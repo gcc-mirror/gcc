@@ -156,29 +156,45 @@ along with GCC; see the file COPYING3.  If not see
           b[10] = x;
        }
 
-   TODO -- stores killing other stores can be taken into account, e.g.,
-   for (i = 0; i < n; i++)
-     {
-       a[i] = 1;
-       a[i+2] = 2;
-     }
+   Apart from predictive commoning on Load-Load and Store-Load chains, we
+   also support Store-Store chains -- stores killed by other store can be
+   eliminated.  Given below example:
 
-   can be replaced with
+     for (i = 0; i < n; i++)
+       {
+	 a[i] = 1;
+	 a[i+2] = 2;
+       }
 
-   t0 = a[0];
-   t1 = a[1];
-   for (i = 0; i < n; i++)
-     {
-       a[i] = 1;
-       t2 = 2;
-       t0 = t1;
-       t1 = t2;
-     }
-   a[n] = t0;
-   a[n+1] = t1;
+   It can be replaced with:
 
-   The interesting part is that this would generalize store motion; still, since
-   sm is performed elsewhere, it does not seem that important.
+     t0 = a[0];
+     t1 = a[1];
+     for (i = 0; i < n; i++)
+       {
+	 a[i] = 1;
+	 t2 = 2;
+	 t0 = t1;
+	 t1 = t2;
+       }
+     a[n] = t0;
+     a[n+1] = t1;
+
+   If the loop runs more than 1 iterations, it can be further simplified into:
+
+     for (i = 0; i < n; i++)
+       {
+	 a[i] = 1;
+       }
+     a[n] = 2;
+     a[n+1] = 2;
+
+   The interesting part is this can be viewed either as general store motion
+   or general dead store elimination in either intra/inter-iterations way.
+
+   TODO: For now, we don't support store-store chains in multi-exit loops.  We
+   force to not unroll in case of store-store chain even if other chains might
+   ask for unroll.
 
    Predictive commoning can be generalized for arbitrary computations (not
    just memory loads), and also nontrivial transfer functions (e.g., replacing
@@ -265,6 +281,9 @@ enum chain_type
   /* Root of the chain is store, the rest are loads.  */
   CT_STORE_LOAD,
 
+  /* There are only stores in the chain.  */
+  CT_STORE_STORE,
+
   /* A combination of two chains.  */
   CT_COMBINATION
 };
@@ -294,8 +313,14 @@ typedef struct chain
   /* Initializers for the variables.  */
   vec<tree> inits;
 
+  /* Finalizers for the eliminated stores.  */
+  vec<tree> finis;
+
   /* gimple stmts intializing the initial variables of the chain.  */
   gimple_seq init_seq;
+
+  /* gimple stmts finalizing the eliminated stores of the chain.  */
+  gimple_seq fini_seq;
 
   /* True if there is a use of a variable with the maximal distance
      that comes after the root in the loop.  */
@@ -333,6 +358,10 @@ struct component
 
   /* What we know about the step of the references in the component.  */
   enum ref_step_type comp_step;
+
+  /* True if all references in component are stores and we try to do
+     intra/inter loop iteration dead store elimination.  */
+  bool eliminate_store_p;
 
   /* Next component in the list.  */
   struct component *next;
@@ -402,6 +431,10 @@ dump_chain (FILE *file, chain_p chain)
 
     case CT_STORE_LOAD:
       chain_type = "Store-loads";
+      break;
+
+    case CT_STORE_STORE:
+      chain_type = "Store-stores";
       break;
 
     case CT_COMBINATION:
@@ -516,6 +549,10 @@ release_chain (chain_p chain)
   chain->inits.release ();
   if (chain->init_seq)
     gimple_seq_discard (chain->init_seq);
+
+  chain->finis.release ();
+  if (chain->fini_seq)
+    gimple_seq_discard (chain->fini_seq);
 
   free (chain);
 }
@@ -719,6 +756,8 @@ split_data_refs_to_components (struct loop *loop,
   struct data_dependence_relation *ddr;
   struct component *comp_list = NULL, *comp;
   dref dataref;
+  /* Don't do store elimination if loop has multiple exit edges.  */
+  bool eliminate_store_p = single_exit (loop) != NULL;
   basic_block last_always_executed = last_always_executed_block (loop);
 
   FOR_EACH_VEC_ELT (datarefs, i, dr)
@@ -761,6 +800,14 @@ split_data_refs_to_components (struct loop *loop,
 
       dra = DDR_A (ddr);
       drb = DDR_B (ddr);
+
+      /* Don't do store elimination if there is any unknown dependence for
+	 any store data reference.  */
+      if ((DR_IS_WRITE (dra) || DR_IS_WRITE (drb))
+	  && (DDR_ARE_DEPENDENT (ddr) == chrec_dont_know
+	      || DDR_NUM_DIST_VECTS (ddr) == 0))
+	eliminate_store_p = false;
+
       ia = component_of (comp_father, (unsigned) (size_t) dra->aux);
       ib = component_of (comp_father, (unsigned) (size_t) drb->aux);
       if (ia == ib)
@@ -800,8 +847,26 @@ split_data_refs_to_components (struct loop *loop,
 	      continue;
 	    }
 	}
+      else if (DR_IS_WRITE (dra) && DR_IS_WRITE (drb)
+	       && ia != bad && ib != bad
+	       && !determine_offset (dra, drb, &dummy_off))
+	{
+	  merge_comps (comp_father, comp_size, bad, ia);
+	  merge_comps (comp_father, comp_size, bad, ib);
+	  continue;
+	}
 
       merge_comps (comp_father, comp_size, ia, ib);
+    }
+
+  if (eliminate_store_p)
+    {
+      tree niters = number_of_latch_executions (loop);
+
+      /* Don't do store elimination if niters info is unknown because stores
+	 in the last iteration can't be eliminated and we need to recover it
+	 after loop.  */
+      eliminate_store_p = (niters != NULL_TREE && niters != chrec_dont_know);
     }
 
   comps = XCNEWVEC (struct component *, n);
@@ -818,6 +883,7 @@ split_data_refs_to_components (struct loop *loop,
 	{
 	  comp = XCNEW (struct component);
 	  comp->refs.create (comp_size[ca]);
+	  comp->eliminate_store_p = eliminate_store_p;
 	  comps[ca] = comp;
 	}
 
@@ -832,6 +898,8 @@ split_data_refs_to_components (struct loop *loop,
 				gimple_bb (dataref->stmt));
       dataref->pos = comp->refs.length ();
       comp->refs.quick_push (dataref);
+      if (DR_IS_READ (dr))
+	comp->eliminate_store_p = false;
     }
 
   for (i = 0; i < n; i++)
@@ -956,6 +1024,21 @@ get_chain_root (chain_p chain)
   return chain->refs[0];
 }
 
+/* Given CHAIN, returns the last ref at DISTANCE, or NULL if it doesn't
+   exist.  */
+
+static inline dref
+get_chain_last_ref_at (chain_p chain, unsigned distance)
+{
+  unsigned i;
+
+  for (i = chain->refs.length (); i > 0; i--)
+    if (distance == chain->refs[i - 1]->distance)
+      break;
+
+  return (i > 0) ? chain->refs[i - 1] : NULL;
+}
+
 /* Adds REF to the chain CHAIN.  */
 
 static void
@@ -1008,22 +1091,26 @@ make_invariant_chain (struct component *comp)
       chain->all_always_accessed &= ref->always_accessed;
     }
 
+  chain->inits = vNULL;
+  chain->finis = vNULL;
+
   return chain;
 }
 
-/* Make a new chain rooted at REF.  */
+/* Make a new chain of type TYPE rooted at REF.  */
 
 static chain_p
-make_rooted_chain (dref ref)
+make_rooted_chain (dref ref, enum chain_type type)
 {
   chain_p chain = XCNEW (struct chain);
 
-  chain->type = DR_IS_READ (ref->ref) ? CT_LOAD : CT_STORE_LOAD;
-
+  chain->type = type;
   chain->refs.safe_push (ref);
   chain->all_always_accessed = ref->always_accessed;
-
   ref->distance = 0;
+
+  chain->inits = vNULL;
+  chain->finis = vNULL;
 
   return chain;
 }
@@ -1199,6 +1286,9 @@ add_looparound_copies (struct loop *loop, chain_p chain)
   dref ref, root = get_chain_root (chain);
   gphi *phi;
 
+  if (chain->type == CT_STORE_STORE)
+    return;
+
   FOR_EACH_VEC_ELT (chain->refs, i, ref)
     {
       phi = find_looparound_phi (loop, ref, root);
@@ -1223,6 +1313,7 @@ determine_roots_comp (struct loop *loop,
   dref a;
   chain_p chain = NULL;
   widest_int last_ofs = 0;
+  enum chain_type type;
 
   /* Invariants are handled specially.  */
   if (comp->comp_step == RS_INVARIANT)
@@ -1239,7 +1330,8 @@ determine_roots_comp (struct loop *loop,
   comp->refs.qsort (order_drefs);
   FOR_EACH_VEC_ELT (comp->refs, i, a)
     {
-      if (!chain || DR_IS_WRITE (a->ref)
+      if (!chain
+	  || (!comp->eliminate_store_p && DR_IS_WRITE (a->ref))
 	  || wi::leu_p (MAX_DISTANCE, a->offset - last_ofs))
 	{
 	  if (nontrivial_chain_p (chain))
@@ -1249,7 +1341,13 @@ determine_roots_comp (struct loop *loop,
 	    }
 	  else
 	    release_chain (chain);
-	  chain = make_rooted_chain (a);
+
+	  if (DR_IS_READ (a->ref))
+	    type = CT_LOAD;
+	  else
+	    type = comp->eliminate_store_p ? CT_STORE_STORE : CT_STORE_LOAD;
+
+	  chain = make_rooted_chain (a, type);
 	  last_ofs = a->offset;
 	  continue;
 	}
@@ -1536,6 +1634,114 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
     }
 }
 
+/* Creates root variables for store elimination CHAIN in which stores for
+   elimination store loop variant values.  In this case, we may need to
+   load root variables before LOOP and propagate it with PHI nodes.  Uids
+   of the newly created root variables are marked in TMP_VARS.  */
+
+static void
+initialize_root_vars_store_elim_2 (struct loop *loop,
+				   chain_p chain, bitmap tmp_vars)
+{
+  unsigned i, n = chain->length;
+  tree ref, init, var, next, val, phi_result;
+  gimple *stmt;
+  gimple_seq stmts;
+
+  chain->vars.create (n);
+
+  ref = DR_REF (get_chain_root (chain)->ref);
+  for (i = 0; i < n; i++)
+    {
+      var = predcom_tmp_var (ref, i, tmp_vars);
+      chain->vars.quick_push (var);
+    }
+
+  FOR_EACH_VEC_ELT (chain->vars, i, var)
+    chain->vars[i] = make_ssa_name (var);
+
+  /* Root values are either rhs operand of stores to be eliminated, or
+     loaded from memory before loop.  */
+  auto_vec<tree> vtemps;
+  vtemps.safe_grow_cleared (n);
+  for (i = 0; i < n; i++)
+    {
+      init = get_init_expr (chain, i);
+      if (init == NULL_TREE)
+	{
+	  /* Root value is rhs operand of the store to be eliminated if
+	     it isn't loaded from memory before loop.  */
+	  dref a = get_chain_last_ref_at (chain, i);
+	  val = gimple_assign_rhs1 (a->stmt);
+	  if (TREE_CLOBBER_P (val))
+	    val = get_or_create_ssa_default_def (cfun, SSA_NAME_VAR (var));
+
+	  vtemps[n - i - 1] = val;
+	}
+      else
+	{
+	  edge latch = loop_latch_edge (loop);
+	  edge entry = loop_preheader_edge (loop);
+
+	  /* Root value is loaded from memory before loop, we also need
+	     to add PHI nodes to propagate the value across iterations.  */
+	  init = force_gimple_operand (init, &stmts, true, NULL_TREE);
+	  if (stmts)
+	    gsi_insert_seq_on_edge_immediate (entry, stmts);
+
+	  next = chain->vars[n - i];
+	  phi_result = copy_ssa_name (next);
+	  gphi *phi = create_phi_node (phi_result, loop->header);
+	  add_phi_arg (phi, init, entry, UNKNOWN_LOCATION);
+	  add_phi_arg (phi, next, latch, UNKNOWN_LOCATION);
+	  vtemps[n - i - 1] = phi_result;
+	}
+    }
+
+  /* Find the insertion position.  */
+  dref last = get_chain_root (chain);
+  for (i = 0; i < chain->refs.length (); i++)
+    {
+      if (chain->refs[i]->pos > last->pos)
+	last = chain->refs[i];
+    }
+
+  gimple_stmt_iterator gsi = gsi_for_stmt (last->stmt);
+
+  /* Insert statements copying root value to root variable.  */
+  for (i = 0; i < n; i++)
+    {
+      var = chain->vars[i];
+      val = vtemps[i];
+      stmt = gimple_build_assign (var, val);
+      gsi_insert_after (&gsi, stmt, GSI_NEW_STMT);
+    }
+}
+
+/* Generates stores for CHAIN's eliminated stores in LOOP's last
+   (CHAIN->length - 1) iterations.  */
+
+static void
+finalize_eliminated_stores (struct loop *loop, chain_p chain)
+{
+  unsigned i, n = chain->length;
+
+  for (i = 0; i < n; i++)
+    {
+      tree var = chain->vars[i];
+      tree fini = chain->finis[n - i - 1];
+      gimple *stmt = gimple_build_assign (fini, var);
+
+      gimple_seq_add_stmt_without_update (&chain->fini_seq, stmt);
+    }
+
+  if (chain->fini_seq)
+    {
+      gsi_insert_seq_on_edge_immediate (single_exit (loop), chain->fini_seq);
+      chain->fini_seq = NULL;
+    }
+}
+
 /* Initializes a variable for load motion for ROOT and prepares phi nodes and
    initialization on entry to LOOP if necessary.  The ssa name for the variable
    is stored in VARS.  If WRITTEN is true, also a phi node to copy its value
@@ -1704,10 +1910,17 @@ remove_stmt (gimple *stmt)
       bsi = gsi_for_stmt (stmt);
 
       name = gimple_assign_lhs (stmt);
-      gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-      next = single_nonlooparound_use (name);
-      reset_debug_uses (stmt);
+      if (TREE_CODE (name) == SSA_NAME)
+	{
+	  next = single_nonlooparound_use (name);
+	  reset_debug_uses (stmt);
+	}
+      else
+	{
+	  /* This is a store to be eliminated.  */
+	  gcc_assert (gimple_vdef (stmt) != NULL);
+	  next = NULL;
+	}
 
       unlink_stmt_vdef (stmt);
       gsi_remove (&bsi, true);
@@ -1727,9 +1940,9 @@ remove_stmt (gimple *stmt)
 
 static void
 execute_pred_commoning_chain (struct loop *loop, chain_p chain,
-			     bitmap tmp_vars)
+			      bitmap tmp_vars)
 {
-  unsigned i;
+  unsigned i, n;
   dref a;
   tree var;
   bool in_lhs;
@@ -1739,6 +1952,27 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
       /* For combined chains, just remove the statements that are used to
 	 compute the values of the expression (except for the root one).
 	 We delay this until after all chains are processed.  */
+    }
+  else if (chain->type == CT_STORE_STORE)
+    {
+      if (chain->length > 0)
+	{
+	  /* For inter-iteration store elimination chain, set up the
+	     variables by loading from memory before loop, copying from rhs
+	     of stores for elimination and propagate it with PHI nodes.  */
+	  initialize_root_vars_store_elim_2 (loop, chain, tmp_vars);
+
+	  /* For inter-iteration store elimination chain, stores at each
+	     distance in loop's last (chain->length - 1) iterations can't
+	     be eliminated, because there is no following killing store.
+	     We need to generate these stores after loop.  */
+	  finalize_eliminated_stores (loop, chain);
+	}
+
+      /* Eliminate the stores killed by following store.  */
+      n = chain->refs.length ();
+      for (i = 0; i < n - 1; i++)
+	remove_stmt (chain->refs[i]->stmt);
     }
   else
     {
@@ -1773,6 +2007,9 @@ determine_unroll_factor (vec<chain_p> chains)
     {
       if (chain->type == CT_INVARIANT)
 	continue;
+      /* For now we can't handle unrolling when eliminating stores.  */
+      else if (chain->type == CT_STORE_STORE)
+	return 1;
 
       if (chain->combined)
 	{
@@ -2419,6 +2656,65 @@ try_combine_chains (vec<chain_p> *chains)
     }
 }
 
+/* Prepare initializers for store elimination CHAIN in LOOP.  Returns false
+   if this is impossible because one of these initializers may trap, true
+   otherwise.  */
+
+static bool
+prepare_initializers_chain_store_elim (struct loop *, chain_p chain)
+{
+  unsigned i, n = chain->length;
+
+  /* For now we can't eliminate stores if some of them are conditional
+     executed.  */
+  if (!chain->all_always_accessed)
+    return false;
+
+  /* Nothing to intialize for intra-iteration store elimination.  */
+  if (n == 0 && chain->type == CT_STORE_STORE)
+    return true;
+
+  chain->inits.create (n);
+  chain->inits.safe_grow_cleared (n);
+
+  /* For store eliminatin chain like below:
+
+     for (i = 0; i < len; i++)
+       {
+	 a[i] = 1;
+	 // a[i + 1] = ...
+	 a[i + 2] = 3;
+       }
+
+     store to a[i + 1] is missed in loop body, it acts like bubbles.  The
+     content of a[i + 1] remain the same if the loop iterates fewer times
+     than chain->length.  We need to set up root variables for such stores
+     by loading from memory before loop.  Note we only need to load bubble
+     elements because loop body is guaranteed to be executed at least once
+     after loop's preheader edge.  */
+  auto_vec<bool> bubbles;
+  bubbles.safe_grow_cleared (n + 1);
+  for (i = 0; i < chain->refs.length (); i++)
+    bubbles[chain->refs[i]->distance] = true;
+
+  struct data_reference *dr = get_chain_root (chain)->ref;
+  for (i = 0; i < n; i++)
+    {
+      if (bubbles[i])
+	continue;
+
+      gimple_seq stmts = NULL;
+
+      tree init = ref_at_iteration (dr, (int) 0 - i, &stmts);
+      if (stmts)
+	gimple_seq_add_seq_without_update (&chain->init_seq, stmts);
+
+      chain->inits[i] = init;
+    }
+
+  return true;
+}
+
 /* Prepare initializers for CHAIN in LOOP.  Returns false if this is
    impossible because one of these initializers may trap, true otherwise.  */
 
@@ -2430,6 +2726,9 @@ prepare_initializers_chain (struct loop *loop, chain_p chain)
   tree init;
   dref laref;
   edge entry = loop_preheader_edge (loop);
+
+  if (chain->type == CT_STORE_STORE)
+    return prepare_initializers_chain_store_elim (loop, chain);
 
   /* Find the initializers for the variables, and check that they cannot
      trap.  */
@@ -2494,6 +2793,90 @@ prepare_initializers (struct loop *loop, vec<chain_p> chains)
     }
 }
 
+/* Generates finalizer memory references for CHAIN in LOOP.  Returns true
+   if finalizer code for CHAIN can be generated, otherwise false.  */
+
+static bool
+prepare_finalizers_chain (struct loop *loop, chain_p chain)
+{
+  unsigned i, n = chain->length;
+  struct data_reference *dr = get_chain_root (chain)->ref;
+  tree fini, niters = number_of_latch_executions (loop);
+
+  /* For now we can't eliminate stores if some of them are conditional
+     executed.  */
+  if (!chain->all_always_accessed)
+    return false;
+
+  chain->finis.create (n);
+  for (i = 0; i < n; i++)
+    chain->finis.quick_push (NULL_TREE);
+
+  /* We never use looparound phi node for store elimination chains.  */
+
+  /* Find the finalizers for the variables, and check that they cannot
+     trap.  */
+  for (i = 0; i < n; i++)
+    {
+      gimple_seq stmts = NULL;
+      gcc_assert (chain->finis[i] == NULL_TREE);
+
+      if (TREE_CODE (niters) != INTEGER_CST && TREE_CODE (niters) != SSA_NAME)
+	{
+	  niters = copy_node (niters);
+	  niters = force_gimple_operand (niters, &stmts, true, NULL);
+	  if (stmts)
+	    {
+	      gimple_seq_add_seq_without_update (&chain->fini_seq, stmts);
+	      stmts = NULL;
+	    }
+	}
+      fini = ref_at_iteration (dr, (int) 0 - i, &stmts, niters);
+      if (stmts)
+	gimple_seq_add_seq_without_update (&chain->fini_seq, stmts);
+
+      chain->finis[i] = fini;
+    }
+
+  return true;
+}
+
+/* Generates finalizer memory reference for CHAINS in LOOP.  Returns true
+   if finalizer code generation for CHAINS breaks loop closed ssa form.  */
+
+static bool
+prepare_finalizers (struct loop *loop, vec<chain_p> chains)
+{
+  chain_p chain;
+  unsigned i;
+  bool loop_closed_ssa = false;
+
+  for (i = 0; i < chains.length ();)
+    {
+      chain = chains[i];
+
+      /* Finalizer is only necessary for inter-iteration store elimination
+	 chains.  */
+      if (chain->length == 0 || chain->type != CT_STORE_STORE)
+	{
+	  i++;
+	  continue;
+	}
+
+      if (prepare_finalizers_chain (loop, chain))
+	{
+	  i++;
+	  loop_closed_ssa = true;
+	}
+      else
+	{
+	  release_chain (chain);
+	  chains.unordered_remove (i);
+	}
+    }
+  return loop_closed_ssa;
+}
+
 /* Insert all initializing gimple stmts into loop's entry edge.  */
 
 static void
@@ -2510,10 +2893,11 @@ insert_init_seqs (struct loop *loop, vec<chain_p> chains)
       }
 }
 
-/* Performs predictive commoning for LOOP.  Returns true if LOOP was
-   unrolled.  */
+/* Performs predictive commoning for LOOP.  Sets bit 1<<0 of return value
+   if LOOP was unrolled; Sets bit 1<<1 of return value if loop closed ssa
+   form was corrupted.  */
 
-static bool
+static unsigned
 tree_predictive_commoning_loop (struct loop *loop)
 {
   vec<data_reference_p> datarefs;
@@ -2522,7 +2906,7 @@ tree_predictive_commoning_loop (struct loop *loop)
   vec<chain_p> chains = vNULL;
   unsigned unroll_factor;
   struct tree_niter_desc desc;
-  bool unroll = false;
+  bool unroll = false, loop_closed_ssa = false;
   edge exit;
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2534,7 +2918,7 @@ tree_predictive_commoning_loop (struct loop *loop)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	fprintf (dump_file, "Loop iterates only 1 time, nothing to do.\n");
 
-      return false;
+      return 0;
     }
 
   /* Find the data references and split them into components according to their
@@ -2549,7 +2933,7 @@ tree_predictive_commoning_loop (struct loop *loop)
 	fprintf (dump_file, "Cannot analyze data dependencies\n");
       free_data_refs (datarefs);
       free_dependence_relations (dependences);
-      return false;
+      return 0;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2562,7 +2946,7 @@ tree_predictive_commoning_loop (struct loop *loop)
     {
       free_data_refs (datarefs);
       free_affine_expand_cache (&name_expansions);
-      return false;
+      return 0;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2587,6 +2971,7 @@ tree_predictive_commoning_loop (struct loop *loop)
       goto end;
     }
   prepare_initializers (loop, chains);
+  loop_closed_ssa = prepare_finalizers (loop, chains);
 
   /* Try to combine the chains that are always worked with together.  */
   try_combine_chains (&chains);
@@ -2648,7 +3033,7 @@ end: ;
 
   free_affine_expand_cache (&name_expansions);
 
-  return unroll;
+  return (unroll ? 1 : 0) | (loop_closed_ssa ? 2 : 0);
 }
 
 /* Runs predictive commoning.  */
@@ -2656,23 +3041,26 @@ end: ;
 unsigned
 tree_predictive_commoning (void)
 {
-  bool unrolled = false;
   struct loop *loop;
-  unsigned ret = 0;
+  unsigned ret = 0, changed = 0;
 
   initialize_original_copy_tables ();
   FOR_EACH_LOOP (loop, LI_ONLY_INNERMOST)
     if (optimize_loop_for_speed_p (loop))
       {
-	unrolled |= tree_predictive_commoning_loop (loop);
+	changed |= tree_predictive_commoning_loop (loop);
       }
+  free_original_copy_tables ();
 
-  if (unrolled)
+  if (changed > 0)
     {
       scev_reset ();
+
+      if (changed > 1)
+	rewrite_into_loop_closed_ssa (NULL, TODO_update_ssa);
+
       ret = TODO_cleanup_cfg;
     }
-  free_original_copy_tables ();
 
   return ret;
 }
