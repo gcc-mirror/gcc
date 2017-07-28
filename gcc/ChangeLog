@@ -1,3 +1,16 @@
+2017-07-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81502
+	* match.pd: Add pattern combining BIT_INSERT_EXPR with
+	BIT_FIELD_REF.
+	* tree-cfg.c (verify_expr): Verify types of BIT_FIELD_REF
+	size/pos operands.
+	(verify_gimple_assign_ternary): Likewise for BIT_INSERT_EXPR pos.
+	* gimple-fold.c (maybe_canonicalize_mem_ref_addr): Use bitsizetype
+	for BIT_FIELD_REF args.
+	* fold-const.c (make_bit_field_ref): Likewise.
+	* tree-vect-stmts.c (vectorizable_simd_clone_call): Likewise.
+
 2017-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80998

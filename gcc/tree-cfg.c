@@ -3054,7 +3054,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  tree t1 = TREE_OPERAND (t, 1);
 	  tree t2 = TREE_OPERAND (t, 2);
 	  if (!tree_fits_uhwi_p (t1)
-	      || !tree_fits_uhwi_p (t2))
+	      || !tree_fits_uhwi_p (t2)
+	      || !types_compatible_p (bitsizetype, TREE_TYPE (t1))
+	      || !types_compatible_p (bitsizetype, TREE_TYPE (t2)))
 	    {
 	      error ("invalid position or size operand to BIT_FIELD_REF");
 	      return t;
@@ -4248,6 +4250,7 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
       if (! tree_fits_uhwi_p (rhs3)
+	  || ! types_compatible_p (bitsizetype, TREE_TYPE (rhs3))
 	  || ! tree_fits_uhwi_p (TYPE_SIZE (rhs2_type)))
 	{
 	  error ("invalid position or size in BIT_INSERT_EXPR");
