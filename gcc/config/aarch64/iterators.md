@@ -44,6 +44,9 @@
 ;; Iterator for all scalar floating point modes (HF, SF, DF)
 (define_mode_iterator GPF_F16 [(HF "AARCH64_ISA_F16") SF DF])
 
+;; Iterator for all scalar floating point modes (HF, SF, DF)
+(define_mode_iterator GPF_HF [HF SF DF])
+
 ;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
 (define_mode_iterator GPF_TF_F16 [HF SF DF TF])
 
