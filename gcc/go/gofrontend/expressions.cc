@@ -12057,12 +12057,15 @@ Interface_field_reference_expression::do_get_backend(Translate_context* context)
   Bexpression* bclosure =
     Expression::make_heap_expression(expr, loc)->get_backend(context);
 
+  Gogo* gogo = context->gogo();
+  Btype* btype = this->type()->get_backend(gogo);
+  bclosure = gogo->backend()->convert_expression(btype, bclosure, loc);
+
   Expression* nil_check =
       Expression::make_binary(OPERATOR_EQEQ, this->expr_,
                               Expression::make_nil(loc), loc);
   Bexpression* bnil_check = nil_check->get_backend(context);
 
-  Gogo* gogo = context->gogo();
   Bexpression* bcrash = gogo->runtime_error(RUNTIME_ERROR_NIL_DEREFERENCE,
 					    loc)->get_backend(context);
 
