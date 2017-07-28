@@ -916,8 +916,6 @@ sanitize_rewrite_addressable_params (function *fun)
 		     IDENTIFIER_POINTER (DECL_NAME (arg)));
 
 	  gcc_assert (!DECL_HAS_VALUE_EXPR_P (arg));
-	  DECL_HAS_VALUE_EXPR_P (arg) = 1;
-	  SET_DECL_VALUE_EXPR (arg, var);
 
 	  SET_DECL_PT_UID (var, DECL_PT_UID (arg));
 
@@ -946,6 +944,9 @@ sanitize_rewrite_addressable_params (function *fun)
 	      gimple_seq_add_stmt (&stmts, g);
 	      clear_value_expr_list.safe_push (arg);
 	    }
+
+	  DECL_HAS_VALUE_EXPR_P (arg) = 1;
+	  SET_DECL_VALUE_EXPR (arg, var);
 	}
     }
 
