@@ -5,6 +5,10 @@
 
 2017-07-28  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/80998
+	* c-c++-common/ubsan/ptr-overflow-1.c: New test.
+	* c-c++-common/ubsan/ptr-overflow-2.c: New test.
+
 	PR tree-optimization/81578
 	* gcc.dg/pr81578.c: New test.
 

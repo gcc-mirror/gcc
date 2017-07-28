@@ -1991,6 +1991,7 @@ call_may_clobber_ref_p_1 (gcall *call, ao_ref *ref)
       case IFN_UBSAN_BOUNDS:
       case IFN_UBSAN_VPTR:
       case IFN_UBSAN_OBJECT_SIZE:
+      case IFN_UBSAN_PTR:
       case IFN_ASAN_CHECK:
 	return false;
       default:
