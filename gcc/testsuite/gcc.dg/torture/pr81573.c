@@ -1,7 +1,7 @@
 /* { dg-do run } */
 
 int a = 1, *c = &a, d;
-char b;
+signed char b;
 
 int main ()
 {
