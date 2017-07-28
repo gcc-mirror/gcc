@@ -402,6 +402,14 @@ expand_UBSAN_VPTR (internal_fn, gcall *)
 /* This should get expanded in the sanopt pass.  */
 
 static void
+expand_UBSAN_PTR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
 expand_UBSAN_OBJECT_SIZE (internal_fn, gcall *)
 {
   gcc_unreachable ();

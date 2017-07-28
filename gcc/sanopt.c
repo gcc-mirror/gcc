@@ -1063,6 +1063,9 @@ pass_sanopt::execute (function *fun)
 		case IFN_UBSAN_OBJECT_SIZE:
 		  no_next = ubsan_expand_objsize_ifn (&gsi);
 		  break;
+		case IFN_UBSAN_PTR:
+		  no_next = ubsan_expand_ptr_ifn (&gsi);
+		  break;
 		case IFN_UBSAN_VPTR:
 		  no_next = ubsan_expand_vptr_ifn (&gsi);
 		  break;

@@ -1143,6 +1143,10 @@ input_function (tree fn_decl, struct data_in *data_in,
 		      if ((flag_sanitize & SANITIZE_OBJECT_SIZE) == 0)
 			remove = true;
 		      break;
+		    case IFN_UBSAN_PTR:
+		      if ((flag_sanitize & SANITIZE_POINTER_OVERFLOW) == 0)
+			remove = true;
+		      break;
 		    case IFN_ASAN_MARK:
 		      if ((flag_sanitize & SANITIZE_ADDRESS) == 0)
 			remove = true;

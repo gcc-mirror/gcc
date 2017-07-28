@@ -4859,21 +4859,21 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
 
   if (low == 0)
     return fold_build2_loc (loc, LE_EXPR, type, exp,
-			fold_convert_loc (loc, etype, high));
+			    fold_convert_loc (loc, etype, high));
 
   if (high == 0)
     return fold_build2_loc (loc, GE_EXPR, type, exp,
-			fold_convert_loc (loc, etype, low));
+			    fold_convert_loc (loc, etype, low));
 
   if (operand_equal_p (low, high, 0))
     return fold_build2_loc (loc, EQ_EXPR, type, exp,
-			fold_convert_loc (loc, etype, low));
+			    fold_convert_loc (loc, etype, low));
 
   if (TREE_CODE (exp) == BIT_AND_EXPR
       && maskable_range_p (low, high, etype, &mask, &value))
     return fold_build2_loc (loc, EQ_EXPR, type,
 			    fold_build2_loc (loc, BIT_AND_EXPR, etype,
-					      exp, mask),
+					     exp, mask),
 			    value);
 
   if (integer_zerop (low))
@@ -4905,7 +4905,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
 	      exp = fold_convert_loc (loc, etype, exp);
 	    }
 	  return fold_build2_loc (loc, GT_EXPR, type, exp,
-			      build_int_cst (etype, 0));
+				  build_int_cst (etype, 0));
 	}
     }
 
@@ -4915,24 +4915,14 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
   if (etype == NULL_TREE)
     return NULL_TREE;
 
+  if (POINTER_TYPE_P (etype))
+    etype = unsigned_type_for (etype);
+
   high = fold_convert_loc (loc, etype, high);
   low = fold_convert_loc (loc, etype, low);
   exp = fold_convert_loc (loc, etype, exp);
 
   value = const_binop (MINUS_EXPR, high, low);
-
-
-  if (POINTER_TYPE_P (etype))
-    {
-      if (value != 0 && !TREE_OVERFLOW (value))
-	{
-	  low = fold_build1_loc (loc, NEGATE_EXPR, TREE_TYPE (low), low);
-          return build_range_check (loc, type,
-			     	    fold_build_pointer_plus_loc (loc, exp, low),
-			            1, build_int_cst (etype, 0), value);
-	}
-      return 0;
-    }
 
   if (value != 0 && !TREE_OVERFLOW (value))
     return build_range_check (loc, type,

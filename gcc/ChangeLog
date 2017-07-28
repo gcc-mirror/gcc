@@ -1,3 +1,29 @@
+2017-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80998
+	* sanopt.c (pass_sanopt::execute): Handle IFN_UBSAN_PTR.
+	* tree-ssa-alias.c (call_may_clobber_ref_p_1): Likewise.
+	* flag-types.h (enum sanitize_code): Add SANITIZER_POINTER_OVERFLOW.
+	Or it into SANITIZER_UNDEFINED.
+	* ubsan.c: Include gimple-fold.h and varasm.h.
+	(ubsan_expand_ptr_ifn): New function.
+	(instrument_pointer_overflow): New function.
+	(maybe_instrument_pointer_overflow): New function.
+	(instrument_object_size): Formatting fix.
+	(pass_ubsan::execute): Call instrument_pointer_overflow
+	and maybe_instrument_pointer_overflow.
+	* internal-fn.c (expand_UBSAN_PTR): New function.
+	* ubsan.h (ubsan_expand_ptr_ifn): Declare.
+	* sanitizer.def (__ubsan_handle_pointer_overflow,
+	__ubsan_handle_pointer_overflow_abort): New builtins.
+	* tree-ssa-tail-merge.c (merge_stmts_p): Handle IFN_UBSAN_PTR.
+	* internal-fn.def (UBSAN_PTR): New internal function.
+	* opts.c (sanitizer_opts): Add pointer-overflow.
+	* lto-streamer-in.c (input_function): Handle IFN_UBSAN_PTR.
+	* fold-const.c (build_range_check): Compute pointer range check in
+	integral type if pointer arithmetics would be needed.  Formatting
+	fixes.
+
 2017-07-28  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/81460
