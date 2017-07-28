@@ -1,3 +1,7 @@
+2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* gcc.target/powerpc/cpu-builtin-1.c (darn, scv): Add tests.
+
 2017-07-28  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/int_mov_immediate_1.c: New.

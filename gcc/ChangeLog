@@ -1,3 +1,9 @@
+2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_DARN): New define.
+	(PPC_FEATURE2_SCV): Likewise.
+	* config/rs6000/rs6000.c (cpu_supports_info): Use them.
+
 2017-07-28  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.c
