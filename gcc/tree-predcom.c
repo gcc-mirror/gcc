@@ -1536,23 +1536,6 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
     }
 }
 
-/* Create the variables and initialization statement for root of chain
-   CHAIN.  Uids of the newly created temporary variables are marked
-   in TMP_VARS.  */
-
-static void
-initialize_root (struct loop *loop, chain_p chain, bitmap tmp_vars)
-{
-  dref root = get_chain_root (chain);
-  bool in_lhs = (chain->type == CT_STORE_LOAD
-		 || chain->type == CT_COMBINATION);
-
-  initialize_root_vars (loop, chain, tmp_vars);
-  replace_ref_with (root->stmt,
-		    chain->vars[chain->length],
-		    true, in_lhs);
-}
-
 /* Initializes a variable for load motion for ROOT and prepares phi nodes and
    initialization on entry to LOOP if necessary.  The ssa name for the variable
    is stored in VARS.  If WRITTEN is true, also a phi node to copy its value
@@ -1749,6 +1732,7 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
   unsigned i;
   dref a;
   tree var;
+  bool in_lhs;
 
   if (chain->combined)
     {
@@ -1758,10 +1742,14 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
     }
   else
     {
-      /* For non-combined chains, set up the variables that hold its value,
-	 and replace the uses of the original references by these
-	 variables.  */
-      initialize_root (loop, chain, tmp_vars);
+      /* For non-combined chains, set up the variables that hold its value.  */
+      initialize_root_vars (loop, chain, tmp_vars);
+      a = get_chain_root (chain);
+      in_lhs = (chain->type == CT_STORE_LOAD
+		|| chain->type == CT_COMBINATION);
+      replace_ref_with (a->stmt, chain->vars[chain->length], true, in_lhs);
+
+      /* Replace the uses of the original references by these variables.  */
       for (i = 1; chain->refs.iterate (i, &a); i++)
 	{
 	  var = chain->vars[chain->length - a->distance];

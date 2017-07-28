@@ -1,5 +1,12 @@
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c (initialize_root): Delete.
+	(execute_pred_commoning_chain): Initialize root vars and replace
+	reference of non-combined chain directly, rather than call above
+	function.
+
+2017-07-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (ref_at_iteration): Add parameter NITERS.  Compute
 	memory reference to DR at (NITERS + ITERS)-th iteration of loop.
 
