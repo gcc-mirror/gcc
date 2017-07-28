@@ -1,3 +1,12 @@
+2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_DARN): New define.
+	(PPC_FEATURE2_SCV): Likewise.
+	* config/rs6000/rs6000.c (cpu_supports_info): Use them.
+
 2017-07-28  David Edelsohn  <dje.gcc@gmail.com>
 
 	Backport from mainline
