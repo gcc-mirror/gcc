@@ -1,5 +1,10 @@
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree-predcom.c (ref_at_iteration): Add parameter NITERS.  Compute
+	memory reference to DR at (NITERS + ITERS)-th iteration of loop.
+
+2017-07-28  Bin Cheng  <bin.cheng@arm.com>
+
 	* tree-predcom.c (struct chain): New field init_seq.
 	(release_chain): Release init_seq.
 	(prepare_initializers_chain): Record intialization stmts in above
