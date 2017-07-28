@@ -1,3 +1,27 @@
+2017-07-28  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_simd_container_mode): Add prototype.
+	(aarch64_expand_mov_immediate): Add HI support.
+	(aarch64_reinterpret_float_as_int, aarch64_float_const_rtx_p: New.
+	(aarch64_can_const_movi_rtx_p): New.
+	(aarch64_preferred_reload_class):
+	Remove restrictions of using FP registers for certain SIMD operations.
+	(aarch64_rtx_costs): Added new cost for CONST_DOUBLE moves.
+	(aarch64_valid_floating_const): Add integer move validation.
+	(aarch64_simd_imm_scalar_p): Remove.
+	(aarch64_output_scalar_simd_mov_immediate): Generalize function.
+	(aarch64_legitimate_constant_p): Expand list of supported cases.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_float_const_rtx_p, aarch64_can_const_movi_rtx_p): New.
+	(aarch64_reinterpret_float_as_int): New.
+	(aarch64_simd_imm_scalar_p): Remove.
+	* config/aarch64/constraints.md (Uvi): New.
+	(Dd): Split into Ds and new Dd.
+	* config/aarch64/aarch64.md (*movsi_aarch64):
+	Add SIMD mov case.
+	(*movdi_aarch64): Add SIMD mov case.
+
 2017-07-28  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-predcom.c: (struct chain): Handle store-store chain in which

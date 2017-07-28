@@ -147,6 +147,8 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
 							 int misalignment,
 							 bool is_packed);
+static machine_mode
+aarch64_simd_container_mode (machine_mode mode, unsigned width);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -4677,6 +4679,69 @@ aarch64_legitimize_address_displacement (rtx *disp, rtx *off, machine_mode mode)
   return true;
 }
 
+/* Return the binary representation of floating point constant VALUE in INTVAL.
+   If the value cannot be converted, return false without setting INTVAL.
+   The conversion is done in the given MODE.  */
+bool
+aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
+{
+
+  /* We make a general exception for 0.  */
+  if (aarch64_float_const_zero_rtx_p (value))
+    {
+      *intval = 0;
+      return true;
+    }
+
+  machine_mode mode = GET_MODE (value);
+  if (GET_CODE (value) != CONST_DOUBLE
+      || !SCALAR_FLOAT_MODE_P (mode)
+      || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT
+      /* Only support up to DF mode.  */
+      || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (DFmode))
+    return false;
+
+  unsigned HOST_WIDE_INT ival = 0;
+
+  long res[2];
+  real_to_target (res,
+		  CONST_DOUBLE_REAL_VALUE (value),
+		  REAL_MODE_FORMAT (mode));
+
+  ival = zext_hwi (res[0], 32);
+  if (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (DFmode))
+    ival |= (zext_hwi (res[1], 32) << 32);
+
+  *intval = ival;
+  return true;
+}
+
+/* Return TRUE if rtx X is an immediate constant that can be moved using a
+   single MOV(+MOVK) followed by an FMOV.  */
+bool
+aarch64_float_const_rtx_p (rtx x)
+{
+  machine_mode mode = GET_MODE (x);
+  if (mode == VOIDmode)
+    return false;
+
+  /* Determine whether it's cheaper to write float constants as
+     mov/movk pairs over ldr/adrp pairs.  */
+  unsigned HOST_WIDE_INT ival;
+
+  if (GET_CODE (x) == CONST_DOUBLE
+      && SCALAR_FLOAT_MODE_P (mode)
+      && aarch64_reinterpret_float_as_int (x, &ival))
+    {
+      machine_mode imode = mode == HFmode ? SImode : int_mode_for_mode (mode);
+      int num_instr = aarch64_internal_mov_immediate
+			(NULL_RTX, gen_int_mode (ival, imode), false, imode);
+      return num_instr < 3;
+    }
+
+  return false;
+}
+
 /* Return TRUE if rtx X is immediate constant 0.0 */
 bool
 aarch64_float_const_zero_rtx_p (rtx x)
@@ -4688,6 +4753,49 @@ aarch64_float_const_zero_rtx_p (rtx x)
     return !HONOR_SIGNED_ZEROS (GET_MODE (x));
   return real_equal (CONST_DOUBLE_REAL_VALUE (x), &dconst0);
 }
+
+/* Return TRUE if rtx X is immediate constant that fits in a single
+   MOVI immediate operation.  */
+bool
+aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
+{
+  if (!TARGET_SIMD)
+     return false;
+
+  /* We make a general exception for 0.  */
+  if (aarch64_float_const_zero_rtx_p (x))
+      return true;
+
+  machine_mode vmode, imode;
+  unsigned HOST_WIDE_INT ival;
+
+  if (GET_CODE (x) == CONST_DOUBLE
+      && SCALAR_FLOAT_MODE_P (mode))
+    {
+      if (!aarch64_reinterpret_float_as_int (x, &ival))
+	return false;
+
+      imode = int_mode_for_mode (mode);
+    }
+  else if (GET_CODE (x) == CONST_INT
+	   && SCALAR_INT_MODE_P (mode))
+    {
+       imode = mode;
+       ival = INTVAL (x);
+    }
+  else
+    return false;
+
+   /* use a 64 bit mode for everything except for DI/DF mode, where we use
+     a 128 bit vector mode.  */
+  int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
+
+  vmode = aarch64_simd_container_mode (imode, width);
+  rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, ival);
+
+  return aarch64_simd_valid_immediate (v_op, vmode, false, NULL);
+}
+
 
 /* Return the fixed registers used for condition codes.  */
 
@@ -5883,12 +5991,6 @@ aarch64_preferred_reload_class (rtx x, reg_class_t regclass)
       return NO_REGS;
     }
 
-  /* If it's an integer immediate that MOVI can't handle, then
-     FP_REGS is not an option, so we return NO_REGS instead.  */
-  if (CONST_INT_P (x) && reg_class_subset_p (regclass, FP_REGS)
-      && !aarch64_simd_imm_scalar_p (x, GET_MODE (x)))
-    return NO_REGS;
-
   /* Register eliminiation can result in a request for
      SP+constant->FP_REGS.  We cannot support such operations which
      use SP as source and an FP_REG as destination, so reject out
@@ -6838,6 +6940,25 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
       return true;
 
     case CONST_DOUBLE:
+
+      /* First determine number of instructions to do the move
+	  as an integer constant.  */
+      if (!aarch64_float_const_representable_p (x)
+	   && !aarch64_can_const_movi_rtx_p (x, mode)
+	   && aarch64_float_const_rtx_p (x))
+	{
+	  unsigned HOST_WIDE_INT ival;
+	  bool succeed = aarch64_reinterpret_float_as_int (x, &ival);
+	  gcc_assert (succeed);
+
+	  machine_mode imode = mode == HFmode ? SImode
+					      : int_mode_for_mode (mode);
+	  int ncost = aarch64_internal_mov_immediate
+		(NULL_RTX, gen_int_mode (ival, imode), false, imode);
+	  *cost += COSTS_N_INSNS (ncost);
+	  return true;
+	}
+
       if (speed)
 	{
 	  /* mov[df,sf]_aarch64.  */
@@ -10182,17 +10303,15 @@ aarch64_legitimate_pic_operand_p (rtx x)
 /* Return true if X holds either a quarter-precision or
      floating-point +0.0 constant.  */
 static bool
-aarch64_valid_floating_const (machine_mode mode, rtx x)
+aarch64_valid_floating_const (rtx x)
 {
   if (!CONST_DOUBLE_P (x))
     return false;
 
-  if (aarch64_float_const_zero_rtx_p (x))
+  /* This call determines which constants can be used in mov<mode>
+     as integer moves instead of constant loads.  */
+  if (aarch64_float_const_rtx_p (x))
     return true;
-
-  /* We only handle moving 0.0 to a TFmode register.  */
-  if (!(mode == SFmode || mode == DFmode))
-    return false;
 
   return aarch64_float_const_representable_p (x);
 }
@@ -10205,11 +10324,15 @@ aarch64_legitimate_constant_p (machine_mode mode, rtx x)
   if (TARGET_SIMD && aarch64_vect_struct_mode_p (mode))
     return false;
 
-  /* This could probably go away because
-     we now decompose CONST_INTs according to expand_mov_immediate.  */
+  /* For these cases we never want to use a literal load.
+     As such we have to prevent the compiler from forcing these
+     to memory.  */
   if ((GET_CODE (x) == CONST_VECTOR
        && aarch64_simd_valid_immediate (x, mode, false, NULL))
-      || CONST_INT_P (x) || aarch64_valid_floating_const (mode, x))
+      || CONST_INT_P (x)
+      || aarch64_valid_floating_const (x)
+      || aarch64_can_const_movi_rtx_p (x, mode)
+      || aarch64_float_const_rtx_p (x))
 	return !targetm.cannot_force_const_mem (mode, x);
 
   if (GET_CODE (x) == HIGH
@@ -11489,23 +11612,6 @@ aarch64_mask_from_zextract_ops (rtx width, rtx pos)
   unsigned HOST_WIDE_INT mask
     = ((unsigned HOST_WIDE_INT) 1 << UINTVAL (width)) - 1;
   return GEN_INT (mask << UINTVAL (pos));
-}
-
-bool
-aarch64_simd_imm_scalar_p (rtx x, machine_mode mode ATTRIBUTE_UNUSED)
-{
-  HOST_WIDE_INT imm = INTVAL (x);
-  int i;
-
-  for (i = 0; i < 8; i++)
-    {
-      unsigned int byte = imm & 0xff;
-      if (byte != 0xff && byte != 0)
-       return false;
-      imm >>= 8;
-    }
-
-  return true;
 }
 
 bool
@@ -12899,15 +13005,28 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
 }
 
 char*
-aarch64_output_scalar_simd_mov_immediate (rtx immediate,
-					  machine_mode mode)
+aarch64_output_scalar_simd_mov_immediate (rtx immediate,  machine_mode mode)
 {
+
+  /* If a floating point number was passed and we desire to use it in an
+     integer mode do the conversion to integer.  */
+  if (CONST_DOUBLE_P (immediate) && GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      unsigned HOST_WIDE_INT ival;
+      if (!aarch64_reinterpret_float_as_int (immediate, &ival))
+	  gcc_unreachable ();
+      immediate = gen_int_mode (ival, mode);
+    }
+
   machine_mode vmode;
+  /* use a 64 bit mode for everything except for DI/DF mode, where we use
+     a 128 bit vector mode.  */
+  int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
 
   gcc_assert (!VECTOR_MODE_P (mode));
-  vmode = aarch64_simd_container_mode (mode, 64);
+  vmode = aarch64_simd_container_mode (mode, width);
   rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (immediate));
-  return aarch64_output_simd_mov_immediate (v_op, vmode, 64);
+  return aarch64_output_simd_mov_immediate (v_op, vmode, width);
 }
 
 /* Split operands into moves from op[1] + op[2] into op[0].  */

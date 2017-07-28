@@ -176,6 +176,12 @@
   (and (match_code "const_double")
        (match_test "aarch64_float_const_representable_p (op)")))
 
+(define_constraint "Uvi"
+  "A floating point constant which can be used with a\
+   MOVI immediate operation."
+  (and (match_code "const_double")
+       (match_test "aarch64_can_const_movi_rtx_p (op, GET_MODE (op))")))
+
 (define_constraint "Dn"
   "@internal
  A constraint that matches vector of immediates."
@@ -220,9 +226,17 @@
 
 (define_constraint "Dd"
   "@internal
- A constraint that matches an immediate operand valid for AdvSIMD scalar."
+ A constraint that matches an integer immediate operand valid\
+ for AdvSIMD scalar operations in DImode."
  (and (match_code "const_int")
-      (match_test "aarch64_simd_imm_scalar_p (op, GET_MODE (op))")))
+      (match_test "aarch64_can_const_movi_rtx_p (op, DImode)")))
+
+(define_constraint "Ds"
+  "@internal
+ A constraint that matches an integer immediate operand valid\
+ for AdvSIMD scalar operations in SImode."
+ (and (match_code "const_int")
+      (match_test "aarch64_can_const_movi_rtx_p (op, SImode)")))
 
 (define_address_constraint "Dp"
   "@internal
