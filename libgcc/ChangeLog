@@ -1,3 +1,7 @@
+2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/ibm-ldouble.c: Disable if defined __rtems__.
+
 2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
 
 	PR testsuite/80759

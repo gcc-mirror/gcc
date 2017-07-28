@@ -2429,7 +2429,7 @@ powerpc-*-rtems*spe*)
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
 	;;
 powerpc-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h rtems.h"
+	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/rtems.h rtems.h"
 	extra_options="${extra_options} rs6000/sysv4.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
 	;;
