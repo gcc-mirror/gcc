@@ -331,6 +331,10 @@ typedef struct chain
 
   /* True if this chain was combined together with some other chain.  */
   unsigned combined : 1;
+
+  /* True if this is store elimination chain and eliminated stores store
+     loop invariant value into memory.  */
+  unsigned inv_store_elimination : 1;
 } *chain_p;
 
 
@@ -1634,6 +1638,98 @@ initialize_root_vars (struct loop *loop, chain_p chain, bitmap tmp_vars)
     }
 }
 
+/* For inter-iteration store elimination CHAIN in LOOP, returns true if
+   all stores to be eliminated store loop invariant values into memory.
+   In this case, we can use these invariant values directly after LOOP.  */
+
+static bool
+is_inv_store_elimination_chain (struct loop *loop, chain_p chain)
+{
+  if (chain->length == 0 || chain->type != CT_STORE_STORE)
+    return false;
+
+  gcc_assert (!chain->has_max_use_after);
+
+  /* If loop iterates for unknown times or fewer times than chain->lenght,
+     we still need to setup root variable and propagate it with PHI node.  */
+  tree niters = number_of_latch_executions (loop);
+  if (TREE_CODE (niters) != INTEGER_CST || wi::leu_p (niters, chain->length))
+    return false;
+
+  /* Check stores in chain for elimination if they only store loop invariant
+     values.  */
+  for (unsigned i = 0; i < chain->length; i++)
+    {
+      dref a = get_chain_last_ref_at (chain, i);
+      if (a == NULL)
+	continue;
+
+      gimple *def_stmt, *stmt = a->stmt;
+      if (!gimple_assign_single_p (stmt))
+	return false;
+
+      tree val = gimple_assign_rhs1 (stmt);
+      if (TREE_CLOBBER_P (val))
+	return false;
+
+      if (CONSTANT_CLASS_P (val))
+	continue;
+
+      if (TREE_CODE (val) != SSA_NAME)
+	return false;
+
+      def_stmt = SSA_NAME_DEF_STMT (val);
+      if (gimple_nop_p (def_stmt))
+	continue;
+
+      if (flow_bb_inside_loop_p (loop, gimple_bb (def_stmt)))
+	return false;
+    }
+  return true;
+}
+
+/* Creates root variables for store elimination CHAIN in which stores for
+   elimination only store loop invariant values.  In this case, we neither
+   need to load root variables before loop nor propagate it with PHI nodes.  */
+
+static void
+initialize_root_vars_store_elim_1 (chain_p chain)
+{
+  tree var;
+  unsigned i, n = chain->length;
+
+  chain->vars.create (n);
+  chain->vars.safe_grow_cleared (n);
+
+  /* Initialize root value for eliminated stores at each distance.  */
+  for (i = 0; i < n; i++)
+    {
+      dref a = get_chain_last_ref_at (chain, i);
+      if (a == NULL)
+	continue;
+
+      var = gimple_assign_rhs1 (a->stmt);
+      chain->vars[a->distance] = var;
+    }
+
+  /* We don't propagate values with PHI nodes, so manually propagate value
+     to bubble positions.  */
+  var = chain->vars[0];
+  for (i = 1; i < n; i++)
+    {
+      if (chain->vars[i] != NULL_TREE)
+	{
+	  var = chain->vars[i];
+	  continue;
+	}
+      chain->vars[i] = var;
+    }
+
+  /* Revert the vector.  */
+  for (i = 0; i < n / 2; i++)
+    std::swap (chain->vars[i], chain->vars[n - i - 1]);
+}
+
 /* Creates root variables for store elimination CHAIN in which stores for
    elimination store loop variant values.  In this case, we may need to
    load root variables before LOOP and propagate it with PHI nodes.  Uids
@@ -1957,10 +2053,20 @@ execute_pred_commoning_chain (struct loop *loop, chain_p chain,
     {
       if (chain->length > 0)
 	{
-	  /* For inter-iteration store elimination chain, set up the
-	     variables by loading from memory before loop, copying from rhs
-	     of stores for elimination and propagate it with PHI nodes.  */
-	  initialize_root_vars_store_elim_2 (loop, chain, tmp_vars);
+	  if (chain->inv_store_elimination)
+	    {
+	      /* If dead stores in this chain only store loop invariant
+		 values, we can simply record the invariant value and use
+		 it directly after loop.  */
+	      initialize_root_vars_store_elim_1 (chain);
+	    }
+	  else
+	    {
+	      /* If dead stores in this chain store loop variant values,
+		 we need to set up the variables by loading from memory
+		 before loop and propagating it with PHI nodes.  */
+	      initialize_root_vars_store_elim_2 (loop, chain, tmp_vars);
+	    }
 
 	  /* For inter-iteration store elimination chain, stores at each
 	     distance in loop's last (chain->length - 1) iterations can't
@@ -2661,7 +2767,7 @@ try_combine_chains (vec<chain_p> *chains)
    otherwise.  */
 
 static bool
-prepare_initializers_chain_store_elim (struct loop *, chain_p chain)
+prepare_initializers_chain_store_elim (struct loop *loop, chain_p chain)
 {
   unsigned i, n = chain->length;
 
@@ -2673,6 +2779,15 @@ prepare_initializers_chain_store_elim (struct loop *, chain_p chain)
   /* Nothing to intialize for intra-iteration store elimination.  */
   if (n == 0 && chain->type == CT_STORE_STORE)
     return true;
+
+  /* For store elimination chain, there is nothing to initialize if stores
+     to be eliminated only store loop invariant values into memory.  */
+  if (chain->type == CT_STORE_STORE
+      && is_inv_store_elimination_chain (loop, chain))
+    {
+      chain->inv_store_elimination = true;
+      return true;
+    }
 
   chain->inits.create (n);
   chain->inits.safe_grow_cleared (n);
@@ -2866,7 +2981,11 @@ prepare_finalizers (struct loop *loop, vec<chain_p> chains)
       if (prepare_finalizers_chain (loop, chain))
 	{
 	  i++;
-	  loop_closed_ssa = true;
+	  /* We don't corrupt loop closed ssa form for store elimination
+	     chain if eliminated stores only store loop invariant values
+	     into memory.  */
+	  if (!chain->inv_store_elimination)
+	    loop_closed_ssa |= (!chain->inv_store_elimination);
 	}
       else
 	{
