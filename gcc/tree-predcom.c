@@ -1370,11 +1370,12 @@ replace_ref_with (gimple *stmt, tree new_tree, bool set, bool in_lhs)
   gsi_insert_after (&bsi, new_stmt, GSI_NEW_STMT);
 }
 
-/* Returns a memory reference to DR in the ITER-th iteration of
-   the loop it was analyzed in.  Append init stmts to STMTS.  */
+/* Returns a memory reference to DR in the (NITERS + ITER)-th iteration
+   of the loop it was analyzed in.  Append init stmts to STMTS.  */
 
 static tree
-ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
+ref_at_iteration (data_reference_p dr, int iter,
+		  gimple_seq *stmts, tree niters = NULL_TREE)
 {
   tree off = DR_OFFSET (dr);
   tree coff = DR_INIT (dr);
@@ -1383,14 +1384,27 @@ ref_at_iteration (data_reference_p dr, int iter, gimple_seq *stmts)
   tree ref_type = NULL_TREE;
   tree ref_op1 = NULL_TREE;
   tree ref_op2 = NULL_TREE;
-  if (iter == 0)
-    ;
-  else if (TREE_CODE (DR_STEP (dr)) == INTEGER_CST)
-    coff = size_binop (PLUS_EXPR, coff,
-		       size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
-  else
-    off = size_binop (PLUS_EXPR, off,
-		      size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter)));
+  tree new_offset;
+
+  if (iter != 0)
+    {
+      new_offset = size_binop (MULT_EXPR, DR_STEP (dr), ssize_int (iter));
+      if (TREE_CODE (new_offset) == INTEGER_CST)
+	coff = size_binop (PLUS_EXPR, coff, new_offset);
+      else
+	off = size_binop (PLUS_EXPR, off, new_offset);
+    }
+
+  if (niters != NULL_TREE)
+    {
+      niters = fold_convert (ssizetype, niters);
+      new_offset = size_binop (MULT_EXPR, DR_STEP (dr), niters);
+      if (TREE_CODE (niters) == INTEGER_CST)
+	coff = size_binop (PLUS_EXPR, coff, new_offset);
+      else
+	off = size_binop (PLUS_EXPR, off, new_offset);
+    }
+
   /* While data-ref analysis punts on bit offsets it still handles
      bitfield accesses at byte boundaries.  Cope with that.  Note that
      if the bitfield object also starts at a byte-boundary we can simply
