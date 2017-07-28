@@ -27076,6 +27076,7 @@ output_macinfo (void)
   macinfo_entry *ref;
   vec<macinfo_entry, va_gc> *files = NULL;
   macinfo_hash_type *macinfo_htab = NULL;
+  char dl_section_ref[MAX_ARTIFICIAL_LABEL_BYTES];
 
   if (! length)
     return;
@@ -27085,6 +27086,12 @@ output_macinfo (void)
 	      && (int) DW_MACINFO_undef == (int) DW_MACRO_undef
 	      && (int) DW_MACINFO_start_file == (int) DW_MACRO_start_file
 	      && (int) DW_MACINFO_end_file == (int) DW_MACRO_end_file);
+
+  /* AIX Assembler inserts the length, so adjust the reference to match the
+     offset expected by debuggers.  */
+  strcpy (dl_section_ref, debug_line_section_label);
+  if (XCOFF_DEBUGGING_INFO)
+    strcat (dl_section_ref, DWARF_INITIAL_LENGTH_SIZE_STR);
 
   /* For .debug_macro emit the section header.  */
   if (!dwarf_strict || dwarf_version >= 5)
@@ -27096,7 +27103,7 @@ output_macinfo (void)
       else
 	dw2_asm_output_data (1, 2, "Flags: 32-bit, lineptr present");
       dw2_asm_output_offset (DWARF_OFFSET_SIZE,
-                             (!dwarf_split_debug_info ? debug_line_section_label
+                             (!dwarf_split_debug_info ? dl_section_ref
                               : debug_skeleton_line_section_label),
                              debug_line_section, NULL);
     }
