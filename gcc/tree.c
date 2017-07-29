@@ -1128,7 +1128,7 @@ free_node (tree node)
    TREE_CHAIN, if it has one, is zero and it has a fresh uid.  */
 
 tree
-copy_node_stat (tree node MEM_STAT_DECL)
+copy_node (tree node MEM_STAT_DECL)
 {
   tree t;
   enum tree_code code = TREE_CODE (node);
@@ -6684,7 +6684,7 @@ build_aligned_type (tree type, unsigned int align)
 tree
 build_distinct_type_copy (tree type MEM_STAT_DECL)
 {
-  tree t = copy_node_stat (type PASS_MEM_STAT);
+  tree t = copy_node (type PASS_MEM_STAT);
 
   TYPE_POINTER_TO (t) = 0;
   TYPE_REFERENCE_TO (t) = 0;

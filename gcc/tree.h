@@ -3897,8 +3897,7 @@ extern void free_node (tree);
 
 /* Make a copy of a node, with all the same contents.  */
 
-extern tree copy_node_stat (tree MEM_STAT_DECL);
-#define copy_node(t) copy_node_stat (t MEM_STAT_INFO)
+extern tree copy_node (tree CXX_MEM_STAT_INFO);
 
 /* Make a copy of a chain of TREE_LIST nodes.  */
 
