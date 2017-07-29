@@ -3912,9 +3912,7 @@ extern tree make_tree_binfo (unsigned CXX_MEM_STAT_INFO);
 
 /* Make an INTEGER_CST.  */
 
-extern tree make_int_cst_stat (int, int MEM_STAT_DECL);
-#define make_int_cst(LEN, EXT_LEN) \
-  make_int_cst_stat (LEN, EXT_LEN MEM_STAT_INFO)
+extern tree make_int_cst (int, int CXX_MEM_STAT_INFO);
 
 /* Make a TREE_VEC.  */
 

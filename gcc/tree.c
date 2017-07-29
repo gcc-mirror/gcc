@@ -2235,7 +2235,7 @@ build_case_label (tree low_value, tree high_value, tree label_decl)
    The latter determines the length of the HOST_WIDE_INT vector.  */
 
 tree
-make_int_cst_stat (int len, int ext_len MEM_STAT_DECL)
+make_int_cst (int len, int ext_len MEM_STAT_DECL)
 {
   tree t;
   int length = ((ext_len - 1) * sizeof (HOST_WIDE_INT)
