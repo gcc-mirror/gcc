@@ -997,7 +997,7 @@ allocate_decl_uid (void)
    Achoo!  I got a code in the node.  */
 
 tree
-make_node_stat (enum tree_code code MEM_STAT_DECL)
+make_node (enum tree_code code MEM_STAT_DECL)
 {
   tree t;
   enum tree_code_class type = TREE_CODE_CLASS (code);
@@ -2870,7 +2870,7 @@ nreverse (tree t)
 tree
 build_tree_list_stat (tree parm, tree value MEM_STAT_DECL)
 {
-  tree t = make_node_stat (TREE_LIST PASS_MEM_STAT);
+  tree t = make_node (TREE_LIST PASS_MEM_STAT);
   TREE_PURPOSE (t) = parm;
   TREE_VALUE (t) = value;
   return t;
@@ -4371,7 +4371,7 @@ build0_stat (enum tree_code code, tree tt MEM_STAT_DECL)
 
   gcc_assert (TREE_CODE_LENGTH (code) == 0);
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   return t;
@@ -4474,7 +4474,7 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
     gcc_assert (POINTER_TYPE_P (tt) && POINTER_TYPE_P (TREE_TYPE (arg0))
 		&& ptrofftype_p (TREE_TYPE (arg1)));
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   /* Below, we automatically set TREE_SIDE_EFFECTS and TREE_READONLY for the
@@ -4543,7 +4543,7 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
   gcc_assert (TREE_CODE_LENGTH (code) == 3);
   gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   read_only = 1;
@@ -4583,7 +4583,7 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 
   gcc_assert (TREE_CODE_LENGTH (code) == 4);
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   side_effects = TREE_SIDE_EFFECTS (t);
@@ -4610,7 +4610,7 @@ build5_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 
   gcc_assert (TREE_CODE_LENGTH (code) == 5);
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   TREE_TYPE (t) = tt;
 
   side_effects = TREE_SIDE_EFFECTS (t);
@@ -4745,7 +4745,7 @@ build_decl_stat (location_t loc, enum tree_code code, tree name,
 {
   tree t;
 
-  t = make_node_stat (code PASS_MEM_STAT);
+  t = make_node (code PASS_MEM_STAT);
   DECL_SOURCE_LOCATION (t) = loc;
 
 /*  if (type == error_mark_node)
