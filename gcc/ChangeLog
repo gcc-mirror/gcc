@@ -1,3 +1,22 @@
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* debug.h (struct gcc_debug_hooks): Add IMPLICIT argument
+	to imported_module_or_decl hook.
+	(debug_nothing_tree_tree_tree_bool): Remove.
+	(debug_nothing_tree_tree_tree_bool_bool): New declaration.
+	* debug.c (do_nothing_debug_hooks): Use
+	debug_nothing_tree_tree_tree_bool_bool instead of
+	debug_nothing_tree_tree_tree_bool.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dbxout.c (dbx_debug_hooks, xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* dwarf2out.c (dwarf2_lineno_debug_hooks): Likewise.
+	(gen_namespace_die): Add DW_AT_export_symbols attribute if
+	langhook wants it.
+	(dwarf2out_imported_module_or_decl): Add IMPLICIT argument,
+	if true, -gdwarf-5 and decl will have DW_AT_export_symbols
+	attribute, don't add anything.
+
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* fold-const.c (fold_build1_stat_loc): Remove _stat from name.

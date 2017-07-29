@@ -1,3 +1,8 @@
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Pass false
+	as new argument to the imported_module_or_decl debug hook.
+
 2017-07-25  Javier Miranda  <miranda@adacore.com>
 
 	* checks.adb (Apply_Divide_Checks): Ensure that operands are not

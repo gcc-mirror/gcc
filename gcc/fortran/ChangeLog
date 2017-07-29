@@ -1,3 +1,8 @@
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-decl.c (gfc_trans_use_stmts): Pass false as new argument to
+	the imported_module_or_decl debug hook.
+
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
 	* resolve.c (find_reachable_labels): Adjust.

@@ -1,3 +1,8 @@
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/inline-ns-1.C: New test.
+	* g++.dg/debug/dwarf2/inline-ns-2.C: New test.
+
 2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/cpu-builtin-1.c (darn, scv): Add tests.

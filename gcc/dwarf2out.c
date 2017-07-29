@@ -2680,7 +2680,7 @@ static bool dwarf2out_ignore_block (const_tree);
 static void dwarf2out_early_global_decl (tree);
 static void dwarf2out_late_global_decl (tree);
 static void dwarf2out_type_decl (tree, int);
-static void dwarf2out_imported_module_or_decl (tree, tree, tree, bool);
+static void dwarf2out_imported_module_or_decl (tree, tree, tree, bool, bool);
 static void dwarf2out_imported_module_or_decl_1 (tree, tree, tree,
 						 dw_die_ref);
 static void dwarf2out_abstract_function (tree);
@@ -2764,7 +2764,7 @@ const struct gcc_debug_hooks dwarf2_lineno_debug_hooks =
   debug_nothing_tree,		         /* early_global_decl */
   debug_nothing_tree,		         /* late_global_decl */
   debug_nothing_tree_int,		 /* type_decl */
-  debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
+  debug_nothing_tree_tree_tree_bool_bool,/* imported_module_or_decl */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
   debug_nothing_rtx_code_label,	         /* label */
@@ -25166,6 +25166,11 @@ gen_namespace_die (tree decl, dw_die_ref context_die)
       add_AT_die_ref (namespace_die, DW_AT_import, origin_die);
       equate_decl_number_to_die (decl, namespace_die);
     }
+  if ((dwarf_version >= 5 || !dwarf_strict)
+      && lang_hooks.decls.decl_dwarf_attribute (decl,
+						DW_AT_export_symbols) == 1)
+    add_AT_flag (namespace_die, DW_AT_export_symbols, 1);
+
   /* Bypass dwarf2_name's check for DECL_NAMELESS.  */
   if (want_pubnames ())
     add_pubname_string (lang_hooks.dwarf_name (decl, 1), namespace_die);
@@ -25579,11 +25584,13 @@ dwarf2out_imported_module_or_decl_1 (tree decl,
 /* Output debug information for imported module or decl DECL.
    NAME is non-NULL name in context if the decl has been renamed.
    CHILD is true if decl is one of the renamed decls as part of
-   importing whole module.  */
+   importing whole module.
+   IMPLICIT is set if this hook is called for an implicit import
+   such as inline namespace.  */
 
 static void
 dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
-				   bool child)
+				   bool child, bool implicit)
 {
   /* dw_die_ref at_import_die;  */
   dw_die_ref scope_die;
@@ -25592,6 +25599,16 @@ dwarf2out_imported_module_or_decl (tree decl, tree name, tree context,
     return;
 
   gcc_assert (decl);
+
+  /* For DWARF5, just DW_AT_export_symbols on the DW_TAG_namespace
+     should be enough, for DWARF4 and older even if we emit as extension
+     DW_AT_export_symbols add the implicit DW_TAG_imported_module anyway
+     for the benefit of consumers unaware of DW_AT_export_symbols.  */
+  if (implicit
+      && dwarf_version >= 5
+      && lang_hooks.decls.decl_dwarf_attribute (decl,
+						DW_AT_export_symbols) == 1)
+    return;
 
   set_early_dwarf s;
 
