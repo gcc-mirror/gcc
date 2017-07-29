@@ -3889,8 +3889,7 @@ extern int allocate_decl_uid (void);
    The TREE_CODE is the only argument.  Contents are initialized
    to zero except for a few of the common fields.  */
 
-extern tree make_node_stat (enum tree_code MEM_STAT_DECL);
-#define make_node(t) make_node_stat (t MEM_STAT_INFO)
+extern tree make_node (enum tree_code CXX_MEM_STAT_INFO);
 
 /* Free tree node.  */
 

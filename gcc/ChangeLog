@@ -1,3 +1,16 @@
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* tree.c (make_node_stat): rename to make_node.
+	(build_tree_list_stat): Adjust.
+	(build0_stat): Likewise.
+	(build2_stat): Likewise.
+	(build3_stat): Likewise.
+	(build4_stat): Likewise.
+	(build5_stat): Likewise.
+	(build_decl_stat): Likewise.
+	* tree.h (make_node_stat): Adjust prototype.
+	(make_node): remove macro.
+
 2017-07-28  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/ppc-auxv.h (PPC_FEATURE2_DARN): New define.
