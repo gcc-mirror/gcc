@@ -273,7 +273,7 @@ bitmap_obstack_release (bitmap_obstack *bit_obstack)
    it on the default bitmap obstack.  */
 
 bitmap
-bitmap_obstack_alloc_stat (bitmap_obstack *bit_obstack MEM_STAT_DECL)
+bitmap_alloc (bitmap_obstack *bit_obstack MEM_STAT_DECL)
 {
   bitmap map;
 
@@ -295,7 +295,7 @@ bitmap_obstack_alloc_stat (bitmap_obstack *bit_obstack MEM_STAT_DECL)
 /* Create a new GCd bitmap.  */
 
 bitmap
-bitmap_gc_alloc_stat (ALONE_MEM_STAT_DECL)
+bitmap_gc_alloc (ALONE_MEM_STAT_DECL)
 {
   bitmap map;
 
