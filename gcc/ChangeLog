@@ -1,5 +1,11 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (make_tre_binfo_stat): Remove _stat from name.
+	* tree.h (make_tree_binfo_stat): Adjust prototype.
+	(make_tree_binfo): Remove.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (copy_node_stat): Rename to copy_node.
 	(build_distinct_type_copy): Adjust.
 	* tree.h (copy_node_stat): Adjust prototype.
