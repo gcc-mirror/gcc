@@ -3989,10 +3989,6 @@ build5_loc (location_t loc, enum tree_code code, tree type, tree arg0,
   return t;
 }
 
-extern tree build_var_debug_value_stat (tree, tree MEM_STAT_DECL);
-#define build_var_debug_value(t1,t2) \
-  build_var_debug_value_stat (t1,t2 MEM_STAT_INFO)
-
 /* Constructs double_int from tree CST.  */
 
 extern tree double_int_to_tree (tree, double_int);

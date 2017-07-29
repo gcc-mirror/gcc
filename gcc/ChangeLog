@@ -1,5 +1,9 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.h (build_var_debug_value): Remove prototype.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (tree_cons_stat): Remove _stat from name.
 	* tree.h (tree_cons): Remove macro.
 
