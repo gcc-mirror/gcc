@@ -1,5 +1,10 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (build_decl_stat): Remove _stat from name.
+	* tree.h (build_decl): Remove macro.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gimple.c (gimple_build_with_ops_stat): Adjust.
 	(gimple_alloc_stat): Remove _stat from name.
 	* gimple.h (gimple_alloc): Remove macro.

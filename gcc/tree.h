@@ -4031,10 +4031,9 @@ extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
 #define build_tree_list(t, q) build_tree_list_stat (t, q MEM_STAT_INFO)
 extern tree build_tree_list_vec_stat (const vec<tree, va_gc> *MEM_STAT_DECL);
 #define build_tree_list_vec(v) build_tree_list_vec_stat (v MEM_STAT_INFO)
-extern tree build_decl_stat (location_t, enum tree_code,
-			     tree, tree MEM_STAT_DECL);
+extern tree build_decl (location_t, enum tree_code,
+			tree, tree CXX_MEM_STAT_INFO);
 extern tree build_fn_decl (const char *, tree);
-#define build_decl(l,c,t,q) build_decl_stat (l, c, t, q MEM_STAT_INFO)
 extern tree build_translation_unit_decl (tree);
 extern tree build_block (tree, tree, tree, tree);
 extern tree build_empty_stmt (location_t);

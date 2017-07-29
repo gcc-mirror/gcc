@@ -4740,7 +4740,7 @@ build_nt_call_vec (tree fn, vec<tree, va_gc> *args)
    Other slots are initialized to 0 or null pointers.  */
 
 tree
-build_decl_stat (location_t loc, enum tree_code code, tree name,
+build_decl (location_t loc, enum tree_code code, tree name,
     		 tree type MEM_STAT_DECL)
 {
   tree t;
