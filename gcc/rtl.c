@@ -359,7 +359,7 @@ copy_rtx (rtx orig)
 /* Create a new copy of an rtx.  Only copy just one level.  */
 
 rtx
-shallow_copy_rtx_stat (const_rtx orig MEM_STAT_DECL)
+shallow_copy_rtx (const_rtx orig MEM_STAT_DECL)
 {
   const unsigned int size = rtx_size (orig);
   rtx const copy = ggc_alloc_rtx_def_stat (size PASS_MEM_STAT);
