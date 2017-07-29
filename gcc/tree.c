@@ -2193,7 +2193,7 @@ build_zero_cst (tree type)
 /* Build a BINFO with LEN language slots.  */
 
 tree
-make_tree_binfo_stat (unsigned base_binfos MEM_STAT_DECL)
+make_tree_binfo (unsigned base_binfos MEM_STAT_DECL)
 {
   tree t;
   size_t length = (offsetof (struct tree_binfo, base_binfos)
