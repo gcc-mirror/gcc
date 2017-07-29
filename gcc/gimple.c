@@ -117,7 +117,7 @@ gimple_size (enum gimple_code code)
    operands.  */
 
 gimple *
-gimple_alloc_stat (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
+gimple_alloc (enum gimple_code code, unsigned num_ops MEM_STAT_DECL)
 {
   size_t size;
   gimple *stmt;
@@ -169,7 +169,7 @@ static gimple *
 gimple_build_with_ops_stat (enum gimple_code code, unsigned subcode,
 		            unsigned num_ops MEM_STAT_DECL)
 {
-  gimple *s = gimple_alloc_stat (code, num_ops PASS_MEM_STAT);
+  gimple *s = gimple_alloc (code, num_ops PASS_MEM_STAT);
   gimple_set_subcode (s, subcode);
 
   return s;

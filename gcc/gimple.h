@@ -1417,8 +1417,7 @@ extern enum gimple_statement_structure_enum const gss_for_code_[];
    of comminucating the profile info to the builtin expanders.  */
 extern gimple *currently_expanding_gimple_stmt;
 
-#define gimple_alloc(c, n) gimple_alloc_stat (c, n MEM_STAT_INFO)
-gimple *gimple_alloc_stat (enum gimple_code, unsigned MEM_STAT_DECL);
+gimple *gimple_alloc (enum gimple_code, unsigned CXX_MEM_STAT_INFO);
 greturn *gimple_build_return (tree);
 void gimple_call_reset_alias_info (gcall *);
 gcall *gimple_build_call_vec (tree, vec<tree> );
