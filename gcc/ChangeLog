@@ -1,5 +1,12 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* emit-rtl.c (gen_raw_REG): Adjust.
+	* gengenrtl.c (gendef): Likewise.
+	* rtl.c (rtx_alloc_stat): Remove _stat from name.
+	* rtl.h (rtx_alloc): Remove macro.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (build_tree_list_vec_stat): Remove _stat from name.
 	(build_tree_list_stat): Likewise.
 	* tree.h (build_tree_list): Remove macro.

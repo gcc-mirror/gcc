@@ -223,7 +223,7 @@ rtx_alloc_stat_v (RTX_CODE code MEM_STAT_DECL, int extra)
    all the rest is initialized to zero.  */
 
 rtx
-rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
+rtx_alloc (RTX_CODE code MEM_STAT_DECL)
 {
   return rtx_alloc_stat_v (code PASS_MEM_STAT, 0);
 }
