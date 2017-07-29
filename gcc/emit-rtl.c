@@ -433,7 +433,7 @@ set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
 rtx
 gen_raw_REG (machine_mode mode, unsigned int regno)
 {
-  rtx x = rtx_alloc_stat (REG MEM_STAT_INFO);
+  rtx x = rtx_alloc (REG MEM_STAT_INFO);
   set_mode_and_regno (x, mode, regno);
   REG_ATTRS (x) = NULL;
   ORIGINAL_REGNO (x) = regno;

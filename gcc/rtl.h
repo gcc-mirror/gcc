@@ -2705,8 +2705,7 @@ extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);
 extern rtx plus_constant (machine_mode, rtx, HOST_WIDE_INT, bool = false);
 
 /* In rtl.c */
-extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
-#define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
+extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
 extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 #define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
 #define const_wide_int_alloc(NWORDS)				\
