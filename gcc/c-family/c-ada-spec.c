@@ -2055,7 +2055,10 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	    }
 	  else
 	    {
-	      pp_string (buffer, "unsigned");
+	      if (TYPE_UNSIGNED (node))
+		pp_string (buffer, "unsigned");
+	      else
+		pp_string (buffer, "int");
 	      for (; value; value = TREE_CHAIN (value))
 		{
 		  pp_semicolon (buffer);
@@ -3097,7 +3100,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	      if (TYPE_NAME (TREE_TYPE (t)))
 		dump_generic_ada_node
 		  (buffer, TREE_TYPE (t), t, spc, false, true);
-	      else
+	      else if (type)
 		dump_ada_double_name (buffer, type, t);
 	    }
 	  else
