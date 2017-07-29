@@ -1681,7 +1681,7 @@ cst_and_fits_in_hwi (const_tree x)
 /* Build a newly constructed VECTOR_CST node of length LEN.  */
 
 tree
-make_vector_stat (unsigned len MEM_STAT_DECL)
+make_vector (unsigned len MEM_STAT_DECL)
 {
   tree t;
   unsigned length = (len - 1) * sizeof (tree) + sizeof (struct tree_vector);
@@ -1700,7 +1700,7 @@ make_vector_stat (unsigned len MEM_STAT_DECL)
    are in a list pointed to by VALS.  */
 
 tree
-build_vector_stat (tree type, tree *vals MEM_STAT_DECL)
+build_vector (tree type, tree *vals MEM_STAT_DECL)
 {
   int over = 0;
   unsigned cnt = 0;
