@@ -11248,7 +11248,7 @@ build_omp_clause (location_t loc, enum omp_clause_code code)
    object is initialized to zeros.  */
 
 tree
-build_vl_exp_stat (enum tree_code code, int len MEM_STAT_DECL)
+build_vl_exp (enum tree_code code, int len MEM_STAT_DECL)
 {
   tree t;
   int length = (len - 1) * sizeof (tree) + sizeof (struct tree_exp);
