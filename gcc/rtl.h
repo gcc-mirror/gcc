@@ -2725,8 +2725,7 @@ extern rtx copy_rtx_if_shared (rtx);
 
 /* In rtl.c */
 extern unsigned int rtx_size (const_rtx);
-extern rtx shallow_copy_rtx_stat (const_rtx MEM_STAT_DECL);
-#define shallow_copy_rtx(a) shallow_copy_rtx_stat (a MEM_STAT_INFO)
+extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
 
