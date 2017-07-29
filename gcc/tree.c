@@ -4365,7 +4365,7 @@ do { tree _node = (NODE); \
    enough for all extant tree codes.  */
 
 tree
-build0_stat (enum tree_code code, tree tt MEM_STAT_DECL)
+build0 (enum tree_code code, tree tt MEM_STAT_DECL)
 {
   tree t;
 
@@ -4378,7 +4378,7 @@ build0_stat (enum tree_code code, tree tt MEM_STAT_DECL)
 }
 
 tree
-build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
+build1 (enum tree_code code, tree type, tree node MEM_STAT_DECL)
 {
   int length = sizeof (struct tree_exp);
   tree t;
@@ -4454,7 +4454,7 @@ build1_stat (enum tree_code code, tree type, tree node MEM_STAT_DECL)
   } while (0)
 
 tree
-build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
+build2 (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects, div_by_zero;
   tree t;
@@ -4534,8 +4534,8 @@ build2_stat (enum tree_code code, tree tt, tree arg0, tree arg1 MEM_STAT_DECL)
 
 
 tree
-build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
-	     tree arg2 MEM_STAT_DECL)
+build3 (enum tree_code code, tree tt, tree arg0, tree arg1,
+	tree arg2 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -4575,8 +4575,8 @@ build3_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 }
 
 tree
-build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
-	     tree arg2, tree arg3 MEM_STAT_DECL)
+build4 (enum tree_code code, tree tt, tree arg0, tree arg1,
+	tree arg2, tree arg3 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
@@ -4602,8 +4602,8 @@ build4_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
 }
 
 tree
-build5_stat (enum tree_code code, tree tt, tree arg0, tree arg1,
-	     tree arg2, tree arg3, tree arg4 MEM_STAT_DECL)
+build5 (enum tree_code code, tree tt, tree arg0, tree arg1,
+	tree arg2, tree arg3, tree arg4 MEM_STAT_DECL)
 {
   bool constant, read_only, side_effects;
   tree t;
