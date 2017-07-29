@@ -4339,8 +4339,7 @@ extern tree chainon (tree, tree);
 
 /* Make a new TREE_LIST node from specified PURPOSE, VALUE and CHAIN.  */
 
-extern tree tree_cons_stat (tree, tree, tree MEM_STAT_DECL);
-#define tree_cons(t,q,w) tree_cons_stat (t,q,w MEM_STAT_INFO)
+extern tree tree_cons (tree, tree, tree CXX_MEM_STAT_INFO);
 
 /* Return the last tree node in a chain.  */
 
