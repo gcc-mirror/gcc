@@ -12212,7 +12212,7 @@ fold_build1_stat_loc (location_t loc,
 
   tem = fold_unary_loc (loc, code, type, op0);
   if (!tem)
-    tem = build1_stat_loc (loc, code, type, op0 PASS_MEM_STAT);
+    tem = build1_loc (loc, code, type, op0 PASS_MEM_STAT);
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
@@ -12258,7 +12258,7 @@ fold_build2_stat_loc (location_t loc,
 
   tem = fold_binary_loc (loc, code, type, op0, op1);
   if (!tem)
-    tem = build2_stat_loc (loc, code, type, op0, op1 PASS_MEM_STAT);
+    tem = build2_loc (loc, code, type, op0, op1 PASS_MEM_STAT);
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
@@ -12318,7 +12318,7 @@ fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
   gcc_assert (TREE_CODE_CLASS (code) != tcc_vl_exp);
   tem = fold_ternary_loc (loc, code, type, op0, op1, op2);
   if (!tem)
-    tem = build3_stat_loc (loc, code, type, op0, op1, op2 PASS_MEM_STAT);
+    tem = build3_loc (loc, code, type, op0, op1, op2 PASS_MEM_STAT);
 
 #ifdef ENABLE_FOLD_CHECKING
   md5_init_ctx (&ctx);
