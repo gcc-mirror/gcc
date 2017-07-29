@@ -2898,7 +2898,7 @@ build_tree_list_vec_stat (const vec<tree, va_gc> *vec MEM_STAT_DECL)
    and whose TREE_CHAIN is CHAIN.  */
 
 tree 
-tree_cons_stat (tree purpose, tree value, tree chain MEM_STAT_DECL)
+tree_cons (tree purpose, tree value, tree chain MEM_STAT_DECL)
 {
   tree node;
 
