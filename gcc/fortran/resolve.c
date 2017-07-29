@@ -9098,7 +9098,7 @@ find_reachable_labels (gfc_code *block)
   if (!block)
     return;
 
-  cs_base->reachable_labels = bitmap_obstack_alloc (&labels_obstack);
+  cs_base->reachable_labels = bitmap_alloc (&labels_obstack);
 
   /* Collect labels in this block.  We don't keep those corresponding
      to END {IF|SELECT}, these are checked in resolve_branch by going

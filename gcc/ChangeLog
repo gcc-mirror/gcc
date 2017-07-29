@@ -1,5 +1,13 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bitmap.c (bitmap_obstack_alloc_stat): Rename to bitmap_alloc.
+	(bitmap_gc_alloc_stat): Rename to bitmap_gc_alloc.
+	* bitmap.h (bitmap_obstack_alloc_stat): Adjust prototype.
+	(bitmap_gc_alloc_stat): Likewise.
+	(BITMAP_ALLOC, BITMAP_GGC_ALLOC): Adjust.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* rtl.c (shallow_copy_rtx_stat): Remove _stat from name.
 	* rtl.h (shallow_copy_rtx): Remove macro.
 
