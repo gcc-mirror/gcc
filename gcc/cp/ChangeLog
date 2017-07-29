@@ -1,3 +1,8 @@
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* lex.c (copy_decl): Adjust.
+	(copy_type): Likewise.
+
 2017-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71570

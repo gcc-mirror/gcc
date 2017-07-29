@@ -766,7 +766,7 @@ copy_decl (tree decl MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node_stat (decl PASS_MEM_STAT);
+  copy = copy_node (decl PASS_MEM_STAT);
   cxx_dup_lang_specific_decl (copy);
   return copy;
 }
@@ -799,7 +799,7 @@ copy_type (tree type MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node_stat (type PASS_MEM_STAT);
+  copy = copy_node (type PASS_MEM_STAT);
   copy_lang_type (copy);
   return copy;
 }

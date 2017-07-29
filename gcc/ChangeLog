@@ -1,5 +1,12 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (copy_node_stat): Rename to copy_node.
+	(build_distinct_type_copy): Adjust.
+	* tree.h (copy_node_stat): Adjust prototype.
+	(copy_node): Remove macro.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (make_node_stat): rename to make_node.
 	(build_tree_list_stat): Adjust.
 	(build0_stat): Likewise.
