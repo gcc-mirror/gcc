@@ -12195,8 +12195,8 @@ debug_fold_checksum (const_tree t)
    expression with code CODE of type TYPE with an operand OP0.  */
 
 tree
-fold_build1_stat_loc (location_t loc,
-		      enum tree_code code, tree type, tree op0 MEM_STAT_DECL)
+fold_build1_loc (location_t loc,
+		 enum tree_code code, tree type, tree op0 MEM_STAT_DECL)
 {
   tree tem;
 #ifdef ENABLE_FOLD_CHECKING
@@ -12232,7 +12232,7 @@ fold_build1_stat_loc (location_t loc,
    OP0 and OP1.  */
 
 tree
-fold_build2_stat_loc (location_t loc,
+fold_build2_loc (location_t loc,
 		      enum tree_code code, tree type, tree op0, tree op1
 		      MEM_STAT_DECL)
 {
@@ -12285,7 +12285,7 @@ fold_build2_stat_loc (location_t loc,
    type TYPE with operands OP0, OP1, and OP2.  */
 
 tree
-fold_build3_stat_loc (location_t loc, enum tree_code code, tree type,
+fold_build3_loc (location_t loc, enum tree_code code, tree type,
 		      tree op0, tree op1, tree op2 MEM_STAT_DECL)
 {
   tree tem;
