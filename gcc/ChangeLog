@@ -1,5 +1,11 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (make_int_cst_stat): Remove _stat from name.
+	* tree.h (make_int_cst_stat): Adjust prototype.
+	(make_int_cst): Remove macro.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (make_tre_binfo_stat): Remove _stat from name.
 	* tree.h (make_tree_binfo_stat): Adjust prototype.
 	(make_tree_binfo): Remove.
