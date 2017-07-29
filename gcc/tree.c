@@ -2265,7 +2265,7 @@ make_int_cst (int len, int ext_len MEM_STAT_DECL)
 /* Build a newly constructed TREE_VEC node of length LEN.  */
 
 tree
-make_tree_vec_stat (int len MEM_STAT_DECL)
+make_tree_vec (int len MEM_STAT_DECL)
 {
   tree t;
   size_t length = (len - 1) * sizeof (tree) + sizeof (struct tree_vec);
@@ -2283,7 +2283,7 @@ make_tree_vec_stat (int len MEM_STAT_DECL)
 /* Grow a TREE_VEC node to new length LEN.  */
 
 tree
-grow_tree_vec_stat (tree v, int len MEM_STAT_DECL)
+grow_tree_vec (tree v, int len MEM_STAT_DECL)
 {
   gcc_assert (TREE_CODE (v) == TREE_VEC);
 

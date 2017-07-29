@@ -3916,13 +3916,11 @@ extern tree make_int_cst (int, int CXX_MEM_STAT_INFO);
 
 /* Make a TREE_VEC.  */
 
-extern tree make_tree_vec_stat (int MEM_STAT_DECL);
-#define make_tree_vec(t) make_tree_vec_stat (t MEM_STAT_INFO)
+extern tree make_tree_vec (int CXX_MEM_STAT_INFO);
 
 /* Grow a TREE_VEC.  */
 
-extern tree grow_tree_vec_stat (tree v, int MEM_STAT_DECL);
-#define grow_tree_vec(v, t) grow_tree_vec_stat (v, t MEM_STAT_INFO)
+extern tree grow_tree_vec (tree v, int CXX_MEM_STAT_INFO);
 
 /* Construct various types of nodes.  */
 

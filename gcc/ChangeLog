@@ -1,5 +1,14 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (make_tree_vec_stat): Remove _stat from name.
+	(grow_tree_vec_stat): Likewise.
+	* tree.h (make_tree_vec_stat): Adjust prototype.
+	(grow_tree_vec_stat): Likewise.
+	(make_tree_vec): Remove macro.
+	(grow_tree_vec): Likewise.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* fold-const.c (fold_build1_stat_loc): Adjust.
 	(fold_build2_stat_loc): Likewise.
 	(fold_build3_stat_loc): Likewise.
