@@ -5553,7 +5553,7 @@ gnat_write_global_declarations (void)
   FOR_EACH_VEC_SAFE_ELT (global_decls, i, iter)
    if (TREE_CODE (iter) == IMPORTED_DECL && !DECL_IGNORED_P (iter))
      debug_hooks->imported_module_or_decl (iter, DECL_NAME (iter),
-					   DECL_CONTEXT (iter), 0);
+					   DECL_CONTEXT (iter), false, false);
 }
 
 /* ************************************************************************
