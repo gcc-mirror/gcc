@@ -1,5 +1,12 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (make_vector_stat): Remove _stat from name.
+	(build_vector_stat): Likewise.
+	* tree.h (make_vector_stat): Remove macro.
+	(build_vector_stat): Likewise.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.h (build_var_debug_value): Remove prototype.
 
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
