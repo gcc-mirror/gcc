@@ -4021,10 +4021,8 @@ extern tree build_minus_one_cst (tree);
 extern tree build_all_ones_cst (tree);
 extern tree build_zero_cst (tree);
 extern tree build_string (int, const char *);
-extern tree build_tree_list_stat (tree, tree MEM_STAT_DECL);
-#define build_tree_list(t, q) build_tree_list_stat (t, q MEM_STAT_INFO)
-extern tree build_tree_list_vec_stat (const vec<tree, va_gc> *MEM_STAT_DECL);
-#define build_tree_list_vec(v) build_tree_list_vec_stat (v MEM_STAT_INFO)
+extern tree build_tree_list (tree, tree CXX_MEM_STAT_INFO);
+extern tree build_tree_list_vec (const vec<tree, va_gc> * CXX_MEM_STAT_INFO);
 extern tree build_decl (location_t, enum tree_code,
 			tree, tree CXX_MEM_STAT_INFO);
 extern tree build_fn_decl (const char *, tree);

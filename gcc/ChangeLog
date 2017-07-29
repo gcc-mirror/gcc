@@ -1,5 +1,12 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* tree.c (build_tree_list_vec_stat): Remove _stat from name.
+	(build_tree_list_stat): Likewise.
+	* tree.h (build_tree_list): Remove macro.
+	(build_tree_list_vec): Likewise.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* tree.c (make_vector_stat): Remove _stat from name.
 	(build_vector_stat): Likewise.
 	* tree.h (make_vector_stat): Remove macro.

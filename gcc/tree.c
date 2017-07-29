@@ -2868,7 +2868,7 @@ nreverse (tree t)
    purpose and value fields are PARM and VALUE.  */
 
 tree
-build_tree_list_stat (tree parm, tree value MEM_STAT_DECL)
+build_tree_list (tree parm, tree value MEM_STAT_DECL)
 {
   tree t = make_node (TREE_LIST PASS_MEM_STAT);
   TREE_PURPOSE (t) = parm;
@@ -2879,7 +2879,7 @@ build_tree_list_stat (tree parm, tree value MEM_STAT_DECL)
 /* Build a chain of TREE_LIST nodes from a vector.  */
 
 tree
-build_tree_list_vec_stat (const vec<tree, va_gc> *vec MEM_STAT_DECL)
+build_tree_list_vec (const vec<tree, va_gc> *vec MEM_STAT_DECL)
 {
   tree ret = NULL_TREE;
   tree *pp = &ret;
@@ -2887,7 +2887,7 @@ build_tree_list_vec_stat (const vec<tree, va_gc> *vec MEM_STAT_DECL)
   tree t;
   FOR_EACH_VEC_SAFE_ELT (vec, i, t)
     {
-      *pp = build_tree_list_stat (NULL, t PASS_MEM_STAT);
+      *pp = build_tree_list (NULL, t PASS_MEM_STAT);
       pp = &TREE_CHAIN (*pp);
     }
   return ret;
