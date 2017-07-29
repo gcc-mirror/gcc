@@ -1,5 +1,12 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* gimple.c (gimple_build_debug_bind_stat): Remove _stat from name.
+	(gimple_build_debug_bind_source_stat): Likewise.
+	* gimple.h (gimple_build_debug_bind): Remove macro.
+	(gimple_build_debug_bind_source): Likewise.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bitmap.c (bitmap_alloc): Adjust.
 	(bitmap_gc_alloc): Likewise.
 	* bitmap.h (bitmap_initialize_stat): Remove _stat from name.
