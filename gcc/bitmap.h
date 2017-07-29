@@ -335,14 +335,13 @@ extern void dump_bitmap_statistics (void);
    to allocate from, NULL for GC'd bitmap.  */
 
 static inline void
-bitmap_initialize_stat (bitmap head, bitmap_obstack *obstack MEM_STAT_DECL)
+bitmap_initialize (bitmap head, bitmap_obstack *obstack CXX_MEM_STAT_INFO)
 {
   head->first = head->current = NULL;
   head->obstack = obstack;
   if (GATHER_STATISTICS)
     bitmap_register (head PASS_MEM_STAT);
 }
-#define bitmap_initialize(h,o) bitmap_initialize_stat (h,o MEM_STAT_INFO)
 
 /* Allocate and free bitmaps from obstack, malloc and gc'd memory.  */
 extern bitmap bitmap_alloc (bitmap_obstack *obstack CXX_MEM_STAT_INFO);

@@ -1,5 +1,11 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* bitmap.c (bitmap_alloc): Adjust.
+	(bitmap_gc_alloc): Likewise.
+	* bitmap.h (bitmap_initialize_stat): Remove _stat from name.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* bitmap.c (bitmap_obstack_alloc_stat): Rename to bitmap_alloc.
 	(bitmap_gc_alloc_stat): Rename to bitmap_gc_alloc.
 	* bitmap.h (bitmap_obstack_alloc_stat): Adjust prototype.
