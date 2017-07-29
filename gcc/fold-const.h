@@ -49,23 +49,17 @@ extern tree fold_binary_loc (location_t, enum tree_code, tree, tree, tree);
    fold_ternary_loc (UNKNOWN_LOCATION, CODE, T1, T2, T3, T4)
 extern tree fold_ternary_loc (location_t, enum tree_code, tree, tree, tree, tree);
 #define fold_build1(c,t1,t2)\
-   fold_build1_stat_loc (UNKNOWN_LOCATION, c, t1, t2 MEM_STAT_INFO)
-#define fold_build1_loc(l,c,t1,t2)\
-   fold_build1_stat_loc (l, c, t1, t2 MEM_STAT_INFO)
-extern tree fold_build1_stat_loc (location_t, enum tree_code, tree,
-				  tree MEM_STAT_DECL);
+   fold_build1_loc (UNKNOWN_LOCATION, c, t1, t2 MEM_STAT_INFO)
+extern tree fold_build1_loc (location_t, enum tree_code, tree,
+			     tree CXX_MEM_STAT_INFO);
 #define fold_build2(c,t1,t2,t3)\
-   fold_build2_stat_loc (UNKNOWN_LOCATION, c, t1, t2, t3 MEM_STAT_INFO)
-#define fold_build2_loc(l,c,t1,t2,t3)\
-   fold_build2_stat_loc (l, c, t1, t2, t3 MEM_STAT_INFO)
-extern tree fold_build2_stat_loc (location_t, enum tree_code, tree, tree,
-				  tree MEM_STAT_DECL);
+   fold_build2_loc (UNKNOWN_LOCATION, c, t1, t2, t3 MEM_STAT_INFO)
+extern tree fold_build2_loc (location_t, enum tree_code, tree, tree,
+			     tree CXX_MEM_STAT_INFO);
 #define fold_build3(c,t1,t2,t3,t4)\
-   fold_build3_stat_loc (UNKNOWN_LOCATION, c, t1, t2, t3, t4 MEM_STAT_INFO)
-#define fold_build3_loc(l,c,t1,t2,t3,t4)\
-   fold_build3_stat_loc (l, c, t1, t2, t3, t4 MEM_STAT_INFO)
-extern tree fold_build3_stat_loc (location_t, enum tree_code, tree, tree, tree,
-				  tree MEM_STAT_DECL);
+   fold_build3_loc (UNKNOWN_LOCATION, c, t1, t2, t3, t4 MEM_STAT_INFO)
+extern tree fold_build3_loc (location_t, enum tree_code, tree, tree, tree,
+				  tree CXX_MEM_STAT_INFO);
 extern tree fold_build1_initializer_loc (location_t, enum tree_code, tree, tree);
 extern tree fold_build2_initializer_loc (location_t, enum tree_code, tree, tree, tree);
 #define fold_build_call_array(T1,T2,N,T4)\

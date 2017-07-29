@@ -1,5 +1,15 @@
 2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
 
+	* fold-const.c (fold_build1_stat_loc): Remove _stat from name.
+	(fold_build2_stat_loc): Likewise.
+	(fold_build3_stat_loc): Likewise.
+	* fold-const.h (fold_build1, fold_build2, fold_build3): Adjust.
+	(fold_build1_loc): Remove macro.
+	(fold_build2_loc): Likewise.
+	(fold_build3_loc): Likewise.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
 	* gimple.c (gimple_build_debug_bind_stat): Remove _stat from name.
 	(gimple_build_debug_bind_source_stat): Likewise.
 	* gimple.h (gimple_build_debug_bind): Remove macro.
