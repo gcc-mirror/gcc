@@ -2196,29 +2196,33 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
   asm_preferred_eh_data_format ((CODE), (GLOBAL))
 
-/* This is how to output an insn to push a register on the stack.
-   It need not be very fast code.  */
+/* These are a couple of extensions to the formats accepted
+   by asm_fprintf:
+     %z prints out opcode suffix for word-mode instruction
+     %r prints out word-mode name for reg_names[arg]  */
+#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
+  case 'z':						\
+    fputc (TARGET_64BIT ? 'q' : 'l', (FILE));		\
+    break;						\
+							\
+  case 'r':						\
+    {							\
+      unsigned int regno = va_arg ((ARGS), int);	\
+      if (LEGACY_INT_REGNO_P (regno))			\
+	fputc (TARGET_64BIT ? 'r' : 'e', (FILE));	\
+      fputs (reg_names[regno], (FILE));			\
+      break;						\
+    }
 
-#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpush{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpush{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+/* This is how to output an insn to push a register on the stack.  */
 
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
+#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)		\
+  asm_fprintf ((FILE), "\tpush%z\t%%%r\n", (REGNO))
+
+/* This is how to output an insn to pop a register from the stack.  */
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpop{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpop{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+  asm_fprintf ((FILE), "\tpop%z\t%%%r\n", (REGNO))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 

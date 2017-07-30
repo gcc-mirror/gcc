@@ -8777,16 +8777,15 @@ ix86_asm_output_function_label (FILE *asm_out_file, const char *fname,
       if (TARGET_64BIT)
 	{
 	  /* leaq [%rsp + 0], %rsp  */
-	  asm_fprintf (asm_out_file, ASM_BYTE
-		       "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n");
+	  fputs (ASM_BYTE "0x48, 0x8d, 0xa4, 0x24, 0x00, 0x00, 0x00, 0x00\n",
+		 asm_out_file);
 	}
       else
 	{
           /* movl.s %edi, %edi
 	     push   %ebp
 	     movl.s %esp, %ebp */
-	  asm_fprintf (asm_out_file, ASM_BYTE
-		       "0x8b, 0xff, 0x55, 0x8b, 0xec\n");
+	  fputs (ASM_BYTE "0x8b, 0xff, 0x55, 0x8b, 0xec\n", asm_out_file);
 	}
     }
 }
