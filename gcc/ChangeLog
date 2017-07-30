@@ -1,3 +1,11 @@
+2017-07-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (ASM_PRINTF_EXTENSIONS): New macro.
+	(ASM_OUTPUT_REG_PUSH): Rewrite with new operand modifiers.
+	(ASM_OUTPUT_REG_POP): Ditto.
+	* config/i386/i386.c (ix86_asm_output_function_label): Use fputs
+	instead of asm_fprintf to output pure string.
+
 2017-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* debug.h (struct gcc_debug_hooks): Add IMPLICIT argument
