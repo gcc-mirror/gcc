@@ -2177,8 +2177,11 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
 
-/* Before the prologue, the top of the frame is at 4(%esp).  */
-#define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
+/* Before the prologue, there are return address and error code for
+   exception handler on the top of the frame.  */
+#define INCOMING_FRAME_SP_OFFSET \
+  (cfun->machine->func_type == TYPE_EXCEPTION \
+   ? 2 * UNITS_PER_WORD : UNITS_PER_WORD)
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) <= DX_REG ? (N) : INVALID_REGNUM)
