@@ -1,3 +1,16 @@
+2017-07-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/79793
+	* config/i386/i386.c (ix86_function_arg): Update arguments for
+	exception handler.
+	(ix86_compute_frame_layout): Set the initial stack offset to
+	INCOMING_FRAME_SP_OFFSET.  Update red-zone offset with
+	INCOMING_FRAME_SP_OFFSET.
+	(ix86_expand_epilogue): Don't pop the 'ERROR_CODE' off the
+	stack before exception handler returns.
+	* config/i386/i386.h (INCOMING_FRAME_SP_OFFSET): Add the
+	the 'ERROR_CODE' for exception handler.
+
 2017-07-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (ASM_PRINTF_EXTENSIONS): New macro.

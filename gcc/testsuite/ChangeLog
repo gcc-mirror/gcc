@@ -1,3 +1,13 @@
+2017-07-30  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/79793
+	* gcc.dg/guality/pr68037-1.c: Update gdb breakpoints.
+	* gcc.target/i386/interrupt-5.c (interrupt_frame): New struct.
+	(foo): Check the builtin return address against the return address
+	in interrupt frame.
+	* gcc.target/i386/pr79793-1.c: New test.
+	* gcc.target/i386/pr79793-2.c: Likewise.
+
 2017-07-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-c++-common/dump-ada-spec-7.c: New test.
