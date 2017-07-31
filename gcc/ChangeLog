@@ -1,3 +1,11 @@
+2017-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81603
+	* ipa-polymorphic-call.c
+	(ipa_polymorphic_call_context::ipa_polymorphic_call_context): Perform
+	offset arithmetic in offset_int, bail out if the resulting bit offset
+	doesn't fit into shwi.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
 	* gimplify.c (mostly_copy_tree_r): Remove Java specific hunk.
