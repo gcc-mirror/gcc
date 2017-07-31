@@ -2,13 +2,13 @@
 # Copyright (C) 2015 Free Software Foundation, Inc.
 # This file is distributed under the same license as the gcc package.
 #
-# Yuri Chornoivan <yurchor@ukr.net>, 2015, 2016.
+# Yuri Chornoivan <yurchor@ukr.net>, 2015, 2016, 2017.
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 6.2.0\n"
+"Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2016-08-24 18:46+0300\n"
+"PO-Revision-Date: 2017-07-18 13:34+0200\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <translation-team-uk@lists.sourceforge.net>\n"
 "Language: uk\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2);\n"
-"X-Generator: Lokalize 1.5\n"
+"X-Generator: Lokalize 2.0\n"
 
 #: cfgrtl.c:2661
 msgid "flow control insn inside a basic block"
@@ -65,9 +65,9 @@ msgstr[2] "знайдено %d деструкторів\n"
 #, c-format
 msgid "%d frame table found\n"
 msgid_plural "%d frame tables found\n"
-msgstr[0] ""
-msgstr[1] ""
-msgstr[2] ""
+msgstr[0] "знайдено %d таблицю кадрів\n"
+msgstr[1] "знайдено %d таблиці кадрів\n"
+msgstr[2] "знайдено %d таблиць кадрів\n"
 
 #: collect2.c:1836
 #, c-format
@@ -94,7 +94,7 @@ msgstr ""
 
 #: cprop.c:1756
 msgid "const/copy propagation disabled"
-msgstr ""
+msgstr "передавання const/copy вимкнено"
 
 #: diagnostic.c:224
 #, c-format
@@ -1042,7 +1042,7 @@ msgstr ""
 #: gimple-ssa-isolate-paths.c:526 gimple-ssa-isolate-paths.c:410
 #, gcc-internal-format
 msgid "function may return address of local variable"
-msgstr ""
+msgstr "функція може повертати адресу локальної змінної"
 
 #: incpath.c:72
 #, c-format
@@ -1091,7 +1091,7 @@ msgstr ""
 #: langhooks.c:386 cp/error.c:3372
 #, c-format
 msgid "In member function %qs"
-msgstr ""
+msgstr "У функції-члені %qs"
 
 #: langhooks.c:390 cp/error.c:3375
 #, c-format
@@ -2779,75 +2779,75 @@ msgstr ""
 #: config/rs6000/rs6000.c:23938 config/sparc/sparc.c:8854
 #, c-format
 msgid "'%%&' used without any local dynamic TLS references"
-msgstr ""
+msgstr "'%%&' використано без будь-яких локальних динамічних посилань TLS"
 
 #: config/alpha/alpha.c:5150 config/bfin/bfin.c:1424
 #, c-format
 msgid "invalid %%J value"
-msgstr ""
+msgstr "некоректне значення %%J"
 
 #: config/alpha/alpha.c:5180 config/ia64/ia64.c:5488
 #, c-format
 msgid "invalid %%r value"
-msgstr ""
+msgstr "некоректне значення %%r"
 
 #: config/alpha/alpha.c:5190 config/ia64/ia64.c:5442
 #: config/rs6000/rs6000.c:23618 config/xtensa/xtensa.c:2363
 #, c-format
 msgid "invalid %%R value"
-msgstr ""
+msgstr "некоректне значення %%R"
 
 #: config/alpha/alpha.c:5196 config/rs6000/rs6000.c:23538
 #: config/xtensa/xtensa.c:2330
 #, c-format
 msgid "invalid %%N value"
-msgstr ""
+msgstr "некоректне значення %%N"
 
 #: config/alpha/alpha.c:5204 config/rs6000/rs6000.c:23566
 #, c-format
 msgid "invalid %%P value"
-msgstr ""
+msgstr "некоректне значення %%P"
 
 #: config/alpha/alpha.c:5212
 #, c-format
 msgid "invalid %%h value"
-msgstr ""
+msgstr "некоректне значення %%h"
 
 #: config/alpha/alpha.c:5220 config/xtensa/xtensa.c:2356
 #, c-format
 msgid "invalid %%L value"
-msgstr ""
+msgstr "некоректне значення %%L"
 
 #: config/alpha/alpha.c:5239
 #, c-format
 msgid "invalid %%m value"
-msgstr ""
+msgstr "некоректне значення %%m"
 
 #: config/alpha/alpha.c:5245
 #, c-format
 msgid "invalid %%M value"
-msgstr ""
+msgstr "некоректне значення %%M"
 
 #: config/alpha/alpha.c:5282
 #, c-format
 msgid "invalid %%U value"
-msgstr ""
+msgstr "некоректне значення %%U"
 
 #: config/alpha/alpha.c:5290 config/alpha/alpha.c:5301
 #: config/rs6000/rs6000.c:23626
 #, c-format
 msgid "invalid %%s value"
-msgstr ""
+msgstr "некоректне значення %%s"
 
 #: config/alpha/alpha.c:5312
 #, c-format
 msgid "invalid %%C value"
-msgstr ""
+msgstr "некоректне значення %%C"
 
 #: config/alpha/alpha.c:5349 config/rs6000/rs6000.c:23402
 #, c-format
 msgid "invalid %%E value"
-msgstr ""
+msgstr "некоректне значення %%E"
 
 #: config/alpha/alpha.c:5374 config/alpha/alpha.c:5424
 #, c-format
@@ -3041,24 +3041,20 @@ msgid "variable"
 msgstr ""
 
 #: config/avr/avr.c:9808
-#, fuzzy
-#| msgid "expected function name"
 msgid "function parameter"
-msgstr "мало бути вказано назву функції"
+msgstr "параметр функції"
 
 #: config/avr/avr.c:9813
 msgid "structure field"
-msgstr ""
+msgstr "поле структури"
 
 #: config/avr/avr.c:9819
 msgid "return type of function"
-msgstr ""
+msgstr "тип значення, яке повертає функція"
 
 #: config/avr/avr.c:9824
-#, fuzzy
-#| msgid "null pointer"
 msgid "pointer"
-msgstr "нульовий вказівник"
+msgstr "вказівник"
 
 #: config/avr/driver-avr.c:48
 #, c-format
@@ -3645,27 +3641,27 @@ msgstr ""
 
 #: config/rs6000/rs6000.c:23199
 msgid "Bad 128-bit move"
-msgstr ""
+msgstr "Помилкове 128-бітове пересування"
 
 #: config/rs6000/rs6000.c:23390
 #, c-format
 msgid "invalid %%e value"
-msgstr ""
+msgstr "некоректне значення %%e"
 
 #: config/rs6000/rs6000.c:23411
 #, c-format
 msgid "invalid %%f value"
-msgstr ""
+msgstr "некоректне значення %%f"
 
 #: config/rs6000/rs6000.c:23420
 #, c-format
 msgid "invalid %%F value"
-msgstr ""
+msgstr "некоректне значення %%F"
 
 #: config/rs6000/rs6000.c:23429
 #, c-format
 msgid "invalid %%G value"
-msgstr ""
+msgstr "некоректне значення %%G"
 
 #: config/rs6000/rs6000.c:23464
 #, c-format
@@ -4311,10 +4307,8 @@ msgid "expected %<<%>"
 msgstr "мало бути %<<%>"
 
 #: c/gimple-parser.c:1428 c/gimple-parser.c:1455 c/gimple-parser.c:1483
-#, fuzzy
-#| msgid "expected %<__label__%>"
 msgid "expected label"
-msgstr "мало бути %<__label__%>"
+msgstr "мало бути вказано мітку"
 
 #: cp/call.c:9927
 msgid "candidate 1:"
@@ -4342,7 +4336,7 @@ msgstr ""
 
 #: cp/error.c:421
 msgid "<unresolved overloaded function type>"
-msgstr ""
+msgstr "<невизначений перевантажений тип функції>"
 
 #: cp/error.c:583
 msgid "<type error>"
@@ -4351,13 +4345,12 @@ msgstr "<помилка типу>"
 #: cp/error.c:684 objc/objc-act.c:6180 cp/cxx-pretty-print.c:161
 #, gcc-internal-format
 msgid "<unnamed>"
-msgstr ""
+msgstr "<неназваний>"
 
 #: cp/error.c:686
-#, fuzzy, c-format
-#| msgid "<anonymous %s>"
+#, c-format
 msgid "<unnamed %s>"
-msgstr "<анонімний %s>"
+msgstr "<неназваний %s>"
 
 #. A lambda's "type" is essentially its signature.
 #: cp/error.c:691
@@ -5302,10 +5295,8 @@ msgid "-E or -x required when input is from standard input"
 msgstr ""
 
 #: config/darwin.h:171
-#, fuzzy
-#| msgid "%<-Wabi=1%> is not supported, using =2"
 msgid "rdynamic is not supported"
-msgstr "Підтримки %<-Wabi=1%> не передбачено, використовуємо =2"
+msgstr "підтримки rdynamic не передбачено"
 
 #: config/darwin.h:260
 msgid "-current_version only allowed with -dynamiclib"
@@ -5498,11 +5489,11 @@ msgstr ""
 
 #: objc/lang-specs.h:55
 msgid "objc-cpp-output is deprecated; please use objective-c-cpp-output instead"
-msgstr ""
+msgstr "objc-cpp-output вважається застарілим; будь ласка, скористайтеся замість нього objective-c-cpp-output"
 
 #: objcp/lang-specs.h:58
 msgid "objc++-cpp-output is deprecated; please use objective-c++-cpp-output instead"
-msgstr ""
+msgstr "objc++-cpp-output вважається застарілим; будь ласка, скористайтеся замість нього objective-c++-cpp-output"
 
 #: fortran/lang.opt:146
 msgid "-J<directory>\tPut MODULE files in 'directory'."
@@ -6104,11 +6095,11 @@ msgstr ""
 
 #: c-family/c.opt:300 ada/gcc-interface/lang.opt:57
 msgid "Enable most warning messages."
-msgstr ""
+msgstr "Увімкнути якнайбільше повідомлень із попередженнями."
 
 #: c-family/c.opt:304
 msgid "Warn on any use of alloca."
-msgstr ""
+msgstr "Попереджати про усі використання alloca."
 
 #: c-family/c.opt:308
 msgid "-Walloc-size-larger-than=<bytes> Warn for calls to allocation functions that attempt to allocate objects larger than the specified number of bytes."
@@ -6128,17 +6119,15 @@ msgstr ""
 
 #: c-family/c.opt:335
 msgid "Warn about casting functions to incompatible types."
-msgstr ""
+msgstr "Попереджати про виклик функцій із несумісними типами параметрів."
 
 #: c-family/c.opt:339
 msgid "Warn about boolean expression compared with an integer value different from true/false."
 msgstr ""
 
 #: c-family/c.opt:343
-#, fuzzy
-#| msgid "Warn about creation of array temporaries."
 msgid "Warn about certain operations on boolean expressions."
-msgstr "Попереджати щодо створення тимчасових масивів."
+msgstr "Попереджати щодо певних дій із булевими виразами."
 
 #: c-family/c.opt:347
 msgid "Warn when __builtin_frame_address or __builtin_return_address is used unsafely."
@@ -6198,7 +6187,7 @@ msgstr ""
 
 #: c-family/c.opt:409
 msgid "Synonym for -Wcomment."
-msgstr ""
+msgstr "Синонім -Wcomment."
 
 #: c-family/c.opt:413
 msgid "Warn for conditionally-supported constructs."
@@ -6206,7 +6195,7 @@ msgstr ""
 
 #: c-family/c.opt:417
 msgid "Warn for implicit type conversions that may change a value."
-msgstr ""
+msgstr "Попереджати про неявні перетворення типів, які можуть призвести до зміни значення."
 
 #: c-family/c.opt:421
 msgid "Warn for converting NULL from/to a non-pointer type."
@@ -6214,7 +6203,7 @@ msgstr ""
 
 #: c-family/c.opt:429
 msgid "Warn when all constructors and destructors are private."
-msgstr ""
+msgstr "Попереджати, якщо усі конструктори і деструктори є закритими (private)."
 
 #: c-family/c.opt:433
 msgid "Warn about dangling else."
@@ -6226,11 +6215,11 @@ msgstr ""
 
 #: c-family/c.opt:441
 msgid "Warn when a declaration is found after a statement."
-msgstr ""
+msgstr "Попереджати, якщо оголошення виявлено після інструкції."
 
 #: c-family/c.opt:445
 msgid "Warn when deleting a pointer to incomplete type."
-msgstr ""
+msgstr "Попереджати щодо вилучення вказівника на неповний тип."
 
 #: c-family/c.opt:449
 msgid "Warn about deleting polymorphic objects with non-virtual destructors."
@@ -6238,7 +6227,7 @@ msgstr ""
 
 #: c-family/c.opt:453
 msgid "Warn if a deprecated compiler feature, class, method, or field is used."
-msgstr ""
+msgstr "Попереджати щодо використання застарілої можливості компілятора, застарілого класу, методу або поля."
 
 #: c-family/c.opt:457
 msgid "Warn about positional initialization of structs requiring designated initializers."
@@ -6258,19 +6247,19 @@ msgstr ""
 
 #: c-family/c.opt:473
 msgid "Warn about duplicated branches in if-else statements."
-msgstr ""
+msgstr "Попереджати про дублювання гілок у інструкціях if-else."
 
 #: c-family/c.opt:477
 msgid "Warn about duplicated conditions in an if-else-if chain."
-msgstr ""
+msgstr "Попереджати про дублювання умов у ланцюжку if-else-if."
 
 #: c-family/c.opt:481
 msgid "Warn about violations of Effective C++ style rules."
-msgstr ""
+msgstr "Попереджати про порушення правил стилю Effective C++."
 
 #: c-family/c.opt:485
 msgid "Warn about an empty body in an if or else statement."
-msgstr ""
+msgstr "Попереджати щодо порожнього комплекту інструкцій у if або else."
 
 #: c-family/c.opt:489
 msgid "Warn about stray tokens after #else and #endif."
@@ -6278,11 +6267,11 @@ msgstr ""
 
 #: c-family/c.opt:493
 msgid "Warn about comparison of different enum types."
-msgstr ""
+msgstr "Попереджати про порівняння різних типів числових даних."
 
 #: c-family/c.opt:501
 msgid "This switch is deprecated; use -Werror=implicit-function-declaration instead."
-msgstr ""
+msgstr "Цей перемикач вважається застарілим; скористайтеся замість нього перемикачем -Werror=implicit-function-declaration."
 
 #: c-family/c.opt:509
 msgid "Warn for implicit type conversions that cause loss of floating point precision."
@@ -6290,15 +6279,15 @@ msgstr ""
 
 #: c-family/c.opt:513
 msgid "Warn if testing floating point numbers for equality."
-msgstr ""
+msgstr "Попереджати про перевірки на рівність чисел із рухомою крапкою."
 
 #: c-family/c.opt:517 c-family/c.opt:559
 msgid "Warn about printf/scanf/strftime/strfmon format string anomalies."
-msgstr ""
+msgstr "Попереджати про некоректності у рядках форматування printf/scanf/strftime/strfmon."
 
 #: c-family/c.opt:521
 msgid "Warn about format strings that contain NUL bytes."
-msgstr ""
+msgstr "Попереджати щодо рядків форматування, які містять байти NUL."
 
 #: c-family/c.opt:525
 msgid "Warn if passing too many arguments to a function for its format string."
@@ -6306,7 +6295,7 @@ msgstr ""
 
 #: c-family/c.opt:529
 msgid "Warn about format strings that are not literals."
-msgstr ""
+msgstr "Попереджати, якщо рядки форматування не є літералами."
 
 #: c-family/c.opt:533
 msgid "Warn about function calls with format strings that write past the end of the destination region.  Same as -Wformat-overflow=1."
@@ -6318,7 +6307,7 @@ msgstr ""
 
 #: c-family/c.opt:542
 msgid "Warn about sign differences with format functions."
-msgstr ""
+msgstr "Попереджати про відмінності у знаку у функціях форматування."
 
 #: c-family/c.opt:546
 msgid "Warn about calls to snprintf and similar functions that truncate output. Same as -Wformat-truncation=1."
@@ -6330,7 +6319,7 @@ msgstr ""
 
 #: c-family/c.opt:555
 msgid "Warn about zero-length formats."
-msgstr ""
+msgstr "Попереджати про формати нульової довжини."
 
 #: c-family/c.opt:563
 msgid "Warn about function calls with format strings that write past the end of the destination region."
@@ -6346,7 +6335,7 @@ msgstr ""
 
 #: c-family/c.opt:576
 msgid "Warn whenever attributes are ignored."
-msgstr ""
+msgstr "Попереджати про ігнорування атрибутів."
 
 #: c-family/c.opt:580
 msgid "Warn when there is a conversion between pointers that have incompatible types."
@@ -6354,27 +6343,27 @@ msgstr ""
 
 #: c-family/c.opt:584
 msgid "Warn about variables which are initialized to themselves."
-msgstr ""
+msgstr "Попереджати про самоініціалізацію змінних."
 
 #: c-family/c.opt:588
 msgid "Warn about implicit declarations."
-msgstr ""
+msgstr "Попереджати про неявні оголошення."
 
 #: c-family/c.opt:596
 msgid "Warn about implicit conversions from \"float\" to \"double\"."
-msgstr ""
+msgstr "Попереджати про неявні перетворення з float на double."
 
 #: c-family/c.opt:600
 msgid "Warn if \"defined\" is used outside #if."
-msgstr ""
+msgstr "Попереджати, якщо defined використано поза #if."
 
 #: c-family/c.opt:604
 msgid "Warn about implicit function declarations."
-msgstr ""
+msgstr "Попереджати про неявні оголошення функцій."
 
 #: c-family/c.opt:608
 msgid "Warn when a declaration does not specify a type."
-msgstr ""
+msgstr "Попереджати, якщо оголошення не визначає типу."
 
 #: c-family/c.opt:615
 msgid "Warn about C++11 inheriting constructors when the base has a variadic constructor."
@@ -8855,7 +8844,7 @@ msgstr ""
 
 #: config/i386/i386.opt:315
 msgid "%<-mcpu=%> is deprecated; use %<-mtune=%> or %<-march=%> instead"
-msgstr ""
+msgstr "%<-mcpu=%> вважається застарілим; скористайтеся замість нього %<-mtune=%> або %<-march=%>"
 
 #: config/i386/i386.opt:319
 msgid "Generate sin, cos, sqrt for FPU."
@@ -11587,7 +11576,7 @@ msgstr ""
 
 #: config/fused-madd.opt:22
 msgid "%<-mfused-madd%> is deprecated; use %<-ffp-contract=%> instead"
-msgstr ""
+msgstr "%<-mfused-madd%> вважається застарілим; скористайтеся замість нього %<-ffp-contract=%>"
 
 #: config/sol2.opt:32
 msgid "Clear hardware capabilities when linking."
@@ -11644,7 +11633,7 @@ msgstr ""
 #: config/microblaze/microblaze.opt:87
 #, c-format
 msgid "%qs is deprecated; use -fstack-check"
-msgstr ""
+msgstr "%qs вважається застарілим; скористайтеся -fstack-check"
 
 #: config/microblaze/microblaze.opt:88
 msgid "Check for stack overflow at runtime."
@@ -12780,7 +12769,7 @@ msgstr ""
 #: config/arc/arc.opt:356 config/arc/arc.opt:373
 #, c-format
 msgid "%qs is deprecated"
-msgstr ""
+msgstr "%qs вважається застарілим"
 
 #: config/arc/arc.opt:170
 msgid "Do not generate mpy instructions for ARC700."
@@ -13437,17 +13426,15 @@ msgstr ""
 
 #: common.opt:1065
 msgid "Check the return value of new in C++."
-msgstr ""
+msgstr "Перевіряти повернуте значення new у C++."
 
 #: common.opt:1069 common.opt:1073
 msgid "Perform internal consistency checkings."
-msgstr ""
+msgstr "Виконувати внутрішні перевірки сумісності."
 
 #: common.opt:1077
-#, fuzzy
-#| msgid "Enable debug output."
 msgid "Enable code hoisting."
-msgstr "Увімкнути виведення діагностичних даних."
+msgstr "Увімкнути підняття коду."
 
 #: common.opt:1081
 msgid "Looks for opportunities to reduce stack adjustments and stack references."
@@ -15438,10 +15425,9 @@ msgid "Not expected TAG."
 msgstr ""
 
 #: auto-profile.c:920
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "can't open input file: %s"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot open profile file %s"
-msgstr "не вдалося відкрити вхідний файл %s"
+msgstr "не вдалося відкрити файл профілювання %s"
 
 #: auto-profile.c:926
 #, gcc-internal-format
@@ -15454,22 +15440,19 @@ msgid "AutoFDO profile version %u does match %u"
 msgstr ""
 
 #: auto-profile.c:946
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read %s: %m"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read string table from %s"
-msgstr "не вдалося прочитати %s: %m"
+msgstr "не вдалося прочитати таблицю рядків з %s"
 
 #: auto-profile.c:954
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read function profile from %s"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "не вдалося прочитати профіль функції з %s"
 
 #: auto-profile.c:964
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "cannot read %s: %m"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot read working set from %s"
-msgstr "не вдалося прочитати %s: %m"
+msgstr "не вдалося прочитати робочий набір з %s"
 
 #: bt-load.c:1564
 #, gcc-internal-format
@@ -15765,21 +15748,19 @@ msgid "argument %i in the range [%E, %E]"
 msgstr ""
 
 #: calls.c:1491
-#, fuzzy, gcc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format
 msgid "in a call to built-in allocation function %qD"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "у виклику до вбудованої функції розподілу пам'яті %qD"
 
 #: calls.c:1494
 #, gcc-internal-format
 msgid "in a call to allocation function %qD declared here"
-msgstr ""
+msgstr "у виклику до функції отримання області пам'яті %qD оголошено тут"
 
 #: calls.c:1508
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "[cannot find %s]"
+#, gcc-internal-format, gfc-internal-format
 msgid "cannot tail-call: %s"
-msgstr "[не вдалося знайти %s]"
+msgstr "хвостовий виклик неможливий: %s"
 
 #: calls.c:3071
 #, gcc-internal-format
@@ -17769,7 +17750,7 @@ msgstr "розіменування нульового вказівника"
 #: cp/semantics.c:1764 cp/typeck.c:1648 cp/typeck.c:1843 cp/typeck.c:3718
 #, gcc-internal-format
 msgid "declared here"
-msgstr ""
+msgstr "оголошено тут"
 
 #: gimple-ssa-nonnull-compare.c:102
 #, gcc-internal-format
@@ -18007,10 +17988,9 @@ msgid "assuming directive output of %wu bytes"
 msgstr ""
 
 #: gimple-ssa-sprintf.c:2776
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected argument"
+#, gcc-internal-format
 msgid "directive argument %qE"
-msgstr "несподіваний аргумент"
+msgstr "аргумент директиви %qE"
 
 #: gimple-ssa-sprintf.c:2778
 #, gcc-internal-format
@@ -18058,10 +18038,9 @@ msgid "specified bound %wu exceeds %<INT_MAX %>"
 msgstr ""
 
 #: gimple-ssa-sprintf.c:3650
-#, fuzzy, gcc-internal-format
-#| msgid "null pointer"
+#, gcc-internal-format
 msgid "null destination pointer"
-msgstr "нульовий вказівник"
+msgstr "нульовий вказівник призначення"
 
 #: gimple-ssa-sprintf.c:3667
 #, gcc-internal-format
@@ -18224,10 +18203,9 @@ msgid "enclosing task"
 msgstr ""
 
 #: gimplify.c:6852
-#, fuzzy, gcc-internal-format
-#| msgid "%qs tag used in naming %q#T"
+#, gcc-internal-format
 msgid "%qE not specified in enclosing %qs"
-msgstr "теґ %qs використано у назві %q#T"
+msgstr "%qE не задано у замиканні %qs"
 
 #: gimplify.c:6854
 #, gcc-internal-format
@@ -19547,10 +19525,9 @@ msgid "-fsanitize=leak is incompatible with -fsanitize=thread"
 msgstr ""
 
 #: opts.c:976
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%<-fabi-compat-version=1%> is not supported, using =2"
+#, gcc-internal-format, gfc-internal-format
 msgid "-fsanitize-recover=%s is not supported"
-msgstr "Підтримки %<-fabi-compat-version=1%> не передбачено, використовуємо =2"
+msgstr "підтримки -fsanitize-recover=%s не передбачено"
 
 #: opts.c:1005
 #, gcc-internal-format
@@ -19623,10 +19600,9 @@ msgid "%s: --param arguments should be of the form NAME=VALUE"
 msgstr ""
 
 #: opts.c:2371
-#, fuzzy, gcc-internal-format
-#| msgid "invalid --param name %qs"
+#, gcc-internal-format
 msgid "invalid --param name %qs; did you mean %qs?"
-msgstr "некоректна назва --param %qs"
+msgstr "некоректна назва --param %qs; ви мали на увазі %qs?"
 
 #: opts.c:2374
 #, gcc-internal-format
@@ -19914,10 +19890,9 @@ msgid "was expecting `%s'"
 msgstr ""
 
 #: read-rtl-function.c:1575
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "duplicate definition of '%s'"
+#, gcc-internal-format, gfc-internal-format
 msgid "duplicate insn UID: %i"
-msgstr "повторне визначення «%s»"
+msgstr "UID інструкції-дубліката: %i"
 
 #: read-rtl-function.c:1635
 #, gcc-internal-format
@@ -21525,17 +21500,17 @@ msgstr ""
 #: tree-diagnostic.c:202
 #, gcc-internal-format
 msgid "in definition of macro %qs"
-msgstr ""
+msgstr "у оголошенні макросу %qs"
 
 #: tree-diagnostic.c:219
 #, gcc-internal-format
 msgid "in expansion of macro %qs"
-msgstr ""
+msgstr "у розгортанні макросу %qs"
 
 #: tree-eh.c:4669
 #, gcc-internal-format, gfc-internal-format
 msgid "BB %i has multiple EH edges"
-msgstr ""
+msgstr "BB %i має декілька країв EH"
 
 #: tree-eh.c:4681
 #, gcc-internal-format, gfc-internal-format
@@ -21679,16 +21654,14 @@ msgid "argument %u null where non-null expected"
 msgstr ""
 
 #: tree-ssa-ccp.c:3427
-#, fuzzy, gcc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format
 msgid "in a call to built-in function %qD"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "у виклику вбудованої функції %qD"
 
 #: tree-ssa-ccp.c:3431
-#, fuzzy, gcc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format
 msgid "in a call to function %qD declared here"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "у виклику функції %qD, оголошено тут"
 
 #: tree-ssa-loop-niter.c:2367
 #, gcc-internal-format
@@ -22154,32 +22127,32 @@ msgstr ""
 #: tree.c:12875
 #, gcc-internal-format
 msgid "%qD is deprecated: %s"
-msgstr ""
+msgstr "%qD вважається застарілим: %s"
 
 #: tree.c:12878
 #, gcc-internal-format
 msgid "%qD is deprecated"
-msgstr ""
+msgstr "%qD вважається застарілим"
 
 #: tree.c:12902 tree.c:12924
 #, gcc-internal-format
 msgid "%qE is deprecated: %s"
-msgstr ""
+msgstr "%qE вважається застарілим: %s"
 
 #: tree.c:12905 tree.c:12927
 #, gcc-internal-format
 msgid "%qE is deprecated"
-msgstr ""
+msgstr "%qE вважається застарілим"
 
 #: tree.c:12911 tree.c:12932
 #, gcc-internal-format, gfc-internal-format
 msgid "type is deprecated: %s"
-msgstr ""
+msgstr "тип вважається застарілим: %s"
 
 #: tree.c:12914 tree.c:12935
 #, gcc-internal-format
 msgid "type is deprecated"
-msgstr ""
+msgstr "тип вважається застарілим"
 
 #. Type variant can differ by:
 #.
@@ -23358,7 +23331,7 @@ msgstr ""
 #: c-family/c-common.c:4869
 #, gcc-internal-format
 msgid "pointers are not permitted as case values"
-msgstr ""
+msgstr "вказівники не можуть бути значеннями випадків"
 
 #: c-family/c-common.c:4876
 #, gcc-internal-format
@@ -23373,7 +23346,7 @@ msgstr ""
 #: c-family/c-common.c:4963
 #, gcc-internal-format
 msgid "duplicate (or overlapping) case value"
-msgstr ""
+msgstr "дублювання (або перекривання) значення випадку"
 
 #: c-family/c-common.c:4965
 #, gcc-internal-format
@@ -23383,7 +23356,7 @@ msgstr ""
 #: c-family/c-common.c:4969
 #, gcc-internal-format
 msgid "duplicate case value"
-msgstr ""
+msgstr "дублювання значення випадку"
 
 #: c-family/c-common.c:4970 c-family/c-warn.c:1995
 #, gcc-internal-format
@@ -24924,12 +24897,12 @@ msgstr ""
 #: c-family/c-warn.c:1068
 #, gcc-internal-format
 msgid "case value %qs not in enumerated type"
-msgstr ""
+msgstr "значення випадку %qs не належить до перераховного типу"
 
 #: c-family/c-warn.c:1073
 #, gcc-internal-format
 msgid "case value %qs not in enumerated type %qT"
-msgstr ""
+msgstr "значення випадку %qs не належить до перераховного типу %qT"
 
 #: c-family/c-warn.c:1134
 #, gcc-internal-format
@@ -25290,7 +25263,7 @@ msgstr ""
 #: c-family/c-warn.c:1897
 #, gcc-internal-format
 msgid "unused parameter %qD"
-msgstr ""
+msgstr "невикористаний параметр %qD"
 
 #: c-family/c-warn.c:1959
 #, gcc-internal-format
@@ -25874,10 +25847,9 @@ msgid "unknown tuning option (%s)"
 msgstr "невідомий параметр регулювання (%s)"
 
 #: config/aarch64/aarch64.c:8715
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid argument %d for builtin %qF"
+#, gcc-internal-format
 msgid "valid arguments are: %s; did you mean %qs?"
-msgstr "Некоректний аргумент %d до вбудованої %qF"
+msgstr "коректними аргументами є такі: %s; ви мали на увазі %qs?"
 
 #: config/aarch64/aarch64.c:8756
 #, gcc-internal-format
@@ -27355,10 +27327,9 @@ msgid "can%'t set position in PCH file: %m"
 msgstr ""
 
 #: config/i386/i386.c:4692
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid argument %d for builtin %qF"
+#, gcc-internal-format
 msgid "wrong argument %qs to option %qs"
-msgstr "Некоректний аргумент %d до вбудованої %qF"
+msgstr "помилковий аргумент %qs параметра %qs"
 
 #: config/i386/i386.c:4698
 #, gcc-internal-format
@@ -27409,7 +27380,7 @@ msgstr ""
 #: config/i386/i386.c:5272
 #, gcc-internal-format
 msgid "%<target(\"tune=x86-64\")%> is deprecated; use %<target(\"tune=k8\")%> or %<target(\"tune=generic\")%> instead as appropriate"
-msgstr ""
+msgstr "%<target(\"tune=x86-64\")%> вважається застарілим; скористайтеся одним із відповідників: %<target(\"tune=k8\")%> або %<target(\"tune=generic\")%>"
 
 #. rep; movq isn't available in 32-bit code.
 #: config/i386/i386.c:5299
@@ -27501,7 +27472,7 @@ msgstr ""
 #: config/i386/i386.c:5688
 #, gcc-internal-format
 msgid "valid arguments to %<-march=%> switch are: %s"
-msgstr ""
+msgstr "коректними аргументами перемикача %<-march=%> є такі: %s"
 
 #: config/i386/i386.c:5689
 #, gcc-internal-format
@@ -27529,10 +27500,9 @@ msgid "valid arguments to %<target(\"tune=\")%> attribute are: %s; did you mean 
 msgstr ""
 
 #: config/i386/i386.c:5759
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %<__builtin_return_address%>"
+#, gcc-internal-format
 msgid "valid arguments to %<-mtune=%> switch are: %s"
-msgstr "некоректний аргумент %<__builtin_return_address%>"
+msgstr "коректними аргументами перемикача %<-mtune=%> є такі: %s"
 
 #: config/i386/i386.c:5760
 #, gcc-internal-format
@@ -28931,10 +28901,9 @@ msgid "invalid warm function for reset attribute"
 msgstr ""
 
 #: config/nds32/nds32.c:2707
-#, fuzzy, gcc-internal-format
-#| msgid "Generate position-independent code if possible (small mode)."
+#, gcc-internal-format
 msgid "position-independent code not supported"
-msgstr "Створити виконуваний файл з незалежним позиціюванням, якщо можливо (малий режим)"
+msgstr "підтримки коду із незалежним позиціюванням не передбачено"
 
 #: config/nios2/nios2.c:561
 #, gcc-internal-format
@@ -30335,13 +30304,12 @@ msgstr ""
 #: config/s390/s390-c.c:879
 #, gcc-internal-format
 msgid "builtin %qF is deprecated."
-msgstr ""
+msgstr "вбудований %qF вважається застарілим."
 
 #: config/s390/s390-c.c:883
-#, fuzzy, gcc-internal-format
-#| msgid "%E requires %<-fgnu-tm%>"
+#, gcc-internal-format
 msgid "%qF requires -mvx"
-msgstr "%E потребує %<-fgnu-tm%>"
+msgstr "%qF потребує -mvx"
 
 #: config/s390/s390-c.c:889
 #, gcc-internal-format
@@ -30415,10 +30383,9 @@ msgid "bad builtin icode"
 msgstr ""
 
 #: config/s390/s390.c:1004
-#, fuzzy, gcc-internal-format
-#| msgid "Invalid argument %d for builtin %qF"
+#, gcc-internal-format
 msgid "invalid argument %d for builtin %qF"
-msgstr "Некоректний аргумент %d до вбудованої %qF"
+msgstr "некоректний аргумент %d для вбудованої %qF"
 
 #: config/s390/s390.c:1105
 #, gcc-internal-format
@@ -31158,7 +31125,7 @@ msgstr ""
 #: c/c-decl.c:1794
 #, gcc-internal-format
 msgid "previous implicit declaration of %q+D was here"
-msgstr ""
+msgstr "попереднє неявне оголошення %q+D було тут"
 
 #: c/c-decl.c:1796
 #, gcc-internal-format
@@ -31329,17 +31296,17 @@ msgstr ""
 #: c/c-decl.c:3144 c/c-decl.c:3157
 #, gcc-internal-format
 msgid "implicit declaration of function %qE; did you mean %qs?"
-msgstr ""
+msgstr "неявне оголошення функції %qE; ви мали на увазі %qs?"
 
 #: c/c-decl.c:3149 c/c-decl.c:3162
 #, gcc-internal-format
 msgid "implicit declaration of function %qE"
-msgstr ""
+msgstr "неявне оголошення функції %qE"
 
 #: c/c-decl.c:3408
 #, gcc-internal-format
 msgid "incompatible implicit declaration of built-in function %qD"
-msgstr ""
+msgstr "несумісне неявне оголошення вбудованої функції %qD"
 
 #: c/c-decl.c:3415
 #, gcc-internal-format
@@ -31349,7 +31316,7 @@ msgstr ""
 #: c/c-decl.c:3424
 #, gcc-internal-format
 msgid "incompatible implicit declaration of function %qD"
-msgstr ""
+msgstr "несумісне неявне оголошення функції %qD"
 
 #: c/c-decl.c:3484
 #, gcc-internal-format
@@ -32618,10 +32585,9 @@ msgid "ISO C90 does not support boolean types"
 msgstr ""
 
 #: c/c-decl.c:10452
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ 1998 does not support %<long long%>"
+#, gcc-internal-format
 msgid "ISO C does not support the %<_Float%d%s%> type"
-msgstr "У ISO C++ 1998 не передбачено підтримки %<long long%>"
+msgstr "У ISO C не передбачено підтримки типу %<_Float%d%s%>"
 
 #: c/c-decl.c:10502
 #, gcc-internal-format
@@ -33222,10 +33188,9 @@ msgid "%E qualifier ignored on asm"
 msgstr ""
 
 #: c/c-parser.c:6175
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<,%> or %<)%>"
+#, gcc-internal-format
 msgid "expected %<:%> or %<)%>"
-msgstr "мало бути %<,%> або %<)%>"
+msgstr "мало бути %<:%> або %<)%>"
 
 #: c/c-parser.c:6487
 #, gcc-internal-format
@@ -33346,7 +33311,7 @@ msgstr ""
 #: c/c-parser.c:7912
 #, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_choose_expr%>"
-msgstr ""
+msgstr "помилкова кількість аргументів %<__builtin_choose_expr%>"
 
 #: c/c-parser.c:7928
 #, gcc-internal-format
@@ -33356,7 +33321,7 @@ msgstr ""
 #: c/c-parser.c:7999
 #, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_call_with_static_chain%>"
-msgstr ""
+msgstr "помилкова кількість аргументів %<__builtin_call_with_static_chain%>"
 
 #: c/c-parser.c:8012
 #, gcc-internal-format
@@ -33371,7 +33336,7 @@ msgstr ""
 #: c/c-parser.c:8042
 #, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_complex%>"
-msgstr ""
+msgstr "помилкова кількість аргументів %<__builtin_complex%>"
 
 #: c/c-parser.c:8064
 #, gcc-internal-format
@@ -33386,7 +33351,7 @@ msgstr ""
 #: c/c-parser.c:8121 cp/parser.c:6676
 #, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_shuffle%>"
-msgstr ""
+msgstr "помилкова кількість аргументів %<__builtin_shuffle%>"
 
 #: c/c-parser.c:8202 cp/parser.c:6587
 #, gcc-internal-format
@@ -33488,10 +33453,9 @@ msgid "%<#pragma %s%> may only be used in compound statements"
 msgstr ""
 
 #: c/c-parser.c:10214 cp/parser.c:38233
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> %s"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> must be at file scope"
-msgstr "%<#pragma acc routine%> %s"
+msgstr "%<#pragma acc routine%> має перебувати у області видимості файла"
 
 #: c/c-parser.c:10292 cp/parser.c:38314
 #, gcc-internal-format
@@ -33683,10 +33647,9 @@ msgid "schedule %<auto%> does not take a %<chunk_size%> parameter"
 msgstr ""
 
 #: c/c-parser.c:12297 cp/semantics.c:6395
-#, fuzzy, gcc-internal-format
-#| msgid "%qs value must be positive"
+#, gcc-internal-format
 msgid "chunk size value must be positive"
-msgstr "значення %qs має бути додатним"
+msgstr "значення розміру фрагмента має бути додатним"
 
 #: c/c-parser.c:12320 cp/parser.c:32207
 #, gcc-internal-format
@@ -33809,10 +33772,9 @@ msgid "variable %qD used more than once with %<#pragma acc declare%>"
 msgstr ""
 
 #: c/c-parser.c:13933 cp/parser.c:36305
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<for%> after %qs"
+#, gcc-internal-format
 msgid "expected %<data%> after %<#pragma acc %s%>"
-msgstr "мало бути %<for%> після %qs"
+msgstr "мало бути %<data%> після %<#pragma acc %s%>"
 
 #: c/c-parser.c:13949 cp/parser.c:36322
 #, gcc-internal-format
@@ -33845,22 +33807,19 @@ msgid "%<#pragma acc routine%> not immediately followed by a single function dec
 msgstr ""
 
 #: c/c-parser.c:14268 cp/parser.c:37576
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> %s"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> already applied to %qD"
-msgstr "%<#pragma acc routine%> %s"
+msgstr "%<#pragma acc routine%> вже застосовано до %qD"
 
 #: c/c-parser.c:14277 cp/parser.c:37585
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> %s"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> must be applied before use"
-msgstr "%<#pragma acc routine%> %s"
+msgstr "%<#pragma acc routine%> має бути застосовано до використання"
 
 #: c/c-parser.c:14278 cp/parser.c:37586
-#, fuzzy, gcc-internal-format
-#| msgid "%<#pragma acc routine%> %s"
+#, gcc-internal-format
 msgid "%<#pragma acc routine%> must be applied before definition"
-msgstr "%<#pragma acc routine%> %s"
+msgstr "%<#pragma acc routine%> має бути застосовано до визначення"
 
 #: c/c-parser.c:14321 cp/parser.c:36497
 #, gcc-internal-format
@@ -34053,10 +34012,9 @@ msgid "function or array type in %<#pragma omp declare reduction%>"
 msgstr ""
 
 #: c/c-parser.c:16998
-#, fuzzy, gcc-internal-format
-#| msgid "previous %<#pragma omp declare reduction%>"
+#, gcc-internal-format
 msgid "%<_Atomic%> qualified type in %<#pragma omp declare reduction%>"
-msgstr "попереднє %<#pragma omp declare reduction%>"
+msgstr "тип класу %<_Atomic%> у %<#pragma omp declare reduction%>"
 
 #: c/c-parser.c:17001
 #, gcc-internal-format
@@ -34508,10 +34466,9 @@ msgid "arithmetic on pointer to an empty aggregate"
 msgstr ""
 
 #: c/c-typeck.c:4244
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<~%> on a boolean expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "%<~%> над булевим виразом"
 
 #: c/c-typeck.c:4248
 #, gcc-internal-format
@@ -35777,51 +35734,44 @@ msgid "base variable or SSA name undeclared"
 msgstr ""
 
 #: c/gimple-parser.c:850
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand"
+#, gcc-internal-format
 msgid "invalid _Literal"
-msgstr "некоректний операнд"
+msgstr "некоректне _Literal"
 
 #: c/gimple-parser.c:869
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand to %%R"
+#, gcc-internal-format
 msgid "invalid number of operands to __FMA"
-msgstr "некоректний операнд %%R"
+msgstr "некоректна кількість операндів __FMA"
 
 #: c/gimple-parser.c:904
 #, gcc-internal-format
 msgid "anonymous SSA name cannot have default definition"
-msgstr ""
+msgstr "анонімна назва SSA не може мати типового визначення"
 
 #: c/gimple-parser.c:1153
-#, fuzzy, gcc-internal-format
-#| msgid "expected type-name"
+#, gcc-internal-format
 msgid "expected pass name"
-msgstr "мало бути вказано тип-назву"
+msgstr ""
 
 #: c/gimple-parser.c:1165
-#, fuzzy, gcc-internal-format
-#| msgid "invalid operand"
+#, gcc-internal-format
 msgid "invalid operation"
-msgstr "некоректний операнд"
+msgstr "некоректна дія"
 
 #: c/gimple-parser.c:1325 c/gimple-parser.c:1349
-#, fuzzy, gcc-internal-format
-#| msgid "expected expression"
+#, gcc-internal-format
 msgid "expected goto expression"
-msgstr "мало бути вказано вираз"
+msgstr "мало бути вказано вираз goto"
 
 #: c/gimple-parser.c:1333
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected argument"
+#, gcc-internal-format
 msgid "expected else statement"
-msgstr "несподіваний аргумент"
+msgstr "мало бути використано інструкцію else"
 
 #: c/gimple-parser.c:1478
-#, fuzzy, gcc-internal-format
-#| msgid "expected expression"
+#, gcc-internal-format
 msgid "expected semicolon"
-msgstr "мало бути вказано вираз"
+msgstr "мало бути використано крапку з комою"
 
 #: c/gimple-parser.c:1488
 #, gcc-internal-format
@@ -36398,16 +36348,14 @@ msgid "default argument mismatch in overload resolution"
 msgstr ""
 
 #: cp/call.c:9877
-#, fuzzy, gcc-internal-format
-#| msgid "candidate 1:"
+#, gcc-internal-format
 msgid " candidate 1: %q#F"
-msgstr "кандидат 1:"
+msgstr " кандидат 1: %q#F"
 
 #: cp/call.c:9879
-#, fuzzy, gcc-internal-format
-#| msgid "candidate 2:"
+#, gcc-internal-format
 msgid " candidate 2: %q#F"
-msgstr "кандидат 2:"
+msgstr " кандидат 2: %q#F"
 
 #: cp/call.c:9924
 #, gcc-internal-format
@@ -36838,10 +36786,9 @@ msgid "invalid use of %q#T with a flexible array member in %q#T"
 msgstr ""
 
 #: cp/class.c:7016
-#, fuzzy, gcc-internal-format
-#| msgid "template %qD declared"
+#, gcc-internal-format
 msgid "array member %q#D declared here"
-msgstr "оголошено шаблон %qD"
+msgstr "член масиву %q#D оголошено тут"
 
 #: cp/class.c:7043
 #, gcc-internal-format
@@ -37034,10 +36981,9 @@ msgid "%q+E is not a constant expression"
 msgstr ""
 
 #: cp/constexpr.c:1363 cp/constexpr.c:5115
-#, fuzzy, gcc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format
 msgid "call to internal function %qE"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "виклик внутрішньої функції %qE"
 
 #: cp/constexpr.c:1426
 #, gcc-internal-format
@@ -37145,10 +37091,9 @@ msgid "accessing uninitialized member %qD"
 msgstr ""
 
 #: cp/constexpr.c:3122 cp/constexpr.c:4412
-#, fuzzy, gcc-internal-format
-#| msgid "null pointer"
+#, gcc-internal-format
 msgid "dereferencing a null pointer"
-msgstr "нульовий вказівник"
+msgstr "розіменування нульового вказівника"
 
 #: cp/constexpr.c:3141
 #, gcc-internal-format
@@ -37191,10 +37136,9 @@ msgid "%qD does not have integral or enumeration type"
 msgstr ""
 
 #: cp/constexpr.c:3410
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "modification of %qE is not a constant expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "зміна %qE не є сталим виразом"
 
 #: cp/constexpr.c:3782
 #, gcc-internal-format, gfc-internal-format
@@ -37202,10 +37146,9 @@ msgid "constexpr loop iteration count exceeds limit of %d (use -fconstexpr-loop-
 msgstr ""
 
 #: cp/constexpr.c:3921
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "value %qE of type %qT is not a constant expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "значення %qE типу %qT не є сталим виразом"
 
 #: cp/constexpr.c:4049 cp/constexpr.c:5562
 #, gcc-internal-format
@@ -37213,34 +37156,29 @@ msgid "temporary of non-literal type %qT in a constant expression"
 msgstr ""
 
 #: cp/constexpr.c:4398
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "a reinterpret_cast is not a constant expression"
-msgstr "%<delete[]%> не є сталим виразом"
+msgstr "reinterpret_cast не є сталим виразом"
 
 #: cp/constexpr.c:4424
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "conversion of %qT null pointer to %qT is not a constant expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "перетворення нульового вказівника %qT на %qT не є сталим виразом"
 
 #: cp/constexpr.c:4439
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<reinterpret_cast<%T>(%E)%> is not a constant expression"
-msgstr "%<delete[]%> не є сталим виразом"
+msgstr "%<reinterpret_cast<%T>(%E)%> не є сталим виразом"
 
 #: cp/constexpr.c:4502 cp/constexpr.c:5423 cp/constexpr.c:5738
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "expression %qE is not a constant expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "вираз %qE не є сталим виразом"
 
 #: cp/constexpr.c:4579
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "statement is not a constant expression"
-msgstr "%<delete[]%> не є сталим виразом"
+msgstr "інструкція не є сталим виразом"
 
 #: cp/constexpr.c:4582
 #, gcc-internal-format
@@ -37308,14 +37246,12 @@ msgid "uninitialized variable %qD in %<constexpr%> function"
 msgstr ""
 
 #: cp/constexpr.c:5611
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "division by zero is not a constant expression"
-msgstr "%<goto%> не є сталим виразом"
+msgstr "ділення на нуль не є сталим виразом"
 
 #: cp/constexpr.c:5715
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<delete[]%> is not a constant expression"
 msgstr "%<delete[]%> не є сталим виразом"
 
@@ -37325,8 +37261,7 @@ msgid "non-constant array initialization"
 msgstr ""
 
 #: cp/constexpr.c:5767
-#, fuzzy, gcc-internal-format
-#| msgid "%<goto%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<goto%> is not a constant expression"
 msgstr "%<goto%> не є сталим виразом"
 
@@ -37502,10 +37437,9 @@ msgid "ignoring returned value of type %qT, declared with attribute nodiscard"
 msgstr ""
 
 #: cp/cvt.c:1003
-#, fuzzy, gcc-internal-format
-#| msgid "template %qD declared"
+#, gcc-internal-format
 msgid "in call to %qD, declared here"
-msgstr "оголошено шаблон %qD"
+msgstr "у виклику %qD, оголошено тут"
 
 #: cp/cvt.c:1082
 #, gcc-internal-format
@@ -37798,27 +37732,24 @@ msgid "previous declaration of %qD"
 msgstr ""
 
 #: cp/decl.c:1277
-#, fuzzy, gcc-internal-format
-#| msgid "due to different exception specifications"
+#, gcc-internal-format
 msgid "declaration of %qF has a different exception specifier"
-msgstr "через різні специфікації виключення"
+msgstr "оголошення %qF містить інше визначення виключення"
 
 #: cp/decl.c:1290
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "from previous declaration %qF"
-msgstr "попереднє оголошення"
+msgstr "з попереднього оголошення %qF"
 
 #: cp/decl.c:1325
 #, gcc-internal-format
 msgid "redeclaration %qD differs in %<constexpr%> from previous declaration"
-msgstr ""
+msgstr "повторне оголошення %qD відрізняється у %<constexpr%> від попереднього оголошення"
 
 #: cp/decl.c:1328 cp/decl.c:13702
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "previous declaration %qD"
-msgstr "попереднє оголошення"
+msgstr "попереднє оголошення %qD"
 
 #: cp/decl.c:1357
 #, gcc-internal-format
@@ -37841,16 +37772,14 @@ msgid "raw literal operator %q+D conflicts with literal operator template %qD"
 msgstr ""
 
 #: cp/decl.c:1442
-#, fuzzy, gcc-internal-format
-#| msgid "previous definition of %q+#T"
+#, gcc-internal-format
 msgid "previous definition of %qD was here"
-msgstr "попереднє визначення %q+#T"
+msgstr "попереднє визначення %qD було тут"
 
 #: cp/decl.c:1445
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "previous declaration of %qD was here"
-msgstr "попереднє оголошення"
+msgstr "попереднє оголошення %qD було тут"
 
 #: cp/decl.c:1467 cp/decl.c:1579
 #, gcc-internal-format
@@ -38655,10 +38584,9 @@ msgid "only %u names provided while %qT decomposes into %wu elements"
 msgstr ""
 
 #: cp/decl.c:7533
-#, fuzzy, gcc-internal-format
-#| msgid "%<delete[]%> is not a constant-expression"
+#, gcc-internal-format
 msgid "%<std::tuple_size<%T>::value%> is not an integral constant expression"
-msgstr "%<delete[]%> не є сталим виразом"
+msgstr "%<std::tuple_size<%T>::value%> не є інтегральним сталим виразом"
 
 #: cp/decl.c:7553
 #, gcc-internal-format
@@ -38666,10 +38594,9 @@ msgid "in initialization of decomposition variable %qD"
 msgstr ""
 
 #: cp/decl.c:7575
-#, fuzzy, gcc-internal-format
-#| msgid "cannot call function %qD"
+#, gcc-internal-format
 msgid "cannot decompose union type %qT"
-msgstr "не вдалося викликати функцію %qD"
+msgstr "не вдалося розкласти тип об'єднання %qT"
 
 #: cp/decl.c:7580
 #, gcc-internal-format
@@ -38933,10 +38860,9 @@ msgid "definition of explicitly-defaulted %q+D"
 msgstr ""
 
 #: cp/decl.c:8936
-#, fuzzy, gcc-internal-format
-#| msgid "%q#D previously declared here"
+#, gcc-internal-format
 msgid "%q#D explicitly defaulted here"
-msgstr "%q#D раніше оголошено тут"
+msgstr "%q#D явним чином типово визначено тут"
 
 #: cp/decl.c:8953 cp/decl2.c:713
 #, gcc-internal-format
@@ -40211,10 +40137,9 @@ msgid "%qT referred to as %qs"
 msgstr ""
 
 #: cp/decl.c:13428 cp/decl.c:13435
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "%qT has a previous declaration here"
-msgstr "попереднє оголошення"
+msgstr "%qT має попереднє оголошення тут"
 
 #: cp/decl.c:13434
 #, gcc-internal-format
@@ -42369,16 +42294,14 @@ msgid "%<_Cilk_spawn%> must be followed by an expression"
 msgstr ""
 
 #: cp/parser.c:6647
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %<__builtin_return_address%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_addressof%>"
-msgstr "некоректний аргумент %<__builtin_return_address%>"
+msgstr "помилкова кількість аргументів %<__builtin_addressof%>"
 
 #: cp/parser.c:6659 cp/pt.c:17319
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %<__builtin_return_address%>"
+#, gcc-internal-format
 msgid "wrong number of arguments to %<__builtin_launder%>"
-msgstr "некоректний аргумент %<__builtin_return_address%>"
+msgstr "помилкова кількість аргументів %<__builtin_launder%>"
 
 #: cp/parser.c:6751
 #, gcc-internal-format
@@ -42541,21 +42464,19 @@ msgid "lambda templates are only available with -std=c++14 or -std=gnu++14"
 msgstr ""
 
 #: cp/parser.c:10186
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C++ 1998 does not support %<long long%>"
+#, gcc-internal-format
 msgid "ISO C++ does not support lambda templates"
-msgstr "У ISO C++ 1998 не передбачено підтримки %<long long%>"
+msgstr "у ISO C++ не передбачено підтримки шаблонів лямбд"
 
 #: cp/parser.c:10216
 #, gcc-internal-format
 msgid "default argument specified for lambda parameter"
-msgstr ""
+msgstr "визначено типовий аргумент для лямбда-параметра"
 
 #: cp/parser.c:10234
-#, fuzzy, gcc-internal-format
-#| msgid "duplicate %<volatile%>"
+#, gcc-internal-format
 msgid "duplicate %<mutable%>"
-msgstr "дублювання %<volatile%>"
+msgstr "дублювання %<mutable%>"
 
 #: cp/parser.c:10282
 #, gcc-internal-format
@@ -42709,10 +42630,9 @@ msgid "decomposition declaration only available with -std=c++1z or -std=gnu++1z"
 msgstr ""
 
 #: cp/parser.c:13028
-#, fuzzy, gcc-internal-format
-#| msgid "previous declaration"
+#, gcc-internal-format
 msgid "empty decomposition declaration"
-msgstr "попереднє оголошення"
+msgstr "порожнє оголошення розкладання"
 
 #: cp/parser.c:13201
 #, gcc-internal-format
@@ -42732,10 +42652,9 @@ msgid "decl-specifier invalid in condition"
 msgstr ""
 
 #: cp/parser.c:13307
-#, fuzzy, gcc-internal-format
-#| msgid "invalid mask"
+#, gcc-internal-format
 msgid "%qD invalid in lambda"
-msgstr "некоректна маска"
+msgstr "%qD є некоректним у лямбді"
 
 #: cp/parser.c:13400
 #, gcc-internal-format
@@ -43046,10 +42965,9 @@ msgid "multiple definition of %q#T"
 msgstr ""
 
 #: cp/parser.c:17927
-#, fuzzy, gcc-internal-format
-#| msgid "ISO C forbids nested functions"
+#, gcc-internal-format
 msgid "ISO C++ forbids empty unnamed enum"
-msgstr "У стандарті ISO C заборонено вкладеність функцій"
+msgstr "У ISO C++ заборонено порожні enum без назви"
 
 #: cp/parser.c:17947
 #, gcc-internal-format
@@ -43379,10 +43297,9 @@ msgid "could not resolve typename type"
 msgstr "не вдалося визначити тип typename"
 
 #: cp/parser.c:22775
-#, fuzzy, gcc-internal-format
-#| msgid "previous definition of %q+#T"
+#, gcc-internal-format
 msgid "previous definition of %q#T"
-msgstr "попереднє визначення %q+#T"
+msgstr "попереднє визначення %q#T"
 
 #: cp/parser.c:22865 cp/parser.c:27878
 #, gcc-internal-format
@@ -43465,10 +43382,9 @@ msgid "types may not be defined in an exception-specification"
 msgstr ""
 
 #: cp/parser.c:23905
-#, fuzzy, gcc-internal-format
-#| msgid "due to different exception specifications"
+#, gcc-internal-format
 msgid "ISO C++1z does not allow dynamic exception specifications"
-msgstr "через різні специфікації виключення"
+msgstr "У ISO C++1z не можна визначати динамічні специфікації виключень"
 
 #: cp/parser.c:23911
 #, gcc-internal-format
@@ -43511,10 +43427,9 @@ msgid "attribute %<deprecated%> can appear at most once in an attribute-list"
 msgstr ""
 
 #: cp/parser.c:24847
-#, fuzzy, gcc-internal-format
-#| msgid "expected %<:%> or %<...%>"
+#, gcc-internal-format
 msgid "expected attribute before %<...%>"
-msgstr "мало бути %<:%> або %<...%>"
+msgstr "мав бути атрибут перед %<...%>"
 
 #: cp/parser.c:24908
 #, gcc-internal-format
@@ -45582,10 +45497,9 @@ msgid "use of parameter outside function body"
 msgstr ""
 
 #: cp/semantics.c:3524
-#, fuzzy, gcc-internal-format
-#| msgid "unexpected argument"
+#, gcc-internal-format
 msgid "missing template arguments"
-msgstr "несподіваний аргумент"
+msgstr "пропущено аргументи шаблона"
 
 #: cp/semantics.c:3551
 #, gcc-internal-format
@@ -45717,8 +45631,7 @@ msgid "%<gang%> static expression must be integral"
 msgstr ""
 
 #: cp/semantics.c:6246
-#, fuzzy, gcc-internal-format
-#| msgid "%<gang%> static value must bepositive"
+#, gcc-internal-format
 msgid "%<gang%> static value must be positive"
 msgstr "статичне значення %<gang%> має бути додатним"
 
@@ -45748,14 +45661,12 @@ msgid "%<gang%> num value must be positive"
 msgstr "значення num %<gang%> має бути додатним"
 
 #: cp/semantics.c:6313
-#, fuzzy, gcc-internal-format
-#| msgid "%<vector%> length value must bepositive"
+#, gcc-internal-format
 msgid "%<vector%> length value must be positive"
-msgstr "значення length %<vector%> має бути додатним"
+msgstr "значення довжини %<vector%> має бути додатним"
 
 #: cp/semantics.c:6318
-#, fuzzy, gcc-internal-format
-#| msgid "%<worker%> num value must bepositive"
+#, gcc-internal-format
 msgid "%<worker%> num value must be positive"
 msgstr "значення num %<worker%> має бути додатним"
 
@@ -45920,10 +45831,9 @@ msgid "no unexpanded parameter packs in binary fold"
 msgstr ""
 
 #: cp/semantics.c:9519
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument to %<__builtin_return_address%>"
+#, gcc-internal-format
 msgid "non-pointer argument to %<__builtin_launder%>"
-msgstr "некоректний аргумент %<__builtin_return_address%>"
+msgstr "аргумент, який не є вказівником, у %<__builtin_launder%>"
 
 #: cp/tree.c:1245
 #, gcc-internal-format
@@ -47733,10 +47643,9 @@ msgid "%qs at %L must be nonnegative"
 msgstr ""
 
 #: fortran/check.c:310
-#, fuzzy, gcc-internal-format
-#| msgid "%qs value must be positive"
+#, gcc-internal-format
 msgid "%qs argument of %qs intrinsic at %L must be positive"
-msgstr "значення %qs має бути додатним"
+msgstr "аргумент %qs внутрішньої частини %qs у %L має бути додатним"
 
 #: fortran/check.c:343
 #, gcc-internal-format
@@ -49377,10 +49286,9 @@ msgid "Derived type at %C has not been previously defined and so cannot appear i
 msgstr ""
 
 #: fortran/decl.c:4911
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in nested structure declaration at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in anonymous structure declaration at %C"
-msgstr "Синтаксична помилка у оголошенні вкладеної структури у %C"
+msgstr "Синтаксична помилка у оголошенні анонімної структури у %C"
 
 #: fortran/decl.c:4920
 #, gcc-internal-format, gfc-internal-format
@@ -49852,10 +49760,9 @@ msgid "Expected entity-list in AUTOMATIC statement at %C"
 msgstr ""
 
 #: fortran/decl.c:7932
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in SUBMODULE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in AUTOMATIC statement at %C"
-msgstr "Синтаксична помилка у інструкції SUBMODULE у %C"
+msgstr "Синтаксична помилка у інструкції AUTOMATIC у %C"
 
 #: fortran/decl.c:7946
 #, gcc-internal-format, gfc-internal-format
@@ -49868,10 +49775,9 @@ msgid "Expected entity-list in STATIC statement at %C"
 msgstr ""
 
 #: fortran/decl.c:7986
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in SUBMODULE statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in STATIC statement at %C"
-msgstr "Синтаксична помилка у інструкції SUBMODULE у %C"
+msgstr "Синтаксична помилка у інструкції STATIC у %C"
 
 #: fortran/decl.c:8005
 #, gcc-internal-format, gfc-internal-format
@@ -50922,10 +50828,9 @@ msgid "No location in statement"
 msgstr ""
 
 #: fortran/frontend-passes.c:182
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in expression at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "No location in expression near %L"
-msgstr "Синтаксична помилка у виразі у %C"
+msgstr "Не вказано місця у виразі поряд із %L"
 
 #: fortran/frontend-passes.c:381
 #, gcc-internal-format
@@ -52682,10 +52587,9 @@ msgid "CYCLE statement at %C to non-innermost collapsed !$OMP DO loop"
 msgstr ""
 
 #: fortran/match.c:2886
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after MAP statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Blank required in %s statement near %C"
-msgstr "Зайві команди після інструкції MAP у %C"
+msgstr "Потрібен пробіл у інструкції %s поряд із %C"
 
 #: fortran/match.c:2904
 #, gcc-internal-format, gfc-internal-format
@@ -52790,10 +52694,9 @@ msgid "EVENT WAIT statement at %C"
 msgstr ""
 
 #: fortran/match.c:3274
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Junk after MAP statement at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "FAIL IMAGE statement at %C"
-msgstr "Зайві команди після інструкції MAP у %C"
+msgstr "Інструкція FAIL IMAGE у %C"
 
 #: fortran/match.c:3309
 #, gcc-internal-format, gfc-internal-format
@@ -53536,10 +53439,9 @@ msgid "Syntax error in OpenMP variable list at %C"
 msgstr ""
 
 #: fortran/openmp.c:499
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Syntax error in !$ACC DECLARE list at %C"
+#, gcc-internal-format, gfc-internal-format
 msgid "Syntax error in OpenMP DEPEND SINK list at %C"
-msgstr "Синтаксична помилка у списку !$ACC DECLARE у %C"
+msgstr "Синтаксична помилка у списку OpenMP DEPEND SINK у %C"
 
 #: fortran/openmp.c:561
 #, gcc-internal-format, gfc-internal-format
@@ -53602,10 +53504,9 @@ msgid "%<acc update%> must contain at least one %<device%> or %<host%> or %<self
 msgstr ""
 
 #: fortran/openmp.c:2175
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid argument to %qD"
+#, gcc-internal-format, gfc-internal-format
 msgid "Invalid argument to !$ACC WAIT at %L"
-msgstr "некоректний аргумент %qD"
+msgstr "Некоректний аргумент !$ACC WAIT у %L"
 
 #: fortran/openmp.c:2184
 #, gcc-internal-format, gfc-internal-format
@@ -53798,10 +53699,9 @@ msgid "INTEGER expression of %s clause at %L must be positive"
 msgstr ""
 
 #: fortran/openmp.c:3721
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "%<priority%> value must be non-negative"
+#, gcc-internal-format, gfc-internal-format
 msgid "INTEGER expression of %s clause at %L must be non-negative"
-msgstr "значення %<priority%> має бути невід’ємним"
+msgstr "Вираз INTEGER пункту %s у %L має бути невід'ємним"
 
 #: fortran/openmp.c:3732
 #, gcc-internal-format
@@ -54148,10 +54048,9 @@ msgid "%s must contain at least one MAP clause at %L"
 msgstr ""
 
 #: fortran/openmp.c:4870
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "expected expression"
+#, gcc-internal-format, gfc-internal-format
 msgid "unexpected !$OMP ATOMIC expression at %L"
-msgstr "мало бути вказано вираз"
+msgstr "неочікуваний вираз !$OMP ATOMIC у %L"
 
 #: fortran/openmp.c:4899
 #, gcc-internal-format, gfc-internal-format
@@ -58837,12 +58736,12 @@ msgstr ""
 #: fortran/trans-decl.c:5512
 #, gcc-internal-format
 msgid "Unused parameter %qs declared at %L"
-msgstr ""
+msgstr "Невикористаний параметр %qs, оголошено у %L"
 
 #: fortran/trans-decl.c:5516
 #, gcc-internal-format
 msgid "Unused parameter %qs which has been explicitly imported at %L"
-msgstr ""
+msgstr "Невикористаний параметр %qs, який було явно імпортовано у %L"
 
 #: fortran/trans-decl.c:5542
 #, gcc-internal-format
@@ -59459,7 +59358,7 @@ msgstr ""
 #: objc/objc-act.c:1679 objc/objc-act.c:6817 objc/objc-act.c:6948
 #, gcc-internal-format
 msgid "class %qE is deprecated"
-msgstr ""
+msgstr "клас %qE вважається застарілим"
 
 #: objc/objc-act.c:1708
 #, gcc-internal-format
@@ -60071,7 +59970,7 @@ msgstr ""
 #: objc/objc-act.c:8074
 #, gcc-internal-format
 msgid "protocol %qE is deprecated"
-msgstr ""
+msgstr "протокол %qE вважається застарілим"
 
 #: objc/objc-act.c:8193
 #, gcc-internal-format
