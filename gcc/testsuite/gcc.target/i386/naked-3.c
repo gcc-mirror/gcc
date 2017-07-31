@@ -1,17 +1,18 @@
 /* { dg-do run { target *-*-linux* *-*-gnu* } } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O0" } */
 
 #include <unistd.h>
 #include <signal.h>
 #include <stdlib.h>
 
-int data;
-
 /* Verify that naked function traps at the end.  */
 
 void
 __attribute__((naked, noinline, noclone))
-naked (void)
+#ifdef __i386__
+__attribute__((regparm(1)))
+#endif
+naked (int data)
 {
   if (data == 0x12345678)
     return;
@@ -32,8 +33,7 @@ int main ()
   s.sa_flags = 0;
   sigaction (SIGILL, &s, NULL);
 
-  data = 0x12345678;
-  naked ();
+  naked (0x12345678);
 
   abort ();
 }
