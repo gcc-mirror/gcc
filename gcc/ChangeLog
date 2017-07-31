@@ -1,3 +1,22 @@
+2017-07-31  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config.gcc: Add z14.
+	* config/s390/driver-native.c (s390_host_detect_local_cpu): Add
+	CPU model numbers for z13s and z14.
+	* config/s390/s390-c.c (s390_resolve_overloaded_builtin): Replace
+	arch12 with z14.
+	* config/s390/s390-opts.h (enum processor_type): Rename
+	PROCESSOR_ARCH12 to PROCESSOR_3906_Z14.
+	* config/s390/s390.c (processor_table): Add field for CPU name to
+	be passed to Binutils.
+	(s390_asm_output_machine_for_arch): Use the new field in
+	processor_table for Binutils.
+	(s390_expand_builtin): Replace arch12 with z14.
+	(s390_issue_rate): Rename PROCESSOR_ARCH12 to PROCESSOR_3906_Z14.
+	(s390_get_sched_attrmask): Likewise.
+	(s390_get_unit_mask): Likewise.
+	* config/s390/s390.opt: Add z14 to processor_type enum.
+
 2017-07-31  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/81477
