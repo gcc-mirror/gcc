@@ -431,6 +431,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     /* We weren't able to determine the type name.  */
     tname = "<unknown>";
 
+  tree eltype = type;
   if (pstyle == UBSAN_PRINT_POINTER)
     {
       pp_printf (&pretty_name, "'%s%s%s%s%s%s%s",
@@ -479,12 +480,12 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
       pp_quote (&pretty_name);
 
       /* Save the tree with stripped types.  */
-      type = t;
+      eltype = t;
     }
   else
     pp_printf (&pretty_name, "'%s'", tname);
 
-  switch (TREE_CODE (type))
+  switch (TREE_CODE (eltype))
     {
     case BOOLEAN_TYPE:
     case ENUMERAL_TYPE:
@@ -494,9 +495,9 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
     case REAL_TYPE:
       /* FIXME: libubsan right now only supports float, double and
 	 long double type formats.  */
-      if (TYPE_MODE (type) == TYPE_MODE (float_type_node)
-	  || TYPE_MODE (type) == TYPE_MODE (double_type_node)
-	  || TYPE_MODE (type) == TYPE_MODE (long_double_type_node))
+      if (TYPE_MODE (eltype) == TYPE_MODE (float_type_node)
+	  || TYPE_MODE (eltype) == TYPE_MODE (double_type_node)
+	  || TYPE_MODE (eltype) == TYPE_MODE (long_double_type_node))
 	tkind = 0x0001;
       else
 	tkind = 0xffff;
@@ -505,7 +506,7 @@ ubsan_type_descriptor (tree type, enum ubsan_print_style pstyle)
       tkind = 0xffff;
       break;
     }
-  tinfo = get_ubsan_type_info_for_type (type);
+  tinfo = get_ubsan_type_info_for_type (eltype);
 
   /* Create a new VAR_DECL of type descriptor.  */
   const char *tmp = pp_formatted_text (&pretty_name);

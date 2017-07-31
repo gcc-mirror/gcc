@@ -1,3 +1,10 @@
+2017-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81604
+	* ubsan.c (ubsan_type_descriptor): For UBSAN_PRINT_ARRAY don't
+	change type to the element type, instead add eltype variable and
+	use it where we are interested in the element type.
+
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81555
