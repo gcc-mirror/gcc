@@ -1,3 +1,10 @@
+2017-07-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/81581
+	* gfortran.dg/dim_sum_1.f90: New test case.
+	* gfortran.dg/dim_sum_2.f90: New test case.
+	* gfortran.dg/dim_sum_3.f90: New test case.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/builtin-unreachable-6.c: Update scanned patterns.
