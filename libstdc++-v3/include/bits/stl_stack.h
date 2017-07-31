@@ -86,7 +86,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    *
    *  The second template parameter defines the type of the underlying
    *  sequence/container.  It defaults to std::deque, but it can be
-   *  any type that supports @c back, @c push_back, and @c pop_front,
+   *  any type that supports @c back, @c push_back, and @c pop_back,
    *  such as std::list, std::vector, or an appropriate user-defined
    *  type.
    *

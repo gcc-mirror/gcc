@@ -1,3 +1,8 @@
+2017-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR libstdc++/81599
+	* include/bits/stl_stack.h: Fix typo.
+
 2017-07-26  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/27_io/basic_fstream/53984.cc: Fix test.
