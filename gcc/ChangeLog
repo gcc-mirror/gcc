@@ -1,5 +1,12 @@
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
+	* gimple-pretty-print.c (dump_gimple_label): Never dump
+	BB info.
+	(dump_gimple_bb_header): Always dump BB info.
+	(pp_cfg_jump): Do not append info about BB when dumping a jump.
+
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
 	PR sanitize/81530
 	* convert.c (convert_to_integer_1): Guard condition with flag_sanitize_p
 	also with current_function_decl non-null equality.
