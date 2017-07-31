@@ -1,3 +1,7 @@
+2017-07-31  Jakub Jelinek  <jakub@redhat.com>
+
+	* check.c (gfc_check_num_images): Fix a pasto.
+
 2017-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* trans-decl.c (gfc_trans_use_stmts): Pass false as new argument to
