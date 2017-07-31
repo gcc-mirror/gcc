@@ -1,3 +1,13 @@
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81530
+	* cp-gimplify.c (cp_genericize): Guard condition with flag_sanitize_p
+	also with current_function_decl non-null equality.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	* init.c (finish_length_check): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+
 2017-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle

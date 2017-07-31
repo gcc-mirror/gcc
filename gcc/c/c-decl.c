@@ -6052,6 +6052,7 @@ grokdeclarator (const struct c_declarator *declarator,
 		    this_size_varies = size_varies = true;
 		    warn_variable_length_array (name, size);
 		    if (sanitize_flags_p (SANITIZE_VLA)
+			&& current_function_decl != NULL_TREE
 			&& decl_context == NORMAL)
 		      {
 			/* Evaluate the array size only once.  */

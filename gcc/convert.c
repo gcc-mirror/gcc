@@ -938,7 +938,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
       return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:
-      if (sanitize_flags_p (SANITIZE_FLOAT_CAST))
+      if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
+	  && current_function_decl != NULL_TREE)
 	{
 	  expr = save_expr (expr);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);

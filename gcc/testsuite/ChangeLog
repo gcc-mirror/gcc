@@ -1,3 +1,8 @@
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81530
+	* g++.dg/ubsan/pr81530.C: New test.
+
 2017-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81604

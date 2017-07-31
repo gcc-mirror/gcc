@@ -1668,7 +1668,8 @@ cp_genericize (tree fndecl)
      walk_tree's hash functionality.  */
   cp_genericize_tree (&DECL_SAVED_TREE (fndecl), true);
 
-  if (sanitize_flags_p (SANITIZE_RETURN))
+  if (sanitize_flags_p (SANITIZE_RETURN)
+      && current_function_decl != NULL_TREE)
     cp_ubsan_maybe_instrument_return (fndecl);
 
   /* Do everything else.  */
