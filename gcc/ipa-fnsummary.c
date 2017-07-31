@@ -3174,9 +3174,7 @@ ipa_fn_summary_generate (void)
 
   FOR_EACH_DEFINED_FUNCTION (node)
     if (DECL_STRUCT_FUNCTION (node->decl))
-      node->local.versionable = 
-	(opt_for_fn (node->decl, optimize)
-	&& tree_versionable_function_p (node->decl));
+      node->local.versionable = tree_versionable_function_p (node->decl);
 
   ipa_fn_summary_alloc ();
 
