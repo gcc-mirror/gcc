@@ -1,5 +1,10 @@
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
+	* gcc.dg/builtin-unreachable-6.c: Update scanned patterns.
+	* gcc.dg/tree-ssa/attr-hotcold-2.c: Likewise.
+
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
 	PR sanitize/81530
 	* g++.dg/ubsan/pr81530.C: New test.
 

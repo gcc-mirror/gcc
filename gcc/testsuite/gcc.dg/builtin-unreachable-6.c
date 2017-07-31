@@ -16,5 +16,5 @@ lab2:
   goto *x;
 }
 
-/* { dg-final { scan-tree-dump-times "lab \\\[\[0-9.\]+%\\\]" 1 "fab1" } } */
+/* { dg-final { scan-tree-dump-times "lab:" 1 "fab1" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_unreachable" 1 "fab1" } } */
