@@ -5149,7 +5149,7 @@ gfc_check_num_images (gfc_expr *distance, gfc_expr *failed)
 	return false;
 
       if (!gfc_notify_std (GFC_STD_F2008_TS, "FAILED= argument to "
-			   "NUM_IMAGES at %L", &distance->where))
+			   "NUM_IMAGES at %L", &failed->where))
 	return false;
     }
 
