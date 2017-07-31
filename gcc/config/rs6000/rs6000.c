@@ -435,7 +435,7 @@ enum rs6000_reg_type {
   ALTIVEC_REG_TYPE,
   FPR_REG_TYPE,
   SPR_REG_TYPE,
-  CR_REG_TYPE,
+  CR_REG_TYPE
 };
 
 /* Map register class to register type.  */
