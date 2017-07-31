@@ -886,7 +886,7 @@ s390_resolve_overloaded_builtin (location_t loc,
 
   if (!TARGET_VXE && (ob_flags & B_VXE))
     {
-      error_at (loc, "%qF requires -march=arch12 or higher", ob_fndecl);
+      error_at (loc, "%qF requires z14 or higher", ob_fndecl);
       return error_mark_node;
     }
 
@@ -963,7 +963,7 @@ s390_resolve_overloaded_builtin (location_t loc,
   if (!TARGET_VXE
       && bflags_overloaded_builtin_var[last_match_index] & B_VXE)
     {
-      error_at (loc, "%qs matching variant requires -march=arch12 or higher",
+      error_at (loc, "%qs matching variant requires z14 or higher",
 		IDENTIFIER_POINTER (DECL_NAME (ob_fndecl)));
       return error_mark_node;
     }
