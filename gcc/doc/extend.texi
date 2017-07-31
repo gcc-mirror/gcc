@@ -15494,6 +15494,19 @@ signed int vec_cnttz_lsbb (vector unsigned char);
 
 vector unsigned short vec_pack_to_short_fp32 (vector float, vector float);
 
+vector signed char vec_xl_be (signed long long, signed char *);
+vector unsigned char vec_xl_be (signed long long, unsigned char *);
+vector signed int vec_xl_be (signed long long, signed int *);
+vector unsigned int vec_xl_be (signed long long, unsigned int *);
+vector signed __int128 vec_xl_be (signed long long, signed __int128 *);
+vector unsigned __int128 vec_xl_be (signed long long, unsigned __int128 *);
+vector signed long long vec_xl_be (signed long long, signed long long *);
+vector unsigned long long vec_xl_be (signed long long, unsigned long long *);
+vector signed short vec_xl_be (signed long long, signed short *);
+vector unsigned short vec_xl_be (signed long long, unsigned short *);
+vector double vec_xl_be (signed long long, double *);
+vector float vec_xl_be (signed long long, float *);
+
 vector signed char vec_xl_len (signed char *addr, size_t len);
 vector unsigned char vec_xl_len (unsigned char *addr, size_t len);
 vector signed int vec_xl_len (signed int *addr, size_t len);

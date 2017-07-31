@@ -1735,6 +1735,14 @@ BU_VSX_X (LXVW4X_V4SF,	      "lxvw4x_v4sf",	MEM)
 BU_VSX_X (LXVW4X_V4SI,        "lxvw4x_v4si",	MEM)
 BU_VSX_X (LXVW4X_V8HI,        "lxvw4x_v8hi",	MEM)
 BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	MEM)
+
+BU_VSX_X (XL_BE_V16QI, "xl_be_v16qi", MEM)
+BU_VSX_X (XL_BE_V8HI, "xl_be_v8hi", MEM)
+BU_VSX_X (XL_BE_V4SI, "xl_be_v4si", MEM)
+BU_VSX_X (XL_BE_V2DI, "xl_be_v2di", MEM)
+BU_VSX_X (XL_BE_V4SF, "xl_be_v4sf", MEM)
+BU_VSX_X (XL_BE_V2DF, "xl_be_v2df", MEM)
+
 BU_VSX_X (STXSDX,	      "stxsdx",		MEM)
 BU_VSX_X (STXVD2X_V1TI,	      "stxvd2x_v1ti",	MEM)
 BU_VSX_X (STXVD2X_V2DF,	      "stxvd2x_v2df",	MEM)
@@ -1835,6 +1843,7 @@ BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
+BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
 /* 2 argument CMPB instructions added in ISA 2.05. */
