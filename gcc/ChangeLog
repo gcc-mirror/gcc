@@ -1,3 +1,8 @@
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	* gimplify.c (mostly_copy_tree_r): Remove Java specific hunk.
+	(gimplify_save_expr): Fix comment.
+
 2017-07-30  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/79793
