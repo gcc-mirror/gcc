@@ -1,3 +1,14 @@
+2017-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/25967
+	* gcc.target/i386/naked-1.c: New test.
+	* gcc.target/i386/naked-2.c: Ditto.
+	* gcc.target/i386/naked-3.c: Ditto.
+	* gcc.target/x86_64/abi/ms-sysv/ms-sysv.c: Remove
+	do_test_body0 stub function, use attribute "naked" instead.
+	* gcc.dg/pr44290-1.c: Use naked_functions effective target.
+	* gcc.dg/pr44290-2.c: Ditto.
+
 2017-07-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/81581

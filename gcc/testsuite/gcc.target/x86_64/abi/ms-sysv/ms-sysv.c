@@ -169,15 +169,9 @@ static const char *argv0;
 
 #define TEST_DATA_OFFSET(f)	((int)__builtin_offsetof(struct test_data, f))
 
-void __attribute__((used))
-do_test_body0 (void)
-{
-  __asm__ ("\n"
-	"	.globl " ASMNAME(do_test_body) "\n"
-#ifdef __ELF__
-	"	.type " ASMNAME(do_test_body) ",@function\n"
-#endif
-	ASMNAME(do_test_body) ":\n"
+void __attribute__((naked))
+do_test_body (void)
+{__asm__ (
 	"	# rax, r10 and r11 are usable here.\n"
 	"\n"
 	"	# Save registers.\n"
@@ -212,9 +206,6 @@ do_test_body0 (void)
 	"	call	" ASMNAME(mem_to_regs) "\n"
 	"\n"
 	"	retq\n"
-#ifdef __ELF__
-	"	.size " ASMNAME(do_test_body) ",.-" ASMNAME(do_test_body) "\n"
-#endif
 	::
 	"i"(TEST_DATA_OFFSET(regdata[REG_SET_SAVE])),
 	"i"(TEST_DATA_OFFSET(regdata[REG_SET_INPUT])),
