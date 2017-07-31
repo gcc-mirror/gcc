@@ -36,6 +36,9 @@ cp_ubsan_instrument_vptr_p (tree type)
   if (!sanitize_flags_p (SANITIZE_VPTR))
     return false;
 
+  if (current_function_decl == NULL_TREE)
+    return false;
+
   if (type)
     {
       type = TYPE_MAIN_VARIANT (type);

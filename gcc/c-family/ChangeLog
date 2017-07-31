@@ -1,3 +1,11 @@
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81530
+	* c-ubsan.c (ubsan_maybe_instrument_array_ref):
+	Guard condition with flag_sanitize_p also with current_function_decl
+	non-null equality.
+	(ubsan_maybe_instrument_reference_or_call): Likewise.
+
 2017-07-30  Uros Bizjak  <ubizjak@gmail.com>
 
 	* c-format.c (asm_fprintf_char_table): Add 'z' to format_chars.

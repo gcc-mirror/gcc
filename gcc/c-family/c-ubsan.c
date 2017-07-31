@@ -373,7 +373,8 @@ void
 ubsan_maybe_instrument_array_ref (tree *expr_p, bool ignore_off_by_one)
 {
   if (!ubsan_array_ref_instrumented_p (*expr_p)
-      && sanitize_flags_p (SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT))
+      && sanitize_flags_p (SANITIZE_BOUNDS | SANITIZE_BOUNDS_STRICT)
+      && current_function_decl != NULL_TREE)
     {
       tree op0 = TREE_OPERAND (*expr_p, 0);
       tree op1 = TREE_OPERAND (*expr_p, 1);
@@ -393,7 +394,8 @@ static tree
 ubsan_maybe_instrument_reference_or_call (location_t loc, tree op, tree ptype,
 					  enum ubsan_null_ckind ckind)
 {
-  if (!sanitize_flags_p (SANITIZE_ALIGNMENT | SANITIZE_NULL))
+  if (!sanitize_flags_p (SANITIZE_ALIGNMENT | SANITIZE_NULL)
+      || current_function_decl == NULL_TREE)
     return NULL_TREE;
 
   tree type = TREE_TYPE (ptype);

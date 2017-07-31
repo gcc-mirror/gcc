@@ -108,6 +108,7 @@ convert (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
+	  && current_function_decl != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
 	  && COMPLETE_TYPE_P (type))
 	{
