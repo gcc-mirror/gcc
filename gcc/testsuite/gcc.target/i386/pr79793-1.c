@@ -1,5 +1,5 @@
 /* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
-/* { dg-options "-O2 -mgeneral-regs-only" } */
+/* { dg-options "-O2 -mgeneral-regs-only -mtune=generic" } */
 
 void
  __attribute__ ((interrupt))
