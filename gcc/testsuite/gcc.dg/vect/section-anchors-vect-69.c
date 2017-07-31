@@ -1,4 +1,5 @@
 /* { dg-require-effective-target section_anchors } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -112,8 +113,6 @@ int main (void)
 } 
 
 /* { dg-final { scan-tree-dump-times "vectorized 4 loops" 1 "vect" { target vect_int } } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
 /* Alignment forced using versioning until the pass that increases alignment
   is extended to handle structs.  */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 2 "vect" { target {vect_int && vector_alignment_reachable } } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 4 "vect" { target {vect_int && {! vector_alignment_reachable} } } } } */

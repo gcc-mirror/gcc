@@ -1,3 +1,11 @@
+2017-07-31  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/80925
+	* gcc.dg/vect/no-section-anchors-vect-69.c: Add 
+	--param vect-max-peeling-for-alignment=0 option.
+	Remove unaligned access and peeling checks.
+	* gcc.dg/vect/section-anchors-vect-69.c: Ditto.
+
 2017-07-31  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-4-runnable.c: Fix dg argument that got
