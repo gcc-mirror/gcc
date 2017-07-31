@@ -8748,6 +8748,15 @@ ix86_function_ms_hook_prologue (const_tree fn)
   return false;
 }
 
+static bool
+ix86_function_naked (const_tree fn)
+{
+  if (fn && lookup_attribute ("naked", DECL_ATTRIBUTES (fn)))
+    return true;
+
+  return false;
+}
+
 /* Write the extra assembler code needed to declare a function properly.  */
 
 void
@@ -12249,6 +12258,9 @@ ix86_can_use_return_insn_p (void)
 {
   struct ix86_frame frame;
 
+  if (ix86_function_naked (current_function_decl))
+    return false;
+
   /* Don't use `ret' instruction in interrupt handler.  */
   if (! reload_completed
       || frame_pointer_needed
@@ -14327,6 +14339,9 @@ ix86_expand_prologue (void)
   bool sse_registers_saved;
   rtx static_chain = NULL_RTX;
 
+  if (ix86_function_naked (current_function_decl))
+    return;
+
   ix86_finalize_stack_realign_flags ();
 
   /* DRAP should not coexist with stack_realign_fp */
@@ -15183,6 +15198,13 @@ ix86_expand_epilogue (int style)
   bool restore_regs_via_mov;
   bool using_drap;
   bool restore_stub_is_tail = false;
+
+  if (ix86_function_naked (current_function_decl))
+    {
+      /* The program should not reach this point.  */
+      emit_insn (gen_trap ());
+      return;
+    }
 
   ix86_finalize_stack_realign_flags ();
   frame = m->frame;
@@ -31652,6 +31674,14 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
 #endif
 }
+
+static bool
+ix86_warn_func_return (tree decl)
+{
+  /* Naked functions are implemented entirely in assembly, including the
+     return sequence, so suppress warnings about this.  */
+  return !ix86_function_naked (decl);
+}
 
 /* The following file contains several enumerations and data structures
    built from the definitions in i386-builtin-types.def.  */
@@ -46486,6 +46516,8 @@ static const struct attribute_spec ix86_attribute_table[] =
     ix86_handle_interrupt_attribute, false },
   { "no_caller_saved_registers", 0, 0, false, true, true,
     ix86_handle_no_caller_saved_registers_attribute, false },
+  { "naked", 0, 0, true, false, false,
+    ix86_handle_fndecl_attribute, false },
 
   /* End element.  */
   { NULL,        0, 0, false, false, false, NULL, false }
@@ -52721,6 +52753,9 @@ ix86_run_selftests (void)
 #define TARGET_TRAMPOLINE_INIT ix86_trampoline_init
 #undef TARGET_RETURN_POPS_ARGS
 #define TARGET_RETURN_POPS_ARGS ix86_return_pops_args
+
+#undef TARGET_WARN_FUNC_RETURN
+#define TARGET_WARN_FUNC_RETURN ix86_warn_func_return
 
 #undef TARGET_LEGITIMATE_COMBINED_INSN
 #define TARGET_LEGITIMATE_COMBINED_INSN ix86_legitimate_combined_insn

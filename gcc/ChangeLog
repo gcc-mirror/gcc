@@ -1,7 +1,19 @@
+2017-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/25967
+	* config/i386/i386.c (ix86_function_naked): New function.
+	(ix86_can_use_return_insn_p): Return false for naked functions.
+	(ix86_expand_prologue): Skip prologue for naked functions.
+	(ix86_expand_epilogue): Skip epilogue for naked functions
+	and emit trap instruction.
+	(ix86_warn_func_return): New function.
+	(ix86_attribute_table): Add "naked" attribute specification.
+	(TARGET_WARN_FUNC_RETURN): Define.
+	* doc/extend.texi (x86 Function Attributes) <naked>: Document it.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
-	* gimple-pretty-print.c (dump_gimple_label): Never dump
-	BB info.
+	* gimple-pretty-print.c (dump_gimple_label): Never dump BB info.
 	(dump_gimple_bb_header): Always dump BB info.
 	(pp_cfg_jump): Do not append info about BB when dumping a jump.
 
