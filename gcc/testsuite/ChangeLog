@@ -1,5 +1,10 @@
 2017-07-31  Carl Love  <cel@us.ibm.com>
 
+	* gcc.target/powerpc/builtins-4-runnable.c: Fix dg argument that got
+	missed in commit 250746.
+
+2017-07-31  Carl Love  <cel@us.ibm.com>
+
 	* gcc.target/powerpc/builtins-4-runnable.c: Add test cases for the
 	new builtins.
 

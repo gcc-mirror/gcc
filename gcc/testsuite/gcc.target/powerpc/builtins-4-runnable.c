@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-require-effective-target powerpc_vsx_hw } */
+/* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-maltivec -mvsx" } */  
 
 #include <inttypes.h>
