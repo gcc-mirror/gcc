@@ -132,9 +132,8 @@ DEF_PREDICTOR (PRED_RECURSIVE_CALL, "recursive call", HITRATE (75), 0)
 DEF_PREDICTOR (PRED_TREE_EARLY_RETURN, "early return (on trees)", HITRATE (66),
 	       0)
 
-/* Branch containing goto is probably not taken.
-   FIXME: Currently not used.  */
-DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (70), 0)
+/* Branch containing goto is probably not taken.  */
+DEF_PREDICTOR (PRED_GOTO, "goto", HITRATE (66), 0)
 
 /* Branch ending with return constant is probably not taken.  */
 DEF_PREDICTOR (PRED_CONST_RETURN, "const return", HITRATE (69), 0)

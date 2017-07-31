@@ -15105,6 +15105,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return tsubst_binary_left_fold (t, args, complain, in_decl);
     case BINARY_RIGHT_FOLD_EXPR:
       return tsubst_binary_right_fold (t, args, complain, in_decl);
+    case PREDICT_EXPR:
+      return t;
 
     default:
       /* We shouldn't get here, but keep going if !flag_checking.  */

@@ -1,8 +1,7 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-profile_estimate-blocks-details" } */
+/* { dg-options "-O2 -fdump-tree-profile_estimate" } */
 
-void g(void);
-void h(void);
+int v1, v2;
 void f(int x, int y)
 {
   if (x) goto A;
@@ -10,11 +9,11 @@ void f(int x, int y)
   return;
 
  A: __attribute__((cold))
-  g();
+  v1 = x;
   return;
 
  B: __attribute__((hot))
-  h();
+  v2 = y;
   return;
 }
 

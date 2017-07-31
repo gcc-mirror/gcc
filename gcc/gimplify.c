@@ -2037,7 +2037,9 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
   gsi = *gsi_p;
 
   /* Skip all immediately following labels.  */
-  while (!gsi_end_p (gsi) && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL)
+  while (!gsi_end_p (gsi)
+	 && (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
+	     || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT))
     gsi_next (&gsi);
 
   /* { ... something; default:; } */

@@ -1,3 +1,9 @@
+2017-07-31  Jan Hubicka <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* c-typeck.c (c_finish_goto_label): Build gimple predict
+	stament.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/81530
