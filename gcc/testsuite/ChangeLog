@@ -1,3 +1,12 @@
+2017-07-31  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/25967
+	* gcc.target/i386/naked-3.c (dg-options): Use -O0.
+	(naked): Add attribute regparm(1) for x86_32 targets.
+	Add integer argument.  Remove global "data" variable.
+	(main): Pass integer argument to naked function.
+	* gcc.target/i386/naked-4.c: New test.
+
 2017-07-31  Jan Hubicka <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 

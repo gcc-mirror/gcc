@@ -31676,6 +31676,13 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 }
 
 static bool
+ix86_allocate_stack_slots_for_args (void)
+{
+  /* Naked functions should not allocate stack slots for arguments.  */
+  return !ix86_function_naked (current_function_decl);
+}
+
+static bool
 ix86_warn_func_return (tree decl)
 {
   /* Naked functions are implemented entirely in assembly, including the
@@ -52727,6 +52734,8 @@ ix86_run_selftests (void)
 #define TARGET_SETUP_INCOMING_VARARGS ix86_setup_incoming_varargs
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK ix86_must_pass_in_stack
+#undef TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS
+#define TARGET_ALLOCATE_STACK_SLOTS_FOR_ARGS ix86_allocate_stack_slots_for_args
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE ix86_function_arg_advance
 #undef TARGET_FUNCTION_ARG
