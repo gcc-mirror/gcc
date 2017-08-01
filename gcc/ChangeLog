@@ -1,5 +1,11 @@
 2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/81641
+	* config/i386/i386.c (ix86_print_operand_address_as): For -masm=intel
+	print "ds:" only for immediates in generic address space.
+
+2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/81639
 	* config/i386/i386.c (ix86_funciton_naked): New prototype.
 	(ix86_function_ok_for_sibcall): Return false for naked functions.
