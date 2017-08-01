@@ -61,7 +61,13 @@ struct strinfo
   tree length;
   /* Any of the corresponding pointers for querying alias oracle.  */
   tree ptr;
-  /* Statement for delayed length computation.  */
+  /* This is used for two things:
+
+     - To record the statement that should be used for delayed length
+       computations.  We maintain the invariant that all related strinfos
+       have delayed lengths or none do.
+
+     - To record the malloc or calloc call that produced this result.  */
   gimple *stmt;
   /* Pointer to '\0' if known, if NULL, it can be computed as
      ptr + length.  */
@@ -154,6 +160,19 @@ get_strinfo (int idx)
   if (vec_safe_length (stridx_to_strinfo) <= (unsigned int) idx)
     return NULL;
   return (*stridx_to_strinfo)[idx];
+}
+
+/* Get the next strinfo in the chain after SI, or null if none.  */
+
+static inline strinfo *
+get_next_strinfo (strinfo *si)
+{
+  if (si->next == 0)
+    return NULL;
+  strinfo *nextsi = get_strinfo (si->next);
+  if (nextsi == NULL || nextsi->first != si->first || nextsi->prev != si->idx)
+    return NULL;
+  return nextsi;
 }
 
 /* Helper function for get_stridx.  */
@@ -438,6 +457,45 @@ set_strinfo (int idx, strinfo *si)
   (*stridx_to_strinfo)[idx] = si;
 }
 
+/* Return the first strinfo in the related strinfo chain
+   if all strinfos in between belong to the chain, otherwise NULL.  */
+
+static strinfo *
+verify_related_strinfos (strinfo *origsi)
+{
+  strinfo *si = origsi, *psi;
+
+  if (origsi->first == 0)
+    return NULL;
+  for (; si->prev; si = psi)
+    {
+      if (si->first != origsi->first)
+	return NULL;
+      psi = get_strinfo (si->prev);
+      if (psi == NULL)
+	return NULL;
+      if (psi->next != si->idx)
+	return NULL;
+    }
+  if (si->idx != si->first)
+    return NULL;
+  return si;
+}
+
+/* Set SI's endptr to ENDPTR and compute its length based on SI->ptr.
+   Use LOC for folding.  */
+
+static void
+set_endptr_and_length (location_t loc, strinfo *si, tree endptr)
+{
+  si->endptr = endptr;
+  si->stmt = NULL;
+  tree start_as_size = fold_convert_loc (loc, size_type_node, si->ptr);
+  tree end_as_size = fold_convert_loc (loc, size_type_node, endptr);
+  si->length = fold_build2_loc (loc, MINUS_EXPR, size_type_node,
+				end_as_size, start_as_size);
+}
+
 /* Return string length, or NULL if it can't be computed.  */
 
 static tree
@@ -533,12 +591,12 @@ get_string_length (strinfo *si)
 	case BUILT_IN_STPCPY_CHK_CHKP:
 	  gcc_assert (lhs != NULL_TREE);
 	  loc = gimple_location (stmt);
-	  si->endptr = lhs;
-	  si->stmt = NULL;
-	  lhs = fold_convert_loc (loc, size_type_node, lhs);
-	  si->length = fold_convert_loc (loc, size_type_node, si->ptr);
-	  si->length = fold_build2_loc (loc, MINUS_EXPR, size_type_node,
-					lhs, si->length);
+	  set_endptr_and_length (loc, si, lhs);
+	  for (strinfo *chainsi = verify_related_strinfos (si);
+	       chainsi != NULL;
+	       chainsi = get_next_strinfo (chainsi))
+	    if (chainsi->length == NULL)
+	      set_endptr_and_length (loc, chainsi, lhs);
 	  break;
 	case BUILT_IN_MALLOC:
 	  break;
@@ -605,32 +663,6 @@ unshare_strinfo (strinfo *si)
   set_strinfo (si->idx, nsi);
   free_strinfo (si);
   return nsi;
-}
-
-/* Return first strinfo in the related strinfo chain
-   if all strinfos in between belong to the chain, otherwise
-   NULL.  */
-
-static strinfo *
-verify_related_strinfos (strinfo *origsi)
-{
-  strinfo *si = origsi, *psi;
-
-  if (origsi->first == 0)
-    return NULL;
-  for (; si->prev; si = psi)
-    {
-      if (si->first != origsi->first)
-	return NULL;
-      psi = get_strinfo (si->prev);
-      if (psi == NULL)
-	return NULL;
-      if (psi->next != si->idx)
-	return NULL;
-    }
-  if (si->idx != si->first)
-    return NULL;
-  return si;
 }
 
 /* Attempt to create a new strinfo for BASESI + OFF, or find existing
