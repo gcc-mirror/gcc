@@ -1,3 +1,8 @@
+2017-08-01  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/70140
+	* gcc.dg/string-opt-1.c: Adjust test-case to scan for memcpy.
+
 2017-08-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/dbl_mov_immediate_1.c:
