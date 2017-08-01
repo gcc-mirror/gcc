@@ -1,5 +1,12 @@
 2017-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* gcc.dg/guality/pr25967-1.c: New test.
+	* gcc.dg/guality/pr25967-2.c: Likewise.
+	* gcc.dg/torture/pr25967-1.c: Likewise.
+	* gcc.dg/torture/pr25967-2.c: Likewise.
+
+2017-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/81654
 	* gcc.target/i386/pr81654.c: New test.
 
