@@ -1477,11 +1477,9 @@ enable_fdo_optimizations (struct gcc_options *opts,
     opts->x_flag_unswitch_loops = value;
   if (!opts_set->x_flag_gcse_after_reload)
     opts->x_flag_gcse_after_reload = value;
-  if (!opts_set->x_flag_tree_loop_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_loop_vectorize)
     opts->x_flag_tree_loop_vectorize = value;
-  if (!opts_set->x_flag_tree_slp_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_slp_vectorize)
     opts->x_flag_tree_slp_vectorize = value;
   if (!opts_set->x_flag_vect_cost_model)
     opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
@@ -2236,10 +2234,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ftree_vectorize:
-      if (!opts_set->x_flag_tree_loop_vectorize)
-        opts->x_flag_tree_loop_vectorize = value;
-      if (!opts_set->x_flag_tree_slp_vectorize)
-        opts->x_flag_tree_slp_vectorize = value;
+      /* Automatically sets -ftree-loop-vectorize and
+	 -ftree-slp-vectorize.  Nothing more to do here.  */
       break;
     case OPT_fshow_column:
       dc->show_column = value;
