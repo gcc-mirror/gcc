@@ -1,4 +1,5 @@
 /* { dg-require-effective-target vect_int } */
+/* { dg-additional-options "--param vect-max-peeling-for-alignment=0" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -63,6 +64,4 @@ int main (void)
 }
           
 /* { dg-final { scan-tree-dump-times "vectorized 2 loops" 1 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Vectorizing an unaligned access" 0 "vect" } } */
-/* { dg-final { scan-tree-dump-times "Alignment of access forced using peeling" 1 "vect" {target { vector_alignment_reachable} } } } */
 /* { dg-final { scan-tree-dump-times "Alignment of access forced using versioning" 1 "vect" {target {{! vector_alignment_reachable} && {! vect_hw_misalign} } } } } */

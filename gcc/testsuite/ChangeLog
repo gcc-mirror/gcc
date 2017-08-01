@@ -1,3 +1,16 @@
+2017-08-01  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/80925
+	* gcc.dg/vect/vect-28.c: Add
+	--param vect-max-peeling-for-alignment=0 option.
+	Remove unaligned access and peeling checks.
+	* gcc.dg/vect/vect-33-big-array.c: Ditto.
+	* gcc.dg/vect/vect-70.c: Ditto.
+	* gcc.dg/vect/vect-87.c: Ditto.
+	* gcc.dg/vect/vect-88.c: Ditto.
+	* gcc.dg/vect/vect-91.c: Ditto.
+	* gcc.dg/vect/vect-93.c: Ditto.
+
 2017-08-01  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.target/nvptx/slp-2.c (foo): Use signed loop iteration variable.
