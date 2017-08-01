@@ -4787,10 +4787,6 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   if (!TARGET_SIMD)
      return false;
 
-  /* We make a general exception for 0.  */
-  if (aarch64_float_const_zero_rtx_p (x))
-      return true;
-
   machine_mode vmode, imode;
   unsigned HOST_WIDE_INT ival;
 
@@ -4799,6 +4795,10 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
     {
       if (!aarch64_reinterpret_float_as_int (x, &ival))
 	return false;
+
+      /* We make a general exception for 0.  */
+      if (aarch64_float_const_zero_rtx_p (x))
+	return true;
 
       imode = int_mode_for_mode (mode);
     }
