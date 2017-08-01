@@ -2631,6 +2631,8 @@ kind_expr:
 	 of the named constants from iso_c_binding.  */
       ts->is_c_interop = e->ts.is_iso_c;
       ts->f90_type = e->ts.f90_type;
+      if (e->symtree)
+	ts->interop_kind = e->symtree->n.sym;
     }
 
   gfc_free_expr (e);
