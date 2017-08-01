@@ -1,3 +1,10 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (print_pre_expr): Handle NULL expr.
+	(compute_antic): Seed worklist with exit block predecessors.
+	* cfganal.c (dfs_find_deadend): For a cycle return the source
+	of the edge closing it.
+
 2017-08-01  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.c

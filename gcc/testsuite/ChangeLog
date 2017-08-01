@@ -1,3 +1,10 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-dce-3.c: Adjust.
+	* gcc.dg/tree-ssa/split-path-5.c: Remove case with just dead
+	endless loop.
+	* gcc.dg/uninit-23.c: Adjust.
+
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
 	* gcc.dg/no-strict-overflow-7.c: Revise comment and test string.

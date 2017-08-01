@@ -837,7 +837,7 @@ bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
     }
 }
 
-/* Subtract all values and expressions contained in ORIG from DEST.  */
+/* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
 bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
@@ -859,7 +859,7 @@ bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
   return result;
 }
 
-/* Subtract all the values in bitmap set B from bitmap set A.  */
+/* Subtract all values in bitmap set B from bitmap set A.  */
 
 static void
 bitmap_set_subtract_values (bitmap_set_t a, bitmap_set_t b)
@@ -987,6 +987,11 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 static void
 print_pre_expr (FILE *outfile, const pre_expr expr)
 {
+  if (! expr)
+    {
+      fprintf (outfile, "NULL");
+      return;
+    }
   switch (expr->kind)
     {
     case CONSTANT:
@@ -2418,7 +2423,9 @@ compute_antic (void)
   inverted_post_order_compute (&postorder);
 
   auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_ones (worklist);
+  bitmap_clear (worklist);
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    bitmap_set_bit (worklist, e->src->index);
   while (changed)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
