@@ -796,7 +796,8 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   if (TREE_CODE (t) != SSA_NAME)
     return NULL_TREE;
 
-  gcc_assert (! inv_ || ! TREE_OVERFLOW_P (inv_));
+  if (inv_ && TREE_OVERFLOW_P (inv_))
+    inv_ = drop_tree_overflow (inv_);
 
   *neg = neg_;
   *inv = inv_;
