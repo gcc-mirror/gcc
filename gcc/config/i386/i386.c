@@ -2492,9 +2492,7 @@ public:
     unsigned last_reg = m->call_ms2sysv_extra_regs + MIN_REGS - 1;
 
     gcc_assert (m->call_ms2sysv_extra_regs <= MAX_EXTRA_REGS);
-    return m_regs[last_reg].offset
-	   + (m->call_ms2sysv_pad_out ? 8 : 0)
-	   + STUB_INDEX_OFFSET;
+    return m_regs[last_reg].offset + STUB_INDEX_OFFSET;
   }
 
   /* Returns the offset for the base pointer used by the stub.  */
@@ -12865,13 +12863,12 @@ ix86_compute_frame_layout (void)
 	{
 	  unsigned count = xlogue_layout::count_stub_managed_regs ();
 	  m->call_ms2sysv_extra_regs = count - xlogue_layout::MIN_REGS;
+	  m->call_ms2sysv_pad_in = 0;
 	}
     }
 
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
-  m->call_ms2sysv_pad_in = 0;
-  m->call_ms2sysv_pad_out = 0;
 
   /* 64-bit MS ABI seem to require stack alignment to be always 16,
      except for function prologues, leaf functions and when the defult
@@ -12973,16 +12970,7 @@ ix86_compute_frame_layout (void)
       gcc_assert (!frame->nsseregs);
 
       m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
-
-      /* Select an appropriate layout for incoming stack offset.  */
-      const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
-
-      if ((offset + xlogue.get_stack_space_used ()) & UNITS_PER_WORD)
-	m->call_ms2sysv_pad_out = 1;
-
-      offset += xlogue.get_stack_space_used ();
-      gcc_assert (!(offset & 0xf));
-      frame->outlined_save_offset = offset;
+      offset += xlogue_layout::get_instance ().get_stack_space_used ();
     }
 
   /* Align and set SSE register save area.  */
@@ -13010,6 +12998,7 @@ ix86_compute_frame_layout (void)
 
   /* Align start of frame for local function.  */
   if (stack_realign_fp
+      || m->call_ms2sysv
       || offset != frame->sse_reg_save_offset
       || size != 0
       || !crtl->is_leaf
