@@ -7583,6 +7583,7 @@ declare_global_var (tree name, tree type)
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_CONTEXT (decl) = FROB_CONTEXT (global_namespace);
   /* If the user has explicitly declared this variable (perhaps
      because the code we are compiling is part of a low-level runtime
      library), then it is possible that our declaration will be merged
