@@ -1,3 +1,8 @@
+2017-08-01  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.target/nvptx/slp-2.c (foo): Use signed loop iteration variable.
+	* gcc.target/nvptx/slp.c (foo): Same.
+
 2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81181

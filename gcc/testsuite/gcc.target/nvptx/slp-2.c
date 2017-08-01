@@ -9,7 +9,7 @@ foo ()
 {
   long long int a, b;
 
-  unsigned int i;
+  int i;
   for (i = 0; i < 1000; i += 2)
     {
       a = p[i];
