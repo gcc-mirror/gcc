@@ -1069,7 +1069,9 @@ add_ref_to_chain (chain_p chain, dref ref)
       chain->has_max_use_after = false;
     }
 
-  if (ref->distance == chain->length
+  /* Don't set the flag for store-store chain since there is no use.  */
+  if (chain->type != CT_STORE_STORE
+      && ref->distance == chain->length
       && ref->pos > root->pos)
     chain->has_max_use_after = true;
 

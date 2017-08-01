@@ -1,3 +1,9 @@
+2017-08-01  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81620
+	* tree-predcom.c (add_ref_to_chain): Don't set has_max_use_after
+	for store-store chain.
+
 2017-08-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/81588
