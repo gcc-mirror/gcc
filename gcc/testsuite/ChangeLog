@@ -1,3 +1,8 @@
+2017-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81654
+	* gcc.target/i386/pr81654.c: New test.
+
 2017-08-01  Thomas König  <tkoenig@gcc.gnu.org>
 
 	PR fortran/79312
