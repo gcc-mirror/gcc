@@ -2484,8 +2484,7 @@ enum avx_u128_state
 			<- end of stub-saved/restored regs
      [padding1]
    ]
-					<- outlined_save_offset
-					<- sse_regs_save_offset
+					<- sse_reg_save_offset
    [padding2]
 		       |		<- FRAME_POINTER
    [va_arg registers]  |
@@ -2511,7 +2510,6 @@ struct GTY(()) ix86_frame
   HOST_WIDE_INT reg_save_offset;
   HOST_WIDE_INT stack_realign_allocate_offset;
   HOST_WIDE_INT stack_realign_offset;
-  HOST_WIDE_INT outlined_save_offset;
   HOST_WIDE_INT sse_reg_save_offset;
 
   /* When save_regs_using_mov is set, emit prologue using
@@ -2647,16 +2645,12 @@ struct GTY(()) machine_function {
   BOOL_BITFIELD arg_reg_available : 1;
 
   /* If true, we're out-of-lining reg save/restore for regs clobbered
-     by ms_abi functions calling a sysv function.  */
+     by 64-bit ms_abi functions calling a sysv_abi function.  */
   BOOL_BITFIELD call_ms2sysv : 1;
 
   /* If true, the incoming 16-byte aligned stack has an offset (of 8) and
-     needs padding.  */
+     needs padding prior to out-of-line stub save/restore area.  */
   BOOL_BITFIELD call_ms2sysv_pad_in : 1;
-
-  /* If true, the size of the stub save area plus inline int reg saves will
-     result in an 8 byte offset, so needs padding.  */
-  BOOL_BITFIELD call_ms2sysv_pad_out : 1;
 
   /* This is the number of extra registers saved by stub (valid range is
      0-6). Each additional register is only saved/restored by the stubs
