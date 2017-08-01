@@ -1,5 +1,13 @@
 2017-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81622
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): For
+	__builtin_vec_cmpne verify both arguments are compatible vectors
+	before looking at TYPE_MODE on the element type.  For __builtin_vec_ld
+	verify arg1_type is a pointer or array type.  For __builtin_vec_st,
+	move computation of aligned to after checking the argument types.
+	Formatting fixes.
+
 	PR target/80846
 	* config/rs6000/vsx.md (vextract_fp_from_shorth,
 	vextract_fp_from_shortl): Add element mode after mode in gen_vec_init*

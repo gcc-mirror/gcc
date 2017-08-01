@@ -5872,6 +5872,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       tree arg1 = (*arglist)[1];
       tree arg1_type = TREE_TYPE (arg1);
 
+      /* Both arguments must be vectors and the types must be compatible.  */
+      if (TREE_CODE (arg0_type) != VECTOR_TYPE)
+	goto bad;
+      if (!lang_hooks.types_compatible_p (arg0_type, arg1_type))
+	goto bad;
+
       /* Power9 instructions provide the most efficient implementation of
 	 ALTIVEC_BUILTIN_VEC_CMPNE if the mode is not DImode or TImode
 	 or SFmode or DFmode.  */
@@ -5881,12 +5887,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	  || (TYPE_MODE (TREE_TYPE (arg0_type)) == SFmode)
 	  || (TYPE_MODE (TREE_TYPE (arg0_type)) == DFmode))
 	{
-	  /* Both arguments must be vectors and the types must be compatible.  */
-	  if (TREE_CODE (arg0_type) != VECTOR_TYPE)
-	    goto bad;
-	  if (!lang_hooks.types_compatible_p (arg0_type, arg1_type))
-	    goto bad;
-
 	  switch (TYPE_MODE (TREE_TYPE (arg0_type)))
 	    {
 	      /* vec_cmpneq (va, vb) == vec_nor (vec_cmpeq (va, vb),
@@ -5951,8 +5951,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	 __int128) and the types must be compatible.  */
       if (TREE_CODE (arg0_type) != VECTOR_TYPE)
 	goto bad;
-      if (!lang_hooks.types_compatible_p (arg0_type, arg1_type) ||
-	  !lang_hooks.types_compatible_p (arg1_type, arg2_type))
+      if (!lang_hooks.types_compatible_p (arg0_type, arg1_type)
+	  || !lang_hooks.types_compatible_p (arg1_type, arg2_type))
 	goto bad;
 
       switch (TYPE_MODE (TREE_TYPE (arg0_type)))
@@ -6034,8 +6034,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	 __int128) and the types must be compatible.  */
       if (TREE_CODE (arg0_type) != VECTOR_TYPE)
 	goto bad;
-      if (!lang_hooks.types_compatible_p (arg0_type, arg1_type) ||
-	  !lang_hooks.types_compatible_p (arg1_type, arg2_type))
+      if (!lang_hooks.types_compatible_p (arg0_type, arg1_type)
+	  || !lang_hooks.types_compatible_p (arg1_type, arg2_type))
 	goto bad;
 
       switch (TYPE_MODE (TREE_TYPE (arg0_type)))
@@ -6484,6 +6484,9 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
       /* Strip qualifiers like "const" from the pointer arg.  */
       tree arg1_type = TREE_TYPE (arg1);
+      if (!POINTER_TYPE_P (arg1_type) && TREE_CODE (arg1_type) != ARRAY_TYPE)
+	goto bad;
+
       tree inner_type = TREE_TYPE (arg1_type);
       if (TYPE_QUALS (TREE_TYPE (arg1_type)) != 0)
 	{
@@ -6572,11 +6575,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	      arg2 = build1 (ADDR_EXPR, arg2_type, arg2_elt0);
 	    }
 
-	  tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg2_type,
-				       arg2, arg1);
-	  tree aligned = fold_build2_loc (loc, BIT_AND_EXPR, arg2_type, addr,
-					  build_int_cst (arg2_type, -16));
-
 	  /* Find the built-in to make sure a compatible one exists; if not
 	     we fall back to default handling to get the error message.  */
 	  for (desc = altivec_overloaded_builtins;
@@ -6589,6 +6587,12 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		&& rs6000_builtin_type_compatible (TREE_TYPE (arg2),
 						   desc->op3))
 	      {
+		tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg2_type,
+					     arg2, arg1);
+		tree aligned
+		  = fold_build2_loc (loc, BIT_AND_EXPR, arg2_type,
+				     addr, build_int_cst (arg2_type, -16));
+
 		tree arg0_type = TREE_TYPE (arg0);
 		if (TYPE_MODE (arg0_type) == V2DImode)
 		  /* Type-based aliasing analysis thinks vector long
@@ -6714,8 +6718,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    overloaded_code = P6_BUILTIN_CMPB_32;
 	  }
 
-	while (desc->code && desc->code == fcode &&
-	       desc->overloaded_code != overloaded_code)
+	while (desc->code && desc->code == fcode
+	       && desc->overloaded_code != overloaded_code)
 	  desc++;
 
 	if (desc->code && (desc->code == fcode)
@@ -6761,8 +6765,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    else
 	      overloaded_code = P9V_BUILTIN_VSIEDP;
 	  }
-	while (desc->code && desc->code == fcode &&
-	       desc->overloaded_code != overloaded_code)
+	while (desc->code && desc->code == fcode
+	       && desc->overloaded_code != overloaded_code)
 	  desc++;
 	if (desc->code && (desc->code == fcode)
 	    && rs6000_builtin_type_compatible (types[0], desc->op1)
@@ -6804,9 +6808,9 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       }
   }
  bad:
-    {
-      const char *name = rs6000_overloaded_builtin_name (fcode);
-      error ("invalid parameter combination for AltiVec intrinsic %s", name);
-      return error_mark_node;
-    }
+  {
+    const char *name = rs6000_overloaded_builtin_name (fcode);
+    error ("invalid parameter combination for AltiVec intrinsic %s", name);
+    return error_mark_node;
+  }
 }
