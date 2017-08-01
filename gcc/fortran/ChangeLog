@@ -1,3 +1,8 @@
+2017-08-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/53542
+	* expr.c (gfc_check_init_expr): Use the renamed name.
+
 2017-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	* check.c (gfc_check_num_images): Fix a pasto.
