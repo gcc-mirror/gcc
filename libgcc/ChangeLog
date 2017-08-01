@@ -1,5 +1,10 @@
 2017-08-01  Olivier Hainque  <hainque@adacore.com>
 
+	* config/t-vxworks (LIBGCC2_INCLUDES): Start with -I. after -nostdinc.
+	* config/t-vxworks7: Likewise.
+
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
 	* config/t-vxworks: Instead of redefining LIB2ADD,
 	augment LIB2ADDEH with vxlib.c and vxlib-tls.c.
 
