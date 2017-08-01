@@ -377,7 +377,7 @@
   "ps_muls1 %0, %1, %2"
   [(set_attr "type" "fp")])
 
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "gpc_reg_operand" "=f")
    (match_operand 1 "" "")]
   "TARGET_PAIRED_FLOAT"

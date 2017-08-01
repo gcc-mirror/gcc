@@ -254,7 +254,7 @@
 })
 
 ; vec_init
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand:V2SF 1 "")]
   "TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT"
@@ -282,7 +282,7 @@
 ;; emulated.  There is no other way to get a vector mode bitfield extract
 ;; currently.
 
-(define_insn "vec_extractv2sf"
+(define_insn "vec_extractv2sfsf"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(vec_select:SF (match_operand:V2SF 1 "register_operand" "f")
 		       (parallel
@@ -379,7 +379,7 @@
     rtx temp = gen_reg_rtx (V2SFmode);
     emit_insn (gen_mips_addr_ps (temp, operands[1], operands[1]));
     rtx lane = BYTES_BIG_ENDIAN ? const1_rtx : const0_rtx;
-    emit_insn (gen_vec_extractv2sf (operands[0], temp, lane));
+    emit_insn (gen_vec_extractv2sfsf (operands[0], temp, lane));
     DONE;
   })
 
@@ -757,7 +757,7 @@
   rtx temp = gen_reg_rtx (V2SFmode);
   mips_expand_vec_reduc (temp, operands[1], gen_sminv2sf3);
   rtx lane = BYTES_BIG_ENDIAN ? const1_rtx : const0_rtx;
-  emit_insn (gen_vec_extractv2sf (operands[0], temp, lane));
+  emit_insn (gen_vec_extractv2sfsf (operands[0], temp, lane));
   DONE;
 })
 
@@ -769,6 +769,6 @@
   rtx temp = gen_reg_rtx (V2SFmode);
   mips_expand_vec_reduc (temp, operands[1], gen_smaxv2sf3);
   rtx lane = BYTES_BIG_ENDIAN ? const1_rtx : const0_rtx;
-  emit_insn (gen_vec_extractv2sf (operands[0], temp, lane));
+  emit_insn (gen_vec_extractv2sfsf (operands[0], temp, lane));
   DONE;
 })

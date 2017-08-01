@@ -386,7 +386,8 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
      is hidden away in the vector lowering support in gimple.  */
-  icode = optab_handler (vec_init_optab, vmode);
+  icode = convert_optab_handler (vec_init_optab, vmode,
+				 GET_MODE_INNER (vmode));
   if (icode == CODE_FOR_nothing)
     return NULL;
 

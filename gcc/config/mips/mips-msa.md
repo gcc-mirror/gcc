@@ -231,7 +231,7 @@
    (V4SI  "uimm5")
    (V2DI  "uimm6")])
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><unitmode>"
   [(match_operand:MSA 0 "register_operand")
    (match_operand:MSA 1 "")]
   "ISA_HAS_MSA"
@@ -311,7 +311,7 @@
   DONE;
 })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><unitmode>"
   [(match_operand:<UNITMODE> 0 "register_operand")
    (match_operand:IMSA 1 "register_operand")
    (match_operand 2 "const_<indeximm>_operand")]
@@ -329,7 +329,7 @@
   DONE;
 })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><unitmode>"
   [(match_operand:<UNITMODE> 0 "register_operand")
    (match_operand:FMSA 1 "register_operand")
    (match_operand 2 "const_<indeximm>_operand")]

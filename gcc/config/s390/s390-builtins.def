@@ -450,12 +450,12 @@ OB_DEF_VAR (s390_vec_extract_u64,       s390_vlgvg,         0,                  
 OB_DEF_VAR (s390_vec_extract_b64,       s390_vlgvg,         0,                  O2_ELEM,            BT_OV_ULONGLONG_BV2DI_INT)
 OB_DEF_VAR (s390_vec_extract_dbl,       s390_vlgvg_dbl,     0,                  O2_ELEM,            BT_OV_DBL_V2DF_INT)                      /* vlgvg */
 
-B_DEF      (s390_vlgvb,                 vec_extractv16qi,   0,                  B_VX,               O2_ELEM,            BT_FN_UCHAR_UV16QI_INT)
-B_DEF      (s390_vlgvh,                 vec_extractv8hi,    0,                  B_VX,               O2_ELEM,            BT_FN_USHORT_UV8HI_INT)
-B_DEF      (s390_vlgvf,                 vec_extractv4si,    0,                  B_VX,               O2_ELEM,            BT_FN_UINT_UV4SI_INT)
-B_DEF      (s390_vlgvf_flt,             vec_extractv4sf,    0,                  B_INT | B_VXE,      O2_ELEM,            BT_FN_FLT_V4SF_INT)
-B_DEF      (s390_vlgvg,                 vec_extractv2di,    0,                  B_VX,               O2_ELEM,            BT_FN_ULONGLONG_UV2DI_INT)
-B_DEF      (s390_vlgvg_dbl,             vec_extractv2df,    0,                  B_INT | B_VX,       O2_ELEM,            BT_FN_DBL_V2DF_INT)
+B_DEF      (s390_vlgvb,                 vec_extractv16qiqi, 0,                  B_VX,               O2_ELEM,            BT_FN_UCHAR_UV16QI_INT)
+B_DEF      (s390_vlgvh,                 vec_extractv8hihi,  0,                  B_VX,               O2_ELEM,            BT_FN_USHORT_UV8HI_INT)
+B_DEF      (s390_vlgvf,                 vec_extractv4sisi,  0,                  B_VX,               O2_ELEM,            BT_FN_UINT_UV4SI_INT)
+B_DEF      (s390_vlgvf_flt,             vec_extractv4sfsf,  0,                  B_INT | B_VXE,      O2_ELEM,            BT_FN_FLT_V4SF_INT)
+B_DEF      (s390_vlgvg,                 vec_extractv2didi,  0,                  B_VX,               O2_ELEM,            BT_FN_ULONGLONG_UV2DI_INT)
+B_DEF      (s390_vlgvg_dbl,             vec_extractv2dfdf,  0,                  B_INT | B_VX,       O2_ELEM,            BT_FN_DBL_V2DF_INT)
 
 OB_DEF     (s390_vec_insert_and_zero,   s390_vec_insert_and_zero_s8,s390_vec_insert_and_zero_dbl,B_VX,BT_FN_OV4SI_INTCONSTPTR)
 OB_DEF_VAR (s390_vec_insert_and_zero_s8,s390_vllezb,        0,                  0,                  BT_OV_V16QI_SCHARCONSTPTR)

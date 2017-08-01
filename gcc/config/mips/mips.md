@@ -917,6 +917,11 @@
 			    (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
 			    (V2DF "DF")])
 
+;; As above, but in lower case.
+(define_mode_attr unitmode [(SF "sf") (DF "df") (V2SF "sf") (V4SF "sf")
+			    (V16QI "qi") (V8QI "qi") (V8HI "hi") (V4HI "hi")
+			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")])
+
 ;; This attribute gives the integer mode that has the same size as a
 ;; fixed-point mode.
 (define_mode_attr IMODE [(QQ "QI") (HQ "HI") (SQ "SI") (DQ "DI")

@@ -5617,9 +5617,9 @@
   DONE;
 })
 
-;; Standard pattern name vec_init<mode>.
+;; Standard pattern name vec_init<mode><Vel>.
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><Vel>"
   [(match_operand:VALL_F16 0 "register_operand" "")
    (match_operand 1 "" "")]
   "TARGET_SIMD"
@@ -5674,9 +5674,9 @@
  "urecpe\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "type" "neon_fp_recpe_<Vetype><q>")])
 
-;; Standard pattern name vec_extract<mode>.
+;; Standard pattern name vec_extract<mode><Vel>.
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><Vel>"
   [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "")
    (match_operand:VALL_F16 1 "register_operand" "")
    (match_operand:SI 2 "immediate_operand" "")]

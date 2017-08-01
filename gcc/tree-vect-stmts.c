@@ -6998,29 +6998,43 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	{
 	  if (group_size < nunits)
 	    {
-	      /* Avoid emitting a constructor of vector elements by performing
-		 the loads using an integer type of the same size,
-		 constructing a vector of those and then re-interpreting it
-		 as the original vector type.  This works around the fact
-		 that the vec_init optab was only designed for scalar
-		 element modes and thus expansion goes through memory.
-		 This avoids a huge runtime penalty due to the general
-		 inability to perform store forwarding from smaller stores
-		 to a larger load.  */
-	      unsigned lsize
-		= group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-	      machine_mode elmode = mode_for_size (lsize, MODE_INT, 0);
-	      machine_mode vmode = mode_for_vector (elmode,
-						    nunits / group_size);
-	      /* If we can't construct such a vector fall back to
-		 element loads of the original vector type.  */
+	      /* First check if vec_init optab supports construction from
+		 vector elts directly.  */
+	      machine_mode elmode = TYPE_MODE (TREE_TYPE (vectype));
+	      machine_mode vmode = mode_for_vector (elmode, group_size);
 	      if (VECTOR_MODE_P (vmode)
-		  && optab_handler (vec_init_optab, vmode) != CODE_FOR_nothing)
+		  && (convert_optab_handler (vec_init_optab,
+					     TYPE_MODE (vectype), vmode)
+		      != CODE_FOR_nothing))
 		{
 		  nloads = nunits / group_size;
 		  lnel = group_size;
-		  ltype = build_nonstandard_integer_type (lsize, 1);
-		  lvectype = build_vector_type (ltype, nloads);
+		  ltype = build_vector_type (TREE_TYPE (vectype), group_size);
+		}
+	      else
+		{
+		  /* Otherwise avoid emitting a constructor of vector elements
+		     by performing the loads using an integer type of the same
+		     size, constructing a vector of those and then
+		     re-interpreting it as the original vector type.
+		     This avoids a huge runtime penalty due to the general
+		     inability to perform store forwarding from smaller stores
+		     to a larger load.  */
+		  unsigned lsize
+		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
+		  elmode = mode_for_size (lsize, MODE_INT, 0);
+		  vmode = mode_for_vector (elmode, nunits / group_size);
+		  /* If we can't construct such a vector fall back to
+		     element loads of the original vector type.  */
+		  if (VECTOR_MODE_P (vmode)
+		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
+			  != CODE_FOR_nothing))
+		    {
+		      nloads = nunits / group_size;
+		      lnel = group_size;
+		      ltype = build_nonstandard_integer_type (lsize, 1);
+		      lvectype = build_vector_type (ltype, nloads);
+		    }
 		}
 	    }
 	  else
