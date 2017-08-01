@@ -3289,19 +3289,22 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 {
   gimple *first_stmt;
   int number_of_vects = 0, i;
+  unsigned int child_index = 0;
   HOST_WIDE_INT lhs_size_unit, rhs_size_unit;
   slp_tree child = NULL;
   vec<tree> vec_defs;
   tree oprnd;
+  bool vectorized_defs;
   bool first_iteration = true;
 
   first_stmt = SLP_TREE_SCALAR_STMTS (slp_node)[0];
   FOR_EACH_VEC_ELT (ops, i, oprnd)
     {
-      bool vectorized_defs = false;
-
       if (oprnd == NULL)
 	{
+	  /* Only vectorizable_reduction will call us with a NULL op which
+	     will always match the reduction operand for which we have no
+	     SLP child.  */
 	  vec_defs = vNULL;
 	  vec_defs.create (0);
 	  vec_oprnds->quick_push (vec_defs);
@@ -3312,9 +3315,10 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 	 node or we need to create them (for invariants and constants).  We
 	 check if the LHS of the first stmt of the next child matches OPRND.
 	 If it does, we found the correct child.  Otherwise, we call
-	 vect_get_constant_vectors ().  */
-      for (unsigned int child_index = 0;
-	   child_index < SLP_TREE_CHILDREN (slp_node).length (); child_index++)
+	 vect_get_constant_vectors (), and not advance CHILD_INDEX in order
+	 to check this child node for the next operand.  */
+      vectorized_defs = false;
+      if (SLP_TREE_CHILDREN (slp_node).length () > child_index)
         {
           child = SLP_TREE_CHILDREN (slp_node)[child_index];
 
@@ -3334,25 +3338,30 @@ vect_get_slp_defs (vec<tree> ops, slp_tree slp_node,
 		     statements.  */
 		  number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (child);
 		  vectorized_defs = true;
-		  break;
+		  child_index++;
 		}
 	    }
+	  else
+	    child_index++;
         }
 
-      if (!vectorized_defs && first_iteration)
-	{
-	  number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	  /* Number of vector stmts was calculated according to LHS in
-	     vect_schedule_slp_instance (), fix it by replacing LHS with
-	     RHS, if necessary.  See vect_get_smallest_scalar_type () for
-	     details.  */
-	  vect_get_smallest_scalar_type (first_stmt, &lhs_size_unit,
-					 &rhs_size_unit);
-	  if (rhs_size_unit != lhs_size_unit)
-	    {
-	      number_of_vects *= rhs_size_unit;
-	      number_of_vects /= lhs_size_unit;
-	    }
+      if (!vectorized_defs)
+        {
+          if (first_iteration)
+            {
+              number_of_vects = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
+              /* Number of vector stmts was calculated according to LHS in
+                 vect_schedule_slp_instance (), fix it by replacing LHS with
+                 RHS, if necessary.  See vect_get_smallest_scalar_type () for
+                 details.  */
+              vect_get_smallest_scalar_type (first_stmt, &lhs_size_unit,
+                                             &rhs_size_unit);
+              if (rhs_size_unit != lhs_size_unit)
+                {
+                  number_of_vects *= rhs_size_unit;
+                  number_of_vects /= lhs_size_unit;
+                }
+            }
         }
 
       /* Allocate memory for vectorized defs.  */

@@ -1,3 +1,10 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71752
+	PR tree-optimization/81633
+	* tree-vect-slp.c (vect_get_slp_defs): Handle null operands
+	in the original suggested way.
+
 2017-08-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/80769

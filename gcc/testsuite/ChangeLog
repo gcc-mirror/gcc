@@ -1,3 +1,9 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71752
+	PR tree-optimization/81633
+	* gcc.dg/vect/pr81633.c: New testcase.
+
 2017-08-01  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/80769
