@@ -1,3 +1,16 @@
+2017-08-01  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* common.opt (ftree-vectorize): No longer set flag_tree_vectorize.
+	(ftree-loop-vectorize): Set as EnabledBy ftree-vectorize.
+	(ftree-slp-vectorize): Likewise.
+	* omp-expand (expand_omp_simd): Remove flag_tree_vectorize, as it
+	can no longer be set independent of flag_tree_loop_vectorize.
+	* omp-general.c (emp_max_vf): Likewise.
+	* opts.c (enable_fdo_optimizations): Remove references to
+	flag_tree_vectorize, these are now implicit.
+	(common_handle_option): Remove handling for OPT_ftree_vectorize,
+	and leave it for the options machinery.
+
 2017-08-01  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/70140

@@ -4851,8 +4851,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	 the loop.  */
       if ((flag_tree_loop_vectorize
-	   || (!global_options_set.x_flag_tree_loop_vectorize
-	       && !global_options_set.x_flag_tree_vectorize))
+	   || !global_options_set.x_flag_tree_loop_vectorize)
 	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
