@@ -1,5 +1,13 @@
 2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-ada-spec.c (has_static_fields): Look only into fields.
+	(dump_generic_ada_node): Small tweak.
+	(dump_nested_types): Look only into fields.
+	(print_ada_declaration): Look only into methods.  Small tweak.
+	(print_ada_struct_decl): Look only into fields.  Use DECL_VIRTUAL_P.
+
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-ada-spec.c (print_generic_ada_decl): Pass correctly-typed constant.
 	(dump_ada_function_declaration): Likewise.
 	(dump_generic_ada_node): Likewise.
