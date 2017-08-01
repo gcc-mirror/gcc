@@ -1,5 +1,10 @@
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/81627
+	* gcc.dg/tree-ssa/pr81627.c: New.
+
+2017-08-01  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/81620
 	* gcc.dg/tree-ssa/pr81620-1.c: New.
 	* gcc.dg/tree-ssa/pr81620-2.c: New.

@@ -1,5 +1,11 @@
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
+	PR tree-optimization/81627
+	* tree-predcom.c (prepare_finalizers): Always rewrite into loop
+	closed ssa form for store-store chain.
+
+2017-08-01  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/81620
 	* tree-predcom.c (add_ref_to_chain): Don't set has_max_use_after
 	for store-store chain.
