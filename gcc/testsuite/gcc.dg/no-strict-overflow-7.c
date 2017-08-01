@@ -3,8 +3,8 @@
 
 /* Source: Ian Lance Taylor.  Dual of strict-overflow-6.c.  */
 
-/* We can only simplify the conditional when using strict overflow
-   semantics.  */
+/* We can simplify the conditional because pointer overflow always has
+   undefined semantics.  */
 
 int
 foo (char* p)
@@ -12,4 +12,4 @@ foo (char* p)
   return p + 1000 < p;
 }
 
-/* { dg-final { scan-tree-dump "\[+\]\[ \]*1000" "optimized" } } */
+/* { dg-final { scan-tree-dump "return 0" "optimized" } } */
