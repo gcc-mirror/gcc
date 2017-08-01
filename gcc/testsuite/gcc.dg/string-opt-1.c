@@ -1,4 +1,4 @@
-/* Ensure mempcpy is "optimized" into memcpy followed by addition.  */
+/* Ensure mempcpy is not "optimized" into memcpy followed by addition.  */
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
 
@@ -8,5 +8,4 @@ fn (char *x, char *y, int z)
   return __builtin_mempcpy (x, y, z);
 }
 
-/* { dg-final { scan-assembler-not "mempcpy" } } */
-/* { dg-final { scan-assembler "memcpy" } } */
+/* { dg-final { scan-assembler-not "memcpy" } } */
