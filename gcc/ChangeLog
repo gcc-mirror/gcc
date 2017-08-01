@@ -1,3 +1,129 @@
+2017-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* optabs.def (vec_extract_optab, vec_init_optab): Change from
+	a direct optab to conversion optab.
+	* optabs.c (expand_vector_broadcast): Use convert_optab_handler
+	with GET_MODE_INNER as last argument instead of optab_handler.
+	* expmed.c (extract_bit_field_1): Likewise.  Use vector from
+	vector extraction if possible and optab is available.
+	* expr.c (store_constructor): Use convert_optab_handler instead
+	of optab_handler.  Use vector initialization from smaller
+	vectors if possible and optab is available.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	* doc/md.texi (vec_extract, vec_init): Document that the optabs
+	now have two modes.
+	* config/i386/i386.c (ix86_expand_vector_init): Handle expansion
+	of vec_init from half-sized vectors with the same element mode.
+	* config/i386/sse.md (ssehalfvecmode): Add V4TI case.
+	(ssehalfvecmodelower, ssescalarmodelower): New mode attributes.
+	(reduc_plus_scal_v8df, reduc_plus_scal_v4df, reduc_plus_scal_v2df,
+	reduc_plus_scal_v16sf, reduc_plus_scal_v8sf, reduc_plus_scal_v4sf,
+	reduc_<code>_scal_<mode>, reduc_umin_scal_v8hi): Add element mode
+	after mode in gen_vec_extract* calls.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><ssescalarmodelower>): ... this.
+	(vec_extract<mode><ssehalfvecmodelower>): New expander.
+	(rotl<mode>3, rotr<mode>3, <shift_insn><mode>3, ashrv2di3): Add
+	element mode after mode in gen_vec_init* calls.
+	(VEC_INIT_HALF_MODE): New mode iterator.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><ssescalarmodelower>): ... this.
+	(vec_init<mode><ssehalfvecmodelower>): New expander.
+	* config/i386/mmx.md (vec_extractv2sf): Renamed to ...
+	(vec_extractv2sfsf): ... this.
+	(vec_initv2sf): Renamed to ...
+	(vec_initv2sfsf): ... this.
+	(vec_extractv2si): Renamed to ...
+	(vec_extractv2sisi): ... this.
+	(vec_initv2si): Renamed to ...
+	(vec_initv2sisi): ... this.
+	(vec_extractv4hi): Renamed to ...
+	(vec_extractv4hihi): ... this.
+	(vec_initv4hi): Renamed to ...
+	(vec_initv4hihi): ... this.
+	(vec_extractv8qi): Renamed to ...
+	(vec_extractv8qiqi): ... this.
+	(vec_initv8qi): Renamed to ...
+	(vec_initv8qiqi): ... this.
+	* config/rs6000/vector.md (VEC_base_l): New mode attribute.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><VEC_base_l>): ... this.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><VEC_base_l>): ... this.
+	* config/rs6000/paired.md (vec_initv2sf): Renamed to ...
+	(vec_initv2sfsf): ... this.
+	* config/rs6000/altivec.md (splitter, altivec_copysign_v4sf3,
+	vec_unpacku_hi_v16qi, vec_unpacku_hi_v8hi, vec_unpacku_lo_v16qi,
+	vec_unpacku_lo_v8hi, mulv16qi3, altivec_vreve<mode>2): Add
+	element mode after mode in gen_vec_init* calls.
+	* config/aarch64/aarch64-simd.md (vec_init<mode>): Renamed to ...
+	(vec_init<mode><Vel>): ... this.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><Vel>): ... this.
+	* config/aarch64/iterators.md (Vel): New mode attribute.
+	* config/s390/s390.c (s390_expand_vec_strlen, s390_expand_vec_movstr):
+	Add element mode after mode in gen_vec_extract* calls.
+	* config/s390/vector.md (non_vec_l): New mode attribute.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><non_vec_l>): ... this.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><non_vec_l>): ... this.
+	* config/s390/s390-builtins.def (s390_vlgvb, s390_vlgvh, s390_vlgvf,
+	s390_vlgvf_flt, s390_vlgvg, s390_vlgvg_dbl): Add element mode after
+	vec_extract mode.
+	* config/arm/iterators.md (V_elem_l): New mode attribute.
+	* config/arm/neon.md (vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><V_elem_l>): ... this.
+	(vec_extractv2di): Renamed to ...
+	(vec_extractv2didi): ... this.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><V_elem_l>): ... this.
+	(reduc_plus_scal_<mode>, reduc_plus_scal_v2di, reduc_smin_scal_<mode>,
+	reduc_smax_scal_<mode>, reduc_umin_scal_<mode>,
+	reduc_umax_scal_<mode>, neon_vget_lane<mode>, neon_vget_laneu<mode>):
+	Add element mode after gen_vec_extract* calls.
+	* config/mips/mips-msa.md (vec_init<mode>): Renamed to ...
+	(vec_init<mode><unitmode>): ... this.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><unitmode>): ... this.
+	* config/mips/loongson.md (vec_init<mode>): Renamed to ...
+	(vec_init<mode><unitmode>): ... this.
+	* config/mips/mips-ps-3d.md (vec_initv2sf): Renamed to ...
+	(vec_initv2sfsf): ... this.
+	(vec_extractv2sf): Renamed to ...
+	(vec_extractv2sfsf): ... this.
+	(reduc_plus_scal_v2sf, reduc_smin_scal_v2sf, reduc_smax_scal_v2sf):
+	Add element mode after gen_vec_extract* calls.
+	* config/mips/mips.md (unitmode): New mode iterator.
+	* config/spu/spu.c (spu_expand_prologue, spu_allocate_stack,
+	spu_builtin_extract): Add element mode after gen_vec_extract* calls.
+	* config/spu/spu.md (inner_l): New mode attribute.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><inner_l>): ... this.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><inner_l>): ... this.
+	* config/sparc/sparc.md (veltmode): New mode iterator.
+	(vec_init<VMALL:mode>): Renamed to ...
+	(vec_init<VMALL:mode><VMALL:veltmode>): ... this.
+	* config/ia64/vect.md (vec_initv2si): Renamed to ...
+	(vec_initv2sisi): ... this.
+	(vec_initv2sf): Renamed to ...
+	(vec_initv2sfsf): ... this.
+	(vec_extractv2sf): Renamed to ...
+	(vec_extractv2sfsf): ... this.
+	* config/powerpcspe/vector.md (VEC_base_l): New mode attribute.
+	(vec_init<mode>): Renamed to ...
+	(vec_init<mode><VEC_base_l>): ... this.
+	(vec_extract<mode>): Renamed to ...
+	(vec_extract<mode><VEC_base_l>): ... this.
+	* config/powerpcspe/paired.md (vec_initv2sf): Renamed to ...
+	(vec_initv2sfsf): ... this.
+	* config/powerpcspe/altivec.md (splitter, altivec_copysign_v4sf3,
+	vec_unpacku_hi_v16qi, vec_unpacku_hi_v8hi, vec_unpacku_lo_v16qi,
+	vec_unpacku_lo_v8hi, mulv16qi3): Add element mode after mode in
+	gen_vec_init* calls.
+
 2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81297

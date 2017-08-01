@@ -90,6 +90,17 @@
 			  (V1DF "DF") (V2DF "DF")
 			  (V1TF "TF") (TF "TF")])
 
+; Like above, but in lower case.
+(define_mode_attr non_vec_l[(V1QI "qi") (V2QI "qi") (V4QI "qi") (V8QI "qi")
+			    (V16QI "qi")
+			    (V1HI "hi") (V2HI "hi") (V4HI "hi") (V8HI "hi")
+			    (V1SI "si") (V2SI "si") (V4SI "si")
+			    (V1DI "di") (V2DI "di")
+			    (V1TI "ti") (TI "ti")
+			    (V1SF "sf") (V2SF "sf") (V4SF "sf")
+			    (V1DF "df") (V2DF "df")
+			    (V1TF "tf") (TF "tf")])
+
 ; The instruction suffix for integer instructions and instructions
 ; which do not care about whether it is floating point or integer.
 (define_mode_attr bhfgq[(V1QI "b") (V2QI "b") (V4QI "b") (V8QI "b") (V16QI "b")
@@ -453,7 +464,7 @@
 ; FIXME: Support also vector mode operands for 0
 ; FIXME: This should be (vec_select ..) or something but it does only allow constant selectors :(
 ; This is used via RTL standard name as well as for expanding the builtin
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><non_vec_l>"
   [(set (match_operand:<non_vec> 0 "nonimmediate_operand" "")
 	(unspec:<non_vec> [(match_operand:V  1 "register_operand" "")
 			   (match_operand:SI 2 "nonmemory_operand" "")]
@@ -485,7 +496,7 @@
   "vlgv<bhfgq>\t%0,%v1,%Y3(%2)"
   [(set_attr "op_type" "VRS")])
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><non_vec_l>"
   [(match_operand:V_128 0 "register_operand" "")
    (match_operand:V_128 1 "nonmemory_operand" "")]
   "TARGET_VX"

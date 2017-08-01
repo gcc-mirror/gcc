@@ -44318,6 +44318,34 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
   int i;
   rtx x;
 
+  /* Handle first initialization from vector elts.  */
+  if (n_elts != XVECLEN (vals, 0))
+    {
+      rtx subtarget = target;
+      x = XVECEXP (vals, 0, 0);
+      gcc_assert (GET_MODE_INNER (GET_MODE (x)) == inner_mode);
+      if (GET_MODE_NUNITS (GET_MODE (x)) * 2 == n_elts)
+	{
+	  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
+	  if (inner_mode == QImode || inner_mode == HImode)
+	    {
+	      mode = mode_for_vector (SImode,
+				      n_elts * GET_MODE_SIZE (inner_mode) / 4);
+	      inner_mode
+		= mode_for_vector (SImode,
+				   n_elts * GET_MODE_SIZE (inner_mode) / 8);
+	      ops[0] = gen_lowpart (inner_mode, ops[0]);
+	      ops[1] = gen_lowpart (inner_mode, ops[1]);
+	      subtarget = gen_reg_rtx (mode);
+	    }
+	  ix86_expand_vector_init_concat (mode, subtarget, ops, 2);
+	  if (subtarget != target)
+	    emit_move_insn (target, gen_lowpart (GET_MODE (target), subtarget));
+	  return;
+	}
+      gcc_unreachable ();
+    }
+
   for (i = 0; i < n_elts; ++i)
     {
       x = XVECEXP (vals, 0, i);
