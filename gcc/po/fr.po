@@ -133,7 +133,7 @@ msgstr ""
 "Project-Id-Version: gcc 7.1.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-05-01 22:24+0000\n"
-"PO-Revision-Date: 2017-05-02 18:16+0200\n"
+"PO-Revision-Date: 2017-07-31 21:23+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -18582,7 +18582,7 @@ msgstr "%<_Cilk_spawn%> attendu avant %<_Cilk_sync%>"
 #: gimplify.c:12201
 #, gcc-internal-format
 msgid "gimplification failed"
-msgstr "la gimplification a échouée"
+msgstr "la gimplification a échoué"
 
 #: gimplify.c:12729
 #, gcc-internal-format
@@ -18637,7 +18637,7 @@ msgstr "Le nom HSA SSA est défini par l'instruction qui est censée l'utiliser"
 #: hsa-gen.c:1189 hsa-gen.c:1202
 #, gcc-internal-format
 msgid "HSA SSA verification failed"
-msgstr "La vérification HSA SSA a échouée"
+msgstr "La vérification HSA SSA a échoué"
 
 #: hsa-gen.c:1198
 #, gcc-internal-format
@@ -18652,7 +18652,7 @@ msgstr "L'instruction HSA utilise un registre qui n'est pas parmi les utilisatio
 #: hsa-gen.c:1462
 #, gcc-internal-format
 msgid "HSA instruction verification failed"
-msgstr "La vérification de l'instruction HSA a échouée"
+msgstr "La vérification de l'instruction HSA a échoué"
 
 #: input.c:1147
 #, gcc-internal-format, gfc-internal-format
@@ -59197,7 +59197,7 @@ msgstr "-fwpa et -fltrans sont mutuellement exclusifs"
 #: lto/lto-object.c:107
 #, gcc-internal-format, gfc-internal-format
 msgid "open %s failed: %s"
-msgstr "l'ouverture de %s a échouée: %s"
+msgstr "l'ouverture de %s a échoué: %s"
 
 #: lto/lto-object.c:151 lto/lto-object.c:186 lto/lto-object.c:283
 #: lto/lto-object.c:340 lto/lto-object.c:364
@@ -59369,7 +59369,7 @@ msgstr "waitpid a échoué"
 #: lto/lto.c:2316
 #, gcc-internal-format
 msgid "streaming subprocess failed"
-msgstr "la mise en ligne du sous processus a échouée"
+msgstr "la mise en ligne du sous processus a échoué"
 
 #: lto/lto.c:2319
 #, gcc-internal-format
