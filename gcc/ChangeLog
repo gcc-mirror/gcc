@@ -1,5 +1,12 @@
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
+	* tree.h (POINTER_TYPE_OVERFLOW_UNDEFINED): Delete.
+	* fold-const.c (fold_comparison, fold_binary_loc): Delete use of
+	above macro.
+	* match.pd: Ditto in address comparison pattern.
+
+2017-08-01  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/81627
 	* tree-predcom.c (prepare_finalizers): Always rewrite into loop
 	closed ssa form for store-store chain.

@@ -1,5 +1,10 @@
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
+	* gcc.dg/no-strict-overflow-7.c: Revise comment and test string.
+	* gcc.dg/tree-ssa/pr81388-1.c: Ditto.
+
+2017-08-01  Bin Cheng  <bin.cheng@arm.com>
+
 	PR tree-optimization/81627
 	* gcc.dg/tree-ssa/pr81627.c: New.
 
