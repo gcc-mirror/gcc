@@ -2983,11 +2983,11 @@ prepare_finalizers (struct loop *loop, vec<chain_p> chains)
       if (prepare_finalizers_chain (loop, chain))
 	{
 	  i++;
-	  /* We don't corrupt loop closed ssa form for store elimination
-	     chain if eliminated stores only store loop invariant values
-	     into memory.  */
-	  if (!chain->inv_store_elimination)
-	    loop_closed_ssa |= (!chain->inv_store_elimination);
+	  /* Be conservative, assume loop closed ssa form is corrupted
+	     by store-store chain.  Though it's not always the case if
+	     eliminated stores only store loop invariant values into
+	     memory.  */
+	  loop_closed_ssa = true;
 	}
       else
 	{
