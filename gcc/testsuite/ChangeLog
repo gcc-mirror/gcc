@@ -1,5 +1,10 @@
 2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/81641
+	* gcc.target/i386/pr81641.c: New test.
+
+2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
 	PR target/81639
 	* gcc.target/i386/pr81639.c: New test.
 
