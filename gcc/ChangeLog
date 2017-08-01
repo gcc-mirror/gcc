@@ -1,3 +1,30 @@
+2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
+            Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (arm-wrs-vxworks*): Rework to handle arm-wrs-vxworks7 as
+	well as arm-wrs-vxworks. Update target_cpu_name from arm6 (arch v3) to
+	arm8 (arch v4).
+	* config/arm/vxworks.h (MAYBE_TARGET_BPABI_CPP_BUILTINS): New, helper
+	for TARGET_OS_CPP_BUILTIN.
+	(TARGET_OS_CPP_BUILTIN): Invoke MAYBE_TARGET_BPABI_CPP_BUILTINS(),
+	refine CPU definitions for arm_arch5 and add those for arm_arch6 and
+	arm_arch7.
+	(MAYBE_ASM_ABI_SPEC): New, helper for SUBTARGET_EXTRA_ASM_SPEC,
+	passing required abi options to the assembler for EABI configurations.
+	(EXTRA_CC1_SPEC): New macro, to help prevent the implicit production
+	of .text.hot and .text.unlikely sections for kernel modules when
+	using ARM style exceptions.
+	(CC1_SPEC): Remove obsolete attempt at mimicking Diab toolchain
+	options. Add EXTRA_CC1_SPEC.
+	(VXWORKS_ENDIAN_SPEC): Adjust comment and remove handling of Diab
+	toolchain options.
+	(DWARF2_UNWIND_INFO): Redefine to handle the pre/post VxWorks 7
+	transition.
+	(ARM_TARGET2_DWARF_FORMAT): Define.
+	* config/arm/t-vxworks: Adjust multilib control to removal of the
+	Diab command line options.
+
 2017-08-01  Martin Liska  <mliska@suse.cz>
 
 	PR gcov-profile/81561
