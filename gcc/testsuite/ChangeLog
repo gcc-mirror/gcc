@@ -1,3 +1,8 @@
+2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81639
+	* gcc.target/i386/pr81639.c: New test.
+
 2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-dce-3.c: Adjust.

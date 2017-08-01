@@ -1,3 +1,9 @@
+2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81639
+	* config/i386/i386.c (ix86_funciton_naked): New prototype.
+	(ix86_function_ok_for_sibcall): Return false for naked functions.
+
 2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-pre.c (print_pre_expr): Handle NULL expr.
@@ -187,14 +193,16 @@
 	vector double vec_xl_be (signed long long, double *);
 	vector float vec_xl_be (signed long long, float *);
 	* config/rs6000/altivec.h (vec_xl_be): Add #define.
-	* config/rs6000/rs6000-builtin.def (XL_BE_V16QI, XL_BE_V8HI, XL_BE_V4SI,
-	XL_BE_V2DI, XL_BE_V4SF, XL_BE_V2DF, XL_BE): Add definitions for the builtins.
+	* config/rs6000/rs6000-builtin.def (XL_BE_V16QI, XL_BE_V8HI, XL_BE_V4SI)
+	XL_BE_V2DI, XL_BE_V4SF, XL_BE_V2DF, XL_BE): Add definitions
+	for the builtins.
 	* config/rs6000/rs6000.c (altivec_expand_xl_be_builtin): Add function.
-	(altivec_expand_builtin): Add switch statement to call altivec_expand_xl_be
-	for each builtin.
+	(altivec_expand_builtin): Add switch statement to call
+	altivec_expand_xl_be for each builtin.
 	(altivec_init_builtins): Add def_builtin for _builtin_vsx_le_be_v8hi,
-	__builtin_vsx_le_be_v4si, __builtin_vsx_le_be_v2di, __builtin_vsx_le_be_v4sf,
-	__builtin_vsx_le_be_v2df, __builtin_vsx_le_be_v16qi.
+	__builtin_vsx_le_be_v4si, __builtin_vsx_le_be_v2di,
+	__builtin_vsx_le_be_v4sf, __builtin_vsx_le_be_v2df,
+	__builtin_vsx_le_be_v16qi.
 	* doc/extend.texi: Update the built-in documentation file for the
 	new built-in functions.
 
