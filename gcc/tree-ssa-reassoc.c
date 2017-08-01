@@ -2941,17 +2941,26 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	{
 	case GT_EXPR:
 	case GE_EXPR:
-	  if (!ranges[i].in_p)
-	    std::swap (rhs1, rhs2);
+	case LT_EXPR:
+	case LE_EXPR:
+	  break;
+	default:
+	  continue;
+	}
+      if (ranges[i].in_p)
+	ccode = invert_tree_comparison (ccode, false);
+      switch (ccode)
+	{
+	case GT_EXPR:
+	case GE_EXPR:
+	  std::swap (rhs1, rhs2);
 	  ccode = swap_tree_comparison (ccode);
 	  break;
 	case LT_EXPR:
 	case LE_EXPR:
-	  if (ranges[i].in_p)
-	    std::swap (rhs1, rhs2);
 	  break;
 	default:
-	  continue;
+	  gcc_unreachable ();
 	}
 
       int *idx = map->get (rhs1);
@@ -2998,8 +3007,14 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	  fprintf (dump_file, "\n");
 	}
 
-      if (ranges[i].in_p)
-	std::swap (rhs1, rhs2);
+      operand_entry *oe = (*ops)[ranges[i].idx];
+      ranges[i].in_p = 0;
+      if (opcode == BIT_IOR_EXPR
+	  || (opcode == ERROR_MARK && oe->rank == BIT_IOR_EXPR))
+	{
+	  ranges[i].in_p = 1;
+	  ccode = invert_tree_comparison (ccode, false);
+	}
 
       unsigned int uid = gimple_uid (stmt);
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -3026,7 +3041,6 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	}
       else
 	{
-	  operand_entry *oe = (*ops)[ranges[i].idx];
 	  tree ctype = oe->op ? TREE_TYPE (oe->op) : boolean_type_node;
 	  if (!INTEGRAL_TYPE_P (ctype)
 	      || (TREE_CODE (ctype) != BOOLEAN_TYPE
@@ -3048,7 +3062,7 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	  ranges[i].high = ranges[i].low;
 	}
       ranges[i].strict_overflow_p = false;
-      operand_entry *oe = (*ops)[ranges[*idx].idx];
+      oe = (*ops)[ranges[*idx].idx];
       /* Now change all the other range test immediate uses, so that
 	 those tests will be optimized away.  */
       if (opcode == ERROR_MARK)
