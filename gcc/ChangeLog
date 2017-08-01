@@ -1,3 +1,9 @@
+2017-08-01  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81654
+	* config/i386/i386.c (ix86_set_func_type): Disallow naked
+	attribute with interrupt attribute.
+
 2017-08-01  Andrew Pinski  <apinski@cavium.com>
 
 	* tree-ssa-scopedtables.c (hashable_expr_equal_p): Check
