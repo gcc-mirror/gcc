@@ -1,3 +1,8 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* gcc.dg/torture/pr81181.c: New testcase.
+
 2017-08-01  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/70140

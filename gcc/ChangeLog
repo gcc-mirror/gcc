@@ -1,3 +1,9 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* tree-ssa-pre.c (compute_antic_aux): Defer clean() to ...
+	(compute_antic): ... end of iteration here.
+
 2017-08-01  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* common.opt (ftree-vectorize): No longer set flag_tree_vectorize.
