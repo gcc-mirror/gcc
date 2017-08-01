@@ -4919,9 +4919,11 @@ gfc_convert_type_warn (gfc_expr *expr, gfc_typespec *ts, int eflag, int wflag)
   if (ts->type == BT_UNKNOWN)
     goto bad;
 
-  /* NULL and zero size arrays get their type here.  */
-  if (expr->expr_type == EXPR_NULL
-      || (expr->expr_type == EXPR_ARRAY && expr->value.constructor == NULL))
+  /* NULL and zero size arrays get their type here, unless they already have a
+     typespec.  */
+  if ((expr->expr_type == EXPR_NULL
+       || (expr->expr_type == EXPR_ARRAY && expr->value.constructor == NULL))
+      && expr->ts.type == BT_UNKNOWN)
     {
       /* Sometimes the RHS acquire the type.  */
       expr->ts = *ts;
