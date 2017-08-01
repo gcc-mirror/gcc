@@ -1,5 +1,21 @@
 2017-08-01  Martin Liska  <mliska@suse.cz>
 
+	PR middle-end/70140
+	* builtins.c (expand_builtin_memcpy_args): Remove.
+	(expand_builtin_memcpy): Call newly added function
+	expand_builtin_memory_copy_args.
+	(expand_builtin_memcpy_with_bounds): Likewise.
+	(expand_builtin_mempcpy): Remove last argument.
+	(expand_builtin_mempcpy_with_bounds): Likewise.
+	(expand_builtin_memory_copy_args): New function created from
+	expand_builtin_mempcpy_args with small modifications.
+	(expand_builtin_mempcpy_args): Remove.
+	(expand_builtin_stpcpy): Remove unused argument.
+	(expand_builtin): Likewise.
+	(expand_builtin_with_bounds): Likewise.
+
+2017-08-01  Martin Liska  <mliska@suse.cz>
+
 	Revert r250771
 	Make mempcpy more optimal (PR middle-end/70140).
 
