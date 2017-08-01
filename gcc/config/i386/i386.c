@@ -94,6 +94,7 @@ static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static rtx legitimize_pe_coff_symbol (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static bool ix86_save_reg (unsigned int, bool, bool);
+static bool ix86_function_naked (const_tree);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -7928,6 +7929,9 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   tree type, decl_or_type;
   rtx a, b;
   bool bind_global = decl && !targetm.binds_local_p (decl);
+
+  if (ix86_function_naked (current_function_decl))
+    return false;
 
   /* Sibling call isn't OK if there are no caller-saved registers
      since all registers must be preserved before return.  */
