@@ -1,3 +1,8 @@
+2017-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c
+	(aarch64_can_const_movi_rtx_p): Move 0 check.
+
 2017-08-01  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree.h (POINTER_TYPE_OVERFLOW_UNDEFINED): Delete.
