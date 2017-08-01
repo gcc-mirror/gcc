@@ -1,3 +1,9 @@
+2017-08-01  Andrew Pinski  <apinski@cavium.com>
+
+	* tree-ssa-scopedtables.c (hashable_expr_equal_p): Check
+	BIT_INSERT_EXPR's operand 1
+	to see if the types precision matches.
+
 2017-08-01  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/70140
