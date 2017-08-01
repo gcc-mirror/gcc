@@ -1,3 +1,10 @@
+2017-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/81588
+	* gcc.dg/tree-ssa/pr81588.c: New test.
+	* gcc.dg/pr81588.c: New test.
+	* gcc.c-torture/execute/pr81588.c: New test.
+
 2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81297

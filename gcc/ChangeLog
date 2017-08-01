@@ -1,5 +1,13 @@
 2017-08-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81588
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): If
+	ranges[i].in_p, invert comparison code ccode.  For >/>=,
+	swap rhs1 and rhs2 and comparison code unconditionally,
+	for </<= don't do that.  Don't swap rhs1/rhs2 again if
+	ranges[i].in_p, instead invert comparison code ccode if
+	opcode or oe->rank is BIT_IOR_EXPR.
+
 	PR target/80846
 	* optabs.def (vec_extract_optab, vec_init_optab): Change from
 	a direct optab to conversion optab.
