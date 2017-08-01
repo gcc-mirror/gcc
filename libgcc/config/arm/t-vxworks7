@@ -1,0 +1,1 @@
+LIB2ADDEH += $(srcdir)/config/arm/unwind-arm-vxworks.c

@@ -388,9 +388,18 @@ arc*-*-linux*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	extra_parts="$extra_parts crttls.o"
 	;;
-arm-wrs-vxworks)
+arm-wrs-vxworks|arm-wrs-vxworks7)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
+	case ${host} in
+	*-*-vxworks7)
+	  # Note that arm/t-bpabi will reset the LIB2ADDEH macro.
+	  # This is intentional.
+	  tmake_file="$tmake_file arm/t-bpabi arm/t-vxworks7"
+	  tm_file="$tm_file arm/bpabi-lib.h"
+	  unwind_header=config/arm/unwind-arm.h
+	  ;;
+	esac
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix arm/t-elf"
