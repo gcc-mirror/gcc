@@ -4523,7 +4523,7 @@
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
      src half words 0,1,2,3 for the conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
 					  operands[1], mask));
   emit_insn (gen_vsx_xvcvhpsp (operands[0], tmp));
@@ -4552,7 +4552,7 @@
      inputs in half words 1,3,5,7 (IBM numbering).  Use xxperm to move
      src half words 4,5,6,7 for the conversion instruction.  */
   v = gen_rtvec_v (16, rvals);
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_v8hiv16qi (tmp, operands[1],
 					  operands[1], mask));
   emit_insn (gen_vsx_xvcvhpsp (operands[0], tmp));

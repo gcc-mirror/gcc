@@ -1,3 +1,10 @@
+2017-08-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/80846
+	* config/rs6000/vsx.md (vextract_fp_from_shorth,
+	vextract_fp_from_shortl): Add element mode after mode in gen_vec_init*
+	calls.
+
 2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
             Doug Rupp  <rupp@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
