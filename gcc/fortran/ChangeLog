@@ -1,3 +1,9 @@
+2017-08-01  Thomas König  <tkoenig@gcc.gnu.org>
+
+	PR fortran/79312
+	* intrisic.c (gfc_convert_type_warn):  Only set typespec for
+	empty array constructors which don't have it already.
+
 2017-08-01  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/45435
