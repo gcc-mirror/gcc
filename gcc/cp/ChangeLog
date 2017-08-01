@@ -1,3 +1,7 @@
+2017-07-31  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (declare_global_var): Set DECL_CONTEXT.
+
 2017-07-31  Jan Hubicka <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
