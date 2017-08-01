@@ -1,3 +1,8 @@
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Instead of redefining LIB2ADD,
+	augment LIB2ADDEH with vxlib.c and vxlib-tls.c.
+
 2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config/rs6000/ibm-ldouble.c: Disable if defined __rtems__.
