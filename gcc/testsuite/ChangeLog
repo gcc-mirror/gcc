@@ -1,3 +1,8 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81297
+	* gcc.dg/torture/pr81297.c: New testcase.
+
 2017-07-31  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/naked-1.c (dg-options): Add -fno-pic.

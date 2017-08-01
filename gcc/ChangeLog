@@ -1,3 +1,9 @@
+2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81297
+	* tree-vrp.c (get_single_symbol): Remove assert, instead drop
+	TREE_OVERFLOW from INTEGER_CSTs.
+
 2017-07-31  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* config/rs6000/rs6000.c (enum rs6000_reg_type): Delete trailing comma.
