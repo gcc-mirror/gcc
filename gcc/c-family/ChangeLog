@@ -1,3 +1,10 @@
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_generic_ada_decl): Pass correctly-typed constant.
+	(dump_ada_function_declaration): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_ada_declaration): Add support for const-qualified variables.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/81530
