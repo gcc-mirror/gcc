@@ -539,13 +539,13 @@ unblock (const block_t *u, block_vector_t &blocked,
   unsigned index = it - blocked.begin ();
   blocked.erase (it);
 
-  for (block_vector_t::iterator it2 = block_lists[index].begin ();
-       it2 != block_lists[index].end (); it2++)
-    unblock (*it2, blocked, block_lists);
-  for (unsigned j = 0; j < block_lists[index].size (); j++)
-    unblock (u, blocked, block_lists);
+  block_vector_t to_unblock (block_lists[index]);
 
   block_lists.erase (block_lists.begin () + index);
+
+  for (block_vector_t::iterator it = to_unblock.begin ();
+       it != to_unblock.end (); it++)
+    unblock (*it, blocked, block_lists);
 }
 
 /* Find circuit going to block V, PATH is provisional seen cycle.
