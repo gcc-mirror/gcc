@@ -46,8 +46,11 @@ double d4(void)
 
 /* { dg-final { scan-assembler-times "fmov\td\[0-9\]+, 1\\\.5e\\\+0"        1 } } */
 
-/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, 25838523252736"       1 } } */
-/* { dg-final { scan-assembler-times "movk\tx\[0-9\]+, 0x40fe, lsl 48"      1 } } */
-/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, -9223372036854775808" 1 } } */
+/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, 25838523252736"       1 { target aarch64-*-* } } } */
+/* { dg-final { scan-assembler-times "movk\tx\[0-9\]+, 0x40fe, lsl 48"      1 { target aarch64-*-* } } } */
+/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, -9223372036854775808" 1 { target aarch64-*-* } } } */
+/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, 6016"                 1 { target aarch64_be-*-* } } } */
+/* { dg-final { scan-assembler-times "movk\tx\[0-9\]+, 0x40fe, lsl 16"      1 { target aarch64_be-*-* } } } */
+/* { dg-final { scan-assembler-times "mov\tx\[0-9\]+, 2147483648"           1 { target aarch64_be-*-* } } } */
 /* { dg-final { scan-assembler-times "fmov\td\[0-9\]+, x\[0-9\]+"           2 } } */
 

@@ -1,3 +1,8 @@
+2017-08-01  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/dbl_mov_immediate_1.c:
+	Use conditional assembler scans.
+
 2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81641
