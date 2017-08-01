@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O0" } */
+/* { dg-options "-O0 -fno-pic" } */
 
 /* Verify that __attribute__((naked)) produces a naked function 
    that does not use ret to return but traps at the end.  */
