@@ -858,7 +858,7 @@ print_generic_ada_decl (pretty_printer *pp, tree decl, const char *source_file)
 {
   source_file_base = source_file;
 
-  if (print_ada_declaration (pp, decl, 0, INDENT_INCR))
+  if (print_ada_declaration (pp, decl, NULL_TREE, INDENT_INCR))
     {
       pp_newline (pp);
       pp_newline (pp);
@@ -1655,7 +1655,8 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	  if (DECL_NAME (arg))
 	    {
 	      check_name (buffer, arg);
-	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), 0, false);
+	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE,
+				      false);
 	      pp_string (buffer, " : ");
 	    }
 	  else
@@ -2096,7 +2097,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  {
 	    if (DECL_NAME (node))
 	      pp_ada_tree_identifier
-		(buffer, DECL_NAME (node), 0, limited_access);
+		(buffer, DECL_NAME (node), NULL_TREE, limited_access);
 	    else
 	      pp_string (buffer, "<unnamed type decl>");
 	  }
@@ -3097,6 +3098,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    {
 	      pp_string (buffer, "aliased ");
 
+	      if (TREE_READONLY (t))
+		pp_string (buffer, "constant ");
+
 	      if (TYPE_NAME (TREE_TYPE (t)))
 		dump_generic_ada_node
 		  (buffer, TREE_TYPE (t), t, spc, false, true);
@@ -3109,6 +3113,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		  && (TYPE_NAME (TREE_TYPE (t))
 		      || TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE))
 		pp_string (buffer, "aliased ");
+
+	      if (TREE_READONLY (t))
+		pp_string (buffer, "constant ");
 
 	      dump_generic_ada_node
 		(buffer, TREE_TYPE (t), TREE_TYPE (t), spc, false, true);
