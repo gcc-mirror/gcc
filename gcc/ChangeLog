@@ -4,7 +4,7 @@
 	* config/i386/i386.md (unspecv): Add UNSPECV_UD2.
 	(ud2): New insn pattern.
 	* config/i386/i386.c (ix86_expand_epilogue):
-	Generate ud2 instead of trap insn.
+	For naked functions, generate ud2 instead of trap insn.
 
 2017-08-02  Marek Polacek  <polacek@redhat.com>
 
