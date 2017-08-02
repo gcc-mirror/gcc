@@ -1,3 +1,8 @@
+2017-08-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/funcspec-56.inc (no_3dnowa): Properly
+	test "no-3dnowa" target attribute.
+
 2017-08-02  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81289
