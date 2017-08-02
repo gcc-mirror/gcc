@@ -1,5 +1,11 @@
 2017-08-02  Richard Biener  <rguenther@suse.de>
 
+	* tree-vect-stmts.c (vectorizable_store): Perform vector extracts
+	via vectors if supported, integer extracts via punning if supported
+	or otherwise vector extracts.
+
+2017-08-02  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-pre.c (bitmap_insert_into_set_1): Remove and inline
 	into ...
 	(bitmap_insert_into_set): ... this.
