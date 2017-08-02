@@ -1,3 +1,8 @@
+2017-08-02  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_reinterpret_float_as_int):
+	Correct endianness.
+
 2017-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79499
