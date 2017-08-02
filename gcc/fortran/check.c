@@ -1213,6 +1213,20 @@ gfc_check_failed_or_stopped_images (gfc_expr *team, gfc_expr *kind)
   return true;
 }
 
+bool
+gfc_check_get_team (gfc_expr *level)
+{
+  if (level)
+    {
+      gfc_error ("%qs argument of %qs intrinsic at %L not yet supported",
+		 gfc_current_intrinsic_arg[0]->name, gfc_current_intrinsic,
+		 &level->where);
+      return false;
+    }
+
+  return true;
+}
+
 
 bool
 gfc_check_atomic_cas (gfc_expr *atom, gfc_expr *old, gfc_expr *compare,

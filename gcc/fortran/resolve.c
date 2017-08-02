@@ -10887,6 +10887,18 @@ start:
 	case EXEC_FAIL_IMAGE:
 	  break;
 
+	case EXEC_FORM_TEAM:
+	  break;
+	  
+	case EXEC_CHANGE_TEAM:
+	  break;
+	  
+	case EXEC_END_TEAM:
+	  break;
+
+	case EXEC_SYNC_TEAM:
+	  break;
+
 	case EXEC_ENTRY:
 	  /* Keep track of which entry we are up to.  */
 	  current_entry_id = code->ext.entry->id;
