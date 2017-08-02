@@ -1,3 +1,9 @@
+2017-08-02  Tom de Vries  <tom@codesourcery.com>
+	    Cesar Philippidis  <cesar@codesourcery.com>
+
+	* config/nvptx/nvptx.c (nvptx_lockless_update, nvptx_lockfull_update):
+	Add missing edge probabilities.
+
 2017-08-02  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64.c (aarch64_reinterpret_float_as_int):
