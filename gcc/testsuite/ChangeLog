@@ -1,3 +1,8 @@
+2017-08-01  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81641
+	* gcc.target/i386/pr81641.c: New test.
+
 2017-07-31  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81604
