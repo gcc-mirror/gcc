@@ -4733,9 +4733,14 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
 		  CONST_DOUBLE_REAL_VALUE (value),
 		  REAL_MODE_FORMAT (mode));
 
-  ival = zext_hwi (res[0], 32);
-  if (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (DFmode))
-    ival |= (zext_hwi (res[1], 32) << 32);
+  if (mode == DFmode)
+    {
+      int order = BYTES_BIG_ENDIAN ? 1 : 0;
+      ival = zext_hwi (res[order], 32);
+      ival |= (zext_hwi (res[1 - order], 32) << 32);
+    }
+  else
+      ival = zext_hwi (res[0], 32);
 
   *intval = ival;
   return true;
