@@ -1,5 +1,11 @@
 2017-08-02  Richard Biener  <rguenther@suse.de>
 
+	* tree-ssa-pre.c (bitmap_insert_into_set_1): Remove and inline
+	into ...
+	(bitmap_insert_into_set): ... this.
+
+2017-08-02  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81633
 	Revert
 	2015-08-17  Alan Hayward  <alan.hayward@arm.com>
