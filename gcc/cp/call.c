@@ -3735,7 +3735,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   gcc_assert (!MAYBE_CLASS_TYPE_P (fromtype) || !MAYBE_CLASS_TYPE_P (totype)
 	      || !DERIVED_FROM_P (totype, fromtype));
 
-  if (MAYBE_CLASS_TYPE_P (totype))
+  if (CLASS_TYPE_P (totype))
     /* Use lookup_fnfields_slot instead of lookup_fnfields to avoid
        creating a garbage BASELINK; constructors can't be inherited.  */
     ctors = lookup_fnfields_slot (totype, complete_ctor_identifier);
