@@ -1,3 +1,12 @@
+2017-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81633
+	Revert
+	2015-08-17  Alan Hayward  <alan.hayward@arm.com>
+
+	PR tree-optimization/71752
+	* tree-vect-slp.c (vect_get_slp_defs): Handle null operands.
+
 2017-08-01  Daniel Santos  <daniel.santos@pobox.com>
 
 	* config/i386/i386.h (ix86_frame::outlined_save_offset): Remove field.
