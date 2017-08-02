@@ -1,5 +1,10 @@
 2017-08-02  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81655
+	PR tree-optimization/81588
+	* gcc.dg/tree-ssa/pr81588.c: Use -mbranch-cost=2 where possible,
+	don't run the test on branch-cost=1 targets.
+
 	PR middle-end/79499
 	* gcc.dg/pr79499.c: New test.
 
