@@ -7099,9 +7099,9 @@ c_parser_unary_expression (c_parser *parser)
       else
 	{
 	  c_parser_error (parser, "expected identifier");
-	  ret.value = error_mark_node;
+	  ret.set_error ();
 	}
-	return ret;
+      return ret;
     case CPP_KEYWORD:
       switch (c_parser_peek_token (parser)->keyword)
 	{
