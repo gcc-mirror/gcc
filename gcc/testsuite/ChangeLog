@@ -1,3 +1,8 @@
+2017-08-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81633
+	* gcc.dg/vect/pr81633.c: New testcase.
+
 2017-08-01  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* gcc.dg/guality/pr25967-3.c: New test.
