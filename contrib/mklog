@@ -1,0 +1,470 @@
+#!/usr/bin/python
+
+# Copyright (C) 2017 Free Software Foundation, Inc.
+#
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING.  If not, write to
+# the Free Software Foundation, 51 Franklin Street, Fifth Floor,
+# Boston, MA 02110-1301, USA.
+
+# This script parses a .diff file generated with 'diff -up' or 'diff -cp'
+# and adds a skeleton ChangeLog file to the file. It does not try to be
+# too smart when parsing function names, but it produces a reasonable
+# approximation.
+#
+# This is a straightforward adaptation of original Perl script.
+#
+# Author: Yury Gribov <tetra2005@gmail.com>
+
+import sys
+import re
+import os.path
+import os
+import getopt
+import tempfile
+import time
+import shutil
+from subprocess import Popen, PIPE
+
+me = os.path.basename(sys.argv[0])
+
+def error(msg):
+  sys.stderr.write("%s: error: %s\n" % (me, msg))
+  sys.exit(1)
+
+def warn(msg):
+  sys.stderr.write("%s: warning: %s\n" % (me, msg))
+
+class RegexCache(object):
+  """Simple trick to Perl-like combined match-and-bind."""
+
+  def __init__(self):
+    self.last_match = None
+
+  def match(self, p, s):
+    self.last_match = re.match(p, s) if isinstance(p, str) else p.match(s)
+    return self.last_match
+
+  def search(self, p, s):
+    self.last_match = re.search(p, s) if isinstance(p, str) else p.search(s)
+    return self.last_match
+
+  def group(self, n):
+    return self.last_match.group(n)
+
+cache = RegexCache()
+
+def print_help_and_exit():
+    print """\
+Usage: %s [-i | --inline] [PATCH]
+Generate ChangeLog template for PATCH.
+PATCH must be generated using diff(1)'s -up or -cp options
+(or their equivalent in Subversion/git).
+
+When PATCH is - or missing, read standard input.
+
+When -i is used, prepends ChangeLog to PATCH.
+If PATCH is not stdin, modifies PATCH in-place, otherwise writes
+to stdout.
+""" % me
+    sys.exit(1)
+
+def run(cmd, die_on_error):
+  """Simple wrapper for Popen."""
+  proc = Popen(cmd.split(' '), stderr = PIPE, stdout = PIPE)
+  (out, err) = proc.communicate()
+  if die_on_error and proc.returncode != 0:
+    error("`%s` failed:\n" % (cmd, proc.stderr))
+  return proc.returncode, out, err
+
+def read_user_info():
+  dot_mklog_format_msg = """\
+The .mklog format is:
+NAME = ...
+EMAIL = ...
+"""
+
+  # First try to read .mklog config
+  mklog_conf = os.path.expanduser('~/.mklog')
+  if os.path.exists(mklog_conf):
+    attrs = {}
+    f = open(mklog_conf, 'rb')
+    for s in f:
+      if cache.match(r'^\s*([a-zA-Z0-9_]+)\s*=\s*(.*?)\s*$', s):
+        attrs[cache.group(1)] = cache.group(2)
+    f.close()
+    if 'NAME' not in attrs:
+      error("'NAME' not present in .mklog")
+    if 'EMAIL' not in attrs:
+      error("'EMAIL' not present in .mklog")
+    return attrs['NAME'], attrs['EMAIL']
+
+  # Otherwise go with git
+
+  rc1, name, _ = run('git config user.name', False)
+  name = name.rstrip()
+  rc2, email, _ = run('git config user.email', False)
+  email = email.rstrip()
+
+  if rc1 != 0 or rc2 != 0:
+    error("""\
+Could not read git user.name and user.email settings.
+Please add missing git settings, or create a %s.
+""" % mklog_conf)
+
+  return name, email
+
+def get_parent_changelog (s):
+  """See which ChangeLog this file change should go to."""
+
+  if s.find('\\') == -1 and s.find('/') == -1:
+    return "ChangeLog", s
+
+  gcc_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
+
+  d = s
+  while d:
+    clname = d + "/ChangeLog"
+    if os.path.exists(gcc_root + '/' + clname) or os.path.exists(clname):
+      relname = s[len(d)+1:]
+      return clname, relname
+    d, _ = os.path.split(d)
+
+  return "Unknown ChangeLog", s
+
+class FileDiff:
+  """Class to represent changes in a single file."""
+
+  def __init__(self, filename):
+    self.filename = filename
+    self.hunks = []
+    self.clname, self.relname = get_parent_changelog(filename);
+
+  def dump(self):
+    print "Diff for %s:\n  ChangeLog = %s\n  rel name = %s\n" % (self.filename, self.clname, self.relname)
+    for i, h in enumerate(self.hunks):
+      print "Next hunk %d:" % i
+      h.dump()
+
+class Hunk:
+  """Class to represent a single hunk of changes."""
+
+  def __init__(self, hdr):
+    self.hdr = hdr
+    self.lines = []
+    self.ctx_diff = is_ctx_hunk_start(hdr)
+
+  def dump(self):
+    print '%s' % self.hdr
+    print '%s' % '\n'.join(self.lines)
+
+  def is_file_addition(self):
+    """Does hunk describe addition of file?"""
+    if self.ctx_diff:
+      for line in self.lines:
+        if re.match(r'^\*\*\* 0 \*\*\*\*', line):
+          return True
+    else:
+      return re.match(r'^@@ -0,0 \+1.* @@', self.hdr)
+
+  def is_file_removal(self):
+    """Does hunk describe removal of file?"""
+    if self.ctx_diff:
+      for line in self.lines:
+        if re.match(r'^--- 0 ----', line):
+          return True
+    else:
+      return re.match(r'^@@ -1.* \+0,0 @@', self.hdr)
+
+def is_file_diff_start(s):
+  # Don't be fooled by context diff line markers:
+  #   *** 385,391 ****
+  return ((s.startswith('***') and not s.endswith('***'))
+          or (s.startswith('---') and not s.endswith('---')))
+
+def is_ctx_hunk_start(s):
+  return re.match(r'^\*\*\*\*\*\**', s)
+
+def is_uni_hunk_start(s):
+  return re.match(r'^@@ .* @@', s)
+
+def is_hunk_start(s):
+  return is_ctx_hunk_start(s) or is_uni_hunk_start(s)
+
+def remove_suffixes(s):
+  if s.startswith('a/') or s.startswith('b/'):
+    s = s[2:]
+  if s.endswith('.jj'):
+    s = s[:-3]
+  return s
+
+def find_changed_funs(hunk):
+  """Find all functions touched by hunk.  We don't try too hard
+     to find good matches.  This should return a superset
+     of the actual set of functions in the .diff file.
+  """
+
+  fns = []
+  fn = None
+
+  if (cache.match(r'^\*\*\*\*\*\** ([a-zA-Z0-9_].*)', hunk.hdr)
+      or cache.match(r'^@@ .* @@ ([a-zA-Z0-9_].*)', hunk.hdr)):
+    fn = cache.group(1)
+
+  for i, line in enumerate(hunk.lines):
+    # Context diffs have extra whitespace after first char;
+    # remove it to make matching easier.
+    if hunk.ctx_diff:
+      line = re.sub(r'^([-+! ]) ', r'\1', line)
+
+    # Remember most recent identifier in hunk
+    # that might be a function name.
+    if cache.match(r'^[-+! ]([a-zA-Z0-9_#].*)', line):
+      fn = cache.group(1)
+
+    change = line and re.match(r'^[-+!][^-]', line)
+
+    # Top-level comment can not belong to function
+    if re.match(r'^[-+! ]\/\*', line):
+      fn = None
+
+    if change and fn:
+      if cache.match(r'^((class|struct|union|enum)\s+[a-zA-Z0-9_]+)', fn):
+        # Struct declaration
+        fn = cache.group(1)
+      elif cache.search(r'#\s*define\s+([a-zA-Z0-9_]+)', fn):
+        # Macro definition
+        fn = cache.group(1)
+      elif cache.match('^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)', fn):
+        # Supermacro
+        fn = cache.group(1)
+      elif cache.search(r'([a-zA-Z_][^()\s]*)\s*\([^*]', fn):
+        # Discard template and function parameters.
+        fn = cache.group(1)
+        fn = re.sub(r'<[^<>]*>', '', fn)
+        fn = fn.rstrip()
+      else:
+        fn = None
+
+      if fn and fn not in fns:  # Avoid dups
+        fns.append(fn)
+
+      fn = None
+
+  return fns
+
+def parse_patch(contents):
+  """Parse patch contents to a sequence of FileDiffs."""
+
+  diffs = []
+
+  lines = contents.split('\n')
+
+  i = 0
+  while i < len(lines):
+    line = lines[i]
+
+    # Diff headers look like
+    #   --- a/gcc/tree.c
+    #   +++ b/gcc/tree.c
+    # or
+    #   *** gcc/cfgexpand.c     2013-12-25 20:07:24.800350058 +0400
+    #   --- gcc/cfgexpand.c     2013-12-25 20:06:30.612350178 +0400
+
+    if is_file_diff_start(line):
+      left = re.split(r'\s+', line)[1]
+    else:
+      i += 1
+      continue
+
+    left = remove_suffixes(left);
+
+    i += 1
+    line = lines[i]
+
+    if not cache.match(r'^[+-][+-][+-] +(\S+)', line):
+      error("expected filename in line %d" % i)
+    right = remove_suffixes(cache.group(1));
+
+    # Extract real file name from left and right names.
+    filename = None
+    if left == right:
+      filename = left
+    elif left == '/dev/null':
+      filename = right;
+    elif right == '/dev/null':
+      filename = left;
+    else:
+      comps = []
+      while left and right:
+        left, l = os.path.split(left)
+        right, r = os.path.split(right)
+        if l != r:
+          break
+        comps.append(l)
+    
+      if not comps:
+        error("failed to extract common name for %s and %s" % (left, right))
+
+      comps.reverse()
+      filename = '/'.join(comps)
+
+    d = FileDiff(filename)
+    diffs.append(d)
+
+    # Collect hunks for current file.
+    hunk = None
+    i += 1
+    while i < len(lines):
+      line = lines[i]
+
+      # Create new hunk when we see hunk header
+      if is_hunk_start(line):
+        if hunk is not None:
+          d.hunks.append(hunk)
+        hunk = Hunk(line)
+        i += 1
+        continue
+
+      # Stop when we reach next diff
+      if (is_file_diff_start(line)
+          or line.startswith('diff ')
+          or line.startswith('Index: ')):
+        i -= 1
+        break
+
+      if hunk is not None:
+        hunk.lines.append(line)
+      i += 1
+
+    d.hunks.append(hunk)
+
+  return diffs
+
+def main():
+  name, email = read_user_info()
+
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], 'hiv', ['help', 'verbose', 'inline'])
+  except getopt.GetoptError, err:
+    error(str(err))
+
+  inline = False
+  verbose = 0
+
+  for o, a in opts:
+    if o in ('-h', '--help'):
+      print_help_and_exit()
+    elif o in ('-i', '--inline'):
+      inline = True
+    elif o in ('-v', '--verbose'):
+      verbose += 1
+    else:
+      assert False, "unhandled option"
+
+  if len(args) == 0:
+    args = ['-']
+
+  if len(args) == 1 and args[0] == '-':
+    input = sys.stdin
+  elif len(args) == 1:
+    input = open(args[0], 'rb')
+  else:
+    error("too many arguments; for more details run with -h")
+
+  contents = input.read()
+  diffs = parse_patch(contents)
+
+  if verbose:
+    print "Parse results:"
+    for d in diffs:
+      d.dump()
+
+  # Generate template ChangeLog.
+
+  logs = {}
+  for d in diffs:
+    log_name = d.clname
+
+    logs.setdefault(log_name, '')
+    logs[log_name] += '\t* %s' % d.relname
+
+    change_msg = ''
+
+    # Check if file was removed or added.
+    # Two patterns for context and unified diff.
+    if len(d.hunks) == 1:
+      hunk0 = d.hunks[0]
+      if hunk0.is_file_addition():
+        if re.search(r'testsuite.*(?<!\.exp)$', d.filename):
+          change_msg = ': New test.\n'
+        else:
+          change_msg = ": New file.\n"
+      elif hunk0.is_file_removal():
+        change_msg = ": Remove.\n"
+
+    _, ext = os.path.splitext(d.filename)
+    if not change_msg and ext in ['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def']:
+      fns = []
+      for hunk in d.hunks:
+        for fn in find_changed_funs(hunk):
+          if fn not in fns:
+            fns.append(fn)
+
+      for fn in fns:
+        if change_msg:
+          change_msg += "\t(%s):\n" % fn
+        else:
+          change_msg = " (%s):\n" % fn
+
+    logs[log_name] += change_msg if change_msg else ":\n"
+
+  if inline and args[0] != '-':
+    # Get a temp filename, rather than an open filehandle, because we use
+    # the open to truncate.
+    fd, tmp = tempfile.mkstemp("tmp.XXXXXXXX")
+    os.close(fd)
+
+    # Copy permissions to temp file
+    # (old Pythons do not support shutil.copymode)
+    shutil.copymode(args[0], tmp)
+
+    # Open the temp file, clearing contents.
+    out = open(tmp, 'wb')
+  else:
+    tmp = None
+    out = sys.stdout
+
+  # Print log
+  date = time.strftime('%Y-%m-%d')
+  for log_name, msg in sorted(logs.iteritems()):
+    out.write("""\
+%s:
+
+%s  %s  <%s>
+
+%s\n""" % (log_name, date, name, email, msg))
+
+  if inline:
+    # Append patch body
+    out.write(contents)
+
+    if args[0] != '-':
+      # Write new contents atomically
+      out.close()
+      shutil.move(tmp, args[0])
+
+if __name__ == '__main__':
+    main()
