@@ -15199,7 +15199,7 @@ ix86_expand_epilogue (int style)
   if (ix86_function_naked (current_function_decl))
     {
       /* The program should not reach this point.  */
-      emit_insn (gen_trap ());
+      emit_insn (gen_ud2 ());
       return;
     }
 
