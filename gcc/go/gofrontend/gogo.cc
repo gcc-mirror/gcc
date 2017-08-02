@@ -3058,25 +3058,52 @@ Finalize_methods::type(Type* t)
 
     case Type::TYPE_NAMED:
       {
-	// We have to finalize the methods of the real type first.
-	// But if the real type is a struct type, then we only want to
-	// finalize the methods of the field types, not of the struct
-	// type itself.  We don't want to add methods to the struct,
-	// since it has a name.
 	Named_type* nt = t->named_type();
 	Type* rt = nt->real_type();
 	if (rt->classification() != Type::TYPE_STRUCT)
 	  {
+	    // Finalize the methods of the real type first.
 	    if (Type::traverse(rt, this) == TRAVERSE_EXIT)
 	      return TRAVERSE_EXIT;
+
+	    // Finalize the methods of this type.
+	    nt->finalize_methods(this->gogo_);
 	  }
 	else
 	  {
+	    // We don't want to finalize the methods of a named struct
+	    // type, as the methods should be attached to the named
+	    // type, not the struct type.  We just want to finalize
+	    // the field types.
+	    //
+	    // It is possible that a field type refers indirectly to
+	    // this type, such as via a field with function type with
+	    // an argument or result whose type is this type.  To
+	    // avoid the cycle, first finalize the methods of any
+	    // embedded types, which are the only types we need to
+	    // know to finalize the methods of this type.
+	    const Struct_field_list* fields = rt->struct_type()->fields();
+	    if (fields != NULL)
+	      {
+		for (Struct_field_list::const_iterator pf = fields->begin();
+		     pf != fields->end();
+		     ++pf)
+		  {
+		    if (pf->is_anonymous())
+		      {
+			if (Type::traverse(pf->type(), this) == TRAVERSE_EXIT)
+			  return TRAVERSE_EXIT;
+		      }
+		  }
+	      }
+
+	    // Finalize the methods of this type.
+	    nt->finalize_methods(this->gogo_);
+
+	    // Finalize all the struct fields.
 	    if (rt->struct_type()->traverse_field_types(this) == TRAVERSE_EXIT)
 	      return TRAVERSE_EXIT;
 	  }
-
-	nt->finalize_methods(this->gogo_);
 
 	// If this type is defined in a different package, then finalize the
 	// types of all the methods, since we won't see them otherwise.
