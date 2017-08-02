@@ -12,14 +12,6 @@ typedef unsigned int uword_t __attribute__ ((mode (__word__)));
 #define SP		0x12345674
 #define SS		0x12345675
 
-#ifdef __x86_64__
-# define STACK_POINTER	"rsp"
-# define WORD_SIZE	"8"
-#else
-# define STACK_POINTER	"esp"
-# define WORD_SIZE	"4"
-#endif
-
 #define STRING(x)	XSTRING(x)
 #define XSTRING(x)	#x
 #define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
@@ -38,11 +30,9 @@ __attribute__((naked, used))
 void
 fn (void)
 {
-  struct interrupt_frame *frame;
-  uword_t error;
-  asm volatile ("lea " WORD_SIZE "(%%" STACK_POINTER "), %0\n\t"
-		"mov (%%" STACK_POINTER "), %1" 
-		: "=r" (frame), "=r" (error) :); 
+  register uword_t *sp __asm__("sp");
+  uword_t error = *sp;
+  struct interrupt_frame *frame = (struct interrupt_frame *) (sp + 1);
   if (ERROR != error)		/* BREAK */
     __builtin_abort ();
   if (IP != frame->ip)
@@ -72,9 +62,9 @@ main ()
   return 0;
 }
 
-/* { dg-final { gdb-test 46 "error" "0x12345670" } } */
-/* { dg-final { gdb-test 46 "frame->ip" "0x12345671" } } */
-/* { dg-final { gdb-test 46 "frame->cs" "0x12345672" } } */
-/* { dg-final { gdb-test 46 "frame->flags" "0x12345673" } } */
-/* { dg-final { gdb-test 46 "frame->sp" "0x12345674" } } */
-/* { dg-final { gdb-test 46 "frame->ss" "0x12345675" } } */
+/* { dg-final { gdb-test 36 "error" "0x12345670" } } */
+/* { dg-final { gdb-test 36 "frame->ip" "0x12345671" } } */
+/* { dg-final { gdb-test 36 "frame->cs" "0x12345672" } } */
+/* { dg-final { gdb-test 36 "frame->flags" "0x12345673" } } */
+/* { dg-final { gdb-test 36 "frame->sp" "0x12345674" } } */
+/* { dg-final { gdb-test 36 "frame->ss" "0x12345675" } } */

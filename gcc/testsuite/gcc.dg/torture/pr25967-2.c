@@ -11,14 +11,6 @@ typedef unsigned int uword_t __attribute__ ((mode (__word__)));
 #define SP		0x12345674
 #define SS		0x12345675
 
-#ifdef __x86_64__
-# define STACK_POINTER	"rsp"
-# define WORD_SIZE	"8"
-#else
-# define STACK_POINTER	"esp"
-# define WORD_SIZE	"4"
-#endif
-
 #define STRING(x)	XSTRING(x)
 #define XSTRING(x)	#x
 #define ASMNAME(cname)  ASMNAME2 (__USER_LABEL_PREFIX__, cname)
@@ -37,9 +29,9 @@ __attribute__((naked, used))
 void
 fn (void)
 {
-  struct interrupt_frame *frame;
-  asm volatile ("lea (%%" STACK_POINTER "), %0" : "=r" (frame) : ); 
-  if (IP != frame->ip)
+  register uword_t *sp __asm__("sp");
+  struct interrupt_frame *frame = (struct interrupt_frame *) sp;
+  if (IP != frame->ip)		/* BREAK */
     __builtin_abort ();
   if (CS != frame->cs)
     __builtin_abort ();
