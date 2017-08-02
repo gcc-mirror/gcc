@@ -1,8 +1,13 @@
+2017-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81289
+	* c-parser.c (c_parser_unary_expression): Use set_error.
+
 2017-07-31  Jan Hubicka <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 
 	* c-typeck.c (c_finish_goto_label): Build gimple predict
-	stament.
+	statement.
 
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
