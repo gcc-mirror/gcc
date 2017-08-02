@@ -540,8 +540,6 @@ static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
-static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr,
-				      unsigned int, bool);
 static bitmap_set_t bitmap_set_new (void);
 static tree create_expression_by_pieces (basic_block, pre_expr, gimple_seq *,
 					 tree);
@@ -732,25 +730,20 @@ bitmap_remove_from_set (bitmap_set_t set, pre_expr expr)
     }
 }
 
-static void
-bitmap_insert_into_set_1 (bitmap_set_t set, pre_expr expr,
-			  unsigned int val, bool allow_constants)
-{
-  if (allow_constants || !value_id_constant_p (val))
-    {
-      /* We specifically expect this and only this function to be able to
-	 insert constants into a set.  */
-      bitmap_set_bit (&set->values, val);
-      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
-    }
-}
-
 /* Insert an expression EXPR into a bitmapped set.  */
 
 static void
 bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
-  bitmap_insert_into_set_1 (set, expr, get_expr_value_id (expr), false);
+  unsigned int val = get_expr_value_id (expr);
+  if (! value_id_constant_p (val))
+    {
+      /* Note this is the only function causing multiple expressions
+         for the same value to appear in a set.  This is needed for
+	 TMP_GEN, PHI_GEN and NEW_SETs.  */
+      bitmap_set_bit (&set->values, val);
+      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
+    }
 }
 
 /* Copy a bitmapped set ORIG, into bitmapped set DEST.  */
@@ -2471,7 +2464,8 @@ compute_antic (void)
     {
       /* For partial antic we ignore backedges and thus we do not need
          to perform any iteration when we process blocks in postorder.  */
-      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder.address (), false);
+      int postorder_num
+	= pre_and_rev_post_order_compute (NULL, postorder.address (), false);
       for (i = postorder_num - 1 ; i >= 0; i--)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
