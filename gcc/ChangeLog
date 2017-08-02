@@ -1,3 +1,8 @@
+2017-08-02  Marek Polacek  <polacek@redhat.com>
+
+	PR other/81667
+	* alloc-pool.h (base_pool_allocator): Initialize m_elt_size.
+
 2017-08-02  Tom de Vries  <tom@codesourcery.com>
 	    Cesar Philippidis  <cesar@codesourcery.com>
 
