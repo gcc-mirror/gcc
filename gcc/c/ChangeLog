@@ -3,6 +3,11 @@
 	PR c/81289
 	* c-parser.c (c_parser_unary_expression): Use set_error.
 
+	PR c/81448
+	PR c/81306
+	* c-warn.c (warn_for_multistatement_macros): Prevent bogus
+	warnings.  Avoid walking MACRO_MAP_LOCATIONS.
+
 2017-07-31  Jan Hubicka <hubicka@ucw.cz>
 	    Martin Liska  <mliska@suse.cz>
 

@@ -3,6 +3,10 @@
 	PR c/81289
 	* gcc.dg/noncompile/pr81289.c: New test.
 
+	PR c/81448
+	PR c/81306
+	* c-c++-common/Wmultistatement-macros-13.c: New test.
+
 2017-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81640
