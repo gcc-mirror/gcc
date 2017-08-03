@@ -1,5 +1,11 @@
 2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/81655
+	PR tree-optimization/81588
+	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Handle also
+	the case when ranges[i].low and high are 1 for unsigned type with
+	precision 1.
+
 	PR middle-end/81052
 	* omp-low.c (diagnose_sb_0): Handle flag_openmp_simd like flag_openmp.
 	(pass_diagnose_omp_blocks::gate): Enable also for flag_openmp_simd.
