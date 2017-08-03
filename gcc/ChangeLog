@@ -1,3 +1,14 @@
+2017-08-03 Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81148
+	* fold-const.c (split_tree): Add minus_var and minus_con
+	arguments, remove unused loc arg.  Never generate NEGATE_EXPRs
+	here but always use minus_*.
+	(associate_trees): Assert we never associate with MINUS_EXPR
+	and NULL first operand.  Do not recurse for PLUS_EXPR operands
+	when associating as MINUS_EXPR either.
+	(fold_binary_loc): Track minus_var and minus_con.
+
 2017-08-03  Tom de Vries  <tom@codesourcery.com>
 
 	PR lto/81430

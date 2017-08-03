@@ -108,8 +108,6 @@ enum comparison_code {
 
 static bool negate_expr_p (tree);
 static tree negate_expr (tree);
-static tree split_tree (location_t, tree, tree, enum tree_code,
-			tree *, tree *, tree *, int);
 static tree associate_trees (location_t, tree, tree, enum tree_code, tree);
 static enum comparison_code comparison_to_compcode (enum tree_code);
 static enum tree_code compcode_to_comparison (enum comparison_code);
@@ -775,12 +773,14 @@ negate_expr (tree t)
    same type as IN, but they will have the same signedness and mode.  */
 
 static tree
-split_tree (location_t loc, tree in, tree type, enum tree_code code,
-	    tree *conp, tree *litp, tree *minus_litp, int negate_p)
+split_tree (tree in, tree type, enum tree_code code,
+	    tree *minus_varp, tree *conp, tree *minus_conp,
+	    tree *litp, tree *minus_litp, int negate_p)
 {
   tree var = 0;
-
+  *minus_varp = 0;
   *conp = 0;
+  *minus_conp = 0;
   *litp = 0;
   *minus_litp = 0;
 
@@ -834,27 +834,19 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
       if (neg_litp_p)
 	*minus_litp = *litp, *litp = 0;
       if (neg_conp_p && *conp)
-	{
-	  /* Convert to TYPE before negating.  */
-	  *conp = fold_convert_loc (loc, type, *conp);
-	  *conp = negate_expr (*conp);
-	}
+	*minus_conp = *conp, *conp = 0;
       if (neg_var_p && var)
-	{
-	  /* Convert to TYPE before negating.  */
-	  var = fold_convert_loc (loc, type, var);
-	  var = negate_expr (var);
-	}
+	*minus_varp = var, var = 0;
     }
   else if (TREE_CONSTANT (in))
     *conp = in;
   else if (TREE_CODE (in) == BIT_NOT_EXPR
 	   && code == PLUS_EXPR)
     {
-      /* -X - 1 is folded to ~X, undo that here.  Do _not_ do this
-         when IN is constant.  Convert to TYPE before negating.  */
-      *minus_litp = build_one_cst (type);
-      var = negate_expr (fold_convert_loc (loc, type, TREE_OPERAND (in, 0)));
+      /* -1 - X is folded to ~X, undo that here.  Do _not_ do this
+         when IN is constant.  */
+      *litp = build_minus_one_cst (type);
+      *minus_varp = TREE_OPERAND (in, 0);
     }
   else
     var = in;
@@ -866,17 +858,13 @@ split_tree (location_t loc, tree in, tree type, enum tree_code code,
       else if (*minus_litp)
 	*litp = *minus_litp, *minus_litp = 0;
       if (*conp)
-	{
-	  /* Convert to TYPE before negating.  */
-	  *conp = fold_convert_loc (loc, type, *conp);
-	  *conp = negate_expr (*conp);
-	}
+	*minus_conp = *conp, *conp = 0;
+      else if (*minus_conp)
+	*conp = *minus_conp, *minus_conp = 0;
       if (var)
-	{
-	  /* Convert to TYPE before negating.  */
-	  var = fold_convert_loc (loc, type, var);
-	  var = negate_expr (var);
-	}
+	*minus_varp = var, var = 0;
+      else if (*minus_varp)
+	var = *minus_varp, *minus_varp = 0;
     }
 
   if (*litp
@@ -898,7 +886,10 @@ static tree
 associate_trees (location_t loc, tree t1, tree t2, enum tree_code code, tree type)
 {
   if (t1 == 0)
-    return t2;
+    {
+      gcc_assert (t2 == 0 || code != MINUS_EXPR);
+      return t2;
+    }
   else if (t2 == 0)
     return t1;
 
@@ -906,6 +897,7 @@ associate_trees (location_t loc, tree t1, tree t2, enum tree_code code, tree typ
      try to fold this since we will have infinite recursion.  But do
      deal with any NEGATE_EXPRs.  */
   if (TREE_CODE (t1) == code || TREE_CODE (t2) == code
+      || TREE_CODE (t1) == PLUS_EXPR || TREE_CODE (t2) == PLUS_EXPR
       || TREE_CODE (t1) == MINUS_EXPR || TREE_CODE (t2) == MINUS_EXPR)
     {
       if (code == PLUS_EXPR)
@@ -9560,8 +9552,8 @@ fold_binary_loc (location_t loc,
       if ((! FLOAT_TYPE_P (type) || flag_associative_math)
 	  && !TYPE_SATURATING (type))
 	{
-	  tree var0, con0, lit0, minus_lit0;
-	  tree var1, con1, lit1, minus_lit1;
+	  tree var0, minus_var0, con0, minus_con0, lit0, minus_lit0;
+	  tree var1, minus_var1, con1, minus_con1, lit1, minus_lit1;
 	  tree atype = type;
 	  bool ok = true;
 
@@ -9570,10 +9562,12 @@ fold_binary_loc (location_t loc,
 	     then the result with variables.  This increases the chances of
 	     literals being recombined later and of generating relocatable
 	     expressions for the sum of a constant and literal.  */
-	  var0 = split_tree (loc, arg0, type, code,
-			     &con0, &lit0, &minus_lit0, 0);
-	  var1 = split_tree (loc, arg1, type, code,
-			     &con1, &lit1, &minus_lit1, code == MINUS_EXPR);
+	  var0 = split_tree (arg0, type, code,
+			     &minus_var0, &con0, &minus_con0,
+			     &lit0, &minus_lit0, 0);
+	  var1 = split_tree (arg1, type, code,
+			     &minus_var1, &con1, &minus_con1,
+			     &lit1, &minus_lit1, code == MINUS_EXPR);
 
 	  /* Recombine MINUS_EXPR operands by using PLUS_EXPR.  */
 	  if (code == MINUS_EXPR)
@@ -9600,6 +9594,8 @@ fold_binary_loc (location_t loc,
 	    {
 	      if (var0 && var1)
 		{
+		  /* ???  If split_tree would handle NEGATE_EXPR we could
+		     simplify this down to the var0/minus_var1 cases.  */
 		  tree tmp0 = var0;
 		  tree tmp1 = var1;
 		  bool one_neg = false;
@@ -9630,21 +9626,45 @@ fold_binary_loc (location_t loc,
 		      || !operand_equal_p (tmp0, tmp1, 0))
 		    ok = false;
 		}
+	      else if ((var0 && minus_var1
+			&& ! operand_equal_p (var0, minus_var1, 0))
+		       || (minus_var0 && var1
+			   && ! operand_equal_p (minus_var0, var1, 0)))
+		ok = false;
 	    }
 
 	  /* Only do something if we found more than two objects.  Otherwise,
 	     nothing has changed and we risk infinite recursion.  */
 	  if (ok
 	      && (2 < ((var0 != 0) + (var1 != 0)
+		       + (minus_var0 != 0) + (minus_var1 != 0)
 		       + (con0 != 0) + (con1 != 0)
+		       + (minus_con0 != 0) + (minus_con1 != 0)
 		       + (lit0 != 0) + (lit1 != 0)
 		       + (minus_lit0 != 0) + (minus_lit1 != 0))))
 	    {
 	      var0 = associate_trees (loc, var0, var1, code, atype);
+	      minus_var0 = associate_trees (loc, minus_var0, minus_var1,
+					    code, atype);
 	      con0 = associate_trees (loc, con0, con1, code, atype);
+	      minus_con0 = associate_trees (loc, minus_con0, minus_con1,
+					    code, atype);
 	      lit0 = associate_trees (loc, lit0, lit1, code, atype);
 	      minus_lit0 = associate_trees (loc, minus_lit0, minus_lit1,
 					    code, atype);
+
+	      if (minus_var0 && var0)
+		{
+		  var0 = associate_trees (loc, var0, minus_var0,
+					  MINUS_EXPR, atype);
+		  minus_var0 = 0;
+		}
+	      if (minus_con0 && con0)
+		{
+		  con0 = associate_trees (loc, con0, minus_con0,
+					  MINUS_EXPR, atype);
+		  minus_con0 = 0;
+		}
 
 	      /* Preserve the MINUS_EXPR if the negative part of the literal is
 		 greater than the positive part.  Otherwise, the multiplicative
@@ -9655,7 +9675,9 @@ fold_binary_loc (location_t loc,
 		{
 		  if (TREE_CODE (lit0) == INTEGER_CST
 		      && TREE_CODE (minus_lit0) == INTEGER_CST
-		      && tree_int_cst_lt (lit0, minus_lit0))
+		      && tree_int_cst_lt (lit0, minus_lit0)
+		      /* But avoid ending up with only negated parts.  */
+		      && (var0 || con0))
 		    {
 		      minus_lit0 = associate_trees (loc, minus_lit0, lit0,
 						    MINUS_EXPR, atype);
@@ -9674,25 +9696,38 @@ fold_binary_loc (location_t loc,
 		  || (minus_lit0 && TREE_OVERFLOW_P (minus_lit0)))
 		return NULL_TREE;
 
-	      if (minus_lit0)
+	      /* Eliminate lit0 and minus_lit0 to con0 and minus_con0. */
+	      con0 = associate_trees (loc, con0, lit0, code, atype);
+	      lit0 = 0;
+	      minus_con0 = associate_trees (loc, minus_con0, minus_lit0,
+					    code, atype);
+	      minus_lit0 = 0;
+
+	      /* Eliminate minus_con0.  */
+	      if (minus_con0)
 		{
-		  if (con0 == 0)
-		    return
-		      fold_convert_loc (loc, type,
-					associate_trees (loc, var0, minus_lit0,
-							 MINUS_EXPR, atype));
+		  if (con0)
+		    con0 = associate_trees (loc, con0, minus_con0,
+					    MINUS_EXPR, atype);
+		  else if (var0)
+		    var0 = associate_trees (loc, var0, minus_con0,
+					    MINUS_EXPR, atype);
 		  else
-		    {
-		      con0 = associate_trees (loc, con0, minus_lit0,
-					      MINUS_EXPR, atype);
-		      return
-			fold_convert_loc (loc, type,
-					  associate_trees (loc, var0, con0,
-							   PLUS_EXPR, atype));
-		    }
+		    gcc_unreachable ();
+		  minus_con0 = 0;
 		}
 
-	      con0 = associate_trees (loc, con0, lit0, code, atype);
+	      /* Eliminate minus_var0.  */
+	      if (minus_var0)
+		{
+		  if (con0)
+		    con0 = associate_trees (loc, con0, minus_var0,
+					    MINUS_EXPR, atype);
+		  else
+		    gcc_unreachable ();
+		  minus_var0 = 0;
+		}
+
 	      return
 		fold_convert_loc (loc, type, associate_trees (loc, var0, con0,
 							      code, atype));
