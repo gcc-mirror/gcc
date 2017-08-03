@@ -1,3 +1,8 @@
+2017-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR driver/81650
+	* gcc.dg/pr81650.c: New test.
+
 2017-08-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71440
