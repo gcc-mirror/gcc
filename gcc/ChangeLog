@@ -1,3 +1,12 @@
+2017-08-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Don't start diagnostic messages with a capital letter.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_trampoline_init): Likewise.
+
 2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81621
