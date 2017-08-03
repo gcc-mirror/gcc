@@ -5487,9 +5487,9 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	    {
 	      if (complain & tf_error)
 		error (DECL_CONSTRUCTOR_P (fn)
-		       ? G_("taking address of constructor %qE")
-		       : G_("taking address of destructor %qE"),
-		       xarg.get_value ());
+		       ? G_("taking address of constructor %qD")
+		       : G_("taking address of destructor %qD"),
+		       fn);
 	      return error_mark_node;
 	    }
 	}
