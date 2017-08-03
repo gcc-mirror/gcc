@@ -23,7 +23,7 @@ extern tree lto_symtab_prevailing_decl (tree decl);
 extern tree lto_symtab_prevailing_virtual_decl (tree decl);
 
 /* Mark DECL to be previailed by PREVAILING.
-   Use DECL_ABSTRACT_ORIGIN and DECL_CHAIN as special markers; those do not
+   Use DECL_LANG_FLAG_0 and DECL_CHAIN as special markers; those do not
    disturb debug_tree and diagnostics.
    We are safe to modify them as we wish, because the declarations disappear
    from the IL after the merging.  */
@@ -31,10 +31,10 @@ extern tree lto_symtab_prevailing_virtual_decl (tree decl);
 inline void
 lto_symtab_prevail_decl (tree prevailing, tree decl)
 {
-  gcc_checking_assert (DECL_ABSTRACT_ORIGIN (decl) != error_mark_node);
+  gcc_checking_assert (! DECL_LANG_FLAG_0 (decl));
   gcc_assert (TREE_PUBLIC (decl) || DECL_EXTERNAL (decl));
   DECL_CHAIN (decl) = prevailing;
-  DECL_ABSTRACT_ORIGIN (decl) = error_mark_node;
+  DECL_LANG_FLAG_0 (decl) = 1;
 }
 
 /* Given the decl DECL, return the prevailing decl with the same name. */
@@ -42,7 +42,7 @@ lto_symtab_prevail_decl (tree prevailing, tree decl)
 inline tree
 lto_symtab_prevailing_decl (tree decl)
 {
-  if (DECL_ABSTRACT_ORIGIN (decl) == error_mark_node)
+  if (DECL_LANG_FLAG_0 (decl))
     return DECL_CHAIN (decl);
   else
     {
