@@ -1,5 +1,9 @@
 2017-08-03  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/pr56727-2.c: Require alias.
+
+2017-08-03  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.dg/attr-noipa.c: Require alloca.
 
 2017-08-03  Tom de Vries  <tom@codesourcery.com>
