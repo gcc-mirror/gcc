@@ -4729,7 +4729,9 @@ should_break_up_subtract (gimple *stmt)
       && (immusestmt = get_single_immediate_use (lhs))
       && is_gimple_assign (immusestmt)
       && (gimple_assign_rhs_code (immusestmt) == PLUS_EXPR
-	  ||  gimple_assign_rhs_code (immusestmt) == MULT_EXPR))
+	  || (gimple_assign_rhs_code (immusestmt) == MINUS_EXPR
+	      && gimple_assign_rhs1 (immusestmt) == lhs)
+	  || gimple_assign_rhs_code (immusestmt) == MULT_EXPR))
     return true;
   return false;
 }
