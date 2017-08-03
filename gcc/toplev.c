@@ -80,6 +80,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "hsa-common.h"
 #include "edit-context.h"
 #include "tree-pass.h"
+#include "dumpfile.h"
 
 #if defined(DBX_DEBUGGING_INFO) || defined(XCOFF_DEBUGGING_INFO)
 #include "dbxout.h"
@@ -1064,11 +1065,22 @@ open_auxiliary_file (const char *ext)
   return file;
 }
 
+/* Alternative diagnostics callback for reentered ICE reporting.  */
+
+static void
+internal_error_reentered (diagnostic_context *, const char *, va_list *)
+{
+  /* Flush the dump file if emergency_dump_function itself caused an ICE.  */
+  if (dump_file)
+    fflush (dump_file);
+}
+
 /* Auxiliary callback for the diagnostics code.  */
 
 static void
 internal_error_function (diagnostic_context *, const char *, va_list *)
 {
+  global_dc->internal_error = internal_error_reentered;
   warn_if_plugins ();
   emergency_dump_function ();
 }

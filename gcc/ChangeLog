@@ -1,3 +1,9 @@
+2017-08-03 Alexander Monakov  <amonakov@ispras.ru>
+
+	* toplev.c (dumpfile.h): New include.
+	(internal_error_reentered): New static function.  Use it...
+	(internal_error_function): ...here to handle reentered internal_error.
+
 2017-08-03 Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81148
