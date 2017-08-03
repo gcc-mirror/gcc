@@ -1,15 +1,21 @@
+2017-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81621
+	* bb-reorder.c (pass_partition_blocks::execute): Return TODO_df_finish
+	after setting changeable df flags.
+
 2017-08-03  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-reassoc.c (should_break_up_subtract): Also break
 	up if the use is in USE - X.
 
-2017-08-03 Alexander Monakov  <amonakov@ispras.ru>
+2017-08-03  Alexander Monakov  <amonakov@ispras.ru>
 
 	* toplev.c (dumpfile.h): New include.
 	(internal_error_reentered): New static function.  Use it...
 	(internal_error_function): ...here to handle reentered internal_error.
 
-2017-08-03 Richard Biener  <rguenther@suse.de>
+2017-08-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81148
 	* fold-const.c (split_tree): Add minus_var and minus_con

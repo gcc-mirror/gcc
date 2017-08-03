@@ -1,9 +1,14 @@
+2017-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81621
+	* gcc.dg/pr81621.c: New test.
+
 2017-08-03  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/reassoc-23.c: Adjust to fool early folding
 	and CSE.
 
-2017-08-03 Richard Biener  <rguenther@suse.de>
+2017-08-03  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81148
 	* c-c++-common/ubsan/pr81148.c: New testcase.
