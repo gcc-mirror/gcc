@@ -4250,7 +4250,7 @@ rs6000_option_override_internal (bool global_init_p)
 	      rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
 	    }
 	  else
-	    error ("Power9 target option is incompatible with -mcpu=<xxx> for "
+	    error ("power9 target option is incompatible with -mcpu=<xxx> for "
 		   "<xxx> less than power9");
 	}
       else if ((ISA_3_0_MASKS_SERVER & rs6000_isa_flags_explicit)
@@ -16060,45 +16060,45 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 
   gcc_assert (name != NULL);
   if ((fnmask & RS6000_BTM_CELL) != 0)
-    error ("Builtin function %s is only valid for the cell processor", name);
+    error ("builtin function %s is only valid for the cell processor", name);
   else if ((fnmask & RS6000_BTM_VSX) != 0)
-    error ("Builtin function %s requires the -mvsx option", name);
+    error ("builtin function %s requires the -mvsx option", name);
   else if ((fnmask & RS6000_BTM_HTM) != 0)
-    error ("Builtin function %s requires the -mhtm option", name);
+    error ("builtin function %s requires the -mhtm option", name);
   else if ((fnmask & RS6000_BTM_ALTIVEC) != 0)
-    error ("Builtin function %s requires the -maltivec option", name);
+    error ("builtin function %s requires the -maltivec option", name);
   else if ((fnmask & RS6000_BTM_PAIRED) != 0)
-    error ("Builtin function %s requires the -mpaired option", name);
+    error ("builtin function %s requires the -mpaired option", name);
   else if ((fnmask & (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
 	   == (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
-    error ("Builtin function %s requires the -mhard-dfp and"
+    error ("builtin function %s requires the -mhard-dfp and"
 	   " -mpower8-vector options", name);
   else if ((fnmask & RS6000_BTM_DFP) != 0)
-    error ("Builtin function %s requires the -mhard-dfp option", name);
+    error ("builtin function %s requires the -mhard-dfp option", name);
   else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
-    error ("Builtin function %s requires the -mpower8-vector option", name);
+    error ("builtin function %s requires the -mpower8-vector option", name);
   else if ((fnmask & (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
-    error ("Builtin function %s requires the -mcpu=power9 and"
+    error ("builtin function %s requires the -mcpu=power9 and"
 	   " -m64 options", name);
   else if ((fnmask & RS6000_BTM_P9_VECTOR) != 0)
-    error ("Builtin function %s requires the -mcpu=power9 option", name);
+    error ("builtin function %s requires the -mcpu=power9 option", name);
   else if ((fnmask & (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
-    error ("Builtin function %s requires the -mcpu=power9 and"
+    error ("builtin function %s requires the -mcpu=power9 and"
 	   " -m64 options", name);
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
-    error ("Builtin function %s requires the -mcpu=power9 option", name);
+    error ("builtin function %s requires the -mcpu=power9 option", name);
   else if ((fnmask & (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
 	   == (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-    error ("Builtin function %s requires the -mhard-float and"
+    error ("builtin function %s requires the -mhard-float and"
 	   " -mlong-double-128 options", name);
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
-    error ("Builtin function %s requires the -mhard-float option", name);
+    error ("builtin function %s requires the -mhard-float option", name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
-    error ("Builtin function %s requires the -mfloat128 option", name);
+    error ("builtin function %s requires the -mfloat128 option", name);
   else
-    error ("Builtin function %s is not supported with the current options",
+    error ("builtin function %s is not supported with the current options",
 	   name);
 }
 
@@ -32272,7 +32272,7 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 	rtx fnmem, fn_reg, toc_reg;
 
 	if (!TARGET_POINTERS_TO_NESTED_FUNCTIONS)
-	  error ("You cannot take the address of a nested function if you use "
+	  error ("you cannot take the address of a nested function if you use "
 		 "the -mno-pointers-to-nested-functions option.");
 
 	fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));

@@ -6802,7 +6802,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     if (unsupported_builtin)
       {
 	const char *name = rs6000_overloaded_builtin_name (fcode);
-	error ("Builtin function %s not supported in this compiler configuration",
+	error ("builtin function %s not supported in this compiler configuration",
 	       name);
 	return error_mark_node;
       }
