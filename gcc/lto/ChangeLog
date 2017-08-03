@@ -1,3 +1,10 @@
+2017-08-03  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.h (lto_symtab_prevail_decl): Do not use
+	DECL_ABSTRACT_ORIGIN as flag we can end up using that.  Instead
+	use DECL_LANG_FLAG_0.
+	(lto_symtab_prevail_decl): Likewise.
+
 2017-07-07  Torsten Duwe  <duwe@suse.de>
 
 	* lto-lang.c (lto_attribute_table): Add entry for
