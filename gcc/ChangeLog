@@ -1,5 +1,11 @@
 2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR driver/81650
+	* calls.c (alloc_max_size): Use HOST_WIDE_INT_UC (10??)
+	instead of 10??LU, perform unit multiplication in wide_int,
+	don't change alloc_object_size_limit if the limit is larger
+	than SSIZE_MAX.
+
 	PR tree-optimization/81655
 	PR tree-optimization/81588
 	* tree-ssa-reassoc.c (optimize_range_tests_var_bound): Handle also
