@@ -1,3 +1,8 @@
+2017-08-03  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-reassoc.c (should_break_up_subtract): Also break
+	up if the use is in USE - X.
+
 2017-08-03 Alexander Monakov  <amonakov@ispras.ru>
 
 	* toplev.c (dumpfile.h): New include.

@@ -1,3 +1,8 @@
+2017-08-03  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/reassoc-23.c: Adjust to fool early folding
+	and CSE.
+
 2017-08-03 Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81148
