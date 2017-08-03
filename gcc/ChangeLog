@@ -1,3 +1,9 @@
+2017-08-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81662
+	* config/nvptx/nvptx.c (nvptx_option_override): Emit sorry if
+	function_entry_patch_area_size > 0.
+
 2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR driver/81650
