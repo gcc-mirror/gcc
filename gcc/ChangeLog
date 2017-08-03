@@ -1,5 +1,12 @@
 2017-08-03  Tom de Vries  <tom@codesourcery.com>
 
+	PR lto/81430
+	* tree-streamer-in.c (lto_input_ts_function_decl_tree_pointers): If
+	ACCEL_COMPILER, apply finish_options on
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION.
+
+2017-08-03  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/81662
 	* config/nvptx/nvptx.c (nvptx_option_override): Emit sorry if
 	function_entry_patch_area_size > 0.
