@@ -1,5 +1,9 @@
 2017-08-03  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/torture/pr80163.c: Require label_values.
+
+2017-08-03  Tom de Vries  <tom@codesourcery.com>
+
 	PR target/81662
 	* c-c++-common/patchable_function_entry-decl.c: Skip for nvptx.
 	* c-c++-common/patchable_function_entry-default.c: Same.
