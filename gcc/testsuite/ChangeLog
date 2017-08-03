@@ -1,3 +1,10 @@
+2017-08-03  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/81662
+	* c-c++-common/patchable_function_entry-decl.c: Skip for nvptx.
+	* c-c++-common/patchable_function_entry-default.c: Same.
+	* c-c++-common/patchable_function_entry-definition.c: Same.
+
 2017-08-02  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81644

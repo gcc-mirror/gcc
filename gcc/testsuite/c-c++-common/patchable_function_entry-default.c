@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! nvptx*-*-* } } } */
 /* { dg-options "-O2 -fpatchable-function-entry=3,1" } */
 /* { dg-final { scan-assembler-times "nop" 3 } } */
 
