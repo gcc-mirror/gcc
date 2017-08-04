@@ -2577,7 +2577,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
       build_new_reduction (reduction_list, reduc_stmt, phi);
     }
-  destroy_loop_vec_info (simple_loop_info, true);
+  delete simple_loop_info;
 
   if (!double_reduc_phis.is_empty ())
     {
@@ -2613,7 +2613,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
 	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
 	    }
-	  destroy_loop_vec_info (simple_loop_info, true);
+	  delete simple_loop_info;
 	}
     }
 
