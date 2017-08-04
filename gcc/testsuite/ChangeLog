@@ -1,3 +1,8 @@
+2017-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81695
+	* gcc.dg/pr81695.c: New test.
+
 2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/81136
