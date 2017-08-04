@@ -1423,9 +1423,8 @@ brig_code_entry_handler::build_output_assignment (const BrigInstBase &brig_inst,
 	  tree element_ref
 	    = build3 (BIT_FIELD_REF, element_type, input,
 		      TYPE_SIZE (element_type),
-		      build_int_cst (uint32_type_node,
-				     i * int_size_in_bytes (element_type)
-				     *  BITS_PER_UNIT));
+		      bitsize_int (i * int_size_in_bytes (element_type)
+				   *  BITS_PER_UNIT));
 
 	  last_assign
 	    = build_output_assignment (brig_inst, element, element_ref);
@@ -1488,7 +1487,7 @@ brig_code_entry_handler::unpack (tree value, tree_stl_vec &elements)
       tree element
 	= build3 (BIT_FIELD_REF, input_element_type, value,
 		  TYPE_SIZE (input_element_type),
-		  build_int_cst (unsigned_char_type_node, i * element_size));
+		  bitsize_int(i * element_size));
 
       element = add_temp_var ("scalar", element);
       elements.push_back (element);
@@ -1543,9 +1542,8 @@ tree_element_unary_visitor::operator () (brig_code_entry_handler &handler,
 	{
 	  tree element = build3 (BIT_FIELD_REF, input_element_type, operand,
 				 TYPE_SIZE (input_element_type),
-				 build_int_cst (unsigned_char_type_node,
-						i * element_size
-						* BITS_PER_UNIT));
+				 bitsize_int (i * element_size
+					      * BITS_PER_UNIT));
 
 	  tree output = visit_element (handler, element);
 	  output_element_type = TREE_TYPE (output);
@@ -1594,15 +1592,13 @@ tree_element_binary_visitor::operator () (brig_code_entry_handler &handler,
 
 	  tree element0 = build3 (BIT_FIELD_REF, input_element_type, operand0,
 				  TYPE_SIZE (input_element_type),
-				  build_int_cst (unsigned_char_type_node,
-						 i * element_size
-						 * BITS_PER_UNIT));
+				  bitsize_int (i * element_size
+					       * BITS_PER_UNIT));
 
 	  tree element1 = build3 (BIT_FIELD_REF, input_element_type, operand1,
 				  TYPE_SIZE (input_element_type),
-				  build_int_cst (unsigned_char_type_node,
-						 i * element_size
-						 * BITS_PER_UNIT));
+				  bitsize_int (i * element_size
+					       * BITS_PER_UNIT));
 
 	  tree output = visit_element (handler, element0, element1);
 	  output_element_type = TREE_TYPE (output);
