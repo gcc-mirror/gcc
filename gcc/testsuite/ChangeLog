@@ -1,3 +1,12 @@
+2017-08-04  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/57371
+	* c-c++-common/pr57371-1.c: New test.
+	* c-c++-common/pr57371-2.c: New test.
+	* c-c++-common/pr57371-3.c: New test.
+	* c-c++-common/pr57371-4.c: New test.
+	* gcc.dg/pr57371-5.c: New test.
+
 2017-08-04  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-3.c: Remove ISA 3.0 word variant

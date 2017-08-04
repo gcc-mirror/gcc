@@ -1,3 +1,8 @@
+2017-08-04  Yury Gribov  <tetra2005@gmail.com>
+
+	PR tree-optimization/57371
+	* match.pd: New pattern.
+
 2017-08-04  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/81695
