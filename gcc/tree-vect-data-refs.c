@@ -51,6 +51,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "params.h"
 #include "tree-cfg.h"
+#include "tree-hash-traits.h"
 
 /* Return true if load- or store-lanes optab OPTAB is implemented for
    COUNT vectors of type VECTYPE.  NAME is the name of OPTAB.  */
@@ -2986,10 +2987,14 @@ dependence_distance_ge_vf (data_dependence_relation *ddr,
 bool
 vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 {
-  vec<ddr_p> may_alias_ddrs =
-    LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
-  vec<dr_with_seg_len_pair_t>& comp_alias_ddrs =
-    LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
+  typedef pair_hash <tree_operand_hash, tree_operand_hash> tree_pair_hash;
+  hash_set <tree_pair_hash> compared_objects;
+
+  vec<ddr_p> may_alias_ddrs = LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo);
+  vec<dr_with_seg_len_pair_t> &comp_alias_ddrs
+    = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo);
+  vec<vec_object_pair> &check_unequal_addrs
+    = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
   int vect_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
 
@@ -3023,6 +3028,24 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 	 than the dependence distance.  */
       if (dependence_distance_ge_vf (ddr, loop_depth, vect_factor))
 	continue;
+
+      if (DDR_OBJECT_A (ddr))
+	{
+	  vec_object_pair new_pair (DDR_OBJECT_A (ddr), DDR_OBJECT_B (ddr));
+	  if (!compared_objects.add (new_pair))
+	    {
+	      if (dump_enabled_p ())
+		{
+		  dump_printf_loc (MSG_NOTE, vect_location, "checking that ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, new_pair.first);
+		  dump_printf (MSG_NOTE, " and ");
+		  dump_generic_expr (MSG_NOTE, TDF_SLIM, new_pair.second);
+		  dump_printf (MSG_NOTE, " have different addresses\n");
+		}
+	      LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).safe_push (new_pair);
+	    }
+	  continue;
+	}
 
       dr_a = DDR_A (ddr);
       stmt_a = DR_STMT (DDR_A (ddr));
@@ -3085,11 +3108,13 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
   prune_runtime_alias_test_list (&comp_alias_ddrs,
 				 (unsigned HOST_WIDE_INT) vect_factor);
+
+  unsigned int count = (comp_alias_ddrs.length ()
+			+ check_unequal_addrs.length ());
   dump_printf_loc (MSG_NOTE, vect_location,
 		   "improved number of alias checks from %d to %d\n",
-		   may_alias_ddrs.length (), comp_alias_ddrs.length ());
-  if ((int) comp_alias_ddrs.length () >
-      PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
+		   may_alias_ddrs.length (), count);
+  if ((int) count > PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

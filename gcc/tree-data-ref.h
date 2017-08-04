@@ -309,6 +309,13 @@ struct data_dependence_relation
        but the analyzer cannot be more specific.  */
   tree are_dependent;
 
+  /* If nonnull, COULD_BE_INDEPENDENT_P is true and the accesses are
+     independent when the runtime addresses of OBJECT_A and OBJECT_B
+     are different.  The addresses of both objects are invariant in the
+     loop nest.  */
+  tree object_a;
+  tree object_b;
+
   /* For each subscript in the dependence test, there is an element in
      this array.  This is the attribute that labels the edge A->B of
      the data_dependence_relation.  */
@@ -372,6 +379,8 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_B(DDR) (DDR)->b
 #define DDR_AFFINE_P(DDR) (DDR)->affine_p
 #define DDR_ARE_DEPENDENT(DDR) (DDR)->are_dependent
+#define DDR_OBJECT_A(DDR) (DDR)->object_a
+#define DDR_OBJECT_B(DDR) (DDR)->object_b
 #define DDR_SUBSCRIPTS(DDR) (DDR)->subscripts
 #define DDR_SUBSCRIPT(DDR, I) DDR_SUBSCRIPTS (DDR)[I]
 #define DDR_NUM_SUBSCRIPTS(DDR) DDR_SUBSCRIPTS (DDR).length ()

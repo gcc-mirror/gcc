@@ -149,6 +149,10 @@ typedef struct _slp_instance {
 
 
 
+/* Describes two objects whose addresses must be unequal for the vectorized
+   loop to be valid.  */
+typedef std::pair<tree, tree> vec_object_pair;
+
 /* Vectorizer state common between loop and basic-block vectorization.  */
 struct vec_info {
   enum { bb, loop } kind;
@@ -245,6 +249,9 @@ typedef struct _loop_vec_info : public vec_info {
      lengths from which the run-time aliasing check is built.  */
   vec<dr_with_seg_len_pair_t> comp_alias_ddrs;
 
+  /* Check that the addresses of each pair of objects is unequal.  */
+  vec<vec_object_pair> check_unequal_addrs;
+
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
   vec<gimple *> may_misalign_stmts;
@@ -339,6 +346,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_MAY_MISALIGN_STMTS(L)   (L)->may_misalign_stmts
 #define LOOP_VINFO_MAY_ALIAS_DDRS(L)       (L)->may_alias_ddrs
 #define LOOP_VINFO_COMP_ALIAS_DDRS(L)      (L)->comp_alias_ddrs
+#define LOOP_VINFO_CHECK_UNEQUAL_ADDRS(L)  (L)->check_unequal_addrs
 #define LOOP_VINFO_GROUPED_STORES(L)       (L)->grouped_stores
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
@@ -358,7 +366,8 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)		\
-  ((L)->comp_alias_ddrs.length () > 0)
+  ((L)->comp_alias_ddrs.length () > 0 \
+   || (L)->check_unequal_addrs.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_NITERS(L)		\
   (LOOP_VINFO_NITERS_ASSUMPTIONS (L))
 #define LOOP_REQUIRES_VERSIONING(L)			\

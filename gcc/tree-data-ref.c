@@ -2506,6 +2506,15 @@ initialize_data_dependence_relation (struct data_reference *a,
 	}
 
       DDR_COULD_BE_INDEPENDENT_P (res) = true;
+      if (!loop_nest.exists ()
+	  || (object_address_invariant_in_loop_p (loop_nest[0],
+						  full_seq.object_a)
+	      && object_address_invariant_in_loop_p (loop_nest[0],
+						     full_seq.object_b)))
+	{
+	  DDR_OBJECT_A (res) = full_seq.object_a;
+	  DDR_OBJECT_B (res) = full_seq.object_b;
+	}
     }
 
   DDR_AFFINE_P (res) = true;
