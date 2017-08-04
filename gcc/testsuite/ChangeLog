@@ -1,3 +1,10 @@
+2017-08-04  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-3.c: Remove ISA 3.0 word variant
+	builtin test cases for vec_mule, and vec_mulo.
+	* gcc.target/powerpc/builtins-3-p8.c: Add ISA 3.0 word variant
+	builtin test cases for vec_mule, and vec_mulo.
+
 2017-08-04  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/81590
