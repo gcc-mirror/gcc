@@ -1,7 +1,7 @@
 2017-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79790
-	* g++.dg/cpp1z/class-deduction42.C: New.
+	* g++.dg/cpp1z/class-deduction43.C: New.
 
 2017-08-04  Yury Gribov  <tetra2005@gmail.com>
 
