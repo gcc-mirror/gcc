@@ -1,3 +1,7 @@
+2017-08-04  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-simd-clone.c (simd_clone_adjust): Add missing edge probability.
+
 2017-08-03  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
