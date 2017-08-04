@@ -9592,12 +9592,13 @@ fold_binary_loc (location_t loc,
 	  if (POINTER_TYPE_P (atype)
 	      || (INTEGRAL_TYPE_P (atype) && !TYPE_OVERFLOW_WRAPS (atype)))
 	    {
-	      if (var0 && var1)
+	      if ((var0 && var1) || (minus_var0 && minus_var1))
 		{
 		  /* ???  If split_tree would handle NEGATE_EXPR we could
-		     simplify this down to the var0/minus_var1 cases.  */
-		  tree tmp0 = var0;
-		  tree tmp1 = var1;
+		     simply reject these cases and the allowed cases would
+		     be the var0/minus_var1 ones.  */
+		  tree tmp0 = var0 ? var0 : minus_var0;
+		  tree tmp1 = var1 ? var1 : minus_var1;
 		  bool one_neg = false;
 
 		  if (TREE_CODE (tmp0) == NEGATE_EXPR)

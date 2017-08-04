@@ -1,3 +1,10 @@
+2017-08-04  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81705
+	* fold-const.c (fold_binary_loc): Properly restrict
+	minus_var0 && minus_var1 case when associating undefined overflow
+	entities.
+
 2017-08-04  Tom de Vries  <tom@codesourcery.com>
 
 	* omp-simd-clone.c (simd_clone_adjust): Add missing edge probability.
