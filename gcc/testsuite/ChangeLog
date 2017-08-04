@@ -1,3 +1,24 @@
+2017-08-04  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81590
+	* gcc.target/i386/avx512-check.h: New file.
+	* gcc.target/i386/avx5124fmaps-check.h: Removed.
+	* gcc.target/i386/avx5124vnniw-check.h: Likewise.
+	* gcc.target/i386/avx512cd-check.h: Likewise.
+	* gcc.target/i386/avx512ifma-check.h: Likewise.
+	* gcc.target/i386/avx512vbmi-check.h: Likewise.
+	* gcc.target/i386/avx512vpopcntdq-check.h: Likewise.
+	* gcc.target/i386/avx512bw-check.h: Rewrite.
+	* gcc.target/i386/avx512dq-check.h: Likewise.
+	* gcc.target/i386/avx512er-check.h: Likewise.
+	* gcc.target/i386/avx512f-check.h: Likewise.
+	* gcc.target/i386/avx512vl-check.h: Likewise.
+	* gcc.target/i386/avx512f-helper.h: Include "avx512-check.h"
+	only.
+	(test_512): Removed.
+	(avx512*_test): Likewise.
+	* gcc.target/i386/avx512f-pr71559.c (TEST): Undef.
+
 2017-08-04  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/81695
