@@ -8,29 +8,7 @@
 #ifndef AVX512F_HELPER_INCLUDED
 #define AVX512F_HELPER_INCLUDED
 
-#if defined (AVX512F) && !defined (AVX512VL)
-#include "avx512f-check.h"
-#elif defined (AVX512ER) && !defined (AVX512VL)
-#include "avx512er-check.h"
-#elif defined (AVX512CD) && !defined (AVX512VL)
-#include "avx512cd-check.h"
-#elif defined (AVX512DQ) && !defined (AVX512VL)
-#include "avx512dq-check.h"
-#elif defined (AVX512BW) && !defined (AVX512VL)
-#include "avx512bw-check.h"
-#elif defined (AVX512IFMA) && !defined (AVX512VL)
-#include "avx512ifma-check.h"
-#elif defined (AVX512VBMI) && !defined (AVX512VL)
-#include "avx512vbmi-check.h"
-#elif defined (AVX5124FMAPS) && !defined (AVX512VL)
-#include "avx5124fmaps-check.h"
-#elif defined (AVX5124VNNIW) && !defined (AVX512VL)
-#include "avx5124vnniw-check.h"
-#elif defined (AVX512VPOPCNTDQ) && !defined (AVX512VL)
-#include "avx512vpopcntdq-check.h"
-#elif defined (AVX512VL)
-#include "avx512vl-check.h"
-#endif
+#include "avx512-check.h"
 
 /* Macros expansion.  */
 #define CONCAT(a,b,c) a ## b ## c
@@ -112,46 +90,6 @@ MAKE_MASK_ZERO(i_uq, unsigned long long)
 #ifndef AVX512VL
 #define AVX512F_LEN 512
 #define AVX512F_LEN_HALF 256
-void test_512 ();
-#endif
-
-void test_512 ();
-void test_256 ();
-void test_128 ();
-
-#if defined (AVX512F) && !defined (AVX512VL)
-void
-avx512f_test (void) { test_512 (); }
-#elif defined (AVX512CD) && !defined (AVX512VL)
-void
-avx512cd_test (void) { test_512 (); }
-#elif defined (AVX512ER) && !defined (AVX512VL)
-void
-avx512er_test (void) { test_512 (); }
-#elif defined (AVX512DQ) && !defined (AVX512VL)
-void
-avx512dq_test (void) { test_512 (); }
-#elif defined (AVX512BW) && !defined (AVX512VL)
-void
-avx512bw_test (void) { test_512 (); }
-#elif defined (AVX512IFMA) && !defined (AVX512VL)
-void
-avx512ifma_test (void) { test_512 (); }
-#elif defined (AVX512VBMI) && !defined (AVX512VL)
-void
-avx512vbmi_test (void) { test_512 (); }
-#elif defined (AVX5124FMAPS) && !defined (AVX512VL)
-void
-avx5124fmaps_test (void) { test_512 (); }
-#elif defined (AVX5124VNNIW) && !defined (AVX512VL)
-void
-avx5124vnniw_test (void) { test_512 (); }
-#elif defined (AVX512VPOPCNTDQ) && !defined (AVX512VL)
-void
-avx512vpopcntdq_test (void) { test_512 (); }
-#elif defined (AVX512VL)
-void
-avx512vl_test (void) { test_256 (); test_128 (); }
 #endif
 
 #endif /* AVX512F_HELPER_INCLUDED */
