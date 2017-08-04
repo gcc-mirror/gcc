@@ -14,3 +14,5 @@ fn1 (int n)
   for (int i = 0; i < n; i++)
     a->bar[i] = b[i];
 }
+
+/* { dg-final { scan-tree-dump-not "Unknown misalignment" "vect" } } */

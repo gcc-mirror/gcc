@@ -708,6 +708,69 @@ vect_slp_analyze_instance_dependence (slp_instance instance)
   return res;
 }
 
+/* Record in VINFO the base alignment guarantee given by DRB.  STMT is
+   the statement that contains DRB, which is useful for recording in the
+   dump file.  */
+
+static void
+vect_record_base_alignment (vec_info *vinfo, gimple *stmt,
+			    innermost_loop_behavior *drb)
+{
+  bool existed;
+  innermost_loop_behavior *&entry
+    = vinfo->base_alignments.get_or_insert (drb->base_address, &existed);
+  if (!existed || entry->base_alignment < drb->base_alignment)
+    {
+      entry = drb;
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "recording new base alignment for ");
+	  dump_generic_expr (MSG_NOTE, TDF_SLIM, drb->base_address);
+	  dump_printf (MSG_NOTE, "\n");
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "  alignment:    %d\n", drb->base_alignment);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "  misalignment: %d\n", drb->base_misalignment);
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "  based on:     ");
+	  dump_gimple_stmt (MSG_NOTE, TDF_SLIM, stmt, 0);
+	}
+    }
+}
+
+/* If the region we're going to vectorize is reached, all unconditional
+   data references occur at least once.  We can therefore pool the base
+   alignment guarantees from each unconditional reference.  Do this by
+   going through all the data references in VINFO and checking whether
+   the containing statement makes the reference unconditionally.  If so,
+   record the alignment of the base address in VINFO so that it can be
+   used for all other references with the same base.  */
+
+void
+vect_record_base_alignments (vec_info *vinfo)
+{
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  struct loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
+  data_reference *dr;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
+    if (!DR_IS_CONDITIONAL_IN_STMT (dr))
+      {
+	gimple *stmt = DR_STMT (dr);
+	vect_record_base_alignment (vinfo, stmt, &DR_INNERMOST (dr));
+
+	/* If DR is nested in the loop that is being vectorized, we can also
+	   record the alignment of the base wrt the outer loop.  */
+	if (loop && nested_in_vect_loop_p (loop, stmt))
+	  {
+	    stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+	    vect_record_base_alignment
+	      (vinfo, stmt, &STMT_VINFO_DR_WRT_VEC_LOOP (stmt_info));
+	  }
+      }
+}
+
 /* Function vect_compute_data_ref_alignment
 
    Compute the misalignment of the data reference DR.
@@ -725,6 +788,7 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
 {
   gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+  vec_base_alignments *base_alignments = &stmt_info->vinfo->base_alignments;
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
   struct loop *loop = NULL;
   tree ref = DR_REF (dr);
@@ -792,6 +856,15 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   unsigned int base_alignment = drb->base_alignment;
   unsigned int base_misalignment = drb->base_misalignment;
   unsigned HOST_WIDE_INT vector_alignment = TYPE_ALIGN_UNIT (vectype);
+
+  /* Calculate the maximum of the pooled base address alignment and the
+     alignment that we can compute for DR itself.  */
+  innermost_loop_behavior **entry = base_alignments->get (drb->base_address);
+  if (entry && base_alignment < (*entry)->base_alignment)
+    {
+      base_alignment = (*entry)->base_alignment;
+      base_misalignment = (*entry)->base_misalignment;
+    }
 
   if (drb->offset_alignment < vector_alignment
       || !step_preserves_misalignment_p
@@ -2113,8 +2186,7 @@ vect_find_same_alignment_drs (struct data_dependence_relation *ddr)
   if (dra == drb)
     return;
 
-  if (!operand_equal_p (DR_BASE_OBJECT (dra), DR_BASE_OBJECT (drb),
-			OEP_ADDRESS_OF)
+  if (!operand_equal_p (DR_BASE_ADDRESS (dra), DR_BASE_ADDRESS (drb), 0)
       || !operand_equal_p (DR_OFFSET (dra), DR_OFFSET (drb), 0)
       || !operand_equal_p (DR_STEP (dra), DR_STEP (drb), 0))
     return;
@@ -2172,6 +2244,7 @@ vect_analyze_data_refs_alignment (loop_vec_info vinfo)
   vec<data_reference_p> datarefs = vinfo->datarefs;
   struct data_reference *dr;
 
+  vect_record_base_alignments (vinfo);
   FOR_EACH_VEC_ELT (datarefs, i, dr)
     {
       stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
@@ -3437,7 +3510,8 @@ again:
 	    {
 	      struct data_reference *newdr
 		= create_data_ref (NULL, loop_containing_stmt (stmt),
-				   DR_REF (dr), stmt, maybe_scatter ? false : true);
+				   DR_REF (dr), stmt, !maybe_scatter,
+				   DR_IS_CONDITIONAL_IN_STMT (dr));
 	      gcc_assert (newdr != NULL && DR_REF (newdr));
 	      if (DR_BASE_ADDRESS (newdr)
 		  && DR_OFFSET (newdr)

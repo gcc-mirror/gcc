@@ -2780,6 +2780,8 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
+  vect_record_base_alignments (bb_vinfo);
+
   /* Analyze and verify the alignment of data references and the
      dependence in the SLP instances.  */
   for (i = 0; BB_VINFO_SLP_INSTANCES (bb_vinfo).iterate (i, &instance); )

@@ -1125,15 +1125,19 @@ free_data_ref (data_reference_p dr)
   free (dr);
 }
 
-/* Analyzes memory reference MEMREF accessed in STMT.  The reference
-   is read if IS_READ is true, write otherwise.  Returns the
-   data_reference description of MEMREF.  NEST is the outermost loop
-   in which the reference should be instantiated, LOOP is the loop in
-   which the data reference should be analyzed.  */
+/* Analyze memory reference MEMREF, which is accessed in STMT.
+   The reference is a read if IS_READ is true, otherwise it is a write.
+   IS_CONDITIONAL_IN_STMT indicates that the reference is conditional
+   within STMT, i.e. that it might not occur even if STMT is executed
+   and runs to completion.
+
+   Return the data_reference description of MEMREF.  NEST is the outermost
+   loop in which the reference should be instantiated, LOOP is the loop
+   in which the data reference should be analyzed.  */
 
 struct data_reference *
 create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
-		 bool is_read)
+		 bool is_read, bool is_conditional_in_stmt)
 {
   struct data_reference *dr;
 
@@ -1148,6 +1152,7 @@ create_data_ref (loop_p nest, loop_p loop, tree memref, gimple *stmt,
   DR_STMT (dr) = stmt;
   DR_REF (dr) = memref;
   DR_IS_READ (dr) = is_read;
+  DR_IS_CONDITIONAL_IN_STMT (dr) = is_conditional_in_stmt;
 
   dr_analyze_innermost (&DR_INNERMOST (dr), memref,
 			nest != NULL ? loop : NULL);
@@ -4774,6 +4779,11 @@ struct data_ref_loc
 
   /* True if the memory reference is read.  */
   bool is_read;
+
+  /* True if the data reference is conditional within the containing
+     statement, i.e. if it might not occur even when the statement
+     is executed and runs to completion.  */
+  bool is_conditional_in_stmt;
 };
 
 
@@ -4840,6 +4850,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	{
 	  ref.ref = op1;
 	  ref.is_read = true;
+	  ref.is_conditional_in_stmt = false;
 	  references->safe_push (ref);
 	}
     }
@@ -4867,6 +4878,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	      type = TREE_TYPE (gimple_call_arg (stmt, 3));
 	    if (TYPE_ALIGN (type) != align)
 	      type = build_aligned_type (type, align);
+	    ref.is_conditional_in_stmt = true;
 	    ref.ref = fold_build2 (MEM_REF, type, gimple_call_arg (stmt, 0),
 				   ptr);
 	    references->safe_push (ref);
@@ -4886,6 +4898,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
 	    {
 	      ref.ref = op1;
 	      ref.is_read = true;
+	      ref.is_conditional_in_stmt = false;
 	      references->safe_push (ref);
 	    }
 	}
@@ -4899,6 +4912,7 @@ get_references_in_stmt (gimple *stmt, vec<data_ref_loc, va_heap> *references)
     {
       ref.ref = op0;
       ref.is_read = false;
+      ref.is_conditional_in_stmt = false;
       references->safe_push (ref);
     }
   return clobbers_memory;
@@ -4963,8 +4977,8 @@ find_data_references_in_stmt (struct loop *nest, gimple *stmt,
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
-      dr = create_data_ref (nest, loop_containing_stmt (stmt),
-			    ref->ref, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop_containing_stmt (stmt), ref->ref,
+			    stmt, ref->is_read, ref->is_conditional_in_stmt);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }
@@ -4993,7 +5007,8 @@ graphite_find_data_references_in_stmt (loop_p nest, loop_p loop, gimple *stmt,
 
   FOR_EACH_VEC_ELT (references, i, ref)
     {
-      dr = create_data_ref (nest, loop, ref->ref, stmt, ref->is_read);
+      dr = create_data_ref (nest, loop, ref->ref, stmt, ref->is_read,
+			    ref->is_conditional_in_stmt);
       gcc_assert (dr != NULL);
       datarefs->safe_push (dr);
     }

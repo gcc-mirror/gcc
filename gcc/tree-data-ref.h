@@ -159,6 +159,11 @@ struct data_reference
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
 
+  /* True when the data reference is conditional within STMT,
+     i.e. if it might not occur even when the statement is executed
+     and runs to completion.  */
+  bool is_conditional_in_stmt;
+
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
@@ -178,6 +183,7 @@ struct data_reference
 #define DR_NUM_DIMENSIONS(DR)      DR_ACCESS_FNS (DR).length ()
 #define DR_IS_READ(DR)             (DR)->is_read
 #define DR_IS_WRITE(DR)            (!DR_IS_READ (DR))
+#define DR_IS_CONDITIONAL_IN_STMT(DR) (DR)->is_conditional_in_stmt
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
@@ -434,7 +440,8 @@ extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
-struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool);
+struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool,
+					bool);
 extern bool find_loop_nest (struct loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, vec<loop_p>);
