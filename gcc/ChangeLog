@@ -1,3 +1,41 @@
+2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-data-ref.h (subscript): Add access_fn field.
+	(data_dependence_relation): Add could_be_independent_p.
+	(SUB_ACCESS_FN, DDR_COULD_BE_INDEPENDENT_P): New macros.
+	(same_access_functions): Move to tree-data-ref.c.
+	* tree-data-ref.c (ref_contains_union_access_p): New function.
+	(access_fn_component_p): Likewise.
+	(access_fn_components_comparable_p): Likewise.
+	(dr_analyze_indices): Add a reference to access_fn_component_p.
+	(dump_data_dependence_relation): Use SUB_ACCESS_FN instead of
+	DR_ACCESS_FN.
+	(constant_access_functions): Likewise.
+	(add_other_self_distances): Likewise.
+	(same_access_functions): Likewise.  (Moved from tree-data-ref.h.)
+	(initialize_data_dependence_relation): Use XCNEW and remove
+	explicit zeroing of DDR_REVERSED_P.  Look for a subsequence
+	of access functions that have the same type.  Allow the
+	subsequence to end with different bases in some circumstances.
+	Record the chosen access functions in SUB_ACCESS_FN.
+	(build_classic_dist_vector_1): Replace ddr_a and ddr_b with
+	a_index and b_index.  Use SUB_ACCESS_FN instead of DR_ACCESS_FN.
+	(subscript_dependence_tester_1): Likewise dra and drb.
+	(build_classic_dist_vector): Update calls accordingly.
+	(subscript_dependence_tester): Likewise.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Check
+	DDR_COULD_BE_INDEPENDENT_P.
+	* tree-vectorizer.h (LOOP_REQUIRES_VERSIONING_FOR_ALIAS): Test
+	comp_alias_ddrs instead of may_alias_ddrs.
+	* tree-vect-data-refs.c (vect_analyze_possibly_independent_ddr):
+	New function.
+	(vect_analyze_data_ref_dependence): Use it if
+	DDR_COULD_BE_INDEPENDENT_P, but fall back to using the recorded
+	distance vectors if that fails.
+	(dependence_distance_ge_vf): New function.
+	(vect_prune_runtime_alias_test_list): Use it.  Don't clear
+	LOOP_VINFO_MAY_ALIAS_DDRS.
+
 2017-08-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81705

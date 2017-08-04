@@ -260,6 +260,9 @@ struct conflict_function
 
 struct subscript
 {
+  /* The access functions of the two references.  */
+  tree access_fn[2];
+
   /* A description of the iterations for which the elements are
      accessed twice.  */
   conflict_function *conflicting_iterations_in_a;
@@ -278,6 +281,7 @@ struct subscript
 
 typedef struct subscript *subscript_p;
 
+#define SUB_ACCESS_FN(SUB, I) (SUB)->access_fn[I]
 #define SUB_CONFLICTS_IN_A(SUB) (SUB)->conflicting_iterations_in_a
 #define SUB_CONFLICTS_IN_B(SUB) (SUB)->conflicting_iterations_in_b
 #define SUB_LAST_CONFLICT(SUB) (SUB)->last_conflict
@@ -333,6 +337,33 @@ struct data_dependence_relation
   /* Set to true when the dependence relation is on the same data
      access.  */
   bool self_reference_p;
+
+  /* True if the dependence described is conservatively correct rather
+     than exact, and if it is still possible for the accesses to be
+     conditionally independent.  For example, the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += b->f[i];
+
+     conservatively have a distance vector of (0), for the case in which
+     a == b, but the accesses are independent if a != b.  Similarly,
+     the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a[0].f[i] += b[i].f[i];
+
+     conservatively have a distance vector of (0), but they are indepenent
+     when a != b + i.  In contrast, the references in:
+
+       struct s *a;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += a->f[i];
+
+     have the same distance vector of (0), but the accesses can never be
+     independent.  */
+  bool could_be_independent_p;
 };
 
 typedef struct data_dependence_relation *ddr_p;
@@ -363,6 +394,7 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_DIST_VECT(DDR, I) \
   DDR_DIST_VECTS (DDR)[I]
 #define DDR_REVERSED_P(DDR) (DDR)->reversed_p
+#define DDR_COULD_BE_INDEPENDENT_P(DDR) (DDR)->could_be_independent_p
 
 
 bool dr_analyze_innermost (innermost_loop_behavior *, tree, struct loop *);
@@ -454,22 +486,6 @@ same_data_refs (data_reference_p a, data_reference_p b)
 
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
-      return false;
-
-  return true;
-}
-
-/* Return true when the DDR contains two data references that have the
-   same access functions.  */
-
-static inline bool
-same_access_functions (const struct data_dependence_relation *ddr)
-{
-  unsigned i;
-
-  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
-    if (!eq_evolutions_p (DR_ACCESS_FN (DDR_A (ddr), i),
-			  DR_ACCESS_FN (DDR_B (ddr), i)))
       return false;
 
   return true;

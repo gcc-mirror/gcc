@@ -1,3 +1,9 @@
+2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/vect-alias-check-3.c: New test.
+	* gcc.dg/vect/vect-alias-check-4.c: Likewise.
+	* gcc.dg/vect/vect-alias-check-5.c: Likewise.
+
 2017-08-04  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81705

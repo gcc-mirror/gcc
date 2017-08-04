@@ -160,6 +160,60 @@ vect_mark_for_runtime_alias_test (ddr_p ddr, loop_vec_info loop_vinfo)
 }
 
 
+/* A subroutine of vect_analyze_data_ref_dependence.  Handle
+   DDR_COULD_BE_INDEPENDENT_P ddr DDR that has a known set of dependence
+   distances.  These distances are conservatively correct but they don't
+   reflect a guaranteed dependence.
+
+   Return true if this function does all the work necessary to avoid
+   an alias or false if the caller should use the dependence distances
+   to limit the vectorization factor in the usual way.  LOOP_DEPTH is
+   the depth of the loop described by LOOP_VINFO and the other arguments
+   are as for vect_analyze_data_ref_dependence.  */
+
+static bool
+vect_analyze_possibly_independent_ddr (data_dependence_relation *ddr,
+				       loop_vec_info loop_vinfo,
+				       int loop_depth, int *max_vf)
+{
+  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
+  lambda_vector dist_v;
+  unsigned int i;
+  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
+    {
+      int dist = dist_v[loop_depth];
+      if (dist != 0 && !(dist > 0 && DDR_REVERSED_P (ddr)))
+	{
+	  /* If the user asserted safelen >= DIST consecutive iterations
+	     can be executed concurrently, assume independence.
+
+	     ??? An alternative would be to add the alias check even
+	     in this case, and vectorize the fallback loop with the
+	     maximum VF set to safelen.  However, if the user has
+	     explicitly given a length, it's less likely that that
+	     would be a win.  */
+	  if (loop->safelen >= 2 && abs_hwi (dist) <= loop->safelen)
+	    {
+	      if (loop->safelen < *max_vf)
+		*max_vf = loop->safelen;
+	      LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo) = false;
+	      continue;
+	    }
+
+	  /* For dependence distances of 2 or more, we have the option
+	     of limiting VF or checking for an alias at runtime.
+	     Prefer to check at runtime if we can, to avoid limiting
+	     the VF unnecessarily when the bases are in fact independent.
+
+	     Note that the alias checks will be removed if the VF ends up
+	     being small enough.  */
+	  return vect_mark_for_runtime_alias_test (ddr, loop_vinfo);
+	}
+    }
+  return true;
+}
+
+
 /* Function vect_analyze_data_ref_dependence.
 
    Return TRUE if there (might) exist a dependence between a memory-reference
@@ -305,6 +359,12 @@ vect_analyze_data_ref_dependence (struct data_dependence_relation *ddr,
     }
 
   loop_depth = index_in_loop_nest (loop->num, DDR_LOOP_NEST (ddr));
+
+  if (DDR_COULD_BE_INDEPENDENT_P (ddr)
+      && vect_analyze_possibly_independent_ddr (ddr, loop_vinfo,
+						loop_depth, max_vf))
+    return false;
+
   FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
     {
       int dist = dist_v[loop_depth];
@@ -2878,6 +2938,44 @@ vect_no_alias_p (struct data_reference *a, struct data_reference *b,
   return false;
 }
 
+/* Return true if the minimum nonzero dependence distance for loop LOOP_DEPTH
+   in DDR is >= VF.  */
+
+static bool
+dependence_distance_ge_vf (data_dependence_relation *ddr,
+			   unsigned int loop_depth, unsigned HOST_WIDE_INT vf)
+{
+  if (DDR_ARE_DEPENDENT (ddr) != NULL_TREE
+      || DDR_NUM_DIST_VECTS (ddr) == 0)
+    return false;
+
+  /* If the dependence is exact, we should have limited the VF instead.  */
+  gcc_checking_assert (DDR_COULD_BE_INDEPENDENT_P (ddr));
+
+  unsigned int i;
+  lambda_vector dist_v;
+  FOR_EACH_VEC_ELT (DDR_DIST_VECTS (ddr), i, dist_v)
+    {
+      HOST_WIDE_INT dist = dist_v[loop_depth];
+      if (dist != 0
+	  && !(dist > 0 && DDR_REVERSED_P (ddr))
+	  && (unsigned HOST_WIDE_INT) abs_hwi (dist) < vf)
+	return false;
+    }
+
+  if (dump_enabled_p ())
+    {
+      dump_printf_loc (MSG_NOTE, vect_location,
+		       "dependence distance between ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_A (ddr)));
+      dump_printf (MSG_NOTE,  " and ");
+      dump_generic_expr (MSG_NOTE, TDF_SLIM, DR_REF (DDR_B (ddr)));
+      dump_printf (MSG_NOTE,  " is >= VF\n");
+    }
+
+  return true;
+}
+
 /* Function vect_prune_runtime_alias_test_list.
 
    Prune a list of ddrs to be tested at run-time by versioning for alias.
@@ -2908,6 +3006,10 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 
   comp_alias_ddrs.create (may_alias_ddrs.length ());
 
+  unsigned int loop_depth
+    = index_in_loop_nest (LOOP_VINFO_LOOP (loop_vinfo)->num,
+			  LOOP_VINFO_LOOP_NEST (loop_vinfo));
+
   /* First, we collect all data ref pairs for aliasing checks.  */
   FOR_EACH_VEC_ELT (may_alias_ddrs, i, ddr)
     {
@@ -2916,6 +3018,11 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
       gimple *dr_group_first_a, *dr_group_first_b;
       tree segment_length_a, segment_length_b;
       gimple *stmt_a, *stmt_b;
+
+      /* Ignore the alias if the VF we chose ended up being no greater
+	 than the dependence distance.  */
+      if (dependence_distance_ge_vf (ddr, loop_depth, vect_factor))
+	continue;
 
       dr_a = DDR_A (ddr);
       stmt_a = DR_STMT (DDR_A (ddr));
@@ -2992,10 +3099,6 @@ vect_prune_runtime_alias_test_list (loop_vec_info loop_vinfo)
 			 PARAM_VALUE (PARAM_VECT_MAX_VERSION_FOR_ALIAS_CHECKS));
       return false;
     }
-
-  /* All alias checks have been resolved at compilation time.  */
-  if (!comp_alias_ddrs.length ())
-    LOOP_VINFO_MAY_ALIAS_DDRS (loop_vinfo).truncate (0);
 
   return true;
 }
