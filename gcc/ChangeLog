@@ -1,3 +1,9 @@
+2017-08-04  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81695
+	* fold-const.c (fold_indirect_ref_1): For ((int *)&a + 4 -> a[1],
+	perform the computation in offset_int.
+
 2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/81136
