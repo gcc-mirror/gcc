@@ -1,5 +1,41 @@
 2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vectorizer.h (vec_info): Add a constructor and destructor.
+	Add an explicit name for the enum.  Use auto_vec for slp_instances
+	and grouped_stores.
+	(_loop_vec_info): Add a constructor and destructor.  Use auto_vec
+	for all vectors.
+	(_bb_vec_info): Add a constructor and destructor.
+	(vinfo_for_stmt): Return NULL for uids of -1 as well.
+	(destroy_loop_vec_info): Delete.
+	(vect_destroy_datarefs): Likewise.
+	* tree-vectorizer.c (vect_destroy_datarefs): Delete.
+	(vec_info::vec_info): New function.
+	(vec_info::~vec_info): Likewise.
+	(vectorize_loops): Use delete instead of destroy_loop_vec_info.
+	* tree-parloops.c (gather_scalar_reductions): Use delete instead of
+	destroy_loop_vec_info.
+	* tree-vect-loop.c (new_loop_vec_info): Replace with...
+	(_loop_vec_info::_loop_vec_info): ...this.
+	(destroy_loop_vec_info): Replace with...
+	(_loop_vec_info::~_loop_vec_info): ...this.  Unconditionally delete
+	the stmt_vec_infos.  Leave handling of vec_info information to its
+	destructor.  Remove explicit vector releases.
+	(vect_analyze_loop_form): Use new instead of new_loop_vec_info.
+	(vect_analyze_loop): Use delete instead of destroy_loop_vec_info.
+	* tree-vect-slp.c (new_bb_vec_info): Replace with...
+	(_bb_vec_info::_bb_vec_info): ...this.  Don't reserve space in
+	BB_VINFO_GROUPED_STORES or BB_VINFO_SLP_INSTANCES.
+	(destroy_bb_vec_info): Replace with...
+	(_bb_vec_info::~_bb_vec_info): ...this.  Leave handling of vec_info
+	information to its destructor.
+	(vect_slp_analyze_bb_1): Use new and delete instead of
+	new_bb_vec_info and destroy_bb_vec_info.
+	(vect_slp_bb): Replace 2 calls to destroy_bb_vec_info with a
+	single delete.
+
+2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-data-ref.h (subscript): Add access_fn field.
 	(data_dependence_relation): Add could_be_independent_p.
 	(SUB_ACCESS_FN, DDR_COULD_BE_INDEPENDENT_P): New macros.

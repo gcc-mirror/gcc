@@ -155,20 +155,27 @@ typedef std::pair<tree, tree> vec_object_pair;
 
 /* Vectorizer state common between loop and basic-block vectorization.  */
 struct vec_info {
-  enum { bb, loop } kind;
+  enum vec_kind { bb, loop };
+
+  vec_info (vec_kind, void *);
+  ~vec_info ();
+
+  /* The type of vectorization.  */
+  vec_kind kind;
 
   /* All SLP instances.  */
-  vec<slp_instance> slp_instances;
+  auto_vec<slp_instance> slp_instances;
 
-  /* All data references.  */
+  /* All data references.  Freed by free_data_refs, so not an auto_vec.  */
   vec<data_reference_p> datarefs;
 
-  /* All data dependences.  */
+  /* All data dependences.  Freed by free_dependence_relations, so not
+     an auto_vec.  */
   vec<ddr_p> ddrs;
 
   /* All interleaving chains of stores, represented by the first
      stmt in the chain.  */
-  vec<gimple *> grouped_stores;
+  auto_vec<gimple *> grouped_stores;
 
   /* Cost data used by the target cost model.  */
   void *target_cost_data;
@@ -198,6 +205,8 @@ is_a_helper <_bb_vec_info *>::test (vec_info *i)
 /* Info on vectorized loops.                                       */
 /*-----------------------------------------------------------------*/
 typedef struct _loop_vec_info : public vec_info {
+  _loop_vec_info (struct loop *);
+  ~_loop_vec_info ();
 
   /* The loop to which this info struct refers to.  */
   struct loop *loop;
@@ -239,32 +248,32 @@ typedef struct _loop_vec_info : public vec_info {
   int ptr_mask;
 
   /* The loop nest in which the data dependences are computed.  */
-  vec<loop_p> loop_nest;
+  auto_vec<loop_p> loop_nest;
 
   /* Data Dependence Relations defining address ranges that are candidates
      for a run-time aliasing check.  */
-  vec<ddr_p> may_alias_ddrs;
+  auto_vec<ddr_p> may_alias_ddrs;
 
   /* Data Dependence Relations defining address ranges together with segment
      lengths from which the run-time aliasing check is built.  */
-  vec<dr_with_seg_len_pair_t> comp_alias_ddrs;
+  auto_vec<dr_with_seg_len_pair_t> comp_alias_ddrs;
 
   /* Check that the addresses of each pair of objects is unequal.  */
-  vec<vec_object_pair> check_unequal_addrs;
+  auto_vec<vec_object_pair> check_unequal_addrs;
 
   /* Statements in the loop that have data references that are candidates for a
      runtime (loop versioning) misalignment check.  */
-  vec<gimple *> may_misalign_stmts;
+  auto_vec<gimple *> may_misalign_stmts;
 
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
-  vec<gimple *> reductions;
+  auto_vec<gimple *> reductions;
 
   /* All reduction chains in the loop, represented by the first
      stmt in the chain.  */
-  vec<gimple *> reduction_chains;
+  auto_vec<gimple *> reduction_chains;
 
   /* Cost vector for a single scalar iteration.  */
-  vec<stmt_info_for_cost> scalar_cost_vec;
+  auto_vec<stmt_info_for_cost> scalar_cost_vec;
 
   /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
      applied to the loop, i.e., no unrolling is needed, this is 1.  */
@@ -399,6 +408,9 @@ nested_in_vect_loop_p (struct loop *loop, gimple *stmt)
 
 typedef struct _bb_vec_info : public vec_info
 {
+  _bb_vec_info (gimple_stmt_iterator, gimple_stmt_iterator);
+  ~_bb_vec_info ();
+
   basic_block bb;
   gimple_stmt_iterator region_begin;
   gimple_stmt_iterator region_end;
@@ -802,8 +814,8 @@ void free_stmt_vec_info_vec (void);
 static inline stmt_vec_info
 vinfo_for_stmt (gimple *stmt)
 {
-  unsigned int uid = gimple_uid (stmt);
-  if (uid == 0)
+  int uid = gimple_uid (stmt);
+  if (uid <= 0)
     return NULL;
 
   return stmt_vec_info_vec[uid - 1];
@@ -1177,7 +1189,6 @@ extern tree vect_create_addr_base_for_vector_ref (gimple *, gimple_seq *,
 
 /* In tree-vect-loop.c.  */
 /* FORNOW: Used in tree-parloops.c.  */
-extern void destroy_loop_vec_info (loop_vec_info, bool);
 extern gimple *vect_force_simple_reduction (loop_vec_info, gimple *,
 					    bool *, bool);
 /* Drive for loop analysis stage.  */
@@ -1226,7 +1237,6 @@ void vect_pattern_recog (vec_info *);
 
 /* In tree-vectorizer.c.  */
 unsigned vectorize_loops (void);
-void vect_destroy_datarefs (vec_info *);
 bool vect_stmt_in_region_p (vec_info *, gimple *);
 void vect_free_loop_info_assumptions (struct loop *);
 
