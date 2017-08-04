@@ -358,7 +358,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT(L)	\
   ((L)->may_misalign_stmts.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_ALIAS(L)		\
-  ((L)->may_alias_ddrs.length () > 0)
+  ((L)->comp_alias_ddrs.length () > 0)
 #define LOOP_REQUIRES_VERSIONING_FOR_NITERS(L)		\
   (LOOP_VINFO_NITERS_ASSUMPTIONS (L))
 #define LOOP_REQUIRES_VERSIONING(L)			\
