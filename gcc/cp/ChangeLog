@@ -1,3 +1,10 @@
+2017-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79790
+	* pt.c (do_class_deduction): Handle the case of no viable implicit
+	deduction guides; simplify the code generating implicit deduction
+	guides.
+
 2017-08-03  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/71440
