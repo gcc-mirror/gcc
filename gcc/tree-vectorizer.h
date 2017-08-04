@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_TREE_VECTORIZER_H
 
 #include "tree-data-ref.h"
+#include "tree-hash-traits.h"
 #include "target.h"
 
 /* Used for naming of new temporaries.  */
@@ -83,6 +84,11 @@ struct stmt_info_for_cost {
 };
 
 typedef vec<stmt_info_for_cost> stmt_vector_for_cost;
+
+/* Maps base addresses to an innermost_loop_behavior that gives the maximum
+   known alignment for that base.  */
+typedef hash_map<tree_operand_hash,
+		 innermost_loop_behavior *> vec_base_alignments;
 
 /************************************************************************
   SLP
@@ -168,6 +174,10 @@ struct vec_info {
 
   /* All data references.  Freed by free_data_refs, so not an auto_vec.  */
   vec<data_reference_p> datarefs;
+
+  /* Maps base addresses to an innermost_loop_behavior that gives the maximum
+     known alignment for that base.  */
+  vec_base_alignments base_alignments;
 
   /* All data dependences.  Freed by free_dependence_relations, so not
      an auto_vec.  */
@@ -1162,6 +1172,7 @@ extern bool vect_prune_runtime_alias_test_list (loop_vec_info);
 extern bool vect_check_gather_scatter (gimple *, loop_vec_info,
 				       gather_scatter_info *);
 extern bool vect_analyze_data_refs (vec_info *, int *);
+extern void vect_record_base_alignments (vec_info *);
 extern tree vect_create_data_ref_ptr (gimple *, tree, struct loop *, tree,
 				      tree *, gimple_stmt_iterator *,
 				      gimple **, bool, bool *,

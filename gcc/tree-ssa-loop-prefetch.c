@@ -1633,7 +1633,7 @@ determine_loop_nest_reuse (struct loop *loop, struct mem_ref_group *refs,
     for (ref = gr->refs; ref; ref = ref->next)
       {
 	dr = create_data_ref (nest, loop_containing_stmt (ref->stmt),
-			      ref->mem, ref->stmt, !ref->write_p);
+			      ref->mem, ref->stmt, !ref->write_p, false);
 
 	if (dr)
 	  {

@@ -1,5 +1,34 @@
 2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	PR tree-optimization/81136
+	* tree-vectorizer.h: Include tree-hash-traits.h.
+	(vec_base_alignments): New typedef.
+	(vec_info): Add a base_alignments field.
+	(vect_record_base_alignments): Declare.
+	* tree-data-ref.h (data_reference): Add an is_conditional_in_stmt
+	field.
+	(DR_IS_CONDITIONAL_IN_STMT): New macro.
+	(create_data_ref): Add an is_conditional_in_stmt argument.
+	* tree-data-ref.c (create_data_ref): Likewise.  Use it to initialize
+	the is_conditional_in_stmt field.
+	(data_ref_loc): Add an is_conditional_in_stmt field.
+	(get_references_in_stmt): Set the is_conditional_in_stmt field.
+	(find_data_references_in_stmt): Update call to create_data_ref.
+	(graphite_find_data_references_in_stmt): Likewise.
+	* tree-ssa-loop-prefetch.c (determine_loop_nest_reuse): Likewise.
+	* tree-vect-data-refs.c (vect_analyze_data_refs): Likewise.
+	(vect_record_base_alignment): New function.
+	(vect_record_base_alignments): Likewise.
+	(vect_compute_data_ref_alignment): Adjust base_addr and aligned_to
+	for nested statements even if we fail to compute a misalignment.
+	Use pooled base alignments for unconditional references.
+	(vect_find_same_alignment_drs): Compare base addresses instead
+	of base objects.
+	(vect_analyze_data_refs_alignment): Call vect_record_base_alignments.
+	* tree-vect-slp.c (vect_slp_analyze_bb_1): Likewise.
+
+2017-08-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vectorizer.h (vec_info): Add a constructor and destructor.
 	Add an explicit name for the enum.  Use auto_vec for slp_instances
 	and grouped_stores.
