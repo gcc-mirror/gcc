@@ -1275,6 +1275,8 @@ destroy_loop_vec_info (loop_vec_info loop_vinfo, bool clean_stmts)
   destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
   loop_vinfo->scalar_cost_vec.release ();
 
+  LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
+
   free (loop_vinfo);
   loop->aux = NULL;
 }
@@ -2343,6 +2345,7 @@ again:
     }
   /* Free optimized alias test DDRS.  */
   LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).release ();
+  LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).release ();
   /* Reset target cost data.  */
   destroy_cost_data (LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo)
@@ -3434,6 +3437,11 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
       unsigned len = LOOP_VINFO_COMP_ALIAS_DDRS (loop_vinfo).length ();
       (void) add_stmt_cost (target_cost_data, len, vector_stmt, NULL, 0,
 			    vect_prologue);
+      len = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo).length ();
+      if (len)
+	/* Count LEN - 1 ANDs and LEN comparisons.  */
+	(void) add_stmt_cost (target_cost_data, len * 2 - 1, scalar_stmt,
+			      NULL, 0, vect_prologue);
       dump_printf (MSG_NOTE,
                    "cost model: Adding cost of checks for loop "
                    "versioning aliasing.\n");
