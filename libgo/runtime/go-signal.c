@@ -298,4 +298,45 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 	  }
  #endif
 #endif
+
+#ifdef __alpha__
+  #ifdef __linux__
+	{
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+
+		runtime_printf("v0  %X\n", m->sc_regs[0]);
+		runtime_printf("t0  %X\n", m->sc_regs[1]);
+		runtime_printf("t1  %X\n", m->sc_regs[2]);
+		runtime_printf("t2  %X\n", m->sc_regs[3]);
+		runtime_printf("t3  %X\n", m->sc_regs[4]);
+		runtime_printf("t4  %X\n", m->sc_regs[5]);
+		runtime_printf("t5  %X\n", m->sc_regs[6]);
+		runtime_printf("t6  %X\n", m->sc_regs[7]);
+		runtime_printf("t7  %X\n", m->sc_regs[8]);
+		runtime_printf("s0  %X\n", m->sc_regs[9]);
+		runtime_printf("s1  %X\n", m->sc_regs[10]);
+		runtime_printf("s2  %X\n", m->sc_regs[11]);
+		runtime_printf("s3  %X\n", m->sc_regs[12]);
+		runtime_printf("s4  %X\n", m->sc_regs[13]);
+		runtime_printf("s5  %X\n", m->sc_regs[14]);
+		runtime_printf("fp  %X\n", m->sc_regs[15]);
+		runtime_printf("a0  %X\n", m->sc_regs[16]);
+		runtime_printf("a1  %X\n", m->sc_regs[17]);
+		runtime_printf("a2  %X\n", m->sc_regs[18]);
+		runtime_printf("a3  %X\n", m->sc_regs[19]);
+		runtime_printf("a4  %X\n", m->sc_regs[20]);
+		runtime_printf("a5  %X\n", m->sc_regs[21]);
+		runtime_printf("t8  %X\n", m->sc_regs[22]);
+		runtime_printf("t9  %X\n", m->sc_regs[23]);
+		runtime_printf("t10 %X\n", m->sc_regs[24]);
+		runtime_printf("t11 %X\n", m->sc_regs[25]);
+		runtime_printf("ra  %X\n", m->sc_regs[26]);
+		runtime_printf("t12 %X\n", m->sc_regs[27]);
+		runtime_printf("at  %X\n", m->sc_regs[28]);
+		runtime_printf("gp  %X\n", m->sc_regs[29]);
+		runtime_printf("sp  %X\n", m->sc_regs[30]);
+		runtime_printf("pc  %X\n", m->sc_pc);
+	  }
+  #endif
+#endif
 }
