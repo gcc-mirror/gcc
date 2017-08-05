@@ -1056,7 +1056,7 @@ has_static_fields (const_tree type)
     return false;
 
   for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
-    if (TREE_CODE (fld) == FIELD_DECL && DECL_NAME (fld) && TREE_STATIC (fld))
+    if (TREE_CODE (fld) == VAR_DECL && DECL_NAME (fld))
       return true;
 
   return false;
@@ -2635,12 +2635,12 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
     }
 }
 
-/* Dump in BUFFER constructor spec corresponding to T.  */
+/* Dump in BUFFER constructor spec corresponding to T for TYPE.  */
 
 static void
-print_constructor (pretty_printer *buffer, tree t)
+print_constructor (pretty_printer *buffer, tree t, tree type)
 {
-  tree decl_name = DECL_NAME (DECL_ORIGIN (t));
+  tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "New_");
   pp_ada_tree_identifier (buffer, decl_name, t, false);
@@ -2649,9 +2649,9 @@ print_constructor (pretty_printer *buffer, tree t)
 /* Dump in BUFFER destructor spec corresponding to T.  */
 
 static void
-print_destructor (pretty_printer *buffer, tree t)
+print_destructor (pretty_printer *buffer, tree t, tree type)
 {
-  tree decl_name = DECL_NAME (DECL_ORIGIN (t));
+  tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "Delete_");
   pp_ada_tree_identifier (buffer, decl_name, t, false);
@@ -2907,7 +2907,8 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    return 0;
 
 	  /* Only consider constructors/destructors for complete objects.  */
-	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__comp", 6) != 0)
+	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__ct_comp", 9) != 0
+	      && strncmp (IDENTIFIER_POINTER (decl_name), "__dt_comp", 9) != 0)
 	    return 0;
 	}
 
@@ -2935,9 +2936,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	}
 
       if (is_constructor)
-	print_constructor (buffer, t);
+	print_constructor (buffer, t, type);
       else if (is_destructor)
-	print_destructor (buffer, t);
+	print_destructor (buffer, t, type);
       else
 	dump_ada_decl_name (buffer, t, false);
 
@@ -2976,7 +2977,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (is_constructor)
 	{
 	  pp_string (buffer, "pragma CPP_Constructor (");
-	  print_constructor (buffer, t);
+	  print_constructor (buffer, t, type);
 	  pp_string (buffer, ", \"");
 	  pp_asm_name (buffer, t);
 	  pp_string (buffer, "\");");
@@ -2984,7 +2985,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       else if (is_destructor)
 	{
 	  pp_string (buffer, "pragma Import (CPP, ");
-	  print_destructor (buffer, t);
+	  print_destructor (buffer, t, type);
 	  pp_string (buffer, ", \"");
 	  pp_asm_name (buffer, t);
 	  pp_string (buffer, "\");");
@@ -3214,7 +3215,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
 		  field_num++;
 		}
 	    }
-	  else if (TREE_CODE (tmp) == FIELD_DECL && !TREE_STATIC (tmp))
+	  else if (TREE_CODE (tmp) == FIELD_DECL)
 	    {
 	      /* Skip internal virtual table field.  */
 	      if (!DECL_VIRTUAL_P (tmp))
@@ -3308,9 +3309,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
   /* Print the static fields of the structure, if any.  */
   for (tmp = TYPE_FIELDS (node); tmp; tmp = TREE_CHAIN (tmp))
     {
-      if (TREE_CODE (tmp) == FIELD_DECL
-	  && DECL_NAME (tmp)
-	  && TREE_STATIC (tmp))
+      if (TREE_CODE (tmp) == VAR_DECL && DECL_NAME (tmp))
 	{
 	  if (need_semicolon)
 	    {
