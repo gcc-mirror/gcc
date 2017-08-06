@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mcpu=thunderx -dA" } */
+/* { dg-options "-O2 -mcpu=thunderx -march=armv8-a -dA" } */
 
 /* Make sure that #pragma overrides command line option and
    target attribute overrides the pragma.  */

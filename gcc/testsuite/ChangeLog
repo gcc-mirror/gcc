@@ -1,5 +1,18 @@
 2017-08-06  Andrew Pinski  <apinski@cavium.com>
 
+	* gcc.target/aarch64/target_attr_10.c: Add -mcpu=generic.
+	* gcc.target/aarch64/target_attr_13.c: LIkewise.
+	* gcc.target/aarch64/target_attr_15.c: LIkewise.
+	* gcc.target/aarch64/target_attr_4.c: Likewise.
+	* gcc.target/aarch64/target_attr_1.c: Add -march=armv8-a.
+	* gcc.target/aarch64/target_attr_2.c: Likewise.
+	* gcc.target/aarch64/target_attr_7.c: Likewise.
+	* gcc.target/aarch64/target_attr_crypto_ice_1.c: Likewise.
+	* gcc.target/aarch64/target_attr_crypto_ice_2.c: Likewise.
+	* gcc.target/aarch64/target_attr_3.c: Add -mcpu=generic -march=armv8-a.
+
+2017-08-06  Andrew Pinski  <apinski@cavium.com>
+
 	* gcc.target/aarch64/atomic_cmp_exchange_zero_reg_1.c: Pass
 	-march=armv8-a+nolse, skip if -mcpu= is passed.
 	* gcc.target/aarch64/atomic_cmp_exchange_zero_strong_1.c: Likewise.
