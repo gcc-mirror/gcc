@@ -1,3 +1,8 @@
+2017-08-06  Tom de Vries  <tom@codesourcery.com>
+
+	* omp-expand.c (expand_oacc_for): Add missing edge probability for chunk
+	loop.
+
 2017-08-04  Yury Gribov  <tetra2005@gmail.com>
 
 	PR tree-optimization/57371
