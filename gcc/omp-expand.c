@@ -5718,7 +5718,9 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
 	  /* Fixup edges from bottom_bb.  */
 	  split->flags ^= EDGE_FALLTHRU | EDGE_FALSE_VALUE;
-	  make_edge (bottom_bb, head_bb, EDGE_TRUE_VALUE);
+	  split->probability = profile_probability::unlikely ().guessed ();
+	  edge latch_edge = make_edge (bottom_bb, head_bb, EDGE_TRUE_VALUE);
+	  latch_edge->probability = profile_probability::likely ().guessed ();
 	}
     }
 
