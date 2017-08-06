@@ -1,5 +1,5 @@
 /* { dg-do assemble } */
-/* { dg-options "-O2 -march=armv8-a+nocrc -save-temps" } */
+/* { dg-options "-O2 -march=armv8-a+nocrc -mcpu=generic -save-temps" } */
 
 #include "arm_acle.h"
 

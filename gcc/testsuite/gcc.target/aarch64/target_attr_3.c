@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-fix-cortex-a53-835769 -save-temps" } */
+/* { dg-options "-O2 -mno-fix-cortex-a53-835769 -march=armv8-a -mcpu=generic -save-temps" } */
 
 /* Check that the attribute overrides the command line option
    and the fix is applied once.  */
