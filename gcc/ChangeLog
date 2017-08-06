@@ -1,5 +1,10 @@
 2017-08-06  Tom de Vries  <tom@codesourcery.com>
 
+	* omp-expand.c (expand_oacc_for): Add missing edge probability for tile
+	and element loops.
+
+2017-08-06  Tom de Vries  <tom@codesourcery.com>
+
 	* omp-expand.c (expand_oacc_for): Add missing edge probability for chunk
 	loop.
 
