@@ -1,5 +1,11 @@
 2017-08-06  Andrew Pinski  <apinski@cavium.com>
 
+	* gcc.target/aarch64/atomic_cmp_exchange_zero_reg_1.c: Pass
+	-march=armv8-a+nolse, skip if -mcpu= is passed.
+	* gcc.target/aarch64/atomic_cmp_exchange_zero_strong_1.c: Likewise.
+
+2017-08-06  Andrew Pinski  <apinski@cavium.com>
+
 	* gcc.target/aarch64/_Float16_1.c: Skip if supplied a -mcpu= option.
 	* gcc.target/aarch64/_Float16_2.c: Likewise.
 	* gcc.target/aarch64/_Float16_3.c: Likewise.
