@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=armv8.2-a+nofp16 -std=c11 -ffp-contract=fast" } */
+/* { dg-skip-if "" { *-*-* } { "-mcpu=*" } { "" } } */
 
 #pragma GCC target ("arch=armv8.2-a+nofp16")
 
