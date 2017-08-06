@@ -1,5 +1,9 @@
 2017-08-06  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.dg/pr78582.c: Require effective target nonlocal_goto.
+
+2017-08-06  Tom de Vries  <tom@codesourcery.com>
+
 	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove):  Fix return
 	type.  Add missing return.
 
