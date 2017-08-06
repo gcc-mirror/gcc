@@ -5663,9 +5663,16 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 	  cont_bb = split->dest;
 
 	  split->flags ^= EDGE_FALLTHRU | EDGE_FALSE_VALUE;
-	  make_edge (elem_cont_bb, elem_body_bb, EDGE_TRUE_VALUE);
+	  split->probability = profile_probability::unlikely ().guessed ();
+	  edge latch_edge
+	    = make_edge (elem_cont_bb, elem_body_bb, EDGE_TRUE_VALUE);
+	  latch_edge->probability = profile_probability::likely ().guessed ();
 
-	  make_edge (body_bb, cont_bb, EDGE_FALSE_VALUE);
+	  edge skip_edge = make_edge (body_bb, cont_bb, EDGE_FALSE_VALUE);
+	  skip_edge->probability = profile_probability::unlikely ().guessed ();
+	  edge loop_entry_edge = EDGE_SUCC (body_bb, 1 - skip_edge->dest_idx);
+	  loop_entry_edge->probability
+	    = profile_probability::likely ().guessed ();
 
 	  gsi = gsi_for_stmt (cont_stmt);
 	}
