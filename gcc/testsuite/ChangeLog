@@ -1,5 +1,10 @@
 2017-08-06  Tom de Vries  <tom@codesourcery.com>
 
+	* gcc.c-torture/execute/builtins/memops-asm-lib.c (my_memmove):  Fix return
+	type.  Add missing return.
+
+2017-08-06  Tom de Vries  <tom@codesourcery.com>
+
 	PR testsuite/81731
 	* gcc.dg/torture/pr78218.c (struct v): New type, factored type out of
 	variable 'a' definition.
