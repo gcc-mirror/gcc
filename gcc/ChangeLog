@@ -1,3 +1,10 @@
+2017-08-07  Jonathan Yong  <10walls@gmail.com>
+
+	* config/i386/mingw.opt (fset-stack-executable): Removed.
+	* config/i386/cygming.opt (fset-stack-executable): Moved
+	from mingw.opt.
+	* config/i386/cygwin.h: Define CHECK_EXECUTE_STACK_ENABLED.
+
 2017-08-07  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* print-rtl.c (print_exp): Print NOT as "~" instead of as "!".
