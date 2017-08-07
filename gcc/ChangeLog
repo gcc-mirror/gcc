@@ -1,3 +1,12 @@
+2017-08-07  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.c (aarch64_pushwb_single_reg):
+	Use gen_frame_mem.
+	(aarch64_pop_regs): Likewise.
+	(aarch64_gen_load_pair): Likewise.
+	(aarch64_save_callee_saves): Likewise.
+	(aarch64_restore_callee_saves): Likewise.
+
 2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* config/i386/i386.c: Revert the last change.
