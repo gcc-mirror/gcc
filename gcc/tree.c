@@ -4946,9 +4946,8 @@ simple_cst_list_equal (const_tree l1, const_tree l2)
   return l1 == l2;
 }
 
-/* Compare two identifier nodes representing attributes.  Either one may
-   be in wrapped __ATTR__ form.  Return true if they are the same, false
-   otherwise.  */
+/* Compare two identifier nodes representing attributes.
+   Return true if they are the same, false otherwise.  */
 
 static bool
 cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
@@ -4961,34 +4960,8 @@ cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
   if (attr1 == attr2)
     return true;
 
-  /* If they are not equal, they may still be one in the form
-     'text' while the other one is in the form '__text__'.  TODO:
-     If we were storing attributes in normalized 'text' form, then
-     this could all go away and we could take full advantage of
-     the fact that we're comparing identifiers. :-)  */
-  const size_t attr1_len = IDENTIFIER_LENGTH (attr1);
-  const size_t attr2_len = IDENTIFIER_LENGTH (attr2);
-
-  if (attr2_len == attr1_len + 4)
-    {
-      const char *p = IDENTIFIER_POINTER (attr2);
-      const char *q = IDENTIFIER_POINTER (attr1);
-      if (p[0] == '_' && p[1] == '_'
-	  && p[attr2_len - 2] == '_' && p[attr2_len - 1] == '_'
-	  && strncmp (q, p + 2, attr1_len) == 0)
-	return true;;
-    }
-  else if (attr2_len + 4 == attr1_len)
-    {
-      const char *p = IDENTIFIER_POINTER (attr2);
-      const char *q = IDENTIFIER_POINTER (attr1);
-      if (q[0] == '_' && q[1] == '_'
-	  && q[attr1_len - 2] == '_' && q[attr1_len - 1] == '_'
-	  && strncmp (q + 2, p, attr2_len) == 0)
-	return true;
-    }
-
-  return false;
+  return cmp_attribs (IDENTIFIER_POINTER (attr1), IDENTIFIER_LENGTH (attr1),
+		      IDENTIFIER_POINTER (attr2), IDENTIFIER_LENGTH (attr2));
 }
 
 /* Compare two attributes for their value identity.  Return true if the
@@ -6051,32 +6024,6 @@ make_pass_ipa_free_lang_data (gcc::context *ctxt)
   return new pass_ipa_free_lang_data (ctxt);
 }
 
-/* The backbone of is_attribute_p().  ATTR_LEN is the string length of
-   ATTR_NAME.  Also used internally by remove_attribute().  */
-bool
-private_is_attribute_p (const char *attr_name, size_t attr_len, const_tree ident)
-{
-  size_t ident_len = IDENTIFIER_LENGTH (ident);
-
-  if (ident_len == attr_len)
-    {
-      if (id_equal (ident, attr_name))
-	return true;
-    }
-  else if (ident_len == attr_len + 4)
-    {
-      /* There is the possibility that ATTR is 'text' and IDENT is
-	 '__text__'.  */
-      const char *p = IDENTIFIER_POINTER (ident);      
-      if (p[0] == '_' && p[1] == '_'
-	  && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
-	  && strncmp (attr_name, p + 2, attr_len) == 0)
-	return true;
-    }
-
-  return false;
-}
-
 /* The backbone of lookup_attribute().  ATTR_LEN is the string length
    of ATTR_NAME, and LIST is not NULL_TREE.  */
 tree
@@ -6084,25 +6031,11 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 {
   while (list)
     {
-      size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
-
-      if (ident_len == attr_len)
-	{
-	  if (!strcmp (attr_name,
-		       IDENTIFIER_POINTER (get_attribute_name (list))))
-	    break;
-	}
-      /* TODO: If we made sure that attributes were stored in the
-	 canonical form without '__...__' (ie, as in 'text' as opposed
-	 to '__text__') then we could avoid the following case.  */
-      else if (ident_len == attr_len + 4)
-	{
-	  const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
-	  if (p[0] == '_' && p[1] == '_'
-	      && p[ident_len - 2] == '_' && p[ident_len - 1] == '_'
-	      && strncmp (attr_name, p + 2, attr_len) == 0)
-	    break;
-	}
+      tree attr = get_attribute_name (list);
+      size_t ident_len = IDENTIFIER_LENGTH (attr);
+      if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
+		       ident_len))
+	break;
       list = TREE_CHAIN (list);
     }
 
@@ -6111,8 +6044,7 @@ private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
 
 /* Given an attribute name ATTR_NAME and a list of attributes LIST,
    return a pointer to the attribute's list first element if the attribute
-   starts with ATTR_NAME. ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
+   starts with ATTR_NAME.  */
 
 tree
 private_lookup_attribute_by_prefix (const char *attr_name, size_t attr_len,
@@ -6129,15 +6061,9 @@ private_lookup_attribute_by_prefix (const char *attr_name, size_t attr_len,
 	}
 
       const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
+      gcc_checking_assert (attr_len == 0 || p[0] != '_');
 
       if (strncmp (attr_name, p, attr_len) == 0)
-	break;
-
-      /* TODO: If we made sure that attributes were stored in the
-	 canonical form without '__...__' (ie, as in 'text' as opposed
-	 to '__text__') then we could avoid the following case.  */
-      if (p[0] == '_' && p[1] == '_' &&
-	  strncmp (attr_name, p + 2, attr_len) == 0)
 	break;
 
       list = TREE_CHAIN (list);
@@ -6185,16 +6111,14 @@ tree
 remove_attribute (const char *attr_name, tree list)
 {
   tree *p;
-  size_t attr_len = strlen (attr_name);
-
   gcc_checking_assert (attr_name[0] != '_');
 
   for (p = &list; *p; )
     {
       tree l = *p;
-      /* TODO: If we were storing attributes in normalized form, here
-	 we could use a simple strcmp().  */
-      if (private_is_attribute_p (attr_name, attr_len, get_attribute_name (l)))
+
+      tree attr = get_attribute_name (l);
+      if (is_attribute_p (attr_name, attr))
 	*p = TREE_CHAIN (l);
       else
 	p = &TREE_CHAIN (l);

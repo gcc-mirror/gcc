@@ -1,3 +1,10 @@
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* g++.dg/cpp0x/pr65558.C: Update scanned pattern.
+	* gcc.dg/parm-impl-decl-1.c: Likewise.
+	* gcc.dg/parm-impl-decl-3.c: Likewise.
+	* gcc.dg/Wattributes-5.c: New test.
+
 2017-08-06  Andrew Pinski  <apinski@cavium.com>
 
 	* gcc.target/aarch64/target_attr_10.c: Add -mcpu=generic.

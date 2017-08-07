@@ -3046,7 +3046,7 @@ Gcc_backend::function(Btype* fntype, const std::string& name,
     DECL_UNINLINABLE(decl) = 1;
   if (disable_split_stack)
     {
-      tree attr = get_identifier("__no_split_stack__");
+      tree attr = get_identifier ("no_split_stack");
       DECL_ATTRIBUTES(decl) = tree_cons(attr, NULL_TREE, NULL_TREE);
     }
   if (in_unique_section)

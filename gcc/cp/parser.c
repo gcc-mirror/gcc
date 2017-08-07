@@ -24782,7 +24782,8 @@ cp_parser_gnu_attribute_list (cp_parser* parser)
 	       parsed identifier.  */
 	    ? ridpointers[(int) token->keyword]
 	    : id_token->u.value;
-	  
+
+	  identifier = canonicalize_attr_name (identifier);
 	  attribute = build_tree_list (identifier, NULL_TREE);
 
 	  /* Peek at the next token.  */
@@ -24928,6 +24929,8 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 		    "expected an identifier for the attribute name");
 	  return error_mark_node;
 	}
+
+      attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (attr_ns, attr_id),
 				   NULL_TREE);
       token = cp_lexer_peek_token (parser->lexer);
@@ -24937,6 +24940,7 @@ cp_parser_std_attribute (cp_parser *parser, tree attr_ns)
 				 NULL_TREE);
   else
     {
+      attr_id = canonicalize_attr_name (attr_id);
       attribute = build_tree_list (build_tree_list (NULL_TREE, attr_id),
 				   NULL_TREE);
       /* C++11 noreturn attribute is equivalent to GNU's.  */

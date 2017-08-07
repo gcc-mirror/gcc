@@ -1,3 +1,16 @@
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* attribs.h (canonicalize_attr_name): New function.
+	(cmp_attribs): Move from c-format.c and adjusted.
+	(is_attribute_p): Moved from tree.h.
+	* tree-inline.c: Add new includes.
+	* tree.c (cmp_attrib_identifiers): Use cmp_attribs.
+	(private_is_attribute_p): Remove.
+	(private_lookup_attribute): Likewise.
+	(private_lookup_attribute_by_prefix): Simplify.
+	(remove_attribute): Use is_attribute_p.
+	* tree.h: Remove removed declarations.
+
 2017-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81698
