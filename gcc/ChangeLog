@@ -1,3 +1,8 @@
+2017-08-07  Douglas Rupp  <rupp@adacore.com>
+
+	* Makefile.in (install-mkheaders): Fix typo, where the multi_dir
+	variable was referenced as multidir in command.
+
 2017-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69389
