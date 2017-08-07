@@ -235,7 +235,9 @@ gfc_post_options (const char **pfilename)
   if (flag_protect_parens == -1)
     flag_protect_parens = !optimize_fast;
 
-  if (flag_stack_arrays == -1)
+  /* -Ofast sets implies -fstack-arrays unless an explicit size is set for
+     stack arrays.  */
+  if (flag_stack_arrays == -1 && flag_max_stack_var_size == -2)
     flag_stack_arrays = optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
@@ -379,6 +381,10 @@ gfc_post_options (const char **pfilename)
       flag_recursive = 1;
       flag_max_stack_var_size = -1;
     }
+
+  /* Set flag_stack_arrays correctly.  */
+  if (flag_stack_arrays == -1)
+    flag_stack_arrays = 0;
 
   /* Set default.  */
   if (flag_max_stack_var_size == -2)

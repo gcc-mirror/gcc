@@ -7278,7 +7278,8 @@ Disregard strict standards compliance.  @option{-Ofast} enables all
 @option{-O3} optimizations.  It also enables optimizations that are not
 valid for all standard-compliant programs.
 It turns on @option{-ffast-math} and the Fortran-specific
-@option{-fno-protect-parens} and @option{-fstack-arrays}.
+@option{-fstack-arrays}, unless @option{-fmax-stack-var-size} is
+specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
