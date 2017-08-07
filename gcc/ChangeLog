@@ -1,5 +1,9 @@
 2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	* config/i386/i386.c: Revert the last change.
+
+2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/81736
 	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Renamed
 	to ...
