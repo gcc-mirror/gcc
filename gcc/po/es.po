@@ -4340,7 +4340,7 @@ msgstr "La notaicón de array de Cilk no puede utilizarse para expresiones throw
 
 #: c/c-parser.c:5715 cp/semantics.c:1144
 msgid "Cilk array notation cannot be used as a condition for switch statement"
-msgstr "La notaicón de array de Cilk no puede utilizarse para sentencias switch"
+msgstr "La notación de array de Cilk no puede utilizarse para sentencias switch"
 
 #: c/c-parser.c:5766 cp/semantics.c:799
 msgid "Cilk array notation cannot be used as a condition for while statement"
@@ -28985,20 +28985,19 @@ msgid "__delay_cycles() only takes constant arguments"
 msgstr "__delay_cycles() solo toma argumentos constantes"
 
 #: config/msp430/msp430.c:2504
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute allows only an integer constant argument"
+#, gcc-internal-format
 msgid "__delay_cycles only takes non-negative cycle counts"
-msgstr "el atributo %qE sólo permite una constante entera como argumento"
+msgstr "__delay_cycles solo permite número de ciclos no negativo"
 
 #: config/msp430/msp430.c:2524
 #, gcc-internal-format
 msgid "__delay_cycles is limited to 32-bit loop counts"
-msgstr ""
+msgstr "__delay_cycles está limitado a números de bucles de 32 bits"
 
 #: config/msp430/msp430.c:2594
 #, gcc-internal-format
 msgid "MSP430 builtin functions only work inside interrupt handlers"
-msgstr ""
+msgstr "las funciones internas de MSP430 solo funcionan dentro de manejadores de interrupciones"
 
 #: config/msp430/msp430.c:2606 config/rx/rx.c:2635 config/xtensa/xtensa.c:3375
 #: config/xtensa/xtensa.c:3401
@@ -29019,10 +29018,9 @@ msgid "multiple nested types attributes to function %qD"
 msgstr "se especificaron múltiples atributos de tipo de función"
 
 #: config/nds32/nds32-isr.c:360
-#, fuzzy, gcc-internal-format
-#| msgid "multiple interrupt attributes not allowed"
+#, gcc-internal-format
 msgid "multiple interrupt attributes to function %qD"
-msgstr "no se permiten atributos interrupt múltiples"
+msgstr "atributos interrupt múltiples para la función %qD"
 
 #. Trampoline is not supported on reduced-set registers yet.
 #: config/nds32/nds32.c:1742 config/nds32/nds32.c:1796
@@ -29030,78 +29028,70 @@ msgstr "no se permiten atributos interrupt múltiples"
 #: config/nds32/nds32.c:2370 config/nds32/nds32.c:2376
 #: config/nds32/nds32.c:2436 config/nds32/nds32.c:2442
 #: config/nds32/nds32.c:2474
-#, fuzzy, gcc-internal-format
-#| msgid "nested functions not supported on this target"
+#, gcc-internal-format
 msgid "a nested function is not supported for reduced registers"
-msgstr "no se admiten funciones anidadas en este objetivo"
+msgstr "no se admiten funciones anidadas para registros reducidos"
 
 #. The enum index value for array size is out of range.
 #: config/nds32/nds32.c:2277
-#, fuzzy, gcc-internal-format
-#| msgid "integer constant out of range"
+#, gcc-internal-format
 msgid "intrinsic register index is out of range"
-msgstr "constante entera fuera de rango"
+msgstr "el índice de registro intrínseco está fuera de rango"
 
 #: config/nds32/nds32.c:2582
-#, fuzzy, gcc-internal-format
-#| msgid "invalid type for iteration variable %qE"
+#, gcc-internal-format
 msgid "invalid id value for interrupt/exception attribute"
-msgstr "tipo no válido para la variable de iteración %qE"
+msgstr "valor de id no válido para atributo de interrupción/excepción"
 
 #: config/nds32/nds32.c:2610
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of %qs attribute"
+#, gcc-internal-format
 msgid "invalid id value for reset attribute"
-msgstr "argumento no válido del atributo %qs"
+msgstr "valor de id no válido atributo reset"
 
 #: config/nds32/nds32.c:2626
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of %qs attribute"
+#, gcc-internal-format
 msgid "invalid nmi function for reset attribute"
-msgstr "argumento no válido del atributo %qs"
+msgstr "función nmi no válida para atributo reset"
 
 #: config/nds32/nds32.c:2639
-#, fuzzy, gcc-internal-format
-#| msgid "invalid argument of %qs attribute"
+#, gcc-internal-format
 msgid "invalid warm function for reset attribute"
-msgstr "argumento no válido del atributo %qs"
+msgstr "función warm no válida para atributo reset"
 
 #: config/nds32/nds32.c:2707
-#, fuzzy, gcc-internal-format
-#| msgid "Disable position-independent code (PIC) for use in OS kernel code"
+#, gcc-internal-format
 msgid "position-independent code not supported"
-msgstr "Desactiva el código independiente de posición (PIC) para su uso en código de núcleo de SO"
+msgstr "no se admite código independiente de posición"
 
 #: config/nios2/nios2.c:561
 #, gcc-internal-format
 msgid "Unknown form for stack limit expression"
-msgstr ""
+msgstr "Forma desconocida para expresión de límite de pila"
 
 #: config/nios2/nios2.c:1168
-#, fuzzy, gcc-internal-format
-#| msgid "target attribute or pragma changes double precision floating point"
+#, gcc-internal-format
 msgid "switch %<-mcustom-%s%> is required for double precision floating point"
-msgstr "el atributo o pragma target cambia la coma flotante de precisión doble"
+msgstr "se requiere la opción %<-mcustom-%s%> para la coma flotante de precisión doble"
 
 #: config/nios2/nios2.c:1181
 #, gcc-internal-format
 msgid "switch %<-mcustom-%s%> has no effect unless -funsafe-math-optimizations is specified"
-msgstr ""
+msgstr "la opción %<-mcustom-%s%> no produce efecto alguno a menos que se especifique -funsafe-math-optimizations"
 
 #: config/nios2/nios2.c:1190
 #, gcc-internal-format
 msgid "switch %<-mcustom-%s%> has no effect unless -ffinite-math-only is specified"
-msgstr ""
+msgstr "la opción %<-mcustom-%s%> no produce efecto alguno a menos que se especifique -ffinite-math-only"
 
 #: config/nios2/nios2.c:1199
 #, gcc-internal-format
 msgid "switch %<-mcustom-%s%> has no effect unless -fno-math-errno is specified"
-msgstr ""
+msgstr "la opción %<-mcustom-%s%> no produce efecto alguno a menos que se especifique -fno-math-errno"
 
 #: config/nios2/nios2.c:1204
 #, gcc-internal-format
 msgid "conflicting use of -mcustom switches, target attributes, and/or __builtin_custom_ functions"
-msgstr ""
+msgstr "hay un conflicto al usar opciones -mcustom, atributos de objetivo y/o funciones _builtin_custom_"
 
 #: config/nios2/nios2.c:1306
 #, gcc-internal-format
@@ -29111,41 +29101,37 @@ msgstr ""
 #: config/nios2/nios2.c:1325
 #, gcc-internal-format
 msgid "switch %<-mcustom-%s%> value %d must be between 0 and 255"
-msgstr ""
+msgstr "opción %<-mcustom-%s%>: el valor %d tiene que estar entre 0 y 255"
 
 #: config/nios2/nios2.c:1348
-#, fuzzy, gcc-internal-format
-#| msgid "Disable position-independent code (PIC) for use in OS kernel code"
+#, gcc-internal-format
 msgid "position-independent code requires the Linux ABI"
-msgstr "Desactiva el código independiente de posición (PIC) para su uso en código de núcleo de SO"
+msgstr "el código independiente de posición requiere la ABI de Linux"
 
 #: config/nios2/nios2.c:1351
 #, gcc-internal-format
 msgid "PIC support for -fstack-limit-symbol"
-msgstr ""
+msgstr "soporte PIC para -fstack-limit-symbol"
 
 #: config/nios2/nios2.c:1377
-#, fuzzy, gcc-internal-format
-#| msgid "generation of Branch Likely instructions enabled, but not supported by architecture"
+#, gcc-internal-format
 msgid "BMX instructions are only supported with R2 architecture"
-msgstr "la generación de instrucciones Probables a Ramificar está activada, pero se admite por la arquitectura"
+msgstr "las instrucciones BMX solo se admiten con la arquitectura R2"
 
 #: config/nios2/nios2.c:1379
-#, fuzzy, gcc-internal-format
-#| msgid "instruction scheduling not supported on this target machine"
+#, gcc-internal-format
 msgid "CDX instructions are only supported with R2 architecture"
-msgstr "no se admite la planificación de instrucciones en este objetivo"
+msgstr "las instrucciones CDX solo se admiten con la arquitectura R2"
 
 #: config/nios2/nios2.c:1384
-#, fuzzy, gcc-internal-format
-#| msgid "Generate code in little endian mode"
+#, gcc-internal-format
 msgid "R2 architecture is little-endian only"
-msgstr "Genera código en modo little endian"
+msgstr "la arquitectura R2 solo es little endian"
 
 #: config/nios2/nios2.c:3130
 #, gcc-internal-format
 msgid "Cannot call %<__builtin_custom_%s%> without specifying switch %<-mcustom-%s%>"
-msgstr ""
+msgstr "No se puede llamar a %<__builtin_custom_%s%> sin especificar la opción %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:3238
 #, gcc-internal-format, gfc-internal-format
@@ -29153,156 +29139,144 @@ msgid "custom instruction opcode must be compile time constant in the range 0-25
 msgstr ""
 
 #: config/nios2/nios2.c:3384
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid argument to built-in function"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid argument to built-in function %s"
-msgstr "argumento no válido para la función interna"
+msgstr "argumento no válido para la función interna %s"
 
 #: config/nios2/nios2.c:3443
 #, gcc-internal-format, gfc-internal-format
 msgid "Control register number must be in range 0-31 for %s"
-msgstr ""
+msgstr "El número del registro de control tiene que estar en el rango 0-31 para %s"
 
 #: config/nios2/nios2.c:3471
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "number must be 0 or 1"
+#, gcc-internal-format, gfc-internal-format
 msgid "Register number must be in range 0-31 for %s"
-msgstr "el número debe ser 0 ó 1"
+msgstr "El número de registro tiene que estar en el rango 0-31 para %s"
 
 #: config/nios2/nios2.c:3478
 #, gcc-internal-format, gfc-internal-format
 msgid "The immediate value must fit into a %d-bit integer for %s"
-msgstr ""
+msgstr "El valor inmediato tiene que caber en un entero de %d bits para %s"
 
 #: config/nios2/nios2.c:3528
 #, gcc-internal-format
 msgid "The ENI instruction operand must be either 0 or 1"
-msgstr ""
+msgstr "El operando de la instrucción ENI tiene que ser 0 o 1"
 
 #: config/nios2/nios2.c:3556
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s requires the -mvsx option"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s requires Nios II R%d"
-msgstr "La función interna %s requiere la opción -mvsx"
+msgstr "La función interna %s requiere Nios II R%d"
 
 #: config/nios2/nios2.c:3636
-#, fuzzy, gcc-internal-format
-#| msgid "switch -mcpu=%s conflicts with -march=%s switch"
+#, gcc-internal-format
 msgid "switch %<-mcustom-%s%> conflicts with switch %<-mcustom-%s%>"
-msgstr "la opción -mcpu=%s genera un conflicto con la opción -march=%s"
+msgstr "la opción %<-mcustom-%s%> genera un conflicto con la opción %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:3642 config/nios2/nios2.c:3652
 #, gcc-internal-format
 msgid "call to %<__builtin_custom_%s%> conflicts with switch %<-mcustom-%s%>"
-msgstr ""
+msgstr "la llamada a %<__builtin_custom_%s%> genera un conflicto con la opción %<-mcustom-%s%>"
 
 #: config/nios2/nios2.c:3758
 #, gcc-internal-format
 msgid "custom-fpu-cfg option does not support %<no-%>"
-msgstr ""
+msgstr "la opción custom-fpu-cfg no admite %<no-%>"
 
 #: config/nios2/nios2.c:3763
 #, gcc-internal-format
 msgid "custom-fpu-cfg option requires configuration argument"
-msgstr ""
+msgstr "la opción custom-fpu-cfg requiere argumento de configuración"
 
 #: config/nios2/nios2.c:3792
-#, fuzzy, gcc-internal-format
-#| msgid "%s only accepts 2 arguments"
+#, gcc-internal-format
 msgid "%<no-custom-%s%> does not accept arguments"
-msgstr "%s sólo acepta 2 argumentos"
+msgstr "%<no-custom-%s%> no acepta argumentos"
 
 #: config/nios2/nios2.c:3807
 #, gcc-internal-format
 msgid "%<custom-%s=%> requires argument"
-msgstr ""
+msgstr "%<no-custom-%s%> requiere argumento"
 
 #: config/nios2/nios2.c:3817
 #, gcc-internal-format, gfc-internal-format
 msgid "`custom-%s=' argument requires numeric digits"
-msgstr ""
+msgstr "el argumento `custom-%s=' requiere dígitos numéricos"
 
 #: config/nios2/nios2.c:3829
 #, gcc-internal-format
 msgid "%<custom-%s=%> is not recognized as FPU instruction"
-msgstr ""
+msgstr "%<custom-%s=%> no se reconoce como instrucción FPU"
 
 #: config/nios2/nios2.c:3836
-#, fuzzy, gcc-internal-format
-#| msgid "type of %qE is unknown"
+#, gcc-internal-format
 msgid "%<%s%> is unknown"
-msgstr "el tipo de %qE es desconocido"
+msgstr "%<%s%> es desconocido"
 
 #: config/nvptx/mkoffload.c:107
-#, fuzzy, gcc-internal-format
-#| msgid "malformed spec function name"
+#, gcc-internal-format
 msgid "malformed ptx file"
-msgstr "nombre de la función de especificación malformado"
+msgstr "fichero ptx mal formado"
 
 #: config/nvptx/mkoffload.c:407
-#, fuzzy, gcc-internal-format
-#| msgid "COLLECT_LTO_WRAPPER must be set"
+#, gcc-internal-format
 msgid "COLLECT_GCC must be set."
-msgstr "se debe definir COLLECT_LTO_WRAPPER."
+msgstr "se debe definir COLLECT_GCC."
 
 #: config/nvptx/mkoffload.c:488
 #, gcc-internal-format
 msgid "either -fopenacc or -fopenmp must be set"
-msgstr ""
+msgstr "se debe definir -fopenacc o -fopenmp"
 
 #: config/nvptx/mkoffload.c:552
-#, fuzzy, gcc-internal-format
-#| msgid "%s:cannot open graph file\n"
+#, gcc-internal-format
 msgid "cannot open intermediate ptx file"
-msgstr "%s:no se puede abrir el fichero de grafo\n"
+msgstr "no se puede abrir el fichero ptx intermedio"
 
 #: config/nvptx/nvptx.c:159
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "Builtin function %s is not supported with the current options"
+#, gcc-internal-format, gfc-internal-format
 msgid "option %s is not supported together with -fopenacc"
-msgstr "La función interna %s no se admite con las opciones actuales"
+msgstr "la función %s no se admite conjuntamente con -fopenacc"
 
 #: config/nvptx/nvptx.c:261
 #, gcc-internal-format
 msgid "static initialization of variable %q+D in %<.shared%> memory is not supported"
-msgstr ""
+msgstr "no se admite la inicialización estática de la variable %q+D en memoria %<.shared%>"
 
 #: config/nvptx/nvptx.c:1941
 #, gcc-internal-format
 msgid "cannot emit unaligned pointers in ptx assembly"
-msgstr ""
+msgstr "no se pueden emitir punteros desalineados en ensamblador ptx"
 
 #: config/nvptx/nvptx.c:2131
 #, gcc-internal-format
 msgid "PTX does not support weak declarations (only weak definitions)"
-msgstr ""
+msgstr "PTX no admite declaraciones débiles (solamente definiciones débiles)"
 
 #: config/nvptx/nvptx.c:4283
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute ignored on types"
+#, gcc-internal-format
 msgid "%qE attribute requires a void return type"
-msgstr "se descarta el atributo %qE en tipos"
+msgstr "el atributo %qE requiere tipo de retorno void"
 
 #: config/nvptx/nvptx.c:4306
-#, fuzzy, gcc-internal-format
-#| msgid "__BELOW100__ attribute not allowed with auto storage class"
+#, gcc-internal-format
 msgid "%qE attribute not allowed with auto storage class"
-msgstr "no se permite el atributo __BELOW100__ con una clase de auto almacenamiento"
+msgstr "no se permite el atributo %qE con una clase de auto almacenamiento"
 
 #: config/nvptx/nvptx.c:4674
 #, gcc-internal-format, gfc-internal-format
 msgid "using vector_length (%d), ignoring %d"
-msgstr ""
+msgstr "se usa vector_length (%d); se hace caso omiso de %d"
 
 #: config/nvptx/nvptx.c:4675
 #, gcc-internal-format, gfc-internal-format
 msgid "using vector_length (%d), ignoring runtime setting"
-msgstr ""
+msgstr "se usa vector_length (%d); se hace caso omiso de la configuración de tiempo de ejecución"
 
 #: config/nvptx/nvptx.c:4685
 #, gcc-internal-format, gfc-internal-format
 msgid "using num_workers (%d), ignoring %d"
-msgstr ""
+msgstr "se usa num_workers (%d); se hace caso omiso de %d"
 
 #: config/pa/pa.c:507
 #, gcc-internal-format
@@ -29330,84 +29304,75 @@ msgid "alignment (%u) for %s exceeds maximum alignment for global common data.  
 msgstr "la alineación (%u) para %s excede la alineación máxima para los datos comunes globales.  Se usará %u"
 
 #: config/riscv/riscv.c:333
-#, fuzzy, gcc-internal-format
-#| msgid "unknown value %s for -mfpu"
+#, gcc-internal-format
 msgid "unknown cpu %qs for -mtune"
-msgstr "valor %s desconocido para -mfpu"
+msgstr "cpu %qs desconocida para -mtune"
 
 #: config/riscv/riscv.c:3765
 #, gcc-internal-format
 msgid "-mdiv requires -march to subsume the %<M%> extension"
-msgstr ""
+msgstr "-mdiv requiere -march para subsumir la extensión %<M%>"
 
 #: config/riscv/riscv.c:3795
 #, gcc-internal-format
 msgid "requested ABI requires -march to subsume the %qc extension"
-msgstr ""
+msgstr "la ABI solicitada requiere -march para subsumir la extensión %qc"
 
 #: config/riscv/riscv.c:3800
 #, gcc-internal-format, gfc-internal-format
 msgid "ABI requires -march=rv%d"
-msgstr ""
+msgstr "ABI requiere -march=rv%d"
 
 #. Address spaces are currently only supported by C.
 #: config/rl78/rl78.c:367
-#, fuzzy, gcc-internal-format
-#| msgid "-mmulticore can only be used with BF561"
+#, gcc-internal-format
 msgid "-mes0 can only be used with C"
-msgstr "-mmulticore sólo se puede usar con BF561"
+msgstr "-mes0 solo se puede usar con C"
 
 #: config/rl78/rl78.c:370
 #, gcc-internal-format
 msgid "mduc registers only saved for G13 target"
-msgstr ""
+msgstr "los registros mduc solo se guardan para el objetivo G13"
 
 #: config/rl78/rl78.c:385
-#, fuzzy, gcc-internal-format
-#| msgid "-mmulticore can only be used with BF561"
+#, gcc-internal-format
 msgid "-mmul=g13 cannot be used with -mcpu=g10"
-msgstr "-mmulticore sólo se puede usar con BF561"
+msgstr "-mmul=g13 no se puede usar con -mcpu=g10"
 
 #: config/rl78/rl78.c:386
-#, fuzzy, gcc-internal-format
-#| msgid "-mmulticore can only be used with BF561"
+#, gcc-internal-format
 msgid "-mmul=g14 cannot be used with -mcpu=g10"
-msgstr "-mmulticore sólo se puede usar con BF561"
+msgstr "-mmul=g14 no se puede usar con -mcpu=g10"
 
 #. The S2 core does not have mul/div instructions.
 #: config/rl78/rl78.c:397
-#, fuzzy, gcc-internal-format
-#| msgid "-mmulticore can only be used with BF561"
+#, gcc-internal-format
 msgid "-mmul=g14 cannot be used with -mcpu=g13"
-msgstr "-mmulticore sólo se puede usar con BF561"
+msgstr "-mmul=g14 no se puede usar con -mcpu=g13"
 
 #. The G14 core does not have the hardware multiply peripheral used by the
 #. G13 core, hence you cannot use G13 multipliy routines on G14 hardware.
 #: config/rl78/rl78.c:409
-#, fuzzy, gcc-internal-format
-#| msgid "-mmulticore can only be used with BF561"
+#, gcc-internal-format
 msgid "-mmul=g13 cannot be used with -mcpu=g14"
-msgstr "-mmulticore sólo se puede usar con BF561"
+msgstr "-mmul=g13 no se puede usar con -mcpu=g14"
 
 #: config/rl78/rl78.c:804
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to functions"
+#, gcc-internal-format
 msgid "naked attribute only applies to functions"
-msgstr "el atributo %qE se aplica solamente a funciones"
+msgstr "atributo desnudo se aplica solamente a funciones"
 
 #: config/rl78/rl78.c:828
-#, fuzzy, gcc-internal-format
-#| msgid "%qE attribute only applies to functions"
+#, gcc-internal-format
 msgid "%qE attribute doesn't apply to functions"
-msgstr "el atributo %qE se aplica solamente a funciones"
+msgstr "el atributo %qE no se aplica a funciones"
 
 #. This is unpredictable, as we're truncating off usable address
 #. bits.
 #: config/rl78/rl78.c:1170
-#, fuzzy, gcc-internal-format
-#| msgid "converting %<false%> to pointer type %qT"
+#, gcc-internal-format
 msgid "converting far pointer to near pointer"
-msgstr "se convierte %<false%> al tipo puntero %qT"
+msgstr "se convierte puntero lejano a puntero cercano"
 
 #: config/rs6000/host-darwin.c:59
 #, gcc-internal-format
@@ -29471,36 +29436,32 @@ msgstr "basura al final de #pragma longcall"
 #: config/rs6000/rs6000-c.c:5575
 #, gcc-internal-format
 msgid "vec_lvsl is deprecated for little endian; use assignment for unaligned loads and stores"
-msgstr ""
+msgstr "vec_lvsl está obsoleta para little endian; utilize asignación para cargas y almacenajes no alineados"
 
 #: config/rs6000/rs6000-c.c:5579
 #, gcc-internal-format
 msgid "vec_lvsr is deprecated for little endian; use assignment for unaligned loads and stores"
-msgstr ""
+msgstr "vec_lvsr está obsoleta para little endian; utilize asignación para cargas y almacenajes no alineados"
 
 #: config/rs6000/rs6000-c.c:5589
-#, fuzzy, gcc-internal-format
-#| msgid "vec_extract only accepts 2 arguments"
+#, gcc-internal-format
 msgid "vec_mul only accepts 2 arguments"
-msgstr "vec_extract sólo acepta 2 argumentos"
+msgstr "vec_mul sólo acepta 2 argumentos"
 
 #: config/rs6000/rs6000-c.c:5640
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_cmpne only accepts 2 arguments"
-msgstr "vec_insert sólo acepta 3 argumentos"
+msgstr "vec_cmpne sólo acepta 2 argumentos"
 
 #: config/rs6000/rs6000-c.c:5710
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_adde only accepts 3 arguments"
-msgstr "vec_insert sólo acepta 3 argumentos"
+msgstr "vec_adde sólo acepta 3 argumentos"
 
 #: config/rs6000/rs6000-c.c:5774
-#, fuzzy, gcc-internal-format
-#| msgid "vec_insert only accepts 3 arguments"
+#, gcc-internal-format
 msgid "vec_addec only accepts 3 arguments"
-msgstr "vec_insert sólo acepta 3 argumentos"
+msgstr "vec_addec sólo acepta 3 argumentos"
 
 #: config/rs6000/rs6000-c.c:5862
 #, gcc-internal-format, gfc-internal-format
@@ -29528,22 +29489,19 @@ msgid "vec_insert only accepts 3 arguments"
 msgstr "vec_insert sólo acepta 3 argumentos"
 
 #: config/rs6000/rs6000-c.c:6381
-#, fuzzy, gcc-internal-format
-#| msgid "passing arg %d of %qE discards qualifiers frompointer target type"
+#, gcc-internal-format
 msgid "passing arg %d of %qE discards qualifiers from pointer target type"
 msgstr "el paso del argumento %d de %qE descarta los calificadores del tipo del destino del puntero"
 
 #: config/rs6000/rs6000-c.c:6435
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "ifunc is not supported in this configuration"
+#, gcc-internal-format, gfc-internal-format
 msgid "Builtin function %s not supported in this compiler configuration"
-msgstr "ifunc no se admite en esta configuración"
+msgstr "No se admite la función interna %s en esta configuración del compilador"
 
 #: config/rs6000/rs6000-c.c:6443
-#, fuzzy, gcc-internal-format, gfc-internal-format
-#| msgid "invalid parameter combination for AltiVec intrinsic"
+#, gcc-internal-format, gfc-internal-format
 msgid "invalid parameter combination for AltiVec intrinsic %s"
-msgstr "combinación de parámetros no válida para el intrínseco AltiVec"
+msgstr "combinación de parámetros no válida para el intrínseco AltiVec %s"
 
 #: config/rs6000/rs6000.c:3642
 #, gcc-internal-format
@@ -29573,27 +29531,27 @@ msgstr "no se admite -malign-power para Darwin de 64-bit; es incompatible con la
 #: config/rs6000/rs6000.c:4021
 #, gcc-internal-format
 msgid "will not generate power9 instructions because assembler lacks power9 support"
-msgstr ""
+msgstr "no generará instrucciones power9 porque el ensamblador no las admite"
 
 #: config/rs6000/rs6000.c:4030
 #, gcc-internal-format
 msgid "will not generate power8 instructions because assembler lacks power8 support"
-msgstr ""
+msgstr "no generará instrucciones power8 porque el ensamblador no las admite"
 
 #: config/rs6000/rs6000.c:4039
 #, gcc-internal-format
 msgid "will not generate power7 instructions because assembler lacks power7 support"
-msgstr ""
+msgstr "no generará instrucciones power7 porque el ensamblador no las admite"
 
 #: config/rs6000/rs6000.c:4048
 #, gcc-internal-format
 msgid "will not generate power6 instructions because assembler lacks power6 support"
-msgstr ""
+msgstr "no generará instrucciones power6 porque el ensamblador no las admite"
 
 #: config/rs6000/rs6000.c:4057
 #, gcc-internal-format
 msgid "will not generate power5 instructions because assembler lacks power5 support"
-msgstr ""
+msgstr "no generará instrucciones power5 porque el ensamblador no las admite"
 
 #: config/rs6000/rs6000.c:4145
 #, gcc-internal-format
@@ -29601,10 +29559,9 @@ msgid "not configured for SPE ABI"
 msgstr "no se configuró para ABI SPE"
 
 #: config/rs6000/rs6000.c:4150
-#, fuzzy, gcc-internal-format
-#| msgid "Do not use PowerPC instruction set"
+#, gcc-internal-format
 msgid "not configured for SPE instruction set"
-msgstr "No usa el conjunto de instrucciones PowerPC"
+msgstr "no configurado para el conjunto de instrucciones SPE"
 
 #: config/rs6000/rs6000.c:4156
 #, gcc-internal-format
@@ -29634,77 +29591,69 @@ msgstr "no se admite -mstring en sistemas little endian"
 #. Enforce that none of the ISA_3_0_MASKS_SERVER flags
 #. were explicitly cleared.
 #: config/rs6000/rs6000.c:4301 config/rs6000/rs6000.c:4312
-#, fuzzy, gcc-internal-format
-#| msgid "-mcmodel incompatible with other toc options"
+#, gcc-internal-format
 msgid "-mpower9-minmax incompatible with explicitly disabled options"
-msgstr "-mcmodel es incompatible con otras opciones toc"
+msgstr "-mpower9-minmax es incompatible con las opciones desactivadas explícitamente"
 
 #: config/rs6000/rs6000.c:4304
 #, gcc-internal-format
 msgid "Power9 target option is incompatible with -mcpu=<xxx> for <xxx> less than power9"
-msgstr ""
+msgstr "la opción del objetivo Power9 es incompatible con -mcpu=<xxx> para <xxx> menor que power9"
 
 #: config/rs6000/rs6000.c:4336
-#, fuzzy, gcc-internal-format
-#| msgid "-mrecip requires -mfused-madd"
+#, gcc-internal-format
 msgid "-mcrypto requires -maltivec"
-msgstr "-mrecip requiere -mfused-madd"
+msgstr "-mcrypto requiere -maltivec"
 
 #: config/rs6000/rs6000.c:4343
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "-mdirect-move requires -mvsx"
-msgstr "--resource requiere -o"
+msgstr "-mdirect-move requiere -mvsx"
 
 #: config/rs6000/rs6000.c:4350
 #, gcc-internal-format
 msgid "-mpower8-vector requires -maltivec"
-msgstr ""
+msgstr "-mpower8-vector requiere -maltivec"
 
 #: config/rs6000/rs6000.c:4358
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "-mpower8-vector requires -mvsx"
-msgstr "--resource requiere -o"
+msgstr "-mpower8-vector requiere -mvsx"
 
 #: config/rs6000/rs6000.c:4377
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "-mvsx-timode requires -mvsx"
-msgstr "--resource requiere -o"
+msgstr "-mvsx-timode requiere -mvsx"
 
 #: config/rs6000/rs6000.c:4384
-#, fuzzy, gcc-internal-format
-#| msgid "-mrecip requires -mfused-madd"
+#, gcc-internal-format
 msgid "-mhard-dfp requires -mhard-float"
-msgstr "-mrecip requiere -mfused-madd"
+msgstr "-mhard-dfp requiere -mhard-float"
 
 #: config/rs6000/rs6000.c:4437
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "-mupper-regs-df requires -mvsx"
-msgstr "--resource requiere -o"
+msgstr "-mupper-regs-df requiere -mvsx"
 
 #: config/rs6000/rs6000.c:4444
-#, fuzzy, gcc-internal-format
-#| msgid "--resource requires -o"
+#, gcc-internal-format
 msgid "-mupper-regs-di requires -mvsx"
-msgstr "--resource requiere -o"
+msgstr "-mupper-regs-di requiere -mvsx"
 
 #: config/rs6000/rs6000.c:4451
 #, gcc-internal-format
 msgid "-mupper-regs-sf requires -mpower8-vector"
-msgstr ""
+msgstr "-mupper-regs-sf requiere -mpower8-vector"
 
 #: config/rs6000/rs6000.c:4500
 #, gcc-internal-format
 msgid "-mpower8-fusion-sign requires -mpower8-fusion"
-msgstr ""
+msgstr "-mpower8-fusion-sign requiere -mpower8-fusion"
 
 #: config/rs6000/rs6000.c:4503
 #, gcc-internal-format
 msgid "-mtoc-fusion requires -mpower8-fusion"
-msgstr ""
+msgstr "-mtoc-fusion requiere -mpower8-fusion"
 
 #. We prefer to not mention undocumented options in
 #. error messages.  However, if users have managed to select
@@ -29713,32 +29662,32 @@ msgstr ""
 #: config/rs6000/rs6000.c:4520
 #, gcc-internal-format
 msgid "-mpower9-fusion requires -mpower8-fusion"
-msgstr ""
+msgstr "-mpower9-fusion requiere -mpower8-fusion"
 
 #: config/rs6000/rs6000.c:4573
 #, gcc-internal-format
 msgid "-mpower9-vector requires -mpower8-vector"
-msgstr ""
+msgstr "-mpower9-vector requiere -mpower8-vector"
 
 #: config/rs6000/rs6000.c:4618
 #, gcc-internal-format
 msgid "-mpower9-dform requires -mpower9-vector"
-msgstr ""
+msgstr "-mpower9-dform requiere -mpower9-vector"
 
 #: config/rs6000/rs6000.c:4647
 #, gcc-internal-format
 msgid "-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar require -mdirect-move"
-msgstr ""
+msgstr "-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar requieren -mdirect-move"
 
 #: config/rs6000/rs6000.c:4670
 #, gcc-internal-format
 msgid "-mpower9-dform requires -mupper-regs-df"
-msgstr ""
+msgstr "-mpower9-dform requiere -mupper-regs-df"
 
 #: config/rs6000/rs6000.c:4677
 #, gcc-internal-format
 msgid "-mpower9-dform requires -mupper-regs-sf"
-msgstr ""
+msgstr "-mpower9-dform requiere -mupper-regs-sf"
 
 #: config/rs6000/rs6000.c:4697
 #, gcc-internal-format
