@@ -1,3 +1,8 @@
+Olivier Hainque  <hainque@adacore.com>
+
+	PR target/81755
+	* config/vxworksae.h (VXWORKS_HAVE_TLS): Define.
+
 2017-08-07  Douglas Rupp  <rupp@adacore.com>
 
 	* Makefile.in (install-mkheaders): Fix typo, where the multi_dir

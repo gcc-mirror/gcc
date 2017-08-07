@@ -68,6 +68,10 @@ along with GCC; see the file COPYING3.  If not see
   while (0)
 
 /* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
+
+/* None of the VxWorks AE/653/MILS ports to date has native TLS support.  */
+#define VXWORKS_HAVE_TLS 0
+
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
