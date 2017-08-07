@@ -1,3 +1,7 @@
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/system/sys/ptrace.h: New file.
+
 2017-07-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/80998
