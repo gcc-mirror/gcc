@@ -1,5 +1,18 @@
 2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
 
+	PR target/81736
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Renamed
+	to ...
+	(ix86_finalize_stack_frame_flags): This.  Also clear
+	frame_pointer_needed if -fno-omit-frame-pointer is used without
+	stack access.
+	(ix86_expand_prologue): Replace ix86_finalize_stack_realign_flags
+	with ix86_finalize_stack_frame_flags.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+
+2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
 	PR target/81743
 	* config/i386/i386.c (get_builtin_code_for_version): Set priority
 	to P_AES for Westmere.
