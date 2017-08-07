@@ -5328,6 +5328,8 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
     }
   if (POINTER_TYPE_P (diff_type) || TYPE_UNSIGNED (diff_type))
     diff_type = signed_type_for (diff_type);
+  if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (integer_type_node))
+    diff_type = integer_type_node;
 
   basic_block entry_bb = region->entry; /* BB ending in OMP_FOR */
   basic_block exit_bb = region->exit; /* BB ending in OMP_RETURN */
