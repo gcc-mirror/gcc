@@ -1,3 +1,8 @@
+2017-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81737
+	* fold-const.c (fold_indirect_ref_1): Check type_domain.
+
 2017-08-07  Martin Liska  <mliska@suse.cz>
 
 	* attribs.h (canonicalize_attr_name): New function.
