@@ -1,3 +1,8 @@
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* c-omp.c (c_finish_omp_atomic): Handle atomics on bitfields.
+
 2017-08-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-ada-spec.c (has_nontrivial_methods): Test for FUNCTION_DECL.

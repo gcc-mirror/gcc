@@ -1,3 +1,9 @@
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* gimplify.c (goa_stabilize_expr): Handle BIT_INSERT_EXPR and
+	BIT_FIELD_REF.
+
 2017-08-07  Martin Liska  <mliska@suse.cz>
 
 	* config/m32c/m32c.c: Add include of stringpool.h and attribs.h.
