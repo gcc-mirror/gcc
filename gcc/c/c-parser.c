@@ -4170,9 +4170,11 @@ c_parser_attributes (c_parser *parser)
 	  attr_name = c_parser_attribute_any_word (parser);
 	  if (attr_name == NULL)
 	    break;
+	  attr_name = canonicalize_attr_name (attr_name);
 	  if (is_cilkplus_vector_p (attr_name))
 	    {
 	      c_token *v_token = c_parser_peek_token (parser);
+	      v_token->value = canonicalize_attr_name (v_token->value);
 	      c_parser_cilk_simd_fn_vector_attrs (parser, *v_token);
 	      /* If the next token isn't a comma, we're done.  */
 	      if (!c_parser_next_token_is (parser, CPP_COMMA))
@@ -4236,6 +4238,7 @@ c_parser_attributes (c_parser *parser)
 		  release_tree_vector (expr_list);
 		}
 	    }
+
 	  attr = build_tree_list (attr_name, attr_args);
 	  if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
 	    c_parser_consume_token (parser);

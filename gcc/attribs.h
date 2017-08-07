@@ -47,4 +47,47 @@ extern char *make_unique_name (tree, const char *, bool);
 extern tree make_dispatcher_decl (const tree);
 extern bool is_function_default_version (const tree);
 
+/* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
+   so that we have a canonical form of attribute names.  */
+
+static inline tree
+canonicalize_attr_name (tree attr_name)
+{
+  const size_t l = IDENTIFIER_LENGTH (attr_name);
+  const char *s = IDENTIFIER_POINTER (attr_name);
+
+  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
+    return get_identifier_with_length (s + 2, l - 4);
+
+  return attr_name;
+}
+
+/* Compare attribute identifiers ATTR1 and ATTR2 with length ATTR1_LEN and
+   ATTR2_LEN.  */
+
+static inline bool
+cmp_attribs (const char *attr1, size_t attr1_len,
+	     const char *attr2, size_t attr2_len)
+{
+  return attr1_len == attr2_len && strncmp (attr1, attr2, attr1_len) == 0;
+}
+
+/* Compare attribute identifiers ATTR1 and ATTR2.  */
+
+static inline bool
+cmp_attribs (const char *attr1, const char *attr2)
+{
+  return cmp_attribs (attr1, strlen (attr1), attr2, strlen (attr2));
+}
+
+/* Given an identifier node IDENT and a string ATTR_NAME, return true
+   if the identifier node is a valid attribute name for the string.  */
+
+static inline bool
+is_attribute_p (const char *attr_name, const_tree ident)
+{
+  return cmp_attribs (attr_name, strlen (attr_name),
+		      IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident));
+}
+
 #endif // GCC_ATTRIBS_H

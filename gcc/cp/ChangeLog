@@ -1,3 +1,10 @@
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (cp_parser_gnu_attribute_list): Canonicalize name of an
+	attribute.
+	(cp_parser_std_attribute): Likewise.
+	* tree.c: Add new include.
+
 2017-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79790

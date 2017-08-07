@@ -4195,29 +4195,8 @@ lookup_attribute_by_prefix (const char *attr_name, tree list)
 					       list);
 }
 
-
-/* This function is a private implementation detail of
-   is_attribute_p() and you should never call it directly.  */
-extern bool private_is_attribute_p (const char *, size_t, const_tree);
-
-/* Given an identifier node IDENT and a string ATTR_NAME, return true
-   if the identifier node is a valid attribute name for the string.
-   ATTR_NAME must be in the form 'text' (not '__text__').  IDENT could
-   be the identifier for 'text' or for '__text__'.  */
-
-static inline bool
-is_attribute_p (const char *attr_name, const_tree ident)
-{
-  gcc_checking_assert (attr_name[0] != '_');
-  /* Do the strlen() before calling the out-of-line implementation.
-     In most cases attr_name is a string constant, and the compiler
-     will optimize the strlen() away.  */
-  return private_is_attribute_p (attr_name, strlen (attr_name), ident);
-}
-
 /* Remove any instances of attribute ATTR_NAME in LIST and return the
-   modified list.  ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
+   modified list.  */
 
 extern tree remove_attribute (const char *, tree);
 

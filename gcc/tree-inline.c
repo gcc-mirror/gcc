@@ -57,7 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "builtins.h"
 #include "tree-chkp.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
