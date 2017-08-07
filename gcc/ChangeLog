@@ -1,3 +1,10 @@
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* config/m32c/m32c.c: Add include of stringpool.h and attribs.h.
+	* config/rl78/rl78.c: Add include of attribs.h.
+	* config/sh/sh.c: Likewise.
+	* config/v850/v850.c: Likewise.
+
 2017-08-07  Tom de Vries  <tom@codesourcery.com>
 
 	PR middle-end/78266
