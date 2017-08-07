@@ -33417,13 +33417,18 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_NEHALEM:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
-		arg_str = "westmere";
+		{
+		  arg_str = "westmere";
+		  priority = P_AES;
+		}
 	      else
-		/* We translate "arch=corei7" and "arch=nehalem" to
-		   "corei7" so that it will be mapped to M_INTEL_COREI7
-		   as cpu type to cover all M_INTEL_COREI7_XXXs.  */
-		arg_str = "corei7";
-	      priority = P_PROC_SSE4_2;
+		{
+		  /* We translate "arch=corei7" and "arch=nehalem" to
+		     "corei7" so that it will be mapped to M_INTEL_COREI7
+		     as cpu type to cover all M_INTEL_COREI7_XXXs.  */
+		  arg_str = "corei7";
+		  priority = P_PROC_SSE4_2;
+		}
 	      break;
 	    case PROCESSOR_SANDYBRIDGE:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_F16C)

@@ -1,3 +1,9 @@
+2017-08-07  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81743
+	* config/i386/i386.c (get_builtin_code_for_version): Set priority
+	to P_AES for Westmere.
+
 2017-08-07  Jonathan Yong  <10walls@gmail.com>
 
 	* config/i386/mingw.opt (fset-stack-executable): Removed.
