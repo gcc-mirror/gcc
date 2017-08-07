@@ -1,3 +1,8 @@
+2017-08-07  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81737
+	* gcc.dg/pr81737.c: New test.
+
 2017-08-07  Martin Liska  <mliska@suse.cz>
 
 	* g++.dg/cpp0x/pr65558.C: Update scanned pattern.
