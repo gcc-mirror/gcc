@@ -1,3 +1,7 @@
+2017-08-07  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* print-rtl.c (print_exp): Print NOT as "~" instead of as "!".
+
 2017-08-07  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/81737
