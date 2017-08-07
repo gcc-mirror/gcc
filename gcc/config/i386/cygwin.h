@@ -153,3 +153,7 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 #define LIBGCC_SONAME "cyggcc_s" LIBGCC_EH_EXTN "-1.dll"
 
+/* Make stack executable to avoid DEP problems with trampolines.  */
+#define HAVE_ENABLE_EXECUTE_STACK
+#undef  CHECK_EXECUTE_STACK_ENABLED
+#define CHECK_EXECUTE_STACK_ENABLED flag_setstackexecutable

@@ -50,6 +50,10 @@ muse-libstdc-wrappers
 Target Condition({defined (USE_CYGWIN_LIBSTDCXX_WRAPPERS)})
 Compile code that relies on Cygwin DLL wrappers to support C++ operator new/delete replacement.
 
+fset-stack-executable
+Common Report Var(flag_setstackexecutable) Init(1) Optimization
+For nested functions on stack executable permission is set.
+
 posix
 Driver
 

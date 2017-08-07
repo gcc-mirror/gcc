@@ -324,6 +324,9 @@ case ${host} in
 i[34567]86-*-mingw* | x86_64-*-mingw*)
   enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
   ;;
+i[34567]86-*-cygwin* | x86_64-*-cygwin*)
+  enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
+  ;;
 *)
   enable_execute_stack=enable-execute-stack-empty.c;
   ;;

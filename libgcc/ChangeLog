@@ -1,3 +1,8 @@
+2017-08-07  Jonathan Yong  <10walls@gmail.com>
+
+	* config.host (*-cygwin): Include file from mingw
+	config/i386/enable-execute-stack-mingw32.c
+
 2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
             Doug Rupp  <rupp@adacore.com>
             Olivier Hainque  <hainque@adacore.com>
