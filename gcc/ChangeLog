@@ -1,3 +1,8 @@
+2017-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/78266
+	* omp-expand.c (expand_oacc_for): Ensure diff_type is large enough.
+
 2017-08-07  Martin Liska  <mliska@suse.cz>
 
 	* config/mips/mips.c: Include attribs.h.
