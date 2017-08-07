@@ -18624,7 +18624,6 @@ print_reg (rtx x, int code, FILE *file)
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
-   @ -- print a segment register of thread base pointer load
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
    ! -- print MPX prefix for jxx/call/ret instructions if required.
  */
@@ -19168,19 +19167,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 #endif
 	  return;
 
-	case '@':
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('%', file);
-
-	  /* The kernel uses a different segment register for performance
-	     reasons; a system call would not have to trash the userspace
-	     segment register, which would be expensive.  */
-	  if (TARGET_64BIT && ix86_cmodel != CM_KERNEL)
-	    fputs ("fs", file);
-	  else
-	    fputs ("gs", file);
-	  return;
-
 	case '~':
 	  putc (TARGET_AVX2 ? 'i' : 'f', file);
 	  return;
@@ -19339,8 +19325,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
-  return (code == '@' || code == '*' || code == '+' || code == '&'
-	  || code == ';' || code == '~' || code == '^' || code == '!');
+  return (code == '*' || code == '+' || code == '&' || code == ';'
+	  || code == '~' || code == '^' || code == '!');
 }
 
 /* Print a memory operand whose address is ADDR.  */
@@ -45810,13 +45796,31 @@ ix86_mangle_type (const_tree type)
 }
 
 #ifdef TARGET_THREAD_SSP_OFFSET
-/* If using TLS guards, don't waste time creating and expanding
-   __stack_chk_guard decl and MEM as we are going to ignore it.  */
 static tree
 ix86_stack_protect_guard (void)
 {
   if (TARGET_SSP_TLS_GUARD)
-    return NULL_TREE;
+    {
+      tree type_node = lang_hooks.types.type_for_mode (ptr_mode, 1);
+      addr_space_t as = DEFAULT_TLS_SEG_REG;
+
+      /* The kernel uses a different segment register for performance
+	 reasons; a system call would not have to trash the userspace
+	 segment register, which would be expensive.  */
+      if (ix86_cmodel == CM_KERNEL)
+	as = ADDR_SPACE_SEG_GS;
+
+      int qual = ENCODE_QUAL_ADDR_SPACE (as);
+
+      tree type = build_qualified_type (type_node, qual);
+      tree asptrtype = build_pointer_type (type);
+      tree sspoff = build_int_cst (asptrtype, TARGET_THREAD_SSP_OFFSET);
+
+      tree t = build2 (MEM_REF, asptrtype, sspoff,
+		       build_int_cst (asptrtype, 0));
+      return t;
+    }
+
   return default_stack_protect_guard ();
 }
 #endif

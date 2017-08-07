@@ -1,4 +1,17 @@
-Olivier Hainque  <hainque@adacore.com>
+2017-08-06  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_stack_protect_guard): Generate
+	memory reference to a SSP offset in TLS address space.
+	(ix86_print_operand) <case '@'>: Remove.
+	(ix86_print_operand_punct_valid_p): Remove '@' code.
+	* config/i386/i386.md (unspec): Remove UNSPEC_SP_TLS_SET and
+	UNSPEC_SP_TLS_TEST.
+	(stack_tls_protect_set_<mode>): Remove.
+	(stack_protect_set): Do not call gen_stack_tls_protect_set_<mode>.
+	(stack_tls_protect_test_<mode>): Remove.
+	(stack_protect_test): Do not call gen_stack_tls_protect_test_<mode>.
+
+2017-08-07  Olivier Hainque  <hainque@adacore.com>
 
 	PR target/81755
 	* config/vxworksae.h (VXWORKS_HAVE_TLS): Define.
