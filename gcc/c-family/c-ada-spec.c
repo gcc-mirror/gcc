@@ -1099,7 +1099,7 @@ has_nontrivial_methods (tree type)
 
   /* If there are user-defined methods, they are deemed non-trivial.  */
   for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE && !DECL_ARTIFICIAL (fld))
+    if (TREE_CODE (fld) == FUNCTION_DECL && !DECL_ARTIFICIAL (fld))
       return true;
 
   return false;
@@ -2442,7 +2442,7 @@ print_ada_methods (pretty_printer *buffer, tree node, int spc)
 
   int res = 1;
   for (tree fld = TYPE_FIELDS (node); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE)
+    if (TREE_CODE (fld) == FUNCTION_DECL)
       {
 	if (res)
 	  {
@@ -2955,8 +2955,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       if (is_constructor && RECORD_OR_UNION_TYPE_P (type))
 	for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
-	  if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE
-	      && cpp_check (fld, IS_ABSTRACT))
+	  if (TREE_CODE (fld) == FUNCTION_DECL && cpp_check (fld, IS_ABSTRACT))
 	    {
 	      is_abstract_class = true;
 	      break;
@@ -3036,7 +3035,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		    is_interface = 0;
 		  has_fields = true;
 		}
-	      else if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE
+	      else if (TREE_CODE (fld) == FUNCTION_DECL
 		       && !DECL_ARTIFICIAL (fld))
 		{
 		  if (cpp_check (fld, IS_ABSTRACT))
