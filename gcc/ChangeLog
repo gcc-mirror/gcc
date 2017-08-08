@@ -1,3 +1,17 @@
+2017-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81708
+	* config/i386/i386.opt (mstack-protector-guard-reg=): New option
+	(mstack-protector-guard-offset=): Ditto.
+	* config/i386/i386.c (ix86_option_override): Handle
+	-mstack-protector-guard-reg= and -mstack-protector-guard-offset=
+	options.
+	(ix86_stack_protect_guard): Use ix86_stack_protect_guard_reg and
+	ix86_stack_protect_guard_offset variables.
+	(TARGET_STACK_PROTECT_GUARD): Always define.
+	* doc/invoke.texi (x86 Options): Document -mstack-protector-guard-reg=
+	and -mstack-protector-guard-offset= options.
+
 2017-08-08  Bin Cheng  <bin.cheng@arm.com>
 
 	* tree-ssa-loop-ivopts.c (relate_compare_use_with_all_cands): Handle
@@ -25,7 +39,8 @@
 	* optabs.def (xorsign_optab): New.
 	* tree-ssa-math-opts.c (is_copysign_call_with_1): New.
 	(convert_expand_mult_copysign): New.
-	(pass_optimize_widening_mul::execute): Call convert_expand_mult_copysign.
+	(pass_optimize_widening_mul::execute): Call
+	convert_expand_mult_copysign.
 
 2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
@@ -212,7 +227,7 @@
 	(vsx_set_<mode>, VSX_D): Rewrite vector set in terms of vector
 	concat to allow optimizing inserts from previous extracts.
 
-2017-08-06  Uros Bizjak  <ubizjak@gmail.com>
+2017-08-07  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_stack_protect_guard): Generate
 	memory reference to a SSP offset in TLS address space.

@@ -1,3 +1,8 @@
+2017-08-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81708
+	* gcc.target/i386/stack-prot-guard.c: New test.
+
 2017-08-08  Tamar Christina  <tamar.christina@arm.com>
 
 	* gcc.target/aarch64/xorsign.c: New.
