@@ -1,3 +1,8 @@
+2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81354
+	* g++.dg/torture/pr81354.C: New file.
+
 2017-08-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81719
