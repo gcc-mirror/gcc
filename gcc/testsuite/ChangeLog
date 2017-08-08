@@ -1,3 +1,8 @@
+2017-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81723
+	* gfortran.dg/pr81723.f: New testcase.
+
 2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: Adjust diagnostic
