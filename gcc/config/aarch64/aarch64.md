@@ -5178,6 +5178,42 @@
 }
 )
 
+;; For xorsign (x, y), we want to generate:
+;;
+;; LDR   d2, #1<<63
+;; AND   v3.8B, v1.8B, v2.8B
+;; EOR   v0.8B, v0.8B, v3.8B
+;;
+
+(define_expand "xorsign<mode>3"
+  [(match_operand:GPF 0 "register_operand")
+   (match_operand:GPF 1 "register_operand")
+   (match_operand:GPF 2 "register_operand")]
+  "TARGET_FLOAT && TARGET_SIMD"
+{
+
+  machine_mode imode = <V_cmp_result>mode;
+  rtx mask = gen_reg_rtx (imode);
+  rtx op1x = gen_reg_rtx (imode);
+  rtx op2x = gen_reg_rtx (imode);
+
+  int bits = GET_MODE_BITSIZE (<MODE>mode) - 1;
+  emit_move_insn (mask, GEN_INT (trunc_int_for_mode (HOST_WIDE_INT_M1U << bits,
+						     imode)));
+
+  emit_insn (gen_and<v_cmp_result>3 (op2x, mask,
+				     lowpart_subreg (imode, operands[2],
+						     <MODE>mode)));
+  emit_insn (gen_xor<v_cmp_result>3 (op1x,
+				     lowpart_subreg (imode, operands[1],
+						     <MODE>mode),
+				     op2x));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, op1x, imode));
+  DONE;
+}
+)
+
 ;; -------------------------------------------------------------------
 ;; Reload support
 ;; -------------------------------------------------------------------
