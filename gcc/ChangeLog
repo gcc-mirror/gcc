@@ -1,3 +1,8 @@
+2017-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	* doc/invoke.texi: Document -ftree-loop-distribution for O3.
+	* opts.c (default_options_table): Add OPT_ftree_loop_distribution.
+
 2017-08-08  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/19706

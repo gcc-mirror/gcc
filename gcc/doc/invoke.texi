@@ -7248,13 +7248,20 @@ invoking @option{-O2} on programs that use computed gotos.
 @item -O3
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified
-by @option{-O2} and also turns on the @option{-finline-functions},
-@option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
-@option{-ftree-loop-distribute-patterns}, @option{-fsplit-paths}
-@option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
-@option{-ftree-partial-pre}, @option{-fpeel-loops}
-and @option{-fipa-cp-clone} options.
+by @option{-O2} and also turns on the following optimization flags:
+@gccoptlist{-finline-functions @gol
+-funswitch-loops @gol
+-fpredictive-commoning @gol
+-fgcse-after-reload @gol
+-ftree-loop-vectorize @gol
+-ftree-loop-distribution @gol
+-ftree-loop-distribute-patterns @gol
+-fsplit-paths @gol
+-ftree-slp-vectorize @gol
+-fvect-cost-model @gol
+-ftree-partial-pre @gol
+-fpeel-loops @gol
+-fipa-cp-clone}
 
 @item -O0
 @opindex O0
