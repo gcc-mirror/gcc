@@ -174,9 +174,9 @@ along with GCC; see the file COPYING3.  If not see
 			    %{!ansi:values-Xa.o%s}"
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
-#define STARTFILE_CRTBEGIN_SPEC "%{shared:crtbeginS.o%s} \
-				 %{" PIE_SPEC ":crtbeginS.o%s} \
-				 %{" NO_PIE_SPEC ":crtbegin.o%s}"
+#define STARTFILE_CRTBEGIN_SPEC "%{static:crtbegin.o%s; \
+				   shared|" PIE_SPEC ":crtbeginS.o%s; \
+				   :crtbegin.o%s}"
 #else
 #define STARTFILE_CRTBEGIN_SPEC	"crtbegin.o%s"
 #endif
@@ -224,9 +224,9 @@ along with GCC; see the file COPYING3.  If not see
 #endif
 
 #if defined(HAVE_LD_PIE) && defined(HAVE_SOLARIS_CRTS)
-#define ENDFILE_CRTEND_SPEC "%{shared:crtendS.o%s;: \
-			       %{" PIE_SPEC ":crtendS.o%s} \
-			       %{" NO_PIE_SPEC ":crtend.o%s}}"
+#define ENDFILE_CRTEND_SPEC "%{static:crtend.o%s; \
+			       shared|" PIE_SPEC ":crtendS.o%s; \
+			       :crtend.o%s}"
 #else
 #define ENDFILE_CRTEND_SPEC "crtend.o%s"
 #endif

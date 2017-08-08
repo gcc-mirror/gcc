@@ -1,3 +1,10 @@
+2017-08-08  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/81523
+	* gcc.dg/pie-7.c: New test.
+	* gcc.dg/pie-static-1.c: Likewise.
+	* gcc.dg/pie-static-2.c: Likewise.
+
 2017-08-08  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81708
