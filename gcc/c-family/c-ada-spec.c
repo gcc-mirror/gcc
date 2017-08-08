@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "c-pragma.h"
 #include "cpp-id-data.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Local functions, macros and variables.  */
 static int dump_generic_ada_node (pretty_printer *, tree, tree, int, int,

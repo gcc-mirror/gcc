@@ -1,3 +1,7 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/trans.c: Include header files.
+
 2017-07-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/utils.c (gnat_write_global_declarations): Pass false

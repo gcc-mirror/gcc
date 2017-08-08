@@ -22,7 +22,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 #include "options.h"
+#include "tree.h"
 #include "stringpool.h"
+#include "attribs.h"
 
 #ifdef OBJCPLUS
 #include "cp/cp-tree.h"

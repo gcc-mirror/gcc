@@ -1,3 +1,14 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* call.c: Include header files.
+	* cp-gimplify.c: Likewise.
+	* cp-ubsan.c: Likewise.
+	* cvt.c: Likewise.
+	* init.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* typeck.c: Likewise.
+
 2017-08-07  Martin Liska  <mliska@suse.cz>
 
 	* parser.c (cp_parser_gnu_attribute_list): Canonicalize name of an

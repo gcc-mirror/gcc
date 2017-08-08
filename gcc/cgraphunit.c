@@ -204,6 +204,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-chkp.h"
 #include "lto-section-names.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that

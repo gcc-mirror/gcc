@@ -117,6 +117,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "auto-profile.h"
 #include "builtins.h"
 #include "fibonacci_heap.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 typedef fibonacci_heap <sreal, cgraph_edge> edge_heap_t;

@@ -62,6 +62,7 @@
 #include "internal-fn.h"
 #include "gimple-iterator.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "tree-vrp.h"
 #include "tree-ssa-operands.h"
 #include "tree-ssanames.h"

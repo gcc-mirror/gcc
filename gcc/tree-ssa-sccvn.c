@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "gimple-iterator.h"
 #include "gimple-match.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"

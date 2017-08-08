@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-outof-ssa.h"
 #include "cfgloop.h"
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "tree-ssa-address.h"
 #include "output.h"

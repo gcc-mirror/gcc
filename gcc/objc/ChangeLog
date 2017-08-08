@@ -1,3 +1,9 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.c: Include header files.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.

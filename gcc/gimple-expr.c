@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "rtl.h"
 #include "tree-pass.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* ----- Type related -----  */
 

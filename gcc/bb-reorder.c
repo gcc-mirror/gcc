@@ -115,6 +115,8 @@
 #include "bb-reorder.h"
 #include "except.h"
 #include "fibonacci_heap.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of

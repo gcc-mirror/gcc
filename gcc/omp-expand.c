@@ -58,7 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
 #include "debug.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* OMP region information.  Every parallel and workshare
    directive is enclosed between two markers, the OMP_* directive

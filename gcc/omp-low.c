@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Lowering of OMP parallel and workshare constructs proceeds in two
    phases.  The first phase scans the function looking for OMP statements

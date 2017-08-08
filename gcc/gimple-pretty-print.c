@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-prof.h"
 #include "trans-mem.h"
 #include "cfganal.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 #define INDENT(SPACE)							\

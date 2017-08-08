@@ -1,3 +1,139 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* asan.c: Include header files.
+	* attribs.c (build_decl_attribute_variant): New function moved
+	from tree.[ch].
+	(build_type_attribute_qual_variant): Likewise.
+	(cmp_attrib_identifiers): Likewise.
+	(simple_cst_list_equal): Likewise.
+	(omp_declare_simd_clauses_equal): Likewise.
+	(attribute_value_equal): Likewise.
+	(comp_type_attributes): Likewise.
+	(build_type_attribute_variant): Likewise.
+	(lookup_ident_attribute): Likewise.
+	(remove_attribute): Likewise.
+	(merge_attributes): Likewise.
+	(merge_type_attributes): Likewise.
+	(merge_decl_attributes): Likewise.
+	(merge_dllimport_decl_attributes): Likewise.
+	(handle_dll_attribute): Likewise.
+	(attribute_list_equal): Likewise.
+	(attribute_list_contained): Likewise.
+	* attribs.h (lookup_attribute): New function moved from tree.[ch].
+	(lookup_attribute_by_prefix): Likewise.
+	* bb-reorder.c: Include header files.
+	* builtins.c: Likewise.
+	* calls.c: Likewise.
+	* cfgexpand.c: Likewise.
+	* cgraph.c: Likewise.
+	* cgraphunit.c: Likewise.
+	* convert.c: Likewise.
+	* dwarf2out.c: Likewise.
+	* final.c: Likewise.
+	* fold-const.c: Likewise.
+	* function.c: Likewise.
+	* gimple-expr.c: Likewise.
+	* gimple-fold.c: Likewise.
+	* gimple-pretty-print.c: Likewise.
+	* gimple.c: Likewise.
+	* gimplify.c: Likewise.
+	* hsa-common.c: Likewise.
+	* hsa-gen.c: Likewise.
+	* internal-fn.c: Likewise.
+	* ipa-chkp.c: Likewise.
+	* ipa-cp.c: Likewise.
+	* ipa-devirt.c: Likewise.
+	* ipa-fnsummary.c: Likewise.
+	* ipa-inline.c: Likewise.
+	* ipa-visibility.c: Likewise.
+	* ipa.c: Likewise.
+	* lto-cgraph.c: Likewise.
+	* omp-expand.c: Likewise.
+	* omp-general.c: Likewise.
+	* omp-low.c: Likewise.
+	* omp-offload.c: Likewise.
+	* omp-simd-clone.c: Likewise.
+	* opts-global.c: Likewise.
+	* passes.c: Likewise.
+	* predict.c: Likewise.
+	* sancov.c: Likewise.
+	* sanopt.c: Likewise.
+	* symtab.c: Likewise.
+	* toplev.c: Likewise.
+	* trans-mem.c: Likewise.
+	* tree-chkp.c: Likewise.
+	* tree-eh.c: Likewise.
+	* tree-into-ssa.c: Likewise.
+	* tree-object-size.c: Likewise.
+	* tree-parloops.c: Likewise.
+	* tree-profile.c: Likewise.
+	* tree-ssa-ccp.c: Likewise.
+	* tree-ssa-live.c: Likewise.
+	* tree-ssa-loop.c: Likewise.
+	* tree-ssa-sccvn.c: Likewise.
+	* tree-ssa-structalias.c: Likewise.
+	* tree-ssa.c: Likewise.
+	* tree-streamer-in.c: Likewise.
+	* tree-vectorizer.c: Likewise.
+	* tree-vrp.c: Likewise.
+	* tsan.c: Likewise.
+	* ubsan.c: Likewise.
+	* varasm.c: Likewise.
+	* varpool.c: Likewise.
+	* tree.c: Remove functions moved to attribs.[ch].
+	* tree.h: Likewise.
+	* config/aarch64/aarch64.c: Add attrs.h header file.
+	* config/alpha/alpha.c: Likewise.
+	* config/arc/arc.c: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/avr/avr.c: Likewise.
+	* config/bfin/bfin.c: Likewise.
+	* config/c6x/c6x.c: Likewise.
+	* config/cr16/cr16.c: Likewise.
+	* config/cris/cris.c: Likewise.
+	* config/darwin.c: Likewise.
+	* config/epiphany/epiphany.c: Likewise.
+	* config/fr30/fr30.c: Likewise.
+	* config/frv/frv.c: Likewise.
+	* config/ft32/ft32.c: Likewise.
+	* config/h8300/h8300.c: Likewise.
+	* config/i386/winnt.c: Likewise.
+	* config/ia64/ia64.c: Likewise.
+	* config/iq2000/iq2000.c: Likewise.
+	* config/lm32/lm32.c: Likewise.
+	* config/m32c/m32c.c: Likewise.
+	* config/m32r/m32r.c: Likewise.
+	* config/m68k/m68k.c: Likewise.
+	* config/mcore/mcore.c: Likewise.
+	* config/microblaze/microblaze.c: Likewise.
+	* config/mips/mips.c: Likewise.
+	* config/mmix/mmix.c: Likewise.
+	* config/mn10300/mn10300.c: Likewise.
+	* config/moxie/moxie.c: Likewise.
+	* config/msp430/msp430.c: Likewise.
+	* config/nds32/nds32-isr.c: Likewise.
+	* config/nds32/nds32.c: Likewise.
+	* config/nios2/nios2.c: Likewise.
+	* config/nvptx/nvptx.c: Likewise.
+	* config/pa/pa.c: Likewise.
+	* config/pdp11/pdp11.c: Likewise.
+	* config/powerpcspe/powerpcspe.c: Likewise.
+	* config/riscv/riscv.c: Likewise.
+	* config/rl78/rl78.c: Likewise.
+	* config/rx/rx.c: Likewise.
+	* config/s390/s390.c: Likewise.
+	* config/sh/sh.c: Likewise.
+	* config/sol2.c: Likewise.
+	* config/sparc/sparc.c: Likewise.
+	* config/spu/spu.c: Likewise.
+	* config/stormy16/stormy16.c: Likewise.
+	* config/tilegx/tilegx.c: Likewise.
+	* config/tilepro/tilepro.c: Likewise.
+	* config/v850/v850.c: Likewise.
+	* config/vax/vax.c: Likewise.
+	* config/visium/visium.c: Likewise.
+	* config/xtensa/xtensa.c: Likewise.
+
 2017-08-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/81593

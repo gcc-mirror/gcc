@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "builtins.h"
 #include "stor-layout.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Print a warning message and set that we have seen an error.  */
 

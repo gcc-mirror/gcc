@@ -52,6 +52,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "ipa-chkp.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /*  Pointer Bounds Checker instruments code with memory checks to find
     out-of-bounds memory accesses.  Checks are performed by computing

@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "gimple-low.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,

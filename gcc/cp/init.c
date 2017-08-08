@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 static bool begin_init_stmts (tree *, tree *);

@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gomp-constants.h"
 #include "tree-dfa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its

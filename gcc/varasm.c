@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "debug.h"
 #include "common/common-target.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 

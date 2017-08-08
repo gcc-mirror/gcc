@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "params.h"
 #include "gcc-rich-location.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);

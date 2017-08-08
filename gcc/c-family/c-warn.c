@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "gimplify.h"

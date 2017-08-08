@@ -145,6 +145,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-ccp.h"
 #include "tree-dfa.h"
 #include "diagnostic-core.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Possible lattice values.  */
 typedef enum

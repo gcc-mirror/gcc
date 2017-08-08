@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfg.h"
 #include "tree-pass.h"
 #include "tree-iterator.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 namespace {

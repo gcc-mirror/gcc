@@ -63,6 +63,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hosthooks.h"
 #include "opts.h"
 #include "opts-diagnostic.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "tsan.h"
 #include "plugin.h"

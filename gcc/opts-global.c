@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "plugin.h"
 #include "toplev.h"
 #include "context.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 typedef const char *const_char_p; /* For DEF_VEC_P.  */

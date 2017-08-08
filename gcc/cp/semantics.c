@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "omp-general.h"
 #include "convert.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "gomp-constants.h"
 #include "predict.h"
 

@@ -1,3 +1,8 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c: Include header files.
+	* lto-symtab.c: Likewise.
+
 2017-08-03  Richard Biener  <rguenther@suse.de>
 
 	* lto-symtab.h (lto_symtab_prevail_decl): Do not use

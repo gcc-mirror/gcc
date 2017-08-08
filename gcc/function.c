@@ -77,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
