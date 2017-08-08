@@ -1,4 +1,13 @@
 2017-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/19706
+	* config/aarch64/aarch64.md (xorsign<mode>3): New optabs.
+	* config/aarch64/aarch64-builtins.c
+	(aarch64_builtin_vectorized_function): Added CASE_CFN_XORSIGN.
+	* config/aarch64/aarch64-simd-builtins.def: Added xorsign BINOP.
+	* config/aarch64/aarch64-simd.md: Added xorsign<mode>3
+
+2017-08-08  Tamar Christina  <tamar.christina@arm.com>
 	    Andrew Pinski <pinskia@gmail.com>
 
 	PR middle-end/19706

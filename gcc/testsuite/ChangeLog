@@ -1,3 +1,9 @@
+2017-08-08  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/xorsign.c: New.
+	* gcc.target/aarch64/xorsign_exec.c: New.
+	* gcc.target/aarch64/vect-xorsign_exec.c: New.
+
 2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81354
