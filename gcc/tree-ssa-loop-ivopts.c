@@ -5284,13 +5284,13 @@ set_autoinc_for_original_candidates (struct ivopts_data *data)
 static void
 relate_compare_use_with_all_cands (struct ivopts_data *data)
 {
-  unsigned i, max_id = data->vcands.length () - 1;
+  unsigned i, count = data->vcands.length ();
   for (i = 0; i < data->vgroups.length (); i++)
     {
       struct iv_group *group = data->vgroups[i];
 
       if (group->type == USE_COMPARE)
-	bitmap_set_range (group->related_cands, 0, max_id);
+	bitmap_set_range (group->related_cands, 0, count);
     }
 }
 
