@@ -1,3 +1,19 @@
+2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/bfp/scalar-extract-exp-2.c: Adjust diagnostic
+	string.
+	* gcc.target/powerpc/bfp/scalar-extract-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-extract-sig-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-11.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-2.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-5.c: Likewise.
+	* gcc.target/powerpc/bfp/scalar-insert-exp-8.c: Likewise.
+	* gcc.target/powerpc/byte-in-set-2.c: Likewise.
+	* gcc.target/powerpc/cmpb-3.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xl-len-13.c: Likewise.
+	* gcc.target/powerpc/vsu/vec-xst-len-13.c: Likewise.
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	PR tree-opt/81696
