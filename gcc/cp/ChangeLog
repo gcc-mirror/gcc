@@ -1,3 +1,10 @@
+2017-08-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81607
+	* cp-gimplify.c (cp_fold): If folding exposed a branch of
+	a COND_EXPR, convert it to the original type of the COND_EXPR, if
+	they differ.		   
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	* call.c: Include header files.
