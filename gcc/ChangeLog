@@ -1,3 +1,9 @@
+2017-08-08  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81744
+	* tree-predcom.c (prepare_finalizers_chain): Deep copy expr of
+	loop's number of iterations.
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	* asan.c: Include header files.

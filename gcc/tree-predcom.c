@@ -2940,7 +2940,7 @@ prepare_finalizers_chain (struct loop *loop, chain_p chain)
 
       if (TREE_CODE (niters) != INTEGER_CST && TREE_CODE (niters) != SSA_NAME)
 	{
-	  niters = copy_node (niters);
+	  niters = unshare_expr (niters);
 	  niters = force_gimple_operand (niters, &stmts, true, NULL);
 	  if (stmts)
 	    {
