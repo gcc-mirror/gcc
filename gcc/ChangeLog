@@ -1,5 +1,12 @@
 2017-08-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/81719
+	* tree-ssa-loop-niter.c: Include tree-dfa.h.
+	(expand_simple_operations): Also look through ADDR_EXPRs with
+	MEM_REF bases treating them as POINTER_PLUS_EXPR.
+
+2017-08-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81723
 	* tree-vect-slp.c (struct bst_traits): New hash traits.
 	(bst_fail): New global.

@@ -1,5 +1,10 @@
 2017-08-08  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/81719
+	* g++.dg/tree-ssa/pr81719.C: New testcase.
+
+2017-08-08  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81723
 	* gfortran.dg/pr81723.f: New testcase.
 
