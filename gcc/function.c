@@ -6082,17 +6082,16 @@ thread_prologue_and_epilogue_insns (void)
       if (prologue_insn
 	  && BLOCK_FOR_INSN (prologue_insn) == NULL)
 	prologue_insn = NULL;
-      if (split_prologue_insn || prologue_insn)
-	{
-	  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
-	  bitmap_clear (blocks);
-	  if (split_prologue_insn)
-	    bitmap_set_bit (blocks,
-			    BLOCK_FOR_INSN (split_prologue_insn)->index);
-	  if (prologue_insn)
-	    bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
-	  find_many_sub_basic_blocks (blocks);
-	}
+      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
+      bitmap_clear (blocks);
+      if (split_prologue_insn)
+	bitmap_set_bit (blocks,
+			BLOCK_FOR_INSN (split_prologue_insn)->index);
+      if (prologue_insn)
+	bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
+      bitmap_set_bit (blocks, entry_edge->dest->index);
+      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
+      find_many_sub_basic_blocks (blocks);
     }
 
   default_rtl_profile ();
