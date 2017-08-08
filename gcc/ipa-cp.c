@@ -122,6 +122,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "ipa-utils.h"
 #include "tree-ssa-ccp.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 template <typename valtype> class ipcp_value;
 

@@ -4088,8 +4088,6 @@ extern tree purpose_member (const_tree, tree);
 extern bool vec_member (const_tree, vec<tree, va_gc> *);
 extern tree chain_index (int, tree);
 
-extern int attribute_list_equal (const_tree, const_tree);
-extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 
 extern bool tree_fits_shwi_p (const_tree)
@@ -4126,90 +4124,6 @@ extern bool valid_constant_size_p (const_tree);
    tree.h had been included.  */
 
 extern tree make_tree (tree, rtx);
-
-/* Return a type like TTYPE except that its TYPE_ATTRIBUTES
-   is ATTRIBUTE.
-
-   Such modified types already made are recorded so that duplicates
-   are not made.  */
-
-extern tree build_type_attribute_variant (tree, tree);
-extern tree build_decl_attribute_variant (tree, tree);
-extern tree build_type_attribute_qual_variant (tree, tree, int);
-
-extern bool attribute_value_equal (const_tree, const_tree);
-
-/* Return 0 if the attributes for two types are incompatible, 1 if they
-   are compatible, and 2 if they are nearly compatible (which causes a
-   warning to be generated).  */
-extern int comp_type_attributes (const_tree, const_tree);
-
-/* Default versions of target-overridable functions.  */
-extern tree merge_decl_attributes (tree, tree);
-extern tree merge_type_attributes (tree, tree);
-
-/* This function is a private implementation detail of lookup_attribute()
-   and you should never call it directly.  */
-extern tree private_lookup_attribute (const char *, size_t, tree);
-
-/* This function is a private implementation detail
-   of lookup_attribute_by_prefix() and you should never call it directly.  */
-extern tree private_lookup_attribute_by_prefix (const char *, size_t, tree);
-
-/* Given an attribute name ATTR_NAME and a list of attributes LIST,
-   return a pointer to the attribute's list element if the attribute
-   is part of the list, or NULL_TREE if not found.  If the attribute
-   appears more than once, this only returns the first occurrence; the
-   TREE_CHAIN of the return value should be passed back in if further
-   occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
-
-static inline tree
-lookup_attribute (const char *attr_name, tree list)
-{
-  gcc_checking_assert (attr_name[0] != '_');  
-  /* In most cases, list is NULL_TREE.  */
-  if (list == NULL_TREE)
-    return NULL_TREE;
-  else
-    /* Do the strlen() before calling the out-of-line implementation.
-       In most cases attr_name is a string constant, and the compiler
-       will optimize the strlen() away.  */
-    return private_lookup_attribute (attr_name, strlen (attr_name), list);
-}
-
-/* Given an attribute name ATTR_NAME and a list of attributes LIST,
-   return a pointer to the attribute's list first element if the attribute
-   starts with ATTR_NAME. ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
-
-static inline tree
-lookup_attribute_by_prefix (const char *attr_name, tree list)
-{
-  gcc_checking_assert (attr_name[0] != '_');
-  /* In most cases, list is NULL_TREE.  */
-  if (list == NULL_TREE)
-    return NULL_TREE;
-  else
-    return private_lookup_attribute_by_prefix (attr_name, strlen (attr_name),
-					       list);
-}
-
-/* Remove any instances of attribute ATTR_NAME in LIST and return the
-   modified list.  */
-
-extern tree remove_attribute (const char *, tree);
-
-/* Given two attributes lists, return a list of their union.  */
-
-extern tree merge_attributes (tree, tree);
-
-/* Given two Windows decl attributes lists, possibly including
-   dllimport, return a list of their union .  */
-extern tree merge_dllimport_decl_attributes (tree, tree);
-
-/* Handle a "dllimport" or "dllexport" attribute.  */
-extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 
 /* Returns true iff CAND and BASE have equivalent language-specific
    qualifiers.  */

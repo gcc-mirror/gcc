@@ -59,6 +59,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "selftest.h"
 #include "cfgrtl.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Enum with reasons why a predictor is ignored.  */
 

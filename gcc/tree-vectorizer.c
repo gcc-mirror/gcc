@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
 #include "tree-scalar-evolution.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 
 /* Loop or bb location.  */

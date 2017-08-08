@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "insn-addr.h" /* for INSN_ADDRESSES_ALLOC.  */
 #include "diagnostic-core.h" /* for fnotice */
+#include "stringpool.h"
+#include "attribs.h"
 
 using namespace gcc;
 

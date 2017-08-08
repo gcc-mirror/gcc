@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"

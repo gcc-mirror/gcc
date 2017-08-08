@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "ubsan.h"
 #include "expr.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "gimplify-me.h"
 #include "dfp.h"

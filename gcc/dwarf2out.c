@@ -92,6 +92,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-dfa.h"
 #include "gdb/gdb-index.h"
 #include "rtl-iter.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static void dwarf2out_source_line (unsigned int, unsigned int, const char *,
 				   int, bool);

@@ -26,6 +26,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "cfghooks.h"

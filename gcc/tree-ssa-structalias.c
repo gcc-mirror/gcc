@@ -40,7 +40,8 @@
 #include "params.h"
 #include "gimple-walk.h"
 #include "varasm.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* The idea behind this analyzer is to generate set constraints from the
    program, then solve the resulting constraints in order to generate the

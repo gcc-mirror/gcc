@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-fold.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 struct object_size_info
 {

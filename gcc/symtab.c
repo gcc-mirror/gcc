@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "ipa-utils.h"
 #include "calls.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static const char *ipa_ref_use_name[] = {"read","write","addr","alias","chkp"};
 

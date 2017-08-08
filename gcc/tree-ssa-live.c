@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "ipa-utils.h"
 #include "cfgloop.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static void verify_live_on_entry (tree_live_info_p);
 

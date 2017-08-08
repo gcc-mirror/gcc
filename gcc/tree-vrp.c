@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 

@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "tree-cfgcleanup.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;

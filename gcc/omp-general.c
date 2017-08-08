@@ -33,7 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "langhooks.h"
 #include "omp-general.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)

@@ -82,6 +82,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cilk.h"
 #include "cfgexpand.h"
 #include "gimplify.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Summaries.  */
 function_summary <ipa_fn_summary *> *ipa_fn_summaries;

@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chkp.h"
 #include "context.h"
 #include "gimplify.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* FIXME: Only for PROP_loops, but cgraph shouldn't have to know about this.  */
 #include "tree-pass.h"

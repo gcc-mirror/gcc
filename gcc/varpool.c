@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "omp-offload.h"
 #include "context.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 const char * const tls_model_names[]={"none", "emulated",
 				      "global-dynamic", "local-dynamic",

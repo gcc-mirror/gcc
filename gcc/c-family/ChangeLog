@@ -1,3 +1,9 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c: Include header files.
+	* c-ubsan.c: Likewise.
+	* c-warn.c: Likewise.
+
 2017-08-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/69389

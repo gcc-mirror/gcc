@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"
 #include "params.h"

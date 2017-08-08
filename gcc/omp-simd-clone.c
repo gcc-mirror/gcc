@@ -48,7 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-eh.h"
 #include "varasm.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
