@@ -1,3 +1,13 @@
+2017-08-08  Tamar Christina  <tamar.christina@arm.com>
+	    Andrew Pinski <pinskia@gmail.com>
+
+	PR middle-end/19706
+	* internal-fn.def (XORSIGN): New.
+	* optabs.def (xorsign_optab): New.
+	* tree-ssa-math-opts.c (is_copysign_call_with_1): New.
+	(convert_expand_mult_copysign): New.
+	(pass_optimize_widening_mul::execute): Call convert_expand_mult_copysign.
+
 2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81354

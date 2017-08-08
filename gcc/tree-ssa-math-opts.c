@@ -3145,6 +3145,93 @@ is_widening_mult_p (gimple *stmt,
   return true;
 }
 
+/* Check to see if the CALL statement is an invocation of copysign
+   with 1. being the first argument.  */
+static bool
+is_copysign_call_with_1 (gimple *call)
+{
+  gcall *c = dyn_cast <gcall *> (call);
+  if (! c)
+    return false;
+
+  enum combined_fn code = gimple_call_combined_fn (c);
+
+  if (code == CFN_LAST)
+    return false;
+
+  if (builtin_fn_p (code))
+    {
+      switch (as_builtin_fn (code))
+	{
+	CASE_FLT_FN (BUILT_IN_COPYSIGN):
+	CASE_FLT_FN_FLOATN_NX (BUILT_IN_COPYSIGN):
+	  return real_onep (gimple_call_arg (c, 0));
+	default:
+	  return false;
+	}
+    }
+
+  if (internal_fn_p (code))
+    {
+      switch (as_internal_fn (code))
+	{
+	case IFN_COPYSIGN:
+	  return real_onep (gimple_call_arg (c, 0));
+	default:
+	  return false;
+	}
+    }
+
+   return false;
+}
+
+/* Try to expand the pattern x * copysign (1, y) into xorsign (x, y).
+   This only happens when the the xorsign optab is defined, if the
+   pattern is not a xorsign pattern or if expansion fails FALSE is
+   returned, otherwise TRUE is returned.  */
+static bool
+convert_expand_mult_copysign (gimple *stmt, gimple_stmt_iterator *gsi)
+{
+  tree treeop0, treeop1, lhs, type;
+  location_t loc = gimple_location (stmt);
+  lhs = gimple_assign_lhs (stmt);
+  treeop0 = gimple_assign_rhs1 (stmt);
+  treeop1 = gimple_assign_rhs2 (stmt);
+  type = TREE_TYPE (lhs);
+  machine_mode mode = TYPE_MODE (type);
+
+  if (HONOR_SNANS (type) || !has_single_use (lhs))
+    return false;
+
+  if (TREE_CODE (treeop0) == SSA_NAME && TREE_CODE (treeop1) == SSA_NAME)
+    {
+      gimple *call0 = SSA_NAME_DEF_STMT (treeop0);
+      if (!is_copysign_call_with_1 (call0))
+	{
+	  call0 = SSA_NAME_DEF_STMT (treeop1);
+	  if (!is_copysign_call_with_1 (call0))
+	    return false;
+
+	  treeop1 = treeop0;
+	}
+
+	if (optab_handler (xorsign_optab, mode) == CODE_FOR_nothing)
+	  return false;
+
+	gcall *c = as_a<gcall*> (call0);
+	treeop0 = gimple_call_arg (c, 1);
+
+	gcall *call_stmt
+	  = gimple_build_call_internal (IFN_XORSIGN, 2, treeop1, treeop0);
+	gimple_set_lhs (call_stmt, lhs);
+	gimple_set_location (call_stmt, loc);
+	gsi_replace (gsi, call_stmt, true);
+	return true;
+    }
+
+  return false;
+}
+
 /* Process a single gimple statement STMT, which has a MULT_EXPR as
    its rhs, and try to convert it into a WIDEN_MULT_EXPR.  The return
    value is true iff we converted the statement.  */
@@ -4114,6 +4201,7 @@ pass_optimize_widening_mul::execute (function *fun)
 		{
 		case MULT_EXPR:
 		  if (!convert_mult_to_widen (stmt, &gsi)
+		      && !convert_expand_mult_copysign (stmt, &gsi)
 		      && convert_mult_to_fma (stmt,
 					      gimple_assign_rhs1 (stmt),
 					      gimple_assign_rhs2 (stmt)))
