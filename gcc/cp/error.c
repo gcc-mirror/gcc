@@ -3046,6 +3046,8 @@ location_of (tree t)
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
+  if (TREE_CODE (t) == DEFAULT_ARG)
+    return defarg_location (t);
   return EXPR_LOC_OR_LOC (t, input_location);
 }
 

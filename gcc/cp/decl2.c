@@ -4988,8 +4988,9 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (TREE_CODE (decl) == CONST_DECL)
     used_types_insert (DECL_CONTEXT (decl));
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    maybe_instantiate_noexcept (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && !maybe_instantiate_noexcept (decl, complain))
+    return false;
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))

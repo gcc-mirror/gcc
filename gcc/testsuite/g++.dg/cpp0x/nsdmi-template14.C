@@ -3,14 +3,14 @@
 
 template<int> struct A
 {
-  int i = (A<0>(), 0); // { dg-error "recursive instantiation of non-static data" }
+  int i = (A<0>(), 0); // { dg-error "recursive instantiation of default" }
 };
 
 A<0> a;
 
 template<int N> struct B
 {
-  B* p = new B<N>; // { dg-error "recursive instantiation of non-static data" }
+  B* p = new B<N>; // { dg-error "recursive instantiation of default" }
 };
 
 B<1> x;

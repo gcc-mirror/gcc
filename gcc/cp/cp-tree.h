@@ -6297,7 +6297,7 @@ extern tree get_type_value			(tree);
 extern tree build_zero_init			(tree, tree, bool);
 extern tree build_value_init			(tree, tsubst_flags_t);
 extern tree build_value_init_noctor		(tree, tsubst_flags_t);
-extern tree get_nsdmi				(tree, bool);
+extern tree get_nsdmi				(tree, bool, tsubst_flags_t);
 extern tree build_offset_ref			(tree, tree, bool,
 						 tsubst_flags_t);
 extern tree throw_bad_array_new_length		(void);
@@ -6355,7 +6355,7 @@ extern bool trivial_fn_p			(tree);
 extern tree forward_parm			(tree);
 extern bool is_trivially_xible			(enum tree_code, tree, tree);
 extern bool is_xible				(enum tree_code, tree, tree);
-extern tree get_defaulted_eh_spec		(tree);
+extern tree get_defaulted_eh_spec		(tree, tsubst_flags_t = tf_warning_or_error);
 extern void after_nsdmi_defaulted_late_checks   (tree);
 extern bool maybe_explain_implicit_delete	(tree);
 extern void explain_implicit_non_constexpr	(tree);
@@ -6385,6 +6385,7 @@ extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool);
 extern bool parsing_nsdmi (void);
 extern bool parsing_default_capturing_generic_lambda_in_template (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
+extern location_t defarg_location (tree);
 
 /* in pt.c */
 extern bool check_template_shadow		(tree);
@@ -6448,7 +6449,7 @@ extern int more_specialized_fn			(tree, tree, int);
 extern void do_decl_instantiation		(tree, tree);
 extern void do_type_instantiation		(tree, tree, tsubst_flags_t);
 extern bool always_instantiate_p		(tree);
-extern void maybe_instantiate_noexcept		(tree);
+extern bool maybe_instantiate_noexcept		(tree, tsubst_flags_t = tf_warning_or_error);
 extern tree instantiate_decl			(tree, bool, bool);
 extern int comp_template_parms			(const_tree, const_tree);
 extern bool builtin_pack_fn_p			(tree);
@@ -7166,7 +7167,7 @@ extern tree split_nonconstant_init		(tree, tree);
 extern bool check_narrowing			(tree, tree, tsubst_flags_t);
 extern tree digest_init				(tree, tree, tsubst_flags_t);
 extern tree digest_init_flags			(tree, tree, int, tsubst_flags_t);
-extern tree digest_nsdmi_init		        (tree, tree);
+extern tree digest_nsdmi_init		        (tree, tree, tsubst_flags_t);
 extern tree build_scoped_ref			(tree, tree, tree *);
 extern tree build_x_arrow			(location_t, tree,
 						 tsubst_flags_t);
