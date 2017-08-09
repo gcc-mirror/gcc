@@ -4050,7 +4050,7 @@ enum_cast_to_int (tree op)
 /* For the c-common bits.  */
 tree
 build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
-		 int /*convert_p*/)
+		 bool /*convert_p*/)
 {
   return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
@@ -5592,7 +5592,7 @@ cp_truthvalue_conversion (tree expr)
   if (TYPE_PTR_OR_PTRMEM_P (type)
       /* Avoid ICE on invalid use of non-static member function.  */
       || TREE_CODE (expr) == FUNCTION_DECL)
-    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, 1);
+    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, true);
   else
     return c_common_truthvalue_conversion (input_location, expr);
 }

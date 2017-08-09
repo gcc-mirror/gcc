@@ -1,3 +1,10 @@
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (pointer_int_sum): Use true/false instead of 1/0.
+	(c_common_truthvalue_conversion): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+	* c-common.h (build_binary_op): Update declaration.
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	* c-ada-spec.c: Include header files.

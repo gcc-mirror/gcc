@@ -1,5 +1,22 @@
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
+	* c-decl.c (build_enumerator): Use true/false instead of 1/0.
+	* c-tree.h (build_external_ref): Update declaration.
+	* c-typeck.c (build_array_ref): Use true/false instead of 1/0.
+	(build_external_ref): Change the type of a parameter to bool.
+	(parser_build_binary_op): Use true/false instead of 1/0.
+	(pointer_diff): Likewise.
+	(build_modify_expr): Likewise.
+	(set_designator): Change the type of a parameter to bool.
+	(set_init_index): Use true/false instead of 1/0.
+	(set_init_label): Likewise.
+	(output_init_element): Change the type of a parameter to bool.
+	(output_pending_init_elements): Use true/false instead of 1/0.
+	(process_init_element): Likewise.
+	(build_binary_op): Change the type of a parameter to bool.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c/81233
 	* c-typeck.c (pedwarn_init): Make the function take a variable list.
 	Call emit_diagnostic_valist instead of pedwarn.

@@ -106,10 +106,10 @@ static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (location_t, int, const char *);
 static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
-static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
+static void output_init_element (location_t, tree, tree, bool, tree, tree, bool,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
-static bool set_designator (location_t, int, struct obstack *);
+static bool set_designator (location_t, bool, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
 static void add_pending_init (location_t, tree, tree, tree, bool,
 			      struct obstack *);
@@ -2723,7 +2723,7 @@ build_array_ref (location_t loc, tree array, tree index)
       gcc_assert (TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) != FUNCTION_TYPE);
 
       ret = build_indirect_ref (loc, build_binary_op (loc, PLUS_EXPR, ar,
-						      index, 0),
+						      index, false),
 				RO_ARRAY_INDEXING);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -2738,7 +2738,7 @@ build_array_ref (location_t loc, tree array, tree index)
    for CONST_DECLs defined as enum constants.  If the type of the
    identifier is not available, *TYPE is set to NULL.  */
 tree
-build_external_ref (location_t loc, tree id, int fun, tree *type)
+build_external_ref (location_t loc, tree id, bool fun, tree *type)
 {
   tree ref;
   tree decl = lookup_name (id);
@@ -3642,7 +3642,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
                 : TREE_TYPE (arg2.value));
 
   result.value = build_binary_op (location, code,
-				  arg1.value, arg2.value, 1);
+				  arg1.value, arg2.value, true);
   result.original_code = code;
   result.original_type = NULL;
 
@@ -3831,7 +3831,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
 
   op0 = build_binary_op (loc,
 			 MINUS_EXPR, convert (inttype, op0),
-			 convert (inttype, op1), 0);
+			 convert (inttype, op1), false);
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
@@ -4098,7 +4098,7 @@ cas_loop:
   add_stmt (loop_label);
 
   /* newval = old + val;  */
-  rhs = build_binary_op (loc, modifycode, old, val, 1);
+  rhs = build_binary_op (loc, modifycode, old, val, true);
   rhs = c_fully_fold (rhs, false, NULL);
   rhs = convert_for_assignment (loc, UNKNOWN_LOCATION, nonatomic_lhs_type,
 				rhs, NULL_TREE, ic_assign, false, NULL_TREE,
@@ -5796,7 +5796,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	      rhseval = newrhs;
 	    }
 	  newrhs = build_binary_op (location,
-				    modifycode, lhs, newrhs, 1);
+				    modifycode, lhs, newrhs, true);
 
 	  /* The original type of the right hand side is no longer
 	     meaningful.  */
@@ -8291,7 +8291,7 @@ pop_init_level (location_t loc, int implicit,
    ARRAY argument is nonzero for array ranges.  Returns false for success.  */
 
 static bool
-set_designator (location_t loc, int array,
+set_designator (location_t loc, bool array,
 		struct obstack *braced_init_obstack)
 {
   tree subtype;
@@ -8387,7 +8387,7 @@ void
 set_init_index (location_t loc, tree first, tree last,
 		struct obstack *braced_init_obstack)
 {
-  if (set_designator (loc, 1, braced_init_obstack))
+  if (set_designator (loc, true, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -8477,7 +8477,7 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 {
   tree field;
 
-  if (set_designator (loc, 0, braced_init_obstack))
+  if (set_designator (loc, false, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -8517,7 +8517,7 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 	field = TREE_CHAIN (field);
 	if (field)
 	  {
-	    if (set_designator (loc, 0, braced_init_obstack))
+	    if (set_designator (loc, false, braced_init_obstack))
 	      return;
 	  }
       }
@@ -8950,9 +8950,9 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
    unparenthesized or we should not warn here for it being parenthesized.
    For other types of VALUE, STRICT_STRING is not used.
 
-   PENDING if non-nil means output pending elements that belong
-   right after this element.  (PENDING is normally 1;
-   it is 0 while outputting pending elements, to avoid recursion.)
+   PENDING if true means output pending elements that belong
+   right after this element.  (PENDING is normally true;
+   it is false while outputting pending elements, to avoid recursion.)
 
    IMPLICIT is true if value comes from pop_init_level (1),
    the new initializer has been merged with the existing one
@@ -8961,7 +8961,7 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
 
 static void
 output_init_element (location_t loc, tree value, tree origtype,
-		     bool strict_string, tree type, tree field, int pending,
+		     bool strict_string, tree type, tree field, bool pending,
 		     bool implicit, struct obstack * braced_init_obstack)
 {
   tree semantic_type = NULL_TREE;
@@ -9204,7 +9204,7 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 				  constructor_unfilled_index))
 	    output_init_element (input_location, elt->value, elt->origtype,
 				 true, TREE_TYPE (constructor_type),
-				 constructor_unfilled_index, 0, false,
+				 constructor_unfilled_index, false, false,
 				 braced_init_obstack);
 	  else if (tree_int_cst_lt (constructor_unfilled_index,
 				    elt->purpose))
@@ -9258,7 +9258,7 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	      constructor_unfilled_fields = elt->purpose;
 	      output_init_element (input_location, elt->value, elt->origtype,
 				   true, TREE_TYPE (elt->purpose),
-				   elt->purpose, 0, false,
+				   elt->purpose, false, false,
 				   braced_init_obstack);
 	    }
 	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
@@ -9502,7 +9502,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_member_name (constructor_fields);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
-				   constructor_fields, 1, implicit,
+				   constructor_fields, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9594,7 +9594,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_member_name (constructor_fields);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
-				   constructor_fields, 1, implicit,
+				   constructor_fields, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9646,7 +9646,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_array_bounds (tree_to_uhwi (constructor_index));
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
-				   constructor_index, 1, implicit,
+				   constructor_index, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9681,7 +9681,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		elttype = TYPE_MAIN_VARIANT (constructor_type);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
-				   constructor_index, 1, implicit,
+				   constructor_index, true, implicit,
 				   braced_init_obstack);
 	    }
 
@@ -9710,7 +9710,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  if (value.value)
 	    output_init_element (loc, value.value, value.original_type,
 				 strict_string, constructor_type,
-				 NULL_TREE, 1, implicit,
+				 NULL_TREE, true, implicit,
 				 braced_init_obstack);
 	  constructor_fields = NULL_TREE;
 	}
@@ -10842,7 +10842,7 @@ build_vec_cmp (tree_code code, tree type,
 
 tree
 build_binary_op (location_t location, enum tree_code code,
-		 tree orig_op0, tree orig_op1, int convert_p)
+		 tree orig_op0, tree orig_op1, bool convert_p)
 {
   tree type0, type1, orig_type0, orig_type1;
   tree eptype;

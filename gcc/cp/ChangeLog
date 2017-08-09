@@ -1,3 +1,9 @@
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (cp_parser_perform_range_for_lookup): Use false instead of 0.
+	* typeck.c (build_binary_op): Change the type of a parameter to bool.
+	(cp_truthvalue_conversion): Use true instead of 1.
+
 2017-08-08  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/81607
