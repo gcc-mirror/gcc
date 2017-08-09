@@ -148,6 +148,10 @@ maltivec=be
 Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
 Generate AltiVec instructions using big-endian element order.
 
+mfold-gimple
+Target Report Var(rs6000_fold_gimple) Init(1)
+Enable early gimple folding of builtins.
+
 mhard-dfp
 Target Report Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions.
