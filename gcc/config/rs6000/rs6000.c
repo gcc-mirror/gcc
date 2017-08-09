@@ -24431,6 +24431,21 @@ rs6000_savres_strategy (rs6000_stack_t *info,
   else if (!lr_save_p && info->first_gp_reg_save > 29)
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
 
+  /* We can only use save multiple if we need to save all the registers from
+     first_gp_reg_save.  Otherwise, the CFI gets messed up (we save some
+     register we do not restore).  */
+  if (strategy & SAVE_MULTIPLE)
+    {
+      int i;
+
+      for (i = info->first_gp_reg_save; i < 32; i++)
+	if (fixed_reg_p (i) || !save_reg_p (i))
+	  {
+	    strategy &= ~SAVE_MULTIPLE;
+	    break;
+	  }
+    }
+
   /* We can only use load multiple or the out-of-line routines to
      restore gprs if we've saved all the registers from
      first_gp_reg_save.  Otherwise, we risk loading garbage.
