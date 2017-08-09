@@ -1314,7 +1314,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 	  if (bad && deleted_p)
 	    *deleted_p = true;
 	}
-      else if (sfk == sfk_constructor)
+      else if (sfk == sfk_constructor || sfk == sfk_inheriting_constructor)
 	{
 	  bool bad;
 
