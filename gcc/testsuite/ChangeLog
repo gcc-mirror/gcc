@@ -1,3 +1,10 @@
+2017-08-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-cntlz-int.c: New.
+	* gcc.target/powerpc/fold-vec-cntlz-char.c: New.
+	* gcc.target/powerpc/fold-vec-cntlz-short.c: New.
+	* gcc.target/powerpc/fold-vec-cntlz-longlong.c: New.
+
 2017-08-09  Slava Barinov  <v.barinov@samsung.com>
 
 	* g++.dg/asan/asan.exp: Switch on *.cc tests.
