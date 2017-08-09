@@ -4182,6 +4182,10 @@ rs6000_option_override_internal (bool global_init_p)
       rs6000_altivec_element_order = 0;
     }
 
+  if (!rs6000_fold_gimple)
+     fprintf (stderr,
+	      "gimple folding of rs6000 builtins has been disabled.\n");
+
   /* Add some warnings for VSX.  */
   if (TARGET_VSX)
     {
@@ -16054,7 +16058,7 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
 static void
 rs6000_invalid_builtin (enum rs6000_builtins fncode)
 {
-  size_t uns_fncode = (size_t)fncode;
+  size_t uns_fncode = (size_t) fncode;
   const char *name = rs6000_builtin_info[uns_fncode].name;
   HOST_WIDE_INT fnmask = rs6000_builtin_info[uns_fncode].mask;
 
@@ -16158,6 +16162,20 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   enum rs6000_builtins fn_code
     = (enum rs6000_builtins) DECL_FUNCTION_CODE (fndecl);
   tree arg0, arg1, lhs;
+
+  size_t uns_fncode = (size_t) fn_code;
+  enum insn_code icode = rs6000_builtin_info[uns_fncode].icode;
+  const char *fn_name1 = rs6000_builtin_info[uns_fncode].name;
+  const char *fn_name2 = (icode != CODE_FOR_nothing)
+			  ? get_insn_name ((int) icode)
+			  : "nothing";
+
+  if (TARGET_DEBUG_BUILTIN)
+      fprintf (stderr, "rs6000_gimple_fold_builtin %d %s %s\n",
+	       fn_code, fn_name1, fn_name2);
+
+  if (!rs6000_fold_gimple)
+    return false;
 
   /* Generic solution to prevent gimple folding of code without a LHS.  */
   if (!gimple_call_lhs (stmt))
@@ -16518,6 +16536,9 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	return true;
       }
     default:
+	if (TARGET_DEBUG_BUILTIN)
+	   fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
+		    fn_code, fn_name1, fn_name2);
       break;
     }
 
@@ -16550,9 +16571,9 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     {
       enum insn_code icode = rs6000_builtin_info[uns_fcode].icode;
       const char *name1 = rs6000_builtin_info[uns_fcode].name;
-      const char *name2 = ((icode != CODE_FOR_nothing)
-			   ? get_insn_name ((int)icode)
-			   : "nothing");
+      const char *name2 = (icode != CODE_FOR_nothing)
+			   ? get_insn_name ((int) icode)
+			   : "nothing";
       const char *name3;
 
       switch (rs6000_builtin_info[uns_fcode].attr & RS6000_BTC_TYPE_MASK)
@@ -16571,7 +16592,7 @@ rs6000_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
       fprintf (stderr,
 	       "rs6000_expand_builtin, %s (%d), insn = %s (%d), type=%s%s\n",
 	       (name1) ? name1 : "---", fcode,
-	       (name2) ? name2 : "---", (int)icode,
+	       (name2) ? name2 : "---", (int) icode,
 	       name3,
 	       func_valid_p ? "" : ", not valid");
     }	     

@@ -1,3 +1,12 @@
+2017-08-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_option_override_internal): Add blurb
+	to indicate when early gimple folding has been disabled.
+	(rs6000_gimple_fold_builtin): Add debug content.
+	(rs6000_invalid_builtin): Fix whitespace.
+	(rs6000_expand_builtin): Fix whitespace.
+	* config/rs6000/rs6000.opt: Add option for -mfold-gimple.
+
 2017-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/80938
