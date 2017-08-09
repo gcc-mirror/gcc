@@ -1,3 +1,9 @@
+2017-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/80938
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Don't use
+	SAVE_MULTIPLE if not all the registers that saves, should be saved.
+
 2017-08-09  Jim Wilson  <jim.wilson@linaro.org>
 
 	* config/aarch64/aarch64-cores.def (falkor): Use falkor pipeline.
