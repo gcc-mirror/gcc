@@ -1,3 +1,20 @@
+2017-08-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
+	* init.c (get_nsdmi): Add complain parm.
+	* typeck2.c (digest_nsdmi_init): Add complain parm.
+	(process_init_constructor_record): Pass complain to get_nsdmi.
+	* pt.c (maybe_instantiate_noexcept): Add complain parm, return bool.
+	* method.c (get_defaulted_eh_spec): Add complain parm.  Pass it into
+	synthesized_method_walk.
+	(synthesized_method_walk): Adjust.
+	(walk_field_subobs): Pass complain to get_nsdmi.
+	(defaulted_late_check): Skip other checks if deleted.
+	* decl2.c (mark_used): Pass complain to maybe_instantiate_noexcept.
+	* call.c (build_aggr_conv): Pass complain to get_nsdmi.
+	* parser.c (defarg_location): New.
+	* error.c (location_of): Use it.
+
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
 	* parser.c (cp_parser_perform_range_for_lookup): Use false instead of 0.

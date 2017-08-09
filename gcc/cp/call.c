@@ -916,7 +916,7 @@ build_aggr_conv (tree type, tree ctor, int flags, tsubst_flags_t complain)
       if (i < CONSTRUCTOR_NELTS (ctor))
 	val = CONSTRUCTOR_ELT (ctor, i)->value;
       else if (DECL_INITIAL (field))
-	val = get_nsdmi (field, /*ctor*/false);
+	val = get_nsdmi (field, /*ctor*/false, complain);
       else if (TREE_CODE (ftype) == REFERENCE_TYPE)
 	/* Value-initialization of reference is ill-formed.  */
 	return NULL;

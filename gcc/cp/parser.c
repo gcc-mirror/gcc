@@ -27431,7 +27431,7 @@ cp_parser_late_parse_one_default_arg (cp_parser *parser, tree decl,
       else if (maybe_reject_flexarray_init (decl, parsed_arg))
 	parsed_arg = error_mark_node;
       else
-	parsed_arg = digest_nsdmi_init (decl, parsed_arg);
+	parsed_arg = digest_nsdmi_init (decl, parsed_arg, tf_warning_or_error);
     }
 
   /* If the token stream has not been completely used up, then
@@ -28679,6 +28679,17 @@ cp_parser_cache_defarg (cp_parser *parser, bool nsdmi)
   DEFARG_INSTANTIATIONS (default_argument) = NULL;
 
   return default_argument;
+}
+
+/* A location to use for diagnostics about an unparsed DEFAULT_ARG.  */
+
+location_t
+defarg_location (tree default_argument)
+{
+  cp_token_cache *tokens = DEFARG_TOKENS (default_argument);
+  location_t start = tokens->first->location;
+  location_t end = tokens->last->location;
+  return make_location (start, start, end);
 }
 
 /* Begin parsing tentatively.  We always save tokens while parsing

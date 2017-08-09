@@ -22493,16 +22493,17 @@ always_instantiate_p (tree decl)
 }
 
 /* If FN has a noexcept-specifier that hasn't been instantiated yet,
-   instantiate it now, modifying TREE_TYPE (fn).  */
+   instantiate it now, modifying TREE_TYPE (fn).  Returns false on
+   error, true otherwise.  */
 
-void
-maybe_instantiate_noexcept (tree fn)
+bool
+maybe_instantiate_noexcept (tree fn, tsubst_flags_t complain)
 {
   tree fntype, spec, noex, clone;
 
   /* Don't instantiate a noexcept-specification from template context.  */
   if (processing_template_decl)
-    return;
+    return true;
 
   if (DECL_CLONED_FUNCTION_P (fn))
     fn = DECL_CLONED_FUNCTION (fn);
@@ -22510,7 +22511,7 @@ maybe_instantiate_noexcept (tree fn)
   spec = TYPE_RAISES_EXCEPTIONS (fntype);
 
   if (!spec || !TREE_PURPOSE (spec))
-    return;
+    return true;
 
   noex = TREE_PURPOSE (spec);
 
@@ -22519,7 +22520,7 @@ maybe_instantiate_noexcept (tree fn)
       static hash_set<tree>* fns = new hash_set<tree>;
       bool added = false;
       if (DEFERRED_NOEXCEPT_PATTERN (noex) == NULL_TREE)
-	spec = get_defaulted_eh_spec (fn);
+	spec = get_defaulted_eh_spec (fn, complain);
       else if (!(added = !fns->add (fn)))
 	{
 	  /* If hash_set::add returns true, the element was already there.  */
@@ -22553,6 +22554,9 @@ maybe_instantiate_noexcept (tree fn)
       if (added)
 	fns->remove (fn);
 
+      if (spec == error_mark_node)
+	return false;
+
       TREE_TYPE (fn) = build_exception_variant (fntype, spec);
     }
 
@@ -22563,6 +22567,8 @@ maybe_instantiate_noexcept (tree fn)
       else
 	TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
     }
+
+  return true;
 }
 
 /* Produce the definition of D, a _DECL generated from a template.  If
