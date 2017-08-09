@@ -5655,7 +5655,7 @@ Binary_expression::do_determine_type(const Type_context* context)
 
   Type_context subcontext(*context);
 
-  if (is_constant_expr)
+  if (is_constant_expr && !is_shift_op)
     {
       subcontext.type = NULL;
       subcontext.may_be_abstract = true;
