@@ -1,5 +1,10 @@
 2017-08-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
+	* gcc.target/powerpc/fold-vec-msum-char.c: New.
+	* gcc.target/powerpc/fold-vec-msum-short.c: New.
+
+2017-08-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
 	* gcc.target/powerpc/fold-vec-madd-double.c: New.
 	* gcc.target/powerpc/fold-vec-madd-float.c: New.
 	* gcc.target/powerpc/fold-vec-madd-short.c: New.
