@@ -1,3 +1,7 @@
+2017-08-09  Slava Barinov  <v.barinov@samsung.com>
+
+	* g++.dg/asan/asan.exp: Switch on *.cc tests.
+
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81233
