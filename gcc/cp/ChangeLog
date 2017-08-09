@@ -1,5 +1,9 @@
 2017-08-09  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81525 - wrong constant value with generic lambda
+	* pt.c (tsubst_decl) [VAR_DECL]: Avoid clobbering auto.
+	(tsubst_copy) [VAR_DECL]: Handle auto.
+
 	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
 	* init.c (get_nsdmi): Add complain parm.
 	* typeck2.c (digest_nsdmi_init): Add complain parm.
