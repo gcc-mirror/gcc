@@ -1,3 +1,8 @@
+2017-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/81423
+	* gcc.c-torture/execute/pr81423.c: New testcase.
+
 2017-08-09  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-pack-double.c: New.
