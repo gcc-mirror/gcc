@@ -960,7 +960,7 @@ extern tree build_real_imag_expr (location_t, enum tree_code, tree);
    a variant of the C language.  They are used in c-common.c.  */
 
 extern tree build_unary_op (location_t, enum tree_code, tree, bool);
-extern tree build_binary_op (location_t, enum tree_code, tree, tree, int);
+extern tree build_binary_op (location_t, enum tree_code, tree, tree, bool);
 extern tree perform_integral_promotions (tree);
 
 /* These functions must be defined by each front-end which implements

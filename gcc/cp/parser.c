@@ -11925,7 +11925,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
       *end = build_binary_op (input_location, PLUS_EXPR,
 			      range,
 			      array_type_nelts_top (TREE_TYPE (range)),
-			      0);
+			      false);
       return TREE_TYPE (*begin);
     }
   else

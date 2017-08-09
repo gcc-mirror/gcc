@@ -276,14 +276,14 @@ c_finish_omp_atomic (location_t loc, enum tree_code code,
       lhs = build3_loc (loc, BIT_FIELD_REF, TREE_TYPE (blhs), lhs,
 			bitsize_int (bitsize), bitsize_int (bitpos));
       if (swapped)
-	rhs = build_binary_op (loc, opcode, rhs, lhs, 1);
+	rhs = build_binary_op (loc, opcode, rhs, lhs, true);
       else if (opcode != NOP_EXPR)
-	rhs = build_binary_op (loc, opcode, lhs, rhs, 1);
+	rhs = build_binary_op (loc, opcode, lhs, rhs, true);
       opcode = NOP_EXPR;
     }
   else if (swapped)
     {
-      rhs = build_binary_op (loc, opcode, rhs, lhs, 1);
+      rhs = build_binary_op (loc, opcode, rhs, lhs, true);
       opcode = NOP_EXPR;
     }
   bool save = in_late_binary_op;
