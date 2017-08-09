@@ -6511,7 +6511,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
 				 tree omp_atomic_lhs)
 {
   struct c_expr cond, exp1, exp2, ret;
-  location_t start, cond_loc, colon_loc, middle_loc;
+  location_t start, cond_loc, colon_loc;
 
   gcc_assert (!after || c_dialect_objc ());
 
@@ -6530,7 +6530,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
     {
       tree eptype = NULL_TREE;
 
-      middle_loc = c_parser_peek_token (parser)->location;
+      location_t middle_loc = c_parser_peek_token (parser)->location;
       pedwarn (middle_loc, OPT_Wpedantic,
 	       "ISO C forbids omitting the middle term of a ?: expression");
       if (TREE_CODE (cond.value) == EXCESS_PRECISION_EXPR)
@@ -6547,6 +6547,7 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
       if (eptype)
 	exp1.value = build1 (EXCESS_PRECISION_EXPR, eptype, exp1.value);
       exp1.original_type = NULL;
+      exp1.src_range = cond.src_range;
       cond.value = c_objc_common_truthvalue_conversion (cond_loc, exp1.value);
       c_inhibit_evaluation_warnings += cond.value == truthvalue_true_node;
     }
@@ -6578,10 +6579,12 @@ c_parser_conditional_expression (c_parser *parser, struct c_expr *after,
     exp2 = convert_lvalue_to_rvalue (exp2_loc, exp2, true, true);
   }
   c_inhibit_evaluation_warnings -= cond.value == truthvalue_true_node;
+  location_t loc1 = make_location (exp1.get_start (), exp1.src_range);
+  location_t loc2 = make_location (exp2.get_start (), exp2.src_range);
   ret.value = build_conditional_expr (colon_loc, cond.value,
 				      cond.original_code == C_MAYBE_CONST_EXPR,
-				      exp1.value, exp1.original_type,
-				      exp2.value, exp2.original_type);
+				      exp1.value, exp1.original_type, loc1,
+				      exp2.value, exp2.original_type, loc2);
   ret.original_code = ERROR_MARK;
   if (exp1.value == error_mark_node || exp2.value == error_mark_node)
     ret.original_type = NULL;

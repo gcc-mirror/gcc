@@ -1,3 +1,15 @@
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* Wsign-compare-1.c: New test.
+	* gcc.dg/compare1.c: Adjust dg-bogus.
+	* gcc.dg/compare2.c: Likewise.
+	* gcc.dg/compare3.c: Likewise.
+	* gcc.dg/compare7.c: Likewise.
+	* gcc.dg/compare8.c: Likewise.
+	* gcc.dg/compare9.c: Likewise.
+	* gcc.dg/pr11492.c: Likewise.
+
 2017-08-08  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/81523

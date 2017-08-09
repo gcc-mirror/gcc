@@ -109,6 +109,7 @@ get_finish (location_t loc)
 
 extern location_t make_location (location_t caret,
 				 location_t start, location_t finish);
+extern location_t make_location (location_t caret, source_range src_range);
 
 void dump_line_table_statistics (void);
 

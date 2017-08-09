@@ -355,8 +355,9 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_cond_expr = build2 (NE_EXPR, TREE_TYPE (func_parm), func_parm,
 			      build_zero_cst (TREE_TYPE (func_parm)));
       new_expr = build_conditional_expr
-	(location, new_cond_expr, false, new_yes_expr,
-	 TREE_TYPE (new_yes_expr), new_no_expr, TREE_TYPE (new_no_expr));
+	(location, new_cond_expr, false,
+	 new_yes_expr, TREE_TYPE (new_yes_expr), location,
+	 new_no_expr, TREE_TYPE (new_no_expr), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ALL_NONZERO:
       new_var_init = build_modify_expr
@@ -375,8 +376,9 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_cond_expr = build2 (EQ_EXPR, TREE_TYPE (func_parm), func_parm,
 			      build_zero_cst (TREE_TYPE (func_parm)));
       new_expr = build_conditional_expr
-	(location, new_cond_expr, false, new_yes_expr,
-	 TREE_TYPE (new_yes_expr), new_no_expr, TREE_TYPE (new_no_expr));
+	(location, new_cond_expr, false,
+	 new_yes_expr, TREE_TYPE (new_yes_expr), location,
+	 new_no_expr, TREE_TYPE (new_no_expr), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_ZERO:
       new_var_init = build_modify_expr
@@ -394,8 +396,9 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_cond_expr = build2 (EQ_EXPR, TREE_TYPE (func_parm), func_parm,
 			      build_zero_cst (TREE_TYPE (func_parm)));
       new_expr = build_conditional_expr
-	(location, new_cond_expr, false, new_yes_expr,
-	 TREE_TYPE (new_yes_expr), new_no_expr, TREE_TYPE (new_no_expr));   
+	(location, new_cond_expr, false,
+	 new_yes_expr, TREE_TYPE (new_yes_expr), location,
+	 new_no_expr, TREE_TYPE (new_no_expr), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_ANY_NONZERO:
       new_var_init = build_modify_expr
@@ -413,8 +416,9 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_cond_expr = build2 (NE_EXPR, TREE_TYPE (func_parm), func_parm,
 			      build_zero_cst (TREE_TYPE (func_parm)));
       new_expr = build_conditional_expr
-	(location, new_cond_expr, false, new_yes_expr,
-	 TREE_TYPE (new_yes_expr), new_no_expr, TREE_TYPE (new_no_expr));   
+	(location, new_cond_expr, false,
+	 new_yes_expr, TREE_TYPE (new_yes_expr), location,
+	 new_no_expr, TREE_TYPE (new_no_expr), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX:
       if (TYPE_MIN_VALUE (new_var_type))
@@ -434,7 +438,8 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_expr = build_conditional_expr
 	(location,
 	 build2 (LT_EXPR, TREE_TYPE (*new_var), *new_var, func_parm), false,
-	 new_yes_expr, TREE_TYPE (*new_var), new_no_expr, TREE_TYPE (*new_var));
+	 new_yes_expr, TREE_TYPE (*new_var), location,
+	 new_no_expr, TREE_TYPE (*new_var), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN:
       if (TYPE_MAX_VALUE (new_var_type))
@@ -454,7 +459,8 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
       new_expr = build_conditional_expr
 	(location,
 	 build2 (GT_EXPR, TREE_TYPE (*new_var), *new_var, func_parm), false,
-	 new_yes_expr, TREE_TYPE (*new_var), new_no_expr, TREE_TYPE (*new_var));
+	 new_yes_expr, TREE_TYPE (*new_var), location,
+	 new_no_expr, TREE_TYPE (*new_var), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MAX_IND:
       new_var_init = build_modify_expr
@@ -504,7 +510,8 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
 	 build2 (LE_EXPR, TREE_TYPE (array_ind_value), array_ind_value,
 		 func_parm),
 	 false,
-	 new_yes_list, TREE_TYPE (*new_var), new_no_list, TREE_TYPE (*new_var));
+	 new_yes_list, TREE_TYPE (*new_var), location,
+	 new_no_list, TREE_TYPE (*new_var), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE_MIN_IND:
       new_var_init = build_modify_expr
@@ -554,7 +561,8 @@ fix_builtin_array_notation_fn (tree an_builtin_fn, tree *new_var)
 	 build2 (GE_EXPR, TREE_TYPE (array_ind_value), array_ind_value,
 		 func_parm),
 	 false,
-	 new_yes_list, TREE_TYPE (*new_var), new_no_list, TREE_TYPE (*new_var));
+	 new_yes_list, TREE_TYPE (*new_var), location,
+	 new_no_list, TREE_TYPE (*new_var), location);
       break;
     case BUILT_IN_CILKPLUS_SEC_REDUCE:
       new_var_init = build_modify_expr

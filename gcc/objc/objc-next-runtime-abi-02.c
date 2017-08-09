@@ -1647,8 +1647,8 @@ build_v2_build_objc_method_call (int super_flag, tree method_prototype,
      /* ??? CHECKME.   */
       ret_val = build_conditional_expr (input_location,
 					ifexp, 1,
-					ret_val, NULL_TREE,
-					ftree, NULL_TREE);
+					ret_val, NULL_TREE, input_location,
+					ftree, NULL_TREE, input_location);
 #endif
     }
   return ret_val;
