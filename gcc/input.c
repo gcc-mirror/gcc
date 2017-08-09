@@ -898,6 +898,15 @@ make_location (location_t caret, location_t start, location_t finish)
   return combined_loc;
 }
 
+/* Same as above, but taking a source range rather than two locations.  */
+
+location_t
+make_location (location_t caret, source_range src_range)
+{
+  location_t pure_loc = get_pure_location (caret);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
+}
+
 #define ONE_K 1024
 #define ONE_M (ONE_K * ONE_K)
 

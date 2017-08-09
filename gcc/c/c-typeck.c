@@ -4865,8 +4865,8 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
 
 tree
 build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
-			tree op1, tree op1_original_type, tree op2,
-			tree op2_original_type)
+			tree op1, tree op1_original_type, location_t op1_loc,
+			tree op2, tree op2_original_type, location_t op2_loc)
 {
   tree type1;
   tree type2;
@@ -5031,10 +5031,18 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 			  || (unsigned_op1
 			      && tree_expr_nonnegative_warnv_p (op2, &ovf)))
 			/* OK */;
+		      else if (unsigned_op2)
+			warning_at (op1_loc, OPT_Wsign_compare,
+				    "operand of ?: changes signedness from "
+				    "%qT to %qT due to unsignedness of other "
+				    "operand", TREE_TYPE (orig_op1),
+				    TREE_TYPE (orig_op2));
 		      else
-			warning_at (colon_loc, OPT_Wsign_compare,
-				    ("signed and unsigned type in "
-				     "conditional expression"));
+			warning_at (op2_loc, OPT_Wsign_compare,
+				    "operand of ?: changes signedness from "
+				    "%qT to %qT due to unsignedness of other "
+				    "operand", TREE_TYPE (orig_op2),
+				    TREE_TYPE (orig_op1));
 		    }
 		  if (!op1_maybe_const || TREE_CODE (op1) != INTEGER_CST)
 		    op1 = c_wrap_maybe_const (op1, !op1_maybe_const);

@@ -1,3 +1,15 @@
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* c-array-notation.c (fix_builtin_array_notation_fn): Update calls to
+	build_conditional_expr.	
+	* c-parser.c (c_parser_conditional_expression): Create locations for
+	EXP1 and EXP2 from their source ranges.  Pass the locations down to
+	build_conditional_expr.
+	* c-tree.h (build_conditional_expr): Update declaration.
+	* c-typeck.c (build_conditional_expr): Add location_t parameters.
+	For -Wsign-compare, also print the types.
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	* c-convert.c: Include header files.
