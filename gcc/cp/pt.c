@@ -12896,7 +12896,15 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
+	    tree auto_node = type_uses_auto (type);
+	    int len = TREE_VEC_LENGTH (args);
+	    if (auto_node)
+	      /* Mask off any template args past the variable's context so we
+		 don't replace the auto with an unrelated argument.  */
+	      TREE_VEC_LENGTH (args) = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
 	    type = tsubst (type, args, complain, in_decl);
+	    if (auto_node)
+	      TREE_VEC_LENGTH (args) = len;
 	  }
 	if (VAR_P (r))
 	  {
@@ -14687,6 +14695,10 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 			DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (r)
 			  = TREE_CONSTANT (r) = true;
 		      DECL_INITIAL (r) = init;
+		      if (tree auto_node = type_uses_auto (TREE_TYPE (r)))
+			TREE_TYPE (r)
+			  = do_auto_deduction (TREE_TYPE (r), init, auto_node,
+					       complain, adc_variable_type);
 		    }
 		  gcc_assert (cp_unevaluated_operand || TREE_STATIC (r)
 			      || decl_constant_var_p (r)
