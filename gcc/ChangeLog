@@ -1,3 +1,10 @@
+2017-08-09  Jim Wilson  <jim.wilson@linaro.org>
+
+	* config/aarch64/aarch64-cores.def (falkor): Use falkor pipeline.
+	(qdf24xx): Likewise.
+	* config/aarch64/aarch64.md: Include falkor.md.
+	* config/aarch64/falkor.md: New.
+
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81233
