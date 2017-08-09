@@ -9,14 +9,14 @@ extern void bar (int);
 int
 fn1 (void)
 {
-  int a = NULL; /* { dg-warning "initialization makes integer from pointer" } */
-  a = NULL; /* { dg-warning "assignment makes integer from pointer" } */
+  int a = NULL; /* { dg-warning "initialization of 'int' from 'void \\*' makes integer from pointer" } */
+  a = NULL; /* { dg-warning "assignment to 'int' from 'void \\*' makes integer from pointer" } */
   bar (NULL); /* { dg-warning "passing argument 1" } */
-  return NULL; /* { dg-warning "return makes integer from pointer" } */
+  return NULL; /* { dg-warning "returning 'void \\*' from a function with return type 'int' makes integer from pointer" } */
 }
 
 int
 fn2 (void)
 {
-  RETURN; /* { dg-warning "return makes integer from pointer" } */
+  RETURN; /* { dg-warning "returning 'void \\*' from a function with return type 'int' makes integer from pointer" } */
 }

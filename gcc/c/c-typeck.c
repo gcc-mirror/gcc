@@ -6065,20 +6065,19 @@ error_init (location_t loc, const char *gmsgid)
    it is unconditionally given.  GMSGID identifies the message.  The
    component name is taken from the spelling stack.  */
 
-static void
-pedwarn_init (location_t loc, int opt, const char *gmsgid)
+static void ATTRIBUTE_GCC_DIAG (3,0)
+pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
 {
-  char *ofwhat;
-  bool warned;
-
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
   source_location exploc = expansion_point_location_if_in_system_header (loc);
 
-  /* The gmsgid may be a format string with %< and %>. */
-  warned = pedwarn (exploc, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = emit_diagnostic_valist (DK_PEDWARN, exploc, opt, gmsgid, &ap);
+  va_end (ap);
+  char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat && warned)
     inform (exploc, "(near initialization for %qs)", ofwhat);
 }
@@ -6311,17 +6310,33 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (checktype != error_mark_node
 	  && TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
-	{
-	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wc___compat,
-			          G_("enum conversion when passing argument "
-				     "%d of %qE is invalid in C++"),
-			          G_("enum conversion in assignment is "
-				     "invalid in C++"),
-			          G_("enum conversion in initialization is "
-				     "invalid in C++"),
-			          G_("enum conversion in return is "
-				     "invalid in C++"));
-	}
+	switch (errtype)
+	  {
+	  case ic_argpass:
+	    if (pedwarn (expr_loc, OPT_Wc___compat, "enum conversion when "
+			 "passing argument %d of %qE is invalid in C++",
+			 parmnum, rname))
+	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		      "expected %qT but argument is of type %qT",
+		      type, rhstype);
+	    break;
+	  case ic_assign:
+	    pedwarn (location, OPT_Wc___compat, "enum conversion from %qT to "
+		     "%qT in assignment is invalid in C++", rhstype, type);
+	    break;
+	  case ic_init:
+	    pedwarn_init (location, OPT_Wc___compat, "enum conversion from "
+			  "%qT to %qT in initialization is invalid in C++",
+			  rhstype, type);
+	    break;
+	  case ic_return:
+	    pedwarn (location, OPT_Wc___compat, "enum conversion from %qT to "
+		     "%qT in return is invalid in C++", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
     }
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
@@ -6727,15 +6742,36 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		 PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpointer_sign,
-				         G_("pointer targets in passing argument "
-					    "%d of %qE differ in signedness"),
-				         G_("pointer targets in assignment "
-					    "differ in signedness"),
-				         G_("pointer targets in initialization "
-					    "differ in signedness"),
-				         G_("pointer targets in return differ "
-					    "in signedness"));
+		switch (errtype)
+		  {
+		  case ic_argpass:
+		    if (pedwarn (expr_loc, OPT_Wpointer_sign,
+				 "pointer targets in passing argument %d of "
+				 "%qE differ in signedness", parmnum, rname))
+		      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+			      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+			      "expected %qT but argument is of type %qT",
+			      type, rhstype);
+		    break;
+		  case ic_assign:
+		    pedwarn (location, OPT_Wpointer_sign,
+			     "pointer targets in assignment from %qT to %qT "
+			     "differ in signedness", rhstype, type);
+		    break;
+		  case ic_init:
+		    pedwarn_init (location, OPT_Wpointer_sign,
+				  "pointer targets in initialization of %qT "
+				  "from %qT differ in signedness", type,
+				  rhstype);
+		    break;
+		  case ic_return:
+		    pedwarn (location, OPT_Wpointer_sign, "pointer targets in "
+			     "returning %qT from a function with return type "
+			     "%qT differ in signedness", rhstype, type);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		  }
 	    }
 	  else if (TREE_CODE (ttl) == FUNCTION_TYPE
 		   && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -6760,17 +6796,39 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 				        TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 	    }
 	}
-      else
-	/* Avoid warning about the volatile ObjC EH puts on decls.  */
-	if (!objc_ok)
-	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			          OPT_Wincompatible_pointer_types,
-			          G_("passing argument %d of %qE from "
-				     "incompatible pointer type"),
-			          G_("assignment from incompatible pointer type"),
-			          G_("initialization from incompatible "
-				     "pointer type"),
-			          G_("return from incompatible pointer type"));
+      /* Avoid warning about the volatile ObjC EH puts on decls.  */
+      else if (!objc_ok)
+	{
+	  switch (errtype)
+	    {
+	    case ic_argpass:
+	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
+			   "passing argument %d of %qE from incompatible "
+			   "pointer type", parmnum, rname))
+		inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+			? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+			"expected %qT but argument is of type %qT",
+			type, rhstype);
+	      break;
+	    case ic_assign:
+	      pedwarn (location, OPT_Wincompatible_pointer_types,
+		       "assignment to %qT from incompatible pointer type %qT",
+		       type, rhstype);
+	      break;
+	    case ic_init:
+	      pedwarn_init (location, OPT_Wincompatible_pointer_types,
+			    "initialization of %qT from incompatible pointer "
+			    "type %qT", type, rhstype);
+	      break;
+	    case ic_return:
+	      pedwarn (location, OPT_Wincompatible_pointer_types,
+		       "returning %qT from a function with incompatible "
+		       "return type %qT", rhstype, type);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
 
       return convert (type, rhs);
     }
@@ -6787,31 +6845,70 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant)
-	PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			        OPT_Wint_conversion,
-			        G_("passing argument %d of %qE makes "
-				   "pointer from integer without a cast"),
-			        G_("assignment makes pointer from integer "
-				   "without a cast"),
-			        G_("initialization makes pointer from "
-				   "integer without a cast"),
-			        G_("return makes pointer from integer "
-				   "without a cast"));
+	switch (errtype)
+	  {
+	  case ic_argpass:
+	    if (pedwarn (expr_loc, OPT_Wint_conversion,
+			 "passing argument %d of %qE makes pointer from "
+			 "integer without a cast", parmnum, rname))
+	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		      "expected %qT but argument is of type %qT",
+		      type, rhstype);
+	    break;
+	  case ic_assign:
+	    pedwarn (location, OPT_Wint_conversion,
+		     "assignment to %qT from %qT makes pointer from integer "
+		     "without a cast", type, rhstype);
+	    break;
+	  case ic_init:
+	    pedwarn_init (location, OPT_Wint_conversion,
+			  "initialization of %qT from %qT makes pointer from "
+			  "integer without a cast", type, rhstype);
+	    break;
+	  case ic_return:
+	    pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
+		     "function with return type %qT makes pointer from "
+		     "integer without a cast", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
 
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			      OPT_Wint_conversion,
-			      G_("passing argument %d of %qE makes integer "
-			         "from pointer without a cast"),
-			      G_("assignment makes integer from pointer "
-			         "without a cast"),
-			      G_("initialization makes integer from pointer "
-			         "without a cast"),
-			      G_("return makes integer from pointer "
-			         "without a cast"));
+      switch (errtype)
+	{
+	case ic_argpass:
+	  if (pedwarn (expr_loc, OPT_Wint_conversion,
+		       "passing argument %d of %qE makes integer from "
+		       "pointer without a cast", parmnum, rname))
+	    inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		    ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		    "expected %qT but argument is of type %qT",
+		    type, rhstype);
+	  break;
+	case ic_assign:
+	  pedwarn (location, OPT_Wint_conversion,
+		   "assignment to %qT from %qT makes integer from pointer "
+		   "without a cast", type, rhstype);
+	  break;
+	case ic_init:
+	  pedwarn_init (location, OPT_Wint_conversion,
+			"initialization of %qT from %qT makes integer from "
+			"pointer without a cast", type, rhstype);
+	  break;
+	case ic_return:
+	  pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
+		   "function with return type %qT makes integer from "
+		   "pointer without a cast", rhstype, type);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
       return convert (type, rhs);
     }
   else if (codel == BOOLEAN_TYPE && coder == POINTER_TYPE)

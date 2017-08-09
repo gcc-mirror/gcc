@@ -1,5 +1,28 @@
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c/81233
+	* gcc.dg/diagnostic-types-1.c: New test.
+	* gcc.dg/assign-warn-1.c: Update warning messages.
+	* gcc.dg/assign-warn-2.c: Likewise.
+	* gcc.dg/c90-const-expr-5.c: Likewise.
+	* gcc.dg/c99-const-expr-5.c: Likewise.
+	* gcc.dg/conv-2.c: Likewise.
+	* gcc.dg/init-bad-7.c: Likewise.
+	* gcc.dg/overflow-warn-1.c: Likewise.
+	* gcc.dg/overflow-warn-2.c: Likewise.
+	* gcc.dg/overflow-warn-3.c: Likewise.
+	* gcc.dg/overflow-warn-4.c: Likewise.
+	* gcc.dg/pointer-array-atomic.c: Likewise.
+	* gcc.dg/pr26865.c: Likewise.
+	* gcc.dg/pr61162-2.c: Likewise.
+	* gcc.dg/pr61162.c: Likewise.
+	* gcc.dg/pr67730-2.c: Likewise.
+	* gcc.dg/pr69156.c: Likewise.
+	* gcc.dg/pr70174.c: Likewise.
+	* objc.dg/proto-lossage-4.m: Likewise.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c/81417
 	* Wsign-compare-1.c: New test.
 	* gcc.dg/compare1.c: Adjust dg-bogus.

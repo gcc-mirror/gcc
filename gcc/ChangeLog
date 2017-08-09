@@ -1,5 +1,12 @@
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
+	PR c/81233
+	* diagnostic-core.h (emit_diagnostic_valist): Add declaration.
+	* diagnostic.c (emit_diagnostic): Add a comment.
+	(emit_diagnostic_valist): New function.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
 	PR c/81417
 	* input.c (make_location): New overload.
 	* input.h (make_location): Declare.

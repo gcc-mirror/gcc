@@ -15,8 +15,8 @@ f (void)
 {
   /* (V *)0 is a null pointer constant, so the assignment should be
      diagnosed.  */
-  q = (j ? p : (V *)0); /* { dg-error "5:assignment from incompatible pointer type" } */
-  q = (j ? p : (void *)0); /* { dg-error "5:assignment from incompatible pointer type" } */
+  q = (j ? p : (V *)0); /* { dg-error "5:assignment to 'long int \\*' from incompatible pointer type 'int \\*'" } */
+  q = (j ? p : (void *)0); /* { dg-error "5:assignment to 'long int \\*' from incompatible pointer type 'int \\*'" } */
   /* And this conversion should be valid.  */
   (void (*)(void))(V *)0;
   (void (*)(void))(void *)0;
