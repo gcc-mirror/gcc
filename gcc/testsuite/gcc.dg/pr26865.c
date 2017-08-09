@@ -4,5 +4,5 @@
 void
 foo (void)
 {
-  char *e = alloca (100); /* { dg-warning "implicit declaration|initialization makes" } */
+  char *e = alloca (100); /* { dg-warning "implicit declaration|initialization of 'char \\*' from 'int' makes" } */
 }

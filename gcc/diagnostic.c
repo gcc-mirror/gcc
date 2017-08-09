@@ -1128,6 +1128,8 @@ diagnostic_n_impl (location_t location, int opt, int n,
 				    singular_gmsgid, plural_gmsgid, ap, kind);
 }
 
+/* Wrapper around diagnostic_impl taking a variable argument list.  */
+
 bool
 emit_diagnostic (diagnostic_t kind, location_t location, int opt,
 		 const char *gmsgid, ...)
@@ -1138,6 +1140,16 @@ emit_diagnostic (diagnostic_t kind, location_t location, int opt,
   bool ret = diagnostic_impl (&richloc, opt, gmsgid, &ap, kind);
   va_end (ap);
   return ret;
+}
+
+/* Wrapper around diagnostic_impl taking a va_list parameter.  */
+
+bool
+emit_diagnostic_valist (diagnostic_t kind, location_t location, int opt,
+			const char *gmsgid, va_list *ap)
+{
+  rich_location richloc (line_table, location);
+  return diagnostic_impl (&richloc, opt, gmsgid, ap, kind);
 }
 
 /* An informative note at LOCATION.  Use this for additional details on an error
