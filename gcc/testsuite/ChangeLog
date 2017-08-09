@@ -1,3 +1,14 @@
+2017-08-09  Michael Collison  <michael.collison@arm.com>
+
+	* testsuite/g++.dg/ext/packed8.C: Remove -mstructure-size-
+	boundary option and fix comment.
+	* testsuite/g++.dg/init/array16.C: Remove -mstructure-size-
+	boundary option and fix comment.
+	* testsuite/g++.dg/other/crash-4.C: Remove -mstructure-size-
+	boundary option and fix comment.
+	* testsuite/gcc.dg/builtin-stringop-chk-1.c: Remove
+	-mstructure-size boundary option.
+
 2017-08-09  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/81423
