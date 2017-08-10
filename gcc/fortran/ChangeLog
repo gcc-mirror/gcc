@@ -1,4 +1,9 @@
-2017-08-10  Fritz Reese <Reese-Fritz@zai.com>
+2017-08-10  Fritz Reese <fritzoreese@gmail.com>
+
+	* options.c (set_dec_flags, gfc_post_options): Only set flag_d_lines
+	with -fdec when not set by user.
+
+2017-08-10  Fritz Reese <fritzoreese@gmail.com>
 
 	* decl.c (attr_seen): New static variable.
 	* decl.c (variable_decl): Match %FILL in STRUCTURE body.
