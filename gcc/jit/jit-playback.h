@@ -392,6 +392,7 @@ public:
   }
 
   type *get_aligned (size_t alignment_in_bytes) const;
+  type *get_vector (size_t num_units) const;
 
 private:
   tree m_inner;

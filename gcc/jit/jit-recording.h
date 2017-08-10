@@ -474,6 +474,7 @@ public:
   type *get_const ();
   type *get_volatile ();
   type *get_aligned (size_t alignment_in_bytes);
+  type *get_vector (size_t num_units);
 
   /* Get the type obtained when dereferencing this type.
 
@@ -600,8 +601,8 @@ private:
   type *m_other_type;
 };
 
-/* A decorated version of a type, for get_const, get_volatile and
-   get_aligned.  */
+/* A decorated version of a type, for get_const, get_volatile,
+   get_aligned, and get_vector.  */
 
 class decorated_type : public type
 {
@@ -681,6 +682,27 @@ private:
 
 private:
   size_t m_alignment_in_bytes;
+};
+
+/* Result of "gcc_jit_type_get_vector".  */
+class memento_of_get_vector : public decorated_type
+{
+public:
+  memento_of_get_vector (type *other_type, size_t num_units)
+  : decorated_type (other_type),
+    m_num_units (num_units) {}
+
+  /* Strip off the alignment, giving the underlying type.  */
+  type *unqualified () FINAL OVERRIDE { return m_other_type; }
+
+  void replay_into (replayer *) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+
+private:
+  size_t m_num_units;
 };
 
 class array_type : public type
