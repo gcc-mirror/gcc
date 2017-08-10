@@ -7366,6 +7366,10 @@ size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets is
 @option{-fomit-frame-pointer}.  You can configure GCC with the
 @option{--enable-frame-pointer} configure option to change the default.
 
+Note that @option{-fno-omit-frame-pointer} doesn't force a new stack
+frame for all functions if it isn't otherwise needed, and hence doesn't
+guarantee a new frame pointer for all functions.
+
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
 @item -foptimize-sibling-calls

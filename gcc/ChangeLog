@@ -1,3 +1,17 @@
+2017-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81736
+	* config/i386/i386.c (ix86_finalize_stack_realign_flags): Renamed
+	to ...
+	(ix86_finalize_stack_frame_flags): This.  Also clear
+	frame_pointer_needed if -fno-omit-frame-pointer is used without
+	stack access.
+	(ix86_expand_prologue): Replace ix86_finalize_stack_realign_flags
+	with ix86_finalize_stack_frame_flags.
+	(ix86_expand_epilogue): Likewise.
+	(ix86_expand_split_stack_prologue): Likewise.
+	* doc/invoke.texi: Add a note for -fno-omit-frame-pointer.
+
 2017-08-10  Martin Liska  <mliska@suse.cz>
 
 	PR c++/81355

@@ -1,3 +1,14 @@
+2017-08-10  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81736
+	* gcc.target/i386/pr81736-1.c: New test.
+	* gcc.target/i386/pr81736-2.c: Likewise.
+	* gcc.target/i386/pr81736-3.c: Likewise.
+	* gcc.target/i386/pr81736-4.c: Likewise.
+	* gcc.target/i386/pr81736-5.c: Likewise.
+	* gcc.target/i386/pr81736-6.c: Likewise.
+	* gcc.target/i386/pr81736-7.c: Likewise.
+
 2017-08-10  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-msum-short.c: Fix typo.
