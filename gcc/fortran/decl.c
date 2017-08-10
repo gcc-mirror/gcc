@@ -54,6 +54,7 @@ static gfc_typespec current_ts;
 static symbol_attribute current_attr;
 static gfc_array_spec *current_as;
 static int colon_seen;
+static int attr_seen;
 
 /* The current binding label (if any).  */
 static const char* curr_binding_label;
@@ -2140,6 +2141,7 @@ static match
 variable_decl (int elem)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
+  static unsigned int fill_id = 0;
   gfc_expr *initializer, *char_len;
   gfc_array_spec *as;
   gfc_array_spec *cp_as; /* Extra copy for Cray Pointees.  */
@@ -2157,9 +2159,47 @@ variable_decl (int elem)
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
      is the name of the symbol.  */
-  m = gfc_match_name (name);
+
+  /* If we are parsing a structure with legacy support, we allow the symbol
+     name to be '%FILL' which gives it an anonymous (inaccessible) name.  */
+  m = MATCH_NO;
+  gfc_gobble_whitespace ();
+  if (gfc_peek_ascii_char () == '%')
+    {
+      gfc_next_ascii_char ();
+      m = gfc_match ("fill");
+    }
+
   if (m != MATCH_YES)
-    goto cleanup;
+    {
+      m = gfc_match_name (name);
+      if (m != MATCH_YES)
+	goto cleanup;
+    }
+
+  else
+    {
+      m = MATCH_ERROR;
+      if (gfc_current_state () != COMP_STRUCTURE)
+	{
+	  if (flag_dec_structure)
+	    gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
+	  else
+	    gfc_error ("%qs at %C is a DEC extension, enable with "
+		       "%<-fdec-structure%>", "%FILL");
+	  goto cleanup;
+	}
+
+      if (attr_seen)
+	{
+	  gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
+	  goto cleanup;
+	}
+
+      /* %FILL components are given invalid fortran names.  */
+      snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
+      m = MATCH_YES;
+    }
 
   var_locus = gfc_current_locus;
 
@@ -2258,6 +2298,14 @@ variable_decl (int elem)
 		     gfc_current_ns->proc_name->name);
 	  goto cleanup;
 	}
+    }
+
+  /* %FILL components may not have initializers.  */
+  if (strncmp (name, "%FILL", 5) == 0 && gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("%qs entity cannot have an initializer at %C", "%FILL");
+      m = MATCH_ERROR;
+      goto cleanup;
     }
 
   /*  If this symbol has already shown up in a Cray Pointer declaration,
@@ -3860,6 +3908,7 @@ match_attr_spec (void)
 
   current_as = NULL;
   colon_seen = 0;
+  attr_seen = 0;
 
   /* See if we get all of the keywords up to the final double colon.  */
   for (d = GFC_DECL_BEGIN; d != GFC_DECL_END; d++)
@@ -4228,6 +4277,8 @@ match_attr_spec (void)
     {
       if (seen[d] == 0)
 	continue;
+      else
+        attr_seen = 1;
 
       if ((d == DECL_STATIC || d == DECL_AUTOMATIC)
 	  && !flag_dec_static)
@@ -4436,6 +4487,7 @@ cleanup:
   gfc_current_locus = start;
   gfc_free_array_spec (current_as);
   current_as = NULL;
+  attr_seen = 0;
   return m;
 }
 

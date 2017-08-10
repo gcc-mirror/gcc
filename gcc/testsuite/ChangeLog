@@ -1,3 +1,10 @@
+2017-08-10  Fritz Reese <Reese-Fritz@zai.com>
+
+	* gfortran.dg/dec_structure_18.f90: New test.
+	* gfortran.dg/dec_structure_19.f90: New test.
+	* gfortran.dg/dec_structure_20.f90: New test.
+	* gfortran.dg/dec_structure_21.f90: New test.
+
 2017-08-10  Marek Polacek  <polacek@redhat.com>
 
 	PR testsuite/81784
