@@ -1,3 +1,8 @@
+2017-08-09  Andrew Pinski  <apinski@cavium.com>
+
+	* gcc.target/aarch64/vect-xorsign_exec.c: Add
+	--save-temps to the options passed.
+
 2017-08-09  Michael Collison  <michael.collison@arm.com>
 
 	* testsuite/g++.dg/ext/packed8.C: Remove -mstructure-size-

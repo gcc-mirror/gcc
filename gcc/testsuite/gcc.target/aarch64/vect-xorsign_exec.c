@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details" } */
+/* { dg-options "-O2 -ftree-vectorize -fdump-tree-vect-details --save-temps" } */
 
 extern void abort ();
 
