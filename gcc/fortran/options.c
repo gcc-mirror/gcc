@@ -57,9 +57,6 @@ set_dec_flags (int value)
     | GFC_STD_GNU | GFC_STD_LEGACY;
   gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
 
-  /* Set -fd-lines-as-comments by default.  */
-  if (value && gfc_current_form != FORM_FREE && gfc_option.flag_d_lines == -1)
-    gfc_option.flag_d_lines = 0;
 
   /* Set other DEC compatibility extensions.  */
   flag_dollar_ok |= value;
@@ -339,8 +336,15 @@ gfc_post_options (const char **pfilename)
 	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
 					DK_ERROR, UNKNOWN_LOCATION);
     }
-  else if (warn_line_truncation == -1)
-    warn_line_truncation = 0;
+  else
+    {
+      /* With -fdec, set -fd-lines-as-comments by default in fixed form.  */
+      if (flag_dec && gfc_option.flag_d_lines == -1)
+	gfc_option.flag_d_lines = 0;
+
+      if (warn_line_truncation == -1)
+	warn_line_truncation = 0;
+    }
 
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
