@@ -1,3 +1,9 @@
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_parse_error): Add rich_location * param, using it
+	rather implicitly using input_location.
+	* c-common.h (c_parse_error): Add rich_location * param.
+
 2017-08-09  Marek Polacek  <polacek@redhat.com>
 
 	* c-common.c (pointer_int_sum): Use true/false instead of 1/0.

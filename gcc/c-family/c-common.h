@@ -1124,7 +1124,8 @@ extern void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 extern void builtin_define_type_sizeof (const char *, tree);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const line_map_ordinary *);
-extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
+extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
+			   rich_location *richloc);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);
