@@ -15785,7 +15785,7 @@ static GTY(()) rtx split_stack_fn;
 
 static GTY(()) rtx split_stack_fn_large;
 
-/*  */
+/* Return location of the stack boundary value in the TLS block.  */
 
 rtx
 ix86_split_stack_boundary (void)
