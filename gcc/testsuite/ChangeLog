@@ -1,3 +1,8 @@
+2017-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR c++/81355
+	* g++.dg/other/pr81355.C: New test.
+
 2017-08-09  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add note about
