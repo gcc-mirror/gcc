@@ -1,3 +1,8 @@
+2017-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81708
+	* gcc.target/i386/stack-prot-sym.c: New test.
+
 2017-08-10  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR testsuite/81738

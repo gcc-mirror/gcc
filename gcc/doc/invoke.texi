@@ -1216,7 +1216,8 @@ See RS/6000 and PowerPC Options.
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
 -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset}  -mmitigate-rop @gol
+-mstack-protector-guard-offset=@var{offset} @gol
+-mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
 -mgeneral-regs-only  -mcall-ms2sysv-xlogues}
 
 @emph{x86 Windows Options}
@@ -22757,9 +22758,11 @@ The @option{-mno-compat-align-parm} option is the default.
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
 @itemx -mstack-protector-guard-offset=@var{offset}
+@itemx -mstack-protector-guard-symbol=@var{symbol}
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-reg
 @opindex mstack-protector-guard-offset
+@opindex mstack-protector-guard-symbol
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default with GNU libc version 2.4 or later).
@@ -22769,7 +22772,8 @@ With the latter choice the options
 @option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
 which register to use as base register for reading the canary, and from what
 offset from that base register. The default for those is as specified in the
-relevant ABI.
+relevant ABI.  @option{-mstack-protector-guard-symbol=@var{symbol}} overrides
+the offset with a symbol reference to a canary in the TLS block.
 @end table
 
 @node RX Options

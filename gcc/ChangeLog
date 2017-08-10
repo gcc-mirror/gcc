@@ -1,5 +1,14 @@
 2017-08-10  Uros Bizjak  <ubizjak@gmail.com>
 
+	PR target/81708
+	* config/i386/i386.opt (mstack-protector-guard-symbol=): New option
+	* config/i386/i386.c (ix86_stack_protect_guard): Use
+	ix86_stack_protect_guard_symbol_str to generate varible declaration.
+	* doc/invoke.texi (x86 Options): Document
+	-mstack-protector-guard-symbol= option.
+
+2017-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
 	* config/i386/i386-protos.h (ix86_split_stack_guard): New prototype.
 	* config/i386/i386.c (ix86_split_stack_guard): New function.
 	(ix86_xpand_split_stack_prologue): Call ix86_split_stack_guard.
