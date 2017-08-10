@@ -1,3 +1,114 @@
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_error): Update for new param to
+	c_parse_error.
+	(class token_pair): New class.
+	(struct matching_paren_traits): New struct.
+	(matching_parens): New typedef.
+	(struct matching_brace_traits): New struct.
+	(matching_braces): New typedef.
+	(cp_parser_statement_expr): Convert explicit parsing of
+	CPP_OPEN_PAREN and CPP_CLOSE_PAREN to use of
+	class matching_parens, so that the pertinent open parenthesis is
+	highlighted when there are problems locating the close
+	parenthesis.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_compound_literal_p): Remove consumption of opening
+	paren.
+	(cp_parser_postfix_expression): Convert explicit parsing of
+	CPP_OPEN_PAREN and CPP_CLOSE_PAREN to use matching parens, as
+	above.  Use it to consume the opening paren previously consumed by
+	cp_parser_compound_literal_p.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_new_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_trait_expr): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_lambda_body): Likewise, for matching_braces.
+	(cp_parser_compound_statement): Likewise.
+	(cp_parser_selection_statement): Likewise, for matching_parens.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_already_scoped_statement): Likewise, for
+	matching_braces.
+	(cp_parser_linkage_specification): Likewise.
+	(cp_parser_static_assert): Likewise, for matching_parens.
+	(cp_parser_decltype): Likewise.
+	(cp_parser_operator): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_braced_list): Likewise.
+	(cp_parser_class_specifier_1): Likewise, for matching_braces.
+	(cp_parser_constant_initializer): Likewise.
+	(cp_parser_noexcept_specification_opt): Likewise, for
+	matching_parens.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_handler): Likewise.
+	(cp_parser_asm_specification_opt): Likewise.
+	(cp_parser_asm_operand_list): Likewise.
+	(cp_parser_gnu_attributes_opt): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	(cp_parser_requirement_parameter_list): Likewise.
+	(cp_parser_requirement_body): Likewise, for matching_braces.
+	(cp_parser_compound_requirement): Likewise.
+	(cp_parser_template_introduction): Likewise.
+	(cp_parser_sizeof_pack): Likewise, for matching_parens.
+	(cp_parser_sizeof_operand): Likewise; use it to consume the
+	opening paren previously consumed by cp_parser_compound_literal_p.
+	(get_matching_symbol): New function.
+	(cp_parser_required_error): Add param "matching_location".  Remove
+	calls to cp_parser_error, instead setting a non-NULL gmsgid, and
+	handling it if set by calling c_parse_error, potentially with a
+	secondary location if matching_location was set.
+	(cp_parser_require): Add param "matching_location", with a default
+	value of UNKNOWN_LOCATION.
+	(cp_parser_require_keyword): Update for new param of
+	cp_parser_required_error.
+	(cp_parser_objc_encode_expression): Update to class matching_parens
+	as above.
+	(cp_parser_objc_defs_expression): Likewise.
+	(cp_parser_objc_protocol_expression): Likewise.
+	(cp_parser_objc_selector_expression): Likewise.
+	(cp_parser_objc_typename): Likewise.
+	(cp_parser_objc_superclass_or_category): Likewise.
+	(cp_parser_objc_try_catch_finally_statement): Likewise.
+	(cp_parser_objc_synchronized_statement): Likewise.
+	(cp_parser_objc_at_property_declaration): Likewise.
+	(cp_parser_oacc_single_int_clause): Likewise.
+	(cp_parser_oacc_shape_clause): Likewise.
+	(cp_parser_omp_clause_collapse): Likewise.
+	(cp_parser_omp_clause_default): Likewise.
+	(cp_parser_omp_clause_final): Likewise.
+	(cp_parser_omp_clause_if): Likewise.
+	(cp_parser_omp_clause_num_threads): Likewise.
+	(cp_parser_omp_clause_num_tasks): Likewise.
+	(cp_parser_omp_clause_grainsize): Likewise.
+	(cp_parser_omp_clause_priority): Likewise.
+	(cp_parser_omp_clause_hint): Likewise.
+	(cp_parser_omp_clause_defaultmap): Likewise.
+	(cp_parser_omp_clause_ordered): Likewise.
+	(cp_parser_omp_clause_schedule): Likewise.
+	(cp_parser_omp_clause_num_teams): Likewise.
+	(cp_parser_omp_clause_thread_limit): Likewise.
+	(cp_parser_omp_clause_aligned): Likewise.
+	(cp_parser_omp_clause_linear): Likewise.
+	(cp_parser_omp_clause_safelen): Likewise.
+	(cp_parser_omp_clause_simdlen): Likewise.
+	(cp_parser_omp_clause_depend): Likewise.
+	(cp_parser_omp_clause_device): Likewise.
+	(cp_parser_omp_clause_dist_schedule): Likewise.
+	(cp_parser_oacc_clause_async): Likewise.
+	(cp_parser_omp_critical): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_sections_scope): Likewise.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+	Update for new param to cp_parser_required_error.
+	(cp_parser_oacc_routine): Likewise.
+	(cp_parser_transaction_expression): Likewise.
+	(cp_parser_cilk_simd_vectorlength): Likewise.
+
 2017-08-09  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81525 - wrong constant value with generic lambda

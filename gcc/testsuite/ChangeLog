@@ -1,3 +1,15 @@
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-c++-common/missing-close-symbol.c: New test case.
+	* c-c++-common/missing-symbol.c: New test case.
+	* gcc.dg/unclosed-init.c: New test case.
+	* g++.dg/diagnostic/unclosed-extern-c.C: New test case.
+	* g++.dg/diagnostic/unclosed-function.C: New test case.
+	* g++.dg/diagnostic/unclosed-namespace.C: New test case.
+	* g++.dg/diagnostic/unclosed-struct.C: New test case.
+	* g++.dg/parse/pragma2.C: Update to reflect movement of the
+	"expected identifier" error.
+
 2017-08-10  Fritz Reese <fritzoreese@gmail.com>
 
 	* gfortran.dg/dec_d_lines_1.f: New test.
