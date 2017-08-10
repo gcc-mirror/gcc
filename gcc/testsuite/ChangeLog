@@ -3,6 +3,8 @@
 	PR testsuite/81784
 	* gcc.dg/compare2.c: Update dg-bogus and dg-warning.
 
+	* objc.dg/proto-lossage-4.m: Accept int/long int as intptr_t.
+
 2017-08-10  Martin Liska  <mliska@suse.cz>
 
 	PR c++/81355
