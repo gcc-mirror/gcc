@@ -1,3 +1,14 @@
+2017-08-10  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_split_stack_boundary): New prototype.
+	* config/i386/i386.c (ix86_split_stack_boundary): New function.
+	(ix86_xpand_split_stack_prologue): Call ix86_split_stack_boundary.
+	(ix86_legitimate_address_p) <case UNSPEC_STACK_CHECK>: Remove.
+	(i386_asm_output_addr_const_extra) <case UNSPEC_STACK_CHECK>: Ditto.
+	(optput_pic_addr_const): Remove UNSPEC_STACK_CHECK handling.
+	* config/i386/i386.md (unspec): Remove UNSPEC_STACK_CHECK.
+	(split_stack_space_check): Call ix86_split_stack_boundary.
+
 2017-08-10  Martin Sebor  <msebor@redhat.com>
 
 	* print-tree.c (print_node): Print location using the established

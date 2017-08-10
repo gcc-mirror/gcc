@@ -15785,6 +15785,28 @@ static GTY(()) rtx split_stack_fn;
 
 static GTY(()) rtx split_stack_fn_large;
 
+/*  */
+
+rtx
+ix86_split_stack_boundary (void)
+{
+  int offset;
+  addr_space_t as = DEFAULT_TLS_SEG_REG;
+  rtx r;
+
+#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
+  offset = TARGET_THREAD_SPLIT_STACK_OFFSET;
+#else
+  gcc_unreachable ();
+#endif
+
+  r = GEN_INT (offset);
+  r = gen_const_mem (Pmode, r);
+  set_mem_addr_space (r, as);
+
+  return r;
+}
+
 /* Handle -fsplit-stack.  These are the first instructions in the
    function, even before the regular prologue.  */
 
@@ -15816,10 +15838,8 @@ ix86_expand_split_stack_prologue (void)
      us SPLIT_STACK_AVAILABLE bytes, so if we need less than that we
      can compare directly.  Otherwise we need to do an addition.  */
 
-  limit = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-			  UNSPEC_STACK_CHECK);
-  limit = gen_rtx_CONST (Pmode, limit);
-  limit = gen_rtx_MEM (Pmode, limit);
+  limit = ix86_split_stack_boundary ();
+
   if (allocate < SPLIT_STACK_AVAILABLE)
     current = stack_pointer_rtx;
   else
@@ -16890,10 +16910,6 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
 	  case UNSPEC_INDNTPOFF:
 	  case UNSPEC_NTPOFF:
 	  case UNSPEC_DTPOFF:
-	    break;
-
-	  case UNSPEC_STACK_CHECK:
-	    gcc_assert (flag_split_stack);
 	    break;
 
 	  default:
@@ -17985,17 +18001,10 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	putc (ASSEMBLER_DIALECT == ASM_INTEL ? ')' : ']', file);
       break;
 
-     case UNSPEC:
-       if (XINT (x, 1) == UNSPEC_STACK_CHECK)
-	 {
-	   bool f = i386_asm_output_addr_const_extra (file, x);
-	   gcc_assert (f);
-	   break;
-	 }
-
-       gcc_assert (XVECLEN (x, 0) == 1);
-       output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
-       switch (XINT (x, 1))
+    case UNSPEC:
+      gcc_assert (XVECLEN (x, 0) == 1);
+      output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
+      switch (XINT (x, 1))
 	{
 	case UNSPEC_GOT:
 	  fputs ("@GOT", file);
@@ -19690,22 +19699,6 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
       machopic_output_function_base_name (file);
       break;
 #endif
-
-    case UNSPEC_STACK_CHECK:
-      {
-	int offset;
-
-	gcc_assert (flag_split_stack);
-
-#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
-	offset = TARGET_THREAD_SPLIT_STACK_OFFSET;
-#else
-	gcc_unreachable ();
-#endif
-
-	fprintf (file, "%s:%d", TARGET_64BIT ? "%fs" : "%gs", offset);
-      }
-      break;
 
     default:
       return false;
