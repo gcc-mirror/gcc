@@ -201,7 +201,7 @@ extern void ix86_expand_truncdf_32 (rtx, rtx);
 
 extern void ix86_expand_vecop_qihi (enum rtx_code, rtx, rtx, rtx);
 
-extern rtx ix86_split_stack_boundary (void);
+extern rtx ix86_split_stack_guard (void);
 
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);

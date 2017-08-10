@@ -15785,14 +15785,16 @@ static GTY(()) rtx split_stack_fn;
 
 static GTY(()) rtx split_stack_fn_large;
 
-/* Return location of the stack boundary value in the TLS block.  */
+/* Return location of the stack guard value in the TLS block.  */
 
 rtx
-ix86_split_stack_boundary (void)
+ix86_split_stack_guard (void)
 {
   int offset;
   addr_space_t as = DEFAULT_TLS_SEG_REG;
   rtx r;
+
+  gcc_assert (flag_split_stack);
 
 #ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
   offset = TARGET_THREAD_SPLIT_STACK_OFFSET;
@@ -15838,7 +15840,7 @@ ix86_expand_split_stack_prologue (void)
      us SPLIT_STACK_AVAILABLE bytes, so if we need less than that we
      can compare directly.  Otherwise we need to do an addition.  */
 
-  limit = ix86_split_stack_boundary ();
+  limit = ix86_split_stack_guard ();
 
   if (allocate < SPLIT_STACK_AVAILABLE)
     current = stack_pointer_rtx;
