@@ -5296,7 +5296,7 @@ enum overload_flags { NO_SPECIAL = 0, DTOR_FLAG, TYPENAME_FLAG };
    (Normally, these entities are registered in the symbol table, but
    not found by lookup.)  */
 #define LOOKUP_HIDDEN (LOOKUP_PREFER_NAMESPACES << 1)
-/* Prefer that the lvalue be treated as an rvalue.  */
+/* We're trying to treat an lvalue as an rvalue.  */
 #define LOOKUP_PREFER_RVALUE (LOOKUP_HIDDEN << 1)
 /* We're inside an init-list, so narrowing conversions are ill-formed.  */
 #define LOOKUP_NO_NARROWING (LOOKUP_PREFER_RVALUE << 1)

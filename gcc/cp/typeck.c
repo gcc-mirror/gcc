@@ -9156,6 +9156,7 @@ check_return_expr (tree retval, bool *no_warning)
 
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
+      bool converted = false;
       if ((cxx_dialect != cxx98)
           && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
 	      || TREE_CODE (retval) == PARM_DECL)
@@ -9163,14 +9164,25 @@ check_return_expr (tree retval, bool *no_warning)
 	  && !TREE_STATIC (retval)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
-	flags = flags | LOOKUP_PREFER_RVALUE;
+	{
+	  tree moved = move (retval);
+	  moved = convert_for_initialization
+	    (NULL_TREE, functype, moved, flags|LOOKUP_PREFER_RVALUE,
+	     ICR_RETURN, NULL_TREE, 0, tf_none);
+	  if (moved != error_mark_node)
+	    {
+	      retval = moved;
+	      converted = true;
+	    }
+	}
 
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */
-      retval = convert_for_initialization
-	(NULL_TREE, functype, retval, flags, ICR_RETURN, NULL_TREE, 0,
-         tf_warning_or_error);
+      if (!converted)
+	retval = convert_for_initialization
+	  (NULL_TREE, functype, retval, flags, ICR_RETURN, NULL_TREE, 0,
+	   tf_warning_or_error);
       retval = convert (valtype, retval);
 
       /* If the conversion failed, treat this just like `return;'.  */

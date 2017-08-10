@@ -1,3 +1,14 @@
+2017-08-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80452 - Core 1579, implicit move semantics on return/throw
+	* cp-tree.h (LOOKUP_PREFER_RVALUE): Now means that we've already
+	tentatively changed the lvalue to an rvalue.
+	* call.c (reference_binding): Remove LOOKUP_PREFER_RVALUE handling.
+	(build_over_call): If LOOKUP_PREFER_RVALUE, check that the first
+	parameter is an rvalue reference.
+	* except.c (build_throw): Do maybe-rvalue overload resolution twice.
+	* typeck.c (check_return_expr): Likewise.
+
 2017-08-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* parser.c (cp_parser_error): Update for new param to
