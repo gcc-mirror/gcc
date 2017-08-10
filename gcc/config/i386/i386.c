@@ -45854,21 +45854,55 @@ ix86_mangle_type (const_tree type)
     }
 }
 
+static GTY(()) tree ix86_tls_stack_chk_guard_decl;
+
 static tree
 ix86_stack_protect_guard (void)
 {
   if (TARGET_SSP_TLS_GUARD)
     {
       tree type_node = lang_hooks.types.type_for_mode (ptr_mode, 1);
-
       int qual = ENCODE_QUAL_ADDR_SPACE (ix86_stack_protector_guard_reg);
-
       tree type = build_qualified_type (type_node, qual);
-      tree asptrtype = build_pointer_type (type);
-      tree sspoff = build_int_cst (asptrtype,
-				   ix86_stack_protector_guard_offset);
-      tree t = build2 (MEM_REF, asptrtype, sspoff,
-		       build_int_cst (asptrtype, 0));
+      tree t;
+
+      if (global_options_set.x_ix86_stack_protector_guard_symbol_str)
+	{
+	  t = ix86_tls_stack_chk_guard_decl;
+
+	  if (t == NULL)
+	    {
+	      rtx x;
+
+	      t = build_decl
+		(UNKNOWN_LOCATION, VAR_DECL,
+		 get_identifier (ix86_stack_protector_guard_symbol_str),
+		 type);
+	      TREE_STATIC (t) = 1;
+	      TREE_PUBLIC (t) = 1;
+	      DECL_EXTERNAL (t) = 1;
+	      TREE_USED (t) = 1;
+	      TREE_THIS_VOLATILE (t) = 1;
+	      DECL_ARTIFICIAL (t) = 1;
+	      DECL_IGNORED_P (t) = 1;
+
+	      /* Do not share RTL as the declaration is visible outside of
+		 current function.  */
+	      x = DECL_RTL (t);
+	      RTX_FLAG (x, used) = 1;
+
+	      ix86_tls_stack_chk_guard_decl = t;
+	    }
+	}
+      else
+	{
+	  tree asptrtype = build_pointer_type (type);
+
+	  t = build_int_cst (asptrtype, ix86_stack_protector_guard_offset);
+	  t = build2 (MEM_REF, asptrtype, t,
+		      build_int_cst (asptrtype, 0));
+	}
+
       return t;
     }
 
