@@ -1,3 +1,10 @@
+2017-08-10  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR testsuite/81738
+	* gcc.dg/vect/vect-alias-check-6.c: Move second function to...
+	* gcc.dg/vect/vect-alias-check-7.c: ...this new file.  Require
+	vect_perm and vect_element_align for vectorization.
+
 2017-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/81736
