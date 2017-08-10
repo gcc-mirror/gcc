@@ -1,3 +1,8 @@
+2017-08-10  Marek Polacek  <polacek@redhat.com>
+
+	PR testsuite/81784
+	* gcc.dg/compare2.c: Update dg-bogus and dg-warning.
+
 2017-08-10  Martin Liska  <mliska@suse.cz>
 
 	PR c++/81355
