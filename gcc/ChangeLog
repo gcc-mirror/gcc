@@ -1,5 +1,12 @@
 2017-08-10  Martin Sebor  <msebor@redhat.com>
 
+	* print-tree.c (print_node): Print location using the established
+	format %s:%i%i.
+	Replace spaces with colons.
+	(debug_raw, debug): Ditto.
+
+2017-08-10  Martin Sebor  <msebor@redhat.com>
+
 	PR c++/81586
 	* pretty-print.c (pp_format): Correct the handling of %s precision.
 
