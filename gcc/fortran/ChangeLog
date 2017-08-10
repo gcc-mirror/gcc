@@ -1,5 +1,10 @@
 2017-08-10  Fritz Reese <fritzoreese@gmail.com>
 
+	* options.c (set_dec_flags): Only set legacy standards when value
+	is not zero.
+
+2017-08-10  Fritz Reese <fritzoreese@gmail.com>
+
 	* options.c (set_dec_flags, gfc_post_options): Only set flag_d_lines
 	with -fdec when not set by user.
 

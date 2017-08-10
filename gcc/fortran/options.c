@@ -52,11 +52,13 @@ set_default_std_flags (void)
 static void
 set_dec_flags (int value)
 {
-  /* Allow legacy code without warnings.  */
-  gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_GNU | GFC_STD_LEGACY;
-  gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
-
+  if (value)
+    {
+      /* Allow legacy code without warnings.  */
+      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+        | GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
+    }
 
   /* Set other DEC compatibility extensions.  */
   flag_dollar_ok |= value;
