@@ -1,3 +1,9 @@
+2017-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR c++/81355
+	* c-attribs.c (handle_target_attribute):
+	Report warning for an empty string argument of target attribute.
+
 2017-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81687
