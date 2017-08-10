@@ -1,5 +1,9 @@
 2017-08-10  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
+	* method.c (synthesized_method_walk): Don't diagnose lack of
+	operator delete.
+
 	PR c++/80452 - Core 1579, implicit move semantics on return/throw
 	* cp-tree.h (LOOKUP_PREFER_RVALUE): Now means that we've already
 	tentatively changed the lvalue to an rvalue.
