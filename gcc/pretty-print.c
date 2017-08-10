@@ -667,7 +667,17 @@ pp_format (pretty_printer *pp, text_info *text)
 	      }
 
 	    s = va_arg (*text->args_ptr, const char *);
-	    pp_append_text (pp, s, s + n);
+
+	    /* Negative precision is treated as if it were omitted.  */
+	    if (n < 0)
+	      n = INT_MAX;
+
+	    /* Append the lesser of precision and strlen (s) characters.  */
+	    size_t len = strlen (s);
+	    if ((unsigned) n < len)
+	      len = n;
+
+	    pp_append_text (pp, s, s + len);
 	  }
 	  break;
 

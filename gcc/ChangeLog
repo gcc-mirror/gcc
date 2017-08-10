@@ -1,3 +1,8 @@
+2017-08-10  Martin Sebor  <msebor@redhat.com>
+
+	PR c++/81586
+	* pretty-print.c (pp_format): Correct the handling of %s precision.
+
 2017-08-10  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/81736
