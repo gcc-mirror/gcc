@@ -2220,6 +2220,20 @@ rules and exceptions:
 @item Structures act like derived types with the @code{SEQUENCE} attribute.
 Otherwise they may contain no specifiers.
 
+@item Structures may contain a special field with the name @code{%FILL}.
+This will create an anonymous component which cannot be accessed but occupies
+space just as if a component of the same type was declared in its place, useful
+for alignment purposes.  As an example, the following structure will consist
+of at least sixteen bytes:
+
+@smallexample
+structure /padded/
+  character(4) start
+  character(8) %FILL
+  character(4) end
+end structure
+@end smallexample
+
 @item Structures may share names with other symbols. For example, the following
 is invalid for derived types, but valid for structures:
 
