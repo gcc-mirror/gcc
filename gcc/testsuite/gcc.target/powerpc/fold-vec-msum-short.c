@@ -15,7 +15,7 @@ test_msum_si (vector signed short vss2, vector signed short vss3,
 }
 
 vector unsigned int
-test_msum)ui (vector unsigned short vus2, vector unsigned short vus3,
+test_msum_ui (vector unsigned short vus2, vector unsigned short vus3,
 	   vector unsigned int vui2)
 {
   return vec_msum (vus2, vus3, vui2);
