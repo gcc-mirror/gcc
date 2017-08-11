@@ -1,3 +1,9 @@
+2017-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81795
+	* c-decl.c (pushtag): Only print inform if the warning was printed.
+	(grokdeclarator): Likewise.
+
 2017-08-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_error): Rename to...
