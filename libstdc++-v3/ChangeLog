@@ -1,3 +1,9 @@
+2017-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81808
+	* testsuite/27_io/basic_fstream/53984.cc: Adjust test for targets
+	that allow opening a directory as a FILE and reading from it.
+
 2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (_GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP):

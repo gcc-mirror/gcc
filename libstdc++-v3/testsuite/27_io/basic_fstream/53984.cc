@@ -17,6 +17,8 @@
 
 // { dg-require-fileio "" }
 
+// PR libstdc++/53984
+
 #include <fstream>
 #include <testsuite_hooks.h>
 
@@ -26,9 +28,32 @@ test01()
   std::ifstream in(".");
   if (in)
   {
+    char c;
+    if (in.get(c))
+    {
+      // Reading a directory doesn't produce an error on this target
+      // so the formatted input functions below wouldn't fail anyway
+      // (see PR libstdc++/81808).
+      return;
+    }
     int x;
+    in.clear();
+    // Formatted input function should set badbit, but not throw:
     in >> x;
     VERIFY( in.bad() );
+
+    in.clear();
+    in.exceptions(std::ios::badbit);
+    try
+    {
+      // Formatted input function should set badbit, and throw:
+      in >> x;
+      VERIFY( false );
+    }
+    catch (const std::exception&)
+    {
+      VERIFY( in.bad() );
+    }
   }
 }
 
