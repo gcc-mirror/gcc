@@ -1,5 +1,11 @@
 2017-08-11  Martin Liska  <mliska@suse.cz>
 
+	PR tree-opt/79987
+	* tree-chkp.c (chkp_get_bounds_for_decl_addr): Do not instrument
+	variables of void type.
+
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
 	* asan.c (asan_protect_global): Replace ASM_OUTPUT_DEF with
 	TARGET_SUPPORTS_ALIASES.
 	* cgraph.c (cgraph_node::create_same_body_alias): Likewise.
