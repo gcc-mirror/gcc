@@ -1,5 +1,16 @@
 2017-08-11  Martin Liska  <mliska@suse.cz>
 
+	* asan.c (asan_protect_global): Replace ASM_OUTPUT_DEF with
+	TARGET_SUPPORTS_ALIASES.
+	* cgraph.c (cgraph_node::create_same_body_alias): Likewise.
+	* ipa-visibility.c (can_replace_by_local_alias): Likewise.
+	(optimize_weakref): Likewise.
+	* symtab.c (symtab_node::noninterposable_alias): Likewise.
+	* varpool.c (varpool_node::create_extra_name_alias): Likewise.
+	* defaults.h: Introduce TARGET_SUPPORTS_ALIASES.
+
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
 	PR ipa/81213
 	* config/i386/i386.c (make_resolver_func): Do complete
 	refactoring of the function.

@@ -339,10 +339,10 @@ varpool_node::externally_visible_p (void)
 static bool
 can_replace_by_local_alias (symtab_node *node)
 {
-#ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported, we can't do replacement.  */
-  return false;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return false;
+
   /* Weakrefs have a reason to be non-local.  Be sure we do not replace
      them.  */
   while (node->transparent_alias && node->definition && !node->weakref)
@@ -463,11 +463,6 @@ update_visibility_by_resolution_info (symtab_node * node)
 static void
 optimize_weakref (symtab_node *node)
 {
-#ifdef ASM_OUTPUT_DEF
-  bool aliases_supported = true;
-#else
-  bool aliases_supported = false;
-#endif
   bool strip_weakref = false;
   bool static_alias = false;
 
@@ -486,8 +481,8 @@ optimize_weakref (symtab_node *node)
 
   /* If we have definition of weakref's target and we know it binds locally,
      we can turn weakref to static alias.  */
-  if (target->definition && decl_binds_to_current_def_p (target->decl)
-      && aliases_supported)
+  if (TARGET_SUPPORTS_ALIASES
+      && target->definition && decl_binds_to_current_def_p (target->decl))
     strip_weakref = static_alias = true;
   /* Otherwise we can turn weakref into transparent alias.  This transformation
      may break asm statements which directly refers to symbol name and expect

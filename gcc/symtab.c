@@ -1765,10 +1765,10 @@ symtab_node::noninterposable_alias (void)
 				   (void *)&new_node, true);
   if (new_node)
     return new_node;
-#ifndef ASM_OUTPUT_DEF
+
   /* If aliases aren't supported by the assembler, fail.  */
-  return NULL;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return NULL;
 
   /* Otherwise create a new one.  */
   new_decl = copy_node (node->decl);
