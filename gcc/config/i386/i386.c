@@ -33913,30 +33913,30 @@ ix86_get_function_versions_dispatcher (void *decl)
 }
 
 /* Make the resolver function decl to dispatch the versions of
-   a multi-versioned function,  DEFAULT_DECL.  Create an
+   a multi-versioned function,  DEFAULT_DECL.  IFUNC_ALIAS_DECL is
+   ifunc alias that will point to the created resolver.  Create an
    empty basic block in the resolver and store the pointer in
    EMPTY_BB.  Return the decl of the resolver function.  */
 
 static tree
 make_resolver_func (const tree default_decl,
-		    const tree dispatch_decl,
+		    const tree ifunc_alias_decl,
 		    basic_block *empty_bb)
 {
   char *resolver_name;
   tree decl, type, decl_name, t;
-  bool is_uniq = false;
 
   /* IFUNC's have to be globally visible.  So, if the default_decl is
      not, then the name of the IFUNC should be made unique.  */
   if (TREE_PUBLIC (default_decl) == 0)
-    is_uniq = true;
+    {
+      char *ifunc_name = make_unique_name (default_decl, "ifunc", true);
+      symtab->change_decl_assembler_name (ifunc_alias_decl,
+					  get_identifier (ifunc_name));
+      XDELETEVEC (ifunc_name);
+    }
 
-  /* Append the filename to the resolver function if the versions are
-     not externally visible.  This is because the resolver function has
-     to be externally visible for the loader to find it.  So, appending
-     the filename will prevent conflicts with a resolver function from
-     another module which is based on the same version name.  */
-  resolver_name = make_unique_name (default_decl, "resolver", is_uniq);
+  resolver_name = make_unique_name (default_decl, "resolver", false);
 
   /* The resolver function should return a (void *). */
   type = build_function_type_list (ptr_type_node, NULL_TREE);
@@ -33949,13 +33949,12 @@ make_resolver_func (const tree default_decl,
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 0;
-  /* IFUNC resolvers have to be externally visible.  */
-  TREE_PUBLIC (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
   DECL_UNINLINABLE (decl) = 1;
 
   /* Resolver is not external, body is generated.  */
   DECL_EXTERNAL (decl) = 0;
-  DECL_EXTERNAL (dispatch_decl) = 0;
+  DECL_EXTERNAL (ifunc_alias_decl) = 0;
 
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
@@ -33986,14 +33985,14 @@ make_resolver_func (const tree default_decl,
 
   pop_cfun ();
 
-  gcc_assert (dispatch_decl != NULL);
-  /* Mark dispatch_decl as "ifunc" with resolver as resolver_name.  */
-  DECL_ATTRIBUTES (dispatch_decl) 
-    = make_attribute ("ifunc", resolver_name, DECL_ATTRIBUTES (dispatch_decl));
+  gcc_assert (ifunc_alias_decl != NULL);
+  /* Mark ifunc_alias_decl as "ifunc" with resolver as resolver_name.  */
+  DECL_ATTRIBUTES (ifunc_alias_decl)
+    = make_attribute ("ifunc", resolver_name,
+		      DECL_ATTRIBUTES (ifunc_alias_decl));
 
   /* Create the alias for dispatch to resolver here.  */
-  /*cgraph_create_function_alias (dispatch_decl, decl);*/
-  cgraph_node::create_same_body_alias (dispatch_decl, decl);
+  cgraph_node::create_same_body_alias (ifunc_alias_decl, decl);
   XDELETEVEC (resolver_name);
   return decl;
 }
