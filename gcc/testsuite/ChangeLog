@@ -1,3 +1,8 @@
+2017-08-11  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81795
+	* gcc.dg/pr81795.c: New test.
+
 2017-08-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/60355
