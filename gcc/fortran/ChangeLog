@@ -1,3 +1,11 @@
+2017-08-11  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/60355
+	* resolve.c (resolve_symbol): Adjust (and reformat)
+	comment.  Perform check if a BIND(C) is declared
+	at module level regardless of whether it is typed
+	implicitly or not.
+
 2017-08-10  Fritz Reese <fritzoreese@gmail.com>
 
 	* options.c (set_dec_flags): Only set legacy standards when value
