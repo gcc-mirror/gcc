@@ -192,7 +192,9 @@
 2017-08-08  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81354
-	* g++.dg/torture/pr81354.C: New file.
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge):
+	Insert on edges rather than explicitly creating landing pads.
+	(analyze_candidates_and_replace): Commit edge inserts.
 
 2017-08-08  Richard Biener  <rguenther@suse.de>
 
