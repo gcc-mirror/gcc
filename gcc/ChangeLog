@@ -1,3 +1,8 @@
+2017-08-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-sra.c (build_access_from_expr_1): Use more precise diagnostics
+	for storage order barriers.
+
 2017-08-11  Martin Liska  <mliska@suse.cz>
 
 	PR tree-opt/79987
