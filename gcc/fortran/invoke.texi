@@ -1570,12 +1570,12 @@ The default value for @var{n} is 32768.
 
 @item -fstack-arrays
 @opindex @code{fstack-arrays}
-Adding this option will make the Fortran compiler put all local arrays,
-even those of unknown size onto stack memory.  If your program uses very
+Adding this option will make the Fortran compiler put all arrays of
+unknown size and array temporaries onto stack memory.  If your program uses very
 large local arrays it is possible that you will have to extend your runtime
 limits for stack memory on some operating systems. This flag is enabled
-by default at optimization level @option{-Ofast}.
-
+by default at optimization level @option{-Ofast} unless
+@option{-fmax-stack-var-size} is specified.
 
 @item -fpack-derived
 @opindex @code{fpack-derived}
