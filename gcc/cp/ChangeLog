@@ -1,3 +1,8 @@
+2017-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81671 - nullptr_t template parameter
+	* pt.c (convert_nontype_argument): Fix nullptr_t check.
+
 2017-08-10  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
