@@ -1,3 +1,8 @@
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Replace ASM_OUTPUT_DEF with
+	TARGET_SUPPORTS_ALIASES.
+
 2017-08-10  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (c_parse_error): Add rich_location * param, using it

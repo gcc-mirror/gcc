@@ -863,6 +863,15 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 #endif
 
+/* Decide whether target supports aliases.  */
+#ifndef TARGET_SUPPORTS_ALIASES
+#ifdef ASM_OUTPUT_DEF
+#define TARGET_SUPPORTS_ALIASES 1
+#else
+#define TARGET_SUPPORTS_ALIASES 0
+#endif
+#endif
+
 /* Select a format to encode pointers in exception handling data.  We
    prefer those that result in fewer dynamic relocations.  Assume no
    special support here and encode direct references.  */

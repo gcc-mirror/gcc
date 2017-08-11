@@ -1665,10 +1665,8 @@ asan_protect_global (tree decl)
   if (lookup_attribute ("weakref", DECL_ATTRIBUTES (decl)))
     return false;
 
-#ifndef ASM_OUTPUT_DEF
-  if (asan_needs_local_alias (decl))
+  if (!TARGET_SUPPORTS_ALIASES && asan_needs_local_alias (decl))
     return false;
-#endif
 
   return true;
 }

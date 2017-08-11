@@ -788,10 +788,10 @@ varpool_node::create_extra_name_alias (tree alias, tree decl)
 {
   varpool_node *alias_node;
 
-#ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
-  return NULL;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return NULL;
+
   alias_node = varpool_node::create_alias (alias, decl);
   alias_node->cpp_implicit_alias = true;
 

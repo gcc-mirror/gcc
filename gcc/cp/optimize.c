@@ -184,10 +184,10 @@ cdtor_comdat_group (tree complete, tree base)
 static bool
 can_alias_cdtor (tree fn)
 {
-#ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported by the assembler, fail.  */
-  return false;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return false;
+
   /* We can't use an alias if there are virtual bases.  */
   if (CLASSTYPE_VBASECLASSES (DECL_CONTEXT (fn)))
     return false;
