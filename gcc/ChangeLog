@@ -1,3 +1,9 @@
+2017-08-11  Tamar Christina  <tamar.christina@arm.com>
+	* config/aarch64/aarch64.md (mov<mode>): Change.
+	(*movhf_aarch64, *movsf_aarch64, *movdf_aarch64):
+	aarch64_reg_or_fp_float into aarch64_reg_or_fp_zero.
+	* config/aarch64/predicates.md (aarch64_reg_or_fp_float): Removed.
+
 2017-08-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-sra.c (build_access_from_expr_1): Use more precise diagnostics
