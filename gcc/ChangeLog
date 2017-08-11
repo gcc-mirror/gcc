@@ -1,3 +1,10 @@
+2017-08-11  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR lto/81430
+	* config/nvptx/nvptx.c (nvptx_override_options_after_change):
+	Remove function.
+	(TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE): Remove definition.
+
 2017-08-11  Tamar Christina  <tamar.christina@arm.com>
 	* config/aarch64/aarch64.md (mov<mode>): Change.
 	(*movhf_aarch64, *movsf_aarch64, *movdf_aarch64):
