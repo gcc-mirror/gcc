@@ -3197,6 +3197,9 @@ chkp_get_bounds_for_decl_addr (tree decl)
       && !flag_chkp_incomplete_type)
       return chkp_get_zero_bounds ();
 
+  if (VOID_TYPE_P (TREE_TYPE (decl)))
+    return chkp_get_zero_bounds ();
+
   if (flag_chkp_use_static_bounds
       && VAR_P (decl)
       && (TREE_STATIC (decl)
