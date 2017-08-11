@@ -212,17 +212,6 @@ nvptx_option_override (void)
     target_flags |= MASK_SOFT_STACK | MASK_UNIFORM_SIMT;
 }
 
-/* Implement TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE.  */
-
-static void
-nvptx_override_options_after_change (void)
-{
-  /* This is a workaround for PR81430 - nvptx acceleration compilation broken
-     because of running pass_partition_blocks.  This should be dealt with in the
-     common code, not in the target.  */
-  flag_reorder_blocks_and_partition = 0;
-}
-
 /* Return a ptx type for MODE.  If PROMOTE, then use .u32 for QImode to
    deal with ptx ideosyncracies.  */
 
@@ -5526,9 +5515,6 @@ nvptx_data_alignment (const_tree type, unsigned int basic_align)
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
-
-#undef TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE
-#define TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE nvptx_override_options_after_change
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE nvptx_attribute_table
