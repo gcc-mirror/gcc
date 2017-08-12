@@ -1,3 +1,9 @@
+2017-08-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/81793
+	* gcc.dg/pie-static-1.c: Require both static and pie support.
+	* gcc.dg/pie-static-2.c: Likewise.
+
 2017-08-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR ada/79542
