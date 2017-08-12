@@ -1,3 +1,16 @@
+2017-08-12  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR ada/79542
+	* dwarf2out.c (modified_type_die): For C typedef types that have
+	an ultimate origin, process the ultimate origin instead of the
+	input type.
+	(gen_typedef_die): Assert that input DECLs have no ultimate
+	origin.
+	(gen_type_die_with_usage): For typedef variants that have an
+	ultimate origin, just call gen_decl_die on the original DECL.
+	(process_scope_var): Avoid creating DIEs for local typedefs and
+	concrete static variables.
+
 2017-08-12  Alan Modra  <amodra@gmail.com>
 
 	PR target/81170
