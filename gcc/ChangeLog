@@ -1,3 +1,11 @@
+2017-08-12  Alan Modra  <amodra@gmail.com>
+
+	PR target/81170
+	PR target/81295
+	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Upgrade to
+	match gnu-user.h startfile.
+	(ENDFILE_LINUX_SPEC): Similarly.
+
 2017-08-11  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR lto/81430
