@@ -14281,6 +14281,42 @@ ix86_finalize_stack_frame_flags (void)
       df_scan_blocks ();
       df_compute_regs_ever_live (true);
       df_analyze ();
+
+      if (flag_var_tracking)
+	{
+	  /* Since frame pointer is no longer available, replace it with
+	     stack pointer - UNITS_PER_WORD in debug insns.  */
+	  df_ref ref, next;
+	  for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
+	       ref; ref = next)
+	    {
+	      rtx_insn *insn = DF_REF_INSN (ref);
+	      /* Make sure the next ref is for a different instruction,
+		 so that we're not affected by the rescan.  */
+	      next = DF_REF_NEXT_REG (ref);
+	      while (next && DF_REF_INSN (next) == insn)
+		next = DF_REF_NEXT_REG (next);
+
+	      if (DEBUG_INSN_P (insn))
+		{
+		  bool changed = false;
+		  for (; ref != next; ref = DF_REF_NEXT_REG (ref))
+		    {
+		      rtx *loc = DF_REF_LOC (ref);
+		      if (*loc == hard_frame_pointer_rtx)
+			{
+			  *loc = plus_constant (Pmode,
+						stack_pointer_rtx,
+						-UNITS_PER_WORD);
+			  changed = true;
+			}
+		    }
+		  if (changed)
+		    df_insn_rescan (insn);
+		}
+	    }
+	}
+
       recompute_frame_layout_p = true;
     }
 
