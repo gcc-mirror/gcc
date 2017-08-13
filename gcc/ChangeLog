@@ -1,3 +1,18 @@
+2017-08-13  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*load_tp_<mode>): Redefine as
+	define_insn_and_split.  Split to a memory load from 0 in
+	DEFAULT_TLS_SEG_REG address space.  Merge with *load_tp_x32
+	using PTR mode iterator.
+	(*load_tp_x32_zext"): Redefine as define_insn_and_split.
+	Split to a memory load from 0 in DEFAULT_TLS_SEG_REG address space.
+	(*add_tp_<mode>): Redefine as define_insn_and_split.
+	Split to an add with a memory load from 0 in DEFAULT_TLS_SEG_REG
+	address space.  Merge with *add_tp_x32 using PTR mode iterator.
+	(*add_tp_x32_zext"): Redefine as define_insn_and_split.
+	Split to an add with a  memory load from 0 in
+	DEFAULT_TLS_SEG_REG address space.
+
 2017-08-12  Andrew Pinski  <apinski@cavium.com>
 
 	* config/aarch64/aarch64-option-extensions.def (rdma):
