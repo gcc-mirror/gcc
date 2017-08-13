@@ -1,3 +1,8 @@
+2017-08-12  Andrew Pinski  <apinski@cavium.com>
+
+	* config/aarch64/aarch64-option-extensions.def (rdma):
+	Fix feature string to what Linux prints out in /proc/cpuinfo.
+
 2017-08-12  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR ada/79542
