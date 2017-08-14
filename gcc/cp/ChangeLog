@@ -1,3 +1,9 @@
+2017-08-14  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71570
+	* lambda.c (add_capture): Early return if we cannot capture by
+	reference.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
