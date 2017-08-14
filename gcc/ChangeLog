@@ -1,5 +1,13 @@
 2017-08-14  Martin Sebor  <msebor@redhat.com>
 
+	PR c/81117
+	* tree-diagnostic.c (default_tree_printer): Handle %G.
+	* gimple-pretty-print.h (percent_G_format): Declare new function.
+	* gimple-pretty-print.c (percent_G_format): Define.
+	* tree-pretty-print.c (percent_K_format): Add argument.
+
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
 	PR translation/79998
 	* gimple-ssa-sprintf.c (pass_sprintf_length::handle_gimple_call):
 	Remove a stray space.

@@ -1,3 +1,10 @@
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-format.h (T89_G): New macro.
+	* c-format.c (local_gcall_ptr_node): New variable.
+	(init_dynamic_diag_info): Initialize it.
+
 2017-08-11  Martin Liska  <mliska@suse.cz>
 
 	* c-opts.c (c_common_post_options): Replace ASM_OUTPUT_DEF with

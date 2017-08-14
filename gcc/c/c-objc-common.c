@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "c-family/c-pretty-print.h"
 #include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "langhooks.h"
 #include "c-objc-common.h"
 
@@ -66,6 +67,8 @@ c_objc_common_init (void)
    %D: a general decl,
    %E: an identifier or expression,
    %F: a function declaration,
+   %G: a Gimple call statement,
+   %K: a CALL_EXPR,
    %T: a type.
    %V: a list of type qualifiers from a tree.
    %v: an explicit list of type qualifiers
@@ -87,9 +90,16 @@ c_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
   if (precision != 0 || wide)
     return false;
 
+  if (*spec == 'G')
+    {
+      percent_G_format (text);
+      return true;
+    }
+
   if (*spec == 'K')
     {
-      percent_K_format (text);
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, t);
       return true;
     }
 
