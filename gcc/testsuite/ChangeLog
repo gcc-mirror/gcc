@@ -1,3 +1,9 @@
+2017-08-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/46932
+	* gcc.dg/pr46932.c: Use dg-require-effective-target autoincdec.
+	* lib/target-supports.exp: Add check_effective_target_autoincdec.
+
 2017-08-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
 
 	* gcc.target/aarch64/dbl_mov_immediate_1.c: Add

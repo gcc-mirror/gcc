@@ -1,3 +1,8 @@
+2017-08-14  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/46932
+	* doc/sourcebuild.texi (autoincdec): Add autoincdec description.
+
 2017-08-14  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81754
