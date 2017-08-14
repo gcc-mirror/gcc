@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3" } */
+/* { dg-options "-O3 -mno-pc-relative-literal-loads" } */
 /* { dg-skip-if "Tiny model won't generate adrp" { *-*-* } { "-mcmodel=tiny" } { "" } } */
 
 double d0(void)

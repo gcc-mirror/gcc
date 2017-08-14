@@ -1,3 +1,8 @@
+2017-08-14  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* gcc.target/aarch64/dbl_mov_immediate_1.c: Add
+	-mno-pc-relative-literal-loads.
+
 2017-08-12  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR testsuite/81793
