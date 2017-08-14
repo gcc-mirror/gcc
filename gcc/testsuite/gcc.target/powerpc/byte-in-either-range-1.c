@@ -18,5 +18,5 @@ test_byte_in_either_range (unsigned char b,
   range_encoding = ((first_hi_bound << 24) | (first_lo_bound << 16)
 		    | (second_hi_bound << 8) | second_lo_bound);
 
-  return __builtin_byte_in_either_range (b, range_encoding); /* { dg-error "builtin function __builtin_scalar_byte_in_either_range requires" } */
+  return __builtin_byte_in_either_range (b, range_encoding); /* { dg-error "builtin function '__builtin_scalar_byte_in_either_range' requires" } */
 }

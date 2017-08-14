@@ -3648,11 +3648,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
   if (rs6000_recip_control)
     {
       if (!flag_finite_math_only)
-	warning (0, "-mrecip requires -ffinite-math or -ffast-math");
+	warning (0, "%qs requires %qs or %qs", "-mrecip", "-ffinite-math",
+		 "-ffast-math");
       if (flag_trapping_math)
-	warning (0, "-mrecip requires -fno-trapping-math or -ffast-math");
+	warning (0, "%qs requires %qs or %qs", "-mrecip",
+		 "-fno-trapping-math", "-ffast-math");
       if (!flag_reciprocal_math)
-	warning (0, "-mrecip requires -freciprocal-math or -ffast-math");
+	warning (0, "%qs requires %qs or %qs", "-mrecip", "-freciprocal-math",
+		 "-ffast-math");
       if (flag_finite_math_only && !flag_trapping_math && flag_reciprocal_math)
 	{
 	  if (RS6000_RECIP_HAVE_RE_P (SFmode)
@@ -3752,7 +3755,7 @@ darwin_rs6000_override_options (void)
   if (TARGET_64BIT && ! TARGET_POWERPC64)
     {
       rs6000_isa_flags |= OPTION_MASK_POWERPC64;
-      warning (0, "-m64 requires PowerPC64 architecture, enabling");
+      warning (0, "%qs requires PowerPC64 architecture, enabling", "-m64");
     }
   if (flag_mkernel)
     {
@@ -3934,8 +3937,9 @@ rs6000_option_override_internal (bool global_init_p)
       && rs6000_alignment_flags == MASK_ALIGN_POWER
       && DEFAULT_ABI == ABI_DARWIN
       && TARGET_64BIT)
-    warning (0, "-malign-power is not supported for 64-bit Darwin;"
-	     " it is incompatible with the installed C and C++ libraries");
+    warning (0, "%qs is not supported for 64-bit Darwin;"
+	     " it is incompatible with the installed C and C++ libraries",
+	     "-malign-power");
 
   /* Numerous experiment shows that IRA based loop pressure
      calculation works better for RTL loop invariant motion on targets
@@ -4153,14 +4157,16 @@ rs6000_option_override_internal (bool global_init_p)
 	{
 	  rs6000_isa_flags &= ~OPTION_MASK_MULTIPLE;
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_MULTIPLE) != 0)
-	    warning (0, "-mmultiple is not supported on little endian systems");
+	    warning (0, "%qs is not supported on little endian systems",
+		     "-mmultiple");
 	}
 
       if (TARGET_STRING)
 	{
 	  rs6000_isa_flags &= ~OPTION_MASK_STRING;
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_STRING) != 0)
-	    warning (0, "-mstring is not supported on little endian systems");
+	    warning (0, "%qs is not supported on little endian systems",
+		     "-mstring");
 	}
     }
 
@@ -4254,15 +4260,16 @@ rs6000_option_override_internal (bool global_init_p)
 	      rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
 	    }
 	  else
-	    error ("power9 target option is incompatible with -mcpu=<xxx> for "
-		   "<xxx> less than power9");
+	    error ("power9 target option is incompatible with %<%s=<xxx>%> "
+		   "for <xxx> less than power9", "-mcpu");
 	}
       else if ((ISA_3_0_MASKS_SERVER & rs6000_isa_flags_explicit)
 	       != (ISA_3_0_MASKS_SERVER & rs6000_isa_flags
 		   & rs6000_isa_flags_explicit))
 	/* Enforce that none of the ISA_3_0_MASKS_SERVER flags
 	   were explicitly cleared.  */
-	error ("-mpower9-minmax incompatible with explicitly disabled options");
+	error ("%qs incompatible with explicitly disabled options",
+	       "-mpower9-minmax");
       else
 	rs6000_isa_flags |= ISA_3_0_MASKS_SERVER;
     }
@@ -4286,21 +4293,21 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_CRYPTO && !TARGET_ALTIVEC)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_CRYPTO)
-	error ("-mcrypto requires -maltivec");
+	error ("%qs requires %qs", "-mcrypto", "-maltivec");
       rs6000_isa_flags &= ~OPTION_MASK_CRYPTO;
     }
 
   if (TARGET_DIRECT_MOVE && !TARGET_VSX)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE)
-	error ("-mdirect-move requires -mvsx");
+	error ("%qs requires %qs", "-mdirect-move", "-mvsx");
       rs6000_isa_flags &= ~OPTION_MASK_DIRECT_MOVE;
     }
 
   if (TARGET_P8_VECTOR && !TARGET_ALTIVEC)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
-	error ("-mpower8-vector requires -maltivec");
+	error ("%qs requires %qs", "-mpower8-vector", "-maltivec");
       rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
     }
 
@@ -4308,7 +4315,7 @@ rs6000_option_override_internal (bool global_init_p)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR)
 	  && (rs6000_isa_flags_explicit & OPTION_MASK_VSX))
-	error ("-mpower8-vector requires -mvsx");
+	error ("%qs requires %qs", "-mpower8-vector", "-mvsx");
       else if ((rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR) == 0)
 	{
 	  rs6000_isa_flags &= ~OPTION_MASK_P8_VECTOR;
@@ -4327,14 +4334,14 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_VSX_TIMODE && !TARGET_VSX)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE)
-	error ("-mvsx-timode requires -mvsx");
+	error ("%qs requires %qs", "-mvsx-timode", "-mvsx");
       rs6000_isa_flags &= ~OPTION_MASK_VSX_TIMODE;
     }
 
   if (TARGET_DFP && !TARGET_HARD_FLOAT)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_DFP)
-	error ("-mhard-dfp requires -mhard-float");
+	error ("%qs requires %qs", "-mhard-dfp", "-mhard-float");
       rs6000_isa_flags &= ~OPTION_MASK_DFP;
     }
 
@@ -4358,7 +4365,8 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_QUAD_MEMORY && !WORDS_BIG_ENDIAN)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_QUAD_MEMORY) != 0)
-	warning (0, N_("-mquad-memory is not available in little endian mode"));
+	warning (0, N_("-mquad-memory is not available in little endian "
+		       "mode"));
 
       rs6000_isa_flags &= ~OPTION_MASK_QUAD_MEMORY;
     }
@@ -4383,10 +4391,11 @@ rs6000_option_override_internal (bool global_init_p)
       if (rs6000_isa_flags_explicit & OPTION_MASK_P8_FUSION)
 	{
 	  if (TARGET_P8_FUSION_SIGN)
-	    error ("-mpower8-fusion-sign requires -mpower8-fusion");
+	    error ("%qs requires %qs", "-mpower8-fusion-sign",
+		   "-mpower8-fusion");
 
 	  if (TARGET_TOC_FUSION)
-	    error ("-mtoc-fusion requires -mpower8-fusion");
+	    error ("%qs requires %qs", "-mtoc-fusion", "-mpower8-fusion");
 
 	  rs6000_isa_flags &= ~OPTION_MASK_P8_FUSION;
 	}
@@ -4403,7 +4412,7 @@ rs6000_option_override_internal (bool global_init_p)
 	     error messages.  However, if users have managed to select
 	     power9-fusion without selecting power8-fusion, they
 	     already know about undocumented flags.  */
-	  error ("-mpower9-fusion requires -mpower8-fusion");
+	  error ("%qs requires %qs", "-mpower9-fusion", "-mpower8-fusion");
 	  rs6000_isa_flags &= ~OPTION_MASK_P9_FUSION;
 	}
       else
@@ -4456,7 +4465,7 @@ rs6000_option_override_internal (bool global_init_p)
 	 already know about undocumented flags.  */
       if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) &&
 	  (rs6000_isa_flags_explicit & OPTION_MASK_P8_VECTOR))
-	error ("-mpower9-vector requires -mpower8-vector");
+	error ("%qs requires %qs", "-mpower9-vector", "-mpower8-vector");
       else if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) == 0)
 	{
 	  rs6000_isa_flags &= ~OPTION_MASK_P9_VECTOR;
@@ -4501,7 +4510,7 @@ rs6000_option_override_internal (bool global_init_p)
       if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
 	  && (rs6000_isa_flags_explicit & (OPTION_MASK_P9_DFORM_SCALAR
 					   | OPTION_MASK_P9_DFORM_VECTOR)))
-	error ("-mpower9-dform requires -mpower9-vector");
+	error ("%qs requires %qs", "-mpower9-dform", "-mpower9-vector");
       else if (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
 	{
 	  rs6000_isa_flags &=
@@ -4530,8 +4539,9 @@ rs6000_option_override_internal (bool global_init_p)
 	  && ((rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_VECTOR) ||
 	      (rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_SCALAR) ||
 	      (TARGET_P9_DFORM_BOTH == 1)))
-	error ("-mpower9-dform, -mpower9-dform-vector, -mpower9-dform-scalar"
-	       " require -mdirect-move");
+	error ("%qs, %qs, %qs require %qs", "-mpower9-dform",
+	       "-mpower9-dform-vector", "-mpower9-dform-scalar",
+	       "-mdirect-move");
       else if ((rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE) == 0)
 	{
 	  rs6000_isa_flags |= OPTION_MASK_DIRECT_MOVE;
@@ -4562,7 +4572,7 @@ rs6000_option_override_internal (bool global_init_p)
     {
       if (TARGET_ALLOW_MOVMISALIGN > 0
 	  && global_options_set.x_TARGET_ALLOW_MOVMISALIGN)
-	error ("-mallow-movmisalign requires -mvsx");
+	error ("%qs requires %qs", "-mallow-movmisalign", "-mvsx");
 
       TARGET_ALLOW_MOVMISALIGN = 0;
     }
@@ -4577,7 +4587,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (!TARGET_VSX)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_EFFICIENT_UNALIGNED_VSX)
-	    error ("-mefficient-unaligned-vsx requires -mvsx");
+	    error ("%qs requires %qs", "-mefficient-unaligned-vsx", "-mvsx");
 
 	  rs6000_isa_flags &= ~OPTION_MASK_EFFICIENT_UNALIGNED_VSX;
 	}
@@ -4585,7 +4595,8 @@ rs6000_option_override_internal (bool global_init_p)
       else if (!TARGET_ALLOW_MOVMISALIGN)
 	{
 	  if (rs6000_isa_flags_explicit & OPTION_MASK_EFFICIENT_UNALIGNED_VSX)
-	    error ("-mefficient-unaligned-vsx requires -mallow-movmisalign");
+	    error ("%qs requires %qs", "-munefficient-unaligned-vsx",
+		   "-mallow-movmisalign");
 
 	  rs6000_isa_flags &= ~OPTION_MASK_EFFICIENT_UNALIGNED_VSX;
 	}
@@ -4623,7 +4634,7 @@ rs6000_option_override_internal (bool global_init_p)
       if (TARGET_FLOAT128_KEYWORD)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
-	    error ("-mfloat128 requires VSX support");
+	    error ("%qs requires VSX support", "-mfloat128");
 
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_TYPE
 				| OPTION_MASK_FLOAT128_KEYWORD
@@ -4633,7 +4644,7 @@ rs6000_option_override_internal (bool global_init_p)
       else if (TARGET_FLOAT128_TYPE)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_TYPE) != 0)
-	    error ("-mfloat128-type requires VSX support");
+	    error ("%qs requires VSX support", "-mfloat128-type");
 
 	  rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_TYPE
 				| OPTION_MASK_FLOAT128_KEYWORD
@@ -4649,7 +4660,7 @@ rs6000_option_override_internal (bool global_init_p)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_KEYWORD) != 0)
 	    {
-	      error ("-mfloat128 requires -mfloat128-type");
+	      error ("%qs requires %qs", "-mfloat128", "-mfloat128-type");
 	      rs6000_isa_flags &= ~(OPTION_MASK_FLOAT128_TYPE
 				    | OPTION_MASK_FLOAT128_KEYWORD
 				    | OPTION_MASK_FLOAT128_HW);
@@ -4662,7 +4673,8 @@ rs6000_option_override_internal (bool global_init_p)
 	{
 	  if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
 	    {
-	      error ("-mfloat128-hardware requires -mfloat128-type");
+	      error ("%qs requires %qs", "-mfloat128-hardware",
+		     "-mfloat128-type");
 	      rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
 	    }
 	  else
@@ -4685,7 +4697,7 @@ rs6000_option_override_internal (bool global_init_p)
       && (rs6000_isa_flags & ISA_3_0_MASKS_IEEE) != ISA_3_0_MASKS_IEEE)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("-mfloat128-hardware requires full ISA 3.0 support");
+	error ("%qs requires full ISA 3.0 support", "-mfloat128-hardware");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -4693,7 +4705,7 @@ rs6000_option_override_internal (bool global_init_p)
   if (TARGET_FLOAT128_HW && !TARGET_64BIT)
     {
       if ((rs6000_isa_flags_explicit & OPTION_MASK_FLOAT128_HW) != 0)
-	error ("-mfloat128-hardware requires -m64");
+	error ("%qs requires %qs", "-mfloat128-hardware", "-m64");
 
       rs6000_isa_flags &= ~OPTION_MASK_FLOAT128_HW;
     }
@@ -4757,8 +4769,8 @@ rs6000_option_override_internal (bool global_init_p)
 	    rs6000_veclib_handler = rs6000_builtin_vectorized_libmass;
 	  else
 	    {
-	      error ("unknown vectorization library ABI type (%s) for "
-		     "-mveclibabi= switch", rs6000_veclibabi_name);
+	      error ("unknown vectorization library ABI type (%qs) for "
+		     "%qs switch", rs6000_veclibabi_name, "-mveclibabi=");
 	      ret = false;
 	    }
 	}
@@ -4974,13 +4986,13 @@ rs6000_option_override_internal (bool global_init_p)
       errno = 0;
       long offset = strtol (str, &endp, 0);
       if (!*str || *endp || errno)
-	error ("%qs is not a valid number "
-	       "in -mstack-protector-guard-offset=", str);
+	error ("%qs is not a valid number in %qs", str,
+	       "-mstack-protector-guard-offset=");
 
       if (!IN_RANGE (offset, -0x8000, 0x7fff)
 	  || (TARGET_64BIT && (offset & 3)))
-	error ("%qs is not a valid offset "
-	       "in -mstack-protector-guard-offset=", str);
+	error ("%qs is not a valid offset in %qs", str,
+	       "-mstack-protector-guard-offset=");
 
       rs6000_stack_protector_guard_offset = offset;
     }
@@ -4991,15 +5003,15 @@ rs6000_option_override_internal (bool global_init_p)
       int reg = decode_reg_name (str);
 
       if (!IN_RANGE (reg, 1, 31))
-	error ("%qs is not a valid base register "
-	       "in -mstack-protector-guard-reg=", str);
+	error ("%qs is not a valid base register in %qs", str,
+	       "-mstack-protector-guard-reg=");
 
       rs6000_stack_protector_guard_reg = reg;
     }
 
   if (rs6000_stack_protector_guard == SSP_TLS
       && !IN_RANGE (rs6000_stack_protector_guard_reg, 1, 31))
-    error ("-mstack-protector-guard=tls needs a valid base register");
+    error ("%qs needs a valid base register", "-mstack-protector-guard=tls");
 
   if (global_init_p)
     {
@@ -5297,7 +5309,7 @@ rs6000_option_override_internal (bool global_init_p)
 
 	      if (i == ARRAY_SIZE (recip_options))
 		{
-		  error ("unknown option for -mrecip=%s", q);
+		  error ("unknown option for %<%s=%s%>", "-mrecip", q);
 		  invert = false;
 		  mask = 0;
 		  ret = false;
@@ -11231,7 +11243,8 @@ rs6000_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
       if (!warned_for_return_big_vectors)
 	{
 	  warning (OPT_Wpsabi, "GCC vector returned by reference: "
-		   "non-standard ABI extension with no compatibility guarantee");
+		   "non-standard ABI extension with no compatibility "
+		   "guarantee");
 	  warned_for_return_big_vectors = true;
 	}
       return true;
@@ -11393,8 +11406,8 @@ init_cumulative_args (CUMULATIVE_ARGS *cum, tree fntype,
       && ALTIVEC_VECTOR_MODE (TYPE_MODE (TREE_TYPE (fntype))))
     {
       error ("cannot return value in vector register because"
-	     " altivec instructions are disabled, use -maltivec"
-	     " to enable them");
+	     " altivec instructions are disabled, use %qs"
+	     " to enable them", "-maltivec");
     }
 }
 
@@ -11860,8 +11873,8 @@ rs6000_function_arg_advance_1 (CUMULATIVE_ARGS *cum, machine_mode mode,
 
 	  if (!TARGET_ALTIVEC)
 	    error ("cannot pass argument in vector register because"
-		   " altivec instructions are disabled, use -maltivec"
-		   " to enable them");
+		   " altivec instructions are disabled, use %qs"
+		   " to enable them", "-maltivec");
 
 	  /* PowerPC64 Linux and AIX allocate GPRs for a vector argument
 	     even if it is going to be passed in a vector register.
@@ -12778,7 +12791,8 @@ rs6000_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
       if (!warned_for_pass_big_vectors)
 	{
 	  warning (OPT_Wpsabi, "GCC vector passed by reference: "
-		   "non-standard ABI extension with no compatibility guarantee");
+		   "non-standard ABI extension with no compatibility "
+		   "guarantee");
 	  warned_for_pass_big_vectors = true;
 	}
       return 1;
@@ -13568,7 +13582,8 @@ def_builtin (const char *name, tree type, enum rs6000_builtins code)
 
   if (rs6000_builtin_decls[(int)code])
     fatal_error (input_location,
-		 "internal error: builtin function %s already processed", name);
+		 "internal error: builtin function %qs already processed",
+		 name);
 
   rs6000_builtin_decls[(int)code] = t =
     add_builtin_function (name, type, (int)code, BUILT_IN_MD, NULL, NULL_TREE);
@@ -14168,7 +14183,8 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
 
   if (TREE_CODE (cr6_form) != INTEGER_CST)
     {
-      error ("argument 1 of __builtin_altivec_predicate must be a constant");
+      error ("argument 1 of %qs must be a constant",
+	     "__builtin_altivec_predicate");
       return const0_rtx;
     }
   else
@@ -14225,7 +14241,8 @@ altivec_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       emit_insn (gen_cr6_test_for_lt_reverse (target));
       break;
     default:
-      error ("argument 1 of __builtin_altivec_predicate is out of range");
+      error ("argument 1 of %qs is out of range",
+	     "__builtin_altivec_predicate");
       break;
     }
 
@@ -14732,7 +14749,7 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
     {
       size_t uns_fcode = (size_t)fcode;
       const char *name = rs6000_builtin_info[uns_fcode].name;
-      error ("builtin %s is only valid in 64-bit mode", name);
+      error ("builtin %qs is only valid in 64-bit mode", name);
       return const0_rtx;
     }
 
@@ -14929,7 +14946,7 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
 
   if (TREE_CODE (arg) != STRING_CST)
     {
-      error ("builtin %s only accepts a string argument",
+      error ("builtin %qs only accepts a string argument",
 	     rs6000_builtin_info[(size_t) fcode].name);
       return const0_rtx;
     }
@@ -14948,7 +14965,7 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
       if (cpuid == NULL_RTX)
 	{
 	  /* Invalid CPU argument.  */
-	  error ("cpu %s is an invalid argument to builtin %s",
+	  error ("cpu %qs is an invalid argument to builtin %qs",
 		 cpu, rs6000_builtin_info[(size_t) fcode].name);
 	  return const0_rtx;
 	}
@@ -14976,8 +14993,8 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
       if (mask == NULL_RTX)
 	{
 	  /* Invalid HWCAP argument.  */
-	  error ("hwcap %s is an invalid argument to builtin %s",
-		 hwcap, rs6000_builtin_info[(size_t) fcode].name);
+	  error ("%s %qs is an invalid argument to builtin %qs",
+		 "hwcap", hwcap, rs6000_builtin_info[(size_t) fcode].name);
 	  return const0_rtx;
 	}
 
@@ -15002,7 +15019,7 @@ cpu_expand_builtin (enum rs6000_builtins fcode, tree exp ATTRIBUTE_UNUSED,
   cpu_builtin_p = true;
 
 #else
-  warning (0, "%s needs GLIBC (2.23 and newer) that exports hardware "
+  warning (0, "builtin %qs needs GLIBC (2.23 and newer) that exports hardware "
 	   "capability bits", rs6000_builtin_info[(size_t) fcode].name);
   
   /* For old LIBCs, always return FALSE.  */
@@ -15677,7 +15694,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
       if (TREE_CODE (arg0) != INTEGER_CST
 	  || TREE_INT_CST_LOW (arg0) & ~0x3)
 	{
-	  error ("argument to dss must be a 2-bit unsigned literal");
+	  error ("argument to %qs must be a 2-bit unsigned literal", "dss");
 	  return const0_rtx;
 	}
 
@@ -15725,7 +15742,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg1) != INTEGER_CST || TREE_INT_CST_LOW (arg1) > 12)
 	{
-	  error ("second argument to vec_vextract4b must be 0..12");
+	  error ("second argument to %qs must be 0..12", "vec_vextract4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -15742,7 +15759,7 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
 
       if (TREE_CODE (arg2) != INTEGER_CST || TREE_INT_CST_LOW (arg2) > 12)
 	{
-	  error ("third argument to vec_vinsert4b must be 0..12");
+	  error ("third argument to %qs must be 0..12", "vec_vinsert4b");
 	  return expand_call (exp, target, false);
 	}
       break;
@@ -15996,7 +16013,8 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
 
   if (TREE_CODE (form) != INTEGER_CST)
     {
-      error ("argument 1 of __builtin_paired_predicate must be a constant");
+      error ("argument 1 of %s must be a constant",
+	     "__builtin_paired_predicate");
       return const0_rtx;
     }
   else
@@ -16043,7 +16061,8 @@ paired_expand_predicate_builtin (enum insn_code icode, tree exp, rtx target)
       emit_insn (gen_move_from_CR_ov_bit (target, scratch));
       return target;
     default:
-      error ("argument 1 of __builtin_paired_predicate is out of range");
+      error ("argument 1 of %qs is out of range",
+	     "__builtin_paired_predicate");
       return const0_rtx;
     }
 
@@ -16064,45 +16083,49 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
 
   gcc_assert (name != NULL);
   if ((fnmask & RS6000_BTM_CELL) != 0)
-    error ("builtin function %s is only valid for the cell processor", name);
+    error ("builtin function %qs is only valid for the cell processor", name);
   else if ((fnmask & RS6000_BTM_VSX) != 0)
-    error ("builtin function %s requires the -mvsx option", name);
+    error ("builtin function %qs requires the %qs option", name, "-mvsx");
   else if ((fnmask & RS6000_BTM_HTM) != 0)
-    error ("builtin function %s requires the -mhtm option", name);
+    error ("builtin function %qs requires the %qs option", name, "-mhtm");
   else if ((fnmask & RS6000_BTM_ALTIVEC) != 0)
-    error ("builtin function %s requires the -maltivec option", name);
+    error ("builtin function %qs requires the %qs option", name, "-maltivec");
   else if ((fnmask & RS6000_BTM_PAIRED) != 0)
-    error ("builtin function %s requires the -mpaired option", name);
+    error ("builtin function %qs requires the %qs option", name, "-mpaired");
   else if ((fnmask & (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
 	   == (RS6000_BTM_DFP | RS6000_BTM_P8_VECTOR))
-    error ("builtin function %s requires the -mhard-dfp and"
-	   " -mpower8-vector options", name);
+    error ("builtin function %qs requires the %qs and %qs options",
+	   name, "-mhard-dfp", "-mpower8-vector");
   else if ((fnmask & RS6000_BTM_DFP) != 0)
-    error ("builtin function %s requires the -mhard-dfp option", name);
+    error ("builtin function %qs requires the %qs option", name, "-mhard-dfp");
   else if ((fnmask & RS6000_BTM_P8_VECTOR) != 0)
-    error ("builtin function %s requires the -mpower8-vector option", name);
+    error ("builtin function %qs requires the %qs option", name,
+	   "-mpower8-vector");
   else if ((fnmask & (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_VECTOR | RS6000_BTM_64BIT))
-    error ("builtin function %s requires the -mcpu=power9 and"
-	   " -m64 options", name);
+    error ("builtin function %qs requires the %qs and %qs options",
+	   name, "-mcpu=power9", "-m64");
   else if ((fnmask & RS6000_BTM_P9_VECTOR) != 0)
-    error ("builtin function %s requires the -mcpu=power9 option", name);
+    error ("builtin function %qs requires the %qs option", name,
+	   "-mcpu=power9");
   else if ((fnmask & (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
 	   == (RS6000_BTM_P9_MISC | RS6000_BTM_64BIT))
-    error ("builtin function %s requires the -mcpu=power9 and"
-	   " -m64 options", name);
+    error ("builtin function %qs requires the %qs and %qs options",
+	   name, "-mcpu=power9", "-m64");
   else if ((fnmask & RS6000_BTM_P9_MISC) == RS6000_BTM_P9_MISC)
-    error ("builtin function %s requires the -mcpu=power9 option", name);
+    error ("builtin function %qs requires the %qs option", name,
+	   "-mcpu=power9");
   else if ((fnmask & (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
 	   == (RS6000_BTM_HARD_FLOAT | RS6000_BTM_LDBL128))
-    error ("builtin function %s requires the -mhard-float and"
-	   " -mlong-double-128 options", name);
+    error ("builtin function %qs requires the %qs and %qs options",
+	   name, "-mhard-float", "-mlong-double-128");
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
-    error ("builtin function %s requires the -mhard-float option", name);
+    error ("builtin function %qs requires the %qs option", name,
+	   "-mhard-float");
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
-    error ("builtin function %s requires the -mfloat128 option", name);
+    error ("builtin function %qs requires the %qs option", name, "-mfloat128");
   else
-    error ("builtin function %s is not supported with the current options",
+    error ("builtin function %qs is not supported with the current options",
 	   name);
 }
 
@@ -18080,8 +18103,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
 
   if (!ret_type)
     fatal_error (input_location,
-		 "internal error: builtin function %s had an unexpected "
-		 "return type %s", name, GET_MODE_NAME (h.mode[0]));
+		 "internal error: builtin function %qs had an unexpected "
+		 "return type %qs", name, GET_MODE_NAME (h.mode[0]));
 
   for (i = 0; i < (int) ARRAY_SIZE (arg_type); i++)
     arg_type[i] = NULL_TREE;
@@ -18097,8 +18120,8 @@ builtin_function_type (machine_mode mode_ret, machine_mode mode_arg0,
 
       if (!arg_type[i])
 	fatal_error (input_location,
-		     "internal error: builtin function %s, argument %d "
-		     "had unexpected argument type %s", name, i,
+		     "internal error: builtin function %qs, argument %d "
+		     "had unexpected argument type %qs", name, i,
 		     GET_MODE_NAME (m));
     }
 
@@ -29010,7 +29033,7 @@ rs6000_expand_split_stack_prologue (void)
 
   if (global_regs[29])
     {
-      error ("-fsplit-stack uses register r29");
+      error ("%qs uses register r29", "-fsplit-stack");
       inform (DECL_SOURCE_LOCATION (global_regs_decl[29]),
 	      "conflicts with %qD", global_regs_decl[29]);
     }
@@ -32309,7 +32332,7 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 	if (!TARGET_POINTERS_TO_NESTED_FUNCTIONS)
 	  error ("you cannot take the address of a nested function if you use "
-		 "the -mno-pointers-to-nested-functions option.");
+		 "the %qs option", "-mno-pointers-to-nested-functions");
 
 	fnmem = gen_const_mem (Pmode, force_reg (Pmode, fnaddr));
 	fn_reg = gen_reg_rtx (Pmode);
@@ -32403,17 +32426,18 @@ rs6000_handle_altivec_attribute (tree *node,
 	{
 	  if (TARGET_64BIT)
 	    error ("use of %<long%> in AltiVec types is invalid for "
-		   "64-bit code without -mvsx");
+		   "64-bit code without %qs", "-mvsx");
 	  else if (rs6000_warn_altivec_long)
 	    warning (0, "use of %<long%> in AltiVec types is deprecated; "
 		     "use %<int%>");
 	}
       else if (type == long_long_unsigned_type_node
 	       || type == long_long_integer_type_node)
-	error ("use of %<long long%> in AltiVec types is invalid without "
+	error ("use of %<long long%> in AltiVec types is invalid without %qs",
 	       "-mvsx");
       else if (type == double_type_node)
-	error ("use of %<double%> in AltiVec types is invalid without -mvsx");
+	error ("use of %<double%> in AltiVec types is invalid without %qs",
+	       "-mvsx");
     }
 
   switch (altivec_type)
@@ -36362,12 +36386,12 @@ rs6000_inner_target_options (tree args, bool attr_p)
 		}
 
 	      if (cpu_opt)
-		error ("invalid cpu \"%s\" for %s\"%s\"%s", cpu_opt, eprefix,
+		error ("invalid cpu %qs for %s%qs%s", cpu_opt, eprefix,
 		       q, esuffix);
 	      else if (not_valid_p)
-		error ("%s\"%s\"%s is not allowed", eprefix, q, esuffix);
+		error ("%s%qs%s is not allowed", eprefix, q, esuffix);
 	      else
-		error ("%s\"%s\"%s is invalid", eprefix, q, esuffix);
+		error ("%s%qs%s is invalid", eprefix, q, esuffix);
 	    }
 	}
     }
@@ -36892,7 +36916,7 @@ rs6000_disable_incompatible_switches (void)
 		if ((set_flags & rs6000_opt_masks[j].mask) != 0)
 		  {
 		    set_flags &= ~rs6000_opt_masks[j].mask;
-		    error ("-mno-%s turns off -m%s",
+		    error ("%<-mno-%s%> turns off %<-m%s%>",
 			   flags[i].name,
 			   rs6000_opt_masks[j].name);
 		  }
@@ -36909,7 +36933,7 @@ rs6000_disable_incompatible_switches (void)
       && (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) != 0
       && TARGET_P9_DFORM_BOTH > 0)
     {
-      error ("-mno-power9-vector turns off -mpower9-dform");
+      error ("%qs turns off %qs", "-mno-power9-vector", "-mpower9-dform");
       TARGET_P9_DFORM_BOTH = 0;
     }
 

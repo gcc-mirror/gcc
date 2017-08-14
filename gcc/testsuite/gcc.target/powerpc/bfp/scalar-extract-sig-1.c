@@ -12,5 +12,5 @@ get_significand (double *p)
 {
   double source = *p;
 
-  return __builtin_vec_scalar_extract_sig (source);	/* { dg-error "builtin function __builtin_vsx_scalar_extract_sig requires" } */
+  return __builtin_vec_scalar_extract_sig (source);	/* { dg-error "builtin function '__builtin_vsx_scalar_extract_sig' requires" } */
 }

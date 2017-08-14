@@ -5,4 +5,4 @@
 
 int i;
 
-/* { dg-error "-mno-vsx turns off -mvsx-timode" "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-vsx' turns off '-mvsx-timode'" "PR80098" { target *-*-* } 0 } */

@@ -12,5 +12,5 @@ make_floats (__vector unsigned int *significands_p,
   __vector unsigned int significands = *significands_p;
   __vector unsigned int exponents = *exponents_p;
 
-  return __builtin_vec_insert_exp (significands, exponents); /* { dg-error "builtin function __builtin_vsx_insert_exp_sp requires" } */
+  return __builtin_vec_insert_exp (significands, exponents); /* { dg-error "builtin function '__builtin_vsx_insert_exp_sp' requires" } */
 }

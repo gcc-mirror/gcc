@@ -11,5 +11,5 @@ test_neg (double *p)
 {
   double source = *p;
 
-  return __builtin_vec_scalar_test_neg_dp (source); /* { dg-error "builtin function __builtin_vsx_scalar_test_neg_dp requires" } */
+  return __builtin_vec_scalar_test_neg_dp (source); /* { dg-error "builtin function '__builtin_vsx_scalar_test_neg_dp' requires" } */
 }
