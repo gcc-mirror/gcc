@@ -1,3 +1,13 @@
+2017-08-14  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81754
+	PR target/81268
+	* config/avr/avr.opt (mgas-isr-prologues): New Var avr_gasisr_prologues.
+	* config/avr/avr.md (gasisr, *gasisr): Use it instead of
+	TARGET_GASISR_PROLOGUES.
+	* config/avr/avr.c (avr_option_override): Same.
+	(avr_pass_pre_proep::execute): Same.
+
 2017-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*load_tp_<mode>): Redefine as
