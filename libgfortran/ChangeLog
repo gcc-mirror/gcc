@@ -1,3 +1,7 @@
+2017-08-14  Release Manager
+
+	* GCC 7.2.0 released.
+
 2017-06-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
