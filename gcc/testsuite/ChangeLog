@@ -1,3 +1,8 @@
+2017-08-14  David Edelsohn  <dje.gcc@gmail.com>
+
+	* gcc.dg/ucnid-5.c: Skip on AIX.
+	* gcc.target/powerpc/pr79909.c: Skip on AIX.
+
 2017-08-14  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46091
