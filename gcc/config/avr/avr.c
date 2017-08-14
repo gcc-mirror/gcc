@@ -777,7 +777,7 @@ avr_option_override (void)
     warning (OPT_fPIE, "-fPIE is not supported");
 
 #if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
-  TARGET_GASISR_PROLOGUES = 0;
+  avr_gasisr_prologues = 0;
 #endif
 
   if (!avr_set_core_architecture())
@@ -1459,7 +1459,7 @@ public:
 
   virtual unsigned int execute (function *fun)
   {
-    if (TARGET_GASISR_PROLOGUES
+    if (avr_gasisr_prologues
         // Whether this function is an ISR worth scanning at all.
         && !fun->machine->is_no_gccisr
         && (fun->machine->is_interrupt
