@@ -5,5 +5,5 @@
 
 int i;
 
-/* { dg-error "-mno-power8-vector turns off -mdirect-move" "PR80098" { target *-*-* } 0 } */
-/* { dg-error "-mno-power8-vector turns off -mcrypto"      "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-power8-vector' turns off '-mdirect-move'" "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-power8-vector' turns off '-mcrypto'"      "PR80098" { target *-*-* } 0 } */

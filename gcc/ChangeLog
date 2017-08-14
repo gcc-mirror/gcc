@@ -1,3 +1,37 @@
+2017-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/79845
+	* config/rs6000/linux64.h (INVALID_64BIT): Use quoted strings.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Use
+	quoted strings, and make more translator-friendly.
+	(darwin_rs6000_override_options): Likewise.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_return_in_memory): Fix overlong line.
+	(init_cmulative_args): Use quoted strings, and make more
+	translator-friendly.
+	(rs6000_pass_by_reference): Fix overlong line.
+	(def_builtin): Use quoted strings.
+	(altivec_expand_predicate_builtin): Use quoted strings, and make
+	more translator-friendly.
+	(htm_expand_builtin): Use quoted strings.
+	(cpu_expand_builtin): Use quoted strings, and make more
+	translator-friendly.
+	(altivec_expand_builtin): Likewise.
+	(paired_expand_predicate_builtin): Likewise.
+	(rs6000_invalid_builtin): Likewise.
+	(builtin_function_type): Use quoted strings.
+	(rs6000_expand_split_stack_prologue): Use quoted strings, and make
+	more translator-friendly.
+	(rs6000_trampoline_init): Likewise.
+	(rs6000_handle_altivec_attribute): Likewise.
+	(rs6000_inner_target_options): Use quoted strings.
+	(rs6000_disable_incompatible_switches): Likewise.
+	* config/rs6000/sysv4.h (SUBTARGET_OVERRIDE_OPTIONS): Use quoted
+	strings, and make more translator-friendly.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Use quoted strings.
+
 2017-08-14  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81799

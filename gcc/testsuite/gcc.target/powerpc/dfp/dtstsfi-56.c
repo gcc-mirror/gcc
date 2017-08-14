@@ -10,7 +10,7 @@ int doTestBCDSignificance (_Decimal128 *p)
 {
   _Decimal128 source = *p;
 
-  return __builtin_dfp_dtstsfi_eq_td (5, source);	/* { dg-error "builtin function __builtin_dtstsfi_eq_td requires" } */
+  return __builtin_dfp_dtstsfi_eq_td (5, source);	/* { dg-error "builtin function '__builtin_dtstsfi_eq_td' requires" } */
 }
 
 

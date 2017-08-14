@@ -5,5 +5,5 @@
 
 int i;
 
-/* { dg-error "-mno-power9-vector turns off -mpower9-minmax" "PR80098" { target *-*-* } 0 } */
-/* { dg-error "-mno-power9-vector turns off -mpower9-dform"  "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-power9-vector' turns off '-mpower9-minmax'" "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-power9-vector' turns off '-mpower9-dform'"  "PR80098" { target *-*-* } 0 } */

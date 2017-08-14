@@ -15,7 +15,7 @@ get_exponent (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return scalar_extract_exp (source);	/* { dg-error "builtin function __builtin_vec_scalar_extract_exp not supported in this compiler configuration" } */
+  return scalar_extract_exp (source);	/* { dg-error "builtin function '__builtin_vec_scalar_extract_exp' not supported in this compiler configuration" } */
 }
 
 

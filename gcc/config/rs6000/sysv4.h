@@ -108,7 +108,7 @@ do {									\
   else									\
     {									\
       rs6000_current_abi = ABI_V4;					\
-      error ("bad value for -mcall-%s", rs6000_abi_name);		\
+      error ("bad value for %<%s-%s%>", "-mcall", rs6000_abi_name);	\
     }									\
 									\
   if (rs6000_sdata_name)						\
@@ -124,7 +124,7 @@ do {									\
       else if (!strcmp (rs6000_sdata_name, "eabi"))			\
 	rs6000_sdata = SDATA_EABI;					\
       else								\
-	error ("bad value for -msdata=%s", rs6000_sdata_name);		\
+	error ("bad value for %<%s=%s%>", "-msdata", rs6000_sdata_name);\
     }									\
   else if (DEFAULT_ABI == ABI_V4)					\
     {									\
@@ -141,8 +141,8 @@ do {									\
       (rs6000_sdata == SDATA_EABI || rs6000_sdata == SDATA_SYSV))	\
     {									\
       rs6000_sdata = SDATA_DATA;					\
-      error ("-mrelocatable and -msdata=%s are incompatible",		\
-	     rs6000_sdata_name);					\
+      error ("%qs and %<%s=%s%> are incompatible", rs6000_sdata_name,	\
+	     "-mrelocatable", "-msdata");				\
     }									\
 									\
   else if (flag_pic && DEFAULT_ABI == ABI_V4				\
@@ -150,17 +150,17 @@ do {									\
 	       || rs6000_sdata == SDATA_SYSV))				\
     {									\
       rs6000_sdata = SDATA_DATA;					\
-      error ("-f%s and -msdata=%s are incompatible",			\
+      error ("%<-f%s%> and %<%s=%s%> are incompatible",			\
 	     (flag_pic > 1) ? "PIC" : "pic",				\
-	     rs6000_sdata_name);					\
+	     "-msdata", rs6000_sdata_name);				\
     }									\
 									\
   if ((rs6000_sdata != SDATA_NONE && DEFAULT_ABI != ABI_V4)		\
       || (rs6000_sdata == SDATA_EABI && !TARGET_EABI))			\
     {									\
       rs6000_sdata = SDATA_NONE;					\
-      error ("-msdata=%s and -mcall-%s are incompatible",		\
-	     rs6000_sdata_name, rs6000_abi_name);			\
+      error ("%<%s=%s%> and %<%s-%s%> are incompatible",		\
+	     "-msdata", "-mcall", rs6000_sdata_name, rs6000_abi_name);	\
     }									\
 									\
   targetm.have_srodata_section = rs6000_sdata == SDATA_EABI;		\
@@ -168,26 +168,27 @@ do {									\
   if (TARGET_RELOCATABLE && !TARGET_MINIMAL_TOC)			\
     {									\
       rs6000_isa_flags |= OPTION_MASK_MINIMAL_TOC;			\
-      error ("-mrelocatable and -mno-minimal-toc are incompatible");	\
+      error ("%qs and %qs are incompatible", "-mrelocatable",		\
+	     "-mno-minimal-toc");					\
     }									\
 									\
   if (TARGET_RELOCATABLE && rs6000_current_abi != ABI_V4)		\
     {									\
       rs6000_isa_flags &= ~OPTION_MASK_RELOCATABLE;			\
-      error ("-mrelocatable and -mcall-%s are incompatible",		\
-	     rs6000_abi_name);						\
+      error ("%qs and %<%s-%s%> are incompatible",			\
+	     "-mrelocatable", "-mcall", rs6000_abi_name);		\
     }									\
 									\
   if (!TARGET_64BIT && flag_pic > 1 && rs6000_current_abi != ABI_V4)	\
     {									\
       flag_pic = 0;							\
-      error ("-fPIC and -mcall-%s are incompatible",			\
-	     rs6000_abi_name);						\
+      error ("%qs and %<%s-%s%> are incompatible",			\
+	     "-fPIC", "-mcall", rs6000_abi_name);			\
     }									\
 									\
   if (TARGET_SECURE_PLT != secure_plt)					\
     {									\
-      error ("-msecure-plt not supported by your assembler");		\
+      error ("%qs not supported by your assembler", "-msecure-plt");	\
     }									\
 									\
   if (flag_pic > 1 && DEFAULT_ABI == ABI_V4)				\
@@ -215,7 +216,7 @@ do {									\
 # define SUBSUBTARGET_OVERRIDE_OPTIONS					\
 do {									\
   if ((TARGET_DEFAULT ^ rs6000_isa_flags) & OPTION_MASK_64BIT)		\
-    error ("-m%s not supported in this configuration",			\
+    error ("%<-m%s%> not supported in this configuration",		\
 	   (rs6000_isa_flags & OPTION_MASK_64BIT) ? "64" : "32");	\
 } while (0)
 #endif

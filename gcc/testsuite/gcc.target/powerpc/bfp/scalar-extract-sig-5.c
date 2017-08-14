@@ -13,5 +13,5 @@ get_significand (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return __builtin_vec_scalar_extract_sig (source); /* { dg-error "builtin function __builtin_vec_scalar_extract_sig not supported in this compiler configuration" } */
+  return __builtin_vec_scalar_extract_sig (source); /* { dg-error "builtin function '__builtin_vec_scalar_extract_sig' not supported in this compiler configuration" } */
 }
