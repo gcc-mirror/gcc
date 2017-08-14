@@ -5835,6 +5835,30 @@ The @code{deprecated} attribute can also be used for functions and
 types (@pxref{Common Function Attributes},
 @pxref{Common Type Attributes}).
 
+@item nonstring (@var{nonstring})
+@cindex @code{nonstring} variable attribute
+The @code{nonstring} variable attribute specifies that an object or member
+declaration with type array of @code{char} or pointer to @code{char} is
+intended to store character arrays that do not necessarily contain
+a terminating @code{NUL} character.  This is useful to avoid warnings
+when such an array or pointer is used as an argument to a bounded string
+manipulation function such as @code{strncpy}.  For example, without the
+attribute, GCC will issue a warning for the call below because it may
+truncate the copy without appending the terminating NUL character.  Using
+the attribute makes it possible to suppress the warning.
+
+@smallexample
+struct Data
+@{
+  char name [32] __attribute__ ((nonstring));
+@};
+void f (struct Data *pd, const char *s)
+@{
+  strncpy (pd->name, s, sizeof pd->name);
+  @dots{}
+@}
+@end smallexample
+
 @item mode (@var{mode})
 @cindex @code{mode} variable attribute
 This attribute specifies the data type for the declaration---whichever

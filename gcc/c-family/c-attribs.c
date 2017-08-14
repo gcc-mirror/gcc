@@ -116,6 +116,7 @@ static tree handle_deprecated_attribute (tree *, tree, tree, int,
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
@@ -270,6 +271,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_tls_model_attribute, false },
   { "nonnull",                0, -1, false, true, true,
 			      handle_nonnull_attribute, false },
+  { "nonstring",              0, 0, true, false, false,
+			      handle_nonstring_attribute, false },
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute, false },
   { "may_alias",	      0, 0, false, true, false, NULL, false },
@@ -2967,6 +2970,48 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
 	}
     }
 
+  return NULL_TREE;
+}
+
+/* Handle the "nonstring" variable attribute.  */
+
+static tree
+handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  gcc_assert (!args);
+  tree_code code = TREE_CODE (*node);
+
+  if (VAR_P (*node)
+      || code == FIELD_DECL
+      || code == PARM_DECL)
+    {
+      tree type = TREE_TYPE (*node);
+
+      if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree eltype = TREE_TYPE (type);
+	  if (eltype == char_type_node)
+	    return NULL_TREE;
+	}
+
+      warning (OPT_Wattributes,
+	       "%qE attribute ignored on objects of type %qT",
+	       name, type);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (code == FUNCTION_DECL)
+    warning (OPT_Wattributes,
+	     "%qE attribute does not apply to functions", name);
+  else if (code == TYPE_DECL)
+    warning (OPT_Wattributes,
+	     "%qE attribute does not apply to types", name);
+  else
+    warning (OPT_Wattributes, "%qE attribute ignored", name);
+
+  *no_add_attrs = true;
   return NULL_TREE;
 }
 
