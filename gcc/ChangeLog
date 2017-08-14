@@ -1,3 +1,10 @@
+2017-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* config/i386/i386.md (*anddi_1_btr): New insn_and_split pattern.
+	(*iordi_1_bts): Ditto.
+	(*xordi_1_btc): Ditto.
+
 2017-08-14  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/79845

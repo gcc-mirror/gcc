@@ -1,3 +1,10 @@
+2017-08-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* gcc.target/i386/pr46091-1.c: New test.
+	* gcc.target/i386/pr46091-2.c: Ditto.
+	* gcc.target/i386/pr46091-3.c: Ditto.
+
 2017-08-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR target/81643
