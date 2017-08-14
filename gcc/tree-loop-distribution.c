@@ -2263,7 +2263,7 @@ version_loop_by_alias_check (struct loop *loop, vec<ddr_p> *alias_ddrs)
   compute_alias_check_pairs (loop, alias_ddrs, &comp_alias_pairs);
   create_runtime_alias_checks (loop, &comp_alias_pairs, &cond_expr);
   cond_expr = force_gimple_operand_1 (cond_expr, &cond_stmts,
-				      is_gimple_condexpr, NULL_TREE);
+				      is_gimple_val, NULL_TREE);
 
   /* Depend on vectorizer to fold IFN_LOOP_DIST_ALIAS.  */
   if (flag_tree_loop_vectorize)

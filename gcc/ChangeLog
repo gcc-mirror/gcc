@@ -1,3 +1,9 @@
+2017-08-14  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81799
+	* tree-loop-distribution.c (version_loop_by_alias_check): Force
+	cond_expr to simple gimple operand.
+
 2017-08-14  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/46932
