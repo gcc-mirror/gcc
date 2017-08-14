@@ -1,3 +1,17 @@
+2017-08-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/53984
+	* include/bits/basic_ios.h (basic_ios::_M_setstate): Adjust comment.
+	* include/bits/istream.tcc (basic_istream::sentry): Handle exceptions
+	during construction.
+	* include/std/istream: Adjust comments for formatted input functions
+	and unformatted input functions.
+	* testsuite/27_io/basic_fstream/53984.cc: New.
+	* testsuite/27_io/basic_istream/sentry/char/53984.cc: New.
+
 2017-08-14  Release Manager
 
 	* GCC 7.2.0 released.
