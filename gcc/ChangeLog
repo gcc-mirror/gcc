@@ -1,3 +1,8 @@
+2017-08-15  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (execute): Emit friendlier message if inferior is killed
+	by an external cause.
+
 2017-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81790
