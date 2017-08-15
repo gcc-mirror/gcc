@@ -1,3 +1,9 @@
+2017-08-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81790
+	* tree-ssa-sccvn.c (vn_lookup_simplify_result): Handle both
+	CONSTRUCTORs from simplifying and VN.
+
 2017-08-14  Martin Sebor  <msebor@redhat.com>
 
 	* builtin-attrs.def: Add comments.
