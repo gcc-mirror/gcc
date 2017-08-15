@@ -3151,9 +3151,27 @@ execute (void)
 	      }
 	    else
 #endif
-	      internal_error_no_backtrace ("%s (program %s)",
-					   strsignal (WTERMSIG (status)),
-					   commands[i].prog);
+	      switch (WTERMSIG (status))
+		{
+		case SIGINT:
+		case SIGQUIT:
+		case SIGKILL:
+		case SIGTERM:
+		  /* The user (or environment) did something to the
+		     inferior.  Making this an ICE confuses the user
+		     into thinking there's a compiler bug.  Much more
+		     likely is the user or OOM killer nuked it.  */
+		  fatal_error (input_location,
+			       "%s signal terminated program %s",
+			       strsignal (WTERMSIG (status)),
+			       commands[i].prog);
+		  break;
+		default:
+		  /* The inferior failed to catch the signal.  */
+		  internal_error_no_backtrace ("%s (program %s)",
+					       strsignal (WTERMSIG (status)),
+					       commands[i].prog);
+		}
 	  }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
