@@ -1,3 +1,9 @@
+2017-08-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR target/78460
+	PR target/67712
+	* gcc.c-torture/compile/string-large-1.c: New test.
+
 2017-08-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81790
