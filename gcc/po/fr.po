@@ -130,10 +130,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: gcc 7.1.0\n"
+"Project-Id-Version: gcc 7.2.0\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
 "POT-Creation-Date: 2017-08-04 22:17+0000\n"
-"PO-Revision-Date: 2017-07-31 21:23+0200\n"
+"PO-Revision-Date: 2017-08-16 09:16+0200\n"
 "Last-Translator: Frédéric Marchal <fmarchal@perso.be>\n"
 "Language-Team: French <traduc@traduc.org>\n"
 "Language: fr\n"
@@ -141,7 +141,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "X-Bugs: Report translation errors to the Language-Team address.\n"
-"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+"Plural-Forms: nplurals=2; plural=(n >= 2);\n"
 
 #: cfgrtl.c:2661
 msgid "flow control insn inside a basic block"
@@ -10343,10 +10343,8 @@ msgid "Use UltraSPARC Visual Instruction Set version 4.0 extensions."
 msgstr "Utiliser les extensions UltraSPARC Visual Instruction Set version 4.0."
 
 #: config/sparc/sparc.opt:86
-#, fuzzy
-#| msgid "Use vector and scalar instructions added in ISA 2.07."
 msgid "Use additional VIS instructions introduced in OSA2017."
-msgstr "Utiliser les instructions vecteurs et scalaires ajoutées dans l'ISA 2.07."
+msgstr "Utiliser les instructions VIS additionnelles ajoutées dans OSA2017."
 
 #: config/sparc/sparc.opt:90
 msgid "Use UltraSPARC Compare-and-Branch extensions."
@@ -10357,10 +10355,8 @@ msgid "Use UltraSPARC Fused Multiply-Add extensions."
 msgstr "Utiliser les extensions UltraSPARC Fused Multiply-Add."
 
 #: config/sparc/sparc.opt:98
-#, fuzzy
-#| msgid "Generate fused multiply/add instructions"
 msgid "Use Floating-point Multiply Single to Double (FsMULd) instruction."
-msgstr "Générer des instructions fusionnés de multiplication/addition"
+msgstr "Utiliser l'instruction de multiplication en virgule flottante simple vers double (FsMULd)."
 
 #: config/sparc/sparc.opt:102
 msgid "Use UltraSPARC Population-Count instruction."
@@ -10427,16 +10423,12 @@ msgid "Enable workarounds for the errata of the UT699 processor."
 msgstr "Activer les contournements des erratas du processeur UT699."
 
 #: config/sparc/sparc.opt:246
-#, fuzzy
-#| msgid "Enable workarounds for the errata of the UT699 processor."
 msgid "Enable workarounds for the errata of the UT699E/UT700 processor."
-msgstr "Activer les contournements des erratas du processeur UT699."
+msgstr "Activer les contournements des erratas des processeurs UT699E/UT700."
 
 #: config/sparc/sparc.opt:250
-#, fuzzy
-#| msgid "Enable workarounds for the errata of the UT699 processor."
 msgid "Enable workarounds for the errata of the GR712RC processor."
-msgstr "Activer les contournements des erratas du processeur UT699."
+msgstr "Activer les contournements des erratas du processeur GR712RC."
 
 #: config/sparc/sparc.opt:283
 msgid "Specify the memory model in effect for the program."
@@ -14791,8 +14783,6 @@ msgid "Detect paths that trigger erroneous or undefined behavior due to derefere
 msgstr "Détecter les chemins qui déclenchent un comportement erroné ou indéfini dû au déréférencement d'un pointeur nul. Isoler ces chemins du flux de contrôle principal et transformer les instructions avec un comportement erroné ou indéfini en instructions de déroutement."
 
 #: common.opt:2495
-#, fuzzy
-#| msgid "Detect paths that trigger erroneous or undefined behavior due a null value being used in a way forbidden by a returns_nonnull or nonnull attribute.  Isolate those paths from the main control flow and turn the statement with erroneous or undefined behavior into a trap."
 msgid "Detect paths that trigger erroneous or undefined behavior due to a null value being used in a way forbidden by a returns_nonnull or nonnull attribute.  Isolate those paths from the main control flow and turn the statement with erroneous or undefined behavior into a trap."
 msgstr "Détecter les chemins qui déclenchent un comportement erroné ou indéfini dû à une valeur nulle utilisée d'une manière interdite par l'attribut returns_nonnull ou nonnull. Isoler ces chemins du flux de contrôle principal et transformer l'instruction avec un comportement erroné ou indéfini en une instruction de déroutement."
 
@@ -17550,10 +17540,9 @@ msgid "input file %qs is the same as output file"
 msgstr "le fichier d'entrée %qs est le même que le fichier de sortie"
 
 #: gcc.c:4476
-#, fuzzy, gcc-internal-format
-#| msgid "output file not specified"
+#, gcc-internal-format
 msgid "output filename may not be empty"
-msgstr "fichier de sortie non spécifié"
+msgstr "le nom du fichier de sortie ne peut pas être vide"
 
 #: gcc.c:4501
 #, gcc-internal-format
@@ -18858,8 +18847,7 @@ msgid "types have different parameter counts"
 msgstr "les types ont des nombres de paramètres différents"
 
 #: ipa-devirt.c:1229
-#, fuzzy, gcc-internal-format
-#| msgid "type %qT itself violate the C++ One Definition Rule"
+#, gcc-internal-format
 msgid "type %qT itself violates the C++ One Definition Rule"
 msgstr "le type %qT enfreint lui-même la règle de la définition unique du C++"
 
@@ -18959,10 +18947,9 @@ msgid "a field of same name but different type is defined in another translation
 msgstr "un champ avec le même nom mais un type différent est défini dans une autre unité de traduction"
 
 #: ipa-devirt.c:1576
-#, fuzzy, gcc-internal-format
-#| msgid "fields has different layout in another translation unit"
+#, gcc-internal-format
 msgid "fields have different layout in another translation unit"
-msgstr "le champ a un agencement différent dans une autre unité de traduction"
+msgstr "les champs ont un agencement différent dans une autre unité de traduction"
 
 #: ipa-devirt.c:1599
 #, gcc-internal-format
@@ -19775,16 +19762,14 @@ msgid "-fsanitize-address-use-after-scope requires -fstack-reuse=none option"
 msgstr "-fsanitize-address-use-after-scope requiert l'option -fstack-reuse=none"
 
 #: opts.c:1012
-#, fuzzy, gcc-internal-format
-#| msgid "transactional memory is not supported with non-call exceptions"
+#, gcc-internal-format
 msgid "transactional memory is not supported with %<-fsanitize=address%>"
-msgstr "la mémoire transactionnelle n'est pas supportée avec des exceptions sans appel"
+msgstr "la mémoire transactionnelle n'est pas supportée avec %<-fsanitize=address%>"
 
 #: opts.c:1015
-#, fuzzy, gcc-internal-format
-#| msgid "transactional memory is not supported with non-call exceptions"
+#, gcc-internal-format
 msgid "transactional memory is not supported with %<-fsanitize=kernel-address%>"
-msgstr "la mémoire transactionnelle n'est pas supportée avec des exceptions sans appel"
+msgstr "la mémoire transactionnelle n'est pas supportée avec %<-fsanitize=kernel-address%>"
 
 #: opts.c:1417
 #, gcc-internal-format
@@ -26910,7 +26895,7 @@ msgstr "l'attribut %qE ne s'applique qu'au type de base d'un pointeur vers une f
 #: config/arm/arm.c:8656
 #, gcc-internal-format
 msgid "accessing thread-local storage is not currently supported with -mpure-code or -mslow-flash-data"
-msgstr ""
+msgstr "l'accès à un stockage local au thread n'est actuellement pas supporté avec -mpure-code ou -mslow-flash-data"
 
 #: config/arm/arm.c:12232
 #, gcc-internal-format
@@ -27067,15 +27052,14 @@ msgstr "la fonction avec l'attribut %qs ne peut pas retourner une valeur"
 
 # %s est « interrupt » ou « signal » non traduit.
 #: config/avr/avr.c:1085
-#, fuzzy, gcc-internal-format
-#| msgid "%qs appears to be a misspelled %s handler, missing __vector prefix"
+#, gcc-internal-format
 msgid "%qs appears to be a misspelled %qs handler, missing %<__vector%> prefix"
-msgstr "%qs semble être un gestionnaire avec l'attribut « %s » mal orthographié, il manque le préfixe __vector"
+msgstr "%qs semble être un gestionnaire avec l'attribut %qs mal orthographié, il manque le préfixe %<__vector%>"
 
 #: config/avr/avr.c:1098
 #, gcc-internal-format
 msgid "%qs is a reserved indentifier in AVR-LibC.  Consider %<#include <avr/interrupt.h>%> before using the %qs macro"
-msgstr ""
+msgstr "%qs est un identificateur réservé de AVR-LibC. Envisagez %<#include <avr/interrupt.h>%> avant d'utiliser la macro %qs"
 
 #: config/avr/avr.c:1327
 #, gcc-internal-format
@@ -27187,10 +27171,9 @@ msgstr "seules les variables non initialisées peuvent être placées dans la se
 
 #. This might happen with C++ if stuff needs constructing.
 #: config/avr/avr.c:10149
-#, fuzzy, gcc-internal-format
-#| msgid "uninitialized variable %q+D put into program memory area"
+#, gcc-internal-format
 msgid "variable %q+D with dynamic initialization put into program memory area"
-msgstr "variable non initialisée %q+D placée dans la zone mémoire du programme"
+msgstr "variable %q+D avec une initialisation dynamique placée dans la zone mémoire du programme"
 
 #: config/avr/avr.c:10160
 #, gcc-internal-format
@@ -30042,7 +30025,7 @@ msgstr "le hwcap %s est un argument invalide pour la fonction interne %s"
 #: config/rs6000/rs6000.c:15598
 #, gcc-internal-format, gfc-internal-format
 msgid "%s needs GLIBC (2.23 and newer) that exports hardware capability bits"
-msgstr ""
+msgstr "%s requiert GLIBC (2.23 ou plus récent) qui exporte des bits de capacité matérielle"
 
 #: config/rs6000/rs6000.c:15651
 #, gcc-internal-format
@@ -30614,10 +30597,9 @@ msgid "%qF requires -mvx"
 msgstr "%qF requiert -mvx"
 
 #: config/s390/s390-c.c:889
-#, fuzzy, gcc-internal-format
-#| msgid "%qF requires -march=arch12 or higher"
+#, gcc-internal-format
 msgid "%qF requires z14 or higher"
-msgstr "%qF requiert -march=arch12 ou supérieur"
+msgstr "%qF requiert z14 ou supérieur"
 
 #: config/s390/s390-c.c:903
 #, gcc-internal-format
@@ -30635,10 +30617,9 @@ msgid "ambiguous overload for intrinsic %qs"
 msgstr "surcharge ambigüe pour l'intrinsèque %qs"
 
 #: config/s390/s390-c.c:966
-#, fuzzy, gcc-internal-format
-#| msgid "%qs matching variant requires -march=arch12 or higher"
+#, gcc-internal-format
 msgid "%qs matching variant requires z14 or higher"
-msgstr "la variante correspondant à %qs requiert -march=arch12 ou supérieur"
+msgstr "la variante correspondant à %qs requiert z14 ou supérieur"
 
 #: config/s390/s390-c.c:972
 #, gcc-internal-format
@@ -30671,10 +30652,9 @@ msgid "builtin %qF requires -mvx (default with -march=z13 and higher)."
 msgstr "la fonction interne %qF requiert -mvx (par défaut avec -march=z13 et supérieur)."
 
 #: config/s390/s390.c:853
-#, fuzzy, gcc-internal-format
-#| msgid "Builtin %qF requires arch12 or higher."
+#, gcc-internal-format
 msgid "Builtin %qF requires z14 or higher."
-msgstr "La fonction interne %qF requiert arch12 ou supérieur."
+msgstr "La fonction interne %qF requiert z14 ou supérieur."
 
 #: config/s390/s390.c:872
 #, gcc-internal-format
@@ -30877,8 +30857,7 @@ msgid "bad value (%s) for -mcmodel= switch"
 msgstr "valeur erronée (%s) pour l'option -mcmodel="
 
 #: config/sparc/sparc.c:1541
-#, fuzzy, gcc-internal-format
-#| msgid "-mcmodel= is not supported on 32 bit systems"
+#, gcc-internal-format
 msgid "-mcmodel= is not supported on 32-bit systems"
 msgstr "-mcmodel= n'est pas supporté sur les systèmes 32 bits"
 
@@ -42946,10 +42925,9 @@ msgid "empty decomposition declaration"
 msgstr "déclaration avec décomposition vide"
 
 #: cp/parser.c:13054
-#, fuzzy, gcc-internal-format
-#| msgid "invalid initializer for member function %qD"
+#, gcc-internal-format
 msgid "invalid initializer for structured binding declaration"
-msgstr "initialisation invalide pour la fonction membre %qD"
+msgstr "initialisation invalide pour la déclaration de liaison structurée"
 
 #: cp/parser.c:13220
 #, gcc-internal-format
@@ -43674,17 +43652,13 @@ msgstr "spécificateur pur invalide (seul %<= 0%> est autorisé)"
 msgid "a brace-enclosed initializer is not allowed here"
 msgstr "une initialisation entre accolades n'est par permise ici"
 
-# Je crois que base-specified aurait dû être base-specifier car la fonction où ce message appraît est nommée ainsi. Je n'ai pas signalé ce bug car je ne suis pas sûr qu'il s'agit réellement d'une erreur.
 #: cp/parser.c:23703
-#, fuzzy, gcc-internal-format
-#| msgid "%<virtual%> specified more than once in base-specified"
+#, gcc-internal-format
 msgid "%<virtual%> specified more than once in base-specifier"
 msgstr "%<virtual%> spécifié plus d'une fois dans le spécificateur de base"
 
-# Je crois que base-specified aurait dû être base-specifier car la fonction où ce message appraît est nommée ainsi. Je n'ai pas signalé ce bug car je ne suis pas sûr qu'il s'agit réellement d'une erreur.
 #: cp/parser.c:23723
-#, fuzzy, gcc-internal-format
-#| msgid "more than one access specifier in base-specified"
+#, gcc-internal-format
 msgid "more than one access specifier in base-specifier"
 msgstr "plus d'un spécificateur d'accès dans le spécificateur de base"
 
@@ -44943,22 +44917,19 @@ msgid "%qE is not a valid template argument of type %qT because %qD has no linka
 msgstr "%qE n'est pas un argument de patron valable pour le type %qT car %qD n'a pas de classe de liaison"
 
 #: cp/pt.c:6625
-#, fuzzy, gcc-internal-format
-#| msgid "  variable-sized array type %qT is not a valid template argument"
+#, gcc-internal-format
 msgid "the address of %qD is not a valid template argument"
-msgstr "  le type tableau %qT dimensionné par une variable n'est pas un argument de patron valable"
+msgstr "l'adresse de %qD n'est pas un argument de patron valable"
 
 #: cp/pt.c:6634
-#, fuzzy, gcc-internal-format
-#| msgid "  variable-sized array type %qT is not a valid template argument"
+#, gcc-internal-format
 msgid "the address of the %qT subobject of %qD is not a valid template argument"
-msgstr "  le type tableau %qT dimensionné par une variable n'est pas un argument de patron valable"
+msgstr "l'adresse du sous-objet %qT de %qD n'est pas un argument de patron valable"
 
 #: cp/pt.c:6641
-#, fuzzy, gcc-internal-format
-#| msgid "%qE is not a valid template argument of type %qT because %qD does not have external linkage"
+#, gcc-internal-format
 msgid "the address of %qD is not a valid template argument because it does not have static storage duration"
-msgstr "%qE n'est pas un argument de patron valable de type %qT car %qD n'a pas une classe de liaison externe"
+msgstr "l'adresse de %qD n'est pas un argument de patron valable car elle n'a pas une durée de stockage statique"
 
 #: cp/pt.c:6672
 #, gcc-internal-format
@@ -52509,10 +52480,9 @@ msgid "NAMELIST object %qs in namelist %qs at %L with ALLOCATABLE or POINTER com
 msgstr "Objet NAMELIST %qs dans la liste de noms %qs à %L avec des composants ALLOCATABLE ou POINTER"
 
 #: fortran/io.c:3317
-#, fuzzy, gcc-internal-format
-#| msgid "NAMELIST object %qs in namelist %qs at %L is polymorphic and requires a defined input/output procedure"
+#, gcc-internal-format
 msgid "NAMELIST object %qs in namelist %qs at %L has ALLOCATABLE or POINTER components and thus requires a defined input/output procedure"
-msgstr "L'objet NAMELIST %qs dans la liste de noms %qs à %L est polymorphique et requiert une procédure d'entrée/sortie définie"
+msgstr "L'objet NAMELIST %qs dans la liste de noms %qs à %L a des composants ALLOCATABLE ou POINTER et requiert donc une procédure d'entrée/sortie définie"
 
 #: fortran/io.c:3328
 #, gcc-internal-format, gfc-internal-format
