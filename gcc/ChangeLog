@@ -1,3 +1,10 @@
+2017-08-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/81835
+	* tree-vect-loop.c (vect_is_simple_reduction): Simply checks for
+	the phi SSA_NAME.  Check that the condition in a COND_EXPR does
+	not depend on the phi.
+
 2017-08-16  Alan Modra  <amodra@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Delete

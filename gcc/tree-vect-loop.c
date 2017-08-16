@@ -2690,15 +2690,15 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
   *double_reduc = false;
   *v_reduc_type = TREE_CODE_REDUCTION;
 
-  name = PHI_RESULT (phi);
+  tree phi_name = PHI_RESULT (phi);
   /* ???  If there are no uses of the PHI result the inner loop reduction
      won't be detected as possibly double-reduction by vectorizable_reduction
      because that tries to walk the PHI arg from the preheader edge which
      can be constant.  See PR60382.  */
-  if (has_zero_uses (name))
+  if (has_zero_uses (phi_name))
     return NULL;
   nloop_uses = 0;
-  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, name)
+  FOR_EACH_IMM_USE_FAST (use_p, imm_iter, phi_name)
     {
       gimple *use_stmt = USE_STMT (use_p);
       if (is_gimple_debug (use_stmt))
@@ -2847,10 +2847,7 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
      simply rewriting this into "res += -x[i]".  Avoid changing
      gimple instruction for the first simple tests and only do this
      if we're allowed to change code at all.  */
-  if (code == MINUS_EXPR
-      && ! ((op1 = gimple_assign_rhs2 (def_stmt))
-	    && TREE_CODE (op1) == SSA_NAME
-	    && SSA_NAME_DEF_STMT (op1) == phi))
+  if (code == MINUS_EXPR && gimple_assign_rhs2 (def_stmt) != phi_name)
     code = PLUS_EXPR;
 
   if (code == COND_EXPR)
@@ -2864,6 +2861,14 @@ vect_is_simple_reduction (loop_vec_info loop_info, gimple *phi,
           op4 = TREE_OPERAND (op3, 1);
           op3 = TREE_OPERAND (op3, 0);
         }
+      if (op3 == phi_name || op4 == phi_name)
+	{
+	  if (dump_enabled_p ())
+	    report_vect_op (MSG_MISSED_OPTIMIZATION, def_stmt,
+			    "reduction: condition depends on previous"
+			    " iteration: ");
+	  return NULL;
+	}
 
       op1 = gimple_assign_rhs2 (def_stmt);
       op2 = gimple_assign_rhs3 (def_stmt);
