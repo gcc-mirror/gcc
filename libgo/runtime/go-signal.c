@@ -224,6 +224,9 @@ getSiginfo(siginfo_t *info, void *context __attribute__((unused)))
   #ifdef __linux__
 	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.regs->nip;
   #endif
+  #ifdef _AIX
+	ret.sigpc = ((ucontext_t*)(context))->uc_mcontext.jmp_context.iar;
+  #endif
 #endif
 
 	if (ret.sigpc == 0) {
@@ -282,19 +285,19 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 	{
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
 
-		runtime_printf("eax    %X\n", m->gregs[REG_EAX]);
-		runtime_printf("ebx    %X\n", m->gregs[REG_EBX]);
-		runtime_printf("ecx    %X\n", m->gregs[REG_ECX]);
-		runtime_printf("edx    %X\n", m->gregs[REG_EDX]);
-		runtime_printf("edi    %X\n", m->gregs[REG_EDI]);
-		runtime_printf("esi    %X\n", m->gregs[REG_ESI]);
-		runtime_printf("ebp    %X\n", m->gregs[REG_EBP]);
-		runtime_printf("esp    %X\n", m->gregs[REG_ESP]);
-		runtime_printf("eip    %X\n", m->gregs[REG_EIP]);
-		runtime_printf("eflags %X\n", m->gregs[REG_EFL]);
-		runtime_printf("cs     %X\n", m->gregs[REG_CS]);
-		runtime_printf("fs     %X\n", m->gregs[REG_FS]);
-		runtime_printf("gs     %X\n", m->gregs[REG_GS]);
+		runtime_printf("eax    %x\n", m->gregs[REG_EAX]);
+		runtime_printf("ebx    %x\n", m->gregs[REG_EBX]);
+		runtime_printf("ecx    %x\n", m->gregs[REG_ECX]);
+		runtime_printf("edx    %x\n", m->gregs[REG_EDX]);
+		runtime_printf("edi    %x\n", m->gregs[REG_EDI]);
+		runtime_printf("esi    %x\n", m->gregs[REG_ESI]);
+		runtime_printf("ebp    %x\n", m->gregs[REG_EBP]);
+		runtime_printf("esp    %x\n", m->gregs[REG_ESP]);
+		runtime_printf("eip    %x\n", m->gregs[REG_EIP]);
+		runtime_printf("eflags %x\n", m->gregs[REG_EFL]);
+		runtime_printf("cs     %x\n", m->gregs[REG_CS]);
+		runtime_printf("fs     %x\n", m->gregs[REG_FS]);
+		runtime_printf("gs     %x\n", m->gregs[REG_GS]);
 	  }
  #endif
 #endif
@@ -336,6 +339,39 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("gp  %X\n", m->sc_regs[29]);
 		runtime_printf("sp  %X\n", m->sc_regs[30]);
 		runtime_printf("pc  %X\n", m->sc_pc);
+	  }
+  #endif
+#endif
+
+#ifdef __PPC__
+  #ifdef __linux__
+	  {
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+		int i;
+
+		for (i = 0; i < 32; i++)
+			runtime_printf("r%d %X\n", i, m->regs->gpr[i]);
+		runtime_printf("pc  %X\n", m->regs->nip);
+		runtime_printf("msr %X\n", m->regs->msr);
+		runtime_printf("cr  %X\n", m->regs->ccr);
+		runtime_printf("lr  %X\n", m->regs->link);
+		runtime_printf("ctr %X\n", m->regs->ctr);
+		runtime_printf("xer %X\n", m->regs->xer);
+	  }
+  #endif
+  #ifdef _AIX
+	  {
+		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
+		int i;
+
+		for (i = 0; i < 32; i++)
+			runtime_printf("r%d %p\n", i, m->jmp_context.gpr[i]);
+		runtime_printf("pc  %p\n", m->jmp_context.iar);
+		runtime_printf("msr %p\n", m->jmp_context.msr);
+		runtime_printf("cr  %x\n", m->jmp_context.cr);
+		runtime_printf("lr  %p\n", m->jmp_context.lr);
+		runtime_printf("ctr %p\n", m->jmp_context.ctr);
+		runtime_printf("xer %x\n", m->jmp_context.xer);
 	  }
   #endif
 #endif
