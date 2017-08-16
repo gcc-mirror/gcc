@@ -4890,9 +4890,7 @@ free_lang_data_in_type (tree type)
 	 leading to false ODR violation errors when merging two
 	 instances of the same function signature compiled by
 	 different front ends.  */
-      tree p;
-
-      for (p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+      for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
 	{
 	  tree arg_type = TREE_VALUE (p);
 
@@ -4908,68 +4906,29 @@ free_lang_data_in_type (tree type)
 	  TREE_PURPOSE (p) = NULL;
 	}
     }
-  if (TREE_CODE (type) == METHOD_TYPE)
+  else if (TREE_CODE (type) == METHOD_TYPE)
+    for (tree p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
+      /* C++ FE uses TREE_PURPOSE to store initial values.  */
+      TREE_PURPOSE (p) = NULL;
+  else if (RECORD_OR_UNION_TYPE_P (type))
     {
-      tree p;
-
-      for (p = TYPE_ARG_TYPES (type); p; p = TREE_CHAIN (p))
-	{
-	  /* C++ FE uses TREE_PURPOSE to store initial values.  */
-	  TREE_PURPOSE (p) = NULL;
-	}
-    }
-
-  /* Remove members that are not actually FIELD_DECLs from the field
-     list of an aggregate.  These occur in C++.  */
-  if (RECORD_OR_UNION_TYPE_P (type))
-    {
-      tree prev, member;
-
-      /* Note that TYPE_FIELDS can be shared across distinct
-	 TREE_TYPEs.  Therefore, if the first field of TYPE_FIELDS is
-	 to be removed, we cannot set its TREE_CHAIN to NULL.
-	 Otherwise, we would not be able to find all the other fields
-	 in the other instances of this TREE_TYPE.
-
-	 This was causing an ICE in testsuite/g++.dg/lto/20080915.C.  */
-      prev = NULL_TREE;
-      member = TYPE_FIELDS (type);
-      while (member)
-	{
-	  if (TREE_CODE (member) == FIELD_DECL
-	      || (TREE_CODE (member) == TYPE_DECL
-		  && !DECL_IGNORED_P (member)
-		  && debug_info_level > DINFO_LEVEL_TERSE
-		  && !is_redundant_typedef (member)))
-	    {
-	      if (prev)
-		TREE_CHAIN (prev) = member;
-	      else
-		TYPE_FIELDS (type) = member;
-	      prev = member;
-	    }
-
-	  member = TREE_CHAIN (member);
-	}
-
-      if (prev)
-	TREE_CHAIN (prev) = NULL_TREE;
-      else
-	TYPE_FIELDS (type) = NULL_TREE;
+      /* Remove members that are not FIELD_DECLs (and maybe
+	 TYPE_DECLs) from the field list of an aggregate.  These occur
+	 in C++.  */
+      for (tree *prev = &TYPE_FIELDS (type), member; (member = *prev);)
+	if (TREE_CODE (member) == FIELD_DECL
+	    || (TREE_CODE (member) == TYPE_DECL
+		&& !DECL_IGNORED_P (member)
+		&& debug_info_level > DINFO_LEVEL_TERSE
+		&& !is_redundant_typedef (member)))
+	  prev = &DECL_CHAIN (member);
+	else
+	  *prev = DECL_CHAIN (member);
 
       /* FIXME: C FE uses TYPE_VFIELD to record C_TYPE_INCOMPLETE_VARS
  	 and danagle the pointer from time to time.  */
       if (TYPE_VFIELD (type) && TREE_CODE (TYPE_VFIELD (type)) != FIELD_DECL)
         TYPE_VFIELD (type) = NULL_TREE;
-
-      /* Splice out FUNCTION_DECLS and TEMPLATE_DECLS from
-	 TYPE_FIELDS.  So LTO doesn't grow.  */
-      for (tree probe, *prev= &TYPE_FIELDS (type); (probe = *prev); )
-	if (TREE_CODE (probe) == FUNCTION_DECL
-	    || TREE_CODE (probe) == TEMPLATE_DECL)
-	  *prev = probe;
-	else
-	  prev = &DECL_CHAIN (probe);
 
       if (TYPE_BINFO (type))
 	{
@@ -4987,20 +4946,15 @@ free_lang_data_in_type (tree type)
 	    TYPE_BINFO (type) = NULL;
 	}
     }
-  else
+  else if (INTEGRAL_TYPE_P (type)
+	   || SCALAR_FLOAT_TYPE_P (type)
+	   || FIXED_POINT_TYPE_P (type))
     {
-      /* For non-aggregate types, clear out the language slot (which
-	 overloads TYPE_BINFO).  */
-      TYPE_LANG_SLOT_1 (type) = NULL_TREE;
-
-      if (INTEGRAL_TYPE_P (type)
-	  || SCALAR_FLOAT_TYPE_P (type)
-	  || FIXED_POINT_TYPE_P (type))
-	{
-	  free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
-	  free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
-	}
+      free_lang_data_in_one_sizepos (&TYPE_MIN_VALUE (type));
+      free_lang_data_in_one_sizepos (&TYPE_MAX_VALUE (type));
     }
+
+  TYPE_LANG_SLOT_1 (type) = NULL_TREE;
 
   free_lang_data_in_one_sizepos (&TYPE_SIZE (type));
   free_lang_data_in_one_sizepos (&TYPE_SIZE_UNIT (type));
@@ -5382,6 +5336,7 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	 this way.  */
       if (!POINTER_TYPE_P (t))
 	fld_worklist_push (TYPE_MIN_VALUE_RAW (t), fld);
+      /* TYPE_MAX_VALUE_RAW is TYPE_BINFO for record types.  */
       if (!RECORD_OR_UNION_TYPE_P (t))
 	fld_worklist_push (TYPE_MAX_VALUE_RAW (t), fld);
       fld_worklist_push (TYPE_MAIN_VARIANT (t), fld);
@@ -13267,9 +13222,23 @@ verify_type (const_tree t)
 	 but does not for C sizetypes in LTO.  */
     }
 
-  /* Check various uses of TYPE_MAXVAL.  */
+  /* Check various uses of TYPE_MAXVAL_RAW.  */
   if (RECORD_OR_UNION_TYPE_P (t))
     {
+      if (!TYPE_BINFO (t))
+	;
+      else if (TREE_CODE (TYPE_BINFO (t)) != TREE_BINFO)
+	{
+	  error ("TYPE_BINFO is not TREE_BINFO");
+	  debug_tree (TYPE_BINFO (t));
+	  error_found = true;
+	}
+      else if (TREE_TYPE (TYPE_BINFO (t)) != TYPE_MAIN_VARIANT (t))
+	{
+	  error ("TYPE_BINFO type is not TYPE_MAIN_VARIANT");
+	  debug_tree (TREE_TYPE (TYPE_BINFO (t)));
+	  error_found = true;
+	}
     }
   else if (TREE_CODE (t) == FUNCTION_TYPE || TREE_CODE (t) == METHOD_TYPE)
     {
@@ -13318,19 +13287,7 @@ verify_type (const_tree t)
       error_found = true;
     }
 
-  /* Check various uses of TYPE_BINFO.  */
-  if (RECORD_OR_UNION_TYPE_P (t))
-    {
-      if (!TYPE_BINFO (t))
-	;
-      else if (TREE_CODE (TYPE_BINFO (t)) != TREE_BINFO)
-	{
-	  error ("TYPE_BINFO is not TREE_BINFO");
-	  debug_tree (TYPE_BINFO (t));
-	  error_found = true;
-	}
-    }
-  else if (TYPE_LANG_SLOT_1 (t) && in_lto_p)
+  if (TYPE_LANG_SLOT_1 (t) && in_lto_p)
     {
       error ("TYPE_LANG_SLOT_1 (binfo) field is non-NULL");
       debug_tree (TYPE_LANG_SLOT_1 (t));
