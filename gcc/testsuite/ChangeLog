@@ -1,3 +1,11 @@
+2017-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* gcc.target/i386/pr46091-1.c: Update scan-assembler-times.
+	(testm): New test function.
+	* gcc.target/i386/pr46091-2.c: Ditto.
+	* gcc.target/i386/pr46091-3.c: Ditto.
+
 2017-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81832

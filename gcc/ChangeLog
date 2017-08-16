@@ -1,3 +1,16 @@
+2017-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* config/i386/i386.md (*anddi_1_btr): Change predicates of
+	operand 0 and operand 1 to nomimmediate_operand. Add "m" constraint.
+	Add ix86_binary_operator_ok to insn constraint.
+	(*iordi_1_bts): Ditto.
+	(*xordi_1_btc): Ditto.
+	(*btsq): Change predicate of operand 0 to nonimmediate_operand.
+	Update corresponding peephole2 pattern.
+	(*btrq): Ditto.
+	(*btcq): Ditto.
+
 2017-08-16  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81832
