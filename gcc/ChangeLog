@@ -1,3 +1,25 @@
+2017-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* tree-core.h (tree_type_non_common): Rename binfo to lang_1.
+	* tree.h (TYPE_BINFO): Use type_non_common.maxval.
+	(TYPE_LANG_SLOT_1): Use type_non_common.lang_1, for any type.
+	* tree.c (free_lang_data_in_type): Use else-if chain.  Always
+	clear TYPE_LANG_1.  Remove obsolete member-function stripping.
+	(find_decls_types_r): Comment about TYPE_MAX_VALUES_RAW.
+	(verify_type): Adjust for TYPE_BINFO move.
+	* lto-streamer-out.c (DFS::DFS_write_tree_body): No need to
+	process TYPE_BINFO directly.
+	(hash_tree): Likewise.
+	* tree-streamer-in.c (lto_input_ts_type_non_common_tree_pointers):
+	Likewise.
+	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
+	Likewise.
+	
+	lto/
+	* lto.c (mentions_vars_p_type): Use TYPE_LANG_SLOT_1.
+	(compare_tree_sccs_1): No need to compare TYPE_BINFO directly.
+	(lto_fixup_prevailing_decls): Use TYPE_LANG_SLOT_1.
+
 2017-08-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostic-show-locus.c (colorizer::m_caret): Remove unused

@@ -1,3 +1,9 @@
+2017-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_type): Use TYPE_LANG_SLOT_1.
+	(compare_tree_sccs_1): No need to compare TYPE_BINFO directly.
+	(lto_fixup_prevailing_decls): Use TYPE_LANG_SLOT_1.
+
 2017-08-08  Tom de Vries  <tom@codesourcery.com>
 
 	* lto.c: Include attribs.h.

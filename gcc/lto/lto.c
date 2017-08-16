@@ -651,7 +651,7 @@ mentions_vars_p_type (tree t)
   CHECK_VAR (TYPE_MAX_VALUE_RAW (t));
 
   /* Accessor is for derived node types only. */
-  CHECK_NO_VAR (t->type_non_common.binfo);
+  CHECK_NO_VAR (TYPE_LANG_SLOT_1 (t));
 
   CHECK_VAR (TYPE_CONTEXT (t));
   CHECK_NO_VAR (TYPE_CANONICAL (t));
@@ -1410,7 +1410,6 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	       f1 || f2;
 	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	    compare_tree_edges (f1, f2);
-	  compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
 	}
       else if (code == FUNCTION_TYPE
 	       || code == METHOD_TYPE)
@@ -2584,7 +2583,7 @@ lto_fixup_prevailing_decls (tree t)
 
       LTO_SET_PREVAIL (TYPE_MIN_VALUE_RAW (t));
       LTO_SET_PREVAIL (TYPE_MAX_VALUE_RAW (t));
-      LTO_NO_PREVAIL (t->type_non_common.binfo);
+      LTO_NO_PREVAIL (TYPE_LANG_SLOT_1 (t));
 
       LTO_SET_PREVAIL (TYPE_CONTEXT (t));
 
