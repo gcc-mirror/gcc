@@ -24406,36 +24406,47 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 		 | SAVE_INLINE_GPRS
 		 | SAVE_INLINE_VRS);
 
+  /* Don't ever restore fixed regs.  That means we can't use the
+     out-of-line register restore functions if a fixed reg is in the
+     range of regs restored.   */
+  if (!(strategy & REST_INLINE_FPRS))
+    for (int i = info->first_fp_reg_save; i < 64; i++)
+      if (fixed_regs[i])
+	{
+	  strategy |= REST_INLINE_FPRS;
+	  break;
+	}
+
   /* We can only use the out-of-line routines to restore fprs if we've
      saved all the registers from first_fp_reg_save in the prologue.
      Otherwise, we risk loading garbage.  Of course, if we have saved
      out-of-line then we know we haven't skipped any fprs.  */
   if ((strategy & SAVE_INLINE_FPRS)
       && !(strategy & REST_INLINE_FPRS))
-    {
-      int i;
-
-      for (i = info->first_fp_reg_save; i < 64; i++)
-	if (fixed_regs[i] || !save_reg_p (i))
-	  {
-	    strategy |= REST_INLINE_FPRS;
-	    break;
-	  }
-    }
+    for (int i = info->first_fp_reg_save; i < 64; i++)
+      if (!save_reg_p (i))
+	{
+	  strategy |= REST_INLINE_FPRS;
+	  break;
+	}
 
   /* Similarly, for altivec regs.  */
+  if (!(strategy & REST_INLINE_VRS))
+    for (int i = info->first_altivec_reg_save; i < LAST_ALTIVEC_REGNO + 1; i++)
+      if (fixed_regs[i])
+	{
+	  strategy |= REST_INLINE_VRS;
+	  break;
+	}
+
   if ((strategy & SAVE_INLINE_VRS)
       && !(strategy & REST_INLINE_VRS))
-    {
-      int i;
-
-      for (i = info->first_altivec_reg_save; i < LAST_ALTIVEC_REGNO + 1; i++)
-	if (fixed_regs[i] || !save_reg_p (i))
-	  {
-	    strategy |= REST_INLINE_VRS;
-	    break;
-	  }
-    }
+    for (int i = info->first_altivec_reg_save; i < LAST_ALTIVEC_REGNO + 1; i++)
+      if (!save_reg_p (i))
+	{
+	  strategy |= REST_INLINE_VRS;
+	  break;
+	}
 
   /* info->lr_save_p isn't yet set if the only reason lr needs to be
      saved is an out-of-line save or restore.  Set up the value for
@@ -24490,6 +24501,16 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	  }
     }
 
+  /* Don't ever restore fixed regs.  */
+  if ((strategy & (REST_INLINE_GPRS | REST_MULTIPLE)) != REST_INLINE_GPRS)
+    for (int i = info->first_gp_reg_save; i < 32; i++)
+      if (fixed_reg_p (i))
+	{
+	  strategy |= REST_INLINE_GPRS;
+	  strategy &= ~REST_MULTIPLE;
+	  break;
+	}
+
   /* We can only use load multiple or the out-of-line routines to
      restore gprs if we've saved all the registers from
      first_gp_reg_save.  Otherwise, we risk loading garbage.
@@ -24497,17 +24518,13 @@ rs6000_savres_strategy (rs6000_stack_t *info,
      we haven't skipped any gprs.  */
   if ((strategy & (SAVE_INLINE_GPRS | SAVE_MULTIPLE)) == SAVE_INLINE_GPRS
       && (strategy & (REST_INLINE_GPRS | REST_MULTIPLE)) != REST_INLINE_GPRS)
-    {
-      int i;
-
-      for (i = info->first_gp_reg_save; i < 32; i++)
-	if (fixed_reg_p (i) || !save_reg_p (i))
-	  {
-	    strategy |= REST_INLINE_GPRS;
-	    strategy &= ~REST_MULTIPLE;
-	    break;
-	  }
-    }
+    for (int i = info->first_gp_reg_save; i < 32; i++)
+      if (!save_reg_p (i))
+	{
+	  strategy |= REST_INLINE_GPRS;
+	  strategy &= ~REST_MULTIPLE;
+	  break;
+	}
 
   if (TARGET_ELF && TARGET_64BIT)
     {

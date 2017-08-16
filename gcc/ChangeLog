@@ -1,3 +1,8 @@
+2017-08-16  Alan Modra  <amodra@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Don't restore
+	fixed regs.
+
 2017-08-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR target/78460
