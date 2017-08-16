@@ -1,3 +1,10 @@
+2017-08-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/81116
+	* frontend-passes.c (realloc_string_callback): If expression is a
+	concatenation, also check for dependency.
+	(constant_string_length): Check for presence of symtree.
+
 2017-08-13  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.texi: Document format of unformatted sequential files.
