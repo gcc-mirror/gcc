@@ -1,3 +1,9 @@
+2017-08-16  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81832
+	* tree-ssa-loop-ch.c (should_duplicate_loop_header_p): Don't
+	copy loop header which has IFN_LOOP_DIST_ALIAS call.
+
 2017-08-16  Marek Polacek  <polacek@redhat.com>
 
 	PR middle/81695
