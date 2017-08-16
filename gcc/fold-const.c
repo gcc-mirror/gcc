@@ -14109,22 +14109,19 @@ fold_indirect_ref_1 (location_t loc, tree type, tree op0)
 		   && type == TREE_TYPE (op00type))
 	    {
 	      tree type_domain = TYPE_DOMAIN (op00type);
-	      tree min;
-	      if (type_domain != NULL_TREE
-		  && (min = TYPE_MIN_VALUE (type_domain))
-		  && TREE_CODE (min) == INTEGER_CST)
+	      tree min = size_zero_node;
+	      if (type_domain && TYPE_MIN_VALUE (type_domain))
+		min = TYPE_MIN_VALUE (type_domain);
+	      offset_int off = wi::to_offset (op01);
+	      offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
+	      offset_int remainder;
+	      off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
+	      if (remainder == 0 && TREE_CODE (min) == INTEGER_CST)
 		{
-		  offset_int off = wi::to_offset (op01);
-		  offset_int el_sz = wi::to_offset (TYPE_SIZE_UNIT (type));
-		  offset_int remainder;
-		  off = wi::divmod_trunc (off, el_sz, SIGNED, &remainder);
-		  if (remainder == 0)
-		    {
-		      off = off + wi::to_offset (min);
-		      op01 = wide_int_to_tree (sizetype, off);
-		      return build4_loc (loc, ARRAY_REF, type, op00, op01,
-					 NULL_TREE, NULL_TREE);
-		    }
+		  off = off + wi::to_offset (min);
+		  op01 = wide_int_to_tree (sizetype, off);
+		  return build4_loc (loc, ARRAY_REF, type, op00, op01,
+				     NULL_TREE, NULL_TREE);
 		}
 	    }
 	}

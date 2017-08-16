@@ -1,3 +1,9 @@
+2017-08-16  Marek Polacek  <polacek@redhat.com>
+
+	PR middle/81695
+	* fold-const.c (fold_indirect_ref_1): Restore original behavior
+	regarding size_zero_node.
+
 2017-08-16  Martin Liska  <mliska@suse.cz>
 
 	PR target/81753
