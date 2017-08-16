@@ -24078,22 +24078,19 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 /* This page contains routines that are used to determine what the
    function prologue and epilogue code will do and write them out.  */
 
-static inline bool
-save_reg_p (int r)
-{
-  return !call_used_regs[r] && df_regs_ever_live_p (r);
-}
-
-/* Determine whether the gp REG is really used.  */
+/* Determine whether the REG is really used.  */
 
 static bool
-rs6000_reg_live_or_pic_offset_p (int reg)
+save_reg_p (int reg)
 {
   /* We need to mark the PIC offset register live for the same conditions
      as it is set up, or otherwise it won't be saved before we clobber it.  */
 
   if (reg == RS6000_PIC_OFFSET_TABLE_REGNUM && !TARGET_SINGLE_PIC_BASE)
     {
+      /* When calling eh_return, we must return true for all the cases
+	 where conditional_register_usage marks the PIC offset reg
+	 call used.  */
       if (TARGET_TOC && TARGET_MINIMAL_TOC
 	  && (crtl->calls_eh_return
 	      || df_regs_ever_live_p (reg)
@@ -24105,11 +24102,7 @@ rs6000_reg_live_or_pic_offset_p (int reg)
 	return true;
     }
 
-  /* If the function calls eh_return, claim used all the registers that would
-     be checked for liveness otherwise.  */
-
-  return ((crtl->calls_eh_return || df_regs_ever_live_p (reg))
-	  && !call_used_regs[reg]);
+  return !call_used_regs[reg] && df_regs_ever_live_p (reg);
 }
 
 /* Return the first fixed-point register that is required to be
@@ -24124,13 +24117,6 @@ first_reg_to_save (void)
   for (first_reg = 13; first_reg <= 31; first_reg++)
     if (save_reg_p (first_reg))
       break;
-
-  if (first_reg > RS6000_PIC_OFFSET_TABLE_REGNUM
-      && ((DEFAULT_ABI == ABI_V4 && flag_pic != 0)
-	  || (DEFAULT_ABI == ABI_DARWIN && flag_pic)
-	  || (TARGET_TOC && TARGET_MINIMAL_TOC))
-      && rs6000_reg_live_or_pic_offset_p (RS6000_PIC_OFFSET_TABLE_REGNUM))
-    first_reg = RS6000_PIC_OFFSET_TABLE_REGNUM;
 
 #if TARGET_MACHO
   if (flag_pic
@@ -26306,7 +26292,7 @@ rs6000_get_separate_components (void)
       for (unsigned regno = info->first_gp_reg_save; regno < 32; regno++)
 	{
 	  if (IN_RANGE (offset, -0x8000, 0x7fff)
-	      && rs6000_reg_live_or_pic_offset_p (regno))
+	      && save_reg_p (regno))
 	    bitmap_set_bit (components, regno);
 
 	  offset += reg_size;
@@ -27047,7 +27033,7 @@ rs6000_emit_prologue (void)
       int offset = info->gp_save_offset + frame_off;
       for (int i = info->first_gp_reg_save; i < 32; i++)
 	{
-	  if (rs6000_reg_live_or_pic_offset_p (i)
+	  if (save_reg_p (i)
 	      && !cfun->machine->gpr_is_wrapped_separately[i])
 	    emit_frame_save (frame_reg_rtx, reg_mode, i, offset,
 			     sp_off - frame_off);
@@ -28497,7 +28483,7 @@ rs6000_emit_epilogue (int sibcall)
       int offset = info->gp_save_offset + frame_off;
       for (i = info->first_gp_reg_save; i < 32; i++)
 	{
-	  if (rs6000_reg_live_or_pic_offset_p (i)
+	  if (save_reg_p (i)
 	      && !cfun->machine->gpr_is_wrapped_separately[i])
 	    {
 	      rtx reg = gen_rtx_REG (reg_mode, i);
@@ -28540,13 +28526,9 @@ rs6000_emit_epilogue (int sibcall)
 	cfa_restores = add_crlr_cfa_restore (info, cfa_restores);
 
       for (i = info->first_gp_reg_save; i < 32; i++)
-	if (!restoring_GPRs_inline
-	    || using_load_multiple
-	    || rs6000_reg_live_or_pic_offset_p (i))
+	if (save_reg_p (i)
+	    && !cfun->machine->gpr_is_wrapped_separately[i])
 	  {
-	    if (cfun->machine->gpr_is_wrapped_separately[i])
-	      continue;
-
 	    rtx reg = gen_rtx_REG (reg_mode, i);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	  }
