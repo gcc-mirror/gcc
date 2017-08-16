@@ -1,3 +1,8 @@
+2017-08-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-show-locus.c (colorizer::m_caret): Remove unused
+	field.
+
 2017-08-16  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46091
