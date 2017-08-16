@@ -1,3 +1,9 @@
+2017-08-16  Martin Liska  <mliska@suse.cz>
+
+	PR target/81753
+	* config.gcc: Respect previously set extra_objs in case
+	of darwin target.
+
 2017-08-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/81835

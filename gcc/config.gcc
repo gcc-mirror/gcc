@@ -653,7 +653,7 @@ case ${target} in
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
   fortran_target_objs="darwin-f.o"
   target_has_targetcm=yes
-  extra_objs="darwin.o"
+  extra_objs="${extra_objs} darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
