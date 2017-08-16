@@ -2142,8 +2142,6 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 			     widest_int increment, edge e, location_t loc,
 			     bool known_stride)
 {
-  basic_block insert_bb;
-  gimple_stmt_iterator gsi;
   tree lhs, basis_type;
   gassign *new_stmt;
 
@@ -2198,19 +2196,13 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 	gcc_unreachable ();
     }
 
-  insert_bb = single_succ_p (e->src) ? e->src : split_edge (e);
-  gsi = gsi_last_bb (insert_bb);
-
-  if (!gsi_end_p (gsi) && is_ctrl_stmt (gsi_stmt (gsi)))
-    gsi_insert_before (&gsi, new_stmt, GSI_NEW_STMT);
-  else
-    gsi_insert_after (&gsi, new_stmt, GSI_NEW_STMT);
-
   gimple_set_location (new_stmt, loc);
+  gsi_insert_on_edge (e, new_stmt);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Inserting in block %d: ", insert_bb->index);
+      fprintf (dump_file, "Inserting on edge %d->%d: ", e->src->index,
+	       e->dest->index);
       print_gimple_stmt (dump_file, new_stmt, 0, 0);
     }
 
@@ -3578,6 +3570,10 @@ analyze_candidates_and_replace (void)
 	  free (incr_vec);
 	}
     }
+
+  /* For conditional candidates, we may have uncommitted insertions
+     on edges to clean up.  */
+  gsi_commit_edge_inserts ();
 }
 
 namespace {
