@@ -1,3 +1,10 @@
+2017-08-16  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-c++-common/patchable_function_entry-decl.c (dg-final): Adapt
+	scan-assembler-times for alpha*-*-*.
+	* c-c++-common/patchable_function_entry-default.c (dg-final): Ditto.
+	* c-c++-common/patchable_function_entry-definition.c (dg-final): Ditto.
+
 2017-08-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/81116
