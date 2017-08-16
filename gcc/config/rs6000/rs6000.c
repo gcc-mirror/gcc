@@ -3241,11 +3241,6 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_wy] = VSX_REGS;
       rs6000_constraints[RS6000_CONSTRAINT_ww] = VSX_REGS;
     }
-  else if (TARGET_P8_VECTOR)
-    {
-      rs6000_constraints[RS6000_CONSTRAINT_wy] = FLOAT_REGS;
-      rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
-    }
   else if (TARGET_VSX)
     rs6000_constraints[RS6000_CONSTRAINT_ww] = FLOAT_REGS;
 

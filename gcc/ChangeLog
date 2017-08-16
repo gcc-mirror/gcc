@@ -1,5 +1,10 @@
 2017-08-16  Alan Modra  <amodra@gmail.com>
 
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Delete
+	dead code.
+
+2017-08-16  Alan Modra  <amodra@gmail.com>
+
 	* config/rs6000/rs6000.c (rs6000_reg_live_or_pic_offset_p): Merge..
 	(save_reg_p): ..into this.  Update all callers.
 	(first_reg_to_save): Simplify.
