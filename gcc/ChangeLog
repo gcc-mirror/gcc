@@ -1,3 +1,12 @@
+2017-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81814
+	* fold-const.c (operand_equal_for_comparison_p): Remove code that used
+	to mimic what shorten_compare did.  Change the return type to bool.
+	(fold_cond_expr_with_comparison): Update call to
+	operand_equal_for_comparison_p.
+	(fold_ternary_loc): Likewise.
+
 2017-08-17  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* aarch64-simd.md (mov<mode>): No longer force zero immediate into
