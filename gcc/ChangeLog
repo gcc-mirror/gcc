@@ -229,6 +229,12 @@
 	* config/avr/avr.c (avr_option_override): Same.
 	(avr_pass_pre_proep::execute): Same.
 
+2017-08-13  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/81820
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Replace
+	frame pointer with stack pointer - UNITS_PER_WORD in debug insns.
+
 2017-08-13  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*load_tp_<mode>): Redefine as
