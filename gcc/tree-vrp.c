@@ -1614,6 +1614,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
   wide_int res;
 
+  *overflow_p = false;
+
   switch (code)
     {
     case RSHIFT_EXPR:
@@ -1685,8 +1687,6 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
       gcc_unreachable ();
     }
 
-  *overflow_p = overflow;
-
   if (overflow
       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
@@ -1729,6 +1729,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	return wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
 			      TYPE_SIGN (TREE_TYPE (val1)));
     }
+
+  *overflow_p = overflow;
 
   return res;
 }

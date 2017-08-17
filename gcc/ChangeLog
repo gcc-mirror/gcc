@@ -1,3 +1,9 @@
+2017-08-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-vrp.c (vrp_int_const_binop): Do not set *overflow_p
+	to true when overflow is undefined and we saturated the
+	result.
+
 2017-08-17  Alan Modra  <amodra@gmail.com>
 
 	PR target/80938
