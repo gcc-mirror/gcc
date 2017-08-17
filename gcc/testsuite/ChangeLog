@@ -1,3 +1,7 @@
+2017-08-17  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.dg/ipa/pr81696.c: Require effective target nonlocal_goto.
+
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/vrp117.c: New testcase.
