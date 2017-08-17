@@ -1,3 +1,11 @@
+2017-08-17  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/81864
+	* tree-loop-distribution.c (ddrs_table): Change type to pointer
+	type.
+	(get_data_dependence): Use it as pointer type.
+	(distribute_loop): Likewise.
+
 2017-08-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	* config/rs6000/altivec.md (UNSPEC_VMRGOW_DIRECT): New constant.

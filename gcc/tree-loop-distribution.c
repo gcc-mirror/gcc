@@ -157,8 +157,7 @@ static vec<data_reference_p> datarefs_vec;
 #define DR_INDEX(dr)      ((uintptr_t) (dr)->aux)
 
 /* Hash table for data dependence relation in the loop to be distributed.  */
-static hash_table<ddr_hasher> ddrs_table (389);
-
+static hash_table<ddr_hasher> *ddrs_table;
 
 /* A Reduced Dependence Graph (RDG) vertex representing a statement.  */
 struct rdg_vertex
@@ -1183,7 +1182,7 @@ get_data_dependence (struct graph *rdg, data_reference_p a, data_reference_p b)
 	      <= rdg_vertex_for_stmt (rdg, DR_STMT (b)));
   ent.a = a;
   ent.b = b;
-  slot = ddrs_table.find_slot (&ent, INSERT);
+  slot = ddrs_table->find_slot (&ent, INSERT);
   if (*slot == NULL)
     {
       ddr = initialize_data_dependence_relation (a, b, loop_nest);
@@ -2366,6 +2365,7 @@ static int
 distribute_loop (struct loop *loop, vec<gimple *> stmts,
 		 control_dependences *cd, int *nb_calls, bool *destroy_p)
 {
+  ddrs_table = new hash_table<ddr_hasher> (389);
   struct graph *rdg;
   partition *partition;
   bool any_builtin;
@@ -2377,6 +2377,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
   if (!find_loop_nest (loop, &loop_nest))
     {
       loop_nest.release ();
+      delete ddrs_table;
       return 0;
     }
 
@@ -2391,6 +2392,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
 
       loop_nest.release ();
       free_data_refs (datarefs_vec);
+      delete ddrs_table;
       return 0;
     }
 
@@ -2404,6 +2406,7 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
       free_rdg (rdg);
       loop_nest.release ();
       free_data_refs (datarefs_vec);
+      delete ddrs_table;
       return 0;
     }
 
@@ -2542,13 +2545,13 @@ distribute_loop (struct loop *loop, vec<gimple *> stmts,
  ldist_done:
   loop_nest.release ();
   free_data_refs (datarefs_vec);
-  for (hash_table<ddr_hasher>::iterator iter = ddrs_table.begin ();
-       iter != ddrs_table.end (); ++iter)
+  for (hash_table<ddr_hasher>::iterator iter = ddrs_table->begin ();
+       iter != ddrs_table->end (); ++iter)
     {
       free_dependence_relation (*iter);
       *iter = NULL;
     }
-  ddrs_table.empty ();
+  delete ddrs_table;
 
   FOR_EACH_VEC_ELT (partitions, i, partition)
     partition_free (partition);
