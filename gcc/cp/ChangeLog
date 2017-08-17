@@ -1,5 +1,11 @@
 2017-08-17  Nathan Sidwell  <nathan@acm.org>
 
+	* lex.c (maybe_add_lang_type_raw): BOUND_TEMPLATE_TEMPLATE_PARMs
+	don't need lang_type.
+	(cxx_make_type): Use maybe_add_lang_type_raw return value.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Don't rely on
+	TYPE_LANG_SPECIFIC.
+
 	* cp-tree.h (struct lang_type): Remove template_info field.
 	(CLASSTYPE_TEMPLATE_INFO): Use TYPE_LANG_SLOT_1.
 	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO): Likewise.
