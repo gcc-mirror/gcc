@@ -1,3 +1,18 @@
+2017-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81827
+	* tree-ssa-structalias.c (struct variable_info): Add is_reg_var
+	flag.
+	(new_var_info): Initialize it conservatively.
+	(get_call_vi): Mark register vars.
+	(new_scalar_tmp_constraint_exp): Likewise.
+	(handle_rhs_call): Likewise.
+	(handle_const_call): Likewise.
+	(create_function_info_for): Likewise.
+	(solve_constraints): Sort varinfos to separate register from
+	non-register vars to pack points-to solution bitmaps during
+	iteration.
+
 2017-08-17  Marek Polacek  <polacek@redhat.com>
 
 	* gimplify.c (gimplify_adjust_omp_clauses): Compare with 0 instead of
