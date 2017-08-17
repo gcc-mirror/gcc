@@ -31,7 +31,7 @@
 			      V4SI
 			      V2DI
 			      V1TI
-			      (TI "TARGET_VSX_TIMODE")])
+			      TI])
 
 ;; Vector float modes
 (define_mode_iterator VEC_F [V4SF V2DF])

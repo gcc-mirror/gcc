@@ -34,11 +34,11 @@
 ;; types that goes in a single vector register.
 (define_mode_iterator VSX_LE_128 [(KF   "FLOAT128_VECTOR_P (KFmode)")
 				  (TF   "FLOAT128_VECTOR_P (TFmode)")
-				  (TI	"TARGET_VSX_TIMODE")
+				  TI
 				  V1TI])
 
 ;; Iterator for 128-bit integer types that go in a single vector register.
-(define_mode_iterator VSX_TI [(TI "TARGET_VSX_TIMODE") V1TI])
+(define_mode_iterator VSX_TI [TI V1TI])
 
 ;; Iterator for the 2 32-bit vector types
 (define_mode_iterator VSX_W [V4SF V4SI])
@@ -71,7 +71,7 @@
 			     V1TI
 			     (KF	"FLOAT128_VECTOR_P (KFmode)")
 			     (TF	"FLOAT128_VECTOR_P (TFmode)")
-			     (TI	"TARGET_VSX_TIMODE")])
+			     TI])
 
 ;; Map into the appropriate load/store name based on the type
 (define_mode_attr VSm  [(V16QI "vw4")
@@ -852,7 +852,7 @@
    (set (match_operand:VSX_TI 2 "int_reg_operand")
 	(rotate:VSX_TI (match_dup 0)
 		       (const_int 64)))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && (rtx_equal_p (operands[0], operands[2])
        || peep2_reg_dead_p (2, operands[0]))"
    [(set (match_dup 2) (match_dup 1))])
@@ -864,7 +864,7 @@
    (set (match_operand:VSX_TI 2 "memory_operand")
 	(rotate:VSX_TI (match_dup 0)
 		       (const_int 64)))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && peep2_reg_dead_p (2, operands[0])"
    [(set (match_dup 2) (match_dup 1))])
 
@@ -878,7 +878,7 @@
    (set (match_operand:TI 2 "vsx_register_operand" "")
 	(rotate:TI (match_dup 0)
 		   (const_int 64)))]
-  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR
    && (rtx_equal_p (operands[0], operands[2])
        || peep2_reg_dead_p (2, operands[0]))"
    [(set (match_dup 2) (match_dup 1))])
