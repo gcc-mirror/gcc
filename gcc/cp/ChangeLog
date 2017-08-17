@@ -1,5 +1,10 @@
 2017-08-17  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Remove stale comment.
+	* cp-tree.h (ENUM_TEMPLATE_INFO): Delete.
+	(TYPE_TEMPLATE_INFO): Simplify.
+	(SET_TYPE_TEMPLATE_INFO): Simplify.
+
 	* lex.c (maybe_add_lang_type_raw): BOUND_TEMPLATE_TEMPLATE_PARMs
 	don't need lang_type.
 	(cxx_make_type): Use maybe_add_lang_type_raw return value.
