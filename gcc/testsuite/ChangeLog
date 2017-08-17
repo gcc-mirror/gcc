@@ -1,3 +1,8 @@
+2017-08-17  Marek Polacek  <polacek@redhat.com>
+
+	PR middle-end/81814
+	* gcc.dg/torture/pr81814.c: New test.
+
 2017-08-17  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* gcc.target/aarch64/simd/vect_str_zero.c: New testcase.
