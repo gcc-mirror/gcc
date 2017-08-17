@@ -1,3 +1,10 @@
+2017-08-17  Richard Biener  <rguenther@suse.de>
+
+	PR ada/81878
+	* Makefile.in (CXX_LFLAGS): Remove.
+	(TOOLS_FLAGS_TO_PASS_NATIVE): Pass $(CXX) as CXX.
+	(TOOLS_FLAGS_TO_PASS_RE): Likewise.
+
 2016-05-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* configure.ac: Add ACX_NONCANONICAL_HOST.
