@@ -2056,7 +2056,7 @@ rs6000_hard_regno_mode_ok (int regno, machine_mode mode)
       && (VECTOR_MEM_VSX_P (mode)
 	  || FLOAT128_VECTOR_P (mode)
 	  || reg_addr[mode].scalar_in_vmx_p
-	  || (TARGET_VSX_TIMODE && mode == TImode)
+	  || mode == TImode
 	  || (TARGET_VADDUQM && mode == V1TImode)))
     {
       if (FP_REGNO_P (regno))
@@ -2937,7 +2937,7 @@ rs6000_setup_reg_addr_masks (void)
 	  else if ((addr_mask != 0) && !indexed_only_p
 		   && msize == 16 && TARGET_P9_DFORM_VECTOR
 		   && (ALTIVEC_OR_VSX_VECTOR_MODE (m2)
-		       || (m2 == TImode && TARGET_VSX_TIMODE)))
+		       || (m2 == TImode && TARGET_VSX)))
 	    {
 	      addr_mask |= RELOAD_REG_OFFSET;
 	      if (rc == RELOAD_REG_FPR || rc == RELOAD_REG_VMX)
@@ -3142,7 +3142,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
     }
 
   /* Allow TImode in VSX register and set the VSX memory macros.  */
-  if (TARGET_VSX && TARGET_VSX_TIMODE)
+  if (TARGET_VSX)
     {
       rs6000_vector_mem[TImode] = VECTOR_VSX;
       rs6000_vector_align[TImode] = align64;
@@ -3203,9 +3203,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_constraints[RS6000_CONSTRAINT_ws] = VSX_REGS;	/* DFmode  */
       rs6000_constraints[RS6000_CONSTRAINT_wv] = ALTIVEC_REGS;	/* DFmode  */
       rs6000_constraints[RS6000_CONSTRAINT_wi] = VSX_REGS;	/* DImode  */
-
-      if (TARGET_VSX_TIMODE)
-	rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;	/* TImode  */
+      rs6000_constraints[RS6000_CONSTRAINT_wt] = VSX_REGS;	/* TImode  */
     }
 
   /* Add conditional constraints based on various options, to allow us to
@@ -3327,7 +3325,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	      reg_addr[SDmode].reload_load  = CODE_FOR_reload_sd_di_load;
 	    }
 
-	  if (TARGET_VSX_TIMODE)
+	  if (TARGET_VSX)
 	    {
 	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_di_store;
 	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_di_load;
@@ -3411,7 +3409,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	      reg_addr[SDmode].reload_load  = CODE_FOR_reload_sd_si_load;
 	    }
 
-	  if (TARGET_VSX_TIMODE)
+	  if (TARGET_VSX)
 	    {
 	      reg_addr[TImode].reload_store  = CODE_FOR_reload_ti_si_store;
 	      reg_addr[TImode].reload_load   = CODE_FOR_reload_ti_si_load;
@@ -4326,13 +4324,6 @@ rs6000_option_override_internal (bool global_init_p)
 	}
     }
 
-  if (TARGET_VSX_TIMODE && !TARGET_VSX)
-    {
-      if (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE)
-	error ("%qs requires %qs", "-mvsx-timode", "-mvsx");
-      rs6000_isa_flags &= ~OPTION_MASK_VSX_TIMODE;
-    }
-
   if (TARGET_DFP && !TARGET_HARD_FLOAT)
     {
       if (rs6000_isa_flags_explicit & OPTION_MASK_DFP)
@@ -4550,11 +4541,6 @@ rs6000_option_override_internal (bool global_init_p)
 	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
 	}
     }
-
-  /* Enable -mvsx-timode by default if VSX.  */
-  if (TARGET_VSX && !TARGET_VSX_TIMODE
-      && (rs6000_isa_flags_explicit & OPTION_MASK_VSX_TIMODE) == 0)
-    rs6000_isa_flags |= OPTION_MASK_VSX_TIMODE;
 
   /* Set -mallow-movmisalign to explicitly on if we have full ISA 2.07
      support. If we only have ISA 2.06 support, and the user did not specify
@@ -8760,7 +8746,7 @@ rs6000_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
 	 pointer, so it works with both GPRs and VSX registers.  */
       /* Make sure both operands are registers.  */
       else if (GET_CODE (x) == PLUS
-	       && (mode != TImode || !TARGET_VSX_TIMODE))
+	       && (mode != TImode || !TARGET_VSX))
 	return gen_rtx_PLUS (Pmode,
 			     force_reg (Pmode, XEXP (x, 0)),
 			     force_reg (Pmode, XEXP (x, 1)));
@@ -9653,7 +9639,7 @@ rs6000_legitimize_reload_address (rtx x, machine_mode mode,
       && mode != TDmode
       && mode != IFmode
       && mode != KFmode
-      && (mode != TImode || !TARGET_VSX_TIMODE)
+      && (mode != TImode || !TARGET_VSX)
       && mode != PTImode
       && (mode != DImode || TARGET_POWERPC64)
       && ((mode != DFmode && mode != DDmode) || TARGET_POWERPC64
@@ -9821,10 +9807,10 @@ rs6000_legitimate_address_p (machine_mode mode, rtx x, bool reg_ok_strict)
      go into VSX registers, so we allow REG+REG, while TImode seems
      somewhat split, in that some uses are GPR based, and some VSX based.  */
   /* FIXME: We could loosen this by changing the following to
-       if (mode == TImode && TARGET_QUAD_MEMORY && TARGET_VSX_TIMODE)
+       if (mode == TImode && TARGET_QUAD_MEMORY && TARGET_VSX)
      but currently we cannot allow REG+REG addressing for TImode.  See
      PR72827 for complete details on how this ends up hoodwinking DSE.  */
-  if (mode == TImode && TARGET_VSX_TIMODE)
+  if (mode == TImode && TARGET_VSX)
     return 0;
   /* If not REG_OK_STRICT (before reload) let pass any stack offset.  */
   if (! reg_ok_strict
@@ -36185,7 +36171,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "toc-fusion",		OPTION_MASK_TOC_FUSION,		false, true  },
   { "update",			OPTION_MASK_NO_UPDATE,		true , true  },
   { "vsx",			OPTION_MASK_VSX,		false, true  },
-  { "vsx-timode",		OPTION_MASK_VSX_TIMODE,		false, true  },
 #ifdef OPTION_MASK_64BIT
 #if TARGET_AIX_OS
   { "aix64",			OPTION_MASK_64BIT,		false, false },
@@ -36894,7 +36879,7 @@ rs6000_print_builtin_options (FILE *file, int indent, const char *string,
 
 /* If the user used -mno-vsx, we need turn off all of the implicit ISA 2.06,
    2.07, and 3.0 options that relate to the vector unit (-mdirect-move,
-   -mvsx-timode, -mupper-regs-df).
+   -mupper-regs-df, etc.).
 
    If the user used -mno-power8-vector, we need to turn off all of the implicit
    ISA 2.07 and 3.0 options that relate to the vector unit.

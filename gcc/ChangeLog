@@ -1,3 +1,32 @@
+2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	* config/rs6000/altivec.md (VParity): Remove TARGET_VSX_TIMODE.
+	* config/rs6000/rs6000-cpus.def: Remove comment.
+	(ISA_2_7_MASKS_SERVER): Delete OPTION_MASK_VSX_TIMODE;
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_mode_ok): Remove unneeded
+	use of TARGET_VSX_TIMODE.
+	(rs6000_setup_reg_addr_masks): Change TARGET_VSX_TIMODE to TARGET_VSX.
+	(rs6000_init_hard_regno_mode_ok): Remove unneeded uses of
+	TARGET_VSX_TIMODE.  Change use of TARGET_VSX_TIMODE to TARGET_VSX.
+	(rs6000_option_override_internal): Remove dead code.
+	(rs6000_legitimize_address): Change TARGET_VSX_TIMODE to TARGET_VSX.
+	(rs6000_legitimize_reload_address): Likewise.
+	(rs6000_legitimate_address_p): Likewise.
+	(rs6000_opt_masks): Delete "vsx-timode".
+	(rs6000_disable_incompatible_switches): Remove mention of -mvsx-timode
+	from function comment.
+	* config/rs6000/rs6000.h (MASK_VSX_TIMODE): Delete.
+	* config/rs6000/rs6000.md (FMOVE128_GPR): Remove TARGET_VSX_TIMODE.
+	(V16QI, V8HI, V4SI, V4SF, V2DI, V2DF, V1TI): Remove useless empty
+	condition.
+	* config/rs6000/rs6000.opt (mvsx-timode): Replace with stub.
+	* config/rs6000/vector.md (VEC_IP): Remove TARGET_VSX_TIMODE.
+	* config/rs6000/vsx.md (VSX_LE_128): Likewise.
+	(VSX_TI): Likewise.
+	(VSX_M): Likewise.
+	(define_peephole2): Likewise.
+
 2017-08-17  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81859

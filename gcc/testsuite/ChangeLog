@@ -1,5 +1,12 @@
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
+	* gcc.target/powerpc/p8vector-int128-1.c: Remove use of -mvsx-timode.
+	* gcc.target/powerpc/p9-vparity.c: Likewise.
+	* gcc.target/powerpc/pr68805.c: Likewise.
+	* gcc.target/powerpc/pr80098-4.c: Remove useless test case.
+
+2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
 	PR target/72804
 	* gcc.target/powerpc/pr72804.c: New test.
 

@@ -510,9 +510,9 @@ msave-toc-indirect
 Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
 Save the TOC in the prologue for indirect calls rather than inline.
 
+; This option existed in the past, but now is always the same as -mvsx.
 mvsx-timode
-Target Undocumented Mask(VSX_TIMODE) Var(rs6000_isa_flags)
-Allow 128-bit integers in VSX registers.
+Target RejectNegative Undocumented Ignore
 
 mpower8-fusion
 Target Report Mask(P8_FUSION) Var(rs6000_isa_flags)

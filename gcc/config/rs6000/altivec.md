@@ -218,7 +218,7 @@
 (define_mode_iterator VParity [V4SI
 			       V2DI
 			       V1TI
-			       (TI "TARGET_VSX_TIMODE")])
+			       TI])
 
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
