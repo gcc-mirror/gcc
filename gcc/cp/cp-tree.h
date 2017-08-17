@@ -471,9 +471,12 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
      At present, only the six low-order bits are used.
 
    TYPE_LANG_SLOT_1
+     For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS.
+     For a POINTER_TYPE (to a METHOD_TYPE), this is TYPE_PTRMEMFUNC_TYPE.
      For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
-     For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS
-     For a POINTER_TYPE (to a METHOD_TYPE), this is TYPE_PTRMEMFUNC_TYPE
+     For a RECORD_TYPE or UNION_TYPE this is CLASSTYPE_TEMPLATE_INFO,
+     For a BOUND_TEMPLATE_TEMPLATE_PARM_TYPE this is also
+     TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
 
   BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  There is an entry for each
@@ -2001,7 +2004,6 @@ struct GTY(()) lang_type {
   vec<tree, va_gc> * GTY((reorder ("resort_type_method_vec"))) methods;
   tree key_method;
   tree decl_list;
-  tree template_info;
   tree befriending_classes;
   /* In a RECORD_TYPE, information specific to Objective-C++, such
      as a list of adopted protocols or a pointer to a corresponding
@@ -3276,7 +3278,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* Template information for a RECORD_TYPE or UNION_TYPE.  */
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \
-  (LANG_TYPE_CLASS_CHECK (RECORD_OR_UNION_CHECK (NODE))->template_info)
+  (TYPE_LANG_SLOT_1 (RECORD_OR_UNION_CHECK (NODE)))
 
 /* Template information for an ENUMERAL_TYPE.  Although an enumeration may
    not be a primary template, it may be declared within the scope of a
@@ -3287,8 +3289,7 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 
 /* Template information for a template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) \
-  (LANG_TYPE_CLASS_CHECK (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)) \
-   ->template_info)
+  (TYPE_LANG_SLOT_1 (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)))
 
 /* Template information for an ENUMERAL_, RECORD_, UNION_TYPE, or
    BOUND_TEMPLATE_TEMPLATE_PARM type.  This ignores any alias
