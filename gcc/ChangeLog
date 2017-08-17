@@ -1,3 +1,8 @@
+2017-08-17  Marek Polacek  <polacek@redhat.com>
+
+	* gimplify.c (gimplify_adjust_omp_clauses): Compare with 0 instead of
+	1.
+
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_int_const_binop): Do not set *overflow_p
