@@ -5558,12 +5558,6 @@ ix86_option_override_internal (bool main_args_p,
   gcc_assert ((opts->x_target_flags & MASK_LONG_DOUBLE_64) == 0
 	      || (opts->x_target_flags & MASK_LONG_DOUBLE_128) == 0);
 
-  /* Save the initial options in case the user does function specific
-     options.  */
-  if (main_args_p)
-    target_option_default_node = target_option_current_node
-      = build_target_option_node (opts);
-
   /* Handle stack protector */
   if (!opts_set->x_ix86_stack_protector_guard)
     opts->x_ix86_stack_protector_guard
@@ -5583,6 +5577,12 @@ ix86_option_override_internal (bool main_args_p,
       ix86_parse_stringop_strategy_string (str, true);
       free (str);
     }
+
+  /* Save the initial options in case the user does function specific
+     options.  */
+  if (main_args_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node (opts);
 }
 
 /* Implement the TARGET_OPTION_OVERRIDE hook.  */

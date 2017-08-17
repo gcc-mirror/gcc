@@ -1,3 +1,12 @@
+2017-08-17  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backport from mainline
+	2017-08-17  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+	PR target/81861
+	* config/i386/i386.c (ix86_option_override_internal): Save target
+	specific options after ix86_stack_protector_guard_reg was changed.
+
 2017-08-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
