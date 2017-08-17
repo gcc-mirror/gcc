@@ -1,3 +1,10 @@
+2017-08-17  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81859
+	* pretty-print.c (pp_format): Use strnlen in %.*s to avoid reading
+	past the end of an array.
+	(test_pp_format): Add test cases.
+
 2017-08-17  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* internal-fn.def (CLRSB, CLZ, CTZ, FFS, PARITY, POPCOUNT): Add
