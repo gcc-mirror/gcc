@@ -1,3 +1,8 @@
+2017-08-17  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* internal-fn.def (CLRSB, CLZ, CTZ, FFS, PARITY, POPCOUNT): Add
+	missing ECF_NOTHROW flags.
+
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/72804
