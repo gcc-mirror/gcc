@@ -945,8 +945,8 @@ conditional_probability (profile_probability target_prob,
 static void
 emit_case_dispatch_table (tree index_expr, tree index_type,
 			  struct case_node *case_list, rtx default_label,
-			  tree minval, tree maxval, tree range,
-                          basic_block stmt_bb)
+			  edge default_edge,  tree minval, tree maxval,
+			  tree range, basic_block stmt_bb)
 {
   int i, ncases;
   struct case_node *n;
@@ -954,7 +954,6 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
   rtx_insn *fallback_label = label_rtx (case_list->code_label);
   rtx_code_label *table_label = gen_label_rtx ();
   bool has_gaps = false;
-  edge default_edge = stmt_bb ? EDGE_SUCC (stmt_bb, 0) : NULL;
   profile_probability default_prob = default_edge ? default_edge->probability
 						  : profile_probability::never ();
   profile_probability base = get_outgoing_edge_probs (stmt_bb);
@@ -1026,9 +1025,8 @@ emit_case_dispatch_table (tree index_expr, tree index_type,
          through the indirect jump or the direct conditional jump
          before that. Split the probability of reaching the
          default label among these two jumps.  */
-      new_default_prob = conditional_probability (default_prob.apply_scale
-							 (1, 2),
-                                                  base);
+      new_default_prob
+	= conditional_probability (default_prob.apply_scale (1, 2), base);
       default_prob = default_prob.apply_scale (1, 2);
       base -= default_prob;
     }
@@ -1147,9 +1145,10 @@ expand_case (gswitch *stmt)
   do_pending_stack_adjust ();
 
   /* Find the default case target label.  */
-  default_label = jump_target_rtx
-      (CASE_LABEL (gimple_switch_default_label (stmt)));
-  edge default_edge = EDGE_SUCC (bb, 0);
+  tree default_lab = CASE_LABEL (gimple_switch_default_label (stmt));
+  default_label = jump_target_rtx (default_lab);
+  basic_block default_bb = label_to_block_fn (cfun, default_lab);
+  edge default_edge = find_edge (bb, default_bb);
   profile_probability default_prob = default_edge->probability;
 
   /* Get upper and lower bounds of case values.  */
@@ -1245,9 +1244,10 @@ expand_case (gswitch *stmt)
 	{
 	  default_label = NULL;
 	  remove_edge (default_edge);
+	  default_edge = NULL;
 	}
       emit_case_dispatch_table (index_expr, index_type,
-				case_list, default_label,
+				case_list, default_label, default_edge,
 				minval, maxval, range, bb);
     }
 
@@ -1340,9 +1340,9 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
 	}
 
       emit_case_dispatch_table (index_expr, index_type,
-				case_list, default_label,
+				case_list, default_label, NULL,
 				minval, maxval, range,
-                                BLOCK_FOR_INSN (before_case));
+				BLOCK_FOR_INSN (before_case));
       emit_label (default_label);
     }
 

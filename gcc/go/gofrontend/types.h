@@ -504,6 +504,9 @@ class Type
   static Pointer_type*
   make_pointer_type(Type*);
 
+  static void
+  finish_pointer_types(Gogo* gogo);
+
   static Type*
   make_nil_type();
 
@@ -1340,6 +1343,15 @@ class Type
 			     Type_identical) Type_functions;
 
   static Type_functions type_functions_table;
+
+  // Cache for reusing existing pointer types; maps from pointed-to-type
+  // to pointer type.
+  typedef Unordered_map(Type*, Pointer_type*) Pointer_type_table;
+
+  static Pointer_type_table pointer_types;
+
+  // List of placeholder pointer types.
+  static std::vector<Pointer_type*> placeholder_pointers;
 
   // The type classification.
   Type_classification classification_;

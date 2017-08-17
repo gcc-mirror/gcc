@@ -32,6 +32,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 /**
  * @addtogroup regex
  * @{
@@ -39,8 +41,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
 namespace regex_constants
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @name 5.3 Error Types
    */
@@ -120,10 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   constexpr error_type error_stack(_S_error_stack);
 
   //@}
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace regex_constants
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // [7.8] Class regex_error
   /**

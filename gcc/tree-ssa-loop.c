@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-vectorizer.h"
 #include "omp-general.h"
 #include "diagnostic-core.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 
 /* A pass making sure loops are fixed up.  */

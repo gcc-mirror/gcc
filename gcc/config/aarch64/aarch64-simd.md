@@ -23,7 +23,10 @@
 	(match_operand:VALL_F16 1 "general_operand" ""))]
   "TARGET_SIMD"
   "
-    if (GET_CODE (operands[0]) == MEM)
+    if (GET_CODE (operands[0]) == MEM
+	&& !(aarch64_simd_imm_zero (operands[1], <MODE>mode)
+	     && aarch64_legitimate_address_p (<MODE>mode, operands[0],
+					      PARALLEL, 1)))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   "
 )
@@ -94,63 +97,66 @@
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VD 0 "nonimmediate_operand"
-		"=w, m,  w, ?r, ?w, ?r, w")
+		"=w, m,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VD 1 "general_operand"
-		"m,  w,  w,  w,  r,  r, Dn"))]
+		"m,  Dz, w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
+       || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
 {
    switch (which_alternative)
      {
-     case 0: return "ldr\\t%d0, %1";
-     case 1: return "str\\t%d1, %0";
-     case 2: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
-     case 3: return "umov\t%0, %1.d[0]";
-     case 4: return "fmov\t%d0, %1";
-     case 5: return "mov\t%0, %1";
-     case 6:
+     case 0: return "ldr\t%d0, %1";
+     case 1: return "str\txzr, %0";
+     case 2: return "str\t%d1, %0";
+     case 3: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
+     case 4: return "umov\t%0, %1.d[0]";
+     case 5: return "fmov\t%d0, %1";
+     case 6: return "mov\t%0, %1";
+     case 7:
 	return aarch64_output_simd_mov_immediate (operands[1],
 						  <MODE>mode, 64);
      default: gcc_unreachable ();
      }
 }
-  [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
+  [(set_attr "type" "neon_load1_1reg<q>, neon_stp, neon_store1_1reg<q>,\
 		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
 		     mov_reg, neon_move<q>")]
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VQ 0 "nonimmediate_operand"
-		"=w, m,  w, ?r, ?w, ?r, w")
+		"=w, Ump,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VQ 1 "general_operand"
-		"m,  w,  w,  w,  r,  r, Dn"))]
+		"m,  Dz, w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
+       || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
     case 0:
-	return "ldr\\t%q0, %1";
+	return "ldr\t%q0, %1";
     case 1:
-	return "str\\t%q1, %0";
+	return "stp\txzr, xzr, %0";
     case 2:
-	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
+	return "str\t%q1, %0";
     case 3:
+	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
     case 4:
     case 5:
-	return "#";
     case 6:
+	return "#";
+    case 7:
 	return aarch64_output_simd_mov_immediate (operands[1], <MODE>mode, 128);
     default:
 	gcc_unreachable ();
     }
 }
   [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
-                     neon_logic<q>, multiple, multiple, multiple,\
-                     neon_move<q>")
-   (set_attr "length" "4,4,4,8,8,8,4")]
+		     neon_stp, neon_logic<q>, multiple, multiple,\
+		     multiple, neon_move<q>")
+   (set_attr "length" "4,4,4,4,8,8,8,4")]
 )
 
 ;; When storing lane zero we can use the normal STR and its more permissive
@@ -349,6 +355,35 @@
      emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
      DONE;
   }
+)
+
+(define_expand "xorsign<mode>3"
+  [(match_operand:VHSDF 0 "register_operand")
+   (match_operand:VHSDF 1 "register_operand")
+   (match_operand:VHSDF 2 "register_operand")]
+  "TARGET_SIMD"
+{
+
+  machine_mode imode = <V_cmp_result>mode;
+  rtx v_bitmask = gen_reg_rtx (imode);
+  rtx op1x = gen_reg_rtx (imode);
+  rtx op2x = gen_reg_rtx (imode);
+
+  rtx arg1 = lowpart_subreg (imode, operands[1], <MODE>mode);
+  rtx arg2 = lowpart_subreg (imode, operands[2], <MODE>mode);
+
+  int bits = GET_MODE_UNIT_BITSIZE (<MODE>mode) - 1;
+
+  emit_move_insn (v_bitmask,
+		  aarch64_simd_gen_const_vector_dup (<V_cmp_result>mode,
+						     HOST_WIDE_INT_M1U << bits));
+
+  emit_insn (gen_and<v_cmp_result>3 (op2x, v_bitmask, arg2));
+  emit_insn (gen_xor<v_cmp_result>3 (op1x, arg1, op2x));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, op1x, imode));
+  DONE;
+}
 )
 
 (define_expand "copysign<mode>3"
@@ -1033,6 +1068,18 @@
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
+(define_insn "*aarch64_mla_elt_merge<mode>"
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+	(plus:VDQHS
+	  (mult:VDQHS (vec_duplicate:VDQHS
+		  (match_operand:<VEL> 1 "register_operand" "w"))
+		(match_operand:VDQHS 2 "register_operand" "w"))
+	  (match_operand:VDQHS 3 "register_operand" "0")))]
+ "TARGET_SIMD"
+ "mla\t%0.<Vtype>, %2.<Vtype>, %1.<Vetype>[0]"
+  [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
+)
+
 (define_insn "aarch64_mls<mode>"
  [(set (match_operand:VDQ_BHSI 0 "register_operand" "=w")
        (minus:VDQ_BHSI (match_operand:VDQ_BHSI 1 "register_operand" "0")
@@ -1077,6 +1124,18 @@
 					  INTVAL (operands[2])));
     return "mls\t%0.<Vtype>, %3.<Vtype>, %1.<Vtype>[%2]";
   }
+  [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
+)
+
+(define_insn "*aarch64_mls_elt_merge<mode>"
+  [(set (match_operand:VDQHS 0 "register_operand" "=w")
+	(minus:VDQHS
+	  (match_operand:VDQHS 1 "register_operand" "0")
+	  (mult:VDQHS (vec_duplicate:VDQHS
+		  (match_operand:<VEL> 2 "register_operand" "w"))
+		(match_operand:VDQHS 3 "register_operand" "w"))))]
+  "TARGET_SIMD"
+  "mls\t%0.<Vtype>, %3.<Vtype>, %2.<Vetype>[0]"
   [(set_attr "type" "neon_mla_<Vetype>_scalar<q>")]
 )
 
@@ -5593,9 +5652,9 @@
   DONE;
 })
 
-;; Standard pattern name vec_init<mode>.
+;; Standard pattern name vec_init<mode><Vel>.
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><Vel>"
   [(match_operand:VALL_F16 0 "register_operand" "")
    (match_operand 1 "" "")]
   "TARGET_SIMD"
@@ -5650,9 +5709,9 @@
  "urecpe\\t%0.<Vtype>, %1.<Vtype>"
   [(set_attr "type" "neon_fp_recpe_<Vetype><q>")])
 
-;; Standard pattern name vec_extract<mode>.
+;; Standard pattern name vec_extract<mode><Vel>.
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><Vel>"
   [(match_operand:<VEL> 0 "aarch64_simd_nonimmediate_operand" "")
    (match_operand:VALL_F16 1 "register_operand" "")
    (match_operand:SI 2 "immediate_operand" "")]

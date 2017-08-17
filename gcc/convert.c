@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "builtins.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 #define maybe_fold_build1_loc(FOLD_P, LOC, CODE, TYPE, EXPR) \
@@ -938,7 +940,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
       return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:
-      if (sanitize_flags_p (SANITIZE_FLOAT_CAST))
+      if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
+	  && current_function_decl != NULL_TREE)
 	{
 	  expr = save_expr (expr);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);

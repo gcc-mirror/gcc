@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "debug.h"
 #include "common/common-target.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 
@@ -1825,6 +1827,46 @@ assemble_start_function (tree decl, const char *fnname)
   if (DECL_PRESERVE_P (decl))
     targetm.asm_out.mark_decl_preserved (fnname);
 
+  unsigned HOST_WIDE_INT patch_area_size = function_entry_patch_area_size;
+  unsigned HOST_WIDE_INT patch_area_entry = function_entry_patch_area_start;
+
+  tree patchable_function_entry_attr
+    = lookup_attribute ("patchable_function_entry", DECL_ATTRIBUTES (decl));
+  if (patchable_function_entry_attr)
+    {
+      tree pp_val = TREE_VALUE (patchable_function_entry_attr);
+      tree patchable_function_entry_value1 = TREE_VALUE (pp_val);
+
+      if (tree_fits_uhwi_p (patchable_function_entry_value1))
+	patch_area_size = tree_to_uhwi (patchable_function_entry_value1);
+      else
+	gcc_unreachable ();
+
+      patch_area_entry = 0;
+      if (list_length (pp_val) > 1)
+	{
+	  tree patchable_function_entry_value2 =
+	    TREE_VALUE (TREE_CHAIN (pp_val));
+
+	  if (tree_fits_uhwi_p (patchable_function_entry_value2))
+	    patch_area_entry = tree_to_uhwi (patchable_function_entry_value2);
+	  else
+	    gcc_unreachable ();
+	}
+    }
+
+  if (patch_area_entry > patch_area_size)
+    {
+      if (patch_area_size > 0)
+	warning (OPT_Wattributes, "Patchable function entry > size");
+      patch_area_entry = 0;
+    }
+
+  /* Emit the patching area before the entry label, if any.  */
+  if (patch_area_entry > 0)
+    targetm.asm_out.print_patchable_function_entry (asm_out_file,
+						    patch_area_entry, true);
+
   /* Do any machine/system dependent processing of the function name.  */
 #ifdef ASM_DECLARE_FUNCTION_NAME
   ASM_DECLARE_FUNCTION_NAME (asm_out_file, fnname, current_function_decl);
@@ -1832,6 +1874,12 @@ assemble_start_function (tree decl, const char *fnname)
   /* Standard thing is just output label for the function.  */
   ASM_OUTPUT_FUNCTION_LABEL (asm_out_file, fnname, current_function_decl);
 #endif /* ASM_DECLARE_FUNCTION_NAME */
+
+  /* And the area after the label.  Record it if we haven't done so yet.  */
+  if (patch_area_size > patch_area_entry)
+    targetm.asm_out.print_patchable_function_entry (asm_out_file,
+					     patch_area_size-patch_area_entry,
+						    patch_area_entry == 0);
 
   if (lookup_attribute ("no_split_stack", DECL_ATTRIBUTES (decl)))
     saw_no_split_stack = true;

@@ -12,5 +12,5 @@ make_doubles (__vector unsigned long long int *significands_p,
   __vector unsigned long long int significands = *significands_p;
   __vector unsigned long long int exponents = *exponents_p;
 
-  return __builtin_vec_insert_exp (significands, exponents); /* { dg-error "Builtin function __builtin_vsx_insert_exp_dp requires" } */
+  return __builtin_vec_insert_exp (significands, exponents); /* { dg-error "builtin function '__builtin_vsx_insert_exp_dp' requires" } */
 }

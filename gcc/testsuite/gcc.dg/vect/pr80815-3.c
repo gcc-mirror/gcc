@@ -42,4 +42,4 @@ int main (void)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "improved number of alias checks from \[0-9\]* to 1" "vect" } } */
+/* { dg-final { scan-tree-dump "improved number of alias checks from \[0-9\]* to 1" "vect" { target vect_perm } } } */

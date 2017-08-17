@@ -30,4 +30,4 @@ void test01()
   test_type d; // { dg-error "required from here" }
 }
 
-// { dg-error "rep cannot be a duration" "" { target *-*-* } 308 }
+// { dg-error "rep cannot be a duration" "" { target *-*-* } 300 }

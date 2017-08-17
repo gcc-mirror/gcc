@@ -1,3 +1,230 @@
+2017-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81808
+	* testsuite/27_io/basic_fstream/53984.cc: Adjust test for targets
+	that allow opening a directory as a FILE and reading from it.
+
+2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP):
+	Replace with _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP and use
+	__is_identifier to set it.
+
+2017-08-09  Katsuhiko Nishimra  <ktns.87@gmail.com>
+
+	* include/std/type_traits (_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Use
+	__is_identifier instead of __has_builtin.
+
+2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79820
+	PR libstdc++/81751
+	* config/io/basic_file_stdio.cc (sys_open(FILE*, ios_base::openmode)):
+	Call fflush on the stream instead of calling sync() while _M_cfile is
+	null. Restore original value of errno.
+	* testsuite/ext/stdio_filebuf/char/79820.cc: New.
+	* testsuite/ext/stdio_filebuf/char/81751.cc: New.
+
+2017-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR libstdc++/81599
+	* include/bits/stl_stack.h: Fix typo.
+
+2017-07-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_fstream/53984.cc: Fix test.
+
+2017-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	* testsuite/27_io/basic_fstream/53984.cc: Fix typo in dg-require
+	directive.
+
+2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/53984
+	* include/bits/basic_ios.h (basic_ios::_M_setstate): Adjust comment.
+	* include/bits/istream.tcc (basic_istream::sentry): Handle exceptions
+	during construction.
+	* include/std/istream: Adjust comments for formatted input functions
+	and unformatted input functions.
+	* testsuite/27_io/basic_fstream/53984.cc: New.
+	* testsuite/27_io/basic_istream/sentry/char/53984.cc: New.
+
+	* include/bits/ios_base.h (ios_base::io_state, ios_base::open_mode)
+	(ios_base::seek_dir): Remove for C++17.
+	* include/std/streambuf (basic_streambuf::stossc): Remove for C++17.
+	Add deprecated attribute for C++11 and C++14.
+	* testsuite/27_io/types/1.cc: Don't run for C++17 and later.
+	* testsuite/27_io/types/4.cc: New.
+
+2017-07-23  Michael Collison  <michael.collison@arm.com>
+
+	Add optimized implementation of mersenne twister for aarch64
+	* config/cpu/aarch64/opt/ext/opt_random.h: New file.
+	(__arch64_recursion): New function.
+	(__aarch64_lsr_128): New function.
+	(__aarch64_lsl_128): New function.
+	(operator==): New function.
+	(simd_fast_mersenne_twister_engine): Implement
+	method _M_gen_rand.
+	* config/cpu/aarch64/opt/bits/opt_random.h: New file.
+	* include/ext/random: (simd_fast_mersenne_twister_engine):
+	add _M_state private array.
+
+2017-07-23  François Dumont  <fdumont@gcc.gnu.org>
+
+	PR libstdc++/81064
+	* include/bits/algorithmfwd.h: Reorganize versioned namespace.
+	* include/bits/basic_string.h: Likewise.
+	* include/bits/c++config: Likewise.
+	* include/bits/deque.tcc: Likewise.
+	* include/bits/forward_list.h: Likewise.
+	* include/bits/forward_list.tcc: Likewise.
+	* include/bits/hashtable_policy.h: Likewise.
+	* include/bits/list.tcc: Likewise.
+	* include/bits/move.h: Likewise.
+	* include/bits/quoted_string.h: Likewise.
+	* include/bits/random.h: Likewise.
+	* include/bits/random.tcc: Likewise.
+	* include/bits/regex.h: Likewise.
+	* include/bits/regex.tcc: Likewise.
+	* include/bits/regex_automaton.h: Likewise.
+	* include/bits/regex_automaton.tcc: Likewise.
+	* include/bits/regex_compiler.h: Likewise.
+	* include/bits/regex_compiler.tcc: Likewise.
+	* include/bits/regex_constants.h: Likewise.
+	* include/bits/regex_error.h: Likewise.
+	* include/bits/regex_executor.h: Likewise.
+	* include/bits/regex_executor.tcc: Likewise.
+	* include/bits/regex_scanner.h: Likewise.
+	* include/bits/regex_scanner.tcc: Likewise.
+	* include/bits/specfun.h: Likewise.
+	* include/bits/stl_algo.h: Likewise.
+	* include/bits/stl_algobase.h: Likewise.
+	* include/bits/stl_bvector.h: Likewise.
+	* include/bits/stl_deque.h: Likewise.
+	* include/bits/stl_iterator.h: Likewise.
+	* include/bits/stl_iterator_base_funcs.h: Likewise.
+	* include/bits/stl_list.h: Likewise.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_relops.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_vector.h: Likewise.
+	* include/bits/uniform_int_dist.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/bits/vector.tcc: Likewise.
+	* include/c_global/cmath: Likewise.
+	* include/c_std/cmath: Likewise.
+	* include/decimal/decimal: Likewise.
+	* include/decimal/decimal.h: Likewise.
+	* include/experimental/algorithm: Likewise.
+	* include/experimental/any: Likewise.
+	* include/experimental/array: Likewise.
+	* include/experimental/bits/erase_if.h: Likewise.
+	* include/experimental/bits/fs_dir.h: Likewise.
+	* include/experimental/bits/fs_fwd.h: Likewise.
+	* include/experimental/bits/fs_ops.h: Likewise.
+	* include/experimental/bits/fs_path.h: Likewise.
+	* include/experimental/bits/lfts_config.h: Likewise.
+	* include/experimental/bits/shared_ptr.h: Likewise.
+	* include/experimental/bits/string_view.tcc: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/deque: Likewise.
+	* include/experimental/filesystem: Likewise.
+	* include/experimental/forward_list: Likewise.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/memory_resource: Likewise.
+	* include/experimental/numeric: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/random: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/source_location: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/utility: Likewise.
+	* include/experimental/vector: Likewise.
+	* include/ext/bitmap_allocator.h: Likewise.
+	* include/ext/codecvt_specializations.h: Likewise.
+	* include/ext/rope: Likewise.
+	* include/ext/typelist.h: Likewise.
+	* include/std/chrono: Likewise.
+	* include/std/complex: Likewise.
+	* include/std/functional: Likewise.
+	* include/std/numeric: Likewise.
+	* include/std/string_view: Likewise.
+	* include/std/thread: Likewise.
+	* include/std/variant: Likewise.
+	* include/tr1/array: Likewise.
+	* include/tr1/bessel_function.tcc: Likewise.
+	* include/tr1/beta_function.tcc: Likewise.
+	* include/tr1/cmath: Likewise.
+	* include/tr1/complex: Likewise.
+	* include/tr1/ell_integral.tcc: Likewise.
+	* include/tr1/exp_integral.tcc: Likewise.
+	* include/tr1/functional: Likewise.
+	* include/tr1/functional_hash.h: Likewise.
+	* include/tr1/gamma.tcc: Likewise.
+	* include/tr1/hashtable.h: Likewise.
+	* include/tr1/hashtable_policy.h: Likewise.
+	* include/tr1/hypergeometric.tcc: Likewise.
+	* include/tr1/legendre_function.tcc: Likewise.
+	* include/tr1/modified_bessel_func.tcc: Likewise.
+	* include/tr1/poly_hermite.tcc: Likewise.
+	* include/tr1/poly_laguerre.tcc: Likewise.
+	* include/tr1/random.h: Likewise.
+	* include/tr1/random.tcc: Likewise.
+	* include/tr1/regex: Likewise.
+	* include/tr1/riemann_zeta.tcc: Likewise.
+	* include/tr1/shared_ptr.h: Likewise.
+	* include/tr1/special_function_util.h: Likewise.
+	* include/tr1/tuple: Likewise.
+	* include/tr1/type_traits: Likewise.
+	* include/tr1/unordered_map.h: Likewise.
+	* include/tr1/unordered_set.h: Likewise.
+	* include/tr1/utility: Likewise.
+	* include/tr2/bool_set: Likewise.
+	* include/tr2/bool_set.tcc: Likewise.
+	* include/tr2/dynamic_bitset: Likewise.
+	* include/tr2/dynamic_bitset.tcc: Likewise.
+	* include/tr2/ratio: Likewise.
+	* include/tr2/type_traits: Likewise.
+	* src/c++11/chrono.cc: Likewise.
+	* src/c++11/compatibility-c++0x.cc: Likewise.
+	* src/c++11/compatibility-chrono.cc: Likewise.
+	* src/c++11/cxx11-shim_facets.cc: Likewise.
+	* src/c++11/hashtable_c++0x.cc: Likewise.
+	* src/c++11/placeholders.cc: Likewise.
+	* src/c++11/thread.cc: Likewise.
+	* src/c++98/bitmap_allocator.cc: Likewise.
+	* src/c++98/hashtable_tr1.cc: Likewise.
+	* src/c++98/list.cc: Likewise.
+	* src/shared/hashtable-aux.cc: Likewise.
+	* testsuite/20_util/duration/literals/range.cc: Adapt line number.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/forward/c_neg.cc: Likewise.
+	* testsuite/20_util/forward/f_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Likewise.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Likewise.
+	* python/libstdcxx/v6/printers.py: Adapt.
+
 2017-07-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	* config/allocator/malloc_allocator_base.h [__SANITIZE_ADDRESS__]

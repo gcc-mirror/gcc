@@ -159,6 +159,11 @@ struct data_reference
   /* True when the data reference is in RHS of a stmt.  */
   bool is_read;
 
+  /* True when the data reference is conditional within STMT,
+     i.e. if it might not occur even when the statement is executed
+     and runs to completion.  */
+  bool is_conditional_in_stmt;
+
   /* Behavior of the memory reference in the innermost loop.  */
   struct innermost_loop_behavior innermost;
 
@@ -178,6 +183,7 @@ struct data_reference
 #define DR_NUM_DIMENSIONS(DR)      DR_ACCESS_FNS (DR).length ()
 #define DR_IS_READ(DR)             (DR)->is_read
 #define DR_IS_WRITE(DR)            (!DR_IS_READ (DR))
+#define DR_IS_CONDITIONAL_IN_STMT(DR) (DR)->is_conditional_in_stmt
 #define DR_BASE_ADDRESS(DR)        (DR)->innermost.base_address
 #define DR_OFFSET(DR)              (DR)->innermost.offset
 #define DR_INIT(DR)                (DR)->innermost.init
@@ -260,6 +266,9 @@ struct conflict_function
 
 struct subscript
 {
+  /* The access functions of the two references.  */
+  tree access_fn[2];
+
   /* A description of the iterations for which the elements are
      accessed twice.  */
   conflict_function *conflicting_iterations_in_a;
@@ -278,6 +287,7 @@ struct subscript
 
 typedef struct subscript *subscript_p;
 
+#define SUB_ACCESS_FN(SUB, I) (SUB)->access_fn[I]
 #define SUB_CONFLICTS_IN_A(SUB) (SUB)->conflicting_iterations_in_a
 #define SUB_CONFLICTS_IN_B(SUB) (SUB)->conflicting_iterations_in_b
 #define SUB_LAST_CONFLICT(SUB) (SUB)->last_conflict
@@ -304,6 +314,13 @@ struct data_dependence_relation
      - when "ARE_DEPENDENT == chrec_dont_know", there may be a dependence,
        but the analyzer cannot be more specific.  */
   tree are_dependent;
+
+  /* If nonnull, COULD_BE_INDEPENDENT_P is true and the accesses are
+     independent when the runtime addresses of OBJECT_A and OBJECT_B
+     are different.  The addresses of both objects are invariant in the
+     loop nest.  */
+  tree object_a;
+  tree object_b;
 
   /* For each subscript in the dependence test, there is an element in
      this array.  This is the attribute that labels the edge A->B of
@@ -333,6 +350,33 @@ struct data_dependence_relation
   /* Set to true when the dependence relation is on the same data
      access.  */
   bool self_reference_p;
+
+  /* True if the dependence described is conservatively correct rather
+     than exact, and if it is still possible for the accesses to be
+     conditionally independent.  For example, the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += b->f[i];
+
+     conservatively have a distance vector of (0), for the case in which
+     a == b, but the accesses are independent if a != b.  Similarly,
+     the a and b references in:
+
+       struct s *a, *b;
+       for (int i = 0; i < n; ++i)
+         a[0].f[i] += b[i].f[i];
+
+     conservatively have a distance vector of (0), but they are indepenent
+     when a != b + i.  In contrast, the references in:
+
+       struct s *a;
+       for (int i = 0; i < n; ++i)
+         a->f[i] += a->f[i];
+
+     have the same distance vector of (0), but the accesses can never be
+     independent.  */
+  bool could_be_independent_p;
 };
 
 typedef struct data_dependence_relation *ddr_p;
@@ -341,6 +385,8 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_B(DDR) (DDR)->b
 #define DDR_AFFINE_P(DDR) (DDR)->affine_p
 #define DDR_ARE_DEPENDENT(DDR) (DDR)->are_dependent
+#define DDR_OBJECT_A(DDR) (DDR)->object_a
+#define DDR_OBJECT_B(DDR) (DDR)->object_b
 #define DDR_SUBSCRIPTS(DDR) (DDR)->subscripts
 #define DDR_SUBSCRIPT(DDR, I) DDR_SUBSCRIPTS (DDR)[I]
 #define DDR_NUM_SUBSCRIPTS(DDR) DDR_SUBSCRIPTS (DDR).length ()
@@ -363,6 +409,7 @@ typedef struct data_dependence_relation *ddr_p;
 #define DDR_DIST_VECT(DDR, I) \
   DDR_DIST_VECTS (DDR)[I]
 #define DDR_REVERSED_P(DDR) (DDR)->reversed_p
+#define DDR_COULD_BE_INDEPENDENT_P(DDR) (DDR)->could_be_independent_p
 
 
 bool dr_analyze_innermost (innermost_loop_behavior *, tree, struct loop *);
@@ -393,7 +440,8 @@ extern bool graphite_find_data_references_in_stmt (loop_p, loop_p, gimple *,
 						   vec<data_reference_p> *);
 tree find_data_references_in_loop (struct loop *, vec<data_reference_p> *);
 bool loop_nest_has_data_refs (loop_p loop);
-struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool);
+struct data_reference *create_data_ref (loop_p, loop_p, tree, gimple *, bool,
+					bool);
 extern bool find_loop_nest (struct loop *, vec<loop_p> *);
 extern struct data_dependence_relation *initialize_data_dependence_relation
      (struct data_reference *, struct data_reference *, vec<loop_p>);
@@ -454,22 +502,6 @@ same_data_refs (data_reference_p a, data_reference_p b)
 
   for (i = 0; i < DR_NUM_DIMENSIONS (a); i++)
     if (!eq_evolutions_p (DR_ACCESS_FN (a, i), DR_ACCESS_FN (b, i)))
-      return false;
-
-  return true;
-}
-
-/* Return true when the DDR contains two data references that have the
-   same access functions.  */
-
-static inline bool
-same_access_functions (const struct data_dependence_relation *ddr)
-{
-  unsigned i;
-
-  for (i = 0; i < DDR_NUM_SUBSCRIPTS (ddr); i++)
-    if (!eq_evolutions_p (DR_ACCESS_FN (DDR_A (ddr), i),
-			  DR_ACCESS_FN (DDR_B (ddr), i)))
       return false;
 
   return true;

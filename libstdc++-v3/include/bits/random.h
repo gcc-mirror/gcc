@@ -58,15 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   /*
    * Implementation-space details.
    */
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -189,10 +185,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	_Engine& _M_g;
       };
 
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup random_generators Random Number Generators

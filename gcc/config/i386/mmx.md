@@ -641,7 +641,7 @@
   [(set (match_dup 0) (match_dup 1))]
   "operands[1] = adjust_address (operands[1], SFmode, 4);")
 
-(define_expand "vec_extractv2sf"
+(define_expand "vec_extractv2sfsf"
   [(match_operand:SF 0 "register_operand")
    (match_operand:V2SF 1 "register_operand")
    (match_operand 2 "const_int_operand")]
@@ -652,7 +652,7 @@
   DONE;
 })
 
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "register_operand")
    (match_operand 1)]
   "TARGET_SSE"
@@ -1344,7 +1344,7 @@
   operands[1] = adjust_address (operands[1], SImode, INTVAL (operands[2]) * 4);
 })
 
-(define_expand "vec_extractv2si"
+(define_expand "vec_extractv2sisi"
   [(match_operand:SI 0 "register_operand")
    (match_operand:V2SI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
@@ -1355,7 +1355,7 @@
   DONE;
 })
 
-(define_expand "vec_initv2si"
+(define_expand "vec_initv2sisi"
   [(match_operand:V2SI 0 "register_operand")
    (match_operand 1)]
   "TARGET_SSE"
@@ -1375,7 +1375,7 @@
   DONE;
 })
 
-(define_expand "vec_extractv4hi"
+(define_expand "vec_extractv4hihi"
   [(match_operand:HI 0 "register_operand")
    (match_operand:V4HI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
@@ -1386,7 +1386,7 @@
   DONE;
 })
 
-(define_expand "vec_initv4hi"
+(define_expand "vec_initv4hihi"
   [(match_operand:V4HI 0 "register_operand")
    (match_operand 1)]
   "TARGET_SSE"
@@ -1406,7 +1406,7 @@
   DONE;
 })
 
-(define_expand "vec_extractv8qi"
+(define_expand "vec_extractv8qiqi"
   [(match_operand:QI 0 "register_operand")
    (match_operand:V8QI 1 "register_operand")
    (match_operand 2 "const_int_operand")]
@@ -1417,7 +1417,7 @@
   DONE;
 })
 
-(define_expand "vec_initv8qi"
+(define_expand "vec_initv8qiqi"
   [(match_operand:V8QI 0 "register_operand")
    (match_operand 1)]
   "TARGET_SSE"

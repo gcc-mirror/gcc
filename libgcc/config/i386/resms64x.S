@@ -44,7 +44,7 @@ HIDDEN_FUNC(__resms64x_13)
 	mov	-0x48(%rsi),%rbx
 HIDDEN_FUNC(__resms64x_12)
 	mov	-0x40(%rsi),%rdi
-	SSE_RESTORE off=0x60
+	SSE_RESTORE
 	mov	-0x38(%rsi),%rsi
 	mov	%r10,%rsp
 	ret

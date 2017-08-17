@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-options "-mcpu=power9 -O2 -mupper-regs-di" } */
+/* { dg-options "-mcpu=power9 -O2" } */
 
 /* Verify that large integer constants are loaded via direct move instead of being
    loaded from memory.  */
@@ -21,7 +21,7 @@ p9_large (void)
   return ret;
 }
 
-/* { dg-final { scan-assembler     "\[ \t\]mtvsrd" } } */
-/* { dg-final { scan-assembler-not "\[ \t\]ld"     } } */
-/* { dg-final { scan-assembler-not "\[ \t\]lfd"    } } */
-/* { dg-final { scan-assembler-not "\[ \t\]lxsd"   } } */
+/* { dg-final { scan-assembler     {\mmtvsrd\M} } } */
+/* { dg-final { scan-assembler-not {\mld\M}     } } */
+/* { dg-final { scan-assembler-not {\mlfd\M}    } } */
+/* { dg-final { scan-assembler-not {\mlxsd\M}   } } */

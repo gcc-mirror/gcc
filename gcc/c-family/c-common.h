@@ -950,7 +950,7 @@ extern tree build_real_imag_expr (location_t, enum tree_code, tree);
    a variant of the C language.  They are used in c-common.c.  */
 
 extern tree build_unary_op (location_t, enum tree_code, tree, bool);
-extern tree build_binary_op (location_t, enum tree_code, tree, tree, int);
+extern tree build_binary_op (location_t, enum tree_code, tree, tree, bool);
 extern tree perform_integral_promotions (tree);
 
 /* These functions must be defined by each front-end which implements
@@ -1114,7 +1114,8 @@ extern void builtin_define_with_int_value (const char *, HOST_WIDE_INT);
 extern void builtin_define_type_sizeof (const char *, tree);
 extern void c_stddef_cpp_builtins (void);
 extern void fe_file_change (const line_map_ordinary *);
-extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char);
+extern void c_parse_error (const char *, enum cpp_ttype, tree, unsigned char,
+			   rich_location *richloc);
 
 /* In c-ppoutput.c  */
 extern void init_pp_output (FILE *);

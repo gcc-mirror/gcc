@@ -7,10 +7,10 @@ package runtime
 import "unsafe"
 
 // This is based on the former libgo/runtime/netpoll_select.c implementation
-// except that it uses poll instead of select and is written in Go.
+// except that it uses AIX pollset_poll instead of select and is written in Go.
 
-// These definitions should come from sysinfo.go as they may be OS-dependent.
-// These are the definitions for the AIX operating system.
+type pollset_t int32
+
 type pollfd struct {
 	fd      int32
 	events  int16
@@ -22,8 +22,23 @@ const _POLLOUT = 0x0002
 const _POLLHUP = 0x2000
 const _POLLERR = 0x4000
 
-//extern poll
-func libc_poll(pfds *pollfd, npfds uintptr, timeout uintptr) int32
+type poll_ctl struct {
+	cmd    int16
+	events int16
+	fd     int32
+}
+
+const _PS_ADD = 0x0
+const _PS_DELETE = 0x2
+
+//extern pollset_create
+func pollset_create(maxfd int32) pollset_t
+
+//extern pollset_ctl
+func pollset_ctl(ps pollset_t, pollctl_array *poll_ctl, array_length int32) int32
+
+//extern pollset_poll
+func pollset_poll(ps pollset_t, polldata_array *pollfd, array_length int32, timeout int32) int32
 
 //extern pipe
 func libc_pipe(fd *int32) int32
@@ -31,59 +46,99 @@ func libc_pipe(fd *int32) int32
 //extern __go_fcntl_uintptr
 func fcntlUintptr(fd, cmd, arg uintptr) (uintptr, uintptr)
 
-func closeonexec(fd int32) {
-	fcntlUintptr(uintptr(fd), _F_SETFD, _FD_CLOEXEC)
+func fcntl(fd, cmd int32, arg uintptr) uintptr {
+	r, _ := fcntlUintptr(uintptr(fd), uintptr(cmd), arg)
+	return r
 }
 
 var (
-	allocated int
-	pfds      []pollfd
-	mpfds     map[uintptr]*pollDesc
-	pmtx      mutex
-	rdwake    int32
-	wrwake    int32
+	ps          pollset_t = -1
+	mpfds       map[int32]*pollDesc
+	pmtx        mutex
+	rdwake      int32
+	wrwake      int32
+	needsUpdate bool
 )
 
 func netpollinit() {
 	var p [2]int32
 
-	// Create the pipe we use to wakeup poll.
+	if ps = pollset_create(-1); ps < 0 {
+		throw("netpollinit: failed to create pollset")
+	}
+	// It is not possible to add or remove descriptors from
+	// the pollset while pollset_poll is active.
+	// We use a pipe to wakeup pollset_poll when the pollset
+	// needs to be updated.
 	if err := libc_pipe(&p[0]); err < 0 {
 		throw("netpollinit: failed to create pipe")
 	}
 	rdwake = p[0]
 	wrwake = p[1]
 
-	closeonexec(rdwake)
-	closeonexec(wrwake)
+	fl := fcntl(rdwake, _F_GETFL, 0)
+	fcntl(rdwake, _F_SETFL, fl|_O_NONBLOCK)
+	fcntl(rdwake, _F_SETFD, _FD_CLOEXEC)
 
-	// Pre-allocate array of pollfd structures for poll.
-	allocated = 128
-	pfds = make([]pollfd, allocated)
+	fl = fcntl(wrwake, _F_GETFL, 0)
+	fcntl(wrwake, _F_SETFL, fl|_O_NONBLOCK)
+	fcntl(wrwake, _F_SETFD, _FD_CLOEXEC)
 
-	mpfds = make(map[uintptr]*pollDesc)
+	// Add the read side of the pipe to the pollset.
+	var pctl poll_ctl
+	pctl.cmd = _PS_ADD
+	pctl.fd = rdwake
+	pctl.events = _POLLIN
+	if pollset_ctl(ps, &pctl, 1) != 0 {
+		throw("netpollinit: failed to register pipe")
+	}
+
+	mpfds = make(map[int32]*pollDesc)
 }
 
 func netpollopen(fd uintptr, pd *pollDesc) int32 {
+	// pollset_ctl will block if pollset_poll is active
+	// so wakeup pollset_poll first.
 	lock(&pmtx)
-	mpfds[fd] = pd
+	needsUpdate = true
 	unlock(&pmtx)
-
-	// Wakeup poll.
 	b := [1]byte{0}
 	write(uintptr(wrwake), unsafe.Pointer(&b[0]), 1)
+
+	var pctl poll_ctl
+	pctl.cmd = _PS_ADD
+	pctl.fd = int32(fd)
+	pctl.events = _POLLIN | _POLLOUT
+	if pollset_ctl(ps, &pctl, 1) != 0 {
+		return int32(errno())
+	}
+	lock(&pmtx)
+	mpfds[int32(fd)] = pd
+	needsUpdate = false
+	unlock(&pmtx)
 
 	return 0
 }
 
 func netpollclose(fd uintptr) int32 {
+	// pollset_ctl will block if pollset_poll is active
+	// so wakeup pollset_poll first.
 	lock(&pmtx)
-	delete(mpfds, fd)
+	needsUpdate = true
 	unlock(&pmtx)
-
-	// Wakeup poll.
 	b := [1]byte{0}
 	write(uintptr(wrwake), unsafe.Pointer(&b[0]), 1)
+
+	var pctl poll_ctl
+	pctl.cmd = _PS_DELETE
+	pctl.fd = int32(fd)
+	if pollset_ctl(ps, &pctl, 1) != 0 {
+		return int32(errno())
+	}
+	lock(&pmtx)
+	delete(mpfds, int32(fd))
+	needsUpdate = false
+	unlock(&pmtx)
 
 	return 0
 }
@@ -93,62 +148,39 @@ func netpollarm(pd *pollDesc, mode int) {
 }
 
 func netpoll(block bool) *g {
-	if allocated == 0 {
+	if ps == -1 {
 		return nil
 	}
-	timeout := ^uintptr(0)
+	timeout := int32(-1)
 	if !block {
 		timeout = 0
 	}
+	var pfds [128]pollfd
 retry:
 	lock(&pmtx)
-	npfds := len(mpfds) + 1
-	unlock(&pmtx)
-
-	if npfds > allocated {
-		for npfds > allocated {
-			allocated *= 2
-		}
-		pfds = make([]pollfd, allocated)
+	if needsUpdate {
+		unlock(&pmtx)
+		osyield()
+		goto retry
 	}
-
-	// Poll the read side of the pipe.
-	pfds[0].fd = rdwake
-	pfds[0].events = _POLLIN
-	lock(&pmtx)
-	// Notice that npfds may have changed since we released the lock.
-	// Just copy what we can, new descriptors will be added at next
-	// iteration.
-	i := 1
-	for fd := range mpfds {
-		if i >= allocated {
-			break
-		}
-		pfds[i].fd = int32(fd)
-		pfds[i].events = _POLLIN | _POLLOUT
-		i++
-	}
-	npfds = i
 	unlock(&pmtx)
-
-	n := libc_poll(&pfds[0], uintptr(npfds), timeout)
-	if n < 0 {
+	nfound := pollset_poll(ps, &pfds[0], int32(len(pfds)), timeout)
+	if nfound < 0 {
 		e := errno()
 		if e != _EINTR {
-			throw("poll failed")
+			throw("pollset_poll failed")
 		}
 		goto retry
 	}
 	var gp guintptr
-	for i = 0; i < npfds && n > 0; i++ {
-		pfd := pfds[i]
+	for i := int32(0); i < nfound; i++ {
+		pfd := &pfds[i]
 
 		var mode int32
 		if pfd.revents&(_POLLIN|_POLLHUP|_POLLERR) != 0 {
-			if i == 0 {
+			if pfd.fd == rdwake {
 				var b [1]byte
 				read(pfd.fd, unsafe.Pointer(&b[0]), 1)
-				n--
 				continue
 			}
 			mode += 'r'
@@ -158,12 +190,11 @@ retry:
 		}
 		if mode != 0 {
 			lock(&pmtx)
-			pd := mpfds[uintptr(pfd.fd)]
+			pd := mpfds[pfd.fd]
 			unlock(&pmtx)
 			if pd != nil {
 				netpollready(&gp, pd, mode)
 			}
-			n--
 		}
 	}
 	if block && gp == 0 {

@@ -1,3 +1,13 @@
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* go-gcc.cc (Gcc_backend::function): Look up for no_split_stack
+	and not __no_split_stack__.
+
+2017-07-27    Tony Reix  <tony.reix@atos.net>
+
+	* go-backend.c (go_write_export_data): Use EXCLUDE section for
+	AIX.
+
 2017-06-09  Ian Lance Taylor  <iant@golang.org>
 
 	* go-lang.c (go_langhook_post_options): If -fsplit-stack is turned

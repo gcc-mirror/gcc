@@ -600,8 +600,7 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
 				 && TARGET_POWERPC64)
 #define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
-
+				 && TARGET_POWERPC64)
 
 /* Whether we should avoid (SUBREG:SI (REG:SF) and (SUBREG:SF (REG:SI).  */
 #define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
@@ -668,7 +667,6 @@ extern int rs6000_vector_align[];
 #define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
-#define MASK_VSX_TIMODE			OPTION_MASK_VSX_TIMODE
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -761,7 +759,6 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64		\
-					 && TARGET_UPPER_REGS_DI	\
 					 && (rs6000_altivec_element_order != 2))
 
 /* Whether the various reciprocal divide/square root estimate instructions
@@ -1584,13 +1581,6 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 
 #define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)			\
   rs6000_secondary_memory_needed_ptr (CLASS1, CLASS2, MODE)
-
-/* For cpus that cannot load/store SDmode values from the 64-bit
-   FP registers without using a full 64-bit load/store, we need
-   to allocate a full 64-bit stack slot for them.  */
-
-#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  rs6000_secondary_memory_needed_rtx (MODE)
 
 /* Specify the mode to be used for memory when a secondary memory
    location is needed.  For cpus that cannot load/store SDmode values

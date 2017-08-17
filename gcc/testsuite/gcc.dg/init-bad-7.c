@@ -8,4 +8,4 @@ struct f
 };
 
 char b[10];
-struct f g = {b}; /* { dg-warning "initialization from incompatible pointer type|near initialization for" } */
+struct f g = {b}; /* { dg-warning "initialization of 'int \\*' from incompatible pointer type|near initialization for" } */

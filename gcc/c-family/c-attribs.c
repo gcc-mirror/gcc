@@ -66,6 +66,7 @@ static tree handle_stack_protect_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noinline_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noclone_attribute (tree *, tree, tree, int, bool *);
 static tree handle_noicf_attribute (tree *, tree, tree, int, bool *);
+static tree handle_noipa_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
 static tree handle_always_inline_attribute (tree *, tree, tree, int,
 					    bool *);
@@ -115,6 +116,7 @@ static tree handle_deprecated_attribute (tree *, tree, tree, int,
 static tree handle_vector_size_attribute (tree *, tree, tree, int,
 					  bool *);
 static tree handle_nonnull_attribute (tree *, tree, tree, int, bool *);
+static tree handle_nonstring_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nothrow_attribute (tree *, tree, tree, int, bool *);
 static tree handle_cleanup_attribute (tree *, tree, tree, int, bool *);
 static tree handle_warn_unused_result_attribute (tree *, tree, tree, int,
@@ -142,6 +144,8 @@ static tree handle_bnd_variable_size_attribute (tree *, tree, tree, int, bool *)
 static tree handle_bnd_legacy (tree *, tree, tree, int, bool *);
 static tree handle_bnd_instrument (tree *, tree, tree, int, bool *);
 static tree handle_fallthrough_attribute (tree *, tree, tree, int, bool *);
+static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
+						       int, bool *);
 
 /* Table of machine-independent attributes common to all C-like languages.
 
@@ -176,6 +180,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_noclone_attribute, false },
   { "no_icf",                 0, 0, true,  false, false,
 			      handle_noicf_attribute, false },
+  { "noipa",		      0, 0, true,  false, false,
+			      handle_noipa_attribute, false },
   { "leaf",                   0, 0, true,  false, false,
 			      handle_leaf_attribute, false },
   { "always_inline",          0, 0, true,  false, false,
@@ -265,6 +271,8 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_tls_model_attribute, false },
   { "nonnull",                0, -1, false, true, true,
 			      handle_nonnull_attribute, false },
+  { "nonstring",              0, 0, true, false, false,
+			      handle_nonstring_attribute, false },
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute, false },
   { "may_alias",	      0, 0, false, true, false, NULL, false },
@@ -351,6 +359,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_bnd_instrument, false },
   { "fallthrough",	      0, 0, false, false, false,
 			      handle_fallthrough_attribute, false },
+  { "patchable_function_entry",	1, 2, true, false, false,
+			      handle_patchable_function_entry_attribute,
+			      false },
   { NULL,                     0, 0, false, false, false, NULL, false }
 };
 
@@ -693,6 +704,21 @@ handle_asan_odr_indicator_attribute (tree *, tree, tree, int, bool *)
 static tree
 handle_stack_protect_attribute (tree *node, tree name, tree, int,
 				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != FUNCTION_DECL)
+    {
+      warning (OPT_Wattributes, "%qE attribute ignored", name);
+      *no_add_attrs = true;
+    }
+
+  return NULL_TREE;
+}
+
+/* Handle a "noipa" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
 {
   if (TREE_CODE (*node) != FUNCTION_DECL)
     {
@@ -2947,6 +2973,48 @@ handle_nonnull_attribute (tree *node, tree ARG_UNUSED (name),
   return NULL_TREE;
 }
 
+/* Handle the "nonstring" variable attribute.  */
+
+static tree
+handle_nonstring_attribute (tree *node, tree name, tree ARG_UNUSED (args),
+			    int ARG_UNUSED (flags), bool *no_add_attrs)
+{
+  gcc_assert (!args);
+  tree_code code = TREE_CODE (*node);
+
+  if (VAR_P (*node)
+      || code == FIELD_DECL
+      || code == PARM_DECL)
+    {
+      tree type = TREE_TYPE (*node);
+
+      if (POINTER_TYPE_P (type) || TREE_CODE (type) == ARRAY_TYPE)
+	{
+	  tree eltype = TREE_TYPE (type);
+	  if (eltype == char_type_node)
+	    return NULL_TREE;
+	}
+
+      warning (OPT_Wattributes,
+	       "%qE attribute ignored on objects of type %qT",
+	       name, type);
+      *no_add_attrs = true;
+      return NULL_TREE;
+    }
+
+  if (code == FUNCTION_DECL)
+    warning (OPT_Wattributes,
+	     "%qE attribute does not apply to functions", name);
+  else if (code == TYPE_DECL)
+    warning (OPT_Wattributes,
+	     "%qE attribute does not apply to types", name);
+  else
+    warning (OPT_Wattributes, "%qE attribute ignored", name);
+
+  *no_add_attrs = true;
+  return NULL_TREE;
+}
+
 /* Handle a "nothrow" attribute; arguments as in
    struct attribute_spec.handler.  */
 
@@ -3116,6 +3184,19 @@ handle_target_attribute (tree *node, tree name, tree args, int flags,
 						      flags))
     *no_add_attrs = true;
 
+  /* Check that there's no empty string in values of the attribute.  */
+  for (tree t = args; t != NULL_TREE; t = TREE_CHAIN (t))
+    {
+      tree value = TREE_VALUE (t);
+      if (TREE_CODE (value) == STRING_CST
+	  && TREE_STRING_LENGTH (value) == 1
+	  && TREE_STRING_POINTER (value)[0] == '\0')
+	{
+	  warning (OPT_Wattributes, "empty string in attribute %<target%>");
+	  *no_add_attrs = true;
+	}
+    }
+
   return NULL_TREE;
 }
 
@@ -3258,5 +3339,12 @@ handle_fallthrough_attribute (tree *, tree name, tree, int,
 {
   warning (OPT_Wattributes, "%qE attribute ignored", name);
   *no_add_attrs = true;
+  return NULL_TREE;
+}
+
+static tree
+handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
+{
+  /* Nothing to be done here.  */
   return NULL_TREE;
 }

@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-tree.h"
 #include "lto.h"
 #include "cilk.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static tree handle_noreturn_attribute (tree *, tree, tree, int, bool *);
 static tree handle_leaf_attribute (tree *, tree, tree, int, bool *);
@@ -48,6 +50,8 @@ static tree handle_sentinel_attribute (tree *, tree, tree, int, bool *);
 static tree handle_type_generic_attribute (tree *, tree, tree, int, bool *);
 static tree handle_transaction_pure_attribute (tree *, tree, tree, int, bool *);
 static tree handle_returns_twice_attribute (tree *, tree, tree, int, bool *);
+static tree handle_patchable_function_entry_attribute (tree *, tree, tree,
+						       int, bool *);
 static tree ignore_attribute (tree *, tree, tree, int, bool *);
 
 static tree handle_format_attribute (tree *, tree, tree, int, bool *);
@@ -76,6 +80,9 @@ const struct attribute_spec lto_attribute_table[] =
 			      handle_nonnull_attribute, false },
   { "nothrow",                0, 0, true,  false, false,
 			      handle_nothrow_attribute, false },
+  { "patchable_function_entry", 1, 2, true, false, false,
+			      handle_patchable_function_entry_attribute,
+			      false },
   { "returns_twice",          0, 0, true,  false, false,
 			      handle_returns_twice_attribute, false },
   { "sentinel",               0, 1, false, true, true,
@@ -470,6 +477,13 @@ handle_returns_twice_attribute (tree *node, tree ARG_UNUSED (name),
 
   DECL_IS_RETURNS_TWICE (*node) = 1;
 
+  return NULL_TREE;
+}
+
+static tree
+handle_patchable_function_entry_attribute (tree *, tree, tree, int, bool *)
+{
+  /* Nothing to be done here.  */
   return NULL_TREE;
 }
 

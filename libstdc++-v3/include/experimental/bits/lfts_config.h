@@ -35,30 +35,25 @@
 #if _GLIBCXX_INLINE_VERSION
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace chrono
 {
 namespace experimental
 {
-inline namespace fundamentals_v1 { inline namespace __8 { } }
-inline namespace fundamentals_v2 { inline namespace __8 { } }
+inline namespace fundamentals_v1 { }
+inline namespace fundamentals_v2 { }
 } // namespace experimental
 } // namespace chrono
 
 namespace experimental
 {
-inline namespace fundamentals_v1 {
-  inline namespace __8 { }
-  namespace __detail { inline namespace __8 { } }
-}
-inline namespace fundamentals_v2 {
-  inline namespace __8 { }
-  namespace pmr { inline namespace __8 { } }
-  namespace __detail { inline namespace __8 { } }
-} // namespace fundamentals_v2
-inline namespace literals { inline namespace string_view_literals {
-  inline namespace __8 { }
-} } // namespace literals::string_view_literals
+inline namespace fundamentals_v1 { }
+inline namespace fundamentals_v2 { }
+inline namespace literals { inline namespace string_view_literals { } }
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif
 #endif

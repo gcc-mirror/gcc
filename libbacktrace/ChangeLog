@@ -1,3 +1,23 @@
+2017-08-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/81638
+	* xcoff.c (xcoff_process_linenos): Initialize incl to NULL.
+
+2017-07-28  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c: Don't leak a file descriptor if an archive is malformed.
+
+2017-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* fileline.c (fileline_initialize): Print pid_t as long.
+
+2017-07-26  Tony Reix  <tony.reix@atos.net>
+
+	* configure.ac: Check for XCOFF32/XCOFF64.  Check for loadquery.
+	* filetype.awk: Separate AIX XCOFF32 and XCOFF64.
+	* xcoff.c: Add support for AIX XCOFF32 and XCOFF64 formats.
+	* configure, config.h.in: Regenerate.
+
 2017-07-21  Tony Reix  <tony.reix@atos.net>
 
 	* filetype.awk: Add AIX XCOFF type detection.

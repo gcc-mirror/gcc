@@ -1,3 +1,14 @@
+2017-07-31  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+        * MAINTAINERS (write after approval): Add myself.
+
+2017-07-28  Tony Reix  <tony.reix@atos.net>
+
+	* configure.ac (target-libffi): Don't disable for AIX.
+	(go): Don't add to unsupported_languages on AIX.
+	(target-libgo): Don't disable for AIX.
+	* configure: Regenerate.
+
 2017-07-19  Yury Gribov  <tetra2005@gmail.com>
 
 	* MAINTAINERS: Add myself.

@@ -44,12 +44,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_gcd_lcm 201411
 
   /// Greatest common divisor
@@ -75,10 +75,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(!is_same<_Nn, bool>::value, "lcm arguments are not bools");
       return std::__detail::__lcm(__m, __n);
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

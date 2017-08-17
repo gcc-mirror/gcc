@@ -2591,7 +2591,7 @@ gfc_check_init_expr (gfc_expr *e)
       else
 	gfc_error ("Parameter %qs at %L has not been declared or is "
 		   "a variable, which does not reduce to a constant "
-		   "expression", e->symtree->n.sym->name, &e->where);
+		   "expression", e->symtree->name, &e->where);
 
       break;
 

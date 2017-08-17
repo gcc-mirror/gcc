@@ -4573,6 +4573,15 @@ will select the smallest suitable mode.
 This section describes the macros that output function entry
 (@dfn{prologue}) and exit (@dfn{epilogue}) code.
 
+@deftypefn {Target Hook} void TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY (FILE *@var{file}, unsigned HOST_WIDE_INT @var{patch_area_size}, bool @var{record_p})
+Generate a patchable area at the function start, consisting of
+@var{patch_area_size} NOP instructions.  If the target supports named
+sections and if @var{record_p} is true, insert a pointer to the current
+location in the table of patchable functions.  The default implementation
+of the hook places the table of pointers in the special section named
+@code{__patchable_function_entries}.
+@end deftypefn
+
 @deftypefn {Target Hook} void TARGET_ASM_FUNCTION_PROLOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
 If defined, a function that outputs the assembler code for entry to a
 function.  The prologue is responsible for setting up the stack frame,

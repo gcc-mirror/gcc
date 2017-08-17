@@ -2918,11 +2918,22 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 
   for (i = 0; i < length; i++)
     {
+      bool in_p = ranges[i].in_p;
       if (ranges[i].low == NULL_TREE
-	  || ranges[i].high == NULL_TREE
-	  || !integer_zerop (ranges[i].low)
-	  || !integer_zerop (ranges[i].high))
+	  || ranges[i].high == NULL_TREE)
 	continue;
+      if (!integer_zerop (ranges[i].low)
+	  || !integer_zerop (ranges[i].high))
+	{
+	  if (ranges[i].exp
+	      && TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) == 1
+	      && TYPE_UNSIGNED (TREE_TYPE (ranges[i].exp))
+	      && integer_onep (ranges[i].low)
+	      && integer_onep (ranges[i].high))
+	    in_p = !in_p;
+	  else
+	    continue;
+	}
 
       gimple *stmt;
       tree_code ccode;
@@ -2958,17 +2969,26 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	{
 	case GT_EXPR:
 	case GE_EXPR:
-	  if (!ranges[i].in_p)
-	    std::swap (rhs1, rhs2);
+	case LT_EXPR:
+	case LE_EXPR:
+	  break;
+	default:
+	  continue;
+	}
+      if (in_p)
+	ccode = invert_tree_comparison (ccode, false);
+      switch (ccode)
+	{
+	case GT_EXPR:
+	case GE_EXPR:
+	  std::swap (rhs1, rhs2);
 	  ccode = swap_tree_comparison (ccode);
 	  break;
 	case LT_EXPR:
 	case LE_EXPR:
-	  if (ranges[i].in_p)
-	    std::swap (rhs1, rhs2);
 	  break;
 	default:
-	  continue;
+	  gcc_unreachable ();
 	}
 
       int *idx = map->get (rhs1);
@@ -3015,8 +3035,14 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	  fprintf (dump_file, "\n");
 	}
 
-      if (ranges[i].in_p)
-	std::swap (rhs1, rhs2);
+      operand_entry *oe = (*ops)[ranges[i].idx];
+      ranges[i].in_p = 0;
+      if (opcode == BIT_IOR_EXPR
+	  || (opcode == ERROR_MARK && oe->rank == BIT_IOR_EXPR))
+	{
+	  ranges[i].in_p = 1;
+	  ccode = invert_tree_comparison (ccode, false);
+	}
 
       unsigned int uid = gimple_uid (stmt);
       gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
@@ -3043,7 +3069,6 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	}
       else
 	{
-	  operand_entry *oe = (*ops)[ranges[i].idx];
 	  tree ctype = oe->op ? TREE_TYPE (oe->op) : boolean_type_node;
 	  if (!INTEGRAL_TYPE_P (ctype)
 	      || (TREE_CODE (ctype) != BOOLEAN_TYPE
@@ -3065,7 +3090,7 @@ optimize_range_tests_var_bound (enum tree_code opcode, int first, int length,
 	  ranges[i].high = ranges[i].low;
 	}
       ranges[i].strict_overflow_p = false;
-      operand_entry *oe = (*ops)[ranges[*idx].idx];
+      oe = (*ops)[ranges[*idx].idx];
       /* Now change all the other range test immediate uses, so that
 	 those tests will be optimized away.  */
       if (opcode == ERROR_MARK)
@@ -4205,11 +4230,15 @@ insert_stmt_before_use (gimple *stmt, gimple *stmt_to_insert)
 
 /* Recursively rewrite our linearized statements so that the operators
    match those in OPS[OPINDEX], putting the computation in rank
-   order.  Return new lhs.  */
+   order.  Return new lhs.
+   CHANGED is true if we shouldn't reuse the lhs SSA_NAME both in
+   the current stmt and during recursive invocations.
+   NEXT_CHANGED is true if we shouldn't reuse the lhs SSA_NAME in
+   recursive invocations.  */
 
 static tree
 rewrite_expr_tree (gimple *stmt, unsigned int opindex,
-		   vec<operand_entry *> ops, bool changed)
+		   vec<operand_entry *> ops, bool changed, bool next_changed)
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   tree rhs2 = gimple_assign_rhs2 (stmt);
@@ -4300,7 +4329,8 @@ rewrite_expr_tree (gimple *stmt, unsigned int opindex,
      be the non-leaf side.  */
   tree new_rhs1
     = rewrite_expr_tree (SSA_NAME_DEF_STMT (rhs1), opindex + 1, ops,
-			 changed || oe->op != rhs2);
+			 changed || oe->op != rhs2 || next_changed,
+			 false);
 
   if (oe->op != rhs2 || new_rhs1 != rhs1)
     {
@@ -4699,7 +4729,9 @@ should_break_up_subtract (gimple *stmt)
       && (immusestmt = get_single_immediate_use (lhs))
       && is_gimple_assign (immusestmt)
       && (gimple_assign_rhs_code (immusestmt) == PLUS_EXPR
-	  ||  gimple_assign_rhs_code (immusestmt) == MULT_EXPR))
+	  || (gimple_assign_rhs_code (immusestmt) == MINUS_EXPR
+	      && gimple_assign_rhs1 (immusestmt) == lhs)
+	  || gimple_assign_rhs_code (immusestmt) == MULT_EXPR))
     return true;
   return false;
 }
@@ -5654,6 +5686,7 @@ reassociate_bb (basic_block bb)
 	      gimple_set_visited (stmt, true);
 	      linearize_expr_tree (&ops, stmt, true, true);
 	      ops.qsort (sort_by_operand_rank);
+	      int orig_len = ops.length ();
 	      optimize_ops_list (rhs_code, &ops);
 	      if (undistribute_ops_list (rhs_code, &ops,
 					 loop_containing_stmt (stmt)))
@@ -5744,7 +5777,8 @@ reassociate_bb (basic_block bb)
 
 		      new_lhs = rewrite_expr_tree (stmt, 0, ops,
 						   powi_result != NULL
-						   || negate_result);
+						   || negate_result,
+						   len != orig_len);
                     }
 
 		  /* If we combined some repeated factors into a 

@@ -765,7 +765,7 @@ copy_decl (tree decl MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node_stat (decl PASS_MEM_STAT);
+  copy = copy_node (decl PASS_MEM_STAT);
   cxx_dup_lang_specific_decl (copy);
   return copy;
 }
@@ -798,7 +798,7 @@ copy_type (tree type MEM_STAT_DECL)
 {
   tree copy;
 
-  copy = copy_node_stat (type PASS_MEM_STAT);
+  copy = copy_node (type PASS_MEM_STAT);
   copy_lang_type (copy);
   return copy;
 }
@@ -808,8 +808,7 @@ copy_type (tree type MEM_STAT_DECL)
 static bool
 maybe_add_lang_type_raw (tree t)
 {
-  if (!(RECORD_OR_UNION_CODE_P (TREE_CODE (t))
-	|| TREE_CODE (t) == BOUND_TEMPLATE_TEMPLATE_PARM))
+  if (!RECORD_OR_UNION_CODE_P (TREE_CODE (t)))
     return false;
   
   TYPE_LANG_SPECIFIC (t)
@@ -830,12 +829,10 @@ cxx_make_type (enum tree_code code)
 {
   tree t = make_node (code);
 
-  maybe_add_lang_type_raw (t);
-
-  /* Set up some flags that give proper default behavior.  */
-  if (RECORD_OR_UNION_CODE_P (code))
+  if (maybe_add_lang_type_raw (t))
     {
-      struct c_fileinfo *finfo = \
+      /* Set up some flags that give proper default behavior.  */
+      struct c_fileinfo *finfo =
 	get_fileinfo (LOCATION_FILE (input_location));
       SET_CLASSTYPE_INTERFACE_UNKNOWN_X (t, finfo->interface_unknown);
       CLASSTYPE_INTERFACE_ONLY (t) = finfo->interface_only;

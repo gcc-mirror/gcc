@@ -1,3 +1,15 @@
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call): Update
+	a call to build_conditional_expr.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.c: Include header files.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.

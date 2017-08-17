@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -mpower9-dform -O2 -mlra" } */
+/* { dg-options "-mcpu=power9 -mpower9-dform -O2" } */
 
 #ifndef TYPE
 #define TYPE float

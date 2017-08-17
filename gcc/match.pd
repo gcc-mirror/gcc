@@ -284,6 +284,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 || mul != wi::min_value (TYPE_PRECISION (type), SIGNED))
      { build_zero_cst (type); })))))
 
+/* Combine successive multiplications.  Similar to above, but handling
+   overflow is different.  */
+(simplify
+ (mult (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+ (with {
+   bool overflow_p;
+   wide_int mul = wi::mul (@1, @2, TYPE_SIGN (type), &overflow_p);
+  }
+  /* Skip folding on overflow: the only special case is @1 * @2 == -INT_MIN,
+     otherwise undefined overflow implies that @0 must be zero.  */
+  (if (!overflow_p || TYPE_OVERFLOW_WRAPS (type))
+   (mult @0 { wide_int_to_tree (type, mul); }))))
+
 /* Optimize A / A to 1.0 if we don't care about
    NaNs or Infinities.  */
 (simplify
@@ -887,7 +900,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (X | Y) | (X | Z) -> (X | Y) | Z  */
 (for op (bit_and bit_ior)
  (simplify
-  (op:c (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
+  (op (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (if (single_use (@5) && single_use (@6))
@@ -2213,6 +2226,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (mult @0 integer_minus_onep)
  (negate @0))
 
+/* Reassociate (X * CST) * Y to (X * Y) * CST.  This does not introduce
+   signed overflow for CST != 0 && CST != -1.  */
+(simplify
+ (mult:c (mult:s @0 INTEGER_CST@1) @2)
+ (if (TREE_CODE (@2) != INTEGER_CST
+      && !integer_zerop (@1) && !integer_minus_onep (@1))
+  (mult (mult @0 @2) @1)))
+
 /* True if we can easily extract the real and imaginary parts of a complex
    number.  */
 (match compositional_complex
@@ -2878,6 +2899,80 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (! HONOR_NANS (@0))
 	(cmp @0 @1))))))
 
+/* Optimize various special cases of (FTYPE) N CMP CST.  */
+(for cmp  (lt le eq ne ge gt)
+     icmp (le le eq ne ge ge)
+ (simplify
+  (cmp (float @0) REAL_CST@1)
+   (if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@1))
+	&& ! DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@1)))
+    (with
+     {
+       tree itype = TREE_TYPE (@0);
+       signop isign = TYPE_SIGN (itype);
+       format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@1))));
+       const REAL_VALUE_TYPE *cst = TREE_REAL_CST_PTR (@1);
+       /* Be careful to preserve any potential exceptions due to
+	  NaNs.  qNaNs are ok in == or != context.
+	  TODO: relax under -fno-trapping-math or
+	  -fno-signaling-nans.  */
+       bool exception_p
+         = real_isnan (cst) && (cst->signalling
+				|| (cmp != EQ_EXPR || cmp != NE_EXPR));
+       /* INT?_MIN is power-of-two so it takes
+	  only one mantissa bit.  */
+       bool signed_p = isign == SIGNED;
+       bool itype_fits_ftype_p
+	 = TYPE_PRECISION (itype) - signed_p <= significand_size (fmt);
+     }
+     /* TODO: allow non-fitting itype and SNaNs when
+	-fno-trapping-math.  */
+     (if (itype_fits_ftype_p && ! exception_p)
+      (with
+       {
+	 REAL_VALUE_TYPE imin, imax;
+	 real_from_integer (&imin, fmt, wi::min_value (itype), isign);
+	 real_from_integer (&imax, fmt, wi::max_value (itype), isign);
+
+	 REAL_VALUE_TYPE icst;
+	 if (cmp == GT_EXPR || cmp == GE_EXPR)
+	   real_ceil (&icst, fmt, cst);
+	 else if (cmp == LT_EXPR || cmp == LE_EXPR)
+	   real_floor (&icst, fmt, cst);
+	 else
+	   real_trunc (&icst, fmt, cst);
+
+	 bool cst_int_p = real_identical (&icst, cst);
+
+	 bool overflow_p = false;
+	 wide_int icst_val
+	   = real_to_integer (&icst, &overflow_p, TYPE_PRECISION (itype));
+       }
+       (switch
+	/* Optimize cases when CST is outside of ITYPE's range.  */
+	(if (real_compare (LT_EXPR, cst, &imin))
+	 { constant_boolean_node (cmp == GT_EXPR || cmp == GE_EXPR || cmp == NE_EXPR,
+				  type); })
+	(if (real_compare (GT_EXPR, cst, &imax))
+	 { constant_boolean_node (cmp == LT_EXPR || cmp == LE_EXPR || cmp == NE_EXPR,
+				  type); })
+	/* Remove cast if CST is an integer representable by ITYPE.  */
+	(if (cst_int_p)
+	 (cmp @0 { gcc_assert (!overflow_p);
+		   wide_int_to_tree (itype, icst_val); })
+	)
+	/* When CST is fractional, optimize
+	    (FTYPE) N == CST -> 0
+	    (FTYPE) N != CST -> 1.  */
+	(if (cmp == EQ_EXPR || cmp == NE_EXPR)
+	 { constant_boolean_node (cmp == NE_EXPR, type); }) 
+	/* Otherwise replace with sensible integer constant.  */
+	(with
+	 {
+	   gcc_checking_assert (!overflow_p);
+	 }
+	 (icmp @0 { wide_int_to_tree (itype, icst_val); })))))))))
+
 /* Fold A /[ex] B CMP C to A CMP B * C.  */
 (for cmp (eq ne)
  (simplify
@@ -3202,14 +3297,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		    || TREE_CODE (base1) == STRING_CST))
          equal = (base0 == base1);
      }
-     (if (equal == 1
-	  && (cmp == EQ_EXPR || cmp == NE_EXPR
-	      /* If the offsets are equal we can ignore overflow.  */
-	      || off0 == off1
-	      || POINTER_TYPE_OVERFLOW_UNDEFINED
-	      /* Or if we compare using pointers to decls or strings.  */
-	      || (POINTER_TYPE_P (TREE_TYPE (@2))
-		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
+     (if (equal == 1)
       (switch
        (if (cmp == EQ_EXPR)
 	{ constant_boolean_node (off0 == off1, type); })
@@ -4157,3 +4245,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 { CONSTRUCTOR_ELT (ctor, idx / k)->value; })
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / k)->value; }
 		       @1 { bitsize_int ((idx % k) * width); })))))))))
+
+/* Simplify a bit extraction from a bit insertion for the cases with
+   the inserted element fully covering the extraction or the insertion
+   not touching the extraction.  */
+(simplify
+ (BIT_FIELD_REF (bit_insert @0 @1 @ipos) @rsize @rpos)
+ (with
+  {
+    unsigned HOST_WIDE_INT isize;
+    if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+      isize = TYPE_PRECISION (TREE_TYPE (@1));
+    else
+      isize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (@1)));
+  }
+  (switch
+   (if (wi::leu_p (@ipos, @rpos)
+        && wi::leu_p (wi::add (@rpos, @rsize), wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @1 @rsize { wide_int_to_tree (bitsizetype,
+                                                 wi::sub (@rpos, @ipos)); }))
+   (if (wi::geu_p (@ipos, wi::add (@rpos, @rsize))
+        || wi::geu_p (@rpos, wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @0 @rsize @rpos)))))

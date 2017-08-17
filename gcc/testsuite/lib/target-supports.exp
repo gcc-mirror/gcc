@@ -3436,7 +3436,7 @@ proc add_options_for_arm_v8_1a_neon { flags } {
 	return "$flags"
     }
     global et_arm_v8_1a_neon_flags
-    return "$flags $et_arm_v8_1a_neon_flags -march=armv8.1-a"
+    return "$flags $et_arm_v8_1a_neon_flags"
 }
 
 # Add the options needed for ARMv8.2 with the scalar FP16 extension.
@@ -4127,13 +4127,15 @@ proc check_effective_target_arm_v8_1a_neon_ok_nocache { } {
     # since AArch64 only needs the -march setting.
     foreach flags {"" "-mfpu=neon-fp-armv8" "-mfloat-abi=softfp" \
 		       "-mfpu=neon-fp-armv8 -mfloat-abi=softfp"} {
-	if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
-	    #if !defined (__ARM_FEATURE_QRDMX)
-	    #error "__ARM_FEATURE_QRDMX not defined"
-	    #endif
-	} "$flags -march=armv8.1-a"] } {
-	    set et_arm_v8_1a_neon_flags "$flags -march=armv8.1-a"
-	    return 1
+	foreach arches { "-march=armv8-a+rdma" "-march=armv8.1-a" } {
+	    if { [check_no_compiler_messages_nocache arm_v8_1a_neon_ok object {
+		#if !defined (__ARM_FEATURE_QRDMX)
+		#error "__ARM_FEATURE_QRDMX not defined"
+		#endif
+	    } "$flags $arches"] } {
+		set et_arm_v8_1a_neon_flags "$flags $arches"
+		return 1
+	    }
 	}
     }
 
@@ -8479,4 +8481,19 @@ proc check_effective_target_arm_coproc4_ok_nocache { } {
 proc check_effective_target_arm_coproc4_ok { } {
     return [check_cached_effective_target arm_coproc4_ok \
 		check_effective_target_arm_coproc4_ok_nocache]
+}
+
+# Return 1 if the target supports the auto_inc_dec optimization pass.
+proc check_effective_target_autoincdec { } {
+    if { ![check_no_compiler_messages auto_incdec assembly { void f () { }
+	 } "-O2 -fdump-rtl-auto_inc_dec" ] } {
+      return 0
+    }
+
+    set dumpfile [glob -nocomplain "auto_incdec[pid].c.\[0-9\]\[0-9\]\[0-9\]r.auto_inc_dec"]
+    if { [file exists $dumpfile ] } {
+	file delete $dumpfile
+	return 1
+    }
+    return 0
 }

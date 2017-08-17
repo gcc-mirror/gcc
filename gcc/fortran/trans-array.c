@@ -4577,7 +4577,10 @@ gfc_conv_resolve_dependencies (gfc_loopinfo * loop, gfc_ss * dest,
 	      && gfc_check_dependency (dest_expr, ss_expr, false))
 	    ss_info->data.scalar.needs_temporary = 1;
 
-	  continue;
+	  if (nDepend)
+	    break;
+	  else
+	    continue;
 	}
 
       if (dest_expr->symtree->n.sym != ss_expr->symtree->n.sym)

@@ -32,7 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ipa-chkp.h"
 #include "gomp-constants.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
+#include "opts.h"
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -769,6 +772,21 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
 #endif
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
+#ifdef ACCEL_COMPILER
+  {
+    tree opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr);
+    if (opts)
+      {
+	struct gcc_options tmp;
+	init_options_struct (&tmp, NULL);
+	cl_optimization_restore (&tmp, TREE_OPTIMIZATION (opts));
+	finish_options (&tmp, &global_options_set, UNKNOWN_LOCATION);
+	opts = build_optimization_node (&tmp);
+	finalize_options_struct (&tmp);
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = opts;
+      }
+  }
+#endif
 
   /* If the file contains a function with an EH personality set,
      then it was compiled with -fexceptions.  In that case, initialize

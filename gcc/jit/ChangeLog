@@ -1,3 +1,33 @@
+2017-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/types.rst (Vector types): New section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_8): New tag.
+	* docs/topics/types.rst (gcc_jit_context_get_type): Fix typo in
+	example.
+	(Vector types): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-playback.h (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-recording.c: In namespace gcc::jit::recording::
+	(type::get_vector): New method.
+	(memento_of_get_aligned::write_reproducer): Fix typo
+	in leading comment.
+	(memento_of_get_vector::replay_into): New method.
+	(memento_of_get_vector::make_debug_string): New method.
+	(memento_of_get_vector::write_reproducer): New method.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(type::get_vector): New
+	 method.
+	(class memento_of_get_vector): New class.
+	* libgccjit++.h (gccjit::type::get_vector): New method.
+	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_type_get_vector): New
+	define.
+	(gcc_jit_type_get_vector): New decl.
+	* libgccjit.map (LIBGCCJIT_ABI_8): New ABI tag.
+
 2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

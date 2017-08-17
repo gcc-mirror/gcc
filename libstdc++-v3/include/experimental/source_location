@@ -32,10 +32,10 @@
 #include <cstdint>
 
 namespace std {
-namespace experimental {
-inline namespace fundamentals_v2 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace experimental {
+inline namespace fundamentals_v2 {
 #define __cpp_lib_experimental_source_location 201505
 
   struct source_location
@@ -77,10 +77,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uint_least32_t _M_line;
     uint_least32_t _M_col;
   };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

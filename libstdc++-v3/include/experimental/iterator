@@ -45,12 +45,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_ostream_joiner 201411
 
   /// Output iterator that inserts a delimiter between elements.
@@ -105,10 +105,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     make_ostream_joiner(basic_ostream<_CharT, _Traits>& __os,
 			_DelimT&& __delimiter)
     { return { __os, std::forward<_DelimT>(__delimiter) }; }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

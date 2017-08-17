@@ -1,3 +1,30 @@
+2017-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_type): Use TYPE_LANG_SLOT_1.
+	(compare_tree_sccs_1): No need to compare TYPE_BINFO directly.
+	(lto_fixup_prevailing_decls): Use TYPE_LANG_SLOT_1.
+
+2017-08-08  Tom de Vries  <tom@codesourcery.com>
+
+	* lto.c: Include attribs.h.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c: Include header files.
+	* lto-symtab.c: Likewise.
+
+2017-08-03  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.h (lto_symtab_prevail_decl): Do not use
+	DECL_ABSTRACT_ORIGIN as flag we can end up using that.  Instead
+	use DECL_LANG_FLAG_0.
+	(lto_symtab_prevail_decl): Likewise.
+
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* lto-lang.c (lto_attribute_table): Add entry for
+	"patchable_function_entry".
+
 2017-07-19  Nathan Sidwell  <nathan@acm.org>
 
 	* lto.c (mentions_vars_p_type): Use TYPE_{MIN,MAX}_VALUE_RAW.

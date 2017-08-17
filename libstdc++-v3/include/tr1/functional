@@ -48,18 +48,15 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-#if __cplusplus >= 201103L
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+#if __cplusplus >= 201103L
   template<int> struct _Placeholder;
   template<typename> class _Bind;
   template<typename, typename> class _Bind_result;
-_GLIBCXX_END_NAMESPACE_VERSION
 #endif
 
 namespace tr1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _MemberPointer>
     class _Mem_fn;
   template<typename _Tp, typename _Class>
@@ -855,14 +852,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// The type of placeholder objects defined by libstdc++.
   template<int _Num> struct _Placeholder { };
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   /** @namespace std::tr1::placeholders
    *  @brief Sub-namespace for tr1/functional.
    */
   namespace placeholders 
   { 
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /*  Define a large number of placeholders. There is no way to
      *  simplify this with variadic templates, because we're introducing
      *  unique names for each.
@@ -899,10 +893,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
       _Placeholder<28> _28;
       _Placeholder<29> _29;
     } 
-  _GLIBCXX_END_NAMESPACE_VERSION
   }
 
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   /**
    *  Partial specialization of is_placeholder that provides the placeholder
    *  number for the placeholder objects defined by libstdc++.
@@ -2247,12 +2239,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline void
     swap(function<_Signature>& __x, function<_Signature>& __y)
     { __x.swap(__y); }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #if __cplusplus >= 201103L
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename> struct is_placeholder;
 
@@ -2301,8 +2290,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
                                                                _Signature>>
     : true_type { };
 
+#endif // C++11
 _GLIBCXX_END_NAMESPACE_VERSION
-#endif
 }
 
 #endif // _GLIBCXX_TR1_FUNCTIONAL

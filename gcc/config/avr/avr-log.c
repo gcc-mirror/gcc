@@ -146,7 +146,13 @@ avr_log_vadump (FILE *file, const char *caller, va_list ap)
               }
 
             case 'T':
-              print_node_brief (file, "", va_arg (ap, tree), 3);
+              {
+                tree t = va_arg (ap, tree);
+                if (NULL_TREE == t)
+                  fprintf (file, "<NULL-TREE>");
+                else
+                  print_node_brief (file, "", t, 3);
+              }
               break;
 
             case 'd':

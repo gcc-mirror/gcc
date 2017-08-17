@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "domwalk.h"
 #include "statistics.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 #define PERCENT(x,y) ((float)(x) * 100.0 / (float)(y))

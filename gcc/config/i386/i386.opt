@@ -924,6 +924,24 @@ Enum(stack_protector_guard) String(tls) Value(SSP_TLS)
 EnumValue
 Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 
+mstack-protector-guard-reg=
+Target RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
+Use the given base register for addressing the stack-protector guard.
+
+TargetVariable
+addr_space_t ix86_stack_protector_guard_reg = ADDR_SPACE_GENERIC
+
+mstack-protector-guard-offset=
+Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
+Use the given offset for addressing the stack-protector guard.
+
+TargetVariable
+HOST_WIDE_INT ix86_stack_protector_guard_offset = 0
+
+mstack-protector-guard-symbol=
+Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
+Use the given symbol for addressing the stack-protector guard.
+
 mmitigate-rop
 Target Var(flag_mitigate_rop) Init(0)
 Attempt to avoid generating instruction sequences containing ret bytes.

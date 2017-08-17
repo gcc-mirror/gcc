@@ -28,6 +28,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
 #include "stor-layout.h"

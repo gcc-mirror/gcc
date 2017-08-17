@@ -525,6 +525,7 @@ static const struct default_options default_options_table[] =
 
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
     /* Inlining of functions reducing size is a good idea with -Os
@@ -1477,11 +1478,9 @@ enable_fdo_optimizations (struct gcc_options *opts,
     opts->x_flag_unswitch_loops = value;
   if (!opts_set->x_flag_gcse_after_reload)
     opts->x_flag_gcse_after_reload = value;
-  if (!opts_set->x_flag_tree_loop_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_loop_vectorize)
     opts->x_flag_tree_loop_vectorize = value;
-  if (!opts_set->x_flag_tree_slp_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_slp_vectorize)
     opts->x_flag_tree_slp_vectorize = value;
   if (!opts_set->x_flag_vect_cost_model)
     opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
@@ -1521,6 +1520,7 @@ const struct sanitizer_opts_s sanitizer_opts[] =
 		 true),
   SANITIZER_OPT (object-size, SANITIZE_OBJECT_SIZE, true),
   SANITIZER_OPT (vptr, SANITIZE_VPTR, true),
+  SANITIZER_OPT (pointer-overflow, SANITIZE_POINTER_OVERFLOW, true),
   SANITIZER_OPT (all, ~0U, true),
 #undef SANITIZER_OPT
   { NULL, 0U, 0UL, false }
@@ -2207,11 +2207,36 @@ common_handle_option (struct gcc_options *opts,
         opts->x_flag_ipa_reference = false;
       break;
 
+    case OPT_fpatchable_function_entry_:
+      {
+	char *patch_area_arg = xstrdup (arg);
+	char *comma = strchr (patch_area_arg, ',');
+	if (comma)
+	  {
+	    *comma = '\0';
+	    function_entry_patch_area_size = 
+	      integral_argument (patch_area_arg);
+	    function_entry_patch_area_start =
+	      integral_argument (comma + 1);
+	  }
+	else
+	  {
+	    function_entry_patch_area_size =
+	      integral_argument (patch_area_arg);
+	    function_entry_patch_area_start = 0;
+	  }
+	if (function_entry_patch_area_size < 0
+	    || function_entry_patch_area_start < 0
+	    || function_entry_patch_area_size 
+		< function_entry_patch_area_start)
+	  error ("invalid arguments for %<-fpatchable_function_entry%>");
+	free (patch_area_arg);
+      }
+      break;
+
     case OPT_ftree_vectorize:
-      if (!opts_set->x_flag_tree_loop_vectorize)
-        opts->x_flag_tree_loop_vectorize = value;
-      if (!opts_set->x_flag_tree_slp_vectorize)
-        opts->x_flag_tree_slp_vectorize = value;
+      /* Automatically sets -ftree-loop-vectorize and
+	 -ftree-slp-vectorize.  Nothing more to do here.  */
       break;
     case OPT_fshow_column:
       dc->show_column = value;

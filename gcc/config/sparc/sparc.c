@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -1304,6 +1305,8 @@ dump_target_flag_bits (const int flags)
     fprintf (stderr, "FLAT ");
   if (flags & MASK_FMAF)
     fprintf (stderr, "FMAF ");
+  if (flags & MASK_FSMULD)
+    fprintf (stderr, "FSMULD ");
   if (flags & MASK_FPU)
     fprintf (stderr, "FPU ");
   if (flags & MASK_HARD_QUAD)
@@ -1403,24 +1406,24 @@ sparc_option_override (void)
     const int disable;
     const int enable;
   } const cpu_table[] = {
-    { "v7",		MASK_ISA, 0 },
-    { "cypress",	MASK_ISA, 0 },
+    { "v7",		MASK_ISA|MASK_FSMULD, 0 },
+    { "cypress",	MASK_ISA|MASK_FSMULD, 0 },
     { "v8",		MASK_ISA, MASK_V8 },
     /* TI TMS390Z55 supersparc */
     { "supersparc",	MASK_ISA, MASK_V8 },
-    { "hypersparc",	MASK_ISA, MASK_V8|MASK_FPU },
-    { "leon",		MASK_ISA, MASK_V8|MASK_LEON|MASK_FPU },
-    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3|MASK_FPU },
-    { "leon3v7",	MASK_ISA, MASK_LEON3|MASK_FPU },
-    { "sparclite",	MASK_ISA, MASK_SPARCLITE },
+    { "hypersparc",	MASK_ISA, MASK_V8 },
+    { "leon",		MASK_ISA|MASK_FSMULD, MASK_V8|MASK_LEON },
+    { "leon3",		MASK_ISA, MASK_V8|MASK_LEON3 },
+    { "leon3v7",	MASK_ISA|MASK_FSMULD, MASK_LEON3 },
+    { "sparclite",	MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
     /* The Fujitsu MB86930 is the original sparclite chip, with no FPU.  */
     { "f930",		MASK_ISA|MASK_FPU, MASK_SPARCLITE },
     /* The Fujitsu MB86934 is the recent sparclite chip, with an FPU.  */
-    { "f934",		MASK_ISA, MASK_SPARCLITE|MASK_FPU },
+    { "f934",		MASK_ISA|MASK_FSMULD, MASK_SPARCLITE },
     { "sparclite86x",	MASK_ISA|MASK_FPU, MASK_SPARCLITE },
-    { "sparclet",	MASK_ISA, MASK_SPARCLET },
+    { "sparclet",	MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
     /* TEMIC sparclet */
-    { "tsc701",		MASK_ISA, MASK_SPARCLET },
+    { "tsc701",		MASK_ISA|MASK_FSMULD, MASK_SPARCLET },
     { "v9",		MASK_ISA, MASK_V9 },
     /* UltraSPARC I, II, IIi */
     { "ultrasparc",	MASK_ISA,
@@ -1447,8 +1450,7 @@ sparc_option_override (void)
       MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC },
     /* UltraSPARC M8 */
     { "m8",		MASK_ISA,
-      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC
-      |MASK_VIS4B }
+      MASK_V9|MASK_POPC|MASK_VIS4|MASK_FMAF|MASK_CBCOND|MASK_SUBXC|MASK_VIS4B }
   };
   const struct cpu_table *cpu;
   unsigned int i;
@@ -1486,6 +1488,11 @@ sparc_option_override (void)
 	    sparc_debug |= mask;
 	}
     }
+
+  /* Enable the FsMULd instruction by default if not explicitly specified by
+     the user.  It may be later disabled by the CPU (explicitly or not).  */
+  if (TARGET_FPU && !(target_flags_explicit & MASK_FSMULD))
+    target_flags |= MASK_FSMULD;
 
   if (TARGET_DEBUG_OPTIONS)
     {
@@ -1532,7 +1539,7 @@ sparc_option_override (void)
 	    sparc_cmodel = cmodel->value;
 	}
       else
-	error ("-mcmodel= is not supported on 32 bit systems");
+	error ("-mcmodel= is not supported on 32-bit systems");
     }
 
   /* Check that -fcall-saved-REG wasn't specified for out registers.  */
@@ -1543,7 +1550,7 @@ sparc_option_override (void)
         call_used_regs [i] = 1;
       }
 
-  /* Set the default CPU.  */
+  /* Set the default CPU if no -mcpu option was specified.  */
   if (!global_options_set.x_sparc_cpu_and_features)
     {
       for (def = &cpu_default[0]; def->cpu != -1; ++def)
@@ -1553,6 +1560,7 @@ sparc_option_override (void)
       sparc_cpu_and_features = def->processor;
     }
 
+  /* Set the default CPU if no -mtune option was specified.  */
   if (!global_options_set.x_sparc_cpu)
     sparc_cpu = sparc_cpu_and_features;
 
@@ -1561,8 +1569,6 @@ sparc_option_override (void)
   if (TARGET_DEBUG_OPTIONS)
     {
       fprintf (stderr, "sparc_cpu_and_features: %s\n", cpu->name);
-      fprintf (stderr, "sparc_cpu: %s\n",
-	       cpu_table[(int) sparc_cpu].name);
       dump_target_flags ("cpu->disable", cpu->disable);
       dump_target_flags ("cpu->enable", cpu->enable);
     }
@@ -1603,11 +1609,11 @@ sparc_option_override (void)
   if (TARGET_VIS4B)
     target_flags |= MASK_VIS4 | MASK_VIS3 | MASK_VIS2 | MASK_VIS;
 
-  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b and -mfmaf if
+  /* Don't allow -mvis, -mvis2, -mvis3, -mvis4, -mvis4b, -mfmaf and -mfsmuld if
      FPU is disabled.  */
-  if (! TARGET_FPU)
+  if (!TARGET_FPU)
     target_flags &= ~(MASK_VIS | MASK_VIS2 | MASK_VIS3 | MASK_VIS4
-		      | MASK_VIS4B | MASK_FMAF);
+		      | MASK_VIS4B | MASK_FMAF | MASK_FSMULD);
 
   /* -mvis assumes UltraSPARC+, so we are sure v9 instructions
      are available; -m64 also implies v9.  */
@@ -1618,18 +1624,18 @@ sparc_option_override (void)
     }
 
   /* -mvis also implies -mv8plus on 32-bit.  */
-  if (TARGET_VIS && ! TARGET_ARCH64)
+  if (TARGET_VIS && !TARGET_ARCH64)
     target_flags |= MASK_V8PLUS;
 
-  /* Use the deprecated v8 insns for sparc64 in 32 bit mode.  */
+  /* Use the deprecated v8 insns for sparc64 in 32-bit mode.  */
   if (TARGET_V9 && TARGET_ARCH32)
     target_flags |= MASK_DEPRECATED_V8_INSNS;
 
-  /* V8PLUS requires V9, makes no sense in 64 bit mode.  */
-  if (! TARGET_V9 || TARGET_ARCH64)
+  /* V8PLUS requires V9 and makes no sense in 64-bit mode.  */
+  if (!TARGET_V9 || TARGET_ARCH64)
     target_flags &= ~MASK_V8PLUS;
 
-  /* Don't use stack biasing in 32 bit mode.  */
+  /* Don't use stack biasing in 32-bit mode.  */
   if (TARGET_ARCH32)
     target_flags &= ~MASK_STACK_BIAS;
 
@@ -1640,6 +1646,10 @@ sparc_option_override (void)
   /* Enable the back-to-back store errata workaround for LEON3FT.  */
   if (sparc_fix_ut699 || sparc_fix_ut700 || sparc_fix_gr712rc)
     sparc_fix_b2bst = 1;
+
+  /* Disable FsMULd for the UT699 since it doesn't work correctly.  */
+  if (sparc_fix_ut699)
+    target_flags &= ~MASK_FSMULD;
 
   /* Supply a default value for align_functions.  */
   if (align_functions == 0)
@@ -4963,7 +4973,7 @@ enum sparc_mode_class {
    ??? Note that, despite the settings, non-double-aligned parameter
    registers can hold double-word quantities in 32-bit mode.  */
 
-/* This points to either the 32 bit or the 64 bit version.  */
+/* This points to either the 32-bit or the 64-bit version.  */
 const int *hard_regno_mode_classes;
 
 static const int hard_32bit_mode_classes[] = {
@@ -7297,7 +7307,7 @@ sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 }
 
 /* Handle the FUNCTION_ARG_PADDING macro.
-   For the 64 bit ABI structs are always stored left shifted in their
+   For the 64-bit ABI structs are always stored left shifted in their
    argument slot.  */
 
 enum direction
@@ -8416,7 +8426,7 @@ output_v9branch (rtx op, rtx dest, int reg, int label, int reversed,
   if (reversed ^ far)
     code = reverse_condition (code);
 
-  /* Only 64 bit versions of these instructions exist.  */
+  /* Only 64-bit versions of these instructions exist.  */
   gcc_assert (mode == DImode);
 
   /* Start by writing the branch condition.  */
@@ -8845,7 +8855,7 @@ mems_ok_for_ldd_peep (rtx mem1, rtx mem2, rtx dependent_reg_rtx)
     return 0;
 
   /* The first offset must be evenly divisible by 8 to ensure the
-     address is 64 bit aligned.  */
+     address is 64-bit aligned.  */
   if (offset1 % 8 != 0)
     return 0;
 

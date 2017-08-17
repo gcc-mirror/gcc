@@ -2705,8 +2705,7 @@ extern HOST_WIDE_INT trunc_int_for_mode	(HOST_WIDE_INT, machine_mode);
 extern rtx plus_constant (machine_mode, rtx, HOST_WIDE_INT, bool = false);
 
 /* In rtl.c */
-extern rtx rtx_alloc_stat (RTX_CODE MEM_STAT_DECL);
-#define rtx_alloc(c) rtx_alloc_stat (c MEM_STAT_INFO)
+extern rtx rtx_alloc (RTX_CODE CXX_MEM_STAT_INFO);
 extern rtx rtx_alloc_stat_v (RTX_CODE MEM_STAT_DECL, int);
 #define rtx_alloc_v(c, SZ) rtx_alloc_stat_v (c MEM_STAT_INFO, SZ)
 #define const_wide_int_alloc(NWORDS)				\
@@ -2726,8 +2725,7 @@ extern rtx copy_rtx_if_shared (rtx);
 
 /* In rtl.c */
 extern unsigned int rtx_size (const_rtx);
-extern rtx shallow_copy_rtx_stat (const_rtx MEM_STAT_DECL);
-#define shallow_copy_rtx(a) shallow_copy_rtx_stat (a MEM_STAT_INFO)
+extern rtx shallow_copy_rtx (const_rtx CXX_MEM_STAT_INFO);
 extern int rtx_equal_p (const_rtx, const_rtx);
 extern bool rtvec_all_equal_p (const_rtvec);
 

@@ -44,7 +44,7 @@ HIDDEN_FUNC(__savms64_13)
 HIDDEN_FUNC(__savms64_12)
 	mov	%rdi,-0x40(%rax)
 	mov	%rsi,-0x38(%rax)
-	SSE_SAVE off=0x60
+	SSE_SAVE
 	ret
 FUNC_END(__savms64_12)
 FUNC_END(__savms64_13)

@@ -6121,7 +6121,7 @@ visl")
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))
 		 (float_extend:DF (match_operand:SF 2 "register_operand" "f"))))]
-  "(TARGET_V8 || TARGET_V9) && TARGET_FPU && !sparc_fix_ut699"
+  "TARGET_FSMULD"
   "fsmuld\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
@@ -8621,6 +8621,8 @@ visl")
 (define_mode_attr vfptype [(V1SI "single") (V2HI "single") (V4QI "single")
 			   (V1DI "double") (V2SI "double") (V4HI "double")
 			   (V8QI "double")])
+(define_mode_attr veltmode [(V1SI "si") (V2HI "hi") (V4QI "qi") (V1DI "di")
+			    (V2SI "si") (V4HI "hi") (V8QI "qi")])
 
 (define_expand "mov<VMALL:mode>"
   [(set (match_operand:VMALL 0 "nonimmediate_operand" "")
@@ -8762,7 +8764,7 @@ visl")
   DONE;
 })
 
-(define_expand "vec_init<VMALL:mode>"
+(define_expand "vec_init<VMALL:mode><VMALL:veltmode>"
   [(match_operand:VMALL 0 "register_operand" "")
    (match_operand:VMALL 1 "" "")]
   "TARGET_VIS"

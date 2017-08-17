@@ -288,6 +288,17 @@ hidden, protected or internal visibility as specified by @var{visibility}.",
  void, (tree decl, int visibility),
  default_assemble_visibility)
 
+DEFHOOK
+(print_patchable_function_entry,
+ "Generate a patchable area at the function start, consisting of\n\
+@var{patch_area_size} NOP instructions.  If the target supports named\n\
+sections and if @var{record_p} is true, insert a pointer to the current\n\
+location in the table of patchable functions.  The default implementation\n\
+of the hook places the table of pointers in the special section named\n\
+@code{__patchable_function_entries}.",
+ void, (FILE *file, unsigned HOST_WIDE_INT patch_area_size, bool record_p),
+ default_print_patchable_function_entry)
+
 /* Output the assembler code for entry to a function.  */
 DEFHOOK
 (function_prologue,

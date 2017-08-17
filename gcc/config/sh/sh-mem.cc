@@ -349,12 +349,13 @@ sh_expand_cmpnstr (rtx *operands)
 
   rtx len = copy_to_mode_reg (SImode, operands[3]);
   int constp = CONST_INT_P (operands[3]);
+  HOST_WIDE_INT bytes = constp ? INTVAL (operands[3]) : 0;
 
   const unsigned int addr1_alignment = MEM_ALIGN (operands[1]) / BITS_PER_UNIT;
   const unsigned int addr2_alignment = MEM_ALIGN (operands[2]) / BITS_PER_UNIT;
 
   /* Loop on a register count.  */
-  if (constp)
+  if (constp && bytes >= 0 && bytes < 32)
     {
       rtx tmp0 = gen_reg_rtx (SImode);
       rtx tmp3 = gen_reg_rtx (SImode);
@@ -363,7 +364,6 @@ sh_expand_cmpnstr (rtx *operands)
       rtx_code_label *L_loop_long = gen_label_rtx ();
       rtx_code_label *L_end_loop_long = gen_label_rtx ();
 
-      int bytes = INTVAL (operands[3]);
       int witers = bytes / 4;
 
       if (witers > 1)

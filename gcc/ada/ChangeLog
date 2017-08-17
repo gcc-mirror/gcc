@@ -1,3 +1,17 @@
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* gcc-interface/trans.c: Include header files.
+
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc-interface/utils.c (gnat_write_global_declarations): Pass false
+	as new argument to the imported_module_or_decl debug hook.
+
+2017-07-25  Javier Miranda  <miranda@adacore.com>
+
+	* checks.adb (Apply_Divide_Checks): Ensure that operands are not
+	evaluated twice. 
+
 2017-07-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc-interface/ada-tree.h (TYPE_OBJECT_RECORD_TYPE,

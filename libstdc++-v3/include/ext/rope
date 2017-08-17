@@ -65,6 +65,8 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
     enum { _S_max_rope_depth = 45 };
@@ -75,8 +77,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
   using std::ptrdiff_t;
   using std::allocator;
   using std::_Destroy;
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // See libstdc++/36832.
   template<typename _ForwardIterator, typename _Allocator>
@@ -2937,10 +2937,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace std _GLIBCXX_VISIBILITY(default)
 { 
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   template<>
     struct hash<__gnu_cxx::crope>
     {
@@ -2967,9 +2967,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return 13 * __str[0] + 5 * __str[__size - 1] + __size;
       }
     };
+} // namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace tr1
 } // namespace std
 
 # include <ext/ropeimpl.h>

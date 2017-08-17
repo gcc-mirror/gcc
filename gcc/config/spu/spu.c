@@ -28,6 +28,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -1773,7 +1774,7 @@ spu_expand_prologue (void)
 	      size_v4si = scratch_v4si;
 	    }
 	  emit_insn (gen_cgt_v4si (scratch_v4si, sp_v4si, size_v4si));
-	  emit_insn (gen_vec_extractv4si
+	  emit_insn (gen_vec_extractv4sisi
 		     (scratch_reg_0, scratch_v4si, GEN_INT (1)));
 	  emit_insn (gen_spu_heq (scratch_reg_0, GEN_INT (0)));
 	}
@@ -5368,7 +5369,7 @@ spu_allocate_stack (rtx op0, rtx op1)
     {
       rtx avail = gen_reg_rtx(SImode);
       rtx result = gen_reg_rtx(SImode);
-      emit_insn (gen_vec_extractv4si (avail, sp, GEN_INT (1)));
+      emit_insn (gen_vec_extractv4sisi (avail, sp, GEN_INT (1)));
       emit_insn (gen_cgt_si(result, avail, GEN_INT (-1)));
       emit_insn (gen_spu_heq (result, GEN_INT(0) ));
     }
@@ -5684,22 +5685,22 @@ spu_builtin_extract (rtx ops[])
       switch (mode)
 	{
 	case V16QImode:
-	  emit_insn (gen_vec_extractv16qi (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv16qiqi (ops[0], ops[1], ops[2]));
 	  break;
 	case V8HImode:
-	  emit_insn (gen_vec_extractv8hi (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv8hihi (ops[0], ops[1], ops[2]));
 	  break;
 	case V4SFmode:
-	  emit_insn (gen_vec_extractv4sf (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv4sfsf (ops[0], ops[1], ops[2]));
 	  break;
 	case V4SImode:
-	  emit_insn (gen_vec_extractv4si (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv4sisi (ops[0], ops[1], ops[2]));
 	  break;
 	case V2DImode:
-	  emit_insn (gen_vec_extractv2di (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv2didi (ops[0], ops[1], ops[2]));
 	  break;
 	case V2DFmode:
-	  emit_insn (gen_vec_extractv2df (ops[0], ops[1], ops[2]));
+	  emit_insn (gen_vec_extractv2dfdf (ops[0], ops[1], ops[2]));
 	  break;
 	default:
 	  abort ();

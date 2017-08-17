@@ -39,6 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "dojump.h"
 #include "expr.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"
 #include "recog.h"
@@ -395,6 +397,14 @@ expand_UBSAN_BOUNDS (internal_fn, gcall *)
 
 static void
 expand_UBSAN_VPTR (internal_fn, gcall *)
+{
+  gcc_unreachable ();
+}
+
+/* This should get expanded in the sanopt pass.  */
+
+static void
+expand_UBSAN_PTR (internal_fn, gcall *)
 {
   gcc_unreachable ();
 }

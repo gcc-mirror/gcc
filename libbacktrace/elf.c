@@ -70,7 +70,7 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *,
    ELF.  We could make this code test and support either possibility,
    but there is no point.  This code only works for the currently
    running executable, which means that we know the ELF mode at
-   configure mode.  */
+   configure time.  */
 
 #if BACKTRACE_ELF_SIZE != 32 && BACKTRACE_ELF_SIZE != 64
 #error "Unknown BACKTRACE_ELF_SIZE"

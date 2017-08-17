@@ -7909,8 +7909,9 @@ resolve_address_of_overloaded_function (tree target_type,
 	  continue;
 
 	/* In C++17 we need the noexcept-qualifier to compare types.  */
-	if (flag_noexcept_type)
-	  maybe_instantiate_noexcept (fn);
+	if (flag_noexcept_type
+	    && !maybe_instantiate_noexcept (fn, complain))
+	  continue;
 
 	/* See if there's a match.  */
 	tree fntype = static_fn_type (fn);
@@ -7992,7 +7993,7 @@ resolve_address_of_overloaded_function (tree target_type,
 
 	  /* In C++17 we need the noexcept-qualifier to compare types.  */
 	  if (flag_noexcept_type)
-	    maybe_instantiate_noexcept (instantiation);
+	    maybe_instantiate_noexcept (instantiation, complain);
 
 	  /* See if there's a match.  */
 	  tree fntype = static_fn_type (instantiation);

@@ -2165,7 +2165,7 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 
 /* Before the prologue, RA is at 0(%esp).  */
 #define INCOMING_RETURN_ADDR_RTX \
-  gen_rtx_MEM (Pmode, gen_rtx_REG (Pmode, STACK_POINTER_REGNUM))
+  gen_rtx_MEM (Pmode, stack_pointer_rtx)
 
 /* After the prologue, RA is at -4(AP) in the current frame.  */
 #define RETURN_ADDR_RTX(COUNT, FRAME)					\
@@ -2177,8 +2177,11 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 /* PC is dbx register 8; let's use that column for RA.  */
 #define DWARF_FRAME_RETURN_COLUMN 	(TARGET_64BIT ? 16 : 8)
 
-/* Before the prologue, the top of the frame is at 4(%esp).  */
-#define INCOMING_FRAME_SP_OFFSET UNITS_PER_WORD
+/* Before the prologue, there are return address and error code for
+   exception handler on the top of the frame.  */
+#define INCOMING_FRAME_SP_OFFSET \
+  (cfun->machine->func_type == TYPE_EXCEPTION \
+   ? 2 * UNITS_PER_WORD : UNITS_PER_WORD)
 
 /* Describe how we implement __builtin_eh_return.  */
 #define EH_RETURN_DATA_REGNO(N)	((N) <= DX_REG ? (N) : INVALID_REGNUM)
@@ -2196,29 +2199,33 @@ extern int const svr4_dbx_register_map[FIRST_PSEUDO_REGISTER];
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL)       		\
   asm_preferred_eh_data_format ((CODE), (GLOBAL))
 
-/* This is how to output an insn to push a register on the stack.
-   It need not be very fast code.  */
+/* These are a couple of extensions to the formats accepted
+   by asm_fprintf:
+     %z prints out opcode suffix for word-mode instruction
+     %r prints out word-mode name for reg_names[arg]  */
+#define ASM_FPRINTF_EXTENSIONS(FILE, ARGS, P)		\
+  case 'z':						\
+    fputc (TARGET_64BIT ? 'q' : 'l', (FILE));		\
+    break;						\
+							\
+  case 'r':						\
+    {							\
+      unsigned int regno = va_arg ((ARGS), int);	\
+      if (LEGACY_INT_REGNO_P (regno))			\
+	fputc (TARGET_64BIT ? 'r' : 'e', (FILE));	\
+      fputs (reg_names[regno], (FILE));			\
+      break;						\
+    }
 
-#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpush{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpush{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+/* This is how to output an insn to push a register on the stack.  */
 
-/* This is how to output an insn to pop a register from the stack.
-   It need not be very fast code.  */
+#define ASM_OUTPUT_REG_PUSH(FILE, REGNO)		\
+  asm_fprintf ((FILE), "\tpush%z\t%%%r\n", (REGNO))
+
+/* This is how to output an insn to pop a register from the stack.  */
 
 #define ASM_OUTPUT_REG_POP(FILE, REGNO)  \
-do {									\
-  if (TARGET_64BIT)							\
-    asm_fprintf ((FILE), "\tpop{q}\t%%r%s\n",				\
-		 reg_names[(REGNO)] + (REX_INT_REGNO_P (REGNO) != 0));	\
-  else									\
-    asm_fprintf ((FILE), "\tpop{l}\t%%e%s\n", reg_names[(REGNO)]);	\
-} while (0)
+  asm_fprintf ((FILE), "\tpop%z\t%%%r\n", (REGNO))
 
 /* This is how to output an element of a case-vector that is absolute.  */
 
@@ -2477,8 +2484,7 @@ enum avx_u128_state
 			<- end of stub-saved/restored regs
      [padding1]
    ]
-					<- outlined_save_offset
-					<- sse_regs_save_offset
+					<- sse_reg_save_offset
    [padding2]
 		       |		<- FRAME_POINTER
    [va_arg registers]  |
@@ -2504,7 +2510,6 @@ struct GTY(()) ix86_frame
   HOST_WIDE_INT reg_save_offset;
   HOST_WIDE_INT stack_realign_allocate_offset;
   HOST_WIDE_INT stack_realign_offset;
-  HOST_WIDE_INT outlined_save_offset;
   HOST_WIDE_INT sse_reg_save_offset;
 
   /* When save_regs_using_mov is set, emit prologue using
@@ -2640,16 +2645,12 @@ struct GTY(()) machine_function {
   BOOL_BITFIELD arg_reg_available : 1;
 
   /* If true, we're out-of-lining reg save/restore for regs clobbered
-     by ms_abi functions calling a sysv function.  */
+     by 64-bit ms_abi functions calling a sysv_abi function.  */
   BOOL_BITFIELD call_ms2sysv : 1;
 
   /* If true, the incoming 16-byte aligned stack has an offset (of 8) and
-     needs padding.  */
+     needs padding prior to out-of-line stub save/restore area.  */
   BOOL_BITFIELD call_ms2sysv_pad_in : 1;
-
-  /* If true, the size of the stub save area plus inline int reg saves will
-     result in an 8 byte offset, so needs padding.  */
-  BOOL_BITFIELD call_ms2sysv_pad_out : 1;
 
   /* This is the number of extra registers saved by stub (valid range is
      0-6). Each additional register is only saved/restored by the stubs

@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */
@@ -1513,8 +1515,8 @@ non_rewritable_lvalue_p (tree lhs)
       if (DECL_P (decl)
 	  && VECTOR_TYPE_P (TREE_TYPE (decl))
 	  && TYPE_MODE (TREE_TYPE (decl)) != BLKmode
-	  && types_compatible_p (TREE_TYPE (lhs),
-				 TREE_TYPE (TREE_TYPE (decl)))
+	  && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
+			      TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (decl))), 0)
 	  && tree_fits_uhwi_p (TREE_OPERAND (lhs, 1))
 	  && tree_int_cst_lt (TREE_OPERAND (lhs, 1),
 			      TYPE_SIZE_UNIT (TREE_TYPE (decl)))
@@ -1529,8 +1531,9 @@ non_rewritable_lvalue_p (tree lhs)
       && DECL_P (TREE_OPERAND (lhs, 0))
       && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (lhs, 0)))
       && TYPE_MODE (TREE_TYPE (TREE_OPERAND (lhs, 0))) != BLKmode
-      && types_compatible_p (TREE_TYPE (lhs),
-			     TREE_TYPE (TREE_TYPE (TREE_OPERAND (lhs, 0))))
+      && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
+			  TYPE_SIZE_UNIT
+			    (TREE_TYPE (TREE_TYPE (TREE_OPERAND (lhs, 0)))), 0)
       && (tree_to_uhwi (TREE_OPERAND (lhs, 2))
 	  % tree_to_uhwi (TYPE_SIZE (TREE_TYPE (lhs)))) == 0)
     return false;
@@ -1812,14 +1815,26 @@ execute_update_addresses_taken (void)
 				     DECL_UID (TREE_OPERAND (lhs, 0)))
 		    && VECTOR_TYPE_P (TREE_TYPE (TREE_OPERAND (lhs, 0)))
 		    && TYPE_MODE (TREE_TYPE (TREE_OPERAND (lhs, 0))) != BLKmode
-		    && types_compatible_p (TREE_TYPE (lhs),
-					   TREE_TYPE (TREE_TYPE
-						       (TREE_OPERAND (lhs, 0))))
+		    && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
+					TYPE_SIZE_UNIT (TREE_TYPE
+					  (TREE_TYPE (TREE_OPERAND (lhs, 0)))),
+					0)
 		    && (tree_to_uhwi (TREE_OPERAND (lhs, 2))
 			% tree_to_uhwi (TYPE_SIZE (TREE_TYPE (lhs))) == 0))
 		  {
 		    tree var = TREE_OPERAND (lhs, 0);
 		    tree val = gimple_assign_rhs1 (stmt);
+		    if (! types_compatible_p (TREE_TYPE (TREE_TYPE (var)),
+					      TREE_TYPE (val)))
+		      {
+			tree tem = make_ssa_name (TREE_TYPE (TREE_TYPE (var)));
+			gimple *pun
+			  = gimple_build_assign (tem,
+						 build1 (VIEW_CONVERT_EXPR,
+							 TREE_TYPE (tem), val));
+			gsi_insert_before (&gsi, pun, GSI_SAME_STMT);
+			val = tem;
+		      }
 		    tree bitpos = TREE_OPERAND (lhs, 2);
 		    gimple_assign_set_lhs (stmt, var);
 		    gimple_assign_set_rhs_with_ops
@@ -1839,8 +1854,9 @@ execute_update_addresses_taken (void)
 		    && bitmap_bit_p (suitable_for_renaming, DECL_UID (sym))
 		    && VECTOR_TYPE_P (TREE_TYPE (sym))
 		    && TYPE_MODE (TREE_TYPE (sym)) != BLKmode
-		    && types_compatible_p (TREE_TYPE (lhs),
-					   TREE_TYPE (TREE_TYPE (sym)))
+		    && operand_equal_p (TYPE_SIZE_UNIT (TREE_TYPE (lhs)),
+					TYPE_SIZE_UNIT
+					  (TREE_TYPE (TREE_TYPE (sym))), 0)
 		    && tree_fits_uhwi_p (TREE_OPERAND (lhs, 1))
 		    && tree_int_cst_lt (TREE_OPERAND (lhs, 1),
 					TYPE_SIZE_UNIT (TREE_TYPE (sym)))
@@ -1848,6 +1864,17 @@ execute_update_addresses_taken (void)
 			% tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (lhs)))) == 0)
 		  {
 		    tree val = gimple_assign_rhs1 (stmt);
+		    if (! types_compatible_p (TREE_TYPE (val),
+					      TREE_TYPE (TREE_TYPE (sym))))
+		      {
+			tree tem = make_ssa_name (TREE_TYPE (TREE_TYPE (sym)));
+			gimple *pun
+			  = gimple_build_assign (tem,
+						 build1 (VIEW_CONVERT_EXPR,
+							 TREE_TYPE (tem), val));
+			gsi_insert_before (&gsi, pun, GSI_SAME_STMT);
+			val = tem;
+		      }
 		    tree bitpos
 		      = wide_int_to_tree (bitsizetype,
 					  mem_ref_offset (lhs) * BITS_PER_UNIT);

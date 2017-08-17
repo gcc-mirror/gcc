@@ -85,7 +85,7 @@ extern int dot_symbols;
 #undef	RS6000_ABI_NAME
 #define	RS6000_ABI_NAME "linux"
 
-#define INVALID_64BIT "-m%s not supported in this configuration"
+#define INVALID_64BIT "%<-m%s%> not supported in this configuration"
 #define INVALID_32BIT INVALID_64BIT
 
 #ifdef LINUX64_DEFAULT_ABI_ELFv2

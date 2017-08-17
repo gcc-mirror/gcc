@@ -44,12 +44,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_type_trait_variable_templates 201402
 
 // See C++14 §20.10.4.1, primary type categories
@@ -218,13 +218,10 @@ template <typename _From, typename _To>
   // raw_invocation_type (still unimplemented)
   // invocation_type_t (still unimplemented)
   // raw_invocation_type_t (still unimplemented)
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_detect 201505
 
 // [meta.detect]
@@ -299,10 +296,10 @@ template<typename... _Bn>
 template<typename _Pp>
   constexpr bool negation_v
     = negation<_Pp>::value;
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

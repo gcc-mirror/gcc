@@ -1818,6 +1818,13 @@ package body Checks is
                      and then
                   ((not LOK) or else (Llo = LLB))
                then
+                  --  Ensure that expressions are not evaluated twice (once
+                  --  for their runtime checks and once for their regular
+                  --  computation).
+
+                  Force_Evaluation (Left, Mode => Strict);
+                  Force_Evaluation (Right, Mode => Strict);
+
                   Insert_Action (N,
                     Make_Raise_Constraint_Error (Loc,
                       Condition =>

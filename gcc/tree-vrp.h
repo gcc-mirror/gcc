@@ -17,6 +17,9 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifndef GCC_TREE_VRP_H
+#define GCC_TREE_VRP_H
+
 /* Type of value ranges.  See value_range_d In tree-vrp.c for a
    description of these types.  */
 enum value_range_type { VR_UNDEFINED, VR_RANGE,
@@ -57,3 +60,4 @@ extern void extract_range_from_unary_expr (value_range *vr,
 					   value_range *vr0_,
 					   tree op0_type);
 
+#endif /* GCC_TREE_VRP_H */

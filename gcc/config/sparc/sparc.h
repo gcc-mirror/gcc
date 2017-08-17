@@ -438,7 +438,8 @@ extern enum cmodel sparc_cmodel;
 /* Mask of all CPU feature flags.  */
 #define MASK_FEATURES						\
   (MASK_FPU + MASK_HARD_QUAD + MASK_VIS + MASK_VIS2 + MASK_VIS3	\
-   + MASK_VIS4 + MASK_CBCOND + MASK_FMAF + MASK_POPC + MASK_SUBXC)
+   + MASK_VIS4 + MASK_CBCOND + MASK_FMAF + MASK_FSMULD		\
+   + MASK_POPC + MASK_SUBXC)
  
 /* TARGET_HARD_MUL: Use 32-bit hardware multiply instructions but not %y.  */
 #define TARGET_HARD_MUL				\

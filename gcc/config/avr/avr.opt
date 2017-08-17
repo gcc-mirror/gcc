@@ -27,7 +27,7 @@ Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or arc
 -mmcu=MCU	Select the target MCU.
 
 mgas-isr-prologues
-Target Report Mask(GASISR_PROLOGUES)
+Target Report Var(avr_gasisr_prologues) UInteger Init(0)
 Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
 
 mn-flash=

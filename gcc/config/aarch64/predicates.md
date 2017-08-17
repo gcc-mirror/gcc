@@ -114,6 +114,10 @@
   (ior (match_operand 0 "register_operand")
        (match_operand 0 "aarch64_logical_immediate")))
 
+(define_predicate "aarch64_mov_imm_operand"
+  (and (match_code "const_int")
+       (match_test "aarch64_move_imm (INTVAL (op), mode)")))
+
 (define_predicate "aarch64_logical_and_immediate"
   (and (match_code "const_int")
        (match_test "aarch64_and_bitmask_imm (INTVAL (op), mode)")))

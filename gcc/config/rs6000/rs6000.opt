@@ -148,6 +148,10 @@ maltivec=be
 Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
 Generate AltiVec instructions using big-endian element order.
 
+mfold-gimple
+Target Report Var(rs6000_fold_gimple) Init(1)
+Enable early gimple folding of builtins.
+
 mhard-dfp
 Target Report Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions.
@@ -199,9 +203,6 @@ Target Undocumented Report Var(TARGET_VSX_SCALAR_FLOAT) Init(1)
 mvsx-scalar-double
 Target Undocumented Report Var(TARGET_VSX_SCALAR_DOUBLE) Init(1)
 ; If -mvsx, use VSX arithmetic instructions for DFmode (on by default)
-
-mvsx-scalar-memory
-Target Undocumented Report Alias(mupper-regs-df)
 
 mvsx-align-128
 Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
@@ -433,9 +434,9 @@ mlong-double-
 Target RejectNegative Joined UInteger Var(rs6000_long_double_type_size) Save
 -mlong-double-<n>	Specify size of long double (64 or 128 bits).
 
+; This option existed in the past, but now is always on.
 mlra
-Target Report Mask(LRA) Var(rs6000_isa_flags)
-Enable Local Register Allocation.
+Target RejectNegative Undocumented Ignore
 
 msched-costly-dep=
 Target RejectNegative Joined Var(rs6000_sched_costly_dep_str)
@@ -509,9 +510,9 @@ msave-toc-indirect
 Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
 Save the TOC in the prologue for indirect calls rather than inline.
 
+; This option existed in the past, but now is always the same as -mvsx.
 mvsx-timode
-Target Undocumented Mask(VSX_TIMODE) Var(rs6000_isa_flags)
-Allow 128-bit integers in VSX registers.
+Target RejectNegative Undocumented Ignore
 
 mpower8-fusion
 Target Report Mask(P8_FUSION) Var(rs6000_isa_flags)
@@ -548,22 +549,6 @@ Generate the quad word memory atomic instructions (lqarx/stqcx).
 mcompat-align-parm
 Target Report Var(rs6000_compat_align_parm) Init(0) Save
 Generate aggregate parameter passing code with at most 64-bit alignment.
-
-mupper-regs-df
-Target Report Mask(UPPER_REGS_DF) Var(rs6000_isa_flags)
-Allow double variables in upper registers with -mcpu=power7 or -mvsx.
-
-mupper-regs-sf
-Target Report Mask(UPPER_REGS_SF) Var(rs6000_isa_flags)
-Allow float variables in upper registers with -mcpu=power8 or -mpower8-vector.
-
-mupper-regs
-Target Report Var(TARGET_UPPER_REGS) Init(-1) Save
-Allow float/double variables in upper registers if cpu allows it.
-
-mupper-regs-di
-Target Report Mask(UPPER_REGS_DI) Var(rs6000_isa_flags)
-Allow 64-bit integer variables in upper registers with -mcpu=power7 or -mvsx.
 
 moptimize-swaps
 Target Undocumented Var(rs6000_optimize_swaps) Init(1) Save
@@ -624,10 +609,6 @@ Enable using IEEE 128-bit floating point instructions.
 mfloat128-convert
 Target Undocumented Mask(FLOAT128_CVT) Var(rs6000_isa_flags)
 Enable default conversions between __float128 & long double.
-
-mvsx-small-integer
-Target Report Mask(VSX_SMALL_INTEGER) Var(rs6000_isa_flags)
-Enable small integers to be in VSX registers.
 
 mstack-protector-guard=
 Target RejectNegative Joined Enum(stack_protector_guard) Var(rs6000_stack_protector_guard) Init(SSP_TLS)

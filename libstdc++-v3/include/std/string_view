@@ -427,22 +427,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       size_t	    _M_len;
       const _CharT* _M_str;
     };
-_GLIBCXX_END_NAMESPACE_VERSION
 
   // [string.view.comparison], non-member basic_string_view comparison function
 
   namespace __detail
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
     // Identity transform to create a non-deduced context, so that only one
     // argument participates in template argument deduction and the other
     // argument gets implicitly converted to the deduced type. See n3766.html.
     template<typename _Tp>
       using __idt = common_type_t<_Tp>;
-_GLIBCXX_END_NAMESPACE_VERSION
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits>
     inline bool
@@ -634,14 +629,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __is_fast_hash<hash<u32string_view>> : std::false_type
     { };
 #endif
-_GLIBCXX_END_NAMESPACE_VERSION
 
   inline namespace literals
   {
   inline namespace string_view_literals
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     inline constexpr basic_string_view<char>
     operator""sv(const char* __str, size_t __len)
     { return basic_string_view<char>{__str, __len}; }
@@ -661,11 +653,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator""sv(const char32_t* __str, size_t __len)
     { return basic_string_view<char32_t>{__str, __len}; }
 #endif
-
-_GLIBCXX_END_NAMESPACE_VERSION
   } // namespace string_literals
   } // namespace literals
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #include <bits/string_view.tcc>

@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"
 #include "params.h"
@@ -894,11 +896,12 @@ sanitize_rewrite_addressable_params (function *fun)
   for (tree arg = DECL_ARGUMENTS (current_function_decl);
        arg; arg = DECL_CHAIN (arg))
     {
-      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (TREE_TYPE (arg)))
+      tree type = TREE_TYPE (arg);
+      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
 	{
 	  TREE_ADDRESSABLE (arg) = 0;
 	  /* The parameter is no longer addressable.  */
-	  tree type = TREE_TYPE (arg);
 	  has_any_addressable_param = true;
 
 	  /* Create a new automatic variable.  */
@@ -915,8 +918,6 @@ sanitize_rewrite_addressable_params (function *fun)
 		     IDENTIFIER_POINTER (DECL_NAME (arg)));
 
 	  gcc_assert (!DECL_HAS_VALUE_EXPR_P (arg));
-	  DECL_HAS_VALUE_EXPR_P (arg) = 1;
-	  SET_DECL_VALUE_EXPR (arg, var);
 
 	  SET_DECL_PT_UID (var, DECL_PT_UID (arg));
 
@@ -945,6 +946,9 @@ sanitize_rewrite_addressable_params (function *fun)
 	      gimple_seq_add_stmt (&stmts, g);
 	      clear_value_expr_list.safe_push (arg);
 	    }
+
+	  DECL_HAS_VALUE_EXPR_P (arg) = 1;
+	  SET_DECL_VALUE_EXPR (arg, var);
 	}
     }
 
@@ -1061,6 +1065,9 @@ pass_sanopt::execute (function *fun)
 		  break;
 		case IFN_UBSAN_OBJECT_SIZE:
 		  no_next = ubsan_expand_objsize_ifn (&gsi);
+		  break;
+		case IFN_UBSAN_PTR:
+		  no_next = ubsan_expand_ptr_ifn (&gsi);
 		  break;
 		case IFN_UBSAN_VPTR:
 		  no_next = ubsan_expand_vptr_ifn (&gsi);

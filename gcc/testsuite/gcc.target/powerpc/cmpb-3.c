@@ -9,7 +9,7 @@ void abort ();
 long long int
 do_compare (long long int a, long long int b)
 {
-  return __builtin_cmpb (a, b);	/* { dg-error "Builtin function __builtin_cmpb not supported in this compiler configuration" } */
+  return __builtin_cmpb (a, b);	/* { dg-error "builtin function '__builtin_cmpb' not supported in this compiler configuration" } */
 }
 
 void expect (long long int pattern, long long int value)

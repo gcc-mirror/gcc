@@ -46,6 +46,8 @@
 #include "gimplify.h"
 #include "opts.h"
 #include "common/common-target.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #include "ada.h"
 #include "adadecode.h"

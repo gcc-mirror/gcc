@@ -36,10 +36,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr2
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr2
+{
   /**
    *  bool_set
    *
@@ -310,9 +310,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline bool_set
   operator!=(bool_set __s, bool_set __t)
   { return ! (__s == __t); }
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #include <tr2/bool_set.tcc>

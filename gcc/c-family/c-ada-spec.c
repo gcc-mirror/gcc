@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "c-pragma.h"
 #include "cpp-id-data.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Local functions, macros and variables.  */
 static int dump_generic_ada_node (pretty_printer *, tree, tree, int, int,
@@ -862,7 +864,7 @@ print_generic_ada_decl (pretty_printer *pp, tree decl, const char *source_file)
 {
   source_file_base = source_file;
 
-  if (print_ada_declaration (pp, decl, 0, INDENT_INCR))
+  if (print_ada_declaration (pp, decl, NULL_TREE, INDENT_INCR))
     {
       pp_newline (pp);
       pp_newline (pp);
@@ -1056,13 +1058,11 @@ get_underlying_decl (tree type)
 static bool
 has_static_fields (const_tree type)
 {
-  tree tmp;
-
   if (!type || !RECORD_OR_UNION_TYPE_P (type))
     return false;
 
-  for (tmp = TYPE_FIELDS (type); tmp; tmp = TREE_CHAIN (tmp))
-    if (DECL_NAME (tmp) && TREE_STATIC (tmp))
+  for (tree fld = TYPE_FIELDS (type); fld; fld = TREE_CHAIN (fld))
+    if (TREE_CODE (fld) == VAR_DECL && DECL_NAME (fld))
       return true;
 
   return false;
@@ -1105,7 +1105,7 @@ has_nontrivial_methods (tree type)
 
   /* If there are user-defined methods, they are deemed non-trivial.  */
   for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE && !DECL_ARTIFICIAL (fld))
+    if (TREE_CODE (fld) == FUNCTION_DECL && !DECL_ARTIFICIAL (fld))
       return true;
 
   return false;
@@ -1659,7 +1659,8 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	  if (DECL_NAME (arg))
 	    {
 	      check_name (buffer, arg);
-	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), 0, false);
+	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE,
+				      false);
 	      pp_string (buffer, " : ");
 	    }
 	  else
@@ -2059,7 +2060,10 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	    }
 	  else
 	    {
-	      pp_string (buffer, "unsigned");
+	      if (TYPE_UNSIGNED (node))
+		pp_string (buffer, "unsigned");
+	      else
+		pp_string (buffer, "int");
 	      for (; value; value = TREE_CHAIN (value))
 		{
 		  pp_semicolon (buffer);
@@ -2097,7 +2101,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	  {
 	    if (DECL_NAME (node))
 	      pp_ada_tree_identifier
-		(buffer, DECL_NAME (node), 0, limited_access);
+		(buffer, DECL_NAME (node), NULL_TREE, limited_access);
 	    else
 	      pp_string (buffer, "<unnamed type decl>");
 	  }
@@ -2384,13 +2388,14 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	{
 	  if (is_tagged_type (TREE_TYPE (node)))
 	    {
-	      tree tmp = TYPE_FIELDS (TREE_TYPE (node));
 	      int first = 1;
 
 	      /* Look for ancestors.  */
-	      for (; tmp; tmp = TREE_CHAIN (tmp))
+	      for (tree fld = TYPE_FIELDS (TREE_TYPE (node));
+		   fld;
+		   fld = TREE_CHAIN (fld))
 		{
-		  if (!DECL_NAME (tmp) && is_tagged_type (TREE_TYPE (tmp)))
+		  if (!DECL_NAME (fld) && is_tagged_type (TREE_TYPE (fld)))
 		    {
 		      if (first)
 			{
@@ -2400,8 +2405,8 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		      else
 			pp_string (buffer, " and ");
 
-		      dump_ada_decl_name
-			(buffer, TYPE_NAME (TREE_TYPE (tmp)), false);
+		      dump_ada_decl_name (buffer, TYPE_NAME (TREE_TYPE (fld)),
+					  false);
 		    }
 		}
 
@@ -2443,7 +2448,7 @@ print_ada_methods (pretty_printer *buffer, tree node, int spc)
 
   int res = 1;
   for (tree fld = TYPE_FIELDS (node); fld; fld = DECL_CHAIN (fld))
-    if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE)
+    if (TREE_CODE (fld) == FUNCTION_DECL)
       {
 	if (res)
 	  {
@@ -2504,7 +2509,7 @@ dump_nested_types (pretty_printer *buffer, tree t, tree parent, bool forward,
       dump_nested_type (buffer, field, t, parent, spc);
 
   for (field = TYPE_FIELDS (type); field; field = TREE_CHAIN (field))
-    if (!TYPE_NAME (TREE_TYPE (field)))
+    if (TREE_CODE (field) == FIELD_DECL && !TYPE_NAME (TREE_TYPE (field)))
       dump_nested_type (buffer, field, t, parent, spc);
 
   TREE_VISITED (t) = 1;
@@ -2636,12 +2641,12 @@ dump_nested_type (pretty_printer *buffer, tree field, tree t, tree parent,
     }
 }
 
-/* Dump in BUFFER constructor spec corresponding to T.  */
+/* Dump in BUFFER constructor spec corresponding to T for TYPE.  */
 
 static void
-print_constructor (pretty_printer *buffer, tree t)
+print_constructor (pretty_printer *buffer, tree t, tree type)
 {
-  tree decl_name = DECL_NAME (DECL_ORIGIN (t));
+  tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "New_");
   pp_ada_tree_identifier (buffer, decl_name, t, false);
@@ -2650,9 +2655,9 @@ print_constructor (pretty_printer *buffer, tree t)
 /* Dump in BUFFER destructor spec corresponding to T.  */
 
 static void
-print_destructor (pretty_printer *buffer, tree t)
+print_destructor (pretty_printer *buffer, tree t, tree type)
 {
-  tree decl_name = DECL_NAME (DECL_ORIGIN (t));
+  tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "Delete_");
   pp_ada_tree_identifier (buffer, decl_name, t, false);
@@ -2908,7 +2913,8 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    return 0;
 
 	  /* Only consider constructors/destructors for complete objects.  */
-	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__comp", 6) != 0)
+	  if (strncmp (IDENTIFIER_POINTER (decl_name), "__ct_comp", 9) != 0
+	      && strncmp (IDENTIFIER_POINTER (decl_name), "__dt_comp", 9) != 0)
 	    return 0;
 	}
 
@@ -2936,9 +2942,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	}
 
       if (is_constructor)
-	print_constructor (buffer, t);
+	print_constructor (buffer, t, type);
       else if (is_destructor)
-	print_destructor (buffer, t);
+	print_destructor (buffer, t, type);
       else
 	dump_ada_decl_name (buffer, t, false);
 
@@ -2955,7 +2961,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 
       if (is_constructor && RECORD_OR_UNION_TYPE_P (type))
 	for (tree fld = TYPE_FIELDS (type); fld; fld = DECL_CHAIN (fld))
-	  if (cpp_check (fld, IS_ABSTRACT))
+	  if (TREE_CODE (fld) == FUNCTION_DECL && cpp_check (fld, IS_ABSTRACT))
 	    {
 	      is_abstract_class = true;
 	      break;
@@ -2976,7 +2982,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (is_constructor)
 	{
 	  pp_string (buffer, "pragma CPP_Constructor (");
-	  print_constructor (buffer, t);
+	  print_constructor (buffer, t, type);
 	  pp_string (buffer, ", \"");
 	  pp_asm_name (buffer, t);
 	  pp_string (buffer, "\");");
@@ -2984,7 +2990,7 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       else if (is_destructor)
 	{
 	  pp_string (buffer, "pragma Import (CPP, ");
-	  print_destructor (buffer, t);
+	  print_destructor (buffer, t, type);
 	  pp_string (buffer, ", \"");
 	  pp_asm_name (buffer, t);
 	  pp_string (buffer, "\");");
@@ -3020,20 +3026,22 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
       if (cpp_check
 	  && RECORD_OR_UNION_TYPE_P (TREE_TYPE (t)))
 	{
-	  is_interface = -1;
+	  bool has_fields = false;
 
 	  /* Check that there are no fields other than the virtual table.  */
 	  for (tree fld = TYPE_FIELDS (TREE_TYPE (t));
-	       fld; fld = TREE_CHAIN (fld))
+	       fld;
+	       fld = TREE_CHAIN (fld))
 	    {
 	      if (TREE_CODE (fld) == FIELD_DECL)
 		{
-		  if (is_interface < 0 && DECL_VIRTUAL_P (fld))
+		  if (!has_fields && DECL_VIRTUAL_P (fld))
 		    is_interface = 1;
 		  else
 		    is_interface = 0;
+		  has_fields = true;
 		}
-	      else if (TREE_CODE (TREE_TYPE (fld)) == METHOD_TYPE
+	      else if (TREE_CODE (fld) == FUNCTION_DECL
 		       && !DECL_ARTIFICIAL (fld))
 		{
 		  if (cpp_check (fld, IS_ABSTRACT))
@@ -3098,10 +3106,13 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 	    {
 	      pp_string (buffer, "aliased ");
 
+	      if (TREE_READONLY (t))
+		pp_string (buffer, "constant ");
+
 	      if (TYPE_NAME (TREE_TYPE (t)))
 		dump_generic_ada_node
 		  (buffer, TREE_TYPE (t), t, spc, false, true);
-	      else
+	      else if (type)
 		dump_ada_double_name (buffer, type, t);
 	    }
 	  else
@@ -3110,6 +3121,9 @@ print_ada_declaration (pretty_printer *buffer, tree t, tree type, int spc)
 		  && (TYPE_NAME (TREE_TYPE (t))
 		      || TREE_CODE (TREE_TYPE (t)) != INTEGER_TYPE))
 		pp_string (buffer, "aliased ");
+
+	      if (TREE_READONLY (t))
+		pp_string (buffer, "constant ");
 
 	      dump_generic_ada_node
 		(buffer, TREE_TYPE (t), TREE_TYPE (t), spc, false, true);
@@ -3206,10 +3220,10 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
 		  field_num++;
 		}
 	    }
-	  else if (TREE_CODE (tmp) != TYPE_DECL && !TREE_STATIC (tmp))
+	  else if (TREE_CODE (tmp) == FIELD_DECL)
 	    {
 	      /* Skip internal virtual table field.  */
-	      if (strncmp (IDENTIFIER_POINTER (DECL_NAME (tmp)), "_vptr", 5))
+	      if (!DECL_VIRTUAL_P (tmp))
 		{
 		  if (is_union)
 		    {
@@ -3300,7 +3314,7 @@ print_ada_struct_decl (pretty_printer *buffer, tree node, tree type, int spc,
   /* Print the static fields of the structure, if any.  */
   for (tmp = TYPE_FIELDS (node); tmp; tmp = TREE_CHAIN (tmp))
     {
-      if (DECL_NAME (tmp) && TREE_STATIC (tmp))
+      if (TREE_CODE (tmp) == VAR_DECL && DECL_NAME (tmp))
 	{
 	  if (need_semicolon)
 	    {

@@ -38,6 +38,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 #elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
@@ -47,8 +49,6 @@ namespace tr1
 #endif
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /// A class to encapsulate type dependent floating point
     /// constants.  Not everything will be able to be expressed as
     /// type logic.
@@ -130,12 +130,12 @@ namespace tr1
     { return __builtin_isnanl(__x); }
 
 #endif
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_SPECIAL_FUNCTION_UTIL_H

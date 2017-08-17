@@ -2,15 +2,13 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_vsx_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-O2 -mcpu=power7 -ffast-math -mno-upper-regs-df" } */
-/* { dg-final { scan-assembler-times "lfiwax" 2 } } */
-/* { dg-final { scan-assembler-times "lfiwzx" 2 } } */
-/* { dg-final { scan-assembler-times "fcfids " 3 } } */
-/* { dg-final { scan-assembler-times "fcfidus " 1 } } */
-/* { dg-final { scan-assembler-times "fcfid " 3 } } */
-/* { dg-final { scan-assembler-times "fcfidu " 1 } } */
-/* { dg-final { scan-assembler-not "xscvdpsxds" } } */
-/* { dg-final { scan-assembler-not "xscvdpuxds" } } */
+/* { dg-options "-O2 -mcpu=power7 -ffast-math" } */
+/* { dg-final { scan-assembler-times {\mlfiwax\M|\mlxsiwax\M}    2 } } */
+/* { dg-final { scan-assembler-times {\mlfiwzx\M|\mlxsiwzx\M}    2 } } */
+/* { dg-final { scan-assembler-times {\mfcfids\M|\mxscvsxdsp\M}  3 } } */
+/* { dg-final { scan-assembler-times {\mfcfidus\M|\mxscvuxdsp\M} 1 } } */
+/* { dg-final { scan-assembler-times {\mfcfid\M|\mxscvsxddp\M}   3 } } */
+/* { dg-final { scan-assembler-times {\mfcfidu\M|\mxscvuxddp\M}  1 } } */
 
 void int_to_float (float *dest, int *src)
 {

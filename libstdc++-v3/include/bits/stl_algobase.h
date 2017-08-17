@@ -1020,8 +1020,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __lg(unsigned long long __n)
   { return sizeof(long long) * __CHAR_BIT__ - 1 - __builtin_clzll(__n); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   /**
@@ -1411,6 +1409,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 #endif
 
 _GLIBCXX_END_NAMESPACE_ALGO
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 // NB: This file is included within many other C++ includes, as a way

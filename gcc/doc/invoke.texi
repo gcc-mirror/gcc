@@ -1045,14 +1045,10 @@ See RS/6000 and PowerPC Options.
 -mquad-memory  -mno-quad-memory @gol
 -mquad-memory-atomic  -mno-quad-memory-atomic @gol
 -mcompat-align-parm  -mno-compat-align-parm @gol
--mupper-regs-df  -mno-upper-regs-df  -mupper-regs-sf  -mno-upper-regs-sf @gol
--mupper-regs-di  -mno-upper-regs-di @gol
--mupper-regs  -mno-upper-regs @gol
 -mfloat128  -mno-float128  -mfloat128-hardware  -mno-float128-hardware @gol
 -mgnu-attribute  -mno-gnu-attribute @gol
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{reg} @gol
--mstack-protector-guard-offset=@var{offset} @gol
--mlra  -mno-lra}
+-mstack-protector-guard-offset=@var{offset}}
 
 @emph{RX Options}
 @gccoptlist{-m64bit-doubles  -m32bit-doubles  -fpu  -nofpu@gol
@@ -1127,7 +1123,7 @@ See RS/6000 and PowerPC Options.
 -mv8plus  -mno-v8plus  -mvis  -mno-vis @gol
 -mvis2  -mno-vis2  -mvis3  -mno-vis3 @gol
 -mvis4 -mno-vis4 -mvis4b -mno-vis4b @gol
--mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  @gol
+-mcbcond  -mno-cbcond  -mfmaf  -mno-fmaf  -mfsmuld  -mno-fsmuld  @gol
 -mpopc  -mno-popc  -msubxc  -mno-subxc @gol
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc @gol
 -mlra  -mno-lra}
@@ -1219,7 +1215,10 @@ See RS/6000 and PowerPC Options.
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop  -mgeneral-regs-only  -mcall-ms2sysv-xlogues}
+-mstack-protector-guard-reg=@var{reg} @gol
+-mstack-protector-guard-offset=@var{offset} @gol
+-mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -7252,13 +7251,20 @@ invoking @option{-O2} on programs that use computed gotos.
 @item -O3
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified
-by @option{-O2} and also turns on the @option{-finline-functions},
-@option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
-@option{-ftree-loop-distribute-patterns}, @option{-fsplit-paths}
-@option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
-@option{-ftree-partial-pre}, @option{-fpeel-loops}
-and @option{-fipa-cp-clone} options.
+by @option{-O2} and also turns on the following optimization flags:
+@gccoptlist{-finline-functions @gol
+-funswitch-loops @gol
+-fpredictive-commoning @gol
+-fgcse-after-reload @gol
+-ftree-loop-vectorize @gol
+-ftree-loop-distribution @gol
+-ftree-loop-distribute-patterns @gol
+-fsplit-paths @gol
+-ftree-slp-vectorize @gol
+-fvect-cost-model @gol
+-ftree-partial-pre @gol
+-fpeel-loops @gol
+-fipa-cp-clone}
 
 @item -O0
 @opindex O0
@@ -7282,7 +7288,8 @@ Disregard strict standards compliance.  @option{-Ofast} enables all
 @option{-O3} optimizations.  It also enables optimizations that are not
 valid for all standard-compliant programs.
 It turns on @option{-ffast-math} and the Fortran-specific
-@option{-fno-protect-parens} and @option{-fstack-arrays}.
+@option{-fstack-arrays}, unless @option{-fmax-stack-var-size} is
+specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
@@ -7359,6 +7366,10 @@ The default setting (when not optimizing for
 size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets is
 @option{-fomit-frame-pointer}.  You can configure GCC with the
 @option{--enable-frame-pointer} configure option to change the default.
+
+Note that @option{-fno-omit-frame-pointer} doesn't force a new stack
+frame for all functions if it isn't otherwise needed, and hence doesn't
+guarantee a new frame pointer for all functions.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -11522,6 +11533,34 @@ of the function name, it is considered to be a match.  For C99 and C++
 extended identifiers, the function name must be given in UTF-8, not
 using universal character names.
 
+@item -fpatchable-function-entry=@var{N}[,@var{M}]
+@opindex fpatchable-function-entry
+Generate @var{N} NOPs right at the beginning
+of each function, with the function entry point before the @var{M}th NOP.
+If @var{M} is omitted, it defaults to @code{0} so the
+function entry points to the address just at the first NOP.
+The NOP instructions reserve extra space which can be used to patch in
+any desired instrumentation at run time, provided that the code segment
+is writable.  The amount of space is controllable indirectly via
+the number of NOPs; the NOP instruction used corresponds to the instruction
+emitted by the internal GCC back-end interface @code{gen_nop}.  This behavior
+is target-specific and may also depend on the architecture variant and/or
+other compilation options.
+
+For run-time identification, the starting addresses of these areas,
+which correspond to their respective function entries minus @var{M},
+are additionally collected in the @code{__patchable_function_entries}
+section of the resulting binary.
+
+Note that the value of @code{__attribute__ ((patchable_function_entry
+(N,M)))} takes precedence over command-line option
+@option{-fpatchable-function-entry=N,M}.  This can be used to increase
+the area size or to remove it completely on a single function.
+If @code{N=0}, no pad location is recorded.
+
+The NOP instructions are inserted at---and maybe before, depending on
+@var{M}---the function entry address, even before the prologue.
+
 @end table
 
 
@@ -14084,7 +14123,7 @@ support for the ARMv8.2-A architecture extensions.
 
 The value @samp{armv8.1-a} implies @samp{armv8-a} and enables compiler
 support for the ARMv8.1-A architecture extension.  In particular, it
-enables the @samp{+crc} and @samp{+lse} features.
+enables the @samp{+crc}, @samp{+lse}, and @samp{+rdma} features.
 
 The value @samp{native} is available on native AArch64 GNU/Linux and
 causes the compiler to pick the architecture of the host system.  This
@@ -14202,6 +14241,9 @@ instructions.  This is on by default for all possible values for options
 @item lse
 Enable Large System Extension instructions.  This is on by default for
 @option{-march=armv8.1-a}.
+@item rdma
+Enable Round Double Multiply Accumulate instructions.  This is on by default
+for @option{-march=armv8.1-a}.
 @item fp16
 Enable FP16 extension.  This also enables floating-point instructions.
 @item rcpc
@@ -15710,6 +15752,8 @@ can also increase the size of the program.  Different values are potentially
 incompatible.  Code compiled with one value cannot necessarily expect to
 work with code or libraries compiled with another value, if they exchange
 information using structures or unions.
+
+This option is deprecated.
 
 @item -mabort-on-noreturn
 @opindex mabort-on-noreturn
@@ -21811,11 +21855,6 @@ This switch enables or disables the generation of ISEL instructions.
 This switch has been deprecated.  Use @option{-misel} and
 @option{-mno-isel} instead.
 
-@item -mlra
-@opindex mlra
-Enable Local Register Allocation. By default the port uses LRA.
-(i.e. @option{-mno-lra}).
-
 @item -mspe
 @itemx -mno-spe
 @opindex mspe
@@ -21898,50 +21937,6 @@ instructions.  The @option{-mquad-memory} option requires use of
 Generate code that uses (does not use) the atomic quad word memory
 instructions.  The @option{-mquad-memory-atomic} option requires use of
 64-bit mode.
-
-@item -mupper-regs-di
-@itemx -mno-upper-regs-di
-@opindex mupper-regs-di
-@opindex mno-upper-regs-di
-Generate code that uses (does not use) the scalar instructions that
-target all 64 registers in the vector/scalar floating point register
-set that were added in version 2.06 of the PowerPC ISA when processing
-integers.  @option{-mupper-regs-di} is turned on by default if you use
-any of the @option{-mcpu=power7}, @option{-mcpu=power8},
-@option{-mcpu=power9}, or @option{-mvsx} options.
-
-@item -mupper-regs-df
-@itemx -mno-upper-regs-df
-@opindex mupper-regs-df
-@opindex mno-upper-regs-df
-Generate code that uses (does not use) the scalar double precision
-instructions that target all 64 registers in the vector/scalar
-floating point register set that were added in version 2.06 of the
-PowerPC ISA.  @option{-mupper-regs-df} is turned on by default if you
-use any of the @option{-mcpu=power7}, @option{-mcpu=power8},
-@option{-mcpu=power9}, or @option{-mvsx} options.
-
-@item -mupper-regs-sf
-@itemx -mno-upper-regs-sf
-@opindex mupper-regs-sf
-@opindex mno-upper-regs-sf
-Generate code that uses (does not use) the scalar single precision
-instructions that target all 64 registers in the vector/scalar
-floating point register set that were added in version 2.07 of the
-PowerPC ISA.  @option{-mupper-regs-sf} is turned on by default if you
-use either of the @option{-mcpu=power8}, @option{-mpower8-vector}, or
-@option{-mcpu=power9} options.
-
-@item -mupper-regs
-@itemx -mno-upper-regs
-@opindex mupper-regs
-@opindex mno-upper-regs
-Generate code that uses (does not use) the scalar
-instructions that target all 64 registers in the vector/scalar
-floating point register set, depending on the model of the machine.
-
-If the @option{-mno-upper-regs} option is used, it turns off both
-@option{-mupper-regs-sf} and @option{-mupper-regs-df} options.
 
 @item -mfloat128
 @itemx -mno-float128
@@ -22763,9 +22758,11 @@ The @option{-mno-compat-align-parm} option is the default.
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
 @itemx -mstack-protector-guard-offset=@var{offset}
+@itemx -mstack-protector-guard-symbol=@var{symbol}
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-reg
 @opindex mstack-protector-guard-offset
+@opindex mstack-protector-guard-symbol
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default with GNU libc version 2.4 or later).
@@ -22775,7 +22772,8 @@ With the latter choice the options
 @option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
 which register to use as base register for reading the canary, and from what
 offset from that base register. The default for those is as specified in the
-relevant ABI.
+relevant ABI.  @option{-mstack-protector-guard-symbol=@var{symbol}} overrides
+the offset with a symbol reference to a canary in the TLS block.
 @end table
 
 @node RX Options
@@ -24082,6 +24080,15 @@ With @option{-mfmaf}, GCC generates code that takes advantage of the UltraSPARC
 Fused Multiply-Add Floating-point instructions.  The default is @option{-mfmaf}
 when targeting a CPU that supports such instructions, such as Niagara-3 and
 later.
+
+@item -mfsmuld
+@itemx -mno-fsmuld
+@opindex mfsmuld
+@opindex mno-fsmuld
+With @option{-mfsmuld}, GCC generates code that takes advantage of the
+Floating-point Multiply Single to Double (FsMULd) instruction.  The default is
+@option{-mfsmuld} when targeting a CPU supporting the architecture versions V8
+or V9 with FPU except @option{-mcpu=leon}.
 
 @item -mpopc
 @itemx -mno-popc
@@ -26150,11 +26157,22 @@ to 255, 8-bit unsigned integer divide is used instead of
 Split 32-byte AVX unaligned load and store.
 
 @item -mstack-protector-guard=@var{guard}
-@opindex mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default).  This option has effect only when
 @option{-fstack-protector} or @option{-fstack-protector-all} is specified.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which segment register (@code{%fs} or @code{%gs}) to use as base register
+for reading the canary, and from what offset from that base register.
+The default for those is as specified in the relevant ABI.
 
 @item -mmitigate-rop
 @opindex mmitigate-rop

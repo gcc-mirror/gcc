@@ -44,6 +44,9 @@
 ;; Iterator for all scalar floating point modes (HF, SF, DF)
 (define_mode_iterator GPF_F16 [(HF "AARCH64_ISA_F16") SF DF])
 
+;; Iterator for all scalar floating point modes (HF, SF, DF)
+(define_mode_iterator GPF_HF [HF SF DF])
+
 ;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
 (define_mode_iterator GPF_TF_F16 [HF SF DF TF])
 
@@ -519,6 +522,17 @@
                         (V2DF "DF") (DF "DF")
 			(SI   "SI") (HI   "HI")
 			(QI   "QI")])
+
+;; Define element mode for each vector mode (lower case).
+(define_mode_attr Vel [(V8QI "qi") (V16QI "qi")
+			(V4HI "hi") (V8HI "hi")
+			(V2SI "si") (V4SI "si")
+			(DI "di")   (V2DI "di")
+			(V4HF "hf") (V8HF "hf")
+			(V2SF "sf") (V4SF "sf")
+			(V2DF "df") (DF "df")
+			(SI   "si") (HI   "hi")
+			(QI   "qi")])
 
 ;; 64-bit container modes the inner or scalar source mode.
 (define_mode_attr VCOND [(HI "V4HI") (SI "V2SI")

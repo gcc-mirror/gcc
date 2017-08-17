@@ -138,19 +138,19 @@
 
 (define_register_constraint "Yd"
  "TARGET_INTER_UNIT_MOVES_TO_VEC
-  ? (TARGET_AVX512BW
+  ? (TARGET_AVX512DQ
      ? ALL_SSE_REGS
      : (TARGET_SSE4_1 ? SSE_REGS : NO_REGS))
   : NO_REGS"
- "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512BW target or any SSE register for SSE4_1 target, when inter-unit moves to vector registers are enabled.")
+ "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target, when inter-unit moves to vector registers are enabled.")
 
 (define_register_constraint "Ye"
  "TARGET_INTER_UNIT_MOVES_FROM_VEC
-  ? (TARGET_AVX512BW
+  ? (TARGET_AVX512DQ
      ? ALL_SSE_REGS
      : (TARGET_SSE4_1 ? SSE_REGS : NO_REGS))
   : NO_REGS"
- "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512BW target or any SSE register for SSE4_1 target, when inter-unit moves from vector registers are enabled.")
+ "@internal Any EVEX encodable SSE register (@code{%xmm0-%xmm31}) for AVX512DQ target or any SSE register for SSE4_1 target, when inter-unit moves from vector registers are enabled.")
 
 (define_register_constraint "Ym"
  "TARGET_MMX && TARGET_INTER_UNIT_MOVES_TO_VEC ? MMX_REGS : NO_REGS"

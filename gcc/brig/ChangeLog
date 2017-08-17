@@ -1,3 +1,10 @@
+2017-08-04  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	Fix PR 81713
+	* brigfrontend/brig-basic-inst-handler.cc: replace build_int_cst with
+	bitsize_int in building BIT_FIELD_REF.
+	* brigfrontend/brig-code-entry-handler.cc: likewise.
+
 2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

@@ -6144,11 +6144,12 @@ add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 /* Tell the debug system of a using directive.  */
 
 static void
-emit_debug_info_using_namespace (tree from, tree target)
+emit_debug_info_using_namespace (tree from, tree target, bool implicit)
 {
   /* Emit debugging info.  */
   tree context = from != global_namespace ? from : NULL_TREE;
-  debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false);
+  debug_hooks->imported_module_or_decl (target, NULL_TREE, context, false,
+					implicit);
 }
 
 /* Process a namespace-scope using directive.  */
@@ -6163,7 +6164,7 @@ finish_namespace_using_directive (tree target, tree attribs)
   add_using_namespace (DECL_NAMESPACE_USING (current_namespace),
 		       ORIGINAL_NAMESPACE (target));
   emit_debug_info_using_namespace (current_namespace,
-				   ORIGINAL_NAMESPACE (target));
+				   ORIGINAL_NAMESPACE (target), false);
 
   if (attribs == error_mark_node)
     return;
@@ -6322,14 +6323,14 @@ push_namespace (tree name, bool make_inline)
 	  else if (TREE_PUBLIC (current_namespace))
 	    TREE_PUBLIC (ns) = 1;
 
-	  if (name == anon_identifier || make_inline)
-	    emit_debug_info_using_namespace (current_namespace, ns);
-
 	  if (make_inline)
 	    {
 	      DECL_NAMESPACE_INLINE_P (ns) = true;
 	      vec_safe_push (DECL_NAMESPACE_INLINEES (current_namespace), ns);
 	    }
+
+	  if (name == anon_identifier || make_inline)
+	    emit_debug_info_using_namespace (current_namespace, ns, true);
 	}
     }
 
@@ -6457,8 +6458,8 @@ cp_emit_debug_info_for_using (tree t, tree context)
 	  if (building_stmt_list_p ())
 	    add_stmt (build_stmt (input_location, USING_STMT, fn));
 	  else
-	    debug_hooks->imported_module_or_decl (fn,
-						  NULL_TREE, context, false);
+	    debug_hooks->imported_module_or_decl (fn, NULL_TREE, context,
+						  false, false);
 	}
     }
 }

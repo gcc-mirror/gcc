@@ -23,141 +23,101 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
-#ifdef __x86_64__
+#if defined(__x86_64__) && defined(__SSE2__)
 
-# ifdef __ELF__
-#  define ELFFN_BEGIN(fn)       .type fn,@function
-#  define ELFFN_END(fn)         .size fn,.-fn
-# else
-#  define ELFFN_BEGIN(fn)
-#  define ELFFN_END(fn)
-# endif
+/* These macros currently support GNU/Linux, Solaris and Darwin.  */
 
-# define FUNC(fn)		\
-	.global fn;		\
-	ELFFN_BEGIN(fn);	\
-fn:
+#ifdef __ELF__
+# define FN_TYPE(fn) .type fn,@function
+# define FN_SIZE(fn) .size fn,.-fn
+#else
+# define FN_TYPE(fn)
+# define FN_SIZE(fn)
+#endif
 
-#define FUNC_END(fn) ELFFN_END(fn)
+#ifdef __USER_LABEL_PREFIX__
+# define ASMNAME2(prefix, name)	prefix ## name
+# define ASMNAME1(prefix, name)	ASMNAME2(prefix, name)
+# define ASMNAME(name)		ASMNAME1(__USER_LABEL_PREFIX__, name)
+#else
+# define ASMNAME(name)		name
+#endif
 
-# ifdef __AVX__
-#  define MOVAPS vmovaps
-# else
-#  define MOVAPS movaps
-# endif
+#define FUNC_BEGIN(fn)		\
+	.globl ASMNAME(fn);	\
+	FN_TYPE (ASMNAME(fn));	\
+ASMNAME(fn):
 
-/* TODO: Is there a cleaner way to provide these offsets?  */
-	.struct 0
-test_data_save:
+#define FUNC_END(fn) FN_SIZE(ASMNAME(fn))
 
-	.struct test_data_save + 224
-test_data_input:
-
-	.struct test_data_save + 448
-test_data_output:
-
-	.struct test_data_save + 672
-test_data_fn:
-
-	.struct test_data_save + 680
-test_data_retaddr:
+#ifdef __AVX__
+# define MOVAPS vmovaps
+#else
+# define MOVAPS movaps
+#endif
 
 	.text
 
-regs_to_mem:
-	MOVAPS	%xmm6, (%rax)
-	MOVAPS	%xmm7, 0x10(%rax)
-	MOVAPS	%xmm8, 0x20(%rax)
-	MOVAPS	%xmm9, 0x30(%rax)
-	MOVAPS	%xmm10, 0x40(%rax)
-	MOVAPS	%xmm11, 0x50(%rax)
-	MOVAPS	%xmm12, 0x60(%rax)
-	MOVAPS	%xmm13, 0x70(%rax)
-	MOVAPS	%xmm14, 0x80(%rax)
-	MOVAPS	%xmm15, 0x90(%rax)
-	mov	%rsi, 0xa0(%rax)
-	mov	%rdi, 0xa8(%rax)
-	mov	%rbx, 0xb0(%rax)
-	mov	%rbp, 0xb8(%rax)
-	mov	%r12, 0xc0(%rax)
-	mov	%r13, 0xc8(%rax)
-	mov	%r14, 0xd0(%rax)
-	mov	%r15, 0xd8(%rax)
+FUNC_BEGIN(regs_to_mem)
+	MOVAPS	%xmm6, (%r10)
+	MOVAPS	%xmm7, 0x10(%r10)
+	MOVAPS	%xmm8, 0x20(%r10)
+	MOVAPS	%xmm9, 0x30(%r10)
+	MOVAPS	%xmm10, 0x40(%r10)
+	MOVAPS	%xmm11, 0x50(%r10)
+	MOVAPS	%xmm12, 0x60(%r10)
+	MOVAPS	%xmm13, 0x70(%r10)
+	MOVAPS	%xmm14, 0x80(%r10)
+	MOVAPS	%xmm15, 0x90(%r10)
+	mov	%rsi, 0xa0(%r10)
+	mov	%rdi, 0xa8(%r10)
+	mov	%rbx, 0xb0(%r10)
+	mov	%rbp, 0xb8(%r10)
+	mov	%r12, 0xc0(%r10)
+	mov	%r13, 0xc8(%r10)
+	mov	%r14, 0xd0(%r10)
+	mov	%r15, 0xd8(%r10)
 	retq
+FUNC_END(regs_to_mem)
 
-mem_to_regs:
-	MOVAPS	(%rax), %xmm6
-	MOVAPS	0x10(%rax),%xmm7
-	MOVAPS	0x20(%rax),%xmm8
-	MOVAPS	0x30(%rax),%xmm9
-	MOVAPS	0x40(%rax),%xmm10
-	MOVAPS	0x50(%rax),%xmm11
-	MOVAPS	0x60(%rax),%xmm12
-	MOVAPS	0x70(%rax),%xmm13
-	MOVAPS	0x80(%rax),%xmm14
-	MOVAPS	0x90(%rax),%xmm15
-	mov	0xa0(%rax),%rsi
-	mov	0xa8(%rax),%rdi
-	mov	0xb0(%rax),%rbx
-	mov	0xb8(%rax),%rbp
-	mov	0xc0(%rax),%r12
-	mov	0xc8(%rax),%r13
-	mov	0xd0(%rax),%r14
-	mov	0xd8(%rax),%r15
+FUNC_BEGIN(mem_to_regs)
+	MOVAPS	(%r10), %xmm6
+	MOVAPS	0x10(%r10),%xmm7
+	MOVAPS	0x20(%r10),%xmm8
+	MOVAPS	0x30(%r10),%xmm9
+	MOVAPS	0x40(%r10),%xmm10
+	MOVAPS	0x50(%r10),%xmm11
+	MOVAPS	0x60(%r10),%xmm12
+	MOVAPS	0x70(%r10),%xmm13
+	MOVAPS	0x80(%r10),%xmm14
+	MOVAPS	0x90(%r10),%xmm15
+	mov	0xa0(%r10),%rsi
+	mov	0xa8(%r10),%rdi
+	mov	0xb0(%r10),%rbx
+	mov	0xb8(%r10),%rbp
+	mov	0xc0(%r10),%r12
+	mov	0xc8(%r10),%r13
+	mov	0xd0(%r10),%r14
+	mov	0xd8(%r10),%r15
 	retq
+FUNC_END(mem_to_regs)
 
 # NOTE: Not MT safe
-FUNC(do_test_unaligned)
-	.cfi_startproc
+FUNC_BEGIN(do_test_unaligned)
 	# The below alignment checks are to verify correctness of the test
 	# its self.
 
 	# Verify that incoming stack is aligned + 8
-	pushf
-	test	$0x8, %rsp
-	jne	L0
-	int	$3		# Stack not unaligned
-
-FUNC(do_test_aligned)
-	# Verify that incoming stack is aligned
-	pushf
 	test	$0xf, %rsp
-	je	L0
-	int	$3		# Stack not aligned
-L0:
-	popf
-
-	# Save registers
-	lea	test_data(%rip), %rax
-	call	regs_to_mem
-
-	# Load register with random data
-	lea	test_data + test_data_input(%rip), %rax
-	call	mem_to_regs
-
-	# Save original return address
-	pop	%rax
-	movq    %rax, test_data + test_data_retaddr(%rip)
-
-	# Call the test function
-	call	*test_data + test_data_fn(%rip)
-
-	# Restore the original return address
-	movq    test_data + test_data_retaddr(%rip), %rcx
-	push	%rcx
-
-	# Save test function return value and store resulting register values
-	push	%rax
-	lea	test_data + test_data_output(%rip), %rax
-	call	regs_to_mem
-
-	# Restore registers
-	lea	test_data(%rip), %rax
-	call	mem_to_regs
-	pop	%rax
-	retq
-        .cfi_endproc
-FUNC_END(do_test_aligned)
+	je	ASMNAME(do_test_body)
+	int	$3		# Stack not unaligned
 FUNC_END(do_test_unaligned)
+
+FUNC_BEGIN(do_test_aligned)
+	# Verify that incoming stack is aligned
+	test	$0x8, %rsp
+	jne	ASMNAME(do_test_body)
+	int	$3		# Stack not aligned
+FUNC_END(do_test_aligned)
 
 #endif /* __x86_64__ */

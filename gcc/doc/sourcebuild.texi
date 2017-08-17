@@ -1846,6 +1846,9 @@ PowerPC target supports executing VSX instructions (ISA 2.06).
 
 @c Please keep this table sorted alphabetically.
 @table @code
+@item autoincdec
+Target supports autoincrement/decrement addressing.
+
 @item avx
 Target supports compiling @code{avx} instructions.
 

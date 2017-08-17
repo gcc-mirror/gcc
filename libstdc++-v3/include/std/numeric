@@ -79,10 +79,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __detail
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   // std::abs is not constexpr and doesn't support unsigned integers.
   template<typename _Tp>
     constexpr
@@ -117,11 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  * __detail::__abs_integral(__n)
 	: 0;
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
-}
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+} // namespace __detail
 
 #if __cplusplus > 201402L
 

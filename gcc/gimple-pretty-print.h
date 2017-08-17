@@ -35,5 +35,6 @@ extern void pp_gimple_stmt_1 (pretty_printer *, gimple *, int, dump_flags_t);
 extern void gimple_dump_bb (FILE *, basic_block, int, dump_flags_t);
 extern void gimple_dump_bb_for_graph (pretty_printer *, basic_block);
 extern void dump_ssaname_info_to_file (FILE *, tree, int);
+extern void percent_G_format (text_info *);
 
 #endif /* ! GCC_GIMPLE_PRETTY_PRINT_H */

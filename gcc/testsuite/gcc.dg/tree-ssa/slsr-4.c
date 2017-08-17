@@ -23,13 +23,9 @@ f (int i)
   foo (y);
 }
 
-/* { dg-final { scan-tree-dump-times "\\* 4" 1 "slsr" } } */
-/* { dg-final { scan-tree-dump-times "\\* 10" 1 "slsr" } } */
-/* { dg-final { scan-tree-dump-times "\\+ 20;" 1 "slsr" } } */
+/* { dg-final { scan-tree-dump-times "\\* 40" 1 "slsr" } } */
 /* { dg-final { scan-tree-dump-times "\\+ 200" 1 "slsr" } } */
-/* { dg-final { scan-tree-dump-times "\\- 16;" 1 "slsr" } } */
 /* { dg-final { scan-tree-dump-times "\\- 160" 1 "slsr" } } */
-/* { dg-final { scan-tree-dump-times "\\* 4" 1 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "\\* 10" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "\\* 40" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\+ 200" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "\\+ 40" 1 "optimized" } } */

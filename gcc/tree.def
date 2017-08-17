@@ -112,10 +112,7 @@ DEFTREECODE (BLOCK, "block", tcc_exceptional, 0)
     itself or have named members doesn't really have a "scope" per se.
   The TYPE_STUB_DECL field is used as a forward-references to names for
     ENUMERAL_TYPE, RECORD_TYPE, UNION_TYPE, and QUAL_UNION_TYPE nodes;
-    see below.
-  The TYPE_METHODS points to list of all methods associated with the type.
-    It is non-NULL only at main variant of the type and after free_lang_data
-    it may be set to error_mark_node instead of actual list to save memory. */
+    see below.  */
 
 /* The ordering of the following codes is optimized for the checking
    macros in tree.h.  Changing the order will degrade the speed of the
@@ -213,8 +210,9 @@ DEFTREECODE (ARRAY_TYPE, "array_type", tcc_type, 0)
 /* Struct in C, or record in Pascal.  */
 /* Special fields:
    TYPE_FIELDS  chain of FIELD_DECLs for the fields of the struct,
-     and VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
-     types and enumerators.
+     VAR_DECLs, TYPE_DECLs and CONST_DECLs for record-scope variables,
+     types and enumerators and FUNCTION_DECLs for methods associated
+     with the type.
    A few may need to be added for Pascal.  */
 /* See the comment above, before ENUMERAL_TYPE, for how
    forward references to struct tags are handled in C.  */

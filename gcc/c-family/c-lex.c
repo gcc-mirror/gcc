@@ -316,6 +316,7 @@ c_common_has_attribute (cpp_reader *pfile)
     {
       attr_name = get_identifier ((const char *)
 				  cpp_token_as_text (pfile, token));
+      attr_name = canonicalize_attr_name (attr_name);
       if (c_dialect_cxx ())
 	{
 	  int idx = 0;

@@ -316,7 +316,7 @@ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 MOSTLYCLEANFILES = \
 	zdefaultcc.go s-zdefaultcc \
-	check-gccgo gotools.head *-testlog gotools.sum gotools.log
+	check-gccgo gotools.head *-testlog gotools.sum gotools.log *.sent
 
 
 # For a native build we build the programs using the newly built libgo

@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-symtab.h"
 #include "stringpool.h"
 #include "fold-const.h"
+#include "attribs.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */

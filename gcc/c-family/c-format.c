@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "substring-locations.h"
 #include "selftest.h"
 #include "builtins.h"
+#include "attribs.h"
 
 /* Handle attributes associated with format checking.  */
 
@@ -55,6 +56,7 @@ struct function_format_info
 
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
+static GTY(()) tree local_gcall_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -67,7 +69,6 @@ static bool check_format_string (tree argument,
 static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 			  int validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
-static bool cmp_attribs (const char *tattr_name, const char *attr_name);
 
 static int first_target_format_type;
 static const char *format_name (int format_num);
@@ -672,6 +673,7 @@ static const format_char_info asm_fprintf_char_table[] =
   { "L",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "U",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "r",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  "", NULL },
+  { "z",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "@",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -688,7 +690,9 @@ static const format_char_info gcc_diag_char_table[] =
 
   /* Custom conversion specifiers.  */
 
-  /* These will require a "tree" at runtime.  */
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
+  /* K requires a "tree" argument at runtime.  */
   { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
 
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL },
@@ -716,6 +720,9 @@ static const format_char_info gcc_tdiag_char_table[] =
   { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
   { "E", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G", 1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
@@ -746,6 +753,9 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "E",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
@@ -775,6 +785,9 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
   { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
   { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
+
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G", 1, STD_C89,{ T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
@@ -3833,6 +3846,29 @@ init_dynamic_diag_info (void)
 	local_tree_type_node = void_type_node;
     }
 
+  /* Similar to the above but for gcall*.  */
+  if (!local_gcall_ptr_node
+      || local_gcall_ptr_node == void_type_node)
+    {
+      if ((local_gcall_ptr_node = maybe_get_identifier ("gcall")))
+	{
+	  local_gcall_ptr_node
+	    = identifier_global_value (local_gcall_ptr_node);
+	  if (local_gcall_ptr_node)
+	    {
+	      if (TREE_CODE (local_gcall_ptr_node) != TYPE_DECL)
+		{
+		  error ("%<gcall%> is not defined as a type");
+		  local_gcall_ptr_node = 0;
+		}
+	      else
+		local_gcall_ptr_node = TREE_TYPE (local_gcall_ptr_node);
+	    }
+	}
+      else
+	local_gcall_ptr_node = void_type_node;
+    }
+
   static tree hwi;
 
   if (!hwi)
@@ -3975,24 +4011,6 @@ convert_format_name_to_system_name (const char *attr_name)
   return attr_name;
 }
 
-/* Return true if TATTR_NAME and ATTR_NAME are the same format attribute,
-   counting "name" and "__name__" as the same, false otherwise.  */
-static bool
-cmp_attribs (const char *tattr_name, const char *attr_name)
-{
-  int alen = strlen (attr_name);
-  int slen = (tattr_name ? strlen (tattr_name) : 0);
-  if (alen > 4 && attr_name[0] == '_' && attr_name[1] == '_'
-      && attr_name[alen - 1] == '_' && attr_name[alen - 2] == '_')
-    {
-      attr_name += 2;
-      alen -= 4;
-    }
-  if (alen != slen || strncmp (tattr_name, attr_name, alen) != 0)
-    return false;
-  return true;
-}
-
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -4020,6 +4038,10 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       n_format_types += TARGET_N_FORMAT_TYPES;
     }
 #endif
+
+  /* Canonicalize name of format function.  */
+  if (TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
+    TREE_VALUE (args) = canonicalize_attr_name (TREE_VALUE (args));
 
   if (!decode_format_attr (args, &info, 0))
     {

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -318,24 +319,27 @@ struct processor_costs zEC12_cost =
 
 static struct
 {
+  /* The preferred name to be used in user visible output.  */
   const char *const name;
+  /* CPU name as it should be passed to Binutils via .machine  */
+  const char *const binutils_name;
   const enum processor_type processor;
   const struct processor_costs *cost;
 }
 const processor_table[] =
 {
-  { "g5",     PROCESSOR_9672_G5,     &z900_cost },
-  { "g6",     PROCESSOR_9672_G6,     &z900_cost },
-  { "z900",   PROCESSOR_2064_Z900,   &z900_cost },
-  { "z990",   PROCESSOR_2084_Z990,   &z990_cost },
-  { "z9-109", PROCESSOR_2094_Z9_109, &z9_109_cost },
-  { "z9-ec",  PROCESSOR_2094_Z9_EC,  &z9_109_cost },
-  { "z10",    PROCESSOR_2097_Z10,    &z10_cost },
-  { "z196",   PROCESSOR_2817_Z196,   &z196_cost },
-  { "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost },
-  { "z13",    PROCESSOR_2964_Z13,    &zEC12_cost },
-  { "arch12", PROCESSOR_ARCH12,      &zEC12_cost },
-  { "native", PROCESSOR_NATIVE,      NULL }
+  { "g5",     "g5",     PROCESSOR_9672_G5,     &z900_cost },
+  { "g6",     "g6",     PROCESSOR_9672_G6,     &z900_cost },
+  { "z900",   "z900",   PROCESSOR_2064_Z900,   &z900_cost },
+  { "z990",   "z990",   PROCESSOR_2084_Z990,   &z990_cost },
+  { "z9-109", "z9-109", PROCESSOR_2094_Z9_109, &z9_109_cost },
+  { "z9-ec",  "z9-ec",  PROCESSOR_2094_Z9_EC,  &z9_109_cost },
+  { "z10",    "z10",    PROCESSOR_2097_Z10,    &z10_cost },
+  { "z196",   "z196",   PROCESSOR_2817_Z196,   &z196_cost },
+  { "zEC12",  "zEC12",  PROCESSOR_2827_ZEC12,  &zEC12_cost },
+  { "z13",    "z13",    PROCESSOR_2964_Z13,    &zEC12_cost },
+  { "z14",    "arch12", PROCESSOR_3906_Z14,    &zEC12_cost },
+  { "native", "",       PROCESSOR_NATIVE,      NULL }
 };
 
 extern int reload_completed;
@@ -847,7 +851,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
       if ((bflags & B_VXE) && !TARGET_VXE)
 	{
-	  error ("Builtin %qF requires arch12 or higher.", fndecl);
+	  error ("Builtin %qF requires z14 or higher.", fndecl);
 	  return const0_rtx;
 	}
     }
@@ -5792,7 +5796,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   add_int_reg_note (s390_emit_ccraw_jump (8, NE, loop_start_label),
 		    REG_BR_PROB,
 		    profile_probability::very_likely ().to_reg_br_prob_note ());
-  emit_insn (gen_vec_extractv16qi (len, result_reg, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (len, result_reg, GEN_INT (7)));
 
   /* If the string pointer wasn't aligned we have loaded less then 16
      bytes and the remaining bytes got filled with zeros (by vll).
@@ -5850,7 +5854,7 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   emit_insn (gen_vlbb (vsrc, src, GEN_INT (6)));
   emit_insn (gen_lcbb (loadlen, src_addr, GEN_INT (6)));
   emit_insn (gen_vfenezv16qi (vpos, vsrc, vsrc));
-  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (gpos_qi, vpos, GEN_INT (7)));
   emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
   /* gpos is the byte index if a zero was found and 16 otherwise.
      So if it is lower than the loaded bytes we have a hit.  */
@@ -5928,7 +5932,7 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   force_expand_binop (Pmode, add_optab, dst_addr_reg, offset, dst_addr_reg,
 		      1, OPTAB_DIRECT);
 
-  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (gpos_qi, vpos, GEN_INT (7)));
   emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
 
   emit_insn (gen_vstlv16qi (vsrc, gpos, gen_rtx_MEM (BLKmode, dst_addr_reg)));
@@ -7359,7 +7363,8 @@ s390_asm_output_machine_for_arch (FILE *asm_out_file)
 {
   fprintf (asm_out_file, "\t.machinemode %s\n",
 	   (TARGET_ZARCH) ? "zarch" : "esa");
-  fprintf (asm_out_file, "\t.machine \"%s", processor_table[s390_arch].name);
+  fprintf (asm_out_file, "\t.machine \"%s",
+	   processor_table[s390_arch].binutils_name);
   if (S390_USE_ARCHITECTURE_MODIFIERS)
     {
       int cpu_flags;
@@ -8093,7 +8098,7 @@ s390_issue_rate (void)
 	 instruction gets issued per cycle.  */
     case PROCESSOR_2827_ZEC12:
     case PROCESSOR_2964_Z13:
-    case PROCESSOR_ARCH12:
+    case PROCESSOR_3906_Z14:
     default:
       return 1;
     }
@@ -14309,7 +14314,7 @@ s390_get_sched_attrmask (rtx_insn *insn)
 	mask |= S390_SCHED_ATTR_MASK_GROUPALONE;
       break;
     case PROCESSOR_2964_Z13:
-    case PROCESSOR_ARCH12:
+    case PROCESSOR_3906_Z14:
       if (get_attr_z13_cracked (insn))
 	mask |= S390_SCHED_ATTR_MASK_CRACKED;
       if (get_attr_z13_expanded (insn))
@@ -14333,7 +14338,7 @@ s390_get_unit_mask (rtx_insn *insn, int *units)
   switch (s390_tune)
     {
     case PROCESSOR_2964_Z13:
-    case PROCESSOR_ARCH12:
+    case PROCESSOR_3906_Z14:
       *units = 3;
       if (get_attr_z13_unit_lsu (insn))
 	mask |= 1 << 0;

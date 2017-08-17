@@ -783,10 +783,8 @@
   (and (and (match_code "mem")
 	    (match_test "MEM_VOLATILE_P (op)"))
        (if_then_else (match_test "reload_completed")
-         (match_operand 0 "memory_operand")
-         (if_then_else (match_test "reload_in_progress")
-	   (match_test "strict_memory_address_p (mode, XEXP (op, 0))")
-	   (match_test "memory_address_p (mode, XEXP (op, 0))")))))
+	 (match_operand 0 "memory_operand")
+	 (match_test "memory_address_p (mode, XEXP (op, 0))"))))
 
 ;; Return 1 if the operand is an offsettable memory operand.
 (define_predicate "offsettable_mem_operand"
@@ -1142,7 +1140,7 @@
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
 
-      if (reload_in_progress || lra_in_progress || reload_completed)
+      if (lra_in_progress || reload_completed)
 	return indexed_or_indirect_address (addr, vmode);
       else
 	return memory_address_addr_space_p (vmode, addr, MEM_ADDR_SPACE (op));

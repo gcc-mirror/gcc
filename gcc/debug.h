@@ -145,7 +145,8 @@ struct gcc_debug_hooks
 
   /* Debug information for imported modules and declarations.  */
   void (* imported_module_or_decl) (tree decl, tree name,
-				    tree context, bool child);
+				    tree context, bool child,
+				    bool implicit);
 
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
@@ -206,7 +207,8 @@ extern void debug_nothing_int_int (unsigned int, unsigned int);
 extern void debug_nothing_tree (tree);
 extern void debug_nothing_tree_tree (tree, tree);
 extern void debug_nothing_tree_int (tree, int);
-extern void debug_nothing_tree_tree_tree_bool (tree, tree, tree, bool);
+extern void debug_nothing_tree_tree_tree_bool_bool (tree, tree, tree,
+						    bool, bool);
 extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx_insn (rtx_insn *);
 extern void debug_nothing_rtx_code_label (rtx_code_label *);

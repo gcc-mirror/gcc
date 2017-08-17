@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Return true when DECL can be referenced from current unit.
@@ -4245,7 +4247,7 @@ maybe_canonicalize_mem_ref_addr (tree *t)
 				       TREE_TYPE (*t),
 				       TREE_OPERAND (TREE_OPERAND (*t, 0), 0),
 				       TYPE_SIZE (TREE_TYPE (*t)),
-				       wide_int_to_tree (sizetype, idx));
+				       wide_int_to_tree (bitsizetype, idx));
 		      res = true;
 		    }
 		}

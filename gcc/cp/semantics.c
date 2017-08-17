@@ -40,7 +40,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "omp-general.h"
 #include "convert.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "gomp-constants.h"
+#include "predict.h"
 
 /* There routines provide a modular interface to perform many parsing
    operations.  They may therefore be used during actual parsing, or
@@ -630,6 +633,7 @@ finish_goto_stmt (tree destination)
 
   check_goto (destination);
 
+  add_stmt (build_predict_expr (PRED_GOTO, NOT_TAKEN));
   return add_stmt (build_stmt (input_location, GOTO_EXPR, destination));
 }
 

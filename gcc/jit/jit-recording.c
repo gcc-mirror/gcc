@@ -1988,6 +1988,20 @@ recording::type::get_aligned (size_t alignment_in_bytes)
   return result;
 }
 
+/* Given a type, get a vector version of the type.
+
+   Implements the post-error-checking part of
+   gcc_jit_type_get_vector.  */
+
+recording::type *
+recording::type::get_vector (size_t num_units)
+{
+  recording::type *result
+    = new memento_of_get_vector (this, num_units);
+  m_ctxt->record (result);
+  return result;
+}
+
 const char *
 recording::type::access_as_type (reproducer &r)
 {
@@ -2457,7 +2471,7 @@ recording::memento_of_get_aligned::make_debug_string ()
 			      m_alignment_in_bytes);
 }
 
-/* Implementation of recording::memento::write_reproducer for volatile
+/* Implementation of recording::memento::write_reproducer for aligned
    types. */
 
 void
@@ -2469,6 +2483,46 @@ recording::memento_of_get_aligned::write_reproducer (reproducer &r)
 	   id,
 	   r.get_identifier_as_type (m_other_type),
 	   m_alignment_in_bytes);
+}
+
+/* The implementation of class gcc::jit::recording::memento_of_get_vector.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_get_vector.  */
+
+void
+recording::memento_of_get_vector::replay_into (replayer *)
+{
+  set_playback_obj
+    (m_other_type->playback_type ()->get_vector (m_num_units));
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of get_vector.  */
+
+recording::string *
+recording::memento_of_get_vector::make_debug_string ()
+{
+  return string::from_printf
+    (m_ctxt,
+     "%s  __attribute__((vector_size(sizeof (%s) * %zi)))",
+     m_other_type->get_debug_string (),
+     m_other_type->get_debug_string (),
+     m_num_units);
+}
+
+/* Implementation of recording::memento::write_reproducer for volatile
+   types. */
+
+void
+recording::memento_of_get_vector::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_vector (%s, %zi);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type),
+	   m_num_units);
 }
 
 /* The implementation of class gcc::jit::recording::array_type */

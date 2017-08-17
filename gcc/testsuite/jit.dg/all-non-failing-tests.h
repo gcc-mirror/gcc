@@ -228,6 +228,8 @@
    of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
    context.  */
 
+/* test-vector-types.cc: We don't use this, since it's C++.  */
+
 /* test-volatile.c */
 #define create_code create_code_volatile
 #define verify_code verify_code_volatile

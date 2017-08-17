@@ -109,7 +109,7 @@ s-zdefaultcc: Makefile
 
 MOSTLYCLEANFILES = \
 	zdefaultcc.go s-zdefaultcc \
-	check-gccgo gotools.head *-testlog gotools.sum gotools.log
+	check-gccgo gotools.head *-testlog gotools.sum gotools.log *.sent
 
 mostlyclean-local:
 	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir

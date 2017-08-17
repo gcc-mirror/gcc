@@ -50,7 +50,8 @@
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-address.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 #define A_RUNINSTRUMENTEDCODE	0x0001
 #define A_RUNUNINSTRUMENTEDCODE	0x0002

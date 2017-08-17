@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
@@ -796,7 +798,8 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   if (TREE_CODE (t) != SSA_NAME)
     return NULL_TREE;
 
-  gcc_assert (! inv_ || ! TREE_OVERFLOW_P (inv_));
+  if (inv_ && TREE_OVERFLOW_P (inv_))
+    inv_ = drop_tree_overflow (inv_);
 
   *neg = neg_;
   *inv = inv_;
@@ -1611,6 +1614,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
   wide_int res;
 
+  *overflow_p = false;
+
   switch (code)
     {
     case RSHIFT_EXPR:
@@ -1682,8 +1687,6 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
       gcc_unreachable ();
     }
 
-  *overflow_p = overflow;
-
   if (overflow
       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
@@ -1726,6 +1729,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	return wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
 			      TYPE_SIGN (TREE_TYPE (val1)));
     }
+
+  *overflow_p = overflow;
 
   return res;
 }

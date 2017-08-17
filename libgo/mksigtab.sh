@@ -107,6 +107,19 @@ if test "${GOOS}" = "aix"; then
     nsig=`expr $nsig + 1`
 else
     nsig=`grep 'const _*NSIG = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+    if test -z "$nsig"; then
+	if grep 'const _*NSIG = [ (]*_*SIGRTMAX + 1[ )]*' gen-sysinfo.go >/dev/null 2>&1; then
+	    rtmax=`grep 'const _*SIGRTMAX = [0-9]*$' gen-sysinfo.go | sed -e 's/.* = \([0-9]*\)/\1/'`
+	    if test -n "$rtmax"; then
+		nsig=`expr $rtmax + 1`
+	    fi
+	fi
+    fi
+fi
+
+if test -z "$nsig"; then
+    echo 1>&2 "could not determine number of signals"
+    exit 1
 fi
 
 i=1

@@ -1,3 +1,295 @@
+2017-08-17  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Remove stale comment.
+	* cp-tree.h (ENUM_TEMPLATE_INFO): Delete.
+	(TYPE_TEMPLATE_INFO): Simplify.
+	(SET_TYPE_TEMPLATE_INFO): Simplify.
+
+	* lex.c (maybe_add_lang_type_raw): BOUND_TEMPLATE_TEMPLATE_PARMs
+	don't need lang_type.
+	(cxx_make_type): Use maybe_add_lang_type_raw return value.
+	* mangle.c (CLASSTYPE_TEMPLATE_ID_P): Don't rely on
+	TYPE_LANG_SPECIFIC.
+
+	* cp-tree.h (struct lang_type): Remove template_info field.
+	(CLASSTYPE_TEMPLATE_INFO): Use TYPE_LANG_SLOT_1.
+	(TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO): Likewise.
+
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* error.c (cp_printer): Handle 'G'.
+
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
+	* decl2.c (get_tls_init_fn): Replace ASM_OUTPUT_DEF with
+	TARGET_SUPPORTS_ALIASES.
+	(handle_tls_init): Likewise.
+	(note_mangling_alias): Likewise.  Remove ATTRIBUTE_UNUSED for
+	both arguments.
+	* optimize.c (can_alias_cdtor): Likewise.
+
+2017-08-11  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81671 - nullptr_t template parameter
+	* pt.c (convert_nontype_argument): Fix nullptr_t check.
+
+2017-08-10  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
+	* method.c (synthesized_method_walk): Don't diagnose lack of
+	operator delete.
+
+	PR c++/80452 - Core 1579, implicit move semantics on return/throw
+	* cp-tree.h (LOOKUP_PREFER_RVALUE): Now means that we've already
+	tentatively changed the lvalue to an rvalue.
+	* call.c (reference_binding): Remove LOOKUP_PREFER_RVALUE handling.
+	(build_over_call): If LOOKUP_PREFER_RVALUE, check that the first
+	parameter is an rvalue reference.
+	* except.c (build_throw): Do maybe-rvalue overload resolution twice.
+	* typeck.c (check_return_expr): Likewise.
+
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.c (cp_parser_error): Update for new param to
+	c_parse_error.
+	(class token_pair): New class.
+	(struct matching_paren_traits): New struct.
+	(matching_parens): New typedef.
+	(struct matching_brace_traits): New struct.
+	(matching_braces): New typedef.
+	(cp_parser_statement_expr): Convert explicit parsing of
+	CPP_OPEN_PAREN and CPP_CLOSE_PAREN to use of
+	class matching_parens, so that the pertinent open parenthesis is
+	highlighted when there are problems locating the close
+	parenthesis.
+	(cp_parser_primary_expression): Likewise.
+	(cp_parser_compound_literal_p): Remove consumption of opening
+	paren.
+	(cp_parser_postfix_expression): Convert explicit parsing of
+	CPP_OPEN_PAREN and CPP_CLOSE_PAREN to use matching parens, as
+	above.  Use it to consume the opening paren previously consumed by
+	cp_parser_compound_literal_p.
+	(cp_parser_parenthesized_expression_list): Likewise.
+	(cp_parser_unary_expression): Likewise.
+	(cp_parser_new_expression): Likewise.
+	(cp_parser_cast_expression): Likewise.
+	(cp_parser_builtin_offsetof): Likewise.
+	(cp_parser_trait_expr): Likewise.
+	(cp_parser_lambda_declarator_opt): Likewise.
+	(cp_parser_lambda_body): Likewise, for matching_braces.
+	(cp_parser_compound_statement): Likewise.
+	(cp_parser_selection_statement): Likewise, for matching_parens.
+	(cp_parser_iteration_statement): Likewise.
+	(cp_parser_already_scoped_statement): Likewise, for
+	matching_braces.
+	(cp_parser_linkage_specification): Likewise.
+	(cp_parser_static_assert): Likewise, for matching_parens.
+	(cp_parser_decltype): Likewise.
+	(cp_parser_operator): Likewise.
+	(cp_parser_enum_specifier): Likewise.
+	(cp_parser_namespace_definition): Likewise.
+	(cp_parser_direct_declarator): Likewise.
+	(cp_parser_braced_list): Likewise.
+	(cp_parser_class_specifier_1): Likewise, for matching_braces.
+	(cp_parser_constant_initializer): Likewise.
+	(cp_parser_noexcept_specification_opt): Likewise, for
+	matching_parens.
+	(cp_parser_exception_specification_opt): Likewise.
+	(cp_parser_handler): Likewise.
+	(cp_parser_asm_specification_opt): Likewise.
+	(cp_parser_asm_operand_list): Likewise.
+	(cp_parser_gnu_attributes_opt): Likewise.
+	(cp_parser_std_attribute_spec): Likewise.
+	(cp_parser_requirement_parameter_list): Likewise.
+	(cp_parser_requirement_body): Likewise, for matching_braces.
+	(cp_parser_compound_requirement): Likewise.
+	(cp_parser_template_introduction): Likewise.
+	(cp_parser_sizeof_pack): Likewise, for matching_parens.
+	(cp_parser_sizeof_operand): Likewise; use it to consume the
+	opening paren previously consumed by cp_parser_compound_literal_p.
+	(get_matching_symbol): New function.
+	(cp_parser_required_error): Add param "matching_location".  Remove
+	calls to cp_parser_error, instead setting a non-NULL gmsgid, and
+	handling it if set by calling c_parse_error, potentially with a
+	secondary location if matching_location was set.
+	(cp_parser_require): Add param "matching_location", with a default
+	value of UNKNOWN_LOCATION.
+	(cp_parser_require_keyword): Update for new param of
+	cp_parser_required_error.
+	(cp_parser_objc_encode_expression): Update to class matching_parens
+	as above.
+	(cp_parser_objc_defs_expression): Likewise.
+	(cp_parser_objc_protocol_expression): Likewise.
+	(cp_parser_objc_selector_expression): Likewise.
+	(cp_parser_objc_typename): Likewise.
+	(cp_parser_objc_superclass_or_category): Likewise.
+	(cp_parser_objc_try_catch_finally_statement): Likewise.
+	(cp_parser_objc_synchronized_statement): Likewise.
+	(cp_parser_objc_at_property_declaration): Likewise.
+	(cp_parser_oacc_single_int_clause): Likewise.
+	(cp_parser_oacc_shape_clause): Likewise.
+	(cp_parser_omp_clause_collapse): Likewise.
+	(cp_parser_omp_clause_default): Likewise.
+	(cp_parser_omp_clause_final): Likewise.
+	(cp_parser_omp_clause_if): Likewise.
+	(cp_parser_omp_clause_num_threads): Likewise.
+	(cp_parser_omp_clause_num_tasks): Likewise.
+	(cp_parser_omp_clause_grainsize): Likewise.
+	(cp_parser_omp_clause_priority): Likewise.
+	(cp_parser_omp_clause_hint): Likewise.
+	(cp_parser_omp_clause_defaultmap): Likewise.
+	(cp_parser_omp_clause_ordered): Likewise.
+	(cp_parser_omp_clause_schedule): Likewise.
+	(cp_parser_omp_clause_num_teams): Likewise.
+	(cp_parser_omp_clause_thread_limit): Likewise.
+	(cp_parser_omp_clause_aligned): Likewise.
+	(cp_parser_omp_clause_linear): Likewise.
+	(cp_parser_omp_clause_safelen): Likewise.
+	(cp_parser_omp_clause_simdlen): Likewise.
+	(cp_parser_omp_clause_depend): Likewise.
+	(cp_parser_omp_clause_device): Likewise.
+	(cp_parser_omp_clause_dist_schedule): Likewise.
+	(cp_parser_oacc_clause_async): Likewise.
+	(cp_parser_omp_critical): Likewise.
+	(cp_parser_omp_for_loop): Likewise.
+	(cp_parser_omp_sections_scope): Likewise.
+	(cp_parser_omp_declare_reduction_exprs): Likewise.
+	Update for new param to cp_parser_required_error.
+	(cp_parser_oacc_routine): Likewise.
+	(cp_parser_transaction_expression): Likewise.
+	(cp_parser_cilk_simd_vectorlength): Likewise.
+
+2017-08-09  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81525 - wrong constant value with generic lambda
+	* pt.c (tsubst_decl) [VAR_DECL]: Avoid clobbering auto.
+	(tsubst_copy) [VAR_DECL]: Handle auto.
+
+	PR c++/81359 - Unparsed NSDMI error from SFINAE context.
+	* init.c (get_nsdmi): Add complain parm.
+	* typeck2.c (digest_nsdmi_init): Add complain parm.
+	(process_init_constructor_record): Pass complain to get_nsdmi.
+	* pt.c (maybe_instantiate_noexcept): Add complain parm, return bool.
+	* method.c (get_defaulted_eh_spec): Add complain parm.  Pass it into
+	synthesized_method_walk.
+	(synthesized_method_walk): Adjust.
+	(walk_field_subobs): Pass complain to get_nsdmi.
+	(defaulted_late_check): Skip other checks if deleted.
+	* decl2.c (mark_used): Pass complain to maybe_instantiate_noexcept.
+	* call.c (build_aggr_conv): Pass complain to get_nsdmi.
+	* parser.c (defarg_location): New.
+	* error.c (location_of): Use it.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	* parser.c (cp_parser_perform_range_for_lookup): Use false instead of 0.
+	* typeck.c (build_binary_op): Change the type of a parameter to bool.
+	(cp_truthvalue_conversion): Use true instead of 1.
+
+2017-08-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81607
+	* cp-gimplify.c (cp_fold): If folding exposed a branch of
+	a COND_EXPR, convert it to the original type of the COND_EXPR, if
+	they differ.		   
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* call.c: Include header files.
+	* cp-gimplify.c: Likewise.
+	* cp-ubsan.c: Likewise.
+	* cvt.c: Likewise.
+	* init.c: Likewise.
+	* search.c: Likewise.
+	* semantics.c: Likewise.
+	* typeck.c: Likewise.
+
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* parser.c (cp_parser_gnu_attribute_list): Canonicalize name of an
+	attribute.
+	(cp_parser_std_attribute): Likewise.
+	* tree.c: Add new include.
+
+2017-08-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79790
+	* pt.c (do_class_deduction): Handle the case of no viable implicit
+	deduction guides; simplify the code generating implicit deduction
+	guides.
+
+2017-08-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71440
+	* typeck.c (build_x_unary_op): Avoid pretty-printing constructor /
+	destructor as expressions.
+
+2017-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81640
+	* call.c (build_user_type_conversion_1): Only call
+	lookup_fnfields_slot if totype is CLASS_TYPE_P.
+
+2017-07-31  Jason Merrill  <jason@redhat.com>
+
+	* decl.c (declare_global_var): Set DECL_CONTEXT.
+
+2017-07-31  Jan Hubicka <hubicka@ucw.cz>
+	    Martin Liska  <mliska@suse.cz>
+
+	* pt.c (tsubst_copy): Copy PREDICT_EXPR.
+	* semantics.c (finish_goto_stmt): Build gimple predict
+	stament.
+	* constexpr.c (potential_constant_expression_1): Handle
+	PREDICT_EXPR.
+
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81530
+	* cp-gimplify.c (cp_genericize): Guard condition with flag_sanitize_p
+	also with current_function_decl non-null equality.
+	* cp-ubsan.c (cp_ubsan_instrument_vptr_p): Likewise.
+	* decl.c (compute_array_index_type): Likewise.
+	* init.c (finish_length_check): Likewise.
+	* typeck.c (cp_build_binary_op): Likewise.
+
+2017-07-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-objcp-common.c (cp_decl_dwarf_attribute): Handle
+	DW_AT_export_symbols.
+	* name-lookup.c (emit_debug_info_using_namespace): Add IMPLICIT
+	argument, pass it through to the debug hook.
+	(finish_namespace_using_directive): Adjust
+	emit_debug_info_using_namespace caller.
+	(push_namespace): Likewise.  Call it after setting
+	DECL_NAMESPACE_INLINE_P.
+	(cp_emit_debug_info_for_using): Pass false as new argument to
+	the imported_module_or_decl debug hook.
+
+2017-07-28  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* lex.c (copy_decl): Adjust.
+	(copy_type): Likewise.
+
+2017-07-26  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/71570
+	* lambda.c (add_capture): Early return if we cannot capture by
+	reference.
+
+2017-07-26  Jason Merrill  <jason@redhat.com>
+
+	P0702R1 - List deduction of vector.
+	* pt.c (do_class_deduction): Special-case deduction from a single
+	element of related type.
+
+2017-07-26  Leonid Koppel  <lkoppel@uwaterloo.ca>
+
+        PR c++/67054 - Inherited ctor with non-default-constructible members
+        * method.c (walk_field_subobs) Consider member initializers (NSDMIs)
+	when deducing an inheriting constructor.
+
 2017-07-21  Nathan Sidwell  <nathan@acm.org>
 
 	* search.c (lookup_conversion_operator): Return overloads.

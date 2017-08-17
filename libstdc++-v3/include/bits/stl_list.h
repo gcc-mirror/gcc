@@ -66,10 +66,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // Supporting structures are split into common and templated
     // types; the latter publicly inherits from the former in an
     // effort to reduce code duplication.  This results in some
@@ -157,8 +157,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
     private:
       _List_node_base* _M_base() { return this; }
     };
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace detail
 
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
@@ -1992,7 +1990,6 @@ _GLIBCXX_END_NAMESPACE_CXX11
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
 #if _GLIBCXX_USE_CXX11_ABI
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Detect when distance is used to compute the size of the whole list.
   template<typename _Tp>
@@ -2026,9 +2023,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       return __n;
     }
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
-#endif
 } // namespace std
 
 #endif /* _STL_LIST_H */

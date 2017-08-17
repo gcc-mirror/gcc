@@ -41,12 +41,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_erase_if 201411
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
@@ -65,19 +65,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		   __cont.end());
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
-namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Tp>
-    using vector = std::vector<_Tp, polymorphic_allocator<_Tp>>;
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace pmr
+  namespace pmr {
+    template<typename _Tp>
+      using vector = std::vector<_Tp, polymorphic_allocator<_Tp>>;
+  } // namespace pmr
 
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

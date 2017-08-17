@@ -212,6 +212,13 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	}
       break;
 
+    case DW_AT_export_symbols:
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && (DECL_NAMESPACE_INLINE_P (decl)
+	      || (DECL_NAME (decl) == NULL_TREE && dwarf_version >= 5)))
+	return 1;
+      break;
+
     default:
       break;
     }

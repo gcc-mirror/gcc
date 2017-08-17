@@ -38,6 +38,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-utils.h"
 #include "omp-offload.h"
 #include "ipa-chkp.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* True when asm nodes has been output.  */
 bool asm_nodes_output = false;

@@ -1,7 +1,7 @@
 /* { dg-do compile { target { powerpc64*-*-* && lp64 } } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-mcpu=power8 -O1 -mno-lra" } */
+/* { dg-options "-mcpu=power8 -O1" } */
 
 typedef long a;
 enum c { e, f, g, h, i, ab } j();

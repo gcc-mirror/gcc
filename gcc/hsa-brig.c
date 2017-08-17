@@ -500,7 +500,7 @@ brig_init (void)
 	  else
 	    part++;
 	  char *modname2;
-	  asprintf (&modname2, "%s_%s", modname, part);
+	  modname2 = xasprintf ("%s_%s", modname, part);
 	  free (modname);
 	  modname = modname2;
 	}

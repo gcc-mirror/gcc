@@ -4875,7 +4875,7 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	(*debug_hooks->imported_module_or_decl) (entry->namespace_decl,
 						 NULL_TREE,
 						 ns->proc_name->backend_decl,
-						 false);
+						 false, false);
       for (rent = use_stmt->rename; rent; rent = rent->next)
 	{
 	  tree decl, local_name;
@@ -4952,7 +4952,8 @@ gfc_trans_use_stmts (gfc_namespace * ns)
 	  gfc_set_backend_locus (&rent->where);
 	  (*debug_hooks->imported_module_or_decl) (decl, local_name,
 						   ns->proc_name->backend_decl,
-						   !use_stmt->only_flag);
+						   !use_stmt->only_flag,
+						   false);
 	}
     }
 }

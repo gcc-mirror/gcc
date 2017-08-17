@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "langhooks.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Change of width--truncation and extension of integers or reals--
@@ -108,6 +110,7 @@ convert (tree type, tree expr)
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
       if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
+	  && current_function_decl != NULL_TREE
 	  && TREE_CODE (TREE_TYPE (expr)) == REAL_TYPE
 	  && COMPLETE_TYPE_P (type))
 	{

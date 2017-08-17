@@ -77,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -5254,6 +5256,16 @@ expand_function_start (tree subr)
 	}
     }
 
+  /* The following was moved from init_function_start.
+     The move is supposed to make sdb output more accurate.  */
+  /* Indicate the beginning of the function body,
+     as opposed to parm setup.  */
+  emit_note (NOTE_INSN_FUNCTION_BEG);
+
+  gcc_assert (NOTE_P (get_last_insn ()));
+
+  parm_birth_insn = get_last_insn ();
+
   /* If the function receives a non-local goto, then store the
      bits we need to restore the frame pointer.  */
   if (cfun->nonlocal_goto_save_area)
@@ -5274,16 +5286,6 @@ expand_function_start (tree subr)
       emit_move_insn (r_save, targetm.builtin_setjmp_frame_value ());
       update_nonlocal_goto_save_area ();
     }
-
-  /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
-  /* Indicate the beginning of the function body,
-     as opposed to parm setup.  */
-  emit_note (NOTE_INSN_FUNCTION_BEG);
-
-  gcc_assert (NOTE_P (get_last_insn ()));
-
-  parm_birth_insn = get_last_insn ();
 
   if (crtl->profile)
     {
@@ -6048,20 +6050,42 @@ thread_prologue_and_epilogue_insns (void)
 
   if (split_prologue_seq || prologue_seq)
     {
+      rtx_insn *split_prologue_insn = split_prologue_seq;
       if (split_prologue_seq)
-	insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	{
+	  while (split_prologue_insn && !NONDEBUG_INSN_P (split_prologue_insn))
+	    split_prologue_insn = NEXT_INSN (split_prologue_insn);
+	  insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	}
 
+      rtx_insn *prologue_insn = prologue_seq;
       if (prologue_seq)
-	insert_insn_on_edge (prologue_seq, entry_edge);
+	{
+	  while (prologue_insn && !NONDEBUG_INSN_P (prologue_insn))
+	    prologue_insn = NEXT_INSN (prologue_insn);
+	  insert_insn_on_edge (prologue_seq, entry_edge);
+	}
 
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
-      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
-      bitmap_clear (blocks);
-      bitmap_set_bit (blocks, entry_edge->dest->index);
-      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
-      find_many_sub_basic_blocks (blocks);
+      if (split_prologue_insn
+	  && BLOCK_FOR_INSN (split_prologue_insn) == NULL)
+	split_prologue_insn = NULL;
+      if (prologue_insn
+	  && BLOCK_FOR_INSN (prologue_insn) == NULL)
+	prologue_insn = NULL;
+      if (split_prologue_insn || prologue_insn)
+	{
+	  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
+	  bitmap_clear (blocks);
+	  if (split_prologue_insn)
+	    bitmap_set_bit (blocks,
+			    BLOCK_FOR_INSN (split_prologue_insn)->index);
+	  if (prologue_insn)
+	    bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
+	  find_many_sub_basic_blocks (blocks);
+	}
     }
 
   default_rtl_profile ();

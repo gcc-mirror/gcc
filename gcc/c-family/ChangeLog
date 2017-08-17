@@ -1,3 +1,126 @@
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-attribs.c (c_common_attribute_table): Add nonstring entry.
+	(handle_nonstring_attribute): New function.
+
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-format.h (T89_G): New macro.
+	* c-format.c (local_gcall_ptr_node): New variable.
+	(init_dynamic_diag_info): Initialize it.
+
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Replace ASM_OUTPUT_DEF with
+	TARGET_SUPPORTS_ALIASES.
+
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_parse_error): Add rich_location * param, using it
+	rather implicitly using input_location.
+	* c-common.h (c_parse_error): Add rich_location * param.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (pointer_int_sum): Use true/false instead of 1/0.
+	(c_common_truthvalue_conversion): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+	* c-common.h (build_binary_op): Update declaration.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c: Include header files.
+	* c-ubsan.c: Likewise.
+	* c-warn.c: Likewise.
+
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* c-omp.c (c_finish_omp_atomic): Handle atomics on bitfields.
+
+2017-08-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_nontrivial_methods): Test for FUNCTION_DECL.
+	(print_ada_methods): Likewise.
+	(print_ada_declaration): Likewise.
+
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* array-notation-common.c: Add new includes.
+	* c-format.c( handle_format_attribute): Canonicalize a format
+	function name.
+	* c-lex.c (c_common_has_attribute): Canonicalize name of an
+	attribute.
+	* c-pretty-print.c: Add new include.
+
+2017-08-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_static_fields): Look only into variables.
+	(print_constructor): Add TYPE parameter and use it for the name.
+	(print_destructor): Likewise.
+	(print_ada_declaration): Adjust to new constructor/destructor names.
+	Adjust calls to print_constructor and print_destructor.
+	(print_ada_struct_decl): Do not test TREE_STATIC on FIELD_DECL.
+	Look only into variables in the final loop.
+
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_static_fields): Look only into fields.
+	(dump_generic_ada_node): Small tweak.
+	(dump_nested_types): Look only into fields.
+	(print_ada_declaration): Look only into methods.  Small tweak.
+	(print_ada_struct_decl): Look only into fields.  Use DECL_VIRTUAL_P.
+
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_generic_ada_decl): Pass correctly-typed constant.
+	(dump_ada_function_declaration): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_ada_declaration): Add support for const-qualified variables.
+
+2017-07-31  Martin Liska  <mliska@suse.cz>
+
+	PR sanitize/81530
+	* c-ubsan.c (ubsan_maybe_instrument_array_ref):
+	Guard condition with flag_sanitize_p also with current_function_decl
+	non-null equality.
+	(ubsan_maybe_instrument_reference_or_call): Likewise.
+
+2017-07-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	* c-format.c (asm_fprintf_char_table): Add 'z' to format_chars.
+
+2017-07-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (dump_generic_ada_node): Take into account signedness
+	for enumeral types.
+	(print_ada_declaration): Add missing guard for record types.
+
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/45784
+	* c-omp.c (c_finish_omp_for): If the condition is wrapped in
+	rhs of COMPOUND_EXPR(s), skip them and readd their lhs into
+	new COMPOUND_EXPRs around the rhs of the comparison.
+
+2017-07-27  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* c-warn.c (warn_for_sign_compare): Tweak the warning message.  Print
+	the types.
+
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-attribs.c (c_common_attribute_table): Add noipa attribute.
+	(handle_noipa_attribute): New function.
+
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* c-attribs.c (c_common_attribute_table): Add entry for
+	"patchable_function_entry".
+
 2017-07-20  Nathan Sidwell  <nathan@acm.org>
 
 	Remove TYPE_METHODS.
