@@ -473,10 +473,8 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    TYPE_LANG_SLOT_1
      For a FUNCTION_TYPE or METHOD_TYPE, this is TYPE_RAISES_EXCEPTIONS.
      For a POINTER_TYPE (to a METHOD_TYPE), this is TYPE_PTRMEMFUNC_TYPE.
-     For an ENUMERAL_TYPE, this is ENUM_TEMPLATE_INFO.
-     For a RECORD_TYPE or UNION_TYPE this is CLASSTYPE_TEMPLATE_INFO,
-     For a BOUND_TEMPLATE_TEMPLATE_PARM_TYPE this is also
-     TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO.
+     For an ENUMERAL_TYPE, BOUND_TEMPLATE_TEMPLATE_PARM_TYPE,
+     RECORD_TYPE or UNION_TYPE this is TYPE_TEMPLATE_INFO,
 
   BINFO_VIRTUALS
      For a binfo, this is a TREE_LIST.  There is an entry for each
@@ -3280,28 +3278,20 @@ extern void decl_shadowed_for_var_insert (tree, tree);
 #define CLASSTYPE_TEMPLATE_INFO(NODE) \
   (TYPE_LANG_SLOT_1 (RECORD_OR_UNION_CHECK (NODE)))
 
-/* Template information for an ENUMERAL_TYPE.  Although an enumeration may
-   not be a primary template, it may be declared within the scope of a
-   primary template and the enumeration constants may depend on
-   non-type template parameters.  */
-#define ENUM_TEMPLATE_INFO(NODE) \
-  (TYPE_LANG_SLOT_1 (ENUMERAL_TYPE_CHECK (NODE)))
-
 /* Template information for a template template parameter.  */
 #define TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO(NODE) \
   (TYPE_LANG_SLOT_1 (BOUND_TEMPLATE_TEMPLATE_PARM_TYPE_CHECK (NODE)))
 
 /* Template information for an ENUMERAL_, RECORD_, UNION_TYPE, or
    BOUND_TEMPLATE_TEMPLATE_PARM type.  This ignores any alias
-   templateness of NODE.  */
+   templateness of NODE.  It'd be nice if this could unconditionally
+   access the slot, rather than return NULL if given a
+   non-templatable type.  */
 #define TYPE_TEMPLATE_INFO(NODE)					\
   (TREE_CODE (NODE) == ENUMERAL_TYPE					\
-   ? ENUM_TEMPLATE_INFO (NODE)						\
-   : (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
-      ? TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO (NODE)			\
-      : (CLASS_TYPE_P (NODE)						\
-	 ? CLASSTYPE_TEMPLATE_INFO (NODE)				\
-	 : NULL_TREE)))
+   || TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
+   || RECORD_OR_UNION_TYPE_P (NODE)					\
+   ? TYPE_LANG_SLOT_1 (NODE) : NULL_TREE)
 
 /* Template information (if any) for an alias type.  */
 #define TYPE_ALIAS_TEMPLATE_INFO(NODE)					\
@@ -3321,10 +3311,9 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    UNION_TYPE to VAL.  */
 #define SET_TYPE_TEMPLATE_INFO(NODE, VAL)				\
   (TREE_CODE (NODE) == ENUMERAL_TYPE					\
-   ? (ENUM_TEMPLATE_INFO (NODE) = (VAL))				\
-   : ((CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))			\
-      ? (CLASSTYPE_TEMPLATE_INFO (NODE) = (VAL))			\
-      : (DECL_TEMPLATE_INFO (TYPE_NAME (NODE)) = (VAL))))
+   || (CLASS_TYPE_P (NODE) && !TYPE_ALIAS_P (NODE))			\
+   ? (TYPE_LANG_SLOT_1 (NODE) = (VAL))				\
+   : (DECL_TEMPLATE_INFO (TYPE_NAME (NODE)) = (VAL)))
 
 #define TI_TEMPLATE(NODE) TREE_TYPE (TEMPLATE_INFO_CHECK (NODE))
 #define TI_ARGS(NODE) TREE_CHAIN (TEMPLATE_INFO_CHECK (NODE))
