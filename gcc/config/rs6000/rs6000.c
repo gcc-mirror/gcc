@@ -24445,20 +24445,36 @@ rs6000_savres_strategy (rs6000_stack_t *info,
 	   && flag_shrink_wrap_separate
 	   && optimize_function_for_speed_p (cfun)))
     {
-      /* Prefer store multiple for saves over out-of-line routines,
-	 since the store-multiple instruction will always be smaller.  */
-      strategy |= SAVE_INLINE_GPRS | SAVE_MULTIPLE;
+      int count = 0;
+      for (int i = info->first_gp_reg_save; i < 32; i++)
+	if (save_reg_p (i))
+	  count++;
 
-      /* The situation is more complicated with load multiple.  We'd
-	 prefer to use the out-of-line routines for restores, since the
-	 "exit" out-of-line routines can handle the restore of LR and the
-	 frame teardown.  However if doesn't make sense to use the
-	 out-of-line routine if that is the only reason we'd need to save
-	 LR, and we can't use the "exit" out-of-line gpr restore if we
-	 have saved some fprs; In those cases it is advantageous to use
-	 load multiple when available.  */
-      if (info->first_fp_reg_save != 64 || !lr_save_p)
-	strategy |= REST_INLINE_GPRS | REST_MULTIPLE;
+      if (count <= 1)
+	/* Don't use store multiple if only one reg needs to be
+	   saved.  This can occur for example when the ABI_V4 pic reg
+	   (r30) needs to be saved to make calls, but r31 is not
+	   used.  */
+	strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
+      else
+	{
+	  /* Prefer store multiple for saves over out-of-line
+	     routines, since the store-multiple instruction will
+	     always be smaller.  */
+	  strategy |= SAVE_INLINE_GPRS | SAVE_MULTIPLE;
+
+	  /* The situation is more complicated with load multiple.
+	     We'd prefer to use the out-of-line routines for restores,
+	     since the "exit" out-of-line routines can handle the
+	     restore of LR and the frame teardown.  However if doesn't
+	     make sense to use the out-of-line routine if that is the
+	     only reason we'd need to save LR, and we can't use the
+	     "exit" out-of-line gpr restore if we have saved some
+	     fprs; In those cases it is advantageous to use load
+	     multiple when available.  */
+	  if (info->first_fp_reg_save != 64 || !lr_save_p)
+	    strategy |= REST_INLINE_GPRS | REST_MULTIPLE;
+	}
     }
 
   /* Using the "exit" out-of-line routine does not improve code size
@@ -24466,21 +24482,6 @@ rs6000_savres_strategy (rs6000_stack_t *info,
      or two gprs.  */
   else if (!lr_save_p && info->first_gp_reg_save > 29)
     strategy |= SAVE_INLINE_GPRS | REST_INLINE_GPRS;
-
-  /* We can only use save multiple if we need to save all the registers from
-     first_gp_reg_save.  Otherwise, the CFI gets messed up (we save some
-     register we do not restore).  */
-  if (strategy & SAVE_MULTIPLE)
-    {
-      int i;
-
-      for (i = info->first_gp_reg_save; i < 32; i++)
-	if (fixed_reg_p (i) || !save_reg_p (i))
-	  {
-	    strategy &= ~SAVE_MULTIPLE;
-	    break;
-	  }
-    }
 
   /* Don't ever restore fixed regs.  */
   if ((strategy & (REST_INLINE_GPRS | REST_MULTIPLE)) != REST_INLINE_GPRS)
@@ -25654,6 +25655,38 @@ output_probe_stack_range (rtx reg1, rtx reg2)
   return "";
 }
 
+/* This function is called when rs6000_frame_related is processing
+   SETs within a PARALLEL, and returns whether the REGNO save ought to
+   be marked RTX_FRAME_RELATED_P.  The PARALLELs involved are those
+   for out-of-line register save functions, store multiple, and the
+   Darwin world_save.  They may contain registers that don't really
+   need saving.  */
+
+static bool
+interesting_frame_related_regno (unsigned int regno)
+{
+  /* Saves apparently of r0 are actually saving LR.  It doesn't make
+     sense to substitute the regno here to test save_reg_p (LR_REGNO).
+     We *know* LR needs saving, and dwarf2cfi.c is able to deduce that
+     (set (mem) (r0)) is saving LR from a prior (set (r0) (lr)) marked
+     as frame related.  */
+  if (regno == 0)
+    return true;
+  /* If we see CR2 then we are here on a Darwin world save.  Saves of
+     CR2 signify the whole CR is being saved.  This is a long-standing
+     ABI wart fixed by ELFv2.  As for r0/lr there is no need to check
+     that CR needs to be saved.  */
+  if (regno == CR2_REGNO)
+    return true;
+  /* Omit frame info for any user-defined global regs.  If frame info
+     is supplied for them, frame unwinding will restore a user reg.
+     Also omit frame info for any reg we don't need to save, as that
+     bloats frame info and can cause problems with shrink wrapping.
+     Since global regs won't be seen as needing to be saved, both of
+     these conditions are covered by save_reg_p.  */
+  return save_reg_p (regno);
+}
+
 /* Add to 'insn' a note which is PATTERN (INSN) but with REG replaced
    with (plus:P (reg 1) VAL), and with REG2 replaced with REPL2 if REG2
    is not NULL.  It would be nice if dwarf2out_frame_debug_expr could
@@ -25688,13 +25721,8 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
 	    {
 	      rtx set = XVECEXP (pat, 0, i);
 
-	      /* If this PARALLEL has been emitted for out-of-line
-		 register save functions, or store multiple, then omit
-		 eh_frame info for any user-defined global regs.  If
-		 eh_frame info is supplied, frame unwinding will
-		 restore a user reg.  */
 	      if (!REG_P (SET_SRC (set))
-		  || !fixed_reg_p (REGNO (SET_SRC (set))))
+		  || interesting_frame_related_regno (REGNO (SET_SRC (set))))
 		RTX_FRAME_RELATED_P (set) = 1;
 	    }
       RTX_FRAME_RELATED_P (insn) = 1;
@@ -25731,9 +25759,8 @@ rs6000_frame_related (rtx_insn *insn, rtx reg, HOST_WIDE_INT val,
 	      set = simplify_replace_rtx (set, reg2, repl2);
 	    XVECEXP (pat, 0, i) = set;
 
-	    /* Omit eh_frame info for any user-defined global regs.  */
 	    if (!REG_P (SET_SRC (set))
-		|| !fixed_reg_p (REGNO (SET_SRC (set))))
+		|| interesting_frame_related_regno (REGNO (SET_SRC (set))))
 	      RTX_FRAME_RELATED_P (set) = 1;
 	  }
     }
@@ -27956,7 +27983,8 @@ rs6000_emit_epilogue (int sibcall)
 	  RTVEC_ELT (p, j++)
 	    = gen_frame_load (reg,
 			      frame_reg_rtx, info->gp_save_offset + reg_size * i);
-	  if (flag_shrink_wrap)
+	  if (flag_shrink_wrap
+	      && save_reg_p (info->first_gp_reg_save + i))
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       for (i = 0; info->first_altivec_reg_save + i <= LAST_ALTIVEC_REGNO; i++)
@@ -27965,7 +27993,8 @@ rs6000_emit_epilogue (int sibcall)
 	  RTVEC_ELT (p, j++)
 	    = gen_frame_load (reg,
 			      frame_reg_rtx, info->altivec_save_offset + 16 * i);
-	  if (flag_shrink_wrap)
+	  if (flag_shrink_wrap
+	      && save_reg_p (info->first_altivec_reg_save + i))
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       for (i = 0; info->first_fp_reg_save + i <= 63; i++)
@@ -27975,7 +28004,8 @@ rs6000_emit_epilogue (int sibcall)
 				 info->first_fp_reg_save + i);
 	  RTVEC_ELT (p, j++)
 	    = gen_frame_load (reg, frame_reg_rtx, info->fp_save_offset + 8 * i);
-	  if (flag_shrink_wrap)
+	  if (flag_shrink_wrap
+	      && save_reg_p (info->first_fp_reg_save + i))
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
       RTVEC_ELT (p, j++)
@@ -28096,7 +28126,8 @@ rs6000_emit_epilogue (int sibcall)
 	    && (flag_shrink_wrap
 		|| (offset_below_red_zone_p
 		    (info->altivec_save_offset
-		     + 16 * (i - info->first_altivec_reg_save)))))
+		     + 16 * (i - info->first_altivec_reg_save))))
+	    && save_reg_p (i))
 	  {
 	    rtx reg = gen_rtx_REG (V4SImode, i);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -28308,7 +28339,8 @@ rs6000_emit_epilogue (int sibcall)
       for (i = info->first_altivec_reg_save; i <= LAST_ALTIVEC_REGNO; ++i)
 	if (((strategy & REST_INLINE_VRS) == 0
 	     || (info->vrsave_mask & ALTIVEC_REG_BIT (i)) != 0)
-	    && (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap))
+	    && (DEFAULT_ABI == ABI_V4 || flag_shrink_wrap)
+	    && save_reg_p (i))
 	  {
 	    rtx reg = gen_rtx_REG (V4SImode, i);
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
@@ -28654,7 +28686,8 @@ rs6000_emit_epilogue (int sibcall)
 
 	  RTVEC_ELT (p, elt++)
 	    = gen_frame_load (reg, sp_reg_rtx, info->fp_save_offset + 8 * i);
-	  if (flag_shrink_wrap)
+	  if (flag_shrink_wrap
+	      && save_reg_p (info->first_fp_reg_save + i))
 	    cfa_restores = alloc_reg_note (REG_CFA_RESTORE, reg, cfa_restores);
 	}
 

@@ -1,3 +1,13 @@
+2017-08-17  Alan Modra  <amodra@gmail.com>
+
+	PR target/80938
+	* config/rs6000/rs6000.c (rs6000_savres_strategy): Revert 2017-08-09.
+	Don't use store multiple if only one reg needs saving.
+	(interesting_frame_related_regno): New function.
+	(rs6000_frame_related): Don't emit frame info for regs that
+	don't need saving.
+	(rs6000_emit_epilogue): Likewise.
+
 2017-08-16  Nathan Sidwell  <nathan@acm.org>
 
 	* tree-core.h (tree_type_non_common): Rename binfo to lang_1.
