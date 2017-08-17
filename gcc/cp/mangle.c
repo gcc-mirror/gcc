@@ -81,10 +81,10 @@ along with GCC; see the file COPYING3.  If not see
    instantiated outside of the template, and A is the type used
    without parameters inside the template.  */
 #define CLASSTYPE_TEMPLATE_ID_P(NODE)					\
-  (TYPE_LANG_SPECIFIC (NODE) != NULL					\
-   && (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
-       || (CLASSTYPE_TEMPLATE_INFO (NODE) != NULL			\
-	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
+  (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
+   || (CLASS_TYPE_P (NODE)						\
+       && CLASSTYPE_TEMPLATE_INFO (NODE) != NULL			\
+       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))
 
 /* For deciding whether to set G.need_abi_warning, we need to consider both
    warn_abi_version and flag_abi_compat_version.  */
