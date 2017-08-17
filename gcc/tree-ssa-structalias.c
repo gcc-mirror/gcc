@@ -2765,19 +2765,34 @@ solve_graph (constraint_graph_t graph)
 		  unsigned eff_escaped_id = find (escaped_id);
 
 		  /* Propagate solution to all successors.  */
+		  unsigned to_remove = ~0U;
 		  EXECUTE_IF_IN_NONNULL_BITMAP (graph->succs[i],
 						0, j, bi)
 		    {
-		      bitmap tmp;
-		      bool flag;
-
+		      if (to_remove != ~0U)
+			{
+			  bitmap_clear_bit (graph->succs[i], to_remove);
+			  to_remove = ~0U;
+			}
 		      unsigned int to = find (j);
-		      tmp = get_varinfo (to)->solution;
-		      flag = false;
-
+		      if (to != j)
+			{
+			  /* Update the succ graph, avoiding duplicate
+			     work.  */
+			  to_remove = j;
+			  if (! bitmap_set_bit (graph->succs[i], to))
+			    continue;
+			  /* We eventually end up processing 'to' twice
+			     as it is undefined whether bitmap iteration
+			     iterates over bits set during iteration.
+			     Play safe instead of doing tricks.  */
+			}
 		      /* Don't try to propagate to ourselves.  */
 		      if (to == i)
 			continue;
+
+		      bitmap tmp = get_varinfo (to)->solution;
+		      bool flag = false;
 
 		      /* If we propagate from ESCAPED use ESCAPED as
 		         placeholder.  */
@@ -2789,6 +2804,8 @@ solve_graph (constraint_graph_t graph)
 		      if (flag)
 			bitmap_set_bit (changed, to);
 		    }
+		  if (to_remove != ~0U)
+		    bitmap_clear_bit (graph->succs[i], to_remove);
 		}
 	    }
 	}
