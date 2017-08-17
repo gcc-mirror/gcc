@@ -668,14 +668,10 @@ pp_format (pretty_printer *pp, text_info *text)
 
 	    s = va_arg (*text->args_ptr, const char *);
 
-	    /* Negative precision is treated as if it were omitted.  */
-	    if (n < 0)
-	      n = INT_MAX;
-
-	    /* Append the lesser of precision and strlen (s) characters.  */
-	    size_t len = strlen (s);
-	    if ((unsigned) n < len)
-	      len = n;
+	    /* Append the lesser of precision and strlen (s) characters
+	       from the array (which need not be a nul-terminated string).
+	       Negative precision is treated as if it were omitted.  */
+	    size_t len = n < 0 ? strlen (s) : strnlen (s, n);
 
 	    pp_append_text (pp, s, s + len);
 	  }
@@ -1438,6 +1434,13 @@ test_pp_format ()
   ASSERT_PP_FORMAT_2 ("A 12345678", "%c %x", 'A', 0x12345678);
   ASSERT_PP_FORMAT_2 ("hello world 12345678", "%s %x", "hello world",
 		      0x12345678);
+
+  /* Not nul-terminated.  */
+  char arr[5] = { '1', '2', '3', '4', '5' };
+  ASSERT_PP_FORMAT_3 ("123 12345678", "%.*s %x", 3, arr, 0x12345678);
+  ASSERT_PP_FORMAT_3 ("1234 12345678", "%.*s %x", -1, "1234", 0x12345678);
+  ASSERT_PP_FORMAT_3 ("12345 12345678", "%.*s %x", 7, "12345", 0x12345678);
+
   /* We can't test for %p; the pointer is printed in an implementation-defined
      manner.  */
   ASSERT_PP_FORMAT_2 ("normal colored normal 12345678",
