@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -fdump-ipa-icf-details"  } */
+/* { dg-require-effective-target nonlocal_goto } */
 
 int
 main (int argc, char **argv)
