@@ -35282,9 +35282,13 @@ altivec_expand_vec_perm_const (rtx operands[4])
       (BYTES_BIG_ENDIAN ? CODE_FOR_altivec_vmrglw_direct
        : CODE_FOR_altivec_vmrghw_direct),
       {  8,  9, 10, 11, 24, 25, 26, 27, 12, 13, 14, 15, 28, 29, 30, 31 } },
-    { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgew_v4si,
+    { OPTION_MASK_P8_VECTOR,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_p8_vmrgew_v4sf_direct
+       : CODE_FOR_p8_vmrgow_v4sf_direct),
       {  0,  1,  2,  3, 16, 17, 18, 19,  8,  9, 10, 11, 24, 25, 26, 27 } },
-    { OPTION_MASK_P8_VECTOR, CODE_FOR_p8_vmrgow,
+    { OPTION_MASK_P8_VECTOR,
+      (BYTES_BIG_ENDIAN ? CODE_FOR_p8_vmrgow_v4sf_direct
+       : CODE_FOR_p8_vmrgew_v4sf_direct),
       {  4,  5,  6,  7, 20, 21, 22, 23, 12, 13, 14, 15, 28, 29, 30, 31 } }
   };
 

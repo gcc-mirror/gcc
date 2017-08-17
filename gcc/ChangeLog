@@ -1,3 +1,11 @@
+2017-08-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_VMRGOW_DIRECT): New constant.
+	(p8_vmrgew_v4sf_direct): Generalize to p8_vmrgew_<mode>_direct.
+	(p8_vmrgow_<mode>_direct): New define_insn.
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Properly
+	handle endianness for vmrgew and vmrgow permute patterns.
+
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/altivec.md (VParity): Remove TARGET_VSX_TIMODE.
