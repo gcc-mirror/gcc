@@ -1,3 +1,7 @@
+2017-08-17  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/simd/vect_str_zero.c: New testcase.
+
 2017-08-17  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.dg/ipa/pr81696.c: Require effective target nonlocal_goto.

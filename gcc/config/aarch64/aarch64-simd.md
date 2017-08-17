@@ -23,7 +23,10 @@
 	(match_operand:VALL_F16 1 "general_operand" ""))]
   "TARGET_SIMD"
   "
-    if (GET_CODE (operands[0]) == MEM)
+    if (GET_CODE (operands[0]) == MEM
+	&& !(aarch64_simd_imm_zero (operands[1], <MODE>mode)
+	     && aarch64_legitimate_address_p (<MODE>mode, operands[0],
+					      PARALLEL, 1)))
       operands[1] = force_reg (<MODE>mode, operands[1]);
   "
 )
@@ -94,63 +97,66 @@
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VD 0 "nonimmediate_operand"
-		"=w, m,  w, ?r, ?w, ?r, w")
+		"=w, m,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VD 1 "general_operand"
-		"m,  w,  w,  w,  r,  r, Dn"))]
+		"m,  Dz, w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
+       || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
 {
    switch (which_alternative)
      {
-     case 0: return "ldr\\t%d0, %1";
-     case 1: return "str\\t%d1, %0";
-     case 2: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
-     case 3: return "umov\t%0, %1.d[0]";
-     case 4: return "fmov\t%d0, %1";
-     case 5: return "mov\t%0, %1";
-     case 6:
+     case 0: return "ldr\t%d0, %1";
+     case 1: return "str\txzr, %0";
+     case 2: return "str\t%d1, %0";
+     case 3: return "mov\t%0.<Vbtype>, %1.<Vbtype>";
+     case 4: return "umov\t%0, %1.d[0]";
+     case 5: return "fmov\t%d0, %1";
+     case 6: return "mov\t%0, %1";
+     case 7:
 	return aarch64_output_simd_mov_immediate (operands[1],
 						  <MODE>mode, 64);
      default: gcc_unreachable ();
      }
 }
-  [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
+  [(set_attr "type" "neon_load1_1reg<q>, neon_stp, neon_store1_1reg<q>,\
 		     neon_logic<q>, neon_to_gp<q>, f_mcr,\
 		     mov_reg, neon_move<q>")]
 )
 
 (define_insn "*aarch64_simd_mov<mode>"
   [(set (match_operand:VQ 0 "nonimmediate_operand"
-		"=w, m,  w, ?r, ?w, ?r, w")
+		"=w, Ump,  m,  w, ?r, ?w, ?r, w")
 	(match_operand:VQ 1 "general_operand"
-		"m,  w,  w,  w,  r,  r, Dn"))]
+		"m,  Dz, w,  w,  w,  r,  r, Dn"))]
   "TARGET_SIMD
    && (register_operand (operands[0], <MODE>mode)
-       || register_operand (operands[1], <MODE>mode))"
+       || aarch64_simd_reg_or_zero (operands[1], <MODE>mode))"
 {
   switch (which_alternative)
     {
     case 0:
-	return "ldr\\t%q0, %1";
+	return "ldr\t%q0, %1";
     case 1:
-	return "str\\t%q1, %0";
+	return "stp\txzr, xzr, %0";
     case 2:
-	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
+	return "str\t%q1, %0";
     case 3:
+	return "mov\t%0.<Vbtype>, %1.<Vbtype>";
     case 4:
     case 5:
-	return "#";
     case 6:
+	return "#";
+    case 7:
 	return aarch64_output_simd_mov_immediate (operands[1], <MODE>mode, 128);
     default:
 	gcc_unreachable ();
     }
 }
   [(set_attr "type" "neon_load1_1reg<q>, neon_store1_1reg<q>,\
-                     neon_logic<q>, multiple, multiple, multiple,\
-                     neon_move<q>")
-   (set_attr "length" "4,4,4,8,8,8,4")]
+		     neon_stp, neon_logic<q>, multiple, multiple,\
+		     multiple, neon_move<q>")
+   (set_attr "length" "4,4,4,4,8,8,8,4")]
 )
 
 ;; When storing lane zero we can use the normal STR and its more permissive

@@ -1,3 +1,9 @@
+2017-08-17  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* aarch64-simd.md (mov<mode>): No longer force zero immediate into
+	register.
+	(*aarch64_simd_mov<mode>): Add new case for stp	using zero immediate.
+
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-structalias.c (solve_graph): When propagating
