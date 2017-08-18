@@ -1,3 +1,11 @@
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81514
+	* g++.dg/lookup/empty.h: New file.
+	* g++.dg/lookup/missing-std-include-2.C: Replace include of
+	stdio.h with empty.h and a declaration of a "std::sprintf" not based
+	on a built-in.
+
 2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/53037
