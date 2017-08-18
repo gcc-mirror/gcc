@@ -1008,6 +1008,13 @@ grokbitfield (const cp_declarator *declarator,
       return NULL_TREE;
     }
 
+  if (width && TYPE_WARN_IF_NOT_ALIGN (TREE_TYPE (value)))
+    {
+      error ("cannot declare bit-field %qD with %<warn_if_not_aligned%> type",
+	     DECL_NAME (value));
+      return NULL_TREE;
+    }
+
   if (DECL_IN_AGGR_P (value))
     {
       error ("%qD is already defined in the class %qT", value,

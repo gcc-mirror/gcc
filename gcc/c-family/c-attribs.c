@@ -89,6 +89,8 @@ static tree handle_destructor_attribute (tree *, tree, tree, int, bool *);
 static tree handle_mode_attribute (tree *, tree, tree, int, bool *);
 static tree handle_section_attribute (tree *, tree, tree, int, bool *);
 static tree handle_aligned_attribute (tree *, tree, tree, int, bool *);
+static tree handle_warn_if_not_aligned_attribute (tree *, tree, tree,
+						  int, bool *);
 static tree handle_weak_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_noplt_attribute (tree *, tree, tree, int, bool *) ;
 static tree handle_alias_ifunc_attribute (bool, tree *, tree, tree, bool *);
@@ -217,6 +219,9 @@ const struct attribute_spec c_common_attribute_table[] =
 			      handle_section_attribute, false },
   { "aligned",                0, 1, false, false, false,
 			      handle_aligned_attribute, false },
+  { "warn_if_not_aligned",    0, 1, false, false, false,
+			      handle_warn_if_not_aligned_attribute,
+			      false },
   { "weak",                   0, 0, true,  false, false,
 			      handle_weak_attribute, false },
   { "noplt",                   0, 0, true,  false, false,
@@ -1666,12 +1671,13 @@ check_cxx_fundamental_alignment_constraints (tree node,
   return !alignment_too_large_p;
 }
 
-/* Handle a "aligned" attribute; arguments as in
-   struct attribute_spec.handler.  */
+/* Common codes shared by handle_warn_if_not_aligned_attribute and
+   handle_aligned_attribute.  */
 
 static tree
-handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
-			  int flags, bool *no_add_attrs)
+common_handle_aligned_attribute (tree *node, tree args, int flags,
+				 bool *no_add_attrs,
+				 bool warn_if_not_aligned_p)
 {
   tree decl = NULL_TREE;
   tree *type = NULL;
@@ -1720,8 +1726,16 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       else
 	*type = build_variant_type_copy (*type);
 
-      SET_TYPE_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
-      TYPE_USER_ALIGN (*type) = 1;
+      if (warn_if_not_aligned_p)
+	{
+	  SET_TYPE_WARN_IF_NOT_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
+	  warn_if_not_aligned_p = false;
+	}
+      else
+	{
+	  SET_TYPE_ALIGN (*type, (1U << i) * BITS_PER_UNIT);
+	  TYPE_USER_ALIGN (*type) = 1;
+	}
     }
   else if (! VAR_OR_FUNCTION_DECL_P (decl)
 	   && TREE_CODE (decl) != FIELD_DECL)
@@ -1754,11 +1768,52 @@ handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
     }
   else
     {
-      SET_DECL_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
-      DECL_USER_ALIGN (decl) = 1;
+      if (warn_if_not_aligned_p)
+	{
+	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_INITIAL (decl))
+	    {
+	      SET_DECL_WARN_IF_NOT_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
+	      warn_if_not_aligned_p = false;
+	    }
+	}
+      else
+	{
+	  SET_DECL_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
+	  DECL_USER_ALIGN (decl) = 1;
+	}
+    }
+
+  if (warn_if_not_aligned_p)
+    {
+      error ("%<warn_if_not_aligned%> may not be specified for %q+D",
+	     decl);
+      *no_add_attrs = true;
     }
 
   return NULL_TREE;
+}
+
+/* Handle a "aligned" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_aligned_attribute (tree *node, tree ARG_UNUSED (name), tree args,
+			  int flags, bool *no_add_attrs)
+{
+  return common_handle_aligned_attribute (node, args, flags,
+					 no_add_attrs, false);
+}
+
+/* Handle a "warn_if_not_aligned" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+static tree
+handle_warn_if_not_aligned_attribute (tree *node, tree ARG_UNUSED (name),
+				      tree args, int flags,
+				      bool *no_add_attrs)
+{
+  return common_handle_aligned_attribute (node, args, flags,
+					  no_add_attrs, true);
 }
 
 /* Handle a "weak" attribute; arguments as in

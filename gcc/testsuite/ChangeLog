@@ -1,3 +1,16 @@
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* c-c++-common/pr53037-5.c: New test.
+	* g++.dg/pr53037-1.C: Likewise.
+	* g++.dg/pr53037-2.C: Likewise.
+	* g++.dg/pr53037-3.C: Likewise.
+	* g++.dg/pr53037-4.C: Likewise.
+	* gcc.dg/pr53037-1.c: Likewise.
+	* gcc.dg/pr53037-2.c: Likewise.
+	* gcc.dg/pr53037-3.c: Likewise.
+	* gcc.dg/pr53037-4.c: Likewise.
+
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-int128-1.c: Remove use of -mvsx-timode.

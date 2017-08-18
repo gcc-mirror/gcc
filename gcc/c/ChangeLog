@@ -1,3 +1,10 @@
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* c-decl.c (merge_decls): Also merge DECL_WARN_IF_NOT_ALIGN.
+	(check_bitfield_type_and_width): Don't allow bit-field with
+	warn_if_not_aligned type.
+
 2017-08-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117
