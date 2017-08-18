@@ -1,3 +1,12 @@
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81514
+	* name-lookup.c (maybe_suggest_missing_header): Convert return
+	type from void to bool; return true iff a suggestion was offered.
+	(suggest_alternative_in_explicit_scope): Move call to
+	maybe_suggest_missing_header to before use of best_match, and
+	return true if the former offers a suggestion.
+
 2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/53037

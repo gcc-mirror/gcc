@@ -4838,34 +4838,34 @@ get_std_name_hint (const char *name)
   return NULL;
 }
 
-/* Subroutine of suggest_alternative_in_explicit_scope, for use when we have no
-   suggestions to offer.
-   If SCOPE is the "std" namespace, then suggest pertinent header
-   files for NAME.  */
+/* If SCOPE is the "std" namespace, then suggest pertinent header
+   files for NAME at LOCATION.
+   Return true iff a suggestion was offered.  */
 
-static void
+static bool
 maybe_suggest_missing_header (location_t location, tree name, tree scope)
 {
   if (scope == NULL_TREE)
-    return;
+    return false;
   if (TREE_CODE (scope) != NAMESPACE_DECL)
-    return;
+    return false;
   /* We only offer suggestions for the "std" namespace.  */
   if (scope != std_node)
-    return;
+    return false;
   gcc_assert (TREE_CODE (name) == IDENTIFIER_NODE);
 
   const char *name_str = IDENTIFIER_POINTER (name);
   const char *header_hint = get_std_name_hint (name_str);
-  if (header_hint)
-    {
-      gcc_rich_location richloc (location);
-      maybe_add_include_fixit (&richloc, header_hint);
-      inform_at_rich_loc (&richloc,
-			  "%<std::%s%> is defined in header %qs;"
-			  " did you forget to %<#include %s%>?",
-			  name_str, header_hint, header_hint);
-    }
+  if (!header_hint)
+    return false;
+
+  gcc_rich_location richloc (location);
+  maybe_add_include_fixit (&richloc, header_hint);
+  inform_at_rich_loc (&richloc,
+		      "%<std::%s%> is defined in header %qs;"
+		      " did you forget to %<#include %s%>?",
+		      name_str, header_hint, header_hint);
+  return true;
 }
 
 /* Look for alternatives for NAME, an IDENTIFIER_NODE for which name
@@ -4879,6 +4879,9 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
 {
   /* Resolve any namespace aliases.  */
   scope = ORIGINAL_NAMESPACE (scope);
+
+  if (maybe_suggest_missing_header (location, name, scope))
+    return true;
 
   cp_binding_level *level = NAMESPACE_LEVEL (scope);
 
@@ -4895,8 +4898,6 @@ suggest_alternative_in_explicit_scope (location_t location, tree name,
 			  fuzzy_name);
       return true;
     }
-  else
-    maybe_suggest_missing_header (location, name, scope);
 
   return false;
 }
