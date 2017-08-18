@@ -2510,6 +2510,10 @@ next_arg:;
       DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
     }
   DECL_USER_ALIGN (olddecl) = DECL_USER_ALIGN (newdecl);
+  if (DECL_WARN_IF_NOT_ALIGN (olddecl)
+      > DECL_WARN_IF_NOT_ALIGN (newdecl))
+    SET_DECL_WARN_IF_NOT_ALIGN (newdecl,
+				DECL_WARN_IF_NOT_ALIGN (olddecl));
   if (TREE_CODE (newdecl) == FIELD_DECL)
     DECL_PACKED (olddecl) = DECL_PACKED (newdecl);
 

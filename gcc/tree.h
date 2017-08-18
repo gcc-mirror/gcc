@@ -1919,6 +1919,16 @@ extern machine_mode element_mode (const_tree t);
 /* The alignment for NODE, in bytes.  */
 #define TYPE_ALIGN_UNIT(NODE) (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
 
+/* The minimum alignment necessary for objects of this type without
+   warning.  The value is an int, measured in bits.  */
+#define TYPE_WARN_IF_NOT_ALIGN(NODE) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align \
+     ? ((unsigned)1) << ((NODE)->type_common.warn_if_not_align - 1) : 0)
+
+/* Specify that TYPE_WARN_IF_NOT_ALIGN(NODE) is X.  */
+#define SET_TYPE_WARN_IF_NOT_ALIGN(NODE, X) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align = ffs_hwi (X))
+
 /* If your language allows you to declare types, and you want debug info
    for them, then you need to generate corresponding TYPE_DECL nodes.
    These "stub" TYPE_DECL nodes have no name, and simply point at the
@@ -2370,6 +2380,16 @@ extern machine_mode element_mode (const_tree t);
 /* Specify that DECL_ALIGN(NODE) is X.  */
 #define SET_DECL_ALIGN(NODE, X) \
     (DECL_COMMON_CHECK (NODE)->decl_common.align = ffs_hwi (X))
+
+/* The minimum alignment necessary for the datum, in bits, without
+   warning.  */
+#define DECL_WARN_IF_NOT_ALIGN(NODE) \
+    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align \
+     ? ((unsigned)1) << ((NODE)->decl_common.warn_if_not_align - 1) : 0)
+
+/* Specify that DECL_WARN_IF_NOT_ALIGN(NODE) is X.  */
+#define SET_DECL_WARN_IF_NOT_ALIGN(NODE, X) \
+    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align = ffs_hwi (X))
 
 /* The alignment of NODE, in bytes.  */
 #define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)

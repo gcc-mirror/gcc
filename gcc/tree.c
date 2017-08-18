@@ -7505,6 +7505,7 @@ build_range_type_1 (tree type, tree lowval, tree highval, bool shared)
   TYPE_SIZE_UNIT (itype) = TYPE_SIZE_UNIT (type);
   SET_TYPE_ALIGN (itype, TYPE_ALIGN (type));
   TYPE_USER_ALIGN (itype) = TYPE_USER_ALIGN (type);
+  SET_TYPE_WARN_IF_NOT_ALIGN (itype, TYPE_WARN_IF_NOT_ALIGN (type));
 
   if (!shared)
     return itype;

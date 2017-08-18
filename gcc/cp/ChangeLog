@@ -1,3 +1,10 @@
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* decl.c (duplicate_decls): Also merge DECL_WARN_IF_NOT_ALIGN.
+	* decl2.c (grokbitfield): Don't allow bit-field with
+	warn_if_not_aligned type.
+
 2017-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Remove stale comment.

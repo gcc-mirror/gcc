@@ -1,3 +1,27 @@
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* print-tree.c (print_node): Support DECL_WARN_IF_NOT_ALIGN
+	and TYPE_WARN_IF_NOT_ALIGN.
+	* stor-layout.c (do_type_align): Merge DECL_WARN_IF_NOT_ALIGN.
+	(handle_warn_if_not_align): New.
+	(place_union_field): Call handle_warn_if_not_align.
+	(place_field): Call handle_warn_if_not_align.  Copy
+	TYPE_WARN_IF_NOT_ALIGN.
+	(finish_builtin_struct): Copy TYPE_WARN_IF_NOT_ALIGN.
+	(layout_type): Likewise.
+	* tree-core.h (tree_type_common): Add warn_if_not_align.  Set
+	spare to 18.
+	(tree_decl_common): Add warn_if_not_align.
+	* tree.c (build_range_type_1): Copy TYPE_WARN_IF_NOT_ALIGN.
+	* tree.h (TYPE_WARN_IF_NOT_ALIGN): New.
+	(SET_TYPE_WARN_IF_NOT_ALIGN): Likewise.
+	(DECL_WARN_IF_NOT_ALIGN): Likewise.
+	(SET_DECL_WARN_IF_NOT_ALIGN): Likewise.
+	* doc/extend.texi: Document warn_if_not_aligned attribute.
+	* doc/invoke.texi: Document -Wif-not-aligned and
+	-Wpacked-not-aligned.
+
 2017-08-17  Martin Liska  <mliska@suse.cz>
 
 	PR bootstrap/81864
