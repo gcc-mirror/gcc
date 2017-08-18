@@ -1,3 +1,10 @@
+2017-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80164
+	* trans-stmt.c (gfc_trans_call): If no code expr, use code->loc
+	as warning/error locus.
+
 2017-08-14  Release Manager
 
 	* GCC 7.2.0 released.

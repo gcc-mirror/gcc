@@ -452,7 +452,10 @@ gfc_trans_call (gfc_code * code, bool dependency_check,
 	 subscripts.  This could be prevented in the elemental case
 	 as temporaries are handled separatedly
 	 (below in gfc_conv_elemental_dependencies).  */
-      gfc_conv_loop_setup (&loop, &code->expr1->where);
+      if (code->expr1)
+	gfc_conv_loop_setup (&loop, &code->expr1->where);
+      else
+	gfc_conv_loop_setup (&loop, &code->loc);
       gfc_mark_ss_chain_used (ss, 1);
 
       /* Convert the arguments, checking for dependencies.  */
