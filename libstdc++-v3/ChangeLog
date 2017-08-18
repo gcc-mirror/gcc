@@ -1,5 +1,15 @@
 2017-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/hashtable_policy.h (_ReuseOrAllocNode): Remove
+	__value_alloc_type and __value_alloc_traits typedefs.
+	(_ReuseOrAllocNode::operator()): Call construct and destroy on the
+	node allocator.
+	(_Hashtable_alloc): Simplify __value_alloc_traits typedef.
+	(_Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&...)): Call
+	construct on the node allocator.
+	(_Hashtable_alloc<_NodeAlloc>::_M_deallocate_node(__node_type*)): Call
+	destroy on the node allocator.
+
 	PR libstdc++/81891
 	* include/bits/hashtable.h (_Hashtable(_InputIterator, _InputIterator,
 	size_type, const _H1&, const _H2&, const _Hash&, const _Equal&,
