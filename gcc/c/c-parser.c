@@ -7752,7 +7752,8 @@ c_parser_generic_selection (c_parser *parser)
 }
 
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2,
-   C11 6.5.1-6.5.2).
+   C11 6.5.1-6.5.2).  Compound literals aren't handled here; callers have to
+   call c_parser_postfix_expression_after_paren_type on encountering them.
 
    postfix-expression:
      primary-expression
@@ -7792,7 +7793,7 @@ c_parser_generic_selection (c_parser *parser)
      __builtin_types_compatible_p ( type-name , type-name )
      __builtin_complex ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression , assignment-expression )
-     __builtin_shuffle ( assignment-expression , 
+     __builtin_shuffle ( assignment-expression ,
 			 assignment-expression ,
 			 assignment-expression, )
 
@@ -7942,28 +7943,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
 	  set_c_expr_source_range (&expr, loc, close_loc);
 	  mark_exp_read (expr.value);
-	}
-      else if (c_token_starts_typename (c_parser_peek_2nd_token (parser)))
-	{
-	  /* A compound literal.  ??? Can we actually get here rather
-	     than going directly to
-	     c_parser_postfix_expression_after_paren_type from
-	     elsewhere?  */
-	  location_t loc;
-	  struct c_type_name *type_name;
-	  c_parser_consume_token (parser);
-	  loc = c_parser_peek_token (parser)->location;
-	  type_name = c_parser_type_name (parser);
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
-	  if (type_name == NULL)
-	    {
-	      expr.set_error ();
-	    }
-	  else
-	    expr = c_parser_postfix_expression_after_paren_type (parser,
-								 type_name,
-								 loc);
 	}
       else
 	{
