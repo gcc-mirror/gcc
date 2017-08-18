@@ -1,5 +1,10 @@
 2017-08-18  David Malcolm  <dmalcolm@redhat.com>
 
+	PR tree-optimization/46805
+	* dummy-frontend.c (jit_langhook_parse_file): Handle vector types.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c (class gcc::jit::reproducer): Rename field
 	"m_identifiers" to "m_map_memento_to_identifier".  Add field
 	"m_set_identifiers" and struct hash_traits for it.
