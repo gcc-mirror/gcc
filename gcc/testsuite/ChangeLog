@@ -1,3 +1,9 @@
+2017-08-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/80164
+	* gfortran.dg/array_temporaries_4.f90: New test.
+
 2017-08-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
