@@ -1,3 +1,9 @@
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/46805
+	* jit.dg/all-non-failing-tests.h: Add test-autovectorize.c.
+	* jit.dg/test-autovectorize.c: New test case.
+
 2017-08-18  Peter Bergner  <bergner@vnet.ibm.com>
 
 	PR target/80210
