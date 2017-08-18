@@ -1,3 +1,9 @@
+2017-08-18  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* config/rs6000/rs6000.c (rs6000_activate_target_options): New function.
+	(rs6000_set_current_function): Rewrite function to use it.
+
 2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/53037
