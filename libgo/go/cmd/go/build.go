@@ -3268,6 +3268,12 @@ func (b *builder) ccompilerCmd(envvar, defcmd, objdir string) []string {
 		a = append(a, "-fno-common")
 	}
 
+	// gccgo uses the language-independent exception mechanism to
+	// handle panics, so it always needs unwind tables.
+	if _, ok := buildToolchain.(gccgoToolchain); ok {
+		a = append(a, "-funwind-tables")
+	}
+
 	return a
 }
 
