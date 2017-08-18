@@ -1,3 +1,8 @@
+2017-08-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression): Remove unused code.  Update
+	commentary.
+
 2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/53037
