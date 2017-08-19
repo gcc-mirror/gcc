@@ -39909,7 +39909,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LFLOOR:
     CASE_CFN_LLFLOOR:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -39936,7 +39936,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LCEIL:
     CASE_CFN_LLCEIL:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -39986,7 +39986,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LROUND:
     CASE_CFN_LLROUND:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -40011,7 +40011,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_FLOOR:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -40036,7 +40036,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_CEIL:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -40061,7 +40061,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_TRUNC:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -40086,7 +40086,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_RINT:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -52281,7 +52281,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       if (SSE_FLOAT_MODE_P (mode1)
 	  && TARGET_SSE_MATH
 	  && !flag_trapping_math
-	  && !TARGET_ROUND)
+	  && !TARGET_SSE4_1)
 	return opt_type == OPTIMIZE_FOR_SPEED;
       return true;
 
@@ -52291,7 +52291,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       if (SSE_FLOAT_MODE_P (mode1)
 	  && TARGET_SSE_MATH
 	  && !flag_trapping_math
-	  && TARGET_ROUND)
+	  && TARGET_SSE4_1)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 

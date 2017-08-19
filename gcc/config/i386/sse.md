@@ -15605,7 +15605,7 @@
 	  [(match_operand:VF_128_256 1 "vector_operand" "YrBm,*xBm,xm")
 	   (match_operand:SI 2 "const_0_to_15_operand" "n,n,n")]
 	  UNSPEC_ROUND))]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
   "%vround<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecvt")
@@ -15619,7 +15619,7 @@
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1_128_256 1 "vector_operand")
    (match_operand:SI 2 "const_0_to_15_operand")]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
 
@@ -15658,7 +15658,7 @@
    (match_operand:VF2 1 "vector_operand")
    (match_operand:VF2 2 "vector_operand")
    (match_operand:SI 3 "const_0_to_15_operand")]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
 {
   rtx tmp0, tmp1;
 
@@ -15700,7 +15700,7 @@
 	    UNSPEC_ROUND)
 	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
   "@
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -15723,7 +15723,7 @@
 	(unspec:VF
 	  [(match_dup 3) (match_dup 4)]
 	  UNSPEC_ROUND))]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   machine_mode scalar_mode;
   const struct real_format *fmt;
@@ -15751,7 +15751,7 @@
 (define_expand "round<mode>2_sfix"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1 1 "register_operand")]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
 
@@ -15766,7 +15766,7 @@
   [(match_operand:<ssepackfltmode> 0 "register_operand")
    (match_operand:VF2 1 "register_operand")
    (match_operand:VF2 2 "register_operand")]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   rtx tmp0, tmp1;
 
