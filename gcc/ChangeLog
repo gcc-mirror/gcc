@@ -1,3 +1,9 @@
+2017-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81894
+	* doc/extend.texi (x86 Built-in Functions): Correct the name of
+	__builtin_ia32_lzcnt_u16.
+
 2017-08-17  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline

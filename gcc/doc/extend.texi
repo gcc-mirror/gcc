@@ -17222,7 +17222,7 @@ unsigned long long _pext_u64 (unsigned long long, unsigned long long)
 The following built-in functions are available when @option{-mlzcnt} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-unsigned short __builtin_ia32_lzcnt_16(unsigned short);
+unsigned short __builtin_ia32_lzcnt_u16(unsigned short);
 unsigned int __builtin_ia32_lzcnt_u32(unsigned int);
 unsigned long long __builtin_ia32_lzcnt_u64 (unsigned long long);
 @end smallexample
