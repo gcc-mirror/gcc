@@ -1,3 +1,8 @@
+2017-08-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR ipa/77732
+	* gcc.dg/ipa/ipcp-cstagg-7.c: Xfail on 32-bit hppa.
+
 2017-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR tree-optimization/46805
