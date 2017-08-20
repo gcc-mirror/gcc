@@ -367,13 +367,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #define _GLIBCXX_3_4_SYMVER(XXname, name) \
    extern "C" void \
-   _X##name() \
+   _X##name(...) \
    __attribute__ ((alias(#XXname))); \
    asm (".symver " "_X" #name "," #name "@GLIBCXX_3.4");
 
 #define _GLIBCXX_3_4_5_SYMVER(XXname, name) \
    extern "C" void \
-   _Y##name() \
+   _Y##name(...) \
    __attribute__ ((alias(#XXname))); \
    asm (".symver " "_Y" #name  "," #name "@@GLIBCXX_3.4.5");
 

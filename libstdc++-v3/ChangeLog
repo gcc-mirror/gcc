@@ -1,3 +1,10 @@
+2017-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* src/c++98/compatibility.cc (_GLIBCXX_3_4_SYMVER): Declare alias
+	target as a C++ function with no prototype.
+	(_GLIBCXX_3_4_5_SYMVER): Ditto.
+
 2017-08-20  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR testsuite/81056
