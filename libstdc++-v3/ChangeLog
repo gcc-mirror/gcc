@@ -1,3 +1,8 @@
+2017-08-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/81056
+	* testsuite/17_intro/names.cc: Undef 'd' and 'r' on __hpux__
+
 2017-08-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable_policy.h (_ReuseOrAllocNode): Remove
