@@ -1,3 +1,11 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* search.c (lookup_field_1) : Assert TYPE is a class.  Assert
+	vfield is not special.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fnfields): Delete.
+	(lookup_field_fuzzy_r): Adjust.
+
 2017-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r251159.
