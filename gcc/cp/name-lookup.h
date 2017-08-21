@@ -340,6 +340,7 @@ extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 
 // FIXME: class symbol handling.  In transition
+extern tree get_class_binding (tree, tree, int type_or_nolazy = 0);
 extern tree lookup_class_member (tree, tree, bool);
 extern void set_class_bindings (tree, tree);
 extern void insert_late_enum_def_bindings (tree, tree);
