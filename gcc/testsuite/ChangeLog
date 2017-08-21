@@ -1,5 +1,12 @@
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* gcc.dg/format/diagnostic-ranges.c (test_mismatching_types):
+	Update expected result to show all of "(long)0" being underlined.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): Update expected underlining.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* gcc.dg/format/diagnostic-ranges.c: Update expected results
 	to show underlining of all pertinent params.
 	* gcc.dg/format/pr72858.c: Likewise.
