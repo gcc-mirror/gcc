@@ -2,6 +2,29 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* read-md.h (md_reader::record_potential_iterator_use): Replace
+	pointer argument with an rtx and an index.
+	* read-rtl.c (iterator_group::apply_iterator): Likewise.
+	(apply_mode_iterator): Likewise.
+	(apply_code_iterator): Likewise.
+	(apply_int_iterator): Likewise.
+	(apply_subst_iterator): Likewise.
+	(record_iterator_use): Likewise.
+	(record_attribute_use): Likewise.
+	(md_reader::record_potential_iterator_use): Likewise.  Update calls
+	to record_iterator_use and apply_iterator.
+	(iterator_use): Replace ptr with x and index.
+	(attribute_use): Likewise.
+	(apply_attribute_uses): Update calls to apply_iterator.
+	(apply_iterators): Likewise.  Update initialization of iterator_use.
+	(rtx_reader::read_rtx_code): Update calls to record_iterator_use
+	and record_potential_iterator_use.
+	(rtx_reader::read_rtx_operand): Likewise.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* varasm.c (const_rtx_hash_1): Don't hash in the mode of a
 	CONST_WIDE_INT.
 
