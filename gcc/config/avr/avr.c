@@ -1111,7 +1111,7 @@ avr_set_current_function (tree decl)
       || 0 == strcmp ("INTERRUPT", name)
       || 0 == strcmp ("SIGNAL", name))
     {
-      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved indentifier"
+      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
                   " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
                   " before using the %qs macro", name, name);
     }
