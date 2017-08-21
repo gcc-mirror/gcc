@@ -1,5 +1,11 @@
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/81884
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle array accesses
+	at struct end conservatively when comparing common bases.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
 	* tree-ssa-loop-im.c (struct lim_aux_data): Add ref index member.
 	(mem_ref_in_stmt): Remove.
 	(determine_max_movement): Use ref index to get at the reference.
