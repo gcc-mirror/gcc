@@ -5539,7 +5539,7 @@ attribute_fallthrough_p (tree attr)
    diagnostics.  Return true if -Wnonnull warning has been diagnosed.  */
 bool
 check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
-			  int nargs, tree *argarray)
+			  int nargs, tree *argarray, vec<location_t> *arglocs)
 {
   bool warned_p = false;
 
@@ -5553,7 +5553,7 @@ check_function_arguments (location_t loc, const_tree fndecl, const_tree fntype,
   /* Check for errors in format strings.  */
 
   if (warn_format || warn_suggest_attribute_format)
-    check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray);
+    check_function_format (TYPE_ATTRIBUTES (fntype), nargs, argarray, arglocs);
 
   if (warn_format)
     check_function_sentinel (fntype, nargs, argarray);

@@ -1,3 +1,27 @@
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (check_function_arguments): Add "arglogs" param; pass
+	it to check_function_format.
+	* c-common.h (check_function_arguments): Add vec<location_t> *
+	param.
+	(check_function_format): Likewise.
+	* c-format.c (struct format_check_context): Add field "arglocs".
+	(check_function_format): Add param "arglocs"; pass it to
+	check_format_info.
+	(check_format_info):  Add param "arglocs"; use it to initialize
+	new field of format_ctx.
+	(check_format_arg): Pass format_ctx->arglocs to new param of
+	check_format_info_main.
+	(class argument_parser): New field "arglocs".
+	(argument_parser::argument_parser): Add "arglocs_" param and use
+	it to initialize new field.
+	(argument_parser::check_argument_type): Pass new arglocs field to
+	check_format_types.
+	(check_format_info_main): Add param "arglocs", and use it when
+	constructing arg_parser.
+	(check_format_types): Add param "arglocs"; use it if non-NULL when
+	!EXPR_HAS_LOCATION (cur_param) to get at location information.
+
 2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR c/53037
