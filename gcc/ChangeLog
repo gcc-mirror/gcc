@@ -1,3 +1,12 @@
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct lim_aux_data): Add ref index member.
+	(mem_ref_in_stmt): Remove.
+	(determine_max_movement): Use ref index to get at the reference.
+	(invariantness_dom_walker::before_dom_children): Deal with
+	lim data already initialized.
+	(gather_mem_refs_stmt): Initialize lim data and record ref index.
+
 2017-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.h (OPTION_MASK_ISA_ROUND): Remove.
