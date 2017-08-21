@@ -1,3 +1,8 @@
+2017-08-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/79883
+	* config/avr/avr.c (avr_set_current_function): Typo in diagnostic.
+
 2017-08-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81894
