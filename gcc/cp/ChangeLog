@@ -1,3 +1,10 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* search.c (lookup_field_1): Assert TYPE is a class and VFIELD
+	isn't special.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fnfields): Delete.
+	(lookup_field_fuzzy_r): Adjust.
+
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* call.c (build_over_call): Pass NULL for new parameter to
