@@ -1,3 +1,8 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81899
+	* g++.dg/template/pr81899.C: New.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81900
