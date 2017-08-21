@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* function.c (pad_below): Simplify padding calculation.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (function_prologue): Remove frame size argument.
 	(function_epilogue): Likewise.
 	* doc/tm.texi: Regenerate.

@@ -4322,21 +4322,16 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 static void
 pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
+  unsigned int align = PARM_BOUNDARY / BITS_PER_UNIT;
   if (passed_mode != BLKmode)
-    {
-      if (GET_MODE_BITSIZE (passed_mode) % PARM_BOUNDARY)
-	offset_ptr->constant
-	  += (((GET_MODE_BITSIZE (passed_mode) + PARM_BOUNDARY - 1)
-	       / PARM_BOUNDARY * PARM_BOUNDARY / BITS_PER_UNIT)
-	      - GET_MODE_SIZE (passed_mode));
-    }
+    offset_ptr->constant += -GET_MODE_SIZE (passed_mode) & (align - 1);
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)
+	  || (TREE_INT_CST_LOW (sizetree) & (align - 1)) != 0)
 	{
 	  /* Round the size up to multiple of PARM_BOUNDARY bits.  */
-	  tree s2 = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
+	  tree s2 = round_up (sizetree, align);
 	  /* Add it in.  */
 	  ADD_PARM_SIZE (*offset_ptr, s2);
 	  SUB_PARM_SIZE (*offset_ptr, sizetree);
