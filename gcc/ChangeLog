@@ -1,3 +1,16 @@
+2017-08-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (-mvsx-scalar-float): Delete
+	undocumented debugging options.
+	(-mvsx-scalar-double): Likewise.
+	(-mallow-df-permute): Likewise.
+	(-mvectorize-builtins): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok):
+	Likewise.
+	(rs6000_builtin_vectorized_function): Likewise.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_opt_vars): Likewise.
+
 2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46091
