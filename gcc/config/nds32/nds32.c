@@ -1502,8 +1502,7 @@ nds32_function_value_regno_p (const unsigned int regno)
 /* The content produced from this function
    will be placed before prologue body.  */
 static void
-nds32_asm_function_prologue (FILE *file,
-			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nds32_asm_function_prologue (FILE *file)
 {
   int r;
   const char *func_name;
@@ -1620,8 +1619,7 @@ nds32_asm_function_begin_epilogue (FILE *file)
 /* The content produced from this function
    will be placed after epilogue body.  */
 static void
-nds32_asm_function_epilogue (FILE *file,
-			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nds32_asm_function_epilogue (FILE *file)
 {
   fprintf (file, "\t! END EPILOGUE\n");
 }

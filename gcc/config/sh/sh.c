@@ -211,7 +211,7 @@ static void sh_print_operand (FILE *, rtx, int);
 static void sh_print_operand_address (FILE *, machine_mode, rtx);
 static bool sh_print_operand_punct_valid_p (unsigned char code);
 static bool sh_asm_output_addr_const_extra (FILE *file, rtx x);
-static void sh_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void sh_output_function_epilogue (FILE *);
 static void sh_insert_attributes (tree, tree *);
 static const char *sh_check_pch_target_flags (int);
 static int sh_register_move_cost (machine_mode, reg_class_t, reg_class_t);
@@ -7350,8 +7350,7 @@ sh_set_return_address (rtx ra, rtx tmp)
 
 /* Clear variables at function end.  */
 static void
-sh_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			     HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+sh_output_function_epilogue (FILE *)
 {
 }
 

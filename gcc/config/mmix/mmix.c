@@ -127,9 +127,9 @@ static struct machine_function *mmix_init_machine_status (void);
 static void mmix_encode_section_info (tree, rtx, int);
 static const char *mmix_strip_name_encoding (const char *);
 static void mmix_emit_sp_add (HOST_WIDE_INT offset);
-static void mmix_target_asm_function_prologue (FILE *, HOST_WIDE_INT);
+static void mmix_target_asm_function_prologue (FILE *);
 static void mmix_target_asm_function_end_prologue (FILE *);
-static void mmix_target_asm_function_epilogue (FILE *, HOST_WIDE_INT);
+static void mmix_target_asm_function_epilogue (FILE *);
 static reg_class_t mmix_preferred_reload_class (rtx, reg_class_t);
 static reg_class_t mmix_preferred_output_reload_class (rtx, reg_class_t);
 static bool mmix_legitimate_address_p (machine_mode, rtx, bool);
@@ -821,8 +821,7 @@ mmix_asm_preferred_eh_data_format (int code ATTRIBUTE_UNUSED,
    mmix_reorg.  */
 
 static void
-mmix_target_asm_function_prologue (FILE *stream ATTRIBUTE_UNUSED,
-				   HOST_WIDE_INT framesize ATTRIBUTE_UNUSED)
+mmix_target_asm_function_prologue (FILE *)
 {
   cfun->machine->in_prologue = 1;
 }
@@ -880,8 +879,7 @@ mmix_reorg (void)
 /* TARGET_ASM_FUNCTION_EPILOGUE.  */
 
 static void
-mmix_target_asm_function_epilogue (FILE *stream,
-				   HOST_WIDE_INT locals_size ATTRIBUTE_UNUSED)
+mmix_target_asm_function_epilogue (FILE *stream)
 {
   /* Emit an \n for readability of the generated assembly.  */
   fputc ('\n', stream);

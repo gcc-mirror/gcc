@@ -1553,7 +1553,7 @@ rl78_expand_eh_epilogue (rtx x ATTRIBUTE_UNUSED)
    this to insert a comment in the asm file describing the
    function.  */
 static void
-rl78_start_function (FILE *file, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
+rl78_start_function (FILE *file)
 {
   int i;
 
