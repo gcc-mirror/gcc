@@ -4582,13 +4582,13 @@ of the hook places the table of pointers in the special section named
 @code{__patchable_function_entries}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_PROLOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_PROLOGUE (FILE *@var{file})
 If defined, a function that outputs the assembler code for entry to a
 function.  The prologue is responsible for setting up the stack frame,
 initializing the frame pointer register, saving registers that must be
 saved, and allocating @var{size} additional bytes of storage for the
-local variables.  @var{size} is an integer.  @var{file} is a stdio
-stream to which the assembler code should be output.
+local variables.  @var{file} is a stdio stream to which the assembler
+code should be output.
 
 The label for the beginning of the function need not be output by this
 macro.  That has already been done when the macro is run.
@@ -4641,12 +4641,12 @@ emitted as RTL, and you have some extra assembler that needs to be
 emitted.  @xref{epilogue instruction pattern}.
 @end deftypefn
 
-@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_EPILOGUE (FILE *@var{file}, HOST_WIDE_INT @var{size})
+@deftypefn {Target Hook} void TARGET_ASM_FUNCTION_EPILOGUE (FILE *@var{file})
 If defined, a function that outputs the assembler code for exit from a
 function.  The epilogue is responsible for restoring the saved
 registers and stack pointer to their values when the function was
 called, and returning control to the caller.  This macro takes the
-same arguments as the macro @code{TARGET_ASM_FUNCTION_PROLOGUE}, and the
+same argument as the macro @code{TARGET_ASM_FUNCTION_PROLOGUE}, and the
 registers to restore are determined from @code{regs_ever_live} and
 @code{CALL_USED_REGISTERS} in the same way.
 

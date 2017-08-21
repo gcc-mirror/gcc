@@ -1,4 +1,46 @@
 2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (function_prologue): Remove frame size argument.
+	(function_epilogue): Likewise.
+	* doc/tm.texi: Regenerate.
+	* final.c (final_start_function): Update call to function_prologue.
+	(final_end_function): Update call to function_epilogue.
+	(default_function_pro_epilogue): Remove frame size argument.
+	* output.h (default_function_pro_epilogue): Likewise.
+	* config/arm/arm.c (arm_output_function_epilogue): Likewise.
+	(arm_output_function_prologue): Likewise.
+	* config/frv/frv.c (frv_function_prologue): Likewise.
+	(frv_function_epilogue): Likewise.
+	* config/i386/i386.c (ix86_output_function_epilogue): Likewise.
+	* config/ia64/ia64.c (ia64_output_function_prologue): Likewise.
+	(ia64_output_function_epilogue): Likewise.
+	* config/m32r/m32r.c (m32r_output_function_prologue): Likewise.
+	(m32r_output_function_epilogue): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_prologue)
+	(microblaze_function_epilogue): Likewise.
+	* config/mips/mips.c (mips_output_function_prologue): Likewise.
+	(mips_output_function_epilogue): Likewise.
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Likewise.
+	(mmix_target_asm_function_epilogue): Likewise.
+	* config/msp430/msp430.c (msp430_start_function): Likewise.
+	* config/nds32/nds32.c (nds32_asm_function_prologue): Likewise.
+	(nds32_asm_function_epilogue): Likewise.
+	* config/nios2/nios2.c (nios2_asm_function_prologue): Likewise.
+	* config/pa/pa.c (pa_output_function_prologue): Likewise.
+	(pa_output_function_epilogue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_output_function_prologue)
+	(rs6000_output_function_epilogue): Likewise.
+	* config/rl78/rl78.c (rl78_start_function): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	* config/rx/rx.c (rx_output_function_prologue): Likewise.
+	* config/sh/sh.c (sh_output_function_epilogue): Likewise.
+	* config/sparc/sparc.c (sparc_asm_function_prologue): Likewise.
+	(sparc_asm_function_epilogue): Likewise.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree.h (type_has_mode_precision_p): New function.
 	* convert.c (convert_to_integer_1): Use it.
