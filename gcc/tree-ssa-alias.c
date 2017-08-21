@@ -2416,6 +2416,7 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
       if (ref->ref)
 	{
 	  tree base = ref->ref;
+	  tree innermost_dropped_array_ref = NULL_TREE;
 	  if (handled_component_p (base))
 	    {
 	      tree saved_lhs0 = NULL_TREE;
@@ -2435,6 +2436,11 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		  TREE_OPERAND (base, 0) = saved_base0;
 		  if (res)
 		    break;
+		  /* Remember if we drop an array-ref that we need to
+		     double-check not being at struct end.  */ 
+		  if (TREE_CODE (base) == ARRAY_REF
+		      || TREE_CODE (base) == ARRAY_RANGE_REF)
+		    innermost_dropped_array_ref = base;
 		  /* Otherwise drop handled components of the access.  */
 		  base = saved_base0;
 		}
@@ -2443,15 +2449,22 @@ stmt_kills_ref_p (gimple *stmt, ao_ref *ref)
 		TREE_OPERAND (lhs, 0) = saved_lhs0;
 	    }
 	  /* Finally check if the lhs has the same address and size as the
-	     base candidate of the access.  */
-	  if (lhs == base
-	      || (((TYPE_SIZE (TREE_TYPE (lhs))
-		    == TYPE_SIZE (TREE_TYPE (base)))
-		   || (TYPE_SIZE (TREE_TYPE (lhs))
-		       && TYPE_SIZE (TREE_TYPE (base))
-		       && operand_equal_p (TYPE_SIZE (TREE_TYPE (lhs)),
-					   TYPE_SIZE (TREE_TYPE (base)), 0)))
-		  && operand_equal_p (lhs, base, OEP_ADDRESS_OF)))
+	     base candidate of the access.  Watch out if we have dropped
+	     an array-ref that was at struct end, this means ref->ref may
+	     be outside of the TYPE_SIZE of its base.  */
+	  if ((! innermost_dropped_array_ref
+	       || ! array_at_struct_end_p (innermost_dropped_array_ref))
+	      && (lhs == base
+		  || (((TYPE_SIZE (TREE_TYPE (lhs))
+			== TYPE_SIZE (TREE_TYPE (base)))
+		       || (TYPE_SIZE (TREE_TYPE (lhs))
+			   && TYPE_SIZE (TREE_TYPE (base))
+			   && operand_equal_p (TYPE_SIZE (TREE_TYPE (lhs)),
+					       TYPE_SIZE (TREE_TYPE (base)),
+					       0)))
+		      && operand_equal_p (lhs, base,
+					  OEP_ADDRESS_OF
+					  | OEP_MATCH_SIDE_EFFECTS))))
 	    return true;
 	}
 
