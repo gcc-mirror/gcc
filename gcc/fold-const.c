@@ -6638,8 +6638,7 @@ fold_single_bit_test_into_sign_test (location_t loc,
       if (arg00 != NULL_TREE
 	  /* This is only a win if casting to a signed type is cheap,
 	     i.e. when arg00's type is not a partial mode.  */
-	  && TYPE_PRECISION (TREE_TYPE (arg00))
-	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (arg00))))
+	  && type_has_mode_precision_p (TREE_TYPE (arg00)))
 	{
 	  tree stype = signed_type_for (TREE_TYPE (arg00));
 	  return fold_build2_loc (loc, code == EQ_EXPR ? GE_EXPR : LT_EXPR,

@@ -5414,4 +5414,13 @@ struct builtin_structptr_type
   const char *str;
 };
 extern const builtin_structptr_type builtin_structptr_types[6];
+
+/* Return true if type T has the same precision as its underlying mode.  */
+
+inline bool
+type_has_mode_precision_p (const_tree t)
+{
+  return TYPE_PRECISION (t) == GET_MODE_PRECISION (TYPE_MODE (t));
+}
+
 #endif  /* GCC_TREE_H  */
