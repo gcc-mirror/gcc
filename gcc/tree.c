@@ -64,6 +64,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "selftest.h"
 #include "stringpool.h"
 #include "attribs.h"
+#include "rtl.h"
+#include "regs.h"
 
 /* Tree code classes.  */
 
@@ -12610,9 +12612,47 @@ element_mode (const_tree t)
     t = TREE_TYPE (t);
   return TYPE_MODE (t);
 }
- 
 
-/* Veirfy that basic properties of T match TV and thus T can be a variant of
+/* Vector types need to re-check the target flags each time we report
+   the machine mode.  We need to do this because attribute target can
+   change the result of vector_mode_supported_p and have_regs_of_mode
+   on a per-function basis.  Thus the TYPE_MODE of a VECTOR_TYPE can
+   change on a per-function basis.  */
+/* ??? Possibly a better solution is to run through all the types
+   referenced by a function and re-compute the TYPE_MODE once, rather
+   than make the TYPE_MODE macro call a function.  */
+
+machine_mode
+vector_type_mode (const_tree t)
+{
+  machine_mode mode;
+
+  gcc_assert (TREE_CODE (t) == VECTOR_TYPE);
+
+  mode = t->type_common.mode;
+  if (VECTOR_MODE_P (mode)
+      && (!targetm.vector_mode_supported_p (mode)
+	  || !have_regs_of_mode[mode]))
+    {
+      machine_mode innermode = TREE_TYPE (t)->type_common.mode;
+
+      /* For integers, try mapping it to a same-sized scalar mode.  */
+      if (GET_MODE_CLASS (innermode) == MODE_INT)
+	{
+	  mode = mode_for_size (TYPE_VECTOR_SUBPARTS (t)
+				* GET_MODE_BITSIZE (innermode), MODE_INT, 0);
+
+	  if (mode != VOIDmode && have_regs_of_mode[mode])
+	    return mode;
+	}
+
+      return BLKmode;
+    }
+
+  return mode;
+}
+
+/* Verify that basic properties of T match TV and thus T can be a variant of
    TV.  TV should be the more specified variant (i.e. the main variant).  */
 
 static bool

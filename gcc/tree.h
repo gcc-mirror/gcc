@@ -1852,7 +1852,8 @@ extern void protected_set_expr_location (tree, location_t);
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type_common.mode = (MODE))
 
-extern machine_mode element_mode (const_tree t);
+extern machine_mode element_mode (const_tree);
+extern machine_mode vector_type_mode (const_tree);
 
 /* The "canonical" type for this type node, which is used by frontends to
    compare the type for equality with another type.  If two types are
