@@ -2119,16 +2119,15 @@ static sbitmap has_abnormal_preds;
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 {
-  bool changed = false;
   bitmap_set_t S, old, ANTIC_OUT;
   bitmap_iterator bi;
   unsigned int bii;
   edge e;
   edge_iterator ei;
-  bool was_visited = BB_VISITED (block);
 
-  old = ANTIC_OUT = S = NULL;
+  bool changed = ! BB_VISITED (block);
   BB_VISITED (block) = 1;
+  old = ANTIC_OUT = S = NULL;
 
   /* If any edges from predecessors are abnormal, antic_in is empty,
      so do nothing.  */
@@ -2217,7 +2216,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   /* clean (ANTIC_IN (block)) is defered to after the iteration converged
      because it can cause non-convergence, see for example PR81181.  */
 
-  if (!was_visited || !bitmap_set_equal (old, ANTIC_IN (block)))
+  if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
 
  maybe_dump_sets:
@@ -2396,9 +2395,6 @@ compute_antic (void)
 	if (e->flags & EDGE_ABNORMAL)
 	  {
 	    bitmap_set_bit (has_abnormal_preds, block->index);
-
-	    /* We also anticipate nothing.  */
-	    BB_VISITED (block) = 1;
 	    break;
 	  }
 

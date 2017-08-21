@@ -1,5 +1,10 @@
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/81900
+	* gcc.dg/torture/pr81900.c: New testcase.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
 	* c-c++-common/asan/global-overflow-1.c: Adjust diagnostic location
 	regex to handle the LTO case.
 	* c-c++-common/asan/heap-overflow-1.c: Likewise.
