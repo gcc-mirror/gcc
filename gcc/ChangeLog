@@ -1,3 +1,10 @@
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* varasm.c (const_rtx_hash_1): Don't hash in the mode of a
+	CONST_WIDE_INT.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81884
