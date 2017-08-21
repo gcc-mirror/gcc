@@ -1,5 +1,11 @@
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
+	* c-parser.c (c_parser_expr_list): Use c_expr::get_location ()
+	rather than peeking the location of the first token.
+	* c-tree.h (c_expr::get_location): New method.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
 	* c-typeck.c (build_function_call_vec): Pass arg_loc to call
 	to check_function_arguments.
 

@@ -25,7 +25,7 @@ void test_mismatching_types (const char *msg)
   printf("hello %i", (long)0);  /* { dg-warning "format '%i' expects argument of type 'int', but argument 2 has type 'long int' " } */
 /* { dg-begin-multiline-output "" }
    printf("hello %i", (long)0);
-                 ~^   ~
+                 ~^   ~~~~~~~
                  %li
    { dg-end-multiline-output "" } */
 }
