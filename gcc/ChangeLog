@@ -1,3 +1,7 @@
+2017-08-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* match.pd: Add pow (C, x) simplification.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81900
