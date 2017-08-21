@@ -33984,7 +33984,7 @@ make_resolver_func (const tree default_decl,
   DECL_NAME (decl) = decl_name;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 0;
+  DECL_IGNORED_P (decl) = 1;
   TREE_PUBLIC (decl) = 0;
   DECL_UNINLINABLE (decl) = 1;
 

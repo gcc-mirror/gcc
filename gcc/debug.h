@@ -148,6 +148,14 @@ struct gcc_debug_hooks
 				    tree context, bool child,
 				    bool implicit);
 
+  /* Return true if a DIE for the tree is available and return a symbol
+     and offset that can be used to refer to it externally.  */
+  bool (* die_ref_for_decl) (tree, const char **, unsigned HOST_WIDE_INT *);
+
+  /* Early debug information for the tree is available at symbol plus
+     offset externally.  */
+  void (* register_external_die) (tree, const char *, unsigned HOST_WIDE_INT);
+
   /* DECL is an inline function, whose body is present, but which is
      not being output at this point.  */
   void (* deferred_inline_function) (tree decl);
@@ -212,6 +220,10 @@ extern void debug_nothing_tree_tree_tree_bool_bool (tree, tree, tree,
 extern bool debug_true_const_tree (const_tree);
 extern void debug_nothing_rtx_insn (rtx_insn *);
 extern void debug_nothing_rtx_code_label (rtx_code_label *);
+extern bool debug_false_tree_charstarstar_uhwistar (tree, const char **,
+						    unsigned HOST_WIDE_INT *);
+extern void debug_nothing_tree_charstar_uhwi (tree, const char *,
+					      unsigned HOST_WIDE_INT);
 
 /* Hooks for various debug formats.  */
 extern const struct gcc_debug_hooks do_nothing_debug_hooks;

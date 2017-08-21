@@ -1,3 +1,8 @@
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Run all
+	tests with -flto as well if supported.
+
 2017-08-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854

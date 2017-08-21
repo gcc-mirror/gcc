@@ -15,6 +15,7 @@
 # <http://www.gnu.org/licenses/>.
 
 load_lib gdb-test.exp
+load_lib target-supports.exp
 
 dg-init
 v3-build_support
@@ -45,6 +46,14 @@ global DEFAULT_CXXFLAGS
 global PCH_CXXFLAGS
 gdb-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
   "" "$DEFAULT_CXXFLAGS $PCH_CXXFLAGS"
+
+if { [check_effective_target_lto] } {
+  append cxxflags " -flto"
+  # work around sourceware.org 20882
+  regsub {^(.*)-Wl,--gc-sections(.*)$} $cxxldflags {\1\2} cxxldflags
+  gdb-dg-runtest [lsort [glob $srcdir/$subdir/*.cc]] \
+    "" "$DEFAULT_CXXFLAGS -flto $PCH_CXXFLAGS"
+}
 
 if [info exists guality_gdb_name] {
     unsetenv GUALITY_GDB_NAME

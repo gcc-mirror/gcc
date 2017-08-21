@@ -1,3 +1,36 @@
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* simple-object-common.h (struct simple_object_functions): Add
+	copy_lto_debug_sections hook.
+	* simple-object.c: Include fcntl.h.
+	(handle_lto_debug_sections): New helper function.
+	(simple_object_copy_lto_debug_sections): New function copying
+	early LTO debug sections to regular debug sections in a new file.
+	(simple_object_start_write): Handle NULL segment_name.
+	* simple-object-coff.c (simple_object_coff_functions): Adjust
+	for not implemented copy_lto_debug_sections hook.
+	* simple-object-mach-o.c (simple_object_mach_o_functions): Likewise.
+	* simple-object-xcoff.c (simple_object_xcoff_functions): Likewise.
+	* simple-object-elf.c (SHT_NULL, SHT_SYMTAB, SHT_RELA, SHT_REL,
+	SHT_GROUP): Add various sectopn header types.
+	(SHF_EXCLUDE): Add flag.
+	(Elf32_External_Sym, Elf64_External_Sym): Add symbol struct.
+	(ELF_ST_BIND, ELF_ST_TYPE, ELF_ST_INFO): Add accessors.
+	(STT_OBJECT, STT_FUNC, STT_TLS, STT_GNU_IFUNC): Add Symbol types.
+	(STV_DEFAULT): Add symbol visibility.
+	(SHN_COMMON): Add special section index name.
+	(struct simple_object_elf_write): New.
+	(simple_object_elf_start_write): Adjust for new private data.
+	(simple_object_elf_write_shdr): Pass in values for all fields
+	we write.
+	(simple_object_elf_write_to_file): Adjust.  Copy from recorded
+	section headers if requested.
+	(simple_object_elf_release_write): Release private data.
+	(simple_object_elf_copy_lto_debug_sections): Copy and rename sections
+	as denoted by PFN and all their dependences, symbols and relocations
+	to the empty destination file.
+	(simple_object_elf_functions): Adjust for copy_lto_debug_sections hook.
+
 2017-07-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* dwarfnames.c (DW_FIRST_IDX, DW_END_IDX, DW_IDX, DW_IDX_DUP): New.

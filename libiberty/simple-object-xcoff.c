@@ -1006,5 +1006,6 @@ const struct simple_object_functions simple_object_xcoff_functions =
   simple_object_xcoff_release_attributes,
   simple_object_xcoff_start_write,
   simple_object_xcoff_write_to_file,
-  simple_object_xcoff_release_write
+  simple_object_xcoff_release_write,
+  NULL
 };

@@ -5662,6 +5662,10 @@ free_lang_data (void)
       || (!flag_generate_lto && !flag_generate_offload))
     return 0;
 
+  /* Provide a dummy TRANSLATION_UNIT_DECL if the FE failed to provide one.  */
+  if (vec_safe_is_empty (all_translation_units))
+    build_translation_unit_decl (NULL_TREE);
+
   /* Allocate and assign alias sets to the standard integer types
      while the slots are still in the way the frontends generated them.  */
   for (i = 0; i < itk_none; ++i)
@@ -8598,8 +8602,16 @@ variably_modified_type_p (tree type, tree fn)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case VECTOR_TYPE:
+      /* Ada can have pointer types refering to themselves indirectly.  */
+      if (TREE_VISITED (type))
+	return false;
+      TREE_VISITED (type) = true;
       if (variably_modified_type_p (TREE_TYPE (type), fn))
-	return true;
+	{
+	  TREE_VISITED (type) = false;
+	  return true;
+	}
+      TREE_VISITED (type) = false;
       break;
 
     case FUNCTION_TYPE:
