@@ -2,7 +2,7 @@
 
 template <template <typename> class FunctorData>
 struct functor {
-  friend FunctorData<int>;
+  friend class FunctorData<int>;
   void foo();
 };
 

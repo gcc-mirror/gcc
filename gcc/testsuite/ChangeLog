@@ -1,3 +1,8 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr81899.C: Fix c++03.
+	* g++.dg/debug/debug9.C: Add -fno-reorder-blocks-and-partition"
+
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/format/diagnostic-ranges.c (test_mismatching_types):
