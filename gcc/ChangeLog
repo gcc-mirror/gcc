@@ -1,3 +1,15 @@
+2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* config/i386/i386.md (*btsq_imm): Rename from *btsq.
+	(*btrq_imm): Rename from *btrq.
+	(*btcq_imm): Rename from *btcq.
+	(btsc): New code attribute.
+	(*<btsc><mode>): New insn pattern.
+	(*btr<mode>): Ditto.
+	(*<btsc><mode>_mask): New insn_and_split pattern.
+	(*btr<mode>_mask): Ditto.
+
 2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

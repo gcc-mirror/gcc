@@ -1,3 +1,11 @@
+2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* gcc.target/i386/pr46091-4.c: New test.
+	* gcc.target/i386/pr46091-4a.c: Ditto.
+	* gcc.target/i386/pr46091-5.c: Ditto.
+	* gcc.target/i386/pr46091-5a.c: Ditto.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81899
