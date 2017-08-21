@@ -1,5 +1,24 @@
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
+	* c-c++-common/asan/global-overflow-1.c: Adjust diagnostic location
+	regex to handle the LTO case.
+	* c-c++-common/asan/heap-overflow-1.c: Likewise.
+	* c-c++-common/asan/misalign-1.c: Likewise.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+	* c-c++-common/asan/null-deref-1.c: Likewise.
+	* c-c++-common/asan/stack-overflow-1.c: Likewise.
+	* c-c++-common/asan/strncpy-overflow-1.c: Likewise.
+	* c-c++-common/asan/use-after-free-1.c: Likewise.
+	* c-c++-common/asan/alloca_big_alignment.c: Likewise.
+	* c-c++-common/asan/alloca_detect_custom_size.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_partial.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_right.c: Likewise.
+	* c-c++-common/asan/alloca_underflow_left.c: Likewise.
+	* g++.dg/asan/large-func-test-1.C: Likewise.
+	* gfortran.dg/save_6.f90: Add -flto -g variant of save_5.f90.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/81884
 	* g++.dg/torture/pr81884.C: New testcase.
 

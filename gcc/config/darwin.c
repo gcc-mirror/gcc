@@ -1960,7 +1960,8 @@ darwin_asm_lto_end (void)
 }
 
 static void
-darwin_asm_dwarf_section (const char *name, unsigned int flags, tree decl);
+darwin_asm_dwarf_section (const char *name, unsigned int flags,
+			  tree decl, bool is_for_lto);
 
 /*  Called for the TARGET_ASM_NAMED_SECTION hook.  */
 
@@ -2002,7 +2003,9 @@ darwin_asm_named_section (const char *name,
       vec_safe_push (lto_section_names, e);
    }
   else if (strncmp (name, "__DWARF,", 8) == 0)
-    darwin_asm_dwarf_section (name, flags, decl);
+    darwin_asm_dwarf_section (name, flags, decl, false);
+  else if (strncmp (name, "__GNU_DWARF_LTO,", 16) == 0)
+    darwin_asm_dwarf_section (name, flags, decl, true);
   else
     fprintf (asm_out_file, "\t.section %s\n", name);
 }
@@ -2784,19 +2787,37 @@ static GTY (()) vec<dwarf_sect_used_entry, va_gc> *dwarf_sect_names_table;
 
 static void
 darwin_asm_dwarf_section (const char *name, unsigned int flags,
-			  tree ARG_UNUSED (decl))
+			  tree ARG_UNUSED (decl), bool is_for_lto)
 {
   unsigned i;
-  int namelen;
-  const char * sname;
+  int namelen, extra = 0;
+  const char *sect, *lto_add = "";
+  char sname[64];
   dwarf_sect_used_entry *ref;
   bool found = false;
-  gcc_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
-		    == (SECTION_DEBUG | SECTION_NAMED));
-  /* We know that the name starts with __DWARF,  */
-  sname = name + 8;
-  namelen = strchr (sname, ',') - sname;
-  gcc_assert (namelen);
+
+  gcc_checking_assert ((flags & (SECTION_DEBUG | SECTION_NAMED))
+			== (SECTION_DEBUG | SECTION_NAMED));
+
+  /* We know that the name starts with __DWARF, or __GNU_DAWRF_LTO  */
+  sect = strchr (name, ',') + 1;
+  namelen = strchr (sect, ',') - sect;
+  gcc_checking_assert (namelen);
+
+  /* The section switch is output as written...  */
+  fprintf (asm_out_file, "\t.section %s\n", name);
+
+  /* ... but the string we keep to make section start labels needs
+     adjustment for lto cases.  */
+  if (is_for_lto)
+    {
+      lto_add = "_lto";
+      extra = 4;
+    }
+
+  snprintf (sname, 64, "%.*s%.*s", namelen, sect, extra, lto_add);
+  namelen += extra;
+
   if (dwarf_sect_names_table == NULL)
     vec_alloc (dwarf_sect_names_table, 16);
   else
@@ -2814,7 +2835,6 @@ darwin_asm_dwarf_section (const char *name, unsigned int flags,
 	  }
       }
 
-  fprintf (asm_out_file, "\t.section %s\n", name);
   if (!found)
     {
       dwarf_sect_used_entry e;
@@ -2867,14 +2887,24 @@ darwin_asm_output_dwarf_offset (FILE *file, int size, const char * lab,
 				HOST_WIDE_INT offset, section *base)
 {
   char sname[64];
-  int namelen;
+  int namelen, extra = 0;
+  bool is_for_lto;
+  const char *lto_add = "";
 
-  gcc_assert (base->common.flags & SECTION_NAMED);
-  gcc_assert (strncmp (base->named.name, "__DWARF,", 8) == 0);
-  gcc_assert (strchr (base->named.name + 8, ','));
+  gcc_checking_assert (base->common.flags & SECTION_NAMED);
+  is_for_lto = strncmp (base->named.name, "__GNU_DWARF_LTO,", 16) == 0;
+  gcc_checking_assert (is_for_lto
+		       || strncmp (base->named.name, "__DWARF,", 8) == 0);
+  const char *name = strchr (base->named.name, ',') + 1;
+  gcc_checking_assert (name);
 
-  namelen = strchr (base->named.name + 8, ',') - (base->named.name + 8);
-  sprintf (sname, "*Lsection%.*s", namelen, base->named.name + 8);
+  namelen = strchr (name, ',') - (name);
+  if (is_for_lto)
+    {
+      lto_add = "_lto";
+      extra = 4;
+    }
+  snprintf (sname, 64, "*Lsection%.*s%.*s", namelen, name, extra, lto_add);
   darwin_asm_output_dwarf_delta (file, size, lab, sname, offset);
 }
 

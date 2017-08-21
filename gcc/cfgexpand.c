@@ -6529,12 +6529,6 @@ pass_expand::execute (function *fun)
 	  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (parent)) = 1;
     }
 
-  /* We are now committed to emitting code for this function.  Do any
-     preparation, such as emitting abstract debug info for the inline
-     before it gets mangled by optimization.  */
-  if (cgraph_function_possibly_inlined_p (current_function_decl))
-    (*debug_hooks->outlining_inline_function) (current_function_decl);
-
   TREE_ASM_WRITTEN (current_function_decl) = 1;
 
   /* After expanding, the return labels are no longer needed. */

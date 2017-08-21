@@ -17,6 +17,6 @@ int main(int argc, char **argv) {
 }
 
 /* { dg-output "WRITE of size 1 at 0x\[0-9a-f\]+ thread T0\[^\n\r]*(\n|\r\n|\r)" } */
-/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*foo(\[^\n\r]*alloca_overflow_partial.c:11|\[^\n\r]*:0)|\[(\]).*(\n|\r\n|\r)" } */
+/* { dg-output "    #0 0x\[0-9a-f\]+ +(in _*foo(\[^\n\r]*alloca_overflow_partial.c:11|\[^\n\r]*:0|\[^\n\r]*\\+0x\[0-9a-z\]*)|\[(\])\[^\n\r]*(\n|\r\n|\r)" } */
 /* { dg-output "\[^\n\r]*Address 0x\[0-9a-f\]+ is located in stack of thread T0.*(\n|\r\n|\r)" */
 /* { dg-output "\[^\n\r]*in foo.*alloca_overflow_partial.c.*(\n|\r\n|\r)" */

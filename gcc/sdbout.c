@@ -302,6 +302,8 @@ const struct gcc_debug_hooks sdb_debug_hooks =
   sdbout_late_global_decl,		 /* late_global_decl */
   sdbout_symbol,			 /* type_decl */
   debug_nothing_tree_tree_tree_bool_bool,/* imported_module_or_decl */
+  debug_false_tree_charstarstar_uhwistar,/* die_ref_for_decl */
+  debug_nothing_tree_charstar_uhwi,      /* register_external_die */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
   sdbout_label,			         /* label */
