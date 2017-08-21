@@ -7,130 +7,130 @@
 
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
-        * debug.h (struct gcc_debug_hooks): Add die_ref_for_decl and
-        register_external_die hooks.
-        (debug_false_tree_charstarstar_uhwistar): Declare.
-        (debug_nothing_tree_charstar_uhwi): Likewise.
-        * debug.c (do_nothing_debug_hooks): Adjust.
-        (debug_false_tree_charstarstar_uhwistar): New do nothing.
-        (debug_nothing_tree_charstar_uhwi): Likewise.
-        * dbxout.c (dbx_debug_hooks): Adjust.
-        (xcoff_debug_hooks): Likewise.
-        * sdbout.c (sdb_debug_hooks): Likewise.
-        * vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
-        * dwarf2out.c (macinfo_label_base): New global.
+	* debug.h (struct gcc_debug_hooks): Add die_ref_for_decl and
+	register_external_die hooks.
+	(debug_false_tree_charstarstar_uhwistar): Declare.
+	(debug_nothing_tree_charstar_uhwi): Likewise.
+	* debug.c (do_nothing_debug_hooks): Adjust.
+	(debug_false_tree_charstarstar_uhwistar): New do nothing.
+	(debug_nothing_tree_charstar_uhwi): Likewise.
+	* dbxout.c (dbx_debug_hooks): Adjust.
+	(xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dwarf2out.c (macinfo_label_base): New global.
 	(dwarf2out_register_external_die): New function for the
 	register_external_die hook.
-        (dwarf2out_die_ref_for_decl): Likewise for die_ref_for_decl.
-        (dwarf2_debug_hooks): Use them.
-        (dwarf2_lineno_debug_hooks): Adjust.
-        (struct die_struct): Add with_offset flag.
-        (DEBUG_LTO_DWO_INFO_SECTION, DEBUG_LTO_INFO_SECTION,
-        DEBUG_LTO_DWO_ABBREV_SECTION, DEBUG_LTO_ABBREV_SECTION,
-        DEBUG_LTO_DWO_MACINFO_SECTION, DEBUG_LTO_MACINFO_SECTION,
-        DEBUG_LTO_DWO_MACRO_SECTION, DEBUG_LTO_MACRO_SECTION,
-        DEBUG_LTO_LINE_SECTION, DEBUG_LTO_DWO_STR_OFFSETS_SECTION,
-        DEBUG_LTO_STR_DWO_SECTION, DEBUG_STR_LTO_SECTION): New macros
-        defining section names for the early LTO debug variants.
+	(dwarf2out_die_ref_for_decl): Likewise for die_ref_for_decl.
+	(dwarf2_debug_hooks): Use them.
+	(dwarf2_lineno_debug_hooks): Adjust.
+	(struct die_struct): Add with_offset flag.
+	(DEBUG_LTO_DWO_INFO_SECTION, DEBUG_LTO_INFO_SECTION,
+	DEBUG_LTO_DWO_ABBREV_SECTION, DEBUG_LTO_ABBREV_SECTION,
+	DEBUG_LTO_DWO_MACINFO_SECTION, DEBUG_LTO_MACINFO_SECTION,
+	DEBUG_LTO_DWO_MACRO_SECTION, DEBUG_LTO_MACRO_SECTION,
+	DEBUG_LTO_LINE_SECTION, DEBUG_LTO_DWO_STR_OFFSETS_SECTION,
+	DEBUG_LTO_STR_DWO_SECTION, DEBUG_STR_LTO_SECTION): New macros
+	defining section names for the early LTO debug variants.
 	(reset_indirect_string): New helper.
-        (add_AT_external_die_ref): Helper for dwarf2out_register_external_die.
-        (print_dw_val): Add support for offsetted symbol references.
+	(add_AT_external_die_ref): Helper for dwarf2out_register_external_die.
+	(print_dw_val): Add support for offsetted symbol references.
 	(get_ultimate_context): Split out from is_cxx.
 	(is_cxx): Use get_ultimate_context.
 	(is_fortran): Add decl overload.
-        (compute_comp_unit_symbol): Split out worker from
+	(compute_comp_unit_symbol): Split out worker from
 	compute_section_prefix.
-        (compute_section_prefix): Call compute_comp_unit_symbol and
+	(compute_section_prefix): Call compute_comp_unit_symbol and
 	set comdat_type_p here.
-        (output_die): Skip DIE symbol output for the LTO added one.
-        Handle DIE symbol references with offset.
-        (output_comp_unit): Guard section name mangling properly.
-        For LTO debug sections emit a symbol at the section beginning
-        which we use to refer to its DIEs.
-        (add_abstract_origin_attribute): For DIEs registered via
-        dwarf2out_register_external_die directly refer to the early
-        DIE rather than indirectly through the shadow one we created.
+	(output_die): Skip DIE symbol output for the LTO added one.
+	Handle DIE symbol references with offset.
+	(output_comp_unit): Guard section name mangling properly.
+	For LTO debug sections emit a symbol at the section beginning
+	which we use to refer to its DIEs.
+	(add_abstract_origin_attribute): For DIEs registered via
+	dwarf2out_register_external_die directly refer to the early
+	DIE rather than indirectly through the shadow one we created.
 	Remove obsolete call to dwarf2out_abstract_function for
 	non-function/block origins.
-        (gen_array_type_die): When generating early LTO debug do
-        not emit DW_AT_string_length.
-        (gen_formal_parameter_die): Do not re-create DIEs for PARM_DECLs
-        late when in LTO.  As suggested place a gcc_unreachable for
+	(gen_array_type_die): When generating early LTO debug do
+	not emit DW_AT_string_length.
+	(gen_formal_parameter_die): Do not re-create DIEs for PARM_DECLs
+	late when in LTO.  As suggested place a gcc_unreachable for
 	the DECL_ABSTRACT_P case.
-        (gen_subprogram_die): Avoid another specification DIE
-        for early built declarations/definitions for the late LTO case.
-        (gen_variable_die): Add type references for late duplicated VLA dies
-        when in late LTO.
-        (gen_inlined_subroutine_die): Do not call dwarf2out_abstract_function,
-        we have the abstract instance already.
-        (process_scope_var): Adjust decl DIE contexts in LTO which
-        first puts them in limbo.
-        (gen_decl_die): Do not generate type DIEs late apart from
-        types for VLAs or for decls we do not yet have a DIE.  Do not
+	(gen_subprogram_die): Avoid another specification DIE
+	for early built declarations/definitions for the late LTO case.
+	(gen_variable_die): Add type references for late duplicated VLA dies
+	when in late LTO.
+	(gen_inlined_subroutine_die): Do not call dwarf2out_abstract_function,
+	we have the abstract instance already.
+	(process_scope_var): Adjust decl DIE contexts in LTO which
+	first puts them in limbo.
+	(gen_decl_die): Do not generate type DIEs late apart from
+	types for VLAs or for decls we do not yet have a DIE.  Do not
 	call dwarf2out_abstract_function late.
-        (dwarf2out_early_global_decl): Make sure to create DIEs
-        for abstract instances of a decl first.
-        (dwarf2out_late_global_decl): Adjust comment.
-        (output_macinfo_op): With multiple macro sections use
+	(dwarf2out_early_global_decl): Make sure to create DIEs
+	for abstract instances of a decl first.
+	(dwarf2out_late_global_decl): Adjust comment.
+	(output_macinfo_op): With multiple macro sections use
 	macinfo_label_base to distinguish labels.
-        (output_macinfo): Likewise.  Update macinfo_label_base.
+	(output_macinfo): Likewise.  Update macinfo_label_base.
 	Pass in the line info label.
 	(note_variable_value_in_expr): When generating LTO resolve
 	all variable values here by generating DIEs as needed.
-        (init_sections_and_labels): Add early LTO debug flag parameter
-        and generate different sections and names if set.  Add generation
-        counter for the labels so we can have multiple of them.
-        (reset_dies): Helper to allow DIEs to be output multiple times.
-        (dwarf2out_finish): When outputting DIEs to the fat part of an
+	(init_sections_and_labels): Add early LTO debug flag parameter
+	and generate different sections and names if set.  Add generation
+	counter for the labels so we can have multiple of them.
+	(reset_dies): Helper to allow DIEs to be output multiple times.
+	(dwarf2out_finish): When outputting DIEs to the fat part of an
 	LTO object first reset DIEs.
-        (dwarf2out_early_finish): Output early DIEs when generating LTO.
+	(dwarf2out_early_finish): Output early DIEs when generating LTO.
 	(modified_type_die): Check for decl_ultimate_origin being self
 	before recursing.
 	(gen_type_die_with_usage): Likewise.
 	(gen_typedef_die): Allow decl_ultimate_origin being self.
-        (set_decl_abstract_flags): Remove.
-        (set_block_abstract_flags): Likewise.
-        (dwarf2out_abstract_function): Treat the early generated DIEs
-        as the abstract copy and only add DW_AT_inline and
-        DW_AT_artificial here and call set_decl_origin_self.
+	(set_decl_abstract_flags): Remove.
+	(set_block_abstract_flags): Likewise.
+	(dwarf2out_abstract_function): Treat the early generated DIEs
+	as the abstract copy and only add DW_AT_inline and
+	DW_AT_artificial here and call set_decl_origin_self.
 	If the DIE has an abstract origin don't do anything.
 	* tree.c (free_lang_data): Build a dummy TRANSLATION_UNIT_DECL
 	if we have none yet (Go fails to build one, PR78628).
 	(variably_modified_type_p): Prevent endless recursion for Ada
 	cyclic pointer types.
-        * lto-streamer-in.c: Include debug.h.
-        (dref_queue): New global.
-        (lto_read_tree_1): Stream in DIE references.
-        (lto_input_tree): Register DIE references.
+	* lto-streamer-in.c: Include debug.h.
+	(dref_queue): New global.
+	(lto_read_tree_1): Stream in DIE references.
+	(lto_input_tree): Register DIE references.
 	(input_function): Stream DECL_DEBUG_ARGS.
-        * lto-streamer-out.c: Include debug.h.
-        (lto_write_tree_1): Output DIE references.
-        (DFS::DFS_write_tree_body): Follow DECL_ABSTRACT_ORIGIN.
+	* lto-streamer-out.c: Include debug.h.
+	(lto_write_tree_1): Output DIE references.
+	(DFS::DFS_write_tree_body): Follow DECL_ABSTRACT_ORIGIN.
 	Force a TRANSLATION_UNIT_DECL DECL_CONTEXT for file-scope decls.
 	(output_function): Stream DECL_DEBUG_ARGS.
-        * tree-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
-        Stream DECL_ABSTRACT_ORIGIN.
-        * tree-streamer-out.c (write_ts_decl_common_tree_pointers): Likewise.
+	* tree-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Stream DECL_ABSTRACT_ORIGIN.
+	* tree-streamer-out.c (write_ts_decl_common_tree_pointers): Likewise.
 	(write_ts_decl_minimal_tree_pointers): Force a TRANSLATION_UNIT_DECL
 	DECL_CONTEXT for file-scope decls.
-        * lto-streamer.h (struct dref_entry): Declare.
-        (dref_queue): Likewise.
+	* lto-streamer.h (struct dref_entry): Declare.
+	(dref_queue): Likewise.
 	* cfgexpand.c (pass_expand::execute): Do not call the
 	outlining_inline_function hook here.
-        * lto-wrapper.c (debug_obj): New global.
-        (tool_cleanup): Unlink it if required.
-        (debug_objcopy): New function.
-        (run_gcc): Handle early debug sections in the IL files by
-        extracting them to separate files, partially linkin them and
-        feeding the result back as result to the linker.
-        * config/darwin.h (DEBUG_LTO_INFO_SECTION, DEBUG_LTO_ABBREV_SECTION,
-        DEBUG_LTO_MACINFO_SECTION, DEBUG_LTO_LINE_SECTION,
-        DEBUG_STR_LTO_SECTION, DEBUG_LTO_MACRO_SECTION): Put early debug
-        sections into a separate segment.
-        * config/darwin.c (darwin_asm_named_section): Handle __GNU_DWARF_LTO
-        segments.
-        (darwin_asm_dwarf_section): Likewise.
-        (darwin_asm_output_dwarf_offset): Likewise.
+	* lto-wrapper.c (debug_obj): New global.
+	(tool_cleanup): Unlink it if required.
+	(debug_objcopy): New function.
+	(run_gcc): Handle early debug sections in the IL files by
+	extracting them to separate files, partially linkin them and
+	feeding the result back as result to the linker.
+	* config/darwin.h (DEBUG_LTO_INFO_SECTION, DEBUG_LTO_ABBREV_SECTION,
+	DEBUG_LTO_MACINFO_SECTION, DEBUG_LTO_LINE_SECTION,
+	DEBUG_STR_LTO_SECTION, DEBUG_LTO_MACRO_SECTION): Put early debug
+	sections into a separate segment.
+	* config/darwin.c (darwin_asm_named_section): Handle __GNU_DWARF_LTO
+	segments.
+	(darwin_asm_dwarf_section): Likewise.
+	(darwin_asm_output_dwarf_offset): Likewise.
 	* config/i386/i386.c (make_resolver_func): Set DECL_IGNORED_P.
 
 2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
