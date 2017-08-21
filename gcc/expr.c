@@ -8244,7 +8244,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
      result to be reduced to the precision of the bit-field type,
      which is narrower than that of the type's mode.  */
   reduce_bit_field = (INTEGRAL_TYPE_P (type)
-		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
+		      && !type_has_mode_precision_p (type));
 
   if (reduce_bit_field && modifier == EXPAND_STACK_PARM)
     target = 0;
@@ -9097,8 +9097,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       gcc_assert (VECTOR_MODE_P (TYPE_MODE (type))
-		  || (GET_MODE_PRECISION (TYPE_MODE (type))
-		      == TYPE_PRECISION (type)));
+		  || type_has_mode_precision_p (type));
       /* fall through */
 
     case LSHIFT_EXPR:
@@ -9671,7 +9670,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
      which is narrower than that of the type's mode.  */
   reduce_bit_field = (!ignore
 		      && INTEGRAL_TYPE_P (type)
-		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
+		      && !type_has_mode_precision_p (type));
 
   /* If we are going to ignore this result, we need only do something
      if there is a side-effect somewhere in the expression.  If there

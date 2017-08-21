@@ -1,3 +1,23 @@
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree.h (type_has_mode_precision_p): New function.
+	* convert.c (convert_to_integer_1): Use it.
+	* expr.c (expand_expr_real_2): Likewise.
+	(expand_expr_real_1): Likewise.
+	* fold-const.c (fold_single_bit_test_into_sign_test): Likewise.
+	* match.pd: Likewise.
+	* tree-ssa-forwprop.c (simplify_rotate): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Likewise.
+	* tree-tailcall.c (process_assignment): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern)
+	(vect_recog_mult_pattern, vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	* tree-vrp.c (register_edge_assert_for_2): Likewise.
+
 2017-08-21  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* match.pd: Add pow (C, x) simplification.

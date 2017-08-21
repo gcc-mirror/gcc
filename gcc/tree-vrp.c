@@ -5247,7 +5247,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && tree_fits_uhwi_p (cst2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && IN_RANGE (tree_to_uhwi (cst2), 1, prec - 1)
-	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val))))
+	      && type_has_mode_precision_p (TREE_TYPE (val)))
 	    {
 	      mask = wi::mask (tree_to_uhwi (cst2), false, prec);
 	      val2 = fold_binary (LSHIFT_EXPR, TREE_TYPE (val), val, cst2);
