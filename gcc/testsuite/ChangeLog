@@ -1,3 +1,9 @@
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/diagnostic-ranges.c: Update expected results
+	to show underlining of all pertinent params.
+	* gcc.dg/format/pr72858.c: Likewise.
+
 2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46091

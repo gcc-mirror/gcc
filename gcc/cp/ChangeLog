@@ -1,3 +1,9 @@
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (build_over_call): Pass NULL for new parameter to
+	check_function_arguments.
+	* typeck.c (cp_build_function_call_vec): Likewise.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	PR c++/81899

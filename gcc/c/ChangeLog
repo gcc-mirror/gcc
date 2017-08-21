@@ -1,3 +1,8 @@
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c (build_function_call_vec): Pass arg_loc to call
+	to check_function_arguments.
+
 2017-08-18  Marek Polacek  <polacek@redhat.com>
 
 	* c-parser.c (c_parser_postfix_expression): Remove unused code.  Update
