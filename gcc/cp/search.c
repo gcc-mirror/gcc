@@ -371,18 +371,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
 {
   tree field;
 
-  gcc_assert (identifier_p (name));
-
-  if (TREE_CODE (type) == TEMPLATE_TYPE_PARM
-      || TREE_CODE (type) == BOUND_TEMPLATE_TEMPLATE_PARM
-      || TREE_CODE (type) == TYPENAME_TYPE)
-    /* The TYPE_FIELDS of a TEMPLATE_TYPE_PARM and
-       BOUND_TEMPLATE_TEMPLATE_PARM are not fields at all;
-       instead TYPE_FIELDS is the TEMPLATE_PARM_INDEX.  (Miraculously,
-       the code often worked even when we treated the index as a list
-       of fields!)
-       The TYPE_FIELDS of TYPENAME_TYPE is its TYPENAME_TYPE_FULLNAME.  */
-    return NULL_TREE;
+  gcc_assert (identifier_p (name) && RECORD_OR_UNION_TYPE_P (type));
 
   if (CLASSTYPE_SORTED_FIELDS (type))
     {
@@ -474,13 +463,11 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
 	return decl;
     }
-  /* Not found.  */
-  if (name == vptr_identifier)
-    {
-      /* Give the user what s/he thinks s/he wants.  */
-      if (TYPE_POLYMORPHIC_P (type))
-	return TYPE_VFIELD (type);
-    }
+
+  /* We used to special-case vptr_identifier.  Make sure it's not
+     special any more.  */
+  gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
+
   return NULL_TREE;
 }
 
@@ -1374,7 +1361,6 @@ class lookup_field_fuzzy_info
   lookup_field_fuzzy_info (bool want_type_p) :
     m_want_type_p (want_type_p), m_candidates () {}
 
-  void fuzzy_lookup_fnfields (tree type);
   void fuzzy_lookup_field (tree type);
 
   /* If true, we are looking for types, not data members.  */
@@ -1382,27 +1368,6 @@ class lookup_field_fuzzy_info
   /* The result: a vec of identifiers.  */
   auto_vec<tree> m_candidates;
 };
-
-/* Locate all methods within TYPE, append them to m_candidates.  */
-
-void
-lookup_field_fuzzy_info::fuzzy_lookup_fnfields (tree type)
-{
-  vec<tree, va_gc> *method_vec;
-  tree fn;
-  size_t i;
-
-  if (!CLASS_TYPE_P (type))
-    return;
-
-  method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
-    return;
-
-  for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
-    if (fn)
-      m_candidates.safe_push (OVL_NAME (fn));
-}
 
 /* Locate all fields within TYPE, append them to m_candidates.  */
 
@@ -1432,11 +1397,6 @@ lookup_field_fuzzy_r (tree binfo, void *data)
   lookup_field_fuzzy_info *lffi = (lookup_field_fuzzy_info *) data;
   tree type = BINFO_TYPE (binfo);
 
-  /* First, look for functions.  */
-  if (!lffi->m_want_type_p)
-    lffi->fuzzy_lookup_fnfields (type);
-
-  /* Look for data member and types.  */
   lffi->fuzzy_lookup_field (type);
 
   return NULL_TREE;
