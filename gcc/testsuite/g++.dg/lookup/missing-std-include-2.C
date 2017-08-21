@@ -6,7 +6,12 @@
 /* This is padding (to avoid the generated patch containing DejaGnu
    directives).  */
 
-#include <stdio.h>
+#include "empty.h"
+
+namespace std
+{
+  extern int sprintf (char *dst, const char *format, ...);
+};
 
 void test (void)
 {
@@ -45,11 +50,11 @@ void test_2 (void)
 @@ -7,6 +7,8 @@
     directives).  */
  
- #include <stdio.h>
+ #include "empty.h"
 +#include <string>
 +#include <iostream>
  
- void test (void)
+ namespace std
  {
 { dg-end-multiline-output "" }
 #endif

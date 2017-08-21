@@ -162,7 +162,8 @@ class md_reader
   rtx copy_rtx_for_iterators (rtx original);
   void read_conditions ();
   void record_potential_iterator_use (struct iterator_group *group,
-				      void *ptr, const char *name);
+				      rtx x, unsigned int index,
+				      const char *name);
   struct mapping *read_mapping (struct iterator_group *group, htab_t table);
 
   const char *get_top_level_filename () const { return m_toplevel_fname; }

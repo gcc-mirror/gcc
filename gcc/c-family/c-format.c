@@ -989,6 +989,7 @@ struct format_check_context
   format_check_results *res;
   function_format_info *info;
   tree params;
+  vec<location_t> *arglocs;
 };
 
 /* Return the format name (as specified in the original table) for the format
@@ -1011,14 +1012,16 @@ format_flags (int format_num)
   gcc_unreachable ();
 }
 
-static void check_format_info (function_format_info *, tree);
+static void check_format_info (function_format_info *, tree,
+			       vec<location_t> *);
 static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
 static void check_format_info_main (format_check_results *,
 				    function_format_info *, const char *,
 				    location_t, tree,
 				    int, tree,
 				    unsigned HOST_WIDE_INT,
-				    object_allocator<format_wanted_type> &);
+				    object_allocator<format_wanted_type> &,
+				    vec<location_t> *);
 
 static void init_dollar_format_checking (int, tree);
 static int maybe_read_dollar_number (const char **, int,
@@ -1033,7 +1036,8 @@ static void check_format_types (const substring_loc &fmt_loc,
 				format_wanted_type *,
 				const format_kind_info *fki,
 				int offset_to_type_start,
-				char conversion_char);
+				char conversion_char,
+				vec<location_t> *arglocs);
 static void format_type_warning (const substring_loc &fmt_loc,
 				 source_range *param_range,
 				 format_wanted_type *, tree,
@@ -1076,7 +1080,8 @@ decode_format_type (const char *s)
    attribute themselves.  */
 
 void
-check_function_format (tree attrs, int nargs, tree *argarray)
+check_function_format (tree attrs, int nargs, tree *argarray,
+		       vec<location_t> *arglocs)
 {
   tree a;
 
@@ -1097,7 +1102,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 	      int i;
 	      for (i = nargs - 1; i >= 0; i--)
 		params = tree_cons (NULL_TREE, argarray[i], params);
-	      check_format_info (&info, params);
+	      check_format_info (&info, params, arglocs);
 	    }
 
 	  /* Attempt to detect whether the current function might benefit
@@ -1400,7 +1405,8 @@ get_flag_spec (const format_flag_spec *spec, int flag, const char *predicates)
    PARAMS is the list of argument values.  */
 
 static void
-check_format_info (function_format_info *info, tree params)
+check_format_info (function_format_info *info, tree params,
+		   vec<location_t> *arglocs)
 {
   format_check_context format_ctx;
   unsigned HOST_WIDE_INT arg_num;
@@ -1434,6 +1440,7 @@ check_format_info (function_format_info *info, tree params)
   format_ctx.res = &res;
   format_ctx.info = info;
   format_ctx.params = params;
+  format_ctx.arglocs = arglocs;
 
   check_function_arguments_recurse (check_format_arg, &format_ctx,
 				    format_tree, arg_num);
@@ -1518,6 +1525,7 @@ check_format_arg (void *ctx, tree format_tree,
   format_check_results *res = format_ctx->res;
   function_format_info *info = format_ctx->info;
   tree params = format_ctx->params;
+  vec<location_t> *arglocs = format_ctx->arglocs;
 
   int format_length;
   HOST_WIDE_INT offset;
@@ -1703,7 +1711,7 @@ check_format_arg (void *ctx, tree format_tree,
   res->number_other++;
   object_allocator <format_wanted_type> fwt_pool ("format_wanted_type pool");
   check_format_info_main (res, info, format_chars, fmt_param_loc, format_tree,
-			  format_length, params, arg_num, fwt_pool);
+			  format_length, params, arg_num, fwt_pool, arglocs);
 }
 
 /* Support class for argument_parser and check_format_info_main.
@@ -1768,7 +1776,8 @@ class argument_parser
 		   const char * const orig_format_chars,
 		   location_t format_string_loc, flag_chars_t &flag_chars,
 		   int &has_operand_number, tree first_fillin_param,
-		   object_allocator <format_wanted_type> &fwt_pool_);
+		   object_allocator <format_wanted_type> &fwt_pool_,
+		   vec<location_t> *arglocs);
 
   bool read_any_dollar ();
 
@@ -1847,6 +1856,7 @@ class argument_parser
  private:
   format_wanted_type *first_wanted_type;
   format_wanted_type *last_wanted_type;
+  vec<location_t> *arglocs;
 };
 
 /* flag_chars_t's constructor.  */
@@ -1997,7 +2007,8 @@ argument_parser (function_format_info *info_, const char *&format_chars_,
 		 flag_chars_t &flag_chars_,
 		 int &has_operand_number_,
 		 tree first_fillin_param_,
-		 object_allocator <format_wanted_type> &fwt_pool_)
+		 object_allocator <format_wanted_type> &fwt_pool_,
+		 vec<location_t> *arglocs_)
 : info (info_),
   fki (&format_types[info->format_type]),
   flag_specs (fki->flag_specs),
@@ -2013,7 +2024,8 @@ argument_parser (function_format_info *info_, const char *&format_chars_,
   has_operand_number (has_operand_number_),
   first_fillin_param (first_fillin_param_),
   first_wanted_type (NULL),
-  last_wanted_type (NULL)
+  last_wanted_type (NULL),
+  arglocs (arglocs_)
 {
 }
 
@@ -2736,7 +2748,7 @@ check_argument_type (const format_char_info *fci,
       ptrdiff_t offset_to_type_start = type_start - orig_format_chars;
       check_format_types (fmt_loc, first_wanted_type, fki,
 			  offset_to_type_start,
-			  conversion_char);
+			  conversion_char, arglocs);
     }
 
   return true;
@@ -2755,7 +2767,8 @@ check_format_info_main (format_check_results *res,
 			location_t fmt_param_loc, tree format_string_cst,
 			int format_length, tree params,
 			unsigned HOST_WIDE_INT arg_num,
-			object_allocator <format_wanted_type> &fwt_pool)
+			object_allocator <format_wanted_type> &fwt_pool,
+			vec<location_t> *arglocs)
 {
   const char * const orig_format_chars = format_chars;
   const tree first_fillin_param = params;
@@ -2802,7 +2815,7 @@ check_format_info_main (format_check_results *res,
       argument_parser arg_parser (info, format_chars, format_string_cst,
 				  orig_format_chars, format_string_loc,
 				  flag_chars, has_operand_number,
-				  first_fillin_param, fwt_pool);
+				  first_fillin_param, fwt_pool, arglocs);
 
       if (!arg_parser.read_any_dollar ())
 	return;
@@ -3032,7 +3045,8 @@ static void
 check_format_types (const substring_loc &fmt_loc,
 		    format_wanted_type *types, const format_kind_info *fki,
 		    int offset_to_type_start,
-		    char conversion_char)
+		    char conversion_char,
+		    vec<location_t> *arglocs)
 {
   for (; types != 0; types = types->next)
     {
@@ -3072,9 +3086,17 @@ check_format_types (const substring_loc &fmt_loc,
 
       source_range param_range;
       source_range *param_range_ptr;
-      if (CAN_HAVE_LOCATION_P (cur_param))
+      if (EXPR_HAS_LOCATION (cur_param))
 	{
 	  param_range = EXPR_LOCATION_RANGE (cur_param);
+	  param_range_ptr = &param_range;
+	}
+      else if (arglocs)
+	{
+	  /* arg_num is 1-based.  */
+	  gcc_assert (types->arg_num > 0);
+	  location_t param_loc = (*arglocs)[types->arg_num - 1];
+	  param_range = get_range_from_loc (line_table, param_loc);
 	  param_range_ptr = &param_range;
 	}
       else

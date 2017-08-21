@@ -147,6 +147,14 @@ struct c_expr
   location_t get_start () const { return src_range.m_start; }
   location_t get_finish () const { return src_range.m_finish; }
 
+  location_t get_location () const
+  {
+    if (CAN_HAVE_LOCATION_P (value))
+      return EXPR_LOCATION (value);
+    else
+      return make_location (get_start (), get_start (), get_finish ());
+  }
+
   /* Set the value to error_mark_node whilst ensuring that src_range
      is initialized.  */
   void set_error ()

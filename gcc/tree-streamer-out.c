@@ -566,7 +566,11 @@ write_ts_decl_minimal_tree_pointers (struct output_block *ob, tree expr,
     stream_write_tree (ob, NULL_TREE, ref_p);
   else
     stream_write_tree (ob, DECL_NAME (expr), ref_p);
-  stream_write_tree (ob, DECL_CONTEXT (expr), ref_p);
+  if (TREE_CODE (expr) != TRANSLATION_UNIT_DECL
+      && ! DECL_CONTEXT (expr))
+    stream_write_tree (ob, (*all_translation_units)[0], ref_p);
+  else
+    stream_write_tree (ob, DECL_CONTEXT (expr), ref_p);
 }
 
 
@@ -585,10 +589,7 @@ write_ts_decl_common_tree_pointers (struct output_block *ob, tree expr,
      special handling in LTO, it must be handled by streamer hooks.  */
 
   stream_write_tree (ob, DECL_ATTRIBUTES (expr), ref_p);
-
-  /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
+  stream_write_tree (ob, DECL_ABSTRACT_ORIGIN (expr), ref_p);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))

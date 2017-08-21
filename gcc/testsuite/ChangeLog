@@ -1,3 +1,100 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* g++.dg/template/pr81899.C: Fix c++03.
+	* g++.dg/debug/debug9.C: Add -fno-reorder-blocks-and-partition"
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/diagnostic-ranges.c (test_mismatching_types):
+	Update expected result to show all of "(long)0" being underlined.
+	* gcc.dg/plugin/diagnostic-test-string-literals-1.c
+	(test_multitoken_macro): Update expected underlining.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/format/diagnostic-ranges.c: Update expected results
+	to show underlining of all pertinent params.
+	* gcc.dg/format/pr72858.c: Likewise.
+
+2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* gcc.target/i386/pr46091-4.c: New test.
+	* gcc.target/i386/pr46091-4a.c: Ditto.
+	* gcc.target/i386/pr46091-5.c: Ditto.
+	* gcc.target/i386/pr46091-5a.c: Ditto.
+
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81899
+	* g++.dg/template/pr81899.C: New.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81900
+	* gcc.dg/torture/pr81900.c: New testcase.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* c-c++-common/asan/global-overflow-1.c: Adjust diagnostic location
+	regex to handle the LTO case.
+	* c-c++-common/asan/heap-overflow-1.c: Likewise.
+	* c-c++-common/asan/misalign-1.c: Likewise.
+	* c-c++-common/asan/misalign-2.c: Likewise.
+	* c-c++-common/asan/null-deref-1.c: Likewise.
+	* c-c++-common/asan/stack-overflow-1.c: Likewise.
+	* c-c++-common/asan/strncpy-overflow-1.c: Likewise.
+	* c-c++-common/asan/use-after-free-1.c: Likewise.
+	* c-c++-common/asan/alloca_big_alignment.c: Likewise.
+	* c-c++-common/asan/alloca_detect_custom_size.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_partial.c: Likewise.
+	* c-c++-common/asan/alloca_overflow_right.c: Likewise.
+	* c-c++-common/asan/alloca_underflow_left.c: Likewise.
+	* g++.dg/asan/large-func-test-1.C: Likewise.
+	* gfortran.dg/save_6.f90: Add -flto -g variant of save_5.f90.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* g++.dg/torture/pr81884.C: New testcase.
+
+2017-08-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR ipa/77732
+	* gcc.dg/ipa/ipcp-cstagg-7.c: Xfail on 32-bit hppa.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/46805
+	* jit.dg/all-non-failing-tests.h: Add test-autovectorize.c.
+	* jit.dg/test-autovectorize.c: New test case.
+
+2017-08-18  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* gcc.target/powerpc/pr80210.c: New test.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81514
+	* g++.dg/lookup/empty.h: New file.
+	* g++.dg/lookup/missing-std-include-2.C: Replace include of
+	stdio.h with empty.h and a declaration of a "std::sprintf" not based
+	on a built-in.
+
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* c-c++-common/pr53037-5.c: New test.
+	* g++.dg/pr53037-1.C: Likewise.
+	* g++.dg/pr53037-2.C: Likewise.
+	* g++.dg/pr53037-3.C: Likewise.
+	* g++.dg/pr53037-4.C: Likewise.
+	* gcc.dg/pr53037-1.c: Likewise.
+	* gcc.dg/pr53037-2.c: Likewise.
+	* gcc.dg/pr53037-3.c: Likewise.
+	* gcc.dg/pr53037-4.c: Likewise.
+
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* gcc.target/powerpc/p8vector-int128-1.c: Remove use of -mvsx-timode.

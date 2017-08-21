@@ -7949,7 +7949,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	fargs[j] = maybe_constant_value (argarray[j]);
 
       warned_p = check_function_arguments (input_location, fn, TREE_TYPE (fn),
-					   nargs, fargs);
+					   nargs, fargs, NULL);
     }
 
   if (DECL_INHERITED_CTOR (fn))

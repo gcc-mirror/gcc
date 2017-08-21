@@ -3699,7 +3699,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
   /* Check for errors in format strings and inappropriately
      null parameters.  */
   bool warned_p = check_function_arguments (input_location, fndecl, fntype,
-					    nargs, argarray);
+					    nargs, argarray, NULL);
 
   ret = build_cxx_call (function, nargs, argarray, complain);
 

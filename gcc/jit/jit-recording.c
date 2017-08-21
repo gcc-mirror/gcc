@@ -236,7 +236,16 @@ class reproducer : public dump
     GNU_PRINTF(2, 3);
 
  private:
-  hash_map<recording::memento *, const char *> m_identifiers;
+  const char * ensure_identifier_is_unique (const char *candidate, void *ptr);
+
+ private:
+  hash_map<recording::memento *, const char *> m_map_memento_to_identifier;
+
+  struct hash_traits : public string_hash
+  {
+    static void remove (const char *) {}
+  };
+  hash_set<const char *, hash_traits> m_set_identifiers;
   allocator m_allocator;
 };
 
@@ -245,7 +254,8 @@ class reproducer : public dump
 reproducer::reproducer (recording::context &ctxt,
 			const char *filename) :
   dump (ctxt, filename, 0),
-  m_identifiers (),
+  m_map_memento_to_identifier (),
+  m_set_identifiers (),
   m_allocator ()
 {
 }
@@ -286,6 +296,35 @@ reproducer::write_args (const vec <recording::context *> &contexts)
     }
 }
 
+/* Ensure that STR is a valid C identifier by overwriting
+   any invalid chars in-place with underscores.
+
+   This doesn't special-case the first character.  */
+
+static void
+convert_to_identifier (char *str)
+{
+  for (char *p = str; *p; p++)
+    if (!ISALNUM (*p))
+      *p = '_';
+}
+
+/* Given CANDIDATE, a possible C identifier for use in a reproducer,
+   ensure that it is unique within the generated source file by
+   appending PTR to it if necessary.  Return the resulting string.
+
+   The reproducer will eventually clean up the buffer in its dtor.  */
+
+const char *
+reproducer::ensure_identifier_is_unique (const char *candidate, void *ptr)
+{
+  if (m_set_identifiers.contains (candidate))
+    candidate = m_allocator.xstrdup_printf ("%s_%p", candidate, ptr);
+  gcc_assert (!m_set_identifiers.contains (candidate));
+  m_set_identifiers.add (candidate);
+  return candidate;
+}
+
 /* Generate a C identifier for the given memento, associating the generated
    buffer with the memento (for future calls to get_identifier et al).
 
@@ -293,21 +332,20 @@ reproducer::write_args (const vec <recording::context *> &contexts)
 const char *
 reproducer::make_identifier (recording::memento *m, const char *prefix)
 {
-  char *result;
+  const char *result;
   if (strlen (m->get_debug_string ()) < 100)
     {
-      result = m_allocator.xstrdup_printf ("%s_%s_%p",
-					   prefix,
-					   m->get_debug_string (),
-					   (void *) m);
-      for (char *p = result; *p; p++)
-	if (!ISALNUM (*p))
-	  *p = '_';
+      char *buf = m_allocator.xstrdup_printf ("%s_%s",
+					      prefix,
+					      m->get_debug_string ());
+      convert_to_identifier (buf);
+      result = buf;
     }
   else
     result = m_allocator.xstrdup_printf ("%s_%p",
 					 prefix, (void *) m);
-  m_identifiers.put (m, result);
+  result = ensure_identifier_is_unique (result, m);
+  m_map_memento_to_identifier.put (m, result);
   return result;
 }
 
@@ -350,7 +388,7 @@ reproducer::get_identifier (recording::memento *m)
     if (!loc->created_by_user ())
       return "NULL";
 
-  const char **slot = m_identifiers.get (m);
+  const char **slot = m_map_memento_to_identifier.get (m);
   if (!slot)
     {
       get_context ().add_error (NULL,

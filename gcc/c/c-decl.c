@@ -2383,6 +2383,10 @@ merge_decls (tree newdecl, tree olddecl, tree newtype, tree oldtype)
 	  SET_DECL_ALIGN (newdecl, DECL_ALIGN (olddecl));
 	  DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
 	}
+      if (DECL_WARN_IF_NOT_ALIGN (olddecl)
+	  > DECL_WARN_IF_NOT_ALIGN (newdecl))
+	SET_DECL_WARN_IF_NOT_ALIGN (newdecl,
+				    DECL_WARN_IF_NOT_ALIGN (olddecl));
     }
 
   /* Keep the old rtl since we can safely use it.  */
@@ -5392,6 +5396,13 @@ check_bitfield_type_and_width (location_t loc, tree *type, tree *width,
       && TREE_CODE (*type) != ENUMERAL_TYPE)
     {
       error_at (loc, "bit-field %qs has invalid type", name);
+      *type = unsigned_type_node;
+    }
+
+  if (TYPE_WARN_IF_NOT_ALIGN (*type))
+    {
+      error_at (loc, "cannot declare bit-field %qs with %<warn_if_not_aligned%> type",
+		name);
       *type = unsigned_type_node;
     }
 

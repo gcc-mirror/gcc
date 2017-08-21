@@ -1,3 +1,340 @@
+2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/46091
+	* config/i386/i386.md (*btsq_imm): Rename from *btsq.
+	(*btrq_imm): Rename from *btrq.
+	(*btcq_imm): Rename from *btcq.
+	(btsc): New code attribute.
+	(*<btsc><mode>): New insn pattern.
+	(*btr<mode>): Ditto.
+	(*<btsc><mode>_mask): New insn_and_split pattern.
+	(*btr<mode>_mask): Ditto.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* function.c (pad_below): Simplify padding calculation.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (function_prologue): Remove frame size argument.
+	(function_epilogue): Likewise.
+	* doc/tm.texi: Regenerate.
+	* final.c (final_start_function): Update call to function_prologue.
+	(final_end_function): Update call to function_epilogue.
+	(default_function_pro_epilogue): Remove frame size argument.
+	* output.h (default_function_pro_epilogue): Likewise.
+	* config/arm/arm.c (arm_output_function_epilogue): Likewise.
+	(arm_output_function_prologue): Likewise.
+	* config/frv/frv.c (frv_function_prologue): Likewise.
+	(frv_function_epilogue): Likewise.
+	* config/i386/i386.c (ix86_output_function_epilogue): Likewise.
+	* config/ia64/ia64.c (ia64_output_function_prologue): Likewise.
+	(ia64_output_function_epilogue): Likewise.
+	* config/m32r/m32r.c (m32r_output_function_prologue): Likewise.
+	(m32r_output_function_epilogue): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_prologue)
+	(microblaze_function_epilogue): Likewise.
+	* config/mips/mips.c (mips_output_function_prologue): Likewise.
+	(mips_output_function_epilogue): Likewise.
+	* config/mmix/mmix.c (mmix_target_asm_function_prologue): Likewise.
+	(mmix_target_asm_function_epilogue): Likewise.
+	* config/msp430/msp430.c (msp430_start_function): Likewise.
+	* config/nds32/nds32.c (nds32_asm_function_prologue): Likewise.
+	(nds32_asm_function_epilogue): Likewise.
+	* config/nios2/nios2.c (nios2_asm_function_prologue): Likewise.
+	* config/pa/pa.c (pa_output_function_prologue): Likewise.
+	(pa_output_function_epilogue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_output_function_prologue)
+	(rs6000_output_function_epilogue): Likewise.
+	* config/rl78/rl78.c (rl78_start_function): Likewise.
+	* config/rs6000/rs6000.c (rs6000_output_function_prologue): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	* config/rx/rx.c (rx_output_function_prologue): Likewise.
+	* config/sh/sh.c (sh_output_function_epilogue): Likewise.
+	* config/sparc/sparc.c (sparc_asm_function_prologue): Likewise.
+	(sparc_asm_function_epilogue): Likewise.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree.h (type_has_mode_precision_p): New function.
+	* convert.c (convert_to_integer_1): Use it.
+	* expr.c (expand_expr_real_2): Likewise.
+	(expand_expr_real_1): Likewise.
+	* fold-const.c (fold_single_bit_test_into_sign_test): Likewise.
+	* match.pd: Likewise.
+	* tree-ssa-forwprop.c (simplify_rotate): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_fma): Likewise.
+	* tree-tailcall.c (process_assignment): Likewise.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (vect_recog_vector_vector_shift_pattern)
+	(vect_recog_mult_pattern, vect_recog_divmod_pattern): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	* tree-vrp.c (register_edge_assert_for_2): Likewise.
+
+2017-08-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* match.pd: Add pow (C, x) simplification.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81900
+	* tree-ssa-pre.c (compute_antic_aux): Properly compute changed
+	for blocks with abnormal predecessors.
+	(compute_antic): Do not set visited flag prematurely.
+
+2017-08-21  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/79883
+	* config/avr/avr.c (avr_set_current_function): Typo in diagnostic.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* stor-layout.h (vector_type_mode): Move to...
+	* tree.h (vector_type_mode): ...here.
+	* stor-layout.c (vector_type_mode): Move to...
+	* tree.c (vector_type_mode): ...here.  Include rtl.h and regs.h.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* debug.h (struct gcc_debug_hooks): Add die_ref_for_decl and
+	register_external_die hooks.
+	(debug_false_tree_charstarstar_uhwistar): Declare.
+	(debug_nothing_tree_charstar_uhwi): Likewise.
+	* debug.c (do_nothing_debug_hooks): Adjust.
+	(debug_false_tree_charstarstar_uhwistar): New do nothing.
+	(debug_nothing_tree_charstar_uhwi): Likewise.
+	* dbxout.c (dbx_debug_hooks): Adjust.
+	(xcoff_debug_hooks): Likewise.
+	* sdbout.c (sdb_debug_hooks): Likewise.
+	* vmsdbgout.c (vmsdbg_debug_hooks): Likewise.
+	* dwarf2out.c (macinfo_label_base): New global.
+	(dwarf2out_register_external_die): New function for the
+	register_external_die hook.
+	(dwarf2out_die_ref_for_decl): Likewise for die_ref_for_decl.
+	(dwarf2_debug_hooks): Use them.
+	(dwarf2_lineno_debug_hooks): Adjust.
+	(struct die_struct): Add with_offset flag.
+	(DEBUG_LTO_DWO_INFO_SECTION, DEBUG_LTO_INFO_SECTION,
+	DEBUG_LTO_DWO_ABBREV_SECTION, DEBUG_LTO_ABBREV_SECTION,
+	DEBUG_LTO_DWO_MACINFO_SECTION, DEBUG_LTO_MACINFO_SECTION,
+	DEBUG_LTO_DWO_MACRO_SECTION, DEBUG_LTO_MACRO_SECTION,
+	DEBUG_LTO_LINE_SECTION, DEBUG_LTO_DWO_STR_OFFSETS_SECTION,
+	DEBUG_LTO_STR_DWO_SECTION, DEBUG_STR_LTO_SECTION): New macros
+	defining section names for the early LTO debug variants.
+	(reset_indirect_string): New helper.
+	(add_AT_external_die_ref): Helper for dwarf2out_register_external_die.
+	(print_dw_val): Add support for offsetted symbol references.
+	(get_ultimate_context): Split out from is_cxx.
+	(is_cxx): Use get_ultimate_context.
+	(is_fortran): Add decl overload.
+	(compute_comp_unit_symbol): Split out worker from
+	compute_section_prefix.
+	(compute_section_prefix): Call compute_comp_unit_symbol and
+	set comdat_type_p here.
+	(output_die): Skip DIE symbol output for the LTO added one.
+	Handle DIE symbol references with offset.
+	(output_comp_unit): Guard section name mangling properly.
+	For LTO debug sections emit a symbol at the section beginning
+	which we use to refer to its DIEs.
+	(add_abstract_origin_attribute): For DIEs registered via
+	dwarf2out_register_external_die directly refer to the early
+	DIE rather than indirectly through the shadow one we created.
+	Remove obsolete call to dwarf2out_abstract_function for
+	non-function/block origins.
+	(gen_array_type_die): When generating early LTO debug do
+	not emit DW_AT_string_length.
+	(gen_formal_parameter_die): Do not re-create DIEs for PARM_DECLs
+	late when in LTO.  As suggested place a gcc_unreachable for
+	the DECL_ABSTRACT_P case.
+	(gen_subprogram_die): Avoid another specification DIE
+	for early built declarations/definitions for the late LTO case.
+	(gen_variable_die): Add type references for late duplicated VLA dies
+	when in late LTO.
+	(gen_inlined_subroutine_die): Do not call dwarf2out_abstract_function,
+	we have the abstract instance already.
+	(process_scope_var): Adjust decl DIE contexts in LTO which
+	first puts them in limbo.
+	(gen_decl_die): Do not generate type DIEs late apart from
+	types for VLAs or for decls we do not yet have a DIE.  Do not
+	call dwarf2out_abstract_function late.
+	(dwarf2out_early_global_decl): Make sure to create DIEs
+	for abstract instances of a decl first.
+	(dwarf2out_late_global_decl): Adjust comment.
+	(output_macinfo_op): With multiple macro sections use
+	macinfo_label_base to distinguish labels.
+	(output_macinfo): Likewise.  Update macinfo_label_base.
+	Pass in the line info label.
+	(note_variable_value_in_expr): When generating LTO resolve
+	all variable values here by generating DIEs as needed.
+	(init_sections_and_labels): Add early LTO debug flag parameter
+	and generate different sections and names if set.  Add generation
+	counter for the labels so we can have multiple of them.
+	(reset_dies): Helper to allow DIEs to be output multiple times.
+	(dwarf2out_finish): When outputting DIEs to the fat part of an
+	LTO object first reset DIEs.
+	(dwarf2out_early_finish): Output early DIEs when generating LTO.
+	(modified_type_die): Check for decl_ultimate_origin being self
+	before recursing.
+	(gen_type_die_with_usage): Likewise.
+	(gen_typedef_die): Allow decl_ultimate_origin being self.
+	(set_decl_abstract_flags): Remove.
+	(set_block_abstract_flags): Likewise.
+	(dwarf2out_abstract_function): Treat the early generated DIEs
+	as the abstract copy and only add DW_AT_inline and
+	DW_AT_artificial here and call set_decl_origin_self.
+	If the DIE has an abstract origin don't do anything.
+	* tree.c (free_lang_data): Build a dummy TRANSLATION_UNIT_DECL
+	if we have none yet (Go fails to build one, PR78628).
+	(variably_modified_type_p): Prevent endless recursion for Ada
+	cyclic pointer types.
+	* lto-streamer-in.c: Include debug.h.
+	(dref_queue): New global.
+	(lto_read_tree_1): Stream in DIE references.
+	(lto_input_tree): Register DIE references.
+	(input_function): Stream DECL_DEBUG_ARGS.
+	* lto-streamer-out.c: Include debug.h.
+	(lto_write_tree_1): Output DIE references.
+	(DFS::DFS_write_tree_body): Follow DECL_ABSTRACT_ORIGIN.
+	Force a TRANSLATION_UNIT_DECL DECL_CONTEXT for file-scope decls.
+	(output_function): Stream DECL_DEBUG_ARGS.
+	* tree-streamer-in.c (lto_input_ts_decl_common_tree_pointers):
+	Stream DECL_ABSTRACT_ORIGIN.
+	* tree-streamer-out.c (write_ts_decl_common_tree_pointers): Likewise.
+	(write_ts_decl_minimal_tree_pointers): Force a TRANSLATION_UNIT_DECL
+	DECL_CONTEXT for file-scope decls.
+	* lto-streamer.h (struct dref_entry): Declare.
+	(dref_queue): Likewise.
+	* cfgexpand.c (pass_expand::execute): Do not call the
+	outlining_inline_function hook here.
+	* lto-wrapper.c (debug_obj): New global.
+	(tool_cleanup): Unlink it if required.
+	(debug_objcopy): New function.
+	(run_gcc): Handle early debug sections in the IL files by
+	extracting them to separate files, partially linkin them and
+	feeding the result back as result to the linker.
+	* config/darwin.h (DEBUG_LTO_INFO_SECTION, DEBUG_LTO_ABBREV_SECTION,
+	DEBUG_LTO_MACINFO_SECTION, DEBUG_LTO_LINE_SECTION,
+	DEBUG_STR_LTO_SECTION, DEBUG_LTO_MACRO_SECTION): Put early debug
+	sections into a separate segment.
+	* config/darwin.c (darwin_asm_named_section): Handle __GNU_DWARF_LTO
+	segments.
+	(darwin_asm_dwarf_section): Likewise.
+	(darwin_asm_output_dwarf_offset): Likewise.
+	* config/i386/i386.c (make_resolver_func): Set DECL_IGNORED_P.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* read-md.h (md_reader::record_potential_iterator_use): Replace
+	pointer argument with an rtx and an index.
+	* read-rtl.c (iterator_group::apply_iterator): Likewise.
+	(apply_mode_iterator): Likewise.
+	(apply_code_iterator): Likewise.
+	(apply_int_iterator): Likewise.
+	(apply_subst_iterator): Likewise.
+	(record_iterator_use): Likewise.
+	(record_attribute_use): Likewise.
+	(md_reader::record_potential_iterator_use): Likewise.  Update calls
+	to record_iterator_use and apply_iterator.
+	(iterator_use): Replace ptr with x and index.
+	(attribute_use): Likewise.
+	(apply_attribute_uses): Update calls to apply_iterator.
+	(apply_iterators): Likewise.  Update initialization of iterator_use.
+	(rtx_reader::read_rtx_code): Update calls to record_iterator_use
+	and record_potential_iterator_use.
+	(rtx_reader::read_rtx_operand): Likewise.
+
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* varasm.c (const_rtx_hash_1): Don't hash in the mode of a
+	CONST_WIDE_INT.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle array accesses
+	at struct end conservatively when comparing common bases.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.c (struct lim_aux_data): Add ref index member.
+	(mem_ref_in_stmt): Remove.
+	(determine_max_movement): Use ref index to get at the reference.
+	(invariantness_dom_walker::before_dom_children): Deal with
+	lim data already initialized.
+	(gather_mem_refs_stmt): Initialize lim data and record ref index.
+
+2017-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.h (OPTION_MASK_ISA_ROUND): Remove.
+	(TARGET_ISA_ROUND): Ditto.
+	(TARGET_ROUND): Ditto.
+	* config/i386/i386.c: Substitute TARGET_ROUND with TARGET_SSE4_1.
+	* config/i386/i386.md: Ditto.
+	* config/i386/sse.md: Ditto.
+	* config/i386/i386-builtin.def: Substitute OPTION_MASK_ISA_ROUND
+	with OPTION_MASK_ISA_SSE4_1.
+
+2017-08-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81894
+	* doc/extend.texi (x86 Built-in Functions): Correct the name of
+	__builtin_ia32_lzcnt_u16.
+
+2017-08-18  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* config/rs6000/rs6000.c (rs6000_activate_target_options): New function.
+	(rs6000_set_current_function): Rewrite function to use it.
+
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* print-tree.c (print_node): Support DECL_WARN_IF_NOT_ALIGN
+	and TYPE_WARN_IF_NOT_ALIGN.
+	* stor-layout.c (do_type_align): Merge DECL_WARN_IF_NOT_ALIGN.
+	(handle_warn_if_not_align): New.
+	(place_union_field): Call handle_warn_if_not_align.
+	(place_field): Call handle_warn_if_not_align.
+	Copy TYPE_WARN_IF_NOT_ALIGN.
+	(finish_builtin_struct): Copy TYPE_WARN_IF_NOT_ALIGN.
+	(layout_type): Likewise.
+	* tree-core.h (tree_type_common): Add warn_if_not_align.  Set
+	spare to 18.
+	(tree_decl_common): Add warn_if_not_align.
+	* tree.c (build_range_type_1): Copy TYPE_WARN_IF_NOT_ALIGN.
+	* tree.h (TYPE_WARN_IF_NOT_ALIGN): New.
+	(SET_TYPE_WARN_IF_NOT_ALIGN): Likewise.
+	(DECL_WARN_IF_NOT_ALIGN): Likewise.
+	(SET_DECL_WARN_IF_NOT_ALIGN): Likewise.
+	* doc/extend.texi: Document warn_if_not_aligned attribute.
+	* doc/invoke.texi: Document -Wif-not-aligned and -Wpacked-not-aligned.
+
+2017-08-17  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/81864
+	* tree-loop-distribution.c (ddrs_table): Change type to pointer type.
+	(get_data_dependence): Use it as pointer type.
+	(distribute_loop): Likewise.
+
+2017-08-17  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	* config/rs6000/altivec.md (UNSPEC_VMRGOW_DIRECT): New constant.
+	(p8_vmrgew_v4sf_direct): Generalize to p8_vmrgew_<mode>_direct.
+	(p8_vmrgow_<mode>_direct): New define_insn.
+	* config/rs6000/rs6000.c (altivec_expand_vec_perm_const): Properly
+	handle endianness for vmrgew and vmrgow permute patterns.
+
 2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
 
 	* config/rs6000/altivec.md (VParity): Remove TARGET_VSX_TIMODE.
@@ -77,8 +414,7 @@
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81827
-	* tree-ssa-structalias.c (struct variable_info): Add is_reg_var
-	flag.
+	* tree-ssa-structalias.c (struct variable_info): Add is_reg_var flag.
 	(new_var_info): Initialize it conservatively.
 	(get_call_vi): Mark register vars.
 	(new_scalar_tmp_constraint_exp): Likewise.
@@ -91,14 +427,12 @@
 
 2017-08-17  Marek Polacek  <polacek@redhat.com>
 
-	* gimplify.c (gimplify_adjust_omp_clauses): Compare with 0 instead of
-	1.
+	* gimplify.c (gimplify_adjust_omp_clauses): Compare with 0 instead of 1.
 
 2017-08-17  Richard Biener  <rguenther@suse.de>
 
 	* tree-vrp.c (vrp_int_const_binop): Do not set *overflow_p
-	to true when overflow is undefined and we saturated the
-	result.
+	to true when overflow is undefined and we saturated the result.
 
 2017-08-17  Alan Modra  <amodra@gmail.com>
 
@@ -126,16 +460,10 @@
 	Likewise.
 	* tree-streamer-out.c (write_ts_type_non_common_tree_pointers):
 	Likewise.
-	
-	lto/
-	* lto.c (mentions_vars_p_type): Use TYPE_LANG_SLOT_1.
-	(compare_tree_sccs_1): No need to compare TYPE_BINFO directly.
-	(lto_fixup_prevailing_decls): Use TYPE_LANG_SLOT_1.
 
 2017-08-16  David Malcolm  <dmalcolm@redhat.com>
 
-	* diagnostic-show-locus.c (colorizer::m_caret): Remove unused
-	field.
+	* diagnostic-show-locus.c (colorizer::m_caret): Remove unused field.
 
 2017-08-16  Uros Bizjak  <ubizjak@gmail.com>
 

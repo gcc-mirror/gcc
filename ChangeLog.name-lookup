@@ -1,5 +1,7 @@
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251241.
+
 	gcc/cp/
 	* search.c (lookup_field_1) : Assert TYPE is a class.  Assert
 	vfield is not special.

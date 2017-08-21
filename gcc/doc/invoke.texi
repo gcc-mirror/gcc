@@ -284,6 +284,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
+-Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -298,7 +299,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
 -Woverride-init-side-effects  -Woverlength-strings @gol
--Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
+-Wpacked  -Wpacked-bitfield-compat -Wpacked-not-aligned -Wpadded @gol
 -Wparentheses  -Wno-pedantic-ms-format @gol
 -Wplacement-new  -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
@@ -4427,6 +4428,13 @@ switch (cond)
 
 The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 
+@item -Wif-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wif-not-aligned
+@opindex Wno-if-not-aligned
+Control if warning triggered by the @code{warn_if_not_aligned} attribute
+should be issued.  This is is enabled by default.
+Use @option{-Wno-if-not-aligned} to disable it.
+
 @item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers
 @opindex Wno-ignored-qualifiers
@@ -6519,6 +6527,25 @@ struct foo
 
 This warning is enabled by default.  Use
 @option{-Wno-packed-bitfield-compat} to disable this warning.
+
+@item -Wpacked-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wpacked-not-aligned
+@opindex Wno-packed-not-aligned
+Warn if a structure field with explicitly specified alignment in a
+packed struct or union is misaligned.  For example, a warning will
+be issued on @code{struct S}, like, @code{warning: alignment 1 of
+'struct S' is less than 8}, in this code:
+
+@smallexample
+@group
+struct __attribute__ ((aligned (8))) S8 @{ char a[8]; @};
+struct __attribute__ ((packed)) S @{
+  struct S8 s8;
+@};
+@end group
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
 
 @item -Wpadded
 @opindex Wpadded

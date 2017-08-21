@@ -2059,7 +2059,7 @@ const struct attribute_spec msp430_attribute_table[] =
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
 
 static void
-msp430_start_function (FILE *outfile, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
+msp430_start_function (FILE *outfile)
 {
   int r, n;
 

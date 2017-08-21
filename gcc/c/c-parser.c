@@ -7752,7 +7752,8 @@ c_parser_generic_selection (c_parser *parser)
 }
 
 /* Parse a postfix expression (C90 6.3.1-6.3.2, C99 6.5.1-6.5.2,
-   C11 6.5.1-6.5.2).
+   C11 6.5.1-6.5.2).  Compound literals aren't handled here; callers have to
+   call c_parser_postfix_expression_after_paren_type on encountering them.
 
    postfix-expression:
      primary-expression
@@ -7792,7 +7793,7 @@ c_parser_generic_selection (c_parser *parser)
      __builtin_types_compatible_p ( type-name , type-name )
      __builtin_complex ( assignment-expression , assignment-expression )
      __builtin_shuffle ( assignment-expression , assignment-expression )
-     __builtin_shuffle ( assignment-expression , 
+     __builtin_shuffle ( assignment-expression ,
 			 assignment-expression ,
 			 assignment-expression, )
 
@@ -7942,28 +7943,6 @@ c_parser_postfix_expression (c_parser *parser)
 	  expr.value = c_finish_stmt_expr (brace_loc, stmt);
 	  set_c_expr_source_range (&expr, loc, close_loc);
 	  mark_exp_read (expr.value);
-	}
-      else if (c_token_starts_typename (c_parser_peek_2nd_token (parser)))
-	{
-	  /* A compound literal.  ??? Can we actually get here rather
-	     than going directly to
-	     c_parser_postfix_expression_after_paren_type from
-	     elsewhere?  */
-	  location_t loc;
-	  struct c_type_name *type_name;
-	  c_parser_consume_token (parser);
-	  loc = c_parser_peek_token (parser)->location;
-	  type_name = c_parser_type_name (parser);
-	  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
-				     "expected %<)%>");
-	  if (type_name == NULL)
-	    {
-	      expr.set_error ();
-	    }
-	  else
-	    expr = c_parser_postfix_expression_after_paren_type (parser,
-								 type_name,
-								 loc);
 	}
       else
 	{
@@ -8933,7 +8912,6 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   vec<tree, va_gc> *ret;
   vec<tree, va_gc> *orig_types;
   struct c_expr expr;
-  location_t loc = c_parser_peek_token (parser)->location;
   unsigned int idx = 0;
 
   ret = make_tree_vector ();
@@ -8946,14 +8924,14 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
     c_parser_check_literal_zero (parser, literal_zero_mask, 0);
   expr = c_parser_expr_no_commas (parser, NULL);
   if (convert_p)
-    expr = convert_lvalue_to_rvalue (loc, expr, true, true);
+    expr = convert_lvalue_to_rvalue (expr.get_location (), expr, true, true);
   if (fold_p)
     expr.value = c_fully_fold (expr.value, false, NULL);
   ret->quick_push (expr.value);
   if (orig_types)
     orig_types->quick_push (expr.original_type);
   if (locations)
-    locations->safe_push (loc);
+    locations->safe_push (expr.get_location ());
   if (sizeof_arg != NULL
       && expr.original_code == SIZEOF_EXPR)
     {
@@ -8963,19 +8941,19 @@ c_parser_expr_list (c_parser *parser, bool convert_p, bool fold_p,
   while (c_parser_next_token_is (parser, CPP_COMMA))
     {
       c_parser_consume_token (parser);
-      loc = c_parser_peek_token (parser)->location;
       if (literal_zero_mask)
 	c_parser_check_literal_zero (parser, literal_zero_mask, idx + 1);
       expr = c_parser_expr_no_commas (parser, NULL);
       if (convert_p)
-	expr = convert_lvalue_to_rvalue (loc, expr, true, true);
+	expr = convert_lvalue_to_rvalue (expr.get_location (), expr, true,
+					 true);
       if (fold_p)
 	expr.value = c_fully_fold (expr.value, false, NULL);
       vec_safe_push (ret, expr.value);
       if (orig_types)
 	vec_safe_push (orig_types, expr.original_type);
       if (locations)
-	locations->safe_push (loc);
+	locations->safe_push (expr.get_location ());
       if (++idx < 3
 	  && sizeof_arg != NULL
 	  && expr.original_code == SIZEOF_EXPR)

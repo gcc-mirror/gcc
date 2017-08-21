@@ -1212,4 +1212,14 @@ DEFINE_DECL_STREAM_FUNCS (TYPE_DECL, type_decl)
 DEFINE_DECL_STREAM_FUNCS (NAMESPACE_DECL, namespace_decl)
 DEFINE_DECL_STREAM_FUNCS (LABEL_DECL, label_decl)
 
+/* Entry for the delayed registering of decl -> DIE references.  */
+struct dref_entry {
+    tree decl;
+    const char *sym;
+    unsigned HOST_WIDE_INT off;
+};
+
+extern vec<dref_entry> dref_queue;
+
+
 #endif /* GCC_LTO_STREAMER_H  */

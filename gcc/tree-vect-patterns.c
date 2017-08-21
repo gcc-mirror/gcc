@@ -2067,8 +2067,7 @@ vect_recog_vector_vector_shift_pattern (vec<gimple *> *stmts,
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TREE_CODE (oprnd1) != SSA_NAME
       || TYPE_MODE (TREE_TYPE (oprnd0)) == TYPE_MODE (TREE_TYPE (oprnd1))
-      || TYPE_PRECISION (TREE_TYPE (oprnd1))
-	 != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (oprnd1)))
+      || !type_has_mode_precision_p (TREE_TYPE (oprnd1))
       || TYPE_PRECISION (TREE_TYPE (lhs))
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
@@ -2470,7 +2469,7 @@ vect_recog_mult_pattern (vec<gimple *> *stmts,
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TREE_CODE (oprnd1) != INTEGER_CST
       || !INTEGRAL_TYPE_P (itype)
-      || TYPE_PRECISION (itype) != GET_MODE_PRECISION (TYPE_MODE (itype)))
+      || !type_has_mode_precision_p (itype))
     return NULL;
 
   vectype = get_vectype_for_scalar_type (itype);
@@ -2585,7 +2584,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
   if (TREE_CODE (oprnd0) != SSA_NAME
       || TREE_CODE (oprnd1) != INTEGER_CST
       || TREE_CODE (itype) != INTEGER_TYPE
-      || TYPE_PRECISION (itype) != GET_MODE_PRECISION (TYPE_MODE (itype)))
+      || !type_has_mode_precision_p (itype))
     return NULL;
 
   vectype = get_vectype_for_scalar_type (itype);

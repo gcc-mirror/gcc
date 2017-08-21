@@ -1,3 +1,38 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	* search.c (lookup_field_1): Assert TYPE is a class and VFIELD
+	isn't special.
+	(lookup_field_fuzzy_info::fuzzy_lookup_fnfields): Delete.
+	(lookup_field_fuzzy_r): Adjust.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (build_over_call): Pass NULL for new parameter to
+	check_function_arguments.
+	* typeck.c (cp_build_function_call_vec): Likewise.
+
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81899
+	* pt.c (instantiate_class_template_1):
+	BOUND_TEMPLATE_TEMPLATE_PARM is never friend-injected.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/81514
+	* name-lookup.c (maybe_suggest_missing_header): Convert return
+	type from void to bool; return true iff a suggestion was offered.
+	(suggest_alternative_in_explicit_scope): Move call to
+	maybe_suggest_missing_header to before use of best_match, and
+	return true if the former offers a suggestion.
+
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* decl.c (duplicate_decls): Also merge DECL_WARN_IF_NOT_ALIGN.
+	* decl2.c (grokbitfield): Don't allow bit-field with
+	warn_if_not_aligned type.
+
 2017-08-17  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.def (TEMPLATE_TEMPLATE_PARM): Remove stale comment.

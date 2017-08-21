@@ -343,7 +343,7 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
   #endif
 #endif
 
-#ifdef __PPC__
+#if defined(__PPC__) && defined(__LITTLE_ENDIAN__)
   #ifdef __linux__
 	  {
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;
@@ -359,6 +359,9 @@ dumpregs(siginfo_t *info __attribute__((unused)), void *context __attribute__((u
 		runtime_printf("xer %X\n", m->regs->xer);
 	  }
   #endif
+#endif
+
+#ifdef __PPC__
   #ifdef _AIX
 	  {
 		mcontext_t *m = &((ucontext_t*)(context))->uc_mcontext;

@@ -5780,6 +5780,41 @@ alignment.  See your linker documentation for further information.
 The @code{aligned} attribute can also be used for functions
 (@pxref{Common Function Attributes}.)
 
+@cindex @code{warn_if_not_aligned} variable attribute
+@item warn_if_not_aligned (@var{alignment})
+This attribute specifies a threshold for the structure field, measured
+in bytes.  If the structure field is aligned below the threshold, a
+warning will be issued.  For example, the declaration:
+
+@smallexample
+struct foo
+@{
+  int i1;
+  int i2;
+  unsigned long long x __attribute__((warn_if_not_aligned(16)));
+@};
+@end smallexample
+
+@noindent
+causes the compiler to issue an warning on @code{struct foo}, like
+@samp{warning: alignment 8 of 'struct foo' is less than 16}.
+The compiler also issues a warning, like @samp{warning: 'x' offset
+8 in 'struct foo' isn't aligned to 16}, when the structure field has
+the misaligned offset:
+
+@smallexample
+struct foo
+@{
+  int i1;
+  int i2;
+  unsigned long long x __attribute__((warn_if_not_aligned(16)));
+@} __attribute__((aligned(16)));
+@end smallexample
+
+This warning can be disabled by @option{-Wno-if-not-aligned}.
+The @code{warn_if_not_aligned} attribute can also be used for types
+(@pxref{Common Type Attributes}.)
+
 @item cleanup (@var{cleanup_function})
 @cindex @code{cleanup} variable attribute
 The @code{cleanup} attribute runs a function when the variable goes
@@ -6656,6 +6691,58 @@ alignment.  See your linker documentation for further information.
 
 The @code{aligned} attribute can only increase alignment.  Alignment
 can be decreased by specifying the @code{packed} attribute.  See below.
+
+@cindex @code{warn_if_not_aligned} type attribute
+@item warn_if_not_aligned (@var{alignment})
+This attribute specifies a threshold for the structure field, measured
+in bytes.  If the structure field is aligned below the threshold, a
+warning will be issued.  For example, the declaration:
+
+@smallexample
+typedef unsigned long long __u64
+   __attribute__((aligned(4),warn_if_not_aligned(8)));
+
+struct foo
+@{
+  int i1;
+  int i2;
+  __u64 x;
+@};
+@end smallexample
+
+@noindent
+causes the compiler to issue an warning on @code{struct foo}, like
+@samp{warning: alignment 4 of 'struct foo' is less than 8}.
+It is used to define @code{struct foo} in such a way that
+@code{struct foo} has the same layout and the structure field @code{x}
+has the same alignment when @code{__u64} is aligned at either 4 or
+8 bytes.  Align @code{struct foo} to 8 bytes:
+
+@smallexample
+struct foo
+@{
+  int i1;
+  int i2;
+  __u64 x;
+@} __attribute__((aligned(8)));
+@end smallexample
+
+@noindent
+silences the warning.  The compiler also issues a warning, like
+@samp{warning: 'x' offset 12 in 'struct foo' isn't aligned to 8},
+when the structure field has the misaligned offset:
+
+@smallexample
+struct foo
+@{
+  int i1;
+  int i2;
+  int i3;
+  __u64 x;
+@} __attribute__((aligned(8)));
+@end smallexample
+
+This warning can be disabled by @option{-Wno-if-not-aligned}.
 
 @item bnd_variable_size
 @cindex @code{bnd_variable_size} type attribute
@@ -20966,7 +21053,7 @@ unsigned long long _pext_u64 (unsigned long long, unsigned long long)
 The following built-in functions are available when @option{-mlzcnt} is used.
 All of them generate the machine instruction that is part of the name.
 @smallexample
-unsigned short __builtin_ia32_lzcnt_16(unsigned short);
+unsigned short __builtin_ia32_lzcnt_u16(unsigned short);
 unsigned int __builtin_ia32_lzcnt_u32(unsigned int);
 unsigned long long __builtin_ia32_lzcnt_u64 (unsigned long long);
 @end smallexample

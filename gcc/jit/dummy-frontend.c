@@ -165,6 +165,17 @@ jit_langhook_parse_file (void)
 static tree
 jit_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
+  /* Build any vector types here (see PR 46805).  */
+  if (VECTOR_MODE_P (mode))
+    {
+      tree inner;
+
+      inner = jit_langhook_type_for_mode (GET_MODE_INNER (mode), unsignedp);
+      if (inner != NULL_TREE)
+	return build_vector_type_for_mode (inner, mode);
+      return NULL_TREE;
+    }
+
   if (mode == TYPE_MODE (float_type_node))
     return float_type_node;
 

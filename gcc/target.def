@@ -306,8 +306,8 @@ DEFHOOK
 function.  The prologue is responsible for setting up the stack frame,\n\
 initializing the frame pointer register, saving registers that must be\n\
 saved, and allocating @var{size} additional bytes of storage for the\n\
-local variables.  @var{size} is an integer.  @var{file} is a stdio\n\
-stream to which the assembler code should be output.\n\
+local variables.  @var{file} is a stdio stream to which the assembler\n\
+code should be output.\n\
 \n\
 The label for the beginning of the function need not be output by this\n\
 macro.  That has already been done when the macro is run.\n\
@@ -344,7 +344,7 @@ for a machine if doing so is more convenient or required for\n\
 compatibility reasons.  Except in cases where required by standard\n\
 or by a debugger, there is no reason why the stack layout used by GCC\n\
 need agree with that used by other compilers for a machine.",
- void, (FILE *file, HOST_WIDE_INT size),
+ void, (FILE *file),
  default_function_pro_epilogue)
 
 /* Output the assembler code for end of prologue.  */
@@ -374,7 +374,7 @@ DEFHOOK
 function.  The epilogue is responsible for restoring the saved\n\
 registers and stack pointer to their values when the function was\n\
 called, and returning control to the caller.  This macro takes the\n\
-same arguments as the macro @code{TARGET_ASM_FUNCTION_PROLOGUE}, and the\n\
+same argument as the macro @code{TARGET_ASM_FUNCTION_PROLOGUE}, and the\n\
 registers to restore are determined from @code{regs_ever_live} and\n\
 @code{CALL_USED_REGISTERS} in the same way.\n\
 \n\
@@ -414,7 +414,7 @@ functions pop their own arguments.  @code{TARGET_ASM_FUNCTION_EPILOGUE}\n\
 needs to know what was decided.  The number of bytes of the current\n\
 function's arguments that this function should pop is available in\n\
 @code{crtl->args.pops_args}.  @xref{Scalar Return}.",
- void, (FILE *file, HOST_WIDE_INT size),
+ void, (FILE *file),
  default_function_pro_epilogue)
 
 /* Initialize target-specific sections.  */

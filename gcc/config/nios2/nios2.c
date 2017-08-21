@@ -2800,7 +2800,7 @@ nios2_asm_file_end (void)
 
 /* Implement TARGET_ASM_FUNCTION_PROLOGUE.  */
 static void
-nios2_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nios2_asm_function_prologue (FILE *file)
 {
   if (flag_verbose_asm || flag_debug_asm)
     {

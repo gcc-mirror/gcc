@@ -1,3 +1,26 @@
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-parser.c (c_parser_expr_list): Use c_expr::get_location ()
+	rather than peeking the location of the first token.
+	* c-tree.h (c_expr::get_location): New method.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-typeck.c (build_function_call_vec): Pass arg_loc to call
+	to check_function_arguments.
+
+2017-08-18  Marek Polacek  <polacek@redhat.com>
+
+	* c-parser.c (c_parser_postfix_expression): Remove unused code.  Update
+	commentary.
+
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* c-decl.c (merge_decls): Also merge DECL_WARN_IF_NOT_ALIGN.
+	(check_bitfield_type_and_width): Don't allow bit-field with
+	warn_if_not_aligned type.
+
 2017-08-14  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81117

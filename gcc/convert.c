@@ -711,8 +711,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	     the signed-to-unsigned case the high-order bits have to
 	     be cleared.  */
 	  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (TREE_TYPE (expr))
-	      && (TYPE_PRECISION (TREE_TYPE (expr))
-		  != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (expr)))))
+	      && !type_has_mode_precision_p (TREE_TYPE (expr)))
 	    code = CONVERT_EXPR;
 	  else
 	    code = NOP_EXPR;
