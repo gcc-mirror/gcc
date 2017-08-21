@@ -196,14 +196,6 @@ mvsx
 Target Report Mask(VSX) Var(rs6000_isa_flags)
 Use vector/scalar (VSX) instructions.
 
-mvsx-scalar-float
-Target Undocumented Report Var(TARGET_VSX_SCALAR_FLOAT) Init(1)
-; If -mpower8-vector, use VSX arithmetic instructions for SFmode (on by default)
-
-mvsx-scalar-double
-Target Undocumented Report Var(TARGET_VSX_SCALAR_DOUBLE) Init(1)
-; If -mvsx, use VSX arithmetic instructions for DFmode (on by default)
-
 mvsx-align-128
 Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
 ; If -mvsx, set alignment to 128 bits instead of 32/64
@@ -216,10 +208,6 @@ mefficient-unaligned-vsx
 Target Undocumented Report Mask(EFFICIENT_UNALIGNED_VSX) Var(rs6000_isa_flags)
 ; Consider unaligned VSX vector and fp accesses to be efficient
 
-mallow-df-permute
-Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE) Save
-; Allow permutation of DF/DI vectors
-
 msched-groups
 Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1) Save
 ; Explicitly set rs6000_sched_groups
@@ -231,10 +219,6 @@ Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1) Save
 malign-branch-targets
 Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
 ; Explicitly set rs6000_align_branch_targets
-
-mvectorize-builtins
-Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1) Save
-; Explicitly control whether we vectorize the builtins or not.
 
 mno-update
 Target Report RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)

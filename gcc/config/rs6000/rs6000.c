@@ -3128,14 +3128,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 
   /* DFmode, see if we want to use the VSX unit.  Memory is handled
      differently, so don't set rs6000_vector_mem.  */
-  if (TARGET_VSX && TARGET_VSX_SCALAR_DOUBLE)
+  if (TARGET_VSX)
     {
       rs6000_vector_unit[DFmode] = VECTOR_VSX;
       rs6000_vector_align[DFmode] = 64;
     }
 
   /* SFmode, see if we want to use the VSX unit.  */
-  if (TARGET_P8_VECTOR && TARGET_VSX_SCALAR_FLOAT)
+  if (TARGET_P8_VECTOR)
     {
       rs6000_vector_unit[SFmode] = VECTOR_VSX;
       rs6000_vector_align[SFmode] = 32;
@@ -5909,8 +5909,7 @@ rs6000_builtin_vectorized_function (unsigned int fn, tree type_out,
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE
-      || !TARGET_VECTORIZE_BUILTINS)
+      || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));
@@ -6041,8 +6040,7 @@ rs6000_builtin_md_vectorized_function (tree fndecl, tree type_out,
 	     GET_MODE_NAME (TYPE_MODE (type_in)));
 
   if (TREE_CODE (type_out) != VECTOR_TYPE
-      || TREE_CODE (type_in) != VECTOR_TYPE
-      || !TARGET_VECTORIZE_BUILTINS)
+      || TREE_CODE (type_in) != VECTOR_TYPE)
     return NULL_TREE;
 
   out_mode = TYPE_MODE (TREE_TYPE (type_out));
@@ -36251,9 +36249,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "allow-movmisalign",
     offsetof (struct gcc_options, x_TARGET_ALLOW_MOVMISALIGN),
     offsetof (struct cl_target_option, x_TARGET_ALLOW_MOVMISALIGN), },
-  { "allow-df-permute",
-    offsetof (struct gcc_options, x_TARGET_ALLOW_DF_PERMUTE),
-    offsetof (struct cl_target_option, x_TARGET_ALLOW_DF_PERMUTE), },
   { "sched-groups",
     offsetof (struct gcc_options, x_TARGET_SCHED_GROUPS),
     offsetof (struct cl_target_option, x_TARGET_SCHED_GROUPS), },
@@ -36263,9 +36258,6 @@ static struct rs6000_opt_var const rs6000_opt_vars[] =
   { "align-branch-targets",
     offsetof (struct gcc_options, x_TARGET_ALIGN_BRANCH_TARGETS),
     offsetof (struct cl_target_option, x_TARGET_ALIGN_BRANCH_TARGETS), },
-  { "vectorize-builtins",
-    offsetof (struct gcc_options, x_TARGET_VECTORIZE_BUILTINS),
-    offsetof (struct cl_target_option, x_TARGET_VECTORIZE_BUILTINS), },
   { "tls-markers",
     offsetof (struct gcc_options, x_tls_markers),
     offsetof (struct cl_target_option, x_tls_markers), },
