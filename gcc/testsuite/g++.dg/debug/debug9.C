@@ -1,4 +1,9 @@
 /* { dg-do assemble } */
+/* Partitioning causes hot/cold section emission and breaks stabs
+   debugging.  */
+/* { dg-additional-options "-fno-reorder-blocks-and-partition" } */
+
+
 /* This testcase requires entries in the debug_range section in DWARF which
    refer to a vague linkage function.  */
 
