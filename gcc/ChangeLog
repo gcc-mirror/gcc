@@ -1,3 +1,10 @@
+2017-08-21  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* stor-layout.h (vector_type_mode): Move to...
+	* tree.h (vector_type_mode): ...here.
+	* stor-layout.c (vector_type_mode): Move to...
+	* tree.c (vector_type_mode): ...here.  Include rtl.h and regs.h.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
         * debug.h (struct gcc_debug_hooks): Add die_ref_for_decl and
