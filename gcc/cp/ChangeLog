@@ -1,3 +1,9 @@
+2017-08-21  Nathan Sidwell  <nathan@acm.org>
+
+	PR c++/81899
+	* pt.c (instantiate_class_template_1):
+	BOUND_TEMPLATE_TEMPLATE_PARM is never friend-injected.
+
 2017-08-18  David Malcolm  <dmalcolm@redhat.com>
 
 	PR c++/81514
