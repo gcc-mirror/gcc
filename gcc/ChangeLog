@@ -1,3 +1,10 @@
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81900
+	* tree-ssa-pre.c (compute_antic_aux): Properly compute changed
+	for blocks with abnormal predecessors.
+	(compute_antic): Do not set visited flag prematurely.
+
 2017-08-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/79883
