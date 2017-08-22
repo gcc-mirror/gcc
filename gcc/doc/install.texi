@@ -2737,6 +2737,16 @@ the testsuite with filenames matching @samp{9805*}, you would use
 make check-g++ RUNTESTFLAGS="old-deja.exp=9805* @var{other-options}"
 @end smallexample
 
+The file-matching expression following @var{filename}@command{.exp=} is treated
+as a series of whitespace-delimited glob expressions so that multiple patterns
+may be passed, although any whitespace must either be escaped or surrounded by
+single quotes if multiple expressions are desired. For example,
+
+@smallexample
+make check-g++ RUNTESTFLAGS="old-deja.exp=9805*\ virtual2.c @var{other-options}"
+make check-g++ RUNTESTFLAGS="'old-deja.exp=9805* virtual2.c' @var{other-options}"
+@end smallexample
+
 The @file{*.exp} files are located in the testsuite directories of the GCC
 source, the most important ones being @file{compile.exp},
 @file{execute.exp}, @file{dg.exp} and @file{old-deja.exp}.
