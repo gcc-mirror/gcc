@@ -1,3 +1,11 @@
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81925
+	* simple-object-elf.c (simple_object_elf_write_shdr): Adjust
+	type of sh_addralign and sh_entsize and properly write
+	sh_entsize as Elf_Addr.
+	(simple_object_elf_write_to_file): Read sh_entsize as Elf_Addr.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	* simple-object-common.h (struct simple_object_functions): Add
