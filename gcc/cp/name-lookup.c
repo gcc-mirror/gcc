@@ -3339,6 +3339,139 @@ pushdecl_outermost_localscope (tree x)
   return ret;
 }
 
+/* FNS is an overload set of conversion functions.  Return the
+   overloads converting to TYPE.  */
+
+static tree
+extract_conversion_operator (tree fns, tree type)
+{
+  tree convs = NULL_TREE;
+  tree tpls = NULL_TREE;
+
+  for (ovl_iterator iter (fns); iter; ++iter)
+    {
+      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	convs = lookup_add (*iter, convs);
+
+      // FIXME: really want some way to say 'no templates'
+      // FIXME: Plus ordering the overload to put templates last
+      if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	tpls = lookup_add (*iter, tpls);
+    }
+
+  if (!convs)
+    convs = tpls;
+
+  return convs;
+}
+
+/* Look for REALNAME member functions of TYPE.  */
+
+static tree
+legacy_fn_member_lookup (tree type, tree realname)
+{
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (!method_vec)
+    return NULL_TREE;
+
+  tree fns = NULL_TREE;
+  tree name = realname;
+  if (IDENTIFIER_CONV_OP_P (realname))
+    name = conv_op_identifier;
+
+  /* If the type is complete, use binary search.  */
+  if (COMPLETE_TYPE_P (type))
+    {
+      int lo = 0;
+      int hi = method_vec->length ();
+      while (lo < hi)
+	{
+	  int i = (lo + hi) / 2;
+
+	  fns = (*method_vec)[i];
+	  tree fns_name = OVL_NAME (fns);
+	  if (fns_name > name)
+	    hi = i;
+	  else if (fns_name < name)
+	    lo = i + 1;
+	  else
+	    break;
+	  fns = NULL_TREE;
+	}
+    }
+  else
+    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
+      {
+	if (OVL_NAME (fns) == name)
+	  break;
+	fns = NULL_TREE;
+      }
+
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (fns && name == conv_op_identifier)
+    {
+      gcc_checking_assert (OVL_FUNCTION (fns) == conv_op_marker);
+      fns = OVL_CHAIN (fns);
+      if (tree type = TREE_TYPE (realname))
+	fns = extract_conversion_operator (fns, type);
+    }
+
+  return fns;
+}
+
+/* Look for non-function member NAME of TYPE */
+
+static tree
+legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
+{
+  tree field;
+
+  gcc_assert (identifier_p (name) && RECORD_OR_UNION_TYPE_P (type));
+
+  if (CLASSTYPE_BINDINGS (type))
+    return lookup_class_member (type, name, want_type);
+
+  field = TYPE_FIELDS (type);
+
+  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      tree decl = field;
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	/* Functions are kep separately, at the moment.  */
+	continue;
+
+      gcc_assert (DECL_P (field));
+      if (DECL_NAME (field) == NULL_TREE
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree temp = legacy_nonfn_member_lookup
+	    (TREE_TYPE (field), name, want_type);
+	  if (temp)
+	    return temp;
+	}
+
+      if (TREE_CODE (decl) == USING_DECL
+	  && DECL_NAME (decl) == name)
+	{
+	  decl = strip_using_decl (decl);
+	  if (is_overloaded_fn (decl))
+	    continue;
+	}
+
+      if (DECL_NAME (decl) == name
+	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
+	return decl;
+    }
+
+  /* We used to special-case vptr_identifier.  Make sure it's not
+     special any more.  */
+  gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
+
+  return NULL_TREE;
+}
+
 /* Look for NAME as an immediate member of KLASS (including
    anon-members or unscoped enum member).  PREFER_TYPE is true if
    you'd prefer a TYPE binding (given a choice, if there's no type
@@ -3354,15 +3487,12 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
 {
   /* Conversion operators can only be found by the marker conversion
      operator name.  */
-  // FIXME: This assert isn't ready yet
-  // gcc_checking_assert (!IDENTIFIER_CONV_OP_P (name)
-  //	       || name == conv_op_identifier);
 
   tree val = NULL_TREE;
 
   /* First look for a function.  */
   if (!prefer_type)
-    val = lookup_fnfields_slot_nolazy (klass, name);
+    val = legacy_fn_member_lookup (klass, name);
 
   if (fn_only)
     /* Don't bother looking for field.  We don't want it.  */;
@@ -3370,7 +3500,7 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
     {
       /* Dependent using declarations are a 'field', make sure we
 	 return that even if we saw an overload already.  */
-      tree field_val = lookup_field_1 (klass, name, prefer_type);
+      tree field_val = legacy_nonfn_member_lookup (klass, name, prefer_type);
       if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
 	val = field_val;
     }
@@ -3441,19 +3571,6 @@ lookup_class_member (tree klass, tree name, bool want_type)
     val = NULL_TREE;
 
   return val;
-}
-
-/* Collect all the conversion operators of KLASS.  */
-
-tree
-lookup_all_conversions (tree klass)
-{
-  tree lkp = NULL_TREE;
-
-  if (TYPE_HAS_CONVERSION (klass))
-    lkp = lookup_fnfields_slot_nolazy (klass, conv_op_identifier);
-  
-  return lkp;
 }
 
 /* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't

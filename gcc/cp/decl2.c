@@ -668,7 +668,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
       else
 	{
 	  if (DECL_CONV_FN_P (function))
-	    fns = lookup_all_conversions (ctype);
+	    fns = get_class_binding (ctype, conv_op_identifier);
 
 	  error_at (DECL_SOURCE_LOCATION (function),
 		    "no declaration matches %q#D", function);

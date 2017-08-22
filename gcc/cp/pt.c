@@ -2894,16 +2894,12 @@ check_explicit_specialization (tree declarator,
 	      name = DECL_NAME (decl);
 	    }
 
-	  tree fns = NULL_TREE;
-	  if (DECL_CONV_FN_P (decl))
-	    /* For a type-conversion operator, we cannot do a
-	       name-based lookup.  We might be looking for `operator
-	       int' which will be a specialization of `operator T'.
-	       Grab all the conversion operators, and then select from
-	       them.  */
-	    fns = lookup_all_conversions (ctype);
-	  else
-	    fns = get_class_binding (ctype, name);
+	  /* For a type-conversion operator, We might be looking for
+	     `operator int' which will be a specialization of
+	     `operator T'.  Grab all the conversion operators, and
+	     then select from them.  */
+	  tree fns = get_class_binding (ctype, IDENTIFIER_CONV_OP_P (name)
+					? conv_op_identifier : name);
 
 	  if (fns == NULL_TREE)
 	    {

@@ -346,6 +346,5 @@ extern tree get_class_binding (tree, tree, bool prefer_type = false);
 extern tree lookup_class_member (tree, tree, bool);
 extern void set_class_bindings (tree, tree);
 extern void insert_late_enum_def_bindings (tree, tree);
-extern tree lookup_all_conversions (tree);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

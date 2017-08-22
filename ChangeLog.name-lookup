@@ -1,6 +1,19 @@
 2017-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (lookup_field_1, lookup_fnfields_slot_nolazy): Delete.
+	* name-lookup.h (lookup_all_conversions): Delete.
+	* decl2.c (check_classfn): Lookup conversions directly.
+	* pt.c (check_explicit_specialization): Likewise.
+	* search.c (lookup_conversion_operator,
+	lookup_fnfields_slot_nolazy, lookup_field_1): Move to ...
+	* name-lookup.c (extract_conversion_operator,
+	legacy_fn_member_lookup, legacy_nonfn_member_lookup): ... here.
+	Make static.
+	(get_class_binding_direct): Adjust.
+	(lookup_all_conversions): Delete.
+
+	gcc/cp/
 	* cp-tree.h (lookup_fnfields_slot): Delete.
 	* search.c (lookup_fnfields_slot): Delete.
 	(look_for_overrides_here): Use get_class_binding.
