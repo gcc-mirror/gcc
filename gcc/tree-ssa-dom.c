@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "gimple-fold.h"
 #include "tree-eh.h"
+#include "tree-inline.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
 #include "tree-into-ssa.h"
@@ -776,16 +777,27 @@ record_temporary_equivalences (edge e,
 
       /* Record the simple NAME = VALUE equivalence.  */
       tree rhs = edge_info->rhs;
-      record_equality (lhs, rhs, const_and_copies);
 
-      /* We already recorded that LHS = RHS, with canonicalization,
-	 value chain following, etc.
+      /* If this is a SSA_NAME = SSA_NAME equivalence and one operand is
+	 cheaper to compute than the other, then set up the equivalence
+	 such that we replace the expensive one with the cheap one.
 
-	 We also want to record RHS = LHS, but without any canonicalization
-	 or value chain following.  */
-      if (TREE_CODE (rhs) == SSA_NAME)
-	const_and_copies->record_const_or_copy_raw (rhs, lhs,
-						    SSA_NAME_VALUE (rhs));
+	 If they are the same cost to compute, then do not record anything.  */
+      if (TREE_CODE (lhs) == SSA_NAME && TREE_CODE (rhs) == SSA_NAME)
+	{
+	  gimple *rhs_def = SSA_NAME_DEF_STMT (rhs);
+	  int rhs_cost = estimate_num_insns (rhs_def, &eni_size_weights);
+
+	  gimple *lhs_def = SSA_NAME_DEF_STMT (lhs);
+	  int lhs_cost = estimate_num_insns (lhs_def, &eni_size_weights);
+
+	  if (rhs_cost > lhs_cost)
+	    record_equality (rhs, lhs, const_and_copies);
+	  else if (rhs_cost < lhs_cost)
+	    record_equality (lhs, rhs, const_and_copies);
+	}
+      else
+	record_equality (lhs, rhs, const_and_copies);
 
       /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
 	 set via a widening type conversion, then we may be able to record

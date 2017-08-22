@@ -1,3 +1,16 @@
+2017-08-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/81741
+	PR tree-optimization/71947
+	* gcc.dg/tree-ssa/pr81741.c: New test.
+	* gcc.dg/tree-ssa/pr71947-7.c: New test.
+	* gcc.dg/tree-ssa/pr71947-8.c: New test.
+	* gcc.dg/tree-ssa/pr71947-9.c: New test.
+	* gcc.dg/tree-ssa/pr71941-1.c: Tweak expected output.
+	* gcc.dg/tree-ssa/pr71941-2.c: Tweak expected output.
+	* gcc.dg/tree-ssa/pr71941-3.c: Tweak expected output.
+	* gcc.dg/tree-ssa/20030922-2.c: xfail.
+
 2017-08-22  Yvan Roux  <yvan.roux@linaro.org>
 
         PR c++/80287
