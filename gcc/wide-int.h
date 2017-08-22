@@ -1517,8 +1517,12 @@ namespace wi
 
 inline wi::hwi_with_prec::hwi_with_prec (HOST_WIDE_INT v, unsigned int p,
 					 signop s)
-  : val (v), precision (p), sgn (s)
+  : precision (p), sgn (s)
 {
+  if (precision < HOST_BITS_PER_WIDE_INT)
+    val = sext_hwi (v, precision);
+  else
+    val = v;
 }
 
 /* Return a signed integer that has value VAL and precision PRECISION.  */
