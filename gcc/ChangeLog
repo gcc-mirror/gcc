@@ -1,3 +1,10 @@
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Error when -mx32
+	is combined with -mabi=ms.
+	(ix86_function_type_abi): Limit errors for mixing -mx32 with attribute
+	ms_abi.
+
 2017-08-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81488
