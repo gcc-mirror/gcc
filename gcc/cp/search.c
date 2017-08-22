@@ -996,6 +996,17 @@ lookup_field_r (tree binfo, void *data)
 	  nval = TYPE_MAIN_DECL (e->type);
     }
 
+  /* If we're looking up a type (as with an elaborated type specifier)
+     we ignore all non-types we find.  */
+  if (lfi->want_type && nval && !DECL_DECLARES_TYPE_P (nval))
+    {
+      nval = NULL_TREE;
+      if (CLASSTYPE_NESTED_UTDS (type))
+	if (binding_entry e = binding_table_find (CLASSTYPE_NESTED_UTDS (type),
+						  lfi->name))
+	  nval = TYPE_MAIN_DECL (e->type);
+    }
+
   /* If there is no declaration with the indicated name in this type,
      then there's nothing to do.  */
   if (!nval)

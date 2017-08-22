@@ -1,3 +1,128 @@
+2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (paradoxical_subreg_p): Define inline, and add a version
+	that takes the outer and inner modes.
+	* doc/rtl.texi: Use paradoxical_subreg_p instead of a GET_MODE_SIZE
+	comparison as the canonical test for a paradoxical subreg.
+	* combine.c (simplify_set): Use paradoxical_subreg_p.
+	(make_extraction): Likewise.
+	(force_to_mode): Likewise.
+	(rtx_equal_for_field_assignment_p): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	(simplify_comparison): Likewise.
+	* cse.c (equiv_constant): Likewise.
+	* expmed.c (store_bit_field_1): Likewise.
+	* final.c (alter_subreg): Likewise.
+	* fwprop.c (propagate_rtx): Likewise.
+	(forward_propagate_subreg): Likewise.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* lower-subreg.c (simplify_gen_subreg_concatn): Likewise.
+	* lra-constraints.c (curr_insn_transform): Likewise.
+	(split_reg): Likewise.
+	* lra-eliminations.c (move_plus_up): Likewise.
+	(lra_eliminate_regs_1): Likewise.
+	* recog.c (general_operand): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	* reload.c (push_reload): Likewise.
+	(find_reloads): Likewise.
+	* reload1.c (elimination_effects): Likewise.
+	(compute_reload_subreg_offset): Likewise.
+	(choose_reload_regs): Likewise.
+	* rtlanal.c (subreg_lsb_1): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_subreg): Likewise.
+	* var-tracking.c (track_loc_p): Likewise.
+	* emit-rtl.c (byte_lowpart_offset): Likewise.
+	(paradoxical_subreg_p): Delete out-of-line definition.
+
+2017-08-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/81741
+	PR tree-optimization/71947
+	* tree-ssa-dom.c: Include tree-inline.h.
+	(record_temporary_equivalences): Only record SSA_NAME = SSA_NAME
+	equivalences if one is more expensive to compute than the other.
+	* tree-ssa-scopedtables.h (class const_or_copies): Make
+	record_const_or_copy_raw method private.
+	(class avail_exprs_stack): New method simplify_binary_operation.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr): Call
+	avail_exprs_stack::simplify_binary_operation as needed.
+	(avail_exprs_stack::simplify_binary_operation): New function.
+
+2017-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (powerpc-*-rtems*): Add rs6000/linux64.opt.
+	* config/rs6000/rtems.h (ASM_PREFERRED_EH_DATA_FORMAT): New define.
+	(DOT_SYMBOLS): Likewise.
+	(MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	(RELOCATABLE_NEEDS_FIXUP): Likewise.
+	(RS6000_ABI_NAME): Likewise.
+	(TARGET_CMODEL): Likewise.
+	(TOC_SECTION_ASM_OP): Likewise.
+	(SET_CMODEL): New macro.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Evaluate cmodel options.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (remap_type_1): Change asserts on TYPE_SIZE[_UNIT]
+	to allow for free-lang-data replacements similar to verify_type_variant.
+
+2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.md (casesi): Use DImode rather than
+	VOIDmode for the LABEL_REF.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-cfg.c (gimple_split_edge): Avoid reallocating target
+	PHI nodes.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (feliminate-dwarf2-dups): Ignore.
+	* doc/invoke.texi (feliminate-dwarf2-dups): Remove documentation.
+	* dwarf2out.c (push_new_compile_unit, pop_compile_unit,
+	same_die_p_wrap, compute_section_prefix,
+	is_symbol_die, assign_symbol_names, break_out_includes): Remove.
+	(comdat_symbol_id, comdat_symbol_number): Likewise.
+	(cu_hash_table_entry, cu_hash_table_entry_hasher, cu_hash_type):
+	Likewise.
+	(check_duplicate_cu, record_comdat_symbol_number): Likewise.
+	(output_die): Mark unreachable path unreachable.
+	(dwarf2out_start_source_file): Do not create DW_TAG_GNU_BINCL.
+	(dwarf2out_end_source_file): Do not create DW_TAG_GNU_EINCL.
+	(dwarf2out_init): Remove code handling flag_eliminate_dwarf2_dups.
+	(dwarf2out_early_finish): Likewise.
+
+2017-08-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (hwi_with_prec::hwi_with_prec): Sign extend.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/81910
+	* config/avr/avr.c (avr_handle_addr_attribute): Early return if
+	not VAR_P. Filter attribute warnings with OPT_Wattributes.
+	(avr_attribute_table) <io, io_low, address>: Initialize
+	.decl_required with true.
+
+2017-08-21  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (-mvsx-scalar-float): Delete
+	undocumented debugging options.
+	(-mvsx-scalar-double): Likewise.
+	(-mallow-df-permute): Likewise.
+	(-mvectorize-builtins): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok):
+	Likewise.
+	(rs6000_builtin_vectorized_function): Likewise.
+	(rs6000_builtin_md_vectorized_function): Likewise.
+	(rs6000_opt_vars): Likewise.
+
 2017-08-21  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/46091

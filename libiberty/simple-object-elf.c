@@ -830,8 +830,8 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
 			      off_t sh_addr,
 			      unsigned int sh_offset, unsigned int sh_size,
 			      unsigned int sh_link, unsigned int sh_info,
-			      unsigned int sh_addralign,
-			      unsigned int sh_entsize,
+			      size_t sh_addralign,
+			      size_t sh_entsize,
 			      const char **errmsg, int *err)
 {
   struct simple_object_elf_attributes *attrs =
@@ -858,7 +858,7 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_link, Elf_Word, sh_link);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_info, Elf_Word, sh_info);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_addralign, Elf_Addr, sh_addralign);
-  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_entsize, Elf_Word, sh_entsize);
+  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_entsize, Elf_Addr, sh_entsize);
 
   return simple_object_internal_write (descriptor, offset, buf, shdr_size,
 				       errmsg, err);
@@ -948,8 +948,8 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
       off_t sh_addr = 0;
       unsigned int sh_link = 0;
       unsigned int sh_info = 0;
-      unsigned int sh_addralign = 1U << section->align;
-      unsigned int sh_entsize = 0;
+      size_t sh_addralign = 1U << section->align;
+      size_t sh_entsize = 0;
       if (eow->shdrs)
 	{
 	  sh_type = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
@@ -972,7 +972,7 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 					  sh_addralign, Elf_Addr);
 	  sh_entsize = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
 					eow->shdrs + secnum * shdr_size,
-					sh_entsize, Elf_Word);
+					sh_entsize, Elf_Addr);
 	  secnum++;
 	}
 

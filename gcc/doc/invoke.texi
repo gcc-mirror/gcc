@@ -347,7 +347,7 @@ Objective-C and Objective-C++ Dialects}.
 -gcolumn-info  -gno-column-info @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
--feliminate-dwarf2-dups  -fno-eliminate-unused-debug-types @gol
+-fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
 -feliminate-unused-debug-symbols  -femit-class-debug-always @gol
@@ -6834,8 +6834,8 @@ for maximum benefit.
 
 GCC no longer supports DWARF Version 1, which is substantially
 different than Version 2 and later.  For historical reasons, some
-other DWARF-related options (including @option{-feliminate-dwarf2-dups} 
-and @option{-fno-dwarf2-cfi-asm}) retain a reference to DWARF Version 2
+other DWARF-related options such as
+@option{-fno-dwarf2-cfi-asm}) retain a reference to DWARF Version 2
 in their names, but apply to all currently-supported versions of DWARF.
 
 @item -gstabs
@@ -7026,12 +7026,6 @@ compression in traditional GNU format).  If the linker doesn't support
 writing compressed debug sections, the option is rejected.  Otherwise,
 if the assembler does not support them, @option{-gz} is silently ignored
 when producing object files.
-
-@item -feliminate-dwarf2-dups
-@opindex feliminate-dwarf2-dups
-Compress DWARF debugging information by eliminating duplicated
-information about each symbol.  This option only makes sense when
-generating DWARF debugging information.
 
 @item -femit-struct-debug-baseonly
 @opindex femit-struct-debug-baseonly

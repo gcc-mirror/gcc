@@ -1002,7 +1002,7 @@ general_operand (rtx op, machine_mode mode)
 	 However, we must allow them after reload so that they can
 	 get cleaned up by cleanup_subreg_operands.  */
       if (!reload_completed && MEM_P (sub)
-	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (sub)))
+	  && paradoxical_subreg_p (op))
 	return 0;
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
@@ -1037,7 +1037,7 @@ general_operand (rtx op, machine_mode mode)
 	     size of floating point mode can be less than the integer
 	     mode.  */
 	  && ! lra_in_progress 
-	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
+	  && paradoxical_subreg_p (op))
 	return 0;
 
       op = sub;

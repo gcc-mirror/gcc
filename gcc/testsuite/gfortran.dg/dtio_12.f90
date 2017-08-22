@@ -70,5 +70,11 @@ end module
   rewind (10)
   read (10, *) msg
   if (trim (msg) .ne. "77") call abort
+  rewind (10)
+  write (10,40) child (77)                         ! Modified using format label
+40 format(DT)
+  rewind (10)
+  read (10, *) msg
+  if (trim (msg) .ne. "77") call abort
   close(10)
 end

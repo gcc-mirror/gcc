@@ -3422,8 +3422,6 @@ static void equate_decl_number_to_die (tree, dw_die_ref);
 static struct var_loc_node *add_var_loc_to_decl (tree, rtx, const char *);
 static void print_spaces (FILE *);
 static void print_die (dw_die_ref, FILE *);
-static dw_die_ref push_new_compile_unit (dw_die_ref, dw_die_ref);
-static dw_die_ref pop_compile_unit (dw_die_ref);
 static void loc_checksum (dw_loc_descr_ref, struct md5_ctx *);
 static void attr_checksum (dw_attr_node *, struct md5_ctx *, int *);
 static void die_checksum (dw_die_ref, struct md5_ctx *, int *);
@@ -3441,14 +3439,9 @@ static int same_loc_p (dw_loc_descr_ref, dw_loc_descr_ref, int *);
 static int same_dw_val_p (const dw_val_node *, const dw_val_node *, int *);
 static int same_attr_p (dw_attr_node *, dw_attr_node *, int *);
 static int same_die_p (dw_die_ref, dw_die_ref, int *);
-static int same_die_p_wrap (dw_die_ref, dw_die_ref);
-static void compute_section_prefix (dw_die_ref);
 static int is_type_die (dw_die_ref);
 static int is_comdat_die (dw_die_ref);
-static int is_symbol_die (dw_die_ref);
 static inline bool is_template_instantiation (dw_die_ref);
-static void assign_symbol_names (dw_die_ref);
-static void break_out_includes (dw_die_ref);
 static int is_declaration_die (dw_die_ref);
 static int should_move_die_to_comdat (dw_die_ref);
 static dw_die_ref clone_as_declaration (dw_die_ref);
@@ -5545,7 +5538,7 @@ dwarf2out_die_ref_for_decl (tree decl, const char **sym,
   while (die->die_parent)
     die = die->die_parent;
   /* For the containing CU DIE we compute a die_symbol in
-     compute_section_prefix.  */
+     compute_comp_unit_symbol.  */
   gcc_assert (die->die_tag == DW_TAG_compile_unit
 	      && die->die_id.die_symbol != NULL);
   *sym = die->die_id.die_symbol;
@@ -6468,31 +6461,6 @@ check_die (dw_die_ref die)
     }
 }
 
-/* Start a new compilation unit DIE for an include file.  OLD_UNIT is the CU
-   for the enclosing include file, if any.  BINCL_DIE is the DW_TAG_GNU_BINCL
-   DIE that marks the start of the DIEs for this include file.  */
-
-static dw_die_ref
-push_new_compile_unit (dw_die_ref old_unit, dw_die_ref bincl_die)
-{
-  const char *filename = get_AT_string (bincl_die, DW_AT_name);
-  dw_die_ref new_unit = gen_compile_unit_die (filename);
-
-  new_unit->die_sib = old_unit;
-  return new_unit;
-}
-
-/* Close an include-file CU and reopen the enclosing one.  */
-
-static dw_die_ref
-pop_compile_unit (dw_die_ref old_unit)
-{
-  dw_die_ref new_unit = old_unit->die_sib;
-
-  old_unit->die_sib = NULL;
-  return new_unit;
-}
-
 #define CHECKSUM(FOO) md5_process_bytes (&(FOO), sizeof (FOO), ctx)
 #define CHECKSUM_BLOCK(FOO, SIZE) md5_process_bytes ((FOO), (SIZE), ctx)
 #define CHECKSUM_STRING(FOO) md5_process_bytes ((FOO), strlen (FOO), ctx)
@@ -7462,27 +7430,6 @@ same_die_p (dw_die_ref die1, dw_die_ref die2, int *mark)
   return 1;
 }
 
-/* Do the dies look the same?  Wrapper around same_die_p.  */
-
-static int
-same_die_p_wrap (dw_die_ref die1, dw_die_ref die2)
-{
-  int mark = 0;
-  int ret = same_die_p (die1, die2, &mark);
-
-  unmark_all_dies (die1);
-  unmark_all_dies (die2);
-
-  return ret;
-}
-
-/* The prefix to attach to symbols on DIEs in the current comdat debug
-   info section.  */
-static const char *comdat_symbol_id;
-
-/* The index of the current symbol within the current comdat CU.  */
-static unsigned int comdat_symbol_number;
-
 /* Calculate the MD5 checksum of the compilation unit DIE UNIT_DIE and its
    children, and set die_symbol.  */
 
@@ -7521,15 +7468,6 @@ compute_comp_unit_symbol (dw_die_ref unit_die)
     }
 
   unit_die->die_id.die_symbol = xstrdup (name);
-}
-
-static void
-compute_section_prefix (dw_die_ref unit_die)
-{
-  compute_comp_unit_symbol (unit_die);
-  unit_die->comdat_type_p = true;
-  comdat_symbol_id = unit_die->die_id.die_symbol;
-  comdat_symbol_number = 0;
 }
 
 /* Returns nonzero if DIE represents a type, in the sense of TYPE_P.  */
@@ -7593,18 +7531,6 @@ is_comdat_die (dw_die_ref c)
     }
 
   return is_type_die (c);
-}
-
-/* Returns 1 iff C is the sort of DIE that might be referred to from another
-   compilation unit.  */
-
-static int
-is_symbol_die (dw_die_ref c)
-{
-  return (is_type_die (c)
-	  || is_declaration_die (c)
-	  || c->die_tag == DW_TAG_namespace
-	  || c->die_tag == DW_TAG_module);
 }
 
 /* Returns true iff C is a compile-unit DIE.  */
@@ -7681,190 +7607,6 @@ gen_internal_sym (const char *prefix)
 
   ASM_GENERATE_INTERNAL_LABEL (buf, prefix, label_num++);
   return xstrdup (buf);
-}
-
-/* Assign symbols to all worthy DIEs under DIE.  */
-
-static void
-assign_symbol_names (dw_die_ref die)
-{
-  dw_die_ref c;
-
-  if (is_symbol_die (die) && !die->comdat_type_p)
-    {
-      if (comdat_symbol_id)
-	{
-	  char *p = XALLOCAVEC (char, strlen (comdat_symbol_id) + 64);
-
-	  sprintf (p, "%s.%s.%x", DIE_LABEL_PREFIX,
-		   comdat_symbol_id, comdat_symbol_number++);
-	  die->die_id.die_symbol = xstrdup (p);
-	}
-      else
-	die->die_id.die_symbol = gen_internal_sym ("LDIE");
-    }
-
-  FOR_EACH_CHILD (die, c, assign_symbol_names (c));
-}
-
-struct cu_hash_table_entry
-{
-  dw_die_ref cu;
-  unsigned min_comdat_num, max_comdat_num;
-  struct cu_hash_table_entry *next;
-};
-
-/* Helpers to manipulate hash table of CUs.  */
-
-struct cu_hash_table_entry_hasher : pointer_hash <cu_hash_table_entry>
-{
-  typedef die_struct *compare_type;
-  static inline hashval_t hash (const cu_hash_table_entry *);
-  static inline bool equal (const cu_hash_table_entry *, const die_struct *);
-  static inline void remove (cu_hash_table_entry *);
-};
-
-inline hashval_t
-cu_hash_table_entry_hasher::hash (const cu_hash_table_entry *entry)
-{
-  return htab_hash_string (entry->cu->die_id.die_symbol);
-}
-
-inline bool
-cu_hash_table_entry_hasher::equal (const cu_hash_table_entry *entry1,
-				   const die_struct *entry2)
-{
-  return !strcmp (entry1->cu->die_id.die_symbol, entry2->die_id.die_symbol);
-}
-
-inline void
-cu_hash_table_entry_hasher::remove (cu_hash_table_entry *entry)
-{
-  struct cu_hash_table_entry *next;
-
-  while (entry)
-    {
-      next = entry->next;
-      free (entry);
-      entry = next;
-    }
-}
-
-typedef hash_table<cu_hash_table_entry_hasher> cu_hash_type;
-
-/* Check whether we have already seen this CU and set up SYM_NUM
-   accordingly.  */
-static int
-check_duplicate_cu (dw_die_ref cu, cu_hash_type *htable, unsigned int *sym_num)
-{
-  struct cu_hash_table_entry dummy;
-  struct cu_hash_table_entry **slot, *entry, *last = &dummy;
-
-  dummy.max_comdat_num = 0;
-
-  slot = htable->find_slot_with_hash (cu,
-				      htab_hash_string (cu->die_id.die_symbol),
-				      INSERT);
-  entry = *slot;
-
-  for (; entry; last = entry, entry = entry->next)
-    {
-      if (same_die_p_wrap (cu, entry->cu))
-	break;
-    }
-
-  if (entry)
-    {
-      *sym_num = entry->min_comdat_num;
-      return 1;
-    }
-
-  entry = XCNEW (struct cu_hash_table_entry);
-  entry->cu = cu;
-  entry->min_comdat_num = *sym_num = last->max_comdat_num;
-  entry->next = *slot;
-  *slot = entry;
-
-  return 0;
-}
-
-/* Record SYM_NUM to record of CU in HTABLE.  */
-static void
-record_comdat_symbol_number (dw_die_ref cu, cu_hash_type *htable,
-			     unsigned int sym_num)
-{
-  struct cu_hash_table_entry **slot, *entry;
-
-  slot = htable->find_slot_with_hash (cu,
-				      htab_hash_string (cu->die_id.die_symbol),
-				      NO_INSERT);
-  entry = *slot;
-
-  entry->max_comdat_num = sym_num;
-}
-
-/* Traverse the DIE (which is always comp_unit_die), and set up
-   additional compilation units for each of the include files we see
-   bracketed by BINCL/EINCL.  */
-
-static void
-break_out_includes (dw_die_ref die)
-{
-  dw_die_ref c;
-  dw_die_ref unit = NULL;
-  limbo_die_node *node, **pnode;
-
-  c = die->die_child;
-  if (c) do {
-    dw_die_ref prev = c;
-    c = c->die_sib;
-    while (c->die_tag == DW_TAG_GNU_BINCL || c->die_tag == DW_TAG_GNU_EINCL
-	   || (unit && is_comdat_die (c)))
-      {
-	dw_die_ref next = c->die_sib;
-
-	/* This DIE is for a secondary CU; remove it from the main one.  */
-	remove_child_with_prev (c, prev);
-
-	if (c->die_tag == DW_TAG_GNU_BINCL)
-	  unit = push_new_compile_unit (unit, c);
-	else if (c->die_tag == DW_TAG_GNU_EINCL)
-	  unit = pop_compile_unit (unit);
-	else
-	  add_child_die (unit, c);
-	c = next;
-	if (c == die->die_child)
-	  break;
-      }
-  } while (c != die->die_child);
-
-#if 0
-  /* We can only use this in debugging, since the frontend doesn't check
-     to make sure that we leave every include file we enter.  */
-  gcc_assert (!unit);
-#endif
-
-  assign_symbol_names (die);
-  cu_hash_type cu_hash_table (10);
-  for (node = limbo_die_list, pnode = &limbo_die_list;
-       node;
-       node = node->next)
-    {
-      int is_dupl;
-
-      compute_section_prefix (node->die);
-      is_dupl = check_duplicate_cu (node->die, &cu_hash_table,
-			&comdat_symbol_number);
-      assign_symbol_names (node->die);
-      if (is_dupl)
-	*pnode = node->next;
-      else
-	{
-	  pnode = &node->next;
-	  record_comdat_symbol_number (node->die, &cu_hash_table,
-		comdat_symbol_number);
-	}
-    }
 }
 
 /* Return non-zero if this DIE is a declaration.  */
@@ -10452,9 +10194,9 @@ output_die (dw_die_ref die)
 		  else
 		    size = DWARF_OFFSET_SIZE;
 		  /* ???  We cannot unconditionally output die_offset if
-		     non-zero - at least -feliminate-dwarf2-dups will
-		     create references to those DIEs via symbols.  And we
-		     do not clear its DIE offset after outputting it
+		     non-zero - others might create references to those
+		     DIEs via symbols.
+		     And we do not clear its DIE offset after outputting it
 		     (and the label refers to the actual DIEs, not the
 		     DWARF CU unit header which is when using label + offset
 		     would be the correct thing to do).
@@ -26946,15 +26688,6 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
 static void
 dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 {
-  if (flag_eliminate_dwarf2_dups)
-    {
-      /* Record the beginning of the file for break_out_includes.  */
-      dw_die_ref bincl_die;
-
-      bincl_die = new_die (DW_TAG_GNU_BINCL, comp_unit_die (), NULL);
-      add_AT_string (bincl_die, DW_AT_name, remap_debug_filename (filename));
-    }
-
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       macinfo_entry e;
@@ -26970,10 +26703,6 @@ dwarf2out_start_source_file (unsigned int lineno, const char *filename)
 static void
 dwarf2out_end_source_file (unsigned int lineno ATTRIBUTE_UNUSED)
 {
-  if (flag_eliminate_dwarf2_dups)
-    /* Record the end of the file for break_out_includes.  */
-    new_die (DW_TAG_GNU_EINCL, comp_unit_die (), NULL);
-
   if (debug_info_level >= DINFO_LEVEL_VERBOSE)
     {
       macinfo_entry e;
@@ -27634,14 +27363,6 @@ init_sections_and_labels (bool early_lto_debug)
 static void
 dwarf2out_init (const char *filename ATTRIBUTE_UNUSED)
 {
-  /* This option is currently broken, see (PR53118 and PR46102).  */
-  if (flag_eliminate_dwarf2_dups
-      && strstr (lang_hooks.name, "C++"))
-    {
-      warning (0, "-feliminate-dwarf2-dups is broken for C++, ignoring");
-      flag_eliminate_dwarf2_dups = 0;
-    }
-
   /* Allocate the file_table.  */
   file_table = hash_table<dwarf_file_hasher>::create_ggc (50);
 
@@ -30788,21 +30509,6 @@ dwarf2out_early_finish (const char *filename)
          we may have left some declarations behind that are no longer
          referenced.  Prune them.  */
       prune_unused_types ();
-    }
-
-  /* Generate separate CUs for each of the include files we've seen.
-     They will go into limbo_die_list and from there to cu_die_list.  */
-  if (flag_eliminate_dwarf2_dups)
-    {
-      gcc_assert (limbo_die_list == NULL);
-      break_out_includes (comp_unit_die ());
-      limbo_die_node *cu;
-      while ((cu = limbo_die_list))
-	{
-	  limbo_die_list = cu->next;
-	  cu->next = cu_die_list;
-	  cu_die_list = cu;
-	}
     }
 
   /* Traverse the DIE's and note DIEs with DW_OP_GNU_variable_value still

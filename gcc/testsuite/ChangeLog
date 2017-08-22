@@ -1,3 +1,48 @@
+2017-08-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-sums-int.c: New.
+
+2017-08-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/81741
+	PR tree-optimization/71947
+	* gcc.dg/tree-ssa/pr81741.c: New test.
+	* gcc.dg/tree-ssa/pr71947-7.c: New test.
+	* gcc.dg/tree-ssa/pr71947-8.c: New test.
+	* gcc.dg/tree-ssa/pr71947-9.c: New test.
+	* gcc.dg/tree-ssa/pr71941-1.c: Tweak expected output.
+	* gcc.dg/tree-ssa/pr71941-2.c: Tweak expected output.
+	* gcc.dg/tree-ssa/pr71941-3.c: Tweak expected output.
+	* gcc.dg/tree-ssa/20030922-2.c: xfail.
+
+2017-08-22  Yvan Roux  <yvan.roux@linaro.org>
+
+        PR c++/80287
+        * g++.dg/pr80287.C: New test.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	Revert
+	2017-08-09  Slava Barinov  <v.barinov@samsung.com>
+
+	* g++.dg/asan/asan.exp: Switch on *.cc tests.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/debug/dwarf2/dwarf2-1.C: Remove -feliminate-dwarf2-dups.
+	* g++.dg/debug/dwarf2/dwarf2-2.C: Likewise.
+	* g++.dg/debug/dwarf2/pr46123-2.C: Likewise.
+	* g++.dg/debug/dwarf2/typedef5.C: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-3.h: Likewise.
+	* gcc.dg/debug/dwarf2/dups-types.c: Remove.
+	* gcc.dg/debug/dwarf2/dups-types.h: Likewise.
+
+2017-08-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/81296
+	* gfortran.dg/dtio_12.f90: Update test.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/pr81899.C: Fix c++03.

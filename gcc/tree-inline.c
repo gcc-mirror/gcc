@@ -554,9 +554,16 @@ remap_type_1 (tree type, copy_body_data *id)
   /* All variants of type share the same size, so use the already remaped data.  */
   if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
     {
-      gcc_checking_assert (TYPE_SIZE (type) == TYPE_SIZE (TYPE_MAIN_VARIANT (type)));
-      gcc_checking_assert (TYPE_SIZE_UNIT (type) == TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type)));
-
+      tree s = TYPE_SIZE (type);
+      tree mvs = TYPE_SIZE (TYPE_MAIN_VARIANT (type));
+      tree su = TYPE_SIZE_UNIT (type);
+      tree mvsu = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type));
+      gcc_checking_assert ((TREE_CODE (s) == PLACEHOLDER_EXPR
+			    && (TREE_CODE (mvs) == PLACEHOLDER_EXPR))
+			   || s == mvs);
+      gcc_checking_assert ((TREE_CODE (su) == PLACEHOLDER_EXPR
+			    && (TREE_CODE (mvsu) == PLACEHOLDER_EXPR))
+			   || su == mvsu);
       TYPE_SIZE (new_tree) = TYPE_SIZE (TYPE_MAIN_VARIANT (new_tree));
       TYPE_SIZE_UNIT (new_tree) = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (new_tree));
     }

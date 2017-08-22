@@ -775,7 +775,7 @@ ira_build_conflicts (void)
 	     cannot be accessed in the widest mode.  */
 	  machine_mode outer_mode = ALLOCNO_WMODE (a);
 	  machine_mode inner_mode = ALLOCNO_MODE (a);
-	  if (GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
+	  if (paradoxical_subreg_p (outer_mode, inner_mode))
 	    {
 	      enum reg_class aclass = ALLOCNO_CLASS (a);
 	      for (int j = ira_class_hard_regs_num[aclass] - 1; j >= 0; --j)
