@@ -1,3 +1,8 @@
+2017-08-22  Yvan Roux  <yvan.roux@linaro.org>
+
+        PR c++/80287
+        * g++.dg/pr80287.C: New test.
+
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
 	Revert
