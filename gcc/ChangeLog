@@ -1,3 +1,7 @@
+2017-08-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (hwi_with_prec::hwi_with_prec): Sign extend.
+
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/81910
