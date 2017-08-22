@@ -495,7 +495,7 @@
 						 const0_rtx),
 				    operands[0], operands[2], operands[4]));
 
-    operands[2] = force_reg (DImode, gen_rtx_LABEL_REF (VOIDmode, operands[3]));
+    operands[2] = force_reg (DImode, gen_rtx_LABEL_REF (DImode, operands[3]));
     emit_jump_insn (gen_casesi_dispatch (operands[2], operands[0],
 					 operands[3]));
     DONE;

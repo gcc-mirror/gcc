@@ -1,3 +1,10 @@
+2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64.md (casesi): Use DImode rather than
+	VOIDmode for the LABEL_REF.
+
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-cfg.c (gimple_split_edge): Avoid reallocating target
