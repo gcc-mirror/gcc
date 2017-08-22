@@ -1,3 +1,13 @@
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-08-22 trunk r251256.
+
+	PR target/81910
+	* config/avr/avr.c (avr_handle_addr_attribute): Early return if
+	not VAR_P. Filter attribute warnings with OPT_Wattributes.
+	(avr_attribute_table) <io, io_low, address>: Initialize
+	.decl_required with true.
+
 2017-08-21  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/79883
