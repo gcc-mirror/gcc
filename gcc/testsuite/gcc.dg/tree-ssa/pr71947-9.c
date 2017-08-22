@@ -6,11 +6,12 @@ int f(int x, int y)
 {
   int ret;
   if (x == y)
-    ret = x - y;
+    ret = x & y;
   else
-    ret = 1;
+    ret = 0;
 
   return ret;
 }
+/* { dg-final { scan-tree-dump "Replaced redundant expr \[^\r\n\]* with .\(x|y\)."  "dom2" } } */
 
-/* { dg-final { scan-tree-dump "Replaced redundant expr \[^\r\n\]* with .0."  "dom2" } } */
+

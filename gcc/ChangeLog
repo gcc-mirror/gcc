@@ -1,3 +1,17 @@
+2017-08-22  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/81741
+	PR tree-optimization/71947
+	* tree-ssa-dom.c: Include tree-inline.h.
+	(record_temporary_equivalences): Only record SSA_NAME = SSA_NAME
+	equivalences if one is more expensive to compute than the other.
+	* tree-ssa-scopedtables.h (class const_or_copies): Make
+	record_const_or_copy_raw method private.
+	(class avail_exprs_stack): New method simplify_binary_operation.
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr): Call
+	avail_exprs_stack::simplify_binary_operation as needed.
+	(avail_exprs_stack::simplify_binary_operation): New function.
+
 2017-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	* config.gcc (powerpc-*-rtems*): Add rs6000/linux64.opt.
