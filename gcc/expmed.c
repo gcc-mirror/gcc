@@ -736,7 +736,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       int byte_offset = 0;
 
       /* Paradoxical subregs need special handling on big-endian machines.  */
-      if (SUBREG_BYTE (op0) == 0 && inner_mode_size < outer_mode_size)
+      if (paradoxical_subreg_p (op0))
 	{
 	  int difference = inner_mode_size - outer_mode_size;
 

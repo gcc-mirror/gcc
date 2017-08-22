@@ -3530,7 +3530,7 @@ subreg_lsb_1 (machine_mode outer_mode,
   unsigned int word;
 
   /* A paradoxical subreg begins at bit position 0.  */
-  if (GET_MODE_PRECISION (outer_mode) > GET_MODE_PRECISION (inner_mode))
+  if (paradoxical_subreg_p (outer_mode, inner_mode))
     return 0;
 
   if (WORDS_BIG_ENDIAN != BYTES_BIG_ENDIAN)

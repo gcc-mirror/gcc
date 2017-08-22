@@ -2784,9 +2784,27 @@ extern rtx operand_subword (rtx, unsigned int, int, machine_mode);
 
 /* In emit-rtl.c */
 extern rtx operand_subword_force (rtx, unsigned int, machine_mode);
-extern bool paradoxical_subreg_p (const_rtx);
 extern int subreg_lowpart_p (const_rtx);
 extern unsigned int subreg_size_lowpart_offset (unsigned int, unsigned int);
+
+/* Return true if a subreg with the given outer and inner modes is
+   paradoxical.  */
+
+inline bool
+paradoxical_subreg_p (machine_mode outermode, machine_mode innermode)
+{
+  return GET_MODE_PRECISION (outermode) > GET_MODE_PRECISION (innermode);
+}
+
+/* Return true if X is a paradoxical subreg, false otherwise.  */
+
+inline bool
+paradoxical_subreg_p (const_rtx x)
+{
+  if (GET_CODE (x) != SUBREG)
+    return false;
+  return paradoxical_subreg_p (GET_MODE (x), GET_MODE (SUBREG_REG (x)));
+}
 
 /* Return the SUBREG_BYTE for an OUTERMODE lowpart of an INNERMODE value.  */
 

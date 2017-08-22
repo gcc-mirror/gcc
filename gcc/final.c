@@ -3204,8 +3204,7 @@ alter_subreg (rtx *xp, bool final_p)
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
-      if (offset == 0
-	  && GET_MODE_SIZE (GET_MODE (y)) < GET_MODE_SIZE (GET_MODE (x)))
+      if (paradoxical_subreg_p (x))
         {
           int difference = GET_MODE_SIZE (GET_MODE (y))
 			   - GET_MODE_SIZE (GET_MODE (x));

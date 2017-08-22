@@ -661,10 +661,8 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
       if (op2 == NULL_RTX)
 	{
 	  /* We don't handle paradoxical subregs here.  */
-	  gcc_assert (GET_MODE_SIZE (outermode)
-		      <= GET_MODE_SIZE (GET_MODE (op)));
-	  gcc_assert (GET_MODE_SIZE (GET_MODE (op))
-		      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))));
+	  gcc_assert (!paradoxical_subreg_p (outermode, GET_MODE (op)));
+	  gcc_assert (!paradoxical_subreg_p (op));
 	  op2 = simplify_subreg_concatn (outermode, SUBREG_REG (op),
 					 byte + SUBREG_BYTE (op));
 	  gcc_assert (op2 != NULL_RTX);
@@ -685,10 +683,7 @@ simplify_gen_subreg_concatn (machine_mode outermode, rtx op,
      resolve_simple_move will ask for the high part of the paradoxical
      subreg, which does not have a value.  Just return a zero.  */
   if (ret == NULL_RTX
-      && GET_CODE (op) == SUBREG
-      && SUBREG_BYTE (op) == 0
-      && (GET_MODE_SIZE (innermode)
-	  > GET_MODE_SIZE (GET_MODE (SUBREG_REG (op)))))
+      && paradoxical_subreg_p (op))
     return CONST0_RTX (outermode);
 
   gcc_assert (ret != NULL_RTX);

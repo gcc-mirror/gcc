@@ -680,8 +680,7 @@ propagate_rtx (rtx x, machine_mode mode, rtx old_rtx, rtx new_rtx,
       || CONSTANT_P (new_rtx)
       || (GET_CODE (new_rtx) == SUBREG
 	  && REG_P (SUBREG_REG (new_rtx))
-	  && (GET_MODE_SIZE (mode)
-	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (new_rtx))))))
+	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (new_rtx)))))
     flags |= PR_CAN_APPEAR;
   if (!varying_mem_p (new_rtx))
     flags |= PR_HANDLE_MEM;
@@ -1103,9 +1102,7 @@ forward_propagate_subreg (df_ref use, rtx_insn *def_insn, rtx def_set)
       || !REG_P (SET_DEST (def_set)))
     return false;
 
-  /* If this is a paradoxical SUBREG...  */
-  if (GET_MODE_SIZE (use_mode)
-      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (use_reg))))
+  if (paradoxical_subreg_p (use_reg))
     {
       /* If this is a paradoxical SUBREG, we have no idea what value the
 	 extra bits would have.  However, if the operand is equivalent to

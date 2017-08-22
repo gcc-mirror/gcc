@@ -1,3 +1,42 @@
+2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (paradoxical_subreg_p): Define inline, and add a version
+	that takes the outer and inner modes.
+	* doc/rtl.texi: Use paradoxical_subreg_p instead of a GET_MODE_SIZE
+	comparison as the canonical test for a paradoxical subreg.
+	* combine.c (simplify_set): Use paradoxical_subreg_p.
+	(make_extraction): Likewise.
+	(force_to_mode): Likewise.
+	(rtx_equal_for_field_assignment_p): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	(simplify_comparison): Likewise.
+	* cse.c (equiv_constant): Likewise.
+	* expmed.c (store_bit_field_1): Likewise.
+	* final.c (alter_subreg): Likewise.
+	* fwprop.c (propagate_rtx): Likewise.
+	(forward_propagate_subreg): Likewise.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* lower-subreg.c (simplify_gen_subreg_concatn): Likewise.
+	* lra-constraints.c (curr_insn_transform): Likewise.
+	(split_reg): Likewise.
+	* lra-eliminations.c (move_plus_up): Likewise.
+	(lra_eliminate_regs_1): Likewise.
+	* recog.c (general_operand): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	* reload.c (push_reload): Likewise.
+	(find_reloads): Likewise.
+	* reload1.c (elimination_effects): Likewise.
+	(compute_reload_subreg_offset): Likewise.
+	(choose_reload_regs): Likewise.
+	* rtlanal.c (subreg_lsb_1): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_subreg): Likewise.
+	* var-tracking.c (track_loc_p): Likewise.
+	* emit-rtl.c (byte_lowpart_offset): Likewise.
+	(paradoxical_subreg_p): Delete out-of-line definition.
+
 2017-08-22  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/81741
