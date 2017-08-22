@@ -1,5 +1,16 @@
 2017-08-22  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (print_search_statistics,
+	reinit_search_statistics): Delete.
+	* tree.c (cxx_print_statistics): Don't print search stats.
+	* search.c (n_fields_searched, n_calls_lookup_field,
+	n_calls_lookup_field_1, n_calls_lookup_fnfields,
+	n_calls_lookup_fnfields_1, n_calls_get_base_type,
+	n_outer_fields_searched, n_contexts_saved): Delete.
+	(lookup_member): Delete stats.
+	(print_search_statistics, reinit_search_statistics): Delete.	
+
 	Merge trunk r251283.
 
 	gcc/cp/

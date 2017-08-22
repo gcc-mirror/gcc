@@ -6575,8 +6575,6 @@ extern int look_for_overrides			(tree, tree);
 extern void get_pure_virtuals			(tree);
 extern void maybe_suppress_debug_info		(tree);
 extern void note_debug_info_needed		(tree);
-extern void print_search_statistics		(void);
-extern void reinit_search_statistics		(void);
 extern tree current_scope			(void);
 extern int at_function_scope_p			(void);
 extern bool at_class_scope_p			(void);

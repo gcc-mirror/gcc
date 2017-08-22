@@ -51,15 +51,6 @@ static access_kind access_in_type (tree, tree);
 static tree dfs_get_pure_virtuals (tree, void *);
 
 
-/* Variables for gathering statistics.  */
-static int n_fields_searched;
-static int n_calls_lookup_field, n_calls_lookup_field_1;
-static int n_calls_lookup_fnfields, n_calls_lookup_fnfields_1;
-static int n_calls_get_base_type;
-static int n_outer_fields_searched;
-static int n_contexts_saved;
-
-
 /* Data for lookup_base and its workers.  */
 
 struct lookup_base_data_s
@@ -1147,9 +1138,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (!basetype_path)
     return NULL_TREE;
 
-  if (GATHER_STATISTICS)
-    n_calls_lookup_field++;
-
   memset (&lfi, 0, sizeof (lfi));
   lfi.type = type;
   lfi.name = name;
@@ -2226,33 +2214,6 @@ note_debug_info_needed (tree type)
   dfs_walk_all (TYPE_BINFO (type), dfs_debug_mark, NULL, 0);
 }
 
-void
-print_search_statistics (void)
-{
-  if (! GATHER_STATISTICS)
-    {
-      fprintf (stderr, "no search statistics\n");
-      return;
-    }
-
-  fprintf (stderr, "%d fields searched in %d[%d] calls to lookup_field[_1]\n",
-	   n_fields_searched, n_calls_lookup_field, n_calls_lookup_field_1);
-  fprintf (stderr, "%d fnfields searched in %d calls to lookup_fnfields\n",
-	   n_outer_fields_searched, n_calls_lookup_fnfields);
-  fprintf (stderr, "%d calls to get_base_type\n", n_calls_get_base_type);
-}
-
-void
-reinit_search_statistics (void)
-{
-  n_fields_searched = 0;
-  n_calls_lookup_field = 0, n_calls_lookup_field_1 = 0;
-  n_calls_lookup_fnfields = 0, n_calls_lookup_fnfields_1 = 0;
-  n_calls_get_base_type = 0;
-  n_outer_fields_searched = 0;
-  n_contexts_saved = 0;
-}
-
 /* Helper for lookup_conversions_r.  TO_TYPE is the type converted to
    by a conversion op in base BINFO.  VIRTUAL_DEPTH is nonzero if
    BINFO is morally virtual, and VIRTUALNESS is nonzero if virtual
