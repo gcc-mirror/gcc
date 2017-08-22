@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { ! x32 } } } */
 /* The pic register save adds unavoidable stack pointer references.  */
 /* { dg-skip-if "" { ia32 && { ! nonpic } } } */
 /* These options are selected to ensure 1 word needs to be allocated

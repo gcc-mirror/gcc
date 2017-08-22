@@ -1,3 +1,12 @@
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr71958.c: New test to verify error on -mx32 and
+	-mabi=ms
+	* gcc.target/i386/pr64409.c: Modify to only run on x32.
+	* gcc.target/i386/pr46470.c: Modify to skip x32 target.
+	* gcc.target/i386/pr66275.c: Likewise.
+	* gcc.target/i386/pr68018.c: Likewise.
+
 2017-08-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-sums-int.c: New.
