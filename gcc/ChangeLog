@@ -1,3 +1,20 @@
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* common.opt (feliminate-dwarf2-dups): Ignore.
+	* doc/invoke.texi (feliminate-dwarf2-dups): Remove documentation.
+	* dwarf2out.c (push_new_compile_unit, pop_compile_unit,
+	same_die_p_wrap, compute_section_prefix,
+	is_symbol_die, assign_symbol_names, break_out_includes): Remove.
+	(comdat_symbol_id, comdat_symbol_number): Likewise.
+	(cu_hash_table_entry, cu_hash_table_entry_hasher, cu_hash_type):
+	Likewise.
+	(check_duplicate_cu, record_comdat_symbol_number): Likewise.
+	(output_die): Mark unreachable path unreachable.
+	(dwarf2out_start_source_file): Do not create DW_TAG_GNU_BINCL.
+	(dwarf2out_end_source_file): Do not create DW_TAG_GNU_EINCL.
+	(dwarf2out_init): Remove code handling flag_eliminate_dwarf2_dups.
+	(dwarf2out_early_finish): Likewise.
+
 2017-08-22  Aldy Hernandez  <aldyh@redhat.com>
 
 	* wide-int.h (hwi_with_prec::hwi_with_prec): Sign extend.

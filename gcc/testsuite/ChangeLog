@@ -1,3 +1,14 @@
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/debug/dwarf2/dwarf2-1.C: Remove -feliminate-dwarf2-dups.
+	* g++.dg/debug/dwarf2/dwarf2-2.C: Likewise.
+	* g++.dg/debug/dwarf2/pr46123-2.C: Likewise.
+	* g++.dg/debug/dwarf2/typedef5.C: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-3.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf2-3.h: Likewise.
+	* gcc.dg/debug/dwarf2/dups-types.c: Remove.
+	* gcc.dg/debug/dwarf2/dups-types.h: Likewise.
+
 2017-08-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/81296
