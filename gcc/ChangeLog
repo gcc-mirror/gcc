@@ -1,5 +1,17 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2017-07-05 trunk r249995.
+
+	PR target/81305
+	* config/avr/avr.c (avr_out_movhi_mr_r_xmega) [CONSTANT_ADDRESS_P]:
+	Don't depend on "optimize > 0".
+	(out_movhi_r_mr, out_movqi_mr_r): Same.
+	(out_movhi_mr_r, out_movqi_r_mr): Same.
+	(avr_address_cost) [CONSTANT_ADDRESS_P]: Don't depend cost for
+	io_address_operand on "optimize > 0".
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2016-06-15 trunk r237486.
 	Backport from 2017-07-12 trunk r250156.
 
