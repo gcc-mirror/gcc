@@ -286,8 +286,8 @@ move_plus_up (rtx x)
   subreg_reg = SUBREG_REG (x);
   x_mode = GET_MODE (x);
   subreg_reg_mode = GET_MODE (subreg_reg);
-  if (GET_CODE (x) == SUBREG && GET_CODE (subreg_reg) == PLUS
-      && GET_MODE_SIZE (x_mode) <= GET_MODE_SIZE (subreg_reg_mode)
+  if (!paradoxical_subreg_p (x)
+      && GET_CODE (subreg_reg) == PLUS
       && CONSTANT_P (XEXP (subreg_reg, 1))
       && GET_MODE_CLASS (x_mode) == MODE_INT
       && GET_MODE_CLASS (subreg_reg_mode) == MODE_INT)
@@ -605,10 +605,7 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 
       if (new_rtx != SUBREG_REG (x))
 	{
-	  int x_size = GET_MODE_SIZE (GET_MODE (x));
-	  int new_size = GET_MODE_SIZE (GET_MODE (new_rtx));
-
-	  if (MEM_P (new_rtx) && x_size <= new_size)
+	  if (MEM_P (new_rtx) && !paradoxical_subreg_p (x))
 	    {
 	      SUBREG_REG (x) = new_rtx;
 	      alter_subreg (&x, false);

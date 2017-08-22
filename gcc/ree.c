@@ -869,7 +869,8 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	    return false;
 
 	  for (df_link *use = uses; use; use = use->next)
-	    if (GET_MODE_PRECISION (GET_MODE (*DF_REF_LOC (use->ref))) > prec)
+	    if (paradoxical_subreg_p (GET_MODE (*DF_REF_LOC (use->ref)),
+				      GET_MODE (SET_DEST (*dest_sub_rtx))))
 	      return false;
 	}
 

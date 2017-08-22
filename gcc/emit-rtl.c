@@ -1008,10 +1008,10 @@ int
 byte_lowpart_offset (machine_mode outer_mode,
 		     machine_mode inner_mode)
 {
-  if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode))
-    return subreg_lowpart_offset (outer_mode, inner_mode);
-  else
+  if (paradoxical_subreg_p (outer_mode, inner_mode))
     return -subreg_lowpart_offset (inner_mode, outer_mode);
+  else
+    return subreg_lowpart_offset (outer_mode, inner_mode);
 }
 
 /* Generate a REG rtx for a new pseudo register of mode MODE.
@@ -1551,16 +1551,6 @@ subreg_lowpart_p (const_rtx x)
 
   return (subreg_lowpart_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)))
 	  == SUBREG_BYTE (x));
-}
-
-/* Return true if X is a paradoxical subreg, false otherwise.  */
-bool
-paradoxical_subreg_p (const_rtx x)
-{
-  if (GET_CODE (x) != SUBREG)
-    return false;
-  return (GET_MODE_PRECISION (GET_MODE (x))
-	  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (x))));
 }
 
 /* Return subword OFFSET of operand OP.

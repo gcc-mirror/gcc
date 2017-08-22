@@ -1872,7 +1872,7 @@ expression is called @dfn{paradoxical}.  The canonical test for this
 class of @code{subreg} is:
 
 @smallexample
-GET_MODE_SIZE (@var{m1}) > GET_MODE_SIZE (@var{m2})
+paradoxical_subreg_p (@var{m1}, @var{m2})
 @end smallexample
 
 Paradoxical @code{subreg}s can be used as both lvalues and rvalues.

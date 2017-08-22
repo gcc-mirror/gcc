@@ -5295,7 +5295,7 @@ track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
       machine_mode pseudo_mode;
 
       pseudo_mode = PSEUDO_REGNO_MODE (ORIGINAL_REGNO (loc));
-      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (pseudo_mode))
+      if (paradoxical_subreg_p (mode, pseudo_mode))
 	{
 	  offset += byte_lowpart_offset (pseudo_mode, mode);
 	  mode = pseudo_mode;
@@ -5309,7 +5309,7 @@ track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
      because the real and imaginary parts are represented as separate
      pseudo registers, even if the whole complex value fits into one
      hard register.  */
-  if ((GET_MODE_SIZE (mode) > GET_MODE_SIZE (DECL_MODE (expr))
+  if ((paradoxical_subreg_p (mode, DECL_MODE (expr))
        || (store_reg_p
 	   && !COMPLEX_MODE_P (DECL_MODE (expr))
 	   && hard_regno_nregs[REGNO (loc)][DECL_MODE (expr)] == 1))
