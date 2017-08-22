@@ -1,10 +1,29 @@
+2017-08-22  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* name-lookup.h (get_class_binding_direct): Declare.
+	(get_class_binding): Adjust.
+	* name-lookup.c (get_class_binding_direct): New.
+	(get_class_binding): Adjust.
+	* cp-tree.h (CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Use
+	get_class_binding_direct.
+	* class.c (vbase_has_user_provided_move_assign): Likewise.
+	(classtype_has_move_assign_or_move_ctor_p): Likewise.
+	* decl2.c (check_classfn): Skip non-functions.
+	* search.c (lookup_fnfields_slot): Forward to get_class_binding.
+	(lookup_conversions_r): Use get_class_binding_direct.
+	gcc/testsuite/
+	* g++.dg/cpp0x/decltype9.C: Adjust messages	
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
 	* decl.c (reshape_init_class): Use get_class_binding.
 	* name-lookup.c (get_class_binding): New.
 	* name-lookup.h (get_class_binding): Declare.
 	* search.c (lookup_field_r): Use get_class_binding.
 
+	gcc/cp/
 	* search.c (lookup_field_r): Remove obsolete code for type-named
 	field in PoD.
 

@@ -3340,12 +3340,17 @@ pushdecl_outermost_localscope (tree x)
 }
 
 /* Look for NAME as an immediate member of KLASS (including
-   anon-members or unscoped enum member).  TYPE_OR_NOLAZY is +1 to
-   prefer a type.  -1 to inhibit lazy special member creation and 0
-   otherwise.  */
+   anon-members or unscoped enum member).  PREFER_TYPE is true if
+   you'd prefer a TYPE binding (given a choice, if there's no type
+   binding, you'll get the value binding.
+
+   FIXME: FN_ONLY is a temporary hack.
+
+   Use this if you do not want lazy member creation.  */
 
 tree
-get_class_binding (tree klass, tree name, int type_or_nolazy)
+get_class_binding_direct (tree klass, tree name, bool prefer_type,
+			  bool fn_only)
 {
   /* Conversion operators can only be found by the marker conversion
      operator name.  */
@@ -3353,7 +3358,35 @@ get_class_binding (tree klass, tree name, int type_or_nolazy)
   // gcc_checking_assert (!IDENTIFIER_CONV_OP_P (name)
   //	       || name == conv_op_identifier);
 
-  if (!type_or_nolazy && COMPLETE_TYPE_P (klass))
+  tree val = NULL_TREE;
+
+  /* First look for a function.  */
+  if (!prefer_type)
+    val = lookup_fnfields_slot_nolazy (klass, name);
+
+  if (fn_only)
+    /* Don't bother looking for field.  We don't want it.  */;
+  else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
+    {
+      /* Dependent using declarations are a 'field', make sure we
+	 return that even if we saw an overload already.  */
+      tree field_val = lookup_field_1 (klass, name, prefer_type);
+      if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
+	val = field_val;
+    }
+
+  return val;
+}
+
+/* Look for NAME's binding in exactly KLASS.  Does lazy special
+   function creation as necessary.  */
+
+tree
+get_class_binding (tree klass, tree name, bool prefer_type)
+{
+  klass = complete_type (klass);
+
+  if (COMPLETE_TYPE_P (klass))
     {
       /* Lazily declare functions, if we're going to search these.  */
       if (IDENTIFIER_CTOR_P (name))
@@ -3379,25 +3412,7 @@ get_class_binding (tree klass, tree name, int type_or_nolazy)
 	}
     }
 
-  bool want_type = type_or_nolazy > 0;
-  tree val = NULL_TREE;
-
-  /* First look for a function.  */
-  if (!want_type)
-    val = lookup_fnfields_slot_nolazy (klass, name);
-
-  if (type_or_nolazy < 0)
-    /* Don't bother looking for field.  There won't be one.  */;
-  else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
-    {
-      /* Dependent using declarations are a 'field', make sure we
-	 return that even if we saw an overload already.  */
-      tree field_val = lookup_field_1 (klass, name, want_type);
-      if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
-	val = field_val;
-    }
-
-  return val;
+  return get_class_binding_direct (klass, name, prefer_type, false);
 }
 
 /* Look for NAME in exactly TYPE (including anon-members).  */

@@ -1505,34 +1505,7 @@ lookup_fnfields_slot_nolazy (tree type, tree realname)
 tree
 lookup_fnfields_slot (tree type, tree name)
 {
-  type = complete_type (type);
-
-  if (COMPLETE_TYPE_P (type))
-    {
-      if (IDENTIFIER_CTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
-	    lazily_declare_fn (sfk_constructor, type);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
-	    lazily_declare_fn (sfk_copy_constructor, type);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
-	    lazily_declare_fn (sfk_move_constructor, type);
-	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
-	    lazily_declare_fn (sfk_copy_assignment, type);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
-	    lazily_declare_fn (sfk_move_assignment, type);
-	}
-      else if (IDENTIFIER_DTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (type))
-	    lazily_declare_fn (sfk_destructor, type);
-	}
-    }
-
-  return lookup_fnfields_slot_nolazy (type, name);
+  return get_class_binding (type, name);
 }
 
 /* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is
@@ -2579,8 +2552,8 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  if (tree conv = lookup_fnfields_slot_nolazy (BINFO_TYPE (binfo),
-					       conv_op_identifier))
+  if (tree conv = get_class_binding_direct (BINFO_TYPE (binfo),
+					    conv_op_identifier))
     for (ovl_iterator iter (conv); iter; ++iter)
       {
 	tree fn = *iter;
