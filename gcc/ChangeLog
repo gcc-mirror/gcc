@@ -1,3 +1,26 @@
+2017-08-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81488
+	* gimple-ssa-strength-reduction (struct slsr_cand_d): Add visited
+	and cached_basis fields.
+	(MAX_SPREAD): New constant.
+	(alloc_cand_and_find_basis): Initialize new fields.
+	(clear_visited): New function.
+	(create_phi_basis_1): Rename from create_phi_basis, set visited
+	and cached_basis fields.
+	(create_phi_basis): New wrapper function.
+	(phi_add_costs_1): Rename from phi_add_costs, add spread
+	parameter, set visited field, short-circuit when limits reached.
+	(phi_add_costs): New wrapper function.
+	(record_phi_increments_1): Rename from record_phi_increments, set
+	visited field.
+	(record_phi_increments): New wrapper function.
+	(phi_incr_cost_1): Rename from phi_incr_cost, set visited field.
+	(phi_incr_cost): New wrapper function.
+	(all_phi_incrs_profitable_1): Rename from
+	all_phi_incrs_profitable, set visited field.
+	(all_phi_incrs_profitable): New wrapper function.
+
 2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
