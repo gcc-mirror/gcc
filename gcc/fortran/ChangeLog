@@ -1,3 +1,9 @@
+2017-08-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/81296
+	* trans-io.c (get_dtio_proc): Add check for format label and set
+	formatted flag accordingly. Reorganize the code a little.
+
 2017-08-16  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/81116

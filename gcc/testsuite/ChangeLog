@@ -1,3 +1,8 @@
+2017-08-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/81296
+	* gfortran.dg/dtio_12.f90: Update test.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	* g++.dg/template/pr81899.C: Fix c++03.
