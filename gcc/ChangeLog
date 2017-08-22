@@ -1,5 +1,10 @@
 2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
 
+	* doc/install.texi: Modify to add more details on running selected
+	tests.
+
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
 	* config/i386/i386.c (ix86_option_override_internal): Error when -mx32
 	is combined with -mabi=ms.
 	(ix86_function_type_abi): Limit errors for mixing -mx32 with attribute
