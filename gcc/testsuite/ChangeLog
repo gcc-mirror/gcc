@@ -1,5 +1,12 @@
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
+	Revert
+	2017-08-09  Slava Barinov  <v.barinov@samsung.com>
+
+	* g++.dg/asan/asan.exp: Switch on *.cc tests.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
 	* g++.dg/debug/dwarf2/dwarf2-1.C: Remove -feliminate-dwarf2-dups.
 	* g++.dg/debug/dwarf2/dwarf2-2.C: Likewise.
 	* g++.dg/debug/dwarf2/pr46123-2.C: Likewise.
