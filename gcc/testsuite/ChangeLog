@@ -1,3 +1,11 @@
+2017-08-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* gcc.target/powerpc/pr80210.c: New test.
+
 2017-08-16  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
