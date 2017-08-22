@@ -1,5 +1,30 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2017-04-19 trunk r246997.
+
+	PR target/80462
+	* config/avr/avr.c (tree.h): Include it.
+	(hash-table.h): Include it.
+	(hash-set.h): Include it.
+	(symtab.h): Include it.
+	(inchash.h): Include it.
+	(function.h): Include it.
+	(hash-map.h): Include it.
+	(plugin-api.h): Include it.
+	(ipa-ref.h): Include it.
+	(cgraph.h): Include it.
+	(avr_encode_section_info): Don't warn for uninitialized progmem
+	variable if it's just an alias.
+
+	Backport from 2017-07-12 trunk r250151.
+
+	PR target/81407
+	* config/avr/avr.c (avr_encode_section_info)
+	[progmem && !TREE_READONLY]: Error if progmem object needs
+	constructing.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2017-08-22 trunk r251256.
 
 	PR target/81910
