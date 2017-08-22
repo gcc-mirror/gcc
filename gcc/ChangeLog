@@ -1,3 +1,12 @@
+2017-08-22  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* config/rs6000/rs6000.c (rs6000_activate_target_options): New function.
+	(rs6000_set_current_function): Rewrite function to use it.
+
 2017-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
 
 	Backport from mainline
