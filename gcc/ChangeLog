@@ -1,3 +1,8 @@
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	* tree-inline.c (remap_type_1): Change asserts on TYPE_SIZE[_UNIT]
+	to allow for free-lang-data replacements similar to verify_type_variant.
+
 2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
