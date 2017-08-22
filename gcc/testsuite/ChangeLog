@@ -1,10 +1,5 @@
 2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
 
-	* doc/install.texi: Modify to add more details on running selected
-	tests.
-
-2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
-
 	* gcc.target/i386/pr71958.c: New test to verify error on -mx32 and
 	-mabi=ms
 	* gcc.target/i386/pr64409.c: Modify to only run on x32.
