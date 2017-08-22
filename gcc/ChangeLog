@@ -1,5 +1,13 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2017-07-26 gcc-7-branch r250562.
+
+	PR 81487
+	* tree-ssa-structalias.c (alias_get_name): Use xasprintf instead
+	of asprintf.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from trunk r247719.
 	2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
 

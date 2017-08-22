@@ -1,3 +1,12 @@
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backport from 2017-07-26 gcc-7-branch r250562.
+
+	PR lto/81487
+	* lto-plugin.c (claim_file_handler): Use xasprintf instead of
+	asprintf.
+	[hi!=0]: Swap hi and lo arguments supplied to xasprintf.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
