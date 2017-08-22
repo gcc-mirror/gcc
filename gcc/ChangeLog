@@ -1,5 +1,10 @@
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
+	* tree-cfg.c (gimple_split_edge): Avoid reallocating target
+	PHI nodes.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
 	* common.opt (feliminate-dwarf2-dups): Ignore.
 	* doc/invoke.texi (feliminate-dwarf2-dups): Remove documentation.
 	* dwarf2out.c (push_new_compile_unit, pop_compile_unit,
