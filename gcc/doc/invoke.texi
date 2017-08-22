@@ -574,7 +574,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{AVR Options}
 @gccoptlist{-mmcu=@var{mcu} -maccumulate-args -mbranch-cost=@var{cost} @gol
 -mcall-prologues -mint8 -mn_flash=@var{size} -mno-interrupts @gol
--mrelax -mrmw -mstrict-X -mtiny-stack -nodevicelib -Waddr-space-convert}
+-mrelax -mrmw -mstrict-X -mtiny-stack -nodevicelib -Waddr-space-convert @gol
+-Wmisspelled-isr}
 
 @emph{Blackfin Options}
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]} @gol
@@ -13656,12 +13657,17 @@ Only change the lower 8@tie{}bits of the stack pointer.
 
 @item -nodevicelib
 @opindex nodevicelib
-Don't link against AVR-LibC's device specific library @code{libdev.a}.
+Don't link against AVR-LibC's device specific library @code{lib<mcu>.a}.
 
 @item -Waddr-space-convert
 @opindex Waddr-space-convert
 Warn about conversions between address spaces in the case where the
 resulting address space is not contained in the incoming address space.
+ 
+@item -Wmisspelled-isr
+@opindex Wmisspelled-isr
+Warn if the ISR is misspelled, i.e. without @code{__vector} prefix.
+Enabled by default.
 @end table
 
 @subsubsection @code{EIND} and Devices with More Than 128 Ki Bytes of Flash

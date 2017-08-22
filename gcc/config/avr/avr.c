@@ -769,12 +769,6 @@ avr_set_current_function (tree decl)
 
       name = default_strip_name_encoding (name);
 
-      /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
-         using this when it switched from SIGNAL and INTERRUPT to ISR.  */
-
-      if (cfun->machine->is_interrupt)
-        cfun->machine->is_signal = 0;
-
       /* Interrupt handlers must be  void __vector (void)  functions.  */
 
       if (args && TREE_CODE (TREE_VALUE (args)) != VOID_TYPE)
@@ -783,14 +777,36 @@ avr_set_current_function (tree decl)
       if (TREE_CODE (ret) != VOID_TYPE)
         error_at (loc, "%qs function cannot return a value", isr);
 
+#if defined WITH_AVRLIBC
+      /* Silently ignore 'signal' if 'interrupt' is present.  AVR-LibC startet
+         using this when it switched from SIGNAL and INTERRUPT to ISR.  */
+
+      if (cfun->machine->is_interrupt)
+        cfun->machine->is_signal = 0;
+
       /* If the function has the 'signal' or 'interrupt' attribute, ensure
          that the name of the function is "__vector_NN" so as to catch
          when the user misspells the vector name.  */
 
       if (!STR_PREFIX_P (name, "__vector"))
-        warning_at (loc, 0, "%qs appears to be a misspelled %s handler",
-                    name, isr);
+        warning_at (loc, OPT_Wmisspelled_isr, "%qs appears to be a misspelled "
+                    "%qs handler, missing %<__vector%> prefix", name, isr);
+#endif // AVR-LibC naming conventions
     }
+
+#if defined WITH_AVRLIBC
+  // Common problem is using "ISR" without first including avr/interrupt.h.
+  const char *name = IDENTIFIER_POINTER (DECL_NAME (decl));
+  name = default_strip_name_encoding (name);
+  if (0 == strcmp ("ISR", name)
+      || 0 == strcmp ("INTERRUPT", name)
+      || 0 == strcmp ("SIGNAL", name))
+    {
+      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
+                  " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
+                  " before using the %qs macro", name, name);
+    }
+#endif // AVR-LibC naming conventions
 
   /* Don't print the above diagnostics more than once.  */
 

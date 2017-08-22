@@ -91,6 +91,10 @@ Waddr-space-convert
 Warning C Report Var(avr_warn_addr_space_convert) Init(0)
 Warn if the address space of an address is changed.
 
+Wmisspelled-isr
+Warning C C++ Report Var(avr_warn_misspelled_isr) Init(1)
+Warn if the ISR is misspelled, i.e. without __vector prefix. Enabled by default.
+
 mfract-convert-truncate
 Target Report Mask(FRACT_CONV_TRUNC)
 Allow to use truncation instead of rounding towards 0 for fractional int types

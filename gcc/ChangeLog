@@ -1,5 +1,18 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from 2016-06-15 trunk r237486.
+	Backport from 2017-07-12 trunk r250156.
+
+	PR target/79883
+	PR target/67353
+	* config/avr/avr.c (avr_set_current_function): Warn misspelled ISR
+	only if -Wmisspelled-isr is on.  In diagnostic messages: Quote
+	keywords and (parts of) identifiers.
+	[WITH_AVRLIBC]: Warn functions named "ISR", "SIGNAL" or "INTERUPT".
+	* doc/invoke.texi (AVR Options) <-Wmisspelled-isr>: Document.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2017-04-19 trunk r246997.
 
 	PR target/80462
