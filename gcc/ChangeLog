@@ -1,5 +1,14 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from trunk r247719.
+	2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/75964
+	* simplify-rtx.c (simplify_const_relational_operation): Remove
+	invalid handling of comparisons of integer ABS.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2017-07-05 trunk r249995.
 
 	PR target/81305

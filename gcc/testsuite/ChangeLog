@@ -1,5 +1,13 @@
 2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
 
+	Backport from trunk r247719.
+	2017-05-06  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/75964
+	* gcc.dg/torture/pr75964.c: New test.
+
+2017-08-22  Georg-Johann Lay  <avr@gjlay.de>
+
 	Backport from 2017-07-05 trunk r249995, r249996.
 
 	PR target/81305

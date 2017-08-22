@@ -5117,34 +5117,14 @@ simplify_const_relational_operation (enum rtx_code code,
 	{
 	case LT:
 	  /* Optimize abs(x) < 0.0.  */
-	  if (!HONOR_SNANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      if (INTEGRAL_MODE_P (mode)
-		  && (issue_strict_overflow_warning
-		      (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-		warning (OPT_Wstrict_overflow,
-			 ("assuming signed overflow does not occur when "
-			  "assuming abs (x) < 0 is false"));
-	       return const0_rtx;
-	    }
+	  if (!INTEGRAL_MODE_P (mode) && !HONOR_SNANS (mode))
+	    return const0_rtx;
 	  break;
 
 	case GE:
 	  /* Optimize abs(x) >= 0.0.  */
-	  if (!HONOR_NANS (mode)
-	      && (!INTEGRAL_MODE_P (mode)
-		  || (!flag_wrapv && !flag_trapv && flag_strict_overflow)))
-	    {
-	      if (INTEGRAL_MODE_P (mode)
-	          && (issue_strict_overflow_warning
-	    	  (WARN_STRICT_OVERFLOW_CONDITIONAL)))
-	        warning (OPT_Wstrict_overflow,
-			 ("assuming signed overflow does not occur when "
-			  "assuming abs (x) >= 0 is true"));
-	      return const_true_rtx;
-	    }
+	  if (!INTEGRAL_MODE_P (mode) && !HONOR_NANS (mode))
+	    return const_true_rtx;
 	  break;
 
 	case UNGE:
