@@ -1,6 +1,13 @@
 2017-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.c (legacy_fn_member_lookup): Move conv_op processing
+	to get_class_binding_direct.
+	(legacy_nonfn_member_lookup): Move asserts to
+	get_class_binding_direct.
+	(get_class_binding_direct): Abosorb asserts and conv_op processing.
+
+	gcc/cp/
 	* cp-tree.h (print_search_statistics,
 	reinit_search_statistics): Delete.
 	* tree.c (cxx_print_statistics): Don't print search stats.

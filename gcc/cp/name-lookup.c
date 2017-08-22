@@ -3368,16 +3368,13 @@ extract_conversion_operator (tree fns, tree type)
 /* Look for REALNAME member functions of TYPE.  */
 
 static tree
-legacy_fn_member_lookup (tree type, tree realname)
+legacy_fn_member_lookup (tree type, tree name)
 {
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     return NULL_TREE;
 
   tree fns = NULL_TREE;
-  tree name = realname;
-  if (IDENTIFIER_CONV_OP_P (realname))
-    name = conv_op_identifier;
 
   /* If the type is complete, use binary search.  */
   if (COMPLETE_TYPE_P (type))
@@ -3407,16 +3404,6 @@ legacy_fn_member_lookup (tree type, tree realname)
 	fns = NULL_TREE;
       }
 
-  /* Extract the conversion operators asked for, unless the general
-     conversion operator was requested.   */
-  if (fns && name == conv_op_identifier)
-    {
-      gcc_checking_assert (OVL_FUNCTION (fns) == conv_op_marker);
-      fns = OVL_CHAIN (fns);
-      if (tree type = TREE_TYPE (realname))
-	fns = extract_conversion_operator (fns, type);
-    }
-
   return fns;
 }
 
@@ -3425,16 +3412,10 @@ legacy_fn_member_lookup (tree type, tree realname)
 static tree
 legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
 {
-  tree field;
-
-  gcc_assert (identifier_p (name) && RECORD_OR_UNION_TYPE_P (type));
-
   if (CLASSTYPE_BINDINGS (type))
     return lookup_class_member (type, name, want_type);
 
-  field = TYPE_FIELDS (type);
-
-  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree decl = field;
 
@@ -3485,14 +3466,17 @@ tree
 get_class_binding_direct (tree klass, tree name, bool prefer_type,
 			  bool fn_only)
 {
+  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
+
   /* Conversion operators can only be found by the marker conversion
      operator name.  */
-
+  bool conv_op = IDENTIFIER_CONV_OP_P (name);
+  tree lookup = conv_op ? conv_op_identifier : name;
   tree val = NULL_TREE;
 
   /* First look for a function.  */
   if (!prefer_type)
-    val = legacy_fn_member_lookup (klass, name);
+    val = legacy_fn_member_lookup (klass, lookup);
 
   if (fn_only)
     /* Don't bother looking for field.  We don't want it.  */;
@@ -3500,9 +3484,19 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
     {
       /* Dependent using declarations are a 'field', make sure we
 	 return that even if we saw an overload already.  */
-      tree field_val = legacy_nonfn_member_lookup (klass, name, prefer_type);
+      tree field_val = legacy_nonfn_member_lookup (klass, lookup, prefer_type);
       if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
 	val = field_val;
+    }
+
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (val && conv_op)
+    {
+      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
+      val = OVL_CHAIN (val);
+      if (tree type = TREE_TYPE (name))
+	val = extract_conversion_operator (val, type);
     }
 
   return val;
