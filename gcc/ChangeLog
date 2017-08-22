@@ -1,3 +1,16 @@
+2017-08-22  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config.gcc (powerpc-*-rtems*): Add rs6000/linux64.opt.
+	* config/rs6000/rtems.h (ASM_PREFERRED_EH_DATA_FORMAT): New define.
+	(DOT_SYMBOLS): Likewise.
+	(MINIMAL_TOC_SECTION_ASM_OP): Likewise.
+	(RELOCATABLE_NEEDS_FIXUP): Likewise.
+	(RS6000_ABI_NAME): Likewise.
+	(TARGET_CMODEL): Likewise.
+	(TOC_SECTION_ASM_OP): Likewise.
+	(SET_CMODEL): New macro.
+	(SUBSUBTARGET_OVERRIDE_OPTIONS): Evaluate cmodel options.
+
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
 	* tree-inline.c (remap_type_1): Change asserts on TYPE_SIZE[_UNIT]
