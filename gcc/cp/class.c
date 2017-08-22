@@ -2900,7 +2900,7 @@ get_basefndecls (tree name, tree t, vec<tree> *base_fndecls)
   bool found_decls = false;
 
   /* Find virtual functions in T with the indicated NAME.  */
-  for (ovl_iterator iter (lookup_fnfields_slot (t, name)); iter; ++iter)
+  for (ovl_iterator iter (get_class_binding (t, name)); iter; ++iter)
     {
       tree method = *iter;
 
@@ -5393,8 +5393,7 @@ type_build_ctor_call (tree t)
     return false;
   /* A user-declared constructor might be private, and a constructor might
      be trivial but deleted.  */
-  for (ovl_iterator iter
-	 (lookup_fnfields_slot (inner, complete_ctor_identifier));
+  for (ovl_iterator iter (get_class_binding (inner, complete_ctor_identifier));
        iter; ++iter)
     {
       tree fn = *iter;
@@ -5421,8 +5420,7 @@ type_build_dtor_call (tree t)
     return false;
   /* A user-declared destructor might be private, and a destructor might
      be trivial but deleted.  */
-  for (ovl_iterator iter
-	 (lookup_fnfields_slot (inner, complete_dtor_identifier));
+  for (ovl_iterator iter (get_class_binding (inner, complete_dtor_identifier));
        iter; ++iter)
     {
       tree fn = *iter;

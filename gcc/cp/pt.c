@@ -1199,7 +1199,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 	return NULL_TREE;
 
       /* Find the instance of TMPL.  */
-      tree fns = lookup_fnfields_slot (class_specialization, DECL_NAME (tmpl));
+      tree fns = get_class_binding (class_specialization, DECL_NAME (tmpl));
       for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
@@ -2903,7 +2903,7 @@ check_explicit_specialization (tree declarator,
 	       them.  */
 	    fns = lookup_all_conversions (ctype);
 	  else
-	    fns = lookup_fnfields_slot (ctype, name);
+	    fns = get_class_binding (ctype, name);
 
 	  if (fns == NULL_TREE)
 	    {

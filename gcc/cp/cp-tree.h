@@ -216,7 +216,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    example:
 
      tree ovlid = cp_assignment_operator_id (NOP_EXPR);
-     tree overloads = lookup_fnfields_slot (type, ovlid);
+     tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
    iterates over the set of implicitly and explicitly defined overloads
@@ -6566,7 +6566,6 @@ extern int accessible_p				(tree, tree, bool);
 extern int accessible_in_template_p		(tree, tree);
 extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_field			(tree, tree, int, bool);
-extern tree lookup_fnfields_slot		(tree, tree);
 extern tree lookup_fnfields_slot_nolazy		(tree, tree);
 extern tree lookup_fnfields			(tree, tree, int);
 extern tree lookup_member			(tree, tree, int, bool,

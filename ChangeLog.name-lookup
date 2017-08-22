@@ -1,6 +1,20 @@
 2017-08-22  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (lookup_fnfields_slot): Delete.
+	* search.c (lookup_fnfields_slot): Delete.
+	(look_for_overrides_here): Use get_class_binding.
+	* call.c (build_user_type_conversion_1): Likewise.
+	(has_trivial_copy_assign_p, has_trivial_copy_p): Likewise.
+	* class.c (get_basefndecls, type_build_ctor_call,
+	type_build_dtor_call): Likewise.
+	* decl.c (register_dtor_fn): Likewise.
+	* decl2.c (check_classfn): Likewise.
+	* pt.c (retrieve_specialization,
+	check_explicit_specialization): Likewise.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Likewise.
+
+	gcc/cp/
 	* name-lookup.h (get_class_binding_direct): Declare.
 	(get_class_binding): Adjust.
 	* name-lookup.c (get_class_binding_direct): New.

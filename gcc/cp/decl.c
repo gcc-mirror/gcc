@@ -7857,7 +7857,7 @@ register_dtor_fn (tree decl)
   use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
-      cleanup = lookup_fnfields_slot (type, complete_dtor_identifier);
+      cleanup = get_class_binding (type, complete_dtor_identifier);
 
       /* Make sure it is accessible.  */
       perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,

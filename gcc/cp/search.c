@@ -1499,15 +1499,6 @@ lookup_fnfields_slot_nolazy (tree type, tree realname)
   return fns;
 }
 
-/* TYPE is a class type. Return the overloads in
-   the method vector with name NAME.  Lazily create ctors etc.  */
-
-tree
-lookup_fnfields_slot (tree type, tree name)
-{
-  return get_class_binding (type, name);
-}
-
 /* DECL is the result of a qualified name lookup.  QUALIFYING_SCOPE is
    the class or namespace used to qualify the name.  CONTEXT_CLASS is
    the class corresponding to the object in which DECL will be used.
@@ -2203,7 +2194,7 @@ look_for_overrides (tree type, tree fndecl)
 tree
 look_for_overrides_here (tree type, tree fndecl)
 {
-  tree ovl = lookup_fnfields_slot (type, DECL_NAME (fndecl));
+  tree ovl = get_class_binding (type, DECL_NAME (fndecl));
 
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
