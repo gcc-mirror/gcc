@@ -1,5 +1,11 @@
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (maybe_version_functions): Declare.
+	* decl.c (decls_match): Break function versioning check to
+	separate function.  Call it.
+	(maybe_version_functions): Broken out of decls_match.
+	* class.c (add_method): Use maybe_version_functions.
+
 	* cp-tree.h (print_search_statistics,
 	reinit_search_statistics): Don't declare.
 	* search.c (n_fields_searched, n_calls_lookup_field,

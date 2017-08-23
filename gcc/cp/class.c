@@ -1154,33 +1154,11 @@ add_method (tree type, tree method, bool via_using)
 			      TREE_TYPE (method_type)))
           && equivalently_constrained (fn, method))
 	{
-	  /* For function versions, their parms and types match
-	     but they are not duplicates.  Record function versions
-	     as and when they are found.  extern "C" functions are
-	     not treated as versions.  */
+	  /* If these are versions of the same function, process and
+	     move on.  */
 	  if (TREE_CODE (fn) == FUNCTION_DECL
-	      && TREE_CODE (method) == FUNCTION_DECL
-	      && !DECL_EXTERN_C_P (fn)
-	      && !DECL_EXTERN_C_P (method)
-	      && targetm.target_option.function_versions (fn, method))
- 	    {
-	      /* Mark functions as versions if necessary.  Modify the mangled
-		 decl name if necessary.  */
-	      if (!DECL_FUNCTION_VERSIONED (fn))
-		{
-		  DECL_FUNCTION_VERSIONED (fn) = 1;
-		  if (DECL_ASSEMBLER_NAME_SET_P (fn))
-		    mangle_decl (fn);
-		}
-	      if (!DECL_FUNCTION_VERSIONED (method))
-		{
-		  DECL_FUNCTION_VERSIONED (method) = 1;
-		  if (DECL_ASSEMBLER_NAME_SET_P (method))
-		    mangle_decl (method);
-		}
-	      cgraph_node::record_function_versions (fn, method);
-	      continue;
-	    }
+	      && maybe_version_functions (method, fn))
+	    continue;
 
 	  if (DECL_INHERITED_CTOR (method))
 	    {
