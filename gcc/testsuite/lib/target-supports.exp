@@ -5332,6 +5332,28 @@ proc check_effective_target_vect_perm_short { } {
     return $et_vect_perm_short_saved($et_index)
 }
 
+# Return 1 if the target plus current options supports folding of
+# copysign into XORSIGN.
+#
+# This won't change for different subtargets so cache the result.
+
+proc check_effective_target_xorsign { } {
+    global et_xorsign_saved
+    global et_index
+
+    if [info exists et_xorsign_saved($et_index)] {
+        verbose "check_effective_target_xorsign: using cached result" 2
+    } else {
+	set et_xorsign_saved($et_index) 0
+        if { [istarget aarch64*-*-*] || [istarget arm*-*-*] } {
+	    set et_xorsign_saved($et_index) 1
+        }
+    }
+    verbose "check_effective_target_xorsign:\
+	     returning $et_xorsign_saved($et_index)" 2
+    return $et_xorsign_saved($et_index)
+}
+
 # Return 1 if the target plus current options supports a vector
 # widening summation of *short* args into *int* result, 0 otherwise.
 #

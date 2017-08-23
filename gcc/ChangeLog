@@ -1,6 +1,12 @@
 2017-08-23  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/19706
+	* doc/sourcebuild.texi (Other hardware attributes):
+	Document xorsign.
+
+2017-08-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/19706
 	* tree-ssa-math-opts.c (convert_expand_mult_copysign):
 	Fix single-use check.
 
