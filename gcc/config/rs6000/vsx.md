@@ -736,17 +736,20 @@
 ;; special V1TI container class, which it is not appropriate to use vec_select
 ;; for the type.
 (define_insn "*vsx_le_permute_<mode>"
-  [(set (match_operand:VSX_LE_128 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z")
+  [(set (match_operand:VSX_LE_128 0 "nonimmediate_operand" "=<VSa>,<VSa>,Z,&r,&r,Q")
 	(rotate:VSX_LE_128
-	 (match_operand:VSX_LE_128 1 "input_operand" "<VSa>,Z,<VSa>")
+	 (match_operand:VSX_LE_128 1 "input_operand" "<VSa>,Z,<VSa>,r,Q,r")
 	 (const_int 64)))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   "@
    xxpermdi %x0,%x1,%x1,2
    lxvd2x %x0,%y1
-   stxvd2x %x1,%y0"
-  [(set_attr "length" "4")
-   (set_attr "type" "vecperm,vecload,vecstore")])
+   stxvd2x %x1,%y0
+   mr %0,%L1\;mr %L0,%1
+   ld%U1%X1 %0,%L1\;ld%U1%X1 %L0,%1
+   std%U0%X0 %L1,%0\;std%U0%X0 %1,%L0"
+  [(set_attr "length" "4,4,4,8,8,8")
+   (set_attr "type" "vecperm,vecload,vecstore,*,load,store")])
 
 (define_insn_and_split "*vsx_le_undo_permute_<mode>"
   [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>,<VSa>")
@@ -772,10 +775,12 @@
    (set_attr "type" "veclogical")])
 
 (define_insn_and_split "*vsx_le_perm_load_<mode>"
-  [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>")
-        (match_operand:VSX_LE_128 1 "memory_operand" "Z"))]
+  [(set (match_operand:VSX_LE_128 0 "vsx_register_operand" "=<VSa>,r")
+	(match_operand:VSX_LE_128 1 "memory_operand" "Z,Q"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
-  "#"
+  "@
+   #
+   #"
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
   [(set (match_dup 2)
 	(rotate:VSX_LE_128 (match_dup 1)
@@ -789,16 +794,18 @@
                                        : operands[0];
 }
   "
-  [(set_attr "type" "vecload")
-   (set_attr "length" "8")])
+  [(set_attr "type" "vecload,load")
+   (set_attr "length" "8,8")])
 
 (define_insn "*vsx_le_perm_store_<mode>"
-  [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z")
-        (match_operand:VSX_LE_128 1 "vsx_register_operand" "+<VSa>"))]
+  [(set (match_operand:VSX_LE_128 0 "memory_operand" "=Z,Q")
+	(match_operand:VSX_LE_128 1 "vsx_register_operand" "+<VSa>,r"))]
   "!BYTES_BIG_ENDIAN && TARGET_VSX && !TARGET_P9_VECTOR"
-  "#"
-  [(set_attr "type" "vecstore")
-   (set_attr "length" "12")])
+  "@
+   #
+   #"
+  [(set_attr "type" "vecstore,store")
+   (set_attr "length" "12,8")])
 
 (define_split
   [(set (match_operand:VSX_LE_128 0 "memory_operand" "")
@@ -814,6 +821,31 @@
   operands[2] = can_create_pseudo_p () ? gen_reg_rtx_and_attrs (operands[0])
                                        : operands[0];
 })
+
+;; Peepholes to catch loads and stores for TImode if TImode landed in
+;; GPR registers on a little endian system.
+(define_peephole2
+  [(set (match_operand:VSX_LE_128 0 "int_reg_operand")
+	(rotate:VSX_LE_128 (match_operand:VSX_LE_128 1 "memory_operand")
+			   (const_int 64)))
+   (set (match_operand:VSX_LE_128 2 "int_reg_operand")
+	(rotate:VSX_LE_128 (match_dup 0)
+			   (const_int 64)))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
+   && (rtx_equal_p (operands[0], operands[2])
+       || peep2_reg_dead_p (2, operands[0]))"
+   [(set (match_dup 2) (match_dup 1))])
+
+(define_peephole2
+  [(set (match_operand:VSX_LE_128 0 "int_reg_operand")
+	(rotate:VSX_LE_128 (match_operand:VSX_LE_128 1 "int_reg_operand")
+			   (const_int 64)))
+   (set (match_operand:VSX_LE_128 2 "memory_operand")
+	(rotate:VSX_LE_128 (match_dup 0)
+			   (const_int 64)))]
+  "!BYTES_BIG_ENDIAN && TARGET_VSX && TARGET_VSX_TIMODE && !TARGET_P9_VECTOR
+   && peep2_reg_dead_p (2, operands[0])"
+   [(set (match_dup 2) (match_dup 1))])
 
 ;; Peephole to catch memory to memory transfers for TImode if TImode landed in
 ;; VSX registers on a little endian system.  The vector types and IEEE 128-bit
