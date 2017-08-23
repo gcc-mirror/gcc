@@ -1,5 +1,7 @@
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251313.
+
 	gcc/cp/
 	* name-lookup.h (get_class_binding_direct, get_class_binding): Add
 	temporary restricted parm.

@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* && { ! ia32 } } } } */
+/* { dg-do compile { target { *-*-linux* && lp64 } } } */
 /* { dg-options "-O -mabi=ms -mstackrealign" } */
 
 typedef float V __attribute__ ((vector_size (16)));

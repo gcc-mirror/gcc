@@ -1,3 +1,47 @@
+2017-08-23  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/param-type-mismatch.C: New test acse.
+	* gcc.dg/param-type-mismatch.c: New test case.
+
+2017-08-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-perm-char.c: New.
+	* gcc.target/powerpc/fold-vec-perm-double.c: New.
+	* gcc.target/powerpc/fold-vec-perm-float.c: New.
+	* gcc.target/powerpc/fold-vec-perm-int.c: New.
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-perm-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-perm-short.c: New.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/cpp1y/constexpr-instantiate.C: Adjust.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* gnat.dg/noinline2.adb: Likewise.
+	* gnat.dg/renaming6.adb: Likewise.
+	* gnat.dg/renaming6.ads: Likewise.
+	* gnat.dg/specs/noinline3.ads: Likewise.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81940
+	* g++.dg/lto/pr81940_0.C: New testcase.
+
+2017-08-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/19706
+	* gcc.dg/tree-ssa/pr19706.c: New.
+	* lib/target-supports.exp (check_effective_target_xorsign): New.
+
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr71958.c: New test to verify error on -mx32 and
+	-mabi=ms
+	* gcc.target/i386/pr64409.c: Modify to only run on x32.
+	* gcc.target/i386/pr46470.c: Modify to skip x32 target.
+	* gcc.target/i386/pr66275.c: Likewise.
+	* gcc.target/i386/pr68018.c: Likewise.
+
 2017-08-22  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-sums-int.c: New.

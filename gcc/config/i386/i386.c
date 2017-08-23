@@ -5684,6 +5684,10 @@ ix86_option_override_internal (bool main_args_p,
   if (!opts_set->x_ix86_abi)
     opts->x_ix86_abi = DEFAULT_ABI;
 
+  if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
+    error ("-mabi=ms not supported with X32 ABI");
+  gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
+
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
@@ -6313,7 +6317,7 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   /* Set the default value for -mstackrealign.  */
-  if (opts->x_ix86_force_align_arg_pointer == -1)
+  if (!opts_set->x_ix86_force_align_arg_pointer)
     opts->x_ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
 
   ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
@@ -8777,8 +8781,12 @@ ix86_function_type_abi (const_tree fntype)
   if (abi == SYSV_ABI
       && lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (fntype)))
     {
-      if (TARGET_X32)
-	error ("X32 does not support ms_abi attribute");
+      static int warned;
+      if (TARGET_X32 && !warned)
+	{
+	  error ("X32 does not support ms_abi attribute");
+	  warned = 1;
+	}
 
       abi = MS_ABI;
     }

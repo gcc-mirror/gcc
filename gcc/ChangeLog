@@ -1,3 +1,75 @@
+2017-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt: Remove unneeded Init(0) initializations.
+	(mstackrealign): Do not init to -1.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Check opts_set, not opts when setting default value of
+	opts->x_ix86_force_align_arg_pointer.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	* function.c (fndecl_name): Use verbosity 1 (no arguments) for
+	lang_hooks.decl_printable_name.
+	* print-rtl-function.c (print_rtx_function): Likewise.
+	* tree-pretty-print.c (dump_function_header): Likewise.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81940
+	* dwarf2out.c (dwarf2out_abstract_function): Handle LTO with
+	-g0 at compile-time.
+
+2017-08-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/19706
+	* doc/sourcebuild.texi (Other hardware attributes):
+	Document xorsign.
+
+2017-08-23  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/19706
+	* tree-ssa-math-opts.c (convert_expand_mult_copysign):
+	Fix single-use check.
+
+2017-08-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c (execute): Only test for SIGKILL and SIGQUIT if available.
+
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
+	* doc/install.texi: Modify to add more details on running selected
+	tests.
+
+2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.c (ix86_option_override_internal): Error when -mx32
+	is combined with -mabi=ms.
+	(ix86_function_type_abi): Limit errors for mixing -mx32 with attribute
+	ms_abi.
+
+2017-08-22  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81488
+	* gimple-ssa-strength-reduction (struct slsr_cand_d): Add visited
+	and cached_basis fields.
+	(MAX_SPREAD): New constant.
+	(alloc_cand_and_find_basis): Initialize new fields.
+	(clear_visited): New function.
+	(create_phi_basis_1): Rename from create_phi_basis, set visited
+	and cached_basis fields.
+	(create_phi_basis): New wrapper function.
+	(phi_add_costs_1): Rename from phi_add_costs, add spread
+	parameter, set visited field, short-circuit when limits reached.
+	(phi_add_costs): New wrapper function.
+	(record_phi_increments_1): Rename from record_phi_increments, set
+	visited field.
+	(record_phi_increments): New wrapper function.
+	(phi_incr_cost_1): Rename from phi_incr_cost, set visited field.
+	(phi_incr_cost): New wrapper function.
+	(all_phi_incrs_profitable_1): Rename from
+	all_phi_incrs_profitable, set visited field.
+	(all_phi_incrs_profitable): New wrapper function.
+
 2017-08-22  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

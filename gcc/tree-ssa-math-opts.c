@@ -3200,21 +3200,20 @@ convert_expand_mult_copysign (gimple *stmt, gimple_stmt_iterator *gsi)
   type = TREE_TYPE (lhs);
   machine_mode mode = TYPE_MODE (type);
 
-  if (HONOR_SNANS (type) || !has_single_use (lhs))
+  if (HONOR_SNANS (type))
     return false;
 
   if (TREE_CODE (treeop0) == SSA_NAME && TREE_CODE (treeop1) == SSA_NAME)
     {
       gimple *call0 = SSA_NAME_DEF_STMT (treeop0);
-      if (!is_copysign_call_with_1 (call0))
+      if (!has_single_use (treeop0) || !is_copysign_call_with_1 (call0))
 	{
 	  call0 = SSA_NAME_DEF_STMT (treeop1);
-	  if (!is_copysign_call_with_1 (call0))
+	  if (!has_single_use (treeop1) || !is_copysign_call_with_1 (call0))
 	    return false;
 
 	  treeop1 = treeop0;
 	}
-
 	if (optab_handler (xorsign_optab, mode) == CODE_FOR_nothing)
 	  return false;
 
