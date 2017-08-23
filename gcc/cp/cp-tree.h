@@ -6071,6 +6071,7 @@ extern void push_switch				(tree);
 extern void pop_switch				(void);
 extern tree make_lambda_name			(void);
 extern int decls_match				(tree, tree);
+extern bool maybe_version_functions		(tree, tree);
 extern tree duplicate_decls			(tree, tree, bool);
 extern tree declare_local_label			(tree);
 extern tree define_label			(location_t, tree);

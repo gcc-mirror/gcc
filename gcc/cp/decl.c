@@ -1088,28 +1088,8 @@ decls_match (tree newdecl, tree olddecl)
       if (types_match
 	  && !DECL_EXTERN_C_P (newdecl)
 	  && !DECL_EXTERN_C_P (olddecl)
-	  && targetm.target_option.function_versions (newdecl, olddecl))
-	{
-	  /* Mark functions as versions if necessary.  Modify the mangled decl
-	     name if necessary.  */
-	  if (DECL_FUNCTION_VERSIONED (newdecl)
-	      && DECL_FUNCTION_VERSIONED (olddecl))
-	    return 0;
-	  if (!DECL_FUNCTION_VERSIONED (newdecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (newdecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
-	        mangle_decl (newdecl);
-	    }
-	  if (!DECL_FUNCTION_VERSIONED (olddecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (olddecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
-	       mangle_decl (olddecl);
-	    }
-	  cgraph_node::record_function_versions (olddecl, newdecl);
-	  return 0;
-	}
+	  && maybe_version_functions (newdecl, olddecl))
+	return 0;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -1163,6 +1143,40 @@ decls_match (tree newdecl, tree olddecl)
     types_match = equivalently_constrained (newdecl, olddecl);
 
   return types_match;
+}
+
+/* NEWDECL and OLDDECL have identical signatures.  If they are
+   different versions adjust them and return true.  */
+
+bool
+maybe_version_functions (tree newdecl, tree olddecl)
+{
+  if (!targetm.target_option.function_versions (newdecl, olddecl))
+    return false;
+
+  bool record = false;
+
+  if (!DECL_FUNCTION_VERSIONED (olddecl))
+    {
+      record = true;
+      DECL_FUNCTION_VERSIONED (olddecl) = 1;
+      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
+	mangle_decl (olddecl);
+    }
+
+  if (!DECL_FUNCTION_VERSIONED (newdecl))
+    {
+      record = true;
+      DECL_FUNCTION_VERSIONED (newdecl) = 1;
+      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
+	mangle_decl (newdecl);
+    }
+
+  /* Only record if at least one was not already versions.  */
+  if (record)
+    cgraph_node::record_function_versions (olddecl, newdecl);
+
+  return true;
 }
 
 /* If NEWDECL is `static' and an `extern' was seen previously,
