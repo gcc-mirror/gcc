@@ -1,3 +1,18 @@
+2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr80969-1.c: New testcase.
+	* gcc.target/i386/pr80969-2a.c: Likewise.
+	* gcc.target/i386/pr80969-2.c: Likewise.
+	* gcc.target/i386/pr80969-3.c: Likewise.
+	* gcc.target/i386/pr80969-4a.c: Likewise.
+	* gcc.target/i386/pr80969-4b.c: Likewise.
+	* gcc.target/i386/pr80969-4.c: Likewise.
+	* gcc.target/i386/pr80969-4.h: New header common to pr80969-4*.c
+	* lib/target-supports.exp (check_avx512_os_support_available,
+	check_avx512f_hw_available, check_effective_target_avx512f_runtime):
+	New proceedures for target avx512f and avx512f_runtime selectors.
+	(check_avx2_hw_available): Fix breakage due NULL being undefined.
+
 2017-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/diagnostic/param-type-mismatch.C: New test acse.

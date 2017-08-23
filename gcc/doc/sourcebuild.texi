@@ -1855,6 +1855,18 @@ Target supports compiling @code{avx} instructions.
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
 
+@item avx2
+Target supports compiling @code{avx2} instructions.
+
+@item avx2_runtime
+Target supports the execution of @code{avx2} instructions.
+
+@item avx512f
+Target supports compiling @code{avx512f} instructions.
+
+@item avx512f_runtime
+Target supports the execution of @code{avx512f} instructions.
+
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
 

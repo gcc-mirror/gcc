@@ -1,3 +1,23 @@
+2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.h (ix86_frame::stack_realign_allocate_offset):
+	Remove field.
+	(ix86_frame::stack_realign_allocate): New field.
+	(struct machine_frame_state): Modify comments.
+	(machine_frame_state::sp_realigned_fp_end): New field.
+	* config/i386/i386.c (ix86_compute_frame_layout): Rework stack frame
+	layout calculation.
+	(sp_valid_at): Add assertion to assure no attempt to access invalid
+	offset of a realigned stack.
+	(fp_valid_at): Likewise.
+	(choose_baseaddr): Modify comments.
+	(ix86_emit_outlined_ms2sysv_save): Adjust to changes in
+	ix86_expand_prologue.
+	(ix86_expand_prologue): Modify stack realignment and allocation.
+	(ix86_expand_epilogue): Modify comments.
+	* doc/sourcebuild.texi: Add documentation for target selectors avx2,
+	avx2_runtime, avx512f, and avx512f_runtime.
+
 2017-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt: Remove unneeded Init(0) initializations.
