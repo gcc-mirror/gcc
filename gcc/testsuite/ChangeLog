@@ -1,3 +1,8 @@
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81940
+	* g++.dg/lto/pr81940_0.C: New testcase.
+
 2017-08-23  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/19706
