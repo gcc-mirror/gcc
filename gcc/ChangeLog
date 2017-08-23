@@ -1,5 +1,12 @@
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
+	* function.c (fndecl_name): Use verbosity 1 (no arguments) for
+	lang_hooks.decl_printable_name.
+	* print-rtl-function.c (print_rtx_function): Likewise.
+	* tree-pretty-print.c (dump_function_header): Likewise.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
 	PR lto/81940
 	* dwarf2out.c (dwarf2out_abstract_function): Handle LTO with
 	-g0 at compile-time.
