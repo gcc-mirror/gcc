@@ -4047,7 +4047,7 @@ dump_function_header (FILE *dump_file, tree fdecl, dump_flags_t flags)
   struct cgraph_node *node = cgraph_node::get (fdecl);
   struct function *fun = DECL_STRUCT_FUNCTION (fdecl);
 
-  dname = lang_hooks.decl_printable_name (fdecl, 2);
+  dname = lang_hooks.decl_printable_name (fdecl, 1);
 
   if (DECL_ASSEMBLER_NAME_SET_P (fdecl))
     aname = (IDENTIFIER_POINTER

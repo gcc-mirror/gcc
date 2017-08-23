@@ -6259,7 +6259,7 @@ fndecl_name (tree fndecl)
 {
   if (fndecl == NULL)
     return "(nofn)";
-  return lang_hooks.decl_printable_name (fndecl, 2);
+  return lang_hooks.decl_printable_name (fndecl, 1);
 }
 
 /* Returns the name of function FN.  */
