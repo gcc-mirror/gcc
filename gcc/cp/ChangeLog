@@ -1,5 +1,17 @@
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (lookup_field_1, lookup_fnfields_slot,
+	lookup_fnfields_slot_nolazy, lookup_all_conversions): Move
+	declatations to ...
+	* name-lookup.h (lookup_field_1, lookup_fnfields_slot,
+	lookup_fnfields_slot_nolazy, lookup_all_conversions): ... here.
+	* search.c (lookup_conversion_operator,
+	lookup_fnfields_slot_nolazy, lookup_field_1, lookup_fnfields_slot,
+	lookup_all_conversions): Move to ...
+	* name-lookup.c (lookup_conversion_operator,
+	lookup_fnfields_slot_nolazy, lookup_field_1, lookup_fnfields_slot,
+	lookup_all_conversions): ... here.
+
 	* semantics.c (finish_member_declaration): Move USING_DECL check
 	earlier.  Always set C++ linkage.  Commonize TYPE_FIELD and
 	template decl list insertion.
