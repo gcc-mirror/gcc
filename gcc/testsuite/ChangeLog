@@ -1,3 +1,13 @@
+2017-08-23  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-perm-char.c: New.
+	* gcc.target/powerpc/fold-vec-perm-double.c: New.
+	* gcc.target/powerpc/fold-vec-perm-float.c: New.
+	* gcc.target/powerpc/fold-vec-perm-int.c: New.
+	* gcc.target/powerpc/fold-vec-perm-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-perm-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-perm-short.c: New.
+
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/cpp1y/constexpr-instantiate.C: Adjust.
