@@ -6317,7 +6317,7 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   /* Set the default value for -mstackrealign.  */
-  if (opts->x_ix86_force_align_arg_pointer == -1)
+  if (!opts_set->x_ix86_force_align_arg_pointer)
     opts->x_ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
 
   ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;

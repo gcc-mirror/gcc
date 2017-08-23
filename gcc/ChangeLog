@@ -1,3 +1,11 @@
+2017-08-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt: Remove unneeded Init(0) initializations.
+	(mstackrealign): Do not init to -1.
+	* config/i386/i386.c (ix86_option_override_internal):
+	Check opts_set, not opts when setting default value of
+	opts->x_ix86_force_align_arg_pointer.
+
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
 	* function.c (fndecl_name): Use verbosity 1 (no arguments) for
