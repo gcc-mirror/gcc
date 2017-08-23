@@ -1908,6 +1908,9 @@ or @code{EM_SPARCV9} executables.
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
 
+@item xorsign
+Target supports the xorsign optab expansion.
+
 @end table
 
 @subsubsection Environment attributes
