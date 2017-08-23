@@ -1,5 +1,9 @@
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
+	* semantics.c (finish_member_declaration): Move USING_DECL check
+	earlier.  Always set C++ linkage.  Commonize TYPE_FIELD and
+	template decl list insertion.
+
 	* cp-tree.h (maybe_version_functions): Declare.
 	* decl.c (decls_match): Break function versioning check to
 	separate function.  Call it.
