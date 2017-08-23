@@ -1089,6 +1089,290 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return fns;
 }
 
+/* FNS is an overload set of conversion functions.  Return the
+   overloads converting to TYPE.  */
+
+static tree
+extract_conversion_operator (tree fns, tree type)
+{
+  tree convs = NULL_TREE;
+  tree tpls = NULL_TREE;
+
+  for (ovl_iterator iter (fns); iter; ++iter)
+    {
+      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	convs = lookup_add (*iter, convs);
+
+      // FIXME: really want some way to say 'no templates'
+      // FIXME: Plus ordering the overload to put templates last
+      if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	tpls = lookup_add (*iter, tpls);
+    }
+
+  if (!convs)
+    convs = tpls;
+
+  return convs;
+}
+
+/* Look for REALNAME member functions of TYPE.  */
+
+static tree
+legacy_fn_member_lookup (tree type, tree name)
+{
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
+  if (!method_vec)
+    return NULL_TREE;
+
+  tree fns = NULL_TREE;
+
+  /* If the type is complete, use binary search.  */
+  if (COMPLETE_TYPE_P (type))
+    {
+      int lo = 0;
+      int hi = method_vec->length ();
+      while (lo < hi)
+	{
+	  int i = (lo + hi) / 2;
+
+	  fns = (*method_vec)[i];
+	  tree fns_name = OVL_NAME (fns);
+	  if (fns_name > name)
+	    hi = i;
+	  else if (fns_name < name)
+	    lo = i + 1;
+	  else
+	    break;
+	  fns = NULL_TREE;
+	}
+    }
+  else
+    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
+      {
+	if (OVL_NAME (fns) == name)
+	  break;
+	fns = NULL_TREE;
+      }
+
+  return fns;
+}
+
+/* Look for non-function member NAME of TYPE */
+
+static tree
+legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
+{
+  if (CLASSTYPE_BINDINGS (type))
+    return lookup_class_member (type, name, want_type);
+
+  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
+    {
+      tree decl = field;
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	/* Functions are kep separately, at the moment.  */
+	continue;
+
+      gcc_assert (DECL_P (field));
+      if (DECL_NAME (field) == NULL_TREE
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	{
+	  tree temp = legacy_nonfn_member_lookup
+	    (TREE_TYPE (field), name, want_type);
+	  if (temp)
+	    return temp;
+	}
+
+      if (TREE_CODE (decl) == USING_DECL
+	  && DECL_NAME (decl) == name)
+	{
+	  decl = strip_using_decl (decl);
+	  if (is_overloaded_fn (decl))
+	    continue;
+	}
+
+      if (DECL_NAME (decl) == name
+	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
+	return decl;
+    }
+
+  /* We used to special-case vptr_identifier.  Make sure it's not
+     special any more.  */
+  gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
+
+  return NULL_TREE;
+}
+
+/* Look for NAME as an immediate member of KLASS (including
+   anon-members or unscoped enum member).  PREFER_TYPE is true if
+   you'd prefer a TYPE binding (given a choice, if there's no type
+   binding, you'll get the value binding.
+
+   Use this if you do not want lazy member creation.  */
+
+tree
+get_class_binding_direct (tree klass, tree name, bool prefer_type,
+			  int restricted)
+{
+  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
+
+  /* Conversion operators can only be found by the marker conversion
+     operator name.  */
+  bool conv_op = IDENTIFIER_CONV_OP_P (name);
+  tree lookup = conv_op ? conv_op_identifier : name;
+  tree val = NULL_TREE;
+
+  /* First look for a function.  */
+  if (!prefer_type && restricted >= 0)
+    val = legacy_fn_member_lookup (klass, lookup);
+
+  if (restricted > 0)
+    /* Don't bother looking for field.  We don't want it.  */;
+  else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
+    {
+      /* Dependent using declarations are a 'field', make sure we
+	 return that even if we saw an overload already.  */
+      tree field_val = legacy_nonfn_member_lookup (klass, lookup, prefer_type);
+      if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
+	val = field_val;
+    }
+
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (val && conv_op)
+    {
+      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
+      val = OVL_CHAIN (val);
+      if (tree type = TREE_TYPE (name))
+	val = extract_conversion_operator (val, type);
+    }
+
+  return val;
+}
+
+/* Look for NAME's binding in exactly KLASS.  Does lazy special
+   function creation as necessary.  */
+
+tree
+get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
+{
+  klass = complete_type (klass);
+
+  if (COMPLETE_TYPE_P (klass))
+    {
+      /* Lazily declare functions, if we're going to search these.  */
+      if (IDENTIFIER_CTOR_P (name))
+	{
+	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
+	    lazily_declare_fn (sfk_constructor, klass);
+	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
+	    lazily_declare_fn (sfk_copy_constructor, klass);
+	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
+	    lazily_declare_fn (sfk_move_constructor, klass);
+	}
+      else if (IDENTIFIER_DTOR_P (name))
+	{
+	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
+	    lazily_declare_fn (sfk_destructor, klass);
+	}
+      else if (name == cp_assignment_operator_id (NOP_EXPR))
+	{
+	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
+	    lazily_declare_fn (sfk_copy_assignment, klass);
+	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
+	    lazily_declare_fn (sfk_move_assignment, klass);
+	}
+    }
+
+  return get_class_binding_direct (klass, name, prefer_type, restricted);
+}
+
+/* Look for NAME in exactly TYPE (including anon-members).  */
+// FIXME currently only fields, will be extending
+
+tree
+lookup_class_member (tree klass, tree name, bool want_type)
+{
+  tree *slot = CLASSTYPE_BINDINGS (klass)->get (name);
+  if (!slot)
+    return NULL_TREE;
+
+  tree val = *slot;
+  if (STAT_HACK_P (val))
+    {
+      if (want_type)
+	return STAT_TYPE (val);
+      val = STAT_DECL (val);
+    }
+
+  val = strip_using_decl (val);
+  if (OVL_P (val))
+    return NULL_TREE;
+
+  if (want_type && !DECL_DECLARES_TYPE_P (val))
+    val = NULL_TREE;
+
+  return val;
+}
+
+/* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
+   do sophistacated collision checking.  Deals with STAT_HACK.  */
+
+static void
+add_class_member (hash_map<lang_identifier *, tree> *map, tree name, tree decl)
+{
+  bool existed;
+  tree *slot = &map->get_or_insert (name, &existed);
+  if (!existed)
+    *slot = decl;
+  else if (TREE_CODE (*slot) == TYPE_DECL && DECL_ARTIFICIAL (*slot))
+    *slot = stat_hack (decl, *slot);
+  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    *slot = stat_hack (*slot, decl);
+
+  /* Else ignore collision.  */
+}
+
+/* Insert the chain FIELDS into MAP.  */
+
+static void
+add_class_members (hash_map<lang_identifier *, tree> *map, tree fields)
+{
+  for (tree field = fields; field; field = DECL_CHAIN (field))
+    {
+      if (TREE_CODE (field) == FIELD_DECL
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	add_class_members (map, TYPE_FIELDS (TREE_TYPE (field)));
+      else if (DECL_NAME (field))
+	add_class_member (map, DECL_NAME (field), field);
+    }
+}
+
+/* Create the binding map of KLASS and insert FIELDS.  */
+
+void
+set_class_bindings (tree klass, tree fields)
+{
+  gcc_assert (!CLASSTYPE_BINDINGS (klass));
+
+  CLASSTYPE_BINDINGS (klass)
+    = hash_map<lang_identifier *, tree>::create_ggc (8);
+  add_class_members (CLASSTYPE_BINDINGS (klass), fields);
+}
+
+/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+
+void
+insert_late_enum_def_bindings (tree klass, tree enumtype)
+{
+  hash_map<lang_identifier *, tree> *map = CLASSTYPE_BINDINGS (klass);
+
+  for (tree values = TYPE_VALUES (enumtype);
+       values; values = TREE_CHAIN (values))
+    add_class_member (map, DECL_NAME (TREE_VALUE (values)),
+		      TREE_VALUE (values));
+}
+
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
    of 2.  */
@@ -3337,290 +3621,6 @@ pushdecl_outermost_localscope (tree x)
   timevar_cond_stop (TV_NAME_LOOKUP, subtime);
 
   return ret;
-}
-
-/* FNS is an overload set of conversion functions.  Return the
-   overloads converting to TYPE.  */
-
-static tree
-extract_conversion_operator (tree fns, tree type)
-{
-  tree convs = NULL_TREE;
-  tree tpls = NULL_TREE;
-
-  for (ovl_iterator iter (fns); iter; ++iter)
-    {
-      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
-	convs = lookup_add (*iter, convs);
-
-      // FIXME: really want some way to say 'no templates'
-      // FIXME: Plus ordering the overload to put templates last
-      if (TREE_CODE (*iter) == TEMPLATE_DECL)
-	tpls = lookup_add (*iter, tpls);
-    }
-
-  if (!convs)
-    convs = tpls;
-
-  return convs;
-}
-
-/* Look for REALNAME member functions of TYPE.  */
-
-static tree
-legacy_fn_member_lookup (tree type, tree name)
-{
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
-    return NULL_TREE;
-
-  tree fns = NULL_TREE;
-
-  /* If the type is complete, use binary search.  */
-  if (COMPLETE_TYPE_P (type))
-    {
-      int lo = 0;
-      int hi = method_vec->length ();
-      while (lo < hi)
-	{
-	  int i = (lo + hi) / 2;
-
-	  fns = (*method_vec)[i];
-	  tree fns_name = OVL_NAME (fns);
-	  if (fns_name > name)
-	    hi = i;
-	  else if (fns_name < name)
-	    lo = i + 1;
-	  else
-	    break;
-	  fns = NULL_TREE;
-	}
-    }
-  else
-    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
-      {
-	if (OVL_NAME (fns) == name)
-	  break;
-	fns = NULL_TREE;
-      }
-
-  return fns;
-}
-
-/* Look for non-function member NAME of TYPE */
-
-static tree
-legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
-{
-  if (CLASSTYPE_BINDINGS (type))
-    return lookup_class_member (type, name, want_type);
-
-  for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    {
-      tree decl = field;
-
-      if (DECL_DECLARES_FUNCTION_P (decl))
-	/* Functions are kep separately, at the moment.  */
-	continue;
-
-      gcc_assert (DECL_P (field));
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	{
-	  tree temp = legacy_nonfn_member_lookup
-	    (TREE_TYPE (field), name, want_type);
-	  if (temp)
-	    return temp;
-	}
-
-      if (TREE_CODE (decl) == USING_DECL
-	  && DECL_NAME (decl) == name)
-	{
-	  decl = strip_using_decl (decl);
-	  if (is_overloaded_fn (decl))
-	    continue;
-	}
-
-      if (DECL_NAME (decl) == name
-	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
-	return decl;
-    }
-
-  /* We used to special-case vptr_identifier.  Make sure it's not
-     special any more.  */
-  gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
-
-  return NULL_TREE;
-}
-
-/* Look for NAME as an immediate member of KLASS (including
-   anon-members or unscoped enum member).  PREFER_TYPE is true if
-   you'd prefer a TYPE binding (given a choice, if there's no type
-   binding, you'll get the value binding.
-
-   Use this if you do not want lazy member creation.  */
-
-tree
-get_class_binding_direct (tree klass, tree name, bool prefer_type,
-			  int restricted)
-{
-  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
-
-  /* Conversion operators can only be found by the marker conversion
-     operator name.  */
-  bool conv_op = IDENTIFIER_CONV_OP_P (name);
-  tree lookup = conv_op ? conv_op_identifier : name;
-  tree val = NULL_TREE;
-
-  /* First look for a function.  */
-  if (!prefer_type && restricted >= 0)
-    val = legacy_fn_member_lookup (klass, lookup);
-
-  if (restricted > 0)
-    /* Don't bother looking for field.  We don't want it.  */;
-  else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
-    {
-      /* Dependent using declarations are a 'field', make sure we
-	 return that even if we saw an overload already.  */
-      tree field_val = legacy_nonfn_member_lookup (klass, lookup, prefer_type);
-      if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
-	val = field_val;
-    }
-
-  /* Extract the conversion operators asked for, unless the general
-     conversion operator was requested.   */
-  if (val && conv_op)
-    {
-      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
-      val = OVL_CHAIN (val);
-      if (tree type = TREE_TYPE (name))
-	val = extract_conversion_operator (val, type);
-    }
-
-  return val;
-}
-
-/* Look for NAME's binding in exactly KLASS.  Does lazy special
-   function creation as necessary.  */
-
-tree
-get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
-{
-  klass = complete_type (klass);
-
-  if (COMPLETE_TYPE_P (klass))
-    {
-      /* Lazily declare functions, if we're going to search these.  */
-      if (IDENTIFIER_CTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
-	    lazily_declare_fn (sfk_constructor, klass);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
-	    lazily_declare_fn (sfk_copy_constructor, klass);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
-	    lazily_declare_fn (sfk_move_constructor, klass);
-	}
-      else if (IDENTIFIER_DTOR_P (name))
-	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
-	    lazily_declare_fn (sfk_destructor, klass);
-	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
-	    lazily_declare_fn (sfk_copy_assignment, klass);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
-	    lazily_declare_fn (sfk_move_assignment, klass);
-	}
-    }
-
-  return get_class_binding_direct (klass, name, prefer_type, restricted);
-}
-
-/* Look for NAME in exactly TYPE (including anon-members).  */
-// FIXME currently only fields, will be extending
-
-tree
-lookup_class_member (tree klass, tree name, bool want_type)
-{
-  tree *slot = CLASSTYPE_BINDINGS (klass)->get (name);
-  if (!slot)
-    return NULL_TREE;
-
-  tree val = *slot;
-  if (STAT_HACK_P (val))
-    {
-      if (want_type)
-	return STAT_TYPE (val);
-      val = STAT_DECL (val);
-    }
-
-  val = strip_using_decl (val);
-  if (OVL_P (val))
-    return NULL_TREE;
-
-  if (want_type && !DECL_DECLARES_TYPE_P (val))
-    val = NULL_TREE;
-
-  return val;
-}
-
-/* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
-   do sophistacated collision checking.  Deals with STAT_HACK.  */
-
-static void
-add_class_member (hash_map<lang_identifier *, tree> *map, tree name, tree decl)
-{
-  bool existed;
-  tree *slot = &map->get_or_insert (name, &existed);
-  if (!existed)
-    *slot = decl;
-  else if (TREE_CODE (*slot) == TYPE_DECL && DECL_ARTIFICIAL (*slot))
-    *slot = stat_hack (decl, *slot);
-  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    *slot = stat_hack (*slot, decl);
-
-  /* Else ignore collision.  */
-}
-
-/* Insert the chain FIELDS into MAP.  */
-
-static void
-add_class_members (hash_map<lang_identifier *, tree> *map, tree fields)
-{
-  for (tree field = fields; field; field = DECL_CHAIN (field))
-    {
-      if (TREE_CODE (field) == FIELD_DECL
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	add_class_members (map, TYPE_FIELDS (TREE_TYPE (field)));
-      else if (DECL_NAME (field))
-	add_class_member (map, DECL_NAME (field), field);
-    }
-}
-
-/* Create the binding map of KLASS and insert FIELDS.  */
-
-void
-set_class_bindings (tree klass, tree fields)
-{
-  gcc_assert (!CLASSTYPE_BINDINGS (klass));
-
-  CLASSTYPE_BINDINGS (klass)
-    = hash_map<lang_identifier *, tree>::create_ggc (8);
-  add_class_members (CLASSTYPE_BINDINGS (klass), fields);
-}
-
-/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
-
-void
-insert_late_enum_def_bindings (tree klass, tree enumtype)
-{
-  hash_map<lang_identifier *, tree> *map = CLASSTYPE_BINDINGS (klass);
-
-  for (tree values = TYPE_VALUES (enumtype);
-       values; values = TREE_CHAIN (values))
-    add_class_member (map, DECL_NAME (TREE_VALUE (values)),
-		      TREE_VALUE (values));
 }
 
 /* Check a non-member using-declaration. Return the name and scope
