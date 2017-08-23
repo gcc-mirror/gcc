@@ -12961,6 +12961,14 @@ ix86_compute_frame_layout (void)
   gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
   gcc_assert (preferred_alignment <= stack_alignment_needed);
 
+  /* The only ABI saving SSE regs should be 64-bit ms_abi.  */
+  gcc_assert (TARGET_64BIT || !frame->nsseregs);
+  if (TARGET_64BIT && m->call_ms2sysv)
+    {
+      gcc_assert (stack_alignment_needed >= 16);
+      gcc_assert (!frame->nsseregs);
+    }
+
   /* For SEH we have to limit the amount of code movement into the prologue.
      At present we do this via a BLOCKAGE, at which point there's very little
      scheduling that can be done, which means that there's very little point
@@ -13023,54 +13031,88 @@ ix86_compute_frame_layout (void)
   if (TARGET_SEH)
     frame->hard_frame_pointer_offset = offset;
 
-  /* When re-aligning the stack frame, but not saving SSE registers, this
-     is the offset we want adjust the stack pointer to.  */
-  frame->stack_realign_allocate_offset = offset;
-
-  /* The re-aligned stack starts here.  Values before this point are not
-     directly comparable with values below this point.  Use sp_valid_at
-     to determine if the stack pointer is valid for a given offset and
-     fp_valid_at for the frame pointer.  */
-  if (stack_realign_fp)
-    offset = ROUND_UP (offset, stack_alignment_needed);
-  frame->stack_realign_offset = offset;
-
-  if (TARGET_64BIT && m->call_ms2sysv)
-    {
-      gcc_assert (stack_alignment_needed >= 16);
-      gcc_assert (!frame->nsseregs);
-
-      m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
-      offset += xlogue_layout::get_instance ().get_stack_space_used ();
-    }
-
-  /* Align and set SSE register save area.  */
-  else if (frame->nsseregs)
-    {
-      /* The only ABI that has saved SSE registers (Win64) also has a
-	 16-byte aligned default stack.  However, many programs violate
-	 the ABI, and Wine64 forces stack realignment to compensate.
-
-	 If the incoming stack boundary is at least 16 bytes, or DRAP is
-	 required and the DRAP re-alignment boundary is at least 16 bytes,
-	 then we want the SSE register save area properly aligned.  */
-      if (ix86_incoming_stack_boundary >= 128
-	       || (stack_realign_drap && stack_alignment_needed >= 16))
-	offset = ROUND_UP (offset, 16);
-      offset += frame->nsseregs * 16;
-      frame->stack_realign_allocate_offset = offset;
-    }
-
-  frame->sse_reg_save_offset = offset;
-
-  /* Va-arg area */
+  /* Calculate the size of the va-arg area (not including padding, if any).  */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
-  offset += frame->va_arg_size;
+
+  if (stack_realign_fp)
+    {
+      /* We may need a 16-byte aligned stack for the remainder of the
+	 register save area, but the stack frame for the local function
+	 may require a greater alignment if using AVX/2/512.  In order
+	 to avoid wasting space, we first calculate the space needed for
+	 the rest of the register saves, add that to the stack pointer,
+	 and then realign the stack to the boundary of the start of the
+	 frame for the local function.  */
+      HOST_WIDE_INT space_needed = 0;
+      HOST_WIDE_INT sse_reg_space_needed = 0;
+
+      if (TARGET_64BIT)
+	{
+	  if (m->call_ms2sysv)
+	    {
+	      m->call_ms2sysv_pad_in = 0;
+	      space_needed = xlogue_layout::get_instance ().get_stack_space_used ();
+	    }
+
+	  else if (frame->nsseregs)
+	    /* The only ABI that has saved SSE registers (Win64) also has a
+	       16-byte aligned default stack.  However, many programs violate
+	       the ABI, and Wine64 forces stack realignment to compensate.  */
+	    space_needed = frame->nsseregs * 16;
+
+	  sse_reg_space_needed = space_needed = ROUND_UP (space_needed, 16);
+
+	  /* 64-bit frame->va_arg_size should always be a multiple of 16, but
+	     rounding to be pedantic.  */
+	  space_needed = ROUND_UP (space_needed + frame->va_arg_size, 16);
+	}
+      else
+	space_needed = frame->va_arg_size;
+
+      /* Record the allocation size required prior to the realignment AND.  */
+      frame->stack_realign_allocate = space_needed;
+
+      /* The re-aligned stack starts at frame->stack_realign_offset.  Values
+	 before this point are not directly comparable with values below
+	 this point.  Use sp_valid_at to determine if the stack pointer is
+	 valid for a given offset, fp_valid_at for the frame pointer, or
+	 choose_baseaddr to have a base register chosen for you.
+
+	 Note that the result of (frame->stack_realign_offset
+	 & (stack_alignment_needed - 1)) may not equal zero.  */
+      offset = ROUND_UP (offset + space_needed, stack_alignment_needed);
+      frame->stack_realign_offset = offset - space_needed;
+      frame->sse_reg_save_offset = frame->stack_realign_offset
+							+ sse_reg_space_needed;
+    }
+  else
+    {
+      frame->stack_realign_offset = offset;
+
+      if (TARGET_64BIT && m->call_ms2sysv)
+	{
+	  m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
+	  offset += xlogue_layout::get_instance ().get_stack_space_used ();
+	}
+
+      /* Align and set SSE register save area.  */
+      else if (frame->nsseregs)
+	{
+	  /* If the incoming stack boundary is at least 16 bytes, or DRAP is
+	     required and the DRAP re-alignment boundary is at least 16 bytes,
+	     then we want the SSE register save area properly aligned.  */
+	  if (ix86_incoming_stack_boundary >= 128
+		  || (stack_realign_drap && stack_alignment_needed >= 16))
+	    offset = ROUND_UP (offset, 16);
+	  offset += frame->nsseregs * 16;
+	}
+      frame->sse_reg_save_offset = offset;
+      offset += frame->va_arg_size;
+    }
 
   /* Align start of frame for local function.  */
-  if (stack_realign_fp
-      || m->call_ms2sysv
-      || offset != frame->sse_reg_save_offset
+  if (m->call_ms2sysv
+      || frame->va_arg_size != 0
       || size != 0
       || !crtl->is_leaf
       || cfun->calls_alloca
@@ -13178,26 +13220,36 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
   return len;
 }
 
-/* Determine if the stack pointer is valid for accessing the cfa_offset.
-   The register is saved at CFA - CFA_OFFSET.  */
+/* Determine if the stack pointer is valid for accessing the CFA_OFFSET in
+   the frame save area.  The register is saved at CFA - CFA_OFFSET.  */
 
-static inline bool
+static bool
 sp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
-  return fs.sp_valid && !(fs.sp_realigned
-			  && cfa_offset <= fs.sp_realigned_offset);
+  if (fs.sp_realigned && cfa_offset <= fs.sp_realigned_offset)
+    {
+      /* Validate that the cfa_offset isn't in a "no-man's land".  */
+      gcc_assert (cfa_offset <= fs.sp_realigned_fp_last);
+      return false;
+    }
+  return fs.sp_valid;
 }
 
-/* Determine if the frame pointer is valid for accessing the cfa_offset.
-   The register is saved at CFA - CFA_OFFSET.  */
+/* Determine if the frame pointer is valid for accessing the CFA_OFFSET in
+   the frame save area.  The register is saved at CFA - CFA_OFFSET.  */
 
 static inline bool
 fp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
-  return fs.fp_valid && !(fs.sp_valid && fs.sp_realigned
-			  && cfa_offset > fs.sp_realigned_offset);
+  if (fs.sp_realigned && cfa_offset > fs.sp_realigned_fp_last)
+    {
+      /* Validate that the cfa_offset isn't in a "no-man's land".  */
+      gcc_assert (cfa_offset >= fs.sp_realigned_offset);
+      return false;
+    }
+  return fs.fp_valid;
 }
 
 /* Choose a base register based upon alignment requested, speed and/or
@@ -13308,10 +13360,13 @@ choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
 }
 
 /* Return an RTX that points to CFA_OFFSET within the stack frame and
-   the alignment of address.  If align is non-null, it should point to
+   the alignment of address.  If ALIGN is non-null, it should point to
    an alignment value (in bits) that is preferred or zero and will
-   recieve the alignment of the base register that was selected.  The
-   valid base registers are taken from CFUN->MACHINE->FS.  */
+   recieve the alignment of the base register that was selected,
+   irrespective of rather or not CFA_OFFSET is a multiple of that
+   alignment value.
+
+   The valid base registers are taken from CFUN->MACHINE->FS.  */
 
 static rtx
 choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align)
@@ -14394,35 +14449,35 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   rtx sym, addr;
   rtx rax = gen_rtx_REG (word_mode, AX_REG);
   const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
-  HOST_WIDE_INT rax_offset = xlogue.get_stub_ptr_offset () + m->fs.sp_offset;
-  HOST_WIDE_INT stack_alloc_size = frame.stack_pointer_offset - m->fs.sp_offset;
-  HOST_WIDE_INT stack_align_off_in = xlogue.get_stack_align_off_in ();
+  HOST_WIDE_INT allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
-  /* Verify that the incoming stack 16-byte alignment offset matches the
-     layout we're using.  */
-  gcc_assert (stack_align_off_in == (m->fs.sp_offset & UNITS_PER_WORD));
+  /* AL should only be live with sysv_abi.  */
+  gcc_assert (!ix86_eax_live_at_start_p ());
+
+  /* Setup RAX as the stub's base pointer.  We use stack_realign_offset rather
+     we've actually realigned the stack or not.  */
+  align = GET_MODE_ALIGNMENT (V4SFmode);
+  addr = choose_baseaddr (frame.stack_realign_offset
+			  + xlogue.get_stub_ptr_offset (), &align);
+  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
+  emit_insn (gen_rtx_SET (rax, addr));
+
+  /* Allocate stack if not already done.  */
+  if (allocate > 0)
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (-allocate), -1, false);
 
   /* Get the stub symbol.  */
   sym = xlogue.get_stub_rtx (frame_pointer_needed ? XLOGUE_STUB_SAVE_HFP
 						  : XLOGUE_STUB_SAVE);
   RTVEC_ELT (v, vi++) = gen_rtx_USE (VOIDmode, sym);
 
-  /* Setup RAX as the stub's base pointer.  */
-  align = GET_MODE_ALIGNMENT (V4SFmode);
-  addr = choose_baseaddr (rax_offset, &align);
-  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
-  insn = emit_insn (gen_rtx_SET (rax, addr));
-
-  gcc_assert (stack_alloc_size >= xlogue.get_stack_space_used ());
-  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (-stack_alloc_size), -1,
-			     m->fs.cfa_reg == stack_pointer_rtx);
   for (i = 0; i < ncregs; ++i)
     {
       const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
       rtx reg = gen_rtx_REG ((SSE_REGNO_P (r.regno) ? V4SFmode : word_mode),
 			     r.regno);
-      RTVEC_ELT (v, vi++) = gen_frame_store (reg, rax, -r.offset);;
+      RTVEC_ELT (v, vi++) = gen_frame_store (reg, rax, -r.offset);
     }
 
   gcc_assert (vi == (unsigned)GET_NUM_ELEM (v));
@@ -14676,12 +14731,16 @@ ix86_expand_prologue (void)
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
       gcc_assert (align_bytes > MIN_STACK_BOUNDARY / BITS_PER_UNIT);
 
+      /* Record last valid frame pointer offset.  */
+      m->fs.sp_realigned_fp_last = frame.reg_save_offset;
+
       /* The computation of the size of the re-aligned stack frame means
 	 that we must allocate the size of the register save area before
 	 performing the actual alignment.  Otherwise we cannot guarantee
 	 that there's enough storage above the realignment point.  */
-      allocate = frame.stack_realign_allocate_offset - m->fs.sp_offset;
-      if (allocate && !m->call_ms2sysv)
+      allocate = frame.reg_save_offset - m->fs.sp_offset
+		 + frame.stack_realign_allocate;
+      if (allocate)
         pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				   GEN_INT (-allocate), -1, false);
 
@@ -14689,14 +14748,18 @@ ix86_expand_prologue (void)
       insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
 					stack_pointer_rtx,
 					GEN_INT (-align_bytes)));
-      /* For the purposes of register save area addressing, the stack
-	 pointer can no longer be used to access anything in the frame
-	 below m->fs.sp_realigned_offset and the frame pointer cannot be
-	 used for anything at or above.  */
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
-      m->fs.sp_realigned = true;
-      m->fs.sp_realigned_offset = m->fs.sp_offset - frame.nsseregs * 16;
+      m->fs.sp_realigned_offset = m->fs.sp_offset
+					      - frame.stack_realign_allocate;
+      /* The stack pointer may no longer be equal to CFA - m->fs.sp_offset.
+	 Beyond this point, stack access should be done via choose_baseaddr or
+	 by using sp_valid_at and fp_valid_at to determine the correct base
+	 register.  Henceforth, any CFA offset should be thought of as logical
+	 and not physical.  */
+      gcc_assert (m->fs.sp_realigned_offset >= m->fs.sp_realigned_fp_last);
       gcc_assert (m->fs.sp_realigned_offset == frame.stack_realign_offset);
+      m->fs.sp_realigned = true;
+
       /* SEH unwind emit doesn't currently support REG_CFA_EXPRESSION, which
 	 is needed to describe where a register is saved using a realigned
 	 stack pointer, so we need to invalidate the stack pointer for that
@@ -14758,7 +14821,7 @@ ix86_expand_prologue (void)
      so probe if the size is non-negative to preserve the protection area.  */
   if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
-      /* We expect the registers to be saved when probes are used.  */
+      /* We expect the GP registers to be saved when probes are used.  */
       gcc_assert (int_registers_saved);
 
       if (STACK_CHECK_MOVING_SP)
@@ -15393,10 +15456,10 @@ ix86_expand_epilogue (int style)
   if (restore_regs_via_mov || frame.nsseregs)
     {
       /* Ensure that the entire register save area is addressable via
-	 the stack pointer, if we will restore via sp.  */
+	 the stack pointer, if we will restore SSE regs via sp.  */
       if (TARGET_64BIT
 	  && m->fs.sp_offset > 0x7fffffff
-	  && !(fp_valid_at (frame.stack_realign_offset) || m->fs.drap_valid)
+	  && sp_valid_at (frame.stack_realign_offset)
 	  && (frame.nsseregs + frame.nregs) != 0)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,

@@ -1642,6 +1642,29 @@ proc check_avx_os_support_available { } {
     }]
 }
 
+# Return 1 if the target OS supports running AVX executables, 0
+# otherwise.  Cache the result.
+
+proc check_avx512_os_support_available { } {
+    return [check_cached_effective_target avx512_os_support_available {
+	# If this is not the right target then we can skip the test.
+	if { !([istarget i?86-*-*] || [istarget x86_64-*-*]) } {
+	    expr 0
+	} else {
+	    # Check that OS has AVX512, AVX and SSE saving enabled.
+	    check_runtime_nocache avx512_os_support_available {
+		int main ()
+		{
+		  unsigned int eax, edx;
+
+		  asm ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (0));
+		  return (eax & 0xe6) != 0xe6;
+		}
+	    } ""
+	}
+    }]
+}
+
 # Return 1 if the target supports executing SSE instructions, 0
 # otherwise.  Cache the result.
 
@@ -1822,6 +1845,7 @@ proc check_avx2_hw_available { } {
 	    expr 0
 	} else {
 	    check_runtime_nocache avx2_hw_available {
+		#include <stddef.h>
 		#include "cpuid.h"
 		int main ()
 		{
@@ -1836,6 +1860,37 @@ proc check_avx2_hw_available { } {
 		  __cpuid_count (7, 0, eax, ebx, ecx, edx);
 
 		  return (ebx & bit_AVX2) != bit_AVX2;
+		}
+	    } ""
+	}
+    }]
+}
+
+# Return 1 if the target supports executing AVX512 foundation instructions, 0
+# otherwise.  Cache the result.
+
+proc check_avx512f_hw_available { } {
+    return [check_cached_effective_target avx512f_hw_available {
+	# If this is not the right target then we can skip the test.
+	if { !([istarget x86_64-*-*] || [istarget i?86-*-*]) } {
+	    expr 0
+	} else {
+	    check_runtime_nocache avx512f_hw_available {
+		#include <stddef.h>
+		#include "cpuid.h"
+		int main ()
+		{
+		  unsigned int eax, ebx, ecx, edx;
+		  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx)
+		      || !(ecx & bit_OSXSAVE))
+		    return 1;
+
+		  if (__get_cpuid_max (0, NULL) < 7)
+		    return 1;
+
+		  __cpuid_count (7, 0, eax, ebx, ecx, edx);
+
+		  return !(ebx & bit_AVX512F);
 		}
 	    } ""
 	}
@@ -1923,6 +1978,17 @@ proc check_effective_target_avx2_runtime { } {
     if { [check_effective_target_avx2]
 	 && [check_avx2_hw_available]
 	 && [check_avx_os_support_available] } {
+	return 1
+    }
+    return 0
+}
+
+# Return 1 if the target supports running AVX512f executables, 0 otherwise.
+
+proc check_effective_target_avx512f_runtime { } {
+    if { [check_effective_target_avx512f]
+	 && [check_avx512f_hw_available]
+	 && [check_avx512_os_support_available] } {
 	return 1
     }
     return 0
