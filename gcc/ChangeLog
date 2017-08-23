@@ -1,3 +1,15 @@
+2017-08-23  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/72804
+	* config/rs6000/vsx.md (*vsx_le_permute_<mode>): Add support for
+	operands residing in integer registers.
+	(*vsx_le_perm_load_<mode>): Likewise.
+	(*vsx_le_perm_store_<mode>): Likewise.
+	(define_peephole2): Add peepholes to optimize the above.
+
 2017-08-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline

@@ -1,3 +1,11 @@
+2017-08-23  Peter Bergner  <bergner@vnet.ibm.com>
+
+	Backport from mainline
+	2017-08-17  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/72804
+	* gcc.target/powerpc/pr72804.c: New test.
+
 2017-08-22  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backport from trunk
