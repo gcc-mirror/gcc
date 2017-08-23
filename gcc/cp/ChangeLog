@@ -1,3 +1,16 @@
+2017-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (print_search_statistics,
+	reinit_search_statistics): Don't declare.
+	* search.c (n_fields_searched, n_calls_lookup_field,
+	n_calls_lookup_field_1, n_calls_lookup_fnfields,
+	n_calls_lookup_fnfields_1, n_calls_get_base_type,
+	n_outer_fields_searched, n_contexts_saved): Delete.
+	(lookup_field_1, lookup_member,
+	lookup_fnfields_slot_nolazy): Remove stat gathering.
+	(print_search_statistics, reinit_search_statistics): Delete.
+	* tree.c (cxx_print_statistics): Don't print search stats.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	* search.c (lookup_field_r): Remove obsolete code for type-named

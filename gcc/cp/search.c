@@ -52,15 +52,6 @@ static access_kind access_in_type (tree, tree);
 static tree dfs_get_pure_virtuals (tree, void *);
 
 
-/* Variables for gathering statistics.  */
-static int n_fields_searched;
-static int n_calls_lookup_field, n_calls_lookup_field_1;
-static int n_calls_lookup_fnfields, n_calls_lookup_fnfields_1;
-static int n_calls_get_base_type;
-static int n_outer_fields_searched;
-static int n_contexts_saved;
-
-
 /* Data for lookup_base and its workers.  */
 
 struct lookup_base_data_s
@@ -383,9 +374,6 @@ lookup_field_1 (tree type, tree name, bool want_type)
 	{
 	  i = (lo + hi) / 2;
 
-	  if (GATHER_STATISTICS)
-	    n_fields_searched++;
-
 	  if (DECL_NAME (fields[i]) > name)
 	    hi = i;
 	  else if (DECL_NAME (fields[i]) < name)
@@ -428,9 +416,6 @@ lookup_field_1 (tree type, tree name, bool want_type)
 
   field = TYPE_FIELDS (type);
 
-  if (GATHER_STATISTICS)
-    n_calls_lookup_field_1++;
-
   for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree decl = field;
@@ -438,9 +423,6 @@ lookup_field_1 (tree type, tree name, bool want_type)
       if (DECL_DECLARES_FUNCTION_P (decl))
 	/* Functions are kep separately, at the moment.  */
 	continue;
-
-      if (GATHER_STATISTICS)
-	n_fields_searched++;
 
       gcc_assert (DECL_P (field));
       if (DECL_NAME (field) == NULL_TREE
@@ -1262,9 +1244,6 @@ lookup_member (tree xbasetype, tree name, int protect, bool want_type,
   if (!basetype_path)
     return NULL_TREE;
 
-  if (GATHER_STATISTICS)
-    n_calls_lookup_field++;
-
   memset (&lfi, 0, sizeof (lfi));
   lfi.type = type;
   lfi.name = name;
@@ -1523,9 +1502,6 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   if (!method_vec)
     return NULL_TREE;
 
-  if (GATHER_STATISTICS)
-    n_calls_lookup_fnfields_1++;
-
   if (IDENTIFIER_CONV_OP_P (name))
     return lookup_conversion_operator (type, TREE_TYPE (name));
 
@@ -1550,9 +1526,6 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 	{
 	  i = (lo + hi) / 2;
 
-	  if (GATHER_STATISTICS)
-	    n_outer_fields_searched++;
-
 	  fns = (*method_vec)[i];
 	  tree fn_name = OVL_NAME (fns);
 	  if (fn_name > name)
@@ -1566,8 +1539,6 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   else
     for (; vec_safe_iterate (method_vec, i, &fns); ++i)
       {
-	if (GATHER_STATISTICS)
-	  n_outer_fields_searched++;
 	if (OVL_NAME (fns) == name)
 	  return fns;
       }
@@ -2501,33 +2472,6 @@ note_debug_info_needed (tree type)
   dfs_walk_all (TYPE_BINFO (type), dfs_debug_mark, NULL, 0);
 }
 
-void
-print_search_statistics (void)
-{
-  if (! GATHER_STATISTICS)
-    {
-      fprintf (stderr, "no search statistics\n");
-      return;
-    }
-
-  fprintf (stderr, "%d fields searched in %d[%d] calls to lookup_field[_1]\n",
-	   n_fields_searched, n_calls_lookup_field, n_calls_lookup_field_1);
-  fprintf (stderr, "%d fnfields searched in %d calls to lookup_fnfields\n",
-	   n_outer_fields_searched, n_calls_lookup_fnfields);
-  fprintf (stderr, "%d calls to get_base_type\n", n_calls_get_base_type);
-}
-
-void
-reinit_search_statistics (void)
-{
-  n_fields_searched = 0;
-  n_calls_lookup_field = 0, n_calls_lookup_field_1 = 0;
-  n_calls_lookup_fnfields = 0, n_calls_lookup_fnfields_1 = 0;
-  n_calls_get_base_type = 0;
-  n_outer_fields_searched = 0;
-  n_contexts_saved = 0;
-}
-
 /* Helper for lookup_conversions_r.  TO_TYPE is the type converted to
    by a conversion op in base BINFO.  VIRTUAL_DEPTH is nonzero if
    BINFO is morally virtual, and VIRTUALNESS is nonzero if virtual
