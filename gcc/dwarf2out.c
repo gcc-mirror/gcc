@@ -21609,7 +21609,10 @@ dwarf2out_abstract_function (tree decl)
     return;
 
   old_die = lookup_decl_die (decl);
-  /* With early debug we always have an old DIE.  */
+  /* With early debug we always have an old DIE unless we are in LTO
+     and the user did not compile but only link with debug.  */
+  if (in_lto_p && ! old_die)
+    return;
   gcc_assert (old_die != NULL);
   if (get_AT (old_die, DW_AT_inline)
       || get_AT (old_die, DW_AT_abstract_origin))

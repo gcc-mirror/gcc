@@ -1,3 +1,9 @@
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81940
+	* dwarf2out.c (dwarf2out_abstract_function): Handle LTO with
+	-g0 at compile-time.
+
 2017-08-23  Tamar Christina  <tamar.christina@arm.com>
 
 	PR middle-end/19706
