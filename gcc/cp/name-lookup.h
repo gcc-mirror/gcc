@@ -340,9 +340,12 @@ extern void push_to_top_level (void);
 extern void pop_from_top_level (void);
 
 // FIXME: class symbol handling.  In transition
+// FIXME: RESTRICTED is temporary hack to avoid regressing performance
+// during transition
 extern tree get_class_binding_direct (tree, tree, bool prefer_type = false,
-				      bool fn_only = true);
-extern tree get_class_binding (tree, tree, bool prefer_type = false);
+				      int restricted = 1);
+extern tree get_class_binding (tree, tree, bool prefer_type = false,
+			       int restricted = 1);
 extern tree lookup_class_member (tree, tree, bool);
 extern void set_class_bindings (tree, tree);
 extern void insert_late_enum_def_bindings (tree, tree);

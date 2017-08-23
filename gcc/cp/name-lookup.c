@@ -3458,13 +3458,11 @@ legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
    you'd prefer a TYPE binding (given a choice, if there's no type
    binding, you'll get the value binding.
 
-   FIXME: FN_ONLY is a temporary hack.
-
    Use this if you do not want lazy member creation.  */
 
 tree
 get_class_binding_direct (tree klass, tree name, bool prefer_type,
-			  bool fn_only)
+			  int restricted)
 {
   gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
@@ -3475,10 +3473,10 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
   tree val = NULL_TREE;
 
   /* First look for a function.  */
-  if (!prefer_type)
+  if (!prefer_type && restricted >= 0)
     val = legacy_fn_member_lookup (klass, lookup);
 
-  if (fn_only)
+  if (restricted > 0)
     /* Don't bother looking for field.  We don't want it.  */;
   else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
     {
@@ -3506,7 +3504,7 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
    function creation as necessary.  */
 
 tree
-get_class_binding (tree klass, tree name, bool prefer_type)
+get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
 {
   klass = complete_type (klass);
 
@@ -3536,7 +3534,7 @@ get_class_binding (tree klass, tree name, bool prefer_type)
 	}
     }
 
-  return get_class_binding_direct (klass, name, prefer_type, false);
+  return get_class_binding_direct (klass, name, prefer_type, restricted);
 }
 
 /* Look for NAME in exactly TYPE (including anon-members).  */

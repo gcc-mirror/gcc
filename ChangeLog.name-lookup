@@ -1,6 +1,18 @@
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* name-lookup.h (get_class_binding_direct, get_class_binding): Add
+	temporary restricted parm.
+	* name-lookup.c (get_class_binding_direct): Replace fn_only with
+	restricted.
+	(get_class_binding): Adjust.
+	* decl.c (reshape_init_class): get_class_binding is differently
+	restricted.
+	* search.c (lookup_field_r): get_class_binding is not restricted.
+	gcc/testsuite/
+	* g++.dg/cpp0x/decltype9.C: Revert, not ready yet.
+
+	gcc/cp/
 	* semantics.c (finish_member_declaration): Move USING_DECL check.
 	Always set lang_cplusplus.  Commonize decl linking.
 
@@ -66,7 +78,7 @@
 	* search.c (lookup_fnfields_slot): Forward to get_class_binding.
 	(lookup_conversions_r): Use get_class_binding_direct.
 	gcc/testsuite/
-	* g++.dg/cpp0x/decltype9.C: Adjust messages	
+	* g++.dg/cpp0x/decltype9.C: Adjust messages.
 
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
