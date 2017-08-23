@@ -3154,8 +3154,13 @@ execute (void)
 	      switch (WTERMSIG (status))
 		{
 		case SIGINT:
+		/* SIGQUIT and SIGKILL are not available on MinGW.  */
+#ifdef SIGQUIT
 		case SIGQUIT:
+#endif
+#ifdef SIGKILL
 		case SIGKILL:
+#endif
 		case SIGTERM:
 		  /* The user (or environment) did something to the
 		     inferior.  Making this an ICE confuses the user

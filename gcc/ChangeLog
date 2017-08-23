@@ -1,3 +1,7 @@
+2017-08-23  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.c (execute): Only test for SIGKILL and SIGQUIT if available.
+
 2017-08-22  Daniel Santos  <daniel.santos@pobox.com>
 
 	* doc/install.texi: Modify to add more details on running selected
