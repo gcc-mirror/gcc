@@ -2,10 +2,10 @@
 
 	* g++.dg/cpp1y/constexpr-instantiate.C: Adjust.
 	* g++.dg/tree-ssa/pr45605.C: Likewise.
-	* gnat.dg/noinline2.ad: Likewise.b
-	* gnat.dg/renaming6.ad: Likewise.b
-	* gnat.dg/renaming6.ad: Likewise.s
-	* gnat.dg/specs/noinline3.ad: Likewise.s
+	* gnat.dg/noinline2.adb: Likewise.
+	* gnat.dg/renaming6.adb: Likewise.
+	* gnat.dg/renaming6.ads: Likewise.
+	* gnat.dg/specs/noinline3.ads: Likewise.
 
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
