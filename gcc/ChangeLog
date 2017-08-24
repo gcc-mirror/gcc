@@ -1,3 +1,9 @@
+2017-08-24  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (make_extraction): Use subreg_offset_from_lsb.
+
 2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
 
 	* config/i386/i386.h (ix86_frame::stack_realign_allocate_offset):
