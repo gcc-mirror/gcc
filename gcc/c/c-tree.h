@@ -149,7 +149,7 @@ struct c_expr
 
   location_t get_location () const
   {
-    if (CAN_HAVE_LOCATION_P (value))
+    if (EXPR_HAS_LOCATION (value))
       return EXPR_LOCATION (value);
     else
       return make_location (get_start (), get_start (), get_finish ());

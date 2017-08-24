@@ -1,3 +1,9 @@
+2017-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-tree.h (c_expr::get_location) Use EXPR_HAS_LOCATION rather
+	than CAN_HAVE_LOCATION_P when determining whether to use the
+	location_t value within "value".
+
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-parser.c (c_parser_expr_list): Use c_expr::get_location ()
