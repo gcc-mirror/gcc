@@ -1,3 +1,7 @@
+2017-08-24  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config/rs6000/mm_malloc.h: New file.
+
 2017-08-24  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81913
