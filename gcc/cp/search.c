@@ -38,8 +38,7 @@ static tree dfs_dcast_hint_post (tree, void *);
 static tree dfs_debug_mark (tree, void *);
 static int check_hidden_convs (tree, int, int, tree, tree, tree);
 static tree split_conversions (tree, tree, tree, tree);
-static int lookup_conversions_r (tree, int, int,
-				 tree, tree, tree, tree, tree *, tree *);
+static int lookup_conversions_r (tree, int, int, tree, tree, tree *);
 static int look_for_overrides_r (tree, tree);
 static tree lookup_field_r (tree, void *);
 static tree dfs_accessible_post (tree, void *);
@@ -2333,14 +2332,13 @@ split_conversions (tree my_convs, tree parent_convs,
 }
 
 /* Worker for lookup_conversions.  Lookup conversion functions in
-   BINFO and its children.  VIRTUAL_DEPTH is nonzero, if BINFO is in
-   a morally virtual base, and VIRTUALNESS is nonzero, if we've
-   encountered virtual bases already in the tree walk.  PARENT_CONVS &
-   PARENT_TPL_CONVS are lists of list of conversions within parent
-   binfos.  OTHER_CONVS and OTHER_TPL_CONVS are conversions found
-   elsewhere in the tree.  Return the conversions found within this
-   portion of the graph in CONVS and TPL_CONVS.  Return nonzero is we
-   encountered virtualness.  We keep template and non-template
+   BINFO and its children.  VIRTUAL_DEPTH is nonzero, if BINFO is in a
+   morally virtual base, and VIRTUALNESS is nonzero, if we've
+   encountered virtual bases already in the tree walk.  PARENT_CONVS
+   is a list of conversions within parent binfos.  OTHER_CONVS are
+   conversions found elsewhere in the tree.  Return the conversions
+   found within this portion of the graph in CONVS.  Return nonzero if
+   we encountered virtualness.  We keep template and non-template
    conversions separate, to avoid unnecessary type comparisons.
 
    The located conversion functions are held in lists of lists.  The
@@ -2353,26 +2351,17 @@ split_conversions (tree my_convs, tree parent_convs,
    is the converted-to type.  */
 
 static int
-lookup_conversions_r (tree binfo,
-		      int virtual_depth, int virtualness,
-		      tree parent_convs, tree parent_tpl_convs,
-		      tree other_convs, tree other_tpl_convs,
-		      tree *convs, tree *tpl_convs)
+lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
+		      tree parent_convs, tree other_convs, tree *convs)
 {
   int my_virtualness = 0;
   tree my_convs = NULL_TREE;
-  tree my_tpl_convs = NULL_TREE;
   tree child_convs = NULL_TREE;
-  tree child_tpl_convs = NULL_TREE;
-  unsigned i;
-  tree base_binfo;
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
-  tree conv;
 
   /* If we have no conversion operators, then don't look.  */
   if (!TYPE_HAS_CONVERSION (BINFO_TYPE (binfo)))
     {
-      *convs = *tpl_convs = NULL_TREE;
+      *convs = NULL_TREE;
 
       return 0;
     }
@@ -2381,60 +2370,32 @@ lookup_conversions_r (tree binfo,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, i, &conv);
-       ++i)
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
+  tree conv = NULL_TREE;
+  vec_safe_iterate (method_vec, CLASSTYPE_FIRST_CONVERSION_SLOT, &conv);
+  if (conv && !DECL_CONV_FN_P (OVL_FIRST (conv)))
+    conv = NULL_TREE;
+
+  for (ovl_iterator iter (conv); iter; ++iter)
     {
-      tree cur = OVL_FIRST (conv);
+      tree fn = *iter;
+      tree type = DECL_CONV_FN_TYPE (fn);
 
-      if (!DECL_CONV_FN_P (cur))
-	break;
-
-      if (TREE_CODE (cur) == TEMPLATE_DECL)
-	/* Only template conversions can be overloaded, and we must
-	   flatten them out and check each one individually.  */
-	for (ovl_iterator iter (conv); iter; ++iter)
-	  {
-	    tree tpl = *iter;
-	    tree type = DECL_CONV_FN_TYPE (tpl);
-
-	    if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				    type, parent_tpl_convs, other_tpl_convs))
-	      {
-		my_tpl_convs = tree_cons (binfo, tpl, my_tpl_convs);
-		TREE_TYPE (my_tpl_convs) = type;
-		if (virtual_depth)
-		  {
-		    TREE_STATIC (my_tpl_convs) = 1;
-		    my_virtualness = 1;
-		  }
-	      }
-	  }
-      else
+      if (TREE_CODE (fn) != TEMPLATE_DECL && type_uses_auto (type))
 	{
-	  tree name = DECL_NAME (cur);
+	  mark_used (fn);
+	  type = DECL_CONV_FN_TYPE (fn);
+	}
 
-	  if (!IDENTIFIER_MARKED (name))
+      if (check_hidden_convs (binfo, virtual_depth, virtualness,
+			      type, parent_convs, other_convs))
+	{
+	  my_convs = tree_cons (binfo, fn, my_convs);
+	  TREE_TYPE (my_convs) = type;
+	  if (virtual_depth)
 	    {
-	      tree type = DECL_CONV_FN_TYPE (cur);
-	      if (type_uses_auto (type))
-		{
-		  mark_used (cur);
-		  type = DECL_CONV_FN_TYPE (cur);
-		}
-
-	      if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				      type, parent_convs, other_convs))
-		{
-		  my_convs = tree_cons (binfo, conv, my_convs);
-		  TREE_TYPE (my_convs) = type;
-		  if (virtual_depth)
-		    {
-		      TREE_STATIC (my_convs) = 1;
-		      my_virtualness = 1;
-		    }
-		  IDENTIFIER_MARKED (name) = 1;
-		}
+	      TREE_STATIC (my_convs) = 1;
+	      my_virtualness = 1;
 	    }
 	}
     }
@@ -2446,41 +2407,27 @@ lookup_conversions_r (tree binfo,
 	TREE_STATIC (parent_convs) = 1;
     }
 
-  if (my_tpl_convs)
-    {
-      parent_tpl_convs = tree_cons (binfo, my_tpl_convs, parent_tpl_convs);
-      if (virtual_depth)
-	TREE_STATIC (parent_tpl_convs) = 1;
-    }
-
   child_convs = other_convs;
-  child_tpl_convs = other_tpl_convs;
 
   /* Now iterate over each base, looking for more conversions.  */
+  unsigned i;
+  tree base_binfo;
   for (i = 0; BINFO_BASE_ITERATE (binfo, i, base_binfo); i++)
     {
-      tree base_convs, base_tpl_convs;
+      tree base_convs;
       unsigned base_virtualness;
 
       base_virtualness = lookup_conversions_r (base_binfo,
 					       virtual_depth, virtualness,
-					       parent_convs, parent_tpl_convs,
-					       child_convs, child_tpl_convs,
-					       &base_convs, &base_tpl_convs);
+					       parent_convs, child_convs,
+					       &base_convs);
       if (base_virtualness)
 	my_virtualness = virtualness = 1;
       child_convs = chainon (base_convs, child_convs);
-      child_tpl_convs = chainon (base_tpl_convs, child_tpl_convs);
     }
-
-  /* Unmark the conversions found at this level  */
-  for (conv = my_convs; conv; conv = TREE_CHAIN (conv))
-    IDENTIFIER_MARKED (OVL_NAME (TREE_VALUE (conv))) = 0;
 
   *convs = split_conversions (my_convs, parent_convs,
 			      child_convs, other_convs);
-  *tpl_convs = split_conversions (my_tpl_convs, parent_tpl_convs,
-				  child_tpl_convs, other_tpl_convs);
 
   return my_virtualness;
 }
@@ -2497,36 +2444,22 @@ lookup_conversions_r (tree binfo,
 tree
 lookup_conversions (tree type)
 {
-  tree convs, tpl_convs;
-  tree list = NULL_TREE;
+  tree convs;
 
   complete_type (type);
   if (!CLASS_TYPE_P (type) || !TYPE_BINFO (type))
     return NULL_TREE;
 
-  lookup_conversions_r (TYPE_BINFO (type), 0, 0,
-			NULL_TREE, NULL_TREE, NULL_TREE, NULL_TREE,
-			&convs, &tpl_convs);
+  lookup_conversions_r (TYPE_BINFO (type), 0, 0, NULL_TREE, NULL_TREE, &convs);
 
+  tree list = NULL_TREE;
+  
   /* Flatten the list-of-lists */
   for (; convs; convs = TREE_CHAIN (convs))
     {
       tree probe, next;
 
       for (probe = TREE_VALUE (convs); probe; probe = next)
-	{
-	  next = TREE_CHAIN (probe);
-
-	  TREE_CHAIN (probe) = list;
-	  list = probe;
-	}
-    }
-
-  for (; tpl_convs; tpl_convs = TREE_CHAIN (tpl_convs))
-    {
-      tree probe, next;
-
-      for (probe = TREE_VALUE (tpl_convs); probe; probe = next)
 	{
 	  next = TREE_CHAIN (probe);
 
