@@ -1,3 +1,9 @@
+2017-08-24  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81913
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Skip niter
+	analysis when either IVs in condition can wrap.
+
 2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	* dwarf2out.c (MAX_ARTIFICIAL_LABEL_BYTES): Increase to 40.
