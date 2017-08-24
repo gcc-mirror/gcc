@@ -61,8 +61,6 @@
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_P9_FUSION		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR)
@@ -76,8 +74,6 @@
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX)
 
 /* Flags that need to be turned off if -mno-power8-vector.  */
@@ -127,8 +123,6 @@
 				 | OPTION_MASK_NO_UPDATE		\
 				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
