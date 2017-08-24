@@ -1,3 +1,7 @@
+2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp: Group together target-dependant checks.
+
 2017-08-24  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/81913
