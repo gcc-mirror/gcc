@@ -988,7 +988,7 @@ interpret_float (const cpp_token *token, unsigned int flags,
     }
 
   if (type != const_type)
-    value = build1 (EXCESS_PRECISION_EXPR, type, value);
+    value = build1_loc (token->src_loc, EXCESS_PRECISION_EXPR, type, value);
 
   return value;
 }
