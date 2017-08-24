@@ -1442,27 +1442,18 @@ default_target_option_pragma_parse (tree ARG_UNUSED (args),
 bool
 default_target_can_inline_p (tree caller, tree callee)
 {
-  bool ret = false;
   tree callee_opts = DECL_FUNCTION_SPECIFIC_TARGET (callee);
   tree caller_opts = DECL_FUNCTION_SPECIFIC_TARGET (caller);
-
-  /* If callee has no option attributes, then it is ok to inline */
-  if (!callee_opts)
-    ret = true;
-
-  /* If caller has no option attributes, but callee does then it is not ok to
-     inline */
-  else if (!caller_opts)
-    ret = false;
+  if (! callee_opts)
+    callee_opts = target_option_default_node;
+  if (! caller_opts)
+    caller_opts = target_option_default_node;
 
   /* If both caller and callee have attributes, assume that if the
      pointer is different, the two functions have different target
      options since build_target_option_node uses a hash table for the
      options.  */
-  else
-    ret = (callee_opts == caller_opts);
-
-  return ret;
+  return callee_opts == caller_opts;
 }
 
 /* If the machine does not have a case insn that compares the bounds,
