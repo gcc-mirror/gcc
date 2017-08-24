@@ -1,3 +1,10 @@
+2017-08-24  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81913
+	* gcc.c-torture/execute/pr81913.c: New test.
+	* gcc.dg/tree-ssa/loop-niter-1.c: New test.
+	* gcc.dg/tree-ssa/loop-niter-2.c: New test.
+
 2017-08-23  Richard Biener  <rguenther@suse.de>
 
         PR target/81921

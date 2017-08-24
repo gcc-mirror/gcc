@@ -1728,7 +1728,7 @@ number_of_iterations_cond (struct loop *loop,
      provided that either below condition is satisfied:
 
        a) the test is NE_EXPR;
-       b) iv0.step - iv1.step is positive integer.
+       b) iv0.step - iv1.step is integer and iv0/iv1 don't overflow.
 
      This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
@@ -1739,7 +1739,9 @@ number_of_iterations_cond (struct loop *loop,
 
       /* No need to check sign of the new step since below code takes care
 	 of this well.  */
-      if (code != NE_EXPR && TREE_CODE (step) != INTEGER_CST)
+      if (code != NE_EXPR
+	  && (TREE_CODE (step) != INTEGER_CST
+	      || !iv0->no_overflow || !iv1->no_overflow))
 	return false;
 
       iv0->step = step;
