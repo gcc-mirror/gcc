@@ -1,3 +1,11 @@
+2017-08-24  Yvan Roux  <yvan.roux@linaro.org>
+
+	Backport from mainline
+	2017-04-17  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR c++/80287
+	* class.c (fixup_may_alias): Fix all type variants.
+
 2017-08-22  Peter Bergner  <bergner@vnet.ibm.com>
 
 	Backport from mainline

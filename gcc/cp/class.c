@@ -1999,12 +1999,14 @@ fixup_type_variants (tree t)
 static void
 fixup_may_alias (tree klass)
 {
-  tree t;
+  tree t, v;
 
   for (t = TYPE_POINTER_TO (klass); t; t = TYPE_NEXT_PTR_TO (t))
-    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+    for (v = TYPE_MAIN_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_REF_CAN_ALIAS_ALL (v) = true;
   for (t = TYPE_REFERENCE_TO (klass); t; t = TYPE_NEXT_REF_TO (t))
-    TYPE_REF_CAN_ALIAS_ALL (t) = true;
+    for (v = TYPE_MAIN_VARIANT (t); v; v = TYPE_NEXT_VARIANT (v))
+      TYPE_REF_CAN_ALIAS_ALL (v) = true;
 }
 
 /* Early variant fixups: we apply attributes at the beginning of the class
