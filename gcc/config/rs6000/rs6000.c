@@ -2926,8 +2926,7 @@ rs6000_setup_reg_addr_masks (void)
 	      && (rc == RELOAD_REG_GPR
 		  || ((msize == 8 || m2 == SFmode)
 		      && (rc == RELOAD_REG_FPR
-			  || (rc == RELOAD_REG_VMX
-			      && TARGET_P9_DFORM_SCALAR)))))
+			  || (rc == RELOAD_REG_VMX && TARGET_P9_VECTOR)))))
 	    addr_mask |= RELOAD_REG_OFFSET;
 
 	  /* VSX registers can do REG+OFFSET addresssing if ISA 3.0
@@ -2935,7 +2934,7 @@ rs6000_setup_reg_addr_masks (void)
 	     only 12-bits.  While GPRs can handle the full offset range, VSX
 	     registers can only handle the restricted range.  */
 	  else if ((addr_mask != 0) && !indexed_only_p
-		   && msize == 16 && TARGET_P9_DFORM_VECTOR
+		   && msize == 16 && TARGET_P9_VECTOR
 		   && (ALTIVEC_OR_VSX_VECTOR_MODE (m2)
 		       || (m2 == TImode && TARGET_VSX)))
 	    {
@@ -3255,13 +3254,14 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	rs6000_constraints[RS6000_CONSTRAINT_wp] = VSX_REGS;	/* TFmode  */
     }
 
-  /* Support for new D-form instructions.  */
-  if (TARGET_P9_DFORM_SCALAR)
-    rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
-
-  /* Support for ISA 3.0 (power9) vectors.  */
   if (TARGET_P9_VECTOR)
-    rs6000_constraints[RS6000_CONSTRAINT_wo] = VSX_REGS;
+    {
+      /* Support for new D-form instructions.  */
+      rs6000_constraints[RS6000_CONSTRAINT_wb] = ALTIVEC_REGS;
+
+      /* Support for ISA 3.0 (power9) vectors.  */
+      rs6000_constraints[RS6000_CONSTRAINT_wo] = VSX_REGS;
+    }
 
   /* Support for new direct moves (ISA 3.0 + 64bit).  */
   if (TARGET_DIRECT_MOVE_128)
@@ -3542,7 +3542,7 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
 	  reg_addr[xmode].fusion_addis_ld[rtype] = addis_insns[i].load;
 	  reg_addr[xmode].fusion_addis_st[rtype] = addis_insns[i].store;
 
-	  if (rtype == RELOAD_REG_FPR && TARGET_P9_DFORM_SCALAR)
+	  if (rtype == RELOAD_REG_FPR && TARGET_P9_VECTOR)
 	    {
 	      reg_addr[xmode].fusion_addis_ld[RELOAD_REG_VMX]
 		= addis_insns[i].load;
@@ -4239,8 +4239,7 @@ rs6000_option_override_internal (bool global_init_p)
 
   /* For the newer switches (vsx, dfp, etc.) set some of the older options,
      unless the user explicitly used the -mno-<option> to disable the code.  */
-  if (TARGET_P9_VECTOR || TARGET_MODULO || TARGET_P9_DFORM_SCALAR
-      || TARGET_P9_DFORM_VECTOR || TARGET_P9_DFORM_BOTH > 0)
+  if (TARGET_P9_VECTOR || TARGET_MODULO || TARGET_P9_MISC)
     rs6000_isa_flags |= (ISA_3_0_MASKS_SERVER & ~ignore_masks);
   else if (TARGET_P9_MINMAX)
     {
@@ -4464,81 +4463,6 @@ rs6000_option_override_internal (bool global_init_p)
 	     OPTION_MASK_P8_VECTOR is not explicit.  */
 	  rs6000_isa_flags |= OPTION_MASK_P8_VECTOR;
 	  rs6000_isa_flags_explicit |= OPTION_MASK_P8_VECTOR;
-	}
-    }
-
-  /* -mpower9-dform turns on both -mpower9-dform-scalar and
-      -mpower9-dform-vector.  */
-  if (TARGET_P9_DFORM_BOTH > 0)
-    {
-      if (!(rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_VECTOR))
-	rs6000_isa_flags |= OPTION_MASK_P9_DFORM_VECTOR;
-
-      if (!(rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_SCALAR))
-	rs6000_isa_flags |= OPTION_MASK_P9_DFORM_SCALAR;
-    }
-  else if (TARGET_P9_DFORM_BOTH == 0)
-    {
-      if (!(rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_VECTOR))
-	rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_VECTOR;
-
-      if (!(rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_SCALAR))
-	rs6000_isa_flags &= ~OPTION_MASK_P9_DFORM_SCALAR;
-    }
-
-  /* ISA 3.0 D-form instructions require p9-vector and upper-regs.  */
-  if ((TARGET_P9_DFORM_SCALAR || TARGET_P9_DFORM_VECTOR) && !TARGET_P9_VECTOR)
-    {
-      /* We prefer to not mention undocumented options in
-	 error messages.  However, if users have managed to select
-	 power9-dform without selecting power9-vector, they
-	 already know about undocumented flags.  */
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
-	  && (rs6000_isa_flags_explicit & (OPTION_MASK_P9_DFORM_SCALAR
-					   | OPTION_MASK_P9_DFORM_VECTOR)))
-	error ("%qs requires %qs", "-mpower9-dform", "-mpower9-vector");
-      else if (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR)
-	{
-	  rs6000_isa_flags &=
-	    ~(OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
-	  rs6000_isa_flags_explicit |=
-	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
-	}
-      else
-	{
-	  /* We know that OPTION_MASK_P9_VECTOR is not explicit and
-	     OPTION_MASK_P9_DFORM_SCALAR or OPTION_MASK_P9_DORM_VECTOR
-	     may be explicit.  */
-	  rs6000_isa_flags |= OPTION_MASK_P9_VECTOR;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_P9_VECTOR;
-	}
-    }
-
-  if ((TARGET_P9_DFORM_SCALAR || TARGET_P9_DFORM_VECTOR)
-      && !TARGET_DIRECT_MOVE)
-    {
-      /* We prefer to not mention undocumented options in
-	 error messages.  However, if users have managed to select
-	 power9-dform without selecting direct-move, they
-	 already know about undocumented flags.  */
-      if ((rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE)
-	  && ((rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_VECTOR) ||
-	      (rs6000_isa_flags_explicit & OPTION_MASK_P9_DFORM_SCALAR) ||
-	      (TARGET_P9_DFORM_BOTH == 1)))
-	error ("%qs, %qs, %qs require %qs", "-mpower9-dform",
-	       "-mpower9-dform-vector", "-mpower9-dform-scalar",
-	       "-mdirect-move");
-      else if ((rs6000_isa_flags_explicit & OPTION_MASK_DIRECT_MOVE) == 0)
-	{
-	  rs6000_isa_flags |= OPTION_MASK_DIRECT_MOVE;
-	  rs6000_isa_flags_explicit |= OPTION_MASK_DIRECT_MOVE;
-	}
-      else
-	{
-	  rs6000_isa_flags &=
-	    ~(OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
-	  rs6000_isa_flags_explicit |=
-	    (OPTION_MASK_P9_DFORM_SCALAR | OPTION_MASK_P9_DFORM_VECTOR);
 	}
     }
 
@@ -27386,7 +27310,7 @@ rs6000_emit_prologue (void)
 
 	    savereg = gen_rtx_REG (V4SImode, i);
 
-	    if (TARGET_P9_DFORM_VECTOR && quad_address_offset_p (offset))
+	    if (TARGET_P9_VECTOR && quad_address_offset_p (offset))
 	      {
 		mem = gen_frame_mem (V4SImode,
 				     gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -28077,7 +28001,7 @@ rs6000_emit_epilogue (int sibcall)
 		  = (info->altivec_save_offset + frame_off
 		     + 16 * (i - info->first_altivec_reg_save));
 
-		if (TARGET_P9_DFORM_VECTOR && quad_address_offset_p (offset))
+		if (TARGET_P9_VECTOR && quad_address_offset_p (offset))
 		  {
 		    mem = gen_frame_mem (V4SImode,
 					 gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -28293,7 +28217,7 @@ rs6000_emit_epilogue (int sibcall)
 		  = (info->altivec_save_offset + frame_off
 		     + 16 * (i - info->first_altivec_reg_save));
 
-		if (TARGET_P9_DFORM_VECTOR && quad_address_offset_p (offset))
+		if (TARGET_P9_VECTOR && quad_address_offset_p (offset))
 		  {
 		    mem = gen_frame_mem (V4SImode,
 					 gen_rtx_PLUS (Pmode, frame_reg_rtx,
@@ -36155,8 +36079,6 @@ static struct rs6000_opt_mask const rs6000_opt_masks[] =
   { "power8-fusion",		OPTION_MASK_P8_FUSION,		false, true  },
   { "power8-fusion-sign",	OPTION_MASK_P8_FUSION_SIGN,	false, true  },
   { "power8-vector",		OPTION_MASK_P8_VECTOR,		false, true  },
-  { "power9-dform-scalar",	OPTION_MASK_P9_DFORM_SCALAR,	false, true  },
-  { "power9-dform-vector",	OPTION_MASK_P9_DFORM_VECTOR,	false, true  },
   { "power9-fusion",		OPTION_MASK_P9_FUSION,		false, true  },
   { "power9-minmax",		OPTION_MASK_P9_MINMAX,		false, true  },
   { "power9-misc",		OPTION_MASK_P9_MISC,		false, true  },
@@ -36942,14 +36864,6 @@ rs6000_disable_incompatible_switches (void)
 	  rs6000_isa_flags &= ~dep_flags;
 	  ignore_masks |= no_flag | dep_flags;
 	}
-    }
-
-  if (!TARGET_P9_VECTOR
-      && (rs6000_isa_flags_explicit & OPTION_MASK_P9_VECTOR) != 0
-      && TARGET_P9_DFORM_BOTH > 0)
-    {
-      error ("%qs turns off %qs", "-mno-power9-vector", "-mpower9-dform");
-      TARGET_P9_DFORM_BOTH = 0;
     }
 
   return ignore_masks;
@@ -38691,7 +38605,7 @@ emit_fusion_p9_load (rtx reg, rtx mem, rtx tmp_reg)
       else
 	gcc_unreachable ();
     }
-  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_DFORM_SCALAR)
+  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_VECTOR)
     {
       if (mode == SFmode)
 	load_string = "lxssp";
@@ -38778,7 +38692,7 @@ emit_fusion_p9_store (rtx mem, rtx reg, rtx tmp_reg)
       else
 	gcc_unreachable ();
     }
-  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_DFORM_SCALAR)
+  else if (ALTIVEC_REGNO_P (r) && TARGET_P9_VECTOR)
     {
       if (mode == SFmode)
 	store_string = "stxssp";

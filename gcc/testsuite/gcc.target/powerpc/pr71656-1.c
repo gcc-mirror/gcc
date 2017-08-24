@@ -1,8 +1,7 @@
 /* Test for reload ICE arising from POWER9 Vector Dform code generation.  */
 /* { dg-do compile } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
-/* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-O1 -mcpu=power9 -mpower9-dform-vector" } */
+/* { dg-options "-O1 -mpower9-vector" } */
 
 typedef __attribute__((altivec(vector__))) int type_t;
 type_t
