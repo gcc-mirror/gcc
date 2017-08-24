@@ -1,5 +1,20 @@
 2017-08-24  Richard Biener  <rguenther@suse.de>
 
+	PR debug/81936
+	* dwarf2out.c (output_die): Handle flag_generate_offload like
+	flag_generate_lto.
+	(output_comp_unit): Likewise.
+	(gen_array_type_die): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	(note_variable_value_in_expr): Likewise.
+	(dwarf2out_finish): Likewise.  Adjust assert.
+	* cgraphunit.c (symbol_table::compile): Move setting of
+	flag_generate_offload earlier ...
+	(symbol_table::finalize_compilation_unit): ... here, before
+	early debug finalization.
+
+2017-08-24  Richard Biener  <rguenther@suse.de>
+
 	* config/i386/i386.c: Include symbol-summary.h, ipa-prop.h
 	and ipa-fnsummary.h.
 	(ix86_can_inline_p): When ix86_fpmath flags do not match
