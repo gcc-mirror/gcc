@@ -1777,6 +1777,7 @@ proc check_avx2_hw_available { } {
 	    expr 0
 	} else {
 	    check_runtime_nocache avx2_hw_available {
+		#include <stddef.h>
 		#include "cpuid.h"
 		int main ()
 		{
