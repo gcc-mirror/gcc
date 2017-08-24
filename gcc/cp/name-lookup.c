@@ -1096,34 +1096,31 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
 static tree
 lookup_conversion_operator (tree class_type, tree type)
 {
-  tree tpls = NULL_TREE;
+  tree convs = NULL_TREE;
 
   if (TYPE_HAS_CONVERSION (class_type))
     {
-      tree fns;
+      tree fns = NULL_TREE;
+      tree tpls = NULL_TREE;
       vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_type);
 
-      for (int i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   vec_safe_iterate (methods, i, &fns); ++i)
+      vec_safe_iterate (methods, CLASSTYPE_FIRST_CONVERSION_SLOT, &fns);
+      if (fns && !DECL_CONV_FN_P (OVL_FIRST (fns)))
+	fns = NULL_TREE;
+      for (ovl_iterator iter (fns); iter; ++iter)
 	{
-	  /* All the conversion operators come near the beginning of
-	     the class.  Therefore, if FN is not a conversion
-	     operator, there is no matching conversion operator in
-	     CLASS_TYPE.  */
-	  tree fn = OVL_FIRST (fns);
-	  if (!DECL_CONV_FN_P (fn))
-	    break;
+	  if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	    convs = lookup_add (*iter, convs);
 
-	  if (TREE_CODE (fn) == TEMPLATE_DECL)
-	    /* All the templated conversion functions are on the same
-	       slot, so remember it.  */
-	    tpls = fns;
-	  else if (same_type_p (DECL_CONV_FN_TYPE (fn), type))
-	    return fns;
+	  if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	    tpls = lookup_add (*iter, tpls);
 	}
+
+      if (!convs)
+	convs = tpls;
     }
 
-  return tpls;
+  return convs;
 }
 
 /* TYPE is a class type. Return the member functions in the method

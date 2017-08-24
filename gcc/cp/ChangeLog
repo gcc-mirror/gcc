@@ -1,3 +1,13 @@
+2017-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	Conversion operators kept on single overload set
+	* class.c (add_method): Keep all conv-ops on one slot.
+	* name-lookup.c (lookup_conversion_operator): Pull the desired
+	conv op out of overload set.
+	* search.c (lookup_conversions_r): Lose template/non-template
+	distinction.
+	(lookup_conversions): Likewise.
+
 2017-08-23  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lookup_field_1, lookup_fnfields_slot,
