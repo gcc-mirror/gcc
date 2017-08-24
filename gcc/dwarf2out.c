@@ -178,7 +178,7 @@ static GTY(()) section *debug_ranges_section;
 static GTY(()) section *debug_frame_section;
 
 /* Maximum size (in bytes) of an artificially generated label.  */
-#define MAX_ARTIFICIAL_LABEL_BYTES	30
+#define MAX_ARTIFICIAL_LABEL_BYTES	40
 
 /* According to the (draft) DWARF 3 specification, the initial length
    should either be 4 or 12 bytes.  When it's 12 bytes, the first 4

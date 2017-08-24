@@ -1,4 +1,9 @@
-2017-08-23  Richard Biener  <rguenther@suse.de>
+2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* dwarf2out.c (MAX_ARTIFICIAL_LABEL_BYTES): Increase to 40.
+	* dwarf2cfi.c (MAX_ARTIFICIAL_LABEL_BYTES): Remove.
+
+2017-08-24  Richard Biener  <rguenther@suse.de>
 
         PR target/81921
         * targhooks.c (default_target_can_inline_p): Properly
