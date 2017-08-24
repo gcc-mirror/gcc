@@ -1,3 +1,10 @@
+2017-08-24  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c: Include symbol-summary.h, ipa-prop.h
+	and ipa-fnsummary.h.
+	(ix86_can_inline_p): When ix86_fpmath flags do not match
+	check whether the callee uses FP math at all.
+
 2017-08-24  Aldy Hernandez  <aldyh@redhat.com>
 
 	PR middle-end/81931
