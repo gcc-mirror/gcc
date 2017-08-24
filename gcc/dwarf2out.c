@@ -9999,7 +9999,7 @@ output_die (dw_die_ref die)
   if (! die->comdat_type_p && die->die_id.die_symbol
       /* Don't output the symbol twice.  For LTO we want the label
          on the section beginning, not on the actual DIE.  */
-      && (!flag_generate_lto
+      && ((!flag_generate_lto && !flag_generate_offload)
 	  || die->die_tag != DW_TAG_compile_unit))
     output_die_symbol (die);
 
@@ -10450,7 +10450,7 @@ output_comp_unit (dw_die_ref die, int output_if_empty,
 
   /* For LTO cross unit DIE refs we want a symbol on the start of the
      debuginfo section, not on the CU DIE.  */
-  if (flag_generate_lto && oldsym)
+  if ((flag_generate_lto || flag_generate_offload) && oldsym)
     {
       /* ???  No way to get visibility assembled without a decl.  */
       tree decl = build_decl (UNKNOWN_LOCATION, VAR_DECL,
@@ -20843,7 +20843,7 @@ gen_array_type_die (tree type, dw_die_ref context_die)
 	add_AT_unsigned (array_die, DW_AT_byte_size, size);
       /* ???  We can't annotate types late, but for LTO we may not
 	 generate a location early either (gfortran.dg/save_6.f90).  */
-      else if (! (early_dwarf && flag_generate_lto)
+      else if (! (early_dwarf && (flag_generate_lto || flag_generate_offload))
 	       && TYPE_DOMAIN (type) != NULL_TREE
 	       && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE)
 	{
@@ -29740,9 +29740,9 @@ dwarf2out_finish (const char *)
 
   gen_remaining_tmpl_value_param_die_attribute ();
 
-  if (flag_generate_lto)
+  if (flag_generate_lto || flag_generate_offload)
     {
-      gcc_assert (flag_fat_lto_objects);
+      gcc_assert (flag_fat_lto_objects || flag_generate_offload);
 
       /* Prune stuff so that dwarf2out_finish runs successfully
 	 for the fat part of the object.  */
@@ -30318,7 +30318,7 @@ note_variable_value_in_expr (dw_die_ref die, dw_loc_descr_ref loc)
       {
 	tree decl = loc->dw_loc_oprnd1.v.val_decl_ref;
 	dw_die_ref ref = lookup_decl_die (decl);
-	if (! ref && flag_generate_lto)
+	if (! ref && (flag_generate_lto || flag_generate_offload))
 	  {
 	    /* ???  This is somewhat a hack because we do not create DIEs
 	       for variables not in BLOCK trees early but when generating
@@ -30529,7 +30529,7 @@ dwarf2out_early_finish (const char *filename)
   early_dwarf_finished = true;
 
   /* Do not generate DWARF assembler now when not producing LTO bytecode.  */
-  if (!flag_generate_lto)
+  if (!flag_generate_lto && !flag_generate_offload)
     return;
 
   /* Now as we are going to output for LTO initialize sections and labels
