@@ -974,7 +974,7 @@ lookup_field_r (tree binfo, void *data)
       && !BINFO_VIRTUAL_P (binfo))
     return dfs_skip_bases;
 
-  nval = get_class_binding (type, lfi->name, lfi->want_type, 0);
+  nval = get_class_value (type, lfi->name, lfi->want_type, 0);
 
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
@@ -2043,7 +2043,7 @@ look_for_overrides (tree type, tree fndecl)
 tree
 look_for_overrides_here (tree type, tree fndecl)
 {
-  tree ovl = get_class_binding (type, DECL_NAME (fndecl));
+  tree ovl = get_class_value (type, DECL_NAME (fndecl));
 
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
@@ -2365,8 +2365,7 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  if (tree conv = get_class_binding_direct (BINFO_TYPE (binfo),
-					    conv_op_identifier))
+  if (tree conv = get_class_value (BINFO_TYPE (binfo), conv_op_identifier))
     for (ovl_iterator iter (conv); iter; ++iter)
       {
 	tree fn = *iter;

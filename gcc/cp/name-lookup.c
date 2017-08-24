@@ -1211,8 +1211,8 @@ legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
    Use this if you do not want lazy member creation.  */
 
 tree
-get_class_binding_direct (tree klass, tree name, bool prefer_type,
-			  int restricted)
+get_class_value_direct (tree klass, tree name, bool prefer_type,
+			int restricted)
 {
   gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
@@ -1254,7 +1254,7 @@ get_class_binding_direct (tree klass, tree name, bool prefer_type,
    function creation as necessary.  */
 
 tree
-get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
+get_class_value (tree klass, tree name, bool prefer_type, int restricted)
 {
   klass = complete_type (klass);
 
@@ -1284,7 +1284,7 @@ get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
 	}
     }
 
-  return get_class_binding_direct (klass, name, prefer_type, restricted);
+  return get_class_value_direct (klass, name, prefer_type, restricted);
 }
 
 /* Look for NAME in exactly TYPE (including anon-members).  */
