@@ -364,6 +364,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	rebind<_List_node<_Tp> >::other _Node_alloc_type;
       typedef __gnu_cxx::__alloc_traits<_Node_alloc_type> _Node_alloc_traits;
 
+#if !_GLIBCXX_INLINE_VERSION
       static size_t
       _S_distance(const __detail::_List_node_base* __first,
 		  const __detail::_List_node_base* __last)
@@ -376,6 +377,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  }
 	return __n;
       }
+#endif
 
       struct _List_impl
       : public _Node_alloc_type
@@ -392,6 +394,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
 #if __cplusplus >= 201103L
 	_List_impl(_List_impl&&) = default;
+
+	_List_impl(_Node_alloc_type&& __a, _List_impl&& __x)
+	: _Node_alloc_type(std::move(__a)), _M_node(std::move(__x._M_node))
+	{ }
 
 	_List_impl(_Node_alloc_type&& __a) noexcept
 	: _Node_alloc_type(std::move(__a))
@@ -410,6 +416,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       void _M_dec_size(size_t __n) { _M_impl._M_node._M_size -= __n; }
 
+# if !_GLIBCXX_INLINE_VERSION
       size_t
       _M_distance(const __detail::_List_node_base* __first,
 		  const __detail::_List_node_base* __last) const
@@ -417,12 +424,15 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
       // return the stored size
       size_t _M_node_count() const { return _M_get_size(); }
+# endif
 #else
       // dummy implementations used when the size is not stored
       size_t _M_get_size() const { return 0; }
       void _M_set_size(size_t) { }
       void _M_inc_size(size_t) { }
       void _M_dec_size(size_t) { }
+
+# if !_GLIBCXX_INLINE_VERSION
       size_t _M_distance(const void*, const void*) const { return 0; }
 
       // count the number of nodes
@@ -431,6 +441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	return _S_distance(_M_impl._M_node._M_next,
 			   std::__addressof(_M_impl._M_node));
       }
+# endif
 #endif
 
       typename _Node_alloc_traits::pointer
@@ -465,6 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus >= 201103L
       _List_base(_List_base&&) = default;
 
+# if !_GLIBCXX_INLINE_VERSION
       _List_base(_List_base&& __x, _Node_alloc_type&& __a)
       : _M_impl(std::move(__a))
       {
@@ -472,6 +484,17 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	  _M_move_nodes(std::move(__x));
 	// else caller must move individual elements.
       }
+# endif
+
+      // Used when allocator is_always_equal.
+      _List_base(_Node_alloc_type&& __a, _List_base&& __x)
+      : _M_impl(std::move(__a), std::move(__x._M_impl))
+      { }
+
+      // Used when allocator !is_always_equal.
+      _List_base(_Node_alloc_type&& __a)
+      : _M_impl(std::move(__a))
+      { }
 
       void
       _M_move_nodes(_List_base&& __x)
@@ -616,6 +639,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	}
 #endif
 
+#if _GLIBCXX_USE_CXX11_ABI
+      static size_t
+      _S_distance(const_iterator __first, const_iterator __last)
+      { return std::distance(__first, __last); }
+
+      // return the stored size
+      size_t
+      _M_node_count() const
+      { return this->_M_get_size(); }
+#else
+      // dummy implementations used when the size is not stored
+      static size_t
+      _S_distance(const_iterator, const_iterator)
+      { return 0; }
+
+      // count the number of nodes
+      size_t
+      _M_node_count() const
+      { return std::distance(begin(), end()); }
+#endif
+
     public:
       // [23.2.2.1] construct/copy/destroy
       // (assign() and get_allocator() are also listed in this section)
@@ -718,15 +762,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       : _Base(_Node_alloc_type(__a))
       { _M_initialize_dispatch(__x.begin(), __x.end(), __false_type()); }
 
+    private:
+      list(list&& __x, const allocator_type& __a, true_type) noexcept
+      : _Base(_Node_alloc_type(__a), std::move(__x))
+      { }
+
+      list(list&& __x, const allocator_type& __a, false_type)
+      : _Base(_Node_alloc_type(__a))
+      {
+	if (__x._M_get_Node_allocator() == this->_M_get_Node_allocator())
+	  this->_M_move_nodes(std::move(__x));
+	else
+	  insert(begin(), std::__make_move_if_noexcept_iterator(__x.begin()),
+			  std::__make_move_if_noexcept_iterator(__x.end()));
+      }
+
+    public:
       list(list&& __x, const allocator_type& __a)
       noexcept(_Node_alloc_traits::_S_always_equal())
-      : _Base(std::move(__x), _Node_alloc_type(__a))
-      {
-	// If __x is not empty it means its allocator is not equal to __a,
-	// so we need to move from each element individually.
-	insert(begin(), std::__make_move_if_noexcept_iterator(__x.begin()),
-			std::__make_move_if_noexcept_iterator(__x.end()));
-      }
+      : list(std::move(__x), __a,
+	     typename _Node_alloc_traits::is_always_equal{})
+      { }
 #endif
 
       /**
@@ -1000,7 +1056,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**  Returns the number of elements in the %list.  */
       size_type
       size() const _GLIBCXX_NOEXCEPT
-      { return this->_M_node_count(); }
+      { return _M_node_count(); }
 
       /**  Returns the size() of the largest possible %list.  */
       size_type
@@ -1578,7 +1634,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	    if (this != std::__addressof(__x))
 	      _M_check_equal_allocators(__x);
 
-	    size_t __n = this->_M_distance(__first._M_node, __last._M_node);
+	    size_t __n = _S_distance(__first, __last);
 	    this->_M_inc_size(__n);
 	    __x._M_dec_size(__n);
 
