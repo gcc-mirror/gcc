@@ -1,3 +1,9 @@
+2017-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/81931
+	* tree-ssanames.c (get_nonzero_bits): Use element_precision
+	instead of TYPE_PRECISION.
+
 2017-08-24  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
