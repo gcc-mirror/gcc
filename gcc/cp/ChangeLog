@@ -1,11 +1,21 @@
+2017-08-25  Marek Polacek  <polacek@redhat.com>
+
+	Backported from mainline
+	2017-08-08  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/81607
+	* cp-gimplify.c (cp_fold): If folding exposed a branch of
+	a COND_EXPR, convert it to the original type of the COND_EXPR, if
+	they differ.		   
+
 2017-08-14  Release Manager
 
 	* GCC 7.2.0 released.
 
 2017-08-09  Leonid Koppel  <lkoppel@uwaterloo.ca>
 
-        PR c++/67054 - Inherited ctor with non-default-constructible members
-        * method.c (walk_field_subobs) Consider member initializers (NSDMIs)
+	PR c++/67054 - Inherited ctor with non-default-constructible members
+	* method.c (walk_field_subobs) Consider member initializers (NSDMIs)
 	when deducing an inheriting constructor.
 
 2017-07-27  Paolo Carlini  <paolo.carlini@oracle.com>
