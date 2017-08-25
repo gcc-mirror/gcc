@@ -1,3 +1,9 @@
+2017-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81908
+	* gimple-fold.c (size_must_be_zero_p): New function.
+	(gimple_fold_builtin_memory_op): Call it.
+
 2017-08-24  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* config/rs6000/mm_malloc.h: New file.
