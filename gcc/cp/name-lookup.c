@@ -1162,9 +1162,6 @@ legacy_fn_member_lookup (tree type, tree name)
 static tree
 legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
 {
-  if (CLASSTYPE_BINDINGS (type))
-    return lookup_class_member (type, name, want_type);
-
   for (tree field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
     {
       tree decl = field;
@@ -1232,7 +1229,33 @@ get_class_value_direct (tree klass, tree name, bool prefer_type,
     {
       /* Dependent using declarations are a 'field', make sure we
 	 return that even if we saw an overload already.  */
-      tree field_val = legacy_nonfn_member_lookup (klass, lookup, prefer_type);
+      tree field_val = NULL_TREE;
+      if (CLASSTYPE_BINDINGS (klass))
+	{
+	  tree *slot = CLASSTYPE_BINDINGS (klass)->get (name);
+	  
+	  if (slot)
+	    {
+	      field_val = *slot;
+
+	      if (STAT_HACK_P (field_val))
+		{
+		  if (prefer_type)
+		    field_val = STAT_TYPE (field_val);
+		  else
+		    field_val = STAT_DECL (field_val);
+		}
+
+	      field_val = strip_using_decl (field_val);
+	      if (OVL_P (field_val))
+		field_val = NULL_TREE;
+	      else if (prefer_type && !DECL_DECLARES_TYPE_P (field_val))
+		field_val = NULL_TREE;
+	    }
+	}
+      else
+	field_val = legacy_nonfn_member_lookup (klass, lookup, prefer_type);
+
       if (field_val && (!val || TREE_CODE (field_val) == USING_DECL))
 	val = field_val;
     }
@@ -1285,34 +1308,6 @@ get_class_value (tree klass, tree name, bool prefer_type, int restricted)
     }
 
   return get_class_value_direct (klass, name, prefer_type, restricted);
-}
-
-/* Look for NAME in exactly TYPE (including anon-members).  */
-// FIXME currently only fields, will be extending
-
-tree
-lookup_class_member (tree klass, tree name, bool want_type)
-{
-  tree *slot = CLASSTYPE_BINDINGS (klass)->get (name);
-  if (!slot)
-    return NULL_TREE;
-
-  tree val = *slot;
-  if (STAT_HACK_P (val))
-    {
-      if (want_type)
-	return STAT_TYPE (val);
-      val = STAT_DECL (val);
-    }
-
-  val = strip_using_decl (val);
-  if (OVL_P (val))
-    return NULL_TREE;
-
-  if (want_type && !DECL_DECLARES_TYPE_P (val))
-    val = NULL_TREE;
-
-  return val;
 }
 
 /* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't

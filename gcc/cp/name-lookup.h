@@ -349,7 +349,6 @@ extern tree get_class_value_direct (tree, tree, bool prefer_type = false,
 				    int restricted = 1);
 extern tree get_class_value (tree, tree, bool prefer_type = false,
 			     int restricted = 1);
-extern tree lookup_class_member (tree, tree, bool);
 extern void set_class_bindings (tree, tree);
 extern void insert_late_enum_def_bindings (tree, tree);
 

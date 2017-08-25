@@ -1,5 +1,11 @@
 2017-08-25  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.h (lookup_class_member): Delete.
+	* name-lookup.c (lookup_class_member): Merge into ...
+	(get_class_value): ... here.
+	(legacy_nonfn_member_lookup): Don't call it.
+
 	Merge trunk r251351.
 
 2017-08-24  Nathan Sidwell  <nathan@acm.org>
