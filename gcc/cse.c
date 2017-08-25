@@ -6640,6 +6640,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	 equivalences due to the condition being tested.  */
       insn = BB_END (bb);
       if (path_entry < path_size - 1
+	  && EDGE_COUNT (bb->succs) == 2
 	  && JUMP_P (insn)
 	  && single_set (insn)
 	  && any_condjump_p (insn))

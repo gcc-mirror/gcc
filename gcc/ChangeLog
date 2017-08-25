@@ -1,3 +1,10 @@
+2017-08-25  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/81747
+	* cse.c (cse_extended_basic_block): Don't attempt to record
+	equivalences for degenerate conditional branches that branch
+	to their fall-through.
+
 2017-08-24  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81908
