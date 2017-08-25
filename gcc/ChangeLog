@@ -1,4 +1,14 @@
-2017-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+2017-08-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81504
+	* config/rs6000/rs6000-p8swap.c (find_alignment_op): Add reference
+	parameter and_insn and return it.
+	(recombine_lvx_pattern): Insert a copy to ensure availability of
+	the base register of the copied masking operation at the point of
+	the instruction replacement.
+	(recombine_stvx_pattern): Likewise.
+
+2017-08-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.opt (-mpower9-dform-scalar): Delete
 	undocumented switches.
