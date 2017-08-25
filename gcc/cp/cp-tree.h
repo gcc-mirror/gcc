@@ -125,6 +125,7 @@ enum cp_tree_index
     CPTI_TYPE_INFO_PTR_TYPE,
     CPTI_ABORT_FNDECL,
     CPTI_AGGR_TAG,
+    CPTI_CONV_OP_MARKER,
 
     CPTI_CTOR_IDENTIFIER,
     CPTI_COMPLETE_CTOR_IDENTIFIER,
@@ -133,6 +134,7 @@ enum cp_tree_index
     CPTI_COMPLETE_DTOR_IDENTIFIER,
     CPTI_BASE_DTOR_IDENTIFIER,
     CPTI_DELETING_DTOR_IDENTIFIER,
+    CPTI_CONV_OP_IDENTIFIER,
     CPTI_DELTA_IDENTIFIER,
     CPTI_IN_CHARGE_IDENTIFIER,
     CPTI_VTT_PARM_IDENTIFIER,
@@ -199,6 +201,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define global_type_node		cp_global_trees[CPTI_GLOBAL_TYPE]
 #define const_type_info_type_node	cp_global_trees[CPTI_CONST_TYPE_INFO_TYPE]
 #define type_info_ptr_type		cp_global_trees[CPTI_TYPE_INFO_PTR_TYPE]
+#define conv_op_marker			cp_global_trees[CPTI_CONV_OP_MARKER]
 #define abort_fndecl			cp_global_trees[CPTI_ABORT_FNDECL]
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 #define nullptr_node			cp_global_trees[CPTI_NULLPTR]
@@ -239,6 +242,10 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 /* The name of a destructor that destroys virtual base classes, and
    then deletes the entire object.  */
 #define deleting_dtor_identifier	cp_global_trees[CPTI_DELETING_DTOR_IDENTIFIER]
+/* The name used for conversion operators -- but note that actual
+   conversion functions use special identifiers outside the identifier
+   table.  */
+#define conv_op_identifier		cp_global_trees[CPTI_CONV_OP_IDENTIFIER]
 
 /* The name of the identifier used internally to represent operator CODE.  */
 #define cp_operator_id(CODE) \
@@ -2147,10 +2154,6 @@ struct GTY(()) lang_type {
    The TREE_PURPOSE of each TREE_LIST is NULL_TREE for a friend,
    and the RECORD_TYPE for the class template otherwise.  */
 #define CLASSTYPE_DECL_LIST(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->decl_list)
-
-/* The first slot in the CLASSTYPE_METHOD_VEC where conversion
-   operators can appear.  */
-#define CLASSTYPE_FIRST_CONVERSION_SLOT 0
 
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
