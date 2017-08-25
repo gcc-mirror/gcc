@@ -28,14 +28,14 @@
 
 2017-08-24  Richard Biener  <rguenther@suse.de>
 
-        PR target/81921
-        * targhooks.c (default_target_can_inline_p): Properly
-        use target_option_default_node when no DECL_FUNCTION_SPECIFIC_TARGET
-        is present and always compare.
-        * config/i386/i386.c (ix86_valid_target_attribute_tree): Do not
-	imply -mfpmath=sse from TARGET_SSE_P.
-        (ix86_can_inline_p): Properly use target_option_default_node when
-        no DECL_FUNCTION_SPECIFIC_TARGET is present and always compare.
+	PR target/81921
+	* targhooks.c (default_target_can_inline_p): Properly
+	use target_option_default_node when no DECL_FUNCTION_SPECIFIC_TARGET
+	is present and always compare.
+	* config/i386/i386.c (ix86_valid_target_attribute_tree): Do not
+	infer -mfpmath=sse from TARGET_SSE_P.
+	(ix86_can_inline_p): Properly use target_option_default_node when
+	no DECL_FUNCTION_SPECIFIC_TARGET is present and always compare.
 
 2017-08-24  Richard Biener  <rguenther@suse.de>
 
