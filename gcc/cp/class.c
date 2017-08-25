@@ -1017,9 +1017,6 @@ add_method (tree type, tree method, bool via_using)
   if (method == error_mark_node)
     return false;
 
-  bool complete_p = COMPLETE_TYPE_P (type);
-  bool conv_p = DECL_CONV_FN_P (method);
-
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     {
@@ -1032,32 +1029,45 @@ add_method (tree type, tree method, bool via_using)
   grok_special_member_properties (method);
 
   bool insert_p = true;
-  unsigned slot;
-  tree m;
+  tree method_name = DECL_NAME (method);
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool conv_p = IDENTIFIER_CONV_OP_P (method_name);
+
+  if (conv_p)
+    method_name = conv_op_identifier;
 
   /* See if we already have an entry with this name.  */
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, slot, &m);
-       ++slot)
+  unsigned slot;
+  tree m;
+  for (slot = 0; vec_safe_iterate (method_vec, slot, &m); ++slot)
     {
-      m = OVL_FIRST (m);
-      if (conv_p)
-	{
-	  if (DECL_CONV_FN_P (m))
-	    insert_p = false;
-	  break;
-	}
-      if (DECL_NAME (m) == DECL_NAME (method))
+      m = DECL_NAME (OVL_FIRST (m));
+      if (m == method_name)
 	{
 	  insert_p = false;
 	  break;
 	}
-      if (complete_p
-	  && !DECL_CONV_FN_P (m)
-	  && DECL_NAME (m) > DECL_NAME (method))
+      if (complete_p && m > method_name)
 	break;
     }
   tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
+
+  tree conv_marker = NULL_TREE;
+  if (conv_p)
+    {
+      /* For conversion operators, we prepend a dummy overload
+	 pointing at conv_op_marker.  That function's DECL_NAME is
+	 conv_op_identifier, so we can use identifier equality to
+	 locate it.  */
+      if (current_fns)
+	{
+	  gcc_checking_assert (OVL_FUNCTION (current_fns) == conv_op_marker);
+	  conv_marker = current_fns;
+	  current_fns = OVL_CHAIN (current_fns);
+	}
+      else
+	conv_marker = ovl_make (conv_op_marker, NULL_TREE);
+    }
   gcc_assert (!DECL_EXTERN_C_P (method));
 
   /* Check to see if we've already got this method.  */
@@ -1206,7 +1216,12 @@ add_method (tree type, tree method, bool via_using)
   current_fns = ovl_insert (method, current_fns, via_using);
 
   if (conv_p)
-    TYPE_HAS_CONVERSION (type) = 1;
+    {
+      TYPE_HAS_CONVERSION (type) = 1;
+      /* Prepend the marker function.  */
+      OVL_CHAIN (conv_marker) = current_fns;
+      current_fns = conv_marker;
+    }
   else if (!complete_p && !IDENTIFIER_CDTOR_P (DECL_NAME (method)))
     push_class_level_binding (DECL_NAME (method), current_fns);
 
@@ -2294,23 +2309,10 @@ resort_type_method_vec (void* obj,
 {
   if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
-      int len = method_vec->length ();
-      int slot;
-
-      /* The type conversion ops have to live at the front of the vec, so we
-	 can't sort them.  */
-      for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   slot < len; slot++)
-	if (!DECL_CONV_FN_P (OVL_FIRST ((*method_vec)[slot])))
-	  break;
-
-      if (len > slot + 1)
-	{
-	  resort_data.new_value = new_value;
-	  resort_data.cookie = cookie;
-	  qsort (method_vec->address () + slot, len - slot, sizeof (tree),
-		 resort_method_name_cmp);
-	}
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      qsort (method_vec->address (), method_vec->length (), sizeof (tree),
+	     resort_method_name_cmp);
     }
 }
 
@@ -2323,14 +2325,9 @@ resort_type_method_vec (void* obj,
 static void
 finish_struct_methods (tree t)
 {
-  vec<tree, va_gc> *method_vec;
-  int slot, len;
-
-  method_vec = CLASSTYPE_METHOD_VEC (t);
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t);
   if (!method_vec)
     return;
-
-  len = method_vec->length ();
 
   /* Clear DECL_IN_AGGR_P for all functions.  */
   for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
@@ -2341,17 +2338,8 @@ finish_struct_methods (tree t)
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
 
-  /* The type conversion ops have to live at the front of the vec, so we
-     can't sort them.  */
-  tree fn_fields;
-  for (slot = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       method_vec->iterate (slot, &fn_fields);
-       ++slot)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fn_fields)))
-      break;
-  if (len - slot > 1)
-    qsort (method_vec->address () + slot,
-	   len-slot, sizeof (tree), method_name_cmp);
+  qsort (method_vec->address (), method_vec->length (),
+	 sizeof (tree), method_name_cmp);
 }
 
 /* Make BINFO's vtable have N entries, including RTTI entries,
@@ -3000,12 +2988,9 @@ warn_hidden (tree t)
 {
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t);
   tree fns;
-  size_t i;
 
   /* We go through each separately named virtual function.  */
-  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, i, &fns);
-       ++i)
+  for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
     {
       tree fndecl;
       tree base_binfo;

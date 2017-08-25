@@ -2370,12 +2370,8 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (BINFO_TYPE (binfo));
-  tree conv = NULL_TREE;
-  vec_safe_iterate (method_vec, CLASSTYPE_FIRST_CONVERSION_SLOT, &conv);
-  if (conv && !DECL_CONV_FN_P (OVL_FIRST (conv)))
-    conv = NULL_TREE;
-
+  tree conv = lookup_fnfields_slot_nolazy (BINFO_TYPE (binfo),
+					   conv_op_identifier);
   for (ovl_iterator iter (conv); iter; ++iter)
     {
       tree fn = *iter;

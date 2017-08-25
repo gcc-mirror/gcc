@@ -1089,36 +1089,26 @@ lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
   return fns;
 }
 
-/* Return the conversion operators in CLASS_TYPE corresponding to
-   "operator TYPE ()".  Only CLASS_TYPE itself is searched; this
-   routine does not scan the base classes of CLASS_TYPE.  */
+/* FNS is an overload set of conversion functions.  Return the
+   overloads converting to TYPE.  */
 
 static tree
-lookup_conversion_operator (tree class_type, tree type)
+extract_conversion_operator (tree fns, tree type)
 {
   tree convs = NULL_TREE;
+  tree tpls = NULL_TREE;
 
-  if (TYPE_HAS_CONVERSION (class_type))
+  for (ovl_iterator iter (fns); iter; ++iter)
     {
-      tree fns = NULL_TREE;
-      tree tpls = NULL_TREE;
-      vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (class_type);
+      if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
+	convs = lookup_add (*iter, convs);
 
-      vec_safe_iterate (methods, CLASSTYPE_FIRST_CONVERSION_SLOT, &fns);
-      if (fns && !DECL_CONV_FN_P (OVL_FIRST (fns)))
-	fns = NULL_TREE;
-      for (ovl_iterator iter (fns); iter; ++iter)
-	{
-	  if (same_type_p (DECL_CONV_FN_TYPE (*iter), type))
-	    convs = lookup_add (*iter, convs);
-
-	  if (TREE_CODE (*iter) == TEMPLATE_DECL)
-	    tpls = lookup_add (*iter, tpls);
-	}
-
-      if (!convs)
-	convs = tpls;
+      if (TREE_CODE (*iter) == TEMPLATE_DECL)
+	tpls = lookup_add (*iter, tpls);
     }
+
+  if (!convs)
+    convs = tpls;
 
   return convs;
 }
@@ -1134,48 +1124,56 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   if (!method_vec)
     return NULL_TREE;
 
-  if (IDENTIFIER_CONV_OP_P (name))
-    return lookup_conversion_operator (type, TREE_TYPE (name));
-
-  /* Skip the conversion operators.  */
-  int i;
+  /* Conversion operators can only be found by the marker conversion
+     operator name.  */
+  bool conv_op = IDENTIFIER_CONV_OP_P (name);
+  tree lookup = conv_op ? conv_op_identifier : name;
+  tree val = NULL_TREE;
   tree fns;
-  for (i = CLASSTYPE_FIRST_CONVERSION_SLOT;
-       vec_safe_iterate (method_vec, i, &fns);
-       ++i)
-    if (!DECL_CONV_FN_P (OVL_FIRST (fns)))
-      break;
 
   /* If the type is complete, use binary search.  */
   if (COMPLETE_TYPE_P (type))
     {
-      int lo;
-      int hi;
-
-      lo = i;
-      hi = method_vec->length ();
+      int lo = 0;
+      int hi = method_vec->length ();
       while (lo < hi)
 	{
-	  i = (lo + hi) / 2;
+	  int i = (lo + hi) / 2;
 
 	  fns = (*method_vec)[i];
 	  tree fn_name = OVL_NAME (fns);
-	  if (fn_name > name)
+	  if (fn_name > lookup)
 	    hi = i;
-	  else if (fn_name < name)
+	  else if (fn_name < lookup)
 	    lo = i + 1;
 	  else
-	    return fns;
+	    {
+	      val = fns;
+	      break;
+	    }
 	}
     }
   else
-    for (; vec_safe_iterate (method_vec, i, &fns); ++i)
+    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
       {
-	if (OVL_NAME (fns) == name)
-	  return fns;
+	if (OVL_NAME (fns) == lookup)
+	  {
+	    val = fns;
+	    break;
+	  }
       }
 
-  return NULL_TREE;
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (val && conv_op)
+    {
+      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
+      val = OVL_CHAIN (val);
+      if (tree type = TREE_TYPE (name))
+	val = extract_conversion_operator (val, type);
+    }
+
+  return val;
 }
 
 /* Do a 1-level search for NAME as a member of TYPE.  The caller must
@@ -1312,30 +1310,6 @@ lookup_fnfields_slot (tree type, tree name)
     }
 
   return lookup_fnfields_slot_nolazy (type, name);
-}
-
-/* Collect all the conversion operators of KLASS.  */
-
-tree
-lookup_all_conversions (tree klass)
-{
-  tree lkp = NULL_TREE;
-
-  if (vec<tree, va_gc> *methods = CLASSTYPE_METHOD_VEC (klass))
-    {
-      tree ovl;
-      for (int idx = CLASSTYPE_FIRST_CONVERSION_SLOT;
-	   methods->iterate (idx, &ovl); ++idx)
-	{
-	  if (!DECL_CONV_FN_P (OVL_FIRST (ovl)))
-	    /* There are no more conversion functions.  */
-	    break;
-
-	  lkp = lookup_add (ovl, lkp);
-	}
-    }
-
-  return lkp;
 }
 
 /* Compute the chain index of a binding_entry given the HASH value of its

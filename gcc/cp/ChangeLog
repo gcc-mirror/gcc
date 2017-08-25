@@ -1,3 +1,24 @@
+2017-08-25  Nathan Sidwell  <nathan@acm.org>
+
+	Conversion operators have a special name
+	* cp-tree.h (CPTI_CONV_OP_MARKER, CPTI_CONV_OP_IDENTIFIER): New.
+	(conv_op_marker, conv_op_identifier): New.
+	(CLASSTYPE_FIRST_CONVERSION_SLOT): Delete.
+	* decl.c (initialize_predefined_identifiers): Add
+	conv_op_identifier.
+	(cxx_init_decl_processing): Create conv_op_marker.
+	* decl2.c (check_classfn): Lookup conv-ops by name.
+	* class.c (add_method): Use conv_op_identifier & conv_op_marker.
+	(resort_type_method_vec): Don't skip conv-ops.
+	(finish_struct_methods, warn_hidden): Likewise.
+	* name-lookup.h (lookup_all_conversions): Delete.
+	* name-lookup.c (lookup_conversion_operator): Replace with ...
+	(extract_conversion_operator): ... this.
+	(lookup_fnfields_slot_nolazy): Find conv-ops by name.
+	(lookup_all_conversions): Delete.
+	* pt.c (check_explicit_specialization): Find conv-ops by name.
+	* search.c (lookup_conversions_r): Likewise.
+
 2017-08-24  Nathan Sidwell  <nathan@acm.org>
 
 	Conversion operators kept on single overload set

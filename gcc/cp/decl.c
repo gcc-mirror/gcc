@@ -3979,6 +3979,7 @@ initialize_predefined_identifiers (void)
     {"__dt_base ", &base_dtor_identifier, cik_dtor},
     {"__dt_comp ", &complete_dtor_identifier, cik_dtor},
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
+    {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
     {"__delta", &delta_identifier, cik_normal},
@@ -4071,6 +4072,13 @@ cxx_init_decl_processing (void)
   noexcept_false_spec = build_tree_list (boolean_false_node, NULL_TREE);
   noexcept_deferred_spec = build_tree_list (make_node (DEFERRED_NOEXCEPT),
 					    NULL_TREE);
+
+  /* Create the conversion operator marker.  This operator's DECL_NAME
+     is in the identifier table, so we can use identifier equality to
+     find it.  This has no type and no context, so we can't
+     accidentally think it a real function.  */
+  conv_op_marker = build_lang_decl (FUNCTION_DECL, conv_op_identifier,
+				    NULL_TREE);
 
 #if 0
   record_builtin_type (RID_MAX, NULL, string_type_node);
