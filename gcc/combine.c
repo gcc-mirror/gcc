@@ -7488,26 +7488,15 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		 return a new hard register.  */
 	      if (pos || in_dest)
 		{
-		  HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
-
-		  if (WORDS_BIG_ENDIAN
-		      && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
-		    final_word = ((GET_MODE_SIZE (inner_mode)
-				   - GET_MODE_SIZE (tmode))
-				  / UNITS_PER_WORD) - final_word;
-
-		  final_word *= UNITS_PER_WORD;
-		  if (BYTES_BIG_ENDIAN &&
-		      GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (tmode))
-		    final_word += (GET_MODE_SIZE (inner_mode)
-				   - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
+		  unsigned int offset
+		    = subreg_offset_from_lsb (tmode, inner_mode, pos);
 
 		  /* Avoid creating invalid subregs, for example when
 		     simplifying (x>>32)&255.  */
-		  if (!validate_subreg (tmode, inner_mode, inner, final_word))
+		  if (!validate_subreg (tmode, inner_mode, inner, offset))
 		    return NULL_RTX;
 
-		  new_rtx = gen_rtx_SUBREG (tmode, inner, final_word);
+		  new_rtx = gen_rtx_SUBREG (tmode, inner, offset);
 		}
 	      else
 		new_rtx = gen_lowpart (tmode, inner);

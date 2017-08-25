@@ -3603,7 +3603,7 @@ do_pushdecl_with_scope (tree x, cp_binding_level *level, bool is_friend)
   current_function_decl = function_decl;
   return x;
 }
- 
+
 /* Inject X into the local scope just before the function parms.  */
 
 tree

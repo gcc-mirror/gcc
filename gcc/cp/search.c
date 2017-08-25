@@ -2366,29 +2366,29 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
 
   /* First, locate the unhidden ones at this level.  */
   if (tree conv = get_class_value (BINFO_TYPE (binfo), conv_op_identifier))
-    for (ovl_iterator iter (conv); iter; ++iter)
-      {
-	tree fn = *iter;
-	tree type = DECL_CONV_FN_TYPE (fn);
+  for (ovl_iterator iter (conv); iter; ++iter)
+    {
+      tree fn = *iter;
+      tree type = DECL_CONV_FN_TYPE (fn);
 
-	if (TREE_CODE (fn) != TEMPLATE_DECL && type_uses_auto (type))
-	  {
-	    mark_used (fn);
-	    type = DECL_CONV_FN_TYPE (fn);
-	  }
+      if (TREE_CODE (fn) != TEMPLATE_DECL && type_uses_auto (type))
+	{
+	  mark_used (fn);
+	  type = DECL_CONV_FN_TYPE (fn);
+	}
 
-	if (check_hidden_convs (binfo, virtual_depth, virtualness,
-				type, parent_convs, other_convs))
-	  {
-	    my_convs = tree_cons (binfo, fn, my_convs);
-	    TREE_TYPE (my_convs) = type;
-	    if (virtual_depth)
-	      {
-		TREE_STATIC (my_convs) = 1;
-		my_virtualness = 1;
-	      }
-	  }
-      }
+      if (check_hidden_convs (binfo, virtual_depth, virtualness,
+			      type, parent_convs, other_convs))
+	{
+	  my_convs = tree_cons (binfo, fn, my_convs);
+	  TREE_TYPE (my_convs) = type;
+	  if (virtual_depth)
+	    {
+	      TREE_STATIC (my_convs) = 1;
+	      my_virtualness = 1;
+	    }
+	}
+    }
 
   if (my_convs)
     {

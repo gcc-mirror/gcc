@@ -1,3 +1,8 @@
+2017-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lex.c (interpret_float): Use token location
+	when building an EXCESS_PRECISION_EXPR.
+
 2017-08-21  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-common.c (check_function_arguments): Add "arglogs" param; pass

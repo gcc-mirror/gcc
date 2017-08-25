@@ -1014,9 +1014,6 @@ add_method (tree type, tree method, bool via_using)
   if (method == error_mark_node)
     return false;
 
-  bool complete_p = COMPLETE_TYPE_P (type);
-  bool conv_p = DECL_CONV_FN_P (method);
-
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
     {
@@ -1029,11 +1026,16 @@ add_method (tree type, tree method, bool via_using)
   grok_special_member_properties (method);
 
   bool insert_p = true;
-  unsigned slot;
-  tree m;
-  tree method_name = conv_p ? conv_op_identifier : DECL_NAME (method);
+  tree method_name = DECL_NAME (method);
+  bool complete_p = COMPLETE_TYPE_P (type);
+  bool conv_p = IDENTIFIER_CONV_OP_P (method_name);
+
+  if (conv_p)
+    method_name = conv_op_identifier;
 
   /* See if we already have an entry with this name.  */
+  unsigned slot;
+  tree m;
   for (slot = 0; vec_safe_iterate (method_vec, slot, &m); ++slot)
     {
       m = DECL_NAME (OVL_FIRST (m));
@@ -1213,6 +1215,7 @@ add_method (tree type, tree method, bool via_using)
   if (conv_p)
     {
       TYPE_HAS_CONVERSION (type) = 1;
+      /* Prepend the marker function.  */
       OVL_CHAIN (conv_marker) = current_fns;
       current_fns = conv_marker;
     }
@@ -2290,15 +2293,10 @@ resort_type_method_vec (void* obj,
 {
   if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
-      int len = method_vec->length ();
-
-      if (len > 1)
-	{
-	  resort_data.new_value = new_value;
-	  resort_data.cookie = cookie;
-	  qsort (method_vec->address (), len, sizeof (tree),
-		 resort_method_name_cmp);
-	}
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      qsort (method_vec->address (), method_vec->length (), sizeof (tree),
+	     resort_method_name_cmp);
     }
 }
 
@@ -2324,9 +2322,8 @@ finish_struct_methods (tree t)
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
 
-  int len = method_vec->length ();
-  if (len > 1)
-    qsort (method_vec->address (), len, sizeof (tree), method_name_cmp);
+  qsort (method_vec->address (), method_vec->length (),
+	 sizeof (tree), method_name_cmp);
 }
 
 /* Make BINFO's vtable have N entries, including RTTI entries,

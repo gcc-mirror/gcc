@@ -1,3 +1,96 @@
+2017-08-25  Alan Modra  <amodra@gmail.com>
+
+	PR rtl-optimization/81747
+	* cse.c (cse_extended_basic_block): Don't attempt to record
+	equivalences for degenerate conditional branches that branch
+	to their fall-through.
+
+2017-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81908
+	* gimple-fold.c (size_must_be_zero_p): New function.
+	(gimple_fold_builtin_memory_op): Call it.
+
+2017-08-24  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config/rs6000/mm_malloc.h: New file.
+
+2017-08-24  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81913
+	* tree-ssa-loop-niter.c (number_of_iterations_cond): Skip niter
+	analysis when either IVs in condition can wrap.
+
+2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* dwarf2out.c (MAX_ARTIFICIAL_LABEL_BYTES): Increase to 40.
+	* dwarf2cfi.c (MAX_ARTIFICIAL_LABEL_BYTES): Remove.
+
+2017-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/81921
+	* targhooks.c (default_target_can_inline_p): Properly
+	use target_option_default_node when no DECL_FUNCTION_SPECIFIC_TARGET
+	is present and always compare.
+	* config/i386/i386.c (ix86_valid_target_attribute_tree): Do not
+	infer -mfpmath=sse from TARGET_SSE_P.
+	(ix86_can_inline_p): Properly use target_option_default_node when
+	no DECL_FUNCTION_SPECIFIC_TARGET is present and always compare.
+
+2017-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR debug/81936
+	* dwarf2out.c (output_die): Handle flag_generate_offload like
+	flag_generate_lto.
+	(output_comp_unit): Likewise.
+	(gen_array_type_die): Likewise.
+	(dwarf2out_early_finish): Likewise.
+	(note_variable_value_in_expr): Likewise.
+	(dwarf2out_finish): Likewise.  Adjust assert.
+	* cgraphunit.c (symbol_table::compile): Move setting of
+	flag_generate_offload earlier ...
+	(symbol_table::finalize_compilation_unit): ... here, before
+	early debug finalization.
+
+2017-08-24  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386.c: Include symbol-summary.h, ipa-prop.h
+	and ipa-fnsummary.h.
+	(ix86_can_inline_p): When ix86_fpmath flags do not match
+	check whether the callee uses FP math at all.
+
+2017-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/81931
+	* tree-ssanames.c (get_nonzero_bits): Use element_precision
+	instead of TYPE_PRECISION.
+
+2017-08-24  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* combine.c (make_extraction): Use subreg_offset_from_lsb.
+
+2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* config/i386/i386.h (ix86_frame::stack_realign_allocate_offset):
+	Remove field.
+	(ix86_frame::stack_realign_allocate): New field.
+	(struct machine_frame_state): Modify comments.
+	(machine_frame_state::sp_realigned_fp_end): New field.
+	* config/i386/i386.c (ix86_compute_frame_layout): Rework stack frame
+	layout calculation.
+	(sp_valid_at): Add assertion to assure no attempt to access invalid
+	offset of a realigned stack.
+	(fp_valid_at): Likewise.
+	(choose_baseaddr): Modify comments.
+	(ix86_emit_outlined_ms2sysv_save): Adjust to changes in
+	ix86_expand_prologue.
+	(ix86_expand_prologue): Modify stack realignment and allocation.
+	(ix86_expand_epilogue): Modify comments.
+	* doc/sourcebuild.texi: Add documentation for target selectors avx2,
+	avx2_runtime, avx512f, and avx512f_runtime.
+
 2017-08-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt: Remove unneeded Init(0) initializations.

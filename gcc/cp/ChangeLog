@@ -1,3 +1,72 @@
+2017-08-25  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (method_name_cmp, resort_method_name_cmp): Method names
+	can never be NULL.
+
+	Conversion operators have a special name
+	* cp-tree.h (CPTI_CONV_OP_MARKER, CPTI_CONV_OP_IDENTIFIER): New.
+	(conv_op_marker, conv_op_identifier): New.
+	(CLASSTYPE_FIRST_CONVERSION_SLOT): Delete.
+	* decl.c (initialize_predefined_identifiers): Add
+	conv_op_identifier.
+	(cxx_init_decl_processing): Create conv_op_marker.
+	* decl2.c (check_classfn): Lookup conv-ops by name.
+	* class.c (add_method): Use conv_op_identifier & conv_op_marker.
+	(resort_type_method_vec): Don't skip conv-ops.
+	(finish_struct_methods, warn_hidden): Likewise.
+	* name-lookup.h (lookup_all_conversions): Delete.
+	* name-lookup.c (lookup_conversion_operator): Replace with ...
+	(extract_conversion_operator): ... this.
+	(lookup_fnfields_slot_nolazy): Find conv-ops by name.
+	(lookup_all_conversions): Delete.
+	* pt.c (check_explicit_specialization): Find conv-ops by name.
+	* search.c (lookup_conversions_r): Likewise.
+
+2017-08-24  Nathan Sidwell  <nathan@acm.org>
+
+	Conversion operators kept on single overload set
+	* class.c (add_method): Keep all conv-ops on one slot.
+	* name-lookup.c (lookup_conversion_operator): Pull the desired
+	conv op out of overload set.
+	* search.c (lookup_conversions_r): Lose template/non-template
+	distinction.
+	(lookup_conversions): Likewise.
+
+2017-08-23  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lookup_field_1, lookup_fnfields_slot,
+	lookup_fnfields_slot_nolazy, lookup_all_conversions): Move
+	declatations to ...
+	* name-lookup.h (lookup_field_1, lookup_fnfields_slot,
+	lookup_fnfields_slot_nolazy, lookup_all_conversions): ... here.
+	* search.c (lookup_conversion_operator,
+	lookup_fnfields_slot_nolazy, lookup_field_1, lookup_fnfields_slot,
+	lookup_all_conversions): Move to ...
+	* name-lookup.c (lookup_conversion_operator,
+	lookup_fnfields_slot_nolazy, lookup_field_1, lookup_fnfields_slot,
+	lookup_all_conversions): ... here.
+
+	* semantics.c (finish_member_declaration): Move USING_DECL check
+	earlier.  Always set C++ linkage.  Commonize TYPE_FIELD and
+	template decl list insertion.
+
+	* cp-tree.h (maybe_version_functions): Declare.
+	* decl.c (decls_match): Break function versioning check to
+	separate function.  Call it.
+	(maybe_version_functions): Broken out of decls_match.
+	* class.c (add_method): Use maybe_version_functions.
+
+	* cp-tree.h (print_search_statistics,
+	reinit_search_statistics): Don't declare.
+	* search.c (n_fields_searched, n_calls_lookup_field,
+	n_calls_lookup_field_1, n_calls_lookup_fnfields,
+	n_calls_lookup_fnfields_1, n_calls_get_base_type,
+	n_outer_fields_searched, n_contexts_saved): Delete.
+	(lookup_field_1, lookup_member,
+	lookup_fnfields_slot_nolazy): Remove stat gathering.
+	(print_search_statistics, reinit_search_statistics): Delete.
+	* tree.c (cxx_print_statistics): Don't print search stats.
+
 2017-08-21  Nathan Sidwell  <nathan@acm.org>
 
 	* search.c (lookup_field_r): Remove obsolete code for type-named

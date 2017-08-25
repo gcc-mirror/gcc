@@ -1,3 +1,23 @@
+2017-08-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_S_distance): Remove.
+	(_List_impl(_Node_alloc_type&&, _List_impl&&)): New.
+	(_List_base(_Node_alloc_type&&, _List_base&&)): New, use latter.
+	[!_GLIBCXX_INLINE_VERSION](_List_base(_Node_alloc_type&&,_List_base&&)):
+	Remove.
+	(_List_base(_Node_alloc_type&&)): New.
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_M_distance): Remove.
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_M_node_count): Remove.
+	(list<>::_M_node_count): New.
+	(list<>::size()): Adapt to call latter.
+	(list<>::_S_distance(const_iterator, const_iterator)): New.
+	(list<>::splice(iterator, list&, const_iterator, const_iterator)):
+	Adapt to call latter.
+	(list(list&&, const allocator_type&, true_type)): New.
+	(list(list&&, const allocator_type&, false_type)): New.
+	(list(list&&, const allocator_type&)): Adapt to call latters.
+
 2017-08-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81912

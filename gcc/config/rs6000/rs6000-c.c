@@ -430,8 +430,8 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
     rs6000_define_or_undefine_macro (define_p, "_ARCH_PWR7");
   /* Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
      turned on in the following condition:
-     1. TARGET_P9_DFORM_SCALAR or TARGET_P9_DFORM_VECTOR are enabled
-        and OPTION_MASK_DIRECT_MOVE is not explicitly disabled.
+     1. TARGET_P8_VECTOR is enabled and OPTION_MASK_DIRECT_MOVE is not
+        explicitly disabled.
         Hereafter, the OPTION_MASK_DIRECT_MOVE flag is considered to
         have been turned on explicitly.
      Note that the OPTION_MASK_DIRECT_MOVE flag is automatically
@@ -545,8 +545,7 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
         also considered to have been turned off explicitly.
      Note that the OPTION_MASK_P9_VECTOR is automatically turned on
      in the following conditions:
-     1. If TARGET_P9_DFORM_SCALAR or TARGET_P9_DFORM_VECTOR and
-        OPTION_MASK_P9_VECTOR was not turned off explicitly.
+     1. If TARGET_P9_MINMAX was turned on explicitly.
         Hereafter, THE OPTION_MASK_P9_VECTOR flag is considered to
         have been turned on explicitly.  */
   if ((flags & OPTION_MASK_P9_VECTOR) != 0)

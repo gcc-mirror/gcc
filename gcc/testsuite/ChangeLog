@@ -1,3 +1,46 @@
+2017-08-24  Martin Sebor  <msebor@redhat.com>
+
+	PR middle-end/81908
+	* gcc.dg/tree-ssa/builtins-folding-gimple-2.c: New test.
+	* gcc.dg/tree-ssa/builtins-folding-gimple-3.c: New test.
+	* gcc.dg/tree-ssa/pr81908.c: New test.
+
+2017-08-24  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* gcc.target/powerpc/mmx-packuswb-1.c [NO_WARN_X86_INTRINSICS]:
+	Define.  Suppress warning during tests.
+
+2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	* lib/target-supports.exp: Group together target-dependant checks.
+
+2017-08-24  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/81913
+	* gcc.c-torture/execute/pr81913.c: New test.
+	* gcc.dg/tree-ssa/loop-niter-1.c: New test.
+	* gcc.dg/tree-ssa/loop-niter-2.c: New test.
+
+2017-08-23  Richard Biener  <rguenther@suse.de>
+
+        PR target/81921
+	* gcc.target/i386/pr81921.c: New testcase.
+
+2017-08-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr80969-1.c: New testcase.
+	* gcc.target/i386/pr80969-2a.c: Likewise.
+	* gcc.target/i386/pr80969-2.c: Likewise.
+	* gcc.target/i386/pr80969-3.c: Likewise.
+	* gcc.target/i386/pr80969-4a.c: Likewise.
+	* gcc.target/i386/pr80969-4b.c: Likewise.
+	* gcc.target/i386/pr80969-4.c: Likewise.
+	* gcc.target/i386/pr80969-4.h: New header common to pr80969-4*.c
+	* lib/target-supports.exp (check_avx512_os_support_available,
+	check_avx512f_hw_available, check_effective_target_avx512f_runtime):
+	New proceedures for target avx512f and avx512f_runtime selectors.
+	(check_avx2_hw_available): Fix breakage due NULL being undefined.
+
 2017-08-23  David Malcolm  <dmalcolm@redhat.com>
 
 	* g++.dg/diagnostic/param-type-mismatch.C: New test acse.

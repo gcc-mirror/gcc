@@ -4075,10 +4075,10 @@ cxx_init_decl_processing (void)
 
   /* Create the conversion operator marker.  This operator's DECL_NAME
      is in the identifier table, so we can use identifier equality to
-     find it.  This has a bogus type and no context, so we can't
+     find it.  This has no type and no context, so we can't
      accidentally think it a real function.  */
   conv_op_marker = build_lang_decl (FUNCTION_DECL, conv_op_identifier,
-				    error_mark_node);
+				    NULL_TREE);
 
 #if 0
   record_builtin_type (RID_MAX, NULL, string_type_node);
