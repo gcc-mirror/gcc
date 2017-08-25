@@ -1,5 +1,8 @@
 2017-08-25  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (method_name_cmp, resort_method_name_cmp): Method names
+	can never be NULL.
+
 	Conversion operators have a special name
 	* cp-tree.h (CPTI_CONV_OP_MARKER, CPTI_CONV_OP_IDENTIFIER): New.
 	(conv_op_marker, conv_op_identifier): New.

@@ -2263,12 +2263,6 @@ method_name_cmp (const void* m1_p, const void* m2_p)
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
 
-  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
-    return 0;
-  if (*m1 == NULL_TREE)
-    return -1;
-  if (*m2 == NULL_TREE)
-    return 1;
   if (OVL_NAME (*m1) < OVL_NAME (*m2))
     return -1;
   return 1;
@@ -2282,20 +2276,13 @@ resort_method_name_cmp (const void* m1_p, const void* m2_p)
 {
   const tree *const m1 = (const tree *) m1_p;
   const tree *const m2 = (const tree *) m2_p;
-  if (*m1 == NULL_TREE && *m2 == NULL_TREE)
-    return 0;
-  if (*m1 == NULL_TREE)
+
+  tree n1 = OVL_NAME (*m1);
+  tree n2 = OVL_NAME (*m2);
+  resort_data.new_value (&n1, resort_data.cookie);
+  resort_data.new_value (&n2, resort_data.cookie);
+  if (n1 < n2)
     return -1;
-  if (*m2 == NULL_TREE)
-    return 1;
-  {
-    tree d1 = OVL_NAME (*m1);
-    tree d2 = OVL_NAME (*m2);
-    resort_data.new_value (&d1, resort_data.cookie);
-    resort_data.new_value (&d2, resort_data.cookie);
-    if (d1 < d2)
-      return -1;
-  }
   return 1;
 }
 
