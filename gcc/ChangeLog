@@ -1,3 +1,12 @@
+2017-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81995
+	* config/i386/i386.md (*<btsc><mode>): Change operand 2
+	predicate to register_operand.  Reorder operands.
+	(*btr<mode>): Ditto.
+	(*<btsc><mode>_mask): Change operand 3 predicate to register_operand.
+	(*btr<mode>_mask): Ditto.
+
 2017-08-25  Steven Munroe  <munroesj@gcc.gnu.org>
 
 	* config.gcc (powerpc*-*-*): Add xmmintrin.h and mm_malloc.h.
