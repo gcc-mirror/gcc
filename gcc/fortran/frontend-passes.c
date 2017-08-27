@@ -3837,14 +3837,25 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       gcc_unreachable();
     }
 
+  /* Build the conjg call around the variables.  Set the typespec manually
+     because gfc_build_intrinsic_call sometimes gets this wrong.  */
   if (conjg_a)
-    ascalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
-					matrix_a->where, 1, ascalar);
+    {
+      gfc_typespec ts;
+      ts = matrix_a->ts;
+      ascalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
+					  matrix_a->where, 1, ascalar);
+      ascalar->ts = ts;
+    }
 
   if (conjg_b)
-    bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
-					matrix_b->where, 1, bscalar);
-
+    {
+      gfc_typespec ts;
+      ts = matrix_b->ts;
+      bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
+					  matrix_b->where, 1, bscalar);
+      bscalar->ts = ts;
+    }
   /* First loop comes after the zero assignment.  */
   assign_zero->next = do_1;
 

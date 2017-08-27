@@ -1,3 +1,9 @@
+2017-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/81974
+	* frontend-passes (inline_matumul_assign):  Explicity
+	set typespec for call to CONJG.
+
 2017-08-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/81296
