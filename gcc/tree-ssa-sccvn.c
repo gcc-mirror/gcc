@@ -2334,7 +2334,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       memset (&op, 0, sizeof (op));
       op.type = vr->type;
       op.opcode = MEM_REF;
-      op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
+      op.op0 = build_int_cst (ptr_type_node, at - lhs_offset + rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
       vr->operands[0] = op;
       op.type = TREE_TYPE (rhs);

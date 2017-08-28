@@ -1,3 +1,8 @@
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81977
+	* g++.dg/torture/pr81977.C: New testcase.
+
 2017-08-28  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR target/80640
