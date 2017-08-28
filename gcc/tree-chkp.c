@@ -3277,7 +3277,7 @@ chkp_may_narrow_to_field (tree ref, tree field)
   return DECL_SIZE (field) && TREE_CODE (DECL_SIZE (field)) == INTEGER_CST
     && tree_to_uhwi (DECL_SIZE (field)) != 0
     && !(flag_chkp_flexible_struct_trailing_arrays
-	 && array_at_struct_end_p (ref, true))
+	 && array_at_struct_end_p (ref))
     && (!DECL_FIELD_OFFSET (field)
 	|| TREE_CODE (DECL_FIELD_OFFSET (field)) == INTEGER_CST)
     && (!DECL_FIELD_BIT_OFFSET (field)
