@@ -1,3 +1,8 @@
+2017-08-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/80640
+	* gcc.dg/atomic/pr80640.c: New testcase.
+
 2017-08-27  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/81995
