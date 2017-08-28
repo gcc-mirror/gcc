@@ -1,3 +1,9 @@
+2017-08-28  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/81770
+	* expr.c (gfc_check_pointer_assign): Improve the check whether pointer
+	may outlive pointer target.
+
 2017-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/81974
