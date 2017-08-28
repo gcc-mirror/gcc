@@ -1382,7 +1382,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 	     unused.  That allows the link editor to remove it in a partial
 	     link.  */
 	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
-			 shdr, sh_type, Elf_Addr, SHT_NULL);
+			 shdr, sh_type, Elf_Word, SHT_NULL);
 	}
 
       flags = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
@@ -1390,7 +1390,7 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       if (ret == 0)
 	flags &= ~SHF_EXCLUDE;
       else if (ret == -1)
-	flags |= SHF_EXCLUDE;
+	flags = SHF_EXCLUDE;
       ELF_SET_FIELD (type_functions, ei_class, Shdr,
 		     shdr, sh_flags, Elf_Addr, flags);
     }
