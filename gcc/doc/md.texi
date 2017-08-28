@@ -7044,14 +7044,20 @@ If these patterns are not defined, attempts will be made to use
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
 
-@cindex @code{mem_thread_fence@var{mode}} instruction pattern
-@item @samp{mem_thread_fence@var{mode}}
+@cindex @code{mem_thread_fence} instruction pattern
+@item @samp{mem_thread_fence}
 This pattern emits code required to implement a thread fence with
 memory model semantics.  Operand 0 is the memory model to be used.
 
-If this pattern is not specified, all memory models except
-@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
-barrier pattern.
+For the @code{__ATOMIC_RELAXED} model no instructions need to be issued
+and this expansion is not invoked.
+
+The compiler always emits a compiler memory barrier regardless of what
+expanding this pattern produced.
+
+If this pattern is not defined, the compiler falls back to expanding the
+@code{memory_barrier} pattern, then to emitting @code{__sync_synchronize}
+library call, and finally to just placing a compiler memory barrier.
 
 @cindex @code{mem_signal_fence@var{mode}} instruction pattern
 @item @samp{mem_signal_fence@var{mode}}

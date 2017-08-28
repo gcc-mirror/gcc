@@ -2248,11 +2248,6 @@ nml_write_obj (st_parameter_dt *dtp, namelist_info *obj, index_type offset,
 		      child_iomsg_len = IOMSG_LEN;
 		    }
 
-		  /* If writing to an internal unit, stash it to allow
-		     the child procedure to access it.  */
-		  if (is_internal_unit (dtp))
-		    stash_internal_unit (dtp);
-		      
 		  /* Call the user defined formatted WRITE procedure.  */
 		  dtp->u.p.current_unit->child_dtio++;
 		  if (obj->type == BT_DERIVED)

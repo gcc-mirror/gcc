@@ -1,5 +1,7 @@
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251385.
+
 	gcc/cp/
 	* name-lookup.c (do_class_using_decl): Simplify.
 

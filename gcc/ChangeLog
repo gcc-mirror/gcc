@@ -1,3 +1,86 @@
+2017-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (execute): Fold SIGPIPE handling into switch
+	statement.  Adjust internal error message.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR debug/81993
+	* dwarf2out.c (gen_remaining_tmpl_value_param_die_attributes):
+	Do nothing for removed DIEs.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81977
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix look through
+	memcpy.
+
+2017-08-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/80640
+	* doc/md.texi (mem_thread_fence): Remove mention of mode.  Rewrite.
+	* optabs.c (expand_mem_thread_fence): Emit a compiler barrier when
+	using targetm.gen_mem_thread_fence.
+
+2017-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81995
+	* config/i386/i386.md (*<btsc><mode>): Change operand 2
+	predicate to register_operand.  Reorder operands.
+	(*btr<mode>): Ditto.
+	(*<btsc><mode>_mask): Change operand 3 predicate to register_operand.
+	(*btr<mode>_mask): Ditto.
+
+2017-08-25  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* config.gcc (powerpc*-*-*): Add xmmintrin.h and mm_malloc.h.
+	* config/rs6000/xmmintrin.h: New file.
+	* config/rs6000/x86intrin.h [__ALTIVEC__]: Include xmmintrin.h.
+
+2017-08-25  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81504
+	* config/rs6000/rs6000-p8swap.c (find_alignment_op): Add reference
+	parameter and_insn and return it.
+	(recombine_lvx_pattern): Insert a copy to ensure availability of
+	the base register of the copied masking operation at the point of
+	the instruction replacement.
+	(recombine_stvx_pattern): Likewise.
+
+2017-08-25  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.opt (-mpower9-dform-scalar): Delete
+	undocumented switches.
+	(-mpower9-dform-vector): Likewise.
+	(-mpower9-dform): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Update
+	comments to delete references to -mpower9-dform* switches.
+	* config/rs6000/predicates.md (vsx_quad_dform_memory_operand):
+	Delete reference to -mpower9-dform* switches, test for
+	-mpower9-vector instead.
+	* config/rs6000/rs6000-cpus.def (ISA_3_0_MASKS_SERVER): Likewise.
+	(OTHER_P9_VECTOR_MASKS): Likewise.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Change
+	tests against -mpower9-dform* to -mpower9-vector.  Delete code
+	that checked for -mpower9-dform* consistancy with other options.
+	Add test for -mpower9-misc to enable other power9 switches.
+	(rs6000_init_hard_regno_mode_ok): Likewise.
+	(rs6000_option_override_internal): Likewise.
+	(rs6000_emit_prologue): Likewise.
+	(rs6000_emit_epilogue): Likewise.
+	(rs6000_opt_masks): Delete -mpower9-dform-{scalar,vector}.
+	(rs6000_disable_incompatiable_switches): Delete -mpower9-dform.
+	(emit_fusion_p9_load): Change tests for -mpower9-dform-scalar
+	-mpower9-vector.
+	(emit_fusion_p9_store): Likewise.
+	* config/rs6000/rs6000.h (TARGET_P9_DFORM_SCALAR): Delete
+	resetting these macros if the assembler does not support ISA 3.0
+	instructions.
+	(TARGET_P9_DFORM_VECTOR): Likewise.
+	* config/rs6000/rs6000.md (peepholes to optimize altivec memory):
+	Change to use -mpower9-vector instead of -mpower9-dform-scalar.
+
 2017-08-25  Alan Modra  <amodra@gmail.com>
 
 	PR rtl-optimization/81747

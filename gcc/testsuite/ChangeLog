@@ -1,3 +1,103 @@
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81977
+	* g++.dg/torture/pr81977.C: New testcase.
+
+2017-08-28  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR target/80640
+	* gcc.dg/atomic/pr80640.c: New testcase.
+
+2017-08-27  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/81995
+	* gcc.target/i386/pr46091-4.c: Add -mregparm=2 for 32bit targets.
+	* gcc.target/i386/pr46091-4a.c: Ditto.
+
+2017-08-27  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/81974
+	* gfortran.dg/inline_matmul_19.f90:  New test.
+
+2017-08-25  Steven Munroe  <munroesj@gcc.gnu.org>
+
+	* gcc.target/powerpc/m128-check.h: New file.
+	* gcc.target/powerpc/sse-check.h: New file.
+	* gcc.target/powerpc/sse-movmskps-1.c: New file.
+	* gcc.target/powerpc/sse-movlps-2.c: New file.
+	* gcc.target/powerpc/sse-pavgw-1.c: New file.
+	* gcc.target/powerpc/sse-cvttss2si-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpi32x2ps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtss2si-1.c: New file.
+	* gcc.target/powerpc/sse-divss-1.c: New file.
+	* gcc.target/powerpc/sse-movhps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtsi2ss-2.c: New file.
+	* gcc.target/powerpc/sse-subps-1.c: New file.
+	* gcc.target/powerpc/sse-minps-1.c: New file.
+	* gcc.target/powerpc/sse-pminub-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpu16ps-1.c: New file.
+	* gcc.target/powerpc/sse-shufps-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-2.c: New file.
+	* gcc.target/powerpc/sse-maxps-1.c: New file.
+	* gcc.target/powerpc/sse-pmaxub-1.c: New file.
+	* gcc.target/powerpc/sse-movmskb-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-4.c: New file.
+	* gcc.target/powerpc/sse-unpcklps-1.c: New file.
+	* gcc.target/powerpc/sse-mulps-1.c: New file.
+	* gcc.target/powerpc/sse-rcpps-1.c: New file.
+	* gcc.target/powerpc/sse-pminsw-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-6.c: New file.
+	* gcc.target/powerpc/sse-subss-1.c: New file.
+	* gcc.target/powerpc/sse-movss-2.c: New file.
+	* gcc.target/powerpc/sse-pmaxsw-1.c: New file.
+	* gcc.target/powerpc/sse-minss-1.c: New file.
+	* gcc.target/powerpc/sse-movaps-2.c: New file.
+	* gcc.target/powerpc/sse-movlps-1.c: New file.
+	* gcc.target/powerpc/sse-maxss-1.c: New file.
+	* gcc.target/powerpc/sse-movhlps-1.c: New file.
+	* gcc.target/powerpc/sse-cvttss2si-2.c: New file.
+	* gcc.target/powerpc/sse-cvtpi8ps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpi32ps-1.c: New file.
+	* gcc.target/powerpc/sse-mulss-1.c: New file.
+	* gcc.target/powerpc/sse-cvtsi2ss-1.c: New file.
+	* gcc.target/powerpc/sse-cvtss2si-2.c: New file.
+	* gcc.target/powerpc/sse-movlhps-1.c: New file.
+	* gcc.target/powerpc/sse-movhps-2.c: New file.
+	* gcc.target/powerpc/sse-rsqrtps-1.c: New file.
+	* gcc.target/powerpc/sse-xorps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpspi8-1.c: New file.
+	* gcc.target/powerpc/sse-orps-1.c: New file.
+	* gcc.target/powerpc/sse-addps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpi16ps-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-3.c: New file.
+	* gcc.target/powerpc/sse-pmulhuw-1.c: New file.
+	* gcc.target/powerpc/sse-andps-1.c: New file.
+	* gcc.target/powerpc/sse-cmpss-1.c: New file.
+	* gcc.target/powerpc/sse-divps-1.c: New file.
+	* gcc.target/powerpc/sse-andnps-1.c: New file.
+	* gcc.target/powerpc/sse-ucomiss-5.c: New file.
+	* gcc.target/powerpc/sse-movss-1.c: New file.
+	* gcc.target/powerpc/sse-sqrtps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpu8ps-1.c: New file.
+	* gcc.target/powerpc/sse-cvtpspi16-1.c: New file.
+	* gcc.target/powerpc/sse-movaps-1.c: New file.
+	* gcc.target/powerpc/sse-movss-3.c: New file.
+	* gcc.target/powerpc/sse-unpckhps-1.c: New file.
+	* gcc.target/powerpc/sse-addss-1.c: New file.
+	* gcc.target/powerpc/sse-psadbw-1.c: New file.
+
+2017-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/dform-1.c: Delete -mpower9-dform*
+	options.
+	* gcc.target/powerpc/dform-2.c: Likewise.
+	* gcc.target/powerpc/dform-3.c: Likewise.
+	* gcc.target/powerpc/pr71656-1.c: Likewise.
+	* gcc.target/powerpc/pr71656-2.c: Likewise.
+	* gcc.target/powerpc/pr80103-1.c: Likewise.
+	* gcc.target/powerpc/pr80098-1.c: Likewise.
+
 2017-08-24  Martin Sebor  <msebor@redhat.com>
 
 	PR middle-end/81908
