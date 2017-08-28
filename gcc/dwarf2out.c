@@ -26037,7 +26037,8 @@ gen_remaining_tmpl_value_param_die_attribute (void)
       j = 0;
       FOR_EACH_VEC_ELT (*tmpl_value_parm_die_table, i, e)
 	{
-	  if (!tree_add_const_value_attribute (e->die, e->arg))
+	  if (!e->die->removed
+	      && !tree_add_const_value_attribute (e->die, e->arg))
 	    {
 	      dw_loc_descr_ref loc = NULL;
 	      if (! early_dwarf
