@@ -1,3 +1,8 @@
+2017-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* gcc.c (execute): Fold SIGPIPE handling into switch
+	statement.  Adjust internal error message.
+
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR debug/81993

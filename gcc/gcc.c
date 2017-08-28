@@ -3135,49 +3135,50 @@ execute (void)
 	int status = statuses[i];
 
 	if (WIFSIGNALED (status))
-	  {
-#ifdef SIGPIPE
-	    /* SIGPIPE is a special case.  It happens in -pipe mode
-	       when the compiler dies before the preprocessor is done,
-	       or the assembler dies before the compiler is done.
-	       There's generally been an error already, and this is
-	       just fallout.  So don't generate another error unless
-	       we would otherwise have succeeded.  */
-	    if (WTERMSIG (status) == SIGPIPE
-		&& (signal_count || greatest_status >= MIN_FATAL_STATUS))
-	      {
-		signal_count++;
-		ret_code = -1;
-	      }
-	    else
-#endif
-	      switch (WTERMSIG (status))
-		{
-		case SIGINT:
-		/* SIGQUIT and SIGKILL are not available on MinGW.  */
+	  switch (WTERMSIG (status))
+	    {
+	    case SIGINT:
+	    case SIGTERM:
+	      /* SIGQUIT and SIGKILL are not available on MinGW.  */
 #ifdef SIGQUIT
-		case SIGQUIT:
+	    case SIGQUIT:
 #endif
 #ifdef SIGKILL
-		case SIGKILL:
+	    case SIGKILL:
 #endif
-		case SIGTERM:
-		  /* The user (or environment) did something to the
-		     inferior.  Making this an ICE confuses the user
-		     into thinking there's a compiler bug.  Much more
-		     likely is the user or OOM killer nuked it.  */
-		  fatal_error (input_location,
-			       "%s signal terminated program %s",
-			       strsignal (WTERMSIG (status)),
-			       commands[i].prog);
+	      /* The user (or environment) did something to the
+		 inferior.  Making this an ICE confuses the user into
+		 thinking there's a compiler bug.  Much more likely is
+		 the user or OOM killer nuked it.  */
+	      fatal_error (input_location,
+			   "%s signal terminated program %s",
+			   strsignal (WTERMSIG (status)),
+			   commands[i].prog);
+	      break;
+
+#ifdef SIGPIPE
+	    case SIGPIPE:
+	      /* SIGPIPE is a special case.  It happens in -pipe mode
+		 when the compiler dies before the preprocessor is
+		 done, or the assembler dies before the compiler is
+		 done.  There's generally been an error already, and
+		 this is just fallout.  So don't generate another
+		 error unless we would otherwise have succeeded.  */
+	      if (signal_count || greatest_status >= MIN_FATAL_STATUS)
+		{
+		  signal_count++;
+		  ret_code = -1;
 		  break;
-		default:
-		  /* The inferior failed to catch the signal.  */
-		  internal_error_no_backtrace ("%s (program %s)",
-					       strsignal (WTERMSIG (status)),
-					       commands[i].prog);
 		}
-	  }
+#endif
+	      /* FALLTHROUGH */
+
+	    default:
+	      /* The inferior failed to catch the signal.  */
+	      internal_error_no_backtrace ("%s signal terminated program %s",
+					   strsignal (WTERMSIG (status)),
+					   commands[i].prog);
+	    }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
 	  {
