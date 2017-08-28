@@ -6023,7 +6023,6 @@ extern tree* decl_cloned_function_p		(const_tree, bool);
 extern void clone_function_decl			(tree, bool);
 extern void adjust_clone_args			(tree);
 extern void deduce_noexcept_on_destructor       (tree);
-extern void insert_late_enum_def_into_classtype_sorted_fields (tree, tree);
 extern bool uniquely_derived_from_p             (tree, tree);
 extern bool publicly_uniquely_derived_p         (tree, tree);
 extern tree common_enclosing_class		(tree, tree);

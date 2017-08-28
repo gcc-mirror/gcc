@@ -1,6 +1,23 @@
+2017-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
+	Delete.
+	* name-lookup.h (set_class_bindings,
+	insert_late_enum_def_bindings): Declare.
+	* decl.c (finish_enum_value_list): Adjust for
+	insert_late_enum_def_bindings name change.
+	* class.c (finish_struct_1): Call set_class_bindings.
+	(count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	insert_into_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
+	* name-lookup.h (count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	set_class_bindings, insert_late_enum_def_bindings): ... here.
+
 2017-08-25  Nathan Sidwell  <nathan@acm.org>
 
-	* class.c (method_name_cmp, resort_method_name_cmp): Method names
+	* class.c (method_name_cmp, resort_method_name_cmp): Methods
 	can never be NULL.
 
 	Conversion operators have a special name
