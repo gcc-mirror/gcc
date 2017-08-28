@@ -1,6 +1,29 @@
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81088
+	* c-c++-common/ubsan/pr81088.c: New testcase.
+
+	2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* c-c++-common/ubsan/pr81065.c: New testcase.
+
+	2017-06-08  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitize/80932
+	* c-c++-common/ubsan/pr80932.c: Test with ints, not with long ints.
+
+	2017-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80932
+	* c-c++-common/ubsan/pr80932.c: New test.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81884
