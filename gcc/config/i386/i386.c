@@ -85,6 +85,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "intl.h"
 #include "ifcvt.h"
+#include "symbol-summary.h"
+#include "ipa-prop.h"
+#include "ipa-inline.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -7114,7 +7117,14 @@ ix86_can_inline_p (tree caller, tree callee)
       else if (caller_opts->tune != callee_opts->tune)
 	ret = false;
 
-      else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath)
+      else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath
+	       /* If the calle doesn't use FP expressions differences in
+		  ix86_fpmath can be ignored.  We are called from FEs
+		  for multi-versioning call optimization, so beware of
+		  inline_summaries not available.  */
+	       && (! inline_summaries
+		   || inline_summaries->get
+			(cgraph_node::get (callee))->fp_expressions))
 	ret = false;
 
       else if (caller_opts->branch_cost != callee_opts->branch_cost)
