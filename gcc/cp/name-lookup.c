@@ -4376,20 +4376,6 @@ push_class_level_binding (tree name, tree x)
 tree
 do_class_using_decl (tree scope, tree name)
 {
-  /* The USING_DECL returned by this function.  */
-  tree value;
-  /* The declaration (or declarations) name by this using
-     declaration.  NULL if we are in a template and cannot figure out
-     what has been named.  */
-  tree decl;
-  /* True if SCOPE is a dependent type.  */
-  bool scope_dependent_p;
-  /* True if SCOPE::NAME is dependent.  */
-  bool name_dependent_p;
-  /* True if any of the bases of CURRENT_CLASS_TYPE are dependent.  */
-  bool bases_dependent_p;
-  tree binfo;
-
   if (name == error_mark_node)
     return NULL_TREE;
 
@@ -4405,6 +4391,7 @@ do_class_using_decl (tree scope, tree name)
       error ("%<%T::%D%> names destructor", scope, name);
       return NULL_TREE;
     }
+
   /* Using T::T declares inheriting ctors, even if T is a typedef.  */
   if (MAYBE_CLASS_TYPE_P (scope)
       && (name == TYPE_IDENTIFIER (scope)
@@ -4414,21 +4401,14 @@ do_class_using_decl (tree scope, tree name)
       name = ctor_identifier;
       CLASSTYPE_NON_AGGREGATE (current_class_type) = true;
     }
+
+  /* Cannot introduce a constructor name.  */
   if (constructor_name_p (name, current_class_type))
     {
       error ("%<%T::%D%> names constructor in %qT",
 	     scope, name, current_class_type);
       return NULL_TREE;
     }
-
-  scope_dependent_p = dependent_scope_p (scope);
-  name_dependent_p = (scope_dependent_p
-		      || (IDENTIFIER_CONV_OP_P (name)
-			  && dependent_type_p (TREE_TYPE (name))));
-
-  bases_dependent_p = any_dependent_bases_p ();
-
-  decl = NULL_TREE;
 
   /* From [namespace.udecl]:
 
@@ -4440,14 +4420,18 @@ do_class_using_decl (tree scope, tree name)
      class type. Morover, if SCOPE is dependent, it might match a
      non-dependent base.  */
 
-  if (!scope_dependent_p)
+  tree decl = NULL_TREE;
+  if (!dependent_scope_p (scope))
     {
       base_kind b_kind;
-      binfo = lookup_base (current_class_type, scope, ba_any, &b_kind,
-			   tf_warning_or_error);
+      tree binfo = lookup_base (current_class_type, scope, ba_any, &b_kind,
+				tf_warning_or_error);
       if (b_kind < bk_proper_base)
 	{
-	  if (!bases_dependent_p || b_kind == bk_same_type)
+	  /* If there are dependent bases, scope might resolve at
+	     instantiation time, even if it isn't exactly one of the
+	     dependent bases.  */
+	  if (b_kind == bk_same_type || !any_dependent_bases_p ())
 	    {
 	      error_not_base_type (scope, current_class_type);
 	      return NULL_TREE;
@@ -4458,7 +4442,8 @@ do_class_using_decl (tree scope, tree name)
 	  error ("cannot inherit constructors from indirect base %qT", scope);
 	  return NULL_TREE;
 	}
-      else if (!name_dependent_p)
+      else if (!IDENTIFIER_CONV_OP_P (name)
+	       || !dependent_type_p (TREE_TYPE (name)))
 	{
 	  decl = lookup_member (binfo, name, 0, false, tf_warning_or_error);
 	  if (!decl)
@@ -4467,13 +4452,14 @@ do_class_using_decl (tree scope, tree name)
 		     scope);
 	      return NULL_TREE;
 	    }
+
 	  /* The binfo from which the functions came does not matter.  */
 	  if (BASELINK_P (decl))
 	    decl = BASELINK_FUNCTIONS (decl);
 	}
     }
 
-  value = build_lang_decl (USING_DECL, name, NULL_TREE);
+  tree value = build_lang_decl (USING_DECL, name, NULL_TREE);
   USING_DECL_DECLS (value) = decl;
   USING_DECL_SCOPE (value) = scope;
   DECL_DEPENDENT_P (value) = !decl;
