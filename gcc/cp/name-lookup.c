@@ -1183,58 +1183,33 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
 tree
 lookup_field_1 (tree type, tree name, bool want_type)
 {
-  tree field;
+  tree field = NULL_TREE;
 
   gcc_assert (identifier_p (name) && RECORD_OR_UNION_TYPE_P (type));
 
-  if (CLASSTYPE_SORTED_FIELDS (type))
+  if (CLASSTYPE_BINDINGS (type))
     {
-      tree *fields = &CLASSTYPE_SORTED_FIELDS (type)->elts[0];
-      int lo = 0, hi = CLASSTYPE_SORTED_FIELDS (type)->len;
-      int i;
+      tree *slot = CLASSTYPE_BINDINGS (type)->get (name);
 
-      while (lo < hi)
+      if (slot)
 	{
-	  i = (lo + hi) / 2;
+	  field = *slot;
 
-	  if (DECL_NAME (fields[i]) > name)
-	    hi = i;
-	  else if (DECL_NAME (fields[i]) < name)
-	    lo = i + 1;
-	  else
+	  if (STAT_HACK_P (field))
 	    {
-	      field = NULL_TREE;
-
-	      /* We might have a nested class and a field with the
-		 same name; we sorted them appropriately via
-		 field_decl_cmp, so just look for the first or last
-		 field with this name.  */
 	      if (want_type)
-		{
-		  do
-		    field = fields[i--];
-		  while (i >= lo && DECL_NAME (fields[i]) == name);
-		  if (!DECL_DECLARES_TYPE_P (field))
-		    field = NULL_TREE;
-		}
+		field = STAT_TYPE (field);
 	      else
-		{
-		  do
-		    field = fields[i++];
-		  while (i < hi && DECL_NAME (fields[i]) == name);
-		}
-
-	      if (field)
-	      	{
-	      	  field = strip_using_decl (field);
-	      	  if (is_overloaded_fn (field))
-	      	    field = NULL_TREE;
-	      	}
-
-	      return field;
+		field = STAT_DECL (field);
 	    }
+
+	  field = strip_using_decl (field);
+	  if (OVL_P (field))
+	    field = NULL_TREE;
+	  else if (want_type && !DECL_DECLARES_TYPE_P (field))
+	    field = NULL_TREE;
 	}
-      return NULL_TREE;
+      return field;
     }
 
   field = TYPE_FIELDS (type);
@@ -1312,113 +1287,62 @@ lookup_fnfields_slot (tree type, tree name)
   return lookup_fnfields_slot_nolazy (type, name);
 }
 
-/* Allocate and return an instance of struct sorted_fields_type with
-   N fields.  */
+/* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
+   do sophisticated collision checking.  Deals with STAT_HACK.  */
 
-static struct sorted_fields_type *
-sorted_fields_type_new (int n)
+static void
+add_class_member (hash_map<lang_identifier *, tree> *map, tree name, tree decl)
 {
-  struct sorted_fields_type *sft;
-  sft = (sorted_fields_type *) ggc_internal_alloc (sizeof (sorted_fields_type)
-				      + n * sizeof (tree));
-  sft->len = n;
+  bool existed;
+  tree *slot = &map->get_or_insert (name, &existed);
+  if (!existed)
+    *slot = decl;
+  else if (TREE_CODE (*slot) == TYPE_DECL && DECL_ARTIFICIAL (*slot))
+    *slot = stat_hack (decl, *slot);
+  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
+    *slot = stat_hack (*slot, decl);
 
-  return sft;
+  /* Else ignore collision.  */
 }
 
-/* Subroutine of insert_into_classtype_sorted_fields.  Recursively
-   count the number of fields in TYPE, including anonymous union
-   members.  */
+/* Insert the chain FIELDS into MAP.  */
 
-static int
-count_fields (tree fields)
+static void
+add_class_members (hash_map<lang_identifier *, tree> *map, tree fields)
 {
-  tree x;
-  int n_fields = 0;
-  for (x = fields; x; x = DECL_CHAIN (x))
+  for (tree field = fields; field; field = DECL_CHAIN (field))
     {
-      if (DECL_DECLARES_FUNCTION_P (x))
-	/* Functions are dealt with separately.  */;
-      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-	n_fields += count_fields (TYPE_FIELDS (TREE_TYPE (x)));
-      else
-	n_fields += 1;
+      if (TREE_CODE (field) == FIELD_DECL
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
+	add_class_members (map, TYPE_FIELDS (TREE_TYPE (field)));
+      else if (DECL_NAME (field))
+	add_class_member (map, DECL_NAME (field), field);
     }
-  return n_fields;
 }
 
-/* Subroutine of insert_into_classtype_sorted_fields.  Recursively add
-   all the fields in the TREE_LIST FIELDS to the SORTED_FIELDS_TYPE
-   elts, starting at offset IDX.  */
-
-static int
-add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec,
-			   int idx)
-{
-  tree x;
-  for (x = fields; x; x = DECL_CHAIN (x))
-    {
-      if (DECL_DECLARES_FUNCTION_P (x))
-	/* Functions are handled separately.  */;
-      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
-	idx = add_fields_to_record_type (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
-      else
-	field_vec->elts[idx++] = x;
-    }
-  return idx;
-}
-
-/* Add all of the enum values of ENUMTYPE, to the FIELD_VEC elts,
-   starting at offset IDX.  */
-
-static int
-add_enum_fields_to_record_type (tree enumtype,
-				struct sorted_fields_type *field_vec,
-				int idx)
-{
-  tree values;
-  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
-      field_vec->elts[idx++] = TREE_VALUE (values);
-  return idx;
-}
-
-/* Insert FIELDS into T for the sorted case if the FIELDS count is
-   equal to THRESHOLD or greater than THRESHOLD.  */
+/* Create the binding map of KLASS and insert FIELDS.  */
 
 void 
 set_class_bindings (tree klass, tree fields)
 {
-  int n_fields = count_fields (fields);
-  if (n_fields >= 8)
-    {
-      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
-      add_fields_to_record_type (fields, field_vec, 0);
-      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (klass) = field_vec;
-    }
+  gcc_assert (!CLASSTYPE_BINDINGS (klass));
+
+  CLASSTYPE_BINDINGS (klass)
+    = hash_map<lang_identifier *, tree>::create_ggc (8);
+  add_class_members (CLASSTYPE_BINDINGS (klass), fields);
 }
 
 /* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
 
 void
-insert_late_enum_def_bindings (tree enumtype, tree t)
+insert_late_enum_def_bindings (tree klass, tree enumtype)
 {
-  struct sorted_fields_type *sorted_fields = CLASSTYPE_SORTED_FIELDS (t);
-  if (sorted_fields)
-    {
-      int i;
-      int n_fields
-	= list_length (TYPE_VALUES (enumtype)) + sorted_fields->len;
-      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
-      
-      for (i = 0; i < sorted_fields->len; ++i)
-	field_vec->elts[i] = sorted_fields->elts[i];
+  hash_map<lang_identifier *, tree> *map = CLASSTYPE_BINDINGS (klass);
 
-      add_enum_fields_to_record_type (enumtype, field_vec,
-				      sorted_fields->len);
-      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
-    }
+  for (tree values = TYPE_VALUES (enumtype);
+       values; values = TREE_CHAIN (values))
+    add_class_member (map, DECL_NAME (TREE_VALUE (values)),
+		      TREE_VALUE (values));
 }
 
 /* Compute the chain index of a binding_entry given the HASH value of its

@@ -1,5 +1,20 @@
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (lang_type): Replace sorted_fields vector with
+	bindings map.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	(CLASSTYPE_BINDINGS): New.
+	* decl.c (finish_enum_value_list): Swap args of
+	insert_late_enum_def_bindings.
+	* name-lookup.c (lookup_field_1): Replace binary search of sorted
+	fields with map->get.
+	(sorted_fields_type_new, count_fields,
+	add_fields_to_record_type, add_enum_fields_to_record_type): Delete.
+	(add_class_member, add_class_members): New.
+	(set_class_bindings): Create map and insert.
+	(insert_late_enum_def_binding): Swap parms.  Use add_clasS_member.
+	* ptree.c (cxx_print_type): Delete sorted fields printing.
+
 	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
 	Delete.
 	* name-lookup.h (set_class_bindings,
