@@ -1236,7 +1236,7 @@ get_range_strlen (tree arg, tree length[2], bitmap *visited, int type,
 		 the NUL.
 		 Set *FLEXP to true if the array whose bound is being
 		 used is at the end of a struct.  */
-	      if (array_at_struct_end_p (arg, true))
+	      if (array_at_struct_end_p (arg))
 		*flexp = true;
 
 	      arg = TREE_OPERAND (arg, 1);

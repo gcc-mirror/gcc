@@ -1,6 +1,25 @@
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* tree-ssa-alias.c (stmt_kills_ref_p): Handle array accesses
+	at struct end conservatively when comparing common bases.
+
+	2017-05-04  Richard Biener  <rguenther@suse.de>
+ 
+	* tree.c (array_at_struct_end_p): Handle arrays at struct
+	end with flexarrays more conservatively.  Refactor and treat
+	arrays of arrays or aggregates more strict.  Fix
+	VIEW_CONVERT_EXPR handling.  Remove allow_compref argument.
+	* tree.h (array_at_struct_end_p): Adjust prototype.
+	* gimple-fold.c (get_range_strlen): Likewise.
+	* tree-chkp.c (chkp_may_narrow_to_field): Likewise.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-08-01  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81181

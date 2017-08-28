@@ -1,3 +1,29 @@
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81884
+	* g++.dg/torture/pr81884.C: New testcase.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-08-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81181
+	* gcc.dg/torture/pr81181.c: New testcase.
+
+	2017-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81723
+	* gfortran.dg/pr81723.f: New testcase.
+
+	2017-08-24  Richard Biener  <rguenther@suse.de>
+
+	PR target/81921
+	* gcc/testsuite/gcc.target/i386/pr81921.c: New testcase.
+
 2017-05-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	Backport from mainline
