@@ -1,6 +1,31 @@
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
+	2017-06-14  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81088
+	* fold-const.c (split_tree): Drop TREE_OVERFLOW flag from
+	literal constants.
+	(fold_binary_loc): When associating do not treat pre-existing
+	TREE_OVERFLOW on literal constants as a reason to allow
+	TREE_OVERFLOW on associated literal constants.
+
+	2017-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81065
+	* fold-const.c (extract_muldiv_1): Remove bogus distribution
+	case of C * (x * C2 + C3).
+	(fold_addr_of_array_ref_difference): Properly fold index difference.
+
+	2017-06-07  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/80932
+	* fold-const.c (extract_muldiv_1) <case MINUS_EXPR>: Add
+	TYPE_OVERFLOW_WRAPS check. 
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
 	2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81884
