@@ -1,3 +1,9 @@
+2017-08-28  Steve Ellcey  <sellcey@cavium.com>
+
+	* gfortran.dg/dec_init_1.f90 (dummy): Use ichar in print statement.
+	* gfortran.dg/dec_init_2.f90 (dummy): Ditto.
+	* gfortran.dg/dec_init_3.f90 (dummy): Ditto.
+
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81977
