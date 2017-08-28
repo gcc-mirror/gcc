@@ -1312,6 +1312,115 @@ lookup_fnfields_slot (tree type, tree name)
   return lookup_fnfields_slot_nolazy (type, name);
 }
 
+/* Allocate and return an instance of struct sorted_fields_type with
+   N fields.  */
+
+static struct sorted_fields_type *
+sorted_fields_type_new (int n)
+{
+  struct sorted_fields_type *sft;
+  sft = (sorted_fields_type *) ggc_internal_alloc (sizeof (sorted_fields_type)
+				      + n * sizeof (tree));
+  sft->len = n;
+
+  return sft;
+}
+
+/* Subroutine of insert_into_classtype_sorted_fields.  Recursively
+   count the number of fields in TYPE, including anonymous union
+   members.  */
+
+static int
+count_fields (tree fields)
+{
+  tree x;
+  int n_fields = 0;
+  for (x = fields; x; x = DECL_CHAIN (x))
+    {
+      if (DECL_DECLARES_FUNCTION_P (x))
+	/* Functions are dealt with separately.  */;
+      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
+	n_fields += count_fields (TYPE_FIELDS (TREE_TYPE (x)));
+      else
+	n_fields += 1;
+    }
+  return n_fields;
+}
+
+/* Subroutine of insert_into_classtype_sorted_fields.  Recursively add
+   all the fields in the TREE_LIST FIELDS to the SORTED_FIELDS_TYPE
+   elts, starting at offset IDX.  */
+
+static int
+add_fields_to_record_type (tree fields, struct sorted_fields_type *field_vec,
+			   int idx)
+{
+  tree x;
+  for (x = fields; x; x = DECL_CHAIN (x))
+    {
+      if (DECL_DECLARES_FUNCTION_P (x))
+	/* Functions are handled separately.  */;
+      else if (TREE_CODE (x) == FIELD_DECL && ANON_AGGR_TYPE_P (TREE_TYPE (x)))
+	idx = add_fields_to_record_type (TYPE_FIELDS (TREE_TYPE (x)), field_vec, idx);
+      else
+	field_vec->elts[idx++] = x;
+    }
+  return idx;
+}
+
+/* Add all of the enum values of ENUMTYPE, to the FIELD_VEC elts,
+   starting at offset IDX.  */
+
+static int
+add_enum_fields_to_record_type (tree enumtype,
+				struct sorted_fields_type *field_vec,
+				int idx)
+{
+  tree values;
+  for (values = TYPE_VALUES (enumtype); values; values = TREE_CHAIN (values))
+      field_vec->elts[idx++] = TREE_VALUE (values);
+  return idx;
+}
+
+/* Insert FIELDS into T for the sorted case if the FIELDS count is
+   equal to THRESHOLD or greater than THRESHOLD.  */
+
+void 
+set_class_bindings (tree klass, tree fields)
+{
+  int n_fields = count_fields (fields);
+  if (n_fields >= 8)
+    {
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
+      add_fields_to_record_type (fields, field_vec, 0);
+      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
+      CLASSTYPE_SORTED_FIELDS (klass) = field_vec;
+    }
+}
+
+/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+
+void
+insert_late_enum_def_bindings (tree enumtype, tree t)
+{
+  struct sorted_fields_type *sorted_fields = CLASSTYPE_SORTED_FIELDS (t);
+  if (sorted_fields)
+    {
+      int i;
+      int n_fields
+	= list_length (TYPE_VALUES (enumtype)) + sorted_fields->len;
+      struct sorted_fields_type *field_vec = sorted_fields_type_new (n_fields);
+      
+      for (i = 0; i < sorted_fields->len; ++i)
+	field_vec->elts[i] = sorted_fields->elts[i];
+
+      add_enum_fields_to_record_type (enumtype, field_vec,
+				      sorted_fields->len);
+      qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
+      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
+    }
+}
+
 /* Compute the chain index of a binding_entry given the HASH value of its
    name and the total COUNT of chains.  COUNT is assumed to be a power
    of 2.  */
