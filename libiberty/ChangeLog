@@ -1,3 +1,10 @@
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Adjust field with for sh_type write, set SHF_EXCLUDE only for
+	removed sections.
+
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
 	PR lto/81925
