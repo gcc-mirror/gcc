@@ -1,3 +1,9 @@
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-prof/update-loopch.c: Scan patterns in
+	switchlower.
+	* gcc.dg/tree-ssa/vrp104.c: Likewise.
+
 2017-08-29  Richard Biener  <rguenther@suse.de>
 	Dominik Infuehr <dominik.infuehr@theobroma-systems.com>
 
