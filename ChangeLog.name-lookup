@@ -1,3 +1,13 @@
+2017-08-29  Nathan Sidwell  <nathan@acm.org>
+
+	Anonymous namespace has NULL name
+	gcc/cp/
+	* cp-tree.h (default_hash_traits <lang_identifier *>): Permit
+	NULL.
+	* name-lookup.c (do_pushdecl): Push NULL-named namespace.
+	(do_push_nested_namespace): Adjust.
+	(push_namespace): Push anonymous namespace as NULL name.
+
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r251385.

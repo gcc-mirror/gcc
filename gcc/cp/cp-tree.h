@@ -587,12 +587,16 @@ struct default_hash_traits <lang_identifier *>
 
   static hashval_t hash (const value_type id)
   {
-    return IDENTIFIER_HASH_VALUE (id);
+    return id ? IDENTIFIER_HASH_VALUE (id) : 0;
   }
 
   /* Nothing is deletable.  Everything is insertable.  */
   static bool is_deleted (value_type) { return false; }
   static void remove (value_type) { gcc_unreachable (); }
+
+  /* We allow a NULL key, so use 1 for empty.  */
+  static bool is_empty (value_type id) { return id == (value_type)1; }
+  static void mark_empty (value_type &id) { id = (value_type)1; }
 };
 
 #define LANG_IDENTIFIER_CAST(NODE) \
