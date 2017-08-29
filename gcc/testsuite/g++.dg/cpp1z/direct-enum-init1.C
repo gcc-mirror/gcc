@@ -140,11 +140,11 @@ struct U2
 template <int N>
 struct W2
 {
-  A a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } .-2 }
-  B b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } .-3 }
-  C c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } .-4 }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-5 }
-  D d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } .-6 }
+  A a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } }
+  B b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
+  C c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } }
+			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-1 }
+  D d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } }
 };
 
 template <typename H, typename I, typename J, typename K, typename L, typename M>
@@ -208,11 +208,11 @@ struct U3
 template <typename H, typename I, typename J, typename K>
 struct W3
 {
-  H a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } .-2 }
-  I b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } .-3 }
-  J c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } .-4 }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-5 }
-  K d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } .-6 }
+  H a { 5 };		// { dg-error "invalid conversion from 'int' to 'A'" "" { target *-*-* } }
+  I b { 6 };		// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } }
+  J c { 3.0f };		// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } }
+			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-1 }
+  K d = { 7 };		// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } }
 };
 
 void
@@ -221,17 +221,9 @@ test ()
   foo2<0> ();
   U2<0> u20;
   U2<1> u21 (5);
-  W2<0> w2;		// { dg-error "invalid conversion from 'int' to 'A'" }
-			// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } .-1 }
-			// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } .-2 }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-3 }
-			// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } .-4 }
+  W2<0> w2;		// { dg-message "" }
   foo3<A, B, C, D, E, V> ();
   U3<E> u30;
   U3<E> u31 (5);
-  W3<A, B, C, D> w3;	// { dg-error "invalid conversion from 'int' to 'A'" }
-			// { dg-error "invalid conversion from 'int' to 'B'" "" { target c++14_down } .-1 }
-			// { dg-error "cannot convert \[^\n\r]* to 'C' in initialization" "" { target c++14_down } .-2 }
-			// { dg-error "narrowing conversion of '3.0e.0f' from 'float' to 'int' inside" "" { target c++1z } .-3 }
-			// { dg-error "cannot convert \[^\n\r]* to 'D' in initialization" "" { target *-*-* } .-4 }
+  W3<A, B, C, D> w3;	// { dg-message "" }
 }

@@ -6465,7 +6465,7 @@ extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
-extern tree tsubst_default_argument		(tree, tree, tree,
+extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
