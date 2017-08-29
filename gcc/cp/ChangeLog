@@ -1,5 +1,11 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	Support copying local_specializations.
+	* cp-tree.h (enum lss_policy): New.
+	(local_specialization_stack): Add policy parameter to default ctor.
+	* pt.c (local_specialization_stack): Copy local_specializations if
+	lss_copy.
+
 	* constexpr.c (potential_constant_expression_1): Add "now" parm.
 	(is_constant_expression, require_constant_expression): New.
 	(is_static_init_expression, is_nondependent_constant_expression)

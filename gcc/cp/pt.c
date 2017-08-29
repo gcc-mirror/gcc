@@ -77,10 +77,13 @@ static tree cur_stmt_expr;
 //
 // Implementation of the RAII helper for creating new local
 // specializations.
-local_specialization_stack::local_specialization_stack ()
+local_specialization_stack::local_specialization_stack (lss_policy policy)
   : saved (local_specializations)
 {
-  local_specializations = new hash_map<tree, tree>;
+  if (policy == lss_blank || !saved)
+    local_specializations = new hash_map<tree, tree>;
+  else
+    local_specializations = new hash_map<tree, tree>(*saved);
 }
 
 local_specialization_stack::~local_specialization_stack ()
