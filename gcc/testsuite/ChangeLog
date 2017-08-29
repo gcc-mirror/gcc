@@ -1,3 +1,34 @@
+2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/20030926-1.c: Add dg-additional-options.
+	* gcc.target/i386/abi-2.c: Ditto.
+	* gcc.target/i386/interrupt-sibcall-2.c: Ditto.
+	* gcc.target/i386/pr22076.c: Ditto.
+	* gcc.target/i386/pr37216.c: Ditto.
+	* gcc.target/i386/pr39431.c: Ditto.
+	* gcc.target/i386/pr40906-1.c: Ditto.
+	* gcc.target/i386/pr40906-2.c: Ditto.
+	* gcc.target/i386/pr43766.c: Ditto.
+	* gcc.target/i386/pr46226.c: Ditto.
+	* gcc.target/i386/pr46470.c: Ditto.
+	* gcc.target/i386/pr59929.c: Ditto.
+	* gcc.target/i386/sse-10.c: Ditto.
+	* gcc.target/i386/vararg-1.c: Ditto.
+	* gcc.target/i386/vararg-1.c: Ditto.
+	* gcc.target/i386/asm-6.c: Compile for fpic target only.
+	* gcc.target/i386/pr44223.c: Ditto.
+	* gcc.target/i386/bitfield1.c (dg-options): Remove target selector.
+	* gcc.target/i386/bitfield2.c (dg-options): Ditto.
+	* gcc.target/i386/pr67480.c (dg-options): Ditto.
+	* gcc.target/i386/vect-cond-1.c (dg-options): Ditto.
+	* gcc.target/i386/bittest.c (scan-assembler-times): Ditto.
+	* gcc.target/i386/darwin-fpmath.c (dg-do): Simplify target selector.
+	* gcc.target/i386/mvc9.c: Compile for lto target only.
+	* gcc.target/i386/pr45234.c: Compile for ia32 target only.
+	* gcc.target/i386/pr49866.c: Compile for lp64 target only.
+	* gcc.target/i386/pr57091.c: Ditto.
+	* gcc.target/i386/pr61599-2.c: Ditto.
+
 2017-08-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81503
@@ -5,12 +36,11 @@
 
 2017-08-29  Martin Liska  <mliska@suse.cz>
 
-	* gcc.dg/tree-prof/update-loopch.c: Scan patterns in
-	switchlower.
+	* gcc.dg/tree-prof/update-loopch.c: Scan patterns in switchlower.
 	* gcc.dg/tree-ssa/vrp104.c: Likewise.
 
 2017-08-29  Richard Biener  <rguenther@suse.de>
-	Dominik Infuehr <dominik.infuehr@theobroma-systems.com>
+	    Dominik Infuehr <dominik.infuehr@theobroma-systems.com>
 
 	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp.c: New testcase.
 
@@ -129,8 +159,7 @@
 
 2017-08-24  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
-	* gcc.target/powerpc/dform-1.c: Delete -mpower9-dform*
-	options.
+	* gcc.target/powerpc/dform-1.c: Delete -mpower9-dform* options.
 	* gcc.target/powerpc/dform-2.c: Likewise.
 	* gcc.target/powerpc/dform-3.c: Likewise.
 	* gcc.target/powerpc/pr71656-1.c: Likewise.
@@ -147,8 +176,8 @@
 
 2017-08-24  Steven Munroe  <munroesj@gcc.gnu.org>
 
-	* gcc.target/powerpc/mmx-packuswb-1.c [NO_WARN_X86_INTRINSICS]:
-	Define.  Suppress warning during tests.
+	* gcc.target/powerpc/mmx-packuswb-1.c [NO_WARN_X86_INTRINSICS]: Define.
+	Suppress warning during tests.
 
 2017-08-24  Uros Bizjak  <ubizjak@gmail.com>
 

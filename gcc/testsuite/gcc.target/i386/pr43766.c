@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2" } */
-/* { dg-options "-O2 -msse -mregparm=3" { target ia32 } } */
+/* { dg-additional-options "-msse -mregparm=3" { target ia32 } } */
 
 void p (int *a, int i)
 {

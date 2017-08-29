@@ -1,4 +1,4 @@
-/* { dg-do compile { target i?86-*-darwin* x86_64-*-darwin* } } */
+/* { dg-do compile { target *-*-darwin* } } */
 /* { dg-final { scan-assembler "addsd" } } */
 /* Do not add -msse or -msse2 or -mfpmath=sse to the options.  GCC is
    supposed to use SSE math on Darwin by default, and libm won't work

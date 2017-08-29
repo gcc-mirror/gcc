@@ -1,6 +1,6 @@
-/* { dg-do run } */
+/* { dg-do run { target lto } } */
 /* { dg-require-ifunc "" } */
-/* { dg-options "-flto -O2" { target lto } } */
+/* { dg-options "-O2 -flto" } */
 
 __attribute__((target_clones("avx","arch=slm","arch=core-avx2","default")))
 int
