@@ -1,3 +1,20 @@
+2017-08-28  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (class edge_info): Changed from a struct
+	to a class.  Add ctor/dtor, methods and data members.
+	(edge_info::edge_info): Renamed from allocate_edge_info.
+	Initialize additional members.
+	(edge_info::~edge_info): New.
+	(free_dom_edge_info): Delete the edge info.
+	(record_edge_info): Use new class & associated member functions.
+	Tighten forms for testing for edge equivalences.
+	(record_temporary_equivalences): Iterate over the simple
+	equivalences rather than assuming there's only one per edge.
+	(cprop_into_successor_phis): Iterate over the simple
+	equivalences rather than assuming there's only one per edge.
+	(optimize_stmt): Use operand_equal_p rather than pointer
+	equality for mini-DSE code.
+
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	* gcc.c (execute): Fold SIGPIPE handling into switch
