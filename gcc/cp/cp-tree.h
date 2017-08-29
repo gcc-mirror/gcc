@@ -1216,8 +1216,9 @@ struct GTY (()) tree_trait_expr {
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
-#define LAMBDA_FUNCTION_P(FNDECL) \
-  (DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR \
+#define LAMBDA_FUNCTION_P(FNDECL)			\
+  (DECL_DECLARES_FUNCTION_P (FNDECL)			\
+   && DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR	\
    && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
 
 enum cp_lambda_default_capture_mode_type {
@@ -6828,6 +6829,11 @@ extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
+extern void start_lambda_scope			(tree);
+extern void record_lambda_scope			(tree);
+extern void finish_lambda_scope			(void);
+extern tree start_lambda_function		(tree fn, tree lambda_expr);
+extern void finish_lambda_function		(tree body);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);

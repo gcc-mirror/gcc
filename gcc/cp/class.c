@@ -7709,27 +7709,10 @@ outermost_open_class (void)
 tree
 current_nonlambda_class_type (void)
 {
-  int i;
-
-  /* We start looking from 1 because entry 0 is from global scope,
-     and has no type.  */
-  for (i = current_class_depth; i > 0; --i)
-    {
-      tree c;
-      if (i == current_class_depth)
-	c = current_class_type;
-      else
-	{
-	  if (current_class_stack[i].hidden)
-	    break;
-	  c = current_class_stack[i].type;
-	}
-      if (!c)
-	continue;
-      if (!LAMBDA_TYPE_P (c))
-	return c;
-    }
-  return NULL_TREE;
+  tree type = current_class_type;
+  while (type && LAMBDA_TYPE_P (type))
+    type = decl_type_context (TYPE_NAME (type));
+  return type;
 }
 
 /* When entering a class scope, all enclosing class scopes' names with

@@ -1253,4 +1253,87 @@ is_lambda_ignored_entity (tree val)
   return false;
 }
 
+/* Lambdas that appear in variable initializer or default argument scope
+   get that in their mangling, so we need to record it.  We might as well
+   use the count for function and namespace scopes as well.  */
+static GTY(()) tree lambda_scope;
+static GTY(()) int lambda_count;
+struct GTY(()) tree_int
+{
+  tree t;
+  int i;
+};
+static GTY(()) vec<tree_int, va_gc> *lambda_scope_stack;
+
+void
+start_lambda_scope (tree decl)
+{
+  tree_int ti;
+  gcc_assert (decl);
+  /* Once we're inside a function, we ignore variable scope and just push
+     the function again so that popping works properly.  */
+  if (current_function_decl && TREE_CODE (decl) == VAR_DECL)
+    decl = current_function_decl;
+  ti.t = lambda_scope;
+  ti.i = lambda_count;
+  vec_safe_push (lambda_scope_stack, ti);
+  if (lambda_scope != decl)
+    {
+      /* Don't reset the count if we're still in the same function.  */
+      lambda_scope = decl;
+      lambda_count = 0;
+    }
+}
+
+void
+record_lambda_scope (tree lambda)
+{
+  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
+  LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
+}
+
+void
+finish_lambda_scope (void)
+{
+  tree_int *p = &lambda_scope_stack->last ();
+  if (lambda_scope != p->t)
+    {
+      lambda_scope = p->t;
+      lambda_count = p->i;
+    }
+  lambda_scope_stack->pop ();
+}
+
+tree
+start_lambda_function (tree fco, tree lambda_expr)
+{
+  /* Let the front end know that we are going to be defining this
+     function.  */
+  start_preparsed_function (fco,
+			    NULL_TREE,
+			    SF_PRE_PARSED | SF_INCLASS_INLINE);
+
+  tree body = begin_function_body ();
+
+  /* Push the proxies for any explicit captures.  */
+  for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
+       cap = TREE_CHAIN (cap))
+    build_capture_proxy (TREE_PURPOSE (cap));
+
+  return body;
+}
+
+void
+finish_lambda_function (tree body)
+{
+  finish_function_body (body);
+
+  /* Finish the function and generate code for it if necessary.  */
+  tree fn = finish_function (/*inline*/2);
+
+  /* Only expand if the call op is not a template.  */
+  if (!DECL_TEMPLATE_INFO (fn))
+    expand_or_defer_fn (fn);
+}
+
 #include "gt-cp-lambda.h"

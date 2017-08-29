@@ -3301,40 +3301,56 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (!mark_used (decl, complain))
     return error_mark_node;
 
-  bool saw_generic_lambda = false;
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
-  else
-    /* If we are in a lambda function, we can move out until we hit
-       1. the context,
-       2. a non-lambda function, or
-       3. a non-default capturing lambda function.  */
-    while (context != containing_function
-	   /* containing_function can be null with invalid generic lambdas.  */
-	   && containing_function
-	   && LAMBDA_FUNCTION_P (containing_function))
-      {
-	tree closure = DECL_CONTEXT (containing_function);
-	lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
 
-	if (generic_lambda_fn_p (containing_function))
-	  saw_generic_lambda = true;
+  if (containing_function && DECL_TEMPLATE_INFO (context)
+      && LAMBDA_FUNCTION_P (containing_function))
+    {
+      /* Check whether we've already built a proxy;
+	 insert_pending_capture_proxies doesn't update
+	 local_specializations.  */
+      tree d = lookup_name (DECL_NAME (decl));
+      if (d && is_capture_proxy (d)
+	  && DECL_CONTEXT (d) == containing_function)
+	return d;
+    }
 
-	if (TYPE_CLASS_SCOPE_P (closure))
-	  /* A lambda in an NSDMI (c++/64496).  */
-	  break;
+  /* If we are in a lambda function, we can move out until we hit
+     1. the context,
+     2. a non-lambda function, or
+     3. a non-default capturing lambda function.  */
+  while (context != containing_function
+	 /* containing_function can be null with invalid generic lambdas.  */
+	 && containing_function
+	 && LAMBDA_FUNCTION_P (containing_function))
+    {
+      tree closure = DECL_CONTEXT (containing_function);
+      lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
 
-	if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
-	    == CPLD_NONE)
-	  break;
+      if (TYPE_CLASS_SCOPE_P (closure))
+	/* A lambda in an NSDMI (c++/64496).  */
+	break;
 
-	lambda_stack = tree_cons (NULL_TREE,
-				  lambda_expr,
-				  lambda_stack);
+      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
+	  == CPLD_NONE)
+	break;
 
-	containing_function
-	  = decl_function_context (containing_function);
-      }
+      lambda_stack = tree_cons (NULL_TREE,
+				lambda_expr,
+				lambda_stack);
+
+      containing_function
+	= decl_function_context (containing_function);
+    }
+
+  /* In a lambda within a template, wait until instantiation
+     time to implicitly capture.  */
+  if (context == containing_function
+      && DECL_TEMPLATE_INFO (containing_function)
+      && any_dependent_template_arguments_p (DECL_TI_ARGS
+					     (containing_function)))
+    return decl;
 
   /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
      support for an approach in which a reference to a local
@@ -3343,26 +3359,11 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
      the complexity of the problem"
 
      FIXME update for final resolution of core issue 696.  */
-  if (decl_maybe_constant_var_p (decl))
+  if (decl_constant_var_p (decl))
     {
-      if (processing_template_decl && !saw_generic_lambda)
-	/* In a non-generic lambda within a template, wait until instantiation
-	   time to decide whether to capture.  For a generic lambda, we can't
-	   wait until we instantiate the op() because the closure class is
-	   already defined at that point.  FIXME to get the semantics exactly
-	   right we need to partially-instantiate the lambda body so the only
-	   dependencies left are on the generic parameters themselves.  This
-	   probably means moving away from our current model of lambdas in
-	   templates (instantiating the closure type) to one based on creating
-	   the closure type when instantiating the lambda context.  That is
-	   probably also the way to handle lambdas within pack expansions.  */
-	return decl;
-      else if (decl_constant_var_p (decl))
-	{
-	  tree t = maybe_constant_value (convert_from_reference (decl));
-	  if (TREE_CONSTANT (t))
-	    return t;
-	}
+      tree t = maybe_constant_value (convert_from_reference (decl));
+      if (TREE_CONSTANT (t))
+	return t;
     }
 
   if (lambda_expr && VAR_P (decl)
