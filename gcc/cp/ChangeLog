@@ -1,4 +1,4 @@
-2017-08-23  Jason Merrill  <jason@redhat.com>
+2017-08-29  Jason Merrill  <jason@redhat.com>
 
 	Reimplement handling of lambdas in templates.
 	* cp-tree.h (LAMBDA_FUNCTION_P): Check DECL_DECLARES_FUNCTION_P.
@@ -27,8 +27,6 @@
 	handling.  Don't implicitly capture in a lambda in a template.  Look
 	for an existing proxy.
 	* class.c (current_nonlambda_class_type): Use decl_type_context.
-
-2017-08-29  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (LAMBDA_EXPR_CLOSURE): Use TREE_TYPE.
 	(LAMBDA_EXPR_RETURN_TYPE): Remove.
