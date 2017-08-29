@@ -1,3 +1,11 @@
+2017-08-29  Jason Merrill  <jason@redhat.com>
+
+	Fix default argument conversion failure and SFINAE.
+	* call.c (build_over_call): Check convert_default_arg result for
+	error_mark_node.
+	* parser.c (cp_parser_late_parsing_default_args): Remember
+	error_mark_node.
+
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lang_type): Replace sorted_fields vector with
