@@ -1486,7 +1486,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	else
 	  option_index = 0;
 
-	set_default_handlers (&handlers);
+	set_default_handlers (&handlers, NULL);
 	control_warning_option (option_index, (int) kind, arg, imply, location,
 				lang_mask, &handlers, &global_options,
 				&global_options_set, global_dc);
