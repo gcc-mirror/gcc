@@ -1,5 +1,11 @@
 2017-08-28  Jeff Law  <law@redhat.com>
 
+	* tree-ssa-dom.c (edge_info::record_simple_equiv): Call
+	derive_equivalences.
+	(derive_equivalences_from_bit_ior, record_temporary_equivalences):
+	Code moved into....
+	(edge_info::derive_equivalences): New private member function
+
 	* tree-ssa-dom.c (class edge_info): Changed from a struct
 	to a class.  Add ctor/dtor, methods and data members.
 	(edge_info::edge_info): Renamed from allocate_edge_info.
