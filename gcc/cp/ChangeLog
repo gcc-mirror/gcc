@@ -1,5 +1,21 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81236 - ICE with template-id in generic lambda
+	* semantics.c (finish_id_expression): Remove special dependent case.
+	Avoid some later pieces when dependent.
+	(finish_qualified_id_expr): Do normal BASELINK handling in a
+	template.  Always build a SCOPE_REF for a destructor BIT_NOT_EXPR.
+	(parsing_default_capturing_generic_lambda_in_template): Remove.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Always give an
+	error for types that will never be complete.
+	* mangle.c (write_expression): Add sanity check.
+	* tree.c (build_qualified_name): Add sanity check.
+	(cp_walk_subtrees): Walk into the class context of a BASELINK.
+	* lambda.c (add_capture): Improve diagnostic for generic lambda
+	capture failure.
+	* call.c (build_new_method_call_1): Print the right constructor
+	name.
+
 	Reimplement handling of lambdas in templates.
 	* cp-tree.h (LAMBDA_FUNCTION_P): Check DECL_DECLARES_FUNCTION_P.
 	* decl.c (start_preparsed_function): Call start_lambda_scope.
