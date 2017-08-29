@@ -1,3 +1,9 @@
+2017-08-29  Richard Biener  <rguenther@suse.de>
+	Dominik Infuehr <dominik.infuehr@theobroma-systems.com>
+
+	* tree-vect-slp.c (vect_bb_slp_scalar_cost): Properly confine
+	life to the active subtree.
+
 2017-08-28  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (edge_info::record_simple_equiv): Call
