@@ -1,5 +1,15 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	Instantiate default arguments/member initializers once.
+	* init.c (get_nsdmi): Remember NSDMI instantiations.
+	* parser.c (inject_this_parameter): Be more picky about
+	current_class_ptr.
+	* pt.c (tsubst_copy): Simplify 'this' handling.
+	(tsubst_default_argument): Remember default argument
+	instantiations.  Take parameter number.
+	(tsubst_default_arguments): Pass it.
+	* call.c (convert_default_arg): Likewise.
+
 	Fix default argument conversion failure and SFINAE.
 	* call.c (build_over_call): Check convert_default_arg result for
 	error_mark_node.

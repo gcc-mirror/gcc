@@ -7282,7 +7282,7 @@ convert_default_arg (tree type, tree arg, tree fn, int parmnum,
   push_defarg_context (fn);
 
   if (fn && DECL_TEMPLATE_INFO (fn))
-    arg = tsubst_default_argument (fn, type, arg, complain);
+    arg = tsubst_default_argument (fn, parmnum, type, arg, complain);
 
   /* Due to:
 

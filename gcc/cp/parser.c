@@ -20715,7 +20715,9 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
     {
       /* We don't clear this between NSDMIs.  Is it already what we want?  */
       tree type = TREE_TYPE (TREE_TYPE (current_class_ptr));
-      if (same_type_ignoring_top_level_qualifiers_p (ctype, type)
+      if (DECL_P (current_class_ptr)
+	  && DECL_CONTEXT (current_class_ptr) == NULL_TREE
+	  && same_type_ignoring_top_level_qualifiers_p (ctype, type)
 	  && cp_type_quals (type) == quals)
 	return;
     }

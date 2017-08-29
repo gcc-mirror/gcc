@@ -12000,11 +12000,14 @@ tsubst_aggr_type (tree t,
     }
 }
 
+static GTY(()) hash_map<tree, tree> *defarg_inst;
+
 /* Substitute into the default argument ARG (a default argument for
    FN), which has the indicated TYPE.  */
 
 tree
-tsubst_default_argument (tree fn, tree type, tree arg, tsubst_flags_t complain)
+tsubst_default_argument (tree fn, int parmnum, tree type, tree arg,
+			 tsubst_flags_t complain)
 {
   tree saved_class_ptr = NULL_TREE;
   tree saved_class_ref = NULL_TREE;
@@ -12013,6 +12016,17 @@ tsubst_default_argument (tree fn, tree type, tree arg, tsubst_flags_t complain)
   /* This can happen in invalid code.  */
   if (TREE_CODE (arg) == DEFAULT_ARG)
     return arg;
+
+  tree parm = FUNCTION_FIRST_USER_PARM (fn);
+  parm = chain_index (parmnum, parm);
+  tree parmtype = TREE_TYPE (parm);
+  if (DECL_BY_REFERENCE (parm))
+    parmtype = TREE_TYPE (parmtype);
+  gcc_assert (same_type_ignoring_top_level_qualifiers_p (type, parmtype));
+
+  tree *slot;
+  if (defarg_inst && (slot = defarg_inst->get (parm)))
+    return *slot;
 
   /* This default argument came from a template.  Instantiate the
      default argument here, not in tsubst.  In the case of
@@ -12066,6 +12080,13 @@ tsubst_default_argument (tree fn, tree type, tree arg, tsubst_flags_t complain)
 
   pop_access_scope (fn);
 
+  if (arg != error_mark_node && !cp_unevaluated_operand)
+    {
+      if (!defarg_inst)
+	defarg_inst = hash_map<tree,tree>::create_ggc (37);
+      defarg_inst->put (parm, arg);
+    }
+
   return arg;
 }
 
@@ -12087,11 +12108,12 @@ tsubst_default_arguments (tree fn, tsubst_flags_t complain)
   if (DECL_CLONED_FUNCTION_P (fn))
     return;
 
+  int i = 0;
   for (arg = TYPE_ARG_TYPES (TREE_TYPE (fn));
        arg;
-       arg = TREE_CHAIN (arg))
+       arg = TREE_CHAIN (arg), ++i)
     if (TREE_PURPOSE (arg))
-      TREE_PURPOSE (arg) = tsubst_default_argument (fn,
+      TREE_PURPOSE (arg) = tsubst_default_argument (fn, i,
 						    TREE_VALUE (arg),
 						    TREE_PURPOSE (arg),
 						    complain);
@@ -14499,13 +14521,8 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 
       if (r == NULL_TREE)
 	{
-	  /* We get here for a use of 'this' in an NSDMI as part of a
-	     constructor call or as part of an aggregate initialization.  */
-	  if (DECL_NAME (t) == this_identifier
-	      && ((current_function_decl
-		   && DECL_CONSTRUCTOR_P (current_function_decl))
-		  || (current_class_ref
-		      && TREE_CODE (current_class_ref) == PLACEHOLDER_EXPR)))
+	  /* We get here for a use of 'this' in an NSDMI.  */
+	  if (DECL_NAME (t) == this_identifier && current_class_ptr)
 	    return current_class_ptr;
 
 	  /* This can happen for a parameter name used later in a function
