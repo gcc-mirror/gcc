@@ -862,7 +862,7 @@ Target Report Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
 Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
-Target Report Var(flag_fentry) Init(-1)
+Target Report Var(flag_fentry)
 Emit profiling counter call at function entry before prologue.
 
 mrecord-mcount
