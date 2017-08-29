@@ -869,8 +869,7 @@ proper position among the other output files.  */
 #endif
 
 #ifdef ENABLE_DEFAULT_PIE
-#define NO_PIE_SPEC		"no-pie|static"
-#define PIE_SPEC		NO_PIE_SPEC "|r|shared:;"
+#define PIE_SPEC		"!no-pie"
 #define NO_FPIE1_SPEC		"fno-pie"
 #define FPIE1_SPEC		NO_FPIE1_SPEC ":;"
 #define NO_FPIE2_SPEC		"fno-PIE"
@@ -891,7 +890,6 @@ proper position among the other output files.  */
 #define FPIE_OR_FPIC_SPEC	NO_FPIE_AND_FPIC_SPEC ":;"
 #else
 #define PIE_SPEC		"pie"
-#define NO_PIE_SPEC		PIE_SPEC "|r|shared:;"
 #define FPIE1_SPEC		"fpie"
 #define NO_FPIE1_SPEC		FPIE1_SPEC ":;"
 #define FPIE2_SPEC		"fPIE"
@@ -920,7 +918,7 @@ proper position among the other output files.  */
 #else
 #define LD_PIE_SPEC ""
 #endif
-#define LINK_PIE_SPEC "%{no-pie:} " "%{" PIE_SPEC ":" LD_PIE_SPEC "} "
+#define LINK_PIE_SPEC "%{static|shared|r:;" PIE_SPEC ":" LD_PIE_SPEC "} "
 #endif
 
 #ifndef LINK_BUILDID_SPEC
@@ -999,8 +997,10 @@ proper position among the other output files.  */
 #endif
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
-/* %{static:} simply prevents an error message if the target machine
-   doesn't handle -static.  */
+/* %{static|no-pie:} simply prevents an error message:
+   1. If the target machine doesn't handle -static.
+   2. If PIE isn't enabled by default.
+ */
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
    directories.  */
@@ -1017,7 +1017,7 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) " \
+    %{static|no-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
