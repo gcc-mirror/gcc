@@ -1,6 +1,6 @@
 /* PR debug/44223 */
-/* { dg-do compile } */
-/* { dg-options "-O3 -fsched-pressure -fschedule-insns -fpic -march=core2 -g" { target fpic } } */
+/* { dg-do compile { target fpic } } */
+/* { dg-options "-O3 -fsched-pressure -fschedule-insns -fpic -march=core2 -g" } */
 
 struct S { unsigned int s1; int s2; };
 struct T { int t; };

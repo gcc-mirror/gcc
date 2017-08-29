@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O3 -msse2" } */
-/* { dg-options "-O3 -msse2 -mpe-aligned-commons" { target pe_aligned_commons } } */
+/* { dg-additional-options "-mpe-aligned-commons" { target pe_aligned_commons } } */
 /* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"

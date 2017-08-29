@@ -1,8 +1,8 @@
 /* PR rtl-optimization/44174 */
 /* Testcase by Jakub Jelinek <jakub@gcc.gnu.org> */
 
-/* { dg-do compile } */
-/* { dg-options "-O2 -fpic" { target fpic } } */
+/* { dg-do compile { target fpic } } */
+/* { dg-options "-O2 -fpic" } */
 
 int f0 (int, int, int, int, int);
 int f1 (void);
