@@ -217,7 +217,7 @@ target_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc)
+		      diagnostic_context *dc, void (*) (void))
 {
   gcc_assert (dc == global_dc);
   gcc_assert (kind == DK_UNSPECIFIED);
@@ -525,6 +525,7 @@ static const struct default_options default_options_table[] =
 
     /* -O3 optimizations.  */
     { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribute_patterns, NULL, 1 },
+    { OPT_LEVELS_3_PLUS, OPT_ftree_loop_distribution, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fpredictive_commoning, NULL, 1 },
     { OPT_LEVELS_3_PLUS, OPT_fsplit_paths, NULL, 1 },
     /* Inlining of functions reducing size is a good idea with -Os
@@ -1477,11 +1478,9 @@ enable_fdo_optimizations (struct gcc_options *opts,
     opts->x_flag_unswitch_loops = value;
   if (!opts_set->x_flag_gcse_after_reload)
     opts->x_flag_gcse_after_reload = value;
-  if (!opts_set->x_flag_tree_loop_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_loop_vectorize)
     opts->x_flag_tree_loop_vectorize = value;
-  if (!opts_set->x_flag_tree_slp_vectorize
-      && !opts_set->x_flag_tree_vectorize)
+  if (!opts_set->x_flag_tree_slp_vectorize)
     opts->x_flag_tree_slp_vectorize = value;
   if (!opts_set->x_flag_vect_cost_model)
     opts->x_flag_vect_cost_model = VECT_COST_MODEL_DYNAMIC;
@@ -1717,7 +1716,8 @@ common_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers,
-		      diagnostic_context *dc)
+		      diagnostic_context *dc,
+		      void (*target_option_override_hook) (void))
 {
   size_t scode = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -1744,6 +1744,7 @@ common_handle_option (struct gcc_options *opts,
 	undoc_mask = ((opts->x_verbose_flag | opts->x_extra_warnings)
 		      ? 0
 		      : CL_UNDOCUMENTED);
+	target_option_override_hook ();
 	/* First display any single language specific options.  */
 	for (i = 0; i < cl_lang_count; i++)
 	  print_specific_help
@@ -1763,6 +1764,7 @@ common_handle_option (struct gcc_options *opts,
       if (lang_mask == CL_DRIVER)
 	break;
 
+      target_option_override_hook ();
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
       break;
@@ -1889,8 +1891,11 @@ common_handle_option (struct gcc_options *opts,
 	  }
 
 	if (include_flags)
-	  print_specific_help (include_flags, exclude_flags, 0, opts,
-			       lang_mask);
+	  {
+	    target_option_override_hook ();
+	    print_specific_help (include_flags, exclude_flags, 0, opts,
+				 lang_mask);
+	  }
 	opts->x_exit_after_options = true;
 	break;
       }
@@ -2236,10 +2241,8 @@ common_handle_option (struct gcc_options *opts,
       break;
 
     case OPT_ftree_vectorize:
-      if (!opts_set->x_flag_tree_loop_vectorize)
-        opts->x_flag_tree_loop_vectorize = value;
-      if (!opts_set->x_flag_tree_slp_vectorize)
-        opts->x_flag_tree_slp_vectorize = value;
+      /* Automatically sets -ftree-loop-vectorize and
+	 -ftree-slp-vectorize.  Nothing more to do here.  */
       break;
     case OPT_fshow_column:
       dc->show_column = value;

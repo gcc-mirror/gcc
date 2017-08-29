@@ -1,6 +1,6 @@
 /* PR tree-optimization/18046  */
 /* { dg-options "-O2 -fdump-tree-optimized" }  */
-/* { dg-final { scan-tree-dump-times "switch" 1 "optimized" } }  */
+/* { dg-final { scan-tree-dump-times "switch" 1 "switchlower" } }  */
 
 void foo (void);
 void bar (void);

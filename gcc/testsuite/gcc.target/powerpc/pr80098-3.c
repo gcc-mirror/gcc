@@ -5,5 +5,5 @@
 
 int i;
 
-/* { dg-error "-mno-vsx turns off -mdirect-move" "PR80098" { target *-*-* } 0 } */
-/* { dg-error "-mno-vsx turns off -mcrypto"      "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-vsx' turns off '-mdirect-move'" "PR80098" { target *-*-* } 0 } */
+/* { dg-error "'-mno-vsx' turns off '-mcrypto'"      "PR80098" { target *-*-* } 0 } */

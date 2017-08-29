@@ -312,15 +312,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #undef  TARGET_MODULO
 #undef  TARGET_P9_VECTOR
 #undef  TARGET_P9_MINMAX
-#undef  TARGET_P9_DFORM_SCALAR
-#undef  TARGET_P9_DFORM_VECTOR
 #undef  TARGET_P9_MISC
 #define TARGET_FLOAT128_HW 0
 #define TARGET_MODULO 0
 #define TARGET_P9_VECTOR 0
 #define TARGET_P9_MINMAX 0
-#define TARGET_P9_DFORM_SCALAR 0
-#define TARGET_P9_DFORM_VECTOR 0
 #define TARGET_P9_MISC 0
 #endif
 
@@ -667,7 +663,6 @@ extern int rs6000_vector_align[];
 #define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
-#define MASK_VSX_TIMODE			OPTION_MASK_VSX_TIMODE
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64

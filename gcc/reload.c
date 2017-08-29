@@ -1062,13 +1062,12 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || (((REG_P (SUBREG_REG (in))
 		&& REGNO (SUBREG_REG (in)) >= FIRST_PSEUDO_REGISTER)
 	       || MEM_P (SUBREG_REG (in)))
-	      && ((GET_MODE_PRECISION (inmode)
-		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
+	      && (paradoxical_subreg_p (inmode, GET_MODE (SUBREG_REG (in)))
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
 		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			  <= UNITS_PER_WORD)
-		      && (GET_MODE_PRECISION (inmode)
-			  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
+		      && paradoxical_subreg_p (inmode,
+					       GET_MODE (SUBREG_REG (in)))
 		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
 		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
 		  || (WORD_REGISTER_OPERATIONS
@@ -1170,8 +1169,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	  || (((REG_P (SUBREG_REG (out))
 		&& REGNO (SUBREG_REG (out)) >= FIRST_PSEUDO_REGISTER)
 	       || MEM_P (SUBREG_REG (out)))
-	      && ((GET_MODE_PRECISION (outmode)
-		   > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
+	      && (paradoxical_subreg_p (outmode, GET_MODE (SUBREG_REG (out)))
 		  || (WORD_REGISTER_OPERATIONS
 		      && (GET_MODE_PRECISION (outmode)
 			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (out))))
@@ -1299,7 +1297,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   if (this_insn_is_asm)
     {
       machine_mode mode;
-      if (GET_MODE_SIZE (inmode) > GET_MODE_SIZE (outmode))
+      if (paradoxical_subreg_p (inmode, outmode))
 	mode = inmode;
       else
 	mode = outmode;
@@ -3137,15 +3135,15 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			  && (WORD_REGISTER_OPERATIONS
 			      || ((GET_MODE_BITSIZE (GET_MODE (operand))
 				   < BIGGEST_ALIGNMENT)
-				 && (GET_MODE_SIZE (operand_mode[i])
-				     > GET_MODE_SIZE (GET_MODE (operand))))
+				  && paradoxical_subreg_p (operand_mode[i],
+							   GET_MODE (operand)))
 			      || BYTES_BIG_ENDIAN
 			      || ((GET_MODE_SIZE (operand_mode[i])
 				   <= UNITS_PER_WORD)
 				  && (GET_MODE_SIZE (GET_MODE (operand))
 				      <= UNITS_PER_WORD)
-				  && (GET_MODE_SIZE (operand_mode[i])
-				      > GET_MODE_SIZE (GET_MODE (operand)))
+				  && paradoxical_subreg_p (operand_mode[i],
+							   GET_MODE (operand))
 				  && INTEGRAL_MODE_P (GET_MODE (operand))
 				  && LOAD_EXTEND_OP (GET_MODE (operand))
 				     != UNKNOWN)))

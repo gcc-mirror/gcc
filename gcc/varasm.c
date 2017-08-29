@@ -51,6 +51,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "debug.h"
 #include "common/common-target.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 
@@ -3637,7 +3639,7 @@ const_rtx_hash_1 (const_rtx x)
       break;
 
     case CONST_WIDE_INT:
-      hwi = GET_MODE_PRECISION (mode);
+      hwi = 0;
       {
 	for (i = 0; i < CONST_WIDE_INT_NUNITS (x); i++)
 	  hwi ^= CONST_WIDE_INT_ELT (x, i);

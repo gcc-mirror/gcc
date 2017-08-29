@@ -2994,3 +2994,31 @@ gcc_jit_type_get_aligned (gcc_jit_type *type,
 
   return (gcc_jit_type *)type->get_aligned (alignment_in_bytes);
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::type::get_vector method, in
+   jit-recording.c.  */
+
+gcc_jit_type *
+gcc_jit_type_get_vector (gcc_jit_type *type, size_t num_units)
+{
+  RETURN_NULL_IF_FAIL (type, NULL, NULL, "NULL type");
+
+  gcc::jit::recording::context *ctxt = type->m_ctxt;
+
+  JIT_LOG_FUNC (ctxt->get_logger ());
+
+  RETURN_NULL_IF_FAIL_PRINTF1
+    (type->is_int () || type->is_float (), ctxt, NULL,
+     "type is not integral or floating point: %s",
+     type->get_debug_string ());
+
+  RETURN_NULL_IF_FAIL_PRINTF1
+    (pow2_or_zerop (num_units), ctxt, NULL,
+     "num_units not a power of two: %zi",
+     num_units);
+
+  return (gcc_jit_type *)type->get_vector (num_units);
+}

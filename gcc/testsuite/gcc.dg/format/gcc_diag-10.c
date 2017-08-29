@@ -15,6 +15,9 @@ typedef struct location_s
 union tree_node;
 typedef union tree_node *tree;
 
+/* Define gcall as a dummy type.  The typedef must be provided for
+   the C test to find the symbol.  */
+typedef struct gcall gcall;
 
 #define FORMAT(kind) __attribute__ ((format (__gcc_## kind ##__, 1, 2)))
 
@@ -23,12 +26,13 @@ void cdiag (const char*, ...) FORMAT (cdiag);
 void tdiag (const char*, ...) FORMAT (tdiag);
 void cxxdiag (const char*, ...) FORMAT (cxxdiag);
 
-void test_diag (tree t)
+void test_diag (tree t, gcall *gc)
 {
   diag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   diag ("%>");   /* { dg-warning "unmatched quoting directive " } */
   diag ("%<foo%<bar%>%>");   /* { dg-warning "nested quoting directive" } */
 
+  diag ("%G", gc);
   diag ("%K", t);
 
   diag ("%R");       /* { dg-warning "unmatched color reset directive" } */
@@ -38,6 +42,7 @@ void test_diag (tree t)
   diag ("%r%r%R", "", "");
   diag ("%r%R%r%R", "", "");
 
+  diag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
   diag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
 
   diag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
@@ -45,7 +50,7 @@ void test_diag (tree t)
   diag ("%<%r%R%>", "");
 }
 
-void test_cdiag (tree t)
+void test_cdiag (tree t, gcall *gc)
 {
   cdiag ("%<");   /* { dg-warning "unterminated quoting directive" } */
   cdiag ("%>");   /* { dg-warning "unmatched quoting directive " } */
@@ -54,6 +59,7 @@ void test_cdiag (tree t)
   cdiag ("%D", t);       /* { dg-warning ".D. conversion used unquoted" } */
   cdiag ("%E", t);
   cdiag ("%F", t);       /* { dg-warning ".F. conversion used unquoted" } */
+  cdiag ("%G", gc);
   cdiag ("%K", t);
 
   cdiag ("%R");       /* { dg-warning "unmatched color reset directive" } */
@@ -69,6 +75,7 @@ void test_cdiag (tree t)
   cdiag ("%<%D%>", t);
   cdiag ("%<%E%>", t);
   cdiag ("%<%F%>", t);
+  cdiag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
   cdiag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
 
   cdiag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
@@ -83,7 +90,7 @@ void test_cdiag (tree t)
   cdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_tdiag (tree t)
+void test_tdiag (tree t, gcall *gc)
 {
   tdiag ("%<");       /* { dg-warning "unterminated quoting directive" } */
   tdiag ("%>");       /* { dg-warning "unmatched quoting directive " } */
@@ -91,6 +98,7 @@ void test_tdiag (tree t)
 
   tdiag ("%D", t);       /* { dg-warning ".D. conversion used unquoted" } */
   tdiag ("%E", t);
+  tdiag ("%G", gc);
   tdiag ("%K", t);
 
   tdiag ("%R");          /* { dg-warning "unmatched color reset directive" } */
@@ -105,6 +113,7 @@ void test_tdiag (tree t)
 
   tdiag ("%<%D%>", t);
   tdiag ("%<%E%>", t);
+  tdiag ("%<%G%>", gc);  /* { dg-warning ".G. conversion used within a quoted sequence" } */
   tdiag ("%<%K%>", t);   /* { dg-warning ".K. conversion used within a quoted sequence" } */
 
   tdiag ("%<%R%>");      /* { dg-warning "unmatched color reset directive" } */
@@ -118,12 +127,14 @@ void test_tdiag (tree t)
   tdiag ("%<%qT%>", t);  /* { dg-warning ".q. flag used within a quoted sequence" } */
 }
 
-void test_cxxdiag (tree t)
+void test_cxxdiag (tree t, gcall *gc)
 {
   cxxdiag ("%A", t);     /* { dg-warning ".A. conversion used unquoted" } */
   cxxdiag ("%D", t);     /* { dg-warning ".D. conversion used unquoted" } */
   cxxdiag ("%E", t);
   cxxdiag ("%F", t);     /* { dg-warning ".F. conversion used unquoted" } */
+  cxxdiag ("%G", gc);
+  cxxdiag ("%K", t);
 
   cxxdiag ("%R");        /* { dg-warning "unmatched color reset directive" } */
   cxxdiag ("%r", "");    /* { dg-warning "unterminated color directive" } */

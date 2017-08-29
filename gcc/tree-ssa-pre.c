@@ -540,8 +540,6 @@ static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
-static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr,
-				      unsigned int, bool);
 static bitmap_set_t bitmap_set_new (void);
 static tree create_expression_by_pieces (basic_block, pre_expr, gimple_seq *,
 					 tree);
@@ -732,25 +730,20 @@ bitmap_remove_from_set (bitmap_set_t set, pre_expr expr)
     }
 }
 
-static void
-bitmap_insert_into_set_1 (bitmap_set_t set, pre_expr expr,
-			  unsigned int val, bool allow_constants)
-{
-  if (allow_constants || !value_id_constant_p (val))
-    {
-      /* We specifically expect this and only this function to be able to
-	 insert constants into a set.  */
-      bitmap_set_bit (&set->values, val);
-      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
-    }
-}
-
 /* Insert an expression EXPR into a bitmapped set.  */
 
 static void
 bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
-  bitmap_insert_into_set_1 (set, expr, get_expr_value_id (expr), false);
+  unsigned int val = get_expr_value_id (expr);
+  if (! value_id_constant_p (val))
+    {
+      /* Note this is the only function causing multiple expressions
+         for the same value to appear in a set.  This is needed for
+	 TMP_GEN, PHI_GEN and NEW_SETs.  */
+      bitmap_set_bit (&set->values, val);
+      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
+    }
 }
 
 /* Copy a bitmapped set ORIG, into bitmapped set DEST.  */
@@ -837,7 +830,7 @@ bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
     }
 }
 
-/* Subtract all values and expressions contained in ORIG from DEST.  */
+/* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
 bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
@@ -859,7 +852,7 @@ bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
   return result;
 }
 
-/* Subtract all the values in bitmap set B from bitmap set A.  */
+/* Subtract all values in bitmap set B from bitmap set A.  */
 
 static void
 bitmap_set_subtract_values (bitmap_set_t a, bitmap_set_t b)
@@ -987,6 +980,11 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 static void
 print_pre_expr (FILE *outfile, const pre_expr expr)
 {
+  if (! expr)
+    {
+      fprintf (outfile, "NULL");
+      return;
+    }
   switch (expr->kind)
     {
     case CONSTANT:
@@ -2115,21 +2113,21 @@ static sbitmap has_abnormal_preds;
      ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)])
 
    ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
-*/
+
+   Note that clean() is deferred until after the iteration.  */
 
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 {
-  bool changed = false;
   bitmap_set_t S, old, ANTIC_OUT;
   bitmap_iterator bi;
   unsigned int bii;
   edge e;
   edge_iterator ei;
-  bool was_visited = BB_VISITED (block);
 
-  old = ANTIC_OUT = S = NULL;
+  bool changed = ! BB_VISITED (block);
   BB_VISITED (block) = 1;
+  old = ANTIC_OUT = S = NULL;
 
   /* If any edges from predecessors are abnormal, antic_in is empty,
      so do nothing.  */
@@ -2215,9 +2213,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     bitmap_value_insert_into_set (ANTIC_IN (block),
 				  expression_for_id (bii));
 
-  clean (ANTIC_IN (block));
+  /* clean (ANTIC_IN (block)) is defered to after the iteration converged
+     because it can cause non-convergence, see for example PR81181.  */
 
-  if (!was_visited || !bitmap_set_equal (old, ANTIC_IN (block)))
+  if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
 
  maybe_dump_sets:
@@ -2396,9 +2395,6 @@ compute_antic (void)
 	if (e->flags & EDGE_ABNORMAL)
 	  {
 	    bitmap_set_bit (has_abnormal_preds, block->index);
-
-	    /* We also anticipate nothing.  */
-	    BB_VISITED (block) = 1;
 	    break;
 	  }
 
@@ -2418,7 +2414,9 @@ compute_antic (void)
   inverted_post_order_compute (&postorder);
 
   auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_ones (worklist);
+  bitmap_clear (worklist);
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    bitmap_set_bit (worklist, e->src->index);
   while (changed)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2449,6 +2447,12 @@ compute_antic (void)
       gcc_checking_assert (num_iterations < 500);
     }
 
+  /* We have to clean after the dataflow problem converged as cleaning
+     can cause non-convergence because it is based on expressions
+     rather than values.  */
+  FOR_EACH_BB_FN (block, cfun)
+    clean (ANTIC_IN (block));
+
   statistics_histogram_event (cfun, "compute_antic iterations",
 			      num_iterations);
 
@@ -2456,7 +2460,8 @@ compute_antic (void)
     {
       /* For partial antic we ignore backedges and thus we do not need
          to perform any iteration when we process blocks in postorder.  */
-      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder.address (), false);
+      int postorder_num
+	= pre_and_rev_post_order_compute (NULL, postorder.address (), false);
       for (i = postorder_num - 1 ; i >= 0; i--)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);

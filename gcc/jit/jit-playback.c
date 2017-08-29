@@ -1110,6 +1110,17 @@ get_aligned (size_t alignment_in_bytes) const
   return new type (t_new_type);
 }
 
+/* Construct a playback::type instance (wrapping a tree)
+   for the given vector type.  */
+
+playback::type *
+playback::type::
+get_vector (size_t num_units) const
+{
+  tree t_new_type = build_vector_type (m_inner, num_units);
+  return new type (t_new_type);
+}
+
 /* Construct a playback::lvalue instance (wrapping a tree) for a
    field access.  */
 

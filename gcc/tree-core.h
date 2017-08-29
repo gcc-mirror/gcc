@@ -1523,8 +1523,9 @@ struct GTY(()) tree_type_common {
      so we need to store the value 32 (not 31, as we need the zero
      as well), hence six bits.  */
   unsigned align : 6;
+  unsigned warn_if_not_align : 6;
   unsigned typeless_storage : 1;
-  unsigned spare : 24;
+  unsigned spare : 18;
 
   alias_set_type alias_set;
   tree pointer_to;
@@ -1552,7 +1553,7 @@ struct GTY(()) tree_type_non_common {
   tree values;
   tree minval;
   tree maxval;
-  tree binfo;
+  tree lang_1;
 };
 
 struct GTY (()) tree_binfo {
@@ -1631,7 +1632,11 @@ struct GTY(()) tree_decl_common {
   /* DECL_ALIGN.  It should have the same size as TYPE_ALIGN.  */
   unsigned int align : 6;
 
-  /* 20 bits unused.  */
+  /* DECL_WARN_IF_NOT_ALIGN.  It should have the same size as
+     TYPE_WARN_IF_NOT_ALIGN.  */
+  unsigned int warn_if_not_align : 6;
+
+  /* 14 bits unused.  */
 
   /* UID for points-to sets, stable over copying from inlining.  */
   unsigned int pt_uid;

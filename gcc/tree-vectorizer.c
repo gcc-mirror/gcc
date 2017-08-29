@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-propagate.h"
 #include "dbgcnt.h"
 #include "tree-scalar-evolution.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 
 /* Loop or bb location.  */
@@ -354,22 +356,36 @@ shrink_simd_arrays
   delete simd_array_to_simduid_htab;
 }
 
-/* A helper function to free data refs.  */
+/* Initialize the vec_info with kind KIND_IN and target cost data
+   TARGET_COST_DATA_IN.  */
 
-void
-vect_destroy_datarefs (vec_info *vinfo)
+vec_info::vec_info (vec_info::vec_kind kind_in, void *target_cost_data_in)
+  : kind (kind_in),
+    datarefs (vNULL),
+    ddrs (vNULL),
+    target_cost_data (target_cost_data_in)
 {
+}
+
+vec_info::~vec_info ()
+{
+  slp_instance instance;
   struct data_reference *dr;
   unsigned int i;
 
-  FOR_EACH_VEC_ELT (vinfo->datarefs, i, dr)
+  FOR_EACH_VEC_ELT (datarefs, i, dr)
     if (dr->aux)
       {
         free (dr->aux);
         dr->aux = NULL;
       }
 
-  free_data_refs (vinfo->datarefs);
+  FOR_EACH_VEC_ELT (slp_instances, i, instance)
+    vect_free_slp_instance (instance);
+
+  free_data_refs (datarefs);
+  free_dependence_relations (ddrs);
+  destroy_cost_data (target_cost_data);
 }
 
 /* A helper function to free scev and LOOP niter information, as well as
@@ -830,7 +846,7 @@ vectorize_loops (void)
       has_mask_store = false;
       if (loop_vinfo)
 	has_mask_store = LOOP_VINFO_HAS_MASK_STORE (loop_vinfo);
-      destroy_loop_vec_info (loop_vinfo, true);
+      delete loop_vinfo;
       if (has_mask_store)
 	optimize_mask_stores (loop);
       loop->aux = NULL;

@@ -37,6 +37,15 @@
 #undef	TARGET_AIX
 #define	TARGET_AIX TARGET_64BIT
 
+/* Simplified copy and paste from linux64.h and freebsd64.h */
+#undef DOT_SYMBOLS
+#define DOT_SYMBOLS 0
+
+/* Copy and paste from linux64.h and freebsd64.h */
+#undef TARGET_CMODEL
+#define TARGET_CMODEL rs6000_current_cmodel
+#define SET_CMODEL(opt) rs6000_current_cmodel = opt
+
 #undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()			\
   do							\
@@ -62,6 +71,15 @@
 	}						\
     }							\
   while (0)
+
+/* Copy and paste from linux64.h and freebsd64.h */
+#undef RELOCATABLE_NEEDS_FIXUP
+#define RELOCATABLE_NEEDS_FIXUP \
+  (rs6000_isa_flags & rs6000_isa_flags_explicit & OPTION_MASK_RELOCATABLE)
+
+/* Copy and paste from linux64.h */
+#undef	RS6000_ABI_NAME
+#define	RS6000_ABI_NAME "linux"
 
 /* Copy and paste from linux64.h and freebsd64.h */
 #define INVALID_64BIT "-m%s not supported in this configuration"
@@ -94,6 +112,24 @@
 	    {							\
 	      rs6000_isa_flags |= OPTION_MASK_POWERPC64;	\
 	      error ("-m64 requires a PowerPC64 cpu");		\
+	    }							\
+	  if ((rs6000_isa_flags_explicit			\
+		& OPTION_MASK_MINIMAL_TOC) != 0)		\
+	    {							\
+	      if (global_options_set.x_rs6000_current_cmodel	\
+		  && rs6000_current_cmodel != CMODEL_SMALL)	\
+		error ("-mcmodel incompatible with other toc options"); \
+	      SET_CMODEL (CMODEL_SMALL);			\
+	    }							\
+	  else							\
+	    {							\
+	      if (!global_options_set.x_rs6000_current_cmodel)	\
+		SET_CMODEL (CMODEL_MEDIUM);			\
+	      if (rs6000_current_cmodel != CMODEL_SMALL)	\
+		{						\
+		  TARGET_NO_FP_IN_TOC = 0;			\
+		  TARGET_NO_SUM_IN_TOC = 0;			\
+		}						\
 	    }							\
 	}							\
     }								\
@@ -139,6 +175,30 @@
 #define RESTORE_FP_PREFIX (TARGET_64BIT ? "._restf" : "_restfpr_")
 #undef  RESTORE_FP_SUFFIX
 #define RESTORE_FP_SUFFIX ""
+
+/* Copy and paste from linux64.h and freebsd64.h */
+#undef	ASM_PREFERRED_EH_DATA_FORMAT
+#define	ASM_PREFERRED_EH_DATA_FORMAT(CODE, GLOBAL) \
+  (TARGET_64BIT || flag_pic						\
+   ? (((GLOBAL) ? DW_EH_PE_indirect : 0) | DW_EH_PE_pcrel		\
+      | (TARGET_64BIT ? DW_EH_PE_udata8 : DW_EH_PE_sdata4))		\
+   : DW_EH_PE_absptr)
+
+/* Copy and paste from linux64.h and freebsd64.h */
+#undef  TOC_SECTION_ASM_OP
+#define TOC_SECTION_ASM_OP \
+  (TARGET_64BIT						\
+   ? "\t.section\t\".toc\",\"aw\""			\
+   : "\t.section\t\".got\",\"aw\"")
+
+/* Copy and paste from linux64.h and freebsd64.h */
+#undef  MINIMAL_TOC_SECTION_ASM_OP
+#define MINIMAL_TOC_SECTION_ASM_OP \
+  (TARGET_64BIT						\
+   ? "\t.section\t\".toc1\",\"aw\""			\
+   : (flag_pic						\
+      ? "\t.section\t\".got2\",\"aw\""			\
+      : "\t.section\t\".got1\",\"aw\""))
 
 /* Copy and paste from linux64.h and freebsd64.h */
 #undef	ASM_DECLARE_FUNCTION_SIZE

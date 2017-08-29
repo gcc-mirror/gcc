@@ -658,12 +658,20 @@
 
 ;; Mapping of vector modes to a vector mode of half size
 (define_mode_attr ssehalfvecmode
-  [(V64QI "V32QI") (V32HI "V16HI") (V16SI "V8SI") (V8DI "V4DI")
+  [(V64QI "V32QI") (V32HI "V16HI") (V16SI "V8SI") (V8DI "V4DI") (V4TI "V2TI")
    (V32QI "V16QI") (V16HI  "V8HI") (V8SI  "V4SI") (V4DI "V2DI")
    (V16QI  "V8QI") (V8HI   "V4HI") (V4SI  "V2SI")
    (V16SF "V8SF") (V8DF "V4DF")
    (V8SF  "V4SF") (V4DF "V2DF")
    (V4SF  "V2SF")])
+
+(define_mode_attr ssehalfvecmodelower
+  [(V64QI "v32qi") (V32HI "v16hi") (V16SI "v8si") (V8DI "v4di") (V4TI "v2ti")
+   (V32QI "v16qi") (V16HI  "v8hi") (V8SI  "v4si") (V4DI "v2di")
+   (V16QI  "v8qi") (V8HI   "v4hi") (V4SI  "v2si")
+   (V16SF "v8sf") (V8DF "v4df")
+   (V8SF  "v4sf") (V4DF "v2df")
+   (V4SF  "v2sf")])
 
 ;; Mapping of vector modes ti packed single mode of the same size
 (define_mode_attr ssePSmode
@@ -689,6 +697,16 @@
    (V16SF "SF") (V8SF "SF")  (V4SF "SF")
    (V8DF "DF")  (V4DF "DF")  (V2DF "DF")
    (V4TI "TI")  (V2TI "TI")])
+
+;; Mapping of vector modes back to the scalar modes
+(define_mode_attr ssescalarmodelower
+  [(V64QI "qi") (V32QI "qi") (V16QI "qi")
+   (V32HI "hi") (V16HI "hi") (V8HI "hi")
+   (V16SI "si") (V8SI "si")  (V4SI "si")
+   (V8DI "di")  (V4DI "di")  (V2DI "di")
+   (V16SF "sf") (V8SF "sf")  (V4SF "sf")
+   (V8DF "df")  (V4DF "df")  (V2DF "df")
+   (V4TI "ti")  (V2TI "ti")])
 
 ;; Mapping of vector modes to the 128bit modes
 (define_mode_attr ssexmmmode
@@ -2356,7 +2374,7 @@
 {
   rtx tmp = gen_reg_rtx (V8DFmode);
   ix86_expand_reduc (gen_addv8df3, tmp, operands[1]);
-  emit_insn (gen_vec_extractv8df (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extractv8dfdf (operands[0], tmp, const0_rtx));
   DONE;
 })
 
@@ -2371,7 +2389,7 @@
   emit_insn (gen_avx_haddv4df3 (tmp, operands[1], operands[1]));
   emit_insn (gen_avx_vperm2f128v4df3 (tmp2, tmp, tmp, GEN_INT (1)));
   emit_insn (gen_addv4df3 (vec_res, tmp, tmp2));
-  emit_insn (gen_vec_extractv4df (operands[0], vec_res, const0_rtx));
+  emit_insn (gen_vec_extractv4dfdf (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
@@ -2382,7 +2400,7 @@
 {
   rtx tmp = gen_reg_rtx (V2DFmode);
   emit_insn (gen_sse3_haddv2df3 (tmp, operands[1], operands[1]));
-  emit_insn (gen_vec_extractv2df (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extractv2dfdf (operands[0], tmp, const0_rtx));
   DONE;
 })
 
@@ -2393,7 +2411,7 @@
 {
   rtx tmp = gen_reg_rtx (V16SFmode);
   ix86_expand_reduc (gen_addv16sf3, tmp, operands[1]);
-  emit_insn (gen_vec_extractv16sf (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extractv16sfsf (operands[0], tmp, const0_rtx));
   DONE;
 })
 
@@ -2409,7 +2427,7 @@
   emit_insn (gen_avx_haddv8sf3 (tmp2, tmp, tmp));
   emit_insn (gen_avx_vperm2f128v8sf3 (tmp, tmp2, tmp2, GEN_INT (1)));
   emit_insn (gen_addv8sf3 (vec_res, tmp, tmp2));
-  emit_insn (gen_vec_extractv8sf (operands[0], vec_res, const0_rtx));
+  emit_insn (gen_vec_extractv8sfsf (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
@@ -2427,7 +2445,7 @@
     }
   else
     ix86_expand_reduc (gen_addv4sf3, vec_res, operands[1]);
-  emit_insn (gen_vec_extractv4sf (operands[0], vec_res, const0_rtx));
+  emit_insn (gen_vec_extractv4sfsf (operands[0], vec_res, const0_rtx));
   DONE;
 })
 
@@ -2449,7 +2467,8 @@
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
+							const0_rtx));
   DONE;
 })
 
@@ -2461,7 +2480,8 @@
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
+  							const0_rtx));
   DONE;
 })
 
@@ -2473,7 +2493,8 @@
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
   ix86_expand_reduc (gen_<code><mode>3, tmp, operands[1]);
-  emit_insn (gen_vec_extract<mode> (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extract<mode><ssescalarmodelower> (operands[0], tmp,
+							const0_rtx));
   DONE;
 })
 
@@ -2485,7 +2506,7 @@
 {
   rtx tmp = gen_reg_rtx (V8HImode);
   ix86_expand_reduc (gen_uminv8hi3, tmp, operands[1]);
-  emit_insn (gen_vec_extractv8hi (operands[0], tmp, const0_rtx));
+  emit_insn (gen_vec_extractv8hihi (operands[0], tmp, const0_rtx));
   DONE;
 })
 
@@ -7881,7 +7902,7 @@
    (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") V2DF
    (V4TI "TARGET_AVX512F") (V2TI "TARGET_AVX")])
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><ssescalarmodelower>"
   [(match_operand:<ssescalarmode> 0 "register_operand")
    (match_operand:VEC_EXTRACT_MODE 1 "register_operand")
    (match_operand 2 "const_int_operand")]
@@ -7889,6 +7910,19 @@
 {
   ix86_expand_vector_extract (false, operands[0], operands[1],
 			      INTVAL (operands[2]));
+  DONE;
+})
+
+(define_expand "vec_extract<mode><ssehalfvecmodelower>"
+  [(match_operand:<ssehalfvecmode> 0 "nonimmediate_operand")
+   (match_operand:V_512 1 "register_operand")
+   (match_operand 2 "const_0_to_1_operand")]
+  "TARGET_AVX512F"
+{
+  if (INTVAL (operands[2]))
+    emit_insn (gen_vec_extract_hi_<mode> (operands[0], operands[1]));
+  else
+    emit_insn (gen_vec_extract_lo_<mode> (operands[0], operands[1]));
   DONE;
 })
 
@@ -15571,7 +15605,7 @@
 	  [(match_operand:VF_128_256 1 "vector_operand" "YrBm,*xBm,xm")
 	   (match_operand:SI 2 "const_0_to_15_operand" "n,n,n")]
 	  UNSPEC_ROUND))]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
   "%vround<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}"
   [(set_attr "isa" "noavx,noavx,avx")
    (set_attr "type" "ssecvt")
@@ -15585,7 +15619,7 @@
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1_128_256 1 "vector_operand")
    (match_operand:SI 2 "const_0_to_15_operand")]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
 
@@ -15624,7 +15658,7 @@
    (match_operand:VF2 1 "vector_operand")
    (match_operand:VF2 2 "vector_operand")
    (match_operand:SI 3 "const_0_to_15_operand")]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
 {
   rtx tmp0, tmp1;
 
@@ -15666,7 +15700,7 @@
 	    UNSPEC_ROUND)
 	  (match_operand:VF_128 1 "register_operand" "0,0,x,v")
 	  (const_int 1)))]
-  "TARGET_ROUND"
+  "TARGET_SSE4_1"
   "@
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
    round<ssescalarmodesuffix>\t{%3, %2, %0|%0, %2, %3}
@@ -15689,7 +15723,7 @@
 	(unspec:VF
 	  [(match_dup 3) (match_dup 4)]
 	  UNSPEC_ROUND))]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   machine_mode scalar_mode;
   const struct real_format *fmt;
@@ -15717,7 +15751,7 @@
 (define_expand "round<mode>2_sfix"
   [(match_operand:<sseintvecmode> 0 "register_operand")
    (match_operand:VF1 1 "register_operand")]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   rtx tmp = gen_reg_rtx (<MODE>mode);
 
@@ -15732,7 +15766,7 @@
   [(match_operand:<ssepackfltmode> 0 "register_operand")
    (match_operand:VF2 1 "register_operand")
    (match_operand:VF2 2 "register_operand")]
-  "TARGET_ROUND && !flag_trapping_math"
+  "TARGET_SSE4_1 && !flag_trapping_math"
 {
   rtx tmp0, tmp1;
 
@@ -16693,7 +16727,7 @@
       for (i = 0; i < <ssescalarnum>; i++)
 	RTVEC_ELT (vs, i) = op2;
 
-      emit_insn (gen_vec_init<mode> (reg, par));
+      emit_insn (gen_vec_init<mode><ssescalarmodelower> (reg, par));
       emit_insn (gen_xop_vrotl<mode>3 (operands[0], operands[1], reg));
       DONE;
     }
@@ -16725,7 +16759,7 @@
       for (i = 0; i < <ssescalarnum>; i++)
 	RTVEC_ELT (vs, i) = op2;
 
-      emit_insn (gen_vec_init<mode> (reg, par));
+      emit_insn (gen_vec_init<mode><ssescalarmodelower> (reg, par));
       emit_insn (gen_neg<mode>2 (neg, reg));
       emit_insn (gen_xop_vrotl<mode>3 (operands[0], operands[1], neg));
       DONE;
@@ -17019,7 +17053,7 @@
         XVECEXP (par, 0, i) = operands[2];
 
       tmp = gen_reg_rtx (V16QImode);
-      emit_insn (gen_vec_initv16qi (tmp, par));
+      emit_insn (gen_vec_initv16qiqi (tmp, par));
 
       if (negate)
 	emit_insn (gen_negv16qi2 (tmp, tmp));
@@ -17055,7 +17089,7 @@
       for (i = 0; i < 2; i++)
 	XVECEXP (par, 0, i) = operands[2];
 
-      emit_insn (gen_vec_initv2di (reg, par));
+      emit_insn (gen_vec_initv2didi (reg, par));
 
       if (negate)
 	emit_insn (gen_negv2di2 (reg, reg));
@@ -18775,7 +18809,7 @@
 				  <ssehalfvecmode>mode);
 })
 
-;; Modes handled by vec_init patterns.
+;; Modes handled by vec_init expanders.
 (define_mode_iterator VEC_INIT_MODE
   [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
@@ -18785,8 +18819,28 @@
    (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")
    (V4TI "TARGET_AVX512F") (V2TI "TARGET_AVX")])
 
-(define_expand "vec_init<mode>"
+;; Likewise, but for initialization from half sized vectors.
+;; Thus, these are all VEC_INIT_MODE modes except V2??.
+(define_mode_iterator VEC_INIT_HALF_MODE
+  [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
+   (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
+   (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX")
+   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX")
+   (V4TI "TARGET_AVX512F")])
+
+(define_expand "vec_init<mode><ssescalarmodelower>"
   [(match_operand:VEC_INIT_MODE 0 "register_operand")
+   (match_operand 1)]
+  "TARGET_SSE"
+{
+  ix86_expand_vector_init (false, operands[0], operands[1]);
+  DONE;
+})
+
+(define_expand "vec_init<mode><ssehalfvecmodelower>"
+  [(match_operand:VEC_INIT_HALF_MODE 0 "register_operand")
    (match_operand 1)]
   "TARGET_SSE"
 {

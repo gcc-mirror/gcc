@@ -50,6 +50,8 @@ func test18146(t *testing.T) {
 		nproc = 6
 	case "darwin", "dragonfly", "freebsd", "netbsd", "openbsd":
 		nproc = 7
+	case "aix":
+		nproc = 9
 	}
 	if setNproc {
 		var rlim syscall.Rlimit

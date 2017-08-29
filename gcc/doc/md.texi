@@ -4871,15 +4871,22 @@ This pattern is not allowed to @code{FAIL}.
 Set given field in the vector value.  Operand 0 is the vector to modify,
 operand 1 is new value of field and operand 2 specify the field index.
 
-@cindex @code{vec_extract@var{m}} instruction pattern
-@item @samp{vec_extract@var{m}}
+@cindex @code{vec_extract@var{m}@var{n}} instruction pattern
+@item @samp{vec_extract@var{m}@var{n}}
 Extract given field from the vector value.  Operand 1 is the vector, operand 2
-specify field index and operand 0 place to store value into.
+specify field index and operand 0 place to store value into.  The
+@var{n} mode is the mode of the field or vector of fields that should be
+extracted, should be either element mode of the vector mode @var{m}, or
+a vector mode with the same element mode and smaller number of elements.
+If @var{n} is a vector mode, the index is counted in units of that mode.
 
-@cindex @code{vec_init@var{m}} instruction pattern
-@item @samp{vec_init@var{m}}
+@cindex @code{vec_init@var{m}@var{n}} instruction pattern
+@item @samp{vec_init@var{m}@var{n}}
 Initialize the vector to given values.  Operand 0 is the vector to initialize
-and operand 1 is parallel containing values for individual fields.
+and operand 1 is parallel containing values for individual fields.  The
+@var{n} mode is the mode of the elements, should be either element mode of
+the vector mode @var{m}, or a vector mode with the same element mode and
+smaller number of elements.
 
 @cindex @code{vec_cmp@var{m}@var{n}} instruction pattern
 @item @samp{vec_cmp@var{m}@var{n}}
@@ -7037,14 +7044,20 @@ If these patterns are not defined, attempts will be made to use
 counterparts.  If none of these are available a compare-and-swap
 loop will be used.
 
-@cindex @code{mem_thread_fence@var{mode}} instruction pattern
-@item @samp{mem_thread_fence@var{mode}}
+@cindex @code{mem_thread_fence} instruction pattern
+@item @samp{mem_thread_fence}
 This pattern emits code required to implement a thread fence with
 memory model semantics.  Operand 0 is the memory model to be used.
 
-If this pattern is not specified, all memory models except
-@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
-barrier pattern.
+For the @code{__ATOMIC_RELAXED} model no instructions need to be issued
+and this expansion is not invoked.
+
+The compiler always emits a compiler memory barrier regardless of what
+expanding this pattern produced.
+
+If this pattern is not defined, the compiler falls back to expanding the
+@code{memory_barrier} pattern, then to emitting @code{__sync_synchronize}
+library call, and finally to just placing a compiler memory barrier.
 
 @cindex @code{mem_signal_fence@var{mode}} instruction pattern
 @item @samp{mem_signal_fence@var{mode}}

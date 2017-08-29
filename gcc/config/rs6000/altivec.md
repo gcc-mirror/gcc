@@ -148,6 +148,7 @@
    UNSPEC_VMRGL_DIRECT
    UNSPEC_VSPLT_DIRECT
    UNSPEC_VMRGEW_DIRECT
+   UNSPEC_VMRGOW_DIRECT
    UNSPEC_VSUMSWS_DIRECT
    UNSPEC_VADDCUQ
    UNSPEC_VADDEUQM
@@ -218,7 +219,7 @@
 (define_mode_iterator VParity [V4SI
 			       V2DI
 			       V1TI
-			       (TI "TARGET_VSX_TIMODE")])
+			       TI])
 
 (define_mode_attr VI_char [(V2DI "d") (V4SI "w") (V8HI "h") (V16QI "b")])
 (define_mode_attr VI_scalar [(V2DI "DI") (V4SI "SI") (V8HI "HI") (V16QI "QI")])
@@ -311,7 +312,7 @@
   for (i = 0; i < num_elements; i++)
     RTVEC_ELT (v, i) = constm1_rtx;
 
-  emit_insn (gen_vec_initv4si (dest, gen_rtx_PARALLEL (mode, v)));
+  emit_insn (gen_vec_initv4sisi (dest, gen_rtx_PARALLEL (mode, v)));
   emit_insn (gen_rtx_SET (dest, gen_rtx_ASHIFT (mode, dest, dest)));
   DONE;
 })
@@ -1357,13 +1358,22 @@
 }
   [(set_attr "type" "vecperm")])
 
-(define_insn "p8_vmrgew_v4sf_direct"
-  [(set (match_operand:V4SF 0 "register_operand" "=v")
-	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
-		      (match_operand:V4SF 2 "register_operand" "v")]
+(define_insn "p8_vmrgew_<mode>_direct"
+  [(set (match_operand:VSX_W 0 "register_operand" "=v")
+	(unspec:VSX_W [(match_operand:VSX_W 1 "register_operand" "v")
+		       (match_operand:VSX_W 2 "register_operand" "v")]
 		     UNSPEC_VMRGEW_DIRECT))]
   "TARGET_P8_VECTOR"
   "vmrgew %0,%1,%2"
+  [(set_attr "type" "vecperm")])
+
+(define_insn "p8_vmrgow_<mode>_direct"
+  [(set (match_operand:VSX_W 0 "register_operand" "=v")
+	(unspec:VSX_W [(match_operand:VSX_W 1 "register_operand" "v")
+		       (match_operand:VSX_W 2 "register_operand" "v")]
+		     UNSPEC_VMRGOW_DIRECT))]
+  "TARGET_P8_VECTOR"
+  "vmrgow %0,%1,%2"
   [(set_attr "type" "vecperm")])
 
 (define_expand "vec_widen_umult_even_v16qi"
@@ -2267,7 +2277,7 @@
   RTVEC_ELT (v, 2) = GEN_INT (mask_val);
   RTVEC_ELT (v, 3) = GEN_INT (mask_val);
 
-  emit_insn (gen_vec_initv4si (mask, gen_rtx_PARALLEL (V4SImode, v)));
+  emit_insn (gen_vec_initv4sisi (mask, gen_rtx_PARALLEL (V4SImode, v)));
   emit_insn (gen_vector_select_v4sf (operands[0], operands[1], operands[2],
 				     gen_lowpart (V4SFmode, mask)));
   DONE;
@@ -3409,7 +3419,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  0);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3445,7 +3455,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ?  6 : 17);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ?  7 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3481,7 +3491,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 16 :  8);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v16qiv8hi (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3517,7 +3527,7 @@
   RTVEC_ELT (v, 14) = gen_rtx_CONST_INT (QImode, be ? 14 : 17);
   RTVEC_ELT (v, 15) = gen_rtx_CONST_INT (QImode, be ? 15 : 16);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_vperm_v8hiv4si (operands[0], operands[1], vzero, mask));
   DONE;
 }")
@@ -3758,7 +3768,7 @@
      = gen_rtx_CONST_INT (QImode, BYTES_BIG_ENDIAN ? 2 * i + 17 : 15 - 2 * i);
   }
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vmulesb (even, operands[1], operands[2]));
   emit_insn (gen_altivec_vmulosb (odd, operands[1], operands[2]));
   emit_insn (gen_altivec_vperm_v8hiv16qi (operands[0], even, odd, mask));
@@ -3804,7 +3814,7 @@
       RTVEC_ELT (v, i + j * size)
 	= GEN_INT (i + (num_elements - 1 - j) * size);
 
-  emit_insn (gen_vec_initv16qi (mask, gen_rtx_PARALLEL (V16QImode, v)));
+  emit_insn (gen_vec_initv16qiqi (mask, gen_rtx_PARALLEL (V16QImode, v)));
   emit_insn (gen_altivec_vperm_<mode> (operands[0], operands[1],
 	     operands[1], mask));
   DONE;

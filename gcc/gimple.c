@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "selftest.h"
 #include "gimple-pretty-print.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 

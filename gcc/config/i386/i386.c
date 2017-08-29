@@ -85,6 +85,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "print-rtl.h"
 #include "intl.h"
 #include "ifcvt.h"
+#include "symbol-summary.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -94,6 +97,7 @@ static rtx legitimize_pe_coff_extern_decl (rtx, bool);
 static rtx legitimize_pe_coff_symbol (rtx, bool);
 static void ix86_print_operand_address_as (FILE *, rtx, addr_space_t, bool);
 static bool ix86_save_reg (unsigned int, bool, bool);
+static bool ix86_function_naked (const_tree);
 
 #ifndef CHECK_STACK_LIMIT
 #define CHECK_STACK_LIMIT (-1)
@@ -2491,9 +2495,7 @@ public:
     unsigned last_reg = m->call_ms2sysv_extra_regs + MIN_REGS - 1;
 
     gcc_assert (m->call_ms2sysv_extra_regs <= MAX_EXTRA_REGS);
-    return m_regs[last_reg].offset
-	   + (m->call_ms2sysv_pad_out ? 8 : 0)
-	   + STUB_INDEX_OFFSET;
+    return m_regs[last_reg].offset + STUB_INDEX_OFFSET;
   }
 
   /* Returns the offset for the base pointer used by the stub.  */
@@ -5685,6 +5687,10 @@ ix86_option_override_internal (bool main_args_p,
   if (!opts_set->x_ix86_abi)
     opts->x_ix86_abi = DEFAULT_ABI;
 
+  if (opts->x_ix86_abi == MS_ABI && TARGET_X32_P (opts->x_ix86_isa_flags))
+    error ("-mabi=ms not supported with X32 ABI");
+  gcc_assert (opts->x_ix86_abi == SYSV_ABI || opts->x_ix86_abi == MS_ABI);
+
   /* For targets using ms ABI enable ms-extensions, if not
      explicit turned off.  For non-ms ABI we turn off this
      option.  */
@@ -6314,7 +6320,7 @@ ix86_option_override_internal (bool main_args_p,
     }
 
   /* Set the default value for -mstackrealign.  */
-  if (opts->x_ix86_force_align_arg_pointer == -1)
+  if (!opts_set->x_ix86_force_align_arg_pointer)
     opts->x_ix86_force_align_arg_pointer = STACK_REALIGN_DEFAULT;
 
   ix86_default_incoming_stack_boundary = PREFERRED_STACK_BOUNDARY;
@@ -6539,27 +6545,18 @@ ix86_option_override_internal (bool main_args_p,
     opts->x_target_flags |= MASK_CLD & ~opts_set->x_target_flags;
 #endif
 
-  if (!TARGET_64BIT_P (opts->x_ix86_isa_flags) && opts->x_flag_pic)
+  /* Set the default value for -mfentry.  */
+  if (!opts_set->x_flag_fentry)
+    opts->x_flag_fentry = TARGET_SEH;
+  else
     {
-      if (opts->x_flag_fentry > 0)
-        sorry ("-mfentry isn%'t supported for 32-bit in combination "
+      if (!TARGET_64BIT_P (opts->x_ix86_isa_flags) && opts->x_flag_pic
+	  && opts->x_flag_fentry)
+	sorry ("-mfentry isn%'t supported for 32-bit in combination "
 	       "with -fpic");
-      opts->x_flag_fentry = 0;
-    }
-  else if (TARGET_SEH)
-    {
-      if (opts->x_flag_fentry == 0)
+      else if (TARGET_SEH && !opts->x_flag_fentry)
 	sorry ("-mno-fentry isn%'t compatible with SEH");
-      opts->x_flag_fentry = 1;
     }
-  else if (opts->x_flag_fentry < 0)
-   {
-#if defined(PROFILE_BEFORE_PROLOGUE)
-     opts->x_flag_fentry = 1;
-#else
-     opts->x_flag_fentry = 0;
-#endif
-   }
 
   if (TARGET_SEH && TARGET_CALL_MS2SYSV_XLOGUES)
     sorry ("-mcall-ms2sysv-xlogues isn%'t currently supported with SEH");
@@ -6652,16 +6649,73 @@ ix86_option_override_internal (bool main_args_p,
   gcc_assert ((opts->x_target_flags & MASK_LONG_DOUBLE_64) == 0
 	      || (opts->x_target_flags & MASK_LONG_DOUBLE_128) == 0);
 
-  /* Save the initial options in case the user does function specific
-     options.  */
-  if (main_args_p)
-    target_option_default_node = target_option_current_node
-      = build_target_option_node (opts);
-
   /* Handle stack protector */
   if (!opts_set->x_ix86_stack_protector_guard)
     opts->x_ix86_stack_protector_guard
       = TARGET_HAS_BIONIC ? SSP_GLOBAL : SSP_TLS;
+
+#ifdef TARGET_THREAD_SSP_OFFSET
+  ix86_stack_protector_guard_offset = TARGET_THREAD_SSP_OFFSET;
+#endif
+
+  if (global_options_set.x_ix86_stack_protector_guard_offset_str)
+    {
+      char *endp;
+      const char *str = ix86_stack_protector_guard_offset_str;
+
+      errno = 0;
+      int64_t offset;
+
+#if defined(INT64_T_IS_LONG)
+      offset = strtol (str, &endp, 0);
+#else
+      offset = strtoll (str, &endp, 0);
+#endif
+
+      if (!*str || *endp || errno)
+	error ("%qs is not a valid number "
+	       "in -mstack-protector-guard-offset=", str);
+
+      if (!IN_RANGE (offset, HOST_WIDE_INT_C (-0x80000000),
+		     HOST_WIDE_INT_C (0x7fffffff)))
+	error ("%qs is not a valid offset "
+	       "in -mstack-protector-guard-offset=", str);
+
+      ix86_stack_protector_guard_offset = offset;
+    }
+
+  ix86_stack_protector_guard_reg = DEFAULT_TLS_SEG_REG;
+
+  /* The kernel uses a different segment register for performance
+     reasons; a system call would not have to trash the userspace
+     segment register, which would be expensive.  */
+  if (ix86_cmodel == CM_KERNEL)
+    ix86_stack_protector_guard_reg = ADDR_SPACE_SEG_GS;
+
+  if (global_options_set.x_ix86_stack_protector_guard_reg_str)
+    {
+      const char *str = ix86_stack_protector_guard_reg_str;
+      addr_space_t seg = ADDR_SPACE_GENERIC;
+
+      /* Discard optional register prefix.  */
+      if (str[0] == '%')
+	str++;
+
+      if (strlen (str) == 2 && str[1] == 's')
+	{
+	  if (str[0] == 'f')
+	    seg = ADDR_SPACE_SEG_FS;
+	  else if (str[0] == 'g')
+	    seg = ADDR_SPACE_SEG_GS;
+	}
+
+      if (seg == ADDR_SPACE_GENERIC)
+	error ("%qs is not a valid base register "
+	       "in -mstack-protector-guard-reg=",
+	       ix86_stack_protector_guard_reg_str);
+
+      ix86_stack_protector_guard_reg = seg;
+    }
 
   /* Handle -mmemcpy-strategy= and -mmemset-strategy=  */
   if (opts->x_ix86_tune_memcpy_strategy)
@@ -6677,6 +6731,12 @@ ix86_option_override_internal (bool main_args_p,
       ix86_parse_stringop_strategy_string (str, true);
       free (str);
     }
+
+  /* Save the initial options in case the user does function specific
+     options.  */
+  if (main_args_p)
+    target_option_default_node = target_option_current_node
+      = build_target_option_node (opts);
 
   return true;
 }
@@ -7336,16 +7396,6 @@ ix86_valid_target_attribute_tree (tree args,
       /* If fpmath= is not set, and we now have sse2 on 32-bit, use it.  */
       if (enum_opts_set.x_ix86_fpmath)
 	opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
-      else if (!TARGET_64BIT_P (opts->x_ix86_isa_flags)
-	       && TARGET_SSE_P (opts->x_ix86_isa_flags))
-	{
-	  if (TARGET_80387_P (opts->x_target_flags))
-	    opts->x_ix86_fpmath = (enum fpmath_unit) (FPMATH_SSE
-						      | FPMATH_387);
-	  else
-	    opts->x_ix86_fpmath = (enum fpmath_unit) FPMATH_SSE;
-	  opts_set->x_ix86_fpmath = (enum fpmath_unit) 1;
-	}
 
       /* Do any overrides, such as arch=xxx, or tune=xxx support.  */
       bool r = ix86_option_override_internal (false, opts, opts_set);
@@ -7440,53 +7490,54 @@ ix86_valid_target_attribute_p (tree fndecl,
 static bool
 ix86_can_inline_p (tree caller, tree callee)
 {
-  bool ret = false;
   tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
   tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
-
-  /* If callee has no option attributes, then it is ok to inline.  */
   if (!callee_tree)
-    ret = true;
+    callee_tree = target_option_default_node;
+  if (!caller_tree)
+    caller_tree = target_option_default_node;
+  if (callee_tree == caller_tree)
+    return true;
 
-  /* If caller has no option attributes, but callee does then it is not ok to
-     inline.  */
-  else if (!caller_tree)
+  struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+  bool ret = false;
+
+  /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
+     function can inline a SSE2 function but a SSE2 function can't inline
+     a SSE4 function.  */
+  if (((caller_opts->x_ix86_isa_flags & callee_opts->x_ix86_isa_flags)
+       != callee_opts->x_ix86_isa_flags)
+      || ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
+	  != callee_opts->x_ix86_isa_flags2))
+    ret = false;
+
+  /* See if we have the same non-isa options.  */
+  else if (caller_opts->x_target_flags != callee_opts->x_target_flags)
+    ret = false;
+
+  /* See if arch, tune, etc. are the same.  */
+  else if (caller_opts->arch != callee_opts->arch)
+    ret = false;
+
+  else if (caller_opts->tune != callee_opts->tune)
+    ret = false;
+
+  else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath
+	   /* If the calle doesn't use FP expressions differences in
+	      ix86_fpmath can be ignored.  We are called from FEs
+	      for multi-versioning call optimization, so beware of
+	      ipa_fn_summaries not available.  */
+	   && (! ipa_fn_summaries
+	       || ipa_fn_summaries->get
+	       (cgraph_node::get (callee))->fp_expressions))
+    ret = false;
+
+  else if (caller_opts->branch_cost != callee_opts->branch_cost)
     ret = false;
 
   else
-    {
-      struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
-      struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
-
-      /* Callee's isa options should be a subset of the caller's, i.e. a SSE4
-	 function can inline a SSE2 function but a SSE2 function can't inline
-	 a SSE4 function.  */
-      if (((caller_opts->x_ix86_isa_flags & callee_opts->x_ix86_isa_flags)
-	   != callee_opts->x_ix86_isa_flags)
-	  || ((caller_opts->x_ix86_isa_flags2 & callee_opts->x_ix86_isa_flags2)
-	      != callee_opts->x_ix86_isa_flags2))
-	ret = false;
-
-      /* See if we have the same non-isa options.  */
-      else if (caller_opts->x_target_flags != callee_opts->x_target_flags)
-	ret = false;
-
-      /* See if arch, tune, etc. are the same.  */
-      else if (caller_opts->arch != callee_opts->arch)
-	ret = false;
-
-      else if (caller_opts->tune != callee_opts->tune)
-	ret = false;
-
-      else if (caller_opts->x_ix86_fpmath != callee_opts->x_ix86_fpmath)
-	ret = false;
-
-      else if (caller_opts->branch_cost != callee_opts->branch_cost)
-	ret = false;
-
-      else
-	ret = true;
-    }
+    ret = true;
 
   return ret;
 }
@@ -7522,6 +7573,10 @@ ix86_set_func_type (tree fndecl)
       if (lookup_attribute ("interrupt",
 			    TYPE_ATTRIBUTES (TREE_TYPE (fndecl))))
 	{
+	  if (ix86_function_naked (fndecl))
+	    error_at (DECL_SOURCE_LOCATION (fndecl),
+		      "interrupt and naked attributes are not compatible");
+
 	  int nargs = 0;
 	  for (tree arg = DECL_ARGUMENTS (fndecl);
 	       arg;
@@ -7928,6 +7983,9 @@ ix86_function_ok_for_sibcall (tree decl, tree exp)
   tree type, decl_or_type;
   rtx a, b;
   bool bind_global = decl && !targetm.binds_local_p (decl);
+
+  if (ix86_function_naked (current_function_decl))
+    return false;
 
   /* Sibling call isn't OK if there are no caller-saved registers
      since all registers must be preserved before return.  */
@@ -8708,8 +8766,12 @@ ix86_function_type_abi (const_tree fntype)
   if (abi == SYSV_ABI
       && lookup_attribute ("ms_abi", TYPE_ATTRIBUTES (fntype)))
     {
-      if (TARGET_X32)
-	error ("X32 does not support ms_abi attribute");
+      static int warned;
+      if (TARGET_X32 && !warned)
+	{
+	  error ("X32 does not support ms_abi attribute");
+	  warned = 1;
+	}
 
       abi = MS_ABI;
     }
@@ -12857,13 +12919,12 @@ ix86_compute_frame_layout (void)
 	{
 	  unsigned count = xlogue_layout::count_stub_managed_regs ();
 	  m->call_ms2sysv_extra_regs = count - xlogue_layout::MIN_REGS;
+	  m->call_ms2sysv_pad_in = 0;
 	}
     }
 
   frame->nregs = ix86_nsaved_regs ();
   frame->nsseregs = ix86_nsaved_sseregs ();
-  m->call_ms2sysv_pad_in = 0;
-  m->call_ms2sysv_pad_out = 0;
 
   /* 64-bit MS ABI seem to require stack alignment to be always 16,
      except for function prologues, leaf functions and when the defult
@@ -12884,6 +12945,14 @@ ix86_compute_frame_layout (void)
   gcc_assert (!size || stack_alignment_needed);
   gcc_assert (preferred_alignment >= STACK_BOUNDARY / BITS_PER_UNIT);
   gcc_assert (preferred_alignment <= stack_alignment_needed);
+
+  /* The only ABI saving SSE regs should be 64-bit ms_abi.  */
+  gcc_assert (TARGET_64BIT || !frame->nsseregs);
+  if (TARGET_64BIT && m->call_ms2sysv)
+    {
+      gcc_assert (stack_alignment_needed >= 16);
+      gcc_assert (!frame->nsseregs);
+    }
 
   /* For SEH we have to limit the amount of code movement into the prologue.
      At present we do this via a BLOCKAGE, at which point there's very little
@@ -12947,62 +13016,88 @@ ix86_compute_frame_layout (void)
   if (TARGET_SEH)
     frame->hard_frame_pointer_offset = offset;
 
-  /* When re-aligning the stack frame, but not saving SSE registers, this
-     is the offset we want adjust the stack pointer to.  */
-  frame->stack_realign_allocate_offset = offset;
-
-  /* The re-aligned stack starts here.  Values before this point are not
-     directly comparable with values below this point.  Use sp_valid_at
-     to determine if the stack pointer is valid for a given offset and
-     fp_valid_at for the frame pointer.  */
-  if (stack_realign_fp)
-    offset = ROUND_UP (offset, stack_alignment_needed);
-  frame->stack_realign_offset = offset;
-
-  if (TARGET_64BIT && m->call_ms2sysv)
-    {
-      gcc_assert (stack_alignment_needed >= 16);
-      gcc_assert (!frame->nsseregs);
-
-      m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
-
-      /* Select an appropriate layout for incoming stack offset.  */
-      const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
-
-      if ((offset + xlogue.get_stack_space_used ()) & UNITS_PER_WORD)
-	m->call_ms2sysv_pad_out = 1;
-
-      offset += xlogue.get_stack_space_used ();
-      gcc_assert (!(offset & 0xf));
-      frame->outlined_save_offset = offset;
-    }
-
-  /* Align and set SSE register save area.  */
-  else if (frame->nsseregs)
-    {
-      /* The only ABI that has saved SSE registers (Win64) also has a
-	 16-byte aligned default stack.  However, many programs violate
-	 the ABI, and Wine64 forces stack realignment to compensate.
-
-	 If the incoming stack boundary is at least 16 bytes, or DRAP is
-	 required and the DRAP re-alignment boundary is at least 16 bytes,
-	 then we want the SSE register save area properly aligned.  */
-      if (ix86_incoming_stack_boundary >= 128
-	       || (stack_realign_drap && stack_alignment_needed >= 16))
-	offset = ROUND_UP (offset, 16);
-      offset += frame->nsseregs * 16;
-      frame->stack_realign_allocate_offset = offset;
-    }
-
-  frame->sse_reg_save_offset = offset;
-
-  /* Va-arg area */
+  /* Calculate the size of the va-arg area (not including padding, if any).  */
   frame->va_arg_size = ix86_varargs_gpr_size + ix86_varargs_fpr_size;
-  offset += frame->va_arg_size;
+
+  if (stack_realign_fp)
+    {
+      /* We may need a 16-byte aligned stack for the remainder of the
+	 register save area, but the stack frame for the local function
+	 may require a greater alignment if using AVX/2/512.  In order
+	 to avoid wasting space, we first calculate the space needed for
+	 the rest of the register saves, add that to the stack pointer,
+	 and then realign the stack to the boundary of the start of the
+	 frame for the local function.  */
+      HOST_WIDE_INT space_needed = 0;
+      HOST_WIDE_INT sse_reg_space_needed = 0;
+
+      if (TARGET_64BIT)
+	{
+	  if (m->call_ms2sysv)
+	    {
+	      m->call_ms2sysv_pad_in = 0;
+	      space_needed = xlogue_layout::get_instance ().get_stack_space_used ();
+	    }
+
+	  else if (frame->nsseregs)
+	    /* The only ABI that has saved SSE registers (Win64) also has a
+	       16-byte aligned default stack.  However, many programs violate
+	       the ABI, and Wine64 forces stack realignment to compensate.  */
+	    space_needed = frame->nsseregs * 16;
+
+	  sse_reg_space_needed = space_needed = ROUND_UP (space_needed, 16);
+
+	  /* 64-bit frame->va_arg_size should always be a multiple of 16, but
+	     rounding to be pedantic.  */
+	  space_needed = ROUND_UP (space_needed + frame->va_arg_size, 16);
+	}
+      else
+	space_needed = frame->va_arg_size;
+
+      /* Record the allocation size required prior to the realignment AND.  */
+      frame->stack_realign_allocate = space_needed;
+
+      /* The re-aligned stack starts at frame->stack_realign_offset.  Values
+	 before this point are not directly comparable with values below
+	 this point.  Use sp_valid_at to determine if the stack pointer is
+	 valid for a given offset, fp_valid_at for the frame pointer, or
+	 choose_baseaddr to have a base register chosen for you.
+
+	 Note that the result of (frame->stack_realign_offset
+	 & (stack_alignment_needed - 1)) may not equal zero.  */
+      offset = ROUND_UP (offset + space_needed, stack_alignment_needed);
+      frame->stack_realign_offset = offset - space_needed;
+      frame->sse_reg_save_offset = frame->stack_realign_offset
+							+ sse_reg_space_needed;
+    }
+  else
+    {
+      frame->stack_realign_offset = offset;
+
+      if (TARGET_64BIT && m->call_ms2sysv)
+	{
+	  m->call_ms2sysv_pad_in = !!(offset & UNITS_PER_WORD);
+	  offset += xlogue_layout::get_instance ().get_stack_space_used ();
+	}
+
+      /* Align and set SSE register save area.  */
+      else if (frame->nsseregs)
+	{
+	  /* If the incoming stack boundary is at least 16 bytes, or DRAP is
+	     required and the DRAP re-alignment boundary is at least 16 bytes,
+	     then we want the SSE register save area properly aligned.  */
+	  if (ix86_incoming_stack_boundary >= 128
+		  || (stack_realign_drap && stack_alignment_needed >= 16))
+	    offset = ROUND_UP (offset, 16);
+	  offset += frame->nsseregs * 16;
+	}
+      frame->sse_reg_save_offset = offset;
+      offset += frame->va_arg_size;
+    }
 
   /* Align start of frame for local function.  */
-  if (stack_realign_fp
-      || offset != frame->sse_reg_save_offset
+  if (m->call_ms2sysv
+      || frame->va_arg_size != 0
       || size != 0
       || !crtl->is_leaf
       || cfun->calls_alloca
@@ -13110,26 +13205,36 @@ choose_baseaddr_len (unsigned int regno, HOST_WIDE_INT offset)
   return len;
 }
 
-/* Determine if the stack pointer is valid for accessing the cfa_offset.
-   The register is saved at CFA - CFA_OFFSET.  */
+/* Determine if the stack pointer is valid for accessing the CFA_OFFSET in
+   the frame save area.  The register is saved at CFA - CFA_OFFSET.  */
 
-static inline bool
+static bool
 sp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
-  return fs.sp_valid && !(fs.sp_realigned
-			  && cfa_offset <= fs.sp_realigned_offset);
+  if (fs.sp_realigned && cfa_offset <= fs.sp_realigned_offset)
+    {
+      /* Validate that the cfa_offset isn't in a "no-man's land".  */
+      gcc_assert (cfa_offset <= fs.sp_realigned_fp_last);
+      return false;
+    }
+  return fs.sp_valid;
 }
 
-/* Determine if the frame pointer is valid for accessing the cfa_offset.
-   The register is saved at CFA - CFA_OFFSET.  */
+/* Determine if the frame pointer is valid for accessing the CFA_OFFSET in
+   the frame save area.  The register is saved at CFA - CFA_OFFSET.  */
 
 static inline bool
 fp_valid_at (HOST_WIDE_INT cfa_offset)
 {
   const struct machine_frame_state &fs = cfun->machine->fs;
-  return fs.fp_valid && !(fs.sp_valid && fs.sp_realigned
-			  && cfa_offset > fs.sp_realigned_offset);
+  if (fs.sp_realigned && cfa_offset > fs.sp_realigned_fp_last)
+    {
+      /* Validate that the cfa_offset isn't in a "no-man's land".  */
+      gcc_assert (cfa_offset >= fs.sp_realigned_offset);
+      return false;
+    }
+  return fs.fp_valid;
 }
 
 /* Choose a base register based upon alignment requested, speed and/or
@@ -13240,10 +13345,13 @@ choose_basereg (HOST_WIDE_INT cfa_offset, rtx &base_reg,
 }
 
 /* Return an RTX that points to CFA_OFFSET within the stack frame and
-   the alignment of address.  If align is non-null, it should point to
+   the alignment of address.  If ALIGN is non-null, it should point to
    an alignment value (in bits) that is preferred or zero and will
-   recieve the alignment of the base register that was selected.  The
-   valid base registers are taken from CFUN->MACHINE->FS.  */
+   recieve the alignment of the base register that was selected,
+   irrespective of rather or not CFA_OFFSET is a multiple of that
+   alignment value.
+
+   The valid base registers are taken from CFUN->MACHINE->FS.  */
 
 static rtx
 choose_baseaddr (HOST_WIDE_INT cfa_offset, unsigned int *align)
@@ -14119,10 +14227,11 @@ output_probe_stack_range (rtx reg, rtx end)
   return "";
 }
 
-/* Finalize stack_realign_needed flag, which will guide prologue/epilogue
-   to be generated in correct form.  */
+/* Finalize stack_realign_needed and frame_pointer_needed flags, which
+   will guide prologue/epilogue to be generated in correct form.  */
+
 static void
-ix86_finalize_stack_realign_flags (void)
+ix86_finalize_stack_frame_flags (void)
 {
   /* Check if stack realign is really needed after reload, and
      stores result in cfun */
@@ -14145,13 +14254,13 @@ ix86_finalize_stack_realign_flags (void)
     }
 
   /* If the only reason for frame_pointer_needed is that we conservatively
-     assumed stack realignment might be needed, but in the end nothing that
-     needed the stack alignment had been spilled, clear frame_pointer_needed
-     and say we don't need stack realignment.  */
-  if (stack_realign
+     assumed stack realignment might be needed or -fno-omit-frame-pointer
+     is used, but in the end nothing that needed the stack alignment had
+     been spilled nor stack access, clear frame_pointer_needed and say we
+     don't need stack realignment.  */
+  if ((stack_realign || !flag_omit_frame_pointer)
       && frame_pointer_needed
       && crtl->is_leaf
-      && flag_omit_frame_pointer
       && crtl->sp_is_unchanging
       && !ix86_current_function_calls_tls_descriptor
       && !crtl->accesses_prior_frames
@@ -14220,6 +14329,42 @@ ix86_finalize_stack_realign_flags (void)
       df_scan_blocks ();
       df_compute_regs_ever_live (true);
       df_analyze ();
+
+      if (flag_var_tracking)
+	{
+	  /* Since frame pointer is no longer available, replace it with
+	     stack pointer - UNITS_PER_WORD in debug insns.  */
+	  df_ref ref, next;
+	  for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
+	       ref; ref = next)
+	    {
+	      rtx_insn *insn = DF_REF_INSN (ref);
+	      /* Make sure the next ref is for a different instruction,
+		 so that we're not affected by the rescan.  */
+	      next = DF_REF_NEXT_REG (ref);
+	      while (next && DF_REF_INSN (next) == insn)
+		next = DF_REF_NEXT_REG (next);
+
+	      if (DEBUG_INSN_P (insn))
+		{
+		  bool changed = false;
+		  for (; ref != next; ref = DF_REF_NEXT_REG (ref))
+		    {
+		      rtx *loc = DF_REF_LOC (ref);
+		      if (*loc == hard_frame_pointer_rtx)
+			{
+			  *loc = plus_constant (Pmode,
+						stack_pointer_rtx,
+						-UNITS_PER_WORD);
+			  changed = true;
+			}
+		    }
+		  if (changed)
+		    df_insn_rescan (insn);
+		}
+	    }
+	}
+
       recompute_frame_layout_p = true;
     }
 
@@ -14289,35 +14434,35 @@ ix86_emit_outlined_ms2sysv_save (const struct ix86_frame &frame)
   rtx sym, addr;
   rtx rax = gen_rtx_REG (word_mode, AX_REG);
   const struct xlogue_layout &xlogue = xlogue_layout::get_instance ();
-  HOST_WIDE_INT rax_offset = xlogue.get_stub_ptr_offset () + m->fs.sp_offset;
-  HOST_WIDE_INT stack_alloc_size = frame.stack_pointer_offset - m->fs.sp_offset;
-  HOST_WIDE_INT stack_align_off_in = xlogue.get_stack_align_off_in ();
+  HOST_WIDE_INT allocate = frame.stack_pointer_offset - m->fs.sp_offset;
 
-  /* Verify that the incoming stack 16-byte alignment offset matches the
-     layout we're using.  */
-  gcc_assert (stack_align_off_in == (m->fs.sp_offset & UNITS_PER_WORD));
+  /* AL should only be live with sysv_abi.  */
+  gcc_assert (!ix86_eax_live_at_start_p ());
+
+  /* Setup RAX as the stub's base pointer.  We use stack_realign_offset rather
+     we've actually realigned the stack or not.  */
+  align = GET_MODE_ALIGNMENT (V4SFmode);
+  addr = choose_baseaddr (frame.stack_realign_offset
+			  + xlogue.get_stub_ptr_offset (), &align);
+  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
+  emit_insn (gen_rtx_SET (rax, addr));
+
+  /* Allocate stack if not already done.  */
+  if (allocate > 0)
+      pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+				GEN_INT (-allocate), -1, false);
 
   /* Get the stub symbol.  */
   sym = xlogue.get_stub_rtx (frame_pointer_needed ? XLOGUE_STUB_SAVE_HFP
 						  : XLOGUE_STUB_SAVE);
   RTVEC_ELT (v, vi++) = gen_rtx_USE (VOIDmode, sym);
 
-  /* Setup RAX as the stub's base pointer.  */
-  align = GET_MODE_ALIGNMENT (V4SFmode);
-  addr = choose_baseaddr (rax_offset, &align);
-  gcc_assert (align >= GET_MODE_ALIGNMENT (V4SFmode));
-  insn = emit_insn (gen_rtx_SET (rax, addr));
-
-  gcc_assert (stack_alloc_size >= xlogue.get_stack_space_used ());
-  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-			     GEN_INT (-stack_alloc_size), -1,
-			     m->fs.cfa_reg == stack_pointer_rtx);
   for (i = 0; i < ncregs; ++i)
     {
       const xlogue_layout::reginfo &r = xlogue.get_reginfo (i);
       rtx reg = gen_rtx_REG ((SSE_REGNO_P (r.regno) ? V4SFmode : word_mode),
 			     r.regno);
-      RTVEC_ELT (v, vi++) = gen_frame_store (reg, rax, -r.offset);;
+      RTVEC_ELT (v, vi++) = gen_frame_store (reg, rax, -r.offset);
     }
 
   gcc_assert (vi == (unsigned)GET_NUM_ELEM (v));
@@ -14342,7 +14487,7 @@ ix86_expand_prologue (void)
   if (ix86_function_naked (current_function_decl))
     return;
 
-  ix86_finalize_stack_realign_flags ();
+  ix86_finalize_stack_frame_flags ();
 
   /* DRAP should not coexist with stack_realign_fp */
   gcc_assert (!(crtl->drap_reg && stack_realign_fp));
@@ -14571,12 +14716,16 @@ ix86_expand_prologue (void)
       int align_bytes = crtl->stack_alignment_needed / BITS_PER_UNIT;
       gcc_assert (align_bytes > MIN_STACK_BOUNDARY / BITS_PER_UNIT);
 
+      /* Record last valid frame pointer offset.  */
+      m->fs.sp_realigned_fp_last = frame.reg_save_offset;
+
       /* The computation of the size of the re-aligned stack frame means
 	 that we must allocate the size of the register save area before
 	 performing the actual alignment.  Otherwise we cannot guarantee
 	 that there's enough storage above the realignment point.  */
-      allocate = frame.stack_realign_allocate_offset - m->fs.sp_offset;
-      if (allocate && !m->call_ms2sysv)
+      allocate = frame.reg_save_offset - m->fs.sp_offset
+		 + frame.stack_realign_allocate;
+      if (allocate)
         pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
 				   GEN_INT (-allocate), -1, false);
 
@@ -14584,14 +14733,18 @@ ix86_expand_prologue (void)
       insn = emit_insn (ix86_gen_andsp (stack_pointer_rtx,
 					stack_pointer_rtx,
 					GEN_INT (-align_bytes)));
-      /* For the purposes of register save area addressing, the stack
-	 pointer can no longer be used to access anything in the frame
-	 below m->fs.sp_realigned_offset and the frame pointer cannot be
-	 used for anything at or above.  */
       m->fs.sp_offset = ROUND_UP (m->fs.sp_offset, align_bytes);
-      m->fs.sp_realigned = true;
-      m->fs.sp_realigned_offset = m->fs.sp_offset - frame.nsseregs * 16;
+      m->fs.sp_realigned_offset = m->fs.sp_offset
+					      - frame.stack_realign_allocate;
+      /* The stack pointer may no longer be equal to CFA - m->fs.sp_offset.
+	 Beyond this point, stack access should be done via choose_baseaddr or
+	 by using sp_valid_at and fp_valid_at to determine the correct base
+	 register.  Henceforth, any CFA offset should be thought of as logical
+	 and not physical.  */
+      gcc_assert (m->fs.sp_realigned_offset >= m->fs.sp_realigned_fp_last);
       gcc_assert (m->fs.sp_realigned_offset == frame.stack_realign_offset);
+      m->fs.sp_realigned = true;
+
       /* SEH unwind emit doesn't currently support REG_CFA_EXPRESSION, which
 	 is needed to describe where a register is saved using a realigned
 	 stack pointer, so we need to invalidate the stack pointer for that
@@ -14653,7 +14806,7 @@ ix86_expand_prologue (void)
      so probe if the size is non-negative to preserve the protection area.  */
   if (allocate >= 0 && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
     {
-      /* We expect the registers to be saved when probes are used.  */
+      /* We expect the GP registers to be saved when probes are used.  */
       gcc_assert (int_registers_saved);
 
       if (STACK_CHECK_MOVING_SP)
@@ -15202,11 +15355,11 @@ ix86_expand_epilogue (int style)
   if (ix86_function_naked (current_function_decl))
     {
       /* The program should not reach this point.  */
-      emit_insn (gen_trap ());
+      emit_insn (gen_ud2 ());
       return;
     }
 
-  ix86_finalize_stack_realign_flags ();
+  ix86_finalize_stack_frame_flags ();
   frame = m->frame;
 
   m->fs.sp_realigned = stack_realign_fp;
@@ -15288,10 +15441,10 @@ ix86_expand_epilogue (int style)
   if (restore_regs_via_mov || frame.nsseregs)
     {
       /* Ensure that the entire register save area is addressable via
-	 the stack pointer, if we will restore via sp.  */
+	 the stack pointer, if we will restore SSE regs via sp.  */
       if (TARGET_64BIT
 	  && m->fs.sp_offset > 0x7fffffff
-	  && !(fp_valid_at (frame.stack_realign_offset) || m->fs.drap_valid)
+	  && sp_valid_at (frame.stack_realign_offset)
 	  && (frame.nsseregs + frame.nregs) != 0)
 	{
 	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
@@ -15580,7 +15733,7 @@ ix86_expand_epilogue (int style)
 /* Reset from the function's potential modifications.  */
 
 static void
-ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED, HOST_WIDE_INT)
+ix86_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED)
 {
   if (pic_offset_table_rtx
       && !ix86_use_pseudo_pic_reg ())
@@ -15724,6 +15877,30 @@ static GTY(()) rtx split_stack_fn;
 
 static GTY(()) rtx split_stack_fn_large;
 
+/* Return location of the stack guard value in the TLS block.  */
+
+rtx
+ix86_split_stack_guard (void)
+{
+  int offset;
+  addr_space_t as = DEFAULT_TLS_SEG_REG;
+  rtx r;
+
+  gcc_assert (flag_split_stack);
+
+#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
+  offset = TARGET_THREAD_SPLIT_STACK_OFFSET;
+#else
+  gcc_unreachable ();
+#endif
+
+  r = GEN_INT (offset);
+  r = gen_const_mem (Pmode, r);
+  set_mem_addr_space (r, as);
+
+  return r;
+}
+
 /* Handle -fsplit-stack.  These are the first instructions in the
    function, even before the regular prologue.  */
 
@@ -15741,7 +15918,7 @@ ix86_expand_split_stack_prologue (void)
 
   gcc_assert (flag_split_stack && reload_completed);
 
-  ix86_finalize_stack_realign_flags ();
+  ix86_finalize_stack_frame_flags ();
   frame = cfun->machine->frame;
   allocate = frame.stack_pointer_offset - INCOMING_FRAME_SP_OFFSET;
 
@@ -15755,10 +15932,8 @@ ix86_expand_split_stack_prologue (void)
      us SPLIT_STACK_AVAILABLE bytes, so if we need less than that we
      can compare directly.  Otherwise we need to do an addition.  */
 
-  limit = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, const0_rtx),
-			  UNSPEC_STACK_CHECK);
-  limit = gen_rtx_CONST (Pmode, limit);
-  limit = gen_rtx_MEM (Pmode, limit);
+  limit = ix86_split_stack_guard ();
+
   if (allocate < SPLIT_STACK_AVAILABLE)
     current = stack_pointer_rtx;
   else
@@ -16829,10 +17004,6 @@ ix86_legitimate_address_p (machine_mode, rtx addr, bool strict)
 	  case UNSPEC_INDNTPOFF:
 	  case UNSPEC_NTPOFF:
 	  case UNSPEC_DTPOFF:
-	    break;
-
-	  case UNSPEC_STACK_CHECK:
-	    gcc_assert (flag_split_stack);
 	    break;
 
 	  default:
@@ -17924,17 +18095,10 @@ output_pic_addr_const (FILE *file, rtx x, int code)
 	putc (ASSEMBLER_DIALECT == ASM_INTEL ? ')' : ']', file);
       break;
 
-     case UNSPEC:
-       if (XINT (x, 1) == UNSPEC_STACK_CHECK)
-	 {
-	   bool f = i386_asm_output_addr_const_extra (file, x);
-	   gcc_assert (f);
-	   break;
-	 }
-
-       gcc_assert (XVECLEN (x, 0) == 1);
-       output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
-       switch (XINT (x, 1))
+    case UNSPEC:
+      gcc_assert (XVECLEN (x, 0) == 1);
+      output_pic_addr_const (file, XVECEXP (x, 0, 0), code);
+      switch (XINT (x, 1))
 	{
 	case UNSPEC_GOT:
 	  fputs ("@GOT", file);
@@ -18627,7 +18791,6 @@ print_reg (rtx x, int code, FILE *file)
    + -- print a branch hint as 'cs' or 'ds' prefix
    ; -- print a semicolon (after prefixes due to bug in older gas).
    ~ -- print "i" if TARGET_AVX2, "f" otherwise.
-   @ -- print a segment register of thread base pointer load
    ^ -- print addr32 prefix if TARGET_64BIT and Pmode != word_mode
    ! -- print MPX prefix for jxx/call/ret instructions if required.
  */
@@ -19171,19 +19334,6 @@ ix86_print_operand (FILE *file, rtx x, int code)
 #endif
 	  return;
 
-	case '@':
-	  if (ASSEMBLER_DIALECT == ASM_ATT)
-	    putc ('%', file);
-
-	  /* The kernel uses a different segment register for performance
-	     reasons; a system call would not have to trash the userspace
-	     segment register, which would be expensive.  */
-	  if (TARGET_64BIT && ix86_cmodel != CM_KERNEL)
-	    fputs ("fs", file);
-	  else
-	    fputs ("gs", file);
-	  return;
-
 	case '~':
 	  putc (TARGET_AVX2 ? 'i' : 'f', file);
 	  return;
@@ -19342,8 +19492,8 @@ ix86_print_operand (FILE *file, rtx x, int code)
 static bool
 ix86_print_operand_punct_valid_p (unsigned char code)
 {
-  return (code == '@' || code == '*' || code == '+' || code == '&'
-	  || code == ';' || code == '~' || code == '^' || code == '!');
+  return (code == '*' || code == '+' || code == '&' || code == ';'
+	  || code == '~' || code == '^' || code == '!');
 }
 
 /* Print a memory operand whose address is ADDR.  */
@@ -19442,7 +19592,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
       /* Displacement only requires special attention.  */
       if (CONST_INT_P (disp))
 	{
-	  if (ASSEMBLER_DIALECT == ASM_INTEL && parts.seg == ADDR_SPACE_GENERIC)
+	  if (ASSEMBLER_DIALECT == ASM_INTEL && ADDR_SPACE_GENERIC_P (as))
 	    fputs ("ds:", file);
 	  fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (disp));
 	}
@@ -19643,22 +19793,6 @@ i386_asm_output_addr_const_extra (FILE *file, rtx x)
       machopic_output_function_base_name (file);
       break;
 #endif
-
-    case UNSPEC_STACK_CHECK:
-      {
-	int offset;
-
-	gcc_assert (flag_split_stack);
-
-#ifdef TARGET_THREAD_SPLIT_STACK_OFFSET
-	offset = TARGET_THREAD_SPLIT_STACK_OFFSET;
-#else
-	gcc_unreachable ();
-#endif
-
-	fprintf (file, "%s:%d", TARGET_64BIT ? "%fs" : "%gs", offset);
-      }
-      break;
 
     default:
       return false;
@@ -33420,13 +33554,18 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      break;
 	    case PROCESSOR_NEHALEM:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_AES)
-		arg_str = "westmere";
+		{
+		  arg_str = "westmere";
+		  priority = P_AES;
+		}
 	      else
-		/* We translate "arch=corei7" and "arch=nehalem" to
-		   "corei7" so that it will be mapped to M_INTEL_COREI7
-		   as cpu type to cover all M_INTEL_COREI7_XXXs.  */
-		arg_str = "corei7";
-	      priority = P_PROC_SSE4_2;
+		{
+		  /* We translate "arch=corei7" and "arch=nehalem" to
+		     "corei7" so that it will be mapped to M_INTEL_COREI7
+		     as cpu type to cover all M_INTEL_COREI7_XXXs.  */
+		  arg_str = "corei7";
+		  priority = P_PROC_SSE4_2;
+		}
 	      break;
 	    case PROCESSOR_SANDYBRIDGE:
 	      if (new_target->x_ix86_isa_flags & OPTION_MASK_ISA_F16C)
@@ -33866,30 +34005,30 @@ ix86_get_function_versions_dispatcher (void *decl)
 }
 
 /* Make the resolver function decl to dispatch the versions of
-   a multi-versioned function,  DEFAULT_DECL.  Create an
+   a multi-versioned function,  DEFAULT_DECL.  IFUNC_ALIAS_DECL is
+   ifunc alias that will point to the created resolver.  Create an
    empty basic block in the resolver and store the pointer in
    EMPTY_BB.  Return the decl of the resolver function.  */
 
 static tree
 make_resolver_func (const tree default_decl,
-		    const tree dispatch_decl,
+		    const tree ifunc_alias_decl,
 		    basic_block *empty_bb)
 {
   char *resolver_name;
   tree decl, type, decl_name, t;
-  bool is_uniq = false;
 
   /* IFUNC's have to be globally visible.  So, if the default_decl is
      not, then the name of the IFUNC should be made unique.  */
   if (TREE_PUBLIC (default_decl) == 0)
-    is_uniq = true;
+    {
+      char *ifunc_name = make_unique_name (default_decl, "ifunc", true);
+      symtab->change_decl_assembler_name (ifunc_alias_decl,
+					  get_identifier (ifunc_name));
+      XDELETEVEC (ifunc_name);
+    }
 
-  /* Append the filename to the resolver function if the versions are
-     not externally visible.  This is because the resolver function has
-     to be externally visible for the loader to find it.  So, appending
-     the filename will prevent conflicts with a resolver function from
-     another module which is based on the same version name.  */
-  resolver_name = make_unique_name (default_decl, "resolver", is_uniq);
+  resolver_name = make_unique_name (default_decl, "resolver", false);
 
   /* The resolver function should return a (void *). */
   type = build_function_type_list (ptr_type_node, NULL_TREE);
@@ -33901,14 +34040,13 @@ make_resolver_func (const tree default_decl,
   DECL_NAME (decl) = decl_name;
   TREE_USED (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
-  DECL_IGNORED_P (decl) = 0;
-  /* IFUNC resolvers have to be externally visible.  */
-  TREE_PUBLIC (decl) = 1;
+  DECL_IGNORED_P (decl) = 1;
+  TREE_PUBLIC (decl) = 0;
   DECL_UNINLINABLE (decl) = 1;
 
   /* Resolver is not external, body is generated.  */
   DECL_EXTERNAL (decl) = 0;
-  DECL_EXTERNAL (dispatch_decl) = 0;
+  DECL_EXTERNAL (ifunc_alias_decl) = 0;
 
   DECL_CONTEXT (decl) = NULL_TREE;
   DECL_INITIAL (decl) = make_node (BLOCK);
@@ -33939,14 +34077,14 @@ make_resolver_func (const tree default_decl,
 
   pop_cfun ();
 
-  gcc_assert (dispatch_decl != NULL);
-  /* Mark dispatch_decl as "ifunc" with resolver as resolver_name.  */
-  DECL_ATTRIBUTES (dispatch_decl) 
-    = make_attribute ("ifunc", resolver_name, DECL_ATTRIBUTES (dispatch_decl));
+  gcc_assert (ifunc_alias_decl != NULL);
+  /* Mark ifunc_alias_decl as "ifunc" with resolver as resolver_name.  */
+  DECL_ATTRIBUTES (ifunc_alias_decl)
+    = make_attribute ("ifunc", resolver_name,
+		      DECL_ATTRIBUTES (ifunc_alias_decl));
 
   /* Create the alias for dispatch to resolver here.  */
-  /*cgraph_create_function_alias (dispatch_decl, decl);*/
-  cgraph_node::create_same_body_alias (dispatch_decl, decl);
+  cgraph_node::create_same_body_alias (ifunc_alias_decl, decl);
   XDELETEVEC (resolver_name);
   return decl;
 }
@@ -39827,7 +39965,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LFLOOR:
     CASE_CFN_LLFLOOR:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -39854,7 +39992,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LCEIL:
     CASE_CFN_LLCEIL:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -39904,7 +40042,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
     CASE_CFN_LROUND:
     CASE_CFN_LLROUND:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == SImode && in_mode == DFmode)
@@ -39929,7 +40067,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_FLOOR:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -39954,7 +40092,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_CEIL:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -39979,7 +40117,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_TRUNC:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -40004,7 +40142,7 @@ ix86_builtin_vectorized_function (unsigned int fn, tree type_out,
 
     CASE_CFN_RINT:
       /* The round insn does not trap on denormals.  */
-      if (flag_trapping_math || !TARGET_ROUND)
+      if (flag_trapping_math || !TARGET_SSE4_1)
 	break;
 
       if (out_mode == DFmode && in_mode == DFmode)
@@ -44318,6 +44456,34 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
   int i;
   rtx x;
 
+  /* Handle first initialization from vector elts.  */
+  if (n_elts != XVECLEN (vals, 0))
+    {
+      rtx subtarget = target;
+      x = XVECEXP (vals, 0, 0);
+      gcc_assert (GET_MODE_INNER (GET_MODE (x)) == inner_mode);
+      if (GET_MODE_NUNITS (GET_MODE (x)) * 2 == n_elts)
+	{
+	  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
+	  if (inner_mode == QImode || inner_mode == HImode)
+	    {
+	      mode = mode_for_vector (SImode,
+				      n_elts * GET_MODE_SIZE (inner_mode) / 4);
+	      inner_mode
+		= mode_for_vector (SImode,
+				   n_elts * GET_MODE_SIZE (inner_mode) / 8);
+	      ops[0] = gen_lowpart (inner_mode, ops[0]);
+	      ops[1] = gen_lowpart (inner_mode, ops[1]);
+	      subtarget = gen_reg_rtx (mode);
+	    }
+	  ix86_expand_vector_init_concat (mode, subtarget, ops, 2);
+	  if (subtarget != target)
+	    emit_move_insn (target, gen_lowpart (GET_MODE (target), subtarget));
+	  return;
+	}
+      gcc_unreachable ();
+    }
+
   for (i = 0; i < n_elts; ++i)
     {
       x = XVECEXP (vals, 0, i);
@@ -45779,17 +45945,60 @@ ix86_mangle_type (const_tree type)
     }
 }
 
-#ifdef TARGET_THREAD_SSP_OFFSET
-/* If using TLS guards, don't waste time creating and expanding
-   __stack_chk_guard decl and MEM as we are going to ignore it.  */
+static GTY(()) tree ix86_tls_stack_chk_guard_decl;
+
 static tree
 ix86_stack_protect_guard (void)
 {
   if (TARGET_SSP_TLS_GUARD)
-    return NULL_TREE;
+    {
+      tree type_node = lang_hooks.types.type_for_mode (ptr_mode, 1);
+      int qual = ENCODE_QUAL_ADDR_SPACE (ix86_stack_protector_guard_reg);
+      tree type = build_qualified_type (type_node, qual);
+      tree t;
+
+      if (global_options_set.x_ix86_stack_protector_guard_symbol_str)
+	{
+	  t = ix86_tls_stack_chk_guard_decl;
+
+	  if (t == NULL)
+	    {
+	      rtx x;
+
+	      t = build_decl
+		(UNKNOWN_LOCATION, VAR_DECL,
+		 get_identifier (ix86_stack_protector_guard_symbol_str),
+		 type);
+	      TREE_STATIC (t) = 1;
+	      TREE_PUBLIC (t) = 1;
+	      DECL_EXTERNAL (t) = 1;
+	      TREE_USED (t) = 1;
+	      TREE_THIS_VOLATILE (t) = 1;
+	      DECL_ARTIFICIAL (t) = 1;
+	      DECL_IGNORED_P (t) = 1;
+
+	      /* Do not share RTL as the declaration is visible outside of
+		 current function.  */
+	      x = DECL_RTL (t);
+	      RTX_FLAG (x, used) = 1;
+
+	      ix86_tls_stack_chk_guard_decl = t;
+	    }
+	}
+      else
+	{
+	  tree asptrtype = build_pointer_type (type);
+
+	  t = build_int_cst (asptrtype, ix86_stack_protector_guard_offset);
+	  t = build2 (MEM_REF, asptrtype, t,
+		      build_int_cst (asptrtype, 0));
+	}
+
+      return t;
+    }
+
   return default_stack_protect_guard ();
 }
-#endif
 
 /* For 32-bit code we can save PIC register setup by using
    __stack_chk_fail_local hidden function instead of calling
@@ -52128,7 +52337,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       if (SSE_FLOAT_MODE_P (mode1)
 	  && TARGET_SSE_MATH
 	  && !flag_trapping_math
-	  && !TARGET_ROUND)
+	  && !TARGET_SSE4_1)
 	return opt_type == OPTIMIZE_FOR_SPEED;
       return true;
 
@@ -52138,7 +52347,7 @@ ix86_optab_supported_p (int op, machine_mode mode1, machine_mode,
       if (SSE_FLOAT_MODE_P (mode1)
 	  && TARGET_SSE_MATH
 	  && !flag_trapping_math
-	  && TARGET_ROUND)
+	  && TARGET_SSE4_1)
 	return true;
       return opt_type == OPTIMIZE_FOR_SPEED;
 
@@ -52797,10 +53006,8 @@ ix86_run_selftests (void)
 #undef TARGET_MANGLE_TYPE
 #define TARGET_MANGLE_TYPE ix86_mangle_type
 
-#ifdef TARGET_THREAD_SSP_OFFSET
 #undef TARGET_STACK_PROTECT_GUARD
 #define TARGET_STACK_PROTECT_GUARD ix86_stack_protect_guard
-#endif
 
 #if !TARGET_MACHO
 #undef TARGET_STACK_PROTECT_FAIL

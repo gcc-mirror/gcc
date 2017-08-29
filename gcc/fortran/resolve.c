@@ -14409,17 +14409,18 @@ resolve_symbol (gfc_symbol *sym)
 	}
     }
 
-  /* If the symbol is marked as bind(c), verify it's type and kind.  Do not
-     do this for something that was implicitly typed because that is handled
-     in gfc_set_default_type.  Handle dummy arguments and procedure
-     definitions separately.  Also, anything that is use associated is not
-     handled here but instead is handled in the module it is declared in.
-     Finally, derived type definitions are allowed to be BIND(C) since that
-     only implies that they're interoperable, and they are checked fully for
-     interoperability when a variable is declared of that type.  */
-  if (sym->attr.is_bind_c && sym->attr.implicit_type == 0 &&
-      sym->attr.use_assoc == 0 && sym->attr.dummy == 0 &&
-      sym->attr.flavor != FL_PROCEDURE && sym->attr.flavor != FL_DERIVED)
+  /* If the symbol is marked as bind(c), that it is declared at module level
+     scope and verify its type and kind.  Do not do the latter for symbols
+     that are implicitly typed because that is handled in
+     gfc_set_default_type.  Handle dummy arguments and procedure definitions
+     separately.  Also, anything that is use associated is not handled here
+     but instead is handled in the module it is declared in.  Finally, derived
+     type definitions are allowed to be BIND(C) since that only implies that
+     they're interoperable, and they are checked fully for interoperability
+     when a variable is declared of that type.  */
+  if (sym->attr.is_bind_c && sym->attr.use_assoc == 0
+      && sym->attr.dummy == 0 && sym->attr.flavor != FL_PROCEDURE
+      && sym->attr.flavor != FL_DERIVED)
     {
       bool t = true;
 
@@ -14433,11 +14434,11 @@ resolve_symbol (gfc_symbol *sym)
 		     "module level scope", sym->name, &(sym->declared_at));
 	  t = false;
 	}
-      else if (sym->common_head != NULL)
+      else if (sym->common_head != NULL && sym->attr.implicit_type == 0)
         {
           t = verify_com_block_vars_c_interop (sym->common_head);
         }
-      else
+      else if (sym->attr.implicit_type == 0)
 	{
 	  /* If type() declaration, we need to verify that the components
 	     of the given type are all C interoperable, etc.  */

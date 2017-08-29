@@ -37,6 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "params.h"
 #include "gcc-rich-location.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 static tree cp_build_addr_expr_strict (tree, tsubst_flags_t);
@@ -3697,7 +3699,7 @@ cp_build_function_call_vec (tree function, vec<tree, va_gc> **params,
   /* Check for errors in format strings and inappropriately
      null parameters.  */
   bool warned_p = check_function_arguments (input_location, fndecl, fntype,
-					    nargs, argarray);
+					    nargs, argarray, NULL);
 
   ret = build_cxx_call (function, nargs, argarray, complain);
 
@@ -4048,7 +4050,7 @@ enum_cast_to_int (tree op)
 /* For the c-common bits.  */
 tree
 build_binary_op (location_t location, enum tree_code code, tree op0, tree op1,
-		 int /*convert_p*/)
+		 bool /*convert_p*/)
 {
   return cp_build_binary_op (location, code, op0, op1, tf_warning_or_error);
 }
@@ -5487,9 +5489,9 @@ build_x_unary_op (location_t loc, enum tree_code code, cp_expr xarg,
 	    {
 	      if (complain & tf_error)
 		error (DECL_CONSTRUCTOR_P (fn)
-		       ? G_("taking address of constructor %qE")
-		       : G_("taking address of destructor %qE"),
-		       xarg.get_value ());
+		       ? G_("taking address of constructor %qD")
+		       : G_("taking address of destructor %qD"),
+		       fn);
 	      return error_mark_node;
 	    }
 	}
@@ -5590,7 +5592,7 @@ cp_truthvalue_conversion (tree expr)
   if (TYPE_PTR_OR_PTRMEM_P (type)
       /* Avoid ICE on invalid use of non-static member function.  */
       || TREE_CODE (expr) == FUNCTION_DECL)
-    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, 1);
+    return build_binary_op (input_location, NE_EXPR, expr, nullptr_node, true);
   else
     return c_common_truthvalue_conversion (input_location, expr);
 }
@@ -9154,6 +9156,7 @@ check_return_expr (tree retval, bool *no_warning)
 
          Note that these conditions are similar to, but not as strict as,
 	 the conditions for the named return value optimization.  */
+      bool converted = false;
       if ((cxx_dialect != cxx98)
           && ((VAR_P (retval) && !DECL_HAS_VALUE_EXPR_P (retval))
 	      || TREE_CODE (retval) == PARM_DECL)
@@ -9161,14 +9164,25 @@ check_return_expr (tree retval, bool *no_warning)
 	  && !TREE_STATIC (retval)
 	  /* This is only interesting for class type.  */
 	  && CLASS_TYPE_P (functype))
-	flags = flags | LOOKUP_PREFER_RVALUE;
+	{
+	  tree moved = move (retval);
+	  moved = convert_for_initialization
+	    (NULL_TREE, functype, moved, flags|LOOKUP_PREFER_RVALUE,
+	     ICR_RETURN, NULL_TREE, 0, tf_none);
+	  if (moved != error_mark_node)
+	    {
+	      retval = moved;
+	      converted = true;
+	    }
+	}
 
       /* First convert the value to the function's return type, then
 	 to the type of return value's location to handle the
 	 case that functype is smaller than the valtype.  */
-      retval = convert_for_initialization
-	(NULL_TREE, functype, retval, flags, ICR_RETURN, NULL_TREE, 0,
-         tf_warning_or_error);
+      if (!converted)
+	retval = convert_for_initialization
+	  (NULL_TREE, functype, retval, flags, ICR_RETURN, NULL_TREE, 0,
+	   tf_warning_or_error);
       retval = convert (valtype, retval);
 
       /* If the conversion failed, treat this just like `return;'.  */

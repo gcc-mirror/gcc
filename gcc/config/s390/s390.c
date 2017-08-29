@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -5795,7 +5796,7 @@ s390_expand_vec_strlen (rtx target, rtx string, rtx alignment)
   add_int_reg_note (s390_emit_ccraw_jump (8, NE, loop_start_label),
 		    REG_BR_PROB,
 		    profile_probability::very_likely ().to_reg_br_prob_note ());
-  emit_insn (gen_vec_extractv16qi (len, result_reg, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (len, result_reg, GEN_INT (7)));
 
   /* If the string pointer wasn't aligned we have loaded less then 16
      bytes and the remaining bytes got filled with zeros (by vll).
@@ -5853,7 +5854,7 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   emit_insn (gen_vlbb (vsrc, src, GEN_INT (6)));
   emit_insn (gen_lcbb (loadlen, src_addr, GEN_INT (6)));
   emit_insn (gen_vfenezv16qi (vpos, vsrc, vsrc));
-  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (gpos_qi, vpos, GEN_INT (7)));
   emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
   /* gpos is the byte index if a zero was found and 16 otherwise.
      So if it is lower than the loaded bytes we have a hit.  */
@@ -5931,7 +5932,7 @@ s390_expand_vec_movstr (rtx result, rtx dst, rtx src)
   force_expand_binop (Pmode, add_optab, dst_addr_reg, offset, dst_addr_reg,
 		      1, OPTAB_DIRECT);
 
-  emit_insn (gen_vec_extractv16qi (gpos_qi, vpos, GEN_INT (7)));
+  emit_insn (gen_vec_extractv16qiqi (gpos_qi, vpos, GEN_INT (7)));
   emit_move_insn (gpos, gen_rtx_SUBREG (SImode, gpos_qi, 0));
 
   emit_insn (gen_vstlv16qi (vsrc, gpos, gen_rtx_MEM (BLKmode, dst_addr_reg)));

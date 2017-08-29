@@ -1,3 +1,21 @@
+2017-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81687
+	* testsuite/libgomp.c/pr81687-1.c: New test.
+	* testsuite/libgomp.c/pr81687-2.c: New test.
+
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* testsuite/libgomp.c/pr69389.c: New test.
+	* testsuite/libgomp.c++/pr69389.C: New test.
+
+2017-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/78266
+	* testsuite/libgomp.oacc-c-c++-common/vprop-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vprop.c: Remove xfail.
+
 2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/45784

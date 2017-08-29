@@ -664,7 +664,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
       else
 	{
 	  if (DECL_CONV_FN_P (function))
-	    fns = lookup_all_conversions (ctype);
+	    fns = lookup_fnfields_slot (ctype, conv_op_identifier);
 
 	  error_at (DECL_SOURCE_LOCATION (function),
 		    "no declaration matches %q#D", function);
@@ -1004,6 +1004,13 @@ grokbitfield (const cp_declarator *declarator,
   if (TREE_CODE (value) == FUNCTION_DECL)
     {
       error ("cannot declare bit-field %qD with function type",
+	     DECL_NAME (value));
+      return NULL_TREE;
+    }
+
+  if (width && TYPE_WARN_IF_NOT_ALIGN (TREE_TYPE (value)))
+    {
+      error ("cannot declare bit-field %qD with %<warn_if_not_aligned%> type",
 	     DECL_NAME (value));
       return NULL_TREE;
     }
@@ -3156,11 +3163,9 @@ get_tls_init_fn (tree var)
   if (!flag_extern_tls_init && DECL_EXTERNAL (var))
     return NULL_TREE;
 
-#ifdef ASM_OUTPUT_DEF
   /* If the variable is internal, or if we can't generate aliases,
      call the local init function directly.  */
-  if (!TREE_PUBLIC (var))
-#endif
+  if (!TREE_PUBLIC (var) || !TARGET_SUPPORTS_ALIASES)
     return get_local_tls_init_fn ();
 
   tree sname = mangle_tls_init_fn (var);
@@ -4241,9 +4246,8 @@ handle_tls_init (void)
       tree init = TREE_PURPOSE (vars);
       one_static_initialization_or_destruction (var, init, true);
 
-#ifdef ASM_OUTPUT_DEF
       /* Output init aliases even with -fno-extern-tls-init.  */
-      if (TREE_PUBLIC (var))
+      if (TARGET_SUPPORTS_ALIASES && TREE_PUBLIC (var))
 	{
           tree single_init_fn = get_tls_init_fn (var);
 	  if (single_init_fn == NULL_TREE)
@@ -4253,7 +4257,6 @@ handle_tls_init (void)
 		(single_init_fn, fn);
 	  gcc_assert (alias != NULL);
 	}
-#endif
     }
 
   finish_then_clause (if_stmt);
@@ -4298,17 +4301,18 @@ generate_mangling_alias (tree decl, tree id2)
    implementation.  */
 
 void
-note_mangling_alias (tree decl ATTRIBUTE_UNUSED, tree id2 ATTRIBUTE_UNUSED)
+note_mangling_alias (tree decl, tree id2)
 {
-#ifdef ASM_OUTPUT_DEF
-  if (!defer_mangling_aliases)
-    generate_mangling_alias (decl, id2);
-  else
+  if (TARGET_SUPPORTS_ALIASES)
     {
-      vec_safe_push (mangling_aliases, decl);
-      vec_safe_push (mangling_aliases, id2);
+      if (!defer_mangling_aliases)
+	generate_mangling_alias (decl, id2);
+      else
+	{
+	  vec_safe_push (mangling_aliases, decl);
+	  vec_safe_push (mangling_aliases, id2);
+	}
     }
-#endif
 }
 
 /* Emit all mangling aliases that were deferred up to this point.  */
@@ -4988,8 +4992,9 @@ mark_used (tree decl, tsubst_flags_t complain)
   if (TREE_CODE (decl) == CONST_DECL)
     used_types_insert (DECL_CONTEXT (decl));
 
-  if (TREE_CODE (decl) == FUNCTION_DECL)
-    maybe_instantiate_noexcept (decl);
+  if (TREE_CODE (decl) == FUNCTION_DECL
+      && !maybe_instantiate_noexcept (decl, complain))
+    return false;
 
   if (TREE_CODE (decl) == FUNCTION_DECL
       && DECL_DELETED_FN (decl))

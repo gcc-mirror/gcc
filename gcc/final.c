@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
@@ -242,8 +244,7 @@ init_final (const char *filename ATTRIBUTE_UNUSED)
    If not overridden for epilogue code, then the function body itself
    contains return instructions wherever needed.  */
 void
-default_function_pro_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+default_function_pro_epilogue (FILE *)
 {
 }
 
@@ -1843,7 +1844,7 @@ final_start_function (rtx_insn *first, FILE *file,
   }
 
   /* First output the function prologue: code to set up the stack frame.  */
-  targetm.asm_out.function_prologue (file, get_frame_size ());
+  targetm.asm_out.function_prologue (file);
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
@@ -1916,7 +1917,7 @@ final_end_function (void)
 
   /* Finally, output the function epilogue:
      code to restore the stack frame and return to the caller.  */
-  targetm.asm_out.function_epilogue (asm_out_file, get_frame_size ());
+  targetm.asm_out.function_epilogue (asm_out_file);
 
   /* And debug output.  */
   if (!DECL_IGNORED_P (current_function_decl))
@@ -3203,8 +3204,7 @@ alter_subreg (rtx *xp, bool final_p)
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
-      if (offset == 0
-	  && GET_MODE_SIZE (GET_MODE (y)) < GET_MODE_SIZE (GET_MODE (x)))
+      if (paradoxical_subreg_p (x))
         {
           int difference = GET_MODE_SIZE (GET_MODE (y))
 			   - GET_MODE_SIZE (GET_MODE (x));

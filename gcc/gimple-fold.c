@@ -56,6 +56,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-chkp.h"
 #include "tree-cfg.h"
 #include "fold-const-call.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Return true when DECL can be referenced from current unit.
@@ -626,6 +628,36 @@ var_decl_component_p (tree var)
   return SSA_VAR_P (inner);
 }
 
+/* If the SIZE argument representing the size of an object is in a range
+   of values of which exactly one is valid (and that is zero), return
+   true, otherwise false.  */
+
+static bool
+size_must_be_zero_p (tree size)
+{
+  if (integer_zerop (size))
+    return true;
+
+  if (TREE_CODE (size) != SSA_NAME)
+    return false;
+
+  wide_int min, max;
+  enum value_range_type rtype = get_range_info (size, &min, &max);
+  if (rtype != VR_ANTI_RANGE)
+    return false;
+
+  tree type = TREE_TYPE (size);
+  int prec = TYPE_PRECISION (type);
+
+  wide_int wone = wi::one (prec);
+
+  /* Compute the value of SSIZE_MAX, the largest positive value that
+     can be stored in ssize_t, the signed counterpart of size_t.  */
+  wide_int ssize_max = wi::lshift (wi::one (prec), prec - 1) - 1;
+
+  return wi::eq_p (min, wone) && wi::geu_p (max, ssize_max);
+}
+
 /* Fold function call to builtin mem{{,p}cpy,move}.  Return
    false if no simplification can be made.
    If ENDP is 0, return DEST (like memcpy).
@@ -644,8 +676,9 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
   tree destvar, srcvar;
   location_t loc = gimple_location (stmt);
 
-  /* If the LEN parameter is zero, return DEST.  */
-  if (integer_zerop (len))
+  /* If the LEN parameter is a constant zero or in range where
+     the only valid value is zero, return DEST.  */
+  if (size_must_be_zero_p (len))
     {
       gimple *repl;
       if (gimple_call_lhs (stmt))

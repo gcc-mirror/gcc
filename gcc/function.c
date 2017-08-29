@@ -77,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -4320,21 +4322,16 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 static void
 pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
+  unsigned int align = PARM_BOUNDARY / BITS_PER_UNIT;
   if (passed_mode != BLKmode)
-    {
-      if (GET_MODE_BITSIZE (passed_mode) % PARM_BOUNDARY)
-	offset_ptr->constant
-	  += (((GET_MODE_BITSIZE (passed_mode) + PARM_BOUNDARY - 1)
-	       / PARM_BOUNDARY * PARM_BOUNDARY / BITS_PER_UNIT)
-	      - GET_MODE_SIZE (passed_mode));
-    }
+    offset_ptr->constant += -GET_MODE_SIZE (passed_mode) & (align - 1);
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)
+	  || (TREE_INT_CST_LOW (sizetree) & (align - 1)) != 0)
 	{
 	  /* Round the size up to multiple of PARM_BOUNDARY bits.  */
-	  tree s2 = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
+	  tree s2 = round_up (sizetree, align);
 	  /* Add it in.  */
 	  ADD_PARM_SIZE (*offset_ptr, s2);
 	  SUB_PARM_SIZE (*offset_ptr, sizetree);
@@ -6048,20 +6045,42 @@ thread_prologue_and_epilogue_insns (void)
 
   if (split_prologue_seq || prologue_seq)
     {
+      rtx_insn *split_prologue_insn = split_prologue_seq;
       if (split_prologue_seq)
-	insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	{
+	  while (split_prologue_insn && !NONDEBUG_INSN_P (split_prologue_insn))
+	    split_prologue_insn = NEXT_INSN (split_prologue_insn);
+	  insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	}
 
+      rtx_insn *prologue_insn = prologue_seq;
       if (prologue_seq)
-	insert_insn_on_edge (prologue_seq, entry_edge);
+	{
+	  while (prologue_insn && !NONDEBUG_INSN_P (prologue_insn))
+	    prologue_insn = NEXT_INSN (prologue_insn);
+	  insert_insn_on_edge (prologue_seq, entry_edge);
+	}
 
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
-      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
-      bitmap_clear (blocks);
-      bitmap_set_bit (blocks, entry_edge->dest->index);
-      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
-      find_many_sub_basic_blocks (blocks);
+      if (split_prologue_insn
+	  && BLOCK_FOR_INSN (split_prologue_insn) == NULL)
+	split_prologue_insn = NULL;
+      if (prologue_insn
+	  && BLOCK_FOR_INSN (prologue_insn) == NULL)
+	prologue_insn = NULL;
+      if (split_prologue_insn || prologue_insn)
+	{
+	  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
+	  bitmap_clear (blocks);
+	  if (split_prologue_insn)
+	    bitmap_set_bit (blocks,
+			    BLOCK_FOR_INSN (split_prologue_insn)->index);
+	  if (prologue_insn)
+	    bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
+	  find_many_sub_basic_blocks (blocks);
+	}
     }
 
   default_rtl_profile ();
@@ -6240,7 +6259,7 @@ fndecl_name (tree fndecl)
 {
   if (fndecl == NULL)
     return "(nofn)";
-  return lang_hooks.decl_printable_name (fndecl, 2);
+  return lang_hooks.decl_printable_name (fndecl, 1);
 }
 
 /* Returns the name of function FN.  */

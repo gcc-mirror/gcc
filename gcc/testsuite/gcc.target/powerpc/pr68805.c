@@ -1,6 +1,6 @@
 /* { dg-do compile { target powerpc64le-*-* } } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
-/* { dg-options "-O2 -mvsx-timode -mcpu=power8" } */
+/* { dg-options "-O2 -mcpu=power8" } */
 
 typedef struct bar {
   void *a;

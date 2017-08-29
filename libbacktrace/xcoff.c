@@ -774,7 +774,7 @@ xcoff_process_linenos (struct backtrace_state *state, uintptr_t base_address,
   const b_xcoff_lineno *lineno;
   const unsigned char *lineptr;
   const char *function;
-  struct xcoff_incl *incl;
+  struct xcoff_incl *incl = NULL;
   uintptr_t lnnoptr;
   uintptr_t pc;
   uint32_t lnno;

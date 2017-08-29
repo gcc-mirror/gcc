@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Test if we should instrument vptr access.  */

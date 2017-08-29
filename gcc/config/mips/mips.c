@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -11721,7 +11722,7 @@ mips_output_cplocal (void)
 /* Implement TARGET_OUTPUT_FUNCTION_PROLOGUE.  */
 
 static void
-mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+mips_output_function_prologue (FILE *file)
 {
   const char *fnname;
 
@@ -11816,8 +11817,7 @@ mips_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
 /* Implement TARGET_OUTPUT_FUNCTION_EPILOGUE.  */
 
 static void
-mips_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+mips_output_function_epilogue (FILE *)
 {
   const char *fnname;
 

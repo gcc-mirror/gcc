@@ -119,7 +119,10 @@ should_duplicate_loop_header_p (basic_block header, struct loop *loop,
 	continue;
 
       if (gimple_code (last) == GIMPLE_CALL
-	  && !gimple_inexpensive_call_p (as_a <gcall *> (last)))
+	  && (!gimple_inexpensive_call_p (as_a <gcall *> (last))
+	      /* IFN_LOOP_DIST_ALIAS means that inner loop is distributed
+		 at current loop's header.  Don't copy in this case.  */
+	      || gimple_call_internal_p (last, IFN_LOOP_DIST_ALIAS)))
 	{
 	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    fprintf (dump_file,

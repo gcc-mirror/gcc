@@ -2591,7 +2591,7 @@ gfc_check_init_expr (gfc_expr *e)
       else
 	gfc_error ("Parameter %qs at %L has not been declared or is "
 		   "a variable, which does not reduce to a constant "
-		   "expression", e->symtree->n.sym->name, &e->where);
+		   "expression", e->symtree->name, &e->where);
 
       break;
 
@@ -3806,7 +3806,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue)
   if (warn_target_lifetime
       && rvalue->expr_type == EXPR_VARIABLE
       && !rvalue->symtree->n.sym->attr.save
-      && !attr.pointer && !rvalue->symtree->n.sym->attr.host_assoc
+      && !rvalue->symtree->n.sym->attr.pointer && !attr.pointer
+      && !rvalue->symtree->n.sym->attr.host_assoc
       && !rvalue->symtree->n.sym->attr.in_common
       && !rvalue->symtree->n.sym->attr.use_assoc
       && !rvalue->symtree->n.sym->attr.dummy)

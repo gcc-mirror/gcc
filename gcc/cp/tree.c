@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "convert.h"
 #include "gimplify.h"
+#include "stringpool.h"
 #include "attribs.h"
 #include "flags.h"
 
@@ -2817,7 +2818,6 @@ extern int depth_reached;
 void
 cxx_print_statistics (void)
 {
-  print_search_statistics ();
   print_class_statistics ();
   print_template_statistics ();
   if (GATHER_STATISTICS)

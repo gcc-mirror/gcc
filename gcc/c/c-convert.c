@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "convert.h"
 #include "langhooks.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Change of width--truncation and extension of integers or reals--

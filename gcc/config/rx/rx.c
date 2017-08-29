@@ -29,6 +29,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -1886,8 +1888,7 @@ add_vector_labels (FILE *file, const char *aname)
 }
 
 static void
-rx_output_function_prologue (FILE * file,
-			     HOST_WIDE_INT frame_size ATTRIBUTE_UNUSED)
+rx_output_function_prologue (FILE * file)
 {
   add_vector_labels (file, "interrupt");
   add_vector_labels (file, "vector");

@@ -1,6 +1,6 @@
 /* PR target/61599 */
 /* { dg-do compile { target lp64 } } */
-/* { dg-options "-mcmodel=medium -fdata-sections" { target lp64 } } */
+/* { dg-options "-mcmodel=medium -fdata-sections" } */
 
 /* With -mcmodel=medium, all the arrays will be treated as large data.  */
 

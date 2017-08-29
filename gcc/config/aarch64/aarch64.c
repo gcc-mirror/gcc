@@ -33,6 +33,7 @@
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -3069,7 +3070,7 @@ aarch64_pushwb_single_reg (machine_mode mode, unsigned regno,
   reg = gen_rtx_REG (mode, regno);
   mem = gen_rtx_PRE_MODIFY (Pmode, base_rtx,
 			    plus_constant (Pmode, base_rtx, -adjustment));
-  mem = gen_rtx_MEM (mode, mem);
+  mem = gen_frame_mem (mode, mem);
 
   insn = emit_move_insn (mem, reg);
   RTX_FRAME_RELATED_P (insn) = 1;
@@ -3157,7 +3158,7 @@ aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
     {
       rtx mem = plus_constant (Pmode, stack_pointer_rtx, adjustment);
       mem = gen_rtx_POST_MODIFY (Pmode, stack_pointer_rtx, mem);
-      emit_move_insn (reg1, gen_rtx_MEM (mode, mem));
+      emit_move_insn (reg1, gen_frame_mem (mode, mem));
     }
   else
     {
@@ -3233,8 +3234,6 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
 			   unsigned start, unsigned limit, bool skip_wb)
 {
   rtx_insn *insn;
-  rtx (*gen_mem_ref) (machine_mode, rtx) = (frame_pointer_needed
-						 ? gen_frame_mem : gen_rtx_MEM);
   unsigned regno;
   unsigned regno2;
 
@@ -3255,8 +3254,8 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
 
       reg = gen_rtx_REG (mode, regno);
       offset = start_offset + cfun->machine->frame.reg_offset[regno];
-      mem = gen_mem_ref (mode, plus_constant (Pmode, stack_pointer_rtx,
-					      offset));
+      mem = gen_frame_mem (mode, plus_constant (Pmode, stack_pointer_rtx,
+						offset));
 
       regno2 = aarch64_next_callee_save (regno + 1, limit);
 
@@ -3270,8 +3269,8 @@ aarch64_save_callee_saves (machine_mode mode, HOST_WIDE_INT start_offset,
 	  rtx mem2;
 
 	  offset = start_offset + cfun->machine->frame.reg_offset[regno2];
-	  mem2 = gen_mem_ref (mode, plus_constant (Pmode, stack_pointer_rtx,
-						   offset));
+	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, stack_pointer_rtx,
+						     offset));
 	  insn = emit_insn (aarch64_gen_store_pair (mode, mem, reg, mem2,
 						    reg2));
 
@@ -3300,8 +3299,6 @@ aarch64_restore_callee_saves (machine_mode mode,
 			      unsigned limit, bool skip_wb, rtx *cfi_ops)
 {
   rtx base_rtx = stack_pointer_rtx;
-  rtx (*gen_mem_ref) (machine_mode, rtx) = (frame_pointer_needed
-						 ? gen_frame_mem : gen_rtx_MEM);
   unsigned regno;
   unsigned regno2;
   HOST_WIDE_INT offset;
@@ -3322,7 +3319,7 @@ aarch64_restore_callee_saves (machine_mode mode,
 
       reg = gen_rtx_REG (mode, regno);
       offset = start_offset + cfun->machine->frame.reg_offset[regno];
-      mem = gen_mem_ref (mode, plus_constant (Pmode, base_rtx, offset));
+      mem = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
 
       regno2 = aarch64_next_callee_save (regno + 1, limit);
 
@@ -3335,7 +3332,7 @@ aarch64_restore_callee_saves (machine_mode mode,
 	  rtx mem2;
 
 	  offset = start_offset + cfun->machine->frame.reg_offset[regno2];
-	  mem2 = gen_mem_ref (mode, plus_constant (Pmode, base_rtx, offset));
+	  mem2 = gen_frame_mem (mode, plus_constant (Pmode, base_rtx, offset));
 	  emit_insn (aarch64_gen_load_pair (mode, reg, mem, reg2, mem2));
 
 	  *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg2, *cfi_ops);
@@ -4733,9 +4730,14 @@ aarch64_reinterpret_float_as_int (rtx value, unsigned HOST_WIDE_INT *intval)
 		  CONST_DOUBLE_REAL_VALUE (value),
 		  REAL_MODE_FORMAT (mode));
 
-  ival = zext_hwi (res[0], 32);
-  if (GET_MODE_BITSIZE (mode) == GET_MODE_BITSIZE (DFmode))
-    ival |= (zext_hwi (res[1], 32) << 32);
+  if (mode == DFmode)
+    {
+      int order = BYTES_BIG_ENDIAN ? 1 : 0;
+      ival = zext_hwi (res[order], 32);
+      ival |= (zext_hwi (res[1 - order], 32) << 32);
+    }
+  else
+      ival = zext_hwi (res[0], 32);
 
   *intval = ival;
   return true;
@@ -4787,10 +4789,6 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   if (!TARGET_SIMD)
      return false;
 
-  /* We make a general exception for 0.  */
-  if (aarch64_float_const_zero_rtx_p (x))
-      return true;
-
   machine_mode vmode, imode;
   unsigned HOST_WIDE_INT ival;
 
@@ -4799,6 +4797,10 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
     {
       if (!aarch64_reinterpret_float_as_int (x, &ival))
 	return false;
+
+      /* We make a general exception for 0.  */
+      if (aarch64_float_const_zero_rtx_p (x))
+	return true;
 
       imode = int_mode_for_mode (mode);
     }

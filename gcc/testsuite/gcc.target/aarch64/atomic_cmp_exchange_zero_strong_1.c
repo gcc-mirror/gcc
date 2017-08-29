@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -march=armv8-a+nolse" } */
+/* { dg-skip-if "" { *-*-* } { "-mcpu=*" } { "" } } */
 
 int
 foo (int *a)

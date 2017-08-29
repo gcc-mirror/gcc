@@ -1,3 +1,14 @@
+2017-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libgfortran/78387
+	* io/list_read.c (nml_read_obj): Remove use of stash.
+	* io/transfer.c (st_read_done, st_write_done): Likewise.
+	* io/unit.c (stash_internal_unit): Delete function.
+	(get_unit): Remove use of stash.
+	(init_units): Likewise.
+	(close_units): Likewise.
+	* io/write.c (nml_write_obj): Likewise:
+
 2017-07-31  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/81581

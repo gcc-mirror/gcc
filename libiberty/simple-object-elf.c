@@ -122,8 +122,11 @@ typedef struct {
 
 /* Special section index values.  */
 
+#define SHN_UNDEF	0		/* Undefined section */
 #define SHN_LORESERVE	0xFF00		/* Begin range of reserved indices */
+#define SHN_COMMON	0xFFF2	/* Associated symbol is in common */
 #define SHN_XINDEX	0xFFFF		/* Section index is held elsewhere */
+
 
 /* 32-bit ELF program header.  */
 
@@ -183,8 +186,57 @@ typedef struct {
 
 /* Values for sh_type field.  */
 
+#define SHT_NULL	0		/* Section header table entry unused */
 #define SHT_PROGBITS	1		/* Program data */
+#define SHT_SYMTAB	2		/* Link editing symbol table */
 #define SHT_STRTAB	3		/* A string table */
+#define SHT_RELA	4		/* Relocation entries with addends */
+#define SHT_REL		9		/* Relocation entries, no addends */
+#define SHT_GROUP	17		/* Section contains a section group */
+
+/* Values for sh_flags field.  */
+
+#define SHF_EXCLUDE	0x80000000	/* Link editor is to exclude this
+					   section from executable and
+					   shared library that it builds
+					   when those objects are not to be
+					   further relocated.  */
+/* Symbol table entry.  */
+
+typedef struct
+{
+  unsigned char st_name[4];                /* Symbol name (string tbl index) */
+  unsigned char st_value[4];               /* Symbol value */
+  unsigned char st_size[4];                /* Symbol size */
+  unsigned char st_info;                /* Symbol type and binding */
+  unsigned char st_other;               /* Symbol visibility */
+  unsigned char st_shndx[2];               /* Section index */
+} Elf32_External_Sym;
+
+typedef struct
+{
+  unsigned char st_name[4];                /* Symbol name (string tbl index) */
+  unsigned char st_info;                /* Symbol type and binding */
+  unsigned char st_other;               /* Symbol visibility */
+  unsigned char st_shndx[2];               /* Section index */
+  unsigned char st_value[8];               /* Symbol value */
+  unsigned char st_size[8];                /* Symbol size */
+} Elf64_External_Sym;
+
+#define ELF_ST_BIND(val)              (((unsigned char) (val)) >> 4)
+#define ELF_ST_TYPE(val)              ((val) & 0xf)
+#define ELF_ST_INFO(bind, type)       (((bind) << 4) + ((type) & 0xf))
+
+#define STT_NOTYPE	0	/* Symbol type is unspecified */
+#define STT_OBJECT	1	/* Symbol is a data object */
+#define STT_FUNC	2	/* Symbol is a code object */
+#define STT_TLS		6	/* Thread local data object */
+#define STT_GNU_IFUNC	10	/* Symbol is an indirect code object */
+
+#define STB_LOCAL	0	/* Local symbol */
+#define STB_GLOBAL	1	/* Global symbol */
+
+#define STV_DEFAULT	0	/* Visibility is specified by binding type */
 
 /* Functions to fetch and store different ELF types, depending on the
    endianness and size.  */
@@ -346,6 +398,14 @@ struct simple_object_elf_attributes
   unsigned short machine;
   /* Processor specific flags.  */
   unsigned int flags;
+};
+
+/* Private data for an simple_object_write.  */
+
+struct simple_object_elf_write
+{
+  struct simple_object_elf_attributes attrs;
+  unsigned char *shdrs;
 };
 
 /* See if we have an ELF file.  */
@@ -675,12 +735,13 @@ simple_object_elf_start_write (void *attributes_data,
 {
   struct simple_object_elf_attributes *attrs =
     (struct simple_object_elf_attributes *) attributes_data;
-  struct simple_object_elf_attributes *ret;
+  struct simple_object_elf_write *ret;
 
   /* We're just going to record the attributes, but we need to make a
      copy because the user may delete them.  */
-  ret = XNEW (struct simple_object_elf_attributes);
-  *ret = *attrs;
+  ret = XNEW (struct simple_object_elf_write);
+  ret->attrs = *attrs;
+  ret->shdrs = NULL;
   return ret;
 }
 
@@ -766,8 +827,11 @@ static int
 simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
 			      off_t offset, unsigned int sh_name,
 			      unsigned int sh_type, unsigned int sh_flags,
+			      off_t sh_addr,
 			      unsigned int sh_offset, unsigned int sh_size,
-			      unsigned int sh_link, unsigned int sh_addralign,
+			      unsigned int sh_link, unsigned int sh_info,
+			      size_t sh_addralign,
+			      size_t sh_entsize,
 			      const char **errmsg, int *err)
 {
   struct simple_object_elf_attributes *attrs =
@@ -788,12 +852,13 @@ simple_object_elf_write_shdr (simple_object_write *sobj, int descriptor,
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_name, Elf_Word, sh_name);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_type, Elf_Word, sh_type);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_flags, Elf_Addr, sh_flags);
+  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_addr, Elf_Addr, sh_addr);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_offset, Elf_Addr, sh_offset);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_size, Elf_Addr, sh_size);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_link, Elf_Word, sh_link);
-  /* sh_info left as zero.  */
+  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_info, Elf_Word, sh_info);
   ELF_SET_FIELD (fns, cl, Shdr, buf, sh_addralign, Elf_Addr, sh_addralign);
-  /* sh_entsize left as zero.  */
+  ELF_SET_FIELD (fns, cl, Shdr, buf, sh_entsize, Elf_Addr, sh_entsize);
 
   return simple_object_internal_write (descriptor, offset, buf, shdr_size,
 				       errmsg, err);
@@ -811,8 +876,9 @@ static const char *
 simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 				 int *err)
 {
-  struct simple_object_elf_attributes *attrs =
-    (struct simple_object_elf_attributes *) sobj->data;
+  struct simple_object_elf_write *eow =
+    (struct simple_object_elf_write *) sobj->data;
+  struct simple_object_elf_attributes *attrs = &eow->attrs;
   unsigned char cl;
   size_t ehdr_size;
   size_t shdr_size;
@@ -825,6 +891,7 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
   unsigned int first_sh_link;
   size_t sh_name;
   unsigned char zero;
+  unsigned secnum;
 
   if (!simple_object_elf_write_ehdr (sobj, descriptor, &errmsg, err))
     return errmsg;
@@ -862,21 +929,54 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
   else
     first_sh_link = shnum - 1;
   if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
-				     0, 0, 0, 0, first_sh_size, first_sh_link,
-				     0, &errmsg, err))
+				     0, 0, 0, 0, 0, first_sh_size, first_sh_link,
+				     0, 0, 0, &errmsg, err))
     return errmsg;
 
   shdr_offset += shdr_size;
 
   sh_name = 1;
+  secnum = 0;
   for (section = sobj->sections; section != NULL; section = section->next)
     {
       size_t mask;
       size_t new_sh_offset;
       size_t sh_size;
       struct simple_object_write_section_buffer *buffer;
+      unsigned int sh_type = SHT_PROGBITS;
+      unsigned int sh_flags = 0;
+      off_t sh_addr = 0;
+      unsigned int sh_link = 0;
+      unsigned int sh_info = 0;
+      size_t sh_addralign = 1U << section->align;
+      size_t sh_entsize = 0;
+      if (eow->shdrs)
+	{
+	  sh_type = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+				     eow->shdrs + secnum * shdr_size,
+				     sh_type, Elf_Word);
+	  sh_flags = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+				      eow->shdrs + secnum * shdr_size,
+				      sh_flags, Elf_Addr);
+	  sh_addr = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+				     eow->shdrs + secnum * shdr_size,
+				     sh_addr, Elf_Addr);
+	  sh_link = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+				     eow->shdrs + secnum * shdr_size,
+				     sh_link, Elf_Word);
+	  sh_info = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+				     eow->shdrs + secnum * shdr_size,
+				     sh_info, Elf_Word);
+	  sh_addralign = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+					  eow->shdrs + secnum * shdr_size,
+					  sh_addralign, Elf_Addr);
+	  sh_entsize = ELF_FETCH_FIELD (attrs->type_functions, attrs->ei_class, Shdr,
+					eow->shdrs + secnum * shdr_size,
+					sh_entsize, Elf_Addr);
+	  secnum++;
+	}
 
-      mask = (1U << section->align) - 1;
+      mask = sh_addralign - 1;
       new_sh_offset = sh_offset + mask;
       new_sh_offset &= ~ mask;
       while (new_sh_offset > sh_offset)
@@ -906,8 +1006,10 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 	}
 
       if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
-					 sh_name, SHT_PROGBITS, 0, sh_offset,
-					 sh_size, 0, 1U << section->align,
+					 sh_name, sh_type, sh_flags,
+					 sh_addr, sh_offset,
+					 sh_size, sh_link, sh_info,
+					 sh_addralign, sh_entsize,
 					 &errmsg, err))
 	return errmsg;
 
@@ -917,9 +1019,9 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
     }
 
   if (!simple_object_elf_write_shdr (sobj, descriptor, shdr_offset,
-				     sh_name, SHT_STRTAB, 0, sh_offset,
-				     sh_name + strlen (".shstrtab") + 1, 0,
-				     1, &errmsg, err))
+				     sh_name, SHT_STRTAB, 0, 0, sh_offset,
+				     sh_name + strlen (".shstrtab") + 1, 0, 0,
+				     1, 0, &errmsg, err))
     return errmsg;
 
   /* .shstrtab has a leading zero byte.  */
@@ -954,8 +1056,353 @@ simple_object_elf_write_to_file (simple_object_write *sobj, int descriptor,
 static void
 simple_object_elf_release_write (void *data)
 {
+  struct simple_object_elf_write *eow = (struct simple_object_elf_write *) data;
+  if (eow->shdrs)
+    XDELETE (eow->shdrs);
   XDELETE (data);
 }
+
+/* Copy all sections in an ELF file.  */
+
+static const char *
+simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
+					   simple_object_write *dobj,
+					   int (*pfn) (const char **),
+					   int *err)
+{
+  struct simple_object_elf_read *eor =
+    (struct simple_object_elf_read *) sobj->data;
+  const struct elf_type_functions *type_functions = eor->type_functions;
+  struct simple_object_elf_write *eow =
+    (struct simple_object_elf_write *) dobj->data;
+  unsigned char ei_class = eor->ei_class;
+  size_t shdr_size;
+  unsigned int shnum;
+  unsigned char *shdrs;
+  const char *errmsg;
+  unsigned char *shstrhdr;
+  size_t name_size;
+  off_t shstroff;
+  unsigned char *names;
+  unsigned int i;
+  int *pfnret;
+  const char **pfnname;
+
+  shdr_size = (ei_class == ELFCLASS32
+	       ? sizeof (Elf32_External_Shdr)
+	       : sizeof (Elf64_External_Shdr));
+
+  /* Read the section headers.  We skip section 0, which is not a
+     useful section.  */
+
+  shnum = eor->shnum;
+  shdrs = XNEWVEC (unsigned char, shdr_size * (shnum - 1));
+
+  if (!simple_object_internal_read (sobj->descriptor,
+				    sobj->offset + eor->shoff + shdr_size,
+				    shdrs,
+				    shdr_size * (shnum - 1),
+				    &errmsg, err))
+    {
+      XDELETEVEC (shdrs);
+      return errmsg;
+    }
+
+  /* Read the section names.  */
+
+  shstrhdr = shdrs + (eor->shstrndx - 1) * shdr_size;
+  name_size = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+			       shstrhdr, sh_size, Elf_Addr);
+  shstroff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+			      shstrhdr, sh_offset, Elf_Addr);
+  names = XNEWVEC (unsigned char, name_size);
+  if (!simple_object_internal_read (sobj->descriptor,
+				    sobj->offset + shstroff,
+				    names, name_size, &errmsg, err))
+    {
+      XDELETEVEC (names);
+      XDELETEVEC (shdrs);
+      return errmsg;
+    }
+
+  eow->shdrs = XNEWVEC (unsigned char, shdr_size * (shnum - 1));
+  pfnret = XNEWVEC (int, shnum);
+  pfnname = XNEWVEC (const char *, shnum);
+
+  /* First perform the callbacks to know which sections to preserve and
+     what name to use for those.  */
+  for (i = 1; i < shnum; ++i)
+    {
+      unsigned char *shdr;
+      unsigned int sh_name;
+      const char *name;
+      int ret;
+
+      shdr = shdrs + (i - 1) * shdr_size;
+      sh_name = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_name, Elf_Word);
+      if (sh_name >= name_size)
+	{
+	  *err = 0;
+	  XDELETEVEC (names);
+	  XDELETEVEC (shdrs);
+	  return "ELF section name out of range";
+	}
+
+      name = (const char *) names + sh_name;
+
+      ret = (*pfn) (&name);
+      pfnret[i - 1] = ret == 1 ? 0 : -1;
+      pfnname[i - 1] = name;
+    }
+
+  /* Mark sections as preserved that are required by to be preserved
+     sections.  */
+  for (i = 1; i < shnum; ++i)
+    {
+      unsigned char *shdr;
+      unsigned int sh_type, sh_info, sh_link;
+      off_t offset;
+      off_t length;
+
+      shdr = shdrs + (i - 1) * shdr_size;
+      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_type, Elf_Word);
+      sh_info = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_info, Elf_Word);
+      sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_link, Elf_Word);
+      if (sh_type == SHT_GROUP)
+	{
+	  /* Mark groups containing copied sections.  */
+	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					      shdr, sh_entsize, Elf_Addr);
+	  unsigned char *ent, *buf;
+	  int keep = 0;
+	  offset = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				    shdr, sh_offset, Elf_Addr);
+	  length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				    shdr, sh_size, Elf_Addr);
+	  buf = XNEWVEC (unsigned char, length);
+	  if (!simple_object_internal_read (sobj->descriptor,
+					    sobj->offset + offset, buf,
+					    (size_t) length, &errmsg, err))
+	    {
+	      XDELETEVEC (buf);
+	      XDELETEVEC (names);
+	      XDELETEVEC (shdrs);
+	      return errmsg;
+	    }
+	  for (ent = buf + entsize; ent < buf + length; ent += entsize)
+	    {
+	      unsigned sec = type_functions->fetch_Elf_Word (ent);
+	      if (pfnret[sec - 1] == 0)
+		keep = 1;
+	    }
+	  if (keep)
+	    {
+	      pfnret[sh_link - 1] = 0;
+	      pfnret[i - 1] = 0;
+	    }
+	}
+      if (sh_type == SHT_RELA
+	  || sh_type == SHT_REL)
+	{
+	  /* Mark relocation sections and symtab of copied sections.  */
+	  if (pfnret[sh_info - 1] == 0)
+	    {
+	      pfnret[sh_link - 1] = 0;
+	      pfnret[i - 1] = 0;
+	    }
+	}
+      if (sh_type == SHT_SYMTAB)
+	{
+	  /* Mark strings sections of copied symtabs.  */
+	  if (pfnret[i - 1] == 0)
+	    pfnret[sh_link - 1] = 0;
+	}
+    }
+
+  /* Then perform the actual copying.  */
+  for (i = 1; i < shnum; ++i)
+    {
+      unsigned char *shdr;
+      unsigned int sh_name, sh_type;
+      const char *name;
+      off_t offset;
+      off_t length;
+      int ret;
+      const char *errmsg;
+      simple_object_write_section *dest;
+      off_t flags;
+      unsigned char *buf;
+
+      shdr = shdrs + (i - 1) * shdr_size;
+      sh_name = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_name, Elf_Word);
+      if (sh_name >= name_size)
+	{
+	  *err = 0;
+	  XDELETEVEC (names);
+	  XDELETEVEC (shdrs);
+	  return "ELF section name out of range";
+	}
+
+      name = (const char *) names + sh_name;
+      offset = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				shdr, sh_offset, Elf_Addr);
+      length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				shdr, sh_size, Elf_Addr);
+      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				 shdr, sh_type, Elf_Word);
+
+      ret = pfnret[i - 1];
+      name = ret == 0 ? pfnname[i - 1] : "";
+
+      dest = simple_object_write_create_section (dobj, name, 0, &errmsg, err);
+      if (dest == NULL)
+	{
+	  XDELETEVEC (names);
+	  XDELETEVEC (shdrs);
+	  return errmsg;
+	}
+
+      /* Record the SHDR of the source.  */
+      memcpy (eow->shdrs + (i - 1) * shdr_size, shdr, shdr_size);
+      shdr = eow->shdrs + (i - 1) * shdr_size;
+
+      /* Copy the data.
+	 ???  This is quite wasteful and ideally would be delayed until
+	 write_to_file ().  Thus it questions the interfacing
+	 which eventually should contain destination creation plus
+	 writing.  */
+      /* Keep empty sections for sections we should discard.  This avoids
+         the need to rewrite section indices in symtab and relocation
+	 sections.  */
+      if (ret == 0)
+	{
+	  buf = XNEWVEC (unsigned char, length);
+	  if (!simple_object_internal_read (sobj->descriptor,
+					    sobj->offset + offset, buf,
+					    (size_t) length, &errmsg, err))
+	    {
+	      XDELETEVEC (buf);
+	      XDELETEVEC (names);
+	      XDELETEVEC (shdrs);
+	      return errmsg;
+	    }
+
+	  /* If we are processing .symtab purge __gnu_lto_v1 and
+	     __gnu_lto_slim symbols from it.  */
+	  if (sh_type == SHT_SYMTAB)
+	    {
+	      unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+						  shdr, sh_entsize, Elf_Addr);
+	      unsigned strtab = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+						 shdr, sh_link, Elf_Word);
+	      unsigned char *strshdr = shdrs + (strtab - 1) * shdr_size;
+	      off_t stroff = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					      strshdr, sh_offset, Elf_Addr);
+	      size_t strsz = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					      strshdr, sh_size, Elf_Addr);
+	      char *strings = XNEWVEC (char, strsz);
+	      unsigned char *ent;
+	      simple_object_internal_read (sobj->descriptor,
+					   sobj->offset + stroff,
+					   (unsigned char *)strings,
+					   strsz, &errmsg, err);
+	      for (ent = buf; ent < buf + length; ent += entsize)
+		{
+		  unsigned st_shndx = ELF_FETCH_FIELD (type_functions, ei_class,
+						       Sym, ent,
+						       st_shndx, Elf_Half);
+		  unsigned char *st_info;
+		  unsigned char *st_other;
+		  int discard = 0;
+		  if (ei_class == ELFCLASS32)
+		    {
+		      st_info = &((Elf32_External_Sym *)ent)->st_info;
+		      st_other = &((Elf32_External_Sym *)ent)->st_other;
+		    }
+		  else
+		    {
+		      st_info = &((Elf64_External_Sym *)ent)->st_info;
+		      st_other = &((Elf64_External_Sym *)ent)->st_other;
+		    }
+		  /* Eliminate all COMMONs - this includes __gnu_lto_v1
+		     and __gnu_lto_slim which otherwise cause endless
+		     LTO plugin invocation.  */
+		  if (st_shndx == SHN_COMMON)
+		    /* Setting st_name to "" seems to work to purge
+		       COMMON symbols (in addition to setting their
+		       size to zero).  */
+		    discard = 1;
+		  /* We also need to remove symbols refering to sections
+		     we'll eventually remove as with fat LTO objects
+		     we otherwise get duplicate symbols at final link
+		     (with GNU ld, gold is fine and ignores symbols in
+		     sections marked as EXCLUDE).  ld/20513  */
+		  else if (st_shndx != SHN_UNDEF
+			   && st_shndx < shnum
+			   && pfnret[st_shndx - 1] == -1)
+		    discard = 1;
+
+		  if (discard)
+		    {
+		      /* Make discarded symbols undefined and unnamed.  */
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_name, Elf_Word, 0);
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_value, Elf_Addr, 0);
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_size, Elf_Word, 0);
+		      ELF_SET_FIELD (type_functions, ei_class, Sym,
+				     ent, st_shndx, Elf_Half, SHN_UNDEF);
+		      *st_info = ELF_ST_INFO (ELF_ST_BIND (*st_info),
+					      STT_NOTYPE);
+		      *st_other = STV_DEFAULT;
+		    }
+		}
+	      XDELETEVEC (strings);
+	    }
+
+	  errmsg = simple_object_write_add_data (dobj, dest,
+						 buf, length, 1, err);
+	  XDELETEVEC (buf);
+	  if (errmsg)
+	    {
+	      XDELETEVEC (names);
+	      XDELETEVEC (shdrs);
+	      return errmsg;
+	    }
+	}
+      else
+	{
+	  /* For deleted sections mark the section header table entry as
+	     unused.  That allows the link editor to remove it in a partial
+	     link.  */
+	  ELF_SET_FIELD (type_functions, ei_class, Shdr,
+			 shdr, sh_type, Elf_Word, SHT_NULL);
+	}
+
+      flags = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+			       shdr, sh_flags, Elf_Addr);
+      if (ret == 0)
+	flags &= ~SHF_EXCLUDE;
+      else if (ret == -1)
+	flags = SHF_EXCLUDE;
+      ELF_SET_FIELD (type_functions, ei_class, Shdr,
+		     shdr, sh_flags, Elf_Addr, flags);
+    }
+
+  XDELETEVEC (names);
+  XDELETEVEC (shdrs);
+  XDELETEVEC (pfnret);
+  XDELETEVEC (pfnname);
+
+  return NULL;
+}
+
 
 /* The ELF functions.  */
 
@@ -969,5 +1416,6 @@ const struct simple_object_functions simple_object_elf_functions =
   simple_object_elf_release_attributes,
   simple_object_elf_start_write,
   simple_object_elf_write_to_file,
-  simple_object_elf_release_write
+  simple_object_elf_release_write,
+  simple_object_elf_copy_lto_debug_sections
 };

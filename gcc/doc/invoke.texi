@@ -284,6 +284,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n} @gol
 -Wformat-y2k  -Wframe-address @gol
 -Wframe-larger-than=@var{len}  -Wno-free-nonheap-object  -Wjump-misses-init @gol
+-Wif-not-aligned @gol
 -Wignored-qualifiers  -Wignored-attributes  -Wincompatible-pointer-types @gol
 -Wimplicit  -Wimplicit-fallthrough  -Wimplicit-fallthrough=@var{n} @gol
 -Wimplicit-function-declaration  -Wimplicit-int @gol
@@ -298,7 +299,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wnormalized=@r{[}none@r{|}id@r{|}nfc@r{|}nfkc@r{]} @gol
 -Wnull-dereference  -Wodr  -Wno-overflow  -Wopenmp-simd  @gol
 -Woverride-init-side-effects  -Woverlength-strings @gol
--Wpacked  -Wpacked-bitfield-compat  -Wpadded @gol
+-Wpacked  -Wpacked-bitfield-compat -Wpacked-not-aligned -Wpadded @gol
 -Wparentheses  -Wno-pedantic-ms-format @gol
 -Wplacement-new  -Wplacement-new=@var{n} @gol
 -Wpointer-arith  -Wpointer-compare  -Wno-pointer-to-int-cast @gol
@@ -346,7 +347,7 @@ Objective-C and Objective-C++ Dialects}.
 -gcolumn-info  -gno-column-info @gol
 -gvms  -gxcoff  -gxcoff+  -gz@r{[}=@var{type}@r{]} @gol
 -fdebug-prefix-map=@var{old}=@var{new}  -fdebug-types-section @gol
--feliminate-dwarf2-dups  -fno-eliminate-unused-debug-types @gol
+-fno-eliminate-unused-debug-types @gol
 -femit-struct-debug-baseonly  -femit-struct-debug-reduced @gol
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]} @gol
 -feliminate-unused-debug-symbols  -femit-class-debug-always @gol
@@ -1215,7 +1216,10 @@ See RS/6000 and PowerPC Options.
 -msse2avx  -mfentry  -mrecord-mcount  -mnop-mcount  -m8bit-idiv @gol
 -mavx256-split-unaligned-load  -mavx256-split-unaligned-store @gol
 -malign-data=@var{type}  -mstack-protector-guard=@var{guard} @gol
--mmitigate-rop  -mgeneral-regs-only  -mcall-ms2sysv-xlogues}
+-mstack-protector-guard-reg=@var{reg} @gol
+-mstack-protector-guard-offset=@var{offset} @gol
+-mstack-protector-guard-symbol=@var{symbol} -mmitigate-rop @gol
+-mgeneral-regs-only  -mcall-ms2sysv-xlogues}
 
 @emph{x86 Windows Options}
 @gccoptlist{-mconsole  -mcygwin  -mno-cygwin  -mdll @gol
@@ -4424,6 +4428,13 @@ switch (cond)
 
 The @option{-Wimplicit-fallthrough=3} warning is enabled by @option{-Wextra}.
 
+@item -Wif-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wif-not-aligned
+@opindex Wno-if-not-aligned
+Control if warning triggered by the @code{warn_if_not_aligned} attribute
+should be issued.  This is is enabled by default.
+Use @option{-Wno-if-not-aligned} to disable it.
+
 @item -Wignored-qualifiers @r{(C and C++ only)}
 @opindex Wignored-qualifiers
 @opindex Wno-ignored-qualifiers
@@ -6517,6 +6528,25 @@ struct foo
 This warning is enabled by default.  Use
 @option{-Wno-packed-bitfield-compat} to disable this warning.
 
+@item -Wpacked-not-aligned @r{(C, C++, Objective-C and Objective-C++ only)}
+@opindex Wpacked-not-aligned
+@opindex Wno-packed-not-aligned
+Warn if a structure field with explicitly specified alignment in a
+packed struct or union is misaligned.  For example, a warning will
+be issued on @code{struct S}, like, @code{warning: alignment 1 of
+'struct S' is less than 8}, in this code:
+
+@smallexample
+@group
+struct __attribute__ ((aligned (8))) S8 @{ char a[8]; @};
+struct __attribute__ ((packed)) S @{
+  struct S8 s8;
+@};
+@end group
+@end smallexample
+
+This warning is enabled by @option{-Wall}.
+
 @item -Wpadded
 @opindex Wpadded
 @opindex Wno-padded
@@ -6804,8 +6834,8 @@ for maximum benefit.
 
 GCC no longer supports DWARF Version 1, which is substantially
 different than Version 2 and later.  For historical reasons, some
-other DWARF-related options (including @option{-feliminate-dwarf2-dups} 
-and @option{-fno-dwarf2-cfi-asm}) retain a reference to DWARF Version 2
+other DWARF-related options such as
+@option{-fno-dwarf2-cfi-asm}) retain a reference to DWARF Version 2
 in their names, but apply to all currently-supported versions of DWARF.
 
 @item -gstabs
@@ -6996,12 +7026,6 @@ compression in traditional GNU format).  If the linker doesn't support
 writing compressed debug sections, the option is rejected.  Otherwise,
 if the assembler does not support them, @option{-gz} is silently ignored
 when producing object files.
-
-@item -feliminate-dwarf2-dups
-@opindex feliminate-dwarf2-dups
-Compress DWARF debugging information by eliminating duplicated
-information about each symbol.  This option only makes sense when
-generating DWARF debugging information.
 
 @item -femit-struct-debug-baseonly
 @opindex femit-struct-debug-baseonly
@@ -7248,13 +7272,20 @@ invoking @option{-O2} on programs that use computed gotos.
 @item -O3
 @opindex O3
 Optimize yet more.  @option{-O3} turns on all optimizations specified
-by @option{-O2} and also turns on the @option{-finline-functions},
-@option{-funswitch-loops}, @option{-fpredictive-commoning},
-@option{-fgcse-after-reload}, @option{-ftree-loop-vectorize},
-@option{-ftree-loop-distribute-patterns}, @option{-fsplit-paths}
-@option{-ftree-slp-vectorize}, @option{-fvect-cost-model},
-@option{-ftree-partial-pre}, @option{-fpeel-loops}
-and @option{-fipa-cp-clone} options.
+by @option{-O2} and also turns on the following optimization flags:
+@gccoptlist{-finline-functions @gol
+-funswitch-loops @gol
+-fpredictive-commoning @gol
+-fgcse-after-reload @gol
+-ftree-loop-vectorize @gol
+-ftree-loop-distribution @gol
+-ftree-loop-distribute-patterns @gol
+-fsplit-paths @gol
+-ftree-slp-vectorize @gol
+-fvect-cost-model @gol
+-ftree-partial-pre @gol
+-fpeel-loops @gol
+-fipa-cp-clone}
 
 @item -O0
 @opindex O0
@@ -7278,7 +7309,8 @@ Disregard strict standards compliance.  @option{-Ofast} enables all
 @option{-O3} optimizations.  It also enables optimizations that are not
 valid for all standard-compliant programs.
 It turns on @option{-ffast-math} and the Fortran-specific
-@option{-fno-protect-parens} and @option{-fstack-arrays}.
+@option{-fstack-arrays}, unless @option{-fmax-stack-var-size} is
+specified, and @option{-fno-protect-parens}.
 
 @item -Og
 @opindex Og
@@ -7355,6 +7387,10 @@ The default setting (when not optimizing for
 size) for 32-bit GNU/Linux x86 and 32-bit Darwin x86 targets is
 @option{-fomit-frame-pointer}.  You can configure GCC with the
 @option{--enable-frame-pointer} configure option to change the default.
+
+Note that @option{-fno-omit-frame-pointer} doesn't force a new stack
+frame for all functions if it isn't otherwise needed, and hence doesn't
+guarantee a new frame pointer for all functions.
 
 Enabled at levels @option{-O}, @option{-O2}, @option{-O3}, @option{-Os}.
 
@@ -22743,9 +22779,11 @@ The @option{-mno-compat-align-parm} option is the default.
 @item -mstack-protector-guard=@var{guard}
 @itemx -mstack-protector-guard-reg=@var{reg}
 @itemx -mstack-protector-guard-offset=@var{offset}
+@itemx -mstack-protector-guard-symbol=@var{symbol}
 @opindex mstack-protector-guard
 @opindex mstack-protector-guard-reg
 @opindex mstack-protector-guard-offset
+@opindex mstack-protector-guard-symbol
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default with GNU libc version 2.4 or later).
@@ -22755,7 +22793,8 @@ With the latter choice the options
 @option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
 which register to use as base register for reading the canary, and from what
 offset from that base register. The default for those is as specified in the
-relevant ABI.
+relevant ABI.  @option{-mstack-protector-guard-symbol=@var{symbol}} overrides
+the offset with a symbol reference to a canary in the TLS block.
 @end table
 
 @node RX Options
@@ -26139,11 +26178,22 @@ to 255, 8-bit unsigned integer divide is used instead of
 Split 32-byte AVX unaligned load and store.
 
 @item -mstack-protector-guard=@var{guard}
-@opindex mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-reg=@var{reg}
+@itemx -mstack-protector-guard-offset=@var{offset}
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-reg
+@opindex mstack-protector-guard-offset
 Generate stack protection code using canary at @var{guard}.  Supported
 locations are @samp{global} for global canary or @samp{tls} for per-thread
 canary in the TLS block (the default).  This option has effect only when
 @option{-fstack-protector} or @option{-fstack-protector-all} is specified.
+
+With the latter choice the options
+@option{-mstack-protector-guard-reg=@var{reg}} and
+@option{-mstack-protector-guard-offset=@var{offset}} furthermore specify
+which segment register (@code{%fs} or @code{%gs}) to use as base register
+for reading the canary, and from what offset from that base register.
+The default for those is as specified in the relevant ABI.
 
 @item -mmitigate-rop
 @opindex mmitigate-rop

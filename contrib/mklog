@@ -1,5 +1,6 @@
-#!/usr/bin/perl
-# Copyright (C) 2012-2017 Free Software Foundation, Inc.
+#!/usr/bin/python
+
+# Copyright (C) 2017 Free Software Foundation, Inc.
 #
 # This file is part of GCC.
 #
@@ -20,343 +21,450 @@
 
 # This script parses a .diff file generated with 'diff -up' or 'diff -cp'
 # and adds a skeleton ChangeLog file to the file. It does not try to be
-# very smart when parsing function names, but it produces a reasonable
+# too smart when parsing function names, but it produces a reasonable
 # approximation.
 #
-# Author: Diego Novillo <dnovillo@google.com> and
-#         Cary Coutant <ccoutant@google.com>
+# This is a straightforward adaptation of original Perl script.
+#
+# Author: Yury Gribov <tetra2005@gmail.com>
 
-use File::Temp;
-use File::Copy qw(cp mv);
+import sys
+import re
+import os.path
+import os
+import getopt
+import tempfile
+import time
+import shutil
+from subprocess import Popen, PIPE
 
-$date = `date +%Y-%m-%d`; chop ($date);
+me = os.path.basename(sys.argv[0])
 
-$dot_mklog_format_msg =
-    "The .mklog format is:\n"
-    . "NAME = ...\n"
-    . "EMAIL = ...\n";
+def error(msg):
+  sys.stderr.write("%s: error: %s\n" % (me, msg))
+  sys.exit(1)
 
-# Create a .mklog to reflect your profile, if necessary.
-my $conf = "$ENV{HOME}/.mklog";
-if (-f "$conf") {
-    open (CONF, "$conf")
-	or die "Could not open file '$conf' for reading: $!\n";
-    while (<CONF>) {
-	if (m/^\s*NAME\s*=\s*(.*?)\s*$/) {
-	    $name = $1;
-	} elsif (m/^\s*EMAIL\s*=\s*(.*?)\s*$/) {
-	    $addr = $1;
-	}
-    }
-    if (!($name && $addr)) {
-	die "Could not read .mklog settings.\n"
-	    . $dot_mklog_format_msg;
-    }
-} else {
-    $name = `git config user.name`;
-    chomp($name);
-    $addr = `git config user.email`;
-    chomp($addr);
+def warn(msg):
+  sys.stderr.write("%s: warning: %s\n" % (me, msg))
 
-    if (!($name && $addr)) {
-	die "Could not read git user.name and user.email settings.\n"
-	    . "Please add missing git settings, or create a .mklog file in"
-	    . " $ENV{HOME}.\n"
-	    . $dot_mklog_format_msg;
-    }
-}
+class RegexCache(object):
+  """Simple trick to Perl-like combined match-and-bind."""
 
-$gcc_root = $0;
-$gcc_root =~ s/[^\\\/]+$/../;
+  def __init__(self):
+    self.last_match = None
 
-#-----------------------------------------------------------------------------
-# Program starts here. You should not need to edit anything below this
-# line.
-#-----------------------------------------------------------------------------
-$inline = 0;
-if ($#ARGV == 1 && ("$ARGV[0]" eq "-i" || "$ARGV[0]" eq "--inline")) {
-	shift;
-	$inline = 1;
-} elsif ($#ARGV != 0) {
-    $prog = `basename $0`; chop ($prog);
-    print <<EOF;
-usage: $prog [ -i | --inline ] file.diff
+  def match(self, p, s):
+    self.last_match = re.match(p, s) if isinstance(p, str) else p.match(s)
+    return self.last_match
 
-Generate ChangeLog template for file.diff.
-It assumes that patch has been created with -up or -cp.
-When -i is used, the ChangeLog template is followed by the contents of
-file.diff.
-When file.diff is -, read standard input.
-When -i is used and file.diff is not -, it writes to file.diff, otherwise it
-writes to stdout.
-EOF
-    exit 1;
-}
+  def search(self, p, s):
+    self.last_match = re.search(p, s) if isinstance(p, str) else p.search(s)
+    return self.last_match
 
-$diff = $ARGV[0];
-$dir = `dirname $diff`; chop ($dir);
-$basename = `basename $diff`; chop ($basename);
-$hdrline = "$date  $name  <$addr>";
+  def group(self, n):
+    return self.last_match.group(n)
 
-sub get_clname ($) {
-	return ('ChangeLog', $_[0]) if ($_[0] !~ /[\/\\]/);
+cache = RegexCache()
 
-	my $dirname = $_[0];
-	while ($dirname) {
-		my $clname = "$dirname/ChangeLog";
-		if (-f "$gcc_root/$clname" || -f "$clname") {
-			my $relname = substr ($_[0], length ($dirname) + 1);
-			return ($clname, $relname);
-		} else {
-			$dirname =~ s/[\/\\]?[^\/\\]*$//;
-		} 
-	}
+def print_help_and_exit():
+    print """\
+Usage: %s [-i | --inline] [PATCH]
+Generate ChangeLog template for PATCH.
+PATCH must be generated using diff(1)'s -up or -cp options
+(or their equivalent in Subversion/git).
 
-	return ('Unknown ChangeLog', $_[0]);
-}
+When PATCH is - or missing, read standard input.
 
-sub remove_suffixes ($) {
-	my $filename = $_[0];
-	$filename =~ s/^[ab]\///;
-	$filename =~ s/\.jj$//;
-	return $filename;
-}
+When -i is used, prepends ChangeLog to PATCH.
+If PATCH is not stdin, modifies PATCH in-place, otherwise writes
+to stdout.
+""" % me
+    sys.exit(1)
 
-sub is_context_hunk_start {
-	return @_[0] =~ /^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/;
-}
+def run(cmd, die_on_error):
+  """Simple wrapper for Popen."""
+  proc = Popen(cmd.split(' '), stderr = PIPE, stdout = PIPE)
+  (out, err) = proc.communicate()
+  if die_on_error and proc.returncode != 0:
+    error("`%s` failed:\n" % (cmd, proc.stderr))
+  return proc.returncode, out, err
 
-sub is_unified_hunk_start {
-	return @_[0] =~ /^@@ .* @@ ([a-zA-Z0-9_].*)/;
-}
+def read_user_info():
+  dot_mklog_format_msg = """\
+The .mklog format is:
+NAME = ...
+EMAIL = ...
+"""
 
-# Check if line is a top-level declaration.
-sub is_top_level {
-	my ($function, $is_context_diff) = (@_);
-	if (is_unified_hunk_start ($function)
-	    || is_context_hunk_start ($function)) {
-	    return 1;
-	}
-	if ($is_context_diff) {
-		$function =~ s/^..//;
-	} else {
-		$function =~ s/^.//;
-	}
-	return $function && $function !~ /^[\s{#]/;
-}
+  # First try to read .mklog config
+  mklog_conf = os.path.expanduser('~/.mklog')
+  if os.path.exists(mklog_conf):
+    attrs = {}
+    f = open(mklog_conf, 'rb')
+    for s in f:
+      if cache.match(r'^\s*([a-zA-Z0-9_]+)\s*=\s*(.*?)\s*$', s):
+        attrs[cache.group(1)] = cache.group(2)
+    f.close()
+    if 'NAME' not in attrs:
+      error("'NAME' not present in .mklog")
+    if 'EMAIL' not in attrs:
+      error("'EMAIL' not present in .mklog")
+    return attrs['NAME'], attrs['EMAIL']
 
-# Read contents of .diff file
-open (DFILE, $diff) or die "Could not open file $diff for reading";
-chomp (my @diff_lines = <DFILE>);
-close (DFILE);
+  # Otherwise go with git
 
-# Array diff_lines is modified by the log generation, so save a copy in
-# orig_diff_lines if needed.
-if ($inline) {
-    @orig_diff_lines = @diff_lines;
-}
+  rc1, name, _ = run('git config user.name', False)
+  name = name.rstrip()
+  rc2, email, _ = run('git config user.email', False)
+  email = email.rstrip()
 
-# For every file in the .diff print all the function names in ChangeLog
-# format.
-%cl_entries = ();
-$change_msg = undef;
-$look_for_funs = 0;
-$clname = get_clname('');
-$line_idx = 0;
-foreach (@diff_lines) {
-    # Stop processing functions if we found a new file.
-	# Remember both left and right names because one may be /dev/null.
-    # Don't be fooled by line markers in case of context diff.
-    if (!/\*\*\*$/ && /^[+*][+*][+*] +(\S+)/) {
-		$left = remove_suffixes ($1);
-		$look_for_funs = 0;
-	}
-    if (!/---$/ && /^--- +(\S+)?/) {
-		$right = remove_suffixes ($1);
-		$look_for_funs = 0;
-	}
+  if rc1 != 0 or rc2 != 0:
+    error("""\
+Could not read git user.name and user.email settings.
+Please add missing git settings, or create a %s.
+""" % mklog_conf)
 
-	# Check if the body of diff started.
-	# We should now have both left and right name,
-	# so we can decide filename.
+  return name, email
 
-    if ($left && (/^\*{15}/ || /^@@ /)) {
-	# If we have not seen any function names in the previous file (ie,
-	# $change_msg is empty), we just write out a ':' before starting the next
-	# file.
-	if ($clname) {
-		$cl_entries{$clname} .= $change_msg ? "$change_msg" : ":\n";
-	}
+def get_parent_changelog (s):
+  """See which ChangeLog this file change should go to."""
 
-	if ($left eq $right) {
-		$filename = $left;
-	} elsif($left eq '/dev/null') {
-		$filename = $right;
-	} elsif($right eq '/dev/null') {
-		$filename = $left;
-	} else {
-		my @ldirs = split /[\/\\]/, $left;
-		my @rdirs = split /[\/\\]/, $right;
+  if s.find('\\') == -1 and s.find('/') == -1:
+    return "ChangeLog", s
 
-		$filename = '';
-		while ((my $l = pop @ldirs) && (my $r = pop @rdirs)) {
-			last if ($l ne $r);
-			$filename = "$l/$filename";
-		}
-		$filename =~ s/\/$//;
+  gcc_root = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))
 
-		if (!$filename) {
-			print STDERR "Error: failed to parse diff for $left and $right\n";
-			exit 1;
-		}
-	}
-	$left = $right = undef;
-	($clname, $relname) = get_clname ($filename);
-	$cl_entries{$clname} .= "\t* $relname";
-	$change_msg = '';
-	$look_for_funs = $filename =~ '\.(c|cpp|C|cc|h|inc|def)$';
-    }
+  d = s
+  while d:
+    clname = d + "/ChangeLog"
+    if os.path.exists(gcc_root + '/' + clname) or os.path.exists(clname):
+      relname = s[len(d)+1:]
+      return clname, relname
+    d, _ = os.path.split(d)
 
+  return "Unknown ChangeLog", s
+
+class FileDiff:
+  """Class to represent changes in a single file."""
+
+  def __init__(self, filename):
+    self.filename = filename
+    self.hunks = []
+    self.clname, self.relname = get_parent_changelog(filename);
+
+  def dump(self):
+    print "Diff for %s:\n  ChangeLog = %s\n  rel name = %s\n" % (self.filename, self.clname, self.relname)
+    for i, h in enumerate(self.hunks):
+      print "Next hunk %d:" % i
+      h.dump()
+
+class Hunk:
+  """Class to represent a single hunk of changes."""
+
+  def __init__(self, hdr):
+    self.hdr = hdr
+    self.lines = []
+    self.ctx_diff = is_ctx_hunk_start(hdr)
+
+  def dump(self):
+    print '%s' % self.hdr
+    print '%s' % '\n'.join(self.lines)
+
+  def is_file_addition(self):
+    """Does hunk describe addition of file?"""
+    if self.ctx_diff:
+      for line in self.lines:
+        if re.match(r'^\*\*\* 0 \*\*\*\*', line):
+          return True
+    else:
+      return re.match(r'^@@ -0,0 \+1.* @@', self.hdr)
+
+  def is_file_removal(self):
+    """Does hunk describe removal of file?"""
+    if self.ctx_diff:
+      for line in self.lines:
+        if re.match(r'^--- 0 ----', line):
+          return True
+    else:
+      return re.match(r'^@@ -1.* \+0,0 @@', self.hdr)
+
+def is_file_diff_start(s):
+  # Don't be fooled by context diff line markers:
+  #   *** 385,391 ****
+  return ((s.startswith('***') and not s.endswith('***'))
+          or (s.startswith('---') and not s.endswith('---')))
+
+def is_ctx_hunk_start(s):
+  return re.match(r'^\*\*\*\*\*\**', s)
+
+def is_uni_hunk_start(s):
+  return re.match(r'^@@ .* @@', s)
+
+def is_hunk_start(s):
+  return is_ctx_hunk_start(s) or is_uni_hunk_start(s)
+
+def remove_suffixes(s):
+  if s.startswith('a/') or s.startswith('b/'):
+    s = s[2:]
+  if s.endswith('.jj'):
+    s = s[:-3]
+  return s
+
+def find_changed_funs(hunk):
+  """Find all functions touched by hunk.  We don't try too hard
+     to find good matches.  This should return a superset
+     of the actual set of functions in the .diff file.
+  """
+
+  fns = []
+  fn = None
+
+  if (cache.match(r'^\*\*\*\*\*\** ([a-zA-Z0-9_].*)', hunk.hdr)
+      or cache.match(r'^@@ .* @@ ([a-zA-Z0-9_].*)', hunk.hdr)):
+    fn = cache.group(1)
+
+  for i, line in enumerate(hunk.lines):
     # Context diffs have extra whitespace after first char;
     # remove it to make matching easier.
-    if ($is_context_diff) {
-      s/^([-+! ]) /\1/;
-    }
+    if hunk.ctx_diff:
+      line = re.sub(r'^([-+! ]) ', r'\1', line)
 
-    # Remember the last line in a diff block that might start
-    # a new function.
-    if (/^[-+! ]([a-zA-Z0-9_].*)/) {
-        $save_fn = $1;
-    }
+    # Remember most recent identifier in hunk
+    # that might be a function name.
+    if cache.match(r'^[-+! ]([a-zA-Z0-9_#].*)', line):
+      fn = cache.group(1)
 
-    # Check if file is newly added.
-    # Two patterns: for context and unified diff.
-    if (/^\*\*\* 0 \*\*\*\*/
-        || /^@@ -0,0 \+1.* @@/) {
-        $change_msg = $filename =~ /testsuite.*(?<!\.exp)$/ ? ": New test.\n" : ": New file.\n";
-        $look_for_funs = 0;
-    }
+    change = line and re.match(r'^[-+!][^-]', line)
 
-    # Check if file was removed.
-    # Two patterns: for context and unified diff.
-    if (/^--- 0 ----/
-        || /^@@ -1.* \+0,0 @@/) {
-        $change_msg = ": Remove.\n";
-        $look_for_funs = 0;
-    }
+    # Top-level comment can not belong to function
+    if re.match(r'^[-+! ]\/\*', line):
+      fn = None
 
-    if (is_unified_hunk_start ($diff_lines[$line_idx])) {
-        $is_context_diff = 0;
-    }
-    elsif (is_context_hunk_start ($diff_lines[$line_idx])) {
-	    $is_context_diff = 1;
-    }
+    if change and fn:
+      if cache.match(r'^((class|struct|union|enum)\s+[a-zA-Z0-9_]+)', fn):
+        # Struct declaration
+        fn = cache.group(1)
+      elif cache.search(r'#\s*define\s+([a-zA-Z0-9_]+)', fn):
+        # Macro definition
+        fn = cache.group(1)
+      elif cache.match('^DEF[A-Z0-9_]+\s*\(([a-zA-Z0-9_]+)', fn):
+        # Supermacro
+        fn = cache.group(1)
+      elif cache.search(r'([a-zA-Z_][^()\s]*)\s*\([^*]', fn):
+        # Discard template and function parameters.
+        fn = cache.group(1)
+        fn = re.sub(r'<[^<>]*>', '', fn)
+        fn = fn.rstrip()
+      else:
+        fn = None
 
-    # If we find a new function, print it in brackets.  Special case if
-    # this is the first function in a file.  
-    #
-    # Note that we don't try too hard to find good matches.  This should
-    # return a superset of the actual set of functions in the .diff file.
-    #
-    # The first pattern works with context diff files (diff -c). The
-    # second pattern works with unified diff files (diff -u).
-    #
-    # The third pattern looks for the starts of functions or classes
-    # within a diff block both for context and unified diff files.
-    if ($look_for_funs
-        && (/^\*\*\*\*\*\** ([a-zA-Z0-9_].*)/
-	|| /^@@ .* @@ ([a-zA-Z0-9_].*)/
-	|| /^[-+! ](\{)/))
-      {
-	$_ = $1;
-	my $fn;
-	if (/^\{/) {
-	    # Beginning of a new function.
-	    $_ = $save_fn;
-	} else {
-	    $save_fn = "";
-	}
-	if (/;$/) {
-	    # No usable function name found.
-	} elsif (/^((class|struct|union|enum) [a-zA-Z0-9_]+)/) {
-	    # Discard stuff after the class/struct/etc. tag.
-	    $fn = $1;
-	} elsif (/([a-zA-Z0-9_][^(]*)\(/) {
-	    # Discard template and function parameters.
-	    $fn = $1;
-	    1 while ($fn =~ s/<[^<>]*>//);
-	    $fn =~ s/[ \t]*$//;
-	}
-	# Check is function really modified
-	$no_real_change = 0;
-	$idx = $line_idx;
-	# Skip line info in context diffs.
-	while ($idx <= $#diff_lines && $is_context_diff
-               && $diff_lines[$idx + 1] =~ /^[-\*]{3} [0-9]/) {
-		++$idx;
-	}
-	# Check all lines till the first change
-	# for the presence of really changed function
-	do {
-		++$idx;
-		$no_real_change = $idx > $#diff_lines
-				  || is_top_level ($diff_lines[$idx], $is_context_diff);
-	} while (!$no_real_change && ($diff_lines[$idx] !~ /^[-+!]/));
-	if ($fn && !$seen_names{$fn} && !$no_real_change) {
-	    # If this is the first function in the file, we display it next
-	    # to the filename, so we need an extra space before the opening
-	    # brace.
-	    if (!$change_msg) {
-		$change_msg .= " ";
-	    } else {
-		$change_msg .= "\t";
-	    }
+      if fn and fn not in fns:  # Avoid dups
+        fns.append(fn)
 
-		$change_msg .= "($fn):\n";
-	    $seen_names{$fn} = 1;
-	}
-    }
-	$line_idx++;
-}
+      fn = None
 
-# If we have not seen any function names (ie, $change_msg is empty), we just
-# write out a ':'. This happens when there is only one file with no
-# functions.
-$cl_entries{$clname} .= $change_msg ? "$change_msg\n" : ":\n";
+  return fns
 
-if ($inline && $diff ne "-") {
-	# Get a temp filename, rather than an open filehandle, because we use
-	# the open to truncate.
-	$tmp = mktemp("tmp.XXXXXXXX") or die "Could not create temp file: $!";
+def parse_patch(contents):
+  """Parse patch contents to a sequence of FileDiffs."""
 
-	# Copy the permissions to the temp file (in File::Copy module version
-	# 2.15 and later).
-	cp $diff, $tmp or die "Could not copy patch file to temp file: $!";
+  diffs = []
 
-	# Open the temp file, clearing contents.
-	open (OUTPUTFILE, '>', $tmp) or die "Could not open temp file: $!";
-} else {
-	*OUTPUTFILE = STDOUT;
-}
+  lines = contents.split('\n')
 
-# Print the log
-foreach my $clname (keys %cl_entries) {
-	print OUTPUTFILE "$clname:\n\n$hdrline\n\n$cl_entries{$clname}\n";
-}
+  i = 0
+  while i < len(lines):
+    line = lines[i]
 
-if ($inline) {
-	# Append the patch to the log
-	foreach (@orig_diff_lines) {
-		print OUTPUTFILE "$_\n";
-	}
-}
+    # Diff headers look like
+    #   --- a/gcc/tree.c
+    #   +++ b/gcc/tree.c
+    # or
+    #   *** gcc/cfgexpand.c     2013-12-25 20:07:24.800350058 +0400
+    #   --- gcc/cfgexpand.c     2013-12-25 20:06:30.612350178 +0400
 
-if ($inline && $diff ne "-") {
-	# Close $tmp
-	close(OUTPUTFILE);
+    if is_file_diff_start(line):
+      left = re.split(r'\s+', line)[1]
+    else:
+      i += 1
+      continue
 
-	# Write new contents to $diff atomically
-	mv $tmp, $diff or die "Could not move temp file to patch file: $!";
-}
+    left = remove_suffixes(left);
 
-exit 0;
+    i += 1
+    line = lines[i]
+
+    if not cache.match(r'^[+-][+-][+-] +(\S+)', line):
+      error("expected filename in line %d" % i)
+    right = remove_suffixes(cache.group(1));
+
+    # Extract real file name from left and right names.
+    filename = None
+    if left == right:
+      filename = left
+    elif left == '/dev/null':
+      filename = right;
+    elif right == '/dev/null':
+      filename = left;
+    else:
+      comps = []
+      while left and right:
+        left, l = os.path.split(left)
+        right, r = os.path.split(right)
+        if l != r:
+          break
+        comps.append(l)
+    
+      if not comps:
+        error("failed to extract common name for %s and %s" % (left, right))
+
+      comps.reverse()
+      filename = '/'.join(comps)
+
+    d = FileDiff(filename)
+    diffs.append(d)
+
+    # Collect hunks for current file.
+    hunk = None
+    i += 1
+    while i < len(lines):
+      line = lines[i]
+
+      # Create new hunk when we see hunk header
+      if is_hunk_start(line):
+        if hunk is not None:
+          d.hunks.append(hunk)
+        hunk = Hunk(line)
+        i += 1
+        continue
+
+      # Stop when we reach next diff
+      if (is_file_diff_start(line)
+          or line.startswith('diff ')
+          or line.startswith('Index: ')):
+        i -= 1
+        break
+
+      if hunk is not None:
+        hunk.lines.append(line)
+      i += 1
+
+    d.hunks.append(hunk)
+
+  return diffs
+
+def main():
+  name, email = read_user_info()
+
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], 'hiv', ['help', 'verbose', 'inline'])
+  except getopt.GetoptError, err:
+    error(str(err))
+
+  inline = False
+  verbose = 0
+
+  for o, a in opts:
+    if o in ('-h', '--help'):
+      print_help_and_exit()
+    elif o in ('-i', '--inline'):
+      inline = True
+    elif o in ('-v', '--verbose'):
+      verbose += 1
+    else:
+      assert False, "unhandled option"
+
+  if len(args) == 0:
+    args = ['-']
+
+  if len(args) == 1 and args[0] == '-':
+    input = sys.stdin
+  elif len(args) == 1:
+    input = open(args[0], 'rb')
+  else:
+    error("too many arguments; for more details run with -h")
+
+  contents = input.read()
+  diffs = parse_patch(contents)
+
+  if verbose:
+    print "Parse results:"
+    for d in diffs:
+      d.dump()
+
+  # Generate template ChangeLog.
+
+  logs = {}
+  for d in diffs:
+    log_name = d.clname
+
+    logs.setdefault(log_name, '')
+    logs[log_name] += '\t* %s' % d.relname
+
+    change_msg = ''
+
+    # Check if file was removed or added.
+    # Two patterns for context and unified diff.
+    if len(d.hunks) == 1:
+      hunk0 = d.hunks[0]
+      if hunk0.is_file_addition():
+        if re.search(r'testsuite.*(?<!\.exp)$', d.filename):
+          change_msg = ': New test.\n'
+        else:
+          change_msg = ": New file.\n"
+      elif hunk0.is_file_removal():
+        change_msg = ": Remove.\n"
+
+    _, ext = os.path.splitext(d.filename)
+    if not change_msg and ext in ['.c', '.cpp', '.C', '.cc', '.h', '.inc', '.def']:
+      fns = []
+      for hunk in d.hunks:
+        for fn in find_changed_funs(hunk):
+          if fn not in fns:
+            fns.append(fn)
+
+      for fn in fns:
+        if change_msg:
+          change_msg += "\t(%s):\n" % fn
+        else:
+          change_msg = " (%s):\n" % fn
+
+    logs[log_name] += change_msg if change_msg else ":\n"
+
+  if inline and args[0] != '-':
+    # Get a temp filename, rather than an open filehandle, because we use
+    # the open to truncate.
+    fd, tmp = tempfile.mkstemp("tmp.XXXXXXXX")
+    os.close(fd)
+
+    # Copy permissions to temp file
+    # (old Pythons do not support shutil.copymode)
+    shutil.copymode(args[0], tmp)
+
+    # Open the temp file, clearing contents.
+    out = open(tmp, 'wb')
+  else:
+    tmp = None
+    out = sys.stdout
+
+  # Print log
+  date = time.strftime('%Y-%m-%d')
+  for log_name, msg in sorted(logs.iteritems()):
+    out.write("""\
+%s:
+
+%s  %s  <%s>
+
+%s\n""" % (log_name, date, name, email, msg))
+
+  if inline:
+    # Append patch body
+    out.write(contents)
+
+    if args[0] != '-':
+      # Write new contents atomically
+      out.close()
+      shutil.move(tmp, args[0])
+
+if __name__ == '__main__':
+    main()

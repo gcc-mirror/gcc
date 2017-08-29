@@ -50,6 +50,13 @@
 #undef create_code
 #undef verify_code
 
+/* test-autovectorize.c */
+#define create_code create_code_autovectorize
+#define verify_code verify_code_autovectorize
+#include "test-autovectorize.c"
+#undef create_code
+#undef verify_code
+
 /* test-calling-external-function.c */
 #define create_code create_code_calling_external_function
 #define verify_code verify_code_calling_external_function
@@ -228,6 +235,8 @@
    of gcc_jit_context_set_bool_allow_unreachable_blocks affects the whole
    context.  */
 
+/* test-vector-types.cc: We don't use this, since it's C++.  */
+
 /* test-volatile.c */
 #define create_code create_code_volatile
 #define verify_code verify_code_volatile
@@ -265,6 +274,9 @@ const struct testcase testcases[] = {
   {"arrays",
    create_code_arrays,
    verify_code_arrays},
+  {"autovectorize",
+   create_code_autovectorize,
+   verify_code_autovectorize},
   {"calling_external_function",
    create_code_calling_external_function,
    verify_code_calling_external_function},

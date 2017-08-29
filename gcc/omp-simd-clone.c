@@ -48,7 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-eh.h"
 #include "varasm.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
@@ -1240,8 +1241,11 @@ simd_clone_adjust (struct cgraph_node *node)
       g = gimple_build_cond (EQ_EXPR, mask, build_zero_cst (TREE_TYPE (mask)),
 			     NULL, NULL);
       gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-      make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
-      FALLTHRU_EDGE (loop->header)->flags = EDGE_FALSE_VALUE;
+      edge e = make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
+      e->probability = profile_probability::unlikely ().guessed ();
+      edge fallthru = FALLTHRU_EDGE (loop->header);
+      fallthru->flags = EDGE_FALSE_VALUE;
+      fallthru->probability = profile_probability::likely ().guessed ();
     }
 
   basic_block latch_bb = NULL;

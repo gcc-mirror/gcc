@@ -26,7 +26,15 @@ a copy of the GCC Runtime Library Exception along with this program;
 see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 <http://www.gnu.org/licenses/>.  */
 
+/* TARGET_OS_CPP_BUILTINS, down to BPABI if defined.  */
 
+#if defined (TARGET_BPABI_CPP_BUILTINS)
+#define MAYBE_TARGET_BPABI_CPP_BUILTINS TARGET_BPABI_CPP_BUILTINS
+#else
+#define MAYBE_TARGET_BPABI_CPP_BUILTINS()
+#endif
+
+#undef TARGET_OS_CPP_BUILTINS
 #define TARGET_OS_CPP_BUILTINS()		\
   do {						\
     if (TARGET_BIG_END)				\
@@ -36,8 +44,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 						\
     if (arm_arch_xscale)			\
       builtin_define ("CPU=XSCALE");		\
+    else if (arm_arch7)				\
+      {						\
+	if (!arm_arch_notm)			\
+	  builtin_define ("CPU=ARMARCH7M");	\
+	else if (TARGET_THUMB)			\
+	  builtin_define ("CPU=ARMARCH7_T2");	\
+	else					\
+	  builtin_define ("CPU=ARMARCH7");	\
+      }						\
+    else if (arm_arch6)				\
+      {						\
+	if (TARGET_THUMB)			\
+	  builtin_define ("CPU=ARMARCH6_T");	\
+	else					\
+	  builtin_define ("CPU=ARMARCH6");	\
+      }						\
     else if (arm_arch5)				\
-      builtin_define ("CPU=ARMARCH5");		\
+      {						\
+	if (TARGET_THUMB)			\
+	  builtin_define ("CPU=ARMARCH5_T");	\
+	else					\
+	  builtin_define ("CPU=ARMARCH5");	\
+      }						\
     else if (arm_arch4)				\
       {						\
 	if (TARGET_THUMB)			\
@@ -46,6 +75,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 	  builtin_define ("CPU=ARMARCH4");	\
       }						\
     VXWORKS_OS_CPP_BUILTINS ();			\
+    MAYBE_TARGET_BPABI_CPP_BUILTINS ();		\
   } while (0)
 
 #undef SUBTARGET_OVERRIDE_OPTIONS
@@ -55,27 +85,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #undef SUBTARGET_CPP_SPEC
 #define SUBTARGET_CPP_SPEC "-D__ELF__" VXWORKS_ADDITIONAL_CPP_SPEC
 
-#undef  CC1_SPEC
-#define CC1_SPEC							\
-"%{tstrongarm:-mlittle-endian -mcpu=strongarm ;				\
-   t4:        -mlittle-endian -march=armv4 ;				\
-   t4be:      -mbig-endian -march=armv4 ;				\
-   t4t:       -mthumb -mthumb-interwork -mlittle-endian -march=armv4t ;	\
-   t4tbe:     -mthumb -mthumb-interwork -mbig-endian -march=armv4t ;	\
-   t5:        -mlittle-endian -march=armv5 ;				\
-   t5be:      -mbig-endian -march=armv5 ;				\
-   t5t:       -mthumb -mthumb-interwork -mlittle-endian -march=armv5 ;	\
-   t5tbe:     -mthumb -mthumb-interwork -mbig-endian -march=armv5 ;	\
-   txscale:   -mlittle-endian -mcpu=xscale ;				\
-   txscalebe: -mbig-endian -mcpu=xscale ;				\
-            : -march=armv4}"
+/* .text.hot and .text.unlikely sections are badly handled by the
+   VxWorks kernel mode loader for ARM style exceptions.  */
 
-/* Pass -EB for big-endian targets.  */
-#define VXWORKS_ENDIAN_SPEC \
-  "%{mbig-endian|t4be|t4tbe|t5be|t5tbe|txscalebe:-EB}"
+#if ARM_UNWIND_INFO
+#define EXTRA_CC1_SPEC "%{!mrtp:-fno-reorder-functions}"
+#else
+#define EXTRA_CC1_SPEC
+#endif
+
+#undef  CC1_SPEC
+#define CC1_SPEC "" EXTRA_CC1_SPEC
+
+/* Translate an explicit -mbig-endian as an explicit -EB to assembler
+   and linker, and pass abi options matching the target expectations
+   or command-line requests.  */
+#define VXWORKS_ENDIAN_SPEC "%{mbig-endian:-EB}"
+
+#if defined (TARGET_BPABI_CPP_BUILTINS)
+#define MAYBE_ASM_ABI_SPEC \
+  "%{mabi=apcs-gnu|mabi=atpcs:-meabi=gnu;:-meabi=5}" TARGET_FIX_V4BX_SPEC
+#else
+#define MAYBE_ASM_ABI_SPEC
+#endif
 
 #undef SUBTARGET_EXTRA_ASM_SPEC
-#define SUBTARGET_EXTRA_ASM_SPEC VXWORKS_ENDIAN_SPEC
+#define SUBTARGET_EXTRA_ASM_SPEC MAYBE_ASM_ABI_SPEC " " VXWORKS_ENDIAN_SPEC
 
 #undef LINK_SPEC
 #define LINK_SPEC VXWORKS_LINK_SPEC " " VXWORKS_ENDIAN_SPEC
@@ -88,6 +123,14 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef ENDFILE_SPEC
 #define ENDFILE_SPEC VXWORKS_ENDFILE_SPEC
+
+/* For exceptions, pre VX7 uses DWARF2 info, VX7 uses ARM unwinding.  */
+#undef  DWARF2_UNWIND_INFO
+#define DWARF2_UNWIND_INFO (!TARGET_VXWORKS7)
+
+#undef ARM_TARGET2_DWARF_FORMAT
+#define ARM_TARGET2_DWARF_FORMAT \
+  (TARGET_VXWORKS_RTP ? DW_EH_PE_pcrel : DW_EH_PE_absptr)
 
 /* There is no default multilib.  */
 #undef MULTILIB_DEFAULTS

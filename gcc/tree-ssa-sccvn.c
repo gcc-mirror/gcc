@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "gimple-iterator.h"
 #include "gimple-match.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -1644,13 +1646,25 @@ static unsigned mprts_hook_cnt;
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
 static tree
-vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
+vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops_)
 {
   if (!rcode.is_tree_code ())
     return NULL_TREE;
+  tree *ops = ops_;
+  unsigned int length = TREE_CODE_LENGTH ((tree_code) rcode);
+  if (rcode == CONSTRUCTOR
+      /* ???  We're arriving here with SCCVNs view, decomposed CONSTRUCTOR
+         and GIMPLEs / match-and-simplifies, CONSTRUCTOR as GENERIC tree.  */
+      && TREE_CODE (ops_[0]) == CONSTRUCTOR)
+    {
+      length = CONSTRUCTOR_NELTS (ops_[0]);
+      ops = XALLOCAVEC (tree, length);
+      for (unsigned i = 0; i < length; ++i)
+	ops[i] = CONSTRUCTOR_ELT (ops_[0], i)->value;
+    }
   vn_nary_op_t vnresult = NULL;
-  tree res = vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
-				       (tree_code) rcode, type, ops, &vnresult);
+  tree res = vn_nary_op_lookup_pieces (length, (tree_code) rcode,
+				       type, ops, &vnresult);
   /* We can end up endlessly recursing simplifications if the lookup above
      presents us with a def-use chain that mirrors the original simplification.
      See PR80887 for an example.  Limit successful lookup artificially
@@ -2320,7 +2334,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       memset (&op, 0, sizeof (op));
       op.type = vr->type;
       op.opcode = MEM_REF;
-      op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
+      op.op0 = build_int_cst (ptr_type_node, at - lhs_offset + rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
       vr->operands[0] = op;
       op.type = TREE_TYPE (rhs);

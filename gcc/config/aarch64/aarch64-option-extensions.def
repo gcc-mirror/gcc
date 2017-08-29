@@ -65,6 +65,6 @@ AARCH64_OPT_EXTENSION("rcpc", AARCH64_FL_RCPC, 0, 0, "lrcpc")
 
 /* Enabling "rdma" also enables "fp", "simd".
    Disabling "rdma" just disables "rdma".  */
-AARCH64_OPT_EXTENSION("rdma", AARCH64_FL_RDMA, AARCH64_FL_FP | AARCH64_FL_SIMD, 0, "rdma")
+AARCH64_OPT_EXTENSION("rdma", AARCH64_FL_RDMA, AARCH64_FL_FP | AARCH64_FL_SIMD, 0, "asimdrdm")
 
 #undef AARCH64_OPT_EXTENSION

@@ -109,6 +109,20 @@ Pointers, `const`, and `volatile`
    Param "loc" is optional.
 
 
+Vector types
+------------
+
+.. function::  gccjit::type gccjit::type::get_vector (size_t num_units)
+
+   Given type "T", get type:
+
+   .. code-block:: c
+
+      T  __attribute__ ((vector_size (sizeof(T) * num_units))
+
+   T must be integral or floating point; num_units must be a power of two.
+
+
 Structures and unions
 ---------------------
 

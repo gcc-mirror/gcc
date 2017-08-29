@@ -4225,8 +4225,7 @@ curr_insn_transform (bool check_only_p)
 		  /* Strict_low_part requires reload the register not
 		     the sub-register.	*/
 		  && (curr_static_id->operand[i].strict_low
-		      || (GET_MODE_SIZE (mode)
-			  <= GET_MODE_SIZE (GET_MODE (reg))
+		      || (!paradoxical_subreg_p (mode, GET_MODE (reg))
 			  && (hard_regno
 			      = get_try_hard_regno (REGNO (reg))) >= 0
 			  && (simplify_subreg_regno
@@ -5465,7 +5464,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	 mode was larger than a register, just use the reg_rtx.  Otherwise,
 	 limit the size to that of the biggest access in the function.  */
       if (mode == VOIDmode
-	  || GET_MODE_SIZE (mode) > GET_MODE_SIZE (reg_rtx_mode))
+	  || paradoxical_subreg_p (mode, reg_rtx_mode))
 	{
 	  original_reg = regno_reg_rtx[hard_regno];
 	  mode = reg_rtx_mode;

@@ -47,4 +47,160 @@ extern char *make_unique_name (tree, const char *, bool);
 extern tree make_dispatcher_decl (const tree);
 extern bool is_function_default_version (const tree);
 
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTES
+   is ATTRIBUTE.
+
+   Such modified types already made are recorded so that duplicates
+   are not made.  */
+
+extern tree build_type_attribute_variant (tree, tree);
+extern tree build_decl_attribute_variant (tree, tree);
+extern tree build_type_attribute_qual_variant (tree, tree, int);
+
+extern bool attribute_value_equal (const_tree, const_tree);
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+extern int comp_type_attributes (const_tree, const_tree);
+
+/* Default versions of target-overridable functions.  */
+extern tree merge_decl_attributes (tree, tree);
+extern tree merge_type_attributes (tree, tree);
+
+/* Remove any instances of attribute ATTR_NAME in LIST and return the
+   modified list.  */
+
+extern tree remove_attribute (const char *, tree);
+
+/* Given two attributes lists, return a list of their union.  */
+
+extern tree merge_attributes (tree, tree);
+
+/* Given two Windows decl attributes lists, possibly including
+   dllimport, return a list of their union .  */
+extern tree merge_dllimport_decl_attributes (tree, tree);
+
+/* Handle a "dllimport" or "dllexport" attribute.  */
+extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
+
+extern int attribute_list_equal (const_tree, const_tree);
+extern int attribute_list_contained (const_tree, const_tree);
+
+/* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
+   so that we have a canonical form of attribute names.  */
+
+static inline tree
+canonicalize_attr_name (tree attr_name)
+{
+  const size_t l = IDENTIFIER_LENGTH (attr_name);
+  const char *s = IDENTIFIER_POINTER (attr_name);
+
+  if (l > 4 && s[0] == '_' && s[1] == '_' && s[l - 1] == '_' && s[l - 2] == '_')
+    return get_identifier_with_length (s + 2, l - 4);
+
+  return attr_name;
+}
+
+/* Compare attribute identifiers ATTR1 and ATTR2 with length ATTR1_LEN and
+   ATTR2_LEN.  */
+
+static inline bool
+cmp_attribs (const char *attr1, size_t attr1_len,
+	     const char *attr2, size_t attr2_len)
+{
+  return attr1_len == attr2_len && strncmp (attr1, attr2, attr1_len) == 0;
+}
+
+/* Compare attribute identifiers ATTR1 and ATTR2.  */
+
+static inline bool
+cmp_attribs (const char *attr1, const char *attr2)
+{
+  return cmp_attribs (attr1, strlen (attr1), attr2, strlen (attr2));
+}
+
+/* Given an identifier node IDENT and a string ATTR_NAME, return true
+   if the identifier node is a valid attribute name for the string.  */
+
+static inline bool
+is_attribute_p (const char *attr_name, const_tree ident)
+{
+  return cmp_attribs (attr_name, strlen (attr_name),
+		      IDENTIFIER_POINTER (ident), IDENTIFIER_LENGTH (ident));
+}
+
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list element if the attribute
+   is part of the list, or NULL_TREE if not found.  If the attribute
+   appears more than once, this only returns the first occurrence; the
+   TREE_CHAIN of the return value should be passed back in if further
+   occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
+
+static inline tree
+lookup_attribute (const char *attr_name, tree list)
+{
+  gcc_checking_assert (attr_name[0] != '_');
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    {
+      size_t attr_len = strlen (attr_name);
+      /* Do the strlen() before calling the out-of-line implementation.
+	 In most cases attr_name is a string constant, and the compiler
+	 will optimize the strlen() away.  */
+      while (list)
+	{
+	  tree attr = get_attribute_name (list);
+	  size_t ident_len = IDENTIFIER_LENGTH (attr);
+	  if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
+			   ident_len))
+	    break;
+	  list = TREE_CHAIN (list);
+	}
+
+      return list;
+    }
+}
+
+/* Given an attribute name ATTR_NAME and a list of attributes LIST,
+   return a pointer to the attribute's list first element if the attribute
+   starts with ATTR_NAME.  ATTR_NAME must be in the form 'text' (not
+   '__text__').  */
+
+static inline tree
+lookup_attribute_by_prefix (const char *attr_name, tree list)
+{
+  gcc_checking_assert (attr_name[0] != '_');
+  /* In most cases, list is NULL_TREE.  */
+  if (list == NULL_TREE)
+    return NULL_TREE;
+  else
+    {
+      size_t attr_len = strlen (attr_name);
+      while (list)
+	{
+	  size_t ident_len = IDENTIFIER_LENGTH (get_attribute_name (list));
+
+	  if (attr_len > ident_len)
+	    {
+	      list = TREE_CHAIN (list);
+	      continue;
+	    }
+
+	  const char *p = IDENTIFIER_POINTER (get_attribute_name (list));
+	  gcc_checking_assert (attr_len == 0 || p[0] != '_');
+
+	  if (strncmp (attr_name, p, attr_len) == 0)
+	    break;
+
+	  list = TREE_CHAIN (list);
+	}
+
+      return list;
+    }
+}
+
 #endif // GCC_ATTRIBS_H

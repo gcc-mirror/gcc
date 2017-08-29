@@ -26,6 +26,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "memmodel.h"
 #include "gimple.h"
 #include "df.h"
@@ -9456,6 +9458,25 @@ And in the noreturn case:
 
   if (current_function_has_exception_handlers ())
     alpha_pad_function_end ();
+
+  /* CALL_PAL that implements trap insn, updates program counter to point
+     after the insn.  In case trap is the last insn in the function,
+     emit NOP to guarantee that PC remains inside function boundaries.
+     This workaround is needed to get reliable backtraces.  */
+  
+  rtx_insn *insn = prev_active_insn (get_last_insn ());
+
+  if (insn && NONJUMP_INSN_P (insn))
+    {
+      rtx pat = PATTERN (insn);
+      if (GET_CODE (pat) == PARALLEL)
+	{
+	  rtx vec = XVECEXP (pat, 0, 0);
+	  if (GET_CODE (vec) == TRAP_IF
+	      && XEXP (vec, 0) == const1_rtx)
+	    emit_insn_after (gen_unop (), insn);
+	}
+    }
 }
 
 static void

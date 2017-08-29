@@ -25,10 +25,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "ubsan.h"
 #include "c-family/c-ubsan.h"
-#include "asan.h"
 #include "stor-layout.h"
 #include "builtins.h"
 #include "gimplify.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "asan.h"
 
 /* Instrument division by zero and INT_MIN / -1.  If not instrumenting,
    return NULL_TREE.  */

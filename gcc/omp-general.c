@@ -33,7 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "langhooks.h"
 #include "omp-general.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 tree
 omp_find_clause (tree clauses, enum omp_clause_code kind)
@@ -429,8 +430,7 @@ omp_max_vf (void)
       || optimize_debug
       || !flag_tree_loop_optimize
       || (!flag_tree_loop_vectorize
-	  && (global_options_set.x_flag_tree_loop_vectorize
-	      || global_options_set.x_flag_tree_vectorize)))
+	  && global_options_set.x_flag_tree_loop_vectorize))
     return 1;
 
   int vf = 1;

@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop-ivopts.h"
 #include "tree-eh.h"
 #include "tsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "builtins.h"
 #include "target.h"

@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "gimplify.h"
@@ -2457,33 +2459,43 @@ warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
       || body_loc_exp == next_loc_exp)
     return;
 
-  /* Find the macro map for the macro expansion BODY_LOC.  */
-  const line_map *map = linemap_lookup (line_table, body_loc);
-  const line_map_macro *macro_map = linemap_check_macro (map);
+  /* Find the macro maps for the macro expansions.  */
+  const line_map *body_map = linemap_lookup (line_table, body_loc);
+  const line_map *next_map = linemap_lookup (line_table, next_loc);
+  const line_map *guard_map = linemap_lookup (line_table, guard_loc);
 
-  /* Now see if the following token is coming from the same macro
-     expansion.  If it is, it's a problem, because it should've been
-     parsed at this point.  We only look at odd-numbered indexes
-     within the MACRO_MAP_LOCATIONS array, i.e. the spelling locations
-     of the tokens.  */
-  bool found_guard = false;
-  bool found_next = false;
-  for (unsigned int i = 1;
-       i < 2 * MACRO_MAP_NUM_MACRO_TOKENS (macro_map);
-       i += 2)
-    {
-      if (MACRO_MAP_LOCATIONS (macro_map)[i] == next_loc_exp)
-	found_next = true;
-      if (MACRO_MAP_LOCATIONS (macro_map)[i] == guard_loc_exp)
-	found_guard = true;
-    }
+  /* Now see if the following token (after the body) is coming from the
+     same macro expansion.  If it is, it might be a problem.  */
+  if (body_map != next_map)
+    return;
 
   /* The conditional itself must not come from the same expansion, because
      we don't want to warn about
      #define IF if (x) x++; y++
      and similar.  */
-  if (!found_next || found_guard)
+  if (guard_map == body_map)
     return;
+
+  /* Handle the case where NEXT and BODY come from the same expansion while
+     GUARD doesn't, yet we shouldn't warn.  E.g.
+
+       #define GUARD if (...)
+       #define GUARD2 GUARD
+
+     and in the definition of another macro:
+
+       GUARD2
+	foo ();
+       return 1;
+   */
+  while (linemap_macro_expansion_map_p (guard_map))
+    {
+      const line_map_macro *mm = linemap_check_macro (guard_map);
+      guard_loc_exp = MACRO_MAP_EXPANSION_POINT_LOCATION (mm);
+      guard_map = linemap_lookup (line_table, guard_loc_exp);
+      if (guard_map == body_map)
+	return;
+    }
 
   if (warning_at (body_loc, OPT_Wmultistatement_macros,
 		  "macro expands to multiple statements"))

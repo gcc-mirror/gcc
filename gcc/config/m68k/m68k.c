@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "cfghooks.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "rtl.h"
 #include "df.h"
 #include "alias.h"

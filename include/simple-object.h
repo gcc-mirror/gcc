@@ -197,6 +197,14 @@ simple_object_write_to_file (simple_object_write *simple_object,
 extern void
 simple_object_release_write (simple_object_write *);
 
+/* Copy LTO debug sections from SRC_OBJECT to DEST.
+   If an error occurs, return the errno value in ERR and an error string.  */
+
+extern const char *
+simple_object_copy_lto_debug_sections (simple_object_read *src_object,
+				       const char *dest,
+				       int *err);
+
 #ifdef __cplusplus
 }
 #endif

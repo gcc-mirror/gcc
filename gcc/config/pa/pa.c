@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -115,9 +116,9 @@ static void set_reg_plus_d (int, int, HOST_WIDE_INT, int);
 static rtx pa_function_value (const_tree, const_tree, bool);
 static rtx pa_libcall_value (machine_mode, const_rtx);
 static bool pa_function_value_regno_p (const unsigned int);
-static void pa_output_function_prologue (FILE *, HOST_WIDE_INT);
+static void pa_output_function_prologue (FILE *);
 static void update_total_code_bytes (unsigned int);
-static void pa_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void pa_output_function_epilogue (FILE *);
 static int pa_adjust_cost (rtx_insn *, int, rtx_insn *, int, unsigned int);
 static int pa_adjust_priority (rtx_insn *, int);
 static int pa_issue_rate (void);
@@ -3821,15 +3822,6 @@ pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
 	  & ~(PREFERRED_STACK_BOUNDARY / BITS_PER_UNIT - 1));
 }
 
-/* Generate the assembly code for function entry.  FILE is a stdio
-   stream to output the code to.  SIZE is an int: how many units of
-   temporary storage to allocate.
-
-   Refer to the array `regs_ever_live' to determine which registers to
-   save; `regs_ever_live[I]' is nonzero if register number I is ever
-   used in the function.  This function is responsible for knowing
-   which registers should not be saved even if used.  */
-
 /* On HP-PA, move-double insns between fpu and cpu need an 8-byte block
    of memory.  If any fpu reg is used in the function, we allocate
    such a block here, at the bottom of the frame, just in case it's needed.
@@ -3839,7 +3831,7 @@ pa_compute_frame_size (HOST_WIDE_INT size, int *fregs_live)
    to do this is made in regclass.c.  */
 
 static void
-pa_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+pa_output_function_prologue (FILE *file)
 {
   /* The function's label and associated .PROC must never be
      separated and must be output *after* any profiling declarations
@@ -4253,7 +4245,7 @@ update_total_code_bytes (unsigned int nbytes)
    adjustments before returning.  */
 
 static void
-pa_output_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+pa_output_function_epilogue (FILE *file)
 {
   rtx_insn *insn = get_last_insn ();
   bool extra_nop;

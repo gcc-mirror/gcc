@@ -1,8 +1,7 @@
 /* PR middle-end/36859 */
 /* { dg-do run } */
-/* { dg-options "-w" { target { ! ia32 } } } */
-/* { dg-options "-w" { target { llp64 } } } */
-/* { dg-options "-w -msse2 -mpreferred-stack-boundary=2" { target { ia32 } } } */
+/* { dg-options "-w -msse2" } */
+/* { dg-additional-options "-mpreferred-stack-boundary=2" { target { ia32 } } } */
 /* { dg-require-effective-target sse2 } */
 
 #include "sse2-check.h"

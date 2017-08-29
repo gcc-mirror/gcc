@@ -386,7 +386,8 @@ expand_vector_broadcast (machine_mode vmode, rtx op)
   /* ??? If the target doesn't have a vec_init, then we have no easy way
      of performing this operation.  Most of this sort of generic support
      is hidden away in the vector lowering support in gimple.  */
-  icode = optab_handler (vec_init_optab, vmode);
+  icode = convert_optab_handler (vec_init_optab, vmode,
+				 GET_MODE_INNER (vmode));
   if (icode == CODE_FOR_nothing)
     return NULL;
 
@@ -6296,17 +6297,19 @@ expand_asm_memory_barrier (void)
 void
 expand_mem_thread_fence (enum memmodel model)
 {
+  if (is_mm_relaxed (model))
+    return;
   if (targetm.have_mem_thread_fence ())
-    emit_insn (targetm.gen_mem_thread_fence (GEN_INT (model)));
-  else if (!is_mm_relaxed (model))
     {
-      if (targetm.have_memory_barrier ())
-	emit_insn (targetm.gen_memory_barrier ());
-      else if (synchronize_libfunc != NULL_RTX)
-	emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
-      else
-	expand_asm_memory_barrier ();
+      emit_insn (targetm.gen_mem_thread_fence (GEN_INT (model)));
+      expand_asm_memory_barrier ();
     }
+  else if (targetm.have_memory_barrier ())
+    emit_insn (targetm.gen_memory_barrier ());
+  else if (synchronize_libfunc != NULL_RTX)
+    emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
+  else
+    expand_asm_memory_barrier ();
 }
 
 /* This routine will either emit the mem_signal_fence pattern or issue a 

@@ -942,3 +942,636 @@ is_function_default_version (const tree decl)
   return (TREE_CODE (attr) == STRING_CST
 	  && strcmp (TREE_STRING_POINTER (attr), "default") == 0);
 }
+
+/* Return a declaration like DDECL except that its DECL_ATTRIBUTES
+   is ATTRIBUTE.  */
+
+tree
+build_decl_attribute_variant (tree ddecl, tree attribute)
+{
+  DECL_ATTRIBUTES (ddecl) = attribute;
+  return ddecl;
+}
+
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTE
+   is ATTRIBUTE and its qualifiers are QUALS.
+
+   Record such modified types already made so we don't make duplicates.  */
+
+tree
+build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
+{
+  if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
+    {
+      tree ntype;
+
+      /* Building a distinct copy of a tagged type is inappropriate; it
+	 causes breakage in code that expects there to be a one-to-one
+	 relationship between a struct and its fields.
+	 build_duplicate_type is another solution (as used in
+	 handle_transparent_union_attribute), but that doesn't play well
+	 with the stronger C++ type identity model.  */
+      if (TREE_CODE (ttype) == RECORD_TYPE
+	  || TREE_CODE (ttype) == UNION_TYPE
+	  || TREE_CODE (ttype) == QUAL_UNION_TYPE
+	  || TREE_CODE (ttype) == ENUMERAL_TYPE)
+	{
+	  warning (OPT_Wattributes,
+		   "ignoring attributes applied to %qT after definition",
+		   TYPE_MAIN_VARIANT (ttype));
+	  return build_qualified_type (ttype, quals);
+	}
+
+      ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
+      ntype = build_distinct_type_copy (ttype);
+
+      TYPE_ATTRIBUTES (ntype) = attribute;
+
+      hashval_t hash = type_hash_canon_hash (ntype);
+      ntype = type_hash_canon (hash, ntype);
+
+      /* If the target-dependent attributes make NTYPE different from
+	 its canonical type, we will need to use structural equality
+	 checks for this type.  */
+      if (TYPE_STRUCTURAL_EQUALITY_P (ttype)
+	  || !comp_type_attributes (ntype, ttype))
+	SET_TYPE_STRUCTURAL_EQUALITY (ntype);
+      else if (TYPE_CANONICAL (ntype) == ntype)
+	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
+
+      ttype = build_qualified_type (ntype, quals);
+    }
+  else if (TYPE_QUALS (ttype) != quals)
+    ttype = build_qualified_type (ttype, quals);
+
+  return ttype;
+}
+
+/* Compare two identifier nodes representing attributes.
+   Return true if they are the same, false otherwise.  */
+
+static bool
+cmp_attrib_identifiers (const_tree attr1, const_tree attr2)
+{
+  /* Make sure we're dealing with IDENTIFIER_NODEs.  */
+  gcc_checking_assert (TREE_CODE (attr1) == IDENTIFIER_NODE
+		       && TREE_CODE (attr2) == IDENTIFIER_NODE);
+
+  /* Identifiers can be compared directly for equality.  */
+  if (attr1 == attr2)
+    return true;
+
+  return cmp_attribs (IDENTIFIER_POINTER (attr1), IDENTIFIER_LENGTH (attr1),
+		      IDENTIFIER_POINTER (attr2), IDENTIFIER_LENGTH (attr2));
+}
+
+/* Compare two constructor-element-type constants.  Return 1 if the lists
+   are known to be equal; otherwise return 0.  */
+
+static bool
+simple_cst_list_equal (const_tree l1, const_tree l2)
+{
+  while (l1 != NULL_TREE && l2 != NULL_TREE)
+    {
+      if (simple_cst_equal (TREE_VALUE (l1), TREE_VALUE (l2)) != 1)
+	return false;
+
+      l1 = TREE_CHAIN (l1);
+      l2 = TREE_CHAIN (l2);
+    }
+
+  return l1 == l2;
+}
+
+/* Check if "omp declare simd" attribute arguments, CLAUSES1 and CLAUSES2, are
+   the same.  */
+
+static bool
+omp_declare_simd_clauses_equal (tree clauses1, tree clauses2)
+{
+  tree cl1, cl2;
+  for (cl1 = clauses1, cl2 = clauses2;
+       cl1 && cl2;
+       cl1 = OMP_CLAUSE_CHAIN (cl1), cl2 = OMP_CLAUSE_CHAIN (cl2))
+    {
+      if (OMP_CLAUSE_CODE (cl1) != OMP_CLAUSE_CODE (cl2))
+	return false;
+      if (OMP_CLAUSE_CODE (cl1) != OMP_CLAUSE_SIMDLEN)
+	{
+	  if (simple_cst_equal (OMP_CLAUSE_DECL (cl1),
+				OMP_CLAUSE_DECL (cl2)) != 1)
+	    return false;
+	}
+      switch (OMP_CLAUSE_CODE (cl1))
+	{
+	case OMP_CLAUSE_ALIGNED:
+	  if (simple_cst_equal (OMP_CLAUSE_ALIGNED_ALIGNMENT (cl1),
+				OMP_CLAUSE_ALIGNED_ALIGNMENT (cl2)) != 1)
+	    return false;
+	  break;
+	case OMP_CLAUSE_LINEAR:
+	  if (simple_cst_equal (OMP_CLAUSE_LINEAR_STEP (cl1),
+				OMP_CLAUSE_LINEAR_STEP (cl2)) != 1)
+	    return false;
+	  break;
+	case OMP_CLAUSE_SIMDLEN:
+	  if (simple_cst_equal (OMP_CLAUSE_SIMDLEN_EXPR (cl1),
+				OMP_CLAUSE_SIMDLEN_EXPR (cl2)) != 1)
+	    return false;
+	default:
+	  break;
+	}
+    }
+  return true;
+}
+
+
+/* Compare two attributes for their value identity.  Return true if the
+   attribute values are known to be equal; otherwise return false.  */
+
+bool
+attribute_value_equal (const_tree attr1, const_tree attr2)
+{
+  if (TREE_VALUE (attr1) == TREE_VALUE (attr2))
+    return true;
+
+  if (TREE_VALUE (attr1) != NULL_TREE
+      && TREE_CODE (TREE_VALUE (attr1)) == TREE_LIST
+      && TREE_VALUE (attr2) != NULL_TREE
+      && TREE_CODE (TREE_VALUE (attr2)) == TREE_LIST)
+    {
+      /* Handle attribute format.  */
+      if (is_attribute_p ("format", get_attribute_name (attr1)))
+	{
+	  attr1 = TREE_VALUE (attr1);
+	  attr2 = TREE_VALUE (attr2);
+	  /* Compare the archetypes (printf/scanf/strftime/...).  */
+	  if (!cmp_attrib_identifiers (TREE_VALUE (attr1), TREE_VALUE (attr2)))
+	    return false;
+	  /* Archetypes are the same.  Compare the rest.  */
+	  return (simple_cst_list_equal (TREE_CHAIN (attr1),
+					 TREE_CHAIN (attr2)) == 1);
+	}
+      return (simple_cst_list_equal (TREE_VALUE (attr1),
+				     TREE_VALUE (attr2)) == 1);
+    }
+
+  if ((flag_openmp || flag_openmp_simd)
+      && TREE_VALUE (attr1) && TREE_VALUE (attr2)
+      && TREE_CODE (TREE_VALUE (attr1)) == OMP_CLAUSE
+      && TREE_CODE (TREE_VALUE (attr2)) == OMP_CLAUSE)
+    return omp_declare_simd_clauses_equal (TREE_VALUE (attr1),
+					   TREE_VALUE (attr2));
+
+  return (simple_cst_equal (TREE_VALUE (attr1), TREE_VALUE (attr2)) == 1);
+}
+
+/* Return 0 if the attributes for two types are incompatible, 1 if they
+   are compatible, and 2 if they are nearly compatible (which causes a
+   warning to be generated).  */
+int
+comp_type_attributes (const_tree type1, const_tree type2)
+{
+  const_tree a1 = TYPE_ATTRIBUTES (type1);
+  const_tree a2 = TYPE_ATTRIBUTES (type2);
+  const_tree a;
+
+  if (a1 == a2)
+    return 1;
+  for (a = a1; a != NULL_TREE; a = TREE_CHAIN (a))
+    {
+      const struct attribute_spec *as;
+      const_tree attr;
+
+      as = lookup_attribute_spec (get_attribute_name (a));
+      if (!as || as->affects_type_identity == false)
+	continue;
+
+      attr = lookup_attribute (as->name, CONST_CAST_TREE (a2));
+      if (!attr || !attribute_value_equal (a, attr))
+	break;
+    }
+  if (!a)
+    {
+      for (a = a2; a != NULL_TREE; a = TREE_CHAIN (a))
+	{
+	  const struct attribute_spec *as;
+
+	  as = lookup_attribute_spec (get_attribute_name (a));
+	  if (!as || as->affects_type_identity == false)
+	    continue;
+
+	  if (!lookup_attribute (as->name, CONST_CAST_TREE (a1)))
+	    break;
+	  /* We don't need to compare trees again, as we did this
+	     already in first loop.  */
+	}
+      /* All types - affecting identity - are equal, so
+	 there is no need to call target hook for comparison.  */
+      if (!a)
+	return 1;
+    }
+  if (lookup_attribute ("transaction_safe", CONST_CAST_TREE (a)))
+    return 0;
+  /* As some type combinations - like default calling-convention - might
+     be compatible, we have to call the target hook to get the final result.  */
+  return targetm.comp_type_attributes (type1, type2);
+}
+
+/* Return a type like TTYPE except that its TYPE_ATTRIBUTE
+   is ATTRIBUTE.
+
+   Record such modified types already made so we don't make duplicates.  */
+
+tree
+build_type_attribute_variant (tree ttype, tree attribute)
+{
+  return build_type_attribute_qual_variant (ttype, attribute,
+					    TYPE_QUALS (ttype));
+}
+
+/* A variant of lookup_attribute() that can be used with an identifier
+   as the first argument, and where the identifier can be either
+   'text' or '__text__'.
+
+   Given an attribute ATTR_IDENTIFIER, and a list of attributes LIST,
+   return a pointer to the attribute's list element if the attribute
+   is part of the list, or NULL_TREE if not found.  If the attribute
+   appears more than once, this only returns the first occurrence; the
+   TREE_CHAIN of the return value should be passed back in if further
+   occurrences are wanted.  ATTR_IDENTIFIER must be an identifier but
+   can be in the form 'text' or '__text__'.  */
+static tree
+lookup_ident_attribute (tree attr_identifier, tree list)
+{
+  gcc_checking_assert (TREE_CODE (attr_identifier) == IDENTIFIER_NODE);
+
+  while (list)
+    {
+      gcc_checking_assert (TREE_CODE (get_attribute_name (list))
+			   == IDENTIFIER_NODE);
+
+      if (cmp_attrib_identifiers (attr_identifier,
+				  get_attribute_name (list)))
+	/* Found it.  */
+	break;
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
+}
+
+/* Remove any instances of attribute ATTR_NAME in LIST and return the
+   modified list.  */
+
+tree
+remove_attribute (const char *attr_name, tree list)
+{
+  tree *p;
+  gcc_checking_assert (attr_name[0] != '_');
+
+  for (p = &list; *p;)
+    {
+      tree l = *p;
+
+      tree attr = get_attribute_name (l);
+      if (is_attribute_p (attr_name, attr))
+	*p = TREE_CHAIN (l);
+      else
+	p = &TREE_CHAIN (l);
+    }
+
+  return list;
+}
+
+/* Return an attribute list that is the union of a1 and a2.  */
+
+tree
+merge_attributes (tree a1, tree a2)
+{
+  tree attributes;
+
+  /* Either one unset?  Take the set one.  */
+
+  if ((attributes = a1) == 0)
+    attributes = a2;
+
+  /* One that completely contains the other?  Take it.  */
+
+  else if (a2 != 0 && ! attribute_list_contained (a1, a2))
+    {
+      if (attribute_list_contained (a2, a1))
+	attributes = a2;
+      else
+	{
+	  /* Pick the longest list, and hang on the other list.  */
+
+	  if (list_length (a1) < list_length (a2))
+	    attributes = a2, a2 = a1;
+
+	  for (; a2 != 0; a2 = TREE_CHAIN (a2))
+	    {
+	      tree a;
+	      for (a = lookup_ident_attribute (get_attribute_name (a2),
+					       attributes);
+		   a != NULL_TREE && !attribute_value_equal (a, a2);
+		   a = lookup_ident_attribute (get_attribute_name (a2),
+					       TREE_CHAIN (a)))
+		;
+	      if (a == NULL_TREE)
+		{
+		  a1 = copy_node (a2);
+		  TREE_CHAIN (a1) = attributes;
+		  attributes = a1;
+		}
+	    }
+	}
+    }
+  return attributes;
+}
+
+/* Given types T1 and T2, merge their attributes and return
+  the result.  */
+
+tree
+merge_type_attributes (tree t1, tree t2)
+{
+  return merge_attributes (TYPE_ATTRIBUTES (t1),
+			   TYPE_ATTRIBUTES (t2));
+}
+
+/* Given decls OLDDECL and NEWDECL, merge their attributes and return
+   the result.  */
+
+tree
+merge_decl_attributes (tree olddecl, tree newdecl)
+{
+  return merge_attributes (DECL_ATTRIBUTES (olddecl),
+			   DECL_ATTRIBUTES (newdecl));
+}
+
+#if TARGET_DLLIMPORT_DECL_ATTRIBUTES
+
+/* Specialization of merge_decl_attributes for various Windows targets.
+
+   This handles the following situation:
+
+     __declspec (dllimport) int foo;
+     int foo;
+
+   The second instance of `foo' nullifies the dllimport.  */
+
+tree
+merge_dllimport_decl_attributes (tree old, tree new_tree)
+{
+  tree a;
+  int delete_dllimport_p = 1;
+
+  /* What we need to do here is remove from `old' dllimport if it doesn't
+     appear in `new'.  dllimport behaves like extern: if a declaration is
+     marked dllimport and a definition appears later, then the object
+     is not dllimport'd.  We also remove a `new' dllimport if the old list
+     contains dllexport:  dllexport always overrides dllimport, regardless
+     of the order of declaration.  */
+  if (!VAR_OR_FUNCTION_DECL_P (new_tree))
+    delete_dllimport_p = 0;
+  else if (DECL_DLLIMPORT_P (new_tree)
+     	   && lookup_attribute ("dllexport", DECL_ATTRIBUTES (old)))
+    {
+      DECL_DLLIMPORT_P (new_tree) = 0;
+      warning (OPT_Wattributes, "%q+D already declared with dllexport "
+	       "attribute: dllimport ignored", new_tree);
+    }
+  else if (DECL_DLLIMPORT_P (old) && !DECL_DLLIMPORT_P (new_tree))
+    {
+      /* Warn about overriding a symbol that has already been used, e.g.:
+	   extern int __attribute__ ((dllimport)) foo;
+	   int* bar () {return &foo;}
+	   int foo;
+      */
+      if (TREE_USED (old))
+	{
+	  warning (0, "%q+D redeclared without dllimport attribute "
+		   "after being referenced with dll linkage", new_tree);
+	  /* If we have used a variable's address with dllimport linkage,
+	      keep the old DECL_DLLIMPORT_P flag: the ADDR_EXPR using the
+	      decl may already have had TREE_CONSTANT computed.
+	      We still remove the attribute so that assembler code refers
+	      to '&foo rather than '_imp__foo'.  */
+	  if (VAR_P (old) && TREE_ADDRESSABLE (old))
+	    DECL_DLLIMPORT_P (new_tree) = 1;
+	}
+
+      /* Let an inline definition silently override the external reference,
+	 but otherwise warn about attribute inconsistency.  */
+      else if (VAR_P (new_tree) || !DECL_DECLARED_INLINE_P (new_tree))
+	warning (OPT_Wattributes, "%q+D redeclared without dllimport "
+		 "attribute: previous dllimport ignored", new_tree);
+    }
+  else
+    delete_dllimport_p = 0;
+
+  a = merge_attributes (DECL_ATTRIBUTES (old), DECL_ATTRIBUTES (new_tree));
+
+  if (delete_dllimport_p)
+    a = remove_attribute ("dllimport", a);
+
+  return a;
+}
+
+/* Handle a "dllimport" or "dllexport" attribute; arguments as in
+   struct attribute_spec.handler.  */
+
+tree
+handle_dll_attribute (tree * pnode, tree name, tree args, int flags,
+		      bool *no_add_attrs)
+{
+  tree node = *pnode;
+  bool is_dllimport;
+
+  /* These attributes may apply to structure and union types being created,
+     but otherwise should pass to the declaration involved.  */
+  if (!DECL_P (node))
+    {
+      if (flags & ((int) ATTR_FLAG_DECL_NEXT | (int) ATTR_FLAG_FUNCTION_NEXT
+		   | (int) ATTR_FLAG_ARRAY_NEXT))
+	{
+	  *no_add_attrs = true;
+	  return tree_cons (name, args, NULL_TREE);
+	}
+      if (TREE_CODE (node) == RECORD_TYPE
+	  || TREE_CODE (node) == UNION_TYPE)
+	{
+	  node = TYPE_NAME (node);
+	  if (!node)
+	    return NULL_TREE;
+	}
+      else
+	{
+	  warning (OPT_Wattributes, "%qE attribute ignored",
+		   name);
+	  *no_add_attrs = true;
+	  return NULL_TREE;
+	}
+    }
+
+  if (!VAR_OR_FUNCTION_DECL_P (node) && TREE_CODE (node) != TYPE_DECL)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qE attribute ignored",
+	       name);
+      return NULL_TREE;
+    }
+
+  if (TREE_CODE (node) == TYPE_DECL
+      && TREE_CODE (TREE_TYPE (node)) != RECORD_TYPE
+      && TREE_CODE (TREE_TYPE (node)) != UNION_TYPE)
+    {
+      *no_add_attrs = true;
+      warning (OPT_Wattributes, "%qE attribute ignored",
+	       name);
+      return NULL_TREE;
+    }
+
+  is_dllimport = is_attribute_p ("dllimport", name);
+
+  /* Report error on dllimport ambiguities seen now before they cause
+     any damage.  */
+  if (is_dllimport)
+    {
+      /* Honor any target-specific overrides.  */
+      if (!targetm.valid_dllimport_attribute_p (node))
+	*no_add_attrs = true;
+
+     else if (TREE_CODE (node) == FUNCTION_DECL
+	      && DECL_DECLARED_INLINE_P (node))
+	{
+	  warning (OPT_Wattributes, "inline function %q+D declared as "
+		  " dllimport: attribute ignored", node);
+	  *no_add_attrs = true;
+	}
+      /* Like MS, treat definition of dllimported variables and
+	 non-inlined functions on declaration as syntax errors.  */
+     else if (TREE_CODE (node) == FUNCTION_DECL && DECL_INITIAL (node))
+	{
+	  error ("function %q+D definition is marked dllimport", node);
+	  *no_add_attrs = true;
+	}
+
+     else if (VAR_P (node))
+	{
+	  if (DECL_INITIAL (node))
+	    {
+	      error ("variable %q+D definition is marked dllimport",
+		     node);
+	      *no_add_attrs = true;
+	    }
+
+	  /* `extern' needn't be specified with dllimport.
+	     Specify `extern' now and hope for the best.  Sigh.  */
+	  DECL_EXTERNAL (node) = 1;
+	  /* Also, implicitly give dllimport'd variables declared within
+	     a function global scope, unless declared static.  */
+	  if (current_function_decl != NULL_TREE && !TREE_STATIC (node))
+	    TREE_PUBLIC (node) = 1;
+	}
+
+      if (*no_add_attrs == false)
+	DECL_DLLIMPORT_P (node) = 1;
+    }
+  else if (TREE_CODE (node) == FUNCTION_DECL
+	   && DECL_DECLARED_INLINE_P (node)
+	   && flag_keep_inline_dllexport)
+    /* An exported function, even if inline, must be emitted.  */
+    DECL_EXTERNAL (node) = 0;
+
+  /*  Report error if symbol is not accessible at global scope.  */
+  if (!TREE_PUBLIC (node) && VAR_OR_FUNCTION_DECL_P (node))
+    {
+      error ("external linkage required for symbol %q+D because of "
+	     "%qE attribute", node, name);
+      *no_add_attrs = true;
+    }
+
+  /* A dllexport'd entity must have default visibility so that other
+     program units (shared libraries or the main executable) can see
+     it.  A dllimport'd entity must have default visibility so that
+     the linker knows that undefined references within this program
+     unit can be resolved by the dynamic linker.  */
+  if (!*no_add_attrs)
+    {
+      if (DECL_VISIBILITY_SPECIFIED (node)
+	  && DECL_VISIBILITY (node) != VISIBILITY_DEFAULT)
+	error ("%qE implies default visibility, but %qD has already "
+	       "been declared with a different visibility",
+	       name, node);
+      DECL_VISIBILITY (node) = VISIBILITY_DEFAULT;
+      DECL_VISIBILITY_SPECIFIED (node) = 1;
+    }
+
+  return NULL_TREE;
+}
+
+#endif /* TARGET_DLLIMPORT_DECL_ATTRIBUTES  */
+
+/* Given two lists of attributes, return true if list l2 is
+   equivalent to l1.  */
+
+int
+attribute_list_equal (const_tree l1, const_tree l2)
+{
+  if (l1 == l2)
+    return 1;
+
+  return attribute_list_contained (l1, l2)
+	 && attribute_list_contained (l2, l1);
+}
+
+/* Given two lists of attributes, return true if list L2 is
+   completely contained within L1.  */
+/* ??? This would be faster if attribute names were stored in a canonicalized
+   form.  Otherwise, if L1 uses `foo' and L2 uses `__foo__', the long method
+   must be used to show these elements are equivalent (which they are).  */
+/* ??? It's not clear that attributes with arguments will always be handled
+   correctly.  */
+
+int
+attribute_list_contained (const_tree l1, const_tree l2)
+{
+  const_tree t1, t2;
+
+  /* First check the obvious, maybe the lists are identical.  */
+  if (l1 == l2)
+    return 1;
+
+  /* Maybe the lists are similar.  */
+  for (t1 = l1, t2 = l2;
+       t1 != 0 && t2 != 0
+       && get_attribute_name (t1) == get_attribute_name (t2)
+       && TREE_VALUE (t1) == TREE_VALUE (t2);
+       t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    ;
+
+  /* Maybe the lists are equal.  */
+  if (t1 == 0 && t2 == 0)
+    return 1;
+
+  for (; t2 != 0; t2 = TREE_CHAIN (t2))
+    {
+      const_tree attr;
+      /* This CONST_CAST is okay because lookup_attribute does not
+	 modify its argument and the return value is assigned to a
+	 const_tree.  */
+      for (attr = lookup_ident_attribute (get_attribute_name (t2),
+					  CONST_CAST_TREE (l1));
+	   attr != NULL_TREE && !attribute_value_equal (t2, attr);
+	   attr = lookup_ident_attribute (get_attribute_name (t2),
+					  TREE_CHAIN (attr)))
+	;
+
+      if (attr == NULL_TREE)
+	return 0;
+    }
+
+  return 1;
+}

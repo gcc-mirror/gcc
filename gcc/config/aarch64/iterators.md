@@ -523,6 +523,17 @@
 			(SI   "SI") (HI   "HI")
 			(QI   "QI")])
 
+;; Define element mode for each vector mode (lower case).
+(define_mode_attr Vel [(V8QI "qi") (V16QI "qi")
+			(V4HI "hi") (V8HI "hi")
+			(V2SI "si") (V4SI "si")
+			(DI "di")   (V2DI "di")
+			(V4HF "hf") (V8HF "hf")
+			(V2SF "sf") (V4SF "sf")
+			(V2DF "df") (DF "df")
+			(SI   "si") (HI   "hi")
+			(QI   "qi")])
+
 ;; 64-bit container modes the inner or scalar source mode.
 (define_mode_attr VCOND [(HI "V4HI") (SI "V2SI")
 			 (V4HI "V4HI") (V8HI "V4HI")

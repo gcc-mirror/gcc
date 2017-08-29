@@ -1846,11 +1846,26 @@ PowerPC target supports executing VSX instructions (ISA 2.06).
 
 @c Please keep this table sorted alphabetically.
 @table @code
+@item autoincdec
+Target supports autoincrement/decrement addressing.
+
 @item avx
 Target supports compiling @code{avx} instructions.
 
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
+
+@item avx2
+Target supports compiling @code{avx2} instructions.
+
+@item avx2_runtime
+Target supports the execution of @code{avx2} instructions.
+
+@item avx512f
+Target supports compiling @code{avx512f} instructions.
+
+@item avx512f_runtime
+Target supports the execution of @code{avx512f} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -1904,6 +1919,9 @@ or @code{EM_SPARCV9} executables.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
+
+@item xorsign
+Target supports the xorsign optab expansion.
 
 @end table
 

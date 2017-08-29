@@ -37,7 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "dbgcnt.h"
 #include "debug.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Return true when NODE has ADDR reference.  */
 

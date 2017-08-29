@@ -6237,6 +6237,9 @@ loop:
   if (flag_dump_fortran_original)
     gfc_dump_parse_tree (gfc_current_ns, stdout);
 
+  if (flag_c_prototypes)
+    gfc_dump_c_prototypes (gfc_current_ns, stdout);
+
   gfc_get_errors (NULL, &errors);
   if (s.state == COMP_MODULE || s.state == COMP_SUBMODULE)
     {

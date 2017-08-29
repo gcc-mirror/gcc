@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
+#include "tree-dfa.h"
 
 
 /* The maximum number of dominator BBs we search for conditions
@@ -1727,7 +1728,7 @@ number_of_iterations_cond (struct loop *loop,
      provided that either below condition is satisfied:
 
        a) the test is NE_EXPR;
-       b) iv0.step - iv1.step is positive integer.
+       b) iv0.step - iv1.step is integer and iv0/iv1 don't overflow.
 
      This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
@@ -1738,7 +1739,9 @@ number_of_iterations_cond (struct loop *loop,
 
       /* No need to check sign of the new step since below code takes care
 	 of this well.  */
-      if (code != NE_EXPR && TREE_CODE (step) != INTEGER_CST)
+      if (code != NE_EXPR
+	  && (TREE_CODE (step) != INTEGER_CST
+	      || !iv0->no_overflow || !iv1->no_overflow))
 	return false;
 
       iv0->step = step;
@@ -1980,6 +1983,21 @@ expand_simple_operations (tree expr, tree stop)
 
       if (code == SSA_NAME)
 	return expand_simple_operations (e, stop);
+      else if (code == ADDR_EXPR)
+	{
+	  HOST_WIDE_INT offset;
+	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (e, 0),
+						     &offset);
+	  if (base
+	      && TREE_CODE (base) == MEM_REF)
+	    {
+	      ee = expand_simple_operations (TREE_OPERAND (base, 0), stop);
+	      return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (expr), ee,
+				  wide_int_to_tree (sizetype,
+						    mem_ref_offset (base)
+						    + offset));
+	    }
+	}
 
       return expr;
     }

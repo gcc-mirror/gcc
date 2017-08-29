@@ -28,6 +28,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -347,8 +348,8 @@ static void frv_reorg_packet 			(void);
 static void frv_register_nop			(rtx);
 static void frv_reorg 				(void);
 static void frv_pack_insns			(void);
-static void frv_function_prologue		(FILE *, HOST_WIDE_INT);
-static void frv_function_epilogue		(FILE *, HOST_WIDE_INT);
+static void frv_function_prologue		(FILE *);
+static void frv_function_epilogue		(FILE *);
 static bool frv_assemble_integer		(rtx, unsigned, int);
 static void frv_init_builtins			(void);
 static rtx frv_expand_builtin			(tree, rtx, rtx, machine_mode, int);
@@ -1400,7 +1401,7 @@ frv_function_contains_far_jump (void)
    will return correctly.  It also does the VLIW packing.  */
 
 static void
-frv_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+frv_function_prologue (FILE *file)
 {
   rtx_insn *insn, *next, *last_call;
 
@@ -1840,8 +1841,7 @@ frv_expand_prologue (void)
    this function provides a convenient place to do cleanup.  */
 
 static void
-frv_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-                       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+frv_function_epilogue (FILE *)
 {
   frv_stack_cache = (frv_stack_t *)0;
 

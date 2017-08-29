@@ -129,6 +129,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Hash based set of pairs of types.  */
 struct type_pair

@@ -416,6 +416,10 @@ fcray-pointer
 Fortran Var(flag_cray_pointer)
 Use the Cray Pointer extension.
 
+fc-prototypes
+Fortran Var(flag_c_prototypes)
+Generate C prototypes from BIND(C) declarations.
+
 fd-lines-as-code
 Fortran RejectNegative
 Ignore 'D' in column one in fixed form.

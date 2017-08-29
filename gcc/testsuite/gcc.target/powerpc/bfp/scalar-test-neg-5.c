@@ -11,5 +11,5 @@ test_neg (__ieee128 *p)
 {
   __ieee128 source = *p;
 
-  return __builtin_vec_scalar_test_neg_qp (source); /* { dg-error "Builtin function __builtin_vsx_scalar_test_neg_qp requires" } */
+  return __builtin_vec_scalar_test_neg_qp (source); /* { dg-error "builtin function '__builtin_vsx_scalar_test_neg_qp' requires" } */
 }

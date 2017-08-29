@@ -1,3 +1,132 @@
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* c-common.c (parse_optimize_options): Add argument to function
+	call.
+	* c-pragma.c (handle_pragma_diagnostic): Likewise.
+
+2017-08-24  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-lex.c (interpret_float): Use token location
+	when building an EXCESS_PRECISION_EXPR.
+
+2017-08-21  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (check_function_arguments): Add "arglogs" param; pass
+	it to check_function_format.
+	* c-common.h (check_function_arguments): Add vec<location_t> *
+	param.
+	(check_function_format): Likewise.
+	* c-format.c (struct format_check_context): Add field "arglocs".
+	(check_function_format): Add param "arglocs"; pass it to
+	check_format_info.
+	(check_format_info):  Add param "arglocs"; use it to initialize
+	new field of format_ctx.
+	(check_format_arg): Pass format_ctx->arglocs to new param of
+	check_format_info_main.
+	(class argument_parser): New field "arglocs".
+	(argument_parser::argument_parser): Add "arglocs_" param and use
+	it to initialize new field.
+	(argument_parser::check_argument_type): Pass new arglocs field to
+	check_format_types.
+	(check_format_info_main): Add param "arglocs", and use it when
+	constructing arg_parser.
+	(check_format_types): Add param "arglocs"; use it if non-NULL when
+	!EXPR_HAS_LOCATION (cur_param) to get at location information.
+
+2017-08-18  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR c/53037
+	* c-attribs.c (handle_warn_if_not_aligned_attribute): New.
+	(c_common_attribute_table): Add warn_if_not_aligned.
+	(handle_aligned_attribute): Renamed to ...
+	(common_handle_aligned_attribute): Remove argument, name, and add
+	argument, warn_if_not_aligned.  Handle warn_if_not_aligned.
+	(handle_aligned_attribute): New.
+	* c.opt: Add -Wif-not-aligned and -Wpacked-not-aligned.
+
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-attribs.c (c_common_attribute_table): Add nonstring entry.
+	(handle_nonstring_attribute): New function.
+
+2017-08-14  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81117
+	* c-format.h (T89_G): New macro.
+	* c-format.c (local_gcall_ptr_node): New variable.
+	(init_dynamic_diag_info): Initialize it.
+
+2017-08-11  Martin Liska  <mliska@suse.cz>
+
+	* c-opts.c (c_common_post_options): Replace ASM_OUTPUT_DEF with
+	TARGET_SUPPORTS_ALIASES.
+
+2017-08-10  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-common.c (c_parse_error): Add rich_location * param, using it
+	rather implicitly using input_location.
+	* c-common.h (c_parse_error): Add rich_location * param.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	* c-common.c (pointer_int_sum): Use true/false instead of 1/0.
+	(c_common_truthvalue_conversion): Likewise.
+	* c-omp.c (c_finish_omp_atomic): Likewise.
+	* c-common.h (build_binary_op): Update declaration.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* c-ada-spec.c: Include header files.
+	* c-ubsan.c: Likewise.
+	* c-warn.c: Likewise.
+
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* c-omp.c (c_finish_omp_atomic): Handle atomics on bitfields.
+
+2017-08-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_nontrivial_methods): Test for FUNCTION_DECL.
+	(print_ada_methods): Likewise.
+	(print_ada_declaration): Likewise.
+
+2017-08-07  Martin Liska  <mliska@suse.cz>
+
+	* array-notation-common.c: Add new includes.
+	* c-format.c( handle_format_attribute): Canonicalize a format
+	function name.
+	* c-lex.c (c_common_has_attribute): Canonicalize name of an
+	attribute.
+	* c-pretty-print.c: Add new include.
+
+2017-08-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_static_fields): Look only into variables.
+	(print_constructor): Add TYPE parameter and use it for the name.
+	(print_destructor): Likewise.
+	(print_ada_declaration): Adjust to new constructor/destructor names.
+	Adjust calls to print_constructor and print_destructor.
+	(print_ada_struct_decl): Do not test TREE_STATIC on FIELD_DECL.
+	Look only into variables in the final loop.
+
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (has_static_fields): Look only into fields.
+	(dump_generic_ada_node): Small tweak.
+	(dump_nested_types): Look only into fields.
+	(print_ada_declaration): Look only into methods.  Small tweak.
+	(print_ada_struct_decl): Look only into fields.  Use DECL_VIRTUAL_P.
+
+2017-08-01  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (print_generic_ada_decl): Pass correctly-typed constant.
+	(dump_ada_function_declaration): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_ada_declaration): Add support for const-qualified variables.
+
 2017-07-31  Martin Liska  <mliska@suse.cz>
 
 	PR sanitize/81530

@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "spellcheck-tree.h"
 #include "gcc-rich-location.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Possible cases of implicit bad conversions.  Used to select
@@ -104,10 +106,10 @@ static int spelling_length (void);
 static char *print_spelling (char *);
 static void warning_init (location_t, int, const char *);
 static tree digest_init (location_t, tree, tree, tree, bool, bool, int);
-static void output_init_element (location_t, tree, tree, bool, tree, tree, int,
+static void output_init_element (location_t, tree, tree, bool, tree, tree, bool,
 				 bool, struct obstack *);
 static void output_pending_init_elements (int, struct obstack *);
-static bool set_designator (location_t, int, struct obstack *);
+static bool set_designator (location_t, bool, struct obstack *);
 static void push_range_stack (tree, struct obstack *);
 static void add_pending_init (location_t, tree, tree, tree, bool,
 			      struct obstack *);
@@ -2721,7 +2723,7 @@ build_array_ref (location_t loc, tree array, tree index)
       gcc_assert (TREE_CODE (TREE_TYPE (TREE_TYPE (ar))) != FUNCTION_TYPE);
 
       ret = build_indirect_ref (loc, build_binary_op (loc, PLUS_EXPR, ar,
-						      index, 0),
+						      index, false),
 				RO_ARRAY_INDEXING);
       if (non_lvalue)
 	ret = non_lvalue_loc (loc, ret);
@@ -2736,7 +2738,7 @@ build_array_ref (location_t loc, tree array, tree index)
    for CONST_DECLs defined as enum constants.  If the type of the
    identifier is not available, *TYPE is set to NULL.  */
 tree
-build_external_ref (location_t loc, tree id, int fun, tree *type)
+build_external_ref (location_t loc, tree id, bool fun, tree *type)
 {
   tree ref;
   tree decl = lookup_name (id);
@@ -3116,7 +3118,7 @@ build_function_call_vec (location_t loc, vec<location_t> arg_loc,
 
   /* Check that the arguments to the function are valid.  */
   bool warned_p = check_function_arguments (loc, fundecl, fntype,
-					    nargs, argarray);
+					    nargs, argarray, &arg_loc);
 
   if (name != NULL_TREE
       && !strncmp (IDENTIFIER_POINTER (name), "__builtin_", 10))
@@ -3640,7 +3642,7 @@ parser_build_binary_op (location_t location, enum tree_code code,
                 : TREE_TYPE (arg2.value));
 
   result.value = build_binary_op (location, code,
-				  arg1.value, arg2.value, 1);
+				  arg1.value, arg2.value, true);
   result.original_code = code;
   result.original_type = NULL;
 
@@ -3829,7 +3831,7 @@ pointer_diff (location_t loc, tree op0, tree op1)
 
   op0 = build_binary_op (loc,
 			 MINUS_EXPR, convert (inttype, op0),
-			 convert (inttype, op1), 0);
+			 convert (inttype, op1), false);
   /* This generates an error if op1 is pointer to incomplete type.  */
   if (!COMPLETE_OR_VOID_TYPE_P (TREE_TYPE (TREE_TYPE (orig_op1))))
     error_at (loc, "arithmetic on pointer to an incomplete type");
@@ -4096,7 +4098,7 @@ cas_loop:
   add_stmt (loop_label);
 
   /* newval = old + val;  */
-  rhs = build_binary_op (loc, modifycode, old, val, 1);
+  rhs = build_binary_op (loc, modifycode, old, val, true);
   rhs = c_fully_fold (rhs, false, NULL);
   rhs = convert_for_assignment (loc, UNKNOWN_LOCATION, nonatomic_lhs_type,
 				rhs, NULL_TREE, ic_assign, false, NULL_TREE,
@@ -4863,8 +4865,8 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
 
 tree
 build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
-			tree op1, tree op1_original_type, tree op2,
-			tree op2_original_type)
+			tree op1, tree op1_original_type, location_t op1_loc,
+			tree op2, tree op2_original_type, location_t op2_loc)
 {
   tree type1;
   tree type2;
@@ -5029,10 +5031,18 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 			  || (unsigned_op1
 			      && tree_expr_nonnegative_warnv_p (op2, &ovf)))
 			/* OK */;
+		      else if (unsigned_op2)
+			warning_at (op1_loc, OPT_Wsign_compare,
+				    "operand of ?: changes signedness from "
+				    "%qT to %qT due to unsignedness of other "
+				    "operand", TREE_TYPE (orig_op1),
+				    TREE_TYPE (orig_op2));
 		      else
-			warning_at (colon_loc, OPT_Wsign_compare,
-				    ("signed and unsigned type in "
-				     "conditional expression"));
+			warning_at (op2_loc, OPT_Wsign_compare,
+				    "operand of ?: changes signedness from "
+				    "%qT to %qT due to unsignedness of other "
+				    "operand", TREE_TYPE (orig_op2),
+				    TREE_TYPE (orig_op1));
 		    }
 		  if (!op1_maybe_const || TREE_CODE (op1) != INTEGER_CST)
 		    op1 = c_wrap_maybe_const (op1, !op1_maybe_const);
@@ -5786,7 +5796,7 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	      rhseval = newrhs;
 	    }
 	  newrhs = build_binary_op (location,
-				    modifycode, lhs, newrhs, 1);
+				    modifycode, lhs, newrhs, true);
 
 	  /* The original type of the right hand side is no longer
 	     meaningful.  */
@@ -6055,20 +6065,19 @@ error_init (location_t loc, const char *gmsgid)
    it is unconditionally given.  GMSGID identifies the message.  The
    component name is taken from the spelling stack.  */
 
-static void
-pedwarn_init (location_t loc, int opt, const char *gmsgid)
+static void ATTRIBUTE_GCC_DIAG (3,0)
+pedwarn_init (location_t loc, int opt, const char *gmsgid, ...)
 {
-  char *ofwhat;
-  bool warned;
-
   /* Use the location where a macro was expanded rather than where
      it was defined to make sure macros defined in system headers
      but used incorrectly elsewhere are diagnosed.  */
   source_location exploc = expansion_point_location_if_in_system_header (loc);
 
-  /* The gmsgid may be a format string with %< and %>. */
-  warned = pedwarn (exploc, opt, gmsgid);
-  ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
+  va_list ap;
+  va_start (ap, gmsgid);
+  bool warned = emit_diagnostic_valist (DK_PEDWARN, exploc, opt, gmsgid, &ap);
+  va_end (ap);
+  char *ofwhat = print_spelling ((char *) alloca (spelling_length () + 1));
   if (*ofwhat && warned)
     inform (exploc, "(near initialization for %qs)", ofwhat);
 }
@@ -6301,17 +6310,33 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
       if (checktype != error_mark_node
 	  && TREE_CODE (type) == ENUMERAL_TYPE
 	  && TYPE_MAIN_VARIANT (checktype) != TYPE_MAIN_VARIANT (type))
-	{
-	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wc___compat,
-			          G_("enum conversion when passing argument "
-				     "%d of %qE is invalid in C++"),
-			          G_("enum conversion in assignment is "
-				     "invalid in C++"),
-			          G_("enum conversion in initialization is "
-				     "invalid in C++"),
-			          G_("enum conversion in return is "
-				     "invalid in C++"));
-	}
+	switch (errtype)
+	  {
+	  case ic_argpass:
+	    if (pedwarn (expr_loc, OPT_Wc___compat, "enum conversion when "
+			 "passing argument %d of %qE is invalid in C++",
+			 parmnum, rname))
+	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		      "expected %qT but argument is of type %qT",
+		      type, rhstype);
+	    break;
+	  case ic_assign:
+	    pedwarn (location, OPT_Wc___compat, "enum conversion from %qT to "
+		     "%qT in assignment is invalid in C++", rhstype, type);
+	    break;
+	  case ic_init:
+	    pedwarn_init (location, OPT_Wc___compat, "enum conversion from "
+			  "%qT to %qT in initialization is invalid in C++",
+			  rhstype, type);
+	    break;
+	  case ic_return:
+	    pedwarn (location, OPT_Wc___compat, "enum conversion from %qT to "
+		     "%qT in return is invalid in C++", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
     }
 
   if (TYPE_MAIN_VARIANT (type) == TYPE_MAIN_VARIANT (rhstype))
@@ -6717,15 +6742,36 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 		;
 	      /* If there is a mismatch, do warn.  */
 	      else if (warn_pointer_sign)
-		 PEDWARN_FOR_ASSIGNMENT (location, expr_loc, OPT_Wpointer_sign,
-				         G_("pointer targets in passing argument "
-					    "%d of %qE differ in signedness"),
-				         G_("pointer targets in assignment "
-					    "differ in signedness"),
-				         G_("pointer targets in initialization "
-					    "differ in signedness"),
-				         G_("pointer targets in return differ "
-					    "in signedness"));
+		switch (errtype)
+		  {
+		  case ic_argpass:
+		    if (pedwarn (expr_loc, OPT_Wpointer_sign,
+				 "pointer targets in passing argument %d of "
+				 "%qE differ in signedness", parmnum, rname))
+		      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+			      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+			      "expected %qT but argument is of type %qT",
+			      type, rhstype);
+		    break;
+		  case ic_assign:
+		    pedwarn (location, OPT_Wpointer_sign,
+			     "pointer targets in assignment from %qT to %qT "
+			     "differ in signedness", rhstype, type);
+		    break;
+		  case ic_init:
+		    pedwarn_init (location, OPT_Wpointer_sign,
+				  "pointer targets in initialization of %qT "
+				  "from %qT differ in signedness", type,
+				  rhstype);
+		    break;
+		  case ic_return:
+		    pedwarn (location, OPT_Wpointer_sign, "pointer targets in "
+			     "returning %qT from a function with return type "
+			     "%qT differ in signedness", rhstype, type);
+		    break;
+		  default:
+		    gcc_unreachable ();
+		  }
 	    }
 	  else if (TREE_CODE (ttl) == FUNCTION_TYPE
 		   && TREE_CODE (ttr) == FUNCTION_TYPE)
@@ -6750,17 +6796,39 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 				        TYPE_QUALS (ttl) & ~TYPE_QUALS (ttr));
 	    }
 	}
-      else
-	/* Avoid warning about the volatile ObjC EH puts on decls.  */
-	if (!objc_ok)
-	  PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			          OPT_Wincompatible_pointer_types,
-			          G_("passing argument %d of %qE from "
-				     "incompatible pointer type"),
-			          G_("assignment from incompatible pointer type"),
-			          G_("initialization from incompatible "
-				     "pointer type"),
-			          G_("return from incompatible pointer type"));
+      /* Avoid warning about the volatile ObjC EH puts on decls.  */
+      else if (!objc_ok)
+	{
+	  switch (errtype)
+	    {
+	    case ic_argpass:
+	      if (pedwarn (expr_loc, OPT_Wincompatible_pointer_types,
+			   "passing argument %d of %qE from incompatible "
+			   "pointer type", parmnum, rname))
+		inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+			? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+			"expected %qT but argument is of type %qT",
+			type, rhstype);
+	      break;
+	    case ic_assign:
+	      pedwarn (location, OPT_Wincompatible_pointer_types,
+		       "assignment to %qT from incompatible pointer type %qT",
+		       type, rhstype);
+	      break;
+	    case ic_init:
+	      pedwarn_init (location, OPT_Wincompatible_pointer_types,
+			    "initialization of %qT from incompatible pointer "
+			    "type %qT", type, rhstype);
+	      break;
+	    case ic_return:
+	      pedwarn (location, OPT_Wincompatible_pointer_types,
+		       "returning %qT from a function with incompatible "
+		       "return type %qT", rhstype, type);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
 
       return convert (type, rhs);
     }
@@ -6777,31 +6845,70 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	 or one that results from arithmetic, even including
 	 a cast to integer type.  */
       if (!null_pointer_constant)
-	PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			        OPT_Wint_conversion,
-			        G_("passing argument %d of %qE makes "
-				   "pointer from integer without a cast"),
-			        G_("assignment makes pointer from integer "
-				   "without a cast"),
-			        G_("initialization makes pointer from "
-				   "integer without a cast"),
-			        G_("return makes pointer from integer "
-				   "without a cast"));
+	switch (errtype)
+	  {
+	  case ic_argpass:
+	    if (pedwarn (expr_loc, OPT_Wint_conversion,
+			 "passing argument %d of %qE makes pointer from "
+			 "integer without a cast", parmnum, rname))
+	      inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		      ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		      "expected %qT but argument is of type %qT",
+		      type, rhstype);
+	    break;
+	  case ic_assign:
+	    pedwarn (location, OPT_Wint_conversion,
+		     "assignment to %qT from %qT makes pointer from integer "
+		     "without a cast", type, rhstype);
+	    break;
+	  case ic_init:
+	    pedwarn_init (location, OPT_Wint_conversion,
+			  "initialization of %qT from %qT makes pointer from "
+			  "integer without a cast", type, rhstype);
+	    break;
+	  case ic_return:
+	    pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
+		     "function with return type %qT makes pointer from "
+		     "integer without a cast", rhstype, type);
+	    break;
+	  default:
+	    gcc_unreachable ();
+	  }
 
       return convert (type, rhs);
     }
   else if (codel == INTEGER_TYPE && coder == POINTER_TYPE)
     {
-      PEDWARN_FOR_ASSIGNMENT (location, expr_loc,
-			      OPT_Wint_conversion,
-			      G_("passing argument %d of %qE makes integer "
-			         "from pointer without a cast"),
-			      G_("assignment makes integer from pointer "
-			         "without a cast"),
-			      G_("initialization makes integer from pointer "
-			         "without a cast"),
-			      G_("return makes integer from pointer "
-			         "without a cast"));
+      switch (errtype)
+	{
+	case ic_argpass:
+	  if (pedwarn (expr_loc, OPT_Wint_conversion,
+		       "passing argument %d of %qE makes integer from "
+		       "pointer without a cast", parmnum, rname))
+	    inform ((fundecl && !DECL_IS_BUILTIN (fundecl))
+		    ? DECL_SOURCE_LOCATION (fundecl) : expr_loc,
+		    "expected %qT but argument is of type %qT",
+		    type, rhstype);
+	  break;
+	case ic_assign:
+	  pedwarn (location, OPT_Wint_conversion,
+		   "assignment to %qT from %qT makes integer from pointer "
+		   "without a cast", type, rhstype);
+	  break;
+	case ic_init:
+	  pedwarn_init (location, OPT_Wint_conversion,
+			"initialization of %qT from %qT makes integer from "
+			"pointer without a cast", type, rhstype);
+	  break;
+	case ic_return:
+	  pedwarn (location, OPT_Wint_conversion, "returning %qT from a "
+		   "function with return type %qT makes integer from "
+		   "pointer without a cast", rhstype, type);
+	  break;
+	default:
+	  gcc_unreachable ();
+	}
+
       return convert (type, rhs);
     }
   else if (codel == BOOLEAN_TYPE && coder == POINTER_TYPE)
@@ -8184,7 +8291,7 @@ pop_init_level (location_t loc, int implicit,
    ARRAY argument is nonzero for array ranges.  Returns false for success.  */
 
 static bool
-set_designator (location_t loc, int array,
+set_designator (location_t loc, bool array,
 		struct obstack *braced_init_obstack)
 {
   tree subtype;
@@ -8280,7 +8387,7 @@ void
 set_init_index (location_t loc, tree first, tree last,
 		struct obstack *braced_init_obstack)
 {
-  if (set_designator (loc, 1, braced_init_obstack))
+  if (set_designator (loc, true, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -8370,7 +8477,7 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 {
   tree field;
 
-  if (set_designator (loc, 0, braced_init_obstack))
+  if (set_designator (loc, false, braced_init_obstack))
     return;
 
   designator_erroneous = 1;
@@ -8410,7 +8517,7 @@ set_init_label (location_t loc, tree fieldname, location_t fieldname_loc,
 	field = TREE_CHAIN (field);
 	if (field)
 	  {
-	    if (set_designator (loc, 0, braced_init_obstack))
+	    if (set_designator (loc, false, braced_init_obstack))
 	      return;
 	  }
       }
@@ -8843,9 +8950,9 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
    unparenthesized or we should not warn here for it being parenthesized.
    For other types of VALUE, STRICT_STRING is not used.
 
-   PENDING if non-nil means output pending elements that belong
-   right after this element.  (PENDING is normally 1;
-   it is 0 while outputting pending elements, to avoid recursion.)
+   PENDING if true means output pending elements that belong
+   right after this element.  (PENDING is normally true;
+   it is false while outputting pending elements, to avoid recursion.)
 
    IMPLICIT is true if value comes from pop_init_level (1),
    the new initializer has been merged with the existing one
@@ -8854,7 +8961,7 @@ find_init_member (tree field, struct obstack * braced_init_obstack)
 
 static void
 output_init_element (location_t loc, tree value, tree origtype,
-		     bool strict_string, tree type, tree field, int pending,
+		     bool strict_string, tree type, tree field, bool pending,
 		     bool implicit, struct obstack * braced_init_obstack)
 {
   tree semantic_type = NULL_TREE;
@@ -9097,7 +9204,7 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 				  constructor_unfilled_index))
 	    output_init_element (input_location, elt->value, elt->origtype,
 				 true, TREE_TYPE (constructor_type),
-				 constructor_unfilled_index, 0, false,
+				 constructor_unfilled_index, false, false,
 				 braced_init_obstack);
 	  else if (tree_int_cst_lt (constructor_unfilled_index,
 				    elt->purpose))
@@ -9151,7 +9258,7 @@ output_pending_init_elements (int all, struct obstack * braced_init_obstack)
 	      constructor_unfilled_fields = elt->purpose;
 	      output_init_element (input_location, elt->value, elt->origtype,
 				   true, TREE_TYPE (elt->purpose),
-				   elt->purpose, 0, false,
+				   elt->purpose, false, false,
 				   braced_init_obstack);
 	    }
 	  else if (tree_int_cst_lt (ctor_unfilled_bitpos, elt_bitpos))
@@ -9395,7 +9502,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_member_name (constructor_fields);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
-				   constructor_fields, 1, implicit,
+				   constructor_fields, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9487,7 +9594,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_member_name (constructor_fields);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, fieldtype,
-				   constructor_fields, 1, implicit,
+				   constructor_fields, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9539,7 +9646,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	      push_array_bounds (tree_to_uhwi (constructor_index));
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
-				   constructor_index, 1, implicit,
+				   constructor_index, true, implicit,
 				   braced_init_obstack);
 	      RESTORE_SPELLING_DEPTH (constructor_depth);
 	    }
@@ -9574,7 +9681,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 		elttype = TYPE_MAIN_VARIANT (constructor_type);
 	      output_init_element (loc, value.value, value.original_type,
 				   strict_string, elttype,
-				   constructor_index, 1, implicit,
+				   constructor_index, true, implicit,
 				   braced_init_obstack);
 	    }
 
@@ -9603,7 +9710,7 @@ process_init_element (location_t loc, struct c_expr value, bool implicit,
 	  if (value.value)
 	    output_init_element (loc, value.value, value.original_type,
 				 strict_string, constructor_type,
-				 NULL_TREE, 1, implicit,
+				 NULL_TREE, true, implicit,
 				 braced_init_obstack);
 	  constructor_fields = NULL_TREE;
 	}
@@ -10735,7 +10842,7 @@ build_vec_cmp (tree_code code, tree type,
 
 tree
 build_binary_op (location_t location, enum tree_code code,
-		 tree orig_op0, tree orig_op1, int convert_p)
+		 tree orig_op0, tree orig_op1, bool convert_p)
 {
   tree type0, type1, orig_type0, orig_type1;
   tree eptype;

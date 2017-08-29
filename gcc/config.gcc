@@ -457,6 +457,7 @@ powerpc*-*-*)
 	extra_objs="rs6000-string.o rs6000-p8swap.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
 	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
+	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h"
 	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} paired.h"
@@ -653,7 +654,7 @@ case ${target} in
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
   fortran_target_objs="darwin-f.o"
   target_has_targetcm=yes
-  extra_objs="darwin.o"
+  extra_objs="${extra_objs} darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
@@ -1059,11 +1060,23 @@ arc*-*-linux*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
         ;;
-arm-wrs-vxworks)
-	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+arm-wrs-vxworks|arm-wrs-vxworks7)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
-	target_cpu_cname="arm6"
+        case $target in
+	*-vxworks7)
+            # VxWorks7 on ARM adheres to the ARM Base Platform ABI
+	    tmake_file="${tmake_file} arm/t-bpabi"
+	    tm_file="arm/bpabi.h ${tm_file}"
+	    # The BPABI long long divmod functions return a 128-bit value in
+	    # registers r0-r3.
+	    need_64bit_hwint=yes
+	    default_use_cxa_atexit=yes
+	    ;;
+        *)  ;;
+        esac
+        tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	target_cpu_cname="arm8"
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
@@ -2430,7 +2443,7 @@ powerpc-*-rtems*spe*)
 	;;
 powerpc-*-rtems*)
 	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/rtems.h rtems.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
+	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
 	;;
 powerpc*-*-linux*spe*)

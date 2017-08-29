@@ -148,6 +148,10 @@ maltivec=be
 Target Report RejectNegative Var(rs6000_altivec_element_order, 2)
 Generate AltiVec instructions using big-endian element order.
 
+mfold-gimple
+Target Report Var(rs6000_fold_gimple) Init(1)
+Enable early gimple folding of builtins.
+
 mhard-dfp
 Target Report Mask(DFP) Var(rs6000_isa_flags)
 Use decimal floating point instructions.
@@ -192,14 +196,6 @@ mvsx
 Target Report Mask(VSX) Var(rs6000_isa_flags)
 Use vector/scalar (VSX) instructions.
 
-mvsx-scalar-float
-Target Undocumented Report Var(TARGET_VSX_SCALAR_FLOAT) Init(1)
-; If -mpower8-vector, use VSX arithmetic instructions for SFmode (on by default)
-
-mvsx-scalar-double
-Target Undocumented Report Var(TARGET_VSX_SCALAR_DOUBLE) Init(1)
-; If -mvsx, use VSX arithmetic instructions for DFmode (on by default)
-
 mvsx-align-128
 Target Undocumented Report Var(TARGET_VSX_ALIGN_128) Save
 ; If -mvsx, set alignment to 128 bits instead of 32/64
@@ -212,10 +208,6 @@ mefficient-unaligned-vsx
 Target Undocumented Report Mask(EFFICIENT_UNALIGNED_VSX) Var(rs6000_isa_flags)
 ; Consider unaligned VSX vector and fp accesses to be efficient
 
-mallow-df-permute
-Target Undocumented Var(TARGET_ALLOW_DF_PERMUTE) Save
-; Allow permutation of DF/DI vectors
-
 msched-groups
 Target Undocumented Report Var(TARGET_SCHED_GROUPS) Init(-1) Save
 ; Explicitly set rs6000_sched_groups
@@ -227,10 +219,6 @@ Target Undocumented Report Var(TARGET_ALWAYS_HINT) Init(-1) Save
 malign-branch-targets
 Target Undocumented Report Var(TARGET_ALIGN_BRANCH_TARGETS) Init(-1) Save
 ; Explicitly set rs6000_align_branch_targets
-
-mvectorize-builtins
-Target Undocumented Report Var(TARGET_VECTORIZE_BUILTINS) Init(-1) Save
-; Explicitly control whether we vectorize the builtins or not.
 
 mno-update
 Target Report RejectNegative Mask(NO_UPDATE) Var(rs6000_isa_flags)
@@ -506,9 +494,9 @@ msave-toc-indirect
 Target Report Mask(SAVE_TOC_INDIRECT) Var(rs6000_isa_flags)
 Save the TOC in the prologue for indirect calls rather than inline.
 
+; This option existed in the past, but now is always the same as -mvsx.
 mvsx-timode
-Target Undocumented Mask(VSX_TIMODE) Var(rs6000_isa_flags)
-Allow 128-bit integers in VSX registers.
+Target RejectNegative Undocumented Ignore
 
 mpower8-fusion
 Target Report Mask(P8_FUSION) Var(rs6000_isa_flags)
@@ -561,18 +549,6 @@ Use certain scalar instructions added in ISA 3.0.
 mpower9-vector
 Target Undocumented Report Mask(P9_VECTOR) Var(rs6000_isa_flags)
 Use vector instructions added in ISA 3.0.
-
-mpower9-dform-scalar
-Target Undocumented Mask(P9_DFORM_SCALAR) Var(rs6000_isa_flags)
-Use scalar register+offset memory instructions added in ISA 3.0.
-
-mpower9-dform-vector
-Target Undocumented Mask(P9_DFORM_VECTOR) Var(rs6000_isa_flags)
-Use vector register+offset memory instructions added in ISA 3.0.
-
-mpower9-dform
-Target Undocumented Report Var(TARGET_P9_DFORM_BOTH) Init(-1) Save
-Use register+offset memory instructions added in ISA 3.0.
 
 mpower9-minmax
 Target Undocumented Mask(P9_MINMAX) Var(rs6000_isa_flags)

@@ -38,8 +38,6 @@
 
   /* For ISA 2.06, don't add ISEL, since in general it isn't a win, but
      altivec is a win so enable it.  */
-  /* OPTION_MASK_VSX_TIMODE should be set, but disable it for now until
-     PR 58587 is fixed.  */
 #define ISA_2_6_MASKS_EMBEDDED	(ISA_2_5_MASKS_EMBEDDED | OPTION_MASK_POPCNTD)
 #define ISA_2_6_MASKS_SERVER	(ISA_2_5_MASKS_SERVER			\
 				 | OPTION_MASK_POPCNTD			\
@@ -63,8 +61,6 @@
 				 | OPTION_MASK_ISEL			\
 				 | OPTION_MASK_MODULO			\
 				 | OPTION_MASK_P9_FUSION		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
 				 | OPTION_MASK_P9_VECTOR)
@@ -78,8 +74,6 @@
 
 /* Flags that need to be turned off if -mno-power9-vector.  */
 #define OTHER_P9_VECTOR_MASKS	(OPTION_MASK_FLOAT128_HW		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_MINMAX)
 
 /* Flags that need to be turned off if -mno-power8-vector.  */
@@ -93,8 +87,7 @@
 				 | OPTION_MASK_EFFICIENT_UNALIGNED_VSX	\
 				 | OPTION_MASK_FLOAT128_KEYWORD		\
 				 | OPTION_MASK_FLOAT128_TYPE		\
-				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_VSX_TIMODE)
+				 | OPTION_MASK_P8_VECTOR)
 
 #define POWERPC_7400_MASK	(OPTION_MASK_PPC_GFXOPT | OPTION_MASK_ALTIVEC)
 
@@ -130,8 +123,6 @@
 				 | OPTION_MASK_NO_UPDATE		\
 				 | OPTION_MASK_P8_FUSION		\
 				 | OPTION_MASK_P8_VECTOR		\
-				 | OPTION_MASK_P9_DFORM_SCALAR		\
-				 | OPTION_MASK_P9_DFORM_VECTOR		\
 				 | OPTION_MASK_P9_FUSION		\
 				 | OPTION_MASK_P9_MINMAX		\
 				 | OPTION_MASK_P9_MISC			\
@@ -147,8 +138,7 @@
 				 | OPTION_MASK_SOFT_FLOAT		\
 				 | OPTION_MASK_STRICT_ALIGN_OPTIONAL	\
 				 | OPTION_MASK_TOC_FUSION		\
-				 | OPTION_MASK_VSX			\
-				 | OPTION_MASK_VSX_TIMODE)
+				 | OPTION_MASK_VSX)
 
 #endif
 

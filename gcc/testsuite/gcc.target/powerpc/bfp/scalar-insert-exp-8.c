@@ -17,5 +17,5 @@ insert_exponent (unsigned __int128 *significand_p, /* { dg-error "'__int128' is 
   unsigned __int128 significand = *significand_p;  /* { dg-error "'__int128' is not supported on this target" } */
   unsigned long long int exponent = *exponent_p;
 
-  return scalar_insert_exp (significand, exponent); /* { dg-error "Builtin function __builtin_vec_scalar_insert_exp not supported in this compiler configuration" } */
+  return scalar_insert_exp (significand, exponent); /* { dg-error "builtin function '__builtin_vec_scalar_insert_exp' not supported in this compiler configuration" } */
 }

@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "trans-types.h"
 #include "trans-const.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
+#include "attribs.h"
 
 
 #if (GFC_MAX_DIMENSIONS < 10)

@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dumpfile.h"
 #include "internal-fn.h"
 #include "gomp-constants.h"
+#include "gimple.h"
 
 /* Local functions, macros and variables.  */
 static const char *op_symbol (const_tree);
@@ -3970,18 +3971,17 @@ newline_and_indent (pretty_printer *pp, int spc)
   INDENT (spc);
 }
 
-/* Handle a %K format for TEXT.  Separate from default_tree_printer so
-   it can also be used in front ends.
-   %K: a statement, from which EXPR_LOCATION and TREE_BLOCK will be recorded.
-*/
+/* Handle the %K format for TEXT.  Separate from default_tree_printer
+   so it can also be used in front ends.
+   Argument is a statement from which EXPR_LOCATION and TREE_BLOCK will
+   be recorded.  */
 
 void
-percent_K_format (text_info *text)
+percent_K_format (text_info *text, tree t)
 {
-  tree t = va_arg (*text->args_ptr, tree), block;
   text->set_location (0, EXPR_LOCATION (t), true);
   gcc_assert (pp_ti_abstract_origin (text) != NULL);
-  block = TREE_BLOCK (t);
+  tree block = TREE_BLOCK (t);
   *pp_ti_abstract_origin (text) = NULL;
 
   if (in_lto_p)
@@ -4047,7 +4047,7 @@ dump_function_header (FILE *dump_file, tree fdecl, dump_flags_t flags)
   struct cgraph_node *node = cgraph_node::get (fdecl);
   struct function *fun = DECL_STRUCT_FUNCTION (fdecl);
 
-  dname = lang_hooks.decl_printable_name (fdecl, 2);
+  dname = lang_hooks.decl_printable_name (fdecl, 1);
 
   if (DECL_ASSEMBLER_NAME_SET_P (fdecl))
     aname = (IDENTIFIER_POINTER

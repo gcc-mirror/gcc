@@ -6809,9 +6809,7 @@ simplify_set (rtx x)
 	   / UNITS_PER_WORD)
 	  == ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
 	       + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD))
-      && (WORD_REGISTER_OPERATIONS
-	  || (GET_MODE_SIZE (GET_MODE (src))
-	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))))
+      && (WORD_REGISTER_OPERATIONS || !paradoxical_subreg_p (src))
 #ifdef CANNOT_CHANGE_MODE_CLASS
       && ! (REG_P (dest) && REGNO (dest) < FIRST_PSEUDO_REGISTER
 	    && REG_CANNOT_CHANGE_MODE_P (REGNO (dest),
@@ -7456,7 +7454,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		     : BITS_PER_UNIT)) == 0
 	      /* We can't do this if we are widening INNER_MODE (it
 		 may not be aligned, for one thing).  */
-	      && GET_MODE_PRECISION (inner_mode) >= GET_MODE_PRECISION (tmode)
+	      && !paradoxical_subreg_p (tmode, inner_mode)
 	      && (inner_mode == tmode
 		  || (! mode_dependent_address_p (XEXP (inner, 0),
 						  MEM_ADDR_SPACE (inner))
@@ -7490,26 +7488,15 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 		 return a new hard register.  */
 	      if (pos || in_dest)
 		{
-		  HOST_WIDE_INT final_word = pos / BITS_PER_WORD;
-
-		  if (WORDS_BIG_ENDIAN
-		      && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
-		    final_word = ((GET_MODE_SIZE (inner_mode)
-				   - GET_MODE_SIZE (tmode))
-				  / UNITS_PER_WORD) - final_word;
-
-		  final_word *= UNITS_PER_WORD;
-		  if (BYTES_BIG_ENDIAN &&
-		      GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (tmode))
-		    final_word += (GET_MODE_SIZE (inner_mode)
-				   - GET_MODE_SIZE (tmode)) % UNITS_PER_WORD;
+		  unsigned int offset
+		    = subreg_offset_from_lsb (tmode, inner_mode, pos);
 
 		  /* Avoid creating invalid subregs, for example when
 		     simplifying (x>>32)&255.  */
-		  if (!validate_subreg (tmode, inner_mode, inner, final_word))
+		  if (!validate_subreg (tmode, inner_mode, inner, offset))
 		    return NULL_RTX;
 
-		  new_rtx = gen_rtx_SUBREG (tmode, inner, final_word);
+		  new_rtx = gen_rtx_SUBREG (tmode, inner, offset);
 		}
 	      else
 		new_rtx = gen_lowpart (tmode, inner);
@@ -7669,7 +7656,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       /* If bytes are big endian and we had a paradoxical SUBREG, we must
 	 adjust OFFSET to compensate.  */
       if (BYTES_BIG_ENDIAN
-	  && GET_MODE_SIZE (inner_mode) < GET_MODE_SIZE (is_mode))
+	  && paradoxical_subreg_p (is_mode, inner_mode))
 	offset -= GET_MODE_SIZE (is_mode) - GET_MODE_SIZE (inner_mode);
 
       /* We can now move to the desired byte.  */
@@ -8529,7 +8516,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
 
   /* If X is narrower than MODE and we want all the bits in X's mode, just
      get X in the proper mode.  */
-  if (GET_MODE_SIZE (GET_MODE (x)) < GET_MODE_SIZE (mode)
+  if (paradoxical_subreg_p (mode, GET_MODE (x))
       && (GET_MODE_MASK (GET_MODE (x)) & ~mask) == 0)
     return gen_lowpart (mode, x);
 
@@ -9408,7 +9395,7 @@ rtx_equal_for_field_assignment_p (rtx x, rtx y, bool widen_x)
 {
   if (widen_x && GET_MODE (x) != GET_MODE (y))
     {
-      if (GET_MODE_SIZE (GET_MODE (x)) > GET_MODE_SIZE (GET_MODE (y)))
+      if (paradoxical_subreg_p (GET_MODE (x), GET_MODE (y)))
 	return 0;
       if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
 	return 0;
@@ -11488,7 +11475,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
       /* If we want to refer to something bigger than the original memref,
 	 generate a paradoxical subreg instead.  That will force a reload
 	 of the original memref X.  */
-      if (isize < osize)
+      if (paradoxical_subreg_p (omode, imode))
 	return gen_rtx_SUBREG (omode, x, 0);
 
       if (WORDS_BIG_ENDIAN)
@@ -12145,8 +12132,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 
 	  /* If the inner mode is narrower and we are extracting the low part,
 	     we can treat the SUBREG as if it were a ZERO_EXTEND.  */
-	  if (subreg_lowpart_p (op0)
-	      && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op0))) < mode_width)
+	  if (paradoxical_subreg_p (op0))
 	    ;
 	  else if (subreg_lowpart_p (op0)
 		   && GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT

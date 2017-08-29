@@ -1,5 +1,4 @@
 /* { dg-do run } */
-/* { dg-xfail-run-if "PR78266" { openacc_nvidia_accel_selected } } */
 
 #include <assert.h>
 

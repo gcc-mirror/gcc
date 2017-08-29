@@ -5,6 +5,6 @@
 _Bool
 foo ()
 {
-  _Bool (*f) () = __builtin_abs;	/* { dg-warning "initialization from incompatible pointer type" } */
+  _Bool (*f) () = __builtin_abs;	/* { dg-warning "initialization of '_Bool \\(\\*\\)\\(\\)' from incompatible pointer type" } */
   return f (0);
 }

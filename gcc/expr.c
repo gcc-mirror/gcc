@@ -6589,6 +6589,7 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	rtvec vector = NULL;
 	unsigned n_elts;
 	alias_set_type alias;
+	bool vec_vec_init_p = false;
 
 	gcc_assert (eltmode != BLKmode);
 
@@ -6596,27 +6597,30 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	if (REG_P (target) && VECTOR_MODE_P (GET_MODE (target)))
 	  {
 	    machine_mode mode = GET_MODE (target);
+	    machine_mode emode = eltmode;
 
-	    icode = (int) optab_handler (vec_init_optab, mode);
-	    /* Don't use vec_init<mode> if some elements have VECTOR_TYPE.  */
-	    if (icode != CODE_FOR_nothing)
+	    if (CONSTRUCTOR_NELTS (exp)
+		&& (TREE_CODE (TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value))
+		    == VECTOR_TYPE))
 	      {
-		tree value;
-
-		FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
-		  if (TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE)
-		    {
-		      icode = CODE_FOR_nothing;
-		      break;
-		    }
+		tree etype = TREE_TYPE (CONSTRUCTOR_ELT (exp, 0)->value);
+		gcc_assert (CONSTRUCTOR_NELTS (exp) * TYPE_VECTOR_SUBPARTS (etype)
+			    == n_elts);
+		emode = TYPE_MODE (etype);
 	      }
+	    icode = (int) convert_optab_handler (vec_init_optab, mode, emode);
 	    if (icode != CODE_FOR_nothing)
 	      {
-		unsigned int i;
+		unsigned int i, n = n_elts;
 
-		vector = rtvec_alloc (n_elts);
-		for (i = 0; i < n_elts; i++)
-		  RTVEC_ELT (vector, i) = CONST0_RTX (GET_MODE_INNER (mode));
+		if (emode != eltmode)
+		  {
+		    n = CONSTRUCTOR_NELTS (exp);
+		    vec_vec_init_p = true;
+		  }
+		vector = rtvec_alloc (n);
+		for (i = 0; i < n; i++)
+		  RTVEC_ELT (vector, i) = CONST0_RTX (emode);
 	      }
 	  }
 
@@ -6634,10 +6638,10 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 
 	    FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (exp), idx, value)
 	      {
-		int n_elts_here = tree_to_uhwi
-		  (int_const_binop (TRUNC_DIV_EXPR,
-				    TYPE_SIZE (TREE_TYPE (value)),
-				    TYPE_SIZE (elttype)));
+		tree sz = TYPE_SIZE (TREE_TYPE (value));
+		int n_elts_here
+		  = tree_to_uhwi (int_const_binop (TRUNC_DIV_EXPR, sz,
+						   TYPE_SIZE (elttype)));
 
 		count += n_elts_here;
 		if (mostly_zeros_p (value))
@@ -6687,18 +6691,21 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 
 	    if (vector)
 	      {
-		/* vec_init<mode> should not be used if there are VECTOR_TYPE
-		   elements.  */
-		gcc_assert (TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE);
-		RTVEC_ELT (vector, eltpos)
-		  = expand_normal (value);
+		if (vec_vec_init_p)
+		  {
+		    gcc_assert (ce->index == NULL_TREE);
+		    gcc_assert (TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE);
+		    eltpos = idx;
+		  }
+		else
+		  gcc_assert (TREE_CODE (TREE_TYPE (value)) != VECTOR_TYPE);
+		RTVEC_ELT (vector, eltpos) = expand_normal (value);
 	      }
 	    else
 	      {
-		machine_mode value_mode =
-		  TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE
-		  ? TYPE_MODE (TREE_TYPE (value))
-		  : eltmode;
+		machine_mode value_mode
+		  = (TREE_CODE (TREE_TYPE (value)) == VECTOR_TYPE
+		     ? TYPE_MODE (TREE_TYPE (value)) : eltmode);
 		bitpos = eltpos * elt_size;
 		store_constructor_field (target, bitsize, bitpos, 0,
 					 bitregion_end, value_mode,
@@ -6707,9 +6714,9 @@ store_constructor (tree exp, rtx target, int cleared, HOST_WIDE_INT size,
 	  }
 
 	if (vector)
-	  emit_insn (GEN_FCN (icode)
-		     (target,
-		      gen_rtx_PARALLEL (GET_MODE (target), vector)));
+	  emit_insn (GEN_FCN (icode) (target,
+				      gen_rtx_PARALLEL (GET_MODE (target),
+							vector)));
 	break;
       }
 
@@ -8237,7 +8244,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
      result to be reduced to the precision of the bit-field type,
      which is narrower than that of the type's mode.  */
   reduce_bit_field = (INTEGRAL_TYPE_P (type)
-		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
+		      && !type_has_mode_precision_p (type));
 
   if (reduce_bit_field && modifier == EXPAND_STACK_PARM)
     target = 0;
@@ -9090,8 +9097,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
     case LROTATE_EXPR:
     case RROTATE_EXPR:
       gcc_assert (VECTOR_MODE_P (TYPE_MODE (type))
-		  || (GET_MODE_PRECISION (TYPE_MODE (type))
-		      == TYPE_PRECISION (type)));
+		  || type_has_mode_precision_p (type));
       /* fall through */
 
     case LSHIFT_EXPR:
@@ -9664,7 +9670,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
      which is narrower than that of the type's mode.  */
   reduce_bit_field = (!ignore
 		      && INTEGRAL_TYPE_P (type)
-		      && GET_MODE_PRECISION (mode) > TYPE_PRECISION (type));
+		      && !type_has_mode_precision_p (type));
 
   /* If we are going to ignore this result, we need only do something
      if there is a side-effect somewhere in the expression.  If there

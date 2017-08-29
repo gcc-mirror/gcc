@@ -859,9 +859,6 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
    && !TYPE_OVERFLOW_WRAPS (TYPE)			\
    && (flag_sanitize & SANITIZE_SI_OVERFLOW))
 
-/* True if pointer types have undefined overflow.  */
-#define POINTER_TYPE_OVERFLOW_UNDEFINED (!flag_wrapv)
-
 /* Nonzero in a VAR_DECL or STRING_CST means assembler code has been written.
    Nonzero in a FUNCTION_DECL means that the function has been compiled.
    This is interesting in an inline function, since it might not need
@@ -1855,7 +1852,8 @@ extern void protected_set_expr_location (tree, location_t);
 #define SET_TYPE_MODE(NODE, MODE) \
   (TYPE_CHECK (NODE)->type_common.mode = (MODE))
 
-extern machine_mode element_mode (const_tree t);
+extern machine_mode element_mode (const_tree);
+extern machine_mode vector_type_mode (const_tree);
 
 /* The "canonical" type for this type node, which is used by frontends to
    compare the type for equality with another type.  If two types are
@@ -1921,6 +1919,16 @@ extern machine_mode element_mode (const_tree t);
 
 /* The alignment for NODE, in bytes.  */
 #define TYPE_ALIGN_UNIT(NODE) (TYPE_ALIGN (NODE) / BITS_PER_UNIT)
+
+/* The minimum alignment necessary for objects of this type without
+   warning.  The value is an int, measured in bits.  */
+#define TYPE_WARN_IF_NOT_ALIGN(NODE) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align \
+     ? ((unsigned)1) << ((NODE)->type_common.warn_if_not_align - 1) : 0)
+
+/* Specify that TYPE_WARN_IF_NOT_ALIGN(NODE) is X.  */
+#define SET_TYPE_WARN_IF_NOT_ALIGN(NODE, X) \
+    (TYPE_CHECK (NODE)->type_common.warn_if_not_align = ffs_hwi (X))
 
 /* If your language allows you to declare types, and you want debug info
    for them, then you need to generate corresponding TYPE_DECL nodes.
@@ -2132,14 +2140,13 @@ extern machine_mode element_mode (const_tree t);
 #define TYPE_ARRAY_MAX_SIZE(ARRAY_TYPE) \
   (ARRAY_TYPE_CHECK (ARRAY_TYPE)->type_non_common.maxval)
 #define TYPE_MAX_VALUE_RAW(NODE) (TYPE_CHECK (NODE)->type_non_common.maxval)
-
 /* For record and union types, information about this type, as a base type
    for itself.  */
-#define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK (NODE)->type_non_common.binfo)
+#define TYPE_BINFO(NODE) (RECORD_OR_UNION_CHECK (NODE)->type_non_common.maxval)
 
-/* For non record and union types, used in a language-dependent way.  */
+/* For types, used in a language-dependent way.  */
 #define TYPE_LANG_SLOT_1(NODE) \
-  (NOT_RECORD_OR_UNION_CHECK (NODE)->type_non_common.binfo)
+  (TYPE_CHECK (NODE)->type_non_common.lang_1)
 
 /* Define accessor macros for information about type inheritance
    and basetypes.
@@ -2374,6 +2381,16 @@ extern machine_mode element_mode (const_tree t);
 /* Specify that DECL_ALIGN(NODE) is X.  */
 #define SET_DECL_ALIGN(NODE, X) \
     (DECL_COMMON_CHECK (NODE)->decl_common.align = ffs_hwi (X))
+
+/* The minimum alignment necessary for the datum, in bits, without
+   warning.  */
+#define DECL_WARN_IF_NOT_ALIGN(NODE) \
+    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align \
+     ? ((unsigned)1) << ((NODE)->decl_common.warn_if_not_align - 1) : 0)
+
+/* Specify that DECL_WARN_IF_NOT_ALIGN(NODE) is X.  */
+#define SET_DECL_WARN_IF_NOT_ALIGN(NODE, X) \
+    (DECL_COMMON_CHECK (NODE)->decl_common.warn_if_not_align = ffs_hwi (X))
 
 /* The alignment of NODE, in bytes.  */
 #define DECL_ALIGN_UNIT(NODE) (DECL_ALIGN (NODE) / BITS_PER_UNIT)
@@ -4091,8 +4108,6 @@ extern tree purpose_member (const_tree, tree);
 extern bool vec_member (const_tree, vec<tree, va_gc> *);
 extern tree chain_index (int, tree);
 
-extern int attribute_list_equal (const_tree, const_tree);
-extern int attribute_list_contained (const_tree, const_tree);
 extern int tree_int_cst_equal (const_tree, const_tree);
 
 extern bool tree_fits_shwi_p (const_tree)
@@ -4129,111 +4144,6 @@ extern bool valid_constant_size_p (const_tree);
    tree.h had been included.  */
 
 extern tree make_tree (tree, rtx);
-
-/* Return a type like TTYPE except that its TYPE_ATTRIBUTES
-   is ATTRIBUTE.
-
-   Such modified types already made are recorded so that duplicates
-   are not made.  */
-
-extern tree build_type_attribute_variant (tree, tree);
-extern tree build_decl_attribute_variant (tree, tree);
-extern tree build_type_attribute_qual_variant (tree, tree, int);
-
-extern bool attribute_value_equal (const_tree, const_tree);
-
-/* Return 0 if the attributes for two types are incompatible, 1 if they
-   are compatible, and 2 if they are nearly compatible (which causes a
-   warning to be generated).  */
-extern int comp_type_attributes (const_tree, const_tree);
-
-/* Default versions of target-overridable functions.  */
-extern tree merge_decl_attributes (tree, tree);
-extern tree merge_type_attributes (tree, tree);
-
-/* This function is a private implementation detail of lookup_attribute()
-   and you should never call it directly.  */
-extern tree private_lookup_attribute (const char *, size_t, tree);
-
-/* This function is a private implementation detail
-   of lookup_attribute_by_prefix() and you should never call it directly.  */
-extern tree private_lookup_attribute_by_prefix (const char *, size_t, tree);
-
-/* Given an attribute name ATTR_NAME and a list of attributes LIST,
-   return a pointer to the attribute's list element if the attribute
-   is part of the list, or NULL_TREE if not found.  If the attribute
-   appears more than once, this only returns the first occurrence; the
-   TREE_CHAIN of the return value should be passed back in if further
-   occurrences are wanted.  ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
-
-static inline tree
-lookup_attribute (const char *attr_name, tree list)
-{
-  gcc_checking_assert (attr_name[0] != '_');  
-  /* In most cases, list is NULL_TREE.  */
-  if (list == NULL_TREE)
-    return NULL_TREE;
-  else
-    /* Do the strlen() before calling the out-of-line implementation.
-       In most cases attr_name is a string constant, and the compiler
-       will optimize the strlen() away.  */
-    return private_lookup_attribute (attr_name, strlen (attr_name), list);
-}
-
-/* Given an attribute name ATTR_NAME and a list of attributes LIST,
-   return a pointer to the attribute's list first element if the attribute
-   starts with ATTR_NAME. ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
-
-static inline tree
-lookup_attribute_by_prefix (const char *attr_name, tree list)
-{
-  gcc_checking_assert (attr_name[0] != '_');
-  /* In most cases, list is NULL_TREE.  */
-  if (list == NULL_TREE)
-    return NULL_TREE;
-  else
-    return private_lookup_attribute_by_prefix (attr_name, strlen (attr_name),
-					       list);
-}
-
-
-/* This function is a private implementation detail of
-   is_attribute_p() and you should never call it directly.  */
-extern bool private_is_attribute_p (const char *, size_t, const_tree);
-
-/* Given an identifier node IDENT and a string ATTR_NAME, return true
-   if the identifier node is a valid attribute name for the string.
-   ATTR_NAME must be in the form 'text' (not '__text__').  IDENT could
-   be the identifier for 'text' or for '__text__'.  */
-
-static inline bool
-is_attribute_p (const char *attr_name, const_tree ident)
-{
-  gcc_checking_assert (attr_name[0] != '_');
-  /* Do the strlen() before calling the out-of-line implementation.
-     In most cases attr_name is a string constant, and the compiler
-     will optimize the strlen() away.  */
-  return private_is_attribute_p (attr_name, strlen (attr_name), ident);
-}
-
-/* Remove any instances of attribute ATTR_NAME in LIST and return the
-   modified list.  ATTR_NAME must be in the form 'text' (not
-   '__text__').  */
-
-extern tree remove_attribute (const char *, tree);
-
-/* Given two attributes lists, return a list of their union.  */
-
-extern tree merge_attributes (tree, tree);
-
-/* Given two Windows decl attributes lists, possibly including
-   dllimport, return a list of their union .  */
-extern tree merge_dllimport_decl_attributes (tree, tree);
-
-/* Handle a "dllimport" or "dllexport" attribute.  */
-extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 
 /* Returns true iff CAND and BASE have equivalent language-specific
    qualifiers.  */
@@ -5504,4 +5414,13 @@ struct builtin_structptr_type
   const char *str;
 };
 extern const builtin_structptr_type builtin_structptr_types[6];
+
+/* Return true if type T has the same precision as its underlying mode.  */
+
+inline bool
+type_has_mode_precision_p (const_tree t)
+{
+  return TYPE_PRECISION (t) == GET_MODE_PRECISION (TYPE_MODE (t));
+}
+
 #endif  /* GCC_TREE_H  */

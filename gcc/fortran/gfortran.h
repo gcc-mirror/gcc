@@ -1014,6 +1014,7 @@ typedef struct
   int is_iso_c;
   bt f90_type;
   bool deferred;
+  gfc_symbol *interop_kind;
 }
 gfc_typespec;
 
@@ -3316,6 +3317,7 @@ void gfc_delete_bbt (void *, void *, compare_fn);
 
 /* dump-parse-tree.c */
 void gfc_dump_parse_tree (gfc_namespace *, FILE *);
+void gfc_dump_c_prototypes (gfc_namespace *, FILE *);
 
 /* parse.c */
 bool gfc_parse_file (void);

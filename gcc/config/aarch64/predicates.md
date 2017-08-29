@@ -57,11 +57,6 @@
        (ior (match_operand 0 "register_operand")
 	    (match_test "op == const0_rtx"))))
 
-(define_predicate "aarch64_reg_or_fp_float"
-  (ior (match_operand 0 "register_operand")
-	(and (match_code "const_double")
-	     (match_test "aarch64_float_const_rtx_p (op)"))))
-
 (define_predicate "aarch64_reg_or_fp_zero"
   (ior (match_operand 0 "register_operand")
 	(and (match_code "const_double")

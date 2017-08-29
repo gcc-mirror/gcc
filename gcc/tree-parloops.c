@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-eh.h"
 #include "gomp-constants.h"
 #include "tree-dfa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This pass tries to distribute iterations of loops into several threads.
    The implementation is straightforward -- for each loop we test whether its
@@ -2577,7 +2579,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
       build_new_reduction (reduction_list, reduc_stmt, phi);
     }
-  destroy_loop_vec_info (simple_loop_info, true);
+  delete simple_loop_info;
 
   if (!double_reduc_phis.is_empty ())
     {
@@ -2613,7 +2615,7 @@ gather_scalar_reductions (loop_p loop, reduction_info_table_type *reduction_list
 
 	      build_new_reduction (reduction_list, double_reduc_stmts[i], phi);
 	    }
-	  destroy_loop_vec_info (simple_loop_info, true);
+	  delete simple_loop_info;
 	}
     }
 

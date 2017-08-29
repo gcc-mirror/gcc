@@ -41,6 +41,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgexpand.h"
 #include "tree-cfg.h"
 #include "tree-dfa.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Pointer map of variable mappings, keyed by edge.  */

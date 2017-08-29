@@ -37,6 +37,8 @@
 
 #ifdef __ALTIVEC__
 #include <mmintrin.h>
+
+#include <xmmintrin.h>
 #endif /* __ALTIVEC__ */
 
 #include <bmiintrin.h>

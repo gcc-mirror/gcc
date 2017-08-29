@@ -1,4 +1,5 @@
 /* { dg-options "-O2 -fdump-rtl-auto_inc_dec" } */
+/* { dg-require-effective-target autoincdec } */
 
 /* Check that accesses based on the frame pointer do not
    use auto increment.  */

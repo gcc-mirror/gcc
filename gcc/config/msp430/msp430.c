@@ -25,6 +25,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "gimple-expr.h"
 #include "df.h"
 #include "memmodel.h"
@@ -1902,6 +1904,10 @@ msp430_attr (tree * node,
 
       if (! TREE_PUBLIC (* node))
 	message = "interrupt handlers cannot be static";
+
+      /* Ensure interrupt handlers never get optimised out.  */
+      TREE_USED (* node) = 1;
+      DECL_PRESERVE_P (* node) = 1;
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {
@@ -2057,7 +2063,7 @@ const struct attribute_spec msp430_attribute_table[] =
 #define TARGET_ASM_FUNCTION_PROLOGUE	msp430_start_function
 
 static void
-msp430_start_function (FILE *outfile, HOST_WIDE_INT hwi_local ATTRIBUTE_UNUSED)
+msp430_start_function (FILE *outfile)
 {
   int r, n;
 

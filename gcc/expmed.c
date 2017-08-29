@@ -736,7 +736,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       int byte_offset = 0;
 
       /* Paradoxical subregs need special handling on big-endian machines.  */
-      if (SUBREG_BYTE (op0) == 0 && inner_mode_size < outer_mode_size)
+      if (paradoxical_subreg_p (op0))
 	{
 	  int difference = inner_mode_size - outer_mode_size;
 
@@ -1566,6 +1566,55 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       return op0;
     }
 
+  /* First try to check for vector from vector extractions.  */
+  if (VECTOR_MODE_P (GET_MODE (op0))
+      && !MEM_P (op0)
+      && VECTOR_MODE_P (tmode)
+      && GET_MODE_SIZE (GET_MODE (op0)) > GET_MODE_SIZE (tmode))
+    {
+      machine_mode new_mode = GET_MODE (op0);
+      if (GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode))
+	{
+	  new_mode = mode_for_vector (GET_MODE_INNER (tmode),
+				      GET_MODE_BITSIZE (GET_MODE (op0))
+				      / GET_MODE_UNIT_BITSIZE (tmode));
+	  if (!VECTOR_MODE_P (new_mode)
+	      || GET_MODE_SIZE (new_mode) != GET_MODE_SIZE (GET_MODE (op0))
+	      || GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode)
+	      || !targetm.vector_mode_supported_p (new_mode))
+	    new_mode = VOIDmode;
+	}
+      if (new_mode != VOIDmode
+	  && (convert_optab_handler (vec_extract_optab, new_mode, tmode)
+	      != CODE_FOR_nothing)
+	  && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (tmode)
+	      == bitnum / GET_MODE_BITSIZE (tmode)))
+	{
+	  struct expand_operand ops[3];
+	  machine_mode outermode = new_mode;
+	  machine_mode innermode = tmode;
+	  enum insn_code icode
+	    = convert_optab_handler (vec_extract_optab, outermode, innermode);
+	  unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);
+
+	  if (new_mode != GET_MODE (op0))
+	    op0 = gen_lowpart (new_mode, op0);
+	  create_output_operand (&ops[0], target, innermode);
+	  ops[0].target = 1;
+	  create_input_operand (&ops[1], op0, outermode);
+	  create_integer_operand (&ops[2], pos);
+	  if (maybe_expand_insn (icode, 3, ops))
+	    {
+	      if (alt_rtl && ops[0].target)
+		*alt_rtl = target;
+	      target = ops[0].value;
+	      if (GET_MODE (target) != mode)
+		return gen_lowpart (tmode, target);
+	      return target;
+	    }
+	}
+    }
+
   /* See if we can get a better vector mode before extracting.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
@@ -1599,14 +1648,17 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      available.  */
   if (VECTOR_MODE_P (GET_MODE (op0))
       && !MEM_P (op0)
-      && optab_handler (vec_extract_optab, GET_MODE (op0)) != CODE_FOR_nothing
+      && (convert_optab_handler (vec_extract_optab, GET_MODE (op0),
+				 GET_MODE_INNER (GET_MODE (op0)))
+	  != CODE_FOR_nothing)
       && ((bitnum + bitsize - 1) / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))
 	  == bitnum / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))))
     {
       struct expand_operand ops[3];
       machine_mode outermode = GET_MODE (op0);
       machine_mode innermode = GET_MODE_INNER (outermode);
-      enum insn_code icode = optab_handler (vec_extract_optab, outermode);
+      enum insn_code icode
+	= convert_optab_handler (vec_extract_optab, outermode, innermode);
       unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);
 
       create_output_operand (&ops[0], target, innermode);

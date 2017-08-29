@@ -957,16 +957,18 @@ c_common_post_options (const char **pfilename)
 
   if (flag_extern_tls_init)
     {
-#if !defined (ASM_OUTPUT_DEF) || !SUPPORTS_WEAK
-      /* Lazy TLS initialization for a variable in another TU requires
-	 alias and weak reference support. */
-      if (flag_extern_tls_init > 0)
-	sorry ("external TLS initialization functions not supported "
-	       "on this target");
-      flag_extern_tls_init = 0;
-#else
-      flag_extern_tls_init = 1;
-#endif
+      if (!TARGET_SUPPORTS_ALIASES || !SUPPORTS_WEAK)
+	{
+	  /* Lazy TLS initialization for a variable in another TU requires
+	     alias and weak reference support.  */
+	  if (flag_extern_tls_init > 0)
+	    sorry ("external TLS initialization functions not supported "
+		   "on this target");
+
+	  flag_extern_tls_init = 0;
+	}
+      else
+	flag_extern_tls_init = 1;
     }
 
   if (num_in_fnames > 1)

@@ -1175,11 +1175,17 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
   else
     partial_ref = false;
 
+  if (storage_order_barrier_p (expr))
+    {
+      disqualify_base_of_expr (expr, "storage order barrier.");
+      return NULL;
+    }
+
   /* We need to dive through V_C_Es in order to get the size of its parameter
      and not the result type.  Ada produces such statements.  We are also
      capable of handling the topmost V_C_E but not any of those buried in other
      handled components.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR && !storage_order_barrier_p (expr))
+  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
     expr = TREE_OPERAND (expr, 0);
 
   if (contains_view_convert_expr_p (expr))

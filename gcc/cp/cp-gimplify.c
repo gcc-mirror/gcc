@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-ubsan.h"
 #include "cilk.h"
 #include "cp-cilkplus.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Forward declarations.  */
@@ -2314,9 +2316,9 @@ cp_fold (tree x)
 
       /* A COND_EXPR might have incompatible types in branches if one or both
 	 arms are bitfields.  If folding exposed such a branch, fix it up.  */
-      if (TREE_CODE (x) != code)
-	if (tree type = is_bitfield_expr_with_lowered_type (x))
-	  x = fold_convert (type, x);
+      if (TREE_CODE (x) != code
+	  && !useless_type_conversion_p (TREE_TYPE (org_x), TREE_TYPE (x)))
+	x = fold_convert (TREE_TYPE (org_x), x);
 
       break;
 

@@ -52,9 +52,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef INCOMING_RETURN_ADDR_RTX
 #define INCOMING_RETURN_ADDR_RTX  (gcc_unreachable (), NULL_RTX)
 #endif
-
-/* Maximum size (in bytes) of an artificially generated label.  */
-#define MAX_ARTIFICIAL_LABEL_BYTES	30
 
 /* A collected description of an entire row of the abstract CFI table.  */
 struct GTY(()) dw_cfi_row

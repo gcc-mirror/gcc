@@ -38,7 +38,7 @@ my_bcopy (const void *s, void *d, size_t n)
 }
 
 __attribute__ ((used))
-void
+void *
 my_memmove (void *d, const void *s, size_t n)
 {
   char *dst = (char *) d;
@@ -53,6 +53,8 @@ my_memmove (void *d, const void *s, size_t n)
       while (n--)
 	*--dst = *--src;
     }
+
+  return d;
 }
 
 /* LTO code is at the present to able to track that asm alias my_bcopy on builtin

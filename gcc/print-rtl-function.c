@@ -227,7 +227,7 @@ print_rtx_function (FILE *outfile, function *fn, bool compact)
 
   tree fdecl = fn->decl;
 
-  const char *dname = lang_hooks.decl_printable_name (fdecl, 2);
+  const char *dname = lang_hooks.decl_printable_name (fdecl, 1);
 
   fprintf (outfile, "(function \"%s\"\n", dname);
 

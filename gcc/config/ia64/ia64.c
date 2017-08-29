@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -232,8 +233,8 @@ static bool ia64_in_small_data_p (const_tree);
 static void process_epilogue (FILE *, rtx, bool, bool);
 
 static bool ia64_assemble_integer (rtx, unsigned int, int);
-static void ia64_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void ia64_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void ia64_output_function_prologue (FILE *);
+static void ia64_output_function_epilogue (FILE *);
 static void ia64_output_function_end_prologue (FILE *);
 
 static void ia64_print_operand (FILE *, rtx, int);
@@ -4277,7 +4278,7 @@ ia64_assemble_integer (rtx x, unsigned int size, int aligned_p)
 /* Emit the function prologue.  */
 
 static void
-ia64_output_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+ia64_output_function_prologue (FILE *file)
 {
   int mask, grsave, grsave_prev;
 
@@ -4355,8 +4356,7 @@ ia64_output_function_end_prologue (FILE *file)
 /* Emit the function epilogue.  */
 
 static void
-ia64_output_function_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+ia64_output_function_epilogue (FILE *)
 {
   int i;
 

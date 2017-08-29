@@ -231,6 +231,7 @@
 (include "../arm/cortex-a53.md")
 (include "../arm/cortex-a57.md")
 (include "../arm/exynos-m1.md")
+(include "falkor.md")
 (include "thunderx.md")
 (include "../arm/xgene1.md")
 (include "thunderx2t99.md")
@@ -494,7 +495,7 @@
 						 const0_rtx),
 				    operands[0], operands[2], operands[4]));
 
-    operands[2] = force_reg (DImode, gen_rtx_LABEL_REF (VOIDmode, operands[3]));
+    operands[2] = force_reg (DImode, gen_rtx_LABEL_REF (DImode, operands[3]));
     emit_jump_insn (gen_casesi_dispatch (operands[2], operands[0],
 					 operands[3]));
     DONE;
@@ -1076,7 +1077,7 @@
   [(set (match_operand:HF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r")
 	(match_operand:HF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r"))]
   "TARGET_FLOAT && (register_operand (operands[0], HFmode)
-    || aarch64_reg_or_fp_float (operands[1], HFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], HFmode))"
   "@
    movi\\t%0.4h, #0
    fmov\\t%h0, %w1
@@ -1099,7 +1100,7 @@
   [(set (match_operand:SF 0 "nonimmediate_operand" "=w,w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
 	(match_operand:SF 1 "general_operand"      "Y ,?rY, w,w,Ufc,Uvi,m,w,m,rY,r,M"))]
   "TARGET_FLOAT && (register_operand (operands[0], SFmode)
-    || aarch64_reg_or_fp_float (operands[1], SFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], SFmode))"
   "@
    movi\\t%0.2s, #0
    fmov\\t%s0, %w1
@@ -1123,7 +1124,7 @@
   [(set (match_operand:DF 0 "nonimmediate_operand" "=w, w  ,?r,w,w  ,w  ,w,m,r,m ,r,r")
 	(match_operand:DF 1 "general_operand"      "Y , ?rY, w,w,Ufc,Uvi,m,w,m,rY,r,N"))]
   "TARGET_FLOAT && (register_operand (operands[0], DFmode)
-    || aarch64_reg_or_fp_float (operands[1], DFmode))"
+    || aarch64_reg_or_fp_zero (operands[1], DFmode))"
   "@
    movi\\t%d0, #0
    fmov\\t%d0, %x1
@@ -5174,6 +5175,42 @@
 						     HOST_WIDE_INT_M1U << 31));
   emit_insn (gen_aarch64_simd_bslv2sf (tmp, v_bitmask, op2, op1));
   emit_move_insn (operands[0], lowpart_subreg (SFmode, tmp, V2SFmode));
+  DONE;
+}
+)
+
+;; For xorsign (x, y), we want to generate:
+;;
+;; LDR   d2, #1<<63
+;; AND   v3.8B, v1.8B, v2.8B
+;; EOR   v0.8B, v0.8B, v3.8B
+;;
+
+(define_expand "xorsign<mode>3"
+  [(match_operand:GPF 0 "register_operand")
+   (match_operand:GPF 1 "register_operand")
+   (match_operand:GPF 2 "register_operand")]
+  "TARGET_FLOAT && TARGET_SIMD"
+{
+
+  machine_mode imode = <V_cmp_result>mode;
+  rtx mask = gen_reg_rtx (imode);
+  rtx op1x = gen_reg_rtx (imode);
+  rtx op2x = gen_reg_rtx (imode);
+
+  int bits = GET_MODE_BITSIZE (<MODE>mode) - 1;
+  emit_move_insn (mask, GEN_INT (trunc_int_for_mode (HOST_WIDE_INT_M1U << bits,
+						     imode)));
+
+  emit_insn (gen_and<v_cmp_result>3 (op2x, mask,
+				     lowpart_subreg (imode, operands[2],
+						     <MODE>mode)));
+  emit_insn (gen_xor<v_cmp_result>3 (op1x,
+				     lowpart_subreg (imode, operands[1],
+						     <MODE>mode),
+				     op2x));
+  emit_move_insn (operands[0],
+		  lowpart_subreg (<MODE>mode, op1x, imode));
   DONE;
 }
 )

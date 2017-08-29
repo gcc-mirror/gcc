@@ -2219,7 +2219,7 @@ predicate_mem_writes (loop_p loop)
 	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
 	    tree ref, addr, ptr, mask;
-	    gimple *new_stmt;
+	    gcall *new_stmt;
 	    gimple_seq stmts = NULL;
 	    int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
 	    ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
@@ -2281,6 +2281,7 @@ predicate_mem_writes (loop_p loop)
 		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 		SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 	      }
+	    gimple_call_set_nothrow (new_stmt, true);
 
 	    gsi_replace (&gsi, new_stmt, true);
 	  }

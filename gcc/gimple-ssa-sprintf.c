@@ -3868,7 +3868,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	    }
 	  else if (dstsize > target_int_max ())
 	    warning_at (gimple_location (info.callstmt), info.warnopt (),
-			"specified bound %wu exceeds %<INT_MAX %>",
+			"specified bound %wu exceeds %<INT_MAX%>",
 			dstsize);
 	}
       else if (TREE_CODE (size) == SSA_NAME)

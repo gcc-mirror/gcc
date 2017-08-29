@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -584,8 +585,8 @@ static rtx sparc_builtin_saveregs (void);
 static int epilogue_renumber (rtx *, int);
 static bool sparc_assemble_integer (rtx, unsigned int, int);
 static int set_extends (rtx_insn *);
-static void sparc_asm_function_prologue (FILE *, HOST_WIDE_INT);
-static void sparc_asm_function_epilogue (FILE *, HOST_WIDE_INT);
+static void sparc_asm_function_prologue (FILE *);
+static void sparc_asm_function_epilogue (FILE *);
 #ifdef TARGET_SOLARIS
 static void sparc_solaris_elf_asm_named_section (const char *, unsigned int,
 						 tree) ATTRIBUTE_UNUSED;
@@ -5910,7 +5911,7 @@ sparc_flat_expand_prologue (void)
    down to emitting the necessary .register directives.  */
 
 static void
-sparc_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+sparc_asm_function_prologue (FILE *file)
 {
   /* Check that the assumption we made in sparc_expand_prologue is valid.  */
   if (!TARGET_FLAT)
@@ -6032,7 +6033,7 @@ sparc_can_use_return_insn_p (void)
 /* This function generates the assembly code for function exit.  */
 
 static void
-sparc_asm_function_epilogue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+sparc_asm_function_epilogue (FILE *file)
 {
   /* If the last two instructions of a function are "call foo; dslot;"
      the return address might point to the first instruction in the next

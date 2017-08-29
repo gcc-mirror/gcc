@@ -24,6 +24,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-pretty-print.h"
 #include "diagnostic.h"
 #include "stor-layout.h"
+#include "stringpool.h"
 #include "attribs.h"
 #include "intl.h"
 #include "tree-pretty-print.h"

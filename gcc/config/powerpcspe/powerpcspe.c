@@ -31,6 +31,7 @@
 #include "df.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "expmed.h"
 #include "optabs.h"
 #include "regs.h"
@@ -30598,8 +30599,7 @@ rs6000_output_savres_externs (FILE *file)
 /* Write function prologue.  */
 
 static void
-rs6000_output_function_prologue (FILE *file,
-				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+rs6000_output_function_prologue (FILE *file)
 {
   if (!cfun->is_thunk)
     rs6000_output_savres_externs (file);
@@ -31789,8 +31789,7 @@ rs6000_emit_epilogue (int sibcall)
 /* Write function epilogue.  */
 
 static void
-rs6000_output_function_epilogue (FILE *file,
-				 HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+rs6000_output_function_epilogue (FILE *file)
 {
 #if TARGET_MACHO
   macho_branch_islands ();

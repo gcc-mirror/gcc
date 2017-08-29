@@ -470,7 +470,9 @@ get_nonzero_bits (const_tree name)
   if (TREE_CODE (name) == INTEGER_CST)
     return name;
 
-  unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
+  /* Use element_precision instead of TYPE_PRECISION so complex and
+     vector types get a non-zero precision.  */
+  unsigned int precision = element_precision (TREE_TYPE (name));
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);

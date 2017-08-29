@@ -20,4 +20,6 @@ rgn_rank (rtx insn1, rtx insn2)
 }
 
 /* There should be two IF conditionals.  */
-/* { dg-final { scan-tree-dump-times "if " 2 "dom2" } } */
+/* We no longer record the conditional equivalence by design, thus we
+   are unable to simplify the 3rd conditional at compile time.  */
+/* { dg-final { scan-tree-dump-times "if " 2 "dom2" { xfail *-*-* } } } */

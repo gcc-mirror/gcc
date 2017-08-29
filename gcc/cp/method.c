@@ -1357,7 +1357,7 @@ walk_field_subobs (tree fields, tree fnname, special_function_kind sfk,
 		 default constructor is noexcept(false).  */
 	      if (spec_p)
 		{
-		  tree nsdmi = get_nsdmi (field, /*ctor*/false);
+		  tree nsdmi = get_nsdmi (field, /*ctor*/false, complain);
 		  if (!expr_noexcept_p (nsdmi, complain))
 		    *spec_p = noexcept_false_spec;
 		}
@@ -1660,6 +1660,10 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     flags |= LOOKUP_DEFAULTED;
 
   tsubst_flags_t complain = diag ? tf_warning_or_error : tf_none;
+  if (diag && spec_p)
+    /* We're in get_defaulted_eh_spec; we don't actually want any walking
+       diagnostics, we just want complain set.  */
+    diag = false;
   int quals = const_p ? TYPE_QUAL_CONST : TYPE_UNQUALIFIED;
 
   for (binfo = TYPE_BINFO (ctype), i = 0;
@@ -1689,12 +1693,18 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 
       if (check_vdtor && type_has_virtual_destructor (BINFO_TYPE (base_binfo)))
 	{
-	  fn = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
-				ptr_type_node, flags, complain);
 	  /* Unlike for base ctor/op=/dtor, for operator delete it's fine
 	     to have a null fn (no class-specific op delete).  */
-	  if (fn && fn == error_mark_node && deleted_p)
-	    *deleted_p = true;
+	  fn = locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+				ptr_type_node, flags, tf_none);
+	  if (fn && fn == error_mark_node)
+	    {
+	      if (complain & tf_error)
+		locate_fn_flags (ctype, cp_operator_id (DELETE_EXPR),
+				 ptr_type_node, flags, complain);
+	      if (deleted_p)
+		*deleted_p = true;
+	    }
 	  check_vdtor = false;
 	}
     }
@@ -1749,7 +1759,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
    needed.  Return what it should be.  */
 
 tree
-get_defaulted_eh_spec (tree decl)
+get_defaulted_eh_spec (tree decl, tsubst_flags_t complain)
 {
   if (DECL_CLONED_FUNCTION_P (decl))
     decl = DECL_CLONED_FUNCTION (decl);
@@ -1759,8 +1769,9 @@ get_defaulted_eh_spec (tree decl)
   tree parm_type = TREE_VALUE (parms);
   bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
   tree spec = empty_except_spec;
+  bool diag = !DECL_DELETED_FN (decl) && (complain & tf_error);
   synthesized_method_walk (ctype, sfk, const_p, &spec, NULL, NULL,
-			   NULL, false, DECL_INHERITED_CTOR (decl),
+			   NULL, diag, DECL_INHERITED_CTOR (decl),
 			   parms);
   return spec;
 }
@@ -2173,6 +2184,12 @@ defaulted_late_check (tree fn)
 		"does not match expected signature %qD", implicit_fn);
     }
 
+  if (DECL_DELETED_FN (implicit_fn))
+    {
+      DECL_DELETED_FN (fn) = 1;
+      return;
+    }
+
   /* 8.4.2/2: An explicitly-defaulted function (...) may have an explicit
      exception-specification only if it is compatible (15.4) with the 
      exception-specification on the implicit declaration.  If a function
@@ -2231,9 +2248,6 @@ defaulted_late_check (tree fn)
 	}
       DECL_DECLARED_CONSTEXPR_P (fn) = false;
     }
-
-  if (DECL_DELETED_FN (implicit_fn))
-    DECL_DELETED_FN (fn) = 1;
 }
 
 /* OK, we've parsed the NSDMI for class T, now we can check any explicit

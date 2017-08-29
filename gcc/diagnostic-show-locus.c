@@ -97,7 +97,6 @@ class colorizer
   diagnostic_context *m_context;
   diagnostic_t m_diagnostic_kind;
   int m_current_state;
-  const char *m_caret;
   const char *m_range1;
   const char *m_range2;
   const char *m_fixit_insert;

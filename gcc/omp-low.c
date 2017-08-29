@@ -58,6 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gomp-constants.h"
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Lowering of OMP parallel and workshare constructs proceeds in two
    phases.  The first phase scans the function looking for OMP statements
@@ -796,6 +798,8 @@ omp_copy_decl (tree var, copy_body_data *cb)
 
   if (TREE_CODE (var) == LABEL_DECL)
     {
+      if (FORCED_LABEL (var) || DECL_NONLOCAL (var))
+	return var;
       new_var = create_artificial_label (DECL_SOURCE_LOCATION (var));
       DECL_CONTEXT (new_var) = current_function_decl;
       insert_decl_map (&ctx->cb, var, new_var);
@@ -9083,7 +9087,7 @@ diagnose_sb_0 (gimple_stmt_iterator *gsi_p,
     }
   if (kind == NULL)
     {
-      gcc_checking_assert (flag_openmp);
+      gcc_checking_assert (flag_openmp || flag_openmp_simd);
       kind = "OpenMP";
     }
 
@@ -9343,7 +9347,7 @@ public:
   /* opt_pass methods: */
   virtual bool gate (function *)
   {
-    return flag_cilkplus || flag_openacc || flag_openmp;
+    return flag_cilkplus || flag_openacc || flag_openmp || flag_openmp_simd;
   }
   virtual unsigned int execute (function *)
     {

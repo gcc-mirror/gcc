@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimplify.h"
 #include "c-family/c-ubsan.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 static bool begin_init_stmts (tree *, tree *);
@@ -534,7 +536,7 @@ perform_target_ctor (tree init)
 /* Return the non-static data initializer for FIELD_DECL MEMBER.  */
 
 tree
-get_nsdmi (tree member, bool in_ctor)
+get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 {
   tree init;
   tree save_ccp = current_class_ptr;
@@ -552,50 +554,54 @@ get_nsdmi (tree member, bool in_ctor)
     {
       init = DECL_INITIAL (DECL_TI_TEMPLATE (member));
       if (TREE_CODE (init) == DEFAULT_ARG)
-	goto unparsed;
-
+	/* Unparsed.  */;
       /* Check recursive instantiation.  */
-      if (DECL_INSTANTIATING_NSDMI_P (member))
+      else if (DECL_INSTANTIATING_NSDMI_P (member))
 	{
-	  error ("recursive instantiation of non-static data member "
-		 "initializer for %qD", member);
+	  if (complain & tf_error)
+	    error ("recursive instantiation of default member "
+		   "initializer for %qD", member);
 	  init = error_mark_node;
 	}
       else
 	{
 	  DECL_INSTANTIATING_NSDMI_P (member) = 1;
-	  
+
 	  /* Do deferred instantiation of the NSDMI.  */
 	  init = (tsubst_copy_and_build
 		  (init, DECL_TI_ARGS (member),
-		   tf_warning_or_error, member, /*function_p=*/false,
+		   complain, member, /*function_p=*/false,
 		   /*integral_constant_expression_p=*/false));
-	  init = digest_nsdmi_init (member, init);
+	  init = digest_nsdmi_init (member, init, complain);
 	  
 	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
 	}
     }
   else
+    init = DECL_INITIAL (member);
+
+  if (init && TREE_CODE (init) == DEFAULT_ARG)
     {
-      init = DECL_INITIAL (member);
-      if (init && TREE_CODE (init) == DEFAULT_ARG)
+      if (complain & tf_error)
 	{
-	unparsed:
-	  error ("constructor required before non-static data member "
-		 "for %qD has been parsed", member);
+	  error ("default member initializer for %qD required before the end "
+		 "of its enclosing class", member);
+	  inform (location_of (init), "defined here");
 	  DECL_INITIAL (member) = error_mark_node;
-	  init = error_mark_node;
 	}
-      /* Strip redundant TARGET_EXPR so we don't need to remap it, and
-	 so the aggregate init code below will see a CONSTRUCTOR.  */
-      bool simple_target = (init && SIMPLE_TARGET_EXPR_P (init));
-      if (simple_target)
-	init = TARGET_EXPR_INITIAL (init);
-      init = break_out_target_exprs (init);
-      if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
-	/* Now put it back so C++17 copy elision works.  */
-	init = get_target_expr (init);
+      init = error_mark_node;
     }
+
+  /* Strip redundant TARGET_EXPR so we don't need to remap it, and
+     so the aggregate init code below will see a CONSTRUCTOR.  */
+  bool simple_target = (init && SIMPLE_TARGET_EXPR_P (init));
+  if (simple_target)
+    init = TARGET_EXPR_INITIAL (init);
+  init = break_out_target_exprs (init);
+  if (simple_target && TREE_CODE (init) != CONSTRUCTOR)
+    /* Now put it back so C++17 copy elision works.  */
+    init = get_target_expr (init);
+
   current_class_ptr = save_ccp;
   current_class_ref = save_ccr;
   return init;
@@ -642,7 +648,7 @@ perform_member_init (tree member, tree init)
   /* Use the non-static data member initializer if there was no
      mem-initializer for this field.  */
   if (init == NULL_TREE)
-    init = get_nsdmi (member, /*ctor*/true);
+    init = get_nsdmi (member, /*ctor*/true, tf_warning_or_error);
 
   if (init == error_mark_node)
     return;

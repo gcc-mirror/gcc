@@ -3802,7 +3802,7 @@ equiv_constant (rtx x)
 	 the subreg.  Note that the upper bits of paradoxical subregs
 	 are undefined, so they cannot be said to equal anything.  */
       if (REG_P (SUBREG_REG (x))
-	  && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (imode)
+	  && !paradoxical_subreg_p (x)
 	  && (new_rtx = equiv_constant (SUBREG_REG (x))) != 0)
         return simplify_subreg (mode, new_rtx, imode, SUBREG_BYTE (x));
 
@@ -6640,6 +6640,7 @@ cse_extended_basic_block (struct cse_basic_block_data *ebb_data)
 	 equivalences due to the condition being tested.  */
       insn = BB_END (bb);
       if (path_entry < path_size - 1
+	  && EDGE_COUNT (bb->succs) == 2
 	  && JUMP_P (insn)
 	  && single_set (insn)
 	  && any_condjump_p (insn))

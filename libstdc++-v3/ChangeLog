@@ -1,3 +1,97 @@
+2017-08-24  François Dumont  <fdumont@gcc.gnu.org>
+
+	* include/bits/stl_list.h
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_S_distance): Remove.
+	(_List_impl(_Node_alloc_type&&, _List_impl&&)): New.
+	(_List_base(_Node_alloc_type&&, _List_base&&)): New, use latter.
+	[!_GLIBCXX_INLINE_VERSION](_List_base(_Node_alloc_type&&,_List_base&&)):
+	Remove.
+	(_List_base(_Node_alloc_type&&)): New.
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_M_distance): Remove.
+	[!_GLIBCXX_INLINE_VERSION](_List_base<>::_M_node_count): Remove.
+	(list<>::_M_node_count): New.
+	(list<>::size()): Adapt to call latter.
+	(list<>::_S_distance(const_iterator, const_iterator)): New.
+	(list<>::splice(iterator, list&, const_iterator, const_iterator)):
+	Adapt to call latter.
+	(list(list&&, const allocator_type&, true_type)): New.
+	(list(list&&, const allocator_type&, false_type)): New.
+	(list(list&&, const allocator_type&)): Adapt to call latters.
+
+2017-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81912
+	* include/bits/stl_iterator_base_types.h (__iterator_category): Add
+	constexpr for C++11 and later.
+	* testsuite/24_iterators/container_access.cc: Add target selector.
+	* testsuite/24_iterators/range_access.cc: Fix clause number in
+	comment.
+	* testsuite/24_iterators/range_access_cpp14.cc: Likewise.
+	* testsuite/24_iterators/range_access_cpp17.cc: New.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* testsuite/libstdc++-prettyprinters/prettyprinters.exp: Run all
+	tests with -flto as well if supported.
+
+2017-08-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* src/c++98/compatibility.cc (_GLIBCXX_3_4_SYMVER): Declare alias
+	target as a C++ function with no prototype.
+	(_GLIBCXX_3_4_5_SYMVER): Ditto.
+
+2017-08-20  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR testsuite/81056
+	* testsuite/17_intro/names.cc: Undef 'd' and 'r' on __hpux__.
+
+2017-08-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable_policy.h (_ReuseOrAllocNode): Remove
+	__value_alloc_type and __value_alloc_traits typedefs.
+	(_ReuseOrAllocNode::operator()): Call construct and destroy on the
+	node allocator.
+	(_Hashtable_alloc): Simplify __value_alloc_traits typedef.
+	(_Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&...)): Call
+	construct on the node allocator.
+	(_Hashtable_alloc<_NodeAlloc>::_M_deallocate_node(__node_type*)): Call
+	destroy on the node allocator.
+
+	PR libstdc++/81891
+	* include/bits/hashtable.h (_Hashtable(_InputIterator, _InputIterator,
+	size_type, const _H1&, const _H2&, const _Hash&, const _Equal&,
+	const _ExtractKey&, const allocator_type&)): Let destructor do clean
+	up if an exception is thrown.
+	* testsuite/23_containers/unordered_map/cons/81891.cc: New.
+
+2017-08-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81808
+	* testsuite/27_io/basic_fstream/53984.cc: Adjust test for targets
+	that allow opening a directory as a FILE and reading from it.
+
+2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP):
+	Replace with _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP and use
+	__is_identifier to set it.
+
+2017-08-09  Katsuhiko Nishimra  <ktns.87@gmail.com>
+
+	* include/std/type_traits (_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Use
+	__is_identifier instead of __has_builtin.
+
+2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79820
+	PR libstdc++/81751
+	* config/io/basic_file_stdio.cc (sys_open(FILE*, ios_base::openmode)):
+	Call fflush on the stream instead of calling sync() while _M_cfile is
+	null. Restore original value of errno.
+	* testsuite/ext/stdio_filebuf/char/79820.cc: New.
+	* testsuite/ext/stdio_filebuf/char/81751.cc: New.
+
 2017-07-31  Marek Polacek  <polacek@redhat.com>
 
 	PR libstdc++/81599

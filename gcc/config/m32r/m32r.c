@@ -28,6 +28,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -69,8 +70,8 @@ static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
 static void  m32r_print_operand_address (FILE *, machine_mode, rtx);
 static bool  m32r_print_operand_punct_valid_p (unsigned char code);
-static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void  m32r_output_function_prologue (FILE *);
+static void  m32r_output_function_epilogue (FILE *);
 
 static void  m32r_file_start (void);
 
@@ -1743,7 +1744,7 @@ m32r_expand_prologue (void)
    m32r_compute_frame_size which calculates the prolog size.  */
 
 static void
-m32r_output_function_prologue (FILE * file, HOST_WIDE_INT size)
+m32r_output_function_prologue (FILE * file)
 {
   enum m32r_function_type fn_type = m32r_compute_function_type (current_function_decl);
 
@@ -1752,7 +1753,7 @@ m32r_output_function_prologue (FILE * file, HOST_WIDE_INT size)
     fprintf (file, "\t%s interrupt handler\n", ASM_COMMENT_START);
 
   if (! current_frame_info.initialized)
-    m32r_compute_frame_size (size);
+    m32r_compute_frame_size (get_frame_size ());
 
   /* This is only for the human reader.  */
   fprintf (file,
@@ -1879,8 +1880,7 @@ m32r_expand_epilogue (void)
    and regs.  */
 
 static void
-m32r_output_function_epilogue (FILE * file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+m32r_output_function_epilogue (FILE *)
 {
   /* Reset state info for each function.  */
   current_frame_info = zero_frame_info;

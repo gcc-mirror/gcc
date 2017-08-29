@@ -40,6 +40,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-iterator.h"
 #include "omp-general.h"
 #include "convert.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "gomp-constants.h"
 #include "predict.h"
 
@@ -3023,7 +3025,13 @@ finish_member_declaration (tree decl)
   if (TREE_CODE (decl) != CONST_DECL)
     DECL_CONTEXT (decl) = current_class_type;
 
-  /* Check for bare parameter packs in the member variable declaration.  */
+  if (TREE_CODE (decl) == USING_DECL)
+    /* For now, ignore class-scope USING_DECLS, so that debugging
+       backends do not see them. */
+    DECL_IGNORED_P (decl) = 1;
+
+  /* Check for bare parameter packs in the non-static data member
+     declaration.  */
   if (TREE_CODE (decl) == FIELD_DECL)
     {
       if (check_for_bare_parameter_packs (TREE_TYPE (decl)))
@@ -3036,54 +3044,31 @@ finish_member_declaration (tree decl)
 
      A C language linkage is ignored for the names of class members
      and the member function type of class member functions.  */
-  if (DECL_LANG_SPECIFIC (decl) && DECL_LANGUAGE (decl) == lang_c)
+  if (DECL_LANG_SPECIFIC (decl))
     SET_DECL_LANGUAGE (decl, lang_cplusplus);
 
-  /* Put the decl on the TYPE_FIELDS list.  Note that this is built up
-     in reverse order.  We reverse it (to obtain declaration order) in
-     finish_struct.  */
-  if (DECL_DECLARES_FUNCTION_P (decl))
-    {
-      /* We also need to add this function to the
-	 CLASSTYPE_METHOD_VEC.  */
-      if (add_method (current_class_type, decl, false))
-	{
-	  gcc_assert (TYPE_MAIN_VARIANT (current_class_type) == current_class_type);
-	  DECL_CHAIN (decl) = TYPE_FIELDS (current_class_type);
-	  TYPE_FIELDS (current_class_type) = decl;
+  bool add = false;
 
-	  maybe_add_class_template_decl_list (current_class_type, decl,
-					      /*friend_p=*/0);
-	}
-    }
+  /* Functions and non-functions are added differently.  */
+  if (DECL_DECLARES_FUNCTION_P (decl))
+    add = add_method (current_class_type, decl, false);
   /* Enter the DECL into the scope of the class, if the class
      isn't a closure (whose fields are supposed to be unnamed).  */
   else if (CLASSTYPE_LAMBDA_EXPR (current_class_type)
 	   || pushdecl_class_level (decl))
+    add = true;
+
+  if (add)
     {
-      if (TREE_CODE (decl) == USING_DECL)
-	{
-	  /* For now, ignore class-scope USING_DECLS, so that
-	     debugging backends do not see them. */
-	  DECL_IGNORED_P (decl) = 1;
-	}
-
       /* All TYPE_DECLs go at the end of TYPE_FIELDS.  Ordinary fields
-	 go at the beginning.  The reason is that lookup_field_1
-	 searches the list in order, and we want a field name to
-	 override a type name so that the "struct stat hack" will
-	 work.  In particular:
+	 go at the beginning.  The reason is that
+	 legacy_nonfn_member_lookup searches the list in order, and we
+	 want a field name to override a type name so that the "struct
+	 stat hack" will work.  In particular:
 
-	   struct S { enum E { }; int E } s;
-	   s.E = 3;
+	   struct S { enum E { }; static const int E = 5; int ary[S::E]; } s;
 
-	 is valid.  In addition, the FIELD_DECLs must be maintained in
-	 declaration order so that class layout works as expected.
-	 However, we don't need that order until class layout, so we
-	 save a little time by putting FIELD_DECLs on in reverse order
-	 here, and then reversing them in finish_struct_1.  (We could
-	 also keep a pointer to the correct insertion points in the
-	 list.)  */
+	 is valid.  */
 
       if (TREE_CODE (decl) == TYPE_DECL)
 	TYPE_FIELDS (current_class_type)
