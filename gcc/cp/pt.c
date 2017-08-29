@@ -25079,11 +25079,9 @@ template_guide_p (const_tree fn)
   gcc_assert (deduction_guide_p (fn));
   if (!DECL_ARTIFICIAL (fn))
     return false;
-  if (tree ctor = DECL_ABSTRACT_ORIGIN (fn))
-    {
-      tree tmpl = DECL_TI_TEMPLATE (ctor);
-      return PRIMARY_TEMPLATE_P (tmpl);
-    }
+  tree tmpl = DECL_TI_TEMPLATE (fn);
+  if (tree org = DECL_ABSTRACT_ORIGIN (tmpl))
+    return PRIMARY_TEMPLATE_P (org);
   return false;
 }
 
@@ -25194,6 +25192,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   bool memtmpl = false;
   bool explicit_p;
   location_t loc;
+  tree fn_tmpl = NULL_TREE;
 
   if (TYPE_P (ctor))
     {
@@ -25219,7 +25218,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
     {
       ++processing_template_decl;
 
-      tree fn_tmpl
+      fn_tmpl
 	= (TREE_CODE (ctor) == TEMPLATE_DECL ? ctor
 	   : DECL_TI_TEMPLATE (ctor));
       if (outer_args)
@@ -25334,7 +25333,7 @@ build_deduction_guide (tree ctor, tree outer_args, tsubst_flags_t complain)
   DECL_TEMPLATE_INFO (ded_fn) = build_template_info (ded_tmpl, targs);
   DECL_PRIMARY_TEMPLATE (ded_tmpl) = ded_tmpl;
   if (DECL_P (ctor))
-    DECL_ABSTRACT_ORIGIN (ded_fn) = ctor;
+    DECL_ABSTRACT_ORIGIN (ded_tmpl) = fn_tmpl;
   if (ci)
     set_constraints (ded_tmpl, ci);
 

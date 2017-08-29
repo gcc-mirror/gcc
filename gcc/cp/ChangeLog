@@ -1,5 +1,9 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	* pt.c (build_deduction_guide): Set DECL_ABSTRACT_ORIGIN on the
+	template, not the function.
+	(template_guide_p): Adjust.
+
 	Support copying local_specializations.
 	* cp-tree.h (enum lss_policy): New.
 	(local_specialization_stack): Add policy parameter to default ctor.
