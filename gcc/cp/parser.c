@@ -27645,11 +27645,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	= cp_parser_late_parse_one_default_arg (parser, parmdecl,
 						default_arg,
 						TREE_VALUE (parm));
-      if (parsed_arg == error_mark_node)
-	{
-	  continue;
-	}
-
       TREE_PURPOSE (parm) = parsed_arg;
 
       /* Update any instantiations we've already created.  */
