@@ -20,5 +20,5 @@ bar (void)
 /* { dg-final { scan-tree-dump-times "&s" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "&t" 0 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "return 0" 2 "optimized" } } */
-/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]s:" { target { *-*-linux* } } } } */
-/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]t:" { target { *-*-linux* } } } } */
+/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]s:" { target *-*-linux* } } } */
+/* { dg-final { scan-assembler ".align\[ \t]*16\[^:]*\[\n\r]t:" { target *-*-linux* } } } */
