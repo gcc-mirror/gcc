@@ -217,7 +217,7 @@ target_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc)
+		      diagnostic_context *dc, void (*) (void))
 {
   gcc_assert (dc == global_dc);
   gcc_assert (kind == DK_UNSPECIFIED);
@@ -1716,7 +1716,8 @@ common_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask, int kind ATTRIBUTE_UNUSED,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers,
-		      diagnostic_context *dc)
+		      diagnostic_context *dc,
+		      void (*target_option_override_hook) (void))
 {
   size_t scode = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -1743,6 +1744,7 @@ common_handle_option (struct gcc_options *opts,
 	undoc_mask = ((opts->x_verbose_flag | opts->x_extra_warnings)
 		      ? 0
 		      : CL_UNDOCUMENTED);
+	target_option_override_hook ();
 	/* First display any single language specific options.  */
 	for (i = 0; i < cl_lang_count; i++)
 	  print_specific_help
@@ -1762,6 +1764,7 @@ common_handle_option (struct gcc_options *opts,
       if (lang_mask == CL_DRIVER)
 	break;
 
+      target_option_override_hook ();
       print_specific_help (CL_TARGET, CL_UNDOCUMENTED, 0, opts, lang_mask);
       opts->x_exit_after_options = true;
       break;
@@ -1888,8 +1891,11 @@ common_handle_option (struct gcc_options *opts,
 	  }
 
 	if (include_flags)
-	  print_specific_help (include_flags, exclude_flags, 0, opts,
-			       lang_mask);
+	  {
+	    target_option_override_hook ();
+	    print_specific_help (include_flags, exclude_flags, 0, opts,
+				 lang_mask);
+	  }
 	opts->x_exit_after_options = true;
 	break;
       }

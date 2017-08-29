@@ -169,7 +169,8 @@ lang_handle_option (struct gcc_options *opts,
 		    unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		    location_t loc,
 		    const struct cl_option_handlers *handlers,
-		    diagnostic_context *dc)
+		    diagnostic_context *dc,
+		    void (*) (void))
 {
   gcc_assert (opts == &global_options);
   gcc_assert (opts_set == &global_options_set);
@@ -269,10 +270,12 @@ decode_cmdline_options_to_array_default_mask (unsigned int argc,
 /* Set *HANDLERS to the default set of option handlers for use in the
    compilers proper (not the driver).  */
 void
-set_default_handlers (struct cl_option_handlers *handlers)
+set_default_handlers (struct cl_option_handlers *handlers,
+		      void (*target_option_override_hook) (void))
 {
   handlers->unknown_option_callback = unknown_option_callback;
   handlers->wrong_lang_callback = complain_wrong_lang;
+  handlers->target_option_override_hook = target_option_override_hook;
   handlers->num_handlers = 3;
   handlers->handlers[0].handler = lang_handle_option;
   handlers->handlers[0].mask = initial_lang_mask;
@@ -290,7 +293,8 @@ void
 decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 		struct cl_decoded_option *decoded_options,
 		unsigned int decoded_options_count,
-		location_t loc, diagnostic_context *dc)
+		location_t loc, diagnostic_context *dc,
+		void (*target_option_override_hook) (void))
 {
   struct cl_option_handlers handlers;
 
@@ -298,7 +302,7 @@ decode_options (struct gcc_options *opts, struct gcc_options *opts_set,
 
   lang_mask = initial_lang_mask;
 
-  set_default_handlers (&handlers);
+  set_default_handlers (&handlers, target_option_override_hook);
 
   default_options_optimization (opts, opts_set,
 				decoded_options, decoded_options_count,
