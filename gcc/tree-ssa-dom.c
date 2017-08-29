@@ -58,17 +58,28 @@ along with GCC; see the file COPYING3.  If not see
    These structures live for a single iteration of the dominator
    optimizer in the edge's AUX field.  At the end of an iteration we
    free each of these structures.  */
-
-struct edge_info
+class edge_info
 {
-  /* If this edge creates a simple equivalence, the LHS and RHS of
-     the equivalence will be stored here.  */
-  tree lhs;
-  tree rhs;
+ public:
+  typedef std::pair <tree, tree> equiv_pair;
+  edge_info (edge);
+  ~edge_info ();
+
+  /* Record a simple LHS = RHS equivalence.  This may trigger
+     calls to derive_equivalences.  */
+  void record_simple_equiv (tree, tree);
+
+  /* If traversing this edge creates simple equivalences, we store
+     them as LHS/RHS pairs within this vector.  */
+  vec<equiv_pair> simple_equivalences;
 
   /* Traversing an edge may also indicate one or more particular conditions
      are true or false.  */
   vec<cond_equivalence> cond_equivalences;
+
+ private:
+  /* Derive equivalences by walking the use-def chains.  */
+  void derive_equivalences (tree, tree, int);
 };
 
 /* Track whether or not we have changed the control flow graph.  */
@@ -109,36 +120,46 @@ static edge single_incoming_edge_ignoring_loop_edges (basic_block);
 static void dump_dominator_optimization_stats (FILE *file,
 					       hash_table<expr_elt_hasher> *);
 
+/* Constructor for EDGE_INFO.  An EDGE_INFO instance is always
+   associated with an edge E.  */
+
+edge_info::edge_info (edge e)
+{
+  /* Free the old one associated with E, if it exists and
+     associate our new object with E.  */
+  free_dom_edge_info (e);
+  e->aux = this;
+
+  /* And initialize the embedded vectors.  */
+  simple_equivalences = vNULL;
+  cond_equivalences = vNULL;
+}
+
+/* Destructor just needs to release the vectors.  */
+edge_info::~edge_info (void)
+{
+  this->cond_equivalences.release ();
+  this->simple_equivalences.release ();
+}
+
+/* Record that LHS is known to be equal to RHS at runtime when the
+   edge associated with THIS is traversed.  */
+
+void
+edge_info::record_simple_equiv (tree lhs, tree rhs)
+{
+  simple_equivalences.safe_push (equiv_pair (lhs, rhs));
+}
 
 /* Free the edge_info data attached to E, if it exists.  */
 
 void
 free_dom_edge_info (edge e)
 {
-  struct edge_info *edge_info = (struct edge_info *)e->aux;
+  class edge_info *edge_info = (struct edge_info *)e->aux;
 
   if (edge_info)
-    {
-      edge_info->cond_equivalences.release ();
-      free (edge_info);
-    }
-}
-
-/* Allocate an EDGE_INFO for edge E and attach it to E.
-   Return the new EDGE_INFO structure.  */
-
-static struct edge_info *
-allocate_edge_info (edge e)
-{
-  struct edge_info *edge_info;
-
-  /* Free the old one, if it exists.  */
-  free_dom_edge_info (e);
-
-  edge_info = XCNEW (struct edge_info);
-
-  e->aux = edge_info;
-  return edge_info;
+    delete edge_info;
 }
 
 /* Free all EDGE_INFO structures associated with edges in the CFG.
@@ -171,7 +192,7 @@ static void
 record_edge_info (basic_block bb)
 {
   gimple_stmt_iterator gsi = gsi_last_bb (bb);
-  struct edge_info *edge_info;
+  class edge_info *edge_info;
 
   if (! gsi_end_p (gsi))
     {
@@ -212,9 +233,8 @@ record_edge_info (basic_block bb)
 		    {
 		      tree x = fold_convert_loc (loc, TREE_TYPE (index),
 						 CASE_LOW (label));
-		      edge_info = allocate_edge_info (e);
-		      edge_info->lhs = index;
-		      edge_info->rhs = x;
+		      edge_info = new class edge_info (e);
+		      edge_info->record_simple_equiv (index, x);
 		    }
 		}
 	      free (info);
@@ -251,28 +271,32 @@ record_edge_info (basic_block bb)
 
               if (code == EQ_EXPR)
                 {
-                  edge_info = allocate_edge_info (true_edge);
-                  edge_info->lhs = op0;
-                  edge_info->rhs = (integer_zerop (op1) ? false_val : true_val);
-
-                  edge_info = allocate_edge_info (false_edge);
-                  edge_info->lhs = op0;
-                  edge_info->rhs = (integer_zerop (op1) ? true_val : false_val);
+		  edge_info = new class edge_info (true_edge);
+		  edge_info->record_simple_equiv (op0,
+						  (integer_zerop (op1)
+						   ? false_val : true_val));
+		  edge_info = new class edge_info (false_edge);
+		  edge_info->record_simple_equiv (op0,
+						  (integer_zerop (op1)
+						   ? true_val : false_val));
                 }
               else
                 {
-                  edge_info = allocate_edge_info (true_edge);
-                  edge_info->lhs = op0;
-                  edge_info->rhs = (integer_zerop (op1) ? true_val : false_val);
-
-                  edge_info = allocate_edge_info (false_edge);
-                  edge_info->lhs = op0;
-                  edge_info->rhs = (integer_zerop (op1) ? false_val : true_val);
+		  edge_info = new class edge_info (true_edge);
+		  edge_info->record_simple_equiv (op0,
+						  (integer_zerop (op1)
+						   ? true_val : false_val));
+		  edge_info = new class edge_info (false_edge);
+		  edge_info->record_simple_equiv (op0,
+						  (integer_zerop (op1)
+						   ? false_val : true_val));
                 }
             }
+	  /* This can show up in the IL as a result of copy propagation
+	     it will eventually be canonicalized, but we have to cope
+	     with this case within the pass.  */
           else if (is_gimple_min_invariant (op0)
-                   && (TREE_CODE (op1) == SSA_NAME
-                       || is_gimple_min_invariant (op1)))
+                   && TREE_CODE (op1) == SSA_NAME)
             {
               tree cond = build2 (code, boolean_type_node, op0, op1);
               tree inverted = invert_truthvalue_loc (loc, cond);
@@ -281,23 +305,17 @@ record_edge_info (basic_block bb)
                     && real_zerop (op0));
               struct edge_info *edge_info;
 
-              edge_info = allocate_edge_info (true_edge);
+	      edge_info = new class edge_info (true_edge);
               record_conditions (&edge_info->cond_equivalences, cond, inverted);
 
               if (can_infer_simple_equiv && code == EQ_EXPR)
-                {
-                  edge_info->lhs = op1;
-                  edge_info->rhs = op0;
-                }
+		edge_info->record_simple_equiv (op1, op0);
 
-              edge_info = allocate_edge_info (false_edge);
+	      edge_info = new class edge_info (false_edge);
               record_conditions (&edge_info->cond_equivalences, inverted, cond);
 
               if (can_infer_simple_equiv && TREE_CODE (inverted) == EQ_EXPR)
-                {
-                  edge_info->lhs = op1;
-                  edge_info->rhs = op0;
-                }
+		edge_info->record_simple_equiv (op1, op0);
             }
 
           else if (TREE_CODE (op0) == SSA_NAME
@@ -311,27 +329,19 @@ record_edge_info (basic_block bb)
                     && (TREE_CODE (op1) == SSA_NAME || real_zerop (op1)));
               struct edge_info *edge_info;
 
-              edge_info = allocate_edge_info (true_edge);
+	      edge_info = new class edge_info (true_edge);
               record_conditions (&edge_info->cond_equivalences, cond, inverted);
 
               if (can_infer_simple_equiv && code == EQ_EXPR)
-                {
-                  edge_info->lhs = op0;
-                  edge_info->rhs = op1;
-                }
+		edge_info->record_simple_equiv (op0, op1);
 
-              edge_info = allocate_edge_info (false_edge);
+	      edge_info = new class edge_info (false_edge);
               record_conditions (&edge_info->cond_equivalences, inverted, cond);
 
               if (can_infer_simple_equiv && TREE_CODE (inverted) == EQ_EXPR)
-                {
-                  edge_info->lhs = op0;
-                  edge_info->rhs = op1;
-                }
+		edge_info->record_simple_equiv (op0, op1);
             }
         }
-
-      /* ??? TRUTH_NOT_EXPR can create an equivalence too.  */
     }
 }
 
@@ -738,7 +748,7 @@ record_temporary_equivalences (edge e,
 			       class avail_exprs_stack *avail_exprs_stack)
 {
   int i;
-  struct edge_info *edge_info = (struct edge_info *) e->aux;
+  class edge_info *edge_info = (class edge_info *) e->aux;
 
   /* If we have info associated with this edge, record it into
      our equivalence tables.  */
@@ -771,68 +781,73 @@ record_temporary_equivalences (edge e,
 	    }
 	}
 
-      tree lhs = edge_info->lhs;
-      if (!lhs || TREE_CODE (lhs) != SSA_NAME)
-	return;
-
-      /* Record the simple NAME = VALUE equivalence.  */
-      tree rhs = edge_info->rhs;
-
-      /* If this is a SSA_NAME = SSA_NAME equivalence and one operand is
-	 cheaper to compute than the other, then set up the equivalence
-	 such that we replace the expensive one with the cheap one.
-
-	 If they are the same cost to compute, then do not record anything.  */
-      if (TREE_CODE (lhs) == SSA_NAME && TREE_CODE (rhs) == SSA_NAME)
+      edge_info::equiv_pair *seq;
+      for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
 	{
-	  gimple *rhs_def = SSA_NAME_DEF_STMT (rhs);
-	  int rhs_cost = estimate_num_insns (rhs_def, &eni_size_weights);
+	  tree lhs = seq->first;
+	  if (!lhs || TREE_CODE (lhs) != SSA_NAME)
+	    continue;
 
-	  gimple *lhs_def = SSA_NAME_DEF_STMT (lhs);
-	  int lhs_cost = estimate_num_insns (lhs_def, &eni_size_weights);
+	  /* Record the simple NAME = VALUE equivalence.  */
+	  tree rhs = seq->second;
 
-	  if (rhs_cost > lhs_cost)
-	    record_equality (rhs, lhs, const_and_copies);
-	  else if (rhs_cost < lhs_cost)
-	    record_equality (lhs, rhs, const_and_copies);
-	}
-      else
-	record_equality (lhs, rhs, const_and_copies);
+	  /* If this is a SSA_NAME = SSA_NAME equivalence and one operand is
+	     cheaper to compute than the other, then set up the equivalence
+	     such that we replace the expensive one with the cheap one.
 
-      /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
-	 set via a widening type conversion, then we may be able to record
-	 additional equivalences.  */
-      if (TREE_CODE (rhs) == INTEGER_CST)
-	{
-	  gimple *defstmt = SSA_NAME_DEF_STMT (lhs);
-
-	  if (defstmt
-	      && is_gimple_assign (defstmt)
-	      && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
+	     If they are the same cost to compute, then do not record
+	     anything.  */
+	  if (TREE_CODE (lhs) == SSA_NAME && TREE_CODE (rhs) == SSA_NAME)
 	    {
-	      tree old_rhs = gimple_assign_rhs1 (defstmt);
+	      gimple *rhs_def = SSA_NAME_DEF_STMT (rhs);
+	      int rhs_cost = estimate_num_insns (rhs_def, &eni_size_weights);
 
-	      /* If the conversion widens the original value and
-		 the constant is in the range of the type of OLD_RHS,
-		 then convert the constant and record the equivalence.
+	      gimple *lhs_def = SSA_NAME_DEF_STMT (lhs);
+	      int lhs_cost = estimate_num_insns (lhs_def, &eni_size_weights);
 
-		 Note that int_fits_type_p does not check the precision
-		 if the upper and lower bounds are OK.  */
-	      if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
-		  && (TYPE_PRECISION (TREE_TYPE (lhs))
-		      > TYPE_PRECISION (TREE_TYPE (old_rhs)))
-		  && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
+	      if (rhs_cost > lhs_cost)
+		record_equality (rhs, lhs, const_and_copies);
+	      else if (rhs_cost < lhs_cost)
+		record_equality (lhs, rhs, const_and_copies);
+	    }
+	  else
+	    record_equality (lhs, rhs, const_and_copies);
+
+	  /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
+	     set via a widening type conversion, then we may be able to record
+	     additional equivalences.  */
+	  if (TREE_CODE (rhs) == INTEGER_CST)
+	    {
+	      gimple *defstmt = SSA_NAME_DEF_STMT (lhs);
+
+	      if (defstmt
+		  && is_gimple_assign (defstmt)
+		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
 		{
-		  tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
-		  record_equality (old_rhs, newval, const_and_copies);
+		  tree old_rhs = gimple_assign_rhs1 (defstmt);
+
+		  /* If the conversion widens the original value and
+		     the constant is in the range of the type of OLD_RHS,
+		     then convert the constant and record the equivalence.
+
+		     Note that int_fits_type_p does not check the precision
+		     if the upper and lower bounds are OK.  */
+		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
+		      && (TYPE_PRECISION (TREE_TYPE (lhs))
+			  > TYPE_PRECISION (TREE_TYPE (old_rhs)))
+		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
+		    {
+		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
+		      record_equality (old_rhs, newval, const_and_copies);
+		    }
 		}
 	    }
-	}
 
-      /* Any equivalence found for LHS may result in additional
-	 equivalences for other uses of LHS that we have already
-	 processed.  */
-      back_propagate_equivalences (lhs, e, const_and_copies);
+	  /* Any equivalence found for LHS may result in additional
+	     equivalences for other uses of LHS that we have already
+	     processed.  */
+	  back_propagate_equivalences (lhs, e, const_and_copies);
+	}
     }
 }
 
@@ -1124,14 +1139,20 @@ cprop_into_successor_phis (basic_block bb,
 
 	 Don't bother with [01] = COND equivalences, they're not useful
 	 here.  */
-      struct edge_info *edge_info = (struct edge_info *) e->aux;
+      class edge_info *edge_info = (class edge_info *) e->aux;
+
       if (edge_info)
 	{
-	  tree lhs = edge_info->lhs;
-	  tree rhs = edge_info->rhs;
+	  edge_info::equiv_pair *seq;
+	  for (int i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
+	    {
+	      tree lhs = seq->first;
+	      tree rhs = seq->second;
 
-	  if (lhs && TREE_CODE (lhs) == SSA_NAME)
-	    const_and_copies->record_const_or_copy (lhs, rhs);
+	      if (lhs && TREE_CODE (lhs) == SSA_NAME)
+		const_and_copies->record_const_or_copy (lhs, rhs);
+	    }
+
 	}
 
       indx = e->dest_idx;
@@ -1701,8 +1722,7 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 	  cached_lhs = avail_exprs_stack->lookup_avail_expr (new_stmt, false,
 							     false);
-	  if (cached_lhs
-	      && rhs == cached_lhs)
+	  if (cached_lhs && operand_equal_p (rhs, cached_lhs, 0))
 	    {
 	      basic_block bb = gimple_bb (stmt);
 	      unlink_stmt_vdef (stmt);
