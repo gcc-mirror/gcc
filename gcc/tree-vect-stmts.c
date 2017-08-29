@@ -2364,9 +2364,11 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 				  misalign);
 	  tree ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)),
 				    misalign ? least_bit_hwi (misalign) : align);
-	  new_stmt
+	  gcall *call
 	    = gimple_build_call_internal (IFN_MASK_STORE, 4, dataref_ptr,
 					  ptr, vec_mask, vec_rhs);
+	  gimple_call_set_nothrow (call, true);
+	  new_stmt = call;
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	  if (i == 0)
 	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
@@ -2414,16 +2416,17 @@ vectorizable_mask_load_store (gimple *stmt, gimple_stmt_iterator *gsi,
 				  misalign);
 	  tree ptr = build_int_cst (TREE_TYPE (gimple_call_arg (stmt, 1)),
 				    misalign ? least_bit_hwi (misalign) : align);
-	  new_stmt
+	  gcall *call
 	    = gimple_build_call_internal (IFN_MASK_LOAD, 3, dataref_ptr,
 					  ptr, vec_mask);
-	  gimple_call_set_lhs (new_stmt, make_ssa_name (vec_dest));
-	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
+	  gimple_call_set_lhs (call, make_ssa_name (vec_dest));
+	  gimple_call_set_nothrow (call, true);
+	  vect_finish_stmt_generation (stmt, call, gsi);
 	  if (i == 0)
-	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = new_stmt;
+	    STMT_VINFO_VEC_STMT (stmt_info) = *vec_stmt = call;
 	  else
-	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = new_stmt;
-	  prev_stmt_info = vinfo_for_stmt (new_stmt);
+	    STMT_VINFO_RELATED_STMT (prev_stmt_info) = call;
+	  prev_stmt_info = vinfo_for_stmt (call);
 	}
     }
 
@@ -2867,8 +2870,11 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  if (modifier == NARROW)
 		    {
 		      tree half_res = make_ssa_name (vectype_in);
-		      new_stmt = gimple_build_call_internal_vec (ifn, vargs);
-		      gimple_call_set_lhs (new_stmt, half_res);
+		      gcall *call
+			= gimple_build_call_internal_vec (ifn, vargs);
+		      gimple_call_set_lhs (call, half_res);
+		      gimple_call_set_nothrow (call, true);
+		      new_stmt = call;
 		      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		      if ((i & 1) == 0)
 			{
@@ -2881,12 +2887,15 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		    }
 		  else
 		    {
+		      gcall *call;
 		      if (ifn != IFN_LAST)
-			new_stmt = gimple_build_call_internal_vec (ifn, vargs);
+			call = gimple_build_call_internal_vec (ifn, vargs);
 		      else
-			new_stmt = gimple_build_call_vec (fndecl, vargs);
-		      new_temp = make_ssa_name (vec_dest, new_stmt);
-		      gimple_call_set_lhs (new_stmt, new_temp);
+			call = gimple_build_call_vec (fndecl, vargs);
+		      new_temp = make_ssa_name (vec_dest, call);
+		      gimple_call_set_lhs (call, new_temp);
+		      gimple_call_set_nothrow (call, true);
+		      new_stmt = call;
 		    }
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
@@ -2934,8 +2943,10 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else if (modifier == NARROW)
 	    {
 	      tree half_res = make_ssa_name (vectype_in);
-	      new_stmt = gimple_build_call_internal_vec (ifn, vargs);
-	      gimple_call_set_lhs (new_stmt, half_res);
+	      gcall *call = gimple_build_call_internal_vec (ifn, vargs);
+	      gimple_call_set_lhs (call, half_res);
+	      gimple_call_set_nothrow (call, true);
+	      new_stmt = call;
 	      vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	      if ((j & 1) == 0)
 		{
@@ -2948,12 +2959,15 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    }
 	  else
 	    {
+	      gcall *call;
 	      if (ifn != IFN_LAST)
-		new_stmt = gimple_build_call_internal_vec (ifn, vargs);
+		call = gimple_build_call_internal_vec (ifn, vargs);
 	      else
-		new_stmt = gimple_build_call_vec (fndecl, vargs);
+		call = gimple_build_call_vec (fndecl, vargs);
 	      new_temp = make_ssa_name (vec_dest, new_stmt);
-	      gimple_call_set_lhs (new_stmt, new_temp);
+	      gimple_call_set_lhs (call, new_temp);
+	      gimple_call_set_nothrow (call, true);
+	      new_stmt = call;
 	    }
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
@@ -2996,12 +3010,15 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		      vargs.quick_push (vec_oprndsk[i]);
 		      vargs.quick_push (vec_oprndsk[i + 1]);
 		    }
+		  gcall *call;
 		  if (ifn != IFN_LAST)
-		    new_stmt = gimple_build_call_internal_vec (ifn, vargs);
+		    call = gimple_build_call_internal_vec (ifn, vargs);
 		  else
-		    new_stmt = gimple_build_call_vec (fndecl, vargs);
-		  new_temp = make_ssa_name (vec_dest, new_stmt);
-		  gimple_call_set_lhs (new_stmt, new_temp);
+		    call = gimple_build_call_vec (fndecl, vargs);
+		  new_temp = make_ssa_name (vec_dest, call);
+		  gimple_call_set_lhs (call, new_temp);
+		  gimple_call_set_nothrow (call, true);
+		  new_stmt = call;
 		  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 		  SLP_TREE_VEC_STMTS (slp_node).quick_push (new_stmt);
 		}
@@ -6356,8 +6373,11 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  /* Emit:
 	       MEM_REF[...all elements...] = STORE_LANES (VEC_ARRAY).  */
 	  data_ref = create_array_ref (aggr_type, dataref_ptr, ref_type);
-	  new_stmt = gimple_build_call_internal (IFN_STORE_LANES, 1, vec_array);
-	  gimple_call_set_lhs (new_stmt, data_ref);
+	  gcall *call = gimple_build_call_internal (IFN_STORE_LANES, 1,
+						    vec_array);
+	  gimple_call_set_lhs (call, data_ref);
+	  gimple_call_set_nothrow (call, true);
+	  new_stmt = call;
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 	}
       else
@@ -7448,8 +7468,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  /* Emit:
 	       VEC_ARRAY = LOAD_LANES (MEM_REF[...all elements...]).  */
 	  data_ref = create_array_ref (aggr_type, dataref_ptr, ref_type);
-	  new_stmt = gimple_build_call_internal (IFN_LOAD_LANES, 1, data_ref);
-	  gimple_call_set_lhs (new_stmt, vec_array);
+	  gcall *call = gimple_build_call_internal (IFN_LOAD_LANES, 1,
+						    data_ref);
+	  gimple_call_set_lhs (call, vec_array);
+	  gimple_call_set_nothrow (call, true);
+	  new_stmt = call;
 	  vect_finish_stmt_generation (stmt, new_stmt, gsi);
 
 	  /* Extract each vector into an SSA_NAME.  */

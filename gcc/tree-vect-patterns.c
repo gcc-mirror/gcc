@@ -1085,6 +1085,7 @@ vect_recog_pow_pattern (vec<gimple *> *stmts, tree *type_in,
 	  gcall *stmt = gimple_build_call_internal (IFN_SQRT, 1, base);
 	  var = vect_recog_temp_ssa_var (TREE_TYPE (base), stmt);
 	  gimple_call_set_lhs (stmt, var);
+	  gimple_call_set_nothrow (stmt, true);
 	  return stmt;
 	}
     }
@@ -3867,7 +3868,6 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (last_stmt);
   stmt_vec_info pattern_stmt_info;
   vec_info *vinfo = stmt_vinfo->vinfo;
-  gimple *pattern_stmt;
 
   /* Check for MASK_LOAD ans MASK_STORE calls requiring mask conversion.  */
   if (is_gimple_call (last_stmt)
@@ -3875,6 +3875,7 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
       && (gimple_call_internal_fn (last_stmt) == IFN_MASK_STORE
 	  || gimple_call_internal_fn (last_stmt) == IFN_MASK_LOAD))
     {
+      gcall *pattern_stmt;
       bool load = (gimple_call_internal_fn (last_stmt) == IFN_MASK_LOAD);
 
       if (load)
@@ -3918,6 +3919,7 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
 					  tmp,
 					  gimple_call_arg (last_stmt, 3));
 
+      gimple_call_set_nothrow (pattern_stmt, true);
 
       pattern_stmt_info = new_stmt_vec_info (pattern_stmt, vinfo);
       set_vinfo_for_stmt (pattern_stmt, pattern_stmt_info);
@@ -3940,6 +3942,7 @@ vect_recog_mask_conversion_pattern (vec<gimple *> *stmts, tree *type_in,
   if (!is_gimple_assign (last_stmt))
     return NULL;
 
+  gimple *pattern_stmt;
   lhs = gimple_assign_lhs (last_stmt);
   rhs1 = gimple_assign_rhs1 (last_stmt);
   rhs_code = gimple_assign_rhs_code (last_stmt);

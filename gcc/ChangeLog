@@ -1,3 +1,19 @@
+2017-08-29  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gimplify.c (gimplify_call_expr): Copy the nothrow flag to
+	calls to internal functions.
+	(gimplify_modify_expr): Likewise.
+	* tree-call-cdce.c (use_internal_fn): Likewise.
+	* tree-ssa-math-opts.c (pass_cse_reciprocals::execute): Likewise.
+	(convert_to_divmod): Set the nothrow flag.
+	* tree-if-conv.c (predicate_mem_writes):  Likewise.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	* tree-vect-patterns.c (vect_recog_pow_pattern): Likewise.
+	(vect_recog_mask_conversion_pattern): Likewise.
+
 2017-08-29  Martin Liska  <mliska@suse.cz>
 
 	PR other/39851
