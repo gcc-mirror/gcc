@@ -2149,7 +2149,8 @@ toplev::main (int argc, char **argv)
      enough to default flags appropriately.  */
   decode_options (&global_options, &global_options_set,
 		  save_decoded_options, save_decoded_options_count,
-		  UNKNOWN_LOCATION, global_dc);
+		  UNKNOWN_LOCATION, global_dc,
+		  targetm.target_option.override);
 
   handle_common_deferred_options ();
 

@@ -1,3 +1,10 @@
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* c-common.c (parse_optimize_options): Add argument to function
+	call.
+	* c-pragma.c (handle_pragma_diagnostic): Likewise.
+
 2017-08-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lex.c (interpret_float): Use token location
