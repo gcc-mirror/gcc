@@ -1138,17 +1138,12 @@ record_address_regs (machine_mode mode, addr_space_t as, rtx x,
 	if (code1 == SUBREG)
 	  arg1 = SUBREG_REG (arg1), code1 = GET_CODE (arg1);
 
-	/* If this machine only allows one register per address, it
-	   must be in the first operand.  */
-	if (MAX_REGS_PER_ADDRESS == 1)
-	  record_address_regs (mode, as, arg0, 0, PLUS, code1, scale);
-
-	/* If index and base registers are the same on this machine,
+	/* If index registers do not appear, or coincide with base registers,
 	   just record registers in any non-constant operands.  We
 	   assume here, as well as in the tests below, that all
 	   addresses are in canonical form.  */
-	else if (INDEX_REG_CLASS
-		 == base_reg_class (VOIDmode, as, PLUS, SCRATCH))
+	if (MAX_REGS_PER_ADDRESS == 1
+	    || INDEX_REG_CLASS == base_reg_class (VOIDmode, as, PLUS, SCRATCH))
 	  {
 	    record_address_regs (mode, as, arg0, context, PLUS, code1, scale);
 	    if (! CONSTANT_P (arg1))
