@@ -1,3 +1,10 @@
+2017-08-29  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (add_dwarf_attr): When checking is enabled verify
+	we do not add a DW_AT_inline attribute twice.
+	(gen_subprogram_die): Remove code setting DW_AT_inline on
+	DECL_ABSTRACT_P nodes.
+
 2017-08-29  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gimplify.c (gimplify_call_expr): Copy the nothrow flag to

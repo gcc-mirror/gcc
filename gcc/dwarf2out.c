@@ -4122,6 +4122,16 @@ add_dwarf_attr (dw_die_ref die, dw_attr_node *attr)
   if (die == NULL)
     return;
 
+  if (flag_checking)
+    {
+      /* Check we do not add duplicate attrs.  Can't use get_AT here
+         because that recurses to the specification/abstract origin DIE.  */
+      dw_attr_node *a;
+      unsigned ix;
+      FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
+	gcc_assert (a->dw_attr != attr->dw_attr || a->dw_attr != DW_AT_inline);
+    }
+
   vec_safe_reserve (die->die_attr, 1);
   vec_safe_push (die->die_attr, *attr);
 }
@@ -22081,28 +22091,6 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 		 == 1)
 	    add_AT_flag (subr_die, DW_AT_rvalue_reference, 1);
 	}
-    }
-  /* Tag abstract instances with DW_AT_inline.  */
-  else if (DECL_ABSTRACT_P (decl))
-    {
-      if (DECL_DECLARED_INLINE_P (decl))
-	{
-	  if (cgraph_function_possibly_inlined_p (decl))
-	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_inlined);
-	  else
-	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_declared_not_inlined);
-	}
-      else
-	{
-	  if (cgraph_function_possibly_inlined_p (decl))
-	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_inlined);
-	  else
-	    add_AT_unsigned (subr_die, DW_AT_inline, DW_INL_not_inlined);
-	}
-
-      if (DECL_DECLARED_INLINE_P (decl)
-	  && lookup_attribute ("artificial", DECL_ATTRIBUTES (decl)))
-	add_AT_flag (subr_die, DW_AT_artificial, 1);
     }
   /* For non DECL_EXTERNALs, if range information is available, fill
      the DIE with it.  */
