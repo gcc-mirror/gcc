@@ -1,3 +1,9 @@
+2017-08-29  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	PR target/80993
+	* gcc/config/msp430/msp430.c (msp430_attr): Mark interrupt
+	handlers as used.
+
 2017-08-29  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (add_dwarf_attr): When checking is enabled verify
