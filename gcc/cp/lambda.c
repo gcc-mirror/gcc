@@ -59,7 +59,7 @@ build_lambda_object (tree lambda_expr)
   tree node, expr, type;
   location_t saved_loc;
 
-  if (processing_template_decl)
+  if (processing_template_decl || lambda_expr == error_mark_node)
     return lambda_expr;
 
   /* Make sure any error messages refer to the lambda-introducer.  */
