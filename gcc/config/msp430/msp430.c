@@ -1904,6 +1904,10 @@ msp430_attr (tree * node,
 
       if (! TREE_PUBLIC (* node))
 	message = "interrupt handlers cannot be static";
+
+      /* Ensure interrupt handlers never get optimised out.  */
+      TREE_USED (* node) = 1;
+      DECL_PRESERVE_P (* node) = 1;
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {
