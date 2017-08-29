@@ -1,3 +1,8 @@
+2017-08-29  Richard Biener  <rguenther@suse.de>
+	Dominik Infuehr <dominik.infuehr@theobroma-systems.com>
+
+	* gcc.dg/vect/costmodel/x86_64/costmodel-vect-slp.c: New testcase.
+
 2017-08-28  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/torture/pr57214.c: Fix type of loop counter.
