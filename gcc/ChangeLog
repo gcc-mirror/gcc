@@ -1,3 +1,8 @@
+2017-08-29  Alexander Monakov  <amonakov@ispras.ru>
+
+	* ira-costs.c (record_address_regs): Handle both operands of PLUS for
+	MAX_REGS_PER_ADDRESS == 1.
+
 2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.opt (flag_fentry): Do not init to -1.
