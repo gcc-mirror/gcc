@@ -9363,12 +9363,6 @@ apply_deduced_return_type (tree fco, tree return_type)
   if (return_type == error_mark_node)
     return;
 
-  if (LAMBDA_FUNCTION_P (fco))
-    {
-      tree lambda = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-      LAMBDA_EXPR_RETURN_TYPE (lambda) = return_type;
-    }
-
   if (DECL_CONV_FN_P (fco))
     DECL_NAME (fco) = make_conv_op_name (return_type);
 

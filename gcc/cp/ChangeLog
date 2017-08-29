@@ -1,4 +1,14 @@
-2017-08-28  Jason Merrill  <jason@redhat.com>
+2017-08-29  Jason Merrill  <jason@redhat.com>
+
+	* cp-tree.h (LAMBDA_EXPR_CLOSURE): Use TREE_TYPE.
+	(LAMBDA_EXPR_RETURN_TYPE): Remove.
+	(struct tree_lambda_expr): Remove closure and return_type fields.
+	* lambda.c (build_lambda_expr): Don't set LAMBDA_EXPR_RETURN_TYPE.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Track return type.
+	(cp_parser_lambda_body): Adjust unspecified return type check.
+	* ptree.c (cxx_print_lambda_node): Don't print closure or
+	return type.
 
 	PR c++/80935 - wrong C++17 error with lambda
 	* decl.c (check_for_uninitialized_const_var): Check
@@ -7,15 +17,11 @@
 	is_instantiation_of_constexpr.
 	(potential_constant_expression_1): Check var_in_maybe_constexpr_fn.
 
-2017-08-23  Jason Merrill  <jason@redhat.com>
-
 	* lambda.c (build_lambda_object): Check for error_mark_node.
 	* pt.c (make_pack_expansion): Set PACK_EXPANSION_LOCAL_P on the type
 	pack as well.
 	(tsubst_decl) [FUNCTION_DECL]: Set DECL_CONTEXT on the parameters.
 	(tsubst) [TEMPLATE_PARM_INDEX]: Check for error_mark_node.
-
-2017-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80767 - unnecessary instantiation of generic lambda
 	* call.c (convert_like_real): Call build_user_type_conversion_1 if

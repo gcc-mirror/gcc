@@ -10416,6 +10416,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree exception_spec = NULL_TREE;
   tree template_param_list = NULL_TREE;
   tree tx_qual = NULL_TREE;
+  tree return_type = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
 
@@ -10490,8 +10491,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
         {
           cp_lexer_consume_token (parser->lexer);
-          LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
-	    = cp_parser_trailing_type_id (parser);
+          return_type = cp_parser_trailing_type_id (parser);
         }
 
       /* The function parameters must be in scope all the way until after the
@@ -10514,8 +10514,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     void *p;
 
     clear_decl_specs (&return_type_specs);
-    if (LAMBDA_EXPR_RETURN_TYPE (lambda_expr))
-      return_type_specs.type = LAMBDA_EXPR_RETURN_TYPE (lambda_expr);
+    if (return_type)
+      return_type_specs.type = return_type;
     else
       /* Maybe we will deduce the return type later.  */
       return_type_specs.type = make_auto ();
@@ -10555,7 +10555,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
-	if (LAMBDA_EXPR_RETURN_TYPE (lambda_expr))
+	if (return_type)
 	  TYPE_HAS_LATE_RETURN_TYPE (TREE_TYPE (fco)) = 1;
       }
     if (template_param_list)
@@ -10645,7 +10645,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
        nor a deducible form, errors should be reported for return statements
        in the body.  Since we used void as the placeholder return type, parsing
        the body as usual will give such desired behavior.  */
-    if (!LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
+    if (is_auto (TREE_TYPE (TREE_TYPE (fco)))
         && cp_lexer_peek_nth_token (parser->lexer, 1)->keyword == RID_RETURN
         && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SEMICOLON)
       {
