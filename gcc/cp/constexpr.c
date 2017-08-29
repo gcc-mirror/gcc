@@ -1458,7 +1458,8 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
     {
       if (!ctx->quiet)
 	{
-	  error_at (loc, "call to non-constexpr function %qD", fun);
+	  if (!lambda_static_thunk_p (fun))
+	    error_at (loc, "call to non-constexpr function %qD", fun);
 	  explain_invalid_constexpr_fn (fun);
 	}
       *non_constant_p = true;

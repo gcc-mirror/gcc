@@ -3773,6 +3773,7 @@ make_pack_expansion (tree arg)
       purpose = cxx_make_type (TYPE_PACK_EXPANSION);
       SET_PACK_EXPANSION_PATTERN (purpose, TREE_PURPOSE (arg));
       PACK_EXPANSION_PARAMETER_PACKS (purpose) = parameter_packs;
+      PACK_EXPANSION_LOCAL_P (purpose) = at_function_scope_p ();
 
       /* Just use structural equality for these TYPE_PACK_EXPANSIONS;
 	 they will rarely be compared to anything.  */
@@ -9535,6 +9536,7 @@ static inline bool
 neglectable_inst_p (tree d)
 {
   return (DECL_P (d)
+	  && !undeduced_auto_decl (d)
 	  && !(TREE_CODE (d) == FUNCTION_DECL ? DECL_DECLARED_CONSTEXPR_P (d)
 	       : decl_maybe_constant_var_p (d)));
 }
@@ -12413,6 +12415,8 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 
 	DECL_ARGUMENTS (r) = tsubst (DECL_ARGUMENTS (t), args,
 				     complain, t);
+	for (tree parm = DECL_ARGUMENTS (r); parm; parm = DECL_CHAIN (parm))
+	  DECL_CONTEXT (parm) = r;
 	DECL_RESULT (r) = NULL_TREE;
 
 	TREE_STATIC (r) = 0;
@@ -13786,6 +13790,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	       couldn't do it earlier because it might be an auto parameter,
 	       and we wouldn't need to if we had an argument.  */
 	    type = tsubst (type, args, complain, in_decl);
+	    if (type == error_mark_node)
+	      return error_mark_node;
 	    r = reduce_template_parm_level (t, type, levels, args, complain);
 	    break;
 

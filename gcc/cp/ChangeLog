@@ -1,3 +1,11 @@
+2017-08-23  Jason Merrill  <jason@redhat.com>
+
+	* lambda.c (build_lambda_object): Check for error_mark_node.
+	* pt.c (make_pack_expansion): Set PACK_EXPANSION_LOCAL_P on the type
+	pack as well.
+	(tsubst_decl) [FUNCTION_DECL]: Set DECL_CONTEXT on the parameters.
+	(tsubst) [TEMPLATE_PARM_INDEX]: Check for error_mark_node.
+
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
 	PR c++/80767 - unnecessary instantiation of generic lambda
