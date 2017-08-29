@@ -1181,7 +1181,7 @@ cxx_eval_builtin_function_call (const constexpr_ctx *ctx, tree t, tree fun,
       return t;
     }
 
-  if (!potential_constant_expression (new_call))
+  if (!is_constant_expression (new_call))
     {
       if (!*non_constant_p && !ctx->quiet)
 	error ("%q+E is not a constant expression", new_call);
@@ -4861,7 +4861,7 @@ maybe_constant_value (tree t, tree decl)
 {
   tree r;
 
-  if (!potential_nondependent_constant_expression (t))
+  if (!is_nondependent_constant_expression (t))
     {
       if (TREE_OVERFLOW_P (t))
 	{
@@ -4929,7 +4929,7 @@ fold_non_dependent_expr (tree t)
      as two declarations of the same function, for example.  */
   if (processing_template_decl)
     {
-      if (potential_nondependent_constant_expression (t))
+      if (is_nondependent_constant_expression (t))
 	{
 	  processing_template_decl_sentinel s;
 	  t = instantiate_non_dependent_expr_internal (t, tf_none);
@@ -4982,7 +4982,7 @@ maybe_constant_init (tree t, tree decl)
     t = TREE_OPERAND (t, 1);
   if (TREE_CODE (t) == TARGET_EXPR)
     t = TARGET_EXPR_INITIAL (t);
-  if (!potential_nondependent_static_init_expression (t))
+  if (!is_nondependent_static_init_expression (t))
     /* Don't try to evaluate it.  */;
   else if (CONSTANT_CLASS_P (t))
     /* No evaluation needed.  */;
@@ -5025,7 +5025,9 @@ check_automatic_or_tls (tree ref)
 
 /* Return true if T denotes a potentially constant expression.  Issue
    diagnostic as appropriate under control of FLAGS.  If WANT_RVAL is true,
-   an lvalue-rvalue conversion is implied.
+   an lvalue-rvalue conversion is implied.  If NOW is true, we want to
+   consider the expression in the current context, independent of constexpr
+   substitution.
 
    C++0x [expr.const] used to say
 
@@ -5041,10 +5043,12 @@ check_automatic_or_tls (tree ref)
       not evaluated are not considered.   */
 
 static bool
-potential_constant_expression_1 (tree t, bool want_rval, bool strict,
+potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
 				 tsubst_flags_t flags)
 {
-#define RECUR(T,RV) potential_constant_expression_1 ((T), (RV), strict, flags)
+#define RECUR(T,RV) \
+  potential_constant_expression_1 ((T), (RV), strict, now, flags)
+
   enum { any = false, rval = true };
   int i;
   tree tmp;
@@ -5087,7 +5091,6 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case USERDEF_LITERAL:
       /* We can see a FIELD_DECL in a pointer-to-member expression.  */
     case FIELD_DECL:
-    case PARM_DECL:
     case RESULT_DECL:
     case USING_DECL:
     case USING_STMT:
@@ -5096,6 +5099,15 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
     case CONTINUE_STMT:
     case REQUIRES_EXPR:
     case STATIC_ASSERT:
+      return true;
+
+    case PARM_DECL:
+      if (now)
+	{
+	  if (flags & tf_error)
+	    error ("%qE is not a constant expression", t);
+	  return false;
+	}
       return true;
 
     case AGGR_INIT_EXPR:
@@ -5173,7 +5185,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 		    tree x = get_nth_callarg (t, 0);
 		    if (is_this_parameter (x))
 		      return true;
-		    else if (!RECUR (x, rval))
+		    /* Don't require an immediately constant value, as
+		       constexpr substitution might not use the value.  */
+		    bool sub_now = false;
+		    if (!potential_constant_expression_1 (x, rval, strict,
+							  sub_now, flags))
 		      return false;
 		    i = 1;
 		  }
@@ -5203,7 +5219,11 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	       REFERENCE_TYPE and we might not even know if the parameter
 	       is a reference, so accept lvalue constants too.  */
 	    bool rv = processing_template_decl ? any : rval;
-	    if (!RECUR (x, rv))
+	    /* Don't require an immediately constant value, as constexpr
+	       substitution might not use the value of the argument.  */
+	    bool sub_now = false;
+	    if (!potential_constant_expression_1 (x, rv, strict,
+						  sub_now, flags))
 	      return false;
           }
         return true;
@@ -5759,7 +5779,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 	return RECUR (TREE_OPERAND (t, 1), want_rval);
       for (i = 1; i < 3; ++i)
 	if (potential_constant_expression_1 (TREE_OPERAND (t, i),
-					     want_rval, strict, tf_none))
+					     want_rval, strict, now, tf_none))
 	  return true;
       if (flags & tf_error)
 	error_at (loc, "expression %qE is not a constant expression", t);
@@ -5816,13 +5836,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict,
 bool
 potential_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, false, true, tf_none);
-}
-
-bool
-potential_static_init_expression (tree t)
-{
-  return potential_constant_expression_1 (t, false, false, tf_none);
+  return potential_constant_expression_1 (t, false, true, false, tf_none);
 }
 
 /* As above, but require a constant rvalue.  */
@@ -5830,7 +5844,7 @@ potential_static_init_expression (tree t)
 bool
 potential_rvalue_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, true, true, tf_none);
+  return potential_constant_expression_1 (t, true, true, false, tf_none);
 }
 
 /* Like above, but complain about non-constant expressions.  */
@@ -5838,7 +5852,7 @@ potential_rvalue_constant_expression (tree t)
 bool
 require_potential_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, false, true, tf_warning_or_error);
+  return potential_constant_expression_1 (t, false, true, false, tf_warning_or_error);
 }
 
 /* Cross product of the above.  */
@@ -5846,7 +5860,38 @@ require_potential_constant_expression (tree t)
 bool
 require_potential_rvalue_constant_expression (tree t)
 {
-  return potential_constant_expression_1 (t, true, true, tf_warning_or_error);
+  return potential_constant_expression_1 (t, true, true, false, tf_warning_or_error);
+}
+
+/* Like potential_constant_expression, but don't consider possible constexpr
+   substitution of the current function.  That is, PARM_DECL qualifies under
+   potential_constant_expression, but not here.
+
+   This is basically what you can check when any actual constant values might
+   be value-dependent.  */
+
+bool
+is_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, false, true, true, tf_none);
+}
+
+/* Like above, but complain about non-constant expressions.  */
+
+bool
+require_constant_expression (tree t)
+{
+  return potential_constant_expression_1 (t, false, true, true,
+					  tf_warning_or_error);
+}
+
+/* Like is_constant_expression, but allow const variables that are not allowed
+   under constexpr rules.  */
+
+bool
+is_static_init_expression (tree t)
+{
+  return potential_constant_expression_1 (t, false, false, true, tf_none);
 }
 
 /* Returns true if T is a potential constant expression that is not
@@ -5854,11 +5899,11 @@ require_potential_rvalue_constant_expression (tree t)
    in a template.  */
 
 bool
-potential_nondependent_constant_expression (tree t)
+is_nondependent_constant_expression (tree t)
 {
   return (!type_unknown_p (t)
 	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
-	  && potential_constant_expression (t)
+	  && is_constant_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }
 
@@ -5866,11 +5911,11 @@ potential_nondependent_constant_expression (tree t)
    instantiation-dependent.  */
 
 bool
-potential_nondependent_static_init_expression (tree t)
+is_nondependent_static_init_expression (tree t)
 {
   return (!type_unknown_p (t)
 	  && !BRACE_ENCLOSED_INITIALIZER_P (t)
-	  && potential_static_init_expression (t)
+	  && is_static_init_expression (t)
 	  && !instantiation_dependent_expression_p (t));
 }
 
