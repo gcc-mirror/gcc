@@ -1,3 +1,12 @@
+2017-08-28  Jason Merrill  <jason@redhat.com>
+
+	PR c++/80935 - wrong C++17 error with lambda
+	* decl.c (check_for_uninitialized_const_var): Check
+	is_instantiation_of_constexpr.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
+	is_instantiation_of_constexpr.
+	(potential_constant_expression_1): Check var_in_maybe_constexpr_fn.
+
 2017-08-23  Jason Merrill  <jason@redhat.com>
 
 	* lambda.c (build_lambda_object): Check for error_mark_node.

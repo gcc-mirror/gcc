@@ -100,7 +100,7 @@ ensure_literal_type_for_constexpr_object (tree decl)
 	    }
 	  else
 	    {
-	      if (!DECL_TEMPLATE_INSTANTIATION (current_function_decl))
+	      if (!is_instantiation_of_constexpr (current_function_decl))
 		{
 		  error ("variable %qD of non-literal type %qT in %<constexpr%> "
 			 "function", decl, type);
@@ -5335,8 +5335,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
         STRIP_NOPS (x);
         if (is_this_parameter (x) && !is_capture_proxy (x))
 	  {
-	    if (DECL_CONTEXT (x)
-		&& !DECL_DECLARED_CONSTEXPR_P (DECL_CONTEXT (x)))
+	    if (!var_in_maybe_constexpr_fn (x))
 	      {
 		if (flags & tf_error)
 		  error_at (loc, "use of %<this%> in a constant expression");
