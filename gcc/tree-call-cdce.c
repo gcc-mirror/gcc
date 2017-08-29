@@ -1019,6 +1019,7 @@ use_internal_fn (gcall *call)
     args.safe_push (gimple_call_arg (call, i));
   gcall *new_call = gimple_build_call_internal_vec (ifn, args);
   gimple_set_location (new_call, gimple_location (call));
+  gimple_call_set_nothrow (new_call, gimple_call_nothrow_p (call));
 
   /* Transfer the LHS to the new call.  */
   tree lhs = gimple_call_lhs (call);
