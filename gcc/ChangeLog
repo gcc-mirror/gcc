@@ -1,3 +1,9 @@
+2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.opt (flag_fentry): Do not init to -1.
+	* config/i386/i386.c (ix86_option_override_internal): Simplify
+	setting of opts->x_flag_entry.
+
 2017-08-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 	    Richard Biener  <rguenther@suse.de>
@@ -461,8 +467,7 @@
 
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
-	* tree-cfg.c (gimple_split_edge): Avoid reallocating target
-	PHI nodes.
+	* tree-cfg.c (gimple_split_edge): Avoid reallocating target PHI nodes.
 
 2017-08-22  Richard Biener  <rguenther@suse.de>
 
@@ -500,8 +505,7 @@
 	(-mvsx-scalar-double): Likewise.
 	(-mallow-df-permute): Likewise.
 	(-mvectorize-builtins): Likewise.
-	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok):
-	Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Likewise.
 	(rs6000_builtin_vectorized_function): Likewise.
 	(rs6000_builtin_md_vectorized_function): Likewise.
 	(rs6000_opt_vars): Likewise.
