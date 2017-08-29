@@ -1,4 +1,4 @@
-/* { dg-do compile { target { *-*-linux* } } } */
+/* { dg-do compile { target *-*-linux* } } */
 /* { dg-options "-O2 -fpic -fno-plt -funroll-loops" } */
 
 extern void *f();

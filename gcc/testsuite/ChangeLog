@@ -1,5 +1,9 @@
 2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
+	* gcc.target/i386/*.c: Remove excess braces from target selectors.
+
+2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
 	* gcc.target/i386/20030926-1.c: Add dg-additional-options.
 	* gcc.target/i386/abi-2.c: Ditto.
 	* gcc.target/i386/interrupt-sibcall-2.c: Ditto.
