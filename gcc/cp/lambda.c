@@ -590,7 +590,11 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
   /* Add it to the appropriate closure class if we've started it.  */
   if (current_class_type
       && current_class_type == LAMBDA_EXPR_CLOSURE (lambda))
-    finish_member_declaration (member);
+    {
+      if (COMPLETE_TYPE_P (current_class_type))
+	internal_error ("trying to capture %qD after closure is complete", id);
+      finish_member_declaration (member);
+    }
 
   tree listmem = member;
   if (variadic)

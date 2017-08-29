@@ -2035,7 +2035,7 @@ finish_qualified_id_expr (tree qualifying_class,
 					    qualifying_class);
       pop_deferring_access_checks ();
     }
-  else if (BASELINK_P (expr) && !processing_template_decl)
+  else if (BASELINK_P (expr))
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
@@ -2055,8 +2055,6 @@ finish_qualified_id_expr (tree qualifying_class,
 	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false,
 				 complain);
     }
-  else if (BASELINK_P (expr))
-    ;
   else
     {
       /* In a template, return a SCOPE_REF for most qualified-ids
@@ -2065,7 +2063,8 @@ finish_qualified_id_expr (tree qualifying_class,
 	 know we have access and building up the SCOPE_REF confuses
 	 non-type template argument handling.  */
       if (processing_template_decl
-	  && !currently_open_class (qualifying_class))
+	  && (!currently_open_class (qualifying_class)
+	      || TREE_CODE (expr) == BIT_NOT_EXPR))
 	expr = build_qualified_name (TREE_TYPE (expr),
 				     qualifying_class, expr,
 				     template_p);
@@ -3595,78 +3594,12 @@ finish_id_expression (tree id_expression,
 		    ? CP_ID_KIND_UNQUALIFIED_DEPENDENT
 		    : CP_ID_KIND_UNQUALIFIED)));
 
-      /* If the name was dependent on a template parameter and we're not in a
-	 default capturing generic lambda within a template, we will resolve the
-	 name at instantiation time.  FIXME: For lambdas, we should defer
-	 building the closure type until instantiation time then we won't need
-	 the extra test here.  */
       if (dependent_p
-	  && !parsing_default_capturing_generic_lambda_in_template ())
-	{
-	  if (DECL_P (decl)
-	      && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
-	    /* Dependent type attributes on the decl mean that the TREE_TYPE is
-	       wrong, so just return the identifier.  */
-	    return id_expression;
-
-	  /* If we found a variable, then name lookup during the
-	     instantiation will always resolve to the same VAR_DECL
-	     (or an instantiation thereof).  */
-	  if (VAR_P (decl)
-	      || TREE_CODE (decl) == CONST_DECL
-	      || TREE_CODE (decl) == PARM_DECL)
-	    {
-	      mark_used (decl);
-	      return convert_from_reference (decl);
-	    }
-
-	  /* Create a SCOPE_REF for qualified names, if the scope is
-	     dependent.  */
-	  if (scope)
-	    {
-	      if (TYPE_P (scope))
-		{
-		  if (address_p && done)
-		    decl = finish_qualified_id_expr (scope, decl,
-						     done, address_p,
-						     template_p,
-						     template_arg_p,
-						     tf_warning_or_error);
-		  else
-		    {
-		      tree type = NULL_TREE;
-		      if (DECL_P (decl) && !dependent_scope_p (scope))
-			type = TREE_TYPE (decl);
-		      decl = build_qualified_name (type,
-						   scope,
-						   id_expression,
-						   template_p);
-		    }
-		}
-	      if (TREE_TYPE (decl))
-		decl = convert_from_reference (decl);
-	      return decl;
-	    }
-	  /* A TEMPLATE_ID already contains all the information we
-	     need.  */
-	  if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
-	    return id_expression;
-	  /* The same is true for FIELD_DECL, but we also need to
-	     make sure that the syntax is correct.  */
-	  else if (TREE_CODE (decl) == FIELD_DECL)
-	    {
-	      /* Since SCOPE is NULL here, this is an unqualified name.
-		 Access checking has been performed during name lookup
-		 already.  Turn off checking to avoid duplicate errors.  */
-	      push_deferring_access_checks (dk_no_check);
-	      decl = finish_non_static_data_member
-		       (decl, NULL_TREE,
-			/*qualifying_scope=*/NULL_TREE);
-	      pop_deferring_access_checks ();
-	      return decl;
-	    }
-	  return id_expression;
-	}
+	  && DECL_P (decl)
+	  && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
+	/* Dependent type attributes on the decl mean that the TREE_TYPE is
+	   wrong, so just return the identifier.  */
+	return id_expression;
 
       if (TREE_CODE (decl) == NAMESPACE_DECL)
 	{
@@ -3700,6 +3633,7 @@ finish_id_expression (tree id_expression,
 	 expression.  Template parameters have already
 	 been handled above.  */
       if (! error_operand_p (decl)
+	  && !dependent_p
 	  && integral_constant_expression_p
 	  && ! decl_constant_var_p (decl)
 	  && TREE_CODE (decl) != CONST_DECL
@@ -3726,6 +3660,7 @@ finish_id_expression (tree id_expression,
 	  decl = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	}
       else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+	       && !dependent_p
 	       && variable_template_p (TREE_OPERAND (decl, 0)))
 	{
 	  decl = finish_template_variable (decl);
@@ -3734,6 +3669,12 @@ finish_id_expression (tree id_expression,
 	}
       else if (scope)
 	{
+	  if (TREE_CODE (decl) == SCOPE_REF)
+	    {
+	      gcc_assert (same_type_p (scope, TREE_OPERAND (decl, 0)));
+	      decl = TREE_OPERAND (decl, 1);
+	    }
+
 	  decl = (adjust_result_of_qualified_name_lookup
 		  (decl, scope, current_nonlambda_class_type()));
 
