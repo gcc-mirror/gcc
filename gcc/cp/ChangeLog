@@ -1,5 +1,10 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80767 - unnecessary instantiation of generic lambda
+	* call.c (convert_like_real): Call build_user_type_conversion_1 if
+	cand is null.
+	(add_conv_candidate): Build a ck_user conversion with no candidate.
+
 	Fix lambdas in template default argument of inherited ctor.
 	* method.c (synthesized_method_base_walk): Replace an inherited
 	template with its specialization.
