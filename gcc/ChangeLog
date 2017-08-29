@@ -4520,6 +4520,24 @@
 	* gimple-fold.c (fold_builtin_memory_op): Use
 	get_addr_base_and_unit_offset instead of get_ref_base_and_extent.
 
+2017-07-19  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81193
+	* config/rs6000/rs6000-c.c (rs6000_cpu_cpp_builtins): If GLIBC
+	provides the hardware capability bits, define the macro
+	__BUILTIN_CPU_SUPPORTS__.
+	* config/rs6000/rs6000.c (cpu_expand_builtin): Generate a warning
+	if GLIBC does not provide the hardware capability bits.  Add a
+	gcc_unreachable call if the built-in cpu function is neither
+	__builtin_cpu_is nor __builtin_cpu_supports.
+	* doc/extend.texi (PowerPC built-in functions): Document that
+	GLIBC 2.23 or newer is needed by __builtin_cpu_is and
+	__builtin_cpu_supports.  Document the macros defined by GCC if the
+	newer GLIBC is available.
+
 2016-07-18  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from mainline
