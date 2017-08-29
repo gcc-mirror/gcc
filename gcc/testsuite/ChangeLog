@@ -1,3 +1,15 @@
+2017-08-28  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/torture/pr57214.c: Fix type of loop counter.
+	* gcc.dg/tree-ssa/ssa-sink-16.c: Disable DOM.
+	* gcc.dg/tree-ssa/ssa-dom-thread-11.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-12.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-13.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-14.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-15.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-16.c: New test.
+	* gcc.dg/tree-ssa/ssa-dom-thread-17.c: New test.
+
 2017-08-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/81770

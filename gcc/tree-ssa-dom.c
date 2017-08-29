@@ -136,19 +136,240 @@ edge_info::edge_info (edge e)
 }
 
 /* Destructor just needs to release the vectors.  */
+
 edge_info::~edge_info (void)
 {
   this->cond_equivalences.release ();
   this->simple_equivalences.release ();
 }
 
-/* Record that LHS is known to be equal to RHS at runtime when the
-   edge associated with THIS is traversed.  */
+/* NAME is known to have the value VALUE, which must be a constant.
+
+   Walk through its use-def chain to see if there are other equivalences
+   we might be able to derive.
+
+   RECURSION_LIMIT controls how far back we recurse through the use-def
+   chains.  */
+
+void
+edge_info::derive_equivalences (tree name, tree value, int recursion_limit)
+{
+  if (TREE_CODE (name) != SSA_NAME || TREE_CODE (value) != INTEGER_CST)
+    return;
+
+  /* This records the equivalence for the toplevel object.  Do
+     this before checking the recursion limit.  */
+  simple_equivalences.safe_push (equiv_pair (name, value));
+
+  /* Limit how far up the use-def chains we are willing to walk.  */
+  if (recursion_limit == 0)
+    return;
+
+  /* We can walk up the use-def chains to potentially find more
+     equivalences.  */
+  gimple *def_stmt = SSA_NAME_DEF_STMT (name);
+  if (is_gimple_assign (def_stmt))
+    {
+      /* We know the result of DEF_STMT was zero.  See if that allows
+	 us to deduce anything about the SSA_NAMEs used on the RHS.  */
+      enum tree_code code = gimple_assign_rhs_code (def_stmt);
+      switch (code)
+	{
+	case BIT_IOR_EXPR:
+	  if (integer_zerop (value))
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	      tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	      value = build_zero_cst (TREE_TYPE (rhs1));
+	      derive_equivalences (rhs1, value, recursion_limit - 1);
+	      value = build_zero_cst (TREE_TYPE (rhs2));
+	      derive_equivalences (rhs2, value, recursion_limit - 1);
+	    }
+	  break;
+
+      /* We know the result of DEF_STMT was one.  See if that allows
+	 us to deduce anything about the SSA_NAMEs used on the RHS.  */
+	case BIT_AND_EXPR:
+	  if (!integer_zerop (value))
+	    {
+	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	      tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	      /* If either operand has a boolean range, then we
+		 know its value must be one, otherwise we just know it
+		 is nonzero.  The former is clearly useful, I haven't
+		 seen cases where the latter is helpful yet.  */
+	      if (TREE_CODE (rhs1) == SSA_NAME)
+		{
+		  if (ssa_name_has_boolean_range (rhs1))
+		    {
+		      value = build_one_cst (TREE_TYPE (rhs1));
+		      derive_equivalences (rhs1, value, recursion_limit - 1);
+		    }
+		}
+	      if (TREE_CODE (rhs2) == SSA_NAME)
+		{
+		  if (ssa_name_has_boolean_range (rhs2))
+		    {
+		      value = build_one_cst (TREE_TYPE (rhs2));
+		      derive_equivalences (rhs2, value, recursion_limit - 1);
+		    }
+		}
+	    }
+	  break;
+
+	/* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
+	   set via a widening type conversion, then we may be able to record
+	   additional equivalences.  */
+	case NOP_EXPR:
+	case CONVERT_EXPR:
+	  {
+	    tree rhs = gimple_assign_rhs1 (def_stmt);
+	    tree rhs_type = TREE_TYPE (rhs);
+	    if (INTEGRAL_TYPE_P (rhs_type)
+		&& (TYPE_PRECISION (TREE_TYPE (name))
+		    >= TYPE_PRECISION (rhs_type))
+		&& int_fits_type_p (value, rhs_type))
+	      derive_equivalences (rhs,
+				   fold_convert (rhs_type, value),
+				   recursion_limit - 1);
+	    break;
+	  }
+
+	/* We can invert the operation of these codes trivially if
+	   one of the RHS operands is a constant to produce a known
+	   value for the other RHS operand.  */
+	case POINTER_PLUS_EXPR:
+	case PLUS_EXPR:
+	  {
+	    tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	    tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	    /* If either argument is a constant, then we can compute
+	       a constant value for the nonconstant argument.  */
+	    if (TREE_CODE (rhs1) == INTEGER_CST
+		&& TREE_CODE (rhs2) == SSA_NAME)
+	      derive_equivalences (rhs2,
+				   fold_binary (MINUS_EXPR, TREE_TYPE (rhs1),
+						value, rhs1),
+				   recursion_limit - 1);
+	    else if (TREE_CODE (rhs2) == INTEGER_CST
+		     && TREE_CODE (rhs1) == SSA_NAME)
+	      derive_equivalences (rhs1,
+				   fold_binary (MINUS_EXPR, TREE_TYPE (rhs1),
+						value, rhs2),
+				   recursion_limit - 1);
+	    break;
+	  }
+
+	/* If one of the operands is a constant, then we can compute
+	   the value of the other operand.  If both operands are
+	   SSA_NAMEs, then they must be equal if the result is zero.  */
+	case MINUS_EXPR:
+	  {
+	    tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	    tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+	    /* If either argument is a constant, then we can compute
+	       a constant value for the nonconstant argument.  */
+	    if (TREE_CODE (rhs1) == INTEGER_CST
+		&& TREE_CODE (rhs2) == SSA_NAME)
+	      derive_equivalences (rhs2,
+				   fold_binary (MINUS_EXPR, TREE_TYPE (rhs1),
+						rhs1, value),
+				   recursion_limit - 1);
+	    else if (TREE_CODE (rhs2) == INTEGER_CST
+		     && TREE_CODE (rhs1) == SSA_NAME)
+	      derive_equivalences (rhs1,
+				   fold_binary (PLUS_EXPR, TREE_TYPE (rhs1),
+						value, rhs2),
+				   recursion_limit - 1);
+	    else if (integer_zerop (value))
+	      {
+		tree cond = build2 (EQ_EXPR, boolean_type_node,
+				    gimple_assign_rhs1 (def_stmt),
+				    gimple_assign_rhs2 (def_stmt));
+		tree inverted = invert_truthvalue (cond);
+		record_conditions (&this->cond_equivalences, cond, inverted);
+	      }
+	    break;
+	  }
+
+
+	case EQ_EXPR:
+	case NE_EXPR:
+	  {
+	    if ((code == EQ_EXPR && integer_onep (value))
+		|| (code == NE_EXPR && integer_zerop (value)))
+	      {
+		tree rhs1 = gimple_assign_rhs1 (def_stmt);
+		tree rhs2 = gimple_assign_rhs2 (def_stmt);
+
+		/* If either argument is a constant, then record the
+		   other argument as being the same as that constant.
+
+		   If neither operand is a constant, then we have a
+		   conditional name == name equivalence.  */
+		if (TREE_CODE (rhs1) == INTEGER_CST)
+		  derive_equivalences (rhs2, rhs1, recursion_limit - 1);
+		else if (TREE_CODE (rhs2) == INTEGER_CST)
+		  derive_equivalences (rhs1, rhs2, recursion_limit - 1);
+	      }
+	    else
+	      {
+		tree cond = build2 (code, boolean_type_node,
+				    gimple_assign_rhs1 (def_stmt),
+				    gimple_assign_rhs2 (def_stmt));
+		tree inverted = invert_truthvalue (cond);
+		if (integer_zerop (value))
+		  std::swap (cond, inverted);
+		record_conditions (&this->cond_equivalences, cond, inverted);
+	      }
+	    break;
+	  }
+
+	/* For BIT_NOT and NEGATE, we can just apply the operation to the
+	   VALUE to get the new equivalence.  It will always be a constant
+	   so we can recurse.  */
+	case BIT_NOT_EXPR:
+	case NEGATE_EXPR:
+	  {
+	    tree rhs = gimple_assign_rhs1 (def_stmt);
+	    tree res = fold_build1 (code, TREE_TYPE (rhs), value);
+	    derive_equivalences (rhs, res, recursion_limit - 1);
+	    break;
+	  }
+
+	default:
+	  {
+	    if (TREE_CODE_CLASS (code) == tcc_comparison)
+	      {
+		tree cond = build2 (code, boolean_type_node,
+				    gimple_assign_rhs1 (def_stmt),
+				    gimple_assign_rhs2 (def_stmt));
+		tree inverted = invert_truthvalue (cond);
+		if (integer_zerop (value))
+		  std::swap (cond, inverted);
+		record_conditions (&this->cond_equivalences, cond, inverted);
+		break;
+	      }
+	    break;
+	  }
+	}
+    }
+}
 
 void
 edge_info::record_simple_equiv (tree lhs, tree rhs)
 {
-  simple_equivalences.safe_push (equiv_pair (lhs, rhs));
+  /* If the RHS is a constant, then we may be able to derive
+     further equivalences.  Else just record the name = name
+     equivalence.  */
+  if (TREE_CODE (rhs) == INTEGER_CST)
+    derive_equivalences (lhs, rhs, 4);
+  else
+    simple_equivalences.safe_push (equiv_pair (lhs, rhs));
 }
 
 /* Free the edge_info data attached to E, if it exists.  */
@@ -702,42 +923,6 @@ back_propagate_equivalences (tree lhs, edge e,
     BITMAP_FREE (domby);
 }
 
-/* Record NAME has the value zero and if NAME was set from a BIT_IOR_EXPR
-   recurse into both operands recording their values as zero too. 
-   RECURSION_DEPTH controls how far back we recurse through the operands
-   of the BIT_IOR_EXPR.  */
-
-static void
-derive_equivalences_from_bit_ior (tree name,
-				  const_and_copies *const_and_copies,
-				  int recursion_limit)
-{
-  if (recursion_limit == 0)
-    return;
-
-  if (TREE_CODE (name) == SSA_NAME)
-    {
-      tree value = build_zero_cst (TREE_TYPE (name));
-
-      /* This records the equivalence for the toplevel object.  */
-      record_equality (name, value, const_and_copies);
-
-      /* And we can recurse into each operand to potentially find more
-	 equivalences.  */
-      gimple *def_stmt = SSA_NAME_DEF_STMT (name);
-      if (is_gimple_assign (def_stmt)
-	  && gimple_assign_rhs_code (def_stmt) == BIT_IOR_EXPR)
-	{
-	  derive_equivalences_from_bit_ior (gimple_assign_rhs1 (def_stmt),
-					    const_and_copies,
-					    recursion_limit - 1);
-	  derive_equivalences_from_bit_ior (gimple_assign_rhs2 (def_stmt),
-					    const_and_copies,
-					    recursion_limit - 1);
-	}
-    }
-}
-
 /* Record into CONST_AND_COPIES and AVAIL_EXPRS_STACK any equivalences implied
    by traversing edge E (which are cached in E->aux).
 
@@ -758,28 +943,7 @@ record_temporary_equivalences (edge e,
       /* If we have 0 = COND or 1 = COND equivalences, record them
 	 into our expression hash tables.  */
       for (i = 0; edge_info->cond_equivalences.iterate (i, &eq); ++i)
-	{
-	  avail_exprs_stack->record_cond (eq);
-
-	  /* If the condition is testing that X == 0 is true or X != 0 is false
-	     and X is set from a BIT_IOR_EXPR, then we can record equivalences
-	     for the operands of the BIT_IOR_EXPR (and recurse on those).  */
-	  tree op0 = eq->cond.ops.binary.opnd0;
-	  tree op1 = eq->cond.ops.binary.opnd1;
-	  if (TREE_CODE (op0) == SSA_NAME && integer_zerop (op1))
-	    {
-	      enum tree_code code = eq->cond.ops.binary.op;
-	      if ((code == EQ_EXPR && eq->value == boolean_true_node)
-		  || (code == NE_EXPR && eq->value == boolean_false_node))
-		derive_equivalences_from_bit_ior (op0, const_and_copies, 4);
-
-	      /* TODO: We could handle BIT_AND_EXPR in a similar fashion
-		 recording that the operands have a nonzero value.  */
-
-	      /* TODO: We can handle more cases here, particularly when OP0 is
-		 known to have a boolean range.  */
-	    }
-	}
+	avail_exprs_stack->record_cond (eq);
 
       edge_info::equiv_pair *seq;
       for (i = 0; edge_info->simple_equivalences.iterate (i, &seq); ++i)
@@ -806,42 +970,13 @@ record_temporary_equivalences (edge e,
 	      int lhs_cost = estimate_num_insns (lhs_def, &eni_size_weights);
 
 	      if (rhs_cost > lhs_cost)
-		record_equality (rhs, lhs, const_and_copies);
+	        record_equality (rhs, lhs, const_and_copies);
 	      else if (rhs_cost < lhs_cost)
-		record_equality (lhs, rhs, const_and_copies);
+	        record_equality (lhs, rhs, const_and_copies);
 	    }
 	  else
 	    record_equality (lhs, rhs, const_and_copies);
 
-	  /* If LHS is an SSA_NAME and RHS is a constant integer and LHS was
-	     set via a widening type conversion, then we may be able to record
-	     additional equivalences.  */
-	  if (TREE_CODE (rhs) == INTEGER_CST)
-	    {
-	      gimple *defstmt = SSA_NAME_DEF_STMT (lhs);
-
-	      if (defstmt
-		  && is_gimple_assign (defstmt)
-		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (defstmt)))
-		{
-		  tree old_rhs = gimple_assign_rhs1 (defstmt);
-
-		  /* If the conversion widens the original value and
-		     the constant is in the range of the type of OLD_RHS,
-		     then convert the constant and record the equivalence.
-
-		     Note that int_fits_type_p does not check the precision
-		     if the upper and lower bounds are OK.  */
-		  if (INTEGRAL_TYPE_P (TREE_TYPE (old_rhs))
-		      && (TYPE_PRECISION (TREE_TYPE (lhs))
-			  > TYPE_PRECISION (TREE_TYPE (old_rhs)))
-		      && int_fits_type_p (rhs, TREE_TYPE (old_rhs)))
-		    {
-		      tree newval = fold_convert (TREE_TYPE (old_rhs), rhs);
-		      record_equality (old_rhs, newval, const_and_copies);
-		    }
-		}
-	    }
 
 	  /* Any equivalence found for LHS may result in additional
 	     equivalences for other uses of LHS that we have already
