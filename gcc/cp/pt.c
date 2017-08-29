@@ -17979,9 +17979,6 @@ tsubst_copy_and_build (tree t,
 	   declaration of the op() for later calls to lambda_function.  */
 	complete_type (type);
 
-	if (tree fn = lambda_function (type))
-	  LAMBDA_EXPR_RETURN_TYPE (r) = TREE_TYPE (TREE_TYPE (fn));
-
 	LAMBDA_EXPR_THIS_CAPTURE (r) = NULL_TREE;
 
 	insert_pending_capture_proxies ();

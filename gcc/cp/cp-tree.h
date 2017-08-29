@@ -1253,11 +1253,6 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
-/* The return type in the expression.
- * NULL_TREE indicates that none was specified.  */
-#define LAMBDA_EXPR_RETURN_TYPE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->return_type)
-
 /* The source location of the lambda.  */
 #define LAMBDA_EXPR_LOCATION(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
@@ -1276,20 +1271,17 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
-/* The closure type of the lambda.  Note that the TREE_TYPE of a
-   LAMBDA_EXPR is always NULL_TREE, because we need to instantiate the
-   LAMBDA_EXPR in order to instantiate the type.  */
+/* The closure type of the lambda, which is also the type of the
+   LAMBDA_EXPR.  */
 #define LAMBDA_EXPR_CLOSURE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->closure)
+  (TREE_TYPE (LAMBDA_EXPR_CHECK (NODE)))
 
 struct GTY (()) tree_lambda_expr
 {
   struct tree_typed typed;
   tree capture_list;
   tree this_capture;
-  tree return_type;
   tree extra_scope;
-  tree closure;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode;
