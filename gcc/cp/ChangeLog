@@ -1,3 +1,33 @@
+2017-08-23  Jason Merrill  <jason@redhat.com>
+
+	Reimplement handling of lambdas in templates.
+	* cp-tree.h (LAMBDA_FUNCTION_P): Check DECL_DECLARES_FUNCTION_P.
+	* decl.c (start_preparsed_function): Call start_lambda_scope.
+	(finish_function): Call finish_lambda_scope.
+	* init.c (get_nsdmi): Call start/finish_lambda_scope.
+	* lambda.c (start_lambda_scope): Only ignore VAR_DECL in a function.
+	* parser.c (cp_parser_function_definition_after_declarator): Don't
+	call start/finish_lambda_scope.
+	* pt.c (retrieve_specialization): Ignore lambda functions in
+	templates.
+	(find_parameter_packs_r): Ignore capture proxies.  Look into
+	lambdas.
+	(check_for_bare_parameter_packs): Allow bare packs in lambdas.
+	(tsubst_default_argument): Call start/finish_lambda_scope.
+	(tsubst_function_decl): Handle lambda functions differently.
+	(tsubst_template_decl): Likewise.
+	(tsubst_expr) [DECL_EXPR]: Skip closure declarations and capture
+	proxies.
+	(tsubst_lambda_expr): Create a new closure rather than instantiate
+	the one from the template.
+	(tsubst_copy_and_build): Don't register a specialization of a pack.
+	(regenerate_decl_from_template): Call start/finish_lambda_scope.
+	(instantiate_decl): Remove special lambda function handling.
+	* semantics.c (process_outer_var_ref): Remove special generic lambda
+	handling.  Don't implicitly capture in a lambda in a template.  Look
+	for an existing proxy.
+	* class.c (current_nonlambda_class_type): Use decl_type_context.
+
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
 	* cp-tree.h (LAMBDA_EXPR_CLOSURE): Use TREE_TYPE.

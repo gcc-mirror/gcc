@@ -574,13 +574,17 @@ get_nsdmi (tree member, bool in_ctor, tsubst_flags_t complain)
 
 	  inject_this_parameter (DECL_CONTEXT (member), TYPE_UNQUALIFIED);
 
+	  start_lambda_scope (member);
+
 	  /* Do deferred instantiation of the NSDMI.  */
 	  init = (tsubst_copy_and_build
 		  (init, DECL_TI_ARGS (member),
 		   complain, member, /*function_p=*/false,
 		   /*integral_constant_expression_p=*/false));
 	  init = digest_nsdmi_init (member, init, complain);
-	  
+
+	  finish_lambda_scope ();
+
 	  DECL_INSTANTIATING_NSDMI_P (member) = 0;
 
 	  if (init != error_mark_node)
