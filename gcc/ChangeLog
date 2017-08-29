@@ -1,3 +1,51 @@
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	* passes.def: Include pass_lower_switch.
+	* stmt.c (dump_case_nodes): Remove and move to
+	tree-switch-conversion.
+	(case_values_threshold): Likewise.
+	(expand_switch_as_decision_tree_p): Likewise.
+	(emit_case_decision_tree): Likewise.
+	(expand_case): Likewise.
+	(balance_case_nodes): Likewise.
+	(node_has_low_bound): Likewise.
+	(node_has_high_bound): Likewise.
+	(node_is_bounded): Likewise.
+	(emit_case_nodes): Likewise.
+	(struct simple_case_node): New struct.
+	(add_case_node): Remove.
+	(emit_case_dispatch_table): Use vector instead of case_list.
+	(reset_out_edges_aux): Remove.
+	(compute_cases_per_edge): Likewise.
+	(expand_case): Build list of simple_case_node.
+	(expand_sjlj_dispatch_table): Use it.
+	* tree-switch-conversion.c (struct case_node): Moved from
+	stmt.c and adjusted.
+	(emit_case_nodes): Likewise.
+	(node_has_low_bound): Likewise.
+	(node_has_high_bound): Likewise.
+	(node_is_bounded): Likewise.
+	(case_values_threshold): Likewise.
+	(reset_out_edges_aux): Likewise.
+	(compute_cases_per_edge): Likewise.
+	(add_case_node): Likewise.
+	(dump_case_nodes): Likewise.
+	(balance_case_nodes): Likewise.
+	(expand_switch_as_decision_tree_p): Likewise.
+	(emit_jump): Likewise.
+	(emit_case_decision_tree): Likewise.
+	(try_switch_expansion): Likewise.
+	(do_jump_if_equal): Likewise.
+	(emit_cmp_and_jump_insns): Likewise.
+	(fix_phi_operands_for_edge): New function.
+	(record_phi_operand_mapping): Likewise.
+	(class pass_lower_switch): New pass.
+	(pass_lower_switch::execute): New function.
+	(make_pass_lower_switch): Likewise.
+	(conditional_probability):
+	* timevar.def: Add TV_TREE_SWITCH_LOWERING.
+	* tree-pass.h: Add make_pass_lower_switch.
+
 2017-08-29  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
 
 	PR target/80993
