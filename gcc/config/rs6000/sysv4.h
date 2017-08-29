@@ -757,24 +757,34 @@ ENDIAN_SELECT(" -mbig", " -mlittle", DEFAULT_ASM_ENDIAN)
 #define CRTOFFLOADEND ""
 #endif
 
-#ifdef HAVE_LD_PIE
-#define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg|p|profile:gcrt1.o%s;pie:Scrt1.o%s;:crt1.o%s}} \
-%{mnewlib:ecrti.o%s;:crti.o%s} \
-%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
-" CRTOFFLOADBEGIN
-#else
-#define	STARTFILE_LINUX_SPEC "\
-%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-%{mnewlib:ecrti.o%s;:crti.o%s} \
-%{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
-" CRTOFFLOADBEGIN
-#endif
+/* STARTFILE_LINUX_SPEC should be the same as GNU_USER_TARGET_STARTFILE_SPEC
+   but with the mnewlib ecrti.o%s selection substituted for crti.o%s.  */
+#define	STARTFILE_LINUX_SPEC \
+  "%{shared:; \
+     pg|p|profile:gcrt1.o%s; \
+     static:crt1.o%s; \
+     " PIE_SPEC ":Scrt1.o%s; \
+     :crt1.o%s} \
+   %{mnewlib:ecrti.o%s;:crti.o%s} \
+   %{static:crtbeginT.o%s; \
+     shared|" PIE_SPEC ":crtbeginS.o%s; \
+     :crtbegin.o%s} \
+   %{fvtable-verify=none:%s; \
+     fvtable-verify=preinit:vtv_start_preinit.o%s; \
+     fvtable-verify=std:vtv_start.o%s} \
+   " CRTOFFLOADBEGIN
 
-#define	ENDFILE_LINUX_SPEC "\
-%{shared|pie:crtendS.o%s;:crtend.o%s} \
-%{mnewlib:ecrtn.o%s;:crtn.o%s} \
-" CRTOFFLOADEND
+/* ENDFILE_LINUX_SPEC should be the same as GNU_USER_TARGET_ENDFILE_SPEC
+   but with the mnewlib ecrtn.o%s selection substituted for crtn.o%s.  */
+#define ENDFILE_LINUX_SPEC \
+  "%{fvtable-verify=none:%s; \
+     fvtable-verify=preinit:vtv_end_preinit.o%s; \
+     fvtable-verify=std:vtv_end.o%s} \
+   %{static:crtend.o%s; \
+     shared|" PIE_SPEC ":crtendS.o%s; \
+     :crtend.o%s} \
+   %{mnewlib:ecrtn.o%s;:crtn.o%s} \
+   " CRTOFFLOADEND
 
 #define LINK_START_LINUX_SPEC ""
 
