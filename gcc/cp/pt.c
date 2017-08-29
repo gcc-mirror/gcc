@@ -5827,7 +5827,7 @@ instantiate_non_dependent_expr_sfinae (tree expr, tsubst_flags_t complain)
 
      as two declarations of the same function, for example.  */
   if (processing_template_decl
-      && potential_nondependent_constant_expression (expr))
+      && is_nondependent_constant_expression (expr))
     {
       processing_template_decl_sentinel s;
       expr = instantiate_non_dependent_expr_internal (expr, complain);
@@ -5851,7 +5851,7 @@ instantiate_non_dependent_or_null (tree expr)
     return NULL_TREE;
   if (processing_template_decl)
     {
-      if (!potential_nondependent_constant_expression (expr))
+      if (!is_nondependent_constant_expression (expr))
 	expr = NULL_TREE;
       else
 	{
@@ -6437,15 +6437,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
       && has_value_dependent_address (expr))
     /* If we want the address and it's value-dependent, don't fold.  */;
   else if (processing_template_decl
-	   && potential_nondependent_constant_expression (expr))
+	   && is_nondependent_constant_expression (expr))
     non_dep = true;
   if (error_operand_p (expr))
     return error_mark_node;
   expr_type = TREE_TYPE (expr);
-  if (TREE_CODE (type) == REFERENCE_TYPE)
-    expr = mark_lvalue_use (expr);
-  else
-    expr = mark_rvalue_use (expr);
 
   /* If the argument is non-dependent, perform any conversions in
      non-dependent context as well.  */
@@ -6492,6 +6488,11 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	    expr = folded;
 	}
     }
+
+  if (TREE_CODE (type) == REFERENCE_TYPE)
+    expr = mark_lvalue_use (expr);
+  else
+    expr = mark_rvalue_use (expr);
 
   /* HACK: Due to double coercion, we can get a
      NOP_EXPR<REFERENCE_TYPE>(ADDR_EXPR<POINTER_TYPE> (arg)) here,

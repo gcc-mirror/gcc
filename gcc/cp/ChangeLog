@@ -1,5 +1,13 @@
 2017-08-29  Jason Merrill  <jason@redhat.com>
 
+	* constexpr.c (potential_constant_expression_1): Add "now" parm.
+	(is_constant_expression, require_constant_expression): New.
+	(is_static_init_expression, is_nondependent_constant_expression)
+	(is_nondependent_static_init_expression): Drop "potential".
+	* except.c (build_must_not_throw_expr): Do type conversion on
+	value-dependent argument.
+	* pt.c, semantics.c, typeck2.c: Use variants without "potential".
+
 	Instantiate default arguments/member initializers once.
 	* init.c (get_nsdmi): Remember NSDMI instantiations.
 	* parser.c (inject_this_parameter): Be more picky about

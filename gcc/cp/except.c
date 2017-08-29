@@ -261,13 +261,19 @@ build_must_not_throw_expr (tree body, tree cond)
   if (!flag_exceptions)
     return body;
 
-  if (cond && !value_dependent_expression_p (cond))
+  if (!cond)
+    /* OK, unconditional.  */;
+  else
     {
-      cond = perform_implicit_conversion_flags (boolean_type_node, cond,
-						tf_warning_or_error,
-						LOOKUP_NORMAL);
-      cond = instantiate_non_dependent_expr (cond);
-      cond = cxx_constant_value (cond);
+      tree conv = NULL_TREE;
+      if (!type_dependent_expression_p (cond))
+	conv = perform_implicit_conversion_flags (boolean_type_node, cond,
+						  tf_warning_or_error,
+						  LOOKUP_NORMAL);
+      if (tree inst = instantiate_non_dependent_or_null (conv))
+	cond = cxx_constant_value (inst);
+      else
+	require_constant_expression (cond);
       if (integer_zerop (cond))
 	return body;
       else if (integer_onep (cond))
