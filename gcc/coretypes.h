@@ -63,6 +63,7 @@ typedef opt_mode<scalar_mode> opt_scalar_mode;
 typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
 typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
 template<typename> class pod_mode;
+typedef pod_mode<scalar_mode> scalar_mode_pod;
 typedef pod_mode<scalar_int_mode> scalar_int_mode_pod;
 
 /* Subclasses of rtx_def, using indentation to show the class

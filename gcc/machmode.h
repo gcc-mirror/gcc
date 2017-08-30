@@ -893,4 +893,22 @@ namespace mode_iterator
        mode_iterator::iterate_p (&(ITERATOR)); \
        mode_iterator::get_2xwider (&(ITERATOR)))
 
+template<typename T>
+void
+gt_ggc_mx (pod_mode<T> *)
+{
+}
+
+template<typename T>
+void
+gt_pch_nx (pod_mode<T> *)
+{
+}
+
+template<typename T>
+void
+gt_pch_nx (pod_mode<T> *, void (*) (void *, void *), void *)
+{
+}
+
 #endif /* not HAVE_MACHINE_MODES */

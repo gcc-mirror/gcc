@@ -1944,7 +1944,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
 {
   tree t;
   double_int temp, temp_trunc;
-  machine_mode mode;
+  scalar_mode mode;
 
   /* Right shift FIXED_CST to temp by fbit.  */
   temp = TREE_FIXED_CST (arg1).data;

@@ -211,7 +211,7 @@ static void
 unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   FIXED_VALUE_TYPE *fp = ggc_alloc<fixed_value> ();
-  fp->mode = bp_unpack_machine_mode (bp);
+  fp->mode = as_a <scalar_mode> (bp_unpack_machine_mode (bp));
   fp->data.low = bp_unpack_var_len_int (bp);
   fp->data.high = bp_unpack_var_len_int (bp);
   TREE_FIXED_CST_PTR (expr) = fp;

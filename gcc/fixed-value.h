@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct GTY(()) fixed_value
 {
-  double_int data;		/* Store data up to 2 wide integers.  */
-  machine_mode mode;	/* Use machine mode to know IBIT and FBIT.  */
+  double_int data;       /* Store data up to 2 wide integers.  */
+  scalar_mode_pod mode;  /* Use machine mode to know IBIT and FBIT.  */
 };
 
 #define FIXED_VALUE_TYPE struct fixed_value

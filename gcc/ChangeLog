@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (scalar_mode_pod): New typedef.
+	* gdbhooks.py (build_pretty_printer): Handle it.
+	* machmode.h (gt_ggc_mx, gt_pch_nx): New functions.
+	* fixed-value.h (fixed_value::mode): Change type to scalar_mode_pod.
+	* fold-const.c (fold_convert_const_int_from_fixed): Use scalar_mode.
+	* tree-streamer-in.c (unpack_ts_fixed_cst_value_fields): Use
+	as_a <scalar_mode>.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_for_vector): Take a scalar_mode instead
 	of a machine_mode.
 	* stor-layout.c (mode_for_vector): Likewise.
