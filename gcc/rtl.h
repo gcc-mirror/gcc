@@ -634,6 +634,7 @@ public:
      This method gets the underlying vec.  */
 
   inline rtvec get_labels () const;
+  inline scalar_int_mode get_data_mode () const;
 };
 
 class GTY(()) rtx_barrier : public rtx_insn
@@ -1475,6 +1476,24 @@ inline rtvec rtx_jump_table_data::get_labels () const
     return XVEC (pat, 0);
   else
     return XVEC (pat, 1); /* presumably an ADDR_DIFF_VEC */
+}
+
+/* Return the mode of the data in the table, which is always a scalar
+   integer.  */
+
+inline scalar_int_mode
+rtx_jump_table_data::get_data_mode () const
+{
+  return as_a <scalar_int_mode> (GET_MODE (PATTERN (this)));
+}
+
+/* If LABEL is followed by a jump table, return the table, otherwise
+   return null.  */
+
+inline rtx_jump_table_data *
+jump_table_for_label (const rtx_code_label *label)
+{
+  return safe_dyn_cast <rtx_jump_table_data *> (NEXT_INSN (label));
 }
 
 #define RTX_FRAME_RELATED_P(RTX)					\

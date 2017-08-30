@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* is-a.h (safe_dyn_cast): New function.
+	* rtl.h (rtx_jump_table_data::get_data_mode): New function.
+	(jump_table_for_label): Likewise.
+	* final.c (final_addr_vec_align): Take an rtx_jump_table_data *
+	instead of an rtx_insn *.
+	(shorten_branches): Use dyn_cast instead of LABEL_P and
+	JUMP_TABLE_DATA_P.  Use jump_table_for_label and
+	rtx_jump_table_data::get_data_mode.
+	(final_scan_insn): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (try_combine): Use is_a <scalar_int_mode> when
 	trying to combine a full-register integer set with a subreg
 	integer set.
