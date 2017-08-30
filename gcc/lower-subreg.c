@@ -349,8 +349,7 @@ simple_move (rtx_insn *insn, bool speed_p)
      size.  */
   mode = GET_MODE (SET_DEST (set));
   if (!SCALAR_INT_MODE_P (mode)
-      && (mode_for_size (GET_MODE_SIZE (mode) * BITS_PER_UNIT, MODE_INT, 0)
-	  == BLKmode))
+      && !int_mode_for_size (GET_MODE_BITSIZE (mode), 0).exists ())
     return NULL_RTX;
 
   /* Reject PARTIAL_INT modes.  They are used for processor specific

@@ -2671,9 +2671,9 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
   copy_mode = word_mode;
   if (MEM_P (target))
     {
-      machine_mode mem_mode = mode_for_size (bitsize, MODE_INT, 1);
-      if (mem_mode != BLKmode)
-	copy_mode = mem_mode;
+      opt_scalar_int_mode mem_mode = int_mode_for_size (bitsize, 1);
+      if (mem_mode.exists ())
+	copy_mode = mem_mode.require ();
     }
   else if (REG_P (target) && GET_MODE_BITSIZE (tmode) < BITS_PER_WORD)
     copy_mode = tmode;

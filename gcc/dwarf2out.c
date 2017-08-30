@@ -15251,13 +15251,12 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	      || GET_MODE_BITSIZE (mode) == HOST_BITS_PER_DOUBLE_INT))
 	{
 	  dw_die_ref type_die = base_type_for_mode (mode, 1);
-	  machine_mode amode;
+	  scalar_int_mode amode;
 	  if (type_die == NULL)
 	    return NULL;
-	  amode = mode_for_size (DWARF2_ADDR_SIZE * BITS_PER_UNIT,
-				 MODE_INT, 0);
 	  if (INTVAL (rtl) >= 0
-	      && amode != BLKmode
+	      && (int_mode_for_size (DWARF2_ADDR_SIZE * BITS_PER_UNIT, 0)
+		  .exists (&amode))
 	      && trunc_int_for_mode (INTVAL (rtl), amode) == INTVAL (rtl)
 	      /* const DW_OP_convert <XXX> vs.
 		 DW_OP_const_type <XXX, 1, const>.  */

@@ -6040,7 +6040,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		     supported.  */
 		  unsigned lsize
 		    = group_size * GET_MODE_BITSIZE (elmode);
-		  elmode = mode_for_size (lsize, MODE_INT, 0);
+		  elmode = int_mode_for_size (lsize, 0).require ();
 		  vmode = mode_for_vector (elmode, nunits / group_size);
 		  /* If we can't construct such a vector fall back to
 		     element extracts from the original vector type and
@@ -7086,7 +7086,7 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		     to a larger load.  */
 		  unsigned lsize
 		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-		  elmode = mode_for_size (lsize, MODE_INT, 0);
+		  elmode = int_mode_for_size (lsize, 0).require ();
 		  vmode = mode_for_vector (elmode, nunits / group_size);
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */

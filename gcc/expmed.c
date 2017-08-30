@@ -364,7 +364,7 @@ check_reverse_float_storage_order_support (void)
 rtx
 flip_storage_order (machine_mode mode, rtx x)
 {
-  machine_mode int_mode;
+  scalar_int_mode int_mode;
   rtx result;
 
   if (mode == QImode)
@@ -384,16 +384,13 @@ flip_storage_order (machine_mode mode, rtx x)
   if (__builtin_expect (reverse_storage_order_supported < 0, 0))
     check_reverse_storage_order_support ();
 
-  if (SCALAR_INT_MODE_P (mode))
-    int_mode = mode;
-  else
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
     {
       if (FLOAT_MODE_P (mode)
 	  && __builtin_expect (reverse_float_storage_order_supported < 0, 0))
 	check_reverse_float_storage_order_support ();
 
-      int_mode = mode_for_size (GET_MODE_PRECISION (mode), MODE_INT, 0);
-      if (int_mode == BLKmode)
+      if (!int_mode_for_size (GET_MODE_PRECISION (mode), 0).exists (&int_mode))
 	{
 	  sorry ("reverse storage order for %smode", GET_MODE_NAME (mode));
 	  return x;
@@ -1429,11 +1426,10 @@ convert_extracted_bit_field (rtx x, machine_mode mode,
      value via a SUBREG.  */
   if (!SCALAR_INT_MODE_P (tmode))
     {
-      machine_mode smode;
-
-      smode = mode_for_size (GET_MODE_BITSIZE (tmode), MODE_INT, 0);
-      x = convert_to_mode (smode, x, unsignedp);
-      x = force_reg (smode, x);
+      scalar_int_mode int_mode
+	= int_mode_for_size (GET_MODE_BITSIZE (tmode), 0).require ();
+      x = convert_to_mode (int_mode, x, unsignedp);
+      x = force_reg (int_mode, x);
       return gen_lowpart (tmode, x);
     }
 

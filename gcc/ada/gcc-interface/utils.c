@@ -1166,8 +1166,9 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	 may need to return the thin pointer.  */
       if (TYPE_FAT_POINTER_P (type) && size < POINTER_SIZE * 2)
 	{
-	  machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
-	  if (!targetm.valid_pointer_mode (p_mode))
+	  scalar_int_mode p_mode;
+	  if (!int_mode_for_size (size, 0).exists (&p_mode)
+	      || !targetm.valid_pointer_mode (p_mode))
 	    p_mode = ptr_mode;
 	  return
 	    build_pointer_type_for_mode

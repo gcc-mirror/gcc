@@ -61,7 +61,7 @@ along with GCC; see the file COPYING3.  If not see
    should use isl to derive the optimal type for each subexpression.  */
 
 static int max_mode_int_precision =
-  GET_MODE_PRECISION (mode_for_size (MAX_FIXED_MODE_SIZE, MODE_INT, 0));
+  GET_MODE_PRECISION (int_mode_for_size (MAX_FIXED_MODE_SIZE, 0).require ());
 static int graphite_expression_type_precision = 128 <= max_mode_int_precision ?
 						128 : max_mode_int_precision;
 

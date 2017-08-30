@@ -557,6 +557,16 @@ extern const unsigned char mode_complex[NUM_MACHINE_MODES];
 
 extern machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
+/* Return the machine mode to use for a MODE_INT of SIZE bits, if one
+   exists.  If LIMIT is nonzero, modes wider than MAX_FIXED_MODE_SIZE
+   will not be used.  */
+
+inline opt_scalar_int_mode
+int_mode_for_size (unsigned int size, int limit)
+{
+  return dyn_cast <scalar_int_mode> (mode_for_size (size, MODE_INT, limit));
+}
+
 /* Return the machine mode to use for a MODE_FLOAT of SIZE bits, if one
    exists.  */
 

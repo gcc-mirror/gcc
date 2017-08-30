@@ -3625,11 +3625,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	/* True if we make a dummy type here.  */
 	bool made_dummy = false;
 	/* The mode to be used for the pointer type.  */
-	machine_mode p_mode = mode_for_size (esize, MODE_INT, 0);
+	scalar_int_mode p_mode;
 	/* The GCC type used for the designated type.  */
 	tree gnu_desig_type = NULL_TREE;
 
-	if (!targetm.valid_pointer_mode (p_mode))
+	if (!int_mode_for_size (esize, 0).exists (&p_mode)
+	    || !targetm.valid_pointer_mode (p_mode))
 	  p_mode = ptr_mode;
 
 	/* If either the designated type or its full view is an unconstrained
@@ -5939,12 +5940,11 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 	      unsigned int size
 		= TREE_INT_CST_LOW (TYPE_SIZE (gnu_cico_return_type));
 	      unsigned int i = BITS_PER_UNIT;
-	      machine_mode mode;
+	      scalar_int_mode mode;
 
 	      while (i < size)
 		i <<= 1;
-	      mode = mode_for_size (i, MODE_INT, 0);
-	      if (mode != BLKmode)
+	      if (int_mode_for_size (i, 0).exists (&mode))
 		{
 		  SET_TYPE_MODE (gnu_cico_return_type, mode);
 		  SET_TYPE_ALIGN (gnu_cico_return_type,
