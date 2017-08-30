@@ -2,6 +2,22 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* emit-rtl.c (immed_double_const): Use is_a <scalar_mode> instead
+	of separate mode class checks.  Do not allow vector modes here.
+	(immed_wide_int_const): Use as_a <scalar_mode>.
+	* explow.c (trunc_int_for_mode): Likewise.
+	* rtl.h (wi::int_traits<rtx_mode_t>::get_precision): Likewise.
+	(wi::shwi): Likewise.
+	(wi::min_value): Likewise.
+	(wi::max_value): Likewise.
+	* dwarf2out.c (loc_descriptor): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Fix rtx_mode_t argument
+	for CONST_WIDE_INT.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (SCALAR_TYPE_MODE): New macro.
 	* expr.c (expand_expr_addr_expr_1): Use it.
 	(expand_expr_real_2): Likewise.

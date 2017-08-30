@@ -2120,8 +2120,7 @@ namespace wi
 inline unsigned int
 wi::int_traits <rtx_mode_t>::get_precision (const rtx_mode_t &x)
 {
-  gcc_checking_assert (x.second != BLKmode && x.second != VOIDmode);
-  return GET_MODE_PRECISION (x.second);
+  return GET_MODE_PRECISION (as_a <scalar_mode> (x.second));
 }
 
 inline wi::storage_ref
@@ -2166,7 +2165,7 @@ namespace wi
 inline wi::hwi_with_prec
 wi::shwi (HOST_WIDE_INT val, machine_mode mode)
 {
-  return shwi (val, GET_MODE_PRECISION (mode));
+  return shwi (val, GET_MODE_PRECISION (as_a <scalar_mode> (mode)));
 }
 
 /* Produce the smallest number that is represented in MODE.  The precision
@@ -2174,7 +2173,7 @@ wi::shwi (HOST_WIDE_INT val, machine_mode mode)
 inline wide_int
 wi::min_value (machine_mode mode, signop sgn)
 {
-  return min_value (GET_MODE_PRECISION (mode), sgn);
+  return min_value (GET_MODE_PRECISION (as_a <scalar_mode> (mode)), sgn);
 }
 
 /* Produce the largest number that is represented in MODE.  The precision
@@ -2182,7 +2181,7 @@ wi::min_value (machine_mode mode, signop sgn)
 inline wide_int
 wi::max_value (machine_mode mode, signop sgn)
 {
-  return max_value (GET_MODE_PRECISION (mode), sgn);
+  return max_value (GET_MODE_PRECISION (as_a <scalar_mode> (mode)), sgn);
 }
 
 extern void init_rtlanal (void);
