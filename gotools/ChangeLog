@@ -1,4 +1,4 @@
-2017-08-30  Ian Lance Taylor  <iant@google.com>
+2017-08-30  Ian Lance Taylor  <iant@golang.org>
 
 	* configure.ac: Substitute GOC_FOR_TARGET and GCC_FOR_TARGET.
 	* Makefile.am (MOSTLYCLEANFILES): Add check-gcc.
