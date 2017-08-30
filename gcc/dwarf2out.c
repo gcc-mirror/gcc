@@ -14824,31 +14824,29 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 
     case SIGN_EXTEND:
     case ZERO_EXTEND:
-      if (!is_a <scalar_int_mode> (mode, &int_mode))
+      if (!is_a <scalar_int_mode> (mode, &int_mode)
+	  || !is_a <scalar_int_mode> (GET_MODE (XEXP (rtl, 0)), &inner_mode))
 	break;
-      op0 = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (XEXP (rtl, 0)),
+      op0 = mem_loc_descriptor (XEXP (rtl, 0), inner_mode,
 				mem_mode, VAR_INIT_STATUS_INITIALIZED);
       if (op0 == 0)
 	break;
       else if (GET_CODE (rtl) == ZERO_EXTEND
 	       && GET_MODE_SIZE (int_mode) <= DWARF2_ADDR_SIZE
-	       && GET_MODE_BITSIZE (GET_MODE (XEXP (rtl, 0)))
-		  < HOST_BITS_PER_WIDE_INT
+	       && GET_MODE_BITSIZE (inner_mode) < HOST_BITS_PER_WIDE_INT
 	       /* If DW_OP_const{1,2,4}u won't be used, it is shorter
 		  to expand zero extend as two shifts instead of
 		  masking.  */
-	       && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= 4)
+	       && GET_MODE_SIZE (inner_mode) <= 4)
 	{
-	  machine_mode imode = GET_MODE (XEXP (rtl, 0));
 	  mem_loc_result = op0;
 	  add_loc_descr (&mem_loc_result,
-			 int_loc_descriptor (GET_MODE_MASK (imode)));
+			 int_loc_descriptor (GET_MODE_MASK (inner_mode)));
 	  add_loc_descr (&mem_loc_result, new_loc_descr (DW_OP_and, 0, 0));
 	}
       else if (GET_MODE_SIZE (int_mode) <= DWARF2_ADDR_SIZE)
 	{
-	  int shift = DWARF2_ADDR_SIZE
-		      - GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0)));
+	  int shift = DWARF2_ADDR_SIZE - GET_MODE_SIZE (inner_mode);
 	  shift *= BITS_PER_UNIT;
 	  if (GET_CODE (rtl) == SIGN_EXTEND)
 	    op = DW_OP_shra;
@@ -14865,7 +14863,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  dw_die_ref type_die1, type_die2;
 	  dw_loc_descr_ref cvt;
 
-	  type_die1 = base_type_for_mode (GET_MODE (XEXP (rtl, 0)),
+	  type_die1 = base_type_for_mode (inner_mode,
 					  GET_CODE (rtl) == ZERO_EXTEND);
 	  if (type_die1 == NULL)
 	    break;
@@ -15410,14 +15408,15 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       if (CONST_INT_P (XEXP (rtl, 1))
 	  && CONST_INT_P (XEXP (rtl, 2))
 	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (rtl, 0)), &inner_mode)
+	  && GET_MODE_SIZE (int_mode) <= DWARF2_ADDR_SIZE
+	  && GET_MODE_SIZE (inner_mode) <= DWARF2_ADDR_SIZE
 	  && ((unsigned) INTVAL (XEXP (rtl, 1))
 	      + (unsigned) INTVAL (XEXP (rtl, 2))
-	      <= GET_MODE_BITSIZE (int_mode))
-	  && GET_MODE_SIZE (int_mode) <= DWARF2_ADDR_SIZE
-	  && GET_MODE_SIZE (GET_MODE (XEXP (rtl, 0))) <= DWARF2_ADDR_SIZE)
+	      <= GET_MODE_BITSIZE (int_mode)))
 	{
 	  int shift, size;
-	  op0 = mem_loc_descriptor (XEXP (rtl, 0), GET_MODE (XEXP (rtl, 0)),
+	  op0 = mem_loc_descriptor (XEXP (rtl, 0), inner_mode,
 				    mem_mode, VAR_INIT_STATUS_INITIALIZED);
 	  if (op0 == 0)
 	    break;
@@ -15429,8 +15428,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  size = INTVAL (XEXP (rtl, 1));
 	  shift = INTVAL (XEXP (rtl, 2));
 	  if (BITS_BIG_ENDIAN)
-	    shift = GET_MODE_BITSIZE (GET_MODE (XEXP (rtl, 0)))
-		    - shift - size;
+	    shift = GET_MODE_BITSIZE (inner_mode) - shift - size;
 	  if (shift + size != (int) DWARF2_ADDR_SIZE)
 	    {
 	      add_loc_descr (&mem_loc_result,

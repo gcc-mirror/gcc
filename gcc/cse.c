@@ -4878,13 +4878,14 @@ cse_insn (rtx_insn *insn)
 	 value.  */
 
       if (flag_expensive_optimizations && ! src_related
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && GET_CODE (src) == AND && CONST_INT_P (XEXP (src, 1))
-	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	  && GET_MODE_SIZE (int_mode) < UNITS_PER_WORD)
 	{
 	  machine_mode tmode;
 	  rtx new_and = gen_rtx_AND (VOIDmode, NULL_RTX, XEXP (src, 1));
 
-	  FOR_EACH_WIDER_MODE (tmode, mode)
+	  FOR_EACH_WIDER_MODE (tmode, int_mode)
 	    {
 	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
 		break;
@@ -4905,7 +4906,7 @@ cse_insn (rtx_insn *insn)
 		    if (REG_P (larger_elt->exp))
 		      {
 			src_related
-			  = gen_lowpart (mode, larger_elt->exp);
+			  = gen_lowpart (int_mode, larger_elt->exp);
 			break;
 		      }
 

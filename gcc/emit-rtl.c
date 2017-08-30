@@ -1430,9 +1430,11 @@ gen_lowpart_common (machine_mode mode, rtx x)
   if (SCALAR_FLOAT_MODE_P (mode) && msize > xsize)
     return 0;
 
+  scalar_int_mode int_mode, int_innermode, from_mode;
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
-      && (GET_MODE_CLASS (mode) == MODE_INT
-	  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT))
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && is_a <scalar_int_mode> (innermode, &int_innermode)
+      && is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &from_mode))
     {
       /* If we are getting the low-order part of something that has been
 	 sign- or zero-extended, we can either just use the object being
@@ -1442,12 +1444,12 @@ gen_lowpart_common (machine_mode mode, rtx x)
 
 	 This case is used mostly by combine and cse.  */
 
-      if (GET_MODE (XEXP (x, 0)) == mode)
+      if (from_mode == int_mode)
 	return XEXP (x, 0);
-      else if (msize < GET_MODE_SIZE (GET_MODE (XEXP (x, 0))))
-	return gen_lowpart_common (mode, XEXP (x, 0));
-      else if (msize < xsize)
-	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
+      else if (GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (from_mode))
+	return gen_lowpart_common (int_mode, XEXP (x, 0));
+      else if (GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (int_innermode))
+	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR

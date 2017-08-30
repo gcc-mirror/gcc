@@ -2,6 +2,23 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (sign_extend_short_imm): Add is_a <scalar_int_mode>
+	checks.
+	(try_combine): Likewise.
+	(simplify_if_then_else): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* emit-rtl.c (gen_lowpart_common): Likewise.
+	* simplify-rtx.c (simplify_truncation): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_ternary_operation): Likewise.
+	* tree-ssa-loop-ivopts.c (force_expr_to_var_cost): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* cse.c (cse_insn): Add is_a <scalar_int_mode> checks.
 	* reload.c (push_reload): Likewise.
 	(find_reloads): Likewise.

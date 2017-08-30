@@ -808,21 +808,22 @@ simplify_truncation (machine_mode mode, rtx op,
      if the MEM has a mode-dependent address.  */
   if ((GET_CODE (op) == LSHIFTRT
        || GET_CODE (op) == ASHIFTRT)
+      && is_a <scalar_int_mode> (mode, &int_mode)
       && is_a <scalar_int_mode> (op_mode, &int_op_mode)
       && MEM_P (XEXP (op, 0))
       && CONST_INT_P (XEXP (op, 1))
-      && (INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (mode)) == 0
+      && INTVAL (XEXP (op, 1)) % GET_MODE_BITSIZE (int_mode) == 0
       && INTVAL (XEXP (op, 1)) > 0
       && INTVAL (XEXP (op, 1)) < GET_MODE_BITSIZE (int_op_mode)
       && ! mode_dependent_address_p (XEXP (XEXP (op, 0), 0),
 				     MEM_ADDR_SPACE (XEXP (op, 0)))
       && ! MEM_VOLATILE_P (XEXP (op, 0))
-      && (GET_MODE_SIZE (mode) >= UNITS_PER_WORD
+      && (GET_MODE_SIZE (int_mode) >= UNITS_PER_WORD
 	  || WORDS_BIG_ENDIAN == BYTES_BIG_ENDIAN))
     {
-      int byte = subreg_lowpart_offset (mode, int_op_mode);
+      int byte = subreg_lowpart_offset (int_mode, int_op_mode);
       int shifted_bytes = INTVAL (XEXP (op, 1)) / BITS_PER_UNIT;
-      return adjust_address_nv (XEXP (op, 0), mode,
+      return adjust_address_nv (XEXP (op, 0), int_mode,
 				(WORDS_BIG_ENDIAN
 				 ? byte - shifted_bytes
 				 : byte + shifted_bytes));
@@ -2989,19 +2990,21 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	 is (lt foo (const_int 0)), so we can perform the above
 	 simplification if STORE_FLAG_VALUE is 1.  */
 
-      if (STORE_FLAG_VALUE == 1
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && STORE_FLAG_VALUE == 1
 	  && trueop1 == const1_rtx
 	  && GET_CODE (op0) == LSHIFTRT
 	  && CONST_INT_P (XEXP (op0, 1))
-	  && INTVAL (XEXP (op0, 1)) == GET_MODE_PRECISION (mode) - 1)
-	return gen_rtx_GE (mode, XEXP (op0, 0), const0_rtx);
+	  && INTVAL (XEXP (op0, 1)) == GET_MODE_PRECISION (int_mode) - 1)
+	return gen_rtx_GE (int_mode, XEXP (op0, 0), const0_rtx);
 
       /* (xor (comparison foo bar) (const_int sign-bit))
 	 when STORE_FLAG_VALUE is the sign bit.  */
-      if (val_signbit_p (mode, STORE_FLAG_VALUE)
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && val_signbit_p (int_mode, STORE_FLAG_VALUE)
 	  && trueop1 == const_true_rtx
 	  && COMPARISON_P (op0)
-	  && (reversed = reversed_comparison (op0, mode)))
+	  && (reversed = reversed_comparison (op0, int_mode)))
 	return reversed;
 
       tem = simplify_byte_swapping_operation (code, mode, op0, op1);
@@ -3424,17 +3427,17 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	return op0;
       /* Optimize (lshiftrt (clz X) C) as (eq X 0).  */
       if (GET_CODE (op0) == CLZ
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (op0, 0)), &inner_mode)
 	  && CONST_INT_P (trueop1)
 	  && STORE_FLAG_VALUE == 1
 	  && INTVAL (trueop1) < (HOST_WIDE_INT)width)
 	{
-	  machine_mode imode = GET_MODE (XEXP (op0, 0));
 	  unsigned HOST_WIDE_INT zero_val = 0;
 
-	  if (CLZ_DEFINED_VALUE_AT_ZERO (imode, zero_val)
-	      && zero_val == GET_MODE_PRECISION (imode)
+	  if (CLZ_DEFINED_VALUE_AT_ZERO (inner_mode, zero_val)
+	      && zero_val == GET_MODE_PRECISION (inner_mode)
 	      && INTVAL (trueop1) == exact_log2 (zero_val))
-	    return simplify_gen_relational (EQ, mode, imode,
+	    return simplify_gen_relational (EQ, mode, inner_mode,
 					    XEXP (op0, 0), const0_rtx);
 	}
       goto canonicalize_shift;
@@ -5275,7 +5278,9 @@ simplify_const_relational_operation (enum rtx_code code,
     }
 
   /* Optimize integer comparisons with zero.  */
-  if (trueop1 == const0_rtx && !side_effects_p (trueop0))
+  if (is_a <scalar_int_mode> (mode, &int_mode)
+      && trueop1 == const0_rtx
+      && !side_effects_p (trueop0))
     {
       /* Some addresses are known to be nonzero.  We don't know
 	 their sign, but equality comparisons are known.  */
@@ -5294,7 +5299,7 @@ simplify_const_relational_operation (enum rtx_code code,
 	  rtx inner_const = avoid_constant_pool_reference (XEXP (op0, 1));
 	  if (CONST_INT_P (inner_const) && inner_const != const0_rtx)
 	    {
-	      int sign_bitnum = GET_MODE_PRECISION (mode) - 1;
+	      int sign_bitnum = GET_MODE_PRECISION (int_mode) - 1;
 	      int has_sign = (HOST_BITS_PER_WIDE_INT >= sign_bitnum
 			      && (UINTVAL (inner_const)
 				  & (HOST_WIDE_INT_1U
@@ -5410,13 +5415,9 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 			    machine_mode op0_mode, rtx op0, rtx op1,
 			    rtx op2)
 {
-  unsigned int width = GET_MODE_PRECISION (mode);
   bool any_change = false;
   rtx tem, trueop2;
-
-  /* VOIDmode means "infinite" precision.  */
-  if (width == 0)
-    width = HOST_BITS_PER_WIDE_INT;
+  scalar_int_mode int_mode, int_op0_mode;
 
   switch (code)
     {
@@ -5450,17 +5451,21 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
       if (CONST_INT_P (op0)
 	  && CONST_INT_P (op1)
 	  && CONST_INT_P (op2)
-	  && ((unsigned) INTVAL (op1) + (unsigned) INTVAL (op2) <= width)
-	  && width <= (unsigned) HOST_BITS_PER_WIDE_INT)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && INTVAL (op1) + INTVAL (op2) <= GET_MODE_PRECISION (int_mode)
+	  && HWI_COMPUTABLE_MODE_P (int_mode))
 	{
 	  /* Extracting a bit-field from a constant */
 	  unsigned HOST_WIDE_INT val = UINTVAL (op0);
 	  HOST_WIDE_INT op1val = INTVAL (op1);
 	  HOST_WIDE_INT op2val = INTVAL (op2);
-	  if (BITS_BIG_ENDIAN)
-	    val >>= GET_MODE_PRECISION (op0_mode) - op2val - op1val;
-	  else
+	  if (!BITS_BIG_ENDIAN)
 	    val >>= op2val;
+	  else if (is_a <scalar_int_mode> (op0_mode, &int_op0_mode))
+	    val >>= GET_MODE_PRECISION (int_op0_mode) - op2val - op1val;
+	  else
+	    /* Not enough information to calculate the bit position.  */
+	    break;
 
 	  if (HOST_BITS_PER_WIDE_INT != op1val)
 	    {
@@ -5473,7 +5478,7 @@ simplify_ternary_operation (enum rtx_code code, machine_mode mode,
 		val |= ~ ((HOST_WIDE_INT_1U << op1val) - 1);
 	    }
 
-	  return gen_int_mode (val, mode);
+	  return gen_int_mode (val, int_mode);
 	}
       break;
 
