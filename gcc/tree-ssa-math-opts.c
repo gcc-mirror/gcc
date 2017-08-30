@@ -3350,7 +3350,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   optab this_optab;
   enum tree_code wmult_code;
   enum insn_code handler;
-  machine_mode to_mode, from_mode, actual_mode;
+  scalar_mode to_mode, from_mode;
+  machine_mode actual_mode;
   location_t loc = gimple_location (stmt);
   int actual_precision;
   bool from_unsigned1, from_unsigned2;
@@ -3446,8 +3447,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   else
     return false;
 
-  to_mode = TYPE_MODE (type);
-  from_mode = TYPE_MODE (type1);
+  to_mode = SCALAR_TYPE_MODE (type);
+  from_mode = SCALAR_TYPE_MODE (type1);
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
   optype = type1;

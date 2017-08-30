@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-lex.c (interpret_fixed): Use SCALAR_TYPE_MODE.
+	* c-common.c (c_build_vec_perm_expr): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-attribs.c (handle_mode_attribute): Check for a scalar_int_mode
 	before calling targetm.addr_space.valid_pointer_mode.
 

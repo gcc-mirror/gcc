@@ -3879,7 +3879,7 @@ estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
 
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      machine_mode inner = TYPE_MODE (TREE_TYPE (type));
+      scalar_mode inner = SCALAR_TYPE_MODE (TREE_TYPE (type));
       machine_mode simd
 	= targetm.vectorize.preferred_simd_mode (inner);
       int simd_mode_size = GET_MODE_SIZE (simd);

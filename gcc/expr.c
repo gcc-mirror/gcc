@@ -7766,7 +7766,7 @@ expand_expr_addr_expr_1 (tree exp, rtx target, scalar_int_mode tmode,
 	 The expression is therefore always offset by the size of the
 	 scalar type.  */
       offset = 0;
-      bitpos = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (exp)));
+      bitpos = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (exp)));
       inner = TREE_OPERAND (exp, 0);
       break;
 
@@ -9443,7 +9443,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	{
 	  tree sel_type = TREE_TYPE (treeop2);
 	  machine_mode vmode
-	    = mode_for_vector (TYPE_MODE (TREE_TYPE (sel_type)),
+	    = mode_for_vector (SCALAR_TYPE_MODE (TREE_TYPE (sel_type)),
 			       TYPE_VECTOR_SUBPARTS (sel_type));
 	  gcc_assert (GET_MODE_CLASS (vmode) == MODE_VECTOR_INT);
 	  op2 = simplify_subreg (vmode, op2, TYPE_MODE (sel_type), 0);
