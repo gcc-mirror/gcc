@@ -617,11 +617,11 @@ public:
   bit_field_mode_iterator (HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, HOST_WIDE_INT,
 			   unsigned int, bool);
-  bool next_mode (machine_mode *);
+  bool next_mode (scalar_int_mode *);
   bool prefer_smaller_modes ();
 
 private:
-  machine_mode m_mode;
+  opt_scalar_int_mode m_mode;
   /* We use signed values here because the bit position can be negative
      for invalid input such as gcc.dg/pr48335-8.c.  */
   HOST_WIDE_INT m_bitsize;
@@ -635,11 +635,9 @@ private:
 
 /* Find the best mode to use to access a bit field.  */
 
-extern machine_mode get_best_mode (int, int,
-					unsigned HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT,
-					unsigned int,
-					machine_mode, bool);
+extern bool get_best_mode (int, int, unsigned HOST_WIDE_INT,
+			   unsigned HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT, bool, scalar_int_mode *);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 

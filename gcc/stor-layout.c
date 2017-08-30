@@ -2748,15 +2748,15 @@ bit_field_mode_iterator
    available, storing it in *OUT_MODE if so.  */
 
 bool
-bit_field_mode_iterator::next_mode (machine_mode *out_mode)
+bit_field_mode_iterator::next_mode (scalar_int_mode *out_mode)
 {
-  for (; m_mode != VOIDmode;
-       m_mode = GET_MODE_WIDER_MODE (m_mode).else_void ())
+  scalar_int_mode mode;
+  for (; m_mode.exists (&mode); m_mode = GET_MODE_WIDER_MODE (mode))
     {
-      unsigned int unit = GET_MODE_BITSIZE (m_mode);
+      unsigned int unit = GET_MODE_BITSIZE (mode);
 
       /* Skip modes that don't have full precision.  */
-      if (unit != GET_MODE_PRECISION (m_mode))
+      if (unit != GET_MODE_PRECISION (mode))
 	continue;
 
       /* Stop if the mode is too wide to handle efficiently.  */
@@ -2783,12 +2783,12 @@ bit_field_mode_iterator::next_mode (machine_mode *out_mode)
 	break;
 
       /* Stop if the mode requires too much alignment.  */
-      if (GET_MODE_ALIGNMENT (m_mode) > m_align
-	  && SLOW_UNALIGNED_ACCESS (m_mode, m_align))
+      if (GET_MODE_ALIGNMENT (mode) > m_align
+	  && SLOW_UNALIGNED_ACCESS (mode, m_align))
 	break;
 
-      *out_mode = m_mode;
-      m_mode = GET_MODE_WIDER_MODE (m_mode).else_void ();
+      *out_mode = mode;
+      m_mode = GET_MODE_WIDER_MODE (mode);
       m_count++;
       return true;
     }
@@ -2815,11 +2815,13 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    memory access to that range.  Otherwise, we are allowed to touch
    any adjacent non bit-fields.
 
-   The underlying object is known to be aligned to a boundary of ALIGN bits.
-   If LARGEST_MODE is not VOIDmode, it means that we should not use a mode
-   larger than LARGEST_MODE (usually SImode).
+   The chosen mode must have no more than LARGEST_MODE_BITSIZE bits.
+   INT_MAX is a suitable value for LARGEST_MODE_BITSIZE if the caller
+   doesn't want to apply a specific limit.
 
    If no mode meets all these conditions, we return VOIDmode.
+
+   The underlying object is known to be aligned to a boundary of ALIGN bits.
 
    If VOLATILEP is false and SLOW_BYTE_ACCESS is false, we return the
    smallest mode meeting these conditions.
@@ -2831,17 +2833,18 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    If VOLATILEP is true the narrow_volatile_bitfields target hook is used to
    decide which of the above modes should be used.  */
 
-machine_mode
+bool
 get_best_mode (int bitsize, int bitpos,
 	       unsigned HOST_WIDE_INT bitregion_start,
 	       unsigned HOST_WIDE_INT bitregion_end,
 	       unsigned int align,
-	       machine_mode largest_mode, bool volatilep)
+	       unsigned HOST_WIDE_INT largest_mode_bitsize, bool volatilep,
+	       scalar_int_mode *best_mode)
 {
   bit_field_mode_iterator iter (bitsize, bitpos, bitregion_start,
 				bitregion_end, align, volatilep);
-  machine_mode widest_mode = VOIDmode;
-  machine_mode mode;
+  scalar_int_mode mode;
+  bool found = false;
   while (iter.next_mode (&mode)
 	 /* ??? For historical reasons, reject modes that would normally
 	    receive greater alignment, even if unaligned accesses are
@@ -2900,14 +2903,15 @@ get_best_mode (int bitsize, int bitpos,
 	    so that the final bitfield reference still has a MEM_EXPR
 	    and MEM_OFFSET.  */
 	 && GET_MODE_ALIGNMENT (mode) <= align
-	 && (largest_mode == VOIDmode
-	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
+	 && GET_MODE_BITSIZE (mode) <= largest_mode_bitsize)
     {
-      widest_mode = mode;
+      *best_mode = mode;
+      found = true;
       if (iter.prefer_smaller_modes ())
 	break;
     }
-  return widest_mode;
+
+  return found;
 }
 
 /* Gets minimal and maximal values for MODE (signed or unsigned depending on

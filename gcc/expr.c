@@ -4682,13 +4682,14 @@ optimize_bitfield_assignment_op (unsigned HOST_WIDE_INT bitsize,
       unsigned HOST_WIDE_INT offset1;
 
       if (str_bitsize == 0 || str_bitsize > BITS_PER_WORD)
-	str_mode = word_mode;
-      str_mode = get_best_mode (bitsize, bitpos,
-				bitregion_start, bitregion_end,
-				MEM_ALIGN (str_rtx), str_mode, 0);
-      if (str_mode == VOIDmode)
+	str_bitsize = BITS_PER_WORD;
+
+      scalar_int_mode best_mode;
+      if (!get_best_mode (bitsize, bitpos, bitregion_start, bitregion_end,
+			  MEM_ALIGN (str_rtx), str_bitsize, false, &best_mode))
 	return false;
-      str_bitsize = GET_MODE_BITSIZE (str_mode);
+      str_mode = best_mode;
+      str_bitsize = GET_MODE_BITSIZE (best_mode);
 
       offset1 = bitpos;
       bitpos %= str_bitsize;
