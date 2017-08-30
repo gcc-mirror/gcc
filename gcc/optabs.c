@@ -1232,8 +1232,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	     it back to the proper size to fit in the broadcast vector.  */
 	  machine_mode inner_mode = GET_MODE_INNER (mode);
 	  if (!CONST_INT_P (op1)
-	      && (GET_MODE_BITSIZE (inner_mode)
-		  < GET_MODE_BITSIZE (GET_MODE (op1))))
+	      && (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (op1)))
+		  > GET_MODE_BITSIZE (inner_mode)))
 	    op1 = force_reg (inner_mode,
 			     simplify_gen_unary (TRUNCATE, inner_mode, op1,
 						 GET_MODE (op1)));
@@ -1378,11 +1378,13 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && optab_handler (lshr_optab, word_mode) != CODE_FOR_nothing)
     {
       unsigned HOST_WIDE_INT shift_mask, double_shift_mask;
-      machine_mode op1_mode;
+      scalar_int_mode op1_mode;
 
       double_shift_mask = targetm.shift_truncation_mask (int_mode);
       shift_mask = targetm.shift_truncation_mask (word_mode);
-      op1_mode = GET_MODE (op1) != VOIDmode ? GET_MODE (op1) : word_mode;
+      op1_mode = (GET_MODE (op1) != VOIDmode
+		  ? as_a <scalar_int_mode> (GET_MODE (op1))
+		  : word_mode);
 
       /* Apply the truncation to constant shifts.  */
       if (double_shift_mask > 0 && CONST_INT_P (op1))
@@ -3011,24 +3013,32 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 		 result.  Similarly for clrsb.  */
 	      if ((unoptab == clz_optab || unoptab == clrsb_optab)
 		  && temp != 0)
-		temp = expand_binop
-		  (wider_mode, sub_optab, temp,
-		   gen_int_mode (GET_MODE_PRECISION (wider_mode)
-				 - GET_MODE_PRECISION (mode),
-				 wider_mode),
-		   target, true, OPTAB_DIRECT);
+		{
+		  scalar_int_mode wider_int_mode
+		    = as_a <scalar_int_mode> (wider_mode);
+		  int_mode = as_a <scalar_int_mode> (mode);
+		  temp = expand_binop
+		    (wider_mode, sub_optab, temp,
+		     gen_int_mode (GET_MODE_PRECISION (wider_int_mode)
+				   - GET_MODE_PRECISION (int_mode),
+				   wider_int_mode),
+		     target, true, OPTAB_DIRECT);
+		}
 
 	      /* Likewise for bswap.  */
 	      if (unoptab == bswap_optab && temp != 0)
 		{
-		  gcc_assert (GET_MODE_PRECISION (wider_mode)
-			      == GET_MODE_BITSIZE (wider_mode)
-			      && GET_MODE_PRECISION (mode)
-				 == GET_MODE_BITSIZE (mode));
+		  scalar_int_mode wider_int_mode
+		    = as_a <scalar_int_mode> (wider_mode);
+		  int_mode = as_a <scalar_int_mode> (mode);
+		  gcc_assert (GET_MODE_PRECISION (wider_int_mode)
+			      == GET_MODE_BITSIZE (wider_int_mode)
+			      && GET_MODE_PRECISION (int_mode)
+				 == GET_MODE_BITSIZE (int_mode));
 
-		  temp = expand_shift (RSHIFT_EXPR, wider_mode, temp,
-				       GET_MODE_BITSIZE (wider_mode)
-				       - GET_MODE_BITSIZE (mode),
+		  temp = expand_shift (RSHIFT_EXPR, wider_int_mode, temp,
+				       GET_MODE_BITSIZE (wider_int_mode)
+				       - GET_MODE_BITSIZE (int_mode),
 				       NULL_RTX, true);
 		}
 
@@ -3256,7 +3266,7 @@ static rtx
 expand_copysign_absneg (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 		        int bitpos, bool op0_is_abs)
 {
-  machine_mode imode;
+  scalar_int_mode imode;
   enum insn_code icode;
   rtx sign;
   rtx_code_label *label;
@@ -3269,7 +3279,7 @@ expand_copysign_absneg (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
   icode = optab_handler (signbit_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
-      imode = insn_data[(int) icode].operand[0].mode;
+      imode = as_a <scalar_int_mode> (insn_data[(int) icode].operand[0].mode);
       sign = gen_reg_rtx (imode);
       emit_unop_insn (icode, sign, op1, UNKNOWN);
     }
@@ -3801,10 +3811,10 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	    continue;
 
 	  /* Must make sure the size fits the insn's mode.  */
-	  if ((CONST_INT_P (size)
-	       && INTVAL (size) >= (1 << GET_MODE_BITSIZE (cmp_mode)))
-	      || (GET_MODE_BITSIZE (GET_MODE (size))
-		  > GET_MODE_BITSIZE (cmp_mode)))
+	  if (CONST_INT_P (size)
+	      ? INTVAL (size) >= (1 << GET_MODE_BITSIZE (cmp_mode))
+	      : (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (size)))
+		 > GET_MODE_BITSIZE (cmp_mode)))
 	    continue;
 
 	  result_mode = insn_data[cmp_code].operand[0].mode;
@@ -6979,8 +6989,8 @@ maybe_legitimize_operand (enum insn_code icode, unsigned int opno,
       goto input;
 
     case EXPAND_ADDRESS:
-      gcc_assert (mode != VOIDmode);
-      op->value = convert_memory_address (mode, op->value);
+      op->value = convert_memory_address (as_a <scalar_int_mode> (mode),
+					  op->value);
       goto input;
 
     case EXPAND_INTEGER:

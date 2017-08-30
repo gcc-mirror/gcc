@@ -4552,14 +4552,17 @@ cse_insn (rtx_insn *insn)
 	       && CONST_INT_P (XEXP (SET_DEST (sets[0].rtl), 2)))
 	{
 	  rtx dest_reg = XEXP (SET_DEST (sets[0].rtl), 0);
+	  /* This is the mode of XEXP (tem, 0) as well.  */
+	  scalar_int_mode dest_mode
+	    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 	  rtx width = XEXP (SET_DEST (sets[0].rtl), 1);
 	  rtx pos = XEXP (SET_DEST (sets[0].rtl), 2);
 	  HOST_WIDE_INT val = INTVAL (XEXP (tem, 0));
 	  HOST_WIDE_INT mask;
 	  unsigned int shift;
 	  if (BITS_BIG_ENDIAN)
-	    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
-	      - INTVAL (pos) - INTVAL (width);
+	    shift = (GET_MODE_PRECISION (dest_mode)
+		     - INTVAL (pos) - INTVAL (width));
 	  else
 	    shift = INTVAL (pos);
 	  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
@@ -5231,8 +5234,11 @@ cse_insn (rtx_insn *insn)
 		  HOST_WIDE_INT val = INTVAL (dest_cst);
 		  HOST_WIDE_INT mask;
 		  unsigned int shift;
+		  /* This is the mode of DEST_CST as well.  */
+		  scalar_int_mode dest_mode
+		    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 		  if (BITS_BIG_ENDIAN)
-		    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
+		    shift = GET_MODE_PRECISION (dest_mode)
 			    - INTVAL (pos) - INTVAL (width);
 		  else
 		    shift = INTVAL (pos);
@@ -5242,7 +5248,7 @@ cse_insn (rtx_insn *insn)
 		    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 		  val &= ~(mask << shift);
 		  val |= (INTVAL (trial) & mask) << shift;
-		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
+		  val = trunc_int_for_mode (val, dest_mode);
 		  validate_unshare_change (insn, &SET_DEST (sets[i].rtl),
 					   dest_reg, 1);
 		  validate_unshare_change (insn, &SET_SRC (sets[i].rtl),

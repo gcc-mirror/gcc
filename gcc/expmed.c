@@ -207,7 +207,8 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
     {
       for (mode_from = MIN_MODE_INT; mode_from <= MAX_MODE_INT;
 	   mode_from = (machine_mode)(mode_from + 1))
-	init_expmed_one_conv (all, int_mode_to, mode_from, speed);
+	init_expmed_one_conv (all, int_mode_to,
+			      as_a <scalar_int_mode> (mode_from), speed);
 
       scalar_int_mode wider_mode;
       if (GET_MODE_CLASS (int_mode_to) == MODE_INT
@@ -2578,7 +2579,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
   bool cache_hit = false;
   enum alg_code cache_alg = alg_zero;
   bool speed = optimize_insn_for_speed_p ();
-  machine_mode imode;
+  scalar_int_mode imode;
   struct alg_hash_entry *entry_ptr;
 
   /* Indicate that no algorithm is yet found.  If no algorithm
@@ -2591,7 +2592,7 @@ synth_mult (struct algorithm *alg_out, unsigned HOST_WIDE_INT t,
     return;
 
   /* Be prepared for vector modes.  */
-  imode = GET_MODE_INNER (mode);
+  imode = as_a <scalar_int_mode> (GET_MODE_INNER (mode));
 
   maxm = MIN (BITS_PER_WORD, GET_MODE_BITSIZE (imode));
 
@@ -4035,7 +4036,6 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   rtx tquotient;
   rtx quotient = 0, remainder = 0;
   rtx_insn *last;
-  int size;
   rtx_insn *insn;
   optab optab1, optab2;
   int op1_is_constant, op1_is_pow2 = 0;
@@ -4157,7 +4157,6 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   else
     tquotient = gen_reg_rtx (compute_mode);
 
-  size = GET_MODE_BITSIZE (compute_mode);
 #if 0
   /* It should be possible to restrict the precision to GET_MODE_BITSIZE
      (mode), and thereby get better code when OP1 is a constant.  Do that
@@ -4230,12 +4229,14 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       case TRUNC_DIV_EXPR:
 	if (op1_is_constant)
 	  {
+	    scalar_int_mode int_mode = as_a <scalar_int_mode> (compute_mode);
+	    int size = GET_MODE_BITSIZE (int_mode);
 	    if (unsignedp)
 	      {
 		unsigned HOST_WIDE_INT mh, ml;
 		int pre_shift, post_shift;
 		int dummy;
-		wide_int wd = rtx_mode_t (op1, compute_mode);
+		wide_int wd = rtx_mode_t (op1, int_mode);
 		unsigned HOST_WIDE_INT d = wd.to_uhwi ();
 
 		if (wi::popcount (wd) == 1)
@@ -4246,14 +4247,14 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			unsigned HOST_WIDE_INT mask
 			  = (HOST_WIDE_INT_1U << pre_shift) - 1;
 			remainder
-			  = expand_binop (compute_mode, and_optab, op0,
-					  gen_int_mode (mask, compute_mode),
+			  = expand_binop (int_mode, and_optab, op0,
+					  gen_int_mode (mask, int_mode),
 					  remainder, 1,
 					  OPTAB_LIB_WIDEN);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
-		    quotient = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+		    quotient = expand_shift (RSHIFT_EXPR, int_mode, op0,
 					     pre_shift, tquotient, 1);
 		  }
 		else if (size <= HOST_BITS_PER_WIDE_INT)
@@ -4263,7 +4264,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			/* Most significant bit of divisor is set; emit an scc
 			   insn.  */
 			quotient = emit_store_flag_force (tquotient, GEU, op0, op1,
-							  compute_mode, 1, 1);
+							  int_mode, 1, 1);
 		      }
 		    else
 		      {
@@ -4295,25 +4296,24 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			      goto fail1;
 
 			    extra_cost
-			      = (shift_cost (speed, compute_mode, post_shift - 1)
-				 + shift_cost (speed, compute_mode, 1)
-				 + 2 * add_cost (speed, compute_mode));
+			      = (shift_cost (speed, int_mode, post_shift - 1)
+				 + shift_cost (speed, int_mode, 1)
+				 + 2 * add_cost (speed, int_mode));
 			    t1 = expmed_mult_highpart
-			      (compute_mode, op0,
-			       gen_int_mode (ml, compute_mode),
+			      (int_mode, op0, gen_int_mode (ml, int_mode),
 			       NULL_RTX, 1, max_cost - extra_cost);
 			    if (t1 == 0)
 			      goto fail1;
-			    t2 = force_operand (gen_rtx_MINUS (compute_mode,
+			    t2 = force_operand (gen_rtx_MINUS (int_mode,
 							       op0, t1),
 						NULL_RTX);
-			    t3 = expand_shift (RSHIFT_EXPR, compute_mode,
+			    t3 = expand_shift (RSHIFT_EXPR, int_mode,
 					       t2, 1, NULL_RTX, 1);
-			    t4 = force_operand (gen_rtx_PLUS (compute_mode,
+			    t4 = force_operand (gen_rtx_PLUS (int_mode,
 							      t1, t3),
 						NULL_RTX);
 			    quotient = expand_shift
-			      (RSHIFT_EXPR, compute_mode, t4,
+			      (RSHIFT_EXPR, int_mode, t4,
 			       post_shift - 1, tquotient, 1);
 			  }
 			else
@@ -4325,19 +4325,19 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			      goto fail1;
 
 			    t1 = expand_shift
-			      (RSHIFT_EXPR, compute_mode, op0,
+			      (RSHIFT_EXPR, int_mode, op0,
 			       pre_shift, NULL_RTX, 1);
 			    extra_cost
-			      = (shift_cost (speed, compute_mode, pre_shift)
-				 + shift_cost (speed, compute_mode, post_shift));
+			      = (shift_cost (speed, int_mode, pre_shift)
+				 + shift_cost (speed, int_mode, post_shift));
 			    t2 = expmed_mult_highpart
-			      (compute_mode, t1,
-			       gen_int_mode (ml, compute_mode),
+			      (int_mode, t1,
+			       gen_int_mode (ml, int_mode),
 			       NULL_RTX, 1, max_cost - extra_cost);
 			    if (t2 == 0)
 			      goto fail1;
 			    quotient = expand_shift
-			      (RSHIFT_EXPR, compute_mode, t2,
+			      (RSHIFT_EXPR, int_mode, t2,
 			       post_shift, tquotient, 1);
 			  }
 		      }
@@ -4348,7 +4348,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		insn = get_last_insn ();
 		if (insn != last)
 		  set_dst_reg_note (insn, REG_EQUAL,
-				    gen_rtx_UDIV (compute_mode, op0, op1),
+				    gen_rtx_UDIV (int_mode, op0, op1),
 				    quotient);
 	      }
 	    else		/* TRUNC_DIV, signed */
@@ -4370,36 +4370,35 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		if (rem_flag && d < 0)
 		  {
 		    d = abs_d;
-		    op1 = gen_int_mode (abs_d, compute_mode);
+		    op1 = gen_int_mode (abs_d, int_mode);
 		  }
 
 		if (d == 1)
 		  quotient = op0;
 		else if (d == -1)
-		  quotient = expand_unop (compute_mode, neg_optab, op0,
+		  quotient = expand_unop (int_mode, neg_optab, op0,
 					  tquotient, 0);
 		else if (size <= HOST_BITS_PER_WIDE_INT
 			 && abs_d == HOST_WIDE_INT_1U << (size - 1))
 		  {
 		    /* This case is not handled correctly below.  */
 		    quotient = emit_store_flag (tquotient, EQ, op0, op1,
-						compute_mode, 1, 1);
+						int_mode, 1, 1);
 		    if (quotient == 0)
 		      goto fail1;
 		  }
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (d)
 			 && (size <= HOST_BITS_PER_WIDE_INT || d >= 0)
 			 && (rem_flag
-			     ? smod_pow2_cheap (speed, compute_mode)
-			     : sdiv_pow2_cheap (speed, compute_mode))
+			     ? smod_pow2_cheap (speed, int_mode)
+			     : sdiv_pow2_cheap (speed, int_mode))
 			 /* We assume that cheap metric is true if the
 			    optab has an expander for this mode.  */
 			 && ((optab_handler ((rem_flag ? smod_optab
 					      : sdiv_optab),
-					     compute_mode)
+					     int_mode)
 			      != CODE_FOR_nothing)
-			     || (optab_handler (sdivmod_optab,
-						compute_mode)
+			     || (optab_handler (sdivmod_optab, int_mode)
 				 != CODE_FOR_nothing)))
 		  ;
 		else if (EXACT_POWER_OF_2_OR_ZERO_P (abs_d)
@@ -4408,23 +4407,23 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		  {
 		    if (rem_flag)
 		      {
-			remainder = expand_smod_pow2 (compute_mode, op0, d);
+			remainder = expand_smod_pow2 (int_mode, op0, d);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
 
-		    if (sdiv_pow2_cheap (speed, compute_mode)
-			&& ((optab_handler (sdiv_optab, compute_mode)
+		    if (sdiv_pow2_cheap (speed, int_mode)
+			&& ((optab_handler (sdiv_optab, int_mode)
 			     != CODE_FOR_nothing)
-			    || (optab_handler (sdivmod_optab, compute_mode)
+			    || (optab_handler (sdivmod_optab, int_mode)
 				!= CODE_FOR_nothing)))
 		      quotient = expand_divmod (0, TRUNC_DIV_EXPR,
-						compute_mode, op0,
+						int_mode, op0,
 						gen_int_mode (abs_d,
-							      compute_mode),
+							      int_mode),
 						NULL_RTX, 0);
 		    else
-		      quotient = expand_sdiv_pow2 (compute_mode, op0, abs_d);
+		      quotient = expand_sdiv_pow2 (int_mode, op0, abs_d);
 
 		    /* We have computed OP0 / abs(OP1).  If OP1 is negative,
 		       negate the quotient.  */
@@ -4435,13 +4434,13 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			    && abs_d < (HOST_WIDE_INT_1U
 					<< (HOST_BITS_PER_WIDE_INT - 1)))
 			  set_dst_reg_note (insn, REG_EQUAL,
-					    gen_rtx_DIV (compute_mode, op0,
+					    gen_rtx_DIV (int_mode, op0,
 							 gen_int_mode
 							   (abs_d,
-							    compute_mode)),
+							    int_mode)),
 					    quotient);
 
-			quotient = expand_unop (compute_mode, neg_optab,
+			quotient = expand_unop (int_mode, neg_optab,
 						quotient, quotient, 0);
 		      }
 		  }
@@ -4457,29 +4456,27 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			    || size - 1 >= BITS_PER_WORD)
 			  goto fail1;
 
-			extra_cost = (shift_cost (speed, compute_mode, post_shift)
-				      + shift_cost (speed, compute_mode, size - 1)
-				      + add_cost (speed, compute_mode));
+			extra_cost = (shift_cost (speed, int_mode, post_shift)
+				      + shift_cost (speed, int_mode, size - 1)
+				      + add_cost (speed, int_mode));
 			t1 = expmed_mult_highpart
-			  (compute_mode, op0, gen_int_mode (ml, compute_mode),
+			  (int_mode, op0, gen_int_mode (ml, int_mode),
 			   NULL_RTX, 0, max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
 			t2 = expand_shift
-			  (RSHIFT_EXPR, compute_mode, t1,
+			  (RSHIFT_EXPR, int_mode, t1,
 			   post_shift, NULL_RTX, 0);
 			t3 = expand_shift
-			  (RSHIFT_EXPR, compute_mode, op0,
+			  (RSHIFT_EXPR, int_mode, op0,
 			   size - 1, NULL_RTX, 0);
 			if (d < 0)
 			  quotient
-			    = force_operand (gen_rtx_MINUS (compute_mode,
-							    t3, t2),
+			    = force_operand (gen_rtx_MINUS (int_mode, t3, t2),
 					     tquotient);
 			else
 			  quotient
-			    = force_operand (gen_rtx_MINUS (compute_mode,
-							    t2, t3),
+			    = force_operand (gen_rtx_MINUS (int_mode, t2, t3),
 					     tquotient);
 		      }
 		    else
@@ -4491,33 +4488,30 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			  goto fail1;
 
 			ml |= HOST_WIDE_INT_M1U << (size - 1);
-			mlr = gen_int_mode (ml, compute_mode);
-			extra_cost = (shift_cost (speed, compute_mode, post_shift)
-				      + shift_cost (speed, compute_mode, size - 1)
-				      + 2 * add_cost (speed, compute_mode));
-			t1 = expmed_mult_highpart (compute_mode, op0, mlr,
+			mlr = gen_int_mode (ml, int_mode);
+			extra_cost = (shift_cost (speed, int_mode, post_shift)
+				      + shift_cost (speed, int_mode, size - 1)
+				      + 2 * add_cost (speed, int_mode));
+			t1 = expmed_mult_highpart (int_mode, op0, mlr,
 						   NULL_RTX, 0,
 						   max_cost - extra_cost);
 			if (t1 == 0)
 			  goto fail1;
-			t2 = force_operand (gen_rtx_PLUS (compute_mode,
-							  t1, op0),
+			t2 = force_operand (gen_rtx_PLUS (int_mode, t1, op0),
 					    NULL_RTX);
 			t3 = expand_shift
-			  (RSHIFT_EXPR, compute_mode, t2,
+			  (RSHIFT_EXPR, int_mode, t2,
 			   post_shift, NULL_RTX, 0);
 			t4 = expand_shift
-			  (RSHIFT_EXPR, compute_mode, op0,
+			  (RSHIFT_EXPR, int_mode, op0,
 			   size - 1, NULL_RTX, 0);
 			if (d < 0)
 			  quotient
-			    = force_operand (gen_rtx_MINUS (compute_mode,
-							    t4, t3),
+			    = force_operand (gen_rtx_MINUS (int_mode, t4, t3),
 					     tquotient);
 			else
 			  quotient
-			    = force_operand (gen_rtx_MINUS (compute_mode,
-							    t3, t4),
+			    = force_operand (gen_rtx_MINUS (int_mode, t3, t4),
 					     tquotient);
 		      }
 		  }
@@ -4527,7 +4521,7 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 		insn = get_last_insn ();
 		if (insn != last)
 		  set_dst_reg_note (insn, REG_EQUAL,
-				    gen_rtx_DIV (compute_mode, op0, op1),
+				    gen_rtx_DIV (int_mode, op0, op1),
 				    quotient);
 	      }
 	    break;
@@ -4539,8 +4533,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       case FLOOR_DIV_EXPR:
       case FLOOR_MOD_EXPR:
       /* We will come here only for signed operations.  */
-	if (op1_is_constant && size <= HOST_BITS_PER_WIDE_INT)
+	if (op1_is_constant && HWI_COMPUTABLE_MODE_P (compute_mode))
 	  {
+	    scalar_int_mode int_mode = as_a <scalar_int_mode> (compute_mode);
+	    int size = GET_MODE_BITSIZE (int_mode);
 	    unsigned HOST_WIDE_INT mh, ml;
 	    int pre_shift, lgup, post_shift;
 	    HOST_WIDE_INT d = INTVAL (op1);
@@ -4557,14 +4553,14 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			unsigned HOST_WIDE_INT mask
 			  = (HOST_WIDE_INT_1U << pre_shift) - 1;
 			remainder = expand_binop
-			  (compute_mode, and_optab, op0,
-			   gen_int_mode (mask, compute_mode),
+			  (int_mode, and_optab, op0,
+			   gen_int_mode (mask, int_mode),
 			   remainder, 0, OPTAB_LIB_WIDEN);
 			if (remainder)
 			  return gen_lowpart (mode, remainder);
 		      }
 		    quotient = expand_shift
-		      (RSHIFT_EXPR, compute_mode, op0,
+		      (RSHIFT_EXPR, int_mode, op0,
 		       pre_shift, tquotient, 0);
 		  }
 		else
@@ -4579,22 +4575,22 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 			&& size - 1 < BITS_PER_WORD)
 		      {
 			t1 = expand_shift
-			  (RSHIFT_EXPR, compute_mode, op0,
+			  (RSHIFT_EXPR, int_mode, op0,
 			   size - 1, NULL_RTX, 0);
-			t2 = expand_binop (compute_mode, xor_optab, op0, t1,
+			t2 = expand_binop (int_mode, xor_optab, op0, t1,
 					   NULL_RTX, 0, OPTAB_WIDEN);
-			extra_cost = (shift_cost (speed, compute_mode, post_shift)
-				      + shift_cost (speed, compute_mode, size - 1)
-				      + 2 * add_cost (speed, compute_mode));
+			extra_cost = (shift_cost (speed, int_mode, post_shift)
+				      + shift_cost (speed, int_mode, size - 1)
+				      + 2 * add_cost (speed, int_mode));
 			t3 = expmed_mult_highpart
-			  (compute_mode, t2, gen_int_mode (ml, compute_mode),
+			  (int_mode, t2, gen_int_mode (ml, int_mode),
 			   NULL_RTX, 1, max_cost - extra_cost);
 			if (t3 != 0)
 			  {
 			    t4 = expand_shift
-			      (RSHIFT_EXPR, compute_mode, t3,
+			      (RSHIFT_EXPR, int_mode, t3,
 			       post_shift, NULL_RTX, 1);
-			    quotient = expand_binop (compute_mode, xor_optab,
+			    quotient = expand_binop (int_mode, xor_optab,
 						     t4, t1, tquotient, 0,
 						     OPTAB_WIDEN);
 			  }
@@ -4604,23 +4600,22 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	    else
 	      {
 		rtx nsign, t1, t2, t3, t4;
-		t1 = force_operand (gen_rtx_PLUS (compute_mode,
+		t1 = force_operand (gen_rtx_PLUS (int_mode,
 						  op0, constm1_rtx), NULL_RTX);
-		t2 = expand_binop (compute_mode, ior_optab, op0, t1, NULL_RTX,
+		t2 = expand_binop (int_mode, ior_optab, op0, t1, NULL_RTX,
 				   0, OPTAB_WIDEN);
-		nsign = expand_shift (RSHIFT_EXPR, compute_mode, t2,
+		nsign = expand_shift (RSHIFT_EXPR, int_mode, t2,
 				      size - 1, NULL_RTX, 0);
-		t3 = force_operand (gen_rtx_MINUS (compute_mode, t1, nsign),
+		t3 = force_operand (gen_rtx_MINUS (int_mode, t1, nsign),
 				    NULL_RTX);
-		t4 = expand_divmod (0, TRUNC_DIV_EXPR, compute_mode, t3, op1,
+		t4 = expand_divmod (0, TRUNC_DIV_EXPR, int_mode, t3, op1,
 				    NULL_RTX, 0);
 		if (t4)
 		  {
 		    rtx t5;
-		    t5 = expand_unop (compute_mode, one_cmpl_optab, nsign,
+		    t5 = expand_unop (int_mode, one_cmpl_optab, nsign,
 				      NULL_RTX, 0);
-		    quotient = force_operand (gen_rtx_PLUS (compute_mode,
-							    t4, t5),
+		    quotient = force_operand (gen_rtx_PLUS (int_mode, t4, t5),
 					      tquotient);
 		  }
 	      }
@@ -4720,31 +4715,31 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	  {
 	    if (op1_is_constant
 		&& EXACT_POWER_OF_2_OR_ZERO_P (INTVAL (op1))
-		&& (size <= HOST_BITS_PER_WIDE_INT
+		&& (HWI_COMPUTABLE_MODE_P (compute_mode)
 		    || INTVAL (op1) >= 0))
 	      {
+		scalar_int_mode int_mode
+		  = as_a <scalar_int_mode> (compute_mode);
 		rtx t1, t2, t3;
 		unsigned HOST_WIDE_INT d = INTVAL (op1);
-		t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+		t1 = expand_shift (RSHIFT_EXPR, int_mode, op0,
 				   floor_log2 (d), tquotient, 1);
-		t2 = expand_binop (compute_mode, and_optab, op0,
-				   gen_int_mode (d - 1, compute_mode),
+		t2 = expand_binop (int_mode, and_optab, op0,
+				   gen_int_mode (d - 1, int_mode),
 				   NULL_RTX, 1, OPTAB_LIB_WIDEN);
-		t3 = gen_reg_rtx (compute_mode);
-		t3 = emit_store_flag (t3, NE, t2, const0_rtx,
-				      compute_mode, 1, 1);
+		t3 = gen_reg_rtx (int_mode);
+		t3 = emit_store_flag (t3, NE, t2, const0_rtx, int_mode, 1, 1);
 		if (t3 == 0)
 		  {
 		    rtx_code_label *lab;
 		    lab = gen_label_rtx ();
-		    do_cmp_and_jump (t2, const0_rtx, EQ, compute_mode, lab);
+		    do_cmp_and_jump (t2, const0_rtx, EQ, int_mode, lab);
 		    expand_inc (t1, const1_rtx);
 		    emit_label (lab);
 		    quotient = t1;
 		  }
 		else
-		  quotient = force_operand (gen_rtx_PLUS (compute_mode,
-							  t1, t3),
+		  quotient = force_operand (gen_rtx_PLUS (int_mode, t1, t3),
 					    tquotient);
 		break;
 	      }
@@ -4934,8 +4929,10 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 	break;
 
       case EXACT_DIV_EXPR:
-	if (op1_is_constant && size <= HOST_BITS_PER_WIDE_INT)
+	if (op1_is_constant && HWI_COMPUTABLE_MODE_P (compute_mode))
 	  {
+	    scalar_int_mode int_mode = as_a <scalar_int_mode> (compute_mode);
+	    int size = GET_MODE_BITSIZE (int_mode);
 	    HOST_WIDE_INT d = INTVAL (op1);
 	    unsigned HOST_WIDE_INT ml;
 	    int pre_shift;
@@ -4943,16 +4940,15 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
 
 	    pre_shift = ctz_or_zero (d);
 	    ml = invert_mod2n (d >> pre_shift, size);
-	    t1 = expand_shift (RSHIFT_EXPR, compute_mode, op0,
+	    t1 = expand_shift (RSHIFT_EXPR, int_mode, op0,
 			       pre_shift, NULL_RTX, unsignedp);
-	    quotient = expand_mult (compute_mode, t1,
-				    gen_int_mode (ml, compute_mode),
+	    quotient = expand_mult (int_mode, t1, gen_int_mode (ml, int_mode),
 				    NULL_RTX, 1);
 
 	    insn = get_last_insn ();
 	    set_dst_reg_note (insn, REG_EQUAL,
 			      gen_rtx_fmt_ee (unsignedp ? UDIV : DIV,
-					      compute_mode, op0, op1),
+					      int_mode, op0, op1),
 			      quotient);
 	  }
 	break;
@@ -4961,60 +4957,63 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
       case ROUND_MOD_EXPR:
 	if (unsignedp)
 	  {
+	    scalar_int_mode int_mode = as_a <scalar_int_mode> (compute_mode);
 	    rtx tem;
 	    rtx_code_label *label;
 	    label = gen_label_rtx ();
-	    quotient = gen_reg_rtx (compute_mode);
-	    remainder = gen_reg_rtx (compute_mode);
+	    quotient = gen_reg_rtx (int_mode);
+	    remainder = gen_reg_rtx (int_mode);
 	    if (expand_twoval_binop (udivmod_optab, op0, op1, quotient, remainder, 1) == 0)
 	      {
 		rtx tem;
-		quotient = expand_binop (compute_mode, udiv_optab, op0, op1,
+		quotient = expand_binop (int_mode, udiv_optab, op0, op1,
 					 quotient, 1, OPTAB_LIB_WIDEN);
-		tem = expand_mult (compute_mode, quotient, op1, NULL_RTX, 1);
-		remainder = expand_binop (compute_mode, sub_optab, op0, tem,
+		tem = expand_mult (int_mode, quotient, op1, NULL_RTX, 1);
+		remainder = expand_binop (int_mode, sub_optab, op0, tem,
 					  remainder, 1, OPTAB_LIB_WIDEN);
 	      }
-	    tem = plus_constant (compute_mode, op1, -1);
-	    tem = expand_shift (RSHIFT_EXPR, compute_mode, tem, 1, NULL_RTX, 1);
-	    do_cmp_and_jump (remainder, tem, LEU, compute_mode, label);
+	    tem = plus_constant (int_mode, op1, -1);
+	    tem = expand_shift (RSHIFT_EXPR, int_mode, tem, 1, NULL_RTX, 1);
+	    do_cmp_and_jump (remainder, tem, LEU, int_mode, label);
 	    expand_inc (quotient, const1_rtx);
 	    expand_dec (remainder, op1);
 	    emit_label (label);
 	  }
 	else
 	  {
+	    scalar_int_mode int_mode = as_a <scalar_int_mode> (compute_mode);
+	    int size = GET_MODE_BITSIZE (int_mode);
 	    rtx abs_rem, abs_op1, tem, mask;
 	    rtx_code_label *label;
 	    label = gen_label_rtx ();
-	    quotient = gen_reg_rtx (compute_mode);
-	    remainder = gen_reg_rtx (compute_mode);
+	    quotient = gen_reg_rtx (int_mode);
+	    remainder = gen_reg_rtx (int_mode);
 	    if (expand_twoval_binop (sdivmod_optab, op0, op1, quotient, remainder, 0) == 0)
 	      {
 		rtx tem;
-		quotient = expand_binop (compute_mode, sdiv_optab, op0, op1,
+		quotient = expand_binop (int_mode, sdiv_optab, op0, op1,
 					 quotient, 0, OPTAB_LIB_WIDEN);
-		tem = expand_mult (compute_mode, quotient, op1, NULL_RTX, 0);
-		remainder = expand_binop (compute_mode, sub_optab, op0, tem,
+		tem = expand_mult (int_mode, quotient, op1, NULL_RTX, 0);
+		remainder = expand_binop (int_mode, sub_optab, op0, tem,
 					  remainder, 0, OPTAB_LIB_WIDEN);
 	      }
-	    abs_rem = expand_abs (compute_mode, remainder, NULL_RTX, 1, 0);
-	    abs_op1 = expand_abs (compute_mode, op1, NULL_RTX, 1, 0);
-	    tem = expand_shift (LSHIFT_EXPR, compute_mode, abs_rem,
+	    abs_rem = expand_abs (int_mode, remainder, NULL_RTX, 1, 0);
+	    abs_op1 = expand_abs (int_mode, op1, NULL_RTX, 1, 0);
+	    tem = expand_shift (LSHIFT_EXPR, int_mode, abs_rem,
 				1, NULL_RTX, 1);
-	    do_cmp_and_jump (tem, abs_op1, LTU, compute_mode, label);
-	    tem = expand_binop (compute_mode, xor_optab, op0, op1,
+	    do_cmp_and_jump (tem, abs_op1, LTU, int_mode, label);
+	    tem = expand_binop (int_mode, xor_optab, op0, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);
-	    mask = expand_shift (RSHIFT_EXPR, compute_mode, tem,
+	    mask = expand_shift (RSHIFT_EXPR, int_mode, tem,
 				 size - 1, NULL_RTX, 0);
-	    tem = expand_binop (compute_mode, xor_optab, mask, const1_rtx,
+	    tem = expand_binop (int_mode, xor_optab, mask, const1_rtx,
 				NULL_RTX, 0, OPTAB_WIDEN);
-	    tem = expand_binop (compute_mode, sub_optab, tem, mask,
+	    tem = expand_binop (int_mode, sub_optab, tem, mask,
 				NULL_RTX, 0, OPTAB_WIDEN);
 	    expand_inc (quotient, tem);
-	    tem = expand_binop (compute_mode, xor_optab, mask, op1,
+	    tem = expand_binop (int_mode, xor_optab, mask, op1,
 				NULL_RTX, 0, OPTAB_WIDEN);
-	    tem = expand_binop (compute_mode, sub_optab, tem, mask,
+	    tem = expand_binop (int_mode, sub_optab, tem, mask,
 				NULL_RTX, 0, OPTAB_WIDEN);
 	    expand_dec (remainder, tem);
 	    emit_label (label);
@@ -5508,25 +5507,29 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
       && (normalizep || STORE_FLAG_VALUE == 1
 	  || val_signbit_p (int_mode, STORE_FLAG_VALUE)))
     {
+      scalar_int_mode int_target_mode;
       subtarget = target;
 
       if (!target)
-	target_mode = int_mode;
-
-      /* If the result is to be wider than OP0, it is best to convert it
-	 first.  If it is to be narrower, it is *incorrect* to convert it
-	 first.  */
-      else if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (int_mode))
+	int_target_mode = int_mode;
+      else
 	{
-	  op0 = convert_modes (target_mode, int_mode, op0, 0);
-	  mode = target_mode;
+	  /* If the result is to be wider than OP0, it is best to convert it
+	     first.  If it is to be narrower, it is *incorrect* to convert it
+	     first.  */
+	  int_target_mode = as_a <scalar_int_mode> (target_mode);
+	  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (int_mode))
+	    {
+	      op0 = convert_modes (int_target_mode, int_mode, op0, 0);
+	      int_mode = int_target_mode;
+	    }
 	}
 
-      if (target_mode != mode)
+      if (int_target_mode != int_mode)
 	subtarget = 0;
 
       if (code == GE)
-	op0 = expand_unop (mode, one_cmpl_optab, op0,
+	op0 = expand_unop (int_mode, one_cmpl_optab, op0,
 			   ((STORE_FLAG_VALUE == 1 || normalizep)
 			    ? 0 : subtarget), 0);
 
@@ -5534,12 +5537,12 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	/* If we are supposed to produce a 0/1 value, we want to do
 	   a logical shift from the sign bit to the low-order bit; for
 	   a -1/0 value, we do an arithmetic shift.  */
-	op0 = expand_shift (RSHIFT_EXPR, mode, op0,
-			    GET_MODE_BITSIZE (mode) - 1,
+	op0 = expand_shift (RSHIFT_EXPR, int_mode, op0,
+			    GET_MODE_BITSIZE (int_mode) - 1,
 			    subtarget, normalizep != -1);
 
-      if (mode != target_mode)
-	op0 = convert_modes (target_mode, mode, op0, 0);
+      if (int_mode != int_target_mode)
+	op0 = convert_modes (int_target_mode, int_mode, op0, 0);
 
       return op0;
     }

@@ -5589,8 +5589,8 @@ expand_function_end (void)
       REG_FUNCTION_VALUE_P (outgoing) = 1;
 
       /* The address may be ptr_mode and OUTGOING may be Pmode.  */
-      value_address = convert_memory_address (GET_MODE (outgoing),
-					      value_address);
+      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (outgoing));
+      value_address = convert_memory_address (mode, value_address);
 
       emit_move_insn (outgoing, value_address);
 

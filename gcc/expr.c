@@ -5243,8 +5243,8 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	{
 	  if (POINTER_TYPE_P (TREE_TYPE (to)))
 	    value = convert_memory_address_addr_space
-		      (GET_MODE (to_rtx), value,
-		       TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (to))));
+	      (as_a <scalar_int_mode> (GET_MODE (to_rtx)), value,
+	       TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (to))));
 
 	  emit_move_insn (to_rtx, value);
 	}
@@ -11144,7 +11144,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 }
 
 /* Subroutine of above: reduce EXP to the precision of TYPE (in the
-   signedness of TYPE), possibly returning the result in TARGET.  */
+   signedness of TYPE), possibly returning the result in TARGET.
+   TYPE is known to be a partial integer type.  */
 static rtx
 reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
 {
@@ -11160,18 +11161,17 @@ reduce_to_bit_field_precision (rtx exp, rtx target, tree type)
     }
   else if (TYPE_UNSIGNED (type))
     {
-      machine_mode mode = GET_MODE (exp);
+      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (exp));
       rtx mask = immed_wide_int_const
 	(wi::mask (prec, false, GET_MODE_PRECISION (mode)), mode);
       return expand_and (mode, exp, mask, target);
     }
   else
     {
-      int count = GET_MODE_PRECISION (GET_MODE (exp)) - prec;
-      exp = expand_shift (LSHIFT_EXPR, GET_MODE (exp),
-			  exp, count, target, 0);
-      return expand_shift (RSHIFT_EXPR, GET_MODE (exp),
-			   exp, count, target, 0);
+      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (exp));
+      int count = GET_MODE_PRECISION (mode) - prec;
+      exp = expand_shift (LSHIFT_EXPR, mode, exp, count, target, 0);
+      return expand_shift (RSHIFT_EXPR, mode, exp, count, target, 0);
     }
 }
 

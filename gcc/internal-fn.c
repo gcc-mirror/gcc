@@ -570,7 +570,8 @@ static void
 expand_arith_overflow_result_store (tree lhs, rtx target,
 				    machine_mode mode, rtx res)
 {
-  machine_mode tgtmode = GET_MODE_INNER (GET_MODE (target));
+  scalar_int_mode tgtmode
+    = as_a <scalar_int_mode> (GET_MODE_INNER (GET_MODE (target)));
   rtx lres = res;
   if (tgtmode != mode)
     {

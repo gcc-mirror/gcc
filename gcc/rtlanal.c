@@ -5799,7 +5799,7 @@ get_address_mode (rtx mem)
   gcc_assert (MEM_P (mem));
   mode = GET_MODE (XEXP (mem, 0));
   if (mode != VOIDmode)
-    return mode;
+    return as_a <scalar_int_mode> (mode);
   return targetm.addr_space.address_mode (MEM_ADDR_SPACE (mem));
 }
 
