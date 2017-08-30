@@ -409,6 +409,47 @@ scalar_float_mode::includes_p (machine_mode m)
   return SCALAR_FLOAT_MODE_P (m);
 }
 
+/* Represents a machine mode that is known to be scalar.  */
+class scalar_mode
+{
+public:
+  typedef mode_traits<scalar_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_mode () {}
+  ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M represents some kind of scalar value.  */
+
+inline bool
+scalar_mode::includes_p (machine_mode m)
+{
+  switch (GET_MODE_CLASS (m))
+    {
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
+    case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
+    case MODE_POINTER_BOUNDS:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Return the base GET_MODE_SIZE value for MODE.  */
 
 ALWAYS_INLINE unsigned short
@@ -440,14 +481,15 @@ mode_to_precision (machine_mode mode)
 
 /* Return the base GET_MODE_INNER value for MODE.  */
 
-ALWAYS_INLINE machine_mode
+ALWAYS_INLINE scalar_mode
 mode_to_inner (machine_mode mode)
 {
 #if GCC_VERSION >= 4001
-  return (machine_mode) (__builtin_constant_p (mode)
-			 ? mode_inner_inline (mode) : mode_inner[mode]);
+  return scalar_mode::from_int (__builtin_constant_p (mode)
+				? mode_inner_inline (mode)
+				: mode_inner[mode]);
 #else
-  return (machine_mode) mode_inner[mode];
+  return scalar_mode::from_int (mode_inner[mode]);
 #endif
 }
 

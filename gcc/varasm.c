@@ -3900,7 +3900,7 @@ output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
     case MODE_VECTOR_UACCUM:
       {
 	int i, units;
-        machine_mode submode = GET_MODE_INNER (mode);
+	scalar_mode submode = GET_MODE_INNER (mode);
 	unsigned int subalign = MIN (align, GET_MODE_BITSIZE (submode));
 
 	gcc_assert (GET_CODE (x) == CONST_VECTOR);

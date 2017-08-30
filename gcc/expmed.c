@@ -761,16 +761,16 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Use vec_set patterns for inserting parts of vectors whenever
      available.  */
-  if (VECTOR_MODE_P (GET_MODE (op0))
+  machine_mode outermode = GET_MODE (op0);
+  scalar_mode innermode = GET_MODE_INNER (outermode);
+  if (VECTOR_MODE_P (outermode)
       && !MEM_P (op0)
-      && optab_handler (vec_set_optab, GET_MODE (op0)) != CODE_FOR_nothing
-      && fieldmode == GET_MODE_INNER (GET_MODE (op0))
-      && bitsize == GET_MODE_UNIT_BITSIZE (GET_MODE (op0))
-      && !(bitnum % GET_MODE_UNIT_BITSIZE (GET_MODE (op0))))
+      && optab_handler (vec_set_optab, outermode) != CODE_FOR_nothing
+      && fieldmode == innermode
+      && bitsize == GET_MODE_BITSIZE (innermode)
+      && !(bitnum % GET_MODE_BITSIZE (innermode)))
     {
       struct expand_operand ops[3];
-      machine_mode outermode = GET_MODE (op0);
-      machine_mode innermode = GET_MODE_INNER (outermode);
       enum insn_code icode = optab_handler (vec_set_optab, outermode);
       int pos = bitnum / GET_MODE_BITSIZE (innermode);
 
@@ -1672,17 +1672,16 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Use vec_extract patterns for extracting parts of vectors whenever
      available.  */
-  if (VECTOR_MODE_P (GET_MODE (op0))
+  machine_mode outermode = GET_MODE (op0);
+  scalar_mode innermode = GET_MODE_INNER (outermode);
+  if (VECTOR_MODE_P (outermode)
       && !MEM_P (op0)
-      && (convert_optab_handler (vec_extract_optab, GET_MODE (op0),
-				 GET_MODE_INNER (GET_MODE (op0)))
+      && (convert_optab_handler (vec_extract_optab, outermode, innermode)
 	  != CODE_FOR_nothing)
-      && ((bitnum + bitsize - 1) / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))
-	  == bitnum / GET_MODE_UNIT_BITSIZE (GET_MODE (op0))))
+      && ((bitnum + bitsize - 1) / GET_MODE_BITSIZE (innermode)
+	  == bitnum / GET_MODE_BITSIZE (innermode)))
     {
       struct expand_operand ops[3];
-      machine_mode outermode = GET_MODE (op0);
-      machine_mode innermode = GET_MODE_INNER (outermode);
       enum insn_code icode
 	= convert_optab_handler (vec_extract_optab, outermode, innermode);
       unsigned HOST_WIDE_INT pos = bitnum / GET_MODE_BITSIZE (innermode);

@@ -1230,7 +1230,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	{
 	  /* The scalar may have been extended to be too wide.  Truncate
 	     it back to the proper size to fit in the broadcast vector.  */
-	  machine_mode inner_mode = GET_MODE_INNER (mode);
+	  scalar_mode inner_mode = GET_MODE_INNER (mode);
 	  if (!CONST_INT_P (op1)
 	      && (GET_MODE_BITSIZE (as_a <scalar_int_mode> (GET_MODE (op1)))
 		  > GET_MODE_BITSIZE (inner_mode)))
