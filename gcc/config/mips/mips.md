@@ -7363,7 +7363,7 @@
 {
   gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
   assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
-		 GET_MODE (operands[0]),
+		 as_a <scalar_float_mode> (GET_MODE (operands[0])),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }

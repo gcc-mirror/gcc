@@ -281,7 +281,7 @@ extern section *get_named_text_section (tree, const char *, const char *);
 /* Assemble the floating-point constant D into an object of size MODE.  ALIGN
    is the alignment of the constant in bits.  If REVERSE is true, D is output
    in reverse storage order.  */
-extern void assemble_real (REAL_VALUE_TYPE, machine_mode, unsigned,
+extern void assemble_real (REAL_VALUE_TYPE, scalar_float_mode, unsigned,
 			   bool = false);
 
 /* Write the address of the entity given by SYMBOL to SEC.  */

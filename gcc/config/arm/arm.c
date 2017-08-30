@@ -22667,8 +22667,9 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
         for (i = 0; i < units; i++)
           {
             rtx elt = CONST_VECTOR_ELT (x, i);
-            assemble_real
-              (*CONST_DOUBLE_REAL_VALUE (elt), GET_MODE_INNER (mode),
+	    assemble_real
+	      (*CONST_DOUBLE_REAL_VALUE (elt),
+	       as_a <scalar_float_mode> (GET_MODE_INNER (mode)),
 	       i == 0 ? BIGGEST_ALIGNMENT : size * BITS_PER_UNIT);
           }
 

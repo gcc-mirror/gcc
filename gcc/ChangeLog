@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* output.h (assemble_real): Take a scalar_float_mode.
+	* config/arm/arm.c (arm_assemble_integer): Update accordingly.
+	* config/arm/arm.md (consttable_4): Likewise.
+	(consttable_8): Likewise.
+	(consttable_16): Likewise.
+	* config/mips/mips.md (consttable_float): Likewise.
+	* config/s390/s390.c (s390_output_pool_entry): Likewise.
+	* varasm.c (assemble_real): Take a scalar_float_mode.
+	(output_constant_pool_2): Update accordingly.
+	(output_constant): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (SCALAR_FLOAT_TYPE_MODE): New macro.
 	* builtins.c (expand_builtin_signbit): Use it instead of TYPE_MODE.
 	* fold-const.c (fold_convert_const_real_from_fixed): Likewise.
