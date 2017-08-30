@@ -1493,10 +1493,9 @@ spu_split_immediate (rtx * ops)
 	unsigned char arrlo[16];
 	rtx to, temp, hi, lo;
 	int i;
-	machine_mode imode = mode;
 	/* We need to do reals as ints because the constant used in the
 	   IOR might not be a legitimate real constant. */
-	imode = int_mode_for_mode (mode);
+	scalar_int_mode imode = int_mode_for_mode (mode).require ();
 	constant_to_array (mode, ops[1], arrhi);
 	if (imode != mode)
 	  to = simplify_gen_subreg (imode, ops[0], mode, 0);
@@ -1522,10 +1521,9 @@ spu_split_immediate (rtx * ops)
 	unsigned char arr_andbi[16];
 	rtx to, reg_fsmbi, reg_and;
 	int i;
-	machine_mode imode = mode;
 	/* We need to do reals as ints because the constant used in the
 	 * AND might not be a legitimate real constant. */
-	imode = int_mode_for_mode (mode);
+	scalar_int_mode imode = int_mode_for_mode (mode).require ();
 	constant_to_array (mode, ops[1], arr_fsmbi);
 	if (imode != mode)
 	  to = simplify_gen_subreg(imode, ops[0], GET_MODE (ops[0]), 0);
@@ -4430,7 +4428,7 @@ spu_expand_mov (rtx * ops, machine_mode mode)
   if (GET_CODE (ops[1]) == SUBREG && !valid_subreg (ops[1]))
     {
       rtx from = SUBREG_REG (ops[1]);
-      machine_mode imode = int_mode_for_mode (GET_MODE (from));
+      scalar_int_mode imode = int_mode_for_mode (GET_MODE (from)).require ();
 
       gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
 		  && GET_MODE_CLASS (imode) == MODE_INT

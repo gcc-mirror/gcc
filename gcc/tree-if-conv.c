@@ -933,8 +933,7 @@ ifcvt_can_use_mask_load_store (gimple *stmt)
   /* Mask should be integer mode of the same size as the load/store
      mode.  */
   mode = TYPE_MODE (TREE_TYPE (lhs));
-  if (int_mode_for_mode (mode) == BLKmode
-      || VECTOR_MODE_P (mode))
+  if (!int_mode_for_mode (mode).exists () || VECTOR_MODE_P (mode))
     return false;
 
   if (can_vec_mask_load_store_p (mode, VOIDmode, is_load))

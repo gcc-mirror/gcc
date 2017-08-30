@@ -4760,7 +4760,9 @@ aarch64_float_const_rtx_p (rtx x)
       && SCALAR_FLOAT_MODE_P (mode)
       && aarch64_reinterpret_float_as_int (x, &ival))
     {
-      machine_mode imode = mode == HFmode ? SImode : int_mode_for_mode (mode);
+      machine_mode imode = (mode == HFmode
+			    ? SImode
+			    : int_mode_for_mode (mode).require ());
       int num_instr = aarch64_internal_mov_immediate
 			(NULL_RTX, gen_int_mode (ival, imode), false, imode);
       return num_instr < 3;
@@ -4802,7 +4804,7 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
       if (aarch64_float_const_zero_rtx_p (x))
 	return true;
 
-      imode = int_mode_for_mode (mode);
+      imode = int_mode_for_mode (mode).require ();
     }
   else if (GET_CODE (x) == CONST_INT
 	   && SCALAR_INT_MODE_P (mode))
@@ -6978,8 +6980,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  bool succeed = aarch64_reinterpret_float_as_int (x, &ival);
 	  gcc_assert (succeed);
 
-	  machine_mode imode = mode == HFmode ? SImode
-					      : int_mode_for_mode (mode);
+	  machine_mode imode = (mode == HFmode
+				? SImode
+				: int_mode_for_mode (mode).require ());
 	  int ncost = aarch64_internal_mov_immediate
 		(NULL_RTX, gen_int_mode (ival, imode), false, imode);
 	  *cost += COSTS_N_INSNS (ncost);
@@ -8265,7 +8268,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     }
 
   machine_mode mmsk
-    = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (mode)),
+    = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (mode)).require (),
 		       GET_MODE_NUNITS (mode));
   if (!recp)
     {

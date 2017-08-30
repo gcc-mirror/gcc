@@ -364,16 +364,16 @@ smallest_mode_for_size (unsigned int size, enum mode_class mclass)
   return mode;
 }
 
-/* Find an integer mode of the exact same size, or BLKmode on failure.  */
+/* Return an integer mode of exactly the same size as MODE, if one exists.  */
 
-machine_mode
+opt_scalar_int_mode
 int_mode_for_mode (machine_mode mode)
 {
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_INT:
     case MODE_PARTIAL_INT:
-      break;
+      return as_a <scalar_int_mode> (mode);
 
     case MODE_COMPLEX_INT:
     case MODE_COMPLEX_FLOAT:
@@ -390,12 +390,11 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_UFRACT:
     case MODE_VECTOR_UACCUM:
     case MODE_POINTER_BOUNDS:
-      mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
-      break;
+      return int_mode_for_size (GET_MODE_BITSIZE (mode), 0);
 
     case MODE_RANDOM:
       if (mode == BLKmode)
-	break;
+	return opt_scalar_int_mode ();
 
       /* fall through */
 
@@ -403,8 +402,6 @@ int_mode_for_mode (machine_mode mode)
     default:
       gcc_unreachable ();
     }
-
-  return mode;
 }
 
 /* Find a mode that can be used for efficient bitwise operations on MODE.

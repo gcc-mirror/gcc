@@ -38664,10 +38664,8 @@ rs6000_do_expand_vec_perm (rtx target, rtx op0, rtx op1,
 
   imode = vmode;
   if (GET_MODE_CLASS (vmode) != MODE_VECTOR_INT)
-    {
-      imode = mode_for_size (GET_MODE_UNIT_BITSIZE (vmode), MODE_INT, 0);
-      imode = mode_for_vector (imode, nelt);
-    }
+    imode = mode_for_vector
+      (int_mode_for_mode (GET_MODE_INNER (vmode)).require (), nelt);
 
   x = gen_rtx_CONST_VECTOR (imode, gen_rtvec_v (nelt, perm));
   x = expand_vec_perm (vmode, op0, op1, x, target);

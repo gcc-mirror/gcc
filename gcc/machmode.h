@@ -240,6 +240,7 @@ public:
   ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
+  machine_mode else_blk () const;
   T require () const;
 
   bool exists () const;
@@ -257,6 +258,15 @@ ALWAYS_INLINE machine_mode
 opt_mode<T>::else_void () const
 {
   return m_mode;
+}
+
+/* If the T exists, return its enum value, otherwise return E_BLKmode.  */
+
+template<typename T>
+inline machine_mode
+opt_mode<T>::else_blk () const
+{
+  return m_mode == E_VOIDmode ? E_BLKmode : m_mode;
 }
 
 /* Assert that the object contains a T and return it.  */
@@ -582,10 +592,9 @@ extern machine_mode smallest_mode_for_size (unsigned int,
 						 enum mode_class);
 
 
-/* Return an integer mode of the exact same size as the input mode,
-   or BLKmode on failure.  */
+/* Return an integer mode of exactly the same size as the input mode.  */
 
-extern machine_mode int_mode_for_mode (machine_mode);
+extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 
 extern machine_mode bitwise_mode_for_mode (machine_mode);
 

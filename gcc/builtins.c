@@ -5349,8 +5349,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
-      imode = int_mode_for_mode (fmode);
-      gcc_assert (imode != BLKmode);
+      imode = int_mode_for_mode (fmode).require ();
       temp = gen_lowpart (imode, temp);
     }
   else

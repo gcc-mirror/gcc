@@ -1734,12 +1734,12 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
     {
       /* The store is a memset (addr, const_val, const_size).  */
       gcc_assert (CONST_INT_P (store_info->rhs));
-      store_mode = int_mode_for_mode (read_mode);
-      if (store_mode == BLKmode)
+      scalar_int_mode int_store_mode;
+      if (!int_mode_for_mode (read_mode).exists (&int_store_mode))
 	read_reg = NULL_RTX;
       else if (store_info->rhs == const0_rtx)
-	read_reg = extract_low_bits (read_mode, store_mode, const0_rtx);
-      else if (GET_MODE_BITSIZE (store_mode) > HOST_BITS_PER_WIDE_INT
+	read_reg = extract_low_bits (read_mode, int_store_mode, const0_rtx);
+      else if (GET_MODE_BITSIZE (int_store_mode) > HOST_BITS_PER_WIDE_INT
 	       || BITS_PER_UNIT >= HOST_BITS_PER_WIDE_INT)
 	read_reg = NULL_RTX;
       else
@@ -1753,8 +1753,8 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	      c |= (c << shift);
 	      shift <<= 1;
 	    }
-	  read_reg = gen_int_mode (c, store_mode);
-	  read_reg = extract_low_bits (read_mode, store_mode, read_reg);
+	  read_reg = gen_int_mode (c, int_store_mode);
+	  read_reg = extract_low_bits (read_mode, int_store_mode, read_reg);
 	}
     }
   else if (store_info->const_rhs

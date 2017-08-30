@@ -26361,7 +26361,7 @@ ix86_split_to_parts (rtx operand, rtx *parts, machine_mode mode)
 
   if (GET_CODE (operand) == CONST_VECTOR)
     {
-      machine_mode imode = int_mode_for_mode (mode);
+      scalar_int_mode imode = int_mode_for_mode (mode).require ();
       /* Caution: if we looked through a constant pool memory above,
 	 the operand may actually have a different mode now.  That's
 	 ok, since we want to pun this all the way back to an integer.  */

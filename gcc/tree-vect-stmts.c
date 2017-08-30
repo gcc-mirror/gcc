@@ -6498,7 +6498,7 @@ vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   mask_elt_type = lang_hooks.types.type_for_mode
-		    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
+    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
   mask_elts = XALLOCAVEC (tree, nunits);

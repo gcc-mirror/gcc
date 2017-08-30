@@ -2094,17 +2094,17 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
       && !MEM_P (orig_src)
       && GET_CODE (orig_src) != CONCAT)
     {
-      machine_mode imode = int_mode_for_mode (GET_MODE (orig_src));
-      if (imode == BLKmode)
-	src = assign_stack_temp (GET_MODE (orig_src), ssize);
+      scalar_int_mode imode;
+      if (int_mode_for_mode (GET_MODE (orig_src)).exists (&imode))
+	{
+	  src = gen_reg_rtx (imode);
+	  emit_move_insn (gen_lowpart (GET_MODE (orig_src), src), orig_src);
+	}
       else
-	src = gen_reg_rtx (imode);
-      if (imode != BLKmode)
-	src = gen_lowpart (GET_MODE (orig_src), src);
-      emit_move_insn (src, orig_src);
-      /* ...and back again.  */
-      if (imode != BLKmode)
-	src = gen_lowpart (imode, src);
+	{
+	  src = assign_stack_temp (GET_MODE (orig_src), ssize);
+	  emit_move_insn (src, orig_src);
+	}
       emit_group_load_1 (tmps, dst, src, type, ssize);
       return;
     }
@@ -2368,14 +2368,18 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
   if (!SCALAR_INT_MODE_P (m)
       && !MEM_P (orig_dst) && GET_CODE (orig_dst) != CONCAT)
     {
-      machine_mode imode = int_mode_for_mode (GET_MODE (orig_dst));
-      if (imode == BLKmode)
-        dst = assign_stack_temp (GET_MODE (orig_dst), ssize);
+      scalar_int_mode imode;
+      if (int_mode_for_mode (GET_MODE (orig_dst)).exists (&imode))
+	{
+	  dst = gen_reg_rtx (imode);
+	  emit_group_store (dst, src, type, ssize);
+	  dst = gen_lowpart (GET_MODE (orig_dst), dst);
+	}
       else
-        dst = gen_reg_rtx (imode);
-      emit_group_store (dst, src, type, ssize);
-      if (imode != BLKmode)
-        dst = gen_lowpart (GET_MODE (orig_dst), dst);
+	{
+	  dst = assign_stack_temp (GET_MODE (orig_dst), ssize);
+	  emit_group_store (dst, src, type, ssize);
+	}
       emit_move_insn (orig_dst, dst);
       return;
     }
@@ -3283,12 +3287,11 @@ emit_move_change_mode (machine_mode new_mode,
 static rtx_insn *
 emit_move_via_integer (machine_mode mode, rtx x, rtx y, bool force)
 {
-  machine_mode imode;
+  scalar_int_mode imode;
   enum insn_code code;
 
   /* There must exist a mode of the exact size we require.  */
-  imode = int_mode_for_mode (mode);
-  if (imode == BLKmode)
+  if (!int_mode_for_mode (mode).exists (&imode))
     return NULL;
 
   /* The target must support moves in this mode.  */
