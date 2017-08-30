@@ -461,7 +461,7 @@ adjust_bit_field_mem_for_reg (enum extraction_pattern pattern,
   bit_field_mode_iterator iter (bitsize, bitnum, bitregion_start,
 				bitregion_end, MEM_ALIGN (op0),
 				MEM_VOLATILE_P (op0));
-  machine_mode best_mode;
+  scalar_int_mode best_mode;
   if (iter.next_mode (&best_mode))
     {
       /* We can use a memory in BEST_MODE.  See whether this is true for
@@ -479,7 +479,7 @@ adjust_bit_field_mem_for_reg (enum extraction_pattern pattern,
 					    fieldmode))
 	    limit_mode = insn.field_mode;
 
-	  machine_mode wider_mode;
+	  scalar_int_mode wider_mode;
 	  while (iter.next_mode (&wider_mode)
 		 && GET_MODE_SIZE (wider_mode) <= GET_MODE_SIZE (limit_mode))
 	    best_mode = wider_mode;
@@ -1095,7 +1095,8 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      bit region.  */
   if (MEM_P (str_rtx) && bitregion_start > 0)
     {
-      machine_mode bestmode;
+      scalar_int_mode best_mode;
+      machine_mode addr_mode = VOIDmode;
       HOST_WIDE_INT offset, size;
 
       gcc_assert ((bitregion_start % BITS_PER_UNIT) == 0);
@@ -1105,11 +1106,13 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       size = (bitnum + bitsize + BITS_PER_UNIT - 1) / BITS_PER_UNIT;
       bitregion_end -= bitregion_start;
       bitregion_start = 0;
-      bestmode = get_best_mode (bitsize, bitnum,
-				bitregion_start, bitregion_end,
-				MEM_ALIGN (str_rtx), VOIDmode,
-				MEM_VOLATILE_P (str_rtx));
-      str_rtx = adjust_bitfield_address_size (str_rtx, bestmode, offset, size);
+      if (get_best_mode (bitsize, bitnum,
+			 bitregion_start, bitregion_end,
+			 MEM_ALIGN (str_rtx), INT_MAX,
+			 MEM_VOLATILE_P (str_rtx), &best_mode))
+	addr_mode = best_mode;
+      str_rtx = adjust_bitfield_address_size (str_rtx, addr_mode,
+					      offset, size);
     }
 
   if (!store_bit_field_1 (str_rtx, bitsize, bitnum,
@@ -1143,10 +1146,10 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
       if (GET_MODE_BITSIZE (mode) == 0
 	  || GET_MODE_BITSIZE (mode) > GET_MODE_BITSIZE (word_mode))
 	mode = word_mode;
-      mode = get_best_mode (bitsize, bitnum, bitregion_start, bitregion_end,
-			    MEM_ALIGN (op0), mode, MEM_VOLATILE_P (op0));
-
-      if (mode == VOIDmode)
+      scalar_int_mode best_mode;
+      if (!get_best_mode (bitsize, bitnum, bitregion_start, bitregion_end,
+			  MEM_ALIGN (op0), GET_MODE_BITSIZE (mode),
+			  MEM_VOLATILE_P (op0), &best_mode))
 	{
 	  /* The only way this should occur is if the field spans word
 	     boundaries.  */
@@ -1155,7 +1158,7 @@ store_fixed_bit_field (rtx op0, unsigned HOST_WIDE_INT bitsize,
 	  return;
 	}
 
-      op0 = narrow_bit_field_mem (op0, mode, bitsize, bitnum, &bitnum);
+      op0 = narrow_bit_field_mem (op0, best_mode, bitsize, bitnum, &bitnum);
     }
 
   store_fixed_bit_field_1 (op0, bitsize, bitnum, value, reverse);
@@ -1998,11 +2001,9 @@ extract_fixed_bit_field (machine_mode tmode, rtx op0,
 {
   if (MEM_P (op0))
     {
-      machine_mode mode
-	= get_best_mode (bitsize, bitnum, 0, 0, MEM_ALIGN (op0), word_mode,
-			 MEM_VOLATILE_P (op0));
-
-      if (mode == VOIDmode)
+      scalar_int_mode mode;
+      if (!get_best_mode (bitsize, bitnum, 0, 0, MEM_ALIGN (op0),
+			  BITS_PER_WORD, MEM_VOLATILE_P (op0), &mode))
 	/* The only way this should occur is if the field spans word
 	   boundaries.  */
 	return extract_split_bit_field (op0, bitsize, bitnum, unsignedp,

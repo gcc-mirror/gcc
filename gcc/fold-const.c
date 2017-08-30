@@ -3934,7 +3934,8 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree type = TREE_TYPE (lhs);
   tree unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
-  machine_mode lmode, rmode, nmode;
+  machine_mode lmode, rmode;
+  scalar_int_mode nmode;
   int lunsignedp, runsignedp;
   int lreversep, rreversep;
   int lvolatilep = 0, rvolatilep = 0;
@@ -3981,12 +3982,11 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  nmode = get_best_mode (lbitsize, lbitpos, bitstart, bitend,
-			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
-			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
-				TYPE_ALIGN (TREE_TYPE (rinner))),
-			 word_mode, false);
-  if (nmode == VOIDmode)
+  if (!get_best_mode (lbitsize, lbitpos, bitstart, bitend,
+		      const_p ? TYPE_ALIGN (TREE_TYPE (linner))
+		      : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
+			     TYPE_ALIGN (TREE_TYPE (rinner))),
+		      BITS_PER_WORD, false, &nmode))
     return 0;
 
   /* Set signed and unsigned types of the precision of this mode for the
@@ -5591,7 +5591,7 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
   int ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
   int ll_reversep, lr_reversep, rl_reversep, rr_reversep;
   machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
-  machine_mode lnmode, rnmode;
+  scalar_int_mode lnmode, rnmode;
   tree ll_mask, lr_mask, rl_mask, rr_mask;
   tree ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   tree l_const, r_const;
@@ -5777,10 +5777,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
      to be relative to a field of that size.  */
   first_bit = MIN (ll_bitpos, rl_bitpos);
   end_bit = MAX (ll_bitpos + ll_bitsize, rl_bitpos + rl_bitsize);
-  lnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			  TYPE_ALIGN (TREE_TYPE (ll_inner)), word_mode,
-			  volatilep);
-  if (lnmode == VOIDmode)
+  if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
+		      TYPE_ALIGN (TREE_TYPE (ll_inner)), BITS_PER_WORD,
+		      volatilep, &lnmode))
     return 0;
 
   lnbitsize = GET_MODE_BITSIZE (lnmode);
@@ -5842,10 +5841,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 
       first_bit = MIN (lr_bitpos, rr_bitpos);
       end_bit = MAX (lr_bitpos + lr_bitsize, rr_bitpos + rr_bitsize);
-      rnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			      TYPE_ALIGN (TREE_TYPE (lr_inner)), word_mode,
-			      volatilep);
-      if (rnmode == VOIDmode)
+      if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
+			  TYPE_ALIGN (TREE_TYPE (lr_inner)), BITS_PER_WORD,
+			  volatilep, &rnmode))
 	return 0;
 
       rnbitsize = GET_MODE_BITSIZE (rnmode);

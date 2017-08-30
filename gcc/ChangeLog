@@ -2,6 +2,27 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (bit_field_mode_iterator::next_mode): Take a pointer
+	to a scalar_int_mode instead of a machine_mode.
+	(bit_field_mode_iterator::m_mode): Change type to opt_scalar_int_mode.
+	(get_best_mode): Return a boolean and use a pointer argument to store
+	the selected mode.  Replace the limit mode parameter with a bit limit.
+	* expmed.c (adjust_bit_field_mem_for_reg): Use scalar_int_mode
+	for the values returned by bit_field_mode_iterator::next_mode.
+	(store_bit_field): Update call to get_best_mode.
+	(store_fixed_bit_field): Likewise.
+	(extract_fixed_bit_field): Likewise.
+	* expr.c (optimize_bitfield_assignment_op): Likewise.
+	* fold-const.c (optimize_bit_field_compare): Likewise.
+	(fold_truth_andor_1): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::next_mode): As above.
+	Update for new type of m_mode.
+	(get_best_mode): As above.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.c (strict_volatile_bitfield_p): Change the type of fieldmode
 	to scalar_int_mode.  Remove check for SCALAR_INT_MODE_P.
 	(store_bit_field): Check is_a <scalar_int_mode> before calling
