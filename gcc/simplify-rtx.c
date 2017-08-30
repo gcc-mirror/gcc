@@ -5728,7 +5728,7 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
   rtx result_s = NULL;
   rtvec result_v = NULL;
   enum mode_class outer_class;
-  machine_mode outer_submode;
+  scalar_mode outer_submode;
   int max_bitsize;
 
   /* Some ports misuse CCmode.  */

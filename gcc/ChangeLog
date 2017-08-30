@@ -2,6 +2,30 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (scalar_mode): New class.
+	* machmode.h (scalar_mode): Likewise.
+	(scalar_mode::includes_p): New function.
+	(mode_to_inner): Return a scalar_mode rather than a machine_mode.
+	* gdbhooks.py (build_pretty_printers): Handle scalar_mode.
+	* genmodes.c (get_mode_class): Handle remaining scalar modes.
+	* cfgexpand.c (expand_debug_expr): Use scalar_mode.
+	* expmed.c (store_bit_field_1): Likewise.
+	(extract_bit_field_1): Likewise.
+	* expr.c (write_complex_part): Likewise.
+	(read_complex_part): Likewise.
+	(emit_move_complex_push): Likewise.
+	(expand_expr_real_2): Likewise.
+	* function.c (assign_parm_setup_reg): Likewise.
+	(assign_parms_unsplit_complex): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	* rtlanal.c (subreg_get_info): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Likewise.
+	* varasm.c (output_constant_pool_2): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.c (extract_high_half): Use scalar_int_mode and remove
 	assertion.
 	(expmed_mult_highpart_optab): Likewise.

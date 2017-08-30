@@ -1141,6 +1141,13 @@ get_mode_class (struct mode_data *mode)
     case MODE_PARTIAL_INT:
       return "scalar_int_mode";
 
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
+    case MODE_POINTER_BOUNDS:
+      return "scalar_mode";
+
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
       return "scalar_float_mode";

@@ -3115,7 +3115,7 @@ void
 write_complex_part (rtx cplx, rtx val, bool imag_p)
 {
   machine_mode cmode;
-  machine_mode imode;
+  scalar_mode imode;
   unsigned ibitsize;
 
   if (GET_CODE (cplx) == CONCAT)
@@ -3176,7 +3176,8 @@ write_complex_part (rtx cplx, rtx val, bool imag_p)
 rtx
 read_complex_part (rtx cplx, bool imag_p)
 {
-  machine_mode cmode, imode;
+  machine_mode cmode;
+  scalar_mode imode;
   unsigned ibitsize;
 
   if (GET_CODE (cplx) == CONCAT)
@@ -3372,7 +3373,7 @@ emit_move_resolve_push (machine_mode mode, rtx x)
 rtx_insn *
 emit_move_complex_push (machine_mode mode, rtx x, rtx y)
 {
-  machine_mode submode = GET_MODE_INNER (mode);
+  scalar_mode submode = GET_MODE_INNER (mode);
   bool imag_first;
 
 #ifdef PUSH_ROUNDING
@@ -9335,7 +9336,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 				      GET_MODE_INNER (GET_MODE (target)), 0);
 	    if (reg_overlap_mentioned_p (temp, op1))
 	      {
-		machine_mode imode = GET_MODE_INNER (GET_MODE (target));
+		scalar_mode imode = GET_MODE_INNER (GET_MODE (target));
 		temp = adjust_address_nv (target, imode,
 					  GET_MODE_SIZE (imode));
 		if (reg_overlap_mentioned_p (temp, op0))
