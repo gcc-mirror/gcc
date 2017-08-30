@@ -4259,7 +4259,7 @@ If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (scalar_float_mode @var{mode})
 Define this to return nonzero if libgcc provides support for the 
 floating-point mode @var{mode}, which is known to pass 
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 

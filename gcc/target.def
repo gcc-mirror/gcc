@@ -3378,7 +3378,7 @@ floating-point mode @var{mode}, which is known to pass \n\
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
 hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
 @code{XFmode} and @code{TFmode}, if such modes exist.",
- bool, (machine_mode mode),
+ bool, (scalar_float_mode mode),
  default_libgcc_floating_mode_supported_p)
 
 DEFHOOK

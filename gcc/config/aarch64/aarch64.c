@@ -15132,7 +15132,7 @@ aarch64_optab_supported_p (int op, machine_mode mode1, machine_mode,
    if MODE is HFmode, and punt to the generic implementation otherwise.  */
 
 static bool
-aarch64_libgcc_floating_mode_supported_p (machine_mode mode)
+aarch64_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
   return (mode == HFmode
 	  ? true

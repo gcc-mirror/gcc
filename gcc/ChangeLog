@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (libgcc_floating_mode_supported_p): Take a
+	scalar_float_mode.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_libgcc_floating_mode_supported_p): Take a
+	scalar_float_mode.
+	* targhooks.c (default_libgcc_floating_mode_supported_p): Likewise.
+	* config/aarch64/aarch64.c (aarch64_libgcc_floating_mode_supported_p):
+	Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (default_floatn_mode): Return an opt_scalar_float_mode.
 	* doc/tm.texi: Regenerate.
 	* config/arm/arm.c (arm_floatn_mode): Return an opt_scalar_float_mode.
