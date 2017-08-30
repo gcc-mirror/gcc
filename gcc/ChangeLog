@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (mode_iterator::start): Provide overload for opt_modes.
+	(mode_iterator::iterate_p): Likewise.
+	(mode_iterator::get_wider): Likewise.
+	* expr.c (init_expr_target): Use opt_scalar_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (opt_scalar_float_mode): New typedef.
 	* machmode.h (float_mode_for_size): New function.
 	* emit-rtl.c (double_mode): Delete.

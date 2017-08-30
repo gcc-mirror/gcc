@@ -364,6 +364,7 @@ void
 gfc_init_kinds (void)
 {
   machine_mode mode;
+  opt_scalar_float_mode float_mode_iter;
   int i_index, r_index, kind;
   bool saw_i4 = false, saw_i8 = false;
   bool saw_r4 = false, saw_r8 = false, saw_r10 = false, saw_r16 = false;
@@ -419,11 +420,11 @@ gfc_init_kinds (void)
   /* Set the maximum integer kind.  Used with at least BOZ constants.  */
   gfc_max_integer_kind = gfc_integer_kinds[i_index - 1].kind;
 
-  for (r_index = 0, mode = MIN_MODE_FLOAT; mode <= MAX_MODE_FLOAT;
-       mode = (machine_mode) ((int) mode + 1))
+  r_index = 0;
+  FOR_EACH_MODE_IN_CLASS (float_mode_iter, MODE_FLOAT)
     {
-      const struct real_format *fmt =
-	REAL_MODE_FORMAT (mode);
+      scalar_float_mode mode = float_mode_iter.require ();
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
       int kind;
 
       if (fmt == NULL)
@@ -434,8 +435,7 @@ gfc_init_kinds (void)
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
-      if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
-						       mode))
+      if (!targetm.libgcc_floating_mode_supported_p (mode))
 	continue;
       if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))

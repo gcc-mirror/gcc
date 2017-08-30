@@ -1186,9 +1186,10 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_building_libgcc)
     {
       /* Properties of floating-point modes for libgcc2.c.  */
-      machine_mode mode;
-      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
+      opt_scalar_float_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_FLOAT)
 	{
+	  scalar_float_mode mode = mode_iter.require ();
 	  const char *name = GET_MODE_NAME (mode);
 	  char *macro_name
 	    = (char *) alloca (strlen (name)

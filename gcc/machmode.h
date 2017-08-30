@@ -651,6 +651,16 @@ namespace mode_iterator
 {
   /* Start mode iterator *ITER at the first mode in class MCLASS, if any.  */
 
+  template<typename T>
+  inline void
+  start (opt_mode<T> *iter, enum mode_class mclass)
+  {
+    if (GET_CLASS_NARROWEST_MODE (mclass) == E_VOIDmode)
+      *iter = opt_mode<T> ();
+    else
+      *iter = as_a<T> (GET_CLASS_NARROWEST_MODE (mclass));
+  }
+
   inline void
   start (machine_mode *iter, enum mode_class mclass)
   {
@@ -658,6 +668,13 @@ namespace mode_iterator
   }
 
   /* Return true if mode iterator *ITER has not reached the end.  */
+
+  template<typename T>
+  inline bool
+  iterate_p (opt_mode<T> *iter)
+  {
+    return iter->exists ();
+  }
 
   inline bool
   iterate_p (machine_mode *iter)
@@ -667,6 +684,13 @@ namespace mode_iterator
 
   /* Set mode iterator *ITER to the next widest mode in the same class,
      if any.  */
+
+  template<typename T>
+  inline void
+  get_wider (opt_mode<T> *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (iter->require ());
+  }
 
   inline void
   get_wider (machine_mode *iter)

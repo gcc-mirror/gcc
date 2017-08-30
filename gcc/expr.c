@@ -112,7 +112,6 @@ void
 init_expr_target (void)
 {
   rtx pat;
-  machine_mode mode;
   int num_clobbers;
   rtx mem, mem1;
   rtx reg;
@@ -131,7 +130,7 @@ init_expr_target (void)
   pat = gen_rtx_SET (NULL_RTX, NULL_RTX);
   PATTERN (insn) = pat;
 
-  for (mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;
+  for (machine_mode mode = VOIDmode; (int) mode < NUM_MACHINE_MODES;
        mode = (machine_mode) ((int) mode + 1))
     {
       int regno;
@@ -177,9 +176,11 @@ init_expr_target (void)
 
   mem = gen_rtx_MEM (VOIDmode, gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1));
 
-  FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
+  opt_scalar_float_mode mode_iter;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_FLOAT)
     {
-      machine_mode srcmode;
+      scalar_float_mode mode = mode_iter.require ();
+      scalar_float_mode srcmode;
       FOR_EACH_MODE_UNTIL (srcmode, mode)
 	{
 	  enum insn_code ic;
