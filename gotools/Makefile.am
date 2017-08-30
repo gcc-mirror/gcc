@@ -109,7 +109,8 @@ s-zdefaultcc: Makefile
 
 MOSTLYCLEANFILES = \
 	zdefaultcc.go s-zdefaultcc \
-	check-gccgo gotools.head *-testlog gotools.sum gotools.log *.sent
+	check-gccgo check-gcc gotools.head *-testlog gotools.sum gotools.log \
+	*.sent
 
 mostlyclean-local:
 	rm -rf check-go-dir check-runtime-dir cgo-test-dir carchive-test-dir
@@ -155,11 +156,22 @@ check-head:
 # check-gccgo is a little shell script that executes gccgo with the
 # options to pick up the newly built libgo.
 check-gccgo: Makefile
-	rm -f $@
-	echo "#!/bin/sh" > $@
+	rm -f $@ $@.tmp
+	echo "#!/bin/sh" > $@.tmp
 	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@
-	chmod +x $@
+	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+	chmod +x $@.tmp
+	mv -f $@.tmp $@
+
+# check-gcc is a little shell script that executes the newly built gcc
+# with the options to pick up the newly built libgo.
+check-gcc: Makefile
+	rm -f $@ $@.tmp
+	echo "#!/bin/sh" > $@.tmp
+	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+	echo "$(GCC_FOR_TARGET)" '"$$@"' "-L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+	chmod +x $@.tmp
+	mv -f $@.tmp $@
 
 # CHECK_ENV sets up the environment to run the newly built go tool.
 # If you change this, change ECHO_ENV, below.
@@ -168,6 +180,8 @@ CHECK_ENV = \
 	export PATH; \
 	GCCGO="$(abs_builddir)/check-gccgo"; \
 	export GCCGO; \
+	CC="$(abs_builddir)/check-gcc"; \
+	export CC; \
 	GCCGOTOOLDIR="$(abs_builddir)"; \
 	export GCCGOTOOLDIR; \
 	GO_TESTING_GOTOOLS=yes; \
@@ -180,10 +194,10 @@ CHECK_ENV = \
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
-ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
+ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
 
 # check-go-tools runs `go test cmd/go` in our environment.
-check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	rm -rf check-go-dir cmd_go-testlog
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
@@ -203,7 +217,7 @@ check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
 # The runtime package is also tested as part of libgo,
 # but the runtime tests use the go tool heavily, so testing
 # here too will catch more problems.
-check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	rm -rf check-runtime-dir runtime-testlog
 	$(MKDIR_P) check-runtime-dir
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
@@ -222,7 +236,7 @@ check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.
-check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	rm -rf cgo-test-dir cgo-testlog
 	$(MKDIR_P) cgo-test-dir/misc/cgo
 	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
@@ -236,7 +250,7 @@ check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
 # in our environment.
-check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	rm -rf carchive-test-dir carchive-testlog
 	$(MKDIR_P) carchive-test-dir/misc/cgo
 	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
