@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* dojump.c (do_jump_by_parts_greater_rtx): Change the type of
+	the mode argument to scalar_int_mode.
+	(do_jump_by_parts_zero_rtx): Likewise.
+	(do_jump_by_parts_equality_rtx): Likewise.
+	(do_jump_by_parts_greater): Take a mode argument.
+	(do_jump_by_parts_equality): Likewise.
+	(do_jump_1): Update calls accordingly.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* is-a.h (safe_dyn_cast): New function.
 	* rtl.h (rtx_jump_table_data::get_data_mode): New function.
 	(jump_table_for_label): Likewise.
