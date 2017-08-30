@@ -15150,7 +15150,7 @@ aarch64_libgcc_floating_mode_supported_p (scalar_float_mode mode)
    if MODE is HFmode, and punt to the generic implementation otherwise.  */
 
 static bool
-aarch64_scalar_mode_supported_p (machine_mode mode)
+aarch64_scalar_mode_supported_p (scalar_mode mode)
 {
   return (mode == HFmode
 	  ? true

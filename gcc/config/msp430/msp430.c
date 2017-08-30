@@ -872,7 +872,7 @@ msp430_option_override (void)
 #define TARGET_SCALAR_MODE_SUPPORTED_P msp430_scalar_mode_supported_p
 
 static bool
-msp430_scalar_mode_supported_p (machine_mode m)
+msp430_scalar_mode_supported_p (scalar_mode m)
 {
   if (m == PSImode && msp430x)
     return true;

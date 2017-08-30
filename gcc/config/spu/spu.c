@@ -288,7 +288,7 @@ spu_option_override (void)
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.  */
 static bool
-spu_scalar_mode_supported_p (machine_mode mode)
+spu_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {
