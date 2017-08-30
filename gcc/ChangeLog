@@ -1,3 +1,8 @@
+2017-08-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
+
+	* gcc/config/msp430/msp430.h: Pass -mcode/data-region to the linker
+	and -mdata-region to the assembler.
+
 2017-08-30  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (add_dwarf_attr): Check we don't add duplicate
