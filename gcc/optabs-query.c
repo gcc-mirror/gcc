@@ -100,9 +100,14 @@ get_traditional_extraction_insn (extraction_insn *insn,
     pos_mode = word_mode;
 
   insn->icode = icode;
-  insn->field_mode = field_mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? byte_mode : struct_mode);
-  insn->pos_mode = pos_mode;
+  insn->field_mode = as_a <scalar_int_mode> (field_mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = byte_mode;
+  else if (struct_mode == BLKmode)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = as_a <scalar_int_mode> (struct_mode);
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 
@@ -126,12 +131,17 @@ get_optab_extraction_insn (struct extraction_insn *insn,
 
   const struct insn_data_d *data = &insn_data[icode];
 
+  machine_mode pos_mode = data->operand[pos_op].mode;
+  if (pos_mode == VOIDmode)
+    pos_mode = word_mode;
+
   insn->icode = icode;
-  insn->field_mode = mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? BLKmode : mode);
-  insn->pos_mode = data->operand[pos_op].mode;
-  if (insn->pos_mode == VOIDmode)
-    insn->pos_mode = word_mode;
+  insn->field_mode = as_a <scalar_int_mode> (mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = insn->field_mode;
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 

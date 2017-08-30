@@ -411,31 +411,33 @@ flip_storage_order (machine_mode mode, rtx x)
   return result;
 }
 
-/* Adjust bitfield memory MEM so that it points to the first unit of mode
-   MODE that contains a bitfield of size BITSIZE at bit position BITNUM.
-   If MODE is BLKmode, return a reference to every byte in the bitfield.
-   Set *NEW_BITNUM to the bit position of the field within the new memory.  */
+/* If MODE is set, adjust bitfield memory MEM so that it points to the
+   first unit of mode MODE that contains a bitfield of size BITSIZE at
+   bit position BITNUM.  If MODE is not set, return a BLKmode reference
+   to every byte in the bitfield.  Set *NEW_BITNUM to the bit position
+   of the field within the new memory.  */
 
 static rtx
-narrow_bit_field_mem (rtx mem, machine_mode mode,
+narrow_bit_field_mem (rtx mem, opt_scalar_int_mode mode,
 		      unsigned HOST_WIDE_INT bitsize,
 		      unsigned HOST_WIDE_INT bitnum,
 		      unsigned HOST_WIDE_INT *new_bitnum)
 {
-  if (mode == BLKmode)
+  scalar_int_mode imode;
+  if (mode.exists (&imode))
+    {
+      unsigned int unit = GET_MODE_BITSIZE (imode);
+      *new_bitnum = bitnum % unit;
+      HOST_WIDE_INT offset = (bitnum - *new_bitnum) / BITS_PER_UNIT;
+      return adjust_bitfield_address (mem, imode, offset);
+    }
+  else
     {
       *new_bitnum = bitnum % BITS_PER_UNIT;
       HOST_WIDE_INT offset = bitnum / BITS_PER_UNIT;
       HOST_WIDE_INT size = ((*new_bitnum + bitsize + BITS_PER_UNIT - 1)
 			    / BITS_PER_UNIT);
-      return adjust_bitfield_address_size (mem, mode, offset, size);
-    }
-  else
-    {
-      unsigned int unit = GET_MODE_BITSIZE (mode);
-      *new_bitnum = bitnum % unit;
-      HOST_WIDE_INT offset = (bitnum - *new_bitnum) / BITS_PER_UNIT;
-      return adjust_bitfield_address (mem, mode, offset);
+      return adjust_bitfield_address_size (mem, BLKmode, offset, size);
     }
 }
 
