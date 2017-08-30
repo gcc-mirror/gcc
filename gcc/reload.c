@@ -1050,6 +1050,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
      register class.  But if it is inside a STRICT_LOW_PART, we have
      no choice, so we hope we do get the right register class there.  */
 
+  scalar_int_mode inner_mode;
   if (in != 0 && GET_CODE (in) == SUBREG
       && (subreg_lowpart_p (in) || strict_low)
 #ifdef CANNOT_CHANGE_MODE_CLASS
@@ -1064,12 +1065,11 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	       || MEM_P (SUBREG_REG (in)))
 	      && (paradoxical_subreg_p (inmode, GET_MODE (SUBREG_REG (in)))
 		  || (GET_MODE_SIZE (inmode) <= UNITS_PER_WORD
-		      && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
-			  <= UNITS_PER_WORD)
-		      && paradoxical_subreg_p (inmode,
-					       GET_MODE (SUBREG_REG (in)))
-		      && INTEGRAL_MODE_P (GET_MODE (SUBREG_REG (in)))
-		      && LOAD_EXTEND_OP (GET_MODE (SUBREG_REG (in))) != UNKNOWN)
+		      && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (in)),
+						 &inner_mode)
+		      && GET_MODE_SIZE (inner_mode) <= UNITS_PER_WORD
+		      && paradoxical_subreg_p (inmode, inner_mode)
+		      && LOAD_EXTEND_OP (inner_mode) != UNKNOWN)
 		  || (WORD_REGISTER_OPERATIONS
 		      && (GET_MODE_PRECISION (inmode)
 			  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (in))))
@@ -3107,6 +3107,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 		  operand = SUBREG_REG (operand);
 		  /* Force reload if this is a constant or PLUS or if there may
 		     be a problem accessing OPERAND in the outer mode.  */
+		  scalar_int_mode inner_mode;
 		  if (CONSTANT_P (operand)
 		      || GET_CODE (operand) == PLUS
 		      /* We must force a reload of paradoxical SUBREGs
@@ -3144,13 +3145,13 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 			      || BYTES_BIG_ENDIAN
 			      || ((GET_MODE_SIZE (operand_mode[i])
 				   <= UNITS_PER_WORD)
-				  && (GET_MODE_SIZE (GET_MODE (operand))
+				  && (is_a <scalar_int_mode>
+				      (GET_MODE (operand), &inner_mode))
+				  && (GET_MODE_SIZE (inner_mode)
 				      <= UNITS_PER_WORD)
 				  && paradoxical_subreg_p (operand_mode[i],
-							   GET_MODE (operand))
-				  && INTEGRAL_MODE_P (GET_MODE (operand))
-				  && LOAD_EXTEND_OP (GET_MODE (operand))
-				     != UNKNOWN)))
+							   inner_mode)
+				  && LOAD_EXTEND_OP (inner_mode) != UNKNOWN)))
 		      )
 		    force_reload = 1;
 		}

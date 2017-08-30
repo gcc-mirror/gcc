@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cse.c (cse_insn): Add is_a <scalar_int_mode> checks.
+	* reload.c (push_reload): Likewise.
+	(find_reloads): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (find_split_point): Add is_a <scalar_int_mode> checks.
 	(make_compound_operation_int): Likewise.
 	(change_zero_ext): Likewise.
