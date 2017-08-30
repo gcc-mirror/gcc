@@ -1,3 +1,19 @@
+2017-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	Back port from trunk
+	2017-08-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/81593
+	* gcc.target/powerpc/vec-setup.h: New tests to test various
+	combinations of setting up vectors of 2 double word elements.
+	* gcc.target/powerpc/vec-setup-long.c: Likewise.
+	* gcc.target/powerpc/vec-setup-double.c: Likewise.
+	* gcc.target/powerpc/vec-setup-be-long.c: Likewise.
+	* gcc.target/powerpc/vec-setup-be-double.c: Likewise.
+	* gcc.target/powerpc/vsx-extract-6.c: New tests for optimzing
+	vector inserts from vector extracts.
+	* gcc.target/powerpc/vsx-extract-7.c: Likewise.
+
 2017-08-29  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
