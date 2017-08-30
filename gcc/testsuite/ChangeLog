@@ -1,3 +1,7 @@
+2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/cr_shrink-wrap.c: New.
+
 2017-08-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/82015

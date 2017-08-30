@@ -1,3 +1,11 @@
+2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_emit_prologue_move_from_cr): Rename from
+	rs6000_emit_move_from_cr and call renamed function.
+	(rs6000_emit_prologue): Call renamed functions.
+	* config/rs6000/rs6000.md (prologue_movesi_from_cr): Rename from
+	movesi_from_cr, remove volatile CRs.
+
 2017-08-30  Jon Beniston  <jon@beniston.com>
 	    Richard Biener  <rguenther@suse.de>
 
