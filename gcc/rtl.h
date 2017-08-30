@@ -2764,6 +2764,24 @@ unwrap_const_vec_duplicate (T x)
   return x;
 }
 
+/* Return the unpromoted (outer) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
+
+inline scalar_int_mode
+subreg_unpromoted_mode (rtx x)
+{
+  gcc_checking_assert (SUBREG_PROMOTED_VAR_P (x));
+  return as_a <scalar_int_mode> (GET_MODE (x));
+}
+
+/* Return the promoted (inner) mode of SUBREG_PROMOTED_VAR_P subreg X.  */
+
+inline scalar_int_mode
+subreg_promoted_mode (rtx x)
+{
+  gcc_checking_assert (SUBREG_PROMOTED_VAR_P (x));
+  return as_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)));
+}
+
 /* In emit-rtl.c */
 extern rtvec gen_rtvec_v (int, rtx *);
 extern rtvec gen_rtvec_v (int, rtx_insn **);
