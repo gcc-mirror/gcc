@@ -9176,7 +9176,7 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 const char*
 avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 {
-  machine_mode mode = GET_MODE (xop[0]);
+  scalar_mode mode = as_a <scalar_mode> (GET_MODE (xop[0]));
   scalar_int_mode imode = int_mode_for_mode (mode).require ();
   // The smallest fractional bit not cleared by the rounding is 2^(-RP).
   int fbit = (int) GET_MODE_FBIT (mode);
