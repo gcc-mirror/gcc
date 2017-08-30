@@ -13890,7 +13890,7 @@ base_type_for_mode (machine_mode mode, bool unsignedp)
    possible.  */
 
 static dw_loc_descr_ref
-convert_descriptor_to_mode (machine_mode mode, dw_loc_descr_ref op)
+convert_descriptor_to_mode (scalar_int_mode mode, dw_loc_descr_ref op)
 {
   machine_mode outer_mode = mode;
   dw_die_ref type_die;
@@ -13935,7 +13935,7 @@ compare_loc_descriptor (enum dwarf_location_atom op, dw_loc_descr_ref op0,
 
 static dw_loc_descr_ref
 scompare_loc_descriptor_wide (enum dwarf_location_atom op,
-			      machine_mode op_mode,
+			      scalar_int_mode op_mode,
 			      dw_loc_descr_ref op0, dw_loc_descr_ref op1)
 {
   dw_die_ref type_die = base_type_for_mode (op_mode, 0);
@@ -13962,7 +13962,7 @@ scompare_loc_descriptor_wide (enum dwarf_location_atom op,
 
 static dw_loc_descr_ref
 scompare_loc_descriptor_narrow (enum dwarf_location_atom op, rtx rtl,
-				machine_mode op_mode,
+				scalar_int_mode op_mode,
 				dw_loc_descr_ref op0, dw_loc_descr_ref op1)
 {
   int shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (op_mode)) * BITS_PER_UNIT;

@@ -2,6 +2,174 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* builtins.h (builtin_strncpy_read_str): Take a scalar_int_mode
+	instead of a machine_mode.
+	(builtin_memset_read_str): Likewise.
+	* builtins.c (c_readstr): Likewise.
+	(builtin_memcpy_read_str): Likewise.
+	(builtin_strncpy_read_str): Likewise.
+	(builtin_memset_read_str): Likewise.
+	(builtin_memset_gen_str): Likewise.
+	(expand_builtin_signbit): Use scalar_int_mode for local variables.
+	* cfgexpand.c (convert_debug_memory_address): Take a scalar_int_mode
+	instead of a machine_mode.
+	* combine.c (simplify_if_then_else): Use scalar_int_mode for local
+	variables.
+	(make_extraction): Likewise.
+	(try_widen_shift_mode): Take and return scalar_int_modes instead
+	of machine_modes.
+	* config/aarch64/aarch64.c (aarch64_libgcc_cmp_return_mode): Return
+	a scalar_int_mode instead of a machine_mode.
+	* config/avr/avr.c (avr_addr_space_address_mode): Likewise.
+	(avr_addr_space_pointer_mode): Likewise.
+	* config/cr16/cr16.c (cr16_unwind_word_mode): Likewise.
+	* config/msp430/msp430.c (msp430_addr_space_pointer_mode): Likewise.
+	(msp430_unwind_word_mode): Likewise.
+	* config/spu/spu.c (spu_unwind_word_mode): Likewise.
+	(spu_addr_space_pointer_mode): Likewise.
+	(spu_addr_space_address_mode): Likewise.
+	(spu_libgcc_cmp_return_mode): Likewise.
+	(spu_libgcc_shift_count_mode): Likewise.
+	* config/rl78/rl78.c (rl78_addr_space_address_mode): Likewise.
+	(rl78_addr_space_pointer_mode): Likewise.
+	(fl78_unwind_word_mode): Likewise.
+	(rl78_valid_pointer_mode): Take a scalar_int_mode instead of a
+	machine_mode.
+	* config/alpha/alpha.c (vms_valid_pointer_mode): Likewise.
+	* config/ia64/ia64.c (ia64_vms_valid_pointer_mode): Likewise.
+	* config/mips/mips.c (mips_mode_rep_extended): Likewise.
+	(mips_valid_pointer_mode): Likewise.
+	* config/tilegx/tilegx.c (tilegx_mode_rep_extended): Likewise.
+	* config/ft32/ft32.c (ft32_valid_pointer_mode): Likewise.
+	(ft32_addr_space_pointer_mode): Return a scalar_int_mode instead
+	of a machine_mode.
+	(ft32_addr_space_address_mode): Likewise.
+	* config/m32c/m32c.c (m32c_valid_pointer_mode): Take a
+	scalar_int_mode instead of a machine_mode.
+	(m32c_addr_space_pointer_mode): Return a scalar_int_mode instead
+	of a machine_mode.
+	(m32c_addr_space_address_mode): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_abi_word_mode): Likewise.
+	(rs6000_eh_return_filter_mode): Likewise.
+	* config/rs6000/rs6000.c (rs6000_abi_word_mode): Likewise.
+	(rs6000_eh_return_filter_mode): Likewise.
+	* config/s390/s390.c (s390_libgcc_cmp_return_mode): Likewise.
+	(s390_libgcc_shift_count_mode): Likewise.
+	(s390_unwind_word_mode): Likewise.
+	(s390_valid_pointer_mode): Take a scalar_int_mode rather than a
+	machine_mode.
+	* target.def (mode_rep_extended): Likewise.
+	(valid_pointer_mode): Likewise.
+	(addr_space.valid_pointer_mode): Likewise.
+	(eh_return_filter_mode): Return a scalar_int_mode rather than
+	a machine_mode.
+	(libgcc_cmp_return_mode): Likewise.
+	(libgcc_shift_count_mode): Likewise.
+	(unwind_word_mode): Likewise.
+	(addr_space.pointer_mode): Likewise.
+	(addr_space.address_mode): Likewise.
+	* doc/tm.texi: Regenerate.
+	* dojump.c (prefer_and_bit_test): Take a scalar_int_mode rather than
+	a machine_mode.
+	(do_jump): Use scalar_int_mode for local variables.
+	* dwarf2cfi.c (init_return_column_size): Take a scalar_int_mode
+	rather than a machine_mode.
+	* dwarf2out.c (convert_descriptor_to_mode): Likewise.
+	(scompare_loc_descriptor_wide): Likewise.
+	(scompare_loc_descriptor_narrow): Likewise.
+	* emit-rtl.c (adjust_address_1): Use scalar_int_mode for local
+	variables.
+	* except.c (sjlj_emit_dispatch_table): Likewise.
+	(expand_builtin_eh_copy_values): Likewise.
+	* explow.c (convert_memory_address_addr_space_1): Likewise.
+	Take a scalar_int_mode rather than a machine_mode.
+	(convert_memory_address_addr_space): Take a scalar_int_mode rather
+	than a machine_mode.
+	(memory_address_addr_space): Use scalar_int_mode for local variables.
+	* expmed.h (expand_mult_highpart_adjust): Take a scalar_int_mode
+	rather than a machine_mode.
+	* expmed.c (mask_rtx): Likewise.
+	(init_expmed_one_conv): Likewise.
+	(expand_mult_highpart_adjust): Likewise.
+	(extract_high_half): Likewise.
+	(expmed_mult_highpart_optab): Likewise.
+	(expmed_mult_highpart): Likewise.
+	(expand_smod_pow2): Likewise.
+	(expand_sdiv_pow2): Likewise.
+	(emit_store_flag_int): Likewise.
+	(adjust_bit_field_mem_for_reg): Use scalar_int_mode for local
+	variables.
+	(extract_low_bits): Likewise.
+	* expr.h (by_pieces_constfn): Take a scalar_int_mode rather than
+	a machine_mode.
+	* expr.c (pieces_addr::adjust):  Likewise.
+	(can_store_by_pieces): Likewise.
+	(store_by_pieces): Likewise.
+	(clear_by_pieces_1): Likewise.
+	(expand_expr_addr_expr_1): Likewise.
+	(expand_expr_addr_expr): Use scalar_int_mode for local variables.
+	(expand_expr_real_1): Likewise.
+	(try_casesi): Likewise.
+	* final.c (shorten_branches): Likewise.
+	* fold-const.c (fold_convert_const_int_from_fixed): Change the
+	type of "mode" to machine_mode.
+	* internal-fn.c (expand_arith_overflow_result_store): Take a
+	scalar_int_mode rather than a machine_mode.
+	(expand_mul_overflow): Use scalar_int_mode for local variables.
+	* loop-doloop.c (doloop_modify): Likewise.
+	(doloop_optimize): Likewise.
+	* optabs.c (expand_subword_shift): Take a scalar_int_mode rather
+	than a machine_mode.
+	(expand_doubleword_shift_condmove): Likewise.
+	(expand_doubleword_shift): Likewise.
+	(expand_doubleword_clz): Likewise.
+	(expand_doubleword_popcount): Likewise.
+	(expand_doubleword_parity): Likewise.
+	(expand_absneg_bit): Use scalar_int_mode for local variables.
+	(prepare_float_lib_cmp): Likewise.
+	* rtl.h (convert_memory_address_addr_space_1): Take a scalar_int_mode
+	rather than a machine_mode.
+	(convert_memory_address_addr_space): Likewise.
+	(get_mode_bounds): Likewise.
+	(get_address_mode): Return a scalar_int_mode rather than a
+	machine_mode.
+	* rtlanal.c (get_address_mode): Likewise.
+	* stor-layout.c (get_mode_bounds): Take a scalar_int_mode rather
+	than a machine_mode.
+	* targhooks.c (default_mode_rep_extended): Likewise.
+	(default_valid_pointer_mode): Likewise.
+	(default_addr_space_valid_pointer_mode): Likewise.
+	(default_eh_return_filter_mode): Return a scalar_int_mode rather
+	than a machine_mode.
+	(default_libgcc_cmp_return_mode): Likewise.
+	(default_libgcc_shift_count_mode): Likewise.
+	(default_unwind_word_mode): Likewise.
+	(default_addr_space_pointer_mode): Likewise.
+	(default_addr_space_address_mode): Likewise.
+	* targhooks.h (default_eh_return_filter_mode): Likewise.
+	(default_libgcc_cmp_return_mode): Likewise.
+	(default_libgcc_shift_count_mode): Likewise.
+	(default_unwind_word_mode): Likewise.
+	(default_addr_space_pointer_mode): Likewise.
+	(default_addr_space_address_mode): Likewise.
+	(default_mode_rep_extended): Take a scalar_int_mode rather than
+	a machine_mode.
+	(default_valid_pointer_mode): Likewise.
+	(default_addr_space_valid_pointer_mode): Likewise.
+	* tree-ssa-address.c (addr_for_mem_ref): Use scalar_int_mode for
+	local variables.
+	* tree-ssa-loop-ivopts.c (get_shiftadd_cost): Take a scalar_int_mode
+	rather than a machine_mode.
+	* tree-switch-conversion.c (array_value_type): Use scalar_int_mode
+	for local variables.
+	* tree-vrp.c (simplify_float_conversion_using_ranges): Likewise.
+	* var-tracking.c (use_narrower_mode): Take a scalar_int_mode rather
+	than a machine_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* dojump.c (do_jump_by_parts_greater_rtx): Change the type of
 	the mode argument to scalar_int_mode.
 	(do_jump_by_parts_zero_rtx): Likewise.

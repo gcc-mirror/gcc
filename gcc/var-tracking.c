@@ -970,7 +970,7 @@ use_narrower_mode_test (rtx x, const_rtx subreg)
 /* Transform X into narrower mode MODE from wider mode WMODE.  */
 
 static rtx
-use_narrower_mode (rtx x, machine_mode mode, machine_mode wmode)
+use_narrower_mode (rtx x, scalar_int_mode mode, scalar_int_mode wmode)
 {
   rtx op0, op1;
   if (CONSTANT_P (x))

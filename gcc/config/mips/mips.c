@@ -13262,7 +13262,7 @@ mips_secondary_reload_class (enum reg_class rclass,
 /* Implement TARGET_MODE_REP_EXTENDED.  */
 
 static int
-mips_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
+mips_mode_rep_extended (scalar_int_mode mode, scalar_int_mode mode_rep)
 {
   /* On 64-bit targets, SImode register values are sign-extended to DImode.  */
   if (TARGET_64BIT && mode == SImode && mode_rep == DImode)
@@ -13274,7 +13274,7 @@ mips_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
 /* Implement TARGET_VALID_POINTER_MODE.  */
 
 static bool
-mips_valid_pointer_mode (machine_mode mode)
+mips_valid_pointer_mode (scalar_int_mode mode)
 {
   return mode == SImode || (TARGET_64BIT && mode == DImode);
 }

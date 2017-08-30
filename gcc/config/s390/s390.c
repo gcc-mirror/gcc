@@ -1209,19 +1209,19 @@ s390_got_symbol (void)
   return got_symbol;
 }
 
-static machine_mode
+static scalar_int_mode
 s390_libgcc_cmp_return_mode (void)
 {
   return TARGET_64BIT ? DImode : SImode;
 }
 
-static machine_mode
+static scalar_int_mode
 s390_libgcc_shift_count_mode (void)
 {
   return TARGET_64BIT ? DImode : SImode;
 }
 
-static machine_mode
+static scalar_int_mode
 s390_unwind_word_mode (void)
 {
   return TARGET_64BIT ? DImode : SImode;
@@ -13138,7 +13138,7 @@ s390_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
 }
 
 static bool
-s390_valid_pointer_mode (machine_mode mode)
+s390_valid_pointer_mode (scalar_int_mode mode)
 {
   return (mode == SImode || (TARGET_64BIT && mode == DImode));
 }

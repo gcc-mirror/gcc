@@ -568,7 +568,7 @@ expand_arith_set_overflow (tree lhs, rtx target)
 
 static void
 expand_arith_overflow_result_store (tree lhs, rtx target,
-				    machine_mode mode, rtx res)
+				    scalar_int_mode mode, rtx res)
 {
   scalar_int_mode tgtmode
     = as_a <scalar_int_mode> (GET_MODE_INNER (GET_MODE (target)));
@@ -1460,8 +1460,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
     {
       struct separate_ops ops;
       int prec = GET_MODE_PRECISION (mode);
-      scalar_int_mode hmode;
-      machine_mode wmode;
+      scalar_int_mode hmode, wmode;
       ops.op0 = make_tree (type, op0);
       ops.op1 = make_tree (type, op1);
       ops.op2 = NULL_TREE;

@@ -275,7 +275,7 @@ break_out_memory_refs (rtx x)
    it should return NULL if it can't be simplified without emitting insns.  */
 
 rtx
-convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
+convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
 				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
 				     bool in_const ATTRIBUTE_UNUSED,
 				     bool no_emit ATTRIBUTE_UNUSED)
@@ -284,7 +284,7 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
   return x;
 #else /* defined(POINTERS_EXTEND_UNSIGNED) */
-  machine_mode pointer_mode, address_mode, from_mode;
+  scalar_int_mode pointer_mode, address_mode, from_mode;
   rtx temp;
   enum rtx_code code;
 
@@ -380,7 +380,8 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
    arithmetic insns can be used.  */
 
 rtx
-convert_memory_address_addr_space (machine_mode to_mode, rtx x, addr_space_t as)
+convert_memory_address_addr_space (scalar_int_mode to_mode, rtx x,
+				   addr_space_t as)
 {
   return convert_memory_address_addr_space_1 (to_mode, x, as, false, false);
 }
@@ -394,7 +395,7 @@ rtx
 memory_address_addr_space (machine_mode mode, rtx x, addr_space_t as)
 {
   rtx oldx = x;
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
+  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
 
   x = convert_memory_address_addr_space (address_mode, x, as);
 

@@ -2917,8 +2917,8 @@ get_best_mode (int bitsize, int bitpos,
    SIGN).  The returned constants are made to be usable in TARGET_MODE.  */
 
 void
-get_mode_bounds (machine_mode mode, int sign,
-		 machine_mode target_mode,
+get_mode_bounds (scalar_int_mode mode, int sign,
+		 scalar_int_mode target_mode,
 		 rtx *mmin, rtx *mmax)
 {
   unsigned size = GET_MODE_PRECISION (mode);

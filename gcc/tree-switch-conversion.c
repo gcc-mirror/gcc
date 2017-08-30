@@ -1051,7 +1051,7 @@ array_value_type (gswitch *swtch, tree type, int num,
     return type;
 
   scalar_int_mode type_mode = SCALAR_INT_TYPE_MODE (type);
-  machine_mode mode = get_narrowest_mode (type_mode);
+  scalar_int_mode mode = get_narrowest_mode (type_mode);
   if (GET_MODE_SIZE (type_mode) <= GET_MODE_SIZE (mode))
     return type;
 

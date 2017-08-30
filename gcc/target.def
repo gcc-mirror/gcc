@@ -2009,7 +2009,7 @@ char *, (void), hook_charptr_void_null)
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_eh_return_filter_mode)
 
 /* Return machine mode for libgcc expanded cmp instructions.  */
@@ -2019,7 +2019,7 @@ DEFHOOK
 of compare instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_cmp_return_mode)
 
 /* Return machine mode for libgcc expanded shift instructions.  */
@@ -2029,7 +2029,7 @@ DEFHOOK
 of shift instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_shift_count_mode)
 
 /* Return machine mode to be used for _Unwind_Word type.  */
@@ -2037,7 +2037,7 @@ DEFHOOK
 (unwind_word_mode,
  "Return machine mode to be used for @code{_Unwind_Word} type.\n\
 The default is to use @code{word_mode}.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_unwind_word_mode)
 
 /* Given two decls, merge their attributes and return the result.  */
@@ -3156,7 +3156,7 @@ extension.\n\
 In order to enforce the representation of @code{mode},\n\
 @code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
- int, (machine_mode mode, machine_mode rep_mode),
+ int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
@@ -3165,7 +3165,7 @@ DEFHOOK
  "Define this to return nonzero if the port can handle pointers\n\
 with machine mode @var{mode}.  The default version of this\n\
 hook returns true for both @code{ptr_mode} and @code{Pmode}.",
- bool, (machine_mode mode),
+ bool, (scalar_int_mode mode),
  default_valid_pointer_mode)
 
 /* Disambiguate with errno.  */
@@ -3190,7 +3190,7 @@ DEFHOOK
  "Define this to return the machine mode to use for pointers to\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{ptr_mode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
 /* MODE to use for an address in another address space.  */
@@ -3199,7 +3199,7 @@ DEFHOOK
  "Define this to return the machine mode to use for addresses in\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{Pmode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE")))
@@ -3213,7 +3213,7 @@ except that it includes explicit named address space support.  The default\n\
 version of this hook returns true for the modes returned by either the\n\
 @code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}\n\
 target hooks for the given address space.",
- bool, (machine_mode mode, addr_space_t as),
+ bool, (scalar_int_mode mode, addr_space_t as),
  default_addr_space_valid_pointer_mode)
 
 /* True if an address is a valid memory address to a given named address

@@ -418,7 +418,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   int nonneg = 0;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
-  machine_mode mode;
+  scalar_int_mode mode;
   widest_int iterations;
 
   jump_insn = BB_END (loop_end);
@@ -609,7 +609,7 @@ record_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 static bool
 doloop_optimize (struct loop *loop)
 {
-  machine_mode mode;
+  scalar_int_mode mode;
   rtx doloop_reg;
   rtx count;
   widest_int iterations, iterations_max;
