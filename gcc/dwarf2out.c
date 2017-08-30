@@ -14235,7 +14235,7 @@ minmax_loc_descriptor (rtx rtl, machine_mode mode,
 
 static dw_loc_descr_ref
 typed_binop (enum dwarf_location_atom op, rtx rtl, dw_die_ref type_die,
-	     machine_mode mode, machine_mode mem_mode)
+	     scalar_int_mode mode, machine_mode mem_mode)
 {
   dw_loc_descr_ref cvt, op0, op1;
 
@@ -14291,7 +14291,7 @@ typed_binop (enum dwarf_location_atom op, rtx rtl, dw_die_ref type_die,
    L4: DW_OP_nop  */
 
 static dw_loc_descr_ref
-clz_loc_descriptor (rtx rtl, machine_mode mode,
+clz_loc_descriptor (rtx rtl, scalar_int_mode mode,
 		    machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
@@ -14302,8 +14302,7 @@ clz_loc_descriptor (rtx rtl, machine_mode mode,
   dw_loc_descr_ref l4jump, l4label;
   rtx msb;
 
-  if (!SCALAR_INT_MODE_P (mode)
-      || GET_MODE (XEXP (rtl, 0)) != mode)
+  if (GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -14403,15 +14402,14 @@ clz_loc_descriptor (rtx rtl, machine_mode mode,
    L2: DW_OP_drop  */
 
 static dw_loc_descr_ref
-popcount_loc_descriptor (rtx rtl, machine_mode mode,
+popcount_loc_descriptor (rtx rtl, scalar_int_mode mode,
 			 machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (!SCALAR_INT_MODE_P (mode)
-      || GET_MODE (XEXP (rtl, 0)) != mode)
+  if (GET_MODE (XEXP (rtl, 0)) != mode)
     return NULL;
 
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -14464,17 +14462,16 @@ popcount_loc_descriptor (rtx rtl, machine_mode mode,
    L2: DW_OP_drop DW_OP_swap DW_OP_drop  */
 
 static dw_loc_descr_ref
-bswap_loc_descriptor (rtx rtl, machine_mode mode,
+bswap_loc_descriptor (rtx rtl, scalar_int_mode mode,
 		      machine_mode mem_mode)
 {
   dw_loc_descr_ref op0, ret, tmp;
   dw_loc_descr_ref l1jump, l1label;
   dw_loc_descr_ref l2jump, l2label;
 
-  if (!SCALAR_INT_MODE_P (mode)
-      || BITS_PER_UNIT != 8
+  if (BITS_PER_UNIT != 8
       || (GET_MODE_BITSIZE (mode) != 32
-	  &&  GET_MODE_BITSIZE (mode) != 64))
+	  && GET_MODE_BITSIZE (mode) != 64))
     return NULL;
 
   op0 = mem_loc_descriptor (XEXP (rtl, 0), mode, mem_mode,
@@ -14549,15 +14546,12 @@ bswap_loc_descriptor (rtx rtl, machine_mode mode,
    [ DW_OP_swap constMASK DW_OP_and DW_OP_swap ] DW_OP_shr DW_OP_or  */
 
 static dw_loc_descr_ref
-rotate_loc_descriptor (rtx rtl, machine_mode mode,
+rotate_loc_descriptor (rtx rtl, scalar_int_mode mode,
 		       machine_mode mem_mode)
 {
   rtx rtlop1 = XEXP (rtl, 1);
   dw_loc_descr_ref op0, op1, ret, mask[2] = { NULL, NULL };
   int i;
-
-  if (!SCALAR_INT_MODE_P (mode))
-    return NULL;
 
   if (GET_MODE (rtlop1) != VOIDmode
       && GET_MODE_BITSIZE (GET_MODE (rtlop1)) < GET_MODE_BITSIZE (mode))
@@ -15167,12 +15161,13 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
       break;
 
     case MOD:
-      if (GET_MODE_SIZE (mode) > DWARF2_ADDR_SIZE
-	  && (!dwarf_strict || dwarf_version >= 5))
+      if ((!dwarf_strict || dwarf_version >= 5)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_MODE_SIZE (int_mode) > DWARF2_ADDR_SIZE)
 	{
 	  mem_loc_result = typed_binop (DW_OP_mod, rtl,
 					base_type_for_mode (mode, 0),
-					mode, mem_mode);
+					int_mode, mem_mode);
 	  break;
 	}
 
@@ -15524,21 +15519,25 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
     case CLZ:
     case CTZ:
     case FFS:
-      mem_loc_result = clz_loc_descriptor (rtl, mode, mem_mode);
+      if (is_a <scalar_int_mode> (mode, &int_mode))
+	mem_loc_result = clz_loc_descriptor (rtl, int_mode, mem_mode);
       break;
 
     case POPCOUNT:
     case PARITY:
-      mem_loc_result = popcount_loc_descriptor (rtl, mode, mem_mode);
+      if (is_a <scalar_int_mode> (mode, &int_mode))
+	mem_loc_result = popcount_loc_descriptor (rtl, int_mode, mem_mode);
       break;
 
     case BSWAP:
-      mem_loc_result = bswap_loc_descriptor (rtl, mode, mem_mode);
+      if (is_a <scalar_int_mode> (mode, &int_mode))
+	mem_loc_result = bswap_loc_descriptor (rtl, int_mode, mem_mode);
       break;
 
     case ROTATE:
     case ROTATERT:
-      mem_loc_result = rotate_loc_descriptor (rtl, mode, mem_mode);
+      if (is_a <scalar_int_mode> (mode, &int_mode))
+	mem_loc_result = rotate_loc_descriptor (rtl, int_mode, mem_mode);
       break;
 
     case COMPARE:
