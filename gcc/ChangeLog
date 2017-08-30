@@ -2,6 +2,38 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/powerpcspe/powerpcspe.h (rs6000_pmode): Change type from
+	machine_mode to scalar_int_mode.
+	* config/powerpcspe/powerpcspe.c (rs6000_pmode): Likewise.
+	(rs6000_option_override_internal): Remove cast to int.
+	* config/rs6000/rs6000.h (rs6000_pmode): Change type from
+	machine_mode to scalar_int_mode.
+	* config/rs6000/rs6000.c (rs6000_pmode): Likewise.
+	(rs6000_option_override_internal): Remove cast to int.
+	* config/s390/s390.h (Pmode): Remove cast to machine_mode.
+	* config/epiphany/epiphany.h (RTX_OK_FOR_OFFSET_P): Add cast
+	to machine_mode.
+	* config/s390/s390.c (s390_expand_builtin): Likewise.
+	* coretypes.h (scalar_int_mode): New type.
+	(opt_scalar_int_mode): New typedef.
+	* machmode.h (scalar_int_mode): New class.
+	(scalar_int_mode::includes_p): New function.
+	(byte_mode): Change type to scalar_int_mode.
+	(word_mode): Likewise.
+	(ptr_mode): Likewise.
+	* emit-rtl.c (byte_mode): Likewise.
+	(word_mode): Likewise.
+	(ptr_mode): Likewise.
+	(init_derived_machine_modes): Update accordingly.
+	* genmodes.c (get_mode_class): Return scalar_int_mode for MODE_INT
+	and MODE_PARTIAL_INT.
+	* gdbhooks.py (build_pretty_printer): Handle scalar_int_mode and
+	opt_scalar_int_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (libgcc_floating_mode_supported_p): Take a
 	scalar_float_mode.
 	* doc/tm.texi: Regenerate.

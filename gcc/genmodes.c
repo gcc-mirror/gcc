@@ -1137,6 +1137,10 @@ get_mode_class (struct mode_data *mode)
 {
   switch (mode->cl)
     {
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+      return "scalar_int_mode";
+
     case MODE_FLOAT:
     case MODE_DECIMAL_FLOAT:
       return "scalar_float_mode";

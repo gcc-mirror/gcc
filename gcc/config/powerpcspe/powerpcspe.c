@@ -186,9 +186,8 @@ int dot_symbols;
 
 /* Specify the machine mode that pointers have.  After generation of rtl, the
    compiler makes no further distinction between pointers and any other objects
-   of this machine mode.  The type is unsigned since not all things that
-   include powerpcspe.h also include machmode.h.  */
-unsigned rs6000_pmode;
+   of this machine mode.  */
+scalar_int_mode rs6000_pmode;
 
 /* Width in bits of a pointer.  */
 unsigned rs6000_pointer_size;
@@ -4038,12 +4037,12 @@ rs6000_option_override_internal (bool global_init_p)
   /* Set the pointer size.  */
   if (TARGET_64BIT)
     {
-      rs6000_pmode = (int)DImode;
+      rs6000_pmode = DImode;
       rs6000_pointer_size = 64;
     }
   else
     {
-      rs6000_pmode = (int)SImode;
+      rs6000_pmode = SImode;
       rs6000_pointer_size = 32;
     }
 
