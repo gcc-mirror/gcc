@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* go-lang.c (go_langhook_type_for_mode): Use is_complex_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* go-lang.c (go_langhook_type_for_mode): Use is_int_mode.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>

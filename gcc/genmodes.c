@@ -1152,6 +1152,10 @@ get_mode_class (struct mode_data *mode)
     case MODE_DECIMAL_FLOAT:
       return "scalar_float_mode";
 
+    case MODE_COMPLEX_INT:
+    case MODE_COMPLEX_FLOAT:
+      return "complex_mode";
+
     default:
       return NULL;
     }
