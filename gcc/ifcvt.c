@@ -2808,13 +2808,17 @@ noce_try_bitop (struct noce_if_info *if_info)
 {
   rtx cond, x, a, result;
   rtx_insn *seq;
-  machine_mode mode;
+  scalar_int_mode mode;
   enum rtx_code code;
   int bitnum;
 
   x = if_info->x;
   cond = if_info->cond;
   code = GET_CODE (cond);
+
+  /* Check for an integer operation.  */
+  if (!is_a <scalar_int_mode> (GET_MODE (x), &mode))
+    return FALSE;
 
   if (!noce_simple_bbs (if_info))
     return FALSE;
@@ -2838,7 +2842,6 @@ noce_try_bitop (struct noce_if_info *if_info)
 	  || ! rtx_equal_p (x, XEXP (cond, 0)))
 	return FALSE;
       bitnum = INTVAL (XEXP (cond, 2));
-      mode = GET_MODE (x);
       if (BITS_BIG_ENDIAN)
 	bitnum = GET_MODE_BITSIZE (mode) - 1 - bitnum;
       if (bitnum < 0 || bitnum >= HOST_BITS_PER_WIDE_INT)
