@@ -6504,8 +6504,8 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     if (fcode == P6_OV_BUILTIN_CMPB)
       {
 	int overloaded_code;
-	int arg1_mode = TYPE_MODE (types[0]);
-	int arg2_mode = TYPE_MODE (types[1]);
+	machine_mode arg1_mode = TYPE_MODE (types[0]);
+	machine_mode arg2_mode = TYPE_MODE (types[1]);
 
 	if (nargs != 2)
 	  {

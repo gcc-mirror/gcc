@@ -1,3 +1,10 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* trans-types.c (gfc_init_kinds): Use machine_mode instead of int
+	for "mode".
+
 2017-08-28  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/81770
