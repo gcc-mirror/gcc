@@ -299,7 +299,7 @@ static void ia64_vms_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 static void ia64_soft_fp_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
-static bool ia64_vms_valid_pointer_mode (machine_mode mode)
+static bool ia64_vms_valid_pointer_mode (scalar_int_mode mode)
      ATTRIBUTE_UNUSED;
 static tree ia64_vms_common_object_attribute (tree *, tree, tree, int, bool *)
      ATTRIBUTE_UNUSED;
@@ -10728,7 +10728,7 @@ ia64_soft_fp_init_libfuncs (void)
 }
 
 static bool
-ia64_vms_valid_pointer_mode (machine_mode mode)
+ia64_vms_valid_pointer_mode (scalar_int_mode mode)
 {
   return (mode == SImode || mode == DImode);
 }

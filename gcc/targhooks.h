@@ -43,14 +43,14 @@ extern void default_setup_incoming_varargs (cumulative_args_t, machine_mode, tre
 extern rtx default_builtin_setjmp_frame_value (void);
 extern bool default_pretend_outgoing_varargs_named (cumulative_args_t);
 
-extern machine_mode default_eh_return_filter_mode (void);
-extern machine_mode default_libgcc_cmp_return_mode (void);
-extern machine_mode default_libgcc_shift_count_mode (void);
-extern machine_mode default_unwind_word_mode (void);
+extern scalar_int_mode default_eh_return_filter_mode (void);
+extern scalar_int_mode default_libgcc_cmp_return_mode (void);
+extern scalar_int_mode default_libgcc_shift_count_mode (void);
+extern scalar_int_mode default_unwind_word_mode (void);
 extern unsigned HOST_WIDE_INT default_shift_truncation_mask
   (machine_mode);
 extern unsigned int default_min_divisions_for_recip_mul (machine_mode);
-extern int default_mode_rep_extended (machine_mode, machine_mode);
+extern int default_mode_rep_extended (scalar_int_mode, scalar_int_mode);
 
 extern tree default_stack_protect_guard (void);
 extern tree default_external_stack_protect_fail (void);
@@ -169,11 +169,11 @@ extern bool default_mode_dependent_address_p (const_rtx, addr_space_t);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);
 extern bool default_target_option_pragma_parse (tree, tree);
 extern bool default_target_can_inline_p (tree, tree);
-extern bool default_valid_pointer_mode (machine_mode);
+extern bool default_valid_pointer_mode (scalar_int_mode);
 extern bool default_ref_may_alias_errno (struct ao_ref *);
-extern machine_mode default_addr_space_pointer_mode (addr_space_t);
-extern machine_mode default_addr_space_address_mode (addr_space_t);
-extern bool default_addr_space_valid_pointer_mode (machine_mode,
+extern scalar_int_mode default_addr_space_pointer_mode (addr_space_t);
+extern scalar_int_mode default_addr_space_address_mode (addr_space_t);
+extern bool default_addr_space_valid_pointer_mode (scalar_int_mode,
 						   addr_space_t);
 extern bool default_addr_space_legitimate_address_p (machine_mode, rtx,
 						     bool, addr_space_t);

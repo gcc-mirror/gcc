@@ -842,7 +842,7 @@ class pieces_addr
   void *m_cfndata;
 public:
   pieces_addr (rtx, bool, by_pieces_constfn, void *);
-  rtx adjust (machine_mode, HOST_WIDE_INT);
+  rtx adjust (scalar_int_mode, HOST_WIDE_INT);
   void increment_address (HOST_WIDE_INT);
   void maybe_predec (HOST_WIDE_INT);
   void maybe_postinc (HOST_WIDE_INT);
@@ -944,7 +944,7 @@ pieces_addr::decide_autoinc (machine_mode ARG_UNUSED (mode), bool reverse,
    but we still modify the MEM's properties.  */
 
 rtx
-pieces_addr::adjust (machine_mode mode, HOST_WIDE_INT offset)
+pieces_addr::adjust (scalar_int_mode mode, HOST_WIDE_INT offset)
 {
   if (m_constfn)
     return m_constfn (m_cfndata, offset, mode);
@@ -1277,7 +1277,7 @@ store_by_pieces_d::finish_endp (int endp)
 
 int
 can_store_by_pieces (unsigned HOST_WIDE_INT len,
-		     rtx (*constfun) (void *, HOST_WIDE_INT, machine_mode),
+		     rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
 		     void *constfundata, unsigned int align, bool memsetp)
 {
   unsigned HOST_WIDE_INT l;
@@ -1356,7 +1356,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
 
 rtx
 store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
-		 rtx (*constfun) (void *, HOST_WIDE_INT, machine_mode),
+		 rtx (*constfun) (void *, HOST_WIDE_INT, scalar_int_mode),
 		 void *constfundata, unsigned int align, bool memsetp, int endp)
 {
   if (len == 0)
@@ -1383,7 +1383,7 @@ store_by_pieces (rtx to, unsigned HOST_WIDE_INT len,
    Return const0_rtx unconditionally.  */
 
 static rtx
-clear_by_pieces_1 (void *, HOST_WIDE_INT, machine_mode)
+clear_by_pieces_1 (void *, HOST_WIDE_INT, scalar_int_mode)
 {
   return const0_rtx;
 }
@@ -7706,7 +7706,7 @@ expand_expr_constant (tree exp, int defer, enum expand_modifier modifier)
    The TARGET, TMODE and MODIFIER arguments are as for expand_expr.  */
 
 static rtx
-expand_expr_addr_expr_1 (tree exp, rtx target, machine_mode tmode,
+expand_expr_addr_expr_1 (tree exp, rtx target, scalar_int_mode tmode,
 		         enum expand_modifier modifier, addr_space_t as)
 {
   rtx result, subtarget;
@@ -7891,8 +7891,8 @@ expand_expr_addr_expr (tree exp, rtx target, machine_mode tmode,
 		       enum expand_modifier modifier)
 {
   addr_space_t as = ADDR_SPACE_GENERIC;
-  machine_mode address_mode = Pmode;
-  machine_mode pointer_mode = ptr_mode;
+  scalar_int_mode address_mode = Pmode;
+  scalar_int_mode pointer_mode = ptr_mode;
   machine_mode rmode;
   rtx result;
 
@@ -7910,9 +7910,9 @@ expand_expr_addr_expr (tree exp, rtx target, machine_mode tmode,
   /* We can get called with some Weird Things if the user does silliness
      like "(short) &a".  In that case, convert_memory_address won't do
      the right thing, so ignore the given target mode.  */
-  machine_mode new_tmode = (tmode == pointer_mode
-			    ? pointer_mode
-			    : address_mode);
+  scalar_int_mode new_tmode = (tmode == pointer_mode
+			       ? pointer_mode
+			       : address_mode);
 
   result = expand_expr_addr_expr_1 (TREE_OPERAND (exp, 0), target,
 				    new_tmode, modifier, as);
@@ -9999,7 +9999,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	  /* Writing into CONST_DECL is always invalid, but handle it
 	     gracefully.  */
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (exp));
-	  machine_mode address_mode = targetm.addr_space.address_mode (as);
+	  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
 	  op0 = expand_expr_addr_expr_1 (exp, NULL_RTX, address_mode,
 					 EXPAND_NORMAL, as);
 	  op0 = memory_address_addr_space (mode, op0, as);
@@ -11538,7 +11538,7 @@ try_casesi (tree index_type, tree index_expr, tree minval, tree range,
             profile_probability default_probability)
 {
   struct expand_operand ops[5];
-  machine_mode index_mode = SImode;
+  scalar_int_mode index_mode = SImode;
   rtx op1, op2, index;
 
   if (! targetm.have_casesi ())

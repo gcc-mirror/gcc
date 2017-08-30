@@ -2865,9 +2865,9 @@ subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 
 extern int byte_lowpart_offset (machine_mode, machine_mode);
 extern rtx make_safe_from (rtx, rtx);
-extern rtx convert_memory_address_addr_space_1 (machine_mode, rtx,
+extern rtx convert_memory_address_addr_space_1 (scalar_int_mode, rtx,
 						addr_space_t, bool, bool);
-extern rtx convert_memory_address_addr_space (machine_mode, rtx,
+extern rtx convert_memory_address_addr_space (scalar_int_mode, rtx,
 					      addr_space_t);
 #define convert_memory_address(to_mode,x) \
 	convert_memory_address_addr_space ((to_mode), (x), ADDR_SPACE_GENERIC)
@@ -3066,7 +3066,7 @@ inline rtx single_set (const rtx_insn *insn)
   return single_set_2 (insn, PATTERN (insn));
 }
 
-extern machine_mode get_address_mode (rtx mem);
+extern scalar_int_mode get_address_mode (rtx mem);
 extern int rtx_addr_can_trap_p (const_rtx);
 extern bool nonzero_address_p (const_rtx);
 extern int rtx_unstable_p (const_rtx);
@@ -3800,8 +3800,8 @@ extern GTY(()) rtx stack_limit_rtx;
 extern unsigned int variable_tracking_main (void);
 
 /* In stor-layout.c.  */
-extern void get_mode_bounds (machine_mode, int, machine_mode,
-			     rtx *, rtx *);
+extern void get_mode_bounds (scalar_int_mode, int,
+			     scalar_int_mode, rtx *, rtx *);
 
 /* In loop-iv.c  */
 extern rtx canon_condition (rtx);

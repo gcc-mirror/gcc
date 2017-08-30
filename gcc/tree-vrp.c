@@ -10095,7 +10095,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
   value_range *vr = get_value_range (rhs1);
   scalar_float_mode fltmode
     = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
-  machine_mode mode;
+  scalar_int_mode mode;
   tree tem;
   gassign *conv;
 

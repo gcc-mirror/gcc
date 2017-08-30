@@ -37,7 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 
-static bool prefer_and_bit_test (machine_mode, int);
+static bool prefer_and_bit_test (scalar_int_mode, int);
 static void do_jump_by_parts_greater (scalar_int_mode, tree, tree, int,
 				      rtx_code_label *, rtx_code_label *,
 				      profile_probability);
@@ -161,7 +161,7 @@ static GTY(()) rtx shift_test;
    is preferred.  */
 
 static bool
-prefer_and_bit_test (machine_mode mode, int bitnum)
+prefer_and_bit_test (scalar_int_mode mode, int bitnum)
 {
   bool speed_p;
   wide_int mask = wi::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
@@ -427,7 +427,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
   rtx temp;
   int i;
   tree type;
-  machine_mode mode;
+  scalar_int_mode mode;
   rtx_code_label *drop_through_label = NULL;
 
   switch (code)

@@ -2211,12 +2211,12 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
-  machine_mode address_mode;
+  scalar_int_mode address_mode;
   int pbits;
   struct mem_attrs attrs = *get_mem_attrs (memref), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
-  machine_mode pointer_mode
+  scalar_int_mode pointer_mode
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
 

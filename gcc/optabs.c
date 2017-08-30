@@ -435,7 +435,7 @@ expand_superword_shift (optab binoptab, rtx outof_input, rtx superword_op1,
    value are the same as for the parent routine.  */
 
 static bool
-expand_subword_shift (machine_mode op1_mode, optab binoptab,
+expand_subword_shift (scalar_int_mode op1_mode, optab binoptab,
 		      rtx outof_input, rtx into_input, rtx op1,
 		      rtx outof_target, rtx into_target,
 		      int unsignedp, enum optab_methods methods,
@@ -518,7 +518,7 @@ expand_subword_shift (machine_mode op1_mode, optab binoptab,
    arguments are the same as the parent routine.  */
 
 static bool
-expand_doubleword_shift_condmove (machine_mode op1_mode, optab binoptab,
+expand_doubleword_shift_condmove (scalar_int_mode op1_mode, optab binoptab,
 				  enum rtx_code cmp_code, rtx cmp1, rtx cmp2,
 				  rtx outof_input, rtx into_input,
 				  rtx subword_op1, rtx superword_op1,
@@ -601,7 +601,7 @@ expand_doubleword_shift_condmove (machine_mode op1_mode, optab binoptab,
    Return true if the shift could be successfully synthesized.  */
 
 static bool
-expand_doubleword_shift (machine_mode op1_mode, optab binoptab,
+expand_doubleword_shift (scalar_int_mode op1_mode, optab binoptab,
 			 rtx outof_input, rtx into_input, rtx op1,
 			 rtx outof_target, rtx into_target,
 			 int unsignedp, enum optab_methods methods,
@@ -2167,7 +2167,7 @@ widen_leading (scalar_int_mode mode, rtx op0, rtx target, optab unoptab)
 /* Try calculating clz of a double-word quantity as two clz's of word-sized
    quantities, choosing which based on whether the high word is nonzero.  */
 static rtx
-expand_doubleword_clz (machine_mode mode, rtx op0, rtx target)
+expand_doubleword_clz (scalar_int_mode mode, rtx op0, rtx target)
 {
   rtx xop0 = force_reg (mode, op0);
   rtx subhi = gen_highpart (word_mode, xop0);
@@ -2238,7 +2238,7 @@ expand_doubleword_clz (machine_mode mode, rtx op0, rtx target)
 /* Try calculating popcount of a double-word quantity as two popcount's of
    word-sized quantities and summing up the results.  */
 static rtx
-expand_doubleword_popcount (machine_mode mode, rtx op0, rtx target)
+expand_doubleword_popcount (scalar_int_mode mode, rtx op0, rtx target)
 {
   rtx t0, t1, t;
   rtx_insn *seq;
@@ -2278,7 +2278,7 @@ expand_doubleword_popcount (machine_mode mode, rtx op0, rtx target)
    as
 	(parity:narrow (low (x) ^ high (x))) */
 static rtx
-expand_doubleword_parity (machine_mode mode, rtx op0, rtx target)
+expand_doubleword_parity (scalar_int_mode mode, rtx op0, rtx target)
 {
   rtx t = expand_binop (word_mode, xor_optab,
 			operand_subword_force (op0, 0, mode),
@@ -2555,7 +2555,7 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 {
   const struct real_format *fmt;
   int bitpos, word, nwords, i;
-  machine_mode imode;
+  scalar_int_mode imode;
   rtx temp;
   rtx_insn *insns;
 
@@ -4067,13 +4067,13 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
   enum rtx_code swapped = swap_condition (comparison);
   enum rtx_code reversed = reverse_condition_maybe_unordered (comparison);
   machine_mode orig_mode = GET_MODE (x);
-  machine_mode mode, cmp_mode;
+  machine_mode mode;
   rtx true_rtx, false_rtx;
   rtx value, target, equiv;
   rtx_insn *insns;
   rtx libfunc = 0;
   bool reversed_p = false;
-  cmp_mode = targetm.libgcc_cmp_return_mode ();
+  scalar_int_mode cmp_mode = targetm.libgcc_cmp_return_mode ();
 
   FOR_EACH_MODE_FROM (mode, orig_mode)
     {

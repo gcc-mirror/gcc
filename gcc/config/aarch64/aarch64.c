@@ -2653,7 +2653,7 @@ aarch64_pad_reg_upward (machine_mode mode, const_tree type,
   return !BYTES_BIG_ENDIAN;
 }
 
-static machine_mode
+static scalar_int_mode
 aarch64_libgcc_cmp_return_mode (void)
 {
   return SImode;
