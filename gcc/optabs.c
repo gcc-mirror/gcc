@@ -2129,39 +2129,36 @@ expand_simple_unop (machine_mode mode, enum rtx_code code, rtx op0,
    A similar operation can be used for clrsb.  UNOPTAB says which operation
    we are trying to expand.  */
 static rtx
-widen_leading (machine_mode mode, rtx op0, rtx target, optab unoptab)
+widen_leading (scalar_int_mode mode, rtx op0, rtx target, optab unoptab)
 {
-  enum mode_class mclass = GET_MODE_CLASS (mode);
-  if (CLASS_HAS_WIDER_MODES_P (mclass))
+  opt_scalar_int_mode wider_mode_iter;
+  FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
     {
-      machine_mode wider_mode;
-      FOR_EACH_WIDER_MODE (wider_mode, mode)
+      scalar_int_mode wider_mode = wider_mode_iter.require ();
+      if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
 	{
-	  if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
-	    {
-	      rtx xop0, temp;
-	      rtx_insn *last;
+	  rtx xop0, temp;
+	  rtx_insn *last;
 
-	      last = get_last_insn ();
+	  last = get_last_insn ();
 
-	      if (target == 0)
-		target = gen_reg_rtx (mode);
-	      xop0 = widen_operand (op0, wider_mode, mode,
-				    unoptab != clrsb_optab, false);
-	      temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
-				  unoptab != clrsb_optab);
-	      if (temp != 0)
-		temp = expand_binop
-		  (wider_mode, sub_optab, temp,
-		   gen_int_mode (GET_MODE_PRECISION (wider_mode)
-				 - GET_MODE_PRECISION (mode),
-				 wider_mode),
-		   target, true, OPTAB_DIRECT);
-	      if (temp == 0)
-		delete_insns_since (last);
+	  if (target == 0)
+	    target = gen_reg_rtx (mode);
+	  xop0 = widen_operand (op0, wider_mode, mode,
+				unoptab != clrsb_optab, false);
+	  temp = expand_unop (wider_mode, unoptab, xop0, NULL_RTX,
+			      unoptab != clrsb_optab);
+	  if (temp != 0)
+	    temp = expand_binop
+	      (wider_mode, sub_optab, temp,
+	       gen_int_mode (GET_MODE_PRECISION (wider_mode)
+			     - GET_MODE_PRECISION (mode),
+			     wider_mode),
+	       target, true, OPTAB_DIRECT);
+	  if (temp == 0)
+	    delete_insns_since (last);
 
-	      return temp;
-	    }
+	  return temp;
 	}
     }
   return 0;
@@ -2295,22 +2292,21 @@ expand_doubleword_parity (machine_mode mode, rtx op0, rtx target)
    as
 	(lshiftrt:wide (bswap:wide x) ((width wide) - (width narrow))).  */
 static rtx
-widen_bswap (machine_mode mode, rtx op0, rtx target)
+widen_bswap (scalar_int_mode mode, rtx op0, rtx target)
 {
-  enum mode_class mclass = GET_MODE_CLASS (mode);
-  machine_mode wider_mode;
   rtx x;
   rtx_insn *last;
+  opt_scalar_int_mode wider_mode_iter;
 
-  if (!CLASS_HAS_WIDER_MODES_P (mclass))
+  FOR_EACH_WIDER_MODE (wider_mode_iter, mode)
+    if (optab_handler (bswap_optab, wider_mode_iter.require ())
+	!= CODE_FOR_nothing)
+      break;
+
+  if (!wider_mode_iter.exists ())
     return NULL_RTX;
 
-  FOR_EACH_WIDER_MODE (wider_mode, mode)
-    if (optab_handler (bswap_optab, wider_mode) != CODE_FOR_nothing)
-      goto found;
-  return NULL_RTX;
-
- found:
+  scalar_int_mode wider_mode = wider_mode_iter.require ();
   last = get_last_insn ();
 
   x = widen_operand (op0, wider_mode, mode, true, true);
@@ -2361,42 +2357,40 @@ expand_doubleword_bswap (machine_mode mode, rtx op, rtx target)
 /* Try calculating (parity x) as (and (popcount x) 1), where
    popcount can also be done in a wider mode.  */
 static rtx
-expand_parity (machine_mode mode, rtx op0, rtx target)
+expand_parity (scalar_int_mode mode, rtx op0, rtx target)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
-  if (CLASS_HAS_WIDER_MODES_P (mclass))
+  opt_scalar_int_mode wider_mode_iter;
+  FOR_EACH_MODE_FROM (wider_mode_iter, mode)
     {
-      machine_mode wider_mode;
-      FOR_EACH_MODE_FROM (wider_mode, mode)
+      scalar_int_mode wider_mode = wider_mode_iter.require ();
+      if (optab_handler (popcount_optab, wider_mode) != CODE_FOR_nothing)
 	{
-	  if (optab_handler (popcount_optab, wider_mode) != CODE_FOR_nothing)
+	  rtx xop0, temp;
+	  rtx_insn *last;
+
+	  last = get_last_insn ();
+
+	  if (target == 0 || GET_MODE (target) != wider_mode)
+	    target = gen_reg_rtx (wider_mode);
+
+	  xop0 = widen_operand (op0, wider_mode, mode, true, false);
+	  temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
+			      true);
+	  if (temp != 0)
+	    temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
+				 target, true, OPTAB_DIRECT);
+
+	  if (temp)
 	    {
-	      rtx xop0, temp;
-	      rtx_insn *last;
-
-	      last = get_last_insn ();
-
-	      if (target == 0 || GET_MODE (target) != wider_mode)
-		target = gen_reg_rtx (wider_mode);
-
-	      xop0 = widen_operand (op0, wider_mode, mode, true, false);
-	      temp = expand_unop (wider_mode, popcount_optab, xop0, NULL_RTX,
-				  true);
-	      if (temp != 0)
-		temp = expand_binop (wider_mode, and_optab, temp, const1_rtx,
-				     target, true, OPTAB_DIRECT);
-
-	      if (temp)
-		{
-		  if (mclass != MODE_INT
-		      || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
-		    return convert_to_mode (mode, temp, 0);
-		  else
-		    return gen_lowpart (mode, temp);
-		}
+	      if (mclass != MODE_INT
+		  || !TRULY_NOOP_TRUNCATION_MODES_P (mode, wider_mode))
+		return convert_to_mode (mode, temp, 0);
 	      else
-		delete_insns_since (last);
+		return gen_lowpart (mode, temp);
 	    }
+	  else
+	    delete_insns_since (last);
 	}
     }
   return 0;
@@ -2415,7 +2409,7 @@ expand_parity (machine_mode mode, rtx op0, rtx target)
    less convenient for expand_ffs anyway.  */
 
 static rtx
-expand_ctz (machine_mode mode, rtx op0, rtx target)
+expand_ctz (scalar_int_mode mode, rtx op0, rtx target)
 {
   rtx_insn *seq;
   rtx temp;
@@ -2458,7 +2452,7 @@ expand_ctz (machine_mode mode, rtx op0, rtx target)
    may have an undefined value in that case.  If they do not give us a
    convenient value, we have to generate a test and branch.  */
 static rtx
-expand_ffs (machine_mode mode, rtx op0, rtx target)
+expand_ffs (scalar_int_mode mode, rtx op0, rtx target)
 {
   HOST_WIDE_INT val = 0;
   bool defined_at_zero = false;
@@ -2715,16 +2709,19 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
   /* Widening (or narrowing) clz needs special treatment.  */
   if (unoptab == clz_optab)
     {
-      temp = widen_leading (mode, op0, target, unoptab);
-      if (temp)
-	return temp;
-
-      if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-	  && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+      if (is_a <scalar_int_mode> (mode, &int_mode))
 	{
-	  temp = expand_doubleword_clz (mode, op0, target);
+	  temp = widen_leading (int_mode, op0, target, unoptab);
 	  if (temp)
 	    return temp;
+
+	  if (GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+	      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+	    {
+	      temp = expand_doubleword_clz (int_mode, op0, target);
+	      if (temp)
+		return temp;
+	    }
 	}
 
       goto try_libcall;
@@ -2732,9 +2729,12 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 
   if (unoptab == clrsb_optab)
     {
-      temp = widen_leading (mode, op0, target, unoptab);
-      if (temp)
-	return temp;
+      if (is_a <scalar_int_mode> (mode, &int_mode))
+	{
+	  temp = widen_leading (int_mode, op0, target, unoptab);
+	  if (temp)
+	    return temp;
+	}
       goto try_libcall;
     }
 
@@ -2806,16 +2806,19 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 	  delete_insns_since (last);
 	}
 
-      temp = widen_bswap (mode, op0, target);
-      if (temp)
-	return temp;
-
-      if (GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-	  && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+      if (is_a <scalar_int_mode> (mode, &int_mode))
 	{
-	  temp = expand_doubleword_bswap (mode, op0, target);
+	  temp = widen_bswap (int_mode, op0, target);
 	  if (temp)
 	    return temp;
+
+	  if (GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+	      && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
+	    {
+	      temp = expand_doubleword_bswap (mode, op0, target);
+	      if (temp)
+		return temp;
+	    }
 	}
 
       goto try_libcall;
@@ -2916,25 +2919,25 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
     }
 
   /* Try calculating parity (x) as popcount (x) % 2.  */
-  if (unoptab == parity_optab)
+  if (unoptab == parity_optab && is_a <scalar_int_mode> (mode, &int_mode))
     {
-      temp = expand_parity (mode, op0, target);
+      temp = expand_parity (int_mode, op0, target);
       if (temp)
 	return temp;
     }
 
   /* Try implementing ffs (x) in terms of clz (x).  */
-  if (unoptab == ffs_optab)
+  if (unoptab == ffs_optab && is_a <scalar_int_mode> (mode, &int_mode))
     {
-      temp = expand_ffs (mode, op0, target);
+      temp = expand_ffs (int_mode, op0, target);
       if (temp)
 	return temp;
     }
 
   /* Try implementing ctz (x) in terms of clz (x).  */
-  if (unoptab == ctz_optab)
+  if (unoptab == ctz_optab && is_a <scalar_int_mode> (mode, &int_mode))
     {
-      temp = expand_ctz (mode, op0, target);
+      temp = expand_ctz (int_mode, op0, target);
       if (temp)
 	return temp;
     }

@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.c (widen_leading): Change the type of the mode argument
+	to scalar_int_mode.  Use opt_scalar_int_mode for the mode iterator.
+	(widen_bswap): Likewise.
+	(expand_parity): Likewise.
+	(expand_ctz): Change the type of the mode argument to scalar_int_mode.
+	(expand_ffs): Likewise.
+	(epand_unop): Check for scalar integer modes before calling the
+	above routines.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (const_scalar_mask_from_tree): Add a mode argument.
 	Expand commentary.
 	(expand_expr_real_1): Update call accordingly.
