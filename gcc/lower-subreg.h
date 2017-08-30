@@ -43,7 +43,7 @@ struct lower_subreg_choices {
 /* Target-specific information for the subreg lowering pass.  */
 struct target_lower_subreg {
   /* An integer mode that is twice as wide as word_mode.  */
-  machine_mode x_twice_word_mode;
+  scalar_int_mode_pod x_twice_word_mode;
 
   /* What we have decided to do when optimizing for size (index 0)
      and speed (index 1).  */

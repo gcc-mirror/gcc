@@ -293,6 +293,19 @@ opt_mode<T>::exists (U *mode) const
   return false;
 }
 
+/* A POD version of mode class T.  */
+
+template<typename T>
+struct pod_mode
+{
+  typedef typename mode_traits<T>::from_int from_int;
+
+  machine_mode m_mode;
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+  ALWAYS_INLINE operator T () const { return from_int (m_mode); }
+  ALWAYS_INLINE pod_mode &operator = (const T &m) { m_mode = m; return *this; }
+};
+
 /* Return true if mode M has type T.  */
 
 template<typename T>
@@ -647,7 +660,7 @@ extern void init_adjust_machine_modes (void);
 struct int_n_data_t {
   /* These parts are initailized by genmodes output */
   unsigned int bitsize;
-  machine_mode m;
+  scalar_int_mode_pod m;
   /* RID_* is RID_INTN_BASE + index into this array */
 };
 
