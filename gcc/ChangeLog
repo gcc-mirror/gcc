@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (try_widen_shift_mode): Move check for equal modes to...
+	(simplify_shift_const_1): ...here.  Use scalar_int_mode for
+	shift_unit_mode and for modes involved in scalar shifts.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (force_int_to_mode): New function, split out from...
 	(force_to_mode): ...here.  Keep xmode up-to-date and use it
 	instead of GET_MODE (x).
