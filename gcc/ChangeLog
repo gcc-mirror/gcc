@@ -1,3 +1,9 @@
+2017-08-30  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (dwarf2out_finish): Remove setting AT_pubnames.
+	(dwarf2out_early_finish): Move setting of AT_pubnames from
+	early debug output to early finish.
+
 2017-08-30  Jozef Lawrynowicz  <jozef.l@somniumtech.com>
 
 	* gcc/config/msp430/msp430.h: Pass -mcode/data-region to the linker
