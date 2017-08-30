@@ -2723,7 +2723,7 @@ bit_field_mode_iterator
 			   HOST_WIDE_INT bitregion_start,
 			   HOST_WIDE_INT bitregion_end,
 			   unsigned int align, bool volatilep)
-: m_mode (GET_CLASS_NARROWEST_MODE (MODE_INT)), m_bitsize (bitsize),
+: m_mode (NARROWEST_INT_MODE), m_bitsize (bitsize),
   m_bitpos (bitpos), m_bitregion_start (bitregion_start),
   m_bitregion_end (bitregion_end), m_align (align),
   m_volatilep (volatilep), m_count (0)

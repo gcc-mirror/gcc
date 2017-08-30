@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (NARROWEST_INT_MODE): New macro.
+	* expr.c (alignment_for_piecewise_move): Use it instead of
+	GET_CLASS_NARROWEST_MODE (MODE_INT).
+	(push_block): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
+	Likewise.
+	* tree-vrp.c (simplify_float_conversion_using_ranges): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_real_2): Use scalar_int_mode for the
 	double-word mode.
 	* lower-subreg.c (resolve_shift_zext): Use is_a <scalar_int_mode>.

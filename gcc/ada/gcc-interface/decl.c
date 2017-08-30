@@ -8574,7 +8574,7 @@ validate_size (Uint uint_size, tree gnu_type, Entity_Id gnat_object,
      by the smallest integral mode that's valid for pointers.  */
   if (TREE_CODE (gnu_type) == POINTER_TYPE || TYPE_IS_FAT_POINTER_P (gnu_type))
     {
-      machine_mode p_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      scalar_int_mode p_mode = NARROWEST_INT_MODE;
       while (!targetm.valid_pointer_mode (p_mode))
 	p_mode = GET_MODE_WIDER_MODE (p_mode).require ();
       type_size = bitsize_int (GET_MODE_BITSIZE (p_mode));
