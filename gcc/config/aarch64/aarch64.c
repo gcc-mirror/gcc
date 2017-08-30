@@ -11473,8 +11473,12 @@ aarch64_simd_valid_immediate (rtx op, machine_mode mode, bool inverse,
 
       if (info)
 	{
-	  info->value = CONST_VECTOR_ELT (op, 0);
-	  info->element_width = GET_MODE_BITSIZE (GET_MODE (info->value));
+	  rtx elt = CONST_VECTOR_ELT (op, 0);
+	  scalar_float_mode elt_mode
+	    = as_a <scalar_float_mode> (GET_MODE (elt));
+
+	  info->value = elt;
+	  info->element_width = GET_MODE_BITSIZE (elt_mode);
 	  info->mvn = false;
 	  info->shift = 0;
 	}

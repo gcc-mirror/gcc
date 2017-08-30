@@ -5811,9 +5811,11 @@ simplify_immed_subreg (machine_mode outermode, rtx op,
 	    {
 	      /* This is big enough for anything on the platform.  */
 	      long tmp[MAX_BITSIZE_MODE_ANY_MODE / 32];
-	      int bitsize = GET_MODE_BITSIZE (GET_MODE (el));
+	      scalar_float_mode el_mode;
 
-	      gcc_assert (SCALAR_FLOAT_MODE_P (GET_MODE (el)));
+	      el_mode = as_a <scalar_float_mode> (GET_MODE (el));
+	      int bitsize = GET_MODE_BITSIZE (el_mode);
+
 	      gcc_assert (bitsize <= elem_bitsize);
 	      gcc_assert (bitsize % value_bit == 0);
 

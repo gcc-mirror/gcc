@@ -2,6 +2,39 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (scalar_float_mode): New type.
+	* machmode.h (mode_traits::from_int): Use machine_mode if
+	USE_ENUM_MODES is defined.
+	(is_a): New function.
+	(as_a): Likewise.
+	(dyn_cast): Likewise.
+	(scalar_float_mode): New class.
+	(scalar_float_mode::includes_p): New function.
+	(is_float_mode): Likewise.
+	* gdbhooks.py (MachineModePrinter): New class.
+	(build_pretty_printer): Use it for scalar_float_mode.
+	* real.h (FLOAT_MODE_FORMAT): Use as_a <scalar_float_mode>.
+	(format_helper::format_helper): Turn into a template.
+	* genmodes.c (get_mode_class): New function.
+	(emit_insn_modes_h): Give modes the class returned by get_mode_class,
+	or machine_mode if none.
+	* config/aarch64/aarch64.c (aarch64_simd_valid_immediate): Use
+	as_a <scalar_float_mode>.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	(insert_float): Likewise.
+	(add_const_value_attribute): Likewise.
+	* simplify-rtx.c (simplify_immed_subreg): Likewise.
+	* optabs.c (expand_absneg_bit): Take a scalar_float_mode.
+	(expand_unop): Update accordingly.
+	(expand_abs_nojump): Likewise.
+	(expand_copysign_absneg): Take a scalar_float_mode.
+	(expand_copysign_bit): Likewise.
+	(expand_copysign): Update accordingly.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (opt_mode): New class.
 	* machmode.h (opt_mode): Likewise.
 	(opt_mode::else_void): New function.

@@ -46,9 +46,15 @@ struct mode_traits
        res = T (typename mode_traits<T>::from_int (mode));
 
      when assigning to a value RES that must be assignment-compatible
-     with (but possibly not the same as) T.
-
-     Here we use an enum type distinct from machine_mode but with the
+     with (but possibly not the same as) T.  */
+#ifdef USE_ENUM_MODES
+  /* Allow direct conversion of enums to specific mode classes only
+     when USE_ENUM_MODES is defined.  This is only intended for use
+     by gencondmd, so that it can tell more easily when .md conditions
+     are always false.  */
+  typedef machine_mode from_int;
+#else
+  /* Here we use an enum type distinct from machine_mode but with the
      same range as machine_mode.  T should have a constructor that
      accepts this enum type; it should not have a constructor that
      accepts machine_mode.
@@ -58,6 +64,7 @@ struct mode_traits
      unoptimized code, the return statement above would construct the
      returned T directly from the numerical value of MODE.  */
   enum from_int { dummy = MAX_MACHINE_MODE };
+#endif
 };
 
 template<>
@@ -284,6 +291,75 @@ opt_mode<T>::exists (U *mode) const
       return true;
     }
   return false;
+}
+
+/* Return true if mode M has type T.  */
+
+template<typename T>
+inline bool
+is_a (machine_mode m)
+{
+  return T::includes_p (m);
+}
+
+/* Assert that mode M has type T, and return it in that form.  */
+
+template<typename T>
+inline T
+as_a (machine_mode m)
+{
+  gcc_checking_assert (T::includes_p (m));
+  return typename mode_traits<T>::from_int (m);
+}
+
+/* Convert M to an opt_mode<T>.  */
+
+template<typename T>
+inline opt_mode<T>
+dyn_cast (machine_mode m)
+{
+  if (T::includes_p (m))
+    return T (typename mode_traits<T>::from_int (m));
+  return opt_mode<T> ();
+}
+
+/* Return true if mode M has type T, storing it as a T in *RESULT
+   if so.  */
+
+template<typename T, typename U>
+inline bool
+is_a (machine_mode m, U *result)
+{
+  if (T::includes_p (m))
+    {
+      *result = T (typename mode_traits<T>::from_int (m));
+      return true;
+    }
+  return false;
+}
+
+/* Represents a machine mode that is known to be a SCALAR_FLOAT_MODE_P.  */
+class scalar_float_mode
+{
+public:
+  typedef mode_traits<scalar_float_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_float_mode () {}
+  ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a scalar_float_mode.  */
+
+inline bool
+scalar_float_mode::includes_p (machine_mode m)
+{
+  return SCALAR_FLOAT_MODE_P (m);
 }
 
 /* Return the base GET_MODE_SIZE value for MODE.  */
@@ -546,6 +622,21 @@ struct int_n_data_t {
    smallest bitsize to largest bitsize. */
 extern bool int_n_enabled_p[NUM_INT_N_ENTS];
 extern const int_n_data_t int_n_data[NUM_INT_N_ENTS];
+
+/* Return true if MODE has class MODE_FLOAT, storing it as a
+   scalar_float_mode in *FLOAT_MODE if so.  */
+
+template<typename T>
+inline bool
+is_float_mode (machine_mode mode, T *float_mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    {
+      *float_mode = scalar_float_mode (scalar_float_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
 
 namespace mode_iterator
 {

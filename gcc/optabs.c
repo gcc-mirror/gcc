@@ -2552,7 +2552,7 @@ lowpart_subreg_maybe_copy (machine_mode omode, rtx val,
    logical operation on the sign bit.  */
 
 static rtx
-expand_absneg_bit (enum rtx_code code, machine_mode mode,
+expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 		   rtx op0, rtx target)
 {
   const struct real_format *fmt;
@@ -2698,6 +2698,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
   machine_mode wider_mode;
+  scalar_float_mode float_mode;
   rtx temp;
   rtx libfunc;
 
@@ -2888,9 +2889,9 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
   if (optab_to_code (unoptab) == NEG)
     {
       /* Try negating floating point values by flipping the sign bit.  */
-      if (SCALAR_FLOAT_MODE_P (mode))
+      if (is_a <scalar_float_mode> (mode, &float_mode))
 	{
-	  temp = expand_absneg_bit (NEG, mode, op0, target);
+	  temp = expand_absneg_bit (NEG, float_mode, op0, target);
 	  if (temp)
 	    return temp;
 	}
@@ -3087,9 +3088,10 @@ expand_abs_nojump (machine_mode mode, rtx op0, rtx target,
     return temp;
 
   /* For floating point modes, try clearing the sign bit.  */
-  if (SCALAR_FLOAT_MODE_P (mode))
+  scalar_float_mode float_mode;
+  if (is_a <scalar_float_mode> (mode, &float_mode))
     {
-      temp = expand_absneg_bit (ABS, mode, op0, target);
+      temp = expand_absneg_bit (ABS, float_mode, op0, target);
       if (temp)
 	return temp;
     }
@@ -3244,7 +3246,7 @@ expand_one_cmpl_abs_nojump (machine_mode mode, rtx op0, rtx target)
    and not playing with subregs so much, will help the register allocator.  */
 
 static rtx
-expand_copysign_absneg (machine_mode mode, rtx op0, rtx op1, rtx target,
+expand_copysign_absneg (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 		        int bitpos, bool op0_is_abs)
 {
   machine_mode imode;
@@ -3328,7 +3330,7 @@ expand_copysign_absneg (machine_mode mode, rtx op0, rtx op1, rtx target,
    is true if op0 is known to have its sign bit clear.  */
 
 static rtx
-expand_copysign_bit (machine_mode mode, rtx op0, rtx op1, rtx target,
+expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 		     int bitpos, bool op0_is_abs)
 {
   machine_mode imode;
@@ -3426,12 +3428,12 @@ expand_copysign_bit (machine_mode mode, rtx op0, rtx op1, rtx target,
 rtx
 expand_copysign (rtx op0, rtx op1, rtx target)
 {
-  machine_mode mode = GET_MODE (op0);
+  scalar_float_mode mode;
   const struct real_format *fmt;
   bool op0_is_abs;
   rtx temp;
 
-  gcc_assert (SCALAR_FLOAT_MODE_P (mode));
+  mode = as_a <scalar_float_mode> (GET_MODE (op0));
   gcc_assert (GET_MODE (op1) == mode);
 
   /* First try to do it with a special instruction.  */
