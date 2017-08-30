@@ -1,5 +1,10 @@
 2017-08-30  Martin Liska  <mliska@suse.cz>
 
+	PR inline-asm/82001
+	* gcc.dg/ipa/pr82001.c: New test.
+
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
 	* gcc.dg/tree-ssa/vrp104.c: Change dump file name.
 
 2017-08-30  Richard Biener  <rguenther@suse.de>
