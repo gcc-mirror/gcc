@@ -1,3 +1,8 @@
+2017-08-30  David Edelsohn  <dje.gcc@gmail.com>
+
+	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Revert
+	back to if statements, including unpack.
+
 2017-08-30  Martin Liska  <mliska@suse.cz>
 
 	PR inline-asm/82001
