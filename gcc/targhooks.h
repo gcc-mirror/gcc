@@ -232,7 +232,7 @@ extern const char *default_pch_valid_p (const void *, size_t);
 
 extern void default_asm_output_ident_directive (const char*);
 
-extern machine_mode default_cstore_mode (enum insn_code);
+extern scalar_int_mode default_cstore_mode (enum insn_code);
 extern bool default_member_type_forces_blk (const_tree, machine_mode);
 extern void default_atomic_assign_expand_fenv (tree *, tree *, tree *);
 extern tree build_va_arg_indirect_ref (tree);

@@ -671,7 +671,7 @@ static void sparc_print_operand_address (FILE *, machine_mode, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   machine_mode,
 					   secondary_reload_info *);
-static machine_mode sparc_cstore_mode (enum insn_code icode);
+static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static unsigned int sparc_min_arithmetic_precision (void);
@@ -13170,7 +13170,7 @@ sparc_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 /* Implement TARGET_CSTORE_MODE.  */
 
-static machine_mode
+static scalar_int_mode
 sparc_cstore_mode (enum insn_code icode ATTRIBUTE_UNUSED)
 {
   return (TARGET_ARCH64 ? DImode : SImode);

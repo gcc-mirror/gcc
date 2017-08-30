@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (cstore_mode): Return a scalar_int_mode.
+	* doc/tm.texi: Regenerate.
+	* config/sparc/sparc.c (sparc_cstore_mode): Return a scalar_int_mode.
+	* targhooks.h (default_cstore_mode): Likewise.
+	* targhooks.c (default_cstore_mode): Likewise, using a forced
+	conversion.
+	* expmed.c (emit_cstore): Expect the target of the cstore to be
+	a scalar_int_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (SCALAR_INT_TYPE_MODE): New macro.
 	* builtins.c (expand_builtin_signbit): Use it.
 	* cfgexpand.c (expand_debug_expr): Likewise.

@@ -5093,7 +5093,7 @@ DEFHOOK
   for the cstore being performed.  Not definiting this hook is the same\
   as accepting the mode encoded into operand 0 of the cstore expander\
   patterns.",
-  machine_mode, (enum insn_code icode),
+  scalar_int_mode, (enum insn_code icode),
   default_cstore_mode)
 
 /* This target hook allows the backend to compute the register pressure
