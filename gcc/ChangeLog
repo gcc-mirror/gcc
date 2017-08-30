@@ -1,3 +1,10 @@
+2017-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81987
+	* gimple-ssa-strength-reduction.c (insert_initializers): Don't
+	insert an initializer in a location not dominated by the stride
+	definition.
+
 2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* tree-eh.c (lower_try_finally_switch): Set the location of the finally
