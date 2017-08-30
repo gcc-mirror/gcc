@@ -4267,22 +4267,22 @@ hook returns true for all of @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}, if such modes exist.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
+@deftypefn {Target Hook} opt_scalar_float_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
 Define this to return the machine mode to use for the type 
 @code{_Float@var{n}}, if @var{extended} is false, or the type 
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type 
-is not supported, return @code{VOIDmode}.  The default version of this 
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for 
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not
+supported, return @code{opt_scalar_float_mode ()}.  The default version of
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for 
 @code{_Float128}, if those modes exist and satisfy the requirements for 
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and 
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it 
 returns the first of @code{XFmode} and @code{TFmode} that exists and 
 satisfies the same requirements; for other types, it returns 
-@code{VOIDmode}.  The hook is only called for values of @var{n} and 
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that 
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or 
-greater than 128 and a multiple of 32.
+@code{opt_scalar_float_mode ()}.  The hook is only called for values
+of @var{n} and @var{extended} that are valid according to
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})

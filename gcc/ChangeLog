@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (default_floatn_mode): Return an opt_scalar_float_mode.
+	* doc/tm.texi: Regenerate.
+	* config/arm/arm.c (arm_floatn_mode): Return an opt_scalar_float_mode.
+	* config/powerpcspe/powerpcspe.c (rs6000_floatn_mode): Likewise.
+	* config/rs6000/rs6000.c (rs6000_floatn_mode): Likewise.
+	* targhooks.h (default_floatn_mode): Likewise.
+	* targhooks.c (default_floatn_mode): Likewise.
+	* tree.c (build_common_tree_nodes): Update accordingly.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (mode_iterator::start): Provide overload for opt_modes.
 	(mode_iterator::iterate_p): Likewise.
 	(mode_iterator::get_wider): Likewise.
