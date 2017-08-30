@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_expr_addr_expr): Add a new_tmode local variable
+	that is always either address_mode or pointer_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_real_2): Use word_mode instead of innermode
 	when the two are known to be equal.
 
