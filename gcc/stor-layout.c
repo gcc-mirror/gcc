@@ -478,7 +478,7 @@ bitwise_type_for_mode (machine_mode mode)
    is no suitable mode.  */
 
 machine_mode
-mode_for_vector (machine_mode innermode, unsigned nunits)
+mode_for_vector (scalar_mode innermode, unsigned nunits)
 {
   machine_mode mode;
 
