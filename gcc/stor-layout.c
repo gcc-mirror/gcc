@@ -306,8 +306,7 @@ mode_for_size (unsigned int size, enum mode_class mclass, int limit)
     return BLKmode;
 
   /* Get the first mode which has this size, in the specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (GET_MODE_PRECISION (mode) == size)
       return mode;
 
@@ -348,8 +347,7 @@ smallest_mode_for_size (unsigned int size, enum mode_class mclass)
 
   /* Get the first mode which has at least this size, in the
      specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (GET_MODE_PRECISION (mode) >= size)
       break;
 
@@ -501,7 +499,7 @@ mode_for_vector (machine_mode innermode, unsigned nunits)
 
   /* Do not check vector_mode_supported_p here.  We'll do that
      later in vector_type_mode.  */
-  for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_NUNITS (mode) == nunits
 	&& GET_MODE_INNER (mode) == innermode)
       break;
@@ -1956,8 +1954,7 @@ finish_bitfield_representative (tree repr, tree field)
   gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
 
   /* Find the smallest nice mode to use.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     if (GET_MODE_BITSIZE (mode) >= bitsize)
       break;
   if (mode != VOIDmode

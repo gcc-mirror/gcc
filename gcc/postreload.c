@@ -1770,10 +1770,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
       else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
 	{
 	  machine_mode narrow_mode;
-	  for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	       narrow_mode != VOIDmode
-		 && narrow_mode != GET_MODE (reg);
-	       narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
+	  FOR_EACH_MODE_UNTIL (narrow_mode, GET_MODE (reg))
 	    {
 	      if (have_insn_for (STRICT_LOW_PART, narrow_mode)
 		  && ((reg_offset[regno] & ~GET_MODE_MASK (narrow_mode))

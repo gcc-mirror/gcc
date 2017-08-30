@@ -1583,14 +1583,16 @@ find_shift_sequence (int access_size,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  for (new_mode = smallest_mode_for_size (access_size * BITS_PER_UNIT,
-					  MODE_INT);
-       GET_MODE_BITSIZE (new_mode) <= BITS_PER_WORD;
-       new_mode = GET_MODE_WIDER_MODE (new_mode))
+  FOR_EACH_MODE_FROM (new_mode,
+		      smallest_mode_for_size (access_size * BITS_PER_UNIT,
+					      MODE_INT))
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
       int cost;
+
+      if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
+	break;
 
       /* If a constant was stored into memory, try to simplify it here,
 	 otherwise the cost of the shift might preclude this optimization

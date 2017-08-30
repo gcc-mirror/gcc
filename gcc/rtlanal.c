@@ -5663,10 +5663,8 @@ init_num_sign_bit_copies_in_rep (void)
 {
   machine_mode mode, in_mode;
 
-  for (in_mode = GET_CLASS_NARROWEST_MODE (MODE_INT); in_mode != VOIDmode;
-       in_mode = GET_MODE_WIDER_MODE (mode))
-    for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != in_mode;
-	 mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (in_mode, MODE_INT)
+    FOR_EACH_MODE_UNTIL (mode, in_mode)
       {
 	machine_mode i;
 
@@ -5677,7 +5675,7 @@ init_num_sign_bit_copies_in_rep (void)
 
 	/* We are in in_mode.  Count how many bits outside of mode
 	   have to be copies of the sign-bit.  */
-	for (i = mode; i != in_mode; i = GET_MODE_WIDER_MODE (i))
+	FOR_EACH_MODE (i, mode, in_mode)
 	  {
 	    machine_mode wider = GET_MODE_WIDER_MODE (i);
 

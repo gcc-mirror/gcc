@@ -11830,9 +11830,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  else if (c0 == c1)
-	    for (tmode = GET_CLASS_NARROWEST_MODE
-		 (GET_MODE_CLASS (GET_MODE (op0)));
-		 tmode != GET_MODE (op0); tmode = GET_MODE_WIDER_MODE (tmode))
+	    FOR_EACH_MODE_UNTIL (tmode, GET_MODE (op0))
 	      if ((unsigned HOST_WIDE_INT) c0 == GET_MODE_MASK (tmode))
 		{
 		  op0 = gen_lowpart_or_truncate (tmode, inner_op0);
@@ -12704,75 +12702,81 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   if (mode != VOIDmode && GET_MODE_CLASS (mode) == MODE_INT
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD
       && ! have_insn_for (COMPARE, mode))
-    for (tmode = GET_MODE_WIDER_MODE (mode);
-	 (tmode != VOIDmode && HWI_COMPUTABLE_MODE_P (tmode));
-	 tmode = GET_MODE_WIDER_MODE (tmode))
-      if (have_insn_for (COMPARE, tmode))
-	{
-	  int zero_extended;
+    FOR_EACH_WIDER_MODE (tmode, mode)
+      {
+	if (!HWI_COMPUTABLE_MODE_P (tmode))
+	  break;
+	if (have_insn_for (COMPARE, tmode))
+	  {
+	    int zero_extended;
 
-	  /* If this is a test for negative, we can make an explicit
-	     test of the sign bit.  Test this first so we can use
-	     a paradoxical subreg to extend OP0.  */
+	    /* If this is a test for negative, we can make an explicit
+	       test of the sign bit.  Test this first so we can use
+	       a paradoxical subreg to extend OP0.  */
 
-	  if (op1 == const0_rtx && (code == LT || code == GE)
-	      && HWI_COMPUTABLE_MODE_P (mode))
-	    {
-	      unsigned HOST_WIDE_INT sign
-		= HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1);
-	      op0 = simplify_gen_binary (AND, tmode,
-					 gen_lowpart (tmode, op0),
-					 gen_int_mode (sign, tmode));
-	      code = (code == LT) ? NE : EQ;
-	      break;
-	    }
-
-	  /* If the only nonzero bits in OP0 and OP1 are those in the
-	     narrower mode and this is an equality or unsigned comparison,
-	     we can use the wider mode.  Similarly for sign-extended
-	     values, in which case it is true for all comparisons.  */
-	  zero_extended = ((code == EQ || code == NE
-			    || code == GEU || code == GTU
-			    || code == LEU || code == LTU)
-			   && (nonzero_bits (op0, tmode)
-			       & ~GET_MODE_MASK (mode)) == 0
-			   && ((CONST_INT_P (op1)
-				|| (nonzero_bits (op1, tmode)
-				    & ~GET_MODE_MASK (mode)) == 0)));
-
-	  if (zero_extended
-	      || ((num_sign_bit_copies (op0, tmode)
-		   > (unsigned int) (GET_MODE_PRECISION (tmode)
-				     - GET_MODE_PRECISION (mode)))
-		  && (num_sign_bit_copies (op1, tmode)
-		      > (unsigned int) (GET_MODE_PRECISION (tmode)
-					- GET_MODE_PRECISION (mode)))))
-	    {
-	      /* If OP0 is an AND and we don't have an AND in MODE either,
-		 make a new AND in the proper mode.  */
-	      if (GET_CODE (op0) == AND
-		  && !have_insn_for (AND, mode))
+	    if (op1 == const0_rtx && (code == LT || code == GE)
+		&& HWI_COMPUTABLE_MODE_P (mode))
+	      {
+		unsigned HOST_WIDE_INT sign
+		  = HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1);
 		op0 = simplify_gen_binary (AND, tmode,
-					   gen_lowpart (tmode,
-							XEXP (op0, 0)),
-					   gen_lowpart (tmode,
-							XEXP (op0, 1)));
-	      else
-		{
-		  if (zero_extended)
-		    {
-		      op0 = simplify_gen_unary (ZERO_EXTEND, tmode, op0, mode);
-		      op1 = simplify_gen_unary (ZERO_EXTEND, tmode, op1, mode);
-		    }
-		  else
-		    {
-		      op0 = simplify_gen_unary (SIGN_EXTEND, tmode, op0, mode);
-		      op1 = simplify_gen_unary (SIGN_EXTEND, tmode, op1, mode);
-		    }
-		  break;
-		}
-	    }
-	}
+					   gen_lowpart (tmode, op0),
+					   gen_int_mode (sign, tmode));
+		code = (code == LT) ? NE : EQ;
+		break;
+	      }
+
+	    /* If the only nonzero bits in OP0 and OP1 are those in the
+	       narrower mode and this is an equality or unsigned comparison,
+	       we can use the wider mode.  Similarly for sign-extended
+	       values, in which case it is true for all comparisons.  */
+	    zero_extended = ((code == EQ || code == NE
+			      || code == GEU || code == GTU
+			      || code == LEU || code == LTU)
+			     && (nonzero_bits (op0, tmode)
+				 & ~GET_MODE_MASK (mode)) == 0
+			     && ((CONST_INT_P (op1)
+				  || (nonzero_bits (op1, tmode)
+				      & ~GET_MODE_MASK (mode)) == 0)));
+
+	    if (zero_extended
+		|| ((num_sign_bit_copies (op0, tmode)
+		     > (unsigned int) (GET_MODE_PRECISION (tmode)
+				       - GET_MODE_PRECISION (mode)))
+		    && (num_sign_bit_copies (op1, tmode)
+			> (unsigned int) (GET_MODE_PRECISION (tmode)
+					  - GET_MODE_PRECISION (mode)))))
+	      {
+		/* If OP0 is an AND and we don't have an AND in MODE either,
+		   make a new AND in the proper mode.  */
+		if (GET_CODE (op0) == AND
+		    && !have_insn_for (AND, mode))
+		  op0 = simplify_gen_binary (AND, tmode,
+					     gen_lowpart (tmode,
+							  XEXP (op0, 0)),
+					     gen_lowpart (tmode,
+							  XEXP (op0, 1)));
+		else
+		  {
+		    if (zero_extended)
+		      {
+			op0 = simplify_gen_unary (ZERO_EXTEND, tmode,
+						  op0, mode);
+			op1 = simplify_gen_unary (ZERO_EXTEND, tmode,
+						  op1, mode);
+		      }
+		    else
+		      {
+			op0 = simplify_gen_unary (SIGN_EXTEND, tmode,
+						  op0, mode);
+			op1 = simplify_gen_unary (SIGN_EXTEND, tmode,
+						  op1, mode);
+		      }
+		    break;
+		  }
+	      }
+	  }
+      }
 
   /* We may have changed the comparison operands.  Re-canonicalize.  */
   if (swap_commutative_operands_p (op0, op1))

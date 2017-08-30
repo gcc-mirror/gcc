@@ -29,6 +29,44 @@ extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_wider[NUM_MACHINE_MODES];
 extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
 
+template<typename T>
+struct mode_traits
+{
+  /* For use by the machmode support code only.
+
+     There are cases in which the machmode support code needs to forcibly
+     convert a machine_mode to a specific mode class T, and in which the
+     context guarantees that this is valid without the need for an assert.
+     This can be done using:
+
+       return typename mode_traits<T>::from_int (mode);
+
+     when returning a T and:
+
+       res = T (typename mode_traits<T>::from_int (mode));
+
+     when assigning to a value RES that must be assignment-compatible
+     with (but possibly not the same as) T.
+
+     Here we use an enum type distinct from machine_mode but with the
+     same range as machine_mode.  T should have a constructor that
+     accepts this enum type; it should not have a constructor that
+     accepts machine_mode.
+
+     We use this somewhat indirect approach to avoid too many constructor
+     calls when the compiler is built with -O0.  For example, even in
+     unoptimized code, the return statement above would construct the
+     returned T directly from the numerical value of MODE.  */
+  enum from_int { dummy = MAX_MACHINE_MODE };
+};
+
+template<>
+struct mode_traits<machine_mode>
+{
+  /* machine_mode itself needs no conversion.  */
+  typedef machine_mode from_int;
+};
+
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
@@ -395,6 +433,16 @@ extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
 #define GET_CLASS_NARROWEST_MODE(CLASS) \
   ((machine_mode) class_narrowest_mode[CLASS])
 
+/* Return the narrowest mode in T's class.  */
+
+template<typename T>
+inline T
+get_narrowest_mode (T mode)
+{
+  return typename mode_traits<T>::from_int
+    (class_narrowest_mode[GET_MODE_CLASS (mode)]);
+}
+
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */
 
@@ -424,5 +472,96 @@ struct int_n_data_t {
    smallest bitsize to largest bitsize. */
 extern bool int_n_enabled_p[NUM_INT_N_ENTS];
 extern const int_n_data_t int_n_data[NUM_INT_N_ENTS];
+
+namespace mode_iterator
+{
+  /* Start mode iterator *ITER at the first mode in class MCLASS, if any.  */
+
+  inline void
+  start (machine_mode *iter, enum mode_class mclass)
+  {
+    *iter = GET_CLASS_NARROWEST_MODE (mclass);
+  }
+
+  /* Return true if mode iterator *ITER has not reached the end.  */
+
+  inline bool
+  iterate_p (machine_mode *iter)
+  {
+    return *iter != E_VOIDmode;
+  }
+
+  /* Set mode iterator *ITER to the next widest mode in the same class,
+     if any.  */
+
+  inline void
+  get_wider (machine_mode *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (*iter);
+  }
+
+  /* Set mode iterator *ITER to the next widest mode in the same class.
+     Such a mode is known to exist.  */
+
+  inline void
+  get_known_wider (machine_mode *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (*iter);
+    gcc_checking_assert (*iter != VOIDmode);
+  }
+
+  /* Set mode iterator *ITER to the mode that is two times wider than the
+     current one, if such a mode exists.  */
+
+  inline void
+  get_2xwider (machine_mode *iter)
+  {
+    *iter = GET_MODE_2XWIDER_MODE (*iter);
+  }
+}
+
+/* Make ITERATOR iterate over all the modes in mode class CLASS,
+   from narrowest to widest.  */
+#define FOR_EACH_MODE_IN_CLASS(ITERATOR, CLASS)  \
+  for (mode_iterator::start (&(ITERATOR), CLASS); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over all the modes in the range [START, END),
+   in order of increasing width.  */
+#define FOR_EACH_MODE(ITERATOR, START, END) \
+  for ((ITERATOR) = (START); \
+       (ITERATOR) != (END); \
+       mode_iterator::get_known_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over START and all wider modes in the same
+   class, in order of increasing width.  */
+#define FOR_EACH_MODE_FROM(ITERATOR, START) \
+  for ((ITERATOR) = (START); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over modes in the range [NARROWEST, END)
+   in order of increasing width, where NARROWEST is the narrowest mode
+   in END's class.  */
+#define FOR_EACH_MODE_UNTIL(ITERATOR, END) \
+  FOR_EACH_MODE (ITERATOR, get_narrowest_mode (END), END)
+
+/* Make ITERATOR iterate over modes in the same class as MODE, in order
+   of increasing width.  Start at the first mode wider than START,
+   or don't iterate at all if there is no wider mode.  */
+#define FOR_EACH_WIDER_MODE(ITERATOR, START) \
+  for ((ITERATOR) = (START), mode_iterator::get_wider (&(ITERATOR)); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over modes in the same class as MODE, in order
+   of increasing width, and with each mode being twice the width of the
+   previous mode.  Start at the mode that is two times wider than START,
+   or don't iterate at all if there is no such mode.  */
+#define FOR_EACH_2XWIDER_MODE(ITERATOR, START) \
+  for ((ITERATOR) = (START), mode_iterator::get_2xwider (&(ITERATOR)); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_2xwider (&(ITERATOR)))
 
 #endif /* not HAVE_MACHINE_MODES */

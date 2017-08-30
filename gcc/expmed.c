@@ -1635,7 +1635,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       else
 	new_mode = MIN_MODE_VECTOR_INT;
 
-      for (; new_mode != VOIDmode ; new_mode = GET_MODE_WIDER_MODE (new_mode))
+      FOR_EACH_MODE_FROM (new_mode, new_mode)
 	if (GET_MODE_SIZE (new_mode) == GET_MODE_SIZE (GET_MODE (op0))
 	    && GET_MODE_UNIT_SIZE (new_mode) == GET_MODE_SIZE (tmode)
 	    && targetm.vector_mode_supported_p (new_mode))
@@ -2081,8 +2081,7 @@ extract_fixed_bit_field_1 (machine_mode tmode, rtx op0,
 
   /* Find the narrowest integer mode that contains the field.  */
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     if (GET_MODE_BITSIZE (mode) >= bitsize + bitnum)
       {
 	op0 = convert_to_mode (mode, op0, 0);
@@ -4146,15 +4145,13 @@ expand_divmod (int rem_flag, enum tree_code code, machine_mode mode,
   optab2 = (op1_is_pow2 ? optab1
 	    : (unsignedp ? udivmod_optab : sdivmod_optab));
 
-  for (compute_mode = mode; compute_mode != VOIDmode;
-       compute_mode = GET_MODE_WIDER_MODE (compute_mode))
+  FOR_EACH_MODE_FROM (compute_mode, mode)
     if (optab_handler (optab1, compute_mode) != CODE_FOR_nothing
 	|| optab_handler (optab2, compute_mode) != CODE_FOR_nothing)
       break;
 
   if (compute_mode == VOIDmode)
-    for (compute_mode = mode; compute_mode != VOIDmode;
-	 compute_mode = GET_MODE_WIDER_MODE (compute_mode))
+    FOR_EACH_MODE_FROM (compute_mode, mode)
       if (optab_libfunc (optab1, compute_mode)
 	  || optab_libfunc (optab2, compute_mode))
 	break;
@@ -5556,8 +5553,7 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
     }
 
   mclass = GET_MODE_CLASS (mode);
-  for (compare_mode = mode; compare_mode != VOIDmode;
-       compare_mode = GET_MODE_WIDER_MODE (compare_mode))
+  FOR_EACH_MODE_FROM (compare_mode, mode)
     {
      machine_mode optab_mode = mclass == MODE_CC ? CCmode : compare_mode;
      icode = optab_handler (cstore_optab, optab_mode);

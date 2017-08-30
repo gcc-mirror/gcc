@@ -1154,7 +1154,7 @@ type_for_widest_vector_mode (tree type, optab op)
   else
     mode = MIN_MODE_VECTOR_INT;
 
-  for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_INNER (mode) == inner_mode
         && GET_MODE_NUNITS (mode) > best_nunits
 	&& optab_handler (op, mode) != CODE_FOR_nothing)

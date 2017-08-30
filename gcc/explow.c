@@ -1912,9 +1912,7 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
 	 since the value of bytes will then be large enough that no
 	 mode will match anyway.  */
 
-      for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   tmpmode != VOIDmode;
-	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+      FOR_EACH_MODE_IN_CLASS (tmpmode, MODE_INT)
 	{
 	  /* Have we found a large enough mode?  */
 	  if (GET_MODE_SIZE (tmpmode) >= bytes)

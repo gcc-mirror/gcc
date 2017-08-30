@@ -6306,13 +6306,14 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
 		     || GET_MODE_CLASS (GET_MODE (x)) == MODE_PARTIAL_INT)
 	      {
-		machine_mode mode = GET_MODE (x);
+		machine_mode mode;
 
-		while ((mode = GET_MODE_WIDER_MODE (mode)) != VOIDmode
-		       && GET_MODE_BITSIZE (mode) <= BITS_PER_WORD)
+		FOR_EACH_WIDER_MODE (mode, GET_MODE (x))
 		  {
-		    rtx reg = simplify_subreg (mode, x, GET_MODE (x), 0);
+		    if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD)
+		      break;
 
+		    rtx reg = simplify_subreg (mode, x, GET_MODE (x), 0);
 		    if (reg == NULL_RTX || !REG_P (reg))
 		      continue;
 		    val = cselib_lookup (reg, mode, 0, VOIDmode);

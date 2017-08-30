@@ -2792,7 +2792,7 @@ expand_builtin_strlen (tree exp, rtx target,
       tree src = CALL_EXPR_ARG (exp, 0);
       rtx src_reg;
       rtx_insn *before_strlen;
-      machine_mode insn_mode = target_mode;
+      machine_mode insn_mode;
       enum insn_code icode = CODE_FOR_nothing;
       unsigned int align;
 
@@ -2820,13 +2820,11 @@ expand_builtin_strlen (tree exp, rtx target,
 	return NULL_RTX;
 
       /* Bail out if we can't compute strlen in the right mode.  */
-      while (insn_mode != VOIDmode)
+      FOR_EACH_MODE_FROM (insn_mode, target_mode)
 	{
 	  icode = optab_handler (strlen_optab, insn_mode);
 	  if (icode != CODE_FOR_nothing)
 	    break;
-
-	  insn_mode = GET_MODE_WIDER_MODE (insn_mode);
 	}
       if (insn_mode == VOIDmode)
 	return NULL_RTX;

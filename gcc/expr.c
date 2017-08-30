@@ -177,12 +177,10 @@ init_expr_target (void)
 
   mem = gen_rtx_MEM (VOIDmode, gen_raw_REG (Pmode, LAST_VIRTUAL_REGISTER + 1));
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
     {
       machine_mode srcmode;
-      for (srcmode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT); srcmode != mode;
-	   srcmode = GET_MODE_WIDER_MODE (srcmode))
+      FOR_EACH_MODE_UNTIL (srcmode, mode)
 	{
 	  enum insn_code ic;
 
@@ -549,8 +547,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 	  int shift_amount;
 
 	  /* Search for a mode to convert via.  */
-	  for (intermediate = from_mode; intermediate != VOIDmode;
-	       intermediate = GET_MODE_WIDER_MODE (intermediate))
+	  FOR_EACH_MODE_FROM (intermediate, from_mode)
 	    if (((can_extend_p (to_mode, intermediate, unsignedp)
 		  != CODE_FOR_nothing)
 		 || (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (intermediate)
@@ -702,12 +699,14 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
     {
       machine_mode tmode, xmode;
 
-      for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT), xmode = tmode;
-	   tmode != VOIDmode;
-	   xmode = tmode, tmode = GET_MODE_WIDER_MODE (tmode))
-	if (GET_MODE_SIZE (tmode) > max_pieces
-	    || SLOW_UNALIGNED_ACCESS (tmode, align))
-	  break;
+      xmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
+	{
+	  if (GET_MODE_SIZE (tmode) > max_pieces
+	      || SLOW_UNALIGNED_ACCESS (tmode, align))
+	    break;
+	  xmode = tmode;
+	}
 
       align = MAX (align, GET_MODE_ALIGNMENT (xmode));
     }
@@ -723,8 +722,7 @@ widest_int_mode_for_size (unsigned int size)
 {
   machine_mode tmode, mode = VOIDmode;
 
-  for (tmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-       tmode != VOIDmode; tmode = GET_MODE_WIDER_MODE (tmode))
+  FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
     if (GET_MODE_SIZE (tmode) < size)
       mode = tmode;
 
@@ -1728,8 +1726,7 @@ emit_block_move_via_movmem (rtx x, rtx y, rtx size, unsigned int align,
      including more than one in the machine description unless
      the more limited one has some advantage.  */
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     {
       enum insn_code code = direct_optab_handler (movmem_optab, mode);
 
@@ -2790,9 +2787,7 @@ copy_blkmode_to_reg (machine_mode mode, tree src)
     {
       /* Find the smallest integer mode large enough to hold the
 	 entire structure.  */
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
 	/* Have we found a large enough mode?  */
 	if (GET_MODE_SIZE (mode) >= bytes)
 	  break;
@@ -3048,8 +3043,7 @@ set_storage_via_setmem (rtx object, rtx size, rtx val, unsigned int align,
 	expected_size = min_size;
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     {
       enum insn_code code = direct_optab_handler (setmem_optab, mode);
 
@@ -3788,9 +3782,7 @@ compress_float_constant (rtx x, rtx y)
   else
     oldcost = set_src_cost (force_const_mem (dstmode, y), dstmode, speed);
 
-  for (srcmode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (orig_srcmode));
-       srcmode != orig_srcmode;
-       srcmode = GET_MODE_WIDER_MODE (srcmode))
+  FOR_EACH_MODE_UNTIL (srcmode, orig_srcmode)
     {
       enum insn_code ic;
       rtx trunc_y;

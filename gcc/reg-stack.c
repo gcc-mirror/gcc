@@ -3315,13 +3315,9 @@ reg_to_stack (void)
   for (i = FIRST_STACK_REG; i <= LAST_STACK_REG; i++)
     {
       machine_mode mode;
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
 	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_COMPLEX_FLOAT)
 	FP_MODE_REG (i, mode) = gen_rtx_REG (mode, i);
     }
 
