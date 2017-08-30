@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtlanal.c (nonzero_bits): Handle VOIDmode here rather than
+	in subroutines.  Return the mode mask for non-integer modes.
+	(cached_nonzero_bits): Change the type of the mode parameter
+	to scalar_int_mode.
+	(nonzero_bits1): Likewise.  Remove early exit for other mode
+	classes.  Handle CONST_INT_P first and then check whether X
+	also has a scalar integer mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (extract_left_shift): Add a mode argument and update
 	recursive calls.
 	(make_compound_operation_int): Change the type of the mode parameter
