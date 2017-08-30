@@ -2138,7 +2138,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
   rtx tem, reversed, opleft, opright;
   HOST_WIDE_INT val;
   unsigned int width = GET_MODE_PRECISION (mode);
-  scalar_int_mode int_mode;
+  scalar_int_mode int_mode, inner_mode;
 
   /* Even if we can't compute a constant result,
      there are some cases worth simplifying.  */
@@ -3374,27 +3374,24 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	 (subreg:M1 ([a|l]shiftrt:M2 (reg:M2) (const_int <c1 + c2>))
 		    <low_part>).  */
       if ((code == ASHIFTRT || code == LSHIFTRT)
-	  && !VECTOR_MODE_P (mode)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && SUBREG_P (op0)
 	  && CONST_INT_P (op1)
 	  && GET_CODE (SUBREG_REG (op0)) == LSHIFTRT
-	  && !VECTOR_MODE_P (GET_MODE (SUBREG_REG (op0)))
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op0)),
+				     &inner_mode)
 	  && CONST_INT_P (XEXP (SUBREG_REG (op0), 1))
-	  && (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
-	      > GET_MODE_BITSIZE (mode))
+	  && GET_MODE_BITSIZE (inner_mode) > GET_MODE_BITSIZE (int_mode)
 	  && (INTVAL (XEXP (SUBREG_REG (op0), 1))
-	      == (GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (op0)))
-		  - GET_MODE_BITSIZE (mode)))
+	      == GET_MODE_BITSIZE (inner_mode) - GET_MODE_BITSIZE (int_mode))
 	  && subreg_lowpart_p (op0))
 	{
 	  rtx tmp = GEN_INT (INTVAL (XEXP (SUBREG_REG (op0), 1))
 			     + INTVAL (op1));
-	  machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
-	  tmp = simplify_gen_binary (code,
-				     GET_MODE (SUBREG_REG (op0)),
+	  tmp = simplify_gen_binary (code, inner_mode,
 				     XEXP (SUBREG_REG (op0), 0),
 				     tmp);
-	  return lowpart_subreg (mode, tmp, inner_mode);
+	  return lowpart_subreg (int_mode, tmp, inner_mode);
 	}
 
       if (SHIFT_COUNT_TRUNCATED && CONST_INT_P (op1))
