@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (simplify_and_const_int): Change the type of the mode
+	parameter to scalar_int_mode.
+	(simplify_and_const_int_1): Likewise.  Update recursive call.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (simplify_compare_const): Check that the mode is a
 	scalar_int_mode (rather than VOIDmode) before testing its
 	precision.
