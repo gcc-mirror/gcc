@@ -925,7 +925,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 {
   enum rtx_code reversed;
   rtx temp;
-  scalar_int_mode inner;
+  scalar_int_mode inner, int_mode;
 
   switch (code)
     {
@@ -986,10 +986,11 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 minus 1 is (ge foo (const_int 0)) if STORE_FLAG_VALUE is -1,
 	 so we can perform the above simplification.  */
       if (STORE_FLAG_VALUE == -1
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && GET_CODE (op) == ASHIFTRT
 	  && CONST_INT_P (XEXP (op, 1))
-	  && INTVAL (XEXP (op, 1)) == GET_MODE_PRECISION (mode) - 1)
-	return simplify_gen_relational (GE, mode, VOIDmode,
+	  && INTVAL (XEXP (op, 1)) == GET_MODE_PRECISION (int_mode) - 1)
+	return simplify_gen_relational (GE, int_mode, VOIDmode,
 					XEXP (op, 0), const0_rtx);
 
 
@@ -1339,8 +1340,10 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	return op;
 
       /* If operand is known to be only -1 or 0, convert ABS to NEG.  */
-      if (num_sign_bit_copies (op, mode) == GET_MODE_PRECISION (mode))
-	return gen_rtx_NEG (mode, op);
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && (num_sign_bit_copies (op, int_mode)
+	      == GET_MODE_PRECISION (int_mode)))
+	return gen_rtx_NEG (int_mode, op);
 
       break;
 
@@ -1494,12 +1497,13 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 is similarly (zero_extend:M (subreg:O <X>)).  */
       if ((GET_CODE (op) == ASHIFTRT || GET_CODE (op) == LSHIFTRT)
 	  && GET_CODE (XEXP (op, 0)) == ASHIFT
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
 	{
 	  scalar_int_mode tmode;
-	  gcc_assert (GET_MODE_BITSIZE (mode)
+	  gcc_assert (GET_MODE_BITSIZE (int_mode)
 		      > GET_MODE_BITSIZE (GET_MODE (op)));
 	  if (int_mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
 				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
@@ -1509,7 +1513,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	      if (inner)
 		return simplify_gen_unary (GET_CODE (op) == ASHIFTRT
 					   ? SIGN_EXTEND : ZERO_EXTEND,
-					   mode, inner, tmode);
+					   int_mode, inner, tmode);
 	    }
 	}
 
@@ -1610,6 +1614,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 GET_MODE_PRECISION (N) - I bits.  */
       if (GET_CODE (op) == LSHIFTRT
 	  && GET_CODE (XEXP (op, 0)) == ASHIFT
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && GET_MODE_PRECISION (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
@@ -1621,7 +1626,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
 	      if (inner)
-		return simplify_gen_unary (ZERO_EXTEND, mode, inner, tmode);
+		return simplify_gen_unary (ZERO_EXTEND, int_mode,
+					   inner, tmode);
 	    }
 	}
 

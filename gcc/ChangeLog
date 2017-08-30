@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (combine_simplify_rtx): Add checks for
+	is_a <scalar_int_mode>.
+	(simplify_if_then_else): Likewise.
+	(make_field_assignment): Likewise.
+	(simplify_comparison): Likewise.
+	* ifcvt.c (noce_try_bitop): Likewise.
+	* loop-invariant.c (canonicalize_address_mult): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* simplify-rtx.c (simplify_binary_operation_1): Use
 	is_a <scalar_int_mode> instead of !VECTOR_MODE_P.
 

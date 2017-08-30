@@ -5850,13 +5850,14 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
       if (!REG_P (temp)
 	  && ! (GET_CODE (temp) == SUBREG
 		&& REG_P (SUBREG_REG (temp)))
-	  && (i = exact_log2 (nonzero_bits (temp, mode))) >= 0)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && (i = exact_log2 (nonzero_bits (temp, int_mode))) >= 0)
 	{
 	  rtx temp1 = simplify_shift_const
-	    (NULL_RTX, ASHIFTRT, mode,
-	     simplify_shift_const (NULL_RTX, ASHIFT, mode, temp,
-				   GET_MODE_PRECISION (mode) - 1 - i),
-	     GET_MODE_PRECISION (mode) - 1 - i);
+	    (NULL_RTX, ASHIFTRT, int_mode,
+	     simplify_shift_const (NULL_RTX, ASHIFT, int_mode, temp,
+				   GET_MODE_PRECISION (int_mode) - 1 - i),
+	     GET_MODE_PRECISION (int_mode) - 1 - i);
 
 	  /* If all we did was surround TEMP with the two shifts, we
 	     haven't improved anything, so don't use it.  Otherwise,
@@ -5947,12 +5948,15 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	  && !REG_P (XEXP (x, 0))
 	  && ! (GET_CODE (XEXP (x, 0)) == SUBREG
 		&& REG_P (SUBREG_REG (XEXP (x, 0))))
-	  && nonzero_bits (XEXP (x, 0), mode) == 1)
-	return simplify_shift_const (NULL_RTX, ASHIFTRT, mode,
-	   simplify_shift_const (NULL_RTX, ASHIFT, mode,
-				 gen_rtx_XOR (mode, XEXP (x, 0), const1_rtx),
-				 GET_MODE_PRECISION (mode) - 1),
-	   GET_MODE_PRECISION (mode) - 1);
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && nonzero_bits (XEXP (x, 0), int_mode) == 1)
+	return simplify_shift_const
+	  (NULL_RTX, ASHIFTRT, int_mode,
+	   simplify_shift_const (NULL_RTX, ASHIFT, int_mode,
+				 gen_rtx_XOR (int_mode, XEXP (x, 0),
+					      const1_rtx),
+				 GET_MODE_PRECISION (int_mode) - 1),
+	   GET_MODE_PRECISION (int_mode) - 1);
 
       /* If we are adding two things that have no bits in common, convert
 	 the addition into an IOR.  This will often be further simplified,
@@ -5990,11 +5994,12 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
     case MINUS:
       /* (minus <foo> (and <foo> (const_int -pow2))) becomes
 	 (and <foo> (const_int pow2-1))  */
-      if (GET_CODE (XEXP (x, 1)) == AND
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_CODE (XEXP (x, 1)) == AND
 	  && CONST_INT_P (XEXP (XEXP (x, 1), 1))
 	  && pow2p_hwi (-UINTVAL (XEXP (XEXP (x, 1), 1)))
 	  && rtx_equal_p (XEXP (XEXP (x, 1), 0), XEXP (x, 0)))
-	return simplify_and_const_int (NULL_RTX, mode, XEXP (x, 0),
+	return simplify_and_const_int (NULL_RTX, int_mode, XEXP (x, 0),
 				       -INTVAL (XEXP (XEXP (x, 1), 1)) - 1);
       break;
 
@@ -6025,14 +6030,16 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
     case UDIV:
       /* If this is a divide by a power of two, treat it as a shift if
 	 its first operand is a shift.  */
-      if (CONST_INT_P (XEXP (x, 1))
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && CONST_INT_P (XEXP (x, 1))
 	  && (i = exact_log2 (UINTVAL (XEXP (x, 1)))) >= 0
 	  && (GET_CODE (XEXP (x, 0)) == ASHIFT
 	      || GET_CODE (XEXP (x, 0)) == LSHIFTRT
 	      || GET_CODE (XEXP (x, 0)) == ASHIFTRT
 	      || GET_CODE (XEXP (x, 0)) == ROTATE
 	      || GET_CODE (XEXP (x, 0)) == ROTATERT))
-	return simplify_shift_const (NULL_RTX, LSHIFTRT, mode, XEXP (x, 0), i);
+	return simplify_shift_const (NULL_RTX, LSHIFTRT, int_mode,
+				     XEXP (x, 0), i);
       break;
 
     case EQ:  case NE:
@@ -6316,22 +6323,28 @@ simplify_if_then_else (rtx x)
 	  std::swap (true_rtx, false_rtx);
 	}
 
-      /* If we are comparing against zero and the expression being tested has
-	 only a single bit that might be nonzero, that is its value when it is
-	 not equal to zero.  Similarly if it is known to be -1 or 0.  */
-
-      if (true_code == EQ && true_val == const0_rtx
-	  && pow2p_hwi (nzb = nonzero_bits (from, GET_MODE (from))))
+      scalar_int_mode from_mode;
+      if (is_a <scalar_int_mode> (GET_MODE (from), &from_mode))
 	{
-	  false_code = EQ;
-	  false_val = gen_int_mode (nzb, GET_MODE (from));
-	}
-      else if (true_code == EQ && true_val == const0_rtx
-	       && (num_sign_bit_copies (from, GET_MODE (from))
-		   == GET_MODE_PRECISION (GET_MODE (from))))
-	{
-	  false_code = EQ;
-	  false_val = constm1_rtx;
+	  /* If we are comparing against zero and the expression being
+	     tested has only a single bit that might be nonzero, that is
+	     its value when it is not equal to zero.  Similarly if it is
+	     known to be -1 or 0.  */
+	  if (true_code == EQ
+	      && true_val == const0_rtx
+	      && pow2p_hwi (nzb = nonzero_bits (from, from_mode)))
+	    {
+	      false_code = EQ;
+	      false_val = gen_int_mode (nzb, from_mode);
+	    }
+	  else if (true_code == EQ
+		   && true_val == const0_rtx
+		   && (num_sign_bit_copies (from, from_mode)
+		       == GET_MODE_PRECISION (from_mode)))
+	    {
+	      false_code = EQ;
+	      false_val = constm1_rtx;
+	    }
 	}
 
       /* Now simplify an arm if we know the value of the register in the
@@ -6581,16 +6594,19 @@ simplify_if_then_else (rtx x)
      negation of a single bit, we can convert this operation to a shift.  We
      can actually do this more generally, but it doesn't seem worth it.  */
 
-  if (true_code == NE && XEXP (cond, 1) == const0_rtx
-      && false_rtx == const0_rtx && CONST_INT_P (true_rtx)
-      && ((1 == nonzero_bits (XEXP (cond, 0), mode)
+  if (true_code == NE
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && XEXP (cond, 1) == const0_rtx
+      && false_rtx == const0_rtx
+      && CONST_INT_P (true_rtx)
+      && ((1 == nonzero_bits (XEXP (cond, 0), int_mode)
 	   && (i = exact_log2 (UINTVAL (true_rtx))) >= 0)
-	  || ((num_sign_bit_copies (XEXP (cond, 0), mode)
-	       == GET_MODE_PRECISION (mode))
+	  || ((num_sign_bit_copies (XEXP (cond, 0), int_mode)
+	       == GET_MODE_PRECISION (int_mode))
 	      && (i = exact_log2 (-UINTVAL (true_rtx))) >= 0)))
     return
-      simplify_shift_const (NULL_RTX, ASHIFT, mode,
-			    gen_lowpart (mode, XEXP (cond, 0)), i);
+      simplify_shift_const (NULL_RTX, ASHIFT, int_mode,
+			    gen_lowpart (int_mode, XEXP (cond, 0)), i);
 
   /* (IF_THEN_ELSE (NE A 0) C1 0) is A or a zero-extend of A if the only
      non-zero bit in A is C1.  */
@@ -9461,7 +9477,11 @@ make_field_assignment (rtx x)
   HOST_WIDE_INT pos;
   unsigned HOST_WIDE_INT len;
   rtx other;
-  machine_mode mode;
+
+  /* All the rules in this function are specific to scalar integers.  */
+  scalar_int_mode mode;
+  if (!is_a <scalar_int_mode> (GET_MODE (dest), &mode))
+    return x;
 
   /* If SRC was (and (not (ashift (const_int 1) POS)) DEST), this is
      a clear of a one-bit field.  We will have changed it to
@@ -9534,7 +9554,6 @@ make_field_assignment (rtx x)
       /* Partial overlap.  We can reduce the source AND.  */
       if ((and_mask & ze_mask) != and_mask)
 	{
-	  mode = GET_MODE (src);
 	  src = gen_rtx_AND (mode, XEXP (src, 0),
 			     gen_int_mode (and_mask & ze_mask, mode));
 	  return gen_rtx_SET (dest, src);
@@ -9553,7 +9572,10 @@ make_field_assignment (rtx x)
      assignment.  The first one we are likely to encounter is an outer
      narrowing SUBREG, which we can just strip for the purposes of
      identifying the constant-field assignment.  */
-  if (GET_CODE (src) == SUBREG && subreg_lowpart_p (src))
+  scalar_int_mode src_mode = mode;
+  if (GET_CODE (src) == SUBREG
+      && subreg_lowpart_p (src)
+      && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (src)), &src_mode))
     src = SUBREG_REG (src);
 
   if (GET_CODE (src) != IOR && GET_CODE (src) != XOR)
@@ -9599,10 +9621,11 @@ make_field_assignment (rtx x)
   else
     return x;
 
-  pos = get_pos_from_mask ((~c1) & GET_MODE_MASK (GET_MODE (dest)), &len);
-  if (pos < 0 || pos + len > GET_MODE_PRECISION (GET_MODE (dest))
-      || GET_MODE_PRECISION (GET_MODE (dest)) > HOST_BITS_PER_WIDE_INT
-      || (c1 & nonzero_bits (other, GET_MODE (dest))) != 0)
+  pos = get_pos_from_mask ((~c1) & GET_MODE_MASK (mode), &len);
+  if (pos < 0
+      || pos + len > GET_MODE_PRECISION (mode)
+      || GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT
+      || (c1 & nonzero_bits (other, mode)) != 0)
     return x;
 
   assign = make_extraction (VOIDmode, dest, pos, NULL_RTX, len, 1, 1, 0);
@@ -9611,17 +9634,16 @@ make_field_assignment (rtx x)
 
   /* The mode to use for the source is the mode of the assignment, or of
      what is inside a possible STRICT_LOW_PART.  */
-  mode = (GET_CODE (assign) == STRICT_LOW_PART
-	  ? GET_MODE (XEXP (assign, 0)) : GET_MODE (assign));
+  machine_mode new_mode = (GET_CODE (assign) == STRICT_LOW_PART
+			   ? GET_MODE (XEXP (assign, 0)) : GET_MODE (assign));
 
   /* Shift OTHER right POS places and make it the source, restricting it
      to the proper length and mode.  */
 
   src = canon_reg_for_combine (simplify_shift_const (NULL_RTX, LSHIFTRT,
-						     GET_MODE (src),
-						     other, pos),
+						     src_mode, other, pos),
 			       dest);
-  src = force_to_mode (src, mode,
+  src = force_to_mode (src, new_mode,
 		       len >= HOST_BITS_PER_WIDE_INT
 		       ? HOST_WIDE_INT_M1U
 		       : (HOST_WIDE_INT_1U << len) - 1,
@@ -11745,16 +11767,17 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  && GET_CODE (XEXP (op1, 0)) == ASHIFT
 	  && GET_CODE (XEXP (XEXP (op0, 0), 0)) == SUBREG
 	  && GET_CODE (XEXP (XEXP (op1, 0), 0)) == SUBREG
-	  && (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0)))
-	      == GET_MODE (SUBREG_REG (XEXP (XEXP (op1, 0), 0))))
+	  && is_a <scalar_int_mode> (GET_MODE (op0), &mode)
+	  && (is_a <scalar_int_mode>
+	      (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))), &inner_mode))
+	  && inner_mode == GET_MODE (SUBREG_REG (XEXP (XEXP (op1, 0), 0)))
 	  && CONST_INT_P (XEXP (op0, 1))
 	  && XEXP (op0, 1) == XEXP (op1, 1)
 	  && XEXP (op0, 1) == XEXP (XEXP (op0, 0), 1)
 	  && XEXP (op0, 1) == XEXP (XEXP (op1, 0), 1)
 	  && (INTVAL (XEXP (op0, 1))
-	      == (GET_MODE_PRECISION (GET_MODE (op0))
-		  - (GET_MODE_PRECISION
-		     (GET_MODE (SUBREG_REG (XEXP (XEXP (op0, 0), 0))))))))
+	      == (GET_MODE_PRECISION (mode)
+		  - GET_MODE_PRECISION (inner_mode))))
 	{
 	  op0 = SUBREG_REG (XEXP (XEXP (op0, 0), 0));
 	  op1 = SUBREG_REG (XEXP (XEXP (op1, 0), 0));
