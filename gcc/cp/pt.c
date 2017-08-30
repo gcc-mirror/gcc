@@ -6400,16 +6400,6 @@ unify_template_argument_mismatch (bool explain_p, tree parm, tree arg)
   return unify_invalid (explain_p);
 }
 
-static int
-unify_overload_resolution_failure (bool explain_p, tree arg)
-{
-  if (explain_p)
-    inform (input_location,
-	    "  could not resolve address from overloaded function %qE",
-	    arg);
-  return unify_invalid (explain_p);
-}
-
 /* Attempt to convert the non-type template parameter EXPR to the
    indicated TYPE.  If the conversion is successful, return the
    converted value.  If the conversion is unsuccessful, return
@@ -19305,12 +19295,12 @@ unify_one_argument (tree tparms, tree targs, tree parm, tree arg,
 		 templates and at most one of a set of
 		 overloaded functions provides a unique
 		 match.  */
-
-	      if (resolve_overloaded_unification
-		  (tparms, targs, parm, arg, strict,
-		   arg_strict, explain_p))
-		return unify_success (explain_p);
-	      return unify_overload_resolution_failure (explain_p, arg);
+	      resolve_overloaded_unification (tparms, targs, parm,
+					      arg, strict,
+					      arg_strict, explain_p);
+	      /* If a unique match was not found, this is a
+	         non-deduced context, so we still succeed. */
+	      return unify_success (explain_p);
 	    }
 
 	  arg_expr = arg;
