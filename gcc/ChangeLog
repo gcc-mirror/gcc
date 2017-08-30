@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (SCALAR_FLOAT_TYPE_MODE): New macro.
+	* builtins.c (expand_builtin_signbit): Use it instead of TYPE_MODE.
+	* fold-const.c (fold_convert_const_real_from_fixed): Likewise.
+	(native_encode_real): Likewise.
+	(native_interpret_real): Likewise.
+	* hsa-brig.c (emit_immediate_scalar_to_buffer): Likewise.
+	* tree-vrp.c (simplify_float_conversion_using_ranges): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs-libfuncs.c (gen_trunc_conv_libfunc): Use is_a
 	<scalar_float_mode>.  Simplify.
 	(gen_extend_conv_libfunc): Likewise.

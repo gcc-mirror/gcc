@@ -46,7 +46,7 @@ size_integer (int kind)
 static size_t
 size_float (int kind)
 {
-  return GET_MODE_SIZE (TYPE_MODE (gfc_get_real_type (kind)));;
+  return GET_MODE_SIZE (SCALAR_FLOAT_TYPE_MODE (gfc_get_real_type (kind)));
 }
 
 

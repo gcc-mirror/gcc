@@ -2032,7 +2032,8 @@ fold_convert_const_real_from_fixed (tree type, const_tree arg1)
   REAL_VALUE_TYPE value;
   tree t;
 
-  real_convert_from_fixed (&value, TYPE_MODE (type), &TREE_FIXED_CST (arg1));
+  real_convert_from_fixed (&value, SCALAR_FLOAT_TYPE_MODE (type),
+			   &TREE_FIXED_CST (arg1));
   t = build_real (type, value);
 
   TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
@@ -7057,7 +7058,7 @@ static int
 native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_FLOAT_TYPE_MODE (type));
   int byte, offset, word, words, bitpos;
   unsigned char value;
 
@@ -7302,7 +7303,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
-  machine_mode mode = TYPE_MODE (type);
+  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   unsigned char value;
   /* There are always 32 bits in each long, no matter the size of

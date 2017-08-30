@@ -664,7 +664,7 @@ encode_type (tree type, int curtype, int format)
       {
 	char c;
 	/* Floating point types.  */
-	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+	switch (GET_MODE_BITSIZE (SCALAR_FLOAT_TYPE_MODE (type)))
 	  {
 	  case 32:  c = 'f'; break;
 	  case 64:  c = 'd'; break;
