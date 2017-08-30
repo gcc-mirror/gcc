@@ -445,7 +445,6 @@ static rtx expand_compound_operation (rtx);
 static const_rtx expand_field_assignment (const_rtx);
 static rtx make_extraction (machine_mode, rtx, HOST_WIDE_INT,
 			    rtx, unsigned HOST_WIDE_INT, int, int, int);
-static rtx extract_left_shift (rtx, int);
 static int get_pos_from_mask (unsigned HOST_WIDE_INT,
 			      unsigned HOST_WIDE_INT *);
 static rtx canon_reg_for_combine (rtx, rtx);
@@ -7789,14 +7788,14 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   return new_rtx;
 }
 
-/* See if X contains an ASHIFT of COUNT or more bits that can be commuted
-   with any other operations in X.  Return X without that shift if so.  */
+/* See if X (of mode MODE) contains an ASHIFT of COUNT or more bits that
+   can be commuted with any other operations in X.  Return X without
+   that shift if so.  */
 
 static rtx
-extract_left_shift (rtx x, int count)
+extract_left_shift (scalar_int_mode mode, rtx x, int count)
 {
   enum rtx_code code = GET_CODE (x);
-  machine_mode mode = GET_MODE (x);
   rtx tem;
 
   switch (code)
@@ -7812,7 +7811,7 @@ extract_left_shift (rtx x, int count)
       break;
 
     case NEG:  case NOT:
-      if ((tem = extract_left_shift (XEXP (x, 0), count)) != 0)
+      if ((tem = extract_left_shift (mode, XEXP (x, 0), count)) != 0)
 	return simplify_gen_unary (code, mode, tem, mode);
 
       break;
@@ -7823,7 +7822,7 @@ extract_left_shift (rtx x, int count)
       if (CONST_INT_P (XEXP (x, 1))
 	  && (UINTVAL (XEXP (x, 1))
 	      & (((HOST_WIDE_INT_1U << count)) - 1)) == 0
-	  && (tem = extract_left_shift (XEXP (x, 0), count)) != 0)
+	  && (tem = extract_left_shift (mode, XEXP (x, 0), count)) != 0)
 	{
 	  HOST_WIDE_INT val = INTVAL (XEXP (x, 1)) >> count;
 	  return simplify_gen_binary (code, mode, tem,
@@ -7851,7 +7850,7 @@ extract_left_shift (rtx x, int count)
    - Return a new rtx, which the caller returns directly.  */
 
 static rtx
-make_compound_operation_int (machine_mode mode, rtx *x_ptr,
+make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 			     enum rtx_code in_code,
 			     enum rtx_code *next_code_ptr)
 {
@@ -8149,7 +8148,7 @@ make_compound_operation_int (machine_mode mode, rtx *x_ptr,
 	  && INTVAL (rhs) >= 0
 	  && INTVAL (rhs) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (rhs) < mode_width
-	  && (new_rtx = extract_left_shift (lhs, INTVAL (rhs))) != 0)
+	  && (new_rtx = extract_left_shift (mode, lhs, INTVAL (rhs))) != 0)
 	new_rtx = make_extraction (mode, make_compound_operation (new_rtx, next_code),
 			       0, NULL_RTX, mode_width - INTVAL (rhs),
 			       code == LSHIFTRT, 0, in_code == COMPARE);
