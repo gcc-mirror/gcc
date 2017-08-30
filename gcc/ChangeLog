@@ -2,6 +2,25 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* fixed-value.h (fixed_from_double_int): Take a scalar_mode
+	rather than a machine_mode.
+	(fixed_from_string): Likewise.
+	(fixed_convert): Likewise.
+	(fixed_convert_from_int): Likewise.
+	(fixed_convert_from_real): Likewise.
+	(real_convert_from_fixed): Likewise.
+	* fixed-value.c (fixed_from_double_int): Likewise.
+	(fixed_from_string): Likewise.
+	(fixed_convert): Likewise.
+	(fixed_convert_from_int): Likewise.
+	(fixed_convert_from_real): Likewise.
+	(real_convert_from_fixed): Likewise.
+	* config/avr/avr.c (avr_out_round): Use as_a <scalar_mode>.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* emit-rtl.c (immed_double_const): Use is_a <scalar_mode> instead
 	of separate mode class checks.  Do not allow vector modes here.
 	(immed_wide_int_const): Use as_a <scalar_mode>.
