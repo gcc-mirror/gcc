@@ -3456,8 +3456,8 @@ omp_clause_aligned_alignment (tree clause)
 	  continue;
 	while (vs
 	       && GET_MODE_SIZE (vmode) < vs
-	       && GET_MODE_2XWIDER_MODE (vmode) != VOIDmode)
-	  vmode = GET_MODE_2XWIDER_MODE (vmode);
+	       && GET_MODE_2XWIDER_MODE (vmode).exists ())
+	  vmode = GET_MODE_2XWIDER_MODE (vmode).require ();
 
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)

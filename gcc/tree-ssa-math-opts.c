@@ -3283,8 +3283,8 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 	      || (TYPE_UNSIGNED (type2)
 		  && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
 	    {
-	      from_mode = GET_MODE_WIDER_MODE (from_mode);
-	      if (GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
+	      if (!GET_MODE_WIDER_MODE (from_mode).exists (&from_mode)
+		  || GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
 		return false;
 	    }
 
@@ -3465,8 +3465,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 	  || (from_unsigned2
 	      && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
 	{
-	  from_mode = GET_MODE_WIDER_MODE (from_mode);
-	  if (GET_MODE_SIZE (from_mode) >= GET_MODE_SIZE (to_mode))
+	  if (!GET_MODE_WIDER_MODE (from_mode).exists (&from_mode)
+	      || GET_MODE_SIZE (from_mode) >= GET_MODE_SIZE (to_mode))
 	    return false;
 	}
 

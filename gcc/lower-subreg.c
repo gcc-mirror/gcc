@@ -266,7 +266,7 @@ init_lower_subreg (void)
 
   memset (this_target_lower_subreg, 0, sizeof (*this_target_lower_subreg));
 
-  twice_word_mode = GET_MODE_2XWIDER_MODE (word_mode);
+  twice_word_mode = GET_MODE_2XWIDER_MODE (word_mode).require ();
 
   rtxes.target = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
   rtxes.source = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 2);

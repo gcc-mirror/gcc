@@ -425,7 +425,7 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
   for (; (permit_non_widening || from_mode != to_mode)
 	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
 	 && from_mode != VOIDmode;
-       from_mode = GET_MODE_WIDER_MODE (from_mode))
+       from_mode = GET_MODE_WIDER_MODE (from_mode).else_void ())
     {
       enum insn_code handler = widening_optab_handler (op, to_mode,
 						       from_mode);

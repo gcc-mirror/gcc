@@ -28534,6 +28534,7 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   bool need_zero_guard = false;
   bool noalign;
   machine_mode move_mode = VOIDmode;
+  machine_mode wider_mode;
   int unroll_factor = 1;
   /* TODO: Once value ranges are available, fill in proper data.  */
   unsigned HOST_WIDE_INT min_size = 0;
@@ -28627,9 +28628,9 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       unroll_factor = 4;
       /* Find the widest supported mode.  */
       move_mode = word_mode;
-      while (optab_handler (mov_optab, GET_MODE_WIDER_MODE (move_mode))
-	     != CODE_FOR_nothing)
-	  move_mode = GET_MODE_WIDER_MODE (move_mode);
+      while (GET_MODE_WIDER_MODE (move_mode).exists (&wider_mode)
+	     && optab_handler (mov_optab, wider_mode) != CODE_FOR_nothing)
+	move_mode = wider_mode;
 
       /* Find the corresponding vector mode with the same size as MOVE_MODE.
 	 MOVE_MODE is an integer mode at the moment (SI, DI, TI, etc.).  */
@@ -43502,7 +43503,7 @@ static inline machine_mode
 get_mode_wider_vector (machine_mode o)
 {
   /* ??? Rely on the ordering that genmodes.c gives to vectors.  */
-  machine_mode n = GET_MODE_WIDER_MODE (o);
+  machine_mode n = GET_MODE_WIDER_MODE (o).require ();
   gcc_assert (GET_MODE_NUNITS (o) == GET_MODE_NUNITS (n) * 2);
   gcc_assert (GET_MODE_SIZE (o) == GET_MODE_SIZE (n));
   return n;
@@ -46865,7 +46866,8 @@ expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   if (vselect_insn == NULL_RTX)
     init_vselect_insn ();
 
-  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  if (!GET_MODE_2XWIDER_MODE (GET_MODE (op0)).exists (&v2mode))
+    return false;
   x = XEXP (SET_SRC (PATTERN (vselect_insn)), 0);
   PUT_MODE (x, v2mode);
   XEXP (x, 0) = op0;

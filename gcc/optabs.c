@@ -1186,13 +1186,13 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
      takes operands of this mode and makes a wider mode.  */
 
   if (binoptab == smul_optab
-      && GET_MODE_2XWIDER_MODE (mode) != VOIDmode
-      && (widening_optab_handler ((unsignedp ? umul_widen_optab
-					     : smul_widen_optab),
-				  GET_MODE_2XWIDER_MODE (mode), mode)
-	  != CODE_FOR_nothing))
+      && GET_MODE_2XWIDER_MODE (mode).exists (&wider_mode)
+      && (convert_optab_handler ((unsignedp
+				  ? umul_widen_optab
+				  : smul_widen_optab),
+				 wider_mode, mode) != CODE_FOR_nothing))
     {
-      temp = expand_binop (GET_MODE_2XWIDER_MODE (mode),
+      temp = expand_binop (wider_mode,
 			   unsignedp ? umul_widen_optab : smul_widen_optab,
 			   op0, op1, NULL_RTX, unsignedp, OPTAB_DIRECT);
 
@@ -1253,14 +1253,14 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       && methods != OPTAB_DIRECT && methods != OPTAB_LIB)
     FOR_EACH_WIDER_MODE (wider_mode, mode)
       {
+	machine_mode next_mode;
 	if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
 	    || (binoptab == smul_optab
-		&& GET_MODE_WIDER_MODE (wider_mode) != VOIDmode
+		&& GET_MODE_WIDER_MODE (wider_mode).exists (&next_mode)
 		&& (find_widening_optab_handler ((unsignedp
 						  ? umul_widen_optab
 						  : smul_widen_optab),
-						 GET_MODE_WIDER_MODE (wider_mode),
-						 mode, 0)
+						 next_mode, mode, 0)
 		    != CODE_FOR_nothing)))
 	  {
 	    rtx xop0 = op0, xop1 = op1;
@@ -3702,7 +3702,7 @@ can_compare_p (enum rtx_code code, machine_mode mode,
 	  && optab_handler (cmov_optab, mode) != CODE_FOR_nothing)
 	return 1;
 
-      mode = GET_MODE_WIDER_MODE (mode);
+      mode = GET_MODE_WIDER_MODE (mode).else_void ();
       PUT_MODE (test, mode);
     }
   while (mode != VOIDmode);

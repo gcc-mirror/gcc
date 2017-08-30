@@ -422,6 +422,18 @@ class VecPrinter:
 
 ######################################################################
 
+class OptMachineModePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        name = str(self.gdbval['m_mode'])
+	if name == 'E_VOIDmode':
+	    return '<None>'
+        return name[2:] if name.startswith('E_') else name
+
+######################################################################
+
 # TODO:
 #   * hashtab
 #   * location_t
@@ -517,6 +529,9 @@ def build_pretty_printer():
     pp.add_printer_for_regex(r'vec<(\S+), (\S+), (\S+)> \*',
                              'vec',
                              VecPrinter)
+
+    pp.add_printer_for_regex(r'opt_mode<(\S+)>',
+                             'opt_mode', OptMachineModePrinter)
 
     return pp
 

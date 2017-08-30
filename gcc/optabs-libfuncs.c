@@ -918,9 +918,10 @@ init_sync_libfuncs_1 (optab tab, const char *base, int max)
   mode = QImode;
   for (i = 1; i <= max; i *= 2)
     {
+      if (i > 1)
+	mode = GET_MODE_2XWIDER_MODE (mode).require ();
       buf[len + 1] = '0' + i;
       set_optab_libfunc (tab, mode, buf);
-      mode = GET_MODE_2XWIDER_MODE (mode);
     }
 }
 

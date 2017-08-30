@@ -197,9 +197,7 @@ while (0)
 
 /* Returns 1 if the register is longer than word size, 0 otherwise.  */
 #define LONG_REG_P(REGNO)                                                    \
-  (HARD_REGNO_NREGS (REGNO,                                                  \
-		     GET_MODE_WIDER_MODE (smallest_mode_for_size	     \
-					 (BITS_PER_WORD, MODE_INT))) == 1)
+  (HARD_REGNO_NREGS (REGNO, GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
 
 #define HARD_REGNO_NREGS(REGNO, MODE)                                         \
  ((REGNO >= CR16_FIRST_DWORD_REGISTER)                                        \

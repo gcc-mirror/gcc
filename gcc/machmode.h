@@ -221,6 +221,71 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 #define POINTER_BOUNDS_MODE_P(MODE)      \
   (GET_MODE_CLASS (MODE) == MODE_POINTER_BOUNDS)
 
+/* An optional T (i.e. a T or nothing), where T is some form of mode class.  */
+template<typename T>
+class opt_mode
+{
+public:
+  enum from_int { dummy = MAX_MACHINE_MODE };
+
+  ALWAYS_INLINE opt_mode () : m_mode (E_VOIDmode) {}
+  ALWAYS_INLINE opt_mode (const T &m) : m_mode (m) {}
+  ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  machine_mode else_void () const;
+  T require () const;
+
+  bool exists () const;
+  template<typename U> bool exists (U *) const;
+
+private:
+  machine_mode m_mode;
+};
+
+/* If the object contains a T, return its enum value, otherwise return
+   E_VOIDmode.  */
+
+template<typename T>
+ALWAYS_INLINE machine_mode
+opt_mode<T>::else_void () const
+{
+  return m_mode;
+}
+
+/* Assert that the object contains a T and return it.  */
+
+template<typename T>
+inline T
+opt_mode<T>::require () const
+{
+  gcc_checking_assert (m_mode != E_VOIDmode);
+  return typename mode_traits<T>::from_int (m_mode);
+}
+
+/* Return true if the object contains a T rather than nothing.  */
+
+template<typename T>
+ALWAYS_INLINE bool
+opt_mode<T>::exists () const
+{
+  return m_mode != E_VOIDmode;
+}
+
+/* Return true if the object contains a T, storing it in *MODE if so.  */
+
+template<typename T>
+template<typename U>
+inline bool
+opt_mode<T>::exists (U *mode) const
+{
+  if (m_mode != E_VOIDmode)
+    {
+      *mode = T (typename mode_traits<T>::from_int (m_mode));
+      return true;
+    }
+  return false;
+}
+
 /* Return the base GET_MODE_SIZE value for MODE.  */
 
 ALWAYS_INLINE unsigned short
@@ -352,13 +417,22 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern const unsigned char mode_wider[NUM_MACHINE_MODES];
-#define GET_MODE_WIDER_MODE(MODE) ((machine_mode) mode_wider[MODE])
+template<typename T>
+ALWAYS_INLINE opt_mode<T>
+GET_MODE_WIDER_MODE (const T &m)
+{
+  return typename opt_mode<T>::from_int (mode_wider[m]);
+}
 
 /* For scalars, this is a mode with twice the precision.  For vectors,
    this is a mode with the same inner mode but with twice the elements.  */
-extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
-#define GET_MODE_2XWIDER_MODE(MODE) ((machine_mode) mode_2xwider[MODE])
+
+template<typename T>
+ALWAYS_INLINE opt_mode<T>
+GET_MODE_2XWIDER_MODE (const T &m)
+{
+  return typename opt_mode<T>::from_int (mode_2xwider[m]);
+}
 
 /* Get the complex mode from the component mode.  */
 extern const unsigned char mode_complex[NUM_MACHINE_MODES];
@@ -497,17 +571,17 @@ namespace mode_iterator
   inline void
   get_wider (machine_mode *iter)
   {
-    *iter = GET_MODE_WIDER_MODE (*iter);
+    *iter = GET_MODE_WIDER_MODE (*iter).else_void ();
   }
 
   /* Set mode iterator *ITER to the next widest mode in the same class.
      Such a mode is known to exist.  */
 
+  template<typename T>
   inline void
-  get_known_wider (machine_mode *iter)
+  get_known_wider (T *iter)
   {
-    *iter = GET_MODE_WIDER_MODE (*iter);
-    gcc_checking_assert (*iter != VOIDmode);
+    *iter = GET_MODE_WIDER_MODE (*iter).require ();
   }
 
   /* Set mode iterator *ITER to the mode that is two times wider than the
@@ -516,7 +590,7 @@ namespace mode_iterator
   inline void
   get_2xwider (machine_mode *iter)
   {
-    *iter = GET_MODE_2XWIDER_MODE (*iter);
+    *iter = GET_MODE_2XWIDER_MODE (*iter).else_void ();
   }
 }
 

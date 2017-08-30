@@ -5671,13 +5671,15 @@ init_num_sign_bit_copies_in_rep (void)
 	/* Currently, it is assumed that TARGET_MODE_REP_EXTENDED
 	   extends to the next widest mode.  */
 	gcc_assert (targetm.mode_rep_extended (mode, in_mode) == UNKNOWN
-		    || GET_MODE_WIDER_MODE (mode) == in_mode);
+		    || GET_MODE_WIDER_MODE (mode).require () == in_mode);
 
 	/* We are in in_mode.  Count how many bits outside of mode
 	   have to be copies of the sign-bit.  */
 	FOR_EACH_MODE (i, mode, in_mode)
 	  {
-	    machine_mode wider = GET_MODE_WIDER_MODE (i);
+	    /* This must always exist (for the last iteration it will be
+	       IN_MODE).  */
+	    machine_mode wider = GET_MODE_WIDER_MODE (i).require ();
 
 	    if (targetm.mode_rep_extended (i, wider) == SIGN_EXTEND
 		/* We can only check sign-bit copies starting from the

@@ -8706,12 +8706,11 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
       last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
 
       /* Attempt to merge adjacent registers or memory.  */
-      wider_mode = GET_MODE_WIDER_MODE (mode);
       for (j = i + 1; j < var->n_var_parts; j++)
 	if (last_limit <= VAR_PART_OFFSET (var, j))
 	  break;
       if (j < var->n_var_parts
-	  && wider_mode != VOIDmode
+	  && GET_MODE_WIDER_MODE (mode).exists (&wider_mode)
 	  && var->var_part[j].cur_loc
 	  && mode == GET_MODE (var->var_part[j].cur_loc)
 	  && (REG_P (loc[n_var_parts]) || MEM_P (loc[n_var_parts]))
