@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* simplify-rtx.c (simplify_binary_operation_1): Use
+	is_a <scalar_int_mode> instead of !VECTOR_MODE_P.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* wide-int.h (int_traits<unsigned char>) New class.
 	(int_traits<unsigned short>) Likewise.
 	* cfgexpand.c (expand_debug_expr): Use is_a <scalar_int_mode>.
