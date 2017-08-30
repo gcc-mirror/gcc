@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-attribs.c (handle_mode_attribute): Check for a scalar_int_mode
+	before calling targetm.addr_space.valid_pointer_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
