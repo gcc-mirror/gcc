@@ -1,3 +1,9 @@
+2017-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82030 - ICE inheriting from multiple lambdas
+	PR c++/80767
+	* call.c (compare_ics): Handle null candidate.
+
 2017-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
 
 	Make taking the address of an overloaded function a non-deduced context
