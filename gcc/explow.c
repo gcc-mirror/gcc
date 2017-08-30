@@ -787,6 +787,7 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
 #ifdef PROMOTE_MODE
   enum tree_code code;
   int unsignedp;
+  scalar_mode smode;
 #endif
 
   /* For libcalls this is invoked without TYPE from the backends
@@ -806,9 +807,11 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
     {
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
-      PROMOTE_MODE (mode, unsignedp, type);
+      /* Values of these types always have scalar mode.  */
+      smode = as_a <scalar_mode> (mode);
+      PROMOTE_MODE (smode, unsignedp, type);
       *punsignedp = unsignedp;
-      return mode;
+      return smode;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
     case REFERENCE_TYPE:

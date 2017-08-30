@@ -650,7 +650,7 @@ extern machine_mode bitwise_mode_for_mode (machine_mode);
 /* Return a mode that is suitable for representing a vector,
    or BLKmode on failure.  */
 
-extern machine_mode mode_for_vector (machine_mode, unsigned);
+extern machine_mode mode_for_vector (scalar_mode, unsigned);
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator
