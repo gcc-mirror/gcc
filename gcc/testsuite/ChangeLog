@@ -1,3 +1,8 @@
+2017-08-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/82015
+	* gcc.target/powerpc/pr82015.c: Fix up error message.
+
 2017-08-30  Martin Liska  <mliska@suse.cz>
 
 	PR inline-asm/82001
