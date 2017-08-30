@@ -29965,13 +29965,6 @@ dwarf2out_finish (const char *)
       *slot = ctnode;
     }
 
-  /* The AT_pubnames attribute needs to go in all skeleton dies, including
-     both the main_cu and all skeleton TUs.  Making this call unconditional
-     would end up either adding a second copy of the AT_pubnames attribute, or
-     requiring a special case in add_top_level_skeleton_die_attrs.  */
-  if (!dwarf_split_debug_info)
-    add_AT_pubnames (comp_unit_die ());
-
   if (dwarf_split_debug_info)
     {
       int mark;
@@ -30521,6 +30514,13 @@ dwarf2out_early_finish (const char *filename)
   for (limbo_die_node *node = limbo_die_list; node; node = node->next)
     note_variable_value (node->die);
 
+  /* The AT_pubnames attribute needs to go in all skeleton dies, including
+     both the main_cu and all skeleton TUs.  Making this call unconditional
+     would end up either adding a second copy of the AT_pubnames attribute, or
+     requiring a special case in add_top_level_skeleton_die_attrs.  */
+  if (!dwarf_split_debug_info)
+    add_AT_pubnames (comp_unit_die ());
+
   /* The early debug phase is now finished.  */
   early_dwarf_finished = true;
 
@@ -30580,13 +30580,6 @@ dwarf2out_early_finish (const char *filename)
       output_comdat_type_unit (ctnode);
       *slot = ctnode;
     }
-
-  /* The AT_pubnames attribute needs to go in all skeleton dies, including
-     both the main_cu and all skeleton TUs.  Making this call unconditional
-     would end up either adding a second copy of the AT_pubnames attribute, or
-     requiring a special case in add_top_level_skeleton_die_attrs.  */
-  if (!dwarf_split_debug_info)
-    add_AT_pubnames (comp_unit_die ());
 
   /* Stick a unique symbol to the main debuginfo section.  */
   compute_comp_unit_symbol (comp_unit_die ());
