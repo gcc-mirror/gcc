@@ -24,6 +24,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-common.c (c_common_type_for_mode): Use as_a <scalar_int_mode>.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-attribs.c (handle_mode_attribute): Check for a scalar_int_mode
 	before calling targetm.addr_space.valid_pointer_mode.
 

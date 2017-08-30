@@ -593,6 +593,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (widest_int_mode_for_size): Make the comment match the code.
+	Return a scalar_int_mode and assert that the size is greater than
+	one byte.
+	(by_pieces_ninsns): Update accordingly and remove VOIDmode handling.
+	(op_by_pieces_d::op_by_pieces_d): Likewise.
+	(op_by_pieces_d::run): Likewise.
+	(can_store_by_pieces): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (extract_left_shift): Add a mode argument and update
 	recursive calls.
 	(make_compound_operation_int): Change the type of the mode parameter
@@ -698,6 +710,89 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cfgloop.h (rtx_iv): Change type of extend_mode and mode to
+	scalar_int_mode.
+	(niter_desc): Likewise mode.
+	(iv_analyze): Add a mode parameter.
+	(biv_p): Likewise.
+	(iv_analyze_expr): Pass the mode paraeter before the rtx it describes
+	and change its type to scalar_int_mode.
+	* loop-iv.c: Update commentary at head of file.
+	(iv_constant): Pass the mode paraeter before the rtx it describes
+	and change its type to scalar_int_mode.  Remove VOIDmode handling.
+	(iv_subreg): Change the type of the mode parameter to scalar_int_mode.
+	(iv_extend): Likewise.
+	(shorten_into_mode): Likewise.
+	(iv_add): Use scalar_int_mode.
+	(iv_mult): Likewise.
+	(iv_shift): Likewise.
+	(canonicalize_iv_subregs): Likewise.
+	(get_biv_step_1): Pass the outer_mode parameter before the rtx
+	it describes and change its mode to scalar_int_mode.   Also change
+	the type of the returned inner_mode to scalar_int_mode.
+	(get_biv_step): Likewise, turning outer_mode from a pointer
+	into a direct parameter.  Update call to get_biv_step_1.
+	(iv_analyze_biv): Add an outer_mode parameter.  Update calls to
+	iv_constant and get_biv_step.
+	(iv_analyze_expr): Pass the mode parameter before the rtx it describes
+	and change its type to scalar_int_mode.  Don't initialise iv->mode
+	to VOIDmode and remove later checks for its still being VOIDmode.
+	Update calls to iv_analyze_op and iv_analyze_expr.  Check
+	is_a <scalar_int_mode> when changing the mode under consideration.
+	(iv_analyze_def): Ignore registers that don't have a scalar_int_mode.
+	Update call to iv_analyze_expr.
+	(iv_analyze_op): Add a mode parameter.  Reject subregs whose
+	inner register is not also a scalar_int_mode.  Update call to
+	iv_analyze_biv.
+	(iv_analyze): Add a mode parameter.  Update call to iv_analyze_op.
+	(biv_p): Add a mode parameter.  Update call to iv_analyze_biv.
+	(iv_number_of_iterations): Use is_a <scalar_int_mode> instead of
+	separate mode class checks.  Update calls to iv_analyze.  Remove
+	fix-up of VOIDmodes after iv_analyze_biv.
+	* loop-unroll.c (analyze_iv_to_split_insn): Reject registers that
+	don't have a scalar_int_mode.  Update call to biv_p.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cfgexpand.c (convert_debug_memory_address): Use
+	as_a <scalar_int_mode>.
+	* combine.c (expand_compound_operation): Likewise.
+	(make_extraction): Likewise.
+	(change_zero_ext): Likewise.
+	(simplify_comparison): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* dwarf2out.c (minmax_loc_descriptor): Likewise.
+	(mem_loc_descriptor): Likewise.
+	(loc_descriptor): Likewise.
+	* expmed.c (init_expmed_one_mode): Likewise.
+	(synth_mult): Likewise.
+	(emit_store_flag_1): Likewise.
+	(expand_divmod): Likewise.  Use HWI_COMPUTABLE_MODE_P instead
+	of a comparison with size.
+	* expr.c (expand_assignment): Use as_a <scalar_int_mode>.
+	(reduce_to_bit_field_precision): Likewise.
+	* function.c (expand_function_end): Likewise.
+	* internal-fn.c (expand_arith_overflow_result_store): Likewise.
+	* loop-doloop.c (doloop_modify): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	(expand_unop): Likewise.
+	(expand_copysign_absneg): Likewise.
+	(prepare_cmp_insn): Likewise.
+	(maybe_legitimize_operand): Likewise.
+	* recog.c (const_scalar_int_operand): Likewise.
+	* rtlanal.c (get_address_mode): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_cond_clz_ctz): Likewise.
+	* tree-nested.c (get_nl_goto_field): Likewise.
+	* tree.c (build_vector_type_for_mode): Likewise.
+	* var-tracking.c (use_narrower_mode): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (SCALAR_INT_TYPE_MODE): New macro.
 	* builtins.c (expand_builtin_signbit): Use it.
 	* cfgexpand.c (expand_debug_expr): Likewise.
@@ -748,6 +843,17 @@
 	* stor-layout.c (bit_field_mode_iterator::bit_field_mode_iterator):
 	Likewise.
 	* tree-vrp.c (simplify_float_conversion_using_ranges): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* postreload.c (move2add_valid_value_p): Change the type of the
+	mode parameter to scalar_int_mode.
+	(move2add_use_add2_insn): Add a mode parameter and use it instead
+	of GET_MODE (reg).
+	(move2add_use_add3_insn): Likewise.
+	(reload_cse_move2add): Update accordingly.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
@@ -825,6 +931,26 @@
 	* ifcvt.c (noce_try_bitop): Likewise.
 	* loop-invariant.c (canonicalize_address_mult): Likewise.
 	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Use
+	is_a <scalar_int_mode> instead of != BLKmode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cfgexpand.c (expand_debug_expr): Use is_a <scalar_int_mode>
+	instead of != VOIDmode.
+	* combine.c (if_then_else_cond): Likewise.
+	(change_zero_ext): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	(loc_descriptor): Likewise.
+	* rtlanal.c (canonicalize_condition): Likewise.
+	* simplify-rtx.c (simplify_relational_operation_1): Likewise.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>

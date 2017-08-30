@@ -1,3 +1,9 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* lto-lang.c (lto_type_for_mode): Use as_a <scalar_int_mode>.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
         * lto.c (unify_scc): Truncate DIE reference queue for dropped SCCs.
