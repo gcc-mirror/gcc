@@ -443,7 +443,7 @@ default_scalar_mode_supported_p (machine_mode mode)
    be supported as a scalar mode).  */
 
 bool
-default_libgcc_floating_mode_supported_p (machine_mode mode)
+default_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
   switch (mode)
     {
