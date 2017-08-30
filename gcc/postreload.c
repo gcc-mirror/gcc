@@ -1699,14 +1699,16 @@ move2add_valid_value_p (int regno, machine_mode mode)
 
   if (mode != reg_mode[regno])
     {
-      if (!MODES_OK_FOR_MOVE2ADD (mode, reg_mode[regno]))
+      scalar_int_mode old_mode;
+      if (!is_a <scalar_int_mode> (reg_mode[regno], &old_mode)
+	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode))
 	return false;
       /* The value loaded into regno in reg_mode[regno] is also valid in
 	 mode after truncation only if (REG:mode regno) is the lowpart of
 	 (REG:reg_mode[regno] regno).  Now, for big endian, the starting
 	 regno of the lowpart might be different.  */
-      int s_off = subreg_lowpart_offset (mode, reg_mode[regno]);
-      s_off = subreg_regno_offset (regno, reg_mode[regno], s_off, mode);
+      int s_off = subreg_lowpart_offset (mode, old_mode);
+      s_off = subreg_regno_offset (regno, old_mode, s_off, mode);
       if (s_off != 0)
 	/* We could in principle adjust regno, check reg_mode[regno] to be
 	   BLKmode, and return s_off to the caller (vs. -1 for failure),

@@ -925,7 +925,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 {
   enum rtx_code reversed;
   rtx temp;
-  scalar_int_mode inner, int_mode;
+  scalar_int_mode inner, int_mode, op0_mode;
 
   switch (code)
     {
@@ -1637,21 +1637,19 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 (zero_extend:SI (subreg:QI (and:SI (reg:SI) (const_int 63)) 0)) is
 	 (and:SI (reg:SI) (const_int 63)).  */
       if (GET_CODE (op) == SUBREG
-	  && GET_MODE_PRECISION (GET_MODE (op))
-	     < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op)))
-	  && GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op)))
-	     <= HOST_BITS_PER_WIDE_INT
-	  && GET_MODE_PRECISION (mode)
-	     >= GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op)))
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op)), &op0_mode)
+	  && GET_MODE_PRECISION (GET_MODE (op)) < GET_MODE_PRECISION (op0_mode)
+	  && GET_MODE_PRECISION (op0_mode) <= HOST_BITS_PER_WIDE_INT
+	  && GET_MODE_PRECISION (int_mode) >= GET_MODE_PRECISION (op0_mode)
 	  && subreg_lowpart_p (op)
-	  && (nonzero_bits (SUBREG_REG (op), GET_MODE (SUBREG_REG (op)))
+	  && (nonzero_bits (SUBREG_REG (op), op0_mode)
 	      & ~GET_MODE_MASK (GET_MODE (op))) == 0)
 	{
-	  if (GET_MODE_PRECISION (mode)
-	      == GET_MODE_PRECISION (GET_MODE (SUBREG_REG (op))))
+	  if (GET_MODE_PRECISION (int_mode) == GET_MODE_PRECISION (op0_mode))
 	    return SUBREG_REG (op);
-	  return simplify_gen_unary (ZERO_EXTEND, mode, SUBREG_REG (op),
-				     GET_MODE (SUBREG_REG (op)));
+	  return simplify_gen_unary (ZERO_EXTEND, int_mode, SUBREG_REG (op),
+				     op0_mode);
 	}
 
 #if defined(POINTERS_EXTEND_UNSIGNED)
@@ -2716,21 +2714,23 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
         by simplify_shift_const.  */
 
       if (GET_CODE (opleft) == SUBREG
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (opleft)),
+				     &inner_mode)
           && GET_CODE (SUBREG_REG (opleft)) == ASHIFT
           && GET_CODE (opright) == LSHIFTRT
           && GET_CODE (XEXP (opright, 0)) == SUBREG
-          && GET_MODE (opleft) == GET_MODE (XEXP (opright, 0))
           && SUBREG_BYTE (opleft) == SUBREG_BYTE (XEXP (opright, 0))
-          && (GET_MODE_SIZE (GET_MODE (opleft))
-              < GET_MODE_SIZE (GET_MODE (SUBREG_REG (opleft))))
+	  && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
           && rtx_equal_p (XEXP (SUBREG_REG (opleft), 0),
                           SUBREG_REG (XEXP (opright, 0)))
           && CONST_INT_P (XEXP (SUBREG_REG (opleft), 1))
           && CONST_INT_P (XEXP (opright, 1))
-          && (INTVAL (XEXP (SUBREG_REG (opleft), 1)) + INTVAL (XEXP (opright, 1))
-              == GET_MODE_PRECISION (mode)))
-        return gen_rtx_ROTATE (mode, XEXP (opright, 0),
-                               XEXP (SUBREG_REG (opleft), 1));
+	  && (INTVAL (XEXP (SUBREG_REG (opleft), 1))
+	      + INTVAL (XEXP (opright, 1))
+	      == GET_MODE_PRECISION (int_mode)))
+	return gen_rtx_ROTATE (int_mode, XEXP (opright, 0),
+			       XEXP (SUBREG_REG (opleft), 1));
 
       /* If we have (ior (and (X C1) C2)), simplify this by making
 	 C1 as small as possible if C1 actually changes.  */

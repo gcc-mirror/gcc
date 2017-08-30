@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (find_split_point): Add is_a <scalar_int_mode> checks.
+	(make_compound_operation_int): Likewise.
+	(change_zero_ext): Likewise.
+	* expr.c (convert_move): Likewise.
+	(convert_modes): Likewise.
+	* fwprop.c (forward_propagate_subreg): Likewise.
+	* loop-iv.c (get_biv_step_1): Likewise.
+	* optabs.c (widen_operand): Likewise.
+	* postreload.c (move2add_valid_value_p): Likewise.
+	* recog.c (simplify_while_replacing): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	(simplify_binary_operation_1): Likewise.  Remove redundant
+	mode equality check.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (combine_simplify_rtx): Add checks for
 	is_a <scalar_int_mode>.
 	(simplify_if_then_else): Likewise.

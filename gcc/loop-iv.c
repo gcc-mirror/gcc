@@ -739,9 +739,9 @@ get_biv_step_1 (df_ref def, rtx reg,
 
   if (GET_CODE (next) == SUBREG)
     {
-      machine_mode amode = GET_MODE (next);
-
-      if (GET_MODE_SIZE (amode) > GET_MODE_SIZE (*inner_mode))
+      scalar_int_mode amode;
+      if (!is_a <scalar_int_mode> (GET_MODE (next), &amode)
+	  || GET_MODE_SIZE (amode) > GET_MODE_SIZE (*inner_mode))
 	return false;
 
       *inner_mode = amode;

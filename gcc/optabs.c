@@ -195,6 +195,7 @@ widen_operand (rtx op, machine_mode mode, machine_mode oldmode,
 	       int unsignedp, int no_extend)
 {
   rtx result;
+  scalar_int_mode int_mode;
 
   /* If we don't have to extend and this is a constant, return it.  */
   if (no_extend && GET_MODE (op) == VOIDmode)
@@ -204,19 +205,20 @@ widen_operand (rtx op, machine_mode mode, machine_mode oldmode,
      extend since it will be more efficient to do so unless the signedness of
      a promoted object differs from our extension.  */
   if (! no_extend
+      || !is_a <scalar_int_mode> (mode, &int_mode)
       || (GET_CODE (op) == SUBREG && SUBREG_PROMOTED_VAR_P (op)
 	  && SUBREG_CHECK_PROMOTED_SIGN (op, unsignedp)))
     return convert_modes (mode, oldmode, op, unsignedp);
 
   /* If MODE is no wider than a single word, we return a lowpart or paradoxical
      SUBREG.  */
-  if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
-    return gen_lowpart (mode, force_reg (GET_MODE (op), op));
+  if (GET_MODE_SIZE (int_mode) <= UNITS_PER_WORD)
+    return gen_lowpart (int_mode, force_reg (GET_MODE (op), op));
 
   /* Otherwise, get an object of MODE, clobber it, and set the low-order
      part to OP.  */
 
-  result = gen_reg_rtx (mode);
+  result = gen_reg_rtx (int_mode);
   emit_clobber (result);
   emit_move_insn (gen_lowpart (GET_MODE (op), result), op);
   return result;
