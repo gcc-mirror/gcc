@@ -1793,13 +1793,13 @@ extern bool current_function_interrupt;
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)			\
   switch (GET_MODE (BODY))						\
     {									\
-    case SImode:							\
+    case E_SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case HImode:							\
+    case E_HImode:							\
       asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case QImode:							\
+    case E_QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
     default:								\

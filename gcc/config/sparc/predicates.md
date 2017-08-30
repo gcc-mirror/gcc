@@ -466,17 +466,17 @@
 {
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCmode:
-    case CCXmode:
+    case E_CCmode:
+    case E_CCXmode:
       return true;
-    case CCNZmode:
-    case CCXNZmode:
+    case E_CCNZmode:
+    case E_CCXNZmode:
       return nz_comparison_operator (op, mode);
-    case CCCmode:
-    case CCXCmode:
+    case E_CCCmode:
+    case E_CCXCmode:
       return c_comparison_operator (op, mode);
-    case CCVmode:
-    case CCXVmode:
+    case E_CCVmode:
+    case E_CCXVmode:
       return v_comparison_operator (op, mode);
     default:
       return false;
@@ -489,8 +489,8 @@
 {
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCFPmode:
-    case CCFPEmode:
+    case E_CCFPmode:
+    case E_CCFPEmode:
       return true;
     default:
       return false;

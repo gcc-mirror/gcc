@@ -88,14 +88,14 @@ tilepro_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
       return true;
 
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       return true;
 
     default:
@@ -1208,15 +1208,15 @@ tilepro_simd_int (rtx num, machine_mode mode)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       n = 0x01010101 * (n & 0x000000FF);
       break;
-    case HImode:
+    case E_HImode:
       n = 0x00010001 * (n & 0x0000FFFF);
       break;
-    case SImode:
+    case E_SImode:
       break;
-    case DImode:
+    case E_DImode:
       break;
     default:
       gcc_unreachable ();

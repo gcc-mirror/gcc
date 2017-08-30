@@ -1272,11 +1272,11 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	{
 	  switch (GET_MODE (x))
 	    {
-	    case QImode: fputs (".b", stream); break;
-	    case HImode: fputs (".w", stream); break;
-	    case SImode: fputs (".l", stream); break;
-	    case SFmode: fputs (".s", stream); break;
-	    case DFmode: fputs (".d", stream); break;
+	    case E_QImode: fputs (".b", stream); break;
+	    case E_HImode: fputs (".w", stream); break;
+	    case E_SImode: fputs (".l", stream); break;
+	    case E_SFmode: fputs (".s", stream); break;
+	    case E_DFmode: fputs (".d", stream); break;
 	    default: gcc_unreachable ();
 	    }
 	}
@@ -4622,10 +4622,10 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 
 	  switch (p->mode)
 	    {
-	    case HImode:
+	    case E_HImode:
 	      break;
-	    case SImode:
-	    case SFmode:
+	    case E_SImode:
+	    case E_SFmode:
 	      if (align_insn && !p->part_of_sequence_p)
 		{
 		  for (lab = p->label; lab; lab = LABEL_REFS (lab))
@@ -4651,7 +4651,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 		  need_align = ! need_align;
 		}
 	      break;
-	    case DFmode:
+	    case E_DFmode:
 	      if (need_align)
 		{
 		  scan = emit_insn_after (gen_align_log (GEN_INT (3)), scan);
@@ -4659,7 +4659,7 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 		  need_align = false;
 		}
 	      /* FALLTHRU */
-	    case DImode:
+	    case E_DImode:
 	      for (lab = p->label; lab; lab = LABEL_REFS (lab))
 		scan = emit_label_after (lab, scan);
 	      scan = emit_insn_after (gen_consttable_8 (p->value, const0_rtx),
@@ -4689,10 +4689,10 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 
       switch (p->mode)
 	{
-	case HImode:
+	case E_HImode:
 	  break;
-	case SImode:
-	case SFmode:
+	case E_SImode:
+	case E_SFmode:
 	  if (need_align)
 	    {
 	      need_align = false;
@@ -4704,8 +4704,8 @@ dump_table (rtx_insn *start, rtx_insn *barrier)
 	  scan = emit_insn_after (gen_consttable_4 (p->value, const0_rtx),
 				  scan);
 	  break;
-	case DFmode:
-	case DImode:
+	case E_DFmode:
+	case E_DImode:
 	  if (need_align)
 	    {
 	      need_align = false;
@@ -11239,13 +11239,13 @@ sh_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 	  && ! ((fp_zero_operand (x) || fp_one_operand (x)) && mode == SFmode))
 	switch (mode)
 	  {
-	  case SFmode:
+	  case E_SFmode:
 	    sri->icode = CODE_FOR_reload_insf__frn;
 	    return NO_REGS;
-	  case DFmode:
+	  case E_DFmode:
 	    sri->icode = CODE_FOR_reload_indf__frn;
 	    return NO_REGS;
-	  case SImode:
+	  case E_SImode:
 	    /* ??? If we knew that we are in the appropriate mode -
 	       single precision - we could use a reload pattern directly.  */
 	    return FPUL_REGS;

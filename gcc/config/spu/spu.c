@@ -292,13 +292,13 @@ spu_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case SFmode:
-    case DImode:
-    case TImode:
-    case DFmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_SFmode:
+    case E_DImode:
+    case E_TImode:
+    case E_DFmode:
       return true;
 
     default:
@@ -314,12 +314,12 @@ spu_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V16QImode:
-    case V8HImode:
-    case V4SImode:
-    case V2DImode:
-    case V4SFmode:
-    case V2DFmode:
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
+    case E_V4SFmode:
+    case E_V2DFmode:
       return true;
 
     default:
@@ -496,13 +496,13 @@ spu_expand_insv (rtx ops[])
     {
       switch (dst_mode)
 	{
-	case SImode:
+	case E_SImode:
 	  emit_insn (gen_ashlsi3 (shift_reg, shift_reg, GEN_INT (shift)));
 	  break;
-	case DImode:
+	case E_DImode:
 	  emit_insn (gen_ashldi3 (shift_reg, shift_reg, GEN_INT (shift)));
 	  break;
-	case TImode:
+	case E_TImode:
 	  emit_insn (gen_ashlti3 (shift_reg, shift_reg, GEN_INT (shift)));
 	  break;
 	default:
@@ -802,50 +802,50 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
 
   switch (op_mode)
     {
-    case QImode:
+    case E_QImode:
       index = 0;
       comp_mode = QImode;
       break;
-    case HImode:
+    case E_HImode:
       index = 1;
       comp_mode = HImode;
       break;
-    case SImode:
+    case E_SImode:
       index = 2;
       break;
-    case DImode:
+    case E_DImode:
       index = 3;
       break;
-    case TImode:
+    case E_TImode:
       index = 4;
       break;
-    case SFmode:
+    case E_SFmode:
       index = 5;
       break;
-    case DFmode:
+    case E_DFmode:
       index = 6;
       break;
-    case V16QImode:
+    case E_V16QImode:
       index = 7;
       comp_mode = op_mode;
       break;
-    case V8HImode:
+    case E_V8HImode:
       index = 8;
       comp_mode = op_mode;
       break;
-    case V4SImode:
+    case E_V4SImode:
       index = 9;
       comp_mode = op_mode;
       break;
-    case V4SFmode:
+    case E_V4SFmode:
       index = 10;
       comp_mode = V4SImode;
       break;
-    case V2DFmode:
+    case E_V2DFmode:
       index = 11;
       comp_mode = V2DImode;
       break;
-    case V2DImode:
+    case E_V2DImode:
     default:
       abort ();
     }
@@ -3710,22 +3710,22 @@ spu_handle_vector_attribute (tree * node, tree name,
   unsigned_p = TYPE_UNSIGNED (type);
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       result = (unsigned_p ? unsigned_V2DI_type_node : V2DI_type_node);
       break;
-    case SImode:
+    case E_SImode:
       result = (unsigned_p ? unsigned_V4SI_type_node : V4SI_type_node);
       break;
-    case HImode:
+    case E_HImode:
       result = (unsigned_p ? unsigned_V8HI_type_node : V8HI_type_node);
       break;
-    case QImode:
+    case E_QImode:
       result = (unsigned_p ? unsigned_V16QI_type_node : V16QI_type_node);
       break;
-    case SFmode:
+    case E_SFmode:
       result = V4SF_type_node;
       break;
-    case DFmode:
+    case E_DFmode:
       result = V2DF_type_node;
       break;
     default:
@@ -5642,24 +5642,24 @@ spu_builtin_splats (rtx ops[])
 	ops[1] = force_reg (GET_MODE_INNER (mode), ops[1]);
       switch (mode)
 	{
-	case V2DImode:
-	case V2DFmode:
+	case E_V2DImode:
+	case E_V2DFmode:
 	  shuf =
 	    immed_double_const (0x0001020304050607ll, 0x1011121314151617ll,
 				TImode);
 	  break;
-	case V4SImode:
-	case V4SFmode:
+	case E_V4SImode:
+	case E_V4SFmode:
 	  shuf =
 	    immed_double_const (0x0001020300010203ll, 0x0001020300010203ll,
 				TImode);
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  shuf =
 	    immed_double_const (0x0203020302030203ll, 0x0203020302030203ll,
 				TImode);
 	  break;
-	case V16QImode:
+	case E_V16QImode:
 	  shuf =
 	    immed_double_const (0x0303030303030303ll, 0x0303030303030303ll,
 				TImode);
@@ -5684,22 +5684,22 @@ spu_builtin_extract (rtx ops[])
     {
       switch (mode)
 	{
-	case V16QImode:
+	case E_V16QImode:
 	  emit_insn (gen_vec_extractv16qiqi (ops[0], ops[1], ops[2]));
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  emit_insn (gen_vec_extractv8hihi (ops[0], ops[1], ops[2]));
 	  break;
-	case V4SFmode:
+	case E_V4SFmode:
 	  emit_insn (gen_vec_extractv4sfsf (ops[0], ops[1], ops[2]));
 	  break;
-	case V4SImode:
+	case E_V4SImode:
 	  emit_insn (gen_vec_extractv4sisi (ops[0], ops[1], ops[2]));
 	  break;
-	case V2DImode:
+	case E_V2DImode:
 	  emit_insn (gen_vec_extractv2didi (ops[0], ops[1], ops[2]));
 	  break;
-	case V2DFmode:
+	case E_V2DFmode:
 	  emit_insn (gen_vec_extractv2dfdf (ops[0], ops[1], ops[2]));
 	  break;
 	default:
@@ -5714,19 +5714,19 @@ spu_builtin_extract (rtx ops[])
 
   switch (mode)
     {
-    case V16QImode:
+    case E_V16QImode:
       emit_insn (gen_addsi3 (tmp, ops[2], GEN_INT (-3)));
       break;
-    case V8HImode:
+    case E_V8HImode:
       emit_insn (gen_addsi3 (tmp, ops[2], ops[2]));
       emit_insn (gen_addsi3 (tmp, tmp, GEN_INT (-2)));
       break;
-    case V4SFmode:
-    case V4SImode:
+    case E_V4SFmode:
+    case E_V4SImode:
       emit_insn (gen_ashlsi3 (tmp, ops[2], GEN_INT (2)));
       break;
-    case V2DImode:
-    case V2DFmode:
+    case E_V2DImode:
+    case E_V2DFmode:
       emit_insn (gen_ashlsi3 (tmp, ops[2], GEN_INT (3)));
       break;
     default:
@@ -5786,20 +5786,20 @@ spu_builtin_promote (rtx ops[])
       offset = gen_reg_rtx (SImode);
       switch (mode)
 	{
-	case V16QImode:
+	case E_V16QImode:
 	  emit_insn (gen_subsi3 (offset, GEN_INT (3), ops[2]));
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  emit_insn (gen_subsi3 (offset, GEN_INT (1), ops[2]));
 	  emit_insn (gen_addsi3 (offset, offset, offset));
 	  break;
-	case V4SFmode:
-	case V4SImode:
+	case E_V4SFmode:
+	case E_V4SImode:
 	  emit_insn (gen_subsi3 (offset, GEN_INT (0), ops[2]));
 	  emit_insn (gen_ashlsi3 (offset, offset, GEN_INT (2)));
 	  break;
-	case V2DImode:
-	case V2DFmode:
+	case E_V2DImode:
+	case E_V2DFmode:
 	  emit_insn (gen_ashlsi3 (offset, ops[2], GEN_INT (3)));
 	  break;
 	default:
@@ -5915,19 +5915,19 @@ spu_expand_sign_extend (rtx ops[])
 	arr[i] = 0x10;
       switch (GET_MODE (ops[1]))
 	{
-	case HImode:
+	case E_HImode:
 	  sign = gen_reg_rtx (SImode);
 	  emit_insn (gen_extendhisi2 (sign, ops[1]));
 	  arr[last] = 0x03;
 	  arr[last - 1] = 0x02;
 	  break;
-	case SImode:
+	case E_SImode:
 	  sign = gen_reg_rtx (SImode);
 	  emit_insn (gen_ashrsi3 (sign, ops[1], GEN_INT (31)));
 	  for (i = 0; i < 4; i++)
 	    arr[last - i] = 3 - i;
 	  break;
-	case DImode:
+	case E_DImode:
 	  sign = gen_reg_rtx (SImode);
 	  c = gen_reg_rtx (SImode);
 	  emit_insn (gen_spu_convert (c, ops[1]));

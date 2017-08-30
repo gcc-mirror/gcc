@@ -2,6 +2,343 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_std_type):
+	Prefix mode names with E_ in case statements.
+	* config/aarch64/aarch64-elf.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/aarch64/aarch64.c (aarch64_split_simd_combine): Likewise.
+	(aarch64_split_simd_move): Likewise.
+	(aarch64_gen_storewb_pair): Likewise.
+	(aarch64_gen_loadwb_pair): Likewise.
+	(aarch64_gen_store_pair): Likewise.
+	(aarch64_gen_load_pair): Likewise.
+	(aarch64_get_condition_code_1): Likewise.
+	(aarch64_constant_pool_reload_icode): Likewise.
+	(get_rsqrte_type): Likewise.
+	(get_rsqrts_type): Likewise.
+	(get_recpe_type): Likewise.
+	(get_recps_type): Likewise.
+	(aarch64_gimplify_va_arg_expr): Likewise.
+	(aarch64_simd_container_mode): Likewise.
+	(aarch64_emit_load_exclusive): Likewise.
+	(aarch64_emit_store_exclusive): Likewise.
+	(aarch64_expand_compare_and_swap): Likewise.
+	(aarch64_gen_atomic_cas): Likewise.
+	(aarch64_emit_bic): Likewise.
+	(aarch64_emit_atomic_swap): Likewise.
+	(aarch64_emit_atomic_load_op): Likewise.
+	(aarch64_evpc_trn): Likewise.
+	(aarch64_evpc_uzp): Likewise.
+	(aarch64_evpc_zip): Likewise.
+	(aarch64_evpc_ext): Likewise.
+	(aarch64_evpc_rev): Likewise.
+	(aarch64_evpc_dup): Likewise.
+	(aarch64_gen_ccmp_first): Likewise.
+	(aarch64_gen_ccmp_next): Likewise.
+	* config/alpha/alpha.c (alpha_scalar_mode_supported_p): Likewise.
+	(alpha_emit_xfloating_libcall): Likewise.
+	(emit_insxl): Likewise.
+	(alpha_arg_type): Likewise.
+	* config/arc/arc.c (arc_vector_mode_supported_p): Likewise.
+	(arc_preferred_simd_mode): Likewise.
+	(arc_secondary_reload): Likewise.
+	(get_arc_condition_code): Likewise.
+	(arc_print_operand): Likewise.
+	(arc_legitimate_constant_p): Likewise.
+	* config/arc/arc.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/arc/arc.md (casesi_load): Likewise.
+	(casesi_compact_jump): Likewise.
+	* config/arc/predicates.md (proper_comparison_operator): Likewise.
+	(cc_use_register): Likewise.
+	* config/arm/aout.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/arm/arm-builtins.c (arm_simd_builtin_std_type): Likewise.
+	(arm_init_iwmmxt_builtins): Likewise.
+	* config/arm/arm.c (thumb1_size_rtx_costs): Likewise.
+	(neon_expand_vector_init): Likewise.
+	(arm_attr_length_move_neon): Likewise.
+	(maybe_get_arm_condition_code): Likewise.
+	(arm_emit_vector_const): Likewise.
+	(arm_preferred_simd_mode): Likewise.
+	(arm_output_iwmmxt_tinsr): Likewise.
+	(thumb1_output_casesi): Likewise.
+	(thumb2_output_casesi): Likewise.
+	(arm_emit_load_exclusive): Likewise.
+	(arm_emit_store_exclusive): Likewise.
+	(arm_expand_compare_and_swap): Likewise.
+	(arm_evpc_neon_vuzp): Likewise.
+	(arm_evpc_neon_vzip): Likewise.
+	(arm_evpc_neon_vrev): Likewise.
+	(arm_evpc_neon_vtrn): Likewise.
+	(arm_evpc_neon_vext): Likewise.
+	(arm_validize_comparison): Likewise.
+	* config/arm/neon.md (neon_vc<cmp_op><mode>): Likewise.
+	* config/avr/avr-c.c (avr_resolve_overloaded_builtin): Likewise.
+	* config/avr/avr.c (avr_rtx_costs_1): Likewise.
+	* config/c6x/c6x.c (c6x_vector_mode_supported_p): Likewise.
+	(c6x_preferred_simd_mode): Likewise.
+	* config/epiphany/epiphany.c (get_epiphany_condition_code): Likewise.
+	(epiphany_rtx_costs): Likewise.
+	* config/epiphany/predicates.md (proper_comparison_operator):
+	Likewise.
+	* config/frv/frv.c (condexec_memory_operand): Likewise.
+	(frv_emit_move): Likewise.
+	(output_move_single): Likewise.
+	(output_condmove_single): Likewise.
+	(frv_hard_regno_mode_ok): Likewise.
+	(frv_matching_accg_mode): Likewise.
+	* config/h8300/h8300.c (split_adds_subs): Likewise.
+	(h8300_rtx_costs): Likewise.
+	(h8300_print_operand): Likewise.
+	(compute_mov_length): Likewise.
+	(output_logical_op): Likewise.
+	(compute_logical_op_length): Likewise.
+	(compute_logical_op_cc): Likewise.
+	(h8300_shift_needs_scratch_p): Likewise.
+	(output_a_shift): Likewise.
+	(compute_a_shift_length): Likewise.
+	(compute_a_shift_cc): Likewise.
+	(expand_a_rotate): Likewise.
+	(output_a_rotate): Likewise.
+	* config/i386/i386.c (classify_argument): Likewise.
+	(function_arg_advance_32): Likewise.
+	(function_arg_32): Likewise.
+	(function_arg_64): Likewise.
+	(function_value_64): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(ix86_legitimate_constant_p): Likewise.
+	(put_condition_code): Likewise.
+	(split_double_mode): Likewise.
+	(ix86_avx256_split_vector_move_misalign): Likewise.
+	(ix86_expand_vector_logical_operator): Likewise.
+	(ix86_split_idivmod): Likewise.
+	(ix86_expand_adjust_ufix_to_sfix_si): Likewise.
+	(ix86_build_const_vector): Likewise.
+	(ix86_build_signbit_mask): Likewise.
+	(ix86_match_ccmode): Likewise.
+	(ix86_cc_modes_compatible): Likewise.
+	(ix86_expand_branch): Likewise.
+	(ix86_expand_sse_cmp): Likewise.
+	(ix86_expand_sse_movcc): Likewise.
+	(ix86_expand_int_sse_cmp): Likewise.
+	(ix86_expand_vec_perm_vpermi2): Likewise.
+	(ix86_expand_vec_perm): Likewise.
+	(ix86_expand_sse_unpack): Likewise.
+	(ix86_expand_int_addcc): Likewise.
+	(ix86_split_to_parts): Likewise.
+	(ix86_vectorize_builtin_gather): Likewise.
+	(ix86_vectorize_builtin_scatter): Likewise.
+	(avx_vpermilp_parallel): Likewise.
+	(inline_memory_move_cost): Likewise.
+	(ix86_tieable_integer_mode_p): Likewise.
+	(x86_maybe_negate_const_int): Likewise.
+	(ix86_expand_vector_init_duplicate): Likewise.
+	(ix86_expand_vector_init_one_nonzero): Likewise.
+	(ix86_expand_vector_init_one_var): Likewise.
+	(ix86_expand_vector_init_concat): Likewise.
+	(ix86_expand_vector_init_interleave): Likewise.
+	(ix86_expand_vector_init_general): Likewise.
+	(ix86_expand_vector_set): Likewise.
+	(ix86_expand_vector_extract): Likewise.
+	(emit_reduc_half): Likewise.
+	(ix86_emit_i387_round): Likewise.
+	(ix86_mangle_type): Likewise.
+	(ix86_expand_round_sse4): Likewise.
+	(expand_vec_perm_blend): Likewise.
+	(canonicalize_vector_int_perm): Likewise.
+	(ix86_expand_vec_one_operand_perm_avx512): Likewise.
+	(expand_vec_perm_1): Likewise.
+	(expand_vec_perm_interleave3): Likewise.
+	(expand_vec_perm_even_odd_pack): Likewise.
+	(expand_vec_perm_even_odd_1): Likewise.
+	(expand_vec_perm_broadcast_1): Likewise.
+	(ix86_vectorize_vec_perm_const_ok): Likewise.
+	(ix86_expand_vecop_qihi): Likewise.
+	(ix86_expand_mul_widen_hilo): Likewise.
+	(ix86_expand_sse2_abs): Likewise.
+	(ix86_expand_pextr): Likewise.
+	(ix86_expand_pinsr): Likewise.
+	(ix86_preferred_simd_mode): Likewise.
+	(ix86_simd_clone_compute_vecsize_and_simdlen): Likewise.
+	* config/i386/sse.md (*andnot<mode>3): Likewise.
+	(<mask_codefor><code><mode>3<mask_name>): Likewise.
+	(*<code><mode>3): Likewise.
+	* config/ia64/ia64.c (ia64_expand_vecint_compare): Likewise.
+	(ia64_expand_atomic_op): Likewise.
+	(ia64_arg_type): Likewise.
+	(ia64_mode_to_int): Likewise.
+	(ia64_scalar_mode_supported_p): Likewise.
+	(ia64_vector_mode_supported_p): Likewise.
+	(expand_vec_perm_broadcast): Likewise.
+	* config/iq2000/iq2000.c (iq2000_move_1word): Likewise.
+	(iq2000_function_arg_advance): Likewise.
+	(iq2000_function_arg): Likewise.
+	* config/m32c/m32c.c (m32c_preferred_reload_class): Likewise.
+	* config/m68k/m68k.c (output_dbcc_and_branch): Likewise.
+	(m68k_libcall_value): Likewise.
+	(m68k_function_value): Likewise.
+	(sched_attr_op_type): Likewise.
+	* config/mcore/mcore.c (mcore_output_move): Likewise.
+	* config/microblaze/microblaze.c (microblaze_function_arg_advance):
+	Likewise.
+	(microblaze_function_arg): Likewise.
+	* config/mips/mips.c (mips16_build_call_stub): Likewise.
+	(mips_print_operand): Likewise.
+	(mips_mode_ok_for_mov_fmt_p): Likewise.
+	(mips_vector_mode_supported_p): Likewise.
+	(mips_preferred_simd_mode): Likewise.
+	(mips_expand_vpc_loongson_even_odd): Likewise.
+	(mips_expand_vec_unpack): Likewise.
+	(mips_expand_vi_broadcast): Likewise.
+	(mips_expand_vector_init): Likewise.
+	(mips_expand_vec_reduc): Likewise.
+	(mips_expand_msa_cmp): Likewise.
+	* config/mips/mips.md (casesi_internal_mips16_<mode>): Likewise.
+	* config/mn10300/mn10300.c (mn10300_print_operand): Likewise.
+	(cc_flags_for_mode): Likewise.
+	* config/msp430/msp430.c (msp430_print_operand): Likewise.
+	* config/nds32/nds32-md-auxiliary.c (nds32_mem_format): Likewise.
+	(nds32_output_casesi_pc_relative): Likewise.
+	* config/nds32/nds32.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/nvptx/nvptx.c (nvptx_ptx_type_from_mode): Likewise.
+	(nvptx_gen_unpack): Likewise.
+	(nvptx_gen_pack): Likewise.
+	(nvptx_gen_shuffle): Likewise.
+	(nvptx_gen_wcast): Likewise.
+	(nvptx_preferred_simd_mode): Likewise.
+	* config/pa/pa.c (pa_secondary_reload): Likewise.
+	* config/pa/predicates.md (base14_operand): Likewise.
+	* config/powerpcspe/powerpcspe-c.c
+	(altivec_resolve_overloaded_builtin): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_setup_reg_addr_masks):
+	Likewise.
+	(rs6000_preferred_simd_mode): Likewise.
+	(output_vec_const_move): Likewise.
+	(rs6000_expand_vector_extract): Likewise.
+	(rs6000_split_vec_extract_var): Likewise.
+	(reg_offset_addressing_ok_p): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_emit_set_const): Likewise.
+	(rs6000_const_vec): Likewise.
+	(rs6000_emit_move): Likewise.
+	(spe_build_register_parallel): Likewise.
+	(rs6000_darwin64_record_arg_recurse): Likewise.
+	(swap_selector_for_mode): Likewise.
+	(spe_init_builtins): Likewise.
+	(paired_init_builtins): Likewise.
+	(altivec_init_builtins): Likewise.
+	(do_load_for_compare): Likewise.
+	(rs6000_generate_compare): Likewise.
+	(rs6000_expand_float128_convert): Likewise.
+	(emit_load_locked): Likewise.
+	(emit_store_conditional): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_handle_altivec_attribute): Likewise.
+	(rs6000_function_value): Likewise.
+	(emit_fusion_gpr_load): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/powerpcspe/predicates.md (easy_fp_constant): Likewise.
+	(fusion_gpr_mem_load): Likewise.
+	(fusion_addis_mem_combo_load): Likewise.
+	(fusion_addis_mem_combo_store): Likewise.
+	* config/rs6000/predicates.md (easy_fp_constant): Likewise.
+	(fusion_gpr_mem_load): Likewise.
+	(fusion_addis_mem_combo_load): Likewise.
+	(fusion_addis_mem_combo_store): Likewise.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Likewise.
+	* config/rs6000/rs6000-string.c (do_load_for_compare): Likewise.
+	* config/rs6000/rs6000.c (rs6000_setup_reg_addr_masks): Likewise.
+	(rs6000_preferred_simd_mode): Likewise.
+	(output_vec_const_move): Likewise.
+	(rs6000_expand_vector_extract): Likewise.
+	(rs6000_split_vec_extract_var): Likewise.
+	(reg_offset_addressing_ok_p): Likewise.
+	(rs6000_legitimate_offset_address_p): Likewise.
+	(rs6000_legitimize_address): Likewise.
+	(rs6000_emit_set_const): Likewise.
+	(rs6000_const_vec): Likewise.
+	(rs6000_emit_move): Likewise.
+	(rs6000_darwin64_record_arg_recurse): Likewise.
+	(swap_selector_for_mode): Likewise.
+	(paired_init_builtins): Likewise.
+	(altivec_init_builtins): Likewise.
+	(rs6000_expand_float128_convert): Likewise.
+	(emit_load_locked): Likewise.
+	(emit_store_conditional): Likewise.
+	(rs6000_output_function_epilogue): Likewise.
+	(rs6000_handle_altivec_attribute): Likewise.
+	(rs6000_function_value): Likewise.
+	(emit_fusion_gpr_load): Likewise.
+	(emit_fusion_p9_load): Likewise.
+	(emit_fusion_p9_store): Likewise.
+	* config/rx/rx.c (rx_gen_move_template): Likewise.
+	(flags_from_mode): Likewise.
+	* config/s390/predicates.md (s390_alc_comparison): Likewise.
+	(s390_slb_comparison): Likewise.
+	* config/s390/s390.c (s390_handle_vectorbool_attribute): Likewise.
+	(s390_vector_mode_supported_p): Likewise.
+	(s390_cc_modes_compatible): Likewise.
+	(s390_match_ccmode_set): Likewise.
+	(s390_canonicalize_comparison): Likewise.
+	(s390_emit_compare_and_swap): Likewise.
+	(s390_branch_condition_mask): Likewise.
+	(s390_rtx_costs): Likewise.
+	(s390_secondary_reload): Likewise.
+	(__SECONDARY_RELOAD_CASE): Likewise.
+	(s390_expand_cs): Likewise.
+	(s390_preferred_simd_mode): Likewise.
+	* config/s390/vx-builtins.md (vec_packsu_u<mode>): Likewise.
+	* config/sh/sh.c (sh_print_operand): Likewise.
+	(dump_table): Likewise.
+	(sh_secondary_reload): Likewise.
+	* config/sh/sh.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/sh/sh.md (casesi_worker_1): Likewise.
+	(casesi_worker_2): Likewise.
+	* config/sparc/predicates.md (icc_comparison_operator): Likewise.
+	(fcc_comparison_operator): Likewise.
+	* config/sparc/sparc.c (sparc_expand_move): Likewise.
+	(emit_soft_tfmode_cvt): Likewise.
+	(sparc_preferred_simd_mode): Likewise.
+	(output_cbranch): Likewise.
+	(sparc_print_operand): Likewise.
+	(sparc_expand_vec_perm_bmask): Likewise.
+	(vector_init_bshuffle): Likewise.
+	* config/spu/spu.c (spu_scalar_mode_supported_p): Likewise.
+	(spu_vector_mode_supported_p): Likewise.
+	(spu_expand_insv): Likewise.
+	(spu_emit_branch_or_set): Likewise.
+	(spu_handle_vector_attribute): Likewise.
+	(spu_builtin_splats): Likewise.
+	(spu_builtin_extract): Likewise.
+	(spu_builtin_promote): Likewise.
+	(spu_expand_sign_extend): Likewise.
+	* config/tilegx/tilegx.c (tilegx_scalar_mode_supported_p): Likewise.
+	(tilegx_simd_int): Likewise.
+	* config/tilepro/tilepro.c (tilepro_scalar_mode_supported_p): Likewise.
+	(tilepro_simd_int): Likewise.
+	* config/v850/v850.c (const_double_split): Likewise.
+	(v850_print_operand): Likewise.
+	(ep_memory_offset): Likewise.
+	* config/vax/vax.c (vax_rtx_costs): Likewise.
+	(vax_output_int_move): Likewise.
+	(vax_output_int_add): Likewise.
+	(vax_output_int_subtract): Likewise.
+	* config/visium/predicates.md (visium_branch_operator): Likewise.
+	* config/visium/visium.c (rtx_ok_for_offset_p): Likewise.
+	(visium_print_operand_address): Likewise.
+	* config/visium/visium.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
+	* config/xtensa/xtensa.c (xtensa_mem_offset): Likewise.
+	(xtensa_expand_conditional_branch): Likewise.
+	(xtensa_copy_incoming_a7): Likewise.
+	(xtensa_output_literal): Likewise.
+	* dfp.c (decimal_real_maxval): Likewise.
+	* targhooks.c (default_libgcc_floating_mode_supported_p): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* genmodes.c (mode_size_inline): Add an E_ prefix to mode names.
 	(mode_nunits_inline): Likewise.
 	(mode_inner_inline): Likewise.

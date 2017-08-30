@@ -6226,11 +6226,11 @@ c6x_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V2HImode:
-    case V4QImode:
-    case V2SImode:
-    case V4HImode:
-    case V8QImode:
+    case E_V2HImode:
+    case E_V4QImode:
+    case E_V2SImode:
+    case E_V4HImode:
+    case E_V8QImode:
       return true;
     default:
       return false;
@@ -6243,9 +6243,9 @@ c6x_preferred_simd_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       return V2HImode;
-    case QImode:
+    case E_QImode:
       return V4QImode;
 
     default:

@@ -897,13 +897,13 @@ enum reg_class
     {                                                                   \
       switch (GET_MODE (body))                                          \
         {                                                               \
-        case QImode:                                                    \
+        case E_QImode:                                                    \
           asm_fprintf (stream, "\t.byte\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
-        case HImode:                                                    \
+        case E_HImode:                                                    \
           asm_fprintf (stream, "\t.short\t.L%d-.L%d\n", value, rel);    \
           break;                                                        \
-        case SImode:                                                    \
+        case E_SImode:                                                    \
           asm_fprintf (stream, "\t.word\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
         default:                                                        \

@@ -1314,9 +1314,9 @@ do {							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);	\
   switch (GET_MODE (BODY))				\
     {							\
-    case QImode: fprintf (FILE, "\t.byte "); break;	\
-    case HImode: fprintf (FILE, "\t.hword "); break;	\
-    case SImode: fprintf (FILE, "\t.word "); break;	\
+    case E_QImode: fprintf (FILE, "\t.byte "); break;	\
+    case E_HImode: fprintf (FILE, "\t.hword "); break;	\
+    case E_SImode: fprintf (FILE, "\t.word "); break;	\
     default: gcc_unreachable ();			\
     }							\
   assemble_name (FILE, label);				\

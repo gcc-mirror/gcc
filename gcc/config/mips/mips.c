@@ -7611,7 +7611,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	     general registers.  */
 	  switch (GET_MODE (retval))
 	    {
-	    case SCmode:
+	    case E_SCmode:
 	      mips_output_32bit_xfer ('f', GP_RETURN + TARGET_BIG_ENDIAN,
 				      TARGET_BIG_ENDIAN
 				      ? FP_REG_FIRST + 2
@@ -7641,16 +7641,16 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 		}
 	      break;
 
-	    case SFmode:
+	    case E_SFmode:
 	      mips_output_32bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
 	      break;
 
-	    case DCmode:
+	    case E_DCmode:
 	      mips_output_64bit_xfer ('f', GP_RETURN + (8 / UNITS_PER_WORD),
 				      FP_REG_FIRST + 2);
 	      /* FALLTHRU */
- 	    case DFmode:
-	    case V2SFmode:
+ 	    case E_DFmode:
+	    case E_V2SFmode:
 	      gcc_assert (TARGET_PAIRED_SINGLE_FLOAT
 			  || GET_MODE (retval) != V2SFmode);
 	      mips_output_64bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
@@ -9116,18 +9116,18 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 'v':
       switch (GET_MODE (op))
 	{
-	case V16QImode:
+	case E_V16QImode:
 	  fprintf (file, "b");
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  fprintf (file, "h");
 	  break;
-	case V4SImode:
-	case V4SFmode:
+	case E_V4SImode:
+	case E_V4SFmode:
 	  fprintf (file, "w");
 	  break;
-	case V2DImode:
-	case V2DFmode:
+	case E_V2DImode:
+	case E_V2DFmode:
 	  fprintf (file, "d");
 	  break;
 	default:
@@ -12974,14 +12974,14 @@ mips_mode_ok_for_mov_fmt_p (machine_mode mode)
 {
   switch (mode)
     {
-    case CCFmode:
-    case SFmode:
+    case E_CCFmode:
+    case E_SFmode:
       return TARGET_HARD_FLOAT;
 
-    case DFmode:
+    case E_DFmode:
       return TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT;
 
-    case V2SFmode:
+    case E_V2SFmode:
       return TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT;
 
     default:
@@ -13286,22 +13286,22 @@ mips_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V2SFmode:
+    case E_V2SFmode:
       return TARGET_PAIRED_SINGLE_FLOAT;
 
-    case V2HImode:
-    case V4QImode:
-    case V2HQmode:
-    case V2UHQmode:
-    case V2HAmode:
-    case V2UHAmode:
-    case V4QQmode:
-    case V4UQQmode:
+    case E_V2HImode:
+    case E_V4QImode:
+    case E_V2HQmode:
+    case E_V2UHQmode:
+    case E_V2HAmode:
+    case E_V2UHAmode:
+    case E_V4QQmode:
+    case E_V4UQQmode:
       return TARGET_DSP;
 
-    case V2SImode:
-    case V4HImode:
-    case V8QImode:
+    case E_V2SImode:
+    case E_V4HImode:
+    case E_V8QImode:
       return TARGET_LOONGSON_VECTORS;
 
     default:
@@ -13335,19 +13335,19 @@ mips_preferred_simd_mode (machine_mode mode)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return V16QImode;
-    case HImode:
+    case E_HImode:
       return V8HImode;
-    case SImode:
+    case E_SImode:
       return V4SImode;
-    case DImode:
+    case E_DImode:
       return V2DImode;
 
-    case SFmode:
+    case E_SFmode:
       return V4SFmode;
 
-    case DFmode:
+    case E_DFmode:
       return V2DFmode;
 
     default:
@@ -21139,7 +21139,7 @@ mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
   t1 = gen_reg_rtx (d->vmode);
   switch (d->vmode)
     {
-    case V4HImode:
+    case E_V4HImode:
       emit_insn (gen_loongson_punpckhhw (t0, d->op0, d->op1));
       emit_insn (gen_loongson_punpcklhw (t1, d->op0, d->op1));
       if (odd)
@@ -21148,7 +21148,7 @@ mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
 	emit_insn (gen_loongson_punpcklhw (d->target, t1, t0));
       break;
 
-    case V8QImode:
+    case E_V8QImode:
       t2 = gen_reg_rtx (d->vmode);
       t3 = gen_reg_rtx (d->vmode);
       emit_insn (gen_loongson_punpckhbh (t0, d->op0, d->op1));
@@ -21481,7 +21481,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
     {
       switch (imode)
 	{
-	case V4SImode:
+	case E_V4SImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_w;
 	  else
@@ -21490,7 +21490,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  cmpFunc = gen_msa_clt_s_w;
 	  break;
 
-	case V8HImode:
+	case E_V8HImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_h;
 	  else
@@ -21499,7 +21499,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  cmpFunc = gen_msa_clt_s_h;
 	  break;
 
-	case V16QImode:
+	case E_V16QImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_b;
 	  else
@@ -21532,14 +21532,14 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 
   switch (imode)
     {
-    case V8QImode:
+    case E_V8QImode:
       if (high_p)
 	unpack = gen_loongson_punpckhbh;
       else
 	unpack = gen_loongson_punpcklbh;
       cmpFunc = gen_loongson_pcmpgtb;
       break;
-    case V4HImode:
+    case E_V4HImode:
       if (high_p)
 	unpack = gen_loongson_punpckhhw;
       else
@@ -21612,10 +21612,10 @@ mips_expand_vi_broadcast (machine_mode vmode, rtx target, rtx elt)
   t1 = gen_reg_rtx (vmode);
   switch (vmode)
     {
-    case V8QImode:
+    case E_V8QImode:
       emit_insn (gen_loongson_vec_init1_v8qi (t1, elt));
       break;
-    case V4HImode:
+    case E_V4HImode:
       emit_insn (gen_loongson_vec_init1_v4hi (t1, elt));
       break;
     default:
@@ -21757,10 +21757,10 @@ mips_expand_vector_init (rtx target, rtx vals)
 	    {
 	      switch (vmode)
 		{
-		case V16QImode:
-		case V8HImode:
-		case V4SImode:
-		case V2DImode:
+		case E_V16QImode:
+		case E_V8HImode:
+		case E_V4SImode:
+		case E_V2DImode:
 		  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
 		  emit_move_insn (target, temp);
 		  return;
@@ -21780,18 +21780,18 @@ mips_expand_vector_init (rtx target, rtx vals)
 
 	  switch (vmode)
 	    {
-	    case V16QImode:
-	    case V8HImode:
-	    case V4SImode:
-	    case V2DImode:
+	    case E_V16QImode:
+	    case E_V8HImode:
+	    case E_V4SImode:
+	    case E_V2DImode:
 	      mips_emit_move (target, gen_rtx_VEC_DUPLICATE (vmode, temp));
 	      break;
 
-	    case V4SFmode:
+	    case E_V4SFmode:
 	      emit_insn (gen_msa_splati_w_f_scalar (target, temp));
 	      break;
 
-	    case V2DFmode:
+	    case E_V2DFmode:
 	      emit_insn (gen_msa_splati_d_f_scalar (target, temp));
 	      break;
 
@@ -21814,27 +21814,27 @@ mips_expand_vector_init (rtx target, rtx vals)
 	      emit_move_insn (temp, XVECEXP (vals, 0, i));
 	      switch (vmode)
 		{
-		case V16QImode:
+		case E_V16QImode:
 		  emit_insn (gen_vec_setv16qi (target, temp, GEN_INT (i)));
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  emit_insn (gen_vec_setv8hi (target, temp, GEN_INT (i)));
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  emit_insn (gen_vec_setv4si (target, temp, GEN_INT (i)));
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  emit_insn (gen_vec_setv2di (target, temp, GEN_INT (i)));
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  emit_insn (gen_vec_setv4sf (target, temp, GEN_INT (i)));
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  emit_insn (gen_vec_setv2df (target, temp, GEN_INT (i)));
 		  break;
 
@@ -21897,7 +21897,7 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
   fold = gen_reg_rtx (vmode);
   switch (vmode)
     {
-    case V2SFmode:
+    case E_V2SFmode:
       /* Use PUL/PLU to produce { L, H } op { H, L }.
 	 By reversing the pair order, rather than a pure interleave high,
 	 we avoid erroneous exceptional conditions that we might otherwise
@@ -21908,12 +21908,12 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
       gcc_assert (ok);
       break;
 
-    case V2SImode:
+    case E_V2SImode:
       /* Use interleave to produce { H, L } op { H, H }.  */
       emit_insn (gen_loongson_punpckhwd (fold, last, last));
       break;
 
-    case V4HImode:
+    case E_V4HImode:
       /* Perform the first reduction with interleave,
 	 and subsequent reductions with shifts.  */
       emit_insn (gen_loongson_punpckhwd_hi (fold, last, last));
@@ -21927,7 +21927,7 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
       emit_insn (gen_vec_shr_v4hi (fold, last, x));
       break;
 
-    case V8QImode:
+    case E_V8QImode:
       emit_insn (gen_loongson_punpckhwd_qi (fold, last, last));
 
       next = gen_reg_rtx (vmode);
@@ -22008,10 +22008,10 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 
   switch (cmp_mode)
     {
-    case V16QImode:
-    case V8HImode:
-    case V4SImode:
-    case V2DImode:
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
       switch (cond)
 	{
 	case NE:
@@ -22039,8 +22039,8 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 	emit_move_insn (dest, gen_rtx_NOT (GET_MODE (dest), dest));
       break;
 
-    case V4SFmode:
-    case V2DFmode:
+    case E_V4SFmode:
+    case E_V2DFmode:
       switch (cond)
 	{
 	case UNORDERED:

@@ -448,16 +448,16 @@ default_libgcc_floating_mode_supported_p (machine_mode mode)
   switch (mode)
     {
 #ifdef HAVE_SFmode
-    case SFmode:
+    case E_SFmode:
 #endif
 #ifdef HAVE_DFmode
-    case DFmode:
+    case E_DFmode:
 #endif
 #ifdef HAVE_XFmode
-    case XFmode:
+    case E_XFmode:
 #endif
 #ifdef HAVE_TFmode
-    case TFmode:
+    case E_TFmode:
 #endif
       return true;
 

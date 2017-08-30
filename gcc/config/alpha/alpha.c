@@ -695,18 +695,18 @@ alpha_scalar_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-    case TImode: /* via optabs.c */
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
+    case E_TImode: /* via optabs.c */
       return true;
 
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       return true;
 
-    case TFmode:
+    case E_TFmode:
       return TARGET_HAS_XFLOATING_LIBS;
 
     default:
@@ -3076,20 +3076,20 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
     {
       switch (GET_MODE (operands[i]))
 	{
-	case TFmode:
+	case E_TFmode:
 	  reg = gen_rtx_REG (TFmode, regno);
 	  regno += 2;
 	  break;
 
-	case DFmode:
+	case E_DFmode:
 	  reg = gen_rtx_REG (DFmode, regno + 32);
 	  regno += 1;
 	  break;
 
-	case VOIDmode:
+	case E_VOIDmode:
 	  gcc_assert (CONST_INT_P (operands[i]));
 	  /* FALLTHRU */
-	case DImode:
+	case E_DImode:
 	  reg = gen_rtx_REG (DImode, regno);
 	  regno += 1;
 	  break;
@@ -3104,13 +3104,13 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 
   switch (GET_MODE (target))
     {
-    case TFmode:
+    case E_TFmode:
       reg = gen_rtx_REG (TFmode, 16);
       break;
-    case DFmode:
+    case E_DFmode:
       reg = gen_rtx_REG (DFmode, 32);
       break;
-    case DImode:
+    case E_DImode:
       reg = gen_rtx_REG (DImode, 0);
       break;
     default:
@@ -4383,16 +4383,16 @@ emit_insxl (machine_mode mode, rtx op1, rtx op2)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       fn = gen_insbl;
       break;
-    case HImode:
+    case E_HImode:
       fn = gen_inswl;
       break;
-    case SImode:
+    case E_SImode:
       fn = gen_insll;
       break;
-    case DImode:
+    case E_DImode:
       fn = gen_insql;
       break;
     default:
@@ -9574,9 +9574,9 @@ alpha_arg_type (machine_mode mode)
 {
   switch (mode)
     {
-    case SFmode:
+    case E_SFmode:
       return TARGET_FLOAT_VAX ? FF : FS;
-    case DFmode:
+    case E_DFmode:
       return TARGET_FLOAT_VAX ? FD : FT;
     default:
       return I64;

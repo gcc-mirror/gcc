@@ -720,13 +720,13 @@ decimal_real_maxval (REAL_VALUE_TYPE *r, int sign, machine_mode mode)
 
   switch (mode)
     {
-    case SDmode:
+    case E_SDmode:
       max = "9.999999E96";
       break;
-    case DDmode:
+    case E_DDmode:
       max = "9.999999999999999E384";
       break;
-    case TDmode:
+    case E_TDmode:
       max = "9.999999999999999999999999999999999E6144";
       break;
     default:

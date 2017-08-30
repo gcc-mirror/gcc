@@ -966,25 +966,25 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   /* Decide which extension, if any, should be given to the move instruction.  */
   switch (CONST_INT_P (src) ? GET_MODE (dest) : GET_MODE (src))
     {
-    case QImode:
+    case E_QImode:
       /* The .B extension is not valid when
 	 loading an immediate into a register.  */
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	extension = ".B";
       break;
-    case HImode:
+    case E_HImode:
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	/* The .W extension is not valid when
 	   loading an immediate into a register.  */
 	extension = ".W";
       break;
-    case DFmode:
-    case DImode:
-    case SFmode:
-    case SImode:
+    case E_DFmode:
+    case E_DImode:
+    case E_SFmode:
+    case E_SImode:
       extension = ".L";
       break;
-    case VOIDmode:
+    case E_VOIDmode:
       /* This mode is used by constants.  */
       break;
     default:
@@ -3079,15 +3079,15 @@ flags_from_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case CC_ZSmode:
+    case E_CC_ZSmode:
       return CC_FLAG_S | CC_FLAG_Z;
-    case CC_ZSOmode:
+    case E_CC_ZSOmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
-    case CC_ZSCmode:
+    case E_CC_ZSCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
-    case CCmode:
+    case E_CCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
-    case CC_Fmode:
+    case E_CC_Fmode:
       return CC_FLAG_FP;
     default:
       gcc_unreachable ();

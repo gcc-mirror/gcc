@@ -1719,18 +1719,18 @@ rtx_ok_for_offset_p (machine_mode mode, rtx op)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return INTVAL (op) <= 31;
 
-    case HImode:
+    case E_HImode:
       return (INTVAL (op) % 2) == 0 && INTVAL (op) < 63;
 
-    case SImode:
-    case SFmode:
+    case E_SImode:
+    case E_SFmode:
       return (INTVAL (op) % 4) == 0 && INTVAL (op) < 127;
 
-    case DImode:
-    case DFmode:
+    case E_DImode:
+    case E_DFmode:
       return (INTVAL (op) % 4) == 0 && INTVAL (op) < 123;
 
     default:
@@ -3323,18 +3323,18 @@ visium_print_operand_address (FILE *file, machine_mode mode, rtx addr)
 		HOST_WIDE_INT val = INTVAL (y);
 		switch (mode)
 		  {
-		  case SImode:
-		  case DImode:
-		  case SFmode:
-		  case DFmode:
+		  case E_SImode:
+		  case E_DImode:
+		  case E_SFmode:
+		  case E_DFmode:
 		    val >>= 2;
 		    break;
 
-		  case HImode:
+		  case E_HImode:
 		    val >>= 1;
 		    break;
 
-		  case QImode:
+		  case E_QImode:
 		  default:
 		    break;
 		  }

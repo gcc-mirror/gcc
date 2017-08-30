@@ -220,30 +220,30 @@ nvptx_ptx_type_from_mode (machine_mode mode, bool promote)
 {
   switch (mode)
     {
-    case BLKmode:
+    case E_BLKmode:
       return ".b8";
-    case BImode:
+    case E_BImode:
       return ".pred";
-    case QImode:
+    case E_QImode:
       if (promote)
 	return ".u32";
       else
 	return ".u8";
-    case HImode:
+    case E_HImode:
       return ".u16";
-    case SImode:
+    case E_SImode:
       return ".u32";
-    case DImode:
+    case E_DImode:
       return ".u64";
 
-    case SFmode:
+    case E_SFmode:
       return ".f32";
-    case DFmode:
+    case E_DFmode:
       return ".f64";
 
-    case V2SImode:
+    case E_V2SImode:
       return ".v2.u32";
-    case V2DImode:
+    case E_V2DImode:
       return ".v2.u64";
 
     default:
@@ -1638,10 +1638,10 @@ nvptx_gen_unpack (rtx dst0, rtx dst1, rtx src)
   
   switch (GET_MODE (src))
     {
-    case DImode:
+    case E_DImode:
       res = gen_unpackdisi2 (dst0, dst1, src);
       break;
-    case DFmode:
+    case E_DFmode:
       res = gen_unpackdfsi2 (dst0, dst1, src);
       break;
     default: gcc_unreachable ();
@@ -1659,10 +1659,10 @@ nvptx_gen_pack (rtx dst, rtx src0, rtx src1)
   
   switch (GET_MODE (dst))
     {
-    case DImode:
+    case E_DImode:
       res = gen_packsidi2 (dst, src0, src1);
       break;
-    case DFmode:
+    case E_DFmode:
       res = gen_packsidf2 (dst, src0, src1);
       break;
     default: gcc_unreachable ();
@@ -1680,14 +1680,14 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 
   switch (GET_MODE (dst))
     {
-    case SImode:
+    case E_SImode:
       res = gen_nvptx_shufflesi (dst, src, idx, GEN_INT (kind));
       break;
-    case SFmode:
+    case E_SFmode:
       res = gen_nvptx_shufflesf (dst, src, idx, GEN_INT (kind));
       break;
-    case DImode:
-    case DFmode:
+    case E_DImode:
+    case E_DFmode:
       {
 	rtx tmp0 = gen_reg_rtx (SImode);
 	rtx tmp1 = gen_reg_rtx (SImode);
@@ -1701,7 +1701,7 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 	end_sequence ();
       }
       break;
-    case BImode:
+    case E_BImode:
       {
 	rtx tmp = gen_reg_rtx (SImode);
 	
@@ -1713,8 +1713,8 @@ nvptx_gen_shuffle (rtx dst, rtx src, rtx idx, nvptx_shuffle_kind kind)
 	end_sequence ();
       }
       break;
-    case QImode:
-    case HImode:
+    case E_QImode:
+    case E_HImode:
       {
 	rtx tmp = gen_reg_rtx (SImode);
 
@@ -1776,7 +1776,7 @@ nvptx_gen_wcast (rtx reg, propagate_mask pm, unsigned rep, wcast_data_t *data)
 
   switch (mode)
     {
-    case BImode:
+    case E_BImode:
       {
 	rtx tmp = gen_reg_rtx (SImode);
 	
@@ -5490,9 +5490,9 @@ nvptx_preferred_simd_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       return V2DImode;
-    case SImode:
+    case E_SImode:
       return V2SImode;
 
     default:

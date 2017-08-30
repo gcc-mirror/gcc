@@ -1621,11 +1621,11 @@ output_dbcc_and_branch (rtx *operands)
      to compensate for the fact that dbcc decrements in HImode.  */
   switch (GET_MODE (operands[0]))
     {
-      case SImode:
+      case E_SImode:
         output_asm_insn ("clr%.w %0\n\tsubq%.l #1,%0\n\tjpl %l1", operands);
         break;
 
-      case HImode:
+      case E_HImode:
         break;
 
       default:
@@ -5270,9 +5270,9 @@ rtx
 m68k_libcall_value (machine_mode mode)
 {
   switch (mode) {
-  case SFmode:
-  case DFmode:
-  case XFmode:
+  case E_SFmode:
+  case E_DFmode:
+  case E_XFmode:
     if (TARGET_68881)
       return gen_rtx_REG (mode, FP0_REG);
     break;
@@ -5293,9 +5293,9 @@ m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 
   mode = TYPE_MODE (valtype);
   switch (mode) {
-  case SFmode:
-  case DFmode:
-  case XFmode:
+  case E_SFmode:
+  case E_DFmode:
+  case E_XFmode:
     if (TARGET_68881)
       return gen_rtx_REG (mode, FP0_REG);
     break;
@@ -5521,11 +5521,11 @@ sched_attr_op_type (rtx_insn *insn, bool opx_p, bool address_p)
     {
       switch (GET_MODE (op))
 	{
-	case SFmode:
+	case E_SFmode:
 	  return OP_TYPE_IMM_W;
 
-	case VOIDmode:
-	case DFmode:
+	case E_VOIDmode:
+	case E_DFmode:
 	  return OP_TYPE_IMM_L;
 
 	default:
@@ -5539,13 +5539,13 @@ sched_attr_op_type (rtx_insn *insn, bool opx_p, bool address_p)
     {
       switch (GET_MODE (op))
 	{
-	case QImode:
+	case E_QImode:
 	  return OP_TYPE_IMM_Q;
 
-	case HImode:
+	case E_HImode:
 	  return OP_TYPE_IMM_W;
 
-	case SImode:
+	case E_SImode:
 	  return OP_TYPE_IMM_L;
 
 	default:

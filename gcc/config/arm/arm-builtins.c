@@ -815,29 +815,29 @@ arm_simd_builtin_std_type (machine_mode mode,
   ((q == qualifier_none) ? int##M##_type_node : unsigned_int##M##_type_node);
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return QUAL_TYPE (QI);
-    case HImode:
+    case E_HImode:
       return QUAL_TYPE (HI);
-    case SImode:
+    case E_SImode:
       return QUAL_TYPE (SI);
-    case DImode:
+    case E_DImode:
       return QUAL_TYPE (DI);
-    case TImode:
+    case E_TImode:
       return QUAL_TYPE (TI);
-    case OImode:
+    case E_OImode:
       return arm_simd_intOI_type_node;
-    case EImode:
+    case E_EImode:
       return arm_simd_intEI_type_node;
-    case CImode:
+    case E_CImode:
       return arm_simd_intCI_type_node;
-    case XImode:
+    case E_XImode:
       return arm_simd_intXI_type_node;
-    case HFmode:
+    case E_HFmode:
       return arm_fp16_type_node;
-    case SFmode:
+    case E_SFmode:
       return float_type_node;
-    case DFmode:
+    case E_DFmode:
       return double_type_node;
     default:
       gcc_unreachable ();
@@ -1677,16 +1677,16 @@ arm_init_iwmmxt_builtins (void)
 
       switch (mode)
 	{
-	case V8QImode:
+	case E_V8QImode:
 	  type = v8qi_ftype_v8qi_v8qi;
 	  break;
-	case V4HImode:
+	case E_V4HImode:
 	  type = v4hi_ftype_v4hi_v4hi;
 	  break;
-	case V2SImode:
+	case E_V2SImode:
 	  type = v2si_ftype_v2si_v2si;
 	  break;
-	case DImode:
+	case E_DImode:
 	  type = di_ftype_di_di;
 	  break;
 

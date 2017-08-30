@@ -591,7 +591,7 @@ xtensa_mem_offset (unsigned v, machine_mode mode)
 {
   switch (mode)
     {
-    case BLKmode:
+    case E_BLKmode:
       /* Handle the worst case for block moves.  See xtensa_expand_block_move
 	 where we emit an optimized block move operation if the block can be
 	 moved in < "move_ratio" pieces.  The worst case is when the block is
@@ -600,13 +600,13 @@ xtensa_mem_offset (unsigned v, machine_mode mode)
       return (xtensa_uimm8 (v)
 	      && xtensa_uimm8 (v + MOVE_MAX * LARGEST_MOVE_RATIO));
 
-    case QImode:
+    case E_QImode:
       return xtensa_uimm8 (v);
 
-    case HImode:
+    case E_HImode:
       return xtensa_uimm8x2 (v);
 
-    case DFmode:
+    case E_DFmode:
       return (xtensa_uimm8x4 (v) && xtensa_uimm8x4 (v + 4));
 
     default:
@@ -802,16 +802,16 @@ xtensa_expand_conditional_branch (rtx *operands, machine_mode mode)
 
   switch (mode)
     {
-    case DFmode:
+    case E_DFmode:
     default:
       fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode, cmp0, cmp1));
 
-    case SImode:
+    case E_SImode:
       invert = FALSE;
       cmp = gen_int_relational (test_code, cmp0, cmp1, &invert);
       break;
 
-    case SFmode:
+    case E_SFmode:
       if (!TARGET_HARD_FLOAT)
 	fatal_insn ("bad test", gen_rtx_fmt_ee (test_code, VOIDmode,
 						cmp0, cmp1));
@@ -1161,8 +1161,8 @@ xtensa_copy_incoming_a7 (rtx opnd)
 
   switch (mode)
     {
-    case DFmode:
-    case DImode:
+    case E_DFmode:
+    case E_DImode:
       /* Copy the value out of A7 here but keep the first word in A6 until
 	 after the set_frame_ptr insn.  Otherwise, the register allocator
 	 may decide to put "subreg (tmp, 0)" in A7 and clobber the incoming
@@ -1170,16 +1170,16 @@ xtensa_copy_incoming_a7 (rtx opnd)
       emit_insn (gen_movsi_internal (gen_rtx_SUBREG (SImode, tmp, 4),
 				     gen_raw_REG (SImode, A7_REG)));
       break;
-    case SFmode:
+    case E_SFmode:
       emit_insn (gen_movsf_internal (tmp, gen_raw_REG (mode, A7_REG)));
       break;
-    case SImode:
+    case E_SImode:
       emit_insn (gen_movsi_internal (tmp, gen_raw_REG (mode, A7_REG)));
       break;
-    case HImode:
+    case E_HImode:
       emit_insn (gen_movhi_internal (tmp, gen_raw_REG (mode, A7_REG)));
       break;
-    case QImode:
+    case E_QImode:
       emit_insn (gen_movqi_internal (tmp, gen_raw_REG (mode, A7_REG)));
       break;
     default:
@@ -2581,7 +2581,7 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 
       switch (mode)
 	{
-	case SFmode:
+	case E_SFmode:
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x),
 				       value_long[0]);
 	  if (HOST_BITS_PER_LONG > 32)
@@ -2589,7 +2589,7 @@ xtensa_output_literal (FILE *file, rtx x, machine_mode mode, int labelno)
 	  fprintf (file, "0x%08lx\n", value_long[0]);
 	  break;
 
-	case DFmode:
+	case E_DFmode:
 	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x),
 				       value_long);
 	  if (HOST_BITS_PER_LONG > 32)

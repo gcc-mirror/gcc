@@ -114,21 +114,21 @@ nds32_mem_format (rtx op)
 
       switch (mode_test)
 	{
-	case QImode:
+	case E_QImode:
 	  /* 333 format.  */
 	  if (val >= 0 && val < 8 && regno < 8)
 	    return ADDRESS_LO_REG_IMM3U;
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  /* 333 format.  */
 	  if (val >= 0 && val < 16 && (val % 2 == 0) && regno < 8)
 	    return ADDRESS_LO_REG_IMM3U;
 	  break;
 
-	case SImode:
-	case SFmode:
-	case DFmode:
+	case E_SImode:
+	case E_SFmode:
+	case E_DFmode:
 	  /* fp imply 37 format.  */
 	  if ((regno == FP_REGNUM) &&
 	      (val >= 0 && val < 512 && (val % 4 == 0)))
@@ -802,13 +802,13 @@ nds32_output_casesi_pc_relative (rtx *operands)
      where m is 0, 1, or 2 to load address-diff value from table.  */
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       output_asm_insn ("lb\t%2, [$ta + %0 << 0]", operands);
       break;
-    case HImode:
+    case E_HImode:
       output_asm_insn ("lh\t%2, [$ta + %0 << 1]", operands);
       break;
-    case SImode:
+    case E_SImode:
       output_asm_insn ("lw\t%2, [$ta + %0 << 2]", operands);
       break;
     default:

@@ -666,7 +666,7 @@ m32c_preferred_reload_class (rtx x, reg_class_t rclass)
     {
       switch (GET_MODE (x))
 	{
-	case QImode:
+	case E_QImode:
 	  newclass = HL_REGS;
 	  break;
 	default:
