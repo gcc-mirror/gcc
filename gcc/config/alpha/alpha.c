@@ -2783,7 +2783,7 @@ alpha_emit_conditional_move (rtx cmp, machine_mode mode)
       emit_insn (gen_rtx_SET (tem, gen_rtx_fmt_ee (cmp_code, cmp_mode,
 						   op0, op1)));
 
-      cmp_mode = cmp_mode == DImode ? DFmode : DImode;
+      cmp_mode = cmp_mode == DImode ? E_DFmode : E_DImode;
       op0 = gen_lowpart (cmp_mode, tem);
       op1 = CONST0_RTX (cmp_mode);
       cmp = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);

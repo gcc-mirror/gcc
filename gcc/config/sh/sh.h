@@ -689,7 +689,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* The mode that should be generally used to store a register by
    itself in the stack, or to load it back.  */
 #define REGISTER_NATURAL_MODE(REGNO) \
-  (FP_REGISTER_P (REGNO) ? SFmode : XD_REGISTER_P (REGNO) ? DFmode : SImode)
+  (FP_REGISTER_P (REGNO) ? E_SFmode \
+   : XD_REGISTER_P (REGNO) ? E_DFmode : E_SImode)
 
 
 #define FIRST_PSEUDO_REGISTER 156

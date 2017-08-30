@@ -376,7 +376,7 @@ double_memory_operand (rtx op, machine_mode mode)
     return 1;
 
   return memory_address_p ((GET_MODE_CLASS (mode) == MODE_INT
-			    ? SImode : SFmode),
+			    ? E_SImode : E_SFmode),
 			   plus_constant (Pmode, addr, 4));
 }
 

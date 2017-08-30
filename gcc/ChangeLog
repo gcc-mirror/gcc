@@ -1,4 +1,54 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* genmodes.c (mode_size_inline): Add an E_ prefix to mode names.
+	(mode_nunits_inline): Likewise.
+	(mode_inner_inline): Likewise.
+	(mode_unit_size_inline): Likewise.
+	(mode_unit_precision_inline): Likewise.
+	(emit_insn_modes_h): Likewise.  Also emit a #define of the
+	unprefixed name.
+	(emit_mode_wider): Add an E_ prefix to mode names.
+	(emit_mode_complex): Likewise.
+	(emit_mode_inner): Likewise.
+	(emit_mode_adjustments): Likewise.
+	(emit_mode_int_n): Likewise.
+	* config/aarch64/aarch64-builtins.c (v8qi_UP, v4hi_UP, v4hf_UP)
+	(v2si_UP, v2sf_UP, v1df_UP, di_UP, df_UP, v16qi_UP, v8hi_UP, v8hf_UP)
+	(v4si_UP, v4sf_UP, v2di_UP, v2df_UP, ti_UP, oi_UP, ci_UP, xi_UP)
+	(si_UP, sf_UP, hi_UP, hf_UP, qi_UP): Likewise.
+	(CRC32_BUILTIN, ENTRY): Likewise.
+	* config/aarch64/aarch64.c (aarch64_push_regs): Likewise.
+	(aarch64_pop_regs): Likewise.
+	(aarch64_process_components): Likewise.
+	* config/alpha/alpha.c (alpha_emit_conditional_move): Likewise.
+	* config/arm/arm-builtins.c (v8qi_UP, v4hi_UP, v4hf_UP, v2si_UP)
+	(v2sf_UP, di_UP, v16qi_UP, v8hi_UP, v8hf_UP, v4si_UP, v4sf_UP)
+	(v2di_UP, ti_UP, ei_UP, oi_UP, hf_UP, si_UP, void_UP): Likewise.
+	* config/arm/arm.c (arm_init_libfuncs): Likewise.
+	* config/i386/i386-builtin-types.awk (ix86_builtin_type_vect_mode):
+	Likewise.
+	* config/i386/i386-builtin.def (pcmpestr): Likewise.
+	(pcmpistr): Likewise.
+	* config/microblaze/microblaze.c (double_memory_operand): Likewise.
+	* config/mmix/mmix.c (mmix_output_condition): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_init_hard_regno_mode_ok):
+	Likewise.
+	* config/rl78/rl78.c (mduc_regs): Likewise.
+	* config/rs6000/rs6000.c (rs6000_init_hard_regno_mode_ok): Likewise.
+	(htm_expand_builtin): Likewise.
+	* config/sh/sh.h (REGISTER_NATURAL_MODE): Likewise.
+	* config/sparc/sparc.c (emit_save_or_restore_regs): Likewise.
+	* config/xtensa/xtensa.c (print_operand): Likewise.
+	* expmed.h (NUM_MODE_PARTIAL_INT): Likewise.
+	(NUM_MODE_VECTOR_INT): Likewise.
+	* genoutput.c (null_operand): Likewise.
+	(output_operand_data): Likewise.
+	* genrecog.c (print_parameter_value): Likewise.
+	* lra.c (debug_operand_data): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* dwarf2out.c (scompare_loc_descriptor_wide)
 	(scompare_loc_descriptor_narrow): New functions, split out from...

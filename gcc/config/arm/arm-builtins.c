@@ -255,24 +255,24 @@ arm_storestruct_lane_qualifiers[SIMD_MAX_BUILTIN_ARGS]
       qualifier_none, qualifier_struct_load_store_lane_index };
 #define STORE1LANE_QUALIFIERS (arm_storestruct_lane_qualifiers)
 
-#define v8qi_UP  V8QImode
-#define v4hi_UP  V4HImode
-#define v4hf_UP  V4HFmode
-#define v2si_UP  V2SImode
-#define v2sf_UP  V2SFmode
-#define di_UP    DImode
-#define v16qi_UP V16QImode
-#define v8hi_UP  V8HImode
-#define v8hf_UP  V8HFmode
-#define v4si_UP  V4SImode
-#define v4sf_UP  V4SFmode
-#define v2di_UP  V2DImode
-#define ti_UP	 TImode
-#define ei_UP	 EImode
-#define oi_UP	 OImode
-#define hf_UP	 HFmode
-#define si_UP	 SImode
-#define void_UP	 VOIDmode
+#define v8qi_UP  E_V8QImode
+#define v4hi_UP  E_V4HImode
+#define v4hf_UP  E_V4HFmode
+#define v2si_UP  E_V2SImode
+#define v2sf_UP  E_V2SFmode
+#define di_UP    E_DImode
+#define v16qi_UP E_V16QImode
+#define v8hi_UP  E_V8HImode
+#define v8hf_UP  E_V8HFmode
+#define v4si_UP  E_V4SImode
+#define v4sf_UP  E_V4SFmode
+#define v2di_UP  E_V2DImode
+#define ti_UP	 E_TImode
+#define ei_UP	 E_EImode
+#define oi_UP	 E_OImode
+#define hf_UP	 E_HFmode
+#define si_UP	 E_SImode
+#define void_UP	 E_VOIDmode
 
 #define UP(X) X##_UP
 

@@ -596,7 +596,7 @@ static struct lra_operand_data debug_operand_data =
   {
     NULL, /* alternative  */
     0, /* early_clobber_alts */
-    VOIDmode, /* We are not interesting in the operand mode.  */
+    E_VOIDmode, /* We are not interesting in the operand mode.  */
     OP_IN,
     0, 0, 0, 0
   };

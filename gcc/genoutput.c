@@ -127,7 +127,7 @@ struct operand_data
 
 static struct operand_data null_operand =
 {
-  0, 0, "", "", VOIDmode, 0, 0, 0, 0, 0
+  0, 0, "", "", E_VOIDmode, 0, 0, 0, 0, 0
 };
 
 static struct operand_data *odata = &null_operand;
@@ -253,7 +253,7 @@ output_operand_data (void)
 
       printf ("    \"%s\",\n", d->constraint ? d->constraint : "");
 
-      printf ("    %smode,\n", GET_MODE_NAME (d->mode));
+      printf ("    E_%smode,\n", GET_MODE_NAME (d->mode));
 
       printf ("    %d,\n", d->strict_low);
 

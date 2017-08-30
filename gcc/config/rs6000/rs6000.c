@@ -3460,67 +3460,67 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       };
 
       static const struct fuse_insns addis_insns[] = {
-	{ SFmode, DImode, RELOAD_REG_FPR,
+	{ E_SFmode, E_DImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_di_sf_load,
 	  CODE_FOR_fusion_vsx_di_sf_store },
 
-	{ SFmode, SImode, RELOAD_REG_FPR,
+	{ E_SFmode, E_SImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_si_sf_load,
 	  CODE_FOR_fusion_vsx_si_sf_store },
 
-	{ DFmode, DImode, RELOAD_REG_FPR,
+	{ E_DFmode, E_DImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_di_df_load,
 	  CODE_FOR_fusion_vsx_di_df_store },
 
-	{ DFmode, SImode, RELOAD_REG_FPR,
+	{ E_DFmode, E_SImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_si_df_load,
 	  CODE_FOR_fusion_vsx_si_df_store },
 
-	{ DImode, DImode, RELOAD_REG_FPR,
+	{ E_DImode, E_DImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_di_di_load,
 	  CODE_FOR_fusion_vsx_di_di_store },
 
-	{ DImode, SImode, RELOAD_REG_FPR,
+	{ E_DImode, E_SImode, RELOAD_REG_FPR,
 	  CODE_FOR_fusion_vsx_si_di_load,
 	  CODE_FOR_fusion_vsx_si_di_store },
 
-	{ QImode, DImode, RELOAD_REG_GPR,
+	{ E_QImode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_qi_load,
 	  CODE_FOR_fusion_gpr_di_qi_store },
 
-	{ QImode, SImode, RELOAD_REG_GPR,
+	{ E_QImode, E_SImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_si_qi_load,
 	  CODE_FOR_fusion_gpr_si_qi_store },
 
-	{ HImode, DImode, RELOAD_REG_GPR,
+	{ E_HImode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_hi_load,
 	  CODE_FOR_fusion_gpr_di_hi_store },
 
-	{ HImode, SImode, RELOAD_REG_GPR,
+	{ E_HImode, E_SImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_si_hi_load,
 	  CODE_FOR_fusion_gpr_si_hi_store },
 
-	{ SImode, DImode, RELOAD_REG_GPR,
+	{ E_SImode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_si_load,
 	  CODE_FOR_fusion_gpr_di_si_store },
 
-	{ SImode, SImode, RELOAD_REG_GPR,
+	{ E_SImode, E_SImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_si_si_load,
 	  CODE_FOR_fusion_gpr_si_si_store },
 
-	{ SFmode, DImode, RELOAD_REG_GPR,
+	{ E_SFmode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_sf_load,
 	  CODE_FOR_fusion_gpr_di_sf_store },
 
-	{ SFmode, SImode, RELOAD_REG_GPR,
+	{ E_SFmode, E_SImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_si_sf_load,
 	  CODE_FOR_fusion_gpr_si_sf_store },
 
-	{ DImode, DImode, RELOAD_REG_GPR,
+	{ E_DImode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_di_load,
 	  CODE_FOR_fusion_gpr_di_di_store },
 
-	{ DFmode, DImode, RELOAD_REG_GPR,
+	{ E_DFmode, E_DImode, RELOAD_REG_GPR,
 	  CODE_FOR_fusion_gpr_di_df_load,
 	  CODE_FOR_fusion_gpr_di_df_store },
       };
@@ -14693,7 +14693,7 @@ htm_expand_builtin (tree exp, rtx target, bool * expandedp)
 
 	if (nonvoid)
 	  {
-	    machine_mode tmode = (uses_spr) ? insn_op->mode : SImode;
+	    machine_mode tmode = (uses_spr) ? insn_op->mode : E_SImode;
 	    if (!target
 		|| GET_MODE (target) != tmode
 		|| (uses_spr && !(*insn_op->predicate) (target, tmode)))

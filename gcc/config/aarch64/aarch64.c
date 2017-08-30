@@ -3106,7 +3106,7 @@ static void
 aarch64_push_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment)
 {
   rtx_insn *insn;
-  machine_mode mode = (regno1 <= R30_REGNUM) ? DImode : DFmode;
+  machine_mode mode = (regno1 <= R30_REGNUM) ? E_DImode : E_DFmode;
 
   if (regno2 == INVALID_REGNUM)
     return aarch64_pushwb_single_reg (mode, regno1, adjustment);
@@ -3149,7 +3149,7 @@ static void
 aarch64_pop_regs (unsigned regno1, unsigned regno2, HOST_WIDE_INT adjustment,
 		  rtx *cfi_ops)
 {
-  machine_mode mode = (regno1 <= R30_REGNUM) ? DImode : DFmode;
+  machine_mode mode = (regno1 <= R30_REGNUM) ? E_DImode : E_DFmode;
   rtx reg1 = gen_rtx_REG (mode, regno1);
 
   *cfi_ops = alloc_reg_note (REG_CFA_RESTORE, reg1, *cfi_ops);
@@ -3483,7 +3483,7 @@ aarch64_process_components (sbitmap components, bool prologue_p)
     {
       /* AAPCS64 section 5.1.2 requires only the bottom 64 bits to be saved
 	 so DFmode for the vector registers is enough.  */
-      machine_mode mode = GP_REGNUM_P (regno) ? DImode : DFmode;
+      machine_mode mode = GP_REGNUM_P (regno) ? E_DImode : E_DFmode;
       rtx reg = gen_rtx_REG (mode, regno);
       HOST_WIDE_INT offset = cfun->machine->frame.reg_offset[regno];
       if (!frame_pointer_needed)
