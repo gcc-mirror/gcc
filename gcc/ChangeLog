@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs.c (expand_float): Explicitly check for scalars before
+	using a branching expansion.
+	(expand_fix): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (convert_mode): Split scalar handling out into...
 	(convert_mode_scalar): ...this new function.  Treat the modes
 	as scalar_modes.
