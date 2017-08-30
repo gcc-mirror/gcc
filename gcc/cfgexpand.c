@@ -3965,12 +3965,10 @@ static rtx
 convert_debug_memory_address (machine_mode mode, rtx x,
 			      addr_space_t as)
 {
-  machine_mode xmode = GET_MODE (x);
-
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (mode == Pmode
 	      || mode == targetm.addr_space.address_mode (as));
-  gcc_assert (xmode == mode || xmode == VOIDmode);
+  gcc_assert (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode);
 #else
   rtx temp;
 
@@ -3979,6 +3977,8 @@ convert_debug_memory_address (machine_mode mode, rtx x,
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
 
+  /* X must have some form of address mode already.  */
+  scalar_int_mode xmode = as_a <scalar_int_mode> (GET_MODE (x));
   if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (xmode))
     x = lowpart_subreg (mode, x, xmode);
   else if (POINTERS_EXTEND_UNSIGNED > 0)

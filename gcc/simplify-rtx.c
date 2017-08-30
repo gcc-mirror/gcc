@@ -926,7 +926,7 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 {
   enum rtx_code reversed;
   rtx temp;
-  scalar_int_mode inner, int_mode, op0_mode;
+  scalar_int_mode inner, int_mode, op_mode, op0_mode;
 
   switch (code)
     {
@@ -1162,26 +1162,27 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (op, 1) == const0_rtx
 	  && is_a <scalar_int_mode> (GET_MODE (XEXP (op, 0)), &inner))
 	{
+	  int_mode = as_a <scalar_int_mode> (mode);
 	  int isize = GET_MODE_PRECISION (inner);
 	  if (STORE_FLAG_VALUE == 1)
 	    {
 	      temp = simplify_gen_binary (ASHIFTRT, inner, XEXP (op, 0),
 					  GEN_INT (isize - 1));
-	      if (mode == inner)
+	      if (int_mode == inner)
 		return temp;
-	      if (GET_MODE_PRECISION (mode) > isize)
-		return simplify_gen_unary (SIGN_EXTEND, mode, temp, inner);
-	      return simplify_gen_unary (TRUNCATE, mode, temp, inner);
+	      if (GET_MODE_PRECISION (int_mode) > isize)
+		return simplify_gen_unary (SIGN_EXTEND, int_mode, temp, inner);
+	      return simplify_gen_unary (TRUNCATE, int_mode, temp, inner);
 	    }
 	  else if (STORE_FLAG_VALUE == -1)
 	    {
 	      temp = simplify_gen_binary (LSHIFTRT, inner, XEXP (op, 0),
 					  GEN_INT (isize - 1));
-	      if (mode == inner)
+	      if (int_mode == inner)
 		return temp;
-	      if (GET_MODE_PRECISION (mode) > isize)
-		return simplify_gen_unary (ZERO_EXTEND, mode, temp, inner);
-	      return simplify_gen_unary (TRUNCATE, mode, temp, inner);
+	      if (GET_MODE_PRECISION (int_mode) > isize)
+		return simplify_gen_unary (ZERO_EXTEND, int_mode, temp, inner);
+	      return simplify_gen_unary (TRUNCATE, int_mode, temp, inner);
 	    }
 	}
       break;
@@ -1501,12 +1502,13 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
-	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
+	  && (op_mode = as_a <scalar_int_mode> (GET_MODE (op)),
+	      GET_MODE_BITSIZE (op_mode) > INTVAL (XEXP (op, 1))))
 	{
 	  scalar_int_mode tmode;
 	  gcc_assert (GET_MODE_BITSIZE (int_mode)
-		      > GET_MODE_BITSIZE (GET_MODE (op)));
-	  if (int_mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
+		      > GET_MODE_BITSIZE (op_mode));
+	  if (int_mode_for_size (GET_MODE_BITSIZE (op_mode)
 				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =
@@ -1618,10 +1620,11 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && CONST_INT_P (XEXP (op, 1))
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
-	  && GET_MODE_PRECISION (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
+	  && (op_mode = as_a <scalar_int_mode> (GET_MODE (op)),
+	      GET_MODE_PRECISION (op_mode) > INTVAL (XEXP (op, 1))))
 	{
 	  scalar_int_mode tmode;
-	  if (int_mode_for_size (GET_MODE_PRECISION (GET_MODE (op))
+	  if (int_mode_for_size (GET_MODE_PRECISION (op_mode)
 				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =
@@ -5395,10 +5398,10 @@ simplify_cond_clz_ctz (rtx x, rtx_code cmp_code, rtx true_val, rtx false_val)
     return NULL_RTX;
 
   HOST_WIDE_INT op_val;
-  if (((op_code == CLZ
-	&& CLZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val))
-      || (op_code == CTZ
-	  && CTZ_DEFINED_VALUE_AT_ZERO (GET_MODE (on_nonzero), op_val)))
+  scalar_int_mode mode ATTRIBUTE_UNUSED
+    = as_a <scalar_int_mode> (GET_MODE (XEXP (on_nonzero, 0)));
+  if (((op_code == CLZ && CLZ_DEFINED_VALUE_AT_ZERO (mode, op_val))
+       || (op_code == CTZ && CTZ_DEFINED_VALUE_AT_ZERO (mode, op_val)))
       && op_val == INTVAL (on_zero))
     return on_nonzero;
 

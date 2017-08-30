@@ -440,7 +440,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)
     counter_reg = XEXP (counter_reg, 0);
-  mode = GET_MODE (counter_reg);
+  /* These patterns must operate on integer counters.  */
+  mode = as_a <scalar_int_mode> (GET_MODE (counter_reg));
 
   increment_count = false;
   switch (GET_CODE (condition))

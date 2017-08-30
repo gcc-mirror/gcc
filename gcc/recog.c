@@ -1189,8 +1189,9 @@ const_scalar_int_operand (rtx op, machine_mode mode)
 
   if (mode != VOIDmode)
     {
-      int prec = GET_MODE_PRECISION (mode);
-      int bitsize = GET_MODE_BITSIZE (mode);
+      scalar_int_mode int_mode = as_a <scalar_int_mode> (mode);
+      int prec = GET_MODE_PRECISION (int_mode);
+      int bitsize = GET_MODE_BITSIZE (int_mode);
 
       if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
 	return 0;

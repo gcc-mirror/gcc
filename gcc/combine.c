@@ -7143,16 +7143,19 @@ expand_compound_operation (rtx x)
     default:
       return x;
     }
+
+  /* We've rejected non-scalar operations by now.  */
+  scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (x));
+
   /* Convert sign extension to zero extension, if we know that the high
      bit is not set, as this is easier to optimize.  It will be converted
      back to cheaper alternative in make_extraction.  */
   if (GET_CODE (x) == SIGN_EXTEND
-      && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
+      && HWI_COMPUTABLE_MODE_P (mode)
       && ((nonzero_bits (XEXP (x, 0), inner_mode)
 	   & ~(((unsigned HOST_WIDE_INT) GET_MODE_MASK (inner_mode)) >> 1))
 	  == 0))
     {
-      machine_mode mode = GET_MODE (x);
       rtx temp = gen_rtx_ZERO_EXTEND (mode, XEXP (x, 0));
       rtx temp2 = expand_compound_operation (temp);
 
@@ -7174,27 +7177,27 @@ expand_compound_operation (rtx x)
 	 know that the last value didn't have any inappropriate bits
 	 set.  */
       if (GET_CODE (XEXP (x, 0)) == TRUNCATE
-	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
-	  && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
-	  && (nonzero_bits (XEXP (XEXP (x, 0), 0), GET_MODE (x))
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && (nonzero_bits (XEXP (XEXP (x, 0), 0), mode)
 	      & ~GET_MODE_MASK (inner_mode)) == 0)
 	return XEXP (XEXP (x, 0), 0);
 
       /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
       if (GET_CODE (XEXP (x, 0)) == SUBREG
-	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
+	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == mode
 	  && subreg_lowpart_p (XEXP (x, 0))
-	  && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
-	  && (nonzero_bits (SUBREG_REG (XEXP (x, 0)), GET_MODE (x))
+	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && (nonzero_bits (SUBREG_REG (XEXP (x, 0)), mode)
 	      & ~GET_MODE_MASK (inner_mode)) == 0)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* (zero_extend:DI (truncate:SI foo:DI)) is just foo:DI when foo
 	 is a comparison and STORE_FLAG_VALUE permits.  This is like
-	 the first case, but it works even when GET_MODE (x) is larger
+	 the first case, but it works even when MODE is larger
 	 than HOST_WIDE_INT.  */
       if (GET_CODE (XEXP (x, 0)) == TRUNCATE
-	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
+	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == mode
 	  && COMPARISON_P (XEXP (XEXP (x, 0), 0))
 	  && GET_MODE_PRECISION (inner_mode) <= HOST_BITS_PER_WIDE_INT
 	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (inner_mode)) == 0)
@@ -7202,7 +7205,7 @@ expand_compound_operation (rtx x)
 
       /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
       if (GET_CODE (XEXP (x, 0)) == SUBREG
-	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
+	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == mode
 	  && subreg_lowpart_p (XEXP (x, 0))
 	  && COMPARISON_P (SUBREG_REG (XEXP (x, 0)))
 	  && GET_MODE_PRECISION (inner_mode) <= HOST_BITS_PER_WIDE_INT
@@ -7226,10 +7229,9 @@ expand_compound_operation (rtx x)
      extraction.  Then the constant of 31 would be substituted in
      to produce such a position.  */
 
-  modewidth = GET_MODE_PRECISION (GET_MODE (x));
+  modewidth = GET_MODE_PRECISION (mode);
   if (modewidth >= pos + len)
     {
-      machine_mode mode = GET_MODE (x);
       tem = gen_lowpart (mode, XEXP (x, 0));
       if (!tem || GET_CODE (tem) == CLOBBER)
 	return x;
@@ -7239,10 +7241,10 @@ expand_compound_operation (rtx x)
 				  mode, tem, modewidth - len);
     }
   else if (unsignedp && len < HOST_BITS_PER_WIDE_INT)
-    tem = simplify_and_const_int (NULL_RTX, GET_MODE (x),
+    tem = simplify_and_const_int (NULL_RTX, mode,
 				  simplify_shift_const (NULL_RTX, LSHIFTRT,
-							GET_MODE (x),
-							XEXP (x, 0), pos),
+							mode, XEXP (x, 0),
+							pos),
 				  (HOST_WIDE_INT_1U << len) - 1);
   else
     /* Any other cases we can't handle.  */
@@ -7732,9 +7734,13 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
     }
 
   /* Adjust mode of POS_RTX, if needed.  If we want a wider mode, we
-     have to zero extend.  Otherwise, we can just use a SUBREG.  */
+     have to zero extend.  Otherwise, we can just use a SUBREG.
+
+     We dealt with constant rtxes earlier, so pos_rtx cannot
+     have VOIDmode at this point.  */
   if (pos_rtx != 0
-      && GET_MODE_SIZE (pos_mode) > GET_MODE_SIZE (GET_MODE (pos_rtx)))
+      && (GET_MODE_SIZE (pos_mode)
+	  > GET_MODE_SIZE (as_a <scalar_int_mode> (GET_MODE (pos_rtx)))))
     {
       rtx temp = simplify_gen_unary (ZERO_EXTEND, pos_mode, pos_rtx,
 				     GET_MODE (pos_rtx));
@@ -11336,7 +11342,8 @@ change_zero_ext (rtx pat)
 	       && !paradoxical_subreg_p (XEXP (x, 0))
 	       && subreg_lowpart_p (XEXP (x, 0)))
 	{
-	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
+	  inner_mode = as_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)));
+	  size = GET_MODE_PRECISION (inner_mode);
 	  x = SUBREG_REG (XEXP (x, 0));
 	  if (GET_MODE (x) != mode)
 	    x = gen_lowpart_SUBREG (mode, x);
@@ -11346,7 +11353,8 @@ change_zero_ext (rtx pat)
 	       && HARD_REGISTER_P (XEXP (x, 0))
 	       && can_change_dest_mode (XEXP (x, 0), 0, mode))
 	{
-	  size = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
+	  inner_mode = as_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)));
+	  size = GET_MODE_PRECISION (inner_mode);
 	  x = gen_rtx_REG (mode, REGNO (XEXP (x, 0)));
 	}
       else
@@ -11764,8 +11772,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   rtx op1 = *pop1;
   rtx tem, tem1;
   int i;
-  scalar_int_mode mode, inner_mode;
-  machine_mode tmode;
+  scalar_int_mode mode, inner_mode, tmode;
+  opt_scalar_int_mode tmode_iter;
 
   /* Try a few ways of applying the same transformation to both operands.  */
   while (1)
@@ -11873,7 +11881,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	    }
 
 	  else if (c0 == c1)
-	    FOR_EACH_MODE_UNTIL (tmode, GET_MODE (op0))
+	    FOR_EACH_MODE_UNTIL (tmode,
+				 as_a <scalar_int_mode> (GET_MODE (op0)))
 	      if ((unsigned HOST_WIDE_INT) c0 == GET_MODE_MASK (tmode))
 		{
 		  op0 = gen_lowpart_or_truncate (tmode, inner_op0);
@@ -12739,8 +12748,9 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
   if (is_int_mode (GET_MODE (op0), &mode)
       && GET_MODE_SIZE (mode) < UNITS_PER_WORD
       && ! have_insn_for (COMPARE, mode))
-    FOR_EACH_WIDER_MODE (tmode, mode)
+    FOR_EACH_WIDER_MODE (tmode_iter, mode)
       {
+	tmode = tmode_iter.require ();
 	if (!HWI_COMPUTABLE_MODE_P (tmode))
 	  break;
 	if (have_insn_for (COMPARE, tmode))
