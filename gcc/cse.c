@@ -720,13 +720,14 @@ preferable (int cost_a, int regcost_a, int cost_b, int regcost_b)
 static int
 notreg_cost (rtx x, machine_mode mode, enum rtx_code outer, int opno)
 {
+  scalar_int_mode int_mode, inner_mode;
   return ((GET_CODE (x) == SUBREG
 	   && REG_P (SUBREG_REG (x))
-	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	   && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	   && is_int_mode (mode, &int_mode)
+	   && is_int_mode (GET_MODE (SUBREG_REG (x)), &inner_mode)
+	   && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
 	   && subreg_lowpart_p (x)
-	   && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (SUBREG_REG (x))))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (int_mode, inner_mode))
 	  ? 0
 	  : rtx_cost (x, mode, outer, opno, optimize_this_for_speed_p) * 2);
 }
@@ -4603,6 +4604,7 @@ cse_insn (rtx_insn *insn)
       /* Set nonzero if we need to call force_const_mem on with the
 	 contents of src_folded before using it.  */
       int src_folded_force_flag = 0;
+      scalar_int_mode int_mode;
 
       dest = SET_DEST (sets[i].rtl);
       src = SET_SRC (sets[i].rtl);
@@ -4840,13 +4842,13 @@ cse_insn (rtx_insn *insn)
 	 wider mode.  */
 
       if (src_const && src_related == 0 && CONST_INT_P (src_const)
-	  && GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
+	  && is_int_mode (mode, &int_mode)
+	  && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
 	{
-	  machine_mode wider_mode;
-
-	  FOR_EACH_WIDER_MODE (wider_mode, mode)
+	  opt_scalar_int_mode wider_mode_iter;
+	  FOR_EACH_WIDER_MODE (wider_mode_iter, int_mode)
 	    {
+	      scalar_int_mode wider_mode = wider_mode_iter.require ();
 	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
 		break;
 
@@ -4860,7 +4862,7 @@ cse_insn (rtx_insn *insn)
 		   const_elt; const_elt = const_elt->next_same_value)
 		if (REG_P (const_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode, const_elt->exp);
+		    src_related = gen_lowpart (int_mode, const_elt->exp);
 		    break;
 		  }
 

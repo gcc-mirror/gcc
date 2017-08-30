@@ -630,6 +630,7 @@ rtx
 convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
 {
   rtx temp;
+  scalar_int_mode int_mode;
 
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
@@ -645,7 +646,8 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
   if (mode == oldmode)
     return x;
 
-  if (CONST_SCALAR_INT_P (x) && GET_MODE_CLASS (mode) == MODE_INT)
+  if (CONST_SCALAR_INT_P (x)
+      && is_int_mode (mode, &int_mode))
     {
       /* If the caller did not tell us the old mode, then there is not
 	 much to do with respect to canonicalization.  We have to
@@ -653,24 +655,24 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
       if (GET_MODE_CLASS (oldmode) != MODE_INT)
 	oldmode = MAX_MODE_INT;
       wide_int w = wide_int::from (rtx_mode_t (x, oldmode),
-				   GET_MODE_PRECISION (mode),
+				   GET_MODE_PRECISION (int_mode),
 				   unsignedp ? UNSIGNED : SIGNED);
-      return immed_wide_int_const (w, mode);
+      return immed_wide_int_const (w, int_mode);
     }
 
   /* We can do this with a gen_lowpart if both desired and current modes
      are integer, and this is either a constant integer, a register, or a
      non-volatile MEM. */
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && GET_MODE_CLASS (oldmode) == MODE_INT
-      && GET_MODE_PRECISION (mode) <= GET_MODE_PRECISION (oldmode)
-      && ((MEM_P (x) && !MEM_VOLATILE_P (x) && direct_load[(int) mode])
+  scalar_int_mode int_oldmode;
+  if (is_int_mode (mode, &int_mode)
+      && is_int_mode (oldmode, &int_oldmode)
+      && GET_MODE_PRECISION (int_mode) <= GET_MODE_PRECISION (int_oldmode)
+      && ((MEM_P (x) && !MEM_VOLATILE_P (x) && direct_load[(int) int_mode])
           || (REG_P (x)
               && (!HARD_REGISTER_P (x)
-                  || HARD_REGNO_MODE_OK (REGNO (x), mode))
-              && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x)))))
-
-   return gen_lowpart (mode, x);
+                  || HARD_REGNO_MODE_OK (REGNO (x), int_mode))
+              && TRULY_NOOP_TRUNCATION_MODES_P (int_mode, GET_MODE (x)))))
+   return gen_lowpart (int_mode, x);
 
   /* Converting from integer constant into mode is always equivalent to an
      subreg operation.  */
@@ -6872,20 +6874,21 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 case, if it has reverse storage order, it needs to be accessed as a
 	 scalar field with reverse storage order and we must first put the
 	 value into target order.  */
+      scalar_int_mode temp_mode;
       if (AGGREGATE_TYPE_P (TREE_TYPE (exp))
-	  && GET_MODE_CLASS (GET_MODE (temp)) == MODE_INT)
+	  && is_int_mode (GET_MODE (temp), &temp_mode))
 	{
-	  HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (temp));
+	  HOST_WIDE_INT size = GET_MODE_BITSIZE (temp_mode);
 
 	  reverse = TYPE_REVERSE_STORAGE_ORDER (TREE_TYPE (exp));
 
 	  if (reverse)
-	    temp = flip_storage_order (GET_MODE (temp), temp);
+	    temp = flip_storage_order (temp_mode, temp);
 
 	  if (bitsize < size
 	      && reverse ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN
 	      && !(mode == BLKmode && bitsize > BITS_PER_WORD))
-	    temp = expand_shift (RSHIFT_EXPR, GET_MODE (temp), temp,
+	    temp = expand_shift (RSHIFT_EXPR, temp_mode, temp,
 				 size - bitsize, NULL_RTX, 1);
 	}
 
@@ -9959,13 +9962,15 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	    || GET_MODE_CLASS (mode) == MODE_VECTOR_ACCUM
 	    || GET_MODE_CLASS (mode) == MODE_VECTOR_UACCUM)
 	  return const_vector_from_tree (exp);
-	if (GET_MODE_CLASS (mode) == MODE_INT)
+	scalar_int_mode int_mode;
+	if (is_int_mode (mode, &int_mode))
 	  {
 	    if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
 	      return const_scalar_mask_from_tree (exp);
 	    else
 	      {
-		tree type_for_mode = lang_hooks.types.type_for_mode (mode, 1);
+		tree type_for_mode
+		  = lang_hooks.types.type_for_mode (int_mode, 1);
 		if (type_for_mode)
 		  tmp = fold_unary_loc (loc, VIEW_CONVERT_EXPR,
 					type_for_mode, exp);
@@ -10360,9 +10365,9 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		    && compare_tree_int (index1, TREE_STRING_LENGTH (init)) < 0)
 		  {
 		    tree type = TREE_TYPE (TREE_TYPE (init));
-		    machine_mode mode = TYPE_MODE (type);
+		    scalar_int_mode mode;
 
-		    if (GET_MODE_CLASS (mode) == MODE_INT
+		    if (is_int_mode (TYPE_MODE (type), &mode)
 			&& GET_MODE_SIZE (mode) == 1)
 		      return gen_int_mode (TREE_STRING_POINTER (init)
 					   [TREE_INT_CST_LOW (index1)],
@@ -10380,6 +10385,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	{
 	  unsigned HOST_WIDE_INT idx;
 	  tree field, value;
+	  scalar_int_mode field_mode;
 
 	  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (treeop0),
 				    idx, field, value)
@@ -10392,8 +10398,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		   the bitfield does not meet either of those conditions,
 		   we can't do this optimization.  */
 		&& (! DECL_BIT_FIELD (field)
-		    || ((GET_MODE_CLASS (DECL_MODE (field)) == MODE_INT)
-			&& (GET_MODE_PRECISION (DECL_MODE (field))
+		    || (is_int_mode (DECL_MODE (field), &field_mode)
+			&& (GET_MODE_PRECISION (field_mode)
 			    <= HOST_BITS_PER_WIDE_INT))))
 	      {
 		if (DECL_BIT_FIELD (field)
@@ -10727,18 +10733,19 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 	       and this is for big-endian data, we must put the field
 	       into the high-order bits.  And we must also put it back
 	       into memory order if it has been previously reversed.  */
+	    scalar_int_mode op0_mode;
 	    if (TREE_CODE (type) == RECORD_TYPE
-		&& GET_MODE_CLASS (GET_MODE (op0)) == MODE_INT)
+		&& is_int_mode (GET_MODE (op0), &op0_mode))
 	      {
-		HOST_WIDE_INT size = GET_MODE_BITSIZE (GET_MODE (op0));
+		HOST_WIDE_INT size = GET_MODE_BITSIZE (op0_mode);
 
 		if (bitsize < size
 		    && reversep ? !BYTES_BIG_ENDIAN : BYTES_BIG_ENDIAN)
-		  op0 = expand_shift (LSHIFT_EXPR, GET_MODE (op0), op0,
+		  op0 = expand_shift (LSHIFT_EXPR, op0_mode, op0,
 				      size - bitsize, op0, 1);
 
 		if (reversep)
-		  op0 = flip_storage_order (GET_MODE (op0), op0);
+		  op0 = flip_storage_order (op0_mode, op0);
 	      }
 
 	    /* If the result type is BLKmode, store the data into a temporary

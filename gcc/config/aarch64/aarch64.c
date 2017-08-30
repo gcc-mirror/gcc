@@ -6844,6 +6844,7 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
   const struct cpu_cost_table *extra_cost
     = aarch64_tune_params.insn_extra_cost;
   int code = GET_CODE (x);
+  scalar_int_mode int_mode;
 
   /* By default, assume that everything has equivalent cost to the
      cheapest instruction.  Any additional costs are applied as a delta
@@ -7426,28 +7427,29 @@ cost_plus:
           return true;
         }
 
-      if (GET_MODE_CLASS (mode) == MODE_INT)
+      if (is_int_mode (mode, &int_mode))
 	{
 	  if (CONST_INT_P (op1))
 	    {
 	      /* We have a mask + shift version of a UBFIZ
 		 i.e. the *andim_ashift<mode>_bfiz pattern.  */
 	      if (GET_CODE (op0) == ASHIFT
-		  && aarch64_mask_and_shift_for_ubfiz_p (mode, op1,
-							  XEXP (op0, 1)))
+		  && aarch64_mask_and_shift_for_ubfiz_p (int_mode, op1,
+							 XEXP (op0, 1)))
 		{
-		  *cost += rtx_cost (XEXP (op0, 0), mode,
+		  *cost += rtx_cost (XEXP (op0, 0), int_mode,
 				     (enum rtx_code) code, 0, speed);
 		  if (speed)
 		    *cost += extra_cost->alu.bfx;
 
 		  return true;
 		}
-	      else if (aarch64_bitmask_imm (INTVAL (op1), mode))
+	      else if (aarch64_bitmask_imm (INTVAL (op1), int_mode))
 		{
 		/* We possibly get the immediate for free, this is not
 		   modelled.  */
-		  *cost += rtx_cost (op0, mode, (enum rtx_code) code, 0, speed);
+		  *cost += rtx_cost (op0, int_mode,
+				     (enum rtx_code) code, 0, speed);
 		  if (speed)
 		    *cost += extra_cost->alu.logical;
 
@@ -7482,8 +7484,10 @@ cost_plus:
 		}
 
 	      /* In both cases we want to cost both operands.  */
-	      *cost += rtx_cost (new_op0, mode, (enum rtx_code) code, 0, speed);
-	      *cost += rtx_cost (op1, mode, (enum rtx_code) code, 1, speed);
+	      *cost += rtx_cost (new_op0, int_mode, (enum rtx_code) code,
+				 0, speed);
+	      *cost += rtx_cost (op1, int_mode, (enum rtx_code) code,
+				 1, speed);
 
 	      return true;
 	    }

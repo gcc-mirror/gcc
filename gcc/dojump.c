@@ -203,6 +203,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 {
   machine_mode mode;
   rtx_code_label *drop_through_label = 0;
+  scalar_int_mode int_mode;
 
   switch (code)
     {
@@ -218,8 +219,8 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
         if (integer_zerop (op1))
 	  do_jump (op0, if_true_label, if_false_label,
 		   prob.invert ());
-        else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-                 && !can_compare_p (EQ, TYPE_MODE (inner_type), ccp_jump))
+	else if (is_int_mode (TYPE_MODE (inner_type), &int_mode)
+		 && !can_compare_p (EQ, int_mode, ccp_jump))
 	  do_jump_by_parts_equality (op0, op1, if_false_label, if_true_label,
 				     prob);
         else
@@ -239,8 +240,8 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
         if (integer_zerop (op1))
 	  do_jump (op0, if_false_label, if_true_label, prob);
-        else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-           && !can_compare_p (NE, TYPE_MODE (inner_type), ccp_jump))
+	else if (is_int_mode (TYPE_MODE (inner_type), &int_mode)
+		 && !can_compare_p (NE, int_mode, ccp_jump))
 	  do_jump_by_parts_equality (op0, op1, if_true_label, if_false_label,
 				     prob.invert ());
         else
@@ -251,10 +252,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case LT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (LT, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 1, if_false_label, if_true_label,
-				  prob);
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (LT, int_mode, ccp_jump))
+	do_jump_by_parts_greater (op0, op1, 1, if_false_label,
+				  if_true_label, prob);
       else
 	do_compare_and_jump (op0, op1, LT, LTU, if_false_label, if_true_label,
 			     prob);
@@ -262,8 +263,8 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case LE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (LE, mode, ccp_jump))
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (LE, int_mode, ccp_jump))
 	do_jump_by_parts_greater (op0, op1, 0, if_true_label, if_false_label,
 				  prob.invert ());
       else
@@ -273,10 +274,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case GT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (GT, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 0, if_false_label, if_true_label,
-				  prob);
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (GT, int_mode, ccp_jump))
+	do_jump_by_parts_greater (op0, op1, 0, if_false_label,
+				  if_true_label, prob);
       else
 	do_compare_and_jump (op0, op1, GT, GTU, if_false_label, if_true_label,
 			     prob);
@@ -284,8 +285,8 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case GE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (GE, mode, ccp_jump))
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (GE, int_mode, ccp_jump))
 	do_jump_by_parts_greater (op0, op1, 1, if_true_label, if_false_label,
 				  prob.invert ());
       else
@@ -1024,62 +1025,63 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   if (! if_true_label)
     dummy_label = if_true_label = gen_label_rtx ();
 
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && ! can_compare_p (code, mode, ccp_jump))
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode)
+      && ! can_compare_p (code, int_mode, ccp_jump))
     {
       switch (code)
 	{
 	case LTU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op1, op0,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case LEU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op0, op1,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case GTU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op0, op1,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case GEU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op1, op0,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case LT:
-	  do_jump_by_parts_greater_rtx (mode, 0, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op1, op0,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case LE:
-	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op0, op1,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case GT:
-	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op0, op1,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case GE:
-	  do_jump_by_parts_greater_rtx (mode, 0, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op1, op0,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case EQ:
-	  do_jump_by_parts_equality_rtx (mode, op0, op1, if_false_label,
+	  do_jump_by_parts_equality_rtx (int_mode, op0, op1, if_false_label,
 					 if_true_label, prob);
 	  break;
 
 	case NE:
-	  do_jump_by_parts_equality_rtx (mode, op0, op1, if_true_label,
+	  do_jump_by_parts_equality_rtx (int_mode, op0, op1, if_true_label,
 					 if_false_label,
 					 prob.invert ());
 	  break;

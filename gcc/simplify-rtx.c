@@ -77,11 +77,12 @@ mode_signbit_p (machine_mode mode, const_rtx x)
 {
   unsigned HOST_WIDE_INT val;
   unsigned int width;
+  scalar_int_mode int_mode;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!is_int_mode (mode, &int_mode))
     return false;
 
-  width = GET_MODE_PRECISION (mode);
+  width = GET_MODE_PRECISION (int_mode);
   if (width == 0)
     return false;
 
@@ -129,15 +130,16 @@ bool
 val_signbit_p (machine_mode mode, unsigned HOST_WIDE_INT val)
 {
   unsigned int width;
+  scalar_int_mode int_mode;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!is_int_mode (mode, &int_mode))
     return false;
 
-  width = GET_MODE_PRECISION (mode);
+  width = GET_MODE_PRECISION (int_mode);
   if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
     return false;
 
-  val &= GET_MODE_MASK (mode);
+  val &= GET_MODE_MASK (int_mode);
   return val == (HOST_WIDE_INT_1U << (width - 1));
 }
 
@@ -148,10 +150,11 @@ val_signbit_known_set_p (machine_mode mode, unsigned HOST_WIDE_INT val)
 {
   unsigned int width;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  scalar_int_mode int_mode;
+  if (!is_int_mode (mode, &int_mode))
     return false;
 
-  width = GET_MODE_PRECISION (mode);
+  width = GET_MODE_PRECISION (int_mode);
   if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
     return false;
 
@@ -166,10 +169,11 @@ val_signbit_known_clear_p (machine_mode mode, unsigned HOST_WIDE_INT val)
 {
   unsigned int width;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  scalar_int_mode int_mode;
+  if (!is_int_mode (mode, &int_mode))
     return false;
 
-  width = GET_MODE_PRECISION (mode);
+  width = GET_MODE_PRECISION (int_mode);
   if (width == 0 || width > HOST_BITS_PER_WIDE_INT)
     return false;
 
@@ -4828,18 +4832,19 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
 
   /* (ne:SI (zero_extract:SI FOO (const_int 1) BAR) (const_int 0))) is
      the same as (zero_extract:SI FOO (const_int 1) BAR).  */
+  scalar_int_mode int_mode;
   if (code == NE
       && op1 == const0_rtx
-      && GET_MODE_CLASS (mode) == MODE_INT
+      && is_int_mode (mode, &int_mode)
       && cmp_mode != VOIDmode
       /* ??? Work-around BImode bugs in the ia64 backend.  */
-      && mode != BImode
+      && int_mode != BImode
       && cmp_mode != BImode
       && nonzero_bits (op0, cmp_mode) == 1
       && STORE_FLAG_VALUE == 1)
-    return GET_MODE_SIZE (mode) > GET_MODE_SIZE (cmp_mode)
-	   ? simplify_gen_unary (ZERO_EXTEND, mode, op0, cmp_mode)
-	   : lowpart_subreg (mode, op0, cmp_mode);
+    return GET_MODE_SIZE (int_mode) > GET_MODE_SIZE (cmp_mode)
+	   ? simplify_gen_unary (ZERO_EXTEND, int_mode, op0, cmp_mode)
+	   : lowpart_subreg (int_mode, op0, cmp_mode);
 
   /* (eq/ne (xor x y) 0) simplifies to (eq/ne x y).  */
   if ((code == EQ || code == NE)

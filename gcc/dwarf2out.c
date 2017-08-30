@@ -18840,9 +18840,10 @@ rtl_for_decl_init (tree init, tree type)
     {
       tree enttype = TREE_TYPE (type);
       tree domain = TYPE_DOMAIN (type);
-      machine_mode mode = TYPE_MODE (enttype);
+      scalar_int_mode mode;
 
-      if (GET_MODE_CLASS (mode) == MODE_INT && GET_MODE_SIZE (mode) == 1
+      if (is_int_mode (TYPE_MODE (enttype), &mode)
+	  && GET_MODE_SIZE (mode) == 1
 	  && domain
 	  && integer_zerop (TYPE_MIN_VALUE (domain))
 	  && compare_tree_int (TYPE_MAX_VALUE (domain),
@@ -19323,9 +19324,10 @@ native_encode_initializer (tree init, unsigned char *array, int size)
       if (TREE_CODE (type) == ARRAY_TYPE)
 	{
 	  tree enttype = TREE_TYPE (type);
-	  machine_mode mode = TYPE_MODE (enttype);
+	  scalar_int_mode mode;
 
-	  if (GET_MODE_CLASS (mode) != MODE_INT || GET_MODE_SIZE (mode) != 1)
+	  if (!is_int_mode (TYPE_MODE (enttype), &mode)
+	      || GET_MODE_SIZE (mode) != 1)
 	    return false;
 	  if (int_size_in_bytes (type) != size)
 	    return false;

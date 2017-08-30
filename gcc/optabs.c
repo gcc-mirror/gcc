@@ -1113,6 +1113,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
        ? OPTAB_WIDEN : methods);
   enum mode_class mclass;
   machine_mode wider_mode;
+  scalar_int_mode int_mode;
   rtx libfunc;
   rtx temp;
   rtx_insn *entry_last = get_last_insn ();
@@ -1161,22 +1162,22 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	&& optab_handler (rotr_optab, mode) != CODE_FOR_nothing)
        || (binoptab == rotr_optab
 	   && optab_handler (rotl_optab, mode) != CODE_FOR_nothing))
-      && mclass == MODE_INT)
+      && is_int_mode (mode, &int_mode))
     {
       optab otheroptab = (binoptab == rotl_optab ? rotr_optab : rotl_optab);
       rtx newop1;
-      unsigned int bits = GET_MODE_PRECISION (mode);
+      unsigned int bits = GET_MODE_PRECISION (int_mode);
 
       if (CONST_INT_P (op1))
         newop1 = GEN_INT (bits - INTVAL (op1));
-      else if (targetm.shift_truncation_mask (mode) == bits - 1)
+      else if (targetm.shift_truncation_mask (int_mode) == bits - 1)
         newop1 = negate_rtx (GET_MODE (op1), op1);
       else
         newop1 = expand_binop (GET_MODE (op1), sub_optab,
 			       gen_int_mode (bits, GET_MODE (op1)), op1,
 			       NULL_RTX, unsignedp, OPTAB_DIRECT);
 
-      temp = expand_binop_directly (mode, otheroptab, op0, newop1,
+      temp = expand_binop_directly (int_mode, otheroptab, op0, newop1,
 				    target, unsignedp, methods, last);
       if (temp)
 	return temp;
@@ -1320,8 +1321,8 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   /* These can be done a word at a time.  */
   if ((binoptab == and_optab || binoptab == ior_optab || binoptab == xor_optab)
-      && mclass == MODE_INT
-      && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > UNITS_PER_WORD
       && optab_handler (binoptab, word_mode) != CODE_FOR_nothing)
     {
       int i;
@@ -1333,17 +1334,17 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  || target == op0
 	  || target == op1
 	  || !valid_multiword_target_p (target))
-	target = gen_reg_rtx (mode);
+	target = gen_reg_rtx (int_mode);
 
       start_sequence ();
 
       /* Do the actual arithmetic.  */
-      for (i = 0; i < GET_MODE_BITSIZE (mode) / BITS_PER_WORD; i++)
+      for (i = 0; i < GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD; i++)
 	{
-	  rtx target_piece = operand_subword (target, i, 1, mode);
+	  rtx target_piece = operand_subword (target, i, 1, int_mode);
 	  rtx x = expand_binop (word_mode, binoptab,
-				operand_subword_force (op0, i, mode),
-				operand_subword_force (op1, i, mode),
+				operand_subword_force (op0, i, int_mode),
+				operand_subword_force (op1, i, int_mode),
 				target_piece, unsignedp, next_methods);
 
 	  if (x == 0)
@@ -1356,7 +1357,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       insns = get_insns ();
       end_sequence ();
 
-      if (i == GET_MODE_BITSIZE (mode) / BITS_PER_WORD)
+      if (i == GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD)
 	{
 	  emit_insn (insns);
 	  return target;
@@ -1366,10 +1367,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
   /* Synthesize double word shifts from single word shifts.  */
   if ((binoptab == lshr_optab || binoptab == ashl_optab
        || binoptab == ashr_optab)
-      && mclass == MODE_INT
+      && is_int_mode (mode, &int_mode)
       && (CONST_INT_P (op1) || optimize_insn_for_speed_p ())
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
-      && GET_MODE_PRECISION (mode) == GET_MODE_BITSIZE (mode)
+      && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
+      && GET_MODE_PRECISION (int_mode) == GET_MODE_BITSIZE (int_mode)
       && optab_handler (binoptab, word_mode) != CODE_FOR_nothing
       && optab_handler (ashl_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (lshr_optab, word_mode) != CODE_FOR_nothing)
@@ -1377,7 +1378,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       unsigned HOST_WIDE_INT shift_mask, double_shift_mask;
       machine_mode op1_mode;
 
-      double_shift_mask = targetm.shift_truncation_mask (mode);
+      double_shift_mask = targetm.shift_truncation_mask (int_mode);
       shift_mask = targetm.shift_truncation_mask (word_mode);
       op1_mode = GET_MODE (op1) != VOIDmode ? GET_MODE (op1) : word_mode;
 
@@ -1405,7 +1406,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	      || target == op0
 	      || target == op1
 	      || !valid_multiword_target_p (target))
-	    target = gen_reg_rtx (mode);
+	    target = gen_reg_rtx (int_mode);
 
 	  start_sequence ();
 
@@ -1417,11 +1418,11 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  left_shift = binoptab == ashl_optab;
 	  outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
 
-	  outof_target = operand_subword (target, outof_word, 1, mode);
-	  into_target = operand_subword (target, 1 - outof_word, 1, mode);
+	  outof_target = operand_subword (target, outof_word, 1, int_mode);
+	  into_target = operand_subword (target, 1 - outof_word, 1, int_mode);
 
-	  outof_input = operand_subword_force (op0, outof_word, mode);
-	  into_input = operand_subword_force (op0, 1 - outof_word, mode);
+	  outof_input = operand_subword_force (op0, outof_word, int_mode);
+	  into_input = operand_subword_force (op0, 1 - outof_word, int_mode);
 
 	  if (expand_doubleword_shift (op1_mode, binoptab,
 				       outof_input, into_input, op1,
@@ -1440,9 +1441,9 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   /* Synthesize double word rotates from single word shifts.  */
   if ((binoptab == rotl_optab || binoptab == rotr_optab)
-      && mclass == MODE_INT
+      && is_int_mode (mode, &int_mode)
       && CONST_INT_P (op1)
-      && GET_MODE_PRECISION (mode) == 2 * BITS_PER_WORD
+      && GET_MODE_PRECISION (int_mode) == 2 * BITS_PER_WORD
       && optab_handler (ashl_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (lshr_optab, word_mode) != CODE_FOR_nothing)
     {
@@ -1463,7 +1464,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  || target == op1
 	  || !REG_P (target)
 	  || !valid_multiword_target_p (target))
-	target = gen_reg_rtx (mode);
+	target = gen_reg_rtx (int_mode);
 
       start_sequence ();
 
@@ -1477,11 +1478,11 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       left_shift = (binoptab == rotl_optab);
       outof_word = left_shift ^ ! WORDS_BIG_ENDIAN;
 
-      outof_target = operand_subword (target, outof_word, 1, mode);
-      into_target = operand_subword (target, 1 - outof_word, 1, mode);
+      outof_target = operand_subword (target, outof_word, 1, int_mode);
+      into_target = operand_subword (target, 1 - outof_word, 1, int_mode);
 
-      outof_input = operand_subword_force (op0, outof_word, mode);
-      into_input = operand_subword_force (op0, 1 - outof_word, mode);
+      outof_input = operand_subword_force (op0, outof_word, int_mode);
+      into_input = operand_subword_force (op0, 1 - outof_word, int_mode);
 
       if (shift_count == BITS_PER_WORD)
 	{
@@ -1557,13 +1558,13 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   /* These can be done a word at a time by propagating carries.  */
   if ((binoptab == add_optab || binoptab == sub_optab)
-      && mclass == MODE_INT
-      && GET_MODE_SIZE (mode) >= 2 * UNITS_PER_WORD
+      && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) >= 2 * UNITS_PER_WORD
       && optab_handler (binoptab, word_mode) != CODE_FOR_nothing)
     {
       unsigned int i;
       optab otheroptab = binoptab == add_optab ? sub_optab : add_optab;
-      const unsigned int nwords = GET_MODE_BITSIZE (mode) / BITS_PER_WORD;
+      const unsigned int nwords = GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD;
       rtx carry_in = NULL_RTX, carry_out = NULL_RTX;
       rtx xop0, xop1, xtarget;
 
@@ -1577,10 +1578,10 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 #endif
 
       /* Prepare the operands.  */
-      xop0 = force_reg (mode, op0);
-      xop1 = force_reg (mode, op1);
+      xop0 = force_reg (int_mode, op0);
+      xop1 = force_reg (int_mode, op1);
 
-      xtarget = gen_reg_rtx (mode);
+      xtarget = gen_reg_rtx (int_mode);
 
       if (target == 0 || !REG_P (target) || !valid_multiword_target_p (target))
 	target = xtarget;
@@ -1593,9 +1594,9 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       for (i = 0; i < nwords; i++)
 	{
 	  int index = (WORDS_BIG_ENDIAN ? nwords - i - 1 : i);
-	  rtx target_piece = operand_subword (xtarget, index, 1, mode);
-	  rtx op0_piece = operand_subword_force (xop0, index, mode);
-	  rtx op1_piece = operand_subword_force (xop1, index, mode);
+	  rtx target_piece = operand_subword (xtarget, index, 1, int_mode);
+	  rtx op0_piece = operand_subword_force (xop0, index, int_mode);
+	  rtx op1_piece = operand_subword_force (xop1, index, int_mode);
 	  rtx x;
 
 	  /* Main add/subtract of the input operands.  */
@@ -1654,16 +1655,16 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 	  carry_in = carry_out;
 	}
 
-      if (i == GET_MODE_BITSIZE (mode) / (unsigned) BITS_PER_WORD)
+      if (i == GET_MODE_BITSIZE (int_mode) / (unsigned) BITS_PER_WORD)
 	{
-	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing
+	  if (optab_handler (mov_optab, int_mode) != CODE_FOR_nothing
 	      || ! rtx_equal_p (target, xtarget))
 	    {
 	      rtx_insn *temp = emit_move_insn (target, xtarget);
 
 	      set_dst_reg_note (temp, REG_EQUAL,
 				gen_rtx_fmt_ee (optab_to_code (binoptab),
-						mode, copy_rtx (xop0),
+						int_mode, copy_rtx (xop0),
 						copy_rtx (xop1)),
 				target);
 	    }
@@ -1683,26 +1684,26 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
      try using a signed widening multiply.  */
 
   if (binoptab == smul_optab
-      && mclass == MODE_INT
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
       && optab_handler (smul_optab, word_mode) != CODE_FOR_nothing
       && optab_handler (add_optab, word_mode) != CODE_FOR_nothing)
     {
       rtx product = NULL_RTX;
-      if (widening_optab_handler (umul_widen_optab, mode, word_mode)
-	    != CODE_FOR_nothing)
+      if (widening_optab_handler (umul_widen_optab, int_mode, word_mode)
+	  != CODE_FOR_nothing)
 	{
-	  product = expand_doubleword_mult (mode, op0, op1, target,
+	  product = expand_doubleword_mult (int_mode, op0, op1, target,
 					    true, methods);
 	  if (!product)
 	    delete_insns_since (last);
 	}
 
       if (product == NULL_RTX
-	  && widening_optab_handler (smul_widen_optab, mode, word_mode)
-		!= CODE_FOR_nothing)
+	  && (widening_optab_handler (smul_widen_optab, int_mode, word_mode)
+	      != CODE_FOR_nothing))
 	{
-	  product = expand_doubleword_mult (mode, op0, op1, target,
+	  product = expand_doubleword_mult (int_mode, op0, op1, target,
 					    false, methods);
 	  if (!product)
 	    delete_insns_since (last);
@@ -1710,13 +1711,13 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
       if (product != NULL_RTX)
 	{
-	  if (optab_handler (mov_optab, mode) != CODE_FOR_nothing)
+	  if (optab_handler (mov_optab, int_mode) != CODE_FOR_nothing)
 	    {
 	      rtx_insn *move = emit_move_insn (target ? target : product,
 					       product);
 	      set_dst_reg_note (move,
 				REG_EQUAL,
-				gen_rtx_fmt_ee (MULT, mode,
+				gen_rtx_fmt_ee (MULT, int_mode,
 						copy_rtx (op0),
 						copy_rtx (op1)),
 				target ? target : product);
@@ -2696,6 +2697,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
   machine_mode wider_mode;
+  scalar_int_mode int_mode;
   scalar_float_mode float_mode;
   rtx temp;
   rtx libfunc;
@@ -2853,24 +2855,24 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 
   /* These can be done a word at a time.  */
   if (unoptab == one_cmpl_optab
-      && mclass == MODE_INT
-      && GET_MODE_SIZE (mode) > UNITS_PER_WORD
+      && is_int_mode (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > UNITS_PER_WORD
       && optab_handler (unoptab, word_mode) != CODE_FOR_nothing)
     {
       int i;
       rtx_insn *insns;
 
       if (target == 0 || target == op0 || !valid_multiword_target_p (target))
-	target = gen_reg_rtx (mode);
+	target = gen_reg_rtx (int_mode);
 
       start_sequence ();
 
       /* Do the actual arithmetic.  */
-      for (i = 0; i < GET_MODE_BITSIZE (mode) / BITS_PER_WORD; i++)
+      for (i = 0; i < GET_MODE_BITSIZE (int_mode) / BITS_PER_WORD; i++)
 	{
-	  rtx target_piece = operand_subword (target, i, 1, mode);
+	  rtx target_piece = operand_subword (target, i, 1, int_mode);
 	  rtx x = expand_unop (word_mode, unoptab,
-			       operand_subword_force (op0, i, mode),
+			       operand_subword_force (op0, i, int_mode),
 			       target_piece, unsignedp);
 
 	  if (target_piece != x)
@@ -3116,18 +3118,20 @@ expand_abs_nojump (machine_mode mode, rtx op0, rtx target,
      value of X as (((signed) x >> (W-1)) ^ x) - ((signed) x >> (W-1)),
      where W is the width of MODE.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode)
       && BRANCH_COST (optimize_insn_for_speed_p (),
 	      	      false) >= 2)
     {
-      rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
-				   GET_MODE_PRECISION (mode) - 1,
+      rtx extended = expand_shift (RSHIFT_EXPR, int_mode, op0,
+				   GET_MODE_PRECISION (int_mode) - 1,
 				   NULL_RTX, 0);
 
-      temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
+      temp = expand_binop (int_mode, xor_optab, extended, op0, target, 0,
 			   OPTAB_LIB_WIDEN);
       if (temp != 0)
-	temp = expand_binop (mode, result_unsignedp ? sub_optab : subv_optab,
+	temp = expand_binop (int_mode,
+			     result_unsignedp ? sub_optab : subv_optab,
                              temp, extended, target, 0, OPTAB_LIB_WIDEN);
 
       if (temp != 0)
@@ -3220,15 +3224,16 @@ expand_one_cmpl_abs_nojump (machine_mode mode, rtx op0, rtx target)
   /* If this machine has expensive jumps, we can do one's complement
      absolute value of X as (((signed) x >> (W-1)) ^ x).  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode)
       && BRANCH_COST (optimize_insn_for_speed_p (),
 	             false) >= 2)
     {
-      rtx extended = expand_shift (RSHIFT_EXPR, mode, op0,
-				   GET_MODE_PRECISION (mode) - 1,
+      rtx extended = expand_shift (RSHIFT_EXPR, int_mode, op0,
+				   GET_MODE_PRECISION (int_mode) - 1,
 				   NULL_RTX, 0);
 
-      temp = expand_binop (mode, xor_optab, extended, op0, target, 0,
+      temp = expand_binop (int_mode, xor_optab, extended, op0, target, 0,
 			   OPTAB_LIB_WIDEN);
 
       if (temp != 0)

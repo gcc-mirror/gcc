@@ -5446,8 +5446,9 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   /* If we are comparing a double-word integer with zero or -1, we can
      convert the comparison into one involving a single word.  */
-  if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD * 2
-      && GET_MODE_CLASS (mode) == MODE_INT
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode)
+      && GET_MODE_BITSIZE (int_mode) == BITS_PER_WORD * 2
       && (!MEM_P (op0) || ! MEM_VOLATILE_P (op0)))
     {
       rtx tem;
@@ -5458,8 +5459,8 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
 	  /* Do a logical OR or AND of the two words and compare the
 	     result.  */
-	  op00 = simplify_gen_subreg (word_mode, op0, mode, 0);
-	  op01 = simplify_gen_subreg (word_mode, op0, mode, UNITS_PER_WORD);
+	  op00 = simplify_gen_subreg (word_mode, op0, int_mode, 0);
+	  op01 = simplify_gen_subreg (word_mode, op0, int_mode, UNITS_PER_WORD);
 	  tem = expand_binop (word_mode,
 			      op1 == const0_rtx ? ior_optab : and_optab,
 			      op00, op01, NULL_RTX, unsignedp,
@@ -5474,9 +5475,9 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  rtx op0h;
 
 	  /* If testing the sign bit, can just test on high word.  */
-	  op0h = simplify_gen_subreg (word_mode, op0, mode,
+	  op0h = simplify_gen_subreg (word_mode, op0, int_mode,
 				      subreg_highpart_offset (word_mode,
-							      mode));
+							      int_mode));
 	  tem = emit_store_flag (NULL_RTX, code, op0h, op1, word_mode,
 				 unsignedp, normalizep);
 	}
@@ -5501,21 +5502,21 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* If this is A < 0 or A >= 0, we can do this by taking the ones
      complement of A (for GE) and shifting the sign bit to the low bit.  */
   if (op1 == const0_rtx && (code == LT || code == GE)
-      && GET_MODE_CLASS (mode) == MODE_INT
+      && is_int_mode (mode, &int_mode)
       && (normalizep || STORE_FLAG_VALUE == 1
-	  || val_signbit_p (mode, STORE_FLAG_VALUE)))
+	  || val_signbit_p (int_mode, STORE_FLAG_VALUE)))
     {
       subtarget = target;
 
       if (!target)
-	target_mode = mode;
+	target_mode = int_mode;
 
       /* If the result is to be wider than OP0, it is best to convert it
 	 first.  If it is to be narrower, it is *incorrect* to convert it
 	 first.  */
-      else if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (mode))
+      else if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (int_mode))
 	{
-	  op0 = convert_modes (target_mode, mode, op0, 0);
+	  op0 = convert_modes (target_mode, int_mode, op0, 0);
 	  mode = target_mode;
 	}
 
@@ -5925,8 +5926,9 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   /* The remaining tricks only apply to integer comparisons.  */
 
-  if (GET_MODE_CLASS (mode) == MODE_INT)
-    return emit_store_flag_int (target, subtarget, code, op0, op1, mode,
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode))
+    return emit_store_flag_int (target, subtarget, code, op0, op1, int_mode,
 				unsignedp, normalizep, trueval);
 
   return 0;
