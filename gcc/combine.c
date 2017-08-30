@@ -10321,8 +10321,6 @@ try_widen_shift_mode (enum rtx_code code, rtx op, int count,
 		      machine_mode orig_mode, machine_mode mode,
 		      enum rtx_code outer_code, HOST_WIDE_INT outer_const)
 {
-  if (orig_mode == mode)
-    return mode;
   gcc_assert (GET_MODE_PRECISION (mode) > GET_MODE_PRECISION (orig_mode));
 
   /* In general we can't perform in wider mode for right shift and rotate.  */
@@ -10383,7 +10381,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
   int count;
   machine_mode mode = result_mode;
   machine_mode shift_mode;
-  scalar_int_mode tmode, inner_mode;
+  scalar_int_mode tmode, inner_mode, int_mode, int_varop_mode, int_result_mode;
   unsigned int mode_words
     = (GET_MODE_SIZE (mode) + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD;
   /* We form (outer_op (code varop count) (outer_const)).  */
@@ -10423,9 +10421,19 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  count = bitsize - count;
 	}
 
-      shift_mode = try_widen_shift_mode (code, varop, count, result_mode,
-					 mode, outer_op, outer_const);
-      machine_mode shift_unit_mode = GET_MODE_INNER (shift_mode);
+      shift_mode = result_mode;
+      if (shift_mode != mode)
+	{
+	  /* We only change the modes of scalar shifts.  */
+	  int_mode = as_a <scalar_int_mode> (mode);
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
+	  shift_mode = try_widen_shift_mode (code, varop, count,
+					     int_result_mode, int_mode,
+					     outer_op, outer_const);
+	}
+
+      scalar_int_mode shift_unit_mode
+	= as_a <scalar_int_mode> (GET_MODE_INNER (shift_mode));
 
       /* Handle cases where the count is greater than the size of the mode
 	 minus 1.  For ASHIFT, use the size minus one as the count (this can
@@ -10520,6 +10528,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_mode = as_a <scalar_int_mode> (mode);
 
 	  /* If we have (xshiftrt (mem ...) C) and C is MODE_WIDTH
 	     minus the width of a smaller mode, we can do this with a
@@ -10528,15 +10537,15 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && ! mode_dependent_address_p (XEXP (varop, 0),
 					     MEM_ADDR_SPACE (varop))
 	      && ! MEM_VOLATILE_P (varop)
-	      && (int_mode_for_size (GET_MODE_BITSIZE (mode) - count, 1)
+	      && (int_mode_for_size (GET_MODE_BITSIZE (int_mode) - count, 1)
 		  .exists (&tmode)))
 	    {
 	      new_rtx = adjust_address_nv (varop, tmode,
-				       BYTES_BIG_ENDIAN ? 0
-				       : count / BITS_PER_UNIT);
+					   BYTES_BIG_ENDIAN ? 0
+					   : count / BITS_PER_UNIT);
 
 	      varop = gen_rtx_fmt_e (code == ASHIFTRT ? SIGN_EXTEND
-				     : ZERO_EXTEND, mode, new_rtx);
+				     : ZERO_EXTEND, int_mode, new_rtx);
 	      count = 0;
 	      continue;
 	    }
@@ -10546,20 +10555,22 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_mode = as_a <scalar_int_mode> (mode);
+	  int_varop_mode = as_a <scalar_int_mode> (GET_MODE (varop));
 
 	  /* If VAROP is a SUBREG, strip it as long as the inner operand has
 	     the same number of words as what we've seen so far.  Then store
 	     the widest mode in MODE.  */
 	  if (subreg_lowpart_p (varop)
 	      && is_int_mode (GET_MODE (SUBREG_REG (varop)), &inner_mode)
-	      && GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (GET_MODE (varop))
+	      && GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (int_varop_mode)
 	      && (unsigned int) ((GET_MODE_SIZE (inner_mode)
 				  + (UNITS_PER_WORD - 1)) / UNITS_PER_WORD)
 		 == mode_words
-	      && GET_MODE_CLASS (GET_MODE (varop)) == MODE_INT)
+	      && GET_MODE_CLASS (int_varop_mode) == MODE_INT)
 	    {
 	      varop = SUBREG_REG (varop);
-	      if (GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (mode))
+	      if (GET_MODE_SIZE (inner_mode) > GET_MODE_SIZE (int_mode))
 		mode = inner_mode;
 	      continue;
 	    }
@@ -10618,14 +10629,17 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_mode = as_a <scalar_int_mode> (mode);
+	  int_varop_mode = as_a <scalar_int_mode> (GET_MODE (varop));
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
 
 	  /* Here we have two nested shifts.  The result is usually the
 	     AND of a new shift with a mask.  We compute the result below.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
 	      && INTVAL (XEXP (varop, 1)) >= 0
-	      && INTVAL (XEXP (varop, 1)) < GET_MODE_PRECISION (GET_MODE (varop))
-	      && HWI_COMPUTABLE_MODE_P (result_mode)
-	      && HWI_COMPUTABLE_MODE_P (mode))
+	      && INTVAL (XEXP (varop, 1)) < GET_MODE_PRECISION (int_varop_mode)
+	      && HWI_COMPUTABLE_MODE_P (int_result_mode)
+	      && HWI_COMPUTABLE_MODE_P (int_mode))
 	    {
 	      enum rtx_code first_code = GET_CODE (varop);
 	      unsigned int first_count = INTVAL (XEXP (varop, 1));
@@ -10640,18 +10654,18 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		 (ashiftrt:M1 (ashift:M1 (and:M1 (subreg:M1 FOO 0) C3) C2) C1).
 		 This simplifies certain SIGN_EXTEND operations.  */
 	      if (code == ASHIFT && first_code == ASHIFTRT
-		  && count == (GET_MODE_PRECISION (result_mode)
-			       - GET_MODE_PRECISION (GET_MODE (varop))))
+		  && count == (GET_MODE_PRECISION (int_result_mode)
+			       - GET_MODE_PRECISION (int_varop_mode)))
 		{
 		  /* C3 has the low-order C1 bits zero.  */
 
-		  mask = GET_MODE_MASK (mode)
+		  mask = GET_MODE_MASK (int_mode)
 			 & ~((HOST_WIDE_INT_1U << first_count) - 1);
 
-		  varop = simplify_and_const_int (NULL_RTX, result_mode,
+		  varop = simplify_and_const_int (NULL_RTX, int_result_mode,
 						  XEXP (varop, 0), mask);
-		  varop = simplify_shift_const (NULL_RTX, ASHIFT, result_mode,
-						varop, count);
+		  varop = simplify_shift_const (NULL_RTX, ASHIFT,
+						int_result_mode, varop, count);
 		  count = first_count;
 		  code = ASHIFTRT;
 		  continue;
@@ -10662,11 +10676,11 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		 this to either an ASHIFT or an ASHIFTRT depending on the
 		 two counts.
 
-		 We cannot do this if VAROP's mode is not SHIFT_MODE.  */
+		 We cannot do this if VAROP's mode is not SHIFT_UNIT_MODE.  */
 
 	      if (code == ASHIFTRT && first_code == ASHIFT
-		  && GET_MODE (varop) == shift_mode
-		  && (num_sign_bit_copies (XEXP (varop, 0), shift_mode)
+		  && int_varop_mode == shift_unit_mode
+		  && (num_sign_bit_copies (XEXP (varop, 0), shift_unit_mode)
 		      > first_count))
 		{
 		  varop = XEXP (varop, 0);
@@ -10697,7 +10711,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	      if (code == first_code)
 		{
-		  if (GET_MODE (varop) != result_mode
+		  if (int_varop_mode != int_result_mode
 		      && (code == ASHIFTRT || code == LSHIFTRT
 			  || code == ROTATE))
 		    break;
@@ -10709,8 +10723,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	      if (code == ASHIFTRT
 		  || (code == ROTATE && first_code == ASHIFTRT)
-		  || GET_MODE_PRECISION (mode) > HOST_BITS_PER_WIDE_INT
-		  || (GET_MODE (varop) != result_mode
+		  || GET_MODE_PRECISION (int_mode) > HOST_BITS_PER_WIDE_INT
+		  || (int_varop_mode != int_result_mode
 		      && (first_code == ASHIFTRT || first_code == LSHIFTRT
 			  || first_code == ROTATE
 			  || code == ROTATE)))
@@ -10720,19 +10734,19 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 		 nonzero bits of the inner shift the same way the
 		 outer shift will.  */
 
-	      mask_rtx = gen_int_mode (nonzero_bits (varop, GET_MODE (varop)),
-				       result_mode);
+	      mask_rtx = gen_int_mode (nonzero_bits (varop, int_varop_mode),
+				       int_result_mode);
 
 	      mask_rtx
-		= simplify_const_binary_operation (code, result_mode, mask_rtx,
-						   GEN_INT (count));
+		= simplify_const_binary_operation (code, int_result_mode,
+						   mask_rtx, GEN_INT (count));
 
 	      /* Give up if we can't compute an outer operation to use.  */
 	      if (mask_rtx == 0
 		  || !CONST_INT_P (mask_rtx)
 		  || ! merge_outer_ops (&outer_op, &outer_const, AND,
 					INTVAL (mask_rtx),
-					result_mode, &complement_p))
+					int_result_mode, &complement_p))
 		break;
 
 	      /* If the shifts are in the same direction, we add the
@@ -10769,22 +10783,22 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      /* For ((unsigned) (cstULL >> count)) >> cst2 we have to make
 		 sure the result will be masked.  See PR70222.  */
 	      if (code == LSHIFTRT
-		  && mode != result_mode
+		  && int_mode != int_result_mode
 		  && !merge_outer_ops (&outer_op, &outer_const, AND,
-				       GET_MODE_MASK (result_mode)
-				       >> orig_count, result_mode,
+				       GET_MODE_MASK (int_result_mode)
+				       >> orig_count, int_result_mode,
 				       &complement_p))
 		break;
 	      /* For ((int) (cstLL >> count)) >> cst2 just give up.  Queuing
 		 up outer sign extension (often left and right shift) is
 		 hardly more efficient than the original.  See PR70429.  */
-	      if (code == ASHIFTRT && mode != result_mode)
+	      if (code == ASHIFTRT && int_mode != int_result_mode)
 		break;
 
-	      rtx new_rtx = simplify_const_binary_operation (code, mode,
+	      rtx new_rtx = simplify_const_binary_operation (code, int_mode,
 							     XEXP (varop, 0),
 							     GEN_INT (count));
-	      varop = gen_rtx_fmt_ee (code, mode, new_rtx, XEXP (varop, 1));
+	      varop = gen_rtx_fmt_ee (code, int_mode, new_rtx, XEXP (varop, 1));
 	      count = 0;
 	      continue;
 	    }
@@ -10805,6 +10819,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_varop_mode = as_a <scalar_int_mode> (GET_MODE (varop));
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
 
 	  /* If we have (xshiftrt (ior (plus X (const_int -1)) X) C)
 	     with C the size of VAROP - 1 and the shift is logical if
@@ -10817,15 +10833,15 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && XEXP (XEXP (varop, 0), 1) == constm1_rtx
 	      && (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
-	      && count == (GET_MODE_PRECISION (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_PRECISION (int_varop_mode) - 1)
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
-	      varop = gen_rtx_LE (GET_MODE (varop), XEXP (varop, 1),
+	      varop = gen_rtx_LE (int_varop_mode, XEXP (varop, 1),
 				  const0_rtx);
 
 	      if (STORE_FLAG_VALUE == 1 ? code == ASHIFTRT : code == LSHIFTRT)
-		varop = gen_rtx_NEG (GET_MODE (varop), varop);
+		varop = gen_rtx_NEG (int_varop_mode, varop);
 
 	      continue;
 	    }
@@ -10838,19 +10854,20 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	  if (CONST_INT_P (XEXP (varop, 1))
 	      /* We can't do this if we have (ashiftrt (xor))  and the
-		 constant has its sign bit set in shift_mode with shift_mode
-		 wider than result_mode.  */
+		 constant has its sign bit set in shift_unit_mode with
+		 shift_unit_mode wider than result_mode.  */
 	      && !(code == ASHIFTRT && GET_CODE (varop) == XOR
-		   && result_mode != shift_mode
+		   && int_result_mode != shift_unit_mode
 		   && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
-					      shift_mode))
+					      shift_unit_mode))
 	      && (new_rtx = simplify_const_binary_operation
-		  (code, result_mode,
-		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		  (code, int_result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
 		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, GET_CODE (varop),
-				  INTVAL (new_rtx), result_mode, &complement_p))
+				  INTVAL (new_rtx), int_result_mode,
+				  &complement_p))
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
@@ -10863,16 +10880,16 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	     changes the sign bit.  */
 	  if (CONST_INT_P (XEXP (varop, 1))
 	     && !(code == ASHIFTRT && GET_CODE (varop) == XOR
-		  && result_mode != shift_mode
+		  && int_result_mode != shift_unit_mode
 		  && 0 > trunc_int_for_mode (INTVAL (XEXP (varop, 1)),
-					     shift_mode)))
+					     shift_unit_mode)))
 	    {
-	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+	      rtx lhs = simplify_shift_const (NULL_RTX, code, shift_unit_mode,
 					      XEXP (varop, 0), count);
-	      rtx rhs = simplify_shift_const (NULL_RTX, code, shift_mode,
+	      rtx rhs = simplify_shift_const (NULL_RTX, code, shift_unit_mode,
 					      XEXP (varop, 1), count);
 
-	      varop = simplify_gen_binary (GET_CODE (varop), shift_mode,
+	      varop = simplify_gen_binary (GET_CODE (varop), shift_unit_mode,
 					   lhs, rhs);
 	      varop = apply_distributive_law (varop);
 
@@ -10885,6 +10902,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
 
 	  /* Convert (lshiftrt (eq FOO 0) C) to (xor FOO 1) if STORE_FLAG_VALUE
 	     says that the sign bit can be tested, FOO has mode MODE, C is
@@ -10892,13 +10910,13 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	     that may be nonzero.  */
 	  if (code == LSHIFTRT
 	      && XEXP (varop, 1) == const0_rtx
-	      && GET_MODE (XEXP (varop, 0)) == result_mode
-	      && count == (GET_MODE_PRECISION (result_mode) - 1)
-	      && HWI_COMPUTABLE_MODE_P (result_mode)
+	      && GET_MODE (XEXP (varop, 0)) == int_result_mode
+	      && count == (GET_MODE_PRECISION (int_result_mode) - 1)
+	      && HWI_COMPUTABLE_MODE_P (int_result_mode)
 	      && STORE_FLAG_VALUE == -1
-	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
-	      && merge_outer_ops (&outer_op, &outer_const, XOR, 1, result_mode,
-				  &complement_p))
+	      && nonzero_bits (XEXP (varop, 0), int_result_mode) == 1
+	      && merge_outer_ops (&outer_op, &outer_const, XOR, 1,
+				  int_result_mode, &complement_p))
 	    {
 	      varop = XEXP (varop, 0);
 	      count = 0;
@@ -10910,12 +10928,13 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
 
 	  /* (lshiftrt (neg A) C) where A is either 0 or 1 and C is one less
 	     than the number of bits in the mode is equivalent to A.  */
 	  if (code == LSHIFTRT
-	      && count == (GET_MODE_PRECISION (result_mode) - 1)
-	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1)
+	      && count == (GET_MODE_PRECISION (int_result_mode) - 1)
+	      && nonzero_bits (XEXP (varop, 0), int_result_mode) == 1)
 	    {
 	      varop = XEXP (varop, 0);
 	      count = 0;
@@ -10925,8 +10944,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* NEG commutes with ASHIFT since it is multiplication.  Move the
 	     NEG outside to allow shifts to combine.  */
 	  if (code == ASHIFT
-	      && merge_outer_ops (&outer_op, &outer_const, NEG, 0, result_mode,
-				  &complement_p))
+	      && merge_outer_ops (&outer_op, &outer_const, NEG, 0,
+				  int_result_mode, &complement_p))
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
@@ -10937,16 +10956,17 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_result_mode = as_a <scalar_int_mode> (result_mode);
 
 	  /* (lshiftrt (plus A -1) C) where A is either 0 or 1 and C
 	     is one less than the number of bits in the mode is
 	     equivalent to (xor A 1).  */
 	  if (code == LSHIFTRT
-	      && count == (GET_MODE_PRECISION (result_mode) - 1)
+	      && count == (GET_MODE_PRECISION (int_result_mode) - 1)
 	      && XEXP (varop, 1) == constm1_rtx
-	      && nonzero_bits (XEXP (varop, 0), result_mode) == 1
-	      && merge_outer_ops (&outer_op, &outer_const, XOR, 1, result_mode,
-				  &complement_p))
+	      && nonzero_bits (XEXP (varop, 0), int_result_mode) == 1
+	      && merge_outer_ops (&outer_op, &outer_const, XOR, 1,
+				  int_result_mode, &complement_p))
 	    {
 	      count = 0;
 	      varop = XEXP (varop, 0);
@@ -10961,21 +10981,20 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	  if ((code == ASHIFTRT || code == LSHIFTRT)
 	      && count < HOST_BITS_PER_WIDE_INT
-	      && nonzero_bits (XEXP (varop, 1), result_mode) >> count == 0
-	      && (nonzero_bits (XEXP (varop, 1), result_mode)
-		  & nonzero_bits (XEXP (varop, 0), result_mode)) == 0)
+	      && nonzero_bits (XEXP (varop, 1), int_result_mode) >> count == 0
+	      && (nonzero_bits (XEXP (varop, 1), int_result_mode)
+		  & nonzero_bits (XEXP (varop, 0), int_result_mode)) == 0)
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
 	    }
 	  else if ((code == ASHIFTRT || code == LSHIFTRT)
 		   && count < HOST_BITS_PER_WIDE_INT
-		   && HWI_COMPUTABLE_MODE_P (result_mode)
-		   && 0 == (nonzero_bits (XEXP (varop, 0), result_mode)
+		   && HWI_COMPUTABLE_MODE_P (int_result_mode)
+		   && 0 == (nonzero_bits (XEXP (varop, 0), int_result_mode)
 			    >> count)
-		   && 0 == (nonzero_bits (XEXP (varop, 0), result_mode)
-			    & nonzero_bits (XEXP (varop, 1),
-						 result_mode)))
+		   && 0 == (nonzero_bits (XEXP (varop, 0), int_result_mode)
+			    & nonzero_bits (XEXP (varop, 1), int_result_mode)))
 	    {
 	      varop = XEXP (varop, 1);
 	      continue;
@@ -10985,12 +11004,13 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  if (code == ASHIFT
 	      && CONST_INT_P (XEXP (varop, 1))
 	      && (new_rtx = simplify_const_binary_operation
-		  (ASHIFT, result_mode,
-		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		  (ASHIFT, int_result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
 		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, PLUS,
-				  INTVAL (new_rtx), result_mode, &complement_p))
+				  INTVAL (new_rtx), int_result_mode,
+				  &complement_p))
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
@@ -11003,14 +11023,15 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	     for reasoning in doing so.  */
 	  if (code == LSHIFTRT
 	      && CONST_INT_P (XEXP (varop, 1))
-	      && mode_signbit_p (result_mode, XEXP (varop, 1))
+	      && mode_signbit_p (int_result_mode, XEXP (varop, 1))
 	      && (new_rtx = simplify_const_binary_operation
-		  (code, result_mode,
-		   gen_int_mode (INTVAL (XEXP (varop, 1)), result_mode),
+		  (code, int_result_mode,
+		   gen_int_mode (INTVAL (XEXP (varop, 1)), int_result_mode),
 		   GEN_INT (count))) != 0
 	      && CONST_INT_P (new_rtx)
 	      && merge_outer_ops (&outer_op, &outer_const, XOR,
-				  INTVAL (new_rtx), result_mode, &complement_p))
+				  INTVAL (new_rtx), int_result_mode,
+				  &complement_p))
 	    {
 	      varop = XEXP (varop, 0);
 	      continue;
@@ -11022,6 +11043,7 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	  /* The following rules apply only to scalars.  */
 	  if (shift_mode != shift_unit_mode)
 	    break;
+	  int_varop_mode = as_a <scalar_int_mode> (GET_MODE (varop));
 
 	  /* If we have (xshiftrt (minus (ashiftrt X C)) X) C)
 	     with C the size of VAROP - 1 and the shift is logical if
@@ -11032,18 +11054,18 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
 	  if ((STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
 	      && GET_CODE (XEXP (varop, 0)) == ASHIFTRT
-	      && count == (GET_MODE_PRECISION (GET_MODE (varop)) - 1)
+	      && count == (GET_MODE_PRECISION (int_varop_mode) - 1)
 	      && (code == LSHIFTRT || code == ASHIFTRT)
 	      && CONST_INT_P (XEXP (XEXP (varop, 0), 1))
 	      && INTVAL (XEXP (XEXP (varop, 0), 1)) == count
 	      && rtx_equal_p (XEXP (XEXP (varop, 0), 0), XEXP (varop, 1)))
 	    {
 	      count = 0;
-	      varop = gen_rtx_GT (GET_MODE (varop), XEXP (varop, 1),
+	      varop = gen_rtx_GT (int_varop_mode, XEXP (varop, 1),
 				  const0_rtx);
 
 	      if (STORE_FLAG_VALUE == 1 ? code == ASHIFTRT : code == LSHIFTRT)
-		varop = gen_rtx_NEG (GET_MODE (varop), varop);
+		varop = gen_rtx_NEG (int_varop_mode, varop);
 
 	      continue;
 	    }
@@ -11079,8 +11101,15 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
       break;
     }
 
-  shift_mode = try_widen_shift_mode (code, varop, count, result_mode, mode,
-				     outer_op, outer_const);
+  shift_mode = result_mode;
+  if (shift_mode != mode)
+    {
+      /* We only change the modes of scalar shifts.  */
+      int_mode = as_a <scalar_int_mode> (mode);
+      int_result_mode = as_a <scalar_int_mode> (result_mode);
+      shift_mode = try_widen_shift_mode (code, varop, count, int_result_mode,
+					 int_mode, outer_op, outer_const);
+    }
 
   /* We have now finished analyzing the shift.  The result should be
      a shift of type CODE with SHIFT_MODE shifting VAROP COUNT places.  If
@@ -11115,8 +11144,9 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
   /* If we were doing an LSHIFTRT in a wider mode than it was originally,
      turn off all the bits that the shift would have turned off.  */
   if (orig_code == LSHIFTRT && result_mode != shift_mode)
-    x = simplify_and_const_int (NULL_RTX, shift_mode, x,
-				GET_MODE_MASK (result_mode) >> orig_count);
+    /* We only change the modes of scalar shifts.  */
+    x = simplify_and_const_int (NULL_RTX, as_a <scalar_int_mode> (shift_mode),
+				x, GET_MODE_MASK (result_mode) >> orig_count);
 
   /* Do the remainder of the processing in RESULT_MODE.  */
   x = gen_lowpart_or_truncate (result_mode, x);
@@ -11128,12 +11158,14 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 
   if (outer_op != UNKNOWN)
     {
+      int_result_mode = as_a <scalar_int_mode> (result_mode);
+
       if (GET_RTX_CLASS (outer_op) != RTX_UNARY
-	  && GET_MODE_PRECISION (result_mode) < HOST_BITS_PER_WIDE_INT)
-	outer_const = trunc_int_for_mode (outer_const, result_mode);
+	  && GET_MODE_PRECISION (int_result_mode) < HOST_BITS_PER_WIDE_INT)
+	outer_const = trunc_int_for_mode (outer_const, int_result_mode);
 
       if (outer_op == AND)
-	x = simplify_and_const_int (NULL_RTX, result_mode, x, outer_const);
+	x = simplify_and_const_int (NULL_RTX, int_result_mode, x, outer_const);
       else if (outer_op == SET)
 	{
 	  /* This means that we have determined that the result is
@@ -11142,9 +11174,9 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	    x = GEN_INT (outer_const);
 	}
       else if (GET_RTX_CLASS (outer_op) == RTX_UNARY)
-	x = simplify_gen_unary (outer_op, result_mode, x, result_mode);
+	x = simplify_gen_unary (outer_op, int_result_mode, x, int_result_mode);
       else
-	x = simplify_gen_binary (outer_op, result_mode, x,
+	x = simplify_gen_binary (outer_op, int_result_mode, x,
 				 GEN_INT (outer_const));
     }
 
