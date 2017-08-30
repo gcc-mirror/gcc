@@ -4829,19 +4829,19 @@ simplify_relational_operation_1 (enum rtx_code code, machine_mode mode,
 
   /* (ne:SI (zero_extract:SI FOO (const_int 1) BAR) (const_int 0))) is
      the same as (zero_extract:SI FOO (const_int 1) BAR).  */
-  scalar_int_mode int_mode;
+  scalar_int_mode int_mode, int_cmp_mode;
   if (code == NE
       && op1 == const0_rtx
       && is_int_mode (mode, &int_mode)
-      && cmp_mode != VOIDmode
+      && is_a <scalar_int_mode> (cmp_mode, &int_cmp_mode)
       /* ??? Work-around BImode bugs in the ia64 backend.  */
       && int_mode != BImode
-      && cmp_mode != BImode
-      && nonzero_bits (op0, cmp_mode) == 1
+      && int_cmp_mode != BImode
+      && nonzero_bits (op0, int_cmp_mode) == 1
       && STORE_FLAG_VALUE == 1)
-    return GET_MODE_SIZE (int_mode) > GET_MODE_SIZE (cmp_mode)
-	   ? simplify_gen_unary (ZERO_EXTEND, int_mode, op0, cmp_mode)
-	   : lowpart_subreg (int_mode, op0, cmp_mode);
+    return GET_MODE_SIZE (int_mode) > GET_MODE_SIZE (int_cmp_mode)
+	   ? simplify_gen_unary (ZERO_EXTEND, int_mode, op0, int_cmp_mode)
+	   : lowpart_subreg (int_mode, op0, int_cmp_mode);
 
   /* (eq/ne (xor x y) 0) simplifies to (eq/ne x y).  */
   if ((code == EQ || code == NE)

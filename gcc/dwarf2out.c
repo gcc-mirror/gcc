@@ -14689,7 +14689,7 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
   if (mode != GET_MODE (rtl) && GET_MODE (rtl) != VOIDmode)
     return NULL;
 
-  scalar_int_mode int_mode, inner_mode;
+  scalar_int_mode int_mode, inner_mode, op1_mode;
   switch (GET_CODE (rtl))
     {
     case POST_INC:
@@ -15127,9 +15127,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 				VAR_INIT_STATUS_INITIALIZED);
       {
 	rtx rtlop1 = XEXP (rtl, 1);
-	if (GET_MODE (rtlop1) != VOIDmode
-	    && GET_MODE_BITSIZE (GET_MODE (rtlop1))
-	       < GET_MODE_BITSIZE (int_mode))
+	if (is_a <scalar_int_mode> (GET_MODE (rtlop1), &op1_mode)
+	    && GET_MODE_BITSIZE (op1_mode) < GET_MODE_BITSIZE (int_mode))
 	  rtlop1 = gen_rtx_ZERO_EXTEND (int_mode, rtlop1);
 	op1 = mem_loc_descriptor (rtlop1, int_mode, mem_mode,
 				  VAR_INIT_STATUS_INITIALIZED);
@@ -15960,7 +15959,8 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	break;
       /* FALLTHROUGH */
     case LABEL_REF:
-      if (mode != VOIDmode && GET_MODE_SIZE (mode) == DWARF2_ADDR_SIZE
+      if (is_a <scalar_int_mode> (mode, &int_mode)
+	  && GET_MODE_SIZE (int_mode) == DWARF2_ADDR_SIZE
 	  && (dwarf_version >= 4 || !dwarf_strict))
 	{
          loc_result = new_addr_loc_descr (rtl, dtprel_false);

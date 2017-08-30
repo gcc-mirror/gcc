@@ -9019,6 +9019,7 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
   enum rtx_code code = GET_CODE (x);
   rtx cond0, cond1, true0, true1, false0, false1;
   unsigned HOST_WIDE_INT nz;
+  scalar_int_mode int_mode;
 
   /* If we are comparing a value against zero, we are done.  */
   if ((code == NE || code == EQ)
@@ -9215,8 +9216,9 @@ if_then_else_cond (rtx x, rtx *ptrue, rtx *pfalse)
   /* If X is known to be either 0 or -1, those are the true and
      false values when testing X.  */
   else if (x == constm1_rtx || x == const0_rtx
-	   || (mode != VOIDmode && mode != BLKmode
-	       && num_sign_bit_copies (x, mode) == GET_MODE_PRECISION (mode)))
+	   || (is_a <scalar_int_mode> (mode, &int_mode)
+	       && (num_sign_bit_copies (x, int_mode)
+		   == GET_MODE_PRECISION (int_mode))))
     {
       *ptrue = constm1_rtx, *pfalse = const0_rtx;
       return x;
@@ -11271,7 +11273,7 @@ change_zero_ext (rtx pat)
   FOR_EACH_SUBRTX_PTR (iter, array, src, NONCONST)
     {
       rtx x = **iter;
-      scalar_int_mode mode;
+      scalar_int_mode mode, inner_mode;
       if (!is_a <scalar_int_mode> (GET_MODE (x), &mode))
 	continue;
       int size;
@@ -11279,12 +11281,9 @@ change_zero_ext (rtx pat)
       if (GET_CODE (x) == ZERO_EXTRACT
 	  && CONST_INT_P (XEXP (x, 1))
 	  && CONST_INT_P (XEXP (x, 2))
-	  && GET_MODE (XEXP (x, 0)) != VOIDmode
-	  && GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
-	      <= GET_MODE_PRECISION (mode))
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &inner_mode)
+	  && GET_MODE_PRECISION (inner_mode) <= GET_MODE_PRECISION (mode))
 	{
-	  machine_mode inner_mode = GET_MODE (XEXP (x, 0));
-
 	  size = INTVAL (XEXP (x, 1));
 
 	  int start = INTVAL (XEXP (x, 2));
