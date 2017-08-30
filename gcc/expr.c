@@ -707,7 +707,7 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
     {
       machine_mode tmode, xmode;
 
-      xmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      xmode = NARROWEST_INT_MODE;
       FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
 	{
 	  if (GET_MODE_SIZE (tmode) > max_pieces
@@ -3910,7 +3910,7 @@ push_block (rtx size, int extra, int below)
 			     negate_rtx (Pmode, size));
     }
 
-  return memory_address (GET_CLASS_NARROWEST_MODE (MODE_INT), temp);
+  return memory_address (NARROWEST_INT_MODE, temp);
 }
 
 /* A utility routine that returns the base of an auto-inc memory, or NULL.  */

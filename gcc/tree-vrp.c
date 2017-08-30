@@ -10120,7 +10120,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
      integer mode available.  */
   else
     {
-      mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
+      mode = NARROWEST_INT_MODE;
       for (;;)
 	{
 	  /* If we cannot do a signed conversion to float from mode
