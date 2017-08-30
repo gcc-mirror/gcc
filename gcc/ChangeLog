@@ -1,4 +1,22 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* df.h (df_read_modify_subreg_p): Remove in favor of...
+	* rtl.h (read_modify_subreg_p): ...this new function.  Take a
+	const_rtx instead of an rtx.
+	* cprop.c (local_cprop_find_used_regs): Update accordingly.
+	* df-problems.c (df_word_lr_mark_ref): Likewise.
+	* ira-lives.c (mark_pseudo_reg_live): Likewise.
+	(mark_pseudo_reg_dead): Likewise.
+	(mark_ref_dead): Likewise.
+	* reginfo.c (init_subregs_of_mode): Likewise.
+	* sched-deps.c (sched_analyze_1): Likewise.
+	* df-scan.c (df_def_record_1): Likewise.
+	(df_uses_record): Likewise.
+	(df_read_modify_subreg_p): Remove in favor of...
+	* rtlanal.c (read_modify_subreg_p): ...this new function.  Take a
+	const_rtx instead of an rtx.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

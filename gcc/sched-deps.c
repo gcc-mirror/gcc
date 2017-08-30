@@ -2419,7 +2419,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     {
       if (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || df_read_modify_subreg_p (dest))
+	 || read_modify_subreg_p (dest))
         {
 	  /* These both read and modify the result.  We must handle
              them as writes to get proper dependencies for following

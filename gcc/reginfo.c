@@ -1348,7 +1348,7 @@ init_subregs_of_mode (void)
 	  df_ref def;
 	  FOR_EACH_INSN_DEF (def, insn)
 	    if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
-		&& df_read_modify_subreg_p (DF_REF_REG (def)))
+		&& read_modify_subreg_p (DF_REF_REG (def)))
 	      record_subregs_of_mode (DF_REF_REG (def), true);
 	}
 }

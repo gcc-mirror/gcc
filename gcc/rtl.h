@@ -2194,6 +2194,7 @@ extern unsigned int subreg_lsb_1 (machine_mode, machine_mode,
 				  unsigned int);
 extern unsigned int subreg_size_offset_from_lsb (unsigned int, unsigned int,
 						 unsigned int);
+extern bool read_modify_subreg_p (const_rtx);
 
 /* Return the subreg byte offset for a subreg whose outer mode is
    OUTER_MODE, whose inner mode is INNER_MODE, and where there are
@@ -2836,7 +2837,7 @@ partial_subreg_p (machine_mode outermode, machine_mode innermode)
 }
 
 /* Likewise return true if X is a subreg that is smaller than the inner
-   register.  Use df_read_modify_subreg_p to test whether writing to such
+   register.  Use read_modify_subreg_p to test whether writing to such
    a subreg preserves any part of the inner register.  */
 
 inline bool
