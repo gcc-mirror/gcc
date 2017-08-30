@@ -2,6 +2,38 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expmed.c (store_bit_field_using_insv): Add op0_mode and
+	value_mode arguments.  Use scalar_int_mode internally.
+	(store_bit_field_1): Rename the new integer mode from imode
+	to op0_mode and use it instead of GET_MODE (op0).  Update calls
+	to store_split_bit_field, store_bit_field_using_insv and
+	store_fixed_bit_field.
+	(store_fixed_bit_field): Add op0_mode and value_mode arguments.
+	Use scalar_int_mode internally.  Use a bit count rather than a mode
+	when calculating the largest bit size for get_best_mode.
+	Update calls to store_split_bit_field and store_fixed_bit_field_1.
+	(store_fixed_bit_field_1): Add mode and value_mode arguments.
+	Remove assertion that OP0 has a scalar integer mode.
+	(store_split_bit_field): Add op0_mode and value_mode arguments.
+	Update calls to extract_fixed_bit_field.
+	(extract_bit_field_using_extv): Add an op0_mode argument.
+	Use scalar_int_mode internally.
+	(extract_bit_field_1): Rename the new integer mode from imode to
+	op0_mode and use it instead of GET_MODE (op0).  Update calls to
+	extract_split_bit_field, extract_bit_field_using_extv and
+	extract_fixed_bit_field.
+	(extract_fixed_bit_field): Add an op0_mode argument.  Update calls
+	to extract_split_bit_field and extract_fixed_bit_field_1.
+	(extract_fixed_bit_field_1): Add a mode argument.  Remove assertion
+	that OP0 has a scalar integer mode.  Use as_a <scalar_int_mode>
+	on the target mode.
+	(extract_split_bit_field): Add an op0_mode argument.  Update call
+	to extract_fixed_bit_field.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* cse.c (cse_insn): Use opt_scalar_int_mode for the mode iterator.
 	* explow.c (hard_function_value): Likewise.
 	* expmed.c (extract_fixed_bit_field_1): Likewise.  Move the
