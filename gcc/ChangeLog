@@ -2,6 +2,17 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (opt_scalar_float_mode): New typedef.
+	* machmode.h (float_mode_for_size): New function.
+	* emit-rtl.c (double_mode): Delete.
+	(init_emit_once): Use float_mode_for_size.
+	* stor-layout.c (layout_type): Likewise.
+	* gdbhooks.py (build_pretty_printer): Handle opt_scalar_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* output.h (assemble_real): Take a scalar_float_mode.
 	* config/arm/arm.c (arm_assemble_integer): Update accordingly.
 	* config/arm/arm.md (consttable_4): Likewise.
