@@ -835,6 +835,13 @@ namespace mode_iterator
   /* Set mode iterator *ITER to the mode that is two times wider than the
      current one, if such a mode exists.  */
 
+  template<typename T>
+  inline void
+  get_2xwider (opt_mode<T> *iter)
+  {
+    *iter = GET_MODE_2XWIDER_MODE (iter->require ());
+  }
+
   inline void
   get_2xwider (machine_mode *iter)
   {

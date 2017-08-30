@@ -2,6 +2,22 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (opt_scalar_mode): New typedef.
+	* gdbhooks.py (build_pretty_printers): Handle it.
+	* machmode.h (mode_iterator::get_2xwider): Add overload for
+	opt_mode<T>.
+	* emit-rtl.c (init_emit_once): Use opt_scalar_mode when iterating
+	over scalar modes.
+	* expr.c (convert_mode_scalar): Likewise.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* optabs.c (expand_float): Likewise.
+	(expand_fix): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.c (expand_float): Explicitly check for scalars before
 	using a branching expansion.
 	(expand_fix): Likewise.

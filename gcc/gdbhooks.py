@@ -543,7 +543,8 @@ def build_pretty_printer():
     pp.add_printer_for_regex(r'opt_mode<(\S+)>',
                              'opt_mode', OptMachineModePrinter)
     pp.add_printer_for_types(['opt_scalar_int_mode',
-                              'opt_scalar_float_mode'],
+                              'opt_scalar_float_mode',
+                              'opt_scalar_mode'],
                              'opt_mode', OptMachineModePrinter)
     pp.add_printer_for_regex(r'pod_mode<(\S+)>',
                              'pod_mode', MachineModePrinter)

@@ -3442,16 +3442,18 @@ omp_clause_aligned_alignment (tree clause)
 
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
-  machine_mode mode, vmode;
+  opt_scalar_mode mode_iter;
   int vs = targetm.vectorize.autovectorize_vector_sizes ();
   if (vs)
     vs = 1 << floor_log2 (vs);
   static enum mode_class classes[]
     = { MODE_INT, MODE_VECTOR_INT, MODE_FLOAT, MODE_VECTOR_FLOAT };
   for (int i = 0; i < 4; i += 2)
-    FOR_EACH_MODE_IN_CLASS (mode, classes[i])
+    /* The for loop above dictates that we only walk through scalar classes.  */
+    FOR_EACH_MODE_IN_CLASS (mode_iter, classes[i])
       {
-	vmode = targetm.vectorize.preferred_simd_mode (mode);
+	scalar_mode mode = mode_iter.require ();
+	machine_mode vmode = targetm.vectorize.preferred_simd_mode (mode);
 	if (GET_MODE_CLASS (vmode) != classes[i + 1])
 	  continue;
 	while (vs
