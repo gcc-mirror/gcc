@@ -8208,6 +8208,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
   tree type;
   int unsignedp;
   machine_mode mode;
+  scalar_int_mode int_mode;
   enum tree_code code = ops->code;
   optab this_optab;
   rtx subtarget, original_target;
@@ -9171,8 +9172,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	if (code == LSHIFT_EXPR
 	    && target
 	    && REG_P (target)
-	    && mode == GET_MODE_WIDER_MODE (word_mode).else_void ()
-	    && GET_MODE_SIZE (mode) == 2 * GET_MODE_SIZE (word_mode)
+	    && GET_MODE_2XWIDER_MODE (word_mode).exists (&int_mode)
+	    && mode == int_mode
 	    && TREE_CONSTANT (treeop1)
 	    && TREE_CODE (treeop0) == SSA_NAME)
 	  {
@@ -9183,20 +9184,20 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		machine_mode rmode = TYPE_MODE
 		  (TREE_TYPE (gimple_assign_rhs1 (def)));
 
-		if (GET_MODE_SIZE (rmode) < GET_MODE_SIZE (mode)
+		if (GET_MODE_SIZE (rmode) < GET_MODE_SIZE (int_mode)
 		    && TREE_INT_CST_LOW (treeop1) < GET_MODE_BITSIZE (word_mode)
 		    && ((TREE_INT_CST_LOW (treeop1) + GET_MODE_BITSIZE (rmode))
 			>= GET_MODE_BITSIZE (word_mode)))
 		  {
 		    rtx_insn *seq, *seq_old;
 		    unsigned int high_off = subreg_highpart_offset (word_mode,
-								    mode);
+								    int_mode);
 		    bool extend_unsigned
 		      = TYPE_UNSIGNED (TREE_TYPE (gimple_assign_rhs1 (def)));
-		    rtx low = lowpart_subreg (word_mode, op0, mode);
-		    rtx dest_low = lowpart_subreg (word_mode, target, mode);
+		    rtx low = lowpart_subreg (word_mode, op0, int_mode);
+		    rtx dest_low = lowpart_subreg (word_mode, target, int_mode);
 		    rtx dest_high = simplify_gen_subreg (word_mode, target,
-							 mode, high_off);
+							 int_mode, high_off);
 		    HOST_WIDE_INT ramount = (BITS_PER_WORD
 					     - TREE_INT_CST_LOW (treeop1));
 		    tree rshift = build_int_cst (TREE_TYPE (treeop1), ramount);
@@ -9219,12 +9220,13 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    end_sequence ();
 		    temp = target ;
 
-		    if (have_insn_for (ASHIFT, mode))
+		    if (have_insn_for (ASHIFT, int_mode))
 		      {
 			bool speed_p = optimize_insn_for_speed_p ();
 			start_sequence ();
-			rtx ret_old = expand_variable_shift (code, mode, op0,
-							     treeop1, target,
+			rtx ret_old = expand_variable_shift (code, int_mode,
+							     op0, treeop1,
+							     target,
 							     unsignedp);
 
 			seq_old = get_insns ();

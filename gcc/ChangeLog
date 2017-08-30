@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_expr_real_2): Use scalar_int_mode for the
+	double-word mode.
+	* lower-subreg.c (resolve_shift_zext): Use is_a <scalar_int_mode>.
+	* optabs.c (expand_unop): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* dwarf2out.c (typed_binop): Change mode parameter to scalar_int_mode.
 	(clz_loc_descriptor): Likewise.  Remove SCALAR_INT_MODE_P check.
 	(popcount_loc_descriptor): Likewise.
