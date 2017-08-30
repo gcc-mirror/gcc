@@ -5559,40 +5559,39 @@ canonicalize_condition (rtx_insn *insn, rtx cond, int reverse,
      if we can do computations in the relevant mode and we do not
      overflow.  */
 
-  if (GET_MODE_CLASS (GET_MODE (op0)) != MODE_CC
-      && CONST_INT_P (op1)
-      && GET_MODE (op0) != VOIDmode
-      && GET_MODE_PRECISION (GET_MODE (op0)) <= HOST_BITS_PER_WIDE_INT)
+  scalar_int_mode op0_mode;
+  if (CONST_INT_P (op1)
+      && is_a <scalar_int_mode> (GET_MODE (op0), &op0_mode)
+      && GET_MODE_PRECISION (op0_mode) <= HOST_BITS_PER_WIDE_INT)
     {
       HOST_WIDE_INT const_val = INTVAL (op1);
       unsigned HOST_WIDE_INT uconst_val = const_val;
       unsigned HOST_WIDE_INT max_val
-	= (unsigned HOST_WIDE_INT) GET_MODE_MASK (GET_MODE (op0));
+	= (unsigned HOST_WIDE_INT) GET_MODE_MASK (op0_mode);
 
       switch (code)
 	{
 	case LE:
 	  if ((unsigned HOST_WIDE_INT) const_val != max_val >> 1)
-	    code = LT, op1 = gen_int_mode (const_val + 1, GET_MODE (op0));
+	    code = LT, op1 = gen_int_mode (const_val + 1, op0_mode);
 	  break;
 
 	/* When cross-compiling, const_val might be sign-extended from
 	   BITS_PER_WORD to HOST_BITS_PER_WIDE_INT */
 	case GE:
 	  if ((const_val & max_val)
-	      != (HOST_WIDE_INT_1U
-		  << (GET_MODE_PRECISION (GET_MODE (op0)) - 1)))
-	    code = GT, op1 = gen_int_mode (const_val - 1, GET_MODE (op0));
+	      != (HOST_WIDE_INT_1U << (GET_MODE_PRECISION (op0_mode) - 1)))
+	    code = GT, op1 = gen_int_mode (const_val - 1, op0_mode);
 	  break;
 
 	case LEU:
 	  if (uconst_val < max_val)
-	    code = LTU, op1 = gen_int_mode (uconst_val + 1, GET_MODE (op0));
+	    code = LTU, op1 = gen_int_mode (uconst_val + 1, op0_mode);
 	  break;
 
 	case GEU:
 	  if (uconst_val != 0)
-	    code = GTU, op1 = gen_int_mode (uconst_val - 1, GET_MODE (op0));
+	    code = GTU, op1 = gen_int_mode (uconst_val - 1, op0_mode);
 	  break;
 
 	default:

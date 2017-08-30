@@ -4139,7 +4139,7 @@ expand_debug_expr (tree exp)
   machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
-  scalar_int_mode op1_mode;
+  scalar_int_mode op0_mode, op1_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -4581,23 +4581,23 @@ expand_debug_expr (tree exp)
 	 size_t, we need to check for mis-matched modes and correct
 	 the addend.  */
       if (op0 && op1
-	  && GET_MODE (op0) != VOIDmode && GET_MODE (op1) != VOIDmode
-	  && GET_MODE (op0) != GET_MODE (op1))
+	  && is_a <scalar_int_mode> (GET_MODE (op0), &op0_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op1), &op1_mode)
+	  && op0_mode != op1_mode)
 	{
-	  if (GET_MODE_BITSIZE (GET_MODE (op0)) < GET_MODE_BITSIZE (GET_MODE (op1))
-	      /* If OP0 is a partial mode, then we must truncate, even if it has
-		 the same bitsize as OP1 as GCC's representation of partial modes
-		 is opaque.  */
-	      || (GET_MODE_CLASS (GET_MODE (op0)) == MODE_PARTIAL_INT
-		  && GET_MODE_BITSIZE (GET_MODE (op0)) == GET_MODE_BITSIZE (GET_MODE (op1))))
-	    op1 = simplify_gen_unary (TRUNCATE, GET_MODE (op0), op1,
-				      GET_MODE (op1));
+	  if (GET_MODE_BITSIZE (op0_mode) < GET_MODE_BITSIZE (op1_mode)
+	      /* If OP0 is a partial mode, then we must truncate, even
+		 if it has the same bitsize as OP1 as GCC's
+		 representation of partial modes is opaque.  */
+	      || (GET_MODE_CLASS (op0_mode) == MODE_PARTIAL_INT
+		  && (GET_MODE_BITSIZE (op0_mode)
+		      == GET_MODE_BITSIZE (op1_mode))))
+	    op1 = simplify_gen_unary (TRUNCATE, op0_mode, op1, op1_mode);
 	  else
 	    /* We always sign-extend, regardless of the signedness of
 	       the operand, because the operand is always unsigned
 	       here even if the original C expression is signed.  */
-	    op1 = simplify_gen_unary (SIGN_EXTEND, GET_MODE (op0), op1,
-				      GET_MODE (op1));
+	    op1 = simplify_gen_unary (SIGN_EXTEND, op0_mode, op1, op1_mode);
 	}
       /* Fall through.  */
     case PLUS_EXPR:
