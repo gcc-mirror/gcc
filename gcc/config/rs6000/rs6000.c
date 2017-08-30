@@ -26097,10 +26097,14 @@ rs6000_emit_savres_rtx (rs6000_stack_t *info,
   return insn;
 }
 
-/* Emit code to store CR fields that need to be saved into REG.  */
+/* Emit prologue code to store CR fields that need to be saved into REG.  This
+   function should only be called when moving the non-volatile CRs to REG, it
+   is not a general purpose routine to move the entire set of CRs to REG.
+   Specifically, gen_prologue_movesi_from_cr() does not contain uses of the
+   volatile CRs.  */
 
 static void
-rs6000_emit_move_from_cr (rtx reg)
+rs6000_emit_prologue_move_from_cr (rtx reg)
 {
   /* Only the ELFv2 ABI allows storing only selected fields.  */
   if (DEFAULT_ABI == ABI_ELFv2 && TARGET_MFCRF)
@@ -26131,7 +26135,7 @@ rs6000_emit_move_from_cr (rtx reg)
 	 as well, using logical operations to combine the values.  */
     }
 
-  emit_insn (gen_movesi_from_cr (reg));
+  emit_insn (gen_prologue_movesi_from_cr (reg));
 }
 
 /* Return whether the split-stack arg pointer (r12) is used.  */
@@ -26871,7 +26875,7 @@ rs6000_emit_prologue (void)
     {
       cr_save_rtx = gen_rtx_REG (SImode, cr_save_regno);
       START_USE (cr_save_regno);
-      rs6000_emit_move_from_cr (cr_save_rtx);
+      rs6000_emit_prologue_move_from_cr (cr_save_rtx);
     }
 
   /* Do any required saving of fpr's.  If only one or two to save, do
@@ -27109,7 +27113,7 @@ rs6000_emit_prologue (void)
 	{
 	  START_USE (0);
 	  cr_save_rtx = gen_rtx_REG (SImode, 0);
-	  rs6000_emit_move_from_cr (cr_save_rtx);
+	  rs6000_emit_prologue_move_from_cr (cr_save_rtx);
 	}
 
       /* Saving CR requires a two-instruction sequence: one instruction
@@ -27196,7 +27200,7 @@ rs6000_emit_prologue (void)
       /* ??? We might get better performance by using multiple mfocrf
 	 instructions.  */
       crsave = gen_rtx_REG (SImode, 0);
-      emit_insn (gen_movesi_from_cr (crsave));
+      emit_insn (gen_prologue_movesi_from_cr (crsave));
 
       for (i = 0; i < 8; i++)
 	if (!call_used_regs[CR0_REGNO + i])
