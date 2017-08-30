@@ -1,5 +1,10 @@
 2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* tree-eh.c (lower_try_finally_switch): Set the location of the finally
+	on the entire header of the finally block in the fallthru case.
+
+2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* varasm.c (decode_addr_const): Deal with INDIRECT_REF <INTEGER_CST>.
 
 2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
