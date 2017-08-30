@@ -6739,17 +6739,18 @@ expand_omp_atomic (struct omp_region *region)
       if (exact_log2 (align) >= index)
 	{
 	  /* Atomic load.  */
+	  scalar_mode smode;
 	  if (loaded_val == stored_val
-	      && (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
-		  || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
-	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	      && (is_int_mode (TYPE_MODE (type), &smode)
+		  || is_float_mode (TYPE_MODE (type), &smode))
+	      && GET_MODE_BITSIZE (smode) <= BITS_PER_WORD
 	      && expand_omp_atomic_load (load_bb, addr, loaded_val, index))
 	    return;
 
 	  /* Atomic store.  */
-	  if ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
-	       || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
-	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	  if ((is_int_mode (TYPE_MODE (type), &smode)
+	       || is_float_mode (TYPE_MODE (type), &smode))
+	      && GET_MODE_BITSIZE (smode) <= BITS_PER_WORD
 	      && store_bb == single_succ (load_bb)
 	      && first_stmt (store_bb) == store
 	      && expand_omp_atomic_store (load_bb, addr, loaded_val,

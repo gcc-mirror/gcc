@@ -9046,18 +9046,16 @@ static tree
 get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
 {
   tree orig_scalar_type = scalar_type;
-  machine_mode inner_mode = TYPE_MODE (scalar_type);
+  scalar_mode inner_mode;
   machine_mode simd_mode;
-  unsigned int nbytes = GET_MODE_SIZE (inner_mode);
   int nunits;
   tree vectype;
 
-  if (nbytes == 0)
+  if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
+      && !is_float_mode (TYPE_MODE (scalar_type), &inner_mode))
     return NULL_TREE;
 
-  if (GET_MODE_CLASS (inner_mode) != MODE_INT
-      && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
-    return NULL_TREE;
+  unsigned int nbytes = GET_MODE_SIZE (inner_mode);
 
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
