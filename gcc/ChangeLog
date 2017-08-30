@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* omp-expand.c (expand_omp_atomic): Use is_int_mode, is_float_mode
+	and scalar_mode.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* fixed-value.h (fixed_from_double_int): Take a scalar_mode
 	rather than a machine_mode.
 	(fixed_from_string): Likewise.
