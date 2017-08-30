@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (try_combine): Use is_a <scalar_int_mode> when
+	trying to combine a full-register integer set with a subreg
+	integer set.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expr.c (expand_expr_addr_expr): Add a new_tmode local variable
 	that is always either address_mode or pointer_mode.
 

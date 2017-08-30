@@ -2645,6 +2645,7 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
   rtx other_pat = 0;
   rtx new_other_notes;
   int i;
+  scalar_int_mode dest_mode, temp_mode;
 
   /* Immediately return if any of I0,I1,I2 are the same insn (I3 can
      never be).  */
@@ -2847,33 +2848,40 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      constant.  */
   if (i1 == 0
       && (temp_expr = single_set (i2)) != 0
+      && is_a <scalar_int_mode> (GET_MODE (SET_DEST (temp_expr)), &temp_mode)
       && CONST_SCALAR_INT_P (SET_SRC (temp_expr))
       && GET_CODE (PATTERN (i3)) == SET
       && CONST_SCALAR_INT_P (SET_SRC (PATTERN (i3)))
       && reg_subword_p (SET_DEST (PATTERN (i3)), SET_DEST (temp_expr)))
     {
       rtx dest = SET_DEST (PATTERN (i3));
+      rtx temp_dest = SET_DEST (temp_expr);
       int offset = -1;
       int width = 0;
-      
+
       if (GET_CODE (dest) == ZERO_EXTRACT)
 	{
 	  if (CONST_INT_P (XEXP (dest, 1))
-	      && CONST_INT_P (XEXP (dest, 2)))
+	      && CONST_INT_P (XEXP (dest, 2))
+	      && is_a <scalar_int_mode> (GET_MODE (XEXP (dest, 0)),
+					 &dest_mode))
 	    {
 	      width = INTVAL (XEXP (dest, 1));
 	      offset = INTVAL (XEXP (dest, 2));
 	      dest = XEXP (dest, 0);
 	      if (BITS_BIG_ENDIAN)
-		offset = GET_MODE_PRECISION (GET_MODE (dest)) - width - offset;
+		offset = GET_MODE_PRECISION (dest_mode) - width - offset;
 	    }
 	}
       else
 	{
 	  if (GET_CODE (dest) == STRICT_LOW_PART)
 	    dest = XEXP (dest, 0);
-	  width = GET_MODE_PRECISION (GET_MODE (dest));
-	  offset = 0;
+	  if (is_a <scalar_int_mode> (GET_MODE (dest), &dest_mode))
+	    {
+	      width = GET_MODE_PRECISION (dest_mode);
+	      offset = 0;
+	    }
 	}
 
       if (offset >= 0)
@@ -2882,9 +2890,9 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  if (subreg_lowpart_p (dest))
 	    ;
 	  /* Handle the case where inner is twice the size of outer.  */
-	  else if (GET_MODE_PRECISION (GET_MODE (SET_DEST (temp_expr)))
-		   == 2 * GET_MODE_PRECISION (GET_MODE (dest)))
-	    offset += GET_MODE_PRECISION (GET_MODE (dest));
+	  else if (GET_MODE_PRECISION (temp_mode)
+		   == 2 * GET_MODE_PRECISION (dest_mode))
+	    offset += GET_MODE_PRECISION (dest_mode);
 	  /* Otherwise give up for now.  */
 	  else
 	    offset = -1;
@@ -2895,23 +2903,22 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	  rtx inner = SET_SRC (PATTERN (i3));
 	  rtx outer = SET_SRC (temp_expr);
 
-	  wide_int o
-	    = wi::insert (rtx_mode_t (outer, GET_MODE (SET_DEST (temp_expr))),
-			  rtx_mode_t (inner, GET_MODE (dest)),
-			  offset, width);
+	  wide_int o = wi::insert (rtx_mode_t (outer, temp_mode),
+				   rtx_mode_t (inner, dest_mode),
+				   offset, width);
 
 	  combine_merges++;
 	  subst_insn = i3;
 	  subst_low_luid = DF_INSN_LUID (i2);
 	  added_sets_2 = added_sets_1 = added_sets_0 = 0;
-	  i2dest = SET_DEST (temp_expr);
+	  i2dest = temp_dest;
 	  i2dest_killed = dead_or_set_p (i2, i2dest);
 
 	  /* Replace the source in I2 with the new constant and make the
 	     resulting insn the new pattern for I3.  Then skip to where we
 	     validate the pattern.  Everything was set up above.  */
 	  SUBST (SET_SRC (temp_expr),
-		 immed_wide_int_const (o, GET_MODE (SET_DEST (temp_expr))));
+		 immed_wide_int_const (o, temp_mode));
 
 	  newpat = PATTERN (i2);
 
