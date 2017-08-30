@@ -4152,7 +4152,7 @@ vect_pattern_recog_1 (vect_recog_func *recog_func,
   loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
  
   if (VECTOR_BOOLEAN_TYPE_P (type_in)
-      || VECTOR_MODE_P (TYPE_MODE (type_in)))
+      || VECTOR_TYPE_P (type_in))
     {
       /* No need to check target support (already checked by the pattern
          recognition function).  */
