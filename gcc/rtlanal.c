@@ -4449,9 +4449,8 @@ nonzero_bits1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
       {
 	unsigned HOST_WIDE_INT nonzero_for_hook = nonzero;
-	rtx new_rtx = rtl_hooks.reg_nonzero_bits (x, mode, known_x,
-					      known_mode, known_ret,
-					      &nonzero_for_hook);
+	rtx new_rtx = rtl_hooks.reg_nonzero_bits (x, xmode, mode,
+						  &nonzero_for_hook);
 
 	if (new_rtx)
 	  nonzero_for_hook &= cached_nonzero_bits (new_rtx, mode, known_x,
@@ -4943,9 +4942,8 @@ num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 
       {
 	unsigned int copies_for_hook = 1, copies = 1;
-	rtx new_rtx = rtl_hooks.reg_num_sign_bit_copies (x, mode, known_x,
-						     known_mode, known_ret,
-						     &copies_for_hook);
+	rtx new_rtx = rtl_hooks.reg_num_sign_bit_copies (x, xmode, mode,
+							 &copies_for_hook);
 
 	if (new_rtx)
 	  copies = cached_num_sign_bit_copies (new_rtx, mode, known_x,

@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (rtl_hooks::reg_nonzero_bits): Add a scalar_int_mode
+	parameter for the mode of "x".  Remove the "known_x", "known_mode"
+	and "known_ret" arguments.  Change the type of the mode argument
+	to scalar_int_mode.
+	(rtl_hooks:reg_num_sign_bit_copies): Likewise.
+	* combine.c (reg_nonzero_bits_for_combine): Update accordingly.
+	(reg_num_sign_bit_copies_for_combine): Likewise.
+	* rtlanal.c (nonzero_bits1): Likewise.
+	(num_sign_bit_copies1): Likewise.
+	* rtlhooks-def.h (reg_nonzero_bits_general): Likewise.
+	(reg_num_sign_bit_copies_general): Likewise.
+	* rtlhooks.c (reg_num_sign_bit_copies_general): Likewise.
+	(reg_nonzero_bits_general): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtlanal.c (num_sign_bit_copies): Handle VOIDmode here rather
 	than in subroutines.  Return 1 for non-integer modes.
 	(cached_num_sign_bit_copies): Change the type of the mode parameter
