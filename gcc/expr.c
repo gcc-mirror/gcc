@@ -102,6 +102,7 @@ static rtx const_vector_from_tree (tree);
 static rtx const_scalar_mask_from_tree (scalar_int_mode, tree);
 static tree tree_expr_size (const_tree);
 static HOST_WIDE_INT int_expr_size (tree);
+static void convert_mode_scalar (rtx, rtx, int);
 
 
 /* This is run to set up which modes can be used
@@ -216,17 +217,7 @@ convert_move (rtx to, rtx from, int unsignedp)
 {
   machine_mode to_mode = GET_MODE (to);
   machine_mode from_mode = GET_MODE (from);
-  int to_real = SCALAR_FLOAT_MODE_P (to_mode);
-  int from_real = SCALAR_FLOAT_MODE_P (from_mode);
-  enum insn_code code;
-  rtx libcall;
 
-  /* rtx code for making an equivalent value.  */
-  enum rtx_code equiv_code = (unsignedp < 0 ? UNKNOWN
-			      : (unsignedp ? ZERO_EXTEND : SIGN_EXTEND));
-
-
-  gcc_assert (to_real == from_real);
   gcc_assert (to_mode != BLKmode);
   gcc_assert (from_mode != BLKmode);
 
@@ -276,6 +267,28 @@ convert_move (rtx to, rtx from, int unsignedp)
       convert_move (XEXP (to, 1), XEXP (from, 1), unsignedp);
       return;
     }
+
+  convert_mode_scalar (to, from, unsignedp);
+}
+
+/* Like convert_move, but deals only with scalar modes.  */
+
+static void
+convert_mode_scalar (rtx to, rtx from, int unsignedp)
+{
+  /* Both modes should be scalar types.  */
+  scalar_mode from_mode = as_a <scalar_mode> (GET_MODE (from));
+  scalar_mode to_mode = as_a <scalar_mode> (GET_MODE (to));
+  bool to_real = SCALAR_FLOAT_MODE_P (to_mode);
+  bool from_real = SCALAR_FLOAT_MODE_P (from_mode);
+  enum insn_code code;
+  rtx libcall;
+
+  gcc_assert (to_real == from_real);
+
+  /* rtx code for making an equivalent value.  */
+  enum rtx_code equiv_code = (unsignedp < 0 ? UNKNOWN
+			      : (unsignedp ? ZERO_EXTEND : SIGN_EXTEND));
 
   if (to_real)
     {
@@ -413,7 +426,7 @@ convert_move (rtx to, rtx from, int unsignedp)
       rtx fill_value;
       rtx lowfrom;
       int i;
-      machine_mode lowpart_mode;
+      scalar_mode lowpart_mode;
       int nwords = CEIL (GET_MODE_SIZE (to_mode), UNITS_PER_WORD);
 
       /* Try converting directly if the insn is supported.  */
