@@ -1,4 +1,34 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (smallest_mode_for_size): Fix formatting.
+	(smallest_int_mode_for_size): New function.
+	* cfgexpand.c (expand_debug_expr): Use smallest_int_mode_for_size
+	instead of smallest_mode_for_size.
+	* combine.c (make_extraction): Likewise.
+	* config/arc/arc.c (arc_expand_movmem): Likewise.
+	* config/arm/arm.c (arm_expand_divmod_libfunc): Likewise.
+	* config/i386/i386.c (ix86_get_mask_mode): Likewise.
+	* config/s390/s390.c (s390_expand_insv): Likewise.
+	* config/sparc/sparc.c (assign_int_registers): Likewise.
+	* config/spu/spu.c (spu_function_value): Likewise.
+	(spu_function_arg): Likewise.
+	* coverage.c (get_gcov_type): Likewise.
+	(get_gcov_unsigned_t): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* expmed.c (store_bit_field_1): Likewise.
+	* expr.c (convert_move): Likewise.
+	(store_field): Likewise.
+	* internal-fn.c (expand_arith_overflow): Likewise.
+	* optabs-query.c (get_best_extraction_insn): Likewise.
+	* optabs.c (expand_twoval_binop_libfunc): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	(initialize_sizetypes): Likewise.
+	* targhooks.c (default_get_mask_mode): Likewise.
+	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
             Alan Hayward  <alan.hayward@arm.com>
             David Sherwood  <david.sherwood@arm.com>
 

@@ -346,8 +346,8 @@ convert_move (rtx to, rtx from, int unsignedp)
      xImode for all MODE_PARTIAL_INT modes they use, but no others.  */
   if (GET_MODE_CLASS (to_mode) == MODE_PARTIAL_INT)
     {
-      machine_mode full_mode
-	= smallest_mode_for_size (GET_MODE_BITSIZE (to_mode), MODE_INT);
+      scalar_int_mode full_mode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (to_mode));
 
       gcc_assert (convert_optab_handler (trunc_optab, to_mode, full_mode)
 		  != CODE_FOR_nothing);
@@ -361,8 +361,8 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_MODE_CLASS (from_mode) == MODE_PARTIAL_INT)
     {
       rtx new_from;
-      machine_mode full_mode
-	= smallest_mode_for_size (GET_MODE_BITSIZE (from_mode), MODE_INT);
+      scalar_int_mode full_mode
+	= smallest_int_mode_for_size (GET_MODE_BITSIZE (from_mode));
       convert_optab ctab = unsignedp ? zext_optab : sext_optab;
       enum insn_code icode;
 
@@ -6848,8 +6848,8 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       if (GET_CODE (temp) == PARALLEL)
 	{
 	  HOST_WIDE_INT size = int_size_in_bytes (TREE_TYPE (exp));
-	  machine_mode temp_mode
-	    = smallest_mode_for_size (size * BITS_PER_UNIT, MODE_INT);
+	  scalar_int_mode temp_mode
+	    = smallest_int_mode_for_size (size * BITS_PER_UNIT);
 	  rtx temp_target = gen_reg_rtx (temp_mode);
 	  emit_group_store (temp_target, temp, TREE_TYPE (exp), size);
 	  temp = temp_target;
@@ -6920,7 +6920,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
 	 word size, we need to load the value (see again store_bit_field).  */
       if (GET_MODE (temp) == BLKmode && bitsize <= BITS_PER_WORD)
 	{
-	  machine_mode temp_mode = smallest_mode_for_size (bitsize, MODE_INT);
+	  scalar_int_mode temp_mode = smallest_int_mode_for_size (bitsize);
 	  temp = extract_bit_field (temp, bitsize, 0, 1, NULL_RTX, temp_mode,
 				    temp_mode, false, NULL);
 	}

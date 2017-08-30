@@ -1180,8 +1180,8 @@ machine_mode
 default_get_mask_mode (unsigned nunits, unsigned vector_size)
 {
   unsigned elem_size = vector_size / nunits;
-  machine_mode elem_mode
-    = smallest_mode_for_size (elem_size * BITS_PER_UNIT, MODE_INT);
+  scalar_int_mode elem_mode
+    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
   machine_mode vector_mode;
 
   gcc_assert (elem_size * nunits == vector_size);

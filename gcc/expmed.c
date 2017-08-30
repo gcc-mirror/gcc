@@ -900,7 +900,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	 is not allowed.  */
       fieldmode = GET_MODE (value);
       if (fieldmode == VOIDmode)
-	fieldmode = smallest_mode_for_size (nwords * BITS_PER_WORD, MODE_INT);
+	fieldmode = smallest_int_mode_for_size (nwords * BITS_PER_WORD);
 
       last = get_last_insn ();
       for (i = 0; i < nwords; i++)

@@ -4497,7 +4497,7 @@ expand_debug_expr (tree exp)
 	  {
 	    if (mode1 == VOIDmode)
 	      /* Bitfield.  */
-	      mode1 = smallest_mode_for_size (bitsize, MODE_INT);
+	      mode1 = smallest_int_mode_for_size (bitsize);
 	    if (bitpos >= BITS_PER_UNIT)
 	      {
 		op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);

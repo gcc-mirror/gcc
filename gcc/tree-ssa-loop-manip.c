@@ -1506,7 +1506,6 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   gcond *stmt;
   edge exit = single_dom_exit (loop);
   gimple_seq stmts;
-  machine_mode mode;
   bool unsigned_p = false;
 
   for (psi = gsi_start_phis (loop->header);
@@ -1533,7 +1532,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
       precision = TYPE_PRECISION (type);
     }
 
-  mode = smallest_mode_for_size (precision, MODE_INT);
+  scalar_int_mode mode = smallest_int_mode_for_size (precision);
   precision = GET_MODE_PRECISION (mode);
   type = build_nonstandard_integer_type (precision, unsigned_p);
 

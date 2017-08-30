@@ -7972,7 +7972,7 @@ arc_expand_movmem (rtx *operands)
 
       while (piece > size)
 	piece >>= 1;
-      mode = smallest_mode_for_size (piece * BITS_PER_UNIT, MODE_INT);
+      mode = smallest_int_mode_for_size (piece * BITS_PER_UNIT);
       /* If we don't re-use temporaries, the scheduler gets carried away,
 	 and the register pressure gets unnecessarily high.  */
       if (0 && tmpx[i] && GET_MODE (tmpx[i]) == mode)

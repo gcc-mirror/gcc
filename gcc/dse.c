@@ -1573,7 +1573,7 @@ find_shift_sequence (int access_size,
 		     int shift, bool speed, bool require_cst)
 {
   machine_mode store_mode = GET_MODE (store_info->mem);
-  machine_mode new_mode;
+  scalar_int_mode new_mode;
   rtx read_reg = NULL;
 
   /* Some machines like the x86 have shift insns for each size of
@@ -1583,14 +1583,15 @@ find_shift_sequence (int access_size,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  FOR_EACH_MODE_FROM (new_mode,
-		      smallest_mode_for_size (access_size * BITS_PER_UNIT,
-					      MODE_INT))
+  opt_scalar_int_mode new_mode_iter;
+  FOR_EACH_MODE_FROM (new_mode_iter,
+		      smallest_int_mode_for_size (access_size * BITS_PER_UNIT))
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
       int cost;
 
+      new_mode = new_mode_iter.require ();
       if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
 	break;
 
