@@ -671,8 +671,11 @@ int
 lra_constraint_offset (int regno, machine_mode mode)
 {
   lra_assert (regno < FIRST_PSEUDO_REGISTER);
-  if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && SCALAR_INT_MODE_P (mode))
+
+  scalar_int_mode int_mode;
+  if (WORDS_BIG_ENDIAN
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > UNITS_PER_WORD)
     return hard_regno_nregs[regno][mode] - 1;
   return 0;
 }

@@ -64,11 +64,12 @@ gen_lowpart_general (machine_mode mode, rtx x)
       gcc_assert (MEM_P (x));
 
       /* The following exposes the use of "x" to CSE.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
-	  && SCALAR_INT_MODE_P (GET_MODE (x))
-	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
+      scalar_int_mode xmode;
+      if (is_a <scalar_int_mode> (GET_MODE (x), &xmode)
+	  && GET_MODE_SIZE (xmode) <= UNITS_PER_WORD
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, xmode)
 	  && !reload_completed)
-	return gen_lowpart_general (mode, force_reg (GET_MODE (x), x));
+	return gen_lowpart_general (mode, force_reg (xmode, x));
 
       if (WORDS_BIG_ENDIAN)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)

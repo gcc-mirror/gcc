@@ -4139,6 +4139,7 @@ expand_debug_expr (tree exp)
   machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
+  scalar_int_mode op1_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -4188,16 +4189,10 @@ expand_debug_expr (tree exp)
 	case WIDEN_LSHIFT_EXPR:
 	  /* Ensure second operand isn't wider than the first one.  */
 	  inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1)));
-	  if (SCALAR_INT_MODE_P (inner_mode))
-	    {
-	      machine_mode opmode = mode;
-	      if (VECTOR_MODE_P (mode))
-		opmode = GET_MODE_INNER (mode);
-	      if (SCALAR_INT_MODE_P (opmode)
-		  && (GET_MODE_PRECISION (opmode)
-		      < GET_MODE_PRECISION (inner_mode)))
-		op1 = lowpart_subreg (opmode, op1, inner_mode);
-	    }
+	  if (is_a <scalar_int_mode> (inner_mode, &op1_mode)
+	      && (GET_MODE_UNIT_PRECISION (mode)
+		  < GET_MODE_PRECISION (op1_mode)))
+	    op1 = lowpart_subreg (GET_MODE_INNER (mode), op1, op1_mode);
 	  break;
 	default:
 	  break;

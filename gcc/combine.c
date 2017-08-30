@@ -1706,6 +1706,7 @@ static void
 set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 {
   rtx_insn *insn = (rtx_insn *) data;
+  scalar_int_mode mode;
 
   if (REG_P (x)
       && REGNO (x) >= FIRST_PSEUDO_REGISTER
@@ -1713,13 +1714,14 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	 say what its contents were.  */
       && ! REGNO_REG_SET_P
 	   (DF_LR_IN (ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb), REGNO (x))
-      && HWI_COMPUTABLE_MODE_P (GET_MODE (x)))
+      && is_a <scalar_int_mode> (GET_MODE (x), &mode)
+      && HWI_COMPUTABLE_MODE_P (mode))
     {
       reg_stat_type *rsp = &reg_stat[REGNO (x)];
 
       if (set == 0 || GET_CODE (set) == CLOBBER)
 	{
-	  rsp->nonzero_bits = GET_MODE_MASK (GET_MODE (x));
+	  rsp->nonzero_bits = GET_MODE_MASK (mode);
 	  rsp->sign_bit_copies = 1;
 	  return;
 	}
@@ -1749,7 +1751,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	      break;
 	  if (!link)
 	    {
-	      rsp->nonzero_bits = GET_MODE_MASK (GET_MODE (x));
+	      rsp->nonzero_bits = GET_MODE_MASK (mode);
 	      rsp->sign_bit_copies = 1;
 	      return;
 	    }
@@ -1768,7 +1770,7 @@ set_nonzero_bits_and_sign_copies (rtx x, const_rtx set, void *data)
 	update_rsp_from_reg_equal (rsp, insn, set, x);
       else
 	{
-	  rsp->nonzero_bits = GET_MODE_MASK (GET_MODE (x));
+	  rsp->nonzero_bits = GET_MODE_MASK (mode);
 	  rsp->sign_bit_copies = 1;
 	}
     }
@@ -4926,37 +4928,38 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
       /* See if this is a bitfield assignment with everything constant.  If
 	 so, this is an IOR of an AND, so split it into that.  */
       if (GET_CODE (SET_DEST (x)) == ZERO_EXTRACT
-	  && HWI_COMPUTABLE_MODE_P (GET_MODE (XEXP (SET_DEST (x), 0)))
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (SET_DEST (x), 0)),
+				     &inner_mode)
+	  && HWI_COMPUTABLE_MODE_P (inner_mode)
 	  && CONST_INT_P (XEXP (SET_DEST (x), 1))
 	  && CONST_INT_P (XEXP (SET_DEST (x), 2))
 	  && CONST_INT_P (SET_SRC (x))
 	  && ((INTVAL (XEXP (SET_DEST (x), 1))
 	       + INTVAL (XEXP (SET_DEST (x), 2)))
-	      <= GET_MODE_PRECISION (GET_MODE (XEXP (SET_DEST (x), 0))))
+	      <= GET_MODE_PRECISION (inner_mode))
 	  && ! side_effects_p (XEXP (SET_DEST (x), 0)))
 	{
 	  HOST_WIDE_INT pos = INTVAL (XEXP (SET_DEST (x), 2));
 	  unsigned HOST_WIDE_INT len = INTVAL (XEXP (SET_DEST (x), 1));
 	  unsigned HOST_WIDE_INT src = INTVAL (SET_SRC (x));
 	  rtx dest = XEXP (SET_DEST (x), 0);
-	  machine_mode mode = GET_MODE (dest);
 	  unsigned HOST_WIDE_INT mask
 	    = (HOST_WIDE_INT_1U << len) - 1;
 	  rtx or_mask;
 
 	  if (BITS_BIG_ENDIAN)
-	    pos = GET_MODE_PRECISION (mode) - len - pos;
+	    pos = GET_MODE_PRECISION (inner_mode) - len - pos;
 
-	  or_mask = gen_int_mode (src << pos, mode);
+	  or_mask = gen_int_mode (src << pos, inner_mode);
 	  if (src == mask)
 	    SUBST (SET_SRC (x),
-		   simplify_gen_binary (IOR, mode, dest, or_mask));
+		   simplify_gen_binary (IOR, inner_mode, dest, or_mask));
 	  else
 	    {
-	      rtx negmask = gen_int_mode (~(mask << pos), mode);
+	      rtx negmask = gen_int_mode (~(mask << pos), inner_mode);
 	      SUBST (SET_SRC (x),
-		     simplify_gen_binary (IOR, mode,
-					  simplify_gen_binary (AND, mode,
+		     simplify_gen_binary (IOR, inner_mode,
+					  simplify_gen_binary (AND, inner_mode,
 							       dest, negmask),
 					  or_mask));
 	    }
@@ -5796,15 +5799,18 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	  return temp;
 
 	/* If op is known to have all lower bits zero, the result is zero.  */
+	scalar_int_mode int_mode, int_op0_mode;
 	if (!in_dest
-	    && SCALAR_INT_MODE_P (mode)
-	    && SCALAR_INT_MODE_P (op0_mode)
-	    && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (op0_mode)
-	    && subreg_lowpart_offset (mode, op0_mode) == SUBREG_BYTE (x)
-	    && HWI_COMPUTABLE_MODE_P (op0_mode)
-	    && (nonzero_bits (SUBREG_REG (x), op0_mode)
-		& GET_MODE_MASK (mode)) == 0)
-	  return CONST0_RTX (mode);
+	    && is_a <scalar_int_mode> (mode, &int_mode)
+	    && is_a <scalar_int_mode> (op0_mode, &int_op0_mode)
+	    && (GET_MODE_PRECISION (int_mode)
+		< GET_MODE_PRECISION (int_op0_mode))
+	    && (subreg_lowpart_offset (int_mode, int_op0_mode)
+		== SUBREG_BYTE (x))
+	    && HWI_COMPUTABLE_MODE_P (int_op0_mode)
+	    && (nonzero_bits (SUBREG_REG (x), int_op0_mode)
+		& GET_MODE_MASK (int_mode)) == 0)
+	  return CONST0_RTX (int_mode);
       }
 
       /* Don't change the mode of the MEM if that would change the meaning
@@ -5912,12 +5918,13 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 	 sign_extract.  The `and' may be a zero_extend and the two
 	 <c>, -<c> constants may be reversed.  */
       if (GET_CODE (XEXP (x, 0)) == XOR
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && CONST_INT_P (XEXP (x, 1))
 	  && CONST_INT_P (XEXP (XEXP (x, 0), 1))
 	  && INTVAL (XEXP (x, 1)) == -INTVAL (XEXP (XEXP (x, 0), 1))
 	  && ((i = exact_log2 (UINTVAL (XEXP (XEXP (x, 0), 1)))) >= 0
 	      || (i = exact_log2 (UINTVAL (XEXP (x, 1)))) >= 0)
-	  && HWI_COMPUTABLE_MODE_P (mode)
+	  && HWI_COMPUTABLE_MODE_P (int_mode)
 	  && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == AND
 	       && CONST_INT_P (XEXP (XEXP (XEXP (x, 0), 0), 1))
 	       && (UINTVAL (XEXP (XEXP (XEXP (x, 0), 0), 1))
@@ -5926,11 +5933,11 @@ combine_simplify_rtx (rtx x, machine_mode op0_mode, int in_dest,
 		  && (GET_MODE_PRECISION (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)))
 		      == (unsigned int) i + 1))))
 	return simplify_shift_const
-	  (NULL_RTX, ASHIFTRT, mode,
-	   simplify_shift_const (NULL_RTX, ASHIFT, mode,
+	  (NULL_RTX, ASHIFTRT, int_mode,
+	   simplify_shift_const (NULL_RTX, ASHIFT, int_mode,
 				 XEXP (XEXP (XEXP (x, 0), 0), 0),
-				 GET_MODE_PRECISION (mode) - (i + 1)),
-	   GET_MODE_PRECISION (mode) - (i + 1));
+				 GET_MODE_PRECISION (int_mode) - (i + 1)),
+	   GET_MODE_PRECISION (int_mode) - (i + 1));
 
       /* If only the low-order bit of X is possibly nonzero, (plus x -1)
 	 can become (ashiftrt (ashift (xor x 1) C) C) where C is
@@ -6946,9 +6953,9 @@ simplify_set (rtx x)
 static rtx
 simplify_logical (rtx x)
 {
-  machine_mode mode = GET_MODE (x);
   rtx op0 = XEXP (x, 0);
   rtx op1 = XEXP (x, 1);
+  scalar_int_mode mode;
 
   switch (GET_CODE (x))
     {
@@ -6956,7 +6963,8 @@ simplify_logical (rtx x)
       /* We can call simplify_and_const_int only if we don't lose
 	 any (sign) bits when converting INTVAL (op1) to
 	 "unsigned HOST_WIDE_INT".  */
-      if (CONST_INT_P (op1)
+      if (is_a <scalar_int_mode> (GET_MODE (x), &mode)
+	  && CONST_INT_P (op1)
 	  && (HWI_COMPUTABLE_MODE_P (mode)
 	      || INTVAL (op1) > 0))
 	{
@@ -7031,6 +7039,7 @@ expand_compound_operation (rtx x)
   int unsignedp = 0;
   unsigned int modewidth;
   rtx tem;
+  scalar_int_mode inner_mode;
 
   switch (GET_CODE (x))
     {
@@ -7049,25 +7058,24 @@ expand_compound_operation (rtx x)
       if (CONST_INT_P (XEXP (x, 0)))
 	return x;
 
+      /* Reject modes that aren't scalar integers because turning vector
+	 or complex modes into shifts causes problems.  */
+      if (!is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &inner_mode))
+	return x;
+
       /* Return if (subreg:MODE FROM 0) is not a safe replacement for
 	 (zero_extend:MODE FROM) or (sign_extend:MODE FROM).  It is for any MEM
 	 because (SUBREG (MEM...)) is guaranteed to cause the MEM to be
 	 reloaded. If not for that, MEM's would very rarely be safe.
 
-	 Reject MODEs bigger than a word, because we might not be able
+	 Reject modes bigger than a word, because we might not be able
 	 to reference a two-register group starting with an arbitrary register
 	 (and currently gen_lowpart might crash for a SUBREG).  */
 
-      if (GET_MODE_SIZE (GET_MODE (XEXP (x, 0))) > UNITS_PER_WORD)
+      if (GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
 	return x;
 
-      /* Reject MODEs that aren't scalar integers because turning vector
-	 or complex modes into shifts causes problems.  */
-
-      if (! SCALAR_INT_MODE_P (GET_MODE (XEXP (x, 0))))
-	return x;
-
-      len = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)));
+      len = GET_MODE_PRECISION (inner_mode);
       /* If the inner object has VOIDmode (the only way this can happen
 	 is if it is an ASM_OPERANDS), we can't do anything since we don't
 	 know how much masking to do.  */
@@ -7087,25 +7095,23 @@ expand_compound_operation (rtx x)
 	return XEXP (x, 0);
 
       if (!CONST_INT_P (XEXP (x, 1))
-	  || !CONST_INT_P (XEXP (x, 2))
-	  || GET_MODE (XEXP (x, 0)) == VOIDmode)
+	  || !CONST_INT_P (XEXP (x, 2)))
 	return x;
 
-      /* Reject MODEs that aren't scalar integers because turning vector
+      /* Reject modes that aren't scalar integers because turning vector
 	 or complex modes into shifts causes problems.  */
-
-      if (! SCALAR_INT_MODE_P (GET_MODE (XEXP (x, 0))))
+      if (!is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &inner_mode))
 	return x;
 
       len = INTVAL (XEXP (x, 1));
       pos = INTVAL (XEXP (x, 2));
 
       /* This should stay within the object being extracted, fail otherwise.  */
-      if (len + pos > GET_MODE_PRECISION (GET_MODE (XEXP (x, 0))))
+      if (len + pos > GET_MODE_PRECISION (inner_mode))
 	return x;
 
       if (BITS_BIG_ENDIAN)
-	pos = GET_MODE_PRECISION (GET_MODE (XEXP (x, 0))) - len - pos;
+	pos = GET_MODE_PRECISION (inner_mode) - len - pos;
 
       break;
 
@@ -7116,12 +7122,10 @@ expand_compound_operation (rtx x)
      bit is not set, as this is easier to optimize.  It will be converted
      back to cheaper alternative in make_extraction.  */
   if (GET_CODE (x) == SIGN_EXTEND
-      && (HWI_COMPUTABLE_MODE_P (GET_MODE (x))
-	  && ((nonzero_bits (XEXP (x, 0), GET_MODE (XEXP (x, 0)))
-		& ~(((unsigned HOST_WIDE_INT)
-		      GET_MODE_MASK (GET_MODE (XEXP (x, 0))))
-		     >> 1))
-	       == 0)))
+      && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
+      && ((nonzero_bits (XEXP (x, 0), inner_mode)
+	   & ~(((unsigned HOST_WIDE_INT) GET_MODE_MASK (inner_mode)) >> 1))
+	  == 0))
     {
       machine_mode mode = GET_MODE (x);
       rtx temp = gen_rtx_ZERO_EXTEND (mode, XEXP (x, 0));
@@ -7148,7 +7152,7 @@ expand_compound_operation (rtx x)
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
 	  && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
 	  && (nonzero_bits (XEXP (XEXP (x, 0), 0), GET_MODE (x))
-	      & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	      & ~GET_MODE_MASK (inner_mode)) == 0)
 	return XEXP (XEXP (x, 0), 0);
 
       /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
@@ -7157,7 +7161,7 @@ expand_compound_operation (rtx x)
 	  && subreg_lowpart_p (XEXP (x, 0))
 	  && HWI_COMPUTABLE_MODE_P (GET_MODE (x))
 	  && (nonzero_bits (SUBREG_REG (XEXP (x, 0)), GET_MODE (x))
-	      & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	      & ~GET_MODE_MASK (inner_mode)) == 0)
 	return SUBREG_REG (XEXP (x, 0));
 
       /* (zero_extend:DI (truncate:SI foo:DI)) is just foo:DI when foo
@@ -7167,9 +7171,8 @@ expand_compound_operation (rtx x)
       if (GET_CODE (XEXP (x, 0)) == TRUNCATE
 	  && GET_MODE (XEXP (XEXP (x, 0), 0)) == GET_MODE (x)
 	  && COMPARISON_P (XEXP (XEXP (x, 0), 0))
-	  && (GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
-	      <= HOST_BITS_PER_WIDE_INT)
-	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	  && GET_MODE_PRECISION (inner_mode) <= HOST_BITS_PER_WIDE_INT
+	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (inner_mode)) == 0)
 	return XEXP (XEXP (x, 0), 0);
 
       /* Likewise for (zero_extend:DI (subreg:SI foo:DI 0)).  */
@@ -7177,9 +7180,8 @@ expand_compound_operation (rtx x)
 	  && GET_MODE (SUBREG_REG (XEXP (x, 0))) == GET_MODE (x)
 	  && subreg_lowpart_p (XEXP (x, 0))
 	  && COMPARISON_P (SUBREG_REG (XEXP (x, 0)))
-	  && (GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
-	      <= HOST_BITS_PER_WIDE_INT)
-	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (GET_MODE (XEXP (x, 0)))) == 0)
+	  && GET_MODE_PRECISION (inner_mode) <= HOST_BITS_PER_WIDE_INT
+	  && (STORE_FLAG_VALUE & ~GET_MODE_MASK (inner_mode)) == 0)
 	return SUBREG_REG (XEXP (x, 0));
 
     }
@@ -7244,7 +7246,7 @@ expand_field_assignment (const_rtx x)
   rtx pos;			/* Always counts from low bit.  */
   int len;
   rtx mask, cleared, masked;
-  machine_mode compute_mode;
+  scalar_int_mode compute_mode;
 
   /* Loop until we find something we can't simplify.  */
   while (1)
@@ -7312,17 +7314,15 @@ expand_field_assignment (const_rtx x)
       while (GET_CODE (inner) == SUBREG && subreg_lowpart_p (inner))
 	inner = SUBREG_REG (inner);
 
-      compute_mode = GET_MODE (inner);
-
       /* Don't attempt bitwise arithmetic on non scalar integer modes.  */
-      if (! SCALAR_INT_MODE_P (compute_mode))
+      if (!is_a <scalar_int_mode> (GET_MODE (inner), &compute_mode))
 	{
 	  /* Don't do anything for vector or complex integral types.  */
-	  if (! FLOAT_MODE_P (compute_mode))
+	  if (! FLOAT_MODE_P (GET_MODE (inner)))
 	    break;
 
 	  /* Try to find an integral mode to pun with.  */
-	  if (!int_mode_for_size (GET_MODE_BITSIZE (compute_mode), 0)
+	  if (!int_mode_for_size (GET_MODE_BITSIZE (GET_MODE (inner)), 0)
 	      .exists (&compute_mode))
 	    break;
 
@@ -8252,10 +8252,11 @@ make_compound_operation (rtx x, enum rtx_code in_code)
 		  && XEXP (x, 1) == const0_rtx) ? COMPARE
 	       : in_code == COMPARE || in_code == EQ ? SET : in_code);
 
-  if (SCALAR_INT_MODE_P (GET_MODE (x)))
+  scalar_int_mode mode;
+  if (is_a <scalar_int_mode> (GET_MODE (x), &mode))
     {
-      rtx new_rtx = make_compound_operation_int (GET_MODE (x), &x,
-						 in_code, &next_code);
+      rtx new_rtx = make_compound_operation_int (mode, &x, in_code,
+						 &next_code);
       if (new_rtx)
 	return new_rtx;
       code = GET_CODE (x);
@@ -10095,10 +10096,12 @@ extended_count (const_rtx x, machine_mode mode, int unsignedp)
   if (nonzero_sign_valid == 0)
     return 0;
 
+  scalar_int_mode int_mode;
   return (unsignedp
-	  ? (HWI_COMPUTABLE_MODE_P (mode)
-	     ? (unsigned int) (GET_MODE_PRECISION (mode) - 1
-			       - floor_log2 (nonzero_bits (x, mode)))
+	  ? (is_a <scalar_int_mode> (mode, &int_mode)
+	     && HWI_COMPUTABLE_MODE_P (int_mode)
+	     ? (unsigned int) (GET_MODE_PRECISION (int_mode) - 1
+			       - floor_log2 (nonzero_bits (x, int_mode)))
 	     : 0)
 	  : num_sign_bit_copies (x, mode) - 1);
 }
@@ -11268,7 +11271,9 @@ change_zero_ext (rtx pat)
   FOR_EACH_SUBRTX_PTR (iter, array, src, NONCONST)
     {
       rtx x = **iter;
-      machine_mode mode = GET_MODE (x);
+      scalar_int_mode mode;
+      if (!is_a <scalar_int_mode> (GET_MODE (x), &mode))
+	continue;
       int size;
 
       if (GET_CODE (x) == ZERO_EXTRACT
@@ -11294,7 +11299,6 @@ change_zero_ext (rtx pat)
 	    x = gen_lowpart_SUBREG (mode, x);
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
-	       && SCALAR_INT_MODE_P (mode)
 	       && GET_CODE (XEXP (x, 0)) == SUBREG
 	       && SCALAR_INT_MODE_P (GET_MODE (SUBREG_REG (XEXP (x, 0))))
 	       && !paradoxical_subreg_p (XEXP (x, 0))
@@ -11306,7 +11310,6 @@ change_zero_ext (rtx pat)
 	    x = gen_lowpart_SUBREG (mode, x);
 	}
       else if (GET_CODE (x) == ZERO_EXTEND
-	       && SCALAR_INT_MODE_P (mode)
 	       && REG_P (XEXP (x, 0))
 	       && HARD_REGISTER_P (XEXP (x, 0))
 	       && can_change_dest_mode (XEXP (x, 0), 0, mode))
@@ -12391,11 +12394,11 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	  if (GET_CODE (XEXP (op0, 0)) == SUBREG
 	      && CONST_INT_P (XEXP (op0, 1)))
 	    {
-	      tmode = GET_MODE (SUBREG_REG (XEXP (op0, 0)));
 	      unsigned HOST_WIDE_INT c1 = INTVAL (XEXP (op0, 1));
 	      /* Require an integral mode, to avoid creating something like
 		 (AND:SF ...).  */
-	      if (SCALAR_INT_MODE_P (tmode)
+	      if ((is_a <scalar_int_mode>
+		   (GET_MODE (SUBREG_REG (XEXP (op0, 0))), &tmode))
 		  /* It is unsafe to commute the AND into the SUBREG if the
 		     SUBREG is paradoxical and WORD_REGISTER_OPERATIONS is
 		     not defined.  As originally written the upper bits

@@ -8801,9 +8801,10 @@ check_ok_for_atomic_type (tree type, Entity_Id gnat_entity, bool component_p)
 
   /* Consider all aligned floating-point types atomic and any aligned types
      that are represented by integers no wider than a machine word.  */
+  scalar_int_mode int_mode;
   if ((mclass == MODE_FLOAT
-       || ((mclass == MODE_INT || mclass == MODE_PARTIAL_INT)
-	   && GET_MODE_BITSIZE (mode) <= BITS_PER_WORD))
+       || (is_a <scalar_int_mode> (mode, &int_mode)
+	   && GET_MODE_BITSIZE (int_mode) <= BITS_PER_WORD))
       && align >= GET_MODE_ALIGNMENT (mode))
     return;
 
