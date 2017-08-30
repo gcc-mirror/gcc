@@ -1,3 +1,7 @@
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/vrp104.c: Change dump file name.
+
 2017-08-30  Richard Biener  <rguenther@suse.de>
 
 	* g++.dg/pr78112-2.C: Do not expect duplicate DW_AT_object_pointer.
