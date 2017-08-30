@@ -1888,7 +1888,6 @@ static void
 finish_bitfield_representative (tree repr, tree field)
 {
   unsigned HOST_WIDE_INT bitsize, maxbitsize;
-  machine_mode mode;
   tree nextf, size;
 
   size = size_diffop (DECL_FIELD_OFFSET (field),
@@ -1953,15 +1952,15 @@ finish_bitfield_representative (tree repr, tree field)
   gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
 
   /* Find the smallest nice mode to use.  */
-  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
-    if (GET_MODE_BITSIZE (mode) >= bitsize)
+  opt_scalar_int_mode mode_iter;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+    if (GET_MODE_BITSIZE (mode_iter.require ()) >= bitsize)
       break;
-  if (mode != VOIDmode
-      && (GET_MODE_BITSIZE (mode) > maxbitsize
-	  || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE))
-    mode = VOIDmode;
 
-  if (mode == VOIDmode)
+  scalar_int_mode mode;
+  if (!mode_iter.exists (&mode)
+      || GET_MODE_BITSIZE (mode) > maxbitsize
+      || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE)
     {
       /* We really want a BLKmode representative only as a last resort,
          considering the member b in

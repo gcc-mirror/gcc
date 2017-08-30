@@ -2,6 +2,25 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cse.c (cse_insn): Use opt_scalar_int_mode for the mode iterator.
+	* explow.c (hard_function_value): Likewise.
+	* expmed.c (extract_fixed_bit_field_1): Likewise.  Move the
+	convert_to_mode call outside the loop.
+	* expr.c (alignment_for_piecewise_move): Use opt_scalar_int_mode
+	for the mode iterator.  Require the mode specified by max_pieces
+	to exist.
+	(emit_block_move_via_movmem): Use opt_scalar_int_mode for the
+	mode iterator.
+	(copy_blkmode_to_reg): Likewise.
+	(set_storage_via_setmem): Likewise.
+	* optabs.c (prepare_cmp_insn): Likewise.
+	* rtlanal.c (init_num_sign_bit_copies_in_rep): Likewise.
+	* stor-layout.c (finish_bitfield_representative): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (subreg_unpromoted_mode, subreg_promoted_mode): New functions.
 	* expr.c (convert_move): Use them.
 	(convert_modes): Likewise.

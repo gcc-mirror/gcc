@@ -363,15 +363,16 @@ gfc_init_c_interop_kinds (void)
 void
 gfc_init_kinds (void)
 {
-  machine_mode mode;
+  opt_scalar_int_mode int_mode_iter;
   opt_scalar_float_mode float_mode_iter;
   int i_index, r_index, kind;
   bool saw_i4 = false, saw_i8 = false;
   bool saw_r4 = false, saw_r8 = false, saw_r10 = false, saw_r16 = false;
 
-  for (i_index = 0, mode = MIN_MODE_INT; mode <= MAX_MODE_INT;
-       mode = (machine_mode) ((int) mode + 1))
+  i_index = 0;
+  FOR_EACH_MODE_IN_CLASS (int_mode_iter, MODE_INT)
     {
+      scalar_int_mode mode = int_mode_iter.require ();
       int kind, bitsize;
 
       if (!targetm.scalar_mode_supported_p (mode))
