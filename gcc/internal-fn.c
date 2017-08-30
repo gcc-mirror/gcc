@@ -1460,14 +1460,14 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
       struct separate_ops ops;
       int prec = GET_MODE_PRECISION (mode);
       machine_mode hmode = mode_for_size (prec / 2, MODE_INT, 1);
+      machine_mode wmode;
       ops.op0 = make_tree (type, op0);
       ops.op1 = make_tree (type, op1);
       ops.op2 = NULL_TREE;
       ops.location = loc;
-      if (GET_MODE_2XWIDER_MODE (mode) != VOIDmode
-	  && targetm.scalar_mode_supported_p (GET_MODE_2XWIDER_MODE (mode)))
+      if (GET_MODE_2XWIDER_MODE (mode).exists (&wmode)
+	  && targetm.scalar_mode_supported_p (wmode))
 	{
-	  machine_mode wmode = GET_MODE_2XWIDER_MODE (mode);
 	  ops.code = WIDEN_MULT_EXPR;
 	  ops.type
 	    = build_nonstandard_integer_type (GET_MODE_PRECISION (wmode), uns);

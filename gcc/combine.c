@@ -7604,10 +7604,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
       wanted_inner_mode = smallest_mode_for_size (len, MODE_INT);
       while (pos % GET_MODE_BITSIZE (wanted_inner_mode) + len
 	     > GET_MODE_BITSIZE (wanted_inner_mode))
-	{
-	  wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode);
-	  gcc_assert (wanted_inner_mode != VOIDmode);
-	}
+	wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode).require ();
     }
 
   orig_pos = pos;

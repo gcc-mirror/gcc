@@ -6066,7 +6066,7 @@ c6x_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *total,
       /* Recognize a mult_highpart operation.  */
       if ((mode == HImode || mode == SImode)
 	  && GET_CODE (XEXP (x, 0)) == LSHIFTRT
-	  && GET_MODE (XEXP (x, 0)) == GET_MODE_2XWIDER_MODE (mode)
+	  && GET_MODE (XEXP (x, 0)) == GET_MODE_2XWIDER_MODE (mode).require ()
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode))

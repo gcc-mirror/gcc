@@ -10120,7 +10120,7 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
   else
     {
       mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-      do
+      for (;;)
 	{
 	  /* If we cannot do a signed conversion to float from mode
 	     or if the value-range does not fit in the signed type
@@ -10129,15 +10129,12 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 	      && range_fits_type_p (vr, GET_MODE_PRECISION (mode), SIGNED))
 	    break;
 
-	  mode = GET_MODE_WIDER_MODE (mode);
 	  /* But do not widen the input.  Instead leave that to the
 	     optabs expansion code.  */
-	  if (GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
+	  if (!GET_MODE_WIDER_MODE (mode).exists (&mode)
+	      || GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
 	    return false;
 	}
-      while (mode != VOIDmode);
-      if (mode == VOIDmode)
-	return false;
     }
 
   /* It works, insert a truncation or sign-change before the

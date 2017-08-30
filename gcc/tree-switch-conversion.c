@@ -1088,8 +1088,7 @@ array_value_type (gswitch *swtch, tree type, int num,
 	  if (sign == 1)
 	    sign = 0;
 
-	  mode = GET_MODE_WIDER_MODE (mode);
-	  if (mode == VOIDmode
+	  if (!GET_MODE_WIDER_MODE (mode).exists (&mode)
 	      || GET_MODE_SIZE (mode) >= GET_MODE_SIZE (type_mode))
 	    return type;
 	}

@@ -207,11 +207,10 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
       for (mode_from = MIN_MODE_INT; mode_from <= MAX_MODE_INT;
 	   mode_from = (machine_mode)(mode_from + 1))
 	init_expmed_one_conv (all, mode, mode_from, speed);
-    }
-  if (GET_MODE_CLASS (mode) == MODE_INT)
-    {
-      machine_mode  wider_mode = GET_MODE_WIDER_MODE (mode);
-      if (wider_mode != VOIDmode)
+
+      machine_mode wider_mode;
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_MODE_WIDER_MODE (mode).exists (&wider_mode))
 	{
 	  PUT_MODE (all->zext, wider_mode);
 	  PUT_MODE (all->wide_mult, wider_mode);
@@ -3641,7 +3640,7 @@ extract_high_half (machine_mode mode, rtx op)
 
   gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
 
-  wider_mode = GET_MODE_WIDER_MODE (mode);
+  wider_mode = GET_MODE_WIDER_MODE (mode).require ();
   op = expand_shift (RSHIFT_EXPR, wider_mode, op,
 		     GET_MODE_BITSIZE (mode), 0, 1);
   return convert_modes (mode, wider_mode, op, 0);
@@ -3663,7 +3662,7 @@ expmed_mult_highpart_optab (machine_mode mode, rtx op0, rtx op1,
 
   gcc_assert (!SCALAR_FLOAT_MODE_P (mode));
 
-  wider_mode = GET_MODE_WIDER_MODE (mode);
+  wider_mode = GET_MODE_WIDER_MODE (mode).require ();
   size = GET_MODE_BITSIZE (mode);
 
   /* Firstly, try using a multiplication insn that only generates the needed
@@ -3769,7 +3768,7 @@ static rtx
 expmed_mult_highpart (machine_mode mode, rtx op0, rtx op1,
 		      rtx target, int unsignedp, int max_cost)
 {
-  machine_mode wider_mode = GET_MODE_WIDER_MODE (mode);
+  machine_mode wider_mode = GET_MODE_WIDER_MODE (mode).require ();
   unsigned HOST_WIDE_INT cnst1;
   int extra_cost;
   bool sign_adjust = false;

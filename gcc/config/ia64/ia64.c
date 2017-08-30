@@ -11298,7 +11298,8 @@ expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   machine_mode v2mode;
   rtx x;
 
-  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  if (!GET_MODE_2XWIDER_MODE (GET_MODE (op0)).exists (&v2mode))
+    return false;
   x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
   return expand_vselect (target, x, perm, nelt);
 }

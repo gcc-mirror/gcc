@@ -2,6 +2,66 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (opt_mode): New class.
+	* machmode.h (opt_mode): Likewise.
+	(opt_mode::else_void): New function.
+	(opt_mode::require): Likewise.
+	(opt_mode::exists): Likewise.
+	(GET_MODE_WIDER_MODE): Turn into a function and return an opt_mode.
+	(GET_MODE_2XWIDER_MODE): Likewise.
+	(mode_iterator::get_wider): Update accordingly.
+	(mode_iterator::get_2xwider): Likewise.
+	(mode_iterator::get_known_wider): Likewise, turning into a template.
+	* combine.c (make_extraction): Update use of GET_MODE_WIDER_MODE,
+	forcing a wider mode to exist.
+	* config/cr16/cr16.h (LONG_REG_P): Likewise.
+	* rtlanal.c (init_num_sign_bit_copies_in_rep): Likewise.
+	* config/c6x/c6x.c (c6x_rtx_costs): Update use of
+	GET_MODE_2XWIDER_MODE, forcing a wider mode to exist.
+	* lower-subreg.c (init_lower_subreg): Likewise.
+	* optabs-libfuncs.c (init_sync_libfuncs_1): Likewise, but not
+	on the final iteration.
+	* config/i386/i386.c (ix86_expand_set_or_movmem): Check whether
+	a wider mode exists before asking for a move pattern.
+	(get_mode_wider_vector): Update use of GET_MODE_WIDER_MODE,
+	forcing a wider mode to exist.
+	(expand_vselect_vconcat): Update use of GET_MODE_2XWIDER_MODE,
+	returning false if no such mode exists.
+	* config/ia64/ia64.c (expand_vselect_vconcat): Likewise.
+	* config/mips/mips.c (mips_expand_vselect_vconcat): Likewise.
+	* expmed.c (init_expmed_one_mode): Update use of GET_MODE_WIDER_MODE.
+	Avoid checking for a MODE_INT if we already know the mode is not a
+	SCALAR_INT_MODE_P.
+	(extract_high_half): Update use of GET_MODE_WIDER_MODE,
+	forcing a wider mode to exist.
+	(expmed_mult_highpart_optab): Likewise.
+	(expmed_mult_highpart): Likewise.
+	* expr.c (expand_expr_real_2): Update use of GET_MODE_WIDER_MODE,
+	using else_void.
+	* lto-streamer-in.c (lto_input_mode_table): Likewise.
+	* optabs-query.c (find_widening_optab_handler_and_mode): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::next_mode): Likewise.
+	* internal-fn.c (expand_mul_overflow): Update use of
+	GET_MODE_2XWIDER_MODE.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Update use of
+	GET_MODE_WIDER_MODE.
+	(convert_plusminus_to_widen): Likewise.
+	* tree-switch-conversion.c (array_value_type): Likewise.
+	* var-tracking.c (emit_note_insn_var_location): Likewise.
+	* tree-vrp.c (simplify_float_conversion_using_ranges): Likewise.
+	Return false inside rather than outside the loop if no wider mode
+	exists
+	* optabs.c (expand_binop): Update use of GET_MODE_WIDER_MODE
+	and GET_MODE_2XWIDER_MODE
+	(can_compare_p): Use else_void.
+	* gdbhooks.py (OptMachineModePrinter): New class.
+	(build_pretty_printer): Use it for opt_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-switch-conversion.c (array_value_type): Only read TYPE_MODE
 	once.  Use get_narrowest_mode instead of GET_CLASS_NARROWEST_MODE.
 

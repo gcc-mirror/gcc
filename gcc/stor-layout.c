@@ -2745,7 +2745,8 @@ bit_field_mode_iterator
 bool
 bit_field_mode_iterator::next_mode (machine_mode *out_mode)
 {
-  for (; m_mode != VOIDmode; m_mode = GET_MODE_WIDER_MODE (m_mode))
+  for (; m_mode != VOIDmode;
+       m_mode = GET_MODE_WIDER_MODE (m_mode).else_void ())
     {
       unsigned int unit = GET_MODE_BITSIZE (m_mode);
 
@@ -2782,7 +2783,7 @@ bit_field_mode_iterator::next_mode (machine_mode *out_mode)
 	break;
 
       *out_mode = m_mode;
-      m_mode = GET_MODE_WIDER_MODE (m_mode);
+      m_mode = GET_MODE_WIDER_MODE (m_mode).else_void ();
       m_count++;
       return true;
     }
