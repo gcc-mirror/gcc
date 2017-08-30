@@ -1,3 +1,7 @@
+2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr22.ad[sb]: New test.
+
 2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* gcc.target/powerpc/cr_shrink-wrap.c: New.

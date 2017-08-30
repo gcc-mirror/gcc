@@ -1,3 +1,7 @@
+2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* varasm.c (decode_addr_const): Deal with INDIRECT_REF <INTEGER_CST>.
+
 2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_emit_prologue_move_from_cr): Rename from

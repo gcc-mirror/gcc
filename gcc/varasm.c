@@ -2924,6 +2924,13 @@ decode_addr_const (tree exp, struct addr_const *value)
       x = output_constant_def (target, 1);
       break;
 
+    case INDIRECT_REF:
+      /* This deals with absolute addresses.  */
+      offset += tree_to_shwi (TREE_OPERAND (target, 0));
+      x = gen_rtx_MEM (QImode,
+		       gen_rtx_SYMBOL_REF (Pmode, "origin of addresses"));
+      break;
+
     default:
       gcc_unreachable ();
     }
