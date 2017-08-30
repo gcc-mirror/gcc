@@ -243,7 +243,7 @@ convert_move (rtx to, rtx from, int unsignedp)
   if (GET_CODE (from) == SUBREG
       && SUBREG_PROMOTED_VAR_P (from)
       && is_a <scalar_int_mode> (to_mode, &to_int_mode)
-      && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (from)))
+      && (GET_MODE_PRECISION (subreg_promoted_mode (from))
 	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
     from = gen_lowpart (to_int_mode, from), from_mode = to_int_mode;
@@ -641,7 +641,8 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
   if (GET_CODE (x) == SUBREG
       && SUBREG_PROMOTED_VAR_P (x)
       && is_a <scalar_int_mode> (mode, &int_mode)
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (int_mode)
+      && (GET_MODE_PRECISION (subreg_promoted_mode (x))
+	  >= GET_MODE_PRECISION (int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
     x = gen_lowpart (int_mode, SUBREG_REG (x));
 
@@ -5422,6 +5423,8 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
        expression.  */
     {
       rtx inner_target = 0;
+      scalar_int_mode outer_mode = subreg_unpromoted_mode (target);
+      scalar_int_mode inner_mode = subreg_promoted_mode (target);
 
       /* We can do the conversion inside EXP, which will often result
 	 in some optimizations.  Do the conversion in two steps: first
@@ -5431,7 +5434,7 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 	 converting modes.  */
       if (INTEGRAL_TYPE_P (TREE_TYPE (exp))
 	  && TREE_TYPE (TREE_TYPE (exp)) == 0
-	  && GET_MODE_PRECISION (GET_MODE (target))
+	  && GET_MODE_PRECISION (outer_mode)
 	     == TYPE_PRECISION (TREE_TYPE (exp)))
 	{
 	  if (!SUBREG_CHECK_PROMOTED_SIGN (target,
@@ -5451,8 +5454,7 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 	    }
 
 	  exp = fold_convert_loc (loc, lang_hooks.types.type_for_mode
-				  (GET_MODE (SUBREG_REG (target)),
-				   SUBREG_PROMOTED_SIGN (target)),
+				  (inner_mode, SUBREG_PROMOTED_SIGN (target)),
 				  exp);
 
 	  inner_target = SUBREG_REG (target);
@@ -5478,10 +5480,9 @@ store_expr_with_bounds (tree exp, rtx target, int call_param_p,
 	 sure that we properly convert it.  */
       if (CONSTANT_P (temp) && GET_MODE (temp) == VOIDmode)
 	{
-	  temp = convert_modes (GET_MODE (target), TYPE_MODE (TREE_TYPE (exp)),
+	  temp = convert_modes (outer_mode, TYPE_MODE (TREE_TYPE (exp)),
 				temp, SUBREG_PROMOTED_SIGN (target));
-	  temp = convert_modes (GET_MODE (SUBREG_REG (target)),
-			        GET_MODE (target), temp,
+	  temp = convert_modes (inner_mode, outer_mode, temp,
 				SUBREG_PROMOTED_SIGN (target));
 	}
 

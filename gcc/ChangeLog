@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtl.h (subreg_unpromoted_mode, subreg_promoted_mode): New functions.
+	* expr.c (convert_move): Use them.
+	(convert_modes): Likewise.
+	(store_expr_with_bounds): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (rtl_hooks::reg_nonzero_bits): Add a scalar_int_mode
 	parameter for the mode of "x".  Remove the "known_x", "known_mode"
 	and "known_ret" arguments.  Change the type of the mode argument
