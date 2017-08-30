@@ -2,6 +2,32 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (preferred_simd_mode): Take a scalar_mode
+	instead of a machine_mode.
+	* targhooks.h (default_preferred_simd_mode): Likewise.
+	* targhooks.c (default_preferred_simd_mode): Likewise.
+	* config/arc/arc.c (arc_preferred_simd_mode): Likewise.
+	* config/arm/arm.c (arm_preferred_simd_mode): Likewise.
+	* config/c6x/c6x.c (c6x_preferred_simd_mode): Likewise.
+	* config/epiphany/epiphany.c (epiphany_preferred_simd_mode): Likewise.
+	* config/i386/i386.c (ix86_preferred_simd_mode): Likewise.
+	* config/mips/mips.c (mips_preferred_simd_mode): Likewise.
+	* config/nvptx/nvptx.c (nvptx_preferred_simd_mode): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_preferred_simd_mode):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_preferred_simd_mode): Likewise.
+	* config/s390/s390.c (s390_preferred_simd_mode): Likewise.
+	* config/sparc/sparc.c (sparc_preferred_simd_mode): Likewise.
+	* config/aarch64/aarch64.c (aarch64_preferred_simd_mode): Likewise.
+	(aarch64_simd_scalar_immediate_valid_for_move): Update accordingly.
+	* doc/tm.texi: Regenerate.
+	* optabs-query.c (can_vec_mask_load_store_p): Return false for
+	non-scalar modes.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (scalar_mode_supported_p): Take a scalar_mode
 	instead of a machine_mode.
 	* targhooks.h (default_scalar_mode_supported_p): Likewise.

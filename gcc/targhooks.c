@@ -1159,7 +1159,7 @@ default_builtin_support_vector_misalignment (machine_mode mode,
    possibly adds/subtracts using bit-twiddling.  */
 
 machine_mode
-default_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
+default_preferred_simd_mode (scalar_mode)
 {
   return word_mode;
 }

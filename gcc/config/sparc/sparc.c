@@ -662,7 +662,7 @@ static void sparc_conditional_register_usage (void);
 static const char *sparc_mangle_type (const_tree);
 #endif
 static void sparc_trampoline_init (rtx, tree, rtx);
-static machine_mode sparc_preferred_simd_mode (machine_mode);
+static machine_mode sparc_preferred_simd_mode (scalar_mode);
 static reg_class_t sparc_preferred_reload_class (rtx x, reg_class_t rclass);
 static bool sparc_lra_p (void);
 static bool sparc_print_operand_punct_valid_p (unsigned char);
@@ -7694,7 +7694,7 @@ sparc_vector_mode_supported_p (machine_mode mode)
 /* Implement the TARGET_VECTORIZE_PREFERRED_SIMD_MODE target hook.  */
 
 static machine_mode
-sparc_preferred_simd_mode (machine_mode mode)
+sparc_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_VIS)
     switch (mode)

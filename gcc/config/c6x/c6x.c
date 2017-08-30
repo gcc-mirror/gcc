@@ -6239,7 +6239,7 @@ c6x_vector_mode_supported_p (machine_mode mode)
 
 /* Implements TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 static machine_mode
-c6x_preferred_simd_mode (machine_mode mode)
+c6x_preferred_simd_mode (scalar_mode mode)
 {
   switch (mode)
     {

@@ -11263,7 +11263,7 @@ aarch64_simd_container_mode (machine_mode mode, unsigned width)
 
 /* Return 128-bit container as the preferred SIMD mode for MODE.  */
 static machine_mode
-aarch64_preferred_simd_mode (machine_mode mode)
+aarch64_preferred_simd_mode (scalar_mode mode)
 {
   return aarch64_simd_container_mode (mode, 128);
 }
@@ -11693,7 +11693,7 @@ aarch64_simd_scalar_immediate_valid_for_move (rtx op, machine_mode mode)
   machine_mode vmode;
 
   gcc_assert (!VECTOR_MODE_P (mode));
-  vmode = aarch64_preferred_simd_mode (mode);
+  vmode = aarch64_preferred_simd_mode (as_a <scalar_mode> (mode));
   rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
   return aarch64_simd_valid_immediate (op_v, vmode, false, NULL);
 }

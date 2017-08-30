@@ -5486,7 +5486,7 @@ nvptx_vector_mode_supported (machine_mode mode)
 /* Return the preferred mode for vectorizing scalar MODE.  */
 
 static machine_mode
-nvptx_preferred_simd_mode (machine_mode mode)
+nvptx_preferred_simd_mode (scalar_mode mode)
 {
   switch (mode)
     {
