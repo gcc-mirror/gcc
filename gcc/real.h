@@ -183,8 +183,7 @@ extern const struct real_format *
 			: (gcc_unreachable (), 0)])
 
 #define FLOAT_MODE_FORMAT(MODE) \
-  (REAL_MODE_FORMAT (SCALAR_FLOAT_MODE_P (MODE)? (MODE) \
-					       : GET_MODE_INNER (MODE)))
+  (REAL_MODE_FORMAT (as_a <scalar_float_mode> (GET_MODE_INNER (MODE))))
 
 /* The following macro determines whether the floating point format is
    composite, i.e. may contain non-consecutive mantissa bits, in which
@@ -212,7 +211,7 @@ class format_helper
 {
 public:
   format_helper (const real_format *format) : m_format (format) {}
-  format_helper (machine_mode m);
+  template<typename T> format_helper (const T &);
   const real_format *operator-> () const { return m_format; }
   operator const real_format *() const { return m_format; }
 
@@ -222,7 +221,8 @@ private:
   const real_format *m_format;
 };
 
-inline format_helper::format_helper (machine_mode m)
+template<typename T>
+inline format_helper::format_helper (const T &m)
   : m_format (m == VOIDmode ? 0 : REAL_MODE_FORMAT (m))
 {}
 

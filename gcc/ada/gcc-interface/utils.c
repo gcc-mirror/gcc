@@ -3464,8 +3464,10 @@ gnat_type_for_mode (machine_mode mode, int unsignedp)
   if (COMPLEX_MODE_P (mode))
     return NULL_TREE;
 
-  if (SCALAR_FLOAT_MODE_P (mode))
-    return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
+  scalar_float_mode float_mode;
+  if (is_a <scalar_float_mode> (mode, &float_mode))
+    return float_type_for_precision (GET_MODE_PRECISION (float_mode),
+				     float_mode);
 
   if (SCALAR_INT_MODE_P (mode))
     return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);

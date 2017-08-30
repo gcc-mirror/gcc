@@ -382,12 +382,13 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
+  scalar_float_mode fmode;
   enum mode_class mc = GET_MODE_CLASS (mode);
   if (mc == MODE_INT)
     return go_langhook_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
-  else if (mc == MODE_FLOAT)
+  else if (is_float_mode (mode, &fmode))
     {
-      switch (GET_MODE_BITSIZE (mode))
+      switch (GET_MODE_BITSIZE (fmode))
 	{
 	case 32:
 	  return float_type_node;
@@ -396,7 +397,7 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
 	default:
 	  // We have to check for long double in order to support
 	  // i386 excess precision.
-	  if (mode == TYPE_MODE(long_double_type_node))
+	  if (fmode == TYPE_MODE(long_double_type_node))
 	    return long_double_type_node;
 	}
     }

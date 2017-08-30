@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc-interface/utils.c (gnat_type_for_mode): Use is_a
+	<scalar_float_mode> instead of SCALAR_FLOAT_MODE_P.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc-interface/decl.c (validate_size): Update use of
 	GET_MODE_WIDER_MODE, forcing a wider mode to exist.
 

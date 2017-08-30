@@ -422,6 +422,16 @@ class VecPrinter:
 
 ######################################################################
 
+class MachineModePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        name = str(self.gdbval['m_mode'])
+        return name[2:] if name.startswith('E_') else name
+
+######################################################################
+
 class OptMachineModePrinter:
     def __init__(self, gdbval):
         self.gdbval = gdbval
@@ -532,6 +542,8 @@ def build_pretty_printer():
 
     pp.add_printer_for_regex(r'opt_mode<(\S+)>',
                              'opt_mode', OptMachineModePrinter)
+    pp.add_printer_for_types(['scalar_float_mode'],
+                             'scalar_float_mode', MachineModePrinter)
 
     return pp
 

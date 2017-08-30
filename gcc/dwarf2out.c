@@ -15324,7 +15324,8 @@ mem_loc_descriptor (rtx rtl, machine_mode mode,
 	  else
 #endif
 	    {
-	      unsigned int length = GET_MODE_SIZE (mode);
+	      scalar_float_mode float_mode = as_a <scalar_float_mode> (mode);
+	      unsigned int length = GET_MODE_SIZE (float_mode);
 	      unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
 	      insert_float (rtl, array);
@@ -18621,11 +18622,12 @@ insert_float (const_rtx rtl, unsigned char *array)
 {
   long val[4];
   int i;
+  scalar_float_mode mode = as_a <scalar_float_mode> (GET_MODE (rtl));
 
-  real_to_target (val, CONST_DOUBLE_REAL_VALUE (rtl), GET_MODE (rtl));
+  real_to_target (val, CONST_DOUBLE_REAL_VALUE (rtl), mode);
 
   /* real_to_target puts 32-bit pieces in each long.  Pack them.  */
-  for (i = 0; i < GET_MODE_SIZE (GET_MODE (rtl)) / 4; i++)
+  for (i = 0; i < GET_MODE_SIZE (mode) / 4; i++)
     {
       insert_int (val[i], 4, array);
       array += 4;
@@ -18669,21 +18671,19 @@ add_const_value_attribute (dw_die_ref die, rtx rtl)
 	 floating-point constant.  A CONST_DOUBLE is used whenever the
 	 constant requires more than one word in order to be adequately
 	 represented.  */
-      {
-	machine_mode mode = GET_MODE (rtl);
+      if (TARGET_SUPPORTS_WIDE_INT == 0
+	  && !SCALAR_FLOAT_MODE_P (GET_MODE (rtl)))
+	add_AT_double (die, DW_AT_const_value,
+		       CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
+      else
+	{
+	  scalar_float_mode mode = as_a <scalar_float_mode> (GET_MODE (rtl));
+	  unsigned int length = GET_MODE_SIZE (mode);
+	  unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
-	if (TARGET_SUPPORTS_WIDE_INT == 0 && !SCALAR_FLOAT_MODE_P (mode))
-	  add_AT_double (die, DW_AT_const_value,
-			 CONST_DOUBLE_HIGH (rtl), CONST_DOUBLE_LOW (rtl));
-	else
-	  {
-	    unsigned int length = GET_MODE_SIZE (mode);
-	    unsigned char *array = ggc_vec_alloc<unsigned char> (length);
-
-	    insert_float (rtl, array);
-	    add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
-	  }
-      }
+	  insert_float (rtl, array);
+	  add_AT_vec (die, DW_AT_const_value, length / 4, 4, array);
+	}
       return true;
 
     case CONST_VECTOR:
