@@ -49,11 +49,12 @@ static unsigned HOST_WIDE_INT cached_nonzero_bits (const_rtx, scalar_int_mode,
 static unsigned HOST_WIDE_INT nonzero_bits1 (const_rtx, scalar_int_mode,
 					     const_rtx, machine_mode,
                                              unsigned HOST_WIDE_INT);
-static unsigned int cached_num_sign_bit_copies (const_rtx, machine_mode, const_rtx,
-                                                machine_mode,
+static unsigned int cached_num_sign_bit_copies (const_rtx, scalar_int_mode,
+						const_rtx, machine_mode,
                                                 unsigned int);
-static unsigned int num_sign_bit_copies1 (const_rtx, machine_mode, const_rtx,
-                                          machine_mode, unsigned int);
+static unsigned int num_sign_bit_copies1 (const_rtx, scalar_int_mode,
+					  const_rtx, machine_mode,
+					  unsigned int);
 
 rtx_subrtx_bound_info rtx_all_subrtx_bounds[NUM_RTX_CODE];
 rtx_subrtx_bound_info rtx_nonconst_subrtx_bounds[NUM_RTX_CODE];
@@ -4248,7 +4249,12 @@ nonzero_bits (const_rtx x, machine_mode mode)
 unsigned int
 num_sign_bit_copies (const_rtx x, machine_mode mode)
 {
-  return cached_num_sign_bit_copies (x, mode, NULL_RTX, VOIDmode, 0);
+  if (mode == VOIDmode)
+    mode = GET_MODE (x);
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
+    return 1;
+  return cached_num_sign_bit_copies (x, int_mode, NULL_RTX, VOIDmode, 0);
 }
 
 /* Return true if nonzero_bits1 might recurse into both operands
@@ -4815,8 +4821,8 @@ num_sign_bit_copies_binary_arith_p (const_rtx x)
    first or the second level.  */
 
 static unsigned int
-cached_num_sign_bit_copies (const_rtx x, machine_mode mode, const_rtx known_x,
-			    machine_mode known_mode,
+cached_num_sign_bit_copies (const_rtx x, scalar_int_mode mode,
+			    const_rtx known_x, machine_mode known_mode,
 			    unsigned int known_ret)
 {
   if (x == known_x && mode == known_mode)
@@ -4861,44 +4867,46 @@ cached_num_sign_bit_copies (const_rtx x, machine_mode mode, const_rtx known_x,
 }
 
 /* Return the number of bits at the high-order end of X that are known to
-   be equal to the sign bit.  X will be used in mode MODE; if MODE is
-   VOIDmode, X will be used in its own mode.  The returned value  will always
-   be between 1 and the number of bits in MODE.  */
+   be equal to the sign bit.  X will be used in mode MODE.  The returned
+   value will always be between 1 and the number of bits in MODE.  */
 
 static unsigned int
-num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
+num_sign_bit_copies1 (const_rtx x, scalar_int_mode mode, const_rtx known_x,
 		      machine_mode known_mode,
 		      unsigned int known_ret)
 {
   enum rtx_code code = GET_CODE (x);
-  machine_mode inner_mode;
+  unsigned int bitwidth = GET_MODE_PRECISION (mode);
   int num0, num1, result;
   unsigned HOST_WIDE_INT nonzero;
 
-  /* If we weren't given a mode, use the mode of X.  If the mode is still
-     VOIDmode, we don't know anything.  Likewise if one of the modes is
-     floating-point.  */
-
-  if (mode == VOIDmode)
-    mode = GET_MODE (x);
-
-  gcc_checking_assert (mode != BLKmode);
-
-  if (mode == VOIDmode || FLOAT_MODE_P (mode) || FLOAT_MODE_P (GET_MODE (x))
-      || VECTOR_MODE_P (GET_MODE (x)) || VECTOR_MODE_P (mode))
-    return 1;
-
-  /* For a smaller mode, just ignore the high bits.  */
-  unsigned int bitwidth = GET_MODE_PRECISION (mode);
-  if (bitwidth < GET_MODE_PRECISION (GET_MODE (x)))
+  if (CONST_INT_P (x))
     {
-      num0 = cached_num_sign_bit_copies (x, GET_MODE (x),
-					 known_x, known_mode, known_ret);
-      return MAX (1,
-		  num0 - (int) (GET_MODE_PRECISION (GET_MODE (x)) - bitwidth));
+      /* If the constant is negative, take its 1's complement and remask.
+	 Then see how many zero bits we have.  */
+      nonzero = UINTVAL (x) & GET_MODE_MASK (mode);
+      if (bitwidth <= HOST_BITS_PER_WIDE_INT
+	  && (nonzero & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
+	nonzero = (~nonzero) & GET_MODE_MASK (mode);
+
+      return (nonzero == 0 ? bitwidth : bitwidth - floor_log2 (nonzero) - 1);
     }
 
-  if (GET_MODE (x) != VOIDmode && bitwidth > GET_MODE_PRECISION (GET_MODE (x)))
+  scalar_int_mode xmode, inner_mode;
+  if (!is_a <scalar_int_mode> (GET_MODE (x), &xmode))
+    return 1;
+
+  unsigned int xmode_width = GET_MODE_PRECISION (xmode);
+
+  /* For a smaller mode, just ignore the high bits.  */
+  if (bitwidth < xmode_width)
+    {
+      num0 = cached_num_sign_bit_copies (x, xmode,
+					 known_x, known_mode, known_ret);
+      return MAX (1, num0 - (int) (xmode_width - bitwidth));
+    }
+
+  if (bitwidth > xmode_width)
     {
       /* If this machine does not do all register operations on the entire
 	 register and MODE is wider than the mode of X, we can say nothing
@@ -4909,8 +4917,8 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       /* Likewise on machines that do, if the mode of the object is smaller
 	 than a word and loads of that size don't sign extend, we can say
 	 nothing about the high order bits.  */
-      if (GET_MODE_PRECISION (GET_MODE (x)) < BITS_PER_WORD
-	  && load_extend_op (GET_MODE (x)) != SIGN_EXTEND)
+      if (xmode_width < BITS_PER_WORD
+	  && load_extend_op (xmode) != SIGN_EXTEND)
 	return 1;
     }
 
@@ -4927,7 +4935,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	 we can do this only if the target does not support different pointer
 	 or address modes depending on the address space.  */
       if (target_default_pointer_address_modes_p ()
-	  && ! POINTERS_EXTEND_UNSIGNED && GET_MODE (x) == Pmode
+	  && ! POINTERS_EXTEND_UNSIGNED && xmode == Pmode
 	  && mode == Pmode && REG_POINTER (x)
 	  && !targetm.have_ptr_extend ())
 	return GET_MODE_PRECISION (Pmode) - GET_MODE_PRECISION (ptr_mode) + 1;
@@ -4952,20 +4960,9 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 
     case MEM:
       /* Some RISC machines sign-extend all loads of smaller than a word.  */
-      if (load_extend_op (GET_MODE (x)) == SIGN_EXTEND)
-	return MAX (1, ((int) bitwidth
-			- (int) GET_MODE_PRECISION (GET_MODE (x)) + 1));
+      if (load_extend_op (xmode) == SIGN_EXTEND)
+	return MAX (1, ((int) bitwidth - (int) xmode_width + 1));
       break;
-
-    case CONST_INT:
-      /* If the constant is negative, take its 1's complement and remask.
-	 Then see how many zero bits we have.  */
-      nonzero = UINTVAL (x) & GET_MODE_MASK (mode);
-      if (bitwidth <= HOST_BITS_PER_WIDE_INT
-	  && (nonzero & (HOST_WIDE_INT_1U << (bitwidth - 1))) != 0)
-	nonzero = (~nonzero) & GET_MODE_MASK (mode);
-
-      return (nonzero == 0 ? bitwidth : bitwidth - floor_log2 (nonzero) - 1);
 
     case SUBREG:
       /* If this is a SUBREG for a promoted object that is sign-extended
@@ -4976,37 +4973,38 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 	{
 	  num0 = cached_num_sign_bit_copies (SUBREG_REG (x), mode,
 					     known_x, known_mode, known_ret);
-	  return MAX ((int) bitwidth
-		      - (int) GET_MODE_PRECISION (GET_MODE (x)) + 1,
-		      num0);
+	  return MAX ((int) bitwidth - (int) xmode_width + 1, num0);
 	}
 
-      /* For a smaller object, just ignore the high bits.  */
-      inner_mode = GET_MODE (SUBREG_REG (x));
-      if (bitwidth <= GET_MODE_PRECISION (inner_mode))
+      if (is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (x)), &inner_mode))
 	{
-	  num0 = cached_num_sign_bit_copies (SUBREG_REG (x), VOIDmode,
-					     known_x, known_mode, known_ret);
-	  return
-	    MAX (1, num0 - (int) (GET_MODE_PRECISION (inner_mode) - bitwidth));
+	  /* For a smaller object, just ignore the high bits.  */
+	  if (bitwidth <= GET_MODE_PRECISION (inner_mode))
+	    {
+	      num0 = cached_num_sign_bit_copies (SUBREG_REG (x), inner_mode,
+						 known_x, known_mode,
+						 known_ret);
+	      return MAX (1, num0 - (int) (GET_MODE_PRECISION (inner_mode)
+					   - bitwidth));
+	    }
+
+	  /* For paradoxical SUBREGs on machines where all register operations
+	     affect the entire register, just look inside.  Note that we are
+	     passing MODE to the recursive call, so the number of sign bit
+	     copies will remain relative to that mode, not the inner mode.  */
+
+	  /* This works only if loads sign extend.  Otherwise, if we get a
+	     reload for the inner part, it may be loaded from the stack, and
+	     then we lose all sign bit copies that existed before the store
+	     to the stack.  */
+
+	  if (WORD_REGISTER_OPERATIONS
+	      && load_extend_op (inner_mode) == SIGN_EXTEND
+	      && paradoxical_subreg_p (x)
+	      && (MEM_P (SUBREG_REG (x)) || REG_P (SUBREG_REG (x))))
+	    return cached_num_sign_bit_copies (SUBREG_REG (x), mode,
+					       known_x, known_mode, known_ret);
 	}
-
-      /* For paradoxical SUBREGs on machines where all register operations
-	 affect the entire register, just look inside.  Note that we are
-	 passing MODE to the recursive call, so the number of sign bit copies
-	 will remain relative to that mode, not the inner mode.  */
-
-      /* This works only if loads sign extend.  Otherwise, if we get a
-	 reload for the inner part, it may be loaded from the stack, and
-	 then we lose all sign bit copies that existed before the store
-	 to the stack.  */
-
-      if (WORD_REGISTER_OPERATIONS
-	  && load_extend_op (inner_mode) == SIGN_EXTEND
-	  && paradoxical_subreg_p (x)
-	  && (MEM_P (SUBREG_REG (x)) || REG_P (SUBREG_REG (x))))
-	return cached_num_sign_bit_copies (SUBREG_REG (x), mode,
-					   known_x, known_mode, known_ret);
       break;
 
     case SIGN_EXTRACT:
@@ -5015,15 +5013,18 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       break;
 
     case SIGN_EXTEND:
-      return (bitwidth - GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
-	      + cached_num_sign_bit_copies (XEXP (x, 0), VOIDmode,
-					    known_x, known_mode, known_ret));
+      if (is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &inner_mode))
+	return (bitwidth - GET_MODE_PRECISION (inner_mode)
+		+ cached_num_sign_bit_copies (XEXP (x, 0), inner_mode,
+					      known_x, known_mode, known_ret));
+      break;
 
     case TRUNCATE:
       /* For a smaller object, just ignore the high bits.  */
-      num0 = cached_num_sign_bit_copies (XEXP (x, 0), VOIDmode,
+      inner_mode = as_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)));
+      num0 = cached_num_sign_bit_copies (XEXP (x, 0), inner_mode,
 					 known_x, known_mode, known_ret);
-      return MAX (1, (num0 - (int) (GET_MODE_PRECISION (GET_MODE (XEXP (x, 0)))
+      return MAX (1, (num0 - (int) (GET_MODE_PRECISION (inner_mode)
 				    - bitwidth)));
 
     case NOT:
@@ -5200,7 +5201,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
 					 known_x, known_mode, known_ret);
       if (CONST_INT_P (XEXP (x, 1))
 	  && INTVAL (XEXP (x, 1)) > 0
-	  && INTVAL (XEXP (x, 1)) < GET_MODE_PRECISION (GET_MODE (x)))
+	  && INTVAL (XEXP (x, 1)) < xmode_width)
 	num0 = MIN ((int) bitwidth, num0 + INTVAL (XEXP (x, 1)));
 
       return num0;
@@ -5210,7 +5211,7 @@ num_sign_bit_copies1 (const_rtx x, machine_mode mode, const_rtx known_x,
       if (!CONST_INT_P (XEXP (x, 1))
 	  || INTVAL (XEXP (x, 1)) < 0
 	  || INTVAL (XEXP (x, 1)) >= (int) bitwidth
-	  || INTVAL (XEXP (x, 1)) >= GET_MODE_PRECISION (GET_MODE (x)))
+	  || INTVAL (XEXP (x, 1)) >= xmode_width)
 	return 1;
 
       num0 = cached_num_sign_bit_copies (XEXP (x, 0), mode,
