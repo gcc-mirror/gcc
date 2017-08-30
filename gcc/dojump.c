@@ -571,7 +571,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	      if (TREE_CODE (shift) == INTEGER_CST
 		  && compare_tree_int (shift, 0) >= 0
 		  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
-		  && prefer_and_bit_test (TYPE_MODE (argtype),
+		  && prefer_and_bit_test (SCALAR_INT_TYPE_MODE (argtype),
 					  TREE_INT_CST_LOW (shift)))
 		{
 		  unsigned HOST_WIDE_INT mask
@@ -1190,17 +1190,14 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
     return;
 
   type = TREE_TYPE (treeop0);
-  mode = TYPE_MODE (type);
   if (TREE_CODE (treeop0) == INTEGER_CST
       && (TREE_CODE (treeop1) != INTEGER_CST
-          || (GET_MODE_BITSIZE (mode)
-              > GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (treeop1))))))
-    {
-      /* op0 might have been replaced by promoted constant, in which
-         case the type of second argument should be used.  */
-      type = TREE_TYPE (treeop1);
-      mode = TYPE_MODE (type);
-    }
+	  || (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type))
+	      > GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (treeop1))))))
+    /* op0 might have been replaced by promoted constant, in which
+       case the type of second argument should be used.  */
+    type = TREE_TYPE (treeop1);
+  mode = TYPE_MODE (type);
   unsignedp = TYPE_UNSIGNED (type);
   code = unsignedp ? unsigned_code : signed_code;
 

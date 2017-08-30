@@ -2,6 +2,49 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (SCALAR_INT_TYPE_MODE): New macro.
+	* builtins.c (expand_builtin_signbit): Use it.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* dojump.c (do_jump): Likewise.
+	(do_compare_and_jump): Likewise.
+	* dwarf2cfi.c (expand_builtin_init_dwarf_reg_sizes): Likewise.
+	* expmed.c (make_tree): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	(expand_expr_real_1): Likewise.
+	(try_casesi): Likewise.
+	* fold-const-call.c (fold_const_call_ss): Likewise.
+	* fold-const.c (unextend): Likewise.
+	(extract_muldiv_1): Likewise.
+	(fold_single_bit_test): Likewise.
+	(native_encode_int): Likewise.
+	(native_encode_string): Likewise.
+	(native_interpret_int): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memset): Likewise.
+	* internal-fn.c (expand_addsub_overflow): Likewise.
+	(expand_neg_overflow): Likewise.
+	(expand_mul_overflow): Likewise.
+	(expand_arith_overflow): Likewise.
+	* match.pd: Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
+	* tree-ssa-math-opts.c (convert_mult_to_widen): Likewise.
+	* tree-ssanames.c (get_range_info): Likewise.
+	* tree-switch-conversion.c (array_value_type) Likewise.
+	* tree-vect-patterns.c (vect_recog_rotate_pattern): Likewise.
+	(vect_recog_divmod_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	* tree-vrp.c (extract_range_basic): Likewise.
+	(simplify_float_conversion_using_ranges): Likewise.
+	* tree.c (int_fits_type_p): Likewise.
+	* ubsan.c (instrument_bool_enum_load): Likewise.
+	* varasm.c (mergeable_string_section): Likewise.
+	(narrowing_initializer_constant_valid_p): Likewise.
+	(output_constant): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (NARROWEST_INT_MODE): New macro.
 	* expr.c (alignment_for_piecewise_move): Use it instead of
 	GET_CLASS_NARROWEST_MODE (MODE_INT).

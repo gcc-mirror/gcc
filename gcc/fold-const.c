@@ -5441,7 +5441,7 @@ static tree
 unextend (tree c, int p, int unsignedp, tree mask)
 {
   tree type = TREE_TYPE (c);
-  int modesize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  int modesize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
   tree temp;
 
   if (p == modesize || unsignedp)
@@ -6031,8 +6031,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 {
   tree type = TREE_TYPE (t);
   enum tree_code tcode = TREE_CODE (t);
-  tree ctype = (wide_type != 0 && (GET_MODE_SIZE (TYPE_MODE (wide_type))
-				   > GET_MODE_SIZE (TYPE_MODE (type)))
+  tree ctype = (wide_type != 0
+		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
+		    > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
 		? wide_type : type);
   tree t1, t2;
   int same_p = tcode == code;
@@ -6669,7 +6670,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       tree inner = TREE_OPERAND (arg0, 0);
       tree type = TREE_TYPE (arg0);
       int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
-      machine_mode operand_mode = TYPE_MODE (type);
+      scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
       int ops_unsigned;
       tree signed_type, unsigned_type, intermediate_type;
       tree tem, one;
@@ -6980,7 +6981,7 @@ static int
 native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
@@ -7190,7 +7191,8 @@ native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 
   if (TREE_CODE (type) != ARRAY_TYPE
       || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
-      || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type))) != BITS_PER_UNIT
+      || (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (type)))
+	  != BITS_PER_UNIT)
       || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return 0;
   total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (type));
@@ -7262,7 +7264,7 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
 static tree
 native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
   if (total_bytes > len
       || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)

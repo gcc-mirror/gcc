@@ -626,7 +626,7 @@ encode_type (tree type, int curtype, int format)
     case INTEGER_TYPE:
       {
 	char c;
-	switch (GET_MODE_BITSIZE (TYPE_MODE (type)))
+	switch (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type)))
 	  {
 	  case 8:  c = TYPE_UNSIGNED (type) ? 'C' : 'c'; break;
 	  case 16: c = TYPE_UNSIGNED (type) ? 'S' : 's'; break;

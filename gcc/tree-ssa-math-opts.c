@@ -3256,8 +3256,8 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
-  to_mode = TYPE_MODE (type);
-  from_mode = TYPE_MODE (type1);
+  to_mode = SCALAR_INT_TYPE_MODE (type);
+  from_mode = SCALAR_INT_TYPE_MODE (type1);
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
 

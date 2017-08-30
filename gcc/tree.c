@@ -8461,7 +8461,7 @@ retry:
   /* Third, unsigned integers with top bit set never fit signed types.  */
   if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
     {
-      int prec = GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (c))) - 1;
+      int prec = GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (c))) - 1;
       if (prec < TYPE_PRECISION (TREE_TYPE (c)))
 	{
 	  /* When a tree_cst is converted to a wide-int, the precision

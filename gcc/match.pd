@@ -3397,7 +3397,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     associated with the mode of @1, so the sign bit is
 	     specified by this mode.  Check that @1 is the signed
 	     max associated with this sign bit.  */
-	  && prec == GET_MODE_PRECISION (TYPE_MODE (arg1_type))
+	  && prec == GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (arg1_type))
 	  /* signed_type does not work on pointer types.  */
 	  && INTEGRAL_TYPE_P (arg1_type))
       /* The following case also applies to X < signed_max+1

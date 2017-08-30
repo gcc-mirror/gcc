@@ -785,7 +785,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       && (len = int_size_in_bytes (TREE_TYPE (decl))) > 0
       && TREE_STRING_LENGTH (decl) >= len)
     {
-      machine_mode mode;
+      scalar_int_mode mode;
       unsigned int modesize;
       const char *str;
       HOST_WIDE_INT i;
@@ -793,7 +793,7 @@ mergeable_string_section (tree decl ATTRIBUTE_UNUSED,
       const char *prefix = function_mergeable_rodata_prefix ();
       char *name = (char *) alloca (strlen (prefix) + 30);
 
-      mode = TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
+      mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (TREE_TYPE (decl)));
       modesize = GET_MODE_BITSIZE (mode);
       if (modesize >= 8 && modesize <= 256
 	  && (modesize & (modesize - 1)) == 0)
@@ -4328,8 +4328,8 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype, tree *cache)
       tree inner = TREE_OPERAND (op0, 0);
       if (inner == error_mark_node
 	  || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
-	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op0)))
-	      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+	  || (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (op0)))
+	      > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (inner)))))
 	break;
       op0 = inner;
     }
@@ -4340,8 +4340,8 @@ narrowing_initializer_constant_valid_p (tree value, tree endtype, tree *cache)
       tree inner = TREE_OPERAND (op1, 0);
       if (inner == error_mark_node
 	  || ! INTEGRAL_MODE_P (TYPE_MODE (TREE_TYPE (inner)))
-	  || (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (op1)))
-	      > GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (inner)))))
+	  || (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (op1)))
+	      > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (inner)))))
 	break;
       op1 = inner;
     }
@@ -4766,7 +4766,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
   if (TREE_CODE (exp) == NOP_EXPR
       && POINTER_TYPE_P (TREE_TYPE (exp))
       && targetm.addr_space.valid_pointer_mode
-	   (TYPE_MODE (TREE_TYPE (exp)),
+	   (SCALAR_INT_TYPE_MODE (TREE_TYPE (exp)),
 	    TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)))))
     {
       tree saved_type = TREE_TYPE (exp);
@@ -4776,7 +4776,7 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
       while (TREE_CODE (exp) == NOP_EXPR
 	     && POINTER_TYPE_P (TREE_TYPE (exp))
 	     && targetm.addr_space.valid_pointer_mode
-		  (TYPE_MODE (TREE_TYPE (exp)),
+		  (SCALAR_INT_TYPE_MODE (TREE_TYPE (exp)),
 		   TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)))))
 	exp = TREE_OPERAND (exp, 0);
 

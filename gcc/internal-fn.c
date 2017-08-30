@@ -645,7 +645,7 @@ expand_addsub_overflow (location_t loc, tree_code code, tree lhs,
   do_pending_stack_adjust ();
   rtx op0 = expand_normal (arg0);
   rtx op1 = expand_normal (arg1);
-  machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
   int prec = GET_MODE_PRECISION (mode);
   rtx sgn = immed_wide_int_const (wi::min_value (prec, SIGNED), mode);
   bool do_xor = false;
@@ -1097,7 +1097,7 @@ expand_neg_overflow (location_t loc, tree lhs, tree arg1, bool is_ubsan,
   do_pending_stack_adjust ();
   op1 = expand_normal (arg1);
 
-  machine_mode mode = TYPE_MODE (TREE_TYPE (arg1));
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg1));
   if (lhs)
     {
       target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
@@ -1192,7 +1192,7 @@ expand_mul_overflow (location_t loc, tree lhs, tree arg0, tree arg1,
   op0 = expand_normal (arg0);
   op1 = expand_normal (arg1);
 
-  machine_mode mode = TYPE_MODE (TREE_TYPE (arg0));
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg0));
   bool uns = unsr_p;
   if (lhs)
     {
@@ -2120,7 +2120,7 @@ expand_arith_overflow (enum tree_code code, gimple *stmt)
 	  /* The infinity precision result will always fit into result.  */
 	  rtx target = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
 	  write_complex_part (target, const0_rtx, true);
-	  machine_mode mode = TYPE_MODE (type);
+	  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
 	  struct separate_ops ops;
 	  ops.code = code;
 	  ops.type = type;

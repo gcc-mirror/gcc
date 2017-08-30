@@ -4139,7 +4139,7 @@ expand_debug_expr (tree exp)
   machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
-  scalar_int_mode op0_mode, op1_mode;
+  scalar_int_mode op0_mode, op1_mode, addr_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -4914,7 +4914,8 @@ expand_debug_expr (tree exp)
 	}
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-      op0 = convert_debug_memory_address (mode, XEXP (op0, 0), as);
+      addr_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (exp));
+      op0 = convert_debug_memory_address (addr_mode, XEXP (op0, 0), as);
 
       return op0;
 

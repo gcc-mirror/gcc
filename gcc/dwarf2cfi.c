@@ -299,7 +299,7 @@ void
 expand_builtin_init_dwarf_reg_sizes (tree address)
 {
   unsigned int i;
-  machine_mode mode = TYPE_MODE (char_type_node);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (char_type_node);
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
 

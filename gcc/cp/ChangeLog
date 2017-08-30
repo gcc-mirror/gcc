@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* cvt.c (cp_convert_to_pointer): Use SCALAR_INT_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* mangle.c (write_real_cst): Use SCALAR_FLOAT_TYPE_MODE
 	instead of TYPE_MODE.
 
