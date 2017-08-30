@@ -41,30 +41,30 @@
 #include "gimple-iterator.h"
 #include "case-cfn-macros.h"
 
-#define v8qi_UP  V8QImode
-#define v4hi_UP  V4HImode
-#define v4hf_UP  V4HFmode
-#define v2si_UP  V2SImode
-#define v2sf_UP  V2SFmode
-#define v1df_UP  V1DFmode
-#define di_UP    DImode
-#define df_UP    DFmode
-#define v16qi_UP V16QImode
-#define v8hi_UP  V8HImode
-#define v8hf_UP  V8HFmode
-#define v4si_UP  V4SImode
-#define v4sf_UP  V4SFmode
-#define v2di_UP  V2DImode
-#define v2df_UP  V2DFmode
-#define ti_UP	 TImode
-#define oi_UP	 OImode
-#define ci_UP	 CImode
-#define xi_UP	 XImode
-#define si_UP    SImode
-#define sf_UP    SFmode
-#define hi_UP    HImode
-#define hf_UP    HFmode
-#define qi_UP    QImode
+#define v8qi_UP  E_V8QImode
+#define v4hi_UP  E_V4HImode
+#define v4hf_UP  E_V4HFmode
+#define v2si_UP  E_V2SImode
+#define v2sf_UP  E_V2SFmode
+#define v1df_UP  E_V1DFmode
+#define di_UP    E_DImode
+#define df_UP    E_DFmode
+#define v16qi_UP E_V16QImode
+#define v8hi_UP  E_V8HImode
+#define v8hf_UP  E_V8HFmode
+#define v4si_UP  E_V4SImode
+#define v4sf_UP  E_V4SFmode
+#define v2di_UP  E_V2DImode
+#define v2df_UP  E_V2DFmode
+#define ti_UP	 E_TImode
+#define oi_UP	 E_OImode
+#define ci_UP	 E_CImode
+#define xi_UP	 E_XImode
+#define si_UP    E_SImode
+#define sf_UP    E_SFmode
+#define hi_UP    E_HImode
+#define hf_UP    E_HFmode
+#define qi_UP    E_QImode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -385,7 +385,7 @@ enum aarch64_builtins
 
 #undef CRC32_BUILTIN
 #define CRC32_BUILTIN(N, M) \
-  {"__builtin_aarch64_"#N, M##mode, CODE_FOR_aarch64_##N, AARCH64_BUILTIN_##N},
+  {"__builtin_aarch64_"#N, E_##M##mode, CODE_FOR_aarch64_##N, AARCH64_BUILTIN_##N},
 
 static aarch64_crc_builtin_datum aarch64_crc_builtin_data[] = {
   AARCH64_CRC32_BUILTINS
@@ -464,7 +464,7 @@ struct aarch64_simd_type_info
 };
 
 #define ENTRY(E, M, Q, G)  \
-  {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, M##mode, qualifier_##Q},
+  {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
 static struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };

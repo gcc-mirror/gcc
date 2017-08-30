@@ -2332,7 +2332,8 @@ print_operand (FILE *file, rtx x, int letter)
       if (GET_CODE (x) == MEM
 	  && (GET_MODE (x) == DFmode || GET_MODE (x) == DImode))
 	{
-	  x = adjust_address (x, GET_MODE (x) == DFmode ? SFmode : SImode, 4);
+	  x = adjust_address (x, GET_MODE (x) == DFmode ? E_SFmode : E_SImode,
+			      4);
 	  output_address (GET_MODE (x), XEXP (x, 0));
 	}
       else
