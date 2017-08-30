@@ -829,19 +829,16 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
      if we aren't.  This must come after the entire register case above,
      since that case is valid for any mode.  The following cases are only
      valid for integral modes.  */
-  {
-    machine_mode imode = int_mode_for_mode (GET_MODE (op0));
-    if (imode != GET_MODE (op0))
-      {
-	if (MEM_P (op0))
-	  op0 = adjust_bitfield_address_size (op0, imode, 0, MEM_SIZE (op0));
-	else
-	  {
-	    gcc_assert (imode != BLKmode);
-	    op0 = gen_lowpart (imode, op0);
-	  }
-      }
-  }
+  opt_scalar_int_mode opt_imode = int_mode_for_mode (GET_MODE (op0));
+  scalar_int_mode imode;
+  if (!opt_imode.exists (&imode) || imode != GET_MODE (op0))
+    {
+      if (MEM_P (op0))
+	op0 = adjust_bitfield_address_size (op0, opt_imode.else_blk (),
+					    0, MEM_SIZE (op0));
+      else
+	op0 = gen_lowpart (op0_mode.require (), op0);
+    }
 
   /* Storing an lsb-aligned field in a register
      can be done with a movstrict instruction.  */
@@ -956,7 +953,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && GET_MODE_CLASS (GET_MODE (value)) != MODE_INT
       && GET_MODE_CLASS (GET_MODE (value)) != MODE_PARTIAL_INT)
     {
-      value = gen_reg_rtx (int_mode_for_mode (GET_MODE (value)));
+      value = gen_reg_rtx (int_mode_for_mode (GET_MODE (value)).require ());
       emit_move_insn (gen_lowpart (GET_MODE (orig_value), value), orig_value);
     }
 
@@ -1426,8 +1423,7 @@ convert_extracted_bit_field (rtx x, machine_mode mode,
      value via a SUBREG.  */
   if (!SCALAR_INT_MODE_P (tmode))
     {
-      scalar_int_mode int_mode
-	= int_mode_for_size (GET_MODE_BITSIZE (tmode), 0).require ();
+      scalar_int_mode int_mode = int_mode_for_mode (tmode).require ();
       x = convert_to_mode (int_mode, x, unsignedp);
       x = force_reg (int_mode, x);
       return gen_lowpart (tmode, x);
@@ -1532,7 +1528,6 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		     bool reverse, bool fallback_p, rtx *alt_rtl)
 {
   rtx op0 = str_rtx;
-  machine_mode int_mode;
   machine_mode mode1;
 
   if (tmode == VOIDmode)
@@ -1673,30 +1668,30 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Make sure we are playing with integral modes.  Pun with subregs
      if we aren't.  */
-  {
-    machine_mode imode = int_mode_for_mode (GET_MODE (op0));
-    if (imode != GET_MODE (op0))
-      {
-	if (MEM_P (op0))
-	  op0 = adjust_bitfield_address_size (op0, imode, 0, MEM_SIZE (op0));
-	else if (imode != BLKmode)
-	  {
-	    op0 = gen_lowpart (imode, op0);
+  opt_scalar_int_mode opt_imode = int_mode_for_mode (GET_MODE (op0));
+  scalar_int_mode imode;
+  if (!opt_imode.exists (&imode) || imode != GET_MODE (op0))
+    {
+      if (MEM_P (op0))
+	op0 = adjust_bitfield_address_size (op0, opt_imode.else_blk (),
+					    0, MEM_SIZE (op0));
+      else if (opt_imode.exists (&imode))
+	{
+	  op0 = gen_lowpart (imode, op0);
 
-	    /* If we got a SUBREG, force it into a register since we
-	       aren't going to be able to do another SUBREG on it.  */
-	    if (GET_CODE (op0) == SUBREG)
-	      op0 = force_reg (imode, op0);
-	  }
-	else
-	  {
-	    HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (op0));
-	    rtx mem = assign_stack_temp (GET_MODE (op0), size);
-	    emit_move_insn (mem, op0);
-	    op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
-	  }
-      }
-  }
+	  /* If we got a SUBREG, force it into a register since we
+	     aren't going to be able to do another SUBREG on it.  */
+	  if (GET_CODE (op0) == SUBREG)
+	    op0 = force_reg (imode, op0);
+	}
+      else
+	{
+	  HOST_WIDE_INT size = GET_MODE_SIZE (GET_MODE (op0));
+	  rtx mem = assign_stack_temp (GET_MODE (op0), size);
+	  emit_move_insn (mem, op0);
+	  op0 = adjust_bitfield_address_size (mem, BLKmode, 0, size);
+	}
+    }
 
   /* ??? We currently assume TARGET is at least as big as BITSIZE.
      If that's wrong, the solution is to test for it and set TARGET to 0
@@ -1900,11 +1895,11 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Find a correspondingly-sized integer field, so we can apply
      shifts and masks to it.  */
-  int_mode = int_mode_for_mode (tmode);
-  if (int_mode == BLKmode)
-    int_mode = int_mode_for_mode (mode);
-  /* Should probably push op0 out to memory and then do a load.  */
-  gcc_assert (int_mode != BLKmode);
+  scalar_int_mode int_mode;
+  if (!int_mode_for_mode (tmode).exists (&int_mode))
+    /* If this fails, we should probably push op0 out to memory and then
+       do a load.  */
+    int_mode = int_mode_for_mode (mode).require ();
 
   target = extract_fixed_bit_field (int_mode, op0, bitsize, bitnum, target,
 				    unsignedp, reverse);
@@ -2259,9 +2254,8 @@ extract_low_bits (machine_mode mode, machine_mode src_mode, rtx src)
         return x;
     }
 
-  src_int_mode = int_mode_for_mode (src_mode);
-  int_mode = int_mode_for_mode (mode);
-  if (src_int_mode == BLKmode || int_mode == BLKmode)
+  if (!int_mode_for_mode (src_mode).exists (&src_int_mode)
+      || !int_mode_for_mode (mode).exists (&int_mode))
     return NULL_RTX;
 
   if (!MODES_TIEABLE_P (src_int_mode, src_mode))

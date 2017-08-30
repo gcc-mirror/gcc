@@ -4838,10 +4838,11 @@ expand_debug_expr (tree exp)
 	    }
 	  else
 	    {
-	      machine_mode ifmode = int_mode_for_mode (mode);
-	      machine_mode ihmode = int_mode_for_mode (imode);
+	      scalar_int_mode ifmode;
+	      scalar_int_mode ihmode;
 	      rtx halfsize;
-	      if (ifmode == BLKmode || ihmode == BLKmode)
+	      if (!int_mode_for_mode (mode).exists (&ifmode)
+		  || !int_mode_for_mode (imode).exists (&ihmode))
 		return NULL;
 	      halfsize = GEN_INT (GET_MODE_BITSIZE (ihmode));
 	      re = op0;

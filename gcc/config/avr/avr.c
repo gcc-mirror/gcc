@@ -285,7 +285,7 @@ avr_to_int_mode (rtx x)
 
   return VOIDmode == mode
     ? x
-    : simplify_gen_subreg (int_mode_for_mode (mode), x, mode, 0);
+    : simplify_gen_subreg (int_mode_for_mode (mode).require (), x, mode, 0);
 }
 
 namespace {
@@ -7739,7 +7739,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
   machine_mode mode = GET_MODE (xop[0]);
 
   /* INT_MODE of the same size.  */
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
 
   /* Number of bytes to operate on.  */
   int n_bytes = GET_MODE_SIZE (mode);
@@ -8242,7 +8242,7 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
   rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   rtx xdest = SET_DEST (xpattern);
   machine_mode mode = GET_MODE (xdest);
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
   int n_bytes = GET_MODE_SIZE (mode);
   enum rtx_code code_sat = GET_CODE (SET_SRC (xpattern));
   enum rtx_code code
@@ -9177,7 +9177,7 @@ const char*
 avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 {
   machine_mode mode = GET_MODE (xop[0]);
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
   // The smallest fractional bit not cleared by the rounding is 2^(-RP).
   int fbit = (int) GET_MODE_FBIT (mode);
   double_int i_add = double_int_zero.set_bit (fbit-1 - INTVAL (xop[2]));

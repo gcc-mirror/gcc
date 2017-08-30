@@ -8422,8 +8422,8 @@ gen_lowpart_or_truncate (machine_mode mode, rtx x)
     {
       /* Bit-cast X into an integer mode.  */
       if (!SCALAR_INT_MODE_P (GET_MODE (x)))
-	x = gen_lowpart (int_mode_for_mode (GET_MODE (x)), x);
-      x = simplify_gen_unary (TRUNCATE, int_mode_for_mode (mode),
+	x = gen_lowpart (int_mode_for_mode (GET_MODE (x)).require (), x);
+      x = simplify_gen_unary (TRUNCATE, int_mode_for_mode (mode).require (),
 			      x, GET_MODE (x));
     }
 
@@ -11497,7 +11497,7 @@ gen_lowpart_for_combine (machine_mode omode, rtx x)
 
       if (imode == VOIDmode)
 	{
-	  imode = int_mode_for_mode (omode);
+	  imode = int_mode_for_mode (omode).require ();
 	  x = gen_lowpart_common (imode, x);
 	  if (x == NULL)
 	    goto fail;

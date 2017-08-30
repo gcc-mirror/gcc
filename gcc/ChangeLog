@@ -1,4 +1,47 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (opt_mode::else_blk): New function.
+	(int_mode_for_mode): Declare.
+	* stor-layout.c (int_mode_for_mode): Return an opt_scalar_int_mode.
+	* builtins.c (expand_builtin_signbit): Adjust for new int_mode_for_mode
+	return type.
+	* cfgexpand.c (expand_debug_expr): Likewise.
+	* combine.c (gen_lowpart_or_truncate): Likewise.
+	(gen_lowpart_for_combine): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Likewise.
+	* config/avr/avr.c (avr_to_int_mode): Likewise.
+	(avr_out_plus_1): Likewise.
+	(avr_out_plus): Likewise.
+	(avr_out_round): Likewise.
+	* config/i386/i386.c (ix86_split_to_parts): Likewise.
+	* config/s390/s390.c (s390_expand_vec_compare_cc): Likewise.
+	(s390_expand_vcond): Likewise.
+	* config/spu/spu.c (spu_split_immediate): Likewise.
+	(spu_expand_mov): Likewise.
+	* dse.c (get_stored_val): Likewise.
+	* expmed.c (store_bit_field_1): Likewise.
+	(convert_extracted_bit_field): Use int_mode_for_mode instead of
+	int_mode_for_size.
+	(extract_bit_field_1): Adjust for new int_mode_for_mode return type.
+	(extract_low_bits): Likewise.
+	* expr.c (emit_group_load_1): Likewise.  Separate out the BLKmode
+	handling rather than repeating the check.
+	(emit_group_store): Likewise.
+	(emit_move_via_integer): Adjust for new int_mode_for_mode return type.
+	* optabs.c (expand_absneg_bit): Likewise.
+	(expand_copysign_absneg): Likewise.
+	(expand_copysign_bit): Likewise.
+	* tree-if-conv.c (ifcvt_can_use_mask_load_store): Likewise.
+	* tree-vect-slp.c (vect_transform_slp_perm_load): Likewise.
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Likewise.
+	* var-tracking.c (prepare_call_arguments):  Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_do_expand_vec_perm): Use
+	int_mode_for_mode instead of mode_for_size.
+	* config/rs6000/rs6000.c (rs6000_do_expand_vec_perm): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

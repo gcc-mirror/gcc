@@ -6348,8 +6348,9 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	      {
 		/* For non-integer stack argument see also if they weren't
 		   initialized by integers.  */
-		machine_mode imode = int_mode_for_mode (GET_MODE (mem));
-		if (imode != GET_MODE (mem) && imode != BLKmode)
+		scalar_int_mode imode;
+		if (int_mode_for_mode (GET_MODE (mem)).exists (&imode)
+		    && imode != GET_MODE (mem))
 		  {
 		    val = cselib_lookup (adjust_address_nv (mem, imode, 0),
 					 imode, 0, VOIDmode);

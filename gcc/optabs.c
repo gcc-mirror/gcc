@@ -2576,8 +2576,7 @@ expand_absneg_bit (enum rtx_code code, scalar_float_mode mode,
 
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
     {
-      imode = int_mode_for_mode (mode);
-      if (imode == BLKmode)
+      if (!int_mode_for_mode (mode).exists (&imode))
 	return NULL_RTX;
       word = 0;
       nwords = 1;
@@ -3270,8 +3269,7 @@ expand_copysign_absneg (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
     {
       if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
 	{
-	  imode = int_mode_for_mode (mode);
-	  if (imode == BLKmode)
+	  if (!int_mode_for_mode (mode).exists (&imode))
 	    return NULL_RTX;
 	  op1 = gen_lowpart (imode, op1);
 	}
@@ -3333,15 +3331,14 @@ static rtx
 expand_copysign_bit (scalar_float_mode mode, rtx op0, rtx op1, rtx target,
 		     int bitpos, bool op0_is_abs)
 {
-  machine_mode imode;
+  scalar_int_mode imode;
   int word, nwords, i;
   rtx temp;
   rtx_insn *insns;
 
   if (GET_MODE_SIZE (mode) <= UNITS_PER_WORD)
     {
-      imode = int_mode_for_mode (mode);
-      if (imode == BLKmode)
+      if (!int_mode_for_mode (mode).exists (&imode))
 	return NULL_RTX;
       word = 0;
       nwords = 1;
