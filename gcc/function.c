@@ -3262,13 +3262,11 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       tempreg = convert_to_mode (data->nominal_mode, tempreg, unsignedp);
 
-      if (GET_CODE (tempreg) == SUBREG
+      if (partial_subreg_p (tempreg)
 	  && GET_MODE (tempreg) == data->nominal_mode
 	  && REG_P (SUBREG_REG (tempreg))
 	  && data->nominal_mode == data->passed_mode
-	  && GET_MODE (SUBREG_REG (tempreg)) == GET_MODE (data->entry_parm)
-	  && GET_MODE_SIZE (GET_MODE (tempreg))
-	     < GET_MODE_SIZE (GET_MODE (data->entry_parm)))
+	  && GET_MODE (SUBREG_REG (tempreg)) == GET_MODE (data->entry_parm))
 	{
 	  /* The argument is already sign/zero extended, so note it
 	     into the subreg.  */

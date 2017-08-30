@@ -1528,8 +1528,7 @@ extract_bit_field_using_extv (const extraction_insn *extv, rtx op0,
 	  && TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (target), ext_mode))
 	{
 	  target = gen_lowpart (ext_mode, target);
-	  if (GET_MODE_PRECISION (ext_mode)
-	      > GET_MODE_PRECISION (GET_MODE (spec_target)))
+	  if (partial_subreg_p (GET_MODE (spec_target), ext_mode))
 	    spec_target_subreg = target;
 	}
       else

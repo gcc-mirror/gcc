@@ -2224,9 +2224,7 @@ combinable_i3pat (rtx_insn *i3, rtx *loc, rtx i2dest, rtx i1dest, rtx i0dest,
 	 STACK_POINTER_REGNUM, since these are always considered to be
 	 live.  Similarly for ARG_POINTER_REGNUM if it is fixed.  */
       subdest = dest;
-      if (GET_CODE (subdest) == SUBREG
-	  && (GET_MODE_SIZE (GET_MODE (subdest))
-	      >= GET_MODE_SIZE (GET_MODE (SUBREG_REG (subdest)))))
+      if (GET_CODE (subdest) == SUBREG && !partial_subreg_p (subdest))
 	subdest = SUBREG_REG (subdest);
       if (pi3dest_killed
 	  && REG_P (subdest)
@@ -6882,10 +6880,8 @@ simplify_set (rtx x)
   /* If we have (set (cc0) (subreg ...)), we try to remove the subreg
      in SRC.  */
   if (dest == cc0_rtx
-      && GET_CODE (src) == SUBREG
-      && subreg_lowpart_p (src)
-      && (GET_MODE_PRECISION (GET_MODE (src))
-	  < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (src)))))
+      && partial_subreg_p (src)
+      && subreg_lowpart_p (src))
     {
       rtx inner = SUBREG_REG (src);
       machine_mode inner_mode = GET_MODE (inner);
@@ -7634,7 +7630,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   /* Never narrow an object, since that might not be safe.  */
 
   if (mode != VOIDmode
-      && GET_MODE_SIZE (extraction_mode) < GET_MODE_SIZE (mode))
+      && partial_subreg_p (extraction_mode, mode))
     extraction_mode = mode;
 
   if (!MEM_P (inner))
@@ -7681,7 +7677,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (wanted_inner_mode != VOIDmode
       && inner_mode != wanted_inner_mode
       && ! pos_rtx
-      && GET_MODE_SIZE (wanted_inner_mode) < GET_MODE_SIZE (is_mode)
+      && partial_subreg_p (wanted_inner_mode, is_mode)
       && MEM_P (inner)
       && ! mode_dependent_address_p (XEXP (inner, 0), MEM_ADDR_SPACE (inner))
       && ! MEM_VOLATILE_P (inner))
@@ -8201,7 +8197,7 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 		   to (subreg:QI (lshiftrt:SI (reg:SI) (const_int 7)) 0).  */
 		|| (GET_CODE (inner) == AND
 		    && CONST_INT_P (XEXP (inner, 1))
-		    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+		    && partial_subreg_p (x)
 		    && exact_log2 (UINTVAL (XEXP (inner, 1)))
 		       >= GET_MODE_BITSIZE (mode) - 1)))
 	  subreg_code = SET;
@@ -8214,7 +8210,7 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  tem = simplified;
 
 	if (GET_CODE (tem) != GET_CODE (inner)
-	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
+	    && partial_subreg_p (x)
 	    && subreg_lowpart_p (x))
 	  {
 	    rtx newer
@@ -8225,8 +8221,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	    if (GET_CODE (newer) != SUBREG)
 	      newer = make_compound_operation (newer, in_code);
 
-	    /* force_to_mode can expand compounds.  If it just re-expanded the
-	       compound, use gen_lowpart to convert to the desired mode.  */
+	    /* force_to_mode can expand compounds.  If it just re-expanded
+	       the compound, use gen_lowpart to convert to the desired
+	       mode.  */
 	    if (rtx_equal_p (newer, x)
 		/* Likewise if it re-expanded the compound only partially.
 		   This happens for SUBREG of ZERO_EXTRACT if they extract
@@ -8468,7 +8465,7 @@ static rtx
 gen_lowpart_or_truncate (machine_mode mode, rtx x)
 {
   if (!CONST_INT_P (x)
-      && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (x))
+      && partial_subreg_p (mode, GET_MODE (x))
       && !TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
       && !(REG_P (x) && reg_truncated_to_mode (mode, x)))
     {
@@ -8523,7 +8520,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
   /* It is not valid to do a right-shift in a narrower mode
      than the one it came in with.  */
   if ((code == LSHIFTRT || code == ASHIFTRT)
-      && GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (GET_MODE (x)))
+      && partial_subreg_p (mode, GET_MODE (x)))
     op_mode = GET_MODE (x);
 
   /* Truncate MASK to fit OP_MODE.  */
@@ -8560,8 +8557,7 @@ force_to_mode (rtx x, machine_mode mode, unsigned HOST_WIDE_INT mask,
      if the constant masks to zero all the bits the mode doesn't have.  */
   if (GET_CODE (x) == SUBREG
       && subreg_lowpart_p (x)
-      && ((GET_MODE_SIZE (GET_MODE (x))
-	   < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))))
+      && (partial_subreg_p (x)
 	  || (0 == (mask
 		    & GET_MODE_MASK (GET_MODE (x))
 		    & ~GET_MODE_MASK (GET_MODE (SUBREG_REG (x)))))))
@@ -9555,8 +9551,7 @@ make_field_assignment (rtx x)
 
   if (GET_CODE (src) == AND && GET_CODE (XEXP (src, 0)) == SUBREG
       && subreg_lowpart_p (XEXP (src, 0))
-      && (GET_MODE_SIZE (GET_MODE (XEXP (src, 0)))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (XEXP (src, 0)))))
+      && partial_subreg_p (XEXP (src, 0))
       && GET_CODE (SUBREG_REG (XEXP (src, 0))) == ROTATE
       && CONST_INT_P (XEXP (SUBREG_REG (XEXP (src, 0)), 0))
       && INTVAL (XEXP (SUBREG_REG (XEXP (src, 0)), 0)) == -2
@@ -13325,7 +13320,7 @@ reg_truncated_to_mode (machine_mode mode, const_rtx x)
   if (truncated == 0
       || rsp->truncation_label < label_tick_ebb_start)
     return false;
-  if (GET_MODE_SIZE (truncated) <= GET_MODE_SIZE (mode))
+  if (!partial_subreg_p (mode, truncated))
     return true;
   if (TRULY_NOOP_TRUNCATION_MODES_P (mode, truncated))
     return true;
@@ -13348,9 +13343,10 @@ record_truncated_value (rtx x)
       machine_mode original_mode = GET_MODE (SUBREG_REG (x));
       truncated_mode = GET_MODE (x);
 
-      if (GET_MODE_SIZE (original_mode) <= GET_MODE_SIZE (truncated_mode))
+      if (!partial_subreg_p (truncated_mode, original_mode))
 	return true;
 
+      truncated_mode = GET_MODE (x);
       if (TRULY_NOOP_TRUNCATION_MODES_P (truncated_mode, original_mode))
 	return true;
 
@@ -13366,8 +13362,7 @@ record_truncated_value (rtx x)
   rsp = &reg_stat[REGNO (x)];
   if (rsp->truncated_to_mode == 0
       || rsp->truncation_label < label_tick_ebb_start
-      || (GET_MODE_SIZE (truncated_mode)
-	  < GET_MODE_SIZE (rsp->truncated_to_mode)))
+      || partial_subreg_p (truncated_mode, rsp->truncated_to_mode))
     {
       rsp->truncated_to_mode = truncated_mode;
       rsp->truncation_label = label_tick;
@@ -13891,8 +13886,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 	     the remaining registers in place of NOTE.  */
 
 	  if (note != 0 && regno < FIRST_PSEUDO_REGISTER
-	      && (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
-		  > GET_MODE_SIZE (GET_MODE (x))))
+	      && partial_subreg_p (GET_MODE (x), GET_MODE (XEXP (note, 0))))
 	    {
 	      unsigned int deadregno = REGNO (XEXP (note, 0));
 	      unsigned int deadend = END_REGNO (XEXP (note, 0));
@@ -13911,8 +13905,8 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 	     their own REG_DEAD notes lying around.  */
 	  else if ((note == 0
 		    || (note != 0
-			&& (GET_MODE_SIZE (GET_MODE (XEXP (note, 0)))
-			    < GET_MODE_SIZE (GET_MODE (x)))))
+			&& partial_subreg_p (GET_MODE (XEXP (note, 0)),
+					     GET_MODE (x))))
 		   && regno < FIRST_PSEUDO_REGISTER
 		   && REG_NREGS (x) > 1)
 	    {

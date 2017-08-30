@@ -3953,10 +3953,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
      if we test MODE instead, we can get an infinite recursion
      alternating between two modes each wider than MODE.  */
 
-  if (code == NE && GET_CODE (op0) == SUBREG
-      && subreg_lowpart_p (op0)
-      && (GET_MODE_SIZE (GET_MODE (op0))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
+  if (code == NE
+      && partial_subreg_p (op0)
+      && subreg_lowpart_p (op0))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
       rtx tem = record_jump_cond_subreg (inner_mode, op1);
@@ -3965,10 +3964,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
 			  reversed_nonequality);
     }
 
-  if (code == NE && GET_CODE (op1) == SUBREG
-      && subreg_lowpart_p (op1)
-      && (GET_MODE_SIZE (GET_MODE (op1))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
+  if (code == NE
+      && partial_subreg_p (op1)
+      && subreg_lowpart_p (op1))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
       rtx tem = record_jump_cond_subreg (inner_mode, op0);
@@ -5013,8 +5011,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (p->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (p->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (p->exp)))))
 	    continue;
 
 	  if (src && GET_CODE (src) == code && rtx_equal_p (src, p->exp))
@@ -5124,8 +5122,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (elt->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (elt->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (elt->exp)))))
 	    {
 	      elt = elt->next_same_value;
 	      continue;
@@ -5967,8 +5965,7 @@ cse_insn (rtx_insn *insn)
 	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
 		 / UNITS_PER_WORD)
 		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
-	    && (GET_MODE_SIZE (GET_MODE (dest))
-		>= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
+	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {
 	    machine_mode new_mode = GET_MODE (SUBREG_REG (dest));

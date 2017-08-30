@@ -995,10 +995,8 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 					XEXP (op, 0), const0_rtx);
 
 
-      if (GET_CODE (op) == SUBREG
+      if (partial_subreg_p (op)
 	  && subreg_lowpart_p (op)
-	  && (GET_MODE_SIZE (GET_MODE (op))
-	      < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op))))
 	  && GET_CODE (SUBREG_REG (op)) == ASHIFT
 	  && XEXP (SUBREG_REG (op), 0) == const1_rtx)
 	{
@@ -1640,10 +1638,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	 of mode N.  E.g.
 	 (zero_extend:SI (subreg:QI (and:SI (reg:SI) (const_int 63)) 0)) is
 	 (and:SI (reg:SI) (const_int 63)).  */
-      if (GET_CODE (op) == SUBREG
+      if (partial_subreg_p (op)
 	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (op)), &op0_mode)
-	  && GET_MODE_PRECISION (GET_MODE (op)) < GET_MODE_PRECISION (op0_mode)
 	  && GET_MODE_PRECISION (op0_mode) <= HOST_BITS_PER_WIDE_INT
 	  && GET_MODE_PRECISION (int_mode) >= GET_MODE_PRECISION (op0_mode)
 	  && subreg_lowpart_p (op)

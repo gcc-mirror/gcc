@@ -3357,8 +3357,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      || ((caller_mode != caller_promoted_mode
 		   || callee_mode != callee_promoted_mode)
 		  && (caller_unsignedp != callee_unsignedp
-		      || GET_MODE_BITSIZE (caller_mode)
-			 < GET_MODE_BITSIZE (callee_mode)))))
+		      || partial_subreg_p (caller_mode, callee_mode)))))
 	{
 	  try_tail_call = 0;
 	  maybe_complain_about_tail_call (exp,
