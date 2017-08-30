@@ -107,7 +107,7 @@ tilegx_option_override (void)
 
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 static bool
-tilegx_scalar_mode_supported_p (machine_mode mode)
+tilegx_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {

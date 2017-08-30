@@ -84,7 +84,7 @@ tilepro_option_override (void)
 
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 static bool
-tilepro_scalar_mode_supported_p (machine_mode mode)
+tilepro_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {

@@ -395,7 +395,7 @@ default_mangle_assembler_name (const char *name ATTRIBUTE_UNUSED)
    supported by optabs.c.  */
 
 bool
-default_scalar_mode_supported_p (machine_mode mode)
+default_scalar_mode_supported_p (scalar_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
 

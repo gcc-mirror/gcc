@@ -691,7 +691,7 @@ resolve_reload_operand (rtx op)
    indicates only DFmode.  */
 
 static bool
-alpha_scalar_mode_supported_p (machine_mode mode)
+alpha_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {

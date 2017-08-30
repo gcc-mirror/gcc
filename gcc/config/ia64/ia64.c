@@ -310,7 +310,7 @@ static tree ia64_handle_version_id_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
-static bool ia64_scalar_mode_supported_p (machine_mode mode);
+static bool ia64_scalar_mode_supported_p (scalar_mode mode);
 static bool ia64_vector_mode_supported_p (machine_mode mode);
 static bool ia64_legitimate_constant_p (machine_mode, rtx);
 static bool ia64_legitimate_address_p (machine_mode, rtx, bool);
@@ -10964,7 +10964,7 @@ ia64_struct_value_rtx (tree fntype,
 }
 
 static bool
-ia64_scalar_mode_supported_p (machine_mode mode)
+ia64_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {

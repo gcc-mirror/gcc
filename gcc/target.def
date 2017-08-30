@@ -3315,7 +3315,7 @@ The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
 code in @file{optabs.c}.",
- bool, (machine_mode mode),
+ bool, (scalar_mode mode),
  default_scalar_mode_supported_p)
 
 /* Similarly for vector modes.  "Supported" here is less strict.  At

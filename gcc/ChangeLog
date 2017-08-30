@@ -2,6 +2,35 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (scalar_mode_supported_p): Take a scalar_mode
+	instead of a machine_mode.
+	* targhooks.h (default_scalar_mode_supported_p): Likewise.
+	* targhooks.c (default_scalar_mode_supported_p): Likewise.
+	* config/aarch64/aarch64.c (aarch64_scalar_mode_supported_p): Likewise.
+	* config/alpha/alpha.c (alpha_scalar_mode_supported_p): Likewise.
+	* config/arm/arm.c (arm_scalar_mode_supported_p): Likewise.
+	* config/avr/avr.c (avr_scalar_mode_supported_p): Likewise.
+	* config/c6x/c6x.c (c6x_scalar_mode_supported_p): Likewise.
+	* config/i386/i386.c (ix86_scalar_mode_supported_p): Likewise.
+	* config/ia64/ia64.c (ia64_scalar_mode_supported_p): Likewise.
+	* config/mips/mips.c (mips_scalar_mode_supported_p): Likewise.
+	* config/msp430/msp430.c (msp430_scalar_mode_supported_p): Likewise.
+	* config/pa/pa.c (pa_scalar_mode_supported_p): Likewise.
+	* config/pdp11/pdp11.c (pdp11_scalar_mode_supported_p): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_scalar_mode_supported_p):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_scalar_mode_supported_p): Likewise.
+	* config/s390/s390.c (s390_scalar_mode_supported_p): Likewise.
+	* config/spu/spu.c (spu_scalar_mode_supported_p): Likewise.
+	* config/tilegx/tilegx.c (tilegx_scalar_mode_supported_p): Likewise.
+	* config/tilepro/tilepro.c (tilepro_scalar_mode_supported_p):
+	Likewise.
+	* doc/tm.texi: Regenerate.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (opt_scalar_mode): New typedef.
 	* gdbhooks.py (build_pretty_printers): Handle it.
 	* machmode.h (mode_iterator::get_2xwider): Add overload for

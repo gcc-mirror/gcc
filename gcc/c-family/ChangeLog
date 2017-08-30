@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-attribs.c (vector_mode_valid_p) Fold GET_MODE_INNER call
+	into scalar_mode_supported_p call.
+	(handle_mode_attribute): Update call to scalar_mode_supported_p.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-common.c (c_common_fixed_point_type_for_size): Use opt_scalar_mode
 	for the mode iterator.
 
