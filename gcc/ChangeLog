@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs-libfuncs.c (gen_trunc_conv_libfunc): Use is_a
+	<scalar_float_mode>.  Simplify.
+	(gen_extend_conv_libfunc): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (scalar_float_mode): New type.
 	* machmode.h (mode_traits::from_int): Use machine_mode if
 	USE_ENUM_MODES is defined.

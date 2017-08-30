@@ -579,24 +579,20 @@ gen_trunc_conv_libfunc (convert_optab tab,
 			machine_mode tmode,
 			machine_mode fmode)
 {
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) <= GET_MODE_PRECISION (tmode))
+  scalar_float_mode float_tmode, float_fmode;
+  if (!is_a <scalar_float_mode> (fmode, &float_fmode)
+      || !is_a <scalar_float_mode> (tmode, &float_tmode)
+      || float_tmode == float_fmode)
     return;
 
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
+  if (GET_MODE_CLASS (float_tmode) != GET_MODE_CLASS (float_fmode))
+    gen_interclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
+
+  if (GET_MODE_PRECISION (float_fmode) <= GET_MODE_PRECISION (float_tmode))
+    return;
+
+  if (GET_MODE_CLASS (float_tmode) == GET_MODE_CLASS (float_fmode))
+    gen_intraclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
 }
 
 /* Pick proper libcall for extend_optab.  We need to chose if we do
@@ -608,23 +604,19 @@ gen_extend_conv_libfunc (convert_optab tab,
 			 machine_mode tmode,
 			 machine_mode fmode)
 {
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) > GET_MODE_PRECISION (tmode))
+  scalar_float_mode float_tmode, float_fmode;
+  if (!is_a <scalar_float_mode> (fmode, &float_fmode)
+      || !is_a <scalar_float_mode> (tmode, &float_tmode)
+      || float_tmode == float_fmode)
     return;
 
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
+  if (GET_MODE_CLASS (float_tmode) != GET_MODE_CLASS (float_fmode))
+    gen_interclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
+
+  if (GET_MODE_PRECISION (float_fmode) > GET_MODE_PRECISION (float_tmode))
+    return;
+
+  if (GET_MODE_CLASS (float_tmode) == GET_MODE_CLASS (float_fmode))
     gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
 }
 
