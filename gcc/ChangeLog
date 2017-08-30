@@ -1,3 +1,11 @@
+2017-08-30  Jon Beniston  <jon@beniston.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.c (vect_pattern_recog_1): Use VECTOR_TYPE_P instead
+	of VECTOR_MODE_P check.
+	* tree-vect-stmts.c (get_vectype_for_scalar_type_and_size): Allow single
+	element vector types.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* df.h (df_read_modify_subreg_p): Remove in favor of...
