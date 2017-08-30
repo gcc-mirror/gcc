@@ -72,7 +72,6 @@ struct target_rtl *this_target_rtl = &default_target_rtl;
 
 machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
 machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
-machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
 machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* Datastructures maintained for currently processed function in RTL form.  */
@@ -5889,7 +5888,7 @@ init_emit_once (void)
 {
   int i;
   machine_mode mode;
-  machine_mode double_mode;
+  scalar_float_mode double_mode;
 
   /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
      CONST_FIXED, and memory attribute hash tables.  */
@@ -5933,7 +5932,7 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  double_mode = mode_for_size (DOUBLE_TYPE_SIZE, MODE_FLOAT, 0);
+  double_mode = float_mode_for_size (DOUBLE_TYPE_SIZE).require ();
 
   real_from_integer (&dconst0, double_mode, 0, SIGNED);
   real_from_integer (&dconst1, double_mode, 1, SIGNED);
