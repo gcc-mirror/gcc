@@ -1,3 +1,44 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (partial_subreg_p): New function.
+	* caller-save.c (save_call_clobbered_regs): Use it.
+	* calls.c (expand_call): Likewise.
+	* combine.c (combinable_i3pat): Likewise.
+	(simplify_set): Likewise.
+	(make_extraction): Likewise.
+	(make_compound_operation_int): Likewise.
+	(gen_lowpart_or_truncate): Likewise.
+	(force_to_mode): Likewise.
+	(make_field_assignment): Likewise.
+	(reg_truncated_to_mode): Likewise.
+	(record_truncated_value): Likewise.
+	(move_deaths): Likewise.
+	* cse.c (record_jump_cond): Likewise.
+	(cse_insn): Likewise.
+	* cselib.c (cselib_lookup_1): Likewise.
+	* expmed.c (extract_bit_field_using_extv): Likewise.
+	* function.c (assign_parm_setup_reg): Likewise.
+	* ifcvt.c (noce_convert_multiple_sets): Likewise.
+	* ira-build.c (create_insn_allocnos): Likewise.
+	* lra-coalesce.c (merge_pseudos): Likewise.
+	* lra-constraints.c (match_reload): Likewise.
+	(simplify_operand_subreg): Likewise.
+	(curr_insn_transform): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra.c (new_insn_reg): Likewise.
+	(lra_substitute_pseudo): Likewise.
+	* regcprop.c (mode_change_ok): Likewise.
+	(maybe_mode_change): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* reload.c (push_reload): Likewise.
+	(find_reloads): Likewise.
+	(find_reloads_subreg_address): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	(eliminate_regs_1): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+
 2017-08-30  David Edelsohn  <dje.gcc@gmail.com>
 
 	* config/rs6000/rs6000.c (rs6000_expand_binop_builtin): Revert

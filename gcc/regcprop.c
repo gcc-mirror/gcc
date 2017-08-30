@@ -372,7 +372,7 @@ static bool
 mode_change_ok (machine_mode orig_mode, machine_mode new_mode,
 		unsigned int regno ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (orig_mode) < GET_MODE_SIZE (new_mode))
+  if (partial_subreg_p (orig_mode, new_mode))
     return false;
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
@@ -392,8 +392,8 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 		   machine_mode new_mode, unsigned int regno,
 		   unsigned int copy_regno ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (orig_mode)
-      && GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (new_mode))
+  if (partial_subreg_p (copy_mode, orig_mode)
+      && partial_subreg_p (copy_mode, new_mode))
     return NULL_RTX;
 
   /* Avoid creating multiple copies of the stack pointer.  Some ports
@@ -1076,8 +1076,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* If a noop move is using narrower mode than we have recorded,
 	 we need to either remove the noop move, or kill_set_value.  */
       if (noop_p
-	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set)))
-	      < GET_MODE_BITSIZE (vd->e[REGNO (SET_DEST (set))].mode)))
+	  && partial_subreg_p (GET_MODE (SET_DEST (set)),
+			       vd->e[REGNO (SET_DEST (set))].mode))
 	{
 	  if (noop_move_p (insn))
 	    {

@@ -717,9 +717,9 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
       for (reg = curr_id->regs; reg != NULL; reg = reg->next)
 	{
 	  int i, regno = reg->regno;
-	  
-	  if (GET_MODE_SIZE (reg->biggest_mode)
-	      > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode))
+
+	  if (partial_subreg_p (lra_reg_info[regno].biggest_mode,
+				reg->biggest_mode))
 	    lra_reg_info[regno].biggest_mode = reg->biggest_mode;
 	  if (regno < FIRST_PSEUDO_REGISTER)
 	    {
@@ -729,8 +729,8 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		 part of multi-register group.  Process this case
 		 here.  */
 	      for (i = 1; i < hard_regno_nregs[regno][reg->biggest_mode]; i++)
-		if (GET_MODE_SIZE (GET_MODE (regno_reg_rtx[regno + i]))
-		    > GET_MODE_SIZE (lra_reg_info[regno + i].biggest_mode))
+		if (partial_subreg_p (lra_reg_info[regno + i].biggest_mode,
+				      GET_MODE (regno_reg_rtx[regno + i])))
 		  lra_reg_info[regno + i].biggest_mode
 		    = GET_MODE (regno_reg_rtx[regno + i]);
 	    }
