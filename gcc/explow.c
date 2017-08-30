@@ -1906,7 +1906,7 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
       && GET_MODE (val) == BLKmode)
     {
       unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);
-      machine_mode tmpmode;
+      opt_scalar_int_mode tmpmode;
 
       /* int_size_in_bytes can return -1.  We don't need a check here
 	 since the value of bytes will then be large enough that no
@@ -1915,14 +1915,11 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
       FOR_EACH_MODE_IN_CLASS (tmpmode, MODE_INT)
 	{
 	  /* Have we found a large enough mode?  */
-	  if (GET_MODE_SIZE (tmpmode) >= bytes)
+	  if (GET_MODE_SIZE (tmpmode.require ()) >= bytes)
 	    break;
 	}
 
-      /* No suitable mode found.  */
-      gcc_assert (tmpmode != VOIDmode);
-
-      PUT_MODE (val, tmpmode);
+      PUT_MODE (val, tmpmode.require ());
     }
   return val;
 }

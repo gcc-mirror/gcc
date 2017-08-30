@@ -2076,12 +2076,13 @@ extract_fixed_bit_field_1 (machine_mode tmode, rtx op0,
 
   /* Find the narrowest integer mode that contains the field.  */
 
-  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
-    if (GET_MODE_BITSIZE (mode) >= bitsize + bitnum)
-      {
-	op0 = convert_to_mode (mode, op0, 0);
-	break;
-      }
+  opt_scalar_int_mode mode_iter;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+    if (GET_MODE_BITSIZE (mode_iter.require ()) >= bitsize + bitnum)
+      break;
+
+  mode = mode_iter.require ();
+  op0 = convert_to_mode (mode, op0, 0);
 
   if (mode != tmode)
     target = 0;
