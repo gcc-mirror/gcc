@@ -15496,7 +15496,7 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 /* Return the vector mode to be used for inner mode MODE when doing
    vectorization.  */
 static machine_mode
-s390_preferred_simd_mode (machine_mode mode)
+s390_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_VX)
     switch (mode)

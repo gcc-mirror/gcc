@@ -524,7 +524,11 @@ can_vec_mask_load_store_p (machine_mode mode,
 
   /* See if there is any chance the mask load or store might be
      vectorized.  If not, punt.  */
-  vmode = targetm.vectorize.preferred_simd_mode (mode);
+  scalar_mode smode;
+  if (!is_a <scalar_mode> (mode, &smode))
+    return false;
+
+  vmode = targetm.vectorize.preferred_simd_mode (smode);
   if (!VECTOR_MODE_P (vmode))
     return false;
 
@@ -541,9 +545,9 @@ can_vec_mask_load_store_p (machine_mode mode,
     {
       unsigned int cur = 1 << floor_log2 (vector_sizes);
       vector_sizes &= ~cur;
-      if (cur <= GET_MODE_SIZE (mode))
+      if (cur <= GET_MODE_SIZE (smode))
 	continue;
-      vmode = mode_for_vector (mode, cur / GET_MODE_SIZE (mode));
+      vmode = mode_for_vector (smode, cur / GET_MODE_SIZE (smode));
       mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
 						   cur);
       if (VECTOR_MODE_P (vmode)

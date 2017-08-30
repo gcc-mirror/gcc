@@ -13324,7 +13324,7 @@ mips_scalar_mode_supported_p (scalar_mode mode)
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
-mips_preferred_simd_mode (machine_mode mode)
+mips_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_PAIRED_SINGLE_FLOAT
       && mode == SFmode)

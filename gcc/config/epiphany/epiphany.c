@@ -2774,7 +2774,7 @@ epiphany_min_divisions_for_recip_mul (machine_mode mode)
 }
 
 static machine_mode
-epiphany_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
+epiphany_preferred_simd_mode (scalar_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_VECT_DOUBLE ? DImode : SImode;
 }

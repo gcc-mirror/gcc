@@ -332,7 +332,7 @@ arc_vector_mode_supported_p (machine_mode mode)
 /* Implements target hook TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
-arc_preferred_simd_mode (machine_mode mode)
+arc_preferred_simd_mode (scalar_mode mode)
 {
   switch (mode)
     {

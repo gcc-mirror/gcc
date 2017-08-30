@@ -5805,7 +5805,7 @@ the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (machine_mode @var{mode})
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (scalar_mode @var{mode})
 This hook should return the preferred mode for vectorizing scalar
 mode @var{mode}.  The default is
 equal to @code{word_mode}, because the vectorizer can do some

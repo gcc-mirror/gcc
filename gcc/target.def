@@ -1859,7 +1859,7 @@ mode @var{mode}.  The default is\n\
 equal to @code{word_mode}, because the vectorizer can do some\n\
 transformations even in absence of specialized @acronym{SIMD} hardware.",
  machine_mode,
- (machine_mode mode),
+ (scalar_mode mode),
  default_preferred_simd_mode)
 
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
