@@ -2,6 +2,16 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expmed.c (strict_volatile_bitfield_p): Change the type of fieldmode
+	to scalar_int_mode.  Remove check for SCALAR_INT_MODE_P.
+	(store_bit_field): Check is_a <scalar_int_mode> before calling
+	strict_volatile_bitfield_p.
+	(extract_bit_field): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (cstore_mode): Return a scalar_int_mode.
 	* doc/tm.texi: Regenerate.
 	* config/sparc/sparc.c (sparc_cstore_mode): Return a scalar_int_mode.

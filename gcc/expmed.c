@@ -516,7 +516,7 @@ lowpart_bit_field_p (unsigned HOST_WIDE_INT bitnum,
 static bool
 strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
 			    unsigned HOST_WIDE_INT bitnum,
-			    machine_mode fieldmode,
+			    scalar_int_mode fieldmode,
 			    unsigned HOST_WIDE_INT bitregion_start,
 			    unsigned HOST_WIDE_INT bitregion_end)
 {
@@ -527,11 +527,6 @@ strict_volatile_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
   if (!MEM_P (op0)
       || !MEM_VOLATILE_P (op0)
       || flag_strict_volatile_bitfields <= 0)
-    return false;
-
-  /* Non-integral modes likely only happen with packed structures.
-     Punt.  */
-  if (!SCALAR_INT_MODE_P (fieldmode))
     return false;
 
   /* The bit size must not be larger than the field mode, and
@@ -1059,19 +1054,21 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 		 rtx value, bool reverse)
 {
   /* Handle -fstrict-volatile-bitfields in the cases where it applies.  */
-  if (strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, fieldmode,
-				  bitregion_start, bitregion_end))
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (fieldmode, &int_mode)
+      && strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, int_mode,
+				     bitregion_start, bitregion_end))
     {
       /* Storing of a full word can be done with a simple store.
 	 We know here that the field can be accessed with one single
 	 instruction.  For targets that support unaligned memory,
 	 an unaligned access may be necessary.  */
-      if (bitsize == GET_MODE_BITSIZE (fieldmode))
+      if (bitsize == GET_MODE_BITSIZE (int_mode))
 	{
-	  str_rtx = adjust_bitfield_address (str_rtx, fieldmode,
+	  str_rtx = adjust_bitfield_address (str_rtx, int_mode,
 					     bitnum / BITS_PER_UNIT);
 	  if (reverse)
-	    value = flip_storage_order (fieldmode, value);
+	    value = flip_storage_order (int_mode, value);
 	  gcc_assert (bitnum % BITS_PER_UNIT == 0);
 	  emit_move_insn (str_rtx, value);
 	}
@@ -1079,12 +1076,12 @@ store_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 	{
 	  rtx temp;
 
-	  str_rtx = narrow_bit_field_mem (str_rtx, fieldmode, bitsize, bitnum,
+	  str_rtx = narrow_bit_field_mem (str_rtx, int_mode, bitsize, bitnum,
 					  &bitnum);
-	  gcc_assert (bitnum + bitsize <= GET_MODE_BITSIZE (fieldmode));
+	  gcc_assert (bitnum + bitsize <= GET_MODE_BITSIZE (int_mode));
 	  temp = copy_to_reg (str_rtx);
 	  if (!store_bit_field_1 (temp, bitsize, bitnum, 0, 0,
-				  fieldmode, value, reverse, true))
+				  int_mode, value, reverse, true))
 	    gcc_unreachable ();
 
 	  emit_move_insn (str_rtx, temp);
@@ -1955,25 +1952,27 @@ extract_bit_field (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
   else
     mode1 = tmode;
 
-  if (strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, mode1, 0, 0))
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (mode1, &int_mode)
+      && strict_volatile_bitfield_p (str_rtx, bitsize, bitnum, int_mode, 0, 0))
     {
-      /* Extraction of a full MODE1 value can be done with a simple load.
+      /* Extraction of a full INT_MODE value can be done with a simple load.
 	 We know here that the field can be accessed with one single
 	 instruction.  For targets that support unaligned memory,
 	 an unaligned access may be necessary.  */
-      if (bitsize == GET_MODE_BITSIZE (mode1))
+      if (bitsize == GET_MODE_BITSIZE (int_mode))
 	{
-	  rtx result = adjust_bitfield_address (str_rtx, mode1,
+	  rtx result = adjust_bitfield_address (str_rtx, int_mode,
 						bitnum / BITS_PER_UNIT);
 	  if (reverse)
-	    result = flip_storage_order (mode1, result);
+	    result = flip_storage_order (int_mode, result);
 	  gcc_assert (bitnum % BITS_PER_UNIT == 0);
 	  return convert_extracted_bit_field (result, mode, tmode, unsignedp);
 	}
 
-      str_rtx = narrow_bit_field_mem (str_rtx, mode1, bitsize, bitnum,
+      str_rtx = narrow_bit_field_mem (str_rtx, int_mode, bitsize, bitnum,
 				      &bitnum);
-      gcc_assert (bitnum + bitsize <= GET_MODE_BITSIZE (mode1));
+      gcc_assert (bitnum + bitsize <= GET_MODE_BITSIZE (int_mode));
       str_rtx = copy_to_reg (str_rtx);
     }
 
