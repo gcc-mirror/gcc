@@ -4245,12 +4245,12 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	      <= GET_MODE_SIZE (TYPE_MODE (rhs_type))))
 	goto unsupported;
 
-      rhs_mode = TYPE_MODE (rhs_type);
       fltsz = GET_MODE_SIZE (TYPE_MODE (lhs_type));
-      for (rhs_mode = GET_MODE_2XWIDER_MODE (TYPE_MODE (rhs_type));
-	   rhs_mode != VOIDmode && GET_MODE_SIZE (rhs_mode) <= fltsz;
-	   rhs_mode = GET_MODE_2XWIDER_MODE (rhs_mode))
+      FOR_EACH_2XWIDER_MODE (rhs_mode, TYPE_MODE (rhs_type))
 	{
+	  if (GET_MODE_SIZE (rhs_mode) > fltsz)
+	    break;
+
 	  cvt_type
 	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
 	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);

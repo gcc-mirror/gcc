@@ -9110,7 +9110,7 @@ type_natural_mode (const_tree type, const CUMULATIVE_ARGS *cum,
 	    mode = MIN_MODE_VECTOR_INT;
 
 	  /* Get the mode which has this inner mode and number of units.  */
-	  for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
+	  FOR_EACH_MODE_FROM (mode, mode)
 	    if (GET_MODE_NUNITS (mode) == TYPE_VECTOR_SUBPARTS (type)
 		&& GET_MODE_INNER (mode) == innermode)
 	      {

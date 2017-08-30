@@ -3449,9 +3449,7 @@ omp_clause_aligned_alignment (tree clause)
   static enum mode_class classes[]
     = { MODE_INT, MODE_VECTOR_INT, MODE_FLOAT, MODE_VECTOR_FLOAT };
   for (int i = 0; i < 4; i += 2)
-    for (mode = GET_CLASS_NARROWEST_MODE (classes[i]);
-	 mode != VOIDmode;
-	 mode = GET_MODE_WIDER_MODE (mode))
+    FOR_EACH_MODE_IN_CLASS (mode, classes[i])
       {
 	vmode = targetm.vectorize.preferred_simd_mode (mode);
 	if (GET_MODE_CLASS (vmode) != classes[i + 1])

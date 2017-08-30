@@ -3946,9 +3946,8 @@ target_supports_divmod_p (optab divmod_optab, optab div_optab, machine_mode mode
     {
       /* If optab_handler exists for div_optab, perhaps in a wider mode,
 	 we don't want to use the libfunc even if it exists for given mode.  */ 
-      for (machine_mode div_mode = mode;
-	   div_mode != VOIDmode;
-	   div_mode = GET_MODE_WIDER_MODE (div_mode))
+      machine_mode div_mode;
+      FOR_EACH_MODE_FROM (div_mode, mode)
 	if (optab_handler (div_optab, div_mode) != CODE_FOR_nothing)
 	  return false;
 

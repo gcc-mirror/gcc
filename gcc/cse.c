@@ -4845,12 +4845,11 @@ cse_insn (rtx_insn *insn)
 	{
 	  machine_mode wider_mode;
 
-	  for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	       wider_mode != VOIDmode
-	       && GET_MODE_PRECISION (wider_mode) <= BITS_PER_WORD
-	       && src_related == 0;
-	       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	  FOR_EACH_WIDER_MODE (wider_mode, mode)
 	    {
+	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
+		break;
+
 	      struct table_elt *const_elt
 		= lookup (src_const, HASH (src_const, wider_mode), wider_mode);
 
@@ -4864,6 +4863,9 @@ cse_insn (rtx_insn *insn)
 		    src_related = gen_lowpart (mode, const_elt->exp);
 		    break;
 		  }
+
+	      if (src_related != 0)
+		break;
 	    }
 	}
 
@@ -4880,10 +4882,11 @@ cse_insn (rtx_insn *insn)
 	  machine_mode tmode;
 	  rtx new_and = gen_rtx_AND (VOIDmode, NULL_RTX, XEXP (src, 1));
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  FOR_EACH_WIDER_MODE (tmode, mode)
 	    {
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
+
 	      rtx inner = gen_lowpart (tmode, XEXP (src, 0));
 	      struct table_elt *larger_elt;
 
@@ -4930,11 +4933,12 @@ cse_insn (rtx_insn *insn)
 	  PUT_CODE (memory_extend_rtx, extend_op);
 	  XEXP (memory_extend_rtx, 0) = src;
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  FOR_EACH_WIDER_MODE (tmode, mode)
 	    {
 	      struct table_elt *larger_elt;
+
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
 
 	      PUT_MODE (memory_extend_rtx, tmode);
 	      larger_elt = lookup (memory_extend_rtx,

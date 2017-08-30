@@ -1,4 +1,68 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* machmode.h (mode_traits): New structure.
+	(get_narrowest_mode): New function.
+	(mode_iterator::start): Likewise.
+	(mode_iterator::iterate_p): Likewise.
+	(mode_iterator::get_wider): Likewise.
+	(mode_iterator::get_known_wider): Likewise.
+	(mode_iterator::get_2xwider): Likewise.
+	(FOR_EACH_MODE_IN_CLASS): New mode iterator.
+	(FOR_EACH_MODE): Likewise.
+	(FOR_EACH_MODE_FROM): Likewise.
+	(FOR_EACH_MODE_UNTIL): Likewise.
+	(FOR_EACH_WIDER_MODE): Likewise.
+	(FOR_EACH_2XWIDER_MODE): Likewise.
+	* builtins.c (expand_builtin_strlen): Use new mode iterators.
+	* combine.c (simplify_comparison): Likewise
+	* config/i386/i386.c (type_natural_mode): Likewise.
+	* cse.c (cse_insn): Likewise.
+	* dse.c (find_shift_sequence): Likewise.
+	* emit-rtl.c (init_derived_machine_modes): Likewise.
+	(init_emit_once): Likewise.
+	* explow.c (hard_function_value): Likewise.
+	* expmed.c (extract_fixed_bit_field_1): Likewise.
+	(extract_bit_field_1): Likewise.
+	(expand_divmod): Likewise.
+	(emit_store_flag_1): Likewise.
+	* expr.c (init_expr_target): Likewise.
+	(convert_move): Likewise.
+	(alignment_for_piecewise_move): Likewise.
+	(widest_int_mode_for_size): Likewise.
+	(emit_block_move_via_movmem): Likewise.
+	(copy_blkmode_to_reg): Likewise.
+	(set_storage_via_setmem): Likewise.
+	(compress_float_constant): Likewise.
+	* omp-low.c (omp_clause_aligned_alignment): Likewise.
+	* optabs-query.c (get_best_extraction_insn): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	(expand_twoval_unop): Likewise.
+	(expand_twoval_binop): Likewise.
+	(widen_leading): Likewise.
+	(widen_bswap): Likewise.
+	(expand_parity): Likewise.
+	(expand_unop): Likewise.
+	(prepare_cmp_insn): Likewise.
+	(prepare_float_lib_cmp): Likewise.
+	(expand_float): Likewise.
+	(expand_fix): Likewise.
+	(expand_sfix_optab): Likewise.
+	* postreload.c (move2add_use_add2_insn): Likewise.
+	* reg-stack.c (reg_to_stack): Likewise.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	* rtlanal.c (init_num_sign_bit_copies_in_rep): Likewise.
+	* stor-layout.c (mode_for_size): Likewise.
+	(smallest_mode_for_size): Likewise.
+	(mode_for_vector): Likewise.
+	(finish_bitfield_representative): Likewise.
+	* tree-ssa-math-opts.c (target_supports_divmod_p): Likewise.
+	* tree-vect-generic.c (type_for_widest_vector_mode): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Likewise.
+	* var-tracking.c (prepare_call_arguments): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

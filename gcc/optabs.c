@@ -1251,9 +1251,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass)
       && methods != OPTAB_DIRECT && methods != OPTAB_LIB)
-    for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	 wider_mode != VOIDmode;
-	 wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+    FOR_EACH_WIDER_MODE (wider_mode, mode)
       {
 	if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing
 	    || (binoptab == smul_optab
@@ -1794,9 +1792,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
 	  if (find_widening_optab_handler (binoptab, wider_mode, mode, 1)
 		  != CODE_FOR_nothing
@@ -1952,9 +1948,7 @@ expand_twoval_unop (optab unoptab, rtx op0, rtx targ0, rtx targ1,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
 	  if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
 	    {
@@ -2035,9 +2029,7 @@ expand_twoval_binop (optab binoptab, rtx op0, rtx op1, rtx targ0, rtx targ1,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
 	  if (optab_handler (binoptab, wider_mode) != CODE_FOR_nothing)
 	    {
@@ -2139,9 +2131,7 @@ widen_leading (machine_mode mode, rtx op0, rtx target, optab unoptab)
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
       machine_mode wider_mode;
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
 	  if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
 	    {
@@ -2311,9 +2301,7 @@ widen_bswap (machine_mode mode, rtx op0, rtx target)
   if (!CLASS_HAS_WIDER_MODES_P (mclass))
     return NULL_RTX;
 
-  for (wider_mode = GET_MODE_WIDER_MODE (mode);
-       wider_mode != VOIDmode;
-       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+  FOR_EACH_WIDER_MODE (wider_mode, mode)
     if (optab_handler (bswap_optab, wider_mode) != CODE_FOR_nothing)
       goto found;
   return NULL_RTX;
@@ -2375,8 +2363,7 @@ expand_parity (machine_mode mode, rtx op0, rtx target)
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
       machine_mode wider_mode;
-      for (wider_mode = mode; wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_MODE_FROM (wider_mode, mode)
 	{
 	  if (optab_handler (popcount_optab, wider_mode) != CODE_FOR_nothing)
 	    {
@@ -2828,9 +2815,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
     }
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
-    for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	 wider_mode != VOIDmode;
-	 wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+    FOR_EACH_WIDER_MODE (wider_mode, mode)
       {
 	if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing)
 	  {
@@ -2997,9 +2982,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
 
   if (CLASS_HAS_WIDER_MODES_P (mclass))
     {
-      for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	   wider_mode != VOIDmode;
-	   wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+      FOR_EACH_WIDER_MODE (wider_mode, mode)
 	{
 	  if (optab_handler (unoptab, wider_mode) != CODE_FOR_nothing
 	      || optab_libfunc (unoptab, wider_mode))
@@ -3800,9 +3783,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
       /* Try to use a memory block compare insn - either cmpstr
 	 or cmpmem will do.  */
-      for (cmp_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   cmp_mode != VOIDmode;
-	   cmp_mode = GET_MODE_WIDER_MODE (cmp_mode))
+      FOR_EACH_MODE_IN_CLASS (cmp_mode, MODE_INT)
 	{
 	  cmp_code = direct_optab_handler (cmpmem_optab, cmp_mode);
 	  if (cmp_code == CODE_FOR_nothing)
@@ -3864,9 +3845,8 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
   mclass = GET_MODE_CLASS (mode);
   test = gen_rtx_fmt_ee (comparison, VOIDmode, x, y);
-  cmp_mode = mode;
-  do
-   {
+  FOR_EACH_MODE_FROM (cmp_mode, mode)
+    {
       enum insn_code icode;
       icode = optab_handler (cbranch_optab, cmp_mode);
       if (icode != CODE_FOR_nothing
@@ -3890,9 +3870,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
       if (methods == OPTAB_DIRECT || !CLASS_HAS_WIDER_MODES_P (mclass))
 	break;
-      cmp_mode = GET_MODE_WIDER_MODE (cmp_mode);
     }
-  while (cmp_mode != VOIDmode);
 
   if (methods != OPTAB_LIB_WIDEN)
     goto fail;
@@ -4075,9 +4053,7 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
   bool reversed_p = false;
   cmp_mode = targetm.libgcc_cmp_return_mode ();
 
-  for (mode = orig_mode;
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_FROM (mode, orig_mode)
     {
       if (code_to_optab (comparison)
 	  && (libfunc = optab_libfunc (code_to_optab (comparison), mode)))
@@ -4650,10 +4626,8 @@ expand_float (rtx to, rtx from, int unsignedp)
      wider mode.  If the integer mode is wider than the mode of FROM,
      we can do the conversion signed even if the input is unsigned.  */
 
-  for (fmode = GET_MODE (to); fmode != VOIDmode;
-       fmode = GET_MODE_WIDER_MODE (fmode))
-    for (imode = GET_MODE (from); imode != VOIDmode;
-	 imode = GET_MODE_WIDER_MODE (imode))
+  FOR_EACH_MODE_FROM (fmode, GET_MODE (to))
+    FOR_EACH_MODE_FROM (imode, GET_MODE (from))
       {
 	int doing_unsigned = unsignedp;
 
@@ -4700,8 +4674,7 @@ expand_float (rtx to, rtx from, int unsignedp)
 	 least as wide as the target.  Using FMODE will avoid rounding woes
 	 with unsigned values greater than the signed maximum value.  */
 
-      for (fmode = GET_MODE (to);  fmode != VOIDmode;
-	   fmode = GET_MODE_WIDER_MODE (fmode))
+      FOR_EACH_MODE_FROM (fmode, GET_MODE (to))
 	if (GET_MODE_PRECISION (GET_MODE (from)) < GET_MODE_BITSIZE (fmode)
 	    && can_float_p (fmode, GET_MODE (from), 0) != CODE_FOR_nothing)
 	  break;
@@ -4848,10 +4821,8 @@ expand_fix (rtx to, rtx from, int unsignedp)
      this conversion.  If the integer mode is wider than the mode of TO,
      we can do the conversion either signed or unsigned.  */
 
-  for (fmode = GET_MODE (from); fmode != VOIDmode;
-       fmode = GET_MODE_WIDER_MODE (fmode))
-    for (imode = GET_MODE (to); imode != VOIDmode;
-	 imode = GET_MODE_WIDER_MODE (imode))
+  FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
+    FOR_EACH_MODE_FROM (imode, GET_MODE (to))
       {
 	int doing_unsigned = unsignedp;
 
@@ -4911,8 +4882,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
      simply clears out that bit.  The rest is trivial.  */
 
   if (unsignedp && GET_MODE_PRECISION (GET_MODE (to)) <= HOST_BITS_PER_WIDE_INT)
-    for (fmode = GET_MODE (from); fmode != VOIDmode;
-	 fmode = GET_MODE_WIDER_MODE (fmode))
+    FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
       if (CODE_FOR_nothing != can_fix_p (GET_MODE (to), fmode, 0, &must_trunc)
 	  && (!DECIMAL_FLOAT_MODE_P (fmode)
 	      || GET_MODE_BITSIZE (fmode) > GET_MODE_PRECISION (GET_MODE (to))))
@@ -5113,10 +5083,8 @@ expand_sfix_optab (rtx to, rtx from, convert_optab tab)
      this conversion.  If the integer mode is wider than the mode of TO,
      we can do the conversion either signed or unsigned.  */
 
-  for (fmode = GET_MODE (from); fmode != VOIDmode;
-       fmode = GET_MODE_WIDER_MODE (fmode))
-    for (imode = GET_MODE (to); imode != VOIDmode;
-	 imode = GET_MODE_WIDER_MODE (imode))
+  FOR_EACH_MODE_FROM (fmode, GET_MODE (from))
+    FOR_EACH_MODE_FROM (imode, GET_MODE (to))
       {
 	icode = convert_optab_handler (tab, imode, fmode);
 	if (icode != CODE_FOR_nothing)

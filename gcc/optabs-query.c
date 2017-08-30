@@ -194,21 +194,20 @@ get_best_extraction_insn (extraction_insn *insn,
 			  machine_mode field_mode)
 {
   machine_mode mode = smallest_mode_for_size (struct_bits, MODE_INT);
-  while (mode != VOIDmode)
+  FOR_EACH_MODE_FROM (mode, mode)
     {
       if (get_extraction_insn (insn, pattern, type, mode))
 	{
-	  while (mode != VOIDmode
-		 && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (field_mode)
-		 && !TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
-						    field_mode))
+	  FOR_EACH_MODE_FROM (mode, mode)
 	    {
+	      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (field_mode)
+		  || TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
+						    field_mode))
+		break;
 	      get_extraction_insn (insn, pattern, type, mode);
-	      mode = GET_MODE_WIDER_MODE (mode);
 	    }
 	  return true;
 	}
-      mode = GET_MODE_WIDER_MODE (mode);
     }
   return false;
 }

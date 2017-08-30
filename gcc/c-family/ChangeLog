@@ -1,4 +1,12 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_fixed_point_type_for_size): Use new mode
+	iterators.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
