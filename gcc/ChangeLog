@@ -2,6 +2,21 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* optabs-query.h (extraction_insn::struct_mode): Change type to
+	opt_scalar_int_mode and update comment.
+	(extraction_insn::field_mode): Change type to scalar_int_mode.
+	(extraction_insn::pos_mode): Likewise.
+	* combine.c (make_extraction): Update accordingly.
+	* optabs-query.c (get_traditional_extraction_insn): Likewise.
+	(get_optab_extraction_insn): Likewise.
+	* recog.c (simplify_while_replacing): Likewise.
+	* expmed.c (narrow_bit_field_mem): Change the type of the mode
+	parameter to opt_scalar_int_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (bit_field_mode_iterator::next_mode): Take a pointer
 	to a scalar_int_mode instead of a machine_mode.
 	(bit_field_mode_iterator::m_mode): Change type to opt_scalar_int_mode.

@@ -663,25 +663,18 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
 					MEM_ADDR_SPACE (XEXP (x, 0)))
 	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
-	  machine_mode wanted_mode = VOIDmode;
 	  int pos = INTVAL (XEXP (x, 2));
-
+	  machine_mode new_mode = is_mode;
 	  if (GET_CODE (x) == ZERO_EXTRACT && targetm.have_extzv ())
-	    {
-	      wanted_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
-	    }
+	    new_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
 	  else if (GET_CODE (x) == SIGN_EXTRACT && targetm.have_extv ())
-	    {
-	      wanted_mode = insn_data[targetm.code_for_extv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
-	    }
+	    new_mode = insn_data[targetm.code_for_extv].operand[1].mode;
+	  scalar_int_mode wanted_mode = (new_mode == VOIDmode
+					 ? word_mode
+					 : as_a <scalar_int_mode> (new_mode));
 
 	  /* If we have a narrower mode, we can do something.  */
-	  if (wanted_mode != VOIDmode
-	      && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
+	  if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 	    {
 	      int offset = pos / BITS_PER_UNIT;
 	      rtx newmem;

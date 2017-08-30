@@ -7619,7 +7619,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (get_best_reg_extraction_insn (&insn, pattern,
 				    GET_MODE_BITSIZE (inner_mode), mode))
     {
-      wanted_inner_reg_mode = insn.struct_mode;
+      wanted_inner_reg_mode = insn.struct_mode.require ();
       pos_mode = insn.pos_mode;
       extraction_mode = insn.field_mode;
     }

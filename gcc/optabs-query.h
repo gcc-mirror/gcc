@@ -141,16 +141,17 @@ struct extraction_insn
   enum insn_code icode;
 
   /* The mode that the structure operand should have.  This is byte_mode
-     when using the legacy insv, extv and extzv patterns to access memory.  */
-  machine_mode struct_mode;
+     when using the legacy insv, extv and extzv patterns to access memory.
+     If no mode is given, the structure is a BLKmode memory.  */
+  opt_scalar_int_mode struct_mode;
 
   /* The mode of the field to be inserted or extracted, and by extension
      the mode of the insertion or extraction itself.  */
-  machine_mode field_mode;
+  scalar_int_mode field_mode;
 
   /* The mode of the field's bit position.  This is only important
      when the position is variable rather than constant.  */
-  machine_mode pos_mode;
+  scalar_int_mode pos_mode;
 };
 
 bool get_best_reg_extraction_insn (extraction_insn *,
