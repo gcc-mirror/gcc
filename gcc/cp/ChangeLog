@@ -1,3 +1,10 @@
+2017-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make taking the address of an overloaded function a non-deduced context
+
+	* pt.c (unify_overload_resolution_failure): Remove.
+	(unify_one_argument): Adjust.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
