@@ -160,8 +160,10 @@ ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
 ECHO_T = @ECHO_T@
 EXEEXT = @EXEEXT@
+GCC_FOR_TARGET = @GCC_FOR_TARGET@
 GOC = @GOC@
 GOCFLAGS = $(CFLAGS_FOR_TARGET)
+GOC_FOR_TARGET = @GOC_FOR_TARGET@
 INSTALL = @INSTALL@
 INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
@@ -316,7 +318,8 @@ GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
 MOSTLYCLEANFILES = \
 	zdefaultcc.go s-zdefaultcc \
-	check-gccgo gotools.head *-testlog gotools.sum gotools.log *.sent
+	check-gccgo check-gcc gotools.head *-testlog gotools.sum gotools.log \
+	*.sent
 
 
 # For a native build we build the programs using the newly built libgo
@@ -332,6 +335,8 @@ MOSTLYCLEANFILES = \
 @NATIVE_TRUE@	export PATH; \
 @NATIVE_TRUE@	GCCGO="$(abs_builddir)/check-gccgo"; \
 @NATIVE_TRUE@	export GCCGO; \
+@NATIVE_TRUE@	CC="$(abs_builddir)/check-gcc"; \
+@NATIVE_TRUE@	export CC; \
 @NATIVE_TRUE@	GCCGOTOOLDIR="$(abs_builddir)"; \
 @NATIVE_TRUE@	export GCCGOTOOLDIR; \
 @NATIVE_TRUE@	GO_TESTING_GOTOOLS=yes; \
@@ -345,7 +350,7 @@ MOSTLYCLEANFILES = \
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
-@NATIVE_TRUE@ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
+@NATIVE_TRUE@ECHO_ENV = PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GCCGO='$(abs_builddir)/check-gccgo' CC='$(abs_builddir)/check-gcc' GCCGOTOOLDIR='$(abs_builddir)' GO_TESTING_GOTOOLS=yes LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'` GOROOT=`echo $${abs_libgodir}`
 all: all-am
 
 .SUFFIXES:
@@ -734,14 +739,25 @@ mostlyclean-local:
 # check-gccgo is a little shell script that executes gccgo with the
 # options to pick up the newly built libgo.
 @NATIVE_TRUE@check-gccgo: Makefile
-@NATIVE_TRUE@	rm -f $@
-@NATIVE_TRUE@	echo "#!/bin/sh" > $@
+@NATIVE_TRUE@	rm -f $@ $@.tmp
+@NATIVE_TRUE@	echo "#!/bin/sh" > $@.tmp
 @NATIVE_TRUE@	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
-@NATIVE_TRUE@	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@
-@NATIVE_TRUE@	chmod +x $@
+@NATIVE_TRUE@	echo "$(GOCOMPILE)" '"$$@"' "-I $${abs_libgodir} -L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+@NATIVE_TRUE@	chmod +x $@.tmp
+@NATIVE_TRUE@	mv -f $@.tmp $@
+
+# check-gcc is a little shell script that executes the newly built gcc
+# with the options to pick up the newly built libgo.
+@NATIVE_TRUE@check-gcc: Makefile
+@NATIVE_TRUE@	rm -f $@ $@.tmp
+@NATIVE_TRUE@	echo "#!/bin/sh" > $@.tmp
+@NATIVE_TRUE@	abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
+@NATIVE_TRUE@	echo "$(GCC_FOR_TARGET)" '"$$@"' "-L $${abs_libgodir} -L $${abs_libgodir}/.libs" >> $@.tmp
+@NATIVE_TRUE@	chmod +x $@.tmp
+@NATIVE_TRUE@	mv -f $@.tmp $@
 
 # check-go-tools runs `go test cmd/go` in our environment.
-@NATIVE_TRUE@check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+@NATIVE_TRUE@check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf check-go-dir cmd_go-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-go-dir/src/cmd/go
 @NATIVE_TRUE@	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
@@ -761,7 +777,7 @@ mostlyclean-local:
 # The runtime package is also tested as part of libgo,
 # but the runtime tests use the go tool heavily, so testing
 # here too will catch more problems.
-@NATIVE_TRUE@check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+@NATIVE_TRUE@check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf check-runtime-dir runtime-testlog
 @NATIVE_TRUE@	$(MKDIR_P) check-runtime-dir
 @NATIVE_TRUE@	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
@@ -780,7 +796,7 @@ mostlyclean-local:
 @NATIVE_TRUE@	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.
-@NATIVE_TRUE@check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+@NATIVE_TRUE@check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf cgo-test-dir cgo-testlog
 @NATIVE_TRUE@	$(MKDIR_P) cgo-test-dir/misc/cgo
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/test cgo-test-dir/misc/cgo/
@@ -794,7 +810,7 @@ mostlyclean-local:
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
 # in our environment.
-@NATIVE_TRUE@check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo
+@NATIVE_TRUE@check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 @NATIVE_TRUE@	rm -rf carchive-test-dir carchive-testlog
 @NATIVE_TRUE@	$(MKDIR_P) carchive-test-dir/misc/cgo
 @NATIVE_TRUE@	cp -r $(libgomiscdir)/cgo/testcarchive carchive-test-dir/misc/cgo/
