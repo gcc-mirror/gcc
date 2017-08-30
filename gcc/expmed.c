@@ -5291,7 +5291,8 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
   struct expand_operand ops[4];
   rtx op0, comparison, subtarget;
   rtx_insn *last;
-  machine_mode result_mode = targetm.cstore_mode (icode);
+  scalar_int_mode result_mode = targetm.cstore_mode (icode);
+  scalar_int_mode int_target_mode;
 
   last = get_last_insn ();
   x = prepare_operand (icode, x, 2, mode, compare_mode, unsignedp);
@@ -5303,9 +5304,11 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
     }
 
   if (target_mode == VOIDmode)
-    target_mode = result_mode;
+    int_target_mode = result_mode;
+  else
+    int_target_mode = as_a <scalar_int_mode> (target_mode);
   if (!target)
-    target = gen_reg_rtx (target_mode);
+    target = gen_reg_rtx (int_target_mode);
 
   comparison = gen_rtx_fmt_ee (code, result_mode, x, y);
 
@@ -5321,20 +5324,20 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
   subtarget = ops[0].value;
 
   /* If we are converting to a wider mode, first convert to
-     TARGET_MODE, then normalize.  This produces better combining
+     INT_TARGET_MODE, then normalize.  This produces better combining
      opportunities on machines that have a SIGN_EXTRACT when we are
      testing a single bit.  This mostly benefits the 68k.
 
      If STORE_FLAG_VALUE does not have the sign bit set when
      interpreted in MODE, we can do this conversion as unsigned, which
      is usually more efficient.  */
-  if (GET_MODE_SIZE (target_mode) > GET_MODE_SIZE (result_mode))
+  if (GET_MODE_SIZE (int_target_mode) > GET_MODE_SIZE (result_mode))
     {
       convert_move (target, subtarget,
 		    val_signbit_known_clear_p (result_mode,
 					       STORE_FLAG_VALUE));
       op0 = target;
-      result_mode = target_mode;
+      result_mode = int_target_mode;
     }
   else
     op0 = subtarget;
@@ -5370,7 +5373,7 @@ emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
     }
 
   /* If we were converting to a smaller mode, do the conversion now.  */
-  if (target_mode != result_mode)
+  if (int_target_mode != result_mode)
     {
       convert_move (target, op0, 0);
       return target;

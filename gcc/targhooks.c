@@ -1870,10 +1870,10 @@ default_pch_valid_p (const void *data_p, size_t len)
 
 /* Default version of cstore_mode.  */
 
-machine_mode
+scalar_int_mode
 default_cstore_mode (enum insn_code icode)
 {
-  return insn_data[(int) icode].operand[0].mode;
+  return as_a <scalar_int_mode> (insn_data[(int) icode].operand[0].mode);
 }
 
 /* Default version of member_type_forces_blk.  */

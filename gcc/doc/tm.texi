@@ -2902,7 +2902,7 @@ This hook defines a class of registers which could be used for spilling  pseudos
 This hook should return @code{true} if given class of registers should  be an allocno class in any way.  Usually RA uses only one register  class from all classes containing the same register set.  In some  complicated cases, you need to have two or more such classes as  allocno ones for RA correct work.  Not defining this hook is  equivalent to returning @code{false} for all inputs.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
+@deftypefn {Target Hook} scalar_int_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
 This hook defines the machine mode to use for the boolean result of  conditional store patterns.  The ICODE argument is the instruction code  for the cstore being performed.  Not definiting this hook is the same  as accepting the mode encoded into operand 0 of the cstore expander  patterns.
 @end deftypefn
 
