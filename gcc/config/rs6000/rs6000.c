@@ -14000,17 +14000,14 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
   if (arg0 == error_mark_node || arg1 == error_mark_node)
     return const0_rtx;
 
-  switch (icode)
+  if (icode == CODE_FOR_altivec_vcfux
+      || icode == CODE_FOR_altivec_vcfsx
+      || icode == CODE_FOR_altivec_vctsxs
+      || icode == CODE_FOR_altivec_vctuxs
+      || icode == CODE_FOR_altivec_vspltb
+      || icode == CODE_FOR_altivec_vsplth
+      || icode == CODE_FOR_altivec_vspltw)
     {
-    default:
-      break;
-    case CODE_FOR_altivec_vcfux:
-    case CODE_FOR_altivec_vcfsx:
-    case CODE_FOR_altivec_vctsxs:
-    case CODE_FOR_altivec_vctuxs:
-    case CODE_FOR_altivec_vspltb:
-    case CODE_FOR_altivec_vsplth:
-    case CODE_FOR_altivec_vspltw:
       /* Only allow 5-bit unsigned literals.  */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
@@ -14019,15 +14016,16 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 2 must be a 5-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
-      break;
-    case CODE_FOR_dfptstsfi_eq_dd:
-    case CODE_FOR_dfptstsfi_lt_dd:
-    case CODE_FOR_dfptstsfi_gt_dd:
-    case CODE_FOR_dfptstsfi_unordered_dd:
-    case CODE_FOR_dfptstsfi_eq_td:
-    case CODE_FOR_dfptstsfi_lt_td:
-    case CODE_FOR_dfptstsfi_gt_td:
-    case CODE_FOR_dfptstsfi_unordered_td:
+    }
+  else if (icode == CODE_FOR_dfptstsfi_eq_dd
+      || icode == CODE_FOR_dfptstsfi_lt_dd
+      || icode == CODE_FOR_dfptstsfi_gt_dd
+      || icode == CODE_FOR_dfptstsfi_unordered_dd
+      || icode == CODE_FOR_dfptstsfi_eq_td
+      || icode == CODE_FOR_dfptstsfi_lt_td
+      || icode == CODE_FOR_dfptstsfi_gt_td
+      || icode == CODE_FOR_dfptstsfi_unordered_td)
+    {
       /* Only allow 6-bit unsigned literals.  */
       STRIP_NOPS (arg0);
       if (TREE_CODE (arg0) != INTEGER_CST
@@ -14036,12 +14034,13 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 1 must be a 6-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
-      break;
-    case CODE_FOR_xststdcqp:
-    case CODE_FOR_xststdcdp:
-    case CODE_FOR_xststdcsp:
-    case CODE_FOR_xvtstdcdp:
-    case CODE_FOR_xvtstdcsp:
+    }
+  else if (icode == CODE_FOR_xststdcqp
+	   || icode == CODE_FOR_xststdcdp
+	   || icode == CODE_FOR_xststdcsp
+	   || icode == CODE_FOR_xvtstdcdp
+	   || icode == CODE_FOR_xvtstdcsp)
+    {
       /* Only allow 7-bit unsigned literals. */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
@@ -14050,12 +14049,13 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 2 must be a 7-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
-      break;
-    case CODE_FOR_unpackv1ti:
-    case CODE_FOR_unpackkf:
-    case CODE_FOR_unpacktf:
-    case CODE_FOR_unpackif:
-    case CODE_FOR_unpacktd:
+    }
+  else if (icode == CODE_FOR_unpackv1ti
+	   || icode == CODE_FOR_unpackkf
+	   || icode == CODE_FOR_unpacktf
+	   || icode == CODE_FOR_unpackif
+	   || icode == CODE_FOR_unpacktd)
+    {
       /* Only allow 1-bit unsigned literals. */
       STRIP_NOPS (arg1);
       if (TREE_CODE (arg1) != INTEGER_CST
@@ -14064,7 +14064,6 @@ rs6000_expand_binop_builtin (enum insn_code icode, tree exp, rtx target)
 	  error ("argument 2 must be a 1-bit unsigned literal");
 	  return CONST0_RTX (tmode);
 	}
-      break;
     }
 
   if (target == 0
