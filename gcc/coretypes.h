@@ -55,8 +55,10 @@ typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
+class scalar_int_mode;
 class scalar_float_mode;
 template<typename> class opt_mode;
+typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
 typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
 
 /* Subclasses of rtx_def, using indentation to show the class
@@ -313,6 +315,7 @@ union _dont_use_tree_here_;
 #define tree union _dont_use_tree_here_ *
 #define const_tree union _dont_use_tree_here_ *
 
+typedef struct scalar_int_mode scalar_int_mode;
 typedef struct scalar_float_mode scalar_float_mode;
 
 #endif

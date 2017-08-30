@@ -338,6 +338,30 @@ is_a (machine_mode m, U *result)
   return false;
 }
 
+/* Represents a machine mode that is known to be a SCALAR_INT_MODE_P.  */
+class scalar_int_mode
+{
+public:
+  typedef mode_traits<scalar_int_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_int_mode () {}
+  ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a scalar_int_mode.  */
+
+inline bool
+scalar_int_mode::includes_p (machine_mode m)
+{
+  return SCALAR_INT_MODE_P (m);
+}
+
 /* Represents a machine mode that is known to be a SCALAR_FLOAT_MODE_P.  */
 class scalar_float_mode
 {
@@ -605,9 +629,9 @@ get_narrowest_mode (T mode)
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */
 
-extern machine_mode byte_mode;
-extern machine_mode word_mode;
-extern machine_mode ptr_mode;
+extern scalar_int_mode byte_mode;
+extern scalar_int_mode word_mode;
+extern scalar_int_mode ptr_mode;
 
 /* Target-dependent machine mode initialization - in insn-modes.c.  */
 extern void init_adjust_machine_modes (void);

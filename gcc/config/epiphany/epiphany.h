@@ -641,7 +641,8 @@ typedef struct GTY (()) machine_function
 
 #define RTX_OK_FOR_OFFSET_P(MODE, X) \
   RTX_OK_FOR_OFFSET_1 (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT \
-		       && epiphany_vect_align == 4 ? SImode : (MODE), X)
+		       && epiphany_vect_align == 4 \
+		       ? (machine_mode) SImode : (machine_mode) (MODE), X)
 #define RTX_OK_FOR_OFFSET_1(MODE, X) \
   (GET_CODE (X) == CONST_INT \
    && !(INTVAL (X) & (GET_MODE_SIZE (MODE) - 1)) \

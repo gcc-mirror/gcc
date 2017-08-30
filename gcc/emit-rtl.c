@@ -70,9 +70,9 @@ struct target_rtl *this_target_rtl = &default_target_rtl;
 
 /* Commonly used modes.  */
 
-machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
-machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
-machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
+scalar_int_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
+scalar_int_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
+scalar_int_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* Datastructures maintained for currently processed function in RTL form.  */
 
@@ -5863,22 +5863,24 @@ init_emit_regs (void)
 void
 init_derived_machine_modes (void)
 {
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
-
-  machine_mode mode;
-  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
+  opt_scalar_int_mode mode_iter, opt_byte_mode, opt_word_mode;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
+      scalar_int_mode mode = mode_iter.require ();
+
       if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
+	  && !opt_byte_mode.exists ())
+	opt_byte_mode = mode;
 
       if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
+	  && !opt_word_mode.exists ())
+	opt_word_mode = mode;
     }
 
-  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+  byte_mode = opt_byte_mode.require ();
+  word_mode = opt_word_mode.require ();
+  ptr_mode = as_a <scalar_int_mode> (mode_for_size (POINTER_SIZE,
+						    MODE_INT, 0));
 }
 
 /* Create some permanent unique rtl objects shared between all functions.  */

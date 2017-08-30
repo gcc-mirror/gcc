@@ -999,7 +999,7 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	     so we cannot use this.  */
 	  machine_mode target_mode =
 	    (insn_op->predicate == address_operand
-	     ? Pmode : insn_op->mode);
+	     ? (machine_mode) Pmode : insn_op->mode);
 	  op[arity] = copy_to_mode_reg (target_mode, op[arity]);
 	}
 
