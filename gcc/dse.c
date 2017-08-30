@@ -2185,11 +2185,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
        arg != void_list_node && idx < nargs;
        arg = TREE_CHAIN (arg), idx++)
     {
-      machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
+      scalar_int_mode mode;
       rtx reg, link, tmp;
+
+      if (!is_int_mode (TYPE_MODE (TREE_VALUE (arg)), &mode))
+	return false;
+
       reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
-      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode
-	  || GET_MODE_CLASS (mode) != MODE_INT)
+      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode)
 	return false;
 
       for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
@@ -2197,15 +2200,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 	   link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == USE)
 	  {
+	    scalar_int_mode arg_mode;
 	    args[idx] = XEXP (XEXP (link, 0), 0);
 	    if (REG_P (args[idx])
 		&& REGNO (args[idx]) == REGNO (reg)
 		&& (GET_MODE (args[idx]) == mode
-		    || (GET_MODE_CLASS (GET_MODE (args[idx])) == MODE_INT
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    <= UNITS_PER_WORD)
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    > GET_MODE_SIZE (mode)))))
+		    || (is_int_mode (GET_MODE (args[idx]), &arg_mode)
+			&& (GET_MODE_SIZE (arg_mode) <= UNITS_PER_WORD)
+			&& (GET_MODE_SIZE (arg_mode) > GET_MODE_SIZE (mode)))))
 	      break;
 	  }
       if (!link)

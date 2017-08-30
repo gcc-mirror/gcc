@@ -189,8 +189,9 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
 {
   int maxsize = 2 * BITS_PER_WORD;
   int minsize = BITS_PER_WORD;
+  scalar_int_mode int_mode;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!is_int_mode (mode, &int_mode))
     return;
   if (maxsize < LONG_LONG_TYPE_SIZE)
     maxsize = LONG_LONG_TYPE_SIZE;
@@ -198,10 +199,10 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
       && (trapv_binoptab_p (optable)
 	  || trapv_unoptab_p (optable)))
     minsize = INT_TYPE_SIZE;
-  if (GET_MODE_BITSIZE (mode) < minsize
-      || GET_MODE_BITSIZE (mode) > maxsize)
+  if (GET_MODE_BITSIZE (int_mode) < minsize
+      || GET_MODE_BITSIZE (int_mode) > maxsize)
     return;
-  gen_libfunc (optable, opname, suffix, mode);
+  gen_libfunc (optable, opname, suffix, int_mode);
 }
 
 /* Like gen_libfunc, but verify that FP and set decimal prefix if needed.  */

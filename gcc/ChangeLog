@@ -2,6 +2,45 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (is_int_mode): New fuction.
+	* combine.c (find_split_point): Use it.
+	(combine_simplify_rtx): Likewise.
+	(simplify_if_then_else): Likewise.
+	(simplify_set): Likewise.
+	(simplify_shift_const_1): Likewise.
+	(simplify_comparison): Likewise.
+	* config/aarch64/aarch64.c (aarch64_rtx_costs): Likewise.
+	* cse.c (notreg_cost): Likewise.
+	(cse_insn): Likewise.
+	* cselib.c (cselib_lookup_1): Likewise.
+	* dojump.c (do_jump_1): Likewise.
+	(do_compare_rtx_and_jump): Likewise.
+	* dse.c (get_call_args): Likewise.
+	* dwarf2out.c (rtl_for_decl_init): Likewise.
+	(native_encode_initializer): Likewise.
+	* expmed.c (emit_store_flag_1): Likewise.
+	(emit_store_flag): Likewise.
+	* expr.c (convert_modes): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_1): Likewise.
+	* fold-const.c (fold_read_from_constant_string): Likewise.
+	* gimple-ssa-sprintf.c (get_format_string): Likewise.
+	* optabs-libfuncs.c (gen_int_libfunc): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	(expand_unop): Likewise.
+	(expand_abs_nojump): Likewise.
+	(expand_one_cmpl_abs_nojump): Likewise.
+	* simplify-rtx.c (mode_signbit_p): Likewise.
+	(val_signbit_p): Likewise.
+	(val_signbit_known_set_p): Likewise.
+	(val_signbit_known_clear_p): Likewise.
+	(simplify_relational_operation_1): Likewise.
+	* tree.c (vector_type_mode): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (smallest_mode_for_size): Fix formatting.
 	(smallest_int_mode_for_size): New function.
 	* cfgexpand.c (expand_debug_expr): Use smallest_int_mode_for_size

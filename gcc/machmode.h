@@ -695,6 +695,21 @@ struct int_n_data_t {
 extern bool int_n_enabled_p[NUM_INT_N_ENTS];
 extern const int_n_data_t int_n_data[NUM_INT_N_ENTS];
 
+/* Return true if MODE has class MODE_INT, storing it as a scalar_int_mode
+   in *INT_MODE if so.  */
+
+template<typename T>
+inline bool
+is_int_mode (machine_mode mode, T *int_mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      *int_mode = scalar_int_mode (scalar_int_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
 /* Return true if MODE has class MODE_FLOAT, storing it as a
    scalar_float_mode in *FLOAT_MODE if so.  */
 

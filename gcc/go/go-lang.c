@@ -382,10 +382,11 @@ go_langhook_type_for_mode (machine_mode mode, int unsignedp)
       return NULL_TREE;
     }
 
+  scalar_int_mode imode;
   scalar_float_mode fmode;
   enum mode_class mc = GET_MODE_CLASS (mode);
-  if (mc == MODE_INT)
-    return go_langhook_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+  if (is_int_mode (mode, &imode))
+    return go_langhook_type_for_size (GET_MODE_BITSIZE (imode), unsignedp);
   else if (is_float_mode (mode, &fmode))
     {
       switch (GET_MODE_BITSIZE (fmode))

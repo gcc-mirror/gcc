@@ -12634,10 +12634,10 @@ vector_type_mode (const_tree t)
       && (!targetm.vector_mode_supported_p (mode)
 	  || !have_regs_of_mode[mode]))
     {
-      machine_mode innermode = TREE_TYPE (t)->type_common.mode;
+      scalar_int_mode innermode;
 
       /* For integers, try mapping it to a same-sized scalar mode.  */
-      if (GET_MODE_CLASS (innermode) == MODE_INT)
+      if (is_int_mode (TREE_TYPE (t)->type_common.mode, &innermode))
 	{
 	  unsigned int size = (TYPE_VECTOR_SUBPARTS (t)
 			       * GET_MODE_BITSIZE (innermode));

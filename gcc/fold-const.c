@@ -13652,14 +13652,15 @@ fold_read_from_constant_string (tree exp)
 	  string = exp1;
 	}
 
+      scalar_int_mode char_mode;
       if (string
 	  && TYPE_MODE (TREE_TYPE (exp)) == TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))
 	  && TREE_CODE (string) == STRING_CST
 	  && TREE_CODE (index) == INTEGER_CST
 	  && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0
-	  && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (string))))
-	      == MODE_INT)
-	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))) == 1))
+	  && is_int_mode (TYPE_MODE (TREE_TYPE (TREE_TYPE (string))),
+			  &char_mode)
+	  && GET_MODE_SIZE (char_mode) == 1)
 	return build_int_cst_type (TREE_TYPE (exp),
 				   (TREE_STRING_POINTER (string)
 				    [TREE_INT_CST_LOW (index)]));
