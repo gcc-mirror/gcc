@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* rtlanal.c (num_sign_bit_copies): Handle VOIDmode here rather
+	than in subroutines.  Return 1 for non-integer modes.
+	(cached_num_sign_bit_copies): Change the type of the mode parameter
+	to scalar_int_mode.
+	(num_sign_bit_copies1): Likewise.  Remove early exit for other mode
+	classes.  Handle CONST_INT_P first and then check whether X also
+	has a scalar integer mode.  Check the same thing for inner registers
+	of a SUBREG and for values that are being extended or truncated.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtlanal.c (nonzero_bits): Handle VOIDmode here rather than
 	in subroutines.  Return the mode mask for non-integer modes.
 	(cached_nonzero_bits): Change the type of the mode parameter
