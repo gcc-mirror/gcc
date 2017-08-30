@@ -1080,7 +1080,6 @@ extern unsigned int df_hard_reg_used_count (unsigned int);
 extern bool df_regs_ever_live_p (unsigned int);
 extern void df_set_regs_ever_live (unsigned int, bool);
 extern void df_compute_regs_ever_live (bool);
-extern bool df_read_modify_subreg_p (rtx);
 extern void df_scan_verify (void);
 
 

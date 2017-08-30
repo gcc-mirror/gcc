@@ -364,7 +364,7 @@ mark_hard_reg_live (rtx reg)
 static void
 mark_pseudo_reg_live (rtx orig_reg, unsigned regno)
 {
-  if (df_read_modify_subreg_p (orig_reg))
+  if (read_modify_subreg_p (orig_reg))
     {
       mark_pseudo_regno_subword_live (regno,
 				      subreg_lowpart_p (orig_reg) ? 0 : 1);
@@ -489,7 +489,7 @@ mark_hard_reg_dead (rtx reg)
 static void
 mark_pseudo_reg_dead (rtx orig_reg, unsigned regno)
 {
-  if (df_read_modify_subreg_p (orig_reg))
+  if (read_modify_subreg_p (orig_reg))
     {
       mark_pseudo_regno_subword_dead (regno,
 				      subreg_lowpart_p (orig_reg) ? 0 : 1);
@@ -515,7 +515,7 @@ mark_ref_dead (df_ref def)
   if (DF_REF_FLAGS_IS_SET (def, DF_REF_PARTIAL)
       && (GET_CODE (orig_reg) != SUBREG
 	  || REGNO (reg) < FIRST_PSEUDO_REGISTER
-	  || !df_read_modify_subreg_p (orig_reg)))
+	  || !read_modify_subreg_p (orig_reg)))
     return;
 
   if (REGNO (reg) >= FIRST_PSEUDO_REGISTER)

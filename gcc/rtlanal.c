@@ -1358,6 +1358,23 @@ modified_in_p (const_rtx x, const_rtx insn)
 
   return 0;
 }
+
+/* Return true if X is a SUBREG and if storing a value to X would
+   preserve some of its SUBREG_REG.  For example, on a normal 32-bit
+   target, using a SUBREG to store to one half of a DImode REG would
+   preserve the other half.  */
+
+bool
+read_modify_subreg_p (const_rtx x)
+{
+  unsigned int isize, osize;
+  if (GET_CODE (x) != SUBREG)
+    return false;
+  isize = GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)));
+  osize = GET_MODE_SIZE (GET_MODE (x));
+  return isize > osize
+	 && isize > REGMODE_NATURAL_SIZE (GET_MODE (SUBREG_REG (x)));
+}
 
 /* Helper function for set_of.  */
 struct set_of_data
