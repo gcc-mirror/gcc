@@ -13929,60 +13929,43 @@ compare_loc_descriptor (enum dwarf_location_atom op, dw_loc_descr_ref op0,
   return ret;
 }
 
-/* Return location descriptor for signed comparison OP RTL.  */
+/* Subroutine of scompare_loc_descriptor for the case in which we're
+   comparing two scalar integer operands OP0 and OP1 that have mode OP_MODE,
+   and in which OP_MODE is bigger than DWARF2_ADDR_SIZE.  */
 
 static dw_loc_descr_ref
-scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
-			 machine_mode mem_mode)
+scompare_loc_descriptor_wide (enum dwarf_location_atom op,
+			      machine_mode op_mode,
+			      dw_loc_descr_ref op0, dw_loc_descr_ref op1)
 {
-  machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
-  dw_loc_descr_ref op0, op1;
-  int shift;
+  dw_die_ref type_die = base_type_for_mode (op_mode, 0);
+  dw_loc_descr_ref cvt;
 
-  if (op_mode == VOIDmode)
-    op_mode = GET_MODE (XEXP (rtl, 1));
-  if (op_mode == VOIDmode)
+  if (type_die == NULL)
     return NULL;
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr (&op0, cvt);
+  cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
+  cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
+  cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
+  cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
+  add_loc_descr (&op1, cvt);
+  return compare_loc_descriptor (op, op0, op1);
+}
 
-  if (dwarf_strict
-      && dwarf_version < 5
-      && (!SCALAR_INT_MODE_P (op_mode)
-	  || GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE))
-    return NULL;
+/* Subroutine of scompare_loc_descriptor for the case in which we're
+   comparing two scalar integer operands OP0 and OP1 that have mode OP_MODE,
+   and in which OP_MODE is smaller than DWARF2_ADDR_SIZE.  */
 
-  op0 = mem_loc_descriptor (XEXP (rtl, 0), op_mode, mem_mode,
-			    VAR_INIT_STATUS_INITIALIZED);
-  op1 = mem_loc_descriptor (XEXP (rtl, 1), op_mode, mem_mode,
-			    VAR_INIT_STATUS_INITIALIZED);
-
-  if (op0 == NULL || op1 == NULL)
-    return NULL;
-
-  if (!SCALAR_INT_MODE_P (op_mode)
-      || GET_MODE_SIZE (op_mode) == DWARF2_ADDR_SIZE)
-    return compare_loc_descriptor (op, op0, op1);
-
-  if (GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
-    {
-      dw_die_ref type_die = base_type_for_mode (op_mode, 0);
-      dw_loc_descr_ref cvt;
-
-      if (type_die == NULL)
-	return NULL;
-      cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
-      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-      add_loc_descr (&op0, cvt);
-      cvt = new_loc_descr (dwarf_OP (DW_OP_convert), 0, 0);
-      cvt->dw_loc_oprnd1.val_class = dw_val_class_die_ref;
-      cvt->dw_loc_oprnd1.v.val_die_ref.die = type_die;
-      cvt->dw_loc_oprnd1.v.val_die_ref.external = 0;
-      add_loc_descr (&op1, cvt);
-      return compare_loc_descriptor (op, op0, op1);
-    }
-
-  shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (op_mode)) * BITS_PER_UNIT;
+static dw_loc_descr_ref
+scompare_loc_descriptor_narrow (enum dwarf_location_atom op, rtx rtl,
+				machine_mode op_mode,
+				dw_loc_descr_ref op0, dw_loc_descr_ref op1)
+{
+  int shift = (DWARF2_ADDR_SIZE - GET_MODE_SIZE (op_mode)) * BITS_PER_UNIT;
   /* For eq/ne, if the operands are known to be zero-extended,
      there is no need to do the fancy shifting up.  */
   if (op == DW_OP_eq || op == DW_OP_ne)
@@ -14036,6 +14019,45 @@ scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
     {
       add_loc_descr (&op1, int_loc_descriptor (shift));
       add_loc_descr (&op1, new_loc_descr (DW_OP_shl, 0, 0));
+    }
+  return compare_loc_descriptor (op, op0, op1);
+}
+
+/* Return location descriptor for signed comparison OP RTL.  */
+
+static dw_loc_descr_ref
+scompare_loc_descriptor (enum dwarf_location_atom op, rtx rtl,
+			 machine_mode mem_mode)
+{
+  machine_mode op_mode = GET_MODE (XEXP (rtl, 0));
+  dw_loc_descr_ref op0, op1;
+
+  if (op_mode == VOIDmode)
+    op_mode = GET_MODE (XEXP (rtl, 1));
+  if (op_mode == VOIDmode)
+    return NULL;
+
+  if (dwarf_strict
+      && dwarf_version < 5
+      && (!SCALAR_INT_MODE_P (op_mode)
+	  || GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE))
+    return NULL;
+
+  op0 = mem_loc_descriptor (XEXP (rtl, 0), op_mode, mem_mode,
+			    VAR_INIT_STATUS_INITIALIZED);
+  op1 = mem_loc_descriptor (XEXP (rtl, 1), op_mode, mem_mode,
+			    VAR_INIT_STATUS_INITIALIZED);
+
+  if (op0 == NULL || op1 == NULL)
+    return NULL;
+
+  if (SCALAR_INT_MODE_P (op_mode))
+    {
+      if (GET_MODE_SIZE (op_mode) < DWARF2_ADDR_SIZE)
+	return scompare_loc_descriptor_narrow (op, rtl, op_mode, op0, op1);
+
+      if (GET_MODE_SIZE (op_mode) > DWARF2_ADDR_SIZE)
+	return scompare_loc_descriptor_wide (op, op_mode, op0, op1);
     }
   return compare_loc_descriptor (op, op0, op1);
 }

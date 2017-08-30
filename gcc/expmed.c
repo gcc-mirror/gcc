@@ -5583,155 +5583,19 @@ emit_store_flag_1 (rtx target, enum rtx_code code, rtx op0, rtx op1,
   return 0;
 }
 
-/* Emit a store-flags instruction for comparison CODE on OP0 and OP1
-   and storing in TARGET.  Normally return TARGET.
-   Return 0 if that cannot be done.
-
-   MODE is the mode to use for OP0 and OP1 should they be CONST_INTs.  If
-   it is VOIDmode, they cannot both be CONST_INT.
-
-   UNSIGNEDP is for the case where we have to widen the operands
-   to perform the operation.  It says to use zero-extension.
-
-   NORMALIZEP is 1 if we should convert the result to be either zero
-   or one.  Normalize is -1 if we should convert the result to be
-   either zero or -1.  If NORMALIZEP is zero, the result will be left
-   "raw" out of the scc insn.  */
+/* Subroutine of emit_store_flag that handles cases in which the operands
+   are scalar integers.  SUBTARGET is the target to use for temporary
+   operations and TRUEVAL is the value to store when the condition is
+   true.  All other arguments are as for emit_store_flag.  */
 
 rtx
-emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
-		 machine_mode mode, int unsignedp, int normalizep)
+emit_store_flag_int (rtx target, rtx subtarget, enum rtx_code code, rtx op0,
+		     rtx op1, machine_mode mode, int unsignedp,
+		     int normalizep, rtx trueval)
 {
   machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
-  enum rtx_code rcode;
-  rtx subtarget;
-  rtx tem, trueval;
-  rtx_insn *last;
-
-  /* If we compare constants, we shouldn't use a store-flag operation,
-     but a constant load.  We can get there via the vanilla route that
-     usually generates a compare-branch sequence, but will in this case
-     fold the comparison to a constant, and thus elide the branch.  */
-  if (CONSTANT_P (op0) && CONSTANT_P (op1))
-    return NULL_RTX;
-
-  tem = emit_store_flag_1 (target, code, op0, op1, mode, unsignedp, normalizep,
-			   target_mode);
-  if (tem)
-    return tem;
-
-  /* If we reached here, we can't do this with a scc insn, however there
-     are some comparisons that can be done in other ways.  Don't do any
-     of these cases if branches are very cheap.  */
-  if (BRANCH_COST (optimize_insn_for_speed_p (), false) == 0)
-    return 0;
-
-  /* See what we need to return.  We can only return a 1, -1, or the
-     sign bit.  */
-
-  if (normalizep == 0)
-    {
-      if (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
-	normalizep = STORE_FLAG_VALUE;
-
-      else if (val_signbit_p (mode, STORE_FLAG_VALUE))
-	;
-      else
-	return 0;
-    }
-
-  last = get_last_insn ();
-
-  /* If optimizing, use different pseudo registers for each insn, instead
-     of reusing the same pseudo.  This leads to better CSE, but slows
-     down the compiler, since there are more pseudos */
-  subtarget = (!optimize
-	       && (target_mode == mode)) ? target : NULL_RTX;
-  trueval = GEN_INT (normalizep ? normalizep : STORE_FLAG_VALUE);
-
-  /* For floating-point comparisons, try the reverse comparison or try
-     changing the "orderedness" of the comparison.  */
-  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
-    {
-      enum rtx_code first_code;
-      bool and_them;
-
-      rcode = reverse_condition_maybe_unordered (code);
-      if (can_compare_p (rcode, mode, ccp_store_flag)
-          && (code == ORDERED || code == UNORDERED
-	      || (! HONOR_NANS (mode) && (code == LTGT || code == UNEQ))
-	      || (! HONOR_SNANS (mode) && (code == EQ || code == NE))))
-	{
-          int want_add = ((STORE_FLAG_VALUE == 1 && normalizep == -1)
-		          || (STORE_FLAG_VALUE == -1 && normalizep == 1));
-
-	  /* For the reverse comparison, use either an addition or a XOR.  */
-          if (want_add
-	      && rtx_cost (GEN_INT (normalizep), mode, PLUS, 1,
-			   optimize_insn_for_speed_p ()) == 0)
-	    {
-	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
-				       STORE_FLAG_VALUE, target_mode);
-	      if (tem)
-                return expand_binop (target_mode, add_optab, tem,
-				     gen_int_mode (normalizep, target_mode),
-				     target, 0, OPTAB_WIDEN);
-	    }
-          else if (!want_add
-	           && rtx_cost (trueval, mode, XOR, 1,
-			        optimize_insn_for_speed_p ()) == 0)
-	    {
-	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
-				       normalizep, target_mode);
-	      if (tem)
-                return expand_binop (target_mode, xor_optab, tem, trueval,
-				     target, INTVAL (trueval) >= 0, OPTAB_WIDEN);
-	    }
-	}
-
-      delete_insns_since (last);
-
-      /* Cannot split ORDERED and UNORDERED, only try the above trick.   */
-      if (code == ORDERED || code == UNORDERED)
-	return 0;
-
-      and_them = split_comparison (code, mode, &first_code, &code);
-
-      /* If there are no NaNs, the first comparison should always fall through.
-         Effectively change the comparison to the other one.  */
-      if (!HONOR_NANS (mode))
-	{
-          gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
-	  return emit_store_flag_1 (target, code, op0, op1, mode, 0, normalizep,
-				    target_mode);
-	}
-
-      if (!HAVE_conditional_move)
-	return 0;
-
-      /* Try using a setcc instruction for ORDERED/UNORDERED, followed by a
-	 conditional move.  */
-      tem = emit_store_flag_1 (subtarget, first_code, op0, op1, mode, 0,
-			       normalizep, target_mode);
-      if (tem == 0)
-	return 0;
-
-      if (and_them)
-        tem = emit_conditional_move (target, code, op0, op1, mode,
-				     tem, const0_rtx, GET_MODE (tem), 0);
-      else
-        tem = emit_conditional_move (target, code, op0, op1, mode,
-				     trueval, tem, GET_MODE (tem), 0);
-
-      if (tem == 0)
-        delete_insns_since (last);
-      return tem;
-    }
-
-  /* The remaining tricks only apply to integer comparisons.  */
-
-  if (GET_MODE_CLASS (mode) != MODE_INT)
-    return 0;
+  rtx_insn *last = get_last_insn ();
+  rtx tem;
 
   /* If this is an equality comparison of integers, we can try to exclusive-or
      (or subtract) the two operands and use a recursive call to try the
@@ -5758,7 +5622,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   /* For integer comparisons, try the reverse comparison.  However, for
      small X and if we'd have anyway to extend, implementing "X != 0"
      as "-(int)X >> 31" is still cheaper than inverting "(int)X == 0".  */
-  rcode = reverse_condition (code);
+  rtx_code rcode = reverse_condition (code);
   if (can_compare_p (rcode, mode, ccp_store_flag)
       && ! (optab_handler (cstore_optab, mode) == CODE_FOR_nothing
 	    && code == NE
@@ -5776,7 +5640,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				   STORE_FLAG_VALUE, target_mode);
 	  if (tem != 0)
-            tem = expand_binop (target_mode, add_optab, tem,
+	    tem = expand_binop (target_mode, add_optab, tem,
 				gen_int_mode (normalizep, target_mode),
 				target, 0, OPTAB_WIDEN);
 	}
@@ -5787,7 +5651,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
 	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
 				   normalizep, target_mode);
 	  if (tem != 0)
-            tem = expand_binop (target_mode, xor_optab, tem, trueval, target,
+	    tem = expand_binop (target_mode, xor_optab, tem, trueval, target,
 				INTVAL (trueval) >= 0, OPTAB_WIDEN);
 	}
 
@@ -5888,7 +5752,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
       if (tem == 0
 	  && (code == NE
 	      || BRANCH_COST (optimize_insn_for_speed_p (),
-		      	      false) > 1))
+			      false) > 1))
 	{
 	  if (rtx_equal_p (subtarget, op0))
 	    subtarget = 0;
@@ -5910,7 +5774,7 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
   if (tem)
     {
       if (!target)
-        ;
+	;
       else if (GET_MODE (tem) != target_mode)
 	{
 	  convert_move (target, tem, 0);
@@ -5926,6 +5790,161 @@ emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
     delete_insns_since (last);
 
   return tem;
+}
+
+/* Emit a store-flags instruction for comparison CODE on OP0 and OP1
+   and storing in TARGET.  Normally return TARGET.
+   Return 0 if that cannot be done.
+
+   MODE is the mode to use for OP0 and OP1 should they be CONST_INTs.  If
+   it is VOIDmode, they cannot both be CONST_INT.
+
+   UNSIGNEDP is for the case where we have to widen the operands
+   to perform the operation.  It says to use zero-extension.
+
+   NORMALIZEP is 1 if we should convert the result to be either zero
+   or one.  Normalize is -1 if we should convert the result to be
+   either zero or -1.  If NORMALIZEP is zero, the result will be left
+   "raw" out of the scc insn.  */
+
+rtx
+emit_store_flag (rtx target, enum rtx_code code, rtx op0, rtx op1,
+		 machine_mode mode, int unsignedp, int normalizep)
+{
+  machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
+  enum rtx_code rcode;
+  rtx subtarget;
+  rtx tem, trueval;
+  rtx_insn *last;
+
+  /* If we compare constants, we shouldn't use a store-flag operation,
+     but a constant load.  We can get there via the vanilla route that
+     usually generates a compare-branch sequence, but will in this case
+     fold the comparison to a constant, and thus elide the branch.  */
+  if (CONSTANT_P (op0) && CONSTANT_P (op1))
+    return NULL_RTX;
+
+  tem = emit_store_flag_1 (target, code, op0, op1, mode, unsignedp, normalizep,
+			   target_mode);
+  if (tem)
+    return tem;
+
+  /* If we reached here, we can't do this with a scc insn, however there
+     are some comparisons that can be done in other ways.  Don't do any
+     of these cases if branches are very cheap.  */
+  if (BRANCH_COST (optimize_insn_for_speed_p (), false) == 0)
+    return 0;
+
+  /* See what we need to return.  We can only return a 1, -1, or the
+     sign bit.  */
+
+  if (normalizep == 0)
+    {
+      if (STORE_FLAG_VALUE == 1 || STORE_FLAG_VALUE == -1)
+	normalizep = STORE_FLAG_VALUE;
+
+      else if (val_signbit_p (mode, STORE_FLAG_VALUE))
+	;
+      else
+	return 0;
+    }
+
+  last = get_last_insn ();
+
+  /* If optimizing, use different pseudo registers for each insn, instead
+     of reusing the same pseudo.  This leads to better CSE, but slows
+     down the compiler, since there are more pseudos.  */
+  subtarget = (!optimize
+	       && (target_mode == mode)) ? target : NULL_RTX;
+  trueval = GEN_INT (normalizep ? normalizep : STORE_FLAG_VALUE);
+
+  /* For floating-point comparisons, try the reverse comparison or try
+     changing the "orderedness" of the comparison.  */
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    {
+      enum rtx_code first_code;
+      bool and_them;
+
+      rcode = reverse_condition_maybe_unordered (code);
+      if (can_compare_p (rcode, mode, ccp_store_flag)
+	  && (code == ORDERED || code == UNORDERED
+	      || (! HONOR_NANS (mode) && (code == LTGT || code == UNEQ))
+	      || (! HONOR_SNANS (mode) && (code == EQ || code == NE))))
+	{
+	  int want_add = ((STORE_FLAG_VALUE == 1 && normalizep == -1)
+			  || (STORE_FLAG_VALUE == -1 && normalizep == 1));
+
+	  /* For the reverse comparison, use either an addition or a XOR.  */
+	  if (want_add
+	      && rtx_cost (GEN_INT (normalizep), mode, PLUS, 1,
+			   optimize_insn_for_speed_p ()) == 0)
+	    {
+	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       STORE_FLAG_VALUE, target_mode);
+	      if (tem)
+		return expand_binop (target_mode, add_optab, tem,
+				     gen_int_mode (normalizep, target_mode),
+				     target, 0, OPTAB_WIDEN);
+	    }
+	  else if (!want_add
+		   && rtx_cost (trueval, mode, XOR, 1,
+				optimize_insn_for_speed_p ()) == 0)
+	    {
+	      tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       normalizep, target_mode);
+	      if (tem)
+		return expand_binop (target_mode, xor_optab, tem, trueval,
+				     target, INTVAL (trueval) >= 0,
+				     OPTAB_WIDEN);
+	    }
+	}
+
+      delete_insns_since (last);
+
+      /* Cannot split ORDERED and UNORDERED, only try the above trick.  */
+      if (code == ORDERED || code == UNORDERED)
+	return 0;
+
+      and_them = split_comparison (code, mode, &first_code, &code);
+
+      /* If there are no NaNs, the first comparison should always fall through.
+	 Effectively change the comparison to the other one.  */
+      if (!HONOR_NANS (mode))
+	{
+	  gcc_assert (first_code == (and_them ? ORDERED : UNORDERED));
+	  return emit_store_flag_1 (target, code, op0, op1, mode, 0, normalizep,
+				    target_mode);
+	}
+
+      if (!HAVE_conditional_move)
+	return 0;
+
+      /* Try using a setcc instruction for ORDERED/UNORDERED, followed by a
+	 conditional move.  */
+      tem = emit_store_flag_1 (subtarget, first_code, op0, op1, mode, 0,
+			       normalizep, target_mode);
+      if (tem == 0)
+	return 0;
+
+      if (and_them)
+	tem = emit_conditional_move (target, code, op0, op1, mode,
+				     tem, const0_rtx, GET_MODE (tem), 0);
+      else
+	tem = emit_conditional_move (target, code, op0, op1, mode,
+				     trueval, tem, GET_MODE (tem), 0);
+
+      if (tem == 0)
+	delete_insns_since (last);
+      return tem;
+    }
+
+  /* The remaining tricks only apply to integer comparisons.  */
+
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    return emit_store_flag_int (target, subtarget, code, op0, op1, mode,
+				unsignedp, normalizep, trueval);
+
+  return 0;
 }
 
 /* Like emit_store_flag, but always succeeds.  */

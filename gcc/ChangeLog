@@ -1,3 +1,11 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* dwarf2out.c (scompare_loc_descriptor_wide)
+	(scompare_loc_descriptor_narrow): New functions, split out from...
+	(scompare_loc_descriptor): ...here.
+	* expmed.c (emit_store_flag_int): New function, split out from...
+	(emit_store_flag): ...here.
+
 2017-08-30  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (dwarf2out_finish): Remove setting AT_pubnames.
