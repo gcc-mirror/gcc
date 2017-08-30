@@ -551,7 +551,8 @@ def build_pretty_printer():
     pp.add_printer_for_types(['scalar_int_mode_pod',
                               'scalar_mode_pod'],
                              'pod_mode', MachineModePrinter)
-    for mode in 'scalar_mode', 'scalar_int_mode', 'scalar_float_mode':
+    for mode in ('scalar_mode', 'scalar_int_mode', 'scalar_float_mode',
+                 'complex_mode'):
         pp.add_printer_for_types([mode], mode, MachineModePrinter)
 
     return pp

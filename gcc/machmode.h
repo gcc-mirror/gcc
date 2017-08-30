@@ -450,6 +450,30 @@ scalar_mode::includes_p (machine_mode m)
     }
 }
 
+/* Represents a machine mode that is known to be a COMPLEX_MODE_P.  */
+class complex_mode
+{
+public:
+  typedef mode_traits<complex_mode>::from_int from_int;
+
+  ALWAYS_INLINE complex_mode () {}
+  ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a complex_mode.  */
+
+inline bool
+complex_mode::includes_p (machine_mode m)
+{
+  return COMPLEX_MODE_P (m);
+}
+
 /* Return the base GET_MODE_SIZE value for MODE.  */
 
 ALWAYS_INLINE unsigned short
@@ -766,6 +790,36 @@ is_float_mode (machine_mode mode, T *float_mode)
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     {
       *float_mode = scalar_float_mode (scalar_float_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+/* Return true if MODE has class MODE_COMPLEX_INT, storing it as
+   a complex_mode in *CMODE if so.  */
+
+template<typename T>
+inline bool
+is_complex_int_mode (machine_mode mode, T *cmode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    {
+      *cmode = complex_mode (complex_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+/* Return true if MODE has class MODE_COMPLEX_FLOAT, storing it as
+   a complex_mode in *CMODE if so.  */
+
+template<typename T>
+inline bool
+is_complex_float_mode (machine_mode mode, T *cmode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    {
+      *cmode = complex_mode (complex_mode::from_int (mode));
       return true;
     }
   return false;

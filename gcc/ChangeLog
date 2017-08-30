@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (complex_mode): New type.
+	* gdbhooks.py (build_pretty_printer): Handle it.
+	* machmode.h (complex_mode): New class.
+	(complex_mode::includes_p): New function.
+	(is_complex_int_mode): Likewise.
+	(is_complex_float_mode): Likewise.
+	* genmodes.c (get_mode_class): Handle complex mode classes.
+	* function.c (expand_function_end): Use is_complex_int_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (scalar_mode_pod): New typedef.
 	* gdbhooks.py (build_pretty_printer): Handle it.
 	* machmode.h (gt_ggc_mx, gt_pch_nx): New functions.
