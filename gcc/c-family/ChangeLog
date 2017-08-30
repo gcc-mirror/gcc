@@ -1,3 +1,10 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (mode_has_fma): Prefix mode names with E_ in
+	case statements.
+
 2017-08-29  Martin Liska  <mliska@suse.cz>
 
 	PR other/39851

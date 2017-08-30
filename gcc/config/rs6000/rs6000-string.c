@@ -152,13 +152,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 {
   switch (GET_MODE (reg))
     {
-    case DImode:
+    case E_DImode:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_zero_extendqidi2 (reg, mem));
 	  break;
-	case HImode:
+	case E_HImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -169,7 +169,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendhidi2 (reg, src));
 	    break;
 	  }
-	case SImode:
+	case E_SImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -180,7 +180,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendsidi2 (reg, src));
 	  }
 	  break;
-	case DImode:
+	case E_DImode:
 	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapdi2 (reg, mem));
 	  else
@@ -191,13 +191,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	}
       break;
 
-    case SImode:
+    case E_SImode:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_zero_extendqisi2 (reg, mem));
 	  break;
-	case HImode:
+	case E_HImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -208,13 +208,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendhisi2 (reg, src));
 	    break;
 	  }
-	case SImode:
+	case E_SImode:
 	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapsi2 (reg, mem));
 	  else
 	    emit_insn (gen_movsi (reg, mem));
 	  break;
-	case DImode:
+	case E_DImode:
 	  /* DImode is larger than the destination reg so is not expected.  */
 	  gcc_unreachable ();
 	  break;

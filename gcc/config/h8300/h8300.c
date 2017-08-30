@@ -1033,11 +1033,11 @@ split_adds_subs (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       gen_add = gen_addhi3;
       break;
 
-    case SImode:
+    case E_SImode:
       gen_add = gen_addsi3;
       break;
 
@@ -1328,12 +1328,12 @@ h8300_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
       if (TARGET_H8300SX)
 	switch (GET_MODE (x))
 	  {
-	  case QImode:
-	  case HImode:
+	  case E_QImode:
+	  case E_HImode:
 	    *total = COSTS_N_INSNS (!speed ? 4 : 10);
 	    return false;
 
-	  case SImode:
+	  case E_SImode:
 	    *total = COSTS_N_INSNS (!speed ? 4 : 18);
 	    return false;
 
@@ -1347,12 +1347,12 @@ h8300_rtx_costs (rtx x, machine_mode mode ATTRIBUTE_UNUSED, int outer_code,
       if (TARGET_H8300SX)
 	switch (GET_MODE (x))
 	  {
-	  case QImode:
-	  case HImode:
+	  case E_QImode:
+	  case E_HImode:
 	    *total = COSTS_N_INSNS (2);
 	    return false;
 
-	  case SImode:
+	  case E_SImode:
 	    *total = COSTS_N_INSNS (5);
 	    return false;
 
@@ -1697,18 +1697,18 @@ h8300_print_operand (FILE *file, rtx x, int code)
 	case REG:
 	  switch (GET_MODE (x))
 	    {
-	    case QImode:
+	    case E_QImode:
 #if 0 /* Is it asm ("mov.b %0,r2l", ...) */
 	      fprintf (file, "%s", byte_reg (x, 0));
 #else /* ... or is it asm ("mov.b %0l,r2l", ...) */
 	      fprintf (file, "%s", names_big[REGNO (x)]);
 #endif
 	      break;
-	    case HImode:
+	    case E_HImode:
 	      fprintf (file, "%s", names_big[REGNO (x)]);
 	      break;
-	    case SImode:
-	    case SFmode:
+	    case E_SImode:
+	    case E_SFmode:
 	      fprintf (file, "%s", names_extended[REGNO (x)]);
 	      break;
 	    default:
@@ -2808,7 +2808,7 @@ compute_mov_length (rtx *operands)
 
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (addr == NULL_RTX)
 	    return 2;
 
@@ -2820,7 +2820,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 4;
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -2835,7 +2835,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 4;
 	  break;
 
-	case SImode:
+	case E_SImode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -2862,7 +2862,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 8;
 	  break;
 
-	case SFmode:
+	case E_SFmode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -2914,7 +2914,7 @@ compute_mov_length (rtx *operands)
 
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (addr == NULL_RTX)
 	    return 2;
 
@@ -2926,7 +2926,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 8;
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -2941,7 +2941,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 8;
 	  break;
 
-	case SImode:
+	case E_SImode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -2982,7 +2982,7 @@ compute_mov_length (rtx *operands)
 	  base_length = 10;
 	  break;
 
-	case SFmode:
+	case E_SFmode:
 	  if (addr == NULL_RTX)
 	    {
 	      if (REG_P (src))
@@ -3304,7 +3304,7 @@ output_logical_op (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && b0 != 0
@@ -3329,7 +3329,7 @@ output_logical_op (machine_mode mode, rtx *operands)
 	    }
 	}
       break;
-    case SImode:
+    case E_SImode:
       if (TARGET_H8300H || TARGET_H8300S)
 	{
 	  /* Determine if the lower half can be taken care of in no more
@@ -3469,7 +3469,7 @@ compute_logical_op_length (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && b0 != 0
@@ -3489,7 +3489,7 @@ compute_logical_op_length (machine_mode mode, rtx *operands)
 	    length += 2;
 	}
       break;
-    case SImode:
+    case E_SImode:
       if (TARGET_H8300H || TARGET_H8300S)
 	{
 	  /* Determine if the lower half can be taken care of in no more
@@ -3613,7 +3613,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
 
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       /* First, see if we can finish with one insn.  */
       if ((TARGET_H8300H || TARGET_H8300S)
 	  && b0 != 0
@@ -3622,7 +3622,7 @@ compute_logical_op_cc (machine_mode mode, rtx *operands)
 	  cc = CC_SET_ZNV;
 	}
       break;
-    case SImode:
+    case E_SImode:
       if (TARGET_H8300H || TARGET_H8300S)
 	{
 	  /* Determine if the lower half can be taken care of in no more
@@ -4533,19 +4533,19 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode)
   /* Find the shift algorithm.  */
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       a  = shift_alg_qi[cpu][SHIFT_ASHIFT][count];
       lr = shift_alg_qi[cpu][SHIFT_LSHIFTRT][count];
       ar = shift_alg_qi[cpu][SHIFT_ASHIFTRT][count];
       break;
 
-    case HImode:
+    case E_HImode:
       a  = shift_alg_hi[cpu][SHIFT_ASHIFT][count];
       lr = shift_alg_hi[cpu][SHIFT_LSHIFTRT][count];
       ar = shift_alg_hi[cpu][SHIFT_ASHIFTRT][count];
       break;
 
-    case SImode:
+    case E_SImode:
       a  = shift_alg_si[cpu][SHIFT_ASHIFT][count];
       lr = shift_alg_si[cpu][SHIFT_LSHIFTRT][count];
       ar = shift_alg_si[cpu][SHIFT_ASHIFTRT][count];
@@ -4578,13 +4578,13 @@ output_a_shift (rtx *operands)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       shift_mode = QIshift;
       break;
-    case HImode:
+    case E_HImode:
       shift_mode = HIshift;
       break;
-    case SImode:
+    case E_SImode:
       shift_mode = SIshift;
       break;
     default:
@@ -4670,11 +4670,11 @@ output_a_shift (rtx *operands)
 	/* Now mask off the high bits.  */
 	switch (mode)
 	  {
-	  case QImode:
+	  case E_QImode:
 	    sprintf (insn_buf, "and\t#%d,%%X0", mask);
 	    break;
 
-	  case HImode:
+	  case E_HImode:
 	    gcc_assert (TARGET_H8300H || TARGET_H8300S);
 	    sprintf (insn_buf, "and.w\t#%d,%%T0", mask);
 	    break;
@@ -4746,13 +4746,13 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       shift_mode = QIshift;
       break;
-    case HImode:
+    case E_HImode:
       shift_mode = HIshift;
       break;
-    case SImode:
+    case E_SImode:
       shift_mode = SIshift;
       break;
     default:
@@ -4842,13 +4842,13 @@ compute_a_shift_length (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
 	    /* Now mask off the high bits.  */
 	    switch (mode)
 	      {
-	      case QImode:
+	      case E_QImode:
 		wlength += 1;
 		break;
-	      case HImode:
+	      case E_HImode:
 		wlength += 2;
 		break;
-	      case SImode:
+	      case E_SImode:
 		gcc_assert (!TARGET_H8300);
 		wlength += 3;
 		break;
@@ -4894,13 +4894,13 @@ compute_a_shift_cc (rtx insn ATTRIBUTE_UNUSED, rtx *operands)
   
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       shift_mode = QIshift;
       break;
-    case HImode:
+    case E_HImode:
       shift_mode = HIshift;
       break;
-    case SImode:
+    case E_SImode:
       shift_mode = SIshift;
       break;
     default:
@@ -5007,13 +5007,13 @@ expand_a_rotate (rtx operands[])
       /* Rotate by one bit.  */
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_rotlqi3_1 (dst, dst, const1_rtx));
 	  break;
-	case HImode:
+	case E_HImode:
 	  emit_insn (gen_rotlhi3_1 (dst, dst, const1_rtx));
 	  break;
-	case SImode:
+	case E_SImode:
 	  emit_insn (gen_rotlsi3_1 (dst, dst, const1_rtx));
 	  break;
 	default:
@@ -5035,13 +5035,13 @@ expand_a_rotate (rtx operands[])
       /* Rotate by AMOUNT bits.  */
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_rotlqi3_1 (dst, dst, rotate_amount));
 	  break;
-	case HImode:
+	case E_HImode:
 	  emit_insn (gen_rotlhi3_1 (dst, dst, rotate_amount));
 	  break;
-	case SImode:
+	case E_SImode:
 	  emit_insn (gen_rotlsi3_1 (dst, dst, rotate_amount));
 	  break;
 	default:
@@ -5070,13 +5070,13 @@ output_a_rotate (enum rtx_code code, rtx *operands)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       rotate_mode = QIshift;
       break;
-    case HImode:
+    case E_HImode:
       rotate_mode = HIshift;
       break;
-    case SImode:
+    case E_SImode:
       rotate_mode = SIshift;
       break;
     default:
@@ -5123,13 +5123,13 @@ output_a_rotate (enum rtx_code code, rtx *operands)
     {
       switch (mode)
 	{
-	case HImode:
+	case E_HImode:
 	  /* This code works on any family.  */
 	  insn_buf = "xor.b\t%s0,%t0\n\txor.b\t%t0,%s0\n\txor.b\t%s0,%t0";
 	  output_asm_insn (insn_buf, operands);
 	  break;
 
-	case SImode:
+	case E_SImode:
 	  /* This code works on the H8/300H and H8S.  */
 	  insn_buf = "xor.w\t%e0,%f0\n\txor.w\t%f0,%e0\n\txor.w\t%e0,%f0";
 	  output_asm_insn (insn_buf, operands);

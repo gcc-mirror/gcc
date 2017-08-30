@@ -624,17 +624,17 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 		{
 		default:
 		  break;
-		case SFmode:
+		case E_SFmode:
 		  ret = "lw\t%0,%1";
 		  break;
-		case SImode:
-		case CCmode:
+		case E_SImode:
+		case E_CCmode:
 		  ret = "lw\t%0,%1";
 		  break;
-		case HImode:
+		case E_HImode:
 		  ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1";
 		  break;
-		case QImode:
+		case E_QImode:
 		  ret = (unsignedp) ? "lbu\t%0,%1" : "lb\t%0,%1";
 		  break;
 		}
@@ -734,10 +734,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	    {
 	      switch (mode)
 		{
-		case SFmode: ret = "sw\t%1,%0"; break;
-		case SImode: ret = "sw\t%1,%0"; break;
-		case HImode: ret = "sh\t%1,%0"; break;
-		case QImode: ret = "sb\t%1,%0"; break;
+		case E_SFmode: ret = "sw\t%1,%0"; break;
+		case E_SImode: ret = "sw\t%1,%0"; break;
+		case E_HImode: ret = "sh\t%1,%0"; break;
+		case E_QImode: ret = "sb\t%1,%0"; break;
 		default: break;
 		}
 	    }
@@ -747,10 +747,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	{
 	  switch (mode)
 	    {
-	    case SFmode: ret = "sw\t%z1,%0"; break;
-	    case SImode: ret = "sw\t%z1,%0"; break;
-	    case HImode: ret = "sh\t%z1,%0"; break;
-	    case QImode: ret = "sb\t%z1,%0"; break;
+	    case E_SFmode: ret = "sw\t%z1,%0"; break;
+	    case E_SImode: ret = "sw\t%z1,%0"; break;
+	    case E_HImode: ret = "sh\t%z1,%0"; break;
+	    case E_QImode: ret = "sb\t%z1,%0"; break;
 	    default: break;
 	    }
 	}
@@ -759,10 +759,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	{
 	  switch (mode)
 	    {
-	    case SFmode: ret = "sw\t%.,%0"; break;
-	    case SImode: ret = "sw\t%.,%0"; break;
-	    case HImode: ret = "sh\t%.,%0"; break;
-	    case QImode: ret = "sb\t%.,%0"; break;
+	    case E_SFmode: ret = "sw\t%.,%0"; break;
+	    case E_SImode: ret = "sw\t%.,%0"; break;
+	    case E_HImode: ret = "sh\t%.,%0"; break;
+	    case E_QImode: ret = "sb\t%.,%0"; break;
 	    default: break;
 	    }
 	}
@@ -1152,7 +1152,7 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   cum->arg_number++;
   switch (mode)
     {
-    case VOIDmode:
+    case E_VOIDmode:
       break;
 
     default:
@@ -1164,37 +1164,37 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 / UNITS_PER_WORD);
       break;
 
-    case BLKmode:
+    case E_BLKmode:
       cum->gp_reg_found = 1;
       cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
-    case SFmode:
+    case E_SFmode:
       cum->arg_words ++;
       if (! cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 1 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DFmode:
+    case E_DFmode:
       cum->arg_words += 2;
       if (! cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 2 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DImode:
+    case E_DImode:
       cum->gp_reg_found = 1;
       cum->arg_words += 2;
       break;
 
-    case TImode:
+    case E_TImode:
       cum->gp_reg_found = 1;
       cum->arg_words += 4;
       break;
 
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       cum->gp_reg_found = 1;
       cum->arg_words ++;
       break;
@@ -1232,11 +1232,11 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
   cum->last_arg_fp = 0;
   switch (mode)
     {
-    case SFmode:
+    case E_SFmode:
       regbase = GP_ARG_FIRST;
       break;
 
-    case DFmode:
+    case E_DFmode:
       cum->arg_words += cum->arg_words & 1;
 
       regbase = GP_ARG_FIRST;
@@ -1247,25 +1247,25 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
 
       /* FALLTHRU */
-    case BLKmode:
+    case E_BLKmode:
       if (type != NULL_TREE && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
       break;
 
-    case VOIDmode:
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_VOIDmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       regbase = GP_ARG_FIRST;
       break;
 
-    case DImode:
+    case E_DImode:
       cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
       break;
 
-    case TImode:
+    case E_TImode:
       cum->arg_words += (cum->arg_words & 3);
       regbase = GP_ARG_FIRST;
       break;

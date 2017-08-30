@@ -537,27 +537,27 @@ aarch64_simd_builtin_std_type (machine_mode mode,
   ((q == qualifier_none) ? int##M##_type_node : unsigned_int##M##_type_node);
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return QUAL_TYPE (QI);
-    case HImode:
+    case E_HImode:
       return QUAL_TYPE (HI);
-    case SImode:
+    case E_SImode:
       return QUAL_TYPE (SI);
-    case DImode:
+    case E_DImode:
       return QUAL_TYPE (DI);
-    case TImode:
+    case E_TImode:
       return QUAL_TYPE (TI);
-    case OImode:
+    case E_OImode:
       return aarch64_simd_intOI_type_node;
-    case CImode:
+    case E_CImode:
       return aarch64_simd_intCI_type_node;
-    case XImode:
+    case E_XImode:
       return aarch64_simd_intXI_type_node;
-    case HFmode:
+    case E_HFmode:
       return aarch64_fp16_type_node;
-    case SFmode:
+    case E_SFmode:
       return float_type_node;
-    case DFmode:
+    case E_DFmode:
       return double_type_node;
     default:
       gcc_unreachable ();

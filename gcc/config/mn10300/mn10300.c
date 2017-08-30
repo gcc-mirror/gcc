@@ -279,18 +279,18 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 
 	    switch (GET_MODE (x))
 	      {
-	      case DFmode:
+	      case E_DFmode:
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[0]);
 		break;;
-	      case SFmode:
+	      case E_SFmode:
 		REAL_VALUE_TO_TARGET_SINGLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val[0]);
 		fprintf (file, "0x%lx", val[0]);
 		break;;
-	      case VOIDmode:
-	      case DImode:
+	      case E_VOIDmode:
+	      case E_DImode:
 		mn10300_print_operand_address (file,
 					       GEN_INT (CONST_DOUBLE_LOW (x)));
 		break;
@@ -338,15 +338,15 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 
 	    switch (GET_MODE (x))
 	      {
-	      case DFmode:
+	      case E_DFmode:
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[1]);
 		break;;
-	      case SFmode:
+	      case E_SFmode:
 		gcc_unreachable ();
-	      case VOIDmode:
-	      case DImode:
+	      case E_VOIDmode:
+	      case E_DImode:
 		mn10300_print_operand_address (file,
 					       GEN_INT (CONST_DOUBLE_HIGH (x)));
 		break;
@@ -2672,13 +2672,13 @@ cc_flags_for_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case CCmode:
+    case E_CCmode:
       return CC_FLAG_Z | CC_FLAG_N | CC_FLAG_C | CC_FLAG_V;
-    case CCZNCmode:
+    case E_CCZNCmode:
       return CC_FLAG_Z | CC_FLAG_N | CC_FLAG_C;
-    case CCZNmode:
+    case E_CCZNmode:
       return CC_FLAG_Z | CC_FLAG_N;
-    case CC_FLOATmode:
+    case E_CC_FLOATmode:
       return -1;
     default:
       gcc_unreachable ();

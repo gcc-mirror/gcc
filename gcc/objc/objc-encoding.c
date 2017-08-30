@@ -756,11 +756,11 @@ encode_gnu_bitfield (int position, tree type, int size)
 	{
 	  switch (TYPE_MODE (type))
 	    {
-	    case QImode:
+	    case E_QImode:
 	      charType = 'C'; break;
-	    case HImode:
+	    case E_HImode:
 	      charType = 'S'; break;
-	    case SImode:
+	    case E_SImode:
 	      {
 		if (type == long_unsigned_type_node)
 		  charType = 'L';
@@ -768,7 +768,7 @@ encode_gnu_bitfield (int position, tree type, int size)
 		  charType = 'I';
 		break;
 	      }
-	    case DImode:
+	    case E_DImode:
 	      charType = 'Q'; break;
 	    default:
 	      gcc_unreachable ();
@@ -779,11 +779,11 @@ encode_gnu_bitfield (int position, tree type, int size)
 	{
 	  switch (TYPE_MODE (type))
 	    {
-	    case QImode:
+	    case E_QImode:
 	      charType = 'c'; break;
-	    case HImode:
+	    case E_HImode:
 	      charType = 's'; break;
-	    case SImode:
+	    case E_SImode:
 	      {
 		if (type == long_integer_type_node)
 		  charType = 'l';
@@ -791,7 +791,7 @@ encode_gnu_bitfield (int position, tree type, int size)
 		  charType = 'i';
 		break;
 	      }
-	    case DImode:
+	    case E_DImode:
 	      charType = 'q'; break;
 	    default:
 	      gcc_unreachable ();

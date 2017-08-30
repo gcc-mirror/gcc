@@ -272,9 +272,9 @@
      assumed in the instruction encoding.  */
   switch (mode)
     {
-    case BLKmode:
-    case QImode:
-    case HImode:
+    case E_BLKmode:
+    case E_QImode:
+    case E_HImode:
       return true;
 
     default:

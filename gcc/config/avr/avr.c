@@ -10806,14 +10806,14 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case NEG:
       switch (mode)
 	{
-	case QImode:
-	case SFmode:
+	case E_QImode:
+	case E_SFmode:
 	  *total = COSTS_N_INSNS (1);
 	  break;
 
-        case HImode:
-        case PSImode:
-        case SImode:
+        case E_HImode:
+        case E_PSImode:
+        case E_SImode:
           *total = COSTS_N_INSNS (2 * GET_MODE_SIZE (mode) - 1);
           break;
 
@@ -10826,8 +10826,8 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ABS:
       switch (mode)
 	{
-	case QImode:
-	case SFmode:
+	case E_QImode:
+	case E_SFmode:
 	  *total = COSTS_N_INSNS (1);
 	  break;
 
@@ -10859,7 +10859,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case PLUS:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
           if (AVR_HAVE_MUL
               && MULT == GET_CODE (XEXP (x, 0))
               && register_operand (XEXP (x, 1), QImode))
@@ -10876,7 +10876,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
 	  break;
 
-	case HImode:
+	case E_HImode:
           if (AVR_HAVE_MUL
               && (MULT == GET_CODE (XEXP (x, 0))
                   || ASHIFT == GET_CODE (XEXP (x, 0)))
@@ -10903,7 +10903,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total = COSTS_N_INSNS (2);
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (3);
@@ -10916,7 +10916,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
             *total = COSTS_N_INSNS (3);
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (4);
@@ -10994,7 +10994,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case MULT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (AVR_HAVE_MUL)
 	    *total = COSTS_N_INSNS (!speed ? 3 : 4);
 	  else if (!speed)
@@ -11003,7 +11003,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    return false;
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (AVR_HAVE_MUL)
             {
               rtx op0 = XEXP (x, 0);
@@ -11047,15 +11047,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    return false;
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!speed)
             *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 2 : 1);
           else
             *total = 10;
           break;
 
-	case SImode:
-	case DImode:
+	case E_SImode:
+	case E_DImode:
 	  if (AVR_HAVE_MUL)
             {
               if (!speed)
@@ -11113,19 +11113,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ROTATE:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 4)
 	    *total = COSTS_N_INSNS (1);
 
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 8)
 	    *total = COSTS_N_INSNS (3);
 
 	  break;
 
-	case SImode:
+	case E_SImode:
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    switch (INTVAL (XEXP (x, 1)))
 	      {
@@ -11148,7 +11148,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11167,7 +11167,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
           if (AVR_HAVE_MUL)
             {
               if (const_2_to_7_operand (XEXP (x, 1), HImode)
@@ -11232,7 +11232,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11257,7 +11257,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11300,7 +11300,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFTRT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11321,7 +11321,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -11367,7 +11367,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11394,7 +11394,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11443,7 +11443,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11462,7 +11462,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -11511,7 +11511,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11536,7 +11536,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11579,14 +11579,14 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case COMPARE:
       switch (GET_MODE (XEXP (x, 0)))
 	{
-	case QImode:
+	case E_QImode:
 	  *total = COSTS_N_INSNS (1);
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    *total += avr_operand_rtx_cost (XEXP (x, 1), QImode, code,
 					    1, speed);
 	  break;
 
-        case HImode:
+        case E_HImode:
 	  *total = COSTS_N_INSNS (2);
 	  if (!CONST_INT_P (XEXP (x, 1)))
             *total += avr_operand_rtx_cost (XEXP (x, 1), HImode, code,
@@ -11595,13 +11595,13 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total += COSTS_N_INSNS (1);
           break;
 
-        case PSImode:
+        case E_PSImode:
           *total = COSTS_N_INSNS (3);
           if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) != 0)
             *total += COSTS_N_INSNS (2);
           break;
 
-        case SImode:
+        case E_SImode:
           *total = COSTS_N_INSNS (4);
           if (!CONST_INT_P (XEXP (x, 1)))
             *total += avr_operand_rtx_cost (XEXP (x, 1), SImode, code,
