@@ -2,6 +2,18 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* dwarf2out.c (typed_binop): Change mode parameter to scalar_int_mode.
+	(clz_loc_descriptor): Likewise.  Remove SCALAR_INT_MODE_P check.
+	(popcount_loc_descriptor): Likewise.
+	(bswap_loc_descriptor): Likewise.
+	(rotate_loc_descriptor): Likewise.
+	(mem_loc_descriptor): Add is_a <scalar_int_mode> checks before
+	calling the functions above.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (sign_extend_short_imm): Add is_a <scalar_int_mode>
 	checks.
 	(try_combine): Likewise.
