@@ -2737,22 +2737,24 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
     }
 
   if (unoptab == popcount_optab
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
       && optab_handler (unoptab, word_mode) != CODE_FOR_nothing
       && optimize_insn_for_speed_p ())
     {
-      temp = expand_doubleword_popcount (mode, op0, target);
+      temp = expand_doubleword_popcount (int_mode, op0, target);
       if (temp)
 	return temp;
     }
 
   if (unoptab == parity_optab
-      && GET_MODE_SIZE (mode) == 2 * UNITS_PER_WORD
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) == 2 * UNITS_PER_WORD
       && (optab_handler (unoptab, word_mode) != CODE_FOR_nothing
 	  || optab_handler (popcount_optab, word_mode) != CODE_FOR_nothing)
       && optimize_insn_for_speed_p ())
     {
-      temp = expand_doubleword_parity (mode, op0, target);
+      temp = expand_doubleword_parity (int_mode, op0, target);
       if (temp)
 	return temp;
     }
