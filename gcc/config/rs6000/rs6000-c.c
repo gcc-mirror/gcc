@@ -6729,7 +6729,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     else if (fcode == P9V_BUILTIN_VEC_VSIEDP)
       {
 	int overloaded_code;
-	int arg1_mode = TYPE_MODE (types[0]);
+	machine_mode arg1_mode = TYPE_MODE (types[0]);
 
 	if (nargs != 2)
 	  {
