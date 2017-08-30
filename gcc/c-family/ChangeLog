@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* c-common.c (c_common_fixed_point_type_for_size): Use opt_scalar_mode
+	for the mode iterator.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* c-lex.c (interpret_fixed): Use SCALAR_TYPE_MODE.
 	* c-common.c (c_build_vec_perm_expr): Likewise.
 

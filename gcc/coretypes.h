@@ -59,6 +59,7 @@ class scalar_mode;
 class scalar_int_mode;
 class scalar_float_mode;
 template<typename> class opt_mode;
+typedef opt_mode<scalar_mode> opt_scalar_mode;
 typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
 typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
 template<typename> class pod_mode;

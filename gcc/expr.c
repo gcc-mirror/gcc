@@ -559,23 +559,28 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 	}
       else
 	{
-	  machine_mode intermediate;
+	  scalar_mode intermediate;
 	  rtx tmp;
 	  int shift_amount;
 
 	  /* Search for a mode to convert via.  */
-	  FOR_EACH_MODE_FROM (intermediate, from_mode)
-	    if (((can_extend_p (to_mode, intermediate, unsignedp)
-		  != CODE_FOR_nothing)
-		 || (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (intermediate)
-		     && TRULY_NOOP_TRUNCATION_MODES_P (to_mode, intermediate)))
-		&& (can_extend_p (intermediate, from_mode, unsignedp)
-		    != CODE_FOR_nothing))
-	      {
-		convert_move (to, convert_to_mode (intermediate, from,
-						   unsignedp), unsignedp);
-		return;
-	      }
+	  opt_scalar_mode intermediate_iter;
+	  FOR_EACH_MODE_FROM (intermediate_iter, from_mode)
+	    {
+	      scalar_mode intermediate = intermediate_iter.require ();
+	      if (((can_extend_p (to_mode, intermediate, unsignedp)
+		    != CODE_FOR_nothing)
+		   || (GET_MODE_SIZE (to_mode) < GET_MODE_SIZE (intermediate)
+		       && TRULY_NOOP_TRUNCATION_MODES_P (to_mode,
+							 intermediate)))
+		  && (can_extend_p (intermediate, from_mode, unsignedp)
+		      != CODE_FOR_nothing))
+		{
+		  convert_move (to, convert_to_mode (intermediate, from,
+						     unsignedp), unsignedp);
+		  return;
+		}
+	    }
 
 	  /* No suitable intermediate mode.
 	     Generate what we need with	shifts.  */
