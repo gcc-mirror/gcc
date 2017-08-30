@@ -49,14 +49,16 @@ static rtx break_out_memory_refs (rtx);
 HOST_WIDE_INT
 trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
 {
-  int width = GET_MODE_PRECISION (mode);
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  scalar_mode smode = as_a <scalar_mode> (mode);
+  int width = GET_MODE_PRECISION (smode);
 
   /* You want to truncate to a _what_?  */
   gcc_assert (SCALAR_INT_MODE_P (mode)
 	      || POINTER_BOUNDS_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
-  if (mode == BImode)
+  if (smode == BImode)
     return c & 1 ? STORE_FLAG_VALUE : 0;
 
   /* Sign-extend for the requested mode.  */

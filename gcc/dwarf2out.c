@@ -15863,10 +15863,11 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	     or a floating-point constant.  A CONST_DOUBLE is used whenever
 	     the constant requires more than one word in order to be
 	     adequately represented.  We output CONST_DOUBLEs as blocks.  */
+	  scalar_mode smode = as_a <scalar_mode> (mode);
 	  loc_result = new_loc_descr (DW_OP_implicit_value,
-				      GET_MODE_SIZE (mode), 0);
+				      GET_MODE_SIZE (smode), 0);
 #if TARGET_SUPPORTS_WIDE_INT == 0
-	  if (!SCALAR_FLOAT_MODE_P (mode))
+	  if (!SCALAR_FLOAT_MODE_P (smode))
 	    {
 	      loc_result->dw_loc_oprnd2.val_class = dw_val_class_const_double;
 	      loc_result->dw_loc_oprnd2.v.val_double
@@ -15875,7 +15876,7 @@ loc_descriptor (rtx rtl, machine_mode mode,
 	  else
 #endif
 	    {
-	      unsigned int length = GET_MODE_SIZE (mode);
+	      unsigned int length = GET_MODE_SIZE (smode);
 	      unsigned char *array = ggc_vec_alloc<unsigned char> (length);
 
 	      insert_float (rtl, array);
