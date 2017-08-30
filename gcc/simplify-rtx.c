@@ -1694,7 +1694,7 @@ rtx
 simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 				rtx op, machine_mode op_mode)
 {
-  unsigned int width = GET_MODE_PRECISION (mode);
+  scalar_int_mode result_mode;
 
   if (code == VEC_DUPLICATE)
     {
@@ -1809,10 +1809,13 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
       return const_double_from_real_value (d, mode);
     }
 
-  if (CONST_SCALAR_INT_P (op) && width > 0)
+  if (CONST_SCALAR_INT_P (op) && is_a <scalar_int_mode> (mode, &result_mode))
     {
+      unsigned int width = GET_MODE_PRECISION (result_mode);
       wide_int result;
-      machine_mode imode = op_mode == VOIDmode ? mode : op_mode;
+      scalar_int_mode imode = (op_mode == VOIDmode
+			       ? result_mode
+			       : as_a <scalar_int_mode> (op_mode));
       rtx_mode_t op0 = rtx_mode_t (op, imode);
       int int_value;
 
@@ -1841,35 +1844,35 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  break;
 
 	case FFS:
-	  result = wi::shwi (wi::ffs (op0), mode);
+	  result = wi::shwi (wi::ffs (op0), result_mode);
 	  break;
 
 	case CLZ:
 	  if (wi::ne_p (op0, 0))
 	    int_value = wi::clz (op0);
-	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (mode, int_value))
-	    int_value = GET_MODE_PRECISION (mode);
-	  result = wi::shwi (int_value, mode);
+	  else if (! CLZ_DEFINED_VALUE_AT_ZERO (imode, int_value))
+	    int_value = GET_MODE_PRECISION (imode);
+	  result = wi::shwi (int_value, result_mode);
 	  break;
 
 	case CLRSB:
-	  result = wi::shwi (wi::clrsb (op0), mode);
+	  result = wi::shwi (wi::clrsb (op0), result_mode);
 	  break;
 
 	case CTZ:
 	  if (wi::ne_p (op0, 0))
 	    int_value = wi::ctz (op0);
-	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (mode, int_value))
-	    int_value = GET_MODE_PRECISION (mode);
-	  result = wi::shwi (int_value, mode);
+	  else if (! CTZ_DEFINED_VALUE_AT_ZERO (imode, int_value))
+	    int_value = GET_MODE_PRECISION (imode);
+	  result = wi::shwi (int_value, result_mode);
 	  break;
 
 	case POPCOUNT:
-	  result = wi::shwi (wi::popcount (op0), mode);
+	  result = wi::shwi (wi::popcount (op0), result_mode);
 	  break;
 
 	case PARITY:
-	  result = wi::shwi (wi::parity (op0), mode);
+	  result = wi::shwi (wi::parity (op0), result_mode);
 	  break;
 
 	case BSWAP:
@@ -1890,7 +1893,7 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
 	  return 0;
 	}
 
-      return immed_wide_int_const (result, mode);
+      return immed_wide_int_const (result, result_mode);
     }
 
   else if (CONST_DOUBLE_AS_FLOAT_P (op) 
@@ -1950,9 +1953,9 @@ simplify_const_unary_operation (enum rtx_code code, machine_mode mode,
     }
   else if (CONST_DOUBLE_AS_FLOAT_P (op)
 	   && SCALAR_FLOAT_MODE_P (GET_MODE (op))
-	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && width > 0)
+	   && is_int_mode (mode, &result_mode))
     {
+      unsigned int width = GET_MODE_PRECISION (result_mode);
       /* Although the overflow semantics of RTL's FIX and UNSIGNED_FIX
 	 operators are intentionally left unspecified (to ease implementation
 	 by target backends), for consistency, this routine implements the

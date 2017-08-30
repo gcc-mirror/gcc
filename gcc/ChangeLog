@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* simplify-rtx.c (simplify_const_unary_operation): Use
+	is_a <scalar_int_mode> instead of checking for a nonzero
+	precision.  Forcibly convert op_mode to a scalar_int_mode
+	in that case.  More clearly differentiate the operand and
+	result modes and use the former when deciding what the value
+	of a count-bits operation should be.  Use is_int_mode instead
+	of checking for a MODE_INT.  Remove redundant check for whether
+	this mode has a zero precision.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* optabs.c (widen_leading): Change the type of the mode argument
 	to scalar_int_mode.  Use opt_scalar_int_mode for the mode iterator.
 	(widen_bswap): Likewise.
