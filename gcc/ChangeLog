@@ -2,6 +2,19 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* combine.c (simplify_compare_const): Check that the mode is a
+	scalar_int_mode (rather than VOIDmode) before testing its
+	precision.
+	(simplify_comparison): Move COMPARISON_P handling out of the
+	loop and restrict the latter part of the loop to scalar_int_modes.
+	Check is_a <scalar_int_mode> before calling HWI_COMPUTABLE_MODE_P
+	and when considering SUBREG_REGs.  Use is_int_mode instead of
+	checking GET_MODE_CLASS against MODE_INT.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* combine.c (try_widen_shift_mode): Move check for equal modes to...
 	(simplify_shift_const_1): ...here.  Use scalar_int_mode for
 	shift_unit_mode and for modes involved in scalar shifts.
