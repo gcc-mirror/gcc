@@ -459,9 +459,9 @@ static int rtx_equal_for_field_assignment_p (rtx, rtx, bool = false);
 static rtx make_field_assignment (rtx);
 static rtx apply_distributive_law (rtx);
 static rtx distribute_and_simplify_rtx (rtx, int);
-static rtx simplify_and_const_int_1 (machine_mode, rtx,
+static rtx simplify_and_const_int_1 (scalar_int_mode, rtx,
 				     unsigned HOST_WIDE_INT);
-static rtx simplify_and_const_int (rtx, machine_mode, rtx,
+static rtx simplify_and_const_int (rtx, scalar_int_mode, rtx,
 				   unsigned HOST_WIDE_INT);
 static int merge_outer_ops (enum rtx_code *, HOST_WIDE_INT *, enum rtx_code,
 			    HOST_WIDE_INT, machine_mode, int *);
@@ -9905,7 +9905,7 @@ distribute_and_simplify_rtx (rtx x, int n)
    (const_int CONSTOP)).  Otherwise, return NULL_RTX.  */
 
 static rtx
-simplify_and_const_int_1 (machine_mode mode, rtx varop,
+simplify_and_const_int_1 (scalar_int_mode mode, rtx varop,
 			  unsigned HOST_WIDE_INT constop)
 {
   unsigned HOST_WIDE_INT nonzero;
@@ -9965,19 +9965,20 @@ simplify_and_const_int_1 (machine_mode mode, rtx varop,
      won't match a pattern either with or without this.  */
 
   if (GET_CODE (varop) == IOR || GET_CODE (varop) == XOR)
-    return
-      gen_lowpart
-	(mode,
-	 apply_distributive_law
-	 (simplify_gen_binary (GET_CODE (varop), GET_MODE (varop),
-			       simplify_and_const_int (NULL_RTX,
-						       GET_MODE (varop),
-						       XEXP (varop, 0),
-						       constop),
-			       simplify_and_const_int (NULL_RTX,
-						       GET_MODE (varop),
-						       XEXP (varop, 1),
-						       constop))));
+    {
+      scalar_int_mode varop_mode = as_a <scalar_int_mode> (GET_MODE (varop));
+      return
+	gen_lowpart
+	  (mode,
+	   apply_distributive_law
+	   (simplify_gen_binary (GET_CODE (varop), varop_mode,
+				 simplify_and_const_int (NULL_RTX, varop_mode,
+							 XEXP (varop, 0),
+							 constop),
+				 simplify_and_const_int (NULL_RTX, varop_mode,
+							 XEXP (varop, 1),
+							 constop))));
+    }
 
   /* If VAROP is PLUS, and the constant is a mask of low bits, distribute
      the AND and see if one of the operands simplifies to zero.  If so, we
@@ -10020,7 +10021,7 @@ simplify_and_const_int_1 (machine_mode mode, rtx varop,
    X is zero, we are to always construct the equivalent form.  */
 
 static rtx
-simplify_and_const_int (rtx x, machine_mode mode, rtx varop,
+simplify_and_const_int (rtx x, scalar_int_mode mode, rtx varop,
 			unsigned HOST_WIDE_INT constop)
 {
   rtx tem = simplify_and_const_int_1 (mode, varop, constop);
