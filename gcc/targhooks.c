@@ -469,12 +469,13 @@ default_libgcc_floating_mode_supported_p (machine_mode mode)
 /* Return the machine mode to use for the type _FloatN, if EXTENDED is
    false, or _FloatNx, if EXTENDED is true, or VOIDmode if not
    supported.  */
-machine_mode
+opt_scalar_float_mode
 default_floatn_mode (int n, bool extended)
 {
   if (extended)
     {
-      machine_mode cand1 = VOIDmode, cand2 = VOIDmode;
+      opt_scalar_float_mode cand1, cand2;
+      scalar_float_mode mode;
       switch (n)
 	{
 	case 32:
@@ -499,20 +500,21 @@ default_floatn_mode (int n, bool extended)
 	  /* Those are the only valid _FloatNx types.  */
 	  gcc_unreachable ();
 	}
-      if (cand1 != VOIDmode
-	  && REAL_MODE_FORMAT (cand1)->ieee_bits > n
-	  && targetm.scalar_mode_supported_p (cand1)
-	  && targetm.libgcc_floating_mode_supported_p (cand1))
+      if (cand1.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand1;
-      if (cand2 != VOIDmode
-	  && REAL_MODE_FORMAT (cand2)->ieee_bits > n
-	  && targetm.scalar_mode_supported_p (cand2)
-	  && targetm.libgcc_floating_mode_supported_p (cand2))
+      if (cand2.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand2;
     }
   else
     {
-      machine_mode cand = VOIDmode;
+      opt_scalar_float_mode cand;
+      scalar_float_mode mode;
       switch (n)
 	{
 	case 16:
@@ -545,13 +547,13 @@ default_floatn_mode (int n, bool extended)
 	default:
 	  break;
 	}
-      if (cand != VOIDmode
-	  && REAL_MODE_FORMAT (cand)->ieee_bits == n
-	  && targetm.scalar_mode_supported_p (cand)
-	  && targetm.libgcc_floating_mode_supported_p (cand))
+      if (cand.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits == n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand;
     }
-  return VOIDmode;
+  return opt_scalar_float_mode ();
 }
 
 /* Make some target macros useable by target-independent code.  */

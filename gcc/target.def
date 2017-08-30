@@ -3385,20 +3385,20 @@ DEFHOOK
 (floatn_mode,
  "Define this to return the machine mode to use for the type \n\
 @code{_Float@var{n}}, if @var{extended} is false, or the type \n\
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type \n\
-is not supported, return @code{VOIDmode}.  The default version of this \n\
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for \n\
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not\n\
+supported, return @code{opt_scalar_float_mode ()}.  The default version of\n\
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for\n\
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for \n\
 @code{_Float128}, if those modes exist and satisfy the requirements for \n\
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and \n\
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it \n\
 returns the first of @code{XFmode} and @code{TFmode} that exists and \n\
 satisfies the same requirements; for other types, it returns \n\
-@code{VOIDmode}.  The hook is only called for values of @var{n} and \n\
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that \n\
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or \n\
-greater than 128 and a multiple of 32.",
- machine_mode, (int n, bool extended),
+@code{opt_scalar_float_mode ()}.  The hook is only called for values\n\
+of @var{n} and @var{extended} that are valid according to\n\
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,\n\
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.",
+ opt_scalar_float_mode, (int n, bool extended),
  default_floatn_mode)
 
 /* Compute cost of moving data from a register of class FROM to one of
