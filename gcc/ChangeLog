@@ -1,4 +1,11 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-switch-conversion.c (array_value_type): Only read TYPE_MODE
+	once.  Use get_narrowest_mode instead of GET_CLASS_NARROWEST_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
             Alan Hayward  <alan.hayward@arm.com>
             David Sherwood  <david.sherwood@arm.com>
 

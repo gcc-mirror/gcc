@@ -1037,7 +1037,6 @@ array_value_type (gswitch *swtch, tree type, int num,
 {
   unsigned int i, len = vec_safe_length (info->constructors[num]);
   constructor_elt *elt;
-  machine_mode mode;
   int sign = 0;
   tree smaller_type;
 
@@ -1051,8 +1050,9 @@ array_value_type (gswitch *swtch, tree type, int num,
   if (!INTEGRAL_TYPE_P (type))
     return type;
 
-  mode = GET_CLASS_NARROWEST_MODE (GET_MODE_CLASS (TYPE_MODE (type)));
-  if (GET_MODE_SIZE (TYPE_MODE (type)) <= GET_MODE_SIZE (mode))
+  machine_mode type_mode = TYPE_MODE (type);
+  machine_mode mode = get_narrowest_mode (type_mode);
+  if (GET_MODE_SIZE (type_mode) <= GET_MODE_SIZE (mode))
     return type;
 
   if (len < (optimize_bb_for_size_p (gimple_bb (swtch)) ? 2 : 32))
@@ -1090,7 +1090,7 @@ array_value_type (gswitch *swtch, tree type, int num,
 
 	  mode = GET_MODE_WIDER_MODE (mode);
 	  if (mode == VOIDmode
-	      || GET_MODE_SIZE (mode) >= GET_MODE_SIZE (TYPE_MODE (type)))
+	      || GET_MODE_SIZE (mode) >= GET_MODE_SIZE (type_mode))
 	    return type;
 	}
     }
