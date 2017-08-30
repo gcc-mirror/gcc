@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (const_scalar_mask_from_tree): Add a mode argument.
+	Expand commentary.
+	(expand_expr_real_1): Update call accordingly.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* expmed.c (store_bit_field_using_insv): Add op0_mode and
 	value_mode arguments.  Use scalar_int_mode internally.
 	(store_bit_field_1): Rename the new integer mode from imode
