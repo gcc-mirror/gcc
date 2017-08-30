@@ -2807,7 +2807,7 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
    in reverse storage order.  */
 
 void
-assemble_real (REAL_VALUE_TYPE d, machine_mode mode, unsigned int align,
+assemble_real (REAL_VALUE_TYPE d, scalar_float_mode mode, unsigned int align,
 	       bool reverse)
 {
   long data[4] = {0, 0, 0, 0};
@@ -3877,7 +3877,8 @@ output_constant_pool_2 (machine_mode mode, rtx x, unsigned int align)
     case MODE_DECIMAL_FLOAT:
       {
 	gcc_assert (CONST_DOUBLE_AS_FLOAT_P (x));
-	assemble_real (*CONST_DOUBLE_REAL_VALUE (x), mode, align, false);
+	assemble_real (*CONST_DOUBLE_REAL_VALUE (x),
+		       as_a <scalar_float_mode> (mode), align, false);
 	break;
       }
 
@@ -4859,7 +4860,8 @@ output_constant (tree exp, unsigned HOST_WIDE_INT size, unsigned int align,
       if (TREE_CODE (exp) != REAL_CST)
 	error ("initializer for floating value is not a floating constant");
       else
-	assemble_real (TREE_REAL_CST (exp), TYPE_MODE (TREE_TYPE (exp)),
+	assemble_real (TREE_REAL_CST (exp),
+		       SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (exp)),
 		       align, reverse);
       break;
 

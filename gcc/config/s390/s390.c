@@ -9498,7 +9498,8 @@ s390_output_pool_entry (rtx exp, machine_mode mode, unsigned int align)
     case MODE_DECIMAL_FLOAT:
       gcc_assert (GET_CODE (exp) == CONST_DOUBLE);
 
-      assemble_real (*CONST_DOUBLE_REAL_VALUE (exp), mode, align);
+      assemble_real (*CONST_DOUBLE_REAL_VALUE (exp),
+		     as_a <scalar_float_mode> (mode), align);
       break;
 
     case MODE_INT:
