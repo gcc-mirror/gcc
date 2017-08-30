@@ -722,19 +722,21 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
   return align;
 }
 
-/* Return the widest integer mode no wider than SIZE.  If no such mode
-   can be found, return VOIDmode.  */
+/* Return the widest integer mode that is narrower than SIZE bytes.  */
 
-static machine_mode
+static scalar_int_mode
 widest_int_mode_for_size (unsigned int size)
 {
-  machine_mode tmode, mode = VOIDmode;
+  scalar_int_mode result = NARROWEST_INT_MODE;
 
+  gcc_checking_assert (size > 1);
+
+  opt_scalar_int_mode tmode;
   FOR_EACH_MODE_IN_CLASS (tmode, MODE_INT)
-    if (GET_MODE_SIZE (tmode) < size)
-      mode = tmode;
+    if (GET_MODE_SIZE (tmode.require ()) < size)
+      result = tmode.require ();
 
-  return mode;
+  return result;
 }
 
 /* Determine whether an operation OP on LEN bytes with alignment ALIGN can
@@ -771,13 +773,9 @@ by_pieces_ninsns (unsigned HOST_WIDE_INT l, unsigned int align,
 
   while (max_size > 1 && l > 0)
     {
-      machine_mode mode;
+      scalar_int_mode mode = widest_int_mode_for_size (max_size);
       enum insn_code icode;
 
-      mode = widest_int_mode_for_size (max_size);
-
-      if (mode == VOIDmode)
-	break;
       unsigned int modesize = GET_MODE_SIZE (mode);
 
       icode = optab_handler (mov_optab, mode);
@@ -1053,7 +1051,7 @@ op_by_pieces_d::op_by_pieces_d (rtx to, bool to_load,
   if (by_pieces_ninsns (len, align, m_max_size, MOVE_BY_PIECES) > 2)
     {
       /* Find the mode of the largest comparison.  */
-      machine_mode mode = widest_int_mode_for_size (m_max_size);
+      scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
 
       m_from.decide_autoinc (mode, m_reverse, len);
       m_to.decide_autoinc (mode, m_reverse, len);
@@ -1073,10 +1071,7 @@ op_by_pieces_d::run ()
 {
   while (m_max_size > 1 && m_len > 0)
     {
-      machine_mode mode = widest_int_mode_for_size (m_max_size);
-
-      if (mode == VOIDmode)
-	break;
+      scalar_int_mode mode = widest_int_mode_for_size (m_max_size);
 
       if (prepare_mode (mode, m_align))
 	{
@@ -1287,7 +1282,6 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
   unsigned HOST_WIDE_INT l;
   unsigned int max_size;
   HOST_WIDE_INT offset = 0;
-  machine_mode mode;
   enum insn_code icode;
   int reverse;
   /* cst is set but not used if LEGITIMATE_CONSTANT doesn't use it.  */
@@ -1316,10 +1310,7 @@ can_store_by_pieces (unsigned HOST_WIDE_INT len,
       max_size = STORE_MAX_PIECES + 1;
       while (max_size > 1 && l > 0)
 	{
-	  mode = widest_int_mode_for_size (max_size);
-
-	  if (mode == VOIDmode)
-	    break;
+	  scalar_int_mode mode = widest_int_mode_for_size (max_size);
 
 	  icode = optab_handler (mov_optab, mode);
 	  if (icode != CODE_FOR_nothing
