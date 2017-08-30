@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* expr.c (expand_expr_real_2): Use word_mode instead of innermode
+	when the two are known to be equal.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* simplify-rtx.c (simplify_const_unary_operation): Use
 	is_a <scalar_int_mode> instead of checking for a nonzero
 	precision.  Forcibly convert op_mode to a scalar_int_mode

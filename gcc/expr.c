@@ -8679,7 +8679,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		  rtx htem, hipart;
 		  op0 = expand_normal (treeop0);
 		  if (TREE_CODE (treeop1) == INTEGER_CST)
-		    op1 = convert_modes (innermode, mode,
+		    op1 = convert_modes (word_mode, mode,
 					 expand_normal (treeop1),
 					 TYPE_UNSIGNED (TREE_TYPE (treeop1)));
 		  else
@@ -8690,8 +8690,8 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 		    goto widen_mult_const;
 		  temp = expand_binop (mode, other_optab, op0, op1, target,
 				       unsignedp, OPTAB_LIB_WIDEN);
-		  hipart = gen_highpart (innermode, temp);
-		  htem = expand_mult_highpart_adjust (innermode, hipart,
+		  hipart = gen_highpart (word_mode, temp);
+		  htem = expand_mult_highpart_adjust (word_mode, hipart,
 						      op0, op1, hipart,
 						      zextend_p);
 		  if (htem != hipart)
