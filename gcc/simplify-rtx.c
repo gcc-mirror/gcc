@@ -1493,12 +1493,11 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && GET_MODE_BITSIZE (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
 	{
-	  machine_mode tmode
-	    = mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
-			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
+	  scalar_int_mode tmode;
 	  gcc_assert (GET_MODE_BITSIZE (mode)
 		      > GET_MODE_BITSIZE (GET_MODE (op)));
-	  if (tmode != BLKmode)
+	  if (int_mode_for_size (GET_MODE_BITSIZE (GET_MODE (op))
+				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));
@@ -1610,10 +1609,9 @@ simplify_unary_operation_1 (enum rtx_code code, machine_mode mode, rtx op)
 	  && XEXP (XEXP (op, 0), 1) == XEXP (op, 1)
 	  && GET_MODE_PRECISION (GET_MODE (op)) > INTVAL (XEXP (op, 1)))
 	{
-	  machine_mode tmode
-	    = mode_for_size (GET_MODE_PRECISION (GET_MODE (op))
-			     - INTVAL (XEXP (op, 1)), MODE_INT, 1);
-	  if (tmode != BLKmode)
+	  scalar_int_mode tmode;
+	  if (int_mode_for_size (GET_MODE_PRECISION (GET_MODE (op))
+				 - INTVAL (XEXP (op, 1)), 1).exists (&tmode))
 	    {
 	      rtx inner =
 		rtl_hooks.gen_lowpart_no_emit (tmode, XEXP (XEXP (op, 0), 0));

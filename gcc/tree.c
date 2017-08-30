@@ -12639,10 +12639,11 @@ vector_type_mode (const_tree t)
       /* For integers, try mapping it to a same-sized scalar mode.  */
       if (GET_MODE_CLASS (innermode) == MODE_INT)
 	{
-	  mode = mode_for_size (TYPE_VECTOR_SUBPARTS (t)
-				* GET_MODE_BITSIZE (innermode), MODE_INT, 0);
-
-	  if (mode != VOIDmode && have_regs_of_mode[mode])
+	  unsigned int size = (TYPE_VECTOR_SUBPARTS (t)
+			       * GET_MODE_BITSIZE (innermode));
+	  scalar_int_mode mode;
+	  if (int_mode_for_size (size, 0).exists (&mode)
+	      && have_regs_of_mode[mode])
 	    return mode;
 	}
 

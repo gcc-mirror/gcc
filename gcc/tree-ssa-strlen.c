@@ -2122,8 +2122,8 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
       unsigned align1 = get_pointer_alignment (arg1);
       unsigned align2 = get_pointer_alignment (arg2);
       unsigned align = MIN (align1, align2);
-      machine_mode mode = mode_for_size (leni, MODE_INT, 1);
-      if (mode != BLKmode
+      scalar_int_mode mode;
+      if (int_mode_for_size (leni, 1).exists (&mode)
 	  && (align >= leni || !SLOW_UNALIGNED_ACCESS (mode, align)))
 	{
 	  location_t loc = gimple_location (stmt2);

@@ -2,6 +2,38 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* machmode.h (int_mode_for_size): New function.
+	* builtins.c (set_builtin_user_assembler_name): Use int_mode_for_size
+	instead of mode_for_size.
+	* calls.c (save_fixed_argument_area): Likewise.  Make use of BLKmode
+	explicit.
+	* combine.c (expand_field_assignment): Use int_mode_for_size
+	instead of mode_for_size.
+	(make_extraction): Likewise.
+	(simplify_shift_const_1): Likewise.
+	(simplify_comparison): Likewise.
+	* dojump.c (do_jump): Likewise.
+	* dwarf2out.c (mem_loc_descriptor): Likewise.
+	* emit-rtl.c (init_derived_machine_modes): Likewise.
+	* expmed.c (flip_storage_order): Likewise.
+	(convert_extracted_bit_field): Likewise.
+	* expr.c (copy_blkmode_from_reg): Likewise.
+	* graphite-isl-ast-to-gimple.c (max_mode_int_precision): Likewise.
+	* internal-fn.c (expand_mul_overflow): Likewise.
+	* lower-subreg.c (simple_move): Likewise.
+	* optabs-libfuncs.c (init_optabs): Likewise.
+	* simplify-rtx.c (simplify_unary_operation_1): Likewise.
+	* tree.c (vector_type_mode): Likewise.
+	* tree-ssa-strlen.c (handle_builtin_memcmp): Likewise.
+	* tree-vect-data-refs.c (vect_lanes_optab_supported_p): Likewise.
+	* tree-vect-generic.c (expand_vector_parallel): Likewise.
+	* tree-vect-stmts.c (vectorizable_load): Likewise.
+	(vectorizable_store): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (pod_mode): New type.
 	(scalar_int_mode_pod): New typedef.
 	* machmode.h (pod_mode): New class.

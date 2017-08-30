@@ -7306,19 +7306,16 @@ expand_field_assignment (const_rtx x)
       /* Don't attempt bitwise arithmetic on non scalar integer modes.  */
       if (! SCALAR_INT_MODE_P (compute_mode))
 	{
-	  machine_mode imode;
-
 	  /* Don't do anything for vector or complex integral types.  */
 	  if (! FLOAT_MODE_P (compute_mode))
 	    break;
 
 	  /* Try to find an integral mode to pun with.  */
-	  imode = mode_for_size (GET_MODE_BITSIZE (compute_mode), MODE_INT, 0);
-	  if (imode == BLKmode)
+	  if (!int_mode_for_size (GET_MODE_BITSIZE (compute_mode), 0)
+	      .exists (&compute_mode))
 	    break;
 
-	  compute_mode = imode;
-	  inner = gen_lowpart (imode, inner);
+	  inner = gen_lowpart (compute_mode, inner);
 	}
 
       /* Compute a mask of LEN bits, if we can do this on the host machine.  */
@@ -7389,7 +7386,6 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   machine_mode wanted_inner_reg_mode = word_mode;
   machine_mode pos_mode = word_mode;
   machine_mode extraction_mode = word_mode;
-  machine_mode tmode = mode_for_size (len, MODE_INT, 1);
   rtx new_rtx = 0;
   rtx orig_pos_rtx = pos_rtx;
   HOST_WIDE_INT orig_pos;
@@ -7437,7 +7433,8 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      For MEM, we can avoid an extract if the field starts on an appropriate
      boundary and we can change the mode of the memory reference.  */
 
-  if (tmode != BLKmode
+  scalar_int_mode tmode;
+  if (int_mode_for_size (len, 1).exists (&tmode)
       && ((pos_rtx == 0 && (pos % BITS_PER_WORD) == 0
 	   && !MEM_P (inner)
 	   && (pos == 0 || REG_P (inner))
@@ -10444,8 +10441,8 @@ simplify_shift_const_1 (enum rtx_code code, machine_mode result_mode,
 	      && ! mode_dependent_address_p (XEXP (varop, 0),
 					     MEM_ADDR_SPACE (varop))
 	      && ! MEM_VOLATILE_P (varop)
-	      && (tmode = mode_for_size (GET_MODE_BITSIZE (mode) - count,
-					 MODE_INT, 1)) != BLKmode)
+	      && (int_mode_for_size (GET_MODE_BITSIZE (mode) - count, 1)
+		  .exists (&tmode)))
 	    {
 	      new_rtx = adjust_address_nv (varop, tmode,
 				       BYTES_BIG_ENDIAN ? 0
@@ -12371,7 +12368,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 				   & GET_MODE_MASK (mode))
 				  + 1)) >= 0
 	      && const_op >> i == 0
-	      && (tmode = mode_for_size (i, MODE_INT, 1)) != BLKmode)
+	      && int_mode_for_size (i, 1).exists (&tmode))
 	    {
 	      op0 = gen_lowpart_or_truncate (tmode, XEXP (op0, 0));
 	      continue;
@@ -12531,8 +12528,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && CONST_INT_P (XEXP (op0, 1))
 	      && GET_CODE (XEXP (op0, 0)) == ASHIFT
 	      && XEXP (op0, 1) == XEXP (XEXP (op0, 0), 1)
-	      && (tmode = mode_for_size (mode_width - INTVAL (XEXP (op0, 1)),
-					 MODE_INT, 1)) != BLKmode
+	      && (int_mode_for_size (mode_width - INTVAL (XEXP (op0, 1)), 1)
+		  .exists (&tmode))
 	      && (((unsigned HOST_WIDE_INT) const_op
 		   + (GET_MODE_MASK (tmode) >> 1) + 1)
 		  <= GET_MODE_MASK (tmode)))
@@ -12550,8 +12547,8 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	      && CONST_INT_P (XEXP (XEXP (op0, 0), 1))
 	      && GET_CODE (XEXP (XEXP (op0, 0), 0)) == ASHIFT
 	      && XEXP (op0, 1) == XEXP (XEXP (XEXP (op0, 0), 0), 1)
-	      && (tmode = mode_for_size (mode_width - INTVAL (XEXP (op0, 1)),
-					 MODE_INT, 1)) != BLKmode
+	      && (int_mode_for_size (mode_width - INTVAL (XEXP (op0, 1)), 1)
+		  .exists (&tmode))
 	      && (((unsigned HOST_WIDE_INT) const_op
 		   + (GET_MODE_MASK (tmode) >> 1) + 1)
 		  <= GET_MODE_MASK (tmode)))

@@ -594,7 +594,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
           && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
           && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
           && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
-          && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
+	  && int_mode_for_size (i + 1, 0).exists (&mode)
           && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
           && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
           && have_insn_for (COMPARE, TYPE_MODE (type)))

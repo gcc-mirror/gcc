@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use int_mode_for_size
+	instead of mode_for_size.
+	(gnat_to_gnu_subprog_type): Likewise.
+	* gcc-interface/utils.c (make_type_from_size): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc-interface/misc.c (fp_prec_to_size): Use opt_scalar_float_mode.
 	(fp_size_to_prec): Likewise.
 

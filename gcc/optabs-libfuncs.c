@@ -858,8 +858,10 @@ init_optabs (void)
   /* The ffs function operates on `int'.  Fall back on it if we do not
      have a libgcc2 function for that width.  */
   if (INT_TYPE_SIZE < BITS_PER_WORD)
-    set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-		       "ffs");
+    {
+      scalar_int_mode mode = int_mode_for_size (INT_TYPE_SIZE, 0).require ();
+      set_optab_libfunc (ffs_optab, mode, "ffs");
+    }
 
   /* Explicitly initialize the bswap libfuncs since we need them to be
      valid for things other than word_mode.  */

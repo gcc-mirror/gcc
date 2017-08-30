@@ -10365,9 +10365,9 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
   if (DECL_FUNCTION_CODE (decl) == BUILT_IN_FFS
       && INT_TYPE_SIZE < BITS_PER_WORD)
     {
+      scalar_int_mode mode = int_mode_for_size (INT_TYPE_SIZE, 0).require ();
       set_user_assembler_libfunc ("ffs", asmspec);
-      set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-			 "ffs");
+      set_optab_libfunc (ffs_optab, mode, "ffs");
     }
 }
 
