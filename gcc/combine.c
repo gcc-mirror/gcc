@@ -4793,7 +4793,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
   HOST_WIDE_INT pos = 0;
   int unsignedp = 0;
   rtx inner = NULL_RTX;
-  scalar_int_mode inner_mode;
+  scalar_int_mode mode, inner_mode;
 
   /* First special-case some codes.  */
   switch (code)
@@ -5047,7 +5047,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 
 	case SIGN_EXTRACT:
 	case ZERO_EXTRACT:
-	  if (CONST_INT_P (XEXP (SET_SRC (x), 1))
+	  if (is_a <scalar_int_mode> (GET_MODE (XEXP (SET_SRC (x), 0)),
+				      &inner_mode)
+	      && CONST_INT_P (XEXP (SET_SRC (x), 1))
 	      && CONST_INT_P (XEXP (SET_SRC (x), 2)))
 	    {
 	      inner = XEXP (SET_SRC (x), 0);
@@ -5055,7 +5057,7 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	      pos = INTVAL (XEXP (SET_SRC (x), 2));
 
 	      if (BITS_BIG_ENDIAN)
-		pos = GET_MODE_PRECISION (GET_MODE (inner)) - len - pos;
+		pos = GET_MODE_PRECISION (inner_mode) - len - pos;
 	      unsignedp = (code == ZERO_EXTRACT);
 	    }
 	  break;
@@ -5065,10 +5067,9 @@ find_split_point (rtx *loc, rtx_insn *insn, bool set_src)
 	}
 
       if (len && pos >= 0
-	  && pos + len <= GET_MODE_PRECISION (GET_MODE (inner)))
+	  && pos + len <= GET_MODE_PRECISION (GET_MODE (inner))
+	  && is_a <scalar_int_mode> (GET_MODE (SET_SRC (x)), &mode))
 	{
-	  machine_mode mode = GET_MODE (SET_SRC (x));
-
 	  /* For unsigned, we have a choice of a shift followed by an
 	     AND or two shifts.  Use two shifts for field sizes where the
 	     constant might be too large.  We assume here that we can
@@ -7846,6 +7847,7 @@ make_compound_operation_int (machine_mode mode, rtx *x_ptr,
   rtx new_rtx = 0;
   int i;
   rtx tem;
+  scalar_int_mode inner_mode;
   bool equality_comparison = false;
 
   if (in_code == EQ)
@@ -7954,11 +7956,12 @@ make_compound_operation_int (machine_mode mode, rtx *x_ptr,
       /* Same as previous, but for (subreg (lshiftrt ...)) in first op.  */
       else if (GET_CODE (XEXP (x, 0)) == SUBREG
 	       && subreg_lowpart_p (XEXP (x, 0))
+	       && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (XEXP (x, 0))),
+					  &inner_mode)
 	       && GET_CODE (SUBREG_REG (XEXP (x, 0))) == LSHIFTRT
 	       && (i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	{
 	  rtx inner_x0 = SUBREG_REG (XEXP (x, 0));
-	  machine_mode inner_mode = GET_MODE (inner_x0);
 	  new_rtx = make_compound_operation (XEXP (inner_x0, 0), next_code);
 	  new_rtx = make_extraction (inner_mode, new_rtx, 0,
 				     XEXP (inner_x0, 1),
@@ -8148,14 +8151,14 @@ make_compound_operation_int (machine_mode mode, rtx *x_ptr,
 	/* If the SUBREG is masking of a logical right shift,
 	   make an extraction.  */
 	if (GET_CODE (inner) == LSHIFTRT
+	    && is_a <scalar_int_mode> (GET_MODE (inner), &inner_mode)
+	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (inner_mode)
 	    && CONST_INT_P (XEXP (inner, 1))
-	    && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (inner))
-	    && (UINTVAL (XEXP (inner, 1))
-		< GET_MODE_PRECISION (GET_MODE (inner)))
+	    && UINTVAL (XEXP (inner, 1)) < GET_MODE_PRECISION (inner_mode)
 	    && subreg_lowpart_p (x))
 	  {
 	    new_rtx = make_compound_operation (XEXP (inner, 0), next_code);
-	    int width = GET_MODE_PRECISION (GET_MODE (inner))
+	    int width = GET_MODE_PRECISION (inner_mode)
 			- INTVAL (XEXP (inner, 1));
 	    if (width > mode_width)
 	      width = mode_width;
@@ -11358,15 +11361,16 @@ change_zero_ext (rtx pat)
       maybe_swap_commutative_operands (**iter);
 
   rtx *dst = &SET_DEST (pat);
+  scalar_int_mode mode;
   if (GET_CODE (*dst) == ZERO_EXTRACT
       && REG_P (XEXP (*dst, 0))
+      && is_a <scalar_int_mode> (GET_MODE (XEXP (*dst, 0)), &mode)
       && CONST_INT_P (XEXP (*dst, 1))
       && CONST_INT_P (XEXP (*dst, 2)))
     {
       rtx reg = XEXP (*dst, 0);
       int width = INTVAL (XEXP (*dst, 1));
       int offset = INTVAL (XEXP (*dst, 2));
-      machine_mode mode = GET_MODE (reg);
       int reg_width = GET_MODE_PRECISION (mode);
       if (BITS_BIG_ENDIAN)
 	offset = reg_width - width - offset;

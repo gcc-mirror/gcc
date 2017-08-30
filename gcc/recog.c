@@ -560,6 +560,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
   rtx new_rtx = NULL_RTX;
+  scalar_int_mode is_mode;
 
   if (SWAPPABLE_OPERANDS_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
@@ -655,6 +656,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
          happen, we might just fail in some cases).  */
 
       if (MEM_P (XEXP (x, 0))
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &is_mode)
 	  && CONST_INT_P (XEXP (x, 1))
 	  && CONST_INT_P (XEXP (x, 2))
 	  && !mode_dependent_address_p (XEXP (XEXP (x, 0), 0),
@@ -662,7 +664,6 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
 	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
 	  machine_mode wanted_mode = VOIDmode;
-	  machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
 
 	  if (GET_CODE (x) == ZERO_EXTRACT && targetm.have_extzv ())

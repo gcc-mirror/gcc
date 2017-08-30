@@ -239,11 +239,14 @@ convert_move (rtx to, rtx from, int unsignedp)
      the required extension, strip it.  We don't handle such SUBREGs as
      TO here.  */
 
-  if (GET_CODE (from) == SUBREG && SUBREG_PROMOTED_VAR_P (from)
+  scalar_int_mode to_int_mode;
+  if (GET_CODE (from) == SUBREG
+      && SUBREG_PROMOTED_VAR_P (from)
+      && is_a <scalar_int_mode> (to_mode, &to_int_mode)
       && (GET_MODE_PRECISION (GET_MODE (SUBREG_REG (from)))
-	  >= GET_MODE_PRECISION (to_mode))
+	  >= GET_MODE_PRECISION (to_int_mode))
       && SUBREG_CHECK_PROMOTED_SIGN (from, unsignedp))
-    from = gen_lowpart (to_mode, from), from_mode = to_mode;
+    from = gen_lowpart (to_int_mode, from), from_mode = to_int_mode;
 
   gcc_assert (GET_CODE (to) != SUBREG || !SUBREG_PROMOTED_VAR_P (to));
 
@@ -635,10 +638,12 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
   /* If FROM is a SUBREG that indicates that we have already done at least
      the required extension, strip it.  */
 
-  if (GET_CODE (x) == SUBREG && SUBREG_PROMOTED_VAR_P (x)
-      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (mode)
+  if (GET_CODE (x) == SUBREG
+      && SUBREG_PROMOTED_VAR_P (x)
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (GET_MODE (SUBREG_REG (x))) >= GET_MODE_SIZE (int_mode)
       && SUBREG_CHECK_PROMOTED_SIGN (x, unsignedp))
-    x = gen_lowpart (mode, SUBREG_REG (x));
+    x = gen_lowpart (int_mode, SUBREG_REG (x));
 
   if (GET_MODE (x) != VOIDmode)
     oldmode = GET_MODE (x);
