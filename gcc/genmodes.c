@@ -1799,7 +1799,7 @@ emit_mode_int_n (void)
       m = mode_sort[i];
       printf(" {\n");
       tagged_printf ("%u", m->int_n, m->name);
-      printf ("E_%smode,", m->name);
+      printf ("{ E_%smode },", m->name);
       printf(" },\n");
     }
 

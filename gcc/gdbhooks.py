@@ -545,6 +545,10 @@ def build_pretty_printer():
     pp.add_printer_for_types(['opt_scalar_int_mode',
                               'opt_scalar_float_mode'],
                              'opt_mode', OptMachineModePrinter)
+    pp.add_printer_for_regex(r'pod_mode<(\S+)>',
+                             'pod_mode', MachineModePrinter)
+    pp.add_printer_for_types(['scalar_int_mode_pod'],
+                             'pod_mode', MachineModePrinter)
     for mode in 'scalar_int_mode', 'scalar_float_mode':
         pp.add_printer_for_types([mode], mode, MachineModePrinter)
 

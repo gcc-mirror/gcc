@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (pod_mode): New type.
+	(scalar_int_mode_pod): New typedef.
+	* machmode.h (pod_mode): New class.
+	(int_n_data_t::m): Change type to scalar_int_mode_pod.
+	* genmodes.c (emit_mode_int_n): Update accordingly.
+	* lower-subreg.h (target_lower_subreg): Change type to
+	scalar_int_mode_pod.
+	* gdbhooks.py (build_pretty_printer): Handle pod_mode and
+	scalar_int_mode_pod.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/powerpcspe/powerpcspe.h (rs6000_pmode): Change type from
 	machine_mode to scalar_int_mode.
 	* config/powerpcspe/powerpcspe.c (rs6000_pmode): Likewise.
