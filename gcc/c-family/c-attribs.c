@@ -1469,10 +1469,12 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (POINTER_TYPE_P (type))
 	{
+	  scalar_int_mode addr_mode;
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
 	  tree (*fn)(tree, machine_mode, bool);
 
-	  if (!targetm.addr_space.valid_pointer_mode (mode, as))
+	  if (!is_a <scalar_int_mode> (mode, &addr_mode)
+	      || !targetm.addr_space.valid_pointer_mode (addr_mode, as))
 	    {
 	      error ("invalid pointer mode %qs", p);
 	      return NULL_TREE;
@@ -1482,7 +1484,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	    fn = build_pointer_type_for_mode;
 	  else
 	    fn = build_reference_type_for_mode;
-	  typefm = fn (TREE_TYPE (type), mode, false);
+	  typefm = fn (TREE_TYPE (type), addr_mode, false);
 	}
       else
 	{
