@@ -3779,10 +3779,10 @@ struct rtl_hooks
 {
   rtx (*gen_lowpart) (machine_mode, rtx);
   rtx (*gen_lowpart_no_emit) (machine_mode, rtx);
-  rtx (*reg_nonzero_bits) (const_rtx, machine_mode, const_rtx, machine_mode,
-			   unsigned HOST_WIDE_INT, unsigned HOST_WIDE_INT *);
-  rtx (*reg_num_sign_bit_copies) (const_rtx, machine_mode, const_rtx, machine_mode,
-				  unsigned int, unsigned int *);
+  rtx (*reg_nonzero_bits) (const_rtx, scalar_int_mode, scalar_int_mode,
+			   unsigned HOST_WIDE_INT *);
+  rtx (*reg_num_sign_bit_copies) (const_rtx, scalar_int_mode, scalar_int_mode,
+				  unsigned int *);
   bool (*reg_truncated_to_mode) (machine_mode, const_rtx);
 
   /* Whenever you add entries here, make sure you adjust rtlhooks-def.h.  */
