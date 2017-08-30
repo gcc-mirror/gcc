@@ -4809,7 +4809,8 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	(index_vec_type);
 
       /* Get an unsigned integer version of the type of the data vector.  */
-      int scalar_precision = GET_MODE_PRECISION (TYPE_MODE (scalar_type));
+      int scalar_precision
+	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       tree scalar_type_unsigned = make_unsigned_type (scalar_precision);
       tree vectype_unsigned = build_vector_type
 	(scalar_type_unsigned, TYPE_VECTOR_SUBPARTS (vectype));
@@ -6211,7 +6212,8 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
     }
   else
     {
-      int scalar_precision = GET_MODE_PRECISION (TYPE_MODE (scalar_type));
+      int scalar_precision
+	= GET_MODE_PRECISION (SCALAR_TYPE_MODE (scalar_type));
       cr_index_scalar_type = make_unsigned_type (scalar_precision);
       cr_index_vector_type = build_vector_type
 	(cr_index_scalar_type, TYPE_VECTOR_SUBPARTS (vectype_out));

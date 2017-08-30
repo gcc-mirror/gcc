@@ -812,11 +812,11 @@ c_common_type (tree t1, tree t2)
   if (code1 == FIXED_POINT_TYPE || code2 == FIXED_POINT_TYPE)
     {
       unsigned int unsignedp = 0, satp = 0;
-      machine_mode m1, m2;
+      scalar_mode m1, m2;
       unsigned int fbit1, ibit1, fbit2, ibit2, max_fbit, max_ibit;
 
-      m1 = TYPE_MODE (t1);
-      m2 = TYPE_MODE (t2);
+      m1 = SCALAR_TYPE_MODE (t1);
+      m2 = SCALAR_TYPE_MODE (t2);
 
       /* If one input type is saturating, the result type is saturating.  */
       if (TYPE_SATURATING (t1) || TYPE_SATURATING (t2))
@@ -848,7 +848,8 @@ c_common_type (tree t1, tree t2)
 		mclass = MODE_ACCUM;
 	      else
 		gcc_unreachable ();
-	      m1 = mode_for_size (GET_MODE_PRECISION (m1), mclass, 0);
+	      m1 = as_a <scalar_mode>
+		(mode_for_size (GET_MODE_PRECISION (m1), mclass, 0));
 	    }
 	  if (code2 == FIXED_POINT_TYPE && TYPE_UNSIGNED (t2))
 	    {
@@ -859,7 +860,8 @@ c_common_type (tree t1, tree t2)
 		mclass = MODE_ACCUM;
 	      else
 		gcc_unreachable ();
-	      m2 = mode_for_size (GET_MODE_PRECISION (m2), mclass, 0);
+	      m2 = as_a <scalar_mode>
+		(mode_for_size (GET_MODE_PRECISION (m2), mclass, 0));
 	    }
 	}
 
@@ -11414,7 +11416,8 @@ build_binary_op (location_t location, enum tree_code code,
 
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+					 (SCALAR_TYPE_MODE
+					  (TREE_TYPE (type0))), 0);
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
@@ -11573,7 +11576,8 @@ build_binary_op (location_t location, enum tree_code code,
 
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+					 (SCALAR_TYPE_MODE
+					  (TREE_TYPE (type0))), 0);
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;

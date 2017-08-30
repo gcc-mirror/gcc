@@ -3754,7 +3754,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  v1 = SLP_TREE_VEC_STMTS (node).copy ();
 	  SLP_TREE_VEC_STMTS (node).truncate (0);
 	  tree meltype = build_nonstandard_integer_type
-	      (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype))), 1);
+	      (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype))), 1);
 	  tree mvectype = get_same_sized_vectype (meltype, vectype);
 	  unsigned k = 0, l;
 	  for (j = 0; j < v0.length (); ++j)

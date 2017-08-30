@@ -2050,8 +2050,8 @@ fold_convert_const_fixed_from_fixed (tree type, const_tree arg1)
   tree t;
   bool overflow_p;
 
-  overflow_p = fixed_convert (&value, TYPE_MODE (type), &TREE_FIXED_CST (arg1),
-			      TYPE_SATURATING (type));
+  overflow_p = fixed_convert (&value, SCALAR_TYPE_MODE (type),
+			      &TREE_FIXED_CST (arg1), TYPE_SATURATING (type));
   t = build_fixed (type, value);
 
   /* Propagate overflow flags.  */
@@ -2079,7 +2079,7 @@ fold_convert_const_fixed_from_int (tree type, const_tree arg1)
   else
     di.high = TREE_INT_CST_ELT (arg1, 1);
 
-  overflow_p = fixed_convert_from_int (&value, TYPE_MODE (type), di,
+  overflow_p = fixed_convert_from_int (&value, SCALAR_TYPE_MODE (type), di,
 				       TYPE_UNSIGNED (TREE_TYPE (arg1)),
 				       TYPE_SATURATING (type));
   t = build_fixed (type, value);
@@ -2100,7 +2100,7 @@ fold_convert_const_fixed_from_real (tree type, const_tree arg1)
   tree t;
   bool overflow_p;
 
-  overflow_p = fixed_convert_from_real (&value, TYPE_MODE (type),
+  overflow_p = fixed_convert_from_real (&value, SCALAR_TYPE_MODE (type),
 					&TREE_REAL_CST (arg1),
 					TYPE_SATURATING (type));
   t = build_fixed (type, value);
@@ -7027,7 +7027,7 @@ static int
 native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  machine_mode mode = TYPE_MODE (type);
+  scalar_mode mode = SCALAR_TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   FIXED_VALUE_TYPE value;
   tree i_value, i_type;
@@ -7129,7 +7129,7 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
     return 0;
   part = TREE_IMAGPART (expr);
   if (off != -1)
-    off = MAX (0, off - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (part))));
+    off = MAX (0, off - GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (part))));
   isize = native_encode_expr (part, ptr+rsize, len-rsize, off);
   if (off == -1
       && isize != rsize)
@@ -7153,7 +7153,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
   offset = 0;
   count = VECTOR_CST_NELTS (expr);
   itype = TREE_TYPE (TREE_TYPE (expr));
-  size = GET_MODE_SIZE (TYPE_MODE (itype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
   for (i = 0; i < count; i++)
     {
       if (off >= size)
@@ -7281,7 +7281,8 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_fixed (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  scalar_mode mode = SCALAR_TYPE_MODE (type);
+  int total_bytes = GET_MODE_SIZE (mode);
   double_int result;
   FIXED_VALUE_TYPE fixed_value;
 
@@ -7290,7 +7291,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
     return NULL_TREE;
 
   result = double_int::from_buffer (ptr, total_bytes);
-  fixed_value = fixed_from_double_int (result, TYPE_MODE (type));
+  fixed_value = fixed_from_double_int (result, mode);
 
   return build_fixed (type, fixed_value);
 }
@@ -7312,7 +7313,6 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
   REAL_VALUE_TYPE r;
   long tmp[6];
 
-  total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   if (total_bytes > len || total_bytes > 24)
     return NULL_TREE;
   int words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
@@ -7367,7 +7367,7 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
   int size;
 
   etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
   if (size * 2 > len)
     return NULL_TREE;
   rpart = native_interpret_expr (etype, ptr, size);
@@ -7392,7 +7392,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
   tree *elements;
 
   etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
   count = TYPE_VECTOR_SUBPARTS (type);
   if (size * count > len)
     return NULL_TREE;

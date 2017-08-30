@@ -2,6 +2,46 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (SCALAR_TYPE_MODE): New macro.
+	* expr.c (expand_expr_addr_expr_1): Use it.
+	(expand_expr_real_2): Likewise.
+	* fold-const.c (fold_convert_const_fixed_from_fixed): Likeise.
+	(fold_convert_const_fixed_from_int): Likewise.
+	(fold_convert_const_fixed_from_real): Likewise.
+	(native_encode_fixed): Likewise
+	(native_encode_complex): Likewise
+	(native_encode_vector): Likewise.
+	(native_interpret_fixed): Likewise.
+	(native_interpret_real): Likewise.
+	(native_interpret_complex): Likewise.
+	(native_interpret_vector): Likewise.
+	* omp-simd-clone.c (simd_clone_adjust_return_type): Likewise.
+	(simd_clone_adjust_argument_types): Likewise.
+	(simd_clone_init_simd_arrays): Likewise.
+	(simd_clone_adjust): Likewise.
+	* stor-layout.c (layout_type): Likewise.
+	* tree.c (build_minus_one_cst): Likewise.
+	* tree-cfg.c (verify_gimple_assign_ternary): Likewise.
+	* tree-inline.c (estimate_move_cost): Likewise.
+	* tree-ssa-math-opts.c (convert_plusminus_to_widen): Likewise.
+	* tree-vect-loop.c (vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_reduction): Likewise.
+	* tree-vect-patterns.c (vect_recog_widen_mult_pattern): Likewise.
+	(vect_recog_mixed_size_cond_pattern): Likewise.
+	(check_bool_pattern): Likewise.
+	(adjust_bool_pattern): Likewise.
+	(search_type_for_mask_1): Likewise.
+	* tree-vect-slp.c (vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (vectorizable_conversion): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_store): Likewise.
+	* ubsan.c (ubsan_encode_value): Likewise.
+	* varasm.c (output_constant): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* coretypes.h (scalar_mode): New class.
 	* machmode.h (scalar_mode): Likewise.
 	(scalar_mode::includes_p): New function.

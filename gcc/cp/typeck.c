@@ -4952,8 +4952,8 @@ cp_build_binary_op (location_t location,
 	    }
 
 	  /* Always construct signed integer vector type.  */
-	  intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  intt = c_common_type_for_size
+	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
 	  if (!intt)
 	    {
 	      if (complain & tf_error)

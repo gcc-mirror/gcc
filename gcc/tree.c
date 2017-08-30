@@ -2132,8 +2132,9 @@ build_minus_one_cst (tree type)
     case FIXED_POINT_TYPE:
       /* We can only generate 1 for accum types.  */
       gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
-      return build_fixed (type, fixed_from_double_int (double_int_minus_one,
-						       TYPE_MODE (type)));
+      return build_fixed (type,
+			  fixed_from_double_int (double_int_minus_one,
+						 SCALAR_TYPE_MODE (type)));
 
     case VECTOR_TYPE:
       {
