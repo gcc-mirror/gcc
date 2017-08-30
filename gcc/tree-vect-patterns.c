@@ -1883,13 +1883,14 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
     }
 
   def = NULL_TREE;
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
   if (TREE_CODE (oprnd1) == INTEGER_CST
-      || TYPE_MODE (TREE_TYPE (oprnd1)) == TYPE_MODE (type))
+      || TYPE_MODE (TREE_TYPE (oprnd1)) == mode)
     def = oprnd1;
   else if (def_stmt && gimple_assign_cast_p (def_stmt))
     {
       tree rhs1 = gimple_assign_rhs1 (def_stmt);
-      if (TYPE_MODE (TREE_TYPE (rhs1)) == TYPE_MODE (type)
+      if (TYPE_MODE (TREE_TYPE (rhs1)) == mode
 	  && TYPE_PRECISION (TREE_TYPE (rhs1))
 	     == TYPE_PRECISION (type))
 	def = rhs1;
@@ -1910,16 +1911,16 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
 	append_pattern_def_seq (stmt_vinfo, def_stmt);
     }
   stype = TREE_TYPE (def);
+  scalar_int_mode smode = SCALAR_INT_TYPE_MODE (stype);
 
   if (TREE_CODE (def) == INTEGER_CST)
     {
       if (!tree_fits_uhwi_p (def)
-	  || tree_to_uhwi (def) >= GET_MODE_PRECISION (TYPE_MODE (type))
+	  || tree_to_uhwi (def) >= GET_MODE_PRECISION (mode)
 	  || integer_zerop (def))
 	return NULL;
       def2 = build_int_cst (stype,
-			    GET_MODE_PRECISION (TYPE_MODE (type))
-			    - tree_to_uhwi (def));
+			    GET_MODE_PRECISION (mode) - tree_to_uhwi (def));
     }
   else
     {
@@ -1945,8 +1946,7 @@ vect_recog_rotate_pattern (vec<gimple *> *stmts, tree *type_in, tree *type_out)
 	}
 
       def2 = vect_recog_temp_ssa_var (stype, NULL);
-      tree mask
-	= build_int_cst (stype, GET_MODE_PRECISION (TYPE_MODE (stype)) - 1);
+      tree mask = build_int_cst (stype, GET_MODE_PRECISION (smode) - 1);
       def_stmt = gimple_build_assign (def2, BIT_AND_EXPR,
 				      gimple_assign_lhs (def_stmt), mask);
       if (ext_def)
@@ -2588,6 +2588,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
       || !type_has_mode_precision_p (itype))
     return NULL;
 
+  scalar_int_mode itype_mode = SCALAR_INT_TYPE_MODE (itype);
   vectype = get_vectype_for_scalar_type (itype);
   if (vectype == NULL_TREE)
     return NULL;
@@ -2655,7 +2656,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 		= build_nonstandard_integer_type (prec, 1);
 	      tree vecutype = get_vectype_for_scalar_type (utype);
 	      tree shift
-		= build_int_cst (utype, GET_MODE_BITSIZE (TYPE_MODE (itype))
+		= build_int_cst (utype, GET_MODE_BITSIZE (itype_mode)
 					- tree_log2 (oprnd1));
 	      tree var = vect_recog_temp_ssa_var (utype, NULL);
 
@@ -2721,7 +2722,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
       unsigned HOST_WIDE_INT mh, ml;
       int pre_shift, post_shift;
       unsigned HOST_WIDE_INT d = (TREE_INT_CST_LOW (oprnd1)
-				  & GET_MODE_MASK (TYPE_MODE (itype)));
+				  & GET_MODE_MASK (itype_mode));
       tree t1, t2, t3, t4;
 
       if (d >= (HOST_WIDE_INT_1U << (prec - 1)))
@@ -3066,7 +3067,8 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
   HOST_WIDE_INT cmp_mode_size
     = GET_MODE_UNIT_BITSIZE (TYPE_MODE (comp_vectype));
 
-  if (GET_MODE_BITSIZE (TYPE_MODE (type)) == cmp_mode_size)
+  scalar_int_mode type_mode = SCALAR_INT_TYPE_MODE (type);
+  if (GET_MODE_BITSIZE (type_mode) == cmp_mode_size)
     return NULL;
 
   vectype = get_vectype_for_scalar_type (type);
@@ -3091,7 +3093,7 @@ vect_recog_mixed_size_cond_pattern (vec<gimple *> *stmts, tree *type_in,
   if (!expand_vec_cond_expr_p (vecitype, comp_vectype, TREE_CODE (cond_expr)))
     return NULL;
 
-  if (GET_MODE_BITSIZE (TYPE_MODE (type)) > cmp_mode_size)
+  if (GET_MODE_BITSIZE (type_mode) > cmp_mode_size)
     {
       if ((TREE_CODE (then_clause) == INTEGER_CST
 	   && !int_fits_type_p (then_clause, itype))

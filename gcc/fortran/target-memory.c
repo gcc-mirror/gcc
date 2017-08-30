@@ -39,7 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 static size_t
 size_integer (int kind)
 {
-  return GET_MODE_SIZE (TYPE_MODE (gfc_get_int_type (kind)));;
+  return GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (gfc_get_int_type (kind)));
 }
 
 
@@ -60,7 +60,7 @@ size_complex (int kind)
 static size_t
 size_logical (int kind)
 {
-  return GET_MODE_SIZE (TYPE_MODE (gfc_get_logical_type (kind)));;
+  return GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (gfc_get_logical_type (kind)));
 }
 
 

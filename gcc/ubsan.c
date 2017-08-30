@@ -1659,7 +1659,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 	   && TREE_TYPE (type) != NULL_TREE
 	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	   && (TYPE_PRECISION (TREE_TYPE (type))
-	       < GET_MODE_PRECISION (TYPE_MODE (type))))
+	       < GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (type))))
     {
       minv = TYPE_MIN_VALUE (TREE_TYPE (type));
       maxv = TYPE_MAX_VALUE (TREE_TYPE (type));
@@ -1667,7 +1667,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   else
     return;
 
-  int modebitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  int modebitsize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
@@ -1679,7 +1679,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   if ((VAR_P (base) && DECL_HARD_REGISTER (base))
       || (bitpos % modebitsize) != 0
       || bitsize != modebitsize
-      || GET_MODE_BITSIZE (TYPE_MODE (utype)) != modebitsize
+      || GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (utype)) != modebitsize
       || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return;
 

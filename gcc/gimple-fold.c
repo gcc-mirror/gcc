@@ -1230,7 +1230,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
     return NULL_TREE;
 
   length = tree_to_uhwi (len);
-  if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
+  if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 

@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target-memory.c (size_integer): Use SCALAR_INT_TYPE_MODE.
+	(size_logical): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* trans-types.c (gfc_type_for_mode): Use is_a <scalar_int_mode>.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>

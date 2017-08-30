@@ -5314,7 +5314,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   arg = CALL_EXPR_ARG (exp, 0);
   fmode = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (arg));
-  rmode = TYPE_MODE (TREE_TYPE (exp));
+  rmode = SCALAR_INT_TYPE_MODE (TREE_TYPE (exp));
   fmt = REAL_MODE_FORMAT (fmode);
 
   arg = builtin_save_expr (arg);

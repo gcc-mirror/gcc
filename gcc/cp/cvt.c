@@ -236,8 +236,8 @@ cp_convert_to_pointer (tree type, tree expr, bool dofold,
       /* Modes may be different but sizes should be the same.  There
 	 is supposed to be some integral type that is the same width
 	 as a pointer.  */
-      gcc_assert (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (expr)))
-		  == GET_MODE_SIZE (TYPE_MODE (type)));
+      gcc_assert (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (expr)))
+		  == GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)));
 
       return convert_to_pointer_maybe_fold (type, expr, dofold);
     }

@@ -1050,7 +1050,7 @@ array_value_type (gswitch *swtch, tree type, int num,
   if (!INTEGRAL_TYPE_P (type))
     return type;
 
-  machine_mode type_mode = TYPE_MODE (type);
+  scalar_int_mode type_mode = SCALAR_INT_TYPE_MODE (type);
   machine_mode mode = get_narrowest_mode (type_mode);
   if (GET_MODE_SIZE (type_mode) <= GET_MODE_SIZE (mode))
     return type;
@@ -1097,8 +1097,8 @@ array_value_type (gswitch *swtch, tree type, int num,
   if (sign == 0)
     sign = TYPE_UNSIGNED (type) ? 1 : -1;
   smaller_type = lang_hooks.types.type_for_mode (mode, sign >= 0);
-  if (GET_MODE_SIZE (TYPE_MODE (type))
-      <= GET_MODE_SIZE (TYPE_MODE (smaller_type)))
+  if (GET_MODE_SIZE (type_mode)
+      <= GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (smaller_type)))
     return type;
 
   return smaller_type;
