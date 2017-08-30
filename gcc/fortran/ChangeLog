@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* trans-types.c (gfc_init_kinds): Use opt_scalar_float_mode
+	and FOR_EACH_MODE_IN_CLASS.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target-memory.c (size_float): Use SCALAR_FLOAT_TYPE_MODE
 	instead of TYPE_MODE.
 

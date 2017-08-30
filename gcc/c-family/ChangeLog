@@ -1,4 +1,10 @@
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
             Alan Hayward  <alan.hayward@arm.com>
             David Sherwood  <david.sherwood@arm.com>
 
