@@ -2,6 +2,48 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* wide-int.h (int_traits<unsigned char>) New class.
+	(int_traits<unsigned short>) Likewise.
+	* cfgexpand.c (expand_debug_expr): Use is_a <scalar_int_mode>.
+	Use GET_MODE_UNIT_PRECISION and remove redundant test for
+	SCALAR_INT_MODE_P.
+	* combine.c (set_nonzero_bits_and_sign_copies): Use
+	is_a <scalar_int_mode>.
+	(find_split_point): Likewise.
+	(combine_simplify_rtx): Likewise.
+	(simplify_logical): Likewise.
+	(expand_compound_operation): Likewise.
+	(expand_field_assignment): Likewise.
+	(make_compound_operation): Likewise.
+	(extended_count): Likewise.
+	(change_zero_ext): Likewise.
+	(simplify_comparison): Likewise.
+	* dwarf2out.c (scompare_loc_descriptor): Likewise.
+	(ucompare_loc_descriptor): Likewise.
+	(minmax_loc_descriptor): Likewise.
+	(mem_loc_descriptor): Likewise.
+	(loc_descriptor): Likewise.
+	* expmed.c (init_expmed_one_mode): Likewise.
+	* lra-constraints.c (lra_constraint_offset): Likewise.
+	* optabs.c (prepare_libcall_arg): Likewise.
+	* postreload.c (move2add_note_store): Likewise.
+	* reload.c (operands_match_p): Likewise.
+	* rtl.h (load_extend_op): Likewise.
+	* rtlhooks.c (gen_lowpart_general): Likewise.
+	* simplify-rtx.c (simplify_truncation): Likewise.
+	(simplify_unary_operation_1): Likewise.
+	(simplify_binary_operation_1): Likewise.
+	(simplify_const_binary_operation): Likewise.
+	(simplify_const_relational_operation): Likewise.
+	(simplify_subreg): Likewise.
+	* stor-layout.c (bitwise_mode_for_mode): Likewise.
+	* var-tracking.c (adjust_mems): Likewise.
+	(prepare_call_arguments): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* machmode.h (is_int_mode): New fuction.
 	* combine.c (find_split_point): Use it.
 	(combine_simplify_rtx): Likewise.

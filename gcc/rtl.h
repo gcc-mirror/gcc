@@ -3837,9 +3837,10 @@ struct GTY(()) cgraph_rtl_info {
 inline rtx_code
 load_extend_op (machine_mode mode)
 {
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
-    return LOAD_EXTEND_OP (mode);
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
+    return LOAD_EXTEND_OP (int_mode);
   return UNKNOWN;
 }
 

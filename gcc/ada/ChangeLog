@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gcc-interface/decl.c (check_ok_for_atomic_type): Use
+	is_a <scalar_int_mode>.
+	* gcc-interface/trans.c (Pragma_to_gnu): Likewise.
+	* gcc-interface/utils.c (gnat_type_for_mode): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity): Use int_mode_for_size
 	instead of mode_for_size.
 	(gnat_to_gnu_subprog_type): Likewise.

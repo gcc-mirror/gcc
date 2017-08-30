@@ -2154,7 +2154,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 {
   rtx_insn *insn = (rtx_insn *) data;
   unsigned int regno = 0;
-  machine_mode mode = GET_MODE (dst);
+  scalar_int_mode mode;
 
   /* Some targets do argument pushes without adding REG_INC notes.  */
 
@@ -2174,8 +2174,10 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
   else
     return;
 
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_CODE (set) == SET)
+  if (!is_a <scalar_int_mode> (GET_MODE (dst), &mode))
+    goto invalidate;
+
+  if (GET_CODE (set) == SET)
     {
       rtx note, sym = NULL_RTX;
       rtx off;
@@ -2202,8 +2204,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	}
     }
 
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_CODE (set) == SET
+  if (GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
     {

@@ -412,8 +412,10 @@ bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
   unsigned int bitsize = GET_MODE_BITSIZE (mode);
-  if (SCALAR_INT_MODE_P (mode) && bitsize <= MAX_FIXED_MODE_SIZE)
-    return mode;
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_BITSIZE (int_mode) <= MAX_FIXED_MODE_SIZE)
+    return int_mode;
 
   /* Reuse the sanity checks from int_mode_for_mode.  */
   gcc_checking_assert ((int_mode_for_mode (mode), true));

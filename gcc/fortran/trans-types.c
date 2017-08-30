@@ -3110,14 +3110,15 @@ gfc_type_for_mode (machine_mode mode, int unsignedp)
 {
   int i;
   tree *base;
+  scalar_int_mode int_mode;
 
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     base = gfc_real_types;
   else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
     base = gfc_complex_types;
-  else if (SCALAR_INT_MODE_P (mode))
+  else if (is_a <scalar_int_mode> (mode, &int_mode))
     {
-      tree type = gfc_type_for_size (GET_MODE_PRECISION (mode), unsignedp);
+      tree type = gfc_type_for_size (GET_MODE_PRECISION (int_mode), unsignedp);
       return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
     }
   else if (VECTOR_MODE_P (mode))

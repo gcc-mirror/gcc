@@ -1468,6 +1468,14 @@ wi::primitive_int_traits <T, signed_p>::decompose (HOST_WIDE_INT *scratch,
 namespace wi
 {
   template <>
+  struct int_traits <unsigned char>
+    : public primitive_int_traits <unsigned char, false> {};
+
+  template <>
+  struct int_traits <unsigned short>
+    : public primitive_int_traits <unsigned short, false> {};
+
+  template <>
   struct int_traits <int>
     : public primitive_int_traits <int, true> {};
 

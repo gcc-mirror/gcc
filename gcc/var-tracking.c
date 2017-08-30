@@ -1008,6 +1008,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
   rtx mem, addr = loc, tem;
   machine_mode mem_mode_save;
   bool store_save;
+  scalar_int_mode tem_mode, tem_subreg_mode;
   switch (GET_CODE (loc))
     {
     case REG:
@@ -1122,16 +1123,14 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
 	      || GET_CODE (SUBREG_REG (tem)) == MULT
 	      || GET_CODE (SUBREG_REG (tem)) == ASHIFT)
-	  && (GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (tem)) == MODE_PARTIAL_INT)
-	  && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_PARTIAL_INT)
-	  && GET_MODE_PRECISION (GET_MODE (tem))
-	     < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (tem)))
+	  && is_a <scalar_int_mode> (GET_MODE (tem), &tem_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (tem)),
+				     &tem_subreg_mode)
+	  && (GET_MODE_PRECISION (tem_mode)
+	      < GET_MODE_PRECISION (tem_subreg_mode))
 	  && subreg_lowpart_p (tem)
 	  && use_narrower_mode_test (SUBREG_REG (tem), tem))
-	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
-				  GET_MODE (SUBREG_REG (tem)));
+	return use_narrower_mode (SUBREG_REG (tem), tem_mode, tem_subreg_mode);
       return tem;
     case ASM_OPERANDS:
       /* Don't do any replacements in second and following
@@ -6301,15 +6300,15 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	else if (REG_P (x))
 	  {
 	    cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
+	    scalar_int_mode mode;
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
-		     || GET_MODE_CLASS (GET_MODE (x)) == MODE_PARTIAL_INT)
+	    else if (is_a <scalar_int_mode> (GET_MODE (x), &mode))
 	      {
-		machine_mode mode;
-
-		FOR_EACH_WIDER_MODE (mode, GET_MODE (x))
+		opt_scalar_int_mode mode_iter;
+		FOR_EACH_WIDER_MODE (mode_iter, mode)
 		  {
+		    mode = mode_iter.require ();
 		    if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD)
 		      break;
 

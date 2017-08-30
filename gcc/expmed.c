@@ -202,15 +202,16 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 							speed));
     }
 
-  if (SCALAR_INT_MODE_P (mode))
+  scalar_int_mode int_mode_to;
+  if (is_a <scalar_int_mode> (mode, &int_mode_to))
     {
       for (mode_from = MIN_MODE_INT; mode_from <= MAX_MODE_INT;
 	   mode_from = (machine_mode)(mode_from + 1))
-	init_expmed_one_conv (all, mode, mode_from, speed);
+	init_expmed_one_conv (all, int_mode_to, mode_from, speed);
 
-      machine_mode wider_mode;
-      if (GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_WIDER_MODE (mode).exists (&wider_mode))
+      scalar_int_mode wider_mode;
+      if (GET_MODE_CLASS (int_mode_to) == MODE_INT
+	  && GET_MODE_WIDER_MODE (int_mode_to).exists (&wider_mode))
 	{
 	  PUT_MODE (all->zext, wider_mode);
 	  PUT_MODE (all->wide_mult, wider_mode);
@@ -219,8 +220,9 @@ init_expmed_one_mode (struct init_expmed_rtl *all,
 
 	  set_mul_widen_cost (speed, wider_mode,
 			      set_src_cost (all->wide_mult, wider_mode, speed));
-	  set_mul_highpart_cost (speed, mode,
-				 set_src_cost (all->wide_trunc, mode, speed));
+	  set_mul_highpart_cost (speed, int_mode_to,
+				 set_src_cost (all->wide_trunc,
+					       int_mode_to, speed));
 	}
     }
 }

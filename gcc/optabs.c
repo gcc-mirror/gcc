@@ -4997,9 +4997,9 @@ expand_fix (rtx to, rtx from, int unsignedp)
 static rtx
 prepare_libcall_arg (rtx arg, int uintp)
 {
-  machine_mode mode = GET_MODE (arg);
+  scalar_int_mode mode;
   machine_mode arg_mode;
-  if (SCALAR_INT_MODE_P (mode))
+  if (is_a <scalar_int_mode> (GET_MODE (arg), &mode))
     {
       /*  If we need to promote the integer function argument we need to do
 	  it here instead of inside emit_library_call_value because in

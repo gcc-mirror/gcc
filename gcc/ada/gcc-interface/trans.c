@@ -1277,6 +1277,7 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  tree gnu_expr = gnat_to_gnu (gnat_expr);
 	  int use_address;
 	  machine_mode mode;
+	  scalar_int_mode int_mode;
 	  tree asm_constraint = NULL_TREE;
 #ifdef ASM_COMMENT_START
 	  char *comment;
@@ -1288,9 +1289,8 @@ Pragma_to_gnu (Node_Id gnat_node)
 	  /* Use the value only if it fits into a normal register,
 	     otherwise use the address.  */
 	  mode = TYPE_MODE (TREE_TYPE (gnu_expr));
-	  use_address = ((GET_MODE_CLASS (mode) != MODE_INT
-			  && GET_MODE_CLASS (mode) != MODE_PARTIAL_INT)
-			 || GET_MODE_SIZE (mode) > UNITS_PER_WORD);
+	  use_address = (!is_a <scalar_int_mode> (mode, &int_mode)
+			 || GET_MODE_SIZE (int_mode) > UNITS_PER_WORD);
 
 	  if (use_address)
 	    gnu_expr = build_unary_op (ADDR_EXPR, NULL_TREE, gnu_expr);
