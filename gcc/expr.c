@@ -7910,20 +7910,21 @@ expand_expr_addr_expr (tree exp, rtx target, machine_mode tmode,
   /* We can get called with some Weird Things if the user does silliness
      like "(short) &a".  In that case, convert_memory_address won't do
      the right thing, so ignore the given target mode.  */
-  if (tmode != address_mode && tmode != pointer_mode)
-    tmode = address_mode;
+  machine_mode new_tmode = (tmode == pointer_mode
+			    ? pointer_mode
+			    : address_mode);
 
   result = expand_expr_addr_expr_1 (TREE_OPERAND (exp, 0), target,
-				    tmode, modifier, as);
+				    new_tmode, modifier, as);
 
   /* Despite expand_expr claims concerning ignoring TMODE when not
      strictly convenient, stuff breaks if we don't honor it.  Note
      that combined with the above, we only do this for pointer modes.  */
   rmode = GET_MODE (result);
   if (rmode == VOIDmode)
-    rmode = tmode;
-  if (rmode != tmode)
-    result = convert_memory_address_addr_space (tmode, result, as);
+    rmode = new_tmode;
+  if (rmode != new_tmode)
+    result = convert_memory_address_addr_space (new_tmode, result, as);
 
   return result;
 }
