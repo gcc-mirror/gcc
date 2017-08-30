@@ -20,6 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_MACHINE_MODES
 #define HAVE_MACHINE_MODES
 
+extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
+extern const unsigned short mode_precision[NUM_MACHINE_MODES];
+extern const unsigned char mode_inner[NUM_MACHINE_MODES];
+extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
+extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
+extern const unsigned char mode_wider[NUM_MACHINE_MODES];
+extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
+
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
@@ -174,22 +183,98 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 #define POINTER_BOUNDS_MODE_P(MODE)      \
   (GET_MODE_CLASS (MODE) == MODE_POINTER_BOUNDS)
 
-/* Get the size in bytes and bits of an object of mode MODE.  */
+/* Return the base GET_MODE_SIZE value for MODE.  */
 
-extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
+ALWAYS_INLINE unsigned short
+mode_to_bytes (machine_mode mode)
+{
 #if GCC_VERSION >= 4001
-#define GET_MODE_SIZE(MODE) \
-  ((unsigned short) (__builtin_constant_p (MODE) \
-		     ? mode_size_inline (MODE) : mode_size[MODE]))
+  return (__builtin_constant_p (mode)
+	  ? mode_size_inline (mode) : mode_size[mode]);
 #else
-#define GET_MODE_SIZE(MODE)    ((unsigned short) mode_size[MODE])
+  return mode_size[mode];
 #endif
-#define GET_MODE_BITSIZE(MODE) \
-  ((unsigned short) (GET_MODE_SIZE (MODE) * BITS_PER_UNIT))
+}
+
+/* Return the base GET_MODE_BITSIZE value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_bits (machine_mode mode)
+{
+  return mode_to_bytes (mode) * BITS_PER_UNIT;
+}
+
+/* Return the base GET_MODE_PRECISION value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_precision (machine_mode mode)
+{
+  return mode_precision[mode];
+}
+
+/* Return the base GET_MODE_INNER value for MODE.  */
+
+ALWAYS_INLINE machine_mode
+mode_to_inner (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (machine_mode) (__builtin_constant_p (mode)
+			 ? mode_inner_inline (mode) : mode_inner[mode]);
+#else
+  return (machine_mode) mode_inner[mode];
+#endif
+}
+
+/* Return the base GET_MODE_UNIT_SIZE value for MODE.  */
+
+ALWAYS_INLINE unsigned char
+mode_to_unit_size (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_unit_size_inline (mode) : mode_unit_size[mode]);
+#else
+  return mode_unit_size[mode];
+#endif
+}
+
+/* Return the base GET_MODE_UNIT_PRECISION value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_unit_precision (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_unit_precision_inline (mode) : mode_unit_precision[mode]);
+#else
+  return mode_unit_precision[mode];
+#endif
+}
+
+/* Return the base GET_MODE_NUNITS value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_nunits (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_nunits_inline (mode) : mode_nunits[mode]);
+#else
+  return mode_nunits[mode];
+#endif
+}
+
+/* Get the size in bytes of an object of mode MODE.  */
+
+#define GET_MODE_SIZE(MODE) (mode_to_bytes (MODE))
+
+/* Get the size in bits of an object of mode MODE.  */
+
+#define GET_MODE_BITSIZE(MODE) (mode_to_bits (MODE))
 
 /* Get the number of value bits of an object of mode MODE.  */
-extern const unsigned short mode_precision[NUM_MACHINE_MODES];
-#define GET_MODE_PRECISION(MODE)  mode_precision[MODE]
+
+#define GET_MODE_PRECISION(MODE) (mode_to_precision (MODE))
 
 /* Get the number of integral bits of an object of mode MODE.  */
 extern CONST_MODE_IBIT unsigned char mode_ibit[NUM_MACHINE_MODES];
@@ -210,51 +295,22 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
    mode of the vector elements.  For complex modes it is the mode of the real
    and imaginary parts.  For other modes it is MODE itself.  */
 
-extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_INNER(MODE) \
-  ((machine_mode) (__builtin_constant_p (MODE) \
-			? mode_inner_inline (MODE) : mode_inner[MODE]))
-#else
-#define GET_MODE_INNER(MODE) ((machine_mode) mode_inner[MODE])
-#endif
+#define GET_MODE_INNER(MODE) (mode_to_inner (MODE))
 
 /* Get the size in bytes or bits of the basic parts of an
    object of mode MODE.  */
 
-extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_UNIT_SIZE(MODE) \
-  ((unsigned char) (__builtin_constant_p (MODE) \
-		   ? mode_unit_size_inline (MODE) : mode_unit_size[MODE]))
-#else
-#define GET_MODE_UNIT_SIZE(MODE) mode_unit_size[MODE]
-#endif
+#define GET_MODE_UNIT_SIZE(MODE) mode_to_unit_size (MODE)
 
 #define GET_MODE_UNIT_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT))
 
-extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_UNIT_PRECISION(MODE) \
-  ((unsigned short) (__builtin_constant_p (MODE) \
-		    ? mode_unit_precision_inline (MODE)\
-		    : mode_unit_precision[MODE]))
-#else
-#define GET_MODE_UNIT_PRECISION(MODE) mode_unit_precision[MODE]
-#endif
+#define GET_MODE_UNIT_PRECISION(MODE) (mode_to_unit_precision (MODE))
 
+/* Get the number of units in an object of mode MODE.  This is 2 for
+   complex modes and the number of elements for vector modes.  */
 
-/* Get the number of units in the object.  */
-
-extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_NUNITS(MODE) \
-  ((unsigned char) (__builtin_constant_p (MODE) \
-		    ? mode_nunits_inline (MODE) : mode_nunits[MODE]))
-#else
-#define GET_MODE_NUNITS(MODE)  mode_nunits[MODE]
-#endif
+#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE))
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 

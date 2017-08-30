@@ -1155,8 +1155,12 @@ enum machine_mode\n{");
 	printf ("%*s/* %s:%d */\n", 27 - count_, "",
 		 trim_filename (m->file), m->line);
 	printf ("#define HAVE_%smode\n", m->name);
-	printf ("#define %smode E_%smode\n",
+	printf ("#ifdef USE_ENUM_MODES\n");
+	printf ("#define %smode E_%smode\n", m->name, m->name);
+	printf ("#else\n");
+	printf ("#define %smode ((void) 0, E_%smode)\n",
 		m->name, m->name);
+	printf ("#endif\n");
       }
 
   puts ("  MAX_MACHINE_MODE,\n");

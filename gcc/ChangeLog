@@ -2,6 +2,41 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* genconditions.c (write_header): Add a "#define USE_ENUM_MODES".
+	* genmodes.c (emit_insn_modes_h): Define FOOmode to E_FOOmode if
+	USE_ENUM_MODES is defined and to ((void) 0, E_FOOmode) otherwise.
+	* machmode.h (mode_size): Move earlier in file.
+	(mode_precision): Likewise.
+	(mode_inner): Likewise.
+	(mode_nunits): Likewise.
+	(mode_unit_size): Likewise.
+	(unit_unit_precision): Likewise.
+	(mode_wider): Likewise.
+	(mode_2xwider): Likewise.
+	(machine_mode): New class.
+	(mode_to_bytes): New function.
+	(mode_to_bits): Likewise.
+	(mode_to_precision): Likewise.
+	(mode_to_inner): Likewise.
+	(mode_to_unit_size): Likewise.
+	(mode_to_unit_precision): Likewise.
+	(mode_to_nunits): Likewise.
+	(GET_MODE_SIZE): Use mode_to_bytes.
+	(GET_MODE_BITSIZE): Use mode_to_bits.
+	(GET_MODE_PRECISION): Use mode_to_precision.
+	(GET_MODE_INNER): Use mode_to_inner.
+	(GET_MODE_UNIT_SIZE): Use mode_to_unit_size.
+	(GET_MODE_UNIT_PRECISION): Use mode_to_unit_precision.
+	(GET_MODE_NUNITS): Use mode_to_nunits.
+	* system.h (ALWAYS_INLINE): New macro.
+	* config/powerpcspe/powerpcspe-c.c
+	(altivec_resolve_overloaded_builtin): Use machine_mode instead of
+	int for arg1_mode and arg2_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-builtins.c (aarch64_simd_builtin_std_type):
 	Prefix mode names with E_ in case statements.
 	* config/aarch64/aarch64-elf.h (ASM_OUTPUT_ADDR_DIFF_ELT): Likewise.
