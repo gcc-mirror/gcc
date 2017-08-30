@@ -4129,7 +4129,7 @@ add_dwarf_attr (dw_die_ref die, dw_attr_node *attr)
       dw_attr_node *a;
       unsigned ix;
       FOR_EACH_VEC_SAFE_ELT (die->die_attr, ix, a)
-	gcc_assert (a->dw_attr != attr->dw_attr || a->dw_attr != DW_AT_inline);
+	gcc_assert (a->dw_attr != attr->dw_attr);
     }
 
   vec_safe_reserve (die->die_attr, 1);
@@ -22334,7 +22334,8 @@ gen_subprogram_die (tree decl, dw_die_ref context_die)
 	    {
 	      dw_die_ref parm_die = gen_decl_die (parm, NULL, NULL, subr_die);
 
-	      if (parm == DECL_ARGUMENTS (decl)
+	      if (early_dwarf
+		  && parm == DECL_ARGUMENTS (decl)
 		  && TREE_CODE (TREE_TYPE (decl)) == METHOD_TYPE
 		  && parm_die
 		  && (dwarf_version >= 3 || !dwarf_strict))
@@ -25479,10 +25480,16 @@ dwarf2out_early_global_decl (tree decl)
 	     with C++ constructor clones for example and makes
 	     dwarf2out_abstract_function happy which requires the early
 	     DIE of the abstract instance to be present.  */
-	  if (DECL_ABSTRACT_ORIGIN (decl))
+	  tree origin = DECL_ABSTRACT_ORIGIN (decl);
+	  dw_die_ref origin_die;
+	  if (origin != NULL
+	      /* Do not emit the DIE multiple times but make sure to
+	         process it fully here in case we just saw a declaration.  */
+	      && ((origin_die = lookup_decl_die (origin)) == NULL
+		  || is_declaration_die (origin_die)))
 	    {
-	      current_function_decl = DECL_ABSTRACT_ORIGIN (decl);
-	      dwarf2out_decl (DECL_ABSTRACT_ORIGIN (decl));
+	      current_function_decl = origin;
+	      dwarf2out_decl (origin);
 	    }
 
 	  current_function_decl = decl;
@@ -29047,7 +29054,7 @@ resolve_addr (dw_die_ref die)
 		    add_AT_flag (tdie, DW_AT_external, 1);
 		    add_AT_flag (tdie, DW_AT_declaration, 1);
 		    add_linkage_attr (tdie, tdecl);
-		    add_name_and_src_coords_attributes (tdie, tdecl);
+		    add_name_and_src_coords_attributes (tdie, tdecl, true);
 		    equate_decl_number_to_die (tdecl, tdie);
 		  }
 	      }
