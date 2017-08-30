@@ -1,3 +1,13 @@
+2017-08-30  Richard Biener  <rguenther@suse.de>
+
+	* dwarf2out.c (add_dwarf_attr): Check we don't add duplicate
+	attributes.
+	(gen_subprogram_die): Add DW_AT_object_pointer only early.
+	(dwarf2out_early_global_decl): Only generate a DIE for the
+	abstract origin if it doesn't already exist or is a declaration DIE.
+	(resolve_addr): Do not add the linkage name twice when
+	generating a stub DIE for the DW_TAG_GNU_call_site target.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):

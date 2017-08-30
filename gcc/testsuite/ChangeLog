@@ -1,3 +1,7 @@
+2017-08-30  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr78112-2.C: Do not expect duplicate DW_AT_object_pointer.
+
 2017-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/82015
