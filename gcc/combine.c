@@ -7598,7 +7598,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
     {
       /* Be careful not to go beyond the extracted object and maintain the
 	 natural alignment of the memory.  */
-      wanted_inner_mode = smallest_mode_for_size (len, MODE_INT);
+      wanted_inner_mode = smallest_int_mode_for_size (len);
       while (pos % GET_MODE_BITSIZE (wanted_inner_mode) + len
 	     > GET_MODE_BITSIZE (wanted_inner_mode))
 	wanted_inner_mode = GET_MODE_WIDER_MODE (wanted_inner_mode).require ();

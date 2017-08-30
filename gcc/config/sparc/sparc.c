@@ -6771,8 +6771,8 @@ assign_int_registers (HOST_WIDE_INT bitpos, assign_data_t *data)
      the latter case we may pick up unwanted bits.  It's not a problem
      at the moment but may wish to revisit.  */
   if (intoffset % BITS_PER_WORD != 0)
-    mode = smallest_mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			  	   MODE_INT);
+    mode = smallest_int_mode_for_size (BITS_PER_WORD
+				       - intoffset % BITS_PER_WORD);
   else
     mode = word_mode;
 

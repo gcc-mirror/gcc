@@ -51580,11 +51580,11 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
       || (TARGET_AVX512VL && (vector_size == 32 || vector_size == 16)))
     {
       if (elem_size == 4 || elem_size == 8 || TARGET_AVX512BW)
-	return smallest_mode_for_size (nunits, MODE_INT);
+	return smallest_int_mode_for_size (nunits);
     }
 
-  machine_mode elem_mode
-    = smallest_mode_for_size (elem_size * BITS_PER_UNIT, MODE_INT);
+  scalar_int_mode elem_mode
+    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
 
   gcc_assert (elem_size * nunits == vector_size);
 

@@ -588,9 +588,16 @@ float_mode_for_size (unsigned int size)
 
 /* Similar to mode_for_size, but find the smallest mode for a given width.  */
 
-extern machine_mode smallest_mode_for_size (unsigned int,
-						 enum mode_class);
+extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
 
+/* Find the narrowest integer mode that contains at least SIZE bits.
+   Such a mode must exist.  */
+
+inline scalar_int_mode
+smallest_int_mode_for_size (unsigned int size)
+{
+  return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
+}
 
 /* Return an integer mode of exactly the same size as the input mode.  */
 

@@ -3810,8 +3810,7 @@ spu_function_value (const_tree type, const_tree func ATTRIBUTE_UNUSED)
 	{
 	  if (byte_size < 4)
 	    byte_size = 4;
-	  smode =
-	    smallest_mode_for_size (byte_size * BITS_PER_UNIT, MODE_INT);
+	  smode = smallest_int_mode_for_size (byte_size * BITS_PER_UNIT);
 	  RTVEC_ELT (v, n) =
 	    gen_rtx_EXPR_LIST (VOIDmode,
 			       gen_rtx_REG (smode, FIRST_RETURN_REGNUM + n),
@@ -3849,7 +3848,7 @@ spu_function_arg (cumulative_args_t cum_v,
       rtx gr_reg;
       if (byte_size < 4)
 	byte_size = 4;
-      smode = smallest_mode_for_size (byte_size * BITS_PER_UNIT, MODE_INT);
+      smode = smallest_int_mode_for_size (byte_size * BITS_PER_UNIT);
       gr_reg = gen_rtx_EXPR_LIST (VOIDmode,
 				  gen_rtx_REG (smode, FIRST_ARG_REGNUM + *cum),
 				  const0_rtx);

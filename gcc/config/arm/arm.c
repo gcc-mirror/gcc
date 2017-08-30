@@ -31097,8 +31097,8 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   if (mode == SImode)
     gcc_assert (!TARGET_IDIV);
 
-  machine_mode libval_mode = smallest_mode_for_size (2 * GET_MODE_BITSIZE (mode),
-						     MODE_INT);
+  scalar_int_mode libval_mode
+    = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
 
   rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
 					libval_mode, 2,

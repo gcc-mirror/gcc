@@ -2194,12 +2194,15 @@ layout_type (tree type)
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      SET_TYPE_MODE (type,
-		     smallest_mode_for_size (TYPE_PRECISION (type), MODE_INT));
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      /* Don't set TYPE_PRECISION here, as it may be set by a bitfield.  */
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      break;
+      {
+	scalar_int_mode mode
+	  = smallest_int_mode_for_size (TYPE_PRECISION (type));
+	SET_TYPE_MODE (type, mode);
+	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
+	/* Don't set TYPE_PRECISION here, as it may be set by a bitfield.  */
+	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
+	break;
+      }
 
     case REAL_TYPE:
       {
@@ -2608,8 +2611,7 @@ initialize_sizetypes (void)
 
   bprecision
     = MIN (precision + LOG2_BITS_PER_UNIT + 1, MAX_FIXED_MODE_SIZE);
-  bprecision
-    = GET_MODE_PRECISION (smallest_mode_for_size (bprecision, MODE_INT));
+  bprecision = GET_MODE_PRECISION (smallest_int_mode_for_size (bprecision));
   if (bprecision > HOST_BITS_PER_DOUBLE_INT)
     bprecision = HOST_BITS_PER_DOUBLE_INT;
 
@@ -2624,17 +2626,18 @@ initialize_sizetypes (void)
   TYPE_UNSIGNED (bitsizetype) = 1;
 
   /* Now layout both types manually.  */
-  SET_TYPE_MODE (sizetype, smallest_mode_for_size (precision, MODE_INT));
+  scalar_int_mode mode = smallest_int_mode_for_size (precision);
+  SET_TYPE_MODE (sizetype, mode);
   SET_TYPE_ALIGN (sizetype, GET_MODE_ALIGNMENT (TYPE_MODE (sizetype)));
   TYPE_SIZE (sizetype) = bitsize_int (precision);
-  TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (TYPE_MODE (sizetype)));
+  TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (mode));
   set_min_and_max_values_for_integral_type (sizetype, precision, UNSIGNED);
 
-  SET_TYPE_MODE (bitsizetype, smallest_mode_for_size (bprecision, MODE_INT));
+  mode = smallest_int_mode_for_size (bprecision);
+  SET_TYPE_MODE (bitsizetype, mode);
   SET_TYPE_ALIGN (bitsizetype, GET_MODE_ALIGNMENT (TYPE_MODE (bitsizetype)));
   TYPE_SIZE (bitsizetype) = bitsize_int (bprecision);
-  TYPE_SIZE_UNIT (bitsizetype)
-    = size_int (GET_MODE_SIZE (TYPE_MODE (bitsizetype)));
+  TYPE_SIZE_UNIT (bitsizetype) = size_int (GET_MODE_SIZE (mode));
   set_min_and_max_values_for_integral_type (bitsizetype, bprecision, UNSIGNED);
 
   /* Create the signed variants of *sizetype.  */
