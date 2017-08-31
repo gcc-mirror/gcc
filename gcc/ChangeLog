@@ -2,6 +2,14 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/aarch64.c (aarch64_base_register_rtx_p): Only allow
+	subregs whose inner modes can be stored in GPRs.
+	(aarch64_classify_index): Likewise.
+
+2017-08-31  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/iterators.md (V_cmp_result): Rename to...
 	(V_INT_EQUIV): ...this.
 	(v_cmp_result): Rename to...
