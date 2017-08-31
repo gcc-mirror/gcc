@@ -1,6 +1,13 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (finish_struct_methods): Don't warn about private bases
+	here.
+	(finish_struct_1): Move set_class_bindings as late as possible.
+	(finish_struct): Warn about overly private bases after completing
+	the type.
+
+	gcc/cp/
 	* class.c (finish_struct_methods): Move DECL_IN_AGGR_P frobbing to
 	finish_struct_1.
 	(check_bases_and_members): Move finish_struct_methods to ...

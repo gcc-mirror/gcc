@@ -2271,10 +2271,6 @@ finish_struct_methods (tree t)
   if (!method_vec)
     return;
 
-  /* Issue warnings about private constructors and such.  If there are
-     no methods, then some public defaults are generated.  */
-  maybe_warn_about_overly_private_class (t);
-
   qsort (method_vec->address (), method_vec->length (),
 	 sizeof (tree), method_name_cmp);
 }
@@ -7026,8 +7022,6 @@ finish_struct_1 (tree t)
 	     && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
 
-  set_class_bindings (t, TYPE_FIELDS (t));
-
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);
 
@@ -7092,6 +7086,8 @@ finish_struct_1 (tree t)
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
     }
+
+  set_class_bindings (t, TYPE_FIELDS (t));
 }
 
 /* When T was built up, the member declarations were added in reverse
@@ -7190,7 +7186,10 @@ finish_struct (tree t, tree attributes)
     }
   else
     finish_struct_1 (t);
+  /* COMPLETE_TYPE_P is now true.  */
 
+  maybe_warn_about_overly_private_class (t);
+  
   if (is_std_init_list (t))
     {
       /* People keep complaining that the compiler crashes on an invalid
