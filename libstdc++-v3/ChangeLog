@@ -1,3 +1,9 @@
+2017-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/82039
+	* include/ext/new_allocator.h (__gnu_cxx::new_allocator::allocate):
+	Adjust null pointer constant to avoid warning.
+
 2017-08-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_list.h
