@@ -1,6 +1,12 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (finish_struct_1): Move finish_struct_methods and
+	set_class_bindings to just after layout.
+	(finish_struct): Process using_decls before setting template
+	pseudo-size. Call finish_struct_methods immediately after.
+
+	gcc/cp/
 	* class.c (finish_struct_methods): Don't warn about private bases
 	here.
 	(finish_struct_1): Move set_class_bindings as late as possible.

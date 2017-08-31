@@ -6914,9 +6914,6 @@ finish_struct_1 (tree t)
      bases and members and add implicitly generated methods.  */
   check_bases_and_members (t);
 
-  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
-  finish_struct_methods (t);
-
   /* Find the key method.  */
   if (TYPE_CONTAINS_VPTR_P (t))
     {
@@ -6941,8 +6938,12 @@ finish_struct_1 (tree t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
-
   /* COMPLETE_TYPE_P is now true.  */
+
+  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
+  finish_struct_methods (t);
+  set_class_bindings (t, TYPE_FIELDS (t));
+
   if (CLASSTYPE_AS_BASE (t) != t)
     /* We use the base type for trivial assignments, and hence it
        needs a mode.  */
@@ -7086,8 +7087,6 @@ finish_struct_1 (tree t)
 	  TYPE_TRANSPARENT_AGGR (t) = 0;
 	}
     }
-
-  set_class_bindings (t, TYPE_FIELDS (t));
 }
 
 /* When T was built up, the member declarations were added in reverse
@@ -7144,9 +7143,24 @@ finish_struct (tree t, tree attributes)
     {
       tree x;
 
-      finish_struct_methods (t);
+      /* We need to add the target functions to the CLASSTYPE_METHOD_VEC if
+	 an enclosing scope is a template class, so that this function be
+	 found by lookup_fnfields_1 when the using declaration is not
+	 instantiated yet.  */
+      for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == USING_DECL)
+	  {
+	    tree fn = strip_using_decl (x);
+  	    if (OVL_P (fn))
+	      for (lkp_iterator iter (fn); iter; ++iter)
+		add_method (t, *iter, true);
+	  }
+
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;
+      /* COMPLETE_TYPE_P is now true.  */
+
+      finish_struct_methods (t);
 
       /* We need to emit an error message if this type was used as a parameter
 	 and it is an abstract type, even if it is a template. We construct
@@ -7160,18 +7174,6 @@ finish_struct (tree t, tree attributes)
 	if (TREE_CODE (x) == FUNCTION_DECL && DECL_PURE_VIRTUAL_P (x))
 	  vec_safe_push (CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
-      /* We need to add the target functions to the CLASSTYPE_METHOD_VEC if
-	 an enclosing scope is a template class, so that this function be
-	 found by lookup_fnfields_1 when the using declaration is not
-	 instantiated yet.  */
-      for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-	if (TREE_CODE (x) == USING_DECL)
-	  {
-	    tree fn = strip_using_decl (x);
-  	    if (OVL_P (fn))
-	      for (lkp_iterator iter (fn); iter; ++iter)
-		add_method (t, *iter, true);
-	  }
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
