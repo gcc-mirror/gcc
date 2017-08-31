@@ -754,7 +754,7 @@ aarch64_init_simd_builtins (void)
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
       bool print_type_signature_p = false;
-      char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
+      char type_signature[SIMD_MAX_BUILTIN_ARGS + 1] = { 0 };
       aarch64_simd_builtin_datum *d = &aarch64_simd_builtin_data[i];
       char namebuf[60];
       tree ftype = NULL;
