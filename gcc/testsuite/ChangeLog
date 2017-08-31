@@ -1,3 +1,8 @@
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82054
+	* g++.dg/gomp/pr82054.C: New testcase.
+
 2017-08-31  Renlin Li  <renlin.li@arm.com>
 	    Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
 

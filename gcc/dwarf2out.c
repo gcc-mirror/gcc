@@ -25492,9 +25492,10 @@ dwarf2out_early_global_decl (tree decl)
   if (TREE_CODE (decl) != TYPE_DECL
       && TREE_CODE (decl) != PARM_DECL)
     {
-      tree save_fndecl = current_function_decl;
       if (TREE_CODE (decl) == FUNCTION_DECL)
 	{
+	  tree save_fndecl = current_function_decl;
+
 	  /* For nested functions, make sure we have DIEs for the parents first
 	     so that all nested DIEs are generated at the proper scope in the
 	     first shot.  */
@@ -25521,11 +25522,19 @@ dwarf2out_early_global_decl (tree decl)
 	      dwarf2out_decl (origin);
 	    }
 
-	  current_function_decl = decl;
+	  /* Emit the DIE for decl but avoid doing that multiple times.  */
+	  dw_die_ref old_die;
+	  if ((old_die = lookup_decl_die (decl)) == NULL
+	      || is_declaration_die (old_die))
+	    {
+	      current_function_decl = decl;
+	      dwarf2out_decl (decl);
+	    }
+
+	  current_function_decl = save_fndecl;
 	}
-      dwarf2out_decl (decl);
-      if (TREE_CODE (decl) == FUNCTION_DECL)
-	current_function_decl = save_fndecl;
+      else
+	dwarf2out_decl (decl);
     }
   symtab->global_info_ready = save;
 }
