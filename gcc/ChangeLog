@@ -1,5 +1,10 @@
 2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_can_follow_jump): Check for short
+	branches.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config.gcc: Use g.opt for arc.
 	* config/arc/arc.c (LEGITIMATE_SCALED_ADDRESS_P): Deleted,
 	functionality moved to ...
