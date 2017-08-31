@@ -1,5 +1,10 @@
 2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/sdata-5.c: New test.
+        * gcc.target/arc/arc700-stld-hazard.c: Update test options.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/sdata-3.c: New file.
 	* gcc.target/arc/sdata-4.c: Likewise.
 
