@@ -5747,7 +5747,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    /* We already reshaped this.  */
 	    gcc_assert (d->cur->index == field);
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = get_class_value (type, d->cur->index, false, -1);
+	    field = get_class_binding (type, d->cur->index, false, -1);
 	  else
 	    {
 	      if (complain & tf_error)
@@ -7858,7 +7858,7 @@ register_dtor_fn (tree decl)
   use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
-      cleanup = get_class_value (type, complete_dtor_identifier);
+      cleanup = get_class_binding (type, complete_dtor_identifier);
 
       /* Make sure it is accessible.  */
       perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,
@@ -14317,7 +14317,7 @@ finish_enum_value_list (tree enumtype)
       && COMPLETE_TYPE_P (current_class_type)
       && UNSCOPED_ENUM_P (enumtype))
     {
-      insert_late_enum_def_bindings (enumtype, current_class_type);
+      insert_late_enum_def_bindings (current_class_type, enumtype);
       fixup_type_variants (current_class_type);
     }
 

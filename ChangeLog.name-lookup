@@ -1,5 +1,30 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	Restore get_class_binding name.
+	* name-lookup.c (get_class_value, get_class_value_direct): Rename
+	to ...
+	(get_class_binding, get_class_binding_direct): ... here.
+	* name-lookup.h (get_class_value, get_class_value_direct): Rename
+	to ...
+	(get_class_binding, get_class_binding_direct): ... here.
+	* call.c (builduser_type_conersion_1): Rename calls.
+	(has_trivial_copy_assign_p, has_trvial_copy_p): Likewise.
+	* class.c (vbase_has_user_provided_move_assign,
+	classtype_has_move_assign_or_move_ctor_p, type_build_ctor_call,
+	type_build_dtor_call): Likewise.
+	* cp-tree.h (CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Likewise.
+	* decl.c (reshape_init_class, register_dtor_fn): Likewise.
+	* decl2.c (check_classfn): Likewise.
+	* pt.c (retrieve_specialization,
+	check_explicit_specialization): Likewise.
+	* search.c (lookup_field_r, look_for_overrides_here,
+	lookup_conversions_r): Likewise.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Likewise.
+
+	* name-lookup.c (insert_late_enum_def_bindings): Swap args.
+	* decl.c (finish_enum_value_list): Adjust
+	insert_late_enum_def_bindings call.
+
 	Restore lang_type::sorted_fields
 	gcc/c/
 	* c-decl.c (field_decl_cmp, resort_data,

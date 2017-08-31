@@ -3738,7 +3738,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   if (CLASS_TYPE_P (totype))
     /* Use lookup_fnfields_slot instead of lookup_fnfields to avoid
        creating a garbage BASELINK; constructors can't be inherited.  */
-    ctors = get_class_value (totype, complete_ctor_identifier);
+    ctors = get_class_binding (totype, complete_ctor_identifier);
 
   /* FIXME P0135 doesn't say what to do in C++17 about list-initialization from
      a single element.  For now, let's handle constructors as before and also
@@ -8243,7 +8243,7 @@ first_non_public_field (tree type)
 static bool
 has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 {
-  tree fns = get_class_value (type, cp_assignment_operator_id (NOP_EXPR));
+  tree fns = get_class_binding (type, cp_assignment_operator_id (NOP_EXPR));
   bool all_trivial = true;
 
   /* Iterate over overloads of the assignment operator, checking
@@ -8292,7 +8292,7 @@ has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 static bool
 has_trivial_copy_p (tree type, bool access, bool hasctor[2])
 {
-  tree fns = get_class_value (type, complete_ctor_identifier);
+  tree fns = get_class_binding (type, complete_ctor_identifier);
   bool all_trivial = true;
 
   for (ovl_iterator oi (fns); oi; ++oi)

@@ -1260,8 +1260,8 @@ legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
    Use this if you do not want lazy member creation.  */
 
 tree
-get_class_value_direct (tree klass, tree name, bool prefer_type,
-			int restricted)
+get_class_binding_direct (tree klass, tree name, bool prefer_type,
+			  int restricted)
 {
   gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
@@ -1304,7 +1304,7 @@ get_class_value_direct (tree klass, tree name, bool prefer_type,
    function creation as necessary.  */
 
 tree
-get_class_value (tree klass, tree name, bool prefer_type, int restricted)
+get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
 {
   klass = complete_type (klass);
 
@@ -1334,7 +1334,7 @@ get_class_value (tree klass, tree name, bool prefer_type, int restricted)
 	}
     }
 
-  return get_class_value_direct (klass, name, prefer_type, restricted);
+  return get_class_binding_direct (klass, name, prefer_type, restricted);
 }
 
 /* Allocate and return an instance of struct sorted_fields_type with
@@ -1426,9 +1426,11 @@ set_class_bindings (tree klass, tree fields)
 /* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
 
 void
-insert_late_enum_def_bindings (tree enumtype, tree t)
+insert_late_enum_def_bindings (tree klass, tree enumtype)
 {
-  struct sorted_fields_type *sorted_fields = CLASSTYPE_SORTED_FIELDS (t);
+  struct sorted_fields_type *sorted_fields
+    = CLASSTYPE_SORTED_FIELDS (klass);
+
   if (sorted_fields)
     {
       int i;
@@ -1442,7 +1444,7 @@ insert_late_enum_def_bindings (tree enumtype, tree t)
       add_enum_fields_to_record_type (enumtype, field_vec,
 				      sorted_fields->len);
       qsort (field_vec->elts, n_fields, sizeof (tree), field_decl_cmp);
-      CLASSTYPE_SORTED_FIELDS (t) = field_vec;
+      CLASSTYPE_SORTED_FIELDS (klass) = field_vec;
     }
 }
 

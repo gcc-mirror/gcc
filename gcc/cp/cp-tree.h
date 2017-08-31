@@ -216,7 +216,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    example:
 
      tree ovlid = cp_assignment_operator_id (NOP_EXPR);
-     tree overloads = get_class_value (type, ovlid);
+     tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
    iterates over the set of implicitly and explicitly defined overloads
@@ -2155,14 +2155,14 @@ struct GTY(()) lang_type {
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
-  (get_class_value_direct (NODE, ctor_identifier))
+  (get_class_binding_direct (NODE, ctor_identifier))
 
 /* A FUNCTION_DECL for the destructor for NODE.  This is the
    destructors that take an in-charge parameter.  If
    CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
-  (get_class_value_direct (NODE, dtor_identifier))
+  (get_class_binding_direct (NODE, dtor_identifier))
 
 /* A dictionary of the nested user-defined-types (class-types, or enums)
    found within this class.  This table includes nested member class
