@@ -12587,6 +12587,63 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
   return r;
 }
 
+/* True if FN is the op() for a lambda in an uninstantiated template.  */
+
+bool
+lambda_fn_in_template_p (tree fn)
+{
+  if (!LAMBDA_FUNCTION_P (fn))
+    return false;
+  tree closure = DECL_CONTEXT (fn);
+  return CLASSTYPE_TEMPLATE_INFO (closure) != NULL_TREE;
+}
+
+/* True if FN is the op() for a lambda regenerated from a lambda in an
+   uninstantiated template.  */
+
+bool
+regenerated_lambda_fn_p (tree fn)
+{
+  return (LAMBDA_FUNCTION_P (fn)
+	  && !DECL_TEMPLATE_INSTANTIATION (fn));
+}
+
+/* We're instantiating a variable from template function TCTX.  Return the
+   corresponding current enclosing scope.  This gets complicated because lambda
+   functions in templates are regenerated rather than instantiated, but generic
+   lambda functions are subsequently instantiated.  */
+
+static tree
+enclosing_instantiation_of (tree tctx)
+{
+  tree fn = current_function_decl;
+  int lambda_count = 0;
+
+  for (; tctx && lambda_fn_in_template_p (tctx);
+       tctx = decl_function_context (tctx))
+    ++lambda_count;
+  for (; fn; fn = decl_function_context (fn))
+    {
+      tree lambda = fn;
+      int flambda_count = 0;
+      for (; fn && regenerated_lambda_fn_p (fn);
+	   fn = decl_function_context (fn))
+	++flambda_count;
+      if (DECL_TEMPLATE_INFO (fn)
+	  ? most_general_template (fn) != most_general_template (tctx)
+	  : fn != tctx)
+	continue;
+      if (lambda_count)
+	{
+	  fn = lambda;
+	  while (flambda_count-- > lambda_count)
+	    fn = decl_function_context (fn);
+	}
+      return fn;
+    }
+  gcc_unreachable ();
+}
+
 /* Substitute the ARGS into the T, which is a _DECL.  Return the
    result of the substitution.  Issue error and warning messages under
    control of COMPLAIN.  */
@@ -12955,7 +13012,7 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	       enclosing function, in which case we need to fill it in now.  */
 	    if (TREE_STATIC (t))
 	      {
-		tree fn = tsubst (DECL_CONTEXT (t), args, complain, in_decl);
+		tree fn = enclosing_instantiation_of (DECL_CONTEXT (t));
 		if (fn != current_function_decl)
 		  ctx = fn;
 	      }
@@ -14734,9 +14791,7 @@ tsubst_copy (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      if (r && !is_capture_proxy (r))
 		{
 		  /* Make sure that the one we found is the one we want.  */
-		  tree ctx = DECL_CONTEXT (t);
-		  if (DECL_LANG_SPECIFIC (ctx) && DECL_TEMPLATE_INFO (ctx))
-		    ctx = tsubst (ctx, args, complain, in_decl);
+		  tree ctx = enclosing_instantiation_of (DECL_CONTEXT (t));
 		  if (ctx != DECL_CONTEXT (r))
 		    r = NULL_TREE;
 		}
