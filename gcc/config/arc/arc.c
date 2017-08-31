@@ -9845,6 +9845,9 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
   if (CROSSING_JUMP_P (followee))
     switch (get_attr_type (u.r))
       {
+      case TYPE_BRANCH:
+	if (get_attr_length (u.r) != 2)
+	  break;
       case TYPE_BRCC:
       case TYPE_BRCC_NO_DELAY_SLOT:
 	return false;
