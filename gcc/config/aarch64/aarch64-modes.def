@@ -44,15 +44,5 @@ INT_MODE (OI, 32);
 INT_MODE (CI, 48);
 INT_MODE (XI, 64);
 
-/* Vector modes for register lists.  */
-VECTOR_MODES (INT, 32);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 32);	/* V8SF V4DF.  */
-
-VECTOR_MODES (INT, 48);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 48);	/* V8SF V4DF.  */
-
-VECTOR_MODES (INT, 64);		/* V32QI V16HI V8SI V4DI.  */
-VECTOR_MODES (FLOAT, 64);	/* V8SF V4DF.  */
-
 /* Quad float: 128-bit floating mode for long doubles.  */
 FLOAT_MODE (TF, 16, ieee_quad_format);

@@ -55,6 +55,17 @@ typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
+class scalar_mode;
+class scalar_int_mode;
+class scalar_float_mode;
+class complex_mode;
+template<typename> class opt_mode;
+typedef opt_mode<scalar_mode> opt_scalar_mode;
+typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
+typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
+template<typename> class pod_mode;
+typedef pod_mode<scalar_mode> scalar_mode_pod;
+typedef pod_mode<scalar_int_mode> scalar_int_mode_pod;
 
 /* Subclasses of rtx_def, using indentation to show the class
    hierarchy, along with the relevant invariant.
@@ -309,6 +320,11 @@ union _dont_use_tree_here_;
 #define rtx_insn struct _dont_use_rtx_insn_here_
 #define tree union _dont_use_tree_here_ *
 #define const_tree union _dont_use_tree_here_ *
+
+typedef struct scalar_mode scalar_mode;
+typedef struct scalar_int_mode scalar_int_mode;
+typedef struct scalar_float_mode scalar_float_mode;
+typedef struct complex_mode complex_mode;
 
 #endif
 

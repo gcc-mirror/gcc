@@ -1853,7 +1853,7 @@ create_insn_allocnos (rtx x, rtx outer, bool output_p)
 	      if (outer != NULL && GET_CODE (outer) == SUBREG)
 		{
 		  machine_mode wmode = GET_MODE (outer);
-		  if (GET_MODE_SIZE (wmode) > GET_MODE_SIZE (ALLOCNO_WMODE (a)))
+		  if (partial_subreg_p (ALLOCNO_WMODE (a), wmode))
 		    ALLOCNO_WMODE (a) = wmode;
 		}
 	    }

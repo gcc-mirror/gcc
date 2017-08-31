@@ -187,7 +187,7 @@ END {
 	    printf ",\n  "
 	else
 	    printf ", "
-	printf vect_mode[i] "mode"
+	printf "E_" vect_mode[i] "mode"
     }
     print "\n};\n\n"
 

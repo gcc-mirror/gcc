@@ -1,5 +1,4 @@
-/* { dg-do run { target { bmi } } } */
-/* { dg-require-effective-target bmi  } */
+/* { dg-do run { target bmi } } */
 /* { dg-options "-O2 -mbmi -fno-inline" } */
 
 #include <x86intrin.h>

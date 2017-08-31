@@ -107,19 +107,19 @@ tilegx_option_override (void)
 
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 static bool
-tilegx_scalar_mode_supported_p (machine_mode mode)
+tilegx_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-    case TImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
+    case E_TImode:
       return true;
 
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       return true;
 
     default:
@@ -188,7 +188,7 @@ tilegx_return_in_memory (const_tree type, const_tree fndecl ATTRIBUTE_UNUSED)
 
 /* Implement TARGET_MODE_REP_EXTENDED.  */
 static int
-tilegx_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
+tilegx_mode_rep_extended (scalar_int_mode mode, scalar_int_mode mode_rep)
 {
   /* SImode register values are sign-extended to DImode.  */
   if (mode == SImode && mode_rep == DImode)
@@ -1466,16 +1466,16 @@ tilegx_simd_int (rtx num, machine_mode mode)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       n = 0x0101010101010101LL * (n & 0x000000FF);
       break;
-    case HImode:
+    case E_HImode:
       n = 0x0001000100010001LL * (n & 0x0000FFFF);
       break;
-    case SImode:
+    case E_SImode:
       n = 0x0000000100000001LL * (n & 0xFFFFFFFF);
       break;
-    case DImode:
+    case E_DImode:
       break;
     default:
       gcc_unreachable ();

@@ -87,12 +87,12 @@ struct mduc_reg_type
 
 struct mduc_reg_type  mduc_regs[] =
 {
-  {0xf00e8, QImode},
-  {0xffff0, HImode},
-  {0xffff2, HImode},
-  {0xf2224, HImode},
-  {0xf00e0, HImode},
-  {0xf00e2, HImode}
+  {0xf00e8, E_QImode},
+  {0xffff0, E_HImode},
+  {0xffff2, E_HImode},
+  {0xf2224, E_HImode},
+  {0xf00e0, E_HImode},
+  {0xf00e2, E_HImode}
 };
 
 struct GTY(()) machine_function
@@ -998,7 +998,7 @@ rl78_hl_b_c_addr_p (rtx op)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1038,7 +1038,7 @@ rl78_far_p (rtx x)
 #undef  TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE rl78_addr_space_pointer_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1059,7 +1059,7 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
 #define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
 
 static bool
-rl78_valid_pointer_mode (machine_mode m)
+rl78_valid_pointer_mode (scalar_int_mode m)
 {
   return (m == HImode || m == SImode);
 }
@@ -4638,7 +4638,7 @@ rl78_asm_out_integer (rtx x, unsigned int size, int aligned_p)
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_unwind_word_mode (void)
 {
   return HImode;

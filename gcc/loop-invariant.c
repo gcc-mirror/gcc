@@ -774,16 +774,16 @@ canonicalize_address_mult (rtx x)
   FOR_EACH_SUBRTX_VAR (iter, array, x, NONCONST)
     {
       rtx sub = *iter;
-
-      if (GET_CODE (sub) == ASHIFT
+      scalar_int_mode sub_mode;
+      if (is_a <scalar_int_mode> (GET_MODE (sub), &sub_mode)
+	  && GET_CODE (sub) == ASHIFT
 	  && CONST_INT_P (XEXP (sub, 1))
-	  && INTVAL (XEXP (sub, 1)) < GET_MODE_BITSIZE (GET_MODE (sub))
+	  && INTVAL (XEXP (sub, 1)) < GET_MODE_BITSIZE (sub_mode)
 	  && INTVAL (XEXP (sub, 1)) >= 0)
 	{
 	  HOST_WIDE_INT shift = INTVAL (XEXP (sub, 1));
 	  PUT_CODE (sub, MULT);
-	  XEXP (sub, 1) = gen_int_mode (HOST_WIDE_INT_1 << shift,
-					GET_MODE (sub));
+	  XEXP (sub, 1) = gen_int_mode (HOST_WIDE_INT_1 << shift, sub_mode);
 	  iter.skip_subrtxes ();
 	}
     }

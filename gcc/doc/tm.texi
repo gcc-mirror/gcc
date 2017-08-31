@@ -1339,21 +1339,21 @@ You would most commonly define this macro if the @code{allocate_stack}
 pattern needs to support both a 32- and a 64-bit mode.
 @end defmac
 
-@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
 This target hook should return the mode to be used for the return value
 of compare instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
 This target hook should return the mode to be used for the shift count operand
 of shift instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_UNWIND_WORD_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_UNWIND_WORD_MODE (void)
 Return machine mode to be used for @code{_Unwind_Word} type.
 The default is to use @code{word_mode}.
 @end deftypefn
@@ -2902,7 +2902,7 @@ This hook defines a class of registers which could be used for spilling  pseudos
 This hook should return @code{true} if given class of registers should  be an allocno class in any way.  Usually RA uses only one register  class from all classes containing the same register set.  In some  complicated cases, you need to have two or more such classes as  allocno ones for RA correct work.  Not defining this hook is  equivalent to returning @code{false} for all inputs.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
+@deftypefn {Target Hook} scalar_int_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
 This hook defines the machine mode to use for the boolean result of  conditional store patterns.  The ICODE argument is the instruction code  for the cstore being performed.  Not definiting this hook is the same  as accepting the mode encoded into operand 0 of the cstore expander  patterns.
 @end deftypefn
 
@@ -4203,7 +4203,7 @@ arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (scalar_int_mode @var{mode})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
@@ -4213,7 +4213,7 @@ hook returns true for both @code{ptr_mode} and @code{Pmode}.
 Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (scalar_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
 considered supported, all the basic arithmetic and comparisons
@@ -4259,7 +4259,7 @@ If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (scalar_float_mode @var{mode})
 Define this to return nonzero if libgcc provides support for the 
 floating-point mode @var{mode}, which is known to pass 
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 
@@ -4267,22 +4267,22 @@ hook returns true for all of @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}, if such modes exist.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
+@deftypefn {Target Hook} opt_scalar_float_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
 Define this to return the machine mode to use for the type 
 @code{_Float@var{n}}, if @var{extended} is false, or the type 
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type 
-is not supported, return @code{VOIDmode}.  The default version of this 
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for 
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not
+supported, return @code{opt_scalar_float_mode ()}.  The default version of
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for 
 @code{_Float128}, if those modes exist and satisfy the requirements for 
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and 
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it 
 returns the first of @code{XFmode} and @code{TFmode} that exists and 
 satisfies the same requirements; for other types, it returns 
-@code{VOIDmode}.  The hook is only called for values of @var{n} and 
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that 
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or 
-greater than 128 and a multiple of 32.
+@code{opt_scalar_float_mode ()}.  The hook is only called for values
+of @var{n} and @var{extended} that are valid according to
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})
@@ -5805,7 +5805,7 @@ the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (machine_mode @var{mode})
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (scalar_mode @var{mode})
 This hook should return the preferred mode for vectorizing scalar
 mode @var{mode}.  The default is
 equal to @code{word_mode}, because the vectorizer can do some
@@ -10527,19 +10527,19 @@ named address space #1:
 c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @end smallexample
 
-@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{ptr_mode}.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{Pmode}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (scalar_int_mode @var{mode}, addr_space_t @var{as})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode} to address space @var{as}.  This target
 hook is the same as the @code{TARGET_VALID_POINTER_MODE} target hook,
@@ -10802,7 +10802,7 @@ If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
 such cases may improve things.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (machine_mode @var{mode}, machine_mode @var{rep_mode})
+@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (scalar_int_mode @var{mode}, scalar_int_mode @var{rep_mode})
 The representation of an integral mode can be such that the values
 are always extended to a wider integral mode.  Return
 @code{SIGN_EXTEND} if values of @var{mode} are represented in

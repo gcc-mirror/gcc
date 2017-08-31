@@ -1,6 +1,6 @@
 /* PR rtl-optimization/61446 */
 
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -march=corei7 -mfpmath=387" } */
 
 unsigned long long

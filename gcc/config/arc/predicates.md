@@ -430,37 +430,37 @@
      a peephole.  */
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CC_ZNmode:
+    case E_CC_ZNmode:
       return (code == EQ || code == NE || code == GE || code == LT
 	      || code == GT);
-    case CC_Zmode:
+    case E_CC_Zmode:
       return code == EQ || code == NE;
-    case CC_Cmode:
+    case E_CC_Cmode:
       return code == LTU || code == GEU;
-    case CC_FP_GTmode:
+    case E_CC_FP_GTmode:
       return code == GT || code == UNLE;
-    case CC_FP_GEmode:
+    case E_CC_FP_GEmode:
       return code == GE || code == UNLT;
-    case CC_FP_ORDmode:
+    case E_CC_FP_ORDmode:
       return code == ORDERED || code == UNORDERED;
-    case CC_FP_UNEQmode:
+    case E_CC_FP_UNEQmode:
       return code == UNEQ || code == LTGT;
-    case CC_FPXmode:
+    case E_CC_FPXmode:
       return (code == EQ || code == NE || code == UNEQ || code == LTGT
 	      || code == ORDERED || code == UNORDERED);
 
-    case CC_FPUmode:
+    case E_CC_FPUmode:
       return 1;
-    case CC_FPU_UNEQmode:
+    case E_CC_FPU_UNEQmode:
       return 1;
 
-    case CCmode:
-    case SImode: /* Used for BRcc.  */
+    case E_CCmode:
+    case E_SImode: /* Used for BRcc.  */
       return 1;
     /* From combiner.  */
-    case QImode: case HImode: case DImode: case SFmode: case DFmode:
+    case E_QImode: case E_HImode: case E_DImode: case E_SFmode: case E_DFmode:
       return 0;
-    case VOIDmode:
+    case E_VOIDmode:
       return 0;
     default:
       gcc_unreachable ();
@@ -537,11 +537,11 @@
     return 1;
   switch (mode)
     {
-    case CC_Zmode:
+    case E_CC_Zmode:
       if (GET_MODE (op) == CC_ZNmode)
 	return 1;
       /* Fall through.  */
-    case CC_ZNmode: case CC_Cmode:
+    case E_CC_ZNmode: case E_CC_Cmode:
       return GET_MODE (op) == CCmode;
     default:
       gcc_unreachable ();

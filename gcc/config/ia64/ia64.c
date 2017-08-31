@@ -299,7 +299,7 @@ static void ia64_vms_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
 static void ia64_soft_fp_init_libfuncs (void)
      ATTRIBUTE_UNUSED;
-static bool ia64_vms_valid_pointer_mode (machine_mode mode)
+static bool ia64_vms_valid_pointer_mode (scalar_int_mode mode)
      ATTRIBUTE_UNUSED;
 static tree ia64_vms_common_object_attribute (tree *, tree, tree, int, bool *)
      ATTRIBUTE_UNUSED;
@@ -310,7 +310,7 @@ static tree ia64_handle_version_id_attribute (tree *, tree, tree, int, bool *);
 static void ia64_encode_section_info (tree, rtx, int);
 static rtx ia64_struct_value_rtx (tree, int);
 static tree ia64_gimplify_va_arg (tree, tree, gimple_seq *, gimple_seq *);
-static bool ia64_scalar_mode_supported_p (machine_mode mode);
+static bool ia64_scalar_mode_supported_p (scalar_mode mode);
 static bool ia64_vector_mode_supported_p (machine_mode mode);
 static bool ia64_legitimate_constant_p (machine_mode, rtx);
 static bool ia64_legitimate_address_p (machine_mode, rtx, bool);
@@ -1909,7 +1909,7 @@ ia64_expand_vecint_compare (enum rtx_code code, machine_mode mode,
     {
       switch (mode)
 	{
-	case V2SImode:
+	case E_V2SImode:
 	  {
 	    rtx t1, t2, mask;
 
@@ -1928,8 +1928,8 @@ ia64_expand_vecint_compare (enum rtx_code code, machine_mode mode,
 	  }
 	  break;
 
-	case V8QImode:
-	case V4HImode:
+	case E_V8QImode:
+	case E_V4HImode:
 	  /* Perform a parallel unsigned saturating subtraction.  */
 	  x = gen_reg_rtx (mode);
 	  emit_insn (gen_rtx_SET (x, gen_rtx_US_MINUS (mode, op0, op1)));
@@ -2447,10 +2447,10 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     case MEMMODEL_CONSUME:
       switch (mode)
 	{
-	case QImode: icode = CODE_FOR_cmpxchg_acq_qi;  break;
-	case HImode: icode = CODE_FOR_cmpxchg_acq_hi;  break;
-	case SImode: icode = CODE_FOR_cmpxchg_acq_si;  break;
-	case DImode: icode = CODE_FOR_cmpxchg_acq_di;  break;
+	case E_QImode: icode = CODE_FOR_cmpxchg_acq_qi;  break;
+	case E_HImode: icode = CODE_FOR_cmpxchg_acq_hi;  break;
+	case E_SImode: icode = CODE_FOR_cmpxchg_acq_si;  break;
+	case E_DImode: icode = CODE_FOR_cmpxchg_acq_di;  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -2463,10 +2463,10 @@ ia64_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     case MEMMODEL_SYNC_SEQ_CST:
       switch (mode)
 	{
-	case QImode: icode = CODE_FOR_cmpxchg_rel_qi;  break;
-	case HImode: icode = CODE_FOR_cmpxchg_rel_hi;  break;
-	case SImode: icode = CODE_FOR_cmpxchg_rel_si;  break;
-	case DImode: icode = CODE_FOR_cmpxchg_rel_di;  break;
+	case E_QImode: icode = CODE_FOR_cmpxchg_rel_qi;  break;
+	case E_HImode: icode = CODE_FOR_cmpxchg_rel_hi;  break;
+	case E_SImode: icode = CODE_FOR_cmpxchg_rel_si;  break;
+	case E_DImode: icode = CODE_FOR_cmpxchg_rel_di;  break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -4899,9 +4899,9 @@ ia64_arg_type (machine_mode mode)
 {
   switch (mode)
     {
-    case SFmode:
+    case E_SFmode:
       return FS;
-    case DFmode:
+    case E_DFmode:
       return FT;
     default:
       return I64;
@@ -7895,15 +7895,15 @@ ia64_mode_to_int (machine_mode mode)
 {
   switch (mode)
     {
-    case BImode: return 0; /* SPEC_MODE_FIRST  */
-    case QImode: return 1; /* SPEC_MODE_FOR_EXTEND_FIRST  */
-    case HImode: return 2;
-    case SImode: return 3; /* SPEC_MODE_FOR_EXTEND_LAST  */
-    case DImode: return 4;
-    case SFmode: return 5;
-    case DFmode: return 6;
-    case XFmode: return 7;
-    case TImode:
+    case E_BImode: return 0; /* SPEC_MODE_FIRST  */
+    case E_QImode: return 1; /* SPEC_MODE_FOR_EXTEND_FIRST  */
+    case E_HImode: return 2;
+    case E_SImode: return 3; /* SPEC_MODE_FOR_EXTEND_LAST  */
+    case E_DImode: return 4;
+    case E_SFmode: return 5;
+    case E_DFmode: return 6;
+    case E_XFmode: return 7;
+    case E_TImode:
       /* ??? This mode needs testing.  Bypasses for ldfp8 instruction are not
 	 mentioned in itanium[12].md.  Predicate fp_register_operand also
 	 needs to be defined.  Bottom line: better disable for now.  */
@@ -10728,7 +10728,7 @@ ia64_soft_fp_init_libfuncs (void)
 }
 
 static bool
-ia64_vms_valid_pointer_mode (machine_mode mode)
+ia64_vms_valid_pointer_mode (scalar_int_mode mode)
 {
   return (mode == SImode || mode == DImode);
 }
@@ -10964,24 +10964,24 @@ ia64_struct_value_rtx (tree fntype,
 }
 
 static bool
-ia64_scalar_mode_supported_p (machine_mode mode)
+ia64_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-    case TImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
+    case E_TImode:
       return true;
 
-    case SFmode:
-    case DFmode:
-    case XFmode:
-    case RFmode:
+    case E_SFmode:
+    case E_DFmode:
+    case E_XFmode:
+    case E_RFmode:
       return true;
 
-    case TFmode:
+    case E_TFmode:
       return true;
 
     default:
@@ -10994,12 +10994,12 @@ ia64_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V8QImode:
-    case V4HImode:
-    case V2SImode:
+    case E_V8QImode:
+    case E_V4HImode:
+    case E_V2SImode:
       return true;
 
-    case V2SFmode:
+    case E_V2SFmode:
       return true;
 
     default:
@@ -11298,7 +11298,8 @@ expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   machine_mode v2mode;
   rtx x;
 
-  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  if (!GET_MODE_2XWIDER_MODE (GET_MODE (op0)).exists (&v2mode))
+    return false;
   x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
   return expand_vselect (target, x, perm, nelt);
 }
@@ -11438,8 +11439,8 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
-    case V2SImode:
-    case V2SFmode:
+    case E_V2SImode:
+    case E_V2SFmode:
       /* Implementable by interleave.  */
       perm2[0] = elt;
       perm2[1] = elt + 2;
@@ -11447,7 +11448,7 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
       gcc_assert (ok);
       break;
 
-    case V8QImode:
+    case E_V8QImode:
       /* Implementable by extract + broadcast.  */
       if (BYTES_BIG_ENDIAN)
 	elt = 7 - elt;
@@ -11458,7 +11459,7 @@ expand_vec_perm_broadcast (struct expand_vec_perm_d *d)
       emit_insn (gen_mux1_brcst_qi (d->target, gen_lowpart (QImode, temp)));
       break;
 
-    case V4HImode:
+    case E_V4HImode:
       /* Should have been matched directly by vec_select.  */
     default:
       gcc_unreachable ();

@@ -2009,6 +2009,8 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 
       e = new_cselib_val (next_uid, GET_MODE (x), x);
       new_elt_loc_list (e, x);
+
+      scalar_int_mode int_mode;
       if (REG_VALUES (i) == 0)
 	{
 	  /* Maintain the invariant that the first entry of
@@ -2018,27 +2020,27 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 	  REG_VALUES (i) = new_elt_list (REG_VALUES (i), NULL);
 	}
       else if (cselib_preserve_constants
-	       && GET_MODE_CLASS (mode) == MODE_INT)
+	       && is_int_mode (mode, &int_mode))
 	{
 	  /* During var-tracking, try harder to find equivalences
 	     for SUBREGs.  If a setter sets say a DImode register
 	     and user uses that register only in SImode, add a lowpart
 	     subreg location.  */
 	  struct elt_list *lwider = NULL;
+	  scalar_int_mode lmode;
 	  l = REG_VALUES (i);
 	  if (l && l->elt == NULL)
 	    l = l->next;
 	  for (; l; l = l->next)
-	    if (GET_MODE_CLASS (GET_MODE (l->elt->val_rtx)) == MODE_INT
-		&& GET_MODE_SIZE (GET_MODE (l->elt->val_rtx))
-		   > GET_MODE_SIZE (mode)
+	    if (is_int_mode (GET_MODE (l->elt->val_rtx), &lmode)
+		&& GET_MODE_SIZE (lmode) > GET_MODE_SIZE (int_mode)
 		&& (lwider == NULL
-		    || GET_MODE_SIZE (GET_MODE (l->elt->val_rtx))
-		       < GET_MODE_SIZE (GET_MODE (lwider->elt->val_rtx))))
+		    || partial_subreg_p (lmode,
+					 GET_MODE (lwider->elt->val_rtx))))
 	      {
 		struct elt_loc_list *el;
 		if (i < FIRST_PSEUDO_REGISTER
-		    && hard_regno_nregs[i][GET_MODE (l->elt->val_rtx)] != 1)
+		    && hard_regno_nregs[i][lmode] != 1)
 		  continue;
 		for (el = l->elt->locs; el; el = el->next)
 		  if (!REG_P (el->loc))
@@ -2048,7 +2050,7 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 	      }
 	  if (lwider)
 	    {
-	      rtx sub = lowpart_subreg (mode, lwider->elt->val_rtx,
+	      rtx sub = lowpart_subreg (int_mode, lwider->elt->val_rtx,
 					GET_MODE (lwider->elt->val_rtx));
 	      if (sub)
 		new_elt_loc_list (e, sub);

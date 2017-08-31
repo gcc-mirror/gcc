@@ -98,10 +98,13 @@
     UNSPEC_GOTTINYTLS
     UNSPEC_LD1
     UNSPEC_LD2
+    UNSPEC_LD2_DREG
     UNSPEC_LD2_DUP
     UNSPEC_LD3
+    UNSPEC_LD3_DREG
     UNSPEC_LD3_DUP
     UNSPEC_LD4
+    UNSPEC_LD4_DREG
     UNSPEC_LD4_DUP
     UNSPEC_LD2_LANE
     UNSPEC_LD3_LANE
@@ -5193,7 +5196,7 @@
   "TARGET_FLOAT && TARGET_SIMD"
 {
 
-  machine_mode imode = <V_cmp_result>mode;
+  machine_mode imode = <V_INT_EQUIV>mode;
   rtx mask = gen_reg_rtx (imode);
   rtx op1x = gen_reg_rtx (imode);
   rtx op2x = gen_reg_rtx (imode);
@@ -5202,13 +5205,13 @@
   emit_move_insn (mask, GEN_INT (trunc_int_for_mode (HOST_WIDE_INT_M1U << bits,
 						     imode)));
 
-  emit_insn (gen_and<v_cmp_result>3 (op2x, mask,
-				     lowpart_subreg (imode, operands[2],
-						     <MODE>mode)));
-  emit_insn (gen_xor<v_cmp_result>3 (op1x,
-				     lowpart_subreg (imode, operands[1],
-						     <MODE>mode),
-				     op2x));
+  emit_insn (gen_and<v_int_equiv>3 (op2x, mask,
+				    lowpart_subreg (imode, operands[2],
+						    <MODE>mode)));
+  emit_insn (gen_xor<v_int_equiv>3 (op1x,
+				    lowpart_subreg (imode, operands[1],
+						    <MODE>mode),
+				    op2x));
   emit_move_insn (operands[0],
 		  lowpart_subreg (<MODE>mode, op1x, imode));
   DONE;

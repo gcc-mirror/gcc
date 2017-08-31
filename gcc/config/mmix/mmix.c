@@ -2648,12 +2648,12 @@ mmix_output_condition (FILE *stream, const_rtx x, int reversed)
 #undef CCEND
 
   static const struct cc_type_conv cc_convs[]
-    = {{CC_FUNmode, cc_fun_convs},
-       {CC_FPmode, cc_fp_convs},
-       {CC_FPEQmode, cc_fpeq_convs},
-       {CC_UNSmode, cc_uns_convs},
-       {CCmode, cc_signed_convs},
-       {DImode, cc_di_convs}};
+    = {{E_CC_FUNmode, cc_fun_convs},
+       {E_CC_FPmode, cc_fp_convs},
+       {E_CC_FPEQmode, cc_fpeq_convs},
+       {E_CC_UNSmode, cc_uns_convs},
+       {E_CCmode, cc_signed_convs},
+       {E_DImode, cc_di_convs}};
 
   size_t i;
   int j;

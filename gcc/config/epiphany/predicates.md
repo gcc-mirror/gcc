@@ -223,31 +223,31 @@
     return 0;
   switch (GET_MODE (cc))
     {
-    case CC_Zmode:
-    case CC_N_NEmode:
-    case CC_FP_EQmode:
+    case E_CC_Zmode:
+    case E_CC_N_NEmode:
+    case E_CC_FP_EQmode:
       return REGNO (cc) == CC_REGNUM && (code == EQ || code == NE);
-    case CC_C_LTUmode:
+    case E_CC_C_LTUmode:
       return REGNO (cc) == CC_REGNUM && (code == LTU || code == GEU);
-    case CC_C_GTUmode:
+    case E_CC_C_GTUmode:
       return REGNO (cc) == CC_REGNUM && (code == GTU || code == LEU);
-    case CC_FPmode:
+    case E_CC_FPmode:
       return (REGNO (cc) == CCFP_REGNUM
 	      && (code == EQ || code == NE || code == LT || code == LE));
-    case CC_FP_GTEmode:
+    case E_CC_FP_GTEmode:
       return (REGNO (cc) == CC_REGNUM
 	      && (code == EQ || code == NE || code == GT || code == GE
 		  || code == UNLE || code == UNLT));
-    case CC_FP_ORDmode:
+    case E_CC_FP_ORDmode:
       return REGNO (cc) == CC_REGNUM && (code == ORDERED || code == UNORDERED);
-    case CC_FP_UNEQmode:
+    case E_CC_FP_UNEQmode:
       return REGNO (cc) == CC_REGNUM && (code == UNEQ || code == LTGT);
-    case CCmode:
+    case E_CCmode:
       return REGNO (cc) == CC_REGNUM;
     /* From combiner.  */
-    case QImode: case SImode: case SFmode: case HImode:
+    case E_QImode: case E_SImode: case E_SFmode: case E_HImode:
     /* From cse.c:dead_libcall_p.  */
-    case DFmode:
+    case E_DFmode:
       return 0;
     default:
       gcc_unreachable ();

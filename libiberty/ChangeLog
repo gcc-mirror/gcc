@@ -1,3 +1,15 @@
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Keep names of removed global symbols.
+
+2017-08-29  Tony Reix  <tony.reix@atos.net>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections):
+	Improve .go_export csect handling.  Don't make assumptions
+	on containing section or number of auxiliary entries.
+
 2017-08-28  Richard Biener  <rguenther@suse.de>
 
 	PR lto/81968

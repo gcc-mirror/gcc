@@ -745,6 +745,12 @@ extern void fancy_abort (const char *, int, const char *)
 #define gcc_checking_assert(EXPR) ((void)(0 && (EXPR)))
 #endif
 
+#if GCC_VERSION >= 4000
+#define ALWAYS_INLINE inline __attribute__ ((always_inline))
+#else
+#define ALWAYS_INLINE inline
+#endif
+
 /* Use gcc_unreachable() to mark unreachable locations (like an
    unreachable default case of a switch.  Do not use gcc_assert(0).  */
 #if (GCC_VERSION >= 4005) && !ENABLE_ASSERT_CHECKING

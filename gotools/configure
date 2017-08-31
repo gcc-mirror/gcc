@@ -558,6 +558,8 @@ LIBOBJS
 NET_LIBS
 NATIVE_FALSE
 NATIVE_TRUE
+GCC_FOR_TARGET
+GOC_FOR_TARGET
 GOCFLAGS
 GOC
 am__fastdepCC_FALSE
@@ -3781,6 +3783,11 @@ ac_cpp='$CPP $CPPFLAGS'
 ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
 ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
 ac_compiler_gnu=$ac_cv_c_compiler_gnu
+
+
+# These should be defined by the top-level configure.
+# Copy them into Makefile.
+
 
 
  if test "$host_alias" = "$target_alias"; then

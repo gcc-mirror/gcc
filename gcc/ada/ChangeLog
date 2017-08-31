@@ -1,3 +1,61 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/decl.c (validate_size): Use NARROWEST_INT_MODE
+	instead of GET_CLASS_NARROWEST_MODE (MODE_INT).
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/decl.c (check_ok_for_atomic_type): Use
+	is_a <scalar_int_mode>.
+	* gcc-interface/trans.c (Pragma_to_gnu): Likewise.
+	* gcc-interface/utils.c (gnat_type_for_mode): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use int_mode_for_size
+	instead of mode_for_size.
+	(gnat_to_gnu_subprog_type): Likewise.
+	* gcc-interface/utils.c (make_type_from_size): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/misc.c (fp_prec_to_size): Use opt_scalar_float_mode.
+	(fp_size_to_prec): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/utils.c (gnat_type_for_mode): Use is_a
+	<scalar_float_mode> instead of SCALAR_FLOAT_MODE_P.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/decl.c (validate_size): Update use of
+	GET_MODE_WIDER_MODE, forcing a wider mode to exist.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* gcc-interface/misc.c (fp_prec_to_size): Use new mode iterators.
+	(fp_size_to_prec): Likewise.
+
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* gcc-interface/trans.c (Pragma_to_gnu): Set argument to NULL.
+
 2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	* gcc-interface/trans.c: Include header files.

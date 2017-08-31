@@ -136,10 +136,10 @@ struct alg_hash_entry {
 #define NUM_MODE_INT \
   (MAX_MODE_INT - MIN_MODE_INT + 1)
 #define NUM_MODE_PARTIAL_INT \
-  (MIN_MODE_PARTIAL_INT == VOIDmode ? 0 \
+  (MIN_MODE_PARTIAL_INT == E_VOIDmode ? 0 \
    : MAX_MODE_PARTIAL_INT - MIN_MODE_PARTIAL_INT + 1)
 #define NUM_MODE_VECTOR_INT \
-  (MIN_MODE_VECTOR_INT == VOIDmode ? 0 \
+  (MIN_MODE_VECTOR_INT == E_VOIDmode ? 0 \
    : MAX_MODE_VECTOR_INT - MIN_MODE_VECTOR_INT + 1)
 
 #define NUM_MODE_IP_INT (NUM_MODE_INT + NUM_MODE_PARTIAL_INT)
@@ -728,6 +728,7 @@ extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      machine_mode, machine_mode, bool, rtx *);
 extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
 extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
+extern rtx expand_mult_highpart_adjust (scalar_int_mode, rtx, rtx, rtx,
+					rtx, int);
 
 #endif  // EXPMED_H

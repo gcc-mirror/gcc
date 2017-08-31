@@ -270,7 +270,7 @@ get_epiphany_condition_code (rtx comparison)
 {
   switch (GET_MODE (XEXP (comparison, 0)))
     {
-    case CCmode:
+    case E_CCmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ  : return 0;
@@ -286,28 +286,28 @@ get_epiphany_condition_code (rtx comparison)
 
 	default : gcc_unreachable ();
 	}
-    case CC_N_NEmode:
+    case E_CC_N_NEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 6;
 	case NE: return 7;
 	default: gcc_unreachable ();
 	}
-    case CC_C_LTUmode:
+    case E_CC_C_LTUmode:
       switch (GET_CODE (comparison))
 	{
 	case GEU: return 2;
 	case LTU: return 3;
 	default: gcc_unreachable ();
 	}
-    case CC_C_GTUmode:
+    case E_CC_C_GTUmode:
       switch (GET_CODE (comparison))
 	{
 	case LEU: return 3;
 	case GTU: return 2;
 	default: gcc_unreachable ();
 	}
-    case CC_FPmode:
+    case E_CC_FPmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 10;
@@ -316,14 +316,14 @@ get_epiphany_condition_code (rtx comparison)
 	case LE: return 13;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_EQmode:
+    case E_CC_FP_EQmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 0;
 	case NE: return 1;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_GTEmode:
+    case E_CC_FP_GTEmode:
       switch (GET_CODE (comparison))
 	{
 	case EQ: return 0;
@@ -334,14 +334,14 @@ get_epiphany_condition_code (rtx comparison)
 	case UNLT : return 7;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_ORDmode:
+    case E_CC_FP_ORDmode:
       switch (GET_CODE (comparison))
 	{
 	case ORDERED: return 9;
 	case UNORDERED: return 8;
 	default: gcc_unreachable ();
 	}
-    case CC_FP_UNEQmode:
+    case E_CC_FP_UNEQmode:
       switch (GET_CODE (comparison))
 	{
 	case UNEQ: return 9;
@@ -803,9 +803,9 @@ epiphany_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	{
 	/* There are a number of single-insn combiner patterns that use
 	   the flag side effects of arithmetic.  */
-	case CC_N_NEmode:
-	case CC_C_LTUmode:
-	case CC_C_GTUmode:
+	case E_CC_N_NEmode:
+	case E_CC_C_LTUmode:
+	case E_CC_C_GTUmode:
 	  return true;
 	default:
 	  return false;
@@ -2774,7 +2774,7 @@ epiphany_min_divisions_for_recip_mul (machine_mode mode)
 }
 
 static machine_mode
-epiphany_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
+epiphany_preferred_simd_mode (scalar_mode mode ATTRIBUTE_UNUSED)
 {
   return TARGET_VECT_DOUBLE ? DImode : SImode;
 }

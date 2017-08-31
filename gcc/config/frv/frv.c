@@ -3893,10 +3893,10 @@ condexec_memory_operand (rtx op, machine_mode mode)
     default:
       return FALSE;
 
-    case QImode:
-    case HImode:
-    case SImode:
-    case SFmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_SFmode:
       break;
     }
 
@@ -3935,16 +3935,16 @@ frv_emit_move (machine_mode mode, rtx dest, rtx src)
 
   switch (mode)
     {
-    case SImode:
+    case E_SImode:
       if (frv_emit_movsi (dest, src))
 	return;
       break;
 
-    case QImode:
-    case HImode:
-    case DImode:
-    case SFmode:
-    case DFmode:
+    case E_QImode:
+    case E_HImode:
+    case E_DImode:
+    case E_SFmode:
+    case E_DFmode:
       if (!reload_in_progress
 	  && !reload_completed
 	  && !register_operand (dest, mode)
@@ -4249,14 +4249,14 @@ output_move_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "ldsb%I1%U1 %M1,%0";
 
-		case HImode:
+		case E_HImode:
 		  return "ldsh%I1%U1 %M1,%0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "ld%I1%U1 %M1, %0";
 		}
 	    }
@@ -4323,14 +4323,14 @@ output_move_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "ldbf%I1%U1 %M1,%0";
 
-		case HImode:
+		case E_HImode:
 		  return "ldhf%I1%U1 %M1,%0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "ldf%I1%U1 %M1, %0";
 		}
 	    }
@@ -4368,14 +4368,14 @@ output_move_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "stb%I0%U0 %1, %M0";
 
-		case HImode:
+		case E_HImode:
 		  return "sth%I0%U0 %1, %M0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "st%I0%U0 %1, %M0";
 		}
 	    }
@@ -4387,14 +4387,14 @@ output_move_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "stbf%I0%U0 %1, %M0";
 
-		case HImode:
+		case E_HImode:
 		  return "sthf%I0%U0 %1, %M0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "stf%I0%U0 %1, %M0";
 		}
 	    }
@@ -4407,14 +4407,14 @@ output_move_single (rtx operands[], rtx insn)
 	    default:
 	      break;
 
-	    case QImode:
+	    case E_QImode:
 	      return "stb%I0%U0 %., %M0";
 
-	    case HImode:
+	    case E_HImode:
 	      return "sth%I0%U0 %., %M0";
 
-	    case SImode:
-	    case SFmode:
+	    case E_SImode:
+	    case E_SFmode:
 	      return "st%I0%U0 %., %M0";
 	    }
 	}
@@ -4591,14 +4591,14 @@ output_condmove_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "cldsb%I3%U3 %M3, %2, %1, %e0";
 
-		case HImode:
+		case E_HImode:
 		  return "cldsh%I3%U3 %M3, %2, %1, %e0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "cld%I3%U3 %M3, %2, %1, %e0";
 		}
 	    }
@@ -4652,14 +4652,14 @@ output_condmove_single (rtx operands[], rtx insn)
 		default:
 		  break;
 
-		case QImode:
+		case E_QImode:
 		  return "cstb%I2%U2 %3, %M2, %1, %e0";
 
-		case HImode:
+		case E_HImode:
 		  return "csth%I2%U2 %3, %M2, %1, %e0";
 
-		case SImode:
-		case SFmode:
+		case E_SImode:
+		case E_SFmode:
 		  return "cst%I2%U2 %3, %M2, %1, %e0";
 		}
 	    }
@@ -4676,14 +4676,14 @@ output_condmove_single (rtx operands[], rtx insn)
 	    default:
 	      break;
 
-	    case QImode:
+	    case E_QImode:
 	      return "cstb%I2%U2 %., %M2, %1, %e0";
 
-	    case HImode:
+	    case E_HImode:
 	      return "csth%I2%U2 %., %M2, %1, %e0";
 
-	    case SImode:
-	    case SFmode:
+	    case E_SImode:
+	    case E_SFmode:
 	      return "cst%I2%U2 %., %M2, %1, %e0";
 	    }
 	}
@@ -6579,15 +6579,15 @@ frv_hard_regno_mode_ok (int regno, machine_mode mode)
 
   switch (mode)
     {
-    case CCmode:
-    case CC_UNSmode:
-    case CC_NZmode:
+    case E_CCmode:
+    case E_CC_UNSmode:
+    case E_CC_NZmode:
       return ICC_P (regno) || GPR_P (regno);
 
-    case CC_CCRmode:
+    case E_CC_CCRmode:
       return CR_P (regno) || GPR_P (regno);
 
-    case CC_FPmode:
+    case E_CC_FPmode:
       return FCC_P (regno) || GPR_P (regno);
 
     default:
@@ -8619,13 +8619,13 @@ frv_matching_accg_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case V4SImode:
+    case E_V4SImode:
       return V4QImode;
 
-    case DImode:
+    case E_DImode:
       return HImode;
 
-    case SImode:
+    case E_SImode:
       return QImode;
 
     default:

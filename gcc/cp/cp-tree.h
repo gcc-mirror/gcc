@@ -1220,8 +1220,9 @@ struct GTY (()) tree_trait_expr {
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
-#define LAMBDA_FUNCTION_P(FNDECL) \
-  (DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR \
+#define LAMBDA_FUNCTION_P(FNDECL)			\
+  (DECL_DECLARES_FUNCTION_P (FNDECL)			\
+   && DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR	\
    && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
 
 enum cp_lambda_default_capture_mode_type {
@@ -1257,11 +1258,6 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
-/* The return type in the expression.
- * NULL_TREE indicates that none was specified.  */
-#define LAMBDA_EXPR_RETURN_TYPE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->return_type)
-
 /* The source location of the lambda.  */
 #define LAMBDA_EXPR_LOCATION(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
@@ -1280,20 +1276,17 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
-/* The closure type of the lambda.  Note that the TREE_TYPE of a
-   LAMBDA_EXPR is always NULL_TREE, because we need to instantiate the
-   LAMBDA_EXPR in order to instantiate the type.  */
+/* The closure type of the lambda, which is also the type of the
+   LAMBDA_EXPR.  */
 #define LAMBDA_EXPR_CLOSURE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->closure)
+  (TREE_TYPE (LAMBDA_EXPR_CHECK (NODE)))
 
 struct GTY (()) tree_lambda_expr
 {
   struct tree_typed typed;
   tree capture_list;
   tree this_capture;
-  tree return_type;
   tree extra_scope;
-  tree closure;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode;
@@ -5121,9 +5114,10 @@ enum unification_kind_t {
 // An RAII class used to create a new pointer map for local
 // specializations. When the stack goes out of scope, the
 // previous pointer map is restored.
+enum lss_policy { lss_blank, lss_copy };
 struct local_specialization_stack
 {
-  local_specialization_stack ();
+  local_specialization_stack (lss_policy = lss_blank);
   ~local_specialization_stack ();
 
   hash_map<tree, tree> *saved;
@@ -6469,7 +6463,7 @@ extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
-extern tree tsubst_default_argument		(tree, tree, tree,
+extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
@@ -6839,6 +6833,11 @@ extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
+extern void start_lambda_scope			(tree);
+extern void record_lambda_scope			(tree);
+extern void finish_lambda_scope			(void);
+extern tree start_lambda_function		(tree fn, tree lambda_expr);
+extern void finish_lambda_function		(tree body);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
@@ -7329,11 +7328,13 @@ extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
 extern tree ensure_literal_type_for_constexpr_object (tree);
 extern bool potential_constant_expression       (tree);
-extern bool potential_nondependent_constant_expression (tree);
-extern bool potential_nondependent_static_init_expression (tree);
-extern bool potential_static_init_expression    (tree);
+extern bool is_constant_expression (tree);
+extern bool is_nondependent_constant_expression (tree);
+extern bool is_nondependent_static_init_expression (tree);
+extern bool is_static_init_expression    (tree);
 extern bool potential_rvalue_constant_expression (tree);
 extern bool require_potential_constant_expression (tree);
+extern bool require_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);

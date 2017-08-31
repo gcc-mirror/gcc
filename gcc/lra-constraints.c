@@ -671,8 +671,11 @@ int
 lra_constraint_offset (int regno, machine_mode mode)
 {
   lra_assert (regno < FIRST_PSEUDO_REGISTER);
-  if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (mode) > UNITS_PER_WORD
-      && SCALAR_INT_MODE_P (mode))
+
+  scalar_int_mode int_mode;
+  if (WORDS_BIG_ENDIAN
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_SIZE (int_mode) > UNITS_PER_WORD)
     return hard_regno_nregs[regno][mode] - 1;
   return 0;
 }
@@ -925,7 +928,7 @@ match_reload (signed char out, signed char *ins, signed char *outs,
   push_to_sequence (*before);
   if (inmode != outmode)
     {
-      if (GET_MODE_SIZE (inmode) > GET_MODE_SIZE (outmode))
+      if (partial_subreg_p (outmode, inmode))
 	{
 	  reg = new_in_reg
 	    = lra_create_new_reg_with_unique_value (inmode, in_rtx,
@@ -1576,8 +1579,7 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 	      bitmap_set_bit (&lra_subreg_reload_pseudos, REGNO (new_reg));
 
 	      insert_before = (type != OP_OUT
-			       || GET_MODE_SIZE (innermode)
-				    > GET_MODE_SIZE (mode));
+			       || partial_subreg_p (mode, innermode));
 	      insert_after = type != OP_IN;
 	      insert_move_for_subreg (insert_before ? &before : NULL,
 				      insert_after ? &after : NULL,
@@ -3936,8 +3938,7 @@ curr_insn_transform (bool check_only_p)
       lra_assert (out >= 0 && in >= 0
 		  && curr_static_id->operand[out].type == OP_OUT
 		  && curr_static_id->operand[in].type == OP_IN);
-      rld = (GET_MODE_SIZE (GET_MODE (dest)) <= GET_MODE_SIZE (GET_MODE (src))
-	     ? dest : src);
+      rld = partial_subreg_p (GET_MODE (src), GET_MODE (dest)) ? src : dest;
       rld_mode = GET_MODE (rld);
 #ifdef SECONDARY_MEMORY_NEEDED_MODE
       sec_mode = SECONDARY_MEMORY_NEEDED_MODE (rld_mode);
@@ -3947,7 +3948,7 @@ curr_insn_transform (bool check_only_p)
       new_reg = lra_create_new_reg (sec_mode, NULL_RTX,
 				    NO_REGS, "secondary");
       /* If the mode is changed, it should be wider.  */
-      lra_assert (GET_MODE_SIZE (sec_mode) >= GET_MODE_SIZE (rld_mode));
+      lra_assert (!partial_subreg_p (sec_mode, rld_mode));
       if (sec_mode != rld_mode)
         {
 	  /* If the target says specifically to use another mode for

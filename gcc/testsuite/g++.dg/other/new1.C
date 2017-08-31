@@ -10,5 +10,5 @@ struct A
 
 void foo()
 {
-  new A;	// { dg-error "default argument" }
+  new A;
 }

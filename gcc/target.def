@@ -1859,7 +1859,7 @@ mode @var{mode}.  The default is\n\
 equal to @code{word_mode}, because the vectorizer can do some\n\
 transformations even in absence of specialized @acronym{SIMD} hardware.",
  machine_mode,
- (machine_mode mode),
+ (scalar_mode mode),
  default_preferred_simd_mode)
 
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
@@ -2009,7 +2009,7 @@ char *, (void), hook_charptr_void_null)
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_eh_return_filter_mode)
 
 /* Return machine mode for libgcc expanded cmp instructions.  */
@@ -2019,7 +2019,7 @@ DEFHOOK
 of compare instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_cmp_return_mode)
 
 /* Return machine mode for libgcc expanded shift instructions.  */
@@ -2029,7 +2029,7 @@ DEFHOOK
 of shift instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_shift_count_mode)
 
 /* Return machine mode to be used for _Unwind_Word type.  */
@@ -2037,7 +2037,7 @@ DEFHOOK
 (unwind_word_mode,
  "Return machine mode to be used for @code{_Unwind_Word} type.\n\
 The default is to use @code{word_mode}.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_unwind_word_mode)
 
 /* Given two decls, merge their attributes and return the result.  */
@@ -3156,7 +3156,7 @@ extension.\n\
 In order to enforce the representation of @code{mode},\n\
 @code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
- int, (machine_mode mode, machine_mode rep_mode),
+ int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
@@ -3165,7 +3165,7 @@ DEFHOOK
  "Define this to return nonzero if the port can handle pointers\n\
 with machine mode @var{mode}.  The default version of this\n\
 hook returns true for both @code{ptr_mode} and @code{Pmode}.",
- bool, (machine_mode mode),
+ bool, (scalar_int_mode mode),
  default_valid_pointer_mode)
 
 /* Disambiguate with errno.  */
@@ -3190,7 +3190,7 @@ DEFHOOK
  "Define this to return the machine mode to use for pointers to\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{ptr_mode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
 /* MODE to use for an address in another address space.  */
@@ -3199,7 +3199,7 @@ DEFHOOK
  "Define this to return the machine mode to use for addresses in\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{Pmode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE")))
@@ -3213,7 +3213,7 @@ except that it includes explicit named address space support.  The default\n\
 version of this hook returns true for the modes returned by either the\n\
 @code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}\n\
 target hooks for the given address space.",
- bool, (machine_mode mode, addr_space_t as),
+ bool, (scalar_int_mode mode, addr_space_t as),
  default_addr_space_valid_pointer_mode)
 
 /* True if an address is a valid memory address to a given named address
@@ -3315,7 +3315,7 @@ The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
 code in @file{optabs.c}.",
- bool, (machine_mode mode),
+ bool, (scalar_mode mode),
  default_scalar_mode_supported_p)
 
 /* Similarly for vector modes.  "Supported" here is less strict.  At
@@ -3378,27 +3378,27 @@ floating-point mode @var{mode}, which is known to pass \n\
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
 hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
 @code{XFmode} and @code{TFmode}, if such modes exist.",
- bool, (machine_mode mode),
+ bool, (scalar_float_mode mode),
  default_libgcc_floating_mode_supported_p)
 
 DEFHOOK
 (floatn_mode,
  "Define this to return the machine mode to use for the type \n\
 @code{_Float@var{n}}, if @var{extended} is false, or the type \n\
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type \n\
-is not supported, return @code{VOIDmode}.  The default version of this \n\
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for \n\
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not\n\
+supported, return @code{opt_scalar_float_mode ()}.  The default version of\n\
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for\n\
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for \n\
 @code{_Float128}, if those modes exist and satisfy the requirements for \n\
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and \n\
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it \n\
 returns the first of @code{XFmode} and @code{TFmode} that exists and \n\
 satisfies the same requirements; for other types, it returns \n\
-@code{VOIDmode}.  The hook is only called for values of @var{n} and \n\
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that \n\
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or \n\
-greater than 128 and a multiple of 32.",
- machine_mode, (int n, bool extended),
+@code{opt_scalar_float_mode ()}.  The hook is only called for values\n\
+of @var{n} and @var{extended} that are valid according to\n\
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,\n\
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.",
+ opt_scalar_float_mode, (int n, bool extended),
  default_floatn_mode)
 
 /* Compute cost of moving data from a register of class FROM to one of
@@ -5093,7 +5093,7 @@ DEFHOOK
   for the cstore being performed.  Not definiting this hook is the same\
   as accepting the mode encoded into operand 0 of the cstore expander\
   patterns.",
-  machine_mode, (enum insn_code icode),
+  scalar_int_mode, (enum insn_code icode),
   default_cstore_mode)
 
 /* This target hook allows the backend to compute the register pressure

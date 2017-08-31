@@ -1,5 +1,5 @@
 /* PR target/59794 */
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -mno-sse" } */
 /* { dg-skip-if "no SSE vector" { *-*-mingw* } } */
 

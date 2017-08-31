@@ -1339,7 +1339,6 @@ static bool
 vector_mode_valid_p (machine_mode mode)
 {
   enum mode_class mclass = GET_MODE_CLASS (mode);
-  machine_mode innermode;
 
   /* Doh!  What's going on?  */
   if (mclass != MODE_VECTOR_INT
@@ -1354,14 +1353,12 @@ vector_mode_valid_p (machine_mode mode)
   if (targetm.vector_mode_supported_p (mode))
     return true;
 
-  innermode = GET_MODE_INNER (mode);
-
   /* We should probably return 1 if requesting V4DI and we have no DI,
      but we have V2DI, but this is probably very unlikely.  */
 
   /* If we have support for the inner mode, we can safely emulate it.
      We may not have V2DI, but me can emulate with a pair of DIs.  */
-  return targetm.scalar_mode_supported_p (innermode);
+  return targetm.scalar_mode_supported_p (GET_MODE_INNER (mode));
 }
 
 
@@ -1437,7 +1434,8 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	case MODE_UFRACT:
 	case MODE_ACCUM:
 	case MODE_UACCUM:
-	  valid_mode = targetm.scalar_mode_supported_p (mode);
+	  valid_mode
+	    = targetm.scalar_mode_supported_p (as_a <scalar_mode> (mode));
 	  break;
 
 	case MODE_COMPLEX_INT:
@@ -1469,10 +1467,12 @@ handle_mode_attribute (tree *node, tree name, tree args,
 
       if (POINTER_TYPE_P (type))
 	{
+	  scalar_int_mode addr_mode;
 	  addr_space_t as = TYPE_ADDR_SPACE (TREE_TYPE (type));
 	  tree (*fn)(tree, machine_mode, bool);
 
-	  if (!targetm.addr_space.valid_pointer_mode (mode, as))
+	  if (!is_a <scalar_int_mode> (mode, &addr_mode)
+	      || !targetm.addr_space.valid_pointer_mode (addr_mode, as))
 	    {
 	      error ("invalid pointer mode %qs", p);
 	      return NULL_TREE;
@@ -1482,7 +1482,7 @@ handle_mode_attribute (tree *node, tree name, tree args,
 	    fn = build_pointer_type_for_mode;
 	  else
 	    fn = build_reference_type_for_mode;
-	  typefm = fn (TREE_TYPE (type), mode, false);
+	  typefm = fn (TREE_TYPE (type), addr_mode, false);
 	}
       else
 	{

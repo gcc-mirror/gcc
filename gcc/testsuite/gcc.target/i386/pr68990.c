@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O3 -march=x86-64" } */
 /* { dg-final { scan-assembler-not "cmpl\[ \t]+(\[%a-z]+), \\1" } } */
 

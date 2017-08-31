@@ -1,3 +1,12 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-typeck.c (build_binary_op): Use SCALAR_TYPE_MODE.
+	(c_common_type): Likewise.  Use as_a <scalar_mode> when setting
+	m1 and m2 to the signed equivalent of a fixed-point
+	SCALAR_TYPE_MODE.
+
 2017-08-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-tree.h (c_expr::get_location) Use EXPR_HAS_LOCATION rather

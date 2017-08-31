@@ -1281,11 +1281,15 @@ sdbout_parms (tree parms)
 		   the parm with the variable's declared type, and adjust
 		   the address if the least significant bytes (which we are
 		   using) are not the first ones.  */
+		scalar_mode from_mode, to_mode;
 		if (BYTES_BIG_ENDIAN
-		    && TREE_TYPE (parms) != DECL_ARG_TYPE (parms))
-		  current_sym_value +=
-		    (GET_MODE_SIZE (TYPE_MODE (DECL_ARG_TYPE (parms)))
-		     - GET_MODE_SIZE (GET_MODE (DECL_RTL (parms))));
+		    && TREE_TYPE (parms) != DECL_ARG_TYPE (parms)
+		    && is_a <scalar_mode> (TYPE_MODE (DECL_ARG_TYPE (parms)),
+					   &from_mode)
+		    && is_a <scalar_mode> (GET_MODE (DECL_RTL (parms)),
+					   &to_mode))
+		  current_sym_value += (GET_MODE_SIZE (from_mode)
+					- GET_MODE_SIZE (to_mode));
 
 		if (MEM_P (DECL_RTL (parms))
 		    && GET_CODE (XEXP (DECL_RTL (parms), 0)) == PLUS

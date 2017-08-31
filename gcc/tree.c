@@ -2132,8 +2132,9 @@ build_minus_one_cst (tree type)
     case FIXED_POINT_TYPE:
       /* We can only generate 1 for accum types.  */
       gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
-      return build_fixed (type, fixed_from_double_int (double_int_minus_one,
-						       TYPE_MODE (type)));
+      return build_fixed (type,
+			  fixed_from_double_int (double_int_minus_one,
+						 SCALAR_TYPE_MODE (type)));
 
     case VECTOR_TYPE:
       {
@@ -8461,7 +8462,7 @@ retry:
   /* Third, unsigned integers with top bit set never fit signed types.  */
   if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
     {
-      int prec = GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (c))) - 1;
+      int prec = GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (c))) - 1;
       if (prec < TYPE_PRECISION (TREE_TYPE (c)))
 	{
 	  /* When a tree_cst is converted to a wide-int, the precision
@@ -9689,8 +9690,8 @@ build_common_tree_nodes (bool signed_char)
     {
       int n = floatn_nx_types[i].n;
       bool extended = floatn_nx_types[i].extended;
-      machine_mode mode = targetm.floatn_mode (n, extended);
-      if (mode == VOIDmode)
+      scalar_float_mode mode;
+      if (!targetm.floatn_mode (n, extended).exists (&mode))
 	continue;
       int precision = GET_MODE_PRECISION (mode);
       /* Work around the rs6000 KFmode having precision 113 not
@@ -10201,6 +10202,7 @@ tree
 build_vector_type_for_mode (tree innertype, machine_mode mode)
 {
   int nunits;
+  unsigned int bitsize;
 
   switch (GET_MODE_CLASS (mode))
     {
@@ -10215,11 +10217,9 @@ build_vector_type_for_mode (tree innertype, machine_mode mode)
 
     case MODE_INT:
       /* Check that there are no leftover bits.  */
-      gcc_assert (GET_MODE_BITSIZE (mode)
-		  % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
-
-      nunits = GET_MODE_BITSIZE (mode)
-	       / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
+      bitsize = GET_MODE_BITSIZE (as_a <scalar_int_mode> (mode));
+      gcc_assert (bitsize % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
+      nunits = bitsize / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
       break;
 
     default:
@@ -12634,15 +12634,16 @@ vector_type_mode (const_tree t)
       && (!targetm.vector_mode_supported_p (mode)
 	  || !have_regs_of_mode[mode]))
     {
-      machine_mode innermode = TREE_TYPE (t)->type_common.mode;
+      scalar_int_mode innermode;
 
       /* For integers, try mapping it to a same-sized scalar mode.  */
-      if (GET_MODE_CLASS (innermode) == MODE_INT)
+      if (is_int_mode (TREE_TYPE (t)->type_common.mode, &innermode))
 	{
-	  mode = mode_for_size (TYPE_VECTOR_SUBPARTS (t)
-				* GET_MODE_BITSIZE (innermode), MODE_INT, 0);
-
-	  if (mode != VOIDmode && have_regs_of_mode[mode])
+	  unsigned int size = (TYPE_VECTOR_SUBPARTS (t)
+			       * GET_MODE_BITSIZE (innermode));
+	  scalar_int_mode mode;
+	  if (int_mode_for_size (size, 0).exists (&mode)
+	      && have_regs_of_mode[mode])
 	    return mode;
 	}
 

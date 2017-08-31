@@ -422,6 +422,28 @@ class VecPrinter:
 
 ######################################################################
 
+class MachineModePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        name = str(self.gdbval['m_mode'])
+        return name[2:] if name.startswith('E_') else name
+
+######################################################################
+
+class OptMachineModePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        name = str(self.gdbval['m_mode'])
+	if name == 'E_VOIDmode':
+	    return '<None>'
+        return name[2:] if name.startswith('E_') else name
+
+######################################################################
+
 # TODO:
 #   * hashtab
 #   * location_t
@@ -517,6 +539,21 @@ def build_pretty_printer():
     pp.add_printer_for_regex(r'vec<(\S+), (\S+), (\S+)> \*',
                              'vec',
                              VecPrinter)
+
+    pp.add_printer_for_regex(r'opt_mode<(\S+)>',
+                             'opt_mode', OptMachineModePrinter)
+    pp.add_printer_for_types(['opt_scalar_int_mode',
+                              'opt_scalar_float_mode',
+                              'opt_scalar_mode'],
+                             'opt_mode', OptMachineModePrinter)
+    pp.add_printer_for_regex(r'pod_mode<(\S+)>',
+                             'pod_mode', MachineModePrinter)
+    pp.add_printer_for_types(['scalar_int_mode_pod',
+                              'scalar_mode_pod'],
+                             'pod_mode', MachineModePrinter)
+    for mode in ('scalar_mode', 'scalar_int_mode', 'scalar_float_mode',
+                 'complex_mode'):
+        pp.add_printer_for_types([mode], mode, MachineModePrinter)
 
     return pp
 

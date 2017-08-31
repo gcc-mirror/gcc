@@ -153,16 +153,16 @@
 {
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCmode:
+    case E_CCmode:
       return ordered_comparison_operator (op, mode);
-    case CCNZmode:
+    case E_CCNZmode:
       return visium_nz_comparison_operator (op, mode);
-    case CCCmode:
+    case E_CCCmode:
       return visium_c_comparison_operator (op, mode);
-    case CCVmode:
+    case E_CCVmode:
       return visium_v_comparison_operator (op, mode);
-    case CCFPmode:
-    case CCFPEmode:
+    case E_CCFPmode:
+    case E_CCFPEmode:
       return visium_fp_comparison_operator (op, mode);
     default:
       return false;

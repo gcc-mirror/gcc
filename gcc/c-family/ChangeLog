@@ -1,3 +1,66 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-attribs.c (vector_mode_valid_p) Fold GET_MODE_INNER call
+	into scalar_mode_supported_p call.
+	(handle_mode_attribute): Update call to scalar_mode_supported_p.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_fixed_point_type_for_size): Use opt_scalar_mode
+	for the mode iterator.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-lex.c (interpret_fixed): Use SCALAR_TYPE_MODE.
+	* c-common.c (c_build_vec_perm_expr): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_type_for_mode): Use as_a <scalar_int_mode>.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-attribs.c (handle_mode_attribute): Check for a scalar_int_mode
+	before calling targetm.addr_space.valid_pointer_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_fixed_point_type_for_size): Use new mode
+	iterators.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (mode_has_fma): Prefix mode names with E_ in
+	case statements.
+
+2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* c-common.c (parse_optimize_options): Add argument to function
+	call.
+	* c-pragma.c (handle_pragma_diagnostic): Likewise.
+
 2017-08-24  David Malcolm  <dmalcolm@redhat.com>
 
 	* c-lex.c (interpret_float): Use token location

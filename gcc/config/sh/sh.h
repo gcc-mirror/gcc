@@ -689,7 +689,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* The mode that should be generally used to store a register by
    itself in the stack, or to load it back.  */
 #define REGISTER_NATURAL_MODE(REGNO) \
-  (FP_REGISTER_P (REGNO) ? SFmode : XD_REGISTER_P (REGNO) ? DFmode : SImode)
+  (FP_REGISTER_P (REGNO) ? E_SFmode \
+   : XD_REGISTER_P (REGNO) ? E_DFmode : E_SImode)
 
 
 #define FIRST_PSEUDO_REGISTER 156
@@ -1792,13 +1793,13 @@ extern bool current_function_interrupt;
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)			\
   switch (GET_MODE (BODY))						\
     {									\
-    case SImode:							\
+    case E_SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case HImode:							\
+    case E_HImode:							\
       asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case QImode:							\
+    case E_QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
     default:								\

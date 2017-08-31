@@ -1282,11 +1282,11 @@ mcore_output_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
 	  else
 	    switch (GET_MODE (src))		/* r-m */
 	      {
-	      case SImode:
+	      case E_SImode:
 		return "ldw\t%0,%1";
-	      case HImode:
+	      case E_HImode:
 		return "ld.h\t%0,%1";
-	      case QImode:
+	      case E_QImode:
 		return "ld.b\t%0,%1";
 	      default:
 		gcc_unreachable ();
@@ -1313,11 +1313,11 @@ mcore_output_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[],
   else if (GET_CODE (dst) == MEM)               /* m-r */
     switch (GET_MODE (dst))
       {
-      case SImode:
+      case E_SImode:
 	return "stw\t%1,%0";
-      case HImode:
+      case E_HImode:
 	return "st.h\t%1,%0";
-      case QImode:
+      case E_QImode:
 	return "st.b\t%1,%0";
       default:
 	gcc_unreachable ();

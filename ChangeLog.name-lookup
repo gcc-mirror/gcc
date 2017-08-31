@@ -1,3 +1,7 @@
+2017-08-31  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk r251560.
+
 2017-08-29  Nathan Sidwell  <nathan@acm.org>
 
 	Anonymous namespace has NULL name

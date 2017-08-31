@@ -196,15 +196,15 @@
 	    {								\
 	      switch (GET_MODE(body))					\
 		{							\
-		case QImode:						\
+		case E_QImode:						\
 		  asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d)/2\n",	\
 			       VALUE, REL);				\
 		  break;						\
-		case HImode: /* TBH */					\
+		case E_HImode: /* TBH */					\
 		  asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d)/2\n",	\
 			       VALUE, REL);				\
 		  break;						\
-		case SImode:						\
+		case E_SImode:						\
 		  asm_fprintf (STREAM, "\t.word\t%LL%d-%LL%d\n",	\
 			       VALUE, REL);				\
 		  break;						\
@@ -219,15 +219,15 @@
 	{								\
 	  switch (GET_MODE(body))					\
 	    {								\
-	    case QImode: /* TBB */					\
+	    case E_QImode: /* TBB */					\
 	      asm_fprintf (STREAM, "\t.byte\t(%LL%d-%LL%d)/2\n",	\
 			   VALUE, REL);					\
 	      break;							\
-	    case HImode: /* TBH */					\
+	    case E_HImode: /* TBH */					\
 	      asm_fprintf (STREAM, "\t.2byte\t(%LL%d-%LL%d)/2\n",	\
 			   VALUE, REL);					\
 	      break;							\
-	    case SImode:						\
+	    case E_SImode:						\
 	      if (flag_pic)						\
 		asm_fprintf (STREAM, "\t.word\t%LL%d+1-%LL%d\n", VALUE, REL); \
 	      else							\

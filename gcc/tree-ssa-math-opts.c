@@ -690,6 +690,8 @@ pass_cse_reciprocals::execute (function *fun)
 			  gimple_set_vdef (stmt2, gimple_vdef (call));
 			  SSA_NAME_DEF_STMT (gimple_vdef (stmt2)) = stmt2;
 			}
+		      gimple_call_set_nothrow (stmt2,
+					       gimple_call_nothrow_p (call));
 		      gimple_set_vuse (stmt2, gimple_vuse (call));
 		      gimple_stmt_iterator gsi2 = gsi_for_stmt (call);
 		      gsi_replace (&gsi2, stmt2, true);
@@ -3254,8 +3256,8 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
   if (!is_widening_mult_p (stmt, &type1, &rhs1, &type2, &rhs2))
     return false;
 
-  to_mode = TYPE_MODE (type);
-  from_mode = TYPE_MODE (type1);
+  to_mode = SCALAR_INT_TYPE_MODE (type);
+  from_mode = SCALAR_INT_TYPE_MODE (type1);
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
 
@@ -3281,8 +3283,8 @@ convert_mult_to_widen (gimple *stmt, gimple_stmt_iterator *gsi)
 	      || (TYPE_UNSIGNED (type2)
 		  && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
 	    {
-	      from_mode = GET_MODE_WIDER_MODE (from_mode);
-	      if (GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
+	      if (!GET_MODE_WIDER_MODE (from_mode).exists (&from_mode)
+		  || GET_MODE_SIZE (to_mode) <= GET_MODE_SIZE (from_mode))
 		return false;
 	    }
 
@@ -3348,7 +3350,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   optab this_optab;
   enum tree_code wmult_code;
   enum insn_code handler;
-  machine_mode to_mode, from_mode, actual_mode;
+  scalar_mode to_mode, from_mode;
+  machine_mode actual_mode;
   location_t loc = gimple_location (stmt);
   int actual_precision;
   bool from_unsigned1, from_unsigned2;
@@ -3444,8 +3447,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
   else
     return false;
 
-  to_mode = TYPE_MODE (type);
-  from_mode = TYPE_MODE (type1);
+  to_mode = SCALAR_TYPE_MODE (type);
+  from_mode = SCALAR_TYPE_MODE (type1);
   from_unsigned1 = TYPE_UNSIGNED (type1);
   from_unsigned2 = TYPE_UNSIGNED (type2);
   optype = type1;
@@ -3463,8 +3466,8 @@ convert_plusminus_to_widen (gimple_stmt_iterator *gsi, gimple *stmt,
 	  || (from_unsigned2
 	      && TYPE_PRECISION (type2) == GET_MODE_PRECISION (from_mode)))
 	{
-	  from_mode = GET_MODE_WIDER_MODE (from_mode);
-	  if (GET_MODE_SIZE (from_mode) >= GET_MODE_SIZE (to_mode))
+	  if (!GET_MODE_WIDER_MODE (from_mode).exists (&from_mode)
+	      || GET_MODE_SIZE (from_mode) >= GET_MODE_SIZE (to_mode))
 	    return false;
 	}
 
@@ -3944,9 +3947,8 @@ target_supports_divmod_p (optab divmod_optab, optab div_optab, machine_mode mode
     {
       /* If optab_handler exists for div_optab, perhaps in a wider mode,
 	 we don't want to use the libfunc even if it exists for given mode.  */ 
-      for (machine_mode div_mode = mode;
-	   div_mode != VOIDmode;
-	   div_mode = GET_MODE_WIDER_MODE (div_mode))
+      machine_mode div_mode;
+      FOR_EACH_MODE_FROM (div_mode, mode)
 	if (optab_handler (div_optab, div_mode) != CODE_FOR_nothing)
 	  return false;
 
@@ -4100,6 +4102,8 @@ convert_to_divmod (gassign *stmt)
   tree res = make_temp_ssa_name (build_complex_type (TREE_TYPE (op1)),
 				 call_stmt, "divmod_tmp");
   gimple_call_set_lhs (call_stmt, res);
+  /* We rejected throwing statements above.  */
+  gimple_call_set_nothrow (call_stmt, true);
 
   /* Insert the call before top_stmt.  */
   gimple_stmt_iterator top_stmt_gsi = gsi_for_stmt (top_stmt);

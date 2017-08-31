@@ -124,7 +124,8 @@ tree
 ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 {
   tree type = TREE_TYPE (t);
-  const unsigned int bitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  scalar_mode mode = SCALAR_TYPE_MODE (type);
+  const unsigned int bitsize = GET_MODE_BITSIZE (mode);
   if (bitsize <= POINTER_SIZE)
     switch (TREE_CODE (type))
       {
@@ -161,10 +162,8 @@ ubsan_encode_value (tree t, enum ubsan_encode_value_phase phase)
 	    }
 	  if (phase == UBSAN_ENCODE_VALUE_RTL)
 	    {
-	      rtx mem
-		= assign_stack_temp_for_type (TYPE_MODE (type),
-					      GET_MODE_SIZE (TYPE_MODE (type)),
-					      type);
+	      rtx mem = assign_stack_temp_for_type (mode, GET_MODE_SIZE (mode),
+						    type);
 	      SET_DECL_RTL (var, mem);
 	      expand_assignment (var, t, false);
 	      return build_fold_addr_expr (var);
@@ -1659,7 +1658,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
 	   && TREE_TYPE (type) != NULL_TREE
 	   && TREE_CODE (TREE_TYPE (type)) == INTEGER_TYPE
 	   && (TYPE_PRECISION (TREE_TYPE (type))
-	       < GET_MODE_PRECISION (TYPE_MODE (type))))
+	       < GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (type))))
     {
       minv = TYPE_MIN_VALUE (TREE_TYPE (type));
       maxv = TYPE_MAX_VALUE (TREE_TYPE (type));
@@ -1667,7 +1666,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   else
     return;
 
-  int modebitsize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  int modebitsize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
   HOST_WIDE_INT bitsize, bitpos;
   tree offset;
   machine_mode mode;
@@ -1679,7 +1678,7 @@ instrument_bool_enum_load (gimple_stmt_iterator *gsi)
   if ((VAR_P (base) && DECL_HARD_REGISTER (base))
       || (bitpos % modebitsize) != 0
       || bitsize != modebitsize
-      || GET_MODE_BITSIZE (TYPE_MODE (utype)) != modebitsize
+      || GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (utype)) != modebitsize
       || TREE_CODE (gimple_assign_lhs (stmt)) != SSA_NAME)
     return;
 

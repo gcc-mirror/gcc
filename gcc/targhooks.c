@@ -216,25 +216,25 @@ default_pretend_outgoing_varargs_named (cumulative_args_t ca ATTRIBUTE_UNUSED)
 	  != default_setup_incoming_varargs);
 }
 
-machine_mode
+scalar_int_mode
 default_eh_return_filter_mode (void)
 {
   return targetm.unwind_word_mode ();
 }
 
-machine_mode
+scalar_int_mode
 default_libgcc_cmp_return_mode (void)
 {
   return word_mode;
 }
 
-machine_mode
+scalar_int_mode
 default_libgcc_shift_count_mode (void)
 {
   return word_mode;
 }
 
-machine_mode
+scalar_int_mode
 default_unwind_word_mode (void)
 {
   return word_mode;
@@ -259,8 +259,7 @@ default_min_divisions_for_recip_mul (machine_mode mode ATTRIBUTE_UNUSED)
 /* The default implementation of TARGET_MODE_REP_EXTENDED.  */
 
 int
-default_mode_rep_extended (machine_mode mode ATTRIBUTE_UNUSED,
-			   machine_mode mode_rep ATTRIBUTE_UNUSED)
+default_mode_rep_extended (scalar_int_mode, scalar_int_mode)
 {
   return UNKNOWN;
 }
@@ -396,7 +395,7 @@ default_mangle_assembler_name (const char *name ATTRIBUTE_UNUSED)
    supported by optabs.c.  */
 
 bool
-default_scalar_mode_supported_p (machine_mode mode)
+default_scalar_mode_supported_p (scalar_mode mode)
 {
   int precision = GET_MODE_PRECISION (mode);
 
@@ -443,21 +442,21 @@ default_scalar_mode_supported_p (machine_mode mode)
    be supported as a scalar mode).  */
 
 bool
-default_libgcc_floating_mode_supported_p (machine_mode mode)
+default_libgcc_floating_mode_supported_p (scalar_float_mode mode)
 {
   switch (mode)
     {
 #ifdef HAVE_SFmode
-    case SFmode:
+    case E_SFmode:
 #endif
 #ifdef HAVE_DFmode
-    case DFmode:
+    case E_DFmode:
 #endif
 #ifdef HAVE_XFmode
-    case XFmode:
+    case E_XFmode:
 #endif
 #ifdef HAVE_TFmode
-    case TFmode:
+    case E_TFmode:
 #endif
       return true;
 
@@ -469,12 +468,13 @@ default_libgcc_floating_mode_supported_p (machine_mode mode)
 /* Return the machine mode to use for the type _FloatN, if EXTENDED is
    false, or _FloatNx, if EXTENDED is true, or VOIDmode if not
    supported.  */
-machine_mode
+opt_scalar_float_mode
 default_floatn_mode (int n, bool extended)
 {
   if (extended)
     {
-      machine_mode cand1 = VOIDmode, cand2 = VOIDmode;
+      opt_scalar_float_mode cand1, cand2;
+      scalar_float_mode mode;
       switch (n)
 	{
 	case 32:
@@ -499,20 +499,21 @@ default_floatn_mode (int n, bool extended)
 	  /* Those are the only valid _FloatNx types.  */
 	  gcc_unreachable ();
 	}
-      if (cand1 != VOIDmode
-	  && REAL_MODE_FORMAT (cand1)->ieee_bits > n
-	  && targetm.scalar_mode_supported_p (cand1)
-	  && targetm.libgcc_floating_mode_supported_p (cand1))
+      if (cand1.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand1;
-      if (cand2 != VOIDmode
-	  && REAL_MODE_FORMAT (cand2)->ieee_bits > n
-	  && targetm.scalar_mode_supported_p (cand2)
-	  && targetm.libgcc_floating_mode_supported_p (cand2))
+      if (cand2.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits > n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand2;
     }
   else
     {
-      machine_mode cand = VOIDmode;
+      opt_scalar_float_mode cand;
+      scalar_float_mode mode;
       switch (n)
 	{
 	case 16:
@@ -545,13 +546,13 @@ default_floatn_mode (int n, bool extended)
 	default:
 	  break;
 	}
-      if (cand != VOIDmode
-	  && REAL_MODE_FORMAT (cand)->ieee_bits == n
-	  && targetm.scalar_mode_supported_p (cand)
-	  && targetm.libgcc_floating_mode_supported_p (cand))
+      if (cand.exists (&mode)
+	  && REAL_MODE_FORMAT (mode)->ieee_bits == n
+	  && targetm.scalar_mode_supported_p (mode)
+	  && targetm.libgcc_floating_mode_supported_p (mode))
 	return cand;
     }
-  return VOIDmode;
+  return opt_scalar_float_mode ();
 }
 
 /* Make some target macros useable by target-independent code.  */
@@ -1158,7 +1159,7 @@ default_builtin_support_vector_misalignment (machine_mode mode,
    possibly adds/subtracts using bit-twiddling.  */
 
 machine_mode
-default_preferred_simd_mode (machine_mode mode ATTRIBUTE_UNUSED)
+default_preferred_simd_mode (scalar_mode)
 {
   return word_mode;
 }
@@ -1178,8 +1179,8 @@ machine_mode
 default_get_mask_mode (unsigned nunits, unsigned vector_size)
 {
   unsigned elem_size = vector_size / nunits;
-  machine_mode elem_mode
-    = smallest_mode_for_size (elem_size * BITS_PER_UNIT, MODE_INT);
+  scalar_int_mode elem_mode
+    = smallest_int_mode_for_size (elem_size * BITS_PER_UNIT);
   machine_mode vector_mode;
 
   gcc_assert (elem_size * nunits == vector_size);
@@ -1254,7 +1255,7 @@ default_destroy_cost_data (void *data)
 /* Determine whether or not a pointer mode is valid. Assume defaults
    of ptr_mode or Pmode - can be overridden.  */
 bool
-default_valid_pointer_mode (machine_mode mode)
+default_valid_pointer_mode (scalar_int_mode mode)
 {
   return (mode == ptr_mode || mode == Pmode);
 }
@@ -1289,7 +1290,7 @@ default_ref_may_alias_errno (ao_ref *ref)
 /* Return the mode for a pointer to a given ADDRSPACE,
    defaulting to ptr_mode for all address spaces.  */
 
-machine_mode
+scalar_int_mode
 default_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return ptr_mode;
@@ -1298,7 +1299,7 @@ default_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 /* Return the mode for an address in a given ADDRSPACE,
    defaulting to Pmode for all address spaces.  */
 
-machine_mode
+scalar_int_mode
 default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return Pmode;
@@ -1308,7 +1309,7 @@ default_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
    To match the above, the same modes apply to all address spaces.  */
 
 bool
-default_addr_space_valid_pointer_mode (machine_mode mode,
+default_addr_space_valid_pointer_mode (scalar_int_mode mode,
 				       addr_space_t as ATTRIBUTE_UNUSED)
 {
   return targetm.valid_pointer_mode (mode);
@@ -1868,10 +1869,10 @@ default_pch_valid_p (const void *data_p, size_t len)
 
 /* Default version of cstore_mode.  */
 
-machine_mode
+scalar_int_mode
 default_cstore_mode (enum insn_code icode)
 {
-  return insn_data[(int) icode].operand[0].mode;
+  return as_a <scalar_int_mode> (insn_data[(int) icode].operand[0].mode);
 }
 
 /* Default version of member_type_forces_blk.  */

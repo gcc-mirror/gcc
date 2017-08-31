@@ -872,7 +872,7 @@ msp430_option_override (void)
 #define TARGET_SCALAR_MODE_SUPPORTED_P msp430_scalar_mode_supported_p
 
 static bool
-msp430_scalar_mode_supported_p (machine_mode m)
+msp430_scalar_mode_supported_p (scalar_mode m)
 {
   if (m == PSImode && msp430x)
     return true;
@@ -1023,7 +1023,7 @@ msp430_initial_elimination_offset (int from, int to)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE msp430_addr_space_pointer_mode
 
-static machine_mode
+static scalar_int_mode
 msp430_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1043,7 +1043,7 @@ msp430_addr_space_pointer_mode (addr_space_t addrspace)
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE msp430_unwind_word_mode
 
-static machine_mode
+static scalar_int_mode
 msp430_unwind_word_mode (void)
 {
   /* This needs to match msp430_init_dwarf_reg_sizes_extra (below).  */
@@ -1904,6 +1904,10 @@ msp430_attr (tree * node,
 
       if (! TREE_PUBLIC (* node))
 	message = "interrupt handlers cannot be static";
+
+      /* Ensure interrupt handlers never get optimised out.  */
+      TREE_USED (* node) = 1;
+      DECL_PRESERVE_P (* node) = 1;
     }
   else if (TREE_NAME_EQ (name, ATTR_REENT))
     {
@@ -3543,10 +3547,10 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'b':
       switch (GET_MODE (op))
 	{
-	case QImode: fprintf (file, ".B"); return;
-	case HImode: fprintf (file, ".W"); return;
-	case PSImode: fprintf (file, ".A"); return;
-	case SImode: fprintf (file, ".A"); return;
+	case E_QImode: fprintf (file, ".B"); return;
+	case E_HImode: fprintf (file, ".W"); return;
+	case E_PSImode: fprintf (file, ".A"); return;
+	case E_SImode: fprintf (file, ".A"); return;
 	default:
 	  return;
 	}

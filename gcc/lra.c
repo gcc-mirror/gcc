@@ -546,8 +546,8 @@ new_insn_reg (rtx_insn *insn, int regno, enum op_type type,
   lra_insn_reg *ir = lra_insn_reg_pool.allocate ();
   ir->type = type;
   ir->biggest_mode = mode;
-  if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (lra_reg_info[regno].biggest_mode)
-      && NONDEBUG_INSN_P (insn))
+  if (NONDEBUG_INSN_P (insn)
+      && partial_subreg_p (lra_reg_info[regno].biggest_mode, mode))
     lra_reg_info[regno].biggest_mode = mode;
   ir->subreg_p = subreg_p;
   ir->early_clobber = early_clobber;
@@ -596,7 +596,7 @@ static struct lra_operand_data debug_operand_data =
   {
     NULL, /* alternative  */
     0, /* early_clobber_alts */
-    VOIDmode, /* We are not interesting in the operand mode.  */
+    E_VOIDmode, /* We are not interesting in the operand mode.  */
     OP_IN,
     0, 0, 0, 0
   };
@@ -1913,7 +1913,7 @@ lra_substitute_pseudo (rtx *loc, int old_regno, rtx new_reg, bool subreg_p)
       if (mode != inner_mode
 	  && ! (CONST_INT_P (new_reg) && SCALAR_INT_MODE_P (mode)))
 	{
-	  if (GET_MODE_SIZE (mode) >= GET_MODE_SIZE (inner_mode)
+	  if (!partial_subreg_p (mode, inner_mode)
 	      || ! SCALAR_INT_MODE_P (inner_mode))
 	    new_reg = gen_rtx_SUBREG (mode, new_reg, 0);
 	  else

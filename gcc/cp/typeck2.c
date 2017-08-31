@@ -821,7 +821,7 @@ store_init_value (tree decl, tree init, vec<tree, va_gc>** cleanups, int flags)
 	  || (DECL_IN_AGGR_P (decl) && !DECL_VAR_DECLARED_INLINE_P (decl)))
 	{
 	  /* Diagnose a non-constant initializer for constexpr.  */
-	  if (!require_potential_constant_expression (value))
+	  if (!require_constant_expression (value))
 	    value = error_mark_node;
 	  else
 	    value = cxx_constant_value (value, decl);

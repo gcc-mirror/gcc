@@ -1047,12 +1047,15 @@ save_fixed_argument_area (int reg_parm_stack_space, rtx argblock, int *low_to_sa
 	*high_to_save = high;
 
 	num_to_save = high - low + 1;
-	save_mode = mode_for_size (num_to_save * BITS_PER_UNIT, MODE_INT, 1);
 
 	/* If we don't have the required alignment, must do this
 	   in BLKmode.  */
-	if ((low & (MIN (GET_MODE_SIZE (save_mode),
-			 BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)))
+	scalar_int_mode imode;
+	if (int_mode_for_size (num_to_save * BITS_PER_UNIT, 1).exists (&imode)
+	    && (low & (MIN (GET_MODE_SIZE (imode),
+			    BIGGEST_ALIGNMENT / UNITS_PER_WORD) - 1)) == 0)
+	  save_mode = imode;
+	else
 	  save_mode = BLKmode;
 
 	if (ARGS_GROW_DOWNWARD)
@@ -3354,8 +3357,7 @@ expand_call (tree exp, rtx target, int ignore)
 	      || ((caller_mode != caller_promoted_mode
 		   || callee_mode != callee_promoted_mode)
 		  && (caller_unsignedp != callee_unsignedp
-		      || GET_MODE_BITSIZE (caller_mode)
-			 < GET_MODE_BITSIZE (callee_mode)))))
+		      || partial_subreg_p (caller_mode, callee_mode)))))
 	{
 	  try_tail_call = 0;
 	  maybe_complain_about_tail_call (exp,

@@ -266,7 +266,7 @@ init_lower_subreg (void)
 
   memset (this_target_lower_subreg, 0, sizeof (*this_target_lower_subreg));
 
-  twice_word_mode = GET_MODE_2XWIDER_MODE (word_mode);
+  twice_word_mode = GET_MODE_2XWIDER_MODE (word_mode).require ();
 
   rtxes.target = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 1);
   rtxes.source = gen_rtx_REG (word_mode, LAST_VIRTUAL_REGISTER + 2);
@@ -349,8 +349,7 @@ simple_move (rtx_insn *insn, bool speed_p)
      size.  */
   mode = GET_MODE (SET_DEST (set));
   if (!SCALAR_INT_MODE_P (mode)
-      && (mode_for_size (GET_MODE_SIZE (mode) * BITS_PER_UNIT, MODE_INT, 0)
-	  == BLKmode))
+      && !int_mode_for_size (GET_MODE_BITSIZE (mode), 0).exists ())
     return NULL_RTX;
 
   /* Reject PARTIAL_INT modes.  They are used for processor specific
@@ -1215,6 +1214,7 @@ resolve_shift_zext (rtx_insn *insn)
   rtx_insn *insns;
   rtx src_reg, dest_reg, dest_upper, upper_src = NULL_RTX;
   int src_reg_num, dest_reg_num, offset1, offset2, src_offset;
+  scalar_int_mode inner_mode;
 
   set = single_set (insn);
   if (!set)
@@ -1228,6 +1228,8 @@ resolve_shift_zext (rtx_insn *insn)
     return NULL;
 
   op_operand = XEXP (op, 0);
+  if (!is_a <scalar_int_mode> (GET_MODE (op_operand), &inner_mode))
+    return NULL;
 
   /* We can tear this operation apart only if the regs were already
      torn apart.  */
@@ -1240,8 +1242,7 @@ resolve_shift_zext (rtx_insn *insn)
   src_reg_num = (GET_CODE (op) == LSHIFTRT || GET_CODE (op) == ASHIFTRT)
 		? 1 : 0;
 
-  if (WORDS_BIG_ENDIAN
-      && GET_MODE_SIZE (GET_MODE (op_operand)) > UNITS_PER_WORD)
+  if (WORDS_BIG_ENDIAN && GET_MODE_SIZE (inner_mode) > UNITS_PER_WORD)
     src_reg_num = 1 - src_reg_num;
 
   if (GET_CODE (op) == ZERO_EXTEND)

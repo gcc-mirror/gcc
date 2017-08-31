@@ -735,7 +735,7 @@ finish_if_stmt_cond (tree cond, tree if_stmt)
 {
   cond = maybe_convert_cond (cond);
   if (IF_STMT_CONSTEXPR_P (if_stmt)
-      && require_potential_rvalue_constant_expression (cond)
+      && is_constant_expression (cond)
       && !value_dependent_expression_p (cond))
     {
       cond = instantiate_non_dependent_expr (cond);
@@ -2035,7 +2035,7 @@ finish_qualified_id_expr (tree qualifying_class,
 					    qualifying_class);
       pop_deferring_access_checks ();
     }
-  else if (BASELINK_P (expr) && !processing_template_decl)
+  else if (BASELINK_P (expr))
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
@@ -2055,8 +2055,6 @@ finish_qualified_id_expr (tree qualifying_class,
 	expr = build_offset_ref (qualifying_class, expr, /*address_p=*/false,
 				 complain);
     }
-  else if (BASELINK_P (expr))
-    ;
   else
     {
       /* In a template, return a SCOPE_REF for most qualified-ids
@@ -2065,7 +2063,8 @@ finish_qualified_id_expr (tree qualifying_class,
 	 know we have access and building up the SCOPE_REF confuses
 	 non-type template argument handling.  */
       if (processing_template_decl
-	  && !currently_open_class (qualifying_class))
+	  && (!currently_open_class (qualifying_class)
+	      || TREE_CODE (expr) == BIT_NOT_EXPR))
 	expr = build_qualified_name (TREE_TYPE (expr),
 				     qualifying_class, expr,
 				     template_p);
@@ -3301,40 +3300,56 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (!mark_used (decl, complain))
     return error_mark_node;
 
-  bool saw_generic_lambda = false;
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
-  else
-    /* If we are in a lambda function, we can move out until we hit
-       1. the context,
-       2. a non-lambda function, or
-       3. a non-default capturing lambda function.  */
-    while (context != containing_function
-	   /* containing_function can be null with invalid generic lambdas.  */
-	   && containing_function
-	   && LAMBDA_FUNCTION_P (containing_function))
-      {
-	tree closure = DECL_CONTEXT (containing_function);
-	lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
 
-	if (generic_lambda_fn_p (containing_function))
-	  saw_generic_lambda = true;
+  if (containing_function && DECL_TEMPLATE_INFO (context)
+      && LAMBDA_FUNCTION_P (containing_function))
+    {
+      /* Check whether we've already built a proxy;
+	 insert_pending_capture_proxies doesn't update
+	 local_specializations.  */
+      tree d = lookup_name (DECL_NAME (decl));
+      if (d && is_capture_proxy (d)
+	  && DECL_CONTEXT (d) == containing_function)
+	return d;
+    }
 
-	if (TYPE_CLASS_SCOPE_P (closure))
-	  /* A lambda in an NSDMI (c++/64496).  */
-	  break;
+  /* If we are in a lambda function, we can move out until we hit
+     1. the context,
+     2. a non-lambda function, or
+     3. a non-default capturing lambda function.  */
+  while (context != containing_function
+	 /* containing_function can be null with invalid generic lambdas.  */
+	 && containing_function
+	 && LAMBDA_FUNCTION_P (containing_function))
+    {
+      tree closure = DECL_CONTEXT (containing_function);
+      lambda_expr = CLASSTYPE_LAMBDA_EXPR (closure);
 
-	if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
-	    == CPLD_NONE)
-	  break;
+      if (TYPE_CLASS_SCOPE_P (closure))
+	/* A lambda in an NSDMI (c++/64496).  */
+	break;
 
-	lambda_stack = tree_cons (NULL_TREE,
-				  lambda_expr,
-				  lambda_stack);
+      if (LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lambda_expr)
+	  == CPLD_NONE)
+	break;
 
-	containing_function
-	  = decl_function_context (containing_function);
-      }
+      lambda_stack = tree_cons (NULL_TREE,
+				lambda_expr,
+				lambda_stack);
+
+      containing_function
+	= decl_function_context (containing_function);
+    }
+
+  /* In a lambda within a template, wait until instantiation
+     time to implicitly capture.  */
+  if (context == containing_function
+      && DECL_TEMPLATE_INFO (containing_function)
+      && any_dependent_template_arguments_p (DECL_TI_ARGS
+					     (containing_function)))
+    return decl;
 
   /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
      support for an approach in which a reference to a local
@@ -3343,26 +3358,11 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
      the complexity of the problem"
 
      FIXME update for final resolution of core issue 696.  */
-  if (decl_maybe_constant_var_p (decl))
+  if (decl_constant_var_p (decl))
     {
-      if (processing_template_decl && !saw_generic_lambda)
-	/* In a non-generic lambda within a template, wait until instantiation
-	   time to decide whether to capture.  For a generic lambda, we can't
-	   wait until we instantiate the op() because the closure class is
-	   already defined at that point.  FIXME to get the semantics exactly
-	   right we need to partially-instantiate the lambda body so the only
-	   dependencies left are on the generic parameters themselves.  This
-	   probably means moving away from our current model of lambdas in
-	   templates (instantiating the closure type) to one based on creating
-	   the closure type when instantiating the lambda context.  That is
-	   probably also the way to handle lambdas within pack expansions.  */
-	return decl;
-      else if (decl_constant_var_p (decl))
-	{
-	  tree t = maybe_constant_value (convert_from_reference (decl));
-	  if (TREE_CONSTANT (t))
-	    return t;
-	}
+      tree t = maybe_constant_value (convert_from_reference (decl));
+      if (TREE_CONSTANT (t))
+	return t;
     }
 
   if (lambda_expr && VAR_P (decl)
@@ -3594,78 +3594,12 @@ finish_id_expression (tree id_expression,
 		    ? CP_ID_KIND_UNQUALIFIED_DEPENDENT
 		    : CP_ID_KIND_UNQUALIFIED)));
 
-      /* If the name was dependent on a template parameter and we're not in a
-	 default capturing generic lambda within a template, we will resolve the
-	 name at instantiation time.  FIXME: For lambdas, we should defer
-	 building the closure type until instantiation time then we won't need
-	 the extra test here.  */
       if (dependent_p
-	  && !parsing_default_capturing_generic_lambda_in_template ())
-	{
-	  if (DECL_P (decl)
-	      && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
-	    /* Dependent type attributes on the decl mean that the TREE_TYPE is
-	       wrong, so just return the identifier.  */
-	    return id_expression;
-
-	  /* If we found a variable, then name lookup during the
-	     instantiation will always resolve to the same VAR_DECL
-	     (or an instantiation thereof).  */
-	  if (VAR_P (decl)
-	      || TREE_CODE (decl) == CONST_DECL
-	      || TREE_CODE (decl) == PARM_DECL)
-	    {
-	      mark_used (decl);
-	      return convert_from_reference (decl);
-	    }
-
-	  /* Create a SCOPE_REF for qualified names, if the scope is
-	     dependent.  */
-	  if (scope)
-	    {
-	      if (TYPE_P (scope))
-		{
-		  if (address_p && done)
-		    decl = finish_qualified_id_expr (scope, decl,
-						     done, address_p,
-						     template_p,
-						     template_arg_p,
-						     tf_warning_or_error);
-		  else
-		    {
-		      tree type = NULL_TREE;
-		      if (DECL_P (decl) && !dependent_scope_p (scope))
-			type = TREE_TYPE (decl);
-		      decl = build_qualified_name (type,
-						   scope,
-						   id_expression,
-						   template_p);
-		    }
-		}
-	      if (TREE_TYPE (decl))
-		decl = convert_from_reference (decl);
-	      return decl;
-	    }
-	  /* A TEMPLATE_ID already contains all the information we
-	     need.  */
-	  if (TREE_CODE (id_expression) == TEMPLATE_ID_EXPR)
-	    return id_expression;
-	  /* The same is true for FIELD_DECL, but we also need to
-	     make sure that the syntax is correct.  */
-	  else if (TREE_CODE (decl) == FIELD_DECL)
-	    {
-	      /* Since SCOPE is NULL here, this is an unqualified name.
-		 Access checking has been performed during name lookup
-		 already.  Turn off checking to avoid duplicate errors.  */
-	      push_deferring_access_checks (dk_no_check);
-	      decl = finish_non_static_data_member
-		       (decl, NULL_TREE,
-			/*qualifying_scope=*/NULL_TREE);
-	      pop_deferring_access_checks ();
-	      return decl;
-	    }
-	  return id_expression;
-	}
+	  && DECL_P (decl)
+	  && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))
+	/* Dependent type attributes on the decl mean that the TREE_TYPE is
+	   wrong, so just return the identifier.  */
+	return id_expression;
 
       if (TREE_CODE (decl) == NAMESPACE_DECL)
 	{
@@ -3699,6 +3633,7 @@ finish_id_expression (tree id_expression,
 	 expression.  Template parameters have already
 	 been handled above.  */
       if (! error_operand_p (decl)
+	  && !dependent_p
 	  && integral_constant_expression_p
 	  && ! decl_constant_var_p (decl)
 	  && TREE_CODE (decl) != CONST_DECL
@@ -3725,6 +3660,7 @@ finish_id_expression (tree id_expression,
 	  decl = build_cxx_call (wrap, 0, NULL, tf_warning_or_error);
 	}
       else if (TREE_CODE (decl) == TEMPLATE_ID_EXPR
+	       && !dependent_p
 	       && variable_template_p (TREE_OPERAND (decl, 0)))
 	{
 	  decl = finish_template_variable (decl);
@@ -3733,6 +3669,12 @@ finish_id_expression (tree id_expression,
 	}
       else if (scope)
 	{
+	  if (TREE_CODE (decl) == SCOPE_REF)
+	    {
+	      gcc_assert (same_type_p (scope, TREE_OPERAND (decl, 0)));
+	      decl = TREE_OPERAND (decl, 1);
+	    }
+
 	  decl = (adjust_result_of_qualified_name_lookup
 		  (decl, scope, current_nonlambda_class_type()));
 
@@ -9362,12 +9304,6 @@ apply_deduced_return_type (tree fco, tree return_type)
 
   if (return_type == error_mark_node)
     return;
-
-  if (LAMBDA_FUNCTION_P (fco))
-    {
-      tree lambda = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-      LAMBDA_EXPR_RETURN_TYPE (lambda) = return_type;
-    }
 
   if (DECL_CONV_FN_P (fco))
     DECL_NAME (fco) = make_conv_op_name (return_type);

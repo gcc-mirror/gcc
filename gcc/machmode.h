@@ -20,6 +20,60 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_MACHINE_MODES
 #define HAVE_MACHINE_MODES
 
+extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
+extern const unsigned short mode_precision[NUM_MACHINE_MODES];
+extern const unsigned char mode_inner[NUM_MACHINE_MODES];
+extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
+extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
+extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
+extern const unsigned char mode_wider[NUM_MACHINE_MODES];
+extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
+
+template<typename T>
+struct mode_traits
+{
+  /* For use by the machmode support code only.
+
+     There are cases in which the machmode support code needs to forcibly
+     convert a machine_mode to a specific mode class T, and in which the
+     context guarantees that this is valid without the need for an assert.
+     This can be done using:
+
+       return typename mode_traits<T>::from_int (mode);
+
+     when returning a T and:
+
+       res = T (typename mode_traits<T>::from_int (mode));
+
+     when assigning to a value RES that must be assignment-compatible
+     with (but possibly not the same as) T.  */
+#ifdef USE_ENUM_MODES
+  /* Allow direct conversion of enums to specific mode classes only
+     when USE_ENUM_MODES is defined.  This is only intended for use
+     by gencondmd, so that it can tell more easily when .md conditions
+     are always false.  */
+  typedef machine_mode from_int;
+#else
+  /* Here we use an enum type distinct from machine_mode but with the
+     same range as machine_mode.  T should have a constructor that
+     accepts this enum type; it should not have a constructor that
+     accepts machine_mode.
+
+     We use this somewhat indirect approach to avoid too many constructor
+     calls when the compiler is built with -O0.  For example, even in
+     unoptimized code, the return statement above would construct the
+     returned T directly from the numerical value of MODE.  */
+  enum from_int { dummy = MAX_MACHINE_MODE };
+#endif
+};
+
+template<>
+struct mode_traits<machine_mode>
+{
+  /* machine_mode itself needs no conversion.  */
+  typedef machine_mode from_int;
+};
+
 /* Get the name of mode MODE as a string.  */
 
 extern const char * const mode_name[NUM_MACHINE_MODES];
@@ -174,22 +228,345 @@ extern const unsigned char mode_class[NUM_MACHINE_MODES];
 #define POINTER_BOUNDS_MODE_P(MODE)      \
   (GET_MODE_CLASS (MODE) == MODE_POINTER_BOUNDS)
 
-/* Get the size in bytes and bits of an object of mode MODE.  */
+/* An optional T (i.e. a T or nothing), where T is some form of mode class.  */
+template<typename T>
+class opt_mode
+{
+public:
+  enum from_int { dummy = MAX_MACHINE_MODE };
 
-extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
+  ALWAYS_INLINE opt_mode () : m_mode (E_VOIDmode) {}
+  ALWAYS_INLINE opt_mode (const T &m) : m_mode (m) {}
+  ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
+
+  machine_mode else_void () const;
+  machine_mode else_blk () const;
+  T require () const;
+
+  bool exists () const;
+  template<typename U> bool exists (U *) const;
+
+private:
+  machine_mode m_mode;
+};
+
+/* If the object contains a T, return its enum value, otherwise return
+   E_VOIDmode.  */
+
+template<typename T>
+ALWAYS_INLINE machine_mode
+opt_mode<T>::else_void () const
+{
+  return m_mode;
+}
+
+/* If the T exists, return its enum value, otherwise return E_BLKmode.  */
+
+template<typename T>
+inline machine_mode
+opt_mode<T>::else_blk () const
+{
+  return m_mode == E_VOIDmode ? E_BLKmode : m_mode;
+}
+
+/* Assert that the object contains a T and return it.  */
+
+template<typename T>
+inline T
+opt_mode<T>::require () const
+{
+  gcc_checking_assert (m_mode != E_VOIDmode);
+  return typename mode_traits<T>::from_int (m_mode);
+}
+
+/* Return true if the object contains a T rather than nothing.  */
+
+template<typename T>
+ALWAYS_INLINE bool
+opt_mode<T>::exists () const
+{
+  return m_mode != E_VOIDmode;
+}
+
+/* Return true if the object contains a T, storing it in *MODE if so.  */
+
+template<typename T>
+template<typename U>
+inline bool
+opt_mode<T>::exists (U *mode) const
+{
+  if (m_mode != E_VOIDmode)
+    {
+      *mode = T (typename mode_traits<T>::from_int (m_mode));
+      return true;
+    }
+  return false;
+}
+
+/* A POD version of mode class T.  */
+
+template<typename T>
+struct pod_mode
+{
+  typedef typename mode_traits<T>::from_int from_int;
+
+  machine_mode m_mode;
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+  ALWAYS_INLINE operator T () const { return from_int (m_mode); }
+  ALWAYS_INLINE pod_mode &operator = (const T &m) { m_mode = m; return *this; }
+};
+
+/* Return true if mode M has type T.  */
+
+template<typename T>
+inline bool
+is_a (machine_mode m)
+{
+  return T::includes_p (m);
+}
+
+/* Assert that mode M has type T, and return it in that form.  */
+
+template<typename T>
+inline T
+as_a (machine_mode m)
+{
+  gcc_checking_assert (T::includes_p (m));
+  return typename mode_traits<T>::from_int (m);
+}
+
+/* Convert M to an opt_mode<T>.  */
+
+template<typename T>
+inline opt_mode<T>
+dyn_cast (machine_mode m)
+{
+  if (T::includes_p (m))
+    return T (typename mode_traits<T>::from_int (m));
+  return opt_mode<T> ();
+}
+
+/* Return true if mode M has type T, storing it as a T in *RESULT
+   if so.  */
+
+template<typename T, typename U>
+inline bool
+is_a (machine_mode m, U *result)
+{
+  if (T::includes_p (m))
+    {
+      *result = T (typename mode_traits<T>::from_int (m));
+      return true;
+    }
+  return false;
+}
+
+/* Represents a machine mode that is known to be a SCALAR_INT_MODE_P.  */
+class scalar_int_mode
+{
+public:
+  typedef mode_traits<scalar_int_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_int_mode () {}
+  ALWAYS_INLINE scalar_int_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a scalar_int_mode.  */
+
+inline bool
+scalar_int_mode::includes_p (machine_mode m)
+{
+  return SCALAR_INT_MODE_P (m);
+}
+
+/* Represents a machine mode that is known to be a SCALAR_FLOAT_MODE_P.  */
+class scalar_float_mode
+{
+public:
+  typedef mode_traits<scalar_float_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_float_mode () {}
+  ALWAYS_INLINE scalar_float_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a scalar_float_mode.  */
+
+inline bool
+scalar_float_mode::includes_p (machine_mode m)
+{
+  return SCALAR_FLOAT_MODE_P (m);
+}
+
+/* Represents a machine mode that is known to be scalar.  */
+class scalar_mode
+{
+public:
+  typedef mode_traits<scalar_mode>::from_int from_int;
+
+  ALWAYS_INLINE scalar_mode () {}
+  ALWAYS_INLINE scalar_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE scalar_mode (const scalar_int_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE scalar_mode (const scalar_float_mode &m) : m_mode (m) {}
+  ALWAYS_INLINE scalar_mode (const scalar_int_mode_pod &m) : m_mode (m) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M represents some kind of scalar value.  */
+
+inline bool
+scalar_mode::includes_p (machine_mode m)
+{
+  switch (GET_MODE_CLASS (m))
+    {
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
+    case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
+    case MODE_POINTER_BOUNDS:
+      return true;
+    default:
+      return false;
+    }
+}
+
+/* Represents a machine mode that is known to be a COMPLEX_MODE_P.  */
+class complex_mode
+{
+public:
+  typedef mode_traits<complex_mode>::from_int from_int;
+
+  ALWAYS_INLINE complex_mode () {}
+  ALWAYS_INLINE complex_mode (from_int m) : m_mode (machine_mode (m)) {}
+  ALWAYS_INLINE operator machine_mode () const { return m_mode; }
+
+  static bool includes_p (machine_mode);
+
+protected:
+  machine_mode m_mode;
+};
+
+/* Return true if M is a complex_mode.  */
+
+inline bool
+complex_mode::includes_p (machine_mode m)
+{
+  return COMPLEX_MODE_P (m);
+}
+
+/* Return the base GET_MODE_SIZE value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_bytes (machine_mode mode)
+{
 #if GCC_VERSION >= 4001
-#define GET_MODE_SIZE(MODE) \
-  ((unsigned short) (__builtin_constant_p (MODE) \
-		     ? mode_size_inline (MODE) : mode_size[MODE]))
+  return (__builtin_constant_p (mode)
+	  ? mode_size_inline (mode) : mode_size[mode]);
 #else
-#define GET_MODE_SIZE(MODE)    ((unsigned short) mode_size[MODE])
+  return mode_size[mode];
 #endif
-#define GET_MODE_BITSIZE(MODE) \
-  ((unsigned short) (GET_MODE_SIZE (MODE) * BITS_PER_UNIT))
+}
+
+/* Return the base GET_MODE_BITSIZE value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_bits (machine_mode mode)
+{
+  return mode_to_bytes (mode) * BITS_PER_UNIT;
+}
+
+/* Return the base GET_MODE_PRECISION value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_precision (machine_mode mode)
+{
+  return mode_precision[mode];
+}
+
+/* Return the base GET_MODE_INNER value for MODE.  */
+
+ALWAYS_INLINE scalar_mode
+mode_to_inner (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return scalar_mode::from_int (__builtin_constant_p (mode)
+				? mode_inner_inline (mode)
+				: mode_inner[mode]);
+#else
+  return scalar_mode::from_int (mode_inner[mode]);
+#endif
+}
+
+/* Return the base GET_MODE_UNIT_SIZE value for MODE.  */
+
+ALWAYS_INLINE unsigned char
+mode_to_unit_size (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_unit_size_inline (mode) : mode_unit_size[mode]);
+#else
+  return mode_unit_size[mode];
+#endif
+}
+
+/* Return the base GET_MODE_UNIT_PRECISION value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_unit_precision (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_unit_precision_inline (mode) : mode_unit_precision[mode]);
+#else
+  return mode_unit_precision[mode];
+#endif
+}
+
+/* Return the base GET_MODE_NUNITS value for MODE.  */
+
+ALWAYS_INLINE unsigned short
+mode_to_nunits (machine_mode mode)
+{
+#if GCC_VERSION >= 4001
+  return (__builtin_constant_p (mode)
+	  ? mode_nunits_inline (mode) : mode_nunits[mode]);
+#else
+  return mode_nunits[mode];
+#endif
+}
+
+/* Get the size in bytes of an object of mode MODE.  */
+
+#define GET_MODE_SIZE(MODE) (mode_to_bytes (MODE))
+
+/* Get the size in bits of an object of mode MODE.  */
+
+#define GET_MODE_BITSIZE(MODE) (mode_to_bits (MODE))
 
 /* Get the number of value bits of an object of mode MODE.  */
-extern const unsigned short mode_precision[NUM_MACHINE_MODES];
-#define GET_MODE_PRECISION(MODE)  mode_precision[MODE]
+
+#define GET_MODE_PRECISION(MODE) (mode_to_precision (MODE))
 
 /* Get the number of integral bits of an object of mode MODE.  */
 extern CONST_MODE_IBIT unsigned char mode_ibit[NUM_MACHINE_MODES];
@@ -210,61 +587,41 @@ extern const unsigned HOST_WIDE_INT mode_mask_array[NUM_MACHINE_MODES];
    mode of the vector elements.  For complex modes it is the mode of the real
    and imaginary parts.  For other modes it is MODE itself.  */
 
-extern const unsigned char mode_inner[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_INNER(MODE) \
-  ((machine_mode) (__builtin_constant_p (MODE) \
-			? mode_inner_inline (MODE) : mode_inner[MODE]))
-#else
-#define GET_MODE_INNER(MODE) ((machine_mode) mode_inner[MODE])
-#endif
+#define GET_MODE_INNER(MODE) (mode_to_inner (MODE))
 
 /* Get the size in bytes or bits of the basic parts of an
    object of mode MODE.  */
 
-extern CONST_MODE_UNIT_SIZE unsigned char mode_unit_size[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_UNIT_SIZE(MODE) \
-  ((unsigned char) (__builtin_constant_p (MODE) \
-		   ? mode_unit_size_inline (MODE) : mode_unit_size[MODE]))
-#else
-#define GET_MODE_UNIT_SIZE(MODE) mode_unit_size[MODE]
-#endif
+#define GET_MODE_UNIT_SIZE(MODE) mode_to_unit_size (MODE)
 
 #define GET_MODE_UNIT_BITSIZE(MODE) \
   ((unsigned short) (GET_MODE_UNIT_SIZE (MODE) * BITS_PER_UNIT))
 
-extern const unsigned short mode_unit_precision[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_UNIT_PRECISION(MODE) \
-  ((unsigned short) (__builtin_constant_p (MODE) \
-		    ? mode_unit_precision_inline (MODE)\
-		    : mode_unit_precision[MODE]))
-#else
-#define GET_MODE_UNIT_PRECISION(MODE) mode_unit_precision[MODE]
-#endif
+#define GET_MODE_UNIT_PRECISION(MODE) (mode_to_unit_precision (MODE))
 
+/* Get the number of units in an object of mode MODE.  This is 2 for
+   complex modes and the number of elements for vector modes.  */
 
-/* Get the number of units in the object.  */
-
-extern const unsigned char mode_nunits[NUM_MACHINE_MODES];
-#if GCC_VERSION >= 4001
-#define GET_MODE_NUNITS(MODE) \
-  ((unsigned char) (__builtin_constant_p (MODE) \
-		    ? mode_nunits_inline (MODE) : mode_nunits[MODE]))
-#else
-#define GET_MODE_NUNITS(MODE)  mode_nunits[MODE]
-#endif
+#define GET_MODE_NUNITS(MODE) (mode_to_nunits (MODE))
 
 /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
 
-extern const unsigned char mode_wider[NUM_MACHINE_MODES];
-#define GET_MODE_WIDER_MODE(MODE) ((machine_mode) mode_wider[MODE])
+template<typename T>
+ALWAYS_INLINE opt_mode<T>
+GET_MODE_WIDER_MODE (const T &m)
+{
+  return typename opt_mode<T>::from_int (mode_wider[m]);
+}
 
 /* For scalars, this is a mode with twice the precision.  For vectors,
    this is a mode with the same inner mode but with twice the elements.  */
-extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
-#define GET_MODE_2XWIDER_MODE(MODE) ((machine_mode) mode_2xwider[MODE])
+
+template<typename T>
+ALWAYS_INLINE opt_mode<T>
+GET_MODE_2XWIDER_MODE (const T &m)
+{
+  return typename opt_mode<T>::from_int (mode_2xwider[m]);
+}
 
 /* Get the complex mode from the component mode.  */
 extern const unsigned char mode_complex[NUM_MACHINE_MODES];
@@ -276,23 +633,48 @@ extern const unsigned char mode_complex[NUM_MACHINE_MODES];
 
 extern machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
-/* Similar, but find the smallest mode for a given width.  */
+/* Return the machine mode to use for a MODE_INT of SIZE bits, if one
+   exists.  If LIMIT is nonzero, modes wider than MAX_FIXED_MODE_SIZE
+   will not be used.  */
 
-extern machine_mode smallest_mode_for_size (unsigned int,
-						 enum mode_class);
+inline opt_scalar_int_mode
+int_mode_for_size (unsigned int size, int limit)
+{
+  return dyn_cast <scalar_int_mode> (mode_for_size (size, MODE_INT, limit));
+}
 
+/* Return the machine mode to use for a MODE_FLOAT of SIZE bits, if one
+   exists.  */
 
-/* Return an integer mode of the exact same size as the input mode,
-   or BLKmode on failure.  */
+inline opt_scalar_float_mode
+float_mode_for_size (unsigned int size)
+{
+  return dyn_cast <scalar_float_mode> (mode_for_size (size, MODE_FLOAT, 0));
+}
 
-extern machine_mode int_mode_for_mode (machine_mode);
+/* Similar to mode_for_size, but find the smallest mode for a given width.  */
+
+extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
+
+/* Find the narrowest integer mode that contains at least SIZE bits.
+   Such a mode must exist.  */
+
+inline scalar_int_mode
+smallest_int_mode_for_size (unsigned int size)
+{
+  return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
+}
+
+/* Return an integer mode of exactly the same size as the input mode.  */
+
+extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
 
 extern machine_mode bitwise_mode_for_mode (machine_mode);
 
 /* Return a mode that is suitable for representing a vector,
    or BLKmode on failure.  */
 
-extern machine_mode mode_for_vector (machine_mode, unsigned);
+extern machine_mode mode_for_vector (scalar_mode, unsigned);
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator
@@ -301,11 +683,11 @@ public:
   bit_field_mode_iterator (HOST_WIDE_INT, HOST_WIDE_INT,
 			   HOST_WIDE_INT, HOST_WIDE_INT,
 			   unsigned int, bool);
-  bool next_mode (machine_mode *);
+  bool next_mode (scalar_int_mode *);
   bool prefer_smaller_modes ();
 
 private:
-  machine_mode m_mode;
+  opt_scalar_int_mode m_mode;
   /* We use signed values here because the bit position can be negative
      for invalid input such as gcc.dg/pr48335-8.c.  */
   HOST_WIDE_INT m_bitsize;
@@ -319,11 +701,9 @@ private:
 
 /* Find the best mode to use to access a bit field.  */
 
-extern machine_mode get_best_mode (int, int,
-					unsigned HOST_WIDE_INT,
-					unsigned HOST_WIDE_INT,
-					unsigned int,
-					machine_mode, bool);
+extern bool get_best_mode (int, int, unsigned HOST_WIDE_INT,
+			   unsigned HOST_WIDE_INT, unsigned int,
+			   unsigned HOST_WIDE_INT, bool, scalar_int_mode *);
 
 /* Determine alignment, 1<=result<=BIGGEST_ALIGNMENT.  */
 
@@ -339,12 +719,28 @@ extern const unsigned char class_narrowest_mode[MAX_MODE_CLASS];
 #define GET_CLASS_NARROWEST_MODE(CLASS) \
   ((machine_mode) class_narrowest_mode[CLASS])
 
+/* The narrowest full integer mode available on the target.  */
+
+#define NARROWEST_INT_MODE \
+  (scalar_int_mode \
+   (scalar_int_mode::from_int (class_narrowest_mode[MODE_INT])))
+
+/* Return the narrowest mode in T's class.  */
+
+template<typename T>
+inline T
+get_narrowest_mode (T mode)
+{
+  return typename mode_traits<T>::from_int
+    (class_narrowest_mode[GET_MODE_CLASS (mode)]);
+}
+
 /* Define the integer modes whose sizes are BITS_PER_UNIT and BITS_PER_WORD
    and the mode whose class is Pmode and whose size is POINTER_SIZE.  */
 
-extern machine_mode byte_mode;
-extern machine_mode word_mode;
-extern machine_mode ptr_mode;
+extern scalar_int_mode byte_mode;
+extern scalar_int_mode word_mode;
+extern scalar_int_mode ptr_mode;
 
 /* Target-dependent machine mode initialization - in insn-modes.c.  */
 extern void init_adjust_machine_modes (void);
@@ -360,7 +756,7 @@ extern void init_adjust_machine_modes (void);
 struct int_n_data_t {
   /* These parts are initailized by genmodes output */
   unsigned int bitsize;
-  machine_mode m;
+  scalar_int_mode_pod m;
   /* RID_* is RID_INTN_BASE + index into this array */
 };
 
@@ -368,5 +764,205 @@ struct int_n_data_t {
    smallest bitsize to largest bitsize. */
 extern bool int_n_enabled_p[NUM_INT_N_ENTS];
 extern const int_n_data_t int_n_data[NUM_INT_N_ENTS];
+
+/* Return true if MODE has class MODE_INT, storing it as a scalar_int_mode
+   in *INT_MODE if so.  */
+
+template<typename T>
+inline bool
+is_int_mode (machine_mode mode, T *int_mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_INT)
+    {
+      *int_mode = scalar_int_mode (scalar_int_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+/* Return true if MODE has class MODE_FLOAT, storing it as a
+   scalar_float_mode in *FLOAT_MODE if so.  */
+
+template<typename T>
+inline bool
+is_float_mode (machine_mode mode, T *float_mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    {
+      *float_mode = scalar_float_mode (scalar_float_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+/* Return true if MODE has class MODE_COMPLEX_INT, storing it as
+   a complex_mode in *CMODE if so.  */
+
+template<typename T>
+inline bool
+is_complex_int_mode (machine_mode mode, T *cmode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_INT)
+    {
+      *cmode = complex_mode (complex_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+/* Return true if MODE has class MODE_COMPLEX_FLOAT, storing it as
+   a complex_mode in *CMODE if so.  */
+
+template<typename T>
+inline bool
+is_complex_float_mode (machine_mode mode, T *cmode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
+    {
+      *cmode = complex_mode (complex_mode::from_int (mode));
+      return true;
+    }
+  return false;
+}
+
+namespace mode_iterator
+{
+  /* Start mode iterator *ITER at the first mode in class MCLASS, if any.  */
+
+  template<typename T>
+  inline void
+  start (opt_mode<T> *iter, enum mode_class mclass)
+  {
+    if (GET_CLASS_NARROWEST_MODE (mclass) == E_VOIDmode)
+      *iter = opt_mode<T> ();
+    else
+      *iter = as_a<T> (GET_CLASS_NARROWEST_MODE (mclass));
+  }
+
+  inline void
+  start (machine_mode *iter, enum mode_class mclass)
+  {
+    *iter = GET_CLASS_NARROWEST_MODE (mclass);
+  }
+
+  /* Return true if mode iterator *ITER has not reached the end.  */
+
+  template<typename T>
+  inline bool
+  iterate_p (opt_mode<T> *iter)
+  {
+    return iter->exists ();
+  }
+
+  inline bool
+  iterate_p (machine_mode *iter)
+  {
+    return *iter != E_VOIDmode;
+  }
+
+  /* Set mode iterator *ITER to the next widest mode in the same class,
+     if any.  */
+
+  template<typename T>
+  inline void
+  get_wider (opt_mode<T> *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (iter->require ());
+  }
+
+  inline void
+  get_wider (machine_mode *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (*iter).else_void ();
+  }
+
+  /* Set mode iterator *ITER to the next widest mode in the same class.
+     Such a mode is known to exist.  */
+
+  template<typename T>
+  inline void
+  get_known_wider (T *iter)
+  {
+    *iter = GET_MODE_WIDER_MODE (*iter).require ();
+  }
+
+  /* Set mode iterator *ITER to the mode that is two times wider than the
+     current one, if such a mode exists.  */
+
+  template<typename T>
+  inline void
+  get_2xwider (opt_mode<T> *iter)
+  {
+    *iter = GET_MODE_2XWIDER_MODE (iter->require ());
+  }
+
+  inline void
+  get_2xwider (machine_mode *iter)
+  {
+    *iter = GET_MODE_2XWIDER_MODE (*iter).else_void ();
+  }
+}
+
+/* Make ITERATOR iterate over all the modes in mode class CLASS,
+   from narrowest to widest.  */
+#define FOR_EACH_MODE_IN_CLASS(ITERATOR, CLASS)  \
+  for (mode_iterator::start (&(ITERATOR), CLASS); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over all the modes in the range [START, END),
+   in order of increasing width.  */
+#define FOR_EACH_MODE(ITERATOR, START, END) \
+  for ((ITERATOR) = (START); \
+       (ITERATOR) != (END); \
+       mode_iterator::get_known_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over START and all wider modes in the same
+   class, in order of increasing width.  */
+#define FOR_EACH_MODE_FROM(ITERATOR, START) \
+  for ((ITERATOR) = (START); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over modes in the range [NARROWEST, END)
+   in order of increasing width, where NARROWEST is the narrowest mode
+   in END's class.  */
+#define FOR_EACH_MODE_UNTIL(ITERATOR, END) \
+  FOR_EACH_MODE (ITERATOR, get_narrowest_mode (END), END)
+
+/* Make ITERATOR iterate over modes in the same class as MODE, in order
+   of increasing width.  Start at the first mode wider than START,
+   or don't iterate at all if there is no wider mode.  */
+#define FOR_EACH_WIDER_MODE(ITERATOR, START) \
+  for ((ITERATOR) = (START), mode_iterator::get_wider (&(ITERATOR)); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_wider (&(ITERATOR)))
+
+/* Make ITERATOR iterate over modes in the same class as MODE, in order
+   of increasing width, and with each mode being twice the width of the
+   previous mode.  Start at the mode that is two times wider than START,
+   or don't iterate at all if there is no such mode.  */
+#define FOR_EACH_2XWIDER_MODE(ITERATOR, START) \
+  for ((ITERATOR) = (START), mode_iterator::get_2xwider (&(ITERATOR)); \
+       mode_iterator::iterate_p (&(ITERATOR)); \
+       mode_iterator::get_2xwider (&(ITERATOR)))
+
+template<typename T>
+void
+gt_ggc_mx (pod_mode<T> *)
+{
+}
+
+template<typename T>
+void
+gt_pch_nx (pod_mode<T> *)
+{
+}
+
+template<typename T>
+void
+gt_pch_nx (pod_mode<T> *, void (*) (void *, void *), void *)
+{
+}
 
 #endif /* not HAVE_MACHINE_MODES */

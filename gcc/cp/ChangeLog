@@ -1,6 +1,185 @@
+2017-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82030 - ICE inheriting from multiple lambdas
+	PR c++/80767
+	* call.c (compare_ics): Handle null candidate.
+
+2017-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make taking the address of an overloaded function a non-deduced context
+
+	* pt.c (unify_overload_resolution_failure): Remove.
+	(unify_one_argument): Adjust.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* typeck.c (cp_build_binary_op): Use SCALAR_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cvt.c (cp_convert_to_pointer): Use SCALAR_INT_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* mangle.c (write_real_cst): Use SCALAR_FLOAT_TYPE_MODE
+	instead of TYPE_MODE.
+
+2017-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81236 - ICE with template-id in generic lambda
+	* semantics.c (finish_id_expression): Remove special dependent case.
+	Avoid some later pieces when dependent.
+	(finish_qualified_id_expr): Do normal BASELINK handling in a
+	template.  Always build a SCOPE_REF for a destructor BIT_NOT_EXPR.
+	(parsing_default_capturing_generic_lambda_in_template): Remove.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Always give an
+	error for types that will never be complete.
+	* mangle.c (write_expression): Add sanity check.
+	* tree.c (build_qualified_name): Add sanity check.
+	(cp_walk_subtrees): Walk into the class context of a BASELINK.
+	* lambda.c (add_capture): Improve diagnostic for generic lambda
+	capture failure.
+	* call.c (build_new_method_call_1): Print the right constructor
+	name.
+
+	Reimplement handling of lambdas in templates.
+	* cp-tree.h (LAMBDA_FUNCTION_P): Check DECL_DECLARES_FUNCTION_P.
+	* decl.c (start_preparsed_function): Call start_lambda_scope.
+	(finish_function): Call finish_lambda_scope.
+	* init.c (get_nsdmi): Call start/finish_lambda_scope.
+	* lambda.c (start_lambda_scope): Only ignore VAR_DECL in a function.
+	* parser.c (cp_parser_function_definition_after_declarator): Don't
+	call start/finish_lambda_scope.
+	* pt.c (retrieve_specialization): Ignore lambda functions in
+	templates.
+	(find_parameter_packs_r): Ignore capture proxies.  Look into
+	lambdas.
+	(check_for_bare_parameter_packs): Allow bare packs in lambdas.
+	(tsubst_default_argument): Call start/finish_lambda_scope.
+	(tsubst_function_decl): Handle lambda functions differently.
+	(tsubst_template_decl): Likewise.
+	(tsubst_expr) [DECL_EXPR]: Skip closure declarations and capture
+	proxies.
+	(tsubst_lambda_expr): Create a new closure rather than instantiate
+	the one from the template.
+	(tsubst_copy_and_build): Don't register a specialization of a pack.
+	(regenerate_decl_from_template): Call start/finish_lambda_scope.
+	(instantiate_decl): Remove special lambda function handling.
+	* semantics.c (process_outer_var_ref): Remove special generic lambda
+	handling.  Don't implicitly capture in a lambda in a template.  Look
+	for an existing proxy.
+	* class.c (current_nonlambda_class_type): Use decl_type_context.
+
+	* cp-tree.h (LAMBDA_EXPR_CLOSURE): Use TREE_TYPE.
+	(LAMBDA_EXPR_RETURN_TYPE): Remove.
+	(struct tree_lambda_expr): Remove closure and return_type fields.
+	* lambda.c (build_lambda_expr): Don't set LAMBDA_EXPR_RETURN_TYPE.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Track return type.
+	(cp_parser_lambda_body): Adjust unspecified return type check.
+	* ptree.c (cxx_print_lambda_node): Don't print closure or
+	return type.
+
+	PR c++/80935 - wrong C++17 error with lambda
+	* decl.c (check_for_uninitialized_const_var): Check
+	is_instantiation_of_constexpr.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
+	is_instantiation_of_constexpr.
+	(potential_constant_expression_1): Check var_in_maybe_constexpr_fn.
+
+	* lambda.c (build_lambda_object): Check for error_mark_node.
+	* pt.c (make_pack_expansion): Set PACK_EXPANSION_LOCAL_P on the type
+	pack as well.
+	(tsubst_decl) [FUNCTION_DECL]: Set DECL_CONTEXT on the parameters.
+	(tsubst) [TEMPLATE_PARM_INDEX]: Check for error_mark_node.
+
+	PR c++/80767 - unnecessary instantiation of generic lambda
+	* call.c (convert_like_real): Call build_user_type_conversion_1 if
+	cand is null.
+	(add_conv_candidate): Build a ck_user conversion with no candidate.
+
+	Fix lambdas in template default argument of inherited ctor.
+	* method.c (synthesized_method_base_walk): Replace an inherited
+	template with its specialization.
+	(synthesized_method_walk): Make inheriting_ctor a pointer.
+	(maybe_explain_implicit_delete, explain_implicit_non_constexpr)
+	(deduce_inheriting_ctor, implicitly_declare_fn): Adjust.
+
+	* pt.c (build_deduction_guide): Set DECL_ABSTRACT_ORIGIN on the
+	template, not the function.
+	(template_guide_p): Adjust.
+
+	Support copying local_specializations.
+	* cp-tree.h (enum lss_policy): New.
+	(local_specialization_stack): Add policy parameter to default ctor.
+	* pt.c (local_specialization_stack): Copy local_specializations if
+	lss_copy.
+
+	* constexpr.c (potential_constant_expression_1): Add "now" parm.
+	(is_constant_expression, require_constant_expression): New.
+	(is_static_init_expression, is_nondependent_constant_expression)
+	(is_nondependent_static_init_expression): Drop "potential".
+	* except.c (build_must_not_throw_expr): Do type conversion on
+	value-dependent argument.
+	* pt.c, semantics.c, typeck2.c: Use variants without "potential".
+
+	Instantiate default arguments/member initializers once.
+	* init.c (get_nsdmi): Remember NSDMI instantiations.
+	* parser.c (inject_this_parameter): Be more picky about
+	current_class_ptr.
+	* pt.c (tsubst_copy): Simplify 'this' handling.
+	(tsubst_default_argument): Remember default argument
+	instantiations.  Take parameter number.
+	(tsubst_default_arguments): Pass it.
+	* call.c (convert_default_arg): Likewise.
+
+	Fix default argument conversion failure and SFINAE.
+	* call.c (build_over_call): Check convert_default_arg result for
+	error_mark_node.
+	* parser.c (cp_parser_late_parsing_default_args): Remember
+	error_mark_node.
+
+2017-08-28  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (lang_type): Replace sorted_fields vector with
+	bindings map.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	(CLASSTYPE_BINDINGS): New.
+	* decl.c (finish_enum_value_list): Swap args of
+	insert_late_enum_def_bindings.
+	* name-lookup.c (lookup_field_1): Replace binary search of sorted
+	fields with map->get.
+	(sorted_fields_type_new, count_fields,
+	add_fields_to_record_type, add_enum_fields_to_record_type): Delete.
+	(add_class_member, add_class_members): New.
+	(set_class_bindings): Create map and insert.
+	(insert_late_enum_def_binding): Swap parms.  Use add_clasS_member.
+	* ptree.c (cxx_print_type): Delete sorted fields printing.
+
+	* cp-tree.h (insert_late_enum_def_into_classtype_sorted_fields):
+	Delete.
+	* name-lookup.h (set_class_bindings,
+	insert_late_enum_def_bindings): Declare.
+	* decl.c (finish_enum_value_list): Adjust for
+	insert_late_enum_def_bindings name change.
+	* class.c (finish_struct_1): Call set_class_bindings.
+	(count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	insert_into_classtype_sorted_fields,
+	insert_late_enum_def_into_classtype_sorted_fields): Move to ...
+	* name-lookup.h (count_fields, add_fields_to_record_type,
+	add_enum_fields_to_record_type, sorted_fields_type_new,
+	set_class_bindings, insert_late_enum_def_bindings): ... here.
+
 2017-08-25  Nathan Sidwell  <nathan@acm.org>
 
-	* class.c (method_name_cmp, resort_method_name_cmp): Method names
+	* class.c (method_name_cmp, resort_method_name_cmp): Methods
 	can never be NULL.
 
 	Conversion operators have a special name

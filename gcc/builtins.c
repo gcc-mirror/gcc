@@ -93,7 +93,7 @@ builtin_info_type builtin_info[(int)END_BUILTINS];
 /* Non-zero if __builtin_constant_p should be folded right away.  */
 bool force_folding_builtin_constant_p;
 
-static rtx c_readstr (const char *, machine_mode);
+static rtx c_readstr (const char *, scalar_int_mode);
 static int target_char_cast (tree, char *);
 static rtx get_memory_rtx (tree, tree);
 static int apply_args_size (void);
@@ -119,7 +119,7 @@ static rtx expand_builtin_va_end (tree);
 static rtx expand_builtin_va_copy (tree);
 static rtx expand_builtin_strcmp (tree, rtx);
 static rtx expand_builtin_strncmp (tree, rtx, machine_mode);
-static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, machine_mode);
+static rtx builtin_memcpy_read_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memchr (tree, rtx);
 static rtx expand_builtin_memcpy (tree, rtx);
 static rtx expand_builtin_memcpy_with_bounds (tree, rtx);
@@ -136,7 +136,7 @@ static rtx expand_builtin_stpcpy (tree, rtx, machine_mode);
 static rtx expand_builtin_stpncpy (tree, rtx);
 static rtx expand_builtin_strncat (tree, rtx);
 static rtx expand_builtin_strncpy (tree, rtx);
-static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, machine_mode);
+static rtx builtin_memset_gen_str (void *, HOST_WIDE_INT, scalar_int_mode);
 static rtx expand_builtin_memset (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_with_bounds (tree, rtx, machine_mode);
 static rtx expand_builtin_memset_args (tree, tree, tree, rtx, machine_mode, tree);
@@ -669,7 +669,7 @@ c_strlen (tree src, int only_value)
    GET_MODE_BITSIZE (MODE) bits from string constant STR.  */
 
 static rtx
-c_readstr (const char *str, machine_mode mode)
+c_readstr (const char *str, scalar_int_mode mode)
 {
   HOST_WIDE_INT ch;
   unsigned int i, j;
@@ -2792,7 +2792,7 @@ expand_builtin_strlen (tree exp, rtx target,
       tree src = CALL_EXPR_ARG (exp, 0);
       rtx src_reg;
       rtx_insn *before_strlen;
-      machine_mode insn_mode = target_mode;
+      machine_mode insn_mode;
       enum insn_code icode = CODE_FOR_nothing;
       unsigned int align;
 
@@ -2820,13 +2820,11 @@ expand_builtin_strlen (tree exp, rtx target,
 	return NULL_RTX;
 
       /* Bail out if we can't compute strlen in the right mode.  */
-      while (insn_mode != VOIDmode)
+      FOR_EACH_MODE_FROM (insn_mode, target_mode)
 	{
 	  icode = optab_handler (strlen_optab, insn_mode);
 	  if (icode != CODE_FOR_nothing)
 	    break;
-
-	  insn_mode = GET_MODE_WIDER_MODE (insn_mode);
 	}
       if (insn_mode == VOIDmode)
 	return NULL_RTX;
@@ -2885,7 +2883,7 @@ expand_builtin_strlen (tree exp, rtx target,
 
 static rtx
 builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
-			 machine_mode mode)
+			 scalar_int_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -3746,7 +3744,7 @@ expand_builtin_stpncpy (tree exp, rtx)
 
 rtx
 builtin_strncpy_read_str (void *data, HOST_WIDE_INT offset,
-			  machine_mode mode)
+			  scalar_int_mode mode)
 {
   const char *str = (const char *) data;
 
@@ -3954,7 +3952,7 @@ expand_builtin_strncpy (tree exp, rtx target)
 
 rtx
 builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
-			 machine_mode mode)
+			 scalar_int_mode mode)
 {
   const char *c = (const char *) data;
   char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
@@ -3971,7 +3969,7 @@ builtin_memset_read_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
 
 static rtx
 builtin_memset_gen_str (void *data, HOST_WIDE_INT offset ATTRIBUTE_UNUSED,
-			machine_mode mode)
+			scalar_int_mode mode)
 {
   rtx target, coeff;
   size_t size;
@@ -5303,7 +5301,8 @@ static rtx
 expand_builtin_signbit (tree exp, rtx target)
 {
   const struct real_format *fmt;
-  machine_mode fmode, imode, rmode;
+  scalar_float_mode fmode;
+  scalar_int_mode rmode, imode;
   tree arg;
   int word, bitpos;
   enum insn_code icode;
@@ -5314,8 +5313,8 @@ expand_builtin_signbit (tree exp, rtx target)
     return NULL_RTX;
 
   arg = CALL_EXPR_ARG (exp, 0);
-  fmode = TYPE_MODE (TREE_TYPE (arg));
-  rmode = TYPE_MODE (TREE_TYPE (exp));
+  fmode = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (arg));
+  rmode = SCALAR_INT_TYPE_MODE (TREE_TYPE (exp));
   fmt = REAL_MODE_FORMAT (fmode);
 
   arg = builtin_save_expr (arg);
@@ -5350,8 +5349,7 @@ expand_builtin_signbit (tree exp, rtx target)
 
   if (GET_MODE_SIZE (fmode) <= UNITS_PER_WORD)
     {
-      imode = int_mode_for_mode (fmode);
-      gcc_assert (imode != BLKmode);
+      imode = int_mode_for_mode (fmode).require ();
       temp = gen_lowpart (imode, temp);
     }
   else
@@ -10366,9 +10364,9 @@ set_builtin_user_assembler_name (tree decl, const char *asmspec)
   if (DECL_FUNCTION_CODE (decl) == BUILT_IN_FFS
       && INT_TYPE_SIZE < BITS_PER_WORD)
     {
+      scalar_int_mode mode = int_mode_for_size (INT_TYPE_SIZE, 0).require ();
       set_user_assembler_libfunc ("ffs", asmspec);
-      set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-			 "ffs");
+      set_optab_libfunc (ffs_optab, mode, "ffs");
     }
 }
 

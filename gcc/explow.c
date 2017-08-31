@@ -49,14 +49,16 @@ static rtx break_out_memory_refs (rtx);
 HOST_WIDE_INT
 trunc_int_for_mode (HOST_WIDE_INT c, machine_mode mode)
 {
-  int width = GET_MODE_PRECISION (mode);
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  scalar_mode smode = as_a <scalar_mode> (mode);
+  int width = GET_MODE_PRECISION (smode);
 
   /* You want to truncate to a _what_?  */
   gcc_assert (SCALAR_INT_MODE_P (mode)
 	      || POINTER_BOUNDS_MODE_P (mode));
 
   /* Canonicalize BImode to 0 and STORE_FLAG_VALUE.  */
-  if (mode == BImode)
+  if (smode == BImode)
     return c & 1 ? STORE_FLAG_VALUE : 0;
 
   /* Sign-extend for the requested mode.  */
@@ -275,7 +277,7 @@ break_out_memory_refs (rtx x)
    it should return NULL if it can't be simplified without emitting insns.  */
 
 rtx
-convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
+convert_memory_address_addr_space_1 (scalar_int_mode to_mode ATTRIBUTE_UNUSED,
 				     rtx x, addr_space_t as ATTRIBUTE_UNUSED,
 				     bool in_const ATTRIBUTE_UNUSED,
 				     bool no_emit ATTRIBUTE_UNUSED)
@@ -284,7 +286,7 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
   gcc_assert (GET_MODE (x) == to_mode || GET_MODE (x) == VOIDmode);
   return x;
 #else /* defined(POINTERS_EXTEND_UNSIGNED) */
-  machine_mode pointer_mode, address_mode, from_mode;
+  scalar_int_mode pointer_mode, address_mode, from_mode;
   rtx temp;
   enum rtx_code code;
 
@@ -380,7 +382,8 @@ convert_memory_address_addr_space_1 (machine_mode to_mode ATTRIBUTE_UNUSED,
    arithmetic insns can be used.  */
 
 rtx
-convert_memory_address_addr_space (machine_mode to_mode, rtx x, addr_space_t as)
+convert_memory_address_addr_space (scalar_int_mode to_mode, rtx x,
+				   addr_space_t as)
 {
   return convert_memory_address_addr_space_1 (to_mode, x, as, false, false);
 }
@@ -394,7 +397,7 @@ rtx
 memory_address_addr_space (machine_mode mode, rtx x, addr_space_t as)
 {
   rtx oldx = x;
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
+  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
 
   x = convert_memory_address_addr_space (address_mode, x, as);
 
@@ -784,6 +787,7 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
 #ifdef PROMOTE_MODE
   enum tree_code code;
   int unsignedp;
+  scalar_mode smode;
 #endif
 
   /* For libcalls this is invoked without TYPE from the backends
@@ -803,9 +807,11 @@ promote_mode (const_tree type ATTRIBUTE_UNUSED, machine_mode mode,
     {
     case INTEGER_TYPE:   case ENUMERAL_TYPE:   case BOOLEAN_TYPE:
     case REAL_TYPE:      case OFFSET_TYPE:     case FIXED_POINT_TYPE:
-      PROMOTE_MODE (mode, unsignedp, type);
+      /* Values of these types always have scalar mode.  */
+      smode = as_a <scalar_mode> (mode);
+      PROMOTE_MODE (smode, unsignedp, type);
       *punsignedp = unsignedp;
-      return mode;
+      return smode;
 
 #ifdef POINTERS_EXTEND_UNSIGNED
     case REFERENCE_TYPE:
@@ -1906,25 +1912,20 @@ hard_function_value (const_tree valtype, const_tree func, const_tree fntype,
       && GET_MODE (val) == BLKmode)
     {
       unsigned HOST_WIDE_INT bytes = int_size_in_bytes (valtype);
-      machine_mode tmpmode;
+      opt_scalar_int_mode tmpmode;
 
       /* int_size_in_bytes can return -1.  We don't need a check here
 	 since the value of bytes will then be large enough that no
 	 mode will match anyway.  */
 
-      for (tmpmode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   tmpmode != VOIDmode;
-	   tmpmode = GET_MODE_WIDER_MODE (tmpmode))
+      FOR_EACH_MODE_IN_CLASS (tmpmode, MODE_INT)
 	{
 	  /* Have we found a large enough mode?  */
-	  if (GET_MODE_SIZE (tmpmode) >= bytes)
+	  if (GET_MODE_SIZE (tmpmode.require ()) >= bytes)
 	    break;
 	}
 
-      /* No suitable mode found.  */
-      gcc_assert (tmpmode != VOIDmode);
-
-      PUT_MODE (val, tmpmode);
+      PUT_MODE (val, tmpmode.require ());
     }
   return val;
 }
