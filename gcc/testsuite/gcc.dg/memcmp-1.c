@@ -110,8 +110,8 @@ static void test_strncmp_ ## SZ ## _ ## ALIGN (const char *str1, const char *str
 	{								\
 	  a = three+i*ALIGN+j*(4096-2*i*ALIGN);				\
 	  b = four+i*ALIGN+j*(4096-2*i*ALIGN);				\
-	  strcpy(a,str1);						\
-	  strcpy(b,str2);						\
+	  memcpy(a,str1,SZ);						\
+	  memcpy(b,str2,SZ);						\
 	  r = strncmp(a,b,SZ);						\
 	  if ( r < 0 && !(expect < 0) ) abort();			\
 	  if ( r > 0 && !(expect > 0) )	abort();			\
