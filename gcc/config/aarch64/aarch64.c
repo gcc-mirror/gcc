@@ -4196,7 +4196,9 @@ aarch64_regno_ok_for_base_p (int regno, bool strict_p)
 static bool
 aarch64_base_register_rtx_p (rtx x, bool strict_p)
 {
-  if (!strict_p && GET_CODE (x) == SUBREG)
+  if (!strict_p
+      && GET_CODE (x) == SUBREG
+      && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (x))])
     x = SUBREG_REG (x);
 
   return (REG_P (x) && aarch64_regno_ok_for_base_p (REGNO (x), strict_p));
@@ -4343,7 +4345,9 @@ aarch64_classify_index (struct aarch64_address_info *info, rtx x,
   else
     return false;
 
-  if (GET_CODE (index) == SUBREG)
+  if (!strict_p
+      && GET_CODE (index) == SUBREG
+      && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (index))])
     index = SUBREG_REG (index);
 
   if ((shift == 0 ||
