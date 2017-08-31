@@ -1,5 +1,11 @@
 2017-08-30  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82029 - __PRETTY_FUNCTION__ in lambda in template
+	* pt.c (enclosing_instantiation_of, lambda_fn_in_template_p)
+	(regenerated_lambda_fn_p): New.
+	(tsubst_decl) [VAR_DECL]: Use enclosing_instantiation_of.
+	(tsubst_copy) [VAR_DECL]: Likewise.
+
 	PR c++/82030 - ICE inheriting from multiple lambdas
 	PR c++/80767
 	* call.c (compare_ics): Handle null candidate.
