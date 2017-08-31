@@ -2011,10 +2011,10 @@ struct GTY(()) lang_type {
      as a list of adopted protocols or a pointer to a corresponding
      @interface.  See objc/objc-act.h for details.  */
   tree objc_info;
-
-  /* Map from IDENTIFIER nodes to DECLS.  */
-  hash_map<lang_identifier *, tree> *bindings;
-
+  /* sorted_fields is sorted based on a pointer, so we need to be able
+     to resort it if pointers get rearranged.  */
+  struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields")))
+    sorted_fields;
   /* FIXME reuse another field?  */
   tree lambda_expr;
 };
@@ -3240,9 +3240,10 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    && TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL	\
    && TYPE_DECL_ALIAS_P (TYPE_NAME (NODE)))
 
-/* The binding map for a class (not always present).  */
-#define CLASSTYPE_BINDINGS(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->bindings)
+/* For a class type: if this structure has many fields, we'll sort them
+   and put them into a TREE_VEC.  */
+#define CLASSTYPE_SORTED_FIELDS(NODE) \
+  (LANG_TYPE_CLASS_CHECK (NODE)->sorted_fields)
 
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL or
    TEMPLATE_DECL, the entity is either a template specialization (if

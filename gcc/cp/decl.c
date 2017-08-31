@@ -14317,8 +14317,7 @@ finish_enum_value_list (tree enumtype)
       && COMPLETE_TYPE_P (current_class_type)
       && UNSCOPED_ENUM_P (enumtype))
     {
-      insert_late_enum_def_bindings (current_class_type, enumtype);
-      /* TYPE_FIELDS needs fixup.  */
+      insert_late_enum_def_bindings (enumtype, current_class_type);
       fixup_type_variants (current_class_type);
     }
 

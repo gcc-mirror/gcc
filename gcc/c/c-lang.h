@@ -22,13 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "c-family/c-common.h"
 
-/* In a RECORD_TYPE, a sorted array of the fields of the type, not a
-   tree for size reasons.  */
-struct GTY(()) sorted_fields_type {
-  int len;
-  tree GTY((length ("%h.len"))) elts[1];
-};
-
 struct GTY(()) lang_type {
   /* In a RECORD_TYPE, a sorted array of the fields of the type.  */
   struct sorted_fields_type * GTY ((reorder ("resort_sorted_fields"))) s;

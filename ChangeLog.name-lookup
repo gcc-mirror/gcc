@@ -1,5 +1,29 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	Restore lang_type::sorted_fields
+	gcc/c/
+	* c-decl.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp, resort_sorted_fields): Moved back to ...
+	* c-lang.h (struct sorted_fields_type): ...
+	gcc/c-family
+	* c-common.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp, resort_sorted_fields): ... here ...
+	* c-common.h (field_decl_cmp, resort_sorted_fields): ... here ...
+	(struct sorted_fields_type): ... here.
+	gcc/cp/
+	* cp-tree.h (struct lang_type): Restore sorted_fields.
+	(CLASSTYPE_SORTED_FIELDS): Restore.
+	(CLASSTYPE_BINDINGS): Delete.
+	* decl.c (finish_enum_value_list): Adjust
+	insert_late_enum_def_bindings call.
+	* name-lookup.c (legacy_nonfn_member_lookup): Restore binary
+	search.
+	(get_class_value_direct): Remove binding table code.
+	(sorted_fields_type_new, count_fields, 
+	add_fields_to_record_type, add_enum_fields_to_record_type): Restore.
+	(add_class_member, add_class_members): Delete.
+	(set_class_bindings, insert_late_enum_def_bindings): Adjust.
+
 	Merge trunk r251560.
 
 2017-08-29  Nathan Sidwell  <nathan@acm.org>
