@@ -2,6 +2,32 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* config/aarch64/iterators.md (V_cmp_result): Rename to...
+	(V_INT_EQUIV): ...this.
+	(v_cmp_result): Rename to...
+	(v_int_equiv): ...this.
+	* config/aarch64/aarch64.md (xorsign<mode>3): Update accordingly.
+	* config/aarch64/aarch64-simd.md (xorsign<mode>3): Likewise.
+	(copysign<mode>3): Likewise.
+	(aarch64_simd_bsl<mode>_internal): Likewise.
+	(aarch64_simd_bsl<mode>): Likewise.
+	(vec_cmp<mode><mode>): Likewise.
+	(vcond<mode><mode>): Likewise.
+	(vcond<v_cmp_mixed><mode>): Likewise.
+	(vcondu<mode><v_cmp_mixed>): Likewise.
+	(aarch64_cm<optab><mode>): Likewise.
+	(aarch64_cmtst<mode>): Likewise.
+	(aarch64_fac<optab><mode>): Likewise.
+	(vec_perm_const<mode>): Likewise.
+	(vcond_mask_<mode><v_cmp_result>): Rename to...
+	(vcond_mask_<mode><v_int_equiv>): ...this.
+	(vec_cmp<mode><v_cmp_result>): Rename to...
+	(vec_cmp<mode><v_int_equiv>): ...this.
+
+2017-08-31  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* config/aarch64/aarch64-modes.def: Remove 32-, 48- and 64-byte
 	vector modes.
 	* config/aarch64/iterators.md (VRL2, VRL3, VRL4): Delete.
