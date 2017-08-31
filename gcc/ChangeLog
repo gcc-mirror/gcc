@@ -1,3 +1,8 @@
+2017-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now
+	match as powerpc-wrs-vxworks*.
+
 2017-08-31  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64-simd.md (aarch64_mla_elt_merge<mode>): Fix
