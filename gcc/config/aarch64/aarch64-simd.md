@@ -4963,278 +4963,62 @@
   DONE;
 })
 
-(define_insn "aarch64_ld2<mode>_dreg_le"
+(define_insn "aarch64_ld2<mode>_dreg"
   [(set (match_operand:OI 0 "register_operand" "=w")
-	(subreg:OI
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD2)
-	     (vec_duplicate:VD (const_int 0)))
-	    (vec_concat:<VDBL>
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD2)
-	     (vec_duplicate:VD (const_int 0)))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	(unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD2_DREG))]
+  "TARGET_SIMD"
   "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
   [(set_attr "type" "neon_load2_2reg<q>")]
 )
 
-(define_insn "aarch64_ld2<mode>_dreg_be"
+(define_insn "aarch64_ld2<mode>_dreg"
   [(set (match_operand:OI 0 "register_operand" "=w")
-	(subreg:OI
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (vec_duplicate:VD (const_int 0))
-	     (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD2))
-	    (vec_concat:<VDBL>
-	     (vec_duplicate:VD (const_int 0))
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD2))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "ld2\\t{%S0.<Vtype> - %T0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load2_2reg<q>")]
-)
-
-(define_insn "aarch64_ld2<mode>_dreg_le"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(subreg:OI
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD2)
-	     (const_int 0))
-	    (vec_concat:<VDBL>
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD2)
-	     (const_int 0))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	(unspec:OI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD2_DREG))]
+  "TARGET_SIMD"
   "ld1\\t{%S0.1d - %T0.1d}, %1"
   [(set_attr "type" "neon_load1_2reg<q>")]
 )
 
-(define_insn "aarch64_ld2<mode>_dreg_be"
-  [(set (match_operand:OI 0 "register_operand" "=w")
-	(subreg:OI
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (const_int 0)
-	     (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD2))
-	    (vec_concat:<VDBL>
-	     (const_int 0)
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD2))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "ld1\\t{%S0.1d - %T0.1d}, %1"
-  [(set_attr "type" "neon_load1_2reg<q>")]
-)
-
-(define_insn "aarch64_ld3<mode>_dreg_le"
+(define_insn "aarch64_ld3<mode>_dreg"
   [(set (match_operand:CI 0 "register_operand" "=w")
-	(subreg:CI
-	 (vec_concat:<VRL3>
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD3)
-	     (vec_duplicate:VD (const_int 0)))
-	    (vec_concat:<VDBL>
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD3)
-	     (vec_duplicate:VD (const_int 0))))
-	  (vec_concat:<VDBL>
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD3)
-	     (vec_duplicate:VD (const_int 0)))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	(unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD3_DREG))]
+  "TARGET_SIMD"
   "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
   [(set_attr "type" "neon_load3_3reg<q>")]
 )
 
-(define_insn "aarch64_ld3<mode>_dreg_be"
+(define_insn "aarch64_ld3<mode>_dreg"
   [(set (match_operand:CI 0 "register_operand" "=w")
-	(subreg:CI
-	 (vec_concat:<VRL3>
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (vec_duplicate:VD (const_int 0))
-	     (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD3))
-	    (vec_concat:<VDBL>
-	     (vec_duplicate:VD (const_int 0))
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD3)))
-	  (vec_concat:<VDBL>
-	     (vec_duplicate:VD (const_int 0))
-	     (unspec:VD [(match_dup 1)]
-			UNSPEC_LD3))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "ld3\\t{%S0.<Vtype> - %U0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load3_3reg<q>")]
-)
-
-(define_insn "aarch64_ld3<mode>_dreg_le"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(subreg:CI
-	 (vec_concat:<VRL3>
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD3)
-	     (const_int 0))
-	    (vec_concat:<VDBL>
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD3)
-	     (const_int 0)))
-	  (vec_concat:<VDBL>
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD3)
-	     (const_int 0))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	(unspec:CI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD3_DREG))]
+  "TARGET_SIMD"
   "ld1\\t{%S0.1d - %U0.1d}, %1"
   [(set_attr "type" "neon_load1_3reg<q>")]
 )
 
-(define_insn "aarch64_ld3<mode>_dreg_be"
-  [(set (match_operand:CI 0 "register_operand" "=w")
-	(subreg:CI
-	 (vec_concat:<VRL3>
-	  (vec_concat:<VRL2>
-	    (vec_concat:<VDBL>
-	     (const_int 0)
-	     (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD3))
-	    (vec_concat:<VDBL>
-	     (const_int 0)
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD3)))
-	  (vec_concat:<VDBL>
-	     (const_int 0)
-	     (unspec:DX [(match_dup 1)]
-			UNSPEC_LD3))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "ld1\\t{%S0.1d - %U0.1d}, %1"
-  [(set_attr "type" "neon_load1_3reg<q>")]
-)
-
-(define_insn "aarch64_ld4<mode>_dreg_le"
+(define_insn "aarch64_ld4<mode>_dreg"
   [(set (match_operand:XI 0 "register_operand" "=w")
-	(subreg:XI
-	 (vec_concat:<VRL4>
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD4)
-	       (vec_duplicate:VD (const_int 0)))
-	      (vec_concat:<VDBL>
-		(unspec:VD [(match_dup 1)]
-			UNSPEC_LD4)
-		(vec_duplicate:VD (const_int 0))))
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (unspec:VD [(match_dup 1)]
-			UNSPEC_LD4)
-	       (vec_duplicate:VD (const_int 0)))
-	     (vec_concat:<VDBL>
-	       (unspec:VD [(match_dup 1)]
-			UNSPEC_LD4)
-	       (vec_duplicate:VD (const_int 0))))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
+	(unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:VD [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD4_DREG))]
+  "TARGET_SIMD"
   "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
   [(set_attr "type" "neon_load4_4reg<q>")]
 )
 
-(define_insn "aarch64_ld4<mode>_dreg_be"
+(define_insn "aarch64_ld4<mode>_dreg"
   [(set (match_operand:XI 0 "register_operand" "=w")
-	(subreg:XI
-	 (vec_concat:<VRL4>
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (vec_duplicate:VD (const_int 0))
-	       (unspec:VD
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD4))
-	      (vec_concat:<VDBL>
-		(vec_duplicate:VD (const_int 0))
-		(unspec:VD [(match_dup 1)]
-			UNSPEC_LD4)))
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (vec_duplicate:VD (const_int 0))
-	       (unspec:VD [(match_dup 1)]
-			UNSPEC_LD4))
-	     (vec_concat:<VDBL>
-	       (vec_duplicate:VD (const_int 0))
-	       (unspec:VD [(match_dup 1)]
-			UNSPEC_LD4)))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
-  "ld4\\t{%S0.<Vtype> - %V0.<Vtype>}, %1"
-  [(set_attr "type" "neon_load4_4reg<q>")]
-)
-
-(define_insn "aarch64_ld4<mode>_dreg_le"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(subreg:XI
-	 (vec_concat:<VRL4>
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD4)
-	       (const_int 0))
-	      (vec_concat:<VDBL>
-	        (unspec:DX [(match_dup 1)]
-			UNSPEC_LD4)
-		(const_int 0)))
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (unspec:DX [(match_dup 1)]
-			UNSPEC_LD4)
-	       (const_int 0))
-	     (vec_concat:<VDBL>
-	       (unspec:DX [(match_dup 1)]
-			UNSPEC_LD4)
-	       (const_int 0)))) 0))]
-  "TARGET_SIMD && !BYTES_BIG_ENDIAN"
-  "ld1\\t{%S0.1d - %V0.1d}, %1"
-  [(set_attr "type" "neon_load1_4reg<q>")]
-)
-
-(define_insn "aarch64_ld4<mode>_dreg_be"
-  [(set (match_operand:XI 0 "register_operand" "=w")
-	(subreg:XI
-	 (vec_concat:<VRL4>
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (const_int 0)
-	       (unspec:DX
-		[(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")]
-		UNSPEC_LD4))
-	      (vec_concat:<VDBL>
-		(const_int 0)
-		(unspec:DX [(match_dup 1)]
-			UNSPEC_LD4)))
-	   (vec_concat:<VRL2>
-	     (vec_concat:<VDBL>
-	       (const_int 0)
-	       (unspec:DX [(match_dup 1)]
-			UNSPEC_LD4))
-	     (vec_concat:<VDBL>
-	       (const_int 0)
-	       (unspec:DX [(match_dup 1)]
-			UNSPEC_LD4)))) 0))]
-  "TARGET_SIMD && BYTES_BIG_ENDIAN"
+	(unspec:XI [(match_operand:BLK 1 "aarch64_simd_struct_operand" "Utv")
+		    (unspec:DX [(const_int 0)] UNSPEC_VSTRUCTDUMMY)]
+		   UNSPEC_LD4_DREG))]
+  "TARGET_SIMD"
   "ld1\\t{%S0.1d - %V0.1d}, %1"
   [(set_attr "type" "neon_load1_4reg<q>")]
 )
@@ -5248,12 +5032,7 @@
   rtx mem = gen_rtx_MEM (BLKmode, operands[1]);
   set_mem_size (mem, <VSTRUCT:nregs> * 8);
 
-  if (BYTES_BIG_ENDIAN)
-    emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg_be (operands[0],
-								mem));
-  else
-    emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg_le (operands[0],
-								mem));
+  emit_insn (gen_aarch64_ld<VSTRUCT:nregs><VDC:mode>_dreg (operands[0], mem));
   DONE;
 })
 

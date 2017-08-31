@@ -711,21 +711,6 @@
 ;; ld..._lane and st..._lane operations.
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
 
-(define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
-			(V4HF "V16HF")
-			(V2SI "V8SI")  (V2SF "V8SF")
-			(DI   "V4DI")  (DF   "V4DF")])
-
-(define_mode_attr VRL3 [(V8QI "V48QI") (V4HI "V24HI")
-			(V4HF "V24HF")
-			(V2SI "V12SI")  (V2SF "V12SF")
-			(DI   "V6DI")  (DF   "V6DF")])
-
-(define_mode_attr VRL4 [(V8QI "V64QI") (V4HI "V32HI")
-			(V4HF "V32HF")
-			(V2SI "V16SI")  (V2SF "V16SF")
-			(DI   "V8DI")  (DF   "V8DF")])
-
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx
   [(QI "b") (HI "h") (SI "") (DI "")])

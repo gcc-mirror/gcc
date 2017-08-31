@@ -1,3 +1,25 @@
+2017-08-31  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-modes.def: Remove 32-, 48- and 64-byte
+	vector modes.
+	* config/aarch64/iterators.md (VRL2, VRL3, VRL4): Delete.
+	* config/aarch64/aarch64.md (UNSPEC_LD2_DREG, UNSPEC_LD3_DREG)
+	(UNSPEC_LD4_DREG): New unspecs.
+	* config/aarch64/aarch64-simd.md (aarch64_ld2<mode>_dreg_le)
+	(aarch64_ld2<mode>_dreg_be): Replace with...
+	(aarch64_ld2<mode>_dreg): ...this pattern and use the new DREG
+	unspec.
+	(aarch64_ld3<mode>_dreg_le)
+	(aarch64_ld3<mode>_dreg_be): Replace with...
+	(aarch64_ld3<mode>_dreg): ...this pattern and use the new DREG
+	unspec.
+	(aarch64_ld4<mode>_dreg_le)
+	(aarch64_ld4<mode>_dreg_be): Replace with...
+	(aarch64_ld4<mode>_dreg): ...this pattern and use the new DREG
+	unspec.
+
 2017-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/81987
