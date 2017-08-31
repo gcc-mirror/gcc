@@ -614,7 +614,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape @gol
 -mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof @gol
 -mlong-calls  -mmedium-calls  -msdata -mirq-ctrl-saved @gol
--mrgf-banked-regs @gol
+-mrgf-banked-regs -G @var{num} @gol
 -mvolatile-cache  -mtp-regno=@var{regno} @gol
 -malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
 -mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
@@ -14895,6 +14895,13 @@ instruction.  Conditional execution of function calls is suppressed, to
 allow use of the 25-bit range, rather than the 21-bit range with
 conditional branch-and-link.  This is the default for tool chains built
 for @w{@code{arc-linux-uclibc}} and @w{@code{arceb-linux-uclibc}} targets.
+
+@item -G @var{num}
+@opindex G
+Put definitions of externally-visible data in a small data section if
+that data is no bigger than @var{num} bytes.  The default value of
+@var{num} is 4 for any ARC configuration, or 8 when we have double
+load/store operations.
 
 @item -mno-sdata
 @opindex mno-sdata

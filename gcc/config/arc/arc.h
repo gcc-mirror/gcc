@@ -65,9 +65,9 @@ along with GCC; see the file COPYING3.  If not see
 %(subtarget_cpp_spec)"
 
 #undef CC1_SPEC
-#define CC1_SPEC "\
-%{EB:%{EL:%emay not use both -EB and -EL}} \
-%{EB:-mbig-endian} %{EL:-mlittle-endian} \
+#define CC1_SPEC "%{EB:%{EL:%emay not use both -EB and -EL}}	\
+%{EB:-mbig-endian} %{EL:-mlittle-endian}			\
+%{G*}								\
 "
 extern const char *arc_cpu_to_as (int argc, const char **argv);
 

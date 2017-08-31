@@ -79,26 +79,21 @@ static const char *arc_cpu_string = arc_cpu_name;
 		      ? 0 \
 		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
 
-#define LEGITIMATE_SCALED_ADDRESS_P(MODE, X, STRICT) \
-(GET_CODE (X) == PLUS \
- && GET_CODE (XEXP (X, 0)) == MULT \
- && RTX_OK_FOR_INDEX_P (XEXP (XEXP (X, 0), 0), (STRICT)) \
- && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT \
- && ((GET_MODE_SIZE (MODE) == 2 && INTVAL (XEXP (XEXP (X, 0), 1)) == 2) \
-     || (GET_MODE_SIZE (MODE) == 4 && INTVAL (XEXP (XEXP (X, 0), 1)) == 4)) \
- && (RTX_OK_FOR_BASE_P (XEXP (X, 1), (STRICT)) \
-     || (flag_pic ? CONST_INT_P (XEXP (X, 1)) : CONSTANT_P (XEXP (X, 1)))))
+#define LEGITIMATE_SMALL_DATA_OFFSET_P(X)				\
+  (GET_CODE (X) == CONST						\
+   && GET_CODE (XEXP ((X), 0)) == PLUS					\
+   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == SYMBOL_REF			\
+   && SYMBOL_REF_SMALL_P (XEXP (XEXP ((X), 0), 0))			\
+   && GET_CODE (XEXP(XEXP ((X), 0), 1)) == CONST_INT			\
+   && INTVAL (XEXP (XEXP ((X), 0), 1)) <= g_switch_value)
 
-#define LEGITIMATE_SMALL_DATA_ADDRESS_P(X) \
-  (GET_CODE (X) == PLUS \
-   && (REG_P (XEXP ((X), 0)) && REGNO (XEXP ((X), 0)) == SDATA_BASE_REGNUM) \
-   && ((GET_CODE (XEXP((X),1)) == SYMBOL_REF \
-	&& SYMBOL_REF_SMALL_P (XEXP ((X), 1))) \
-       || (GET_CODE (XEXP ((X), 1)) == CONST \
-	   && GET_CODE (XEXP (XEXP ((X), 1), 0)) == PLUS \
-	   && GET_CODE (XEXP (XEXP (XEXP ((X), 1), 0), 0)) == SYMBOL_REF \
-	   && SYMBOL_REF_SMALL_P (XEXP (XEXP (XEXP ((X), 1), 0), 0)) \
-	   && GET_CODE (XEXP(XEXP (XEXP ((X), 1), 0), 1)) == CONST_INT)))
+#define LEGITIMATE_SMALL_DATA_ADDRESS_P(X)				\
+  (GET_CODE (X) == PLUS							\
+     && REG_P (XEXP ((X), 0))						\
+     && REGNO (XEXP ((X), 0)) == SDATA_BASE_REGNUM			\
+     && ((GET_CODE (XEXP ((X), 1)) == SYMBOL_REF			\
+	    && SYMBOL_REF_SMALL_P (XEXP ((X), 1)))			\
+	 || LEGITIMATE_SMALL_DATA_OFFSET_P (XEXP ((X), 1))))
 
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
@@ -276,6 +271,61 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
 
+static bool
+legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
+{
+  if (GET_CODE (op) != PLUS)
+    return false;
+
+  if (GET_CODE (XEXP (op, 0)) != MULT)
+    return false;
+
+  /* Check multiplication operands.  */
+  if (!RTX_OK_FOR_INDEX_P (XEXP (XEXP (op, 0), 0), strict))
+    return false;
+
+  if (!CONST_INT_P (XEXP (XEXP (op, 0), 1)))
+    return false;
+
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 2:
+      if (INTVAL (XEXP (XEXP (op, 0), 1)) != 2)
+	return false;
+      break;
+    case 8:
+      if (!TARGET_LL64)
+	return false;
+      /*  Fall through. */
+    case 4:
+      if (INTVAL (XEXP (XEXP (op, 0), 1)) != 4)
+	return false;
+    default:
+      return false;
+    }
+
+  /* Check the base.  */
+  if (RTX_OK_FOR_BASE_P (XEXP (op, 1), (strict)))
+    return true;
+
+  if (flag_pic)
+    {
+      if (CONST_INT_P (XEXP (op, 1)))
+	return true;
+      return false;
+    }
+  if (CONSTANT_P (XEXP (op, 1)))
+    {
+      /* Scalled addresses for sdata is done other places.  */
+      if (GET_CODE (XEXP (op, 1)) == SYMBOL_REF
+	  && SYMBOL_REF_SMALL_P (XEXP (op, 1)))
+	return false;
+      return true;
+    }
+
+  return false;
+}
+
 /* Check for constructions like REG + OFFS, where OFFS can be a
    register, an immediate or an long immediate. */
 
@@ -301,8 +351,7 @@ legitimate_offset_address_p (machine_mode mode, rtx x, bool index, bool strict)
       && (GET_MODE_SIZE (mode) <= 4)
       /* Avoid small data which ends in something like GP +
 	 symb@sda.  */
-      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))
-	  || TARGET_NO_SDATA_SET))
+      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))))
     return true;
 
   return false;
@@ -1116,6 +1165,10 @@ arc_override_options (void)
     TARGET_COMPACT_CASESI = 0;
   if (TARGET_COMPACT_CASESI)
     TARGET_CASE_VECTOR_PC_RELATIVE = 1;
+
+  /* Check for small data option */
+  if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
+    g_switch_value = TARGET_LL64 ? 8 : 4;
 
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
@@ -5422,7 +5475,7 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 
 /* Output address constant X to FILE, taking PIC into account.  */
 
-void
+static void
 arc_output_pic_addr_const (FILE * file, rtx x, int code)
 {
   char buf[256];
@@ -5871,7 +5924,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
      return true;
   if (legitimate_offset_address_p (mode, x, TARGET_INDEXED_LOADS, strict))
      return true;
-  if (LEGITIMATE_SCALED_ADDRESS_P (mode, x, strict))
+  if (legitimate_scaled_address_p (mode, x, strict))
     return true;
   if (LEGITIMATE_SMALL_DATA_ADDRESS_P (x))
      return true;
@@ -7465,28 +7518,6 @@ valid_brcc_with_delay_p (rtx *operands)
   return brcc_nolimm_operator (operands[0], VOIDmode);
 }
 
-/* ??? Hack.  This should no really be here.  See PR32143.  */
-static bool
-arc_decl_anon_ns_mem_p (const_tree decl)
-{
-  while (1)
-    {
-      if (decl == NULL_TREE || decl == error_mark_node)
-	return false;
-      if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && DECL_NAME (decl) == NULL_TREE)
-	return true;
-      /* Classes and namespaces inside anonymous namespaces have
-	 TREE_PUBLIC == 0, so we can shortcut the search.  */
-      else if (TYPE_P (decl))
-	return (TREE_PUBLIC (TYPE_NAME (decl)) == 0);
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	return (TREE_PUBLIC (decl) == 0);
-      else
-	decl = DECL_CONTEXT (decl);
-    }
-}
-
 /* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
    access DECL using %gp_rel(...)($gp).  */
 
@@ -7495,60 +7526,43 @@ arc_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
-  /* Strings and functions are never in small data area.  */
-  if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
+  /* Only variables are going into small data area.  */
+  if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
   if (TARGET_NO_SDATA_SET)
     return false;
 
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
-    {
-      const char *name;
-
-      /* Reject anything that isn't in a known small-data section.  */
-      name = DECL_SECTION_NAME (decl);
-      if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
-	return false;
-
-      /* If a symbol is defined externally, the assembler will use the
-	 usual -G rules when deciding how to implement macros.  */
-      if (!DECL_EXTERNAL (decl))
-	  return true;
-    }
-  /* Only global variables go into sdata section for now.  */
-  else
-    {
-      /* Don't put constants into the small data section: we want them
-	 to be in ROM rather than RAM.  */
-      if (TREE_CODE (decl) != VAR_DECL)
-	return false;
-
-      if (TREE_READONLY (decl)
-	  && !TREE_SIDE_EFFECTS (decl)
-	  && (!DECL_INITIAL (decl) || TREE_CONSTANT (DECL_INITIAL (decl))))
-	return false;
-
-      /* TREE_PUBLIC might change after the first call, because of the patch
-	 for PR19238.  */
-      if (default_binds_local_p_1 (decl, 1)
-	  || arc_decl_anon_ns_mem_p (decl))
-	return false;
-
-      /* To ensure -mvolatile-cache works
-	 ld.di does not have a gp-relative variant.  */
-      if (TREE_THIS_VOLATILE (decl))
-	return false;
-    }
-
   /* Disable sdata references to weak variables.  */
   if (DECL_WEAK (decl))
     return false;
 
-  size = int_size_in_bytes (TREE_TYPE (decl));
+  /* Don't put constants into the small data section: we want them to
+     be in ROM rather than RAM.  */
+  if (TREE_READONLY (decl))
+    return false;
 
-  /* Allow only <=4B long data types into sdata.  */
-  return (size > 0 && size <= 4);
+  /* To ensure -mvolatile-cache works ld.di does not have a
+     gp-relative variant.  */
+  if (!TARGET_VOLATILE_CACHE_SET
+      && TREE_THIS_VOLATILE (decl))
+    return false;
+
+  if (DECL_SECTION_NAME (decl) != 0)
+    {
+      const char *name = DECL_SECTION_NAME (decl);
+      if (strcmp (name, ".sdata") == 0
+	  || strcmp (name, ".sbss") == 0)
+	return true;
+    }
+  /* If it's not public, there's no need to put it in the small data
+     section.  */
+  else if (TREE_PUBLIC (decl))
+    {
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      return (size > 0 && size <= g_switch_value);
+    }
+  return false;
 }
 
 /* Return true if X is a small data address that can be rewritten
@@ -7577,9 +7591,10 @@ arc_rewrite_small_data_p (const_rtx x)
 /* If possible, rewrite OP so that it refers to small data using
    explicit relocations.  */
 
-rtx
-arc_rewrite_small_data (rtx op)
+static rtx
+arc_rewrite_small_data_1 (rtx op)
 {
+  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
   op = copy_insn (op);
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, &op, ALL)
@@ -7587,24 +7602,29 @@ arc_rewrite_small_data (rtx op)
       rtx *loc = *iter;
       if (arc_rewrite_small_data_p (*loc))
 	{
-	  gcc_assert (SDATA_BASE_REGNUM == PIC_OFFSET_TABLE_REGNUM);
-	  *loc = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, *loc);
-	  if (loc != &op)
-	    {
-	      if (GET_CODE (op) == MEM && &XEXP (op, 0) == loc)
-		; /* OK.  */
-	      else if (GET_CODE (op) == MEM
-		       && GET_CODE (XEXP (op, 0)) == PLUS
-		       && GET_CODE (XEXP (XEXP (op, 0), 0)) == MULT)
-		*loc = force_reg (Pmode, *loc);
-	      else
-		gcc_unreachable ();
-	    }
+	  *loc = gen_rtx_PLUS (Pmode, rgp, *loc);
 	  iter.skip_subrtxes ();
 	}
       else if (GET_CODE (*loc) == PLUS
-	       && rtx_equal_p (XEXP (*loc, 0), pic_offset_table_rtx))
+	       && rtx_equal_p (XEXP (*loc, 0), rgp))
 	iter.skip_subrtxes ();
+    }
+  return op;
+}
+
+rtx
+arc_rewrite_small_data (rtx op)
+{
+  op = arc_rewrite_small_data_1 (op);
+
+  /* Check if we fit small data constraints.  */
+  if (MEM_P (op)
+      && !LEGITIMATE_SMALL_DATA_ADDRESS_P (XEXP (op, 0)))
+    {
+      rtx addr = XEXP (op, 0);
+      rtx tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, addr);
+      op = replace_equiv_address_nv (op, tmp);
     }
   return op;
 }
@@ -7617,12 +7637,14 @@ small_data_pattern (rtx op, machine_mode)
 {
   if (GET_CODE (op) == SEQUENCE)
     return false;
+
+  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, op, ALL)
     {
       const_rtx x = *iter;
       if (GET_CODE (x) == PLUS
-	  && rtx_equal_p (XEXP (x, 0), pic_offset_table_rtx))
+	  && rtx_equal_p (XEXP (x, 0), rgp))
 	iter.skip_subrtxes ();
       else if (arc_rewrite_small_data_p (x))
 	return true;

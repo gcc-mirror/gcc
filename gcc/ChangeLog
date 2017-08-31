@@ -1,5 +1,32 @@
 2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config.gcc: Use g.opt for arc.
+	* config/arc/arc.c (LEGITIMATE_SCALED_ADDRESS_P): Deleted,
+	functionality moved to ...
+	(legitimate_scaled_address_p): New function, ...here.
+	(LEGITIMATE_SMALL_DATA_OFFSET_P): New define.
+	(LEGITIMATE_SMALL_DATA_ADDRESS_P): Use the above define.
+	(legitimate_offset_address_p): Delete TARGET_NO_SDATA_SET
+	condition.
+	(arc_override_options): Handle G option.
+	(arc_output_pic_addr_const): Correct function definition.
+	(arc_legitimate_address_p): Use legitimate_scaled_address_p.
+	(arc_decl_anon_ns_mem_p): Delete.
+	(arc_in_small_data_p): Overhaul this function to take into
+	consideration the value given via G option.
+	(arc_rewrite_small_data_1): Renamed and corrected old
+	arc_rewrite_small_data function.
+	(arc_rewrite_small_data): New function.
+	(small_data_pattern): Don't use pic_offset_table_rtx.
+	* config/arc/arc.h (CC1_SPEC): Recognize G option.
+	* config/arc/simdext.md (movmisalignv2hi): Use
+	prepare_move_operands function.
+	(mov*): Likewise.
+	(movmisalign*): Likewise.
+	* doc/invoke.texi (ARC options): Document -G option.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc-protos.h (compact_sda_memory_operand): Update
 	prototype.
 	* config/arc/arc.c (arc_print_operand): Output scalled address for
