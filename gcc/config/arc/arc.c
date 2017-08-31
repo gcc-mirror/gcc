@@ -3804,6 +3804,26 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  fputs (".as", file);
 		  output_scaled = 1;
 		}
+	      else if (LEGITIMATE_SMALL_DATA_ADDRESS_P (addr)
+		       && GET_MODE_SIZE (GET_MODE (x)) > 1)
+		{
+		  tree decl = NULL_TREE;
+		  int align = 0;
+		  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
+		    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
+		  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0))
+			   == SYMBOL_REF)
+		    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
+		  if (decl)
+		    align = DECL_ALIGN (decl);
+		  align = align / BITS_PER_UNIT;
+		  if ((GET_MODE_SIZE (GET_MODE (x)) == 2)
+		      && align && ((align & 1) == 0))
+		    fputs (".as", file);
+		  if ((GET_MODE_SIZE (GET_MODE (x)) >= 4)
+		      && align && ((align & 3) == 0))
+		    fputs (".as", file);
+		}
 	      break;
 	    case REG:
 	      break;
@@ -7475,12 +7495,10 @@ arc_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
+  /* Strings and functions are never in small data area.  */
   if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
     return false;
 
-
-  /* We don't yet generate small-data references for -mabicalls.  See related
-     -G handling in override_options.  */
   if (TARGET_NO_SDATA_SET)
     return false;
 
@@ -7499,7 +7517,7 @@ arc_in_small_data_p (const_tree decl)
 	  return true;
     }
   /* Only global variables go into sdata section for now.  */
-  else if (1)
+  else
     {
       /* Don't put constants into the small data section: we want them
 	 to be in ROM rather than RAM.  */
@@ -7528,9 +7546,6 @@ arc_in_small_data_p (const_tree decl)
     return false;
 
   size = int_size_in_bytes (TREE_TYPE (decl));
-
-/*   if (AGGREGATE_TYPE_P (TREE_TYPE (decl))) */
-/*     return false; */
 
   /* Allow only <=4B long data types into sdata.  */
   return (size > 0 && size <= 4);
@@ -7623,10 +7638,13 @@ small_data_pattern (rtx op, machine_mode)
 /* volatile cache option still to be handled.  */
 
 bool
-compact_sda_memory_operand (rtx op, machine_mode mode)
+compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
 {
   rtx addr;
   int size;
+  tree decl = NULL_TREE;
+  int align = 0;
+  int mask = 0;
 
   /* Eliminate non-memory operations.  */
   if (GET_CODE (op) != MEM)
@@ -7644,7 +7662,35 @@ compact_sda_memory_operand (rtx op, machine_mode mode)
   /* Decode the address now.  */
   addr = XEXP (op, 0);
 
-  return LEGITIMATE_SMALL_DATA_ADDRESS_P  (addr);
+  if (!LEGITIMATE_SMALL_DATA_ADDRESS_P (addr))
+    return false;
+
+  if (!short_p || size == 1)
+    return true;
+
+  /* Now check for the alignment, the short loads using gp require the
+     addresses to be aligned.  */
+  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
+    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
+  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0)) == SYMBOL_REF)
+    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
+  if (decl)
+    align = DECL_ALIGN (decl);
+  align = align / BITS_PER_UNIT;
+
+  switch (mode)
+    {
+    case E_HImode:
+      mask = 1;
+      break;
+    default:
+      mask = 3;
+      break;
+    }
+
+  if (align && ((align & mask) == 0))
+    return true;
+  return false;
 }
 
 /* Implement ASM_OUTPUT_ALIGNED_DECL_LOCAL.  */

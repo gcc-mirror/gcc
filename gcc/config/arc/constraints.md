@@ -355,7 +355,7 @@
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
-	(match_test "compact_sda_memory_operand (op, VOIDmode)")))
+	(match_test "compact_sda_memory_operand (op, VOIDmode, true)")))
 
 (define_memory_constraint "Usc"
   "@internal
@@ -363,7 +363,7 @@
   (and (match_code "mem")
        (match_test "!CONSTANT_P (XEXP (op,0))")
 ;; ??? the assembler rejects stores of immediates to small data.
-       (match_test "!compact_sda_memory_operand (op, VOIDmode)")))
+       (match_test "!compact_sda_memory_operand (op, VOIDmode, false)")))
 
 (define_constraint "Us<"
   "@internal
