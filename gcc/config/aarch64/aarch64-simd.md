@@ -1072,7 +1072,7 @@
   [(set (match_operand:VDQHS 0 "register_operand" "=w")
 	(plus:VDQHS
 	  (mult:VDQHS (vec_duplicate:VDQHS
-		  (match_operand:<VEL> 1 "register_operand" "w"))
+		  (match_operand:<VEL> 1 "register_operand" "<h_con>"))
 		(match_operand:VDQHS 2 "register_operand" "w"))
 	  (match_operand:VDQHS 3 "register_operand" "0")))]
  "TARGET_SIMD"
@@ -1132,7 +1132,7 @@
 	(minus:VDQHS
 	  (match_operand:VDQHS 1 "register_operand" "0")
 	  (mult:VDQHS (vec_duplicate:VDQHS
-		  (match_operand:<VEL> 2 "register_operand" "w"))
+		  (match_operand:<VEL> 2 "register_operand" "<h_con>"))
 		(match_operand:VDQHS 3 "register_operand" "w"))))]
   "TARGET_SIMD"
   "mls\t%0.<Vtype>, %3.<Vtype>, %2.<Vetype>[0]"

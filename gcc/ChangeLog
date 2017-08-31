@@ -1,3 +1,9 @@
+2017-08-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_mla_elt_merge<mode>): Fix
+	register constraint for by-element operand.
+	(aarch64_mls_elt_merge<mode>): Likewise.
+
 2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc.c (arc_can_follow_jump): Check for short
