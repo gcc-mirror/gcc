@@ -662,25 +662,25 @@
 ;; Double vector types for ALLX.
 (define_mode_attr Vallxd [(QI "8b") (HI "4h") (SI "2s")])
 
-;; Mode of result of comparison operations.
-(define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
-				(V4HI "V4HI") (V8HI  "V8HI")
-				(V2SI "V2SI") (V4SI  "V4SI")
-				(DI   "DI")   (V2DI  "V2DI")
-				(V4HF "V4HI") (V8HF  "V8HI")
-				(V2SF "V2SI") (V4SF  "V4SI")
-				(V2DF "V2DI") (DF    "DI")
-				(SF   "SI")   (HF    "HI")])
+;; Mode with floating-point values replaced by like-sized integers.
+(define_mode_attr V_INT_EQUIV [(V8QI "V8QI") (V16QI "V16QI")
+			       (V4HI "V4HI") (V8HI  "V8HI")
+			       (V2SI "V2SI") (V4SI  "V4SI")
+			       (DI   "DI")   (V2DI  "V2DI")
+			       (V4HF "V4HI") (V8HF  "V8HI")
+			       (V2SF "V2SI") (V4SF  "V4SI")
+			       (V2DF "V2DI") (DF    "DI")
+			       (SF   "SI")   (HF    "HI")])
 
-;; Lower case mode of results of comparison operations.
-(define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
-				(V4HI "v4hi") (V8HI  "v8hi")
-				(V2SI "v2si") (V4SI  "v4si")
-				(DI   "di")   (V2DI  "v2di")
-				(V4HF "v4hi") (V8HF  "v8hi")
-				(V2SF "v2si") (V4SF  "v4si")
-				(V2DF "v2di") (DF    "di")
-				(SF   "si")])
+;; Lower case mode with floating-point values replaced by like-sized integers.
+(define_mode_attr v_int_equiv [(V8QI "v8qi") (V16QI "v16qi")
+			       (V4HI "v4hi") (V8HI  "v8hi")
+			       (V2SI "v2si") (V4SI  "v4si")
+			       (DI   "di")   (V2DI  "v2di")
+			       (V4HF "v4hi") (V8HF  "v8hi")
+			       (V2SF "v2si") (V4SF  "v4si")
+			       (V2DF "v2di") (DF    "di")
+			       (SF   "si")])
 
 ;; Mode for vector conditional operations where the comparison has
 ;; different type from the lhs.
