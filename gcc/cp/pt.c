@@ -25604,20 +25604,18 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     }
 
   bool saw_ctor = false;
-  if (CLASSTYPE_METHOD_VEC (type))
-    // FIXME cache artificial deduction guides
-    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type));
-	 iter; ++iter)
-      {
-	tree guide = build_deduction_guide (*iter, outer_args, complain);
-	if ((flags & LOOKUP_ONLYCONVERTING)
-	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
-	  elided = true;
-	else
-	  cands = lookup_add (guide, cands);
+  // FIXME cache artificial deduction guides
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
+    {
+      tree guide = build_deduction_guide (*iter, outer_args, complain);
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	elided = true;
+      else
+	cands = lookup_add (guide, cands);
 
-	saw_ctor = true;
-      }
+      saw_ctor = true;
+    }
 
   tree call = error_mark_node;
 

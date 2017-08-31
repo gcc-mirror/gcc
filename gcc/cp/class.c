@@ -2271,11 +2271,6 @@ finish_struct_methods (tree t)
   if (!method_vec)
     return;
 
-  /* Clear DECL_IN_AGGR_P for all functions.  */
-  for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (DECL_DECLARES_FUNCTION_P (fn))
-      DECL_IN_AGGR_P (fn) = false;
-
   /* Issue warnings about private constructors and such.  If there are
      no methods, then some public defaults are generated.  */
   maybe_warn_about_overly_private_class (t);
@@ -5794,9 +5789,6 @@ check_bases_and_members (tree t)
   for (; access_decls; access_decls = TREE_CHAIN (access_decls))
     handle_using_decl (TREE_VALUE (access_decls), t);
 
-  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
-  finish_struct_methods (t);
-
   /* Figure out whether or not we will need a cookie when dynamically
      allocating an array of this type.  */
   LANG_TYPE_CLASS_CHECK (t)->vec_new_uses_cookie
@@ -6926,6 +6918,9 @@ finish_struct_1 (tree t)
      bases and members and add implicitly generated methods.  */
   check_bases_and_members (t);
 
+  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
+  finish_struct_methods (t);
+
   /* Find the key method.  */
   if (TYPE_CONTAINS_VPTR_P (t))
     {
@@ -6950,6 +6945,8 @@ finish_struct_1 (tree t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
+
+  /* COMPLETE_TYPE_P is now true.  */
   if (CLASSTYPE_AS_BASE (t) != t)
     /* We use the base type for trivial assignments, and hence it
        needs a mode.  */
@@ -7014,16 +7011,19 @@ finish_struct_1 (tree t)
     }
 
   finish_struct_bits (t);
+
   set_method_tm_attributes (t);
   if (flag_openmp || flag_openmp_simd)
     finish_omp_declare_simd_methods (t);
 
-  /* Complete the rtl for any static member objects of the type we're
-     working on.  */
+  /* Clear DECL_IN_AGGR_P for all member functions.  Complete the rtl
+     for any static member objects of the type we're working on.  */
   for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-    if (VAR_P (x) && TREE_STATIC (x)
-        && TREE_TYPE (x) != error_mark_node
-	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
+    if (DECL_DECLARES_FUNCTION_P (x))
+      DECL_IN_AGGR_P (x) = false;
+    else if (VAR_P (x) && TREE_STATIC (x)
+	     && TREE_TYPE (x) != error_mark_node
+	     && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
 
   set_class_bindings (t, TYPE_FIELDS (t));
@@ -7110,7 +7110,7 @@ unreverse_member_declarations (tree t)
 
   /* For the TYPE_FIELDS, only the non TYPE_DECLs are in reverse
      order, so we can't just use nreverse.  Due to stat_hack
-     chicanery in finish_member_declarations.  */
+     chicanery in finish_member_declaration.  */
   prev = NULL_TREE;
   for (x = TYPE_FIELDS (t);
        x && TREE_CODE (x) != TYPE_DECL;
@@ -7124,8 +7124,7 @@ unreverse_member_declarations (tree t)
   if (prev)
     {
       DECL_CHAIN (TYPE_FIELDS (t)) = x;
-      if (prev)
-	TYPE_FIELDS (t) = prev;
+      TYPE_FIELDS (t) = prev;
     }
 }
 

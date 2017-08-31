@@ -1,6 +1,16 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (finish_struct_methods): Move DECL_IN_AGGR_P frobbing to
+	finish_struct_1.
+	(check_bases_and_members): Move finish_struct_methods to ...
+	(finish_struct_1): ... here.  Frob DECL_IN_AGGR_P.
+	(unreverse_member_declarations): Remove unneeded if.
+	* method.c (lazily_declare_fn): Adjust comment.
+	* pt.c (do_class_deduction): No need to check CLASSTYPE_METHOD_VEC.
+	* tree.c (type_has_nontrivial_copy_init): Likewise.
+
+	gcc/cp/
 	* class.c (add_method): Use find_method_slot.
 	* name-lookup.h (find_method_slot): Declare.
 	* name-lookup.c (legacy_fn_member_lookup): Allow NULL slot in
