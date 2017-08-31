@@ -1,6 +1,15 @@
 2017-08-31  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* class.c (add_method): Use find_method_slot.
+	* name-lookup.h (find_method_slot): Declare.
+	* name-lookup.c (legacy_fn_member_lookup): Allow NULL slot in
+	incomplete type.
+	(find_method_slot): Use.
+	* decl.c (grok_special_member_properties): Check conv-op here.
+
 	Restore get_class_binding name.
+	gcc/cp/
 	* name-lookup.c (get_class_value, get_class_value_direct): Rename
 	to ...
 	(get_class_binding, get_class_binding_direct): ... here.
@@ -21,6 +30,7 @@
 	lookup_conversions_r): Likewise.
 	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Likewise.
 
+	gcc/cp/
 	* name-lookup.c (insert_late_enum_def_bindings): Swap args.
 	* decl.c (finish_enum_value_list): Adjust
 	insert_late_enum_def_bindings call.

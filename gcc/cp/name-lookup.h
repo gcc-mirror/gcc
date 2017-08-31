@@ -353,5 +353,6 @@ extern tree get_class_binding (tree, tree, bool prefer_type = false,
 			       int restricted = 1);
 extern void set_class_bindings (tree, tree);
 extern void insert_late_enum_def_bindings (tree, tree);
+extern tree *find_method_slot (tree klass, tree name);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

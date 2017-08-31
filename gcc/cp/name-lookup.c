@@ -1148,11 +1148,12 @@ legacy_fn_member_lookup (tree type, tree name)
     }
   else
     for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
-      {
-	if (OVL_NAME (fns) == name)
-	  break;
-	fns = NULL_TREE;
-      }
+      if (fns)
+	{
+	  if (OVL_NAME (fns) == name)
+	    break;
+	  fns = NULL_TREE;
+	}
 
   return fns;
 }
@@ -1250,6 +1251,54 @@ legacy_nonfn_member_lookup (tree type, tree name, bool want_type)
   gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
 
   return NULL_TREE;
+}
+
+/* Find the slot containing overloads called 'NAME'.  If there is no
+   such slot, create an empty one.  KLASS might be complete at this
+   point, in which case we need to preserve ordering. */
+
+tree *
+find_method_slot (tree klass, tree name)
+{
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass);
+  if (!method_vec)
+    {
+      /* Make a new method vector.  We start with 8 entries.  */
+      vec_alloc (method_vec, 8);
+      CLASSTYPE_METHOD_VEC (klass) = method_vec;
+    }
+
+  bool complete_p = COMPLETE_TYPE_P (klass);
+  unsigned ix, length = method_vec->length ();
+
+  for (ix = 0; ix < length; ix++)
+    {
+      tree *slot = &(*method_vec)[ix];
+      tree fn_name = DECL_NAME (OVL_FIRST (*slot));
+
+      if (fn_name == name)
+	return slot;
+      if (complete_p && fn_name > name)
+	break;
+    }
+
+  /* No slot found.  Create one at IX.  */
+  if (complete_p)
+    {
+      // FIXME: Check whether this is before or after adding the fields.
+      /* Do exact allocation when complete, as we don't expect to add
+	 many.  */
+      vec_safe_reserve_exact (method_vec, 1);
+      method_vec->quick_insert (ix, NULL_TREE);
+    }
+  else
+    {
+      gcc_checking_assert (ix == length);
+      vec_safe_push (method_vec, NULL_TREE);
+    }
+  CLASSTYPE_METHOD_VEC (klass) = method_vec;
+
+  return &(*method_vec)[ix];
 }
 
 /* Look for NAME as an immediate member of KLASS (including

@@ -12793,7 +12793,7 @@ grok_special_member_properties (tree decl)
     return;
 
   class_type = DECL_CONTEXT (decl);
-  if (DECL_CONSTRUCTOR_P (decl))
+  if (IDENTIFIER_CTOR_P (DECL_NAME (decl)))
     {
       int ctor = copy_fn_p (decl);
 
@@ -12823,10 +12823,10 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
-	  && !copy_fn_p (decl) && !move_fn_p (decl))
+	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
-  else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
+  else if (DECL_NAME (decl) == cp_assignment_operator_id (NOP_EXPR))
     {
       /* [class.copy]
 
@@ -12847,6 +12847,9 @@ grok_special_member_properties (tree decl)
       else if (move_fn_p (decl) && user_provided_p (decl))
 	TYPE_HAS_COMPLEX_MOVE_ASSIGN (class_type) = 1;
     }
+  else if (IDENTIFIER_CONV_OP_P (DECL_NAME (decl)))
+    TYPE_HAS_CONVERSION (class_type) = true;
+  
   /* Destructors are handled in check_methods.  */
 }
 

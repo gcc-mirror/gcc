@@ -1014,40 +1014,17 @@ add_method (tree type, tree method, bool via_using)
   if (method == error_mark_node)
     return false;
 
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
-    {
-      /* Make a new method vector.  We start with 8 entries.  */
-      vec_alloc (method_vec, 8);
-      CLASSTYPE_METHOD_VEC (type) = method_vec;
-    }
-
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  bool insert_p = true;
   tree method_name = DECL_NAME (method);
-  bool complete_p = COMPLETE_TYPE_P (type);
   bool conv_p = IDENTIFIER_CONV_OP_P (method_name);
 
   if (conv_p)
     method_name = conv_op_identifier;
 
-  /* See if we already have an entry with this name.  */
-  unsigned slot;
-  tree m;
-  for (slot = 0; vec_safe_iterate (method_vec, slot, &m); ++slot)
-    {
-      m = DECL_NAME (OVL_FIRST (m));
-      if (m == method_name)
-	{
-	  insert_p = false;
-	  break;
-	}
-      if (complete_p && m > method_name)
-	break;
-    }
-  tree current_fns = insert_p ? NULL_TREE : (*method_vec)[slot];
+  tree *slot = find_method_slot (type, method_name);
+  tree current_fns = *slot;
 
   tree conv_marker = NULL_TREE;
   if (conv_p)
@@ -1214,34 +1191,15 @@ add_method (tree type, tree method, bool via_using)
 
   if (conv_p)
     {
-      TYPE_HAS_CONVERSION (type) = 1;
       /* Prepend the marker function.  */
       OVL_CHAIN (conv_marker) = current_fns;
       current_fns = conv_marker;
     }
-  else if (!complete_p)
+  else if (!COMPLETE_TYPE_P (type))
     push_class_level_binding (DECL_NAME (method), current_fns);
 
-  if (insert_p)
-    {
-      bool reallocated;
+  *slot = current_fns;
 
-      /* We only expect to add few methods in the COMPLETE_P case, so
-	 just make room for one more method in that case.  */
-      if (complete_p)
-	reallocated = vec_safe_reserve_exact (method_vec, 1);
-      else
-	reallocated = vec_safe_reserve (method_vec, 1);
-      if (reallocated)
-	CLASSTYPE_METHOD_VEC (type) = method_vec;
-      if (slot == method_vec->length ())
-	method_vec->quick_push (current_fns);
-      else
-	method_vec->quick_insert (slot, current_fns);
-    }
-  else
-    /* Replace the current slot.  */
-    (*method_vec)[slot] = current_fns;
   return true;
 }
 
