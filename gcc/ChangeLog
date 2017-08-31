@@ -1,3 +1,19 @@
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (compact_sda_memory_operand): Update
+	prototype.
+	* config/arc/arc.c (arc_print_operand): Output scalled address for
+	sdata whenever is possible.
+	(arc_in_small_data_p): Allow sdata for 64bit datum when double
+	load/stores are available.
+	(compact_sda_memory_operand): Check for the alignment required by
+	code density instructions.
+	* config/arc/arc.md (movsi_insn): Use newly introduced Us0
+	constraint.
+	* config/arc/constraints.md (Usd): Update constraint.
+	(Us0): New constraint.
+	(Usc): Update constraint.
+
 2017-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82054

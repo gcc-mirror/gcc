@@ -27,7 +27,7 @@ extern struct rtx_def *gen_compare_reg (rtx, machine_mode);
 /* Declarations for various fns used in the .md file.  */
 extern void arc_output_function_epilogue (FILE *, HOST_WIDE_INT, int);
 extern const char *output_shift (rtx *);
-extern bool compact_sda_memory_operand (rtx op,machine_mode  mode);
+extern bool compact_sda_memory_operand (rtx, machine_mode, bool);
 extern bool arc_double_limm_p (rtx);
 extern void arc_print_operand (FILE *, rtx, int);
 extern void arc_print_operand_address (FILE *, rtx);

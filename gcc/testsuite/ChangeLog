@@ -1,3 +1,8 @@
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-3.c: New file.
+	* gcc.target/arc/sdata-4.c: Likewise.
+
 2017-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82054
