@@ -1,3 +1,9 @@
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82054
+	* dwarf2out.c (dwarf2out_early_global_decl): Process each
+	function only once.
+
 2017-08-31  Tamar Christina  <tamar.christina@arm.com>
 
 	* config/aarch64/aarch64-builtins.c (aarch64_init_simd_builtins):
