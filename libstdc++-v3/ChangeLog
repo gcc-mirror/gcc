@@ -1,3 +1,22 @@
+2017-09-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2016-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2011.xml: Update status.
+	* doc/html/manual/status.html: Regenerate.
+	* include/std/scoped_allocator (__outer_allocator_t, __outermost_type):
+	New helpers for recursive OUTERMOST.
+	(__outermost): Use __outermost_type::_S_outermost.
+	(__do_outermost, scoped_allocator_adaptor::__outermost_type): Remove.
+	(scoped_allocator_adaptor::__outermost_alloc_traits): Use new
+	__outermost_type helper.
+	(scoped_allocator_adaptor::_Constructible): New alias template.
+	(scoped_allocator_adaptor::scoped_allocator_adaptor<_Outer2>):
+	Constrain template constructors.
+	* testsuite/20_util/scoped_allocator/3.cc: New test.
+	* testsuite/20_util/scoped_allocator/outermost.cc: New test.
+
 2017-06-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/locale_conv.h (wbuffer_convert::sync): Fix condition.
