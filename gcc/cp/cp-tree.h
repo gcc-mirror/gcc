@@ -5952,8 +5952,6 @@ extern tree convert_to_base_statically		(tree, tree);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
-extern void resort_type_method_vec		(void *, void *,
-						 gt_pointer_operator, void *);
 extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
 extern tree currently_open_class		(tree);

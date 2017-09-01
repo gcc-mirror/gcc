@@ -1312,6 +1312,59 @@ lookup_fnfields_slot (tree type, tree name)
   return lookup_fnfields_slot_nolazy (type, name);
 }
 
+static struct {
+  gt_pointer_operator new_value;
+  void *cookie;
+} resort_data;
+
+/* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
+
+static int
+method_name_cmp (const void* m1_p, const void* m2_p)
+{
+  const tree *const m1 = (const tree *) m1_p;
+  const tree *const m2 = (const tree *) m2_p;
+
+  if (OVL_NAME (*m1) < OVL_NAME (*m2))
+    return -1;
+  return 1;
+}
+
+/* This routine compares two fields like method_name_cmp but using the
+   pointer operator in resort_field_decl_data.  */
+
+static int
+resort_method_name_cmp (const void* m1_p, const void* m2_p)
+{
+  const tree *const m1 = (const tree *) m1_p;
+  const tree *const m2 = (const tree *) m2_p;
+
+  tree n1 = OVL_NAME (*m1);
+  tree n2 = OVL_NAME (*m2);
+  resort_data.new_value (&n1, resort_data.cookie);
+  resort_data.new_value (&n2, resort_data.cookie);
+  if (n1 < n2)
+    return -1;
+  return 1;
+}
+
+/* Resort TYPE_METHOD_VEC because pointers have been reordered.  */
+
+void
+resort_type_method_vec (void* obj,
+			void* /*orig_obj*/,
+			gt_pointer_operator new_value,
+			void* cookie)
+{
+  if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
+    {
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      qsort (method_vec->address (), method_vec->length (), sizeof (tree),
+	     resort_method_name_cmp);
+    }
+}
+
 /* Allocate and return an instance of struct sorted_fields_type with
    N fields.  */
 
@@ -1383,11 +1436,16 @@ add_enum_fields_to_record_type (tree enumtype,
 }
 
 /* Insert FIELDS into KLASS for the sorted case if the FIELDS count is
-   big enough.  */
+   big enough.  Sort the METHOD_VEC too.  */
 
 void 
-set_class_bindings (tree klass, tree fields)
+set_class_bindings (tree klass)
 {
+  if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass))
+    qsort (method_vec->address (), method_vec->length (),
+	   sizeof (tree), method_name_cmp);
+
+  tree fields = TYPE_FIELDS (klass);
   int n_fields = count_fields (fields);
   if (n_fields >= 8)
     {
