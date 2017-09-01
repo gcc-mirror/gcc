@@ -1,3 +1,15 @@
+2017-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* c-typeck.c (build_atomic_assign): Handle argument with excess
+	precision.  Ensure any EXCESS_PRECISION_EXPR is present in
+	argument passed to build_binary_op and convert_for_assignment but
+	not for call to c_fully_fold.
+	(build_modify_expr): Do not remove EXCESS_PRECISION_EXPR early.
+	Ensure build_binary_op is called with argument with original
+	semantic type.  Avoid calling c_fully_fold with an
+	EXCESS_PRECISION_EXPR from build_binary_op.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81887
