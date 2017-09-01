@@ -11074,6 +11074,12 @@ This option enables instrumentation of C++ member function calls, member
 accesses and some conversions between pointers to base and derived classes,
 to verify the referenced object has the correct dynamic type.
 
+@item -fsanitize=pointer-overflow
+@opindex fsanitize=pointer-overflow
+
+This option enables instrumentation of pointer arithmetics.  If the pointer
+arithmetics overflows, a run-time error is issued.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,

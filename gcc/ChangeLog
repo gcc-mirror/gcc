@@ -1,5 +1,8 @@
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81902
+	* doc/invoke.texi: Document -fsanitize=pointer-overflow.
+
 	PR sanitizer/81923
 	* asan.c (create_odr_indicator): Strip name encoding from assembler
 	name before appending it after __odr_asan_.
