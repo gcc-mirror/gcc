@@ -1,5 +1,20 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (finish_struct_methods): Done clear DECL_IN_AGGR_P here.
+	Don't call maybe_warn_about_overly_private_class here.
+	(warn_hidden): Cleanup declarations and comments.
+	(type_has_user_provided_constructor): No need to check
+	CLASSTYPE_METHOD_VEC.
+	(type_has_user_provided_or_explicit_constructor): Likewise.
+	(classtype_has_move_assign_or_move_ctor_p): Likewise.
+	(check_bases_and_members): Don't call finish_struct_methods here.
+	(finish_struct_1): Call finish_struct_methods and
+	set_class_bindings immediately after layout.  Clear DECL_IN_AGGR_P
+	here.
+	(finish_struct): For templates process USING_DECLS and clear
+	DECL_IN_AGGR_P before calling finish_struct_methods. Call
+	maybe_warn_about_overly_private_class here.
+
 	Revert 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 	Restore sorted_fields vector.
 	* cp-tree.h (lang_type): Restore sorted_fields vector.
