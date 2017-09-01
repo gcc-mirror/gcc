@@ -1,3 +1,8 @@
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* typeck.c (cp_build_unary_op): Avoid re-entering reporting routines.
+
 2017-08-30  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82029 - __PRETTY_FUNCTION__ in lambda in template
