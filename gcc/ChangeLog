@@ -1,3 +1,10 @@
+2017-09-01  Joerg Sonnenberger  <joerg@bec.de>
+	    Jeff Law  <law@redhat.com>
+
+	* varasm.c (bss_initializer_p): Do not put constants into .bss
+	(categorize_decl_for_section): Handle bss_initializer_p returning
+	false when DECL_INITIAL is NULL.
+
 2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	PR target/82012
