@@ -15647,6 +15647,11 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
 
       if (!strcmp ("depend", p))
 	{
+	  if (!flag_openmp)	/* flag_openmp_simd  */
+	    {
+	      c_parser_skip_to_pragma_eol (parser, false);
+	      return false;
+	    }
 	  if (context == pragma_stmt)
 	    {
 	      error_at (loc,
@@ -15667,6 +15672,11 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
 
   tree clauses = c_parser_omp_all_clauses (parser, OMP_ORDERED_CLAUSE_MASK,
 					   "#pragma omp ordered");
+
+  if (!flag_openmp	/* flag_openmp_simd  */
+      && omp_find_clause (clauses, OMP_CLAUSE_SIMD) == NULL_TREE)
+    return false;
+
   c_finish_omp_ordered (loc, clauses,
 			c_parser_omp_structured_block (parser, if_p));
   return true;

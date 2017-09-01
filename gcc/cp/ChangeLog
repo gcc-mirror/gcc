@@ -1,3 +1,8 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* parser.c (cp_parser_omp_ordered): Handle -fopenmp-simd.
+
 2017-09-01  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/82040
