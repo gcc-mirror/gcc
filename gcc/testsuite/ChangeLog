@@ -5,6 +5,8 @@
 
 2017-09-01  Jeff Law  <law@redhat.com>
 
+	* gcc.target/i386/const-in-bss.c: New test.
+
 	PR tree-optimization/82052
 	* gcc.c-torture/compile/pr82052.c: New test.
 
