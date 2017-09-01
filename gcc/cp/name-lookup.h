@@ -351,7 +351,9 @@ extern tree get_class_binding_direct (tree, tree, bool prefer_type = false,
 				      int restricted = 1);
 extern tree get_class_binding (tree, tree, bool prefer_type = false,
 			       int restricted = 1);
-extern void set_class_bindings (tree, tree);
+extern void resort_type_method_vec (void *, void *,
+				    gt_pointer_operator, void *);
+extern void set_class_bindings (tree);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree *find_method_slot (tree klass, tree name);
 

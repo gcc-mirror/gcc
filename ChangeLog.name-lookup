@@ -1,5 +1,16 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* cp-tree.h (resort_type_method_vec): Move declaration to ...
+	* name-lookup.h (resort_type_method_vec): ... here.
+	* class.c (finish_struct_1, finish_struct): Adjust
+	set_class_bindings call.  Don't call finish_struct_methods.
+	(resort_data, method_name_cmp, resort_method_name_cmp,
+	resort_type_method_vec, finish_struct_methods): Move to ...
+	* name-lookup.c (resort_data, method_name_cmp,
+	resort_method_name_cmp, resort_type_method_vec): ... here.
+	(set_class_bindings): Lose fields arg.  Swallow finish_struct_methods.
+
 	Merge trunk r251592.
 
 	gcc/cp/

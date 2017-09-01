@@ -129,10 +129,7 @@ static void handle_using_decl (tree, tree);
 static tree dfs_modify_vtables (tree, void *);
 static tree modify_all_vtables (tree, tree);
 static void determine_primary_bases (tree);
-static void finish_struct_methods (tree);
 static void maybe_warn_about_overly_private_class (tree);
-static int method_name_cmp (const void *, const void *);
-static int resort_method_name_cmp (const void *, const void *);
 static void add_implicitly_declared_members (tree, tree*, int, int);
 static tree fixed_type_or_null (tree, int *, int *);
 static tree build_simple_base_path (tree expr, tree binfo);
@@ -2203,76 +2200,6 @@ maybe_warn_about_overly_private_class (tree t)
 	  return;
 	}
     }
-}
-
-static struct {
-  gt_pointer_operator new_value;
-  void *cookie;
-} resort_data;
-
-/* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
-
-static int
-method_name_cmp (const void* m1_p, const void* m2_p)
-{
-  const tree *const m1 = (const tree *) m1_p;
-  const tree *const m2 = (const tree *) m2_p;
-
-  if (OVL_NAME (*m1) < OVL_NAME (*m2))
-    return -1;
-  return 1;
-}
-
-/* This routine compares two fields like method_name_cmp but using the
-   pointer operator in resort_field_decl_data.  */
-
-static int
-resort_method_name_cmp (const void* m1_p, const void* m2_p)
-{
-  const tree *const m1 = (const tree *) m1_p;
-  const tree *const m2 = (const tree *) m2_p;
-
-  tree n1 = OVL_NAME (*m1);
-  tree n2 = OVL_NAME (*m2);
-  resort_data.new_value (&n1, resort_data.cookie);
-  resort_data.new_value (&n2, resort_data.cookie);
-  if (n1 < n2)
-    return -1;
-  return 1;
-}
-
-/* Resort TYPE_METHOD_VEC because pointers have been reordered.  */
-
-void
-resort_type_method_vec (void* obj,
-			void* /*orig_obj*/,
-			gt_pointer_operator new_value,
-			void* cookie)
-{
-  if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
-    {
-      resort_data.new_value = new_value;
-      resort_data.cookie = cookie;
-      qsort (method_vec->address (), method_vec->length (), sizeof (tree),
-	     resort_method_name_cmp);
-    }
-}
-
-/* Warn about duplicate methods in fn_fields.
-
-   Sort methods that are not special (i.e., constructors, destructors,
-   and type conversion operators) so that we can find them faster in
-   search.  */
-
-static void
-finish_struct_methods (tree t)
-{
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t);
-  if (!method_vec)
-    return;
-
-  qsort (method_vec->address (), method_vec->length (),
-	 sizeof (tree), method_name_cmp);
 }
 
 /* Make BINFO's vtable have N entries, including RTTI entries,
@@ -6940,9 +6867,7 @@ finish_struct_1 (tree t)
   layout_class_type (t, &virtuals);
   /* COMPLETE_TYPE_P is now true.  */
 
-  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
-  finish_struct_methods (t);
-  set_class_bindings (t, TYPE_FIELDS (t));
+  set_class_bindings (t);
 
   if (CLASSTYPE_AS_BASE (t) != t)
     /* We use the base type for trivial assignments, and hence it
@@ -7160,8 +7085,7 @@ finish_struct (tree t, tree attributes)
       TYPE_SIZE_UNIT (t) = size_zero_node;
       /* COMPLETE_TYPE_P is now true.  */
 
-      finish_struct_methods (t);
-      set_class_bindings (t, TYPE_FIELDS (t));
+      set_class_bindings (t);
 
       /* We need to emit an error message if this type was used as a parameter
 	 and it is an abstract type, even if it is a template. We construct
