@@ -1,3 +1,20 @@
+2017-09-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR libquadmath/81848
+	* configure.ac (powerpc*-linux*): Use attribute mode KC to create
+	complex __float128 on PowerPC instead of attribute mode TC.
+	* quadmath.h (__complex128): Likewise.
+	* configure: Regenerate.
+	* math/cbrtq.c (CBRT2): Use __float128 not long double.
+	(CBRT4): Likewise.
+	(CBRT2I): Likewise.
+	(CBRT4I): Likewise.
+	* math/j0q.c (U0): Likewise.
+	* math/sqrtq.c (sqrtq): Don't depend on implicit conversion
+	between __float128, instead explicitly convert the __float128
+	value to long double because the PowerPC does not allow __float128
+	and long double in the same expression.
+
 2017-07-19  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* math/powq.c (powq): Use uint32_t instead of u_int32_t.

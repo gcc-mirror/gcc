@@ -816,7 +816,7 @@ static __float128 Y0_2D[NY0_2D + 1] = {
  /* 1.000000000000000000000000000000000000000E0 */
 };
 
-static const long double U0 = -7.3804295108687225274343927948483016310862e-02Q;
+static const __float128 U0 = -7.3804295108687225274343927948483016310862e-02Q;
 
 /* Bessel function of the second kind, order zero.  */
 
