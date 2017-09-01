@@ -1,3 +1,9 @@
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82059
+	* gimple-ssa-isolate-paths.c (isolate_path): Add profile and
+	frequency only when an edge is redirected.
+
 2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* config/arc/arc-c.c (__ARC_LPC_WIDTH__): Add builtin define.
