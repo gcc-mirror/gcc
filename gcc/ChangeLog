@@ -1,3 +1,129 @@
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82059
+	* gimple-ssa-isolate-paths.c (isolate_path): Add profile and
+	frequency only when an edge is redirected.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-c.c (__ARC_LPC_WIDTH__): Add builtin define.
+	* config/arc/arc.c (ARC_MAX_LOOP_LENGTH): Define.
+	(arc_conditional_register_usage): Remove ARC600 lp_count
+	exception.
+	(arc_file_start): Emit Tag_ARC_CPU_variation.
+	(arc_can_use_doloop_p): New conditions to use ZOLs.
+	(hwloop_fail): New function.
+	(hwloop_optimize): Likewise.
+	(hwloop_pattern_reg): Likewise.
+	(arc_doloop_hooks): New struct, to be used with reorg_loops.
+	(arc_reorg_loops): New function, calls reorg_loops.
+	(arc_reorg): Call arc_reorg_loops.  Remove old ZOL handling.
+	(arc600_corereg_hazard): Remove ZOL checking, case handled by
+	hwloop_optimize.
+	(arc_loop_hazard): Remove function, functionality moved into
+	hwloop_optimize.
+	(arc_hazard): Remove arc_loop_hazard call.
+	(arc_adjust_insn_length): Remove ZOL handling, functionality moved
+	into hwloop_optimize.
+	(arc_label_align): Remove ZOL handling.
+	* config/arc/arc.h (LOOP_ALIGN): Changed to 0.
+	* config/arc/arc.md (doloop_begin): Remove pattern.
+	(doloop_begin_i): Likewise.
+	(doloop_end_i): Likewise.
+	(doloop_fallback): Likewise.
+	(doloop_fallback_m): Likewise.
+	(doloop_end): Reimplement expand.
+	(arc_lp): New pattern for LP instruction.
+	(loop_end): New pattern.
+	(loop_fail): Likewise.
+	(decrement_and_branch_until_zero): Likewise.
+	* config/arc/arc.opt (mlpc-width): New option.
+	* doc/invoke.texi (mlpc-width): Document option.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_ifcvt): Remove use of merge_blocks call.
+	(arc_ccfsm_advance): Fix checking for delay slots.
+	(arc_reorg): Add rtl dump after each call to arc_ifcvt.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.md (movqi_insn): Add stores to save constant long
+	immediates.
+	(movhi_insn): Update store instruction constraint which are saving
+	6-bit short immediates.
+	(movsi_insn): Consider also short scaled load operations.
+	(zero_extendhisi2_i): Use Usd constraint instead of T.
+	(extendhisi2_i): Add q constraint.
+	(arc_clzsi2): Add type and length attributes.
+	(arc_ctzsi2): Likewise.
+	* config/arc/constraints.md (Usc): Update constraint, the
+	assembler can parse two relocations for a single instruction.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_use_anchors_for_symbol_p): New function.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define.
+
+2017-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now
+	match as powerpc-wrs-vxworks*.
+
+2017-08-31  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64-simd.md (aarch64_mla_elt_merge<mode>): Fix
+	register constraint for by-element operand.
+	(aarch64_mls_elt_merge<mode>): Likewise.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_can_follow_jump): Check for short
+	branches.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config.gcc: Use g.opt for arc.
+	* config/arc/arc.c (LEGITIMATE_SCALED_ADDRESS_P): Deleted,
+	functionality moved to ...
+	(legitimate_scaled_address_p): New function, ...here.
+	(LEGITIMATE_SMALL_DATA_OFFSET_P): New define.
+	(LEGITIMATE_SMALL_DATA_ADDRESS_P): Use the above define.
+	(legitimate_offset_address_p): Delete TARGET_NO_SDATA_SET
+	condition.
+	(arc_override_options): Handle G option.
+	(arc_output_pic_addr_const): Correct function definition.
+	(arc_legitimate_address_p): Use legitimate_scaled_address_p.
+	(arc_decl_anon_ns_mem_p): Delete.
+	(arc_in_small_data_p): Overhaul this function to take into
+	consideration the value given via G option.
+	(arc_rewrite_small_data_1): Renamed and corrected old
+	arc_rewrite_small_data function.
+	(arc_rewrite_small_data): New function.
+	(small_data_pattern): Don't use pic_offset_table_rtx.
+	* config/arc/arc.h (CC1_SPEC): Recognize G option.
+	* config/arc/simdext.md (movmisalignv2hi): Use
+	prepare_move_operands function.
+	(mov*): Likewise.
+	(movmisalign*): Likewise.
+	* doc/invoke.texi (ARC options): Document -G option.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc-protos.h (compact_sda_memory_operand): Update
+	prototype.
+	* config/arc/arc.c (arc_print_operand): Output scalled address for
+	sdata whenever is possible.
+	(arc_in_small_data_p): Allow sdata for 64bit datum when double
+	load/stores are available.
+	(compact_sda_memory_operand): Check for the alignment required by
+	code density instructions.
+	* config/arc/arc.md (movsi_insn): Use newly introduced Us0
+	constraint.
+	* config/arc/constraints.md (Usd): Update constraint.
+	(Us0): New constraint.
+	(Usc): Update constraint.
+
 2017-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82054

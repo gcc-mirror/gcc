@@ -1,5 +1,7 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251592.
+
 	gcc/cp/
 	* class.c (finish_struct): Also call set_class_bindings in
 	template case.

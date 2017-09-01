@@ -5982,6 +5982,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	{
 	  /* Warn if the expression has boolean value.  */
 	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	      && (complain & tf_warning)
 	      && warning_at (location, OPT_Wbool_operation,
 			     "%<~%> on an expression of type bool"))
 	    inform (location, "did you mean to use logical not (%<!%>)?");

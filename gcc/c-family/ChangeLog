@@ -1,3 +1,11 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* c-pragma.c (omp_pragmas): Move "ordered" entry from here to ...
+	(omp_pragmas_simd): ... here.
+	* c-omp.c (c_finish_omp_ordered): If clauses isn't simd clause alone,
+	create new clauses list containing just simd clause.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

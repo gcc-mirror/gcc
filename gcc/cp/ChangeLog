@@ -1,4 +1,33 @@
+2017-09-01  Nathan Sidwell  <nathan@acm.org>
+
+	Revert 2017-08-28  Nathan Sidwell  <nathan@acm.org>
+	Restore sorted_fields vector.
+	* cp-tree.h (lang_type): Restore sorted_fields vector.
+	(CLASSTYPE_SORTED_FIELDS): Restore.
+	(CLASSTYPE_BINDINGS): Delete.
+	* name-lookup.c (lookup_field_1): Restore binary search.
+	(sorted_fields_type_new, count_fields,
+	add_fields_to_record_type, add_enum_fields_to_record_type): Restore
+	(set_class_bindings): Revert.
+	(insert_late_enum_def_binding): Restore field_vec insertion.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* parser.c (cp_parser_omp_ordered): Handle -fopenmp-simd.
+
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* typeck.c (cp_build_unary_op): Avoid re-entering reporting routines.
+
 2017-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82029 - __PRETTY_FUNCTION__ in lambda in template
+	* pt.c (enclosing_instantiation_of, lambda_fn_in_template_p)
+	(regenerated_lambda_fn_p): New.
+	(tsubst_decl) [VAR_DECL]: Use enclosing_instantiation_of.
+	(tsubst_copy) [VAR_DECL]: Likewise.
 
 	PR c++/82030 - ICE inheriting from multiple lambdas
 	PR c++/80767

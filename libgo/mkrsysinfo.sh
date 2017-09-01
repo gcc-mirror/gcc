@@ -36,6 +36,10 @@ grep -v '^// ' gen-sysinfo.go | \
 grep '^type _arpcom ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
+# Same on Solaris for _mld_hdr_t.
+grep '^type _mld_hdr_t ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
 # The time structures need special handling: we need to name the
 # types, so that we can cast integers to the right types when
 # assigning to the structures.

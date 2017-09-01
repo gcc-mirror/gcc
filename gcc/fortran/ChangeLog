@@ -1,3 +1,13 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* parse.c (decode_omp_directive): Use matchs instead of matcho for
+	end ordered and ordered directives, except for ordered depend.  For
+	-fopenmp-simd and ordered depend, reject the stmt.
+	* trans-openmp.c (gfc_trans_omp_ordered): For -fopenmp-simd ignore
+	threads clause and if simd clause isn't present, just translate the
+	body.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

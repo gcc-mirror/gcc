@@ -35301,6 +35301,11 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
 
       if (strcmp (p, "depend") == 0)
 	{
+	  if (!flag_openmp)	/* flag_openmp_simd */
+	    {
+	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	      return false;
+	    }
 	  if (context == pragma_stmt)
 	    {
 	      error_at (pragma_tok->location, "%<#pragma omp ordered%> with "
@@ -35321,6 +35326,11 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_ORDERED_CLAUSE_MASK,
 				 "#pragma omp ordered", pragma_tok);
+
+  if (!flag_openmp     /* flag_openmp_simd  */
+      && omp_find_clause (clauses, OMP_CLAUSE_SIMD) == NULL_TREE)
+    return false;
+
   c_finish_omp_ordered (loc, clauses,
 			cp_parser_omp_structured_block (parser, if_p));
   return true;

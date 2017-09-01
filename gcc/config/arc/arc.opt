@@ -494,3 +494,28 @@ Specifies the registers that the processor saves on an interrupt entry and exit.
 mrgf-banked-regs=
 Target RejectNegative Joined Var(arc_deferred_options) Defer
 Specifies the number of registers replicated in second register bank on entry to fast interrupt.
+
+mlpc-width=
+Target RejectNegative Joined Enum(arc_lpc) Var(arc_lpcwidth) Init(32)
+Sets LP_COUNT register width.  Possible values are 8, 16, 20, 24, 28, and 32.
+
+Enum
+Name(arc_lpc) Type(int)
+
+EnumValue
+Enum(arc_lpc) String(8) Value(8)
+
+EnumValue
+Enum(arc_lpc) String(16) Value(16)
+
+EnumValue
+Enum(arc_lpc) String(20) Value(20)
+
+EnumValue
+Enum(arc_lpc) String(24) Value(24)
+
+EnumValue
+Enum(arc_lpc) String(28) Value(28)
+
+EnumValue
+Enum(arc_lpc) String(32) Value(32)

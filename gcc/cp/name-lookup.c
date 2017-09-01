@@ -1456,8 +1456,8 @@ add_enum_fields_to_record_type (tree enumtype,
   return idx;
 }
 
-/* Insert FIELDS into T for the sorted case if the FIELDS count is
-   equal to THRESHOLD or greater than THRESHOLD.  */
+/* Insert FIELDS into KLASS for the sorted case if the FIELDS count is
+   big enough.  */
 
 void 
 set_class_bindings (tree klass, tree fields)
@@ -1472,7 +1472,7 @@ set_class_bindings (tree klass, tree fields)
     }
 }
 
-/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+/* Insert lately defined enum ENUMTYPE into KLASS for the sorted case.  */
 
 void
 insert_late_enum_def_bindings (tree klass, tree enumtype)

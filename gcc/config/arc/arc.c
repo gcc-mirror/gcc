@@ -65,10 +65,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "alias.h"
 #include "opts.h"
+#include "hw-doloop.h"
 
 /* Which cpu we're compiling for (ARC600, ARC601, ARC700).  */
 static char arc_cpu_name[10] = "";
 static const char *arc_cpu_string = arc_cpu_name;
+
+/* Maximum size of a loop.  */
+#define ARC_MAX_LOOP_LENGTH 4095
 
 /* ??? Loads can handle any constant, stores can only handle small ones.  */
 /* OTOH, LIMMs cost extra, so their usefulness is limited.  */
@@ -79,26 +83,21 @@ static const char *arc_cpu_string = arc_cpu_name;
 		      ? 0 \
 		      : -(-GET_MODE_SIZE (MODE) | -4) >> 1)))
 
-#define LEGITIMATE_SCALED_ADDRESS_P(MODE, X, STRICT) \
-(GET_CODE (X) == PLUS \
- && GET_CODE (XEXP (X, 0)) == MULT \
- && RTX_OK_FOR_INDEX_P (XEXP (XEXP (X, 0), 0), (STRICT)) \
- && GET_CODE (XEXP (XEXP (X, 0), 1)) == CONST_INT \
- && ((GET_MODE_SIZE (MODE) == 2 && INTVAL (XEXP (XEXP (X, 0), 1)) == 2) \
-     || (GET_MODE_SIZE (MODE) == 4 && INTVAL (XEXP (XEXP (X, 0), 1)) == 4)) \
- && (RTX_OK_FOR_BASE_P (XEXP (X, 1), (STRICT)) \
-     || (flag_pic ? CONST_INT_P (XEXP (X, 1)) : CONSTANT_P (XEXP (X, 1)))))
+#define LEGITIMATE_SMALL_DATA_OFFSET_P(X)				\
+  (GET_CODE (X) == CONST						\
+   && GET_CODE (XEXP ((X), 0)) == PLUS					\
+   && GET_CODE (XEXP (XEXP ((X), 0), 0)) == SYMBOL_REF			\
+   && SYMBOL_REF_SMALL_P (XEXP (XEXP ((X), 0), 0))			\
+   && GET_CODE (XEXP(XEXP ((X), 0), 1)) == CONST_INT			\
+   && INTVAL (XEXP (XEXP ((X), 0), 1)) <= g_switch_value)
 
-#define LEGITIMATE_SMALL_DATA_ADDRESS_P(X) \
-  (GET_CODE (X) == PLUS \
-   && (REG_P (XEXP ((X), 0)) && REGNO (XEXP ((X), 0)) == SDATA_BASE_REGNUM) \
-   && ((GET_CODE (XEXP((X),1)) == SYMBOL_REF \
-	&& SYMBOL_REF_SMALL_P (XEXP ((X), 1))) \
-       || (GET_CODE (XEXP ((X), 1)) == CONST \
-	   && GET_CODE (XEXP (XEXP ((X), 1), 0)) == PLUS \
-	   && GET_CODE (XEXP (XEXP (XEXP ((X), 1), 0), 0)) == SYMBOL_REF \
-	   && SYMBOL_REF_SMALL_P (XEXP (XEXP (XEXP ((X), 1), 0), 0)) \
-	   && GET_CODE (XEXP(XEXP (XEXP ((X), 1), 0), 1)) == CONST_INT)))
+#define LEGITIMATE_SMALL_DATA_ADDRESS_P(X)				\
+  (GET_CODE (X) == PLUS							\
+     && REG_P (XEXP ((X), 0))						\
+     && REGNO (XEXP ((X), 0)) == SDATA_BASE_REGNUM			\
+     && ((GET_CODE (XEXP ((X), 1)) == SYMBOL_REF			\
+	    && SYMBOL_REF_SMALL_P (XEXP ((X), 1)))			\
+	 || LEGITIMATE_SMALL_DATA_OFFSET_P (XEXP ((X), 1))))
 
 /* Array of valid operand punctuation characters.  */
 char arc_punct_chars[256];
@@ -276,6 +275,61 @@ static bool arc_use_by_pieces_infrastructure_p (unsigned HOST_WIDE_INT,
 /* Globally visible information about currently selected cpu.  */
 const arc_cpu_t *arc_selected_cpu;
 
+static bool
+legitimate_scaled_address_p (machine_mode mode, rtx op, bool strict)
+{
+  if (GET_CODE (op) != PLUS)
+    return false;
+
+  if (GET_CODE (XEXP (op, 0)) != MULT)
+    return false;
+
+  /* Check multiplication operands.  */
+  if (!RTX_OK_FOR_INDEX_P (XEXP (XEXP (op, 0), 0), strict))
+    return false;
+
+  if (!CONST_INT_P (XEXP (XEXP (op, 0), 1)))
+    return false;
+
+  switch (GET_MODE_SIZE (mode))
+    {
+    case 2:
+      if (INTVAL (XEXP (XEXP (op, 0), 1)) != 2)
+	return false;
+      break;
+    case 8:
+      if (!TARGET_LL64)
+	return false;
+      /*  Fall through. */
+    case 4:
+      if (INTVAL (XEXP (XEXP (op, 0), 1)) != 4)
+	return false;
+    default:
+      return false;
+    }
+
+  /* Check the base.  */
+  if (RTX_OK_FOR_BASE_P (XEXP (op, 1), (strict)))
+    return true;
+
+  if (flag_pic)
+    {
+      if (CONST_INT_P (XEXP (op, 1)))
+	return true;
+      return false;
+    }
+  if (CONSTANT_P (XEXP (op, 1)))
+    {
+      /* Scalled addresses for sdata is done other places.  */
+      if (GET_CODE (XEXP (op, 1)) == SYMBOL_REF
+	  && SYMBOL_REF_SMALL_P (XEXP (op, 1)))
+	return false;
+      return true;
+    }
+
+  return false;
+}
+
 /* Check for constructions like REG + OFFS, where OFFS can be a
    register, an immediate or an long immediate. */
 
@@ -301,8 +355,7 @@ legitimate_offset_address_p (machine_mode mode, rtx x, bool index, bool strict)
       && (GET_MODE_SIZE (mode) <= 4)
       /* Avoid small data which ends in something like GP +
 	 symb@sda.  */
-      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))
-	  || TARGET_NO_SDATA_SET))
+      && (!SYMBOL_REF_SMALL_P (XEXP (x, 1))))
     return true;
 
   return false;
@@ -1117,6 +1170,10 @@ arc_override_options (void)
   if (TARGET_COMPACT_CASESI)
     TARGET_CASE_VECTOR_PC_RELATIVE = 1;
 
+  /* Check for small data option */
+  if (!global_options_set.x_g_switch_value && !TARGET_NO_SDATA_SET)
+    g_switch_value = TARGET_LL64 ? 8 : 4;
+
   /* These need to be done at start up.  It's convenient to do them here.  */
   arc_init ();
 }
@@ -1652,18 +1709,7 @@ arc_conditional_register_usage (void)
 	   i <= ARC_LAST_SIMD_DMA_CONFIG_REG; i++)
 	reg_alloc_order [i] = i;
     }
-  /* For ARC600, lp_count may not be read in an instruction
-     following immediately after another one setting it to a new value.
-     There was some discussion on how to enforce scheduling constraints for
-     processors with missing interlocks on the gcc mailing list:
-     http://gcc.gnu.org/ml/gcc/2008-05/msg00021.html .
-     However, we can't actually use this approach, because for ARC the
-     delay slot scheduling pass is active, which runs after
-     machine_dependent_reorg.  */
-  if (TARGET_ARC600)
-    CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], LP_COUNT);
-  else if (!TARGET_LP_WR_INTERLOCK)
-    fixed_regs[LP_COUNT] = 1;
+
   for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
     if (!call_used_regs[regno])
       CLEAR_HARD_REG_BIT (reg_class_contents[SIBCALL_REGS], regno);
@@ -3804,6 +3850,26 @@ arc_print_operand (FILE *file, rtx x, int code)
 		  fputs (".as", file);
 		  output_scaled = 1;
 		}
+	      else if (LEGITIMATE_SMALL_DATA_ADDRESS_P (addr)
+		       && GET_MODE_SIZE (GET_MODE (x)) > 1)
+		{
+		  tree decl = NULL_TREE;
+		  int align = 0;
+		  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
+		    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
+		  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0))
+			   == SYMBOL_REF)
+		    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
+		  if (decl)
+		    align = DECL_ALIGN (decl);
+		  align = align / BITS_PER_UNIT;
+		  if ((GET_MODE_SIZE (GET_MODE (x)) == 2)
+		      && align && ((align & 1) == 0))
+		    fputs (".as", file);
+		  if ((GET_MODE_SIZE (GET_MODE (x)) >= 4)
+		      && align && ((align & 3) == 0))
+		    fputs (".as", file);
+		}
 	      break;
 	    case REG:
 	      break;
@@ -4267,12 +4333,10 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 
       /* If this is a non-annulled branch with a delay slot, there is
 	 no need to conditionalize the delay slot.  */
-      if (NEXT_INSN (PREV_INSN (insn)) != insn
+      if ((GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) == SEQUENCE)
 	  && state->state == 0 && !INSN_ANNULLED_BRANCH_P (insn))
 	{
 	  this_insn = NEXT_INSN (this_insn);
-	  gcc_assert (NEXT_INSN (NEXT_INSN (PREV_INSN (start_insn)))
-		      == NEXT_INSN (this_insn));
 	}
       /* See how many insns this branch skips, and what kind of insns.  If all
 	 insns are okay, and the label or unconditional branch to the same
@@ -5402,7 +5466,7 @@ arc_legitimize_pic_address (rtx orig, rtx oldx)
 
 /* Output address constant X to FILE, taking PIC into account.  */
 
-void
+static void
 arc_output_pic_addr_const (FILE * file, rtx x, int code)
 {
   char buf[256];
@@ -5851,7 +5915,7 @@ arc_legitimate_address_p (machine_mode mode, rtx x, bool strict)
      return true;
   if (legitimate_offset_address_p (mode, x, TARGET_INDEXED_LOADS, strict))
      return true;
-  if (LEGITIMATE_SCALED_ADDRESS_P (mode, x, strict))
+  if (legitimate_scaled_address_p (mode, x, strict))
     return true;
   if (LEGITIMATE_SMALL_DATA_ADDRESS_P (x))
      return true;
@@ -6829,28 +6893,33 @@ arc_pass_by_reference (cumulative_args_t ca_v ATTRIBUTE_UNUSED,
 /* Implement TARGET_CAN_USE_DOLOOP_P.  */
 
 static bool
-arc_can_use_doloop_p (const widest_int &iterations, const widest_int &,
+arc_can_use_doloop_p (const widest_int &,
+		      const widest_int &iterations_max,
 		      unsigned int loop_depth, bool entered_at_top)
 {
-  if (loop_depth > 1)
+  /* Considering limitations in the hardware, only use doloop
+     for innermost loops which must be entered from the top.  */
+  if (loop_depth > 1 || !entered_at_top)
     return false;
-  /* Setting up the loop with two sr instructions costs 6 cycles.  */
-  if (TARGET_ARC700
-      && !entered_at_top
-      && wi::gtu_p (iterations, 0)
-      && wi::leu_p (iterations, flag_pic ? 6 : 3))
+
+  /* Check for lp_count width boundary.  */
+  if (arc_lpcwidth != 32
+      && (wi::gtu_p (iterations_max, ((1 << arc_lpcwidth) - 1))
+	  || wi::eq_p (iterations_max, 0)))
     return false;
   return true;
 }
 
-/* NULL if INSN insn is valid within a low-overhead loop.
-   Otherwise return why doloop cannot be applied.  */
+/* NULL if INSN insn is valid within a low-overhead loop.  Otherwise
+   return why doloop cannot be applied.  */
 
 static const char *
 arc_invalid_within_doloop (const rtx_insn *insn)
 {
   if (CALL_P (insn))
     return "Function call in the loop.";
+
+  /* FIXME! add here all the ZOL exceptions.  */
   return NULL;
 }
 
@@ -6949,6 +7018,359 @@ workaround_arc_anomaly (void)
     }
 }
 
+/* A callback for the hw-doloop pass.  Called when a loop we have discovered
+   turns out not to be optimizable; we have to split the loop_end pattern into
+   a subtract and a test.  */
+
+static void
+hwloop_fail (hwloop_info loop)
+{
+  rtx test;
+  rtx insn = loop->loop_end;
+
+  if (TARGET_V2
+      && (loop->length && (loop->length <= ARC_MAX_LOOP_LENGTH))
+      && REG_P (loop->iter_reg))
+    {
+      /* TARGET_V2 has dbnz instructions.  */
+      test = gen_dbnz (loop->iter_reg, loop->start_label);
+      insn = emit_jump_insn_before (test, loop->loop_end);
+    }
+  else if (REG_P (loop->iter_reg) && (REGNO (loop->iter_reg) == LP_COUNT))
+    {
+      /* We have the lp_count as loop iterator, try to use it.  */
+      emit_insn_before (gen_loop_fail (), loop->loop_end);
+      test = gen_rtx_NE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG),
+			 const0_rtx);
+      test = gen_rtx_IF_THEN_ELSE (VOIDmode, test,
+				   gen_rtx_LABEL_REF (Pmode, loop->start_label),
+				   pc_rtx);
+      insn = emit_jump_insn_before (gen_rtx_SET (pc_rtx, test),
+				     loop->loop_end);
+    }
+  else
+    {
+      emit_insn_before (gen_addsi3 (loop->iter_reg,
+				    loop->iter_reg,
+				    constm1_rtx),
+			loop->loop_end);
+      test = gen_rtx_NE (VOIDmode, loop->iter_reg, const0_rtx);
+      insn = emit_jump_insn_before (gen_cbranchsi4 (test,
+						    loop->iter_reg,
+						    const0_rtx,
+						    loop->start_label),
+				    loop->loop_end);
+    }
+  JUMP_LABEL (insn) = loop->start_label;
+  LABEL_NUSES (loop->start_label)++;
+  delete_insn (loop->loop_end);
+}
+
+/* Optimize LOOP.  */
+
+static bool
+hwloop_optimize (hwloop_info loop)
+{
+  int i;
+  edge entry_edge;
+  basic_block entry_bb, bb;
+  rtx iter_reg, end_label;
+  rtx_insn *insn, *seq, *entry_after, *last_insn;
+  unsigned int length;
+  bool need_fix = false;
+  rtx lp_reg = gen_rtx_REG (SImode, LP_COUNT);
+
+  if (loop->depth > 1)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d is not innermost\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (!loop->incoming_dest)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d has more than one entry\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (loop->incoming_dest != loop->head)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d is not entered from head\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  if (loop->has_call || loop->has_asm)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d has invalid insn\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Scan all the blocks to make sure they don't use iter_reg.  */
+  if (loop->iter_reg_used || loop->iter_reg_used_outside)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d uses iterator\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Check if start_label appears before doloop_end.  */
+  length = 0;
+  for (insn = loop->start_label;
+       insn && insn != loop->loop_end;
+       insn = NEXT_INSN (insn))
+    length += NONDEBUG_INSN_P (insn) ? get_attr_length (insn) : 0;
+
+  if (!insn)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d start_label not before loop_end\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  loop->length = length;
+  if (loop->length > ARC_MAX_LOOP_LENGTH)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d too long\n", loop->loop_no);
+      return false;
+    }
+
+  /* Check if we use a register or not.  */
+  if (!REG_P (loop->iter_reg))
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d iterator is MEM\n",
+                 loop->loop_no);
+      return false;
+    }
+
+  /* Check if loop register is lpcount.  */
+  if (REG_P (loop->iter_reg) && (REGNO (loop->iter_reg)) != LP_COUNT)
+    {
+      if (dump_file)
+        fprintf (dump_file, ";; loop %d doesn't use lp_count as loop"
+		 " iterator\n",
+                 loop->loop_no);
+      /* This loop doesn't use the lp_count, check though if we can
+	 fix it.  */
+      if (TEST_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT)
+	  /* In very unique cases we may have LP_COUNT alive.  */
+	  || (loop->incoming_src
+	      && REGNO_REG_SET_P (df_get_live_out (loop->incoming_src),
+				  LP_COUNT)))
+	return false;
+      else
+	need_fix = true;
+    }
+
+  /* Check for control like instruction as the last instruction of a
+     ZOL.  */
+  bb = loop->tail;
+  last_insn = PREV_INSN (loop->loop_end);
+
+  while (1)
+    {
+      for (; last_insn != BB_HEAD (bb);
+	   last_insn = PREV_INSN (last_insn))
+	if (NONDEBUG_INSN_P (last_insn))
+	  break;
+
+      if (last_insn != BB_HEAD (bb))
+	break;
+
+      if (single_pred_p (bb)
+	  && single_pred_edge (bb)->flags & EDGE_FALLTHRU
+	  && single_pred (bb) != ENTRY_BLOCK_PTR_FOR_FN (cfun))
+	{
+	  bb = single_pred (bb);
+	  last_insn = BB_END (bb);
+	  continue;
+	}
+      else
+	{
+	  last_insn = NULL;
+	  break;
+	}
+    }
+
+  if (!last_insn)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has no last instruction\n",
+		 loop->loop_no);
+      return false;
+    }
+
+  if ((TARGET_ARC600_FAMILY || TARGET_HS)
+      && INSN_P (last_insn)
+      && (JUMP_P (last_insn) || CALL_P (last_insn)
+	  || GET_CODE (PATTERN (last_insn)) == SEQUENCE
+	  || get_attr_type (last_insn) == TYPE_BRCC
+	  || get_attr_type (last_insn) == TYPE_BRCC_NO_DELAY_SLOT))
+    {
+      if (loop->length + 2 > ARC_MAX_LOOP_LENGTH)
+	{
+	  if (dump_file)
+	    fprintf (dump_file, ";; loop %d too long\n", loop->loop_no);
+	  return false;
+	}
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has a control like last insn;"
+		 "add a nop\n",
+		 loop->loop_no);
+
+      last_insn = emit_insn_after (gen_nopv (), last_insn);
+    }
+
+  if (LABEL_P (last_insn))
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has a label as last insn;"
+		 "add a nop\n",
+		 loop->loop_no);
+      last_insn = emit_insn_after (gen_nopv (), last_insn);
+    }
+  loop->last_insn = last_insn;
+
+  /* Get the loop iteration register.  */
+  iter_reg = loop->iter_reg;
+
+  gcc_assert (REG_P (iter_reg));
+
+  entry_edge = NULL;
+
+  FOR_EACH_VEC_SAFE_ELT (loop->incoming, i, entry_edge)
+    if (entry_edge->flags & EDGE_FALLTHRU)
+      break;
+
+  if (entry_edge == NULL)
+    {
+      if (dump_file)
+	fprintf (dump_file, ";; loop %d has no fallthru edge jumping"
+		 "into the loop\n",
+		 loop->loop_no);
+      return false;
+    }
+  /* The loop is good.  */
+  end_label = gen_label_rtx ();
+  loop->end_label = end_label;
+
+  /* Place the zero_cost_loop_start instruction before the loop.  */
+  entry_bb = entry_edge->src;
+
+  start_sequence ();
+
+  if (need_fix)
+    {
+      /* The loop uses a R-register, but the lp_count is free, thus
+	 use lp_count.  */
+      emit_insn (gen_movsi (lp_reg, iter_reg));
+      SET_HARD_REG_BIT (loop->regs_set_in_loop, LP_COUNT);
+      iter_reg = lp_reg;
+      if (dump_file)
+	{
+	  fprintf (dump_file, ";; fix loop %d to use lp_count\n",
+		   loop->loop_no);
+	}
+    }
+
+  insn = emit_insn (gen_arc_lp (iter_reg,
+				loop->start_label,
+				loop->end_label));
+
+  seq = get_insns ();
+  end_sequence ();
+
+  entry_after = BB_END (entry_bb);
+  if (!single_succ_p (entry_bb) || vec_safe_length (loop->incoming) > 1
+      || !entry_after)
+    {
+      basic_block new_bb;
+      edge e;
+      edge_iterator ei;
+
+      emit_insn_before (seq, BB_HEAD (loop->head));
+      seq = emit_label_before (gen_label_rtx (), seq);
+      new_bb = create_basic_block (seq, insn, entry_bb);
+      FOR_EACH_EDGE (e, ei, loop->incoming)
+        {
+          if (!(e->flags & EDGE_FALLTHRU))
+            redirect_edge_and_branch_force (e, new_bb);
+          else
+            redirect_edge_succ (e, new_bb);
+        }
+
+      make_edge (new_bb, loop->head, 0);
+    }
+  else
+    {
+#if 0
+      while (DEBUG_INSN_P (entry_after)
+             || (NOTE_P (entry_after)
+                 && NOTE_KIND (entry_after) != NOTE_INSN_BASIC_BLOCK
+		 /* Make sure we don't split a call and its corresponding
+		    CALL_ARG_LOCATION note.  */
+                 && NOTE_KIND (entry_after) != NOTE_INSN_CALL_ARG_LOCATION))
+        entry_after = NEXT_INSN (entry_after);
+#endif
+      entry_after = next_nonnote_insn_bb (entry_after);
+
+      gcc_assert (entry_after);
+      emit_insn_before (seq, entry_after);
+    }
+
+  delete_insn (loop->loop_end);
+  /* Insert the loop end label before the last instruction of the
+     loop.  */
+  emit_label_after (end_label, loop->last_insn);
+
+  return true;
+}
+
+/* A callback for the hw-doloop pass.  This function examines INSN; if
+   it is a loop_end pattern we recognize, return the reg rtx for the
+   loop counter.  Otherwise, return NULL_RTX.  */
+
+static rtx
+hwloop_pattern_reg (rtx_insn *insn)
+{
+  rtx reg;
+
+  if (!JUMP_P (insn) || recog_memoized (insn) != CODE_FOR_loop_end)
+    return NULL_RTX;
+
+  reg = SET_DEST (XVECEXP (PATTERN (insn), 0, 1));
+  if (!REG_P (reg))
+    return NULL_RTX;
+  return reg;
+}
+
+static struct hw_doloop_hooks arc_doloop_hooks =
+{
+  hwloop_pattern_reg,
+  hwloop_optimize,
+  hwloop_fail
+};
+
+/* Run from machine_dependent_reorg, this pass looks for doloop_end insns
+   and tries to rewrite the RTL of these loops so that proper Blackfin
+   hardware loops are generated.  */
+
+static void
+arc_reorg_loops (void)
+{
+  reorg_loops (true, &arc_doloop_hooks);
+}
+
 static int arc_reorg_in_progress = 0;
 
 /* ARC's machince specific reorg function.  */
@@ -6962,204 +7384,17 @@ arc_reorg (void)
   long offset;
   int changed;
 
-  workaround_arc_anomaly ();
-
   cfun->machine->arc_reorg_started = 1;
   arc_reorg_in_progress = 1;
 
-  /* Link up loop ends with their loop start.  */
-  {
-    for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
-      if (GET_CODE (insn) == JUMP_INSN
-	  && recog_memoized (insn) == CODE_FOR_doloop_end_i)
-	{
-	  rtx_insn *top_label
-	    = as_a <rtx_insn *> (XEXP (XEXP (SET_SRC (XVECEXP (PATTERN (insn), 0, 0)), 1), 0));
-	  rtx num = GEN_INT (CODE_LABEL_NUMBER (top_label));
-	  rtx_insn *lp, *prev = prev_nonnote_insn (top_label);
-	  rtx_insn *lp_simple = NULL;
-	  rtx_insn *next = NULL;
-	  rtx op0 = XEXP (XVECEXP (PATTERN (insn), 0, 1), 0);
-	  int seen_label = 0;
+  compute_bb_for_insn ();
 
-	  for (lp = prev;
-	       (lp && NONJUMP_INSN_P (lp)
-		&& recog_memoized (lp) != CODE_FOR_doloop_begin_i);
-	       lp = prev_nonnote_insn (lp))
-	    ;
-	  if (!lp || !NONJUMP_INSN_P (lp)
-	      || dead_or_set_regno_p (lp, LP_COUNT))
-	    {
-	      HOST_WIDE_INT loop_end_id
-		= INTVAL (XEXP (XVECEXP (PATTERN (insn), 0, 4), 0));
+  df_analyze ();
 
-	      for (prev = next = insn, lp = NULL ; prev || next;)
-		{
-		  if (prev)
-		    {
-		      if (NONJUMP_INSN_P (prev)
-			  && recog_memoized (prev) == CODE_FOR_doloop_begin_i
-			  && (INTVAL (XEXP (XVECEXP (PATTERN (prev), 0, 5), 0))
-			      == loop_end_id))
-			{
-			  lp = prev;
-			  break;
-			}
-		      else if (LABEL_P (prev))
-			seen_label = 1;
-		      prev = prev_nonnote_insn (prev);
-		    }
-		  if (next)
-		    {
-		      if (NONJUMP_INSN_P (next)
-			  && recog_memoized (next) == CODE_FOR_doloop_begin_i
-			  && (INTVAL (XEXP (XVECEXP (PATTERN (next), 0, 5), 0))
-			      == loop_end_id))
-			{
-			  lp = next;
-			  break;
-			}
-		      next = next_nonnote_insn (next);
-		    }
-		}
-	      prev = NULL;
-	    }
-	  else
-	    lp_simple = lp;
-	  if (lp && !dead_or_set_regno_p (lp, LP_COUNT))
-	    {
-	      rtx begin_cnt = XEXP (XVECEXP (PATTERN (lp), 0 ,3), 0);
-	      if (INTVAL (XEXP (XVECEXP (PATTERN (lp), 0, 4), 0)))
-		/* The loop end insn has been duplicated.  That can happen
-		   when there is a conditional block at the very end of
-		   the loop.  */
-		goto failure;
-	      /* If Register allocation failed to allocate to the right
-		 register, There is no point into teaching reload to
-		 fix this up with reloads, as that would cost more
-		 than using an ordinary core register with the
-		 doloop_fallback pattern.  */
-	      if ((true_regnum (op0) != LP_COUNT || !REG_P (begin_cnt))
-	      /* Likewise, if the loop setup is evidently inside the loop,
-		 we loose.  */
-		  || (!lp_simple && lp != next && !seen_label))
-		{
-		  remove_insn (lp);
-		  goto failure;
-		}
-	      /* It is common that the optimizers copy the loop count from
-		 another register, and doloop_begin_i is stuck with the
-		 source of the move.  Making doloop_begin_i only accept "l"
-		 is nonsentical, as this then makes reload evict the pseudo
-		 used for the loop end.  The underlying cause is that the
-		 optimizers don't understand that the register allocation for
-		 doloop_begin_i should be treated as part of the loop.
-		 Try to work around this problem by verifying the previous
-		 move exists.  */
-	      if (true_regnum (begin_cnt) != LP_COUNT)
-		{
-		  rtx_insn *mov;
-		  rtx set, note;
+  /* Doloop optimization.  */
+  arc_reorg_loops ();
 
-		  for (mov = prev_nonnote_insn (lp); mov;
-		       mov = prev_nonnote_insn (mov))
-		    {
-		      if (!NONJUMP_INSN_P (mov))
-			mov = 0;
-		      else if ((set = single_set (mov))
-			  && rtx_equal_p (SET_SRC (set), begin_cnt)
-			  && rtx_equal_p (SET_DEST (set), op0))
-			break;
-		    }
-		  if (mov)
-		    {
-		      XEXP (XVECEXP (PATTERN (lp), 0 ,3), 0) = op0;
-		      note = find_regno_note (lp, REG_DEAD, REGNO (begin_cnt));
-		      if (note)
-			remove_note (lp, note);
-		    }
-		  else
-		    {
-		      remove_insn (lp);
-		      goto failure;
-		    }
-		}
-	      XEXP (XVECEXP (PATTERN (insn), 0, 4), 0) = num;
-	      XEXP (XVECEXP (PATTERN (lp), 0, 4), 0) = num;
-	      if (next == lp)
-		XEXP (XVECEXP (PATTERN (lp), 0, 6), 0) = const2_rtx;
-	      else if (!lp_simple)
-		XEXP (XVECEXP (PATTERN (lp), 0, 6), 0) = const1_rtx;
-	      else if (prev != lp)
-		{
-		  remove_insn (lp);
-		  add_insn_after (lp, prev, NULL);
-		}
-	      if (!lp_simple)
-		{
-		  XEXP (XVECEXP (PATTERN (lp), 0, 7), 0)
-		    = gen_rtx_LABEL_REF (Pmode, top_label);
-		  add_reg_note (lp, REG_LABEL_OPERAND, top_label);
-		  LABEL_NUSES (top_label)++;
-		}
-	      /* We can avoid tedious loop start / end setting for empty loops
-		 be merely setting the loop count to its final value.  */
-	      if (next_active_insn (top_label) == insn)
-		{
-		  rtx lc_set
-		    = gen_rtx_SET (XEXP (XVECEXP (PATTERN (lp), 0, 3), 0),
-				   const0_rtx);
-
-		  rtx_insn *lc_set_insn = emit_insn_before (lc_set, insn);
-		  delete_insn (lp);
-		  delete_insn (insn);
-		  insn = lc_set_insn;
-		}
-	      /* If the loop is non-empty with zero length, we can't make it
-		 a zero-overhead loop.  That can happen for empty asms.  */
-	      else
-		{
-		  rtx_insn *scan;
-
-		  for (scan = top_label;
-		       (scan && scan != insn
-			&& (!NONJUMP_INSN_P (scan) || !get_attr_length (scan)));
-		       scan = NEXT_INSN (scan));
-		  if (scan == insn)
-		    {
-		      remove_insn (lp);
-		      goto failure;
-		    }
-		}
-	    }
-	  else
-	    {
-	      /* Sometimes the loop optimizer makes a complete hash of the
-		 loop.  If it were only that the loop is not entered at the
-		 top, we could fix this up by setting LP_START with SR .
-		 However, if we can't find the loop begin were it should be,
-		 chances are that it does not even dominate the loop, but is
-		 inside the loop instead.  Using SR there would kill
-		 performance.
-		 We use the doloop_fallback pattern here, which executes
-		 in two cycles on the ARC700 when predicted correctly.  */
-	    failure:
-	      if (!REG_P (op0))
-		{
-		  rtx op3 = XEXP (XVECEXP (PATTERN (insn), 0, 5), 0);
-
-		  emit_insn_before (gen_move_insn (op3, op0), insn);
-		  PATTERN (insn)
-		    = gen_doloop_fallback_m (op3, JUMP_LABEL (insn), op0);
-		}
-	      else
-		XVEC (PATTERN (insn), 0)
-		  = gen_rtvec (2, XVECEXP (PATTERN (insn), 0, 0),
-			       XVECEXP (PATTERN (insn), 0, 1));
-	      INSN_CODE (insn) = -1;
-	    }
-	}
-    }
+  workaround_arc_anomaly ();
 
 /* FIXME: should anticipate ccfsm action, generate special patterns for
    to-be-deleted branches that have no delay slot and have at least the
@@ -7205,6 +7440,12 @@ arc_reorg (void)
 	  arc_ifcvt ();
 	  unsigned int flags = pass_data_arc_ifcvt.todo_flags_finish;
 	  df_finish_pass ((flags & TODO_df_verify) != 0);
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, ";; After if conversion:\n\n");
+	      print_rtl (dump_file, get_insns ());
+	    }
 	}
 
       /* Call shorten_branches to calculate the insn lengths.  */
@@ -7445,28 +7686,6 @@ valid_brcc_with_delay_p (rtx *operands)
   return brcc_nolimm_operator (operands[0], VOIDmode);
 }
 
-/* ??? Hack.  This should no really be here.  See PR32143.  */
-static bool
-arc_decl_anon_ns_mem_p (const_tree decl)
-{
-  while (1)
-    {
-      if (decl == NULL_TREE || decl == error_mark_node)
-	return false;
-      if (TREE_CODE (decl) == NAMESPACE_DECL
-	  && DECL_NAME (decl) == NULL_TREE)
-	return true;
-      /* Classes and namespaces inside anonymous namespaces have
-	 TREE_PUBLIC == 0, so we can shortcut the search.  */
-      else if (TYPE_P (decl))
-	return (TREE_PUBLIC (TYPE_NAME (decl)) == 0);
-      else if (TREE_CODE (decl) == NAMESPACE_DECL)
-	return (TREE_PUBLIC (decl) == 0);
-      else
-	decl = DECL_CONTEXT (decl);
-    }
-}
-
 /* Implement TARGET_IN_SMALL_DATA_P.  Return true if it would be safe to
    access DECL using %gp_rel(...)($gp).  */
 
@@ -7475,65 +7694,43 @@ arc_in_small_data_p (const_tree decl)
 {
   HOST_WIDE_INT size;
 
-  if (TREE_CODE (decl) == STRING_CST || TREE_CODE (decl) == FUNCTION_DECL)
+  /* Only variables are going into small data area.  */
+  if (TREE_CODE (decl) != VAR_DECL)
     return false;
 
-
-  /* We don't yet generate small-data references for -mabicalls.  See related
-     -G handling in override_options.  */
   if (TARGET_NO_SDATA_SET)
     return false;
-
-  if (TREE_CODE (decl) == VAR_DECL && DECL_SECTION_NAME (decl) != 0)
-    {
-      const char *name;
-
-      /* Reject anything that isn't in a known small-data section.  */
-      name = DECL_SECTION_NAME (decl);
-      if (strcmp (name, ".sdata") != 0 && strcmp (name, ".sbss") != 0)
-	return false;
-
-      /* If a symbol is defined externally, the assembler will use the
-	 usual -G rules when deciding how to implement macros.  */
-      if (!DECL_EXTERNAL (decl))
-	  return true;
-    }
-  /* Only global variables go into sdata section for now.  */
-  else if (1)
-    {
-      /* Don't put constants into the small data section: we want them
-	 to be in ROM rather than RAM.  */
-      if (TREE_CODE (decl) != VAR_DECL)
-	return false;
-
-      if (TREE_READONLY (decl)
-	  && !TREE_SIDE_EFFECTS (decl)
-	  && (!DECL_INITIAL (decl) || TREE_CONSTANT (DECL_INITIAL (decl))))
-	return false;
-
-      /* TREE_PUBLIC might change after the first call, because of the patch
-	 for PR19238.  */
-      if (default_binds_local_p_1 (decl, 1)
-	  || arc_decl_anon_ns_mem_p (decl))
-	return false;
-
-      /* To ensure -mvolatile-cache works
-	 ld.di does not have a gp-relative variant.  */
-      if (TREE_THIS_VOLATILE (decl))
-	return false;
-    }
 
   /* Disable sdata references to weak variables.  */
   if (DECL_WEAK (decl))
     return false;
 
-  size = int_size_in_bytes (TREE_TYPE (decl));
+  /* Don't put constants into the small data section: we want them to
+     be in ROM rather than RAM.  */
+  if (TREE_READONLY (decl))
+    return false;
 
-/*   if (AGGREGATE_TYPE_P (TREE_TYPE (decl))) */
-/*     return false; */
+  /* To ensure -mvolatile-cache works ld.di does not have a
+     gp-relative variant.  */
+  if (!TARGET_VOLATILE_CACHE_SET
+      && TREE_THIS_VOLATILE (decl))
+    return false;
 
-  /* Allow only <=4B long data types into sdata.  */
-  return (size > 0 && size <= 4);
+  if (DECL_SECTION_NAME (decl) != 0)
+    {
+      const char *name = DECL_SECTION_NAME (decl);
+      if (strcmp (name, ".sdata") == 0
+	  || strcmp (name, ".sbss") == 0)
+	return true;
+    }
+  /* If it's not public, there's no need to put it in the small data
+     section.  */
+  else if (TREE_PUBLIC (decl))
+    {
+      size = int_size_in_bytes (TREE_TYPE (decl));
+      return (size > 0 && size <= g_switch_value);
+    }
+  return false;
 }
 
 /* Return true if X is a small data address that can be rewritten
@@ -7562,9 +7759,10 @@ arc_rewrite_small_data_p (const_rtx x)
 /* If possible, rewrite OP so that it refers to small data using
    explicit relocations.  */
 
-rtx
-arc_rewrite_small_data (rtx op)
+static rtx
+arc_rewrite_small_data_1 (rtx op)
 {
+  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
   op = copy_insn (op);
   subrtx_ptr_iterator::array_type array;
   FOR_EACH_SUBRTX_PTR (iter, array, &op, ALL)
@@ -7572,24 +7770,29 @@ arc_rewrite_small_data (rtx op)
       rtx *loc = *iter;
       if (arc_rewrite_small_data_p (*loc))
 	{
-	  gcc_assert (SDATA_BASE_REGNUM == PIC_OFFSET_TABLE_REGNUM);
-	  *loc = gen_rtx_PLUS (Pmode, pic_offset_table_rtx, *loc);
-	  if (loc != &op)
-	    {
-	      if (GET_CODE (op) == MEM && &XEXP (op, 0) == loc)
-		; /* OK.  */
-	      else if (GET_CODE (op) == MEM
-		       && GET_CODE (XEXP (op, 0)) == PLUS
-		       && GET_CODE (XEXP (XEXP (op, 0), 0)) == MULT)
-		*loc = force_reg (Pmode, *loc);
-	      else
-		gcc_unreachable ();
-	    }
+	  *loc = gen_rtx_PLUS (Pmode, rgp, *loc);
 	  iter.skip_subrtxes ();
 	}
       else if (GET_CODE (*loc) == PLUS
-	       && rtx_equal_p (XEXP (*loc, 0), pic_offset_table_rtx))
+	       && rtx_equal_p (XEXP (*loc, 0), rgp))
 	iter.skip_subrtxes ();
+    }
+  return op;
+}
+
+rtx
+arc_rewrite_small_data (rtx op)
+{
+  op = arc_rewrite_small_data_1 (op);
+
+  /* Check if we fit small data constraints.  */
+  if (MEM_P (op)
+      && !LEGITIMATE_SMALL_DATA_ADDRESS_P (XEXP (op, 0)))
+    {
+      rtx addr = XEXP (op, 0);
+      rtx tmp = gen_reg_rtx (Pmode);
+      emit_move_insn (tmp, addr);
+      op = replace_equiv_address_nv (op, tmp);
     }
   return op;
 }
@@ -7602,12 +7805,14 @@ small_data_pattern (rtx op, machine_mode)
 {
   if (GET_CODE (op) == SEQUENCE)
     return false;
+
+  rtx rgp = gen_rtx_REG (Pmode, SDATA_BASE_REGNUM);
   subrtx_iterator::array_type array;
   FOR_EACH_SUBRTX (iter, array, op, ALL)
     {
       const_rtx x = *iter;
       if (GET_CODE (x) == PLUS
-	  && rtx_equal_p (XEXP (x, 0), pic_offset_table_rtx))
+	  && rtx_equal_p (XEXP (x, 0), rgp))
 	iter.skip_subrtxes ();
       else if (arc_rewrite_small_data_p (x))
 	return true;
@@ -7623,10 +7828,13 @@ small_data_pattern (rtx op, machine_mode)
 /* volatile cache option still to be handled.  */
 
 bool
-compact_sda_memory_operand (rtx op, machine_mode mode)
+compact_sda_memory_operand (rtx op, machine_mode mode, bool short_p)
 {
   rtx addr;
   int size;
+  tree decl = NULL_TREE;
+  int align = 0;
+  int mask = 0;
 
   /* Eliminate non-memory operations.  */
   if (GET_CODE (op) != MEM)
@@ -7644,7 +7852,35 @@ compact_sda_memory_operand (rtx op, machine_mode mode)
   /* Decode the address now.  */
   addr = XEXP (op, 0);
 
-  return LEGITIMATE_SMALL_DATA_ADDRESS_P  (addr);
+  if (!LEGITIMATE_SMALL_DATA_ADDRESS_P (addr))
+    return false;
+
+  if (!short_p || size == 1)
+    return true;
+
+  /* Now check for the alignment, the short loads using gp require the
+     addresses to be aligned.  */
+  if (GET_CODE (XEXP (addr, 1)) == SYMBOL_REF)
+    decl = SYMBOL_REF_DECL (XEXP (addr, 1));
+  else if (GET_CODE (XEXP (XEXP (XEXP (addr, 1), 0), 0)) == SYMBOL_REF)
+    decl = SYMBOL_REF_DECL (XEXP (XEXP (XEXP (addr, 1), 0), 0));
+  if (decl)
+    align = DECL_ALIGN (decl);
+  align = align / BITS_PER_UNIT;
+
+  switch (mode)
+    {
+    case E_HImode:
+      mask = 1;
+      break;
+    default:
+      mask = 3;
+      break;
+    }
+
+  if (align && ((align & mask) == 0))
+    return true;
+  return false;
 }
 
 /* Implement ASM_OUTPUT_ALIGNED_DECL_LOCAL.  */
@@ -7702,11 +7938,11 @@ arc_register_move_cost (machine_mode,
 	return 6;
     }
 
-  /* The ARC700 stalls for 3 cycles when *reading* from lp_count.  */
-  if (TARGET_ARC700
-      && (from_class == LPCOUNT_REG || from_class == ALL_CORE_REGS
-	  || from_class == WRITABLE_CORE_REGS))
-    return 8;
+  /* Using lp_count as scratch reg is a VERY bad idea.  */
+  if (from_class == LPCOUNT_REG)
+    return 1000;
+  if (to_class == LPCOUNT_REG)
+    return 6;
 
   /* Force an attempt to 'mov Dy,Dx' to spill.  */
   if ((TARGET_ARC700 || TARGET_EM) && TARGET_DPFP
@@ -8148,14 +8384,6 @@ arc600_corereg_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   if (!TARGET_ARC600)
     return 0;
-  /* If SUCC is a doloop_end_i with a preceding label, we must output a nop
-     in front of SUCC anyway, so there will be separation between PRED and
-     SUCC.  */
-  if (recog_memoized (succ) == CODE_FOR_doloop_end_i
-      && LABEL_P (prev_nonnote_insn (succ)))
-    return 0;
-  if (recog_memoized (succ) == CODE_FOR_doloop_begin_i)
-    return 0;
   if (GET_CODE (PATTERN (pred)) == SEQUENCE)
     pred = as_a <rtx_sequence *> (PATTERN (pred))->insn (1);
   if (GET_CODE (PATTERN (succ)) == SEQUENCE)
@@ -8229,76 +8457,6 @@ arc_asm_insn_p (rtx x)
   return 0;
 }
 
-/* We might have a CALL to a non-returning function before a loop end.
-   ??? Although the manual says that's OK (the target is outside the
-   loop, and the loop counter unused there), the assembler barfs on
-   this for ARC600, so we must insert a nop before such a call too.
-   For ARC700, and ARCv2 is not allowed to have the last ZOL
-   instruction a jump to a location where lp_count is modified.  */
-
-static bool
-arc_loop_hazard (rtx_insn *pred, rtx_insn *succ)
-{
-  rtx_insn *jump  = NULL;
-  rtx label_rtx = NULL_RTX;
-  rtx_insn *label = NULL;
-  basic_block succ_bb;
-
-  if (recog_memoized (succ) != CODE_FOR_doloop_end_i)
-    return false;
-
-  /* Phase 1: ARC600 and ARCv2HS doesn't allow any control instruction
-     (i.e., jump/call) as the last instruction of a ZOL.  */
-  if (TARGET_ARC600 || TARGET_HS)
-    if (JUMP_P (pred) || CALL_P (pred)
-	|| arc_asm_insn_p (PATTERN (pred))
-	|| GET_CODE (PATTERN (pred)) == SEQUENCE)
-      return true;
-
-  /* Phase 2: Any architecture, it is not allowed to have the last ZOL
-     instruction a jump to a location where lp_count is modified.  */
-
-  /* Phase 2a: Dig for the jump instruction.  */
-  if (JUMP_P (pred))
-    jump = pred;
-  else if (GET_CODE (PATTERN (pred)) == SEQUENCE
-	   && JUMP_P (XVECEXP (PATTERN (pred), 0, 0)))
-    jump = as_a <rtx_insn *> (XVECEXP (PATTERN (pred), 0, 0));
-  else
-    return false;
-
-  /* Phase 2b: Make sure is not a millicode jump.  */
-  if ((GET_CODE (PATTERN (jump)) == PARALLEL)
-      && (XVECEXP (PATTERN (jump), 0, 0) == ret_rtx))
-    return false;
-
-  label_rtx = JUMP_LABEL (jump);
-  if (!label_rtx)
-    return false;
-
-  /* Phase 2c: Make sure is not a return.  */
-  if (ANY_RETURN_P (label_rtx))
-    return false;
-
-  /* Pahse 2d: Go to the target of the jump and check for aliveness of
-     LP_COUNT register.  */
-  label = safe_as_a <rtx_insn *> (label_rtx);
-  succ_bb = BLOCK_FOR_INSN (label);
-  if (!succ_bb)
-    {
-      gcc_assert (NEXT_INSN (label));
-      if (NOTE_INSN_BASIC_BLOCK_P (NEXT_INSN (label)))
-	succ_bb = NOTE_BASIC_BLOCK (NEXT_INSN (label));
-      else
-	succ_bb = BLOCK_FOR_INSN (NEXT_INSN (label));
-    }
-
-  if (succ_bb && REGNO_REG_SET_P (df_get_live_out (succ_bb), LP_COUNT))
-    return true;
-
-  return false;
-}
-
 /* For ARC600:
    A write to a core reg greater or equal to 32 must not be immediately
    followed by a use.  Anticipate the length requirement to insert a nop
@@ -8309,9 +8467,6 @@ arc_hazard (rtx_insn *pred, rtx_insn *succ)
 {
   if (!pred || !INSN_P (pred) || !succ || !INSN_P (succ))
     return 0;
-
-  if (arc_loop_hazard (pred, succ))
-    return 4;
 
   if (TARGET_ARC600)
     return arc600_corereg_hazard (pred, succ);
@@ -8329,24 +8484,6 @@ arc_adjust_insn_length (rtx_insn *insn, int len, bool)
   /* We already handle sequences by ignoring the delay sequence flag.  */
   if (GET_CODE (PATTERN (insn)) == SEQUENCE)
     return len;
-
-  /* It is impossible to jump to the very end of a Zero-Overhead Loop, as
-     the ZOL mechanism only triggers when advancing to the end address,
-     so if there's a label at the end of a ZOL, we need to insert a nop.
-     The ARC600 ZOL also has extra restrictions on jumps at the end of a
-     loop.  */
-  if (recog_memoized (insn) == CODE_FOR_doloop_end_i)
-    {
-      rtx_insn *prev = prev_nonnote_insn (insn);
-
-      return ((LABEL_P (prev)
-	       || (TARGET_ARC600
-		   && (JUMP_P (prev)
-		       || CALL_P (prev) /* Could be a noreturn call.  */
-		       || (NONJUMP_INSN_P (prev)
-			   && GET_CODE (PATTERN (prev)) == SEQUENCE))))
-	      ? len + 4 : len);
-    }
 
   /* Check for return with but one preceding insn since function
      start / call.  */
@@ -8760,7 +8897,6 @@ static unsigned
 arc_ifcvt (void)
 {
   struct arc_ccfsm *statep = &cfun->machine->ccfsm_current;
-  basic_block merge_bb = 0;
 
   memset (statep, 0, sizeof *statep);
   for (rtx_insn *insn = get_insns (); insn; insn = next_insn (insn))
@@ -8770,20 +8906,14 @@ arc_ifcvt (void)
       switch (statep->state)
 	{
 	case 0:
-	  if (JUMP_P (insn))
-	    merge_bb = 0;
 	  break;
 	case 1: case 2:
 	  {
 	    /* Deleted branch.  */
-	    gcc_assert (!merge_bb);
-	    merge_bb = BLOCK_FOR_INSN (insn);
-	    basic_block succ_bb
-	      = BLOCK_FOR_INSN (NEXT_INSN (NEXT_INSN (PREV_INSN (insn))));
 	    arc_ccfsm_post_advance (insn, statep);
 	    gcc_assert (!IN_RANGE (statep->state, 1, 2));
 	    rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
-	    if (seq != insn)
+	    if (GET_CODE (PATTERN (seq)) == SEQUENCE)
 	      {
 		rtx slot = XVECEXP (PATTERN (seq), 0, 1);
 		rtx pat = PATTERN (slot);
@@ -8797,18 +8927,10 @@ arc_ifcvt (void)
 		  gcc_unreachable ();
 		PUT_CODE (slot, NOTE);
 		NOTE_KIND (slot) = NOTE_INSN_DELETED;
-		if (merge_bb && succ_bb)
-		  merge_blocks (merge_bb, succ_bb);
-	      }
-	    else if (merge_bb && succ_bb)
-	      {
-		set_insn_deleted (insn);
-		merge_blocks (merge_bb, succ_bb);
 	      }
 	    else
 	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_KIND (insn) = NOTE_INSN_DELETED;
+		set_insn_deleted (insn);
 	      }
 	    continue;
 	  }
@@ -8817,17 +8939,8 @@ arc_ifcvt (void)
 	      && statep->target_label == CODE_LABEL_NUMBER (insn))
 	    {
 	      arc_ccfsm_post_advance (insn, statep);
-	      basic_block succ_bb = BLOCK_FOR_INSN (insn);
-	      if (merge_bb && succ_bb)
-		merge_blocks (merge_bb, succ_bb);
-	      else if (--LABEL_NUSES (insn) == 0)
-		{
-		  const char *name = LABEL_NAME (insn);
-		  PUT_CODE (insn, NOTE);
-		  NOTE_KIND (insn) = NOTE_INSN_DELETED_LABEL;
-		  NOTE_DELETED_LABEL_NAME (insn) = name;
-		}
-	      merge_bb = 0;
+	      if (--LABEL_NUSES (insn) == 0)
+		delete_insn (insn);
 	      continue;
 	    }
 	  /* Fall through.  */
@@ -9707,27 +9820,9 @@ arc_scheduling_not_expected (void)
   return cfun->machine->arc_reorg_started;
 }
 
-/* Oddly enough, sometimes we get a zero overhead loop that branch
-   shortening doesn't think is a loop - observed with compile/pr24883.c
-   -O3 -fomit-frame-pointer -funroll-loops.  Make sure to include the
-   alignment visible for branch shortening  (we actually align the loop
-   insn before it, but that is equivalent since the loop insn is 4 byte
-   long.)  */
-
 int
 arc_label_align (rtx_insn *label)
 {
-  int loop_align = LOOP_ALIGN (LABEL);
-
-  if (loop_align > align_labels_log)
-    {
-      rtx_insn *prev = prev_nonnote_insn (label);
-
-      if (prev && NONJUMP_INSN_P (prev)
-	  && GET_CODE (PATTERN (prev)) == PARALLEL
-	  && recog_memoized (prev) == CODE_FOR_doloop_begin_i)
-	return loop_align;
-    }
   /* Code has a minimum p2 alignment of 1, which we must restore after an
      ADDR_DIFF_VEC.  */
   if (align_labels_log < 1)
@@ -9777,6 +9872,9 @@ arc_can_follow_jump (const rtx_insn *follower, const rtx_insn *followee)
   if (CROSSING_JUMP_P (followee))
     switch (get_attr_type (u.r))
       {
+      case TYPE_BRANCH:
+	if (get_attr_length (u.r) != 2)
+	  break;
       case TYPE_BRCC:
       case TYPE_BRCC_NO_DELAY_SLOT:
 	return false;
@@ -10494,6 +10592,30 @@ compact_memory_operand_p (rtx op, machine_mode mode,
     }
   return false;
 }
+
+/* Implement TARGET_USE_ANCHORS_FOR_SYMBOL_P.  We don't want to use
+   anchors for small data: the GP register acts as an anchor in that
+   case.  We also don't want to use them for PC-relative accesses,
+   where the PC acts as an anchor.  Prohibit also TLS symbols to use
+   anchors.  */
+
+static bool
+arc_use_anchors_for_symbol_p (const_rtx symbol)
+{
+  if (SYMBOL_REF_TLS_MODEL (symbol))
+    return false;
+
+  if (flag_pic)
+    return false;
+
+  if (SYMBOL_REF_SMALL_P (symbol))
+    return false;
+
+  return default_use_anchors_for_symbol_p (symbol);
+}
+
+#undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

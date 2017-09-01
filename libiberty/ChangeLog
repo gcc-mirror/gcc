@@ -1,3 +1,8 @@
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Remove duplicite declaration.
+
 2017-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR lto/81968

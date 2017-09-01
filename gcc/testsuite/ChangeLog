@@ -1,3 +1,42 @@
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82059
+	* gcc.dg/tree-ssa/pr82059.c: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/loop-1.c: Deleted.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/arc.exp: Test also cpp files.
+	* gcc.target/arc/tdelay_slots.cpp: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001184797.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* c-c++-common/gomp/pr81887.c: New test.
+	* gfortran.dg/gomp/pr81887.f90: New test.
+
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* g++.dg/warn/Wbool-operation-1.C: New test.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-5.c: New test.
+	* gcc.target/arc/arc700-stld-hazard.c: Update test options.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-3.c: New file.
+	* gcc.target/arc/sdata-4.c: Likewise.
+
 2017-08-31  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82054
