@@ -4340,12 +4340,10 @@ arc_ccfsm_advance (rtx_insn *insn, struct arc_ccfsm *state)
 
       /* If this is a non-annulled branch with a delay slot, there is
 	 no need to conditionalize the delay slot.  */
-      if (NEXT_INSN (PREV_INSN (insn)) != insn
+      if ((GET_CODE (PATTERN (NEXT_INSN (PREV_INSN (insn)))) == SEQUENCE)
 	  && state->state == 0 && !INSN_ANNULLED_BRANCH_P (insn))
 	{
 	  this_insn = NEXT_INSN (this_insn);
-	  gcc_assert (NEXT_INSN (NEXT_INSN (PREV_INSN (start_insn)))
-		      == NEXT_INSN (this_insn));
 	}
       /* See how many insns this branch skips, and what kind of insns.  If all
 	 insns are okay, and the label or unconditional branch to the same
@@ -7278,6 +7276,12 @@ arc_reorg (void)
 	  arc_ifcvt ();
 	  unsigned int flags = pass_data_arc_ifcvt.todo_flags_finish;
 	  df_finish_pass ((flags & TODO_df_verify) != 0);
+
+	  if (dump_file)
+	    {
+	      fprintf (dump_file, ";; After if conversion:\n\n");
+	      print_rtl (dump_file, get_insns ());
+	    }
 	}
 
       /* Call shorten_branches to calculate the insn lengths.  */
@@ -8828,7 +8832,6 @@ static unsigned
 arc_ifcvt (void)
 {
   struct arc_ccfsm *statep = &cfun->machine->ccfsm_current;
-  basic_block merge_bb = 0;
 
   memset (statep, 0, sizeof *statep);
   for (rtx_insn *insn = get_insns (); insn; insn = next_insn (insn))
@@ -8838,20 +8841,14 @@ arc_ifcvt (void)
       switch (statep->state)
 	{
 	case 0:
-	  if (JUMP_P (insn))
-	    merge_bb = 0;
 	  break;
 	case 1: case 2:
 	  {
 	    /* Deleted branch.  */
-	    gcc_assert (!merge_bb);
-	    merge_bb = BLOCK_FOR_INSN (insn);
-	    basic_block succ_bb
-	      = BLOCK_FOR_INSN (NEXT_INSN (NEXT_INSN (PREV_INSN (insn))));
 	    arc_ccfsm_post_advance (insn, statep);
 	    gcc_assert (!IN_RANGE (statep->state, 1, 2));
 	    rtx_insn *seq = NEXT_INSN (PREV_INSN (insn));
-	    if (seq != insn)
+	    if (GET_CODE (PATTERN (seq)) == SEQUENCE)
 	      {
 		rtx slot = XVECEXP (PATTERN (seq), 0, 1);
 		rtx pat = PATTERN (slot);
@@ -8865,18 +8862,10 @@ arc_ifcvt (void)
 		  gcc_unreachable ();
 		PUT_CODE (slot, NOTE);
 		NOTE_KIND (slot) = NOTE_INSN_DELETED;
-		if (merge_bb && succ_bb)
-		  merge_blocks (merge_bb, succ_bb);
-	      }
-	    else if (merge_bb && succ_bb)
-	      {
-		set_insn_deleted (insn);
-		merge_blocks (merge_bb, succ_bb);
 	      }
 	    else
 	      {
-		PUT_CODE (insn, NOTE);
-		NOTE_KIND (insn) = NOTE_INSN_DELETED;
+		set_insn_deleted (insn);
 	      }
 	    continue;
 	  }
@@ -8885,17 +8874,8 @@ arc_ifcvt (void)
 	      && statep->target_label == CODE_LABEL_NUMBER (insn))
 	    {
 	      arc_ccfsm_post_advance (insn, statep);
-	      basic_block succ_bb = BLOCK_FOR_INSN (insn);
-	      if (merge_bb && succ_bb)
-		merge_blocks (merge_bb, succ_bb);
-	      else if (--LABEL_NUSES (insn) == 0)
-		{
-		  const char *name = LABEL_NAME (insn);
-		  PUT_CODE (insn, NOTE);
-		  NOTE_KIND (insn) = NOTE_INSN_DELETED_LABEL;
-		  NOTE_DELETED_LABEL_NAME (insn) = name;
-		}
-	      merge_bb = 0;
+	      if (--LABEL_NUSES (insn) == 0)
+		delete_insn (insn);
 	      continue;
 	    }
 	  /* Fall through.  */

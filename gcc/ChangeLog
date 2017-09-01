@@ -1,5 +1,11 @@
 2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.c (arc_ifcvt): Remove use of merge_blocks call.
+	(arc_ccfsm_advance): Fix checking for delay slots.
+	(arc_reorg): Add rtl dump after each call to arc_ifcvt.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.md (movqi_insn): Add stores to save constant long
 	immediates.
 	(movhi_insn): Update store instruction constraint which are saving
