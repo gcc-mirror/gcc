@@ -1,3 +1,11 @@
+2017-09-01  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/s390/s390.md (mem_signal_fence): Remove.
+	* doc/md.texi (mem_signal_fence): Remove.
+	* optabs.c (expand_mem_signal_fence): Remove uses of mem_signal_fence.
+	Update comments.
+	* target-insns.def (mem_signal_fence): Remove.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81902
