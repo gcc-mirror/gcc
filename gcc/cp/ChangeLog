@@ -1,6 +1,9 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
-	* class.c (finish_struct_methods): Done clear DECL_IN_AGGR_P here.
+	* class.c (finish_struct): Call set_class_bindings for the
+	template case too.
+
+	* class.c (finish_struct_methods): Dont clear DECL_IN_AGGR_P here.
 	Don't call maybe_warn_about_overly_private_class here.
 	(warn_hidden): Cleanup declarations and comments.
 	(type_has_user_provided_constructor): No need to check

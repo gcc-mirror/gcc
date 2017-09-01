@@ -7188,6 +7188,7 @@ finish_struct (tree t, tree attributes)
       /* COMPLETE_TYPE_P is now true.  */
 
       finish_struct_methods (t);
+      set_class_bindings (t, TYPE_FIELDS (t));
 
       /* We need to emit an error message if this type was used as a parameter
 	 and it is an abstract type, even if it is a template. We construct
