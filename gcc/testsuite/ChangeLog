@@ -1,3 +1,8 @@
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* gcc.target/s390/target-attribute/pr82012.c: New test.
+
 2017-09-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/82052

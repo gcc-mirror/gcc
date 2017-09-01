@@ -79,6 +79,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "intl.h"
 #include "tm-constrs.h"
+#include "tree-vrp.h"
+#include "symbol-summary.h"
+#include "ipa-prop.h"
+#include "ipa-fnsummary.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -15354,6 +15358,52 @@ s390_valid_target_attribute_p (tree fndecl,
   return ret;
 }
 
+/* Hook to determine if one function can safely inline another.  */
+
+static bool
+s390_can_inline_p (tree caller, tree callee)
+{
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+
+  if (!callee_tree)
+    callee_tree = target_option_default_node;
+  if (!caller_tree)
+    caller_tree = target_option_default_node;
+  if (callee_tree == caller_tree)
+    return true;
+
+  struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+  bool ret = true;
+
+  if ((caller_opts->x_target_flags & ~(MASK_SOFT_FLOAT | MASK_HARD_DFP))
+      != (callee_opts->x_target_flags & ~(MASK_SOFT_FLOAT | MASK_HARD_DFP)))
+    ret = false;
+
+  /* Don't inline functions to be compiled for a more recent arch into a
+     function for an older arch.  */
+  else if (caller_opts->x_s390_arch < callee_opts->x_s390_arch)
+    ret = false;
+
+  /* Inlining a hard float function into a soft float function is only
+     allowed if the hard float function doesn't actually make use of
+     floating point.
+
+     We are called from FEs for multi-versioning call optimization, so
+     beware of ipa_fn_summaries not available.  */
+  else if (((TARGET_SOFT_FLOAT_P (caller_opts->x_target_flags)
+	     && !TARGET_SOFT_FLOAT_P (callee_opts->x_target_flags))
+	    || (!TARGET_HARD_DFP_P (caller_opts->x_target_flags)
+		&& TARGET_HARD_DFP_P (callee_opts->x_target_flags)))
+	   && (! ipa_fn_summaries
+	       || ipa_fn_summaries->get
+	       (cgraph_node::get (callee))->fp_expressions))
+    ret = false;
+
+  return ret;
+}
+
 /* Restore targets globals from NEW_TREE and invalidate s390_previous_fndecl
    cache.  */
 
@@ -15936,6 +15986,9 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P s390_valid_target_attribute_p
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P s390_can_inline_p
 #endif
 
 #undef TARGET_OPTION_RESTORE

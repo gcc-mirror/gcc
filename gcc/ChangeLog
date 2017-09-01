@@ -1,3 +1,8 @@
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* config/s390/s390.c (s390_can_inline_p): New function.
+
 2017-09-01  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/82052
