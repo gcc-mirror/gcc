@@ -1,6 +1,14 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (warn_hidden): Clean up.
+	(clone_constructors_and_destructors): No need to check METHOD_VEC.
+	(type_has_user_provided_constructor): Likewise.
+	(type_has_user_provided_or_explicit_constructor): Likewise.
+	(classtype_has_move_assign_or_move_ctor_p): Likewise.
+	(finish_struct): Adjust comment.
+
+	gcc/cp/
 	* cp-tree.h (resort_type_method_vec): Move declaration to ...
 	* name-lookup.h (resort_type_method_vec): ... here.
 	* class.c (finish_struct_1, finish_struct): Adjust
