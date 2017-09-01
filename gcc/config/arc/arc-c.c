@@ -62,6 +62,8 @@ arc_cpu_cpp_builtins (cpp_reader * pfile)
   builtin_define_with_int_value ("__ARC_TLS_REGNO__",
 				 arc_tp_regno);
 
+  builtin_define_with_int_value ("__ARC_LPC_WIDTH__", arc_lpcwidth);
+
   builtin_define (TARGET_BIG_ENDIAN
 		  ? "__BIG_ENDIAN__" : "__LITTLE_ENDIAN__");
   if (TARGET_BIG_ENDIAN)

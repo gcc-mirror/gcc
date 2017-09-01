@@ -362,6 +362,8 @@
       else if (TARGET_MUL64_SET
 	       && (REGNO (op) == 57 || REGNO(op) == 58 || REGNO(op) == 59 ))
 	return 0;
+      else if (REGNO (op) == LP_COUNT)
+        return 1;
       else
 	return dest_reg_operand (op, mode);
     case SUBREG :
