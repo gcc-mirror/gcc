@@ -1145,8 +1145,11 @@ c_common_finish (void)
 {
   FILE *deps_stream = NULL;
 
-  /* Don't write the deps file if there are errors.  */
-  if (cpp_opts->deps.style != DEPS_NONE && !seen_error ())
+  /* Note that we write the dependencies even if there are errors. This is
+     useful for handling outdated generated headers that now trigger errors
+     (for example, with #error) which would be resolved by re-generating
+     them. In a sense, this complements -MG.  */
+  if (cpp_opts->deps.style != DEPS_NONE)
     {
       /* If -M or -MM was seen without -MF, default output to the
 	 output stream.  */
