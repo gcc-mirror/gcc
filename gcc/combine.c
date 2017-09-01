@@ -3488,7 +3488,10 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
      i3, and one from i2.  Combining then splitting the parallel results
      in the original i2 again plus an invalid insn (which we delete).
      The net effect is only to move instructions around, which makes
-     debug info less accurate.  */
+     debug info less accurate.
+
+     If the remaining SET came from I2 its destination should not be used
+     between I2 and I3.  See PR82024.  */
 
   if (!(added_sets_2 && i1 == 0)
       && is_parallel_of_n_reg_sets (newpat, 2)
@@ -3517,11 +3520,17 @@ try_combine (rtx_insn *i3, rtx_insn *i2, rtx_insn *i1, rtx_insn *i0,
 	       && insn_nothrow_p (i3)
 	       && !side_effects_p (SET_SRC (set0)))
 	{
-	  newpat = set1;
-	  insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
+	  rtx dest = SET_DEST (set1);
+	  if (GET_CODE (dest) == SUBREG)
+	    dest = SUBREG_REG (dest);
+	  if (!reg_used_between_p (dest, i2, i3))
+	    {
+	      newpat = set1;
+	      insn_code_number = recog_for_combine (&newpat, i3, &new_i3_notes);
 
-	  if (insn_code_number >= 0)
-	    changed_i3_dest = 1;
+	      if (insn_code_number >= 0)
+		changed_i3_dest = 1;
+	    }
 	}
 
       if (insn_code_number < 0)
