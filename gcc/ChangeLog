@@ -1,3 +1,10 @@
+2017-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/82024
+	* combine.c (try_combine): If the combination result is a PARALLEL,
+	and we only need to retain the SET in there that would be placed
+	at I2, check that we can place that at I3 instead, before doing so.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81766
