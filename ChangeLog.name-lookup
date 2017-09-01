@@ -1,5 +1,7 @@
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251609.
+
 	gcc/cp/
 	* class.c (warn_hidden): Clean up.
 	(clone_constructors_and_destructors): No need to check METHOD_VEC.

@@ -1,3 +1,30 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81766
+	* gcc.target/i386/pr81766.c: New test.
+
+2017-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* gcc.target/i386/excess-precision-7.c: New test.
+
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* gcc.target/s390/target-attribute/pr82012.c: New test.
+
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/const-in-bss.c: New test.
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81923
+	* gcc.dg/asan/pr81923.c: New test.
+
 2017-09-01  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/82059

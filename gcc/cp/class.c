@@ -7058,6 +7058,8 @@ finish_struct (tree t, tree attributes)
 	      for (lkp_iterator iter (fn); iter; ++iter)
 		add_method (t, *iter, true);
 	  }
+	else if (DECL_DECLARES_FUNCTION_P (x))
+	  DECL_IN_AGGR_P (x) = false;
 
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;

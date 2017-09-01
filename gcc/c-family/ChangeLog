@@ -1,3 +1,8 @@
+2017-09-01  Boris Kolpackov <boris@codesynthesis.com>
+
+	* c-opts.c (c_common_finish): Write dependency information even if
+	there are errors.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81887

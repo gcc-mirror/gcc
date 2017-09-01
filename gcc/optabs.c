@@ -6318,22 +6318,15 @@ expand_mem_thread_fence (enum memmodel model)
     expand_asm_memory_barrier ();
 }
 
-/* This routine will either emit the mem_signal_fence pattern or issue a 
-   sync_synchronize to generate a fence for memory model MEMMODEL.  */
+/* Emit a signal fence with given memory model.  */
 
 void
 expand_mem_signal_fence (enum memmodel model)
 {
-  if (targetm.have_mem_signal_fence ())
-    emit_insn (targetm.gen_mem_signal_fence (GEN_INT (model)));
-  else if (!is_mm_relaxed (model))
-    {
-      /* By default targets are coherent between a thread and the signal
-	 handler running on the same thread.  Thus this really becomes a
-	 compiler barrier, in that stores must not be sunk past
-	 (or raised above) a given point.  */
-      expand_asm_memory_barrier ();
-    }
+  /* No machine barrier is required to implement a signal fence, but
+     a compiler memory barrier must be issued, except for relaxed MM.  */
+  if (!is_mm_relaxed (model))
+    expand_asm_memory_barrier ();
 }
 
 /* This function expands the atomic load operation:

@@ -2527,9 +2527,12 @@ create_odr_indicator (tree decl, tree type)
   /* DECL_NAME theoretically might be NULL.  Bail out with 0 in this case.  */
   if (decl_name == NULL_TREE)
     return build_int_cst (uptr, 0);
-  size_t len = strlen (IDENTIFIER_POINTER (decl_name)) + sizeof ("__odr_asan_");
+  const char *dname = IDENTIFIER_POINTER (decl_name);
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl))
+    dname = targetm.strip_name_encoding (dname);
+  size_t len = strlen (dname) + sizeof ("__odr_asan_");
   name = XALLOCAVEC (char, len);
-  snprintf (name, len, "__odr_asan_%s", IDENTIFIER_POINTER (decl_name));
+  snprintf (name, len, "__odr_asan_%s", dname);
 #ifndef NO_DOT_IN_LABEL
   name[sizeof ("__odr_asan") - 1] = '.';
 #elif !defined(NO_DOLLAR_IN_LABEL)

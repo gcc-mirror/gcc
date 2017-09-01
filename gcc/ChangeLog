@@ -1,3 +1,53 @@
+2017-09-01  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/82024
+	* combine.c (try_combine): If the combination result is a PARALLEL,
+	and we only need to retain the SET in there that would be placed
+	at I2, check that we can place that at I3 instead, before doing so.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81766
+	* config/i386/i386.c (ix86_init_large_pic_reg): Return label instead of void.
+	(ix86_init_pic_reg): Remember label from ix86_init_large_pic_reg, if non-NULL
+	and preceded by NOTE_INSN_BASIC_BLOCK, swap the note and label.
+
+2017-09-01  Joerg Sonnenberger  <joerg@bec.de>
+	    Jeff Law  <law@redhat.com>
+
+	* varasm.c (bss_initializer_p): Do not put constants into .bss
+	(categorize_decl_for_section): Handle bss_initializer_p returning
+	false when DECL_INITIAL is NULL.
+
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* config/s390/s390.c (s390_can_inline_p): New function.
+
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/82052
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Always initialize the returned slot after a hash table miss
+	when INSERT is true.
+
+2017-09-01  Alexander Monakov  <amonakov@ispras.ru>
+
+	* config/s390/s390.md (mem_signal_fence): Remove.
+	* doc/md.texi (mem_signal_fence): Remove.
+	* optabs.c (expand_mem_signal_fence): Remove uses of mem_signal_fence.
+	Update comments.
+	* target-insns.def (mem_signal_fence): Remove.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81902
+	* doc/invoke.texi: Document -fsanitize=pointer-overflow.
+
+	PR sanitizer/81923
+	* asan.c (create_odr_indicator): Strip name encoding from assembler
+	name before appending it after __odr_asan_.
+
 2017-09-01  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/82059
