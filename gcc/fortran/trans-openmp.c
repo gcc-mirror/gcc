@@ -3925,6 +3925,12 @@ gfc_trans_omp_master (gfc_code *code)
 static tree
 gfc_trans_omp_ordered (gfc_code *code)
 {
+  if (!flag_openmp)
+    {
+      if (!code->ext.omp_clauses->simd)
+	return gfc_trans_code (code->block ? code->block->next : NULL);
+      code->ext.omp_clauses->threads = 0;
+    }
   tree omp_clauses = gfc_trans_omp_clauses (NULL, code->ext.omp_clauses,
 					    code->loc);
   return build2_loc (input_location, OMP_ORDERED, void_type_node,
