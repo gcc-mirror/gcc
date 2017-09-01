@@ -1232,7 +1232,6 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       off_t offset;
       off_t length;
       int ret;
-      const char *errmsg;
       simple_object_write_section *dest;
       off_t flags;
       unsigned char *buf;
