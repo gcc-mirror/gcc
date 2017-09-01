@@ -1,3 +1,8 @@
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c: New test.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81923

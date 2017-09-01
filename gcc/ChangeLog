@@ -1,3 +1,10 @@
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/82052
+	* tree-ssa-scopedtables.c (avail_exprs_stack::lookup_avail_expr):
+	Always initialize the returned slot after a hash table miss
+	when INSERT is true.
+
 2017-09-01  Alexander Monakov  <amonakov@ispras.ru>
 
 	* config/s390/s390.md (mem_signal_fence): Remove.
