@@ -1,3 +1,9 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81923
+	* asan.c (create_odr_indicator): Strip name encoding from assembler
+	name before appending it after __odr_asan_.
+
 2017-09-01  Martin Liska  <mliska@suse.cz>
 
 	PR tree-optimization/82059
