@@ -7059,19 +7059,6 @@ If this pattern is not defined, the compiler falls back to expanding the
 @code{memory_barrier} pattern, then to emitting @code{__sync_synchronize}
 library call, and finally to just placing a compiler memory barrier.
 
-@cindex @code{mem_signal_fence@var{mode}} instruction pattern
-@item @samp{mem_signal_fence@var{mode}}
-This pattern emits code required to implement a signal fence with
-memory model semantics.  Operand 0 is the memory model to be used.
-
-This pattern should impact the compiler optimizers the same way that
-mem_signal_fence does, but it does not need to issue any barrier
-instructions.
-
-If this pattern is not specified, all memory models except
-@code{__ATOMIC_RELAXED} will result in issuing a @code{sync_synchronize}
-barrier pattern.
-
 @cindex @code{get_thread_pointer@var{mode}} instruction pattern
 @cindex @code{set_thread_pointer@var{mode}} instruction pattern
 @item @samp{get_thread_pointer@var{mode}}
