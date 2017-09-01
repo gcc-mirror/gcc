@@ -2313,15 +2313,6 @@ finish_struct_methods (tree t)
   if (!method_vec)
     return;
 
-  /* Clear DECL_IN_AGGR_P for all functions.  */
-  for (tree fn = TYPE_FIELDS (t); fn; fn = DECL_CHAIN (fn))
-    if (DECL_DECLARES_FUNCTION_P (fn))
-      DECL_IN_AGGR_P (fn) = false;
-
-  /* Issue warnings about private constructors and such.  If there are
-     no methods, then some public defaults are generated.  */
-  maybe_warn_about_overly_private_class (t);
-
   qsort (method_vec->address (), method_vec->length (),
 	 sizeof (tree), method_name_cmp);
 }
@@ -2976,16 +2967,12 @@ warn_hidden (tree t)
   /* We go through each separately named virtual function.  */
   for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
     {
-      tree fndecl;
+      tree name = OVL_NAME (fns);
+      auto_vec<tree, 20> base_fndecls;
       tree base_binfo;
       tree binfo;
       int j;
 
-      /* All functions in this slot in the CLASSTYPE_METHOD_VEC will
-	 have the same name.  Figure out what name that is.  */
-      tree name = OVL_NAME (fns);
-      /* There are no possibly hidden functions yet.  */
-      auto_vec<tree, 20> base_fndecls;
       /* Iterate through all of the base classes looking for possibly
 	 hidden functions.  */
       for (binfo = TYPE_BINFO (t), j = 0;
@@ -3002,14 +2989,14 @@ warn_hidden (tree t)
       /* Remove any overridden functions.  */
       for (ovl_iterator iter (fns); iter; ++iter)
 	{
-	  fndecl = *iter;
+	  tree fndecl = *iter;
 	  if (TREE_CODE (fndecl) == FUNCTION_DECL
 	      && DECL_VINDEX (fndecl))
 	    {
-		/* If the method from the base class has the same
-		   signature as the method from the derived class, it
-		   has been overridden.  */
-		for (size_t k = 0; k < base_fndecls.length (); k++)
+	      /* If the method from the base class has the same
+		 signature as the method from the derived class, it
+		 has been overridden.  */
+	      for (size_t k = 0; k < base_fndecls.length (); k++)
 		if (base_fndecls[k]
 		    && same_signature_p (fndecl, base_fndecls[k]))
 		  base_fndecls[k] = NULL_TREE;
@@ -4892,11 +4879,6 @@ adjust_clone_args (tree decl)
 static void
 clone_constructors_and_destructors (tree t)
 {
-  /* If for some reason we don't have a CLASSTYPE_METHOD_VEC, we bail
-     out now.  */
-  if (!CLASSTYPE_METHOD_VEC (t))
-    return;
-
   /* While constructors can be via a using declaration, at this point
      we no longer need to know that.  */
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
@@ -5134,10 +5116,6 @@ type_has_user_provided_constructor (tree t)
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
     return false;
 
-  /* This can happen in error cases; avoid crashing.  */
-  if (!CLASSTYPE_METHOD_VEC (t))
-    return false;
-
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
     if (user_provided_p (*iter))
       return true;
@@ -5154,10 +5132,6 @@ type_has_user_provided_or_explicit_constructor (tree t)
     return false;
 
   if (!TYPE_HAS_USER_CONSTRUCTOR (t))
-    return false;
-
-  /* This can happen in error cases; avoid crashing.  */
-  if (!CLASSTYPE_METHOD_VEC (t))
     return false;
 
   for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
@@ -5347,9 +5321,6 @@ classtype_has_move_assign_or_move_ctor_p (tree t, bool user_p)
   gcc_assert (user_p
 	      || (!CLASSTYPE_LAZY_MOVE_CTOR (t)
 		  && !CLASSTYPE_LAZY_MOVE_ASSIGN (t)));
-
-  if (!CLASSTYPE_METHOD_VEC (t))
-    return false;
 
   if (!CLASSTYPE_LAZY_MOVE_CTOR (t))
     for (ovl_iterator iter (lookup_fnfields_slot_nolazy (t, ctor_identifier));
@@ -5839,9 +5810,6 @@ check_bases_and_members (tree t)
   /* Process the using-declarations.  */
   for (; access_decls; access_decls = TREE_CHAIN (access_decls))
     handle_using_decl (TREE_VALUE (access_decls), t);
-
-  /* Build and sort the CLASSTYPE_METHOD_VEC.  */
-  finish_struct_methods (t);
 
   /* Figure out whether or not we will need a cookie when dynamically
      allocating an array of this type.  */
@@ -6996,6 +6964,11 @@ finish_struct_1 (tree t)
 
   /* Layout the class itself.  */
   layout_class_type (t, &virtuals);
+  /* COMPLETE_TYPE_P is now true.  */
+
+  finish_struct_methods (t);
+  set_class_bindings (t, TYPE_FIELDS (t));
+
   if (CLASSTYPE_AS_BASE (t) != t)
     /* We use the base type for trivial assignments, and hence it
        needs a mode.  */
@@ -7060,19 +7033,20 @@ finish_struct_1 (tree t)
     }
 
   finish_struct_bits (t);
+
   set_method_tm_attributes (t);
   if (flag_openmp || flag_openmp_simd)
     finish_omp_declare_simd_methods (t);
 
-  /* Complete the rtl for any static member objects of the type we're
-     working on.  */
+  /* Clear DECL_IN_AGGR_P for all member functions.  Complete the rtl
+     for any static member objects of the type we're working on.  */
   for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-    if (VAR_P (x) && TREE_STATIC (x)
-        && TREE_TYPE (x) != error_mark_node
-	&& same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
+    if (DECL_DECLARES_FUNCTION_P (x))
+      DECL_IN_AGGR_P (x) = false;
+    else if (VAR_P (x) && TREE_STATIC (x)
+	     && TREE_TYPE (x) != error_mark_node
+	     && same_type_p (TYPE_MAIN_VARIANT (TREE_TYPE (x)), t))
       SET_DECL_MODE (x, TYPE_MODE (t));
-
-  set_class_bindings (t, TYPE_FIELDS (t));
 
   /* Complain if one of the field types requires lower visibility.  */
   constrain_class_visibility (t);
@@ -7195,9 +7169,25 @@ finish_struct (tree t, tree attributes)
     {
       tree x;
 
-      finish_struct_methods (t);
+      /* We need to add the target functions of USING_DECLS, so that
+	 they can be found when the using declaration is not
+	 instantiated yet.  */
+      for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
+	if (TREE_CODE (x) == USING_DECL)
+	  {
+	    tree fn = strip_using_decl (x);
+  	    if (OVL_P (fn))
+	      for (lkp_iterator iter (fn); iter; ++iter)
+		add_method (t, *iter, true);
+	  }
+	else if (DECL_DECLARES_FUNCTION_P (x))
+	  DECL_IN_AGGR_P (x) = false;
+
       TYPE_SIZE (t) = bitsize_zero_node;
       TYPE_SIZE_UNIT (t) = size_zero_node;
+      /* COMPLETE_TYPE_P is now true.  */
+
+      finish_struct_methods (t);
 
       /* We need to emit an error message if this type was used as a parameter
 	 and it is an abstract type, even if it is a template. We construct
@@ -7211,18 +7201,6 @@ finish_struct (tree t, tree attributes)
 	if (TREE_CODE (x) == FUNCTION_DECL && DECL_PURE_VIRTUAL_P (x))
 	  vec_safe_push (CLASSTYPE_PURE_VIRTUALS (t), x);
       complete_vars (t);
-      /* We need to add the target functions to the CLASSTYPE_METHOD_VEC if
-	 an enclosing scope is a template class, so that this function be
-	 found by lookup_fnfields_1 when the using declaration is not
-	 instantiated yet.  */
-      for (x = TYPE_FIELDS (t); x; x = DECL_CHAIN (x))
-	if (TREE_CODE (x) == USING_DECL)
-	  {
-	    tree fn = strip_using_decl (x);
-  	    if (OVL_P (fn))
-	      for (lkp_iterator iter (fn); iter; ++iter)
-		add_method (t, *iter, true);
-	  }
 
       /* Remember current #pragma pack value.  */
       TYPE_PRECISION (t) = maximum_field_alignment;
@@ -7237,7 +7215,10 @@ finish_struct (tree t, tree attributes)
     }
   else
     finish_struct_1 (t);
+  /* COMPLETE_TYPE_P is now true.  */
 
+  maybe_warn_about_overly_private_class (t);
+  
   if (is_std_init_list (t))
     {
       /* People keep complaining that the compiler crashes on an invalid
