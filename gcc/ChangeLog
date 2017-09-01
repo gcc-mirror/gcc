@@ -1,5 +1,19 @@
 2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* config/arc/arc.md (movqi_insn): Add stores to save constant long
+	immediates.
+	(movhi_insn): Update store instruction constraint which are saving
+	6-bit short immediates.
+	(movsi_insn): Consider also short scaled load operations.
+	(zero_extendhisi2_i): Use Usd constraint instead of T.
+	(extendhisi2_i): Add q constraint.
+	(arc_clzsi2): Add type and length attributes.
+	(arc_ctzsi2): Likewise.
+	* config/arc/constraints.md (Usc): Update constraint, the
+	assembler can parse two relocations for a single instruction.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* config/arc/arc.c (arc_use_anchors_for_symbol_p): New function.
 	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define.
 
