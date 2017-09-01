@@ -1,3 +1,7 @@
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001184797.c: New test.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81887

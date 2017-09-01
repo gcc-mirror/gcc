@@ -1,3 +1,8 @@
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* config/arc/arc.c (arc_use_anchors_for_symbol_p): New function.
+	(TARGET_USE_ANCHORS_FOR_SYMBOL_P): Define.
+
 2017-08-31  Olivier Hainque  <hainque@adacore.com>
 
 	* config.gcc (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now

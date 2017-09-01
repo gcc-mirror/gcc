@@ -10566,6 +10566,30 @@ compact_memory_operand_p (rtx op, machine_mode mode,
   return false;
 }
 
+/* Implement TARGET_USE_ANCHORS_FOR_SYMBOL_P.  We don't want to use
+   anchors for small data: the GP register acts as an anchor in that
+   case.  We also don't want to use them for PC-relative accesses,
+   where the PC acts as an anchor.  Prohibit also TLS symbols to use
+   anchors.  */
+
+static bool
+arc_use_anchors_for_symbol_p (const_rtx symbol)
+{
+  if (SYMBOL_REF_TLS_MODEL (symbol))
+    return false;
+
+  if (flag_pic)
+    return false;
+
+  if (SYMBOL_REF_SMALL_P (symbol))
+    return false;
+
+  return default_use_anchors_for_symbol_p (symbol);
+}
+
+#undef TARGET_USE_ANCHORS_FOR_SYMBOL_P
+#define TARGET_USE_ANCHORS_FOR_SYMBOL_P arc_use_anchors_for_symbol_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-arc.h"
