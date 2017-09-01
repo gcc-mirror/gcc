@@ -1,3 +1,10 @@
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81766
+	* config/i386/i386.c (ix86_init_large_pic_reg): Return label instead of void.
+	(ix86_init_pic_reg): Remember label from ix86_init_large_pic_reg, if non-NULL
+	and preceded by NOTE_INSN_BASIC_BLOCK, swap the note and label.
+
 2017-09-01  Joerg Sonnenberger  <joerg@bec.de>
 	    Jeff Law  <law@redhat.com>
 

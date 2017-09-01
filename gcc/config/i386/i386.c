@@ -8885,7 +8885,7 @@ ix86_use_pseudo_pic_reg (void)
 
 /* Initialize large model PIC register.  */
 
-static void
+static rtx_code_label *
 ix86_init_large_pic_reg (unsigned int tmp_regno)
 {
   rtx_code_label *label;
@@ -8902,6 +8902,7 @@ ix86_init_large_pic_reg (unsigned int tmp_regno)
   emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
   emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
 			    pic_offset_table_rtx, tmp_reg));
+  return label;
 }
 
 /* Create and initialize PIC register if required.  */
@@ -8910,6 +8911,7 @@ ix86_init_pic_reg (void)
 {
   edge entry_edge;
   rtx_insn *seq;
+  rtx_code_label *label = NULL;
 
   if (!ix86_use_pseudo_pic_reg ())
     return;
@@ -8919,7 +8921,7 @@ ix86_init_pic_reg (void)
   if (TARGET_64BIT)
     {
       if (ix86_cmodel == CM_LARGE_PIC)
-	ix86_init_large_pic_reg (R11_REG);
+	label = ix86_init_large_pic_reg (R11_REG);
       else
 	emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
     }
@@ -8943,6 +8945,22 @@ ix86_init_pic_reg (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);
   commit_one_edge_insertion (entry_edge);
+
+  if (label)
+    {
+      basic_block bb = BLOCK_FOR_INSN (label);
+      rtx_insn *bb_note = PREV_INSN (label);
+      /* If the note preceding the label starts a basic block, and the
+	 label is a member of the same basic block, interchange the two.  */
+      if (bb_note != NULL_RTX
+	  && NOTE_INSN_BASIC_BLOCK_P (bb_note)
+	  && bb != NULL
+	  && bb == BLOCK_FOR_INSN (bb_note))
+	{
+	  reorder_insns_nobb (bb_note, bb_note, label);
+	  BB_HEAD (bb) = label;
+	}
+    }
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
