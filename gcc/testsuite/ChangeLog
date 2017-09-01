@@ -1,5 +1,9 @@
 2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
 
+	* gcc.target/arc/loop-1.c: Deleted.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
 	* gcc.target/arc/arc.exp: Test also cpp files.
 	* gcc.target/arc/tdelay_slots.cpp: New test.
 
