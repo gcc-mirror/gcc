@@ -1,3 +1,16 @@
+2017-09-01  Nathan Sidwell  <nathan@acm.org>
+
+	Revert 2017-08-28  Nathan Sidwell  <nathan@acm.org>
+	Restore sorted_fields vector.
+	* cp-tree.h (lang_type): Restore sorted_fields vector.
+	(CLASSTYPE_SORTED_FIELDS): Restore.
+	(CLASSTYPE_BINDINGS): Delete.
+	* name-lookup.c (lookup_field_1): Restore binary search.
+	(sorted_fields_type_new, count_fields,
+	add_fields_to_record_type, add_enum_fields_to_record_type): Restore
+	(set_class_bindings): Revert.
+	(insert_late_enum_def_binding): Restore field_vec insertion.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81887
