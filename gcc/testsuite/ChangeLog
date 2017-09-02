@@ -1,3 +1,10 @@
+2017-09-02  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/81770
+	* gfortran.dg/warn_target_lifetime_3.f90: Fix a typo.
+	* gfortran.dg/warn_target_lifetime_4.f90: New testcase.
+
 2017-08-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	Back port from trunk
