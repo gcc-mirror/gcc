@@ -1,3 +1,10 @@
+2017-09-02  Janus Weil  <janus@gcc.gnu.org>
+
+	Backport from trunk
+	PR fortran/81770
+	* expr.c (gfc_check_pointer_assign): Improve the check whether pointer
+	may outlive pointer target.
+
 2017-06-09  Janus Weil  <janus@gcc.gnu.org>
 
 	Backport from trunk
