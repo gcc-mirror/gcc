@@ -3,7 +3,7 @@
 !
 ! PR fortran/55476
 !
-! Contribued by  Janus Weil
+! Contributed by Janus Weil
 !
 subroutine test
   integer, pointer :: p
