@@ -2251,7 +2251,7 @@ compilation.
 @tindex OACC_UPDATE
 
 All the statements starting with @code{OACC_} represent directives and
-clauses used by the OpenACC API @w{@uref{http://www.openacc.org/}}.
+clauses used by the OpenACC API @w{@uref{https://www.openacc.org}}.
 
 @table @code
 @item OACC_CACHE

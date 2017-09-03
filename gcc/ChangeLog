@@ -1,3 +1,8 @@
+2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/generic.texi (OpenACC): Adjust URL.
+	* doc/invoke.texi (C Dialect Options): Ditto.
+
 2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*bt<mode>): Use nonimmediate_operand
