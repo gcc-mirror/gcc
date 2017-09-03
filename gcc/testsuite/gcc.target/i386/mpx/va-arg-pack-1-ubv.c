@@ -28,7 +28,7 @@ foo2 (int i1, int *p1, ...)
 static __attribute__((always_inline)) int
 foo1 (int *p1, ...)
 {
-  return foo2 (10, p1, __va_arg_pack ());
+  return foo2 (10, p1, __builtin_va_arg_pack ());
 }
 
 int prebuf[100];
