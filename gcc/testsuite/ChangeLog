@@ -1,3 +1,15 @@
+2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-check.h (main): Use __get_cpuid_count
+	and return NORUNRES on failure.
+	* gcc.target/i386/mpx/va-arg-pack-1-lbv.c (foo1): Use
+	__builtin_va_arg_pack instead of __va_arg_pack.
+	* gcc.target/i386/mpx/va-arg-pack-1-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-1-ubv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-lbv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-ubv.c (foo1): Ditto.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81766

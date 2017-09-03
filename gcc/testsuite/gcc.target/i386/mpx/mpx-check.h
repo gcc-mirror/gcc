@@ -31,10 +31,8 @@ main (int argc, const char **argv)
 {
   unsigned int eax, ebx, ecx, edx;
 
-  if (__get_cpuid_max (0, NULL) < 7)
-    return 0;
-
-  __cpuid_count (7, 0, eax, ebx, ecx, edx);
+  if (!__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx))
+    return NORUNRES;
 
   /* Run MPX test only if host has MPX support.  */
   if ((ebx & bit_MPX) && (xgetbv (0) & XSTATE_BNDREGS))
