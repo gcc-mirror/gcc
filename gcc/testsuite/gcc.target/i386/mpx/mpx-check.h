@@ -26,6 +26,15 @@ static int xgetbv (unsigned x)
    return eax;
 }
 
+static int
+check_osxsave (void)
+{
+  unsigned int eax, ebx, ecx, edx;
+
+  __cpuid (1, eax, ebx, ecx, edx);
+  return (ecx & bit_OSXSAVE) != 0;
+}
+
 int
 main (int argc, const char **argv)
 {
@@ -35,7 +44,7 @@ main (int argc, const char **argv)
     return NORUNRES;
 
   /* Run MPX test only if host has MPX support.  */
-  if ((ebx & bit_MPX) && (xgetbv (0) & XSTATE_BNDREGS))
+  if (check_osxsave () && (ebx & bit_MPX) && (xgetbv (0) & XSTATE_BNDREGS))
     mpx_test (argc, argv);
   else
     {

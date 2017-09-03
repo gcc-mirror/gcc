@@ -25,87 +25,65 @@ do_test (void)
 }
 #endif
 
+static int
+check_osxsave (void)
+{
+  unsigned int eax, ebx, ecx, edx;
+
+  __cpuid (1, eax, ebx, ecx, edx);
+  return (ecx & bit_OSXSAVE) != 0;
+}
+
 int
 main ()
 {
   unsigned int eax, ebx, ecx, edx;
 
-  if (!__get_cpuid (1, &eax, &ebx, &ecx, &edx))
-    goto skipped;
+  if (!__get_cpuid_count (7, 0, &eax, &ebx, &ecx, &edx))
+    return 0;
 
-  /* Run AVX512F test only if host has AVX512F support.  */
-  if (!(ecx & bit_OSXSAVE))
-    goto skipped;
-
-  if (__get_cpuid_max (0, NULL) < 7)
-    goto skipped;
-
-  __cpuid_count (7, 0, eax, ebx, ecx, edx);
-
-  if (!(ebx & bit_AVX512F))
-    goto skipped;
-
+  /* Run AVX512 test only if host has ISA support.  */
+  if (check_osxsave ()
+      && (ebx & bit_AVX512F)
 #ifdef AVX512VL
-  if (!(ebx & bit_AVX512VL))
-    goto skipped;
+      && (ebx & bit_AVX512VL)
 #endif
-
 #ifdef AVX512ER
-  if (!(ebx & bit_AVX512ER))
-    goto skipped;
+      && (ebx & bit_AVX512ER)
 #endif
-
 #ifdef AVX512CD
-  if (!(ebx & bit_AVX512CD))
-    goto skipped;
+      && (ebx & bit_AVX512CD)
 #endif
-
 #ifdef AVX512DQ
-  if (!(ebx & bit_AVX512DQ))
-    goto skipped;
+      && (ebx & bit_AVX512DQ)
 #endif
-
 #ifdef AVX512BW
-  if (!(ebx & bit_AVX512BW))
-    goto skipped;
+      && (ebx & bit_AVX512BW)
 #endif
-
 #ifdef AVX512IFMA
-  if (!(ebx & bit_AVX512IFMA))
-    goto skipped;
+      && (ebx & bit_AVX512IFMA)
 #endif
-
 #ifdef AVX512VBMI
-  if (!(ecx & bit_AVX512VBMI))
-    goto skipped;
+      && (ecx & bit_AVX512VBMI)
 #endif
-
 #ifdef AVX5124FMAPS
-  if (!(edx & bit_AVX5124FMAPS))
-    goto skipped;
+      && (edx & bit_AVX5124FMAPS)
 #endif
-
 #ifdef AVX5124VNNIW
-  if (!(edx & bit_AVX5124VNNIW))
-    goto skipped;
+      && (edx & bit_AVX5124VNNIW)
 #endif
-
 #ifdef AVX512VPOPCNTDQ
-  if (!(ecx & bit_AVX512VPOPCNTDQ))
-    goto skipped;
+      && (ecx & bit_AVX512VPOPCNTDQ)
 #endif
-
-  if (!avx512f_os_support ())
-    goto skipped;
-
-  DO_TEST ();
-
+      && avx512f_os_support ())
+    {
+      DO_TEST ();
 #ifdef DEBUG
-  printf ("PASSED\n");
+      printf ("PASSED\n");
 #endif
-  return 0;
-
-skipped:
+      return 0;
+    }
+ 
 #ifdef DEBUG
   printf ("SKIPPED\n");
 #endif

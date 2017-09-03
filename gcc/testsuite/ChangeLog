@@ -1,3 +1,17 @@
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/adx-check.h (main): Use __get_cpuid_count.
+	* gcc.target/i386/bmi-check.h (main): Ditto.
+	* gcc.target/i386/bmi2-check.h (main): Ditto.
+	* gcc.target/i386/rtm-check.h (main): Ditto.
+	* gcc.target/i386/sha-check.h (main): Ditto.
+	* gcc.target/i386/avx2-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.
+	* gcc.target/i386/avx512-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.  Reorder conditions.
+	* gcc.target/i386/mpx/mpx-check.h (check_osxsave): New function.
+	(main): Use check_osxsave.
+
 2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/mpx/mpx-check.h (main): Use __get_cpuid_count
