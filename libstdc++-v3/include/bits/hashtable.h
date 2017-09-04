@@ -836,17 +836,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    _M_bucket_count = __bkt_count;
 	  }
 
-	__try
-	  {
-	    for (; __f != __l; ++__f)
-	      this->insert(*__f);
-	  }
-	__catch(...)
-	  {
-	    clear();
-	    _M_deallocate_buckets();
-	    __throw_exception_again;
-	  }
+	for (; __f != __l; ++__f)
+	  this->insert(*__f);
       }
 
   template<typename _Key, typename _Value,
