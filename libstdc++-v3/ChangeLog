@@ -1,6 +1,18 @@
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-08-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81912
+	* include/bits/stl_iterator_base_types.h (__iterator_category): Add
+	constexpr for C++11 and later.
+	* testsuite/24_iterators/container_access.cc: Add target selector.
+	* testsuite/24_iterators/range_access.cc: Fix clause number in
+	comment.
+	* testsuite/24_iterators/range_access_cpp14.cc: Likewise.
+	* testsuite/24_iterators/range_access_cpp17.cc: New.
+
+	Backport from mainline
 	2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (_GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP):
