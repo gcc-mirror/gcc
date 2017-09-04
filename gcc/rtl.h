@@ -2888,6 +2888,8 @@ subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 }
 
 extern int byte_lowpart_offset (machine_mode, machine_mode);
+extern int subreg_memory_offset (machine_mode, machine_mode, unsigned int);
+extern int subreg_memory_offset (const_rtx);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address_addr_space_1 (scalar_int_mode, rtx,
 						addr_space_t, bool, bool);

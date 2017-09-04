@@ -6069,34 +6069,18 @@ simplify_subreg (machine_mode outermode, rtx op,
   if (GET_CODE (op) == SUBREG)
     {
       machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
-      int final_offset = byte + SUBREG_BYTE (op);
       rtx newx;
 
       if (outermode == innermostmode
 	  && byte == 0 && SUBREG_BYTE (op) == 0)
 	return SUBREG_REG (op);
 
-      /* The SUBREG_BYTE represents offset, as if the value were stored
-	 in memory.  Irritating exception is paradoxical subreg, where
-	 we define SUBREG_BYTE to be 0.  On big endian machines, this
-	 value should be negative.  For a moment, undo this exception.  */
-      if (byte == 0 && GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
-	{
-	  int difference = (GET_MODE_SIZE (innermode) - GET_MODE_SIZE (outermode));
-	  if (WORDS_BIG_ENDIAN)
-	    final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    final_offset += difference % UNITS_PER_WORD;
-	}
-      if (SUBREG_BYTE (op) == 0
-	  && GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (innermode))
-	{
-	  int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (innermode));
-	  if (WORDS_BIG_ENDIAN)
-	    final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    final_offset += difference % UNITS_PER_WORD;
-	}
+      /* Work out the memory offset of the final OUTERMODE value relative
+	 to the inner value of OP.  */
+      HOST_WIDE_INT mem_offset = subreg_memory_offset (outermode,
+						       innermode, byte);
+      HOST_WIDE_INT op_mem_offset = subreg_memory_offset (op);
+      HOST_WIDE_INT final_offset = mem_offset + op_mem_offset;
 
       /* See whether resulting subreg will be paradoxical.  */
       if (!paradoxical_subreg_p (outermode, innermostmode))
@@ -6111,19 +6095,12 @@ simplify_subreg (machine_mode outermode, rtx op,
 	}
       else
 	{
-	  int offset = 0;
-	  int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (outermode));
-
-	  /* In paradoxical subreg, see if we are still looking on lower part.
-	     If so, our SUBREG_BYTE will be 0.  */
-	  if (WORDS_BIG_ENDIAN)
-	    offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    offset += difference % UNITS_PER_WORD;
-	  if (offset == final_offset)
-	    final_offset = 0;
-	  else
+	  HOST_WIDE_INT required_offset
+	    = subreg_memory_offset (outermode, innermostmode, 0);
+	  if (final_offset != required_offset)
 	    return NULL_RTX;
+	  /* Paradoxical subregs always have byte offset 0.  */
+	  final_offset = 0;
 	}
 
       /* Recurse for further possible simplifications.  */
@@ -6164,22 +6141,9 @@ simplify_subreg (machine_mode outermode, rtx op,
       final_regno = simplify_subreg_regno (regno, innermode, byte, outermode);
       if (HARD_REGISTER_NUM_P (final_regno))
 	{
-	  rtx x;
-	  int final_offset = byte;
-
-	  /* Adjust offset for paradoxical subregs.  */
-	  if (byte == 0
-	      && GET_MODE_SIZE (innermode) < GET_MODE_SIZE (outermode))
-	    {
-	      int difference = (GET_MODE_SIZE (innermode)
-				- GET_MODE_SIZE (outermode));
-	      if (WORDS_BIG_ENDIAN)
-		final_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	      if (BYTES_BIG_ENDIAN)
-		final_offset += difference % UNITS_PER_WORD;
-	    }
-
-	  x = gen_rtx_REG_offset (op, outermode, final_regno, final_offset);
+	  rtx x = gen_rtx_REG_offset (op, outermode, final_regno,
+				      subreg_memory_offset (outermode,
+							    innermode, byte));
 
 	  /* Propagate original regno.  We don't have any way to specify
 	     the offset inside original regno, so do so only for lowpart.

@@ -727,29 +727,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   while (GET_CODE (op0) == SUBREG)
     {
-      /* The following line once was done only if WORDS_BIG_ENDIAN,
-	 but I think that is a mistake.  WORDS_BIG_ENDIAN is
-	 meaningful at a much higher level; when structures are copied
-	 between memory and regs, the higher-numbered regs
-	 always get higher addresses.  */
-      int inner_mode_size = GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)));
-      int outer_mode_size = GET_MODE_SIZE (GET_MODE (op0));
-      int byte_offset = 0;
-
-      /* Paradoxical subregs need special handling on big-endian machines.  */
-      if (paradoxical_subreg_p (op0))
-	{
-	  int difference = inner_mode_size - outer_mode_size;
-
-	  if (WORDS_BIG_ENDIAN)
-	    byte_offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-	  if (BYTES_BIG_ENDIAN)
-	    byte_offset += difference % UNITS_PER_WORD;
-	}
-      else
-	byte_offset = SUBREG_BYTE (op0);
-
-      bitnum += byte_offset * BITS_PER_UNIT;
+      bitnum += subreg_memory_offset (op0) * BITS_PER_UNIT;
       op0 = SUBREG_REG (op0);
     }
 

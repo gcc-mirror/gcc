@@ -1,3 +1,13 @@
+2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* rtl.h (subreg_memory_offset): Declare.
+	* emit-rtl.c (subreg_memory_offset): New function.
+	* expmed.c (store_bit_field_1): Use it.
+	* expr.c (undefined_operand_subword_p): Likewise.
+	* simplify-rtx.c (simplify_subreg): Likewise.
+
 2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/57448

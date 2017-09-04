@@ -3541,30 +3541,12 @@ emit_move_ccmode (machine_mode mode, rtx x, rtx y)
 static bool
 undefined_operand_subword_p (const_rtx op, int i)
 {
-  machine_mode innermode, innermostmode;
-  int offset;
   if (GET_CODE (op) != SUBREG)
     return false;
-  innermode = GET_MODE (op);
-  innermostmode = GET_MODE (SUBREG_REG (op));
-  offset = i * UNITS_PER_WORD + SUBREG_BYTE (op);
-  /* The SUBREG_BYTE represents offset, as if the value were stored in
-     memory, except for a paradoxical subreg where we define
-     SUBREG_BYTE to be 0; undo this exception as in
-     simplify_subreg.  */
-  if (SUBREG_BYTE (op) == 0
-      && GET_MODE_SIZE (innermostmode) < GET_MODE_SIZE (innermode))
-    {
-      int difference = (GET_MODE_SIZE (innermostmode) - GET_MODE_SIZE (innermode));
-      if (WORDS_BIG_ENDIAN)
-	offset += (difference / UNITS_PER_WORD) * UNITS_PER_WORD;
-      if (BYTES_BIG_ENDIAN)
-	offset += difference % UNITS_PER_WORD;
-    }
-  if (offset >= GET_MODE_SIZE (innermostmode)
-      || offset <= -GET_MODE_SIZE (word_mode))
-    return true;
-  return false;
+  machine_mode innermostmode = GET_MODE (SUBREG_REG (op));
+  HOST_WIDE_INT offset = i * UNITS_PER_WORD + subreg_memory_offset (op);
+  return (offset >= GET_MODE_SIZE (innermostmode)
+	  || offset <= -UNITS_PER_WORD);
 }
 
 /* A subroutine of emit_move_insn_1.  Generate a move from Y into X.
