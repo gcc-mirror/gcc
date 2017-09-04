@@ -4201,14 +4201,14 @@ ea_load_store (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
       if (!cache_fetch_dirty)
 	cache_fetch_dirty = init_one_libfunc ("__cache_fetch_dirty");
       emit_library_call_value (cache_fetch_dirty, data_addr, LCT_NORMAL, Pmode,
-			       2, ea_addr, EAmode, ndirty, SImode);
+			       ea_addr, EAmode, ndirty, SImode);
     }
   else
     {
       if (!cache_fetch)
 	cache_fetch = init_one_libfunc ("__cache_fetch");
       emit_library_call_value (cache_fetch, data_addr, LCT_NORMAL, Pmode,
-			       1, ea_addr, EAmode);
+			       ea_addr, EAmode);
     }
 }
 

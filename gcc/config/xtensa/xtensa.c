@@ -1343,7 +1343,7 @@ xtensa_expand_nonlocal_goto (rtx *operands)
     containing_fp = force_reg (Pmode, containing_fp);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_nonlocal_goto"),
-		     LCT_NORMAL, VOIDmode, 2,
+		     LCT_NORMAL, VOIDmode,
 		     containing_fp, Pmode,
 		     goto_handler, Pmode);
 }
@@ -1623,7 +1623,7 @@ xtensa_setup_frame_addresses (void)
   if (TARGET_WINDOWED_ABI)
     emit_library_call
       (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
-       LCT_NORMAL, VOIDmode, 0);
+       LCT_NORMAL, VOIDmode);
 }
 
 
@@ -4045,7 +4045,7 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
   emit_move_insn (adjust_address (m_tramp, SImode, chain_off), chain);
   emit_move_insn (adjust_address (m_tramp, SImode, func_off), func);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */

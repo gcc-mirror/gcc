@@ -5977,7 +5977,7 @@ aarch64_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
      gen_clear_cache().  */
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, a_tramp, ptr_mode,
+		     LCT_NORMAL, VOIDmode, a_tramp, ptr_mode,
 		     plus_constant (ptr_mode, a_tramp, TRAMPOLINE_SIZE),
 		     ptr_mode);
 }

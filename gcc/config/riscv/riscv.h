@@ -340,7 +340,7 @@ along with GCC; see the file COPYING3.  If not see
     rtx fun, ra;							\
     ra = get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);		\
     fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, ra, Pmode);	\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, ra, Pmode);		\
   }
 
 /* All the work done in PROFILE_HOOK, but still required.  */

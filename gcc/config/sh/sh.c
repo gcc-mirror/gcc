@@ -10090,7 +10090,7 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
 	  || (!(TARGET_SH4A || TARGET_SH4_300) && TARGET_USERMODE))
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
 					    FUNCTION_ORDINARY).sym,
-			   LCT_NORMAL, VOIDmode, 1, tramp, SImode);
+			   LCT_NORMAL, VOIDmode, tramp, SImode);
       else
 	emit_insn (gen_ic_invalidate_line (tramp));
     }

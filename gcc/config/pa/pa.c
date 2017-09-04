@@ -906,7 +906,7 @@ hppa_tls_call (rtx arg)
 
   ret = gen_reg_rtx (Pmode);
   emit_library_call_value (gen_tls_get_addr (), ret,
-		  	   LCT_CONST, Pmode, 1, arg, Pmode);
+			   LCT_CONST, Pmode, arg, Pmode);
 
   return ret;
 }
@@ -10192,7 +10192,7 @@ pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 

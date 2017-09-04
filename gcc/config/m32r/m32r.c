@@ -2493,7 +2493,7 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
   emit_library_call (m32r_function_symbol ("memcpy"), LCT_NORMAL,
-		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
+		     VOIDmode, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TYPE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
@@ -2796,7 +2796,7 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		gen_int_mode (m32r_cache_flush_trap, SImode)));
   else if (m32r_cache_flush_func && m32r_cache_flush_func[0])
     emit_library_call (m32r_function_symbol (m32r_cache_flush_func),
-		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
+		       LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
 }

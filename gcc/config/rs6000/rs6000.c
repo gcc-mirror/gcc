@@ -9233,7 +9233,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	{
 	  tga = rs6000_tls_get_addr ();
 	  emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				   1, const0_rtx, Pmode);
+				   const0_rtx, Pmode);
 
 	  r3 = gen_rtx_REG (Pmode, 3);
 	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
@@ -9258,7 +9258,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
 	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				   1, const0_rtx, Pmode);
+				   const0_rtx, Pmode);
 
 	  r3 = gen_rtx_REG (Pmode, 3);
 	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
@@ -21887,7 +21887,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 
       if (!check_nan)
 	dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					SImode, 2, op0, mode, op1, mode);
+					SImode, op0, mode, op1, mode);
 
       /* The library signals an exception for signalling NaNs, so we need to
 	 handle isgreater, etc. by first checking isordered.  */
@@ -21903,8 +21903,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	  /* Test for either value being a NaN.  */
 	  gcc_assert (unord_func);
 	  unord_dest = emit_library_call_value (unord_func, NULL_RTX, LCT_CONST,
-						SImode, 2, op0, mode, op1,
-						mode);
+						SImode, op0, mode, op1, mode);
 
 	  /* Set value (0) if either value is a NaN, and jump to the join
 	     label.  */
@@ -21923,8 +21922,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	  /* Do the normal comparison, knowing that the values are not
 	     NaNs.  */
 	  normal_dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-						 SImode, 2, op0, mode, op1,
-						 mode);
+						 SImode, op0, mode, op1, mode);
 
 	  emit_insn (gen_cstoresi4 (dest,
 				    gen_rtx_fmt_ee (code, SImode, normal_dest,
@@ -22287,8 +22285,8 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
       libfunc = convert_optab_libfunc (cvt, dest_mode, src_mode);
       gcc_assert (libfunc != NULL_RTX);
 
-      dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode, 1, src,
-				       src_mode);
+      dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode,
+				       src, src_mode);
 
       gcc_assert (dest2 != NULL_RTX);
       if (!rtx_equal_p (dest, dest2))
@@ -29928,7 +29926,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 #endif
       if (NO_PROFILE_COUNTERS)
 	emit_library_call (init_one_libfunc (RS6000_MCOUNT),
-			   LCT_NORMAL, VOIDmode, 0);
+			   LCT_NORMAL, VOIDmode);
       else
 	{
 	  char buf[30];
@@ -29940,7 +29938,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 	  fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
 
 	  emit_library_call (init_one_libfunc (RS6000_MCOUNT),
-			     LCT_NORMAL, VOIDmode, 1, fun, Pmode);
+			     LCT_NORMAL, VOIDmode, fun, Pmode);
 	}
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
@@ -29959,7 +29957,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 	caller_addr_regno = 0;
 #endif
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mcount_name),
-			 LCT_NORMAL, VOIDmode, 1,
+			 LCT_NORMAL, VOIDmode,
 			 gen_rtx_REG (Pmode, caller_addr_regno), Pmode);
     }
 }
@@ -32309,7 +32307,7 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
     case ABI_DARWIN:
     case ABI_V4:
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__trampoline_setup"),
-			 LCT_NORMAL, VOIDmode, 4,
+			 LCT_NORMAL, VOIDmode,
 			 addr, Pmode,
 			 GEN_INT (rs6000_trampoline_size ()), SImode,
 			 fnaddr, Pmode,

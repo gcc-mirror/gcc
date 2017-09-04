@@ -2380,7 +2380,7 @@ expand_block_move_4 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
       emit_insn (insn);
     }
   else
-    emit_library_call (long_int_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+    emit_library_call (long_int_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		       dst_reg, Pmode,
 		       src_reg, Pmode,
 		       convert_to_mode (TYPE_MODE (sizetype),
@@ -2416,7 +2416,7 @@ expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
   unsigned HOST_WIDE_INT bytes = UINTVAL (bytes_rtx);
   unsigned int rem = bytes % 2;
 
-  emit_library_call (wrd_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (wrd_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2440,7 +2440,7 @@ expand_block_move_2 (rtx dst, rtx dst_reg, rtx src, rtx src_reg, rtx bytes_rtx)
 static void
 expand_block_move_1 (rtx dst_reg, rtx src_reg, rtx bytes_rtx)
 {
-  emit_library_call (byt_memcpy_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (byt_memcpy_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2459,7 +2459,7 @@ expand_block_set_4 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
   unsigned int rem = bytes % 4;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (long_int_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (long_int_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2505,7 +2505,7 @@ expand_block_set_2 (rtx dst, rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
   unsigned int rem = bytes % 2;
 
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (wrd_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (wrd_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2529,7 +2529,7 @@ static void
 expand_block_set_1 (rtx dst_reg, rtx value_rtx, rtx bytes_rtx)
 {
   value_rtx = convert_to_mode (Pmode, value_rtx, 1);
-  emit_library_call (byt_memset_libfunc, LCT_NORMAL, VOIDmode, 3,
+  emit_library_call (byt_memset_libfunc, LCT_NORMAL, VOIDmode,
 		     dst_reg, Pmode,
 		     value_rtx, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype),
@@ -2681,7 +2681,7 @@ visium_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
 					     GEN_INT (0xffff), NULL_RTX),
 				 0x04940000));
 
-  emit_library_call (set_trampoline_parity_libfunc, LCT_NORMAL, VOIDmode, 1,
+  emit_library_call (set_trampoline_parity_libfunc, LCT_NORMAL, VOIDmode,
 		     addr, SImode);
 }
 
@@ -2721,7 +2721,7 @@ visium_profile_hook (void)
 {
   visium_frame_needed = true;
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "mcount"), LCT_NORMAL,
-		     VOIDmode, 0);
+		     VOIDmode);
 }
 
 /* A C expression whose value is RTL representing the address in a stack frame

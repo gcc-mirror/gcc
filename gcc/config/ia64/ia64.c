@@ -1202,8 +1202,8 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       emit_insn (gen_load_dtprel (tga_op2, op1));
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-					 LCT_CONST, Pmode, 2, tga_op1,
-					 Pmode, tga_op2, Pmode);
+					 LCT_CONST, Pmode,
+					 tga_op1, Pmode, tga_op2, Pmode);
 
       insns = get_insns ();
       end_sequence ();
@@ -1226,8 +1226,8 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       tga_op2 = const0_rtx;
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-					 LCT_CONST, Pmode, 2, tga_op1,
-					 Pmode, tga_op2, Pmode);
+					 LCT_CONST, Pmode,
+					 tga_op1, Pmode, tga_op2, Pmode);
 
       insns = get_insns ();
       end_sequence ();
@@ -1836,7 +1836,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
 
       start_sequence ();
 
-      ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode, 3,
+      ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode,
 				     *op0, TFmode, *op1, TFmode,
 				     GEN_INT (magic), DImode);
       cmp = gen_reg_rtx (BImode);
@@ -11101,7 +11101,7 @@ ia64_profile_hook (int labelno)
   ip = gen_reg_rtx (Pmode);
   emit_insn (gen_ip_value (ip));
   emit_library_call (gen_mcount_func_rtx (), LCT_NORMAL,
-                     VOIDmode, 3,
+                     VOIDmode,
 		     gen_rtx_REG (Pmode, BR_REG (0)), Pmode,
 		     ip, Pmode,
 		     label, Pmode);
