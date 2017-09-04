@@ -3936,17 +3936,42 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 					gimple_call_arg (stmt, 2));
 	  break;
 	case IFN_UBSAN_OBJECT_SIZE:
-	  if (integer_all_onesp (gimple_call_arg (stmt, 2))
-	      || (TREE_CODE (gimple_call_arg (stmt, 1)) == INTEGER_CST
-		  && TREE_CODE (gimple_call_arg (stmt, 2)) == INTEGER_CST
-		  && tree_int_cst_le (gimple_call_arg (stmt, 1),
-				      gimple_call_arg (stmt, 2))))
+	  {
+	    tree offset = gimple_call_arg (stmt, 1);
+	    tree objsize = gimple_call_arg (stmt, 2);
+	    if (integer_all_onesp (objsize)
+		|| (TREE_CODE (offset) == INTEGER_CST
+		    && TREE_CODE (objsize) == INTEGER_CST
+		    && tree_int_cst_le (offset, objsize)))
+	      {
+		replace_call_with_value (gsi, NULL_TREE);
+		return true;
+	      }
+	  }
+	  break;
+	case IFN_UBSAN_PTR:
+	  if (integer_zerop (gimple_call_arg (stmt, 1)))
 	    {
-	      gsi_replace (gsi, gimple_build_nop (), false);
-	      unlink_stmt_vdef (stmt);
-	      release_defs (stmt);
+	      replace_call_with_value (gsi, NULL_TREE);
 	      return true;
 	    }
+	  break;
+	case IFN_UBSAN_BOUNDS:
+	  {
+	    tree index = gimple_call_arg (stmt, 1);
+	    tree bound = gimple_call_arg (stmt, 2);
+	    if (TREE_CODE (index) == INTEGER_CST
+		&& TREE_CODE (bound) == INTEGER_CST)
+	      {
+		index = fold_convert (TREE_TYPE (bound), index);
+		if (TREE_CODE (index) == INTEGER_CST
+		    && tree_int_cst_le (index, bound))
+		  {
+		    replace_call_with_value (gsi, NULL_TREE);
+		    return true;
+		  }
+	      }
+	  }
 	  break;
 	case IFN_GOACC_DIM_SIZE:
 	case IFN_GOACC_DIM_POS:

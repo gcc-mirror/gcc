@@ -1,5 +1,11 @@
 2017-09-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81981
+	* gimple-fold.c (gimple_fold_call): Optimize away useless UBSAN_PTR
+	and UBSAN_BOUNDS internal calls.  Clean up IFN_UBSAN_OBJECT_SIZE
+	handling.  Use replace_call_with_value with NULL instead of
+	gsi_replace, unlink_stmt_vdef and release_defs.
+
 	* gdbhooks.py (OptMachineModePrinter.to_string): Use 8 spaces
 	instead of tab.
 
