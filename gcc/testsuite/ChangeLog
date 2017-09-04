@@ -1,3 +1,11 @@
+2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57448
+	PR target/67458
+	PR target/81316
+	* gcc.dg/atomic/pr80640-2.c: New testcase.
+	* gcc.dg/atomic/pr81316.c: New testcase.
+
 2017-09-04  Tom de Vries  <tom@codesourcery.com>
 
 	PR tree-optimization/82052

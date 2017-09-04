@@ -1,3 +1,12 @@
+2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57448
+	PR target/67458
+	PR target/81316
+	* optabs.c (expand_atomic_load): Place compiler memory barriers if
+	using atomic_load pattern.
+	(expand_atomic_store): Likewise.
+
 2017-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81981

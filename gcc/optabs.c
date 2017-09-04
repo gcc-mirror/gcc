@@ -6344,12 +6344,20 @@ expand_atomic_load (rtx target, rtx mem, enum memmodel model)
   if (icode != CODE_FOR_nothing)
     {
       struct expand_operand ops[3];
+      rtx_insn *last = get_last_insn ();
+      if (is_mm_seq_cst (model))
+	expand_asm_memory_barrier ();
 
       create_output_operand (&ops[0], target, mode);
       create_fixed_operand (&ops[1], mem);
       create_integer_operand (&ops[2], model);
       if (maybe_expand_insn (icode, 3, ops))
-	return ops[0].value;
+	{
+	  if (!is_mm_relaxed (model))
+	    expand_asm_memory_barrier ();
+	  return ops[0].value;
+	}
+      delete_insns_since (last);
     }
 
   /* If the size of the object is greater than word size on this target,
@@ -6394,11 +6402,19 @@ expand_atomic_store (rtx mem, rtx val, enum memmodel model, bool use_release)
   icode = direct_optab_handler (atomic_store_optab, mode);
   if (icode != CODE_FOR_nothing)
     {
+      rtx_insn *last = get_last_insn ();
+      if (!is_mm_relaxed (model))
+	expand_asm_memory_barrier ();
       create_fixed_operand (&ops[0], mem);
       create_input_operand (&ops[1], val, mode);
       create_integer_operand (&ops[2], model);
       if (maybe_expand_insn (icode, 3, ops))
-	return const0_rtx;
+	{
+	  if (is_mm_seq_cst (model))
+	    expand_asm_memory_barrier ();
+	  return const0_rtx;
+	}
+      delete_insns_since (last);
     }
 
   /* If using __sync_lock_release is a viable alternative, try it.
