@@ -910,7 +910,8 @@ extern void fancy_abort (const char *, int, const char *)
 	ASM_BYTE_OP MEMBER_TYPE_FORCES_BLK LIBGCC2_HAS_SF_MODE		\
 	LIBGCC2_HAS_DF_MODE LIBGCC2_HAS_XF_MODE LIBGCC2_HAS_TF_MODE	\
 	CLEAR_BY_PIECES_P MOVE_BY_PIECES_P SET_BY_PIECES_P		\
-	STORE_BY_PIECES_P TARGET_FLT_EVAL_METHOD
+	STORE_BY_PIECES_P TARGET_FLT_EVAL_METHOD			\
+	HARD_REGNO_CALL_PART_CLOBBERED
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */

@@ -1698,16 +1698,10 @@ This macro is optional.  If not specified, it defaults to the value
 of @code{CALL_USED_REGISTERS}.
 @end defmac
 
-@defmac HARD_REGNO_CALL_PART_CLOBBERED (@var{regno}, @var{mode})
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-A C expression that is nonzero if it is not permissible to store a
-value of mode @var{mode} in hard register number @var{regno} across a
-call without some part of it being clobbered.  For most machines this
-macro need not be defined.  It is only required for machines that do not
-preserve the entire contents of a register across a call.
-@end defmac
+@hook TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 
 @findex fixed_regs
 @findex call_used_regs

@@ -285,9 +285,6 @@ enum reg_class {
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)     \
-  avr_hard_regno_call_part_clobbered (REGNO, MODE)
-
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
 #define STACK_PUSH_CODE POST_DEC

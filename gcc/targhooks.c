@@ -1737,7 +1737,7 @@ default_dwarf_frame_reg_mode (int regno)
 {
   machine_mode save_mode = reg_raw_mode[regno];
 
-  if (HARD_REGNO_CALL_PART_CLOBBERED (regno, save_mode))
+  if (targetm.hard_regno_call_part_clobbered (regno, save_mode))
     save_mode = choose_hard_reg_mode (regno, 1, true);
   return save_mode;
 }

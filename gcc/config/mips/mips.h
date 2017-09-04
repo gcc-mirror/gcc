@@ -1971,14 +1971,6 @@ FP_ASM_SPEC "\
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
   mips_hard_regno_caller_save_mode (REGNO, NREGS, MODE)
 
-/* Odd-numbered single-precision registers are not considered callee-saved
-   for o32 FPXX as they will be clobbered when run on an FR=1 FPU.
-   MSA vector registers with MODE > 64 bits are part clobbered too.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  ((TARGET_FLOATXX && hard_regno_nregs[REGNO][MODE] == 1		\
-   && FP_REG_P (REGNO) && ((REGNO) & 1))				\
-   || (ISA_HAS_MSA && FP_REG_P (REGNO) && GET_MODE_SIZE (MODE) > 8))
-
 #define MODES_TIEABLE_P mips_modes_tieable_p
 
 /* Register to use for pushing function arguments.  */

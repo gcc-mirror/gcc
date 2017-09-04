@@ -12857,6 +12857,26 @@ mips_hard_regno_scratch_ok (unsigned int regno)
   return true;
 }
 
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  Odd-numbered
+   single-precision registers are not considered callee-saved for o32
+   FPXX as they will be clobbered when run on an FR=1 FPU.  MSA vector
+   registers with MODE > 64 bits are part clobbered too.  */
+
+static bool
+mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_FLOATXX
+      && hard_regno_nregs[regno][mode] == 1
+      && FP_REG_P (regno)
+      && (regno & 1) != 0)
+    return true;
+
+  if (ISA_HAS_MSA && FP_REG_P (regno) && GET_MODE_SIZE (mode) > 8)
+    return true;
+
+  return false;
+}
+
 /* Implement HARD_REGNO_NREGS.  */
 
 unsigned int
@@ -22557,6 +22577,10 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  mips_hard_regno_call_part_clobbered
 
 /* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS

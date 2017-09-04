@@ -34,6 +34,7 @@
 #include "tree-pass.h"
 #include "rtl-iter.h"
 #include "cfgrtl.h"
+#include "target.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -1055,7 +1056,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 				  regs_invalidated_by_call);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
-		 || HARD_REGNO_CALL_PART_CLOBBERED (regno, vd->e[regno].mode))
+		 || (targetm.hard_regno_call_part_clobbered
+		     (regno, vd->e[regno].mode)))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 

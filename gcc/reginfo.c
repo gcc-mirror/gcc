@@ -635,28 +635,32 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
   FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
-	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+	&& (!call_saved
+	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
 	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
     if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
-	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+	&& (!call_saved
+	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
 	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
     if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
-	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+	&& (!call_saved
+	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
 	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
       found_mode = mode;
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
     if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	&& HARD_REGNO_MODE_OK (regno, mode)
-	&& (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+	&& (!call_saved
+	    || !targetm.hard_regno_call_part_clobbered (regno, mode))
 	&& GET_MODE_SIZE (mode) > GET_MODE_SIZE (found_mode))
       found_mode = mode;
 
@@ -669,7 +673,8 @@ choose_hard_reg_mode (unsigned int regno ATTRIBUTE_UNUSED,
       mode = (machine_mode) m;
       if ((unsigned) hard_regno_nregs[regno][mode] == nregs
 	  && HARD_REGNO_MODE_OK (regno, mode)
-	  && (! call_saved || ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode)))
+	  && (!call_saved
+	      || !targetm.hard_regno_call_part_clobbered (regno, mode)))
 	return mode;
     }
 

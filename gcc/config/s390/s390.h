@@ -509,19 +509,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
    (((MODE1) == SFmode || (MODE1) == DFmode)	\
    == ((MODE2) == SFmode || (MODE2) == DFmode))
 
-/* When generating code that runs in z/Architecture mode,
-   but conforms to the 31-bit ABI, GPRs can hold 8 bytes;
-   the ABI guarantees only that the lower 4 bytes are
-   saved across calls, however.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  ((!TARGET_64BIT && TARGET_ZARCH					\
-    && GET_MODE_SIZE (MODE) > 4						\
-    && (((REGNO) >= 6 && (REGNO) <= 15) || (REGNO) == 32))		\
-   || (TARGET_VX							\
-       && GET_MODE_SIZE (MODE) > 8					\
-       && (((TARGET_64BIT && (REGNO) >= 24 && (REGNO) <= 31))		\
-	   || (!TARGET_64BIT && ((REGNO) == 18 || (REGNO) == 19)))))
-
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
