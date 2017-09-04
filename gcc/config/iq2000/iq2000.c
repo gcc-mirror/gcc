@@ -165,6 +165,7 @@ static rtx iq2000_function_arg	      (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void iq2000_function_arg_advance (cumulative_args_t,
 					 machine_mode, const_tree, bool);
+static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
 static void iq2000_va_start	      (tree, rtx);
@@ -231,6 +232,8 @@ static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
 #define TARGET_FUNCTION_ARG		iq2000_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	iq2000_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING	iq2000_function_arg_padding
 #undef  TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY	iq2000_function_arg_boundary
 
@@ -1374,6 +1377,22 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
     }
 
   return ret;
+}
+
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
+iq2000_function_arg_padding (machine_mode mode, const_tree type)
+{
+  return (! BYTES_BIG_ENDIAN
+	  ? PAD_UPWARD
+	  : ((mode == BLKmode
+	      ? (type
+		 && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+	      : (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY
+		 && GET_MODE_CLASS (mode) == MODE_INT))
+	     ? PAD_DOWNWARD : PAD_UPWARD));
 }
 
 static unsigned int

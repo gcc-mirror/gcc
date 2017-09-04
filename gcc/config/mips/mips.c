@@ -6117,18 +6117,17 @@ mips_get_reg_raw_mode (int regno)
   return default_get_reg_raw_mode (regno);
 }
 
-/* Return true if FUNCTION_ARG_PADDING (MODE, TYPE) should return
-   upward rather than downward.  In other words, return true if the
-   first byte of the stack slot has useful data, false if the last
-   byte does.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING; return PAD_UPWARD if the first
+   byte of the stack slot has useful data, PAD_DOWNWARD if the last byte
+   does.  */
 
-bool
-mips_pad_arg_upward (machine_mode mode, const_tree type)
+static pad_direction
+mips_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return true;
+    return PAD_UPWARD;
 
   /* Otherwise, integral types are padded downward: the last byte of a
      stack argument is passed in the last byte of the stack slot.  */
@@ -6138,22 +6137,24 @@ mips_pad_arg_upward (machine_mode mode, const_tree type)
 	 || FIXED_POINT_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode)
 	 || ALL_SCALAR_FIXED_POINT_MODE_P (mode)))
-    return false;
+    return PAD_DOWNWARD;
 
   /* Big-endian o64 pads floating-point arguments downward.  */
   if (mips_abi == ABI_O64)
     if (type != 0 ? FLOAT_TYPE_P (type) : GET_MODE_CLASS (mode) == MODE_FLOAT)
-      return false;
+      return PAD_DOWNWARD;
 
   /* Other types are padded upward for o32, o64, n32 and n64.  */
   if (mips_abi != ABI_EABI)
-    return true;
+    return PAD_UPWARD;
 
   /* Arguments smaller than a stack slot are padded downward.  */
-  if (mode != BLKmode)
-    return GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY;
-  else
-    return int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT);
+  if (mode != BLKmode
+      ? GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY
+      : int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT))
+    return PAD_UPWARD;
+
+  return PAD_DOWNWARD;
 }
 
 /* Likewise BLOCK_REG_PADDING (MODE, TYPE, ...).  Return !BYTES_BIG_ENDIAN
@@ -6169,7 +6170,7 @@ mips_pad_reg_upward (machine_mode mode, tree type)
 
   /* Otherwise, apply the same padding to register arguments as we do
      to stack arguments.  */
-  return mips_pad_arg_upward (mode, type);
+  return mips_function_arg_padding (mode, type) == PAD_UPWARD;
 }
 
 /* Return nonzero when an argument must be passed by reference.  */
@@ -22459,6 +22460,8 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG mips_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE mips_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING mips_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY mips_function_arg_boundary
 #undef TARGET_GET_RAW_RESULT_MODE

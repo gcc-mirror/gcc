@@ -4096,21 +4096,21 @@ slot that is in the middle of the quad word instead of starting at the
 top.
 @end defmac
 
-@defmac FUNCTION_ARG_PADDING (@var{mode}, @var{type})
-If defined, a C expression which determines whether, and in which direction,
-to pad out an argument with extra space.  The value should be of type
-@code{enum direction}: either @code{upward} to pad above the argument,
-@code{downward} to pad below, or @code{none} to inhibit padding.
+@deftypefn {Target Hook} pad_direction TARGET_FUNCTION_ARG_PADDING (machine_mode @var{mode}, const_tree @var{type})
+This hook determines whether, and in which direction, to pad out
+an argument of mode @var{mode} and type @var{type}.  It returns
+@code{PAD_UPWARD} to insert padding above the argument, @code{PAD_DOWNWARD}
+to insert padding below the argument, or @code{PAD_NONE} to inhibit padding.
 
-The @emph{amount} of padding is not controlled by this macro, but by the
-target hook @code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is
-always just enough to reach the next multiple of that boundary. 
+The @emph{amount} of padding is not controlled by this hook, but by
+@code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is always just enough
+to reach the next multiple of that boundary.
 
-This macro has a default definition which is right for most systems.
+This hook has a default definition that is right for most systems.
 For little-endian machines, the default is to pad upward.  For
 big-endian machines, the default is to pad downward for an argument of
 constant size shorter than an @code{int}, and upward otherwise.
-@end defmac
+@end deftypefn
 
 @defmac PAD_VARARGS_DOWN
 If defined, a C expression which determines whether the default

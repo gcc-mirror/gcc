@@ -12124,6 +12124,18 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
   gcc_unreachable ();
 }
 
+/* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Vector arguments are
+   left-justified when placed on the stack during parameter passing.  */
+
+static pad_direction
+s390_function_arg_padding (machine_mode mode, const_tree type)
+{
+  if (s390_function_arg_vector (mode, type))
+    return PAD_UPWARD;
+
+  return default_function_arg_padding (mode, type);
+}
+
 /* Return true if return values of type TYPE should be returned
    in a memory buffer whose address is passed by the caller as
    hidden first argument.  */
@@ -15886,6 +15898,8 @@ s390_asan_shadow_offset (void)
 #define TARGET_FUNCTION_ARG s390_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE s390_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING s390_function_arg_padding
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE s390_function_value
 #undef TARGET_LIBCALL_VALUE

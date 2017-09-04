@@ -329,8 +329,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
  ? (4 - GET_MODE_SIZE (MODE))						\
  : 0)
 
-#define FUNCTION_ARG_PADDING(MODE,TYPE) upward
-
 #define PAD_VARARGS_DOWN 0
 
 #define FUNCTION_ARG_REGNO_P(N) ((N) >= (FIRST_ARG_REGNUM) && (N) <= (LAST_ARG_REGNUM))

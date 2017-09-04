@@ -1154,7 +1154,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 #ifdef BLOCK_REG_PADDING
 	    && (BLOCK_REG_PADDING (args[i].mode,
 				   TREE_TYPE (args[i].tree_value), 1)
-		== downward)
+		== PAD_DOWNWARD)
 #else
 	    && BYTES_BIG_ENDIAN
 #endif
@@ -2222,7 +2222,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    }
 	  align = BITS_PER_UNIT;
 	  boundary = args[i].locate.boundary;
-	  if (args[i].locate.where_pad != downward)
+	  if (args[i].locate.where_pad != PAD_DOWNWARD)
 	    align = boundary;
 	  else if (CONST_INT_P (offset))
 	    {
@@ -2519,7 +2519,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		 upward on a BYTES_BIG_ENDIAN machine.  */
 	      if (size < UNITS_PER_WORD
 		  && (args[i].locate.where_pad
-		      == (BYTES_BIG_ENDIAN ? upward : downward)))
+		      == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 		{
 		  rtx x;
 		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
@@ -2580,7 +2580,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Handle a BLKmode that needs shifting.  */
 	      if (nregs == 1 && size < UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
-		  && args[i].locate.where_pad == downward
+		  && args[i].locate.where_pad == PAD_DOWNWARD
 #else
 		  && BYTES_BIG_ENDIAN
 #endif
@@ -4919,7 +4919,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	     upward on a BYTES_BIG_ENDIAN machine.  */
 	  if (size < UNITS_PER_WORD
 	      && (argvec[argnum].locate.where_pad
-		  == (BYTES_BIG_ENDIAN ? upward : downward)))
+		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 	    {
 	      rtx x;
 	      int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
@@ -5397,14 +5397,16 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* Compute how much space the argument should get:
 	 round up to a multiple of the alignment for arguments.  */
-      if (none != FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)))
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  != PAD_NONE)
 	used = (((size + PARM_BOUNDARY / BITS_PER_UNIT - 1)
 		 / (PARM_BOUNDARY / BITS_PER_UNIT))
 		* (PARM_BOUNDARY / BITS_PER_UNIT));
 
       /* Compute the alignment of the pushed argument.  */
       parm_align = arg->locate.boundary;
-      if (FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)) == downward)
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  == PAD_DOWNWARD)
 	{
 	  int pad = used - size;
 	  if (pad)
@@ -5463,7 +5465,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* When an argument is padded down, the block is aligned to
 	 PARM_BOUNDARY, but the actual argument isn't.  */
-      if (FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)) == downward)
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  == PAD_DOWNWARD)
 	{
 	  if (arg->locate.size.var)
 	    parm_align = BITS_PER_UNIT;
@@ -5614,8 +5617,8 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
      a register would put it into the wrong part of the register.  */
   if (mode == BLKmode
       && int_size_in_bytes (type) % (PARM_BOUNDARY / BITS_PER_UNIT)
-      && (FUNCTION_ARG_PADDING (mode, type)
-	  == (BYTES_BIG_ENDIAN ? upward : downward)))
+      && (targetm.calls.function_arg_padding (mode, type)
+	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 
   return false;

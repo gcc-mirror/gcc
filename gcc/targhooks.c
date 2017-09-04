@@ -734,6 +734,31 @@ default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Default implementation of TARGET_FUNCTION_ARG_PADDING: usually pad
+   upward, but pad short args downward on big-endian machines.  */
+
+pad_direction
+default_function_arg_padding (machine_mode mode, const_tree type)
+{
+  if (!BYTES_BIG_ENDIAN)
+    return PAD_UPWARD;
+
+  unsigned HOST_WIDE_INT size;
+  if (mode == BLKmode)
+    {
+      if (!type || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST)
+	return PAD_UPWARD;
+      size = int_size_in_bytes (type);
+    }
+  else
+    size = GET_MODE_SIZE (mode);
+
+  if (size < (PARM_BOUNDARY / BITS_PER_UNIT))
+    return PAD_DOWNWARD;
+
+  return PAD_UPWARD;
+}
+
 rtx
 default_function_arg (cumulative_args_t ca ATTRIBUTE_UNUSED,
 		      machine_mode mode ATTRIBUTE_UNUSED,

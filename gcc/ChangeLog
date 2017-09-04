@@ -2,6 +2,131 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* coretypes.h (pad_direction): New enum.
+	* defaults.h (DEFAULT_FUNCTION_ARG_PADDING): Delete.
+	(FUNCTION_ARG_PADDING): Likewise.
+	* target.def (function_arg_padding): New hook.
+	* targhooks.h (default_function_arg_padding): Declare.
+	* targhooks.c (default_function_arg_padding): New function.
+	* doc/tm.texi.in (FUNCTION_ARG_PADDING): Replace with...
+	(TARGET_FUNCTION_ARG_PADDING): ...this.
+	* doc/tm.texi: Regenerate.
+	* calls.c (store_unaligned_arguments_into_pseudos): Use pad_direction
+	instead of direction.
+	(compute_argument_addresses): Likewise.
+	(load_register_parameters): Likewise.
+	(emit_library_call_value_1): Likewise.
+	(store_one_arg): Use targetm.calls.function_arg_padding instead
+	of FUNCTION_ARG_PADDING.
+	(must_pass_in_stack_var_size_or_pad): Likewise.
+	* expr.c (emit_group_load_1): Use pad_direction instead of direction.
+	(emit_group_store): Likewise.
+	(emit_single_push_insn_1): Use targetm.calls.function_arg_padding
+	instead of FUNCTION_ARG_PADDING.
+	(emit_push_insn): Likewise, and propagate enum change throughout
+	function.
+	* function.h (direction): Delete.
+	(locate_and_pad_arg_data::where_pad): Use pad_direction instead
+	of direction.
+	* function.c (assign_parm_find_stack_rtl): Likewise.
+	(assign_parm_setup_block_p): Likewise.
+	(assign_parm_setup_block): Likewise.
+	(gimplify_parameters): Likewise.
+	(locate_and_pad_parm): Use targetm.calls.function_arg_padding
+	instead of FUNCTION_ARG_PADDING, and propagate enum change throughout
+	function.
+	* config/aarch64/aarch64.h (FUNCTION_ARG_PADDING): Delete.
+	(BLOCK_REG_PADDING): Use pad_direction instead of direction.
+	* config/aarch64/aarch64-protos.h (aarch64_pad_arg_upward): Delete.
+	* config/aarch64/aarch64.c (aarch64_pad_arg_upward): Replace with...
+	(aarch64_function_arg_padding): ...this new function.
+	(aarch64_gimplify_va_arg_expr): Use pad_direction instead of direction.
+	(TARGET_FUNCTION_ARG_PADDING): Redefine.
+	* config/arm/arm.h (FUNCTION_ARG_PADDING): Delete.
+	(BLOCK_REG_PADDING): Use pad_direction instead of direction.
+	* config/arm/arm-protos.h (arm_pad_arg_upward): Delete.
+	* config/arm/arm.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(arm_pad_arg_upward): Replace with...
+	(arm_function_arg_padding): ...this new function.
+	* config/c6x/c6x.h (BLOCK_REG_PADDING): Use pad_direction instead
+	of direction.
+	* config/ia64/hpux.h (FUNCTION_ARG_PADDING): Delete.
+	* config/ia64/ia64-protos.h (ia64_hpux_function_arg_padding): Delete.
+	* config/ia64/ia64.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(ia64_hpux_function_arg_padding): Replace with...
+	(ia64_function_arg_padding): ...this new function.  Use pad_direction
+	instead of direction.  Check for TARGET_HPUX.
+	* config/iq2000/iq2000.h (FUNCTION_ARG_PADDING): Delete.
+	* config/iq2000/iq2000.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(iq2000_function_arg_padding): New function.
+	* config/mips/mips-protos.h (mips_pad_arg_upward): Delete.
+	* config/mips/mips.c (mips_pad_arg_upward): Replace with...
+	(mips_function_arg_padding): ...this new function.
+	(mips_pad_reg_upward): Update accordingly.
+	(TARGET_FUNCTION_ARG_PADDING): Redefine.
+	* config/mips/mips.h (PAD_VARARGS_DOWN): Use
+	targetm.calls.function_arg_padding.
+	(FUNCTION_ARG_PADDING): Delete.
+	(BLOCK_REG_PADDING): Use pad_direction instead of direction.
+	* config/nios2/nios2.h (FUNCTION_ARG_PADDING): Delete.
+	(PAD_VARARGS_DOWN): Use targetm.calls.function_arg_padding.
+	* config/nios2/nios2-protos.h (nios2_function_arg_padding): Delete.
+	(nios2_block_reg_padding): Return pad_direction instead of direction.
+	* config/nios2/nios2.c (nios2_block_reg_padding): Return pad_direction
+	instead of direction.
+	(nios2_function_arg_padding): Likewise.  Make static.
+	(TARGET_FUNCTION_ARG_PADDING): Redefine.
+	* config/pa/pa.h (FUNCTION_ARG_PADDING): Delete.
+	(BLOCK_REG_PADDING): Use targetm.calls.function_arg_padding.
+	* config/pa/pa-protos.h (pa_function_arg_padding): Delete.
+	* config/pa/pa.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(pa_function_arg_padding): Make static.  Return pad_direction instead
+	of direction.
+	* config/powerpcspe/powerpcspe.h (FUNCTION_ARG_PADDING): Delete.
+	(PAD_VARARGS_DOWN): Use targetm.calls.function_arg_padding.
+	* config/powerpcspe/aix.h (BLOCK_REG_PADDING): Use pad_direction
+	instead of direction.  Use targetm.calls.function_arg_padding.
+	* config/powerpcspe/darwin.h (BLOCK_REG_PADDING): Likewise.
+	* config/powerpcspe/freebsd64.h (BLOCK_REG_PADDING): Likewise.
+	* config/powerpcspe/linux64.h (BLOCK_REG_PADDING): Likewise.
+	* config/powerpcspe/powerpcspe-protos.h (function_arg_padding): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_FUNCTION_ARG_PADDING):
+	Redefine.
+	(function_arg_padding): Rename to...
+	(rs6000_function_arg_padding): ...this.  Make static.  Return
+	pad_direction instead of direction.
+	(rs6000_return_in_msb): Use rs6000_function_arg_padding.
+	* config/rs6000/rs6000.h (FUNCTION_ARG_PADDING): Delete.
+	(PAD_VARARGS_DOWN): Use targetm.calls.function_arg_padding.
+	* config/rs6000/aix.h (BLOCK_REG_PADDING): Use pad_direction
+	instead of direction.  Use targetm.calls.function_arg_padding.
+	* config/rs6000/darwin.h (BLOCK_REG_PADDING): Likewise.
+	* config/rs6000/freebsd64.h (BLOCK_REG_PADDING): Likewise.
+	* config/rs6000/linux64.h (BLOCK_REG_PADDING): Likewise.
+	* config/rs6000/rs6000-protos.h (function_arg_padding): Delete.
+	* config/rs6000/rs6000.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(function_arg_padding): Rename to...
+	(rs6000_function_arg_padding): ...this.  Make static.  Return
+	pad_direction instead of direction.
+	(rs6000_return_in_msb): Use rs6000_function_arg_padding.
+	* config/s390/s390.h (FUNCTION_ARG_PADDING): Delete.
+	* config/s390/s390.c (s390_function_arg_padding): New function.
+	(TARGET_FUNCTION_ARG_PADDING): Redefine.
+	* config/sparc/sparc.h (FUNCTION_ARG_PADDING): Delete.
+	* config/sparc/sparc-protos.h (function_arg_padding): Delete.
+	* config/sparc/sparc.c (TARGET_FUNCTION_ARG_PADDING): Redefine.
+	(function_arg_padding): Rename to...
+	(sparc_function_arg_padding): ...this.  Make static.  Return
+	pad_direction instead of direction.
+	* config/spu/spu.h (FUNCTION_ARG_PADDING): Delete.
+	* config/spu/spu.c (spu_function_arg_padding): New function.
+	(TARGET_FUNCTION_ARG_PADDING): Redefine.
+	* system.h (FUNCTION_ARG_PADDING): Poison.
+
+2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (modes_tieable_p): New hook.
 	* doc/tm.texi (MODES_TIEABLE_P): Replace with...
 	(TARGET_MODES_TIEABLE_P): ...this.

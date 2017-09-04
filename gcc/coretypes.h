@@ -230,6 +230,22 @@ enum optimization_type {
   OPTIMIZE_FOR_SIZE
 };
 
+/* Enumerates a padding direction.  */
+enum pad_direction {
+  /* No padding is required.  */
+  PAD_NONE,
+
+  /* Insert padding above the data, i.e. at higher memeory addresses
+     when dealing with memory, and at the most significant end when
+     dealing with registers.  */
+  PAD_UPWARD,
+
+  /* Insert padding below the data, i.e. at lower memeory addresses
+     when dealing with memory, and at the least significant end when
+     dealing with registers.  */
+  PAD_DOWNWARD
+};
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */

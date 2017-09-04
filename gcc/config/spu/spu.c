@@ -3873,6 +3873,14 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   : HARD_REGNO_NREGS (cum, mode));
 }
 
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
+spu_function_arg_padding (machine_mode, const_tree)
+{
+  return PAD_UPWARD;
+}
+
 /* Variable sized types are passed by reference.  */
 static bool
 spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
@@ -7264,6 +7272,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
+
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING spu_function_arg_padding
 
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size

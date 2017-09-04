@@ -4533,6 +4533,24 @@ used for arguments without any special help.",
  (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
  default_function_arg_advance)
 
+DEFHOOK
+(function_arg_padding,
+ "This hook determines whether, and in which direction, to pad out\n\
+an argument of mode @var{mode} and type @var{type}.  It returns\n\
+@code{PAD_UPWARD} to insert padding above the argument, @code{PAD_DOWNWARD}\n\
+to insert padding below the argument, or @code{PAD_NONE} to inhibit padding.\n\
+\n\
+The @emph{amount} of padding is not controlled by this hook, but by\n\
+@code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is always just enough\n\
+to reach the next multiple of that boundary.\n\
+\n\
+This hook has a default definition that is right for most systems.\n\
+For little-endian machines, the default is to pad upward.  For\n\
+big-endian machines, the default is to pad downward for an argument of\n\
+constant size shorter than an @code{int}, and upward otherwise.",
+ pad_direction, (machine_mode mode, const_tree type),
+ default_function_arg_padding)
+
 /* Return zero if the argument described by the state of CA should
    be placed on a stack, or a hard register in which to store the
    argument.  The values MODE, TYPE, and NAMED describe that

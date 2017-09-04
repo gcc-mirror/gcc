@@ -1215,14 +1215,6 @@ struct sparc_args {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
 init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL));
 
-/* If defined, a C expression which determines whether, and in which direction,
-   to pad out an argument with extra space.  The value should be of type
-   `enum direction': either `upward' to pad above the argument,
-   `downward' to pad below, or `none' to inhibit padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-function_arg_padding ((MODE), (TYPE))
-
 
 /* Generate the special assembly code needed to tell the assembler whatever
    it might need to know about the return value of a function.
