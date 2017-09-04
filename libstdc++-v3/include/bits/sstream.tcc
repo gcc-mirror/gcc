@@ -88,6 +88,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return traits_type::not_eof(__c);
 
       const __size_type __capacity = _M_string.capacity();
+
+#if _GLIBCXX_USE_CXX11_ABI
+      if ((this->epptr() - this->pbase()) < __capacity)
+	{
+	  // There is additional capacity in _M_string that can be used.
+	  char_type* __base = const_cast<char_type*>(_M_string.data());
+	  _M_pbump(__base, __base + __capacity, this->pptr() - this->pbase());
+	  if (_M_mode & ios_base::in)
+	    {
+	      const __size_type __nget = this->gptr() - this->eback();
+	      const __size_type __eget = this->egptr() - this->eback();
+	      this->setg(__base, __base + __nget, __base + __eget + 1);
+	    }
+	  *this->pptr() = traits_type::to_char_type(__c);
+	  this->pbump(1);
+	  return __c;
+	}
+#endif
+
       const __size_type __max_size = _M_string.max_size();
       const bool __testput = this->pptr() < this->epptr();
       if (__builtin_expect(!__testput && __capacity == __max_size, false))
