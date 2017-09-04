@@ -6696,6 +6696,14 @@ c6x_debug_unwind_info (void)
 
   return default_debug_unwind_info ();
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+c6x_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= UNITS_PER_WORD || (regno & 1) == 0;
+}
 
 /* Target Structure.  */
 
@@ -6861,6 +6869,9 @@ c6x_debug_unwind_info (void)
 #define TARGET_EXPAND_BUILTIN c6x_expand_builtin
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL c6x_builtin_decl
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK c6x_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -50,7 +50,6 @@ void m32c_expand_neg_mulpsi3 (rtx *);
 int  m32c_expand_setmemhi (rtx *);
 bool m32c_matches_constraint_p (rtx, int);
 int  m32c_hard_regno_nregs (int, machine_mode);
-int  m32c_hard_regno_ok (int, machine_mode);
 bool m32c_illegal_subreg_p (rtx);
 bool m32c_immd_dbl_mov (rtx *, machine_mode);
 rtx  m32c_incoming_return_addr_rtx (void);

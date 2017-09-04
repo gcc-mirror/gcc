@@ -176,26 +176,10 @@ extern const struct real_format pdp11_d_format;
     :1)
     
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the pdp, the cpu registers can hold any mode other than float
-   (because otherwise we may end up being asked to move from CPU to FPU
-   register, which isn't a valid operation on the PDP11).
-   For CPU registers, check alignment.
-
-   FPU accepts SF and DF but actually holds a DF - simplifies life!
-*/
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-(((REGNO) <= PC_REGNUM)?				\
-  ((GET_MODE_BITSIZE(MODE) <= 16) 			\
-   || (GET_MODE_BITSIZE(MODE) >= 32 &&      		\
-       !((REGNO) & 1) && !FLOAT_MODE_P (MODE)))		\
-  :FLOAT_MODE_P (MODE))
-    
-
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) 0
 
 /* Specify the registers used for certain standard purposes.

@@ -114,8 +114,8 @@ struct target_ira
   HARD_REG_SET x_ira_no_alloc_regs;
 
   /* Array whose values are hard regset of hard registers available for
-     the allocation of given register class whose HARD_REGNO_MODE_OK
-     values for given mode are zero.  */
+     the allocation of given register class whose targetm.hard_regno_mode_ok
+     values for given mode are false.  */
   HARD_REG_SET x_ira_prohibited_class_mode_regs[N_REG_CLASSES][NUM_MACHINE_MODES];
 };
 

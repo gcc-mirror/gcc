@@ -328,17 +328,10 @@ extern int leaf_function;
 	((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) : \
 	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  */
-extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  xtensa_hard_regno_mode_ok[(int) (MODE)][(REGNO)]
-
 /* Value is 1 if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)					\
   ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
     GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\

@@ -92,6 +92,8 @@ static rtx m32c_libcall_value (machine_mode, const_rtx);
 /* Returns true if an address is specified, else false.  */
 static bool m32c_get_pragma_address (const char *varname, unsigned *addr);
 
+static bool m32c_hard_regno_mode_ok (unsigned int, machine_mode);
+
 #define SYMBOL_FLAG_FUNCVEC_FUNCTION    (SYMBOL_FLAG_MACH_DEP << 0)
 
 #define streq(a,b) (strcmp ((a), (b)) == 0)
@@ -370,7 +372,7 @@ class_can_hold_mode (reg_class_t rclass, machine_mode mode)
       results[rclass][mode] = 1;
       for (r = 0; r < FIRST_PSEUDO_REGISTER; r++)
 	if (in_hard_reg_set_p (reg_class_contents[(int) rclass], mode, r)
-	    && HARD_REGNO_MODE_OK (r, mode))
+	    && m32c_hard_regno_mode_ok (r, mode))
 	  {
 	    results[rclass][mode] = 2;
 	    break;
@@ -573,10 +575,10 @@ m32c_hard_regno_nregs (int regno, machine_mode mode)
   return rv ? rv : 1;
 }
 
-/* Implements HARD_REGNO_MODE_OK.  The above function does the work
+/* Implement TARGET_HARD_REGNO_MODE_OK.  The above function does the work
    already; just test its return value.  */
-int
-m32c_hard_regno_ok (int regno, machine_mode mode)
+static bool
+m32c_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return m32c_hard_regno_nregs_1 (regno, mode) != 0;
 }
@@ -815,7 +817,7 @@ m32c_cannot_change_mode_class (machine_mode from,
      can't allow the change.  */
   for (rn = 0; rn < FIRST_PSEUDO_REGISTER; rn++)
     if (class_contents[rclass][0] & (1 << rn))
-      if (! m32c_hard_regno_ok (rn, to))
+      if (! m32c_hard_regno_mode_ok (rn, to))
 	return 1;
 
   if (to == QImode)
@@ -4486,6 +4488,9 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK m32c_hard_regno_mode_ok
 
 /* The Global `targetm' Variable. */
 

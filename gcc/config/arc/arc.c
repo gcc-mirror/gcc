@@ -590,6 +590,9 @@ static void arc_finalize_pic (void);
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN arc_dwarf_register_span
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK arc_hard_regno_mode_ok
+
 /* Try to keep the (mov:DF _, reg) as early as possible so
    that the d<add/sub/mul>h-lr insns appear together and can
    use the peephole2 pattern.  */
@@ -1483,7 +1486,7 @@ enum arc_mode_class {
 
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-unsigned int arc_hard_regno_mode_ok[] = {
+static unsigned int arc_hard_regno_modes[] = {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, D_MODES,
@@ -1509,7 +1512,7 @@ unsigned int arc_hard_regno_mode_ok[] = {
   S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES, S_MODES
 };
 
-unsigned int arc_mode_class [NUM_MACHINE_MODES];
+static unsigned int arc_mode_class [NUM_MACHINE_MODES];
 
 enum reg_class arc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
@@ -1730,10 +1733,10 @@ arc_conditional_register_usage (void)
 	  CLEAR_HARD_REG_BIT (reg_class_contents[WRITABLE_CORE_REGS], LP_COUNT);
 
 	  /* Instead of taking out SF_MODE like below, forbid it outright.  */
-	  arc_hard_regno_mode_ok[60] = 0;
+	  arc_hard_regno_modes[60] = 0;
 	}
       else
-	arc_hard_regno_mode_ok[60] = 1 << (int) S_MODE;
+	arc_hard_regno_modes[60] = 1 << (int) S_MODE;
     }
 
   /* ARCHS has 64-bit data-path which makes use of the even-odd paired
@@ -1742,7 +1745,7 @@ arc_conditional_register_usage (void)
     {
       for (regno = 1; regno < 32; regno +=2)
 	{
-	  arc_hard_regno_mode_ok[regno] = S_MODES;
+	  arc_hard_regno_modes[regno] = S_MODES;
 	}
     }
 
@@ -1820,8 +1823,8 @@ arc_conditional_register_usage (void)
       fixed_regs[42] = 1;
       fixed_regs[43] = 1;
 
-      arc_hard_regno_mode_ok[40] = 0;
-      arc_hard_regno_mode_ok[42] = 0;
+      arc_hard_regno_modes[40] = 0;
+      arc_hard_regno_modes[42] = 0;
 
       CLEAR_HARD_REG_SET(reg_class_contents [DOUBLE_REGS]);
     }
@@ -1867,8 +1870,16 @@ arc_conditional_register_usage (void)
     fixed_regs[ACCL_REGNO] = 0;
     fixed_regs[ACCH_REGNO] = 0;
 
-    arc_hard_regno_mode_ok[ACC_REG_FIRST] = D_MODES;
+    arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
   }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+arc_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (arc_hard_regno_modes[regno] & arc_mode_class[mode]) != 0;
 }
 
 /* Handle an "interrupt" attribute; arguments as in

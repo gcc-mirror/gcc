@@ -335,7 +335,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   /* See whether it accepts all modes that occur in
      definition and uses.  */
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-    if ((! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
+    if ((!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
 	 && ! DEBUG_INSN_P (tmp->insn))
 	|| (this_head->need_caller_save_reg
 	    && ! (targetm.hard_regno_call_part_clobbered

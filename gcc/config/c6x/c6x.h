@@ -185,9 +185,6 @@ extern c6x_cpu_t c6x_arch;
   ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)  \
    / UNITS_PER_WORD)
 
-#define HARD_REGNO_MODE_OK(reg, mode) (GET_MODE_SIZE (mode) <= UNITS_PER_WORD \
-				       ? 1 : ((reg) & 1) == 0)
-
 #define MODES_TIEABLE_P(mode1, mode2)	       \
   ((mode1) == (mode2) ||		       \
    (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD && \

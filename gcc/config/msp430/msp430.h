@@ -335,9 +335,6 @@ typedef struct
 #define HARD_REGNO_NREGS(REGNO, MODE)            \
   msp430_hard_regno_nregs (REGNO, MODE)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
-  msp430_hard_regno_mode_ok (REGNO, MODE)
-
 #define MODES_TIEABLE_P(MODE1, MODE2)				\
   msp430_modes_tieable_p (MODE1, MODE2)
 

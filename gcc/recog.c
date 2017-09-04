@@ -3159,7 +3159,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 #endif
 
       /* Can it support the mode we need?  */
-      if (! HARD_REGNO_MODE_OK (regno, mode))
+      if (!targetm.hard_regno_mode_ok (regno, mode))
 	continue;
 
       success = 1;

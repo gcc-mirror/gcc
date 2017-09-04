@@ -2753,17 +2753,21 @@ nds32_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 }
 
-int
-nds32_hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Restrict double-word quantities to even register pairs.  */
   if (HARD_REGNO_NREGS (regno, mode) == 1
       || !((regno) & 1))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
 
 /* Register Classes.  */
 

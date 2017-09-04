@@ -163,6 +163,7 @@ static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (machine_mode, const_rtx);
 static bool cris_function_value_regno_p (const unsigned int);
 static void cris_file_end (void);
+static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
    it (still) is zero, then there was no such option given.  */
@@ -279,6 +280,9 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #define TARGET_LIBCALL_VALUE cris_libcall_value
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P cris_function_value_regno_p
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK cris_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4292,6 +4296,18 @@ cris_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
      sake of a trampoline.  */
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   CRIS permits all registers to hold all modes.  Well, except for the
+   condition-code register.  And we can't hold larger-than-register size
+   modes in the last special register that can hold a full 32 bits.  */
+static bool
+cris_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return ((mode == CCmode || regno != CRIS_CC0_REGNUM)
+	  && (GET_MODE_SIZE (mode) <= UNITS_PER_WORD
+	      || (regno != CRIS_MOF_REGNUM && regno != CRIS_ACR_REGNUM)));
+}
 
 #if 0
 /* Various small functions to replace macros.  Only called from a

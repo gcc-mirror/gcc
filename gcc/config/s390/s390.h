@@ -499,9 +499,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define HARD_REGNO_NREGS(REGNO, MODE)                           \
   s390_class_max_nregs (REGNO_REG_CLASS (REGNO), (MODE))
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)         \
-  s390_hard_regno_mode_ok ((REGNO), (MODE))
-
 #define HARD_REGNO_RENAME_OK(FROM, TO)          \
   s390_hard_regno_rename_ok ((FROM), (TO))
 

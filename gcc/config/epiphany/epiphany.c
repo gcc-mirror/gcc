@@ -170,6 +170,9 @@ static rtx_insn *frame_insn (rtx);
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
 #undef TARGET_ASM_ALIGNED_SI_OP
 #define TARGET_ASM_ALIGNED_SI_OP "\t.word\t"
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK epiphany_hard_regno_mode_ok
 
 bool
 epiphany_is_interrupt_p (tree decl)
@@ -355,14 +358,15 @@ get_epiphany_condition_code (rtx comparison)
 }
 
 
-/* Return 1 if hard register REGNO can hold a value of machine_mode MODE.  */
-int
-hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+epiphany_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_SIZE (mode) > UNITS_PER_WORD)
     return (regno & 1) == 0 && GPR_P (regno);
   else
-    return 1;
+    return true;
 }
 
 /* Given a comparison code (EQ, NE, etc.) and the first operand of a COMPARE,

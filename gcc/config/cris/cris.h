@@ -477,18 +477,9 @@ extern int cris_cpu_version;
  (MODE == VOIDmode \
   ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* CRIS permits all registers to hold all modes.  Well, except for the
-   condition-code register.  And we can't hold larger-than-register size
-   modes in the last special register that can hold a full 32 bits.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
- (((MODE) == CCmode				\
-   || (REGNO) != CRIS_CC0_REGNUM)		\
-  && (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
-      || ((REGNO) != CRIS_MOF_REGNUM && (REGNO) != CRIS_ACR_REGNUM)))
-
 /* Because CCmode isn't covered by the "narrower mode" statement in
    tm.texi, we can still say all modes are tieable despite not having an
-   always 1 HARD_REGNO_MODE_OK.  */
+   always 1 TARGET_HARD_REGNO_MODE_OK.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 

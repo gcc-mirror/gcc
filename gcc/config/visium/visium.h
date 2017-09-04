@@ -573,34 +573,17 @@
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   visium_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-/*  `HARD_REGNO_MODE_OK (REGNO, MODE)'
-
-    A C expression that is nonzero if it is permissible to store a
-    value of mode MODE in hard register number REGNO (or in several
-    registers starting with that one). 
-
-    Modes with sizes which cross from the one register class to the
-    other cannot be allowed. Only single floats are allowed in the
-    floating point registers, and only fixed point values in the EAM
-    registers. */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)                         \
- (GP_REGISTER_P (REGNO) ?                                       \
-     GP_REGISTER_P (REGNO + HARD_REGNO_NREGS (REGNO, MODE) - 1) \
-  : FP_REGISTER_P (REGNO) ?                                     \
-     (MODE) == SFmode || ((MODE) == SImode && TARGET_FPU_IEEE)  \
-  : GET_MODE_CLASS (MODE) == MODE_INT                           \
-    && HARD_REGNO_NREGS (REGNO, MODE) == 1)
-
 /* `MODES_TIEABLE_P (MODE1, MODE2)'
 
    A C expression that is nonzero if a value of mode MODE1 is
    accessible in mode MODE2 without copying.
 
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are always the same for any R, then `MODES_TIEABLE_P
-   (MODE1, MODE2)' should be nonzero.  If they differ for any R, you
-   should define this macro to return zero unless some other mechanism
-   ensures the accessibility of the value in a narrower mode.
+   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
+   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are always the same for any R,
+   then `MODES_TIEABLE_P (MODE1, MODE2)' should be nonzero.  If they
+   differ for any R, you should define this macro to return zero unless
+   some other mechanism ensures the accessibility of the value in a
+   narrower mode.
 
    You should define this macro to return nonzero in as many cases as
    possible since doing so will allow GNU CC to perform better

@@ -78,7 +78,8 @@ enum internal_test
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
+static char xtensa_hard_regno_mode_ok_p
+  [(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Largest block move to handle in-line.  */
 #define LARGEST_MOVE_RATIO 15
@@ -177,6 +178,7 @@ static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
 
 static void xtensa_conditional_register_usage (void);
+static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 
 
 
@@ -304,6 +306,9 @@ static void xtensa_conditional_register_usage (void);
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE xtensa_conditional_register_usage
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK xtensa_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2217,7 +2222,7 @@ xtensa_option_override (void)
 	  else
 	    temp = FALSE;
 
-	  xtensa_hard_regno_mode_ok[(int) mode][regno] = temp;
+	  xtensa_hard_regno_mode_ok_p[(int) mode][regno] = temp;
 	}
     }
 
@@ -2250,6 +2255,14 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+xtensa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return xtensa_hard_regno_mode_ok_p[mode][regno];
 }
 
 /* A C compound statement to output to stdio stream STREAM the

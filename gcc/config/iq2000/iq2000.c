@@ -177,6 +177,7 @@ static rtx iq2000_libcall_value       (machine_mode, const_rtx);
 static void iq2000_print_operand      (FILE *, rtx, int);
 static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
+static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -253,6 +254,9 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	iq2000_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		iq2000_trampoline_init
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK	iq2000_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3483,6 +3487,16 @@ iq2000_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, Pmode,
 			TRAMPOLINE_CODE_SIZE + GET_MODE_SIZE (Pmode));
   emit_move_insn (mem, chain_value);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+iq2000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (REGNO_REG_CLASS (regno) == GR_REGS
+	  ? (regno & 1) == 0 || GET_MODE_SIZE (mode) <= 4
+	  : (regno & 1) == 0 || GET_MODE_SIZE (mode) == 4);
 }
 
 #include "gt-iq2000.h"

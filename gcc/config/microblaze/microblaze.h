@@ -295,20 +295,6 @@ extern enum pipeline_type microblaze_pipe;
 #define HARD_REGNO_NREGS(REGNO, MODE)					\
 	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  In 32 bit mode, require that DImode and DFmode be in even
-   registers.  For DImode, this makes some of the insns easier to
-   write, since you don't have to worry about a DImode value in
-   registers 3 & 4, producing a result in 4 & 5.
-
-   To make the code simpler HARD_REGNO_MODE_OK now just references an
-   array built in override_options.  Because machmodes.h is not yet
-   included before this file is processed, the MODE bound can't be
-   expressed here.  */
-extern char microblaze_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-            microblaze_hard_regno_mode_ok[ (int)(MODE) ][ (REGNO)]
-
 #define MODES_TIEABLE_P(MODE1, MODE2)					\
   ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
     GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\

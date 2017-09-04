@@ -2114,16 +2114,18 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.
 
-int
-hard_regno_mode_ok (int regno, machine_mode mode)
+   Do not allow to store a value in REG_CC for any mode.
+   Do not allow to store value in pregs if mode is not SI.  */
+static bool
+bfin_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Allow only dregs to store value of mode HI or QI */
   enum reg_class rclass = REGNO_REG_CLASS (regno);
 
   if (mode == CCmode)
-    return 0;
+    return false;
 
   if (mode == V2HImode)
     return D_REGNO_P (regno);
@@ -2139,7 +2141,7 @@ hard_regno_mode_ok (int regno, machine_mode mode)
 
   if (mode == SImode
       && TEST_HARD_REG_BIT (reg_class_contents[PROLOGUE_REGS], regno))
-    return 1;
+    return true;
 
   return TEST_HARD_REG_BIT (reg_class_contents[MOST_REGS], regno);
 }
@@ -5844,5 +5846,8 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P bfin_can_use_doloop_p
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK bfin_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -296,9 +296,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HARD_REGNO_NREGS(REGNO, MODE) riscv_hard_regno_nregs (REGNO, MODE)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  riscv_hard_regno_mode_ok_p (REGNO, MODE)
-
 /* Don't allow floating-point modes to be tied, since type punning of
    single-precision and double-precision is implementation defined.  */
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
@@ -864,7 +861,6 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
-extern bool riscv_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 extern bool riscv_slow_unaligned_access;
 #endif
 

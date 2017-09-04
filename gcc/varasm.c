@@ -1387,7 +1387,7 @@ make_decl_rtl (tree decl)
       else if (!in_hard_reg_set_p (operand_reg_set, mode, reg_number))
 	error ("the register specified for %q+D is not general enough"
 	       " to be used as a register variable", decl);
-      else if (!HARD_REGNO_MODE_OK (reg_number, mode))
+      else if (!targetm.hard_regno_mode_ok (reg_number, mode))
 	error ("register specified for %q+D isn%'t suitable for data type",
                decl);
       /* Now handle properly declared static register variables.  */

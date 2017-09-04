@@ -235,6 +235,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P pdp11_scalar_mode_supported_p
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK pdp11_hard_regno_mode_ok
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1923,6 +1926,25 @@ int
 pdp11_branch_cost ()
 {
   return (TARGET_BRANCH_CHEAP ? 0 : 1);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the pdp, the cpu registers
+   can hold any mode other than float (because otherwise we may end up
+   being asked to move from CPU to FPU register, which isn't a valid
+   operation on the PDP11).  For CPU registers, check alignment.
+
+   FPU accepts SF and DF but actually holds a DF - simplifies life!  */
+
+static bool
+pdp11_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (regno <= PC_REGNUM)
+    return (GET_MODE_BITSIZE (mode) <= 16
+	    || (GET_MODE_BITSIZE (mode) >= 32
+		&& !(regno & 1)
+		&& !FLOAT_MODE_P (mode)));
+
+  return FLOAT_MODE_P (mode);
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

@@ -38,7 +38,6 @@ extern void epiphany_expand_prologue (void);
 extern void epiphany_expand_epilogue (int);
 extern int epiphany_initial_elimination_offset (int, int);
 extern void epiphany_init_expanders (void);
-extern int hard_regno_mode_ok (int regno, machine_mode mode);
 #ifdef HARD_CONST
 extern void emit_set_fp_mode (int entity, int mode, int prev_mode,
 			      HARD_REG_SET regs_live);

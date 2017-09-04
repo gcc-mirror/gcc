@@ -246,19 +246,13 @@ along with GCC; see the file COPYING3.  If not see
 #define HARD_REGNO_NREGS(REGNO, MODE) 			\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* A C expression that is nonzero if it is permissible to store a value of mode
-   MODE in hard register number REGNO (or in several registers starting with
-   that one).  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
 /* A C expression that is nonzero if it is desirable to choose register
    allocation so as to avoid move instructions between a value of mode MODE1
    and a value of mode MODE2.
 
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
-   ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
-   zero.  */
+   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
+   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
+   then `MODES_TIEABLE_P (MODE1, MODE2)' must be zero.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 /*}}}*/ 

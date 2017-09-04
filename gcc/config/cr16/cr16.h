@@ -204,13 +204,6 @@ while (0)
   ? ((GET_MODE_SIZE (MODE) + CR16_UNITS_PER_DWORD - 1) / CR16_UNITS_PER_DWORD)\
   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD       - 1) / UNITS_PER_WORD))
 
-/* Nonzero if it is permissible to store a value of mode @var{mode} in hard
-   register number @var{regno} (or in several registers starting with that
-   one).  On the CR16 architecture, all registers can hold all modes,
-   except that double precision floats (and double ints) must fall on
-   even-register boundaries.  */ 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) cr16_hard_regno_mode_ok (REGNO, MODE)
-
 #define NOTICE_UPDATE_CC(EXP, INSN) \
    notice_update_cc ((EXP))
 

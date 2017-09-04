@@ -667,11 +667,11 @@ find_valid_class (machine_mode outer ATTRIBUTE_UNUSED,
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER - n && ! bad; regno++)
 	if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno))
 	  {
-	    if (HARD_REGNO_MODE_OK (regno, inner))
+	    if (targetm.hard_regno_mode_ok (regno, inner))
 	      {
 		good = 1;
 		if (TEST_HARD_REG_BIT (reg_class_contents[rclass], regno + n)
-		    && ! HARD_REGNO_MODE_OK (regno + n, outer))
+		    && !targetm.hard_regno_mode_ok (regno + n, outer))
 		  bad = 1;
 	      }
 	  }
@@ -720,7 +720,7 @@ find_valid_class_1 (machine_mode outer ATTRIBUTE_UNUSED,
       for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
         {
           if (in_hard_reg_set_p (reg_class_contents[rclass], mode, regno)
-              && (HARD_REGNO_MODE_OK (regno, mode)))
+	      && targetm.hard_regno_mode_ok (regno, mode))
             computed_rclass_size++;
         }
 
@@ -850,7 +850,7 @@ reload_inner_reg_of_subreg (rtx x, machine_mode mode, bool output)
     return false;
 
   /* If INNER is not ok for MODE, then INNER will need reloading.  */
-  if (!HARD_REGNO_MODE_OK (subreg_regno (x), mode))
+  if (!targetm.hard_regno_mode_ok (subreg_regno (x), mode))
     return true;
 
   /* If this is for an output, and the outer part is a word or smaller,
@@ -1087,7 +1087,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 			/ UNITS_PER_WORD)
 		       != (int) hard_regno_nregs[REGNO (SUBREG_REG (in))]
 						[GET_MODE (SUBREG_REG (in))]))
-		  || ! HARD_REGNO_MODE_OK (subreg_regno (in), inmode)))
+		  || !targetm.hard_regno_mode_ok (subreg_regno (in), inmode)))
 	  || (secondary_reload_class (1, rclass, inmode, in) != NO_REGS
 	      && (secondary_reload_class (1, rclass, GET_MODE (SUBREG_REG (in)),
 					  SUBREG_REG (in))
@@ -1181,7 +1181,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	      && ! (GET_MODE_SIZE (outmode) <= UNITS_PER_WORD
 		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (out)))
 		        > UNITS_PER_WORD))
-	      && ! HARD_REGNO_MODE_OK (subreg_regno (out), outmode))
+	      && !targetm.hard_regno_mode_ok (subreg_regno (out), outmode))
 	  || (secondary_reload_class (0, rclass, outmode, out) != NO_REGS
 	      && (secondary_reload_class (0, rclass, GET_MODE (SUBREG_REG (out)),
 					  SUBREG_REG (out))
@@ -1310,7 +1310,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	    outmode = word_mode;
 	}
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-	if (HARD_REGNO_MODE_OK (i, mode)
+	if (targetm.hard_regno_mode_ok (i, mode)
 	    && in_hard_reg_set_p (reg_class_contents[(int) rclass], mode, i))
 	  break;
       if (i == FIRST_PSEUDO_REGISTER)
@@ -1621,8 +1621,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	    /* Make sure the operand fits in the reg that dies.  */
 	    && (GET_MODE_SIZE (rel_mode)
 		<= GET_MODE_SIZE (GET_MODE (XEXP (note, 0))))
-	    && HARD_REGNO_MODE_OK (regno, inmode)
-	    && HARD_REGNO_MODE_OK (regno, outmode))
+	    && targetm.hard_regno_mode_ok (regno, inmode)
+	    && targetm.hard_regno_mode_ok (regno, outmode))
 	  {
 	    unsigned int offs;
 	    unsigned int nregs = MAX (hard_regno_nregs[regno][inmode],
@@ -1902,7 +1902,7 @@ combine_reloads (void)
 	&& !reg_overlap_mentioned_for_reload_p (XEXP (note, 0),
 						rld[output_reload].out)
 	&& (regno = REGNO (XEXP (note, 0))) < FIRST_PSEUDO_REGISTER
-	&& HARD_REGNO_MODE_OK (regno, rld[output_reload].outmode)
+	&& targetm.hard_regno_mode_ok (regno, rld[output_reload].outmode)
 	&& TEST_HARD_REG_BIT (reg_class_contents[(int) rld[output_reload].rclass],
 			      regno)
 	&& (hard_regno_nregs[regno][rld[output_reload].outmode]
@@ -2026,7 +2026,7 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
       *inloc = const0_rtx;
 
       if (regno < FIRST_PSEUDO_REGISTER
-	  && HARD_REGNO_MODE_OK (regno, outmode)
+	  && targetm.hard_regno_mode_ok (regno, outmode)
 	  && ! refers_to_regno_for_reload_p (regno, regno + nwords,
 					     PATTERN (this_insn), outloc))
 	{
@@ -2063,13 +2063,13 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 	  || find_reg_note (this_insn, REG_UNUSED, real_out))
       && find_reg_note (this_insn, REG_DEAD, real_in)
       && !fixed_regs[REGNO (in)]
-      && HARD_REGNO_MODE_OK (REGNO (in),
-			     /* The only case where out and real_out might
-				have different modes is where real_out
-				is a subreg, and in that case, out
-				has a real mode.  */
-			     (GET_MODE (out) != VOIDmode
-			      ? GET_MODE (out) : outmode))
+      && targetm.hard_regno_mode_ok (REGNO (in),
+				     /* The only case where out and real_out
+					might have different modes is where
+					real_out is a subreg, and in that
+					case, out has a real mode.  */
+				     (GET_MODE (out) != VOIDmode
+				      ? GET_MODE (out) : outmode))
       && (ORIGINAL_REGNO (in) < FIRST_PSEUDO_REGISTER
 	  /* However only do this if we can be sure that this input
 	     operand doesn't correspond with an uninitialized pseudo.
@@ -4574,7 +4574,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 
 	if (regno < FIRST_PSEUDO_REGISTER
 	    && TEST_HARD_REG_BIT (reg_class_contents[rld[i].rclass], regno)
-	    && HARD_REGNO_MODE_OK (regno, rld[i].mode))
+	    && targetm.hard_regno_mode_ok (regno, rld[i].mode))
 	  {
 	    int nr = hard_regno_nregs[regno][rld[i].mode];
 	    int ok = 1, nri;
