@@ -1408,7 +1408,7 @@ allocate_dynamic_stack_space (rtx size, unsigned size_align,
       func = init_one_libfunc ("__morestack_allocate_stack_space");
 
       space = emit_library_call_value (func, target, LCT_NORMAL, Pmode,
-				       1, ask, Pmode);
+				       ask, Pmode);
 
       if (available_label == NULL_RTX)
 	return space;
@@ -1621,8 +1621,8 @@ probe_stack_range (HOST_WIDE_INT first, rtx size)
 					         stack_pointer_rtx,
 					         plus_constant (Pmode,
 								size, first)));
-      emit_library_call (stack_check_libfunc, LCT_THROW, VOIDmode, 1, addr,
-			 Pmode);
+      emit_library_call (stack_check_libfunc, LCT_THROW, VOIDmode,
+			 addr, Pmode);
     }
 
   /* Next see if we have an insn to check the stack.  */

@@ -739,9 +739,8 @@ c6x_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
 #ifdef CLEAR_INSN_CACHE
   tramp = XEXP (tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gnu_clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, tramp, Pmode,
-		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE),
-		     Pmode);
+		     LCT_NORMAL, VOIDmode, tramp, Pmode,
+		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE), Pmode);
 #endif
 }
 
@@ -1592,7 +1591,7 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 	    }
 	  start_sequence ();
 
-	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode, 2,
+	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode,
 					 op0, op_mode, op1, op_mode);
 	  insns = get_insns ();
 	  end_sequence ();
@@ -1728,7 +1727,7 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	mark_addressable (src_expr);
       if (dst_expr)
 	mark_addressable (dst_expr);
-      emit_library_call (fn, LCT_NORMAL, VOIDmode, 3,
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
 			 dstreg, Pmode, srcreg, Pmode, count_exp, SImode);
       return true;
     }

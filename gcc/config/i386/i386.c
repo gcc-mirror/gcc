@@ -31824,7 +31824,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   if (CHECK_EXECUTE_STACK_ENABLED)
 #endif
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -52432,10 +52432,10 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
 
   rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-				    mode, 3,
-				    op0, GET_MODE (op0),
-				    op1, GET_MODE (op1),
-				    XEXP (rem, 0), Pmode);
+				      mode,
+				      op0, GET_MODE (op0),
+				      op1, GET_MODE (op1),
+				      XEXP (rem, 0), Pmode);
   *quot_p = quot;
   *rem_p = rem;
 }

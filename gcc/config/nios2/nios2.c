@@ -1734,7 +1734,7 @@ nios2_emit_expensive_div (rtx *operands, machine_mode mode)
 
   start_sequence ();
   final_result = emit_library_call_value (libfunc, NULL_RTX,
-                                          LCT_CONST, SImode, 2,
+                                          LCT_CONST, SImode,
                                           operands[1], SImode,
                                           operands[2], SImode);
 
@@ -3025,7 +3025,7 @@ nios2_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   rtx addr = force_reg (Pmode, XEXP (m_tramp, 0));
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__trampoline_setup"),
-		     LCT_NORMAL, VOIDmode, 3, addr, Pmode, fnaddr, Pmode,
+		     LCT_NORMAL, VOIDmode, addr, Pmode, fnaddr, Pmode,
 		     ctx_reg, Pmode);
 }
 

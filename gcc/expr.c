@@ -327,7 +327,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 
       start_sequence ();
       value = emit_library_call_value (libcall, NULL_RTX, LCT_CONST, to_mode,
-				       1, from, from_mode);
+				       from, from_mode);
       insns = get_insns ();
       end_sequence ();
       emit_libcall_block (insns, to, value,

@@ -5562,7 +5562,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       emit_insn (gen_imb ());
 #ifdef HAVE_ENABLE_EXECUTE_STACK
       emit_library_call (init_one_libfunc ("__enable_execute_stack"),
-			 LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+			 LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
     }
 }

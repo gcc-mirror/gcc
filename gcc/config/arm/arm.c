@@ -3888,7 +3888,7 @@ arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, a_tramp, Pmode,
+		     LCT_NORMAL, VOIDmode, a_tramp, Pmode,
 		     plus_constant (Pmode, a_tramp, TRAMPOLINE_SIZE), Pmode);
 }
 
@@ -8364,7 +8364,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
 				     LCT_PURE, /* LCT_CONST?  */
-				     Pmode, 1, reg, Pmode);
+				     Pmode, reg, Pmode);
 
   rtx_insn *insns = get_insns ();
   end_sequence ();
@@ -31101,7 +31101,7 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
     = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
 
   rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					libval_mode, 2,
+					libval_mode,
 					op0, GET_MODE (op0),
 					op1, GET_MODE (op1));
 

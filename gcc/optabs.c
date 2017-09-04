@@ -1759,7 +1759,7 @@ expand_binop (machine_mode mode, optab binoptab, rtx op0, rtx op1,
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (libfunc,
-				       NULL_RTX, LCT_CONST, mode, 2,
+				       NULL_RTX, LCT_CONST, mode,
 				       op0, mode, op1x, op1_mode);
 
       insns = get_insns ();
@@ -2092,7 +2092,7 @@ expand_twoval_binop_libfunc (optab binoptab, rtx op0, rtx op1,
   libval_mode = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
   start_sequence ();
   libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				    libval_mode, 2,
+				    libval_mode,
 				    op0, mode,
 				    op1, mode);
   /* Get the part of VAL containing the value that we want.  */
@@ -2966,7 +2966,7 @@ expand_unop (machine_mode mode, optab unoptab, rtx op0, rtx target,
       /* Pass 1 for NO_QUEUE so we don't lose any increments
 	 if the libcall is cse'd or moved.  */
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, outmode,
-				       1, op0, mode);
+				       op0, mode);
       insns = get_insns ();
       end_sequence ();
 
@@ -3917,7 +3917,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 
       ret_mode = targetm.libgcc_cmp_return_mode ();
       result = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					ret_mode, 2, x, mode, y, mode);
+					ret_mode, x, mode, y, mode);
 
       /* There are two kinds of comparison routines. Biased routines
 	 return 0/1/2, and unbiased routines return -1/0/1. Other parts
@@ -4171,7 +4171,7 @@ prepare_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison,
 
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				   cmp_mode, 2, x, mode, y, mode);
+				   cmp_mode, x, mode, y, mode);
   insns = get_insns ();
   end_sequence ();
 
@@ -4811,8 +4811,7 @@ expand_float (rtx to, rtx from, int unsignedp)
       start_sequence ();
 
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				       GET_MODE (to), 1, from,
-				       GET_MODE (from));
+				       GET_MODE (to), from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -5004,8 +5003,7 @@ expand_fix (rtx to, rtx from, int unsignedp)
       start_sequence ();
 
       value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-				       GET_MODE (to), 1, from,
-				       GET_MODE (from));
+				       GET_MODE (to), from, GET_MODE (from));
       insns = get_insns ();
       end_sequence ();
 
@@ -5097,7 +5095,7 @@ expand_fixed_convert (rtx to, rtx from, int uintp, int satp)
 
   start_sequence ();
   value = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST, to_mode,
-				   1, from, from_mode);
+				   from, from_mode);
   insns = get_insns ();
   end_sequence ();
 
@@ -5944,7 +5942,7 @@ maybe_emit_sync_lock_test_and_set (rtx target, rtx mem, rtx val,
 
 	  addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
 	  return emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-					  mode, 2, addr, ptr_mode,
+					  mode, addr, ptr_mode,
 					  val, mode);
 	}
     }
@@ -6252,7 +6250,7 @@ expand_atomic_compare_and_swap (rtx *ptarget_bool, rtx *ptarget_oval,
     {
       rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
       rtx target = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-					    mode, 3, addr, ptr_mode,
+					    mode, addr, ptr_mode,
 					    expected, mode, desired, mode);
       emit_move_insn (target_oval, target);
 
@@ -6313,7 +6311,7 @@ expand_mem_thread_fence (enum memmodel model)
   else if (targetm.have_memory_barrier ())
     emit_insn (targetm.gen_memory_barrier ());
   else if (synchronize_libfunc != NULL_RTX)
-    emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode, 0);
+    emit_library_call (synchronize_libfunc, LCT_NORMAL, VOIDmode);
   else
     expand_asm_memory_barrier ();
 }
@@ -6813,7 +6811,7 @@ expand_atomic_fetch_op (rtx target, rtx mem, rtx val, enum rtx_code code,
 	{
 	  rtx addr = convert_memory_address (ptr_mode, XEXP (mem, 0));
 	  result = emit_library_call_value (libfunc, NULL, LCT_NORMAL, mode,
-					    2, addr, ptr_mode, val, mode);
+					    addr, ptr_mode, val, mode);
 
 	  if (!unused_result && fixup)
 	    result = expand_simple_binop (mode, code, result, val, target,

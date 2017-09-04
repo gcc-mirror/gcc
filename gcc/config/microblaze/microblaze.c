@@ -585,7 +585,7 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
                                      LCT_PURE, /* LCT_CONST?  */
-                                     Pmode, 1, reg, Pmode);
+                                     Pmode, reg, Pmode);
 
   insns = get_insns ();
   end_sequence ();
@@ -3560,10 +3560,10 @@ microblaze_expand_divide (rtx operands[])
 
   emit_label (div_label);
   ret = emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__divsi3"), 
-				       operands[0], LCT_NORMAL, 
-				       GET_MODE (operands[0]), 2, operands[1], 
-				       GET_MODE (operands[1]), operands[2], 
-				       GET_MODE (operands[2]));
+				 operands[0], LCT_NORMAL,
+				 GET_MODE (operands[0]),
+				 operands[1], GET_MODE (operands[1]),
+				 operands[2], GET_MODE (operands[2]));
   if (ret != operands[0])
                 emit_move_insn (operands[0], ret);    
 

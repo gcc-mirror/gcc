@@ -1,3 +1,108 @@
+2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR bootstrap/82045
+	* rtl.h (emit_library_call_value_1): Declare.
+	(emit_library_call): Replace declaration with a series of overloads.
+	Remove the parameter count argument.
+	(emit_library_call_value): Likewise.
+	* calls.c (emit_library_call_value_1): Make global.  Replace varargs
+	with an "rtx_mode_t *".
+	(emit_library_call_value): Delete.
+	(emit_library_call): Likewise.
+	* asan.c (asan_emit_stack_protection): Update calls accordingly.
+	(asan_emit_allocas_unpoison): Likewise.
+	* builtins.c (expand_builtin_powi): Likewise.
+	(expand_asan_emit_allocas_unpoison): Likewise.
+	* cfgexpand.c (expand_main_function): Likewise.
+	* config/aarch64/aarch64.c (aarch64_trampoline_init): Likewise.
+	* config/aarch64/aarch64.h (PROFILE_HOOK): Likewise.
+	* config/alpha/alpha.c (alpha_trampoline_init): Likewise.
+	* config/arm/arm.c (arm_trampoline_init): Likewise.
+	(arm_call_tls_get_addr): Likewise.
+	(arm_expand_divmod_libfunc): Likewise.
+	* config/bfin/bfin.md (umulsi3_highpart): Likewise.
+	(smulsi3_highpart): Likewise.
+	* config/c6x/c6x.c (c6x_initialize_trampoline): Likewise.
+	(c6x_expand_compare): Likewise.
+	(c6x_expand_movmem): Likewise.
+	* config/frv/frv.c (frv_trampoline_init): Likewise.
+	* config/i386/i386.c (ix86_trampoline_init): Likewise.
+	(ix86_expand_divmod_libfunc): Likewise.
+	* config/ia64/ia64.c (ia64_expand_tls_address): Likewise.
+	(ia64_expand_compare): Likewise.
+	(ia64_profile_hook): Likewise.
+	* config/ia64/ia64.md (save_stack_nonlocal): Likewise.
+	(nonlocal_goto): Likewise.
+	(restore_stack_nonlocal): Likewise.
+	* config/m32r/m32r.c (block_move_call): Likewise.
+	(m32r_trampoline_init): Likewise.
+	* config/m68k/linux.h (FINALIZE_TRAMPOLINE): Likewise.
+	* config/m68k/m68k.c (m68k_call_tls_get_addr): Likewise.
+	(m68k_call_m68k_read_tp): Likewise.
+	* config/microblaze/microblaze.c (microblaze_call_tls_get_addr)
+	(microblaze_expand_divide): Likewise.
+	* config/mips/mips.h (mips_args): Likewise.
+	* config/mips/sdemtk.h (mips_sync_icache): Likewise.
+	(MIPS_ICACHE_SYNC): Likewise.
+	* config/nios2/nios2.c (nios2_emit_expensive_div): Likewise.
+	(nios2_trampoline_init): Likewise.
+	* config/pa/pa.c (hppa_tls_call): Likewise.
+	(pa_trampoline_init): Likewise.
+	* config/pa/pa.md (canonicalize_funcptr_for_compare): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_legitimize_tls_address)
+	(expand_strn_compare): Likewise.
+	(rs6000_generate_compare): Likewise.
+	(rs6000_expand_float128_convert): Likewise.
+	(output_profile_hook): Likewise.
+	(rs6000_trampoline_init): Likewise.
+	* config/powerpcspe/powerpcspe.md (neg<mode>2): Likewise.
+	* config/riscv/riscv.h (PROFILE_HOOK): Likewise.
+	* config/rs6000/rs6000-string.c (expand_strn_compare): Likewise.
+	* config/rs6000/rs6000.c (rs6000_legitimize_tls_address): Likewise.
+	(rs6000_generate_compare): Likewise.
+	(rs6000_expand_float128_convert): Likewise.
+	(output_profile_hook): Likewise.
+	(rs6000_trampoline_init): Likewise.
+	* config/rs6000/rs6000.md (neg<mode>2): Likewise.
+	* config/sh/sh.c (sh_trampoline_init): Likewise.
+	* config/sparc/sparc.c (emit_soft_tfmode_libcall): Likewise.
+	(sparc_emit_float_lib_cmp): Likewise.
+	(sparc32_initialize_trampoline): Likewise.
+	(sparc64_initialize_trampoline): Likewise.
+	(sparc_profile_hook): Likewise.
+	* config/spu/spu.c (ea_load_store): Likewise.
+	* config/spu/spu.md (floatunssidf2): Likewise.
+	* config/tilegx/tilegx.c (tilegx_trampoline_init): Likewise.
+	* config/tilepro/tilepro.c (tilepro_trampoline_init): Likewise.
+	* config/visium/visium.c (expand_block_move_4): Likewise.
+	(expand_block_move_2): Likewise.
+	(expand_block_move_1): Likewise.
+	(expand_block_set_4): Likewise.
+	(expand_block_set_2): Likewise.
+	(expand_block_set_1): Likewise.
+	(visium_trampoline_init): Likewise.
+	(visium_profile_hook): Likewise.
+	* config/xtensa/xtensa.c (xtensa_expand_nonlocal_goto): Likewise.
+	(xtensa_setup_frame_addresses): Likewise.
+	(xtensa_trampoline_init): Likewise.
+	* except.c (sjlj_emit_function_enter): Likewise.
+	(sjlj_emit_function_exit): Likewise.
+	* explow.c (allocate_dynamic_stack_space): Likewise.
+	(probe_stack_range): Likewise.
+	* expr.c (convert_mode_scalar): Likewise.
+	* optabs.c (expand_binop): Likewise.
+	(expand_twoval_binop_libfunc): Likewise.
+	(expand_unop): Likewise.
+	(prepare_cmp_insn): Likewise.
+	(prepare_float_lib_cmp): Likewise.
+	(expand_float): Likewise.
+	(expand_fix): Likewise.
+	(expand_fixed_convert): Likewise.
+	(maybe_emit_sync_lock_test_and_set): Likewise.
+	(expand_atomic_compare_and_swap): Likewise.
+	(expand_mem_thread_fence): Likewise.
+	(expand_atomic_fetch_op): Likewise.
+
 2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/generic.texi (OpenACC): Adjust URL.

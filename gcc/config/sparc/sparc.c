@@ -3399,11 +3399,11 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
   if (GET_MODE (operands[0]) == TFmode)
     {
       if (nargs == 2)
-	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 2,
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode,
 			   arg[0], GET_MODE (arg[0]),
 			   arg[1], GET_MODE (arg[1]));
       else
-	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 3,
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode,
 			   arg[0], GET_MODE (arg[0]),
 			   arg[1], GET_MODE (arg[1]),
 			   arg[2], GET_MODE (arg[2]));
@@ -3418,7 +3418,7 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
       gcc_assert (nargs == 2);
 
       ret = emit_library_call_value (func_sym, operands[0], LCT_NORMAL,
-				     GET_MODE (operands[0]), 1,
+				     GET_MODE (operands[0]),
 				     arg[1], GET_MODE (arg[1]));
 
       if (ret != operands[0])
@@ -8131,7 +8131,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 
       libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
       emit_library_call (libfunc, LCT_NORMAL,
-			 DImode, 2,
+			 DImode,
 			 XEXP (slot0, 0), Pmode,
 			 XEXP (slot1, 0), Pmode);
       mode = DImode;
@@ -8140,7 +8140,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
     {
       libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
       emit_library_call (libfunc, LCT_NORMAL,
-			 SImode, 2,
+			 SImode,
 			 x, TFmode, y, TFmode);
       mode = SImode;
     }
@@ -9632,7 +9632,7 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
      the stack address is accessible.  */
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+                     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 
 }
@@ -9679,7 +9679,7 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
      the stack address is accessible.  */
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+                     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -10183,13 +10183,13 @@ sparc_profile_hook (int labelno)
   fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_FUNCTION);
   if (NO_PROFILE_COUNTERS)
     {
-      emit_library_call (fun, LCT_NORMAL, VOIDmode, 0);
+      emit_library_call (fun, LCT_NORMAL, VOIDmode);
     }
   else
     {
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-      emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
+      emit_library_call (fun, LCT_NORMAL, VOIDmode, lab, Pmode);
     }
 }
 

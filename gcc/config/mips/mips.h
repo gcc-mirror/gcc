@@ -2603,7 +2603,7 @@ typedef struct mips_args {
   /* Flush both caches.  We need to flush the data cache in case	\
      the system has a write-back cache.  */				\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),	\
-		     LCT_NORMAL, VOIDmode, 3, ADDR, Pmode, SIZE, Pmode,	\
+		     LCT_NORMAL, VOIDmode, ADDR, Pmode, SIZE, Pmode,	\
 		     GEN_INT (3), TYPE_MODE (integer_type_node))
 
 
