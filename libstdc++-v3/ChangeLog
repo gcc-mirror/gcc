@@ -1,6 +1,12 @@
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-07-31  Marek Polacek  <polacek@redhat.com>
+
+	PR libstdc++/81599
+	* include/bits/stl_stack.h: Fix typo.
+
+	Backport from mainline
 	2017-07-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81338
