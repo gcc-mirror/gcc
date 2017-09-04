@@ -17649,6 +17649,89 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   return dest;
 }
 
+/* Return true if OP refers to a TLS address.  */
+bool
+ix86_tls_address_pattern_p (rtx op)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
+    {
+      rtx op = *iter;
+      if (MEM_P (op))
+	{
+	  rtx *x = &XEXP (op, 0);
+	  while (GET_CODE (*x) == PLUS)
+	    {
+	      int i;
+	      for (i = 0; i < 2; i++)
+		{
+		  rtx u = XEXP (*x, i);
+		  if (GET_CODE (u) == ZERO_EXTEND)
+		    u = XEXP (u, 0);
+		  if (GET_CODE (u) == UNSPEC
+		      && XINT (u, 1) == UNSPEC_TP)
+		    return true;
+		}
+	      x = &XEXP (*x, 0);
+	    }
+
+	  iter.skip_subrtxes ();
+	}
+    }
+
+  return false;
+}
+
+/* Rewrite *LOC so that it refers to a default TLS address space.  */
+void
+ix86_rewrite_tls_address_1 (rtx *loc)
+{
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
+    {
+      rtx *loc = *iter;
+      if (MEM_P (*loc))
+	{
+	  rtx addr = XEXP (*loc, 0);
+	  rtx *x = &addr;
+	  while (GET_CODE (*x) == PLUS)
+	    {
+	      int i;
+	      for (i = 0; i < 2; i++)
+		{
+		  rtx u = XEXP (*x, i);
+		  if (GET_CODE (u) == ZERO_EXTEND)
+		    u = XEXP (u, 0);
+		  if (GET_CODE (u) == UNSPEC
+		      && XINT (u, 1) == UNSPEC_TP)
+		    {
+		      addr_space_t as = DEFAULT_TLS_SEG_REG;
+
+		      *x = XEXP (*x, 1 - i);
+
+		      *loc = replace_equiv_address_nv (*loc, addr, true);
+		      set_mem_addr_space (*loc, as);
+		      return;
+		    }
+		}
+	      x = &XEXP (*x, 0);
+	    }
+
+	  iter.skip_subrtxes ();
+	}
+    }
+}
+
+/* Rewrite instruction pattern involvning TLS address
+   so that it refers to a default TLS address space.  */
+rtx
+ix86_rewrite_tls_address (rtx pattern)
+{
+  pattern = copy_insn (pattern);
+  ix86_rewrite_tls_address_1 (&pattern);
+  return pattern;
+}
+
 /* Create or return the unique __imp_DECL dllimport symbol corresponding
    to symbol DECL if BEIMPORT is true.  Otherwise create or return the
    unique refptr-DECL symbol corresponding to symbol DECL.  */
