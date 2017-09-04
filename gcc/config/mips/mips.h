@@ -1968,8 +1968,6 @@ FP_ASM_SPEC "\
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
   mips_hard_regno_caller_save_mode (REGNO, NREGS, MODE)
 
-#define MODES_TIEABLE_P mips_modes_tieable_p
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
 

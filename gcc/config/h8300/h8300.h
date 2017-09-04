@@ -239,17 +239,6 @@ extern const char * const *h8_reg_names;
 #define HARD_REGNO_NREGS(REGNO, MODE)		\
   h8300_hard_regno_nregs ((REGNO), (MODE))
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)					  \
-  ((MODE1) == (MODE2)							  \
-   || (((MODE1) == QImode || (MODE1) == HImode				  \
-	|| ((TARGET_H8300H || TARGET_H8300S) && (MODE1) == SImode))	  \
-       &&  ((MODE2) == QImode || (MODE2) == HImode			  \
-	    || ((TARGET_H8300H || TARGET_H8300S) && (MODE2) == SImode))))
-
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register */
 

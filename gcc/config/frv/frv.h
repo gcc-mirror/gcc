@@ -763,15 +763,6 @@
    we can build the appropriate instructions to properly reload the values.  */
 #define HARD_REGNO_NREGS(REGNO, MODE) frv_hard_regno_nregs (REGNO, MODE)
 
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
-   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
-   then `MODES_TIEABLE_P (MODE1, MODE2)' must be zero.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) (MODE1 == MODE2)
-
 /* Define this macro if the compiler should avoid copies to/from CCmode
    registers.  You should only define this macro if support fo copying to/from
    CCmode is incomplete.  */
@@ -1855,10 +1846,10 @@ fprintf (STREAM, "\t.word .L%d\n", VALUE)
 
    On many machines, this expression can be 1.
 
-   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for modes for
-   which `MODES_TIEABLE_P' is 0, suboptimal code can result.  If this is the
-   case, making `TRULY_NOOP_TRUNCATION' return 0 in such cases may improve
-   things.  */
+   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for modes
+   for which `TARGET_MODES_TIEABLE_P' is 0, suboptimal code can result.
+   If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in such
+   cases may improve things.  */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* An alias for the machine mode for pointers.  On most machines, define this

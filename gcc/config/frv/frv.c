@@ -400,6 +400,7 @@ static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
 static bool frv_hard_regno_mode_ok		(unsigned int, machine_mode);
+static bool frv_modes_tieable_p			(machine_mode, machine_mode);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_PRINT_OPERAND
@@ -519,6 +520,8 @@ static bool frv_hard_regno_mode_ok		(unsigned int, machine_mode);
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK frv_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P frv_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6588,6 +6591,14 @@ frv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     }
 
   return false;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+frv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return mode1 == mode2;
 }
 
 

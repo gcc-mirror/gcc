@@ -5447,11 +5447,11 @@ subst (rtx x, rtx from, rtx to, int in_dest, int in_cond, int unique_copy)
 		     FROM to CC0.  */
 
 		  if (GET_CODE (to) == SUBREG
-		      && ! MODES_TIEABLE_P (GET_MODE (to),
-					    GET_MODE (SUBREG_REG (to)))
+		      && !targetm.modes_tieable_p (GET_MODE (to),
+						   GET_MODE (SUBREG_REG (to)))
 		      && ! (code == SUBREG
-			    && MODES_TIEABLE_P (GET_MODE (x),
-						GET_MODE (SUBREG_REG (to))))
+			    && (targetm.modes_tieable_p
+				(GET_MODE (x), GET_MODE (SUBREG_REG (to)))))
 		      && (!HAVE_cc0
 			  || (! (code == SET
 				 && i == 1

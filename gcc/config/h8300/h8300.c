@@ -5904,6 +5904,20 @@ h8300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return regno == MAC_REG ? mode == SImode : 1;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+h8300_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || ((mode1 == QImode
+	       || mode1 == HImode
+	       || ((TARGET_H8300H || TARGET_H8300S) && mode1 == SImode))
+	      && (mode2 == QImode
+		  || mode2 == HImode
+		  || ((TARGET_H8300H || TARGET_H8300S) && mode2 == SImode))));
+}
+
 /* Helper function for the move patterns.  Make sure a move is legitimate.  */
 
 bool
@@ -6103,6 +6117,9 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK h8300_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P h8300_modes_tieable_p
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false

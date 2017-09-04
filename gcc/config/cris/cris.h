@@ -477,12 +477,6 @@ extern int cris_cpu_version;
  (MODE == VOIDmode \
   ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Because CCmode isn't covered by the "narrower mode" statement in
-   tm.texi, we can still say all modes are tieable despite not having an
-   always 1 TARGET_HARD_REGNO_MODE_OK.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
-
 /* Node: Leaf Functions */
 /* (no definitions) */
 

@@ -2768,6 +2768,21 @@ nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
+
+/* Implement TARGET_MODES_TIEABLE_P.  We can use general registers to
+   tie QI/HI/SI modes together.  */
+
+static bool
+nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+}
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* Register Classes.  */
 

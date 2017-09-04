@@ -13863,16 +13863,15 @@ aarch64_reverse_mask (machine_mode mode)
   return force_reg (V16QImode, mask);
 }
 
-/* Implement MODES_TIEABLE_P.  In principle we should always return true.
-   However due to issues with register allocation it is preferable to avoid
-   tieing integer scalar and FP scalar modes.  Executing integer operations
-   in general registers is better than treating them as scalar vector
-   operations.  This reduces latency and avoids redundant int<->FP moves.
-   So tie modes if they are either the same class, or vector modes with
-   other vector modes, vector structs or any scalar mode.
-*/
+/* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
+   true.  However due to issues with register allocation it is preferable
+   to avoid tieing integer scalar and FP scalar modes.  Executing integer
+   operations in general registers is better than treating them as scalar
+   vector operations.  This reduces latency and avoids redundant int<->FP
+   moves.  So tie modes if they are either the same class, or vector modes
+   with other vector modes, vector structs or any scalar mode.  */
 
-bool
+static bool
 aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
@@ -15671,6 +15670,9 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK aarch64_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P aarch64_modes_tieable_p
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

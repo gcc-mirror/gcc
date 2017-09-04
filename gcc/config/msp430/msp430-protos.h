@@ -39,7 +39,6 @@ int	msp430_initial_elimination_offset (int, int);
 bool    msp430_is_interrupt_func (void);
 const char * msp430x_logical_shift_right (rtx);
 const char * msp430_mcu_name (void);
-bool	msp430_modes_tieable_p (machine_mode, machine_mode);
 void    msp430_output_aligned_decl_common (FILE *, const tree, const char *, unsigned HOST_WIDE_INT, unsigned);
 void	msp430_output_labelref (FILE *, const char *);
 void	msp430_register_pragmas (void);

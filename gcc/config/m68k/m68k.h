@@ -397,13 +397,6 @@ along with GCC; see the file COPYING3.  If not see
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
   m68k_secondary_reload_class (CLASS, MODE, X)
 
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  (! TARGET_HARD_FLOAT					\
-   || ((GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
-	|| GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)	\
-       == (GET_MODE_CLASS (MODE2) == MODE_FLOAT		\
-	   || GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT)))
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

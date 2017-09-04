@@ -990,8 +990,6 @@ extern int arm_arch_cmse;
     && !IS_VFP_REGNUM (REGNO)		\
    ? 1 : ARM_NUM_REGS (MODE))
 
-#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 

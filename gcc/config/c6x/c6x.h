@@ -185,11 +185,6 @@ extern c6x_cpu_t c6x_arch;
   ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)  \
    / UNITS_PER_WORD)
 
-#define MODES_TIEABLE_P(mode1, mode2)	       \
-  ((mode1) == (mode2) ||		       \
-   (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD && \
-    GET_MODE_SIZE (mode2) <= UNITS_PER_WORD))
-
 
 /* Register Classes.  */
 

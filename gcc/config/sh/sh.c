@@ -322,6 +322,7 @@ static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 static bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool sh_modes_tieable_p (machine_mode, machine_mode);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -644,6 +645,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK sh_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P sh_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10571,6 +10575,22 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return mode == SImode;
 
   return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be false for correct output.
+   That's the case for xd registers: we don't hold SFmode values in
+   them, so we can't tie an SFmode pseudos with one in another
+   floating-point mode.  */
+
+static bool
+sh_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2)
+	      && (mode1 != SFmode && mode2 != SFmode)));
 }
 
 /* Specify the modes required to caller save a given hard regno.

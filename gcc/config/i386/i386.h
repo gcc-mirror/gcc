@@ -1181,14 +1181,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be 0 for correct output.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ix86_modes_tieable_p ((MODE1), (MODE2))
-
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
 #define AVOID_CCMODE_COPIES

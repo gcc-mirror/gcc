@@ -82,6 +82,13 @@ hook_bool_mode_true (machine_mode)
   return true;
 }
 
+/* Generic hook that takes (machine_mode, machine_mode) and returns true.  */
+bool
+hook_bool_mode_mode_true (machine_mode, machine_mode)
+{
+  return true;
+}
+
 /* Generic hook that takes (machine_mode, const_rtx) and returns false.  */
 bool
 hook_bool_mode_const_rtx_false (machine_mode, const_rtx)

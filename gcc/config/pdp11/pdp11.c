@@ -238,6 +238,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pdp11_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P pdp11_modes_tieable_p
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1945,6 +1948,14 @@ pdp11_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 		&& !FLOAT_MODE_P (mode)));
 
   return FLOAT_MODE_P (mode);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+pdp11_modes_tieable_p (machine_mode, machine_mode)
+{
+  return false;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

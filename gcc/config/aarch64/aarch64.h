@@ -403,8 +403,6 @@ extern unsigned aarch64_architecture_version;
 
 #define HARD_REGNO_NREGS(REGNO, MODE)	aarch64_hard_regno_nregs (REGNO, MODE)
 
-#define MODES_TIEABLE_P(MODE1, MODE2) aarch64_modes_tieable_p (MODE1, MODE2)
-
 #define DWARF2_UNWIND_INFO 1
 
 /* Use R0 through R3 to pass exception handling information.  */

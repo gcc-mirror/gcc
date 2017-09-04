@@ -600,17 +600,6 @@ enum nds32_builtins
    reg "regno" for holding a value of mode "mode".  */
 #define HARD_REGNO_NREGS(regno, mode) nds32_hard_regno_nregs (regno, mode)
 
-/* A C expression that is nonzero if a value of mode1
-   is accessible in mode2 without copying.
-   Define this macro to return nonzero in as many cases as possible
-   since doing so will allow GCC to perform better register allocation.
-   We can use general registers to tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(mode1, mode2)          \
-  (GET_MODE_CLASS (mode1) == MODE_INT          \
-   && GET_MODE_CLASS (mode2) == MODE_INT       \
-   && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD  \
-   && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD)
-
 
 /* Register Classes.  */
 

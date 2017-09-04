@@ -2,6 +2,168 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (modes_tieable_p): New hook.
+	* doc/tm.texi (MODES_TIEABLE_P): Replace with...
+	(TARGET_MODES_TIEABLE_P): ...this.
+	* doc/tm.texi.in: Regenerate.
+	* hooks.h (hook_bool_mode_mode_true): Declare.
+	* hooks.c (hook_bool_mode_mode_true): New function.
+	* combine.c (subst): Use targetm.modes_tieable_p instead of
+	MODES_TIEABLE_P.
+	* dse.c (find_shift_sequence): Likewise.
+	* expmed.c (extract_low_bits): Likewise.
+	* lower-subreg.c: Include target.h.
+	(find_decomposable_subregs): Use targetm.modes_tieable_p instead of
+	MODES_TIEABLE_P.
+	* rtlanal.c (rtx_cost): Likewise.
+	* config/aarch64/aarch64.h (MODES_TIEABLE_P): Delete.
+	* config/aarch64/aarch64-protos.h (aarch64_modes_tieable_p): Delete.
+	* config/aarch64/aarch64.c (aarch64_modes_tieable_p): Make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/alpha/alpha.h (MODES_TIEABLE_P): Delete.
+	* config/alpha/alpha.c (alpha_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/arc/arc.h (MODES_TIEABLE_P): Delete.
+	* config/arc/arc.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(arc_modes_tieable_p): New function.
+	* config/arm/arm.h (MODES_TIEABLE_P): Delete.
+	* config/arm/arm-protos.h (arm_modes_tieable_p): Delete.
+	* config/arm/arm.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(arm_modes_tieable_p): Make static.
+	* config/avr/avr.h (MODES_TIEABLE_P): Delete.
+	* config/bfin/bfin.h (MODES_TIEABLE_P): Delete.
+	* config/bfin/bfin.c (bfin_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/c6x/c6x.h (MODES_TIEABLE_P): Delete.
+	* config/c6x/c6x.c (c6x_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/cr16/cr16.h (MODES_TIEABLE_P): Delete.
+	* config/cr16/cr16.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(cr16_modes_tieable_p): New function.
+	* config/cris/cris.h (MODES_TIEABLE_P): Delete.
+	* config/epiphany/epiphany.h (MODES_TIEABLE_P): Delete.
+	* config/fr30/fr30.h (MODES_TIEABLE_P): Delete.
+	(TRULY_NOOP_TRUNCATION): Update comment.
+	* config/frv/frv.h (MODES_TIEABLE_P): Delete.
+	(TRULY_NOOP_TRUNCATION): Update comment.
+	* config/frv/frv.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(frv_modes_tieable_p): New function.
+	* config/ft32/ft32.h (MODES_TIEABLE_P): Delete.
+	* config/h8300/h8300.h (MODES_TIEABLE_P): Delete.
+	* config/h8300/h8300.c (h8300_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/i386/i386.h (MODES_TIEABLE_P): Delete.
+	* config/i386/i386-protos.h (ix86_modes_tieable_p): Delete.
+	* config/i386/i386.c (ix86_modes_tieable_p): Make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/ia64/ia64.h (MODES_TIEABLE_P): Delete.
+	* config/ia64/ia64.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(ia64_modes_tieable_p): New function.
+	* config/iq2000/iq2000.h (MODES_TIEABLE_P): Delete.
+	* config/iq2000/iq2000.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(iq2000_modes_tieable_p): New function.
+	* config/lm32/lm32.h (MODES_TIEABLE_P): Delete.
+	* config/lm32/lm32.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(lm32_modes_tieable_p): New function.
+	* config/m32c/m32c.h (MODES_TIEABLE_P): Delete.
+	* config/m32c/m32c-protos.h (m32c_modes_tieable_p): Delete.
+	* config/m32c/m32c.c (m32c_modes_tieable_p): Make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/m32r/m32r.h (MODES_TIEABLE_P): Delete.
+	* config/m32r/m32r.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(m32r_modes_tieable_p): New function.
+	* config/m68k/m68k.h (MODES_TIEABLE_P): Delete.
+	* config/m68k/m68k.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(m68k_modes_tieable_p): New function.
+	* config/mcore/mcore.h (MODES_TIEABLE_P): Delete.
+	* config/mcore/mcore.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(mcore_modes_tieable_p): New function.
+	* config/microblaze/microblaze.h (MODES_TIEABLE_P): Delete.
+	* config/microblaze/microblaze.c (microblaze_modes_tieable_p): New
+	function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/mips/mips.h (MODES_TIEABLE_P): Delete.
+	* config/mips/mips-protos.h (mips_modes_tieable_p): Delete.
+	* config/mips/mips.c (mips_modes_tieable_p): Make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/mmix/mmix.h (MODES_TIEABLE_P): Delete.
+	* config/mn10300/mn10300.h (MODES_TIEABLE_P): Delete.
+	* config/mn10300/mn10300-protos.h (mn10300_modes_tieable): Delete.
+	* config/mn10300/mn10300.c (mn10300_modes_tieable): Rename to...
+	(mn10300_modes_tieable_p): ...this and make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/moxie/moxie.h (MODES_TIEABLE_P): Delete.
+	* config/msp430/msp430.h (MODES_TIEABLE_P): Delete.
+	* config/msp430/msp430-protos.h (msp430_modes_tieable_p): Delete.
+	* config/msp430/msp430.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(msp430_modes_tieable_p): Make static.
+	* config/nds32/nds32.h (MODES_TIEABLE_P): Delete.
+	* config/nds32/nds32.c (nds32_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/nios2/nios2.h (MODES_TIEABLE_P): Delete.
+	* config/nvptx/nvptx.h (MODES_TIEABLE_P): Delete.
+	* config/nvptx/nvptx.c (nvptx_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/pa/pa.h (MODES_TIEABLE_P): Delete.
+	* config/pa/pa-protos.h (pa_modes_tieable_p): Delete.
+	* config/pa/pa.c (pa_modes_tieable_p): Make static.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/pdp11/pdp11.h (MODES_TIEABLE_P): Delete.
+	* config/pdp11/pdp11.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(pdp11_modes_tieable_p): New function.
+	* config/powerpcspe/powerpcspe.h (MODES_TIEABLE_P): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(rs6000_modes_tieable_p): New function.
+	(rs6000_debug_reg_global): Use it instead of MODES_TIEABLE_P.
+	* config/powerpcspe/powerpcspe.md: Update comment.
+	* config/riscv/riscv.h (MODES_TIEABLE_P): Delete.
+	* config/riscv/riscv.c (riscv_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/rl78/rl78.h (MODES_TIEABLE_P): Delete.
+	* config/rl78/rl78.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(rl78_modes_tieable_p): New function.
+	* config/rs6000/rs6000.h (MODES_TIEABLE_P): Delete.
+	* config/rs6000/rs6000.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(rs6000_modes_tieable_p): New function.
+	(rs6000_debug_reg_global): Use it instead of MODES_TIEABLE_P.
+	* config/rs6000/rs6000.md: Update comment.
+	* config/rx/rx.h (MODES_TIEABLE_P): Delete.
+	* config/rx/rx.c (rx_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/s390/s390.h (MODES_TIEABLE_P): Delete.
+	* config/s390/s390.c (s390_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/sh/sh.h (MODES_TIEABLE_P): Delete.
+	* config/sh/sh.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(sh_modes_tieable_p): New function.
+	* config/sparc/sparc.h (MODES_TIEABLE_P): Delete.
+	* config/sparc/sparc-protos.h (sparc_modes_tieable_p): Delete.
+	* config/sparc/sparc.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(sparc_modes_tieable_p): Make static.
+	* config/spu/spu.h (MODES_TIEABLE_P): Delete.
+	* config/spu/spu.c (spu_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/stormy16/stormy16.h (MODES_TIEABLE_P): Delete.
+	* config/stormy16/stormy16.c (xstormy16_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/tilegx/tilegx.h (MODES_TIEABLE_P): Delete.
+	* config/tilepro/tilepro.h (MODES_TIEABLE_P): Delete.
+	* config/v850/v850.h (MODES_TIEABLE_P): Delete.
+	* config/v850/v850.c (v850_modes_tieable_p): New function.
+	(TARGET_MODES_TIEABLE_P): Redefine.
+	* config/vax/vax.h (MODES_TIEABLE_P): Delete.
+	* config/visium/visium.h (MODES_TIEABLE_P): Delete.
+	* config/visium/visium.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(visium_modes_tieable_p): New function.
+	* config/xtensa/xtensa.h (MODES_TIEABLE_P): Delete.
+	* config/xtensa/xtensa.c (TARGET_MODES_TIEABLE_P): Redefine.
+	(xtensa_modes_tieable_p): New function.
+	* system.h (MODES_TIEABLE_P): Poison.
+
+2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (hard_regno_mode_ok): New hook.
 	* doc/tm.texi (HARD_REGNO_MODE_OK): Replace with...
 	(TARGET_HARD_REGNO_MODE_OK): ...this.

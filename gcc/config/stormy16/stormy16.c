@@ -2625,6 +2625,14 @@ xstormy16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return regno != 16 || mode == BImode;
 }
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return mode1 != BImode && mode2 != BImode;
+}
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -2704,6 +2712,8 @@ xstormy16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK xstormy16_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P xstormy16_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

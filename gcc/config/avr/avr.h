@@ -212,8 +212,6 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define HARD_REGNO_NREGS(REGNO, MODE)                                   \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
 enum reg_class {
   NO_REGS,
   R0_REG,			/* r0 */

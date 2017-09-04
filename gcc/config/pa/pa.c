@@ -199,6 +199,7 @@ static bool pa_legitimate_address_p (machine_mode, rtx, bool);
 static bool pa_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool pa_modes_tieable_p (machine_mode, machine_mode);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -407,6 +408,8 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pa_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P pa_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10012,10 +10015,7 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
   return false;
 }
 
-/* Returns TRUE if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be FALSE for correct output.
+/* Implement TARGET_MODES_TIEABLE_P.
    
    We should return FALSE for QImode and HImode because these modes
    are not ok in the floating-point registers.  However, this prevents
@@ -10024,7 +10024,7 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
    CANNOT_CHANGE_MODE_CLASS to prevent these modes from being used
    in the floating-point registers.  */
 
-bool
+static bool
 pa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* Don't tie modes in different classes.  */

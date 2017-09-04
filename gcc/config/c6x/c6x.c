@@ -6704,6 +6704,17 @@ c6x_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD || (regno & 1) == 0;
 }
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
+}
+
 
 /* Target Structure.  */
 
@@ -6872,6 +6883,8 @@ c6x_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK c6x_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P c6x_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

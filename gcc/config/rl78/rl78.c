@@ -491,6 +491,18 @@ rl78_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P rl78_modes_tieable_p
+
+static bool
+rl78_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
+}
+
 /* Simplify_gen_subreg() doesn't handle memory references the way we
    need it to below, so we use this function for when we must get a
    valid subreg in a "natural" state.  */

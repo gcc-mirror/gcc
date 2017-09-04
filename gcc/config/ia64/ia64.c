@@ -336,6 +336,7 @@ static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 					      const unsigned char *sel);
 
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool ia64_modes_tieable_p (machine_mode, machine_mode);
 
 #define MAX_VECT_LEN	8
 
@@ -657,6 +658,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK ia64_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P ia64_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4279,6 +4283,21 @@ ia64_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return mode == DImode;
 
   return false;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   Don't tie integer and FP modes, as that causes us to get integer registers
+   allocated for FP instructions.  XFmode only supported in FP registers so
+   we can't tie it with any other modes.  */
+
+static bool
+ia64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2)
+	  && ((mode1 == XFmode || mode1 == XCmode || mode1 == RFmode)
+	      == (mode2 == XFmode || mode2 == XCmode || mode2 == RFmode))
+	  && (mode1 == BImode) == (mode2 == BImode));
 }
 
 /* Target hook for assembling integer objects.  Handle word-sized

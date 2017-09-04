@@ -179,6 +179,7 @@ static bool xtensa_member_type_forces_blk (const_tree,
 
 static void xtensa_conditional_register_usage (void);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 
 
 
@@ -309,6 +310,9 @@ static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK xtensa_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P xtensa_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2263,6 +2267,17 @@ static bool
 xtensa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return xtensa_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+xtensa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 /* A C compound statement to output to stdio stream STREAM the

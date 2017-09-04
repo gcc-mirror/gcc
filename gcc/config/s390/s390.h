@@ -502,10 +502,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define HARD_REGNO_RENAME_OK(FROM, TO)          \
   s390_hard_regno_rename_ok ((FROM), (TO))
 
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-   (((MODE1) == SFmode || (MODE1) == DFmode)	\
-   == ((MODE2) == SFmode || (MODE2) == DFmode))
-
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\

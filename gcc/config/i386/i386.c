@@ -41440,11 +41440,13 @@ ix86_tieable_integer_mode_p (machine_mode mode)
     }
 }
 
-/* Return true if MODE1 is accessible in a register that can hold MODE2
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   Return true if MODE1 is accessible in a register that can hold MODE2
    without copying.  That is, all register classes that can hold MODE2
    can also hold MODE1.  */
 
-bool
+static bool
 ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (mode1 == mode2)
@@ -53262,6 +53264,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK ix86_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P ix86_modes_tieable_p
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

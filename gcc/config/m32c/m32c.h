@@ -256,7 +256,6 @@ machine_function;
 /* How Values Fit in Registers */
 
 #define HARD_REGNO_NREGS(R,M) m32c_hard_regno_nregs (R, M)
-#define MODES_TIEABLE_P(M1,M2) m32c_modes_tieable_p (M1, M2)
 #define AVOID_CCMODE_COPIES
 
 /* Register Classes */

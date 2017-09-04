@@ -773,8 +773,6 @@ extern enum cmodel sparc_cmodel;
    register window instruction in the prologue.  */
 #define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
 
-#define MODES_TIEABLE_P(MODE1, MODE2) sparc_modes_tieable_p (MODE1, MODE2)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

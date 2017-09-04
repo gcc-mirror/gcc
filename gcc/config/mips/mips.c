@@ -13017,9 +13017,9 @@ mips_mode_ok_for_mov_fmt_p (machine_mode mode)
     }
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 mips_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* FPRs allow no mode punning, so it's not worth tying modes if we'd
@@ -22588,6 +22588,9 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK mips_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mips_modes_tieable_p
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

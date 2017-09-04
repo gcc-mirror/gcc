@@ -30,6 +30,7 @@ extern bool hook_bool_bool_gcc_optionsp_false (bool, struct gcc_options *);
 extern bool hook_bool_const_int_const_int_true (const int, const int);
 extern bool hook_bool_mode_false (machine_mode);
 extern bool hook_bool_mode_true (machine_mode);
+extern bool hook_bool_mode_mode_true (machine_mode, machine_mode);
 extern bool hook_bool_mode_const_rtx_false (machine_mode, const_rtx);
 extern bool hook_bool_mode_const_rtx_true (machine_mode, const_rtx);
 extern bool hook_bool_mode_rtx_false (machine_mode, rtx);

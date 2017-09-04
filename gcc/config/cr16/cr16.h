@@ -245,9 +245,6 @@ while (0)
   (0 == COUNT)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
 		:  const0_rtx
 
-#define MODES_TIEABLE_P(MODE1, MODE2)  \
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
-
 enum reg_class
 {
   NO_REGS,

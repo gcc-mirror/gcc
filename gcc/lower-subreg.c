@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "lower-subreg.h"
 #include "rtl-iter.h"
+#include "target.h"
 
 
 /* Decompose multi-word pseudo-registers into individual
@@ -496,7 +497,7 @@ find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 	     likely to mess up whatever the backend is trying to do.  */
 	  if (outer_words > 1
 	      && outer_size == inner_size
-	      && !MODES_TIEABLE_P (GET_MODE (x), GET_MODE (inner)))
+	      && !targetm.modes_tieable_p (GET_MODE (x), GET_MODE (inner)))
 	    {
 	      bitmap_set_bit (non_decomposable_context, regno);
 	      bitmap_set_bit (subreg_context, regno);
@@ -534,7 +535,7 @@ find_decomposable_subregs (rtx *loc, enum classify_move_insn *pcmi)
 		  bitmap_set_bit (non_decomposable_context, regno);
 		  break;
 		case DECOMPOSABLE_SIMPLE_MOVE:
-		  if (MODES_TIEABLE_P (GET_MODE (x), word_mode))
+		  if (targetm.modes_tieable_p (GET_MODE (x), word_mode))
 		    bitmap_set_bit (decomposable_context, regno);
 		  break;
 		case SIMPLE_MOVE:

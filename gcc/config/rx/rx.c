@@ -3441,6 +3441,17 @@ rx_hard_regno_mode_ok (unsigned int regno, machine_mode)
 {
   return REGNO_REG_CLASS (regno) == GR_REGS;
 }
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
+}
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3597,6 +3608,9 @@ rx_hard_regno_mode_ok (unsigned int regno, machine_mode)
 
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK		rx_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P			rx_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

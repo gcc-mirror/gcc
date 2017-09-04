@@ -593,6 +593,9 @@ static void arc_finalize_pic (void);
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK arc_hard_regno_mode_ok
 
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P arc_modes_tieable_p
+
 /* Try to keep the (mov:DF _, reg) as early as possible so
    that the d<add/sub/mul>h-lr insns appear together and can
    use the peephole2 pattern.  */
@@ -1880,6 +1883,17 @@ static bool
 arc_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return (arc_hard_regno_modes[regno] & arc_mode_class[mode]) != 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  Tie QI/HI/SI modes together.  */
+
+static bool
+arc_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
 }
 
 /* Handle an "interrupt" attribute; arguments as in
