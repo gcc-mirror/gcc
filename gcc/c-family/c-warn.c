@@ -321,6 +321,59 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
   return NULL_TREE;
 }
 
+/* Subroutine of warn_tautological_cmp.  Warn about bitwise comparison
+   that always evaluate to true or false.  LOC is the location of the
+   ==/!= comparison specified by CODE; LHS and RHS are the usual operands
+   of this comparison.  */
+
+static void
+warn_tautological_bitwise_comparison (location_t loc, tree_code code,
+				      tree lhs, tree rhs)
+{
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+
+  /* Extract the operands from e.g. (x & 8) == 4.  */
+  tree bitop;
+  tree cst;
+  if ((TREE_CODE (lhs) == BIT_AND_EXPR
+       || TREE_CODE (lhs) == BIT_IOR_EXPR)
+      && TREE_CODE (rhs) == INTEGER_CST)
+    bitop = lhs, cst = rhs;
+  else if ((TREE_CODE (rhs) == BIT_AND_EXPR
+	    || TREE_CODE (rhs) == BIT_IOR_EXPR)
+	   && TREE_CODE (lhs) == INTEGER_CST)
+    bitop = rhs, cst = lhs;
+  else
+    return;
+
+  tree bitopcst;
+  if (TREE_CODE (TREE_OPERAND (bitop, 0)) == INTEGER_CST)
+    bitopcst = TREE_OPERAND (bitop, 0);
+  else if (TREE_CODE (TREE_OPERAND (bitop, 1)) == INTEGER_CST)
+    bitopcst = TREE_OPERAND (bitop, 1);
+  else
+    return;
+
+  wide_int res;
+  if (TREE_CODE (bitop) == BIT_AND_EXPR)
+    res = wi::bit_and (bitopcst, cst);
+  else
+    res = wi::bit_or (bitopcst, cst);
+
+  /* For BIT_AND only warn if (CST2 & CST1) != CST1, and
+     for BIT_OR only if (CST2 | CST1) != CST1.  */
+  if (res == cst)
+    return;
+
+  if (code == EQ_EXPR)
+    warning_at (loc, OPT_Wtautological_compare,
+		"bitwise comparison always evaluates to false");
+  else
+    warning_at (loc, OPT_Wtautological_compare,
+		"bitwise comparison always evaluates to true");
+}
+
 /* Warn if a self-comparison always evaluates to true or false.  LOC
    is the location of the comparison with code CODE, LHS and RHS are
    operands of the comparison.  */
@@ -336,6 +389,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
       || from_macro_expansion_at (EXPR_LOCATION (lhs))
       || from_macro_expansion_at (EXPR_LOCATION (rhs)))
     return;
+
+  warn_tautological_bitwise_comparison (loc, code, lhs, rhs);
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */

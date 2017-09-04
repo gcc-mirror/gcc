@@ -5492,6 +5492,14 @@ int i = 1;
 @dots{}
 if (i > i) @{ @dots{} @}
 @end smallexample
+
+This warning also warns about bitwise comparisons that always evaluate
+to true or false, for instance:
+@smallexample
+if ((a & 16) == 10) @{ @dots{} @}
+@end smallexample
+will always be false.
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wtrampolines

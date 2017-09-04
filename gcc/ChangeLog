@@ -1,3 +1,8 @@
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* doc/invoke.texi: Update -Wtautological-compare documentation.
+
 2017-09-04  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64910
