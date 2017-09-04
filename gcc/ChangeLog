@@ -1,3 +1,9 @@
+2017-09-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* tree-ssa-reassoc.c (reassociate_bb): For bitwise binary ops,
+	swap the first and last operand if the last is a constant.
+
 2017-09-04  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/82072

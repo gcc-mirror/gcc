@@ -5762,6 +5762,18 @@ reassociate_bb (basic_block bb)
 		    fprintf (dump_file,
 			     "Width = %d was chosen for reassociation\n", width);
 
+
+		  /* For binary bit operations, if the last operand in
+		     OPS is a constant, move it to the front.  This
+		     helps ensure that we generate (X & Y) & C rather
+		     than (X & C) & Y.  The former will often match
+		     a canonical bit test when we get to RTL.  */
+		  if ((rhs_code == BIT_AND_EXPR
+		       || rhs_code == BIT_IOR_EXPR
+		       || rhs_code == BIT_XOR_EXPR)
+		      && TREE_CODE (ops.last ()->op) == INTEGER_CST)
+		    std::swap (*ops[0], *ops[ops_num - 1]);
+
 		  if (width > 1
 		      && ops.length () > 3)
 		    rewrite_expr_tree_parallel (as_a <gassign *> (stmt),

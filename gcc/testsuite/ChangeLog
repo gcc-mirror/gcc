@@ -1,3 +1,8 @@
+2017-09-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* gcc.dg/tree-ssa/pr64910-2.c: New test.
+
 2017-09-04  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/82072
