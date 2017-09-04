@@ -2529,7 +2529,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       int
       compare(size_type __pos, size_type __n1, const _CharT* __s,
 	      size_type __n2) const;
-  };
+
+      // Allow basic_stringbuf::__xfer_bufptrs to call _M_length:
+      template<typename, typename, typename> friend class basic_stringbuf;
+    };
 _GLIBCXX_END_NAMESPACE_CXX11
 #else  // !_GLIBCXX_USE_CXX11_ABI
   // Reference-counted COW string implentation
