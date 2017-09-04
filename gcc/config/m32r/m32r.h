@@ -396,21 +396,6 @@
 #define HARD_REGNO_NREGS(REGNO, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
-   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
-   then `MODES_TIEABLE_P (MODE1, MODE2)' must be zero.  */
-
-/* Tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 		\
-  (   GET_MODE_CLASS (MODE1) == MODE_INT	\
-   && GET_MODE_CLASS (MODE2) == MODE_INT	\
-   && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
-   && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
-
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m32r_hard_regno_rename_ok (OLD_REG, NEW_REG)
 

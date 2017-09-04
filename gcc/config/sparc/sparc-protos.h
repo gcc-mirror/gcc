@@ -111,7 +111,6 @@ extern void sparc_expand_vec_perm_bmask(machine_mode, rtx);
 extern bool sparc_expand_conditional_move (machine_mode, rtx *);
 extern void sparc_expand_vcond (machine_mode, rtx *, int, int);
 unsigned int sparc_regmode_natural_size (machine_mode);
-bool sparc_modes_tieable_p (machine_mode, machine_mode);
 #endif /* RTX_CODE */
 
 extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);

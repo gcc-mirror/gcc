@@ -178,10 +178,6 @@ enum reg_class
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)             \
    / UNITS_PER_WORD)
 
-/* A C expression that is nonzero if a value of mode MODE1 is
-   accessible in mode MODE2 without copying.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
 /* The Overall Framework of an Assembler File */
 
 #undef  ASM_SPEC

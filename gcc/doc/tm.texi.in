@@ -1871,21 +1871,7 @@ handler.
 The default is always nonzero.
 @end defmac
 
-@defmac MODES_TIEABLE_P (@var{mode1}, @var{mode2})
-A C expression that is nonzero if a value of mode
-@var{mode1} is accessible in mode @var{mode2} without copying.
-
-If @code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
-@code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always the same
-for any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
-should be nonzero.  If they differ for any @var{r}, you should define
-this macro to return zero unless some other mechanism ensures the
-accessibility of the value in a narrower mode.
-
-You should define this macro to return nonzero in as many cases as
-possible since doing so will allow GCC to perform better register
-allocation.
-@end defmac
+@hook TARGET_MODES_TIEABLE_P
 
 @hook TARGET_HARD_REGNO_SCRATCH_OK
 
@@ -7610,8 +7596,8 @@ On many machines, this expression can be 1.
 
 @c rearranged this, removed the phrase "it is reported that".  this was
 @c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for
-modes for which @code{MODES_TIEABLE_P} is 0, suboptimal code can result.
+When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
+for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
 If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
 such cases may improve things.
 @end defmac

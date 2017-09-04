@@ -450,21 +450,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
   && REGNO >= ARC_FIRST_SIMD_VR_REG && REGNO <= ARC_LAST_SIMD_VR_REG) ? 1 \
  : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
-   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
-   then `TARGET_MODES_TIEABLE_P (MODE1, MODE2)' must be zero.  */
-
-/* Tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-(GET_MODE_CLASS (MODE1) == MODE_INT		\
- && GET_MODE_CLASS (MODE2) == MODE_INT		\
- && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
- && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
-
 /* Internal macros to classify a register number as to whether it's a
    general purpose register for compact insns (r0-r3,r12-r15), or
    stack pointer (r28).  */

@@ -676,6 +676,7 @@ static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static unsigned int sparc_min_arithmetic_precision (void);
 static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
@@ -903,6 +904,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK sparc_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P sparc_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13139,15 +13143,12 @@ sparc_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return (hard_regno_mode_classes[regno] & sparc_mode_class[mode]) != 0;
 }
 
-/* Return TRUE if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be FALSE for correct output.
+/* Implement TARGET_MODES_TIEABLE_P.
 
    For V9 we have to deal with the fact that only the lower 32 floating
    point registers are 32-bit addressable.  */
 
-bool
+static bool
 sparc_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   enum mode_class mclass1, mclass2;

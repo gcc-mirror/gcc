@@ -4181,12 +4181,12 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       total = 0;
       /* If we can't tie these modes, make this expensive.  The larger
 	 the mode, the more expensive it is.  */
-      if (! MODES_TIEABLE_P (mode, GET_MODE (SUBREG_REG (x))))
+      if (!targetm.modes_tieable_p (mode, GET_MODE (SUBREG_REG (x))))
 	return COSTS_N_INSNS (2 + factor);
       break;
 
     case TRUNCATE:
-      if (MODES_TIEABLE_P (mode, GET_MODE (XEXP (x, 0))))
+      if (targetm.modes_tieable_p (mode, GET_MODE (XEXP (x, 0))))
 	{
 	  total = 0;
 	  break;

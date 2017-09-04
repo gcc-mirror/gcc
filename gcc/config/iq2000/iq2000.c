@@ -178,6 +178,7 @@ static void iq2000_print_operand      (FILE *, rtx, int);
 static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -257,6 +258,8 @@ static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
 
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK	iq2000_hard_regno_mode_ok
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		iq2000_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3497,6 +3500,17 @@ iq2000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return (REGNO_REG_CLASS (regno) == GR_REGS
 	  ? (regno & 1) == 0 || GET_MODE_SIZE (mode) <= 4
 	  : (regno & 1) == 0 || GET_MODE_SIZE (mode) == 4);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+iq2000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 #include "gt-iq2000.h"

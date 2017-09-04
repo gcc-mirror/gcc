@@ -1966,6 +1966,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK rs6000_hard_regno_mode_ok
 
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P rs6000_modes_tieable_p
+
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   rs6000_hard_regno_call_part_clobbered
@@ -2137,6 +2140,46 @@ static bool
 rs6000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return rs6000_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   PTImode cannot tie with other modes because PTImode is restricted to even
+   GPR registers, and TImode can go in any GPR as well as VSX registers (PR
+   57744).
+
+   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
+   128-bit floating point on VSX systems ties with other vectors.  */
+
+static bool
+rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  if (mode1 == PTImode)
+    return mode2 == PTImode;
+  if (mode2 == PTImode)
+    return false;
+
+  if (ALTIVEC_OR_VSX_VECTOR_MODE (mode1))
+    return ALTIVEC_OR_VSX_VECTOR_MODE (mode2);
+  if (ALTIVEC_OR_VSX_VECTOR_MODE (mode2))
+    return false;
+
+  if (SCALAR_FLOAT_MODE_P (mode1))
+    return SCALAR_FLOAT_MODE_P (mode2);
+  if (SCALAR_FLOAT_MODE_P (mode2))
+    return false;
+
+  if (GET_MODE_CLASS (mode1) == MODE_CC)
+    return GET_MODE_CLASS (mode2) == MODE_CC;
+  if (GET_MODE_CLASS (mode2) == MODE_CC)
+    return false;
+
+  if (PAIRED_VECTOR_MODE (mode1))
+    return PAIRED_VECTOR_MODE (mode2);
+  if (PAIRED_VECTOR_MODE (mode2))
+    return false;
+
+  return true;
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
@@ -2610,7 +2653,7 @@ rs6000_debug_reg_global (void)
       for (m2 = 0; m2 < ARRAY_SIZE (print_tieable_modes); m2++)
 	{
 	  machine_mode mode2 = print_tieable_modes[m2];
-	  if (mode1 != mode2 && MODES_TIEABLE_P (mode1, mode2))
+	  if (mode1 != mode2 && rs6000_modes_tieable_p (mode1, mode2))
 	    {
 	      if (first_time)
 		{

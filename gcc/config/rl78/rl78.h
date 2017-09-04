@@ -409,12 +409,6 @@ typedef unsigned int CUMULATIVE_ARGS;
 
 #define HARD_REGNO_NREGS(REGNO, MODE)            \
   rl78_hard_regno_nregs (REGNO, MODE)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)				\
-  (   (   GET_MODE_CLASS (MODE1) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)		\
-   == (   GET_MODE_CLASS (MODE2) == MODE_FLOAT			\
-       || GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
 
 
 #define TEXT_SECTION_ASM_OP ".text"

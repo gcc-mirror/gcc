@@ -823,18 +823,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
     ? ((GET_MODE_SIZE (MODE) + (2*UNITS_PER_WORD - 1)) / (2*UNITS_PER_WORD)) \
     : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be 0 for correct output.
-   That's the case for xd registers: we don't hold SFmode values in
-   them, so we can't tie an SFmode pseudos with one in another
-   floating-point mode.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((MODE1) == (MODE2) \
-   || (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2) \
-       && (((MODE1) != SFmode && (MODE2) != SFmode))))
-
 /* Specify the modes required to caller save a given hard regno.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)	\
   sh_hard_regno_caller_save_mode ((REGNO), (NREGS), (MODE))

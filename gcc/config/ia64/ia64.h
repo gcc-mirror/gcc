@@ -614,22 +614,6 @@ while (0)
    : FR_REGNO_P (REGNO) && (MODE) == XCmode ? 2				\
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
-   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
-   then `MODES_TIEABLE_P (MODE1, MODE2)' must be zero.  */
-/* Don't tie integer and FP modes, as that causes us to get integer registers
-   allocated for FP instructions.  XFmode only supported in FP registers so
-   we can't tie it with any other modes.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)	\
-   && ((((MODE1) == XFmode) || ((MODE1) == XCmode) || ((MODE1) == RFmode))	\
-       == (((MODE2) == XFmode) || ((MODE2) == XCmode) || ((MODE2) == RFmode)))	\
-   && (((MODE1) == BImode) == ((MODE2) == BImode)))
-
 /* Specify the modes required to caller save a given hard regno.
    We need to ensure floating pt regs are not saved as DImode.  */
 

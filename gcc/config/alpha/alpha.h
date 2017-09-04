@@ -385,17 +385,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)
 
-/* A C expression that is nonzero if a value of mode
-   MODE1 is accessible in mode MODE2 without copying.
-
-   This asymmetric test is true when MODE1 could be put
-   in an FP register but MODE2 could not.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) 				\
-  (targetm.hard_regno_mode_ok (32, (MODE1))			\
-   ? targetm.hard_regno_mode_ok (32, (MODE2))			\
-   : 1)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

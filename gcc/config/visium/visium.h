@@ -573,25 +573,6 @@
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   visium_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-/* `MODES_TIEABLE_P (MODE1, MODE2)'
-
-   A C expression that is nonzero if a value of mode MODE1 is
-   accessible in mode MODE2 without copying.
-
-   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
-   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are always the same for any R,
-   then `MODES_TIEABLE_P (MODE1, MODE2)' should be nonzero.  If they
-   differ for any R, you should define this macro to return zero unless
-   some other mechanism ensures the accessibility of the value in a
-   narrower mode.
-
-   You should define this macro to return nonzero in as many cases as
-   possible since doing so will allow GNU CC to perform better
-   register allocation. */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((GET_MODE_CLASS (MODE1) == MODE_INT) \
-  && (GET_MODE_CLASS (MODE2) == MODE_INT))
-
 /* Register Classes
 
    On many machines, the numbered registers are not all equivalent.
@@ -1271,7 +1252,7 @@ do									\
    On many machines, this expression can be 1.
 
    When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
-   modes for which `MODES_TIEABLE_P' is 0, suboptimal code can result.
+   modes for which `TARGET_MODES_TIEABLE_P' is 0, suboptimal code can result.
    If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
    such cases may improve things. */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1

@@ -103,6 +103,7 @@ static void m32r_trampoline_init (rtx, tree, rtx);
 static bool m32r_legitimate_constant_p (machine_mode, rtx);
 static bool m32r_attribute_identifier (const_tree);
 static bool m32r_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool m32r_modes_tieable_p (machine_mode, machine_mode);
 
 /* M32R specific attributes.  */
 
@@ -212,6 +213,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK m32r_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m32r_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -2757,6 +2761,17 @@ static bool
 m32r_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   return (m32r_hard_regno_modes[regno] & m32r_mode_class[mode]) != 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  Tie QI/HI/SI modes together.  */
+
+static bool
+m32r_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
 }
 
 /* Return true if using NEW_REG in place of OLD_REG is ok.  */

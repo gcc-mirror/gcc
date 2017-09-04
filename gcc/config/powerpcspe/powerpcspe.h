@@ -1330,40 +1330,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
-   and MODE2, for any hard reg, then this must be 0 for correct output.
-
-   PTImode cannot tie with other modes because PTImode is restricted to even
-   GPR registers, and TImode can go in any GPR as well as VSX registers (PR
-   57744).
-
-   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
-   128-bit floating point on VSX systems ties with other vectors.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-  ((MODE1) == PTImode				\
-   ? (MODE2) == PTImode				\
-   : (MODE2) == PTImode				\
-   ? 0						\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
-   ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   ? 0						\
-   : SCALAR_FLOAT_MODE_P (MODE1)		\
-   ? SCALAR_FLOAT_MODE_P (MODE2)		\
-   : SCALAR_FLOAT_MODE_P (MODE2)		\
-   ? 0						\
-   : GET_MODE_CLASS (MODE1) == MODE_CC		\
-   ? GET_MODE_CLASS (MODE2) == MODE_CC		\
-   : GET_MODE_CLASS (MODE2) == MODE_CC		\
-   ? 0						\
-   : SPE_VECTOR_MODE (MODE1)			\
-   ? SPE_VECTOR_MODE (MODE2)			\
-   : SPE_VECTOR_MODE (MODE2)			\
-   ? 0						\
-   : 1)
-
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
 

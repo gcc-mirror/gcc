@@ -9907,6 +9907,17 @@ alpha_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	    || mode == DCmode);
   return true;
 }
+
+/* Implement TARGET_MODES_TIEABLE_P.  This asymmetric test is true when
+   MODE1 could be put in an FP register but MODE2 could not.  */
+
+static bool
+alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (alpha_hard_regno_mode_ok (32, mode1)
+	  ? alpha_hard_regno_mode_ok (32, mode2)
+	  : true);
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10103,6 +10114,9 @@ alpha_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK alpha_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P alpha_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

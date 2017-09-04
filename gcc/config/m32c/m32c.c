@@ -583,11 +583,11 @@ m32c_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return m32c_hard_regno_nregs_1 (regno, mode) != 0;
 }
 
-/* Implements MODES_TIEABLE_P.  In general, modes aren't tieable since
+/* Implement TARGET_MODES_TIEABLE_P.  In general, modes aren't tieable since
    registers are all different sizes.  However, since most modes are
    bigger than our registers anyway, it's easier to implement this
    function that way, leaving QImode as the only unique case.  */
-int
+static bool
 m32c_modes_tieable_p (machine_mode m1, machine_mode m2)
 {
   if (GET_MODE_SIZE (m1) == GET_MODE_SIZE (m2))
@@ -4491,6 +4491,8 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK m32c_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m32c_modes_tieable_p
 
 /* The Global `targetm' Variable. */
 

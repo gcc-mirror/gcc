@@ -2146,6 +2146,21 @@ bfin_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return TEST_HARD_REG_BIT (reg_class_contents[MOST_REGS], regno);
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+bfin_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || ((GET_MODE_CLASS (mode1) == MODE_INT
+	       || GET_MODE_CLASS (mode1) == MODE_FLOAT)
+	      && (GET_MODE_CLASS (mode2) == MODE_INT
+		  || GET_MODE_CLASS (mode2) == MODE_FLOAT)
+	      && mode1 != BImode && mode2 != BImode
+	      && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
+}
+
 /* Implements target hook vector_mode_supported_p.  */
 
 static bool
@@ -5849,5 +5864,8 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK bfin_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P bfin_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

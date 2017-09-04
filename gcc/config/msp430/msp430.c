@@ -943,8 +943,10 @@ msp430_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 		   - (unsigned int) msp430_hard_regno_nregs (regno, mode));
 }
 
-/* Implements MODES_TIEABLE_P.  */
-bool
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P msp430_modes_tieable_p
+
+static bool
 msp430_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if ((mode1 == PSImode || mode2 == SImode)

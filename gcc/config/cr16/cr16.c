@@ -222,6 +222,8 @@ static const struct attribute_spec cr16_attribute_table[] = {
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK	cr16_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		cr16_modes_tieable_p
 
 /* Target hook implementations.  */
 
@@ -491,6 +493,13 @@ cr16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (GET_MODE_CLASS (mode) == MODE_CC)
     return false;
   return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+static bool
+cr16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2);
 }
 
 /* Returns register number for function return value.*/

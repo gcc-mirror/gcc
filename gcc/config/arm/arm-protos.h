@@ -61,7 +61,6 @@ extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
 extern bool arm_small_register_classes_for_mode_p (machine_mode);
-extern bool arm_modes_tieable_p (machine_mode, machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);

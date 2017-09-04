@@ -7138,6 +7138,14 @@ spu_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     emit_move_insn (orig_after, after);
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+spu_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
+	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7359,6 +7367,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P spu_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

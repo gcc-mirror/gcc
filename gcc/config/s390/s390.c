@@ -10453,6 +10453,15 @@ s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+s390_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((mode1 == SFmode || mode1 == DFmode)
+	  == (mode2 == SFmode || mode2 == DFmode));
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 bool
@@ -15965,6 +15974,8 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK s390_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P s390_modes_tieable_p
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

@@ -55,7 +55,6 @@ bool m32c_immd_dbl_mov (rtx *, machine_mode);
 rtx  m32c_incoming_return_addr_rtx (void);
 int  m32c_legitimize_reload_address (rtx *, machine_mode, int, int, int);
 int  m32c_limit_reload_class (machine_mode, int);
-int  m32c_modes_tieable_p (machine_mode, machine_mode);
 bool m32c_mov_ok (rtx *, machine_mode);
 char * m32c_output_compare (rtx_insn *, rtx *);
 int  m32c_prepare_move (rtx *, machine_mode);

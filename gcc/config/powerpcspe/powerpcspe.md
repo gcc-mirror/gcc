@@ -4834,9 +4834,9 @@
  [(set_attr "length" "8,8,4")
   (set_attr "type" "mftgpr,load,integer")])
 
-;; MODES_TIEABLE_P doesn't allow DImode to be tied with the various floating
-;; point types, which makes normal SUBREG's problematical. Instead use a
-;; special pattern to avoid using a normal movdi.
+;; TARGET_MODES_TIEABLE_P doesn't allow DImode to be tied with the various
+;; floating point types, which makes normal SUBREG's problematical.  Instead
+;; use a special pattern to avoid using a normal movdi.
 (define_insn "signbit<mode>2_dm2"
   [(set (match_operand:DI 0 "gpc_reg_operand" "=r")
 	(unspec:DI [(match_operand:SIGNBIT 1 "gpc_reg_operand" "wa")

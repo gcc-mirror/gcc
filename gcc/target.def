@@ -5406,8 +5406,8 @@ all narrower integer modes, it is not necessary on any machine for\n\
 this hook to distinguish between these modes, provided you define\n\
 patterns @samp{movhi}, etc., to take advantage of this.  This is\n\
 useful because of the interaction between @code{TARGET_HARD_REGNO_MODE_OK}\n\
-and @code{MODES_TIEABLE_P}; it is very desirable for all integer modes\n\
-to be tieable.\n\
+and @code{TARGET_MODES_TIEABLE_P}; it is very desirable for all integer\n\
+modes to be tieable.\n\
 \n\
 Many machines have special registers for floating point arithmetic.\n\
 Often people assume that floating point machine modes are allowed only\n\
@@ -5439,6 +5439,25 @@ floating registers are not in class @code{GENERAL_REGS}, they will not\n\
 be used unless some pattern's constraint asks for one.",
  bool, (unsigned int regno, machine_mode mode),
  hook_bool_uint_mode_true)
+
+DEFHOOK
+(modes_tieable_p,
+ "This hook returns true if a value of mode @var{mode1} is accessible\n\
+in mode @var{mode2} without copying.\n\
+\n\
+If @code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and\n\
+@code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always\n\
+the same for any @var{r}, then\n\
+@code{TARGET_MODES_TIEABLE_P (@var{mode1}, @var{mode2})}\n\
+should be true.  If they differ for any @var{r}, you should define\n\
+this hook to return false unless some other mechanism ensures the\n\
+accessibility of the value in a narrower mode.\n\
+\n\
+You should define this hook to return true in as many cases as\n\
+possible since doing so will allow GCC to perform better register\n\
+allocation.  The default definition returns true unconditionally.",
+ bool, (machine_mode mode1, machine_mode mode2),
+ hook_bool_mode_mode_true)
 
 /* Return true if is OK to use a hard register REGNO as scratch register
    in peephole2.  */

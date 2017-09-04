@@ -314,6 +314,7 @@ static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
 static opt_scalar_float_mode arm_floatn_mode (int, bool);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool arm_modes_tieable_p (machine_mode, machine_mode);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -783,6 +784,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK arm_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P arm_modes_tieable_p
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -23427,9 +23431,9 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))

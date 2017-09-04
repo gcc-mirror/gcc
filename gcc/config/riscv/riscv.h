@@ -296,13 +296,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HARD_REGNO_NREGS(REGNO, MODE) riscv_hard_regno_nregs (REGNO, MODE)
 
-/* Don't allow floating-point modes to be tied, since type punning of
-   single-precision and double-precision is implementation defined.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  ((MODE1) == (MODE2)					\
-   || !(GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
-	&& GET_MODE_CLASS (MODE2) == MODE_FLOAT))
-
 /* Use s0 as the frame pointer if it is so requested.  */
 #define HARD_FRAME_POINTER_REGNUM 8
 #define STACK_POINTER_REGNUM 2

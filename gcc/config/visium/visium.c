@@ -230,6 +230,8 @@ static unsigned int visium_reorg (void);
 
 static bool visium_hard_regno_mode_ok (unsigned int, machine_mode);
 
+static bool visium_modes_tieable_p (machine_mode, machine_mode);
+
 /* Setup the global target hooks structure.  */
 
 #undef  TARGET_MAX_ANCHOR_OFFSET
@@ -343,6 +345,9 @@ static bool visium_hard_regno_mode_ok (unsigned int, machine_mode);
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK visium_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P visium_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -859,6 +864,15 @@ visium_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 
   return (GET_MODE_CLASS (mode) == MODE_INT
 	  && HARD_REGNO_NREGS (regno, mode) == 1);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+visium_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT);
 }
 
 /* Return true if it is ok to do sibling call optimization for the specified

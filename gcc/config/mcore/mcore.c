@@ -145,6 +145,7 @@ static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
 static bool	  mcore_legitimate_address_p	(machine_mode, rtx, bool,
 						 addr_space_t);
 static bool	  mcore_hard_regno_mode_ok	(unsigned int, machine_mode);
+static bool	  mcore_modes_tieable_p		(machine_mode, machine_mode);
 
 /* MCore specific attributes.  */
 
@@ -243,6 +244,9 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK mcore_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mcore_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3274,4 +3278,12 @@ mcore_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     return (regno & 1) == 0;
 
   return regno < 18;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+mcore_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return mode1 == mode2 || GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2);
 }
