@@ -2011,7 +2011,7 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 
       if (REG_P (src)
 	  && ((REGNO (dest) < FIRST_PSEUDO_REGISTER
-	       && ! HARD_REGNO_MODE_OK (REGNO (dest), GET_MODE (dest)))
+	       && !targetm.hard_regno_mode_ok (REGNO (dest), GET_MODE (dest)))
 	      /* Don't extend the life of a hard register unless it is
 		 user variable (if we have few registers) or it can't
 		 fit into the desired register (meaning something special
@@ -2020,7 +2020,8 @@ can_combine_p (rtx_insn *insn, rtx_insn *i3, rtx_insn *pred ATTRIBUTE_UNUSED,
 		 reload can't handle a conflict with constraints of other
 		 inputs.  */
 	      || (REGNO (src) < FIRST_PSEUDO_REGISTER
-		  && ! HARD_REGNO_MODE_OK (REGNO (src), GET_MODE (src)))))
+		  && !targetm.hard_regno_mode_ok (REGNO (src),
+						  GET_MODE (src)))))
 	return 0;
     }
   else if (GET_CODE (dest) != CC0)
@@ -2210,8 +2211,8 @@ combinable_i3pat (rtx_insn *i3, rtx *loc, rtx i2dest, rtx i1dest, rtx i0dest,
 
 	  || (REG_P (inner_dest)
 	      && REGNO (inner_dest) < FIRST_PSEUDO_REGISTER
-	      && (! HARD_REGNO_MODE_OK (REGNO (inner_dest),
-					GET_MODE (inner_dest))))
+	      && !targetm.hard_regno_mode_ok (REGNO (inner_dest),
+					      GET_MODE (inner_dest)))
 	  || (i1_not_in_src && reg_overlap_mentioned_p (i1dest, src))
 	  || (i0_not_in_src && reg_overlap_mentioned_p (i0dest, src)))
 	return 0;
@@ -2454,7 +2455,7 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
   /* Allow hard registers if the new mode is legal, and occupies no more
      registers than the old mode.  */
   if (regno < FIRST_PSEUDO_REGISTER)
-    return (HARD_REGNO_MODE_OK (regno, mode)
+    return (targetm.hard_regno_mode_ok (regno, mode)
 	    && REG_NREGS (x) >= hard_regno_nregs[regno][mode]);
 
   /* Or a pseudo that is only used once.  */

@@ -3519,10 +3519,10 @@ riscv_register_move_cost (machine_mode mode,
   return SECONDARY_MEMORY_NEEDED (from, to, mode) ? 8 : 2;
 }
 
-/* Return true if register REGNO can store a value of mode MODE.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
-riscv_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
+static bool
+riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   unsigned int nregs = riscv_hard_regno_nregs (regno, mode);
 
@@ -4082,6 +4082,9 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN riscv_expand_builtin
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK riscv_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -5889,10 +5889,10 @@ h8300_hard_regno_nregs (int regno ATTRIBUTE_UNUSED, machine_mode mode)
   return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
-/* Worker function for HARD_REGNO_MODE_OK.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-int
-h8300_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+h8300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (TARGET_H8300)
     /* If an even reg, then anything goes.  Otherwise the mode must be
@@ -6100,6 +6100,9 @@ h8300_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK h8300_hard_regno_scratch_ok
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK h8300_hard_regno_mode_ok
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false

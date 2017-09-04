@@ -9891,6 +9891,22 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 		    build2 (COMPOUND_EXPR, void_type_node,
 			    reload_fenv, restore_fnenv), update_call);
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On Alpha, the integer registers
+   can hold any mode.  The floating-point registers can hold 64-bit
+   integers as well, but not smaller values.  */
+
+static bool
+alpha_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (IN_RANGE (regno, 32, 62))
+    return (mode == SFmode
+	    || mode == DFmode
+	    || mode == DImode
+	    || mode == SCmode
+	    || mode == DCmode);
+  return true;
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10084,6 +10100,9 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV alpha_atomic_assign_expand_fenv
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK alpha_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

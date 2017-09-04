@@ -3186,7 +3186,7 @@ init_alias_target (void)
        argument.  FUNCTION_ARG_REGNO_P tests outgoing register
        numbers, so translate if necessary due to register windows.  */
     if (FUNCTION_ARG_REGNO_P (OUTGOING_REGNO (i))
-	&& HARD_REGNO_MODE_OK (i, Pmode))
+	&& targetm.hard_regno_mode_ok (i, Pmode))
       static_reg_base_value[i] = arg_base_value;
 
   static_reg_base_value[STACK_POINTER_REGNUM]

@@ -1076,7 +1076,7 @@ init_regs_for_mode (machine_mode mode)
 
       /* See whether it accepts all modes that occur in
          original insns.  */
-      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
+      if (!targetm.hard_regno_mode_ok (cur_reg, mode))
         continue;
 
       nregs = hard_regno_nregs[cur_reg][mode];

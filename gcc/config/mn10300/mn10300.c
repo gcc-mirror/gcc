@@ -2626,7 +2626,9 @@ mn10300_can_output_mi_thunk (const_tree    thunk_fndecl ATTRIBUTE_UNUSED,
   return true;
 }
 
-bool
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
 mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (REGNO_REG_CLASS (regno) == FP_REGS
@@ -3424,5 +3426,8 @@ mn10300_reorg (void)
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM  CC_REG
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mn10300_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;

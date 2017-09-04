@@ -144,6 +144,7 @@ static void       mcore_option_override		(void);
 static bool       mcore_legitimate_constant_p   (machine_mode, rtx);
 static bool	  mcore_legitimate_address_p	(machine_mode, rtx, bool,
 						 addr_space_t);
+static bool	  mcore_hard_regno_mode_ok	(unsigned int, machine_mode);
 
 /* MCore specific attributes.  */
 
@@ -239,6 +240,9 @@ static const struct attribute_spec mcore_attribute_table[] =
 
 #undef TARGET_WARN_FUNC_RETURN
 #define TARGET_WARN_FUNC_RETURN mcore_warn_func_return
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mcore_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3260,3 +3264,14 @@ mcore_legitimate_address_p (machine_mode mode, rtx x, bool strict_p,
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  We may keep double values in
+   even registers.  */
+
+static bool
+mcore_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_8ALIGN && GET_MODE_SIZE (mode) > UNITS_PER_WORD)
+    return (regno & 1) == 0;
+
+  return regno < 18;
+}

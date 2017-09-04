@@ -335,6 +335,8 @@ static section * ia64_hpux_function_section (tree, enum node_frequency,
 static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 					      const unsigned char *sel);
 
+static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
+
 #define MAX_VECT_LEN	8
 
 struct expand_vec_perm_d
@@ -652,6 +654,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 0
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK ia64_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4249,6 +4254,31 @@ ia64_hard_regno_rename_ok (int from, int to)
     return (from & 1) == (to & 1);
 
   return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+ia64_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (FR_REGNO_P (regno))
+    return (GET_MODE_CLASS (mode) != MODE_CC
+	    && mode != BImode
+	    && mode != TFmode);
+
+  if (PR_REGNO_P (regno))
+    return mode == BImode || GET_MODE_CLASS (mode) == MODE_CC;
+
+  if (GR_REGNO_P (regno))
+    return mode != XFmode && mode != XCmode && mode != RFmode;
+
+  if (AR_REGNO_P (regno))
+    return mode == DImode;
+
+  if (BR_REGNO_P (regno))
+    return mode == DImode;
+
+  return false;
 }
 
 /* Target hook for assembling integer objects.  Handle word-sized

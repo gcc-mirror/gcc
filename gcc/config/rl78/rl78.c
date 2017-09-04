@@ -459,34 +459,36 @@ rl78_hard_regno_nregs (int regno, machine_mode mode)
   return ((GET_MODE_SIZE (mode) + rs - 1) / rs);
 }
 
-/* Implements HARD_REGNO_MODE_OK.  */
-int
-rl78_hard_regno_mode_ok (int regno, machine_mode mode)
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK rl78_hard_regno_mode_ok
+
+static bool
+rl78_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   int s = GET_MODE_SIZE (mode);
 
   if (s < 1)
-    return 0;
+    return false;
   /* These are not to be used by gcc.  */
   if (regno == 23 || regno == ES_REG || regno == CS_REG)
-    return 0;
+    return false;
   /* $fp can always be accessed as a 16-bit value.  */
   if (regno == FP_REG && s == 2)
-    return 1;
+    return true;
   if (regno < SP_REG)
     {
       /* Since a reg-reg move is really a reg-mem move, we must
 	 enforce alignment.  */
       if (s > 1 && (regno % 2))
-	return 0;
-      return 1;
+	return false;
+      return true;
     }
   if (s == CC_REGNUM)
     return (mode == BImode);
   /* All other registers must be accessed in their natural sizes.  */
   if (s == register_sizes [regno])
-    return 1;
-  return 0;
+    return true;
+  return false;
 }
 
 /* Simplify_gen_subreg() doesn't handle memory references the way we

@@ -47,7 +47,6 @@ extern bool s390_can_use_simple_return_insn (void);
 extern bool s390_can_use_return_insn (void);
 extern void s390_function_profiler (FILE *, int);
 extern void s390_set_has_landing_pad_p (bool);
-extern bool s390_hard_regno_mode_ok (unsigned int, machine_mode);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
 extern int s390_cannot_change_mode_class (machine_mode, machine_mode,

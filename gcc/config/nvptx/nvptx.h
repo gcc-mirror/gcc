@@ -99,8 +99,6 @@
   ((void)(REG), (void)(MODE), 1)
 #define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS)	\
   ((void)(M1), (void)(M2), (void)(CLS), true)
-#define HARD_REGNO_MODE_OK(REG, MODE)		\
-     ((void)(REG), (void)(MODE), true)
 
 /* Register Classes.  */
 enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };

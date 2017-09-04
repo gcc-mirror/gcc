@@ -1961,9 +1961,6 @@ FP_ASM_SPEC "\
 
 #define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  mips_hard_regno_mode_ok[ (int)(MODE) ][ (REGNO) ]
-
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG)				\
   mips_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
@@ -3214,7 +3211,6 @@ struct mips_asm_switch {
 };
 
 extern const enum reg_class mips_regno_to_class[];
-extern bool mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern struct mips_asm_switch mips_noreorder;

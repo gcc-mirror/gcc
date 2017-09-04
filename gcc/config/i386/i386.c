@@ -41296,11 +41296,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
   return 2;
 }
 
-/* Return TRUE if hard register REGNO can hold a value of machine-mode
-   MODE.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
-ix86_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Flags and only flags can only hold CCmode values.  */
   if (CC_REGNO_P (regno))
@@ -53260,6 +53259,9 @@ ix86_run_selftests (void)
 
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P ix86_noce_conversion_profitable_p
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK ix86_hard_regno_mode_ok
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

@@ -148,7 +148,7 @@ init_expr_target (void)
 	     && (direct_load[(int) mode] == 0 || direct_store[(int) mode] == 0);
 	     regno++)
 	  {
-	    if (! HARD_REGNO_MODE_OK (regno, mode))
+	    if (!targetm.hard_regno_mode_ok (regno, mode))
 	      continue;
 
 	    set_mode_and_regno (reg, mode, regno);
@@ -541,7 +541,7 @@ convert_mode_scalar (rtx to, rtx from, int unsignedp)
 	    || GET_CODE (from) == SUBREG))
 	from = force_reg (from_mode, from);
       if (REG_P (from) && REGNO (from) < FIRST_PSEUDO_REGISTER
-	  && ! HARD_REGNO_MODE_OK (REGNO (from), to_mode))
+	  && !targetm.hard_regno_mode_ok (REGNO (from), to_mode))
 	from = copy_to_reg (from);
       emit_move_insn (to, gen_lowpart (to_mode, from));
       return;
@@ -694,7 +694,7 @@ convert_modes (machine_mode mode, machine_mode oldmode, rtx x, int unsignedp)
       && ((MEM_P (x) && !MEM_VOLATILE_P (x) && direct_load[(int) int_mode])
           || (REG_P (x)
               && (!HARD_REGISTER_P (x)
-                  || HARD_REGNO_MODE_OK (REGNO (x), int_mode))
+		  || targetm.hard_regno_mode_ok (REGNO (x), int_mode))
               && TRULY_NOOP_TRUNCATION_MODES_P (int_mode, GET_MODE (x)))))
    return gen_lowpart (int_mode, x);
 

@@ -87,6 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
+static bool s390_hard_regno_mode_ok (unsigned int, machine_mode);
+
 /* Remember the last target of s390_set_current_function.  */
 static GTY(()) tree s390_previous_fndecl;
 
@@ -10386,9 +10388,9 @@ s390_optimize_nonescaping_tx (void)
   return;
 }
 
-/* Return true if it is legal to put a value with MODE into REGNO.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
+static bool
 s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (!TARGET_VX && VECTOR_NOFP_REGNO_P (regno))
@@ -15960,6 +15962,9 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK s390_hard_regno_scratch_ok
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK s390_hard_regno_mode_ok
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

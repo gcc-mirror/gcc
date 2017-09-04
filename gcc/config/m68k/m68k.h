@@ -394,9 +394,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m68k_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  m68k_regno_mode_ok ((REGNO), (MODE))
-
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
   m68k_secondary_reload_class (CLASS, MODE, X)
 

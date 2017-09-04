@@ -677,10 +677,6 @@ enum reg_class
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-/* Do not allow to store a value in REG_CC for any mode */
-/* Do not allow to store value in pregs if mode is not SI*/
-#define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok((REGNO), (MODE))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
@@ -700,9 +696,9 @@ enum reg_class
    register allocation so as to avoid move instructions between a
    value of mode MODE1 and a value of mode MODE2.
 
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
-   MODE2)' must be zero. */
+   If `TARGET_HARD_REGNO_MODE_OK (R, MODE1)' and
+   `TARGET_HARD_REGNO_MODE_OK (R, MODE2)' are ever different for any R,
+   then `MODES_TIEABLE_P (MODE1, MODE2)' must be zero. */
 #define MODES_TIEABLE_P(MODE1, MODE2)			\
  ((MODE1) == (MODE2)					\
   || ((GET_MODE_CLASS (MODE1) == MODE_INT		\

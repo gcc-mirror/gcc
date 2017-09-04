@@ -324,10 +324,10 @@ typedef struct GTY(()) machine_function
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
+/* Value is 1 if it is a good idea to tie two pseudo registers when one
+   has mode MODE1 and one has mode MODE2.
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be 0 for correct output.  */
 #define MODES_TIEABLE_P(MODE1, MODE2) \
   pa_modes_tieable_p (MODE1, MODE2)
 

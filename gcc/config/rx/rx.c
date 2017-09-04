@@ -3434,6 +3434,13 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
     emit_insn (gen_mvtc (GEN_INT (CTRLREG_PSW), m_prev_psw_reg));
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+rx_hard_regno_mode_ok (unsigned int regno, machine_mode)
+{
+  return REGNO_REG_CLASS (regno) == GR_REGS;
+}
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3587,6 +3594,9 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
 
 #undef  TARGET_LRA_P
 #define TARGET_LRA_P 				rx_enable_lra
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK		rx_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

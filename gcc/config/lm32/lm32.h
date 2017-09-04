@@ -166,8 +166,6 @@ do {                                                    \
 #define HARD_REGNO_NREGS(REGNO, MODE)                                   \
     ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) G_REG_P(REGNO)
-
 #define MODES_TIEABLE_P(MODE1, MODE2)           \
 (      GET_MODE_CLASS (MODE1) == MODE_INT		\
     && GET_MODE_CLASS (MODE2) == MODE_INT		\

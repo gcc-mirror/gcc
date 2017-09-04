@@ -420,7 +420,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
       offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
 		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
-      if (HARD_REGNO_MODE_OK (regno, new_mode))
+      if (targetm.hard_regno_mode_ok (regno, new_mode))
 	return gen_raw_REG (new_mode, regno);
     }
   return NULL_RTX;

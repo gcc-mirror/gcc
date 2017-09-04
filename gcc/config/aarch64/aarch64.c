@@ -1083,9 +1083,9 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
   gcc_unreachable ();
 }
 
-/* Implement HARD_REGNO_MODE_OK.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-int
+static bool
 aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -1101,7 +1101,7 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == Pmode;
 
   if (GP_REGNUM_P (regno) && ! aarch64_vect_struct_mode_p (mode))
-    return 1;
+    return true;
 
   if (FP_REGNUM_P (regno))
     {
@@ -1109,10 +1109,10 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 	return
 	  (regno + aarch64_hard_regno_nregs (regno, mode) - 1) <= V31_REGNUM;
       else
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
 }
 
 /* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
@@ -15668,6 +15668,9 @@ aarch64_libgcc_floating_mode_supported_p
 /* The architecture reserves bits 0 and 1 so use bit 2 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 4
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK aarch64_hard_regno_mode_ok
 
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \

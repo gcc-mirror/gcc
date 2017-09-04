@@ -162,8 +162,6 @@
 #define HARD_REGNO_NREGS(REGNO, MODE)	\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
 #define MODES_TIEABLE_P(MODE1, MODE2)  1
 
 /* Register that holds an address into the text segment that can be

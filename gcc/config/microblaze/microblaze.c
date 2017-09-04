@@ -176,8 +176,8 @@ REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char microblaze_hard_regno_mode_ok[(int)MAX_MACHINE_MODE]
-				  [FIRST_PSEUDO_REGISTER];
+static char microblaze_hard_regno_mode_ok_p[(int)MAX_MACHINE_MODE]
+					   [FIRST_PSEUDO_REGISTER];
 
 /* Current frame information calculated by compute_frame_size.  */
 struct microblaze_frame_info current_frame_info;
@@ -1841,9 +1841,23 @@ microblaze_option_override (void)
 	  else
 	    ok = 0;
 
-	  microblaze_hard_regno_mode_ok[(int) mode][regno] = ok;
+	  microblaze_hard_regno_mode_ok_p[(int) mode][regno] = ok;
 	}
     }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  In 32 bit mode, require that
+   DImode and DFmode be in even registers.  For DImode, this makes some
+   of the insns easier to write, since you don't have to worry about a
+   DImode value in registers 3 & 4, producing a result in 4 & 5.
+
+   To make the code simpler, the hook now just references an
+   array built in override_options.  */
+
+static bool
+microblaze_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return microblaze_hard_regno_mode_ok_p[mode][regno];
 }
 
 /* Return true if FUNC is an interrupt function as specified
@@ -3872,6 +3886,9 @@ microblaze_machine_dependent_reorg (void)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG microblaze_machine_dependent_reorg
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK microblaze_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

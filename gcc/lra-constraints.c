@@ -2416,7 +2416,7 @@ process_alt_operands (int only_alternative)
 		{
 		  int i;
 		  for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-		    if (HARD_REGNO_MODE_OK (i, mode)
+		    if (targetm.hard_regno_mode_ok (i, mode)
 			&& in_hard_reg_set_p (reg_class_contents[this_alternative],
 					      mode, i))
 		      break;
@@ -2528,10 +2528,9 @@ process_alt_operands (int only_alternative)
 		      && hard_regno[nop] < 0
 		      && GET_CODE (*curr_id->operand_loc[nop]) == SUBREG
 		      && ira_class_hard_regs_num[this_alternative] > 0
-		      && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
-					       [this_alternative][0],
-					       GET_MODE
-					       (*curr_id->operand_loc[nop])))
+		      && (!targetm.hard_regno_mode_ok
+			  (ira_class_hard_regs[this_alternative][0],
+			   GET_MODE (*curr_id->operand_loc[nop]))))
 		    {
 		      if (lra_dump_file != NULL)
 			fprintf
@@ -2615,9 +2614,9 @@ process_alt_operands (int only_alternative)
 		     more one general reg).  Therefore we have 2
 		     conditions to check that the reload pseudo can
 		     not hold the mode value.  */
-		  && ! HARD_REGNO_MODE_OK (ira_class_hard_regs
-					   [this_alternative][0],
-					   GET_MODE (*curr_id->operand_loc[nop]))
+		  && (!targetm.hard_regno_mode_ok
+		      (ira_class_hard_regs[this_alternative][0],
+		       GET_MODE (*curr_id->operand_loc[nop])))
 		  /* The above condition is not enough as the first
 		     reg in ira_class_hard_regs can be not aligned for
 		     multi-words mode values.  */
@@ -5519,7 +5518,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
 	 mode used for each independent register may not be supported
 	 so reject the split.  Splitting the wider mode should theoretically
 	 be possible but is not implemented.  */
-      if (! HARD_REGNO_MODE_OK (hard_regno, mode))
+      if (!targetm.hard_regno_mode_ok (hard_regno, mode))
 	{
 	  if (lra_dump_file != NULL)
 	    {

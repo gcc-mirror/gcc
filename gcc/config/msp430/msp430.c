@@ -933,12 +933,14 @@ msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
   return msp430_hard_regno_nregs (regno, mode);
 }
 
-/* Implements HARD_REGNO_MODE_OK.  */
-int
-msp430_hard_regno_mode_ok (int regno ATTRIBUTE_UNUSED,
-			   machine_mode mode)
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK msp430_hard_regno_mode_ok
+
+static bool
+msp430_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
-  return regno <= (ARG_POINTER_REGNUM - msp430_hard_regno_nregs (regno, mode));
+  return regno <= (ARG_POINTER_REGNUM
+		   - (unsigned int) msp430_hard_regno_nregs (regno, mode));
 }
 
 /* Implements MODES_TIEABLE_P.  */

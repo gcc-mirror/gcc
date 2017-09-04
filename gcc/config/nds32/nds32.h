@@ -600,10 +600,6 @@ enum nds32_builtins
    reg "regno" for holding a value of mode "mode".  */
 #define HARD_REGNO_NREGS(regno, mode) nds32_hard_regno_nregs (regno, mode)
 
-/* Value is 1 if hard register "regno" can hold a value
-   of machine-mode "mode".  */
-#define HARD_REGNO_MODE_OK(regno, mode) nds32_hard_regno_mode_ok (regno, mode)
-
 /* A C expression that is nonzero if a value of mode1
    is accessible in mode2 without copying.
    Define this macro to return nonzero in as many cases as possible

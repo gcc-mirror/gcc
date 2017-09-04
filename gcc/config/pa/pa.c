@@ -198,6 +198,7 @@ static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
 static bool pa_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
+static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -403,6 +404,9 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK pa_hard_regno_mode_ok
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -9998,7 +10002,7 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
   if (MAYBE_FP_REG_CLASS_P (rclass))
     return true;
 
-  /* HARD_REGNO_MODE_OK places modes with sizes larger than a word
+  /* TARGET_HARD_REGNO_MODE_OK places modes with sizes larger than a word
      in specific sets of registers.  Thus, we cannot allow changing
      to a larger mode when it's larger than a word.  */
   if (GET_MODE_SIZE (to) > UNITS_PER_WORD
@@ -10010,13 +10014,13 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
 
 /* Returns TRUE if it is a good idea to tie two pseudo registers
    when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be FALSE for correct output.
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be FALSE for correct output.
    
    We should return FALSE for QImode and HImode because these modes
    are not ok in the floating-point registers.  However, this prevents
    tieing these modes to SImode and DImode in the general registers.
-   So, this isn't a good idea.  We rely on HARD_REGNO_MODE_OK and
+   So, this isn't a good idea.  We rely on TARGET_HARD_REGNO_MODE_OK and
    CANNOT_CHANGE_MODE_CLASS to prevent these modes from being used
    in the floating-point registers.  */
 
@@ -10754,6 +10758,14 @@ pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
   return !TARGET_CALLER_COPIES;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+pa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return PA_HARD_REGNO_MODE_OK (regno, mode);
 }
 
 #include "gt-pa.h"

@@ -111,7 +111,6 @@ extern int avr_jump_mode (rtx x, rtx_insn *insn);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
 extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
-extern int avr_hard_regno_mode_ok (int regno, machine_mode mode);
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
 extern int avr_simplify_comparison_p (machine_mode mode,
