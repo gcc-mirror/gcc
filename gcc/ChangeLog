@@ -1,3 +1,7 @@
+2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lra-remat.c (reg_overlap_for_remat_p): Fix a pasto.
+
 2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR bootstrap/82045
