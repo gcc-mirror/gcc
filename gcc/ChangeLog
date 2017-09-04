@@ -1,3 +1,10 @@
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82098
+	* config/i386/i386.md (*<btsc><mode>_mask): Add
+	TARGET_USE_BT to insn constraint.
+	(*btr<mode>_mask): Ditto.
+
 2017-09-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.c (arm_legitimate_index_p): Add comment.
