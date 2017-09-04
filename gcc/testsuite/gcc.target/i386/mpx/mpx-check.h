@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <assert.h>
-
 #include "cpuid.h"
+#include "mpx-os-support.h"
 
 static int
 __attribute__ ((noinline))
@@ -15,16 +15,6 @@ mpx_test (int, const char **);
 #endif
 
 #define DEBUG
-
-#define XSTATE_BNDREGS (1 << 3)
-
-/* This should be an intrinsic, but isn't.  */
-static int xgetbv (unsigned x)
-{
-   unsigned eax, edx;
-   asm ("xgetbv" : "=a" (eax), "=d" (edx) : "c" (x)); 
-   return eax;
-}
 
 static int
 check_osxsave (void)
@@ -44,7 +34,7 @@ main (int argc, const char **argv)
     return NORUNRES;
 
   /* Run MPX test only if host has MPX support.  */
-  if (check_osxsave () && (ebx & bit_MPX) && (xgetbv (0) & XSTATE_BNDREGS))
+  if (check_osxsave () && (ebx & bit_MPX) && mpx_os_support ())
     mpx_test (argc, argv);
   else
     {

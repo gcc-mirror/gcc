@@ -1,3 +1,8 @@
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-os-support.h: New file.
+	* gcc.target/i386/mpx/mpx-check.h: Include mpx-os-support.h.
+
 2017-09-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/77308
