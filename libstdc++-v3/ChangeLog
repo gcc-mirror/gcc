@@ -1,6 +1,13 @@
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP):
+	Replace with _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP and use
+	__is_identifier to set it.
+
+	Backport from mainline
 	2017-08-09  Katsuhiko Nishimra  <ktns.87@gmail.com>
 
 	* include/std/type_traits (_GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE): Use

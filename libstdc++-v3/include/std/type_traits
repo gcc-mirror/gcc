@@ -3043,14 +3043,16 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#ifdef __has_builtin
-# if !__has_builtin(__has_unique_object_representations)
-// Try not to break non-GNU compilers that don't support the built-in:
-#  define _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#if __GNUC__ >= 7
+# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#elif defined(__is_identifier)
+// For non-GNU compilers:
+# if ! __is_identifier(__has_unique_object_representations)
+#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # endif
 #endif
 
-#ifndef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
   template<typename _Tp>
@@ -3060,7 +3062,7 @@ template <typename _From, typename _To>
       )>
     { };
 #endif
-#undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 
 #if __GNUC__ >= 7
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
