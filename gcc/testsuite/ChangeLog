@@ -1,3 +1,8 @@
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072.c: New test.
+
 2017-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82060
