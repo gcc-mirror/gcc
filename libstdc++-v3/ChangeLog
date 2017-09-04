@@ -1,6 +1,17 @@
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-08-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79820
+	PR libstdc++/81751
+	* config/io/basic_file_stdio.cc (sys_open(FILE*, ios_base::openmode)):
+	Call fflush on the stream instead of calling sync() while _M_cfile is
+	null. Restore original value of errno.
+	* testsuite/ext/stdio_filebuf/char/79820.cc: New.
+	* testsuite/ext/stdio_filebuf/char/81751.cc: New.
+
+	Backport from mainline
 	2017-07-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/53984
