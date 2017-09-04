@@ -177,7 +177,6 @@ extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern bool arm_pad_arg_upward (machine_mode, const_tree);
 extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);

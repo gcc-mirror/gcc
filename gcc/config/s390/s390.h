@@ -273,13 +273,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 
 #define STACK_SIZE_MODE (Pmode)
 
-/* Vector arguments are left-justified when placed on the stack during
-   parameter passing.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (s390_function_arg_vector ((MODE), (TYPE))			\
-   ? upward							\
-   : DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE)))
-
 #ifndef IN_LIBGCC2
 
 /* Width of a word, in units (bytes).  */

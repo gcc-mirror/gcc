@@ -1355,24 +1355,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define SET_RATIO(speed) MOVE_RATIO (speed)
 #endif
 
-/* Supply a default definition for FUNCTION_ARG_PADDING:
-   usually pad upward, but pad short args downward on
-   big-endian machines.  */
-
-#define DEFAULT_FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (! BYTES_BIG_ENDIAN							\
-   ? upward								\
-   : (((MODE) == BLKmode						\
-       ? ((TYPE) && TREE_CODE (TYPE_SIZE (TYPE)) == INTEGER_CST		\
-	  && int_size_in_bytes (TYPE) < (PARM_BOUNDARY / BITS_PER_UNIT)) \
-       : GET_MODE_BITSIZE (MODE) < PARM_BOUNDARY)			\
-      ? downward : upward))
-
-#ifndef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE)	\
-  DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE))
-#endif
-
 /* Supply a default definition of STACK_SAVEAREA_MODE for emit_stack_save.
    Normally move_insn, so Pmode stack pointer.  */
 

@@ -172,6 +172,7 @@ static void pa_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
 static rtx pa_function_arg (cumulative_args_t, machine_mode,
 			    const_tree, bool);
+static pad_direction pa_function_arg_padding (machine_mode, const_tree);
 static unsigned int pa_function_arg_boundary (machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
 static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
@@ -355,6 +356,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_FUNCTION_ARG pa_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE pa_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING pa_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY pa_function_arg_boundary
 
@@ -6241,7 +6244,9 @@ pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
     return size <= 0 || size > 8;
 }
 
-enum direction
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
 pa_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (mode == BLKmode
@@ -6251,11 +6256,11 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	      || TREE_CODE (type) == COMPLEX_TYPE
 	      || TREE_CODE (type) == VECTOR_TYPE)))
     {
-      /* Return none if justification is not required.  */
+      /* Return PAD_NONE if justification is not required.  */
       if (type
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	  && (int_size_in_bytes (type) * BITS_PER_UNIT) % PARM_BOUNDARY == 0)
-	return none;
+	return PAD_NONE;
 
       /* The directions set here are ignored when a BLKmode argument larger
 	 than a word is placed in a register.  Different code is used for
@@ -6265,18 +6270,18 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	 the stack and in registers should be identical.  */
       if (TARGET_64BIT)
 	/* The 64-bit runtime specifies left justification for aggregates.  */
-        return upward;
+	return PAD_UPWARD;
       else
 	/* The 32-bit runtime architecture specifies right justification.
 	   When the argument is passed on the stack, the argument is padded
 	   with garbage on the left.  The HP compiler pads with zeros.  */
-	return downward;
+	return PAD_DOWNWARD;
     }
 
   if (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
-    return downward;
+    return PAD_DOWNWARD;
   else
-    return none;
+    return PAD_NONE;
 }
 
 

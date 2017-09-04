@@ -59,14 +59,8 @@ extern bool gen_ldstwm_peep (bool, int, rtx, rtx *);
 
 extern void nios2_adjust_reg_alloc_order (void);
 
-#ifdef TREE_CODE
-#ifdef ARGS_SIZE_RTX
-/* expr.h defines both ARGS_SIZE_RTX and `enum direction' */
-extern enum direction nios2_function_arg_padding (machine_mode, const_tree);
-extern enum direction nios2_block_reg_padding (machine_mode, tree, int);
-#endif /* ARGS_SIZE_RTX */
+extern pad_direction nios2_block_reg_padding (machine_mode, tree, int);
 
-#endif /* TREE_CODE */
 #endif /* RTX_CODE */
 
 #endif /* GCC_NIOS2_PROTOS_H */

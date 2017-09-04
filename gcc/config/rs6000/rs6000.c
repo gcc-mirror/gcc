@@ -89,6 +89,8 @@
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
+static pad_direction rs6000_function_arg_padding (machine_mode, const_tree);
+
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
   int reload_completed;		/* stack info won't change from here on */
@@ -1794,6 +1796,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_FUNCTION_ARG_ADVANCE rs6000_function_arg_advance
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG rs6000_function_arg
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING rs6000_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY rs6000_function_arg_boundary
 
@@ -11247,7 +11251,8 @@ rs6000_return_in_msb (const_tree valtype)
   return (DEFAULT_ABI == ABI_ELFv2
 	  && BYTES_BIG_ENDIAN
 	  && AGGREGATE_TYPE_P (valtype)
-	  && FUNCTION_ARG_PADDING (TYPE_MODE (valtype), valtype) == upward);
+	  && (rs6000_function_arg_padding (TYPE_MODE (valtype), valtype)
+	      == PAD_UPWARD));
 }
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
@@ -11464,17 +11469,13 @@ abi_v4_pass_in_fpr (machine_mode mode)
   return false;
 }
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  The value
-   should be of type `enum direction': either `upward' to pad above
-   the argument, `downward' to pad below, or `none' to inhibit
-   padding.
+/* Implement TARGET_FUNCTION_ARG_PADDING.
 
    For the AIX ABI structs are always stored left shifted in their
    argument slot.  */
 
-enum direction
-function_arg_padding (machine_mode mode, const_tree type)
+static pad_direction
+rs6000_function_arg_padding (machine_mode mode, const_tree type)
 {
 #ifndef AGGREGATE_PADDING_FIXED
 #define AGGREGATE_PADDING_FIXED 0
@@ -11486,7 +11487,7 @@ function_arg_padding (machine_mode mode, const_tree type)
   if (!AGGREGATE_PADDING_FIXED)
     {
       /* GCC used to pass structures of the same size as integer types as
-	 if they were in fact integers, ignoring FUNCTION_ARG_PADDING.
+	 if they were in fact integers, ignoring TARGET_FUNCTION_ARG_PADDING.
 	 i.e. Structures of size 1 or 2 (or 4 when TARGET_64BIT) were
 	 passed padded downward, except that -mstrict-align further
 	 muddied the water in that multi-component structures of 2 and 4
@@ -11507,19 +11508,19 @@ function_arg_padding (machine_mode mode, const_tree type)
 	    size = GET_MODE_SIZE (mode);
 
 	  if (size == 1 || size == 2 || size == 4)
-	    return downward;
+	    return PAD_DOWNWARD;
 	}
-      return upward;
+      return PAD_UPWARD;
     }
 
   if (AGGREGATES_PAD_UPWARD_ALWAYS)
     {
       if (type != 0 && AGGREGATE_TYPE_P (type))
-	return upward;
+	return PAD_UPWARD;
     }
 
   /* Fall back to the default.  */
-  return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
+  return default_function_arg_padding (mode, type);
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits,

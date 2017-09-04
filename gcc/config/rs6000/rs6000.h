@@ -1803,16 +1803,8 @@ typedef struct rs6000_args
   init_cumulative_args (&CUM, NULL_TREE, LIBNAME, FALSE, TRUE, \
 			0, NULL_TREE, MODE)
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  The value
-   should be of type `enum direction': either `upward' to pad above
-   the argument, `downward' to pad below, or `none' to inhibit
-   padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding (MODE, TYPE)
-
 #define PAD_VARARGS_DOWN \
-   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

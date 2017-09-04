@@ -209,6 +209,7 @@ static rtx ia64_function_incoming_arg (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void ia64_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
+static pad_direction ia64_function_arg_padding (machine_mode, const_tree);
 static unsigned int ia64_function_arg_boundary (machine_mode,
 						const_tree);
 static bool ia64_function_ok_for_sibcall (tree, tree);
@@ -509,6 +510,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_FUNCTION_INCOMING_ARG ia64_function_incoming_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE ia64_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING ia64_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY ia64_function_arg_boundary
 
@@ -10608,20 +10611,23 @@ ia64_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   return ia64_builtins[code];
 }
 
-/* For the HP-UX IA64 aggregate parameters are passed stored in the
+/* Implement TARGET_FUNCTION_ARG_PADDING.
+
+   For the HP-UX IA64 aggregate parameters are passed stored in the
    most significant bits of the stack slot.  */
 
-enum direction
-ia64_hpux_function_arg_padding (machine_mode mode, const_tree type)
+static pad_direction
+ia64_function_arg_padding (machine_mode mode, const_tree type)
 {
-   /* Exception to normal case for structures/unions/etc.  */
+  /* Exception to normal case for structures/unions/etc.  */
+  if (TARGET_HPUX
+      && type
+      && AGGREGATE_TYPE_P (type)
+      && int_size_in_bytes (type) < UNITS_PER_WORD)
+    return PAD_UPWARD;
 
-   if (type && AGGREGATE_TYPE_P (type)
-       && int_size_in_bytes (type) < UNITS_PER_WORD)
-     return upward;
-
-   /* Fall back to the default.  */
-   return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
+  /* Fall back to the default.  */
+  return default_function_arg_padding (mode, type);
 }
 
 /* Emit text to declare externally defined variables and functions, because

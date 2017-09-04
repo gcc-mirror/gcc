@@ -2593,22 +2593,19 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
   return MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
 }
 
-/* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
-
-   Return true if an argument passed on the stack should be padded upwards,
-   i.e. if the least-significant byte of the stack slot has useful data.
+/* Implement TARGET_FUNCTION_ARG_PADDING.
 
    Small aggregate types are placed in the lowest memory address.
 
    The related parameter passing rules are B.4, C.3, C.5 and C.14.  */
 
-bool
-aarch64_pad_arg_upward (machine_mode mode, const_tree type)
+static pad_direction
+aarch64_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the least significant byte of every stack
      argument is passed at the lowest byte address of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return true;
+    return PAD_UPWARD;
 
   /* Otherwise, integral, floating-point and pointer types are padded downward:
      the least significant byte of a stack argument is passed at the highest
@@ -2617,10 +2614,10 @@ aarch64_pad_arg_upward (machine_mode mode, const_tree type)
       ? (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type)
 	 || POINTER_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode) || SCALAR_FLOAT_MODE_P (mode)))
-    return false;
+    return PAD_DOWNWARD;
 
   /* Everything else padded upward, i.e. data in first byte of stack slot.  */
-  return true;
+  return PAD_UPWARD;
 }
 
 /* Similarly, for use by BLOCK_REG_PADDING (MODE, TYPE, FIRST).
@@ -10633,7 +10630,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  if (BYTES_BIG_ENDIAN && GET_MODE_SIZE (ag_mode) < UNITS_PER_VREG)
 	    adjust = UNITS_PER_VREG - GET_MODE_SIZE (ag_mode);
 	}
-      else if (BLOCK_REG_PADDING (mode, type, 1) == downward
+      else if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
 	       && size < UNITS_PER_VREG)
 	{
 	  adjust = UNITS_PER_VREG - size;
@@ -10652,7 +10649,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       if (align > 8)
 	dw_align = true;
 
-      if (BLOCK_REG_PADDING (mode, type, 1) == downward
+      if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
 	  && size < UNITS_PER_WORD)
 	{
 	  adjust = UNITS_PER_WORD  - size;
@@ -10727,7 +10724,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   /* String up with arg */
   on_stack = build2 (COMPOUND_EXPR, TREE_TYPE (arg), t, arg);
   /* Big-endianness related address adjustment.  */
-  if (BLOCK_REG_PADDING (mode, type, 1) == downward
+  if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
       && size < UNITS_PER_WORD)
   {
     t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (arg), arg,
@@ -15384,6 +15381,9 @@ aarch64_run_selftests (void)
 
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY aarch64_function_arg_boundary
+
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING aarch64_function_arg_padding
 
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL aarch64_function_ok_for_sibcall

@@ -347,7 +347,6 @@ rtx aarch64_reverse_mask (machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);
-bool aarch64_pad_arg_upward (machine_mode, const_tree);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);

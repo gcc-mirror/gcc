@@ -345,7 +345,7 @@ struct c6x_args {
   c6x_init_cumulative_args (&cum, fntype, libname, n_named_args)
 
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 #define FUNCTION_ARG_REGNO_P(r) \
     (((r) >= REG_A4 && (r) <= REG_A13) || ((r) >= REG_B4 && (r) <= REG_B13))

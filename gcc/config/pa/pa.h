@@ -663,11 +663,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   the standard parameter passing conventions on the RS6000.  That's why
   you'll see lots of similar code in rs6000.h.  */
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  pa_function_arg_padding ((MODE), (TYPE))
-
 /* Specify padding for the last element of a block move between registers
    and memory.
 
@@ -678,7 +673,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
    so that there is only one element.  This allows the object to be
    correctly padded.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  pa_function_arg_padding ((MODE), (TYPE))
+  targetm.calls.function_arg_padding ((MODE), (TYPE))
 
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than

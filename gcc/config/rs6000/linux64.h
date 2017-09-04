@@ -340,7 +340,7 @@ extern int dot_symbols;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 /* Linux doesn't support saving and restoring 64-bit regs in a 32-bit
    process.  */
