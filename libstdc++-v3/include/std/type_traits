@@ -3064,9 +3064,9 @@ template <typename _From, typename _To>
 
 #if __GNUC__ >= 7
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined __has_builtin
+#elif defined(__is_identifier)
 // For non-GNU compilers:
-# if __has_builtin(__is_aggregate)
+# if ! __is_identifier(__is_aggregate)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # endif
 #endif
