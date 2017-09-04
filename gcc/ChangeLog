@@ -1,3 +1,12 @@
+2017-09-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* config/arm/arm.md (*arm_adddi3, *arm_subdi3): Split early except for
+	TARGET_NEON and TARGET_IWMMXT.
+	(anddi3, iordi3, xordi3, one_cmpldi2): Split while expanding except for
+	TARGET_NEON and TARGET_IWMMXT.
+	(*one_cmpldi2_insn): Moved the body of one_cmpldi2 here.
+
 2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386-protos.h (ix86_tls_address_pattern_p) New prototype.
