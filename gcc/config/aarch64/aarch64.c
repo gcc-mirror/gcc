@@ -1115,6 +1115,16 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   return 0;
 }
 
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
+   the lower 64 bits of a 128-bit register.  Tell the compiler the callee
+   clobbers the top 64 bits when restoring the bottom 64 bits.  */
+
+static bool
+aarch64_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  return FP_REGNUM_P (regno) && GET_MODE_SIZE (mode) > 8;
+}
+
 /* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
 machine_mode
 aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned nregs,
@@ -15658,6 +15668,10 @@ aarch64_libgcc_floating_mode_supported_p
 /* The architecture reserves bits 0 and 1 so use bit 2 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 4
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  aarch64_hard_regno_call_part_clobbered
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

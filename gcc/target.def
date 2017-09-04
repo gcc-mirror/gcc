@@ -5395,6 +5395,19 @@ The default version of this hook always returns @code{true}.",
  bool, (unsigned int regno),
  default_hard_regno_scratch_ok)
 
+DEFHOOK
+(hard_regno_call_part_clobbered,
+ "This hook should return true if @var{regno} is partly call-saved and\n\
+partly call-clobbered, and if a value of mode @var{mode} would be partly\n\
+clobbered by a call.  For example, if the low 32 bits of @var{regno} are\n\
+preserved across a call but higher bits are clobbered, this hook should\n\
+return true for a 64-bit mode but false for a 32-bit mode.\n\
+\n\
+The default implementation returns false, which is correct\n\
+for targets that don't have partly call-clobbered registers.",
+ bool, (unsigned int regno, machine_mode mode),
+ hook_bool_uint_mode_false)
+
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */
 DEFHOOK

@@ -2662,8 +2662,8 @@ cselib_process_insn (rtx_insn *insn)
       for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
 	if (call_used_regs[i]
 	    || (REG_VALUES (i) && REG_VALUES (i)->elt
-		&& HARD_REGNO_CALL_PART_CLOBBERED (i,
-		      GET_MODE (REG_VALUES (i)->elt->val_rtx))))
+		&& (targetm.hard_regno_call_part_clobbered
+		    (i, GET_MODE (REG_VALUES (i)->elt->val_rtx)))))
 	  cselib_invalidate_regno (i, reg_raw_mode[i]);
 
       /* Since it is not clear how cselib is going to be used, be

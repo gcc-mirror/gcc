@@ -8275,7 +8275,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : out_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (regno + k, mode))
+		      if (targetm.hard_regno_call_part_clobbered (regno + k,
+								  mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  regno + k);
 		      else
@@ -8354,7 +8355,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : in_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (regno + k, mode))
+		      if (targetm.hard_regno_call_part_clobbered (regno + k,
+								  mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  regno + k);
 		      else
@@ -8468,8 +8470,8 @@ emit_reload_insns (struct insn_chain *chain)
 		      reg_reloaded_insn[src_regno + k] = store_insn;
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, src_regno + k);
 		      SET_HARD_REG_BIT (reg_reloaded_valid, src_regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (src_regno + k,
-							  mode))
+		      if (targetm.hard_regno_call_part_clobbered
+			  (src_regno + k, mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  src_regno + k);
 		      else

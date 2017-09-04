@@ -41407,6 +41407,17 @@ ix86_hard_regno_mode_ok (int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The only ABI that
+   saves SSE registers across calls is Win64 (thus no need to check the
+   current ABI here), and with AVX enabled Win64 only guarantees that
+   the low 16 bytes are saved.  */
+
+static bool
+ix86_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
+}
+
 /* A subroutine of ix86_modes_tieable_p.  Return true if MODE is a
    tieable integer mode.  */
 
@@ -53249,6 +53260,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P ix86_noce_conversion_profitable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  ix86_hard_regno_call_part_clobbered
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

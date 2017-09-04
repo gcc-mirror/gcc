@@ -126,6 +126,13 @@ hook_bool_mode_uhwi_false (machine_mode, unsigned HOST_WIDE_INT)
   return false;
 }
 
+/* Generic hook that takes (unsigned int, machine_mode) and returns false.  */
+bool
+hook_bool_uint_mode_false (unsigned int, machine_mode)
+{
+  return false;
+}
+
 /* Generic hook that takes (FILE *, const char *) and does nothing.  */
 void
 hook_void_FILEptr_constcharptr (FILE *, const char *)

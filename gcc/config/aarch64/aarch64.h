@@ -888,12 +888,6 @@ typedef struct
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
   aarch64_hard_regno_caller_save_mode ((REGNO), (NREGS), (MODE))
 
-/* Callee only saves lower 64-bits of a 128-bit register.  Tell the
-   compiler the callee clobbers the top 64-bits when restoring the
-   bottom 64-bits.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) \
-		(FP_REGNUM_P (REGNO) && GET_MODE_SIZE (MODE) > 8)
-
 #undef SWITCHABLE_TARGET
 #define SWITCHABLE_TARGET 1
 

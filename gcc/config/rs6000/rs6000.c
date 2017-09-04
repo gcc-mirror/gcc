@@ -1962,6 +1962,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS common_function_versions
 
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  rs6000_hard_regno_call_part_clobbered
 
 
 /* Processor table.  */
@@ -2122,6 +2125,26 @@ rs6000_hard_regno_mode_ok (int regno, machine_mode mode)
      and it must be able to fit within the register set.  */
 
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
+}
+
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
+
+static bool
+rs6000_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_32BIT
+      && TARGET_POWERPC64
+      && GET_MODE_SIZE (mode) > 4
+      && INT_REGNO_P (regno))
+    return true;
+
+  if (TARGET_VSX
+      && FP_REGNO_P (regno)
+      && GET_MODE_SIZE (mode) > 8
+      && !FLOAT128_2REG_P (mode))
+    return true;
+
+  return false;
 }
 
 /* Print interesting facts about registers.  */

@@ -2,6 +2,73 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (hard_regno_call_part_clobbered): New hook.
+	* doc/tm.texi.in (HARD_REGNO_CALL_PART_CLOBBERED): Replace with...
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): ...this hook.
+	* doc/tm.texi: Regenerate.
+	* hooks.h (hook_bool_uint_mode_false): Declare.
+	* hooks.c (hook_bool_uint_mode_false): New function.
+	* regs.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* cselib.c (cselib_process_insn): Use
+	targetm.hard_regno_call_part_clobbered instead of
+	HARD_REGNO_CALL_PART_CLOBBERED.
+	* ira-conflicts.c (ira_build_conflicts): Likewise.
+	* ira-costs.c (ira_tune_allocno_costs): Likewise.
+	* lra-constraints.c (need_for_call_save_p): Likewise.
+	* lra-lives.c: Include target.h.
+	(check_pseudos_live_through_calls): Use
+	targetm.hard_regno_call_part_clobbered instead of
+	HARD_REGNO_CALL_PART_CLOBBERED.
+	* regcprop.c: Include target.h.
+	(copyprop_hardreg_forward_1): Use
+	targetm.hard_regno_call_part_clobbered instead of
+	HARD_REGNO_CALL_PART_CLOBBERED.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	* reload.c (find_equiv_reg): Likewise.
+	* reload1.c (emit_reload_insns): Likewise.
+	* sched-deps.c (deps_analyze_insn): Likewise.
+	* sel-sched.c (init_regs_for_mode): Likewise.
+	(mark_unavailable_hard_regs): Likewise.
+	* targhooks.c (default_dwarf_frame_reg_mode): Likewise.
+	* config/aarch64/aarch64.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_call_part_clobbered):
+	New function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/avr/avr.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/avr/avr-protos.h (avr_hard_regno_call_part_clobbered):
+	Delete.
+	* config/avr/avr.c (avr_hard_regno_call_part_clobbered): Make static
+	and return a bool.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/i386/i386.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/i386/i386.c (ix86_hard_regno_call_part_clobbered): New
+	function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/mips/mips.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): New
+	function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/powerpcspe/powerpcspe.h (HARD_REGNO_CALL_PART_CLOBBERED):
+	Delete.
+	* config/powerpcspe/powerpcspe.c
+	(rs6000_hard_regno_call_part_clobbered): New function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/rs6000/rs6000.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/rs6000/rs6000.c (rs6000_hard_regno_call_part_clobbered):
+	New function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/s390/s390.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* config/s390/s390.c (s390_hard_regno_call_part_clobbered): New
+	function.
+	(TARGET_HARD_REGNO_CALL_PART_CLOBBERED): Redefine.
+	* config/sh/sh.h (HARD_REGNO_CALL_PART_CLOBBERED): Delete.
+	* system.h (HARD_REGNO_CALL_PART_CLOBBERED): Poison.
+
+2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* rtl.h (subreg_memory_offset): Declare.
 	* emit-rtl.c (subreg_memory_offset): New function.
 	* expmed.c (store_bit_field_1): Use it.

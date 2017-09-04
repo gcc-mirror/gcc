@@ -812,8 +812,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      0,      0,						\
 }
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO,MODE) (false)
-
 /* Return number of consecutive hard regs needed starting at reg REGNO
    to hold something of mode MODE.
    This is ordinarily the length in words of a value of mode MODE

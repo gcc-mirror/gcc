@@ -1236,13 +1236,6 @@ enum data_align { align_abi, align_opt, align_both };
    ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  (((TARGET_32BIT && TARGET_POWERPC64					\
-     && (GET_MODE_SIZE (MODE) > 4)					\
-     && INT_REGNO_P (REGNO)) ? 1 : 0)					\
-   || (TARGET_VSX && FP_REGNO_P (REGNO)					\
-       && GET_MODE_SIZE (MODE) > 8 && !FLOAT128_2REG_P (MODE)))
-
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
 	  || (MODE) == V2DFmode)	\

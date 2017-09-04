@@ -12186,9 +12186,9 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
 }
 
 
-/* Implement `HARD_REGNO_CALL_PART_CLOBBERED'.  */
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
-int
+static bool
 avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
@@ -14693,6 +14693,10 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 
 #undef  TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
+#undef  TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  avr_hard_regno_call_part_clobbered
+
 #undef  TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
 
