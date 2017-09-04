@@ -1,3 +1,9 @@
+2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/70043
+	PR testsuite/82093
+	* gfortran.dg/vect/pr70043.f90 (fn1): Start loop from 1 instead of 0.
+
 2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/adx-check.h (main): Use __get_cpuid_count.
