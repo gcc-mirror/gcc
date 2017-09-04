@@ -1,6 +1,15 @@
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
+	2017-06-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81017
+	* include/std/functional (function::function(function&&))
+	(function::operator=(function&&)): Add noexcept.
+	* testsuite/20_util/function/assign/move.cc: Check for noexcept.
+	* testsuite/20_util/function/cons/move.cc: Likewise.
+
+	Backport from mainline
 	2017-06-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/shared_ptr_base.h (__shared_ptr::owner_before)

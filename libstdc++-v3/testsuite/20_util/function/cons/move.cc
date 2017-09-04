@@ -38,11 +38,12 @@ void test01()
   function fo2(std::move(fo));
   VERIFY( static_cast<bool>(fo2) );
   VERIFY( fo2() == 2 );
+
+  static_assert(std::is_nothrow_move_constructible<function>::value,
+		"PR libstdc++/81017");
 }
 
 int main()
 {
   test01();
-
-  return 0;
 }
