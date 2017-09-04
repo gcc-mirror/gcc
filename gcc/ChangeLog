@@ -1,5 +1,8 @@
 2017-09-04  Jakub Jelinek  <jakub@redhat.com>
 
+	* gdbhooks.py (OptMachineModePrinter.to_string): Use 8 spaces
+	instead of tab.
+
 	* lra-remat.c (reg_overlap_for_remat_p): Fix a pasto.
 
 2017-09-04  Richard Sandiford  <richard.sandiford@linaro.org>

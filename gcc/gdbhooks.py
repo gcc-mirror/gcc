@@ -438,8 +438,8 @@ class OptMachineModePrinter:
 
     def to_string (self):
         name = str(self.gdbval['m_mode'])
-	if name == 'E_VOIDmode':
-	    return '<None>'
+        if name == 'E_VOIDmode':
+            return '<None>'
         return name[2:] if name.startswith('E_') else name
 
 ######################################################################
