@@ -1079,12 +1079,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1>
 	bool
-	owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const
+	owner_before(__shared_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       template<typename _Tp1>
 	bool
-	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const
+	owner_before(__weak_ptr<_Tp1, _Lp> const& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
 #if __cpp_rtti
@@ -1441,12 +1441,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Tp1>
 	bool
-	owner_before(const __shared_ptr<_Tp1, _Lp>& __rhs) const
+	owner_before(const __shared_ptr<_Tp1, _Lp>& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       template<typename _Tp1>
 	bool
-	owner_before(const __weak_ptr<_Tp1, _Lp>& __rhs) const
+	owner_before(const __weak_ptr<_Tp1, _Lp>& __rhs) const noexcept
 	{ return _M_refcount._M_less(__rhs._M_refcount); }
 
       void
@@ -1488,15 +1488,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Sp_owner_less : public binary_function<_Tp, _Tp, bool>
     {
       bool
-      operator()(const _Tp& __lhs, const _Tp& __rhs) const
+      operator()(const _Tp& __lhs, const _Tp& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
 
       bool
-      operator()(const _Tp& __lhs, const _Tp1& __rhs) const
+      operator()(const _Tp& __lhs, const _Tp1& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
 
       bool
-      operator()(const _Tp1& __lhs, const _Tp& __rhs) const
+      operator()(const _Tp1& __lhs, const _Tp& __rhs) const noexcept
       { return __lhs.owner_before(__rhs); }
     };
 

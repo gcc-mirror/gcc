@@ -71,6 +71,12 @@ test02()
   VERIFY( !a1.owner_before(w1) && !w1.owner_before(a1) );
   std::weak_ptr<A> w2(a2);
   VERIFY( !b1.owner_before(w2) && !w2.owner_before(b1) );
+
+  static_assert( noexcept(a1.owner_before(a0)), "" );
+  static_assert( noexcept(a1.owner_before(b1)), "" );
+  static_assert( noexcept(b1.owner_before(a1)), "" );
+  static_assert( noexcept(a1.owner_before(w1)), "" );
+  static_assert( noexcept(b1.owner_before(w1)), "" );
 }
 
 // Aliasing
