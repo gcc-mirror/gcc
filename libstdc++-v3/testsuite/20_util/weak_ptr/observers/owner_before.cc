@@ -27,7 +27,7 @@ struct B { };
 
 // 20.6.6.3.5 weak_ptr observers [util.smartptr.weak.obs]
 
-int
+void
 test01()
 {
   bool test __attribute__((unused)) = true;
@@ -40,11 +40,14 @@ test01()
   std::shared_ptr<B> p3;
   VERIFY( !p1.owner_before(p3) && !p3.owner_before(p1) );
 
-  return 0;
+  static_assert( noexcept(p1.owner_before(p1)), "" );
+  static_assert( noexcept(p1.owner_before(p2)), "" );
+  static_assert( noexcept(p1.owner_before(p3)), "" );
+  static_assert( noexcept(p2.owner_before(p1)), "" );
 }
 
 
-int
+void
 test02()
 {
   bool test __attribute__((unused)) = true;
@@ -64,8 +67,6 @@ test02()
 
   std::shared_ptr<B> b1(new B);
   VERIFY( w1.owner_before(b1) || b1.owner_before(w1) );
-
-  return 0;
 }
 
 int 
