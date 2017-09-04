@@ -96,7 +96,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // NB: __n is permitted to be 0.  The C++ standard says nothing
       // about what the return value is when __n == 0.
       pointer
-      allocate(size_type __n, const void* = 0)
+      allocate(size_type __n, const void* = static_cast<const void*>(0))
       {
 	if (__n > this->max_size())
 	  std::__throw_bad_alloc();
