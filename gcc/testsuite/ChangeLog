@@ -1,5 +1,8 @@
 2017-09-04  Jakub Jelinek  <jakub@redhat.com>
 
+	PR sanitizer/81981
+	* gcc.dg/ubsan/pr81981.c: New test.
+
 	PR tree-optimization/70043
 	PR testsuite/82093
 	* gfortran.dg/vect/pr70043.f90 (fn1): Start loop from 1 instead of 0.
