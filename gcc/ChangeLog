@@ -1,3 +1,12 @@
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* fold-const.h (can_native_encode_string_p): Declare.
+	* fold-const.c (can_native_encode_string_p): Factor out from ...
+	(native_encode_string): ... here.
+	* tree-vect-stmts.c (vectorizable_store): Call it to avoid
+	vectorizing stores from constants we later cannot handle.
+
 2017-09-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81783
