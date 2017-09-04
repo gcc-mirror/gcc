@@ -1,3 +1,13 @@
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386-protos.h (ix86_tls_address_pattern_p) New prototype.
+	(ix86_rewrite_tls_address): Ditto.
+	* config/i386/i386.c (ix86_tls_address_pattern_p) New function.
+	(ix86_rewrite_tls_address_1): Ditto.
+	(ix86_rewrite_tls_address): Ditto.
+	* config/i386/predicates.md (tls_address_pattern): New predicate.
+	* config/i386/i386.md (TLS address splitter): New splitter.
+
 2017-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82084
@@ -2237,8 +2247,8 @@
 	* tree-ssa-loop-manip.c (canonicalize_loop_ivs): Likewise.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
-            David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* machmode.h (opt_mode::else_blk): New function.
 	(int_mode_for_mode): Declare.
@@ -2539,8 +2549,8 @@
 	once.  Use get_narrowest_mode instead of GET_CLASS_NARROWEST_MODE.
 
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
-            Alan Hayward  <alan.hayward@arm.com>
-            David Sherwood  <david.sherwood@arm.com>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
 	* machmode.h (mode_traits): New structure.
 	(get_narrowest_mode): New function.
