@@ -1,3 +1,8 @@
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82060
+	* g++.dg/torture/pr82060.C: New testcase.
+
 2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/57448
