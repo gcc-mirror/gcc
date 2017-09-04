@@ -1,3 +1,10 @@
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* convert.c (do_narrow): When sanitizing signed integer overflows,
+	bail out for signed types.
+	(convert_to_integer_1) <case NEGATE_EXPR>: Likewise.
+
 2017-09-04  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82060

@@ -434,6 +434,13 @@ do_narrow (location_t loc,
     typex = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
 					    TYPE_UNSIGNED (typex));
 
+  /* The type demotion below might cause doing unsigned arithmetic
+     instead of signed, and thus hide overflow bugs.  */
+  if ((ex_form == PLUS_EXPR || ex_form == MINUS_EXPR)
+      && !TYPE_UNSIGNED (typex)
+      && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+    return NULL_TREE;
+
   /* But now perhaps TYPEX is as wide as INPREC.
      In that case, do nothing special here.
      (Otherwise would recurse infinitely in convert.  */
@@ -895,7 +902,12 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 						    TYPE_UNSIGNED (typex));
 
 	      if (!TYPE_UNSIGNED (typex))
-		typex = unsigned_type_for (typex);
+		{
+		  /* Using unsigned arithmetic may hide overflow bugs.  */
+		  if (sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+		    break;
+		  typex = unsigned_type_for (typex);
+		}
 	      return convert (type,
 			      fold_build1 (ex_form, typex,
 					   convert (typex,
