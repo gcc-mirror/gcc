@@ -1,3 +1,8 @@
+2017-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82102
+	* gcc.dg/torture/pr82102.c: New testcase.
+
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* testsuite/gnat.dg/array29.ad[sb]: New test.
