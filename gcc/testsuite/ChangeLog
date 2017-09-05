@@ -1,3 +1,9 @@
+2017-09-05  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	Backport from trunk
+	PR ada/79542
+	* gnat.dg/debug13.ads, gnat.dg/debug13.adb: New testcase.
+
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/incomplete5.ad[sb]: New test.
