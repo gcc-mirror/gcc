@@ -1,5 +1,10 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/utils.c (unchecked_convert): When the result type is a
+	non-biased integral type with size 0, set the result to 0 directly.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
 	there is no target, do not create a temporary for the return value for
 	an allocator either.

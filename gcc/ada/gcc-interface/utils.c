@@ -5230,20 +5230,26 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 					? TYPE_RM_SIZE (etype)
 					: TYPE_SIZE (etype)) == 0)))
     {
-      tree base_type
-	= gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			      type_unsigned_for_rm (type));
-      tree shift_expr
-	= convert (base_type,
-		   size_binop (MINUS_EXPR,
-			       TYPE_SIZE (type), TYPE_RM_SIZE (type)));
-      expr
-	= convert (type,
-		   build_binary_op (RSHIFT_EXPR, base_type,
-				    build_binary_op (LSHIFT_EXPR, base_type,
-						     convert (base_type, expr),
-						     shift_expr),
-				    shift_expr));
+      if (integer_zerop (TYPE_RM_SIZE (type)))
+	expr = build_int_cst (type, 0);
+      else
+	{
+	  tree base_type
+	    = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
+				  type_unsigned_for_rm (type));
+	  tree shift_expr
+	    = convert (base_type,
+		       size_binop (MINUS_EXPR,
+				   TYPE_SIZE (type), TYPE_RM_SIZE (type)));
+	  expr
+	    = convert (type,
+		       build_binary_op (RSHIFT_EXPR, base_type,
+				        build_binary_op (LSHIFT_EXPR, base_type,
+							 convert (base_type,
+								  expr),
+							 shift_expr),
+				        shift_expr));
+	}
     }
 
   /* An unchecked conversion should never raise Constraint_Error.  The code

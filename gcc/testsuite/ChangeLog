@@ -1,5 +1,9 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/uc2.ads: New test.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* testsuite/gnat.dg/array29.ad[sb]: New test.
 
 2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
