@@ -1,5 +1,15 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* machmode.h (decimal_float_mode_for_size): New function.
+	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use float_mode_for_size.
+	(REAL_VALUE_TO_TARGET_DOUBLE): Likewise.
+	(REAL_VALUE_TO_TARGET_SINGLE): Likewise.
+	(REAL_VALUE_TO_TARGET_DECIMAL128): Use decimal_float_mode_for_size.
+	(REAL_VALUE_TO_TARGET_DECIMAL64): Likewise.
+	(REAL_VALUE_TO_TARGET_DECIMAL32): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* builtins.c (expand_builtin_powi): Use int_mode_for_size.
 	(get_builtin_sync_mode): Likewise.
 	(expand_ifn_atomic_compare_exchange): Likewise.
