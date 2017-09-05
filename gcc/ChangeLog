@@ -1,3 +1,7 @@
+2017-09-05  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* explow.c (get_dynamic_stack_size): Improve dynamic alignment.
+
 2017-09-05  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82084
