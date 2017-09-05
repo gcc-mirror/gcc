@@ -1,3 +1,14 @@
+2017-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82032
+	* tree-cfg.c (generate_range_test): New function.
+	* tree-cfg.h (generate_range_test): Declared here.
+	* tree-cfgcleanup.c (convert_single_case_switch): New function.
+	(cleanup_control_expr_graph): Use it.
+	* tree-switch-conversion.c (try_switch_expansion): Remove
+	assert.
+	(emit_case_nodes): Use generate_range_test.
+
 2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82098
