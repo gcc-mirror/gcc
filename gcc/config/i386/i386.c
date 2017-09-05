@@ -14303,6 +14303,11 @@ ix86_finalize_stack_frame_flags (void)
       add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
       add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 			   HARD_FRAME_POINTER_REGNUM);
+
+      /* The preferred stack alignment is the minimum stack alignment.  */
+      unsigned int stack_alignment = crtl->preferred_stack_boundary;
+      bool require_stack_frame = false;
+
       FOR_EACH_BB_FN (bb, cfun)
         {
           rtx_insn *insn;
@@ -14311,79 +14316,107 @@ ix86_finalize_stack_frame_flags (void)
 		&& requires_stack_frame_p (insn, prologue_used,
 					   set_up_by_prologue))
 	      {
-		if (crtl->stack_realign_needed != stack_realign)
-		  recompute_frame_layout_p = true;
-		crtl->stack_realign_needed = stack_realign;
-		crtl->stack_realign_finalized = true;
-		if (recompute_frame_layout_p)
-		  ix86_compute_frame_layout ();
-		return;
+		require_stack_frame = true;
+
+		if (stack_realign)
+		  {
+		    /* Find the maximum stack alignment.  */
+		    subrtx_iterator::array_type array;
+		    FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+		      if (MEM_P (*iter)
+			  && (reg_mentioned_p (stack_pointer_rtx,
+					       *iter)
+			      || reg_mentioned_p (frame_pointer_rtx,
+						  *iter)))
+			{
+			  unsigned int alignment = MEM_ALIGN (*iter);
+			  if (alignment > stack_alignment)
+			    stack_alignment = alignment;
+			}
+		  }
 	      }
 	}
 
-      /* If drap has been set, but it actually isn't live at the start
-	 of the function, there is no reason to set it up.  */
-      if (crtl->drap_reg)
+      if (require_stack_frame)
 	{
-	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-	  if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
+	  /* Stack frame is required.  If stack alignment needed is less
+	     than incoming stack boundary, don't realign stack.  */
+	  stack_realign = incoming_stack_boundary < stack_alignment;
+	  if (!stack_realign)
 	    {
-	      crtl->drap_reg = NULL_RTX;
-	      crtl->need_drap = false;
+	      crtl->max_used_stack_slot_alignment
+		= incoming_stack_boundary;
+	      crtl->stack_alignment_needed
+		= incoming_stack_boundary;
 	    }
 	}
       else
-	cfun->machine->no_drap_save_restore = true;
-
-      frame_pointer_needed = false;
-      stack_realign = false;
-      crtl->max_used_stack_slot_alignment = incoming_stack_boundary;
-      crtl->stack_alignment_needed = incoming_stack_boundary;
-      crtl->stack_alignment_estimated = incoming_stack_boundary;
-      if (crtl->preferred_stack_boundary > incoming_stack_boundary)
-	crtl->preferred_stack_boundary = incoming_stack_boundary;
-      df_finish_pass (true);
-      df_scan_alloc (NULL);
-      df_scan_blocks ();
-      df_compute_regs_ever_live (true);
-      df_analyze ();
-
-      if (flag_var_tracking)
 	{
-	  /* Since frame pointer is no longer available, replace it with
-	     stack pointer - UNITS_PER_WORD in debug insns.  */
-	  df_ref ref, next;
-	  for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
-	       ref; ref = next)
+	  /* If drap has been set, but it actually isn't live at the
+	     start of the function, there is no reason to set it up.  */
+	  if (crtl->drap_reg)
 	    {
-	      rtx_insn *insn = DF_REF_INSN (ref);
-	      /* Make sure the next ref is for a different instruction,
-		 so that we're not affected by the rescan.  */
-	      next = DF_REF_NEXT_REG (ref);
-	      while (next && DF_REF_INSN (next) == insn)
-		next = DF_REF_NEXT_REG (next);
-
-	      if (DEBUG_INSN_P (insn))
+	      basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      if (! REGNO_REG_SET_P (DF_LR_IN (bb),
+				     REGNO (crtl->drap_reg)))
 		{
-		  bool changed = false;
-		  for (; ref != next; ref = DF_REF_NEXT_REG (ref))
-		    {
-		      rtx *loc = DF_REF_LOC (ref);
-		      if (*loc == hard_frame_pointer_rtx)
-			{
-			  *loc = plus_constant (Pmode,
-						stack_pointer_rtx,
-						-UNITS_PER_WORD);
-			  changed = true;
-			}
-		    }
-		  if (changed)
-		    df_insn_rescan (insn);
+		  crtl->drap_reg = NULL_RTX;
+		  crtl->need_drap = false;
 		}
 	    }
-	}
+	  else
+	    cfun->machine->no_drap_save_restore = true;
 
-      recompute_frame_layout_p = true;
+	  frame_pointer_needed = false;
+	  stack_realign = false;
+	  crtl->max_used_stack_slot_alignment = incoming_stack_boundary;
+	  crtl->stack_alignment_needed = incoming_stack_boundary;
+	  crtl->stack_alignment_estimated = incoming_stack_boundary;
+	  if (crtl->preferred_stack_boundary > incoming_stack_boundary)
+	    crtl->preferred_stack_boundary = incoming_stack_boundary;
+	  df_finish_pass (true);
+	  df_scan_alloc (NULL);
+	  df_scan_blocks ();
+	  df_compute_regs_ever_live (true);
+	  df_analyze ();
+
+	  if (flag_var_tracking)
+	    {
+	      /* Since frame pointer is no longer available, replace it with
+		 stack pointer - UNITS_PER_WORD in debug insns.  */
+	      df_ref ref, next;
+	      for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
+		   ref; ref = next)
+		{
+		  rtx_insn *insn = DF_REF_INSN (ref);
+		  /* Make sure the next ref is for a different instruction,
+		     so that we're not affected by the rescan.  */
+		  next = DF_REF_NEXT_REG (ref);
+		  while (next && DF_REF_INSN (next) == insn)
+		    next = DF_REF_NEXT_REG (next);
+
+		  if (DEBUG_INSN_P (insn))
+		    {
+		      bool changed = false;
+		      for (; ref != next; ref = DF_REF_NEXT_REG (ref))
+			{
+			  rtx *loc = DF_REF_LOC (ref);
+			  if (*loc == hard_frame_pointer_rtx)
+			    {
+			      *loc = plus_constant (Pmode,
+						    stack_pointer_rtx,
+						    -UNITS_PER_WORD);
+			      changed = true;
+			    }
+			}
+		      if (changed)
+			df_insn_rescan (insn);
+		    }
+		}
+	    }
+
+	  recompute_frame_layout_p = true;
+	}
     }
 
   if (crtl->stack_realign_needed != stack_realign)

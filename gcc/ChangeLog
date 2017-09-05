@@ -1,3 +1,12 @@
+2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59501
+	PR target/81624
+	PR target/81769
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Don't
+	realign stack if stack alignment needed is less than incoming
+	stack boundary.
+
 2017-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/82072
