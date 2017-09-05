@@ -1,6 +1,10 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (DECL_TEMPLATE_CONV_FN_P): Delete.
+	* pt.c (push_template_decl_real): Don't set it.
+
+	gcc/cp/
 	* cp-tree.h (DECL_CONV_FN_P): No need to check DECL_NAME nullness.
 	(DECL_CONV_FN_TYPE): FN must be a conv op.
 

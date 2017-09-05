@@ -5571,11 +5571,11 @@ push_template_decl_real (tree decl, bool is_friend)
 	  (TI_ARGS (tinfo),
 	   TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (tmpl)))))
 	{
-	  error ("\
-template arguments to %qD do not match original template %qD",
-		 decl, DECL_TEMPLATE_RESULT (tmpl));
+	  error ("template arguments to %qD do not match original"
+		 "template %qD", decl, DECL_TEMPLATE_RESULT (tmpl));
 	  if (!uses_template_parms (TI_ARGS (tinfo)))
-	    inform (input_location, "use template<> for an explicit specialization");
+	    inform (input_location, "use %<template<>%> for"
+		    " an explicit specialization");
 	  /* Avoid crash in import_export_decl.  */
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  return error_mark_node;
@@ -5607,25 +5607,13 @@ template arguments to %qD do not match original template %qD",
   if (is_primary)
     {
       tree parms = DECL_TEMPLATE_PARMS (tmpl);
-      int i;
 
       DECL_PRIMARY_TEMPLATE (tmpl) = tmpl;
-      if (DECL_CONV_FN_P (tmpl))
-	{
-	  int depth = TMPL_PARMS_DEPTH (parms);
-
-	  /* It is a conversion operator. See if the type converted to
-	     depends on innermost template operands.  */
-
-	  if (uses_template_parms_level (TREE_TYPE (TREE_TYPE (tmpl)),
-					 depth))
-	    DECL_TEMPLATE_CONV_FN_P (tmpl) = 1;
-	}
 
       /* Give template template parms a DECL_CONTEXT of the template
 	 for which they are a parameter.  */
       parms = INNERMOST_TEMPLATE_PARMS (parms);
-      for (i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
+      for (int i = TREE_VEC_LENGTH (parms) - 1; i >= 0; --i)
 	{
 	  tree parm = TREE_VALUE (TREE_VEC_ELT (parms, i));
 	  if (TREE_CODE (parm) == TEMPLATE_DECL)
