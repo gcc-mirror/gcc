@@ -652,6 +652,15 @@ float_mode_for_size (unsigned int size)
   return dyn_cast <scalar_float_mode> (mode_for_size (size, MODE_FLOAT, 0));
 }
 
+/* Likewise for MODE_DECIMAL_FLOAT.  */
+
+inline opt_scalar_float_mode
+decimal_float_mode_for_size (unsigned int size)
+{
+  return dyn_cast <scalar_float_mode>
+    (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
+}
+
 /* Similar to mode_for_size, but find the smallest mode for a given width.  */
 
 extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
