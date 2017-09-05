@@ -1,5 +1,14 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (adjust_for_implicit_deref): New function.
+	(gnat_to_gnu) <N_Explicit_Dereference>: Translate result type first.
+	(N_Indexed_Component): Invoke adjust_for_implicit_deref on the prefix.
+	(N_Slice): Likewise.
+	(N_Selected_Component): Likewise.  Do not try again to translate it.
+	(N_Free_Statement): Invoke adjust_for_implicit_deref on the expression.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* repinfo.ads: Document new treatment of dynamic values.
 	(TCode): Bump upper bound to 29.
 	(Dynamic_Val): New constant set to 29.
