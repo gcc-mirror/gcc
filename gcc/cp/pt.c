@@ -5572,11 +5572,11 @@ push_template_decl_real (tree decl, bool is_friend)
 	  (TI_ARGS (tinfo),
 	   TI_ARGS (get_template_info (DECL_TEMPLATE_RESULT (tmpl)))))
 	{
-	  error ("\
-template arguments to %qD do not match original template %qD",
-		 decl, DECL_TEMPLATE_RESULT (tmpl));
+	  error ("template arguments to %qD do not match original"
+		 "template %qD", decl, DECL_TEMPLATE_RESULT (tmpl));
 	  if (!uses_template_parms (TI_ARGS (tinfo)))
-	    inform (input_location, "use template<> for an explicit specialization");
+	    inform (input_location, "use %<template<>%> for"
+		    " an explicit specialization");
 	  /* Avoid crash in import_export_decl.  */
 	  DECL_INTERFACE_KNOWN (decl) = 1;
 	  return error_mark_node;
