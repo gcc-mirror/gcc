@@ -312,11 +312,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 
   /* Since a use of an Itype is a definition, process it as such if it is in
      the main unit, except for E_Access_Subtype because it's actually a use
-     of its base type, see below.  */
+     of its base type, and for E_Record_Subtype with cloned subtype because
+     it's actually a use of the cloned subtype, see below.  */
   if (!definition
       && is_type
       && Is_Itype (gnat_entity)
-      && Ekind (gnat_entity) != E_Access_Subtype
+      && !(kind == E_Access_Subtype
+	   || (kind == E_Record_Subtype
+	       && Present (Cloned_Subtype (gnat_entity))))
       && !present_gnu_tree (gnat_entity)
       && In_Extended_Main_Code_Unit (gnat_entity))
     {
@@ -3411,7 +3414,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	{
 	  gnu_decl = gnat_to_gnu_entity (Cloned_Subtype (gnat_entity),
 					 NULL_TREE, false);
-	  maybe_present = true;
+	  saved = true;
 	  break;
 	}
 
