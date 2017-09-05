@@ -1266,15 +1266,14 @@ find_method_slot (tree klass, tree name)
 }
 
 /* Look for NAME as an immediate member of KLASS (including
-   anon-members or unscoped enum member).  PREFER_TYPE is true if
-   you'd prefer a TYPE binding (given a choice, if there's no type
-   binding, you'll get the value binding.
+   anon-members or unscoped enum member).  TYPE_OR_FNS is zero for
+   regular search.  >0 to get a type binding (if there is one) and <0
+   if you want (just) the member function binding.
 
    Use this if you do not want lazy member creation.  */
 
 tree
-get_class_binding_direct (tree klass, tree name, bool want_type,
-			  int restricted)
+get_class_binding_direct (tree klass, tree name, int type_or_fns)
 {
   gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
@@ -1290,7 +1289,7 @@ get_class_binding_direct (tree klass, tree name, bool want_type,
       val = method_vec_binary_search (method_vec, lookup);
       if (!val)
 	;
-      else if (want_type)
+      else if (type_or_fns > 0)
 	{
 	  if (STAT_HACK_P (val))
 	    val = STAT_TYPE (val);
@@ -1303,7 +1302,9 @@ get_class_binding_direct (tree klass, tree name, bool want_type,
       if (val && TREE_CODE (val) == OVERLOAD
 	  && TREE_CODE (OVL_FUNCTION (val)) == USING_DECL)
 	{
-	  if (restricted > 0)
+	  /* An overload with a dependent USING_DECL.  Does the caller
+	     want the USING_DECL or the functions?  */
+	  if (type_or_fns < 0)
 	    val = OVL_CHAIN (val);
 	  else
 	    val = OVL_FUNCTION (val);  
@@ -1311,17 +1312,16 @@ get_class_binding_direct (tree klass, tree name, bool want_type,
     }
   else
     {
-      gcc_assert (COMPLETE_TYPE_P (klass) ? !method_vec
-		  : restricted >= 0 || want_type);
-      if (method_vec && !want_type && restricted >= 0)
+      if (method_vec && type_or_fns <= 0)
 	val = method_vec_linear_search (method_vec, lookup);
 
-      if (restricted > 0)
+      if (type_or_fns < 0)
 	/* Don't bother looking for field.  We don't want it.  */;
       else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
 	/* Dependent using declarations are a 'field', make sure we
 	   return that even if we saw an overload already.  */
-	if (tree field_val = fields_linear_search (klass, lookup, want_type))
+	if (tree field_val = fields_linear_search (klass, lookup,
+						   type_or_fns > 0))
 	  if (!val || TREE_CODE (field_val) == USING_DECL)
 	    val = field_val;
     }
@@ -1339,11 +1339,12 @@ get_class_binding_direct (tree klass, tree name, bool want_type,
   return val;
 }
 
-/* Look for NAME's binding in exactly KLASS.  Does lazy special
-   function creation as necessary.  */
+/* Look for NAME's binding in exactly KLASS.  See
+   get_class_binding_direct for argument description.  Does lazy
+   special function creation as necessary.  */
 
 tree
-get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
+get_class_binding (tree klass, tree name, int type_or_fns)
 {
   klass = complete_type (klass);
 
@@ -1373,7 +1374,7 @@ get_class_binding (tree klass, tree name, bool prefer_type, int restricted)
 	}
     }
 
-  return get_class_binding_direct (klass, name, prefer_type, restricted);
+  return get_class_binding_direct (klass, name, type_or_fns);
 }
 
 /* Comparison function to compare two TYPE_METHOD_VEC entries by

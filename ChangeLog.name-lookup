@@ -1,5 +1,14 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	gcc/cp/
+	* name-lookup.h (get_class_binding_direct, get_class_binding):
+	Merge want_type and restricted args.
+	* name-lookup.c (get_class_binding_direct): Merge want_type and
+	restricted args.  Adjust.
+	(get_class_binding): Adjust for argument merge.
+	* decl.c (reshape_init_class): Adjust get_class_binding call.
+	* search.c (lookup_field_r): Adjust get_class_binding call.
+
 	Kill CLASSTYPE_SORTED_FIELDS
 	gcc/cp/
 	* cp-tree.h (struct lang_type): Delete sorted_fields.

@@ -9011,8 +9011,8 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 
   if (assign_p || TYPE_HAS_COPY_CTOR (type))
     fns = get_class_binding (type,
-			   assign_p ? cp_assignment_operator_id (NOP_EXPR)
-			   : ctor_identifier);
+			     assign_p ? cp_assignment_operator_id (NOP_EXPR)
+			     : ctor_identifier);
 
   bool saw_copy = false;
   for (ovl_iterator iter (fns); iter; ++iter)

@@ -974,7 +974,7 @@ lookup_field_r (tree binfo, void *data)
       && !BINFO_VIRTUAL_P (binfo))
     return dfs_skip_bases;
 
-  nval = get_class_binding (type, lfi->name, lfi->want_type, 0);
+  nval = get_class_binding (type, lfi->name, lfi->want_type);
 
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
