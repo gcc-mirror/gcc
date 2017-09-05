@@ -1,5 +1,12 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/62235
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip regular processing
+	for Itypes that are E_Record_Subtype with a cloned subtype.
+	<E_Record_Subtype>: Use the DECL of the cloned type directly, if any.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (unchecked_convert): When the result type is a
 	non-biased integral type with size 0, set the result to 0 directly.
 
