@@ -1,6 +1,10 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* class.c (add_method): Move conv_op marker handling to ...
+	* name-lookup.c (find_method_slot): ... here.
+
+	gcc/cp/
 	* name-lookup.h (get_class_binding_direct, get_class_binding):
 	Merge want_type and restricted args.
 	* name-lookup.c (get_class_binding_direct): Merge want_type and

@@ -1014,31 +1014,9 @@ add_method (tree type, tree method, bool via_using)
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  tree method_name = DECL_NAME (method);
-  bool conv_p = IDENTIFIER_CONV_OP_P (method_name);
-
-  if (conv_p)
-    method_name = conv_op_identifier;
-
-  tree *slot = find_method_slot (type, method_name);
+  tree *slot = find_method_slot (type, DECL_NAME (method));
   tree current_fns = *slot;
 
-  tree conv_marker = NULL_TREE;
-  if (conv_p)
-    {
-      /* For conversion operators, we prepend a dummy overload
-	 pointing at conv_op_marker.  That function's DECL_NAME is
-	 conv_op_identifier, so we can use identifier equality to
-	 locate it.  */
-      if (current_fns)
-	{
-	  gcc_checking_assert (OVL_FUNCTION (current_fns) == conv_op_marker);
-	  conv_marker = current_fns;
-	  current_fns = OVL_CHAIN (current_fns);
-	}
-      else
-	conv_marker = ovl_make (conv_op_marker, NULL_TREE);
-    }
   gcc_assert (!DECL_EXTERN_C_P (method));
 
   /* Check to see if we've already got this method.  */
@@ -1186,13 +1164,7 @@ add_method (tree type, tree method, bool via_using)
 
   current_fns = ovl_insert (method, current_fns, via_using);
 
-  if (conv_p)
-    {
-      /* Prepend the marker function.  */
-      OVL_CHAIN (conv_marker) = current_fns;
-      current_fns = conv_marker;
-    }
-  else if (!COMPLETE_TYPE_P (type))
+  if (!DECL_CONV_FN_P (method) && !COMPLETE_TYPE_P (type))
     push_class_level_binding (DECL_NAME (method), current_fns);
 
   *slot = current_fns;

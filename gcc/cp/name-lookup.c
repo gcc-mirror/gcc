@@ -1211,12 +1211,14 @@ fields_linear_search (tree klass, tree name, bool want_type)
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
    such slot, create an empty one.  KLASS might be complete at this
-   point, in which case we need to preserve ordering. */
+   point, in which case we need to preserve ordering.  Deals with
+   conv_op marker handling.  */
 
 tree *
 find_method_slot (tree klass, tree name)
 {
   bool complete_p = COMPLETE_TYPE_P (klass);
+  
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass);
   if (!method_vec)
     {
@@ -1233,6 +1235,9 @@ find_method_slot (tree klass, tree name)
 	}
     }
 
+  if (IDENTIFIER_CONV_OP_P (name))
+    name = conv_op_identifier;
+
   unsigned ix, length = method_vec->length ();
   for (ix = 0; ix < length; ix++)
     {
@@ -1240,8 +1245,17 @@ find_method_slot (tree klass, tree name)
       tree fn_name = OVL_NAME (*slot);
 
       if (fn_name == name)
-	// FIXME: DEAL with STAT_HACK creation?
-	return slot;
+	{
+	  // FIXME: DEAL with STAT_HACK creation?
+	  if (name == conv_op_identifier)
+	    {
+	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
+	      /* Skip the conv-op marker. */
+	      slot = &OVL_CHAIN (*slot);
+	    }
+	  return slot;
+	}
+
       if (complete_p && fn_name > name)
 	break;
     }
@@ -1262,7 +1276,15 @@ find_method_slot (tree klass, tree name)
     }
   CLASSTYPE_METHOD_VEC (klass) = method_vec;
 
-  return &(*method_vec)[ix];
+  tree *slot = &(*method_vec)[ix];
+  if (name == conv_op_identifier)
+    {
+      /* Install the marker prefix.  */
+      *slot = ovl_make (conv_op_marker, NULL_TREE);
+      slot = &OVL_CHAIN (*slot);
+    }
+
+  return slot;
 }
 
 /* Look for NAME as an immediate member of KLASS (including
