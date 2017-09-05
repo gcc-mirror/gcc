@@ -1,3 +1,8 @@
+2017-09-05  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/owner_less/noexcept.cc: Remove owner_less<void>
+	tests.
+
 2017-09-04  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
