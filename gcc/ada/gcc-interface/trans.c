@@ -1629,10 +1629,14 @@ Attribute_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, int attribute)
 
     case Attr_Address:
     case Attr_Unrestricted_Access:
-      /* Conversions don't change addresses but can cause us to miss the
-	 COMPONENT_REF case below, so strip them off.  */
-      gnu_prefix = remove_conversions (gnu_prefix,
-				       !Must_Be_Byte_Aligned (gnat_node));
+      /* Conversions don't change the address of references but can cause
+	 build_unary_op to miss the references below, so strip them off.
+	 On the contrary, if the address-of operation causes a temporary
+	 to be created, then it must be created with the proper type.  */
+      gnu_expr = remove_conversions (gnu_prefix,
+				     !Must_Be_Byte_Aligned (gnat_node));
+      if (REFERENCE_CLASS_P (gnu_expr))
+	gnu_prefix = gnu_expr;
 
       /* If we are taking 'Address of an unconstrained object, this is the
 	 pointer to the underlying array.  */

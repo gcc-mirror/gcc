@@ -1,5 +1,10 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Address>: Do not strip
+	conversions around prefixes that are not references.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (unchecked_convert): When the result type is a
 	non-biased integral type with size 0, set the result to 0 directly.
 
