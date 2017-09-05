@@ -1,4 +1,37 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_is_extend_from_extract):
+	Take a scalar_int_mode instead of a machine_mode.
+	(aarch64_mask_and_shift_for_ubfiz_p): Likewise.
+	(aarch64_output_scalar_simd_mov_immediate): Likewise.
+	(aarch64_simd_scalar_immediate_valid_for_move): Likewise.
+	(aarch64_simd_attr_length_rglist): Delete.
+	* config/aarch64/aarch64.c (aarch64_is_extend_from_extract): Take
+	a scalar_int_mode instead of a machine_mode.
+	(aarch64_add_offset): Likewise.
+	(aarch64_internal_mov_immediate): Likewise
+	(aarch64_add_constant_internal): Likewise.
+	(aarch64_add_constant): Likewise.
+	(aarch64_movw_imm): Likewise.
+	(aarch64_rtx_arith_op_extract_p): Likewise.
+	(aarch64_mask_and_shift_for_ubfiz_p): Likewise.
+	(aarch64_simd_scalar_immediate_valid_for_move): Likewise.
+	Remove assert that the mode isn't a vector.
+	(aarch64_output_scalar_simd_mov_immediate): Likewise.
+	(aarch64_expand_mov_immediate): Update calls after above changes.
+	(aarch64_output_casesi): Use as_a <scalar_int_mode>.
+	(aarch64_and_bitmask_imm): Check for scalar integer modes.
+	(aarch64_move_imm): Likewise.
+	(aarch64_can_const_movi_rtx_p): Likewise.
+	(aarch64_strip_extend): Likewise.
+	(aarch64_extr_rtx_p): Likewise.
+	(aarch64_rtx_costs): Likewise, using wode_mode as the mode of
+	a CONST_INT when the mode parameter is VOIDmode.
+	(aarch64_float_const_rtx_p): Use scalar_int_mode for a temporary.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* machmode.h (bitwise_mode_for_mode): Return opt_mode.
 	* stor-layout.c (bitwise_mode_for_mode): Likewise.
