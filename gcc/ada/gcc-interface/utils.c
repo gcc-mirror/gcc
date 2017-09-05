@@ -1080,7 +1080,8 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
      in case the record itself contains a BLKmode field.  */
   if (in_record && TYPE_MODE (new_type) == BLKmode)
     SET_TYPE_MODE (new_type,
-		   mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1));
+		   mode_for_size_tree (TYPE_SIZE (new_type),
+				       MODE_INT, 1).else_blk ());
 
   /* If neither mode nor size nor alignment shrunk, return the old type.  */
   if (TYPE_MODE (new_type) == BLKmode && new_size >= size && max_align == 0)

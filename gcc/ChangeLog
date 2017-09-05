@@ -1,5 +1,13 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* stor-layout.h (mode_for_size_tree): Return an opt_mode.
+	* stor-layout.c (mode_for_size_tree): Likewise.
+	(mode_for_array): Update accordingly.
+	(layout_decl): Likewise.
+	(compute_record_mode): Likewise.  Only set the mode once.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* target.def (get_mask_mode): Change return type to opt_mode.
 	Expand commentary.
 	* doc/tm.texi: Regenerate.
