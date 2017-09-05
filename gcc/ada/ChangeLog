@@ -1,3 +1,82 @@
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/62235
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip regular processing
+	for Itypes that are E_Record_Subtype with a cloned subtype.
+	<E_Record_Subtype>: Use the DECL of the cloned type directly, if any.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (convert_with_check): Use a custom base type
+	if the base type of the expression has a different machine mode.
+	Rename a couple of parameters and local variable.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Address>: Do not strip
+	conversions around prefixes that are not references.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (unchecked_convert): When the result type is a
+	non-biased integral type with size 0, set the result to 0 directly.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (renaming_from_generic_instantiation_p): Turn to
+	(renaming_from_instantiation_p): ...this.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Use inline predicate
+	instead of explicit tests on kind of entities.  Adjust for renaming.
+	(gnat_to_gnu_profile_type): Likewise.
+	(gnat_to_gnu_subprog_type): Likewise.
+	* gcc-interface/trans.c (Identifier_to_gnu): Likewise.
+	(Case_Statement_to_gnu): Likewise.
+	(gnat_to_gnu): Likewise.
+	(process_freeze_entity): Likewise.
+	(process_type): Likewise.
+	(add_stmt_with_node): Adjust for renaming.
+	* gcc-interface/utils.c (gnat_pushdecl): Adjust for renaming.
+	(renaming_from_generic_instantiation_p): Rename to...
+	(renaming_from_instantiation_p): ...this.  Use inline predicate.
+	(pad_type_hasher::keep_cache_entry): Fold.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (adjust_for_implicit_deref): New function.
+	(gnat_to_gnu) <N_Explicit_Dereference>: Translate result type first.
+	(N_Indexed_Component): Invoke adjust_for_implicit_deref on the prefix.
+	(N_Slice): Likewise.
+	(N_Selected_Component): Likewise.  Do not try again to translate it.
+	(N_Free_Statement): Invoke adjust_for_implicit_deref on the expression.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.ads: Document new treatment of dynamic values.
+	(TCode): Bump upper bound to 29.
+	(Dynamic_Val): New constant set to 29.
+	* repinfo.adb (Print_Expr) <Dynamic_Val>: New case.
+	(Rep_Value)  <Dynamic_Val>: Likewise.
+	* repinfo.h (Dynamic_Val): New macro.
+	* gcc-interface/decl.c (annotate_value): Tidy up and cache result for
+	DECL_P nodes too.
+	<INTEGER_CST>: Set TCODE instead of recursing.
+	<COMPONENT_REF>: Set TCODE instead of calling Create_Node manually.
+	<VAR_DECL>: New case.
+	<MULT_EXPR, PLUS_EXPR>: Fold conversions into inner operations.
+	<BIT_AND_EXPR>: Adjust.
+	<CALL_EXPR>: Do not fall through.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
+	there is no target, do not create a temporary for the return value for
+	an allocator either.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (pos_to_constructor): Skip conversions to an
+	unconstrained array type.
+
 2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

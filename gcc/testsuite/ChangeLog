@@ -1,3 +1,138 @@
+2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59501
+	PR target/81624
+	PR target/81769
+	* gcc.target/i386/pr59501-4a.c: Remove xfail.
+	* gcc.target/i386/pr81769-1a.c: New test.
+	* gcc.target/i386/pr81769-1b.c: Likewise.
+	* gcc.target/i386/pr81769-2.c: Likewise.
+
+2017-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072-2.c: New test.
+
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* g++.dg/cpp1y/constexpr-return3.C: New.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete5.ad[sb]: New test.
+	* gnat.dg/incomplete5_pkg.ad[sb]: New helper.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/uc2.ads: New test.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/taft_type4.adb: New test.
+	* gnat.dg/taft_type4_pkg.ad[sb]: New helper.
+
+2017-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82102
+	* gcc.dg/torture/pr82102.c: New testcase.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/gnat.dg/array29.ad[sb]: New test.
+
+2017-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82032
+	* g++.dg/other/pr82032.C: New test.
+	* gcc.dg/tree-ssa/pr68198.c: Update scanned pattern.
+	* gcc.dg/tree-ssa/vrp34.c: Likewise.
+	* gcc.dg/switch-10.c: Likewise.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-os-support.h: New file.
+	* gcc.target/i386/mpx/mpx-check.h: Include mpx-os-support.h.
+
+2017-09-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* gcc.target/arm/pr77308-1.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* g++.dg/torture/pr82084.C: New testcase.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* c-c++-common/Wtautological-compare-5.c: New test.
+
+2017-09-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* gcc.dg/tree-ssa/pr64910-2.c: New test.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82060
+	* g++.dg/torture/pr82060.C: New testcase.
+
+2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57448
+	PR target/67458
+	PR target/81316
+	* gcc.dg/atomic/pr80640-2.c: New testcase.
+	* gcc.dg/atomic/pr81316.c: New testcase.
+
+2017-09-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c (fn2): Add parameters corresponding to
+	call in fn11.
+
+2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81981
+	* gcc.dg/ubsan/pr81981.c: New test.
+
+	PR tree-optimization/70043
+	PR testsuite/82093
+	* gfortran.dg/vect/pr70043.f90 (fn1): Start loop from 1 instead of 0.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/adx-check.h (main): Use __get_cpuid_count.
+	* gcc.target/i386/bmi-check.h (main): Ditto.
+	* gcc.target/i386/bmi2-check.h (main): Ditto.
+	* gcc.target/i386/rtm-check.h (main): Ditto.
+	* gcc.target/i386/sha-check.h (main): Ditto.
+	* gcc.target/i386/avx2-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.
+	* gcc.target/i386/avx512-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.  Reorder conditions.
+	* gcc.target/i386/mpx/mpx-check.h (check_osxsave): New function.
+	(main): Use check_osxsave.
+
+2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-check.h (main): Use __get_cpuid_count
+	and return NORUNRES on failure.
+	* gcc.target/i386/mpx/va-arg-pack-1-lbv.c (foo1): Use
+	__builtin_va_arg_pack instead of __va_arg_pack.
+	* gcc.target/i386/mpx/va-arg-pack-1-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-1-ubv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-lbv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-ubv.c (foo1): Ditto.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81766

@@ -1076,7 +1076,7 @@ init_regs_for_mode (machine_mode mode)
 
       /* See whether it accepts all modes that occur in
          original insns.  */
-      if (! HARD_REGNO_MODE_OK (cur_reg, mode))
+      if (!targetm.hard_regno_mode_ok (cur_reg, mode))
         continue;
 
       nregs = hard_regno_nregs[cur_reg][mode];
@@ -1102,7 +1102,7 @@ init_regs_for_mode (machine_mode mode)
       if (i >= 0)
         continue;
 
-      if (HARD_REGNO_CALL_PART_CLOBBERED (cur_reg, mode))
+      if (targetm.hard_regno_call_part_clobbered (cur_reg, mode))
         SET_HARD_REG_BIT (sel_hrd.regs_for_call_clobbered[mode],
                           cur_reg);
 
@@ -1251,7 +1251,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
 
   /* Exclude registers that are partially call clobbered.  */
   if (def->crosses_call
-      && ! HARD_REGNO_CALL_PART_CLOBBERED (regno, mode))
+      && !targetm.hard_regno_call_part_clobbered (regno, mode))
     AND_COMPL_HARD_REG_SET (reg_rename_p->available_for_renaming,
                             sel_hrd.regs_for_call_clobbered[mode]);
 

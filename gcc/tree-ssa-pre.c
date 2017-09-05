@@ -4592,6 +4592,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       /* If we didn't replace the whole stmt (or propagate the result
          into all uses), replace all uses on this stmt with their
 	 leaders.  */
+      bool modified = false;
       use_operand_p use_p;
       ssa_op_iter iter;
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
@@ -4613,7 +4614,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  || !bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))))
 	    {
 	      propagate_value (use_p, sprime);
-	      gimple_set_modified (stmt, true);
+	      modified = true;
 	      if (TREE_CODE (sprime) == SSA_NAME
 		  && !is_gimple_debug (stmt))
 		gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
@@ -4621,73 +4622,16 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    }
 	}
 
-      /* Visit indirect calls and turn them into direct calls if
-	 possible using the devirtualization machinery.  */
-      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
-	{
-	  tree fn = gimple_call_fn (call_stmt);
-	  if (fn
-	      && flag_devirtualize
-	      && virtual_method_call_p (fn))
-	    {
-	      tree otr_type = obj_type_ref_class (fn);
-	      tree instance;
-	      ipa_polymorphic_call_context context (current_function_decl, fn, stmt, &instance);
-	      bool final;
-
-	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
-
-	      vec <cgraph_node *>targets
-		= possible_polymorphic_call_targets (obj_type_ref_class (fn),
-						     tree_to_uhwi
-						       (OBJ_TYPE_REF_TOKEN (fn)),
-						     context,
-						     &final);
-	      if (dump_file)
-		dump_possible_polymorphic_call_targets (dump_file, 
-							obj_type_ref_class (fn),
-							tree_to_uhwi
-							  (OBJ_TYPE_REF_TOKEN (fn)),
-							context);
-	      if (final && targets.length () <= 1 && dbg_cnt (devirt))
-		{
-		  tree fn;
-		  if (targets.length () == 1)
-		    fn = targets[0]->decl;
-		  else
-		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-		  if (dump_enabled_p ())
-		    {
-		      location_t loc = gimple_location_safe (stmt);
-		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-				       "converting indirect call to "
-				       "function %s\n",
-				       lang_hooks.decl_printable_name (fn, 2));
-		    }
-		  gimple_call_set_fndecl (call_stmt, fn);
-		  /* If changing the call to __builtin_unreachable
-		     or similar noreturn function, adjust gimple_call_fntype
-		     too.  */
-		  if (gimple_call_noreturn_p (call_stmt)
-		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
-		      && TYPE_ARG_TYPES (TREE_TYPE (fn))
-		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)))
-			  == void_type_node))
-		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
-		  maybe_remove_unused_call_args (cfun, call_stmt);
-		  gimple_set_modified (stmt, true);
-		}
-	    }
-	}
-
-      if (gimple_modified_p (stmt))
+      /* Fold the stmt if modified, this canonicalizes MEM_REFs we propagated
+         into which is a requirement for the IPA devirt machinery.  */
+      gimple *old_stmt = stmt;
+      if (modified)
 	{
 	  /* If a formerly non-invariant ADDR_EXPR is turned into an
 	     invariant one it was on a separate stmt.  */
 	  if (gimple_assign_single_p (stmt)
 	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-	  gimple *old_stmt = stmt;
 	  gimple_stmt_iterator prev = gsi;
 	  gsi_prev (&prev);
 	  if (fold_stmt (&gsi))
@@ -4719,6 +4663,71 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		while (1);
 	    }
 	  stmt = gsi_stmt (gsi);
+	  /* In case we folded the stmt away schedule the NOP for removal.  */
+	  if (gimple_nop_p (stmt))
+	    el_to_remove.safe_push (stmt);
+	}
+
+      /* Visit indirect calls and turn them into direct calls if
+	 possible using the devirtualization machinery.  Do this before
+	 checking for required EH/abnormal/noreturn cleanup as devird
+	 may expose more of those.  */
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
+	{
+	  tree fn = gimple_call_fn (call_stmt);
+	  if (fn
+	      && flag_devirtualize
+	      && virtual_method_call_p (fn))
+	    {
+	      tree otr_type = obj_type_ref_class (fn);
+	      unsigned HOST_WIDE_INT otr_tok
+		= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (fn));
+	      tree instance;
+	      ipa_polymorphic_call_context context (current_function_decl,
+						    fn, stmt, &instance);
+	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
+					otr_type, stmt);
+	      bool final;
+	      vec <cgraph_node *> targets
+		= possible_polymorphic_call_targets (obj_type_ref_class (fn),
+						     otr_tok, context, &final);
+	      if (dump_file)
+		dump_possible_polymorphic_call_targets (dump_file, 
+							obj_type_ref_class (fn),
+							otr_tok, context);
+	      if (final && targets.length () <= 1 && dbg_cnt (devirt))
+		{
+		  tree fn;
+		  if (targets.length () == 1)
+		    fn = targets[0]->decl;
+		  else
+		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  if (dump_enabled_p ())
+		    {
+		      location_t loc = gimple_location (stmt);
+		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				       "converting indirect call to "
+				       "function %s\n",
+				       lang_hooks.decl_printable_name (fn, 2));
+		    }
+		  gimple_call_set_fndecl (call_stmt, fn);
+		  /* If changing the call to __builtin_unreachable
+		     or similar noreturn function, adjust gimple_call_fntype
+		     too.  */
+		  if (gimple_call_noreturn_p (call_stmt)
+		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
+		      && TYPE_ARG_TYPES (TREE_TYPE (fn))
+		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+			  == void_type_node))
+		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
+		  maybe_remove_unused_call_args (cfun, call_stmt);
+		  modified = true;
+		}
+	    }
+	}
+
+      if (modified)
+	{
 	  /* When changing a call into a noreturn call, cfg cleanup
 	     is needed to fix up the noreturn call.  */
 	  if (!was_noreturn
@@ -4851,6 +4860,7 @@ fini_eliminate (void)
 	lhs = gimple_get_lhs (stmt);
 
       if (inserted_exprs
+	  && lhs
 	  && TREE_CODE (lhs) == SSA_NAME
 	  && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (lhs)))
 	continue;

@@ -209,6 +209,7 @@ static rtx ia64_function_incoming_arg (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void ia64_function_arg_advance (cumulative_args_t, machine_mode,
 				       const_tree, bool);
+static pad_direction ia64_function_arg_padding (machine_mode, const_tree);
 static unsigned int ia64_function_arg_boundary (machine_mode,
 						const_tree);
 static bool ia64_function_ok_for_sibcall (tree, tree);
@@ -334,6 +335,9 @@ static section * ia64_hpux_function_section (tree, enum node_frequency,
 
 static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 					      const unsigned char *sel);
+
+static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool ia64_modes_tieable_p (machine_mode, machine_mode);
 
 #define MAX_VECT_LEN	8
 
@@ -506,6 +510,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #define TARGET_FUNCTION_INCOMING_ARG ia64_function_incoming_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE ia64_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING ia64_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY ia64_function_arg_boundary
 
@@ -652,6 +658,12 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 0
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK ia64_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P ia64_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1202,8 +1214,8 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       emit_insn (gen_load_dtprel (tga_op2, op1));
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-					 LCT_CONST, Pmode, 2, tga_op1,
-					 Pmode, tga_op2, Pmode);
+					 LCT_CONST, Pmode,
+					 tga_op1, Pmode, tga_op2, Pmode);
 
       insns = get_insns ();
       end_sequence ();
@@ -1226,8 +1238,8 @@ ia64_expand_tls_address (enum tls_model tls_kind, rtx op0, rtx op1,
       tga_op2 = const0_rtx;
 
       tga_ret = emit_library_call_value (gen_tls_get_addr (), NULL_RTX,
-					 LCT_CONST, Pmode, 2, tga_op1,
-					 Pmode, tga_op2, Pmode);
+					 LCT_CONST, Pmode,
+					 tga_op1, Pmode, tga_op2, Pmode);
 
       insns = get_insns ();
       end_sequence ();
@@ -1836,7 +1848,7 @@ ia64_expand_compare (rtx *expr, rtx *op0, rtx *op1)
 
       start_sequence ();
 
-      ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode, 3,
+      ret = emit_library_call_value (cmptf_libfunc, 0, LCT_CONST, DImode,
 				     *op0, TFmode, *op1, TFmode,
 				     GEN_INT (magic), DImode);
       cmp = gen_reg_rtx (BImode);
@@ -4249,6 +4261,46 @@ ia64_hard_regno_rename_ok (int from, int to)
     return (from & 1) == (to & 1);
 
   return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+ia64_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (FR_REGNO_P (regno))
+    return (GET_MODE_CLASS (mode) != MODE_CC
+	    && mode != BImode
+	    && mode != TFmode);
+
+  if (PR_REGNO_P (regno))
+    return mode == BImode || GET_MODE_CLASS (mode) == MODE_CC;
+
+  if (GR_REGNO_P (regno))
+    return mode != XFmode && mode != XCmode && mode != RFmode;
+
+  if (AR_REGNO_P (regno))
+    return mode == DImode;
+
+  if (BR_REGNO_P (regno))
+    return mode == DImode;
+
+  return false;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   Don't tie integer and FP modes, as that causes us to get integer registers
+   allocated for FP instructions.  XFmode only supported in FP registers so
+   we can't tie it with any other modes.  */
+
+static bool
+ia64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2)
+	  && ((mode1 == XFmode || mode1 == XCmode || mode1 == RFmode)
+	      == (mode2 == XFmode || mode2 == XCmode || mode2 == RFmode))
+	  && (mode1 == BImode) == (mode2 == BImode));
 }
 
 /* Target hook for assembling integer objects.  Handle word-sized
@@ -10559,20 +10611,23 @@ ia64_builtin_decl (unsigned code, bool initialize_p ATTRIBUTE_UNUSED)
   return ia64_builtins[code];
 }
 
-/* For the HP-UX IA64 aggregate parameters are passed stored in the
+/* Implement TARGET_FUNCTION_ARG_PADDING.
+
+   For the HP-UX IA64 aggregate parameters are passed stored in the
    most significant bits of the stack slot.  */
 
-enum direction
-ia64_hpux_function_arg_padding (machine_mode mode, const_tree type)
+static pad_direction
+ia64_function_arg_padding (machine_mode mode, const_tree type)
 {
-   /* Exception to normal case for structures/unions/etc.  */
+  /* Exception to normal case for structures/unions/etc.  */
+  if (TARGET_HPUX
+      && type
+      && AGGREGATE_TYPE_P (type)
+      && int_size_in_bytes (type) < UNITS_PER_WORD)
+    return PAD_UPWARD;
 
-   if (type && AGGREGATE_TYPE_P (type)
-       && int_size_in_bytes (type) < UNITS_PER_WORD)
-     return upward;
-
-   /* Fall back to the default.  */
-   return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
+  /* Fall back to the default.  */
+  return default_function_arg_padding (mode, type);
 }
 
 /* Emit text to declare externally defined variables and functions, because
@@ -11101,7 +11156,7 @@ ia64_profile_hook (int labelno)
   ip = gen_reg_rtx (Pmode);
   emit_insn (gen_ip_value (ip));
   emit_library_call (gen_mcount_func_rtx (), LCT_NORMAL,
-                     VOIDmode, 3,
+                     VOIDmode,
 		     gen_rtx_REG (Pmode, BR_REG (0)), Pmode,
 		     ip, Pmode,
 		     label, Pmode);

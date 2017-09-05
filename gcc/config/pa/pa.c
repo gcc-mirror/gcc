@@ -172,6 +172,7 @@ static void pa_function_arg_advance (cumulative_args_t, machine_mode,
 				     const_tree, bool);
 static rtx pa_function_arg (cumulative_args_t, machine_mode,
 			    const_tree, bool);
+static pad_direction pa_function_arg_padding (machine_mode, const_tree);
 static unsigned int pa_function_arg_boundary (machine_mode, const_tree);
 static struct machine_function * pa_init_machine_status (void);
 static reg_class_t pa_secondary_reload (bool, rtx, reg_class_t,
@@ -198,6 +199,8 @@ static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
 static bool pa_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
+static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool pa_modes_tieable_p (machine_mode, machine_mode);
 
 /* The following extra sections are only used for SOM.  */
 static GTY(()) section *som_readonly_data_section;
@@ -353,6 +356,8 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_FUNCTION_ARG pa_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE pa_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING pa_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY pa_function_arg_boundary
 
@@ -403,6 +408,11 @@ static size_t n_deferred_plabels = 0;
 
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK pa_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P pa_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -906,7 +916,7 @@ hppa_tls_call (rtx arg)
 
   ret = gen_reg_rtx (Pmode);
   emit_library_call_value (gen_tls_get_addr (), ret,
-		  	   LCT_CONST, Pmode, 1, arg, Pmode);
+			   LCT_CONST, Pmode, arg, Pmode);
 
   return ret;
 }
@@ -6234,7 +6244,9 @@ pa_pass_by_reference (cumulative_args_t ca ATTRIBUTE_UNUSED,
     return size <= 0 || size > 8;
 }
 
-enum direction
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
 pa_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (mode == BLKmode
@@ -6244,11 +6256,11 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	      || TREE_CODE (type) == COMPLEX_TYPE
 	      || TREE_CODE (type) == VECTOR_TYPE)))
     {
-      /* Return none if justification is not required.  */
+      /* Return PAD_NONE if justification is not required.  */
       if (type
 	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	  && (int_size_in_bytes (type) * BITS_PER_UNIT) % PARM_BOUNDARY == 0)
-	return none;
+	return PAD_NONE;
 
       /* The directions set here are ignored when a BLKmode argument larger
 	 than a word is placed in a register.  Different code is used for
@@ -6258,18 +6270,18 @@ pa_function_arg_padding (machine_mode mode, const_tree type)
 	 the stack and in registers should be identical.  */
       if (TARGET_64BIT)
 	/* The 64-bit runtime specifies left justification for aggregates.  */
-        return upward;
+	return PAD_UPWARD;
       else
 	/* The 32-bit runtime architecture specifies right justification.
 	   When the argument is passed on the stack, the argument is padded
 	   with garbage on the left.  The HP compiler pads with zeros.  */
-	return downward;
+	return PAD_DOWNWARD;
     }
 
   if (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY)
-    return downward;
+    return PAD_DOWNWARD;
   else
-    return none;
+    return PAD_NONE;
 }
 
 
@@ -9998,7 +10010,7 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
   if (MAYBE_FP_REG_CLASS_P (rclass))
     return true;
 
-  /* HARD_REGNO_MODE_OK places modes with sizes larger than a word
+  /* TARGET_HARD_REGNO_MODE_OK places modes with sizes larger than a word
      in specific sets of registers.  Thus, we cannot allow changing
      to a larger mode when it's larger than a word.  */
   if (GET_MODE_SIZE (to) > UNITS_PER_WORD
@@ -10008,19 +10020,16 @@ pa_cannot_change_mode_class (machine_mode from, machine_mode to,
   return false;
 }
 
-/* Returns TRUE if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be FALSE for correct output.
+/* Implement TARGET_MODES_TIEABLE_P.
    
    We should return FALSE for QImode and HImode because these modes
    are not ok in the floating-point registers.  However, this prevents
    tieing these modes to SImode and DImode in the general registers.
-   So, this isn't a good idea.  We rely on HARD_REGNO_MODE_OK and
+   So, this isn't a good idea.  We rely on TARGET_HARD_REGNO_MODE_OK and
    CANNOT_CHANGE_MODE_CLASS to prevent these modes from being used
    in the floating-point registers.  */
 
-bool
+static bool
 pa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* Don't tie modes in different classes.  */
@@ -10192,7 +10201,7 @@ pa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -10754,6 +10763,14 @@ pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
   return !TARGET_CALLER_COPIES;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+pa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return PA_HARD_REGNO_MODE_OK (regno, mode);
 }
 
 #include "gt-pa.h"

@@ -125,10 +125,6 @@ do {								\
   ASM_OUTPUT_TYPE_DIRECTIVE (FILE, XSTR (FUN, 0), "function");	\
 } while (0)
 
-#undef FUNCTION_ARG_PADDING
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-	ia64_hpux_function_arg_padding ((MODE), (TYPE))
-
 #undef PAD_VARARGS_DOWN
 #define PAD_VARARGS_DOWN (!AGGREGATE_TYPE_P (type))
 

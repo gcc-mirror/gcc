@@ -296,16 +296,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HARD_REGNO_NREGS(REGNO, MODE) riscv_hard_regno_nregs (REGNO, MODE)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  riscv_hard_regno_mode_ok_p (REGNO, MODE)
-
-/* Don't allow floating-point modes to be tied, since type punning of
-   single-precision and double-precision is implementation defined.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  ((MODE1) == (MODE2)					\
-   || !(GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
-	&& GET_MODE_CLASS (MODE2) == MODE_FLOAT))
-
 /* Use s0 as the frame pointer if it is so requested.  */
 #define HARD_FRAME_POINTER_REGNUM 8
 #define STACK_POINTER_REGNUM 2
@@ -340,7 +330,7 @@ along with GCC; see the file COPYING3.  If not see
     rtx fun, ra;							\
     ra = get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);		\
     fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, ra, Pmode);	\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, ra, Pmode);		\
   }
 
 /* All the work done in PROFILE_HOOK, but still required.  */
@@ -864,7 +854,6 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
-extern bool riscv_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 extern bool riscv_slow_unaligned_access;
 #endif
 

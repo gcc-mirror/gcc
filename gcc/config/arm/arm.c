@@ -186,6 +186,7 @@ static rtx arm_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
 static void arm_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
+static pad_direction arm_function_arg_padding (machine_mode, const_tree);
 static unsigned int arm_function_arg_boundary (machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (machine_mode, const_tree,
 				      const_tree);
@@ -313,6 +314,8 @@ static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 						int reloc);
 static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
 static opt_scalar_float_mode arm_floatn_mode (int, bool);
+static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool arm_modes_tieable_p (machine_mode, machine_mode);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -534,6 +537,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_FUNCTION_ARG arm_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE arm_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING arm_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY arm_function_arg_boundary
 
@@ -780,6 +785,11 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS arm_fixed_condition_code_regs
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK arm_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P arm_modes_tieable_p
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -2863,20 +2873,12 @@ arm_option_params_internal (void)
       targetm.max_anchor_offset = TARGET_MAX_ANCHOR_OFFSET;
     }
 
-  if (optimize_size)
-    {
-      /* If optimizing for size, bump the number of instructions that we
-         are prepared to conditionally execute (even on a StrongARM).  */
-      max_insns_skipped = 6;
+  /* Increase the number of conditional instructions with -Os.  */
+  max_insns_skipped = optimize_size ? 4 : current_tune->max_insns_skipped;
 
-      /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TARGET_THUMB2)
-        max_insns_skipped = arm_restrict_it ? 1 : 4;
-    }
-  else
-    /* When -mrestrict-it is in use tone down the if-conversion.  */
-    max_insns_skipped = (TARGET_THUMB2 && arm_restrict_it)
-      ? 1 : current_tune->max_insns_skipped;
+  /* For THUMB2, we limit the conditional sequence to one IT block.  */
+  if (TARGET_THUMB2)
+    max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3888,7 +3890,7 @@ arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, a_tramp, Pmode,
+		     LCT_NORMAL, VOIDmode, a_tramp, Pmode,
 		     plus_constant (Pmode, a_tramp, TRAMPOLINE_SIZE), Pmode);
 }
 
@@ -7922,6 +7924,8 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 	{
 	  HOST_WIDE_INT val = INTVAL (index);
 
+	  /* Assume we emit ldrd or 2x ldr if !TARGET_LDRD.
+	     If vldr is selected it uses arm_coproc_mem_operand.  */
 	  if (TARGET_LDRD)
 	    return val > -256 && val < 256;
 	  else
@@ -8049,11 +8053,13 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
       if (code == CONST_INT)
 	{
 	  HOST_WIDE_INT val = INTVAL (index);
-	  /* ??? Can we assume ldrd for thumb2?  */
-	  /* Thumb-2 ldrd only has reg+const addressing modes.  */
-	  /* ldrd supports offsets of +-1020.
-	     However the ldr fallback does not.  */
-	  return val > -256 && val < 256 && (val & 3) == 0;
+	  /* Thumb-2 ldrd only has reg+const addressing modes.
+	     Assume we emit ldrd or 2x ldr if !TARGET_LDRD.
+	     If vldr is selected it uses arm_coproc_mem_operand.  */
+	  if (TARGET_LDRD)
+	    return IN_RANGE (val, -1020, 1020) && (val & 3) == 0;
+	  else
+	    return IN_RANGE (val, -255, 4095 - 4);
 	}
       else
 	return 0;
@@ -8364,7 +8370,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
 				     LCT_PURE, /* LCT_CONST?  */
-				     Pmode, 1, reg, Pmode);
+				     Pmode, reg, Pmode);
 
   rtx_insn *insns = get_insns ();
   end_sequence ();
@@ -15148,22 +15154,21 @@ arm_must_pass_in_stack (machine_mode mode, const_tree type)
 }
 
 
-/* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
-   Return true if an argument passed on the stack should be padded upwards,
-   i.e. if the least-significant byte has useful data.
-   For legacy APCS ABIs we use the default.  For AAPCS based ABIs small
-   aggregate types are placed in the lowest memory address.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING; return PAD_UPWARD if the lowest
+   byte of a stack argument has useful data.  For legacy APCS ABIs we use
+   the default.  For AAPCS based ABIs small aggregate types are placed
+   in the lowest memory address.  */
 
-bool
-arm_pad_arg_upward (machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
+static pad_direction
+arm_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
-    return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
+    return default_function_arg_padding (mode, type);
 
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
-    return false;
+    return PAD_DOWNWARD;
 
-  return true;
+  return PAD_UPWARD;
 }
 
 
@@ -23344,9 +23349,8 @@ thumb2_asm_output_opcode (FILE * stream)
     }
 }
 
-/* Returns true if REGNO is a valid register
-   for holding a quantity of type MODE.  */
-int
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+static bool
 arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -23390,7 +23394,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	       || (mode == CImode && NEON_REGNO_OK_FOR_NREGS (regno, 6))
 	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8));
 
-      return FALSE;
+      return false;
     }
 
   if (TARGET_REALLY_IWMMXT)
@@ -23409,10 +23413,10 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (regno <= LAST_ARM_REGNUM)
     {
       if (ARM_NUM_REGS (mode) > 4)
-	  return FALSE;
+	return false;
 
       if (TARGET_THUMB2)
-	return TRUE;
+	return true;
 
       return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
     }
@@ -23422,12 +23426,12 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     /* We only allow integers in the fake hard registers.  */
     return GET_MODE_CLASS (mode) == MODE_INT;
 
-  return FALSE;
+  return false;
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
@@ -31101,7 +31105,7 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
     = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
 
   rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					libval_mode, 2,
+					libval_mode,
 					op0, GET_MODE (op0),
 					op1, GET_MODE (op1));
 

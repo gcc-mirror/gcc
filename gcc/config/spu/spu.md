@@ -864,9 +864,10 @@
     {
        start_sequence ();
        value =
-         emit_library_call_value (convert_optab_libfunc (ufloat_optab,
-                                                         DFmode, SImode),
-                   NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], SImode);
+	 emit_library_call_value (convert_optab_libfunc (ufloat_optab,
+							 DFmode, SImode),
+				  NULL_RTX, LCT_NORMAL, DFmode,
+				  operands[1], SImode);
        rtx_insn *insns = get_insns ();
        end_sequence ();
        emit_libcall_block (insns, operands[0], value,
@@ -959,7 +960,8 @@
       value =
          emit_library_call_value (convert_optab_libfunc (ufloat_optab,
                                                          DFmode, DImode),
-                   NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], DImode);
+				  NULL_RTX, LCT_NORMAL, DFmode,
+				  operands[1], DImode);
       rtx_insn *insns = get_insns ();
       end_sequence ();
       emit_libcall_block (insns, operands[0], value,

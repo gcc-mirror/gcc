@@ -1,3 +1,9 @@
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* c-warn.c (warn_tautological_bitwise_comparison): New function.
+	(warn_tautological_cmp): Call it.
+
 2017-09-01  Boris Kolpackov <boris@codesynthesis.com>
 
 	* c-opts.c (c_common_finish): Write dependency information even if

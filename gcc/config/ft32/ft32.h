@@ -166,12 +166,6 @@ enum reg_class
 /* We can't copy to or from our CC register. */
 #define AVOID_CCMODE_COPIES 1
 
-/* A C expression that is nonzero if it is permissible to store a
-   value of mode MODE in hard register number REGNO (or in several
-   registers starting with that one).  All gstore registers are
-   equivalent, so we can set this to 1.  */
-#define HARD_REGNO_MODE_OK(R,M) 1
-
 /* A C expression whose value is a register class containing hard
    register REGNO.  */
 #define REGNO_REG_CLASS(R) ((R < FT32_PC) ? GENERAL_REGS :                \
@@ -183,10 +177,6 @@ enum reg_class
 #define HARD_REGNO_NREGS(REGNO, MODE)                      \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)             \
    / UNITS_PER_WORD)
-
-/* A C expression that is nonzero if a value of mode MODE1 is
-   accessible in mode MODE2 without copying.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
 
 /* The Overall Framework of an Assembler File */
 

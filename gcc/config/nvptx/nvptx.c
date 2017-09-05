@@ -5513,6 +5513,14 @@ nvptx_data_alignment (const_tree type, unsigned int basic_align)
   return basic_align;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+nvptx_modes_tieable_p (machine_mode, machine_mode)
+{
+  return false;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -5636,6 +5644,9 @@ nvptx_data_alignment (const_tree type, unsigned int basic_align)
 #undef TARGET_VECTORIZE_PREFERRED_SIMD_MODE
 #define TARGET_VECTORIZE_PREFERRED_SIMD_MODE \
     nvptx_preferred_simd_mode
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nvptx_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

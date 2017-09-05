@@ -2057,9 +2057,8 @@ try_switch_expansion (gswitch *stmt)
      expressions being INTEGER_CST.  */
   gcc_assert (TREE_CODE (index_expr) != INTEGER_CST);
 
-  /* Optimization of switch statements with only one label has already
-     occurred, so we should never see them at this point.  */
-  gcc_assert (ncases > 1);
+  if (ncases == 1)
+    return false;
 
   /* Find the default case target label.  */
   tree default_label = CASE_LABEL (gimple_switch_default_label (stmt));
@@ -2701,27 +2700,13 @@ emit_case_nodes (basic_block bb, tree index, case_node_ptr node,
 	    }
 	  else if (!low_bound && !high_bound)
 	    {
-	      tree type = TREE_TYPE (index);
-	      tree utype = unsigned_type_for (type);
-
-	      tree lhs = make_ssa_name (type);
-	      gassign *sub1
-		= gimple_build_assign (lhs, MINUS_EXPR, index, node->low);
-
-	      tree converted = make_ssa_name (utype);
-	      gassign *a = gimple_build_assign (converted, NOP_EXPR, lhs);
-
-	      tree rhs = fold_build2 (MINUS_EXPR, utype,
-				      fold_convert (type, node->high),
-				      fold_convert (type, node->low));
-	      gimple_stmt_iterator gsi = gsi_last_bb (bb);
-	      gsi_insert_before (&gsi, sub1, GSI_SAME_STMT);
-	      gsi_insert_before (&gsi, a, GSI_SAME_STMT);
-
+	      tree lhs, rhs;
+	      generate_range_test (bb, index, node->low, node->high,
+				   &lhs, &rhs);
 	      probability
 		= conditional_probability (default_prob,
 					   subtree_prob + default_prob);
-	      bb = emit_cmp_and_jump_insns (bb, converted, rhs, GT_EXPR,
+	      bb = emit_cmp_and_jump_insns (bb, lhs, rhs, GT_EXPR,
 					    default_bb, probability,
 					    phi_mapping);
 	    }

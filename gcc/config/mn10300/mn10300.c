@@ -2626,7 +2626,9 @@ mn10300_can_output_mi_thunk (const_tree    thunk_fndecl ATTRIBUTE_UNUSED,
   return true;
 }
 
-bool
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
 mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (REGNO_REG_CLASS (regno) == FP_REGS
@@ -2648,8 +2650,10 @@ mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
-bool
-mn10300_modes_tieable (machine_mode mode1, machine_mode mode2)
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+mn10300_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == MODE_FLOAT
       && GET_MODE_CLASS (mode2) != MODE_FLOAT)
@@ -3424,5 +3428,11 @@ mn10300_reorg (void)
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM  CC_REG
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mn10300_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mn10300_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

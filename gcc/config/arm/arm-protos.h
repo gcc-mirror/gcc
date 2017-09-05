@@ -61,8 +61,6 @@ extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
 extern bool arm_small_register_classes_for_mode_p (machine_mode);
-extern int arm_hard_regno_mode_ok (unsigned int, machine_mode);
-extern bool arm_modes_tieable_p (machine_mode, machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
@@ -179,7 +177,6 @@ extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern bool arm_pad_arg_upward (machine_mode, const_tree);
 extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);

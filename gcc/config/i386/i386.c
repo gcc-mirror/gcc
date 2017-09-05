@@ -14303,6 +14303,11 @@ ix86_finalize_stack_frame_flags (void)
       add_to_hard_reg_set (&set_up_by_prologue, Pmode, ARG_POINTER_REGNUM);
       add_to_hard_reg_set (&set_up_by_prologue, Pmode,
 			   HARD_FRAME_POINTER_REGNUM);
+
+      /* The preferred stack alignment is the minimum stack alignment.  */
+      unsigned int stack_alignment = crtl->preferred_stack_boundary;
+      bool require_stack_frame = false;
+
       FOR_EACH_BB_FN (bb, cfun)
         {
           rtx_insn *insn;
@@ -14311,79 +14316,107 @@ ix86_finalize_stack_frame_flags (void)
 		&& requires_stack_frame_p (insn, prologue_used,
 					   set_up_by_prologue))
 	      {
-		if (crtl->stack_realign_needed != stack_realign)
-		  recompute_frame_layout_p = true;
-		crtl->stack_realign_needed = stack_realign;
-		crtl->stack_realign_finalized = true;
-		if (recompute_frame_layout_p)
-		  ix86_compute_frame_layout ();
-		return;
+		require_stack_frame = true;
+
+		if (stack_realign)
+		  {
+		    /* Find the maximum stack alignment.  */
+		    subrtx_iterator::array_type array;
+		    FOR_EACH_SUBRTX (iter, array, PATTERN (insn), ALL)
+		      if (MEM_P (*iter)
+			  && (reg_mentioned_p (stack_pointer_rtx,
+					       *iter)
+			      || reg_mentioned_p (frame_pointer_rtx,
+						  *iter)))
+			{
+			  unsigned int alignment = MEM_ALIGN (*iter);
+			  if (alignment > stack_alignment)
+			    stack_alignment = alignment;
+			}
+		  }
 	      }
 	}
 
-      /* If drap has been set, but it actually isn't live at the start
-	 of the function, there is no reason to set it up.  */
-      if (crtl->drap_reg)
+      if (require_stack_frame)
 	{
-	  basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
-	  if (! REGNO_REG_SET_P (DF_LR_IN (bb), REGNO (crtl->drap_reg)))
+	  /* Stack frame is required.  If stack alignment needed is less
+	     than incoming stack boundary, don't realign stack.  */
+	  stack_realign = incoming_stack_boundary < stack_alignment;
+	  if (!stack_realign)
 	    {
-	      crtl->drap_reg = NULL_RTX;
-	      crtl->need_drap = false;
+	      crtl->max_used_stack_slot_alignment
+		= incoming_stack_boundary;
+	      crtl->stack_alignment_needed
+		= incoming_stack_boundary;
 	    }
 	}
       else
-	cfun->machine->no_drap_save_restore = true;
-
-      frame_pointer_needed = false;
-      stack_realign = false;
-      crtl->max_used_stack_slot_alignment = incoming_stack_boundary;
-      crtl->stack_alignment_needed = incoming_stack_boundary;
-      crtl->stack_alignment_estimated = incoming_stack_boundary;
-      if (crtl->preferred_stack_boundary > incoming_stack_boundary)
-	crtl->preferred_stack_boundary = incoming_stack_boundary;
-      df_finish_pass (true);
-      df_scan_alloc (NULL);
-      df_scan_blocks ();
-      df_compute_regs_ever_live (true);
-      df_analyze ();
-
-      if (flag_var_tracking)
 	{
-	  /* Since frame pointer is no longer available, replace it with
-	     stack pointer - UNITS_PER_WORD in debug insns.  */
-	  df_ref ref, next;
-	  for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
-	       ref; ref = next)
+	  /* If drap has been set, but it actually isn't live at the
+	     start of the function, there is no reason to set it up.  */
+	  if (crtl->drap_reg)
 	    {
-	      rtx_insn *insn = DF_REF_INSN (ref);
-	      /* Make sure the next ref is for a different instruction,
-		 so that we're not affected by the rescan.  */
-	      next = DF_REF_NEXT_REG (ref);
-	      while (next && DF_REF_INSN (next) == insn)
-		next = DF_REF_NEXT_REG (next);
-
-	      if (DEBUG_INSN_P (insn))
+	      basic_block bb = ENTRY_BLOCK_PTR_FOR_FN (cfun)->next_bb;
+	      if (! REGNO_REG_SET_P (DF_LR_IN (bb),
+				     REGNO (crtl->drap_reg)))
 		{
-		  bool changed = false;
-		  for (; ref != next; ref = DF_REF_NEXT_REG (ref))
-		    {
-		      rtx *loc = DF_REF_LOC (ref);
-		      if (*loc == hard_frame_pointer_rtx)
-			{
-			  *loc = plus_constant (Pmode,
-						stack_pointer_rtx,
-						-UNITS_PER_WORD);
-			  changed = true;
-			}
-		    }
-		  if (changed)
-		    df_insn_rescan (insn);
+		  crtl->drap_reg = NULL_RTX;
+		  crtl->need_drap = false;
 		}
 	    }
-	}
+	  else
+	    cfun->machine->no_drap_save_restore = true;
 
-      recompute_frame_layout_p = true;
+	  frame_pointer_needed = false;
+	  stack_realign = false;
+	  crtl->max_used_stack_slot_alignment = incoming_stack_boundary;
+	  crtl->stack_alignment_needed = incoming_stack_boundary;
+	  crtl->stack_alignment_estimated = incoming_stack_boundary;
+	  if (crtl->preferred_stack_boundary > incoming_stack_boundary)
+	    crtl->preferred_stack_boundary = incoming_stack_boundary;
+	  df_finish_pass (true);
+	  df_scan_alloc (NULL);
+	  df_scan_blocks ();
+	  df_compute_regs_ever_live (true);
+	  df_analyze ();
+
+	  if (flag_var_tracking)
+	    {
+	      /* Since frame pointer is no longer available, replace it with
+		 stack pointer - UNITS_PER_WORD in debug insns.  */
+	      df_ref ref, next;
+	      for (ref = DF_REG_USE_CHAIN (HARD_FRAME_POINTER_REGNUM);
+		   ref; ref = next)
+		{
+		  rtx_insn *insn = DF_REF_INSN (ref);
+		  /* Make sure the next ref is for a different instruction,
+		     so that we're not affected by the rescan.  */
+		  next = DF_REF_NEXT_REG (ref);
+		  while (next && DF_REF_INSN (next) == insn)
+		    next = DF_REF_NEXT_REG (next);
+
+		  if (DEBUG_INSN_P (insn))
+		    {
+		      bool changed = false;
+		      for (; ref != next; ref = DF_REF_NEXT_REG (ref))
+			{
+			  rtx *loc = DF_REF_LOC (ref);
+			  if (*loc == hard_frame_pointer_rtx)
+			    {
+			      *loc = plus_constant (Pmode,
+						    stack_pointer_rtx,
+						    -UNITS_PER_WORD);
+			      changed = true;
+			    }
+			}
+		      if (changed)
+			df_insn_rescan (insn);
+		    }
+		}
+	    }
+
+	  recompute_frame_layout_p = true;
+	}
     }
 
   if (crtl->stack_realign_needed != stack_realign)
@@ -17647,6 +17680,89 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
     }
 
   return dest;
+}
+
+/* Return true if OP refers to a TLS address.  */
+bool
+ix86_tls_address_pattern_p (rtx op)
+{
+  subrtx_var_iterator::array_type array;
+  FOR_EACH_SUBRTX_VAR (iter, array, op, ALL)
+    {
+      rtx op = *iter;
+      if (MEM_P (op))
+	{
+	  rtx *x = &XEXP (op, 0);
+	  while (GET_CODE (*x) == PLUS)
+	    {
+	      int i;
+	      for (i = 0; i < 2; i++)
+		{
+		  rtx u = XEXP (*x, i);
+		  if (GET_CODE (u) == ZERO_EXTEND)
+		    u = XEXP (u, 0);
+		  if (GET_CODE (u) == UNSPEC
+		      && XINT (u, 1) == UNSPEC_TP)
+		    return true;
+		}
+	      x = &XEXP (*x, 0);
+	    }
+
+	  iter.skip_subrtxes ();
+	}
+    }
+
+  return false;
+}
+
+/* Rewrite *LOC so that it refers to a default TLS address space.  */
+void
+ix86_rewrite_tls_address_1 (rtx *loc)
+{
+  subrtx_ptr_iterator::array_type array;
+  FOR_EACH_SUBRTX_PTR (iter, array, loc, ALL)
+    {
+      rtx *loc = *iter;
+      if (MEM_P (*loc))
+	{
+	  rtx addr = XEXP (*loc, 0);
+	  rtx *x = &addr;
+	  while (GET_CODE (*x) == PLUS)
+	    {
+	      int i;
+	      for (i = 0; i < 2; i++)
+		{
+		  rtx u = XEXP (*x, i);
+		  if (GET_CODE (u) == ZERO_EXTEND)
+		    u = XEXP (u, 0);
+		  if (GET_CODE (u) == UNSPEC
+		      && XINT (u, 1) == UNSPEC_TP)
+		    {
+		      addr_space_t as = DEFAULT_TLS_SEG_REG;
+
+		      *x = XEXP (*x, 1 - i);
+
+		      *loc = replace_equiv_address_nv (*loc, addr, true);
+		      set_mem_addr_space (*loc, as);
+		      return;
+		    }
+		}
+	      x = &XEXP (*x, 0);
+	    }
+
+	  iter.skip_subrtxes ();
+	}
+    }
+}
+
+/* Rewrite instruction pattern involvning TLS address
+   so that it refers to a default TLS address space.  */
+rtx
+ix86_rewrite_tls_address (rtx pattern)
+{
+  pattern = copy_insn (pattern);
+  ix86_rewrite_tls_address_1 (&pattern);
+  return pattern;
 }
 
 /* Create or return the unique __imp_DECL dllimport symbol corresponding
@@ -31824,7 +31940,7 @@ ix86_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   if (CHECK_EXECUTE_STACK_ENABLED)
 #endif
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -41296,11 +41412,10 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
   return 2;
 }
 
-/* Return TRUE if hard register REGNO can hold a value of machine-mode
-   MODE.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
-ix86_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+ix86_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Flags and only flags can only hold CCmode values.  */
   if (CC_REGNO_P (regno))
@@ -41407,6 +41522,17 @@ ix86_hard_regno_mode_ok (int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The only ABI that
+   saves SSE registers across calls is Win64 (thus no need to check the
+   current ABI here), and with AVX enabled Win64 only guarantees that
+   the low 16 bytes are saved.  */
+
+static bool
+ix86_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  return SSE_REGNO_P (regno) && GET_MODE_SIZE (mode) > 16;
+}
+
 /* A subroutine of ix86_modes_tieable_p.  Return true if MODE is a
    tieable integer mode.  */
 
@@ -41430,11 +41556,13 @@ ix86_tieable_integer_mode_p (machine_mode mode)
     }
 }
 
-/* Return true if MODE1 is accessible in a register that can hold MODE2
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   Return true if MODE1 is accessible in a register that can hold MODE2
    without copying.  That is, all register classes that can hold MODE2
    can also hold MODE1.  */
 
-bool
+static bool
 ix86_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (mode1 == mode2)
@@ -52432,10 +52560,10 @@ ix86_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   rtx rem = assign_386_stack_local (mode, SLOT_TEMP);
 
   rtx quot = emit_library_call_value (libfunc, NULL_RTX, LCT_NORMAL,
-				    mode, 3,
-				    op0, GET_MODE (op0),
-				    op1, GET_MODE (op1),
-				    XEXP (rem, 0), Pmode);
+				      mode,
+				      op0, GET_MODE (op0),
+				      op1, GET_MODE (op1),
+				      XEXP (rem, 0), Pmode);
   *quot_p = quot;
   *rem_p = rem;
 }
@@ -53249,6 +53377,16 @@ ix86_run_selftests (void)
 
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P ix86_noce_conversion_profitable_p
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK ix86_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P ix86_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  ix86_hard_regno_call_part_clobbered
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

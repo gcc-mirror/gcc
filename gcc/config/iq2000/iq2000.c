@@ -165,6 +165,7 @@ static rtx iq2000_function_arg	      (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void iq2000_function_arg_advance (cumulative_args_t,
 					 machine_mode, const_tree, bool);
+static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
 static void iq2000_va_start	      (tree, rtx);
@@ -177,6 +178,8 @@ static rtx iq2000_libcall_value       (machine_mode, const_rtx);
 static void iq2000_print_operand      (FILE *, rtx, int);
 static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
+static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -229,6 +232,8 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_FUNCTION_ARG		iq2000_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	iq2000_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING	iq2000_function_arg_padding
 #undef  TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY	iq2000_function_arg_boundary
 
@@ -253,6 +258,11 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	iq2000_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		iq2000_trampoline_init
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK	iq2000_hard_regno_mode_ok
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		iq2000_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1367,6 +1377,22 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
     }
 
   return ret;
+}
+
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
+iq2000_function_arg_padding (machine_mode mode, const_tree type)
+{
+  return (! BYTES_BIG_ENDIAN
+	  ? PAD_UPWARD
+	  : ((mode == BLKmode
+	      ? (type
+		 && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+	      : (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY
+		 && GET_MODE_CLASS (mode) == MODE_INT))
+	     ? PAD_DOWNWARD : PAD_UPWARD));
 }
 
 static unsigned int
@@ -3483,6 +3509,27 @@ iq2000_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, Pmode,
 			TRAMPOLINE_CODE_SIZE + GET_MODE_SIZE (Pmode));
   emit_move_insn (mem, chain_value);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+iq2000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (REGNO_REG_CLASS (regno) == GR_REGS
+	  ? (regno & 1) == 0 || GET_MODE_SIZE (mode) <= 4
+	  : (regno & 1) == 0 || GET_MODE_SIZE (mode) == 4);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+iq2000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 #include "gt-iq2000.h"

@@ -86,7 +86,6 @@ extern enum attr_op_mem m68k_sched_attr_op_mem (rtx_insn *);
 
 #endif /* RTX_CODE */
 
-extern bool m68k_regno_mode_ok (int, machine_mode);
 extern enum reg_class m68k_secondary_reload_class (enum reg_class,
 						   machine_mode, rtx);
 extern enum reg_class m68k_preferred_reload_class (rtx, enum reg_class);

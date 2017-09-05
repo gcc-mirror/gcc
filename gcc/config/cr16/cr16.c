@@ -220,6 +220,11 @@ static const struct attribute_spec cr16_attribute_table[] = {
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP 	TARGET_ASM_ALIGNED_DI_OP
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK	cr16_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		cr16_modes_tieable_p
+
 /* Target hook implementations.  */
 
 /* Implements hook TARGET_RETURN_IN_MEMORY.  */
@@ -463,28 +468,38 @@ cr16_regno_reg_class (int regno)
   return NO_REGS;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-int
-cr16_hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the CR16 architecture, all
+   registers can hold all modes, except that double precision floats
+   (and double ints) must fall on even-register boundaries.  */
+
+static bool
+cr16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if ((GET_MODE_SIZE (mode) >= 4) && (regno == 11))
-    return 0;
+    return false;
  
   if (mode == DImode || mode == DFmode)
     {
       if ((regno > 8) || (regno & 1))
-	return 0;
-      return 1;
+	return false;
+      return true;
     }
 
   if ((TARGET_INT32)
        && ((regno >= 12) && (GET_MODE_SIZE (mode) < 4 )))
-     return 0;
+     return false;
 
   /* CC can only hold CCmode values.  */
   if (GET_MODE_CLASS (mode) == MODE_CC)
-    return 0;
-  return 1;
+    return false;
+  return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+static bool
+cr16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2);
 }
 
 /* Returns register number for function return value.*/

@@ -20,7 +20,7 @@ uint16_t t35[][7][2];
 static uint8_t t41;
 char z[][8][3];
 char fn1(char p1, int p2) { return p1 < 0 ?: p1 >> p2; }
-short fn2() {}
+short fn2(int a, uint16_t b) {}
 void fn3(uint8_t p1) { d = d >> 8 ^ c[(d ^ p1) & 5]; }
 void fn4(uint32_t p1, int p2) {
   int e;

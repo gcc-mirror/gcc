@@ -1083,9 +1083,9 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
   gcc_unreachable ();
 }
 
-/* Implement HARD_REGNO_MODE_OK.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-int
+static bool
 aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -1101,7 +1101,7 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
     return mode == Pmode;
 
   if (GP_REGNUM_P (regno) && ! aarch64_vect_struct_mode_p (mode))
-    return 1;
+    return true;
 
   if (FP_REGNUM_P (regno))
     {
@@ -1109,10 +1109,20 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
 	return
 	  (regno + aarch64_hard_regno_nregs (regno, mode) - 1) <= V31_REGNUM;
       else
-	return 1;
+	return true;
     }
 
-  return 0;
+  return false;
+}
+
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  The callee only saves
+   the lower 64 bits of a 128-bit register.  Tell the compiler the callee
+   clobbers the top 64 bits when restoring the bottom 64 bits.  */
+
+static bool
+aarch64_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  return FP_REGNUM_P (regno) && GET_MODE_SIZE (mode) > 8;
 }
 
 /* Implement HARD_REGNO_CALLER_SAVE_MODE.  */
@@ -2583,22 +2593,19 @@ aarch64_function_arg_boundary (machine_mode mode, const_tree type)
   return MIN (MAX (alignment, PARM_BOUNDARY), STACK_BOUNDARY);
 }
 
-/* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
-
-   Return true if an argument passed on the stack should be padded upwards,
-   i.e. if the least-significant byte of the stack slot has useful data.
+/* Implement TARGET_FUNCTION_ARG_PADDING.
 
    Small aggregate types are placed in the lowest memory address.
 
    The related parameter passing rules are B.4, C.3, C.5 and C.14.  */
 
-bool
-aarch64_pad_arg_upward (machine_mode mode, const_tree type)
+static pad_direction
+aarch64_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the least significant byte of every stack
      argument is passed at the lowest byte address of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return true;
+    return PAD_UPWARD;
 
   /* Otherwise, integral, floating-point and pointer types are padded downward:
      the least significant byte of a stack argument is passed at the highest
@@ -2607,10 +2614,10 @@ aarch64_pad_arg_upward (machine_mode mode, const_tree type)
       ? (INTEGRAL_TYPE_P (type) || SCALAR_FLOAT_TYPE_P (type)
 	 || POINTER_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode) || SCALAR_FLOAT_MODE_P (mode)))
-    return false;
+    return PAD_DOWNWARD;
 
   /* Everything else padded upward, i.e. data in first byte of stack slot.  */
-  return true;
+  return PAD_UPWARD;
 }
 
 /* Similarly, for use by BLOCK_REG_PADDING (MODE, TYPE, FIRST).
@@ -5977,7 +5984,7 @@ aarch64_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
      gen_clear_cache().  */
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, a_tramp, ptr_mode,
+		     LCT_NORMAL, VOIDmode, a_tramp, ptr_mode,
 		     plus_constant (ptr_mode, a_tramp, TRAMPOLINE_SIZE),
 		     ptr_mode);
 }
@@ -10623,7 +10630,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
 	  if (BYTES_BIG_ENDIAN && GET_MODE_SIZE (ag_mode) < UNITS_PER_VREG)
 	    adjust = UNITS_PER_VREG - GET_MODE_SIZE (ag_mode);
 	}
-      else if (BLOCK_REG_PADDING (mode, type, 1) == downward
+      else if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
 	       && size < UNITS_PER_VREG)
 	{
 	  adjust = UNITS_PER_VREG - size;
@@ -10642,7 +10649,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
       if (align > 8)
 	dw_align = true;
 
-      if (BLOCK_REG_PADDING (mode, type, 1) == downward
+      if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
 	  && size < UNITS_PER_WORD)
 	{
 	  adjust = UNITS_PER_WORD  - size;
@@ -10717,7 +10724,7 @@ aarch64_gimplify_va_arg_expr (tree valist, tree type, gimple_seq *pre_p,
   /* String up with arg */
   on_stack = build2 (COMPOUND_EXPR, TREE_TYPE (arg), t, arg);
   /* Big-endianness related address adjustment.  */
-  if (BLOCK_REG_PADDING (mode, type, 1) == downward
+  if (BLOCK_REG_PADDING (mode, type, 1) == PAD_DOWNWARD
       && size < UNITS_PER_WORD)
   {
     t = build2 (POINTER_PLUS_EXPR, TREE_TYPE (arg), arg,
@@ -13853,16 +13860,15 @@ aarch64_reverse_mask (machine_mode mode)
   return force_reg (V16QImode, mask);
 }
 
-/* Implement MODES_TIEABLE_P.  In principle we should always return true.
-   However due to issues with register allocation it is preferable to avoid
-   tieing integer scalar and FP scalar modes.  Executing integer operations
-   in general registers is better than treating them as scalar vector
-   operations.  This reduces latency and avoids redundant int<->FP moves.
-   So tie modes if they are either the same class, or vector modes with
-   other vector modes, vector structs or any scalar mode.
-*/
+/* Implement TARGET_MODES_TIEABLE_P.  In principle we should always return
+   true.  However due to issues with register allocation it is preferable
+   to avoid tieing integer scalar and FP scalar modes.  Executing integer
+   operations in general registers is better than treating them as scalar
+   vector operations.  This reduces latency and avoids redundant int<->FP
+   moves.  So tie modes if they are either the same class, or vector modes
+   with other vector modes, vector structs or any scalar mode.  */
 
-bool
+static bool
 aarch64_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
@@ -15376,6 +15382,9 @@ aarch64_run_selftests (void)
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY aarch64_function_arg_boundary
 
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING aarch64_function_arg_padding
+
 #undef TARGET_FUNCTION_OK_FOR_SIBCALL
 #define TARGET_FUNCTION_OK_FOR_SIBCALL aarch64_function_ok_for_sibcall
 
@@ -15658,6 +15667,16 @@ aarch64_libgcc_floating_mode_supported_p
 /* The architecture reserves bits 0 and 1 so use bit 2 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 4
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK aarch64_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P aarch64_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  aarch64_hard_regno_call_part_clobbered
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

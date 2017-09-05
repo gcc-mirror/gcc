@@ -176,8 +176,8 @@ REAL_VALUE_TYPE dfhigh, dflow, sfhigh, sflow;
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char microblaze_hard_regno_mode_ok[(int)MAX_MACHINE_MODE]
-				  [FIRST_PSEUDO_REGISTER];
+static char microblaze_hard_regno_mode_ok_p[(int)MAX_MACHINE_MODE]
+					   [FIRST_PSEUDO_REGISTER];
 
 /* Current frame information calculated by compute_frame_size.  */
 struct microblaze_frame_info current_frame_info;
@@ -585,7 +585,7 @@ microblaze_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
                                      LCT_PURE, /* LCT_CONST?  */
-                                     Pmode, 1, reg, Pmode);
+                                     Pmode, reg, Pmode);
 
   insns = get_insns ();
   end_sequence ();
@@ -1841,9 +1841,34 @@ microblaze_option_override (void)
 	  else
 	    ok = 0;
 
-	  microblaze_hard_regno_mode_ok[(int) mode][regno] = ok;
+	  microblaze_hard_regno_mode_ok_p[(int) mode][regno] = ok;
 	}
     }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  In 32 bit mode, require that
+   DImode and DFmode be in even registers.  For DImode, this makes some
+   of the insns easier to write, since you don't have to worry about a
+   DImode value in registers 3 & 4, producing a result in 4 & 5.
+
+   To make the code simpler, the hook now just references an
+   array built in override_options.  */
+
+static bool
+microblaze_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return microblaze_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+microblaze_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 /* Return true if FUNC is an interrupt function as specified
@@ -3560,10 +3585,10 @@ microblaze_expand_divide (rtx operands[])
 
   emit_label (div_label);
   ret = emit_library_call_value (gen_rtx_SYMBOL_REF (Pmode, "__divsi3"), 
-				       operands[0], LCT_NORMAL, 
-				       GET_MODE (operands[0]), 2, operands[1], 
-				       GET_MODE (operands[1]), operands[2], 
-				       GET_MODE (operands[2]));
+				 operands[0], LCT_NORMAL,
+				 GET_MODE (operands[0]),
+				 operands[1], GET_MODE (operands[1]),
+				 operands[2], GET_MODE (operands[2]));
   if (ret != operands[0])
                 emit_move_insn (operands[0], ret);    
 
@@ -3872,6 +3897,12 @@ microblaze_machine_dependent_reorg (void)
 
 #undef TARGET_MACHINE_DEPENDENT_REORG
 #define TARGET_MACHINE_DEPENDENT_REORG microblaze_machine_dependent_reorg
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK microblaze_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P microblaze_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

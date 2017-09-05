@@ -2753,17 +2753,36 @@ nds32_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
   return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
 }
 
-int
-nds32_hard_regno_mode_ok (int regno, machine_mode mode)
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Restrict double-word quantities to even register pairs.  */
   if (HARD_REGNO_NREGS (regno, mode) == 1
       || !((regno) & 1))
-    return 1;
+    return true;
 
-  return 0;
+  return false;
 }
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK nds32_hard_regno_mode_ok
+
+/* Implement TARGET_MODES_TIEABLE_P.  We can use general registers to
+   tie QI/HI/SI modes together.  */
+
+static bool
+nds32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+}
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P nds32_modes_tieable_p
 
 /* Register Classes.  */
 

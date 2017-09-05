@@ -321,6 +321,8 @@ static bool sh_legitimate_combined_insn (rtx_insn* insn);
 static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
+static bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool sh_modes_tieable_p (machine_mode, machine_mode);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -640,6 +642,12 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM sh_cannot_force_const_mem_p
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK sh_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P sh_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10090,7 +10098,7 @@ sh_trampoline_init (rtx tramp_mem, tree fndecl, rtx cxt)
 	  || (!(TARGET_SH4A || TARGET_SH4_300) && TARGET_USERMODE))
 	emit_library_call (function_symbol (NULL, "__ic_invalidate",
 					    FUNCTION_ORDINARY).sym,
-			   LCT_NORMAL, VOIDmode, 1, tramp, SImode);
+			   LCT_NORMAL, VOIDmode, tramp, SImode);
       else
 	emit_insn (gen_ic_invalidate_line (tramp));
     }
@@ -10494,7 +10502,8 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
   return target;
 }
 
-/* Return true if hard register REGNO can hold a value of machine-mode MODE.
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
    We can allow any mode in any general register.  The special registers
    only allow SImode.  Don't allow any mode in the PR.
 
@@ -10509,7 +10518,7 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 
    We want to allow TImode FP regs so that when V4SFmode is loaded as TImode,
    it won't be ferried through GP registers first.  */
-bool
+static bool
 sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (SPECIAL_REGISTER_P (regno))
@@ -10568,8 +10577,24 @@ sh_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return true;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   If TARGET_HARD_REGNO_MODE_OK could produce different values for MODE1
+   and MODE2, for any hard reg, then this must be false for correct output.
+   That's the case for xd registers: we don't hold SFmode values in
+   them, so we can't tie an SFmode pseudos with one in another
+   floating-point mode.  */
+
+static bool
+sh_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2)
+	      && (mode1 != SFmode && mode2 != SFmode)));
+}
+
 /* Specify the modes required to caller save a given hard regno.
-   choose_hard_reg_mode chooses mode based on HARD_REGNO_MODE_OK
+   choose_hard_reg_mode chooses mode based on TARGET_HARD_REGNO_MODE_OK
    and returns ?Imode for float regs when sh_hard_regno_mode_ok
    permits integer modes on them.  That makes LRA's split process
    unhappy.  See PR55212.

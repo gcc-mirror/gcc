@@ -3873,6 +3873,14 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   : HARD_REGNO_NREGS (cum, mode));
 }
 
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
+spu_function_arg_padding (machine_mode, const_tree)
+{
+  return PAD_UPWARD;
+}
+
 /* Variable sized types are passed by reference.  */
 static bool
 spu_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
@@ -4201,14 +4209,14 @@ ea_load_store (rtx mem, bool is_store, rtx ea_addr, rtx data_addr)
       if (!cache_fetch_dirty)
 	cache_fetch_dirty = init_one_libfunc ("__cache_fetch_dirty");
       emit_library_call_value (cache_fetch_dirty, data_addr, LCT_NORMAL, Pmode,
-			       2, ea_addr, EAmode, ndirty, SImode);
+			       ea_addr, EAmode, ndirty, SImode);
     }
   else
     {
       if (!cache_fetch)
 	cache_fetch = init_one_libfunc ("__cache_fetch");
       emit_library_call_value (cache_fetch, data_addr, LCT_NORMAL, Pmode,
-			       1, ea_addr, EAmode);
+			       ea_addr, EAmode);
     }
 }
 
@@ -7138,6 +7146,14 @@ spu_expand_atomic_op (enum rtx_code code, rtx mem, rtx val,
     emit_move_insn (orig_after, after);
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+spu_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
+	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7257,6 +7273,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
 
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING spu_function_arg_padding
+
 #undef TARGET_MUST_PASS_IN_STACK
 #define TARGET_MUST_PASS_IN_STACK must_pass_in_stack_var_size
 
@@ -7359,6 +7378,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P spu_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

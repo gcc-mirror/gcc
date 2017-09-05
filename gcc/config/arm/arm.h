@@ -990,12 +990,6 @@ extern int arm_arch_cmse;
     && !IS_VFP_REGNUM (REGNO)		\
    ? 1 : ARM_NUM_REGS (MODE))
 
-/* Return true if REGNO is suitable for holding a quantity of type MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  arm_hard_regno_mode_ok ((REGNO), (MODE))
-
-#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
@@ -1486,11 +1480,8 @@ typedef struct
 } CUMULATIVE_ARGS;
 #endif
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
-
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 /* For AAPCS, padding should never be below the argument. For other ABIs,
  * mimic the default.  */

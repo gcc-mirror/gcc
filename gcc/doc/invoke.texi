@@ -2039,7 +2039,7 @@ freestanding and hosted environments.
 Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
 @code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
 compiler generates accelerated code according to the OpenACC Application
-Programming Interface v2.0 @w{@uref{http://www.openacc.org/}}.  This option
+Programming Interface v2.0 @w{@uref{https://www.openacc.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
@@ -5492,6 +5492,14 @@ int i = 1;
 @dots{}
 if (i > i) @{ @dots{} @}
 @end smallexample
+
+This warning also warns about bitwise comparisons that always evaluate
+to true or false, for instance:
+@smallexample
+if ((a & 16) == 10) @{ @dots{} @}
+@end smallexample
+will always be false.
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wtrampolines

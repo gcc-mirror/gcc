@@ -77,6 +77,8 @@ static rtx lm32_function_arg (cumulative_args_t cum,
 static void lm32_function_arg_advance (cumulative_args_t cum,
 				       machine_mode mode,
 				       const_tree type, bool named);
+static bool lm32_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool lm32_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE lm32_option_override
@@ -106,6 +108,10 @@ static void lm32_function_arg_advance (cumulative_args_t cum,
 #define TARGET_LRA_P hook_bool_void_false
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P lm32_legitimate_address_p
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK lm32_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P lm32_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1220,4 +1226,23 @@ lm32_move_ok (machine_mode mode, rtx operands[2]) {
   if (memory_operand (operands[0], mode))
     return register_or_zero_operand (operands[1], mode);
   return true;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+lm32_hard_regno_mode_ok (unsigned int regno, machine_mode)
+{
+  return G_REG_P (regno);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+lm32_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
 }

@@ -386,14 +386,6 @@ struct GTY(()) machine_function
    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  	\
     / UNITS_PER_WORD)
 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
-/* Note that no register can really be accessed in single-float mode, so
-   we *can* say 1 here.  FIXME:  Will TRT happen for single-float, or do
-   we have to punt to libgcc1.asm?  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
-
 /* Node: Leaf Functions */
 /* (empty) */
 

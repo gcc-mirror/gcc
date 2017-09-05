@@ -78,7 +78,8 @@ enum internal_test
 
 /* Array giving truth value on whether or not a given hard register
    can support a given mode.  */
-char xtensa_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
+static char xtensa_hard_regno_mode_ok_p
+  [(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Largest block move to handle in-line.  */
 #define LARGEST_MOVE_RATIO 15
@@ -177,6 +178,8 @@ static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
 
 static void xtensa_conditional_register_usage (void);
+static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 
 
 
@@ -304,6 +307,12 @@ static void xtensa_conditional_register_usage (void);
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE xtensa_conditional_register_usage
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK xtensa_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P xtensa_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1343,7 +1352,7 @@ xtensa_expand_nonlocal_goto (rtx *operands)
     containing_fp = force_reg (Pmode, containing_fp);
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_nonlocal_goto"),
-		     LCT_NORMAL, VOIDmode, 2,
+		     LCT_NORMAL, VOIDmode,
 		     containing_fp, Pmode,
 		     goto_handler, Pmode);
 }
@@ -1623,7 +1632,7 @@ xtensa_setup_frame_addresses (void)
   if (TARGET_WINDOWED_ABI)
     emit_library_call
       (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_libgcc_window_spill"),
-       LCT_NORMAL, VOIDmode, 0);
+       LCT_NORMAL, VOIDmode);
 }
 
 
@@ -2217,7 +2226,7 @@ xtensa_option_override (void)
 	  else
 	    temp = FALSE;
 
-	  xtensa_hard_regno_mode_ok[(int) mode][regno] = temp;
+	  xtensa_hard_regno_mode_ok_p[(int) mode][regno] = temp;
 	}
     }
 
@@ -2250,6 +2259,25 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+xtensa_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return xtensa_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+xtensa_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 /* A C compound statement to output to stdio stream STREAM the
@@ -4045,7 +4073,7 @@ xtensa_trampoline_init (rtx m_tramp, tree fndecl, rtx chain)
   emit_move_insn (adjust_address (m_tramp, SImode, chain_off), chain);
   emit_move_insn (adjust_address (m_tramp, SImode, func_off), func);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__xtensa_sync_caches"),
-		     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+		     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 }
 
 /* Implement TARGET_LEGITIMATE_CONSTANT_P.  */

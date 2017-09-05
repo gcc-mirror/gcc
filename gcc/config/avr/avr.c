@@ -12149,14 +12149,12 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 }
 
 
-/* Worker function for `HARD_REGNO_MODE_OK'.  */
-/* Returns 1 if a value of mode MODE can be stored starting with hard
-   register number REGNO.  On the enhanced core, anything larger than
-   1 byte must start in even numbered register for "movw" to work
-   (this way we don't have to check for odd registers everywhere).  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the enhanced core, anything
+   larger than 1 byte must start in even numbered register for "movw" to
+   work (this way we don't have to check for odd registers everywhere).  */
 
-int
-avr_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
         Disallowing QI et al. in these regs might lead to code like
@@ -12169,7 +12167,7 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
   /* Any GENERAL_REGS register can hold 8-bit values.  */
 
   if (GET_MODE_SIZE (mode) == 1)
-    return 1;
+    return true;
 
   /* FIXME: Ideally, the following test is not needed.
         However, it turned out that it can reduce the number
@@ -12178,7 +12176,7 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
 
   if (GET_MODE_SIZE (mode) >= 4
       && regno >= REG_X)
-    return 0;
+    return false;
 
   /* All modes larger than 8 bits should start in an even register.  */
 
@@ -12186,9 +12184,9 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
 }
 
 
-/* Implement `HARD_REGNO_CALL_PART_CLOBBERED'.  */
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
-int
+static bool
 avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
@@ -14691,8 +14689,14 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE avr_conditional_register_usage
 
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK avr_hard_regno_mode_ok
 #undef  TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
+#undef  TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  avr_hard_regno_call_part_clobbered
+
 #undef  TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
 

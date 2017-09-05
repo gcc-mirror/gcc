@@ -1845,7 +1845,7 @@ find_reg (struct insn_chain *chain, int order)
 
       if (! TEST_HARD_REG_BIT (not_usable, regno)
 	  && ! TEST_HARD_REG_BIT (used_by_other_reload, regno)
-	  && HARD_REGNO_MODE_OK (regno, rl->mode))
+	  && targetm.hard_regno_mode_ok (regno, rl->mode))
 	{
 	  int this_cost = spill_cost[regno];
 	  int ok = 1;
@@ -6099,9 +6099,7 @@ failed_reload (rtx_insn *insn, int r)
 static int
 set_reload_reg (int i, int r)
 {
-  /* regno is 'set but not used' if HARD_REGNO_MODE_OK doesn't use its first
-     parameter.  */
-  int regno ATTRIBUTE_UNUSED;
+  int regno;
   rtx reg = spill_reg_rtx[i];
 
   if (reg == 0 || GET_MODE (reg) != rld[r].mode)
@@ -6112,7 +6110,7 @@ set_reload_reg (int i, int r)
 
   /* Detect when the reload reg can't hold the reload mode.
      This used to be one `if', but Sequent compiler can't handle that.  */
-  if (HARD_REGNO_MODE_OK (regno, rld[r].mode))
+  if (targetm.hard_regno_mode_ok (regno, rld[r].mode))
     {
       machine_mode test_mode = VOIDmode;
       if (rld[r].in)
@@ -6124,9 +6122,9 @@ set_reload_reg (int i, int r)
 	 to reload from or into have modes which are valid for this
 	 reload register.  Otherwise the reload insns would be invalid.  */
       if (! (rld[r].in != 0 && test_mode != VOIDmode
-	     && ! HARD_REGNO_MODE_OK (regno, test_mode)))
+	     && !targetm.hard_regno_mode_ok (regno, test_mode)))
 	if (! (rld[r].out != 0
-	       && ! HARD_REGNO_MODE_OK (regno, GET_MODE (rld[r].out))))
+	       && !targetm.hard_regno_mode_ok (regno, GET_MODE (rld[r].out))))
 	  {
 	    /* The reg is OK.  */
 	    last_spill_reg = i;
@@ -6217,7 +6215,7 @@ allocate_reload_reg (struct insn_chain *chain ATTRIBUTE_UNUSED, int r,
 					rld[r].when_needed, rld[r].in,
 					rld[r].out, r, 1)))
 	      && TEST_HARD_REG_BIT (reg_class_contents[rclass], regnum)
-	      && HARD_REGNO_MODE_OK (regnum, rld[r].mode)
+	      && targetm.hard_regno_mode_ok (regnum, rld[r].mode)
 	      /* Look first for regs to share, then for unshared.  But
 		 don't share regs used for inherited reloads; they are
 		 the ones we want to preserve.  */
@@ -6587,7 +6585,7 @@ choose_reload_regs (struct insn_chain *chain)
 
 		  if (reg_reloaded_contents[i] == regno
 		      && TEST_HARD_REG_BIT (reg_reloaded_valid, i)
-		      && HARD_REGNO_MODE_OK (i, rld[r].mode)
+		      && targetm.hard_regno_mode_ok (i, rld[r].mode)
 		      && (TEST_HARD_REG_BIT (reg_class_contents[(int) rclass], i)
 			  /* Even if we can't use this register as a reload
 			     register, we might use it for reload_override_in,
@@ -6771,7 +6769,8 @@ choose_reload_regs (struct insn_chain *chain)
 		    equiv = 0;
 		}
 
-	      if (equiv != 0 && ! HARD_REGNO_MODE_OK (regno, rld[r].mode))
+	      if (equiv != 0
+		  && !targetm.hard_regno_mode_ok (regno, rld[r].mode))
 		equiv = 0;
 
 	      /* We found a register that contains the value we need.
@@ -7152,7 +7151,7 @@ reload_adjust_reg_for_temp (rtx *reload_reg, rtx alt_reload_reg,
 	continue;
       if (GET_MODE (reg) != new_mode)
 	{
-	  if (!HARD_REGNO_MODE_OK (regno, new_mode))
+	  if (!targetm.hard_regno_mode_ok (regno, new_mode))
 	    continue;
 	  if (hard_regno_nregs[regno][new_mode]
 	      > hard_regno_nregs[regno][GET_MODE (reg)])
@@ -8275,7 +8274,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : out_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (regno + k, mode))
+		      if (targetm.hard_regno_call_part_clobbered (regno + k,
+								  mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  regno + k);
 		      else
@@ -8354,7 +8354,8 @@ emit_reload_insns (struct insn_chain *chain)
 			   : in_regno + k);
 		      reg_reloaded_insn[regno + k] = insn;
 		      SET_HARD_REG_BIT (reg_reloaded_valid, regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (regno + k, mode))
+		      if (targetm.hard_regno_call_part_clobbered (regno + k,
+								  mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  regno + k);
 		      else
@@ -8468,8 +8469,8 @@ emit_reload_insns (struct insn_chain *chain)
 		      reg_reloaded_insn[src_regno + k] = store_insn;
 		      CLEAR_HARD_REG_BIT (reg_reloaded_dead, src_regno + k);
 		      SET_HARD_REG_BIT (reg_reloaded_valid, src_regno + k);
-		      if (HARD_REGNO_CALL_PART_CLOBBERED (src_regno + k,
-							  mode))
+		      if (targetm.hard_regno_call_part_clobbered
+			  (src_regno + k, mode))
 			SET_HARD_REG_BIT (reg_reloaded_call_part_clobbered,
 					  src_regno + k);
 		      else

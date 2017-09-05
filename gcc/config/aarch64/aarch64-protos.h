@@ -339,8 +339,6 @@ bool aarch64_label_mentioned_p (rtx);
 void aarch64_declare_function_name (FILE *, const char*, tree);
 bool aarch64_legitimate_pic_operand_p (rtx);
 bool aarch64_mask_and_shift_for_ubfiz_p (machine_mode, rtx, rtx);
-bool aarch64_modes_tieable_p (machine_mode mode1,
-			      machine_mode mode2);
 bool aarch64_zero_extend_const_eq (machine_mode, rtx, machine_mode, rtx);
 bool aarch64_move_imm (HOST_WIDE_INT, machine_mode);
 bool aarch64_mov_operand_p (rtx, machine_mode);
@@ -349,7 +347,6 @@ rtx aarch64_reverse_mask (machine_mode);
 bool aarch64_offset_7bit_signed_scaled_p (machine_mode, HOST_WIDE_INT);
 char *aarch64_output_scalar_simd_mov_immediate (rtx, machine_mode);
 char *aarch64_output_simd_mov_immediate (rtx, machine_mode, unsigned);
-bool aarch64_pad_arg_upward (machine_mode, const_tree);
 bool aarch64_pad_reg_upward (machine_mode, const_tree, bool);
 bool aarch64_regno_ok_for_base_p (int, bool);
 bool aarch64_regno_ok_for_index_p (int, bool);
@@ -375,7 +372,6 @@ int aarch64_asm_preferred_eh_data_format (int, int);
 int aarch64_fpconst_pow_of_2 (rtx);
 machine_mode aarch64_hard_regno_caller_save_mode (unsigned, unsigned,
 						       machine_mode);
-int aarch64_hard_regno_mode_ok (unsigned, machine_mode);
 int aarch64_hard_regno_nregs (unsigned, machine_mode);
 int aarch64_uxt_size (int, HOST_WIDE_INT);
 int aarch64_vec_fpconst_pow_of_2 (rtx);

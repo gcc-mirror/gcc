@@ -2768,7 +2768,7 @@ expand_builtin_powi (tree exp, rtx target)
     op1 = convert_to_mode (mode2, op1, 0);
 
   target = emit_library_call_value (optab_libfunc (powi_optab, mode),
-				    target, LCT_CONST, mode, 2,
+				    target, LCT_CONST, mode,
 				    op0, mode, op1, mode2);
 
   return target;
@@ -4909,8 +4909,8 @@ expand_asan_emit_allocas_unpoison (tree exp)
   rtx top = expand_expr (arg0, NULL_RTX, ptr_mode, EXPAND_NORMAL);
   rtx bot = convert_memory_address (ptr_mode, virtual_stack_dynamic_rtx);
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
-  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2, top,
-				 ptr_mode, bot, ptr_mode);
+  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
+				 top, ptr_mode, bot, ptr_mode);
   return ret;
 }
 

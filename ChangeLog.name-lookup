@@ -1,5 +1,7 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	Merge trunk r251721.
+
 	gcc/cp/
 	* cp-tree.h (DECL_TEMPLATE_CONV_FN_P): Delete.
 	* pt.c (push_template_decl_real): Don't set it.

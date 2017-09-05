@@ -2888,6 +2888,8 @@ subreg_highpart_offset (machine_mode outermode, machine_mode innermode)
 }
 
 extern int byte_lowpart_offset (machine_mode, machine_mode);
+extern int subreg_memory_offset (machine_mode, machine_mode, unsigned int);
+extern int subreg_memory_offset (const_rtx);
 extern rtx make_safe_from (rtx, rtx);
 extern rtx convert_memory_address_addr_space_1 (scalar_int_mode, rtx,
 						addr_space_t, bool, bool);
@@ -3773,10 +3775,138 @@ enum libcall_type
   LCT_RETURNS_TWICE = 5
 };
 
-extern void emit_library_call (rtx, enum libcall_type, machine_mode, int,
-			       ...);
-extern rtx emit_library_call_value (rtx, rtx, enum libcall_type,
-				    machine_mode, int, ...);
+extern rtx emit_library_call_value_1 (int, rtx, rtx, enum libcall_type,
+				      machine_mode, int, rtx_mode_t *);
+
+/* Output a library call and discard the returned value.  FUN is the
+   address of the function, as a SYMBOL_REF rtx, and OUTMODE is the mode
+   of the (discarded) return value.  FN_TYPE is LCT_NORMAL for `normal'
+   calls, LCT_CONST for `const' calls, LCT_PURE for `pure' calls, or
+   another LCT_ value for other types of library calls.
+
+   There are different overloads of this function for different numbers
+   of arguments.  In each case the argument value is followed by its mode.  */
+
+inline void
+emit_library_call (rtx fun, libcall_type fn_type, machine_mode outmode)
+{
+  emit_library_call_value_1 (0, fun, NULL_RTX, fn_type, outmode, 0, NULL);
+}
+
+inline void
+emit_library_call (rtx fun, libcall_type fn_type, machine_mode outmode,
+		   rtx arg1, machine_mode arg1_mode)
+{
+  rtx_mode_t args[] = { rtx_mode_t (arg1, arg1_mode) };
+  emit_library_call_value_1 (0, fun, NULL_RTX, fn_type, outmode, 1, args);
+}
+
+inline void
+emit_library_call (rtx fun, libcall_type fn_type, machine_mode outmode,
+		   rtx arg1, machine_mode arg1_mode,
+		   rtx arg2, machine_mode arg2_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode)
+  };
+  emit_library_call_value_1 (0, fun, NULL_RTX, fn_type, outmode, 2, args);
+}
+
+inline void
+emit_library_call (rtx fun, libcall_type fn_type, machine_mode outmode,
+		   rtx arg1, machine_mode arg1_mode,
+		   rtx arg2, machine_mode arg2_mode,
+		   rtx arg3, machine_mode arg3_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode),
+    rtx_mode_t (arg3, arg3_mode)
+  };
+  emit_library_call_value_1 (0, fun, NULL_RTX, fn_type, outmode, 3, args);
+}
+
+inline void
+emit_library_call (rtx fun, libcall_type fn_type, machine_mode outmode,
+		   rtx arg1, machine_mode arg1_mode,
+		   rtx arg2, machine_mode arg2_mode,
+		   rtx arg3, machine_mode arg3_mode,
+		   rtx arg4, machine_mode arg4_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode),
+    rtx_mode_t (arg3, arg3_mode),
+    rtx_mode_t (arg4, arg4_mode)
+  };
+  emit_library_call_value_1 (0, fun, NULL_RTX, fn_type, outmode, 4, args);
+}
+
+/* Like emit_library_call, but return the value produced by the call.
+   Use VALUE to store the result if it is nonnull, otherwise pick a
+   convenient location.  */
+
+inline rtx
+emit_library_call_value (rtx fun, rtx value, libcall_type fn_type,
+			 machine_mode outmode)
+{
+  return emit_library_call_value_1 (1, fun, value, fn_type, outmode, 0, NULL);
+}
+
+inline rtx
+emit_library_call_value (rtx fun, rtx value, libcall_type fn_type,
+			 machine_mode outmode,
+			 rtx arg1, machine_mode arg1_mode)
+{
+  rtx_mode_t args[] = { rtx_mode_t (arg1, arg1_mode) };
+  return emit_library_call_value_1 (1, fun, value, fn_type, outmode, 1, args);
+}
+
+inline rtx
+emit_library_call_value (rtx fun, rtx value, libcall_type fn_type,
+			 machine_mode outmode,
+			 rtx arg1, machine_mode arg1_mode,
+			 rtx arg2, machine_mode arg2_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode)
+  };
+  return emit_library_call_value_1 (1, fun, value, fn_type, outmode, 2, args);
+}
+
+inline rtx
+emit_library_call_value (rtx fun, rtx value, libcall_type fn_type,
+			 machine_mode outmode,
+			 rtx arg1, machine_mode arg1_mode,
+			 rtx arg2, machine_mode arg2_mode,
+			 rtx arg3, machine_mode arg3_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode),
+    rtx_mode_t (arg3, arg3_mode)
+  };
+  return emit_library_call_value_1 (1, fun, value, fn_type, outmode, 3, args);
+}
+
+inline rtx
+emit_library_call_value (rtx fun, rtx value, libcall_type fn_type,
+			 machine_mode outmode,
+			 rtx arg1, machine_mode arg1_mode,
+			 rtx arg2, machine_mode arg2_mode,
+			 rtx arg3, machine_mode arg3_mode,
+			 rtx arg4, machine_mode arg4_mode)
+{
+  rtx_mode_t args[] = {
+    rtx_mode_t (arg1, arg1_mode),
+    rtx_mode_t (arg2, arg2_mode),
+    rtx_mode_t (arg3, arg3_mode),
+    rtx_mode_t (arg4, arg4_mode)
+  };
+  return emit_library_call_value_1 (1, fun, value, fn_type, outmode, 4, args);
+}
 
 /* In varasm.c */
 extern void init_varasm_once (void);

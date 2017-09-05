@@ -4533,6 +4533,24 @@ used for arguments without any special help.",
  (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
  default_function_arg_advance)
 
+DEFHOOK
+(function_arg_padding,
+ "This hook determines whether, and in which direction, to pad out\n\
+an argument of mode @var{mode} and type @var{type}.  It returns\n\
+@code{PAD_UPWARD} to insert padding above the argument, @code{PAD_DOWNWARD}\n\
+to insert padding below the argument, or @code{PAD_NONE} to inhibit padding.\n\
+\n\
+The @emph{amount} of padding is not controlled by this hook, but by\n\
+@code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is always just enough\n\
+to reach the next multiple of that boundary.\n\
+\n\
+This hook has a default definition that is right for most systems.\n\
+For little-endian machines, the default is to pad upward.  For\n\
+big-endian machines, the default is to pad downward for an argument of\n\
+constant size shorter than an @code{int}, and upward otherwise.",
+ pad_direction, (machine_mode mode, const_tree type),
+ default_function_arg_padding)
+
 /* Return zero if the argument described by the state of CA should
    be placed on a stack, or a hard register in which to store the
    argument.  The values MODE, TYPE, and NAMED describe that
@@ -5381,6 +5399,84 @@ that are not actually in any insns yet, but will be later.",
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(hard_regno_mode_ok,
+ "This hook returns true if it is permissible to store a value\n\
+of mode @var{mode} in hard register number @var{regno} (or in several\n\
+registers starting with that one).  The default definition returns true\n\
+unconditionally.\n\
+\n\
+You need not include code to check for the numbers of fixed registers,\n\
+because the allocation mechanism considers them to be always occupied.\n\
+\n\
+@cindex register pairs\n\
+On some machines, double-precision values must be kept in even/odd\n\
+register pairs.  You can implement that by defining this hook to reject\n\
+odd register numbers for such modes.\n\
+\n\
+The minimum requirement for a mode to be OK in a register is that the\n\
+@samp{mov@var{mode}} instruction pattern support moves between the\n\
+register and other hard register in the same class and that moving a\n\
+value into the register and back out not alter it.\n\
+\n\
+Since the same instruction used to move @code{word_mode} will work for\n\
+all narrower integer modes, it is not necessary on any machine for\n\
+this hook to distinguish between these modes, provided you define\n\
+patterns @samp{movhi}, etc., to take advantage of this.  This is\n\
+useful because of the interaction between @code{TARGET_HARD_REGNO_MODE_OK}\n\
+and @code{TARGET_MODES_TIEABLE_P}; it is very desirable for all integer\n\
+modes to be tieable.\n\
+\n\
+Many machines have special registers for floating point arithmetic.\n\
+Often people assume that floating point machine modes are allowed only\n\
+in floating point registers.  This is not true.  Any registers that\n\
+can hold integers can safely @emph{hold} a floating point machine\n\
+mode, whether or not floating arithmetic can be done on it in those\n\
+registers.  Integer move instructions can be used to move the values.\n\
+\n\
+On some machines, though, the converse is true: fixed-point machine\n\
+modes may not go in floating registers.  This is true if the floating\n\
+registers normalize any value stored in them, because storing a\n\
+non-floating value there would garble it.  In this case,\n\
+@code{TARGET_HARD_REGNO_MODE_OK} should reject fixed-point machine modes in\n\
+floating registers.  But if the floating registers do not automatically\n\
+normalize, if you can store any bit pattern in one and retrieve it\n\
+unchanged without a trap, then any machine mode may go in a floating\n\
+register, so you can define this hook to say so.\n\
+\n\
+The primary significance of special floating registers is rather that\n\
+they are the registers acceptable in floating point arithmetic\n\
+instructions.  However, this is of no concern to\n\
+@code{TARGET_HARD_REGNO_MODE_OK}.  You handle it by writing the proper\n\
+constraints for those instructions.\n\
+\n\
+On some machines, the floating registers are especially slow to access,\n\
+so that it is better to store a value in a stack frame than in such a\n\
+register if floating point arithmetic is not being done.  As long as the\n\
+floating registers are not in class @code{GENERAL_REGS}, they will not\n\
+be used unless some pattern's constraint asks for one.",
+ bool, (unsigned int regno, machine_mode mode),
+ hook_bool_uint_mode_true)
+
+DEFHOOK
+(modes_tieable_p,
+ "This hook returns true if a value of mode @var{mode1} is accessible\n\
+in mode @var{mode2} without copying.\n\
+\n\
+If @code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and\n\
+@code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always\n\
+the same for any @var{r}, then\n\
+@code{TARGET_MODES_TIEABLE_P (@var{mode1}, @var{mode2})}\n\
+should be true.  If they differ for any @var{r}, you should define\n\
+this hook to return false unless some other mechanism ensures the\n\
+accessibility of the value in a narrower mode.\n\
+\n\
+You should define this hook to return true in as many cases as\n\
+possible since doing so will allow GCC to perform better register\n\
+allocation.  The default definition returns true unconditionally.",
+ bool, (machine_mode mode1, machine_mode mode2),
+ hook_bool_mode_mode_true)
+
 /* Return true if is OK to use a hard register REGNO as scratch register
    in peephole2.  */
 DEFHOOK
@@ -5394,6 +5490,19 @@ is not saved by a prologue in an interrupt handler.\n\
 The default version of this hook always returns @code{true}.",
  bool, (unsigned int regno),
  default_hard_regno_scratch_ok)
+
+DEFHOOK
+(hard_regno_call_part_clobbered,
+ "This hook should return true if @var{regno} is partly call-saved and\n\
+partly call-clobbered, and if a value of mode @var{mode} would be partly\n\
+clobbered by a call.  For example, if the low 32 bits of @var{regno} are\n\
+preserved across a call but higher bits are clobbered, this hook should\n\
+return true for a 64-bit mode but false for a 32-bit mode.\n\
+\n\
+The default implementation returns false, which is correct\n\
+for targets that don't have partly call-clobbered registers.",
+ bool, (unsigned int regno, machine_mode mode),
+ hook_bool_uint_mode_false)
 
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */

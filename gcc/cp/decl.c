@@ -15073,7 +15073,10 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (DECL_DESTRUCTOR_P (decl1)
       || (DECL_CONSTRUCTOR_P (decl1)
 	  && targetm.cxx.cdtor_returns_this ()))
-    cdtor_label = create_artificial_label (input_location);
+    {
+      cdtor_label = create_artificial_label (input_location);
+      LABEL_DECL_CDTOR (cdtor_label) = true;
+    }
 
   start_fname_decls ();
 

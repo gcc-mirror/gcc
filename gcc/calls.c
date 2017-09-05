@@ -164,8 +164,6 @@ static void compute_argument_addresses (struct arg_data *, rtx, int);
 static rtx rtx_for_function_call (tree, tree);
 static void load_register_parameters (struct arg_data *, int, rtx *, int,
 				      int, int *);
-static rtx emit_library_call_value_1 (int, rtx, rtx, enum libcall_type,
-				      machine_mode, int, va_list);
 static int special_function_p (const_tree, int);
 static int check_sibcall_argument_overlap_1 (rtx);
 static int check_sibcall_argument_overlap (rtx_insn *, struct arg_data *, int);
@@ -1156,7 +1154,7 @@ store_unaligned_arguments_into_pseudos (struct arg_data *args, int num_actuals)
 #ifdef BLOCK_REG_PADDING
 	    && (BLOCK_REG_PADDING (args[i].mode,
 				   TREE_TYPE (args[i].tree_value), 1)
-		== downward)
+		== PAD_DOWNWARD)
 #else
 	    && BYTES_BIG_ENDIAN
 #endif
@@ -2224,7 +2222,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    }
 	  align = BITS_PER_UNIT;
 	  boundary = args[i].locate.boundary;
-	  if (args[i].locate.where_pad != downward)
+	  if (args[i].locate.where_pad != PAD_DOWNWARD)
 	    align = boundary;
 	  else if (CONST_INT_P (offset))
 	    {
@@ -2521,7 +2519,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 		 upward on a BYTES_BIG_ENDIAN machine.  */
 	      if (size < UNITS_PER_WORD
 		  && (args[i].locate.where_pad
-		      == (BYTES_BIG_ENDIAN ? upward : downward)))
+		      == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 		{
 		  rtx x;
 		  int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
@@ -2582,7 +2580,7 @@ load_register_parameters (struct arg_data *args, int num_actuals,
 	      /* Handle a BLKmode that needs shifting.  */
 	      if (nregs == 1 && size < UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
-		  && args[i].locate.where_pad == downward
+		  && args[i].locate.where_pad == PAD_DOWNWARD
 #else
 		  && BYTES_BIG_ENDIAN
 #endif
@@ -4364,14 +4362,21 @@ split_complex_types (tree types)
   return types;
 }
 
-/* Output a library call to function FUN (a SYMBOL_REF rtx).
-   The RETVAL parameter specifies whether return value needs to be saved, other
-   parameters are documented in the emit_library_call function below.  */
+/* Output a library call to function ORGFUN (a SYMBOL_REF rtx)
+   for a value of mode OUTMODE,
+   with NARGS different arguments, passed as ARGS.
+   Store the return value if RETVAL is nonzero: store it in VALUE if
+   VALUE is nonnull, otherwise pick a convenient location.  In either
+   case return the location of the stored value.
 
-static rtx
+   FN_TYPE should be LCT_NORMAL for `normal' calls, LCT_CONST for
+   `const' calls, LCT_PURE for `pure' calls, or another LCT_ value for
+   other types of library calls.  */
+
+rtx
 emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 			   enum libcall_type fn_type,
-			   machine_mode outmode, int nargs, va_list p)
+			   machine_mode outmode, int nargs, rtx_mode_t *args)
 {
   /* Total size in bytes of all the stack-parms scanned so far.  */
   struct args_size args_size;
@@ -4553,10 +4558,10 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
       count++;
     }
 
-  for (; count < nargs; count++)
+  for (unsigned int i = 0; count < nargs; i++, count++)
     {
-      rtx val = va_arg (p, rtx);
-      machine_mode mode = (machine_mode) va_arg (p, int);
+      rtx val = args[i].first;
+      machine_mode mode = args[i].second;
       int unsigned_p = 0;
 
       /* We cannot convert the arg value to the mode the library wants here;
@@ -4914,7 +4919,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 	     upward on a BYTES_BIG_ENDIAN machine.  */
 	  if (size < UNITS_PER_WORD
 	      && (argvec[argnum].locate.where_pad
-		  == (BYTES_BIG_ENDIAN ? upward : downward)))
+		  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 	    {
 	      rtx x;
 	      int shift = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
@@ -5126,51 +5131,6 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 
   return value;
 
-}
-
-/* Output a library call to function FUN (a SYMBOL_REF rtx)
-   (emitting the queue unless NO_QUEUE is nonzero),
-   for a value of mode OUTMODE,
-   with NARGS different arguments, passed as alternating rtx values
-   and machine_modes to convert them to.
-
-   FN_TYPE should be LCT_NORMAL for `normal' calls, LCT_CONST for
-   `const' calls, LCT_PURE for `pure' calls, or other LCT_ value for
-   other types of library calls.  */
-
-void
-emit_library_call (rtx orgfun, enum libcall_type fn_type,
-		   machine_mode outmode, int nargs, ...)
-{
-  va_list p;
-
-  va_start (p, nargs);
-  emit_library_call_value_1 (0, orgfun, NULL_RTX, fn_type, outmode, nargs, p);
-  va_end (p);
-}
-
-/* Like emit_library_call except that an extra argument, VALUE,
-   comes second and says where to store the result.
-   (If VALUE is zero, this function chooses a convenient way
-   to return the value.
-
-   This function returns an rtx for where the value is to be found.
-   If VALUE is nonzero, VALUE is returned.  */
-
-rtx
-emit_library_call_value (rtx orgfun, rtx value,
-			 enum libcall_type fn_type,
-			 machine_mode outmode, int nargs, ...)
-{
-  rtx result;
-  va_list p;
-
-  va_start (p, nargs);
-  result = emit_library_call_value_1 (1, orgfun, value, fn_type, outmode,
-				      nargs, p);
-  va_end (p);
-
-  return result;
 }
 
 
@@ -5437,14 +5397,16 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* Compute how much space the argument should get:
 	 round up to a multiple of the alignment for arguments.  */
-      if (none != FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)))
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  != PAD_NONE)
 	used = (((size + PARM_BOUNDARY / BITS_PER_UNIT - 1)
 		 / (PARM_BOUNDARY / BITS_PER_UNIT))
 		* (PARM_BOUNDARY / BITS_PER_UNIT));
 
       /* Compute the alignment of the pushed argument.  */
       parm_align = arg->locate.boundary;
-      if (FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)) == downward)
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  == PAD_DOWNWARD)
 	{
 	  int pad = used - size;
 	  if (pad)
@@ -5503,7 +5465,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 
       /* When an argument is padded down, the block is aligned to
 	 PARM_BOUNDARY, but the actual argument isn't.  */
-      if (FUNCTION_ARG_PADDING (arg->mode, TREE_TYPE (pval)) == downward)
+      if (targetm.calls.function_arg_padding (arg->mode, TREE_TYPE (pval))
+	  == PAD_DOWNWARD)
 	{
 	  if (arg->locate.size.var)
 	    parm_align = BITS_PER_UNIT;
@@ -5654,8 +5617,8 @@ must_pass_in_stack_var_size_or_pad (machine_mode mode, const_tree type)
      a register would put it into the wrong part of the register.  */
   if (mode == BLKmode
       && int_size_in_bytes (type) % (PARM_BOUNDARY / BITS_PER_UNIT)
-      && (FUNCTION_ARG_PADDING (mode, type)
-	  == (BYTES_BIG_ENDIAN ? upward : downward)))
+      && (targetm.calls.function_arg_padding (mode, type)
+	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 
   return false;

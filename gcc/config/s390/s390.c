@@ -87,6 +87,8 @@ along with GCC; see the file COPYING3.  If not see
 /* This file should be included last.  */
 #include "target-def.h"
 
+static bool s390_hard_regno_mode_ok (unsigned int, machine_mode);
+
 /* Remember the last target of s390_set_current_function.  */
 static GTY(()) tree s390_previous_fndecl;
 
@@ -10386,9 +10388,9 @@ s390_optimize_nonescaping_tx (void)
   return;
 }
 
-/* Return true if it is legal to put a value with MODE into REGNO.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
+static bool
 s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (!TARGET_VX && VECTOR_NOFP_REGNO_P (regno))
@@ -10451,6 +10453,15 @@ s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+s390_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((mode1 == SFmode || mode1 == DFmode)
+	  == (mode2 == SFmode || mode2 == DFmode));
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 bool
@@ -10489,6 +10500,29 @@ s390_hard_regno_scratch_ok (unsigned int regno)
     return false;
 
   return true;
+}
+
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  When generating
+   code that runs in z/Architecture mode, but conforms to the 31-bit
+   ABI, GPRs can hold 8 bytes; the ABI guarantees only that the lower 4
+   bytes are saved across calls, however.  */
+
+static bool
+s390_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (!TARGET_64BIT
+      && TARGET_ZARCH
+      && GET_MODE_SIZE (mode) > 4
+      && ((regno >= 6 && regno <= 15) || regno == 32))
+    return true;
+
+  if (TARGET_VX
+      && GET_MODE_SIZE (mode) > 8
+      && (((TARGET_64BIT && regno >= 24 && regno <= 31))
+	  || (!TARGET_64BIT && (regno == 18 || regno == 19))))
+    return true;
+
+  return false;
 }
 
 /* Maximum number of registers to represent a value of mode MODE
@@ -12088,6 +12122,18 @@ s390_function_arg (cumulative_args_t cum_v, machine_mode mode,
     return const0_rtx;
 
   gcc_unreachable ();
+}
+
+/* Implement TARGET_FUNCTION_ARG_BOUNDARY.  Vector arguments are
+   left-justified when placed on the stack during parameter passing.  */
+
+static pad_direction
+s390_function_arg_padding (machine_mode mode, const_tree type)
+{
+  if (s390_function_arg_vector (mode, type))
+    return PAD_UPWARD;
+
+  return default_function_arg_padding (mode, type);
 }
 
 /* Return true if return values of type TYPE should be returned
@@ -15852,6 +15898,8 @@ s390_asan_shadow_offset (void)
 #define TARGET_FUNCTION_ARG s390_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE s390_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING s390_function_arg_padding
 #undef TARGET_FUNCTION_VALUE
 #define TARGET_FUNCTION_VALUE s390_function_value
 #undef TARGET_LIBCALL_VALUE
@@ -15937,6 +15985,15 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK s390_hard_regno_scratch_ok
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK s390_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P s390_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  s390_hard_regno_call_part_clobbered
 
 #undef TARGET_ATTRIBUTE_TABLE
 #define TARGET_ATTRIBUTE_TABLE s390_attribute_table

@@ -739,9 +739,8 @@ c6x_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
 #ifdef CLEAR_INSN_CACHE
   tramp = XEXP (tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gnu_clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, tramp, Pmode,
-		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE),
-		     Pmode);
+		     LCT_NORMAL, VOIDmode, tramp, Pmode,
+		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE), Pmode);
 #endif
 }
 
@@ -1592,7 +1591,7 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 	    }
 	  start_sequence ();
 
-	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode, 2,
+	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode,
 					 op0, op_mode, op1, op_mode);
 	  insns = get_insns ();
 	  end_sequence ();
@@ -1728,7 +1727,7 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	mark_addressable (src_expr);
       if (dst_expr)
 	mark_addressable (dst_expr);
-      emit_library_call (fn, LCT_NORMAL, VOIDmode, 3,
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
 			 dstreg, Pmode, srcreg, Pmode, count_exp, SImode);
       return true;
     }
@@ -6697,6 +6696,25 @@ c6x_debug_unwind_info (void)
 
   return default_debug_unwind_info ();
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+c6x_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= UNITS_PER_WORD || (regno & 1) == 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
+}
+
 
 /* Target Structure.  */
 
@@ -6862,6 +6880,11 @@ c6x_debug_unwind_info (void)
 #define TARGET_EXPAND_BUILTIN c6x_expand_builtin
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL c6x_builtin_decl
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK c6x_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P c6x_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

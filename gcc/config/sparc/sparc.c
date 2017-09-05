@@ -648,6 +648,7 @@ static rtx sparc_function_arg (cumulative_args_t,
 			       machine_mode, const_tree, bool);
 static rtx sparc_function_incoming_arg (cumulative_args_t,
 					machine_mode, const_tree, bool);
+static pad_direction sparc_function_arg_padding (machine_mode, const_tree);
 static unsigned int sparc_function_arg_boundary (machine_mode,
 						 const_tree);
 static int sparc_arg_partial_bytes (cumulative_args_t,
@@ -675,6 +676,9 @@ static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static unsigned int sparc_min_arithmetic_precision (void);
+static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool sparc_modes_tieable_p (machine_mode, machine_mode);
+
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -793,6 +797,8 @@ char sparc_hard_reg_printed[8];
 #define TARGET_FUNCTION_ARG sparc_function_arg
 #undef TARGET_FUNCTION_INCOMING_ARG
 #define TARGET_FUNCTION_INCOMING_ARG sparc_function_incoming_arg
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING sparc_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY sparc_function_arg_boundary
 
@@ -898,6 +904,12 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK sparc_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P sparc_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -3399,11 +3411,11 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
   if (GET_MODE (operands[0]) == TFmode)
     {
       if (nargs == 2)
-	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 2,
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode,
 			   arg[0], GET_MODE (arg[0]),
 			   arg[1], GET_MODE (arg[1]));
       else
-	emit_library_call (func_sym, LCT_NORMAL, VOIDmode, 3,
+	emit_library_call (func_sym, LCT_NORMAL, VOIDmode,
 			   arg[0], GET_MODE (arg[0]),
 			   arg[1], GET_MODE (arg[1]),
 			   arg[2], GET_MODE (arg[2]));
@@ -3418,7 +3430,7 @@ emit_soft_tfmode_libcall (const char *func_name, int nargs, rtx *operands)
       gcc_assert (nargs == 2);
 
       ret = emit_library_call_value (func_sym, operands[0], LCT_NORMAL,
-				     GET_MODE (operands[0]), 1,
+				     GET_MODE (operands[0]),
 				     arg[1], GET_MODE (arg[1]));
 
       if (ret != operands[0])
@@ -4974,7 +4986,7 @@ enum sparc_mode_class {
    registers can hold double-word quantities in 32-bit mode.  */
 
 /* This points to either the 32-bit or the 64-bit version.  */
-const int *hard_regno_mode_classes;
+static const int *hard_regno_mode_classes;
 
 static const int hard_32bit_mode_classes[] = {
   S_MODES, S_MODES, T_MODES, S_MODES, T_MODES, S_MODES, D_MODES, S_MODES,
@@ -5026,7 +5038,7 @@ static const int hard_64bit_mode_classes[] = {
   CC_MODES, 0, D_MODES
 };
 
-int sparc_mode_class [NUM_MACHINE_MODES];
+static int sparc_mode_class [NUM_MACHINE_MODES];
 
 enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
@@ -7306,18 +7318,17 @@ sparc_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     }
 }
 
-/* Handle the FUNCTION_ARG_PADDING macro.
-   For the 64-bit ABI structs are always stored left shifted in their
-   argument slot.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING.  For the 64-bit ABI structs
+   are always stored left shifted in their argument slot.  */
 
-enum direction
-function_arg_padding (machine_mode mode, const_tree type)
+static pad_direction
+sparc_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (TARGET_ARCH64 && type && AGGREGATE_TYPE_P (type))
-    return upward;
+    return PAD_UPWARD;
 
   /* Fall back to the default.  */
-  return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
+  return default_function_arg_padding (mode, type);
 }
 
 /* Handle the TARGET_RETURN_IN_MEMORY target hook.
@@ -8131,7 +8142,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
 
       libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
       emit_library_call (libfunc, LCT_NORMAL,
-			 DImode, 2,
+			 DImode,
 			 XEXP (slot0, 0), Pmode,
 			 XEXP (slot1, 0), Pmode);
       mode = DImode;
@@ -8140,7 +8151,7 @@ sparc_emit_float_lib_cmp (rtx x, rtx y, enum rtx_code comparison)
     {
       libfunc = gen_rtx_SYMBOL_REF (Pmode, qpfunc);
       emit_library_call (libfunc, LCT_NORMAL,
-			 SImode, 2,
+			 SImode,
 			 x, TFmode, y, TFmode);
       mode = SImode;
     }
@@ -9632,7 +9643,7 @@ sparc32_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
      the stack address is accessible.  */
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+                     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 
 }
@@ -9679,7 +9690,7 @@ sparc64_initialize_trampoline (rtx m_tramp, rtx fnaddr, rtx cxt)
      the stack address is accessible.  */
 #ifdef HAVE_ENABLE_EXECUTE_STACK
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__enable_execute_stack"),
-                     LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+                     LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
 }
 
@@ -10183,13 +10194,13 @@ sparc_profile_hook (int labelno)
   fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_FUNCTION);
   if (NO_PROFILE_COUNTERS)
     {
-      emit_library_call (fun, LCT_NORMAL, VOIDmode, 0);
+      emit_library_call (fun, LCT_NORMAL, VOIDmode);
     }
   else
     {
       ASM_GENERATE_INTERNAL_LABEL (buf, "LP", labelno);
       lab = gen_rtx_SYMBOL_REF (Pmode, ggc_strdup (buf));
-      emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, lab, Pmode);
+      emit_library_call (fun, LCT_NORMAL, VOIDmode, lab, Pmode);
     }
 }
 
@@ -13122,15 +13133,24 @@ sparc_regmode_natural_size (machine_mode mode)
   return size;
 }
 
-/* Return TRUE if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be FALSE for correct output.
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   ??? Because of the funny way we pass parameters we should allow certain
+   ??? types of float/complex values to be in integer registers during
+   ??? RTL generation.  This only matters on arch32.  */
+
+static bool
+sparc_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (hard_regno_mode_classes[regno] & sparc_mode_class[mode]) != 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
 
    For V9 we have to deal with the fact that only the lower 32 floating
    point registers are 32-bit addressable.  */
 
-bool
+static bool
 sparc_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   enum mode_class mclass1, mclass2;

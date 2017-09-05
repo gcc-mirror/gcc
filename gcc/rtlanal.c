@@ -3635,8 +3635,8 @@ subreg_size_offset_from_lsb (unsigned int outer_bytes,
    function does not check whether adding INFO->offset to XREGNO gives
    a valid hard register; even if INFO->offset + XREGNO is out of range,
    there might be another register of the same type that is in range.
-   Likewise it doesn't check whether HARD_REGNO_MODE_OK accepts the new
-   register, since that can depend on things like whether the final
+   Likewise it doesn't check whether targetm.hard_regno_mode_ok accepts
+   the new register, since that can depend on things like whether the final
    register number is even or odd.  Callers that want to check whether
    this particular subreg can be replaced by a simple (reg ...) should
    use simplify_subreg_regno.  */
@@ -3901,8 +3901,8 @@ simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
      ??? We allow invalid registers if (reg:XMODE XREGNO) is also invalid.
      This is a kludge to work around how complex FP arguments are passed
      on IA-64 and should be fixed.  See PR target/49226.  */
-  if (!HARD_REGNO_MODE_OK (yregno, ymode)
-      && HARD_REGNO_MODE_OK (xregno, xmode))
+  if (!targetm.hard_regno_mode_ok (yregno, ymode)
+      && targetm.hard_regno_mode_ok (xregno, xmode))
     return -1;
 
   return (int) yregno;
@@ -4181,12 +4181,12 @@ rtx_cost (rtx x, machine_mode mode, enum rtx_code outer_code,
       total = 0;
       /* If we can't tie these modes, make this expensive.  The larger
 	 the mode, the more expensive it is.  */
-      if (! MODES_TIEABLE_P (mode, GET_MODE (SUBREG_REG (x))))
+      if (!targetm.modes_tieable_p (mode, GET_MODE (SUBREG_REG (x))))
 	return COSTS_N_INSNS (2 + factor);
       break;
 
     case TRUNCATE:
-      if (MODES_TIEABLE_P (mode, GET_MODE (XEXP (x, 0))))
+      if (targetm.modes_tieable_p (mode, GET_MODE (XEXP (x, 0))))
 	{
 	  total = 0;
 	  break;

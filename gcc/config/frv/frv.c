@@ -399,6 +399,8 @@ static bool frv_can_eliminate			(const int, const int);
 static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
+static bool frv_hard_regno_mode_ok		(unsigned int, machine_mode);
+static bool frv_modes_tieable_p			(machine_mode, machine_mode);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_PRINT_OPERAND
@@ -515,6 +517,11 @@ static bool frv_class_likely_spilled_p 		(reg_class_t);
 #define TARGET_FUNCTION_VALUE frv_function_value
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE frv_libcall_value
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK frv_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P frv_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6241,7 +6248,7 @@ frv_trampoline_init (rtx m_tramp, tree fndecl, rtx static_chain)
   rtx sc_reg = force_reg (Pmode, static_chain);
 
   emit_library_call (gen_rtx_SYMBOL_REF (SImode, "__trampoline_setup"),
-		     LCT_NORMAL, VOIDmode, 4,
+		     LCT_NORMAL, VOIDmode,
 		     addr, Pmode,
 		     GEN_INT (frv_trampoline_size ()), SImode,
 		     fnaddr, Pmode,
@@ -6517,62 +6524,10 @@ frv_adjust_field_align (tree field, int computed)
 }
 
 
-/* A C expression that is nonzero if it is permissible to store a value of mode
-   MODE in hard register number REGNO (or in several registers starting with
-   that one).  For a machine where all registers are equivalent, a suitable
-   definition is
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-        #define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
-   It is not necessary for this macro to check for the numbers of fixed
-   registers, because the allocation mechanism considers them to be always
-   occupied.
-
-   On some machines, double-precision values must be kept in even/odd register
-   pairs.  The way to implement that is to define this macro to reject odd
-   register numbers for such modes.
-
-   The minimum requirement for a mode to be OK in a register is that the
-   `movMODE' instruction pattern support moves between the register and any
-   other hard register for which the mode is OK; and that moving a value into
-   the register and back out not alter it.
-
-   Since the same instruction used to move `SImode' will work for all narrower
-   integer modes, it is not necessary on any machine for `HARD_REGNO_MODE_OK'
-   to distinguish between these modes, provided you define patterns `movhi',
-   etc., to take advantage of this.  This is useful because of the interaction
-   between `HARD_REGNO_MODE_OK' and `MODES_TIEABLE_P'; it is very desirable for
-   all integer modes to be tieable.
-
-   Many machines have special registers for floating point arithmetic.  Often
-   people assume that floating point machine modes are allowed only in floating
-   point registers.  This is not true.  Any registers that can hold integers
-   can safely *hold* a floating point machine mode, whether or not floating
-   arithmetic can be done on it in those registers.  Integer move instructions
-   can be used to move the values.
-
-   On some machines, though, the converse is true: fixed-point machine modes
-   may not go in floating registers.  This is true if the floating registers
-   normalize any value stored in them, because storing a non-floating value
-   there would garble it.  In this case, `HARD_REGNO_MODE_OK' should reject
-   fixed-point machine modes in floating registers.  But if the floating
-   registers do not automatically normalize, if you can store any bit pattern
-   in one and retrieve it unchanged without a trap, then any machine mode may
-   go in a floating register, so you can define this macro to say so.
-
-   The primary significance of special floating registers is rather that they
-   are the registers acceptable in floating point arithmetic instructions.
-   However, this is of no concern to `HARD_REGNO_MODE_OK'.  You handle it by
-   writing the proper constraints for those instructions.
-
-   On some machines, the floating registers are especially slow to access, so
-   that it is better to store a value in a stack frame than in such a register
-   if floating point arithmetic is not being done.  As long as the floating
-   registers are not in class `GENERAL_REGS', they will not be used unless some
-   pattern's constraint asks for one.  */
-
-int
-frv_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+frv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   int base;
   int mask;
@@ -6624,18 +6579,26 @@ frv_hard_regno_mode_ok (int regno, machine_mode mode)
 
 	  /* Fill in the table.  */
 	  else
-	    return 0;
+	    return false;
 
 	  /* Anything smaller than an SI is OK in any word-sized register.  */
 	  if (GET_MODE_SIZE (mode) < 4)
-	    return 1;
+	    return true;
 
 	  mask = (GET_MODE_SIZE (mode) / 4) - 1;
 	}
       return (((regno - base) & mask) == 0);
     }
 
-  return 0;
+  return false;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+frv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return mode1 == mode2;
 }
 
 

@@ -193,12 +193,6 @@ extern int caller_save_needed;
   choose_hard_reg_mode (REGNO, NREGS, false)
 #endif
 
-/* Registers that get partially clobbered by a call in a given mode.
-   These must not be call used registers.  */
-#ifndef HARD_REGNO_CALL_PART_CLOBBERED
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE) 0
-#endif
-
 /* Target-dependent globals.  */
 struct target_regs {
   /* For each starting hard register, the number of consecutive hard

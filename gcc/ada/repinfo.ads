@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,7 +83,7 @@ package Repinfo is
    --    For E_Array_Type entities, the Component_Size field
 
    --    For all record and array types and subtypes, the Esize field,
-   --    which contains the Size (more accurately the Object_SIze) value
+   --    which contains the Size (more accurately the Object_Size) value
    --    for the type or subtype.
 
    --    For E_Component and E_Discriminant entities, the Esize (size
@@ -96,19 +96,19 @@ package Repinfo is
    --       by simply storing the non-negative universal integer value in
    --       the appropriate field corresponding to this constant size.
 
-   --    2. The value depends on variables other than discriminants of the
-   --       current record. In this case, the value is not known, even if
-   --       the complete data of the record is available, and gigi marks
-   --       this situation by storing the special value No_Uint.
-
-   --    3. The value depends on the discriminant values for the current
+   --    2. The value depends on the discriminant values for the current
    --       record. In this case, gigi back annotates the field with a
    --       representation of the expression for computing the value in
    --       terms of the discriminants. A negative Uint value is used to
    --       represent the value of such an expression, as explained in
    --       the following section.
 
-   --  Note: the extended back-annotation for the dynamic case is needed only
+   --    3. The value depends on variables other than discriminants of the
+   --       current record. In this case, gigi also back annotates the field
+   --       with a representation of the expression for computing the value
+   --       in terms of the variables represented symbolically.
+
+   --  Note: the extended back annotation for the dynamic case is needed only
    --  for -gnatR3 output, and for proper operation of the ASIS DDA. Since it
    --  can be expensive to do this back annotation (for discriminated records
    --  with many variable length arrays), we only do the full back annotation
@@ -136,7 +136,7 @@ package Repinfo is
    --  Subtype used for values that can either be a Node_Ref (negative)
    --  or a value (non-negative)
 
-   type TCode is range 0 .. 28;
+   type TCode is range 0 .. 29;
    --  Type used on Ada side to represent DEFTREECODE values defined in
    --  tree.def. Only a subset of these tree codes can actually appear.
    --  The names are the names from tree.def in Ada casing.
@@ -174,10 +174,17 @@ package Repinfo is
 
    --  The following entry is used to represent a discriminant value in
    --  the tree. It has a special tree code that does not correspond
-   --  directly to a gcc node. The single operand is the number of the
-   --  discriminant in the record (1 = first discriminant).
+   --  directly to a GCC node. The single operand is the index number
+   --  of the discriminant in the record (1 = first discriminant).
 
-   Discrim_Val : constant TCode := 0;  -- discriminant value       1
+   Discrim_Val      : constant TCode :=  0;  -- discriminant value      1
+
+   --  The following entry is used to represent a value not known at
+   --  compile time in the tree, other than a discriminant value. It
+   --  has a special tree code that does not correspond directly to
+   --  a GCC node. The single operand is an arbitrary index number.
+
+   Dynamic_Val      : constant TCode := 29;  -- dynamic value           1
 
    ------------------------
    -- The gigi Interface --

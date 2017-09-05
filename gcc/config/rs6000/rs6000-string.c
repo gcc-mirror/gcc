@@ -843,7 +843,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -862,7 +862,7 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));
@@ -1109,7 +1109,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -1124,7 +1124,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));

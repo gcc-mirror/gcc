@@ -1236,13 +1236,6 @@ enum data_align { align_abi, align_opt, align_both };
    ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  (((TARGET_32BIT && TARGET_POWERPC64					\
-     && (GET_MODE_SIZE (MODE) > 4)					\
-     && INT_REGNO_P (REGNO)) ? 1 : 0)					\
-   || (TARGET_VSX && FP_REGNO_P (REGNO)					\
-       && GET_MODE_SIZE (MODE) > 8 && !FLOAT128_2REG_P (MODE)))
-
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
 	  || (MODE) == V2DFmode)	\
@@ -1264,45 +1257,6 @@ enum data_align { align_abi, align_opt, align_both };
 
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
-
-/* Value is TRUE if hard register REGNO can hold a value of
-   machine-mode MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  rs6000_hard_regno_mode_ok_p[(int)(MODE)][REGNO]
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.
-
-   PTImode cannot tie with other modes because PTImode is restricted to even
-   GPR registers, and TImode can go in any GPR as well as VSX registers (PR
-   57744).
-
-   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
-   128-bit floating point on VSX systems ties with other vectors.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-  ((MODE1) == PTImode				\
-   ? (MODE2) == PTImode				\
-   : (MODE2) == PTImode				\
-   ? 0						\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
-   ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   ? 0						\
-   : SCALAR_FLOAT_MODE_P (MODE1)		\
-   ? SCALAR_FLOAT_MODE_P (MODE2)		\
-   : SCALAR_FLOAT_MODE_P (MODE2)		\
-   ? 0						\
-   : GET_MODE_CLASS (MODE1) == MODE_CC		\
-   ? GET_MODE_CLASS (MODE2) == MODE_CC		\
-   : GET_MODE_CLASS (MODE2) == MODE_CC		\
-   ? 0						\
-   : PAIRED_VECTOR_MODE (MODE1)			\
-   ? PAIRED_VECTOR_MODE (MODE2)			\
-   : PAIRED_VECTOR_MODE (MODE2)			\
-   ? 0						\
-   : 1)
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
@@ -1849,16 +1803,8 @@ typedef struct rs6000_args
   init_cumulative_args (&CUM, NULL_TREE, LIBNAME, FALSE, TRUE, \
 			0, NULL_TREE, MODE)
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  The value
-   should be of type `enum direction': either `upward' to pad above
-   the argument, `downward' to pad below, or `none' to inhibit
-   padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding (MODE, TYPE)
-
 #define PAD_VARARGS_DOWN \
-   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */

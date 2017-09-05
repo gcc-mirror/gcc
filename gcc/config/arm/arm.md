@@ -463,7 +463,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
   "#"
-  "TARGET_32BIT && reload_completed
+  "TARGET_32BIT && ((!TARGET_NEON && !TARGET_IWMMXT) || reload_completed)
    && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))"
   [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
@@ -1269,7 +1269,7 @@
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
   "#"  ; "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
-  "&& reload_completed"
+  "&& (!TARGET_IWMMXT || reload_completed)"
   [(parallel [(set (reg:CC CC_REGNUM)
 		   (compare:CC (match_dup 1) (match_dup 2)))
 	      (set (match_dup 0) (minus:SI (match_dup 1) (match_dup 2)))])
@@ -2255,7 +2255,24 @@
 	(and:DI (match_operand:DI 1 "s_register_operand" "")
 		(match_operand:DI 2 "neon_inv_logic_op2" "")))]
   "TARGET_32BIT"
-  ""
+  "
+  if (!TARGET_NEON && !TARGET_IWMMXT)
+    {
+      rtx low  = simplify_gen_binary (AND, SImode,
+				      gen_lowpart (SImode, operands[1]),
+				      gen_lowpart (SImode, operands[2]));
+      rtx high = simplify_gen_binary (AND, SImode,
+				      gen_highpart (SImode, operands[1]),
+				      gen_highpart_mode (SImode, DImode,
+							 operands[2]));
+
+      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+
+      DONE;
+    }
+  /* Otherwise expand pattern as above.  */
+  "
 )
 
 (define_insn_and_split "*anddi3_insn"
@@ -3128,7 +3145,24 @@
 	(ior:DI (match_operand:DI 1 "s_register_operand" "")
 		(match_operand:DI 2 "neon_logic_op2" "")))]
   "TARGET_32BIT"
-  ""
+  "
+  if (!TARGET_NEON && !TARGET_IWMMXT)
+    {
+      rtx low  = simplify_gen_binary (IOR, SImode,
+				      gen_lowpart (SImode, operands[1]),
+				      gen_lowpart (SImode, operands[2]));
+      rtx high = simplify_gen_binary (IOR, SImode,
+				      gen_highpart (SImode, operands[1]),
+				      gen_highpart_mode (SImode, DImode,
+							 operands[2]));
+
+      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+
+      DONE;
+    }
+  /* Otherwise expand pattern as above.  */
+  "
 )
 
 (define_insn_and_split "*iordi3_insn"
@@ -3316,6 +3350,22 @@
        no NEON instructions that take an immediate.  */
     if (TARGET_IWMMXT && !REG_P (operands[2]))
       operands[2] = force_reg (DImode, operands[2]);
+    if (!TARGET_NEON && !TARGET_IWMMXT)
+      {
+	rtx low  = simplify_gen_binary (XOR, SImode,
+					gen_lowpart (SImode, operands[1]),
+					gen_lowpart (SImode, operands[2]));
+	rtx high = simplify_gen_binary (XOR, SImode,
+					gen_highpart (SImode, operands[1]),
+					gen_highpart_mode (SImode, DImode,
+							   operands[2]));
+
+	emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+	emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+
+	DONE;
+      }
+    /* Otherwise expand pattern as above.  */
   }
 )
 
@@ -5027,7 +5077,31 @@
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
   "")
 
-(define_insn_and_split "one_cmpldi2"
+(define_expand "one_cmpldi2"
+  [(set (match_operand:DI 0 "s_register_operand" "")
+	(not:DI (match_operand:DI 1 "s_register_operand" "")))]
+  "TARGET_32BIT"
+  "
+  if (!TARGET_NEON && !TARGET_IWMMXT)
+    {
+      rtx low  = simplify_gen_unary (NOT, SImode,
+				     gen_lowpart (SImode, operands[1]),
+				     SImode);
+      rtx high = simplify_gen_unary (NOT, SImode,
+				     gen_highpart_mode (SImode, DImode,
+							operands[1]),
+				     SImode);
+
+      emit_insn (gen_rtx_SET (gen_lowpart (SImode, operands[0]), low));
+      emit_insn (gen_rtx_SET (gen_highpart (SImode, operands[0]), high));
+
+      DONE;
+    }
+  /* Otherwise expand pattern as above.  */
+  "
+)
+
+(define_insn_and_split "*one_cmpldi2_insn"
   [(set (match_operand:DI 0 "s_register_operand"	 "=w,&r,&r,?w")
 	(not:DI (match_operand:DI 1 "s_register_operand" " w, 0, r, w")))]
   "TARGET_32BIT"
@@ -5804,7 +5878,7 @@
 	operands[1] = force_reg (DImode, operands[1]);
     }
   if (REG_P (operands[0]) && REGNO (operands[0]) <= LAST_ARM_REGNUM
-      && !HARD_REGNO_MODE_OK (REGNO (operands[0]), DImode))
+      && !targetm.hard_regno_mode_ok (REGNO (operands[0]), DImode))
     {
       /* Avoid LDRD's into an odd-numbered register pair in ARM state
 	 when expanding function calls.  */
@@ -5823,7 +5897,7 @@
       DONE;
     }
   else if (REG_P (operands[1]) && REGNO (operands[1]) <= LAST_ARM_REGNUM
-	   && !HARD_REGNO_MODE_OK (REGNO (operands[1]), DImode))
+	   && !targetm.hard_regno_mode_ok (REGNO (operands[1]), DImode))
     {
       /* Avoid STRD's from an odd-numbered register pair in ARM state
 	 when expanding function prologue.  */

@@ -88,6 +88,8 @@
 #define min(A,B)	((A) < (B) ? (A) : (B))
 #define max(A,B)	((A) > (B) ? (A) : (B))
 
+static pad_direction rs6000_function_arg_padding (machine_mode, const_tree);
+
 /* Structure used to define the rs6000 stack */
 typedef struct rs6000_stack {
   int reload_completed;		/* stack info won't change from here on */
@@ -210,7 +212,8 @@ static bool rs6000_returns_struct;
 #endif
 
 /* Value is TRUE if register/mode pair is acceptable.  */
-bool rs6000_hard_regno_mode_ok_p[NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
+static bool rs6000_hard_regno_mode_ok_p
+  [NUM_MACHINE_MODES][FIRST_PSEUDO_REGISTER];
 
 /* Maximum number of registers needed for a given register class and mode.  */
 unsigned char rs6000_class_max_nregs[NUM_MACHINE_MODES][LIM_REG_CLASSES];
@@ -1808,6 +1811,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #define TARGET_FUNCTION_ARG_ADVANCE rs6000_function_arg_advance
 #undef TARGET_FUNCTION_ARG
 #define TARGET_FUNCTION_ARG rs6000_function_arg
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING rs6000_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY rs6000_function_arg_boundary
 
@@ -1971,6 +1976,16 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK rs6000_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P rs6000_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  rs6000_hard_regno_call_part_clobbered
 
 
 /* Processor table.  */
@@ -2056,7 +2071,7 @@ rs6000_hard_regno_nregs_internal (int regno, machine_mode mode)
 /* Value is 1 if hard register REGNO can hold a value of machine-mode
    MODE.  */
 static int
-rs6000_hard_regno_mode_ok (int regno, machine_mode mode)
+rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
 {
   int last_regno = regno + rs6000_hard_regno_nregs[mode][regno] - 1;
 
@@ -2154,6 +2169,74 @@ rs6000_hard_regno_mode_ok (int regno, machine_mode mode)
      and it must be able to fit within the register set.  */
 
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+rs6000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return rs6000_hard_regno_mode_ok_p[mode][regno];
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   PTImode cannot tie with other modes because PTImode is restricted to even
+   GPR registers, and TImode can go in any GPR as well as VSX registers (PR
+   57744).
+
+   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
+   128-bit floating point on VSX systems ties with other vectors.  */
+
+static bool
+rs6000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  if (mode1 == PTImode)
+    return mode2 == PTImode;
+  if (mode2 == PTImode)
+    return false;
+
+  if (ALTIVEC_OR_VSX_VECTOR_MODE (mode1))
+    return ALTIVEC_OR_VSX_VECTOR_MODE (mode2);
+  if (ALTIVEC_OR_VSX_VECTOR_MODE (mode2))
+    return false;
+
+  if (SCALAR_FLOAT_MODE_P (mode1))
+    return SCALAR_FLOAT_MODE_P (mode2);
+  if (SCALAR_FLOAT_MODE_P (mode2))
+    return false;
+
+  if (GET_MODE_CLASS (mode1) == MODE_CC)
+    return GET_MODE_CLASS (mode2) == MODE_CC;
+  if (GET_MODE_CLASS (mode2) == MODE_CC)
+    return false;
+
+  if (SPE_VECTOR_MODE (mode1))
+    return SPE_VECTOR_MODE (mode2);
+  if (SPE_VECTOR_MODE (mode2))
+    return false;
+
+  return true;
+}
+
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
+
+static bool
+rs6000_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_32BIT
+      && TARGET_POWERPC64
+      && GET_MODE_SIZE (mode) > 4
+      && INT_REGNO_P (regno))
+    return true;
+
+  if (TARGET_VSX
+      && FP_REGNO_P (regno)
+      && GET_MODE_SIZE (mode) > 8
+      && !FLOAT128_2REG_P (mode))
+    return true;
+
+  return false;
 }
 
 /* Print interesting facts about registers.  */
@@ -2612,7 +2695,7 @@ rs6000_debug_reg_global (void)
       for (m2 = 0; m2 < ARRAY_SIZE (print_tieable_modes); m2++)
 	{
 	  machine_mode mode2 = print_tieable_modes[m2];
-	  if (mode1 != mode2 && MODES_TIEABLE_P (mode1, mode2))
+	  if (mode1 != mode2 && rs6000_modes_tieable_p (mode1, mode2))
 	    {
 	      if (first_time)
 		{
@@ -3660,10 +3743,10 @@ rs6000_init_hard_regno_mode_ok (bool global_init_p)
       rs6000_hard_regno_nregs[m][r]
 	= rs6000_hard_regno_nregs_internal (r, (machine_mode)m);
 
-  /* Precalculate HARD_REGNO_MODE_OK.  */
+  /* Precalculate TARGET_HARD_REGNO_MODE_OK.  */
   for (r = 0; r < FIRST_PSEUDO_REGISTER; ++r)
     for (m = 0; m < NUM_MACHINE_MODES; ++m)
-      if (rs6000_hard_regno_mode_ok (r, (machine_mode)m))
+      if (rs6000_hard_regno_mode_ok_uncached (r, (machine_mode)m))
 	rs6000_hard_regno_mode_ok_p[m][r] = true;
 
   /* Precalculate CLASS_MAX_NREGS sizes.  */
@@ -9694,7 +9777,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	{
 	  tga = rs6000_tls_get_addr ();
 	  emit_library_call_value (tga, dest, LCT_CONST, Pmode,
-				   1, const0_rtx, Pmode);
+				   const0_rtx, Pmode);
 
 	  r3 = gen_rtx_REG (Pmode, 3);
 	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
@@ -9719,7 +9802,7 @@ rs6000_legitimize_tls_address (rtx addr, enum tls_model model)
 	  tga = rs6000_tls_get_addr ();
 	  tmp1 = gen_reg_rtx (Pmode);
 	  emit_library_call_value (tga, tmp1, LCT_CONST, Pmode,
-				   1, const0_rtx, Pmode);
+				   const0_rtx, Pmode);
 
 	  r3 = gen_rtx_REG (Pmode, 3);
 	  if (DEFAULT_ABI == ABI_AIX || DEFAULT_ABI == ABI_ELFv2)
@@ -11734,7 +11817,8 @@ rs6000_return_in_msb (const_tree valtype)
   return (DEFAULT_ABI == ABI_ELFv2
 	  && BYTES_BIG_ENDIAN
 	  && AGGREGATE_TYPE_P (valtype)
-	  && FUNCTION_ARG_PADDING (TYPE_MODE (valtype), valtype) == upward);
+	  && rs6000_function_arg_padding (TYPE_MODE (valtype),
+					  valtype) == PAD_UPWARD);
 }
 
 #ifdef HAVE_AS_GNU_ATTRIBUTE
@@ -11951,17 +12035,13 @@ abi_v4_pass_in_fpr (machine_mode mode)
   return false;
 }
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  The value
-   should be of type `enum direction': either `upward' to pad above
-   the argument, `downward' to pad below, or `none' to inhibit
-   padding.
+/* Implement TARGET_FUNCTION_ARG_PADDING
 
    For the AIX ABI structs are always stored left shifted in their
    argument slot.  */
 
-enum direction
-function_arg_padding (machine_mode mode, const_tree type)
+static pad_direction
+rs6000_function_arg_padding (machine_mode mode, const_tree type)
 {
 #ifndef AGGREGATE_PADDING_FIXED
 #define AGGREGATE_PADDING_FIXED 0
@@ -11973,7 +12053,7 @@ function_arg_padding (machine_mode mode, const_tree type)
   if (!AGGREGATE_PADDING_FIXED)
     {
       /* GCC used to pass structures of the same size as integer types as
-	 if they were in fact integers, ignoring FUNCTION_ARG_PADDING.
+	 if they were in fact integers, ignoring TARGET_FUNCTION_ARG_PADDING.
 	 i.e. Structures of size 1 or 2 (or 4 when TARGET_64BIT) were
 	 passed padded downward, except that -mstrict-align further
 	 muddied the water in that multi-component structures of 2 and 4
@@ -11994,19 +12074,19 @@ function_arg_padding (machine_mode mode, const_tree type)
 	    size = GET_MODE_SIZE (mode);
 
 	  if (size == 1 || size == 2 || size == 4)
-	    return downward;
+	    return PAD_DOWNWARD;
 	}
-      return upward;
+      return PAD_UPWARD;
     }
 
   if (AGGREGATES_PAD_UPWARD_ALWAYS)
     {
       if (type != 0 && AGGREGATE_TYPE_P (type))
-	return upward;
+	return PAD_UPWARD;
     }
 
   /* Fall back to the default.  */
-  return DEFAULT_FUNCTION_ARG_PADDING (mode, type);
+  return default_function_arg_padding (mode, type);
 }
 
 /* If defined, a C expression that gives the alignment boundary, in bits,
@@ -20417,7 +20497,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -20436,7 +20516,7 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));
@@ -20683,7 +20763,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -20698,7 +20778,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));
@@ -24720,7 +24800,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 
       if (!check_nan)
 	dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					SImode, 2, op0, mode, op1, mode);
+					SImode, op0, mode, op1, mode);
 
       /* The library signals an exception for signalling NaNs, so we need to
 	 handle isgreater, etc. by first checking isordered.  */
@@ -24736,8 +24816,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	  /* Test for either value being a NaN.  */
 	  gcc_assert (unord_func);
 	  unord_dest = emit_library_call_value (unord_func, NULL_RTX, LCT_CONST,
-						SImode, 2, op0, mode, op1,
-						mode);
+						SImode, op0, mode, op1, mode);
 
 	  /* Set value (0) if either value is a NaN, and jump to the join
 	     label.  */
@@ -24756,8 +24835,7 @@ rs6000_generate_compare (rtx cmp, machine_mode mode)
 	  /* Do the normal comparison, knowing that the values are not
 	     NaNs.  */
 	  normal_dest = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-						 SImode, 2, op0, mode, op1,
-						 mode);
+						 SImode, op0, mode, op1, mode);
 
 	  emit_insn (gen_cstoresi4 (dest,
 				    gen_rtx_fmt_ee (code, SImode, normal_dest,
@@ -25121,8 +25199,8 @@ rs6000_expand_float128_convert (rtx dest, rtx src, bool unsigned_p)
       libfunc = convert_optab_libfunc (cvt, dest_mode, src_mode);
       gcc_assert (libfunc != NULL_RTX);
 
-      dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode, 1, src,
-				       src_mode);
+      dest2 = emit_library_call_value (libfunc, dest, LCT_CONST, dest_mode,
+				       src, src_mode);
 
       gcc_assert (dest2 != NULL_RTX);
       if (!rtx_equal_p (dest, dest2))
@@ -33083,7 +33161,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 #endif
       if (NO_PROFILE_COUNTERS)
 	emit_library_call (init_one_libfunc (RS6000_MCOUNT),
-			   LCT_NORMAL, VOIDmode, 0);
+			   LCT_NORMAL, VOIDmode);
       else
 	{
 	  char buf[30];
@@ -33095,7 +33173,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 	  fun = gen_rtx_SYMBOL_REF (Pmode, label_name);
 
 	  emit_library_call (init_one_libfunc (RS6000_MCOUNT),
-			     LCT_NORMAL, VOIDmode, 1, fun, Pmode);
+			     LCT_NORMAL, VOIDmode, fun, Pmode);
 	}
     }
   else if (DEFAULT_ABI == ABI_DARWIN)
@@ -33114,7 +33192,7 @@ output_profile_hook (int labelno ATTRIBUTE_UNUSED)
 	caller_addr_regno = 0;
 #endif
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mcount_name),
-			 LCT_NORMAL, VOIDmode, 1,
+			 LCT_NORMAL, VOIDmode,
 			 gen_rtx_REG (Pmode, caller_addr_regno), Pmode);
     }
 }
@@ -35464,7 +35542,7 @@ rs6000_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
     case ABI_DARWIN:
     case ABI_V4:
       emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__trampoline_setup"),
-			 LCT_NORMAL, VOIDmode, 4,
+			 LCT_NORMAL, VOIDmode,
 			 addr, Pmode,
 			 GEN_INT (rs6000_trampoline_size ()), SImode,
 			 fnaddr, Pmode,

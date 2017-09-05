@@ -172,8 +172,6 @@
 /*  30 */  1, 1, 1, 1, 1, 1, 1, 1, 1, 1,     \
   }
 
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
 #define HARD_REGNO_NREGS(REGNO, MODE)            \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
@@ -296,11 +294,8 @@ typedef struct nios2_args
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
   do { (CUM).regs_used = 0; } while (0)
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (nios2_function_arg_padding ((MODE), (TYPE)))
-
 #define PAD_VARARGS_DOWN \
-  (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
   (nios2_block_reg_padding ((MODE), (TYPE), (FIRST)))

@@ -1,3 +1,32 @@
+2017-09-04  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	PR libstdc++/79162
+	Implement LWG 2946, LWG 2758's resolution missed further corrections
+	* include/bits/basic_string.h (basic_string::compare): Add missing
+	required noexcept specifications.
+	(basic_string): Introduce internal _S_to_string_view and __sv_wrapper
+	for implicit string_view conversion.
+	(basic_string::basic_string): Fix explicit string_view conversion by
+	implicit conversion using _S_to_string_view and __sv_wrapper.
+	(basic_string): Introduce internal basic_string(__sv_wrapper, Alloc)
+	constructor.
+	(basic_string): Fix operator=(T) template by operator=(const T&)
+	template for uncopyable types (PR 79162).
+	(basic_string::operator+=, basic_string::append, basic_string::assign)
+	(basic_string::insert, basic_string::replace, basic_string::find)
+	(basic_string::rfind, basic_string::find_first_of)
+	(basic_string::find_last_of, basic_string::find_first_not_of)
+	(basic_string::find_last_not_of, basic_string::compare): Replace
+	__sv_type argument by template const T& (LWG 2946) and correct
+	documentation describing __sv_type argument.
+	(basic_string::find, basic_string::rfind, basic_string::find_first_of)
+	(basic_string::find_last_of, basic_string::find_first_not_of)
+	(basic_string::find_last_not_of, basic_string::compare): Replace
+	unconditional noexcept specification by conditional noexcept
+	specification to partially balance the removal of noexcept by LWG 2946.
+	* testsuite/21_strings/basic_string/79162.cc: New.
+	* testsuite/21_strings/basic_string/lwg2946.cc: New.
+
 2017-08-31  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/82039

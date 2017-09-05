@@ -3519,10 +3519,10 @@ riscv_register_move_cost (machine_mode mode,
   return SECONDARY_MEMORY_NEEDED (from, to, mode) ? 8 : 2;
 }
 
-/* Return true if register REGNO can store a value of mode MODE.  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
-bool
-riscv_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
+static bool
+riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   unsigned int nregs = riscv_hard_regno_nregs (regno, mode);
 
@@ -3556,6 +3556,19 @@ riscv_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
       return false;
 
   return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.
+
+   Don't allow floating-point modes to be tied, since type punning of
+   single-precision and double-precision is implementation defined.  */
+
+static bool
+riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || !(GET_MODE_CLASS (mode1) == MODE_FLOAT
+	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
 }
 
 /* Implement HARD_REGNO_NREGS.  */
@@ -4082,6 +4095,12 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN riscv_expand_builtin
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK riscv_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P riscv_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

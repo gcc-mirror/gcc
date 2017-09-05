@@ -246,7 +246,6 @@ extern bool mips_expand_block_move (rtx, rtx, rtx);
 extern void mips_expand_synci_loop (rtx, rtx);
 
 extern void mips_init_cumulative_args (CUMULATIVE_ARGS *, tree);
-extern bool mips_pad_arg_upward (machine_mode, const_tree);
 extern bool mips_pad_reg_upward (machine_mode, tree);
 
 extern bool mips_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,
@@ -300,7 +299,6 @@ extern bool mips_secondary_memory_needed (enum reg_class, enum reg_class,
 extern bool mips_cannot_change_mode_class (machine_mode,
 					   machine_mode, enum reg_class);
 extern bool mips_dangerous_for_la25_p (rtx);
-extern bool mips_modes_tieable_p (machine_mode, machine_mode);
 extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   machine_mode,
 						   rtx, bool);

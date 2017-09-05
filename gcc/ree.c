@@ -819,7 +819,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 
       /* Ensure we can use the src_reg in dst_mode (needed for
 	 the (set (reg1) (reg2)) insn mentioned above).  */
-      if (!HARD_REGNO_MODE_OK (REGNO (src_reg), dst_mode))
+      if (!targetm.hard_regno_mode_ok (REGNO (src_reg), dst_mode))
 	return false;
 
       /* Ensure the number of hard registers of the copy match.  */

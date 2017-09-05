@@ -1631,7 +1631,7 @@ find_shift_sequence (int access_size,
       /* Also try a wider mode if the necessary punning is either not
 	 desirable or not possible.  */
       if (!CONSTANT_P (store_info->rhs)
-	  && !MODES_TIEABLE_P (new_mode, store_mode))
+	  && !targetm.modes_tieable_p (new_mode, store_mode))
 	continue;
 
       new_reg = gen_reg_rtx (new_mode);

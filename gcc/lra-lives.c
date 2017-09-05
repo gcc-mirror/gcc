@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.	If not see
 #include "cfganal.h"
 #include "sparseset.h"
 #include "lra-int.h"
+#include "target.h"
 
 /* Program points are enumerated by numbers from range
    0..LRA_LIVE_MAX_POINT-1.  There are approximately two times more
@@ -575,7 +576,8 @@ check_pseudos_live_through_calls (int regno,
 		    last_call_used_reg_set);
 
   for (hr = 0; hr < FIRST_PSEUDO_REGISTER; hr++)
-    if (HARD_REGNO_CALL_PART_CLOBBERED (hr, PSEUDO_REGNO_MODE (regno)))
+    if (targetm.hard_regno_call_part_clobbered (hr,
+						PSEUDO_REGNO_MODE (regno)))
       SET_HARD_REG_BIT (lra_reg_info[regno].conflict_hard_regs, hr);
   lra_reg_info[regno].call_p = true;
   if (! sparseset_bit_p (pseudos_live_through_setjumps, regno))

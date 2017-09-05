@@ -494,7 +494,7 @@ static int mips_base_align_jumps; /* align_jumps */
 static int mips_base_align_functions; /* align_functions */
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
-bool mips_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
+static bool mips_hard_regno_mode_ok_p[MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Index C is true if character C is a valid PRINT_OPERAND punctation
    character.  */
@@ -6117,18 +6117,17 @@ mips_get_reg_raw_mode (int regno)
   return default_get_reg_raw_mode (regno);
 }
 
-/* Return true if FUNCTION_ARG_PADDING (MODE, TYPE) should return
-   upward rather than downward.  In other words, return true if the
-   first byte of the stack slot has useful data, false if the last
-   byte does.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING; return PAD_UPWARD if the first
+   byte of the stack slot has useful data, PAD_DOWNWARD if the last byte
+   does.  */
 
-bool
-mips_pad_arg_upward (machine_mode mode, const_tree type)
+static pad_direction
+mips_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return true;
+    return PAD_UPWARD;
 
   /* Otherwise, integral types are padded downward: the last byte of a
      stack argument is passed in the last byte of the stack slot.  */
@@ -6138,22 +6137,24 @@ mips_pad_arg_upward (machine_mode mode, const_tree type)
 	 || FIXED_POINT_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode)
 	 || ALL_SCALAR_FIXED_POINT_MODE_P (mode)))
-    return false;
+    return PAD_DOWNWARD;
 
   /* Big-endian o64 pads floating-point arguments downward.  */
   if (mips_abi == ABI_O64)
     if (type != 0 ? FLOAT_TYPE_P (type) : GET_MODE_CLASS (mode) == MODE_FLOAT)
-      return false;
+      return PAD_DOWNWARD;
 
   /* Other types are padded upward for o32, o64, n32 and n64.  */
   if (mips_abi != ABI_EABI)
-    return true;
+    return PAD_UPWARD;
 
   /* Arguments smaller than a stack slot are padded downward.  */
-  if (mode != BLKmode)
-    return GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY;
-  else
-    return int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT);
+  if (mode != BLKmode
+      ? GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY
+      : int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT))
+    return PAD_UPWARD;
+
+  return PAD_DOWNWARD;
 }
 
 /* Likewise BLOCK_REG_PADDING (MODE, TYPE, ...).  Return !BYTES_BIG_ENDIAN
@@ -6169,7 +6170,7 @@ mips_pad_reg_upward (machine_mode mode, tree type)
 
   /* Otherwise, apply the same padding to register arguments as we do
      to stack arguments.  */
-  return mips_pad_arg_upward (mode, type);
+  return mips_function_arg_padding (mode, type) == PAD_UPWARD;
 }
 
 /* Return nonzero when an argument must be passed by reference.  */
@@ -12725,7 +12726,7 @@ mips_can_use_return_insn (void)
    The result of this function is cached in mips_hard_regno_mode_ok.  */
 
 static bool
-mips_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
+mips_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
 {
   unsigned int size;
   enum mode_class mclass;
@@ -12830,6 +12831,14 @@ mips_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+mips_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return mips_hard_regno_mode_ok_p[mode][regno];
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 bool
@@ -12855,6 +12864,26 @@ mips_hard_regno_scratch_ok (unsigned int regno)
     return false;
 
   return true;
+}
+
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  Odd-numbered
+   single-precision registers are not considered callee-saved for o32
+   FPXX as they will be clobbered when run on an FR=1 FPU.  MSA vector
+   registers with MODE > 64 bits are part clobbered too.  */
+
+static bool
+mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_FLOATXX
+      && hard_regno_nregs[regno][mode] == 1
+      && FP_REG_P (regno)
+      && (regno & 1) != 0)
+    return true;
+
+  if (ISA_HAS_MSA && FP_REG_P (regno) && GET_MODE_SIZE (mode) > 8)
+    return true;
+
+  return false;
 }
 
 /* Implement HARD_REGNO_NREGS.  */
@@ -12892,14 +12921,14 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   COPY_HARD_REG_SET (left, reg_class_contents[(int) rclass]);
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
     {
-      if (HARD_REGNO_MODE_OK (ST_REG_FIRST, mode))
+      if (mips_hard_regno_mode_ok (ST_REG_FIRST, mode))
 	size = MIN (size, 4);
 
       AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) ST_REGS]);
     }
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) FP_REGS]))
     {
-      if (HARD_REGNO_MODE_OK (FP_REG_FIRST, mode))
+      if (mips_hard_regno_mode_ok (FP_REG_FIRST, mode))
 	{
 	  if (MSA_SUPPORTED_MODE_P (mode))
 	    size = MIN (size, UNITS_PER_MSA_REG);
@@ -12989,9 +13018,9 @@ mips_mode_ok_for_mov_fmt_p (machine_mode mode)
     }
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 mips_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* FPRs allow no mode punning, so it's not worth tying modes if we'd
@@ -20090,8 +20119,8 @@ mips_option_override (void)
   /* Set up mips_hard_regno_mode_ok.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-      mips_hard_regno_mode_ok[mode][regno]
-	= mips_hard_regno_mode_ok_p (regno, (machine_mode) mode);
+      mips_hard_regno_mode_ok_p[mode][regno]
+	= mips_hard_regno_mode_ok_uncached (regno, (machine_mode) mode);
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
@@ -22431,6 +22460,8 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG mips_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE mips_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING mips_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY mips_function_arg_boundary
 #undef TARGET_GET_RAW_RESULT_MODE
@@ -22557,6 +22588,16 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mips_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mips_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  mips_hard_regno_call_part_clobbered
 
 /* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS

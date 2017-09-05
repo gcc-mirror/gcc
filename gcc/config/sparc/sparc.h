@@ -768,23 +768,10 @@ extern enum cmodel sparc_cmodel;
    macro too.  */
 #define REGMODE_NATURAL_SIZE(MODE) sparc_regmode_natural_size (MODE)
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   See sparc.c for how we initialize this.  */
-extern const int *hard_regno_mode_classes;
-extern int sparc_mode_class[];
-
-/* ??? Because of the funny way we pass parameters we should allow certain
-   ??? types of float/complex values to be in integer registers during
-   ??? RTL generation.  This only matters on arch32.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((hard_regno_mode_classes[REGNO] & sparc_mode_class[MODE]) != 0)
-
 /* Value is 1 if it is OK to rename a hard register FROM to another hard
    register TO.  We cannot rename %g1 as it may be used before the save
    register window instruction in the prologue.  */
 #define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
-
-#define MODES_TIEABLE_P(MODE1, MODE2) sparc_modes_tieable_p (MODE1, MODE2)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -878,10 +865,10 @@ extern int sparc_mode_class[];
 
    For v9 we must distinguish between the upper and lower floating point
    registers because the upper ones can't hold SFmode values.
-   HARD_REGNO_MODE_OK won't help here because reload assumes that register(s)
-   satisfying a group need for a class will also satisfy a single need for
-   that class.  EXTRA_FP_REGS is a bit of a misnomer as it covers all 64 fp
-   regs.
+   TARGET_HARD_REGNO_MODE_OK won't help here because reload assumes that
+   register(s) satisfying a group need for a class will also satisfy a
+   single need for that class.  EXTRA_FP_REGS is a bit of a misnomer as
+   it covers all 64 fp regs.
 
    It is important that one class contains all the general and all the standard
    fp regs.  Otherwise find_reg() won't properly allocate int regs for moves,
@@ -1227,14 +1214,6 @@ struct sparc_args {
 
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
 init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL));
-
-/* If defined, a C expression which determines whether, and in which direction,
-   to pad out an argument with extra space.  The value should be of type
-   `enum direction': either `upward' to pad above the argument,
-   `downward' to pad below, or `none' to inhibit padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-function_arg_padding ((MODE), (TYPE))
 
 
 /* Generate the special assembly code needed to tell the assembler whatever

@@ -1005,6 +1005,33 @@ byte_lowpart_offset (machine_mode outer_mode,
   else
     return subreg_lowpart_offset (outer_mode, inner_mode);
 }
+
+/* Return the offset of (subreg:OUTER_MODE (mem:INNER_MODE X) OFFSET)
+   from address X.  For paradoxical big-endian subregs this is a
+   negative value, otherwise it's the same as OFFSET.  */
+
+int
+subreg_memory_offset (machine_mode outer_mode, machine_mode inner_mode,
+		      unsigned int offset)
+{
+  if (paradoxical_subreg_p (outer_mode, inner_mode))
+    {
+      gcc_assert (offset == 0);
+      return -subreg_lowpart_offset (inner_mode, outer_mode);
+    }
+  return offset;
+}
+
+/* As above, but return the offset that existing subreg X would have
+   if SUBREG_REG (X) were stored in memory.  The only significant thing
+   about the current SUBREG_REG is its mode.  */
+
+int
+subreg_memory_offset (const_rtx x)
+{
+  return subreg_memory_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
+			       SUBREG_BYTE (x));
+}
 
 /* Generate a REG rtx for a new pseudo register of mode MODE.
    This pseudo is assigned the next sequential register number.  */

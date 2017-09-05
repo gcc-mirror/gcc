@@ -1190,7 +1190,7 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
     }
 
   emit_library_call (unwind_sjlj_register_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (fc, 0), Pmode);
+		     XEXP (fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1232,7 +1232,7 @@ sjlj_emit_function_exit (void)
   start_sequence ();
 
   emit_library_call (unwind_sjlj_unregister_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (crtl->eh.sjlj_fc, 0), Pmode);
+		     XEXP (crtl->eh.sjlj_fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();

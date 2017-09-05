@@ -385,27 +385,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 #define HARD_REGNO_NREGS(REGNO, MODE)   \
   CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On Alpha, the integer registers can hold any mode.  The floating-point
-   registers can hold 64-bit integers as well, but not smaller values.  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
-  (IN_RANGE ((REGNO), 32, 62)						\
-   ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
-     || (MODE) == SCmode || (MODE) == DCmode				\
-   : 1)
-
-/* A C expression that is nonzero if a value of mode
-   MODE1 is accessible in mode MODE2 without copying.
-
-   This asymmetric test is true when MODE1 could be put
-   in an FP register but MODE2 could not.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) 				\
-  (HARD_REGNO_MODE_OK (32, (MODE1))				\
-   ? HARD_REGNO_MODE_OK (32, (MODE2))				\
-   : 1)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

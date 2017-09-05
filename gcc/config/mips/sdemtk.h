@@ -70,7 +70,7 @@ extern void mips_sync_icache (void *beg, unsigned long len);
 #undef MIPS_ICACHE_SYNC
 #define MIPS_ICACHE_SYNC(ADDR, SIZE)					\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),	\
-		     LCT_NORMAL, VOIDmode, 2, ADDR, Pmode,		\
+		     LCT_NORMAL, VOIDmode, ADDR, Pmode,			\
 		     SIZE, TYPE_MODE (sizetype))
 
 /* This version of _mcount does not pop 2 words from the stack.  */

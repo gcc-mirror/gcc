@@ -677,10 +677,6 @@ enum reg_class
    registers.  */
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-/* Do not allow to store a value in REG_CC for any mode */
-/* Do not allow to store value in pregs if mode is not SI*/
-#define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok((REGNO), (MODE))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)					\
@@ -695,23 +691,6 @@ enum reg_class
 /* A C expression that is nonzero if hard register TO can be
    considered for use as a rename register for FROM register */
 #define HARD_REGNO_RENAME_OK(FROM, TO) bfin_hard_regno_rename_ok (FROM, TO)
-
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
-   MODE2)' must be zero. */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
- ((MODE1) == (MODE2)					\
-  || ((GET_MODE_CLASS (MODE1) == MODE_INT		\
-       || GET_MODE_CLASS (MODE1) == MODE_FLOAT)		\
-      && (GET_MODE_CLASS (MODE2) == MODE_INT		\
-	  || GET_MODE_CLASS (MODE2) == MODE_FLOAT)	\
-      && (MODE1) != BImode && (MODE2) != BImode		\
-      && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
-      && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD))
 
 /* `PREFERRED_RELOAD_CLASS (X, CLASS)'
    A C expression that places additional restrictions on the register

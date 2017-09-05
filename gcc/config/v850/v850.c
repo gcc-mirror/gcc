@@ -3247,6 +3247,23 @@ v850_gen_movdi (rtx * operands)
   
   return "st.dw %1, %0";
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+v850_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= 4 || ((regno & 1) == 0 && regno != 0);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= 4 && GET_MODE_SIZE (mode2) <= 4));
+}
 
 /* Initialize the GCC target structure.  */
 
@@ -3351,6 +3368,12 @@ v850_gen_movdi (rtx * operands)
 
 #undef  TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK v850_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P v850_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
