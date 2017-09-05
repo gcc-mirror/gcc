@@ -1053,14 +1053,14 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 		  && (Etype (gnat_node)
 		      == Packed_Array_Impl_Type (gnat_temp_type)))
 	      || (Is_Class_Wide_Type (Etype (gnat_node)))
-	      || (IN (Ekind (gnat_temp_type), Incomplete_Or_Private_Kind)
+	      || (Is_Incomplete_Or_Private_Type (gnat_temp_type)
 		  && Present (Full_View (gnat_temp_type))
 		  && ((Etype (gnat_node) == Full_View (gnat_temp_type))
 		      || (Is_Packed (Full_View (gnat_temp_type))
 			  && (Etype (gnat_node)
 			      == Packed_Array_Impl_Type
 			           (Full_View (gnat_temp_type))))))
-	      || (IN (Ekind (gnat_temp_type), Incomplete_Kind)
+	      || (Is_Incomplete_Type (gnat_temp_type)
 		  && From_Limited_With (gnat_temp_type)
 		  && Present (Non_Limited_View (gnat_temp_type))
 		  && Etype (gnat_node) == Non_Limited_View (gnat_temp_type))
@@ -1069,7 +1069,7 @@ Identifier_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p)
 		   || Ekind (gnat_temp) == E_Component
 		   || Ekind (gnat_temp) == E_Constant
 		   || Ekind (gnat_temp) == E_Loop_Parameter
-		   || IN (Ekind (gnat_temp), Formal_Kind)));
+		   || Is_Formal (gnat_temp)));
 
   /* If this is a reference to a deferred constant whose partial view is an
      unconstrained private type, the proper type is on the full view of the
@@ -2558,7 +2558,7 @@ Case_Statement_to_gnu (Node_Id gnat_node)
 	    case N_Expanded_Name:
 	      /* This represents either a subtype range or a static value of
 		 some kind; Ekind says which.  */
-	      if (IN (Ekind (Entity (gnat_choice)), Type_Kind))
+	      if (Is_Type (Entity (gnat_choice)))
 		{
 		  tree gnu_type = get_unpadded_type (Entity (gnat_choice));
 
@@ -6007,7 +6007,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
       /* If this is of a fixed-point type, the value we want is the value of
 	 the corresponding integer.  */
-      if (IN (Ekind (Underlying_Type (Etype (gnat_node))), Fixed_Point_Kind))
+      if (Is_Fixed_Point_Type (Underlying_Type (Etype (gnat_node))))
 	{
 	  gnu_result = UI_To_gnu (Corresponding_Integer_Value (gnat_node),
 				  gnu_result_type);
@@ -6599,7 +6599,7 @@ gnat_to_gnu (Node_Id gnat_node)
       /* If the result is a pointer type, see if we are improperly
 	 converting to a stricter alignment.  */
       if (STRICT_ALIGNMENT && POINTER_TYPE_P (gnu_result_type)
-	  && IN (Ekind (Etype (gnat_node)), Access_Kind))
+	  && Is_Access_Type (Etype (gnat_node)))
 	{
 	  unsigned int align = known_alignment (gnu_expr);
 	  tree gnu_obj_type = TREE_TYPE (gnu_result_type);
@@ -8110,8 +8110,7 @@ add_stmt_with_node (tree gnu_stmt, Node_Id gnat_node)
 {
   /* Do not emit a location for renamings that come from generic instantiation,
      they are likely to disturb debugging.  */
-  if (Present (gnat_node)
-      && !renaming_from_generic_instantiation_p (gnat_node))
+  if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
     set_expr_location_from_node (gnu_stmt, gnat_node);
   add_stmt (gnu_stmt);
 }
@@ -8748,14 +8747,14 @@ process_freeze_entity (Node_Id gnat_node)
     {
       save_gnu_tree (gnat_entity, NULL_TREE, false);
 
-      if (IN (kind, Incomplete_Or_Private_Kind)
+      if (Is_Incomplete_Or_Private_Type (gnat_entity)
 	  && Present (Full_View (gnat_entity)))
 	{
 	  Entity_Id full_view = Full_View (gnat_entity);
 
 	  save_gnu_tree (full_view, NULL_TREE, false);
 
-          if (IN (Ekind (full_view), Private_Kind)
+          if (Is_Private_Type (full_view)
 	      && Present (Underlying_Full_View (full_view)))
 	    {
 	      full_view = Underlying_Full_View (full_view);
@@ -8763,18 +8762,18 @@ process_freeze_entity (Node_Id gnat_node)
 	    }
 	}
 
-      if (IN (kind, Type_Kind)
+      if (Is_Type (gnat_entity)
 	  && Present (Class_Wide_Type (gnat_entity))
 	  && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
 	save_gnu_tree (Class_Wide_Type (gnat_entity), NULL_TREE, false);
     }
 
-  if (IN (kind, Incomplete_Or_Private_Kind)
+  if (Is_Incomplete_Or_Private_Type (gnat_entity)
       && Present (Full_View (gnat_entity)))
     {
       Entity_Id full_view = Full_View (gnat_entity);
 
-      if (IN (Ekind (full_view), Private_Kind)
+      if (Is_Private_Type (full_view)
 	  && Present (Underlying_Full_View (full_view)))
 	full_view = Underlying_Full_View (full_view);
 
@@ -8806,7 +8805,7 @@ process_freeze_entity (Node_Id gnat_node)
       gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, true);
     }
 
-  if (IN (kind, Type_Kind)
+  if (Is_Type (gnat_entity)
       && Present (Class_Wide_Type (gnat_entity))
       && Root_Type (Class_Wide_Type (gnat_entity)) == gnat_entity)
     save_gnu_tree (Class_Wide_Type (gnat_entity), gnu_new, false);
@@ -9626,7 +9625,7 @@ process_type (Entity_Id gnat_entity)
 	{
 	  tree gnu_decl = TYPE_STUB_DECL (make_dummy_type (gnat_entity));
 	  save_gnu_tree (gnat_entity, gnu_decl, false);
-	  if (IN (Ekind (gnat_entity), Incomplete_Or_Private_Kind)
+	  if (Is_Incomplete_Or_Private_Type (gnat_entity)
 	      && Present (Full_View (gnat_entity)))
 	    {
 	      if (Has_Completion_In_Body (gnat_entity))
