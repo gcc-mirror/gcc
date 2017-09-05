@@ -2873,20 +2873,12 @@ arm_option_params_internal (void)
       targetm.max_anchor_offset = TARGET_MAX_ANCHOR_OFFSET;
     }
 
-  if (optimize_size)
-    {
-      /* If optimizing for size, bump the number of instructions that we
-         are prepared to conditionally execute (even on a StrongARM).  */
-      max_insns_skipped = 6;
+  /* Increase the number of conditional instructions with -Os.  */
+  max_insns_skipped = optimize_size ? 4 : current_tune->max_insns_skipped;
 
-      /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TARGET_THUMB2)
-        max_insns_skipped = arm_restrict_it ? 1 : 4;
-    }
-  else
-    /* When -mrestrict-it is in use tone down the if-conversion.  */
-    max_insns_skipped = (TARGET_THUMB2 && arm_restrict_it)
-      ? 1 : current_tune->max_insns_skipped;
+  /* For THUMB2, we limit the conditional sequence to one IT block.  */
+  if (TARGET_THUMB2)
+    max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
