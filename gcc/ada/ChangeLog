@@ -1,5 +1,22 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* repinfo.ads: Document new treatment of dynamic values.
+	(TCode): Bump upper bound to 29.
+	(Dynamic_Val): New constant set to 29.
+	* repinfo.adb (Print_Expr) <Dynamic_Val>: New case.
+	(Rep_Value)  <Dynamic_Val>: Likewise.
+	* repinfo.h (Dynamic_Val): New macro.
+	* gcc-interface/decl.c (annotate_value): Tidy up and cache result for
+	DECL_P nodes too.
+	<INTEGER_CST>: Set TCODE instead of recursing.
+	<COMPONENT_REF>: Set TCODE instead of calling Create_Node manually.
+	<VAR_DECL>: New case.
+	<MULT_EXPR, PLUS_EXPR>: Fold conversions into inner operations.
+	<BIT_AND_EXPR>: Adjust.
+	<CALL_EXPR>: Do not fall through.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
 	there is no target, do not create a temporary for the return value for
 	an allocator either.
