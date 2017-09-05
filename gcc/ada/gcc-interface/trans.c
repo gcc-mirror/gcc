@@ -4303,11 +4303,11 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	  parameters.
 
        2. There is no target and the call is made for neither an object nor a
-	  renaming declaration, nor a return statement, and the return type has
-	  variable size, because in this case the gimplifier cannot create the
-	  temporary, or more generally is simply an aggregate type, because the
-	  gimplifier would create the temporary in the outermost scope instead
-	  of locally.
+	  renaming declaration, nor a return statement, nor an allocator, and
+	  the return type has variable size because in this case the gimplifier
+	  cannot create the temporary, or more generally is simply an aggregate
+	  type, because the gimplifier would then create the temporary in the
+	  outermost scope instead of locally.
 
        3. There is a target and it is a slice or an array with fixed size,
 	  and the return type has variable size, because the gimplifier
@@ -4326,6 +4326,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	      && Nkind (Parent (gnat_node)) != N_Object_Declaration
 	      && Nkind (Parent (gnat_node)) != N_Object_Renaming_Declaration
 	      && Nkind (Parent (gnat_node)) != N_Simple_Return_Statement
+	      && !(Nkind (Parent (gnat_node)) == N_Qualified_Expression
+		   && Nkind (Parent (Parent (gnat_node))) == N_Allocator)
 	      && AGGREGATE_TYPE_P (gnu_result_type)
 	      && !TYPE_IS_FAT_POINTER_P (gnu_result_type))
 	  || (gnu_target
