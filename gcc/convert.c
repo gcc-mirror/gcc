@@ -886,6 +886,12 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    break;
 
 	  case NEGATE_EXPR:
+	    /* Using unsigned arithmetic for signed types may hide overflow
+	       bugs.  */
+	    if (!TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (expr, 0)))
+		&& sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+	      break;
+	    /* Fall through.  */
 	  case BIT_NOT_EXPR:
 	    /* This is not correct for ABS_EXPR,
 	       since we must test the sign before truncation.  */
@@ -902,12 +908,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 						    TYPE_UNSIGNED (typex));
 
 	      if (!TYPE_UNSIGNED (typex))
-		{
-		  /* Using unsigned arithmetic may hide overflow bugs.  */
-		  if (sanitize_flags_p (SANITIZE_SI_OVERFLOW))
-		    break;
-		  typex = unsigned_type_for (typex);
-		}
+		typex = unsigned_type_for (typex);
 	      return convert (type,
 			      fold_build1 (ex_form, typex,
 					   convert (typex,
