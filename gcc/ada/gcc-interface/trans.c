@@ -9252,63 +9252,71 @@ emit_check (tree gnu_cond, tree gnu_expr, int reason, Node_Id gnat_node)
 
 /* Return an expression that converts GNU_EXPR to GNAT_TYPE, doing overflow
    checks if OVERFLOW_P is true and range checks if RANGE_P is true.
-   GNAT_TYPE is known to be an integral type.  If TRUNCATE_P true, do a
-   float to integer conversion with truncation; otherwise round.
-   GNAT_NODE is the GNAT node conveying the source location for which the
-   error should be signaled.  */
+   If TRUNCATE_P true, do a float-to-integer conversion with truncation,
+   otherwise round.  GNAT_NODE is the GNAT node conveying the source location
+   for which the error should be signaled.  */
 
 static tree
-convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
-		    bool rangep, bool truncatep, Node_Id gnat_node)
+convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
+		    bool range_p, bool truncate_p, Node_Id gnat_node)
 {
   tree gnu_type = get_unpadded_type (gnat_type);
-  tree gnu_in_type = TREE_TYPE (gnu_expr);
-  tree gnu_in_basetype = get_base_type (gnu_in_type);
   tree gnu_base_type = get_base_type (gnu_type);
+  tree gnu_in_type = TREE_TYPE (gnu_expr);
+  tree gnu_in_base_type = get_base_type (gnu_in_type);
   tree gnu_result = gnu_expr;
 
   /* If we are not doing any checks, the output is an integral type and the
      input is not a floating-point type, just do the conversion.  This is
      required for packed array types and is simpler in all cases anyway.   */
-  if (!rangep
-      && !overflowp
+  if (!range_p
+      && !overflow_p
       && INTEGRAL_TYPE_P (gnu_base_type)
-      && !FLOAT_TYPE_P (gnu_in_type))
+      && !FLOAT_TYPE_P (gnu_in_base_type))
     return convert (gnu_type, gnu_expr);
 
-  /* First convert the expression to its base type.  This
-     will never generate code, but makes the tests below much simpler.
-     But don't do this if converting from an integer type to an unconstrained
-     array type since then we need to get the bounds from the original
-     (unpacked) type.  */
-  if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
-    gnu_result = convert (gnu_in_basetype, gnu_result);
+  /* If the mode of the input base type is larger, then converting to it below
+     may pessimize the final conversion step, for example generate a libcall
+     instead of a simple instruction, so use a narrower type in this case.  */
+  if (TYPE_MODE (gnu_in_base_type) != TYPE_MODE (gnu_in_type)
+      && !(TREE_CODE (gnu_in_type) == INTEGER_TYPE
+	   && TYPE_BIASED_REPRESENTATION_P (gnu_in_type)))
+    gnu_in_base_type = gnat_type_for_mode (TYPE_MODE (gnu_in_type),
+					   TYPE_UNSIGNED (gnu_in_type));
 
-  /* If overflow checks are requested,  we need to be sure the result will
-     fit in the output base type.  But don't do this if the input
-     is integer and the output floating-point.  */
-  if (overflowp
-      && !(FLOAT_TYPE_P (gnu_base_type) && INTEGRAL_TYPE_P (gnu_in_basetype)))
+  /* First convert the expression to the base type.  This will never generate
+     code, but makes the tests below simpler.  But don't do this if converting
+     from an integer type to an unconstrained array type since then we need to
+     get the bounds from the original (unpacked) type.  */
+  if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
+    gnu_result = convert (gnu_in_base_type, gnu_result);
+
+  /* If overflow checks are requested,  we need to be sure the result will fit
+     in the output base type.  But don't do this if the input is integer and
+     the output floating-point.  */
+  if (overflow_p
+      && !(FLOAT_TYPE_P (gnu_base_type) && INTEGRAL_TYPE_P (gnu_in_base_type)))
     {
       /* Ensure GNU_EXPR only gets evaluated once.  */
       tree gnu_input = gnat_protect_expr (gnu_result);
       tree gnu_cond = boolean_false_node;
-      tree gnu_in_lb = TYPE_MIN_VALUE (gnu_in_basetype);
-      tree gnu_in_ub = TYPE_MAX_VALUE (gnu_in_basetype);
+      tree gnu_in_lb = TYPE_MIN_VALUE (gnu_in_base_type);
+      tree gnu_in_ub = TYPE_MAX_VALUE (gnu_in_base_type);
       tree gnu_out_lb = TYPE_MIN_VALUE (gnu_base_type);
       tree gnu_out_ub = TYPE_MAX_VALUE (gnu_base_type);
 
       /* Convert the lower bounds to signed types, so we're sure we're
 	 comparing them properly.  Likewise, convert the upper bounds
 	 to unsigned types.  */
-      if (INTEGRAL_TYPE_P (gnu_in_basetype) && TYPE_UNSIGNED (gnu_in_basetype))
+      if (INTEGRAL_TYPE_P (gnu_in_base_type)
+	  && TYPE_UNSIGNED (gnu_in_base_type))
 	gnu_in_lb
-	  = convert (gnat_signed_type_for (gnu_in_basetype), gnu_in_lb);
+	  = convert (gnat_signed_type_for (gnu_in_base_type), gnu_in_lb);
 
-      if (INTEGRAL_TYPE_P (gnu_in_basetype)
-	  && !TYPE_UNSIGNED (gnu_in_basetype))
+      if (INTEGRAL_TYPE_P (gnu_in_base_type)
+	  && !TYPE_UNSIGNED (gnu_in_base_type))
 	gnu_in_ub
-	  = convert (gnat_unsigned_type_for (gnu_in_basetype), gnu_in_ub);
+	  = convert (gnat_unsigned_type_for (gnu_in_base_type), gnu_in_ub);
 
       if (INTEGRAL_TYPE_P (gnu_base_type) && TYPE_UNSIGNED (gnu_base_type))
 	gnu_out_lb
@@ -9328,7 +9336,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	 Note that we have to do the comparison which would *fail* in the
 	 case of an error since if it's an FP comparison and one of the
 	 values is a NaN or Inf, the comparison will fail.  */
-      if (INTEGRAL_TYPE_P (gnu_in_basetype)
+      if (INTEGRAL_TYPE_P (gnu_in_base_type)
 	  ? tree_int_cst_lt (gnu_in_lb, gnu_out_lb)
 	  : (FLOAT_TYPE_P (gnu_base_type)
 	     ? real_less (&TREE_REAL_CST (gnu_in_lb),
@@ -9337,10 +9345,10 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	gnu_cond
 	  = invert_truthvalue
 	    (build_binary_op (GE_EXPR, boolean_type_node,
-			      gnu_input, convert (gnu_in_basetype,
+			      gnu_input, convert (gnu_in_base_type,
 						  gnu_out_lb)));
 
-      if (INTEGRAL_TYPE_P (gnu_in_basetype)
+      if (INTEGRAL_TYPE_P (gnu_in_base_type)
 	  ? tree_int_cst_lt (gnu_out_ub, gnu_in_ub)
 	  : (FLOAT_TYPE_P (gnu_base_type)
 	     ? real_less (&TREE_REAL_CST (gnu_out_ub),
@@ -9351,7 +9359,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 			     invert_truthvalue
 			     (build_binary_op (LE_EXPR, boolean_type_node,
 					       gnu_input,
-					       convert (gnu_in_basetype,
+					       convert (gnu_in_base_type,
 							gnu_out_ub))));
 
       if (!integer_zerop (gnu_cond))
@@ -9362,8 +9370,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
   /* Now convert to the result base type.  If this is a non-truncating
      float-to-integer conversion, round.  */
   if (INTEGRAL_TYPE_P (gnu_base_type)
-      && FLOAT_TYPE_P (gnu_in_basetype)
-      && !truncatep)
+      && FLOAT_TYPE_P (gnu_in_base_type)
+      && !truncate_p)
     {
       REAL_VALUE_TYPE half_minus_pred_half, pred_half;
       tree gnu_conv, gnu_zero, gnu_comp, calc_type;
@@ -9375,7 +9383,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	 precision from spoiling this property, use the widest hardware
 	 floating-point type if FP_ARITH_MAY_WIDEN is true.  */
       calc_type
-	= fp_arith_may_widen ? longest_float_type_node : gnu_in_basetype;
+	= fp_arith_may_widen ? longest_float_type_node : gnu_in_base_type;
 
       /* Compute the exact value calc_type'Pred (0.5) at compile time.  */
       fmt = REAL_MODE_FORMAT (TYPE_MODE (calc_type));
@@ -9400,7 +9408,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 	 to be scheduled in parallel with retrieval of the constant and
 	 conversion of the input to the calc_type (if necessary).  */
 
-      gnu_zero = build_real (gnu_in_basetype, dconst0);
+      gnu_zero = build_real (gnu_in_base_type, dconst0);
       gnu_result = gnat_protect_expr (gnu_result);
       gnu_conv = convert (calc_type, gnu_result);
       gnu_comp
@@ -9422,9 +9430,10 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflowp,
 
   /* Finally, do the range check if requested.  Note that if the result type
      is a modular type, the range check is actually an overflow check.  */
-  if (rangep
-      || (TREE_CODE (gnu_base_type) == INTEGER_TYPE
-	  && TYPE_MODULAR_P (gnu_base_type) && overflowp))
+  if (range_p
+      || (overflow_p
+	  && TREE_CODE (gnu_base_type) == INTEGER_TYPE
+	  && TYPE_MODULAR_P (gnu_base_type)))
     gnu_result = emit_range_check (gnu_result, gnat_type, gnat_node);
 
   return convert (gnu_type, gnu_result);
