@@ -2451,7 +2451,7 @@ struct GTY(()) lang_decl_base {
   unsigned anticipated_p : 1;		   /* fn, type or template */
   /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
-  unsigned template_conv_p : 1;		   /* var or template */
+  unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
@@ -2807,28 +2807,20 @@ struct GTY(()) lang_decl {
        || DECL_BASE_DESTRUCTOR_P (NODE)))
 
 /* Nonzero if NODE is a user-defined conversion operator.  */
-#define DECL_CONV_FN_P(NODE) \
-  (DECL_NAME (NODE) && IDENTIFIER_CONV_OP_P (DECL_NAME (NODE)))
+#define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
 
-/* If FN is a conversion operator, the type to which it converts.
-   Otherwise, NULL_TREE.  */
+/* The type to which conversion operator FN converts to.   */
 #define DECL_CONV_FN_TYPE(FN) \
-  (DECL_CONV_FN_P (FN) ? TREE_TYPE (DECL_NAME (FN)) : NULL_TREE)
-
-/* Nonzero if NODE, which is a TEMPLATE_DECL, is a template
-   conversion operator to a type dependent on the innermost template
-   args.  */
-#define DECL_TEMPLATE_CONV_FN_P(NODE) \
-  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))->u.base.template_conv_p)
+  TREE_TYPE ((gcc_checking_assert (DECL_CONV_FN_P (FN)), DECL_NAME (FN)))
 
 /* Nonzero if NODE, a static data member, was declared in its class as an
    array of unknown bound.  */
 #define VAR_HAD_UNKNOWN_BOUND(NODE)			\
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))		\
-   ? DECL_LANG_SPECIFIC (NODE)->u.base.template_conv_p	\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.unknown_bound_p	\
    : false)
 #define SET_VAR_HAD_UNKNOWN_BOUND(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.template_conv_p = true)
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.unknown_bound_p = true)
 
 /* Set the overloaded operator code for NODE to CODE.  */
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \

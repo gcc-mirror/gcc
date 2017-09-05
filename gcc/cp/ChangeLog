@@ -1,5 +1,14 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	* cp-tree.h (lang_decl_base): Rename template_conv_p to
+	unknown_bound_p.
+	(DECL_CONV_FN_P): Don't check NULL DECL_NAME.
+	(DECL_CONV_FN_TYPE): FN must be conv op.
+	(DECL_TEMPLATE_CONV_FN_P): Delete.
+	(VAR_HAD_UNKNOWN_BOUND, SET_VAR_HAD_UNKNOWN_BOUND): Adjust.
+	* pt.c (push_template_decl_real): Delete DECL_TEMPLATE_CONV_FN_P
+	setting.
+
 	* class.c (unreverse_member_declarations): Remove extraneous if.
 	* pt.c (push_template_decl_real): Use string concatenation, not
 	\<newline>.  Add %<..%>.
