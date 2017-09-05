@@ -1,3 +1,13 @@
+2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59501
+	PR target/81624
+	PR target/81769
+	* gcc.target/i386/pr59501-4a.c: Remove xfail.
+	* gcc.target/i386/pr81769-1a.c: New test.
+	* gcc.target/i386/pr81769-1b.c: Likewise.
+	* gcc.target/i386/pr81769-2.c: Likewise.
+
 2017-09-05  Marek Polacek  <polacek@redhat.com>
 
 	PR sanitizer/82072
