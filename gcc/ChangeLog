@@ -1,5 +1,11 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* machmode.h (bitwise_mode_for_mode): Return opt_mode.
+	* stor-layout.c (bitwise_mode_for_mode): Likewise.
+	(bitwise_type_for_mode): Update accordingly.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* stor-layout.h (mode_for_size_tree): Return an opt_mode.
 	* stor-layout.c (mode_for_size_tree): Likewise.
 	(mode_for_array): Update accordingly.

@@ -694,7 +694,7 @@ smallest_int_mode_for_size (unsigned int size)
 }
 
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
-extern machine_mode bitwise_mode_for_mode (machine_mode);
+extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
 extern opt_machine_mode mode_for_vector (scalar_mode, unsigned);
 extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
 
