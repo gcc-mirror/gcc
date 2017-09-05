@@ -506,8 +506,10 @@ mode_for_vector (scalar_mode innermode, unsigned nunits)
   /* For integers, try mapping it to a same-sized scalar mode.  */
   if (mode == VOIDmode
       && GET_MODE_CLASS (innermode) == MODE_INT)
-    mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
-			  MODE_INT, 0);
+    {
+      unsigned int nbits = nunits * GET_MODE_BITSIZE (innermode);
+      mode = int_mode_for_size (nbits, 0).else_blk ();
+    }
 
   if (mode == VOIDmode
       || (GET_MODE_CLASS (mode) == MODE_INT
@@ -2295,7 +2297,7 @@ layout_type (tree type)
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE_UNITS);
       /* A pointer might be MODE_PARTIAL_INT, but ptrdiff_t must be
 	 integral, which may be an __intN.  */
-      SET_TYPE_MODE (type, mode_for_size (POINTER_SIZE, MODE_INT, 0));
+      SET_TYPE_MODE (type, int_mode_for_size (POINTER_SIZE, 0).require ());
       TYPE_PRECISION (type) = POINTER_SIZE;
       break;
 
@@ -2304,7 +2306,8 @@ layout_type (tree type)
       /* It's hard to see what the mode and size of a function ought to
 	 be, but we do know the alignment is FUNCTION_BOUNDARY, so
 	 make it consistent with that.  */
-      SET_TYPE_MODE (type, mode_for_size (FUNCTION_BOUNDARY, MODE_INT, 0));
+      SET_TYPE_MODE (type,
+		     int_mode_for_size (FUNCTION_BOUNDARY, 0).else_blk ());
       TYPE_SIZE (type) = bitsize_int (FUNCTION_BOUNDARY);
       TYPE_SIZE_UNIT (type) = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
       break;

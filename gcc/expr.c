@@ -10680,7 +10680,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		&& ! (target != 0 && MEM_P (op0)
 		      && MEM_P (target)
 		      && bitpos % BITS_PER_UNIT == 0))
-	      ext_mode = mode_for_size (bitsize, MODE_INT, 1);
+	      ext_mode = int_mode_for_size (bitsize, 1).else_blk ();
 
 	    if (ext_mode == BLKmode)
 	      {

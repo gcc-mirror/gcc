@@ -836,7 +836,7 @@ lm32_block_move_inline (rtx dest, rtx src, HOST_WIDE_INT length,
       break;
     }
 
-  mode = mode_for_size (bits, MODE_INT, 0);
+  mode = int_mode_for_size (bits, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */

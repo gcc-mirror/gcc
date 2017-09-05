@@ -800,7 +800,8 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
 		{
 		  unsigned int size = tree_to_uhwi (TYPE_SIZE (type));
 		  type = copy_type (type);
-		  SET_TYPE_MODE (type, mode_for_size (size, MODE_INT, 0));
+		  machine_mode mode = int_mode_for_size (size, 0).else_blk ();
+		  SET_TYPE_MODE (type, mode);
 		}
 
 	      /* Create the temporary by inserting a SAVE_EXPR.  */
