@@ -1,5 +1,12 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	PR ada/62235
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Skip regular processing
+	for Itypes that are E_Record_Subtype with a cloned subtype.
+	<E_Record_Subtype>: Use the DECL of the cloned type directly, if any.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (convert_with_check): Use a custom base type
 	if the base type of the expression has a different machine mode.
 	Rename a couple of parameters and local variable.
