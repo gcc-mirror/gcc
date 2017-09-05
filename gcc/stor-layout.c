@@ -404,10 +404,10 @@ int_mode_for_mode (machine_mode mode)
     }
 }
 
-/* Find a mode that can be used for efficient bitwise operations on MODE.
-   Return BLKmode if no such mode exists.  */
+/* Find a mode that can be used for efficient bitwise operations on MODE,
+   if one exists.  */
 
-machine_mode
+opt_machine_mode
 bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
@@ -445,7 +445,7 @@ bitwise_mode_for_mode (machine_mode mode)
     }
 
   /* Otherwise fall back on integers while honoring MAX_FIXED_MODE_SIZE.  */
-  return mode_for_size (bitsize, MODE_INT, true).else_blk ();
+  return mode_for_size (bitsize, MODE_INT, true);
 }
 
 /* Find a type that can be used for efficient bitwise operations on MODE.
@@ -454,8 +454,7 @@ bitwise_mode_for_mode (machine_mode mode)
 tree
 bitwise_type_for_mode (machine_mode mode)
 {
-  mode = bitwise_mode_for_mode (mode);
-  if (mode == BLKmode)
+  if (!bitwise_mode_for_mode (mode).exists (&mode))
     return NULL_TREE;
 
   unsigned int inner_size = GET_MODE_UNIT_BITSIZE (mode);
