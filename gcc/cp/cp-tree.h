@@ -2806,13 +2806,11 @@ struct GTY(()) lang_decl {
        || DECL_BASE_DESTRUCTOR_P (NODE)))
 
 /* Nonzero if NODE is a user-defined conversion operator.  */
-#define DECL_CONV_FN_P(NODE) \
-  (DECL_NAME (NODE) && IDENTIFIER_CONV_OP_P (DECL_NAME (NODE)))
+#define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
 
-/* If FN is a conversion operator, the type to which it converts.
-   Otherwise, NULL_TREE.  */
+/* The type to which conversion operator FN converts to.   */
 #define DECL_CONV_FN_TYPE(FN) \
-  (DECL_CONV_FN_P (FN) ? TREE_TYPE (DECL_NAME (FN)) : NULL_TREE)
+  TREE_TYPE ((gcc_checking_assert (DECL_CONV_FN_P (FN)), DECL_NAME (FN)))
 
 /* Nonzero if NODE, which is a TEMPLATE_DECL, is a template
    conversion operator to a type dependent on the innermost template

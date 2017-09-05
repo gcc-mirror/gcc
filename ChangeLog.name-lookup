@@ -1,6 +1,10 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/
+	* cp-tree.h (DECL_CONV_FN_P): No need to check DECL_NAME nullness.
+	(DECL_CONV_FN_TYPE): FN must be a conv op.
+
+	gcc/cp/
 	* class.c (add_method): Move conv_op marker handling to ...
 	* name-lookup.c (find_method_slot): ... here.
 
