@@ -291,19 +291,19 @@ finalize_size_functions (void)
   vec_free (size_functions);
 }
 
-/* Return the machine mode to use for a nonscalar of SIZE bits.  The
-   mode must be in class MCLASS, and have exactly that many value bits;
-   it may have padding as well.  If LIMIT is nonzero, modes of wider
-   than MAX_FIXED_MODE_SIZE will not be used.  */
+/* Return a machine mode of class MCLASS with SIZE bits of precision,
+   if one exists.  The mode may have padding bits as well the SIZE
+   value bits.  If LIMIT is nonzero, disregard modes wider than
+   MAX_FIXED_MODE_SIZE.  */
 
-machine_mode
+opt_machine_mode
 mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 {
   machine_mode mode;
   int i;
 
   if (limit && size > MAX_FIXED_MODE_SIZE)
-    return BLKmode;
+    return opt_machine_mode ();
 
   /* Get the first mode which has this size, in the specified class.  */
   FOR_EACH_MODE_IN_CLASS (mode, mclass)
@@ -316,7 +316,7 @@ mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 	  && int_n_enabled_p[i])
 	return int_n_data[i].m;
 
-  return BLKmode;
+  return opt_machine_mode ();
 }
 
 /* Similar, except passed a tree node.  */
@@ -333,11 +333,11 @@ mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
   ui = uhwi;
   if (uhwi != ui)
     return BLKmode;
-  return mode_for_size (ui, mclass, limit);
+  return mode_for_size (ui, mclass, limit).else_blk ();
 }
 
-/* Similar, but never return BLKmode; return the narrowest mode that
-   contains at least the requested number of value bits.  */
+/* Return the narrowest mode of class MCLASS that contains at least
+   SIZE bits.  Abort if no such mode exists.  */
 
 machine_mode
 smallest_mode_for_size (unsigned int size, enum mode_class mclass)
@@ -426,9 +426,8 @@ bitwise_mode_for_mode (machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     {
       machine_mode trial = mode;
-      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT)
-	trial = mode_for_size (bitsize, MODE_COMPLEX_INT, false);
-      if (trial != BLKmode
+      if ((GET_MODE_CLASS (trial) == MODE_COMPLEX_INT
+	   || mode_for_size (bitsize, MODE_COMPLEX_INT, false).exists (&trial))
 	  && have_regs_of_mode[GET_MODE_INNER (trial)])
 	return trial;
     }
@@ -438,16 +437,15 @@ bitwise_mode_for_mode (machine_mode mode)
   if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
     {
       machine_mode trial = mode;
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-	trial = mode_for_size (bitsize, MODE_VECTOR_INT, 0);
-      if (trial != BLKmode
+      if ((GET_MODE_CLASS (trial) == MODE_VECTOR_INT
+	   || mode_for_size (bitsize, MODE_VECTOR_INT, 0).exists (&trial))
 	  && have_regs_of_mode[trial]
 	  && targetm.vector_mode_supported_p (trial))
 	return trial;
     }
 
   /* Otherwise fall back on integers while honoring MAX_FIXED_MODE_SIZE.  */
-  return mode_for_size (bitsize, MODE_INT, true);
+  return mode_for_size (bitsize, MODE_INT, true).else_blk ();
 }
 
 /* Find a type that can be used for efficient bitwise operations on MODE.
@@ -2543,13 +2541,9 @@ make_fract_type (int precision, int unsignedp, int satp)
     TYPE_SATURATING (type) = 1;
 
   /* Lay out the type: set its alignment, size, etc.  */
-  if (unsignedp)
-    {
-      TYPE_UNSIGNED (type) = 1;
-      SET_TYPE_MODE (type, mode_for_size (precision, MODE_UFRACT, 0));
-    }
-  else
-    SET_TYPE_MODE (type, mode_for_size (precision, MODE_FRACT, 0));
+  TYPE_UNSIGNED (type) = unsignedp;
+  enum mode_class mclass = unsignedp ? MODE_UFRACT : MODE_FRACT;
+  SET_TYPE_MODE (type, mode_for_size (precision, mclass, 0).require ());
   layout_type (type);
 
   return type;
@@ -2569,13 +2563,9 @@ make_accum_type (int precision, int unsignedp, int satp)
     TYPE_SATURATING (type) = 1;
 
   /* Lay out the type: set its alignment, size, etc.  */
-  if (unsignedp)
-    {
-      TYPE_UNSIGNED (type) = 1;
-      SET_TYPE_MODE (type, mode_for_size (precision, MODE_UACCUM, 0));
-    }
-  else
-    SET_TYPE_MODE (type, mode_for_size (precision, MODE_ACCUM, 0));
+  TYPE_UNSIGNED (type) = unsignedp;
+  enum mode_class mclass = unsignedp ? MODE_UACCUM : MODE_ACCUM;
+  SET_TYPE_MODE (type, mode_for_size (precision, mclass, 0).require ());
   layout_type (type);
 
   return type;
