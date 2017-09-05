@@ -1240,15 +1240,20 @@ get_dynamic_stack_size (rtx *psize, unsigned size_align,
      example), so we must preventively align the value.  We leave space
      in SIZE for the hole that might result from the alignment operation.  */
 
-  extra = (required_align - BITS_PER_UNIT) / BITS_PER_UNIT;
-  size = plus_constant (Pmode, size, extra);
-  size = force_operand (size, NULL_RTX);
+  /* Since the stack is presumed to be aligned before this allocation,
+     we only need to increase the size of the allocation if the required
+     alignment is more than the stack alignment.  */
+  if (required_align > STACK_BOUNDARY)
+    {
+      extra = (required_align - STACK_BOUNDARY) / BITS_PER_UNIT;
+      size = plus_constant (Pmode, size, extra);
+      size = force_operand (size, NULL_RTX);
+      if (size_align > STACK_BOUNDARY)
+	size_align = STACK_BOUNDARY;
 
-  if (flag_stack_usage_info && pstack_usage_size)
-    *pstack_usage_size += extra;
-
-  if (extra && size_align > BITS_PER_UNIT)
-    size_align = BITS_PER_UNIT;
+      if (flag_stack_usage_info && pstack_usage_size)
+	*pstack_usage_size += extra;
+    }
 
   /* Round the size to a multiple of the required stack alignment.
      Since the stack is presumed to be rounded before this allocation,
