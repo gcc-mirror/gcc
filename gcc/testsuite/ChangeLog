@@ -1,3 +1,11 @@
+2017-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82032
+	* g++.dg/other/pr82032.C: New test.
+	* gcc.dg/tree-ssa/pr68198.c: Update scanned pattern.
+	* gcc.dg/tree-ssa/vrp34.c: Likewise.
+	* gcc.dg/switch-10.c: Likewise.
+
 2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/mpx/mpx-os-support.h: New file.
