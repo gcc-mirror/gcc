@@ -1,5 +1,10 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* gcc-interface/utils.c (make_packable_type): Update call to
+	mode_for_size_tree.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* gcc-interface/utils2.c (build_load_modify_store):
 	Use int_mode_for_size.
 

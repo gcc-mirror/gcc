@@ -321,19 +321,19 @@ mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 
 /* Similar, except passed a tree node.  */
 
-machine_mode
+opt_machine_mode
 mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 {
   unsigned HOST_WIDE_INT uhwi;
   unsigned int ui;
 
   if (!tree_fits_uhwi_p (size))
-    return BLKmode;
+    return opt_machine_mode ();
   uhwi = tree_to_uhwi (size);
   ui = uhwi;
   if (uhwi != ui)
-    return BLKmode;
-  return mode_for_size (ui, mclass, limit).else_blk ();
+    return opt_machine_mode ();
+  return mode_for_size (ui, mclass, limit);
 }
 
 /* Return the narrowest mode of class MCLASS that contains at least
@@ -563,7 +563,7 @@ mode_for_array (tree elem_type, tree size)
 					     int_size / int_elem_size))
 	limit_p = false;
     }
-  return mode_for_size_tree (size, MODE_INT, limit_p);
+  return mode_for_size_tree (size, MODE_INT, limit_p).else_blk ();
 }
 
 /* Subroutine of layout_decl: Force alignment required for the data type.
@@ -683,17 +683,18 @@ layout_decl (tree decl, unsigned int known_align)
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
 	    {
-	      machine_mode xmode
-		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
-	      unsigned int xalign = GET_MODE_ALIGNMENT (xmode);
-
-	      if (xmode != BLKmode
-		  && !(xalign > BITS_PER_UNIT && DECL_PACKED (decl))
-		  && (known_align == 0 || known_align >= xalign))
+	      machine_mode xmode;
+	      if (mode_for_size_tree (DECL_SIZE (decl),
+				      MODE_INT, 1).exists (&xmode))
 		{
-		  SET_DECL_ALIGN (decl, MAX (xalign, DECL_ALIGN (decl)));
-		  SET_DECL_MODE (decl, xmode);
-		  DECL_BIT_FIELD (decl) = 0;
+		  unsigned int xalign = GET_MODE_ALIGNMENT (xmode);
+		  if (!(xalign > BITS_PER_UNIT && DECL_PACKED (decl))
+		      && (known_align == 0 || known_align >= xalign))
+		    {
+		      SET_DECL_ALIGN (decl, MAX (xalign, DECL_ALIGN (decl)));
+		      SET_DECL_MODE (decl, xmode);
+		      DECL_BIT_FIELD (decl) = 0;
+		    }
 		}
 	    }
 
@@ -1756,22 +1757,24 @@ compute_record_mode (tree type)
   if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
       && tree_fits_uhwi_p (TYPE_SIZE (type))
       && GET_MODE_BITSIZE (mode) == tree_to_uhwi (TYPE_SIZE (type)))
-    SET_TYPE_MODE (type, mode);
+    ;
   else
-    SET_TYPE_MODE (type, mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1));
+    mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();
 
   /* If structure's known alignment is less than what the scalar
      mode would need, and it matters, then stick with BLKmode.  */
-  if (TYPE_MODE (type) != BLKmode
+  if (mode != BLKmode
       && STRICT_ALIGNMENT
       && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	    || TYPE_ALIGN (type) >= GET_MODE_ALIGNMENT (TYPE_MODE (type))))
+	    || TYPE_ALIGN (type) >= GET_MODE_ALIGNMENT (mode)))
     {
       /* If this is the only reason this type is BLKmode, then
 	 don't force containing types to be BLKmode.  */
       TYPE_NO_FORCE_BLK (type) = 1;
-      SET_TYPE_MODE (type, BLKmode);
+      mode = BLKmode;
     }
+
+  SET_TYPE_MODE (type, mode);
 }
 
 /* Compute TYPE_SIZE and TYPE_ALIGN for TYPE, once it has been laid
