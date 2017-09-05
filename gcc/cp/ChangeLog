@@ -1,5 +1,8 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (do_class_using_decl): Elide read-once temps.
+	Move declarations to initializations.
+
 	* class.c (add_method): Move slot search and insertion to ...
 	* name-lookup.c (get_method_slot): ... this new function.
 	(lookup_fnfields_slot_nolazy): Cope with NULL slot.
