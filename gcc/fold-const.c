@@ -7489,10 +7489,11 @@ can_native_encode_string_p (const_tree expr)
 {
   tree type = TREE_TYPE (expr);
 
-  if (TREE_CODE (type) != ARRAY_TYPE
+  /* Wide-char strings are encoded in target byte-order so native
+     encoding them is trivial.  */
+  if (BITS_PER_UNIT != CHAR_BIT
+      || TREE_CODE (type) != ARRAY_TYPE
       || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
-      || (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (type)))
-	  != BITS_PER_UNIT)
       || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
     return false;
   return true;

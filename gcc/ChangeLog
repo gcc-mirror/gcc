@@ -1,5 +1,10 @@
 2017-09-05  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82084
+	* fold-const.c (can_native_encode_string_p): Handle wide characters.
+
+2017-09-05  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82102
 	* tree-ssa-pre.c (fini_eliminate): Check if lhs is NULL.
 
