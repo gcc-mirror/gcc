@@ -1,5 +1,9 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gnat.dg/specs/uc2.ads: New test.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/taft_type4.adb: New test.
 	* gnat.dg/taft_type4_pkg.ad[sb]: New helper.
 
