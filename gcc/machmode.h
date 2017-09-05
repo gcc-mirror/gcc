@@ -682,8 +682,6 @@ decimal_float_mode_for_size (unsigned int size)
     (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
 }
 
-/* Similar to mode_for_size, but find the smallest mode for a given width.  */
-
 extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
 
 /* Find the narrowest integer mode that contains at least SIZE bits.
@@ -695,17 +693,9 @@ smallest_int_mode_for_size (unsigned int size)
   return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
-/* Return an integer mode of exactly the same size as the input mode.  */
-
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
-
 extern machine_mode bitwise_mode_for_mode (machine_mode);
-
-/* Return a mode that is suitable for representing a vector,
-   or BLKmode on failure.  */
-
-extern machine_mode mode_for_vector (scalar_mode, unsigned);
-
+extern opt_machine_mode mode_for_vector (scalar_mode, unsigned);
 extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
 
 /* Return the integer vector equivalent of MODE, if one exists.  In other

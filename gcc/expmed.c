@@ -1578,10 +1578,11 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       machine_mode new_mode = GET_MODE (op0);
       if (GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode))
 	{
-	  new_mode = mode_for_vector (GET_MODE_INNER (tmode),
-				      GET_MODE_BITSIZE (GET_MODE (op0))
-				      / GET_MODE_UNIT_BITSIZE (tmode));
-	  if (!VECTOR_MODE_P (new_mode)
+	  scalar_mode inner_mode = GET_MODE_INNER (tmode);
+	  unsigned int nunits = (GET_MODE_BITSIZE (GET_MODE (op0))
+				 / GET_MODE_UNIT_BITSIZE (tmode));
+	  if (!mode_for_vector (inner_mode, nunits).exists (&new_mode)
+	      || !VECTOR_MODE_P (new_mode)
 	      || GET_MODE_SIZE (new_mode) != GET_MODE_SIZE (GET_MODE (op0))
 	      || GET_MODE_INNER (new_mode) != GET_MODE_INNER (tmode)
 	      || !targetm.vector_mode_supported_p (new_mode))
