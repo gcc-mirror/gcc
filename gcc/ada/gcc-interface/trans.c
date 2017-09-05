@@ -9702,7 +9702,14 @@ pos_to_constructor (Node_Id gnat_expr, tree gnu_array_type,
 				       gnat_component_type);
       else
 	{
-	  gnu_expr = gnat_to_gnu (gnat_expr);
+	  /* If the expression is a conversion to an unconstrained array type,
+	     skip it to avoid spilling to memory.  */
+	  if (Nkind (gnat_expr) == N_Type_Conversion
+	      && Is_Array_Type (Etype (gnat_expr))
+	      && !Is_Constrained (Etype (gnat_expr)))
+	    gnu_expr = gnat_to_gnu (Expression (gnat_expr));
+	  else
+	    gnu_expr = gnat_to_gnu (gnat_expr);
 
 	  /* Before assigning the element to the array, make sure it is
 	     in range.  */
