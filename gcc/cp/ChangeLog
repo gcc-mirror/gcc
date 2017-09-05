@@ -1,3 +1,13 @@
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* cp-tree.h (LABEL_DECL_CDTOR): Add and document.
+	* decl.c (start_preparsed_function): Set LABEL_DECL_CDTOR when
+	creating cdtor_label.
+	* constexpr.c (returns): Add the case of a constructor/destructor
+	returning via a LABEL_DECL_CDTOR label.
+	(cxx_eval_constant_expression, case [GOTO_EXPR]): Likewise.
+
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (resort_type_method_vec): Move declaration to ...

@@ -1,3 +1,8 @@
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* g++.dg/cpp1y/constexpr-return3.C: New.
+
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/incomplete5.ad[sb]: New test.

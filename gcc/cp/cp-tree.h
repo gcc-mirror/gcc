@@ -456,6 +456,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
+      LABEL_DECL_CDTOR (in LABEL_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
@@ -3832,6 +3833,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if NODE is the target for genericization of 'continue' stmts.  */
 #define LABEL_DECL_CONTINUE(NODE) \
   DECL_LANG_FLAG_1 (LABEL_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is the target for genericization of 'return' stmts
+   in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
+#define LABEL_DECL_CDTOR(NODE) \
+  DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
 
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by
