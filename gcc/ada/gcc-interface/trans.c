@@ -242,6 +242,7 @@ static bool addressable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree pos_to_constructor (Node_Id, tree, Entity_Id);
 static void validate_unchecked_conversion (Node_Id);
+static Node_Id adjust_for_implicit_deref (Node_Id);
 static tree maybe_implicit_deref (tree);
 static void set_expr_location_from_node (tree, Node_Id, bool = false);
 static void set_gnu_expr_location_from_node (tree, Node_Id);
@@ -6274,8 +6275,9 @@ gnat_to_gnu (Node_Id gnat_node)
     /*************************************/
 
     case N_Explicit_Dereference:
-      gnu_result = gnat_to_gnu (Prefix (gnat_node));
+      /* Make sure the designated type is complete before dereferencing.  */
       gnu_result_type = get_unpadded_type (Etype (gnat_node));
+      gnu_result = gnat_to_gnu (Prefix (gnat_node));
       gnu_result = build_unary_op (INDIRECT_REF, NULL_TREE, gnu_result);
 
       /* If atomic access is required on the RHS, build the atomic load.  */
@@ -6286,7 +6288,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Indexed_Component:
       {
-	tree gnu_array_object = gnat_to_gnu (Prefix (gnat_node));
+	tree gnu_array_object
+	  = gnat_to_gnu (adjust_for_implicit_deref (Prefix (gnat_node)));
 	tree gnu_type;
 	int ndim;
 	int i;
@@ -6399,7 +6402,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Slice:
       {
-	tree gnu_array_object = gnat_to_gnu (Prefix (gnat_node));
+	tree gnu_array_object
+	  = gnat_to_gnu (adjust_for_implicit_deref (Prefix (gnat_node)));
 
 	gnu_result_type = get_unpadded_type (Etype (gnat_node));
 
@@ -6423,7 +6427,8 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Selected_Component:
       {
-	Entity_Id gnat_prefix = Prefix (gnat_node);
+	Entity_Id gnat_prefix
+	  = adjust_for_implicit_deref (Prefix (gnat_node));
 	Entity_Id gnat_field = Entity (Selector_Name (gnat_node));
 	tree gnu_prefix = gnat_to_gnu (gnat_prefix);
 
@@ -6455,17 +6460,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  {
 	    tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
-
-	    /* If the prefix has incomplete type, try again to translate it.
-	       The idea is that the translation of the field just above may
-	       have completed it through gnat_to_gnu_entity, in case it is
-	       the dereference of an access to Taft Amendment type used in
-	       the instantiation of a generic body from an external unit.  */
-	    if (!COMPLETE_TYPE_P (TREE_TYPE (gnu_prefix)))
-	      {
-		gnu_prefix = gnat_to_gnu (gnat_prefix);
-		gnu_prefix = maybe_implicit_deref (gnu_prefix);
-	      }
 
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
@@ -7725,7 +7719,8 @@ gnat_to_gnu (Node_Id gnat_node)
     case N_Free_Statement:
       if (!type_annotate_only)
 	{
-	  tree gnu_ptr = gnat_to_gnu (Expression (gnat_node));
+	  tree gnu_ptr
+	    = gnat_to_gnu (adjust_for_implicit_deref (Expression (gnat_node)));
 	  tree gnu_ptr_type = TREE_TYPE (gnu_ptr);
 	  tree gnu_obj_type, gnu_actual_obj_type;
 
@@ -9913,6 +9908,21 @@ validate_unchecked_conversion (Node_Id gnat_node)
     }
 }
 
+/* EXP is to be used in a context where access objects are implicitly
+   dereferenced.  Handle the cases when it is an access object.  */
+
+static Node_Id
+adjust_for_implicit_deref (Node_Id exp)
+{
+  Entity_Id type = Underlying_Type (Etype (exp));
+
+  /* Make sure the designated type is complete before dereferencing.  */
+  if (Is_Access_Type (type))
+    gnat_to_gnu_entity (Designated_Type (type), NULL_TREE, false);
+
+  return exp;
+}
+
 /* EXP is to be treated as an array or record.  Handle the cases when it is
    an access object and perform the required dereferences.  */
 
