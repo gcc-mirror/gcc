@@ -1,3 +1,9 @@
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/spu/spu.c (exp2_immediate_p): Use int_mode_for_mode.
+	(spu_convert_move): Likewise.
+	* lower-subreg.c (resolve_simple_move): Likewise.
+
 2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR target/81833

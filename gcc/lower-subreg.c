@@ -956,11 +956,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
       if (real_dest == NULL_RTX)
 	real_dest = dest;
       if (!SCALAR_INT_MODE_P (dest_mode))
-	{
-	  dest_mode = mode_for_size (GET_MODE_SIZE (dest_mode) * BITS_PER_UNIT,
-				     MODE_INT, 0);
-	  gcc_assert (dest_mode != BLKmode);
-	}
+	dest_mode = int_mode_for_mode (dest_mode).require ();
       dest = gen_reg_rtx (dest_mode);
       if (REG_P (real_dest))
 	REG_ATTRS (dest) = REG_ATTRS (real_dest);
