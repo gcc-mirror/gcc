@@ -1200,7 +1200,7 @@ default_autovectorize_vector_sizes (void)
 
 /* By defaults a vector of integers is used as a mask.  */
 
-machine_mode
+opt_machine_mode
 default_get_mask_mode (unsigned nunits, unsigned vector_size)
 {
   unsigned elem_size = vector_size / nunits;
@@ -1210,12 +1210,12 @@ default_get_mask_mode (unsigned nunits, unsigned vector_size)
 
   gcc_assert (elem_size * nunits == vector_size);
 
-  if (!mode_for_vector (elem_mode, nunits).exists (&vector_mode)
-      || !VECTOR_MODE_P (vector_mode)
-      || !targetm.vector_mode_supported_p (vector_mode))
-    vector_mode = BLKmode;
+  if (mode_for_vector (elem_mode, nunits).exists (&vector_mode)
+      && VECTOR_MODE_P (vector_mode)
+      && targetm.vector_mode_supported_p (vector_mode))
+    return vector_mode;
 
-  return vector_mode;
+  return opt_machine_mode ();
 }
 
 /* By default, the cost model accumulates three separate costs (prologue,
