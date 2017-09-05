@@ -7070,8 +7070,7 @@ unreverse_member_declarations (tree t)
   if (prev)
     {
       DECL_CHAIN (TYPE_FIELDS (t)) = x;
-      if (prev)
-	TYPE_FIELDS (t) = prev;
+      TYPE_FIELDS (t) = prev;
     }
 }
 

@@ -1,3 +1,9 @@
+2017-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	* class.c (unreverse_member_declarations): Remove extraneous if.
+	* pt.c (push_template_decl_real): Use string concatenation, not
+	\<newline>.  Add %<..%>.
+
 2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81942
