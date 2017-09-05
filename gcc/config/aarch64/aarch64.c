@@ -8282,9 +8282,6 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
       return false;
     }
 
-  machine_mode mmsk
-    = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (mode)).require (),
-		       GET_MODE_NUNITS (mode));
   if (!recp)
     {
       if (!(flag_mlow_precision_sqrt
@@ -8302,7 +8299,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
-
+  machine_mode mmsk = mode_for_int_vector (mode).require ();
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
     /* When calculating the approximate square root, compare the

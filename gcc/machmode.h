@@ -706,6 +706,21 @@ extern machine_mode bitwise_mode_for_mode (machine_mode);
 
 extern machine_mode mode_for_vector (scalar_mode, unsigned);
 
+extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
+
+/* Return the integer vector equivalent of MODE, if one exists.  In other
+   words, return the mode for an integer vector that has the same number
+   of bits as MODE and the same number of elements as MODE, with the
+   latter being 1 if MODE is scalar.  The returned mode can be either
+   an integer mode or a vector mode.  */
+
+inline opt_machine_mode
+mode_for_int_vector (machine_mode mode)
+{
+  return mode_for_int_vector (GET_MODE_UNIT_BITSIZE (mode),
+			      GET_MODE_NUNITS (mode));
+}
+
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator
 {

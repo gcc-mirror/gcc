@@ -1,5 +1,15 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* machmode.h (mode_for_int_vector): New function.
+	* stor-layout.c (mode_for_int_vector): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use it.
+	* config/powerpcspe/powerpcspe.c (rs6000_do_expand_vec_perm): Likewise.
+	* config/rs6000/rs6000.c (rs6000_do_expand_vec_perm): Likewise.
+	* config/s390/s390.c (s390_expand_vec_compare_cc): Likewise.
+	(s390_expand_vcond): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* machmode.h (opt_machine_mode): New type.
 	(opt_mode<T>): Allow construction from anything that can be
 	converted to a T.
