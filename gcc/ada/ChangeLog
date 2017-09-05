@@ -1,3 +1,8 @@
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/trans.c (pos_to_constructor): Skip conversions to an
+	unconstrained array type.
+
 2017-07-04  Release Manager
 
 	* GCC 6.4.0 released.
