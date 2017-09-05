@@ -38679,7 +38679,7 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 
       vmode = GET_MODE (target);
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
-      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
+      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4).require ();
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
       x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));

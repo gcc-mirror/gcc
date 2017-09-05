@@ -27536,9 +27536,8 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
   if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
     {
       int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
-      move_mode = mode_for_vector (word_mode, nunits);
-      code = optab_handler (mov_optab, move_mode);
-      if (code == CODE_FOR_nothing)
+      if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
+	  || (code = optab_handler (mov_optab, move_mode)) == CODE_FOR_nothing)
 	{
 	  move_mode = word_mode;
 	  piece_size = GET_MODE_SIZE (move_mode);
@@ -28770,8 +28769,8 @@ ix86_expand_set_or_movmem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       if (GET_MODE_SIZE (move_mode) > GET_MODE_SIZE (word_mode))
 	{
 	  int nunits = GET_MODE_SIZE (move_mode) / GET_MODE_SIZE (word_mode);
-	  move_mode = mode_for_vector (word_mode, nunits);
-	  if (optab_handler (mov_optab, move_mode) == CODE_FOR_nothing)
+	  if (!mode_for_vector (word_mode, nunits).exists (&move_mode)
+	      || optab_handler (mov_optab, move_mode) == CODE_FOR_nothing)
 	    move_mode = word_mode;
 	}
       gcc_assert (optab_handler (mov_optab, move_mode) != CODE_FOR_nothing);
@@ -44613,11 +44612,9 @@ ix86_expand_vector_init (bool mmx_ok, rtx target, rtx vals)
 	  rtx ops[2] = { XVECEXP (vals, 0, 0), XVECEXP (vals, 0, 1) };
 	  if (inner_mode == QImode || inner_mode == HImode)
 	    {
-	      mode = mode_for_vector (SImode,
-				      n_elts * GET_MODE_SIZE (inner_mode) / 4);
-	      inner_mode
-		= mode_for_vector (SImode,
-				   n_elts * GET_MODE_SIZE (inner_mode) / 8);
+	      unsigned int n_bits = n_elts * GET_MODE_SIZE (inner_mode);
+	      mode = mode_for_vector (SImode, n_bits / 4).require ();
+	      inner_mode = mode_for_vector (SImode, n_bits / 8).require ();
 	      ops[0] = gen_lowpart (inner_mode, ops[0]);
 	      ops[1] = gen_lowpart (inner_mode, ops[1]);
 	      subtarget = gen_reg_rtx (mode);
@@ -51735,7 +51732,7 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
 
   gcc_assert (elem_size * nunits == vector_size);
 
-  return mode_for_vector (elem_mode, nunits);
+  return mode_for_vector (elem_mode, nunits).else_blk ();
 }
 
 

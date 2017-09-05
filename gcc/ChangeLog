@@ -1,5 +1,28 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* machmode.h (mode_for_vector): Return an opt_mode.
+	* stor-layout.c (mode_for_vector): Likewise.
+	(mode_for_int_vector): Update accordingly.
+	(layout_type): Likewise.
+	* config/i386/i386.c (emit_memmov): Likewise.
+	(ix86_expand_set_or_movmem): Likewise.
+	(ix86_expand_vector_init): Likewise.
+	(ix86_get_mask_mode): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_vec_perm_const_1):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* optabs-query.c (can_vec_perm_p): Likewise.
+	(can_vec_mask_load_store_p): Likewise.
+	* optabs.c (expand_vec_perm): Likewise.
+	* targhooks.c (default_get_mask_mode): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(get_vectype_for_scalar_type_and_size): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* machmode.h (mode_for_int_vector): New function.
 	* stor-layout.c (mode_for_int_vector): Likewise.
 	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use it.

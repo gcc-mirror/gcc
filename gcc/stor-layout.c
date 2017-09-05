@@ -471,11 +471,11 @@ bitwise_type_for_mode (machine_mode mode)
   return inner_type;
 }
 
-/* Find a mode that is suitable for representing a vector with
-   NUNITS elements of mode INNERMODE.  Returns BLKmode if there
-   is no suitable mode.  */
+/* Find a mode that is suitable for representing a vector with NUNITS
+   elements of mode INNERMODE, if one exists.  The returned mode can be
+   either an integer mode or a vector mode.  */
 
-machine_mode
+opt_machine_mode
 mode_for_vector (scalar_mode innermode, unsigned nunits)
 {
   machine_mode mode;
@@ -499,22 +499,18 @@ mode_for_vector (scalar_mode innermode, unsigned nunits)
   FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_NUNITS (mode) == nunits
 	&& GET_MODE_INNER (mode) == innermode)
-      break;
+      return mode;
 
   /* For integers, try mapping it to a same-sized scalar mode.  */
-  if (mode == VOIDmode
-      && GET_MODE_CLASS (innermode) == MODE_INT)
+  if (GET_MODE_CLASS (innermode) == MODE_INT)
     {
       unsigned int nbits = nunits * GET_MODE_BITSIZE (innermode);
-      mode = int_mode_for_size (nbits, 0).else_blk ();
+      if (int_mode_for_size (nbits, 0).exists (&mode)
+	  && have_regs_of_mode[mode])
+	return mode;
     }
 
-  if (mode == VOIDmode
-      || (GET_MODE_CLASS (mode) == MODE_INT
-	  && !have_regs_of_mode[mode]))
-    return BLKmode;
-
-  return mode;
+  return opt_machine_mode ();
 }
 
 /* Return the mode for a vector that has NUNITS integer elements of
@@ -525,12 +521,10 @@ opt_machine_mode
 mode_for_int_vector (unsigned int int_bits, unsigned int nunits)
 {
   scalar_int_mode int_mode;
-  if (int_mode_for_size (int_bits, 0).exists (&int_mode))
-    {
-      machine_mode vec_mode = mode_for_vector (int_mode, nunits);
-      if (vec_mode != BLKmode)
-	return vec_mode;
-    }
+  machine_mode vec_mode;
+  if (int_mode_for_size (int_bits, 0).exists (&int_mode)
+      && mode_for_vector (int_mode, nunits).exists (&vec_mode))
+    return vec_mode;
   return opt_machine_mode ();
 }
 
@@ -2264,7 +2258,7 @@ layout_type (tree type)
 	if (TYPE_MODE (type) == VOIDmode)
 	  SET_TYPE_MODE (type,
 			 mode_for_vector (SCALAR_TYPE_MODE (innertype),
-					  nunits));
+					  nunits).else_blk ());
 
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));

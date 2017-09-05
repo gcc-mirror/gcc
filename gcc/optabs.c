@@ -5434,13 +5434,10 @@ expand_vec_perm (machine_mode mode, rtx v0, rtx v1, rtx sel, rtx target)
 
   /* Set QIMODE to a different vector mode with byte elements.
      If no such mode, or if MODE already has byte elements, use VOIDmode.  */
-  qimode = VOIDmode;
-  if (GET_MODE_INNER (mode) != QImode)
-    {
-      qimode = mode_for_vector (QImode, w);
-      if (!VECTOR_MODE_P (qimode))
-	qimode = VOIDmode;
-    }
+  if (GET_MODE_INNER (mode) == QImode
+      || !mode_for_vector (QImode, w).exists (&qimode)
+      || !VECTOR_MODE_P (qimode))
+    qimode = VOIDmode;
 
   /* If the input is a constant, expand it specially.  */
   gcc_assert (GET_MODE_CLASS (GET_MODE (sel)) == MODE_VECTOR_INT);
