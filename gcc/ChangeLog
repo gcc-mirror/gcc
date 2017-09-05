@@ -1,5 +1,17 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* target.def (get_mask_mode): Change return type to opt_mode.
+	Expand commentary.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_mask_mode): Return an opt_mode.
+	* targhooks.c (default_get_mask_mode): Likewise.
+	* config/i386/i386.c (ix86_get_mask_mode): Likewise.
+	* optabs-query.c (can_vec_mask_load_store_p): Update use of
+	targetm.get_mask_mode.
+	* tree.c (build_truth_vector_type): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* machmode.h (mode_for_vector): Return an opt_mode.
 	* stor-layout.c (mode_for_vector): Likewise.
 	(mode_for_int_vector): Update accordingly.

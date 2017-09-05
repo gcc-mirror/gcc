@@ -51714,7 +51714,7 @@ ix86_autovectorize_vector_sizes (void)
 
 /* Implemenation of targetm.vectorize.get_mask_mode.  */
 
-static machine_mode
+static opt_machine_mode
 ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
 {
   unsigned elem_size = vector_size / nunits;
@@ -51732,7 +51732,7 @@ ix86_get_mask_mode (unsigned nunits, unsigned vector_size)
 
   gcc_assert (elem_size * nunits == vector_size);
 
-  return mode_for_vector (elem_mode, nunits).else_blk ();
+  return mode_for_vector (elem_mode, nunits);
 }
 
 

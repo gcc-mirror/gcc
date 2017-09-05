@@ -1877,10 +1877,16 @@ The default is zero which means to not iterate over other vector sizes.",
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,
- "This hook returns mode to be used for a mask to be used for a vector\n\
-of specified @var{length} with @var{nunits} elements.  By default an integer\n\
-vector mode of a proper size is returned.",
- machine_mode,
+ "A vector mask is a value that holds one boolean result for every element\n\
+in a vector.  This hook returns the machine mode that should be used to\n\
+represent such a mask when the vector in question is @var{length} bytes\n\
+long and contains @var{nunits} elements.  The hook returns an empty\n\
+@code{opt_machine_mode} if no such mode exists.\n\
+\n\
+The default implementation returns the mode of an integer vector that\n\
+is @var{length} bytes long and that contains @var{nunits} elements,\n\
+if such a mode exists.",
+ opt_machine_mode,
  (unsigned nunits, unsigned length),
  default_get_mask_mode)
 

@@ -5820,10 +5820,16 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
-This hook returns mode to be used for a mask to be used for a vector
-of specified @var{length} with @var{nunits} elements.  By default an integer
-vector mode of a proper size is returned.
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+A vector mask is a value that holds one boolean result for every element
+in a vector.  This hook returns the machine mode that should be used to
+represent such a mask when the vector in question is @var{length} bytes
+long and contains @var{nunits} elements.  The hook returns an empty
+@code{opt_machine_mode} if no such mode exists.
+
+The default implementation returns the mode of an integer vector that
+is @var{length} bytes long and that contains @var{nunits} elements,
+if such a mode exists.
 @end deftypefn
 
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
