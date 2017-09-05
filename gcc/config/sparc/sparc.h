@@ -1077,13 +1077,13 @@ extern char leaf_reg_remap[];
 /* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
    because the movsi and movsf patterns don't handle r/f moves.
    For v8 we copy the default definition.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE) \
-  (TARGET_ARCH64						\
-   ? (GET_MODE_BITSIZE (MODE) < 32				\
-      ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
-      : MODE)							\
-   : (GET_MODE_BITSIZE (MODE) < BITS_PER_WORD			\
-      ? mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0)	\
+#define SECONDARY_MEMORY_NEEDED_MODE(MODE)				   \
+  (TARGET_ARCH64							   \
+   ? (GET_MODE_BITSIZE (MODE) < 32					   \
+      ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()		   \
+      : MODE)								   \
+   : (GET_MODE_BITSIZE (MODE) < BITS_PER_WORD				   \
+      ? mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0).require () \
       : MODE))
 
 /* Return the maximum number of consecutive registers

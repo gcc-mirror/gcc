@@ -1,5 +1,29 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* machmode.h (opt_machine_mode): New type.
+	(opt_mode<T>): Allow construction from anything that can be
+	converted to a T.
+	(is_a, as_a, dyn_cast): Add overloads for opt_mode.
+	(mode_for_size): Return an opt_machine_mode.
+	* stor-layout.c (mode_for_size): Likewise.
+	(mode_for_size_tree): Update call accordingly.
+	(bitwise_mode_for_mode): Likewise.
+	(make_fract_type): Likewise.
+	(make_accum_type): Likewise.
+	* caller-save.c (replace_reg_with_saved_mem): Update call
+	accordingly.
+	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	* reload.c (get_secondary_mem): Likewise.
+	* varasm.c (assemble_integer): Likewise.
+	* lower-subreg.c (simplify_subreg_concatn): Likewise.  Move
+	early-out.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* machmode.h (decimal_float_mode_for_size): New function.
 	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use float_mode_for_size.
 	(REAL_VALUE_TO_TARGET_DOUBLE): Likewise.

@@ -1711,14 +1711,9 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
 
   /* Get the mode of the field to use for atomic access or subreg
      conversion.  */
-  mode1 = mode;
-  if (SCALAR_INT_MODE_P (tmode))
-    {
-      machine_mode try_mode = mode_for_size (bitsize,
-						  GET_MODE_CLASS (tmode), 0);
-      if (try_mode != BLKmode)
-	mode1 = try_mode;
-    }
+  if (!SCALAR_INT_MODE_P (tmode)
+      || !mode_for_size (bitsize, GET_MODE_CLASS (tmode), 0).exists (&mode1))
+    mode1 = mode;
   gcc_assert (mode1 != BLKmode);
 
   /* Extraction of a full MODE1 value can be done with a subreg as long
