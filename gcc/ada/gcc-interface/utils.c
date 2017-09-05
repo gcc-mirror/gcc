@@ -231,11 +231,15 @@ struct pad_type_hasher : ggc_cache_ptr_hash<pad_type_hash>
 {
   static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
   static bool equal (pad_type_hash *a, pad_type_hash *b);
-  static int keep_cache_entry (pad_type_hash *&);
+
+  static int
+  keep_cache_entry (pad_type_hash *&t)
+  {
+    return ggc_marked_p (t->type);
+  }
 };
 
-static GTY ((cache))
-  hash_table<pad_type_hasher> *pad_type_hash_table;
+static GTY ((cache)) hash_table<pad_type_hasher> *pad_type_hash_table;
 
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree fold_bit_position (const_tree);
@@ -750,7 +754,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
-  if (Present (gnat_node) && !renaming_from_generic_instantiation_p (gnat_node))
+  if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
     Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (decl));
 
   add_decl_expr (decl, gnat_node);
@@ -1190,14 +1194,6 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
     }
 
   return type;
-}
-
-/* See if the data pointed to by the hash table slot is marked.  */
-
-int
-pad_type_hasher::keep_cache_entry (pad_type_hash *&t)
-{
-  return ggc_marked_p (t->type);
 }
 
 /* Return true iff the padded types are equivalent.  */
@@ -2899,10 +2895,10 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
    initialization is likely to disturb debugging.  */
 
 bool
-renaming_from_generic_instantiation_p (Node_Id gnat_node)
+renaming_from_instantiation_p (Node_Id gnat_node)
 {
   if (Nkind (gnat_node) != N_Defining_Identifier
-      || !IN (Ekind (gnat_node), Object_Kind)
+      || !Is_Object (gnat_node)
       || Comes_From_Source (gnat_node)
       || !Present (Renamed_Object (gnat_node)))
     return false;

@@ -341,14 +341,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnat_temp
 	      = Corresponding_Spec (Parent (Declaration_Node (gnat_temp)));
 
-	  if (IN (Ekind (gnat_temp), Subprogram_Kind)
+	  if (Is_Subprogram (gnat_temp)
 	      && Present (Protected_Body_Subprogram (gnat_temp)))
 	    gnat_temp = Protected_Body_Subprogram (gnat_temp);
 
 	  if (Ekind (gnat_temp) == E_Entry
 	      || Ekind (gnat_temp) == E_Entry_Family
 	      || Ekind (gnat_temp) == E_Task_Type
-	      || (IN (Ekind (gnat_temp), Subprogram_Kind)
+	      || (Is_Subprogram (gnat_temp)
 		  && present_gnu_tree (gnat_temp)
 		  && (current_function_decl
 		      == gnat_to_gnu_entity (gnat_temp, NULL_TREE, false))))
@@ -426,7 +426,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
      inherit another source location.  */
   gnu_entity_name = get_entity_name (gnat_entity);
   if (Sloc (gnat_entity) != No_Location
-      && !renaming_from_generic_instantiation_p (gnat_entity))
+      && !renaming_from_instantiation_p (gnat_entity))
     Sloc_to_locus (Sloc (gnat_entity), &input_location);
 
   /* For cases when we are not defining (i.e., we are referencing from
@@ -2922,7 +2922,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* Create the type for a string literal.  */
       {
 	Entity_Id gnat_full_type
-	  = (IN (Ekind (Etype (gnat_entity)), Private_Kind)
+	  = (Is_Private_Type (Etype (gnat_entity))
 	     && Present (Full_View (Etype (gnat_entity)))
 	     ? Full_View (Etype (gnat_entity)) : Etype (gnat_entity));
 	tree gnu_string_type = get_unpadded_type (gnat_full_type);
@@ -3198,7 +3198,7 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    if (has_discr)
 	      {
 		/* The actual parent subtype is the full view.  */
-		if (IN (Ekind (gnat_parent), Private_Kind))
+		if (Is_Private_Type (gnat_parent))
 		  {
 		    if (Present (Full_View (gnat_parent)))
 		      gnat_parent = Full_View (gnat_parent);
@@ -3583,14 +3583,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	Entity_Id gnat_desig_equiv = Gigi_Equivalent_Type (gnat_desig_type);
 	/* Whether it comes from a limited with.  */
 	const bool is_from_limited_with
-	  = (IN (Ekind (gnat_desig_equiv), Incomplete_Kind)
+	  = (Is_Incomplete_Type (gnat_desig_equiv)
 	     && From_Limited_With (gnat_desig_equiv));
 	/* Whether it is a completed Taft Amendment type.  Such a type is to
 	   be treated as coming from a limited with clause if it is not in
 	   the main unit, i.e. we break potential circularities here in case
 	   the body of an external unit is loaded for inter-unit inlining.  */
         const bool is_completed_taft_type
-	  = (IN (Ekind (gnat_desig_equiv), Incomplete_Kind)
+	  = (Is_Incomplete_Type (gnat_desig_equiv)
 	     && Has_Completion_In_Body (gnat_desig_equiv)
 	     && Present (Full_View (gnat_desig_equiv)));
 	/* The "full view" of the designated type.  If this is an incomplete
@@ -3603,12 +3603,12 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	Entity_Id gnat_desig_full_direct_first
 	  = (is_from_limited_with
 	     ? Non_Limited_View (gnat_desig_equiv)
-	     : (IN (Ekind (gnat_desig_equiv), Incomplete_Or_Private_Kind)
+	     : (Is_Incomplete_Or_Private_Type (gnat_desig_equiv)
 		? Full_View (gnat_desig_equiv) : Empty));
 	Entity_Id gnat_desig_full_direct
 	  = ((is_from_limited_with
 	      && Present (gnat_desig_full_direct_first)
-	      && IN (Ekind (gnat_desig_full_direct_first), Private_Kind))
+	      && Is_Private_Type (gnat_desig_full_direct_first))
 	     ? Full_View (gnat_desig_full_direct_first)
 	     : gnat_desig_full_direct_first);
 	Entity_Id gnat_desig_full
@@ -3856,9 +3856,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      p->next = defer_incomplete_list;
 	      defer_incomplete_list = p;
 	    }
-	  else if (!IN (Ekind (Base_Type
-			       (Directly_Designated_Type (gnat_entity))),
-		        Incomplete_Or_Private_Kind))
+	  else if (!Is_Incomplete_Or_Private_Type
+		      (Base_Type (Directly_Designated_Type (gnat_entity))))
 	    gnat_to_gnu_entity (Directly_Designated_Type (gnat_entity),
 				NULL_TREE, false);
 	}
@@ -5484,17 +5483,17 @@ gnat_to_gnu_profile_type (Entity_Id gnat_type)
      ought to be merged at some point.  */
   Entity_Id gnat_equiv = Gigi_Equivalent_Type (gnat_type);
   const bool is_from_limited_with
-    = (IN (Ekind (gnat_equiv), Incomplete_Kind)
+    = (Is_Incomplete_Type (gnat_equiv)
        && From_Limited_With (gnat_equiv));
   Entity_Id gnat_full_direct_first
     = (is_from_limited_with
        ? Non_Limited_View (gnat_equiv)
-       : (IN (Ekind (gnat_equiv), Incomplete_Or_Private_Kind)
+       : (Is_Incomplete_Or_Private_Type (gnat_equiv)
 	  ? Full_View (gnat_equiv) : Empty));
   Entity_Id gnat_full_direct
     = ((is_from_limited_with
 	&& Present (gnat_full_direct_first)
-	&& IN (Ekind (gnat_full_direct_first), Private_Kind))
+	&& Is_Private_Type (gnat_full_direct_first))
        ? Full_View (gnat_full_direct_first)
        : gnat_full_direct_first);
   Entity_Id gnat_full = Gigi_Equivalent_Type (gnat_full_direct);
@@ -5818,7 +5817,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
 		       && (gnat_decl = Parent (gnat_subprog))
 		       && Nkind (gnat_decl) == N_Procedure_Specification
 		       && Null_Present (gnat_decl)
-		       && IN (Ekind (gnat_param_type), Incomplete_Kind))
+		       && Is_Incomplete_Type (gnat_param_type))
 		gnu_param = create_param_decl (gnu_param_name, ptr_type_node);
 
 	      else
