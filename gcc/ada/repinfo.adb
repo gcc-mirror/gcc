@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1999-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -59,11 +59,11 @@ package body Repinfo is
    --  value is assumed to be 8 for the implementation of the DDA.
 
    ---------------------------------------
-   -- Representation of gcc Expressions --
+   -- Representation of GCC Expressions --
    ---------------------------------------
 
    --    This table is used only if Frontend_Layout_On_Target is False, so gigi
-   --    lays out dynamic size/offset fields using encoded gcc expressions.
+   --    lays out dynamic size/offset fields using encoded GCC expressions.
 
    --    A table internal to this unit is used to hold the values of back
    --    annotated expressions. This table is written out by -gnatt and read
@@ -642,6 +642,10 @@ package body Repinfo is
 
                   when Discrim_Val =>
                      Write_Char ('#');
+                     UI_Write (Node.Op1);
+
+                  when Dynamic_Val =>
+                     Write_Str ("Var");
                      UI_Write (Node.Op1);
                end case;
             end;
@@ -1448,6 +1452,9 @@ package body Repinfo is
                         pragma Assert (Sub in D'Range);
                         return D (Sub);
                      end;
+
+                  when Dynamic_Val =>
+                     return No_Uint;
                end case;
             end;
          end if;

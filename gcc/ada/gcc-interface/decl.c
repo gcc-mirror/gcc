@@ -8047,13 +8047,13 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
 static Uint
 annotate_value (tree gnu_size)
 {
+  static int var_count = 0;
   TCode tcode;
-  Node_Ref_Or_Val ops[3], ret, pre_op1 = No_Uint;
+  Node_Ref_Or_Val ops[3] = { No_Uint, No_Uint, No_Uint };
   struct tree_int_map in;
-  int i;
 
   /* See if we've already saved the value for this node.  */
-  if (EXPR_P (gnu_size))
+  if (EXPR_P (gnu_size) || DECL_P (gnu_size))
     {
       struct tree_int_map *e;
 
@@ -8067,9 +8067,7 @@ annotate_value (tree gnu_size)
     in.base.from = NULL_TREE;
 
   /* If we do not return inside this switch, TCODE will be set to the
-     code to use for a Create_Node operand and LEN (set above) will be
-     the number of recursive calls for us to make.  */
-
+     code to be used in a call to Create_Node.  */
   switch (TREE_CODE (gnu_size))
     {
     case INTEGER_CST:
@@ -8078,38 +8076,51 @@ annotate_value (tree gnu_size)
       if (tree_int_cst_sgn (gnu_size) < 0)
 	{
 	  tree t = wide_int_to_tree (sizetype, wi::neg (gnu_size));
-	  return annotate_value (build1 (NEGATE_EXPR, sizetype, t));
+	  tcode = Negate_Expr;
+	  ops[0] = UI_From_gnu (t);
 	}
-
-      return TREE_OVERFLOW (gnu_size) ? No_Uint : UI_From_gnu (gnu_size);
+      else
+	return TREE_OVERFLOW (gnu_size) ? No_Uint : UI_From_gnu (gnu_size);
+      break;
 
     case COMPONENT_REF:
       /* The only case we handle here is a simple discriminant reference.  */
       if (DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1)))
 	{
-	  tree n = DECL_DISCRIMINANT_NUMBER (TREE_OPERAND (gnu_size, 1));
+	  tree ref = gnu_size;
+	  gnu_size = TREE_OPERAND (ref, 1);
 
 	  /* Climb up the chain of successive extensions, if any.  */
-	  while (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == COMPONENT_REF
-		 && DECL_NAME (TREE_OPERAND (TREE_OPERAND (gnu_size, 0), 1))
+	  while (TREE_CODE (TREE_OPERAND (ref, 0)) == COMPONENT_REF
+		 && DECL_NAME (TREE_OPERAND (TREE_OPERAND (ref, 0), 1))
 		    == parent_name_id)
-	    gnu_size = TREE_OPERAND (gnu_size, 0);
+	    ref = TREE_OPERAND (ref, 0);
 
-	  if (TREE_CODE (TREE_OPERAND (gnu_size, 0)) == PLACEHOLDER_EXPR)
-	    return
-	      Create_Node (Discrim_Val, annotate_value (n), No_Uint, No_Uint);
+	  if (TREE_CODE (TREE_OPERAND (ref, 0)) == PLACEHOLDER_EXPR)
+	    {
+	      /* Fall through to common processing as a FIELD_DECL.  */
+	      tcode = Discrim_Val;
+	      ops[0] = UI_From_gnu (DECL_DISCRIMINANT_NUMBER (gnu_size));
+	    }
+	  else
+	    return No_Uint;
 	}
+      else
+	return No_Uint;
+      break;
 
-      return No_Uint;
+    case VAR_DECL:
+      tcode = Dynamic_Val;
+      ops[0] = UI_From_Int (++var_count);
+      break;
 
-    CASE_CONVERT:   case NON_LVALUE_EXPR:
+    CASE_CONVERT:
+    case NON_LVALUE_EXPR:
       return annotate_value (TREE_OPERAND (gnu_size, 0));
 
       /* Now just list the operations we handle.  */
     case COND_EXPR:		tcode = Cond_Expr; break;
-    case PLUS_EXPR:		tcode = Plus_Expr; break;
     case MINUS_EXPR:		tcode = Minus_Expr; break;
-    case MULT_EXPR:		tcode = Mult_Expr; break;
     case TRUNC_DIV_EXPR:	tcode = Trunc_Div_Expr; break;
     case CEIL_DIV_EXPR:		tcode = Ceil_Div_Expr; break;
     case FLOOR_DIV_EXPR:	tcode = Floor_Div_Expr; break;
@@ -8134,6 +8145,30 @@ annotate_value (tree gnu_size)
     case EQ_EXPR:		tcode = Eq_Expr; break;
     case NE_EXPR:		tcode = Ne_Expr; break;
 
+    case MULT_EXPR:
+    case PLUS_EXPR:
+      tcode = (TREE_CODE (gnu_size) == MULT_EXPR ? Mult_Expr : Plus_Expr);
+      /* Fold conversions from bytes to bits into inner operations.  */
+      if (TREE_CODE (TREE_OPERAND (gnu_size, 1)) == INTEGER_CST
+	  && CONVERT_EXPR_P (TREE_OPERAND (gnu_size, 0)))
+	{
+	  tree inner_op = TREE_OPERAND (TREE_OPERAND (gnu_size, 0), 0);
+	  if (TREE_CODE (inner_op) == TREE_CODE (gnu_size)
+	      && TREE_CODE (TREE_OPERAND (inner_op, 1)) == INTEGER_CST)
+	    {
+	      tree inner_op_op1 = TREE_OPERAND (inner_op, 1);
+	      tree gnu_size_op1 = TREE_OPERAND (gnu_size, 1);
+	      wide_int op1;
+	      if (TREE_CODE (gnu_size) == MULT_EXPR)
+		op1 = wi::mul (inner_op_op1, gnu_size_op1);
+	      else
+		op1 = wi::add (inner_op_op1, gnu_size_op1);
+	      ops[1] = UI_From_gnu (wide_int_to_tree (sizetype, op1));
+	      ops[0] = annotate_value (TREE_OPERAND (inner_op, 0));
+	    }
+	}
+      break;
+
     case BIT_AND_EXPR:
       tcode = Bit_And_Expr;
       /* For negative values in sizetype, build NEGATE_EXPR of the opposite.
@@ -8146,7 +8181,7 @@ annotate_value (tree gnu_size)
 	  if (wi::neg_p (signed_op1))
 	    {
 	      op1 = wide_int_to_tree (sizetype, wi::neg (signed_op1));
-	      pre_op1 = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
+	      ops[1] = annotate_value (build1 (NEGATE_EXPR, sizetype, op1));
 	    }
 	}
       break;
@@ -8158,13 +8193,10 @@ annotate_value (tree gnu_size)
       if (List_Representation_Info == 3 || type_annotate_only)
 	{
 	  tree t = maybe_inline_call_in_expr (gnu_size);
-	  if (t)
-	    return annotate_value (t);
+	  return t ? annotate_value (t) : No_Uint;
 	}
       else
 	return Uint_Minus_1;
-
-      /* Fall through... */
 
     default:
       return No_Uint;
@@ -8172,20 +8204,15 @@ annotate_value (tree gnu_size)
 
   /* Now get each of the operands that's relevant for this code.  If any
      cannot be expressed as a repinfo node, say we can't.  */
-  for (i = 0; i < 3; i++)
-    ops[i] = No_Uint;
-
-  for (i = 0; i < TREE_CODE_LENGTH (TREE_CODE (gnu_size)); i++)
-    {
-      if (i == 1 && pre_op1 != No_Uint)
-	ops[i] = pre_op1;
-      else
+  for (int i = 0; i < TREE_CODE_LENGTH (TREE_CODE (gnu_size)); i++)
+    if (ops[i] == No_Uint)
+      {
 	ops[i] = annotate_value (TREE_OPERAND (gnu_size, i));
-      if (ops[i] == No_Uint)
-	return No_Uint;
-    }
+	if (ops[i] == No_Uint)
+	  return No_Uint;
+      }
 
-  ret = Create_Node (tcode, ops[0], ops[1], ops[2]);
+  Node_Ref_Or_Val ret = Create_Node (tcode, ops[0], ops[1], ops[2]);
 
   /* Save the result in the cache.  */
   if (in.base.from)
@@ -8198,7 +8225,7 @@ annotate_value (tree gnu_size)
       h = annotate_value_cache->find_slot (&in, INSERT);
       gcc_assert (!*h);
       *h = ggc_alloc<tree_int_map> ();
-      (*h)->base.from = gnu_size;
+      (*h)->base.from = in.base.from;
       (*h)->to = ret;
     }
 
