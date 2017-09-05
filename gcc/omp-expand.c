@@ -4730,24 +4730,28 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	      tree itype2 = TREE_TYPE (fd->loops[i - 1].v);
 	      if (POINTER_TYPE_P (itype2))
 		itype2 = signed_type_for (itype2);
+	      t = fold_convert (itype2, fd->loops[i - 1].step);
+	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
+					    GSI_SAME_STMT);
 	      t = build3 (COND_EXPR, itype2,
 			  build2 (fd->loops[i].cond_code, boolean_type_node,
 				  fd->loops[i].v,
 				  fold_convert (itype, fd->loops[i].n2)),
-			  build_int_cst (itype2, 0),
-			  fold_convert (itype2, fd->loops[i - 1].step));
+			  build_int_cst (itype2, 0), t);
 	      if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i - 1].v)))
 		t = fold_build_pointer_plus (fd->loops[i - 1].v, t);
 	      else
 		t = fold_build2 (PLUS_EXPR, itype2, fd->loops[i - 1].v, t);
 	      expand_omp_build_assign (&gsi, fd->loops[i - 1].v, t);
 
+	      t = fold_convert (itype, fd->loops[i].n1);
+	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
+					    GSI_SAME_STMT);
 	      t = build3 (COND_EXPR, itype,
 			  build2 (fd->loops[i].cond_code, boolean_type_node,
 				  fd->loops[i].v,
 				  fold_convert (itype, fd->loops[i].n2)),
-			  fd->loops[i].v,
-			  fold_convert (itype, fd->loops[i].n1));
+			  fd->loops[i].v, t);
 	      expand_omp_build_assign (&gsi, fd->loops[i].v, t);
 	    }
 	}
