@@ -9892,15 +9892,16 @@ construct_container (machine_mode mode, machine_mode orig_mode,
 	  case X86_64_INTEGERSI_CLASS:
 	    /* Merge TImodes on aligned occasions here too.  */
 	    if (i * 8 + 8 > bytes)
-	      tmpmode
-		= mode_for_size ((bytes - i * 8) * BITS_PER_UNIT, MODE_INT, 0);
+	      {
+		unsigned int tmpbits = (bytes - i * 8) * BITS_PER_UNIT;
+		if (!int_mode_for_size (tmpbits, 0).exists (&tmpmode))
+		  /* We've requested 24 bytes we
+		     don't have mode for.  Use DImode.  */
+		  tmpmode = DImode;
+	      }
 	    else if (regclass[i] == X86_64_INTEGERSI_CLASS)
 	      tmpmode = SImode;
 	    else
-	      tmpmode = DImode;
-	    /* We've requested 24 bytes we
-	       don't have mode for.  Use DImode.  */
-	    if (tmpmode == BLKmode)
 	      tmpmode = DImode;
 	    exp [nexps++]
 	      = gen_rtx_EXPR_LIST (VOIDmode,
@@ -11880,8 +11881,8 @@ ix86_gimplify_va_arg (tree valist, tree type, gimple_seq *pre_p,
 	      if (prev_size + cur_size > size)
 		{
 		  cur_size = size - prev_size;
-		  mode = mode_for_size (cur_size * BITS_PER_UNIT, MODE_INT, 1);
-		  if (mode == BLKmode)
+		  unsigned int nbits = cur_size * BITS_PER_UNIT;
+		  if (!int_mode_for_size (nbits, 1).exists (&mode))
 		    mode = QImode;
 		}
 	      piece_type = lang_hooks.types.type_for_mode (mode, 1);
@@ -24923,9 +24924,8 @@ ix86_expand_sse_cmp (rtx dest, enum rtx_code code, rtx cmp_op0, rtx cmp_op1,
 
   if (GET_MODE_SIZE (cmp_ops_mode) == 64)
     {
-      cmp_mode = mode_for_size (GET_MODE_NUNITS (cmp_ops_mode), MODE_INT, 0);
-      gcc_assert (cmp_mode != BLKmode);
-
+      unsigned int nbits = GET_MODE_NUNITS (cmp_ops_mode);
+      cmp_mode = int_mode_for_size (nbits, 0).require ();
       maskcmp = true;
     }
   else
@@ -27524,13 +27524,11 @@ emit_memmov (rtx destmem, rtx *srcmem, rtx destptr, rtx srcptr,
      Start with the biggest power of 2 less than SIZE_TO_MOVE and half
      it until move of such size is supported.  */
   piece_size = 1 << floor_log2 (size_to_move);
-  move_mode = mode_for_size (piece_size * BITS_PER_UNIT, MODE_INT, 0);
-  code = optab_handler (mov_optab, move_mode);
-  while (code == CODE_FOR_nothing && piece_size > 1)
+  while (!int_mode_for_size (piece_size * BITS_PER_UNIT, 0).exists (&move_mode)
+	 || (code = optab_handler (mov_optab, move_mode)) == CODE_FOR_nothing)
     {
+      gcc_assert (piece_size > 1);
       piece_size >>= 1;
-      move_mode = mode_for_size (piece_size * BITS_PER_UNIT, MODE_INT, 0);
-      code = optab_handler (mov_optab, move_mode);
     }
 
   /* Find the corresponding vector mode with the same size as MOVE_MODE.
@@ -27713,7 +27711,8 @@ emit_memset (rtx destmem, rtx destptr, rtx promoted_val,
     move_mode = QImode;
   if (size_to_move < GET_MODE_SIZE (move_mode))
     {
-      move_mode = mode_for_size (size_to_move * BITS_PER_UNIT, MODE_INT, 0);
+      unsigned int move_bits = size_to_move * BITS_PER_UNIT;
+      move_mode = int_mode_for_size (move_bits, 0).require ();
       promoted_val = gen_lowpart (move_mode, promoted_val);
     }
   piece_size = GET_MODE_SIZE (move_mode);
@@ -27908,7 +27907,7 @@ expand_small_movmem_or_setmem (rtx destmem, rtx srcmem,
 			       rtx done_label, bool issetmem)
 {
   rtx_code_label *label = ix86_expand_aligntest (count, size, false);
-  machine_mode mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 1);
+  machine_mode mode = int_mode_for_size (size * BITS_PER_UNIT, 1).else_blk ();
   rtx modesize;
   int n;
 
@@ -50569,7 +50568,8 @@ ix86_expand_pextr (rtx *operands)
 	machine_mode srcmode, dstmode;
 	rtx d, pat;
 
-	dstmode = mode_for_size (size, MODE_INT, 0);
+	if (!int_mode_for_size (size, 0).exists (&dstmode))
+	  return false;
 
 	switch (dstmode)
 	  {
@@ -50665,7 +50665,8 @@ ix86_expand_pinsr (rtx *operands)
 	rtx (*pinsr)(rtx, rtx, rtx, rtx);
 	rtx d;
 
-	srcmode = mode_for_size (size, MODE_INT, 0);
+	if (!int_mode_for_size (size, 0).exists (&srcmode))
+	  return false;
 
 	switch (srcmode)
 	  {

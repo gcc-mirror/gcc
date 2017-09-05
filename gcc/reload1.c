@@ -2189,11 +2189,12 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	    {
 	      adjust = inherent_size - total_size;
 	      if (adjust)
-		stack_slot
-		  = adjust_address_nv (x, mode_for_size (total_size
-						         * BITS_PER_UNIT,
-						         MODE_INT, 1),
-				       adjust);
+		{
+		  unsigned int total_bits = total_size * BITS_PER_UNIT;
+		  machine_mode mem_mode
+		    = int_mode_for_size (total_bits, 1).else_blk ();
+		  stack_slot = adjust_address_nv (x, mem_mode, adjust);
+		}
 	    }
 
 	  if (! dont_share_p && ira_conflicts_p)
@@ -2240,11 +2241,12 @@ alter_reg (int i, int from_reg, bool dont_share_p)
 	    {
 	      adjust = GET_MODE_SIZE (mode) - total_size;
 	      if (adjust)
-		stack_slot
-		  = adjust_address_nv (x, mode_for_size (total_size
-							 * BITS_PER_UNIT,
-							 MODE_INT, 1),
-				       adjust);
+		{
+		  unsigned int total_bits = total_size * BITS_PER_UNIT;
+		  machine_mode mem_mode
+		    = int_mode_for_size (total_bits, 1).else_blk ();
+		  stack_slot = adjust_address_nv (x, mem_mode, adjust);
+		}
 	    }
 
 	  spill_stack_slot[from_reg] = stack_slot;

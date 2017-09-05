@@ -2978,8 +2978,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	 that mode's store operation.  */
       else if (size <= UNITS_PER_WORD)
 	{
-	  machine_mode mode
-	    = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  unsigned int bits = size * BITS_PER_UNIT;
+	  machine_mode mode = int_mode_for_size (bits, 0).else_blk ();
 
 	  if (mode != BLKmode
 #ifdef BLOCK_REG_PADDING

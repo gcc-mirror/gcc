@@ -370,7 +370,7 @@ static int label_tick_ebb_start;
 /* Mode used to compute significance in reg_stat[].nonzero_bits.  It is the
    largest integer mode that can fit in HOST_BITS_PER_WIDE_INT.  */
 
-static machine_mode nonzero_bits_mode;
+static scalar_int_mode nonzero_bits_mode;
 
 /* Nonzero when reg_stat[].nonzero_bits and reg_stat[].sign_bit_copies can
    be safely used.  It is zero while computing them and after combine has
@@ -1157,7 +1157,7 @@ combine_instructions (rtx_insn *f, unsigned int nregs)
   uid_insn_cost = XCNEWVEC (int, max_uid_known + 1);
   gcc_obstack_init (&insn_link_obstack);
 
-  nonzero_bits_mode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
+  nonzero_bits_mode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
 
   /* Don't use reg_stat[].nonzero_bits when computing it.  This can cause
      problems when, for example, we have j <<= 1 in a loop.  */

@@ -1,5 +1,54 @@
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* builtins.c (expand_builtin_powi): Use int_mode_for_size.
+	(get_builtin_sync_mode): Likewise.
+	(expand_ifn_atomic_compare_exchange): Likewise.
+	(expand_builtin_atomic_clear): Likewise.
+	(expand_builtin_atomic_test_and_set): Likewise.
+	(fold_builtin_atomic_always_lock_free): Likewise.
+	* calls.c (compute_argument_addresses): Likewise.
+	(emit_library_call_value_1): Likewise.
+	(store_one_arg): Likewise.
+	* combine.c (combine_instructions): Likewise.
+	* config/aarch64/aarch64.c (aarch64_function_value): Likewise.
+	* config/arm/arm.c (arm_function_value): Likewise.
+	(aapcs_allocate_return_reg): Likewise.
+	* config/c6x/c6x.c (c6x_expand_movmem): Likewise.
+	* config/i386/i386.c (construct_container): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(ix86_expand_sse_cmp): Likewise.
+	(emit_memmov): Likewise.
+	(emit_memset): Likewise.
+	(expand_small_movmem_or_setmem): Likewise.
+	(ix86_expand_pextr): Likewise.
+	(ix86_expand_pinsr): Likewise.
+	* config/lm32/lm32.c (lm32_block_move_inline): Likewise.
+	* config/microblaze/microblaze.c (microblaze_block_move_straight):
+	Likewise.
+	* config/mips/mips.c (mips_function_value_1) Likewise.
+	(mips_block_move_straight): Likewise.
+	(mips_expand_ins_as_unaligned_store): Likewise.
+	* config/powerpcspe/powerpcspe.c
+	(rs6000_darwin64_record_arg_advance_flush): Likewise.
+	(rs6000_darwin64_record_arg_flush): Likewise.
+	* config/rs6000/rs6000.c
+	(rs6000_darwin64_record_arg_advance_flush): Likewise.
+	(rs6000_darwin64_record_arg_flush): Likewise.
+	* config/sparc/sparc.c (sparc_function_arg_1): Likewise.
+	(sparc_function_value_1): Likewise.
+	* config/spu/spu.c (adjust_operand): Likewise.
+	(spu_emit_branch_or_set): Likewise.
+	(arith_immediate_p): Likewise.
+	* emit-rtl.c (gen_lowpart_common): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* function.c (assign_parm_setup_block): Likewise.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	* stor-layout.c (mode_for_vector): Likewise.
+	(layout_type): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/spu/spu.c (exp2_immediate_p): Use int_mode_for_mode.
 	(spu_convert_move): Likewise.
 	* lower-subreg.c (resolve_simple_move): Likewise.

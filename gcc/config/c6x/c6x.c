@@ -1758,8 +1758,8 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       if (dst_size > src_size)
 	dst_size = src_size;
 
-      srcmode = mode_for_size (src_size * BITS_PER_UNIT, MODE_INT, 0);
-      dstmode = mode_for_size (dst_size * BITS_PER_UNIT, MODE_INT, 0);
+      srcmode = int_mode_for_size (src_size * BITS_PER_UNIT, 0).require ();
+      dstmode = int_mode_for_size (dst_size * BITS_PER_UNIT, 0).require ();
       if (src_size >= 4)
 	reg_lowpart = reg = gen_reg_rtx (srcmode);
       else

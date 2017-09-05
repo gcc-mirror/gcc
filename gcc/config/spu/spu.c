@@ -368,7 +368,7 @@ adjust_operand (rtx op, HOST_WIDE_INT * start)
       op_size = 32;
     }
   /* If it is not a MODE_INT (and/or it is smaller than SI) add a SUBREG. */
-  mode = mode_for_size (op_size, MODE_INT, 0);
+  mode = int_mode_for_size (op_size, 0).require ();
   if (mode != GET_MODE (op))
     op = gen_rtx_SUBREG (mode, op, 0);
   return op;
@@ -935,7 +935,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
       rtx target = operands[0];
       int compare_size = GET_MODE_BITSIZE (comp_mode);
       int target_size = GET_MODE_BITSIZE (GET_MODE (target));
-      machine_mode mode = mode_for_size (target_size, MODE_INT, 0);
+      machine_mode mode = int_mode_for_size (target_size, 0).require ();
       rtx select_mask;
       rtx op_t = operands[2];
       rtx op_f = operands[3];

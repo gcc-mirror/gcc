@@ -12222,7 +12222,6 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
 {
   unsigned int startbit, endbit;
   int intregs, intoffset;
-  machine_mode mode;
 
   /* Handle the situations where a float is taking up the first half
      of the GPR, and the other half is empty (typically due to
@@ -12246,9 +12245,8 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
 
   if (intoffset % BITS_PER_WORD != 0)
     {
-      mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			    MODE_INT, 0);
-      if (mode == BLKmode)
+      unsigned int bits = BITS_PER_WORD - intoffset % BITS_PER_WORD;
+      if (!int_mode_for_size (bits, 0).exists ())
 	{
 	  /* We couldn't find an appropriate mode, which happens,
 	     e.g., in packed structs when there are 3 bytes to load.
@@ -12714,9 +12712,8 @@ rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *cum,
 
   if (intoffset % BITS_PER_WORD != 0)
     {
-      mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			  MODE_INT, 0);
-      if (mode == BLKmode)
+      unsigned int bits = BITS_PER_WORD - intoffset % BITS_PER_WORD;
+      if (!int_mode_for_size (bits, 0).exists (&mode))
 	{
 	  /* We couldn't find an appropriate mode, which happens,
 	     e.g., in packed structs when there are 3 bytes to load.
