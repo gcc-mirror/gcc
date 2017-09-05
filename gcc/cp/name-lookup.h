@@ -319,12 +319,14 @@ extern void pop_decl_namespace (void);
 extern void do_namespace_alias (tree, tree);
 extern tree do_class_using_decl (tree, tree);
 extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
-extern tree lookup_field_1			(tree, tree, bool);
-extern tree lookup_fnfields_slot		(tree, tree);
-extern tree lookup_fnfields_slot_nolazy		(tree, tree);
+extern tree get_class_binding_direct (tree, tree, bool prefer_type = false,
+				      int restricted = 1);
+extern tree get_class_binding (tree, tree, bool prefer_type = false,
+			       int restricted = 1);
+extern tree *find_method_slot (tree klass, tree name);
 extern void resort_type_method_vec (void *, void *,
 				    gt_pointer_operator, void *);
-extern void set_class_bindings (tree);
+extern void set_class_bindings (tree, unsigned extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
@@ -349,14 +351,5 @@ extern void pop_from_top_level (void);
 // FIXME: class symbol handling.  In transition
 // FIXME: RESTRICTED is temporary hack to avoid regressing performance
 // during transition
-extern tree get_class_binding_direct (tree, tree, bool prefer_type = false,
-				      int restricted = 1);
-extern tree get_class_binding (tree, tree, bool prefer_type = false,
-			       int restricted = 1);
-extern void resort_type_method_vec (void *, void *,
-				    gt_pointer_operator, void *);
-extern void set_class_bindings (tree);
-extern void insert_late_enum_def_bindings (tree, tree);
-extern tree *find_method_slot (tree klass, tree name);
 
 #endif /* GCC_CP_NAME_LOOKUP_H */

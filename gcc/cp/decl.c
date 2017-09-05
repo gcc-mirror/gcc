@@ -4073,13 +4073,6 @@ cxx_init_decl_processing (void)
   noexcept_deferred_spec = build_tree_list (make_node (DEFERRED_NOEXCEPT),
 					    NULL_TREE);
 
-  /* Create the conversion operator marker.  This operator's DECL_NAME
-     is in the identifier table, so we can use identifier equality to
-     find it.  This has no type and no context, so we can't
-     accidentally think it a real function.  */
-  conv_op_marker = build_lang_decl (FUNCTION_DECL, conv_op_identifier,
-				    NULL_TREE);
-
 #if 0
   record_builtin_type (RID_MAX, NULL, string_type_node);
 #endif
@@ -4093,6 +4086,12 @@ cxx_init_decl_processing (void)
 					     ptr_type_node, NULL_TREE);
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr, empty_except_spec);
+
+  /* Create the conversion operator marker.  This operator's DECL_NAME
+     is in the identifier table, so we can use identifier equality to
+     find it.  */
+  conv_op_marker = build_lang_decl (FUNCTION_DECL, conv_op_identifier,
+				    void_ftype);
 
   /* C++ extensions */
 

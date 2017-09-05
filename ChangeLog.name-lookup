@@ -1,3 +1,36 @@
+2017-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	Merge TYPE_FIELDS to METHOD_VEC
+	gcc/cp/
+	* name-lookup.c (method_vec_binary_search,
+	method_vec_linear_search): New.  Broken out of ...
+	(legacy_fn_member_lookup): ... here.  Delete.
+	(fields_linear_search): New.  Broken out of ...
+	(legacy_nonfn_member_lookup): ... here.  Delete.
+	(find_method_slot): Call set_class_bindings if adding method_vec
+	to completed class.
+	(get_class_binding_direct): Use new searching functions.
+	(method-name_cmp): Order identically named decls.
+	(resort_method_name_cmp): Adjust.
+	(sorted_fields_type_new): Delete.
+	(count_fields): Rename to ...
+	(count_class_fields): ... here.  Take RECORD_TYPE and adjust.
+	(add_fields_to_record_type): Rename to ...
+	(method_vec_append_class_fields): ... here.  Take RECORD_TYPE and
+	adjust.
+	(add_enum_fields_to_record_type): Rename to ...
+	(method_vec_append_enum_values): ... here.  Adjust.
+	(method_vec_dedup): New.
+	(set_class_bindings): Reimplement.
+	(insert_late_enum_def_bindings): Reimplement.
+	* name-lookup.h (lookup_field_1, lookup_fnfields_slot,
+	lookup_fnfields_slot_nolazy): Delete.
+	(get_class_binding_direct, get_class_binding, find_method_slot): Move.
+	(set_class_bindings): Add EXTRA parm.
+	* class.c (warn_hidden): Cope with non-functions.
+	* decl.c (cxx_init_decl_processing): Make conv-op marker function
+	not so bogusly typed.
+
 2017-09-01  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r251609.
