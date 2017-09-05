@@ -441,7 +441,7 @@ bool aarch64_atomic_ldop_supported_p (enum rtx_code);
 void aarch64_gen_atomic_ldop (enum rtx_code, rtx, rtx, rtx, rtx, rtx);
 void aarch64_split_atomic_op (enum rtx_code, rtx, rtx, rtx, rtx, rtx, rtx);
 
-bool aarch64_gen_adjusted_ldpstp (rtx *, bool, machine_mode, RTX_CODE);
+bool aarch64_gen_adjusted_ldpstp (rtx *, bool, scalar_mode, RTX_CODE);
 #endif /* RTX_CODE */
 
 void aarch64_init_builtins (void);
@@ -469,7 +469,7 @@ int aarch64_ccmp_mode_to_code (machine_mode mode);
 
 bool extract_base_offset_in_addr (rtx mem, rtx *base, rtx *offset);
 bool aarch64_operands_ok_for_ldpstp (rtx *, bool, machine_mode);
-bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, machine_mode);
+bool aarch64_operands_adjust_ok_for_ldpstp (rtx *, bool, scalar_mode);
 
 extern void aarch64_asm_output_pool_epilogue (FILE *, const char *,
 					      tree, HOST_WIDE_INT);
