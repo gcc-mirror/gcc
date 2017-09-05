@@ -1,3 +1,10 @@
+2017-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (duplicate_thread_path): Remove unused
+	REGION_COPY argument.
+	(thread_through_all_blocks): Remove unused argument to
+	duplicate_thread_path.
+
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
