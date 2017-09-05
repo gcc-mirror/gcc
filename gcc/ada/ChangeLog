@@ -1,5 +1,11 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Call_to_gnu): If this is a function call and
+	there is no target, do not create a temporary for the return value for
+	an allocator either.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (pos_to_constructor): Skip conversions to an
 	unconstrained array type.
 
