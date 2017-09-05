@@ -4860,6 +4860,7 @@ fini_eliminate (void)
 	lhs = gimple_get_lhs (stmt);
 
       if (inserted_exprs
+	  && lhs
 	  && TREE_CODE (lhs) == SSA_NAME
 	  && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (lhs)))
 	continue;
