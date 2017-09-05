@@ -322,6 +322,7 @@ extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern tree lookup_field_1			(tree, tree, bool);
 extern tree lookup_fnfields_slot		(tree, tree);
 extern tree lookup_fnfields_slot_nolazy		(tree, tree);
+extern tree *get_method_slot (tree klass, tree name);
 extern void resort_type_method_vec (void *, void *,
 				    gt_pointer_operator, void *);
 extern void set_class_bindings (tree);
