@@ -1,3 +1,8 @@
+2017-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072-2.c: New test.
+
 2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/81942

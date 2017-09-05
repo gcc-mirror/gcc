@@ -1,3 +1,9 @@
+2017-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* convert.c (convert_to_integer_1) <case NEGATE_EXPR>: Move the ubsan
+	check earlier.
+
 2017-09-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* explow.c (get_dynamic_stack_size): Improve dynamic alignment.
