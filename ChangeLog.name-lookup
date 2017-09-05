@@ -1,5 +1,19 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	Kill CLASSTYPE_SORTED_FIELDS
+	gcc/cp/
+	* cp-tree.h (struct lang_type): Delete sorted_fields.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	gcc/c-family/
+	* c-common.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp, resort_sorted_fields): Move ...
+	* c-common.h (field_decl_cmp, resort_sorted_fields): ... and ...
+	(struct sorted_fields_type): ... and to ...
+	gcc/c/
+	* c-decl.c (field_decl_cmp, resort_data,
+	resort_field_decl_cmp, resort_sorted_fields): Here and ...
+	* c-lang.h (struct sorted_fields_type): here..
+
 	Merge TYPE_FIELDS to METHOD_VEC
 	gcc/cp/
 	* name-lookup.c (method_vec_binary_search,
