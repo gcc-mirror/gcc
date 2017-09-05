@@ -517,6 +517,23 @@ mode_for_vector (scalar_mode innermode, unsigned nunits)
   return mode;
 }
 
+/* Return the mode for a vector that has NUNITS integer elements of
+   INT_BITS bits each, if such a mode exists.  The mode can be either
+   an integer mode or a vector mode.  */
+
+opt_machine_mode
+mode_for_int_vector (unsigned int int_bits, unsigned int nunits)
+{
+  scalar_int_mode int_mode;
+  if (int_mode_for_size (int_bits, 0).exists (&int_mode))
+    {
+      machine_mode vec_mode = mode_for_vector (int_mode, nunits);
+      if (vec_mode != BLKmode)
+	return vec_mode;
+    }
+  return opt_machine_mode ();
+}
+
 /* Return the alignment of MODE. This will be bounded by 1 and
    BIGGEST_ALIGNMENT.  */
 
