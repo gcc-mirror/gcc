@@ -1155,13 +1155,18 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
     }
   else
     for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
-      {
-	if (OVL_NAME (fns) == lookup)
-	  {
-	    val = fns;
-	    break;
-	  }
-      }
+      /* We can get a NULL binding during insertion of a new
+	 method name, because the identifier_binding machinery
+	 performs a lookup.  If we find such a NULL slot, that's
+	 the thing we were looking for, so we might as well bail
+	 out immediately.  */
+      if (!fns)
+	break;
+      else if (OVL_NAME (fns) == lookup)
+	{
+	  val = fns;
+	  break;
+	}
 
   /* Extract the conversion operators asked for, unless the general
      conversion operator was requested.   */
@@ -1310,6 +1315,74 @@ lookup_fnfields_slot (tree type, tree name)
     }
 
   return lookup_fnfields_slot_nolazy (type, name);
+}
+
+/* Find the slot containing overloads called 'NAME'.  If there is no
+   such slot, create an empty one.  KLASS might be complete at this
+   point, in which case we need to preserve ordering.  Deals with
+   conv_op marker handling.  */
+
+tree *
+get_method_slot (tree klass, tree name)
+{
+  bool complete_p = COMPLETE_TYPE_P (klass);
+  
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass);
+  if (!method_vec)
+    {
+      vec_alloc (method_vec, 8);
+      CLASSTYPE_METHOD_VEC (klass) = method_vec;
+    }
+
+  if (IDENTIFIER_CONV_OP_P (name))
+    name = conv_op_identifier;
+
+  unsigned ix, length = method_vec->length ();
+  for (ix = 0; ix < length; ix++)
+    {
+      tree *slot = &(*method_vec)[ix];
+      tree fn_name = OVL_NAME (*slot);
+
+      if (fn_name == name)
+	{
+	  if (name == conv_op_identifier)
+	    {
+	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
+	      /* Skip the conv-op marker. */
+	      slot = &OVL_CHAIN (*slot);
+	    }
+	  return slot;
+	}
+
+      if (complete_p && fn_name > name)
+	break;
+    }
+
+  /* No slot found.  Create one at IX.  We know in this case that our
+     caller will succeed in adding the function.  */
+  if (complete_p)
+    {
+      /* Do exact allocation when complete, as we don't expect to add
+	 many.  */
+      vec_safe_reserve_exact (method_vec, 1);
+      method_vec->quick_insert (ix, NULL_TREE);
+    }
+  else
+    {
+      gcc_checking_assert (ix == length);
+      vec_safe_push (method_vec, NULL_TREE);
+    }
+  CLASSTYPE_METHOD_VEC (klass) = method_vec;
+
+  tree *slot = &(*method_vec)[ix];
+  if (name == conv_op_identifier)
+    {
+      /* Install the marker prefix.  */
+      *slot = ovl_make (conv_op_marker, NULL_TREE);
+      slot = &OVL_CHAIN (*slot);
+    }
+
+  return slot;
 }
 
 static struct {

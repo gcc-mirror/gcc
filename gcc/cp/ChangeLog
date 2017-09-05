@@ -1,5 +1,15 @@
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (add_method): Move slot search and insertion to ...
+	* name-lookup.c (get_method_slot): ... this new function.
+	(lookup_fnfields_slot_nolazy): Cope with NULL slot.
+	* name-lookup.h (get_method_slot): Declare.
+	* decl.c (cxx_init_decl_processinng): Give conv_op_marker a more
+	realistic type.
+	(grok_special_member_properties): Set
+	TYPE_HAS_CONVERSION. Expicitly look at DECL_NAME for specialness.
+	Improve TYPE_HAS_CONSTEXPR_CTOR setting.	
+
 	* cp-tree.h (lang_decl_base): Rename template_conv_p to
 	unknown_bound_p.
 	(DECL_CONV_FN_P): Don't check NULL DECL_NAME.
