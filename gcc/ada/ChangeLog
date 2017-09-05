@@ -1,5 +1,11 @@
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (convert_with_check): Use a custom base type
+	if the base type of the expression has a different machine mode.
+	Rename a couple of parameters and local variable.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Attribute_to_gnu) <Attr_Address>: Do not strip
 	conversions around prefixes that are not references.
 
