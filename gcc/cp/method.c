@@ -2408,7 +2408,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       || sfk == sfk_copy_assignment)
     check_for_override (fn, type);
 
-  /* Add it to CLASSTYPE_METHOD_VEC.  */
+  /* Add it to the class  */
   bool added = add_method (type, fn, false);
   gcc_assert (added);
 

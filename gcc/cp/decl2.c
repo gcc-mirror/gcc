@@ -606,7 +606,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
      resolving within the scope of CTYPE.  */
   tree pushed_scope = push_scope (ctype);
   tree matched = NULL_TREE;
-  tree fns = lookup_fnfields_slot (ctype, DECL_NAME (function));
+  tree fns = get_class_binding (ctype, DECL_NAME (function));
   
   for (ovl_iterator iter (fns); !matched && iter; ++iter)
     {
@@ -664,7 +664,7 @@ check_classfn (tree ctype, tree function, tree template_parms)
       else
 	{
 	  if (DECL_CONV_FN_P (function))
-	    fns = lookup_fnfields_slot (ctype, conv_op_identifier);
+	    fns = get_class_binding (ctype, conv_op_identifier);
 
 	  error_at (DECL_SOURCE_LOCATION (function),
 		    "no declaration matches %q#D", function);

@@ -1,3 +1,30 @@
+2017-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (lookup_fnfields_slot_nolazy,
+	lookup_fnfields_slot): Rename to ...
+	(get_class_binding_direct, get_class_binding): ... here.
+	* name-lookup.c (lookup_fnfields_slot_nolazy,
+	lookup_fnfields_slot): Rename to ...
+	(get_class_binding_direct, get_class_binding): ... here.
+	* cp-tree.h (CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Adjust.
+	* call.c (build_user_type_conversion_1): Adjust.
+	(has_trivial_copy_assign_p): Adjust.
+	(has_trivial_copy_p): Adjust.
+	* class.c (get_basefndecls) Adjust.
+	(vbase_has_user_provided_move_assign) Adjust.
+	(classtype_has_move_assign_or_move_ctor_p): Adjust.
+	(type_build_ctor_call, type_build_dtor_call): Adjust.
+	* decl.c (register_dtor_fn): Adjust.
+	* decl2.c (check_classfn): Adjust.
+	* pt.c (retrieve_specialization): Adjust.
+	(check_explicit_specialization): Adjust.
+	(do_class_deduction): Adjust.
+	* search.c (lookup_field_r): Adjust.
+	(look_for_overrides_here, lookup_conversions_r): Adjust.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Adjust.
+	* tree.c (type_has_nontrivial_copy_init): Adjust.
+	* method.c (lazily_declare_fn): Adjust comment.
+
 2017-09-05  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (do_class_using_decl): Elide read-once temps.

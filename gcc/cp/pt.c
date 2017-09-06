@@ -1216,7 +1216,7 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 	return NULL_TREE;
 
       /* Find the instance of TMPL.  */
-      tree fns = lookup_fnfields_slot (class_specialization, DECL_NAME (tmpl));
+      tree fns = get_class_binding (class_specialization, DECL_NAME (tmpl));
       for (ovl_iterator iter (fns); iter; ++iter)
 	{
 	  tree fn = *iter;
@@ -2915,9 +2915,8 @@ check_explicit_specialization (tree declarator,
 	     `operator int' which will be a specialization of
 	     `operator T'.  Grab all the conversion operators, and
 	     then select from them.  */
-	  tree fns = lookup_fnfields_slot_nolazy (ctype,
-						  IDENTIFIER_CONV_OP_P (name)
-						  ? conv_op_identifier : name);
+	  tree fns = get_class_binding (ctype, IDENTIFIER_CONV_OP_P (name)
+				      ? conv_op_identifier : name);
 
 	  if (fns == NULL_TREE)
 	    {
@@ -25648,20 +25647,18 @@ do_class_deduction (tree ptype, tree tmpl, tree init, int flags,
     }
 
   bool saw_ctor = false;
-  if (CLASSTYPE_METHOD_VEC (type))
-    // FIXME cache artificial deduction guides
-    for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type));
-	 iter; ++iter)
-      {
-	tree guide = build_deduction_guide (*iter, outer_args, complain);
-	if ((flags & LOOKUP_ONLYCONVERTING)
-	    && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
-	  elided = true;
-	else
-	  cands = lookup_add (guide, cands);
+  // FIXME cache artificial deduction guides
+  for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (type)); iter; ++iter)
+    {
+      tree guide = build_deduction_guide (*iter, outer_args, complain);
+      if ((flags & LOOKUP_ONLYCONVERTING)
+	  && DECL_NONCONVERTING_P (STRIP_TEMPLATE (guide)))
+	elided = true;
+      else
+	cands = lookup_add (guide, cands);
 
-	saw_ctor = true;
-      }
+      saw_ctor = true;
+    }
 
   tree call = error_mark_node;
 
