@@ -1,5 +1,5 @@
 /* PR tree-optimization/81588 */
-/* { dg-do compile { target { ! "m68k*-*-* mmix*-*-* bfin*-*-* v850*-*-* moxie*-*-* cris*-*-* m32c*-*-* fr30*-*-* mcore*-*-* powerpc*-*-* xtensa*-*-* hppa*-*-* nios2*-*-*" } } } */
+/* { dg-do compile { target { ! { { logical_op_short_circuit && { ! "mips*-*-* avr-*-* s390*-*-*" } } || { m68k*-*-* bfin*-*-* v850*-*-* moxie*-*-* m32c*-*-* fr30*-*-* mcore*-*-* xtensa*-*-* hppa*-*-* } } } } } */
 /* { dg-options "-O2 -fdump-tree-reassoc1-details" } */
 /* { dg-additional-options "-mbranch-cost=2" { target mips*-*-* avr-*-* s390*-*-* i?86-*-* x86_64-*-* } } */
 
