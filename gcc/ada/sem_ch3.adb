@@ -20785,7 +20785,7 @@ package body Sem_Ch3 is
          --  corresponding subtype of the full view.
 
          elsif Ekind (Priv_Dep) = E_Incomplete_Subtype
-            and then Comes_From_Source (Priv_Dep)
+           and then Comes_From_Source (Priv_Dep)
          then
             Set_Subtype_Indication
               (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
@@ -20793,8 +20793,8 @@ package body Sem_Ch3 is
             Set_Ekind (Priv_Dep, Subtype_Kind (Ekind (Full_T)));
             Set_Analyzed (Parent (Priv_Dep), False);
 
-            --  Reanalyze the declaration, suppressing the call to
-            --  Enter_Name to avoid duplicate names.
+            --  Reanalyze the declaration, suppressing the call to Enter_Name
+            --  to avoid duplicate names.
 
             Analyze_Subtype_Declaration
               (N    => Parent (Priv_Dep),

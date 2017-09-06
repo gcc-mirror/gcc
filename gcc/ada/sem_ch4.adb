@@ -2936,8 +2936,8 @@ package body Sem_Ch4 is
 
                   Set_Etype (Alt, It.Typ);
 
-                  --  If the alternative is an enumeration literal, use
-                  --  the one for this interpretation.
+                  --  If the alternative is an enumeration literal, use the one
+                  --  for this interpretation.
 
                   if Is_Entity_Name (Alt) then
                      Set_Entity (Alt, It.Nam);
@@ -2948,7 +2948,6 @@ package body Sem_Ch4 is
                   if No (It.Typ) then
                      Set_Is_Overloaded (Alt, False);
                      Common_Type := Etype (Alt);
-
                   end if;
 
                   Candidate_Interps := Alt;

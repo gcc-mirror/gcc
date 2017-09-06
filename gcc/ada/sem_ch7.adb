@@ -1441,8 +1441,8 @@ package body Sem_Ch7 is
 
          --  Check on incomplete types
 
-         --  AI05-0213: A formal incomplete type has no completion,
-         --  and neither does the corresponding subtype in an instance.
+         --  AI05-0213: A formal incomplete type has no completion, and neither
+         --  does the corresponding subtype in an instance.
 
          if Is_Incomplete_Type (E)
            and then No (Full_View (E))

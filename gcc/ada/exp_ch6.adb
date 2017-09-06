@@ -3515,7 +3515,7 @@ package body Exp_Ch6 is
                elsif Etype (Call_Node) /= Root_Type (Etype (Name (Ass))) then
                   Error_Msg_NE
                     ("tag-indeterminate expression must have type&"
-                     & "(RM 5.2 (6))",
+                     & " (RM 5.2 (6))",
                      Call_Node, Root_Type (Etype (Name (Ass))));
 
                else

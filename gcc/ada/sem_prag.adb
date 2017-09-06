@@ -14734,25 +14734,11 @@ package body Sem_Prag is
          ---------------
 
          --  pragma Eliminate (
-         --      [Unit_Name  =>] IDENTIFIER | SELECTED_COMPONENT,
-         --    [,[Entity     =>] IDENTIFIER |
-         --                      SELECTED_COMPONENT |
-         --                      STRING_LITERAL]
-         --    [,                OVERLOADING_RESOLUTION]);
-
-         --  OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
-         --                             SOURCE_LOCATION
-
-         --  PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
-         --                                        FUNCTION_PROFILE
-
-         --  PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
-
-         --  FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
-         --                       Result_Type => result_SUBTYPE_NAME]
-
-         --  PARAMETER_TYPES ::= (SUBTYPE_NAME {, SUBTYPE_NAME})
-         --  SUBTYPE_NAME    ::= STRING_LITERAL
+         --      [Unit_Name        =>] IDENTIFIER | SELECTED_COMPONENT,
+         --      [Entity           =>] IDENTIFIER |
+         --                            SELECTED_COMPONENT |
+         --                            STRING_LITERAL]
+         --      [, Source_Location => SOURCE_TRACE]);
 
          --  SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
          --  SOURCE_TRACE    ::= STRING_LITERAL
@@ -14765,6 +14751,11 @@ package body Sem_Prag is
                       Name_Parameter_Types,
                       Name_Result_Type,
                       Name_Source_Location);
+
+            --  Note : Parameter_Types and Result_Type are leftovers from
+            --  prior implementations of the pragma. They are not generated
+            --  by the gnatelim tool, and play no role in selecting which
+            --  of a set of overloaded names is chosen for elimination.
 
             Unit_Name       : Node_Id renames Args (1);
             Entity          : Node_Id renames Args (2);

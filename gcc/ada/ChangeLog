@@ -1,3 +1,17 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, sem_ch7.adb, sem_util.adb, g-debpoo.adb, sem_ch4.adb,
+	sem_ch6.adb, sem_ch8.adb: Minor reformatting.
+	* exp_util.adb (Is_Source_Object): Account for
+	the cases where the source object may appear as a dereference
+	or within a type conversion.
+	* exp_ch6.adb: Fix missing space in error message.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb: Update description of Eliminate.
+
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_attr.adb (Analyze_Attribute, case 'Loop_Entry): Handle
