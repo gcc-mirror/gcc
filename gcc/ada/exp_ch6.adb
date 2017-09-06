@@ -3951,6 +3951,20 @@ package body Exp_Ch6 is
               Unchecked_Convert_To
                 (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
             return;
+
+         --  A call to a null procedure is replaced by a null statement, but
+         --  we are not allowed to ignore possible side effects of the call,
+         --  so we make sure that actuals are evaluated.
+
+         elsif Is_Null_Procedure (Subp) then
+            Actual := First_Actual (Call_Node);
+            while Present (Actual) loop
+               Remove_Side_Effects (Actual);
+               Next_Actual (Actual);
+            end loop;
+
+            Rewrite (Call_Node, Make_Null_Statement (Loc));
+            return;
          end if;
 
          --  Handle inlining. No action needed if the subprogram is not inlined

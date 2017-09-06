@@ -1,3 +1,40 @@
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* a-comlin.ads, a-comlin.adb (Argument): Move the constraint
+	check back to the body, because SPARK is not yet ready for
+	"or else raise Constraint_Error".
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Replace call to null
+	procedure by a single null statement, after evaluating the
+	actuals that require it.
+
+2017-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Backend_Processing_Possible.Component_Check):
+	Generating C code improve the code that checks the use of nested
+	aggregates to initialize object declarations.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Derived_Type_Declaration): Detect
+	violations of new rule SPARK RM 3.4(1).  Also refactor existing
+	check to use the new function Find_Partial_View.
+
+2017-09-06  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: gnat ls -V -P... invokes gprls -V -P...	The code
+	from the Prj hierarchy has been removed from the GNAT driver.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Interface_Present_In_Ancestor): Within an
+	expression function, or within a spec expression (default value,
+	etc) a reference to an incomplete type is legal: legality of
+	the operation will be checked when some related entity (type,
+	object or subprogram) is frozen.
+
 2017-09-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* exp_ch5.adb, s-diinio.ads, sem_ch4.adb, s-diflio.ads: Minor spelling

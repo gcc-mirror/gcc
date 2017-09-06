@@ -56,12 +56,19 @@ package body Ada.Command_Line is
    --------------
 
    function Argument (Number : Positive) return String is
-      Num : constant Positive :=
-        (if Remove_Args = null then Number else Remove_Args (Number));
-      Arg : aliased String (1 .. Len_Arg (Num));
    begin
-      Fill_Arg (Arg'Address, Num);
-      return Arg;
+      if Number > Argument_Count then
+         raise Constraint_Error;
+      end if;
+
+      declare
+         Num : constant Positive :=
+           (if Remove_Args = null then Number else Remove_Args (Number));
+         Arg : aliased String (1 .. Len_Arg (Num));
+      begin
+         Fill_Arg (Arg'Address, Num);
+         return Arg;
+      end;
    end Argument;
 
    --------------------
