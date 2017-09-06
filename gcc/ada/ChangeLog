@@ -1,3 +1,10 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): Do not generate a freeze
+	node for a generic unit, even if it includes delayed aspect
+	specifications. Freeze nodes for generic entities must never
+	appear in the tree that reaches the back-end of the compiler.
+
 2017-09-06  Yannick Moy  <moy@adacore.com>
 
 	* treepr.adb (Print_Entity_Info): Do not print empty Elist.
