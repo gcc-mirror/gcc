@@ -596,7 +596,6 @@ package body Sem_Prag is
       --  to the name buffer. The individual kinds are as follows:
       --    E_Abstract_State           - "state"
       --    E_Constant                 - "constant"
-      --    E_Discriminant             - "discriminant"
       --    E_Generic_In_Out_Parameter - "generic parameter"
       --    E_Generic_In_Parameter     - "generic parameter"
       --    E_In_Parameter             - "parameter"
@@ -650,9 +649,6 @@ package body Sem_Prag is
 
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
-
-         elsif Ekind (Item_Id) = E_Discriminant then
-            Add_Str_To_Name_Buffer ("discriminant");
 
          elsif Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
                                   E_Generic_In_Parameter)
@@ -1104,7 +1100,7 @@ package body Sem_Prag is
                   else
                      SPARK_Msg_N
                        ("item must denote parameter, variable, state or "
-                        & "current instance of concurren type", Item);
+                        & "current instance of concurrent type", Item);
                   end if;
 
                --  All other input/output items are illegal
@@ -1238,7 +1234,6 @@ package body Sem_Prag is
             --  Constants
 
             elsif Ekind_In (Item_Id, E_Constant,
-                                     E_Discriminant,
                                      E_Loop_Parameter)
             then
                Item_Is_Input := True;

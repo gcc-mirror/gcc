@@ -329,8 +329,10 @@ package body Binde is
    --  the reason for the link is R. Ea_Id is the contents to be placed in the
    --  Elab_All_Link of the entry.
 
-   procedure Choose (Elab_Order : in out Unit_Id_Table; Chosen : Unit_Id;
-                     Msg : String);
+   procedure Choose
+     (Elab_Order : in out Unit_Id_Table;
+      Chosen     : Unit_Id;
+      Msg        : String);
    --  Chosen is the next entry chosen in the elaboration order. This procedure
    --  updates all data structures appropriately.
 
@@ -985,8 +987,10 @@ package body Binde is
    -- Choose --
    ------------
 
-   procedure Choose (Elab_Order : in out Unit_Id_Table; Chosen : Unit_Id;
-                     Msg : String)
+   procedure Choose
+     (Elab_Order : in out Unit_Id_Table;
+      Chosen     : Unit_Id;
+      Msg        : String)
    is
       pragma Assert (Chosen /= No_Unit_Id);
       S : Successor_Id;
@@ -1087,6 +1091,7 @@ package body Binde is
         (Errors_Detected > 0 or else Num_Chosen = Last (Elab_Order));
       pragma Assert (Units.Last = UNR.Last);
       pragma Assert (Num_Chosen + Num_Left = Int (UNR.Last));
+
       if Debug_Flag_C then
          Write_Str (" ");
          Write_Int (Int (Num_Chosen));
@@ -1113,8 +1118,10 @@ package body Binde is
          then
             null;
          else
-            Choose (Elab_Order, Corresponding_Body (Chosen),
-                    " [Elaborate_Body]");
+            Choose
+              (Elab_Order => Elab_Order,
+               Chosen     => Corresponding_Body (Chosen),
+               Msg        => " [Elaborate_Body]");
          end if;
       end if;
    end Choose;
@@ -1720,7 +1727,8 @@ package body Binde is
          if Pessimistic_Elab_Order or Debug_Flag_Old or Debug_Flag_Older then
             pragma Assert
               (Last (Elab_Order) = 0
-                 or else Last (Elab_Order) = Old_Order'Last);
+                or else Last (Elab_Order) = Old_Order'Last);
+
             Init (Elab_Order);
             Append_All (Elab_Order, Old_Order);
          end if;
@@ -3033,8 +3041,10 @@ package body Binde is
                   end if;
 
                   if Choose_The_Body then
-                     Choose (Elab_Order, Corresponding_Body (Best_So_Far),
-                             " [body]");
+                     Choose
+                       (Elab_Order => Elab_Order,
+                        Chosen     => Corresponding_Body (Best_So_Far),
+                        Msg        => " [body]");
                   end if;
                end;
             end if;

@@ -4130,7 +4130,8 @@ package body Freeze is
                declare
                   Comp_Type : constant Entity_Id := Etype (Comp);
                   Comp_Size : constant Uint := RM_Size (Comp_Type);
-                  SSU : constant Int := Ttypes.System_Storage_Unit;
+                  SSU       : constant Int := Ttypes.System_Storage_Unit;
+
                begin
                   Sized_Component_Total_RM_Size :=
                     Sized_Component_Total_RM_Size + Comp_Size;

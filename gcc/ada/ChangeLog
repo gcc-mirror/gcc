@@ -1,3 +1,23 @@
+2017-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch5.adb: Minor reformatting and a typo fix
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sinput-l.ads: minor remove extra period at the end of comment
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Add_Item_To_Name_Buffer): remove support for
+	E_Discriminant.
+	(Find_Role): remove support for E_Discriminant.
+
+2017-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Expand_Simple_Function_Return):
+	Add missing implicit type conversion to force displacement of the
+	"this" pointer.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, sem_aux.adb, sem_res.adb: Minor reformatting.

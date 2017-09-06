@@ -67,7 +67,7 @@ package Sinput.L is
    function Source_File_Is_Body (X : Source_File_Index) return Boolean;
    --  Returns true if the designated source file contains a subprogram body
    --  or a package body. This is a limited scan just to determine the answer
-   --  to this question..
+   --  to this question.
 
    function Source_File_Is_No_Body (X : Source_File_Index) return Boolean;
    --  Returns true if the designated source file contains pragma No_Body;
