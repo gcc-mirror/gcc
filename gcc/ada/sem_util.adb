@@ -14153,18 +14153,21 @@ package body Sem_Util is
             --  In Ada 95, a function call is a constant object; a procedure
             --  call is not.
 
-            when N_Function_Call =>
+            --  Note that predefined operators are functions as well, and so
+            --  are attributes that are (can be renamed as) functions.
+
+            when N_Function_Call | N_Binary_Op | N_Unary_Op =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes 'Input, 'Loop_Entry, 'Old, and 'Result produce
-            --  objects.
+            --  Attributes references 'Loop_Entry, 'Old, and 'Result yield
+            --  objects, even though they are not functions.
 
             when N_Attribute_Reference =>
                return
-                 Nam_In (Attribute_Name (N), Name_Input,
-                                             Name_Loop_Entry,
+                 Nam_In (Attribute_Name (N), Name_Loop_Entry,
                                              Name_Old,
-                                             Name_Result);
+                                             Name_Result)
+                  or else Is_Function_Attribute_Name (Attribute_Name (N));
 
             when N_Selected_Component =>
                return

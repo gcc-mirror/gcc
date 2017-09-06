@@ -7151,13 +7151,13 @@ package body Einfo is
    begin
       Desig_Type := Directly_Designated_Type (Id);
 
-      if Ekind (Desig_Type) = E_Incomplete_Type
+      if Is_Incomplete_Type (Desig_Type)
         and then Present (Full_View (Desig_Type))
       then
          return Full_View (Desig_Type);
 
       elsif Is_Class_Wide_Type (Desig_Type)
-        and then Ekind (Etype (Desig_Type)) = E_Incomplete_Type
+        and then Is_Incomplete_Type (Etype (Desig_Type))
         and then Present (Full_View (Etype (Desig_Type)))
         and then Present (Class_Wide_Type (Full_View (Etype (Desig_Type))))
       then
@@ -7364,11 +7364,11 @@ package body Einfo is
 
    function Get_Full_View (T : Entity_Id) return Entity_Id is
    begin
-      if Ekind (T) = E_Incomplete_Type and then Present (Full_View (T)) then
+      if Is_Incomplete_Type (T) and then Present (Full_View (T)) then
          return Full_View (T);
 
       elsif Is_Class_Wide_Type (T)
-        and then Ekind (Root_Type (T)) = E_Incomplete_Type
+        and then Is_Incomplete_Type (Root_Type (T))
         and then Present (Full_View (Root_Type (T)))
       then
          return Class_Wide_Type (Full_View (Root_Type (T)));
@@ -7800,7 +7800,7 @@ package body Einfo is
 
    Entity_Is_Base_Type : constant array (Entity_Kind) of Boolean :=
      (E_Enumeration_Subtype          |
-      E_Incomplete_Type              |
+      E_Incomplete_Subtype           |
       E_Signed_Integer_Subtype       |
       E_Modular_Integer_Subtype      |
       E_Floating_Point_Subtype       |
@@ -9173,6 +9173,9 @@ package body Einfo is
 
          when Enumeration_Kind =>
             Kind := E_Enumeration_Subtype;
+
+         when E_Incomplete_Type =>
+            Kind := E_Incomplete_Subtype;
 
          when Float_Kind =>
             Kind := E_Floating_Point_Subtype;

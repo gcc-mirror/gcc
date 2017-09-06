@@ -41,6 +41,7 @@ with GNAT.Debug_Utilities; use GNAT.Debug_Utilities;
 with GNAT.HTable;
 with GNAT.Traceback; use GNAT.Traceback;
 
+with Ada.Finalization;
 with Ada.Unchecked_Conversion;
 
 package body GNAT.Debug_Pools is
@@ -385,6 +386,36 @@ package body GNAT.Debug_Pools is
 
    function PC_For (TB_Entry : STBE.Traceback_Entry) return System.Address
      renames STBE.PC_For;
+
+   type Scope_Lock is
+     new Ada.Finalization.Limited_Controlled with null record;
+   --  to handle Lock_Task/Unlock_Task calls
+
+   overriding procedure Initialize (This : in out Scope_Lock);
+   --  lock task on initialization
+
+   overriding procedure Finalize   (This : in out Scope_Lock);
+   --  unlock task on finalization
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize (This : in out Scope_Lock) is
+      pragma Unreferenced (This);
+   begin
+      Lock_Task.all;
+   end Initialize;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize (This : in out Scope_Lock) is
+      pragma Unreferenced (This);
+   begin
+      Unlock_Task.all;
+   end Finalize;
 
    -----------
    -- Align --
@@ -906,14 +937,15 @@ package body GNAT.Debug_Pools is
 
       Reset_Disable_At_Exit : Boolean := False;
 
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
+
    begin
       <<Allocate_Label>>
-      Lock_Task.all;
 
       if Disable then
          Storage_Address :=
            System.CRTL.malloc (System.CRTL.size_t (Size_In_Storage_Elements));
-         Unlock_Task.all;
          return;
       end if;
 
@@ -1055,14 +1087,11 @@ package body GNAT.Debug_Pools is
 
       Disable := False;
 
-      Unlock_Task.all;
-
    exception
       when others =>
          if Reset_Disable_At_Exit then
             Disable := False;
          end if;
-         Unlock_Task.all;
          raise;
    end Allocate;
 
@@ -1345,10 +1374,12 @@ package body GNAT.Debug_Pools is
          end loop;
       end Reset_Marks;
 
-   --  Start of processing for Free_Physically
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
+
+      --  Start of processing for Free_Physically
 
    begin
-      Lock_Task.all;
 
       if Pool.Advanced_Scanning then
 
@@ -1371,12 +1402,6 @@ package body GNAT.Debug_Pools is
          Free_Blocks (Ignore_Marks => True);
       end if;
 
-      Unlock_Task.all;
-
-   exception
-      when others =>
-         Unlock_Task.all;
-         raise;
    end Free_Physically;
 
    --------------
@@ -1387,8 +1412,11 @@ package body GNAT.Debug_Pools is
      (Storage_Address          : Address;
       Size_In_Storage_Elements : out Storage_Count;
       Valid                    : out Boolean) is
+
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
+
    begin
-      Lock_Task.all;
 
       Valid := Is_Valid (Storage_Address);
 
@@ -1407,13 +1435,6 @@ package body GNAT.Debug_Pools is
       else
          Valid := False;
       end if;
-
-      Unlock_Task.all;
-
-   exception
-      when others =>
-         Unlock_Task.all;
-         raise;
 
    end Get_Size;
 
@@ -1444,21 +1465,136 @@ package body GNAT.Debug_Pools is
    is
       pragma Unreferenced (Alignment);
 
-      Unlock_Task_Required : Boolean := False;
       Header   : constant Allocation_Header_Access :=
         Header_Of (Storage_Address);
       Valid    : Boolean;
       Previous : System.Address;
+      Header_Block_Size_Was_Less_Than_0 : Boolean := True;
 
    begin
       <<Deallocate_Label>>
-      Lock_Task.all;
-      Unlock_Task_Required := True;
-      Valid := Is_Valid (Storage_Address);
+
+      declare
+         Lock : Scope_Lock;
+         pragma Unreferenced (Lock);
+      begin
+         Valid := Is_Valid (Storage_Address);
+
+         if Valid and then not (Header.Block_Size < 0) then
+            Header_Block_Size_Was_Less_Than_0 := False;
+
+            --  Some sort of codegen problem or heap corruption caused the
+            --  Size_In_Storage_Elements to be wrongly computed.
+            --  The code below is all based on the assumption that Header.all
+            --  is not corrupted, such that the error is non-fatal.
+
+            if Header.Block_Size /= Size_In_Storage_Elements and then
+              Size_In_Storage_Elements /= Storage_Count'Last
+            then
+               Put_Line (Output_File (Pool),
+                         "error: Deallocate size "
+                         & Storage_Count'Image (Size_In_Storage_Elements)
+                         & " does not match allocate size "
+                         & Storage_Count'Image (Header.Block_Size));
+            end if;
+
+            if Pool.Low_Level_Traces then
+               Put (Output_File (Pool),
+                    "info: Deallocated"
+                    & Storage_Count'Image (Header.Block_Size)
+                    & " bytes at ");
+               Print_Address (Output_File (Pool), Storage_Address);
+               Put (Output_File (Pool),
+                    " (physically"
+                    & Storage_Count'Image
+                      (Header.Block_Size + Extra_Allocation)
+                    & " bytes at ");
+               Print_Address (Output_File (Pool), Header.Allocation_Address);
+               Put (Output_File (Pool), "), at ");
+
+               Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
+                         Deallocate_Label'Address,
+                         Code_Address_For_Deallocate_End);
+               Print_Traceback (Output_File (Pool),
+                                "   Memory was allocated at ",
+                                Header.Alloc_Traceback);
+            end if;
+
+            --  Remove this block from the list of used blocks
+
+            Previous :=
+              To_Address (Header.Dealloc_Traceback);
+
+            if Previous = System.Null_Address then
+               Pool.First_Used_Block := Header_Of (Pool.First_Used_Block).Next;
+
+               if Pool.First_Used_Block /= System.Null_Address then
+                  Header_Of (Pool.First_Used_Block).Dealloc_Traceback :=
+                    To_Traceback (null);
+               end if;
+
+            else
+               Header_Of (Previous).Next := Header.Next;
+
+               if Header.Next /= System.Null_Address then
+                  Header_Of
+                    (Header.Next).Dealloc_Traceback := To_Address (Previous);
+               end if;
+            end if;
+
+            --  Update the Alloc_Traceback Frees/Total_Frees members
+            --  (if present)
+
+            if Header.Alloc_Traceback /= null then
+               Header.Alloc_Traceback.Frees :=
+                 Header.Alloc_Traceback.Frees + 1;
+               Header.Alloc_Traceback.Total_Frees :=
+                 Header.Alloc_Traceback.Total_Frees +
+                   Byte_Count (Header.Block_Size);
+            end if;
+
+            Pool.Free_Count := Pool.Free_Count + 1;
+
+            --  Update the header
+
+            Header.all :=
+              (Allocation_Address => Header.Allocation_Address,
+               Alloc_Traceback    => Header.Alloc_Traceback,
+               Dealloc_Traceback  => To_Traceback
+                 (Find_Or_Create_Traceback
+                      (Pool, Dealloc,
+                       Header.Block_Size,
+                       Deallocate_Label'Address,
+                       Code_Address_For_Deallocate_End)),
+               Next               => System.Null_Address,
+               Block_Size         => -Header.Block_Size);
+
+            if Pool.Reset_Content_On_Free then
+               Set_Dead_Beef (Storage_Address, -Header.Block_Size);
+            end if;
+
+            Pool.Logically_Deallocated :=
+              Pool.Logically_Deallocated + Byte_Count (-Header.Block_Size);
+
+            --  Link this free block with the others (at the end of the list,
+            --  so that we can start releasing the older blocks first later on)
+
+            if Pool.First_Free_Block = System.Null_Address then
+               Pool.First_Free_Block := Storage_Address;
+               Pool.Last_Free_Block := Storage_Address;
+
+            else
+               Header_Of (Pool.Last_Free_Block).Next := Storage_Address;
+               Pool.Last_Free_Block := Storage_Address;
+            end if;
+
+            --  Do not physically release the memory here, but in Alloc.
+            --  See comment there for details.
+         end if;
+
+      end;
 
       if not Valid then
-         Unlock_Task_Required := False;
-         Unlock_Task.all;
 
          if Storage_Address = System.Null_Address then
             if Pool.Raise_Exceptions and then
@@ -1493,9 +1629,8 @@ package body GNAT.Debug_Pools is
                       Code_Address_For_Deallocate_End);
          end if;
 
-      elsif Header.Block_Size < 0 then
-         Unlock_Task_Required := False;
-         Unlock_Task.all;
+      elsif Header_Block_Size_Was_Less_Than_0 then
+
          if Pool.Raise_Exceptions then
             raise Freeing_Deallocated_Storage;
          else
@@ -1511,121 +1646,8 @@ package body GNAT.Debug_Pools is
                              Header.Alloc_Traceback);
          end if;
 
-      else
-         --  Some sort of codegen problem or heap corruption caused the
-         --  Size_In_Storage_Elements to be wrongly computed.
-         --  The code below is all based on the assumption that Header.all
-         --  is not corrupted, such that the error is non-fatal.
-
-         if Header.Block_Size /= Size_In_Storage_Elements and then
-           Size_In_Storage_Elements /= Storage_Count'Last
-         then
-            Put_Line (Output_File (Pool),
-                      "error: Deallocate size "
-                        & Storage_Count'Image (Size_In_Storage_Elements)
-                        & " does not match allocate size "
-                        & Storage_Count'Image (Header.Block_Size));
-         end if;
-
-         if Pool.Low_Level_Traces then
-            Put (Output_File (Pool),
-                 "info: Deallocated"
-                 & Storage_Count'Image (Header.Block_Size)
-                 & " bytes at ");
-            Print_Address (Output_File (Pool), Storage_Address);
-            Put (Output_File (Pool),
-                 " (physically"
-                 & Storage_Count'Image (Header.Block_Size + Extra_Allocation)
-                 & " bytes at ");
-            Print_Address (Output_File (Pool), Header.Allocation_Address);
-            Put (Output_File (Pool), "), at ");
-
-            Put_Line (Output_File (Pool), Pool.Stack_Trace_Depth, null,
-                      Deallocate_Label'Address,
-                      Code_Address_For_Deallocate_End);
-            Print_Traceback (Output_File (Pool), "   Memory was allocated at ",
-                             Header.Alloc_Traceback);
-         end if;
-
-         --  Remove this block from the list of used blocks
-
-         Previous :=
-           To_Address (Header.Dealloc_Traceback);
-
-         if Previous = System.Null_Address then
-            Pool.First_Used_Block := Header_Of (Pool.First_Used_Block).Next;
-
-            if Pool.First_Used_Block /= System.Null_Address then
-               Header_Of (Pool.First_Used_Block).Dealloc_Traceback :=
-                 To_Traceback (null);
-            end if;
-
-         else
-            Header_Of (Previous).Next := Header.Next;
-
-            if Header.Next /= System.Null_Address then
-               Header_Of
-                 (Header.Next).Dealloc_Traceback := To_Address (Previous);
-            end if;
-         end if;
-
-         --  Update the Alloc_Traceback Frees/Total_Frees members (if present)
-
-         if Header.Alloc_Traceback /= null then
-            Header.Alloc_Traceback.Frees := Header.Alloc_Traceback.Frees + 1;
-            Header.Alloc_Traceback.Total_Frees :=
-              Header.Alloc_Traceback.Total_Frees +
-                Byte_Count (Header.Block_Size);
-         end if;
-
-         Pool.Free_Count := Pool.Free_Count + 1;
-
-         --  Update the header
-
-         Header.all :=
-           (Allocation_Address => Header.Allocation_Address,
-            Alloc_Traceback    => Header.Alloc_Traceback,
-            Dealloc_Traceback  => To_Traceback
-                                    (Find_Or_Create_Traceback
-                                       (Pool, Dealloc,
-                                        Header.Block_Size,
-                                        Deallocate_Label'Address,
-                                        Code_Address_For_Deallocate_End)),
-            Next               => System.Null_Address,
-            Block_Size         => -Header.Block_Size);
-
-         if Pool.Reset_Content_On_Free then
-            Set_Dead_Beef (Storage_Address, -Header.Block_Size);
-         end if;
-
-         Pool.Logically_Deallocated :=
-           Pool.Logically_Deallocated + Byte_Count (-Header.Block_Size);
-
-         --  Link this free block with the others (at the end of the list, so
-         --  that we can start releasing the older blocks first later on).
-
-         if Pool.First_Free_Block = System.Null_Address then
-            Pool.First_Free_Block := Storage_Address;
-            Pool.Last_Free_Block := Storage_Address;
-
-         else
-            Header_Of (Pool.Last_Free_Block).Next := Storage_Address;
-            Pool.Last_Free_Block := Storage_Address;
-         end if;
-
-         --  Do not physically release the memory here, but in Alloc.
-         --  See comment there for details.
-
-         Unlock_Task_Required := False;
-         Unlock_Task.all;
       end if;
 
-   exception
-      when others =>
-         if Unlock_Task_Required then
-            Unlock_Task.all;
-         end if;
-         raise;
    end Deallocate;
 
    --------------------
@@ -1904,9 +1926,6 @@ package body GNAT.Debug_Pools is
       Size   : Positive;
       Report : Report_Type := All_Reports) is
 
-      Total_Freed : constant Byte_Count :=
-        Pool.Logically_Deallocated + Pool.Physically_Deallocated;
-
       procedure Do_Report (Sort : Report_Type);
       --  Do a specific type of report
 
@@ -1918,6 +1937,15 @@ package body GNAT.Debug_Pools is
          Max  : array (1 .. Size) of Traceback_Htable_Elem_Ptr :=
            (others => null);
          --  Sorted array for the biggest memory users
+
+         Allocated_In_Pool : Byte_Count;
+         --  safe thread Pool.Allocated
+
+         Elem_Safe : Traceback_Htable_Elem;
+         --  safe thread current elem.all;
+
+         Max_M_Safe : Traceback_Htable_Elem;
+         --  safe thread Max(M).all
 
       begin
          Put_Line ("");
@@ -1940,52 +1968,83 @@ package body GNAT.Debug_Pools is
                Put_Line ("Results include total bytes and chunks allocated,");
                Put_Line ("even if no longer allocated - Deallocations are"
                          & " ignored");
-               Grand_Total := Float (Pool.Allocated);
+
+               declare
+                  Lock : Scope_Lock;
+                  pragma Unreferenced (Lock);
+               begin
+                  Allocated_In_Pool := Pool.Allocated;
+               end;
+
+               Grand_Total := Float (Allocated_In_Pool);
 
             when Marked_Blocks =>
                Put_Line ("Special blocks marked by Mark_Traceback");
                Grand_Total := 0.0;
          end case;
 
-         Elem := Backtrace_Htable.Get_First;
+         declare
+            Lock : Scope_Lock;
+            pragma Unreferenced (Lock);
+         begin
+            Elem := Backtrace_Htable.Get_First;
+         end;
+
          while Elem /= null loop
+
+            declare
+               Lock : Scope_Lock;
+               pragma Unreferenced (Lock);
+            begin
+               Elem_Safe := Elem.all;
+            end;
+
             --  Handle only alloc elememts
-            if Elem.Kind = Alloc then
+            if Elem_Safe.Kind = Alloc then
                --  Ignore small blocks (depending on the sorting criteria) to
                --  gain speed.
 
                if (Sort = Memory_Usage
-                   and then Elem.Total - Elem.Total_Frees >= 1_000)
+                   and then Elem_Safe.Total - Elem_Safe.Total_Frees >= 1_000)
                  or else (Sort = Allocations_Count
-                          and then Elem.Count - Elem.Frees >= 1)
-                 or else (Sort = Sort_Total_Allocs and then Elem.Count > 1)
+                          and then Elem_Safe.Count - Elem_Safe.Frees >= 1)
+                 or else (Sort = Sort_Total_Allocs
+                          and then Elem_Safe.Count > 1)
                  or else (Sort = Marked_Blocks
-                          and then Elem.Total = 0)
+                          and then Elem_Safe.Total = 0)
                then
                   if Sort = Marked_Blocks then
-                     Grand_Total := Grand_Total + Float (Elem.Count);
+                     Grand_Total := Grand_Total + Float (Elem_Safe.Count);
                   end if;
 
                   for M in Max'Range loop
                      Bigger := Max (M) = null;
                      if not Bigger then
+
+                        declare
+                           Lock : Scope_Lock;
+                           pragma Unreferenced (Lock);
+                        begin
+                           Max_M_Safe := Max (M).all;
+                        end;
+
                         case Sort is
                            when All_Reports
                               | Memory_Usage
                            =>
                               Bigger :=
-                                Max (M).Total - Max (M).Total_Frees
-                                  < Elem.Total - Elem.Total_Frees;
+                                Max_M_Safe.Total - Max_M_Safe.Total_Frees
+                                  < Elem_Safe.Total - Elem_Safe.Total_Frees;
 
                            when Allocations_Count =>
                               Bigger :=
-                                Max (M).Count - Max (M).Frees
-                                  < Elem.Count - Elem.Frees;
+                                Max_M_Safe.Count - Max_M_Safe.Frees
+                                  < Elem_Safe.Count - Elem_Safe.Frees;
 
                            when Marked_Blocks
                               | Sort_Total_Allocs
                            =>
-                              Bigger := Max (M).Count < Elem.Count;
+                              Bigger := Max_M_Safe.Count < Elem_Safe.Count;
                         end case;
                      end if;
 
@@ -1998,7 +2057,13 @@ package body GNAT.Debug_Pools is
                end if;
             end if;
 
-            Elem := Backtrace_Htable.Get_Next;
+            declare
+               Lock : Scope_Lock;
+               pragma Unreferenced (Lock);
+            begin
+               Elem := Backtrace_Htable.Get_Next;
+            end;
+
          end loop;
 
          if Grand_Total = 0.0 then
@@ -2012,37 +2077,56 @@ package body GNAT.Debug_Pools is
                Total : Byte_Count;
                P : Percent;
             begin
+
+               declare
+                  Lock : Scope_Lock;
+                  pragma Unreferenced (Lock);
+               begin
+                  Max_M_Safe := Max (M).all;
+               end;
+
                case Sort is
                   when All_Reports
                      | Allocations_Count
                      | Memory_Usage
                   =>
-                     Total := Max (M).Total - Max (M).Total_Frees;
+                     Total := Max_M_Safe.Total - Max_M_Safe.Total_Frees;
 
                   when Sort_Total_Allocs =>
-                     Total := Max (M).Total;
+                     Total := Max_M_Safe.Total;
 
                   when Marked_Blocks =>
-                     Total := Byte_Count (Max (M).Count);
+                     Total := Byte_Count (Max_M_Safe.Count);
                end case;
 
-               P := Percent (100.0 * Float (Total) / Grand_Total);
+               declare
+                  Normalized_Total : constant Float := Float (Total);
+                  --  In multi tasking configuration, memory deallocations
+                  --  during Do_Report processing can lead to Total >
+                  --  Grand_Total. As Percent requires Total <= Grand_Total
+               begin
+                  if Normalized_Total > Grand_Total then
+                     P := 100.0;
+                  else
+                     P := Percent (100.0 * Normalized_Total / Grand_Total);
+                  end if;
+               end;
 
                case Sort is
                   when Memory_Usage | Allocations_Count | All_Reports =>
                      declare
                         Count : constant Natural :=
-                          Max (M).Count - Max (M).Frees;
+                          Max_M_Safe.Count - Max_M_Safe.Frees;
                      begin
                         Put (P'Img & "%:" & Total'Img & " bytes in"
                              & Count'Img & " chunks at");
                      end;
                   when Sort_Total_Allocs =>
                      Put (P'Img & "%:" & Total'Img & " bytes in"
-                          & Max (M).Count'Img & " chunks at");
+                          & Max_M_Safe.Count'Img & " chunks at");
                   when Marked_Blocks =>
                      Put (P'Img & "%:"
-                          & Max (M).Count'Img & " chunks /"
+                          & Max_M_Safe.Count'Img & " chunks /"
                           & Integer (Grand_Total)'Img & " at");
                end case;
             end;
@@ -2055,20 +2139,57 @@ package body GNAT.Debug_Pools is
          end loop;
       end Do_Report;
 
+      --  Local variables
+
+      Total_Freed : Byte_Count;
+      --  safe thread pool logically & physically deallocated
+
+      Traceback_Elements_Allocated : Byte_Count;
+      --  safe thread Traceback_Count
+
+      Validity_Elements_Allocated : Byte_Count;
+      --  safe thread Validity_Count
+
+      Ada_Allocs_Bytes : Byte_Count;
+      --  safe thread pool Allocated
+
+      Ada_Allocs_Chunks : Byte_Count;
+      --  safe thread pool Alloc_Count
+
+      Ada_Free_Chunks : Byte_Count;
+      --  safe thread pool Free_Count
+
+   --  Start of processing for Dump
+
    begin
-      Put_Line ("Traceback elements allocated: " & Traceback_Count'Img);
-      Put_Line ("Validity elements allocated: " & Validity_Count'Img);
+      declare
+         Lock : Scope_Lock;
+         pragma Unreferenced (Lock);
+      begin
+         Total_Freed :=
+           Pool.Logically_Deallocated + Pool.Physically_Deallocated;
+         Traceback_Elements_Allocated := Traceback_Count;
+         Validity_Elements_Allocated := Validity_Count;
+         Ada_Allocs_Bytes := Pool.Allocated;
+         Ada_Allocs_Chunks := Pool.Alloc_Count;
+         Ada_Free_Chunks := Pool.Free_Count;
+      end;
+
+      Put_Line
+        ("Traceback elements allocated: " & Traceback_Elements_Allocated'Img);
+      Put_Line
+        ("Validity elements allocated: " & Validity_Elements_Allocated'Img);
       Put_Line ("");
 
-      Put_Line ("Ada Allocs:" & Pool.Allocated'Img
-                & " bytes in" & Pool.Alloc_Count'Img & " chunks");
+      Put_Line ("Ada Allocs:" & Ada_Allocs_Bytes'Img
+                & " bytes in" & Ada_Allocs_Chunks'Img & " chunks");
       Put_Line ("Ada Free:" & Total_Freed'Img & " bytes in" &
-                  Pool.Free_Count'Img
+                  Ada_Free_Chunks'Img
                 & " chunks");
       Put_Line ("Ada Current watermark: "
                 & Byte_Count'Image (Pool.Current_Water_Mark)
-                & " in" & Byte_Count'Image (Pool.Alloc_Count -
-                    Pool.Free_Count) & " chunks");
+                & " in" & Byte_Count'Image (Ada_Allocs_Chunks -
+                    Ada_Free_Chunks) & " chunks");
       Put_Line ("Ada High watermark: " & Pool.High_Water_Mark'Img);
 
       case Report is
@@ -2109,6 +2230,8 @@ package body GNAT.Debug_Pools is
 
    procedure Reset is
       Elem : Traceback_Htable_Elem_Ptr;
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
    begin
       Elem := Backtrace_Htable.Get_First;
       while Elem /= null loop
@@ -2136,6 +2259,8 @@ package body GNAT.Debug_Pools is
 
    function High_Water_Mark
      (Pool : Debug_Pool) return Byte_Count is
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
    begin
       return Pool.High_Water;
    end High_Water_Mark;
@@ -2146,6 +2271,8 @@ package body GNAT.Debug_Pools is
 
    function Current_Water_Mark
      (Pool : Debug_Pool) return Byte_Count is
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
    begin
       return Pool.Allocated - Pool.Logically_Deallocated -
         Pool.Physically_Deallocated;
@@ -2157,6 +2284,8 @@ package body GNAT.Debug_Pools is
 
    procedure System_Memory_Debug_Pool
      (Has_Unhandled_Memory : Boolean := True) is
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
    begin
       System_Memory_Debug_Pool_Enabled := True;
       Allow_Unhandled_Memory := Has_Unhandled_Memory;
@@ -2177,6 +2306,8 @@ package body GNAT.Debug_Pools is
       Errors_To_Stdout               : Boolean := Default_Errors_To_Stdout;
       Low_Level_Traces               : Boolean := Default_Low_Level_Traces)
    is
+      Lock : Scope_Lock;
+      pragma Unreferenced (Lock);
    begin
       Pool.Stack_Trace_Depth              := Stack_Trace_Depth;
       Pool.Maximum_Logically_Freed_Memory := Maximum_Logically_Freed_Memory;

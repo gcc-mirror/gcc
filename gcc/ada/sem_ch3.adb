@@ -10094,7 +10094,11 @@ package body Sem_Ch3 is
          --  elaboration, because only the access type is needed in the
          --  initialization procedure.
 
-         Set_Ekind (Def_Id, Ekind (T));
+         if Ekind (T) = E_Incomplete_Type then
+            Set_Ekind (Def_Id, E_Incomplete_Subtype);
+         else
+            Set_Ekind (Def_Id, Ekind (T));
+         end if;
 
          if For_Access and then Within_Init_Proc then
             null;
@@ -13629,15 +13633,9 @@ package body Sem_Ch3 is
 
       procedure Fixup_Bad_Constraint is
       begin
-         --  Set a reasonable Ekind for the entity. For an incomplete type,
-         --  we can't do much, but for other types, we can set the proper
-         --  corresponding subtype kind.
+         --  Set a reasonable Ekind for the entity, including incomplete types.
 
-         if Ekind (T) = E_Incomplete_Type then
-            Set_Ekind (Def_Id, Ekind (T));
-         else
-            Set_Ekind (Def_Id, Subtype_Kind (Ekind (T)));
-         end if;
+         Set_Ekind (Def_Id, Subtype_Kind (Ekind (T)));
 
          --  Set Etype to the known type, to reduce chances of cascaded errors
 
@@ -20802,7 +20800,9 @@ package body Sem_Ch3 is
          --  Ada 2005 (AI-412): Transform a regular incomplete subtype into a
          --  corresponding subtype of the full view.
 
-         elsif Ekind (Priv_Dep) = E_Incomplete_Subtype then
+         elsif Ekind (Priv_Dep) = E_Incomplete_Subtype
+            and then Comes_From_Source (Priv_Dep)
+         then
             Set_Subtype_Indication
               (Parent (Priv_Dep), New_Occurrence_Of (Full_T, Sloc (Priv_Dep)));
             Set_Etype (Priv_Dep, Full_T);
