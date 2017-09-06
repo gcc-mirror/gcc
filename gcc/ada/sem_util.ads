@@ -365,6 +365,16 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
+   procedure Check_Previous_Null_Procedure
+     (Decl : Node_Id;
+      Prev : Entity_Id);
+   --  A null procedure or a subprogram renaming can complete a previous
+   --  declaration, unless that previous declaration is itself a null
+   --  procedure. This must be treated specially because the analysis of
+   --  the null procedure leaves the corresponding entity as having no
+   --  completion, because its completion is provided by a generated body
+   --  inserted after all other declarations.
+
    procedure Check_Result_And_Post_State (Subp_Id : Entity_Id);
    --  Determine whether the contract of subprogram Subp_Id mentions attribute
    --  'Result and it contains an expression that evaluates differently in pre-
@@ -1661,6 +1671,15 @@ package Sem_Util is
    --  Determine whether T is declared with a null record definition or a
    --  null component list.
 
+   function Is_Object_Image (Prefix : Node_Id) return Boolean;
+   --  Returns true if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
+   --  is applied to a given object or named value prefix (see below).
+
+   --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for scalar
+   --  types, so that the prefix of any 'Image attribute can be an object, a
+   --  named value, or a type, and there is no need for an argument in the
+   --  case it is an object reference.
+
    function Is_Object_Reference (N : Node_Id) return Boolean;
    --  Determines if the tree referenced by N represents an object. Both
    --  variable and constant objects return True (compare Is_Variable).
@@ -1819,6 +1838,10 @@ package Sem_Util is
      (N : Node_Id) return Boolean;
    --  Return True if N is a subprogram stub with no prior subprogram
    --  declaration.
+
+   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean;
+   --  Return True if E is an entry or a subprogram that is part (directly or
+   --  in a nested way) of a protected type.
 
    function Is_Suspension_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes Suspension_Object defined
@@ -2002,9 +2025,10 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
-   --  Returns True if a function has defaults for all but its first
-   --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
-   --  results from an indexing of a function call written in prefix form.
+   --  Returns True if a function has defaults for all but its first formal,
+   --  which is a controlling formal. Used in Ada 2005 mode to solve the
+   --  syntactic ambiguity that results from an indexing of a function call
+   --  that returns an array, so that Obj.F (X, Y) may mean F (Ob) (X, Y).
 
    function New_Copy_List_Tree (List : List_Id) return List_Id;
    --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined

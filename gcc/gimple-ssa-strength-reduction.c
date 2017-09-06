@@ -1742,8 +1742,7 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	slsr_process_ref (gs);
 
       else if (is_gimple_assign (gs)
-	       && SCALAR_INT_MODE_P
-	            (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (gs)))))
+	       && INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (gs))))
 	{
 	  tree rhs1 = NULL_TREE, rhs2 = NULL_TREE;
 

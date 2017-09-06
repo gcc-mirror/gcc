@@ -2209,8 +2209,8 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	      /* Only part of the parameter is being passed on the stack.
 		 Generate a simple memory reference of the correct size.  */
 	      units_on_stack = args[i].locate.size.constant;
-	      partial_mode = mode_for_size (units_on_stack * BITS_PER_UNIT,
-					    MODE_INT, 1);
+	      unsigned int bits_on_stack = units_on_stack * BITS_PER_UNIT;
+	      partial_mode = int_mode_for_size (bits_on_stack, 1).else_blk ();
 	      args[i].stack = gen_rtx_MEM (partial_mode, addr);
 	      set_mem_size (args[i].stack, units_on_stack);
 	    }
@@ -4818,7 +4818,7 @@ emit_library_call_value_1 (int retval, rtx orgfun, rtx value,
 		  unsigned int size
 		    = argvec[argnum].locate.size.constant * BITS_PER_UNIT;
 		  machine_mode save_mode
-		    = mode_for_size (size, MODE_INT, 1);
+		    = int_mode_for_size (size, 1).else_blk ();
 		  rtx adr
 		    = plus_constant (Pmode, argblock,
 				     argvec[argnum].locate.offset.constant);
@@ -5271,7 +5271,8 @@ store_one_arg (struct arg_data *arg, rtx argblock, int flags,
 	    {
 	      /* We need to make a save area.  */
 	      unsigned int size = arg->locate.size.constant * BITS_PER_UNIT;
-	      machine_mode save_mode = mode_for_size (size, MODE_INT, 1);
+	      machine_mode save_mode
+		= int_mode_for_size (size, 1).else_blk ();
 	      rtx adr = memory_address (save_mode, XEXP (arg->stack_slot, 0));
 	      rtx stack_area = gen_rtx_MEM (save_mode, adr);
 

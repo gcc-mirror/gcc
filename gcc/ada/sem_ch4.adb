@@ -283,7 +283,7 @@ package body Sem_Ch4 is
    --  Called when P is the prefix of an implicit dereference, denoting an
    --  object E. The function returns the designated type of the prefix, taking
    --  into account that the designated type of an anonymous access type may be
-   --  a limited view, when the non-limited view is visible.
+   --  a limited view, when the nonlimited view is visible.
    --
    --  If in semantics only mode (-gnatc or generic), the function also records
    --  that the prefix is a reference to E, if any. Normally, such a reference
@@ -755,7 +755,7 @@ package body Sem_Ch4 is
                           ("\constraint with discriminant values required", N);
                      end if;
 
-                  --  Limited Ada 2005 and general non-limited case
+                  --  Limited Ada 2005 and general nonlimited case
 
                   else
                      Error_Msg_N
@@ -1469,10 +1469,10 @@ package body Sem_Ch4 is
          --  can also happen when the function declaration appears before the
          --  full view of the type (which is legal in Ada 2012) and the call
          --  appears in a different unit, in which case the incomplete view
-         --  must be replaced with the full view (or the non-limited view)
+         --  must be replaced with the full view (or the nonlimited view)
          --  to prevent subsequent type errors. Note that the usual install/
          --  removal of limited_with clauses is not sufficient to handle this
-         --  case, because the limited view may have been captured is another
+         --  case, because the limited view may have been captured in another
          --  compilation unit that defines the current function.
 
          if Is_Incomplete_Type (Etype (N)) then
@@ -2935,6 +2935,14 @@ package body Sem_Ch4 is
                   --  for all of them.
 
                   Set_Etype (Alt, It.Typ);
+
+                  --  If the alternative is an enumeration literal, use the one
+                  --  for this interpretation.
+
+                  if Is_Entity_Name (Alt) then
+                     Set_Entity (Alt, It.Nam);
+                  end if;
+
                   Get_Next_Interp (Index, It);
 
                   if No (It.Typ) then
@@ -4574,7 +4582,7 @@ package body Sem_Ch4 is
       --  in what follows, either to retrieve a component of to find
       --  a primitive operation. If the prefix is an explicit dereference,
       --  set the type of the prefix to reflect this transformation.
-      --  If the non-limited view is itself an incomplete type, get the
+      --  If the nonlimited view is itself an incomplete type, get the
       --  full view if available.
 
       if From_Limited_With (Prefix_Type)
@@ -9004,7 +9012,7 @@ package body Sem_Ch4 is
 
          --  The type may have be obtained through a limited_with clause,
          --  in which case the primitive operations are available on its
-         --  non-limited view. If still incomplete, retrieve full view.
+         --  nonlimited view. If still incomplete, retrieve full view.
 
          if Ekind (Obj_Type) = E_Incomplete_Type
            and then From_Limited_With (Obj_Type)

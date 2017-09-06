@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1448,9 +1448,20 @@ package body Exp_Ch5 is
             U_U : Boolean := False) return Node_Id
          is
             A    : Node_Id;
+            Disc : Entity_Id;
             Expr : Node_Id;
 
          begin
+            --  The discriminant entity to be used in the retrieval below must
+            --  be one in the corresponding type, given that the assignment may
+            --  be between derived and parent types.
+
+            if Is_Derived_Type (Etype (Rhs)) then
+               Disc := Find_Component (R_Typ, C);
+            else
+               Disc := C;
+            end if;
+
             --  In the case of an Unchecked_Union, use the discriminant
             --  constraint value as on the right-hand side of the assignment.
 
@@ -1463,7 +1474,7 @@ package body Exp_Ch5 is
                Expr :=
                  Make_Selected_Component (Loc,
                    Prefix        => Duplicate_Subexpr (Rhs),
-                   Selector_Name => New_Occurrence_Of (C, Loc));
+                   Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
             A :=
@@ -1578,6 +1589,49 @@ package body Exp_Ch5 is
                   Next_Discriminant (F);
                end;
             end loop;
+
+            --  If the derived type has a stored constraint, assign the value
+            --  of the corresponding discriminants explicitly, skipping those
+            --  that are renamed discriminants. We cannot just retrieve them
+            --  from the Rhs by selected component because they are invisible
+            --  in the type of the right-hand side.
+
+            if Stored_Constraint (R_Typ) /= No_Elist then
+               declare
+                  Assign    : Node_Id;
+                  Discr_Val : Elmt_Id;
+
+               begin
+                  Discr_Val := First_Elmt (Stored_Constraint (R_Typ));
+                  F := First_Entity (R_Typ);
+                  while Present (F) loop
+                     if Ekind (F) = E_Discriminant
+                       and then Is_Completely_Hidden (F)
+                       and then Present (Corresponding_Record_Component (F))
+                       and then
+                         (not Is_Entity_Name (Node (Discr_Val))
+                           or else Ekind (Entity (Node (Discr_Val))) /=
+                                     E_Discriminant)
+                     then
+                        Assign :=
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              Make_Selected_Component (Loc,
+                                Prefix        => Duplicate_Subexpr (Lhs),
+                                Selector_Name =>
+                                  New_Occurrence_Of
+                                    (Corresponding_Record_Component (F), Loc)),
+                            Expression => New_Copy (Node (Discr_Val)));
+
+                        Set_Assignment_OK (Name (Assign));
+                        Insert_Action (N, Assign);
+                        Next_Elmt (Discr_Val);
+                     end if;
+
+                     Next_Entity (F);
+                  end loop;
+               end;
+            end if;
          end if;
 
          --  We know the underlying type is a record, but its current view
@@ -3880,9 +3934,9 @@ package body Exp_Ch5 is
 
             function Get_Default_Iterator
               (T : Entity_Id) return Entity_Id;
-            --  If the container is a derived type, the aspect holds the parent
-            --  operation. The required one is a primitive of the derived type
-            --  and is either inherited or overridden. Also sets Container_Arg.
+            --  Return the default iterator for a specific type. If the type is
+            --  derived, we return the inherited or overridden one if
+            --  appropriate.
 
             --------------------------
             -- Get_Default_Iterator --
@@ -3899,11 +3953,11 @@ package body Exp_Ch5 is
             begin
                Container_Arg := New_Copy_Tree (Container);
 
-               --  A previous version of GNAT allowed indexing aspects to
-               --  be redefined on derived container types, while the
-               --  default iterator was inherited from the parent type.
-               --  This non-standard extension is preserved temporarily for
-               --  use by the modelling project under debug flag d.X.
+               --  A previous version of GNAT allowed indexing aspects to be
+               --  redefined on derived container types, while the default
+               --  iterator was inherited from the parent type. This
+               --  nonstandard extension is preserved for use by the
+               --  modeling project under debug flag -gnatd.X.
 
                if Debug_Flag_Dot_XX then
                   if Base_Type (Etype (Container)) /=
@@ -3941,9 +3995,11 @@ package body Exp_Ch5 is
                      Next_Elmt (Prim);
                   end loop;
 
-                  --  Default iterator must exist
+                  --  If we didn't find it, then our parent type is not
+                  --  iterable, so we return the Default_Iterator aspect of
+                  --  this type.
 
-                  pragma Assert (False);
+                  return Iter;
 
                --  Otherwise not a derived type
 

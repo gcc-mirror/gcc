@@ -1430,9 +1430,9 @@ gen_lowpart_common (machine_mode mode, rtx x)
   innermode = GET_MODE (x);
   if (CONST_INT_P (x)
       && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
-    innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
+    innermode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
   else if (innermode == VOIDmode)
-    innermode = mode_for_size (HOST_BITS_PER_DOUBLE_INT, MODE_INT, 0);
+    innermode = int_mode_for_size (HOST_BITS_PER_DOUBLE_INT, 0).require ();
 
   xsize = GET_MODE_SIZE (innermode);
 

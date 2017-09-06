@@ -3505,8 +3505,8 @@ package body Exp_Ch6 is
                     Root_Type (Etype (Name (Ass)))
                   then
                      Error_Msg_NE
-                       ("tag-indeterminate expression "
-                         & " must have designated type& (RM 5.2 (6))",
+                       ("tag-indeterminate expression must have designated "
+                        & "type& (RM 5.2 (6))",
                          Call_Node, Root_Type (Etype (Name (Ass))));
                   else
                      Propagate_Tag (Name (Ass), Call_Node);
@@ -3514,7 +3514,7 @@ package body Exp_Ch6 is
 
                elsif Etype (Call_Node) /= Root_Type (Etype (Name (Ass))) then
                   Error_Msg_NE
-                    ("tag-indeterminate expression must have type&"
+                    ("tag-indeterminate expression must have type & "
                      & "(RM 5.2 (6))",
                      Call_Node, Root_Type (Etype (Name (Ass))));
 
@@ -3950,6 +3950,20 @@ package body Exp_Ch6 is
             Rewrite (Call_Node,
               Unchecked_Convert_To
                 (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
+            return;
+
+         --  A call to a null procedure is replaced by a null statement, but
+         --  we are not allowed to ignore possible side effects of the call,
+         --  so we make sure that actuals are evaluated.
+
+         elsif Is_Null_Procedure (Subp) then
+            Actual := First_Actual (Call_Node);
+            while Present (Actual) loop
+               Remove_Side_Effects (Actual);
+               Next_Actual (Actual);
+            end loop;
+
+            Rewrite (Call_Node, Make_Null_Statement (Loc));
             return;
          end if;
 

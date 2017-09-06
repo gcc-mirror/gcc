@@ -1414,6 +1414,7 @@ begin
          | Pragma_Max_Queue_Length
          | Pragma_Memory_Size
          | Pragma_No_Body
+         | Pragma_No_Component_Reordering
          | Pragma_No_Elaboration_Code_All
          | Pragma_No_Heap_Finalization
          | Pragma_No_Inline

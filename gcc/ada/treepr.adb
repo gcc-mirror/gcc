@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -423,12 +423,13 @@ package body Treepr is
    procedure Print_Entity_Info (Ent : Entity_Id; Prefix : String) is
       function Field_Present (U : Union_Id) return Boolean;
       --  Returns False unless the value U represents a missing value
-      --  (Empty, No_Uint, No_Ureal or No_String)
+      --  (Empty, No_Elist, No_Uint, No_Ureal or No_String)
 
       function Field_Present (U : Union_Id) return Boolean is
       begin
          return
             U /= Union_Id (Empty)    and then
+            U /= Union_Id (No_Elist) and then
             U /= To_Union (No_Uint)  and then
             U /= To_Union (No_Ureal) and then
             U /= Union_Id (No_String);

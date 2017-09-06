@@ -2704,8 +2704,17 @@ package body Sem_Type is
          if Present (Full_View (Target_Typ)) then
             Target_Typ := Full_View (Target_Typ);
          else
-            pragma Assert (Present (Non_Limited_View (Target_Typ)));
-            Target_Typ := Non_Limited_View (Target_Typ);
+            --  In a spec expression or in an expression function, the use of
+            --  an incomplete type is legal; legality of the conversion will be
+            --  checked at freeze point of related entity.
+
+            if In_Spec_Expression then
+               return True;
+
+            else
+               pragma Assert (Present (Non_Limited_View (Target_Typ)));
+               Target_Typ := Non_Limited_View (Target_Typ);
+            end if;
          end if;
 
          --  Protect the front end against previously detected errors

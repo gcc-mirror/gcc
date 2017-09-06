@@ -152,8 +152,8 @@ procedure XOSCons is
    --  True if S contains Tmpl_Name, possibly with different casing
 
    function Spaces (Count : Integer) return String;
-   --  If Count is positive, return a string of Count spaces, else return an
-   --  empty string.
+   --  If Count is positive, return a string of Count spaces, else return
+   --  an empty string.
 
    ---------
    -- ">" --

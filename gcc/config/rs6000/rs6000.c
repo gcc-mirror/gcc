@@ -11654,7 +11654,6 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
 {
   unsigned int startbit, endbit;
   int intregs, intoffset;
-  machine_mode mode;
 
   /* Handle the situations where a float is taking up the first half
      of the GPR, and the other half is empty (typically due to
@@ -11678,9 +11677,8 @@ rs6000_darwin64_record_arg_advance_flush (CUMULATIVE_ARGS *cum,
 
   if (intoffset % BITS_PER_WORD != 0)
     {
-      mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			    MODE_INT, 0);
-      if (mode == BLKmode)
+      unsigned int bits = BITS_PER_WORD - intoffset % BITS_PER_WORD;
+      if (!int_mode_for_size (bits, 0).exists ())
 	{
 	  /* We couldn't find an appropriate mode, which happens,
 	     e.g., in packed structs when there are 3 bytes to load.
@@ -12049,9 +12047,8 @@ rs6000_darwin64_record_arg_flush (CUMULATIVE_ARGS *cum,
 
   if (intoffset % BITS_PER_WORD != 0)
     {
-      mode = mode_for_size (BITS_PER_WORD - intoffset % BITS_PER_WORD,
-			  MODE_INT, 0);
-      if (mode == BLKmode)
+      unsigned int bits = BITS_PER_WORD - intoffset % BITS_PER_WORD;
+      if (!int_mode_for_size (bits, 0).exists (&mode))
 	{
 	  /* We couldn't find an appropriate mode, which happens,
 	     e.g., in packed structs when there are 3 bytes to load.
@@ -35528,7 +35525,7 @@ rs6000_expand_vec_perm_const_1 (rtx target, rtx op0, rtx op1,
 
       vmode = GET_MODE (target);
       gcc_assert (GET_MODE_NUNITS (vmode) == 2);
-      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4);
+      dmode = mode_for_vector (GET_MODE_INNER (vmode), 4).require ();
       x = gen_rtx_VEC_CONCAT (dmode, op0, op1);
       v = gen_rtvec (2, GEN_INT (perm0), GEN_INT (perm1));
       x = gen_rtx_VEC_SELECT (vmode, x, gen_rtx_PARALLEL (VOIDmode, v));
@@ -35587,8 +35584,7 @@ rs6000_do_expand_vec_perm (rtx target, rtx op0, rtx op1,
 
   imode = vmode;
   if (GET_MODE_CLASS (vmode) != MODE_VECTOR_INT)
-    imode = mode_for_vector
-      (int_mode_for_mode (GET_MODE_INNER (vmode)).require (), nelt);
+    imode = mode_for_int_vector (vmode).require ();
 
   x = gen_rtx_CONST_VECTOR (imode, gen_rtvec_v (nelt, perm));
   x = expand_vec_perm (vmode, op0, op1, x, target);

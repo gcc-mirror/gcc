@@ -578,7 +578,8 @@ get_secondary_mem (rtx x ATTRIBUTE_UNUSED, machine_mode mode,
   mode = SECONDARY_MEMORY_NEEDED_MODE (mode);
 #else
   if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD && INTEGRAL_MODE_P (mode))
-    mode = mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0);
+    mode = mode_for_size (BITS_PER_WORD,
+			  GET_MODE_CLASS (mode), 0).require ();
 #endif
 
   /* If we already have made a MEM for this operand in MODE, return it.  */

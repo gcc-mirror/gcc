@@ -644,15 +644,27 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  Checks 11: (part of an object declaration)
+         --  Checks 11: The C code generator cannot handle aggregates that
+         --  are not part of an object declaration.
 
-         if Modify_Tree_For_C
-           and then Nkind (Parent (N)) /= N_Object_Declaration
-           and then
-             (Nkind (Parent (N)) /= N_Qualified_Expression
-               or else Nkind (Parent (Parent (N))) /= N_Object_Declaration)
-         then
-            return False;
+         if Modify_Tree_For_C then
+            declare
+               Par : Node_Id := Parent (N);
+
+            begin
+               --  Skip enclosing nested aggregates and their qualified
+               --  expressions
+
+               while Nkind (Par) = N_Aggregate
+                 or else Nkind (Par) = N_Qualified_Expression
+               loop
+                  Par := Parent (Par);
+               end loop;
+
+               if Nkind (Par) /= N_Object_Declaration then
+                  return False;
+               end if;
+            end;
          end if;
 
          --  Checks on components
@@ -7135,6 +7147,13 @@ package body Exp_Aggr is
 
             elsif Modify_Tree_For_C
               and then Nkind (Expr_Q) = N_Identifier
+              and then Is_Array_Type (Etype (Expr_Q))
+            then
+               Static_Components := False;
+               return True;
+
+            elsif Modify_Tree_For_C
+              and then Nkind (Expr_Q) = N_Type_Conversion
               and then Is_Array_Type (Etype (Expr_Q))
             then
                Static_Components := False;

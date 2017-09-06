@@ -2780,8 +2780,8 @@ assemble_integer (rtx x, unsigned int size, unsigned int align, int force)
       else
 	mclass = MODE_INT;
 
-      omode = mode_for_size (subsize * BITS_PER_UNIT, mclass, 0);
-      imode = mode_for_size (size * BITS_PER_UNIT, mclass, 0);
+      omode = mode_for_size (subsize * BITS_PER_UNIT, mclass, 0).require ();
+      imode = mode_for_size (size * BITS_PER_UNIT, mclass, 0).require ();
 
       for (i = 0; i < size; i += subsize)
 	{
@@ -6562,8 +6562,9 @@ categorize_decl_for_section (const_tree decl, int reloc)
       /* Note that this would be *just* SECCAT_BSS, except that there's
 	 no concept of a read-only thread-local-data section.  */
       if (ret == SECCAT_BSS
-	       || (flag_zero_initialized_in_bss
-		   && initializer_zerop (DECL_INITIAL (decl))))
+	  || DECL_INITIAL (decl) == NULL
+	  || (flag_zero_initialized_in_bss
+	      && initializer_zerop (DECL_INITIAL (decl))))
 	ret = SECCAT_TBSS;
       else
 	ret = SECCAT_TDATA;

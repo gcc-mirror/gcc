@@ -432,6 +432,7 @@ package Snames is
    Name_Interrupt_State                : constant Name_Id := N + $; -- GNAT
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
+   Name_No_Component_Reordering        : constant Name_Id := N + $; -- GNAT
    Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -1810,6 +1811,7 @@ package Snames is
       Pragma_Interrupt_State,
       Pragma_License,
       Pragma_Locking_Policy,
+      Pragma_No_Component_Reordering,
       Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,

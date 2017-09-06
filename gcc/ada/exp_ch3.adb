@@ -7556,12 +7556,12 @@ package body Exp_Ch3 is
 
       --  Do not generate invariant procedure within other assertion
       --  subprograms, which may involve local declarations of local
-      --  subtypes to which these checks don't apply.
+      --  subtypes to which these checks do not apply.
 
       elsif Has_Invariants (Def_Id) then
          if Within_Internal_Subprogram
-          or else (Ekind (Current_Scope) = E_Function
-                    and then Is_Predicate_Function (Current_Scope))
+           or else (Ekind (Current_Scope) = E_Function
+                     and then Is_Predicate_Function (Current_Scope))
          then
             null;
          else

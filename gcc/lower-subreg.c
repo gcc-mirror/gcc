@@ -616,20 +616,18 @@ simplify_subreg_concatn (machine_mode outermode, rtx op,
   part = XVECEXP (op, 0, byte / inner_size);
   partmode = GET_MODE (part);
 
+  final_offset = byte % inner_size;
+  if (final_offset + GET_MODE_SIZE (outermode) > inner_size)
+    return NULL_RTX;
+
   /* VECTOR_CSTs in debug expressions are expanded into CONCATN instead of
      regular CONST_VECTORs.  They have vector or integer modes, depending
      on the capabilities of the target.  Cope with them.  */
   if (partmode == VOIDmode && VECTOR_MODE_P (innermode))
     partmode = GET_MODE_INNER (innermode);
   else if (partmode == VOIDmode)
-    {
-      enum mode_class mclass = GET_MODE_CLASS (innermode);
-      partmode = mode_for_size (inner_size * BITS_PER_UNIT, mclass, 0);
-    }
-
-  final_offset = byte % inner_size;
-  if (final_offset + GET_MODE_SIZE (outermode) > inner_size)
-    return NULL_RTX;
+    partmode = mode_for_size (inner_size * BITS_PER_UNIT,
+			      GET_MODE_CLASS (innermode), 0).require ();
 
   return simplify_gen_subreg (outermode, part, partmode, final_offset);
 }
@@ -956,11 +954,7 @@ resolve_simple_move (rtx set, rtx_insn *insn)
       if (real_dest == NULL_RTX)
 	real_dest = dest;
       if (!SCALAR_INT_MODE_P (dest_mode))
-	{
-	  dest_mode = mode_for_size (GET_MODE_SIZE (dest_mode) * BITS_PER_UNIT,
-				     MODE_INT, 0);
-	  gcc_assert (dest_mode != BLKmode);
-	}
+	dest_mode = int_mode_for_mode (dest_mode).require ();
       dest = gen_reg_rtx (dest_mode);
       if (REG_P (real_dest))
 	REG_ATTRS (dest) = REG_ATTRS (real_dest);

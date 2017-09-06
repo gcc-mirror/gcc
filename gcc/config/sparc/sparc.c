@@ -7123,7 +7123,7 @@ sparc_function_arg_1 (cumulative_args_t cum_v, machine_mode mode,
       HOST_WIDE_INT size = int_size_in_bytes (type);
       gcc_assert (size <= 16);
 
-      mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+      mode = int_mode_for_size (size * BITS_PER_UNIT, 0).else_blk ();
     }
 
   return gen_rtx_REG (mode, regno);
@@ -7499,7 +7499,7 @@ sparc_function_value_1 (const_tree type, machine_mode mode,
 	  HOST_WIDE_INT size = int_size_in_bytes (type);
 	  gcc_assert (size <= 32);
 
-	  mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  mode = int_mode_for_size (size * BITS_PER_UNIT, 0).else_blk ();
 
 	  /* ??? We probably should have made the same ABI change in
 	     3.4.0 as the one we made for unions.   The latter was

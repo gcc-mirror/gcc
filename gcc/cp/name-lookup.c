@@ -1209,84 +1209,6 @@ fields_linear_search (tree klass, tree name, bool want_type)
   return NULL_TREE;
 }
 
-/* Find the slot containing overloads called 'NAME'.  If there is no
-   such slot, create an empty one.  KLASS might be complete at this
-   point, in which case we need to preserve ordering.  Deals with
-   conv_op marker handling.  */
-
-tree *
-find_method_slot (tree klass, tree name)
-{
-  bool complete_p = COMPLETE_TYPE_P (klass);
-  
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass);
-  if (!method_vec)
-    {
-      vec_alloc (method_vec, 8);
-      CLASSTYPE_METHOD_VEC (klass) = method_vec;
-      if (complete_p)
-	{
-	  /* If the class is complete but had no method_vec, we need
-	     to add the TYPE_FIELDS into it.  We're also most likely
-	     to be adding ctors & dtors, so ask for 6 spare slots (the
-	     abstract cdtors and their clones).  */
-	  set_class_bindings (klass, 6);
-	  method_vec = CLASSTYPE_METHOD_VEC (klass);
-	}
-    }
-
-  if (IDENTIFIER_CONV_OP_P (name))
-    name = conv_op_identifier;
-
-  unsigned ix, length = method_vec->length ();
-  for (ix = 0; ix < length; ix++)
-    {
-      tree *slot = &(*method_vec)[ix];
-      tree fn_name = OVL_NAME (*slot);
-
-      if (fn_name == name)
-	{
-	  // FIXME: DEAL with STAT_HACK creation?
-	  if (name == conv_op_identifier)
-	    {
-	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
-	      /* Skip the conv-op marker. */
-	      slot = &OVL_CHAIN (*slot);
-	    }
-	  return slot;
-	}
-
-      if (complete_p && fn_name > name)
-	break;
-    }
-
-  /* No slot found.  Create one at IX.  We know in this case that our
-     caller will succeed in adding the function.  */
-  if (complete_p)
-    {
-      /* Do exact allocation when complete, as we don't expect to add
-	 many.  */
-      vec_safe_reserve_exact (method_vec, 1);
-      method_vec->quick_insert (ix, NULL_TREE);
-    }
-  else
-    {
-      gcc_checking_assert (ix == length);
-      vec_safe_push (method_vec, NULL_TREE);
-    }
-  CLASSTYPE_METHOD_VEC (klass) = method_vec;
-
-  tree *slot = &(*method_vec)[ix];
-  if (name == conv_op_identifier)
-    {
-      /* Install the marker prefix.  */
-      *slot = ovl_make (conv_op_marker, NULL_TREE);
-      slot = &OVL_CHAIN (*slot);
-    }
-
-  return slot;
-}
-
 /* Look for NAME as an immediate member of KLASS (including
    anon-members or unscoped enum member).  TYPE_OR_FNS is zero for
    regular search.  >0 to get a type binding (if there is one) and <0
@@ -1397,6 +1319,84 @@ get_class_binding (tree klass, tree name, int type_or_fns)
     }
 
   return get_class_binding_direct (klass, name, type_or_fns);
+}
+
+/* Find the slot containing overloads called 'NAME'.  If there is no
+   such slot, create an empty one.  KLASS might be complete at this
+   point, in which case we need to preserve ordering.  Deals with
+   conv_op marker handling.  */
+
+tree *
+get_method_slot (tree klass, tree name)
+{
+  bool complete_p = COMPLETE_TYPE_P (klass);
+  
+  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass);
+  if (!method_vec)
+    {
+      vec_alloc (method_vec, 8);
+      CLASSTYPE_METHOD_VEC (klass) = method_vec;
+      if (complete_p)
+	{
+	  /* If the class is complete but had no method_vec, we need
+	     to add the TYPE_FIELDS into it.  We're also most likely
+	     to be adding ctors & dtors, so ask for 6 spare slots (the
+	     abstract cdtors and their clones).  */
+	  set_class_bindings (klass, 6);
+	  method_vec = CLASSTYPE_METHOD_VEC (klass);
+	}
+    }
+
+  if (IDENTIFIER_CONV_OP_P (name))
+    name = conv_op_identifier;
+
+  unsigned ix, length = method_vec->length ();
+  for (ix = 0; ix < length; ix++)
+    {
+      tree *slot = &(*method_vec)[ix];
+      tree fn_name = OVL_NAME (*slot);
+
+      if (fn_name == name)
+	{
+	  // FIXME: DEAL with STAT_HACK creation?
+	  if (name == conv_op_identifier)
+	    {
+	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
+	      /* Skip the conv-op marker. */
+	      slot = &OVL_CHAIN (*slot);
+	    }
+	  return slot;
+	}
+
+      if (complete_p && fn_name > name)
+	break;
+    }
+
+  /* No slot found.  Create one at IX.  We know in this case that our
+     caller will succeed in adding the function.  */
+  if (complete_p)
+    {
+      /* Do exact allocation when complete, as we don't expect to add
+	 many.  */
+      vec_safe_reserve_exact (method_vec, 1);
+      method_vec->quick_insert (ix, NULL_TREE);
+    }
+  else
+    {
+      gcc_checking_assert (ix == length);
+      vec_safe_push (method_vec, NULL_TREE);
+    }
+  CLASSTYPE_METHOD_VEC (klass) = method_vec;
+
+  tree *slot = &(*method_vec)[ix];
+  if (name == conv_op_identifier)
+    {
+      /* Install the marker prefix.  */
+      *slot = ovl_make (conv_op_marker, NULL_TREE);
+      slot = &OVL_CHAIN (*slot);
+    }
+
+  return slot;
 }
 
 /* Comparison function to compare two TYPE_METHOD_VEC entries by

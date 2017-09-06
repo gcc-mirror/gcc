@@ -2533,8 +2533,11 @@ package body Sem_Res is
                  and then Ekind (Entity (Name (N))) = E_Function
                then
                   Error_Msg_NE
-                    ("cannot use function & in a procedure call",
+                    ("cannot use call to function & as a statement",
                      Name (N), Entity (Name (N)));
+                  Error_Msg_N
+                    ("\return value of a function call cannot be ignored",
+                     Name (N));
 
                --  Otherwise give general message (not clear what cases this
                --  covers, but no harm in providing for them).
@@ -6627,11 +6630,15 @@ package body Sem_Res is
                null;
 
             --  Calls cannot be inlined inside assertions, as GNATprove treats
-            --  assertions as logic expressions.
+            --  assertions as logic expressions. Only issue a message when the
+            --  body has been seen, otherwise this leads to spurious messages
+            --  on expression functions.
 
             elsif In_Assertion_Expr /= 0 then
-               Cannot_Inline
-                 ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               if Present (Body_Id) then
+                  Cannot_Inline
+                    ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               end if;
 
             --  Calls cannot be inlined inside default expressions
 
@@ -7519,10 +7526,15 @@ package body Sem_Res is
 
       if Nkind (Entry_Name) = N_Selected_Component then
 
-         --  Simple entry call
+         --  Simple entry or protected operation call
 
          Nam := Entity (Selector_Name (Entry_Name));
          Obj := Prefix (Entry_Name);
+
+         if Is_Subprogram (Nam) then
+            Check_For_Eliminated_Subprogram (Entry_Name, Nam);
+         end if;
+
          Was_Over := Is_Overloaded (Selector_Name (Entry_Name));
 
       else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);

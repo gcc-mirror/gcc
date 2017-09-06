@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -359,7 +359,14 @@ private
 
    type Cursor is record
       Container : Map_Access;
+      --  Access to this cursor's container
+
       Node      : Node_Access;
+      --  Access to the node pointed to by this cursor
+
+      Position  : Hash_Type := Hash_Type'Last;
+      --  Position of the node in the buckets of the container. If this is
+      --  equal to Hash_Type'Last, then it will not be used.
    end record;
 
    procedure Read
@@ -442,7 +449,8 @@ private
 
    Empty_Map : constant Map := (Controlled with others => <>);
 
-   No_Element : constant Cursor := (Container => null, Node => null);
+   No_Element : constant Cursor := (Container => null, Node => null,
+                                    Position  => Hash_Type'Last);
 
    type Iterator is new Limited_Controlled and
      Map_Iterator_Interfaces.Forward_Iterator with

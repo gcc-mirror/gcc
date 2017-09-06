@@ -823,6 +823,7 @@ package body Exp_Util is
                Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
                Flag_Expr : Node_Id;
                Param     : Node_Id;
+               Pref      : Node_Id;
                Temp      : Node_Id;
 
             begin
@@ -871,10 +872,22 @@ package body Exp_Util is
 
                   --    Temp'Tag
 
+                  --  If the object is an unchecked conversion (typically to
+                  --  an access to class-wide type), we must preserve the
+                  --  conversion to ensure that the object is seen as tagged
+                  --  in the code that follows.
+
                   else
+                     Pref := Temp;
+
+                     if Nkind (Parent (Pref)) = N_Unchecked_Type_Conversion
+                     then
+                        Pref := Parent (Pref);
+                     end if;
+
                      Param :=
                        Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (Temp),
+                         Prefix         => Relocate_Node (Pref),
                          Attribute_Name => Name_Tag);
                   end if;
 
@@ -7635,11 +7648,12 @@ package body Exp_Util is
       ----------------------
 
       function Is_Displace_Call (N : Node_Id) return Boolean is
-         Call : Node_Id := N;
+         Call : Node_Id;
 
       begin
          --  Strip various actions which may precede a call to Displace
 
+         Call := N;
          loop
             if Nkind (Call) = N_Explicit_Dereference then
                Call := Prefix (Call);
@@ -7665,12 +7679,31 @@ package body Exp_Util is
       ----------------------
 
       function Is_Source_Object (N : Node_Id) return Boolean is
+         Obj : Node_Id;
+
       begin
+         --  Strip various actions which may be associated with the object
+
+         Obj := N;
+         loop
+            if Nkind (Obj) = N_Explicit_Dereference then
+               Obj := Prefix (Obj);
+
+            elsif Nkind_In (Obj, N_Type_Conversion,
+                                 N_Unchecked_Type_Conversion)
+            then
+               Obj := Expression (Obj);
+
+            else
+               exit;
+            end if;
+         end loop;
+
          return
-           Present (N)
-             and then Nkind (N) in N_Has_Entity
-             and then Is_Object (Entity (N))
-             and then Comes_From_Source (N);
+           Present (Obj)
+             and then Nkind (Obj) in N_Has_Entity
+             and then Is_Object (Entity (Obj))
+             and then Comes_From_Source (Obj);
       end Is_Source_Object;
 
       --  Local variables
@@ -11938,16 +11971,6 @@ package body Exp_Util is
 
             elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                null;
-
-            --  The expansion of iterator loops generates an object declaration
-            --  where the Ekind is explicitly set to loop parameter. This is to
-            --  ensure that the loop parameter behaves as a constant from user
-            --  code point of view. Such object are never controlled and do not
-            --  require cleanup actions. An iterator loop over a container of
-            --  controlled objects does not produce such object declarations.
-
-            elsif Ekind (Obj_Id) = E_Loop_Parameter then
-               return False;
 
             --  The object is of the form:
             --    Obj : [constant] Typ [:= Expr];

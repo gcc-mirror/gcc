@@ -2451,7 +2451,7 @@ struct GTY(()) lang_decl_base {
   unsigned anticipated_p : 1;		   /* fn, type or template */
   /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
-  unsigned template_conv_p : 1;		   /* var or template */
+  unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
@@ -2817,10 +2817,10 @@ struct GTY(()) lang_decl {
    array of unknown bound.  */
 #define VAR_HAD_UNKNOWN_BOUND(NODE)			\
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))		\
-   ? DECL_LANG_SPECIFIC (NODE)->u.base.template_conv_p	\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.unknown_bound_p	\
    : false)
 #define SET_VAR_HAD_UNKNOWN_BOUND(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.template_conv_p = true)
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.unknown_bound_p = true)
 
 /* Set the overloaded operator code for NODE to CODE.  */
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \

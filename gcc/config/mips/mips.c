@@ -6384,7 +6384,7 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
 	  if (size % UNITS_PER_WORD != 0)
 	    {
 	      size += UNITS_PER_WORD - size % UNITS_PER_WORD;
-	      mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	      mode = int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
 	    }
 	}
 
@@ -7992,7 +7992,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 	bits = BITS_PER_WORD;
     }
 
-  mode = mode_for_size (bits, MODE_INT, 0);
+  mode = int_mode_for_size (bits, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
@@ -8397,7 +8397,7 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
   if (!mips_get_unaligned_mem (dest, width, bitpos, &left, &right))
     return false;
 
-  mode = mode_for_size (width, MODE_INT, 0);
+  mode = int_mode_for_size (width, 0).require ();
   src = gen_lowpart (mode, src);
   if (mode == DImode)
     {

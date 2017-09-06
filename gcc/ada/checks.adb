@@ -7333,21 +7333,12 @@ package body Checks is
          return;
       end if;
 
-      --  We are about to insert the validity check for Exp. We save and
-      --  reset the Do_Range_Check flag over this validity check, and then
-      --  put it back for the final original reference (Exp may be rewritten).
-
       declare
-         DRC : constant Boolean := Do_Range_Check (Exp);
-
          CE     : Node_Id;
-         Obj    : Node_Id;
          PV     : Node_Id;
          Var_Id : Entity_Id;
 
       begin
-         Set_Do_Range_Check (Exp, False);
-
          --  If the expression denotes an assignable object, capture its value
          --  in a variable and replace the original expression by the variable.
          --  This approach has several effects:
@@ -7386,15 +7377,16 @@ package body Checks is
          --         Object := Var;         --  update Object
 
          if Is_Variable (Exp) then
-            Obj    := New_Copy_Tree (Exp);
             Var_Id := Make_Temporary (Loc, 'T', Exp);
 
             Insert_Action (Exp,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Var_Id,
                 Object_Definition   => New_Occurrence_Of (Typ, Loc),
-                Expression          => Relocate_Node (Exp)));
-            Set_Validated_Object (Var_Id, Obj);
+                Expression          => New_Copy_Tree (Exp)),
+              Suppress => Validity_Check);
+
+            Set_Validated_Object (Var_Id, New_Copy_Tree (Exp));
 
             Rewrite (Exp, New_Occurrence_Of (Var_Id, Loc));
             PV := New_Occurrence_Of (Var_Id, Loc);
@@ -7474,20 +7466,6 @@ package body Checks is
                end if;
             end;
          end if;
-
-         --  Put back the Do_Range_Check flag on the resulting (possibly
-         --  rewritten) expression.
-
-         --  Note: it might be thought that a validity check is not required
-         --  when a range check is present, but that's not the case, because
-         --  the back end is allowed to assume for the range check that the
-         --  operand is within its declared range (an assumption that validity
-         --  checking is all about NOT assuming).
-
-         --  Note: no need to worry about Possible_Local_Raise here, it will
-         --  already have been called if original node has Do_Range_Check set.
-
-         Set_Do_Range_Check (Exp, DRC);
       end;
    end Insert_Valid_Check;
 

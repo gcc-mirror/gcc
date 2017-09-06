@@ -354,7 +354,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   tree tmp_int = expr;
   bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
 			|| (bitpos % BITS_PER_UNIT)
-			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode);
+			|| !int_mode_for_size (bitlen, 0).exists ());
 
   if (!sub_byte_op_p)
     return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)

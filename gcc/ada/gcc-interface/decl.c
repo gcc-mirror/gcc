@@ -3331,7 +3331,8 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    && Stored_Constraint (gnat_entity) != No_Elist
 	    && (gnat_parent_type = Underlying_Type (Etype (gnat_entity)))
 	    && Is_Record_Type (gnat_parent_type)
-	    && !Is_Unchecked_Union (gnat_parent_type))
+	    && !Is_Unchecked_Union (gnat_parent_type)
+	    && No_Reordering (gnat_entity) == No_Reordering (gnat_parent_type))
 	  {
 	    tree gnu_parent_type
 	      = TYPE_MAIN_VARIANT (gnat_to_gnu_type (gnat_parent_type));
@@ -7692,9 +7693,7 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
     }
 
   /* Scan GNU_FIELD_LIST and see if any fields have rep clauses.  If they do,
-     pull them out and put them onto the appropriate list.  We have to do it
-     in a separate pass since we want to handle the discriminants but can't
-     play with them until we've used them in debugging data above.
+     pull them out and put them onto the appropriate list.
 
      Similarly, pull out the fields with zero size and no rep clause, as they
      would otherwise modify the layout and thus very likely run afoul of the
@@ -7714,16 +7713,16 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      different kinds of fields and issue a warning if some of them would be
      (or are being) reordered by the reordering mechanism.
 
-     Finally, pull out the fields whose size is not a multiple of a byte, so
-     that they don't cause the regular fields to be misaligned.  As this can
-     only happen in packed record types, the alignment is capped to the byte.
-
-     ??? If we reorder them, debugging information will be wrong but there is
-     nothing that can be done about this at the moment.  */
-  const bool do_reorder = OK_To_Reorder_Components (gnat_record_type);
+     ??? If we reorder fields, the debugging information will be affected and
+     the debugger print fields in a different order from the source code.  */
+  const bool do_reorder
+    = (Convention (gnat_record_type) == Convention_Ada
+       && !No_Reordering (gnat_record_type)
+       && !debug__debug_flag_dot_r);
   const bool w_reorder
-    = Warn_On_Questionable_Layout
-      && (Convention (gnat_record_type) == Convention_Ada);
+    = (Convention (gnat_record_type) == Convention_Ada
+       && Warn_On_Questionable_Layout
+       && !(No_Reordering (gnat_record_type) && GNAT_Mode));
   const bool in_variant = (p_gnu_rep_list != NULL);
   tree gnu_zero_list = NULL_TREE;
   tree gnu_self_list = NULL_TREE;

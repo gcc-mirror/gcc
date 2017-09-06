@@ -4441,17 +4441,6 @@ package body Freeze is
             end if;
          end;
 
-         --  Set OK_To_Reorder_Components depending on debug flags
-
-         if Is_Base_Type (Rec) and then Convention (Rec) = Convention_Ada then
-            if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
-                 or else
-                   (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
-            then
-               Set_OK_To_Reorder_Components (Rec);
-            end if;
-         end if;
-
          --  Check for useless pragma Pack when all components placed. We only
          --  do this check for record types, not subtypes, since a subtype may
          --  have all its components placed, and it still makes perfectly good
@@ -5277,8 +5266,12 @@ package body Freeze is
       --  pragma or attribute definition clause in the tree at this point. We
       --  also analyze the aspect specification node at the freeze point when
       --  the aspect doesn't correspond to pragma/attribute definition clause.
+      --  In addition, a derived type may have inherited aspects that were
+      --  delayed in the parent, so these must also be captured now.
 
-      if Has_Delayed_Aspects (E) then
+      if Has_Delayed_Aspects (E)
+        or else May_Inherit_Delayed_Rep_Aspects (E)
+      then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
@@ -5495,6 +5488,13 @@ package body Freeze is
               and then not Has_Delayed_Freeze (E)
             then
                Explode_Initialization_Compound_Statement (E);
+            end if;
+
+            --  Do not generate a freeze node for a generic unit
+
+            if Is_Generic_Unit (E) then
+               Result := No_List;
+               goto Leave;
             end if;
          end if;
 

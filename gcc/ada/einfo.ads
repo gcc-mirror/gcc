@@ -1539,8 +1539,8 @@ package Einfo is
 --       the package body).
 
 --    Has_Complex_Representation (Flag140) [implementation base type only]
---       Defined in all type entities. Set only for a record base type to
---       which a valid pragma Complex_Representation applies.
+--       Defined in record types. Set only for a base type to which a valid
+--       pragma Complex_Representation applies.
 
 --    Has_Component_Size_Clause (Flag68) [implementation base type only]
 --       Defined in all type entities. Set if a component size clause is
@@ -3630,6 +3630,10 @@ package Einfo is
 --       in the spec of a generic package, in constructs that forbid discrete
 --       types with predicates.
 
+--    No_Reordering (Flag239) [implementation base type only]
+--       Defined in record types. Set only for a base type to which a valid
+--       pragma No_Component_Reordering applies.
+
 --    No_Return (Flag113)
 --       Defined in all entities. Always false except in the case of procedures
 --       and generic procedures for which a pragma No_Return is given.
@@ -3708,12 +3712,6 @@ package Einfo is
 --       of concatenations are so marked (see Exp_Ch4.Expand_Concatenate). It
 --       is only worth setting this flag for composites, since for primitive
 --       types, it is cheaper to do the copy.
-
---    OK_To_Reorder_Components (Flag239) [base type only]
---       Defined in record types. Set if the backend is permitted to reorder
---       the components. If not set, the record must be laid out in the order
---       in which the components are declared textually. Currently this flag
---       can only be set by debug switches.
 
 --    Optimize_Alignment_Space (Flag241)
 --       Defined in type, subtype, variable, and constant entities. This
@@ -4327,12 +4325,12 @@ package Einfo is
 --       expression may consist of the above xxxPredicate call on its own.
 
 --    Status_Flag_Or_Transient_Decl (Node15)
---       Defined in variables and constants. Applies to objects that require
---       special treatment by the finalization machinery, such as extended
---       return results, IF and CASE expression results, and objects inside
---       N_Expression_With_Actions nodes. The attribute contains the entity
---       of a flag which specifies particular behavior over a region of code
---       or the declaration of a "hook" object.
+--       Defined in constant, loop, and variable entities. Applies to objects
+--       that require special treatment by the finalization machinery, such as
+--       extended return results, IF and CASE expression results, and objects
+--       inside N_Expression_With_Actions nodes. The attribute contains the
+--       entity of a flag which specifies particular behavior over a region of
+--       code or the declaration of a "hook" object.
 --       In which case is it a flag, or a hook object???
 
 --    Storage_Size_Variable (Node26) [implementation base type only]
@@ -4527,7 +4525,7 @@ package Einfo is
 
 --    Uses_Lock_Free (Flag188)
 --       Defined in protected type entities. Set to True when the Lock Free
---       implementation is used for the protected type. This implemenatation is
+--       implementation is used for the protected type. This implementation is
 --       based on atomic transactions and doesn't require anymore the use of
 --       Protection object (see System.Tasking.Protected_Objects).
 
@@ -5848,7 +5846,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)   (constants only)
    --    Alignment                           (Uint14)
-   --    Status_Flag_Or_Transient_Decl       (Node15)   (constants only)
+   --    Status_Flag_Or_Transient_Decl       (Node15)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)   (constants only)
@@ -6493,7 +6491,7 @@ package Einfo is
    --    Is_Controlled                       (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
-   --    OK_To_Reorder_Components            (Flag239)  (base type only)
+   --    No_Reordering                       (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    Reverse_Storage_Order               (Flag93)   (base type only)
    --    SSO_Set_High_By_Default             (Flag273)  (base type only)
@@ -6522,7 +6520,7 @@ package Einfo is
    --    Is_Controlled                       (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
-   --    OK_To_Reorder_Components            (Flag239)  (base type only)
+   --    No_Reordering                       (Flag239)  (base type only)
    --    Reverse_Bit_Order                   (Flag164)  (base type only)
    --    Reverse_Storage_Order               (Flag93)   (base type only)
    --    SSO_Set_High_By_Default             (Flag273)  (base type only)
@@ -7279,6 +7277,7 @@ package Einfo is
    function No_Dynamic_Predicate_On_Actual      (Id : E) return B;
    function No_Pool_Assigned                    (Id : E) return B;
    function No_Predicate_On_Actual              (Id : E) return B;
+   function No_Reordering                       (Id : E) return B;
    function No_Return                           (Id : E) return B;
    function No_Strict_Aliasing                  (Id : E) return B;
    function No_Tagged_Streams_Pragma            (Id : E) return N;
@@ -7289,7 +7288,6 @@ package Einfo is
    function Normalized_Position                 (Id : E) return U;
    function Normalized_Position_Max             (Id : E) return U;
    function OK_To_Rename                        (Id : E) return B;
-   function OK_To_Reorder_Components            (Id : E) return B;
    function Optimize_Alignment_Space            (Id : E) return B;
    function Optimize_Alignment_Time             (Id : E) return B;
    function Original_Access_Type                (Id : E) return E;
@@ -7971,6 +7969,7 @@ package Einfo is
    procedure Set_No_Dynamic_Predicate_On_Actual  (Id : E; V : B := True);
    procedure Set_No_Pool_Assigned                (Id : E; V : B := True);
    procedure Set_No_Predicate_On_Actual          (Id : E; V : B := True);
+   procedure Set_No_Reordering                   (Id : E; V : B := True);
    procedure Set_No_Return                       (Id : E; V : B := True);
    procedure Set_No_Strict_Aliasing              (Id : E; V : B := True);
    procedure Set_No_Tagged_Streams_Pragma        (Id : E; V : N);
@@ -7981,7 +7980,6 @@ package Einfo is
    procedure Set_Normalized_Position             (Id : E; V : U);
    procedure Set_Normalized_Position_Max         (Id : E; V : U);
    procedure Set_OK_To_Rename                    (Id : E; V : B := True);
-   procedure Set_OK_To_Reorder_Components        (Id : E; V : B := True);
    procedure Set_Optimize_Alignment_Space        (Id : E; V : B := True);
    procedure Set_Optimize_Alignment_Time         (Id : E; V : B := True);
    procedure Set_Original_Access_Type            (Id : E; V : E);
@@ -8815,6 +8813,7 @@ package Einfo is
    pragma Inline (No_Dynamic_Predicate_On_Actual);
    pragma Inline (No_Pool_Assigned);
    pragma Inline (No_Predicate_On_Actual);
+   pragma Inline (No_Reordering);
    pragma Inline (No_Return);
    pragma Inline (No_Strict_Aliasing);
    pragma Inline (No_Tagged_Streams_Pragma);
@@ -8825,7 +8824,6 @@ package Einfo is
    pragma Inline (Normalized_Position);
    pragma Inline (Normalized_Position_Max);
    pragma Inline (OK_To_Rename);
-   pragma Inline (OK_To_Reorder_Components);
    pragma Inline (Optimize_Alignment_Space);
    pragma Inline (Optimize_Alignment_Time);
    pragma Inline (Original_Access_Type);
@@ -9295,6 +9293,7 @@ package Einfo is
    pragma Inline (Set_No_Dynamic_Predicate_On_Actual);
    pragma Inline (Set_No_Pool_Assigned);
    pragma Inline (Set_No_Predicate_On_Actual);
+   pragma Inline (Set_No_Reordering);
    pragma Inline (Set_No_Return);
    pragma Inline (Set_No_Strict_Aliasing);
    pragma Inline (Set_No_Tagged_Streams_Pragma);
@@ -9305,7 +9304,6 @@ package Einfo is
    pragma Inline (Set_Normalized_Position);
    pragma Inline (Set_Normalized_Position_Max);
    pragma Inline (Set_OK_To_Rename);
-   pragma Inline (Set_OK_To_Reorder_Components);
    pragma Inline (Set_Optimize_Alignment_Space);
    pragma Inline (Set_Optimize_Alignment_Time);
    pragma Inline (Set_Original_Access_Type);

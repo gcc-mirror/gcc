@@ -1107,6 +1107,10 @@ package Opt is
    --  GNATNAME
    --  Do not create backup copies of project files. Set by switch --no-backup.
 
+   No_Component_Reordering : Boolean := False;
+   --  GNAT
+   --  Set True if pragma No_Component_Reordering with no parameter encountered
+
    No_Deletion : Boolean := False;
    --  GNATPREP
    --  Set by preprocessor switch -a. Do not eliminate any source text. Implies
@@ -2025,6 +2029,14 @@ package Opt is
    --  This switch is not set when the pragma appears ahead of a given
    --  unit, so it does not affect the compilation of other units.
 
+   No_Component_Reordering_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch that is set by the
+   --  pragma No_Component_Reordering when it appears in the gnat.adc file.
+   --  This flag is used to set the initial value of No_Component_Reordering
+   --  at the start of each compilation unit, except that it is always set
+   --  False for predefined units.
+
    No_Exit_Message : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set with switch --no-exit-message. When True, if there are compilation
@@ -2089,8 +2101,7 @@ package Opt is
 
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type);
    --  This procedure saves the current values of the switches which are
-   --  initialized from the above Config values, and then resets these switches
-   --  according to the Config value settings.
+   --  initialized from the above Config values.
 
    procedure Set_Opt_Config_Switches
      (Internal_Unit : Boolean;
@@ -2306,6 +2317,7 @@ private
       External_Name_Imp_Casing       : External_Casing_Type;
       Fast_Math                      : Boolean;
       Initialize_Scalars             : Boolean;
+      No_Component_Reordering        : Boolean;
       Normalize_Scalars              : Boolean;
       Optimize_Alignment             : Character;
       Optimize_Alignment_Local       : Boolean;

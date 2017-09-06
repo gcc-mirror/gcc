@@ -1014,7 +1014,7 @@ add_method (tree type, tree method, bool via_using)
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  tree *slot = find_method_slot (type, DECL_NAME (method));
+  tree *slot = get_method_slot (type, DECL_NAME (method));
   tree current_fns = *slot;
 
   gcc_assert (!DECL_EXTERN_C_P (method));

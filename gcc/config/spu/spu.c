@@ -368,7 +368,7 @@ adjust_operand (rtx op, HOST_WIDE_INT * start)
       op_size = 32;
     }
   /* If it is not a MODE_INT (and/or it is smaller than SI) add a SUBREG. */
-  mode = mode_for_size (op_size, MODE_INT, 0);
+  mode = int_mode_for_size (op_size, 0).require ();
   if (mode != GET_MODE (op))
     op = gen_rtx_SUBREG (mode, op, 0);
   return op;
@@ -935,7 +935,7 @@ spu_emit_branch_or_set (int is_set, rtx cmp, rtx operands[])
       rtx target = operands[0];
       int compare_size = GET_MODE_BITSIZE (comp_mode);
       int target_size = GET_MODE_BITSIZE (GET_MODE (target));
-      machine_mode mode = mode_for_size (target_size, MODE_INT, 0);
+      machine_mode mode = int_mode_for_size (target_size, 0).require ();
       rtx select_mask;
       rtx op_t = operands[2];
       rtx op_f = operands[3];
@@ -3372,7 +3372,7 @@ arith_immediate_p (rtx op, machine_mode mode,
   constant_to_array (mode, op, arr);
 
   bytes = GET_MODE_UNIT_SIZE (mode);
-  mode = mode_for_size (GET_MODE_UNIT_BITSIZE (mode), MODE_INT, 0);
+  mode = int_mode_for_mode (GET_MODE_INNER (mode)).require ();
 
   /* Check that bytes are repeated. */
   for (i = bytes; i < 16; i += bytes)
@@ -3415,7 +3415,7 @@ exp2_immediate_p (rtx op, machine_mode mode, int low, int high)
   mode = GET_MODE_INNER (mode);
 
   bytes = GET_MODE_SIZE (mode);
-  int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+  int_mode = int_mode_for_mode (mode).require ();
 
   /* Check that bytes are repeated. */
   for (i = bytes; i < 16; i += bytes)
@@ -4503,7 +4503,7 @@ static void
 spu_convert_move (rtx dst, rtx src)
 {
   machine_mode mode = GET_MODE (dst);
-  machine_mode int_mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
+  machine_mode int_mode = int_mode_for_mode (mode).require ();
   rtx reg;
   gcc_assert (GET_MODE (src) == TImode);
   reg = int_mode != mode ? gen_reg_rtx (int_mode) : dst;

@@ -149,7 +149,7 @@ static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 int misalignment,
 							 bool is_packed);
 static machine_mode
-aarch64_simd_container_mode (machine_mode mode, unsigned width);
+aarch64_simd_container_mode (scalar_mode mode, unsigned width);
 
 /* Major revision number of the ARM Architecture implemented by the target.  */
 unsigned aarch64_architecture_version;
@@ -1183,7 +1183,7 @@ aarch64_is_noplt_call_p (rtx sym)
 
    (extract:MODE (mult (reg) (MULT_IMM)) (EXTRACT_IMM) (const_int 0)).  */
 bool
-aarch64_is_extend_from_extract (machine_mode mode, rtx mult_imm,
+aarch64_is_extend_from_extract (scalar_int_mode mode, rtx mult_imm,
 				rtx extract_imm)
 {
   HOST_WIDE_INT mult_val, extract_val;
@@ -1809,7 +1809,8 @@ aarch64_force_temporary (machine_mode mode, rtx x, rtx value)
 
 
 static rtx
-aarch64_add_offset (machine_mode mode, rtx temp, rtx reg, HOST_WIDE_INT offset)
+aarch64_add_offset (scalar_int_mode mode, rtx temp, rtx reg,
+		    HOST_WIDE_INT offset)
 {
   if (!aarch64_plus_immediate (GEN_INT (offset), mode))
     {
@@ -1827,7 +1828,7 @@ aarch64_add_offset (machine_mode mode, rtx temp, rtx reg, HOST_WIDE_INT offset)
 
 static int
 aarch64_internal_mov_immediate (rtx dest, rtx imm, bool generate,
-				machine_mode mode)
+				scalar_int_mode mode)
 {
   int i;
   unsigned HOST_WIDE_INT val, val2, mask;
@@ -1958,9 +1959,11 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
   gcc_assert (mode == SImode || mode == DImode);
 
   /* Check on what type of symbol it is.  */
-  if (GET_CODE (imm) == SYMBOL_REF
-      || GET_CODE (imm) == LABEL_REF
-      || GET_CODE (imm) == CONST)
+  scalar_int_mode int_mode;
+  if ((GET_CODE (imm) == SYMBOL_REF
+       || GET_CODE (imm) == LABEL_REF
+       || GET_CODE (imm) == CONST)
+      && is_a <scalar_int_mode> (mode, &int_mode))
     {
       rtx mem, base, offset;
       enum aarch64_symbol_type sty;
@@ -1974,11 +1977,12 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	{
 	case SYMBOL_FORCE_TO_MEM:
 	  if (offset != const0_rtx
-	      && targetm.cannot_force_const_mem (mode, imm))
+	      && targetm.cannot_force_const_mem (int_mode, imm))
 	    {
 	      gcc_assert (can_create_pseudo_p ());
-	      base = aarch64_force_temporary (mode, dest, base);
-	      base = aarch64_add_offset (mode, NULL, base, INTVAL (offset));
+	      base = aarch64_force_temporary (int_mode, dest, base);
+	      base = aarch64_add_offset (int_mode, NULL, base,
+					 INTVAL (offset));
 	      aarch64_emit_move (dest, base);
 	      return;
 	    }
@@ -2000,8 +2004,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	      mem = gen_rtx_MEM (ptr_mode, base);
 	    }
 
-	  if (mode != ptr_mode)
-	    mem = gen_rtx_ZERO_EXTEND (mode, mem);
+	  if (int_mode != ptr_mode)
+	    mem = gen_rtx_ZERO_EXTEND (int_mode, mem);
 
 	  emit_insn (gen_rtx_SET (dest, mem));
 
@@ -2017,8 +2021,9 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
 	  if (offset != const0_rtx)
 	    {
 	      gcc_assert(can_create_pseudo_p ());
-	      base = aarch64_force_temporary (mode, dest, base);
-	      base = aarch64_add_offset (mode, NULL, base, INTVAL (offset));
+	      base = aarch64_force_temporary (int_mode, dest, base);
+	      base = aarch64_add_offset (int_mode, NULL, base,
+					 INTVAL (offset));
 	      aarch64_emit_move (dest, base);
 	      return;
 	    }
@@ -2052,7 +2057,8 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
       return;
     }
 
-  aarch64_internal_mov_immediate (dest, imm, true, GET_MODE (dest));
+  aarch64_internal_mov_immediate (dest, imm, true,
+				  as_a <scalar_int_mode> (mode));
 }
 
 /* Add DELTA to REGNUM in mode MODE.  SCRATCHREG can be used to hold a
@@ -2068,9 +2074,9 @@ aarch64_expand_mov_immediate (rtx dest, rtx imm)
    large immediate).  */
 
 static void
-aarch64_add_constant_internal (machine_mode mode, int regnum, int scratchreg,
-			       HOST_WIDE_INT delta, bool frame_related_p,
-			       bool emit_move_imm)
+aarch64_add_constant_internal (scalar_int_mode mode, int regnum,
+			       int scratchreg, HOST_WIDE_INT delta,
+			       bool frame_related_p, bool emit_move_imm)
 {
   HOST_WIDE_INT mdelta = abs_hwi (delta);
   rtx this_rtx = gen_rtx_REG (mode, regnum);
@@ -2117,7 +2123,7 @@ aarch64_add_constant_internal (machine_mode mode, int regnum, int scratchreg,
 }
 
 static inline void
-aarch64_add_constant (machine_mode mode, int regnum, int scratchreg,
+aarch64_add_constant (scalar_int_mode mode, int regnum, int scratchreg,
 		      HOST_WIDE_INT delta)
 {
   aarch64_add_constant_internal (mode, regnum, scratchreg, delta, false, true);
@@ -2235,7 +2241,7 @@ aarch64_function_value (const_tree type, const_tree func,
       if (size % UNITS_PER_WORD != 0)
 	{
 	  size += UNITS_PER_WORD - size % UNITS_PER_WORD;
-	  mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  mode = int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
 	}
     }
 
@@ -3985,7 +3991,7 @@ aarch64_uimm12_shift (HOST_WIDE_INT val)
 /* Return true if val is an immediate that can be loaded into a
    register by a MOVZ instruction.  */
 static bool
-aarch64_movw_imm (HOST_WIDE_INT val, machine_mode mode)
+aarch64_movw_imm (HOST_WIDE_INT val, scalar_int_mode mode)
 {
   if (GET_MODE_SIZE (mode) > 4)
     {
@@ -4089,15 +4095,19 @@ aarch64_and_split_imm2 (HOST_WIDE_INT val_in)
 bool
 aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
 {
-  if (aarch64_bitmask_imm (val_in, mode))
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
     return false;
 
-  if (aarch64_move_imm (val_in, mode))
+  if (aarch64_bitmask_imm (val_in, int_mode))
+    return false;
+
+  if (aarch64_move_imm (val_in, int_mode))
     return false;
 
   unsigned HOST_WIDE_INT imm2 = aarch64_and_split_imm2 (val_in);
 
-  return aarch64_bitmask_imm (imm2, mode);
+  return aarch64_bitmask_imm (imm2, int_mode);
 }
 
 /* Return true if val is an immediate that can be loaded into a
@@ -4105,9 +4115,13 @@ aarch64_and_bitmask_imm (unsigned HOST_WIDE_INT val_in, machine_mode mode)
 bool
 aarch64_move_imm (HOST_WIDE_INT val, machine_mode mode)
 {
-  if (aarch64_movw_imm (val, mode) || aarch64_movw_imm (~val, mode))
+  scalar_int_mode int_mode;
+  if (!is_a <scalar_int_mode> (mode, &int_mode))
+    return false;
+
+  if (aarch64_movw_imm (val, int_mode) || aarch64_movw_imm (~val, int_mode))
     return 1;
-  return aarch64_bitmask_imm (val, mode);
+  return aarch64_bitmask_imm (val, int_mode);
 }
 
 static bool
@@ -4771,9 +4785,9 @@ aarch64_float_const_rtx_p (rtx x)
       && SCALAR_FLOAT_MODE_P (mode)
       && aarch64_reinterpret_float_as_int (x, &ival))
     {
-      machine_mode imode = (mode == HFmode
-			    ? SImode
-			    : int_mode_for_mode (mode).require ());
+      scalar_int_mode imode = (mode == HFmode
+			       ? SImode
+			       : int_mode_for_mode (mode).require ());
       int num_instr = aarch64_internal_mov_immediate
 			(NULL_RTX, gen_int_mode (ival, imode), false, imode);
       return num_instr < 3;
@@ -4802,7 +4816,8 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
   if (!TARGET_SIMD)
      return false;
 
-  machine_mode vmode, imode;
+  machine_mode vmode;
+  scalar_int_mode imode;
   unsigned HOST_WIDE_INT ival;
 
   if (GET_CODE (x) == CONST_DOUBLE
@@ -4818,17 +4833,14 @@ aarch64_can_const_movi_rtx_p (rtx x, machine_mode mode)
       imode = int_mode_for_mode (mode).require ();
     }
   else if (GET_CODE (x) == CONST_INT
-	   && SCALAR_INT_MODE_P (mode))
-    {
-       imode = mode;
-       ival = INTVAL (x);
-    }
+	   && is_a <scalar_int_mode> (mode, &imode))
+    ival = INTVAL (x);
   else
     return false;
 
    /* use a 64 bit mode for everything except for DI/DF mode, where we use
      a 128 bit vector mode.  */
-  int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
+  int width = GET_MODE_BITSIZE (imode) == 64 ? 128 : 64;
 
   vmode = aarch64_simd_container_mode (imode, width);
   rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, ival);
@@ -6130,7 +6142,8 @@ aarch64_output_casesi (rtx *operands)
 
   gcc_assert (GET_CODE (diff_vec) == ADDR_DIFF_VEC);
 
-  index = exact_log2 (GET_MODE_SIZE (GET_MODE (diff_vec)));
+  scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (diff_vec));
+  index = exact_log2 (GET_MODE_SIZE (mode));
 
   gcc_assert (index >= 0 && index <= 3);
 
@@ -6250,13 +6263,17 @@ aarch64_strip_shift (rtx x)
 static rtx
 aarch64_strip_extend (rtx x, bool strip_shift)
 {
+  scalar_int_mode mode;
   rtx op = x;
+
+  if (!is_a <scalar_int_mode> (GET_MODE (op), &mode))
+    return op;
 
   /* Zero and sign extraction of a widened value.  */
   if ((GET_CODE (op) == ZERO_EXTRACT || GET_CODE (op) == SIGN_EXTRACT)
       && XEXP (op, 2) == const0_rtx
       && GET_CODE (XEXP (op, 0)) == MULT
-      && aarch64_is_extend_from_extract (GET_MODE (op), XEXP (XEXP (op, 0), 1),
+      && aarch64_is_extend_from_extract (mode, XEXP (XEXP (op, 0), 1),
 					 XEXP (op, 1)))
     return XEXP (XEXP (op, 0), 0);
 
@@ -6593,7 +6610,7 @@ aarch64_branch_cost (bool speed_p, bool predictable_p)
 /* Return true if the RTX X in mode MODE is a zero or sign extract
    usable in an ADD or SUB (extended register) instruction.  */
 static bool
-aarch64_rtx_arith_op_extract_p (rtx x, machine_mode mode)
+aarch64_rtx_arith_op_extract_p (rtx x, scalar_int_mode mode)
 {
   /* Catch add with a sign extract.
      This is add_<optab><mode>_multp2.  */
@@ -6652,7 +6669,9 @@ static bool
 aarch64_extr_rtx_p (rtx x, rtx *res_op0, rtx *res_op1)
 {
   rtx op0, op1;
-  machine_mode mode = GET_MODE (x);
+  scalar_int_mode mode;
+  if (!is_a <scalar_int_mode> (GET_MODE (x), &mode))
+    return false;
 
   *res_op0 = NULL_RTX;
   *res_op1 = NULL_RTX;
@@ -6837,7 +6856,8 @@ aarch64_extend_bitfield_pattern_p (rtx x)
    mode MODE.  See the *andim_ashift<mode>_bfiz pattern.  */
 
 bool
-aarch64_mask_and_shift_for_ubfiz_p (machine_mode mode, rtx mask, rtx shft_amnt)
+aarch64_mask_and_shift_for_ubfiz_p (scalar_int_mode mode, rtx mask,
+				    rtx shft_amnt)
 {
   return CONST_INT_P (mask) && CONST_INT_P (shft_amnt)
 	 && INTVAL (shft_amnt) < GET_MODE_BITSIZE (mode)
@@ -6929,8 +6949,8 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  if ((GET_CODE (op1) == ZERO_EXTEND
 	       || GET_CODE (op1) == SIGN_EXTEND)
 	      && CONST_INT_P (XEXP (op0, 1))
-	      && (GET_MODE_BITSIZE (GET_MODE (XEXP (op1, 0)))
-		  >= INTVAL (XEXP (op0, 1))))
+	      && is_a <scalar_int_mode> (GET_MODE (XEXP (op1, 0)), &int_mode)
+	      && GET_MODE_BITSIZE (int_mode) >= INTVAL (XEXP (op0, 1)))
 	    op1 = XEXP (op1, 0);
 
           if (CONST_INT_P (op1))
@@ -6975,8 +6995,10 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	     proportionally expensive to the number of instructions
 	     required to build that constant.  This is true whether we
 	     are compiling for SPEED or otherwise.  */
+	  if (!is_a <scalar_int_mode> (mode, &int_mode))
+	    int_mode = word_mode;
 	  *cost = COSTS_N_INSNS (aarch64_internal_mov_immediate
-				 (NULL_RTX, x, false, mode));
+				 (NULL_RTX, x, false, int_mode));
 	}
       return true;
 
@@ -6992,9 +7014,9 @@ aarch64_rtx_costs (rtx x, machine_mode mode, int outer ATTRIBUTE_UNUSED,
 	  bool succeed = aarch64_reinterpret_float_as_int (x, &ival);
 	  gcc_assert (succeed);
 
-	  machine_mode imode = (mode == HFmode
-				? SImode
-				: int_mode_for_mode (mode).require ());
+	  scalar_int_mode imode = (mode == HFmode
+				   ? SImode
+				   : int_mode_for_mode (mode).require ());
 	  int ncost = aarch64_internal_mov_immediate
 		(NULL_RTX, gen_int_mode (ival, imode), false, imode);
 	  *cost += COSTS_N_INSNS (ncost);
@@ -7249,7 +7271,8 @@ cost_minus:
 	  }
 
 	/* Look for SUB (extended register).  */
-        if (aarch64_rtx_arith_op_extract_p (op1, mode))
+	if (is_a <scalar_int_mode> (mode, &int_mode)
+	    && aarch64_rtx_arith_op_extract_p (op1, int_mode))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
@@ -7328,7 +7351,8 @@ cost_plus:
 	*cost += rtx_cost (op1, mode, PLUS, 1, speed);
 
 	/* Look for ADD (extended register).  */
-        if (aarch64_rtx_arith_op_extract_p (op0, mode))
+	if (is_a <scalar_int_mode> (mode, &int_mode)
+	    && aarch64_rtx_arith_op_extract_p (op0, int_mode))
 	  {
 	    if (speed)
 	      *cost += extra_cost->alu.extend_arith;
@@ -8282,9 +8306,6 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
       return false;
     }
 
-  machine_mode mmsk
-    = mode_for_vector (int_mode_for_mode (GET_MODE_INNER (mode)).require (),
-		       GET_MODE_NUNITS (mode));
   if (!recp)
     {
       if (!(flag_mlow_precision_sqrt
@@ -8302,7 +8323,7 @@ aarch64_emit_approx_sqrt (rtx dst, rtx src, bool recp)
     /* Caller assumes we cannot fail.  */
     gcc_assert (use_rsqrt_p (mode));
 
-
+  machine_mode mmsk = mode_for_int_vector (mode).require ();
   rtx xmsk = gen_reg_rtx (mmsk);
   if (!recp)
     /* When calculating the approximate square root, compare the
@@ -11227,7 +11248,7 @@ aarch64_vector_mode_supported_p (machine_mode mode)
 /* Return appropriate SIMD container
    for MODE within a vector of WIDTH bits.  */
 static machine_mode
-aarch64_simd_container_mode (machine_mode mode, unsigned width)
+aarch64_simd_container_mode (scalar_mode mode, unsigned width)
 {
   gcc_assert (width == 64 || width == 128);
   if (TARGET_SIMD)
@@ -11699,12 +11720,11 @@ aarch64_simd_gen_const_vector_dup (machine_mode mode, HOST_WIDE_INT val)
 /* Check OP is a legal scalar immediate for the MOVI instruction.  */
 
 bool
-aarch64_simd_scalar_immediate_valid_for_move (rtx op, machine_mode mode)
+aarch64_simd_scalar_immediate_valid_for_move (rtx op, scalar_int_mode mode)
 {
   machine_mode vmode;
 
-  gcc_assert (!VECTOR_MODE_P (mode));
-  vmode = aarch64_preferred_simd_mode (as_a <scalar_mode> (mode));
+  vmode = aarch64_preferred_simd_mode (mode);
   rtx op_v = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (op));
   return aarch64_simd_valid_immediate (op_v, vmode, false, NULL);
 }
@@ -11977,7 +11997,7 @@ void
 aarch64_expand_vector_init (rtx target, rtx vals)
 {
   machine_mode mode = GET_MODE (target);
-  machine_mode inner_mode = GET_MODE_INNER (mode);
+  scalar_mode inner_mode = GET_MODE_INNER (mode);
   /* The number of vector elements.  */
   int n_elts = GET_MODE_NUNITS (mode);
   /* The number of vector elements which are not constant.  */
@@ -13054,7 +13074,7 @@ aarch64_output_simd_mov_immediate (rtx const_vector,
 }
 
 char*
-aarch64_output_scalar_simd_mov_immediate (rtx immediate,  machine_mode mode)
+aarch64_output_scalar_simd_mov_immediate (rtx immediate, scalar_int_mode mode)
 {
 
   /* If a floating point number was passed and we desire to use it in an
@@ -13072,7 +13092,6 @@ aarch64_output_scalar_simd_mov_immediate (rtx immediate,  machine_mode mode)
      a 128 bit vector mode.  */
   int width = GET_MODE_BITSIZE (mode) == 64 ? 128 : 64;
 
-  gcc_assert (!VECTOR_MODE_P (mode));
   vmode = aarch64_simd_container_mode (mode, width);
   rtx v_op = aarch64_simd_gen_const_vector_dup (vmode, INTVAL (immediate));
   return aarch64_output_simd_mov_immediate (v_op, vmode, width);
@@ -14791,7 +14810,7 @@ aarch64_operands_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
-				       machine_mode mode)
+				       scalar_mode mode)
 {
   enum reg_class rclass_1, rclass_2, rclass_3, rclass_4;
   HOST_WIDE_INT offval_1, offval_2, offval_3, offval_4, msize;
@@ -14925,7 +14944,7 @@ aarch64_operands_adjust_ok_for_ldpstp (rtx *operands, bool load,
 
 bool
 aarch64_gen_adjusted_ldpstp (rtx *operands, bool load,
-			     machine_mode mode, RTX_CODE code)
+			     scalar_mode mode, RTX_CODE code)
 {
   rtx base, offset, t1, t2;
   rtx mem_1, mem_2, mem_3, mem_4;

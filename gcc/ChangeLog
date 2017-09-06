@@ -1,3 +1,255 @@
+2017-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82078
+	* tree-sra.c (sort_and_splice_var_accesses): Move call to
+	add_access_to_work_queue...
+	(build_accesses_from_assign): ...here.
+	(propagate_all_subaccesses): Make sure racc is the group
+	representative, if there is one.
+
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82095
+	* varasm.c (categorize_decl_for_section): Use SECCAT_TBSS for TLS vars with
+	NULL DECL_INITIAL.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_doom_children): Use a
+	type and not a mode check.
+
+2017-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* config/arm/predicates.md (arm_general_adddi_operand): Create new
+	non-vfp predicate.
+	* config/arm/arm.md (*arm_adddi3, *arm_subdi3): Use new predicates.
+
+2017-09-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* tree-ssa-reassoc.c (reassociate_bb): Restrict last change to
+	cases where we have 3 or more operands.
+
+2017-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81768
+	* omp-low.c (lower_omp_for): Recompute tree invariant if
+	gimple_omp_for_initial/final is ADDR_EXPR.
+
+	PR middle-end/81768
+	* omp-expand.c (expand_omp_simd): Force second operands of COND_EXPR
+	into gimple val before gimplification fo the COND_EXPR.
+
+2017-09-05  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadupdate.c (duplicate_thread_path): Remove unused
+	REGION_COPY argument.
+	(thread_through_all_blocks): Remove unused argument to
+	duplicate_thread_path.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_gen_adjusted_ldpstp):
+	Take a scalar_mode rather than a machine_mode.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	* config/aarch64/aarch64.c (aarch64_simd_container_mode): Likewise.
+	(aarch64_operands_adjust_ok_for_ldpstp): Likewise.
+	(aarch64_gen_adjusted_ldpstp): Likewise.
+	(aarch64_expand_vector_init): Use scalar_mode instead of machine_mode.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* config/aarch64/aarch64-protos.h (aarch64_is_extend_from_extract):
+	Take a scalar_int_mode instead of a machine_mode.
+	(aarch64_mask_and_shift_for_ubfiz_p): Likewise.
+	(aarch64_output_scalar_simd_mov_immediate): Likewise.
+	(aarch64_simd_scalar_immediate_valid_for_move): Likewise.
+	(aarch64_simd_attr_length_rglist): Delete.
+	* config/aarch64/aarch64.c (aarch64_is_extend_from_extract): Take
+	a scalar_int_mode instead of a machine_mode.
+	(aarch64_add_offset): Likewise.
+	(aarch64_internal_mov_immediate): Likewise
+	(aarch64_add_constant_internal): Likewise.
+	(aarch64_add_constant): Likewise.
+	(aarch64_movw_imm): Likewise.
+	(aarch64_rtx_arith_op_extract_p): Likewise.
+	(aarch64_mask_and_shift_for_ubfiz_p): Likewise.
+	(aarch64_simd_scalar_immediate_valid_for_move): Likewise.
+	Remove assert that the mode isn't a vector.
+	(aarch64_output_scalar_simd_mov_immediate): Likewise.
+	(aarch64_expand_mov_immediate): Update calls after above changes.
+	(aarch64_output_casesi): Use as_a <scalar_int_mode>.
+	(aarch64_and_bitmask_imm): Check for scalar integer modes.
+	(aarch64_move_imm): Likewise.
+	(aarch64_can_const_movi_rtx_p): Likewise.
+	(aarch64_strip_extend): Likewise.
+	(aarch64_extr_rtx_p): Likewise.
+	(aarch64_rtx_costs): Likewise, using wode_mode as the mode of
+	a CONST_INT when the mode parameter is VOIDmode.
+	(aarch64_float_const_rtx_p): Use scalar_int_mode for a temporary.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.h (bitwise_mode_for_mode): Return opt_mode.
+	* stor-layout.c (bitwise_mode_for_mode): Likewise.
+	(bitwise_type_for_mode): Update accordingly.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* stor-layout.h (mode_for_size_tree): Return an opt_mode.
+	* stor-layout.c (mode_for_size_tree): Likewise.
+	(mode_for_array): Update accordingly.
+	(layout_decl): Likewise.
+	(compute_record_mode): Likewise.  Only set the mode once.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (get_mask_mode): Change return type to opt_mode.
+	Expand commentary.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_get_mask_mode): Return an opt_mode.
+	* targhooks.c (default_get_mask_mode): Likewise.
+	* config/i386/i386.c (ix86_get_mask_mode): Likewise.
+	* optabs-query.c (can_vec_mask_load_store_p): Update use of
+	targetm.get_mask_mode.
+	* tree.c (build_truth_vector_type): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.h (mode_for_vector): Return an opt_mode.
+	* stor-layout.c (mode_for_vector): Likewise.
+	(mode_for_int_vector): Update accordingly.
+	(layout_type): Likewise.
+	* config/i386/i386.c (emit_memmov): Likewise.
+	(ix86_expand_set_or_movmem): Likewise.
+	(ix86_expand_vector_init): Likewise.
+	(ix86_get_mask_mode): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_vec_perm_const_1):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_expand_vec_perm_const_1): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	* expr.c (expand_expr_real_2): Likewise.
+	* optabs-query.c (can_vec_perm_p): Likewise.
+	(can_vec_mask_load_store_p): Likewise.
+	* optabs.c (expand_vec_perm): Likewise.
+	* targhooks.c (default_get_mask_mode): Likewise.
+	* tree-vect-stmts.c (vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(get_vectype_for_scalar_type_and_size): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.h (mode_for_int_vector): New function.
+	* stor-layout.c (mode_for_int_vector): Likewise.
+	* config/aarch64/aarch64.c (aarch64_emit_approx_sqrt): Use it.
+	* config/powerpcspe/powerpcspe.c (rs6000_do_expand_vec_perm): Likewise.
+	* config/rs6000/rs6000.c (rs6000_do_expand_vec_perm): Likewise.
+	* config/s390/s390.c (s390_expand_vec_compare_cc): Likewise.
+	(s390_expand_vcond): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.h (opt_machine_mode): New type.
+	(opt_mode<T>): Allow construction from anything that can be
+	converted to a T.
+	(is_a, as_a, dyn_cast): Add overloads for opt_mode.
+	(mode_for_size): Return an opt_machine_mode.
+	* stor-layout.c (mode_for_size): Likewise.
+	(mode_for_size_tree): Update call accordingly.
+	(bitwise_mode_for_mode): Likewise.
+	(make_fract_type): Likewise.
+	(make_accum_type): Likewise.
+	* caller-save.c (replace_reg_with_saved_mem): Update call
+	accordingly.
+	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED_MODE): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	* reload.c (get_secondary_mem): Likewise.
+	* varasm.c (assemble_integer): Likewise.
+	* lower-subreg.c (simplify_subreg_concatn): Likewise.  Move
+	early-out.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* machmode.h (decimal_float_mode_for_size): New function.
+	* real.h (REAL_VALUE_TO_TARGET_LONG_DOUBLE): Use float_mode_for_size.
+	(REAL_VALUE_TO_TARGET_DOUBLE): Likewise.
+	(REAL_VALUE_TO_TARGET_SINGLE): Likewise.
+	(REAL_VALUE_TO_TARGET_DECIMAL128): Use decimal_float_mode_for_size.
+	(REAL_VALUE_TO_TARGET_DECIMAL64): Likewise.
+	(REAL_VALUE_TO_TARGET_DECIMAL32): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* builtins.c (expand_builtin_powi): Use int_mode_for_size.
+	(get_builtin_sync_mode): Likewise.
+	(expand_ifn_atomic_compare_exchange): Likewise.
+	(expand_builtin_atomic_clear): Likewise.
+	(expand_builtin_atomic_test_and_set): Likewise.
+	(fold_builtin_atomic_always_lock_free): Likewise.
+	* calls.c (compute_argument_addresses): Likewise.
+	(emit_library_call_value_1): Likewise.
+	(store_one_arg): Likewise.
+	* combine.c (combine_instructions): Likewise.
+	* config/aarch64/aarch64.c (aarch64_function_value): Likewise.
+	* config/arm/arm.c (arm_function_value): Likewise.
+	(aapcs_allocate_return_reg): Likewise.
+	* config/c6x/c6x.c (c6x_expand_movmem): Likewise.
+	* config/i386/i386.c (construct_container): Likewise.
+	(ix86_gimplify_va_arg): Likewise.
+	(ix86_expand_sse_cmp): Likewise.
+	(emit_memmov): Likewise.
+	(emit_memset): Likewise.
+	(expand_small_movmem_or_setmem): Likewise.
+	(ix86_expand_pextr): Likewise.
+	(ix86_expand_pinsr): Likewise.
+	* config/lm32/lm32.c (lm32_block_move_inline): Likewise.
+	* config/microblaze/microblaze.c (microblaze_block_move_straight):
+	Likewise.
+	* config/mips/mips.c (mips_function_value_1) Likewise.
+	(mips_block_move_straight): Likewise.
+	(mips_expand_ins_as_unaligned_store): Likewise.
+	* config/powerpcspe/powerpcspe.c
+	(rs6000_darwin64_record_arg_advance_flush): Likewise.
+	(rs6000_darwin64_record_arg_flush): Likewise.
+	* config/rs6000/rs6000.c
+	(rs6000_darwin64_record_arg_advance_flush): Likewise.
+	(rs6000_darwin64_record_arg_flush): Likewise.
+	* config/sparc/sparc.c (sparc_function_arg_1): Likewise.
+	(sparc_function_value_1): Likewise.
+	* config/spu/spu.c (adjust_operand): Likewise.
+	(spu_emit_branch_or_set): Likewise.
+	(arith_immediate_p): Likewise.
+	* emit-rtl.c (gen_lowpart_common): Likewise.
+	* expr.c (expand_expr_real_1): Likewise.
+	* function.c (assign_parm_setup_block): Likewise.
+	* gimple-ssa-store-merging.c (encode_tree_to_bitpos): Likewise.
+	* reload1.c (alter_reg): Likewise.
+	* stor-layout.c (mode_for_vector): Likewise.
+	(layout_type): Likewise.
+
+2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/spu/spu.c (exp2_immediate_p): Use int_mode_for_mode.
+	(spu_convert_move): Likewise.
+	* lower-subreg.c (resolve_simple_move): Likewise.
+
+2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81833
+	* config/rs6000/altivec.md (altivec_vsum2sws): Convert from a
+	define_insn to a define_expand.
+	(altivec_vsum2sws_direct): New define_insn.
+	(altivec_vsumsws): Convert from a define_insn to a define_expand.
+
 2017-09-05  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/arm/arm.c (arm_option_params_internal): Improve setting of

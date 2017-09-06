@@ -376,10 +376,9 @@ can_vec_perm_p (machine_mode mode, bool variable,
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
-  if (GET_MODE_INNER (mode) == QImode)
-    return false;
-  qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
-  if (!VECTOR_MODE_P (qimode))
+  if (GET_MODE_INNER (mode) == QImode
+      || !mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
+      || !VECTOR_MODE_P (qimode))
     return false;
 
   /* ??? For completeness, we ought to check the QImode version of
@@ -532,12 +531,9 @@ can_vec_mask_load_store_p (machine_mode mode,
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-					       GET_MODE_SIZE (vmode));
-  if (mask_mode == VOIDmode)
-    return false;
-
-  if (convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+  if ((targetm.vectorize.get_mask_mode
+       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+      && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
   vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
@@ -547,10 +543,10 @@ can_vec_mask_load_store_p (machine_mode mode,
       vector_sizes &= ~cur;
       if (cur <= GET_MODE_SIZE (smode))
 	continue;
-      vmode = mode_for_vector (smode, cur / GET_MODE_SIZE (smode));
-      mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-						   cur);
-      if (VECTOR_MODE_P (vmode)
+      unsigned int nunits = cur / GET_MODE_SIZE (smode);
+      if (mode_for_vector (smode, nunits).exists (&vmode)
+	  && VECTOR_MODE_P (vmode)
+	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }

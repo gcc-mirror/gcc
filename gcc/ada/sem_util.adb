@@ -1900,138 +1900,6 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
-   -----------------------------
-   -- Check_Part_Of_Reference --
-   -----------------------------
-
-   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
-      Conc_Typ : constant Entity_Id := Encapsulating_State (Var_Id);
-      Decl     : Node_Id;
-      OK_Use   : Boolean := False;
-      Par      : Node_Id;
-      Prag_Nam : Name_Id;
-      Spec_Id  : Entity_Id;
-
-   begin
-      --  Traverse the parent chain looking for a suitable context for the
-      --  reference to the concurrent constituent.
-
-      Par := Parent (Ref);
-      while Present (Par) loop
-         if Nkind (Par) = N_Pragma then
-            Prag_Nam := Pragma_Name (Par);
-
-            --  A concurrent constituent is allowed to appear in pragmas
-            --  Initial_Condition and Initializes as this is part of the
-            --  elaboration checks for the constituent (SPARK RM 9.3).
-
-            if Nam_In (Prag_Nam, Name_Initial_Condition, Name_Initializes) then
-               OK_Use := True;
-               exit;
-
-            --  When the reference appears within pragma Depends or Global,
-            --  check whether the pragma applies to a single task type. Note
-            --  that the pragma is not encapsulated by the type definition,
-            --  but this is still a valid context.
-
-            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global) then
-               Decl := Find_Related_Declaration_Or_Body (Par);
-
-               if Nkind (Decl) = N_Object_Declaration
-                 and then Defining_Entity (Decl) = Conc_Typ
-               then
-                  OK_Use := True;
-                  exit;
-               end if;
-            end if;
-
-         --  The reference appears somewhere in the definition of the single
-         --  protected/task type (SPARK RM 9.3).
-
-         elsif Nkind_In (Par, N_Single_Protected_Declaration,
-                              N_Single_Task_Declaration)
-           and then Defining_Entity (Par) = Conc_Typ
-         then
-            OK_Use := True;
-            exit;
-
-         --  The reference appears within the expanded declaration or the body
-         --  of the single protected/task type (SPARK RM 9.3).
-
-         elsif Nkind_In (Par, N_Protected_Body,
-                              N_Protected_Type_Declaration,
-                              N_Task_Body,
-                              N_Task_Type_Declaration)
-         then
-            Spec_Id := Unique_Defining_Entity (Par);
-
-            if Present (Anonymous_Object (Spec_Id))
-              and then Anonymous_Object (Spec_Id) = Conc_Typ
-            then
-               OK_Use := True;
-               exit;
-            end if;
-
-         --  The reference has been relocated within an internally generated
-         --  package or subprogram. Assume that the reference is legal as the
-         --  real check was already performed in the original context of the
-         --  reference.
-
-         elsif Nkind_In (Par, N_Package_Body,
-                              N_Package_Declaration,
-                              N_Subprogram_Body,
-                              N_Subprogram_Declaration)
-           and then not Comes_From_Source (Par)
-         then
-            --  Continue to examine the context if the reference appears in a
-            --  subprogram body which was previously an expression function.
-
-            if Nkind (Par) = N_Subprogram_Body
-              and then Was_Expression_Function (Par)
-            then
-               null;
-
-            --  Otherwise the reference is legal
-
-            else
-               OK_Use := True;
-               exit;
-            end if;
-
-         --  The reference has been relocated to an inlined body for GNATprove.
-         --  Assume that the reference is legal as the real check was already
-         --  performed in the original context of the reference.
-
-         elsif GNATprove_Mode
-           and then Nkind (Par) = N_Subprogram_Body
-           and then Chars (Defining_Entity (Par)) = Name_uParent
-         then
-            OK_Use := True;
-            exit;
-         end if;
-
-         Par := Parent (Par);
-      end loop;
-
-      --  The reference is illegal as it appears outside the definition or
-      --  body of the single protected/task type.
-
-      if not OK_Use then
-         Error_Msg_NE
-           ("reference to variable & cannot appear in this context",
-            Ref, Var_Id);
-         Error_Msg_Name_1 := Chars (Var_Id);
-
-         if Ekind (Conc_Typ) = E_Protected_Type then
-            Error_Msg_NE
-              ("\% is constituent of single protected type &", Ref, Conc_Typ);
-         else
-            Error_Msg_NE
-              ("\% is constituent of single task type &", Ref, Conc_Typ);
-         end if;
-      end if;
-   end Check_Part_Of_Reference;
-
    -----------------------------------------
    -- Check_Dynamically_Tagged_Expression --
    -----------------------------------------
@@ -3314,6 +3182,138 @@ package body Sem_Util is
       end if;
    end Check_Nonvolatile_Function_Profile;
 
+   -----------------------------
+   -- Check_Part_Of_Reference --
+   -----------------------------
+
+   procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
+      Conc_Typ : constant Entity_Id := Encapsulating_State (Var_Id);
+      Decl     : Node_Id;
+      OK_Use   : Boolean := False;
+      Par      : Node_Id;
+      Prag_Nam : Name_Id;
+      Spec_Id  : Entity_Id;
+
+   begin
+      --  Traverse the parent chain looking for a suitable context for the
+      --  reference to the concurrent constituent.
+
+      Par := Parent (Ref);
+      while Present (Par) loop
+         if Nkind (Par) = N_Pragma then
+            Prag_Nam := Pragma_Name (Par);
+
+            --  A concurrent constituent is allowed to appear in pragmas
+            --  Initial_Condition and Initializes as this is part of the
+            --  elaboration checks for the constituent (SPARK RM 9.3).
+
+            if Nam_In (Prag_Nam, Name_Initial_Condition, Name_Initializes) then
+               OK_Use := True;
+               exit;
+
+            --  When the reference appears within pragma Depends or Global,
+            --  check whether the pragma applies to a single task type. Note
+            --  that the pragma is not encapsulated by the type definition,
+            --  but this is still a valid context.
+
+            elsif Nam_In (Prag_Nam, Name_Depends, Name_Global) then
+               Decl := Find_Related_Declaration_Or_Body (Par);
+
+               if Nkind (Decl) = N_Object_Declaration
+                 and then Defining_Entity (Decl) = Conc_Typ
+               then
+                  OK_Use := True;
+                  exit;
+               end if;
+            end if;
+
+         --  The reference appears somewhere in the definition of the single
+         --  protected/task type (SPARK RM 9.3).
+
+         elsif Nkind_In (Par, N_Single_Protected_Declaration,
+                              N_Single_Task_Declaration)
+           and then Defining_Entity (Par) = Conc_Typ
+         then
+            OK_Use := True;
+            exit;
+
+         --  The reference appears within the expanded declaration or the body
+         --  of the single protected/task type (SPARK RM 9.3).
+
+         elsif Nkind_In (Par, N_Protected_Body,
+                              N_Protected_Type_Declaration,
+                              N_Task_Body,
+                              N_Task_Type_Declaration)
+         then
+            Spec_Id := Unique_Defining_Entity (Par);
+
+            if Present (Anonymous_Object (Spec_Id))
+              and then Anonymous_Object (Spec_Id) = Conc_Typ
+            then
+               OK_Use := True;
+               exit;
+            end if;
+
+         --  The reference has been relocated within an internally generated
+         --  package or subprogram. Assume that the reference is legal as the
+         --  real check was already performed in the original context of the
+         --  reference.
+
+         elsif Nkind_In (Par, N_Package_Body,
+                              N_Package_Declaration,
+                              N_Subprogram_Body,
+                              N_Subprogram_Declaration)
+           and then not Comes_From_Source (Par)
+         then
+            --  Continue to examine the context if the reference appears in a
+            --  subprogram body which was previously an expression function.
+
+            if Nkind (Par) = N_Subprogram_Body
+              and then Was_Expression_Function (Par)
+            then
+               null;
+
+            --  Otherwise the reference is legal
+
+            else
+               OK_Use := True;
+               exit;
+            end if;
+
+         --  The reference has been relocated to an inlined body for GNATprove.
+         --  Assume that the reference is legal as the real check was already
+         --  performed in the original context of the reference.
+
+         elsif GNATprove_Mode
+           and then Nkind (Par) = N_Subprogram_Body
+           and then Chars (Defining_Entity (Par)) = Name_uParent
+         then
+            OK_Use := True;
+            exit;
+         end if;
+
+         Par := Parent (Par);
+      end loop;
+
+      --  The reference is illegal as it appears outside the definition or
+      --  body of the single protected/task type.
+
+      if not OK_Use then
+         Error_Msg_NE
+           ("reference to variable & cannot appear in this context",
+            Ref, Var_Id);
+         Error_Msg_Name_1 := Chars (Var_Id);
+
+         if Ekind (Conc_Typ) = E_Protected_Type then
+            Error_Msg_NE
+              ("\% is constituent of single protected type &", Ref, Conc_Typ);
+         else
+            Error_Msg_NE
+              ("\% is constituent of single task type &", Ref, Conc_Typ);
+         end if;
+      end if;
+   end Check_Part_Of_Reference;
+
    ------------------------------------------
    -- Check_Potentially_Blocking_Operation --
    ------------------------------------------
@@ -3343,6 +3343,25 @@ package body Sem_Util is
          S := Scope (S);
       end loop;
    end Check_Potentially_Blocking_Operation;
+
+   ------------------------------------
+   --  Check_Previous_Null_Procedure --
+   ------------------------------------
+
+   procedure Check_Previous_Null_Procedure
+     (Decl : Node_Id;
+      Prev : Entity_Id)
+   is
+   begin
+      if Ekind (Prev) = E_Procedure
+        and then Nkind (Parent (Prev)) = N_Procedure_Specification
+        and then Null_Present (Parent (Prev))
+      then
+         Error_Msg_Sloc := Sloc (Prev);
+         Error_Msg_N
+           ("declaration cannot complete previous null procedure#", Decl);
+      end if;
+   end Check_Previous_Null_Procedure;
 
    ---------------------------------
    -- Check_Result_And_Post_State --
@@ -14105,6 +14124,27 @@ package body Sem_Util is
             or else Null_Present (Component_List (Type_Definition (Decl))));
    end Is_Null_Record_Type;
 
+   ---------------------
+   -- Is_Object_Image --
+   ---------------------
+
+   function Is_Object_Image (Prefix : Node_Id) return Boolean is
+   begin
+      --  When the type of the prefix is not scalar then the prefix is not
+      --  valid in any senario.
+
+      if not Is_Scalar_Type (Etype (Prefix)) then
+         return False;
+      end if;
+
+      --  Here we test for the case that the prefix is not a type and assume
+      --  if it is not then it must be a named value or an object reference.
+      --  This is because the parser always checks that prefix's of attributes
+      --  are named.
+
+      return not (Is_Entity_Name (Prefix) and then Is_Type (Entity (Prefix)));
+   end Is_Object_Image;
+
    -------------------------
    -- Is_Object_Reference --
    -------------------------
@@ -14153,18 +14193,24 @@ package body Sem_Util is
             --  In Ada 95, a function call is a constant object; a procedure
             --  call is not.
 
-            when N_Function_Call =>
+            --  Note that predefined operators are functions as well, and so
+            --  are attributes that are (can be renamed as) functions.
+
+            when N_Binary_Op
+               | N_Function_Call
+               | N_Unary_Op
+            =>
                return Etype (N) /= Standard_Void_Type;
 
-            --  Attributes 'Input, 'Loop_Entry, 'Old, and 'Result produce
-            --  objects.
+            --  Attributes references 'Loop_Entry, 'Old, and 'Result yield
+            --  objects, even though they are not functions.
 
             when N_Attribute_Reference =>
                return
-                 Nam_In (Attribute_Name (N), Name_Input,
-                                             Name_Loop_Entry,
+                 Nam_In (Attribute_Name (N), Name_Loop_Entry,
                                              Name_Old,
-                                             Name_Result);
+                                             Name_Result)
+                   or else Is_Function_Attribute_Name (Attribute_Name (N));
 
             when N_Selected_Component =>
                return
@@ -14182,9 +14228,9 @@ package body Sem_Util is
                return not Nkind_In (Original_Node (N), N_Case_Expression,
                                                        N_If_Expression);
 
-            --  A view conversion of a tagged object is an object reference
-
             when N_Type_Conversion =>
+               --  A view conversion of a tagged object is an object reference
+
                return Is_Tagged_Type (Etype (Subtype_Mark (N)))
                  and then Is_Tagged_Type (Etype (Expression (N)))
                  and then Is_Object_Reference (Expression (N));
@@ -15498,6 +15544,32 @@ package body Sem_Util is
       return Nkind (N) = N_Subprogram_Body_Stub
         and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
+
+   ---------------------------------------
+   -- Is_Subp_Or_Entry_Inside_Protected --
+   ---------------------------------------
+
+   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean is
+      Scop : Entity_Id;
+
+   begin
+      case Ekind (E) is
+         when Entry_Kind | Subprogram_Kind =>
+            Scop := Scope (E);
+
+            while Present (Scop) loop
+               if Ekind (Scop) = E_Protected_Type then
+                  return True;
+               end if;
+               Scop := Scope (Scop);
+            end loop;
+
+            return False;
+
+         when others =>
+            return False;
+      end case;
+   end Is_Subp_Or_Entry_Inside_Protected;
 
    --------------------------
    -- Is_Suspension_Object --
@@ -17020,11 +17092,17 @@ package body Sem_Util is
       Formal : Entity_Id;
 
    begin
-      --  Ada 2005 or later, and formals present
+      --  Ada 2005 or later, and formals present. The first formal must be
+      --  of a type that supports prefix notation: a controlling argument,
+      --  a class-wide type, or an access to such.
 
       if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
         and then No (Default_Value (First_Formal (E)))
+        and then
+          (Is_Controlling_Formal (First_Formal (E))
+            or else Is_Class_Wide_Type (Etype (First_Formal (E)))
+            or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
       then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop

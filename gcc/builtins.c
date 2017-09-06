@@ -2755,7 +2755,7 @@ expand_builtin_powi (tree exp, rtx target)
   /* Emit a libcall to libgcc.  */
 
   /* Mode of the 2nd argument must match that of an int.  */
-  mode2 = mode_for_size (INT_TYPE_SIZE, MODE_INT, 0);
+  mode2 = int_mode_for_size (INT_TYPE_SIZE, 0).require ();
 
   if (target == NULL_RTX)
     target = gen_reg_rtx (mode);
@@ -5477,7 +5477,7 @@ get_builtin_sync_mode (int fcode_diff)
 {
   /* The size is not negotiable, so ask not to get BLKmode in return
      if the target indicates that a smaller size would be better.  */
-  return mode_for_size (BITS_PER_UNIT << fcode_diff, MODE_INT, 0);
+  return int_mode_for_size (BITS_PER_UNIT << fcode_diff, 0).require ();
 }
 
 /* Expand the memory expression LOC and return the appropriate memory operand
@@ -5858,7 +5858,7 @@ expand_ifn_atomic_compare_exchange (gcall *call)
 {
   int size = tree_to_shwi (gimple_call_arg (call, 3)) & 255;
   gcc_assert (size == 1 || size == 2 || size == 4 || size == 8 || size == 16);
-  machine_mode mode = mode_for_size (BITS_PER_UNIT * size, MODE_INT, 0);
+  machine_mode mode = int_mode_for_size (BITS_PER_UNIT * size, 0).require ();
   rtx expect, desired, mem, oldval, boolret;
   enum memmodel success, failure;
   tree lhs;
@@ -6154,7 +6154,7 @@ expand_builtin_atomic_clear (tree exp)
   rtx mem, ret;
   enum memmodel model;
 
-  mode = mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0);
+  mode = int_mode_for_size (BOOL_TYPE_SIZE, 0).require ();
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
 
@@ -6189,7 +6189,7 @@ expand_builtin_atomic_test_and_set (tree exp, rtx target)
   enum memmodel model;
   machine_mode mode;
 
-  mode = mode_for_size (BOOL_TYPE_SIZE, MODE_INT, 0);
+  mode = int_mode_for_size (BOOL_TYPE_SIZE, 0).require ();
   mem = get_builtin_sync_mem (CALL_EXPR_ARG (exp, 0), mode);
   model = get_memmodel (CALL_EXPR_ARG (exp, 1));
 
@@ -6210,8 +6210,11 @@ fold_builtin_atomic_always_lock_free (tree arg0, tree arg1)
   if (TREE_CODE (arg0) != INTEGER_CST)
     return NULL_TREE;
 
+  /* We need a corresponding integer mode for the access to be lock-free.  */
   size = INTVAL (expand_normal (arg0)) * BITS_PER_UNIT;
-  mode = mode_for_size (size, MODE_INT, 0);
+  if (!int_mode_for_size (size, 0).exists (&mode))
+    return boolean_false_node;
+
   mode_align = GET_MODE_ALIGNMENT (mode);
 
   if (TREE_CODE (arg1) == INTEGER_CST)

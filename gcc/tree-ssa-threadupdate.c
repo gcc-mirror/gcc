@@ -2205,18 +2205,13 @@ bb_in_bbs (basic_block bb, basic_block *bbs, int n)
    and create a single fallthru edge pointing to the same destination as the
    EXIT edge.
 
-   The new basic blocks are stored to REGION_COPY in the same order as they had
-   in REGION, provided that REGION_COPY is not NULL.
-
    Returns false if it is unable to copy the region, true otherwise.  */
 
 static bool
-duplicate_thread_path (edge entry, edge exit,
-		       basic_block *region, unsigned n_region,
-		       basic_block *region_copy)
+duplicate_thread_path (edge entry, edge exit, basic_block *region,
+		       unsigned n_region)
 {
   unsigned i;
-  bool free_region_copy = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
@@ -2242,12 +2237,7 @@ duplicate_thread_path (edge entry, edge exit,
 
   set_loop_copy (loop, loop);
 
-  if (!region_copy)
-    {
-      region_copy = XNEWVEC (basic_block, n_region);
-      free_region_copy = true;
-    }
-
+  basic_block *region_copy = XNEWVEC (basic_block, n_region);
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), false);
 
@@ -2376,8 +2366,7 @@ duplicate_thread_path (edge entry, edge exit,
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region, NULL);
 
-  if (free_region_copy)
-    free (region_copy);
+  free (region_copy);
 
   free_original_copy_tables ();
   return true;
@@ -2502,7 +2491,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       for (unsigned int j = 0; j < len - 1; j++)
 	region[j] = (*path)[j]->e->dest;
 
-      if (duplicate_thread_path (entry, exit, region, len - 1, NULL))
+      if (duplicate_thread_path (entry, exit, region, len - 1))
 	{
 	  /* We do not update dominance info.  */
 	  free_dominance_info (CDI_DOMINATORS);

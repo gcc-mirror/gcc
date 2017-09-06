@@ -6038,8 +6038,9 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      /* First check if vec_extract optab doesn't support extraction
 		 of vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
-	      machine_mode vmode = mode_for_vector (elmode, group_size);
-	      if (! VECTOR_MODE_P (vmode)
+	      machine_mode vmode;
+	      if (!mode_for_vector (elmode, group_size).exists (&vmode)
+		  || !VECTOR_MODE_P (vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
 		      == CODE_FOR_nothing))
@@ -6052,11 +6053,12 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  unsigned lsize
 		    = group_size * GET_MODE_BITSIZE (elmode);
 		  elmode = int_mode_for_size (lsize, 0).require ();
-		  vmode = mode_for_vector (elmode, nunits / group_size);
 		  /* If we can't construct such a vector fall back to
 		     element extracts from the original vector type and
 		     element size stores.  */
-		  if (VECTOR_MODE_P (vmode)
+		  if (mode_for_vector (elmode,
+				       nunits / group_size).exists (&vmode)
+		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_extract_optab,
 						 vmode, elmode)
 			  != CODE_FOR_nothing))
@@ -7076,8 +7078,9 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	      /* First check if vec_init optab supports construction from
 		 vector elts directly.  */
 	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
-	      machine_mode vmode = mode_for_vector (elmode, group_size);
-	      if (VECTOR_MODE_P (vmode)
+	      machine_mode vmode;
+	      if (mode_for_vector (elmode, group_size).exists (&vmode)
+		  && VECTOR_MODE_P (vmode)
 		  && (convert_optab_handler (vec_init_optab,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
@@ -7098,10 +7101,11 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		  unsigned lsize
 		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
 		  elmode = int_mode_for_size (lsize, 0).require ();
-		  vmode = mode_for_vector (elmode, nunits / group_size);
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
-		  if (VECTOR_MODE_P (vmode)
+		  if (mode_for_vector (elmode,
+				       nunits / group_size).exists (&vmode)
+		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
 			  != CODE_FOR_nothing))
 		    {
@@ -9104,8 +9108,8 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
      lookup a vector mode of the specified size.  */
   if (size == 0)
     simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
-  else
-    simd_mode = mode_for_vector (inner_mode, size / nbytes);
+  else if (!mode_for_vector (inner_mode, size / nbytes).exists (&simd_mode))
+    return NULL_TREE;
   nunits = GET_MODE_SIZE (simd_mode) / nbytes;
   /* NOTE: nunits == 1 is allowed to support single element vector types.  */
   if (nunits < 1)

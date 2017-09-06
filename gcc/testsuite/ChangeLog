@@ -1,3 +1,27 @@
+2017-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82078
+	* gcc.dg/tree-ssa/pr82078.c: New test.
+
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82095
+	* gcc.dg/tls/pr82095.c: New test.
+
+2017-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-2.c: New test.
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-1.c: New test.
+
+2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81833
+	* gcc.target/powerpc/pr81833-1.c: New file.
+	* gcc.target/powerpc/pr81833-2.c: New file.
+
 2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/59501

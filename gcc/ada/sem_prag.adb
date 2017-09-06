@@ -1457,6 +1457,9 @@ package body Sem_Prag is
 
                   Error_Msg := Name_Find;
                   SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+                  SPARK_Msg_NE
+                    ("\add `null ='> &` dependency to ignore this input",
+                     N, Item_Id);
                end if;
 
             --  Output case (SPARK RM 6.1.5(10))
@@ -14398,9 +14401,9 @@ package body Sem_Prag is
 
                   if Etype (E_Id) = Any_Type then
                      return;
-                  else
-                     E := Entity (E_Id);
                   end if;
+
+                  E := Entity (E_Id);
 
                   --  A pragma that applies to a Ghost entity becomes Ghost for
                   --  the purposes of legality checks and removal of ignored
@@ -14734,25 +14737,11 @@ package body Sem_Prag is
          ---------------
 
          --  pragma Eliminate (
-         --      [Unit_Name  =>] IDENTIFIER | SELECTED_COMPONENT,
-         --    [,[Entity     =>] IDENTIFIER |
-         --                      SELECTED_COMPONENT |
-         --                      STRING_LITERAL]
-         --    [,                OVERLOADING_RESOLUTION]);
-
-         --  OVERLOADING_RESOLUTION ::= PARAMETER_AND_RESULT_TYPE_PROFILE |
-         --                             SOURCE_LOCATION
-
-         --  PARAMETER_AND_RESULT_TYPE_PROFILE ::= PROCEDURE_PROFILE |
-         --                                        FUNCTION_PROFILE
-
-         --  PROCEDURE_PROFILE ::= Parameter_Types => PARAMETER_TYPES
-
-         --  FUNCTION_PROFILE ::= [Parameter_Types => PARAMETER_TYPES,]
-         --                       Result_Type => result_SUBTYPE_NAME]
-
-         --  PARAMETER_TYPES ::= (SUBTYPE_NAME {, SUBTYPE_NAME})
-         --  SUBTYPE_NAME    ::= STRING_LITERAL
+         --      [Unit_Name        =>] IDENTIFIER | SELECTED_COMPONENT,
+         --      [Entity           =>] IDENTIFIER |
+         --                            SELECTED_COMPONENT |
+         --                            STRING_LITERAL]
+         --      [, Source_Location => SOURCE_TRACE]);
 
          --  SOURCE_LOCATION ::= Source_Location => SOURCE_TRACE
          --  SOURCE_TRACE    ::= STRING_LITERAL
@@ -14765,6 +14754,11 @@ package body Sem_Prag is
                       Name_Parameter_Types,
                       Name_Result_Type,
                       Name_Source_Location);
+
+            --  Note : Parameter_Types and Result_Type are leftovers from
+            --  prior implementations of the pragma. They are not generated
+            --  by the gnatelim tool, and play no role in selecting which
+            --  of a set of overloaded names is chosen for elimination.
 
             Unit_Name       : Node_Id renames Args (1);
             Entity          : Node_Id renames Args (2);
@@ -18066,6 +18060,43 @@ package body Sem_Prag is
                Opt.No_Elab_Code_All_Pragma := N;
             end if;
 
+         -----------------------------
+         -- No_Component_Reordering --
+         -----------------------------
+
+         --  pragma No_Component_Reordering [([Entity =>] type_LOCAL_NAME)];
+
+         when Pragma_No_Component_Reordering => No_Comp_Reordering : declare
+            E    : Entity_Id;
+            E_Id : Node_Id;
+
+         begin
+            GNAT_Pragma;
+            Check_At_Most_N_Arguments (1);
+
+            if Arg_Count = 0 then
+               Check_Valid_Configuration_Pragma;
+               Opt.No_Component_Reordering := True;
+
+            else
+               Check_Optional_Identifier (Arg2, Name_Entity);
+               Check_Arg_Is_Local_Name (Arg1);
+               E_Id := Get_Pragma_Arg (Arg1);
+
+               if Etype (E_Id) = Any_Type then
+                  return;
+               end if;
+
+               E := Entity (E_Id);
+
+               if not Is_Record_Type (E) then
+                  Error_Pragma_Arg ("pragma% requires record type", Arg1);
+               end if;
+
+               Set_No_Reordering (Base_Type (E));
+            end if;
+         end No_Comp_Reordering;
+
          --------------------------
          -- No_Heap_Finalization --
          --------------------------
@@ -18443,7 +18474,8 @@ package body Sem_Prag is
          --  pragma No_Strict_Aliasing [([Entity =>] type_LOCAL_NAME)];
 
          when Pragma_No_Strict_Aliasing => No_Strict_Aliasing : declare
-            E_Id : Entity_Id;
+            E    : Entity_Id;
+            E_Id : Node_Id;
 
          begin
             GNAT_Pragma;
@@ -18456,15 +18488,19 @@ package body Sem_Prag is
             else
                Check_Optional_Identifier (Arg2, Name_Entity);
                Check_Arg_Is_Local_Name (Arg1);
-               E_Id := Entity (Get_Pragma_Arg (Arg1));
+               E_Id := Get_Pragma_Arg (Arg1);
 
-               if E_Id = Any_Type then
+               if Etype (E_Id) = Any_Type then
                   return;
-               elsif No (E_Id) or else not Is_Access_Type (E_Id) then
+               end if;
+
+               E := Entity (E_Id);
+
+               if not Is_Access_Type (E) then
                   Error_Pragma_Arg ("pragma% requires access type", Arg1);
                end if;
 
-               Set_No_Strict_Aliasing (Implementation_Base_Type (E_Id));
+               Set_No_Strict_Aliasing (Base_Type (E));
             end if;
          end No_Strict_Aliasing;
 
@@ -20369,7 +20405,7 @@ package body Sem_Prag is
             Check_Arg_Is_Local_Name (Arg1);
             E_Id := Get_Pragma_Arg (Arg1);
 
-            if Error_Posted (E_Id) then
+            if Etype (E_Id) = Any_Type then
                return;
             end if;
 
@@ -23164,27 +23200,32 @@ package body Sem_Prag is
          --  pragma Universal_Aliasing [([Entity =>] type_LOCAL_NAME)];
 
          when Pragma_Universal_Aliasing => Universal_Alias : declare
-            E_Id : Entity_Id;
+            E    : Entity_Id;
+            E_Id : Node_Id;
 
          begin
             GNAT_Pragma;
             Check_Arg_Count (1);
             Check_Optional_Identifier (Arg2, Name_Entity);
             Check_Arg_Is_Local_Name (Arg1);
-            E_Id := Entity (Get_Pragma_Arg (Arg1));
+            E_Id := Get_Pragma_Arg (Arg1);
 
-            if E_Id = Any_Type then
+            if Etype (E_Id) = Any_Type then
                return;
-            elsif No (E_Id) or else not Is_Type (E_Id) then
+            end if;
+
+            E := Entity (E_Id);
+
+            if not Is_Type (E) then
                Error_Pragma_Arg ("pragma% requires type", Arg1);
             end if;
 
             --  A pragma that applies to a Ghost entity becomes Ghost for the
             --  purposes of legality checks and removal of ignored Ghost code.
 
-            Mark_Ghost_Pragma (N, E_Id);
-            Set_Universal_Aliasing (Implementation_Base_Type (E_Id));
-            Record_Rep_Item (E_Id, N);
+            Mark_Ghost_Pragma (N, E);
+            Set_Universal_Aliasing (Base_Type (E));
+            Record_Rep_Item (E, N);
          end Universal_Alias;
 
          --------------------
@@ -29293,6 +29334,7 @@ package body Sem_Prag is
       Pragma_Memory_Size                    =>  0,
       Pragma_No_Return                      =>  0,
       Pragma_No_Body                        =>  0,
+      Pragma_No_Component_Reordering        => -1,
       Pragma_No_Elaboration_Code_All        =>  0,
       Pragma_No_Heap_Finalization           =>  0,
       Pragma_No_Inline                      =>  0,

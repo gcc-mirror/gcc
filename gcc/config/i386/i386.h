@@ -1548,7 +1548,7 @@ enum reg_class
    for integral modes that can be moved using 32 bit move.  */
 #define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
   (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
-   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
+   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()	\
    : MODE)
 
 /* Return a class of registers that cannot change FROM mode to TO mode.  */

@@ -383,27 +383,28 @@ extern const struct real_format arm_half_format;
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT)			\
   real_to_target (OUT, &(IN),						\
-		  mode_for_size (LONG_DOUBLE_TYPE_SIZE, MODE_FLOAT, 0))
+		  float_mode_for_size (LONG_DOUBLE_TYPE_SIZE).require ())
 
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (64, MODE_FLOAT, 0))
+  real_to_target (OUT, &(IN), float_mode_for_size (64).require ())
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
-  ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_FLOAT, 0)))
+  ((OUT) = real_to_target (NULL, &(IN), float_mode_for_size (32).require ()))
 
 /* Real values to IEEE 754 decimal floats.  */
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #define REAL_VALUE_TO_TARGET_DECIMAL128(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (128, MODE_DECIMAL_FLOAT, 0))
+  real_to_target (OUT, &(IN), decimal_float_mode_for_size (128).require ())
 
 #define REAL_VALUE_TO_TARGET_DECIMAL64(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (64, MODE_DECIMAL_FLOAT, 0))
+  real_to_target (OUT, &(IN), decimal_float_mode_for_size (64).require ())
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_DECIMAL32(IN, OUT) \
-  ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_DECIMAL_FLOAT, 0)))
+  ((OUT) = real_to_target (NULL, &(IN), \
+			   decimal_float_mode_for_size (32).require ()))
 
 extern REAL_VALUE_TYPE real_value_truncate (format_helper, REAL_VALUE_TYPE);
 

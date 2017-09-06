@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef HAVE_MACHINE_MODES
 #define HAVE_MACHINE_MODES
 
+typedef opt_mode<machine_mode> opt_machine_mode;
+
 extern CONST_MODE_SIZE unsigned short mode_size[NUM_MACHINE_MODES];
 extern const unsigned short mode_precision[NUM_MACHINE_MODES];
 extern const unsigned char mode_inner[NUM_MACHINE_MODES];
@@ -237,6 +239,8 @@ public:
 
   ALWAYS_INLINE opt_mode () : m_mode (E_VOIDmode) {}
   ALWAYS_INLINE opt_mode (const T &m) : m_mode (m) {}
+  template<typename U>
+  ALWAYS_INLINE opt_mode (const U &m) : m_mode (T (m)) {}
   ALWAYS_INLINE opt_mode (from_int m) : m_mode (machine_mode (m)) {}
 
   machine_mode else_void () const;
@@ -325,6 +329,13 @@ is_a (machine_mode m)
   return T::includes_p (m);
 }
 
+template<typename T, typename U>
+inline bool
+is_a (const opt_mode<U> &m)
+{
+  return T::includes_p (m.else_void ());
+}
+
 /* Assert that mode M has type T, and return it in that form.  */
 
 template<typename T>
@@ -333,6 +344,13 @@ as_a (machine_mode m)
 {
   gcc_checking_assert (T::includes_p (m));
   return typename mode_traits<T>::from_int (m);
+}
+
+template<typename T, typename U>
+inline T
+as_a (const opt_mode<U> &m)
+{
+  return as_a <T> (m.else_void ());
 }
 
 /* Convert M to an opt_mode<T>.  */
@@ -344,6 +362,13 @@ dyn_cast (machine_mode m)
   if (T::includes_p (m))
     return T (typename mode_traits<T>::from_int (m));
   return opt_mode<T> ();
+}
+
+template<typename T, typename U>
+inline opt_mode<T>
+dyn_cast (const opt_mode<U> &m)
+{
+  return dyn_cast <T> (m.else_void ());
 }
 
 /* Return true if mode M has type T, storing it as a T in *RESULT
@@ -627,11 +652,7 @@ GET_MODE_2XWIDER_MODE (const T &m)
 extern const unsigned char mode_complex[NUM_MACHINE_MODES];
 #define GET_MODE_COMPLEX_MODE(MODE) ((machine_mode) mode_complex[MODE])
 
-/* Return the mode for data of a given size SIZE and mode class CLASS.
-   If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
-   The value is BLKmode if no other mode is found.  */
-
-extern machine_mode mode_for_size (unsigned int, enum mode_class, int);
+extern opt_machine_mode mode_for_size (unsigned int, enum mode_class, int);
 
 /* Return the machine mode to use for a MODE_INT of SIZE bits, if one
    exists.  If LIMIT is nonzero, modes wider than MAX_FIXED_MODE_SIZE
@@ -652,7 +673,14 @@ float_mode_for_size (unsigned int size)
   return dyn_cast <scalar_float_mode> (mode_for_size (size, MODE_FLOAT, 0));
 }
 
-/* Similar to mode_for_size, but find the smallest mode for a given width.  */
+/* Likewise for MODE_DECIMAL_FLOAT.  */
+
+inline opt_scalar_float_mode
+decimal_float_mode_for_size (unsigned int size)
+{
+  return dyn_cast <scalar_float_mode>
+    (mode_for_size (size, MODE_DECIMAL_FLOAT, 0));
+}
 
 extern machine_mode smallest_mode_for_size (unsigned int, enum mode_class);
 
@@ -665,16 +693,23 @@ smallest_int_mode_for_size (unsigned int size)
   return as_a <scalar_int_mode> (smallest_mode_for_size (size, MODE_INT));
 }
 
-/* Return an integer mode of exactly the same size as the input mode.  */
-
 extern opt_scalar_int_mode int_mode_for_mode (machine_mode);
+extern opt_machine_mode bitwise_mode_for_mode (machine_mode);
+extern opt_machine_mode mode_for_vector (scalar_mode, unsigned);
+extern opt_machine_mode mode_for_int_vector (unsigned int, unsigned int);
 
-extern machine_mode bitwise_mode_for_mode (machine_mode);
+/* Return the integer vector equivalent of MODE, if one exists.  In other
+   words, return the mode for an integer vector that has the same number
+   of bits as MODE and the same number of elements as MODE, with the
+   latter being 1 if MODE is scalar.  The returned mode can be either
+   an integer mode or a vector mode.  */
 
-/* Return a mode that is suitable for representing a vector,
-   or BLKmode on failure.  */
-
-extern machine_mode mode_for_vector (scalar_mode, unsigned);
+inline opt_machine_mode
+mode_for_int_vector (machine_mode mode)
+{
+  return mode_for_int_vector (GET_MODE_UNIT_BITSIZE (mode),
+			      GET_MODE_NUNITS (mode));
+}
 
 /* A class for iterating through possible bitfield modes.  */
 class bit_field_mode_iterator

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -28,8 +28,6 @@
 -- Extensive contributions were provided by Ada Core Technologies Inc.      --
 --                                                                          --
 ------------------------------------------------------------------------------
-
-pragma Compiler_Unit_Warning;
 
 with System; use System;
 
@@ -58,20 +56,14 @@ package body Ada.Command_Line is
    --------------
 
    function Argument (Number : Positive) return String is
-      Num : Positive;
-
    begin
       if Number > Argument_Count then
          raise Constraint_Error;
       end if;
 
-      if Remove_Args = null then
-         Num := Number;
-      else
-         Num := Remove_Args (Number);
-      end if;
-
       declare
+         Num : constant Positive :=
+           (if Remove_Args = null then Number else Remove_Args (Number));
          Arg : aliased String (1 .. Len_Arg (Num));
       begin
          Fill_Arg (Arg'Address, Num);

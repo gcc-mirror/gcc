@@ -3613,7 +3613,6 @@ package body Exp_Attr is
       --  Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Image =>
-
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
 
@@ -3630,13 +3629,7 @@ package body Exp_Attr is
       --  X'Img is expanded to typ'Image (X), where typ is the type of X
 
       when Attribute_Img =>
-         Rewrite (N,
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Occurrence_Of (Ptyp, Loc),
-             Attribute_Name => Name_Image,
-             Expressions    => New_List (Relocate_Node (Pref))));
-
-         Analyze_And_Resolve (N, Standard_String);
+         Exp_Imgv.Expand_Image_Attribute (N);
 
       -----------
       -- Input --
@@ -6982,7 +6975,6 @@ package body Exp_Attr is
       --  Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Image =>
-
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
 
@@ -6999,7 +6991,6 @@ package body Exp_Attr is
       --  Wide_Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Wide_Image =>
-
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
 

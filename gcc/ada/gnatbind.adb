@@ -36,7 +36,12 @@ with Debug;    use Debug;
 with Fmap;
 with Namet;    use Namet;
 with Opt;      use Opt;
+
 with Osint;    use Osint;
+--  Note that we use low-level routines in Osint to read command-line
+--  arguments. We cannot depend on Ada.Command_Line, because it contains modern
+--  Ada features that would break bootstrapping with old base compilers.
+
 with Osint.B;  use Osint.B;
 with Output;   use Output;
 with Rident;   use Rident;
@@ -47,9 +52,8 @@ with Targparm; use Targparm;
 with Types;    use Types;
 
 with System.Case_Util; use System.Case_Util;
+with System.Response_File;
 with System.OS_Lib;    use System.OS_Lib;
-
-with Ada.Command_Line.Response_File; use Ada.Command_Line;
 
 procedure Gnatbind is
 
@@ -505,8 +509,6 @@ procedure Gnatbind is
       Next_Arg : Positive := 1;
 
    begin
-      --  Use low level argument routines to avoid dragging in secondary stack
-
       while Next_Arg < Arg_Count loop
          declare
             Next_Argv : String (1 .. Len_Arg (Next_Arg));
@@ -519,7 +521,7 @@ procedure Gnatbind is
                   if Next_Argv'Length > 1 then
                      declare
                         Arguments : constant Argument_List :=
-                                      Response_File.Arguments_From
+                          System.Response_File.Arguments_From
                                         (Response_File_Name        =>
                                            Next_Argv (2 .. Next_Argv'Last),
                                          Recursive                 => True,
@@ -598,7 +600,13 @@ begin
    Scan_Bind_Args;
 
    if Verbose_Mode then
-      Write_Str (Command_Name);
+      declare
+         Command_Name : String (1 .. Len_Arg (0));
+      begin
+         Fill_Arg (Command_Name'Address, 0);
+         Write_Str (Command_Name);
+      end;
+
       Put_Bind_Args;
       Write_Eol;
    end if;
@@ -669,7 +677,7 @@ begin
    --  Output usage information if no arguments
 
    if not More_Lib_Files then
-      if Argument_Count = 0 then
+      if Arg_Count = 0 then
          Bindusg.Display;
       else
          Write_Line ("try ""gnatbind --help"" for more information.");
