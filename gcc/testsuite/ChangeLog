@@ -1,3 +1,8 @@
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82108
+	* gcc.dg/vect/pr82108.c: New testcase.
+
 2017-09-06  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/82078
