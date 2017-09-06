@@ -12901,12 +12901,51 @@ package body Exp_Util is
          --  Is this right? what about x'first where x is a variable???
 
          when N_Attribute_Reference =>
-            return
-              Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
-                and then Attribute_Name (N) /= Name_Input
-                and then (Is_Entity_Name (Prefix (N))
-                           or else Side_Effect_Free
-                                     (Prefix (N), Name_Req, Variable_Ref));
+            Attribute_Reference : declare
+
+               function Side_Effect_Free_Attribute
+                 (Attribute_Name : Name_Id) return Boolean;
+               --  Returns True if evaluation of the given attribute is
+               --  considered side-effect free (independent of prefix and
+               --  arguments).
+
+               --------------------------------
+               -- Side_Effect_Free_Attribute --
+               --------------------------------
+
+               function Side_Effect_Free_Attribute
+                 (Attribute_Name : Name_Id) return Boolean
+               is
+               begin
+                  case Attribute_Name is
+                     when Name_Input =>
+                        return False;
+
+                     when Name_Image
+                        | Name_Img
+                        | Name_Wide_Image
+                        | Name_Wide_Wide_Image
+                     =>
+                        --  CodePeer doesn't want to see replicated copies of
+                        --  'Image calls.
+
+                        return not CodePeer_Mode;
+
+                     when others =>
+                        return True;
+                  end case;
+               end Side_Effect_Free_Attribute;
+
+            --  Start of processing for Attribute_Reference
+
+            begin
+               return
+                 Side_Effect_Free (Expressions (N), Name_Req, Variable_Ref)
+                   and then Side_Effect_Free_Attribute (Attribute_Name (N))
+                   and then (Is_Entity_Name (Prefix (N))
+                              or else Side_Effect_Free
+                                        (Prefix (N), Name_Req, Variable_Ref));
+            end Attribute_Reference;
 
          --  A binary operator is side effect free if and both operands are
          --  side effect free. For this purpose binary operators include

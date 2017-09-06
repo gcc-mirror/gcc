@@ -14130,7 +14130,7 @@ package body Sem_Util is
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean is
    begin
-      --  When the type of the prefix is not scalar then the prefix is not
+      --  When the type of the prefix is not scalar, then the prefix is not
       --  valid in any scenario.
 
       if not Is_Scalar_Type (Etype (Prefix)) then
@@ -14228,9 +14228,9 @@ package body Sem_Util is
                return not Nkind_In (Original_Node (N), N_Case_Expression,
                                                        N_If_Expression);
 
-            when N_Type_Conversion =>
-               --  A view conversion of a tagged object is an object reference
+            --  A view conversion of a tagged object is an object reference
 
+            when N_Type_Conversion =>
                return Is_Tagged_Type (Etype (Subtype_Mark (N)))
                  and then Is_Tagged_Type (Etype (Expression (N)))
                  and then Is_Object_Reference (Expression (N));
@@ -22569,6 +22569,7 @@ package body Sem_Util is
          if Ekind (Scop) = E_Protected_Type then
             return True;
          end if;
+
          Scop := Scope (Scop);
       end loop;
 

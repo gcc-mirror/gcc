@@ -1200,7 +1200,6 @@ package body Sem_Dim is
             end if;
 
          when N_Unary_Op =>
-
             Analyze_Dimension_Unary_Op (N);
 
          when others =>

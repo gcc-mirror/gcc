@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -325,22 +325,66 @@ package body Pprint is
                end if;
 
             when N_Explicit_Dereference =>
+               Explicit_Dereference : declare
+                  function Deref_Suffix return String;
+                  --  Usually returns ".all", but will return "" if
+                  --  Hide_Temp_Derefs is true and the prefix is a use of a
+                  --  not-from-source object declared as
+                  --    X : constant Some_Access_Type := Some_Expr'Reference;
+                  --  (as is sometimes done in Exp_Util.Remove_Side_Effects).
 
-               --  Return "Foo" instead of "Parameter_Block.Foo.all"
+                  ------------------
+                  -- Deref_Suffix --
+                  ------------------
 
-               if Hide_Parameter_Blocks
-                 and then Nkind (Prefix (Expr)) = N_Selected_Component
-                 and then Present (Etype (Prefix (Expr)))
-                 and then Is_Access_Type (Etype (Prefix (Expr)))
-                 and then Is_Param_Block_Component_Type (Etype (Prefix (Expr)))
-               then
-                  return Expr_Name (Selector_Name (Prefix (Expr)));
+                  function Deref_Suffix return String is
+                     Decl : Node_Id;
 
-               elsif Take_Prefix then
-                  return Expr_Name (Prefix (Expr)) & ".all";
-               else
-                  return ".all";
-               end if;
+                  begin
+                     if Hide_Temp_Derefs
+                       and then Nkind (Prefix (Expr)) = N_Identifier
+                       and then Nkind (Entity (Prefix (Expr))) =
+                                  N_Defining_Identifier
+                     then
+                        Decl := Parent (Entity (Prefix (Expr)));
+
+                        if Present (Decl)
+                          and then Nkind (Decl) = N_Object_Declaration
+                          and then not Comes_From_Source (Decl)
+                          and then Constant_Present (Decl)
+                          and then Present (Sinfo.Expression (Decl))
+                          and then Nkind (Sinfo.Expression (Decl)) =
+                                     N_Reference
+                        then
+                           return "";
+                        end if;
+                     end if;
+
+                     --  The default case
+
+                     return ".all";
+                  end Deref_Suffix;
+
+               --  Start of processing for Explicit_Dereference
+
+               begin
+                  if Hide_Parameter_Blocks
+                    and then Nkind (Prefix (Expr)) = N_Selected_Component
+                    and then Present (Etype (Prefix (Expr)))
+                    and then Is_Access_Type (Etype (Prefix (Expr)))
+                    and then Is_Param_Block_Component_Type
+                               (Etype (Prefix (Expr)))
+                  then
+                     --  Return "Foo" instead of "Parameter_Block.Foo.all"
+
+                     return Expr_Name (Selector_Name (Prefix (Expr)));
+
+                  elsif Take_Prefix then
+                     return Expr_Name (Prefix (Expr)) & Deref_Suffix;
+                  else
+                     return Deref_Suffix;
+                  end if;
+               end Explicit_Dereference;
 
             when N_Expanded_Name
                | N_Selected_Component
