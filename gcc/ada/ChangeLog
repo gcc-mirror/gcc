@@ -1,3 +1,78 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch3.adb, sem_aux.adb, sem_res.adb: Minor reformatting.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Instance_And_Renamings): Refactor to set
+	global variable Ignore_SPARK_Mode_Pragmas_In_Instance only once.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch8.adb: Change Assert to be consistent with
+	other similar ones.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Find_Elab_Order): Do not run Elab_Old unless
+	requested. Previously, the -do switch meant "run Elab_New and
+	Elab_Old and use the order chosen by Elab_Old, possibly with
+	debugging printouts comparing the two orders."	Now it means
+	"do not run Elab_New." This is of use if there are bugs that
+	cause Elab_New to crash.
+	(Elab_Position, Num_Chosen): Change type to Nat, to avoid various
+	type conversions.
+	* ali.ads (Elab_Position): Change type to Nat, to avoid various
+	type conversions.
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Check_Mode_Restriction_In_Enclosing_Context): Fix
+	reference to SPARK RM.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb: Use SSU short hand consistently throughout the file.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Freeze_Record_Type)
+	<Sized_Component_Total_Round_RM_Size>: New local variable to
+	accumulate the rounded RM_Size of components.  Update it for
+	every component whose RM_Size is statically known.  Add missing
+	guard to check that bit packing is really required before issuing
+	the error about packing.  Swap condition for clarity's sake.
+	* sem_prag.adb (Usage_Error): fix reference to
+	SPARK RM in comment
+
+2017-09-06  Fedor Rybin  <frybin@adacore.com>
+
+	* makeutl.adb, makeutl.ads, mlib.adb, mlib.ads, mlib-fil.adb,
+	mlib-fil.ads, mlib-prj.adb, mlib-prj.ads, mlib-tgt.adb, mlib-tgt.ads,
+	mlib-tgt-specific.adb, mlib-tgt-specific.ads,
+	mlib-tgt-specific-aix.adb, mlib-tgt-specific-darwin.adb,
+	mlib-tgt-specific-hpux.adb, mlib-tgt-specific-linux.adb,
+	mlib-tgt-specific-mingw.adb, mlib-tgt-specific-solaris.adb,
+	mlib-tgt-specific-vxworks.adb, mlib-tgt-specific-xi.adb, mlib-utl.adb,
+	mlib-utl.ads, prj.adb, prj.ads, prj-attr.adb, prj-attr.ads,
+	prj-attr-pm.adb, prj-attr-pm.ads, prj-com.ads, prj-conf.adb,
+	prj-conf.ads, prj-dect.adb, prj-dect.ads, prj-env.adb, prj-env.ads,
+	prj-err.adb, prj-err.ads, prj-ext.adb, prj-ext.ads, prj-makr.adb,
+	prj-makr.ads, prj-nmsc.adb, prj-nmsc.ads, prj-pars.adb, prj-pars.ads,
+	prj-part.adb, prj-part.ads, prj-pp.adb, prj-pp.ads, prj-proc.adb,
+	prj-proc.ads, prj-strt.adb, prj-strt.ads, prj-tree.adb, prj-tree.ads,
+	prj-util.adb, prj-util.ads, sinput-p.adb, sinput-p.ads: Remove obsolete
+	project manager sources.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch5.adb (Analyze_Assigment): If the left-hand side is an
+	entity of a mutable type and the right-hand side is a conditional
+	expression, resolve the alternatives of the conditional using
+	the base type of the target entity, because the alternatives
+	may have distinct subtypes. This is particularly relevant if
+	the alternatives are aggregates.
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* checks.adb (Apply_Predicate_Check): If the expression is an

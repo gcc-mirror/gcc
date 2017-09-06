@@ -3818,6 +3818,10 @@ package body Freeze is
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
 
+         Sized_Component_Total_Round_RM_Size : Uint := Uint_0;
+         --  Accumulates total RM_Size values of all sized components, rounded
+         --  individually to a multiple of the storage unit.
+
          SSO_ADC : Node_Id;
          --  Scalar_Storage_Order attribute definition clause for the record
 
@@ -4123,21 +4127,31 @@ package body Freeze is
             --  an implicit subtype declaration.
 
             if Known_Static_RM_Size (Etype (Comp)) then
-               Sized_Component_Total_RM_Size :=
-                 Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
+               declare
+                  Comp_Type : constant Entity_Id := Etype (Comp);
+                  Comp_Size : constant Uint := RM_Size (Comp_Type);
+                  SSU : constant Int := Ttypes.System_Storage_Unit;
+               begin
+                  Sized_Component_Total_RM_Size :=
+                    Sized_Component_Total_RM_Size + Comp_Size;
 
-               if Present (Underlying_Type (Etype (Comp)))
-                 and then Is_Elementary_Type (Underlying_Type (Etype (Comp)))
-               then
-                  Elem_Component_Total_Esize :=
-                    Elem_Component_Total_Esize + Esize (Etype (Comp));
-               else
-                  All_Elem_Components := False;
+                  Sized_Component_Total_Round_RM_Size :=
+                    Sized_Component_Total_Round_RM_Size +
+                      (Comp_Size + SSU - 1) / SSU * SSU;
 
-                  if RM_Size (Etype (Comp)) mod System_Storage_Unit /= 0 then
-                     All_Storage_Unit_Components := False;
+                  if Present (Underlying_Type (Comp_Type))
+                    and then Is_Elementary_Type (Underlying_Type (Comp_Type))
+                  then
+                     Elem_Component_Total_Esize :=
+                       Elem_Component_Total_Esize + Esize (Comp_Type);
+                  else
+                     All_Elem_Components := False;
+
+                     if Comp_Size mod SSU /= 0 then
+                        All_Storage_Unit_Components := False;
+                     end if;
                   end if;
-               end if;
+               end;
             else
                All_Sized_Components := False;
             end if;
@@ -4603,12 +4617,13 @@ package body Freeze is
                  and then RM_Size (Rec) < Elem_Component_Total_Esize)
              or else
                (not All_Elem_Components
-                 and then not All_Storage_Unit_Components))
+                 and then not All_Storage_Unit_Components
+                 and then RM_Size (Rec) < Sized_Component_Total_Round_RM_Size))
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be.
 
-           and then RM_Size (Rec) >= Sized_Component_Total_RM_Size
+           and then Sized_Component_Total_RM_Size <= RM_Size (Rec)
 
            --  Never do implicit packing in CodePeer or SPARK modes since
            --  we don't do any packing in these modes, since this generates

@@ -1447,7 +1447,7 @@ package body Sem_Prag is
                --  Unconstrained and tagged items are not part of the explicit
                --  input set of the related subprogram, they do not have to be
                --  present in a dependence relation and should not be flagged
-               --  (SPARK RM 6.1.5(8)).
+               --  (SPARK RM 6.1.5(5)).
 
                if not Is_Unconstrained_Or_Tagged_Item (Item_Id) then
                   Name_Len := 0;
@@ -2443,7 +2443,7 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram (SPARK RM 6.1.4(11)).
+                  --  an Input in an enclosing subprogram (SPARK RM 6.1.4(12)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)

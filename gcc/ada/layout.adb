@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -2728,8 +2728,8 @@ package body Layout is
                --  this means it will be storage-unit addressable).
 
                if Is_Scalar_Type (E) then
-                  if Size <= System_Storage_Unit then
-                     Init_Esize (E, System_Storage_Unit);
+                  if Size <= SSU then
+                     Init_Esize (E, SSU);
                   elsif Size <= 16 then
                      Init_Esize (E, 16);
                   elsif Size <= 32 then
@@ -2741,7 +2741,7 @@ package body Layout is
                   --  Finally, make sure that alignment is consistent with
                   --  the newly assigned size.
 
-                  while Alignment (E) * System_Storage_Unit < Esize (E)
+                  while Alignment (E) * SSU < Esize (E)
                     and then Alignment (E) < Maximum_Alignment
                   loop
                      Set_Alignment (E, 2 * Alignment (E));
@@ -2971,11 +2971,11 @@ package body Layout is
          --  Reset alignment to match size if the known size is exactly 2, 4,
          --  or 8 storage units.
 
-         if Siz = 2 * System_Storage_Unit then
+         if Siz = 2 * SSU then
             Align := 2;
-         elsif Siz = 4 * System_Storage_Unit then
+         elsif Siz = 4 * SSU then
             Align := 4;
-         elsif Siz = 8 * System_Storage_Unit then
+         elsif Siz = 8 * SSU then
             Align := 8;
 
             --  If Optimize_Alignment is set to Space, then make sure the
@@ -2983,11 +2983,11 @@ package body Layout is
             --  bytes then we want an alignment of 1 for the type.
 
          elsif Optimize_Alignment_Space (E) then
-            if Siz mod (8 * System_Storage_Unit) = 0 then
+            if Siz mod (8 * SSU) = 0 then
                Align := 8;
-            elsif Siz mod (4 * System_Storage_Unit) = 0 then
+            elsif Siz mod (4 * SSU) = 0 then
                Align := 4;
-            elsif Siz mod (2 * System_Storage_Unit) = 0 then
+            elsif Siz mod (2 * SSU) = 0 then
                Align := 2;
             else
                Align := 1;
@@ -2998,14 +2998,14 @@ package body Layout is
             --  alignment of 4.
 
          elsif Optimize_Alignment_Time (E)
-           and then Siz > System_Storage_Unit
-           and then Siz <= 8 * System_Storage_Unit
+           and then Siz > SSU
+           and then Siz <= 8 * SSU
          then
-            if Siz <= 2 * System_Storage_Unit then
+            if Siz <= 2 * SSU then
                Align := 2;
-            elsif Siz <= 4 * System_Storage_Unit then
+            elsif Siz <= 4 * SSU then
                Align := 4;
-            else -- Siz <= 8 * System_Storage_Unit then
+            else -- Siz <= 8 * SSU then
                Align := 8;
             end if;
 
@@ -3034,10 +3034,10 @@ package body Layout is
          --  words in any case. Omit this if we are optimizing for time,
          --  since conceivably we may be able to do better.
 
-         if Align > System_Word_Size / System_Storage_Unit
+         if Align > System_Word_Size / SSU
            and then not Optimize_Alignment_Time (E)
          then
-            Align := System_Word_Size / System_Storage_Unit;
+            Align := System_Word_Size / SSU;
          end if;
 
          --  Check components. If any component requires a higher alignment,
@@ -3068,8 +3068,7 @@ package body Layout is
                             (Unknown_Esize (Comp)
                               or else (Known_Static_Esize (Comp)
                                         and then
-                                          Esize (Comp) =
-                                              Calign * System_Storage_Unit))
+                                       Esize (Comp) = Calign * SSU))
                         then
                            Align := UI_To_Int (Calign);
                         end if;
@@ -3088,9 +3087,9 @@ package body Layout is
       Set_Alignment (E, UI_From_Int (Align));
 
       if Known_Static_Esize (E)
-        and then Esize (E) < Align * System_Storage_Unit
+        and then Esize (E) < Align * SSU
       then
-         Set_Esize (E, UI_From_Int (Align * System_Storage_Unit));
+         Set_Esize (E, UI_From_Int (Align * SSU));
       end if;
    end Set_Composite_Alignment;
 
