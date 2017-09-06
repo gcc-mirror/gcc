@@ -871,11 +871,25 @@ package body Exp_Util is
 
                   --    Temp'Tag
 
+                  --  If the object is an unchecked conversion (typically to
+                  --  an access to class-wide type), we must preserve the
+                  --  conversion to ensure that the object is seen as tagged
+                  --  in the code that follows.
+
                   else
-                     Param :=
-                       Make_Attribute_Reference (Loc,
-                         Prefix         => Relocate_Node (Temp),
-                         Attribute_Name => Name_Tag);
+                     if
+                       Nkind (Parent (Temp)) = N_Unchecked_Type_Conversion
+                     then
+                        Param :=
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => Relocate_Node (Parent (Temp)),
+                            Attribute_Name => Name_Tag);
+                     else
+                        Param :=
+                          Make_Attribute_Reference (Loc,
+                            Prefix         => Relocate_Node (Temp),
+                            Attribute_Name => Name_Tag);
+                     end if;
                   end if;
 
                   --  Generate:
