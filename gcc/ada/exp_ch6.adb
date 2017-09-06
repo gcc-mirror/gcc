@@ -3505,8 +3505,8 @@ package body Exp_Ch6 is
                     Root_Type (Etype (Name (Ass)))
                   then
                      Error_Msg_NE
-                       ("tag-indeterminate expression "
-                         & " must have designated type& (RM 5.2 (6))",
+                       ("tag-indeterminate expression must have designated "
+                        & "type& (RM 5.2 (6))",
                          Call_Node, Root_Type (Etype (Name (Ass))));
                   else
                      Propagate_Tag (Name (Ass), Call_Node);
@@ -3514,8 +3514,8 @@ package body Exp_Ch6 is
 
                elsif Etype (Call_Node) /= Root_Type (Etype (Name (Ass))) then
                   Error_Msg_NE
-                    ("tag-indeterminate expression must have type&"
-                     & " (RM 5.2 (6))",
+                    ("tag-indeterminate expression must have type & "
+                     & "(RM 5.2 (6))",
                      Call_Node, Root_Type (Etype (Name (Ass))));
 
                else

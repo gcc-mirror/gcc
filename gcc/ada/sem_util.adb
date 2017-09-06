@@ -13773,6 +13773,20 @@ package body Sem_Util is
                              N_Generic_Subprogram_Declaration);
    end Is_Generic_Declaration_Or_Body;
 
+   --------------------------------
+   -- Is_Image_Applied_To_Object --
+   --------------------------------
+
+   function Is_Image_Applied_To_Object
+     (Prefix : Node_Id;
+      P_Typ  : Entity_Id) return Boolean
+   is
+   begin
+      return Ada_Version > Ada_2005
+        and then Is_Object_Reference (Prefix)
+        and then Is_Scalar_Type (P_Typ);
+   end Is_Image_Applied_To_Object;
+
    ----------------------------
    -- Is_Inherited_Operation --
    ----------------------------
@@ -17045,12 +17059,16 @@ package body Sem_Util is
       Formal : Entity_Id;
 
    begin
-      --  Ada 2005 or later, and formals present
+      --  Ada 2005 or later, and formals present. The first formal must
+      --  be of  type that supports prefix notation: a controlling argument,
+      --  a class-wide type, or an access to such.
 
       if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
         and then No (Default_Value (First_Formal (E)))
-        and then Is_Controlling_Formal (First_Formal (E))
+        and then (Is_Controlling_Formal (First_Formal (E))
+          or else Is_Class_Wide_Type (Etype (First_Formal (E)))
+          or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
       then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop

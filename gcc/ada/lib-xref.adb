@@ -415,6 +415,7 @@ package body Lib.Xref is
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id is
       begin
          case Ekind (E) is
+
             --  For subprograms we just need to check once if they are have a
             --  Renamed_Entity, because Renamed_Entity is set transitively.
 
@@ -443,6 +444,7 @@ package body Lib.Xref is
 
                      declare
                         Renamed : constant Entity_Id := Renamed_Object (Obj);
+
                      begin
                         if Present (Renamed) then
                            Obj := Get_Enclosing_Object (Renamed);
@@ -450,6 +452,7 @@ package body Lib.Xref is
                            --  The renamed expression denotes a non-object,
                            --  e.g. function call, slicing of a function call,
                            --  pointer dereference, etc.
+
                            if No (Obj) then
                               return Empty;
                            end if;

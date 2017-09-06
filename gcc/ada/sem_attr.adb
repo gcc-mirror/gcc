@@ -326,18 +326,18 @@ package body Sem_Attr is
 
       procedure Check_Fixed_Point_Type_0;
       --  Verify that prefix of attribute N is a fixed type and that
-      --  no attribute expressions are present
+      --  no attribute expressions are present.
 
       procedure Check_Floating_Point_Type;
       --  Verify that prefix of attribute N is a float type
 
       procedure Check_Floating_Point_Type_0;
       --  Verify that prefix of attribute N is a float type and that
-      --  no attribute expressions are present
+      --  no attribute expressions are present.
 
       procedure Check_Floating_Point_Type_1;
       --  Verify that prefix of attribute N is a float type and that
-      --  exactly one attribute expression is present
+      --  exactly one attribute expression is present.
 
       procedure Check_Floating_Point_Type_2;
       --  Verify that prefix of attribute N is a float type and that
@@ -362,6 +362,9 @@ package body Sem_Attr is
 
       procedure Check_Object_Reference (P : Node_Id);
       --  Check that P is an object reference
+
+      procedure Check_Object_Reference_Image (Str_Typ : Entity_Id);
+      --  Verify that the prefix of an image attribute....
 
       procedure Check_PolyORB_Attribute;
       --  Validity checking for PolyORB/DSA attribute
@@ -2159,6 +2162,33 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be object");
          end if;
       end Check_Object_Reference;
+
+      ----------------------------------
+      -- Check_Object_Reference_Image --
+      ----------------------------------
+
+      procedure Check_Object_Reference_Image (Str_Typ : Entity_Id) is
+      begin
+         Check_E0;
+         Set_Etype (N, Str_Typ);
+
+         if not Is_Scalar_Type (P_Type)
+           or else (Is_Entity_Name (P) and then Is_Type (Entity (P)))
+         then
+            Error_Attr_P
+              ("prefix of % attribute must be scalar object name");
+         end if;
+
+         Check_Enum_Image;
+
+         --  Check restriction No_Fixed_IO
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
+      end Check_Object_Reference_Image;
 
       ----------------------------
       -- Check_PolyORB_Attribute --
@@ -4044,43 +4074,12 @@ package body Sem_Attr is
       when Attribute_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
 
-         --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img for
-         --  scalar types, so that the prefix can be an object and not a type,
-         --  and there is no need for an argument. Given the vote of confidence
-         --  from the ARG, simplest is to transform this new usage of 'Image
-         --  into a reference to 'Img.
-
-         if Ada_Version > Ada_2005
-           and then Is_Object_Reference (P)
-           and then Is_Scalar_Type (P_Type)
-         then
-            if No (Expressions (N)) then
-               Rewrite (N,
-                 Make_Attribute_Reference (Loc,
-                   Prefix         => Relocate_Node (P),
-                   Attribute_Name => Name_Img));
-
-            --  If the attribute reference includes expressions, the only
-            --  possible interpretation is as an indexing of the parameterless
-            --  version of 'Image, so rewrite it accordingly.
-
-            else
-               Rewrite (N,
-                 Make_Indexed_Component (Loc,
-                   Prefix      =>
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => Relocate_Node (P),
-                       Attribute_Name => Name_Img),
-                   Expressions => Expressions (N)));
-            end if;
-
-            Analyze (N);
+         if Is_Image_Applied_To_Object (P, P_Type) then
+            Check_Object_Reference_Image (Standard_String);
             return;
-
-         else
-            Check_Scalar_Type;
          end if;
 
+         Check_Scalar_Type;
          Set_Etype (N, Standard_String);
 
          if Is_Real_Type (P_Type) then
@@ -4115,25 +4114,7 @@ package body Sem_Attr is
       ---------
 
       when Attribute_Img =>
-         Check_E0;
-         Set_Etype (N, Standard_String);
-
-         if not Is_Scalar_Type (P_Type)
-           or else (Is_Entity_Name (P) and then Is_Type (Entity (P)))
-         then
-            Error_Attr_P
-              ("prefix of % attribute must be scalar object name");
-         end if;
-
-         Check_Enum_Image;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+         Check_Object_Reference_Image (Standard_String);
 
       -----------
       -- Input --
@@ -7014,6 +6995,12 @@ package body Sem_Attr is
 
       when Attribute_Wide_Image =>
          Check_SPARK_05_Restriction_On_Attribute;
+
+         if Is_Image_Applied_To_Object (P, P_Type) then
+            Check_Object_Reference_Image (Standard_Wide_String);
+            return;
+         end if;
+
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_String);
          Check_E1;
@@ -7033,6 +7020,11 @@ package body Sem_Attr is
       ---------------------
 
       when Attribute_Wide_Wide_Image =>
+         if Is_Image_Applied_To_Object (P, P_Type) then
+            Check_Object_Reference_Image (Standard_Wide_Wide_String);
+            return;
+         end if;
+
          Check_Scalar_Type;
          Set_Etype (N, Standard_Wide_Wide_String);
          Check_E1;
