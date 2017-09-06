@@ -3361,22 +3361,22 @@ arm_option_override (void)
 
   /* Initialize boolean versions of the architectural flags, for use
      in the arm.md file.  */
-  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv3m);
-  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv4);
+  arm_arch3m = bitmap_bit_p (arm_active_target.isa, isa_bit_armv3m);
+  arm_arch4 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv4);
   arm_arch4t = arm_arch4 && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5);
-  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv5e);
+  arm_arch5 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5);
+  arm_arch5e = bitmap_bit_p (arm_active_target.isa, isa_bit_armv5e);
   arm_arch5te = arm_arch5e
     && bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
-  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6);
-  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv6k);
+  arm_arch6 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6);
+  arm_arch6k = bitmap_bit_p (arm_active_target.isa, isa_bit_armv6k);
   arm_arch_notm = bitmap_bit_p (arm_active_target.isa, isa_bit_notm);
   arm_arch6m = arm_arch6 && !arm_arch_notm;
-  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7);
-  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv7em);
-  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8);
-  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_1);
-  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_ARMv8_2);
+  arm_arch7 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7);
+  arm_arch7em = bitmap_bit_p (arm_active_target.isa, isa_bit_armv7em);
+  arm_arch8 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8);
+  arm_arch8_1 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_1);
+  arm_arch8_2 = bitmap_bit_p (arm_active_target.isa, isa_bit_armv8_2);
   arm_arch_thumb1 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb);
   arm_arch_thumb2 = bitmap_bit_p (arm_active_target.isa, isa_bit_thumb2);
   arm_arch_xscale = bitmap_bit_p (arm_active_target.isa, isa_bit_xscale);
@@ -3406,9 +3406,9 @@ arm_option_override (void)
 
   /* And finally, set up some quirks.  */
   arm_arch_no_volatile_ce
-    = bitmap_bit_p (arm_active_target.isa, isa_quirk_no_volatile_ce);
-  arm_arch6kz
-    = arm_arch6k && bitmap_bit_p (arm_active_target.isa, isa_quirk_ARMv6kz);
+    = bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_no_volatile_ce);
+  arm_arch6kz = arm_arch6k && bitmap_bit_p (arm_active_target.isa,
+					    isa_bit_quirk_armv6kz);
 
   /* V5 code we generate is completely interworking capable, so we turn off
      TARGET_INTERWORK here to avoid many tests later on.  */
@@ -3453,7 +3453,7 @@ arm_option_override (void)
       else if (TARGET_HARD_FLOAT_ABI)
 	{
 	  arm_pcs_default = ARM_PCS_AAPCS_VFP;
-	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv2))
+	  if (!bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv2))
 	    error ("-mfloat-abi=hard: selected processor lacks an FPU");
 	}
       else
@@ -3556,7 +3556,7 @@ arm_option_override (void)
   /* Enable -mfix-cortex-m3-ldrd by default for Cortex-M3 cores.  */
   if (fix_cm3_ldrd == 2)
     {
-      if (bitmap_bit_p (arm_active_target.isa, isa_quirk_cm3_ldrd))
+      if (bitmap_bit_p (arm_active_target.isa, isa_bit_quirk_cm3_ldrd))
 	fix_cm3_ldrd = 1;
       else
 	fix_cm3_ldrd = 0;
