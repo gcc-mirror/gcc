@@ -1,3 +1,9 @@
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82095
+	* varasm.c (categorize_decl_for_section): Use SECCAT_TBSS for TLS vars with
+	NULL DECL_INITIAL.
+
 2017-09-06  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-strength-reduction.c
