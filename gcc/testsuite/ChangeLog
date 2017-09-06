@@ -1,3 +1,9 @@
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/82120
+	* gcc.dg/tree-ssa/pr81588.c: Don't run on logical_op_short_circuit
+	targets except for those where -mbranch-cost=2 is supported.
+
 2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
