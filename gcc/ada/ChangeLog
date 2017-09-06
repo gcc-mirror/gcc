@@ -1,3 +1,22 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute, case 'Loop_Entry): Handle
+	properly an attribute reference 'Loop_Entry that appears in the
+	list of indices of an indexed expression, to prevent an infinite
+	loop in the compiler.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* s-fileio.adb (Name): Do not raise Use_Error for temp files.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch4.adb (Analyze_Set_Membership):  If an alternative
+	in a set membership is an overloaded enumeration literal, and
+	the type of the alternative is resolved from a previous one,
+	replace the entity of the alternative as well as the type,
+	to prevent inconsistencies between the entity and the type.
+
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* ali.ads (ALIs_Record): Add No_Component_Reordering component.
