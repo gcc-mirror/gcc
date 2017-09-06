@@ -1,3 +1,22 @@
+2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-1.c: Update options to know that
+	-mfloat128 is now on by default on PowerPC VSX systems.  Remove
+	-static-libgcc option which is no longer needed.  Use -mvsx or
+	-mpower9-vector to enable VSX or hardware IEEE support, rather
+	than specifying a particular CPU.
+	* gcc.target/powerpc/float128-2.c: Likewise.
+	* gcc.target/powerpc/float128-cmp.c: Likewise.
+	* gcc.target/powerpc/float128-complex-1.c: Likewise.
+	* gcc.target/powerpc/float128-complex-2.c: Likewise.
+	* gcc.target/powerpc/float128-hw.c: Likewise.
+	* gcc.target/powerpc/float128-mix.c: Likewise.
+	* gcc.target/powerpc/float128-type-1.c: Likewise.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/float128-3.c: New test.
+	* gcc.target/powerpc/float128-4.c: Likewise.
+	* gcc.target/powerpc/float128-5.c: Likewise.
+
 2017-09-06  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	PR middle-end/78468
