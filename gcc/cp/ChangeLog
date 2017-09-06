@@ -1,3 +1,9 @@
+2017-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82070 - error with nested lambda capture
+	* pt.c (tsubst_expr) [DECL_EXPR]: Register capture proxies with
+	register_local_specialization.
+
 2017-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (lookup_field_1): Delete.
