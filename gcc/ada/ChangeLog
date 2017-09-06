@@ -1,3 +1,8 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb, einfo.adb, sem_attr.adb, exp_ch4.adb, gnatls.adb,
+	exp_ch3.adb, xoscons.adb: Minor reformatting.
+
 2017-09-06  Raphael Amiard  <amiard@adacore.com>
 
 	* a-chtgop.ads, a-chtgop.adb: Add versions of First and Next with
