@@ -1494,12 +1494,12 @@ package body Freeze is
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
 
-            --  In SPARK mode this is where we can collect the inherited
+            --  In GNATprove mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
             --  normally convey the the modified class-wide conditions on
             --  overriding operations.
 
-            if SPARK_Mode = On then
+            if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
 
             --  Otherwise build the corresponding pragmas to check for legality

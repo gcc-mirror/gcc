@@ -63,7 +63,7 @@ package body Ada.Command_Line is
 
       declare
          Num : constant Positive :=
-           (if Remove_Args = null then Number else Remove_Args (Number));
+                 (if Remove_Args = null then Number else Remove_Args (Number));
          Arg : aliased String (1 .. Len_Arg (Num));
       begin
          Fill_Arg (Arg'Address, Num);

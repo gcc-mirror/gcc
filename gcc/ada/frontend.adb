@@ -133,14 +133,14 @@ begin
    --  Read and process configuration pragma files if present
 
    declare
-      Config_Pragmas : List_Id := Empty_List;
-      --  Gather configuration pragmas
-
-      Gnat_Adc : constant File_Name_Type := Name_Find ("gnat.adc");
       Dot_Gnat_Adc : constant File_Name_Type := Name_Find ("./gnat.adc");
+      Gnat_Adc     : constant File_Name_Type := Name_Find ("gnat.adc");
 
       Save_Style_Check : constant Boolean := Opt.Style_Check;
       --  Save style check mode so it can be restored later
+
+      Config_Pragmas : List_Id := Empty_List;
+      --  Gather configuration pragmas
 
       Source_Config_File : Source_File_Index;
       --  Source reference for -gnatec configuration file
@@ -191,19 +191,21 @@ begin
             declare
                Len : constant Natural := Config_File_Names (Index)'Length;
                Str : constant String (1 .. Len) :=
-                 Config_File_Names (Index).all;
+                       Config_File_Names (Index).all;
+
                Config_Name : constant File_Name_Type := Name_Find (Str);
-               Temp_File : constant Boolean := Len > 4
-                 and then
-                  (Str (Len - 3 .. Len) = ".TMP"
-                     or else
-                   Str (Len - 3 .. Len) = ".tmp");
+               Temp_File   : constant Boolean :=
+                               Len > 4
+                                 and then
+                                   (Str (Len - 3 .. Len) = ".TMP"
+                                      or else
+                                    Str (Len - 3 .. Len) = ".tmp");
                --  Extension indicating a temporary config file?
 
             begin
                --  Skip it if it's the default name, already loaded above.
-               --  Otherwise, we get confusing warning messages about
-               --  seeing the same thing twice.
+               --  Otherwise, we get confusing warning messages about seeing
+               --  the same thing twice.
 
                if Config_Name /= Gnat_Adc
                  and then Config_Name /= Dot_Gnat_Adc

@@ -16311,7 +16311,7 @@ package body Sem_Ch3 is
       then
          declare
             Partial_View : constant Entity_Id :=
-              Find_Partial_View (Parent_Type);
+                             Find_Partial_View (Parent_Type);
 
          begin
             --  If the partial view was not found then the parent type is not a
@@ -16321,9 +16321,9 @@ package body Sem_Ch3 is
             if Present (Partial_View)
               and then not Is_Tagged_Type (Partial_View)
             then
-               Error_Msg_NE ("cannot derive from & declared as "
-                             & "untagged private (SPARK RM 3.4(1))",
-                             N, Partial_View);
+               Error_Msg_NE
+                 ("cannot derive from & declared as untagged private "
+                  & "(SPARK RM 3.4(1))", N, Partial_View);
             end if;
          end;
       end if;

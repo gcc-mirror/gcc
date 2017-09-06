@@ -644,8 +644,8 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  Checks 11: The C code generator cannot handle aggregates that
-         --  are not part of an object declaration.
+         --  Checks 11: The C code generator cannot handle aggregates that are
+         --  not part of an object declaration.
 
          if Modify_Tree_For_C then
             declare
@@ -653,7 +653,7 @@ package body Exp_Aggr is
 
             begin
                --  Skip enclosing nested aggregates and their qualified
-               --  expressions
+               --  expressions.
 
                while Nkind (Par) = N_Aggregate
                  or else Nkind (Par) = N_Qualified_Expression

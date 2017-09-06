@@ -1,3 +1,44 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* a-comlin.adb, exp_aggr.adb, exp_ch6.adb, frontend.adb, gnatbind.adb,
+	sem_ch3.adb, sem_util.adb: Minor reformatting.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* freeze.adb (Check_Inherited_Conditions): Rewriting
+	of inherited preconditions and postconditions should only occur
+	in GNATprove mode, that is, when GNATprove_Mode is True, not to
+	be confused with SPARK_Mode being On.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Check_References): Take into
+	account possibility of attribute reference as original node.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Protect against invalid
+	use of attribute.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Split_Unconstrained_Function): Also set Is_Inlined
+	on the procedure created to encapsulate the body.
+	* sem_ch7.adb: Add with clause for GNAT.HTable.
+	(Entity_Table_Size): New constant.
+	(Entity_Hash): New function.
+	(Subprogram_Table): New instantiation of GNAT.Htable.Simple_HTable.
+	(Is_Subprogram_Ref): Rename into...
+	(Scan_Subprogram_Ref): ...this. Record references to subprograms in
+	the table instead of bailing out on them. Scan the value of constants
+	if it is not known at compile time.
+	(Contains_Subprograms_Refs): Rename into...
+	(Scan_Subprogram_Refs): ...this.
+	(Has_Referencer): Scan the body of all inlined subprograms. Reset the
+	Is_Public flag on subprograms if they are not actually referenced.
+	(Hide_Public_Entities): Beef up comment on the algorithm.
+	Reset the table of subprograms on entry.
+
 2017-09-06  Yannick Moy  <moy@adacore.com>
 
 	* inline.adb: Add comments to Can_Be_Inlined_In_GNATprove_Mode.
