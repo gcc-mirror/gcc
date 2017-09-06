@@ -4061,6 +4061,7 @@ package body Exp_Ch4 is
                 New_Copy_Tree (Right_Opnd (N))));
             Set_Left_Opnd (Mod_Expr,
               Unchecked_Convert_To (Standard_Integer, Op_Expr));
+
          else
             Set_Left_Opnd (Op_Expr,
               Unchecked_Convert_To (Standard_Integer,
@@ -4157,6 +4158,7 @@ package body Exp_Ch4 is
             Expand_Modular_Subtraction;
 
          when N_Op_Minus =>
+
             --  Expand -expr into (0 - expr)
 
             Rewrite (N,

@@ -823,6 +823,7 @@ package body Exp_Util is
                Flag_Id   : constant Entity_Id := Make_Temporary (Loc, 'F');
                Flag_Expr : Node_Id;
                Param     : Node_Id;
+               Pref      : Node_Id;
                Temp      : Node_Id;
 
             begin
@@ -877,19 +878,17 @@ package body Exp_Util is
                   --  in the code that follows.
 
                   else
-                     if
-                       Nkind (Parent (Temp)) = N_Unchecked_Type_Conversion
+                     Pref := Temp;
+
+                     if Nkind (Parent (Pref)) = N_Unchecked_Type_Conversion
                      then
-                        Param :=
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Relocate_Node (Parent (Temp)),
-                            Attribute_Name => Name_Tag);
-                     else
-                        Param :=
-                          Make_Attribute_Reference (Loc,
-                            Prefix         => Relocate_Node (Temp),
-                            Attribute_Name => Name_Tag);
+                        Pref := Parent (Pref);
                      end if;
+
+                     Param :=
+                       Make_Attribute_Reference (Loc,
+                         Prefix         => Relocate_Node (Pref),
+                         Attribute_Name => Name_Tag);
                   end if;
 
                   --  Generate:

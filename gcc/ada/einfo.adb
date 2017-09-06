@@ -7132,7 +7132,7 @@ package body Einfo is
       loop
          if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
            or else (Nkind (P) = N_Defining_Program_Unit_Name
-                    and then Is_Child_Unit (Id))
+                     and then Is_Child_Unit (Id))
          then
             P := Parent (P);
          else
