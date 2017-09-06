@@ -15539,6 +15539,32 @@ package body Sem_Util is
         and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
 
+   ---------------------------------------
+   -- Is_Subp_Or_Entry_Inside_Protected --
+   ---------------------------------------
+
+   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean is
+      Scop : Entity_Id;
+
+   begin
+      case Ekind (E) is
+         when Entry_Kind | Subprogram_Kind =>
+            Scop := Scope (E);
+
+            while Present (Scop) loop
+               if Ekind (Scop) = E_Protected_Type then
+                  return True;
+               end if;
+               Scop := Scope (Scop);
+            end loop;
+
+            return False;
+
+         when others =>
+            return False;
+      end case;
+   end Is_Subp_Or_Entry_Inside_Protected;
+
    --------------------------
    -- Is_Suspension_Object --
    --------------------------
