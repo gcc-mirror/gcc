@@ -2649,8 +2649,26 @@ package body Sem_Ch3 is
                --  in order to perform visibility checks on delayed aspects.
 
                Adjust_Decl;
-               Freeze_All (First_Entity (Current_Scope), Decl);
-               Freeze_From := Last_Entity (Current_Scope);
+
+               --  If the current scope is a generic subprogram body. skip
+               --  the generic formal parameters that are not frozen here.
+
+               if Is_Subprogram (Current_Scope)
+                 and then Nkind (Unit_Declaration_Node (Current_Scope))
+                   = N_Generic_Subprogram_Declaration
+                 and then Present (First_Entity (Current_Scope))
+               then
+                  while Is_Generic_Formal (Freeze_From) loop
+                     Freeze_From := Next_Entity (Freeze_From);
+                  end loop;
+
+                  Freeze_All (Freeze_From, Decl);
+                  Freeze_From := Last_Entity (Current_Scope);
+
+               else
+                  Freeze_All (First_Entity (Current_Scope), Decl);
+                  Freeze_From := Last_Entity (Current_Scope);
+               end if;
 
             --  Current scope is a package specification
 

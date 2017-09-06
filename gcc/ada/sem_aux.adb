@@ -1053,9 +1053,13 @@ package body Sem_Aux is
 
          return
            Nkind_In (Kind, N_Formal_Object_Declaration,
-                           N_Formal_Package_Declaration,
                            N_Formal_Type_Declaration)
-             or else Is_Formal_Subprogram (E);
+             or else Is_Formal_Subprogram (E)
+
+             or else
+               (Ekind (E) = E_Package
+                 and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                    N_Formal_Package_Declaration);
       end if;
    end Is_Generic_Formal;
 

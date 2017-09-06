@@ -5089,6 +5089,15 @@ package body Sem_Ch12 is
             Set_Parent_Spec (Pack_Decl, Parent_Spec (N));
          end if;
 
+         --  If the context of the instance is subject to SPARK_Mode "off" or
+         --  the annotation is altogether missing, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
+         --  the instance.
+
+         if SPARK_Mode /= On then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
          Analyze (Pack_Decl);
          Check_Formal_Packages (Pack_Id);
          Set_Is_Generic_Instance (Pack_Id, False);
