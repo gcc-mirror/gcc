@@ -1,3 +1,18 @@
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-pre.c (NECESSARY): Remove.
+	(create_expression_by_pieces): Do not touch pass-local flags.
+	(insert_into_preds_of_block): Likewise.
+	(do_pre_regular_insertion): Likewise.
+	(eliminate_insert): Likewise.
+	(eliminate_dom_walker::before_dom_children): Likewise.
+	(fini_eliminate): Do not look at inserted_exprs.
+	(mark_operand_necessary): Remove.
+	(remove_dead_inserted_code): Replace with simple work-list
+	algorithm based on inserted_exprs and SSA uses.
+	(pass_pre::execute): Re-order fini_eliminate and
+	remove_dead_inserted_code.
+
 2017-09-06  Olivier Hainque  <hainque@adacore.com>
 
 	* config/powerpcspe/vxworks.h (VXCPU_FOR_8548): Correct definition
