@@ -44,7 +44,6 @@ with Table;
 
 with GNAT.HTable;      use GNAT.HTable;
 with GNAT.Heap_Sort_G;
-with GNAT.Table;
 
 package body Par_SCO is
 
@@ -76,12 +75,13 @@ package body Par_SCO is
    --  running some steps multiple times (the second pass has to be started
    --  from multiple places).
 
-   package SCO_Raw_Table is new GNAT.Table
+   package SCO_Raw_Table is new Table.Table
      (Table_Component_Type => SCO_Table_Entry,
       Table_Index_Type     => Nat,
       Table_Low_Bound      => 1,
       Table_Initial        => 500,
-      Table_Increment      => 300);
+      Table_Increment      => 300,
+      Table_Name           => "Raw_Table");
 
    -----------------------
    -- Unit Number Table --

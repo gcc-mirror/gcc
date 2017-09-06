@@ -1590,6 +1590,48 @@ package body Exp_Ch5 is
                   Next_Discriminant (F);
                end;
             end loop;
+
+            --  If the derived type has a stored constraint, assign the value
+            --  of the corresponding discriminants explicitly, skipping those
+            --  that are renamed discriminants. We cannot just retrieve them
+            --  from the Rhs by selected component because they are invisible
+            --  in the type of the right-hand side.
+
+            if Stored_Constraint (R_Typ) /= No_Elist then
+               declare
+                  Discr_Val : Elmt_Id;
+                  Assign    : Node_Id;
+
+               begin
+                  Discr_Val := First_Elmt (Stored_Constraint (R_Typ));
+                  F := First_Entity (R_Typ);
+                  while Present (F) loop
+                     if Ekind (F) = E_Discriminant
+                       and then Is_Completely_Hidden (F)
+                       and then Present (Corresponding_Record_Component (F))
+                       and then (not Is_Entity_Name (Node (Discr_Val))
+                         or else Ekind (Entity (Node (Discr_Val)))
+                           /= E_Discriminant)
+                     then
+                        Assign :=
+                          Make_Assignment_Statement (Loc,
+                            Name =>
+                              Make_Selected_Component (Loc,
+                                Prefix        => Duplicate_Subexpr (Lhs),
+                                Selector_Name =>
+                                  New_Occurrence_Of
+                                    (Corresponding_Record_Component (F), Loc)),
+                            Expression => New_Copy (Node ((Discr_Val))));
+
+                        Set_Assignment_OK (Name (Assign));
+                        Insert_Action (N, Assign);
+                        Next_Elmt (Discr_Val);
+                     end if;
+
+                     Next_Entity (F);
+                  end loop;
+               end;
+            end if;
          end if;
 
          --  We know the underlying type is a record, but its current view

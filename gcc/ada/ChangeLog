@@ -1,3 +1,77 @@
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* treepr.adb (Print_Entity_Info): Do not print empty Elist.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Do not consider calls
+	to subprograms in other units as possibly inlined.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Freeze_Entity): For a derived type that has no
+	explicit delayed aspects but may inherit delayed aspects from its
+	parent type, analyze aspect at freeze point for proper capture
+	of an inherited aspect.
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.adb (Get_Through_Renamings): Get through subprogram
+	renamings; also, avoid repeated calls to Renamed_Object when getting
+	through object renamings.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Array_Type_Declaration): Handle properly an
+	array type declaration in a private part, when an index is a
+	subtype indication of a discrete type with a private partial view.
+
+2017-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_Modular_Op): Force generating
+	temporary to improve the generated code.
+
+2017-09-06  Tristan Gingold  <gingold@adacore.com>
+
+	* s-fatgen.adb: Minor typo fix in comment.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Make_Field_Assign): If the type
+	of the right-hand side has stored constraint, use its values
+	(except for those that are renamings of parent discriminants)
+	to produce additional assignments for the discriminants of the
+	left-hand side, which are invisible in the righ-hand side and
+	not retrievable as selected components.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Needs_One_Formal): The first formal of such a
+	function must be a controlling formal, so that Obj.F (X, Y)
+	can have the interpretation F(Obj)(X, Y).
+	* sem_util.ads: Clarify documentation.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* table.ads, table.adb: Restore original implementation.
+	* namet.h (Names_Ptr): Adjust back.
+	(Name_Chars_Ptr): Likewise.
+	* uintp.h (Uints_Ptr): Likewise.
+	(Udigits_Ptr): Likewise.
+	* g-table.ads: Remove pragma Compiler_Unit_Warning.
+	* par_sco.adb: Do not with GNAT.Table and use Table consistently.
+	* scos.ads: Replace GNAT.Table with Table and adjust instantiations.
+	* spark_xrefs.ads: Likewise.
+	* scos.h: Undo latest changes.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Propagate
+	No_Return flag to instance if pragma applies to generic unit. This
+	must be done explicitly because the pragma does not appear
+	directly in the generic declaration (unlike the corresponding
+	aspect specification).
+
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb (Has_Referencer): Move up and expand comment

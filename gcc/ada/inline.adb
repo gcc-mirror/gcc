@@ -1349,6 +1349,15 @@ package body Inline is
       elsif In_Package_Visible_Spec (Id) then
          return False;
 
+      --  Do not inline subprograms declared in other units. This is important
+      --  in particular for subprograms defined in the private part of a
+      --  package spec, when analyzing one of its child packages, as otherwise
+      --  we issue spurious messages about the impossibility to inline such
+      --  calls.
+
+      elsif not In_Extended_Main_Code_Unit (Id) then
+         return False;
+
       --  Do not inline subprograms marked No_Return, possibly used for
       --  signaling errors, which GNATprove handles specially.
 

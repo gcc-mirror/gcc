@@ -4069,6 +4069,31 @@ package body Exp_Ch4 is
             Set_Right_Opnd (Op_Expr,
               Unchecked_Convert_To (Standard_Integer,
                 New_Copy_Tree (Right_Opnd (N))));
+
+            --  Link this node to the tree to analyze it
+
+            --  If the parent node is an expression with actions we link it
+            --  to N since otherwise Force_Evaluation cannot identify if this
+            --  node comes from the Expression and rejects generating the
+            --  temporary.
+
+            if Nkind (Parent (N)) = N_Expression_With_Actions then
+               Set_Parent (Op_Expr, N);
+
+            --  Common case
+
+            else
+               Set_Parent (Op_Expr, Parent (N));
+            end if;
+
+            Analyze (Op_Expr);
+
+            --  Force generating a temporary because in the expansion of this
+            --  expression we may generate code that performs this computation
+            --  several times.
+
+            Force_Evaluation (Op_Expr, Mode => Strict);
+
             Set_Left_Opnd (Mod_Expr, Op_Expr);
          end if;
 
