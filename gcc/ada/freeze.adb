@@ -5489,6 +5489,13 @@ package body Freeze is
             then
                Explode_Initialization_Compound_Statement (E);
             end if;
+
+            --  Do not generate a freeze node for a generic unit.
+
+            if Is_Generic_Unit (E) then
+               Result := No_List;
+               goto Leave;
+            end if;
          end if;
 
       --  Case of a type or subtype being frozen
