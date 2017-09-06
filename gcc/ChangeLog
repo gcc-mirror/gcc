@@ -1,3 +1,10 @@
+2017-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* config/arm/predicates.md (arm_general_adddi_operand): Create new
+	non-vfp predicate.
+	* config/arm/arm.md (*arm_adddi3, *arm_subdi3): Use new predicates.
+
 2017-09-05  Jeff Law  <law@redhat.com>
 
 	PR tree-optimization/64910
