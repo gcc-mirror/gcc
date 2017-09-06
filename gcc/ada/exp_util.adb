@@ -7675,6 +7675,7 @@ package body Exp_Util is
          return
            Present (Call)
              and then Nkind (Call) = N_Function_Call
+             and then Nkind (Name (Call)) in N_Has_Entity
              and then Is_RTE (Entity (Name (Call)), RE_Displace);
       end Is_Displace_Call;
 

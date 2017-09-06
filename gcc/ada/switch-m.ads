@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2011, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -34,13 +34,14 @@ pragma Warnings (Off);
 with System.OS_Lib; use System.OS_Lib;
 pragma Warnings (On);
 
-with Prj.Tree;
-
 package Switch.M is
 
+   Subdirs : String_Ptr := null;
+   --  The value after the equal sign in switch --subdirs=...
+   --  Contains the relative subdirectory.
+
    procedure Scan_Make_Switches
-     (Env               : in out Prj.Tree.Environment;
-      Switch_Chars      : String;
+     (Switch_Chars      : String;
       Success           : out Boolean);
    --  Scan a gnatmake switch and act accordingly. For switches that are
    --  recognized, Success is set to True. A switch that is not recognized and

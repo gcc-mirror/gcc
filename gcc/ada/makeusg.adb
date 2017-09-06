@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Makeutl;
+with Make_Util;
 with Osint;   use Osint;
 with Output;  use Output;
 with Switch;  use Switch;
@@ -350,14 +350,14 @@ begin
    --  Line for --source-info=
 
    Write_Str ("  ");
-   Write_Str (Makeutl.Source_Info_Option);
+   Write_Str (Make_Util.Source_Info_Option);
    Write_Str ("file specify a source info file");
    Write_Eol;
 
    --  Line for --unchecked-shared-lib-imports
 
    Write_Str ("  ");
-   Write_Str (Makeutl.Unchecked_Shared_Lib_Imports);
+   Write_Str (Make_Util.Unchecked_Shared_Lib_Imports);
    Write_Eol;
    Write_Str ("            Allow shared libraries to import static libraries");
    Write_Eol;

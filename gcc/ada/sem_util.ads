@@ -465,8 +465,9 @@ package Sem_Util is
    --  we are operating in Ada 83 mode, or the Warn parameter is set to True.
 
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
-   --  Sets the Has_Delayed_Freeze flag of New if the Delayed_Freeze flag of
-   --  Old is set and Old has no yet been Frozen (i.e. Is_Frozen is false).
+   --  Sets the Has_Delayed_Freeze flag of New_Ent if the Delayed_Freeze flag
+   --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
+   --  False).
 
    function Contains_Refined_State (Prag : Node_Id) return Boolean;
    --  Determine whether pragma Prag contains a reference to the entity of an

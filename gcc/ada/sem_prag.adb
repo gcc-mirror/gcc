@@ -4080,7 +4080,10 @@ package body Sem_Prag is
 
          --  Object declaration of a single concurrent type
 
-         elsif Nkind (Subp_Decl) = N_Object_Declaration then
+         elsif Nkind (Subp_Decl) = N_Object_Declaration
+           and then Is_Single_Concurrent_Object
+                      (Unique_Defining_Entity (Subp_Decl))
+         then
             null;
 
          --  Single task type

@@ -715,6 +715,13 @@ package Sinput is
    --  Writes out internal tables to current tree file using the relevant
    --  Table.Tree_Write routines.
 
+   procedure Clear_Source_File_Table;
+   --  This procedure frees memory allocated in the Source_File table (in the
+   --  private). It should only be used when it is guaranteed that all source
+   --  files that have been loaded so far will not be accessed before being
+   --  reloaded. It is intended for tools that parse several times sources,
+   --  to avoid memory leaks.
+
 private
    pragma Inline (File_Name);
    pragma Inline (Full_File_Name);
