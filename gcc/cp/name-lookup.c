@@ -1118,7 +1118,7 @@ extract_conversion_operator (tree fns, tree type)
    member functions.  */
 
 tree
-lookup_fnfields_slot_nolazy (tree type, tree name)
+get_class_binding_direct (tree type, tree name)
 {
   vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
   if (!method_vec)
@@ -1285,7 +1285,7 @@ lookup_field_1 (tree type, tree name, bool want_type)
    the method vector with name NAME.  Lazily create ctors etc.  */
 
 tree
-lookup_fnfields_slot (tree type, tree name)
+get_class_binding (tree type, tree name)
 {
   type = complete_type (type);
 
@@ -1314,7 +1314,7 @@ lookup_fnfields_slot (tree type, tree name)
 	}
     }
 
-  return lookup_fnfields_slot_nolazy (type, name);
+  return get_class_binding_direct (type, name);
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no

@@ -3988,7 +3988,7 @@ type_has_nontrivial_copy_init (const_tree type)
 	    saw_non_deleted = true;
 	}
 
-      if (!saw_non_deleted && CLASSTYPE_METHOD_VEC (t))
+      if (!saw_non_deleted)
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
 	  {
 	    tree fn = *iter;
