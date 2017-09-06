@@ -1,3 +1,8 @@
+2017-09-06  Olivier Hainque  <hainque@adacore.com>
+
+	* config/powerpcspe/vxworks.h (VXCPU_FOR_8548): Correct definition
+	for VxWorks 7.  Adjust surrounding comments.
+
 2017-09-06  Richard Biener  <rguenther@suse.de>
 
 	* gimple-ssa-strength-reduction.c
