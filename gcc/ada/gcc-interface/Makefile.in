@@ -322,14 +322,11 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  atree.o binderr.o butil.o casing.o csets.o debug.o elists.o einfo.o errout.o \
  erroutc.o errutil.o err_vars.o fmap.o fname.o fname-uf.o fname-sf.o \
  gnatmake.o gnatvsn.o hostparm.o interfac.o i-c.o i-cstrin.o krunch.o lib.o \
- make.o makeusg.o makeutl.o mlib.o mlib-fil.o mlib-prj.o mlib-tgt.o \
- mlib-tgt-specific.o mlib-utl.o namet.o nlists.o opt.o osint.o osint-m.o \
- output.o prj.o prj-attr.o prj-attr-pm.o prj-com.o prj-dect.o prj-env.o \
- prj-conf.o prj-pp.o prj-err.o prj-ext.o prj-nmsc.o prj-pars.o prj-part.o \
- prj-proc.o prj-strt.o prj-tree.o prj-util.o restrict.o rident.o s-exctab.o \
+ make.o makeusg.o make_util.o namet.o nlists.o opt.o osint.o osint-m.o \
+ output.o restrict.o rident.o s-exctab.o \
  s-secsta.o s-stalib.o s-stoele.o scans.o scng.o sdefault.o sfn_scan.o \
  s-purexc.o s-htable.o scil_ll.o sem_aux.o sinfo.o sinput.o sinput-c.o \
- sinput-p.o snames.o stand.o stringt.o styleg.o stylesw.o system.o validsw.o \
+ snames.o stand.o stringt.o styleg.o stylesw.o system.o validsw.o \
  switch.o switch-m.o table.o targparm.o tempdir.o tree_io.o types.o uintp.o \
  uname.o urealp.o usage.o widechar.o \
  $(EXTRA_GNATMAKE_OBJS)

@@ -31,6 +31,7 @@
 	* make.adb, makeusg.adb, switch-m.adb, switch-m.ads, make_util.adb,
 	make_util.ads, sinput.adb, sinput.ads, clean.adb, gnatls.adb,
 	gnatname.adb: Remove the Project Manager from the GNAT tools.
+	* gcc-interface/Makefile.in: ditto.
 
 2017-09-06  Bob Duff  <duff@adacore.com>
 
