@@ -1,3 +1,31 @@
+2017-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch5.adb, s-diinio.ads, sem_ch4.adb, s-diflio.ads: Minor spelling
+	adjustments and a typo fix.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not issue info
+	message about inlining of calls to functions in assertions,
+	for functions whose body has not been seen yet.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* a-comlin.ads, a-comlin.adb (Argument): Simplify the code, now that
+	we can use modern Ada in this package.
+	* s-resfil.ads, s-resfil.adb, a-clrefi.ads, a-clrefi.adb:
+	Move Ada.Command_Line.Response_File to System.Response_File,
+	and make Ada.Command_Line.Response_File into a rename of
+	System.Response_File. This is to avoid having gnatbind depend
+	Ada.Command_Line, which would damage the bootstrap process now
+	that Ada.Command_Line contains modern Ada (the raise expression).
+	* gnatbind.adb: Avoid dependence on
+	Ada.Command_Line. Depend on System.Response_File instead
+	of Ada.Command_Line.Response_File. Change one call to
+	Ada.Command_Line.Command_Name to use Fill_Arg.	Change one call
+	to Ada.Command_Line.Argument_Count to use Arg_Count.
+	* gcc-interface/Make-lang.in, Makefile.rtl: Take note of the new files.
+
 2017-09-06  Bob Duff  <duff@adacore.com>
 
 	* frontend.adb (Frontend): Skip -gnatec=gnat.adc

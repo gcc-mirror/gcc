@@ -1,5 +1,5 @@
 # Makefile.rtl for GNU Ada Compiler (GNAT).
-#   Copyright (C) 2003-2012, Free Software Foundation, Inc.
+#   Copyright (C) 2003-2017, Free Software Foundation, Inc.
 
 #This file is part of GCC.
 
@@ -651,6 +651,7 @@ GNATRTL_NONTASKING_OBJS= \
   s-ransee$(objext) \
   s-regexp$(objext) \
   s-regpat$(objext) \
+  s-resfil$(objext) \
   s-restri$(objext) \
   s-rident$(objext) \
   s-rpc$(objext)    \

@@ -3957,7 +3957,7 @@ package body Exp_Ch5 is
                --  redefined on derived container types, while the default
                --  iterator was inherited from the parent type. This
                --  nonstandard extension is preserved for use by the
-               --  modelling project under debug flag -gnatd.X.
+               --  modeling project under debug flag -gnatd.X.
 
                if Debug_Flag_Dot_XX then
                   if Base_Type (Etype (Container)) /=
