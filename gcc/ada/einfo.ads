@@ -8295,6 +8295,12 @@ package Einfo is
    --    Test_Case
    --    Volatile_Function
 
+   function Get_Classwide_Pragma
+     (E  : Entity_Id;
+      Id : Pragma_Id) return Node_Id;
+   --  Examine Rep_Item chain to locate a classwide pre- or postcondition
+   --  of a primitive operation. Returns Empty if not present.
+
    function Get_Record_Representation_Clause (E : Entity_Id) return Node_Id;
    --  Searches the Rep_Item chain for a given entity E, for a record
    --  representation clause, and if found, returns it. Returns Empty

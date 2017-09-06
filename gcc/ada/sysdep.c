@@ -921,16 +921,40 @@ __gnat_is_file_not_found_error (int errno_val) {
 
 #if defined (__linux__)
 
-/* HAVE_CAPABILITY is defined if sys/capability.h exists on the system where
-   this is being compiled.
+/* Note well: If this code is modified, it should be tested by hand,
+   because automated testing doesn't exercise it.
+*/
+
+/* HAVE_CAPABILITY is supposed to be defined if sys/capability.h exists on the
+   system where this is being compiled. If this macro is defined, we #include
+   the header. Otherwise we have the relevant declarations textually here.
 */
 
 #if defined (HAVE_CAPABILITY)
 #include <sys/capability.h>
+#else
 
-/* Note well: If this code is modified, it should be tested by hand,
-   because automated testing doesn't exercise it.
-*/
+/* HAVE_CAPABILITY is not defined, so sys/capability.h does might not exist. */
+
+typedef struct _cap_struct *cap_t;
+typedef enum {
+    CAP_CLEAR=0,
+    CAP_SET=1
+} cap_flag_value_t;
+#define CAP_SYS_NICE         23
+typedef enum {
+    CAP_EFFECTIVE=0,                        /* Specifies the effective flag */
+    CAP_PERMITTED=1,                        /* Specifies the permitted flag */
+    CAP_INHERITABLE=2                     /* Specifies the inheritable flag */
+} cap_flag_t;
+
+typedef int cap_value_t;
+
+extern cap_t   cap_get_proc(void);
+extern int     cap_get_flag(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *);
+extern int     cap_free(void *);
+
+#endif
 
 /* __gnat_has_cap_sys_nice returns 1 if the current process has the
    CAP_SYS_NICE capability. This capability is necessary to use the
@@ -945,9 +969,12 @@ __gnat_is_file_not_found_error (int errno_val) {
    symbols will be 0, and __gnat_has_cap_sys_nice will return 0.
 */
 
-static cap_t cap_get_proc_weak() __attribute__ ((weakref ("cap_get_proc")));
-static int cap_get_flag_weak() __attribute__ ((weakref ("cap_get_flag")));
-static int cap_free_weak() __attribute__ ((weakref ("cap_free")));
+static cap_t cap_get_proc_weak(void)
+  __attribute__ ((weakref ("cap_get_proc")));
+static int cap_get_flag_weak(cap_t, cap_value_t, cap_flag_t, cap_flag_value_t *)
+  __attribute__ ((weakref ("cap_get_flag")));
+static int cap_free_weak(void *)
+  __attribute__ ((weakref ("cap_free")));
 
 int
 __gnat_has_cap_sys_nice () {
@@ -957,10 +984,10 @@ __gnat_has_cap_sys_nice () {
     return 0;
 
   cap_t caps = cap_get_proc_weak();
-  cap_flag_value_t value;
-
   if (caps == NULL)
     return 0;
+
+  cap_flag_value_t value;
 
   if (cap_get_flag_weak(caps, CAP_SYS_NICE, CAP_EFFECTIVE, &value) == -1)
     return 0;
@@ -973,20 +1000,6 @@ __gnat_has_cap_sys_nice () {
 
   return 0;
 }
-
-#else
-
-/* HAVE_CAPABILITY is not defined, so sys/capability.h does not exist, so
-   simply indicate that the current process does not have the CAP_SYS_NICE
-   capability.
-*/
-
-int
-__gnat_has_cap_sys_nice () {
-  return 0;
-}
-
-#endif
 #endif
 
 #ifdef __ANDROID__

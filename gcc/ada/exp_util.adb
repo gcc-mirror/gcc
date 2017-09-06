@@ -7590,22 +7590,28 @@ package body Exp_Util is
      (Obj_Id : Entity_Id) return Boolean
    is
       function Is_Controlled_Function_Call (N : Node_Id) return Boolean;
-      --  Determine if particular node denotes a controlled function call. The
-      --  call may have been heavily expanded.
+      --  Determine whether node N denotes a controlled function call
+
+      function Is_Controlled_Indexing (N : Node_Id) return Boolean;
+      --  Determine whether node N denotes a generalized indexing form which
+      --  involves a controlled result.
 
       function Is_Displace_Call (N : Node_Id) return Boolean;
-      --  Determine whether a particular node is a call to Ada.Tags.Displace.
-      --  The call might be nested within other actions such as conversions.
+      --  Determine whether node N denotes a call to Ada.Tags.Displace
 
       function Is_Source_Object (N : Node_Id) return Boolean;
       --  Determine whether a particular node denotes a source object
+
+      function Strip (N : Node_Id) return Node_Id;
+      --  Examine arbitrary node N by stripping various indirections and return
+      --  the "real" node.
 
       ---------------------------------
       -- Is_Controlled_Function_Call --
       ---------------------------------
 
       function Is_Controlled_Function_Call (N : Node_Id) return Boolean is
-         Expr : Node_Id := Original_Node (N);
+         Expr : Node_Id;
 
       begin
          --  When a function call appears in Object.Operation format, the
@@ -7617,6 +7623,7 @@ package body Exp_Util is
          --    Obj.Func (Formal => Actual) N_Function_Call, whose Name is an
          --                                N_Selected_Component
 
+         Expr := Original_Node (N);
          loop
             if Nkind (Expr) = N_Function_Call then
                Expr := Name (Expr);
@@ -7643,31 +7650,28 @@ package body Exp_Util is
              and then Needs_Finalization (Etype (Entity (Expr)));
       end Is_Controlled_Function_Call;
 
+      ----------------------------
+      -- Is_Controlled_Indexing --
+      ----------------------------
+
+      function Is_Controlled_Indexing (N : Node_Id) return Boolean is
+         Expr : constant Node_Id := Original_Node (N);
+
+      begin
+         return
+           Nkind (Expr) = N_Indexed_Component
+             and then Present (Generalized_Indexing (Expr))
+             and then Needs_Finalization (Etype (Expr));
+      end Is_Controlled_Indexing;
+
       ----------------------
       -- Is_Displace_Call --
       ----------------------
 
       function Is_Displace_Call (N : Node_Id) return Boolean is
-         Call : Node_Id;
+         Call : constant Node_Id := Strip (N);
 
       begin
-         --  Strip various actions which may precede a call to Displace
-
-         Call := N;
-         loop
-            if Nkind (Call) = N_Explicit_Dereference then
-               Call := Prefix (Call);
-
-            elsif Nkind_In (Call, N_Type_Conversion,
-                                  N_Unchecked_Type_Conversion)
-            then
-               Call := Expression (Call);
-
-            else
-               exit;
-            end if;
-         end loop;
-
          return
            Present (Call)
              and then Nkind (Call) = N_Function_Call
@@ -7679,38 +7683,48 @@ package body Exp_Util is
       ----------------------
 
       function Is_Source_Object (N : Node_Id) return Boolean is
-         Obj : Node_Id;
+         Obj : constant Node_Id := Strip (N);
 
       begin
-         --  Strip various actions which may be associated with the object
+         return
+           Present (Obj)
+             and then Comes_From_Source (Obj)
+             and then Nkind (Obj) in N_Has_Entity
+             and then Is_Object (Entity (Obj));
+      end Is_Source_Object;
 
-         Obj := N;
+      -----------
+      -- Strip --
+      -----------
+
+      function Strip (N : Node_Id) return Node_Id is
+         Result : Node_Id;
+
+      begin
+         Result := N;
          loop
-            if Nkind (Obj) = N_Explicit_Dereference then
-               Obj := Prefix (Obj);
+            if Nkind (Result) = N_Explicit_Dereference then
+               Result := Prefix (Result);
 
-            elsif Nkind_In (Obj, N_Type_Conversion,
-                                 N_Unchecked_Type_Conversion)
+            elsif Nkind_In (Result, N_Type_Conversion,
+                                    N_Unchecked_Type_Conversion)
             then
-               Obj := Expression (Obj);
+               Result := Expression (Result);
 
             else
                exit;
             end if;
          end loop;
 
-         return
-           Present (Obj)
-             and then Nkind (Obj) in N_Has_Entity
-             and then Is_Object (Entity (Obj))
-             and then Comes_From_Source (Obj);
-      end Is_Source_Object;
+         return Result;
+      end Strip;
 
       --  Local variables
 
-      Decl      : constant Node_Id   := Parent (Obj_Id);
+      Obj_Decl  : constant Node_Id   := Declaration_Node (Obj_Id);
       Obj_Typ   : constant Entity_Id := Base_Type (Etype (Obj_Id));
-      Orig_Decl : constant Node_Id   := Original_Node (Decl);
+      Orig_Decl : constant Node_Id   := Original_Node (Obj_Decl);
+      Orig_Expr : Node_Id;
 
    --  Start of processing for Is_Displacement_Of_Object_Or_Function_Result
 
@@ -7719,34 +7733,52 @@ package body Exp_Util is
 
       --     Obj : CW_Type := Function_Call (...);
 
-      --  rewritten into:
+      --  is rewritten into:
 
-      --     Tmp : ... := Function_Call (...)'reference;
-      --     Obj : CW_Type renames (... Ada.Tags.Displace (Tmp));
+      --     Temp : ... := Function_Call (...)'reference;
+      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
 
       --  where the return type of the function and the class-wide type require
       --  dispatch table pointer displacement.
 
       --  Case 2:
 
+      --     Obj : CW_Type := Container (...);
+
+      --  is rewritten into:
+
+      --     Temp : ... := Function_Call (Container, ...)'reference;
+      --     Obj  : CW_Type renames (... Ada.Tags.Displace (Temp));
+
+      --  where the container element type and the class-wide type require
+      --  dispatch table pointer dispacement.
+
+      --  Case 3:
+
       --     Obj : CW_Type := Src_Obj;
 
-      --  rewritten into:
+      --  is rewritten into:
 
       --     Obj : CW_Type renames (... Ada.Tags.Displace (Src_Obj));
 
       --  where the type of the source object and the class-wide type require
       --  dispatch table pointer displacement.
 
-      return
-        Nkind (Decl) = N_Object_Renaming_Declaration
-          and then Nkind (Orig_Decl) = N_Object_Declaration
-          and then Comes_From_Source (Orig_Decl)
-          and then Is_Class_Wide_Type (Obj_Typ)
-          and then Is_Displace_Call (Renamed_Object (Obj_Id))
-          and then
-            (Is_Controlled_Function_Call (Expression (Orig_Decl))
-              or else Is_Source_Object (Expression (Orig_Decl)));
+      if Nkind (Obj_Decl) = N_Object_Renaming_Declaration
+        and then Is_Class_Wide_Type (Obj_Typ)
+        and then Is_Displace_Call (Renamed_Object (Obj_Id))
+        and then Nkind (Orig_Decl) = N_Object_Declaration
+        and then Comes_From_Source (Orig_Decl)
+      then
+         Orig_Expr := Expression (Orig_Decl);
+
+         return
+           Is_Controlled_Function_Call (Orig_Expr)
+             or else Is_Controlled_Indexing (Orig_Expr)
+             or else Is_Source_Object (Orig_Expr);
+      end if;
+
+      return False;
    end Is_Displacement_Of_Object_Or_Function_Result;
 
    ------------------------------

@@ -1,3 +1,66 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Entity_Table_Size): Change to nearest prime number.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb: Minor refactoring.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.ads, einfo.adb (Get_Classwwide_Pragma): New utility,
+	to retrieve the inherited classwide precondition/postcondition
+	of a subprogram.
+	* freeze.adb (Freeze_Entity): Use Get_Classwide_Pragma when
+	freezing a subprogram, to complete the generation of the
+	corresponding checking code.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* inline.adb (Analyze_Inlined_Bodies): Remove restriction on
+	loading of parent body with a with clause for the main unit.
+	* gcc-interface/decl.c (defer_limited_with_list): Document
+	new usage.
+	(gnat_to_gnu_entity) <E_Access_Type>: Handle
+	completed Taft Amendment types declared in external units like
+	types from limited with clauses.  Adjust final processing of
+	defer_limited_with_list accordingly.
+
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_util.adb (Is_Controlled_Indexing): New routine.
+	(Is_Displace_Call): Use routine Strip to remove indirections.
+	(Is_Displacement_Of_Object_Or_Function_Result): Code clean up. Add a
+	missing case of controlled generalized indexing.
+	(Is_Source_Object): Use routine Strip to remove indirections.
+	(Strip): New routine.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sysdep.c (__gnat_has_cap_sys_nice): If HAVE_CAPABILITY is defined,
+	we include the proper header. Otherwise, we just declare the necessary
+	things from the capabilities library. This is so we can build on
+	machines without that library, while still enabling that library.
+	At run time, we're using weak symbols, so __gnat_has_cap_sys_nice will
+	simply return 0 if the library is not present, or not included
+	in the link.
+
+2017-09-06  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* exp_dbug.adb (Debug_Renaming_Declaration): Do not create an encoding
+	for renamings that involve function calls in prefix form.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration):
+	Set Has_Delayed_Freeze on a subtype of an incomplete type.
+
+2017-09-06  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* par_sco.adb (Extend_Statement_Sequence): When the accept statement
+	has no parameter specification and no entry index, use the entry name
+	as the end of the generated SCO statement.
+
 2017-09-06  Steve Baird  <baird@adacore.com>
 
 	* exp_util.adb (Side_Effect_Free): For CodePeer (only) treat

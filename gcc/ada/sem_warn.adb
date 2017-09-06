@@ -1388,15 +1388,18 @@ package body Sem_Warn is
                   --  an expression with actions.
 
                   UR := Original_Node (UR);
-                  while Nkind_In (UR, N_Attribute_Reference,
-                                      N_Expression_With_Actions,
+                  loop
+                     if Nkind_In (UR, N_Expression_With_Actions,
                                       N_Qualified_Expression,
                                       N_Type_Conversion)
-                  loop
-                     if Nkind (UR) = N_Attribute_Reference then
-                        UR := Prefix (UR);
-                     else
+                     then
                         UR := Expression (UR);
+
+                     elsif Nkind (UR) = N_Attribute_Reference then
+                        UR := Prefix (UR);
+
+                     else
+                        exit;
                      end if;
                   end loop;
 

@@ -193,7 +193,7 @@ package body Sem_Ch7 is
    -- Analyze_Package_Body_Helper Data and Subprograms --
    ------------------------------------------------------
 
-   Entity_Table_Size : constant := 4096;
+   Entity_Table_Size : constant := 4093;
    --  Number of headers in hash table
 
    subtype Entity_Header_Num is Integer range 0 .. Entity_Table_Size - 1;

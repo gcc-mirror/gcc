@@ -5707,6 +5707,27 @@ package body Sem_Ch3 is
          Conditional_Delay (Id, T);
       end if;
 
+      --  If we have a subtype of an incomplete type whose full type is a
+      --  derived numeric type, we need to have a freeze node for the subtype.
+      --  Otherwise gigi will complain while computing the (static) bounds of
+      --  the subtype.
+
+      if Is_Itype (T)
+        and then Is_Elementary_Type (Id)
+        and then Etype (Id) /= Id
+      then
+         declare
+            Partial : constant Entity_Id :=
+              Incomplete_Or_Partial_View (First_Subtype (Id));
+         begin
+            if Present (Partial)
+              and then Ekind (Partial) = E_Incomplete_Type
+            then
+               Set_Has_Delayed_Freeze (Id);
+            end if;
+         end;
+      end if;
+
       --  Check that Constraint_Error is raised for a scalar subtype indication
       --  when the lower or upper bound of a non-null range lies outside the
       --  range of the type mark.
