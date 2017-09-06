@@ -1597,8 +1597,8 @@ package body Exp_Attr is
       procedure Rewrite_Object_Reference_Image
         (Name    : Name_Id;
          Str_Typ : Entity_Id);
-      --  Rewrite an 'Image attribute applied to an object reference for
-      --  AI12-0012401 into an attribute applied to a type.
+      --  Rewrite an Image attribute applied to an object reference for
+      --  AI12-00124 into an attribute applied to a type.
 
       procedure Rewrite_Stream_Proc_Call (Pname : Entity_Id);
       --  Rewrites a stream attribute for Read, Write or Output with the
