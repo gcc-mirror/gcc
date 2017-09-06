@@ -6693,7 +6693,11 @@ package body Sem_Ch6 is
                   Error_Msg_N
                     ("implied return after this statement "
                      & "would have raised Program_Error", Last_Stm);
-               else
+
+               --  In normal compilation mode, do not warn on a generated
+               --  call (e.g. in the body of a renaming as completion).
+
+               elsif Comes_From_Source (Last_Stm) then
                   Error_Msg_N
                     ("implied return after this statement "
                      & "will raise Program_Error??", Last_Stm);

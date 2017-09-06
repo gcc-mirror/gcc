@@ -2946,6 +2946,14 @@ package body Sem_Ch8 is
          Check_Fully_Conformant (New_S, Rename_Spec);
          Set_Public_Status (New_S);
 
+         if No_Return (Rename_Spec)
+            and then not No_Return (Entity (Nam))
+         then
+            Error_Msg_N ("renaming completes a No_Return procedure", N);
+            Error_Msg_N
+              ("\renamed procedure must be nonreturning (RM 6.5.1 (7/2))", N);
+         end if;
+
          --  The specification does not introduce new formals, but only
          --  repeats the formals of the original subprogram declaration.
          --  For cross-reference purposes, and for refactoring tools, we
