@@ -1,3 +1,24 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Move up and expand comment
+	explaining the test used to detect inlining.  Use same test
+	in second occurrence.
+	(Analyze_Package_Body_Helper): Minor formatting fixes.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Handle_Changed_Representation): For an untagged
+	derived type with a mixture of renamed and constrained parent
+	discriminants, the constraint for the target must obtain the
+	discriminant values from both the operand and from the stored
+	constraint for it, given that the constrained discriminants are
+	not visible in the object.
+	* exp_ch5.adb (Make_Field_Assign): The type of the right-hand
+	side may be derived from that of the left-hand side (as in the
+	case of an assignment with a change of representation) so the
+	discriminant to be used in the retrieval of the value of the
+	component must be the entity in the type of the right-hand side.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_ch3.adb, sem_ch7.adb, sem_util.adb, g-debpoo.adb, sem_ch4.adb,
@@ -10,7 +31,6 @@
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_prag.adb: Update description of Eliminate.
-
 
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
@@ -178,7 +198,6 @@
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* fe.h (Eliminate_Error_Msg): Remove.
-
 
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 

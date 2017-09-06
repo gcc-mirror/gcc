@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1448,9 +1448,21 @@ package body Exp_Ch5 is
             U_U : Boolean := False) return Node_Id
          is
             A    : Node_Id;
+            Disc : Entity_Id;
             Expr : Node_Id;
 
          begin
+
+            --  The discriminant entity to be used in the retrieval below must
+            --  be one in the corresponding type, given that the assignment
+            --  may be between derived and parent types.
+
+            if Is_Derived_Type (Etype (Rhs)) then
+               Disc := Find_Component (R_Typ, C);
+            else
+               Disc := C;
+            end if;
+
             --  In the case of an Unchecked_Union, use the discriminant
             --  constraint value as on the right-hand side of the assignment.
 
@@ -1463,7 +1475,7 @@ package body Exp_Ch5 is
                Expr :=
                  Make_Selected_Component (Loc,
                    Prefix        => Duplicate_Subexpr (Rhs),
-                   Selector_Name => New_Occurrence_Of (C, Loc));
+                   Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
             A :=
