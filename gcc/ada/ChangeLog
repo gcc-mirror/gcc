@@ -1,5 +1,13 @@
 2017-09-06  Bob Duff  <duff@adacore.com>
 
+	* sysdep.c (__gnat_has_cap_sys_nice): New function to determine
+	whether the current process has the CAP_SYS_NICE capability.
+	* s-taprop-linux.adb (Get_Ceiling_Support): Update this to allow
+	ceiling priorities if the current process has the CAP_SYS_NICE
+	capability.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
 	* a-comlin.ads, a-comlin.adb (Argument): Move the constraint
 	check back to the body, because SPARK is not yet ready for
 	"or else raise Constraint_Error".

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *         Copyright (C) 1992-2016, Free Software Foundation, Inc.          *
+ *         Copyright (C) 1992-2017, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -918,6 +918,76 @@ __gnat_is_file_not_found_error (int errno_val) {
         return 0;
    }
 }
+
+#if defined (__linux__)
+
+/* HAVE_CAPABILITY is defined if sys/capability.h exists on the system where
+   this is being compiled.
+*/
+
+#if defined (HAVE_CAPABILITY)
+#include <sys/capability.h>
+
+/* Note well: If this code is modified, it should be tested by hand,
+   because automated testing doesn't exercise it.
+*/
+
+/* __gnat_has_cap_sys_nice returns 1 if the current process has the
+   CAP_SYS_NICE capability. This capability is necessary to use the
+   Ceiling_Locking policy. Returns 0 otherwise. Note that this is
+   defined only for Linux.
+*/
+
+/* Define these as weak symbols, so if support for capabilities is not present,
+   programs can still link. On Ubuntu, support for capabilities can be
+   installed via "sudo apt-get --assume-yes install libcap-dev".
+   In addition, the user must link with "-lcap", or else these
+   symbols will be 0, and __gnat_has_cap_sys_nice will return 0.
+*/
+
+static cap_t cap_get_proc_weak() __attribute__ ((weakref ("cap_get_proc")));
+static int cap_get_flag_weak() __attribute__ ((weakref ("cap_get_flag")));
+static int cap_free_weak() __attribute__ ((weakref ("cap_free")));
+
+int
+__gnat_has_cap_sys_nice () {
+  /* If the address of cap_get_proc_weak is 0, this means support for
+     capabilities is not present, so we return 0. */
+  if (&cap_get_proc_weak == 0)
+    return 0;
+
+  cap_t caps = cap_get_proc_weak();
+  cap_flag_value_t value;
+
+  if (caps == NULL)
+    return 0;
+
+  if (cap_get_flag_weak(caps, CAP_SYS_NICE, CAP_EFFECTIVE, &value) == -1)
+    return 0;
+
+  if (cap_free_weak(caps) == -1)
+    return 0;
+
+  if (value == CAP_SET)
+    return 1;
+
+  return 0;
+}
+
+#else
+
+/* HAVE_CAPABILITY is not defined, so sys/capability.h does not exist, so
+   simply indicate that the current process does not have the CAP_SYS_NICE
+   capability.
+*/
+
+int
+__gnat_has_cap_sys_nice () {
+  return 0;
+}
+
+#endif
+#endif
 
 #ifdef __ANDROID__
 

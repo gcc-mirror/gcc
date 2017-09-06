@@ -165,6 +165,13 @@ package body System.Task_Primitives.Operations is
    pragma Import
      (C, GNAT_pthread_condattr_setup, "__gnat_pthread_condattr_setup");
 
+   function GNAT_has_cap_sys_nice return C.int;
+   pragma Import
+     (C, GNAT_has_cap_sys_nice, "__gnat_has_cap_sys_nice");
+   --  We do not have pragma Linker_Options ("-lcap"); here, because this
+   --  library is not present on many Linux systems. 'libcap' is the Linux
+   --  "capabilities" library, called by __gnat_has_cap_sys_nice.
+
    function Prio_To_Linux_Prio (Prio : Any_Priority) return C.int is
      (C.int (Prio) + 1);
    --  Convert Ada priority to Linux priority. Priorities are 1 .. 99 on
@@ -172,23 +179,25 @@ package body System.Task_Primitives.Operations is
 
    function Get_Ceiling_Support return Boolean;
    --  Get the value of the Ceiling_Support constant (see below).
-   --  ???For now, we're returning True only if running as superuser,
-   --  and ignore capabilities.
+   --  Note well: If this function or related code is modified, it should be
+   --  tested by hand, because automated testing doesn't exercise it.
 
    function Get_Ceiling_Support return Boolean is
       Ceiling_Support : Boolean := False;
    begin
-      if Locking_Policy = 'C' then
-         declare
-            function geteuid return Integer;
-            pragma Import (C, geteuid, "geteuid");
-            Superuser : constant Boolean := geteuid = 0;
-         begin
-            if Superuser then
-               Ceiling_Support := True;
-            end if;
-         end;
+      if Locking_Policy /= 'C' then
+         return False;
       end if;
+
+      declare
+         function geteuid return Integer;
+         pragma Import (C, geteuid, "geteuid");
+         Superuser : constant Boolean := geteuid = 0;
+         Has_Cap : constant C.int := GNAT_has_cap_sys_nice;
+         pragma Assert (Has_Cap in 0 | 1);
+      begin
+         Ceiling_Support := Superuser or else Has_Cap = 1;
+      end;
 
       return Ceiling_Support;
    end Get_Ceiling_Support;
