@@ -1,3 +1,45 @@
+2017-09-06  Wish Wu  <wishwu007@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* asan.c (initialize_sanitizer_builtins): Add
+	BT_FN_VOID_UINT8_UINT8, BT_FN_VOID_UINT16_UINT16,
+	BT_FN_VOID_UINT32_UINT32, BT_FN_VOID_UINT64_UINT64,
+	BT_FN_VOID_FLOAT_FLOAT, BT_FN_VOID_DOUBLE_DOUBLE and
+	BT_FN_VOID_UINT64_PTR variables.
+	* builtin-types.def (BT_FN_VOID_UINT8_UINT8): New fn type.
+	(BT_FN_VOID_UINT16_UINT16): Likewise.
+	(BT_FN_VOID_UINT32_UINT32): Likewise.
+	(BT_FN_VOID_FLOAT_FLOAT): Likewise.
+	(BT_FN_VOID_DOUBLE_DOUBLE): Likewise.
+	(BT_FN_VOID_UINT64_PTR): Likewise.
+	* common.opt (flag_sanitize_coverage): New variable.
+	(fsanitize-coverage=trace-pc): Remove.
+	(fsanitize-coverage=): Add.
+	* flag-types.h (enum sanitize_coverage_code): New enum.
+	* fold-const.c (fold_range_test): Disable non-short-circuit
+	optimization if flag_sanitize_coverage.
+	(fold_truth_andor): Likewise.
+	* tree-ssa-ifcombine.c (ifcombine_ifandif): Likewise.
+	* opts.c (COVERAGE_SANITIZER_OPT): Define.
+	(coverage_sanitizer_opts): New array.
+	(get_closest_sanitizer_option): Add OPTS argument, handle also
+	OPT_fsanitize_coverage_.
+	(parse_sanitizer_options): Adjusted to also handle
+	OPT_fsanitize_coverage_.
+	(common_handle_option): Add OPT_fsanitize_coverage_.
+	* sancov.c (instrument_comparison, instrument_switch): New function.
+	(sancov_pass): Add trace-cmp support.
+	* sanitizer.def (BUILT_IN_SANITIZER_COV_TRACE_CMP1,
+	BUILT_IN_SANITIZER_COV_TRACE_CMP2, BUILT_IN_SANITIZER_COV_TRACE_CMP4,
+	BUILT_IN_SANITIZER_COV_TRACE_CMP8,
+	BUILT_IN_SANITIZER_COV_TRACE_CONST_CMP1,
+	BUILT_IN_SANITIZER_COV_TRACE_CONST_CMP2,
+	BUILT_IN_SANITIZER_COV_TRACE_CONST_CMP4,
+	BUILT_IN_SANITIZER_COV_TRACE_CONST_CMP8,
+	BUILT_IN_SANITIZER_COV_TRACE_CMPF, BUILT_IN_SANITIZER_COV_TRACE_CMPD,
+	BUILT_IN_SANITIZER_COV_TRACE_SWITCH): New builtins.
+	* doc/invoke.texi: Document -fsanitize-coverage=trace-cmp.
+
 2017-09-06  Richard Earnshaw  <rearnsha@arm.com>
 
 	* config/arm/parsecpu.awk (fatal): Note that we've encountered an

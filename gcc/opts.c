@@ -1526,6 +1526,17 @@ const struct sanitizer_opts_s sanitizer_opts[] =
   { NULL, 0U, 0UL, false }
 };
 
+/* -f{,no-}sanitize-coverage= suboptions.  */
+const struct sanitizer_opts_s coverage_sanitizer_opts[] =
+{
+#define COVERAGE_SANITIZER_OPT(name, flags) \
+    { #name, flags, sizeof #name - 1, true }
+  COVERAGE_SANITIZER_OPT (trace-pc, SANITIZE_COV_TRACE_PC),
+  COVERAGE_SANITIZER_OPT (trace-cmp, SANITIZE_COV_TRACE_CMP),
+#undef COVERAGE_SANITIZER_OPT
+  { NULL, 0U, 0UL, false }
+};
+
 /* A struct for describing a run of chars within a string.  */
 
 struct string_fragment
@@ -1556,31 +1567,34 @@ struct edit_distance_traits<const string_fragment &>
 
 /* Given ARG, an unrecognized sanitizer option, return the best
    matching sanitizer option, or NULL if there isn't one.
-   CODE is OPT_fsanitize_ or OPT_fsanitize_recover_.
+   OPTS is array of candidate sanitizer options.
+   CODE is OPT_fsanitize_, OPT_fsanitize_recover_ or
+   OPT_fsanitize_coverage_.
    VALUE is non-zero for the regular form of the option, zero
    for the "no-" form (e.g. "-fno-sanitize-recover=").  */
 
 static const char *
 get_closest_sanitizer_option (const string_fragment &arg,
+			      const struct sanitizer_opts_s *opts,
 			      enum opt_code code, int value)
 {
   best_match <const string_fragment &, const char*> bm (arg);
-  for (int i = 0; sanitizer_opts[i].name != NULL; ++i)
+  for (int i = 0; opts[i].name != NULL; ++i)
     {
       /* -fsanitize=all is not valid, so don't offer it.  */
-      if (sanitizer_opts[i].flag == ~0U
-	  && code == OPT_fsanitize_
+      if (code == OPT_fsanitize_
+	  && opts[i].flag == ~0U
 	  && value)
 	continue;
 
       /* For -fsanitize-recover= (and not -fno-sanitize-recover=),
 	 don't offer the non-recoverable options.  */
-      if (!sanitizer_opts[i].can_recover
-	  && code == OPT_fsanitize_recover_
+      if (code == OPT_fsanitize_recover_
+	  && !opts[i].can_recover
 	  && value)
 	continue;
 
-      bm.consider (sanitizer_opts[i].name);
+      bm.consider (opts[i].name);
     }
   return bm.get_best_meaningful_candidate ();
 }
@@ -1594,6 +1608,13 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 			 unsigned int flags, int value, bool complain)
 {
   enum opt_code code = (enum opt_code) scode;
+
+  const struct sanitizer_opts_s *opts;
+  if (code == OPT_fsanitize_coverage_)
+    opts = coverage_sanitizer_opts;
+  else
+    opts = sanitizer_opts;
+
   while (*p != 0)
     {
       size_t len, i;
@@ -1611,12 +1632,11 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	}
 
       /* Check to see if the string matches an option class name.  */
-      for (i = 0; sanitizer_opts[i].name != NULL; ++i)
-	if (len == sanitizer_opts[i].len
-	    && memcmp (p, sanitizer_opts[i].name, len) == 0)
+      for (i = 0; opts[i].name != NULL; ++i)
+	if (len == opts[i].len && memcmp (p, opts[i].name, len) == 0)
 	  {
 	    /* Handle both -fsanitize and -fno-sanitize cases.  */
-	    if (value && sanitizer_opts[i].flag == ~0U)
+	    if (value && opts[i].flag == ~0U)
 	      {
 		if (code == OPT_fsanitize_)
 		  {
@@ -1633,14 +1653,14 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 		   -fsanitize-recover=return if -fsanitize-recover=undefined
 		   is selected.  */
 		if (code == OPT_fsanitize_recover_
-		    && sanitizer_opts[i].flag == SANITIZE_UNDEFINED)
+		    && opts[i].flag == SANITIZE_UNDEFINED)
 		  flags |= (SANITIZE_UNDEFINED
 			    & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN));
 		else
-		  flags |= sanitizer_opts[i].flag;
+		  flags |= opts[i].flag;
 	      }
 	    else
-	      flags &= ~sanitizer_opts[i].flag;
+	      flags &= ~opts[i].flag;
 	    found = true;
 	    break;
 	  }
@@ -1649,21 +1669,27 @@ parse_sanitizer_options (const char *p, location_t loc, int scode,
 	{
 	  const char *hint
 	    = get_closest_sanitizer_option (string_fragment (p, len),
-					    code, value);
+					    opts, code, value);
+
+	  const char *suffix;
+	  if (code == OPT_fsanitize_recover_)
+	    suffix = "-recover";
+	  else if (code == OPT_fsanitize_coverage_)
+	    suffix = "-coverage";
+	  else
+	    suffix = "";
 
 	  if (hint)
 	    error_at (loc,
 		      "unrecognized argument to -f%ssanitize%s= option: %q.*s;"
 		      " did you mean %qs?",
 		      value ? "" : "no-",
-		      code == OPT_fsanitize_ ? "" : "-recover",
-		      (int) len, p, hint);
+		      suffix, (int) len, p, hint);
 	  else
 	    error_at (loc,
 		      "unrecognized argument to -f%ssanitize%s= option: %q.*s",
 		      value ? "" : "no-",
-		      code == OPT_fsanitize_ ? "" : "-recover",
-		      (int) len, p);
+		      suffix, (int) len, p);
 	}
 
       if (comma == NULL)
@@ -1954,6 +1980,12 @@ common_handle_option (struct gcc_options *opts,
       else
 	opts->x_flag_sanitize_recover
 	  &= ~(SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT);
+      break;
+
+    case OPT_fsanitize_coverage_:
+      opts->x_flag_sanitize_coverage
+	= parse_sanitizer_options (arg, loc, code,
+				   opts->x_flag_sanitize_coverage, value, true);
       break;
 
     case OPT_O:

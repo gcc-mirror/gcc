@@ -252,6 +252,14 @@ enum sanitize_code {
 				  | SANITIZE_BOUNDS_STRICT
 };
 
+/* Different trace modes.  */
+enum sanitize_coverage_code {
+  /* Trace PC.  */
+  SANITIZE_COV_TRACE_PC = 1 << 0,
+  /* Trace Comparison.  */
+  SANITIZE_COV_TRACE_CMP = 1 << 1
+};
+
 /* flag_vtable_verify initialization levels. */
 enum vtv_priority {
   VTV_NO_PRIORITY       = 0,  /* i.E. Do NOT do vtable verification. */

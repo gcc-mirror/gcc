@@ -11169,6 +11169,20 @@ is usable even in freestanding environments.
 Enable coverage-guided fuzzing code instrumentation.
 Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
 
+@item -fsanitize-coverage=trace-cmp
+@opindex fsanitize-coverage=trace-cmp
+Enable dataflow guided fuzzing code instrumentation.
+Inserts a call to @code{__sanitizer_cov_trace_cmp1},
+@code{__sanitizer_cov_trace_cmp2}, @code{__sanitizer_cov_trace_cmp4} or
+@code{__sanitizer_cov_trace_cmp8} for integral comparison with both operands
+variable or @code{__sanitizer_cov_trace_const_cmp1},
+@code{__sanitizer_cov_trace_const_cmp2},
+@code{__sanitizer_cov_trace_const_cmp4} or
+@code{__sanitizer_cov_trace_const_cmp8} for integral comparison with one
+operand constant, @code{__sanitizer_cov_trace_cmpf} or
+@code{__sanitizer_cov_trace_cmpd} for float or double comparisons and
+@code{__sanitizer_cov_trace_switch} for switch statements.
+
 @item -fbounds-check
 @opindex fbounds-check
 For front ends that support it, generate additional code to check that
