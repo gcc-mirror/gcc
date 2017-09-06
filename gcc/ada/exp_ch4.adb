@@ -4072,10 +4072,9 @@ package body Exp_Ch4 is
 
             --  Link this node to the tree to analyze it
 
-            --  If the parent node is an expression with actions we link it
-            --  to N since otherwise Force_Evaluation cannot identify if this
-            --  node comes from the Expression and rejects generating the
-            --  temporary.
+            --  If the parent node is an expression with actions we link it to
+            --  N since otherwise Force_Evaluation cannot identify if this node
+            --  comes from the Expression and rejects generating the temporary.
 
             if Nkind (Parent (N)) = N_Expression_With_Actions then
                Set_Parent (Op_Expr, N);
@@ -10698,13 +10697,13 @@ package body Exp_Ch4 is
 
                   declare
                      Stored : constant Elist_Id :=
-                       Stored_Constraint (Operand_Type);
+                                Stored_Constraint (Operand_Type);
 
                      Elmt : Elmt_Id;
 
                      Disc_O : Entity_Id;
                      --  Discriminant of the operand type. Its value in the
-                     --  the object is captured in a selected component.
+                     --  object is captured in a selected component.
 
                      Disc_S : Entity_Id;
                      --  Stored discriminant of the operand. If present, it
@@ -10732,7 +10731,7 @@ package body Exp_Ch4 is
                              Make_Selected_Component (Loc,
                                Prefix        =>
                                  Duplicate_Subexpr_Move_Checks (Operand),
-                                  Selector_Name =>
+                               Selector_Name =>
                                  Make_Identifier (Loc, Chars (Disc_O))));
                            Next_Discriminant (Disc_O);
 
@@ -10756,10 +10755,10 @@ package body Exp_Ch4 is
 
                      Append_To (Cons,
                        Make_Range (Loc,
-                         Low_Bound =>
+                         Low_Bound  =>
                            Unchecked_Convert_To (Etype (N_Ix),
                              Make_Attribute_Reference (Loc,
-                               Prefix =>
+                               Prefix         =>
                                  Duplicate_Subexpr_No_Checks
                                    (Operand, Name_Req => True),
                                Attribute_Name => Name_First,
@@ -10769,7 +10768,7 @@ package body Exp_Ch4 is
                          High_Bound =>
                            Unchecked_Convert_To (Etype (N_Ix),
                              Make_Attribute_Reference (Loc,
-                               Prefix =>
+                               Prefix         =>
                                  Duplicate_Subexpr_No_Checks
                                    (Operand, Name_Req => True),
                                Attribute_Name => Name_Last,
@@ -10787,7 +10786,7 @@ package body Exp_Ch4 is
                Odef :=
                  Make_Subtype_Indication (Loc,
                    Subtype_Mark => Odef,
-                   Constraint =>
+                   Constraint   =>
                      Make_Index_Or_Discriminant_Constraint (Loc,
                        Constraints => Cons));
             end if;
@@ -10808,7 +10807,7 @@ package body Exp_Ch4 is
               New_List (
                 Decl,
                 Make_Assignment_Statement (Loc,
-                  Name => New_Occurrence_Of (Temp, Loc),
+                  Name       => New_Occurrence_Of (Temp, Loc),
                   Expression => Relocate_Node (N))),
                 Suppress => All_Checks);
 

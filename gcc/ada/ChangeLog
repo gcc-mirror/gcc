@@ -1,3 +1,20 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, freeze.adb, exp_ch4.adb, exp_ch6.adb, lib-xref.adb:
+	Minor reformatting.
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Modified Image
+	attribute cases (Rewrite_Object_Reference_Image): Created to
+	aid the rewriting of new-style 'Image attributes.
+	* sem_attr.adb (Analyze_Attribute): Modified Image attribute cases
+	(Check_Object_Reference_Image): Created to handle verification of
+	'Image with object-references as prefixes.
+	* sem_util.ads, sem_util.adb (Is_Image_Applied_To_Object):
+	Create predicate to identify cases where an 'Image attribute's
+	prefix applies to an object reference.
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* freeze.adb (Freeze_Entity): Do not generate a freeze

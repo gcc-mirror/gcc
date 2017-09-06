@@ -1598,6 +1598,18 @@ package Sem_Util is
    --  Determine whether arbitrary declaration Decl denotes a generic package,
    --  a generic subprogram or a generic body.
 
+   function Is_Image_Applied_To_Object
+     (Prefix : Node_Id;
+      P_Typ  : Entity_Id) return Boolean;
+   --  Returns true if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
+   --  can be applied to a given object-reference prefix (see AI12-00124-1).
+
+   --  AI12-00124-1 : The ARG has adopted the GNAT semantics of 'Img for
+   --  scalar types, so that the prefix can be an object and not a type,
+   --  and there is no need for an argument. Given the vote of confidence
+   --  from the ARG, simplest is to transform this new usage of 'Image
+   --  into a reference to 'Img.
+
    function Is_Inherited_Operation (E : Entity_Id) return Boolean;
    --  E is a subprogram. Return True is E is an implicit operation inherited
    --  by a derived type declaration.

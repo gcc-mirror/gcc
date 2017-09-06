@@ -1594,9 +1594,32 @@ package body Exp_Attr is
       Exprs : constant List_Id      := Expressions (N);
       Id    : constant Attribute_Id := Get_Attribute_Id (Attribute_Name (N));
 
+      procedure Rewrite_Object_Reference_Image
+        (Name    : Name_Id;
+         Str_Typ : Entity_Id);
+      --  Rewrite an 'Image attribute applied to an object reference for
+      --  AI12-0012401 into an attribute applied to a type.
+
       procedure Rewrite_Stream_Proc_Call (Pname : Entity_Id);
       --  Rewrites a stream attribute for Read, Write or Output with the
       --  procedure call. Pname is the entity for the procedure to call.
+
+      ------------------------------------
+      -- Rewrite_Object_Reference_Image --
+      ------------------------------------
+
+      procedure Rewrite_Object_Reference_Image
+        (Name    : Name_Id;
+         Str_Typ : Entity_Id) is
+      begin
+         Rewrite (N,
+           Make_Attribute_Reference (Loc,
+             Prefix         => New_Occurrence_Of (Ptyp, Loc),
+             Attribute_Name => Name,
+             Expressions    => New_List (Relocate_Node (Pref))));
+
+         Analyze_And_Resolve (N, Str_Typ);
+      end Rewrite_Object_Reference_Image;
 
       ------------------------------
       -- Rewrite_Stream_Proc_Call --
@@ -3613,6 +3636,10 @@ package body Exp_Attr is
       --  Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Image =>
+         if Is_Image_Applied_To_Object (Pref, Ptyp) then
+            Rewrite_Object_Reference_Image (Name_Image, Standard_String);
+            return;
+         end if;
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
@@ -3630,13 +3657,7 @@ package body Exp_Attr is
       --  X'Img is expanded to typ'Image (X), where typ is the type of X
 
       when Attribute_Img =>
-         Rewrite (N,
-           Make_Attribute_Reference (Loc,
-             Prefix         => New_Occurrence_Of (Ptyp, Loc),
-             Attribute_Name => Name_Image,
-             Expressions    => New_List (Relocate_Node (Pref))));
-
-         Analyze_And_Resolve (N, Standard_String);
+         Rewrite_Object_Reference_Image (Name_Image, Standard_String);
 
       -----------
       -- Input --
@@ -6982,6 +7003,11 @@ package body Exp_Attr is
       --  Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Image =>
+         if Is_Image_Applied_To_Object (Pref, Ptyp) then
+            Rewrite_Object_Reference_Image
+              (Name_Wide_Image, Standard_Wide_String);
+            return;
+         end if;
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.
@@ -6999,6 +7025,11 @@ package body Exp_Attr is
       --  Wide_Wide_Image attribute is handled in separate unit Exp_Imgv
 
       when Attribute_Wide_Wide_Image =>
+         if Is_Image_Applied_To_Object (Pref, Ptyp) then
+            Rewrite_Object_Reference_Image
+              (Name_Wide_Wide_Image, Standard_Wide_Wide_String);
+            return;
+         end if;
 
          --  Leave attribute unexpanded in CodePeer mode: the gnat2scil
          --  back-end knows how to handle this attribute directly.

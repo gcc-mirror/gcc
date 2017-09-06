@@ -5270,7 +5270,7 @@ package body Freeze is
       --  delayed in the parent, so these must also be captured now.
 
       if Has_Delayed_Aspects (E)
-         or else May_Inherit_Delayed_Rep_Aspects (E)
+        or else May_Inherit_Delayed_Rep_Aspects (E)
       then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
@@ -5490,7 +5490,7 @@ package body Freeze is
                Explode_Initialization_Compound_Statement (E);
             end if;
 
-            --  Do not generate a freeze node for a generic unit.
+            --  Do not generate a freeze node for a generic unit
 
             if Is_Generic_Unit (E) then
                Result := No_List;

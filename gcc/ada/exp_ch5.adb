@@ -1452,10 +1452,9 @@ package body Exp_Ch5 is
             Expr : Node_Id;
 
          begin
-
             --  The discriminant entity to be used in the retrieval below must
-            --  be one in the corresponding type, given that the assignment
-            --  may be between derived and parent types.
+            --  be one in the corresponding type, given that the assignment may
+            --  be between derived and parent types.
 
             if Is_Derived_Type (Etype (Rhs)) then
                Disc := Find_Component (R_Typ, C);
@@ -1599,8 +1598,8 @@ package body Exp_Ch5 is
 
             if Stored_Constraint (R_Typ) /= No_Elist then
                declare
-                  Discr_Val : Elmt_Id;
                   Assign    : Node_Id;
+                  Discr_Val : Elmt_Id;
 
                begin
                   Discr_Val := First_Elmt (Stored_Constraint (R_Typ));
@@ -1609,19 +1608,20 @@ package body Exp_Ch5 is
                      if Ekind (F) = E_Discriminant
                        and then Is_Completely_Hidden (F)
                        and then Present (Corresponding_Record_Component (F))
-                       and then (not Is_Entity_Name (Node (Discr_Val))
-                         or else Ekind (Entity (Node (Discr_Val)))
-                           /= E_Discriminant)
+                       and then
+                         (not Is_Entity_Name (Node (Discr_Val))
+                           or else Ekind (Entity (Node (Discr_Val))) /=
+                                     E_Discriminant)
                      then
                         Assign :=
                           Make_Assignment_Statement (Loc,
-                            Name =>
+                            Name       =>
                               Make_Selected_Component (Loc,
                                 Prefix        => Duplicate_Subexpr (Lhs),
                                 Selector_Name =>
                                   New_Occurrence_Of
                                     (Corresponding_Record_Component (F), Loc)),
-                            Expression => New_Copy (Node ((Discr_Val))));
+                            Expression => New_Copy (Node (Discr_Val)));
 
                         Set_Assignment_OK (Name (Assign));
                         Insert_Action (N, Assign);
