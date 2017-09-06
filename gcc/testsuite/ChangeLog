@@ -1,5 +1,10 @@
 2017-09-06  Richard Biener  <rguenther@suse.de>
 
+	* gcc.c-torture/execute/20050604-1.c: Adjust to be a better
+	test for correctness of vector lowering.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82108
 	* gcc.dg/vect/pr82108.c: New testcase.
 
