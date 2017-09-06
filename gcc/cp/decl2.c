@@ -611,6 +611,15 @@ check_classfn (tree ctype, tree function, tree template_parms)
   for (ovl_iterator iter (fns); !matched && iter; ++iter)
     {
       tree fndecl = *iter;
+
+      /* A member template definition only matches a member template
+	 declaration.  */
+      if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
+	continue;
+
+      if (!DECL_DECLARES_FUNCTION_P (fndecl))
+	continue;
+
       tree p1 = TYPE_ARG_TYPES (TREE_TYPE (function));
       tree p2 = TYPE_ARG_TYPES (TREE_TYPE (fndecl));
 
@@ -624,11 +633,6 @@ check_classfn (tree ctype, tree function, tree template_parms)
       if (DECL_STATIC_FUNCTION_P (fndecl)
 	  && TREE_CODE (TREE_TYPE (function)) == METHOD_TYPE)
 	p1 = TREE_CHAIN (p1);
-
-      /* A member template definition only matches a member template
-	 declaration.  */
-      if (is_template != (TREE_CODE (fndecl) == TEMPLATE_DECL))
-	continue;
 
       /* ref-qualifier or absence of same must match.  */
       if (type_memfn_rqual (TREE_TYPE (function))
