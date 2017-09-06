@@ -7481,6 +7481,39 @@ package body Einfo is
       return Empty;
    end Get_Pragma;
 
+   --------------------------
+   -- Get_Classwide_Pragma --
+   --------------------------
+
+   function Get_Classwide_Pragma
+     (E  : Entity_Id;
+      Id : Pragma_Id) return Node_Id
+    is
+      Item  : Node_Id;
+      Items : Node_Id;
+
+   begin
+      Items := Contract (E);
+      if No (Items) then
+         return Empty;
+      end if;
+
+      Item := Pre_Post_Conditions (Items);
+
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name_Unmapped (Item)) = Id
+           and then Class_Present (Item)
+         then
+            return Item;
+         else
+            Item := Next_Pragma (Item);
+         end if;
+      end loop;
+
+      return Empty;
+   end Get_Classwide_Pragma;
+
    --------------------------------------
    -- Get_Record_Representation_Clause --
    --------------------------------------
