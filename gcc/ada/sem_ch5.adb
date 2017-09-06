@@ -1111,7 +1111,10 @@ package body Sem_Ch5 is
             end loop;
          end if;
 
-         Check_References (Ent);
+         if Comes_From_Source (Ent) then
+            Check_References (Ent);
+         end if;
+
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then

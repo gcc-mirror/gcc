@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,24 +23,35 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Ada.Command_Line;  use Ada.Command_Line;
-with Ada.Text_IO;       use Ada.Text_IO;
+with Ada.Characters.Handling;   use Ada.Characters.Handling;
+with Ada.Command_Line;          use Ada.Command_Line;
+with Ada.Text_IO;               use Ada.Text_IO;
 
-with GNAT.Command_Line; use GNAT.Command_Line;
+with GNAT.Command_Line;         use GNAT.Command_Line;
+with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.Dynamic_Tables;
-with GNAT.OS_Lib;       use GNAT.OS_Lib;
+with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
+with Make_Util; use Make_Util;
+with Namet;     use Namet;
 with Opt;
-with Osint;    use Osint;
-with Output;   use Output;
-with Prj;      use Prj;
-with Prj.Makr;
-with Switch;   use Switch;
+with Osint;     use Osint;
+with Output;    use Output;
+with Switch;    use Switch;
 with Table;
+with Tempdir;
+with Types;     use Types;
 
-with System.Regexp; use System.Regexp;
+with System.CRTL;
+with System.Regexp;    use System.Regexp;
 
 procedure Gnatname is
+
+   pragma Warnings (Off);
+   type Matched_Type is (True, False, Excluded);
+   pragma Warnings (On);
+
+   Create_Project : Boolean := False;
 
    Subdirs_Switch : constant String := "--subdirs=";
 
@@ -56,15 +67,29 @@ procedure Gnatname is
    Very_Verbose : Boolean := False;
    --  Set to True with -v -v
 
-   Create_Project : Boolean := False;
-   --  Set to True with a -P switch
-
    File_Path : String_Access := new String'("gnat.adc");
    --  Path name of the file specified by -c or -P switch
 
    File_Set : Boolean := False;
    --  Set to True by -c or -P switch.
    --  Used to detect multiple -c/-P switches.
+
+   Args : Argument_List_Access;
+   --  The list of arguments for calls to the compiler to get the unit names
+   --  and kinds (spec or body) in the Ada sources.
+
+   Path_Name : String_Access;
+
+   Path_Last : Natural;
+
+   Directory_Last    : Natural := 0;
+
+   function Dup (Fd : File_Descriptor) return File_Descriptor;
+
+   procedure Dup2 (Old_Fd, New_Fd : File_Descriptor);
+
+   Gcc      : constant String := "gcc";
+   Gcc_Path : String_Access := null;
 
    package Patterns is new GNAT.Dynamic_Tables
      (Table_Component_Type => String_Access,
@@ -100,6 +125,33 @@ procedure Gnatname is
    --  Table to store the preprocessor switches to be used in the call
    --  to the compiler.
 
+   type Source is record
+      File_Name : Name_Id;
+      Unit_Name : Name_Id;
+      Index     : Int := 0;
+      Spec      : Boolean;
+   end record;
+
+   package Processed_Directories is new Table.Table
+     (Table_Component_Type => String_Access,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Prj.Makr.Processed_Directories");
+   --  The list of already processed directories for each section, to avoid
+   --  processing several times the same directory in the same section.
+
+   package Sources is new Table.Table
+     (Table_Component_Type => Source,
+      Table_Index_Type     => Natural,
+      Table_Low_Bound      => 0,
+      Table_Initial        => 10,
+      Table_Increment      => 100,
+      Table_Name           => "Gnatname.Sources");
+   --  The list of Ada sources found, with their unit name and kind, to be put
+   --  in the pragmas Source_File_Name in the configuration pragmas file.
+
    procedure Output_Version;
    --  Print name and version
 
@@ -115,6 +167,49 @@ procedure Gnatname is
    procedure Get_Directories (From_File : String);
    --  Read a source directory text file
 
+   procedure Write_Eol;
+   --  Output an empty line
+
+   procedure Write_A_String (S : String);
+   --  Write a String to Output_FD
+
+   procedure Initialize
+     (File_Path         : String;
+      Preproc_Switches  : Argument_List);
+   --  Start the creation of a configuration pragmas file
+   --
+   --  File_Path is the name of the configuration pragmas file to create
+   --
+   --  Preproc_Switches is a list of switches to be used when invoking the
+   --  compiler to get the name and kind of unit of a source file.
+
+   type Regexp_List is array (Positive range <>) of Regexp;
+
+   procedure Process
+     (Directories       : Argument_List;
+      Name_Patterns     : Regexp_List;
+      Excluded_Patterns : Regexp_List;
+      Foreign_Patterns  : Regexp_List);
+   --  Look for source files in the specified directories, with the specified
+   --  patterns.
+   --
+   --  Directories is the list of source directories where to look for sources.
+   --
+   --  Name_Patterns is a potentially empty list of file name patterns to check
+   --  for Ada Sources.
+   --
+   --  Excluded_Patterns is a potentially empty list of file name patterns that
+   --  should not be checked for Ada or non Ada sources.
+   --
+   --  Foreign_Patterns is a potentially empty list of file name patterns to
+   --  check for non Ada sources.
+   --
+   --  At least one of Name_Patterns and Foreign_Patterns is not empty
+
+   procedure Finalize;
+   --  Write the configuration pragmas file indicated in a call to procedure
+   --  Initialize, after one or several calls to procedure Process.
+
    --------------------------
    -- Add_Source_Directory --
    --------------------------
@@ -124,6 +219,26 @@ procedure Gnatname is
       Patterns.Append
         (Arguments.Table (Arguments.Last).Directories, new String'(S));
    end Add_Source_Directory;
+
+   ---------
+   -- Dup --
+   ---------
+
+   function Dup  (Fd : File_Descriptor) return File_Descriptor is
+   begin
+      return File_Descriptor (System.CRTL.dup (Integer (Fd)));
+   end Dup;
+
+   ----------
+   -- Dup2 --
+   ----------
+
+   procedure Dup2 (Old_Fd, New_Fd : File_Descriptor) is
+      Fd : Integer;
+      pragma Warnings (Off, Fd);
+   begin
+      Fd := System.CRTL.dup2 (Integer (Old_Fd), Integer (New_Fd));
+   end Dup2;
 
    ---------------------
    -- Get_Directories --
@@ -151,6 +266,504 @@ procedure Gnatname is
       when Name_Error =>
          Fail ("cannot open source directory file """ & From_File & '"');
    end Get_Directories;
+
+   --------------
+   -- Finalize --
+   --------------
+
+   procedure Finalize is
+      Discard : Boolean;
+      pragma Warnings (Off, Discard);
+
+   begin
+      --  Delete the file if it already exists
+
+      Delete_File
+        (Path_Name (Directory_Last + 1 .. Path_Last),
+         Success => Discard);
+
+      --  Create a new one
+
+      if Opt.Verbose_Mode then
+         Output.Write_Str ("Creating new file """);
+         Output.Write_Str (Path_Name (Directory_Last + 1 .. Path_Last));
+         Output.Write_Line ("""");
+      end if;
+
+      Output_FD := Create_New_File
+        (Path_Name (Directory_Last + 1 .. Path_Last),
+         Fmode => Text);
+
+      --  Fails if file cannot be created
+
+      if Output_FD = Invalid_FD then
+         Fail_Program
+           ("cannot create new """ & Path_Name (1 .. Path_Last) & """");
+      end if;
+
+      --  For each Ada source, write a pragma Source_File_Name to the
+      --  configuration pragmas file.
+
+      for Index in 1 .. Sources.Last loop
+         if Sources.Table (Index).Unit_Name /= No_Name then
+            Write_A_String ("pragma Source_File_Name");
+            Write_Eol;
+            Write_A_String ("  (");
+            Write_A_String
+              (Get_Name_String (Sources.Table (Index).Unit_Name));
+            Write_A_String (",");
+            Write_Eol;
+
+            if Sources.Table (Index).Spec then
+               Write_A_String ("   Spec_File_Name => """);
+
+            else
+               Write_A_String ("   Body_File_Name => """);
+            end if;
+
+            Write_A_String
+              (Get_Name_String (Sources.Table (Index).File_Name));
+
+            Write_A_String ("""");
+
+            if Sources.Table (Index).Index /= 0 then
+               Write_A_String (", Index =>");
+               Write_A_String (Sources.Table (Index).Index'Img);
+            end if;
+
+            Write_A_String (");");
+            Write_Eol;
+         end if;
+      end loop;
+
+      Close (Output_FD);
+   end Finalize;
+
+   ----------------
+   -- Initialize --
+   ----------------
+
+   procedure Initialize
+     (File_Path         : String;
+      Preproc_Switches  : Argument_List)
+   is
+   begin
+      Sources.Set_Last (0);
+
+      --  Initialize the compiler switches
+
+      Args := new Argument_List (1 .. Preproc_Switches'Length + 6);
+      Args (1) := new String'("-c");
+      Args (2) := new String'("-gnats");
+      Args (3) := new String'("-gnatu");
+      Args (4 .. 3 + Preproc_Switches'Length) := Preproc_Switches;
+      Args (4 + Preproc_Switches'Length) := new String'("-x");
+      Args (5 + Preproc_Switches'Length) := new String'("ada");
+
+      --  Get the path and file names
+
+      Path_Name := new
+        String (1 .. File_Path'Length);
+      Path_Last := File_Path'Length;
+
+      if File_Names_Case_Sensitive then
+         Path_Name (1 .. Path_Last) := File_Path;
+      else
+         Path_Name (1 .. Path_Last) := To_Lower (File_Path);
+      end if;
+
+      --  Get the end of directory information, if any
+
+      for Index in reverse 1 .. Path_Last loop
+         if Path_Name (Index) = Directory_Separator then
+            Directory_Last := Index;
+            exit;
+         end if;
+      end loop;
+
+      --  Change the current directory to the directory of the project file,
+      --  if any directory information is specified.
+
+      if Directory_Last /= 0 then
+         begin
+            Change_Dir (Path_Name (1 .. Directory_Last));
+         exception
+            when Directory_Error =>
+               Fail_Program
+                 ("unknown directory """
+                  & Path_Name (1 .. Directory_Last)
+                  & """");
+         end;
+      end if;
+   end Initialize;
+
+   -------------
+   -- Process --
+   -------------
+
+   procedure Process
+     (Directories       : Argument_List;
+      Name_Patterns     : Regexp_List;
+      Excluded_Patterns : Regexp_List;
+      Foreign_Patterns  : Regexp_List)
+  is
+      procedure Process_Directory (Dir_Name : String);
+      --  Look for Ada and foreign sources in a directory, according to the
+      --  patterns.
+
+      -----------------------
+      -- Process_Directory --
+      -----------------------
+
+      procedure Process_Directory (Dir_Name : String) is
+         Matched : Matched_Type := False;
+         Str     : String (1 .. 2_000);
+         Canon   : String (1 .. 2_000);
+         Last    : Natural;
+         Dir     : Dir_Type;
+         Do_Process : Boolean := True;
+
+         Temp_File_Name         : String_Access := null;
+         Save_Last_Source_Index : Natural := 0;
+         File_Name_Id           : Name_Id := No_Name;
+
+         Current_Source : Source;
+
+      begin
+         --  Avoid processing the same directory more than once
+
+         for Index in 1 .. Processed_Directories.Last loop
+            if Processed_Directories.Table (Index).all = Dir_Name then
+               Do_Process := False;
+               exit;
+            end if;
+         end loop;
+
+         if Do_Process then
+            if Opt.Verbose_Mode then
+               Output.Write_Str ("Processing directory """);
+               Output.Write_Str (Dir_Name);
+               Output.Write_Line ("""");
+            end if;
+
+            Processed_Directories. Increment_Last;
+            Processed_Directories.Table (Processed_Directories.Last) :=
+              new String'(Dir_Name);
+
+            --  Get the source file names from the directory. Fails if the
+            --  directory does not exist.
+
+            begin
+               Open (Dir, Dir_Name);
+            exception
+               when Directory_Error =>
+                  Fail_Program ("cannot open directory """ & Dir_Name & """");
+            end;
+
+            --  Process each regular file in the directory
+
+            File_Loop : loop
+               Read (Dir, Str, Last);
+               exit File_Loop when Last = 0;
+
+               --  Copy the file name and put it in canonical case to match
+               --  against the patterns that have themselves already been put
+               --  in canonical case.
+
+               Canon (1 .. Last) := Str (1 .. Last);
+               Canonical_Case_File_Name (Canon (1 .. Last));
+
+               if Is_Regular_File
+                    (Dir_Name & Directory_Separator & Str (1 .. Last))
+               then
+                  Matched := True;
+
+                  Name_Len := Last;
+                  Name_Buffer (1 .. Name_Len) := Str (1 .. Last);
+                  File_Name_Id := Name_Find;
+
+                  --  First, check if the file name matches at least one of
+                  --  the excluded expressions;
+
+                  for Index in Excluded_Patterns'Range loop
+                     if
+                       Match (Canon (1 .. Last), Excluded_Patterns (Index))
+                     then
+                        Matched := Excluded;
+                        exit;
+                     end if;
+                  end loop;
+
+                  --  If it does not match any of the excluded expressions,
+                  --  check if the file name matches at least one of the
+                  --  regular expressions.
+
+                  if Matched = True then
+                     Matched := False;
+
+                     for Index in Name_Patterns'Range loop
+                        if
+                          Match
+                            (Canon (1 .. Last), Name_Patterns (Index))
+                        then
+                           Matched := True;
+                           exit;
+                        end if;
+                     end loop;
+                  end if;
+
+                  if Very_Verbose
+                    or else (Matched = True and then Opt.Verbose_Mode)
+                  then
+                     Output.Write_Str ("   Checking """);
+                     Output.Write_Str (Str (1 .. Last));
+                     Output.Write_Line (""": ");
+                  end if;
+
+                  --  If the file name matches one of the regular expressions,
+                  --  parse it to get its unit name.
+
+                  if Matched = True then
+                     declare
+                        FD : File_Descriptor;
+                        Success : Boolean;
+                        Saved_Output : File_Descriptor;
+                        Saved_Error  : File_Descriptor;
+                        Tmp_File     : Path_Name_Type;
+
+                     begin
+                        --  If we don't have the path of the compiler yet,
+                        --  get it now. The compiler name may have a prefix,
+                        --  so we get the potentially prefixed name.
+
+                        if Gcc_Path = null then
+                           declare
+                              Prefix_Gcc : String_Access :=
+                                             Program_Name (Gcc, "gnatname");
+                           begin
+                              Gcc_Path :=
+                                Locate_Exec_On_Path (Prefix_Gcc.all);
+                              Free (Prefix_Gcc);
+                           end;
+
+                           if Gcc_Path = null then
+                              Fail_Program ("could not locate " & Gcc);
+                           end if;
+                        end if;
+
+                        --  Create the temporary file
+
+                        Tempdir.Create_Temp_File (FD, Tmp_File);
+
+                        if FD = Invalid_FD then
+                           Fail_Program
+                             ("could not create temporary file");
+
+                        else
+                           Temp_File_Name :=
+                             new String'(Get_Name_String (Tmp_File));
+                        end if;
+
+                        Args (Args'Last) :=
+                          new String'
+                            (Dir_Name & Directory_Separator & Str (1 .. Last));
+
+                        --  Save the standard output and error
+
+                        Saved_Output := Dup (Standout);
+                        Saved_Error  := Dup (Standerr);
+
+                        --  Set standard output and error to the temporary file
+
+                        Dup2 (FD, Standout);
+                        Dup2 (FD, Standerr);
+
+                        --  And spawn the compiler
+
+                        Spawn (Gcc_Path.all, Args.all, Success);
+
+                        --  Restore the standard output and error
+
+                        Dup2 (Saved_Output, Standout);
+                        Dup2 (Saved_Error, Standerr);
+
+                        --  Close the temporary file
+
+                        Close (FD);
+
+                        --  And close the saved standard output and error to
+                        --  avoid too many file descriptors.
+
+                        Close (Saved_Output);
+                        Close (Saved_Error);
+
+                        --  Now that standard output is restored, check if
+                        --  the compiler ran correctly.
+
+                        --  Read the lines of the temporary file:
+                        --  they should contain the kind and name of the unit.
+
+                        declare
+                           File      : Ada.Text_IO.File_Type;
+                           Text_Line : String (1 .. 1_000);
+                           Text_Last : Natural;
+
+                        begin
+                           begin
+                              Open (File, In_File, Temp_File_Name.all);
+
+                           exception
+                              when others =>
+                                 Fail_Program
+                                   ("could not read temporary file " &
+                                      Temp_File_Name.all);
+                           end;
+
+                           Save_Last_Source_Index := Sources.Last;
+
+                           if End_Of_File (File) then
+                              if Opt.Verbose_Mode then
+                                 if not Success then
+                                    Output.Write_Str ("      (process died) ");
+                                 end if;
+                              end if;
+
+                           else
+                              Line_Loop : while not End_Of_File (File) loop
+                                 Get_Line (File, Text_Line, Text_Last);
+
+                                 --  Find the first closing parenthesis
+
+                                 Char_Loop : for J in 1 .. Text_Last loop
+                                    if Text_Line (J) = ')' then
+                                       if J >= 13 and then
+                                         Text_Line (1 .. 4) = "Unit"
+                                       then
+                                          --  Add entry to Sources table
+
+                                          Name_Len := J - 12;
+                                          Name_Buffer (1 .. Name_Len) :=
+                                            Text_Line (6 .. J - 7);
+                                          Current_Source :=
+                                            (Unit_Name  => Name_Find,
+                                             File_Name  => File_Name_Id,
+                                             Index => 0,
+                                             Spec  => Text_Line (J - 5 .. J) =
+                                                        "(spec)");
+
+                                          Sources.Append (Current_Source);
+                                       end if;
+
+                                       exit Char_Loop;
+                                    end if;
+                                 end loop Char_Loop;
+                              end loop Line_Loop;
+                           end if;
+
+                           if Save_Last_Source_Index = Sources.Last then
+                              if Opt.Verbose_Mode then
+                                 Output.Write_Line ("      not a unit");
+                              end if;
+
+                           else
+                              if Sources.Last >
+                                   Save_Last_Source_Index + 1
+                              then
+                                 for Index in Save_Last_Source_Index + 1 ..
+                                                Sources.Last
+                                 loop
+                                    Sources.Table (Index).Index :=
+                                      Int (Index - Save_Last_Source_Index);
+                                 end loop;
+                              end if;
+
+                              for Index in Save_Last_Source_Index + 1 ..
+                                             Sources.Last
+                              loop
+                                 Current_Source := Sources.Table (Index);
+
+                                 if Opt.Verbose_Mode then
+                                    if Current_Source.Spec then
+                                       Output.Write_Str ("      spec of ");
+
+                                    else
+                                       Output.Write_Str ("      body of ");
+                                    end if;
+
+                                    Output.Write_Line
+                                      (Get_Name_String
+                                         (Current_Source.Unit_Name));
+                                 end if;
+                              end loop;
+                           end if;
+
+                           Close (File);
+
+                           Delete_File (Temp_File_Name.all, Success);
+                        end;
+                     end;
+
+                  --  File name matches none of the regular expressions
+
+                  else
+                     --  If file is not excluded, see if this is foreign source
+
+                     if Matched /= Excluded then
+                        for Index in Foreign_Patterns'Range loop
+                           if Match (Canon (1 .. Last),
+                                     Foreign_Patterns (Index))
+                           then
+                              Matched := True;
+                              exit;
+                           end if;
+                        end loop;
+                     end if;
+
+                     if Very_Verbose then
+                        case Matched is
+                           when False =>
+                              Output.Write_Line ("no match");
+
+                           when Excluded =>
+                              Output.Write_Line ("excluded");
+
+                           when True =>
+                              Output.Write_Line ("foreign source");
+                        end case;
+                     end if;
+
+                     if Matched = True then
+
+                        --  Add source file name without unit name
+
+                        Name_Len := 0;
+                        Add_Str_To_Name_Buffer (Canon (1 .. Last));
+                        Sources.Append
+                          ((File_Name => Name_Find,
+                            Unit_Name => No_Name,
+                            Index     => 0,
+                            Spec      => False));
+                     end if;
+                  end if;
+               end if;
+            end loop File_Loop;
+
+            Close (Dir);
+         end if;
+
+      end Process_Directory;
+
+   --  Start of processing for Process
+
+   begin
+      Processed_Directories.Set_Last (0);
+
+      --  Process each directory
+
+      for Index in Directories'Range  loop
+         Process_Directory (Directories (Index).all);
+      end loop;
+   end Process;
 
    --------------------
    -- Output_Version --
@@ -243,7 +856,6 @@ procedure Gnatname is
                elsif Pragmas_File_Expected then
                   File_Set := True;
                   File_Path := new String'(Arg);
-                  Create_Project := False;
                   Pragmas_File_Expected := False;
 
                --  -d xxx
@@ -343,8 +955,8 @@ procedure Gnatname is
                elsif Arg'Length > Subdirs_Switch'Length
                  and then Arg (1 .. Subdirs_Switch'Length) = Subdirs_Switch
                then
-                  Subdirs :=
-                    new String'(Arg (Subdirs_Switch'Length + 1 .. Arg'Last));
+                  null;
+                  --  Subdirs are only used in gprname
 
                --  --no-backup
 
@@ -368,7 +980,6 @@ procedure Gnatname is
                   else
                      File_Set := True;
                      File_Path := new String'(Arg (3 .. Arg'Last));
-                     Create_Project := False;
                   end if;
 
                --  -d
@@ -510,38 +1121,71 @@ procedure Gnatname is
       if not Usage_Output then
          Usage_Needed := False;
          Usage_Output := True;
-         Write_Str ("Usage: ");
+         Output.Write_Str ("Usage: ");
          Osint.Write_Program_Name;
-         Write_Line (" [switches] naming-pattern [naming-patterns]");
-         Write_Line ("   {--and [switches] naming-pattern [naming-patterns]}");
-         Write_Eol;
-         Write_Line ("switches:");
+         Output.Write_Line (" [switches] naming-pattern [naming-patterns]");
+         Output.Write_Line
+           ("   {--and [switches] naming-pattern [naming-patterns]}");
+         Output.Write_Eol;
+         Output.Write_Line ("switches:");
 
          Display_Usage_Version_And_Help;
 
-         Write_Line ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
-         Write_Line ("  --no-backup   do not create backup of project file");
-         Write_Eol;
+         Output.Write_Line
+           ("  --subdirs=dir real obj/lib/exec dirs are subdirs");
+         Output.Write_Line
+           ("  --no-backup   do not create backup of project file");
+         Output.Write_Eol;
 
-         Write_Line ("  --and        use different patterns");
-         Write_Eol;
+         Output.Write_Line ("  --and        use different patterns");
+         Output.Write_Eol;
 
-         Write_Line ("  -cfile       create configuration pragmas file");
-         Write_Line ("  -ddir        use dir as one of the source " &
-                     "directories");
-         Write_Line ("  -Dfile       get source directories from file");
-         Write_Line ("  -eL          follow symbolic links when processing " &
-                     "project files");
-         Write_Line ("  -fpat        foreign pattern");
-         Write_Line ("  -gnateDsym=v preprocess with symbol definition");
-         Write_Line ("  -gnatep=data preprocess files with data file");
-         Write_Line ("  -h           output this help message");
-         Write_Line ("  -Pproj       update or create project file proj");
-         Write_Line ("  -v           verbose output");
-         Write_Line ("  -v -v        very verbose output");
-         Write_Line ("  -xpat        exclude pattern pat");
+         Output.Write_Line
+           ("  -cfile       create configuration pragmas file");
+         Output.Write_Line ("  -ddir        use dir as one of the source " &
+                            "directories");
+         Output.Write_Line ("  -Dfile       get source directories from file");
+         Output.Write_Line
+           ("  -eL          follow symbolic links when processing " &
+            "project files");
+         Output.Write_Line ("  -fpat        foreign pattern");
+         Output.Write_Line
+           ("  -gnateDsym=v preprocess with symbol definition");
+         Output.Write_Line ("  -gnatep=data preprocess files with data file");
+         Output.Write_Line ("  -h           output this help message");
+         Output.Write_Line
+           ("  -Pproj       update or create project file proj");
+         Output.Write_Line ("  -v           verbose output");
+         Output.Write_Line ("  -v -v        very verbose output");
+         Output.Write_Line ("  -xpat        exclude pattern pat");
       end if;
    end Usage;
+
+   ---------------
+   -- Write_Eol --
+   ---------------
+
+   procedure Write_Eol is
+   begin
+      Write_A_String ((1 => ASCII.LF));
+   end Write_Eol;
+
+   --------------------
+   -- Write_A_String --
+   --------------------
+
+   procedure Write_A_String (S : String) is
+      Str : String (1 .. S'Length);
+
+   begin
+      if S'Length > 0 then
+         Str := S;
+
+         if Write (Output_FD, Str (1)'Address, Str'Length) /= Str'Length then
+            Fail_Program ("disk full");
+         end if;
+      end if;
+   end Write_A_String;
 
 --  Start of processing for Gnatname
 
@@ -601,67 +1245,60 @@ begin
 
    Scan_Args;
 
+   if Create_Project then
+      declare
+         Gprname_Path : constant String_Access :=
+           Locate_Exec_On_Path ("gprname");
+         Arg_Len : Natural       := Argument_Count;
+         Pos     : Natural       := 0;
+         Target  : String_Access := null;
+         Success : Boolean       := False;
+      begin
+         if Gprname_Path = null then
+            Fail_Program
+              ("project files are no longer supported by gnatname;" &
+               " use gprname instead");
+         end if;
+
+         Find_Program_Name;
+
+         if Name_Len > 9
+            and then Name_Buffer (Name_Len - 7 .. Name_Len) = "gnatname"
+         then
+            Target  := new String'(Name_Buffer (1 .. Name_Len - 9));
+            Arg_Len := Arg_Len + 1;
+         end if;
+
+         declare
+            Args : Argument_List (1 .. Arg_Len);
+         begin
+            if Target /= null then
+               Args (1) := new String'("--target=" & Target.all);
+               Pos := 1;
+            end if;
+
+            for J in 1 .. Argument_Count loop
+               Pos := Pos + 1;
+               Args (Pos) := new String'(Argument (J));
+            end loop;
+
+            Spawn (Gprname_Path.all, Args, Success);
+
+            if Success then
+               Exit_Program (E_Success);
+            else
+               Exit_Program (E_Errors);
+            end if;
+         end;
+      end;
+   end if;
+
    if Opt.Verbose_Mode then
       Output_Version;
    end if;
 
    if Usage_Needed then
       Usage;
-   end if;
-
-   if Create_Project then
-      declare
-         Gnatname : constant String_Access :=
-                      Program_Name ("gnatname", "gnatname");
-         Arg_Len  : Positive      := Argument_Count;
-         Target   : String_Access := null;
-
-      begin
-         --  Find the target, if any
-
-         if Gnatname.all /= "gnatname" then
-            Target :=
-              new String'(Gnatname (Gnatname'First .. Gnatname'Last - 9));
-            Arg_Len := Arg_Len + 1;
-         end if;
-
-         declare
-            Args    : Argument_List (1 .. Arg_Len);
-            Gprname : String_Access :=
-                        Locate_Exec_On_Path (Exec_Name => "gprname");
-            Success : Boolean;
-
-         begin
-            if Gprname /= null then
-               for J in 1 .. Argument_Count loop
-                  Args (J) := new String'(Argument (J));
-               end loop;
-
-               --  Add the target if there is one
-
-               if Target /= null then
-                  Args (Args'Last) := new String'("--target=" & Target.all);
-               end if;
-
-               Spawn (Gprname.all, Args, Success);
-
-               Free (Gprname);
-
-               if Success then
-                  Exit_Program (E_Success);
-               end if;
-            end if;
-         end;
-      end;
-   end if;
-
-   --  This only happens if gprname is not found or if the invocation of
-   --  gprname did not succeed.
-
-   if Create_Project then
-      Write_Line
-        ("warning: gnatname -P is obsolete and will not be available in the" &
-         " next release; use gprname instead");
    end if;
 
    --  If no Ada or foreign pattern was specified, print the usage and return
@@ -700,12 +1337,9 @@ begin
          Prep_Switches (Index) := Preprocessor_Switches.Table (Index);
       end loop;
 
-      Prj.Makr.Initialize
+      Initialize
         (File_Path         => File_Path.all,
-         Project_File      => Create_Project,
-         Preproc_Switches  => Prep_Switches,
-         Very_Verbose      => Very_Verbose,
-         Flags             => Gnatmake_Flags);
+         Preproc_Switches  => Prep_Switches);
    end;
 
    --  Process each section successively
@@ -715,13 +1349,13 @@ begin
          Directories   : Argument_List
            (1 .. Integer
                    (Patterns.Last (Arguments.Table (J).Directories)));
-         Name_Patterns : Prj.Makr.Regexp_List
+         Name_Patterns : Regexp_List
            (1 .. Integer
                    (Patterns.Last (Arguments.Table (J).Name_Patterns)));
-         Excl_Patterns : Prj.Makr.Regexp_List
+         Excl_Patterns : Regexp_List
            (1 .. Integer
                    (Patterns.Last (Arguments.Table (J).Excluded_Patterns)));
-         Frgn_Patterns : Prj.Makr.Regexp_List
+         Frgn_Patterns : Regexp_List
            (1 .. Integer
                    (Patterns.Last (Arguments.Table (J).Foreign_Patterns)));
 
@@ -756,7 +1390,7 @@ begin
 
          --  Call Prj.Makr.Process where the real work is done
 
-         Prj.Makr.Process
+         Process
            (Directories       => Directories,
             Name_Patterns     => Name_Patterns,
             Excluded_Patterns => Excl_Patterns,
@@ -766,9 +1400,9 @@ begin
 
    --  Finalize
 
-   Prj.Makr.Finalize;
+   Finalize;
 
    if Opt.Verbose_Mode then
-      Write_Eol;
+      Output.Write_Eol;
    end if;
 end Gnatname;

@@ -1,3 +1,49 @@
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* exp_util.adb (Is_Displace_Call): Make sure it works for indirect
+	calls and the like.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_Global): Reinforce test on object
+	declarations to only consider valid uses of Global/Depends those on
+	single concurrent objects.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Check_Record_Representation_Clause): Give an
+	error as soon as one of the specified components overlaps the
+	parent field.
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.ads: minor fix typo in comment.
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch5.adb (Analyze_Block_Statement): Verify a block comes
+	from source before checking source references.
+	* sem_warn.adb (Check_References): Add check for internal block
+	before recursing.
+
+2017-09-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb, makeusg.adb, switch-m.adb, switch-m.ads, make_util.adb,
+	make_util.ads, sinput.adb, sinput.ads, clean.adb, gnatls.adb,
+	gnatname.adb: Remove the Project Manager from the GNAT tools.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads: Minor comment fix.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations, case of Formal_Package):
+	Generate a freeze node for the actual of a formal package, if
+	the actual is declared in the same unit and has a corresponding
+	body, to prevent the current instance from being frozen before
+	the actual is.
+
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch7.adb (Entity_Table_Size): Change to nearest prime number.
@@ -14,17 +60,6 @@
 	* freeze.adb (Freeze_Entity): Use Get_Classwide_Pragma when
 	freezing a subprogram, to complete the generation of the
 	corresponding checking code.
-
-2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
-
-	* inline.adb (Analyze_Inlined_Bodies): Remove restriction on
-	loading of parent body with a with clause for the main unit.
-	* gcc-interface/decl.c (defer_limited_with_list): Document
-	new usage.
-	(gnat_to_gnu_entity) <E_Access_Type>: Handle
-	completed Taft Amendment types declared in external units like
-	types from limited with clauses.  Adjust final processing of
-	defer_limited_with_list accordingly.
 
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 

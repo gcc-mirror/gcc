@@ -1894,6 +1894,53 @@ package body Sem_Ch12 is
                        (Instantiate_Formal_Package
                          (Formal, Match, Analyzed_Formal),
                         Assoc_List);
+
+                     --  Determine whether the actual package needs an
+                     --  explicit freeze node. This is only the case if
+                     --  the actual is declared in the same unit and has
+                     --  a body. Normally packages do not have explicit
+                     --  freeze nodes, and gigi only uses them to elaborate
+                     --  entities in a package body.
+
+                     declare
+                        Actual : constant Entity_Id := Entity (Match);
+                        Needs_Freezing : Boolean;
+                        S : Entity_Id;
+
+                     begin
+                        if not Expander_Active
+                          or else not Has_Completion (Actual)
+                          or else not In_Same_Source_Unit (I_Node, Actual)
+                          or else (Present (Renamed_Entity (Actual))
+                           and then not In_Same_Source_Unit (I_Node,
+                             (Renamed_Entity (Actual))))
+                        then
+                           null;
+
+                        else
+                           --  Finally we want to exclude such freeze nodes
+                           --  from statement sequences, which freeze
+                           --  everything before them.
+                           --  Is this strictly necesssary ???
+
+                           Needs_Freezing := True;
+                           S := Current_Scope;
+                           while Present (S) loop
+                              if Ekind_In
+                                (S, E_Loop, E_Block, E_Procedure, E_Function)
+                              then
+                                 Needs_Freezing := False;
+                                 exit;
+                              end if;
+                              S := Scope (S);
+                           end loop;
+
+                           if Needs_Freezing then
+                              Set_Has_Delayed_Freeze (Actual);
+                              Append_Elmt (Actual, Actuals_To_Freeze);
+                           end if;
+                        end if;
+                     end;
                   end if;
 
                --  For use type and use package appearing in the generic part,
