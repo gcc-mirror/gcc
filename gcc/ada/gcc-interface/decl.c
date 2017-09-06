@@ -7263,6 +7263,9 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
 			 Entity_Id gnat_record_type, bool in_variant,
 			 bool do_reorder)
 {
+  if (!Comes_From_Source (gnat_record_type))
+    return;
+
   const char *msg1
     = in_variant
       ? "?variant layout may cause performance issues"
@@ -7277,6 +7280,7 @@ warn_on_field_placement (tree gnu_field, Node_Id gnat_component_list,
     = do_reorder
       ? "?comes too early and was moved down"
       : "?comes too early and ought to be moved down";
+
   Entity_Id gnat_field
     = gnu_field_to_gnat (gnu_field, gnat_component_list, gnat_record_type);
 
