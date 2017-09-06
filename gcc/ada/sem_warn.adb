@@ -3608,10 +3608,14 @@ package body Sem_Warn is
 
       --  Local variables
 
-      Act1  : Node_Id;
-      Act2  : Node_Id;
-      Form1 : Entity_Id;
-      Form2 : Entity_Id;
+      Act1       : Node_Id;
+      Act2       : Node_Id;
+      Form1      : Entity_Id;
+      Form2      : Entity_Id;
+      Warn_Only  : Boolean;
+      --  GNAT warns on overlapping in-out parameters even when there
+      --  sre no two in-out parameters of an elementary type, as stated in
+      --  RM 6.5.1 (17/2).
 
    --  Start of processing for Warn_On_Overlapping_Actuals
 
@@ -3620,6 +3624,29 @@ package body Sem_Warn is
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
+
+      --  The call is illegal only if there are at least two in-out
+      --  parameters of the same elementary type.
+
+      Warn_Only := True;
+      Form1 := First_Formal (Subp);
+      while Present (Form1) loop
+         Form2 := Next_Formal (Form1);
+         while Present (Form2) loop
+            if Is_Elementary_Type (Etype (Form1))
+              and then Is_Elementary_Type (Etype (Form2))
+              and then Ekind (Form1) /= E_In_Parameter
+              and then Ekind (Form2) /= E_In_Parameter
+            then
+               Warn_Only := False;
+               exit;
+            end if;
+
+            Next_Formal (Form2);
+         end loop;
+
+         Next_Formal (Form1);
+      end loop;
 
       --  Exclude calls rewritten as enumeration literals
 
@@ -3684,14 +3711,6 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  If the types of the formals are different there can
-                  --  be no aliasing (even though there might be overlap
-                  --  through address clauses, which must be intentional).
-
-                  elsif Base_Type (Etype (Form1)) /= Base_Type (Etype (Form2))
-                  then
-                     null;
-
                   --  Here we may need to issue overlap message
 
                   else
@@ -3708,10 +3727,12 @@ package body Sem_Warn is
 
                        or else not Is_Elementary_Type (Etype (Form1))
 
-                       --  Finally, debug flag -gnatd.E changes the error to a
+                       --  debug flag -gnatd.E changes the error to a
                        --  warning even in Ada 2012 mode.
 
-                       or else Error_To_Warning;
+                       or else Error_To_Warning
+
+                       or else Warn_Only;
 
                      declare
                         Act  : Node_Id;

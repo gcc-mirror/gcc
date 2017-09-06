@@ -364,7 +364,8 @@ package body Sem_Attr is
       --  Check that P is an object reference
 
       procedure Check_Object_Reference_Image (Str_Typ : Entity_Id);
-      --  Verify that the prefix of an image attribute.... ???
+      --  Verify that the prefix of an image attribute is an object reference
+      --  and set the Etype of the prefix to that specified by Str_Typ.
 
       procedure Check_PolyORB_Attribute;
       --  Validity checking for PolyORB/DSA attribute
