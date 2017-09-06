@@ -1,3 +1,13 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_warn.adb (Warn_On_Overlapping_Actuals): Refine previous
+	fix and preserve older GNAT warning on overlapping actuals that
+	are not elementary types.
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_attr.adb: Comment correction.
+
 2017-09-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_util.adb: Minor reformatting.
