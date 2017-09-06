@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -300,21 +300,30 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    -- First --
    -----------
 
-   function First (HT : Hash_Table_Type) return Node_Access is
-      Indx : Hash_Type;
+   function First
+     (HT       : Hash_Table_Type) return Node_Access
+   is
+      Dummy : Hash_Type;
+   begin
+      return First (HT, Dummy);
+   end First;
 
+   function First
+     (HT       : Hash_Table_Type;
+      Position : out Hash_Type) return Node_Access is
    begin
       if HT.Length = 0 then
+         Position := Hash_Type'Last;
          return null;
       end if;
 
-      Indx := HT.Buckets'First;
+      Position := HT.Buckets'First;
       loop
-         if HT.Buckets (Indx) /= null then
-            return HT.Buckets (Indx);
+         if HT.Buckets (Position) /= null then
+            return HT.Buckets (Position);
          end if;
 
-         Indx := Indx + 1;
+         Position := Position + 1;
       end loop;
    end First;
 
@@ -589,29 +598,49 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    ----------
 
    function Next
-     (HT   : aliased in out Hash_Table_Type;
-      Node : Node_Access) return Node_Access
+     (HT            : aliased in out Hash_Table_Type;
+      Node          : Node_Access;
+      Position : in out Hash_Type) return Node_Access
    is
       Result : Node_Access;
       First  : Hash_Type;
 
    begin
+      --  First, check if the node has other nodes chained to it
       Result := Next (Node);
 
       if Result /= null then
          return Result;
       end if;
 
-      First := Checked_Index (HT, Node) + 1;
+      --  Check if we were supplied a position for Node, from which we
+      --  can start iteration on the buckets.
+
+      if Position /= Hash_Type'Last then
+         First := Position + 1;
+      else
+         First := Checked_Index (HT, Node) + 1;
+      end if;
+
       for Indx in First .. HT.Buckets'Last loop
          Result := HT.Buckets (Indx);
 
          if Result /= null then
+            Position := Indx;
             return Result;
          end if;
       end loop;
 
       return null;
+   end Next;
+
+   function Next
+     (HT            : aliased in out Hash_Table_Type;
+      Node          : Node_Access) return Node_Access
+   is
+      Pos : Hash_Type := Hash_Type'Last;
+   begin
+      return Next (HT, Node, Pos);
    end Next;
 
    ----------------------

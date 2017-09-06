@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -506,7 +506,7 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
          return No_Element;
       end if;
 
-      return Cursor'(Container'Unrestricted_Access, Node);
+      return Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last);
    end Find;
 
    --------------------
@@ -537,12 +537,13 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    -----------
 
    function First (Container : Map) return Cursor is
-      Node : constant Node_Access := HT_Ops.First (Container.HT);
+      Pos  : Hash_Type;
+      Node : constant Node_Access := HT_Ops.First (Container.HT, Pos);
    begin
       if Node = null then
          return No_Element;
       else
-         return Cursor'(Container'Unrestricted_Access, Node);
+         return Cursor'(Container'Unrestricted_Access, Node, Pos);
       end if;
    end First;
 
@@ -781,7 +782,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       procedure Process_Node (Node : Node_Access) is
       begin
-         Process (Cursor'(Container'Unrestricted_Access, Node));
+         Process
+           (Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last));
       end Process_Node;
 
       Busy : With_Busy (Container.HT.TC'Unrestricted_Access);
@@ -860,6 +862,8 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
    end Next;
 
    function Next (Position : Cursor) return Cursor is
+      Node : Node_Access;
+      Pos  : Hash_Type;
    begin
       if Position.Node = null then
          return No_Element;
@@ -873,16 +877,14 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
 
       pragma Assert (Vet (Position), "Position cursor of Next is bad");
 
-      declare
-         HT   : Hash_Table_Type renames Position.Container.HT;
-         Node : constant Node_Access := HT_Ops.Next (HT, Position.Node);
-      begin
-         if Node = null then
-            return No_Element;
-         else
-            return Cursor'(Position.Container, Node);
-         end if;
-      end;
+      Pos := Position.Position;
+      Node := HT_Ops.Next (Position.Container.HT, Position.Node, Pos);
+
+      if Node = null then
+         return No_Element;
+      else
+         return Cursor'(Position.Container, Node, Pos);
+      end if;
    end Next;
 
    function Next (Object : Iterator; Position : Cursor) return Cursor is

@@ -1,3 +1,20 @@
+2017-09-06  Raphael Amiard  <amiard@adacore.com>
+
+	* a-chtgop.ads, a-chtgop.adb: Add versions of First and Next with
+	Position parameter. If supplied, use it to provide efficient iteration.
+	* a-cohase.ads, a-cohase.adb, a-cihama.ads, a-cihama.adb,
+	a-cohama.ads, a-cohama.adb: Add/Use Position to provide efficient
+	iteration.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): If the
+	designated type is class-wide and the expression is an unchecked
+	conversion, preserve the conversion when checking the tag of the
+	designated object, to prevent spurious semantic errors when the
+	expression in the conversion has an untagged type (for example
+	an address attribute).
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_res.adb (Resolve_Entry_Call): Check whether a protected

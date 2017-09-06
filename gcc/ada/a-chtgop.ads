@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -142,17 +142,31 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
       X  : Node_Access);
    --  Removes node X from the hash table without deallocating the node
 
-   function First (HT : Hash_Table_Type) return Node_Access;
+   function First
+     (HT       : Hash_Table_Type) return Node_Access;
+   function First
+     (HT       : Hash_Table_Type;
+      Position : out Hash_Type) return Node_Access;
    --  Returns the head of the list in the first (lowest-index) non-empty
-   --  bucket.
+   --  bucket. Position will be the index of the bucket of the first node.
+   --  It is provided so that clients can implement efficient iterators.
 
    function Next
      (HT   : aliased in out Hash_Table_Type;
       Node : Node_Access) return Node_Access;
+   function Next
+     (HT       : aliased in out Hash_Table_Type;
+      Node     : Node_Access;
+      Position : in out Hash_Type) return Node_Access;
    --  Returns the node that immediately follows Node. This corresponds to
    --  either the next node in the same bucket, or (if Node is the last node in
    --  its bucket) the head of the list in the first non-empty bucket that
    --  follows.
+   --
+   --  If Node_Position is supplied, then it will be used as a starting point
+   --  for iteration (Node_Position must be the index of Node's buckets). If it
+   --  is not supplied, it will be recomputed. It is provided so that clients
+   --  can implement efficient iterators.
 
    generic
       with procedure Process (Node : Node_Access);
