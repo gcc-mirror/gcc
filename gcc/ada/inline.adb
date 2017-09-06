@@ -1607,7 +1607,7 @@ package body Inline is
       --  N is an inlined function body that returns an unconstrained type and
       --  has a single extended return statement. Split N in two subprograms:
       --  a procedure P' and a function F'. The formals of P' duplicate the
-      --  formals of N plus an extra formal which is used return a value;
+      --  formals of N plus an extra formal which is used to return a value;
       --  its body is composed by the declarations and list of statements
       --  of the extended return statement of N.
 
@@ -1915,6 +1915,7 @@ package body Inline is
             Pop_Scope;
             Build_Procedure (Proc_Id, Decl_List);
             Insert_Actions (N, Decl_List);
+            Set_Is_Inlined (Proc_Id);
             Push_Scope (Scope);
          end;
 

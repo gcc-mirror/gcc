@@ -70,6 +70,8 @@ with Sinput;    use Sinput;
 with Style;
 with Uintp;     use Uintp;
 
+with GNAT.HTable;
+
 package body Sem_Ch7 is
 
    -----------------------------------
@@ -187,6 +189,38 @@ package body Sem_Ch7 is
       end if;
    end Analyze_Package_Body;
 
+   ------------------------------------------------------
+   -- Analyze_Package_Body_Helper Data and Subprograms --
+   ------------------------------------------------------
+
+   Entity_Table_Size : constant := 4096;
+   --  Number of headers in hash table
+
+   subtype Entity_Header_Num is Integer range 0 .. Entity_Table_Size - 1;
+   --  Range of headers in hash table
+
+   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num;
+   --  Simple hash function for Entity_Ids
+
+   package Subprogram_Table is new GNAT.Htable.Simple_HTable
+     (Header_Num => Entity_Header_Num,
+      Element    => Boolean,
+      No_Element => False,
+      Key        => Entity_Id,
+      Hash       => Entity_Hash,
+      Equal      => "=");
+   --  Hash table to record which subprograms are referenced. It is declared
+   --  at library level to avoid elaborating it for every call to Analyze.
+
+   -----------------
+   -- Entity_Hash --
+   -----------------
+
+   function Entity_Hash (Id : Entity_Id) return Entity_Header_Num is
+   begin
+      return Entity_Header_Num (Id mod Entity_Table_Size);
+   end Entity_Hash;
+
    ---------------------------------
    -- Analyze_Package_Body_Helper --
    ---------------------------------
@@ -200,8 +234,8 @@ package body Sem_Ch7 is
       --  Attempt to hide all public entities found in declarative list Decls
       --  by resetting their Is_Public flag to False depending on whether the
       --  entities are not referenced by inlined or generic bodies. This kind
-      --  of processing is a conservative approximation and may still leave
-      --  certain entities externally visible.
+      --  of processing is a conservative approximation and will still leave
+      --  entities externally visible if the package is not simple enough.
 
       procedure Install_Composite_Operations (P : Entity_Id);
       --  Composite types declared in the current scope may depend on types
@@ -214,11 +248,6 @@ package body Sem_Ch7 is
       --------------------------
 
       procedure Hide_Public_Entities (Decls : List_Id) is
-         function Contains_Subprograms_Refs (N : Node_Id) return Boolean;
-         --  Subsidiary to routine Has_Referencer. Determine whether a node
-         --  contains a reference to a subprogram.
-         --  WARNING: this is a very expensive routine as it performs a full
-         --  tree traversal.
 
          function Has_Referencer
            (Decls     : List_Id;
@@ -229,76 +258,15 @@ package body Sem_Ch7 is
          --  in the range Last (Decls) .. Referencer are hidden from external
          --  visibility.
 
-         -------------------------------
-         -- Contains_Subprograms_Refs --
-         -------------------------------
+         function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result;
+         --  Determine whether a node denotes a reference to a subprogram
 
-         function Contains_Subprograms_Refs (N : Node_Id) return Boolean is
-            Reference_Seen : Boolean := False;
-
-            function Is_Subprogram_Ref (N : Node_Id) return Traverse_Result;
-            --  Determine whether a node denotes a reference to a subprogram
-
-            -----------------------
-            -- Is_Subprogram_Ref --
-            -----------------------
-
-            function Is_Subprogram_Ref
-              (N : Node_Id) return Traverse_Result
-            is
-               Val : Node_Id;
-
-            begin
-               --  Detect a reference of the form
-               --    Subp_Call
-
-               if Nkind (N) in N_Subprogram_Call
-                 and then Is_Entity_Name (Name (N))
-               then
-                  Reference_Seen := True;
-                  return Abandon;
-
-               --  Detect a reference of the form
-               --    Subp'Some_Attribute
-
-               elsif Nkind (N) = N_Attribute_Reference
-                 and then Is_Entity_Name (Prefix (N))
-                 and then Present (Entity (Prefix (N)))
-                 and then Is_Subprogram (Entity (Prefix (N)))
-               then
-                  Reference_Seen := True;
-                  return Abandon;
-
-               --  Constants can be substituted by their value in gigi, which
-               --  may contain a reference, so be conservative for them.
-
-               elsif Is_Entity_Name (N)
-                 and then Present (Entity (N))
-                 and then Ekind (Entity (N)) = E_Constant
-               then
-                  Val := Constant_Value (Entity (N));
-
-                  if Present (Val)
-                    and then not Compile_Time_Known_Value (Val)
-                  then
-                     Reference_Seen := True;
-                     return Abandon;
-                  end if;
-               end if;
-
-               return OK;
-            end Is_Subprogram_Ref;
-
-            procedure Find_Subprograms_Ref is
-              new Traverse_Proc (Is_Subprogram_Ref);
-
-         --  Start of processing for Contains_Subprograms_Refs
-
-         begin
-            Find_Subprograms_Ref (N);
-
-            return Reference_Seen;
-         end Contains_Subprograms_Refs;
+         procedure Scan_Subprogram_Refs is
+           new Traverse_Proc (Scan_Subprogram_Ref);
+         --  Subsidiary to routine Has_Referencer. Determine whether a node
+         --  contains references to a subprogram and record them.
+         --  WARNING: this is a very expensive routine as it performs a full
+         --  tree traversal.
 
          --------------------
          -- Has_Referencer --
@@ -313,10 +281,9 @@ package body Sem_Ch7 is
             Spec    : Node_Id;
 
             Has_Non_Subprograms_Referencer : Boolean := False;
-            --  Flag set if a subprogram body was detected as a referencer but
-            --  does not contain references to other subprograms. In this case,
-            --  if we still are top level, we do not return True immediately,
-            --  but keep hiding subprograms from external visibility.
+            --  Set if an inlined subprogram body was detected as a referencer.
+            --  In this case, we do not return True immediately but keep hiding
+            --  subprograms from external visibility.
 
          begin
             if No (Decls) then
@@ -402,17 +369,13 @@ package body Sem_Ch7 is
                      if Is_Inlined (Decl_Id)
                        or else Has_Pragma_Inline (Decl_Id)
                      then
+                        Has_Non_Subprograms_Referencer := True;
+
                         --  Inspect the statements of the subprogram body
                         --  to determine whether the body references other
                         --  subprograms.
 
-                        if Top_Level
-                          and then not Contains_Subprograms_Refs (Decl)
-                        then
-                           Has_Non_Subprograms_Referencer := True;
-                        else
-                           return True;
-                        end if;
+                        Scan_Subprogram_Refs (Decl);
                      end if;
 
                   --  Otherwise this is a stand alone subprogram body
@@ -420,21 +383,22 @@ package body Sem_Ch7 is
                   else
                      Decl_Id := Defining_Entity (Decl);
 
-                     --  An inlined body acts as a referencer, see above. Note
-                     --  that an inlined subprogram remains Is_Public as gigi
-                     --  requires the flag to be set.
+                     --  An inlined subprogram body acts as a referencer
 
                      if Is_Inlined (Decl_Id)
                        or else Has_Pragma_Inline (Decl_Id)
                      then
-                        if Top_Level
-                          and then not Contains_Subprograms_Refs (Decl)
-                        then
-                           Has_Non_Subprograms_Referencer := True;
-                        else
-                           return True;
-                        end if;
-                     else
+                        Has_Non_Subprograms_Referencer := True;
+
+                        --  Inspect the statements of the subprogram body
+                        --  to determine whether the body references other
+                        --  subprograms.
+
+                        Scan_Subprogram_Refs (Decl);
+
+                     --  Otherwise we can reset Is_Public right away
+
+                     elsif not Subprogram_Table.Get (Decl_Id) then
                         Set_Is_Public (Decl_Id, False);
                      end if;
                   end if;
@@ -443,9 +407,7 @@ package body Sem_Ch7 is
                --  if they are not followed by a construct which can reference
                --  and export them. The Is_Public flag is reset on top level
                --  entities only as anything nested is local to its context.
-               --  Likewise for subprograms, but we work harder for them as
-               --  their visibility can have a significant impact on inlining
-               --  decisions in the back end.
+               --  Likewise for subprograms, but we work harder for them.
 
                elsif Nkind_In (Decl, N_Exception_Declaration,
                                      N_Object_Declaration,
@@ -461,7 +423,8 @@ package body Sem_Ch7 is
                     and then No (Interface_Name (Decl_Id))
                     and then
                       (not Has_Non_Subprograms_Referencer
-                        or else Nkind (Decl) = N_Subprogram_Declaration)
+                        or else (Nkind (Decl) = N_Subprogram_Declaration
+                                  and then not Subprogram_Table.Get (Decl_Id)))
                   then
                      Set_Is_Public (Decl_Id, False);
                   end if;
@@ -472,6 +435,53 @@ package body Sem_Ch7 is
 
             return Has_Non_Subprograms_Referencer;
          end Has_Referencer;
+
+         -------------------------
+         -- Scan_Subprogram_Ref --
+         -------------------------
+
+         function Scan_Subprogram_Ref (N : Node_Id) return Traverse_Result is
+         begin
+            --  Detect a reference of the form
+            --    Subp_Call
+
+            if Nkind (N) in N_Subprogram_Call
+              and then Is_Entity_Name (Name (N))
+              and then Present (Entity (Name (N)))
+              and then Is_Subprogram (Entity (Name (N)))
+            then
+               Subprogram_Table.Set (Entity (Name (N)), True);
+
+            --  Detect a reference of the form
+            --    Subp'Some_Attribute
+
+            elsif Nkind (N) = N_Attribute_Reference
+              and then Is_Entity_Name (Prefix (N))
+              and then Present (Entity (Prefix (N)))
+              and then Is_Subprogram (Entity (Prefix (N)))
+            then
+               Subprogram_Table.Set (Entity (Prefix (N)), True);
+
+            --  Constants can be substituted by their value in gigi, which may
+            --  contain a reference, so scan the value recursively.
+
+            elsif Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Ekind (Entity (N)) = E_Constant
+            then
+               declare
+                  Val : constant Node_Id := Constant_Value (Entity (N));
+               begin
+                  if Present (Val)
+                    and then not Compile_Time_Known_Value (Val)
+                  then
+                     Scan_Subprogram_Refs (Val);
+                  end if;
+               end;
+            end if;
+
+            return OK;
+         end Scan_Subprogram_Ref;
 
          --  Local variables
 
@@ -513,6 +523,30 @@ package body Sem_Ch7 is
          --  not always be the case. The algorithm takes a conservative stance
          --  and leaves entity External_Obj public.
 
+         --  This very conservative algorithm is supplemented by a more precise
+         --  processing for inlined bodies. For them, we traverse the syntactic
+         --  tree and record which subprograms are actually referenced from it.
+         --  This makes it possible to compute a much smaller set of externally
+         --  visible subprograms, which can have a significant impact on the
+         --  inlining decisions made in the back end. We do it only for inlined
+         --  bodies because they are supposed to be reasonably small and tree
+         --  traversal is very expensive.
+
+         --  Note that even this special processing is not optimal for inlined
+         --  bodies, because we treat all inlined subprograms alike. An optimal
+         --  algorithm would require computing the transitive closure of the
+         --  inlined subprograms that can really be referenced from other units
+         --  in the source code.
+
+         --  We could extend this processing for inlined bodies and record all
+         --  entities, not just subprograms, referenced from them, which would
+         --  make it possible to compute a much smaller set of all externally
+         --  visible entities in the absence of generic bodies. But this would
+         --  mean implementing a more thorough tree traversal of the bodies,
+         --  i.e. not just syntactic, and the gain would very likely be worth
+         --  neither the hassle nor the slowdown of the compiler.
+
+         Subprogram_Table.Reset;
          Discard := Has_Referencer (Decls, Top_Level => True);
       end Hide_Public_Entities;
 

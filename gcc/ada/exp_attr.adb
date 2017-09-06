@@ -6884,7 +6884,8 @@ package body Exp_Attr is
          --  are any non-valid scalar subcomponents, and call the function.
 
          elsif Is_Record_Type (Ftyp)
-            and then Nkind (Type_Definition (Declaration_Node (Ftyp))) =
+           and then Present (Declaration_Node (Ftyp))
+           and then Nkind (Type_Definition (Declaration_Node (Ftyp))) =
                                                         N_Record_Definition
          then
             Rewrite (N,

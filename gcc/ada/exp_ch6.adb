@@ -3952,9 +3952,9 @@ package body Exp_Ch6 is
                 (RTE (RE_Address), Relocate_Node (First_Actual (Call_Node))));
             return;
 
-         --  A call to a null procedure is replaced by a null statement, but
-         --  we are not allowed to ignore possible side effects of the call,
-         --  so we make sure that actuals are evaluated.
+         --  A call to a null procedure is replaced by a null statement, but we
+         --  are not allowed to ignore possible side effects of the call, so we
+         --  make sure that actuals are evaluated.
 
          elsif Is_Null_Procedure (Subp) then
             Actual := First_Actual (Call_Node);

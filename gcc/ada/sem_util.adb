@@ -14131,7 +14131,7 @@ package body Sem_Util is
    function Is_Object_Image (Prefix : Node_Id) return Boolean is
    begin
       --  When the type of the prefix is not scalar then the prefix is not
-      --  valid in any senario.
+      --  valid in any scenario.
 
       if not Is_Scalar_Type (Etype (Prefix)) then
          return False;
@@ -14139,7 +14139,7 @@ package body Sem_Util is
 
       --  Here we test for the case that the prefix is not a type and assume
       --  if it is not then it must be a named value or an object reference.
-      --  This is because the parser always checks that prefix's of attributes
+      --  This is because the parser always checks that prefixes of attributes
       --  are named.
 
       return not (Is_Entity_Name (Prefix) and then Is_Type (Entity (Prefix)));
@@ -15554,7 +15554,9 @@ package body Sem_Util is
 
    begin
       case Ekind (E) is
-         when Entry_Kind | Subprogram_Kind =>
+         when Entry_Kind
+            | Subprogram_Kind
+         =>
             Scop := Scope (E);
 
             while Present (Scop) loop
