@@ -3371,7 +3371,9 @@ package body Einfo is
 
    function Status_Flag_Or_Transient_Decl (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Loop_Parameter,
+                                   E_Variable));
       return Node15 (Id);
    end Status_Flag_Or_Transient_Decl;
 
@@ -6546,7 +6548,9 @@ package body Einfo is
 
    procedure Set_Status_Flag_Or_Transient_Decl (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Loop_Parameter,
+                                   E_Variable));
       Set_Node15 (Id, V);
    end Set_Status_Flag_Or_Transient_Decl;
 
@@ -10087,6 +10091,7 @@ package body Einfo is
             Write_Str ("Related_Instance");
 
          when E_Constant
+            | E_Loop_Parameter
             | E_Variable
          =>
             Write_Str ("Status_Flag_Or_Transient_Decl");

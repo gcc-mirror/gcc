@@ -4325,12 +4325,12 @@ package Einfo is
 --       expression may consist of the above xxxPredicate call on its own.
 
 --    Status_Flag_Or_Transient_Decl (Node15)
---       Defined in variables and constants. Applies to objects that require
---       special treatment by the finalization machinery, such as extended
---       return results, IF and CASE expression results, and objects inside
---       N_Expression_With_Actions nodes. The attribute contains the entity
---       of a flag which specifies particular behavior over a region of code
---       or the declaration of a "hook" object.
+--       Defined in constant, loop, and variable entities. Applies to objects
+--       that require special treatment by the finalization machinery, such as
+--       extended return results, IF and CASE expression results, and objects
+--       inside N_Expression_With_Actions nodes. The attribute contains the
+--       entity of a flag which specifies particular behavior over a region of
+--       code or the declaration of a "hook" object.
 --       In which case is it a flag, or a hook object???
 
 --    Storage_Size_Variable (Node26) [implementation base type only]
@@ -5846,7 +5846,7 @@ package Einfo is
    --    Esize                               (Uint12)
    --    Extra_Accessibility                 (Node13)   (constants only)
    --    Alignment                           (Uint14)
-   --    Status_Flag_Or_Transient_Decl       (Node15)   (constants only)
+   --    Status_Flag_Or_Transient_Decl       (Node15)
    --    Actual_Subtype                      (Node17)
    --    Renamed_Object                      (Node18)
    --    Size_Check_Code                     (Node19)   (constants only)

@@ -1,3 +1,24 @@
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_warn.adb (Warn_On_Suspicious_Index): Improve warning when the
+	literal index used to access a string is null or negative.
+
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb (Status_Flag_Or_Transient_Decl): The attribute is now
+	allowed on loop parameters.
+	(Set_Status_Flag_Or_Transient_Decl): The attribute is now allowed
+	on loop parameters.
+	(Write_Field15_Name): Update the output for
+	Status_Flag_Or_Transient_Decl.
+	* einfo.ads: Attribute Status_Flag_Or_Transient_Decl now applies
+	to loop parameters. Update the documentation of the attribute
+	and the E_Loop_Parameter entity.
+	* exp_ch7.adb (Process_Declarations): Remove the bogus guard
+	which assumes that cursors can never be controlled.
+	* exp_util.adb (Requires_Cleanup_Actions): Remove the bogus
+	guard which assumes that cursors can never be controlled.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_attr.adb, sem_util.adb, sem_attr.adb, sem_ch6.adb, sem_ch8.adb,
