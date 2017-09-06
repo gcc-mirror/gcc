@@ -1,3 +1,15 @@
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* frontend.adb (Frontend): Skip -gnatec=gnat.adc
+	switch, because we've already read gnat.adc by default.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Get_Default_Iterator): Replace
+	"Assert(False)" with "return Iter", because if an iterable
+	type is derived from a noniterable one, then we won't find an
+	overriding or inherited default iterator.
+
 2017-09-06  Yannick Moy  <moy@adacore.com>
 
 	* sem_warn.adb (Warn_On_Suspicious_Index): Improve warning when the
