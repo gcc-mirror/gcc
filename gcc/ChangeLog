@@ -1,3 +1,12 @@
+2017-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82078
+	* tree-sra.c (sort_and_splice_var_accesses): Move call to
+	add_access_to_work_queue...
+	(build_accesses_from_assign): ...here.
+	(propagate_all_subaccesses): Make sure racc is the group
+	representative, if there is one.
+
 2017-09-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/82095
