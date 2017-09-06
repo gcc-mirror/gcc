@@ -2544,7 +2544,7 @@ powerpc*-*-linux*)
 		    ;;
 	esac
 	;;
-powerpc-wrs-vxworksspe)
+powerpc-wrs-vxworks*spe)
 	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
 	extra_options="${extra_options} powerpcspe/sysv4.opt"

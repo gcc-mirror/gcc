@@ -1,3 +1,7 @@
+2017-09-06  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc-wrs-vxworksspe): Now match as vxworks*spe.
+
 2017-09-06  Wish Wu  <wishwu007@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
