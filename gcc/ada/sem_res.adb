@@ -6630,11 +6630,15 @@ package body Sem_Res is
                null;
 
             --  Calls cannot be inlined inside assertions, as GNATprove treats
-            --  assertions as logic expressions.
+            --  assertions as logic expressions. Only issue a message when the
+            --  body has been seen, otherwise this leads to spurious messages
+            --  on expression functions.
 
             elsif In_Assertion_Expr /= 0 then
-               Cannot_Inline
-                 ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               if Present (Body_Id) then
+                  Cannot_Inline
+                    ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               end if;
 
             --  Calls cannot be inlined inside default expressions
 

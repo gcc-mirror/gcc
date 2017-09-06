@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -30,7 +30,7 @@
 ------------------------------------------------------------------------------
 
 --  This package provides output routines for float dimensioned types. All Put
---  routines are modelled after those in package Ada.Text_IO.Float_IO with the
+--  routines are modeled after those in package Ada.Text_IO.Float_IO with the
 --  addition of an extra default parameter. All Put_Dim_Of routines
 --  output the dimension of Item in a symbolic manner.
 

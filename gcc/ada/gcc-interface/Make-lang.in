@@ -468,8 +468,6 @@ GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
 GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS) ada/b_gnat1.o
 
 GNATBIND_OBJS = \
- ada/a-clrefi.o   \
- ada/a-comlin.o   \
  ada/a-elchha.o   \
  ada/a-except.o   \
  ada/ada.o        \
@@ -553,6 +551,7 @@ GNATBIND_OBJS = \
  ada/s-memory.o   \
  ada/s-os_lib.o   \
  ada/s-parame.o   \
+ ada/s-resfil.o   \
  ada/s-restri.o   \
  ada/s-secsta.o   \
  ada/s-soflin.o   \
