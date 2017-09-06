@@ -2709,6 +2709,29 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_SIZE_CONST_PTR_INT
     = build_function_type_list (size_type_node, const_ptr_type_node,
 				integer_type_node, NULL_TREE);
+
+  tree BT_FN_VOID_UINT8_UINT8
+    = build_function_type_list (void_type_node, unsigned_char_type_node,
+				unsigned_char_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT16_UINT16
+    = build_function_type_list (void_type_node, uint16_type_node,
+				uint16_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT32_UINT32
+    = build_function_type_list (void_type_node, uint32_type_node,
+				uint32_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT64_UINT64
+    = build_function_type_list (void_type_node, uint64_type_node,
+				uint64_type_node, NULL_TREE);
+  tree BT_FN_VOID_FLOAT_FLOAT
+    = build_function_type_list (void_type_node, float_type_node,
+				float_type_node, NULL_TREE);
+  tree BT_FN_VOID_DOUBLE_DOUBLE
+    = build_function_type_list (void_type_node, double_type_node,
+				double_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT64_PTR
+    = build_function_type_list (void_type_node, uint64_type_node,
+				ptr_type_node, NULL_TREE);
+
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];
