@@ -2650,12 +2650,12 @@ package body Sem_Ch3 is
 
                Adjust_Decl;
 
-               --  If the current scope is a generic subprogram body. skip
-               --  the generic formal parameters that are not frozen here.
+               --  If the current scope is a generic subprogram body. Skip the
+               --  generic formal parameters that are not frozen here.
 
                if Is_Subprogram (Current_Scope)
-                 and then Nkind (Unit_Declaration_Node (Current_Scope))
-                   = N_Generic_Subprogram_Declaration
+                 and then Nkind (Unit_Declaration_Node (Current_Scope)) =
+                            N_Generic_Subprogram_Declaration
                  and then Present (First_Entity (Current_Scope))
                then
                   while Is_Generic_Formal (Freeze_From) loop

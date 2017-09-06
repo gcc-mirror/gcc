@@ -5089,15 +5089,6 @@ package body Sem_Ch12 is
             Set_Parent_Spec (Pack_Decl, Parent_Spec (N));
          end if;
 
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
-
-         if SPARK_Mode /= On then
-            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
-         end if;
-
          Analyze (Pack_Decl);
          Check_Formal_Packages (Pack_Id);
          Set_Is_Generic_Instance (Pack_Id, False);
@@ -5407,6 +5398,16 @@ package body Sem_Ch12 is
            (Original_Node (Gen_Decl), Renaming_List);
 
          Build_Subprogram_Renaming;
+
+         --  If the context of the instance is subject to SPARK_Mode "off" or
+         --  the annotation is altogether missing, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
+         --  the instance. This should be done prior to analyzing the instance.
+
+         if SPARK_Mode /= On then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
          Analyze_Instance_And_Renamings;
 
          --  If the generic is marked Import (Intrinsic), then so is the
@@ -5461,18 +5462,11 @@ package body Sem_Ch12 is
          Set_Has_Pragma_Inline_Always
            (Anon_Id,     Has_Pragma_Inline_Always (Gen_Unit));
 
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
+         --  Mark both the instance spec and the anonymous package in case the
+         --  body is instantiated at a later pass. This preserves the original
+         --  context in effect for the body.
 
          if SPARK_Mode /= On then
-            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
-
-            --  Mark both the instance spec and the anonymous package in case
-            --  the body is instantiated at a later pass. This preserves the
-            --  original context in effect for the body.
-
             Set_Ignore_SPARK_Mode_Pragmas (Act_Decl_Id);
             Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
          end if;

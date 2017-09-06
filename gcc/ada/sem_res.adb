@@ -6664,8 +6664,8 @@ package body Sem_Res is
                --  are themselves expression functions.
 
                if Present (Current_Subprogram)
-                    and then
-                  Is_Expression_Function_Or_Completion (Current_Subprogram)
+                 and then Is_Expression_Function_Or_Completion
+                            (Current_Subprogram)
                then
                   if Present (Body_Id)
                     and then Present (Body_To_Inline (Nam_Decl))

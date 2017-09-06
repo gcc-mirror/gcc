@@ -361,7 +361,7 @@ package ALI is
       --  used for informational output, and also for constructing the main
       --  unit if it is being built in Ada.
 
-      Elab_Position : aliased Natural;
+      Elab_Position : Nat;
       --  Initialized to zero. Set non-zero when a unit is chosen and
       --  placed in the elaboration order. The value represents the
       --  ordinal position in the elaboration order.
