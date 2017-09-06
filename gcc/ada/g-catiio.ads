@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1999-2013, AdaCore                     --
+--                     Copyright (C) 1999-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -141,6 +141,18 @@ package GNAT.Calendar.Time_IO is
    --     mmm dd, yyyy         - month spelled out
    --     dd mmm yyyy          - month spelled out
    --
+   --  The following ISO-8861 format expressed as a regular expression is also
+   --  supported:
+   --
+   --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
+   --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
+   --
+   --  Examples:
+   --
+   --    2017-04-14T14:47:06      20170414T14:47:06       20170414T144706
+   --    2017-04-14T14:47:06,1234 20170414T14:47:06.1234
+   --    2017-04-14T19:47:06+05   20170414T09:00:06-05:47
+
    --  Constraint_Error is raised if the input string is malformed (does not
    --  conform to one of the above dates, or has an invalid time string), or
    --  the resulting time is not valid.

@@ -1161,7 +1161,6 @@ package body Sem_Dim is
             | N_Qualified_Expression
             | N_Selected_Component
             | N_Slice
-            | N_Type_Conversion
             | N_Unchecked_Type_Conversion
          =>
             Analyze_Dimension_Has_Etype (N);
@@ -1191,7 +1190,17 @@ package body Sem_Dim is
          when N_Subtype_Declaration =>
             Analyze_Dimension_Subtype_Declaration (N);
 
+         when  N_Type_Conversion =>
+            if In_Instance
+              and then Exists (Dimensions_Of (Expression (N)))
+            then
+               Set_Dimensions (N, Dimensions_Of (Expression (N)));
+            else
+               Analyze_Dimension_Has_Etype (N);
+            end if;
+
          when N_Unary_Op =>
+
             Analyze_Dimension_Unary_Op (N);
 
          when others =>
@@ -1378,10 +1387,23 @@ package body Sem_Dim is
 
          --  A type conversion may have been inserted to rewrite other
          --  expressions, e.g. function returns. Dimensions are those of
-         --  the target type.
+         --  the target type, unless this is a conversion in an instance,
+         --  in which case the proper dimensions are those of the operand,
 
          elsif Nkind (N) = N_Type_Conversion then
-            return Dimensions_Of (Etype (N));
+            if In_Instance
+              and then Is_Generic_Actual_Type (Etype (Expression (N)))
+            then
+               return Dimensions_Of (Etype (Expression (N)));
+
+            elsif In_Instance
+              and then Exists (Dimensions_Of (Expression (N)))
+            then
+               return Dimensions_Of (Expression (N));
+
+            else
+               return Dimensions_Of (Etype (N));
+            end if;
 
          --  Otherwise return the default dimensions
 

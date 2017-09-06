@@ -3955,8 +3955,11 @@ package body Exp_Ch6 is
          --  A call to a null procedure is replaced by a null statement, but we
          --  are not allowed to ignore possible side effects of the call, so we
          --  make sure that actuals are evaluated.
+         --  We also suppress this optimization for GNATCoverage.
 
-         elsif Is_Null_Procedure (Subp) then
+         elsif Is_Null_Procedure (Subp)
+           and then not Opt.Suppress_Control_Flow_Optimizations
+         then
             Actual := First_Actual (Call_Node);
             while Present (Actual) loop
                Remove_Side_Effects (Actual);

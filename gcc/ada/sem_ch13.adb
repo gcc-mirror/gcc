@@ -12649,9 +12649,6 @@ package body Sem_Ch13 is
    --------------------------------
 
    procedure Resolve_Aspect_Expressions (E : Entity_Id) is
-      ASN  : Node_Id;
-      A_Id : Aspect_Id;
-      Expr : Node_Id;
 
       function Resolve_Name (N : Node_Id) return Traverse_Result;
       --  Verify that all identifiers in the expression, with the exception
@@ -12696,84 +12693,92 @@ package body Sem_Ch13 is
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
 
+      ASN : Node_Id := First_Rep_Item (E);
+
    --  Start of processing for Resolve_Aspect_Expressions
 
    begin
-      ASN := First_Rep_Item (E);
+      --  Need to make sure discriminants, if any, are directly visible
+
+      Push_Scope_And_Install_Discriminants (E);
+
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
-            A_Id := Get_Aspect_Id (ASN);
-            Expr := Expression (ASN);
+            declare
+               A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
+               Expr : constant Node_Id   := Expression (ASN);
+            begin
+               case A_Id is
+                  --  For now we only deal with aspects that do not generate
+                  --  subprograms, or that may mention current instances of
+                  --  types. These will require special handling (???TBD).
 
-            case A_Id is
+                  when Aspect_Invariant
+                     | Aspect_Predicate
+                     | Aspect_Predicate_Failure
+                  =>
+                     null;
 
-               --  For now we only deal with aspects that do not generate
-               --  subprograms, or that may mention current instances of
-               --  types. These will require special handling (???TBD).
+                  when Aspect_Dynamic_Predicate
+                     | Aspect_Static_Predicate
+                  =>
+                     --  Build predicate function specification and preanalyze
+                     --  expression after type replacement.
 
-               when Aspect_Invariant
-                  | Aspect_Predicate
-                  | Aspect_Predicate_Failure
-               =>
-                  null;
+                     if No (Predicate_Function (E)) then
+                        declare
+                           FDecl : constant Node_Id :=
+                                     Build_Predicate_Function_Declaration (E);
+                           pragma Unreferenced (FDecl);
+                        begin
+                           Resolve_Aspect_Expression (Expr);
+                        end;
+                     end if;
 
-               when Aspect_Dynamic_Predicate
-                  | Aspect_Static_Predicate
-               =>
-                  --  Build predicate function specification and preanalyze
-                  --  expression after type replacement.
+                  when Pre_Post_Aspects =>
+                     null;
 
-                  if No (Predicate_Function (E)) then
-                     declare
-                        FDecl : constant Node_Id :=
-                                  Build_Predicate_Function_Declaration (E);
-                        pragma Unreferenced (FDecl);
-                     begin
-                        Resolve_Aspect_Expression (Expr);
-                     end;
-                  end if;
+                  when Aspect_Iterable =>
+                     if Nkind (Expr) = N_Aggregate then
+                        declare
+                           Assoc : Node_Id;
 
-               when Pre_Post_Aspects =>
-                  null;
+                        begin
+                           Assoc := First (Component_Associations (Expr));
+                           while Present (Assoc) loop
+                              Find_Direct_Name (Expression (Assoc));
+                              Next (Assoc);
+                           end loop;
+                        end;
+                     end if;
 
-               when Aspect_Iterable =>
-                  if Nkind (Expr) = N_Aggregate then
-                     declare
-                        Assoc : Node_Id;
+                  when others =>
+                     if Present (Expr) then
+                        case Aspect_Argument (A_Id) is
+                           when Expression
+                              | Optional_Expression
+                           =>
+                              Analyze_And_Resolve (Expr);
 
-                     begin
-                        Assoc := First (Component_Associations (Expr));
-                        while Present (Assoc) loop
-                           Find_Direct_Name (Expression (Assoc));
-                           Next (Assoc);
-                        end loop;
-                     end;
-                  end if;
+                           when Name
+                              | Optional_Name
+                           =>
+                              if Nkind (Expr) = N_Identifier then
+                                 Find_Direct_Name (Expr);
 
-               when others =>
-                  if Present (Expr) then
-                     case Aspect_Argument (A_Id) is
-                        when Expression
-                           | Optional_Expression
-                        =>
-                           Analyze_And_Resolve (Expression (ASN));
-
-                        when Name
-                           | Optional_Name
-                        =>
-                           if Nkind (Expr) = N_Identifier then
-                              Find_Direct_Name (Expr);
-
-                           elsif Nkind (Expr) = N_Selected_Component then
-                              Find_Selected_Component (Expr);
-                           end if;
-                     end case;
-                  end if;
-            end case;
+                              elsif Nkind (Expr) = N_Selected_Component then
+                                 Find_Selected_Component (Expr);
+                              end if;
+                        end case;
+                     end if;
+               end case;
+            end;
          end if;
 
          ASN := Next_Rep_Item (ASN);
       end loop;
+
+      Uninstall_Discriminants_And_Pop_Scope (E);
    end Resolve_Aspect_Expressions;
 
    -------------------------

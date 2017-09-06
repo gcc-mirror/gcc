@@ -527,10 +527,11 @@ package body Sem_Ch7 is
          --  processing for inlined bodies. For them, we traverse the syntactic
          --  tree and record which subprograms are actually referenced from it.
          --  This makes it possible to compute a much smaller set of externally
-         --  visible subprograms, which can have a significant impact on the
-         --  inlining decisions made in the back end. We do it only for inlined
-         --  bodies because they are supposed to be reasonably small and tree
-         --  traversal is very expensive.
+         --  visible subprograms in the absence of generic bodies, which can
+         --  have a significant impact on the inlining decisions made in the
+         --  back end and the removal of out-of-line bodies from the object
+         --  code. We do it only for inlined bodies because they are supposed
+         --  to be reasonably small and tree traversal is very expensive.
 
          --  Note that even this special processing is not optimal for inlined
          --  bodies, because we treat all inlined subprograms alike. An optimal
