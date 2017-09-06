@@ -5763,14 +5763,15 @@ reassociate_bb (basic_block bb)
 			     "Width = %d was chosen for reassociation\n", width);
 
 
-		  /* For binary bit operations, if the last operand in
-		     OPS is a constant, move it to the front.  This
-		     helps ensure that we generate (X & Y) & C rather
-		     than (X & C) & Y.  The former will often match
-		     a canonical bit test when we get to RTL.  */
-		  if ((rhs_code == BIT_AND_EXPR
-		       || rhs_code == BIT_IOR_EXPR
-		       || rhs_code == BIT_XOR_EXPR)
+		  /* For binary bit operations, if there are at least 3
+		     operands and the last last operand in OPS is a constant,
+		     move it to the front.  This helps ensure that we generate
+		     (X & Y) & C rather than (X & C) & Y.  The former will
+		     often match a canonical bit test when we get to RTL.  */
+		  if (ops.length () != 2
+		      && (rhs_code == BIT_AND_EXPR
+		          || rhs_code == BIT_IOR_EXPR
+		          || rhs_code == BIT_XOR_EXPR)
 		      && TREE_CODE (ops.last ()->op) == INTEGER_CST)
 		    std::swap (*ops[0], *ops[ops_num - 1]);
 

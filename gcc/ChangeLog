@@ -1,3 +1,9 @@
+2017-09-05  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* tree-ssa-reassoc.c (reassociate_bb): Restrict last change to
+	cases where we have 3 or more operands.
+
 2017-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81768
