@@ -1,3 +1,9 @@
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_doom_children): Use a
+	type and not a mode check.
+
 2017-09-06  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	PR target/77308
