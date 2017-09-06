@@ -1,3 +1,17 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Entry_Call): Check whether a protected
+	operation is subject to a pragma Eliminate.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_elim.ads, exp_ch4.adb: Minor reformatting.
+
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* fe.h (Eliminate_Error_Msg): Remove.
+
+
 2017-09-05  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc-interface/utils.c (make_packable_type): Update call to

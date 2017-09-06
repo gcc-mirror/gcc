@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1997-2008, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -60,9 +60,9 @@ package Sem_Elim is
    --  error will be posted on N.
 
    procedure Eliminate_Error_Msg (N : Node_Id; E : Entity_Id);
-   --  Called by the front-end and back-end on encountering a reference to an
-   --  eliminated subprogram. N is the node for the reference (such as occurs
-   --  in a call or attribute), and E is the entity of the subprogram that has
-   --  been eliminated.
+   --  Called by the front-end on encountering a reference to an eliminated
+   --  subprogram. N is the node for the reference (such as occurs in a call,
+   --  a protected call or an  attribute), and E is the entity of the
+   --  subprogram that has been eliminated.
 
 end Sem_Elim;

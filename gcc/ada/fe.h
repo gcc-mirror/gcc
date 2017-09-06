@@ -242,12 +242,6 @@ extern Entity_Id  First_Subtype                (Entity_Id);
 extern Boolean    Is_By_Reference_Type         (Entity_Id);
 extern Boolean    Is_Derived_Type              (Entity_Id);
 
-/* sem_elim: */
-
-#define Eliminate_Error_Msg    sem_elim__eliminate_error_msg
-
-extern void Eliminate_Error_Msg (Node_Id, Entity_Id);
-
 /* sem_eval: */
 
 #define Compile_Time_Known_Value	sem_eval__compile_time_known_value

@@ -7519,10 +7519,15 @@ package body Sem_Res is
 
       if Nkind (Entry_Name) = N_Selected_Component then
 
-         --  Simple entry call
+         --  Simple entry or protected operation call
 
          Nam := Entity (Selector_Name (Entry_Name));
          Obj := Prefix (Entry_Name);
+
+         if Is_Subprogram (Nam) then
+            Check_For_Eliminated_Subprogram (Entry_Name, Nam);
+         end if;
+
          Was_Over := Is_Overloaded (Selector_Name (Entry_Name));
 
       else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
