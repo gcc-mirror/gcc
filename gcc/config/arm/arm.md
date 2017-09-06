@@ -457,14 +457,13 @@
 )
 
 (define_insn_and_split "*arm_adddi3"
-  [(set (match_operand:DI          0 "s_register_operand" "=&r,&r,&r,&r,&r")
-	(plus:DI (match_operand:DI 1 "s_register_operand" "%0, 0, r, 0, r")
-		 (match_operand:DI 2 "arm_adddi_operand"  "r,  0, r, Dd, Dd")))
+  [(set (match_operand:DI          0 "arm_general_register_operand" "=&r,&r,&r,&r,&r")
+	(plus:DI (match_operand:DI 1 "arm_general_register_operand" "%0, 0, r, 0, r")
+		 (match_operand:DI 2 "arm_general_adddi_operand"    "r,  0, r, Dd, Dd")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
   "#"
-  "TARGET_32BIT && ((!TARGET_NEON && !TARGET_IWMMXT) || reload_completed)
-   && ! (TARGET_NEON && IS_VFP_REGNUM (REGNO (operands[0])))"
+  "TARGET_32BIT && ((!TARGET_NEON && !TARGET_IWMMXT) || reload_completed)"
   [(parallel [(set (reg:CC_C CC_REGNUM)
 		   (compare:CC_C (plus:SI (match_dup 1) (match_dup 2))
 				 (match_dup 1)))
@@ -1263,9 +1262,9 @@
 )
 
 (define_insn_and_split "*arm_subdi3"
-  [(set (match_operand:DI           0 "s_register_operand" "=&r,&r,&r")
-	(minus:DI (match_operand:DI 1 "s_register_operand" "0,r,0")
-		  (match_operand:DI 2 "s_register_operand" "r,0,0")))
+  [(set (match_operand:DI           0 "arm_general_register_operand" "=&r,&r,&r")
+	(minus:DI (match_operand:DI 1 "arm_general_register_operand" "0,r,0")
+		  (match_operand:DI 2 "arm_general_register_operand" "r,0,0")))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT && !TARGET_NEON"
   "#"  ; "subs\\t%Q0, %Q1, %Q2\;sbc\\t%R0, %R1, %R2"
