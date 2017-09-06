@@ -1,3 +1,8 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+        * gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Try
+        again to translate the prefix after the field if it is incomplete.
+
 2017-09-06  Bob Duff  <duff@adacore.com>
 
 	* exp_util.adb (Is_Displace_Call): Make sure it works for indirect
