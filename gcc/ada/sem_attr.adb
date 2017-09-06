@@ -264,7 +264,7 @@ package body Sem_Attr is
       procedure Analyze_Image_Attribute (Str_Typ : Entity_Id);
       --  Common processing for attributes 'Img, 'Image, 'Wide_Image, and
       --  'Wide_Wide_Image. The routine checks that the prefix is valid and
-      --  sets the entity type to the one specified by Str_Typ (e.g.
+      --  sets the type of the attribute to the one specified by Str_Typ (e.g.
       --  Standard_String for 'Image and Standard_Wide_String for 'Wide_Image).
 
       procedure Bad_Attribute_For_Predicate;
@@ -1475,7 +1475,7 @@ package body Sem_Attr is
                if Ada_Version > Ada_2005 then
                   Error_Attr_P
                     ("prefix of % attribute must be a scalar type or a scalar "
-                      & "object name");
+                     & "object name");
                else
                   Error_Attr_P ("prefix of % attribute must be a scalar type");
                end if;

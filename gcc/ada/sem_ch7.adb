@@ -248,7 +248,6 @@ package body Sem_Ch7 is
       --------------------------
 
       procedure Hide_Public_Entities (Decls : List_Id) is
-
          function Has_Referencer
            (Decls     : List_Id;
             Top_Level : Boolean := False) return Boolean;

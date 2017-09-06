@@ -574,7 +574,7 @@ package body GNAT.Calendar.Time_IO is
        Time    : out Ada.Calendar.Time;
        Success : out Boolean)
    is
-      Index                 : Positive := Date'First;
+      Index : Positive := Date'First;
       --  The current character scan index. After a call to Advance, Index
       --  points to the next character.
 
@@ -582,7 +582,7 @@ package body GNAT.Calendar.Time_IO is
       --  An exception used to signal that the scan pointer has reached the
       --  end of the source string.
 
-      Wrong_Syntax          : exception;
+      Wrong_Syntax : exception;
       --  An exception used to signal that the scan pointer has reached an
       --  unexpected character in the source string.
 
@@ -815,20 +815,21 @@ package body GNAT.Calendar.Time_IO is
 
       Date_Separator : constant Character := '-';
       Hour_Separator : constant Character := ':';
-      Day            : Day_Number;
-      Month          : Month_Number;
-      Year           : Year_Number;
-      Hour           : Hour_Number     := 0;
-      Minute         : Minute_Number   := 0;
-      Second         : Second_Number   := 0;
-      Subsec         : Second_Duration := 0.0;
 
-      Local_Hour     : Hour_Number     := 0;
-      Local_Minute   : Minute_Number   := 0;
-      Local_Sign     : Character       := ' ';
-      Local_Disp     : Duration;
+      Day          : Day_Number;
+      Month        : Month_Number;
+      Year         : Year_Number;
+      Hour         : Hour_Number     := 0;
+      Minute       : Minute_Number   := 0;
+      Second       : Second_Number   := 0;
+      Subsec       : Second_Duration := 0.0;
 
-      Sep_Required   : Boolean := False;
+      Local_Hour   : Hour_Number     := 0;
+      Local_Minute : Minute_Number   := 0;
+      Local_Sign   : Character       := ' ';
+      Local_Disp   : Duration;
+
+      Sep_Required : Boolean := False;
       --  True if a separator is seen (and therefore required after it!)
 
    begin
@@ -929,14 +930,16 @@ package body GNAT.Calendar.Time_IO is
       --  Compute time with positive local displacement
 
       elsif Local_Sign = '+' then
-         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec)
-                   - Local_Disp;
+         Time :=
+           Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec) -
+             Local_Disp;
 
       --  Compute time with negative local displacement
 
       elsif Local_Sign = '-' then
-         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec)
-                   + Local_Disp;
+         Time :=
+           Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec) +
+             Local_Disp;
       end if;
 
       --  Notify that the input string was successfully parsed
@@ -944,8 +947,9 @@ package body GNAT.Calendar.Time_IO is
       Success := True;
 
    exception
-      when End_Of_Source_Reached |
-           Wrong_Syntax          =>
+      when End_Of_Source_Reached
+         | Wrong_Syntax
+      =>
          Success := False;
    end Parse_ISO_8861_UTC;
 

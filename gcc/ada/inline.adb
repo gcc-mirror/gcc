@@ -1607,7 +1607,6 @@ package body Inline is
       --------------------------
 
       procedure Build_Body_To_Inline (N : Node_Id; Spec_Id : Entity_Id) is
-
          procedure Generate_Subprogram_Body
            (N              : Node_Id;
             Body_To_Inline : out Node_Id);
@@ -1683,11 +1682,10 @@ package body Inline is
             Save_Env (Scope (Current_Scope), Scope (Current_Scope));
          end if;
 
-         --  We need to capture references to the formals in order
-         --  to substitute the actuals at the point of inlining, i.e.
-         --  instantiation. To treat the formals as globals to the body to
-         --  inline, we nest it within a dummy parameterless subprogram,
-         --  declared within the real one.
+         --  Capture references to formals in order to substitute the actuals
+         --  at the point of inlining or instantiation. To treat the formals
+         --  as globals to the body to inline, nest the body within a dummy
+         --  parameterless subprogram, declared within the real one.
 
          Generate_Subprogram_Body (N, Original_Body);
          Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
@@ -1730,8 +1728,7 @@ package body Inline is
       -- Can_Split_Unconstrained_Function --
       --------------------------------------
 
-      function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean
-      is
+      function Can_Split_Unconstrained_Function (N : Node_Id) return Boolean is
          Ret_Node : constant Node_Id :=
                       First (Statements (Handled_Statement_Sequence (N)));
          D : Node_Id;
@@ -2925,7 +2922,7 @@ package body Inline is
             --  The semantic analyzer checked that frontend-inlined functions
             --  returning unconstrained types have no declarations and have
             --  a single extended return statement. As part of its processing
-            --  the function was split in two subprograms: a procedure P' and
+            --  the function was split into two subprograms: a procedure P' and
             --  a function F' that has a block with a call to procedure P' (see
             --  Split_Unconstrained_Function).
 

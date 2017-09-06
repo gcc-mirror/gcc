@@ -1672,7 +1672,7 @@ package Sem_Util is
    --  null component list.
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean;
-   --  Returns true if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
+   --  Returns True if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
    --  is applied to a given object or named value prefix (see below).
 
    --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for scalar

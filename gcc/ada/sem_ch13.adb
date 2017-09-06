@@ -12707,8 +12707,10 @@ package body Sem_Ch13 is
             declare
                A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
                Expr : constant Node_Id   := Expression (ASN);
+
             begin
                case A_Id is
+
                   --  For now we only deal with aspects that do not generate
                   --  subprograms, or that may mention current instances of
                   --  types. These will require special handling (???TBD).
