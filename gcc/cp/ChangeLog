@@ -1,5 +1,17 @@
 2017-09-06  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.c (count_fields): Rename to ...
+	(count_class_fields): ... here.  Take a class, don't count
+	NULL-named fields.
+	(add_fields_to_record_type): Rename to ...
+	(field_vec_append_class_fields): ... here.  Take a class, don't
+	add NULL-named fields.
+	(add_enum_fields_to_record_type): Rename to ...
+	(field_vec_append_enum_values): ... here.
+	(set_class_bindings): Adjust, assert we added expected number.
+	(insert_late_enum_def_bindings): Reimplement.  Create vector if
+	there are now sufficient entries.
+
 	* name-lookup.h (lookup_fnfields_slot_nolazy,
 	lookup_fnfields_slot): Rename to ...
 	(get_class_binding_direct, get_class_binding): ... here.
