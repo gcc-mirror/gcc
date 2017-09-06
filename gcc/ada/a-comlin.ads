@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -45,7 +45,14 @@ package Ada.Command_Line is
    --
    --  In GNAT: Corresponds to (argc - 1) in C.
 
+   pragma Assertion_Policy (Pre => Ignore);
+   --  We need to ignore the precondition of Argument, below, so that we don't
+   --  raise Assertion_Error. The body raises Constraint_Error. It would be
+   --  cleaner to add "or else raise Constraint_Error" to the precondition, but
+   --  SPARK does not yet support raise expressions.
+
    function Argument (Number : Positive) return String;
+   pragma Precondition (Number <= Argument_Count);
    --  If the external execution environment supports passing arguments to
    --  a program, then Argument returns an implementation-defined value
    --  corresponding to the argument at relative position Number. If Number
