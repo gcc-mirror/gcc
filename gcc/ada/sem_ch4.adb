@@ -2935,11 +2935,20 @@ package body Sem_Ch4 is
                   --  for all of them.
 
                   Set_Etype (Alt, It.Typ);
+
+                  --  If the alternative is an enumeration literal, use
+                  --  the one for this interpretation.
+
+                  if Is_Entity_Name (Alt) then
+                     Set_Entity (Alt, It.Nam);
+                  end if;
+
                   Get_Next_Interp (Index, It);
 
                   if No (It.Typ) then
                      Set_Is_Overloaded (Alt, False);
                      Common_Type := Etype (Alt);
+
                   end if;
 
                   Candidate_Interps := Alt;

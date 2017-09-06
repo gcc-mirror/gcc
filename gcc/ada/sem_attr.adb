@@ -4377,7 +4377,14 @@ package body Sem_Attr is
          --  When the attribute is part of an indexed component, find the first
          --  expression as it will determine the semantics of 'Loop_Entry.
 
-         if Nkind (Context) = N_Indexed_Component then
+         --  If the attribute is itself an index in an indexed component, i.e.
+         --  a member of a list, the context itself is not relevant (the code
+         --  below would lead to an infinite loop) and the attribute applies
+         --  to the enclosing loop.
+
+         if Nkind (Context) = N_Indexed_Component
+           and then not Is_List_Member (N)
+         then
             E1 := First (Expressions (Context));
             E2 := Next (E1);
 

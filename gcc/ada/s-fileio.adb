@@ -742,8 +742,6 @@ package body System.File_IO is
    begin
       if File = null then
          raise Status_Error with "Name: file not open";
-      elsif File.Is_Temporary_File then
-         raise Use_Error with "Name: temporary file has no name";
       else
          return File.Name.all (1 .. File.Name'Length - 1);
       end if;
