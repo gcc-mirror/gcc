@@ -7151,6 +7151,13 @@ package body Exp_Aggr is
             then
                Static_Components := False;
                return True;
+
+            elsif Modify_Tree_For_C
+              and then Nkind (Expr_Q) = N_Type_Conversion
+              and then Is_Array_Type (Etype (Expr_Q))
+            then
+               Static_Components := False;
+               return True;
             end if;
 
             if Is_Elementary_Type (Etype (Expr_Q)) then

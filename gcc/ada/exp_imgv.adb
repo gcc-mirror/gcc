@@ -36,6 +36,7 @@ with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem_Aux;  use Sem_Aux;
 with Sem_Res;  use Sem_Res;
+with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
@@ -51,6 +52,17 @@ package body Exp_Imgv is
    --  Applies to all entities. True for a Decimal_Fixed_Point_Type, or an
    --  Ordinary_Fixed_Point_Type with a small that is a negative power of ten.
    --  Shouldn't this be in einfo.adb or sem_aux.adb???
+
+   procedure Rewrite_Object_Image
+     (N         : Node_Id;
+      Pref      : Entity_Id;
+      Attr_Name : Name_Id;
+      Str_Typ   : Entity_Id);
+   --  AI12-00124: Rewrite attribute 'Image when it is applied to an object
+   --  reference as an attribute applied to a type. N denotes the node to be
+   --  rewritten, Pref denotes the prefix of the 'Image attribute, and Name
+   --  and Str_Typ specify which specific string type and 'Image attribute to
+   --  apply (e.g. Name_Wide_Image and Standard_Wide_String).
 
    ------------------------------------
    -- Build_Enumeration_Image_Tables --
@@ -254,10 +266,10 @@ package body Exp_Imgv is
       Loc       : constant Source_Ptr := Sloc (N);
       Exprs     : constant List_Id    := Expressions (N);
       Pref      : constant Node_Id    := Prefix (N);
-      Ptyp      : constant Entity_Id  := Entity (Pref);
-      Rtyp      : constant Entity_Id  := Root_Type (Ptyp);
       Expr      : constant Node_Id    := Relocate_Node (First (Exprs));
       Imid      : RE_Id;
+      Ptyp      : Entity_Id;
+      Rtyp      : Entity_Id;
       Tent      : Entity_Id;
       Ttyp      : Entity_Id;
       Proc_Ent  : Entity_Id;
@@ -273,6 +285,14 @@ package body Exp_Imgv is
       Pnn : constant Entity_Id := Make_Temporary (Loc, 'P');
 
    begin
+      if Is_Object_Image (Pref) then
+         Rewrite_Object_Image (N, Pref, Name_Image, Standard_String);
+         return;
+      end if;
+
+      Ptyp := Entity (Pref);
+      Rtyp := Root_Type (Ptyp);
+
       --  Build declarations of Snn and Pnn to be inserted
 
       Ins_List := New_List (
@@ -791,11 +811,19 @@ package body Exp_Imgv is
 
    procedure Expand_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
-      Rnn  : constant Entity_Id := Make_Temporary (Loc, 'S');
-      Lnn  : constant Entity_Id := Make_Temporary (Loc, 'P');
+      Pref : constant Entity_Id  := Prefix (N);
+      Rnn  : constant Entity_Id  := Make_Temporary (Loc, 'S');
+      Lnn  : constant Entity_Id  := Make_Temporary (Loc, 'P');
+      Rtyp : Entity_Id;
 
    begin
+      if Is_Object_Image (Pref) then
+         Rewrite_Object_Image (N, Pref, Name_Wide_Image, Standard_Wide_String);
+         return;
+      end if;
+
+      Rtyp := Root_Type (Entity (Pref));
+
       Insert_Actions (N, New_List (
 
          --  Rnn : Wide_String (1 .. base_typ'Width);
@@ -882,12 +910,20 @@ package body Exp_Imgv is
 
    procedure Expand_Wide_Wide_Image_Attribute (N : Node_Id) is
       Loc  : constant Source_Ptr := Sloc (N);
-      Rtyp : constant Entity_Id  := Root_Type (Entity (Prefix (N)));
-
-      Rnn : constant Entity_Id := Make_Temporary (Loc, 'S');
-      Lnn : constant Entity_Id := Make_Temporary (Loc, 'P');
+      Pref : constant Entity_Id  := Prefix (N);
+      Rnn  : constant Entity_Id  := Make_Temporary (Loc, 'S');
+      Lnn  : constant Entity_Id  := Make_Temporary (Loc, 'P');
+      Rtyp : Entity_Id;
 
    begin
+      if Is_Object_Image (Pref) then
+         Rewrite_Object_Image
+           (N, Pref, Name_Wide_Wide_Image, Standard_Wide_Wide_String);
+         return;
+      end if;
+
+      Rtyp := Root_Type (Entity (Pref));
+
       Insert_Actions (N, New_List (
 
          --  Rnn : Wide_Wide_String (1 .. rt'Wide_Wide_Width);
@@ -1373,4 +1409,23 @@ package body Exp_Imgv is
              and then Ureal_10**Aft_Value (E) * Small_Value (E) = Ureal_1);
    end Has_Decimal_Small;
 
+   --------------------------
+   -- Rewrite_Object_Image --
+   --------------------------
+
+   procedure Rewrite_Object_Image
+     (N         : Node_Id;
+      Pref      : Entity_Id;
+      Attr_Name : Name_Id;
+      Str_Typ   : Entity_Id)
+   is
+   begin
+      Rewrite (N,
+        Make_Attribute_Reference (Sloc (N),
+          Prefix         => New_Occurrence_Of (Etype (Pref), Sloc (N)),
+          Attribute_Name => Attr_Name,
+          Expressions    => New_List (Relocate_Node (Pref))));
+
+      Analyze_And_Resolve (N, Str_Typ);
+   end Rewrite_Object_Image;
 end Exp_Imgv;

@@ -261,6 +261,12 @@ package body Sem_Attr is
       --  when the above criteria are met. Spec_Id denotes the entity of the
       --  subprogram [body] or Empty if the attribute is illegal.
 
+      procedure Analyze_Image_Attribute (Str_Typ : Entity_Id);
+      --  Common processing for attributes 'Img, 'Image, 'Wide_Image, and
+      --  'Wide_Wide_Image. The routine checks that the prefix is valid and
+      --  sets the entity type to the one specified by Str_Typ (e.g.
+      --  Standard_String for 'Image and Standard_Wide_String for 'Wide_Image).
+
       procedure Bad_Attribute_For_Predicate;
       --  Output error message for use of a predicate (First, Last, Range) not
       --  allowed with a type that has predicates. If the type is a generic
@@ -362,10 +368,6 @@ package body Sem_Attr is
 
       procedure Check_Object_Reference (P : Node_Id);
       --  Check that P is an object reference
-
-      procedure Check_Object_Reference_Image (Str_Typ : Entity_Id);
-      --  Verify that the prefix of attribute 'Image is an object reference and
-      --  set the type of the prefix to Str_Typ.
 
       procedure Check_PolyORB_Attribute;
       --  Validity checking for PolyORB/DSA attribute
@@ -1427,6 +1429,82 @@ package body Sem_Attr is
          end if;
       end Analyze_Attribute_Old_Result;
 
+      -----------------------------
+      -- Analyze_Image_Attribute --
+      -----------------------------
+
+      procedure Analyze_Image_Attribute (Str_Typ : Entity_Id) is
+      begin
+         Check_SPARK_05_Restriction_On_Attribute;
+
+         --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for
+         --  scalar types, so that the prefix can be an object, a named value,
+         --  or a type, and there is no need for an argument in this case.
+
+         if Attr_Id = Attribute_Img
+           or else (Ada_Version > Ada_2005 and then Is_Object_Image (P))
+         then
+            Check_E0;
+            Set_Etype (N, Str_Typ);
+
+            if Attr_Id = Attribute_Img and then not Is_Object_Image (P) then
+               Error_Attr_P
+                 ("prefix of % attribute must be a scalar object name");
+            end if;
+         else
+            Check_E1;
+            Set_Etype (N, Str_Typ);
+
+            --  Check that the prefix type is scalar - much in the same way as
+            --  Check_Scalar_Type but with custom error messages to denote the
+            --  variants of 'Image attributes.
+
+            if Is_Entity_Name (P)
+              and then Is_Type (Entity (P))
+              and then Ekind (Entity (P)) = E_Incomplete_Type
+              and then Present (Full_View (Entity (P)))
+            then
+               P_Type := Full_View (Entity (P));
+               Set_Entity (P, P_Type);
+            end if;
+
+            if not Is_Entity_Name (P)
+              or else not Is_Type (Entity (P))
+              or else not Is_Scalar_Type (P_Type)
+            then
+               if Ada_Version > Ada_2005 then
+                  Error_Attr_P
+                    ("prefix of % attribute must be a scalar type or a scalar "
+                      & "object name");
+               else
+                  Error_Attr_P ("prefix of % attribute must be a scalar type");
+               end if;
+
+            elsif Is_Protected_Self_Reference (P) then
+               Error_Attr_P
+                 ("prefix of % attribute denotes current instance "
+                  & "(RM 9.4(21/2))");
+            end if;
+
+            Resolve (E1, P_Base_Type);
+            Validate_Non_Static_Attribute_Function_Call;
+         end if;
+
+         Check_Enum_Image;
+
+         --  Check restriction No_Fixed_IO. Note the check of Comes_From_Source
+         --  to avoid giving a duplicate message for when Image attributes
+         --  applied to object references get expanded into type-based Image
+         --  attributes.
+
+         if Restriction_Check_Required (No_Fixed_IO)
+           and then Comes_From_Source (N)
+           and then Is_Fixed_Point_Type (P_Type)
+         then
+            Check_Restriction (No_Fixed_IO, P);
+         end if;
+      end Analyze_Image_Attribute;
+
       ---------------------------------
       -- Bad_Attribute_For_Predicate --
       ---------------------------------
@@ -2163,33 +2241,6 @@ package body Sem_Attr is
             Error_Attr_P ("prefix of % attribute must be object");
          end if;
       end Check_Object_Reference;
-
-      ----------------------------------
-      -- Check_Object_Reference_Image --
-      ----------------------------------
-
-      procedure Check_Object_Reference_Image (Str_Typ : Entity_Id) is
-      begin
-         Check_E0;
-         Set_Etype (N, Str_Typ);
-
-         if not Is_Scalar_Type (P_Type)
-           or else (Is_Entity_Name (P) and then Is_Type (Entity (P)))
-         then
-            Error_Attr_P
-              ("prefix of % attribute must be scalar object name");
-         end if;
-
-         Check_Enum_Image;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
-      end Check_Object_Reference_Image;
 
       ----------------------------
       -- Check_PolyORB_Attribute --
@@ -4073,16 +4124,6 @@ package body Sem_Attr is
       -----------
 
       when Attribute_Image =>
-         Check_SPARK_05_Restriction_On_Attribute;
-
-         if Is_Image_Applied_To_Object (P, P_Type) then
-            Check_Object_Reference_Image (Standard_String);
-            return;
-         end if;
-
-         Check_Scalar_Type;
-         Set_Etype (N, Standard_String);
-
          if Is_Real_Type (P_Type) then
             if Ada_Version = Ada_83 and then Comes_From_Source (N) then
                Error_Msg_Name_1 := Aname;
@@ -4091,31 +4132,14 @@ package body Sem_Attr is
             end if;
          end if;
 
-         if Is_Enumeration_Type (P_Type) then
-            Check_Restriction (No_Enumeration_Maps, N);
-         end if;
-
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-         Check_Enum_Image;
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO. Note the check of Comes_From_Source
-         --  to avoid giving a duplicate message for Img expanded into Image.
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Comes_From_Source (N)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+         Analyze_Image_Attribute (Standard_String);
 
       ---------
       -- Img --
       ---------
 
       when Attribute_Img =>
-         Check_Object_Reference_Image (Standard_String);
+         Analyze_Image_Attribute (Standard_String);
 
       -----------
       -- Input --
@@ -6995,50 +7019,14 @@ package body Sem_Attr is
       ----------------
 
       when Attribute_Wide_Image =>
-         Check_SPARK_05_Restriction_On_Attribute;
-
-         if Is_Image_Applied_To_Object (P, P_Type) then
-            Check_Object_Reference_Image (Standard_Wide_String);
-            return;
-         end if;
-
-         Check_Scalar_Type;
-         Set_Etype (N, Standard_Wide_String);
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+         Analyze_Image_Attribute (Standard_Wide_String);
 
       ---------------------
       -- Wide_Wide_Image --
       ---------------------
 
       when Attribute_Wide_Wide_Image =>
-         if Is_Image_Applied_To_Object (P, P_Type) then
-            Check_Object_Reference_Image (Standard_Wide_Wide_String);
-            return;
-         end if;
-
-         Check_Scalar_Type;
-         Set_Etype (N, Standard_Wide_Wide_String);
-         Check_E1;
-         Resolve (E1, P_Base_Type);
-         Validate_Non_Static_Attribute_Function_Call;
-
-         --  Check restriction No_Fixed_IO
-
-         if Restriction_Check_Required (No_Fixed_IO)
-           and then Is_Fixed_Point_Type (P_Type)
-         then
-            Check_Restriction (No_Fixed_IO, P);
-         end if;
+         Analyze_Image_Attribute (Standard_Wide_Wide_String);
 
       ----------------
       -- Wide_Value --

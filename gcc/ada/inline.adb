@@ -1178,8 +1178,9 @@ package body Inline is
       --  types.
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id has any contract (Pre, Post, Global,
-      --  Depends, etc.)
+      --  Returns True if subprogram Id has any contract (Pre, Post,
+      --  Global, Depends, etc.) The presence of Extensions_Visible
+      --  or Volatile_Function is also considered as a contract here.
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
       --  Returns True if subprogram Id defines a compilation unit
@@ -1271,6 +1272,11 @@ package body Inline is
 
          if Is_Subprogram_Or_Generic_Subprogram (Id) then
             Items := Contract (Id);
+
+            --  Note that Classifications is not Empty when Extensions_Visible
+            --  or Volatile_Function is present, which causes such subprograms
+            --  to be considered to have a contract here. This is fine as we
+            --  want to avoid inlining these too.
 
             return Present (Items)
               and then (Present (Pre_Post_Conditions (Items)) or else
@@ -1365,7 +1371,8 @@ package body Inline is
          return False;
 
       --  Do not inline subprograms that have a contract on the spec or the
-      --  body. Use the contract(s) instead in GNATprove.
+      --  body. Use the contract(s) instead in GNATprove. This also prevents
+      --  inlining of subprograms with Extensions_Visible or Volatile_Function.
 
       elsif (Present (Spec_Id) and then Has_Some_Contract (Spec_Id))
                or else
