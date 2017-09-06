@@ -392,6 +392,13 @@ package body Sem_Ch7 is
 
                      --  An inlined subprogram body acts as a referencer
 
+                     --  Note that we test Has_Pragma_Inline here in addition
+                     --  to Is_Inlined. We are doing this for a client, since
+                     --  we are computing which entities should be public, and
+                     --  it is the client who will decide if actual inlining
+                     --  should occur, so we need to catch all cases where the
+                     --  subprogram may be inlined by the client.
+
                      if Is_Inlined (Decl_Id)
                        or else Has_Pragma_Inline (Decl_Id)
                      then
@@ -413,18 +420,13 @@ package body Sem_Ch7 is
                   else
                      Decl_Id := Defining_Entity (Decl);
 
-                     --  An inlined body acts as a referencer. Note that an
-                     --  inlined subprogram remains Is_Public as gigi requires
-                     --  the flag to be set.
+                     --  An inlined body acts as a referencer, see above. Note
+                     --  that an inlined subprogram remains Is_Public as gigi
+                     --  requires the flag to be set.
 
-                     --  Note that we test Has_Pragma_Inline here rather than
-                     --  Is_Inlined. We are compiling this for a client, and
-                     --  it is the client who will decide if actual inlining
-                     --  should occur, so we need to assume that the procedure
-                     --  could be inlined for the purpose of accessing global
-                     --  entities.
-
-                     if Has_Pragma_Inline (Decl_Id) then
+                     if Is_Inlined (Decl_Id)
+                       or else Has_Pragma_Inline (Decl_Id)
+                     then
                         if Top_Level
                           and then not Contains_Subprograms_Refs (Decl)
                         then
@@ -915,11 +917,11 @@ package body Sem_Ch7 is
       --  down the number of global symbols that do not neet public visibility
       --  as this has two beneficial effects:
       --    (1) It makes the compilation process more efficient.
-      --    (2) It gives the code generatormore freedom to optimize within each
+      --    (2) It gives the code generator more leeway to optimize within each
       --        unit, especially subprograms.
 
-      --  This is done only for top level library packages or child units as
-      --  the algorithm does a top down traversal of the package body.
+      --  This is done only for top-level library packages or child units as
+      --  the algorithm does a top-down traversal of the package body.
 
       if (Scope (Spec_Id) = Standard_Standard or else Is_Child_Unit (Spec_Id))
         and then not Is_Generic_Unit (Spec_Id)
