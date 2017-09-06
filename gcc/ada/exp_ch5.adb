@@ -3934,9 +3934,9 @@ package body Exp_Ch5 is
 
             function Get_Default_Iterator
               (T : Entity_Id) return Entity_Id;
-            --  If the container is a derived type, the aspect holds the parent
-            --  operation. The required one is a primitive of the derived type
-            --  and is either inherited or overridden. Also sets Container_Arg.
+            --  Return the default iterator for a specific type. If the type is
+            --  derived, we return the inherited or overridden one if
+            --  appropriate.
 
             --------------------------
             -- Get_Default_Iterator --
@@ -3953,11 +3953,11 @@ package body Exp_Ch5 is
             begin
                Container_Arg := New_Copy_Tree (Container);
 
-               --  A previous version of GNAT allowed indexing aspects to
-               --  be redefined on derived container types, while the
-               --  default iterator was inherited from the parent type.
-               --  This non-standard extension is preserved temporarily for
-               --  use by the modelling project under debug flag d.X.
+               --  A previous version of GNAT allowed indexing aspects to be
+               --  redefined on derived container types, while the default
+               --  iterator was inherited from the parent type. This
+               --  nonstandard extension is preserved for use by the
+               --  modelling project under debug flag -gnatd.X.
 
                if Debug_Flag_Dot_XX then
                   if Base_Type (Etype (Container)) /=
@@ -3995,9 +3995,11 @@ package body Exp_Ch5 is
                      Next_Elmt (Prim);
                   end loop;
 
-                  --  Default iterator must exist
+                  --  If we didn't find it, then our parent type is not
+                  --  iterable, so we return the Default_Iterator aspect of
+                  --  this type.
 
-                  pragma Assert (False);
+                  return Iter;
 
                --  Otherwise not a derived type
 
