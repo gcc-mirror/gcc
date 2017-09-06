@@ -32,7 +32,8 @@
 
 function fatal (m) {
     print "error ("lineno"): " m > "/dev/stderr"
-    exit 1
+    fatal_err = 1
+    if (parse_done) exit 1
 }
 
 function toplevel () {
@@ -502,14 +503,18 @@ BEGIN {
     arch_name = ""
     fpu_name = ""
     lineno = 0
+    fatal_err = 0
+    parse_done = 0
     if (cmd == "") fatal("Usage parsecpu.awk -v cmd=<xyz>")
 }
 
+# New line.  Reset parse status and increment line count for error messages
 // {
     lineno++
     parse_ok = 0
 }
 
+# Comments must be on a line on their own.
 /^#/ {
     parse_ok = 1
 }
@@ -552,12 +557,14 @@ BEGIN {
 }
 
 /^begin fpu / {
+    if (NF != 3) fatal("syntax: begin fpu <name>")
     toplevel()
     fpu_name = $3
     parse_ok = 1
 }
 
 /^end fpu / {
+    if (NF != 3) fatal("syntax: end fpu <name>")
     if (fpu_name != $3) fatal("mimatched end fpu")
     if (! (fpu_name in fpu_isa)) {
 	fatal("fpu definition \"" fpu_name "\" lacks an \"isa\" statement")
@@ -570,24 +577,28 @@ BEGIN {
 }
 
 /^begin arch / {
+    if (NF != 3) fatal("syntax: begin arch <name>")
     toplevel()
     arch_name = $3
     parse_ok = 1
 }
 
 /^[ 	]*base / {
+    if (NF != 2) fatal("syntax: base <architecture-base-name>")
     if (arch_name == "") fatal("\"base\" statement outside of arch block")
     arch_base[arch_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*profile / {
+    if (NF != 2) fatal("syntax: profile <profile-name>")
     if (arch_name == "") fatal("\"profile\" statement outside of arch block")
     arch_prof[arch_name] = $2
     parse_ok = 1
 }
 
 /^end arch / {
+    if (NF != 3) fatal("syntax: end arch <name>")
     if (arch_name != $3) fatal("mimatched end arch")
     if (! arch_name in arch_tune_for) {
 	fatal("arch definition lacks a \"tune for\" statement")
@@ -603,18 +614,21 @@ BEGIN {
 }
 
 /^begin cpu / {
+    if (NF != 3) fatal("syntax: begin cpu <name>")
     toplevel()
     cpu_name = $3
     parse_ok = 1
 }
 
 /^[ 	]*cname / {
+    if (NF != 2) fatal("syntax: cname <identifier>")
     if (cpu_name == "") fatal("\"cname\" outside of cpu block")
     cpu_cnames[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*tune for / {
+    if (NF != 3) fatal("syntax: tune for <cpu-name>")
     if (cpu_name != "") {
 	cpu_tune_for[cpu_name] = $3
     } else if (arch_name != "") {
@@ -624,6 +638,7 @@ BEGIN {
 }
 
 /^[ 	]*tune flags / {
+    if (NF < 3) fatal("syntax: tune flags <flag> [<flag>]*")
     flags=""
     flag_count = NF
     for (n = 3; n <= flag_count; n++) {
@@ -640,18 +655,21 @@ BEGIN {
 }
 
 /^[ 	]*architecture / {
+    if (NF != 2) fatal("syntax: architecture <arch-name>")
     if (cpu_name == "") fatal("\"architecture\" outside of cpu block")
     cpu_arch[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*fpu / {
+    if (NF != 2) fatal("syntax: fpu <fpu-name>")
     if (cpu_name == "") fatal("\"fpu\" outside of cpu block")
     cpu_fpu[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*isa / {
+    if (NF < 2) fatal("syntax: isa <feature-or-fgroup> [<feature-or-fgroup>]*")
     flags=""
     flag_count = NF
     for (n = 2; n <= flag_count; n++) {
@@ -670,6 +688,7 @@ BEGIN {
 }
 
 /^[ 	]*option / {
+    if (NF < 4) fatal("syntax: option <name> add|remove <feature-or-fgroup>+")
     name=$2
     if ($3 == "add") {
 	remove = "false"
@@ -696,6 +715,7 @@ BEGIN {
 }
 
 /^[ 	]*optalias / {
+    if (NF != 3) fatal("syntax: optalias <name> <option-name>")
     name=$2
     alias=$3
     if (cpu_name != "") {
@@ -709,12 +729,14 @@ BEGIN {
 }
 
 /^[ 	]*costs / {
+    if (NF != 2) fatal("syntax: costs <identifier>")
     if (cpu_name == "") fatal("\"costs\" outside of cpu block")
     cpu_cost[cpu_name] = $2
     parse_ok = 1
 }
 
 /^end cpu / {
+    if (NF != 3) fatal("syntax: end cpu <name>")
     if (cpu_name != $3) fatal("mimatched end cpu")
     if (! (cpu_name in cpu_cnames)) {
 	cpu_cnames[cpu_name] = cpu_name
@@ -731,6 +753,8 @@ BEGIN {
 }
 
 END {
+    parse_done = 1
+    if (fatal_err) exit 1
     toplevel()
     if (cmd == "data") {
 	gen_data()
