@@ -2100,15 +2100,6 @@ package body Exp_Ch7 is
                elsif Is_Ignored_Ghost_Entity (Obj_Id) then
                   null;
 
-               --  The expansion of iterator loops generates an object
-               --  declaration where the Ekind is explicitly set to loop
-               --  parameter. This is to ensure that the loop parameter behaves
-               --  as a constant from user code point of view. Such object are
-               --  never controlled and do not require finalization.
-
-               elsif Ekind (Obj_Id) = E_Loop_Parameter then
-                  null;
-
                --  The object is of the form:
                --    Obj : [constant] Typ [:= Expr];
 

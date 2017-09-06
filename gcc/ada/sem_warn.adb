@@ -46,6 +46,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
 package body Sem_Warn is
@@ -3878,6 +3879,13 @@ package body Sem_Warn is
          procedure Warn1;
          --  Generate first warning line
 
+         procedure Warn_On_Index_Below_Lower_Bound;
+         --  Generate a warning on indexing the array with a literal value
+         --  below the lower bound of the index type.
+
+         procedure Warn_On_Literal_Index;
+         --  Generate a warning on indexing the array with a literal value
+
          ----------------------
          -- Length_Reference --
          ----------------------
@@ -3903,21 +3911,31 @@ package body Sem_Warn is
               ("?w?index for& may assume lower bound of^", X, Ent);
          end Warn1;
 
-      --  Start of processing for Test_Suspicious_Index
+         -------------------------------------
+         -- Warn_On_Index_Below_Lower_Bound --
+         -------------------------------------
 
-      begin
-         --  Nothing to do if subscript does not come from source (we don't
-         --  want to give garbage warnings on compiler expanded code, e.g. the
-         --  loops generated for slice assignments. Such junk warnings would
-         --  be placed on source constructs with no subscript in sight).
+         procedure Warn_On_Index_Below_Lower_Bound is
+         begin
+            if Is_Standard_String_Type (Typ) then
+               Discard_Node
+                 (Compile_Time_Constraint_Error
+                   (N   => X,
+                    Msg => "?w?string index should be positive"));
+            else
+               Discard_Node
+                 (Compile_Time_Constraint_Error
+                   (N   => X,
+                    Msg => "?w?index out of the allowed range"));
+            end if;
+         end Warn_On_Index_Below_Lower_Bound;
 
-         if not Comes_From_Source (Original_Node (X)) then
-            return;
-         end if;
+         ---------------------------
+         -- Warn_On_Literal_Index --
+         ---------------------------
 
-         --  Case where subscript is a constant integer
-
-         if Nkind (X) = N_Integer_Literal then
+         procedure Warn_On_Literal_Index is
+         begin
             Warn1;
 
             --  Case where original form of subscript is an integer literal
@@ -4036,6 +4054,34 @@ package body Sem_Warn is
 
                Error_Msg_FE -- CODEFIX
                  ("\?w?suggested replacement: `&~`", Original_Node (X), Ent);
+            end if;
+         end Warn_On_Literal_Index;
+
+      --  Start of processing for Test_Suspicious_Index
+
+      begin
+         --  Nothing to do if subscript does not come from source (we don't
+         --  want to give garbage warnings on compiler expanded code, e.g. the
+         --  loops generated for slice assignments. Such junk warnings would
+         --  be placed on source constructs with no subscript in sight).
+
+         if not Comes_From_Source (Original_Node (X)) then
+            return;
+         end if;
+
+         --  Case where subscript is a constant integer
+
+         if Nkind (X) = N_Integer_Literal then
+
+            --  Case where subscript is lower than the lowest possible bound.
+            --  This might be the case for example when programmers try to
+            --  access a string at index 0, as they are used to in other
+            --  programming languages like C.
+
+            if Intval (X) < Low_Bound then
+               Warn_On_Index_Below_Lower_Bound;
+            else
+               Warn_On_Literal_Index;
             end if;
 
          --  Case where subscript is of the form X'Length
