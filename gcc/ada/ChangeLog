@@ -1,5 +1,52 @@
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
+	* checks.adb (Apply_Predicate_Check): If the expression is an
+	aggregate that is the RHS of an assignment, apply the check to
+	the LHS after the assignment, rather than to the aggregate. This
+	is more efficient than creating a temporary for the aggregate,
+	and prevents back-end crashes when the aggregate includes a
+	dynamic "others' association.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch12.adb (Analyze_Instance_And_Renamings):
+	Set variable to ignore SPARK_Mode in instance before the analysis
+	of the generated package declaration.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Call): Do not issue a
+	message for calls inside expression function, unless body was
+	seen and is candidate for inlining.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aux.adb (Is_Generic_Formal): Handle properly formal packages.
+	* sem_ch3.adb (Analyze_Declarations): In a generic subprogram
+	body. do not freeze the formals of the generic unit.
+
+2017-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* errout.adb (Error_Msg): Separate the
+	treatment for warning vs. style messages in inlinings and
+	instantiations. Prevents blowups on calls to Warn_Insertion for
+	style messages, which should not be called in that case because
+	Warning_Msg_Char is not set.
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Check_VFA_Conflicts): Created
+	to group all Volatile_Full_Access checks relating to other
+	representation pragmas (Mark_Component_Or_Object): Created
+	to centeralize the flagging of attributes for the record type
+	component case, a pragma applied individually to a component, and
+	the object case.
+	(Process_Atomic_Independent_Shared_Volatile):
+	Add propagation of certain pragmas to record components and move
+	evaluation of VFA checks
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
 	* sem_prag.adb (Check_Postcondition_Use_In_Inlined_Subprogram):
 	Do not warn on conditions that are not obeyed for Inline_Always
 	subprograms, when assertions are not enabled.

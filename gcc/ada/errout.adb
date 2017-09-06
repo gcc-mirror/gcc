@@ -503,9 +503,14 @@ package body Errout is
                        ("info: in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
 
-                  elsif Is_Warning_Msg or Is_Style_Msg then
+                  elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in inlined body #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
+                  elsif Is_Style_Msg then
+                     Error_Msg_Internal
+                       ("style: in inlined body #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
 
                   else
@@ -522,9 +527,14 @@ package body Errout is
                        ("info: in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
 
-                  elsif Is_Warning_Msg or else Is_Style_Msg then
+                  elsif Is_Warning_Msg then
                      Error_Msg_Internal
                        (Warn_Insertion & "in instantiation #",
+                        Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+
+                  elsif Is_Style_Msg then
+                     Error_Msg_Internal
+                       ("style: in instantiation #",
                         Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
 
                   else
