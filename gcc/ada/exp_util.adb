@@ -7648,11 +7648,12 @@ package body Exp_Util is
       ----------------------
 
       function Is_Displace_Call (N : Node_Id) return Boolean is
-         Call : Node_Id := N;
+         Call : Node_Id;
 
       begin
          --  Strip various actions which may precede a call to Displace
 
+         Call := N;
          loop
             if Nkind (Call) = N_Explicit_Dereference then
                Call := Prefix (Call);
@@ -7678,12 +7679,31 @@ package body Exp_Util is
       ----------------------
 
       function Is_Source_Object (N : Node_Id) return Boolean is
+         Obj : Node_Id;
+
       begin
+         --  Strip various actions which may be associated with the object
+
+         Obj := N;
+         loop
+            if Nkind (Obj) = N_Explicit_Dereference then
+               Obj := Prefix (Obj);
+
+            elsif Nkind_In (Obj, N_Type_Conversion,
+                                 N_Unchecked_Type_Conversion)
+            then
+               Obj := Expression (Obj);
+
+            else
+               exit;
+            end if;
+         end loop;
+
          return
-           Present (N)
-             and then Nkind (N) in N_Has_Entity
-             and then Is_Object (Entity (N))
-             and then Comes_From_Source (N);
+           Present (Obj)
+             and then Nkind (Obj) in N_Has_Entity
+             and then Is_Object (Entity (Obj))
+             and then Comes_From_Source (Obj);
       end Is_Source_Object;
 
       --  Local variables

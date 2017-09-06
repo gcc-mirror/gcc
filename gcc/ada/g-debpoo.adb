@@ -389,13 +389,13 @@ package body GNAT.Debug_Pools is
 
    type Scope_Lock is
      new Ada.Finalization.Limited_Controlled with null record;
-   --  to handle Lock_Task/Unlock_Task calls
+   --  Used to handle Lock_Task/Unlock_Task calls
 
    overriding procedure Initialize (This : in out Scope_Lock);
-   --  lock task on initialization
+   --  Lock task on initialization
 
    overriding procedure Finalize   (This : in out Scope_Lock);
-   --  unlock task on finalization
+   --  Unlock task on finalization
 
    ----------------
    -- Initialize --
@@ -431,11 +431,13 @@ package body GNAT.Debug_Pools is
    -- Header_Of --
    ---------------
 
-   function Header_Of (Address : System.Address)
-     return Allocation_Header_Access
+   function Header_Of
+     (Address : System.Address) return Allocation_Header_Access
    is
-      function Convert is new Ada.Unchecked_Conversion
-        (System.Address, Allocation_Header_Access);
+      function Convert is
+        new Ada.Unchecked_Conversion
+                  (System.Address,
+                   Allocation_Header_Access);
    begin
       return Convert (Address - Header_Offset);
    end Header_Of;
@@ -457,7 +459,8 @@ package body GNAT.Debug_Pools is
    ----------
 
    function Next
-     (E : Traceback_Htable_Elem_Ptr) return Traceback_Htable_Elem_Ptr is
+     (E : Traceback_Htable_Elem_Ptr) return Traceback_Htable_Elem_Ptr
+   is
    begin
       return E.Next;
    end Next;
@@ -1366,6 +1369,7 @@ package body GNAT.Debug_Pools is
       procedure Reset_Marks is
          Current : System.Address := Pool.First_Free_Block;
          Header  : Allocation_Header_Access;
+
       begin
          while Current /= System.Null_Address loop
             Header := Header_Of (Current);
@@ -1377,10 +1381,9 @@ package body GNAT.Debug_Pools is
       Lock : Scope_Lock;
       pragma Unreferenced (Lock);
 
-      --  Start of processing for Free_Physically
+   --  Start of processing for Free_Physically
 
    begin
-
       if Pool.Advanced_Scanning then
 
          --  Reset the mark for each freed block
@@ -1393,7 +1396,7 @@ package body GNAT.Debug_Pools is
       Free_Blocks (Ignore_Marks => not Pool.Advanced_Scanning);
 
       --  The contract is that we need to free at least Minimum_To_Free bytes,
-      --  even if this means freeing marked blocks in the advanced scheme
+      --  even if this means freeing marked blocks in the advanced scheme.
 
       if Total_Freed < Pool.Minimum_To_Free
         and then Pool.Advanced_Scanning
@@ -1401,7 +1404,6 @@ package body GNAT.Debug_Pools is
          Pool.Marked_Blocks_Deallocated := True;
          Free_Blocks (Ignore_Marks => True);
       end if;
-
    end Free_Physically;
 
    --------------
@@ -1411,19 +1413,19 @@ package body GNAT.Debug_Pools is
    procedure Get_Size
      (Storage_Address          : Address;
       Size_In_Storage_Elements : out Storage_Count;
-      Valid                    : out Boolean) is
-
+      Valid                    : out Boolean)
+   is
       Lock : Scope_Lock;
       pragma Unreferenced (Lock);
 
    begin
-
       Valid := Is_Valid (Storage_Address);
 
       if Is_Valid (Storage_Address) then
          declare
-            Header   : constant Allocation_Header_Access :=
-              Header_Of (Storage_Address);
+            Header : constant Allocation_Header_Access :=
+                       Header_Of (Storage_Address);
+
          begin
             if Header.Block_Size >= 0 then
                Valid := True;
@@ -1435,7 +1437,6 @@ package body GNAT.Debug_Pools is
       else
          Valid := False;
       end if;
-
    end Get_Size;
 
    ---------------------
@@ -1445,7 +1446,8 @@ package body GNAT.Debug_Pools is
    procedure Print_Traceback
      (Output_File : File_Type;
       Prefix      : String;
-      Traceback   : Traceback_Htable_Elem_Ptr) is
+      Traceback   : Traceback_Htable_Elem_Ptr)
+   is
    begin
       if Traceback /= null then
          Put (Output_File, Prefix);
@@ -1466,9 +1468,10 @@ package body GNAT.Debug_Pools is
       pragma Unreferenced (Alignment);
 
       Header   : constant Allocation_Header_Access :=
-        Header_Of (Storage_Address);
-      Valid    : Boolean;
+                   Header_Of (Storage_Address);
       Previous : System.Address;
+      Valid    : Boolean;
+
       Header_Block_Size_Was_Less_Than_0 : Boolean := True;
 
    begin
@@ -1477,6 +1480,7 @@ package body GNAT.Debug_Pools is
       declare
          Lock : Scope_Lock;
          pragma Unreferenced (Lock);
+
       begin
          Valid := Is_Valid (Storage_Address);
 
@@ -1484,9 +1488,9 @@ package body GNAT.Debug_Pools is
             Header_Block_Size_Was_Less_Than_0 := False;
 
             --  Some sort of codegen problem or heap corruption caused the
-            --  Size_In_Storage_Elements to be wrongly computed.
-            --  The code below is all based on the assumption that Header.all
-            --  is not corrupted, such that the error is non-fatal.
+            --  Size_In_Storage_Elements to be wrongly computed. The code
+            --  below is all based on the assumption that Header.all is not
+            --  corrupted, such that the error is non-fatal.
 
             if Header.Block_Size /= Size_In_Storage_Elements and then
               Size_In_Storage_Elements /= Storage_Count'Last
@@ -1591,11 +1595,9 @@ package body GNAT.Debug_Pools is
             --  Do not physically release the memory here, but in Alloc.
             --  See comment there for details.
          end if;
-
       end;
 
       if not Valid then
-
          if Storage_Address = System.Null_Address then
             if Pool.Raise_Exceptions and then
               Size_In_Storage_Elements /= Storage_Count'Last
@@ -1611,14 +1613,15 @@ package body GNAT.Debug_Pools is
             end if;
          end if;
 
-         if Allow_Unhandled_Memory and then not Is_Handled (Storage_Address)
+         if Allow_Unhandled_Memory
+           and then not Is_Handled (Storage_Address)
          then
             System.CRTL.free (Storage_Address);
             return;
          end if;
 
-         if Pool.Raise_Exceptions and then
-           Size_In_Storage_Elements /= Storage_Count'Last
+         if Pool.Raise_Exceptions
+           and then Size_In_Storage_Elements /= Storage_Count'Last
          then
             raise Freeing_Not_Allocated_Storage;
          else
@@ -1630,7 +1633,6 @@ package body GNAT.Debug_Pools is
          end if;
 
       elsif Header_Block_Size_Was_Less_Than_0 then
-
          if Pool.Raise_Exceptions then
             raise Freeing_Deallocated_Storage;
          else
@@ -1645,9 +1647,7 @@ package body GNAT.Debug_Pools is
             Print_Traceback (Output_File (Pool), "   Memory was allocated at ",
                              Header.Alloc_Traceback);
          end if;
-
       end if;
-
    end Deallocate;
 
    --------------------
@@ -1750,7 +1750,6 @@ package body GNAT.Debug_Pools is
       Display_Slots : Boolean := False;
       Display_Leaks : Boolean := False)
    is
-
       package Backtrace_Htable_Cumulate is new GNAT.HTable.Static_HTable
         (Header_Num => Header,
          Element    => Traceback_Htable_Elem,
@@ -1764,9 +1763,9 @@ package body GNAT.Debug_Pools is
          Equal      => Equal);
       --  This needs a comment ??? probably some of the ones below do too???
 
+      Current : System.Address;
       Data    : Traceback_Htable_Elem_Ptr;
       Elem    : Traceback_Htable_Elem_Ptr;
-      Current : System.Address;
       Header  : Allocation_Header_Access;
       K       : Traceback_Kind;
 
@@ -1805,13 +1804,13 @@ package body GNAT.Debug_Pools is
             if Data.Kind in Alloc .. Dealloc then
                Elem :=
                  new Traceback_Htable_Elem'
-                      (Traceback => new Tracebacks_Array'(Data.Traceback.all),
-                       Count       => Data.Count,
-                       Kind        => Data.Kind,
-                       Total       => Data.Total,
-                       Frees       => Data.Frees,
-                       Total_Frees => Data.Total_Frees,
-                       Next        => null);
+                       (Traceback => new Tracebacks_Array'(Data.Traceback.all),
+                        Count       => Data.Count,
+                        Kind        => Data.Kind,
+                        Total       => Data.Total,
+                        Frees       => Data.Frees,
+                        Total_Frees => Data.Total_Frees,
+                        Next        => null);
                Backtrace_Htable_Cumulate.Set (Elem);
 
                if Cumulate then
@@ -1828,15 +1827,18 @@ package body GNAT.Debug_Pools is
                      --  If not, insert it
 
                      if Elem = null then
-                        Elem := new Traceback_Htable_Elem'
-                          (Traceback => new Tracebacks_Array'
-                             (Data.Traceback (T .. Data.Traceback'Last)),
-                           Count       => Data.Count,
-                           Kind        => K,
-                           Total       => Data.Total,
-                           Frees       => Data.Frees,
-                           Total_Frees => Data.Total_Frees,
-                           Next        => null);
+                        Elem :=
+                          new Traceback_Htable_Elem'
+                                (Traceback =>
+                                   new Tracebacks_Array'
+                                         (Data.Traceback
+                                           (T .. Data.Traceback'Last)),
+                                 Count       => Data.Count,
+                                 Kind        => K,
+                                 Total       => Data.Total,
+                                 Frees       => Data.Frees,
+                                 Total_Frees => Data.Total_Frees,
+                                 Next        => null);
                         Backtrace_Htable_Cumulate.Set (Elem);
 
                         --  Properly take into account that the subprograms
@@ -1924,10 +1926,14 @@ package body GNAT.Debug_Pools is
    procedure Dump
      (Pool   : Debug_Pool;
       Size   : Positive;
-      Report : Report_Type := All_Reports) is
-
+      Report : Report_Type := All_Reports)
+   is
       procedure Do_Report (Sort : Report_Type);
       --  Do a specific type of report
+
+      ---------------
+      -- Do_Report --
+      ---------------
 
       procedure Do_Report (Sort : Report_Type) is
          Elem        : Traceback_Htable_Elem_Ptr;
@@ -1991,7 +1997,6 @@ package body GNAT.Debug_Pools is
          end;
 
          while Elem /= null loop
-
             declare
                Lock : Scope_Lock;
                pragma Unreferenced (Lock);
@@ -2005,13 +2010,13 @@ package body GNAT.Debug_Pools is
                --  gain speed.
 
                if (Sort = Memory_Usage
-                   and then Elem_Safe.Total - Elem_Safe.Total_Frees >= 1_000)
+                    and then Elem_Safe.Total - Elem_Safe.Total_Frees >= 1_000)
                  or else (Sort = Allocations_Count
-                          and then Elem_Safe.Count - Elem_Safe.Frees >= 1)
+                           and then Elem_Safe.Count - Elem_Safe.Frees >= 1)
                  or else (Sort = Sort_Total_Allocs
-                          and then Elem_Safe.Count > 1)
+                           and then Elem_Safe.Count > 1)
                  or else (Sort = Marked_Blocks
-                          and then Elem_Safe.Total = 0)
+                           and then Elem_Safe.Total = 0)
                then
                   if Sort = Marked_Blocks then
                      Grand_Total := Grand_Total + Float (Elem_Safe.Count);
@@ -2020,7 +2025,6 @@ package body GNAT.Debug_Pools is
                   for M in Max'Range loop
                      Bigger := Max (M) = null;
                      if not Bigger then
-
                         declare
                            Lock : Scope_Lock;
                            pragma Unreferenced (Lock);
@@ -2063,7 +2067,6 @@ package body GNAT.Debug_Pools is
             begin
                Elem := Backtrace_Htable.Get_Next;
             end;
-
          end loop;
 
          if Grand_Total = 0.0 then
@@ -2074,10 +2077,11 @@ package body GNAT.Debug_Pools is
             exit when Max (M) = null;
             declare
                type Percent is delta 0.1 range 0.0 .. 100.0;
-               Total : Byte_Count;
-               P : Percent;
-            begin
 
+               P     : Percent;
+               Total : Byte_Count;
+
+            begin
                declare
                   Lock : Scope_Lock;
                   pragma Unreferenced (Lock);
@@ -2104,6 +2108,7 @@ package body GNAT.Debug_Pools is
                   --  In multi tasking configuration, memory deallocations
                   --  during Do_Report processing can lead to Total >
                   --  Grand_Total. As Percent requires Total <= Grand_Total
+
                begin
                   if Normalized_Total > Grand_Total then
                      P := 100.0;
@@ -2113,7 +2118,10 @@ package body GNAT.Debug_Pools is
                end;
 
                case Sort is
-                  when Memory_Usage | Allocations_Count | All_Reports =>
+                  when All_Reports
+                     | Allocations_Count
+                     | Memory_Usage
+                  =>
                      declare
                         Count : constant Natural :=
                           Max_M_Safe.Count - Max_M_Safe.Frees;
@@ -2121,9 +2129,11 @@ package body GNAT.Debug_Pools is
                         Put (P'Img & "%:" & Total'Img & " bytes in"
                              & Count'Img & " chunks at");
                      end;
+
                   when Sort_Total_Allocs =>
                      Put (P'Img & "%:" & Total'Img & " bytes in"
                           & Max_M_Safe.Count'Img & " chunks at");
+
                   when Marked_Blocks =>
                      Put (P'Img & "%:"
                           & Max_M_Safe.Count'Img & " chunks /"
@@ -2257,8 +2267,7 @@ package body GNAT.Debug_Pools is
    -- High_Water_Mark --
    ---------------------
 
-   function High_Water_Mark
-     (Pool : Debug_Pool) return Byte_Count is
+   function High_Water_Mark (Pool : Debug_Pool) return Byte_Count is
       Lock : Scope_Lock;
       pragma Unreferenced (Lock);
    begin
@@ -2269,8 +2278,7 @@ package body GNAT.Debug_Pools is
    -- Current_Water_Mark --
    ------------------------
 
-   function Current_Water_Mark
-     (Pool : Debug_Pool) return Byte_Count is
+   function Current_Water_Mark (Pool : Debug_Pool) return Byte_Count is
       Lock : Scope_Lock;
       pragma Unreferenced (Lock);
    begin
@@ -2283,7 +2291,8 @@ package body GNAT.Debug_Pools is
    ------------------------------
 
    procedure System_Memory_Debug_Pool
-     (Has_Unhandled_Memory : Boolean := True) is
+     (Has_Unhandled_Memory : Boolean := True)
+   is
       Lock : Scope_Lock;
       pragma Unreferenced (Lock);
    begin
@@ -2329,9 +2338,9 @@ package body GNAT.Debug_Pools is
       Header  : Allocation_Header_Access;
 
    begin
-      --  We might get Null_Address if the call from gdb was done
-      --  incorrectly. For instance, doing a "print_pool(my_var)" passes 0x0,
-      --  instead of passing the value of my_var
+      --  We might get Null_Address if the call from gdb was done incorrectly.
+      --  For instance, doing a "print_pool(my_var)" passes 0x0, instead of
+      --  passing the value of my_var.
 
       if A = System.Null_Address then
          Put_Line
@@ -2369,7 +2378,6 @@ package body GNAT.Debug_Pools is
       Display_Slots : Boolean := False;
       Display_Leaks : Boolean := False)
    is
-
       procedure Internal is new Print_Info
         (Put_Line => Stdout_Put_Line,
          Put      => Stdout_Put);
