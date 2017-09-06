@@ -6000,8 +6000,8 @@ package body Sem_Ch3 is
                Analyze (Decl);
                Set_Etype (Index, New_E);
 
-               --  If the index is a range the Entity attribute is not
-               --  available. Example:
+               --  If the index is a range or a subtype indication it carries
+               --  no entity. Example:
 
                --     package Pkg is
                --        type T is private;
@@ -6010,7 +6010,9 @@ package body Sem_Ch3 is
                --        Table : array (T(1) .. T(10)) of Boolean;
                --     end Pkg;
 
-               if Nkind (Index) /= N_Range then
+               --  Otherwise the type of the reference is its entity.
+
+               if Is_Entity_Name (Index) then
                   Set_Entity (Index, New_E);
                end if;
             end;

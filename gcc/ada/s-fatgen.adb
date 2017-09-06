@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -726,11 +726,11 @@ package body System.Fat_Gen is
    --  This works provided that the intermediate result (RM1 + N) does not
    --  have extra precision (which is why we call Machine). When we compute
    --  RM1 + N, the exponent of N will be normalized and the mantissa shifted
-   --  shifted appropriately so the lower order bits, which cannot contribute
-   --  to the integer part of N, fall off on the right. When we subtract RM1
-   --  again, the significant bits of N are shifted to the left, and what we
-   --  have is an integer, because only the first e bits are different from
-   --  zero (assuming binary radix here).
+   --  appropriately so the lower order bits, which cannot contribute to the
+   --  integer part of N, fall off on the right. When we subtract RM1 again,
+   --  the significant bits of N are shifted to the left, and what we have is
+   --  an integer, because only the first e bits are different from zero
+   --  (assuming binary radix here).
 
    function Truncation (X : T) return T is
       Result : T;

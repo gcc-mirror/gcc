@@ -2012,9 +2012,10 @@ package Sem_Util is
    --  entity E. If no such instance exits, return Empty.
 
    function Needs_One_Actual (E : Entity_Id) return Boolean;
-   --  Returns True if a function has defaults for all but its first
-   --  formal. Used in Ada 2005 mode to solve the syntactic ambiguity that
-   --  results from an indexing of a function call written in prefix form.
+   --  Returns True if a function has defaults for all but its first formal,
+   --  which is a controlling formal. Used in Ada 2005 mode to solve the
+   --  syntactic ambiguity that results from an indexing of a function call
+   --  that returns an array, so that Obj.F (X, Y) may mean F (Ob) (X, Y).
 
    function New_Copy_List_Tree (List : List_Id) return List_Id;
    --  Copy recursively an analyzed list of nodes. Uses New_Copy_Tree defined

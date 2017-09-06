@@ -5382,6 +5382,15 @@ package body Sem_Ch12 is
          Set_Has_Pragma_Inline (Act_Decl_Id, Has_Pragma_Inline (Gen_Unit));
          Set_Has_Pragma_Inline (Anon_Id,     Has_Pragma_Inline (Gen_Unit));
 
+         --  Propagate No_Return if pragma applied to generic unit. This must
+         --  be done explicitly because pragma does not appear in generic
+         --  declaration (unlike the aspect case).
+
+         if No_Return (Gen_Unit) then
+            Set_No_Return (Act_Decl_Id);
+            Set_No_Return (Anon_Id);
+         end if;
+
          Set_Has_Pragma_Inline_Always
            (Act_Decl_Id, Has_Pragma_Inline_Always (Gen_Unit));
          Set_Has_Pragma_Inline_Always

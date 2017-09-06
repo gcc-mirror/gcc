@@ -413,17 +413,57 @@ package body Lib.Xref is
       ---------------------------
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id is
-         Result : Entity_Id := E;
-
       begin
-         while Present (Result)
-           and then Is_Object (Result)
-           and then Present (Renamed_Object (Result))
-         loop
-            Result := Get_Enclosing_Object (Renamed_Object (Result));
-         end loop;
+         case Ekind (E) is
+            --  For subprograms we just need to check once if they are have a
+            --  Renamed_Entity, because Renamed_Entity is set transitively.
 
-         return Result;
+            when Subprogram_Kind =>
+               declare
+                  Renamed : constant Entity_Id := Renamed_Entity (E);
+
+               begin
+                  if Present (Renamed) then
+                     return Renamed;
+                  else
+                     return E;
+                  end if;
+               end;
+
+            --  For objects we need to repeatedly call Renamed_Object, because
+            --  it is not transitive.
+
+            when Object_Kind =>
+               declare
+                  Obj : Entity_Id := E;
+
+               begin
+                  loop
+                     pragma Assert (Present (Obj));
+
+                     declare
+                        Renamed : constant Entity_Id := Renamed_Object (Obj);
+                     begin
+                        if Present (Renamed) then
+                           Obj := Get_Enclosing_Object (Renamed);
+
+                           --  The renamed expression denotes a non-object,
+                           --  e.g. function call, slicing of a function call,
+                           --  pointer dereference, etc.
+                           if No (Obj) then
+                              return Empty;
+                           end if;
+                        else
+                           return Obj;
+                        end if;
+                     end;
+                  end loop;
+               end;
+
+            when others =>
+               return E;
+
+         end case;
       end Get_Through_Renamings;
 
       ---------------

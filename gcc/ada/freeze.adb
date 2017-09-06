@@ -5266,8 +5266,12 @@ package body Freeze is
       --  pragma or attribute definition clause in the tree at this point. We
       --  also analyze the aspect specification node at the freeze point when
       --  the aspect doesn't correspond to pragma/attribute definition clause.
+      --  In addition, a derived type may have inherited aspects that were
+      --  delayed in the parent, so these must also be captured now.
 
-      if Has_Delayed_Aspects (E) then
+      if Has_Delayed_Aspects (E)
+         or else May_Inherit_Delayed_Rep_Aspects (E)
+      then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
