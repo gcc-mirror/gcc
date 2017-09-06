@@ -1,5 +1,11 @@
 2017-09-06  Richard Biener  <rguenther@suse.de>
 
+	* gimple-ssa-strength-reduction.c
+	(find_candidates_dom_walker::before_dom_children): Also allow
+	pointer types.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82108
 	* tree-vect-stmts.c (vectorizable_load): Fix pointer adjustment
 	for gap in the non-permutation SLP case.
