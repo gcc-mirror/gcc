@@ -1670,17 +1670,17 @@ package body Sem_Warn is
             end if;
          end if;
 
-         --  Recurse into a nested package or non-internal block, but do not
-         --  recurse into a formal package because the corresponding body is
-         --  not analyzed.
+         --  Recurse into nested package or block. Do not recurse into a formal
+         --  package, because the corresponding body is not analyzed.
 
          <<Continue>>
             if (Is_Package_Or_Generic_Package (E1)
                  and then Nkind (Parent (E1)) = N_Package_Specification
                  and then
                    Nkind (Original_Node (Unit_Declaration_Node (E1))) /=
-                                          N_Formal_Package_Declaration)
-              or else (Ekind (E1) = E_Block and then not Is_Internal (E1))
+                                                N_Formal_Package_Declaration)
+
+              or else Ekind (E1) = E_Block
             then
                Check_References (E1);
             end if;

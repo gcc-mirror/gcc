@@ -1111,10 +1111,7 @@ package body Sem_Ch5 is
             end loop;
          end if;
 
-         if Comes_From_Source (Ent) then
-            Check_References (Ent);
-         end if;
-
+         Check_References (Ent);
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then
@@ -1905,8 +1902,8 @@ package body Sem_Ch5 is
 
       Preanalyze_Range (Iter_Name);
 
-      --  Set the kind of the loop variable, which is not visible within
-      --  the iterator name.
+      --  Set the kind of the loop variable, which is not visible within the
+      --  iterator name.
 
       Set_Ekind (Def_Id, E_Variable);
 

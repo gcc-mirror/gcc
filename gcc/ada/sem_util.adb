@@ -22116,7 +22116,7 @@ package body Sem_Util is
                      Prot_Type := Scope (E);
 
                   --  Bodies of entry families are nested within an extra scope
-                  --  that contains an entry index declaration
+                  --  that contains an entry index declaration.
 
                   else
                      Prot_Type := Scope (Scope (E));

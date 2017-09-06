@@ -1,3 +1,51 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Check_Postcondition_Use_In_Inlined_Subprogram):
+	Do not warn on conditions that are not obeyed for Inline_Always
+	subprograms, when assertions are not enabled.
+
+2017-09-06  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Unique_Entity): For abstract states return their
+	non-limited view.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch12.adb (Copy_Generic_Node): When we copy a node
+	that is a proper body corresponding to a stub, we defer the
+	adjustment of the sloc until after the correct adjustment has
+	been computed. Otherwise, Adjust_Instantiation_Sloc will ignore
+	the adjustment, because it will be outside the range in (the old,
+	incorrect) S_Adjustment.
+	* inline.adb: Use named notation for readability and uniformity.
+	* sinput-l.adb: Minor improvements to debugging output printed
+	for Debug_Flag_L.
+	* sinput-l.ads (Create_Instantiation_Source): Minor comment
+	correction.
+
+2017-09-06  Vincent Celier  <celier@adacore.com>
+
+	* make.adb: Do not invoke gprbuild for -bargs -P.
+
+2017-09-06  Sylvain Dailler  <dailler@adacore.com>
+
+	* sem_eval.adb (Compile_Time_Known_Value_Or_Aggr): Adding a
+	case when Op is of kind N_Qualified_Expression. In this case,
+	the function is called recursively on the subexpression like in
+	other cases.
+	* make.adb: Minor reformatting
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* einfo.adb (Set_Linker_Section_Pragma): Modify
+	Set_Linker_Section_Pragma to be consistant with the "getter"
+	Linker_Section_Pragma.
+	* exp_ch5.adb (Expand_Formal_Container_Loop): Add proper error
+	checking for container loops so that the index cursor is not
+	directly changable by the user with the use of E_Loop_Parameter.
+	* sem_ch5.adb (Analyze_Block_Statement): Revert previous change.
+	* sem_warn.adb (Check_References): Revert previous change.
+
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
         * gcc-interface/trans.c (gnat_to_gnu) <N_Selected_Component>: Try

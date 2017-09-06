@@ -3746,6 +3746,10 @@ package body Make is
          Success       : Boolean;
          Target        : String_Access := null;
 
+         In_Gnatmake_Switches : Boolean := True;
+         --  Set to False after -cargs, -bargs, or -largs, to avoid detecting
+         --  -P switches that are not for gnatmake.
+
       begin
          Find_Program_Name;
 
@@ -3761,7 +3765,14 @@ package body Make is
                declare
                   Arg : constant String := Argument (J);
                begin
-                  if Arg'Length >= 2
+                  if Arg = "-cargs" or Arg = "-bargs" or Arg = "-largs" then
+                     In_Gnatmake_Switches := False;
+
+                  elsif Arg = "-margs" then
+                     In_Gnatmake_Switches := True;
+
+                  elsif In_Gnatmake_Switches
+                    and then Arg'Length >= 2
                     and then Arg (Arg'First .. Arg'First + 1) = "-P"
                   then
                      Call_Gprbuild := True;

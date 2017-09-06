@@ -197,8 +197,9 @@ package body Sem_Prag is
      (Prag    : Node_Id;
       Spec_Id : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
-   --  Precondition, Refined_Post and Test_Case. Emit a warning when pragma
-   --  Prag is associated with subprogram Spec_Id subject to Inline_Always.
+   --  Precondition, Refined_Post, and Test_Case. Emit a warning when pragma
+   --  Prag is associated with subprogram Spec_Id subject to Inline_Always,
+   --  and assertions are enabled.
 
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
@@ -27996,6 +27997,7 @@ package body Sem_Prag is
    begin
       if Warn_On_Redundant_Constructs
         and then Has_Pragma_Inline_Always (Spec_Id)
+        and then Assertions_Enabled
       then
          Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Prag);
 

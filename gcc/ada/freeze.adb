@@ -1418,7 +1418,8 @@ package body Freeze is
          New_Prag : Node_Id;
 
       begin
-         A_Pre := Get_Classwide_Pragma (Par_Prim, Pragma_Precondition);
+         A_Pre := Get_Class_Wide_Pragma (Par_Prim, Pragma_Precondition);
+
          if Present (A_Pre) then
             New_Prag := New_Copy_Tree (A_Pre);
             Build_Class_Wide_Expression
@@ -1436,7 +1437,7 @@ package body Freeze is
             end if;
          end if;
 
-         A_Post := Get_Classwide_Pragma (Par_Prim, Pragma_Postcondition);
+         A_Post := Get_Class_Wide_Pragma (Par_Prim, Pragma_Postcondition);
 
          if Present (A_Post) then
             New_Prag := New_Copy_Tree (A_Post);

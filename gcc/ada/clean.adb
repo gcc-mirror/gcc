@@ -30,7 +30,6 @@ with Namet;     use Namet;
 with Opt;       use Opt;
 with Osint;     use Osint;
 with Osint.M;   use Osint.M;
---  with Sdefault;
 with Snames;
 with Stringt;
 with Switch;   use Switch;
@@ -48,8 +47,8 @@ with GNAT.OS_Lib;               use GNAT.OS_Lib;
 package body Clean is
 
    Initialized : Boolean := False;
-   --  Set to True by the first call to Initialize to avoid reinitialization
-   --  of some packages.
+   --  Set to True by the first call to Initialize to avoid reinitialization of
+   --  some packages.
 
    --  Suffixes of various files
 

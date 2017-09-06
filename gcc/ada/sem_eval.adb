@@ -1828,6 +1828,9 @@ package body Sem_Eval is
 
             return True;
 
+         elsif Nkind (Op) = N_Qualified_Expression then
+            return Compile_Time_Known_Value_Or_Aggr (Expression (Op));
+
          --  All other types of values are not known at compile time
 
          else
