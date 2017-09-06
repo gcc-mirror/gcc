@@ -17059,8 +17059,8 @@ package body Sem_Util is
       Formal : Entity_Id;
 
    begin
-      --  Ada 2005 or later, and formals present. The first formal must
-      --  be of  type that supports prefix notation: a controlling argument,
+      --  Ada 2005 or later, and formals present. The first formal must be
+      --  of a type that supports prefix notation: a controlling argument,
       --  a class-wide type, or an access to such.
 
       if Ada_Version >= Ada_2005

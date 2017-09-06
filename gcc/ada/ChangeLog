@@ -1,3 +1,11 @@
+2017-09-06  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_util.adb: Minor reformatting.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* a-comlin.ads (Argument): Add precondition for analysis.
+
 2017-09-06  Yannick Moy  <moy@adacore.com>
 
 	* sem_res.adb (Resolve): Update message for function call as statement.
