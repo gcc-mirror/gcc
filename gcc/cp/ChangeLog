@@ -1,5 +1,8 @@
 2017-09-06  Nathan Sidwell  <nathan@acm.org>
 
+	* class.c (warn_hidden): Don't barf on non-functions.
+	* decl2.c (check_classfn): Likewise.  Check template match earlier.
+
 	* name-lookup.c (count_fields): Rename to ...
 	(count_class_fields): ... here.  Take a class, don't count
 	NULL-named fields.
