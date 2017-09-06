@@ -1113,79 +1113,54 @@ extract_conversion_operator (tree fns, tree type)
   return convs;
 }
 
-/* TYPE is a class type. Return the member functions in the method
-   vector with name NAME.  Does not lazily declare implicitly-declared
-   member functions.  */
+/* Binary search of (ordered) METHOD_VEC for NAME.  */
 
-tree
-get_class_binding_direct (tree type, tree name)
+static tree
+method_vec_binary_search (vec<tree, va_gc> *method_vec, tree name)
 {
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
-    return NULL_TREE;
-
-  /* Conversion operators can only be found by the marker conversion
-     operator name.  */
-  bool conv_op = IDENTIFIER_CONV_OP_P (name);
-  tree lookup = conv_op ? conv_op_identifier : name;
-  tree val = NULL_TREE;
-  tree fns;
-
-  /* If the type is complete, use binary search.  */
-  if (COMPLETE_TYPE_P (type))
+  for (unsigned lo = 0, hi = method_vec->length (); lo < hi;)
     {
-      int lo = 0;
-      int hi = method_vec->length ();
-      while (lo < hi)
-	{
-	  int i = (lo + hi) / 2;
+      unsigned mid = (lo + hi) / 2;
+      tree binding = (*method_vec)[mid];
+      tree binding_name = OVL_NAME (binding);
 
-	  fns = (*method_vec)[i];
-	  tree fn_name = OVL_NAME (fns);
-	  if (fn_name > lookup)
-	    hi = i;
-	  else if (fn_name < lookup)
-	    lo = i + 1;
-	  else
-	    {
-	      val = fns;
-	      break;
-	    }
-	}
-    }
-  else
-    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
-      /* We can get a NULL binding during insertion of a new
-	 method name, because the identifier_binding machinery
-	 performs a lookup.  If we find such a NULL slot, that's
-	 the thing we were looking for, so we might as well bail
-	 out immediately.  */
-      if (!fns)
-	break;
-      else if (OVL_NAME (fns) == lookup)
-	{
-	  val = fns;
-	  break;
-	}
-
-  /* Extract the conversion operators asked for, unless the general
-     conversion operator was requested.   */
-  if (val && conv_op)
-    {
-      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
-      val = OVL_CHAIN (val);
-      if (tree type = TREE_TYPE (name))
-	val = extract_conversion_operator (val, type);
+      if (binding_name > name)
+	hi = mid;
+      else if (binding_name < name)
+	lo = mid + 1;
+      else
+	return binding;
     }
 
-  return val;
+  return NULL_TREE;
+}
+
+/* Linear search of (unordered) METHOD_VEC for NAME.  */
+
+static tree
+method_vec_linear_search (vec<tree, va_gc> *method_vec, tree name)
+{
+  for (int ix = method_vec->length (); ix--;)
+    /* We can get a NULL binding during insertion of a new method
+       name, because the identifier_binding machinery performs a
+       lookup.  If we find such a NULL slot, that's the thing we were
+       looking for, so we might as well bail out immediately.  */
+    if (tree binding = (*method_vec)[ix])
+      {
+	if (OVL_NAME (binding) == name)
+	  return binding;
+      }
+    else
+      break;
+
+  return NULL_TREE;
 }
 
 /* Do a 1-level search for NAME as a member of TYPE.  The caller must
    figure out whether it can access this field.  (Since it is only one
    level, this is reasonable.)  */
 
-tree
+static tree
 lookup_field_1 (tree type, tree name, bool want_type)
 {
   tree field;
@@ -1281,11 +1256,62 @@ lookup_field_1 (tree type, tree name, bool want_type)
   return NULL_TREE;
 }
 
-/* TYPE is a class type. Return the overloads in
-   the method vector with name NAME.  Lazily create ctors etc.  */
+/* Look for NAME as an immediate member of KLASS (including
+   anon-members or unscoped enum member).  TYPE_OR_FNS is zero for
+   regular search.  >0 to get a type binding (if there is one) and <0
+   if you want (just) the member function binding.
+
+   Use this if you do not want lazy member creation.  */
 
 tree
-get_class_binding (tree type, tree name)
+get_class_binding_direct (tree klass, tree name, int type_or_fns)
+{
+  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
+
+  /* Conversion operators can only be found by the marker conversion
+     operator name.  */
+  bool conv_op = IDENTIFIER_CONV_OP_P (name);
+  tree lookup = conv_op ? conv_op_identifier : name;
+  tree val = NULL_TREE;
+
+  if (type_or_fns > 0)
+    /* User wants type.  Don't look in method_vec.  */;
+  else if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (klass))
+    {
+      if (COMPLETE_TYPE_P (klass))
+	val = method_vec_binary_search (method_vec, lookup);
+      else
+	val = method_vec_linear_search (method_vec, lookup);
+    }
+
+  if (type_or_fns < 0)
+    /* User wants functions.  Don't look for a field. */;
+  else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
+    /* Dependent using declarations are a 'field', make sure we
+       return that even if we saw an overload already.  */
+    if (tree field_val = lookup_field_1 (klass, lookup, type_or_fns > 0))
+      if (!val || TREE_CODE (field_val) == USING_DECL)
+	val = field_val;
+
+  /* Extract the conversion operators asked for, unless the general
+     conversion operator was requested.   */
+  if (val && conv_op)
+    {
+      gcc_checking_assert (OVL_FUNCTION (val) == conv_op_marker);
+      val = OVL_CHAIN (val);
+      if (tree type = TREE_TYPE (name))
+	val = extract_conversion_operator (val, type);
+    }
+
+  return val;
+}
+
+/* Look for NAME's binding in exactly KLASS.  See
+   get_class_binding_direct for argument description.  Does lazy
+   special function creation as necessary.  */
+
+tree
+get_class_binding (tree type, tree name, int type_or_fns)
 {
   type = complete_type (type);
 
@@ -1314,7 +1340,7 @@ get_class_binding (tree type, tree name)
 	}
     }
 
-  return get_class_binding_direct (type, name);
+  return get_class_binding_direct (type, name, type_or_fns);
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
