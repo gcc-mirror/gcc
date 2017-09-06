@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1996-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1996-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -23,33 +23,18 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;
 with Gnatvsn;
-with Makeutl;  use Makeutl;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
-with Prj;      use Prj;
-with Prj.Env;
-with Prj.Ext;  use Prj.Ext;
-with Prj.Pars;
-with Prj.Tree; use Prj.Tree;
-with Prj.Util; use Prj.Util;
-with Sdefault;
-with Sinput.P;
-with Snames;   use Snames;
-with Stringt;
 with Switch;   use Switch;
 with Table;
-with Tempdir;
-with Types;    use Types;
 
 with Ada.Characters.Handling; use Ada.Characters.Handling;
 with Ada.Command_Line;        use Ada.Command_Line;
 with Ada.Text_IO;             use Ada.Text_IO;
 
-with GNAT.Directory_Operations; use GNAT.Directory_Operations;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 procedure GNATCmd is
@@ -96,25 +81,6 @@ procedure GNATCmd is
       Prep  => Preprocess,
       Pp    => Pretty);
    --  Mapping of alternate commands to commands
-
-   Call_GPR_Tool : Boolean := False;
-   --  True when a GPR tool should be called, if available
-
-   Project_Node_Tree : Project_Node_Tree_Ref;
-   Project_File      : String_Access;
-   Project           : Prj.Project_Id;
-   Current_Verbosity : Prj.Verbosity := Prj.Default;
-   Tool_Package_Name : Name_Id       := No_Name;
-
-   Project_Tree : constant Project_Tree_Ref :=
-                    new Project_Tree_Data (Is_Root_Tree => True);
-   --  The project tree
-
-   All_Projects : Boolean := False;
-
-   Temp_File_Name : Path_Name_Type := No_Path;
-   --  The name of the temporary text file to put a list of source/object
-   --  files to pass to a tool.
 
    package First_Switches is new Table.Table
      (Table_Component_Type => String_Access,
@@ -256,177 +222,15 @@ procedure GNATCmd is
          Unixsws  => null)
      );
 
-   subtype SA is String_Access;
-
-   Naming_String      : constant SA := new String'("naming");
-   Gnatls_String      : constant SA := new String'("gnatls");
-
-   Packages_To_Check_By_Gnatls    : constant String_List_Access :=
-     new String_List'((Naming_String, Gnatls_String));
-
-   Packages_To_Check : String_List_Access := Prj.All_Packages;
-
    -----------------------
    -- Local Subprograms --
    -----------------------
-
-   procedure Check_Files;
-   --  For GNAT LIST -V, check if a project file is specified, without any file
-   --  arguments and without a switch -files=. If it is the case, invoke the
-   --  GNAT tool with the proper list of files, derived from the sources of
-   --  the project.
 
    procedure Output_Version;
    --  Output the version of this program
 
    procedure Usage;
    --  Display usage
-
-   -----------------
-   -- Check_Files --
-   -----------------
-
-   procedure Check_Files is
-      Add_Sources : Boolean := True;
-      Unit        : Prj.Unit_Index;
-      Subunit     : Boolean := False;
-      FD          : File_Descriptor := Invalid_FD;
-      Status      : Integer;
-      Success     : Boolean;
-
-      procedure Add_To_Response_File
-        (File_Name  : String;
-         Check_File : Boolean := True);
-      --  Include the file name passed as parameter in the response file for
-      --  the tool being called. If the response file can not be written then
-      --  the file name is passed in the parameter list of the tool. If the
-      --  Check_File parameter is True then the procedure verifies the
-      --  existence of the file before adding it to the response file.
-
-      --------------------------
-      -- Add_To_Response_File --
-      --------------------------
-
-      procedure Add_To_Response_File
-        (File_Name  : String;
-         Check_File : Boolean := True)
-      is
-      begin
-         Name_Len := 0;
-
-         Add_Str_To_Name_Buffer (File_Name);
-
-         if not Check_File or else
-           Is_Regular_File (Name_Buffer (1 .. Name_Len))
-         then
-            if FD /= Invalid_FD then
-               Name_Len := Name_Len + 1;
-               Name_Buffer (Name_Len) := ASCII.LF;
-
-               Status := Write (FD, Name_Buffer (1)'Address, Name_Len);
-
-               if Status /= Name_Len then
-                  Osint.Fail ("disk full");
-               end if;
-            else
-               Last_Switches.Increment_Last;
-               Last_Switches.Table (Last_Switches.Last) :=
-                 new String'(File_Name);
-            end if;
-         end if;
-      end Add_To_Response_File;
-
-   --  Start of processing for Check_Files
-
-   begin
-      --  Check if there is at least one argument that is not a switch
-
-      for Index in 1 .. Last_Switches.Last loop
-         if Last_Switches.Table (Index) (1) /= '-'
-           or else (Last_Switches.Table (Index).all'Length > 7
-                     and then Last_Switches.Table (Index) (1 .. 7) = "-files=")
-         then
-            Add_Sources := False;
-            exit;
-         end if;
-      end loop;
-
-      --  If all arguments are switches and there is no switch -files=, add the
-      --  path names of all the sources of the main project.
-
-      if Add_Sources then
-         Tempdir.Create_Temp_File (FD, Temp_File_Name);
-         Record_Temp_File (Project_Tree.Shared, Temp_File_Name);
-         Last_Switches.Increment_Last;
-         Last_Switches.Table (Last_Switches.Last) :=
-           new String'("-files=" & Get_Name_String (Temp_File_Name));
-
-         Unit := Units_Htable.Get_First (Project_Tree.Units_HT);
-         while Unit /= No_Unit_Index loop
-
-            --  We only need to put the library units, body or spec, but not
-            --  the subunits.
-
-            if Unit.File_Names (Impl) /= null
-              and then not Unit.File_Names (Impl).Locally_Removed
-            then
-               --  There is a body, check if it is for this project
-
-               if All_Projects
-                 or else Unit.File_Names (Impl).Project = Project
-               then
-                  Subunit := False;
-
-                  if Unit.File_Names (Spec) = null
-                    or else Unit.File_Names (Spec).Locally_Removed
-                  then
-                     --  We have a body with no spec: we need to check if
-                     --  this is a subunit, because gnatls will complain
-                     --  about subunits.
-
-                     declare
-                        Src_Ind : constant Source_File_Index :=
-                                    Sinput.P.Load_Project_File
-                                      (Get_Name_String
-                                         (Unit.File_Names (Impl).Path.Name));
-                     begin
-                        Subunit := Sinput.P.Source_File_Is_Subunit (Src_Ind);
-                     end;
-                  end if;
-
-                  if not Subunit then
-                     Add_To_Response_File
-                       (Get_Name_String (Unit.File_Names (Impl).Display_File),
-                        Check_File => False);
-                  end if;
-               end if;
-
-            elsif Unit.File_Names (Spec) /= null
-              and then not Unit.File_Names (Spec).Locally_Removed
-            then
-               --  We have a spec with no body. Check if it is for this project
-
-               if All_Projects
-                 or else Unit.File_Names (Spec).Project = Project
-               then
-                  Add_To_Response_File
-                    (Get_Name_String (Unit.File_Names (Spec).Display_File),
-                     Check_File => False);
-               end if;
-            end if;
-
-            Unit := Units_Htable.Get_Next (Project_Tree.Units_HT);
-         end loop;
-
-         if FD /= Invalid_FD then
-            Close (FD, Success);
-
-            if not Success then
-               Osint.Fail ("disk full");
-            end if;
-         end if;
-      end if;
-   end Check_Files;
 
    --------------------
    -- Output_Version --
@@ -484,17 +288,6 @@ begin
    Set_Standard_Error;
 
    --  Initializations
-
-   Csets.Initialize;
-   Snames.Initialize;
-   Stringt.Initialize;
-
-   Prj.Tree.Initialize (Root_Environment, Gnatmake_Flags);
-
-   Project_Node_Tree := new Project_Node_Tree_Data;
-   Prj.Tree.Initialize (Project_Node_Tree);
-
-   Prj.Initialize (Project_Tree);
 
    Last_Switches.Init;
    Last_Switches.Set_Last (0);
@@ -679,23 +472,17 @@ begin
            or else The_Command = List
          then
             declare
-               Switch            : String_Access;
-               Dash_V_Switch     : constant String := "-V";
-
+               Switch        : String_Access;
+               Call_GPR_Tool : Boolean := False;
             begin
                for J in 1 .. Last_Switches.Last loop
                   Switch := Last_Switches.Table (J);
-
-                  if The_Command = List and then Switch.all = Dash_V_Switch
-                  then
-                     Call_GPR_Tool := False;
-                     exit;
-                  end if;
 
                   if Switch'Length >= 2
                     and then Switch (Switch'First .. Switch'First + 1) = "-P"
                   then
                      Call_GPR_Tool := True;
+                     exit;
                   end if;
                end loop;
 
@@ -806,390 +593,6 @@ begin
          end;
       end if;
 
-      if The_Command = List and then not Call_GPR_Tool then
-         Tool_Package_Name := Name_Gnatls;
-         Packages_To_Check := Packages_To_Check_By_Gnatls;
-
-         --  Check that the switches are consistent. Detect project file
-         --  related switches.
-
-         Inspect_Switches : declare
-            Arg_Num : Positive := 1;
-            Argv    : String_Access;
-
-            procedure Remove_Switch (Num : Positive);
-            --  Remove a project related switch from table Last_Switches
-
-            -------------------
-            -- Remove_Switch --
-            -------------------
-
-            procedure Remove_Switch (Num : Positive) is
-            begin
-               Last_Switches.Table (Num .. Last_Switches.Last - 1) :=
-                 Last_Switches.Table (Num + 1 .. Last_Switches.Last);
-               Last_Switches.Decrement_Last;
-            end Remove_Switch;
-
-         --  Start of processing for Inspect_Switches
-
-         begin
-            while Arg_Num <= Last_Switches.Last loop
-               Argv := Last_Switches.Table (Arg_Num);
-
-               if Argv (Argv'First) = '-' then
-                  if Argv'Length = 1 then
-                     Fail ("switch character cannot be followed by a blank");
-                  end if;
-
-                  --  --subdirs=... Specify Subdirs
-
-                  if Argv'Length > Makeutl.Subdirs_Option'Length
-                    and then
-                      Argv
-                       (Argv'First ..
-                        Argv'First + Makeutl.Subdirs_Option'Length - 1) =
-                                                        Makeutl.Subdirs_Option
-                  then
-                     Subdirs :=
-                       new String'
-                         (Argv (Argv'First + Makeutl.Subdirs_Option'Length ..
-                                Argv'Last));
-
-                     Remove_Switch (Arg_Num);
-
-                  --  -aPdir  Add dir to the project search path
-
-                  elsif Argv'Length > 3
-                    and then Argv (Argv'First + 1 .. Argv'First + 2) = "aP"
-                  then
-                     Prj.Env.Add_Directories
-                       (Root_Environment.Project_Path,
-                        Argv (Argv'First + 3 .. Argv'Last));
-
-                     --  Pass -aPdir to gnatls, but not to other tools
-
-                     if The_Command = List then
-                        Arg_Num := Arg_Num + 1;
-                     else
-                        Remove_Switch (Arg_Num);
-                     end if;
-
-                  --  -eL  Follow links for files
-
-                  elsif Argv.all = "-eL" then
-                     Follow_Links_For_Files := True;
-                     Follow_Links_For_Dirs  := True;
-
-                     Remove_Switch (Arg_Num);
-
-                  --  -vPx  Specify verbosity while parsing project files
-
-                  elsif Argv'Length >= 3
-                    and then  Argv (Argv'First + 1 .. Argv'First + 2) = "vP"
-                  then
-                     if Argv'Length = 4
-                       and then Argv (Argv'Last) in '0' .. '2'
-                     then
-                        case Argv (Argv'Last) is
-                           when '0' =>
-                              Current_Verbosity := Prj.Default;
-                           when '1' =>
-                              Current_Verbosity := Prj.Medium;
-                           when '2' =>
-                              Current_Verbosity := Prj.High;
-                           when others =>
-
-                              --  Cannot happen
-
-                              raise Program_Error;
-                        end case;
-                     else
-                        Fail ("invalid verbosity level: "
-                              & Argv (Argv'First + 3 .. Argv'Last));
-                     end if;
-
-                     Remove_Switch (Arg_Num);
-
-                  --  -Pproject_file  Specify project file to be used
-
-                  elsif Argv (Argv'First + 1) = 'P' then
-
-                     --  Only one -P switch can be used
-
-                     if Project_File /= null then
-                        Fail
-                          (Argv.all
-                           & ": second project file forbidden (first is """
-                           & Project_File.all & """)");
-
-                     elsif Argv'Length = 2 then
-
-                        --  There is space between -P and the project file
-                        --  name. -P cannot be the last option.
-
-                        if Arg_Num = Last_Switches.Last then
-                           Fail ("project file name missing after -P");
-
-                        else
-                           Remove_Switch (Arg_Num);
-                           Argv := Last_Switches.Table (Arg_Num);
-
-                           --  After -P, there must be a project file name,
-                           --  not another switch.
-
-                           if Argv (Argv'First) = '-' then
-                              Fail ("project file name missing after -P");
-
-                           else
-                              Project_File := new String'(Argv.all);
-                           end if;
-                        end if;
-
-                     else
-                        --  No space between -P and project file name
-
-                        Project_File :=
-                          new String'(Argv (Argv'First + 2 .. Argv'Last));
-                     end if;
-
-                     Remove_Switch (Arg_Num);
-
-                  --  -Xexternal=value Specify an external reference to be
-                  --                   used in project files
-
-                  elsif Argv'Length >= 5
-                    and then Argv (Argv'First + 1) = 'X'
-                  then
-                     if not Check (Root_Environment.External,
-                                    Argv (Argv'First + 2 .. Argv'Last))
-                     then
-                        Fail
-                          (Argv.all & " is not a valid external assignment.");
-                     end if;
-
-                     Remove_Switch (Arg_Num);
-
-                  --  --unchecked-shared-lib-imports
-
-                  elsif Argv.all = "--unchecked-shared-lib-imports" then
-                     Opt.Unchecked_Shared_Lib_Imports := True;
-                     Remove_Switch (Arg_Num);
-
-                  --  gnat list -U
-
-                  elsif
-                    The_Command = List
-                    and then Argv'Length = 2
-                    and then Argv (2) = 'U'
-                  then
-                     All_Projects := True;
-                     Remove_Switch (Arg_Num);
-
-                  else
-                     Arg_Num := Arg_Num + 1;
-                  end if;
-
-               else
-                  Arg_Num := Arg_Num + 1;
-               end if;
-            end loop;
-         end Inspect_Switches;
-      end if;
-
-      --  Add the default project search directories now, after the directories
-      --  that have been specified by switches -aP<dir>.
-
-      Prj.Env.Initialize_Default_Project_Path
-        (Root_Environment.Project_Path,
-         Target_Name => Sdefault.Target_Name.all);
-
-      --  If there is a project file specified, parse it, get the switches
-      --  for the tool and setup PATH environment variables.
-
-      if Project_File /= null then
-         Prj.Pars.Set_Verbosity (To => Current_Verbosity);
-
-         Prj.Pars.Parse
-           (Project           => Project,
-            In_Tree           => Project_Tree,
-            In_Node_Tree      => Project_Node_Tree,
-            Project_File_Name => Project_File.all,
-            Env               => Root_Environment,
-            Packages_To_Check => Packages_To_Check);
-
-         --  Prj.Pars.Parse calls Set_Standard_Output, reset to stderr
-
-         Set_Standard_Error;
-
-         if Project = Prj.No_Project then
-            Fail ("""" & Project_File.all & """ processing failed");
-
-         elsif Project.Qualifier = Aggregate then
-            Fail ("aggregate projects are not supported");
-
-         elsif Aggregate_Libraries_In (Project_Tree) then
-            Fail ("aggregate library projects are not supported");
-         end if;
-
-         --  Check if a package with the name of the tool is in the project
-         --  file and if there is one, get the switches, if any, and scan them.
-
-         declare
-            Pkg : constant Prj.Package_Id :=
-                    Prj.Util.Value_Of
-                      (Name        => Tool_Package_Name,
-                       In_Packages => Project.Decl.Packages,
-                       Shared      => Project_Tree.Shared);
-
-            Element : Package_Element;
-
-            Switches_Array : Array_Element_Id;
-
-            The_Switches : Prj.Variable_Value;
-            Current      : Prj.String_List_Id;
-            The_String   : String_Element;
-
-            Main : String_Access := null;
-
-         begin
-            if Pkg /= No_Package then
-               Element := Project_Tree.Shared.Packages.Table (Pkg);
-
-               --  Package Gnatls has a single attribute Switches, that is not
-               --  an associative array.
-
-               if The_Command = List then
-                  The_Switches :=
-                    Prj.Util.Value_Of
-                    (Variable_Name => Snames.Name_Switches,
-                     In_Variables  => Element.Decl.Attributes,
-                     Shared        => Project_Tree.Shared);
-
-               --  Packages Binder (for gnatbind), Cross_Reference (for
-               --  gnatxref), Linker (for gnatlink), Finder (for gnatfind),
-               --  have an attributed Switches, an associative array, indexed
-               --  by the name of the file.
-
-               --  They also have an attribute Default_Switches, indexed by the
-               --  name of the programming language.
-
-               else
-                  --  First check if there is a single main
-
-                  for J in 1 .. Last_Switches.Last loop
-                     if Last_Switches.Table (J) (1) /= '-' then
-                        if Main = null then
-                           Main := Last_Switches.Table (J);
-                        else
-                           Main := null;
-                           exit;
-                        end if;
-                     end if;
-                  end loop;
-
-                  if Main /= null then
-                     Switches_Array :=
-                       Prj.Util.Value_Of
-                         (Name      => Name_Switches,
-                          In_Arrays => Element.Decl.Arrays,
-                          Shared    => Project_Tree.Shared);
-                     Name_Len := 0;
-
-                     --  If the single main has been specified as an absolute
-                     --  path, use only the simple file name. If the absolute
-                     --  path is incorrect, an error will be reported by the
-                     --  underlying tool and it does not make a difference
-                     --  what switches are used.
-
-                     if Is_Absolute_Path (Main.all) then
-                        Add_Str_To_Name_Buffer (File_Name (Main.all));
-                     else
-                        Add_Str_To_Name_Buffer (Main.all);
-                     end if;
-
-                     The_Switches := Prj.Util.Value_Of
-                       (Index     => Name_Find,
-                        Src_Index => 0,
-                        In_Array  => Switches_Array,
-                        Shared    => Project_Tree.Shared);
-                  end if;
-
-                  if The_Switches.Kind = Prj.Undefined then
-                     Switches_Array :=
-                       Prj.Util.Value_Of
-                         (Name      => Name_Default_Switches,
-                          In_Arrays => Element.Decl.Arrays,
-                          Shared    => Project_Tree.Shared);
-                     The_Switches := Prj.Util.Value_Of
-                       (Index     => Name_Ada,
-                        Src_Index => 0,
-                        In_Array  => Switches_Array,
-                        Shared    => Project_Tree.Shared);
-                  end if;
-               end if;
-
-               --  If there are switches specified in the package of the
-               --  project file corresponding to the tool, scan them.
-
-               case The_Switches.Kind is
-                  when Prj.Undefined =>
-                     null;
-
-                  when Prj.Single =>
-                     declare
-                        Switch : constant String :=
-                                   Get_Name_String (The_Switches.Value);
-                     begin
-                        if Switch'Length > 0 then
-                           First_Switches.Increment_Last;
-                           First_Switches.Table (First_Switches.Last) :=
-                             new String'(Switch);
-                        end if;
-                     end;
-
-                  when Prj.List =>
-                     Current := The_Switches.Values;
-                     while Current /= Prj.Nil_String loop
-                        The_String := Project_Tree.Shared.String_Elements.
-                                        Table (Current);
-
-                        declare
-                           Switch : constant String :=
-                                      Get_Name_String (The_String.Value);
-                        begin
-                           if Switch'Length > 0 then
-                              First_Switches.Increment_Last;
-                              First_Switches.Table (First_Switches.Last) :=
-                                new String'(Switch);
-                           end if;
-                        end;
-
-                        Current := The_String.Next;
-                     end loop;
-               end case;
-            end if;
-         end;
-
-         if The_Command = Bind or else The_Command = Link then
-            if Project.Object_Directory.Name = No_Path then
-               Fail ("project " & Get_Name_String (Project.Display_Name)
-                     & " has no object directory");
-            end if;
-
-            Change_Dir (Get_Name_String (Project.Object_Directory.Name));
-         end if;
-
-         --  Set up the env vars for project path files
-
-         Prj.Env.Set_Ada_Paths
-           (Project, Project_Tree, Including_Libraries => True);
-
-         if The_Command = List then
-            Check_Files;
-         end if;
-      end if;
-
       --  Gather all the arguments and invoke the executable
 
       declare
@@ -1219,10 +622,6 @@ begin
          end if;
 
          My_Exit_Status := Exit_Status (Spawn (Exec_Path.all, The_Args));
-
-         if not Keep_Temporary_Files then
-            Delete_All_Temp_Files (Project_Tree.Shared);
-         end if;
 
          Set_Exit_Status (My_Exit_Status);
       end;
