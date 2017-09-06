@@ -5746,7 +5746,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    /* We already reshaped this.  */
 	    gcc_assert (d->cur->index == field);
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
+	    field = get_class_binding (type, d->cur->index, false);
 	  else
 	    {
 	      if (complain & tf_error)
