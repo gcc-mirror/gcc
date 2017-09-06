@@ -3,6 +3,9 @@
 /* { dg-require-effective-target vsx_hw } */
 /* { dg-options "-mvsx -O2" } */
 
+/* This is the same as test float128-1.c, using the _Float128 keyword instead
+   of __float128, and not using -mfloat128.  */
+
 #ifdef DEBUG
 #include <stdio.h>
 #include <stddef.h>
@@ -11,19 +14,19 @@
 #endif
 
 #if !defined(__FLOAT128__) || !defined(_ARCH_PPC)
-static __float128
-pass_through (__float128 x)
+static _Float128
+pass_through (_Float128 x)
 {
   return x;
 }
 
-__float128 (*no_optimize) (__float128) = pass_through;
+_Float128 (*no_optimize) (_Float128) = pass_through;
 #endif
 
 #ifdef DEBUG
 __attribute__((__noinline__))
 static void
-print_f128 (__float128 x)
+print_f128 (_Float128 x)
 {
   unsigned sign;
   unsigned exponent;
@@ -49,7 +52,7 @@ print_f128 (__float128 x)
 #endif
 
   union {
-    __float128 f128;
+    _Float128 f128;
     struct ieee128 s128;
   } u;
 
@@ -72,7 +75,7 @@ print_f128 (__float128 x)
 
 __attribute__((__noinline__))
 static void
-do_test (__float128 expected, __float128 got, const char *name)
+do_test (_Float128 expected, _Float128 got, const char *name)
 {
   int equal_p = (expected == got);
 
@@ -94,21 +97,22 @@ do_test (__float128 expected, __float128 got, const char *name)
 int
 main (void)
 {
-  __float128 one	= 1.0q;
-  __float128 two	= 2.0q;
-  __float128 three	= 3.0q;
-  __float128 four	= 4.0q;
-  __float128 five	= 5.0q;
-  __float128 add_result = (1.0q + 2.0q);
-  __float128 mul_result = ((1.0q + 2.0q) * 3.0q);
-  __float128 div_result = (((1.0q + 2.0q) * 3.0q) / 4.0q);
-  __float128 sub_result = ((((1.0q + 2.0q) * 3.0q) / 4.0q) - 5.0q);
-  __float128 neg_result = - sub_result;
-  __float128 add_xresult;
-  __float128 mul_xresult;
-  __float128 div_xresult;
-  __float128 sub_xresult;
-  __float128 neg_xresult;
+  _Float128 one		= 1.0f128;
+  _Float128 two		= 2.0f128;
+  _Float128 three	= 3.0f128;
+  _Float128 four	= 4.0f128;
+  _Float128 five	= 5.0f128;
+  _Float128 add_result = (1.0f128 + 2.0f128);
+  _Float128 mul_result = ((1.0f128 + 2.0f128) * 3.0f128);
+  _Float128 div_result = (((1.0f128 + 2.0f128) * 3.0f128) / 4.0f128);
+  _Float128 sub_result = ((((1.0f128 + 2.0f128) * 3.0f128) / 4.0f128)
+			  - 5.0f128);
+  _Float128 neg_result = - sub_result;
+  _Float128 add_xresult;
+  _Float128 mul_xresult;
+  _Float128 div_xresult;
+  _Float128 sub_xresult;
+  _Float128 neg_xresult;
 
 #if defined(__FLOAT128__) && defined(_ARCH_PPC)
   __asm__ (" #prevent constant folding, %x0" : "+wa" (one));

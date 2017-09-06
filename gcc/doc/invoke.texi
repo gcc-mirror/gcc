@@ -22014,15 +22014,21 @@ Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
 and use either software emulation for IEEE 128-bit floating point or
 hardware instructions.
 
-The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
-@option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
-option.  The @option{-mfloat128} option only works on PowerPC 64-bit
-Linux systems.
+The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7},
+@option{-mcpu=power8}), or @option{-mcpu=power9} must be enabled to
+use the IEEE 128-bit floating point support.  The IEEE 128-bit
+floating point support only works on PowerPC Linux systems.
 
-If you use the ISA 3.0 instruction set (@option{-mcpu=power9}), the
-@option{-mfloat128} option will also enable the generation of ISA 3.0
-IEEE 128-bit floating point instructions.  Otherwise, IEEE 128-bit
-floating point will be done with software emulation.
+The default for @option{-mfloat128} is enabled on PowerPC Linux
+systems using the VSX instruction set, and disabled on other systems.
+
+If you use the ISA 3.0 instruction set (@option{-mpower9-vector} or
+@option{-mcpu=power9}) on a 64-bit system, the IEEE 128-bit floating
+point support will also enable the generation of ISA 3.0 IEEE 128-bit
+floating point instructions.  Otherwise, if you do not specify to
+generate ISA 3.0 instructions or you are targeting a 32-bit big endian
+system, IEEE 128-bit floating point will be done with software
+emulation.
 
 @item -mfloat128-hardware
 @itemx -mno-float128-hardware
@@ -22031,12 +22037,9 @@ floating point will be done with software emulation.
 Enable/disable using ISA 3.0 hardware instructions to support the
 @var{__float128} data type.
 
-If you use @option{-mfloat128-hardware}, it will enable the option
-@option{-mfloat128} as well.
-
-If you select ISA 3.0 instructions with @option{-mcpu=power9}, but do
-not use either @option{-mfloat128} or @option{-mfloat128-hardware},
-the IEEE 128-bit floating point support will not be enabled.
+The default for @option{-mfloat128-hardware} is enabled on PowerPC
+Linux systems using the ISA 3.0 instruction set, and disabled on other
+systems.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs
