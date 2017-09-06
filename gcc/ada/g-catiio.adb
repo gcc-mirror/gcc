@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 1999-2016, AdaCore                     --
+--                     Copyright (C) 1999-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,6 +92,26 @@ package body GNAT.Calendar.Time_IO is
       Padding : Padding_Mode := Zero;
       Length  : Natural := 0) return String;
    --  As above with N provided in Integer format
+
+   procedure Parse_ISO_8861_UTC
+      (Date    : String;
+       Time    : out Ada.Calendar.Time;
+       Success : out Boolean);
+   --  Subsidiary of function Value. It parses the string Date, interpreted as
+   --  an ISO 8861 time representation, and returns corresponding Time value.
+   --  Success is set to False when the string is not a supported ISO 8861
+   --  date. The following regular expression defines the supported format:
+   --
+   --    (yyyymmdd | yyyy'-'mm'-'dd)'T'(hhmmss | hh':'mm':'ss)
+   --      [ ('Z' | ('.' | ',') s{s} | ('+'|'-')hh':'mm) ]
+   --
+   --  Trailing characters (in particular spaces) are not allowed.
+   --
+   --  Examples:
+   --
+   --    2017-04-14T14:47:06    20170414T14:47:06    20170414T144706
+   --    2017-04-14T14:47:06,12 20170414T14:47:06.12
+   --    2017-04-14T19:47:06+05 20170414T09:00:06-05:47
 
    -----------
    -- Am_Pm --
@@ -531,7 +551,7 @@ package body GNAT.Calendar.Time_IO is
           "JUL", "AUG", "SEP", "OCT", "NOV", "DEC");
       --  Short version of the month names, used when parsing date strings
 
-      S                                                     : String := Str;
+      S : String := Str;
 
    begin
       GNAT.Case_Util.To_Upper (S);
@@ -544,6 +564,390 @@ package body GNAT.Calendar.Time_IO is
 
       return Abbrev_Upper_Month_Names'First;
    end Month_Name_To_Number;
+
+   ------------------------
+   -- Parse_ISO_8861_UTC --
+   ------------------------
+
+   procedure Parse_ISO_8861_UTC
+      (Date    : String;
+       Time    : out Ada.Calendar.Time;
+       Success : out Boolean)
+   is
+      Index                 : Positive := Date'First;
+      --  The current character scan index. After a call to Advance, Index
+      --  points to the next character.
+
+      End_Of_Source_Reached : exception;
+      --  An exception used to signal that the scan pointer has reached the
+      --  end of the source string.
+
+      Wrong_Syntax          : exception;
+      --  An exception used to signal that the scan pointer has reached an
+      --  unexpected character in the source string.
+
+      procedure Advance;
+      pragma Inline (Advance);
+      --  Past the current character of Date
+
+      procedure Advance_Digits (Num_Digits : Positive);
+      pragma Inline (Advance_Digits);
+      --  Past the given number of digit characters
+
+      function Scan_Day return Day_Number;
+      pragma Inline (Scan_Day);
+      --  Scan the two digits of a day number and return its value
+
+      function Scan_Hour return Hour_Number;
+      pragma Inline (Scan_Hour);
+      --  Scan the two digits of an hour number and return its value
+
+      function Scan_Minute return Minute_Number;
+      pragma Inline (Scan_Minute);
+      --  Scan the two digits of a minute number and return its value
+
+      function Scan_Month return Month_Number;
+      pragma Inline (Scan_Month);
+      --  Scan the two digits of a month number and return its value
+
+      function Scan_Second return Second_Number;
+      pragma Inline (Scan_Second);
+      --  Scan the two digits of a second number and return its value
+
+      function Scan_Separator (Expected_Symbol : Character) return Boolean;
+      pragma Inline (Scan_Separator);
+      --  If the current symbol matches the Expected_Symbol then advance the
+      --  scanner index and return True; otherwise do nothing and return False
+
+      procedure Scan_Separator (Required : Boolean; Separator : Character);
+      pragma Inline (Scan_Separator);
+      --  If Required then check that the current character matches Separator
+      --  and advance the scanner index; if not Required then do nothing.
+
+      function Scan_Subsecond return Second_Duration;
+      pragma Inline (Scan_Subsecond);
+      --  Scan all the digits of a subsecond number and return its value
+
+      function Scan_Year return Year_Number;
+      pragma Inline (Scan_Year);
+      --  Scan the four digits of a year number and return its value
+
+      function Symbol return Character;
+      pragma Inline (Symbol);
+      --  Return the current character being scanned
+
+      -------------
+      -- Advance --
+      -------------
+
+      procedure Advance is
+      begin
+         --  Signal the end of the source string. This stops a complex scan by
+         --  bottoming up any recursive calls till control reaches routine Scan
+         --  which handles the exception. Certain scanning scenarios may handle
+         --  this exception on their own.
+
+         if Index > Date'Last then
+            raise End_Of_Source_Reached;
+
+         --  Advance the scan pointer as long as there are characters to scan,
+         --  in other words, the scan pointer has not passed the end of the
+         --  source string.
+
+         else
+            Index := Index + 1;
+         end if;
+      end Advance;
+
+      --------------------
+      -- Advance_Digits --
+      --------------------
+
+      procedure Advance_Digits (Num_Digits : Positive) is
+      begin
+         for J in 1 .. Num_Digits loop
+            if Symbol not in '0' .. '9' then
+               raise Wrong_Syntax;
+            end if;
+
+            Advance; --  past digit
+         end loop;
+      end Advance_Digits;
+
+      --------------
+      -- Scan_Day --
+      --------------
+
+      function Scan_Day return Day_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 2);
+         return Day_Number'Value (Date (From .. Index - 1));
+      end Scan_Day;
+
+      ---------------
+      -- Scan_Hour --
+      ---------------
+
+      function Scan_Hour return Hour_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 2);
+         return Hour_Number'Value (Date (From .. Index - 1));
+      end Scan_Hour;
+
+      -----------------
+      -- Scan_Minute --
+      -----------------
+
+      function Scan_Minute return Minute_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 2);
+         return Minute_Number'Value (Date (From .. Index - 1));
+      end Scan_Minute;
+
+      ----------------
+      -- Scan_Month --
+      ----------------
+
+      function Scan_Month return Month_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 2);
+         return Month_Number'Value (Date (From .. Index - 1));
+      end Scan_Month;
+
+      -----------------
+      -- Scan_Second --
+      -----------------
+
+      function Scan_Second return Second_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 2);
+         return Second_Number'Value (Date (From .. Index - 1));
+      end Scan_Second;
+
+      --------------------
+      -- Scan_Separator --
+      --------------------
+
+      function Scan_Separator (Expected_Symbol : Character) return Boolean is
+      begin
+         if Symbol = Expected_Symbol then
+            Advance;
+            return True;
+         else
+            return False;
+         end if;
+      end Scan_Separator;
+
+      --------------------
+      -- Scan_Separator --
+      --------------------
+
+      procedure Scan_Separator (Required : Boolean; Separator : Character) is
+      begin
+         if Required then
+            if Symbol /= Separator then
+               raise Wrong_Syntax;
+            end if;
+
+            Advance; --  Past the separator
+         end if;
+      end Scan_Separator;
+
+      --------------------
+      -- Scan_Subsecond --
+      --------------------
+
+      function Scan_Subsecond return Second_Duration is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 1);
+
+         while Symbol in '0' .. '9'
+           and then Index < Date'Length
+         loop
+            Advance;
+         end loop;
+
+         if Symbol not in '0' .. '9' then
+            raise Wrong_Syntax;
+         end if;
+
+         Advance;
+         return Second_Duration'Value ("0." & Date (From .. Index - 1));
+      end Scan_Subsecond;
+
+      ---------------
+      -- Scan_Year --
+      ---------------
+
+      function Scan_Year return Year_Number is
+         From : constant Positive := Index;
+      begin
+         Advance_Digits (Num_Digits => 4);
+         return Year_Number'Value (Date (From .. Index - 1));
+      end Scan_Year;
+
+      ------------
+      -- Symbol --
+      ------------
+
+      function Symbol return Character is
+      begin
+         --  Signal the end of the source string. This stops a complex scan by
+         --  bottoming up any recursive calls till control reaches routine Scan
+         --  which handles the exception. Certain scanning scenarios may handle
+         --  this exception on their own.
+
+         if Index > Date'Last then
+            raise End_Of_Source_Reached;
+
+         else
+            return Date (Index);
+         end if;
+      end Symbol;
+
+      --  Local variables
+
+      Date_Separator : constant Character := '-';
+      Hour_Separator : constant Character := ':';
+      Day            : Day_Number;
+      Month          : Month_Number;
+      Year           : Year_Number;
+      Hour           : Hour_Number     := 0;
+      Minute         : Minute_Number   := 0;
+      Second         : Second_Number   := 0;
+      Subsec         : Second_Duration := 0.0;
+
+      Local_Hour     : Hour_Number     := 0;
+      Local_Minute   : Minute_Number   := 0;
+      Local_Sign     : Character       := ' ';
+      Local_Disp     : Duration;
+
+      Sep_Required   : Boolean := False;
+      --  True if a separator is seen (and therefore required after it!)
+
+   begin
+      --  Parse date
+
+      Year := Scan_Year;
+      Sep_Required := Scan_Separator (Date_Separator);
+
+      Month := Scan_Month;
+      Scan_Separator (Sep_Required, Date_Separator);
+
+      Day := Scan_Day;
+
+      if Index < Date'Last and then Symbol = 'T' then
+         Advance;
+
+         --  Parse time
+
+         Hour := Scan_Hour;
+         Sep_Required := Scan_Separator (Hour_Separator);
+
+         Minute := Scan_Minute;
+         Scan_Separator (Sep_Required, Hour_Separator);
+
+         Second := Scan_Second;
+
+         --  [('Z' | ('.' | ',') s{s} | ('+'|'-')hh:mm)]
+
+         if Index <= Date'Last then
+
+            --  Suffix 'Z' just confirms that this is an UTC time. No further
+            --  action needed.
+
+            if Symbol = 'Z' then
+               Advance;
+
+            --  A decimal fraction shall have at least one digit, and has as
+            --  many digits as supported by the underlying implementation.
+            --  The valid decimal separators are those specified in ISO 31-0,
+            --  i.e. the comma [,] or full stop [.]. Of these, the comma is
+            --  the preferred separator of ISO-8861.
+
+            elsif Symbol = ',' or else Symbol = '.' then
+               Advance; --  past decimal separator
+               Subsec := Scan_Subsecond;
+
+            --  Difference between local time and UTC: It shall be expressed
+            --  as positive (i.e. with the leading plus sign [+]) if the local
+            --  time is ahead of or equal to UTC of day and as negative (i.e.
+            --  with the leading minus sign [-]) if it is behind UTC of day.
+            --  The minutes time element of the difference may only be omitted
+            --  if the difference between the time scales is exactly an
+            --  integral number of hours.
+
+            elsif Symbol = '+' or else Symbol = '-' then
+               Local_Sign := Symbol;
+               Advance;
+               Local_Hour := Scan_Hour;
+
+               --  Past ':'
+
+               if Index < Date'Last and then Symbol = Hour_Separator then
+                  Advance;
+                  Local_Minute := Scan_Minute;
+               end if;
+
+               --  Compute local displacement
+
+               Local_Disp := Local_Hour * 3600.0 + Local_Minute * 60.0;
+            else
+               raise Wrong_Syntax;
+            end if;
+         end if;
+      end if;
+
+      --  Sanity checks. The check on Index ensures that there are no trailing
+      --  characters.
+
+      if Index /= Date'Length + 1
+        or else not Year'Valid
+        or else not Month'Valid
+        or else not Day'Valid
+        or else not Hour'Valid
+        or else not Minute'Valid
+        or else not Second'Valid
+        or else not Subsec'Valid
+        or else not Local_Hour'Valid
+        or else not Local_Minute'Valid
+      then
+         raise Wrong_Syntax;
+      end if;
+
+      --  Compute time without local displacement
+
+      if Local_Sign = ' ' then
+         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec);
+
+      --  Compute time with positive local displacement
+
+      elsif Local_Sign = '+' then
+         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec)
+                   - Local_Disp;
+
+      --  Compute time with negative local displacement
+
+      elsif Local_Sign = '-' then
+         Time := Time_Of (Year, Month, Day, Hour, Minute, Second, Subsec)
+                   + Local_Disp;
+      end if;
+
+      --  Notify that the input string was successfully parsed
+
+      Success := True;
+
+   exception
+      when End_Of_Source_Reached |
+           Wrong_Syntax          =>
+         Success := False;
+   end Parse_ISO_8861_UTC;
 
    -----------
    -- Value --
@@ -757,11 +1161,22 @@ package body GNAT.Calendar.Time_IO is
 
       --  Local Declarations
 
+      Success    : Boolean;
       Time_Start : Natural := 1;
+      Time       : Ada.Calendar.Time;
 
    --  Start of processing for Value
 
    begin
+      --  Let's try parsing Date as a supported ISO-8861 format. If we do not
+      --  succeed, then retry using all the other GNAT supported formats.
+
+      Parse_ISO_8861_UTC (Date, Time, Success);
+
+      if Success then
+         return Time;
+      end if;
+
       --  Length checks
 
       if D_Length /= 8

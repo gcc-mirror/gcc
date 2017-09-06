@@ -1,3 +1,50 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb: Update comment.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* einfo.adb, einfo.ads (Is_Subprogram_Or_Entry): New predicate.
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Use new function.
+	* sem_util.adb, sem_util.ads (Within_Protected_Type): Renaming
+	with slight modification from Is_Subp_Or_Entry_Inside_Protected,
+	so that applies to any entity.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Derived_Type_Declaration): Use
+	Incomplete_Or_Partial_View rather than local Find_Partial_View.
+
+2017-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* g-catiio.ads, g-catiio.adb (Value): Extended to parse an UTC time
+	following ISO-8861.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension): In an instance, a type
+	conversion takes its dimensions from the expression, not from
+	the context type.
+	(Dimensions_Of_Operand): Ditto.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Do not optimize calls to
+	null procedures when GNAT coverage is used, so that their (empty)
+	bodies are properly covered.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expressions): If
+	the entity is a type with discriminants, make the discriminants
+	directly visible in aspect clauses.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_res.adb (Resolve_Arithmentic_Op): If both operands are
+	Universal_Real and the context is a floating-point type, resolve
+	both operands to the target type.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* a-comlin.adb, exp_aggr.adb, exp_ch6.adb, frontend.adb, gnatbind.adb,

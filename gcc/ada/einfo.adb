@@ -3764,6 +3764,13 @@ package body Einfo is
       return Ekind (Id) in Subprogram_Kind;
    end Is_Subprogram;
 
+   function Is_Subprogram_Or_Entry              (Id : E) return B is
+   begin
+      return Ekind (Id) in Subprogram_Kind
+               or else
+             Ekind (Id) in Entry_Kind;
+   end Is_Subprogram_Or_Entry;
+
    function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B is
    begin
       return Ekind (Id) in Subprogram_Kind

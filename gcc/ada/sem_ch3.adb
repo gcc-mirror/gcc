@@ -16241,9 +16241,6 @@ package body Sem_Ch3 is
       --  Check whether the parent type is a generic formal, or derives
       --  directly or indirectly from one.
 
-      function Find_Partial_View (T : Entity_Id) return Entity_Id;
-      --  Return the partial view for a type entity T, when there is one
-
       ------------------------
       -- Comes_From_Generic --
       ------------------------
@@ -16270,28 +16267,6 @@ package body Sem_Ch3 is
          end if;
       end Comes_From_Generic;
 
-      -----------------------
-      -- Find_Partial_View --
-      -----------------------
-
-      function Find_Partial_View (T : Entity_Id) return Entity_Id is
-         Partial_View : Entity_Id;
-
-      begin
-         --  Look for the associated private type declaration
-
-         Partial_View := First_Entity (Scope (T));
-         loop
-            exit when No (Partial_View)
-              or else (Has_Private_Declaration (Partial_View)
-                        and then Full_View (Partial_View) = T);
-
-            Next_Entity (Partial_View);
-         end loop;
-
-         return Partial_View;
-      end Find_Partial_View;
-
       --  Local variables
 
       Def          : constant Node_Id := Type_Definition (N);
@@ -16311,14 +16286,15 @@ package body Sem_Ch3 is
       then
          declare
             Partial_View : constant Entity_Id :=
-                             Find_Partial_View (Parent_Type);
+                             Incomplete_Or_Partial_View (Parent_Type);
 
          begin
-            --  If the partial view was not found then the parent type is not a
-            --  private type. Otherwise check that the partial view is declared
-            --  as tagged.
+            --  If the partial view was not found then the parent type is not
+            --  a private type. Otherwise check if the partial view is a tagged
+            --  private type.
 
             if Present (Partial_View)
+              and then Is_Private_Type (Partial_View)
               and then not Is_Tagged_Type (Partial_View)
             then
                Error_Msg_NE
@@ -16515,7 +16491,7 @@ package body Sem_Ch3 is
          begin
             --  Look for the associated private type declaration
 
-            Partial_View := Find_Partial_View (T);
+            Partial_View := Incomplete_Or_Partial_View (T);
 
             --  If the partial view was not found then the source code has
             --  errors and the transformation is not needed.

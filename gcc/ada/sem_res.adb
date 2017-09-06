@@ -5455,6 +5455,13 @@ package body Sem_Res is
             Resolve (L, B_Typ);
             Resolve (R, TR);
 
+         --  If both operands are universal and the context is a floating
+         --  point type, the operands are resolved to the type of the context.
+
+         elsif Is_Floating_Point_Type (B_Typ) then
+            Resolve (L, B_Typ);
+            Resolve (R, B_Typ);
+
          else
             Set_Mixed_Mode_Operand (L, TR);
             Set_Mixed_Mode_Operand (R, TL);
