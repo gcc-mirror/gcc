@@ -15985,8 +15985,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl,
 	else if (is_capture_proxy (decl)
 		 && !DECL_TEMPLATE_INSTANTIATION (current_function_decl))
 	  {
-	    /* We're in tsubst_lambda_expr, we've already inserted new capture
-	       proxies, and uses will find them with lookup_name.  */
+	    /* We're in tsubst_lambda_expr, we've already inserted a new
+	       capture proxy, so look it up and register it.  */
+	    tree inst = lookup_name (DECL_NAME (decl));
+	    gcc_assert (inst != decl && is_capture_proxy (inst));
+	    register_local_specialization (inst, decl);
 	    break;
 	  }
 	else if (DECL_IMPLICIT_TYPEDEF_P (decl)
