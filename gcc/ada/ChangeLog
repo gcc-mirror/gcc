@@ -1,3 +1,8 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/decl.c (warn_on_field_placement): Issue the warning
+	only if the record type itself comes from source.
+
 2017-09-06  Gary Dismukes  <dismukes@adacore.com>
 
 	* sem_ch5.adb: Minor reformatting and a typo fix
@@ -62,8 +67,7 @@
 	every component whose RM_Size is statically known.  Add missing
 	guard to check that bit packing is really required before issuing
 	the error about packing.  Swap condition for clarity's sake.
-	* sem_prag.adb (Usage_Error): fix reference to
-	SPARK RM in comment
+	* sem_prag.adb (Usage_Error): Fix reference to SPARK RM in comment.
 
 2017-09-06  Fedor Rybin  <frybin@adacore.com>
 
