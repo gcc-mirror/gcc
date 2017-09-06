@@ -1457,6 +1457,9 @@ package body Sem_Prag is
 
                   Error_Msg := Name_Find;
                   SPARK_Msg_NE (Get_Name_String (Error_Msg), N, Item_Id);
+                  SPARK_Msg_NE
+                    ("\add `null ='> &` dependency to ignore this input",
+                     N, Item_Id);
                end if;
 
             --  Output case (SPARK RM 6.1.5(10))

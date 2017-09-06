@@ -1842,6 +1842,10 @@ package Sem_Util is
    --  Return True if N is a subprogram stub with no prior subprogram
    --  declaration.
 
+   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean;
+   --  Return True if E is an entry or a subprogram that is part (directly or
+   --  in a nested way) of a protected type.
+
    function Is_Suspension_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes Suspension_Object defined
    --  in Ada.Synchronous_Task_Control.

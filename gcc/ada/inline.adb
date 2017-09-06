@@ -1406,6 +1406,13 @@ package body Inline is
       elsif Instantiation_Location (Sloc (Id)) /= No_Location then
          return False;
 
+      --  Do not inline subprograms and entries defined inside protected types,
+      --  which typically are not helper subprograms, which also avoids getting
+      --  spurious messages on calls that cannot be inlined.
+
+      elsif Is_Subp_Or_Entry_Inside_Protected (Id) then
+         return False;
+
       --  Do not inline predicate functions (treated specially by GNATprove)
 
       elsif Is_Predicate_Function (Id) then

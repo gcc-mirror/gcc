@@ -1,3 +1,16 @@
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Add continuation
+	message for missing input.
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode): Prevent inlining
+	of protected subprograms and entries.
+	* sem_util.adb, sem_util.ads (Is_Subp_Or_Entry_Inside_Protected):
+	New function to detect when a subprogram of entry is defined
+	inside a protected object.
+
 2017-09-06  Bob Duff  <duff@adacore.com>
 
 	* sysdep.c (__gnat_has_cap_sys_nice): New function to determine
