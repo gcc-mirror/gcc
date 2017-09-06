@@ -3608,13 +3608,13 @@ package body Sem_Warn is
 
       --  Local variables
 
-      Act1       : Node_Id;
-      Act2       : Node_Id;
-      Form1      : Entity_Id;
-      Form2      : Entity_Id;
-      Warn_Only  : Boolean;
-      --  GNAT warns on overlapping in-out parameters even when there
-      --  sre no two in-out parameters of an elementary type, as stated in
+      Act1      : Node_Id;
+      Act2      : Node_Id;
+      Form1     : Entity_Id;
+      Form2     : Entity_Id;
+      Warn_Only : Boolean;
+      --  GNAT warns on overlapping in-out parameters even when there are no
+      --  two in-out parameters of an elementary type, as stated in
       --  RM 6.5.1 (17/2).
 
    --  Start of processing for Warn_On_Overlapping_Actuals
@@ -3625,8 +3625,8 @@ package body Sem_Warn is
          return;
       end if;
 
-      --  The call is illegal only if there are at least two in-out
-      --  parameters of the same elementary type.
+      --  The call is illegal only if there are at least two in-out parameters
+      --  of the same elementary type.
 
       Warn_Only := True;
       Form1 := First_Formal (Subp);
@@ -3727,11 +3727,10 @@ package body Sem_Warn is
 
                        or else not Is_Elementary_Type (Etype (Form1))
 
-                       --  debug flag -gnatd.E changes the error to a
-                       --  warning even in Ada 2012 mode.
+                       --  debug flag -gnatd.E changes the error to a warning
+                       --  even in Ada 2012 mode.
 
                        or else Error_To_Warning
-
                        or else Warn_Only;
 
                      declare

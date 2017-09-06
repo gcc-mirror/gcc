@@ -2947,7 +2947,7 @@ package body Sem_Ch8 is
          Set_Public_Status (New_S);
 
          if No_Return (Rename_Spec)
-            and then not No_Return (Entity (Nam))
+           and then not No_Return (Entity (Nam))
          then
             Error_Msg_N ("renaming completes a No_Return procedure", N);
             Error_Msg_N

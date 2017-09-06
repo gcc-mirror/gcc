@@ -1,3 +1,8 @@
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_attr.adb, sem_util.adb, sem_attr.adb, sem_ch6.adb, sem_ch8.adb,
+	sem_warn.adb: Minor reformatting.
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_warn.adb (Warn_On_Overlapping_Actuals): Refine previous

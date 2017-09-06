@@ -13782,9 +13782,10 @@ package body Sem_Util is
       P_Typ  : Entity_Id) return Boolean
    is
    begin
-      return Ada_Version > Ada_2005
-        and then Is_Object_Reference (Prefix)
-        and then Is_Scalar_Type (P_Typ);
+      return
+        Ada_Version > Ada_2005
+          and then Is_Object_Reference (Prefix)
+          and then Is_Scalar_Type (P_Typ);
    end Is_Image_Applied_To_Object;
 
    ----------------------------
@@ -17066,9 +17067,10 @@ package body Sem_Util is
       if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
         and then No (Default_Value (First_Formal (E)))
-        and then (Is_Controlling_Formal (First_Formal (E))
-          or else Is_Class_Wide_Type (Etype (First_Formal (E)))
-          or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
+        and then
+          (Is_Controlling_Formal (First_Formal (E))
+            or else Is_Class_Wide_Type (Etype (First_Formal (E)))
+            or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
       then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop
