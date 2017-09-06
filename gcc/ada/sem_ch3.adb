@@ -5015,6 +5015,7 @@ package body Sem_Ch3 is
       Set_Ekind            (T, E_Record_Type_With_Private);
       Init_Size_Align      (T);
       Set_Default_SSO      (T);
+      Set_No_Reordering    (T, No_Component_Reordering);
 
       Set_Etype            (T,                Parent_Base);
       Propagate_Concurrent_Flags (T, Parent_Base);
@@ -7679,6 +7680,7 @@ package body Sem_Ch3 is
                Set_Ekind (Full_Der, E_Record_Type);
                Set_Is_Underlying_Record_View (Full_Der);
                Set_Default_SSO (Full_Der);
+               Set_No_Reordering (Full_Der, No_Component_Reordering);
 
                Analyze (Decl);
 
@@ -8478,6 +8480,7 @@ package body Sem_Ch3 is
          Type_Def := N;
          Set_Ekind (Derived_Type, E_Record_Type_With_Private);
          Set_Default_SSO (Derived_Type);
+         Set_No_Reordering (Derived_Type, No_Component_Reordering);
 
       else
          Type_Def := Type_Definition (N);
@@ -8492,6 +8495,7 @@ package body Sem_Ch3 is
          if Present (Record_Extension_Part (Type_Def)) then
             Set_Ekind (Derived_Type, E_Record_Type);
             Set_Default_SSO (Derived_Type);
+            Set_No_Reordering (Derived_Type, No_Component_Reordering);
 
             --  Create internal access types for components with anonymous
             --  access types.
@@ -9112,60 +9116,45 @@ package body Sem_Ch3 is
       Set_Has_Primitive_Operations
         (Derived_Type, Has_Primitive_Operations (Parent_Base));
 
-      --  Fields inherited from the Parent_Base in the non-private case
+      --  Set fields for private derived types
 
-      if Ekind (Derived_Type) = E_Record_Type then
-         Set_Has_Complex_Representation
-           (Derived_Type, Has_Complex_Representation (Parent_Base));
+      if Is_Private_Type (Derived_Type) then
+         Set_Depends_On_Private (Derived_Type, True);
+         Set_Private_Dependents (Derived_Type, New_Elmt_List);
       end if;
 
-      --  Fields inherited from the Parent_Base for record types
+      --  Inherit fields for non-private types. If this is the completion of a
+      --  derivation from a private type, the parent itself is private and the
+      --  attributes come from its full view, which must be present.
 
       if Is_Record_Type (Derived_Type) then
          declare
             Parent_Full : Entity_Id;
 
          begin
-            --  Ekind (Parent_Base) is not necessarily E_Record_Type since
-            --  Parent_Base can be a private type or private extension. Go
-            --  to the full view here to get the E_Record_Type specific flags.
-
-            if Present (Full_View (Parent_Base)) then
+            if Is_Private_Type (Parent_Base)
+              and then not Is_Record_Type (Parent_Base)
+            then
                Parent_Full := Full_View (Parent_Base);
             else
                Parent_Full := Parent_Base;
             end if;
 
-            Set_OK_To_Reorder_Components
-              (Derived_Type, OK_To_Reorder_Components (Parent_Full));
+            Set_Component_Alignment
+              (Derived_Type, Component_Alignment        (Parent_Full));
+            Set_C_Pass_By_Copy
+              (Derived_Type, C_Pass_By_Copy             (Parent_Full));
+            Set_Has_Complex_Representation
+              (Derived_Type, Has_Complex_Representation (Parent_Full));
+
+            --  For untagged types, inherit the layout by default to avoid
+            --  costly changes of representation for type conversions.
+
+            if not Is_Tagged then
+               Set_Is_Packed     (Derived_Type, Is_Packed     (Parent_Full));
+               Set_No_Reordering (Derived_Type, No_Reordering (Parent_Full));
+            end if;
          end;
-      end if;
-
-      --  Set fields for private derived types
-
-      if Is_Private_Type (Derived_Type) then
-         Set_Depends_On_Private (Derived_Type, True);
-         Set_Private_Dependents (Derived_Type, New_Elmt_List);
-
-      --  Inherit fields from non private record types. If this is the
-      --  completion of a derivation from a private type, the parent itself
-      --  is private, and the attributes come from its full view, which must
-      --  be present.
-
-      else
-         if Is_Private_Type (Parent_Base)
-           and then not Is_Record_Type (Parent_Base)
-         then
-            Set_Component_Alignment
-              (Derived_Type, Component_Alignment (Full_View (Parent_Base)));
-            Set_C_Pass_By_Copy
-              (Derived_Type, C_Pass_By_Copy      (Full_View (Parent_Base)));
-         else
-            Set_Component_Alignment
-              (Derived_Type, Component_Alignment (Parent_Base));
-            Set_C_Pass_By_Copy
-              (Derived_Type, C_Pass_By_Copy      (Parent_Base));
-         end if;
       end if;
 
       --  Set fields for tagged types
@@ -9270,11 +9259,6 @@ package body Sem_Ch3 is
                end if;
             end;
          end if;
-
-      else
-         Set_Is_Packed (Derived_Type, Is_Packed (Parent_Base));
-         Set_Has_Non_Standard_Rep
-                       (Derived_Type, Has_Non_Standard_Rep (Parent_Base));
       end if;
 
       --  STEP 4: Inherit components from the parent base and constrain them.
@@ -21540,6 +21524,7 @@ package body Sem_Ch3 is
       Set_Interfaces        (T, No_Elist);
       Set_Stored_Constraint (T, No_Elist);
       Set_Default_SSO       (T);
+      Set_No_Reordering     (T, No_Component_Reordering);
 
       --  Normal case
 

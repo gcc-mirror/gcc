@@ -12799,7 +12799,8 @@ package body Sem_Ch13 is
          return True;
       end if;
 
-      --  Tagged types never have differing representations
+      --  Tagged types always have the same representation, because it is not
+      --  possible to specify different representations for common fields.
 
       if Is_Tagged_Type (T1) then
          return True;
@@ -12837,6 +12838,15 @@ package body Sem_Ch13 is
          end if;
       end if;
 
+      --  For records, representations are different if reorderings differ
+
+      if Is_Record_Type (T1)
+        and then Is_Record_Type (T2)
+        and then No_Reordering (T1) /= No_Reordering (T2)
+      then
+         return False;
+      end if;
+
       --  Types definitely have same representation if neither has non-standard
       --  representation since default representations are always consistent.
       --  If only one has non-standard representation, and the other does not,
@@ -12860,12 +12870,6 @@ package body Sem_Ch13 is
 
       if Is_Array_Type (T1) then
          return Component_Size (T1) = Component_Size (T2);
-
-      --  Tagged types always have the same representation, because it is not
-      --  possible to specify different representations for common fields.
-
-      elsif Is_Tagged_Type (T1) then
-         return True;
 
       --  Case of record types
 

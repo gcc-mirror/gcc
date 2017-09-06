@@ -1468,10 +1468,13 @@ package body Sem_Ch6 is
          --  there are various error checks that are applied on this body
          --  when it is analyzed (e.g. correct aspect placement).
 
-         if Has_Completion (Prev) then
+         if Has_Completion (Prev)
+         then
             Error_Msg_Sloc := Sloc (Prev);
             Error_Msg_NE ("duplicate body for & declared#", N, Prev);
          end if;
+
+         Check_Previous_Null_Procedure (N, Prev);
 
          Is_Completion := True;
          Rewrite (N, Null_Body);

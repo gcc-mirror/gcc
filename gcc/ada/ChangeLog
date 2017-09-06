@@ -1,3 +1,75 @@
+2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* ali.ads (ALIs_Record): Add No_Component_Reordering component.
+	(No_Component_Reordering_Specified): New switch.
+	* ali.adb (Initialize_ALI): Set No_Component_Reordering_Specified.
+	(Scan_ALI): Set No_Component_Reordering and deal with NC marker.
+	* bcheck.adb (Check_Consistent_No_Component_Reordering):
+	New check.
+	(Check_Configuration_Consistency): Invoke it.
+	* debug.adb (d.r): Toggle the effect of the switch.
+	(d.v): Change to no-op.
+	* einfo.ads (Has_Complex_Representation):
+	Restrict to record types.
+	(No_Reordering): New alias for Flag239.
+	(OK_To_Reorder_Components): Delete.
+	(No_Reordering): Declare.
+	(Set_No_Reordering): Likewise.
+	(OK_To_Reorder_Components): Delete.
+	(Set_OK_To_Reorder_Components): Likewise.
+	* einfo.adb (Has_Complex_Representation): Expect record types.
+	(No_Reordering): New function.
+	(OK_To_Reorder_Components): Delete.
+	(Set_Has_Complex_Representation): Expect base record types.
+	(Set_No_Reordering): New procedure.
+	(Set_OK_To_Reorder_Components): Delete.
+	(Write_Entity_Flags): Adjust to above change.
+	* fe.h (Debug_Flag_Dot_R): New macro and declaration.
+	* freeze.adb (Freeze_Record_Type): Remove conditional code setting
+	OK_To_Reorder_Components on record types with convention Ada.
+	* lib-writ.adb (Write_ALI): Deal with NC marker.
+	* opt.ads (No_Component_Reordering): New flag.
+	(No_Component_Reordering_Config): Likewise.
+	(Config_Switches_Type): Add No_Component_Reordering component.
+	* opt.adb (Register_Opt_Config_Switches): Copy
+	No_Component_Reordering onto No_Component_Reordering_Config.
+	(Restore_Opt_Config_Switches): Restore No_Component_Reordering.
+	(Save_Opt_Config_Switches): Save No_Component_Reordering.
+	(Set_Opt_Config_Switches): Set No_Component_Reordering.
+	* par-prag.adb (Prag): Deal with Pragma_No_Component_Reordering.
+	* sem_ch3.adb (Analyze_Private_Extension_Declaration): Also set the
+	No_Reordering flag from the default.
+	(Build_Derived_Private_Type): Likewise.
+	(Build_Derived_Record_Type): Likewise.	Then inherit it
+	for untagged types and clean up handling of similar flags.
+	(Record_Type_Declaration): Likewise.
+	* sem_ch13.adb (Same_Representation): Deal with No_Reordering and
+	remove redundant test on Is_Tagged_Type.
+	* sem_prag.adb (Analyze_Pragma): Handle No_Component_Reordering.
+	(Sig_Flags): Likewise.
+	* snames.ads-tmpl (Name_No_Component_Reordering): New name.
+	(Pragma_Id): Add Pragma_No_Component_Reordering value.
+	* warnsw.adb (Set_GNAT_Mode_Warnings): Enable -gnatw.q as well.
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>:
+	Copy the layout of the parent type only if the No_Reordering
+	settings match.
+	(components_to_record): Reorder record types with
+	convention Ada by default unless No_Reordering is set or -gnatd.r
+	is specified and do not warn if No_Reordering is set in GNAT mode.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Check_Previous_Null_Procedure):
+	new predicate to reject declarations that can be completions,
+	when there is a visible prior homograph that is a null procedure.
+	* sem_ch6.adb (Analyze_Null_Procedure): use it.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): ditto.
+
+2017-09-06  Thomas Quinot  <quinot@adacore.com>
+
+	* s-regpat.adb (Compile.Parse_Literal): Fix handling of literal
+	run of 253 characters or more.
+
 2017-09-06  Ed Schonberg  <schonberg@adacore.com>
 
 	* einfo.adb (Designated_Type): Use Is_Incomplete_Type to handle

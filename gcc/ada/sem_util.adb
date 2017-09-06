@@ -1900,6 +1900,25 @@ package body Sem_Util is
       end if;
    end Cannot_Raise_Constraint_Error;
 
+   ------------------------------------
+   --  Check_Previous_Null_Procedure --
+   ------------------------------------
+
+   procedure Check_Previous_Null_Procedure
+     (Decl : Node_Id;
+      Prev : Entity_Id)
+   is
+   begin
+      if Ekind (Prev) = E_Procedure
+        and then Nkind (Parent (Prev)) = N_Procedure_Specification
+        and then Null_Present (Parent (Prev))
+      then
+         Error_Msg_Sloc := Sloc (Prev);
+         Error_Msg_N
+           ("declaration cannot complete previous null procedure#", Decl);
+      end if;
+   end Check_Previous_Null_Procedure;
+
    -----------------------------
    -- Check_Part_Of_Reference --
    -----------------------------

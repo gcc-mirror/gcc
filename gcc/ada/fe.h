@@ -56,7 +56,9 @@ extern char Fold_Lower[], Fold_Upper[];
 
 /* debug: */
 
-#define Debug_Flag_NN debug__debug_flag_nn
+#define Debug_Flag_Dot_R	debug__debug_flag_dot_r
+#define Debug_Flag_NN		debug__debug_flag_nn
+extern Boolean Debug_Flag_Dot_R;
 extern Boolean Debug_Flag_NN;
 
 /* einfo: */

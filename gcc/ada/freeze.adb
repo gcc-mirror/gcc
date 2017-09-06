@@ -4441,17 +4441,6 @@ package body Freeze is
             end if;
          end;
 
-         --  Set OK_To_Reorder_Components depending on debug flags
-
-         if Is_Base_Type (Rec) and then Convention (Rec) = Convention_Ada then
-            if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
-                 or else
-                   (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
-            then
-               Set_OK_To_Reorder_Components (Rec);
-            end if;
-         end if;
-
          --  Check for useless pragma Pack when all components placed. We only
          --  do this check for record types, not subtypes, since a subtype may
          --  have all its components placed, and it still makes perfectly good

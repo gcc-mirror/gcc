@@ -365,6 +365,16 @@ package Sem_Util is
    --  N is one of the statement forms that is a potentially blocking
    --  operation. If it appears within a protected action, emit warning.
 
+   procedure Check_Previous_Null_Procedure
+     (Decl : Node_Id;
+      Prev : Entity_Id);
+   --  A null procedure or a subprogram renaming can complete a previous
+   --  declaration, unless that previous declaration is itself a null
+   --  procedure. This must be treated specially because the analysis of
+   --  the null procedure leaves the corresponding entity as having no
+   --  completion, because its completion is provided by a generated body
+   --  inserted after all other declarations.
+
    procedure Check_Result_And_Post_State (Subp_Id : Entity_Id);
    --  Determine whether the contract of subprogram Subp_Id mentions attribute
    --  'Result and it contains an expression that evaluates differently in pre-
