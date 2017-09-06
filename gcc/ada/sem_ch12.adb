@@ -1895,25 +1895,28 @@ package body Sem_Ch12 is
                          (Formal, Match, Analyzed_Formal),
                         Assoc_List);
 
-                     --  Determine whether the actual package needs an
-                     --  explicit freeze node. This is only the case if
-                     --  the actual is declared in the same unit and has
-                     --  a body. Normally packages do not have explicit
-                     --  freeze nodes, and gigi only uses them to elaborate
-                     --  entities in a package body.
+                     --  Determine whether the actual package needs an explicit
+                     --  freeze node. This is only the case if the actual is
+                     --  declared in the same unit and has a body. Normally
+                     --  packages do not have explicit freeze nodes, and gigi
+                     --  only uses them to elaborate entities in a package
+                     --  body.
 
                      declare
                         Actual : constant Entity_Id := Entity (Match);
+
                         Needs_Freezing : Boolean;
-                        S : Entity_Id;
+                        S              : Entity_Id;
 
                      begin
                         if not Expander_Active
                           or else not Has_Completion (Actual)
                           or else not In_Same_Source_Unit (I_Node, Actual)
-                          or else (Present (Renamed_Entity (Actual))
-                           and then not In_Same_Source_Unit (I_Node,
-                             (Renamed_Entity (Actual))))
+                          or else
+                            (Present (Renamed_Entity (Actual))
+                              and then not
+                                In_Same_Source_Unit
+                                  (I_Node, (Renamed_Entity (Actual))))
                         then
                            null;
 
@@ -1921,17 +1924,21 @@ package body Sem_Ch12 is
                            --  Finally we want to exclude such freeze nodes
                            --  from statement sequences, which freeze
                            --  everything before them.
-                           --  Is this strictly necesssary ???
+                           --  Is this strictly necessary ???
 
                            Needs_Freezing := True;
+
                            S := Current_Scope;
                            while Present (S) loop
-                              if Ekind_In
-                                (S, E_Loop, E_Block, E_Procedure, E_Function)
+                              if Ekind_In (S, E_Block,
+                                              E_Function,
+                                              E_Loop,
+                                              E_Procedure)
                               then
                                  Needs_Freezing := False;
                                  exit;
                               end if;
+
                               S := Scope (S);
                            end loop;
 
@@ -2648,7 +2655,9 @@ package body Sem_Ch12 is
                    (Generic_Formal_Declarations (Original_Node (Gen_Decl)));
                while Present (Formal_Decl) loop
                   Append_To
-                    (Decls, Copy_Generic_Node (Formal_Decl, Empty, True));
+                    (Decls,
+                     Copy_Generic_Node
+                       (Formal_Decl, Empty, Instantiating => True));
                   Next (Formal_Decl);
                end loop;
             end;
@@ -5586,7 +5595,7 @@ package body Sem_Ch12 is
             Assoc := Associated_Node (Assoc);
          end loop;
 
-         --  Follow and additional link in case the final node was rewritten.
+         --  Follow an additional link in case the final node was rewritten.
          --  This can only happen with nested generic units.
 
          if (Nkind (Assoc) = N_Identifier or else Nkind (Assoc) in N_Op)
@@ -5603,7 +5612,7 @@ package body Sem_Ch12 is
          --  An additional special case: an unconstrained type in an object
          --  declaration may have been rewritten as a local subtype constrained
          --  by the expression in the declaration. We need to recover the
-         --  original entity which may be global.
+         --  original entity, which may be global.
 
          if Present (Original_Node (Assoc))
            and then Nkind (Parent (N)) = N_Object_Declaration
@@ -7450,7 +7459,16 @@ package body Sem_Ch12 is
            (New_N, Copy_Generic_List (Aspect_Specifications (N), Parent_Id));
       end if;
 
-      if Instantiating then
+      --  If we are instantiating, we want to adjust the sloc based on the
+      --  current S_Adjustment. However, if this is the root node of a subunit,
+      --  we need to defer that adjustment to below (see "elsif Instantiating
+      --  and Was_Stub"), so it comes after Create_Instantiation_Source has
+      --  computed the adjustment.
+
+      if Instantiating
+        and then not (Nkind (N) in N_Proper_Body
+                       and then Was_Originally_Stub (N))
+      then
          Adjust_Instantiation_Sloc (New_N, S_Adjustment);
       end if;
 
@@ -7594,18 +7612,16 @@ package body Sem_Ch12 is
             Set_Selector_Name (New_N,
               Copy_Generic_Node (Selector_Name (N), New_N, Instantiating));
 
-         --  For operators, we must copy the right operand
+         --  For operators, copy the operands
 
          elsif Nkind (N) in N_Op then
-            Set_Right_Opnd (New_N,
-              Copy_Generic_Node (Right_Opnd (N), New_N, Instantiating));
-
-            --  And for binary operators, the left operand as well
-
             if Nkind (N) in N_Binary_Op then
                Set_Left_Opnd (New_N,
                  Copy_Generic_Node (Left_Opnd (N), New_N, Instantiating));
             end if;
+
+            Set_Right_Opnd (New_N,
+              Copy_Generic_Node (Right_Opnd (N), New_N, Instantiating));
          end if;
 
       --  Establish a link between an entity from the generic template and the
@@ -7751,14 +7767,16 @@ package body Sem_Ch12 is
            Copy_Generic_List (Context_Items (N), New_N));
 
          Set_Unit (New_N,
-           Copy_Generic_Node (Unit (N), New_N, False));
+           Copy_Generic_Node (Unit (N), New_N, Instantiating => False));
 
          Set_First_Inlined_Subprogram (New_N,
            Copy_Generic_Node
-             (First_Inlined_Subprogram (N), New_N, False));
+             (First_Inlined_Subprogram (N), New_N, Instantiating => False));
 
-         Set_Aux_Decls_Node (New_N,
-           Copy_Generic_Node (Aux_Decls_Node (N), New_N, False));
+         Set_Aux_Decls_Node
+           (New_N,
+            Copy_Generic_Node
+              (Aux_Decls_Node (N), New_N, Instantiating => False));
 
       --  For an assignment node, the assignment is known to be semantically
       --  legal if we are instantiating the template. This avoids incorrect
@@ -7873,13 +7891,14 @@ package body Sem_Ch12 is
       elsif Nkind (N) in N_Proper_Body then
          declare
             Save_Adjustment : constant Sloc_Adjustment := S_Adjustment;
-
          begin
             if Instantiating and then Was_Originally_Stub (N) then
                Create_Instantiation_Source
                  (Instantiation_Node,
                   Defining_Entity (N),
                   S_Adjustment);
+
+               Adjust_Instantiation_Sloc (New_N, S_Adjustment);
             end if;
 
             --  Now copy the fields of the proper body, using the new
@@ -7887,7 +7906,7 @@ package body Sem_Ch12 is
 
             Copy_Descendants;
 
-            --  Restore the original adjustment factor in case changed
+            --  Restore the original adjustment factor
 
             S_Adjustment := Save_Adjustment;
          end;

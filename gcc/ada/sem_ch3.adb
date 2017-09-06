@@ -5718,7 +5718,7 @@ package body Sem_Ch3 is
       then
          declare
             Partial : constant Entity_Id :=
-              Incomplete_Or_Partial_View (First_Subtype (Id));
+                        Incomplete_Or_Partial_View (First_Subtype (Id));
          begin
             if Present (Partial)
               and then Ekind (Partial) = E_Incomplete_Type

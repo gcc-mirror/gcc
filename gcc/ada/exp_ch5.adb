@@ -211,7 +211,8 @@ package body Exp_Ch5 is
             Make_Iteration_Scheme (Loc,
               Condition =>
                 Make_Function_Call (Loc,
-                  Name => New_Occurrence_Of (Has_Element_Op, Loc),
+                  Name                   =>
+                    New_Occurrence_Of (Has_Element_Op, Loc),
                   Parameter_Associations => New_List (
                     New_Occurrence_Of (Container, Loc),
                     New_Occurrence_Of (Cursor, Loc)))),
@@ -3081,15 +3082,15 @@ package body Exp_Ch5 is
       Container : constant Node_Id    := Entity (Name (I_Spec));
       Stats     : constant List_Id    := Statements (N);
 
-      Advance  : Node_Id;
-      Blk_Nod  : Node_Id;
-      Init     : Node_Id;
-      New_Loop : Node_Id;
+      Advance   : Node_Id;
+      Init_Decl : Node_Id;
+      New_Loop  : Node_Id;
 
    begin
-      --  The expansion resembles the one for Ada containers, but the
-      --  primitives mention the domain of iteration explicitly, and
-      --  function First applied to the container yields a cursor directly.
+      --  The expansion of a formal container loop resembles the one for Ada
+      --  containers. The only difference is that the primitives mention the
+      --  domain of iteration explicitly, and function First applied to the
+      --  container yields a cursor directly.
 
       --    Cursor : Cursor_type := First (Container);
       --    while Has_Element (Cursor, Container) loop
@@ -3098,21 +3099,34 @@ package body Exp_Ch5 is
       --    end loop;
 
       Build_Formal_Container_Iteration
-        (N, Container, Cursor, Init, Advance, New_Loop);
+        (N, Container, Cursor, Init_Decl, Advance, New_Loop);
 
-      Set_Ekind (Cursor, E_Variable);
       Append_To (Stats, Advance);
 
-      --  Build block to capture declaration of cursor entity.
+      --  Build a block to capture declaration of the cursor
 
-      Blk_Nod :=
+      Rewrite (N,
         Make_Block_Statement (Loc,
-          Declarations               => New_List (Init),
+          Declarations               => New_List (Init_Decl),
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (New_Loop)));
+              Statements => New_List (New_Loop))));
 
-      Rewrite (N, Blk_Nod);
+      --  The loop parameter is declared by an object declaration, but within
+      --  the loop we must prevent user assignments to it, so we analyze the
+      --  declaration and reset the entity kind, before analyzing the rest of
+      --  the loop.
+
+      Analyze (Init_Decl);
+      Set_Ekind (Defining_Identifier (Init_Decl), E_Loop_Parameter);
+
+      --  The cursor was marked as a loop parameter to prevent user assignments
+      --  to it, however this renders the advancement step illegal as it is not
+      --  possible to change the value of a constant. Flag the advancement step
+      --  as a legal form of assignment to remedy this side effect.
+
+      Set_Assignment_OK (Name (Advance));
+
       Analyze (N);
    end Expand_Formal_Container_Loop;
 
@@ -3236,7 +3250,7 @@ package body Exp_Ch5 is
       --  The loop parameter is declared by an object declaration, but within
       --  the loop we must prevent user assignments to it, so we analyze the
       --  declaration and reset the entity kind, before analyzing the rest of
-      --  the loop;
+      --  the loop.
 
       Analyze (Elmt_Decl);
       Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);

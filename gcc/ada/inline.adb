@@ -1058,7 +1058,7 @@ package body Inline is
 
       if In_Instance and then Scope (Current_Scope) /= Standard_Standard then
          Save_Env (Scope (Current_Scope), Scope (Current_Scope));
-         Original_Body := Copy_Generic_Node (N, Empty, True);
+         Original_Body := Copy_Generic_Node (N, Empty, Instantiating => True);
       else
          Original_Body := Copy_Separate_Tree (N);
       end if;
@@ -1081,7 +1081,8 @@ package body Inline is
 
       Remove_Aspects_And_Pragmas (Original_Body);
 
-      Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
+      Body_To_Analyze :=
+        Copy_Generic_Node (Original_Body, Empty, Instantiating => False);
 
       --  Set return type of function, which is also global and does not need
       --  to be resolved.
@@ -1635,7 +1636,8 @@ package body Inline is
             if In_Instance
               and then Scope (Current_Scope) /= Standard_Standard
             then
-               Body_To_Inline := Copy_Generic_Node (N, Empty, True);
+               Body_To_Inline :=
+                 Copy_Generic_Node (N, Empty, Instantiating => True);
             else
                Body_To_Inline := Copy_Separate_Tree (N);
             end if;
@@ -1688,7 +1690,8 @@ package body Inline is
          --  parameterless subprogram, declared within the real one.
 
          Generate_Subprogram_Body (N, Original_Body);
-         Body_To_Analyze := Copy_Generic_Node (Original_Body, Empty, False);
+         Body_To_Analyze :=
+           Copy_Generic_Node (Original_Body, Empty, Instantiating => False);
 
          --  Set return type of function, which is also global and does not
          --  need to be resolved.
