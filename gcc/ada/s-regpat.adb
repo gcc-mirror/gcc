@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                                                                          --
 --               Copyright (C) 1986 by University of Toronto.               --
---                      Copyright (C) 1999-2016, AdaCore                    --
+--                      Copyright (C) 1999-2017, AdaCore                    --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1634,11 +1634,9 @@ package body System.Regpat is
                   Case_Emit (C);
             end case;
 
-            exit Parse_Loop when Emit_Ptr - Length_Ptr = 254;
-
             Parse_Pos := Parse_Pos + 1;
-
-            exit Parse_Loop when Parse_Pos > Parse_End;
+            exit Parse_Loop when Parse_Pos > Parse_End
+              or else Emit_Ptr - Length_Ptr = 254;
          end loop Parse_Loop;
 
          --  Is the string followed by a '*+?{' operator ? If yes, and if there

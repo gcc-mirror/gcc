@@ -108,11 +108,11 @@ package body Debug is
    --  d.o  Conservative elaboration order for indirect calls
    --  d.p  Use original Ada 95 semantics for Bit_Order (disable AI95-0133)
    --  d.q  Suppress optimizations on imported 'in'
-   --  d.r  Enable OK_To_Reorder_Components in non-variant records
+   --  d.r  Disable reordering of components in record types
    --  d.s  Strict secondary stack management
    --  d.t  Disable static allocation of library level dispatch tables
    --  d.u  Enable Modify_Tree_For_C (update tree for c)
-   --  d.v  Enable OK_To_Reorder_Components in variant records
+   --  d.v
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
    --  d.y
@@ -574,8 +574,7 @@ package body Debug is
    --       optimizations. This option should not be used; the correct solution
    --       is to declare the parameter 'in out'.
 
-   --  d.r  Forces the flag OK_To_Reorder_Components to be set in all record
-   --       base types that have no discriminants.
+   --  d.r  Do not reorder components in record types.
 
    --  d.s  The compiler no longer attempts to optimize the calls to secondary
    --       stack management routines SS_Mark and SS_Release. As a result, each
@@ -595,9 +594,6 @@ package body Debug is
 
    --  d.u  Sets Modify_Tree_For_C mode in which tree is modified to make it
    --       easier to generate code using a C compiler.
-
-   --  d.v  Forces the flag OK_To_Reorder_Components to be set in all record
-   --       base types that have at least one discriminant (v = variant).
 
    --  d.w  This flag turns off the scanning of loops to detect possible
    --       infinite loops.

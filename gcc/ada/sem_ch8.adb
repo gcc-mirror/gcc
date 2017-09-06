@@ -2893,6 +2893,8 @@ package body Sem_Ch8 is
 
       if Present (Rename_Spec) then
 
+         Check_Previous_Null_Procedure (N, Rename_Spec);
+
          --  Renaming declaration is the completion of the declaration of
          --  Rename_Spec. We build an actual body for it at the freezing point.
 

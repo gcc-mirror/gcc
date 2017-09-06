@@ -485,6 +485,7 @@ package body Warnsw is
       --  These warnings are added to the -gnatwa set
 
       Address_Clause_Overlay_Warnings     := True;
+      Warn_On_Questionable_Layout         := True;
       Warn_On_Overridden_Size             := True;
 
       --  These warnings are removed from the -gnatwa set

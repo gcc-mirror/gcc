@@ -506,6 +506,7 @@ package GNAT.Sockets is
       Addr : Inet_Addr_Type (Family);
       Port : Port_Type;
    end record;
+   pragma No_Component_Reordering (Sock_Addr_Type);
    --  Socket addresses fully define a socket connection with protocol family,
    --  an Internet address and a port. No_Sock_Addr provides a special value
    --  for uninitialized socket addresses.
