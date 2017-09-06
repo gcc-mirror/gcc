@@ -1,5 +1,38 @@
 2017-09-06  Yannick Moy  <moy@adacore.com>
 
+	* inline.adb: Add comments to Can_Be_Inlined_In_GNATprove_Mode.
+
+2017-09-06  Javier Miranda  <miranda@adacore.com>
+
+	* exp_aggr.adb (Component_Not_OK_For_Backend): The C backend
+	cannot handle a type conversion of an array as an aggregate
+	component.
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* g-comlin.adb (Try_Help): Remove ".exe" so we
+	get the same results on windows and unix.
+
+2017-09-06  Justin Squirek  <squirek@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute),
+	(Expand_Wide_Image_Attribute), (Expand_Wide_Wide_Image_Attribute):
+	Added case to handle new-style 'Image expansion
+	(Rewrite_Object_Image): Moved from exp_attr.adb
+	* exp_attr.adb (Expand_N_Attribute_Reference): Modified Image
+	attribute cases so that the relevant subprograms in exp_imgv.adb
+	handle all expansion.
+	(Rewrite_Object_Reference_Image): Moved to exp_imgv.adb
+	* sem_attr.adb (Analyze_Attribute): Modified Image attribute
+	cases to call common function Analyze_Image_Attribute.
+	(Analyze_Image_Attribute): Created as a common path for all
+	image attributes (Check_Object_Reference_Image): Removed
+	* sem_util.ads, sem_util.adb (Is_Image_Applied_To_Object):
+	Removed and refactored into Is_Object_Image (Is_Object_Image):
+	Created as a replacement for Is_Image_Applied_To_Object
+
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
 	* sem_prag.adb (Analyze_Depends_In_Decl_Part): Add continuation
 	message for missing input.
 
