@@ -2533,8 +2533,11 @@ package body Sem_Res is
                  and then Ekind (Entity (Name (N))) = E_Function
                then
                   Error_Msg_NE
-                    ("cannot use function & in a procedure call",
+                    ("cannot use call to function & as a statement",
                      Name (N), Entity (Name (N)));
+                  Error_Msg_N
+                    ("\return value of a function call cannot be ignored",
+                     Name (N));
 
                --  Otherwise give general message (not clear what cases this
                --  covers, but no harm in providing for them).

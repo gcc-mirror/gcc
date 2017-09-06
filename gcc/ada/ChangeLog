@@ -1,3 +1,16 @@
+2017-09-06  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve): Update message for function call as statement.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Check_Returns): Clean up warnings coming from
+	generated bodies for renamings that are completions, when renamed
+	procedure is No_Return.
+	* sem_ch8.adb (Analyze_Subprogram_Renaming): Implement legality
+	rule in 6.5.1 (7/2): if a renaming is a completion of a subprogram
+	with No_Return, the renamed entity must be No_Return as well.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_ch5.adb, freeze.adb, exp_ch4.adb, exp_ch6.adb, lib-xref.adb:
