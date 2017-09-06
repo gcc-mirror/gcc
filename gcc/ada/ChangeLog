@@ -1,3 +1,44 @@
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* einfo.adb (Designated_Type): Use Is_Incomplete_Type to handle
+	properly incomplete subtypes that may be created by explicit or
+	implicit declarations.
+	(Is_Base_Type): Take E_Incomplete_Subtype into account.
+	(Subtype_Kind): Ditto.
+	* sem_ch3.adb (Build_Discriminated_Subtype): Set properly the
+	Ekind of a subtype of a discriminated incomplete type.
+	(Fixup_Bad_Constraint): Use Subtype_Kind in all cases, including
+	incomplete types, to preserve error reporting.
+	(Process_Incomplete_Dependents): Do not create a subtype
+	declaration for an incomplete subtype that is created internally.
+	* sem_ch7.adb (Analyze_Package_Specification): Handle properly
+	incomplete subtypes that do not require a completion, either
+	because they are limited views, of they are generic actuals.
+
+2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Remove the
+	suspicious manipulation of the Do_Range_Check flag as ths is
+	no linger needed. Suppress validity check when analysing the
+	validation variable.
+
+2017-09-06  Philippe Gil  <gil@adacore.com>
+
+	* g-debpoo.adb: adapt GNAT.Debug_Pools to allow safe thread
+	GNATCOLL.Memory
+
+2017-09-06  Bob Duff  <duff@adacore.com>
+
+	* sem_elim.adb: Minor comment fix.
+
+2017-09-06  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_util.adb (Is_Object_Reference): A function call is an
+	object reference, and thus attribute references for attributes
+	that are functions (such as Pred and Succ) as well as predefined
+	operators are legal in contexts that require an object, such as
+	the prefix of attribute Img and the Ada2020 version of 'Image.
+
 2017-09-06  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_util.adb, einfo.adb, sem_attr.adb, exp_ch4.adb, gnatls.adb,

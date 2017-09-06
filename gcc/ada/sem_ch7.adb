@@ -1441,11 +1441,14 @@ package body Sem_Ch7 is
 
          --  Check on incomplete types
 
-         --  AI05-0213: A formal incomplete type has no completion
+         --  AI05-0213: A formal incomplete type has no completion,
+         --  and neither does the corresponding subtype in an instance.
 
-         if Ekind (E) = E_Incomplete_Type
+         if Is_Incomplete_Type (E)
            and then No (Full_View (E))
            and then not Is_Generic_Type (E)
+           and then not From_Limited_With (E)
+           and then not Is_Generic_Actual_Type (E)
          then
             Error_Msg_N ("no declaration in visible part for incomplete}", E);
          end if;
