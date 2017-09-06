@@ -1382,16 +1382,25 @@ package body Sem_Warn is
                   --  deal with case where original unset reference has been
                   --  rewritten during expansion.
 
-                  --  In some cases, the original node may be a type conversion
-                  --  or qualification, and in this case we want the object
-                  --  entity inside.
+                  --  In some cases, the original node may be a type
+                  --  conversion, a qualification or an attribute reference and
+                  --  in this case we want the object entity inside. Same for
+                  --  an expression with actions.
 
                   UR := Original_Node (UR);
-                  while Nkind (UR) = N_Type_Conversion
-                    or else Nkind (UR) = N_Qualified_Expression
-                    or else Nkind (UR) = N_Expression_With_Actions
                   loop
-                     UR := Expression (UR);
+                     if Nkind_In (UR, N_Expression_With_Actions,
+                                      N_Qualified_Expression,
+                                      N_Type_Conversion)
+                     then
+                        UR := Expression (UR);
+
+                     elsif Nkind (UR) = N_Attribute_Reference then
+                        UR := Prefix (UR);
+
+                     else
+                        exit;
+                     end if;
                   end loop;
 
                   --  Don't issue warning if appearing inside Initial_Condition

@@ -7213,7 +7213,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-      int group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
@@ -7256,7 +7255,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    {
 	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	      group_gap_adj = group_gap;
+	      group_gap_adj
+		= group_size - SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
 	    }
     	}
       else

@@ -32,7 +32,7 @@ with Butil;       use Butil;
 with Csets;       use Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
-with Makeutl;     use Makeutl;
+with Make_Util;   use Make_Util;
 with Namet;       use Namet;
 with Opt;         use Opt;
 with Osint;       use Osint;

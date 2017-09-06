@@ -2756,7 +2756,7 @@ package body Einfo is
    function Linker_Section_Pragma (Id : E) return N is
    begin
       pragma Assert
-        (Is_Type (Id) or else Is_Object (Id) or else Is_Subprogram (Id));
+        (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       return Node33 (Id);
    end Linker_Section_Pragma;
 
@@ -3763,6 +3763,13 @@ package body Einfo is
    begin
       return Ekind (Id) in Subprogram_Kind;
    end Is_Subprogram;
+
+   function Is_Subprogram_Or_Entry              (Id : E) return B is
+   begin
+      return Ekind (Id) in Subprogram_Kind
+               or else
+             Ekind (Id) in Entry_Kind;
+   end Is_Subprogram_Or_Entry;
 
    function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B is
    begin
@@ -5911,9 +5918,8 @@ package body Einfo is
 
    procedure Set_Linker_Section_Pragma (Id : E; V : N) is
    begin
-      pragma Assert (Is_Type (Id)
-        or else Ekind_In (Id, E_Constant, E_Variable)
-        or else Is_Subprogram (Id));
+      pragma Assert
+        (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       Set_Node33 (Id, V);
    end Set_Linker_Section_Pragma;
 
@@ -7360,6 +7366,39 @@ package body Einfo is
 
       return Empty;
    end Get_Attribute_Definition_Clause;
+
+   ---------------------------
+   -- Get_Class_Wide_Pragma --
+   ---------------------------
+
+   function Get_Class_Wide_Pragma
+     (E  : Entity_Id;
+      Id : Pragma_Id) return Node_Id
+    is
+      Item  : Node_Id;
+      Items : Node_Id;
+
+   begin
+      Items := Contract (E);
+
+      if No (Items) then
+         return Empty;
+      end if;
+
+      Item := Pre_Post_Conditions (Items);
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name_Unmapped (Item)) = Id
+           and then Class_Present (Item)
+         then
+            return Item;
+         end if;
+
+         Item := Next_Pragma (Item);
+      end loop;
+
+      return Empty;
+   end Get_Class_Wide_Pragma;
 
    -------------------
    -- Get_Full_View --

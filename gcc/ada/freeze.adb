@@ -1418,8 +1418,9 @@ package body Freeze is
          New_Prag : Node_Id;
 
       begin
-         A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
-         if Present (A_Pre) and then Class_Present (A_Pre) then
+         A_Pre := Get_Class_Wide_Pragma (Par_Prim, Pragma_Precondition);
+
+         if Present (A_Pre) then
             New_Prag := New_Copy_Tree (A_Pre);
             Build_Class_Wide_Expression
               (Prag          => New_Prag,
@@ -1436,9 +1437,9 @@ package body Freeze is
             end if;
          end if;
 
-         A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
+         A_Post := Get_Class_Wide_Pragma (Par_Prim, Pragma_Postcondition);
 
-         if Present (A_Post) and then Class_Present (A_Post) then
+         if Present (A_Post) then
             New_Prag := New_Copy_Tree (A_Post);
             Build_Class_Wide_Expression
               (Prag           => New_Prag,
@@ -1494,12 +1495,12 @@ package body Freeze is
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
 
-            --  In SPARK mode this is where we can collect the inherited
+            --  In GNATprove mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
             --  normally convey the the modified class-wide conditions on
             --  overriding operations.
 
-            if SPARK_Mode = On then
+            if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
 
             --  Otherwise build the corresponding pragmas to check for legality
@@ -3817,6 +3818,10 @@ package body Freeze is
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
 
+         Sized_Component_Total_Round_RM_Size : Uint := Uint_0;
+         --  Accumulates total RM_Size values of all sized components, rounded
+         --  individually to a multiple of the storage unit.
+
          SSO_ADC : Node_Id;
          --  Scalar_Storage_Order attribute definition clause for the record
 
@@ -4122,21 +4127,32 @@ package body Freeze is
             --  an implicit subtype declaration.
 
             if Known_Static_RM_Size (Etype (Comp)) then
-               Sized_Component_Total_RM_Size :=
-                 Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
+               declare
+                  Comp_Type : constant Entity_Id := Etype (Comp);
+                  Comp_Size : constant Uint := RM_Size (Comp_Type);
+                  SSU       : constant Int := Ttypes.System_Storage_Unit;
 
-               if Present (Underlying_Type (Etype (Comp)))
-                 and then Is_Elementary_Type (Underlying_Type (Etype (Comp)))
-               then
-                  Elem_Component_Total_Esize :=
-                    Elem_Component_Total_Esize + Esize (Etype (Comp));
-               else
-                  All_Elem_Components := False;
+               begin
+                  Sized_Component_Total_RM_Size :=
+                    Sized_Component_Total_RM_Size + Comp_Size;
 
-                  if RM_Size (Etype (Comp)) mod System_Storage_Unit /= 0 then
-                     All_Storage_Unit_Components := False;
+                  Sized_Component_Total_Round_RM_Size :=
+                    Sized_Component_Total_Round_RM_Size +
+                      (Comp_Size + SSU - 1) / SSU * SSU;
+
+                  if Present (Underlying_Type (Comp_Type))
+                    and then Is_Elementary_Type (Underlying_Type (Comp_Type))
+                  then
+                     Elem_Component_Total_Esize :=
+                       Elem_Component_Total_Esize + Esize (Comp_Type);
+                  else
+                     All_Elem_Components := False;
+
+                     if Comp_Size mod SSU /= 0 then
+                        All_Storage_Unit_Components := False;
+                     end if;
                   end if;
-               end if;
+               end;
             else
                All_Sized_Components := False;
             end if;
@@ -4602,12 +4618,13 @@ package body Freeze is
                  and then RM_Size (Rec) < Elem_Component_Total_Esize)
              or else
                (not All_Elem_Components
-                 and then not All_Storage_Unit_Components))
+                 and then not All_Storage_Unit_Components
+                 and then RM_Size (Rec) < Sized_Component_Total_Round_RM_Size))
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be.
 
-           and then RM_Size (Rec) >= Sized_Component_Total_RM_Size
+           and then Sized_Component_Total_RM_Size <= RM_Size (Rec)
 
            --  Never do implicit packing in CodePeer or SPARK modes since
            --  we don't do any packing in these modes, since this generates

@@ -580,7 +580,25 @@ package body Sem_Ch5 is
 
       Set_Assignment_Type (Lhs, T1);
 
-      Resolve (Rhs, T1);
+      --  If the target of the assignment is an entity of a mutable type and
+      --  the expression is a conditional expression, its alternatives can be
+      --  of different subtypes of the nominal type of the LHS, so they must be
+      --  resolved with the base type, given that their subtype may differ from
+      --  that of the target mutable object.
+
+      if Is_Entity_Name (Lhs)
+        and then Ekind_In (Entity (Lhs), E_In_Out_Parameter,
+                                         E_Out_Parameter,
+                                         E_Variable)
+        and then Is_Composite_Type (T1)
+        and then not Is_Constrained (Etype (Entity (Lhs)))
+        and then Nkind_In (Rhs, N_If_Expression, N_Case_Expression)
+      then
+         Resolve (Rhs, Base_Type (T1));
+
+      else
+         Resolve (Rhs, T1);
+      end if;
 
       --  This is the point at which we check for an unset reference
 
@@ -1902,8 +1920,8 @@ package body Sem_Ch5 is
 
       Preanalyze_Range (Iter_Name);
 
-      --  Set the kind of the loop variable, which is not visible within
-      --  the iterator name.
+      --  Set the kind of the loop variable, which is not visible within the
+      --  iterator name.
 
       Set_Ekind (Def_Id, E_Variable);
 

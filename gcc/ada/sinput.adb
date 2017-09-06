@@ -320,6 +320,38 @@ package body Sinput is
       end case;
    end Check_For_BOM;
 
+   -----------------------------
+   -- Clear_Source_File_Table --
+   -----------------------------
+
+   procedure Free is new Unchecked_Deallocation
+     (Lines_Table_Type, Lines_Table_Ptr);
+
+   procedure Free is new Unchecked_Deallocation
+     (Logical_Lines_Table_Type, Logical_Lines_Table_Ptr);
+
+   procedure Clear_Source_File_Table is
+   begin
+      for X in 1 .. Source_File.Last loop
+         declare
+            S  : Source_File_Record renames Source_File.Table (X);
+         begin
+            if S.Instance = No_Instance_Id then
+               Free_Source_Buffer (S.Source_Text);
+            else
+               Free_Dope (S.Source_Text'Address);
+               S.Source_Text := null;
+            end if;
+
+            Free (S.Lines_Table);
+            Free (S.Logical_Lines_Table);
+         end;
+      end loop;
+
+      Source_File.Free;
+      Sinput.Initialize;
+   end Clear_Source_File_Table;
+
    ---------------------------------
    -- Comes_From_Inherited_Pragma --
    ---------------------------------

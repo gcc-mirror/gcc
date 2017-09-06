@@ -1,5 +1,32 @@
 2017-09-06  Nathan Sidwell  <nathan@acm.org>
 
+	* name-lookup.h (lookup_field_1): Delete.
+	(get_class_binding_direct, get_class_binding): Add type_or_fns arg.
+	* name-lookup.c	(lookup_field_1): make static
+	(method_vec_binary_search, method_vec_linear_search): New.  Broken
+	out of ...
+	(get_class_binding_direct): ... here.  Add TYPE_OR_FNS argument.
+	Do complete search of this level.
+	(get_class_binding): Adjust.
+	* decl.c (reshape_init_class): Call get_class_binding.
+	* search.c (lookup_field_r): Move field searching into
+	get_class_binding_direct.
+
+	* class.c (warn_hidden): Don't barf on non-functions.
+	* decl2.c (check_classfn): Likewise.  Check template match earlier.
+
+	* name-lookup.c (count_fields): Rename to ...
+	(count_class_fields): ... here.  Take a class, don't count
+	NULL-named fields.
+	(add_fields_to_record_type): Rename to ...
+	(field_vec_append_class_fields): ... here.  Take a class, don't
+	add NULL-named fields.
+	(add_enum_fields_to_record_type): Rename to ...
+	(field_vec_append_enum_values): ... here.
+	(set_class_bindings): Adjust, assert we added expected number.
+	(insert_late_enum_def_bindings): Reimplement.  Create vector if
+	there are now sufficient entries.
+
 	* name-lookup.h (lookup_fnfields_slot_nolazy,
 	lookup_fnfields_slot): Rename to ...
 	(get_class_binding_direct, get_class_binding): ... here.

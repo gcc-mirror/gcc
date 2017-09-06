@@ -1483,6 +1483,8 @@ package body Par_SCO is
                   To_Node := Last (Parameter_Specifications (N));
                elsif Present (Entry_Index (N)) then
                   To_Node := Entry_Index (N);
+               else
+                  To_Node := Entry_Direct_Name (N);
                end if;
 
             when N_Case_Statement =>

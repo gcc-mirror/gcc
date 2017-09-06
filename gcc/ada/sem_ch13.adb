@@ -9806,12 +9806,12 @@ package body Sem_Ch13 is
       --  checking for overlap, since no overlap is possible.
 
       Tagged_Parent : Entity_Id := Empty;
-      --  This is set in the case of a derived tagged type for which we have
-      --  Is_Fully_Repped_Tagged_Type True (indicating that all components are
-      --  positioned by record representation clauses). In this case we must
-      --  check for overlap between components of this tagged type, and the
-      --  components of its parent. Tagged_Parent will point to this parent
-      --  type. For all other cases Tagged_Parent is left set to Empty.
+      --  This is set in the case of an extension for which we have either a
+      --  size clause or Is_Fully_Repped_Tagged_Type True (indicating that all
+      --  components are positioned by record representation clauses) on the
+      --  parent type. In this case we check for overlap between components of
+      --  this tagged type and the parent component. Tagged_Parent will point
+      --  to this parent type. For all other cases, Tagged_Parent is Empty.
 
       Parent_Last_Bit : Uint;
       --  Relevant only if Tagged_Parent is set, Parent_Last_Bit indicates the
@@ -9959,9 +9959,9 @@ package body Sem_Ch13 is
 
       if Rectype = Any_Type then
          return;
-      else
-         Rectype := Underlying_Type (Rectype);
       end if;
+
+      Rectype := Underlying_Type (Rectype);
 
       --  See if we have a fully repped derived tagged type
 
@@ -9969,7 +9969,11 @@ package body Sem_Ch13 is
          PS : constant Entity_Id := Parent_Subtype (Rectype);
 
       begin
-         if Present (PS) and then Is_Fully_Repped_Tagged_Type (PS) then
+         if Present (PS) and then Known_Static_RM_Size (PS) then
+            Tagged_Parent := PS;
+            Parent_Last_Bit := RM_Size (PS) - 1;
+
+         elsif Present (PS) and then Is_Fully_Repped_Tagged_Type (PS) then
             Tagged_Parent := PS;
 
             --  Find maximum bit of any component of the parent type
@@ -10063,7 +10067,7 @@ package body Sem_Ch13 is
                  ("bit number out of range of specified size",
                   Last_Bit (CC));
 
-               --  Check for overlap with tag component
+               --  Check for overlap with tag or parent component
 
             else
                if Is_Tagged_Type (Rectype)
@@ -10073,26 +10077,19 @@ package body Sem_Ch13 is
                     ("component overlaps tag field of&",
                      Component_Name (CC), Rectype);
                   Overlap_Detected := True;
+
+               elsif Present (Tagged_Parent)
+                 and then Fbit <= Parent_Last_Bit
+               then
+                  Error_Msg_NE
+                    ("component overlaps parent field of&",
+                     Component_Name (CC), Rectype);
+                  Overlap_Detected := True;
                end if;
 
                if Hbit < Lbit then
                   Hbit := Lbit;
                end if;
-            end if;
-
-            --  Check parent overlap if component might overlap parent field
-
-            if Present (Tagged_Parent) and then Fbit <= Parent_Last_Bit then
-               Pcomp := First_Component_Or_Discriminant (Tagged_Parent);
-               while Present (Pcomp) loop
-                  if not Is_Tag (Pcomp)
-                    and then Chars (Pcomp) /= Name_uParent
-                  then
-                     Check_Component_Overlap (Comp, Pcomp);
-                  end if;
-
-                  Next_Component_Or_Discriminant (Pcomp);
-               end loop;
             end if;
          end if;
 
@@ -12649,9 +12646,6 @@ package body Sem_Ch13 is
    --------------------------------
 
    procedure Resolve_Aspect_Expressions (E : Entity_Id) is
-      ASN  : Node_Id;
-      A_Id : Aspect_Id;
-      Expr : Node_Id;
 
       function Resolve_Name (N : Node_Id) return Traverse_Result;
       --  Verify that all identifiers in the expression, with the exception
@@ -12696,84 +12690,94 @@ package body Sem_Ch13 is
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
 
+      ASN : Node_Id := First_Rep_Item (E);
+
    --  Start of processing for Resolve_Aspect_Expressions
 
    begin
-      ASN := First_Rep_Item (E);
+      --  Need to make sure discriminants, if any, are directly visible
+
+      Push_Scope_And_Install_Discriminants (E);
+
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
-            A_Id := Get_Aspect_Id (ASN);
-            Expr := Expression (ASN);
+            declare
+               A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
+               Expr : constant Node_Id   := Expression (ASN);
 
-            case A_Id is
+            begin
+               case A_Id is
 
-               --  For now we only deal with aspects that do not generate
-               --  subprograms, or that may mention current instances of
-               --  types. These will require special handling (???TBD).
+                  --  For now we only deal with aspects that do not generate
+                  --  subprograms, or that may mention current instances of
+                  --  types. These will require special handling (???TBD).
 
-               when Aspect_Invariant
-                  | Aspect_Predicate
-                  | Aspect_Predicate_Failure
-               =>
-                  null;
+                  when Aspect_Invariant
+                     | Aspect_Predicate
+                     | Aspect_Predicate_Failure
+                  =>
+                     null;
 
-               when Aspect_Dynamic_Predicate
-                  | Aspect_Static_Predicate
-               =>
-                  --  Build predicate function specification and preanalyze
-                  --  expression after type replacement.
+                  when Aspect_Dynamic_Predicate
+                     | Aspect_Static_Predicate
+                  =>
+                     --  Build predicate function specification and preanalyze
+                     --  expression after type replacement.
 
-                  if No (Predicate_Function (E)) then
-                     declare
-                        FDecl : constant Node_Id :=
-                                  Build_Predicate_Function_Declaration (E);
-                        pragma Unreferenced (FDecl);
-                     begin
-                        Resolve_Aspect_Expression (Expr);
-                     end;
-                  end if;
+                     if No (Predicate_Function (E)) then
+                        declare
+                           FDecl : constant Node_Id :=
+                                     Build_Predicate_Function_Declaration (E);
+                           pragma Unreferenced (FDecl);
+                        begin
+                           Resolve_Aspect_Expression (Expr);
+                        end;
+                     end if;
 
-               when Pre_Post_Aspects =>
-                  null;
+                  when Pre_Post_Aspects =>
+                     null;
 
-               when Aspect_Iterable =>
-                  if Nkind (Expr) = N_Aggregate then
-                     declare
-                        Assoc : Node_Id;
+                  when Aspect_Iterable =>
+                     if Nkind (Expr) = N_Aggregate then
+                        declare
+                           Assoc : Node_Id;
 
-                     begin
-                        Assoc := First (Component_Associations (Expr));
-                        while Present (Assoc) loop
-                           Find_Direct_Name (Expression (Assoc));
-                           Next (Assoc);
-                        end loop;
-                     end;
-                  end if;
+                        begin
+                           Assoc := First (Component_Associations (Expr));
+                           while Present (Assoc) loop
+                              Find_Direct_Name (Expression (Assoc));
+                              Next (Assoc);
+                           end loop;
+                        end;
+                     end if;
 
-               when others =>
-                  if Present (Expr) then
-                     case Aspect_Argument (A_Id) is
-                        when Expression
-                           | Optional_Expression
-                        =>
-                           Analyze_And_Resolve (Expression (ASN));
+                  when others =>
+                     if Present (Expr) then
+                        case Aspect_Argument (A_Id) is
+                           when Expression
+                              | Optional_Expression
+                           =>
+                              Analyze_And_Resolve (Expr);
 
-                        when Name
-                           | Optional_Name
-                        =>
-                           if Nkind (Expr) = N_Identifier then
-                              Find_Direct_Name (Expr);
+                           when Name
+                              | Optional_Name
+                           =>
+                              if Nkind (Expr) = N_Identifier then
+                                 Find_Direct_Name (Expr);
 
-                           elsif Nkind (Expr) = N_Selected_Component then
-                              Find_Selected_Component (Expr);
-                           end if;
-                     end case;
-                  end if;
-            end case;
+                              elsif Nkind (Expr) = N_Selected_Component then
+                                 Find_Selected_Component (Expr);
+                              end if;
+                        end case;
+                     end if;
+               end case;
+            end;
          end if;
 
          ASN := Next_Rep_Item (ASN);
       end loop;
+
+      Uninstall_Discriminants_And_Pop_Scope (E);
    end Resolve_Aspect_Expressions;
 
    -------------------------

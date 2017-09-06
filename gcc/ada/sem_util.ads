@@ -465,8 +465,9 @@ package Sem_Util is
    --  we are operating in Ada 83 mode, or the Warn parameter is set to True.
 
    procedure Conditional_Delay (New_Ent, Old_Ent : Entity_Id);
-   --  Sets the Has_Delayed_Freeze flag of New if the Delayed_Freeze flag of
-   --  Old is set and Old has no yet been Frozen (i.e. Is_Frozen is false).
+   --  Sets the Has_Delayed_Freeze flag of New_Ent if the Delayed_Freeze flag
+   --  of Old_Ent is set and Old_Ent has not yet been Frozen (i.e. Is_Frozen is
+   --  False).
 
    function Contains_Refined_State (Prag : Node_Id) return Boolean;
    --  Determine whether pragma Prag contains a reference to the entity of an
@@ -1672,7 +1673,7 @@ package Sem_Util is
    --  null component list.
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean;
-   --  Returns true if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
+   --  Returns True if an 'Image, 'Wide_Image, or 'Wide_Wide_Image attribute
    --  is applied to a given object or named value prefix (see below).
 
    --  AI12-00124: The ARG has adopted the GNAT semantics of 'Img for scalar
@@ -1838,10 +1839,6 @@ package Sem_Util is
      (N : Node_Id) return Boolean;
    --  Return True if N is a subprogram stub with no prior subprogram
    --  declaration.
-
-   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean;
-   --  Return True if E is an entry or a subprogram that is part (directly or
-   --  in a nested way) of a protected type.
 
    function Is_Suspension_Object (Id : Entity_Id) return Boolean;
    --  Determine whether arbitrary entity Id denotes Suspension_Object defined
@@ -2583,6 +2580,9 @@ package Sem_Util is
 
    function Within_Init_Proc return Boolean;
    --  Determines if Current_Scope is within an init proc
+
+   function Within_Protected_Type (E : Entity_Id) return Boolean;
+   --  Returns True if entity E is declared within a protected type
 
    function Within_Scope (E : Entity_Id; S : Entity_Id) return Boolean;
    --  Returns True if entity E is declared within scope S

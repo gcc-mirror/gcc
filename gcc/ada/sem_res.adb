@@ -5455,6 +5455,13 @@ package body Sem_Res is
             Resolve (L, B_Typ);
             Resolve (R, TR);
 
+         --  If both operands are universal and the context is a floating
+         --  point type, the operands are resolved to the type of the context.
+
+         elsif Is_Floating_Point_Type (B_Typ) then
+            Resolve (L, B_Typ);
+            Resolve (R, B_Typ);
+
          else
             Set_Mixed_Mode_Operand (L, TR);
             Set_Mixed_Mode_Operand (R, TL);
@@ -6650,10 +6657,28 @@ package body Sem_Res is
 
             elsif Full_Analysis then
 
+               --  Do not inline calls inside expression functions, as this
+               --  would prevent interpreting them as logical formulas in
+               --  GNATprove. Only issue a message when the body has been seen,
+               --  otherwise this leads to spurious messages on callees that
+               --  are themselves expression functions.
+
+               if Present (Current_Subprogram)
+                 and then Is_Expression_Function_Or_Completion
+                            (Current_Subprogram)
+               then
+                  if Present (Body_Id)
+                    and then Present (Body_To_Inline (Nam_Decl))
+                  then
+                     Cannot_Inline
+                       ("cannot inline & (inside expression function)?",
+                        N, Nam_UA);
+                  end if;
+
                --  With the one-pass inlining technique, a call cannot be
                --  inlined if the corresponding body has not been seen yet.
 
-               if No (Body_Id) then
+               elsif No (Body_Id) then
                   Cannot_Inline
                     ("cannot inline & (body not seen yet)?", N, Nam_UA);
 
@@ -6663,18 +6688,6 @@ package body Sem_Res is
 
                elsif No (Body_To_Inline (Nam_Decl)) then
                   null;
-
-               --  Do not inline calls inside expression functions, as this
-               --  would prevent interpreting them as logical formulas in
-               --  GNATprove.
-
-               elsif Present (Current_Subprogram)
-                       and then
-                     Is_Expression_Function_Or_Completion (Current_Subprogram)
-               then
-                  Cannot_Inline
-                    ("cannot inline & (inside expression function)?",
-                     N, Nam_UA);
 
                --  Calls cannot be inlined inside potentially unevaluated
                --  expressions, as this would create complex actions inside

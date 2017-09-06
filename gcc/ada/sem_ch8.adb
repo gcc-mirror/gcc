@@ -7385,7 +7385,7 @@ package body Sem_Ch8 is
                      --  synchronized type itself, with minimal semantic
                      --  attributes, to catch other errors in some ACATS tests.
 
-                     pragma Assert (Serious_Errors_Detected > 0);
+                     pragma Assert (Serious_Errors_Detected /= 0);
                      Make_Class_Wide_Type (T);
                      C := Class_Wide_Type (T);
                      Set_First_Entity (C, First_Entity (T));

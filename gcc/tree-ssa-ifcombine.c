@@ -560,7 +560,7 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 	{
 	  tree t1, t2;
 	  gimple_stmt_iterator gsi;
-	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT)
+	  if (!LOGICAL_OP_NON_SHORT_CIRCUIT || flag_sanitize_coverage)
 	    return false;
 	  /* Only do this optimization if the inner bb contains only the conditional. */
 	  if (!gsi_one_before_end_p (gsi_start_nondebug_after_labels_bb (inner_cond_bb)))

@@ -14130,8 +14130,8 @@ package body Sem_Util is
 
    function Is_Object_Image (Prefix : Node_Id) return Boolean is
    begin
-      --  When the type of the prefix is not scalar then the prefix is not
-      --  valid in any senario.
+      --  When the type of the prefix is not scalar, then the prefix is not
+      --  valid in any scenario.
 
       if not Is_Scalar_Type (Etype (Prefix)) then
          return False;
@@ -14139,7 +14139,7 @@ package body Sem_Util is
 
       --  Here we test for the case that the prefix is not a type and assume
       --  if it is not then it must be a named value or an object reference.
-      --  This is because the parser always checks that prefix's of attributes
+      --  This is because the parser always checks that prefixes of attributes
       --  are named.
 
       return not (Is_Entity_Name (Prefix) and then Is_Type (Entity (Prefix)));
@@ -14228,9 +14228,9 @@ package body Sem_Util is
                return not Nkind_In (Original_Node (N), N_Case_Expression,
                                                        N_If_Expression);
 
-            when N_Type_Conversion =>
-               --  A view conversion of a tagged object is an object reference
+            --  A view conversion of a tagged object is an object reference
 
+            when N_Type_Conversion =>
                return Is_Tagged_Type (Etype (Subtype_Mark (N)))
                  and then Is_Tagged_Type (Etype (Expression (N)))
                  and then Is_Object_Reference (Expression (N));
@@ -15544,32 +15544,6 @@ package body Sem_Util is
       return Nkind (N) = N_Subprogram_Body_Stub
         and then Ekind (Defining_Entity (N)) /= E_Subprogram_Body;
    end Is_Subprogram_Stub_Without_Prior_Declaration;
-
-   ---------------------------------------
-   -- Is_Subp_Or_Entry_Inside_Protected --
-   ---------------------------------------
-
-   function Is_Subp_Or_Entry_Inside_Protected (E : Entity_Id) return Boolean is
-      Scop : Entity_Id;
-
-   begin
-      case Ekind (E) is
-         when Entry_Kind | Subprogram_Kind =>
-            Scop := Scope (E);
-
-            while Present (Scop) loop
-               if Ekind (Scop) = E_Protected_Type then
-                  return True;
-               end if;
-               Scop := Scope (Scop);
-            end loop;
-
-            return False;
-
-         when others =>
-            return False;
-      end case;
-   end Is_Subp_Or_Entry_Inside_Protected;
 
    --------------------------
    -- Is_Suspension_Object --
@@ -22142,7 +22116,7 @@ package body Sem_Util is
                      Prot_Type := Scope (E);
 
                   --  Bodies of entry families are nested within an extra scope
-                  --  that contains an entry index declaration
+                  --  that contains an entry index declaration.
 
                   else
                      Prot_Type := Scope (Scope (E));
@@ -22582,6 +22556,25 @@ package body Sem_Util is
 
       return Is_Init_Proc (S);
    end Within_Init_Proc;
+
+   ---------------------------
+   -- Within_Protected_Type --
+   ---------------------------
+
+   function Within_Protected_Type (E : Entity_Id) return Boolean is
+      Scop : Entity_Id := Scope (E);
+
+   begin
+      while Present (Scop) loop
+         if Ekind (Scop) = E_Protected_Type then
+            return True;
+         end if;
+
+         Scop := Scope (Scop);
+      end loop;
+
+      return False;
+   end Within_Protected_Type;
 
    ------------------
    -- Within_Scope --

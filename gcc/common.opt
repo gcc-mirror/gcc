@@ -233,10 +233,9 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
-fsanitize-coverage=trace-pc
-Common Report Var(flag_sanitize_coverage)
-Enable coverage-guided fuzzing code instrumentation.
-Inserts call to __sanitizer_cov_trace_pc into every basic block.
+; What the coverage sanitizers should instrument
+Variable
+unsigned int flag_sanitize_coverage
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -981,6 +980,10 @@ Does nothing. Preserved for backward compatibility.
 fsanitize=
 Common Driver Report Joined
 Select what to sanitize.
+
+fsanitize-coverage=
+Common Report Joined
+Select what to coverage sanitize.
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer

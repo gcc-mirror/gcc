@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,7 +67,7 @@ package Sinput.L is
    function Source_File_Is_Body (X : Source_File_Index) return Boolean;
    --  Returns true if the designated source file contains a subprogram body
    --  or a package body. This is a limited scan just to determine the answer
-   --  to this question..
+   --  to this question.
 
    function Source_File_Is_No_Body (X : Source_File_Index) return Boolean;
    --  Returns true if the designated source file contains pragma No_Body;
@@ -100,13 +100,16 @@ package Sinput.L is
    --  Inst_Node is the instantiation node, and Template_Id is the defining
    --  identifier of the generic declaration or body unit as appropriate.
    --  Factor is set to an adjustment factor to be used in subsequent calls to
-   --  Adjust_Instantiation_Sloc. The instantiation mechanism is also used for
-   --  inlined function and procedure calls. The parameter Inlined_Body is set
-   --  to True in such cases. This is used for generating error messages that
-   --  distinguish these two cases, otherwise the two cases are handled
-   --  identically. Similarly, the instantiation mechanism is also used for
-   --  inherited class-wide pre- and postconditions. Parameter Inherited_Pragma
-   --  is set to True in such cases.
+   --  Adjust_Instantiation_Sloc. Template_Id can also be a subunit body that
+   --  replaces a stub in a generic unit.
+   --
+   --  The instantiation mechanism is also used for inlined function and
+   --  procedure calls. The parameter Inlined_Body is set to True in such
+   --  cases. This is used for generating error messages that distinguish these
+   --  two cases, otherwise the two cases are handled identically. Similarly,
+   --  the instantiation mechanism is also used for inherited class-wide pre-
+   --  and postconditions. Parameter Inherited_Pragma is set to True in such
+   --  cases.
 
 private
 

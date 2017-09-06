@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2008-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,11 @@ package Pprint is
       Hide_Parameter_Blocks : Boolean := False;
       --  If true, then "Parameter_Block.Field_Name.all" is
       --  instead displayed as "Field_Name".
+
+      Hide_Temp_Derefs : Boolean := False;
+      --  If true, then "Foo.all" is instead displayed as "Foo"
+      --  in the case where Foo is a compiler-generated constant
+      --  initialized to Some_Captured_Value'Reference.
 
    function Expression_Image
      (Expr    : Node_Id;

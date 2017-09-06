@@ -197,8 +197,9 @@ package body Sem_Prag is
      (Prag    : Node_Id;
       Spec_Id : Entity_Id);
    --  Subsidiary to the analysis of pragmas Contract_Cases, Postcondition,
-   --  Precondition, Refined_Post and Test_Case. Emit a warning when pragma
-   --  Prag is associated with subprogram Spec_Id subject to Inline_Always.
+   --  Precondition, Refined_Post, and Test_Case. Emit a warning when pragma
+   --  Prag is associated with subprogram Spec_Id subject to Inline_Always,
+   --  and assertions are enabled.
 
    procedure Check_State_And_Constituent_Use
      (States   : Elist_Id;
@@ -595,7 +596,6 @@ package body Sem_Prag is
       --  to the name buffer. The individual kinds are as follows:
       --    E_Abstract_State           - "state"
       --    E_Constant                 - "constant"
-      --    E_Discriminant             - "discriminant"
       --    E_Generic_In_Out_Parameter - "generic parameter"
       --    E_Generic_In_Parameter     - "generic parameter"
       --    E_In_Parameter             - "parameter"
@@ -649,9 +649,6 @@ package body Sem_Prag is
 
          elsif Ekind (Item_Id) = E_Constant then
             Add_Str_To_Name_Buffer ("constant");
-
-         elsif Ekind (Item_Id) = E_Discriminant then
-            Add_Str_To_Name_Buffer ("discriminant");
 
          elsif Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
                                   E_Generic_In_Parameter)
@@ -1103,7 +1100,7 @@ package body Sem_Prag is
                   else
                      SPARK_Msg_N
                        ("item must denote parameter, variable, state or "
-                        & "current instance of concurren type", Item);
+                        & "current instance of concurrent type", Item);
                   end if;
 
                --  All other input/output items are illegal
@@ -1237,7 +1234,6 @@ package body Sem_Prag is
             --  Constants
 
             elsif Ekind_In (Item_Id, E_Constant,
-                                     E_Discriminant,
                                      E_Loop_Parameter)
             then
                Item_Is_Input := True;
@@ -1446,7 +1442,7 @@ package body Sem_Prag is
                --  Unconstrained and tagged items are not part of the explicit
                --  input set of the related subprogram, they do not have to be
                --  present in a dependence relation and should not be flagged
-               --  (SPARK RM 6.1.5(8)).
+               --  (SPARK RM 6.1.5(5)).
 
                if not Is_Unconstrained_Or_Tagged_Item (Item_Id) then
                   Name_Len := 0;
@@ -2442,7 +2438,7 @@ package body Sem_Prag is
                      Global_Seen  => Dummy);
 
                   --  The item is classified as In_Out or Output but appears as
-                  --  an Input in an enclosing subprogram (SPARK RM 6.1.4(11)).
+                  --  an Input in an enclosing subprogram (SPARK RM 6.1.4(12)).
 
                   if Appears_In (Inputs, Item_Id)
                     and then not Appears_In (Outputs, Item_Id)
@@ -4080,7 +4076,10 @@ package body Sem_Prag is
 
          --  Object declaration of a single concurrent type
 
-         elsif Nkind (Subp_Decl) = N_Object_Declaration then
+         elsif Nkind (Subp_Decl) = N_Object_Declaration
+           and then Is_Single_Concurrent_Object
+                      (Unique_Defining_Entity (Subp_Decl))
+         then
             null;
 
          --  Single task type
@@ -6869,26 +6868,193 @@ package body Sem_Prag is
       ------------------------------------------------
 
       procedure Process_Atomic_Independent_Shared_Volatile is
-         procedure Set_Atomic_VFA (E : Entity_Id);
+         procedure Check_VFA_Conflicts (Ent : Entity_Id);
+         --  Apply additional checks for the GNAT pragma Volatile_Full_Access
+
+         procedure Mark_Component_Or_Object (Ent : Entity_Id);
+         --  Appropriately set flags on the given entity (either an array or
+         --  record component, or an object declaration) according to the
+         --  current pragma.
+
+         procedure Set_Atomic_VFA (Ent : Entity_Id);
          --  Set given type as Is_Atomic or Is_Volatile_Full_Access. Also, if
          --  no explicit alignment was given, set alignment to unknown, since
          --  back end knows what the alignment requirements are for atomic and
          --  full access arrays. Note: this is necessary for derived types.
 
+         -------------------------
+         -- Check_VFA_Conflicts --
+         -------------------------
+
+         procedure Check_VFA_Conflicts (Ent : Entity_Id) is
+            Comp : Entity_Id;
+            Typ  : Entity_Id;
+
+            VFA_And_Atomic : Boolean := False;
+            --  Set True if atomic component present
+
+            VFA_And_Aliased : Boolean := False;
+            --  Set True if aliased component present
+
+         begin
+            --  Fetch the type in case we are dealing with an object or
+            --  component.
+
+            if Is_Type (Ent) then
+               Typ := Ent;
+            else
+               pragma Assert (Is_Object (Ent)
+                 or else
+                   Nkind (Declaration_Node (Ent)) = N_Component_Declaration);
+
+               Typ := Etype (Ent);
+            end if;
+
+            --  Check Atomic and VFA used together
+
+            if Prag_Id = Pragma_Volatile_Full_Access
+              or else Is_Volatile_Full_Access (Ent)
+            then
+               if Prag_Id = Pragma_Atomic
+                 or else Prag_Id = Pragma_Shared
+                 or else Is_Atomic (Ent)
+               then
+                  VFA_And_Atomic := True;
+
+               elsif Is_Array_Type (Typ) then
+                  VFA_And_Atomic := Has_Atomic_Components (Typ);
+
+               --  Note: Has_Atomic_Components is not used below, as this flag
+               --  represents the pragma of the same name, Atomic_Components,
+               --  which only applies to arrays.
+
+               elsif Is_Record_Type (Typ) then
+                  --  Attributes cannot be applied to discriminants, only
+                  --  regular record components.
+
+                  Comp := First_Component (Typ);
+                  while Present (Comp) loop
+                     if Is_Atomic (Comp)
+                       or else Is_Atomic (Typ)
+                     then
+                        VFA_And_Atomic := True;
+
+                        exit;
+                     end if;
+
+                     Next_Component (Comp);
+                  end loop;
+               end if;
+
+               if VFA_And_Atomic then
+                  Error_Pragma
+                    ("cannot have Volatile_Full_Access and Atomic for same "
+                     & "entity");
+               end if;
+            end if;
+
+            --  Check for the application of VFA to an entity that has aliased
+            --  components.
+
+            if Prag_Id = Pragma_Volatile_Full_Access then
+               if Is_Array_Type (Typ)
+                 and then Has_Aliased_Components (Typ)
+               then
+                  VFA_And_Aliased := True;
+
+               --  Note: Has_Aliased_Components, like Has_Atomic_Components,
+               --  and Has_Independent_Components, applies only to arrays.
+               --  However, this flag does not have a corresponding pragma, so
+               --  perhaps it should be possible to apply it to record types as
+               --  well. Should this be done ???
+
+               elsif Is_Record_Type (Typ) then
+                  --  It is possible to have an aliased discriminant, so they
+                  --  must be checked along with normal components.
+
+                  Comp := First_Component_Or_Discriminant (Typ);
+                  while Present (Comp) loop
+                     if Is_Aliased (Comp)
+                       or else Is_Aliased (Etype (Comp))
+                     then
+                        VFA_And_Aliased := True;
+                        Check_SPARK_05_Restriction
+                          ("aliased is not allowed", Comp);
+
+                        exit;
+                     end if;
+
+                     Next_Component_Or_Discriminant (Comp);
+                  end loop;
+               end if;
+
+               if VFA_And_Aliased then
+                  Error_Pragma
+                    ("cannot apply Volatile_Full_Access (aliased component "
+                     & "present)");
+               end if;
+            end if;
+         end Check_VFA_Conflicts;
+
+         ------------------------------
+         -- Mark_Component_Or_Object --
+         ------------------------------
+
+         procedure Mark_Component_Or_Object (Ent : Entity_Id) is
+         begin
+            if Prag_Id = Pragma_Atomic
+              or else Prag_Id = Pragma_Shared
+              or else Prag_Id = Pragma_Volatile_Full_Access
+            then
+               if Prag_Id = Pragma_Volatile_Full_Access then
+                  Set_Is_Volatile_Full_Access (Ent);
+               else
+                  Set_Is_Atomic (Ent);
+               end if;
+
+               --  If the object declaration has an explicit initialization, a
+               --  temporary may have to be created to hold the expression, to
+               --  ensure that access to the object remains atomic.
+
+               if Nkind (Parent (Ent)) = N_Object_Declaration
+                 and then Present (Expression (Parent (Ent)))
+               then
+                  Set_Has_Delayed_Freeze (Ent);
+               end if;
+            end if;
+
+            --  Atomic/Shared/Volatile_Full_Access imply Independent
+
+            if Prag_Id /= Pragma_Volatile then
+               Set_Is_Independent (Ent);
+
+               if Prag_Id = Pragma_Independent then
+                  Record_Independence_Check (N, Ent);
+               end if;
+            end if;
+
+            --  Atomic/Shared/Volatile_Full_Access imply Volatile
+
+            if Prag_Id /= Pragma_Independent then
+               Set_Is_Volatile (Ent);
+               Set_Treat_As_Volatile (Ent);
+            end if;
+         end Mark_Component_Or_Object;
+
          --------------------
          -- Set_Atomic_VFA --
          --------------------
 
-         procedure Set_Atomic_VFA (E : Entity_Id) is
+         procedure Set_Atomic_VFA (Ent : Entity_Id) is
          begin
             if Prag_Id = Pragma_Volatile_Full_Access then
-               Set_Is_Volatile_Full_Access (E);
+               Set_Is_Volatile_Full_Access (Ent);
             else
-               Set_Is_Atomic (E);
+               Set_Is_Atomic (Ent);
             end if;
 
-            if not Has_Alignment_Clause (E) then
-               Set_Alignment (E, Uint_0);
+            if not Has_Alignment_Clause (Ent) then
+               Set_Alignment (Ent, Uint_0);
             end if;
          end Set_Atomic_VFA;
 
@@ -6922,63 +7088,15 @@ package body Sem_Prag is
 
          Check_Duplicate_Pragma (E);
 
-         --  Check Atomic and VFA used together
-
-         if (Is_Atomic (E) and then Prag_Id = Pragma_Volatile_Full_Access)
-           or else (Is_Volatile_Full_Access (E)
-                     and then (Prag_Id = Pragma_Atomic
-                                 or else
-                               Prag_Id = Pragma_Shared))
-         then
-            Error_Pragma
-              ("cannot have Volatile_Full_Access and Atomic for same entity");
-         end if;
-
-         --  Check for applying VFA to an entity which has aliased component
-
-         if Prag_Id = Pragma_Volatile_Full_Access then
-            declare
-               Comp         : Entity_Id;
-               Aliased_Comp : Boolean := False;
-               --  Set True if aliased component present
-
-            begin
-               if Is_Array_Type (Etype (E)) then
-                  Aliased_Comp := Has_Aliased_Components (Etype (E));
-
-               --  Record case, too bad Has_Aliased_Components is not also
-               --  set for records, should it be ???
-
-               elsif Is_Record_Type (Etype (E)) then
-                  Comp := First_Component_Or_Discriminant (Etype (E));
-                  while Present (Comp) loop
-                     if Is_Aliased (Comp)
-                       or else Is_Aliased (Etype (Comp))
-                     then
-                        Aliased_Comp := True;
-                        exit;
-                     end if;
-
-                     Next_Component_Or_Discriminant (Comp);
-                  end loop;
-               end if;
-
-               if Aliased_Comp then
-                  Error_Pragma
-                    ("cannot apply Volatile_Full_Access (aliased component "
-                     & "present)");
-               end if;
-            end;
-         end if;
-
-         --  Now check appropriateness of the entity
+         --  Check appropriateness of the entity
 
          Decl := Declaration_Node (E);
 
+         --  Deal with the case where the pragma/attribute is applied to a type
+
          if Is_Type (E) then
             if Rep_Item_Too_Early (E, N)
-                 or else
-               Rep_Item_Too_Late (E, N)
+              or else Rep_Item_Too_Late (E, N)
             then
                return;
             else
@@ -6989,10 +7107,8 @@ package body Sem_Prag is
             --  currently private, it also belongs on the underlying type.
 
             if Prag_Id = Pragma_Atomic
-                 or else
-               Prag_Id = Pragma_Shared
-                 or else
-               Prag_Id = Pragma_Volatile_Full_Access
+              or else Prag_Id = Pragma_Shared
+              or else Prag_Id = Pragma_Volatile_Full_Access
             then
                Set_Atomic_VFA (E);
                Set_Atomic_VFA (Base_Type (E));
@@ -7022,6 +7138,9 @@ package body Sem_Prag is
                Set_Treat_As_Volatile (Underlying_Type (E));
             end if;
 
+         --  Deal with the case where the pragma/attribute applies to a
+         --  component or object declaration.
+
          elsif Nkind (Decl) = N_Object_Declaration
            or else (Nkind (Decl) = N_Component_Declaration
                      and then Original_Record_Component (E) = E)
@@ -7030,49 +7149,15 @@ package body Sem_Prag is
                return;
             end if;
 
-            if Prag_Id = Pragma_Atomic
-                 or else
-               Prag_Id = Pragma_Shared
-                 or else
-               Prag_Id = Pragma_Volatile_Full_Access
-            then
-               if Prag_Id = Pragma_Volatile_Full_Access then
-                  Set_Is_Volatile_Full_Access (E);
-               else
-                  Set_Is_Atomic (E);
-               end if;
-
-               --  If the object declaration has an explicit initialization, a
-               --  temporary may have to be created to hold the expression, to
-               --  ensure that access to the object remain atomic.
-
-               if Nkind (Parent (E)) = N_Object_Declaration
-                 and then Present (Expression (Parent (E)))
-               then
-                  Set_Has_Delayed_Freeze (E);
-               end if;
-            end if;
-
-            --  Atomic/Shared/Volatile_Full_Access imply Independent
-
-            if Prag_Id /= Pragma_Volatile then
-               Set_Is_Independent (E);
-
-               if Prag_Id = Pragma_Independent then
-                  Record_Independence_Check (N, E);
-               end if;
-            end if;
-
-            --  Atomic/Shared/Volatile_Full_Access imply Volatile
-
-            if Prag_Id /= Pragma_Independent then
-               Set_Is_Volatile (E);
-               Set_Treat_As_Volatile (E);
-            end if;
-
+            Mark_Component_Or_Object (E);
          else
             Error_Pragma_Arg ("inappropriate entity for pragma%", Arg1);
          end if;
+
+         --  Perform the checks needed to assure the proper use of the GNAT
+         --  pragma Volatile_Full_Access.
+
+         Check_VFA_Conflicts (E);
 
          --  The following check is only relevant when SPARK_Mode is on as
          --  this is not a standard Ada legality rule. Pragma Volatile can
@@ -27993,6 +28078,7 @@ package body Sem_Prag is
    begin
       if Warn_On_Redundant_Constructs
         and then Has_Pragma_Inline_Always (Spec_Id)
+        and then Assertions_Enabled
       then
          Error_Msg_Name_1 := Original_Aspect_Pragma_Name (Prag);
 

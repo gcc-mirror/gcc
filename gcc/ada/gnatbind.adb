@@ -522,10 +522,10 @@ procedure Gnatbind is
                      declare
                         Arguments : constant Argument_List :=
                           System.Response_File.Arguments_From
-                                        (Response_File_Name        =>
-                                           Next_Argv (2 .. Next_Argv'Last),
-                                         Recursive                 => True,
-                                         Ignore_Non_Existing_Files => True);
+                            (Response_File_Name        =>
+                               Next_Argv (2 .. Next_Argv'Last),
+                             Recursive                 => True,
+                             Ignore_Non_Existing_Files => True);
                      begin
                         for J in Arguments'Range loop
                            Action (Arguments (J).all);

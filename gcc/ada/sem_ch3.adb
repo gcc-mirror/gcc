@@ -2649,8 +2649,26 @@ package body Sem_Ch3 is
                --  in order to perform visibility checks on delayed aspects.
 
                Adjust_Decl;
-               Freeze_All (First_Entity (Current_Scope), Decl);
-               Freeze_From := Last_Entity (Current_Scope);
+
+               --  If the current scope is a generic subprogram body. Skip the
+               --  generic formal parameters that are not frozen here.
+
+               if Is_Subprogram (Current_Scope)
+                 and then Nkind (Unit_Declaration_Node (Current_Scope)) =
+                            N_Generic_Subprogram_Declaration
+                 and then Present (First_Entity (Current_Scope))
+               then
+                  while Is_Generic_Formal (Freeze_From) loop
+                     Freeze_From := Next_Entity (Freeze_From);
+                  end loop;
+
+                  Freeze_All (Freeze_From, Decl);
+                  Freeze_From := Last_Entity (Current_Scope);
+
+               else
+                  Freeze_All (First_Entity (Current_Scope), Decl);
+                  Freeze_From := Last_Entity (Current_Scope);
+               end if;
 
             --  Current scope is a package specification
 
@@ -5705,6 +5723,27 @@ package body Sem_Ch3 is
         and then Ekind (Scope (Scope (Id))) /= E_Protected_Type
       then
          Conditional_Delay (Id, T);
+      end if;
+
+      --  If we have a subtype of an incomplete type whose full type is a
+      --  derived numeric type, we need to have a freeze node for the subtype.
+      --  Otherwise gigi will complain while computing the (static) bounds of
+      --  the subtype.
+
+      if Is_Itype (T)
+        and then Is_Elementary_Type (Id)
+        and then Etype (Id) /= Id
+      then
+         declare
+            Partial : constant Entity_Id :=
+                        Incomplete_Or_Partial_View (First_Subtype (Id));
+         begin
+            if Present (Partial)
+              and then Ekind (Partial) = E_Incomplete_Type
+            then
+               Set_Has_Delayed_Freeze (Id);
+            end if;
+         end;
       end if;
 
       --  Check that Constraint_Error is raised for a scalar subtype indication
@@ -16241,9 +16280,6 @@ package body Sem_Ch3 is
       --  Check whether the parent type is a generic formal, or derives
       --  directly or indirectly from one.
 
-      function Find_Partial_View (T : Entity_Id) return Entity_Id;
-      --  Return the partial view for a type entity T, when there is one
-
       ------------------------
       -- Comes_From_Generic --
       ------------------------
@@ -16270,28 +16306,6 @@ package body Sem_Ch3 is
          end if;
       end Comes_From_Generic;
 
-      -----------------------
-      -- Find_Partial_View --
-      -----------------------
-
-      function Find_Partial_View (T : Entity_Id) return Entity_Id is
-         Partial_View : Entity_Id;
-
-      begin
-         --  Look for the associated private type declaration
-
-         Partial_View := First_Entity (Scope (T));
-         loop
-            exit when No (Partial_View)
-              or else (Has_Private_Declaration (Partial_View)
-                        and then Full_View (Partial_View) = T);
-
-            Next_Entity (Partial_View);
-         end loop;
-
-         return Partial_View;
-      end Find_Partial_View;
-
       --  Local variables
 
       Def          : constant Node_Id := Type_Definition (N);
@@ -16311,19 +16325,20 @@ package body Sem_Ch3 is
       then
          declare
             Partial_View : constant Entity_Id :=
-              Find_Partial_View (Parent_Type);
+                             Incomplete_Or_Partial_View (Parent_Type);
 
          begin
-            --  If the partial view was not found then the parent type is not a
-            --  private type. Otherwise check that the partial view is declared
-            --  as tagged.
+            --  If the partial view was not found then the parent type is not
+            --  a private type. Otherwise check if the partial view is a tagged
+            --  private type.
 
             if Present (Partial_View)
+              and then Is_Private_Type (Partial_View)
               and then not Is_Tagged_Type (Partial_View)
             then
-               Error_Msg_NE ("cannot derive from & declared as "
-                             & "untagged private (SPARK RM 3.4(1))",
-                             N, Partial_View);
+               Error_Msg_NE
+                 ("cannot derive from & declared as untagged private "
+                  & "(SPARK RM 3.4(1))", N, Partial_View);
             end if;
          end;
       end if;
@@ -16515,7 +16530,7 @@ package body Sem_Ch3 is
          begin
             --  Look for the associated private type declaration
 
-            Partial_View := Find_Partial_View (T);
+            Partial_View := Incomplete_Or_Partial_View (T);
 
             --  If the partial view was not found then the source code has
             --  errors and the transformation is not needed.
