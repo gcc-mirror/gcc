@@ -1,3 +1,14 @@
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* output.h (switch_to_other_text_partition): New declaration.
+	* varasm.c (switch_to_other_text_partition): New function.
+	* config/rs6000/rs6000.c (uses_TOC): Return 2 if
+	NOTE_INSN_SWITCH_TEXT_SECTIONS is seen before finding load_toc_* insn.
+	(rs6000_elf_declare_function_name): If uses_TOC returned 2, switch
+	to the other text partition before emitting LCL label and switch back
+	after emitting the word after it.
+
 2017-09-07  Richard Biener  <rguenther@suse.de>
 
 	* passes.def (pass_split_crit_edges): Remove instance before PRE.
