@@ -1,6 +1,12 @@
 2017-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81768
+	* omp-expand.c (expand_omp_simd): Force second operands of COND_EXPR
+	into gimple val before gimplification fo the COND_EXPR.
+
 	2017-09-04  Jakub Jelinek  <jakub@redhat.com>
 
 	* lra-remat.c (reg_overlap_for_remat_p): Fix a pasto.
