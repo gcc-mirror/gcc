@@ -6667,7 +6667,15 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 		*tp = t = out->to;
 	    }
 
-	  DECL_CONTEXT (t) = p->to_context;
+	  /* For FORCED_LABELs we can end up with references from other
+	     functions if some SESE regions are outlined.  It is UB to
+	     jump in between them, but they could be used just for printing
+	     addresses etc.  In that case, DECL_CONTEXT on the label should
+	     be the function containing the glabel stmt with that LABEL_DECL,
+	     rather than whatever function a reference to the label was seen
+	     last time.  */
+	  if (!FORCED_LABEL (t) && !DECL_NONLOCAL (t))
+	    DECL_CONTEXT (t) = p->to_context;
 	}
       else if (p->remap_decls_p)
 	{
@@ -6785,6 +6793,21 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_RETURN:
     case GIMPLE_OMP_CONTINUE:
       break;
+
+    case GIMPLE_LABEL:
+      {
+	/* For FORCED_LABEL, move_stmt_op doesn't adjust DECL_CONTEXT,
+	   so that such labels can be referenced from other regions.
+	   Make sure to update it when seeing a GIMPLE_LABEL though,
+	   that is the owner of the label.  */
+	walk_gimple_op (stmt, move_stmt_op, wi);
+	*handled_ops_p = true;
+	tree label = gimple_label_label (as_a <glabel *> (stmt));
+	if (FORCED_LABEL (label) || DECL_NONLOCAL (label))
+	  DECL_CONTEXT (label) = p->to_context;
+      }
+      break;
+
     default:
       if (is_gimple_omp (stmt))
 	{
