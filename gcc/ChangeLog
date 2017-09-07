@@ -1,3 +1,7 @@
+2017-09-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* sancov.c: Include tm_p.h.
+
 2017-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81979
