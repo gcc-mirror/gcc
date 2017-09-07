@@ -7138,6 +7138,24 @@ package body Sem_Prag is
                Set_Treat_As_Volatile (Underlying_Type (E));
             end if;
 
+            --  Apply Volatile to the composite type's individual components,
+            --  (RM C.6(8/3)).
+
+            if Prag_Id = Pragma_Volatile
+              and then Is_Record_Type (Etype (E))
+            then
+               declare
+                  Comp : Entity_Id;
+               begin
+                  Comp := First_Component (E);
+                  while Present (Comp) loop
+                     Mark_Component_Or_Object (Comp);
+
+                     Next_Component (Comp);
+                  end loop;
+               end;
+            end if;
+
          --  Deal with the case where the pragma/attribute applies to a
          --  component or object declaration.
 

@@ -1394,6 +1394,7 @@ package body Sem_Attr is
 
          elsif not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
                                         N_Entry_Declaration,
+                                        N_Expression_Function,
                                         N_Generic_Subprogram_Declaration,
                                         N_Subprogram_Body,
                                         N_Subprogram_Body_Stub,

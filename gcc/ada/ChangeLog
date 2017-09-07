@@ -1,3 +1,58 @@
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch6.adb (P_Subprogram): Improve error message on null
+	procedure with misplaced aspect specification, which the parser
+	first attempts to interpret as a malformed expression function.
+
+2017-09-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_attr.adb (Analyze_Attribute_Old_Result):
+	Allow attributes Result and Old in the case of an expression
+	function.
+
+2017-09-07  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Process_Atomic_Independent_Shared_Volatile): Propagate
+	Volatile to subcomponents.
+
+2017-09-07  Bob Duff  <duff@adacore.com>
+
+	* exp_ch7.adb (Find_Last_Init): Check for the
+	case where a build-in-place function call has been replaced by a
+	'Reference attribute reference.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): Recurse on Actions of freeze
+	nodes.
+
+2017-09-07  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Object_Declaration,
+	Make_Build_In_Place_Call_In_Anonymous_Context): Do not use the
+	secondary stack for all functions that return limited tagged
+	types -- just do it for dispatching calls.  Misc cleanup.
+	* sem_util.ads, sem_util.adb (Unqual_Conv): New function to
+	remove qualifications and type conversions. Fix various bugs
+	where only a single level of qualification or conversion was
+	removed, so e.g. "T1'(T2'(X))" would incorrectly return "T2'(X)"
+	instead of "X".
+	* checks.adb, exp_util.ads, exp_util.adb, sem_res.adb: Misc related
+	cleanup.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (setr_Actual_Subtypes): Within a predicate function
+	do not create actual subtypes that may generate further predicate
+	functions.
+	* sem_ch13.adb (Build_Predicate_Functions): Indicate that entity
+	of body is a predicate function as well.
+	(Resolve_Aspect_Expressions, Resolve_Name): For a component
+	association, only the expression needs resolution, not the name.
+	(Resolve_Aspect_Expressions, case Predicates): Construct and
+	analyze the predicate function declaration in the scope of the
+	type, before making the type and its discriminants visible.
+
 2017-09-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (warn_on_field_placement): Issue the warning

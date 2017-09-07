@@ -2763,9 +2763,30 @@ package body Exp_Ch7 is
 
             Stmt := Next_Suitable_Statement (Decl);
 
-            --  Nothing to do for an object with suppressed initialization
+            --  For an object with suppressed initialization, we check whether
+            --  there is in fact no initialization expression. If there is not,
+            --  then this is an object declaration that has been turned into a
+            --  different object declaration that calls the build-in-place
+            --  function in a 'Reference attribute, as in "F(...)'Reference".
+            --  We search for that later object declaration, so that the
+            --  Inc_Decl will be inserted after the call. Otherwise, if the
+            --  call raises an exception, we will finalize the (uninitialized)
+            --  object, which is wrong.
 
             if No_Initialization (Decl) then
+               if No (Expression (Last_Init)) then
+                  loop
+                     Last_Init := Next (Last_Init);
+                     exit when No (Last_Init);
+                     exit when Nkind (Last_Init) = N_Object_Declaration
+                       and then Nkind (Expression (Last_Init)) = N_Reference
+                       and then Nkind (Prefix (Expression (Last_Init))) =
+                                  N_Function_Call
+                       and then Is_Expanded_Build_In_Place_Call
+                                  (Prefix (Expression (Last_Init)));
+                  end loop;
+               end if;
+
                return;
 
             --  In all other cases the initialization calls follow the related
@@ -2955,7 +2976,7 @@ package body Exp_Ch7 is
 
          if No (Finalizer_Insert_Nod) then
 
-            --  Insertion after an abort deffered block
+            --  Insertion after an abort deferred block
 
             if Present (Body_Ins) then
                Finalizer_Insert_Nod := Body_Ins;

@@ -2571,6 +2571,11 @@ package Sem_Util is
    --  Removes any qualifications from Expr. For example, for T1'(T2'(X)), this
    --  returns X. If Expr is not a qualified expression, returns Expr.
 
+   function Unqual_Conv (Expr : Node_Id) return Node_Id;
+   pragma Inline (Unqual_Conv);
+   --  Similar to Unqualify, but removes qualified expressions, type
+   --  conversions, and unchecked conversions.
+
    function Visible_Ancestors (Typ : Entity_Id) return Elist_Id;
    --  [Ada 2012:AI-0125-1]: Collect all the visible parents and progenitors
    --  of a type extension or private extension declaration. If the full-view

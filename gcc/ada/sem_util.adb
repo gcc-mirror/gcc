@@ -15734,22 +15734,10 @@ package body Sem_Util is
    --------------------------------------
 
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean is
-      Var    : Node_Id;
+      Var    : constant Node_Id := Unqual_Conv (N);
       Var_Id : Entity_Id;
 
    begin
-      Var := N;
-
-      --  Use the expression when the context qualifies a reference in some
-      --  fashion.
-
-      while Nkind_In (Var, N_Qualified_Expression,
-                           N_Type_Conversion,
-                           N_Unchecked_Type_Conversion)
-      loop
-         Var := Expression (Var);
-      end loop;
-
       Var_Id := Empty;
 
       if Is_Entity_Name (Var) then
@@ -22496,6 +22484,28 @@ package body Sem_Util is
          return Expr;
       end if;
    end Unqualify;
+
+   -----------------
+   -- Unqual_Conv --
+   -----------------
+
+   function Unqual_Conv (Expr : Node_Id) return Node_Id is
+   begin
+      --  Recurse to handle unlikely case of multiple levels of qualification
+      --  and/or conversion.
+
+      if Nkind_In (Expr, N_Qualified_Expression,
+                         N_Type_Conversion,
+                         N_Unchecked_Type_Conversion)
+      then
+         return Unqual_Conv (Expression (Expr));
+
+      --  Normal case, not a qualified expression
+
+      else
+         return Expr;
+      end if;
+   end Unqual_Conv;
 
    -----------------------
    -- Visible_Ancestors --

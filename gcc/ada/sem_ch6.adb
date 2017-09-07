@@ -11588,6 +11588,12 @@ package body Sem_Ch6 is
 
       if Ekind (Subp) = E_Procedure and then Is_Null_Init_Proc (Subp) then
          return;
+
+      --  Within a predicate function we do not want to generate local
+      --  subtypes that may generate nested predicate functions.
+
+      elsif Is_Subprogram (Subp) and then Is_Predicate_Function (Subp) then
+         return;
       end if;
 
       --  The subtype declarations may freeze the formals. The body generated

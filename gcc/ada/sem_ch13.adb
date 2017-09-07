@@ -8700,6 +8700,9 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
+            Set_Ekind (SIdB, E_Function);
+            Set_Is_Predicate_Function (SIdB);
+
             --  The predicate function is shared between views of a type
 
             if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
@@ -12664,6 +12667,7 @@ package body Sem_Ch13 is
       ------------------
 
       function Resolve_Name (N : Node_Id) return Traverse_Result is
+         Dummy : Traverse_Result;
       begin
          if Nkind (N) = N_Selected_Component then
             if Nkind (Prefix (N)) = N_Identifier
@@ -12680,6 +12684,12 @@ package body Sem_Ch13 is
             if not ASIS_Mode then
                Set_Entity (N, Empty);
             end if;
+
+         --  The name is component association needs no resolution.
+
+         elsif Nkind (N) = N_Component_Association then
+            Dummy := Resolve_Name (Expression (N));
+            return Skip;
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;
@@ -12722,14 +12732,19 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
                   =>
                      --  Build predicate function specification and preanalyze
-                     --  expression after type replacement.
+                     --  expression after type replacement. The function
+                     --  declaration must be analyzed in the scope of the
+                     --  type, but the expression must see components.
 
                      if No (Predicate_Function (E)) then
+                        Uninstall_Discriminants_And_Pop_Scope (E);
                         declare
                            FDecl : constant Node_Id :=
                                      Build_Predicate_Function_Declaration (E);
                            pragma Unreferenced (FDecl);
+
                         begin
+                           Push_Scope_And_Install_Discriminants (E);
                            Resolve_Aspect_Expression (Expr);
                         end;
                      end if;
