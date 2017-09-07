@@ -5006,11 +5006,9 @@ const pass_data pass_data_pre =
   "pre", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_PRE, /* tv_id */
-  /* PROP_no_crit_edges is ensured by placing pass_split_crit_edges before
-     pass_pre.  */
-  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
-  PROP_no_crit_edges, /* properties_destroyed */
+  0, /* properties_destroyed */
   TODO_rebuild_alias, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
@@ -5040,6 +5038,7 @@ pass_pre::execute (function *fun)
   /* This has to happen before SCCVN runs because
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
+  split_critical_edges ();
 
   run_scc_vn (VN_WALK);
 
