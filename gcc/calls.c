@@ -1220,32 +1220,38 @@ alloc_max_size (void)
 		  else if (!strcasecmp (end, "KiB") || strcmp (end, "KB"))
 		    unit = 1024;
 		  else if (!strcmp (end, "MB"))
-		    unit = 1000LU * 1000;
+		    unit = HOST_WIDE_INT_UC (1000) * 1000;
 		  else if (!strcasecmp (end, "MiB"))
-		    unit = 1024LU * 1024;
+		    unit = HOST_WIDE_INT_UC (1024) * 1024;
 		  else if (!strcasecmp (end, "GB"))
-		    unit = 1000LU * 1000 * 1000;
+		    unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000;
 		  else if (!strcasecmp (end, "GiB"))
-		    unit = 1024LU * 1024 * 1024;
+		    unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024;
 		  else if (!strcasecmp (end, "TB"))
-		    unit = 1000LU * 1000 * 1000 * 1000;
+		    unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000;
 		  else if (!strcasecmp (end, "TiB"))
-		    unit = 1024LU * 1024 * 1024 * 1024;
+		    unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024;
 		  else if (!strcasecmp (end, "PB"))
-		    unit = 1000LU * 1000 * 1000 * 1000 * 1000;
+		    unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000;
 		  else if (!strcasecmp (end, "PiB"))
-		    unit = 1024LU * 1024 * 1024 * 1024 * 1024;
+		    unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024;
 		  else if (!strcasecmp (end, "EB"))
-		    unit = 1000LU * 1000 * 1000 * 1000 * 1000 * 1000;
+		    unit = HOST_WIDE_INT_UC (1000) * 1000 * 1000 * 1000 * 1000
+			   * 1000;
 		  else if (!strcasecmp (end, "EiB"))
-		    unit = 1024LU * 1024 * 1024 * 1024 * 1024 * 1024;
+		    unit = HOST_WIDE_INT_UC (1024) * 1024 * 1024 * 1024 * 1024
+			   * 1024;
 		  else
 		    unit = 0;
 		}
 
 	      if (unit)
-		alloc_object_size_limit
-		  = build_int_cst (ssizetype, limit * unit);
+		{
+		  wide_int w = wi::uhwi (limit, HOST_BITS_PER_WIDE_INT + 64);
+		  w *= unit;
+		  if (wi::ltu_p (w, alloc_object_size_limit))
+		    alloc_object_size_limit = wide_int_to_tree (ssizetype, w);
+		}
 	    }
 	}
     }
