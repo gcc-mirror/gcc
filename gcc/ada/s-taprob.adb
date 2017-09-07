@@ -6,8 +6,8 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---            Copyright (C) 1991-1994, Florida State University             --
---                     Copyright (C) 1995-2014, AdaCore                     --
+--            Copyright (C) 1991-1997, Florida State University             --
+--                     Copyright (C) 1995-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -35,8 +35,6 @@ pragma Polling (Off);
 --  operations. It causes infinite loops and other problems.
 
 with System.Task_Primitives.Operations;
-with System.Parameters;
-with System.Traces;
 with System.Soft_Links.Tasking;
 
 with System.Secondary_Stack;
@@ -48,7 +46,6 @@ pragma Unreferenced (System.Secondary_Stack);
 package body System.Tasking.Protected_Objects is
 
    use System.Task_Primitives.Operations;
-   use System.Traces;
 
    ----------------
    -- Local Data --
@@ -128,10 +125,6 @@ package body System.Tasking.Protected_Objects is
 
       Write_Lock (Object.L'Access, Ceiling_Violation);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (PO_Lock);
-      end if;
-
       if Ceiling_Violation then
          raise Program_Error;
       end if;
@@ -184,10 +177,6 @@ package body System.Tasking.Protected_Objects is
       end if;
 
       Read_Lock (Object.L'Access, Ceiling_Violation);
-
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (PO_Lock);
-      end if;
 
       if Ceiling_Violation then
          raise Program_Error;
@@ -271,9 +260,6 @@ package body System.Tasking.Protected_Objects is
 
       Unlock (Object.L'Access);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (PO_Unlock);
-      end if;
    end Unlock;
 
 begin

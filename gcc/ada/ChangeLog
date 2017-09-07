@@ -1,3 +1,67 @@
+2017-09-07  Nicolas Roche  <roche@adacore.com>
+
+	* s-traces-default.adb, s-trafor-default.adb, s-trafor-default.ads,
+	s-traces.adb, s-traces.ads, s-tratas-default.adb, s-tfsetr-default.adb,
+	s-tfsetr-vxworks.adb, s-tratas.adb, s-tratas.ads, s-tasuti.adb,
+	s-parame-hpux.ads, s-tassta.adb, s-taasde.adb, s-tasren.adb,
+	s-taprob.adb, a-caldel.adb, s-parame.ads, Makefile.rtl, s-tpobop.adb,
+	s-taenca.adb, s-parame-vxworks.ads: Remove support for System.Traces.
+
+2017-09-07  Yannick Moy  <moy@adacore.com>
+
+	* a-ngelfu.ads Add preconditions to all functions
+	listed in Ada RM A.5.1(19-33) as having constraints on inputs.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref.adb (Generate_Reference): ignore
+	references to entities which are Part_Of single concurrent
+	objects.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Hide_Public_Entities): Add paragraph to main
+	comment.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-taside.adb (Activation_Is_Complete): Raise Program_Error if
+	Null_Task_Id is passed.
+
+2017-09-07  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads, einfo.adb (Access_Disp_Table_Elab_Flag): New
+	attribute. Defined for record types and subtypes.
+	* exp_ch3.ads (Init_Secondary_Tags): Adding new formal
+	(Init_Tags_List) to facilitate generating separate code in the
+	IP routine to initialize the object components and for completing
+	the elaboration of dispatch tables.
+	* exp_ch3.adb (Build_Init_Procedure): Improve the code
+	generated in the IP routines by means of keeping separate
+	the initialization of the object components from the
+	initialization of its dispatch tables.	(Init_Secondary_Tags):
+	Adding new formal (Init_Tags_List) and adjusting calls to
+	Ada.Tags.Set_Dynamic_Offset_To_Top since it has a new formal;
+	adjusting also calls to Ada.Tags.Register_Interface_Offset
+	because the type of one of its formals has been changed.
+	* a-tags.ads, a-tags.adb (Register_Interface_Offset): Profile
+	modified. Instead of receiving a pointer to an object this
+	routine receives now a primary tag.
+	(Set_Dyanic_Offset_To_Top): Profile modified. This routine receives an
+	additional formal: the tag of the primary dispatch table.
+	* exp_disp.ads (Elab_Flag_Needed): New subprogram.
+	* exp_disp.adb (Elab_Flag_Needed): New subprogram.
+	(Make_Tags): Adding the declaration of the elaboration flag (if needed).
+	* exp_aggr.adb (Build_Record_Aggr_Code): Adding actual of new
+	formal in calls to Init_Secondary_Tags.
+
+2017-09-07  Javier Miranda  <miranda@adacore.com>
+
+	* ghost.adb (Mark_And_Set_Ghost_Instantiation.Check_Ghost_Actuals): New
+	subprogram.
+	* sem_prag.adb (Pragma_Ghost): Add missing support for ghost
+	applied to generic subprograms.
+
 2017-09-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_util.adb (Check_Part_Of_Reference): rename Conc_Typ to Conc_Obj

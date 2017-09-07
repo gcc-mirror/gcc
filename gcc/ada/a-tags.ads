@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -527,18 +527,18 @@ private
    --  assumes that _size is always in slot one of the dispatch table.
 
    procedure Register_Interface_Offset
-     (This         : System.Address;
+     (Prim_T       : Tag;
       Interface_T  : Tag;
       Is_Static    : Boolean;
       Offset_Value : SSE.Storage_Offset;
       Offset_Func  : Offset_To_Top_Function_Ptr);
    --  Register in the table of interfaces of the tagged type associated with
-   --  "This" object the offset of the record component associated with the
-   --  progenitor Interface_T (that is, the distance from "This" to the object
-   --  component containing the tag of the secondary dispatch table). In case
-   --  of constant offset, Is_Static is true and Offset_Value has such value.
-   --  In case of variable offset, Is_Static is false and Offset_Func is an
-   --  access to function that must be called to evaluate the offset.
+   --  Prim_T the offset of the record component associated with the progenitor
+   --  Interface_T (that is, the distance from "This" to the object component
+   --  containing the tag of the secondary dispatch table). In case of constant
+   --  offset, Is_Static is true and Offset_Value has such value. In case of
+   --  variable offset, Is_Static is false and Offset_Func is an access to
+   --  function that must be called to evaluate the offset.
 
    procedure Register_Tag (T : Tag);
    --  Insert the Tag and its associated external_tag in a table for the sake
@@ -546,20 +546,24 @@ private
 
    procedure Set_Dynamic_Offset_To_Top
      (This         : System.Address;
+      Prim_T       : Tag;
       Interface_T  : Tag;
       Offset_Value : SSE.Storage_Offset;
       Offset_Func  : Offset_To_Top_Function_Ptr);
    --  Ada 2005 (AI-251): The compiler generates calls to this routine only
-   --  when initializing the Offset_To_Top field of dispatch tables associated
-   --  with tagged type whose parent has variable size components. "This" is
-   --  the object whose dispatch table is being initialized. Interface_T is the
-   --  interface for which the secondary dispatch table is being initialized,
-   --  and Offset_Value is the distance from "This" to the object component
-   --  containing the tag of the secondary dispatch table (a zero value means
-   --  that this interface shares the primary dispatch table). Offset_Func
-   --  references a function that must be called to evaluate the offset at
-   --  runtime. This routine also takes care of registering these values in
-   --  the table of interfaces of the type.
+   --  when initializing the Offset_To_Top field of dispatch tables of tagged
+   --  types that cover interface types whose parent type has variable size
+   --  components.
+   --
+   --  "This" is the object whose dispatch table is being initialized. Prim_T
+   --  is the primary tag of such object. Interface_T is the interface tag for
+   --  which the secondary dispatch table is being initialized, Offset_Value
+   --  is the distance from "This" to the object component containing the tag
+   --  of the secondary dispatch table (a zero value means that this interface
+   --  shares the primary dispatch table). Offset_Func references a function
+   --  that must be called to evaluate the offset at runtime. This routine also
+   --  takes care of registering these values in the table of interfaces of the
+   --  type.
 
    procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
    --  Ada 2005 (AI-345): Set the entry index of a primitive operation in T's

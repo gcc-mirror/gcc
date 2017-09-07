@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2014, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,6 @@ with System.Task_Primitives.Operations;
 with System.Tasking.Initialization;
 with System.Tasking.Queuing;
 with System.Parameters;
-with System.Traces.Tasking;
 
 package body System.Tasking.Utilities is
 
@@ -52,9 +51,6 @@ package body System.Tasking.Utilities is
    use Tasking.Debug;
    use Task_Primitives;
    use Task_Primitives.Operations;
-
-   use System.Traces;
-   use System.Traces.Tasking;
 
    --------------------
    -- Abort_One_Task --
@@ -67,10 +63,6 @@ package body System.Tasking.Utilities is
 
    procedure Abort_One_Task (Self_ID : Task_Id; T : Task_Id) is
    begin
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (T_Abort, Self_ID, T);
-      end if;
-
       Write_Lock (T);
 
       if T.Common.State = Unactivated then

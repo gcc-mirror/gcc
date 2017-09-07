@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -92,7 +92,11 @@ is
    function Activation_Is_Complete (T : Task_Id) return Boolean is
       use type System.Tasking.Task_Id;
    begin
-      return Convert_Ids (T).Common.Activator = null;
+      if T = Null_Task_Id then
+         raise Program_Error;
+      else
+         return Convert_Ids (T).Common.Activator = null;
+      end if;
    end Activation_Is_Complete;
 
    -----------------

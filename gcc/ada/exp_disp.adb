@@ -625,6 +625,17 @@ package body Exp_Disp is
       raise Program_Error;
    end Default_Prim_Op_Position;
 
+   ----------------------
+   -- Elab_Flag_Needed --
+   ----------------------
+
+   function Elab_Flag_Needed (Typ : Entity_Id) return Boolean is
+   begin
+      return Ada_Version >= Ada_2005
+        and then not Is_Interface (Typ)
+        and then Has_Interfaces (Typ);
+   end Elab_Flag_Needed;
+
    -----------------------------
    -- Expand_Dispatching_Call --
    -----------------------------
@@ -6669,6 +6680,24 @@ package body Exp_Disp is
    begin
       pragma Assert (No (Access_Disp_Table (Typ)));
       Set_Access_Disp_Table (Typ, New_Elmt_List);
+
+      --  If the elaboration of this tagged type needs a boolean flag then
+      --  define now its entity. It is initialized to True to indicate that
+      --  elaboration is still pending; set to False by the IP routine.
+
+      --      TypFxx : boolean := True;
+
+      if Elab_Flag_Needed (Typ) then
+         Set_Access_Disp_Table_Elab_Flag (Typ,
+           Make_Defining_Identifier (Loc,
+             New_External_Name (Tname, 'F', Suffix_Index => -1)));
+
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Access_Disp_Table_Elab_Flag (Typ),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_True, Loc)));
+      end if;
 
       --  1) Generate the primary tag entities
 

@@ -355,6 +355,14 @@ package Einfo is
 --       used to expand dispatching calls through the primary dispatch table.
 --       For an untagged record, contains No_Elist.
 
+--    Access_Disp_Table_Elab_Flag (Node30) [implementation base type only]
+--       Defined in E_Record_Type and E_Record_Subtype entities. Set in tagged
+--       types whose dispatch table elaboration must be completed at runtime by
+--       the IP routine to point to its pending elaboration flag entity. This
+--       flag is needed when the elaboration of the dispatch table relies on
+--       attribute 'Position applied to an object of the type; it is used by
+--       the IP routine to avoid performing this elaboration twice.
+
 --    Activation_Record_Component (Node31)
 --       Defined in E_Variable, E_Constant, E_Loop_Parameter, E_In_Parameter,
 --       E_Out_Parameter, E_In_Out_Parameter nodes. Used only if we are in
@@ -6466,6 +6474,7 @@ package Einfo is
    --  E_Record_Subtype
    --    Direct_Primitive_Operations         (Elist10)
    --    Access_Disp_Table                   (Elist16)  (base type only)
+   --    Access_Disp_Table_Elab_Flag         (Node30)   (base type only)
    --    Cloned_Subtype                      (Node16)   (subtype case only)
    --    First_Entity                        (Node17)
    --    Corresponding_Concurrent_Type       (Node18)
@@ -6911,6 +6920,7 @@ package Einfo is
    function Abstract_States                     (Id : E) return L;
    function Accept_Address                      (Id : E) return L;
    function Access_Disp_Table                   (Id : E) return L;
+   function Access_Disp_Table_Elab_Flag         (Id : E) return E;
    function Activation_Record_Component         (Id : E) return E;
    function Actual_Subtype                      (Id : E) return E;
    function Address_Taken                       (Id : E) return B;
@@ -7602,6 +7612,7 @@ package Einfo is
    procedure Set_Abstract_States                 (Id : E; V : L);
    procedure Set_Accept_Address                  (Id : E; V : L);
    procedure Set_Access_Disp_Table               (Id : E; V : L);
+   procedure Set_Access_Disp_Table_Elab_Flag     (Id : E; V : E);
    procedure Set_Activation_Record_Component     (Id : E; V : E);
    procedure Set_Actual_Subtype                  (Id : E; V : E);
    procedure Set_Address_Taken                   (Id : E; V : B := True);
@@ -8415,6 +8426,7 @@ package Einfo is
    pragma Inline (Abstract_States);
    pragma Inline (Accept_Address);
    pragma Inline (Access_Disp_Table);
+   pragma Inline (Access_Disp_Table_Elab_Flag);
    pragma Inline (Activation_Record_Component);
    pragma Inline (Actual_Subtype);
    pragma Inline (Address_Taken);
@@ -8941,6 +8953,7 @@ package Einfo is
    pragma Inline (Set_Abstract_States);
    pragma Inline (Set_Accept_Address);
    pragma Inline (Set_Access_Disp_Table);
+   pragma Inline (Set_Access_Disp_Table_Elab_Flag);
    pragma Inline (Set_Activation_Record_Component);
    pragma Inline (Set_Actual_Subtype);
    pragma Inline (Set_Address_Taken);
