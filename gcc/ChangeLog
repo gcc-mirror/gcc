@@ -1,6 +1,10 @@
 2017-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* lra-remat.c (reg_overlap_for_remat_p): Fix a pasto.
+
 	2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81923
