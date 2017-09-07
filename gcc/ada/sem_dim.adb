@@ -35,6 +35,7 @@ with Nmake;    use Nmake;
 with Opt;      use Opt;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
+with Sem_Aux;  use Sem_Aux;
 with Sem_Eval; use Sem_Eval;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
@@ -280,6 +281,14 @@ package body Sem_Dim is
    --  both the identifier and the parent type of N are not dimensionless,
    --  return an error.
 
+   procedure Analyze_Dimension_Type_Conversion (N : Node_Id);
+   --  Type conversions handle conversions between literals and dimensioned
+   --  types, from dimensioned types to their base type, and between different
+   --  dimensioned systems. Dimensions of the conversion are obtained either
+   --  from those of the expression, or from the target type, and dimensional
+   --  consistency must be checked when converting between values belonging
+   --  to different dimensioned systems.
+
    procedure Analyze_Dimension_Unary_Op (N : Node_Id);
    --  Subroutine of Analyze_Dimension for unary operators. For Plus, Minus and
    --  Abs operators, propagate the dimensions from the operand to N.
@@ -300,6 +309,11 @@ package body Sem_Dim is
    --  Given a node N, return the dimension symbols of N, preceded by "has
    --  dimension" if Description_Needed. if N is dimensionless, return "'[']",
    --  or "is dimensionless" if Description_Needed.
+
+   function Dimension_System_Root (T : Entity_Id) return Entity_Id;
+   --  Given a type that has dimension information, return the type that is the
+   --  root of its dimension system, e.g. Mks_Type. If T is not a dimensioned
+   --  type, i.e. a standard numeric type, return Empty.
 
    procedure Dim_Warning_For_Numeric_Literal (N : Node_Id; Typ : Entity_Id);
    --  Issue a warning on the given numeric literal N to indicate that the
@@ -1191,13 +1205,7 @@ package body Sem_Dim is
             Analyze_Dimension_Subtype_Declaration (N);
 
          when  N_Type_Conversion =>
-            if In_Instance
-              and then Exists (Dimensions_Of (Expression (N)))
-            then
-               Set_Dimensions (N, Dimensions_Of (Expression (N)));
-            else
-               Analyze_Dimension_Has_Etype (N);
-            end if;
+            Analyze_Dimension_Type_Conversion (N);
 
          when N_Unary_Op =>
             Analyze_Dimension_Unary_Op (N);
@@ -1379,26 +1387,6 @@ package body Sem_Dim is
 
             if Present (Original_Entity (N)) then
                return Dimensions_Of (Original_Entity (N));
-
-            else
-               return Dimensions_Of (Etype (N));
-            end if;
-
-         --  A type conversion may have been inserted to rewrite other
-         --  expressions, e.g. function returns. Dimensions are those of
-         --  the target type, unless this is a conversion in an instance,
-         --  in which case the proper dimensions are those of the operand,
-
-         elsif Nkind (N) = N_Type_Conversion then
-            if In_Instance
-              and then Is_Generic_Actual_Type (Etype (Expression (N)))
-            then
-               return Dimensions_Of (Etype (Expression (N)));
-
-            elsif In_Instance
-              and then Exists (Dimensions_Of (Expression (N)))
-            then
-               return Dimensions_Of (Expression (N));
 
             else
                return Dimensions_Of (Etype (N));
@@ -2339,6 +2327,56 @@ package body Sem_Dim is
       end if;
    end Analyze_Dimension_Subtype_Declaration;
 
+   ---------------------------------------
+   -- Analyze_Dimension_Type_Conversion --
+   ---------------------------------------
+
+   procedure Analyze_Dimension_Type_Conversion (N : Node_Id) is
+      Expr_Root   : constant Entity_Id :=
+                      Dimension_System_Root (Etype (Expression (N)));
+      Target_Root : constant Entity_Id :=
+                      Dimension_System_Root (Etype (N));
+
+   begin
+      --  If the expression has dimensions and the target type has dimensions,
+      --  the conversion has the dimensions of the expression. Consistency is
+      --  checked below. Converting to a non-dimensioned type such as Float
+      --  ignores the dimensions of the expression.
+
+      if Exists (Dimensions_Of (Expression (N)))
+        and then Present (Target_Root)
+      then
+         Set_Dimensions (N, Dimensions_Of (Expression (N)));
+
+      --  Otherwise the dimensions are those of the target type.
+
+      else
+         Analyze_Dimension_Has_Etype (N);
+      end if;
+
+      --  A conversion between types in different dimension systems (e.g. MKS
+      --  and British units) must respect the dimensions of expression and
+      --  type, It is up to the user to provide proper conversion factors.
+
+      --  Upward conversions to root type of a dimensioned system are legal,
+      --  and correspond to "view conversions", i.e. preserve the dimensions
+      --  of the expression; otherwise conversion must be between types with
+      --  then same dimensions. Conversions to a non-dimensioned type such as
+      --  Float lose the dimensions of the expression.
+
+      if Present (Expr_Root)
+       and then Present (Target_Root)
+       and then Etype (N) /= Target_Root
+       and then Dimensions_Of (Expression (N)) /= Dimensions_Of (Etype (N))
+      then
+         Error_Msg_N ("dimensions mismatch in conversion", N);
+         Error_Msg_N
+           ("\expression " & Dimensions_Msg_Of (Expression (N), True), N);
+         Error_Msg_N
+           ("\target type " & Dimensions_Msg_Of (Etype (N), True), N);
+      end if;
+   end Analyze_Dimension_Type_Conversion;
+
    --------------------------------
    -- Analyze_Dimension_Unary_Op --
    --------------------------------
@@ -2664,6 +2702,24 @@ package body Sem_Dim is
         not Has_Dimension_System (Base_Type (T1))
           or else Dimensions_Of (T1) = Dimensions_Of (T2);
    end Dimensions_Match;
+
+   ---------------------------
+   -- Dimension_System_Root --
+   ---------------------------
+
+   function Dimension_System_Root (T : Entity_Id) return Entity_Id is
+      Root : Entity_Id;
+
+   begin
+      Root := Base_Type (T);
+
+      if Has_Dimension_System (Root) then
+         return First_Subtype (Root);   --  for example Dim_Mks
+
+      else
+         return Empty;
+      end if;
+   end Dimension_System_Root;
 
    ----------------------------------------
    -- Eval_Op_Expon_For_Dimensioned_Type --

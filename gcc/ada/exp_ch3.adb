@@ -2489,20 +2489,19 @@ package body Exp_Ch3 is
 
                      Append_To (Elab_Sec_DT_Stmts_List,
                        Make_Assignment_Statement (Loc,
-                         Name =>
+                         Name       =>
                            New_Occurrence_Of
                              (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
                          Expression =>
                            New_Occurrence_Of (Standard_False, Loc)));
 
-                     Prepend_List_To (Body_Stmts,
-                       New_List (
-                         Make_If_Statement (Loc,
-                           Condition => New_Occurrence_Of (Set_Tag, Loc),
-                           Then_Statements => Init_Tags_List),
+                     Prepend_List_To (Body_Stmts, New_List (
+                       Make_If_Statement (Loc,
+                         Condition       => New_Occurrence_Of (Set_Tag, Loc),
+                         Then_Statements => Init_Tags_List),
 
                        Make_If_Statement (Loc,
-                         Condition =>
+                         Condition       =>
                            New_Occurrence_Of
                              (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
                          Then_Statements => Elab_Sec_DT_Stmts_List)));
@@ -2510,7 +2509,7 @@ package body Exp_Ch3 is
                else
                   Prepend_To (Body_Stmts,
                     Make_If_Statement (Loc,
-                      Condition => New_Occurrence_Of (Set_Tag, Loc),
+                      Condition       => New_Occurrence_Of (Set_Tag, Loc),
                       Then_Statements => Init_Tags_List));
                end if;
 

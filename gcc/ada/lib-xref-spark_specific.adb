@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1307,8 +1307,18 @@ package body SPARK_Specific is
             when N_Protected_Type_Declaration =>
                Traverse_Visible_And_Private_Parts (Protected_Definition (N));
 
-            when N_Task_Definition =>
-               Traverse_Visible_And_Private_Parts (N);
+            when N_Task_Type_Declaration =>
+
+               --  Task type definition is optional (unlike protected type
+               --  definition, which is mandatory).
+
+               declare
+                  Task_Def : constant Node_Id := Task_Definition (N);
+               begin
+                  if Present (Task_Def) then
+                     Traverse_Visible_And_Private_Parts (Task_Def);
+                  end if;
+               end;
 
             when N_Task_Body =>
                Traverse_Task_Body (N);

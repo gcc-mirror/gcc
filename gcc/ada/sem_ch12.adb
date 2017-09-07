@@ -8431,7 +8431,7 @@ package body Sem_Ch12 is
          --  The parent was a premature instantiation. Insert freeze node at
          --  the end the current declarative part.
 
-         if ABE_Is_Certain (Get_Package_Instantiation_Node (Par)) then
+         if ABE_Is_Certain (Get_Unit_Instantiation_Node (Par)) then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
          --  Handle the following case:
@@ -8452,7 +8452,7 @@ package body Sem_Ch12 is
          --  after that of Parent_Inst. This relation is established by
          --  comparing the Slocs of Parent_Inst freeze node and Inst.
 
-         elsif List_Containing (Get_Package_Instantiation_Node (Par)) =
+         elsif List_Containing (Get_Unit_Instantiation_Node (Par)) =
                List_Containing (Inst_Node)
            and then Sloc (Freeze_Node (Par)) < Sloc (Inst_Node)
          then
@@ -8574,11 +8574,11 @@ package body Sem_Ch12 is
       end if;
    end Get_Instance_Of;
 
-   ------------------------------------
-   -- Get_Package_Instantiation_Node --
-   ------------------------------------
+   ---------------------------------
+   -- Get_Unit_Instantiation_Node --
+   ---------------------------------
 
-   function Get_Package_Instantiation_Node (A : Entity_Id) return Node_Id is
+   function Get_Unit_Instantiation_Node (A : Entity_Id) return Node_Id is
       Decl : Node_Id := Unit_Declaration_Node (A);
       Inst : Node_Id;
 
@@ -8624,7 +8624,10 @@ package body Sem_Ch12 is
             Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
          end if;
 
-         if Nkind (Original_Node (Decl)) = N_Package_Instantiation then
+         if Nkind_In (Original_Node (Decl), N_Function_Instantiation,
+                                            N_Package_Instantiation,
+                                            N_Procedure_Instantiation)
+         then
             return Original_Node (Decl);
          else
             return Unit (Parent (Decl));
@@ -8637,15 +8640,17 @@ package body Sem_Ch12 is
 
       else
          Inst := Next (Decl);
-         while not Nkind_In (Inst, N_Package_Instantiation,
-                                   N_Formal_Package_Declaration)
+         while not Nkind_In (Inst, N_Formal_Package_Declaration,
+                                   N_Function_Instantiation,
+                                   N_Package_Instantiation,
+                                   N_Procedure_Instantiation)
          loop
             Next (Inst);
          end loop;
 
          return Inst;
       end if;
-   end Get_Package_Instantiation_Node;
+   end Get_Unit_Instantiation_Node;
 
    ------------------------
    -- Has_Been_Exchanged --
@@ -9311,7 +9316,7 @@ package body Sem_Ch12 is
                --  Parent_Inst. This relation is established by comparing
                --  the Slocs of Parent_Inst freeze node and Inst.
 
-               if List_Containing (Get_Package_Instantiation_Node (Par)) =
+               if List_Containing (Get_Unit_Instantiation_Node (Par)) =
                   List_Containing (N)
                  and then Sloc (Freeze_Node (Par)) < Sloc (N)
                then
@@ -9572,7 +9577,7 @@ package body Sem_Ch12 is
 
          --  Load grandparent instance as well
 
-         Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+         Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
          if Nkind (Name (Inst_Node)) = N_Expanded_Name then
             Inst_Par := Entity (Prefix (Name (Inst_Node)));

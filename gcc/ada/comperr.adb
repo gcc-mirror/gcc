@@ -476,8 +476,8 @@ package body Comperr is
          when N_Package_Body =>
             Unit_Name := Corresponding_Spec (Main);
 
-         when N_Package_Renaming_Declaration
-            | N_Package_Instantiation
+         when N_Package_Instantiation
+            | N_Package_Renaming_Declaration
          =>
             Unit_Name := Defining_Unit_Name (Main);
 

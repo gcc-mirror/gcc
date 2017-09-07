@@ -169,6 +169,11 @@ package Ada.Containers.Hash_Tables.Generic_Operations is
    --  can implement efficient iterators.
 
    generic
+      with procedure Process (Node : Node_Access; Position : Hash_Type);
+   procedure Generic_Iteration_With_Position (HT : Hash_Table_Type);
+   --  Calls Process for each node in hash table HT
+
+   generic
       with procedure Process (Node : Node_Access);
    procedure Generic_Iteration (HT : Hash_Table_Type);
    --  Calls Process for each node in hash table HT

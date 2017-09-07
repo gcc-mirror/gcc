@@ -915,6 +915,7 @@ package body Ada.Tags is
       Prim_DT     : constant Dispatch_Table_Ptr := DT (Prim_T);
       Iface_Table : constant Interface_Data_Ptr :=
                       To_Type_Specific_Data_Ptr (Prim_DT.TSD).Interfaces_Table;
+
    begin
       --  Save Offset_Value in the table of interfaces of the primary DT.
       --  This data will be used by the subprogram "Displace" to give support
@@ -927,11 +928,11 @@ package body Ada.Tags is
             if Iface_Table.Ifaces_Table (Id).Iface_Tag = Interface_T then
                if Is_Static or else Offset_Value = 0 then
                   Iface_Table.Ifaces_Table (Id).Static_Offset_To_Top := True;
-                  Iface_Table.Ifaces_Table (Id).Offset_To_Top_Value :=
+                  Iface_Table.Ifaces_Table (Id).Offset_To_Top_Value  :=
                     Offset_Value;
                else
                   Iface_Table.Ifaces_Table (Id).Static_Offset_To_Top := False;
-                  Iface_Table.Ifaces_Table (Id).Offset_To_Top_Func :=
+                  Iface_Table.Ifaces_Table (Id).Offset_To_Top_Func   :=
                     Offset_Func;
                end if;
 

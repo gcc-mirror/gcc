@@ -1875,6 +1875,9 @@ package Sem_Util is
    pragma Inline (Is_Universal_Numeric_Type);
    --  True if T is Universal_Integer or Universal_Real
 
+   function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
+   --  Determine whether an entity denotes a user-defined equality
+
    function Is_Validation_Variable_Reference (N : Node_Id) return Boolean;
    --  Determine whether N denotes a reference to a variable which captures the
    --  value of an object for validation purposes.

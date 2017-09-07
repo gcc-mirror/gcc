@@ -770,20 +770,19 @@ package body Ada.Containers.Indefinite_Hashed_Maps is
      (Container : Map;
       Process   : not null access procedure (Position : Cursor))
    is
-      procedure Process_Node (Node : Node_Access);
+      procedure Process_Node (Node : Node_Access; Position : Hash_Type);
       pragma Inline (Process_Node);
 
       procedure Local_Iterate is
-         new HT_Ops.Generic_Iteration (Process_Node);
+        new HT_Ops.Generic_Iteration_With_Position (Process_Node);
 
       ------------------
       -- Process_Node --
       ------------------
 
-      procedure Process_Node (Node : Node_Access) is
+      procedure Process_Node (Node : Node_Access; Position : Hash_Type) is
       begin
-         Process
-           (Cursor'(Container'Unrestricted_Access, Node, Hash_Type'Last));
+         Process (Cursor'(Container'Unrestricted_Access, Node, Position));
       end Process_Node;
 
       Busy : With_Busy (Container.HT.TC'Unrestricted_Access);

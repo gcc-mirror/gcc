@@ -195,14 +195,6 @@ package Sem_Dim is
    --  a full copy of the type declaration of the parent, and the dimension
    --  information of individual components must be transferred explicitly.
 
-   function New_Copy_Tree_And_Copy_Dimensions
-     (Source    : Node_Id;
-      Map       : Elist_Id   := No_Elist;
-      New_Sloc  : Source_Ptr := No_Location;
-      New_Scope : Entity_Id  := Empty) return Node_Id;
-   --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
-   --  also copies the dimensions of Source to the returned node.
-
    function Dimensions_Match (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
    --  If the common base type has a dimension system, verify that two
    --  subtypes have the same dimensions. Used for conformance checking.
@@ -227,6 +219,14 @@ package Sem_Dim is
    function Is_Dim_IO_Package_Instantiation (N : Node_Id) return Boolean;
    --  Return True if N is a package instantiation of System.Dim.Integer_IO or
    --  of System.Dim.Float_IO.
+
+   function New_Copy_Tree_And_Copy_Dimensions
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id;
+   --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
+   --  also copies the dimensions of Source to the returned node.
 
    procedure Remove_Dimension_In_Statement (Stmt : Node_Id);
    --  Remove the dimensions associated with Stmt

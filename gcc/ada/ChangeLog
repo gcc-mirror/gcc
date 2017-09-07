@@ -1,3 +1,99 @@
+2017-09-07  Yannick Moy  <moy@adacore.com>
+
+	* a-exetim-mingw.ads: Add contract Global=>null
+	on all operations that are modeled as having no read or write
+	of global variables in SPARK.
+
+2017-09-07  Raphael Amiard  <amiard@adacore.com>
+
+	* a-chtgop.adb, a-chtgop.ads (Generic_Iteration_With_Position): Added
+	to Hmaps.Generic_Ops.
+	* a-cohama.adb (Ada.Containers.Hmaps.Iterate): Pass proper position in
+	cursors.
+	* a-cihama.adb (Ada.Containers.Indefinite_Hmaps.Iterate): Pass pos in
+	cursors.
+	* a-cohase.adb (Ada.Containers.Hashed_Sets.Iterate): Pass proper
+	position in cursors.
+
+2017-09-07  Javier Miranda  <miranda@adacore.com>
+
+	* sem_elab.adb (Check_Task_Activation): Adding switch -gnatd.y to
+	allow disabling the generation of implicit pragma Elaborate_All
+	on task bodies.
+
+2017-09-07  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Make_Tags): Avoid suffix counter
+	in the external name of the elaboration flag. Required to fix
+	the regressions introduced by the initial version of this patch.
+
+2017-09-07  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Analyze_Function_Return): Do not
+	insert an explicit conversion to force the displacement of the
+	"this" pointer to reference the secondary dispatch table in the
+	case where the return statement is returning a raise expression,
+	as in "return raise ...".
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_disp.adb (Is_User_Defined_Equality): Removed procedure.
+	* sem_util.ads, sem_util.adb (Is_User_Defined_Equality): Copied
+	procedure from sem_disp.adb.
+	* sem_ch12.ads (Get_Unit_Instantiation_Node): rename Package
+	with Unit.
+	* sem_ch12.adb (Get_Unit_Instantiation_Node): function extended to
+	return the instantiation node for subprograms. Update references
+	to Get_Unit_Instantiation_Node.
+	* sem_ch7.adb (Install_Parent_Private_Declarations): update
+	reference to Get_Unit_Instantiation_Node.
+	* exp_dist.adb (Build_Package_Stubs): update reference to
+	Get_Unit_Instantiation_Node.
+	* sem_ch9.adb: minor typo in comment.
+	* lib-xref-spark_specific.adb
+	(Traverse_Declaration_Or_Statement): traverse into task type
+	definition.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_Type_Conversion): New procedure
+	to handle properly various cases of type conversions where the
+	target type and/or the expression carry dimension information.
+	(Dimension_System_Root); If a subtype carries dimension
+	information, obtain the source parent type that carries the
+	Dimension aspect.
+
+2017-09-07  Dmitriy Anisimkov  <anisimko@adacore.com>
+
+	* g-socket.adb, g-socket.ads (GNAT.Sockets.To_Ada): New routine.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference, case 'Constrained):
+	If the prefix is a reference to an object, rewrite it as an
+	explicit dereference, as required by 3.7.2 (2) and as is done
+	with most other attributes whose prefix is an access value.
+
+2017-09-07  Bob Duff  <duff@adacore.com>
+
+	* par-ch13.adb: Set the Inside_Depends flag if we are inside a
+	Refined_Depends aspect.
+	* par-ch2.adb: Set the Inside_Depends flag if we are inside a
+	Refined_Depends pragma.
+	* scans.ads: Fix documentation of Inside_Depends flag.
+	* styleg.adb, styleg.ads: Minor reformatting and comment fixes.
+
+2017-09-07  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch7.adb (Insert_Actions_In_Scope_Around):
+	Account for the case where the are no lists to insert, but the
+	secondary stack still requires management.
+	* a-chtgop.adb, a-cihama.adb, a-cohama.adb, a-cohase.adb, a-tags.adb,
+	comperr.adb, einfo.adb, exp_aggr.adb, exp_ch3.adb, exp_disp.adb,
+	lib-xref.adb, lib-xref-spark_specific.adb, sem_ch12.adb, sem_ch13.adb,
+	sem_ch6.adb, sem_dim.adb, sem_dim.ads, sem_elab.adb, sem_prag.adb:
+	Minor reformatting.
+
 2017-09-07  Vincent Celier  <celier@adacore.com>
 
 	* clean.adb: Do not get the target parameters before calling
