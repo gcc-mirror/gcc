@@ -3187,7 +3187,7 @@ package body Sem_Util is
    -----------------------------
 
    procedure Check_Part_Of_Reference (Var_Id : Entity_Id; Ref : Node_Id) is
-      Conc_Typ : constant Entity_Id := Encapsulating_State (Var_Id);
+      Conc_Obj : constant Entity_Id := Encapsulating_State (Var_Id);
       Decl     : Node_Id;
       OK_Use   : Boolean := False;
       Par      : Node_Id;
@@ -3220,7 +3220,7 @@ package body Sem_Util is
                Decl := Find_Related_Declaration_Or_Body (Par);
 
                if Nkind (Decl) = N_Object_Declaration
-                 and then Defining_Entity (Decl) = Conc_Typ
+                 and then Defining_Entity (Decl) = Conc_Obj
                then
                   OK_Use := True;
                   exit;
@@ -3232,7 +3232,7 @@ package body Sem_Util is
 
          elsif Nkind_In (Par, N_Single_Protected_Declaration,
                               N_Single_Task_Declaration)
-           and then Defining_Entity (Par) = Conc_Typ
+           and then Defining_Entity (Par) = Conc_Obj
          then
             OK_Use := True;
             exit;
@@ -3248,7 +3248,7 @@ package body Sem_Util is
             Spec_Id := Unique_Defining_Entity (Par);
 
             if Present (Anonymous_Object (Spec_Id))
-              and then Anonymous_Object (Spec_Id) = Conc_Typ
+              and then Anonymous_Object (Spec_Id) = Conc_Obj
             then
                OK_Use := True;
                exit;
@@ -3304,12 +3304,13 @@ package body Sem_Util is
             Ref, Var_Id);
          Error_Msg_Name_1 := Chars (Var_Id);
 
-         if Ekind (Conc_Typ) = E_Protected_Type then
+         if Is_Single_Protected_Object (Conc_Obj) then
             Error_Msg_NE
-              ("\% is constituent of single protected type &", Ref, Conc_Typ);
+              ("\% is constituent of single protected type &", Ref, Conc_Obj);
+
          else
             Error_Msg_NE
-              ("\% is constituent of single task type &", Ref, Conc_Typ);
+              ("\% is constituent of single task type &", Ref, Conc_Obj);
          end if;
       end if;
    end Check_Part_Of_Reference;
