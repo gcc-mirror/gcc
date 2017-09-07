@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -810,10 +810,15 @@ package body Ch6 is
                      end if;
                   end if;
 
-                  --  Fall through if we have a likely expression function
+                  --  Fall through if we have a likely expression function.
+                  --  If the starting keyword is not "function" the error
+                  --  will be reported elsewhere.
 
-                  Error_Msg_SC
-                    ("expression function must be enclosed in parentheses");
+                  if Func then
+                     Error_Msg_SC
+                       ("expression function must be enclosed in parentheses");
+                  end if;
+
                   return True;
                end Likely_Expression_Function;
 
@@ -844,12 +849,20 @@ package body Ch6 is
 
                   --  This case is correctly processed by the parser because
                   --  the expression function first appears as a subprogram
-                  --  declaration to the parser.
+                  --  declaration to the parser. The starting keyword may
+                  --  not have been "function" in which case the error is
+                  --  on a malformed procedure.
 
                   if Is_Non_Empty_List (Aspects) then
-                     Error_Msg
-                       ("aspect specifications must come after parenthesized "
-                        & "expression", Sloc (First (Aspects)));
+                     if Func then
+                        Error_Msg ("aspect specifications must come after "
+                          & "parenthesized expression",
+                            Sloc (First (Aspects)));
+                     else
+                        Error_Msg ("aspect specifications must come after "
+                          & "subprogram specification",
+                            Sloc (First (Aspects)));
+                     end if;
                   end if;
 
                   --  Parse out expression and build expression function

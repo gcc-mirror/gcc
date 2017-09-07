@@ -774,12 +774,6 @@ package Exp_Util is
    function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean;
    --  Determine whether node Expr denotes a non build-in-place function call
 
-   function Is_Object_Access_BIP_Func_Call
-      (Expr   : Node_Id;
-       Obj_Id : Entity_Id) return Boolean;
-   --  Determine if Expr denotes a build-in-place function which stores its
-   --  result in the BIPaccess actual parameter whose prefix must match Obj_Id.
-
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean;
    --  Node N is an object reference. This function returns True if it is
    --  possible that the object may not be aligned according to the normal

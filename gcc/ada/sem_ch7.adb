@@ -402,6 +402,18 @@ package body Sem_Ch7 is
                      end if;
                   end if;
 
+               --  Freeze node
+
+               elsif Nkind (Decl) = N_Freeze_Entity then
+                  declare
+                     Discard : Boolean;
+                     pragma Unreferenced (Discard);
+                  begin
+                     --  Inspect the actions to find references to subprograms
+
+                     Discard := Has_Referencer (Actions (Decl));
+                  end;
+
                --  Exceptions, objects and renamings do not need to be public
                --  if they are not followed by a construct which can reference
                --  and export them. The Is_Public flag is reset on top level
@@ -484,7 +496,7 @@ package body Sem_Ch7 is
 
          --  Local variables
 
-         Discard : Boolean := True;
+         Discard : Boolean;
          pragma Unreferenced (Discard);
 
       --  Start of processing for Hide_Public_Entities
