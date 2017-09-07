@@ -1,6 +1,13 @@
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/80897
+	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): Deal with too
+	large offsets.
+
 2017-09-07  Carl Love  <cel@us.ibm.com>
 
-	* config/rs6000/vsx.md (define_insn "*stxvl"): Add missing argument to the sldi instruction.
+	* config/rs6000/vsx.md (define_insn "*stxvl"): Add missing argument to
+	the sldi instruction.
 
 2017-09-07  David Edelsohn  <dje.gcc@gmail.com>
 
