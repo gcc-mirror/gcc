@@ -1,3 +1,17 @@
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* passes.def (pass_split_crit_edges): Remove instance before PRE.
+	* tree-ssa-pre.c (pass_pre::execute): Instead manually split
+	critical edges here, after loop init.
+	(pass_data_pre): Remove PROP_no_crit_edges flags.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use vn_valueize
+	for valueization of call args to avoid leaking VN_TOP.
+	(visit_use): Assert we do not visit default defs.
+	(init_scc_vn): Use build_decl for VN_TOP to make name nicer.
+	Use error_mark_node to more easily detect leaking VN_TOP.
+	All default-defs are varying, not VN_TOP.  Mark them visited.
+	(run_scc_vn): Make code match comment.
+
 2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-cpus.def (OTHER_VSX_VECTOR_MASKS): Delete

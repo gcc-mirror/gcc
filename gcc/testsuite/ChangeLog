@@ -1,3 +1,8 @@
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-thread-12.c: XFAIL third FSM threading
+	opportunity.
+
 2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-1.c: Update options to know that
