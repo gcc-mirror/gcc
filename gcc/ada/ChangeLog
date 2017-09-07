@@ -1,5 +1,22 @@
 2017-09-07  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_util.adb (Check_Part_Of_Reference): rename Conc_Typ to Conc_Obj
+	(because it refers to the anonymous concurrent object, not its type);
+	fix condition for emitting error message about task/protected type,
+
+2017-09-07  Bob Duff  <duff@adacore.com>
+
+	* binde.adb (Debug_Flag_Old): If both -do and -dp
+	are specified, behave as if just -do was specified, rather than
+	using a mixture.
+
+2017-09-07  Nicolas Roche  <roche@adacore.com>
+
+	* system-vxworks-sparcv9.ads, s-vxwork-m68k.ads, s-vxwork-mips.ads,
+	system-vxworks-m68k.ads, system-vxworks-mips.ads: Removed.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_prag.adb (Find_Role): The Global_Seen flag
 	is now consulted not only for abstract states and variables,
 	but for all kinds of items.

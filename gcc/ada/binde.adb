@@ -1160,7 +1160,10 @@ package body Binde is
 
    function Debug_Flag_Old return Boolean is
    begin
-      return Debug_Flag_P;
+      --  If the user specified both flags, we want to use the older algorithm,
+      --  rather than some confusing mix of the two.
+
+      return Debug_Flag_P and not Debug_Flag_O;
    end Debug_Flag_Old;
 
    ----------------------
