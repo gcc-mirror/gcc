@@ -9530,12 +9530,10 @@ copy_and_substitute_in_layout (Entity_Id gnat_new_type,
 	  save_gnu_tree (gnat_field, gnu_field, false);
       }
 
-  /* If there is a variant list, a selected variant and the fields all have a
+  /* If there is no variant list or a selected variant and the fields all have
      constant position, put them in order of increasing position to match that
-     of constant CONSTRUCTORs.  Likewise if there is no variant list but a REP
-     part, since the latter has been flattened in the process.  */
-  if ((gnu_variant_list.exists () ? selected_variant : gnu_rep_part != NULL)
-      && all_constant_pos)
+     of constant CONSTRUCTORs.  */
+  if ((!gnu_variant_list.exists () || selected_variant) && all_constant_pos)
     {
       const int len = list_length (gnu_field_list);
       tree *field_arr = XALLOCAVEC (tree, len), t = gnu_field_list;

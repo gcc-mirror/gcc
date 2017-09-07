@@ -1,3 +1,9 @@
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82127
+	* gcc-interface/decl.c (copy_and_substitute_in_layout): Put the fields
+	in order of increasing position in more cases.
+
 2017-09-07  Yannick Moy  <moy@adacore.com>
 
 	* a-exetim-mingw.ads: Add contract Global=>null
