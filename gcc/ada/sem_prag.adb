@@ -3066,7 +3066,7 @@ package body Sem_Prag is
             States_And_Objs := New_Copy_Elist (Abstract_States (Pack_Id));
          end if;
 
-         --  Collect all objects the appear in the visible declarations of the
+         --  Collect all objects that appear in the visible declarations of the
          --  related package.
 
          if Present (Visible_Declarations (Pack_Spec)) then
@@ -3076,6 +3076,9 @@ package body Sem_Prag is
                  and then Nkind (Decl) = N_Object_Declaration
                then
                   Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+               elsif Is_Single_Concurrent_Type_Declaration (Decl) then
+                  Append_New_Elmt (Anonymous_Object (Defining_Entity (Decl)),
+                                   States_And_Objs);
                end if;
 
                Next (Decl);

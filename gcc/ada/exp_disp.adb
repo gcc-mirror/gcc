@@ -701,6 +701,16 @@ package body Exp_Disp is
                   while Present (F) loop
                      if F = Entity (N) then
                         Rewrite (N, New_Copy_Tree (A));
+
+                        --  If the formal is class-wide, and thus not a
+                        --  controlling argument, preserve its type because
+                        --  it may appear in a nested call with a class-wide
+                        --  parameter.
+
+                        if Is_Class_Wide_Type (Etype (F)) then
+                           Set_Etype (N, Etype (F));
+                        end if;
+
                         exit;
                      end if;
 

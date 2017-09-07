@@ -357,10 +357,10 @@ package Einfo is
 
 --    Access_Disp_Table_Elab_Flag (Node30) [implementation base type only]
 --       Defined in E_Record_Type and E_Record_Subtype entities. Set in tagged
---       types whose dispatch table elaboration must be completed at runtime by
---       the IP routine to point to its pending elaboration flag entity. This
---       flag is needed when the elaboration of the dispatch table relies on
---       attribute 'Position applied to an object of the type; it is used by
+--       types whose dispatch table elaboration must be completed at run time
+--       by the IP routine to point to its pending elaboration flag entity.
+--       This flag is needed when the elaboration of the dispatch table relies
+--       on attribute 'Position applied to an object of the type; it is used by
 --       the IP routine to avoid performing this elaboration twice.
 
 --    Activation_Record_Component (Node31)

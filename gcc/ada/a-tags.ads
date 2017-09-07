@@ -557,13 +557,13 @@ private
    --
    --  "This" is the object whose dispatch table is being initialized. Prim_T
    --  is the primary tag of such object. Interface_T is the interface tag for
-   --  which the secondary dispatch table is being initialized, Offset_Value
+   --  which the secondary dispatch table is being initialized. Offset_Value
    --  is the distance from "This" to the object component containing the tag
    --  of the secondary dispatch table (a zero value means that this interface
    --  shares the primary dispatch table). Offset_Func references a function
-   --  that must be called to evaluate the offset at runtime. This routine also
-   --  takes care of registering these values in the table of interfaces of the
-   --  type.
+   --  that must be called to evaluate the offset at run time. This routine
+   --  also takes care of registering these values in the table of interfaces
+   --  of the type.
 
    procedure Set_Entry_Index (T : Tag; Position : Positive; Value : Positive);
    --  Ada 2005 (AI-345): Set the entry index of a primitive operation in T's

@@ -216,7 +216,7 @@ package Exp_Disp is
 
    function Elab_Flag_Needed (Typ : Entity_Id) return Boolean;
    --  Return True if the elaboration of the tagged type Typ is completed at
-   --  runtime by the execution of code located in the IP routine and the
+   --  run time by the execution of code located in the IP routine and the
    --  expander must generate an extra elaboration flag to avoid performing
    --  such elaboration twice.
 

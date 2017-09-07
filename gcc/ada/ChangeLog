@@ -1,5 +1,53 @@
 2017-09-07  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_prag.adb (Collect_States_And_Objects): Detect also instances of
+	single concurrent objects.
+
+2017-09-07  Javier Miranda  <miranda@adacore.com>
+
+	* s-regexp.ads: Fix documentation of the globbing grammar.
+
+2017-09-07  Gary Dismukes  <dismukes@adacore.com>
+
+	* a-tags.ads, einfo.ads, exp_disp.ads: Minor reformatting.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Enable pragma Ignore_Pragma (Global)
+	in CodePeer mode, to support more legacy code automatically.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Replace_Formals): If thr formal is classwide,
+	and thus not a controlling argument, preserve its type after
+	rewriting because it may appear in an nested call with a classwide
+	parameter.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* comperr.adb (Delete_SCIL_Files): Handle case of
+	N_Package_Instantiation.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch10.adb (Remove_Private_With_Clause): If a private with
+	clause for a unit U appears in a context that includes a regular
+	with_clause on U, rewrite the redundant private clause into a null
+	statement, rather than removing it altogether from the context,
+	so that ASIS tools can reconstruct the original source.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Check_Aspect_At_Freeze_Point): The expression
+	for aspect Small can be of any real type (not only a universal
+	real literal) as long as it is a static constant.
+
+2017-09-07  Thomas Quinot  <quinot@adacore.com>
+
+	* par_sco.adb: Minor reformatting.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
 	* s-parame-ae653.ads: Removed.
 
 2017-09-07  Nicolas Roche  <roche@adacore.com>
