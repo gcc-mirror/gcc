@@ -1,5 +1,11 @@
 2017-09-06  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82053 - ICE with default argument in lambda in template
+	* pt.c (tsubst_arg_types): Substitute default arguments for lambdas
+	in templates.
+	(retrieve_specialization): Use lambda_fn_in_template_p.
+	* cp-tree.h: Declare it.
+
 	PR c++/82070 - error with nested lambda capture
 	* pt.c (tsubst_expr) [DECL_EXPR]: Register capture proxies with
 	register_local_specialization.

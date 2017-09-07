@@ -1193,16 +1193,8 @@ retrieve_specialization (tree tmpl, tree args, hashval_t hash)
 
   /* Lambda functions in templates aren't instantiated normally, but through
      tsubst_lambda_expr.  */
-  if (LAMBDA_FUNCTION_P (tmpl))
-    {
-      bool generic = PRIMARY_TEMPLATE_P (tmpl);
-      if (TMPL_PARMS_DEPTH (DECL_TEMPLATE_PARMS (tmpl)) > generic)
-	return NULL_TREE;
-
-      /* But generic lambda functions are instantiated normally, once their
-	 containing context is fully instantiated.  */
-      gcc_assert (generic);
-    }
+  if (lambda_fn_in_template_p (tmpl))
+    return NULL_TREE;
 
   if (optimize_specialization_lookup_p (tmpl))
     {
@@ -12579,7 +12571,7 @@ tsubst_template_decl (tree t, tree args, tsubst_flags_t complain,
 bool
 lambda_fn_in_template_p (tree fn)
 {
-  if (!LAMBDA_FUNCTION_P (fn))
+  if (!fn || !LAMBDA_FUNCTION_P (fn))
     return false;
   tree closure = DECL_CONTEXT (fn);
   return CLASSTYPE_TEMPLATE_INFO (closure) != NULL_TREE;
@@ -13247,6 +13239,13 @@ tsubst_arg_types (tree arg_types,
        mandates that they be instantiated only when needed, which is
        done in build_over_call.  */
     default_arg = TREE_PURPOSE (arg_types);
+
+    /* Except that we do substitute default arguments under tsubst_lambda_expr,
+       since the new op() won't have any associated template arguments for us
+       to refer to later.  */
+    if (lambda_fn_in_template_p (in_decl))
+      default_arg = tsubst_copy_and_build (default_arg, args, complain, in_decl,
+					   false/*fn*/, false/*constexpr*/);
 
     if (default_arg && TREE_CODE (default_arg) == DEFAULT_ARG)
       {
