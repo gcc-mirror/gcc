@@ -2961,19 +2961,21 @@ package body Sem_Elab is
          Next_Elmt (Elmt);
       end loop;
 
-      --  For tasks declared in the current unit, trace other calls within
-      --  the task procedure bodies, which are available.
+      --  For tasks declared in the current unit, trace other calls within the
+      --  task procedure bodies, which are available.
 
-      In_Task_Activation := True;
+      if not Debug_Flag_Dot_Y then
+         In_Task_Activation := True;
 
-      Elmt := First_Elmt (Intra_Procs);
-      while Present (Elmt) loop
-         Ent := Node (Elmt);
-         Check_Internal_Call_Continue (N, Ent, Enclosing, Ent);
-         Next_Elmt (Elmt);
-      end loop;
+         Elmt := First_Elmt (Intra_Procs);
+         while Present (Elmt) loop
+            Ent := Node (Elmt);
+            Check_Internal_Call_Continue (N, Ent, Enclosing, Ent);
+            Next_Elmt (Elmt);
+         end loop;
 
-      In_Task_Activation := False;
+         In_Task_Activation := False;
+      end if;
    end Check_Task_Activation;
 
    -------------------------------

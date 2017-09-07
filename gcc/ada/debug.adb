@@ -115,7 +115,7 @@ package body Debug is
    --  d.v
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
-   --  d.y
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
@@ -603,6 +603,12 @@ package body Debug is
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
 
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies. When a task
+   --       body calls a procedure in the same package, and that procedure
+   --       calls a procedure in another package, the static elaboration
+   --       machinery adds an implicit Elaborate_All on the other package. This
+   --       switch disables the addition of the implicit pragma in such cases.
+   --
    --  d.z  Restore previous front-end support for Inline_Always. In default
    --       mode, for targets that use the GCC back end, Inline_Always is
    --       handled by the back end. Use of this switch restores the previous

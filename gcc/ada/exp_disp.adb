@@ -6700,7 +6700,7 @@ package body Exp_Disp is
       if Elab_Flag_Needed (Typ) then
          Set_Access_Disp_Table_Elab_Flag (Typ,
            Make_Defining_Identifier (Loc,
-             New_External_Name (Tname, 'F', Suffix_Index => -1)));
+             Chars => New_External_Name (Tname, 'F')));
 
          Append_To (Result,
            Make_Object_Declaration (Loc,

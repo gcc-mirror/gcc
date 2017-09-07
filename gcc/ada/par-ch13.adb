@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -520,9 +520,11 @@ package body Ch13 is
                   end if;
                end if;
 
-               --  Note if inside Depends aspect
+               --  Note if inside Depends or Refined_Depends aspect
 
-               if A_Id = Aspect_Depends then
+               if A_Id = Aspect_Depends
+                 or else A_Id = Aspect_Refined_Depends
+               then
                   Inside_Depends := True;
                end if;
 

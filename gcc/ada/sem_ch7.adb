@@ -1411,7 +1411,7 @@ package body Sem_Ch7 is
          Gen_Par :=
            Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
-            Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+            Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
             if Nkind_In (Inst_Node, N_Package_Instantiation,
                                     N_Formal_Package_Declaration)

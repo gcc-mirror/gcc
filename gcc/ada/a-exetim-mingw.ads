@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -79,7 +79,9 @@ is
 
    function "-"
      (Left  : CPU_Time;
-      Right : CPU_Time) return Ada.Real_Time.Time_Span;
+      Right : CPU_Time) return Ada.Real_Time.Time_Span
+   with
+     Global => null;
 
    function "<"  (Left, Right : CPU_Time) return Boolean with
      Global => null;

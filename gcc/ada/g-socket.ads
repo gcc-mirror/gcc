@@ -456,7 +456,11 @@ package GNAT.Sockets is
    function Image (Socket : Socket_Type) return String;
    --  Return a printable string for Socket
 
-   function To_C (Socket : Socket_Type) return Integer;
+   function To_Ada (Fd : Integer) return Socket_Type with Inline;
+   --  Convert a file descriptor to Socket_Type. This is useful when a socket
+   --  file descriptor is obtained from an external library call.
+
+   function To_C (Socket : Socket_Type) return Integer with Inline;
    --  Return a file descriptor to be used by external subprograms. This is
    --  useful for C functions that are not yet interfaced in this package.
 

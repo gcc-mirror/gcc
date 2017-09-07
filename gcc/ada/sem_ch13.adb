@@ -9280,8 +9280,9 @@ package body Sem_Ch13 is
             T := Standard_Integer;
 
          when Aspect_Small =>
-            --  Note that the expression can be of any real type (not just
-            --  a real universal literal) as long as it is a static constant.
+
+            --  Note that the expression can be of any real type (not just a
+            --  real universal literal) as long as it is a static constant.
 
             T := Any_Real;
 

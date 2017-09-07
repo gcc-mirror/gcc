@@ -2478,6 +2478,15 @@ package body GNAT.Sockets is
       return Stream_Access (S);
    end Stream;
 
+   ------------
+   -- To_Ada --
+   ------------
+
+   function To_Ada (Fd : Integer) return Socket_Type is
+   begin
+      return Socket_Type (Fd);
+   end To_Ada;
+
    ----------
    -- To_C --
    ----------

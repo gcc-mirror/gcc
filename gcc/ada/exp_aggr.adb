@@ -3322,9 +3322,9 @@ package body Exp_Aggr is
 
                   if Has_Interfaces (Base_Type (Typ)) then
                      Init_Secondary_Tags
-                       (Typ        => Base_Type (Typ),
-                        Target     => Target,
-                        Stmts_List => Assign,
+                       (Typ            => Base_Type (Typ),
+                        Target         => Target,
+                        Stmts_List     => Assign,
                         Init_Tags_List => Assign);
                   end if;
                end if;
@@ -3858,9 +3858,9 @@ package body Exp_Aggr is
 
          if Has_Interfaces (Base_Type (Typ)) then
             Init_Secondary_Tags
-              (Typ        => Base_Type (Typ),
-               Target     => Target,
-               Stmts_List => L,
+              (Typ            => Base_Type (Typ),
+               Target         => Target,
+               Stmts_List     => L,
                Init_Tags_List => L);
          end if;
       end if;

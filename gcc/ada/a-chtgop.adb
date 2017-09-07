@@ -439,6 +439,33 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
    -----------------------
 
    procedure Generic_Iteration (HT : Hash_Table_Type) is
+      procedure Wrapper (Node : Node_Access; Dummy_Pos : Hash_Type);
+
+      -------------
+      -- Wrapper --
+      -------------
+
+      procedure Wrapper (Node : Node_Access; Dummy_Pos : Hash_Type) is
+      begin
+         Process (Node);
+      end Wrapper;
+
+      procedure Internal_With_Pos is
+        new Generic_Iteration_With_Position (Wrapper);
+
+   --  Start of processing for Generic_Iteration
+
+   begin
+      Internal_With_Pos (HT);
+   end Generic_Iteration;
+
+   -------------------------------------
+   -- Generic_Iteration_With_Position --
+   -------------------------------------
+
+   procedure Generic_Iteration_With_Position
+     (HT : Hash_Table_Type)
+   is
       Node : Node_Access;
 
    begin
@@ -449,11 +476,11 @@ package body Ada.Containers.Hash_Tables.Generic_Operations is
       for Indx in HT.Buckets'Range loop
          Node := HT.Buckets (Indx);
          while Node /= null loop
-            Process (Node);
+            Process (Node, Indx);
             Node := Next (Node);
          end loop;
       end loop;
-   end Generic_Iteration;
+   end Generic_Iteration_With_Position;
 
    ------------------
    -- Generic_Read --

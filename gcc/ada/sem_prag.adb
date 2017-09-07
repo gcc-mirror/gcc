@@ -3076,9 +3076,11 @@ package body Sem_Prag is
                  and then Nkind (Decl) = N_Object_Declaration
                then
                   Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
+
                elsif Is_Single_Concurrent_Type_Declaration (Decl) then
-                  Append_New_Elmt (Anonymous_Object (Defining_Entity (Decl)),
-                                   States_And_Objs);
+                  Append_New_Elmt
+                    (Anonymous_Object (Defining_Entity (Decl)),
+                     States_And_Objs);
                end if;
 
                Next (Decl);

@@ -5297,7 +5297,14 @@ package body Exp_Ch7 is
    --  Start of processing for Insert_Actions_In_Scope_Around
 
    begin
-      if No (Act_Before) and then No (Act_After) and then No (Act_Cleanup) then
+      --  Nothing to do if the scope does not manage the secondary stack or
+      --  does not contain meaninful actions for insertion.
+
+      if not Manage_SS
+        and then No (Act_Before)
+        and then No (Act_After)
+        and then No (Act_Cleanup)
+      then
          return;
       end if;
 

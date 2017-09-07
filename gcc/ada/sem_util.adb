@@ -15730,6 +15730,22 @@ package body Sem_Util is
       return T = Universal_Integer or else T = Universal_Real;
    end Is_Universal_Numeric_Type;
 
+   ------------------------------
+   -- Is_User_Defined_Equality --
+   ------------------------------
+
+   function Is_User_Defined_Equality (Id : Entity_Id) return Boolean is
+   begin
+      return Ekind (Id) = E_Function
+        and then Chars (Id) = Name_Op_Eq
+        and then Comes_From_Source (Id)
+
+        --  Internally generated equalities have a full type declaration
+        --  as their parent.
+
+        and then Nkind (Parent (Id)) = N_Function_Specification;
+   end Is_User_Defined_Equality;
+
    --------------------------------------
    -- Is_Validation_Variable_Reference --
    --------------------------------------

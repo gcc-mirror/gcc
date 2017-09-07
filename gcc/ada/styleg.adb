@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -127,20 +127,17 @@ package body Styleg is
    -----------------
 
    --  In check tokens mode (-gnatys), arrow must be surrounded by spaces,
-   --  except that within the argument of a Depends macro the required format
-   --  is =>+ rather than => +).
+   --  except that within the argument of a Depends or Refined_Depends aspect
+   --  or pragma the required format is "=>+ " rather than "=> +").
 
    procedure Check_Arrow (Inside_Depends : Boolean := False) is
    begin
       if Style_Check_Tokens then
          Require_Preceding_Space;
 
-         if not Inside_Depends then
-            Require_Following_Space;
+         --  Special handling for Depends and Refined_Depends
 
-         --  Special handling for Inside_Depends
-
-         else
+         if Inside_Depends then
             if Source (Scan_Ptr) = ' '
               and then Source (Scan_Ptr + 1) = '+'
             then
@@ -151,6 +148,11 @@ package body Styleg is
             then
                Require_Following_Space;
             end if;
+
+         --  Normal case
+
+         else
+            Require_Following_Space;
          end if;
       end if;
    end Check_Arrow;
@@ -1054,16 +1056,17 @@ package body Styleg is
    --  In check token mode (-gnatyt), unary plus or minus must not be
    --  followed by a space.
 
-   --  Annoying exception: if we have the sequence =>+ within a Depends pragma
-   --  or aspect, then we insist on a space rather than forbidding it.
+   --  Annoying exception: if we have the sequence =>+ within a Depends or
+   --  Refined_Depends pragma or aspect, then we insist on a space rather
+   --  than forbidding it.
 
    procedure Check_Unary_Plus_Or_Minus (Inside_Depends : Boolean := False) is
    begin
       if Style_Check_Tokens then
-         if not Inside_Depends then
-            Check_No_Space_After;
-         else
+         if Inside_Depends then
             Require_Following_Space;
+         else
+            Check_No_Space_After;
          end if;
       end if;
    end Check_Unary_Plus_Or_Minus;

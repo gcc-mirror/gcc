@@ -2671,6 +2671,18 @@ package body Exp_Attr is
               New_Occurrence_Of
                 (Extra_Constrained (Formal_Ent), Sloc (N)));
 
+         --  If the prefix is an access to object, the attribute applies to
+         --  the designated object, so rewrite with an explicit dereference.
+
+         elsif Is_Access_Type (Etype (Pref))
+           and then
+             (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
+         then
+            Rewrite (Pref,
+              Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+            return;
+
          --  For variables with a Extra_Constrained field, we use the
          --  corresponding entity.
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -304,7 +304,9 @@ package body Ch2 is
 
       --  Set global to indicate if we are within a Depends pragma
 
-      if Chars (Ident_Node) = Name_Depends then
+      if Chars (Ident_Node) = Name_Depends
+        or else Chars (Ident_Node) = Name_Refined_Depends
+      then
          Inside_Depends := True;
       end if;
 
