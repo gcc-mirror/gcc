@@ -1079,7 +1079,7 @@ package body Lib.Xref is
          --  original discriminant, which gets the reference.
 
          elsif Ekind (E) = E_In_Parameter
-           and then  Present (Discriminal_Link (E))
+           and then Present (Discriminal_Link (E))
          then
             Ent := Discriminal_Link (E);
             Set_Referenced (Ent);
@@ -2702,7 +2702,7 @@ package body Lib.Xref is
                   if XE.Key.Loc /= No_Location
                     and then
                       (XE.Key.Loc /= Crloc
-                        or else (Prevt = 'm' and then  XE.Key.Typ = 'r'))
+                        or else (Prevt = 'm' and then XE.Key.Typ = 'r'))
                   then
                      Crloc := XE.Key.Loc;
                      Prevt := XE.Key.Typ;

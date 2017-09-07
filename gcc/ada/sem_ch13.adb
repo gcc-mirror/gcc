@@ -12649,7 +12649,6 @@ package body Sem_Ch13 is
    --------------------------------
 
    procedure Resolve_Aspect_Expressions (E : Entity_Id) is
-
       function Resolve_Name (N : Node_Id) return Traverse_Result;
       --  Verify that all identifiers in the expression, with the exception
       --  of references to the current entity, denote visible entities. This
@@ -12668,6 +12667,7 @@ package body Sem_Ch13 is
 
       function Resolve_Name (N : Node_Id) return Traverse_Result is
          Dummy : Traverse_Result;
+
       begin
          if Nkind (N) = N_Selected_Component then
             if Nkind (Prefix (N)) = N_Identifier
@@ -12699,6 +12699,8 @@ package body Sem_Ch13 is
       end Resolve_Name;
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
+
+      --  Local variables
 
       ASN : Node_Id := First_Rep_Item (E);
 

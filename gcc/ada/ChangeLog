@@ -1,3 +1,45 @@
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_prag.adb (Find_Role): The Global_Seen flag
+	is now consulted not only for abstract states and variables,
+	but for all kinds of items.
+	(Collect_Subprogram_Inputs_Outputs): Do not process formal
+	generic parameters, because unlike ordinary formal parameters,
+	generic formals only act as input/ outputs if they are explicitly
+	mentioned in a Global contract.
+
+2017-09-07  Yannick Moy  <moy@adacore.com>
+
+	* ghost.adb (Check_Ghost_Context): Do not err on ghost code inside
+	predicate procedure. Check predicate pragma/aspect with Ghost entity.
+	* exp_ch6.adb, par-ch6.adb, sem_ch13.adb, sem_prag.adb; Minor
+	reformatting.
+
+2017-09-07  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_aggr.adb: Move New_Copy_Tree_And_Dimensions to sem_dim
+	(code cleanup);
+	* sem_ch3.adb (Build_Derived_Record_Type):i Call
+	Copy_Dimensions_Of_Components after creating the copy of the
+	record declaration.
+	* sem_dim.ads, sem_dim.adb (Copy_Dimensions_Of_Components): For a
+	derived recor type, copy the dikensions if any of each component
+	of the parent record to the corresponding component declarations
+	of the derived record. These expressions are used among other
+	things as default values in aggregates with box associations.
+	* a-dirval-mingw.adb, g-cgi.adb, gnatcmd.adb, lib-xref.adb,
+	repinfo.adb, sem_attr.adb, sem_ch10.adb, sem_ch6.adb, sem_prag.adb:
+	Minor reformatting.
+
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb: Remove extra space after THEN.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch7.adb (Has_Referencer): For a subprogram renaming,
+	also mark the renamed subprogram as referenced.
+
 2017-09-07  Ed Schonberg  <schonberg@adacore.com>
 
 	* par-ch6.adb (P_Subprogram): Improve error message on null

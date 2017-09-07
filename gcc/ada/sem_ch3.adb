@@ -9352,6 +9352,7 @@ package body Sem_Ch3 is
          New_Decl :=
            New_Copy_Tree
              (Parent (Parent_Base), Map => Assoc_List, New_Sloc => Loc);
+         Copy_Dimensions_Of_Components (Derived_Type);
 
          --  Restore the fields saved prior to the New_Copy_Tree call
          --  and compute the stored constraint.
@@ -11883,7 +11884,7 @@ package body Sem_Ch3 is
          --  or protected interfaces.
 
          elsif Nkind (N) = N_Full_Type_Declaration
-           and then  Protected_Present (Type_Def)
+           and then Protected_Present (Type_Def)
          then
             if Limited_Present (Iface_Def)
               or else Synchronized_Present (Iface_Def)
@@ -16795,7 +16796,7 @@ package body Sem_Ch3 is
 
    procedure Diagnose_Interface (N : Node_Id;  E : Entity_Id) is
    begin
-      if not Is_Interface (E) and then  E /= Any_Type then
+      if not Is_Interface (E) and then E /= Any_Type then
          Error_Msg_NE ("(Ada 2005) & must be an interface", N, E);
       end if;
    end Diagnose_Interface;
@@ -21450,7 +21451,7 @@ package body Sem_Ch3 is
                Constrain_Access (Def_Id, S, Related_Nod);
 
                if Expander_Active
-                 and then  Is_Itype (Designated_Type (Def_Id))
+                 and then Is_Itype (Designated_Type (Def_Id))
                  and then Nkind (Related_Nod) = N_Subtype_Declaration
                  and then not Is_Incomplete_Type (Designated_Type (Def_Id))
                then

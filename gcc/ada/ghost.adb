@@ -281,6 +281,13 @@ package body Ghost is
                   if Chars (Subp_Id) = Name_uPostconditions then
                      return True;
 
+                  --  The context is the internally built predicate function,
+                  --  which is OK because the real check was done before the
+                  --  predicate function was generated.
+
+                  elsif Is_Predicate_Function (Subp_Id) then
+                     return True;
+
                   else
                      Subp_Decl :=
                        Original_Node (Unit_Declaration_Node (Subp_Id));
@@ -362,10 +369,12 @@ package body Ghost is
                   return True;
 
                --  An assertion expression pragma is Ghost when it contains a
-               --  reference to a Ghost entity (SPARK RM 6.9(10)).
+               --  reference to a Ghost entity (SPARK RM 6.9(10)), except for
+               --  predicate pragmas (SPARK RM 6.9(11)).
 
-               elsif Assertion_Expression_Pragma (Prag_Id) then
-
+               elsif Assertion_Expression_Pragma (Prag_Id)
+                 and then Prag_Id /= Pragma_Predicate
+               then
                   --  Ensure that the assertion policy and the Ghost policy are
                   --  compatible (SPARK RM 6.9(18)).
 
@@ -464,9 +473,16 @@ package body Ghost is
                   return True;
 
                --  A reference to a Ghost entity can appear within an aspect
-               --  specification (SPARK RM 6.9(10)).
+               --  specification (SPARK RM 6.9(10)). The precise checking will
+               --  occur when analyzing the corresponding pragma. We make an
+               --  exception for predicate aspects that only allow referencing
+               --  a Ghost entity when the corresponding type declaration is
+               --  Ghost (SPARK RM 6.9(11)).
 
-               elsif Nkind (Par) = N_Aspect_Specification then
+               elsif Nkind (Par) = N_Aspect_Specification
+                 and then not Same_Aspect
+                                (Get_Aspect_Id (Par), Aspect_Predicate)
+               then
                   return True;
 
                elsif Is_OK_Declaration (Par) then

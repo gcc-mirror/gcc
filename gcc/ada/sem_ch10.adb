@@ -1748,7 +1748,7 @@ package body Sem_Ch10 is
             --  body may not be available, in which case do not try analysis.
 
             if Serious_Errors_Detected > 0
-              and then  No (Library_Unit (Library_Unit (N)))
+              and then No (Library_Unit (Library_Unit (N)))
             then
                return;
             end if;
@@ -2129,7 +2129,7 @@ package body Sem_Ch10 is
                      --  attempt processing.
 
                      if Serious_Errors_Detected > 0
-                       and then  No (Entity (Name (Item)))
+                       and then No (Entity (Name (Item)))
                      then
                         Set_Entity (Name (Item), Standard_Standard);
                      end if;

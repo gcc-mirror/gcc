@@ -573,9 +573,9 @@ begin
       --  report an error indicating that the command is no longer supporting
       --  project files.
 
-      if The_Command = Find or else  The_Command = Xref then
+      if The_Command = Find or else The_Command = Xref then
          declare
-            Argv    : String_Access;
+            Argv : String_Access;
          begin
             for Arg_Num in 1 .. Last_Switches.Last loop
                Argv := Last_Switches.Table (Arg_Num);

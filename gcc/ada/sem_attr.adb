@@ -3556,7 +3556,7 @@ package body Sem_Attr is
 
          elsif Nkind (P) = N_Indexed_Component then
             if not Is_Entity_Name (Prefix (P))
-              or else  No (Entity (Prefix (P)))
+              or else No (Entity (Prefix (P)))
               or else Ekind (Entity (Prefix (P))) /= E_Entry_Family
             then
                if Nkind (Prefix (P)) = N_Selected_Component

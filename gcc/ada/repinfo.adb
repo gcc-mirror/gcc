@@ -341,7 +341,7 @@ package body Repinfo is
       begin
          Decl := Parent (E);
          while Present (Decl)
-           and then  Nkind (Decl) /= N_Package_Body
+           and then Nkind (Decl) /= N_Package_Body
            and then Nkind (Decl) /= N_Subprogram_Declaration
            and then Nkind (Decl) /= N_Subprogram_Body
          loop

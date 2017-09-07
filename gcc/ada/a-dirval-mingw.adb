@@ -7,7 +7,7 @@
 --                                 B o d y                                  --
 --                            (Windows Version)                             --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -75,7 +75,7 @@ package body Ada.Directories.Validity is
          --  A drive letter may be specified at the beginning
 
          if Name'Length >= 2
-           and then  Name (Start + 1) = ':'
+           and then Name (Start + 1) = ':'
            and then
              (Name (Start) in 'A' .. 'Z' or else Name (Start) in 'a' .. 'z')
          then
