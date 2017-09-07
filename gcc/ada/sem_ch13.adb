@@ -9280,7 +9280,10 @@ package body Sem_Ch13 is
             T := Standard_Integer;
 
          when Aspect_Small =>
-            T := Universal_Real;
+            --  Note that the expression can be of any real type (not just
+            --  a real universal literal) as long as it is a static constant.
+
+            T := Any_Real;
 
          --  For a simple storage pool, we have to retrieve the type of the
          --  pool object associated with the aspect's corresponding attribute

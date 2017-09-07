@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---                     Copyright (C) 1998-2010, AdaCore                     --
+--                     Copyright (C) 1998-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -83,13 +83,17 @@ package System.Regexp is
    --     regexp ::= term
 
    --     term   ::= elmt
-
    --     term   ::= elmt elmt ...     -- concatenation (elmt then elmt)
-   --     term   ::= *                 -- any string of 0 or more characters
-   --     term   ::= ?                 -- matches any character
-   --     term   ::= [char char ...]   -- matches any character listed
-   --     term   ::= [char - char]     -- matches any character in given range
    --     term   ::= {elmt, elmt, ...} -- alternation (matches any of elmt)
+
+   --     elmt   ::= *                 -- any string of 0 or more characters
+   --     elmt   ::= ?                 -- matches any character
+   --     elmt   ::= char
+   --     elmt   ::= [^ char char ...] -- matches any character not listed
+   --     elmt   ::= [char char ...]   -- matches any character listed
+   --     elmt   ::= [char - char]     -- matches any character in given range
+
+   --     \char is also supported by this grammar.
 
    --  Important note : This package was mainly intended to match regular
    --  expressions against file names. The whole string has to match the

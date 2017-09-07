@@ -264,7 +264,11 @@ procedure Gnat1drv is
          Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
          Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
-         --  Suppress division by zero and access checks since they are handled
+         --  Enable pragma Ignore_Pragma (Global) to support legacy code
+
+         Set_Name_Table_Boolean3 (Name_Id'(Name_Find ("global")), True);
+
+         --  Suppress division by zero checks since they are handled
          --  implicitly by CodePeer.
 
          --  Turn off dynamic elaboration checks: generates inconsistencies in

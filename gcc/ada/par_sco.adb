@@ -214,8 +214,8 @@ package body Par_SCO is
    --  Parameter D, when present, indicates the dominant of the first
    --  declaration or statement within N.
 
-   --  Why is Traverse_Sync_Definition commented specificaly and
-   --   the others are not???
+   --  Why is Traverse_Sync_Definition commented specifically, whereas
+   --  the others are not???
 
    procedure Traverse_Generic_Package_Declaration (N : Node_Id);
 
