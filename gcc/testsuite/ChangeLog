@@ -1,3 +1,8 @@
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82126
+	* gnat.dg/alignment3.adb: Add pragma No_Component_Reordering.
+
 2017-09-07  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/tree-ssa/ssa-thread-12.c: XFAIL third FSM threading
