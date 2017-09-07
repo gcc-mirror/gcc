@@ -137,7 +137,8 @@ package body Exp_Ch6 is
    --  there are no tasks.
 
    function Caller_Known_Size
-     (Func_Call : Node_Id; Result_Subt : Entity_Id) return Boolean;
+     (Func_Call   : Node_Id;
+      Result_Subt : Entity_Id) return Boolean;
    --  True if result subtype is definite, or has a size that does not require
    --  secondary stack usage (i.e. no variant part or components whose type
    --  depends on discriminants). In particular, untagged types with only
@@ -837,11 +838,14 @@ package body Exp_Ch6 is
    -----------------------
 
    function Caller_Known_Size
-     (Func_Call : Node_Id; Result_Subt : Entity_Id) return Boolean is
+     (Func_Call   : Node_Id;
+      Result_Subt : Entity_Id) return Boolean
+   is
    begin
-      return (Is_Definite_Subtype (Underlying_Type (Result_Subt))
-              and then No (Controlling_Argument (Func_Call)))
-          or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
+      return
+          (Is_Definite_Subtype (Underlying_Type (Result_Subt))
+            and then No (Controlling_Argument (Func_Call)))
+        or else not Requires_Transient_Scope (Underlying_Type (Result_Subt));
    end Caller_Known_Size;
 
    --------------------------------
@@ -8081,7 +8085,8 @@ package body Exp_Ch6 is
 
       declare
          Definite : constant Boolean :=
-           Caller_Known_Size (Func_Call, Result_Subt);
+                      Caller_Known_Size (Func_Call, Result_Subt);
+
       begin
          --  Create an access type designating the function's result subtype.
          --  We use the type of the original call because it may be a call to

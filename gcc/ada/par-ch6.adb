@@ -855,13 +855,14 @@ package body Ch6 is
 
                   if Is_Non_Empty_List (Aspects) then
                      if Func then
-                        Error_Msg ("aspect specifications must come after "
-                          & "parenthesized expression",
-                            Sloc (First (Aspects)));
+                        Error_Msg
+                          ("aspect specifications must come after "
+                           & "parenthesized expression",
+                           Sloc (First (Aspects)));
                      else
-                        Error_Msg ("aspect specifications must come after "
-                          & "subprogram specification",
-                            Sloc (First (Aspects)));
+                        Error_Msg
+                          ("aspect specifications must come after subprogram "
+                           & "specification", Sloc (First (Aspects)));
                      end if;
                   end if;
 

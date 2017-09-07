@@ -189,6 +189,20 @@ package Sem_Dim is
    --  node that is allowed to contain a dimension (see OK_For_Dimension in
    --  body of Sem_Dim).
 
+   procedure Copy_Dimensions_Of_Components (Rec : Entity_Id);
+   --  Propagate the dimensions of the components of a record type T to the
+   --  components of a record type derived from T. The derivation creates
+   --  a full copy of the type declaration of the parent, and the dimension
+   --  information of individual components must be transferred explicitly.
+
+   function New_Copy_Tree_And_Copy_Dimensions
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id;
+   --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
+   --  also copies the dimensions of Source to the returned node.
+
    function Dimensions_Match (T1 : Entity_Id; T2 : Entity_Id) return Boolean;
    --  If the common base type has a dimension system, verify that two
    --  subtypes have the same dimensions. Used for conformance checking.

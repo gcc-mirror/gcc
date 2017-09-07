@@ -439,6 +439,23 @@ package body Sem_Ch7 is
                   then
                      Set_Is_Public (Decl_Id, False);
                   end if;
+
+                  --  For a subprogram renaming, if the entity is referenced,
+                  --  then so is the renamed subprogram. But there is an issue
+                  --  with generic bodies because instantiations are not done
+                  --  yet and, therefore, cannot be scanned for referencers.
+                  --  That's why we use an approximation and test that we have
+                  --  at least one subprogram referenced by an inlined body
+                  --  instead of precisely the entity of this renaming.
+
+                  if Nkind (Decl) = N_Subprogram_Renaming_Declaration
+                    and then Subprogram_Table.Get_First
+                    and then Is_Entity_Name (Name (Decl))
+                    and then Present (Entity (Name (Decl)))
+                    and then Is_Subprogram (Entity (Name (Decl)))
+                  then
+                     Subprogram_Table.Set (Entity (Name (Decl)), True);
+                  end if;
                end if;
 
                Prev (Decl);

@@ -764,7 +764,7 @@ package body Sem_Util is
 
       if Inside_A_Generic then
          Gen := Current_Scope;
-         while Present (Gen) and then  Ekind (Gen) /= E_Generic_Package loop
+         while Present (Gen) and then Ekind (Gen) /= E_Generic_Package loop
             Gen := Scope (Gen);
          end loop;
 

@@ -2405,6 +2405,25 @@ package body Sem_Dim is
       end if;
    end Copy_Dimensions;
 
+   -----------------------------------
+   -- Copy_Dimensions_Of_Components --
+   -----------------------------------
+
+   procedure Copy_Dimensions_Of_Components (Rec : Entity_Id) is
+      C : Entity_Id;
+
+   begin
+      C := First_Component (Rec);
+      while Present (C) loop
+         if Nkind (Parent (C)) = N_Component_Declaration then
+            Copy_Dimensions
+              (Expression (Parent (Corresponding_Record_Component (C))),
+               Expression (Parent (C)));
+         end if;
+         Next_Component (C);
+      end loop;
+   end Copy_Dimensions_Of_Components;
+
    --------------------------
    -- Create_Rational_From --
    --------------------------
@@ -3482,6 +3501,26 @@ package body Sem_Dim is
       Copy_Dimensions   (From, To);
       Remove_Dimensions (From);
    end Move_Dimensions;
+
+   ---------------------------------------
+   -- New_Copy_Tree_And_Copy_Dimensions --
+   ---------------------------------------
+
+   function New_Copy_Tree_And_Copy_Dimensions
+     (Source    : Node_Id;
+      Map       : Elist_Id   := No_Elist;
+      New_Sloc  : Source_Ptr := No_Location;
+      New_Scope : Entity_Id  := Empty) return Node_Id
+   is
+      New_Copy : constant Node_Id :=
+                   New_Copy_Tree (Source, Map, New_Sloc, New_Scope);
+
+   begin
+      --  Move the dimensions of Source to New_Copy
+
+      Copy_Dimensions (Source, New_Copy);
+      return New_Copy;
+   end New_Copy_Tree_And_Copy_Dimensions;
 
    ------------
    -- Reduce --

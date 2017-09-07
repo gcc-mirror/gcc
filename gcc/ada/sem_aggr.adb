@@ -3279,14 +3279,6 @@ package body Sem_Aggr is
       --  An error message is emitted if the components taking their value from
       --  the others choice do not have same type.
 
-      function New_Copy_Tree_And_Copy_Dimensions
-        (Source    : Node_Id;
-         Map       : Elist_Id   := No_Elist;
-         New_Sloc  : Source_Ptr := No_Location;
-         New_Scope : Entity_Id  := Empty) return Node_Id;
-      --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
-      --  also copies the dimensions of Source to the returned node.
-
       procedure Propagate_Discriminants
         (Aggr       : Node_Id;
          Assoc_List : List_Id);
@@ -3732,26 +3724,6 @@ package body Sem_Aggr is
 
          return Expr;
       end Get_Value;
-
-      ---------------------------------------
-      -- New_Copy_Tree_And_Copy_Dimensions --
-      ---------------------------------------
-
-      function New_Copy_Tree_And_Copy_Dimensions
-        (Source    : Node_Id;
-         Map       : Elist_Id   := No_Elist;
-         New_Sloc  : Source_Ptr := No_Location;
-         New_Scope : Entity_Id  := Empty) return Node_Id
-      is
-         New_Copy : constant Node_Id :=
-                      New_Copy_Tree (Source, Map, New_Sloc, New_Scope);
-
-      begin
-         --  Move the dimensions of Source to New_Copy
-
-         Copy_Dimensions (Source, New_Copy);
-         return New_Copy;
-      end New_Copy_Tree_And_Copy_Dimensions;
 
       -----------------------------
       -- Propagate_Discriminants --

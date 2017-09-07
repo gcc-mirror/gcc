@@ -1205,126 +1205,173 @@ package body Sem_Prag is
             Item_Is_Output : out Boolean)
          is
          begin
-            Item_Is_Input  := False;
-            Item_Is_Output := False;
+            case Ekind (Item_Id) is
 
-            --  Abstract states
+               --  Abstract states
 
-            if Ekind (Item_Id) = E_Abstract_State then
+               when E_Abstract_State =>
 
-               --  When pragma Global is present, the mode of the state may be
-               --  further constrained by setting a more restrictive mode.
+                  --  When pragma Global is present it determines the mode of
+                  --  the abstract state.
 
-               if Global_Seen then
-                  if Appears_In (Subp_Inputs, Item_Id) then
-                     Item_Is_Input := True;
-                  end if;
+                  if Global_Seen then
+                     Item_Is_Input  := Appears_In (Subp_Inputs, Item_Id);
+                     Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
 
-                  if Appears_In (Subp_Outputs, Item_Id) then
+                  --  Otherwise the state has a default IN OUT mode, because it
+                  --  behaves as a variable.
+
+                  else
+                     Item_Is_Input  := True;
                      Item_Is_Output := True;
                   end if;
 
-               --  Otherwise the state has a default IN OUT mode
+               --  Constants and IN parameters
 
-               else
-                  Item_Is_Input  := True;
-                  Item_Is_Output := True;
-               end if;
+               when E_Constant
+                  | E_Generic_In_Parameter
+                  | E_In_Parameter
+                  | E_Loop_Parameter
+               =>
+                  --  When pragma Global is present it determines the mode
+                  --  of constant objects as inputs (and such objects cannot
+                  --  appear as outputs in the Global contract).
 
-            --  Constants
-
-            elsif Ekind_In (Item_Id, E_Constant,
-                                     E_Loop_Parameter)
-            then
-               Item_Is_Input := True;
-
-            --  Parameters
-
-            elsif Ekind_In (Item_Id, E_Generic_In_Parameter,
-                                     E_In_Parameter)
-            then
-               Item_Is_Input := True;
-
-            elsif Ekind_In (Item_Id, E_Generic_In_Out_Parameter,
-                                     E_In_Out_Parameter)
-            then
-               Item_Is_Input  := True;
-               Item_Is_Output := True;
-
-            elsif Ekind (Item_Id) = E_Out_Parameter then
-               if Scope (Item_Id) = Spec_Id then
-
-                  --  An OUT parameter of the related subprogram has mode IN
-                  --  if its type is unconstrained or tagged because array
-                  --  bounds, discriminants or tags can be read.
-
-                  if Is_Unconstrained_Or_Tagged_Item (Item_Id) then
+                  if Global_Seen then
+                     Item_Is_Input := Appears_In (Subp_Inputs, Item_Id);
+                  else
                      Item_Is_Input := True;
                   end if;
 
-                  Item_Is_Output := True;
+                  Item_Is_Output := False;
 
-               --  An OUT parameter of an enclosing subprogram behaves as a
-               --  read-write variable in which case the mode is IN OUT.
+               --  Variables and IN OUT parameters
 
-               else
-                  Item_Is_Input  := True;
-                  Item_Is_Output := True;
-               end if;
+               when E_Generic_In_Out_Parameter
+                  | E_In_Out_Parameter
+                  | E_Variable
+               =>
+                  --  When pragma Global is present it determines the mode of
+                  --  the object.
 
-            --  Protected types
+                  if Global_Seen then
 
-            elsif Ekind (Item_Id) = E_Protected_Type then
+                     --  A variable has mode IN when its type is unconstrained
+                     --  or tagged because array bounds, discriminants or tags
+                     --  can be read.
 
-               --  A protected type acts as a formal parameter of mode IN when
-               --  it applies to a protected function.
+                     Item_Is_Input :=
+                       Appears_In (Subp_Inputs, Item_Id)
+                         or else Is_Unconstrained_Or_Tagged_Item (Item_Id);
 
-               if Ekind (Spec_Id) = E_Function then
-                  Item_Is_Input := True;
+                     Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
 
-               --  Otherwise the protected type acts as a formal of mode IN OUT
+                  --  Otherwise the variable has a default IN OUT mode
 
-               else
-                  Item_Is_Input  := True;
-                  Item_Is_Output := True;
-               end if;
-
-            --  Task types
-
-            elsif Ekind (Item_Id) = E_Task_Type then
-               Item_Is_Input  := True;
-               Item_Is_Output := True;
-
-            --  Variable case
-
-            else pragma Assert (Ekind (Item_Id) = E_Variable);
-
-               --  When pragma Global is present, the mode of the variable may
-               --  be further constrained by setting a more restrictive mode.
-
-               if Global_Seen then
-
-                  --  A variable has mode IN when its type is unconstrained or
-                  --  tagged because array bounds, discriminants or tags can be
-                  --  read.
-
-                  if Appears_In (Subp_Inputs, Item_Id)
-                    or else Is_Unconstrained_Or_Tagged_Item (Item_Id)
-                  then
-                     Item_Is_Input := True;
-                  end if;
-
-                  if Appears_In (Subp_Outputs, Item_Id) then
+                  else
+                     Item_Is_Input  := True;
                      Item_Is_Output := True;
                   end if;
 
-               --  Otherwise the variable has a default IN OUT mode
+               when E_Out_Parameter =>
 
-               else
-                  Item_Is_Input  := True;
-                  Item_Is_Output := True;
-               end if;
-            end if;
+                  --  An OUT parameter of the related subprogram; it cannot
+                  --  appear in Global.
+
+                  if Scope (Item_Id) = Spec_Id then
+
+                     --  The parameter has mode IN if its type is unconstrained
+                     --  or tagged because array bounds, discriminants or tags
+                     --  can be read.
+
+                     Item_Is_Input :=
+                       Is_Unconstrained_Or_Tagged_Item (Item_Id);
+
+                     Item_Is_Output := True;
+
+                  --  An OUT parameter of an enclosing subprogram; it can
+                  --  appear in Global and behaves as a read-write variable.
+
+                  else
+                     --  When pragma Global is present it determines the mode
+                     --  of the object.
+
+                     if Global_Seen then
+
+                        --  A variable has mode IN when its type is
+                        --  unconstrained or tagged because array
+                        --  bounds, discriminants or tags can be read.
+
+                        Item_Is_Input :=
+                          Appears_In (Subp_Inputs, Item_Id)
+                            or else Is_Unconstrained_Or_Tagged_Item (Item_Id);
+
+                        Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
+
+                     --  Otherwise the variable has a default IN OUT mode
+
+                     else
+                        Item_Is_Input  := True;
+                        Item_Is_Output := True;
+                     end if;
+                  end if;
+
+               --  Protected types
+
+               when E_Protected_Type =>
+                  if Global_Seen then
+
+                     --  A variable has mode IN when its type is unconstrained
+                     --  or tagged because array bounds, discriminants or tags
+                     --  can be read.
+
+                     Item_Is_Input :=
+                       Appears_In (Subp_Inputs, Item_Id)
+                         or else Is_Unconstrained_Or_Tagged_Item (Item_Id);
+
+                     Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
+
+                  else
+                     --  A protected type acts as a formal parameter of mode IN
+                     --  when it applies to a protected function.
+
+                     if Ekind (Spec_Id) = E_Function then
+                        Item_Is_Input  := True;
+                        Item_Is_Output := False;
+
+                     --  Otherwise the protected type acts as a formal of mode
+                     --  IN OUT.
+
+                     else
+                        Item_Is_Input  := True;
+                        Item_Is_Output := True;
+                     end if;
+                  end if;
+
+               --  Task types
+
+               when E_Task_Type =>
+
+                  --  When pragma Global is present it determines the mode of
+                  --  the object.
+
+                  if Global_Seen then
+                     Item_Is_Input :=
+                       Appears_In (Subp_Inputs, Item_Id)
+                         or else Is_Unconstrained_Or_Tagged_Item (Item_Id);
+
+                     Item_Is_Output := Appears_In (Subp_Outputs, Item_Id);
+
+                  --  Otherwise task types act as IN OUT parameters
+
+                  else
+                     Item_Is_Input  := True;
+                     Item_Is_Output := True;
+                  end if;
+
+               when others =>
+                  raise Program_Error;
+            end case;
          end Find_Role;
 
          ----------------
@@ -5069,7 +5116,7 @@ package body Sem_Prag is
                --  pragma is inserted in its declarative part.
 
                elsif From_Aspect_Specification (N)
-                 and then  Ent = Current_Scope
+                 and then Ent = Current_Scope
                  and then
                    Nkind (Unit_Declaration_Node (Ent)) = N_Subprogram_Body
                then
@@ -28300,7 +28347,7 @@ package body Sem_Prag is
          if Nkind (Clause) = N_Null then
             null;
 
-         --  A dependency cause appears as component association
+         --  A dependency clause appears as component association
 
          elsif Nkind (Clause) = N_Component_Association then
             Collect_Dependency_Item
@@ -28424,21 +28471,15 @@ package body Sem_Prag is
          Subp_Decl := Unit_Declaration_Node (Subp_Id);
          Spec_Id   := Unique_Defining_Entity (Subp_Decl);
 
-         --  Process all [generic] formal parameters
+         --  Process all formal parameters
 
          Formal := First_Entity (Spec_Id);
          while Present (Formal) loop
-            if Ekind_In (Formal, E_Generic_In_Parameter,
-                                 E_In_Out_Parameter,
-                                 E_In_Parameter)
-            then
+            if Ekind_In (Formal, E_In_Out_Parameter, E_In_Parameter) then
                Append_New_Elmt (Formal, Subp_Inputs);
             end if;
 
-            if Ekind_In (Formal, E_Generic_In_Out_Parameter,
-                                 E_In_Out_Parameter,
-                                 E_Out_Parameter)
-            then
+            if Ekind_In (Formal, E_In_Out_Parameter, E_Out_Parameter) then
                Append_New_Elmt (Formal, Subp_Outputs);
 
                --  Out parameters can act as inputs when the related type is
