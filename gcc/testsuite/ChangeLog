@@ -1,3 +1,8 @@
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* gcc.dg/pr81979.c: New test.
+
 2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82126

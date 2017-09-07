@@ -695,6 +695,16 @@ unlikely_text_section_p (section *sect)
   return sect == function_section_1 (current_function_decl, true);
 }
 
+/* Switch to the other function partition (if inside of hot section
+   into cold section, otherwise into the hot section).  */
+
+void
+switch_to_other_text_partition (void)
+{
+  in_cold_section_p = !in_cold_section_p;
+  switch_to_section (current_function_section ());
+}
+
 /* Return the read-only data section associated with function DECL.  */
 
 section *
