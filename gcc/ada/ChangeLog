@@ -1,3 +1,7 @@
+2017-09-07  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-parame-ae653.ads: Removed.
+
 2017-09-07  Nicolas Roche  <roche@adacore.com>
 
 	* s-traces-default.adb, s-trafor-default.adb, s-trafor-default.ads,
