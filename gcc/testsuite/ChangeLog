@@ -3,6 +3,9 @@
 	Backported from mainline
 	2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81621
+	* gcc.dg/pr81621.c: New test.
+
 	PR driver/81650
 	* gcc.dg/pr81650.c: New test.
 
