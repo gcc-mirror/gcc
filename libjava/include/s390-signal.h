@@ -51,7 +51,7 @@ do									\
   struct                                                                \
   {                                                                     \
     unsigned long int uc_flags;                                         \
-    struct ucontext *uc_link;                                           \
+    ucontext_t *uc_link;                                                \
     stack_t uc_stack;                                                   \
     mcontext_t uc_mcontext;                                             \
     unsigned long sigmask[2];                                           \

@@ -1,3 +1,10 @@
+2017-09-07  Matthias Klose  <doko@ubuntu.com>
+
+	* include/x86_64-signal.h (HANDLE_DIVIDE_OVERFLOW): Replace
+	'struct ucontext' with ucontext_t.
+	* include/i386-signal.h (HANDLE_DIVIDE_OVERFLOW): Likewise.
+	* include/s390-signal.h (HANDLE_DIVIDE_OVERFLOW): Likewise.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
