@@ -28,7 +28,7 @@ static void _Jv_##_name (int, siginfo_t *,			\
 #define HANDLE_DIVIDE_OVERFLOW						\
 do									\
 {									\
-  struct ucontext *_uc = (struct ucontext *)_p;				\
+  ucontext_t *_uc = (ucontext_t *)_p;					\
   gregset_t &_gregs = _uc->uc_mcontext.gregs;				\
   unsigned char *_rip = (unsigned char *)_gregs[REG_RIP];		\
 									\
