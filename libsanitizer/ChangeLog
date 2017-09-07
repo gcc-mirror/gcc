@@ -1,3 +1,14 @@
+2017-09-07  Matthias Klose  <doko@ubuntu.com>
+
+	Backported from mainline
+	2017-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81066
+	* sanitizer_common/sanitizer_linux.h: Cherry-pick upstream r307969.
+	* sanitizer_common/sanitizer_linux.cc: Likewise.
+	* sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc: Likewise.
+	* tsan/tsan_platform_linux.cc: Likewise.
+
 2017-06-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Backport from mainline
