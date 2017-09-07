@@ -1,3 +1,12 @@
+2017-09-07  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb: Do not get the target parameters before calling
+	gprclean.
+
+2017-09-07  Nicolas Roche  <roche@adacore.com>
+
+	* s-osinte-solaris-posix.ads: Removed.
+
 2017-09-07  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_prag.adb (Collect_States_And_Objects): Detect also instances of
