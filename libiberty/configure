@@ -1879,7 +1879,7 @@ $4
 int
 main ()
 {
-if (sizeof (($2)))
+if (sizeof ($2))
 	    return 0;
   ;
   return 0;
