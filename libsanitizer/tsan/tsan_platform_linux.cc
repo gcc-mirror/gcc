@@ -291,7 +291,7 @@ bool IsGlobalVar(uptr addr) {
 int ExtractResolvFDs(void *state, int *fds, int nfd) {
 #if SANITIZER_LINUX
   int cnt = 0;
-  __res_state *statp = (__res_state*)state;
+  struct __res_state *statp = (struct __res_state*)state;
   for (int i = 0; i < MAXNS && cnt < nfd; i++) {
     if (statp->_u._ext.nsaddrs[i] && statp->_u._ext.nssocks[i] != -1)
       fds[cnt++] = statp->_u._ext.nssocks[i];
