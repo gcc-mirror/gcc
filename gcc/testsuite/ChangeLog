@@ -1,3 +1,11 @@
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81052
+	* c-c++-common/pr81052.c: New test.
+
 2017-09-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline:
