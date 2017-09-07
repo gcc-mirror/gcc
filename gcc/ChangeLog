@@ -1,6 +1,12 @@
 2017-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81923
+	* asan.c (create_odr_indicator): Strip name encoding from assembler
+	name before appending it after __odr_asan_.
+
 	2017-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81687
