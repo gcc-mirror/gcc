@@ -2475,18 +2475,44 @@ package body Exp_Ch3 is
                  and then not Is_Interface (Rec_Type)
                  and then Has_Interfaces (Rec_Type)
                then
-                  Init_Secondary_Tags
-                    (Typ            => Rec_Type,
-                     Target         => Make_Identifier (Loc, Name_uInit),
-                     Stmts_List     => Init_Tags_List,
-                     Fixed_Comps    => True,
-                     Variable_Comps => False);
-               end if;
+                  declare
+                     Elab_Sec_DT_Stmts_List : constant List_Id := New_List;
 
-               Prepend_To (Body_Stmts,
-                 Make_If_Statement (Loc,
-                   Condition => New_Occurrence_Of (Set_Tag, Loc),
-                   Then_Statements => Init_Tags_List));
+                  begin
+                     Init_Secondary_Tags
+                       (Typ            => Rec_Type,
+                        Target         => Make_Identifier (Loc, Name_uInit),
+                        Init_Tags_List => Init_Tags_List,
+                        Stmts_List     => Elab_Sec_DT_Stmts_List,
+                        Fixed_Comps    => True,
+                        Variable_Comps => False);
+
+                     Append_To (Elab_Sec_DT_Stmts_List,
+                       Make_Assignment_Statement (Loc,
+                         Name =>
+                           New_Occurrence_Of
+                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
+                         Expression =>
+                           New_Occurrence_Of (Standard_False, Loc)));
+
+                     Prepend_List_To (Body_Stmts,
+                       New_List (
+                         Make_If_Statement (Loc,
+                           Condition => New_Occurrence_Of (Set_Tag, Loc),
+                           Then_Statements => Init_Tags_List),
+
+                       Make_If_Statement (Loc,
+                         Condition =>
+                           New_Occurrence_Of
+                             (Access_Disp_Table_Elab_Flag (Rec_Type), Loc),
+                         Then_Statements => Elab_Sec_DT_Stmts_List)));
+                  end;
+               else
+                  Prepend_To (Body_Stmts,
+                    Make_If_Statement (Loc,
+                      Condition => New_Occurrence_Of (Set_Tag, Loc),
+                      Then_Statements => Init_Tags_List));
+               end if;
 
             --  Case 2: CPP type. The imported C++ constructor takes care of
             --  tags initialization. No action needed here because the IP
@@ -2533,6 +2559,7 @@ package body Exp_Ch3 is
                   Init_Secondary_Tags
                     (Typ            => Rec_Type,
                      Target         => Make_Identifier (Loc, Name_uInit),
+                     Init_Tags_List => Init_Tags_List,
                      Stmts_List     => Init_Tags_List,
                      Fixed_Comps    => True,
                      Variable_Comps => False);
@@ -2606,6 +2633,7 @@ package body Exp_Ch3 is
                Init_Secondary_Tags
                  (Typ            => Rec_Type,
                   Target         => Make_Identifier (Loc, Name_uInit),
+                  Init_Tags_List => Init_Tags_List,
                   Stmts_List     => Init_Tags_List,
                   Fixed_Comps    => False,
                   Variable_Comps => True);
@@ -8119,6 +8147,7 @@ package body Exp_Ch3 is
    procedure Init_Secondary_Tags
      (Typ            : Entity_Id;
       Target         : Node_Id;
+      Init_Tags_List : List_Id;
       Stmts_List     : List_Id;
       Fixed_Comps    : Boolean := True;
       Variable_Comps : Boolean := True)
@@ -8156,7 +8185,7 @@ package body Exp_Ch3 is
          --  Initialize pointer to secondary DT associated with the interface
 
          if not Is_Ancestor (Iface, Typ, Use_Full_View => True) then
-            Append_To (Stmts_List,
+            Append_To (Init_Tags_List,
               Make_Assignment_Statement (Loc,
                 Name       =>
                   Make_Selected_Component (Loc,
@@ -8190,6 +8219,7 @@ package body Exp_Ch3 is
             --  Generate:
             --    Set_Dynamic_Offset_To_Top
             --      (This         => Init,
+            --       Prim_T       => Typ'Tag,
             --       Interface_T  => Iface'Tag,
             --       Offset_Value => n,
             --       Offset_Func  => Fn'Address)
@@ -8202,6 +8232,10 @@ package body Exp_Ch3 is
                   Make_Attribute_Reference (Loc,
                     Prefix         => New_Copy_Tree (Target),
                     Attribute_Name => Name_Address),
+
+                  Unchecked_Convert_To (RTE (RE_Tag),
+                    New_Occurrence_Of
+                      (Node (First_Elmt (Access_Disp_Table (Typ))), Loc)),
 
                   Unchecked_Convert_To (RTE (RE_Tag),
                     New_Occurrence_Of
@@ -8230,7 +8264,7 @@ package body Exp_Ch3 is
             Offset_To_Top_Comp := Next_Entity (Tag_Comp);
             pragma Assert (Present (Offset_To_Top_Comp));
 
-            Append_To (Stmts_List,
+            Append_To (Init_Tags_List,
               Make_Assignment_Statement (Loc,
                 Name       =>
                   Make_Selected_Component (Loc,
@@ -8269,7 +8303,7 @@ package body Exp_Ch3 is
 
             --  Generate:
             --    Register_Interface_Offset
-            --      (This         => Init,
+            --      (Prim_T       => Typ'Tag,
             --       Interface_T  => Iface'Tag,
             --       Is_Constant  => True,
             --       Offset_Value => n,
@@ -8282,9 +8316,9 @@ package body Exp_Ch3 is
                      New_Occurrence_Of
                        (RTE (RE_Register_Interface_Offset), Loc),
                    Parameter_Associations => New_List (
-                     Make_Attribute_Reference (Loc,
-                       Prefix         => New_Copy_Tree (Target),
-                       Attribute_Name => Name_Address),
+                     Unchecked_Convert_To (RTE (RE_Tag),
+                       New_Occurrence_Of
+                         (Node (First_Elmt (Access_Disp_Table (Typ))), Loc)),
 
                      Unchecked_Convert_To (RTE (RE_Tag),
                        New_Occurrence_Of
@@ -8403,7 +8437,7 @@ package body Exp_Ch3 is
             --  Initialize secondary tags
 
             else
-               Append_To (Stmts_List,
+               Append_To (Init_Tags_List,
                  Make_Assignment_Statement (Loc,
                    Name =>
                      Make_Selected_Component (Loc,

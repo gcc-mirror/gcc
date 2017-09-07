@@ -38,7 +38,6 @@ with System.Tasking.Protected_Objects.Operations;
 with System.Tasking.Debug;
 with System.Restrictions;
 with System.Parameters;
-with System.Traces.Tasking;
 
 package body System.Tasking.Rendezvous is
 
@@ -48,8 +47,6 @@ package body System.Tasking.Rendezvous is
 
    use Parameters;
    use Task_Primitives.Operations;
-   use System.Traces;
-   use System.Traces.Tasking;
 
    type Select_Treatment is (
      Accept_Alternative_Selected,   --  alternative with non-null body
@@ -200,10 +197,6 @@ package body System.Tasking.Rendezvous is
 
          --  Wait for normal call
 
-         if Parameters.Runtime_Traces then
-            Send_Trace_Info (W_Accept, Self_Id, Integer (Open_Accepts'Length));
-         end if;
-
          pragma Debug
            (Debug.Trace (Self_Id, "Accept_Call: wait", 'R'));
          Wait_For_Call (Self_Id);
@@ -232,9 +225,6 @@ package body System.Tasking.Rendezvous is
 
       Initialization.Undefer_Abort (Self_Id);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Accept_Complete, Caller, Entry_Index (E));
-      end if;
    end Accept_Call;
 
    --------------------
@@ -285,10 +275,6 @@ package body System.Tasking.Rendezvous is
          Open_Accepts (1).S := E;
          Self_Id.Open_Accepts := Open_Accepts'Unrestricted_Access;
 
-         if Parameters.Runtime_Traces then
-            Send_Trace_Info (W_Accept, Self_Id, Integer (Open_Accepts'Length));
-         end if;
-
          pragma Debug
           (Debug.Trace (Self_Id, "Accept_Trivial: wait", 'R'));
 
@@ -312,15 +298,6 @@ package body System.Tasking.Rendezvous is
          STPO.Write_Lock (Caller);
          Initialization.Wakeup_Entry_Caller (Self_Id, Entry_Call, Done);
          STPO.Unlock (Caller);
-      end if;
-
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Accept_Complete);
-
-         --  Fake one, since there is (???) no way to know that the rendezvous
-         --  is over.
-
-         Send_Trace_Info (M_RDV_Complete);
       end if;
 
       if Single_Lock then
@@ -404,10 +381,6 @@ package body System.Tasking.Rendezvous is
       Entry_Call.Mode := Mode;
       Entry_Call.Cancellation_Attempted := False;
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (W_Call, Acceptor, Entry_Index (E));
-      end if;
-
       --  If this is a call made inside of an abort deferred region,
       --  the call should be never abortable.
 
@@ -436,10 +409,6 @@ package body System.Tasking.Rendezvous is
 
          if Single_Lock then
             Unlock_RTS;
-         end if;
-
-         if Parameters.Runtime_Traces then
-            Send_Trace_Info (E_Missed, Acceptor);
          end if;
 
          Local_Undefer_Abort (Self_Id);
@@ -559,10 +528,6 @@ package body System.Tasking.Rendezvous is
 
          --  The call came from normal end-of-rendezvous, so abort is not yet
          --  deferred.
-
-         if Parameters.Runtime_Traces then
-            Send_Trace_Info (M_RDV_Complete, Entry_Call.Self);
-         end if;
 
          Initialization.Defer_Abort (Self_Id);
 
@@ -848,10 +813,6 @@ package body System.Tasking.Rendezvous is
 
             --  Accept body is null, so rendezvous is over immediately
 
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (M_RDV_Complete, Entry_Call.Self);
-            end if;
-
             STPO.Unlock (Self_Id);
             Caller := Entry_Call.Self;
 
@@ -866,11 +827,6 @@ package body System.Tasking.Rendezvous is
             Self_Id.Open_Accepts := Open_Accepts;
             pragma Debug
               (Debug.Trace (Self_Id, "Selective_Wait: wait", 'R'));
-
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (W_Select, Self_Id,
-                                Integer (Open_Accepts'Length));
-            end if;
 
             Wait_For_Call (Self_Id);
 
@@ -907,10 +863,6 @@ package body System.Tasking.Rendezvous is
 
          when Else_Selected =>
             pragma Assert (Self_Id.Open_Accepts = null);
-
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (M_Select_Else);
-            end if;
 
             STPO.Unlock (Self_Id);
 
@@ -1320,10 +1272,6 @@ package body System.Tasking.Rendezvous is
            "potentially blocking operation";
       end if;
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (W_Call, Acceptor, Entry_Index (E));
-      end if;
-
       if Mode = Simple_Call or else Mode = Conditional_Call then
          Call_Synchronous
            (Acceptor, E, Uninterpreted_Data, Mode, Rendezvous_Successful);
@@ -1368,10 +1316,6 @@ package body System.Tasking.Rendezvous is
             end if;
 
             Initialization.Undefer_Abort (Self_Id);
-
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (E_Missed, Acceptor);
-            end if;
 
             raise Tasking_Error;
          end if;
@@ -1514,10 +1458,6 @@ package body System.Tasking.Rendezvous is
 
             --  Rendezvous is over
 
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (M_RDV_Complete, Entry_Call.Self);
-            end if;
-
             STPO.Unlock (Self_Id);
             Caller := Entry_Call.Self;
 
@@ -1568,23 +1508,12 @@ package body System.Tasking.Rendezvous is
                if Timedout then
                   Sleep (Self_Id, Acceptor_Delay_Sleep);
                else
-                  if Parameters.Runtime_Traces then
-                     Send_Trace_Info (WT_Select,
-                                      Self_Id,
-                                      Integer (Open_Accepts'Length),
-                                      Timeout);
-                  end if;
-
                   STPO.Timed_Sleep (Self_Id, Timeout, Mode,
                     Acceptor_Delay_Sleep, Timedout, Yielded);
                end if;
 
                if Timedout then
                   Self_Id.Open_Accepts := null;
-
-                  if Parameters.Runtime_Traces then
-                     Send_Trace_Info (E_Timeout);
-                  end if;
                end if;
             end loop;
 
@@ -1700,11 +1629,6 @@ package body System.Tasking.Rendezvous is
         (Debug.Trace (Self_Id, "TTEC: entered ATC level: " &
          ATC_Level'Image (Self_Id.ATC_Nesting_Level), 'A'));
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (WT_Call, Acceptor,
-                          Entry_Index (E), Timeout);
-      end if;
-
       Level := Self_Id.ATC_Nesting_Level;
       Entry_Call := Self_Id.Entry_Calls (Level)'Access;
       Entry_Call.Next := null;
@@ -1744,9 +1668,6 @@ package body System.Tasking.Rendezvous is
 
          Initialization.Undefer_Abort (Self_Id);
 
-         if Parameters.Runtime_Traces then
-            Send_Trace_Info (E_Missed, Acceptor);
-         end if;
          raise Tasking_Error;
       end if;
 

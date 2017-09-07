@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2012-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2012-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -41,7 +41,16 @@ package Ada.Numerics.Generic_Elementary_Functions with
 is
    pragma Pure;
 
+   --  Preconditions in this unit are meant for analysis only, not for run-time
+   --  checking, so that the expected exceptions are raised when calling
+   --  Assert. This is enforced by setting the corresponding assertion policy
+   --  to Ignore. This is done in the generic spec so that it applies to all
+   --  instances.
+
+   pragma Assertion_Policy (Pre => Ignore);
+
    function Sqrt (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => X >= 0.0,
      Post => Sqrt'Result >= 0.0
        and then (if X = 0.0 then Sqrt'Result = 0.0)
        and then (if X = 1.0 then Sqrt'Result = 1.0)
@@ -64,15 +73,18 @@ is
        and then (if X >= Float_Type'Succ (0.0) then Sqrt'Result > 0.0);
 
    function Log (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => X > 0.0,
      Post => (if X = 1.0 then Log'Result = 0.0);
 
    function Log (X, Base : Float_Type'Base) return Float_Type'Base with
+     Pre  => X > 0.0 and Base > 0.0 and Base /= 1.0,
      Post => (if X = 1.0 then Log'Result = 0.0);
 
    function Exp (X : Float_Type'Base) return Float_Type'Base with
      Post => (if X = 0.0 then Exp'Result = 1.0);
 
    function "**" (Left, Right : Float_Type'Base) return Float_Type'Base with
+     Pre  => (if Left = 0.0 then Right > 0.0) and Left >= 0.0,
      Post => "**"'Result >= 0.0
        and then (if Right = 0.0 then "**"'Result = 1.0)
        and then (if Right = 1.0 then "**"'Result = Left)
@@ -84,6 +96,7 @@ is
        and then (if X = 0.0 then Sin'Result = 0.0);
 
    function Sin (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre  => Cycle > 0.0,
      Post => Sin'Result in -1.0 .. 1.0
        and then (if X = 0.0 then Sin'Result = 0.0);
 
@@ -92,6 +105,7 @@ is
        and then (if X = 0.0 then Cos'Result = 1.0);
 
    function Cos (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre  => Cycle > 0.0,
      Post => Cos'Result in -1.0 .. 1.0
        and then (if X = 0.0 then Cos'Result = 1.0);
 
@@ -99,28 +113,40 @@ is
      Post => (if X = 0.0 then Tan'Result = 0.0);
 
    function Tan (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre  => Cycle > 0.0
+       and then abs Float_Type'Base'Remainder (X, Cycle) /= 0.25 * Cycle,
      Post => (if X = 0.0 then Tan'Result = 0.0);
 
-   function Cot (X : Float_Type'Base) return Float_Type'Base;
+   function Cot (X : Float_Type'Base) return Float_Type'Base with
+     Pre => X /= 0.0;
 
-   function Cot (X, Cycle : Float_Type'Base) return Float_Type'Base;
+   function Cot (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre => Cycle > 0.0
+       and then X /= 0.0
+       and then Float_Type'Base'Remainder (X, Cycle) /= 0.0
+       and then abs Float_Type'Base'Remainder (X, Cycle) = 0.5 * Cycle;
 
    function Arcsin (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => abs X <= 1.0,
      Post => (if X = 0.0 then Arcsin'Result = 0.0);
 
    function Arcsin (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre  => Cycle > 0.0 and abs X <= 1.0,
      Post => (if X = 0.0 then Arcsin'Result = 0.0);
 
    function Arccos (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => abs X <= 1.0,
      Post => (if X = 1.0 then Arccos'Result = 0.0);
 
    function Arccos (X, Cycle : Float_Type'Base) return Float_Type'Base with
+     Pre  => Cycle > 0.0 and abs X <= 1.0,
      Post => (if X = 1.0 then Arccos'Result = 0.0);
 
    function Arctan
      (Y : Float_Type'Base;
       X : Float_Type'Base := 1.0) return Float_Type'Base
    with
+     Pre  => X /= 0.0 or Y /= 0.0,
      Post => (if X > 0.0 and then Y = 0.0 then Arctan'Result = 0.0);
 
    function Arctan
@@ -128,12 +154,14 @@ is
       X     : Float_Type'Base := 1.0;
       Cycle : Float_Type'Base) return Float_Type'Base
    with
+     Pre  => Cycle > 0.0 and (X /= 0.0 or Y /= 0.0),
      Post => (if X > 0.0 and then Y = 0.0 then Arctan'Result = 0.0);
 
    function Arccot
      (X   : Float_Type'Base;
       Y   : Float_Type'Base := 1.0) return Float_Type'Base
    with
+     Pre  => X /= 0.0 or Y /= 0.0,
      Post => (if X > 0.0 and then Y = 0.0 then Arccot'Result = 0.0);
 
    function Arccot
@@ -141,6 +169,7 @@ is
       Y     : Float_Type'Base := 1.0;
       Cycle : Float_Type'Base) return Float_Type'Base
    with
+     Pre  => Cycle > 0.0 and (X /= 0.0 or Y /= 0.0),
      Post => (if X > 0.0 and then Y = 0.0 then Arccot'Result = 0.0);
 
    function Sinh (X : Float_Type'Base) return Float_Type'Base with
@@ -155,18 +184,22 @@ is
        and then (if X = 0.0 then Tanh'Result = 0.0);
 
    function Coth (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => X /= 0.0,
      Post => abs Coth'Result >= 1.0;
 
    function Arcsinh (X : Float_Type'Base) return Float_Type'Base with
      Post => (if X = 0.0 then Arcsinh'Result = 0.0);
 
    function Arccosh (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => X >= 1.0,
      Post => Arccosh'Result >= 0.0
        and then (if X = 1.0 then Arccosh'Result = 0.0);
 
    function Arctanh (X : Float_Type'Base) return Float_Type'Base with
+     Pre  => abs X /= 1.0,
      Post => (if X = 0.0 then Arctanh'Result = 0.0);
 
-   function Arccoth (X : Float_Type'Base) return Float_Type'Base;
+   function Arccoth (X : Float_Type'Base) return Float_Type'Base with
+     Pre => X <= 1.0 and abs X /= 1.0;
 
 end Ada.Numerics.Generic_Elementary_Functions;

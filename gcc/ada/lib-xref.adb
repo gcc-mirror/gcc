@@ -1126,6 +1126,19 @@ package body Lib.Xref is
          --  Comment needed here for special SPARK code ???
 
          if GNATprove_Mode then
+            --  Ignore reference to an entity that is a Part_Of single
+            --  concurrent object. Ideally we would prefer to add it as a
+            --  reference to the corresponding concurrent type, but it is quite
+            --  difficult (as such references are not currently added even for)
+            --  reads/writes of private protected components) and not worth the
+            --  effort.
+            if Ekind_In (Ent, E_Abstract_State, E_Constant, E_Variable)
+              and then Present (Encapsulating_State (Ent))
+              and then Is_Single_Concurrent_Object (Encapsulating_State (Ent))
+            then
+               return;
+            end if;
+
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -180,15 +180,6 @@ package System.Parameters is
 
    Max_Attribute_Count : constant := 32;
    --  Number of task attributes stored in the task control block
-
-   --------------------
-   -- Runtime Traces --
-   --------------------
-
-   Runtime_Traces : constant Boolean := False;
-   --  This constant indicates whether the runtime outputs traces to a
-   --  predefined output or not (True means that traces are output).
-   --  See System.Traces for more details.
 
    -----------------------
    -- Task Image Length --

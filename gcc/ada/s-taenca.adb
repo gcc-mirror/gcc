@@ -36,7 +36,6 @@ with System.Tasking.Protected_Objects.Operations;
 with System.Tasking.Queuing;
 with System.Tasking.Utilities;
 with System.Parameters;
-with System.Traces;
 
 package body System.Tasking.Entry_Calls is
 
@@ -46,7 +45,6 @@ package body System.Tasking.Entry_Calls is
    use Task_Primitives;
    use Protected_Objects.Entries;
    use Protected_Objects.Operations;
-   use System.Traces;
 
    --  DO NOT use Protected_Objects.Lock or Protected_Objects.Unlock
    --  internally. Those operations will raise Program_Error, which
@@ -478,10 +476,6 @@ package body System.Tasking.Entry_Calls is
       --  If this is a conditional call, it should be cancelled when it
       --  becomes abortable. This is checked in the loop below.
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (W_Completion);
-      end if;
-
       Self_Id.Common.State := Entry_Caller_Sleep;
 
       --  Try to remove calls to Sleep in the loop below by letting the caller
@@ -515,9 +509,6 @@ package body System.Tasking.Entry_Calls is
       Self_Id.Common.State := Runnable;
       Utilities.Exit_One_ATC_Level (Self_Id);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Call_Complete);
-      end if;
    end Wait_For_Completion;
 
    --------------------------------------
@@ -567,10 +558,6 @@ package body System.Tasking.Entry_Calls is
       --  is allowed to wake up at any time, not just when the condition is
       --  signaled. See same loop in the ordinary Wait_For_Completion, above.
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (WT_Completion, Wakeup_Time);
-      end if;
-
       loop
          Check_Pending_Actions_For_Entry_Call (Self_Id, Entry_Call);
          exit when Entry_Call.State >= Done;
@@ -579,10 +566,6 @@ package body System.Tasking.Entry_Calls is
            Entry_Caller_Sleep, Timedout, Yielded);
 
          if Timedout then
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (E_Timeout);
-            end if;
-
             --  Try to cancel the call (see Try_To_Cancel_Entry_Call for
             --  corresponding code in the ATC case).
 
@@ -620,10 +603,6 @@ package body System.Tasking.Entry_Calls is
       --  This last part is the same as ordinary Wait_For_Completion,
       --  and is only executed if the call completed without timing out.
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Call_Complete);
-      end if;
-
       Self_Id.Common.State := Runnable;
       Utilities.Exit_One_ATC_Level (Self_Id);
    end Wait_For_Completion_With_Timeout;
@@ -640,10 +619,6 @@ package body System.Tasking.Entry_Calls is
       pragma Assert (Self_ID.ATC_Nesting_Level > 0);
       pragma Assert (Call.Mode = Asynchronous_Call);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (W_Completion);
-      end if;
-
       STPO.Write_Lock (Self_ID);
       Self_ID.Common.State := Entry_Caller_Sleep;
 
@@ -656,9 +631,6 @@ package body System.Tasking.Entry_Calls is
       Self_ID.Common.State := Runnable;
       STPO.Unlock (Self_ID);
 
-      if Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Call_Complete);
-      end if;
    end Wait_Until_Abortable;
 
 end System.Tasking.Entry_Calls;

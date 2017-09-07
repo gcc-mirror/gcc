@@ -3324,7 +3324,8 @@ package body Exp_Aggr is
                      Init_Secondary_Tags
                        (Typ        => Base_Type (Typ),
                         Target     => Target,
-                        Stmts_List => Assign);
+                        Stmts_List => Assign,
+                        Init_Tags_List => Assign);
                   end if;
                end if;
 
@@ -3859,7 +3860,8 @@ package body Exp_Aggr is
             Init_Secondary_Tags
               (Typ        => Base_Type (Typ),
                Target     => Target,
-               Stmts_List => L);
+               Stmts_List => L,
+               Init_Tags_List => L);
          end if;
       end if;
 

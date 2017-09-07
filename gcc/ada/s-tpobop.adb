@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1998-2016, Free Software Foundation, Inc.          --
+--         Copyright (C) 1998-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,7 +49,6 @@ with System.Tasking.Rendezvous;
 with System.Tasking.Utilities;
 with System.Tasking.Debug;
 with System.Parameters;
-with System.Traces.Tasking;
 with System.Restrictions;
 
 with System.Tasking.Initialization;
@@ -67,8 +66,6 @@ package body System.Tasking.Protected_Objects.Operations is
 
    use System.Restrictions;
    use System.Restrictions.Rident;
-   use System.Traces;
-   use System.Traces.Tasking;
 
    -----------------------
    -- Local Subprograms --
@@ -272,13 +269,6 @@ package body System.Tasking.Protected_Objects.Operations is
          --  PO_Service_Entries on return.
 
       end if;
-
-      if Runtime_Traces then
-
-         --  ??? Entry_Call can be null
-
-         Send_Trace_Info (PO_Done, Entry_Call.Self);
-      end if;
    end Exceptional_Complete_Entry_Body;
 
    --------------------
@@ -439,11 +429,6 @@ package body System.Tasking.Protected_Objects.Operations is
          Object.Call_In_Progress := Entry_Call;
 
          begin
-            if Runtime_Traces then
-               Send_Trace_Info (PO_Run, Self_ID,
-                                Entry_Call.Self, Entry_Index (E));
-            end if;
-
             pragma Debug
               (Debug.Trace (Self_ID, "POSE: start entry body", 'P'));
 
@@ -561,10 +546,6 @@ package body System.Tasking.Protected_Objects.Operations is
    begin
       pragma Debug
         (Debug.Trace (Self_ID, "Protected_Entry_Call", 'P'));
-
-      if Runtime_Traces then
-         Send_Trace_Info (PO_Call, Entry_Index (E));
-      end if;
 
       if Self_ID.ATC_Nesting_Level = ATC_Level'Last then
          raise Storage_Error with "not enough ATC nesting levels";
@@ -979,10 +960,6 @@ package body System.Tasking.Protected_Objects.Operations is
         and then Self_Id.Common.Protected_Action_Nesting > 0
       then
          raise Program_Error with "potentially blocking operation";
-      end if;
-
-      if Runtime_Traces then
-         Send_Trace_Info (POT_Call, Entry_Index (E), Timeout);
       end if;
 
       Initialization.Defer_Abort_Nestable (Self_Id);

@@ -42,8 +42,6 @@ with System.Tasking.Initialization;
 with System.Tasking.Debug;
 with System.OS_Primitives;
 with System.Interrupt_Management.Operations;
-with System.Parameters;
-with System.Traces.Tasking;
 
 package body System.Tasking.Async_Delays is
 
@@ -54,8 +52,6 @@ package body System.Tasking.Async_Delays is
    package OSP renames System.OS_Primitives;
 
    use Parameters;
-   use System.Traces;
-   use System.Traces.Tasking;
 
    function To_System is new Ada.Unchecked_Conversion
      (Ada.Task_Identification.Task_Id, Task_Id);
@@ -368,10 +364,6 @@ package body System.Tasking.Async_Delays is
             --  another task might perform an enqueue or dequeue operation on
             --  the timer queue, but that is OK because we always restart the
             --  next iteration at the head of the queue.
-
-            if Parameters.Runtime_Traces then
-               Send_Trace_Info (E_Kill, Dequeued.Self_Id);
-            end if;
 
             STPO.Unlock (Timer_Server_ID);
             STPO.Write_Lock (Dequeued.Self_Id);

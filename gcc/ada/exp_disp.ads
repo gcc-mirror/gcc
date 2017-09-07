@@ -214,6 +214,12 @@ package Exp_Disp is
    --  Return the number of primitives of the C++ part of the dispatch table.
    --  For types that are not derivations of CPP types return 0.
 
+   function Elab_Flag_Needed (Typ : Entity_Id) return Boolean;
+   --  Return True if the elaboration of the tagged type Typ is completed at
+   --  runtime by the execution of code located in the IP routine and the
+   --  expander must generate an extra elaboration flag to avoid performing
+   --  such elaboration twice.
+
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform
    --  the required tag checks when appropriate. For CPP types tag checks are

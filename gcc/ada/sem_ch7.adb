@@ -575,6 +575,12 @@ package body Sem_Ch7 is
          --  i.e. not just syntactic, and the gain would very likely be worth
          --  neither the hassle nor the slowdown of the compiler.
 
+         --  Finally, an important thing to be aware of is that, at this point,
+         --  instantiations are not done yet so we cannot directly see inlined
+         --  bodies coming from them. That's not catastrophic because only the
+         --  actual parameters of the instantiations matter here, and they are
+         --  present in the declarations list of the instantiated packages.
+
          Subprogram_Table.Reset;
          Discard := Has_Referencer (Decls, Top_Level => True);
       end Hide_Public_Entities;

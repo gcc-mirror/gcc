@@ -7,7 +7,7 @@
 --                                  B o d y                                 --
 --                                                                          --
 --             Copyright (C) 1991-1994, Florida State University            --
---                     Copyright (C) 1995-2010, AdaCore                     --
+--                     Copyright (C) 1995-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -32,8 +32,6 @@
 
 with System.OS_Primitives;
 with System.Soft_Links;
-with System.Traces;
-with System.Parameters;
 
 package body Ada.Calendar.Delays is
 
@@ -41,8 +39,6 @@ package body Ada.Calendar.Delays is
    package SSL renames System.Soft_Links;
 
    use type SSL.Timed_Delay_Call;
-
-   use System.Traces;
 
    --  Earlier, System.Time_Operations was used to implement the following
    --  operations. The idea was to avoid sucking in the tasking packages. This
@@ -64,16 +60,8 @@ package body Ada.Calendar.Delays is
 
    procedure Delay_For (D : Duration) is
    begin
-      if System.Parameters.Runtime_Traces then
-         Send_Trace_Info (W_Delay, D);
-      end if;
-
       SSL.Timed_Delay.all (Duration'Min (D, OSP.Max_Sensible_Delay),
                            OSP.Relative);
-
-      if System.Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Delay, D);
-      end if;
    end Delay_For;
 
    -----------------
@@ -84,15 +72,7 @@ package body Ada.Calendar.Delays is
       D : constant Duration := To_Duration (T);
 
    begin
-      if System.Parameters.Runtime_Traces then
-         Send_Trace_Info (WU_Delay, D);
-      end if;
-
       SSL.Timed_Delay.all (D, OSP.Absolute_Calendar);
-
-      if System.Parameters.Runtime_Traces then
-         Send_Trace_Info (M_Delay, D);
-      end if;
    end Delay_Until;
 
    --------------------

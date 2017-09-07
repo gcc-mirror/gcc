@@ -6,7 +6,7 @@
 --                                                                          --
 --                                  B o d y                                 --
 --                                                                          --
---         Copyright (C) 1992-2016, Free Software Foundation, Inc.          --
+--         Copyright (C) 1992-2017, Free Software Foundation, Inc.          --
 --                                                                          --
 -- GNARL is free software; you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -52,7 +52,6 @@ with System.OS_Primitives;
 with System.Secondary_Stack;
 with System.Restrictions;
 with System.Standard_Library;
-with System.Traces.Tasking;
 with System.Stack_Usage;
 with System.Storage_Elements;
 
@@ -80,9 +79,6 @@ package body System.Tasking.Stages is
    use Task_Primitives;
    use Task_Primitives.Operations;
    use Task_Info;
-
-   use System.Traces;
-   use System.Traces.Tasking;
 
    -----------------------
    -- Local Subprograms --
@@ -426,9 +422,6 @@ package body System.Tasking.Stages is
 
       --  ??? Why do we need to allow for nested deferral here?
 
-      if Runtime_Traces then
-         Send_Trace_Info (T_Activate);
-      end if;
    end Complete_Activation;
 
    ---------------------
@@ -708,10 +701,6 @@ package body System.Tasking.Stages is
       Chain.T_ID := T;
       Created_Task := T;
       Initialization.Undefer_Abort_Nestable (Self_ID);
-
-      if Runtime_Traces then
-         Send_Trace_Info (T_Create, T);
-      end if;
 
       pragma Debug
         (Debug.Trace
@@ -1452,10 +1441,6 @@ package body System.Tasking.Stages is
 
    begin
       Debug.Task_Termination_Hook;
-
-      if Runtime_Traces then
-         Send_Trace_Info (T_Terminate);
-      end if;
 
       --  Since GCC cannot allocate stack chunks efficiently without reordering
       --  some of the allocations, we have to handle this unexpected situation

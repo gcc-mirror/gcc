@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -906,22 +906,16 @@ package body Ada.Tags is
    -------------------------------
 
    procedure Register_Interface_Offset
-     (This         : System.Address;
+     (Prim_T       : Tag;
       Interface_T  : Tag;
       Is_Static    : Boolean;
       Offset_Value : SSE.Storage_Offset;
       Offset_Func  : Offset_To_Top_Function_Ptr)
    is
-      Prim_DT     : Dispatch_Table_Ptr;
-      Iface_Table : Interface_Data_Ptr;
-
+      Prim_DT     : constant Dispatch_Table_Ptr := DT (Prim_T);
+      Iface_Table : constant Interface_Data_Ptr :=
+                      To_Type_Specific_Data_Ptr (Prim_DT.TSD).Interfaces_Table;
    begin
-      --  "This" points to the primary DT and we must save Offset_Value in
-      --  the Offset_To_Top field of the corresponding dispatch table.
-
-      Prim_DT     := DT (To_Tag_Ptr (This).all);
-      Iface_Table := To_Type_Specific_Data_Ptr (Prim_DT.TSD).Interfaces_Table;
-
       --  Save Offset_Value in the table of interfaces of the primary DT.
       --  This data will be used by the subprogram "Displace" to give support
       --  to backward abstract interface type conversions.
@@ -1008,6 +1002,7 @@ package body Ada.Tags is
 
    procedure Set_Dynamic_Offset_To_Top
      (This         : System.Address;
+      Prim_T       : Tag;
       Interface_T  : Tag;
       Offset_Value : SSE.Storage_Offset;
       Offset_Func  : Offset_To_Top_Function_Ptr)
@@ -1025,7 +1020,7 @@ package body Ada.Tags is
       end if;
 
       Register_Interface_Offset
-        (This, Interface_T, False, Offset_Value, Offset_Func);
+        (Prim_T, Interface_T, False, Offset_Value, Offset_Func);
    end Set_Dynamic_Offset_To_Top;
 
    ----------------------

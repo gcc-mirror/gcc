@@ -1303,6 +1303,43 @@ package body Ghost is
      (N      : Node_Id;
       Gen_Id : Entity_Id)
    is
+      procedure Check_Ghost_Actuals;
+      --  Check the context of ghost actuals
+
+      -------------------------
+      -- Check_Ghost_Actuals --
+      -------------------------
+
+      procedure Check_Ghost_Actuals is
+         Assoc : Node_Id := First (Generic_Associations (N));
+         Act   : Node_Id;
+
+      begin
+         while Present (Assoc) loop
+            if Nkind (Assoc) /= N_Others_Choice then
+               Act := Explicit_Generic_Actual_Parameter (Assoc);
+
+               --  Within a nested instantiation, a defaulted actual is an
+               --  empty association, so nothing to check.
+
+               if No (Act) then
+                  null;
+
+               elsif Comes_From_Source (Act)
+                  and then Nkind (Act) in N_Has_Etype
+                  and then Present (Etype (Act))
+                  and then Is_Ghost_Entity (Etype (Act))
+               then
+                  Check_Ghost_Context (Etype (Act), Act);
+               end if;
+            end if;
+
+            Next (Assoc);
+         end loop;
+      end Check_Ghost_Actuals;
+
+      --  Local variables
+
       Policy : Name_Id := No_Name;
 
    begin
@@ -1336,6 +1373,13 @@ package body Ghost is
       --  Install the appropriate Ghost mode
 
       Install_Ghost_Mode (Policy);
+
+      --  Check ghost actuals. Given that this routine is unconditionally
+      --  invoked with subprogram and package instantiations, this check
+      --  verifies the context of all the ghost entities passed in generic
+      --  instantiations.
+
+      Check_Ghost_Actuals;
    end Mark_And_Set_Ghost_Instantiation;
 
    ---------------------------------------

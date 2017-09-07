@@ -15825,6 +15825,11 @@ package body Sem_Prag is
 
                elsif Nkind (Context) = N_Subprogram_Declaration then
                   Id := Defining_Entity (Context);
+
+               --  Pragma Ghost applies to a generic subprogram
+
+               elsif Nkind (Context) = N_Generic_Subprogram_Declaration then
+                  Id := Defining_Entity (Specification (Context));
                end if;
             end if;
 
