@@ -1,5 +1,9 @@
 2017-09-07  Matthias Klose  <doko@ubuntu.com>
 
+	* asan/asan_linux.cc: Include <signal.h>
+
+2017-09-07  Matthias Klose  <doko@ubuntu.com>
+
 	Backported from mainline
 	2017-07-14  Jakub Jelinek  <jakub@redhat.com>
 
