@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -197,7 +197,7 @@ begin
          --  last line, in which case no End_Error should be raised.
 
          if ch = EOF then
-            if  Last < Item'First then
+            if Last < Item'First then
                raise End_Error;
 
             else  --  All done

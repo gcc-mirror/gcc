@@ -1,3 +1,27 @@
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* exp_intr.adb (Add_Source_Info): Do not decode
+	file names; they were not encoded in the first place.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* a-tags.adb (Internal_Tag): Unsuppress checks, so we get
+	exceptions instead of crashes. Check for absurdly long strings
+	and empty strings. Empty strings cause trouble because they can
+	have super-null ranges (e.g. 100..10), which causes Ext_Copy to
+	be empty, which causes an array index out of bounds.
+	* s-ststop.adb (Input): Unsuppress checks, so we get exceptions
+	instead of crashes.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Is_CCT_Instance): allow use in
+	the context of protected types.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-tigeli.adb: minor remove extra whitespace.
+
 2017-09-08  Gary Dismukes  <dismukes@adacore.com>
 
 	* par-ch4.adb: Reformatting of an error message.

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2008-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2008-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -128,17 +128,20 @@ package body System.Strings.Stream_Ops is
         (Strm : access Root_Stream_Type'Class;
          IO   : IO_Kind) return Array_Type
       is
+         pragma Unsuppress (All_Checks);
+         --  To make T'Class'Input robust in the case of bad data. The
+         --  declaration of Item below could raise Storage_Error if the length
+         --  is huge.
       begin
          if Strm = null then
             raise Constraint_Error;
          end if;
 
          declare
-            Low  : Index_Type;
-            High : Index_Type;
-
+            Low, High : Index_Type'Base;
          begin
-            --  Read the bounds of the string
+            --  Read the bounds of the string. Note that they could be out of
+            --  range of Index_Type in the case of empty arrays.
 
             Index_Type'Read (Strm, Low);
             Index_Type'Read (Strm, High);

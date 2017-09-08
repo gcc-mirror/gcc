@@ -125,7 +125,7 @@ package body Exp_Intr is
             Append (Buf, Nat (Get_Logical_Line_Number (Loc)));
 
          when Name_File =>
-            Append_Decoded (Buf, Reference_Name (Get_Source_File_Index (Loc)));
+            Append (Buf, Reference_Name (Get_Source_File_Index (Loc)));
 
          when Name_Source_Location =>
             Build_Location_String (Buf, Loc);

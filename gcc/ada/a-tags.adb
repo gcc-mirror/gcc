@@ -641,10 +641,22 @@ package body Ada.Tags is
    Header_Separator    : constant Character := '#';
 
    function Internal_Tag (External : String) return Tag is
-      Ext_Copy : aliased String (External'First .. External'Last + 1);
-      Res      : Tag := null;
+      pragma Unsuppress (All_Checks);
+      --  To make T'Class'Input robust in the case of bad data
+
+      Res : Tag := null;
 
    begin
+      --  Raise Tag_Error for empty strings, and for absurdly long strings.
+      --  This is to make T'Class'Input robust in the case of bad data, for
+      --  example a String(123456789..1234). The limit of 10,000 characters is
+      --  arbitrary, but is unlikely to be exceeded by legitimate external tag
+      --  names.
+
+      if External'Length not in 1 .. 10_000 then
+         raise Tag_Error;
+      end if;
+
       --  Handle locally defined tagged types
 
       if External'Length > Internal_Tag_Header'Length
@@ -731,9 +743,14 @@ package body Ada.Tags is
       else
          --  Make NUL-terminated copy of external tag string
 
-         Ext_Copy (External'Range) := External;
-         Ext_Copy (Ext_Copy'Last)  := ASCII.NUL;
-         Res := External_Tag_HTable.Get (Ext_Copy'Address);
+         declare
+            Ext_Copy : aliased String (External'First .. External'Last + 1);
+            pragma Assert (Ext_Copy'Length > 1); -- See Length check at top
+         begin
+            Ext_Copy (External'Range) := External;
+            Ext_Copy (Ext_Copy'Last)  := ASCII.NUL;
+            Res := External_Tag_HTable.Get (Ext_Copy'Address);
+         end;
       end if;
 
       if Res = null then
