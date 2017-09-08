@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -79,6 +79,9 @@ package body Ada.Streams.Stream_IO.C_Streams is
                 Creat     => False,
                 Text      => False,
                 C_Stream  => C_Stream);
+
+      File.Last_Op := (if Mode = Out_File then Op_Write else Op_Read);
+      --  See comment in Ada.Streams.Stream_IO.Open for the reason
    end Open;
 
 end Ada.Streams.Stream_IO.C_Streams;

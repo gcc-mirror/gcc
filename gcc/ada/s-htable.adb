@@ -171,7 +171,7 @@ package body System.HTable is
 
       procedure Reset is
       begin
-         --  Use an aggregate for efficient reasons
+         --  Use an aggregate for efficiency reasons
 
          Table := (others => Null_Ptr);
       end Reset;

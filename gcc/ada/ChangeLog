@@ -1,5 +1,28 @@
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* sem_util.adb (NCT_Tables_In_Use): Move to library level from...
+	(New_Copy_Tree): ...there.  Reset the hash tables only if they
+	were used in the previous invocation.
+	* s-htable.adb: Fix typo.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* a-ssicst.adb (Open): Set File.Last_Op to the appropriate value.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_aggr.adb: minor style fix.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* sprint.adb (Write_Corresponding_Source): Ignore if there is
+	no current source file.
+	(Write_Name_With_Col_Check, Write_Name_With_Col_Check_Sloc):
+	Print something helpful in case N is invalid.
+	* sprint.ads: Minor comment fix.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* exp_aggr.adb: (Aggr_Assignment_OK_For_Backend): Add early return for
 	access types.
 
