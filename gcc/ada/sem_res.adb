@@ -9375,6 +9375,7 @@ package body Sem_Res is
             return;
 
          elsif Nkind (Parent (N)) in N_Op
+           and then Present (Etype (Parent (N)))
            and then Is_Fixed_Point_Type (Etype (Parent (N)))
            and then Etype (N) = Universal_Real
            and then Comes_From_Source (N)

@@ -12704,7 +12704,16 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
 
-            if not ASIS_Mode then
+            --  In ASIS mode we must analyze overloaded identifiers to ensure
+            --  their correct decoration because expansion is disabled (and
+            --  the expansion of freeze nodes takes care of resolving aspect
+            --  expressions).
+
+            if ASIS_Mode then
+               if Is_Overloaded (N) then
+                  Analyze (Parent (N));
+               end if;
+            else
                Set_Entity (N, Empty);
             end if;
 
