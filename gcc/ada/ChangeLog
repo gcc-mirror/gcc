@@ -1,5 +1,11 @@
 2017-09-08  Arnaud Charlet <charlet@adacore.com>
 
+	* doc/share/conf.py, doc/share/latex_elements.py,
+	doc/share/ada_pygments.py, doc/Makefile: Improve support for Ada
+	highlighting.
+
+2017-09-08  Arnaud Charlet <charlet@adacore.com>
+
 	* gnat_rm.texi, gnat_ugn.texi,
 	doc/gnat_ugn/the_gnat_compilation_model.rst,
 	doc/gnat_ugn/getting_started_with_gnat.rst,
