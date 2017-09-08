@@ -1,3 +1,5 @@
+.. role:: switch(samp)
+
 .. _Representation_Clauses_and_Pragmas:
 
 **********************************
@@ -35,17 +37,17 @@ values are as follows:
 * *Elementary Types*.
 
   For elementary types, the alignment is the minimum of the actual size of
-  objects of the type divided by `Storage_Unit`,
+  objects of the type divided by ``Storage_Unit``,
   and the maximum alignment supported by the target.
   (This maximum alignment is given by the GNAT-specific attribute
-  `Standard'Maximum_Alignment`; see :ref:`Attribute_Maximum_Alignment`.)
+  ``Standard'Maximum_Alignment``; see :ref:`Attribute_Maximum_Alignment`.)
 
   .. index:: Maximum_Alignment attribute
 
-  For example, for type `Long_Float`, the object size is 8 bytes, and the
+  For example, for type ``Long_Float``, the object size is 8 bytes, and the
   default alignment will be 8 on any target that supports alignments
   this large, but on some targets, the maximum alignment may be smaller
-  than 8, in which case objects of type `Long_Float` will be maximally
+  than 8, in which case objects of type ``Long_Float`` will be maximally
   aligned.
 
 * *Arrays*.
@@ -64,9 +66,9 @@ values are as follows:
 
   For the normal non-packed case, the alignment of a record is equal to
   the maximum alignment of any of its components.  For tagged records, this
-  includes the implicit access type used for the tag.  If a pragma `Pack`
+  includes the implicit access type used for the tag.  If a pragma ``Pack``
   is used and all components are packable (see separate section on pragma
-  `Pack`), then the resulting alignment is 1, unless the layout of the
+  ``Pack``), then the resulting alignment is 1, unless the layout of the
   record makes it profitable to increase it.
 
   A special case is when:
@@ -86,14 +88,14 @@ values are as follows:
        end record;
        for Small'Size use 16;
 
-  then the default alignment of the record type `Small` is 2, not 1. This
+  then the default alignment of the record type ``Small`` is 2, not 1. This
   leads to more efficient code when the record is treated as a unit, and also
-  allows the type to specified as `Atomic` on architectures requiring
+  allows the type to specified as ``Atomic`` on architectures requiring
   strict alignment.
 
 An alignment clause may specify a larger alignment than the default value
 up to some maximum value dependent on the target (obtainable by using the
-attribute reference `Standard'Maximum_Alignment`). It may also specify
+attribute reference ``Standard'Maximum_Alignment``). It may also specify
 a smaller alignment than the default value for enumeration, integer and
 fixed point types, as well as for record types, for example
 
@@ -107,7 +109,7 @@ fixed point types, as well as for record types, for example
 
 .. index:: Alignment, default
 
-The default alignment for the type `V` is 4, as a result of the
+The default alignment for the type ``V`` is 4, as a result of the
 Integer field in the record, but it is permissible, as shown, to
 override the default alignment of the record with a smaller value.
 
@@ -125,15 +127,15 @@ to control this choice. Consider:
      subtype RS is R range 1 .. 1000;
 
 The alignment clause specifies an alignment of 1 for the first named subtype
-`R` but this does not necessarily apply to `RS`. When writing
+``R`` but this does not necessarily apply to ``RS``. When writing
 portable Ada code, you should avoid writing code that explicitly or
 implicitly relies on the alignment of such subtypes.
 
 For the GNAT compiler, if an explicit alignment clause is given, this
 value is also used for any subsequent subtypes. So for GNAT, in the
-above example, you can count on the alignment of `RS` being 1. But this
+above example, you can count on the alignment of ``RS`` being 1. But this
 assumption is non-portable, and other compilers may choose different
-alignments for the subtype `RS`.
+alignments for the subtype ``RS``.
 
 .. _Size_Clauses:
 
@@ -142,13 +144,13 @@ Size Clauses
 
 .. index:: Size Clause
 
-The default size for a type `T` is obtainable through the
-language-defined attribute `T'Size` and also through the
-equivalent GNAT-defined attribute `T'Value_Size`.
-For objects of type `T`, GNAT will generally increase the type size
+The default size for a type ``T`` is obtainable through the
+language-defined attribute ``T'Size`` and also through the
+equivalent GNAT-defined attribute ``T'Value_Size``.
+For objects of type ``T``, GNAT will generally increase the type size
 so that the object size (obtainable through the GNAT-defined attribute
-`T'Object_Size`)
-is a multiple of `T'Alignment * Storage_Unit`.
+``T'Object_Size``)
+is a multiple of ``T'Alignment * Storage_Unit``.
 
 For example:
 
@@ -161,27 +163,27 @@ For example:
         Y2 : boolean;
      end record;
 
-In this example, `Smallint'Size` = `Smallint'Value_Size` = 3,
+In this example, ``Smallint'Size`` = ``Smallint'Value_Size`` = 3,
 as specified by the RM rules,
 but objects of this type will have a size of 8
-(`Smallint'Object_Size` = 8),
+(``Smallint'Object_Size`` = 8),
 since objects by default occupy an integral number
 of storage units.  On some targets, notably older
 versions of the Digital Alpha, the size of stand
 alone objects of this type may be 32, reflecting
 the inability of the hardware to do byte load/stores.
 
-Similarly, the size of type `Rec` is 40 bits
-(`Rec'Size` = `Rec'Value_Size` = 40), but
+Similarly, the size of type ``Rec`` is 40 bits
+(``Rec'Size`` = ``Rec'Value_Size`` = 40), but
 the alignment is 4, so objects of this type will have
 their size increased to 64 bits so that it is a multiple
 of the alignment (in bits).  This decision is
 in accordance with the specific Implementation Advice in RM 13.3(43):
 
-   "A `Size` clause should be supported for an object if the specified
-   `Size` is at least as large as its subtype's `Size`, and corresponds
+   "A ``Size`` clause should be supported for an object if the specified
+   ``Size`` is at least as large as its subtype's ``Size``, and corresponds
    to a size in storage elements that is a multiple of the object's
-   `Alignment` (if the `Alignment` is nonzero)."
+   ``Alignment`` (if the ``Alignment`` is nonzero)."
 
 An explicit size clause may be used to override the default size by
 increasing it.  For example, if we have:
@@ -217,11 +219,11 @@ Storage_Size Clauses
 
 .. index:: Storage_Size Clause
 
-For tasks, the `Storage_Size` clause specifies the amount of space
+For tasks, the ``Storage_Size`` clause specifies the amount of space
 to be allocated for the task stack.  This cannot be extended, and if the
-stack is exhausted, then `Storage_Error` will be raised (if stack
-checking is enabled).  Use a `Storage_Size` attribute definition clause,
-or a `Storage_Size` pragma in the task definition to set the
+stack is exhausted, then ``Storage_Error`` will be raised (if stack
+checking is enabled).  Use a ``Storage_Size`` attribute definition clause,
+or a ``Storage_Size`` pragma in the task definition to set the
 appropriate required size.  A useful technique is to include in every
 task definition a pragma of the form:
 
@@ -229,24 +231,24 @@ task definition a pragma of the form:
 
      pragma Storage_Size (Default_Stack_Size);
 
-Then `Default_Stack_Size` can be defined in a global package, and
+Then ``Default_Stack_Size`` can be defined in a global package, and
 modified as required. Any tasks requiring stack sizes different from the
 default can have an appropriate alternative reference in the pragma.
 
 You can also use the *-d* binder switch to modify the default stack
 size.
 
-For access types, the `Storage_Size` clause specifies the maximum
+For access types, the ``Storage_Size`` clause specifies the maximum
 space available for allocation of objects of the type.  If this space is
-exceeded then `Storage_Error` will be raised by an allocation attempt.
+exceeded then ``Storage_Error`` will be raised by an allocation attempt.
 In the case where the access type is declared local to a subprogram, the
-use of a `Storage_Size` clause triggers automatic use of a special
-predefined storage pool (`System.Pool_Size`) that ensures that all
+use of a ``Storage_Size`` clause triggers automatic use of a special
+predefined storage pool (``System.Pool_Size``) that ensures that all
 space for the pool is automatically reclaimed on exit from the scope in
 which the type is declared.
 
 A special case recognized by the compiler is the specification of a
-`Storage_Size` of zero for an access type.  This means that no
+``Storage_Size`` of zero for an access type.  This means that no
 items can be allocated from the pool, and this is recognized at compile
 time, and all the overhead normally associated with maintaining a fixed
 size storage pool is eliminated.  Consider the following example:
@@ -336,7 +338,7 @@ variant value to V2, therefore 16 bits must be allocated for V2
 in the general case, even fewer bits may be needed at any particular
 point during the program execution.
 
-As can be seen from the output of this program, the `'Size`
+As can be seen from the output of this program, the ``'Size``
 attribute applied to such an object in GNAT gives the actual allocated
 size of the variable, which is the largest size of any of the variants.
 The Ada Reference Manual is not completely clear on what choice should
@@ -387,9 +389,9 @@ The output from this program is
   16
   16
 
-Here we see that while the `'Size` attribute always returns
+Here we see that while the ``'Size`` attribute always returns
 the maximum size, regardless of the current variant value, the
-`Size` function does indeed return the size of the current
+``Size`` function does indeed return the size of the current
 variant value.
 
 
@@ -415,7 +417,7 @@ For example, suppose we have the declaration:
      type Small is range -7 .. -4;
      for Small'Size use 2;
 
-Although the default size of type `Small` is 4, the `Size`
+Although the default size of type ``Small`` is 4, the ``Size``
 clause is accepted by GNAT and results in the following representation
 scheme:
 
@@ -426,7 +428,7 @@ scheme:
     -5 is represented as 2#10#
     -4 is represented as 2#11#
 
-Biased representation is only used if the specified `Size` clause
+Biased representation is only used if the specified ``Size`` clause
 cannot be accepted in any other manner.  These reduced sizes that force
 biased representation can be used for all discrete types except for
 enumeration types for which a representation clause is given.
@@ -441,13 +443,13 @@ Value_Size and Object_Size Clauses
 .. index:: Object_Size
 .. index:: Size, of objects
 
-In Ada 95 and Ada 2005, `T'Size` for a type `T` is the minimum
-number of bits required to hold values of type `T`.
+In Ada 95 and Ada 2005, ``T'Size`` for a type ``T`` is the minimum
+number of bits required to hold values of type ``T``.
 Although this interpretation was allowed in Ada 83, it was not required,
 and this requirement in practice can cause some significant difficulties.
-For example, in most Ada 83 compilers, `Natural'Size` was 32.
+For example, in most Ada 83 compilers, ``Natural'Size`` was 32.
 However, in Ada 95 and Ada 2005,
-`Natural'Size` is
+``Natural'Size`` is
 typically 31.  This means that code may change in behavior when moving
 from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
 
@@ -463,99 +465,99 @@ from Ada 83 to Ada 95 or Ada 2005.  For example, consider:
         at 0  range Natural'Size .. 2 * Natural'Size - 1;
      end record;
 
-In the above code, since the typical size of `Natural` objects
-is 32 bits and `Natural'Size` is 31, the above code can cause
+In the above code, since the typical size of ``Natural`` objects
+is 32 bits and ``Natural'Size`` is 31, the above code can cause
 unexpected inefficient packing in Ada 95 and Ada 2005, and in general
 there are cases where the fact that the object size can exceed the
 size of the type causes surprises.
 
 To help get around this problem GNAT provides two implementation
-defined attributes, `Value_Size` and `Object_Size`.  When
+defined attributes, ``Value_Size`` and ``Object_Size``.  When
 applied to a type, these attributes yield the size of the type
 (corresponding to the RM defined size attribute), and the size of
 objects of the type respectively.
 
-The `Object_Size` is used for determining the default size of
+The ``Object_Size`` is used for determining the default size of
 objects and components.  This size value can be referred to using the
-`Object_Size` attribute.  The phrase 'is used' here means that it is
+``Object_Size`` attribute.  The phrase 'is used' here means that it is
 the basis of the determination of the size.  The backend is free to
 pad this up if necessary for efficiency, e.g., an 8-bit stand-alone
 character might be stored in 32 bits on a machine with no efficient
 byte access instructions such as the Alpha.
 
-The default rules for the value of `Object_Size` for
+The default rules for the value of ``Object_Size`` for
 discrete types are as follows:
 
 *
-  The `Object_Size` for base subtypes reflect the natural hardware
+  The ``Object_Size`` for base subtypes reflect the natural hardware
   size in bits (run the compiler with *-gnatS* to find those values
   for numeric types). Enumeration types and fixed-point base subtypes have
   8, 16, 32, or 64 bits for this size, depending on the range of values
   to be stored.
 
 *
-  The `Object_Size` of a subtype is the same as the
-  `Object_Size` of
+  The ``Object_Size`` of a subtype is the same as the
+  ``Object_Size`` of
   the type from which it is obtained.
 
 *
-  The `Object_Size` of a derived base type is copied from the parent
-  base type, and the `Object_Size` of a derived first subtype is copied
+  The ``Object_Size`` of a derived base type is copied from the parent
+  base type, and the ``Object_Size`` of a derived first subtype is copied
   from the parent first subtype.
 
-The `Value_Size` attribute
+The ``Value_Size`` attribute
 is the (minimum) number of bits required to store a value
 of the type.
 This value is used to determine how tightly to pack
 records or arrays with components of this type, and also affects
 the semantics of unchecked conversion (unchecked conversions where
-the `Value_Size` values differ generate a warning, and are potentially
+the ``Value_Size`` values differ generate a warning, and are potentially
 target dependent).
 
-The default rules for the value of `Value_Size` are as follows:
+The default rules for the value of ``Value_Size`` are as follows:
 
 *
-  The `Value_Size` for a base subtype is the minimum number of bits
+  The ``Value_Size`` for a base subtype is the minimum number of bits
   required to store all values of the type (including the sign bit
   only if negative values are possible).
 
 *
   If a subtype statically matches the first subtype of a given type, then it has
-  by default the same `Value_Size` as the first subtype.  This is a
+  by default the same ``Value_Size`` as the first subtype.  This is a
   consequence of RM 13.1(14): "if two subtypes statically match,
   then their subtype-specific aspects are the same".)
 
 *
-  All other subtypes have a `Value_Size` corresponding to the minimum
+  All other subtypes have a ``Value_Size`` corresponding to the minimum
   number of bits required to store all values of the subtype.  For
   dynamic bounds, it is assumed that the value can range down or up
   to the corresponding bound of the ancestor
 
-The RM defined attribute `Size` corresponds to the
-`Value_Size` attribute.
+The RM defined attribute ``Size`` corresponds to the
+``Value_Size`` attribute.
 
-The `Size` attribute may be defined for a first-named subtype.  This sets
-the `Value_Size` of
+The ``Size`` attribute may be defined for a first-named subtype.  This sets
+the ``Value_Size`` of
 the first-named subtype to the given value, and the
-`Object_Size` of this first-named subtype to the given value padded up
+``Object_Size`` of this first-named subtype to the given value padded up
 to an appropriate boundary.  It is a consequence of the default rules
-above that this `Object_Size` will apply to all further subtypes.  On the
-other hand, `Value_Size` is affected only for the first subtype, any
+above that this ``Object_Size`` will apply to all further subtypes.  On the
+other hand, ``Value_Size`` is affected only for the first subtype, any
 dynamic subtypes obtained from it directly, and any statically matching
-subtypes.  The `Value_Size` of any other static subtypes is not affected.
+subtypes.  The ``Value_Size`` of any other static subtypes is not affected.
 
-`Value_Size` and
-`Object_Size` may be explicitly set for any subtype using
+``Value_Size`` and
+``Object_Size`` may be explicitly set for any subtype using
 an attribute definition clause.  Note that the use of these attributes
 can cause the RM 13.1(14) rule to be violated.  If two access types
-reference aliased objects whose subtypes have differing `Object_Size`
+reference aliased objects whose subtypes have differing ``Object_Size``
 values as a result of explicit attribute definition clauses, then it
 is illegal to convert from one access subtype to the other. For a more
 complete description of this additional legality rule, see the
-description of the `Object_Size` attribute.
+description of the ``Object_Size`` attribute.
 
 To get a feel for the difference, consider the following examples (note
-that in each case the base is `Short_Short_Integer` with a size of 8):
+that in each case the base is ``Short_Short_Integer`` with a size of 8):
 
 +---------------------------------------------+-------------+-------------+
 |Type or subtype declaration                  | Object_Size |   Value_Size|
@@ -582,22 +584,22 @@ case. What GNAT does is to allocate sufficient bits to accomodate any
 possible dynamic values for the bounds at run-time.
 
 So far, so good, but GNAT has to obey the RM rules, so the question is
-under what conditions must the RM `Size` be used.
+under what conditions must the RM ``Size`` be used.
 The following is a list
-of the occasions on which the RM `Size` must be used:
+of the occasions on which the RM ``Size`` must be used:
 
 *
   Component size for packed arrays or records
 
 *
-  Value of the attribute `Size` for a type
+  Value of the attribute ``Size`` for a type
 
 *
   Warning about sizes not matching for unchecked conversion
 
-For record types, the `Object_Size` is always a multiple of the
+For record types, the ``Object_Size`` is always a multiple of the
 alignment of the type (this is true for all types). In some cases the
-`Value_Size` can be smaller. Consider:
+``Value_Size`` can be smaller. Consider:
 
 
 .. code-block:: ada
@@ -610,18 +612,18 @@ alignment of the type (this is true for all types). In some cases the
 
 On a typical 32-bit architecture, the X component will be four bytes, and
 require four-byte alignment, and the Y component will be one byte. In this
-case `R'Value_Size` will be 40 (bits) since this is the minimum size
+case ``R'Value_Size`` will be 40 (bits) since this is the minimum size
 required to store a value of this type, and for example, it is permissible
 to have a component of type R in an outer array whose component size is
-specified to be 48 bits. However, `R'Object_Size` will be 64 (bits),
+specified to be 48 bits. However, ``R'Object_Size`` will be 64 (bits),
 since it must be rounded up so that this value is a multiple of the
 alignment (4 bytes = 32 bits).
 
-For all other types, the `Object_Size`
-and `Value_Size` are the same (and equivalent to the RM attribute `Size`).
-Only `Size` may be specified for such types.
+For all other types, the ``Object_Size``
+and ``Value_Size`` are the same (and equivalent to the RM attribute ``Size``).
+Only ``Size`` may be specified for such types.
 
-Note that `Value_Size` can be used to force biased representation
+Note that ``Value_Size`` can be used to force biased representation
 for a particular subtype. Consider this example:
 
 
@@ -632,12 +634,12 @@ for a particular subtype. Consider this example:
      subtype REF is R range E .. F;
 
 
-By default, `RAB`
+By default, ``RAB``
 has a size of 1 (sufficient to accommodate the representation
-of `A` and `B`, 0 and 1), and `REF`
+of ``A`` and ``B``, 0 and 1), and ``REF``
 has a size of 3 (sufficient to accommodate the representation
-of `E` and `F`, 4 and 5). But if we add the
-following `Value_Size` attribute definition clause:
+of ``E`` and ``F``, 4 and 5). But if we add the
+following ``Value_Size`` attribute definition clause:
 
 
 .. code-block:: ada
@@ -645,11 +647,11 @@ following `Value_Size` attribute definition clause:
      for REF'Value_Size use 1;
 
 
-then biased representation is forced for `REF`,
-and 0 will represent `E` and 1 will represent `F`.
-A warning is issued when a `Value_Size` attribute
+then biased representation is forced for ``REF``,
+and 0 will represent ``E`` and 1 will represent ``F``.
+A warning is issued when a ``Value_Size`` attribute
 definition clause forces biased representation. This
-warning can be turned off using `-gnatw.B`.
+warning can be turned off using :switch:`-gnatw.B`.
 
 .. _Component_Size_Clauses:
 
@@ -713,7 +715,7 @@ Bit_Order Clauses
 
 .. index:: ordering, of bits
 
-For record subtypes, GNAT permits the specification of the `Bit_Order`
+For record subtypes, GNAT permits the specification of the ``Bit_Order``
 attribute.  The specification may either correspond to the default bit
 order for the target, in which case the specification has no effect and
 places no additional restrictions, or it may be for the non-standard
@@ -728,7 +730,7 @@ restrictions placed on component clauses as follows:
 * Components fitting within a single storage unit.
 
   These are unrestricted, and the effect is merely to renumber bits.  For
-  example if we are on a little-endian machine with `Low_Order_First`
+  example if we are on a little-endian machine with ``Low_Order_First``
   being the default, then the following two declarations have exactly
   the same effect:
 
@@ -759,14 +761,14 @@ restrictions placed on component clauses as follows:
 
 
   The useful application here is to write the second declaration with the
-  `Bit_Order` attribute definition clause, and know that it will be treated
+  ``Bit_Order`` attribute definition clause, and know that it will be treated
   the same, regardless of whether the target is little-endian or big-endian.
 
 * Components occupying an integral number of bytes.
 
   These are components that exactly fit in two or more bytes.  Such component
   declarations are allowed, but have no effect, since it is important to realize
-  that the `Bit_Order` specification does not affect the ordering of bytes.
+  that the ``Bit_Order`` specification does not affect the ordering of bytes.
   In particular, the following attempt at getting an endian-independent integer
   does not work:
 
@@ -788,7 +790,7 @@ restrictions placed on component clauses as follows:
   little-endian machine, and a big-endian integer on a big-endian machine.
   If byte flipping is required for interoperability between big- and
   little-endian machines, this must be explicitly programmed.  This capability
-  is not provided by `Bit_Order`.
+  is not provided by ``Bit_Order``.
 
 * Components that are positioned across byte boundaries.
 
@@ -802,7 +804,7 @@ restrictions placed on component clauses as follows:
 Since the misconception that Bit_Order automatically deals with all
 endian-related incompatibilities is a common one, the specification of
 a component field that is an integral number of bytes will always
-generate a warning.  This warning may be suppressed using `pragma Warnings (Off)`
+generate a warning.  This warning may be suppressed using ``pragma Warnings (Off)``
 if desired.  The following section contains additional
 details regarding the issue of byte ordering.
 
@@ -815,11 +817,11 @@ Effect of Bit_Order on Byte Ordering
 
 .. index:: ordering, of bytes
 
-In this section we will review the effect of the `Bit_Order` attribute
+In this section we will review the effect of the ``Bit_Order`` attribute
 definition clause on byte ordering.  Briefly, it has no effect at all, but
 a detailed example will be helpful.  Before giving this
 example, let us review the precise
-definition of the effect of defining `Bit_Order`.  The effect of a
+definition of the effect of defining ``Bit_Order``.  The effect of a
 non-standard bit order is described in section 13.5.3 of the Ada
 Reference Manual:
 
@@ -836,7 +838,7 @@ this context, we visit section 13.5.1 of the manual:
    less than Storage_Unit."
 
 The critical point here is that storage places are taken from
-the values after normalization, not before.  So the `Bit_Order`
+the values after normalization, not before.  So the ``Bit_Order``
 interpretation applies to normalized values.  The interpretation
 is described in the later part of the 13.5.3 paragraph:
 
@@ -936,7 +938,7 @@ the byte is backwards, so we have to rewrite the record rep clause as:
 It is a nuisance to have to rewrite the clause, especially if
 the code has to be maintained on both machines.  However,
 this is a case that we can handle with the
-`Bit_Order` attribute if it is implemented.
+``Bit_Order`` attribute if it is implemented.
 Note that the implementation is not required on byte addressed
 machines, but it is indeed implemented in GNAT.
 This means that we can simply use the
@@ -953,7 +955,7 @@ independent of whether the code is compiled on a big-endian or little-endian
 machine.
 
 The important point to understand is that byte ordering is not affected.
-A `Bit_Order` attribute definition never affects which byte a field
+A ``Bit_Order`` attribute definition never affects which byte a field
 ends up in, only where it ends up in that byte.
 To make this clear, let us rewrite the record rep clause of the previous
 example as:
@@ -1008,13 +1010,13 @@ This is exactly equivalent to saying (a repeat of the first example):
      end record;
 
 
-Why are they equivalent? Well take a specific field, the `Slave_V2`
+Why are they equivalent? Well take a specific field, the ``Slave_V2``
 field.  The storage place attributes are obtained by normalizing the
-values given so that the `First_Bit` value is less than 8.  After
+values given so that the ``First_Bit`` value is less than 8.  After
 normalizing the values (0,10,10) we get (1,2,2) which is exactly what
 we specified in the other case.
 
-Now one might expect that the `Bit_Order` attribute might affect
+Now one might expect that the ``Bit_Order`` attribute might affect
 bit numbering within the entire record component (two bytes in this
 case, thus affecting which byte fields end up in), but that is not
 the way this feature is defined, it only affects numbering of bits,
@@ -1022,7 +1024,7 @@ not which byte they end up in.
 
 Consequently it never makes sense to specify a starting bit number
 greater than 7 (for a byte addressable field) if an attribute
-definition for `Bit_Order` has been given, and indeed it
+definition for ``Bit_Order`` has been given, and indeed it
 may be actively confusing to specify such a value, so the compiler
 generates a warning for such usage.
 
@@ -1060,7 +1062,7 @@ some machines we might write:
      end record;
 
 Now to switch between machines, all that is necessary is
-to set the boolean constant `Master_Byte_First` in
+to set the boolean constant ``Master_Byte_First`` in
 an appropriate manner.
 
 .. _Pragma_Pack_for_Arrays:
@@ -1070,7 +1072,7 @@ Pragma Pack for Arrays
 
 .. index:: Pragma Pack (for arrays)
 
-Pragma `Pack` applied to an array has an effect that depends upon whether the
+Pragma ``Pack`` applied to an array has an effect that depends upon whether the
 component type is *packable*.  For a component type to be *packable*, it must
 be one of the following cases:
 
@@ -1081,7 +1083,7 @@ be one of the following cases:
 * Any small simple record type with a static size.
 
 For all these cases, if the component subtype size is in the range
-1 through 64, then the effect of the pragma `Pack` is exactly as though a
+1 through 64, then the effect of the pragma ``Pack`` is exactly as though a
 component size were specified giving the component subtype size.
 
 All other types are non-packable, they occupy an integral number of storage
@@ -1096,18 +1098,18 @@ For example if we have:
      type ar is array (1 .. 8) of r;
      pragma Pack (ar);
 
-Then the component size of `ar` will be set to 5 (i.e., to `r'size`,
-and the size of the array `ar` will be exactly 40 bits).
+Then the component size of ``ar`` will be set to 5 (i.e., to ``r'size``,
+and the size of the array ``ar`` will be exactly 40 bits).
 
 Note that in some cases this rather fierce approach to packing can produce
 unexpected effects.  For example, in Ada 95 and Ada 2005,
-subtype `Natural` typically has a size of 31, meaning that if you
-pack an array of `Natural`, you get 31-bit
+subtype ``Natural`` typically has a size of 31, meaning that if you
+pack an array of ``Natural``, you get 31-bit
 close packing, which saves a few bits, but results in far less efficient
 access.  Since many other Ada compilers will ignore such a packing request,
-GNAT will generate a warning on some uses of pragma `Pack` that it guesses
+GNAT will generate a warning on some uses of pragma ``Pack`` that it guesses
 might not be what is intended.  You can easily remove this warning by
-using an explicit `Component_Size` setting instead, which never generates
+using an explicit ``Component_Size`` setting instead, which never generates
 a warning, since the intention of the programmer is clear in this case.
 
 GNAT treats packed arrays in one of two ways.  If the size of the array is
@@ -1147,7 +1149,7 @@ rejecting the size clause and noting that the minimum size allowed is 64.
 
 One special case that is worth noting occurs when the base type of the
 component size is 8/16/32 and the subtype is one bit less. Notably this
-occurs with subtype `Natural`. Consider:
+occurs with subtype ``Natural``. Consider:
 
 .. code-block:: ada
 
@@ -1155,10 +1157,10 @@ occurs with subtype `Natural`. Consider:
      pragma Pack (Arr);
 
 In all commonly used Ada 83 compilers, this pragma Pack would be ignored,
-since typically `Natural'Size` is 32 in Ada 83, and in any case most
+since typically ``Natural'Size`` is 32 in Ada 83, and in any case most
 Ada 83 compilers did not attempt 31 bit packing.
 
-In Ada 95 and Ada 2005, `Natural'Size` is required to be 31. Furthermore,
+In Ada 95 and Ada 2005, ``Natural'Size`` is required to be 31. Furthermore,
 GNAT really does pack 31-bit subtype to 31 bits. This may result in a
 substantial unintended performance penalty when porting legacy Ada 83 code.
 To help prevent this, GNAT generates a warning in such cases. If you really
@@ -1180,7 +1182,7 @@ Pragma Pack for Records
 
 .. index:: Pragma Pack (for records)
 
-Pragma `Pack` applied to a record will pack the components to reduce
+Pragma ``Pack`` applied to a record will pack the components to reduce
 wasted space from alignment gaps and by reducing the amount of space
 taken by components.  We distinguish between *packable* components and
 *non-packable* components.
@@ -1194,13 +1196,13 @@ Components of the following types are considered packable:
 
 * Small simple records, where the size is statically known, are also packable.
 
-For all these cases, if the 'Size value is in the range 1 through 64, the
+For all these cases, if the ``'Size`` value is in the range 1 through 64, the
 components occupy the exact number of bits corresponding to this value
 and are packed with no padding bits, i.e. they can start on an arbitrary
 bit boundary.
 
 All other types are non-packable, they occupy an integral number of storage
-units and the only effect of pragma Pack is to remove alignment gaps.
+units and the only effect of pragma ``Pack`` is to remove alignment gaps.
 
 For example, consider the record
 
@@ -1224,7 +1226,7 @@ For example, consider the record
      end record;
      pragma Pack (X2);
 
-The representation for the record X2 is as follows:
+The representation for the record ``X2`` is as follows:
 
 .. code-block:: ada
 
@@ -1238,17 +1240,17 @@ The representation for the record X2 is as follows:
      L6 at 18 range  0 .. 71;
   end record;
 
-Studying this example, we see that the packable fields `L1`
-and `L2` are
+Studying this example, we see that the packable fields ``L1``
+and ``L2`` are
 of length equal to their sizes, and placed at specific bit boundaries (and
 not byte boundaries) to
-eliminate padding.  But `L3` is of a non-packable float type (because
+eliminate padding.  But ``L3`` is of a non-packable float type (because
 it is aliased), so it is on the next appropriate alignment boundary.
 
-The next two fields are fully packable, so `L4` and `L5` are
-minimally packed with no gaps.  However, type `Rb2` is a packed
+The next two fields are fully packable, so ``L4`` and ``L5`` are
+minimally packed with no gaps.  However, type ``Rb2`` is a packed
 array that is longer than 64 bits, so it is itself non-packable.  Thus
-the `L6` field is aligned to the next byte boundary, and takes an
+the ``L6`` field is aligned to the next byte boundary, and takes an
 integral number of bytes, i.e., 72 bits.
 
 .. _Record_Representation_Clauses:
@@ -1266,7 +1268,7 @@ of the component.
 .. index:: Component Clause
 
 For all components of an elementary type, the only restriction on component
-clauses is that the size must be at least the 'Size value of the type
+clauses is that the size must be at least the ``'Size`` value of the type
 (actually the Value_Size).  There are no restrictions due to alignment,
 and such components may freely cross storage boundaries.
 
@@ -1280,7 +1282,7 @@ thus the same lack of restriction applies.  For example, if you declare:
      pragma Pack (R);
      for R'Size use 49;
 
-then a component clause for a component of type R may start on any
+then a component clause for a component of type ``R`` may start on any
 specified bit boundary, and may specify a value of 49 bits or greater.
 
 For packed bit arrays that are longer than 64 bits, there are two
@@ -1304,9 +1306,9 @@ the start of the record.  No component clause may attempt to overlay this
 tag. When a tagged type appears as a component, the tag field must have
 proper alignment
 
-In the case of a record extension T1, of a type T, no component clause applied
-to the type T1 can specify a storage location that would overlap the first
-T'Size bytes of the record.
+In the case of a record extension ``T1``, of a type ``T``, no component clause applied
+to the type ``T1`` can specify a storage location that would overlap the first
+``T'Size`` bytes of the record.
 
 For all other component types, including non-bit-packed arrays,
 the component can be placed at an arbitrary bit boundary,
@@ -1328,13 +1330,6 @@ so for example, the following is permitted:
         L at 0 range  2 ..  81;
         R at 0 range 82 .. 161;
      end record;
-
-Note: the above rules apply to recent releases of GNAT 5.
-In GNAT 3, there are more severe restrictions on larger components.
-For composite types, including packed arrays with a size greater than
-64 bits, component clauses must respect the alignment requirement of the
-type, in particular, always starting on a byte boundary, and the length
-must be a multiple of the storage unit.
 
 .. _Handling_of_Records_with_Holes:
 
@@ -1454,10 +1449,10 @@ manner.  Consider the declarations:
      type t is array (r) of Character;
 
 The array type t corresponds to a vector with exactly three elements and
-has a default size equal to `3*Character'Size`.  This ensures efficient
+has a default size equal to ``3*Character'Size``.  This ensures efficient
 use of space, but means that accesses to elements of the array will incur
 the overhead of converting representation values to the corresponding
-positional values, (i.e., the value delivered by the `Pos` attribute).
+positional values, (i.e., the value delivered by the ``Pos`` attribute).
 
 
 .. _Address_Clauses:
@@ -1557,7 +1552,7 @@ thus when used as an address clause value is always permitted.
 Additionally, GNAT treats as static an address clause that is an
 unchecked_conversion of a static integer value.  This simplifies the porting
 of legacy code, and provides a portable equivalent to the GNAT attribute
-`To_Address`.
+``To_Address``.
 
 Another issue with address clauses is the interaction with alignment
 requirements.  When an address clause is given for an object, the address
@@ -1570,10 +1565,10 @@ Since this source of erroneous behavior can have unfortunate effects on
 machines with strict alignment requirements, GNAT
 checks (at compile time if possible, generating a warning, or at execution
 time with a run-time check) that the alignment is appropriate.  If the
-run-time check fails, then `Program_Error` is raised.  This run-time
+run-time check fails, then ``Program_Error`` is raised.  This run-time
 check is suppressed if range checks are suppressed, or if the special GNAT
 check Alignment_Check is suppressed, or if
-`pragma Restrictions (No_Elaboration_Code)` is in effect. It is also
+``pragma Restrictions (No_Elaboration_Code)`` is in effect. It is also
 suppressed by default on non-strict alignment machines (such as the x86).
 
 Finally, GNAT does not permit overlaying of objects of class-wide types. In
@@ -1661,13 +1656,13 @@ or alternatively, using the form recommended by the RM:
     for B'Address use Addr;
 
 
-In both of these cases, `A` and `B` become aliased to one another
+In both of these cases, ``A`` and ``B`` become aliased to one another
 via the address clause. This use of address clauses to overlay
 variables, achieving an effect similar to unchecked conversion
 was erroneous in Ada 83, but in Ada 95 and Ada 2005
 the effect is implementation defined. Furthermore, the
 Ada RM specifically recommends that in a situation
-like this, `B` should be subject to the following
+like this, ``B`` should be subject to the following
 implementation advice (RM 13.3(19)):
 
    "19  If the Address of an object is specified, or it is imported
@@ -1675,13 +1670,13 @@ implementation advice (RM 13.3(19)):
    optimizations based on assumptions of no aliases."
 
 GNAT follows this recommendation, and goes further by also applying
-this recommendation to the overlaid variable (`A` in the above example)
+this recommendation to the overlaid variable (``A`` in the above example)
 in this case. This means that the overlay works "as expected", in that
 a modification to one of the variables will affect the value of the other.
 
 More generally, GNAT interprets this recommendation conservatively for
 address clauses: in the cases other than overlays, it considers that the
-object is effectively subject to pragma `Volatile` and implements the
+object is effectively subject to pragma ``Volatile`` and implements the
 associated semantics.
 
 Note that when address clause overlays are used in this way, there is an
@@ -1704,9 +1699,9 @@ issue of unintentional initialization, as shown by this example:
 
   end Overwrite_Record;
 
-Here the default initialization of `Y` will clobber the value
-of `X`, which justifies the warning. The warning notes that
-this effect can be eliminated by adding a `pragma Import`
+Here the default initialization of ``Y`` will clobber the value
+of ``X``, which justifies the warning. The warning notes that
+this effect can be eliminated by adding a ``pragma Import``
 which suppresses the initialization:
 
 .. code-block:: ada
@@ -1723,12 +1718,12 @@ which suppresses the initialization:
   end Overwrite_Record;
 
 
-Note that the use of `pragma Initialize_Scalars` may cause variables to
+Note that the use of ``pragma Initialize_Scalars`` may cause variables to
 be initialized when they would not otherwise have been in the absence
 of the use of this pragma. This may cause an overlay to have this
 unintended clobbering effect. The compiler avoids this for scalar
 types, but not for composite objects (where in general the effect
-of `Initialize_Scalars` is part of the initialization routine
+of ``Initialize_Scalars`` is part of the initialization routine
 for the composite object:
 
 ::
@@ -1754,7 +1749,7 @@ for the composite object:
   end Overwrite_Array;
 
 The above program generates the warning as shown, and at execution
-time, prints `X was clobbered`. If the `pragma Import` is
+time, prints ``X was clobbered``. If the ``pragma Import`` is
 added as suggested:
 
 .. code-block:: ada
@@ -1776,7 +1771,7 @@ added as suggested:
   end Overwrite_Array;
 
 then the program compiles without the warning and when run will generate
-the output `X was not clobbered`.
+the output ``X was not clobbered``.
 
 
 .. _Use_of_Address_Clauses_for_Memory-Mapped_I/O:
@@ -1834,8 +1829,8 @@ It is best to be explicit in this situation, by either declaring the
 components to be atomic if you want the byte store, or explicitly writing
 the full word access sequence if that is what the hardware requires.
 Alternatively, if the full word access sequence is required, GNAT also
-provides the pragma `Volatile_Full_Access` which can be used in lieu of
-pragma `Atomic` and will give the additional guarantee.
+provides the pragma ``Volatile_Full_Access`` which can be used in lieu of
+pragma ``Atomic`` and will give the additional guarantee.
 
 
 .. _Effect_of_Convention_on_Representation:
@@ -1872,9 +1867,9 @@ There are four exceptions to this general rule:
        type Color is (Red, Green, Blue);
 
   8 bits is sufficient to store all values of the type, so by default, objects
-  of type `Color` will be represented using 8 bits.  However, normal C
+  of type ``Color`` will be represented using 8 bits.  However, normal C
   convention is to use 32 bits for all enum values in C, since enum values
-  are essentially of type int.  If pragma `Convention C` is specified for an
+  are essentially of type int.  If pragma ``Convention C`` is specified for an
   Ada enumeration type, then the size is modified as necessary (usually to
   32 bits) to be consistent with the C convention for enum values.
 
@@ -1893,7 +1888,7 @@ There are four exceptions to this general rule:
   true.  In Ada, the normal convention is that two specific values, typically
   0/1, are used to represent false/true respectively.
 
-  Fortran has a similar convention for `LOGICAL` values (any nonzero
+  Fortran has a similar convention for ``LOGICAL`` values (any nonzero
   value represents true).
 
   To accommodate the Fortran and C conventions, if a pragma Convention specifies
@@ -2006,8 +2001,8 @@ representation clause or pragma is accepted, there can still be questions
 of what the compiler actually does.  For example, if a partial record
 representation clause specifies the location of some components and not
 others, then where are the non-specified components placed? Or if pragma
-`Pack` is used on a record, then exactly where are the resulting
-fields placed? The section on pragma `Pack` in this chapter can be
+``Pack`` is used on a record, then exactly where are the resulting
+fields placed? The section on pragma ``Pack`` in this chapter can be
 used to answer the second question, but it is often easier to just see
 what the compiler does.
 
@@ -2130,7 +2125,7 @@ fields present, including the parent field, which is a copy of the fields
 of the parent type of r2, i.e., r1.
 
 The component size and size clauses for types rb1 and rb2 show
-the exact effect of pragma `Pack` on these arrays, and the record
+the exact effect of pragma ``Pack`` on these arrays, and the record
 representation clause for type x2 shows how pragma `Pack` affects
 this record type.
 

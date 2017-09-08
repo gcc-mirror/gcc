@@ -78,15 +78,15 @@ corresponding to :ref:`pragma Annotate<Pragma-Annotate>`.
 
 
 *Annotate => ID*
-  Equivalent to `pragma Annotate (ID, Entity => Name);`
+  Equivalent to ``pragma Annotate (ID, Entity => Name);``
 
 
 *Annotate => (ID)*
-  Equivalent to `pragma Annotate (ID, Entity => Name);`
+  Equivalent to ``pragma Annotate (ID, Entity => Name);``
 
 
 *Annotate => (ID ,ID {, ARG})*
-  Equivalent to `pragma Annotate (ID, ID {, ARG}, Entity => Name);`
+  Equivalent to ``pragma Annotate (ID, ID {, ARG}, Entity => Name);``
 
 Aspect Async_Readers
 ====================
@@ -130,7 +130,7 @@ Aspect Dimension
 ================
 .. index:: Dimension
 
-The `Dimension` aspect is used to specify the dimensions of a given
+The ``Dimension`` aspect is used to specify the dimensions of a given
 subtype of a dimensioned numeric type. The aspect also specifies a symbol
 used when doing formatted output of dimensioned quantities. The syntax is::
 
@@ -148,13 +148,13 @@ used when doing formatted output of dimensioned quantities. The syntax is::
 
 
 This aspect can only be applied to a subtype whose parent type has
-a `Dimension_System` aspect. The aspect must specify values for
+a ``Dimension_System`` aspect. The aspect must specify values for
 all dimensions of the system. The rational values are the powers of the
 corresponding dimensions that are used by the compiler to verify that
 physical (numeric) computations are dimensionally consistent. For example,
 the computation of a force must result in dimensions (L => 1, M => 1, T => -2).
 For further examples of the usage
-of this aspect, see package `System.Dim.Mks`.
+of this aspect, see package ``System.Dim.Mks``.
 Note that when the dimensioned type is an integer type, then any
 dimension value must be an integer literal.
 
@@ -162,9 +162,9 @@ Aspect Dimension_System
 =======================
 .. index:: Dimension_System
 
-The `Dimension_System` aspect is used to define a system of
+The ``Dimension_System`` aspect is used to define a system of
 dimensions that will be used in subsequent subtype declarations with
-`Dimension` aspects that reference this system. The syntax is::
+``Dimension`` aspects that reference this system. The syntax is::
 
   with Dimension_System => (DIMENSION {, DIMENSION});
 
@@ -177,20 +177,20 @@ dimensions that will be used in subsequent subtype declarations with
 
 This aspect is applied to a type, which must be a numeric derived type
 (typically a floating-point type), that
-will represent values within the dimension system. Each `DIMENSION`
+will represent values within the dimension system. Each ``DIMENSION``
 corresponds to one particular dimension. A maximum of 7 dimensions may
-be specified. `Unit_Name` is the name of the dimension (for example
-`Meter`). `Unit_Symbol` is the shorthand used for quantities
-of this dimension (for example `m` for `Meter`).
-`Dim_Symbol` gives
+be specified. ``Unit_Name`` is the name of the dimension (for example
+``Meter``). ``Unit_Symbol`` is the shorthand used for quantities
+of this dimension (for example ``m`` for ``Meter``).
+``Dim_Symbol`` gives
 the identification within the dimension system (typically this is a
-single letter, e.g. `L` standing for length for unit name `Meter`).
-The `Unit_Symbol` is used in formatted output of dimensioned quantities.
-The `Dim_Symbol` is used in error messages when numeric operations have
+single letter, e.g. ``L`` standing for length for unit name ``Meter``).
+The ``Unit_Symbol`` is used in formatted output of dimensioned quantities.
+The ``Dim_Symbol`` is used in error messages when numeric operations have
 inconsistent dimensions.
 
 GNAT provides the standard definition of the International MKS system in
-the run-time package `System.Dim.Mks`. You can easily define
+the run-time package ``System.Dim.Mks``. You can easily define
 similar packages for cgs units or British units, and define conversion factors
 between values in different systems. The MKS system is characterized by the
 following aspect:
@@ -208,7 +208,7 @@ following aspect:
          (Unit_Name => Candela,  Unit_Symbol => "cd",  Dim_Symbol => 'J'));
 
 
-Note that in the above type definition, we use the `at` symbol (``@``) to
+Note that in the above type definition, we use the ``at`` symbol (``@``) to
 represent a theta character (avoiding the use of extended Latin-1
 characters in this context).
 
@@ -219,9 +219,9 @@ Aspect Disable_Controlled
 =========================
 .. index:: Disable_Controlled
 
-The aspect  `Disable_Controlled` is defined for controlled record types. If
-active, this aspect causes suppression of all related calls to `Initialize`,
-`Adjust`, and `Finalize`. The intended use is for conditional compilation,
+The aspect  ``Disable_Controlled`` is defined for controlled record types. If
+active, this aspect causes suppression of all related calls to ``Initialize``,
+``Adjust``, and ``Finalize``. The intended use is for conditional compilation,
 where for example you might want a record to be controlled or not depending on
 whether some run-time check is enabled or suppressed.
 
@@ -284,16 +284,16 @@ Aspect Invariant
 .. index:: Invariant
 
 This aspect is equivalent to :ref:`pragma Invariant<Pragma-Invariant>`. It is a
-synonym for the language defined aspect `Type_Invariant` except
-that it is separately controllable using pragma `Assertion_Policy`.
+synonym for the language defined aspect ``Type_Invariant`` except
+that it is separately controllable using pragma ``Assertion_Policy``.
 
 Aspect Invariant'Class
 ======================
 .. index:: Invariant'Class
 
 This aspect is equivalent to :ref:`pragma Type_Invariant_Class<Pragma-Type_Invariant_Class>`. It is a
-synonym for the language defined aspect `Type_Invariant'Class` except
-that it is separately controllable using pragma `Assertion_Policy`.
+synonym for the language defined aspect ``Type_Invariant'Class`` except
+that it is separately controllable using pragma ``Assertion_Policy``.
 
 Aspect Iterable
 ===============
@@ -302,10 +302,10 @@ Aspect Iterable
 This aspect provides a light-weight mechanism for loops and quantified
 expressions over container types, without the overhead imposed by the tampering
 checks of standard Ada 2012 iterators. The value of the aspect is an aggregate
-with four named components: `First`, `Next`, `Has_Element`, and `Element` (the
+with four named components: ``First``, ``Next``, ``Has_Element``, and ``Element`` (the
 last one being optional). When only 3 components are specified, only the
-`for .. in` form of iteration over cursors is available. When all 4 components
-are specified, both this form and the `for .. of` form of iteration over
+``for .. in`` form of iteration over cursors is available. When all 4 components
+are specified, both this form and the ``for .. of`` form of iteration over
 elements are available. The following is a typical example of use:
 
 .. code-block:: ada
@@ -316,30 +316,30 @@ elements are available. The following is a typical example of use:
                    Has_Element  => Cursor_Has_Element,
                   [Element      => Get_Element]);
 
-* The value denoted by `First` must denote a primitive operation of the
-  container type that returns a `Cursor`, which must a be a type declared in
+* The value denoted by ``First`` must denote a primitive operation of the
+  container type that returns a ``Cursor``, which must a be a type declared in
   the container package or visible from it. For example:
 
 .. code-block:: ada
 
   function First_Cursor (Cont : Container) return Cursor;
 
-* The value of `Next` is a primitive operation of the container type that takes
+* The value of ``Next`` is a primitive operation of the container type that takes
   both a container and a cursor and yields a cursor. For example:
 
 .. code-block:: ada
 
   function Advance (Cont : Container; Position : Cursor) return Cursor;
 
-* The value of `Has_Element` is a primitive operation of the container type
+* The value of ``Has_Element`` is a primitive operation of the container type
   that takes both a container and a cursor and yields a boolean. For example:
 
 .. code-block:: ada
 
   function Cursor_Has_Element (Cont : Container; Position : Cursor) return Boolean;
 
-* The value of `Element` is a primitive operation of the container type that
-  takes both a container and a cursor and yields an `Element_Type`, which must
+* The value of ``Element`` is a primitive operation of the container type that
+  takes both a container and a cursor and yields an ``Element_Type``, which must
   be a type declared in the container package or visible from it. For example:
 
 .. code-block:: ada
@@ -372,6 +372,12 @@ Aspect No_Elaboration_Code_All
 
 This aspect is equivalent to :ref:`pragma No_Elaboration_Code_All<Pragma-No_Elaboration_Code_All>`
 for a program unit.
+
+Aspect No_Inline
+================
+.. index:: No_Inline
+
+This boolean aspect is equivalent to :ref:`pragma No_Inline<Pragma-No_Inline>`.
 
 Aspect No_Tagged_Streams
 ========================
@@ -412,11 +418,11 @@ Aspect Predicate
 .. index:: Predicate
 
 This aspect is equivalent to :ref:`pragma Predicate<Pragma-Predicate>`. It is thus
-similar to the language defined aspects `Dynamic_Predicate`
-and `Static_Predicate` except that whether the resulting
+similar to the language defined aspects ``Dynamic_Predicate``
+and ``Static_Predicate`` except that whether the resulting
 predicate is static or dynamic is controlled by the form of the
 expression. It is also separately controllable using pragma
-`Assertion_Policy`.
+``Assertion_Policy``.
 
 Aspect Pure_Function
 ====================
@@ -473,7 +479,7 @@ Aspect Shared
 .. index:: Shared
 
 This boolean aspect is equivalent to :ref:`pragma Shared<Pragma-Shared>`
-and is thus a synonym for aspect `Atomic`.
+and is thus a synonym for aspect ``Atomic``.
 
 Aspect Simple_Storage_Pool
 ==========================
@@ -574,5 +580,5 @@ Aspect Warnings
 .. index:: Warnings
 
 This aspect is equivalent to the two argument form of :ref:`pragma Warnings<Pragma_Warnings>`,
-where the first argument is `ON` or `OFF` and the second argument
+where the first argument is ``ON`` or ``OFF`` and the second argument
 is the entity.

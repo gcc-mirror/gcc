@@ -1,3 +1,5 @@
+.. role:: switch(samp)
+
 .. |with| replace:: *with*
 .. |withs| replace:: *with*\ s
 .. |withed| replace:: *with*\ ed
@@ -56,20 +58,20 @@ representing foreign languages (see :ref:`Foreign_Language_Representation`
 for support of non-USA character sets). The format effector characters
 are represented using their standard ASCII encodings, as follows:
 
-    =========== ======================= =========
+    =========== ======================= ===========
      Character          Effect           Code
-    ----------- ----------------------- ---------
-    :kbd:`VT`    Vertical tab            `16#0B#`
-    :kbd:`HT`    Horizontal tab          `16#09#`
-    :kbd:`CR`    Carriage return         `16#0D#`
-    :kbd:`LF`    Line feed               `16#0A#`
-    :kbd:`FF`    Form feed               `16#0C#`
-    =========== ======================= =========
+    ----------- ----------------------- -----------
+    :kbd:`VT`    Vertical tab            ``16#0B#``
+    :kbd:`HT`    Horizontal tab          ``16#09#``
+    :kbd:`CR`    Carriage return         ``16#0D#``
+    :kbd:`LF`    Line feed               ``16#0A#``
+    :kbd:`FF`    Form feed               ``16#0C#``
+    =========== ======================= ===========
 
 Source files are in standard text file format. In addition, GNAT will
 recognize a wide variety of stream formats, in which the end of
 physical lines is marked by any of the following sequences:
-`LF`, `CR`, `CR-LF`, or `LF-CR`. This is useful
+``LF``, ``CR``, ``CR-LF``, or ``LF-CR``. This is useful
 in accommodating files that are imported from other operating systems.
 
 .. index:: pair: End of source file; Source file, end
@@ -77,7 +79,7 @@ in accommodating files that are imported from other operating systems.
 .. index:: SUB (control character)
 
 The end of a source file is normally represented by the physical end of
-file. However, the control character `16#1A#` (:kbd:`SUB`) is also
+file. However, the control character ``16#1A#`` (:kbd:`SUB`) is also
 recognized as signalling the end of the source file. Again, this is
 provided for compatibility with other operating systems where this
 code is used to represent the end of file.
@@ -86,8 +88,8 @@ code is used to represent the end of file.
 
 Each file contains a single Ada compilation unit, including any pragmas
 associated with the unit. For example, this means you must place a
-package declaration (a package `spec`) and the corresponding body in
-separate files. An Ada `compilation` (which is a sequence of
+package declaration (a package *spec*) and the corresponding body in
+separate files. An Ada *compilation* (which is a sequence of
 compilation units) is represented using a sequence of files. Similarly,
 you will place each subunit or child unit in a separate file.
 
@@ -108,8 +110,8 @@ Latin-1
 .. index:: Latin-1
 
 The basic character set is Latin-1. This character set is defined by ISO
-standard 8859, part 1. The lower half (character codes `16#00#`
-... `16#7F#)` is identical to standard ASCII coding, but the upper
+standard 8859, part 1. The lower half (character codes ``16#00#``
+... ``16#7F#)`` is identical to standard ASCII coding, but the upper
 half is used to represent additional characters. These include extended letters
 used by European languages, such as French accents, the vowels with umlauts
 used in German, and the extra letter A-ring used in Swedish.
@@ -117,7 +119,7 @@ used in German, and the extra letter A-ring used in Swedish.
 .. index:: Ada.Characters.Latin_1
 
 For a complete list of Latin-1 codes and their encodings, see the source
-file of library unit `Ada.Characters.Latin_1` in file
+file of library unit ``Ada.Characters.Latin_1`` in file
 :file:`a-chlat1.ads`.
 You may use any of these extended characters freely in character or
 string literals. In addition, the extended characters that represent
@@ -218,18 +220,18 @@ possible encoding schemes:
 
     ESC a b c d
 
-  where `a`, `b`, `c`, `d` are the four hexadecimal
+  where ``a``, ``b``, ``c``, ``d`` are the four hexadecimal
   characters (using uppercase letters) of the wide character code. For
   example, ESC A345 is used to represent the wide character with code
-  `16#A345#`.
+  ``16#A345#``.
   This scheme is compatible with use of the full Wide_Character set.
 
 *Upper-Half Coding*
   .. index:: Upper-Half Coding
 
-  The wide character with encoding `16#abcd#` where the upper bit is on
+  The wide character with encoding ``16#abcd#`` where the upper bit is on
   (in other words, 'a' is in the range 8-F) is represented as two bytes,
-  `16#ab#` and `16#cd#`. The second byte cannot be a format control
+  ``16#ab#`` and ``16#cd#``. The second byte cannot be a format control
   character, but is not required to be in the upper half. This method can
   be also used for shift-JIS or EUC, where the internal coding matches the
   external coding.
@@ -238,8 +240,8 @@ possible encoding schemes:
   .. index:: Shift JIS Coding
 
   A wide character is represented by a two-character sequence,
-  `16#ab#` and
-  `16#cd#`, with the restrictions described for upper-half encoding as
+  ``16#ab#`` and
+  ``16#cd#``, with the restrictions described for upper-half encoding as
   described above. The internal character code is the corresponding JIS
   character according to the standard algorithm for Shift-JIS
   conversion. Only characters defined in the JIS code set table can be
@@ -250,8 +252,8 @@ possible encoding schemes:
   .. index:: EUC Coding
 
   A wide character is represented by a two-character sequence
-  `16#ab#` and
-  `16#cd#`, with both characters being in the upper half. The internal
+  ``16#ab#`` and
+  ``16#cd#``, with both characters being in the upper half. The internal
   character code is the corresponding JIS character according to the EUC
   encoding algorithm. Only characters defined in the JIS code set table
   can be used with this encoding method.
@@ -263,11 +265,11 @@ possible encoding schemes:
   10646-1/Am.2. Depending on the character value, the representation
   is a one, two, or three byte sequence::
 
-    16#0000#-16#007f#: 2#0`xxxxxxx`#
-    16#0080#-16#07ff#: 2#110`xxxxx`# 2#10`xxxxxx`#
-    16#0800#-16#ffff#: 2#1110`xxxx`# 2#10`xxxxxx`# 2#10`xxxxxx`#
+    16#0000#-16#007f#: 2#0xxxxxxx#
+    16#0080#-16#07ff#: 2#110xxxxx# 2#10xxxxxx#
+    16#0800#-16#ffff#: 2#1110xxxx# 2#10xxxxxx# 2#10xxxxxx#
 
-  where the `xxx` bits correspond to the left-padded bits of the
+  where the ``xxx`` bits correspond to the left-padded bits of the
   16-bit character value. Note that all lower half ASCII characters
   are represented as ASCII bytes and all upper half characters and
   other wide characters are represented as sequences of upper-half
@@ -282,12 +284,12 @@ possible encoding schemes:
 
     [ " a b c d " ]
 
-  where `a`, `b`, `c`, `d` are the four hexadecimal
+  where ``a``, ``b``, ``c``, ``d`` are the four hexadecimal
   characters (using uppercase letters) of the wide character code. For
   example, ['A345'] is used to represent the wide character with code
-  `16#A345#`. It is also possible (though not required) to use the
+  ``16#A345#``. It is also possible (though not required) to use the
   Brackets coding for upper half characters. For example, the code
-  `16#A3#` can be represented as `['A3']`.
+  ``16#A3#`` can be represented as ``['A3']``.
 
   This scheme is compatible with use of the full Wide_Character set,
   and is also the method used for wide character encoding in some standard
@@ -323,7 +325,7 @@ possible encoding schemes:
                                  10xxxxxx 10xxxxxx 10xxxxxx
 
 
-  where the `xxx` bits correspond to the left-padded bits of the
+  where the ``xxx`` bits correspond to the left-padded bits of the
   32-bit character value.
 
 *Brackets Coding*
@@ -333,10 +335,10 @@ possible encoding schemes:
     [ " a b c d e f " ]
     [ " a b c d e f g h " ]
 
-  where `a-h` are the six or eight hexadecimal
+  where ``a-h`` are the six or eight hexadecimal
   characters (using uppercase letters) of the wide wide character code. For
   example, ["1F4567"] is used to represent the wide wide character with code
-  `16#001F_4567#`.
+  ``16#001F_4567#``.
 
   This scheme is compatible with use of the full Wide_Wide_Character set,
   and is also the method used for wide wide character encoding in some standard
@@ -365,12 +367,12 @@ lowercase for all letters.
 
 An exception arises if the file name generated by the above rules starts
 with one of the characters
-`a`, `g`, `i`, or `s`, and the second character is a
+``a``, ``g``, ``i``, or ``s``, and the second character is a
 minus. In this case, the character tilde is used in place
 of the minus. The reason for this special rule is to avoid clashes with
 the standard names for child units of the packages System, Ada,
 Interfaces, and GNAT, which use the prefixes
-`s-`, `a-`, `i-`, and `g-`,
+``s-``, ``a-``, ``i-``, and ``g-``,
 respectively.
 
 The file extension is :file:`.ads` for a spec and
@@ -408,8 +410,8 @@ utility to produce source files that follow the GNAT naming conventions.
 (For details see :ref:`Renaming_Files_with_gnatchop`.)
 
 Note: in the case of Windows or Mac OS operating systems, case is not
-significant. So for example on `Windows` if the canonical name is
-`main-sub.adb`, you can use the file name :file:`Main-Sub.adb` instead.
+significant. So for example on Windows if the canonical name is
+:file:`main-sub.adb`, you can use the file name :file:`Main-Sub.adb` instead.
 However, case is significant for other operating systems, so for example,
 if you want to use other than canonically cased file names on a Unix system,
 you need to follow the procedures described in the next section.
@@ -461,17 +463,17 @@ GNAT allows completely arbitrary file names to be specified using the
 source file name pragma. However, if the file name specified has an
 extension other than :file:`.ads` or :file:`.adb` it is necessary to use
 a special syntax when compiling the file. The name in this case must be
-preceded by the special sequence *-x* followed by a space and the name
-of the language, here `ada`, as in:
+preceded by the special sequence ``-x`` followed by a space and the name
+of the language, here ``ada``, as in:
 
 .. code-block:: sh
 
      $ gcc -c -x ada peculiar_file_name.sim
 
-`gnatmake` handles non-standard file names in the usual manner (the
+``gnatmake`` handles non-standard file names in the usual manner (the
 non-standard file name for the main program is simply used as the
 argument to gnatmake). Note that if the extension is also non-standard,
-then it must be included in the `gnatmake` command, it may not
+then it must be included in the ``gnatmake`` command, it may not
 be omitted.
 
 .. _Alternative_File_Naming_Schemes:
@@ -483,7 +485,7 @@ Alternative File Naming Schemes
 
 .. index:: File names
 
-The previous section described the use of the `Source_File_Name`
+The previous section described the use of the ``Source_File_Name``
 pragma to allow arbitrary names to be assigned to individual source files.
 However, this approach requires one pragma for each file, and especially in
 large systems can result in very long :file:`gnat.adc` files, and also create
@@ -494,7 +496,7 @@ a maintenance problem.
 GNAT also provides a facility for specifying systematic file naming schemes
 other than the standard default naming scheme previously described. An
 alternative scheme for naming is specified by the use of
-`Source_File_Name` pragmas having the following format:
+``Source_File_Name`` pragmas having the following format:
 
 .. code-block:: ada
 
@@ -516,29 +518,29 @@ alternative scheme for naming is specified by the use of
      FILE_NAME_PATTERN ::= STRING_LITERAL
      CASING_SPEC ::= Lowercase | Uppercase | Mixedcase
 
-The `FILE_NAME_PATTERN` string shows how the file name is constructed.
+The ``FILE_NAME_PATTERN`` string shows how the file name is constructed.
 It contains a single asterisk character, and the unit name is substituted
 systematically for this asterisk. The optional parameter
-`Casing` indicates
+``Casing`` indicates
 whether the unit name is to be all upper-case letters, all lower-case letters,
 or mixed-case. If no
-`Casing` parameter is used, then the default is all
+``Casing`` parameter is used, then the default is all
 lower-case.
 
-The optional `Dot_Replacement` string is used to replace any periods
-that occur in subunit or child unit names. If no `Dot_Replacement`
+The optional ``Dot_Replacement`` string is used to replace any periods
+that occur in subunit or child unit names. If no ``Dot_Replacement``
 argument is used then separating dots appear unchanged in the resulting
 file name.
 Although the above syntax indicates that the
-`Casing` argument must appear
-before the `Dot_Replacement` argument, but it
+``Casing`` argument must appear
+before the ``Dot_Replacement`` argument, but it
 is also permissible to write these arguments in the opposite order.
 
 As indicated, it is possible to specify different naming schemes for
 bodies, specs, and subunits. Quite often the rule for subunits is the
 same as the rule for bodies, in which case, there is no need to give
-a separate `Subunit_File_Name` rule, and in this case the
-`Body_File_name` rule is used for subunits as well.
+a separate ``Subunit_File_Name`` rule, and in this case the
+``Body_File_name`` rule is used for subunits as well.
 
 The separate rule for subunits can also be used to implement the rather
 unusual case of a compilation environment (e.g., a single directory) which
@@ -549,15 +551,15 @@ in the same environment.
 
 The file name translation works in the following steps:
 
-* If there is a specific `Source_File_Name` pragma for the given unit,
+* If there is a specific ``Source_File_Name`` pragma for the given unit,
   then this is always used, and any general pattern rules are ignored.
 
-* If there is a pattern type `Source_File_Name` pragma that applies to
+* If there is a pattern type ``Source_File_Name`` pragma that applies to
   the unit, then the resulting file name will be used if the file exists. If
   more than one pattern matches, the latest one will be tried first, and the
   first attempt resulting in a reference to a file that exists will be used.
 
-* If no pattern type `Source_File_Name` pragma that applies to the unit
+* If no pattern type ``Source_File_Name`` pragma that applies to the unit
   for which the corresponding file exists, then the standard GNAT default
   naming rules are used.
 
@@ -613,8 +615,8 @@ the same double underscore separator for child units.
 
 .. _Handling_Arbitrary_File_Naming_Conventions_with_gnatname:
 
-Handling Arbitrary File Naming Conventions with `gnatname`
-----------------------------------------------------------
+Handling Arbitrary File Naming Conventions with ``gnatname``
+------------------------------------------------------------
 
 .. index:: File Naming Conventions
 
@@ -625,7 +627,7 @@ Arbitrary File Naming Conventions
 
 The GNAT compiler must be able to know the source file name of a compilation
 unit.  When using the standard GNAT default file naming conventions
-(`.ads` for specs, `.adb` for bodies), the GNAT compiler
+(``.ads`` for specs, ``.adb`` for bodies), the GNAT compiler
 does not need additional information.
 
 When the source file names do not follow the standard GNAT default file naming
@@ -633,48 +635,48 @@ conventions, the GNAT compiler must be given additional information through
 a configuration pragmas file (:ref:`Configuration_Pragmas`)
 or a project file.
 When the non-standard file naming conventions are well-defined,
-a small number of pragmas `Source_File_Name` specifying a naming pattern
+a small number of pragmas ``Source_File_Name`` specifying a naming pattern
 (:ref:`Alternative_File_Naming_Schemes`) may be sufficient. However,
 if the file naming conventions are irregular or arbitrary, a number
-of pragma `Source_File_Name` for individual compilation units
+of pragma ``Source_File_Name`` for individual compilation units
 must be defined.
 To help maintain the correspondence between compilation unit names and
 source file names within the compiler,
-GNAT provides a tool `gnatname` to generate the required pragmas for a
+GNAT provides a tool ``gnatname`` to generate the required pragmas for a
 set of files.
 
 .. _Running_gnatname:
 
-Running `gnatname`
-^^^^^^^^^^^^^^^^^^
+Running ``gnatname``
+^^^^^^^^^^^^^^^^^^^^
 
-The usual form of the `gnatname` command is:
+The usual form of the ``gnatname`` command is:
 
 .. code-block:: sh
 
-      $ gnatname [`switches`] `naming_pattern` [`naming_patterns`]
-          [--and [`switches`] `naming_pattern` [`naming_patterns`]]
+      $ gnatname [ switches ]  naming_pattern  [ naming_patterns ]
+          [--and [ switches ]  naming_pattern  [ naming_patterns ]]
 
 
 All of the arguments are optional. If invoked without any argument,
-`gnatname` will display its usage.
+``gnatname`` will display its usage.
 
-When used with at least one naming pattern, `gnatname` will attempt to
+When used with at least one naming pattern, ``gnatname`` will attempt to
 find all the compilation units in files that follow at least one of the
 naming patterns. To find these compilation units,
-`gnatname` will use the GNAT compiler in syntax-check-only mode on all
+``gnatname`` will use the GNAT compiler in syntax-check-only mode on all
 regular files.
 
-One or several Naming Patterns may be given as arguments to `gnatname`.
+One or several Naming Patterns may be given as arguments to ``gnatname``.
 Each Naming Pattern is enclosed between double quotes (or single
 quotes on Windows).
 A Naming Pattern is a regular expression similar to the wildcard patterns
 used in file names by the Unix shells or the DOS prompt.
 
-`gnatname` may be called with several sections of directories/patterns.
-Sections are separated by switch `--and`. In each section, there must be
+``gnatname`` may be called with several sections of directories/patterns.
+Sections are separated by the switch :switch:`--and`. In each section, there must be
 at least one pattern. If no directory is specified in a section, the current
-directory (or the project directory is `-P` is used) is implied.
+directory (or the project directory if :switch:`-P` is used) is implied.
 The options other that the directory switches and the patterns apply globally
 even if they are in different sections.
 
@@ -688,94 +690,94 @@ For a more complete description of the syntax of Naming Patterns,
 see the second kind of regular expressions described in :file:`g-regexp.ads`
 (the 'Glob' regular expressions).
 
-When invoked with no switch `-P`, `gnatname` will create a
+When invoked without the switch :switch:`-P`, ``gnatname`` will create a
 configuration pragmas file :file:`gnat.adc` in the current working directory,
-with pragmas `Source_File_Name` for each file that contains a valid Ada
+with pragmas ``Source_File_Name`` for each file that contains a valid Ada
 unit.
 
 .. _Switches_for_gnatname:
 
-Switches for `gnatname`
-^^^^^^^^^^^^^^^^^^^^^^^
+Switches for ``gnatname``
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Switches for `gnatname` must precede any specified Naming Pattern.
+Switches for ``gnatname`` must precede any specified Naming Pattern.
 
-You may specify any of the following switches to `gnatname`:
+You may specify any of the following switches to ``gnatname``:
 
 .. index:: --version (gnatname)
 
-:samp:`--version`
+:switch:`--version`
   Display Copyright and version, then exit disregarding all other options.
 
 .. index:: --help (gnatname)
 
-:samp:`--help`
-  If *--version* was not used, display usage, then exit disregarding
+:switch:`--help`
+  If :switch:`--version` was not used, display usage, then exit disregarding
   all other options.
 
-:samp:`--subdirs={dir}`
+:switch:`--subdirs={dir}`
   Real object, library or exec directories are subdirectories <dir> of the
   specified ones.
 
-:samp:`--no-backup`
+:switch:`--no-backup`
   Do not create a backup copy of an existing project file.
 
-:samp:`--and`
+:switch:`--and`
   Start another section of directories/patterns.
 
 .. index:: -c (gnatname)
 
-:samp:`-c{filename}`
+:switch:`-c{filename}`
   Create a configuration pragmas file :file:`filename` (instead of the default
   :file:`gnat.adc`).
-  There may be zero, one or more space between *-c* and
+  There may be zero, one or more space between :switch:`-c` and
   :file:`filename`.
   :file:`filename` may include directory information. :file:`filename` must be
-  writable. There may be only one switch *-c*.
-  When a switch *-c* is
-  specified, no switch *-P* may be specified (see below).
+  writable. There may be only one switch :switch:`-c`.
+  When a switch :switch:`-c` is
+  specified, no switch :switch:`-P` may be specified (see below).
 
 .. index:: -d (gnatname)
 
-:samp:`-d{dir}`
+:switch:`-d{dir}`
   Look for source files in directory :file:`dir`. There may be zero, one or more
-  spaces between *-d* and :file:`dir`.
-  :file:`dir` may end with `/**`, that is it may be of the form
-  `root_dir/**`. In this case, the directory `root_dir` and all of its
+  spaces between :switch:`-d` and :file:`dir`.
+  :file:`dir` may end with ``/**``, that is it may be of the form
+  ``root_dir/**``. In this case, the directory ``root_dir`` and all of its
   subdirectories, recursively, have to be searched for sources.
-  When a switch *-d*
+  When a switch :switch:`-d`
   is specified, the current working directory will not be searched for source
-  files, unless it is explicitly specified with a *-d*
-  or *-D* switch.
-  Several switches *-d* may be specified.
+  files, unless it is explicitly specified with a :switch:`-d`
+  or :switch:`-D` switch.
+  Several switches :switch:`-d` may be specified.
   If :file:`dir` is a relative path, it is relative to the directory of
   the configuration pragmas file specified with switch
-  *-c*,
+  :switch:`-c`,
   or to the directory of the project file specified with switch
-  *-P* or,
-  if neither switch *-c*
-  nor switch *-P* are specified, it is relative to the
+  :switch:`-P` or,
+  if neither switch :switch:`-c`
+  nor switch :switch:`-P` are specified, it is relative to the
   current working directory. The directory
-  specified with switch *-d* must exist and be readable.
+  specified with switch :switch:`-d` must exist and be readable.
 
 .. index:: -D (gnatname)
 
-:samp:`-D{filename}`
+:switch:`-D{filename}`
   Look for source files in all directories listed in text file :file:`filename`.
-  There may be zero, one or more spaces between *-D*
+  There may be zero, one or more spaces between :switch:`-D`
   and :file:`filename`.
   :file:`filename` must be an existing, readable text file.
   Each nonempty line in :file:`filename` must be a directory.
-  Specifying switch *-D* is equivalent to specifying as many
-  switches *-d* as there are nonempty lines in
+  Specifying switch :switch:`-D` is equivalent to specifying as many
+  switches :switch:`-d` as there are nonempty lines in
   :file:`file`.
 
-:samp:`-eL`
+:switch:`-eL`
   Follow symbolic links when processing project files.
 
   .. index:: -f (gnatname)
 
-:samp:`-f{pattern}`
+:switch:`-f{pattern}`
   Foreign patterns. Using this switch, it is possible to add sources of languages
   other than Ada to the list of sources of a project file.
   It is only useful if a -P switch is used.
@@ -791,26 +793,26 @@ You may specify any of the following switches to `gnatname`:
 
   .. index:: -h (gnatname)
 
-:samp:`-h`
+:switch:`-h`
   Output usage (help) information. The output is written to :file:`stdout`.
 
   .. index:: -P (gnatname)
 
-:samp:`-P{proj}`
+:switch:`-P{proj}`
   Create or update project file :file:`proj`. There may be zero, one or more space
-  between *-P* and :file:`proj`. :file:`proj` may include directory
+  between :switch:`-P` and :file:`proj`. :file:`proj` may include directory
   information. :file:`proj` must be writable.
-  There may be only one switch *-P*.
-  When a switch *-P* is specified,
-  no switch *-c* may be specified.
-  On all platforms, except on VMS, when `gnatname` is invoked for an
+  There may be only one switch :switch:`-P`.
+  When a switch :switch:`-P` is specified,
+  no switch :switch:`-c` may be specified.
+  On all platforms, except on VMS, when ``gnatname`` is invoked for an
   existing project file <proj>.gpr, a backup copy of the project file is created
   in the project directory with file name <proj>.gpr.saved_x. 'x' is the first
   non negative number that makes this backup copy a new file.
 
   .. index:: -v (gnatname)
 
-:samp:`-v`
+:switch:`-v`
   Verbose mode. Output detailed explanation of behavior to :file:`stdout`.
   This includes name of the file written, the name of the directories to search
   and, for each file in those directories whose name matches at least one of
@@ -819,14 +821,14 @@ You may specify any of the following switches to `gnatname`:
 
 .. index:: -v -v (gnatname)
 
-:samp:`-v -v`
+:switch:`-v -v`
   Very Verbose mode. In addition to the output produced in verbose mode,
   for each file in the searched directories whose name matches none of
   the Naming Patterns, an indication is given that there is no match.
 
   .. index:: -x (gnatname)
 
-:samp:`-x{pattern}`
+:switch:`-x{pattern}`
   Excluded patterns. Using this switch, it is possible to exclude some files
   that would match the name patterns. For example,
 
@@ -840,8 +842,8 @@ You may specify any of the following switches to `gnatname`:
 
 .. _Examples_of_gnatname_Usage:
 
-Examples of `gnatname` Usage
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Examples of ``gnatname`` Usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: sh
 
@@ -850,38 +852,38 @@ Examples of `gnatname` Usage
 In this example, the directory :file:`/home/me` must already exist
 and be writable. In addition, the directory
 :file:`/home/me/sources` (specified by
-*-d sources*) must exist and be readable.
+:switch:`-d sources`) must exist and be readable.
 
-Note the optional spaces after *-c* and *-d*.
+Note the optional spaces after :switch:`-c` and :switch:`-d`.
 
 .. code-block:: sh
 
      $ gnatname -P/home/me/proj -x "*_nt_body.ada"
      -dsources -dsources/plus -Dcommon_dirs.txt "body_*" "spec_*"
 
-Note that several switches *-d* may be used,
+Note that several switches :switch:`-d` may be used,
 even in conjunction with one or several switches
-*-D*. Several Naming Patterns and one excluded pattern
+:switch:`-D`. Several Naming Patterns and one excluded pattern
 are used in this example.
 
 
 .. _File_Name_Krunching_with_gnatkr:
 
-File Name Krunching with `gnatkr`
----------------------------------
+File Name Krunching with ``gnatkr``
+-----------------------------------
 
 .. index:: ! gnatkr
 
 This section discusses the method used by the compiler to shorten
 the default file names chosen for Ada units so that they do not
 exceed the maximum length permitted. It also describes the
-`gnatkr` utility that can be used to determine the result of
+``gnatkr`` utility that can be used to determine the result of
 applying this shortening.
 
 .. _About_gnatkr:
 
-About `gnatkr`
-^^^^^^^^^^^^^^
+About ``gnatkr``
+^^^^^^^^^^^^^^^^
 
 The default file naming rule in GNAT
 is that the file name must be derived from
@@ -902,26 +904,26 @@ the unit name. The exact default rule is as follows:
   :samp:`s-`, :samp:`a-`, :samp:`i-`, and :samp:`g-`,
   respectively.
 
-The :samp:`-gnatk{nn}`
+The :switch:`-gnatk{nn}`
 switch of the compiler activates a 'krunching'
 circuit that limits file names to nn characters (where nn is a decimal
 integer).
 
-The `gnatkr` utility can be used to determine the krunched name for
+The ``gnatkr`` utility can be used to determine the krunched name for
 a given file, when krunched to a specified maximum length.
 
 .. _Using_gnatkr:
 
-Using `gnatkr`
-^^^^^^^^^^^^^^
+Using ``gnatkr``
+^^^^^^^^^^^^^^^^
 
-The `gnatkr` command has the form:
+The ``gnatkr`` command has the form:
 
 .. code-block:: sh
 
-      $ gnatkr `name` [`length`]
+      $ gnatkr name [ length ]
 
-`name` is the uncrunched file name, derived from the name of the unit
+``name`` is the uncrunched file name, derived from the name of the unit
 in the standard manner described in the previous section (i.e., in particular
 all dots are replaced by hyphens). The file name may or may not have an
 extension (defined as a suffix of the form period followed by arbitrary
@@ -929,9 +931,9 @@ characters other than period). If an extension is present then it will
 be preserved in the output. For example, when krunching :file:`hellofile.ads`
 to eight characters, the result will be hellofil.ads.
 
-Note: for compatibility with previous versions of `gnatkr` dots may
+Note: for compatibility with previous versions of ``gnatkr`` dots may
 appear in the name instead of hyphens, but the last dot will always be
-taken as the start of an extension. So if `gnatkr` is given an argument
+taken as the start of an extension. So if ``gnatkr`` is given an argument
 such as :file:`Hello.World.adb` it will be treated exactly as if the first
 period had been a hyphen, and for example krunching to eight characters
 gives the result :file:`hellworl.adb`.
@@ -939,7 +941,7 @@ gives the result :file:`hellworl.adb`.
 Note that the result is always all lower case.
 Characters of the other case are folded as required.
 
-`length` represents the length of the krunched name. The default
+``length`` represents the length of the krunched name. The default
 when no argument is given is 8 characters. A length of zero stands for
 unlimited, in other words do not chop except for system files where the
 implied crunching length is always eight characters.
@@ -959,8 +961,8 @@ using lowercase
 for all letters, except that a hyphen in the second character position is
 replaced by a tilde if the first character is
 :samp:`a`, :samp:`i`, :samp:`g`, or :samp:`s`.
-The extension is `.ads` for a
-spec and `.adb` for a body.
+The extension is ``.ads`` for a
+spec and ``.adb`` for a body.
 Krunching does not affect the extension, but the file name is shortened to
 the specified length by following these rules:
 
@@ -1027,13 +1029,13 @@ the specified length by following these rules:
 Of course no file shortening algorithm can guarantee uniqueness over all
 possible unit names, and if file name krunching is used then it is your
 responsibility to ensure that no name clashes occur. The utility
-program `gnatkr` is supplied for conveniently determining the
+program ``gnatkr`` is supplied for conveniently determining the
 krunched name of a file.
 
 .. _Examples_of_gnatkr_Usage:
 
-Examples of `gnatkr` Usage
-^^^^^^^^^^^^^^^^^^^^^^^^^^
+Examples of ``gnatkr`` Usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 ::
 
@@ -1047,13 +1049,13 @@ Examples of `gnatkr` Usage
 
 .. _Renaming_Files_with_gnatchop:
 
-Renaming Files with `gnatchop`
-------------------------------
+Renaming Files with ``gnatchop``
+--------------------------------
 
 .. index:: ! gnatchop
 
 This section discusses how to handle files with multiple units by using
-the `gnatchop` utility. This utility is also useful in renaming
+the ``gnatchop`` utility. This utility is also useful in renaming
 files to meet the standard GNAT default file naming conventions.
 
 .. _Handling_Files_with_Multiple_Units:
@@ -1065,21 +1067,21 @@ The basic compilation model of GNAT requires that a file submitted to the
 compiler have only one unit and there be a strict correspondence
 between the file name and the unit name.
 
-The `gnatchop` utility allows both of these rules to be relaxed,
+The ``gnatchop`` utility allows both of these rules to be relaxed,
 allowing GNAT to process files which contain multiple compilation units
-and files with arbitrary file names. `gnatchop`
+and files with arbitrary file names. ``gnatchop``
 reads the specified file and generates one or more output files,
 containing one unit per file. The unit and the file name correspond,
 as required by GNAT.
 
 If you want to permanently restructure a set of 'foreign' files so that
 they match the GNAT rules, and do the remaining development using the
-GNAT structure, you can simply use *gnatchop* once, generate the
+GNAT structure, you can simply use ``gnatchop`` once, generate the
 new set of files and work with them from that point on.
 
 Alternatively, if you want to keep your files in the 'foreign' format,
 perhaps to maintain compatibility with some other Ada compilation
-system, you can set up a procedure where you use *gnatchop* each
+system, you can set up a procedure where you use ``gnatchop`` each
 time you compile, regarding the source files that it writes as temporary
 files that you throw away.
 
@@ -1093,7 +1095,7 @@ automatically in UTF-8 mode without needing to specify an explicit encoding.
 Operating gnatchop in Compilation Mode
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The basic function of `gnatchop` is to take a file with multiple units
+The basic function of ``gnatchop`` is to take a file with multiple units
 and split it into separate files. The boundary between files is reasonably
 clear, except for the issue of comments and pragmas. In default mode, the
 rule is that any pragmas between units belong to the previous unit, except
@@ -1103,17 +1105,17 @@ almost always result in the right choice of
 the split point without needing to mark it explicitly and most users will
 find this default to be what they want. In this default mode it is incorrect to
 submit a file containing only configuration pragmas, or one that ends in
-configuration pragmas, to `gnatchop`.
+configuration pragmas, to ``gnatchop``.
 
 However, using a special option to activate 'compilation mode',
-`gnatchop`
+``gnatchop``
 can perform another function, which is to provide exactly the semantics
 required by the RM for handling of configuration pragmas in a compilation.
 In the absence of configuration pragmas (at the main file level), this
 option has no effect, but it causes such configuration pragmas to be handled
 in a quite different manner.
 
-First, in compilation mode, if `gnatchop` is given a file that consists of
+First, in compilation mode, if ``gnatchop`` is given a file that consists of
 only configuration pragmas, then this file is appended to the
 :file:`gnat.adc` file in the current directory. This behavior provides
 the required behavior described in the RM for the actions to be taken
@@ -1124,7 +1126,7 @@ environment. Using GNAT, the current directory, possibly containing a
 of a compilation environment. For more information on the
 :file:`gnat.adc` file, see :ref:`Handling_of_Configuration_Pragmas`.
 
-Second, in compilation mode, if `gnatchop`
+Second, in compilation mode, if ``gnatchop``
 is given a file that starts with
 configuration pragmas, and contains one or more units, then these
 configuration pragmas are prepended to each of the chopped files. This
@@ -1140,21 +1142,21 @@ a unit. This provides the required RM behavior that forbids configuration
 pragmas other than those preceding the first compilation unit of a
 compilation.
 
-For most purposes, `gnatchop` will be used in default mode. The
+For most purposes, ``gnatchop`` will be used in default mode. The
 compilation mode described above is used only if you need exactly
 accurate behavior with respect to compilations, and you have files
 that contain multiple units and configuration pragmas. In this
-circumstance the use of `gnatchop` with the compilation mode
+circumstance the use of ``gnatchop`` with the compilation mode
 switch provides the required behavior, and is for example the mode
 in which GNAT processes the ACVC tests.
 
 
 .. _Command_Line_for_gnatchop:
 
-Command Line for `gnatchop`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Command Line for ``gnatchop``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The `gnatchop` command has the form:
+The ``gnatchop`` command has the form:
 
 .. code-block:: sh
 
@@ -1166,10 +1168,10 @@ There are no restrictions on the form of this file name. The file itself
 contains one or more Ada units, in normal GNAT format, concatenated
 together. As shown, more than one file may be presented to be chopped.
 
-When run in default mode, `gnatchop` generates one output file in
+When run in default mode, ``gnatchop`` generates one output file in
 the current directory for each unit in each of the files.
 
-`directory`, if specified, gives the name of the directory to which
+``directory``, if specified, gives the name of the directory to which
 the output files will be written. If it is not specified, all files are
 written to the current directory.
 
@@ -1224,106 +1226,106 @@ will not produce any new file and will result in the following warnings::
 
 .. _Switches_for_gnatchop:
 
-Switches for `gnatchop`
-^^^^^^^^^^^^^^^^^^^^^^^
+Switches for ``gnatchop``
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-*gnatchop* recognizes the following switches:
+``gnatchop`` recognizes the following switches:
 
 
 .. index:: --version (gnatchop)
 
-:samp:`--version`
+:switch:`--version`
   Display Copyright and version, then exit disregarding all other options.
 
 .. index:: --help (gnatchop)
 
-:samp:`--help`
-  If *--version* was not used, display usage, then exit disregarding
+:switch:`--help`
+  If :switch:`--version` was not used, display usage, then exit disregarding
   all other options.
 
 .. index:: -c (gnatchop)
 
-:samp:`-c`
-  Causes `gnatchop` to operate in compilation mode, in which
+:switch:`-c`
+  Causes ``gnatchop`` to operate in compilation mode, in which
   configuration pragmas are handled according to strict RM rules. See
   previous section for a full description of this mode.
 
-:samp:`-gnat{xxx}`
-  This passes the given *-gnat`xxx*` switch to `gnat` which is
-  used to parse the given file. Not all `xxx` options make sense,
-  but for example, the use of *-gnati2* allows `gnatchop` to
+:switch:`-gnat{xxx}`
+  This passes the given :switch:`-gnat{xxx}` switch to ``gnat`` which is
+  used to parse the given file. Not all *xxx* options make sense,
+  but for example, the use of :switch:`-gnati2` allows ``gnatchop`` to
   process a source file that uses Latin-2 coding for identifiers.
 
-:samp:`-h`
-  Causes `gnatchop` to generate a brief help summary to the standard
+:switch:`-h`
+  Causes ``gnatchop`` to generate a brief help summary to the standard
   output file showing usage information.
 
 .. index:: -k (gnatchop)
 
-:samp:`-k{mm}`
-  Limit generated file names to the specified number `mm`
+:switch:`-k{mm}`
+  Limit generated file names to the specified number ``mm``
   of characters.
   This is useful if the
   resulting set of files is required to be interoperable with systems
   which limit the length of file names.
-  No space is allowed between the *-k* and the numeric value. The numeric
-  value may be omitted in which case a default of *-k8*,
+  No space is allowed between the :switch:`-k` and the numeric value. The numeric
+  value may be omitted in which case a default of :switch:`-k8`,
   suitable for use
-  with DOS-like file systems, is used. If no *-k* switch
+  with DOS-like file systems, is used. If no :switch:`-k` switch
   is present then
   there is no limit on the length of file names.
 
 .. index:: -p (gnatchop)
 
-:samp:`-p`
+:switch:`-p`
   Causes the file modification time stamp of the input file to be
   preserved and used for the time stamp of the output file(s). This may be
   useful for preserving coherency of time stamps in an environment where
-  `gnatchop` is used as part of a standard build process.
+  ``gnatchop`` is used as part of a standard build process.
 
 .. index:: -q (gnatchop)
 
-:samp:`-q`
+:switch:`-q`
   Causes output of informational messages indicating the set of generated
   files to be suppressed. Warnings and error messages are unaffected.
 
 .. index:: -r (gnatchop)
 .. index:: Source_Reference pragmas
 
-:samp:`-r`
-  Generate `Source_Reference` pragmas. Use this switch if the output
+:switch:`-r`
+  Generate ``Source_Reference`` pragmas. Use this switch if the output
   files are regarded as temporary and development is to be done in terms
   of the original unchopped file. This switch causes
-  `Source_Reference` pragmas to be inserted into each of the
+  ``Source_Reference`` pragmas to be inserted into each of the
   generated files to refers back to the original file name and line number.
   The result is that all error messages refer back to the original
   unchopped file.
   In addition, the debugging information placed into the object file (when
-  the *-g* switch of *gcc* or *gnatmake* is
+  the :switch:`-g` switch of ``gcc`` or ``gnatmake`` is
   specified)
   also refers back to this original file so that tools like profilers and
   debuggers will give information in terms of the original unchopped file.
 
   If the original file to be chopped itself contains
-  a `Source_Reference`
+  a ``Source_Reference``
   pragma referencing a third file, then gnatchop respects
-  this pragma, and the generated `Source_Reference` pragmas
+  this pragma, and the generated ``Source_Reference`` pragmas
   in the chopped file refer to the original file, with appropriate
-  line numbers. This is particularly useful when `gnatchop`
-  is used in conjunction with `gnatprep` to compile files that
+  line numbers. This is particularly useful when ``gnatchop``
+  is used in conjunction with ``gnatprep`` to compile files that
   contain preprocessing statements and multiple units.
 
 .. index:: -v (gnatchop)
 
-:samp:`-v`
-  Causes `gnatchop` to operate in verbose mode. The version
+:switch:`-v`
+  Causes ``gnatchop`` to operate in verbose mode. The version
   number and copyright notice are output, as well as exact copies of
   the gnat1 commands spawned to obtain the chop control information.
 
 .. index:: -w (gnatchop)
 
-:samp:`-w`
-  Overwrite existing file names. Normally `gnatchop` regards it as a
+:switch:`-w`
+  Overwrite existing file names. Normally ``gnatchop`` regards it as a
   fatal error if there is already a file with the same name as a
   file it would otherwise output, in other words if the files to be
   chopped contain duplicated units. This switch bypasses this
@@ -1332,15 +1334,15 @@ Switches for `gnatchop`
 
 .. index:: --GCC= (gnatchop)
 
-:samp:`--GCC={xxxx}`
+:switch:`--GCC={xxxx}`
   Specify the path of the GNAT parser to be used. When this switch is used,
   no attempt is made to add the prefix to the GNAT parser executable.
 
 
 .. _Examples_of_gnatchop_Usage:
 
-Examples of `gnatchop` Usage
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Examples of ``gnatchop`` Usage
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. code-block:: sh
 
@@ -1358,11 +1360,11 @@ directory are modified).
 
 Chops the source file :file:`archive`
 into the current directory. One
-useful application of `gnatchop` is in sending sets of sources
+useful application of ``gnatchop`` is in sending sets of sources
 around, for example in email messages. The required sources are simply
-concatenated (for example, using a Unix `cat`
+concatenated (for example, using a Unix ``cat``
 command), and then
-*gnatchop* is used at the other end to reconstitute the original
+``gnatchop`` is used at the other end to reconstitute the original
 file names.
 
 .. code-block:: sh
@@ -1373,7 +1375,7 @@ Chops all units in files :file:`file1`, :file:`file2`, :file:`file3`, placing
 the resulting files in the directory :file:`direc`. Note that if any units
 occur more than once anywhere within this set of files, an error message
 is generated, and no files are written. To override this check, use the
-*-w* switch,
+:switch:`-w` switch,
 in which case the last occurrence in the last file will
 be the one that is output, and earlier duplicate occurrences for a given
 unit will be skipped.
@@ -1390,10 +1392,10 @@ Configuration Pragmas
 Configuration pragmas include those pragmas described as
 such in the Ada Reference Manual, as well as
 implementation-dependent pragmas that are configuration pragmas.
-See the `Implementation_Defined_Pragmas` chapter in the
+See the ``Implementation_Defined_Pragmas`` chapter in the
 :title:`GNAT_Reference_Manual` for details on these
 additional GNAT-specific configuration pragmas.
-Most notably, the pragma `Source_File_Name`, which allows
+Most notably, the pragma ``Source_File_Name``, which allows
 specifying non-default names for source files, is a configuration
 pragma. The following is a complete list of configuration pragmas
 recognized by GNAT::
@@ -1409,42 +1411,53 @@ recognized by GNAT::
      Assertion_Policy
      Assume_No_Invalid_Values
      C_Pass_By_Copy
+     Check_Float_Overflow
      Check_Name
      Check_Policy
      Compile_Time_Error
      Compile_Time_Warning
      Compiler_Unit
+     Compiler_Unit_Warning
      Component_Alignment
      Convention_Identifier
      Debug_Policy
      Detect_Blocking
+     Default_Scalar_Storage_Order
      Default_Storage_Pool
+     Disable_Atomic_Synchronization
      Discard_Names
      Elaboration_Checks
      Eliminate
+     Enable_Atomic_Synchronization
      Extend_System
      Extensions_Allowed
      External_Name_Casing
      Fast_Math
      Favor_Top_Level
-     Float_Representation
+     Ignore_Pragma
      Implicit_Packing
      Initialize_Scalars
      Interrupt_State
      License
      Locking_Policy
-     Long_Float
+     No_Component_Reordering
+     No_Heap_Finalization
      No_Run_Time
      No_Strict_Aliasing
      Normalize_Scalars
      Optimize_Alignment
+     Overflow_Mode
+     Overriding_Renamings
+     Partition_Elaboration_Policy
      Persistent_BSS
      Polling
+     Prefix_Exception_Messages
      Priority_Specific_Dispatching
      Profile
      Profile_Warnings
      Propagate_Exceptions
      Queuing_Policy
+     Rational
      Ravenscar
      Rename_Pragma
      Restricted_Run_Time
@@ -1452,6 +1465,7 @@ recognized by GNAT::
      Restrictions_Warnings
      Reviewable
      Short_Circuit_And_Or
+     Short_Descriptors
      Source_File_Name
      Source_File_Name_Project
      SPARK_Mode
@@ -1459,10 +1473,12 @@ recognized by GNAT::
      Suppress
      Suppress_Exception_Locations
      Task_Dispatching_Policy
+     Unevaluated_Use_Of_Old
      Universal_Data
      Unsuppress
      Use_VADS_Size
      Validity_Checks
+     Warning_As_Error
      Warnings
      Wide_Character_Encoding
 
@@ -1476,7 +1492,7 @@ Configuration pragmas may either appear at the start of a compilation
 unit, or they can appear in a configuration pragma file to apply to
 all compilations performed in a given compilation environment.
 
-GNAT also provides the `gnatchop` utility to provide an automatic
+GNAT also provides the ``gnatchop`` utility to provide an automatic
 way to handle configuration pragmas following the semantics for
 compilations (that is, files with multiple units), described in the RM.
 See :ref:`Operating_gnatchop_in_Compilation_Mode` for details.
@@ -1484,12 +1500,12 @@ However, for most purposes, it will be more convenient to edit the
 :file:`gnat.adc` file that contains configuration pragmas directly,
 as described in the following section.
 
-In the case of `Restrictions` pragmas appearing as configuration
+In the case of ``Restrictions`` pragmas appearing as configuration
 pragmas in individual compilation units, the exact handling depends on
 the type of restriction.
 
 Restrictions that require partition-wide consistency (like
-`No_Tasking`) are
+``No_Tasking``) are
 recognized wherever they appear
 and can be freely inherited, e.g. from a |withed| unit to the |withing|
 unit. This makes sense since the binder will in any case insist on seeing
@@ -1521,34 +1537,34 @@ directory at the time that a compile command is given. This current
 directory is searched for a file whose name is :file:`gnat.adc`. If
 this file is present, it is expected to contain one or more
 configuration pragmas that will be applied to the current compilation.
-However, if the switch *-gnatA* is used, :file:`gnat.adc` is not
+However, if the switch :switch:`-gnatA` is used, :file:`gnat.adc` is not
 considered. When taken into account, :file:`gnat.adc` is added to the
 dependencies, so that if :file:`gnat.adc` is modified later, an invocation of
-*gnatmake* will recompile the source.
+``gnatmake`` will recompile the source.
 
 Configuration pragmas may be entered into the :file:`gnat.adc` file
-either by running `gnatchop` on a source file that consists only of
+either by running ``gnatchop`` on a source file that consists only of
 configuration pragmas, or more conveniently by direct editing of the
 :file:`gnat.adc` file, which is a standard format source file.
 
 Besides :file:`gnat.adc`, additional files containing configuration
 pragmas may be applied to the current compilation using the switch
-:samp:`-gnatec={path}` where `path` must designate an existing file that
+:switch:`-gnatec={path}` where ``path`` must designate an existing file that
 contains only configuration pragmas. These configuration pragmas are
 in addition to those found in :file:`gnat.adc` (provided :file:`gnat.adc`
-is present and switch *-gnatA* is not used).
+is present and switch :switch:`-gnatA` is not used).
 
-It is allowable to specify several switches *-gnatec=*, all of which
+It is allowable to specify several switches :switch:`-gnatec=`, all of which
 will be taken into account.
 
 Files containing configuration pragmas specified with switches
-*-gnatec=* are added to the dependencies, unless they are
+:switch:`-gnatec=` are added to the dependencies, unless they are
 temporary files. A file is considered temporary if its name ends in
 :file:`.tmp` or :file:`.TMP`. Certain tools follow this naming
-convention because they pass information to *gcc* via
+convention because they pass information to ``gcc`` via
 temporary files that are immediately deleted; it doesn't make sense to
 depend on a file that no longer exists. Such tools include
-*gprbuild*, *gnatmake*, and *gnatcheck*.
+``gprbuild``, ``gnatmake``, and ``gnatcheck``.
 
 If you are using project file, a separate mechanism is provided using
 project attributes.
@@ -1612,7 +1628,7 @@ compilations will fail if there is an error in the spec.
 GNAT provides an option for compiling such files purely for the
 purposes of checking correctness; such compilations are not required as
 part of the process of building a program. To compile a file in this
-checking mode, use the *-gnatc* switch.
+checking mode, use the :switch:`-gnatc` switch.
 
 .. _Source_Dependencies:
 
@@ -1621,14 +1637,14 @@ Source Dependencies
 
 A given object file clearly depends on the source file which is compiled
 to produce it. Here we are using "depends" in the sense of a typical
-`make` utility; in other words, an object file depends on a source
+``make`` utility; in other words, an object file depends on a source
 file if changes to the source file require the object file to be
 recompiled.
 In addition to this basic dependency, a given object may depend on
 additional source files as follows:
 
-* If a file being compiled |withs| a unit `X`, the object file
-  depends on the file containing the spec of unit `X`. This includes
+* If a file being compiled |withs| a unit ``X``, the object file
+  depends on the file containing the spec of unit ``X``. This includes
   files that are |withed| implicitly either because they are parents
   of |withed| child units or they are run-time units required by the
   language constructs used in a particular unit.
@@ -1645,22 +1661,22 @@ additional source files as follows:
 .. index:: -gnatn switch
 
 * If a file being compiled contains a call to a subprogram for which
-  pragma `Inline` applies and inlining is activated with the
-  *-gnatn* switch, the object file depends on the file containing the
+  pragma ``Inline`` applies and inlining is activated with the
+  :switch:`-gnatn` switch, the object file depends on the file containing the
   body of this subprogram as well as on the file containing the spec. Note
   that for inlining to actually occur as a result of the use of this switch,
   it is necessary to compile in optimizing mode.
 
   .. index:: -gnatN switch
 
-  The use of *-gnatN* activates  inlining optimization
+  The use of :switch:`-gnatN` activates  inlining optimization
   that is performed by the front end of the compiler. This inlining does
-  not require that the code generation be optimized. Like *-gnatn*,
+  not require that the code generation be optimized. Like :switch:`-gnatn`,
   the use of this switch generates additional dependencies.
 
   When using a gcc-based back end (in practice this means using any version
   of GNAT other than for the JVM, .NET or GNAAMP platforms), then the use of
-  *-gnatN* is deprecated, and the use of *-gnatn* is preferred.
+  :switch:`-gnatN` is deprecated, and the use of :switch:`-gnatn` is preferred.
   Historically front end inlining was more extensive than the gcc back end
   inlining, but that is no longer the case.
 
@@ -1674,10 +1690,10 @@ additional source files as follows:
 * The previous two rules meant that for purposes of computing dependencies and
   recompilation, a body and all its subunits are treated as an indivisible whole.
 
-  These rules are applied transitively: if unit `A` |withs|
-  unit `B`, whose elaboration calls an inlined procedure in package
-  `C`, the object file for unit `A` will depend on the body of
-  `C`, in file :file:`c.adb`.
+  These rules are applied transitively: if unit ``A`` |withs|
+  unit ``B``, whose elaboration calls an inlined procedure in package
+  ``C``, the object file for unit ``A`` will depend on the body of
+  ``C``, in file :file:`c.adb`.
 
   The set of dependent files described by these rules includes all the
   files on which the unit is semantically dependent, as dictated by the
@@ -1687,11 +1703,11 @@ additional source files as follows:
 
   An object file must be recreated by recompiling the corresponding source
   file if any of the source files on which it depends are modified. For
-  example, if the `make` utility is used to control compilation,
+  example, if the ``make`` utility is used to control compilation,
   the rule for an Ada object file must mention all the source files on
   which the object file depends, according to the above definition.
   The determination of the necessary
-  recompilations is done automatically when one uses *gnatmake*.
+  recompilations is done automatically when one uses ``gnatmake``.
 
 .. _The_Ada_Library_Information_Files:
 
@@ -1715,7 +1731,7 @@ The following information is contained in the :file:`ALI` file.
 * Main program information (including priority and time slice settings,
   as well as the wide character encoding used during compilation).
 
-* List of arguments used in the *gcc* command for the compilation
+* List of arguments used in the ``gcc`` command for the compilation
 
 * Attributes of the unit, including configuration pragmas used, an indication
   of whether the compilation was successful, exception model used etc.
@@ -1723,14 +1739,14 @@ The following information is contained in the :file:`ALI` file.
 * A list of relevant restrictions applying to the unit (used for consistency)
   checking.
 
-* Categorization information (e.g., use of pragma `Pure`).
+* Categorization information (e.g., use of pragma ``Pure``).
 
 * Information on all |withed| units, including presence of
-  Elaborate` or `Elaborate_All` pragmas.
+  ``Elaborate`` or ``Elaborate_All`` pragmas.
 
-* Information from any `Linker_Options` pragmas used in the unit
+* Information from any ``Linker_Options`` pragmas used in the unit
 
-* Information on the use of `Body_Version` or `Version`
+* Information on the use of ``Body_Version`` or ``Version``
   attributes in the unit.
 
 * Dependency information. This is a list of files, together with
@@ -1739,11 +1755,11 @@ The following information is contained in the :file:`ALI` file.
   if any of these units are modified.
 
 * Cross-reference data. Contains information on all entities referenced
-  in the unit. Used by tools like `gnatxref` and `gnatfind` to
+  in the unit. Used by tools like ``gnatxref`` and ``gnatfind`` to
   provide cross-reference information.
 
 For a full detailed description of the format of the :file:`ALI` file,
-see the source of the body of unit `Lib.Writ`, contained in file
+see the source of the body of unit ``Lib.Writ``, contained in file
 :file:`lib-writ.adb` in the GNAT compiler sources.
 
 
@@ -1776,7 +1792,7 @@ compilation unit that require them, followed by
 a call to the main program. This Ada program is compiled to generate the
 object file for the main program. The name of
 the Ada file is :file:`b~xxx`.adb` (with the corresponding spec
-:file:`b~xxx`.ads`) where `xxx` is the name of the
+:file:`b~xxx`.ads`) where ``xxx`` is the name of the
 main program unit.
 
 Finally, the linker is used to build the resulting executable program,
@@ -1856,22 +1872,22 @@ which supports a special type of project called a *Library Project*
 chapter of the *GPRbuild User's Guide*).
 
 A project is considered a library project, when two project-level attributes
-are defined in it: `Library_Name` and `Library_Dir`. In order to
+are defined in it: ``Library_Name`` and ``Library_Dir``. In order to
 control different aspects of library configuration, additional optional
 project-level attributes can be specified:
 
-* *Library_Kind*
+* ``Library_Kind``
     This attribute controls whether the library is to be static or dynamic
 
 
-* *Library_Version*
+* ``Library_Version``
     This attribute specifies the library version; this value is used
     during dynamic linking of shared libraries to determine if the currently
     installed versions of the binaries are compatible.
 
-* *Library_Options*
+* ``Library_Options``
 
-* *Library_GCC*
+* ``Library_GCC``
     These attributes specify additional low-level options to be used during
     library generation, and redefine the actual application used to generate
     library.
@@ -1910,7 +1926,7 @@ library: for example with a Makefile (:ref:`Using_the_GNU_make_Utility`) or
 with a conventional script. For simple libraries, it is also possible to create
 a dummy main program which depends upon all the packages that comprise the
 interface of the library. This dummy main program can then be given to
-*gnatmake*, which will ensure that all necessary objects are built.
+``gnatmake``, which will ensure that all necessary objects are built.
 
 After this task is accomplished, you should follow the standard procedure
 of the underlying operating system to produce the static or shared library.
@@ -1954,7 +1970,7 @@ Here are the generic commands that will build an archive or a shared library.
 
 Please note that the library must have a name of the form :file:`lib{xxx}.a`
 or :file:`lib{xxx}.so` (or :file:`lib{xxx}.dll` on Windows) in order to
-be accessed by the directive :samp:`-l{xxx}` at link time.
+be accessed by the directive :switch:`-l{xxx}` at link time.
 
 .. _Installing_a_library:
 
@@ -2003,10 +2019,10 @@ contain the location for the GNAT run-time objects (which can simply
 be :file:`adalib`).
 
 You can also specify a new default path to the run-time library at compilation
-time with the switch *--RTS=rts-path*. You can thus choose / change
+time with the switch :switch:`--RTS=rts-path`. You can thus choose / change
 the run-time library you want your program to be compiled with. This switch is
-recognized by *gcc*, *gnatmake*, *gnatbind*,
-*gnatls*, *gnatfind* and *gnatxref*.
+recognized by ``gcc``, ``gnatmake``, ``gnatbind``,
+``gnatls``, ``gnatfind`` and ``gnatxref``.
 
 It is possible to install a library before or after the standard GNAT
 library, by reordering the lines in the configuration files. In general, a
@@ -2021,7 +2037,7 @@ Using a library
 Once again, the project facility greatly simplifies the use of
 libraries. In this context, using a library is just a matter of adding a
 |with| clause in the user project. For instance, to make use of the
-library `My_Lib` shown in examples in earlier sections, you can
+library ``My_Lib`` shown in examples in earlier sections, you can
 write:
 
 .. code-block:: gpr
@@ -2046,7 +2062,7 @@ third-party library :file:`liba.a`:
           for Library_Kind use "static";
        end Liba;
 
-This is an alternative to the use of `pragma Linker_Options`. It is
+This is an alternative to the use of ``pragma Linker_Options``. It is
 especially interesting in the context of systems with several interdependent
 static libraries where finding a proper linker order is not easy and best be
 left to the tools having visibility over project dependence information.
@@ -2082,7 +2098,7 @@ when the following conditions are met:
   variable :envvar:`ADA_OBJECTS_PATH`, or by the administrator to the file
   :file:`ada_object_path`
 
-* a pragma `Linker_Options` has been added to one of the sources.
+* a pragma ``Linker_Options`` has been added to one of the sources.
   For example:
 
   .. code-block:: ada
@@ -2126,7 +2142,7 @@ The main purpose of a SAL is to minimize the recompilation overhead of client
 applications when a new version of the library is installed. Specifically,
 if the interface sources have not changed, client applications do not need to
 be recompiled. If, furthermore, a SAL is provided in the shared form and its
-version, controlled by `Library_Version` attribute, is not changed,
+version, controlled by ``Library_Version`` attribute, is not changed,
 then the clients do not need to be relinked.
 
 SALs also allow the library providers to minimize the amount of library source
@@ -2145,10 +2161,10 @@ GNAT's Project facility provides a simple way of building and installing
 stand-alone libraries; see the *Stand-alone Library Projects* section
 in the *GNAT Project Manager* chapter of the *GPRbuild User's Guide*.
 To be a Stand-alone Library Project, in addition to the two attributes
-that make a project a Library Project (`Library_Name` and
-`Library_Dir`; see the *Library Projects* section in the
+that make a project a Library Project (``Library_Name`` and
+``Library_Dir``; see the *Library Projects* section in the
 *GNAT Project Manager* chapter of the *GPRbuild User's Guide*),
-the attribute `Library_Interface` must be defined.  For example:
+the attribute ``Library_Interface`` must be defined.  For example:
 
 .. code-block:: gpr
 
@@ -2156,7 +2172,7 @@ the attribute `Library_Interface` must be defined.  For example:
        for Library_Name use "dummy";
        for Library_Interface use ("int1", "int1.child");
 
-Attribute `Library_Interface` has a non-empty string list value,
+Attribute ``Library_Interface`` has a non-empty string list value,
 each string in the list designating a unit contained in an immediate source
 of the project file.
 
@@ -2165,18 +2181,18 @@ a package whose name depends on the library name
 (:file:`b~dummy.ads/b` in the example above).
 This binder-generated package includes initialization and
 finalization procedures whose
-names depend on the library name (`dummyinit` and `dummyfinal`
+names depend on the library name (``dummyinit`` and ``dummyfinal``
 in the example
 above). The object corresponding to this package is included in the library.
 
 You must ensure timely (e.g., prior to any use of interfaces in the SAL)
 calling of these procedures if a static SAL is built, or if a shared SAL
 is built
-with the project-level attribute `Library_Auto_Init` set to
-`"false"`.
+with the project-level attribute ``Library_Auto_Init`` set to
+``"false"``.
 
 For a Stand-Alone Library, only the :file:`ALI` files of the Interface Units
-(those that are listed in attribute `Library_Interface`) are copied to
+(those that are listed in attribute ``Library_Interface``) are copied to
 the Library Directory. As a consequence, only the Interface Units may be
 imported from Ada units outside of the library. If other units are imported,
 the binding phase will fail.
@@ -2187,7 +2203,7 @@ ensuring that the library is linked only against static
 libraries. So an encapsulated library only depends on system
 libraries, all other code, including the GNAT runtime, is embedded. To
 build an encapsulated library the attribute
-`Library_Standalone` must be set to `encapsulated`:
+``Library_Standalone`` must be set to ``encapsulated``:
 
 .. code-block:: gpr
 
@@ -2197,11 +2213,11 @@ build an encapsulated library the attribute
        for Library_Interface use ("int1", "int1.child");
        for Library_Standalone use "encapsulated";
 
-The default value for this attribute is `standard` in which case
+The default value for this attribute is ``standard`` in which case
 a stand-alone library is built.
 
-The attribute `Library_Src_Dir` may be specified for a
-Stand-Alone Library. `Library_Src_Dir` is a simple attribute that has a
+The attribute ``Library_Src_Dir`` may be specified for a
+Stand-Alone Library. ``Library_Src_Dir`` is a simple attribute that has a
 single string value. Its value must be the path (absolute or relative to the
 project directory) of an existing directory. This directory cannot be the
 object directory or one of the source directories, but it can be the same as
@@ -2209,7 +2225,7 @@ the library directory. The sources of the Interface
 Units of the library that are needed by an Ada client of the library will be
 copied to the designated directory, called the Interface Copy directory.
 These sources include the specs of the Interface Units, but they may also
-include bodies and subunits, when pragmas `Inline` or `Inline_Always`
+include bodies and subunits, when pragmas ``Inline`` or ``Inline_Always``
 are used, or when there is a generic unit in the spec. Before the sources
 are copied to the Interface Copy directory, an attempt is made to delete all
 files in the Interface Copy directory.
@@ -2219,10 +2235,10 @@ occasions when it is necessary here are the steps that you need to perform:
 
 * Compile all library sources.
 
-* Invoke the binder with the switch *-n* (No Ada main program),
+* Invoke the binder with the switch :switch:`-n` (No Ada main program),
   with all the :file:`ALI` files of the interfaces, and
-  with the switch *-L* to give specific names to the `init`
-  and `final` procedures.  For example:
+  with the switch :switch:`-L` to give specific names to the ``init``
+  and ``final`` procedures.  For example:
 
   .. code-block:: sh
 
@@ -2235,14 +2251,14 @@ occasions when it is necessary here are the steps that you need to perform:
       $ gcc -c b~int2.adb
 
 * Link the dynamic library with all the necessary object files,
-  indicating to the linker the names of the `init` (and possibly
-  `final`) procedures for automatic initialization (and finalization).
+  indicating to the linker the names of the ``init`` (and possibly
+  ``final``) procedures for automatic initialization (and finalization).
   The built library should be placed in a directory different from
   the object directory.
 
-* Copy the `ALI` files of the interface to the library directory,
+* Copy the ``ALI`` files of the interface to the library directory,
   add in this copy an indication that it is an interface to a SAL
-  (i.e., add a word *SL* on the line in the :file:`ALI` file that starts
+  (i.e., add a word ``SL`` on the line in the :file:`ALI` file that starts
   with letter 'P') and make the modified copy of the :file:`ALI` file
   read-only.
 
@@ -2258,8 +2274,8 @@ It is easy to adapt the SAL build procedure discussed above for use of a SAL in
 a non-Ada context.
 
 The only extra step required is to ensure that library interface subprograms
-are compatible with the main program, by means of `pragma Export`
-or `pragma Convention`.
+are compatible with the main program, by means of ``pragma Export``
+or ``pragma Convention``.
 
 Here is an example of simple library interface for use with C main program:
 
@@ -2279,7 +2295,7 @@ On the foreign language side, you must provide a 'foreign' view of the
 library interface; remember that it should contain elaboration routines in
 addition to interface subprograms.
 
-The example below shows the content of `mylib_interface.h` (note
+The example below shows the content of :file:`mylib_interface.h` (note
 that there is no rule for the naming of this file, any name can be used)
 
 .. code-block:: c
@@ -2295,12 +2311,12 @@ that there is no rule for the naming of this file, any name can be used)
        extern void do_something_else (void);
 
 Libraries built as explained above can be used from any program, provided
-that the elaboration procedures (named `mylibinit` in the previous
+that the elaboration procedures (named ``mylibinit`` in the previous
 example) are called before the library services are used. Any number of
 libraries can be used simultaneously, as long as the elaboration
 procedure of each library is called.
 
-Below is an example of a C program that uses the `mylib` library.
+Below is an example of a C program that uses the ``mylib`` library.
 
 .. code-block:: c
 
@@ -2322,7 +2338,7 @@ Below is an example of a C program that uses the `mylib` library.
        }
 
 Note that invoking any library finalization procedure generated by
-`gnatbind` shuts down the Ada run-time environment.
+``gnatbind`` shuts down the Ada run-time environment.
 Consequently, the
 finalization of all Ada libraries must be performed at the end of the program.
 No call to these libraries or to the Ada run-time library should be made
@@ -2342,15 +2358,15 @@ Restrictions in Stand-alone Libraries
 The pragmas listed below should be used with caution inside libraries,
 as they can create incompatibilities with other Ada libraries:
 
-* pragma `Locking_Policy`
-* pragma `Partition_Elaboration_Policy`
-* pragma `Queuing_Policy`
-* pragma `Task_Dispatching_Policy`
-* pragma `Unreserve_All_Interrupts`
+* pragma ``Locking_Policy``
+* pragma ``Partition_Elaboration_Policy``
+* pragma ``Queuing_Policy``
+* pragma ``Task_Dispatching_Policy``
+* pragma ``Unreserve_All_Interrupts``
 
 When using a library that contains such pragmas, the user must make sure
 that all libraries use the same pragmas with the same values. Otherwise,
-`Program_Error` will
+``Program_Error`` will
 be raised during the elaboration of the conflicting
 libraries. The usage of these pragmas and its consequences for the user
 should therefore be well documented.
@@ -2360,9 +2376,9 @@ enabled or disabled in a consistent manner across all libraries.
 Otherwise, Program_Error will be raised during the elaboration of the
 conflicting libraries.
 
-If the `Version` or `Body_Version`
+If the ``Version`` or ``Body_Version``
 attributes are used inside a library, then you need to
-perform a `gnatbind` step that specifies all :file:`ALI` files in all
+perform a ``gnatbind`` step that specifies all :file:`ALI` files in all
 libraries, so that version identifiers can be properly computed.
 In practice these attributes are rarely used, so this is unlikely
 to be a consideration.
@@ -2379,8 +2395,8 @@ Rebuilding the GNAT Run-Time Library
 
 It may be useful to recompile the GNAT library in various contexts, the
 most important one being the use of partition-wide configuration pragmas
-such as `Normalize_Scalars`. A special Makefile called
-`Makefile.adalib` is provided to that effect and can be found in
+such as ``Normalize_Scalars``. A special Makefile called
+:file:`Makefile.adalib` is provided to that effect and can be found in
 the directory containing the GNAT library. The location of this
 directory depends on the way the GNAT environment has been installed and can
 be determined by means of the command:
@@ -2455,10 +2471,10 @@ constants to control which code is executed.
       ...
       end if;
 
-Not only will the code inside the `if` statement not be executed if
-the constant Boolean is `False`, but it will also be completely
+Not only will the code inside the ``if`` statement not be executed if
+the constant Boolean is ``False``, but it will also be completely
 deleted from the program.
-However, the code is only deleted after the `if` statement
+However, the code is only deleted after the ``if`` statement
 has been checked for syntactic and semantic correctness.
 (In contrast, with preprocessors the code is deleted before the
 compiler ever gets to see it, so it is not checked until the switch
@@ -2477,10 +2493,10 @@ something like:
           ...
        end Config;
 
-The `Config` package exists in multiple forms for the various targets,
-with an appropriate script selecting the version of `Config` needed.
+The ``Config`` package exists in multiple forms for the various targets,
+with an appropriate script selecting the version of ``Config`` needed.
 Then any other unit requiring conditional compilation can do a |with|
-of `Config` to make the constants visible.
+of ``Config`` to make the constants visible.
 
 .. _Debugging_-_A_Special_Case:
 
@@ -2511,10 +2527,10 @@ or
 
 Since this is a common case, there are special features to deal with
 this in a convenient manner. For the case of tests, Ada 2005 has added
-a pragma `Assert` that can be used for such tests. This pragma is modeled
-on the `Assert` pragma that has always been available in GNAT, so this
+a pragma ``Assert`` that can be used for such tests. This pragma is modeled
+on the ``Assert`` pragma that has always been available in GNAT, so this
 feature may be used with GNAT even if you are not using Ada 2005 features.
-The use of pragma `Assert` is described in the
+The use of pragma ``Assert`` is described in the
 :title:`GNAT_Reference_Manual`, but as an
 example, the last test could be written:
 
@@ -2529,62 +2545,62 @@ or simply
        pragma Assert (Temperature <= 999.0);
 
 In both cases, if assertions are active and the temperature is excessive,
-the exception `Assert_Failure` will be raised, with the given string in
+the exception ``Assert_Failure`` will be raised, with the given string in
 the first case or a string indicating the location of the pragma in the second
 case used as the exception message.
 
 .. index:: pragma Assertion_Policy
 
-You can turn assertions on and off by using the `Assertion_Policy`
+You can turn assertions on and off by using the ``Assertion_Policy``
 pragma.
 
 .. index:: -gnata switch
 
 This is an Ada 2005 pragma which is implemented in all modes by
-GNAT. Alternatively, you can use the *-gnata* switch
+GNAT. Alternatively, you can use the :switch:`-gnata` switch
 to enable assertions from the command line, which applies to
 all versions of Ada.
 
 .. index:: pragma Debug
 
-For the example above with the `Put_Line`, the GNAT-specific pragma
-`Debug` can be used:
+For the example above with the ``Put_Line``, the GNAT-specific pragma
+``Debug`` can be used:
 
 .. code-block:: ada
 
        pragma Debug (Put_Line ("got to the first stage!"));
 
 If debug pragmas are enabled, the argument, which must be of the form of
-a procedure call, is executed (in this case, `Put_Line` will be called).
+a procedure call, is executed (in this case, ``Put_Line`` will be called).
 Only one call can be present, but of course a special debugging procedure
 containing any code you like can be included in the program and then
-called in a pragma `Debug` argument as needed.
+called in a pragma ``Debug`` argument as needed.
 
-One advantage of pragma `Debug` over the `if Debugging then`
-construct is that pragma `Debug` can appear in declarative contexts,
+One advantage of pragma ``Debug`` over the ``if Debugging then``
+construct is that pragma ``Debug`` can appear in declarative contexts,
 such as at the very beginning of a procedure, before local declarations have
 been elaborated.
 
 .. index:: pragma Debug_Policy
 
-Debug pragmas are enabled using either the *-gnata* switch that also
+Debug pragmas are enabled using either the :switch:`-gnata` switch that also
 controls assertions, or with a separate Debug_Policy pragma.
 
 The latter pragma is new in the Ada 2005 versions of GNAT (but it can be used
 in Ada 95 and Ada 83 programs as well), and is analogous to
-pragma `Assertion_Policy` to control assertions.
+pragma ``Assertion_Policy`` to control assertions.
 
-`Assertion_Policy` and `Debug_Policy` are configuration pragmas,
+``Assertion_Policy`` and ``Debug_Policy`` are configuration pragmas,
 and thus they can appear in :file:`gnat.adc` if you are not using a
 project file, or in the file designated to contain configuration pragmas
 in a project file.
 They then apply to all subsequent compilations. In practice the use of
-the *-gnata* switch is often the most convenient method of controlling
+the :switch:`-gnata` switch is often the most convenient method of controlling
 the status of these pragmas.
 
 Note that a pragma is not a statement, so in contexts where a statement
 sequence is required, you can't just write a pragma on its own. You have
-to add a `null` statement.
+to add a ``null`` statement.
 
 .. code-block:: ada
 
@@ -2627,8 +2643,8 @@ Note that in this approach, both declarations are analyzed by the
 compiler so this can only be used where both declarations are legal,
 even though one of them will not be used.
 
-Another approach is to define integer constants, e.g., `Bits_Per_Word`,
-or Boolean constants, e.g., `Little_Endian`, and then write declarations
+Another approach is to define integer constants, e.g., ``Bits_Per_Word``,
+or Boolean constants, e.g., ``Little_Endian``, and then write declarations
 that are parameterized by these constants. For example
 
 .. code-block:: ada
@@ -2637,7 +2653,7 @@ that are parameterized by these constants. For example
          Field1 at 0 range Boolean'Pos (Little_Endian) * 10 .. Bits_Per_Word;
        end record;
 
-If `Bits_Per_Word` is set to 32, this generates either
+If ``Bits_Per_Word`` is set to 32, this generates either
 
 .. code-block:: ada
 
@@ -2657,7 +2673,7 @@ for the little endian case. Since a powerful subset of Ada expression
 notation is usable for creating static constants, clever use of this
 feature can often solve quite difficult problems in conditionalizing
 compilation (note incidentally that in Ada 95, the little endian
-constant was introduced as `System.Default_Bit_Order`, so you do not
+constant was introduced as ``System.Default_Bit_Order``, so you do not
 need to define this one yourself).
 
 .. _Use_of_Alternative_Implementations:
@@ -2693,10 +2709,10 @@ to compile with an Ada 95 compiler. Conceptually you want to say:
           ... not quite as neat Ada 95 code
        end if;
 
-where `Ada_2005` is a Boolean constant.
+where ``Ada_2005`` is a Boolean constant.
 
-But this won't work when `Ada_2005` is set to `False`,
-since the `then` clause will be illegal for an Ada 95 compiler.
+But this won't work when ``Ada_2005`` is set to ``False``,
+since the ``then`` clause will be illegal for an Ada 95 compiler.
 (Recall that although such unreachable code would eventually be deleted
 by the compiler, it still needs to be legal.  If it uses features
 introduced in Ada 2005, it will be illegal in Ada 95.)
@@ -2707,9 +2723,9 @@ So instead we write
 
        procedure Insert is separate;
 
-Then we have two files for the subunit `Insert`, with the two sets of
+Then we have two files for the subunit ``Insert``, with the two sets of
 code.
-If the package containing this is called `File_Queries`, then we might
+If the package containing this is called ``File_Queries``, then we might
 have two files
 
 * :file:`file_queries-insert-2005.adb`
@@ -2755,11 +2771,11 @@ renaming it if necessary to :file:`s-asthan.adb` before the run-time build.
 Another style for arranging alternative implementations is through Ada's
 access-to-subprogram facility.
 In case some functionality is to be conditionally included,
-you can declare an access-to-procedure variable `Ref` that is initialized
-to designate a 'do nothing' procedure, and then invoke `Ref.all`
+you can declare an access-to-procedure variable ``Ref`` that is initialized
+to designate a 'do nothing' procedure, and then invoke ``Ref.all``
 when appropriate.
-In some library package, set `Ref` to `Proc'Access` for some
-procedure `Proc` that performs the relevant processing.
+In some library package, set ``Ref`` to ``Proc'Access`` for some
+procedure ``Proc`` that performs the relevant processing.
 The initialization only occurs if the library package is included in the
 program.
 The same idea can also be implemented using tagged types and dispatching
@@ -2788,7 +2804,7 @@ with legacy code on other compilers, to enable easier transition).
 The preprocessor may be used in two separate modes. It can be used quite
 separately from the compiler, to generate a separate output source file
 that is then fed to the compiler as a separate step. This is the
-`gnatprep` utility, whose use is fully described in
+``gnatprep`` utility, whose use is fully described in
 :ref:`Preprocessing_with_gnatprep`.
 
 The preprocessing language allows such constructs as
@@ -2801,27 +2817,27 @@ The preprocessing language allows such constructs as
           completely different sequence of declarations
        #end if;
 
-The values of the symbols `DEBUG` and `PRIORITY` can be
+The values of the symbols ``DEBUG`` and ``PRIORITY`` can be
 defined either on the command line or in a separate file.
 
 The other way of running the preprocessor is even closer to the C style and
 often more convenient. In this approach the preprocessing is integrated into
 the compilation process. The compiler is given the preprocessor input which
-includes `#if` lines etc, and then the compiler carries out the
+includes ``#if`` lines etc, and then the compiler carries out the
 preprocessing internally and processes the resulting output.
 For more details on this approach, see :ref:`Integrated_Preprocessing`.
 
 .. _Preprocessing_with_gnatprep:
 
-Preprocessing with `gnatprep`
------------------------------
+Preprocessing with ``gnatprep``
+-------------------------------
 
 .. index:: ! gnatprep
 .. index:: Preprocessing (gnatprep)
 
-This section discusses how to use GNAT's `gnatprep` utility for simple
+This section discusses how to use GNAT's ``gnatprep`` utility for simple
 preprocessing.
-Although designed for use with GNAT, `gnatprep` does not depend on any
+Although designed for use with GNAT, ``gnatprep`` does not depend on any
 special GNAT features.
 For further discussion of conditional compilation in general, see
 :ref:`Conditional_Compilation`.
@@ -2838,14 +2854,14 @@ all characters need to be in the ASCII set (no accented letters).
 
 .. _Using_gnatprep:
 
-Using `gnatprep`
-^^^^^^^^^^^^^^^^
+Using ``gnatprep``
+^^^^^^^^^^^^^^^^^^
 
-To call `gnatprep` use:
+To call ``gnatprep`` use:
 
 .. code-block:: sh
 
-    $ gnatprep [`switches`] `infile` `outfile` [`deffile`]
+    $ gnatprep [ switches ] infile outfile [ deffile ]
 
 where
 
@@ -2859,48 +2875,48 @@ where
 * *outfile*
     is the full name of the output file, which is an Ada source
     in standard Ada form. When used with GNAT, this file name will
-    normally have an *ads* or *adb* suffix.
+    normally have an ``ads`` or ``adb`` suffix.
 
-* *deffile*
+* ``deffile``
     is the full name of a text file containing definitions of
     preprocessing symbols to be referenced by the preprocessor. This argument is
-    optional, and can be replaced by the use of the *-D* switch.
+    optional, and can be replaced by the use of the :switch:`-D` switch.
 
 
 .. _Switches_for_gnatprep:
 
-Switches for `gnatprep`
-^^^^^^^^^^^^^^^^^^^^^^^
+Switches for ``gnatprep``
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. index:: --version (gnatprep)
 
-:samp:`--version`
+:switch:`--version`
   Display Copyright and version, then exit disregarding all other options.
 
 .. index:: --help (gnatprep)
 
-:samp:`--help`
-  If :option:`--version` was not used, display usage and then exit disregarding
+:switch:`--help`
+  If :switch:`--version` was not used, display usage and then exit disregarding
   all other options.
 
 .. index:: -b (gnatprep)
 
-:samp:`-b`
+:switch:`-b`
   Causes both preprocessor lines and the lines deleted by
   preprocessing to be replaced by blank lines in the output source file,
   preserving line numbers in the output file.
 
 .. index:: -c (gnatprep)
 
-:samp:`-c`
+:switch:`-c`
   Causes both preprocessor lines and the lines deleted
   by preprocessing to be retained in the output source as comments marked
-  with the special string `"--! "`. This option will result in line numbers
+  with the special string ``"--! "``. This option will result in line numbers
   being preserved in the output file.
 
 .. index:: -C (gnatprep)
 
-:samp:`-C`
+:switch:`-C`
   Causes comments to be scanned. Normally comments are ignored by gnatprep.
   If this option is specified, then comments are scanned and any $symbol
   substitutions performed as in program text. This is particularly useful
@@ -2911,55 +2927,55 @@ Switches for `gnatprep`
 
 .. index:: -D (gnatprep)
 
-:samp:`-D{symbol}[={value}]`
+:switch:`-D{symbol}[={value}]`
   Defines a new preprocessing symbol with the specified value. If no value is given
-  on the command line, then symbol is considered to be `True`. This switch
+  on the command line, then symbol is considered to be ``True``. This switch
   can be used in place of a definition file.
 
 .. index:: -r (gnatprep)
 
-:samp:`-r`
-  Causes a `Source_Reference` pragma to be generated that
+:switch:`-r`
+  Causes a ``Source_Reference`` pragma to be generated that
   references the original input file, so that error messages will use
   the file name of this original file. The use of this switch implies
   that preprocessor lines are not to be removed from the file, so its
-  use will force *-b* mode if *-c*
+  use will force ``-b`` mode if ``-c``
   has not been specified explicitly.
 
   Note that if the file to be preprocessed contains multiple units, then
-  it will be necessary to `gnatchop` the output file from
-  `gnatprep`. If a `Source_Reference` pragma is present
+  it will be necessary to ``gnatchop`` the output file from
+  ``gnatprep``. If a ``Source_Reference`` pragma is present
   in the preprocessed file, it will be respected by
-  `gnatchop -r`
+  ``gnatchop -r``
   so that the final chopped files will correctly refer to the original
-  input source file for `gnatprep`.
+  input source file for ``gnatprep``.
 
 .. index:: -s (gnatprep)
 
-:samp:`-s`
+:switch:`-s`
   Causes a sorted list of symbol names and values to be
   listed on the standard output file.
 
 .. index:: -T (gnatprep)
 
-:samp:`-T`
+:switch:`-T`
   Use LF as line terminators when writing files. By default the line terminator
   of the host (LF under unix, CR/LF under Windows) is used.
 
 .. index:: -u (gnatprep)
 
-:samp:`-u`
+:switch:`-u`
   Causes undefined symbols to be treated as having the value FALSE in the context
   of a preprocessor test. In the absence of this option, an undefined symbol in
-  a `#if` or `#elsif` test will be treated as an error.
+  a ``#if`` or ``#elsif`` test will be treated as an error.
 
 .. index:: -v (gnatprep)
 
-:samp:`-v`
+:switch:`-v`
   Verbose mode: generates more output about work done.
 
 
-Note: if neither *-b* nor *-c* is present,
+Note: if neither :switch:`-b` nor :switch:`-c` is present,
 then preprocessor lines and
 deleted lines are completely removed from the output, unless -r is
 specified, in which case -b is assumed.
@@ -2974,7 +2990,7 @@ The definitions file contains lines of the form::
 
       symbol := value
 
-where `symbol` is a preprocessing symbol, and `value` is one of the following:
+where ``symbol`` is a preprocessing symbol, and ``value`` is one of the following:
 
 *  Empty, corresponding to a null substitution,
 *  A string literal using normal Ada syntax, or
@@ -2987,8 +3003,8 @@ and comments may be added to the definitions lines.
 
 .. _Form_of_Input_Text_for_gnatprep:
 
-Form of Input Text for `gnatprep`
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+Form of Input Text for ``gnatprep``
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The input text may contain preprocessor conditional inclusion lines,
 as well as general symbol substitution sequences.
@@ -3044,7 +3060,7 @@ This can be expressed instead as one of the following forms:
 For the first test (<expression> ::= <symbol>) the symbol must have
 either the value true or false, that is to say the right-hand of the
 symbol definition must be one of the (case-insensitive) literals
-`True` or `False`. If the value is true, then the
+``True`` or ``False``. If the value is true, then the
 corresponding lines are included, and if the value is false, they are
 excluded.
 
@@ -3054,35 +3070,35 @@ literal integer as defined in the Ada Reference Manual, such as 3, 16#FF# or
 in the range 0 .. 2**31-1 are supported.
 
 The test (<expression> ::= <symbol>'Defined) is true only if
-the symbol has been defined in the definition file or by a *-D*
+the symbol has been defined in the definition file or by a :switch:`-D`
 switch on the command line. Otherwise, the test is false.
 
 The equality tests are case insensitive, as are all the preprocessor lines.
 
 If the symbol referenced is not defined in the symbol definitions file,
-then the effect depends on whether or not switch *-u*
+then the effect depends on whether or not switch :switch:`-u`
 is specified. If so, then the symbol is treated as if it had the value
 false and the test fails. If this switch is not specified, then
 it is an error to reference an undefined symbol. It is also an error to
-reference a symbol that is defined with a value other than `True`
-or `False`.
+reference a symbol that is defined with a value other than ``True``
+or ``False``.
 
-The use of the `not` operator inverts the sense of this logical test.
-The `not` operator cannot be combined with the `or` or `and`
+The use of the ``not`` operator inverts the sense of this logical test.
+The ``not`` operator cannot be combined with the ``or`` or ``and``
 operators, without parentheses. For example, "if not X or Y then" is not
 allowed, but "if (not X) or Y then" and "if not (X or Y) then" are.
 
-The `then` keyword is optional as shown
+The ``then`` keyword is optional as shown
 
-The `#` must be the first non-blank character on a line, but
+The ``#`` must be the first non-blank character on a line, but
 otherwise the format is free form. Spaces or tabs may appear between
-the `#` and the keyword. The keywords and the symbols are case
+the ``#`` and the keyword. The keywords and the symbols are case
 insensitive as in normal Ada code. Comments may be used on a
 preprocessor line, but other than that, no other tokens may appear on a
-preprocessor line. Any number of `elsif` clauses can be present,
-including none at all. The `else` is optional, as in Ada.
+preprocessor line. Any number of ``elsif`` clauses can be present,
+including none at all. The ``else`` is optional, as in Ada.
 
-The `#` marking the start of a preprocessor line must be the first
+The ``#`` marking the start of a preprocessor line must be the first
 non-blank character on the line, i.e., it must be preceded only by
 spaces or horizontal tabs.
 
@@ -3093,19 +3109,19 @@ the sequence::
 
 anywhere within a source line, except in a comment or within a
 string literal. The identifier
-following the `$` must match one of the symbols defined in the symbol
+following the ``$`` must match one of the symbols defined in the symbol
 definition file, and the result is to substitute the value of the
-symbol in place of `$symbol` in the output file.
+symbol in place of ``$symbol`` in the output file.
 
 Note that although the substitution of strings within a string literal
 is not possible, it is possible to have a symbol whose defined value is
-a string literal. So instead of setting XYZ to `hello` and writing:
+a string literal. So instead of setting XYZ to ``hello`` and writing:
 
 .. code-block:: c
 
      Header : String := "$XYZ";
 
-you should set XYZ to `"hello"` and write:
+you should set XYZ to ``"hello"`` and write:
 
 .. code-block:: c
 
@@ -3121,17 +3137,17 @@ Integrated Preprocessing
 
 As noted above, a file to be preprocessed consists of Ada source code
 in which preprocessing lines have been inserted. However,
-instead of using *gnatprep* to explicitly preprocess a file as a separate
+instead of using ``gnatprep`` to explicitly preprocess a file as a separate
 step before compilation, you can carry out the preprocessing implicitly
 as part of compilation. Such *integrated preprocessing*, which is the common
 style with C, is performed when either or both of the following switches
 are passed to the compiler:
 
-   *   :option:`-gnatep`, which specifies the *preprocessor data file*.
+   *   :switch:`-gnatep`, which specifies the *preprocessor data file*.
        This file dictates how the source files will be preprocessed (e.g., which
        symbol definition files apply to which sources).
 
-   *   :option:`-gnateD`, which defines values for preprocessing symbols.
+   *   :switch:`-gnateD`, which defines values for preprocessing symbols.
 
 Integrated preprocessing applies only to Ada source files, it is
 not available for configuration pragma files.
@@ -3139,17 +3155,17 @@ not available for configuration pragma files.
 With integrated preprocessing, the output from the preprocessor is not,
 by default, written to any external file. Instead it is passed
 internally to the compiler. To preserve the result of
-preprocessing in a file, either run *gnatprep*
-in standalone mode or else supply the :option:`-gnateG` switch
+preprocessing in a file, either run ``gnatprep``
+in standalone mode or else supply the :switch:`-gnateG` switch
 (described below) to the compiler.
 
-The *gnatmake* switch :option:`-s` should be used with integrated
+The ``gnatmake`` switch :switch:`-s` should be used with integrated
 preprocessing; otherwise the use of a different preprocessor data file
 without changing the sources will not cause recompilation.
 
-Note that the *gnatmake* switch :option:`-m` will almost
+Note that the ``gnatmake`` switch :switch:`-m` will almost
 always trigger recompilation for sources that are preprocessed,
-because *gnatmake* cannot compute the checksum of the source after
+because ``gnatmake`` cannot compute the checksum of the source after
 preprocessing.
 
 The actual preprocessing function is described in detail in
@@ -3158,7 +3174,7 @@ that relate to integrated preprocessing.
 
 .. index:: -gnatep (gcc)
 
-:samp:`-gnatep={preprocessor_data_file}`
+:switch:`-gnatep={preprocessor_data_file}`
   This switch specifies the file name (without directory
   information) of the preprocessor data file. Either place this file
   in one of the source directories, or, when using project
@@ -3176,7 +3192,7 @@ that relate to integrated preprocessing.
 
   A preprocessor data file is a text file that contains *preprocessor
   control lines*.  A preprocessor control line directs the preprocessing of
-  either a particular source file, or, analogous to *others* in Ada,
+  either a particular source file, or, analogous to ``others`` in Ada,
   all sources not specified elsewhere in  the preprocessor data file.
   A preprocessor control line
   can optionally identify a *definition file* that assigns values to
@@ -3237,57 +3253,57 @@ that relate to integrated preprocessing.
   compiler in one of the source directories. In some cases, when compiling
   a source in a directory other than the current directory, if the definition
   file is in the current directory, it may be necessary to add the current
-  directory as a source directory through the :option:`-I` switch; otherwise
+  directory as a source directory through the :switch:`-I` switch; otherwise
   the compiler would not find the definition file.
 
-  Finally, switches similar to those of *gnatprep* may optionally appear:
+  Finally, switches similar to those of ``gnatprep`` may optionally appear:
 
-  :samp:`-b`
+  :switch:`-b`
     Causes both preprocessor lines and the lines deleted by
     preprocessing to be replaced by blank lines, preserving the line number.
-    This switch is always implied; however, if specified after :option:`-c`
-    it cancels the effect of :option:`-c`.
+    This switch is always implied; however, if specified after :switch:`-c`
+    it cancels the effect of :switch:`-c`.
 
 
-  :samp:`-c`
+  :switch:`-c`
     Causes both preprocessor lines and the lines deleted
     by preprocessing to be retained as comments marked
     with the special string '`--!`'.
 
 
-  :samp:`-D{symbol}={new_value}`
-    Define or redefine *symbol* to have *new_value* as its value.
-    The permitted form for *symbol* is either an Ada identifier, or any Ada reserved word
-    aside from `if`,
-    `else`, `elsif`, `end`, `and`, `or` and `then`.
-    The permitted form for `new_value` is a literal string, an Ada identifier or any Ada reserved
+  :switch:`-D{symbol}={new_value}`
+    Define or redefine ``symbol`` to have ``new_value`` as its value.
+    The permitted form for ``symbol`` is either an Ada identifier, or any Ada reserved word
+    aside from ``if``,
+    ``else``, ``elsif``, ``end``, ``and``, ``or`` and ``then``.
+    The permitted form for ``new_value`` is a literal string, an Ada identifier or any Ada reserved
     word. A symbol declared with this switch replaces a symbol with the
     same name defined in a definition file.
 
 
-  :samp:`-s`
+  :switch:`-s`
     Causes a sorted list of symbol names and values to be
     listed on the standard output file.
 
 
-  :samp:`-u`
-    Causes undefined symbols to be treated as having the value `FALSE`
+  :switch:`-u`
+    Causes undefined symbols to be treated as having the value ``FALSE``
     in the context
     of a preprocessor test. In the absence of this option, an undefined symbol in
-    a `#if` or `#elsif` test will be treated as an error.
+    a ``#if`` or ``#elsif`` test will be treated as an error.
 
 
 .. index:: -gnateD (gcc)
 
-:samp:`-gnateD{symbol}[={new_value}]`
-  Define or redefine *symbol* to have *new_value* as its value. If no value
-  is supplied, then the value of *symbol* is `True`.
-  The form of *symbol* is an identifier, following normal Ada (case-insensitive)
-  rules for its syntax, and *new_value* is either an arbitrary string between double
+:switch:`-gnateD{symbol}[={new_value}]`
+  Define or redefine ``symbol`` to have ``new_value`` as its value. If no value
+  is supplied, then the value of ``symbol`` is ``True``.
+  The form of ``symbol`` is an identifier, following normal Ada (case-insensitive)
+  rules for its syntax, and ``new_value`` is either an arbitrary string between double
   quotes or any sequence (including an empty sequence) of characters from the
   set (letters, digits, period, underline).
-  Ada reserved words may be used as symbols, with the exceptions of `if`,
-  `else`, `elsif`, `end`, `and`, `or` and `then`.
+  Ada reserved words may be used as symbols, with the exceptions of ``if``,
+  ``else``, ``elsif``, ``end``, ``and``, ``or`` and ``then``.
 
   Examples:
 
@@ -3299,12 +3315,12 @@ that relate to integrated preprocessing.
 
   A symbol declared with this switch on the command line replaces a
   symbol with the same name either in a definition file or specified with a
-  switch :option:`-D` in the preprocessor data file.
+  switch :switch:`-D` in the preprocessor data file.
 
-  This switch is similar to switch :option:`-D` of `gnatprep`.
+  This switch is similar to switch :switch:`-D` of ``gnatprep``.
 
 
-:samp:`-gnateG`
+:switch:`-gnateG`
   When integrated preprocessing is performed on source file :file:`filename.extension`,
   create or overwrite :file:`filename.extension.prep` to contain
   the result of the preprocessing.
@@ -3329,8 +3345,8 @@ Interfacing to C
 
 Interfacing Ada with a foreign language such as C involves using
 compiler directives to import and/or export entity definitions in each
-language -- using `extern` statements in C, for instance, and the
-`Import`, `Export`, and `Convention` pragmas in Ada.
+language -- using ``extern`` statements in C, for instance, and the
+``Import``, ``Export``, and ``Convention`` pragmas in Ada.
 A full treatment of these topics is provided in Appendix B, section 1
 of the Ada Reference Manual.
 
@@ -3515,7 +3531,7 @@ example's:
       $ gnatmake -c unit2.adb
 
 * Run the Ada binder on every generated ALI file.  Make sure to use the
-  :option:`-n` option to specify a foreign main program:
+  :switch:`-n` option to specify a foreign main program:
 
   .. code-block:: sh
 
@@ -3531,9 +3547,9 @@ example's:
   This procedure yields a binary executable called :file:`exec_file`.
 
 Depending on the circumstances (for example when your non-Ada main object
-does not provide symbol `main`), you may also need to instruct the
+does not provide symbol ``main``), you may also need to instruct the
 GNAT linker not to include the standard startup objects by passing the
-:option:`-nostartfiles` switch to `gnatlink`.
+:switch:`-nostartfiles` switch to ``gnatlink``.
 
 .. _Calling_Conventions:
 
@@ -3555,7 +3571,7 @@ Convention identifiers are recognized by GNAT:
 
 .. index:: Convention Ada
 
-*Ada*
+``Ada``
   This indicates that the standard Ada calling sequence will be
   used and all Ada data items may be passed without any limitations in the
   case where GNAT is used to generate both the caller and callee. It is also
@@ -3589,7 +3605,7 @@ Convention identifiers are recognized by GNAT:
 .. index:: Convention Assembler
 
 
-*Assembler*
+``Assembler``
   Specifies assembler as the convention. In practice this has the
   same effect as convention Ada (but is not equivalent in the sense of being
   considered the same convention).
@@ -3598,7 +3614,7 @@ Convention identifiers are recognized by GNAT:
 
 .. index:: Asm
 
-*Asm*
+``Asm``
   Equivalent to Assembler.
 
   .. index:: Interfacing to COBOL
@@ -3607,7 +3623,7 @@ Convention identifiers are recognized by GNAT:
 
 .. index:: COBOL
 
-*COBOL*
+``COBOL``
   Data will be passed according to the conventions described
   in section B.4 of the Ada Reference Manual.
 
@@ -3617,7 +3633,7 @@ Convention identifiers are recognized by GNAT:
 .. index:: Convention C
 
 
-*C*
+``C``
   Data will be passed according to the conventions described
   in section B.3 of the Ada Reference Manual.
 
@@ -3627,36 +3643,36 @@ Convention identifiers are recognized by GNAT:
     .. index:: Interfacing to C varargs function
     .. index:: varargs function interfaces
 
-    In C, `varargs` allows a function to take a variable number of
+    In C, ``varargs`` allows a function to take a variable number of
     arguments. There is no direct equivalent in this to Ada. One
     approach that can be used is to create a C wrapper for each
     different profile and then interface to this C wrapper. For
-    example, to print an `int` value using `printf`,
-    create a C function `printfi` that takes two arguments, a
-    pointer to a string and an int, and calls `printf`.
-    Then in the Ada program, use pragma `Import` to
-    interface to `printfi`.
+    example, to print an ``int`` value using ``printf``,
+    create a C function ``printfi`` that takes two arguments, a
+    pointer to a string and an int, and calls ``printf``.
+    Then in the Ada program, use pragma ``Import`` to
+    interface to ``printfi``.
 
     It may work on some platforms to directly interface to
-    a `varargs` function by providing a specific Ada profile
+    a ``varargs`` function by providing a specific Ada profile
     for a particular call. However, this does not work on
     all platforms, since there is no guarantee that the
     calling sequence for a two argument normal C function
-    is the same as for calling a `varargs` C function with
+    is the same as for calling a ``varargs`` C function with
     the same two arguments.
 
 .. index:: Convention Default
 
 .. index:: Default
 
-*Default*
+``Default``
   Equivalent to C.
 
 .. index:: Convention External
 
 .. index:: External
 
-*External*
+``External``
   Equivalent to C.
 
 .. index:: C++
@@ -3665,7 +3681,7 @@ Convention identifiers are recognized by GNAT:
 .. index:: Convention C++
 
 
-*C_Plus_Plus (or CPP)*
+``C_Plus_Plus`` (or ``CPP``)
   This stands for C++. For most purposes this is identical to C.
   See the separate description of the specialized GNAT pragmas relating to
   C++ interfacing for further details.
@@ -3675,12 +3691,12 @@ Convention identifiers are recognized by GNAT:
 .. index:: Convention Fortran
 
 
-*Fortran*
+``Fortran``
   Data will be passed according to the conventions described
   in section B.5 of the Ada Reference Manual.
 
 
-*Intrinsic*
+``Intrinsic``
   This applies to an intrinsic operation, as defined in the Ada
   Reference Manual. If a pragma Import (Intrinsic) applies to a subprogram,
   this means that the body of the subprogram is provided by the compiler itself,
@@ -3723,7 +3739,7 @@ Convention identifiers are recognized by GNAT:
   * General subprogram entities. This is used  to bind an Ada subprogram
     declaration to
     a compiler builtin by name with back-ends where such interfaces are
-    available. A typical example is the set of `__builtin` functions
+    available. A typical example is the set of ``__builtin`` functions
     exposed by the GCC back-end, as in the following example:
 
 
@@ -3740,36 +3756,36 @@ Convention identifiers are recognized by GNAT:
 .. index:: Stdcall
 .. index:: Convention Stdcall
 
-*Stdcall*
+``Stdcall``
   This is relevant only to Windows implementations of GNAT,
-  and specifies that the `Stdcall` calling sequence will be used,
+  and specifies that the ``Stdcall`` calling sequence will be used,
   as defined by the NT API. Nevertheless, to ease building
-  cross-platform bindings this convention will be handled as a `C` calling
+  cross-platform bindings this convention will be handled as a ``C`` calling
   convention on non-Windows platforms.
 
 .. index:: DLL
 .. index:: Convention DLL
 
 
-*DLL*
-  This is equivalent to `Stdcall`.
+``DLL``
+  This is equivalent to ``Stdcall``.
 
 .. index:: Win32
 .. index:: Convention Win32
 
 
-*Win32*
-  This is equivalent to `Stdcall`.
+``Win32``
+  This is equivalent to ``Stdcall``.
 
 .. index:: Stubbed
 .. index:: Convention Stubbed
 
 
-*Stubbed*
+``Stubbed``
   This is a special convention that indicates that the compiler
-  should provide a stub body that raises `Program_Error`.
+  should provide a stub body that raises ``Program_Error``.
 
-GNAT additionally provides a useful pragma `Convention_Identifier`
+GNAT additionally provides a useful pragma ``Convention_Identifier``
 that can be used to parameterize conventions and allow additional synonyms
 to be specified. For example if you have legacy code in which the convention
 identifier Fortran77 was used for Fortran, you can use the configuration
@@ -3780,7 +3796,7 @@ pragma:
      pragma Convention_Identifier (Fortran77, Fortran);
 
 And from now on the identifier Fortran77 may be used as a convention
-identifier (for example in an `Import` pragma) with the same
+identifier (for example in an ``Import`` pragma) with the same
 meaning as Fortran.
 
 
@@ -3803,20 +3819,20 @@ generating code that is compatible with the G++ Application Binary
 Interface ---see http://www.codesourcery.com/archives/cxx-abi).
 
 Interfacing can be done at 3 levels: simple data, subprograms, and
-classes. In the first two cases, GNAT offers a specific `Convention C_Plus_Plus`
-(or `CPP`) that behaves exactly like `Convention C`.
+classes. In the first two cases, GNAT offers a specific ``Convention C_Plus_Plus``
+(or ``CPP``) that behaves exactly like ``Convention C``.
 Usually, C++ mangles the names of subprograms. To generate proper mangled
 names automatically, see :ref:`Generating_Ada_Bindings_for_C_and_C++_headers`).
 This problem can also be addressed manually in two ways:
 
 * by modifying the C++ code in order to force a C convention using
-  the `extern "C"` syntax.
+  the ``extern "C"`` syntax.
 
-* by figuring out the mangled name (using e.g. *nm*) and using it as the
+* by figuring out the mangled name (using e.g. ``nm``) and using it as the
   Link_Name argument of the pragma import.
 
 Interfacing at the class level can be achieved by using the GNAT specific
-pragmas such as `CPP_Constructor`.  See the :title:`GNAT_Reference_Manual` for additional information.
+pragmas such as ``CPP_Constructor``.  See the :title:`GNAT_Reference_Manual` for additional information.
 
 .. _Linking_a_Mixed_C++_and_Ada_Program:
 
@@ -3833,10 +3849,10 @@ considered:
 
 * Using GNAT and G++ (GNU C++ compiler) from the same GCC installation:
   The C++ linker can simply be called by using the C++ specific driver
-  called `g++`.
+  called ``g++``.
 
   Note that if the C++ code uses inline functions, you will need to
-  compile your C++ code with the `-fkeep-inline-functions` switch in
+  compile your C++ code with the :switch:`-fkeep-inline-functions` switch in
   order to provide an existing function implementation that the Ada code can
   link with.
 
@@ -3857,7 +3873,7 @@ considered:
   improperly if set during invocation of the wrong compiler.  It is also
   very important that the linker uses the proper :file:`libgcc.a` GCC
   library -- that is, the one from the C++ compiler installation. The
-  implicit link command as suggested in the `gnatmake` command
+  implicit link command as suggested in the ``gnatmake`` command
   from the former example can be replaced by an explicit link command with
   the full-verbosity option in order to verify which library is used:
 
@@ -3886,20 +3902,20 @@ considered:
   a few more parameters to the link command line, depending on the exception
   mechanism used.
 
-  If the `setjmp/longjmp` exception mechanism is used, only the paths
-  to the libgcc libraries are required:
+  If the ``setjmp`` / ``longjmp`` exception mechanism is used, only the paths
+  to the ``libgcc`` libraries are required:
 
   .. code-block:: sh
 
     $ cat ./my_script
     #!/bin/sh
-    CC $* `gcc -print-file-name=libgcc.a` `gcc -print-file-name=libgcc_eh.a`
+    CC $* gcc -print-file-name=libgcc.a gcc -print-file-name=libgcc_eh.a
     $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 
 
   where CC is the name of the non-GNU C++ compiler.
 
-  If the `zero cost` exception mechanism is used, and the platform
+  If the "zero cost" exception mechanism is used, and the platform
   supports automatic registration of exception tables (e.g., Solaris),
   paths to more objects are required:
 
@@ -3907,9 +3923,9 @@ considered:
 
     $ cat ./my_script
     #!/bin/sh
-    CC `gcc -print-file-name=crtbegin.o` $* \\
-    `gcc -print-file-name=libgcc.a` `gcc -print-file-name=libgcc_eh.a` \\
-    `gcc -print-file-name=crtend.o`
+    CC gcc -print-file-name=crtbegin.o $* \\
+    gcc -print-file-name=libgcc.a gcc -print-file-name=libgcc_eh.a \\
+    gcc -print-file-name=crtend.o
     $ gnatlink ada_unit file1.o file2.o --LINK=./my_script
 
 
@@ -4059,7 +4075,7 @@ Interfacing with C++ constructors
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to interface with C++ constructors GNAT provides the
-`pragma CPP_Constructor` (see the :title:`GNAT_Reference_Manual`
+``pragma CPP_Constructor`` (see the :title:`GNAT_Reference_Manual`
 for additional information).
 In this section we present some common uses of C++ constructors
 in mixed-languages programs in GNAT.
@@ -4117,8 +4133,8 @@ properly initialized.
 
 Constructors can only appear in the following contexts:
 
-* On the right side of an initialization of an object of type `T`.
-* On the right side of an initialization of a record component of type `T`.
+* On the right side of an initialization of an object of type ``T``.
+* On the right side of an initialization of a record component of type ``T``.
 * In an Ada 2005 limited aggregate.
 * In an Ada 2005 nested limited aggregate.
 * In an Ada 2005 limited aggregate that initializes an object built in
@@ -4139,8 +4155,8 @@ expression that initializes the object. For example:
 The first two declarations are equivalent: in both cases the default C++
 constructor is invoked (in the former case the call to the constructor is
 implicit, and in the latter case the call is explicit in the object
-declaration). `Obj3` is initialized by the C++ non-default constructor
-that takes an integer argument, and `Obj4` is initialized by the
+declaration). ``Obj3`` is initialized by the C++ non-default constructor
+that takes an integer argument, and ``Obj4`` is initialized by the
 non-default C++ constructor that takes two integers.
 
 Let us derive the imported C++ class in the Ada side. For example:
@@ -4163,11 +4179,11 @@ an aggregate of type DT, or by means of an extension aggregate.
      Obj6 : DT := Function_Returning_DT (50);
      Obj7 : DT := (Constructor (30,40) with C_Value => 50);
 
-The declaration of `Obj5` invokes the default constructors: the
+The declaration of ``Obj5`` invokes the default constructors: the
 C++ default constructor of the parent type takes care of the initialization
 of the components inherited from Root, and GNAT takes care of the default
 initialization of the additional Ada components of type DT (that is,
-`C_Value` is initialized to value 2009). The order of invocation of
+``C_Value`` is initialized to value 2009). The order of invocation of
 the constructors is consistent with the order of elaboration required by
 Ada and C++. That is, the constructor of the parent type is always called
 before the constructor of the derived type.
@@ -4187,7 +4203,7 @@ from C++. For example:
         Data2 : Root := Constructor (D, 30);
      end record;
 
-The initialization of an object of type `Rec2` will call the
+The initialization of an object of type ``Rec2`` will call the
 non-default C++ constructors specified for the imported components.
 For example:
 
@@ -4206,15 +4222,15 @@ declarations. For example:
                      others => <>);
 
 The above declaration uses an Ada 2005 limited aggregate to
-initialize `Obj9`, and the C++ constructor that has two integer
-arguments is invoked to initialize the `Data1` component instead
-of the constructor specified in the declaration of type `Rec1`. In
+initialize ``Obj9``, and the C++ constructor that has two integer
+arguments is invoked to initialize the ``Data1`` component instead
+of the constructor specified in the declaration of type ``Rec1``. In
 Ada 2005 the box in the aggregate indicates that unspecified components
 are initialized using the expression (if any) available in the component
-declaration. That is, in this case discriminant `D` is initialized
-to value `20`, `Value` is initialized to value 1000, and the
+declaration. That is, in this case discriminant ``D`` is initialized
+to value ``20``, ``Value`` is initialized to value 1000, and the
 non-default C++ constructor that handles two integers takes care of
-initializing component `Data2` with values `20,30`.
+initializing component ``Data2`` with values ``20,30``.
 
 In Ada 2005 we can use the extended return statement to build the Ada
 equivalent to C++ non-default constructors. For example:
@@ -4251,8 +4267,8 @@ classifications. We first demonstrate a case in which the types and
 constructors are defined on the C++ side and imported from the Ada
 side, and latter the reverse case.
 
-The root of our derivation will be the `Animal` class, with a
-single private attribute (the `Age` of the animal), a constructor,
+The root of our derivation will be the ``Animal`` class, with a
+single private attribute (the ``Age`` of the animal), a constructor,
 and two public primitives to set and get the value of this attribute.
 
 .. code-block:: cpp
@@ -4268,8 +4284,8 @@ and two public primitives to set and get the value of this attribute.
 
 Abstract interface types are defined in C++ by means of classes with pure
 virtual functions and no data members. In our example we will use two
-interfaces that provide support for the common management of `Carnivore`
-and `Domestic` animals:
+interfaces that provide support for the common management of ``Carnivore``
+and ``Domestic`` animals:
 
 .. code-block:: cpp
 
@@ -4283,7 +4299,7 @@ and `Domestic` animals:
         virtual void Set_Owner (char* Name) = 0;
      };
 
-Using these declarations, we can now say that a `Dog` is an animal that is
+Using these declarations, we can now say that a ``Dog`` is an animal that is
 both Carnivore and Domestic, that is:
 
 .. code-block:: cpp
@@ -4300,7 +4316,7 @@ both Carnivore and Domestic, that is:
      };
 
 In the following examples we will assume that the previous declarations are
-located in a file named `animals.h`. The following package demonstrates
+located in a file named :file:`animals.h`. The following package demonstrates
 how to import these C++ declarations from the Ada side:
 
 .. code-block:: ada
@@ -4356,9 +4372,9 @@ the primitives and components must be declared exactly in the same order in
 the two languages.
 
 Regarding the abstract interfaces, we must indicate to the GNAT compiler by
-means of a `pragma Convention (C_Plus_Plus)`, the convention used to pass
+means of a ``pragma Convention (C_Plus_Plus)``, the convention used to pass
 the arguments to the called primitives will be the same as for C++. For the
-imported classes we use `pragma Import` with convention `C_Plus_Plus`
+imported classes we use ``pragma Import`` with convention ``C_Plus_Plus``
 to indicate that they have been defined on the C++ side; this is required
 because the dispatch table associated with these tagged types will be built
 in the C++ side and therefore will not contain the predefined Ada primitives
@@ -4368,7 +4384,7 @@ As the reader can see there is no need to indicate the C++ mangled names
 associated with each subprogram because it is assumed that all the calls to
 these primitives will be dispatching calls. The only exception is the
 constructor, which must be registered with the compiler by means of
-`pragma CPP_Constructor` and needs to provide its associated C++
+``pragma CPP_Constructor`` and needs to provide its associated C++
 mangled name because the Ada compiler generates direct calls to it.
 
 With the above packages we can now declare objects of type Dog on the Ada side
@@ -4440,14 +4456,14 @@ them to C++, using the same hierarchy of our previous example:
      end Animals;
 
 Compared with our previous example the only differences are the use of
-`pragma Convention` (instead of `pragma Import`), and the use of
-`pragma Export` to indicate to the GNAT compiler that the primitives will
+``pragma Convention`` (instead of ``pragma Import``), and the use of
+``pragma Export`` to indicate to the GNAT compiler that the primitives will
 be available to C++. Thanks to the ABI compatibility, on the C++ side there is
 nothing else to be done; as explained above, the only requirement is that all
 the primitives and components are declared in exactly the same order.
 
 For completeness, let us see a brief C++ main program that uses the
-declarations available in `animals.h` (presented in our first example) to
+declarations available in :file:`animals.h` (presented in our first example) to
 import and use the declarations from the Ada side, properly initializing and
 finalizing the Ada run-time system along the way:
 
@@ -4508,7 +4524,7 @@ Some of the known limitations include:
 * some extensions (e.g. vector types) are not supported
 * pointers to pointers or complex structures are mapped to System.Address
 * identifiers with identical name (except casing) will generate compilation
-  errors (e.g. `shm_get` vs `SHM_GET`).
+  errors (e.g. ``shm_get`` vs ``SHM_GET``).
 
 The code generated is using the Ada 2005 syntax, which makes it
 easier to interface with other languages than previous versions of Ada.
@@ -4518,8 +4534,8 @@ easier to interface with other languages than previous versions of Ada.
 Running the Binding Generator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The binding generator is part of the *gcc* compiler and can be
-invoked via the *-fdump-ada-spec* switch, which will generate Ada
+The binding generator is part of the ``gcc`` compiler and can be
+invoked via the :switch:`-fdump-ada-spec` switch, which will generate Ada
 spec files for the header files specified on the command line, and all
 header files needed by these files transitively. For example:
 
@@ -4531,17 +4547,17 @@ header files needed by these files transitively. For example:
 will generate, under GNU/Linux, the following files: :file:`time_h.ads`,
 :file:`bits_time_h.ads`, :file:`stddef_h.ads`, :file:`bits_types_h.ads` which
 correspond to the files :file:`/usr/include/time.h`,
-:file:`/usr/include/bits/time.h`, etc..., and will then compile in Ada 2005
-mode these Ada specs.
+:file:`/usr/include/bits/time.h`, etc..., and will then compile these Ada specs
+in Ada 2005 mode.
 
-The `-C` switch tells *gcc* to extract comments from headers,
+The :switch:`-C` switch tells ``gcc`` to extract comments from headers,
 and will attempt to generate corresponding Ada comments.
 
 If you want to generate a single Ada file and not the transitive closure, you
-can use instead the *-fdump-ada-spec-slim* switch.
+can use instead the :switch:`-fdump-ada-spec-slim` switch.
 
 You can optionally specify a parent unit, of which all generated units will
-be children, using `-fada-spec-parent=<unit>`.
+be children, using :switch:`-fada-spec-parent={unit}`.
 
 Note that we recommend when possible to use the *g++* driver to
 generate bindings, even for most C headers, since this will in general
@@ -4549,7 +4565,7 @@ generate better Ada specs. For generating bindings for C++ headers, it is
 mandatory to use the *g++* command, or *gcc -x c++* which
 is equivalent in this case. If *g++* cannot work on your C headers
 because of incompatibilities between C and C++, then you can fallback to
-*gcc* instead.
+``gcc`` instead.
 
 For an example of better bindings generated from the C++ front-end,
 the name of the parameters (when available) are actually ignored by the C
@@ -4559,7 +4575,7 @@ front-end. Consider the following C header:
 
      extern void foo (int variable);
 
-with the C front-end, `variable` is ignored, and the above is handled as:
+with the C front-end, ``variable`` is ignored, and the above is handled as:
 
 .. code-block:: c
 
@@ -4578,7 +4594,7 @@ with the C++ front-end, the name is available, and we generate:
      procedure foo (variable : int);
 
 In some cases, the generated bindings will be more complete or more meaningful
-when defining some macros, which you can do via the *-D* switch. This
+when defining some macros, which you can do via the :switch:`-D` switch. This
 is for example the case with :file:`Xlib.h` under GNU/Linux:
 
 .. code-block:: sh
@@ -4586,12 +4602,12 @@ is for example the case with :file:`Xlib.h` under GNU/Linux:
       $ g++ -c -fdump-ada-spec -DXLIB_ILLEGAL_ACCESS -C /usr/include/X11/Xlib.h
 
 The above will generate more complete bindings than a straight call without
-the *-DXLIB_ILLEGAL_ACCESS* switch.
+the :switch:`-DXLIB_ILLEGAL_ACCESS` switch.
 
 In other cases, it is not possible to parse a header file in a stand-alone
 manner, because other include files need to be included first. In this
 case, the solution is to create a small header file including the needed
-`#include` and possible `#define` directives. For example, to
+``#include`` and possible ``#define`` directives. For example, to
 generate Ada bindings for :file:`readline/readline.h`, you need to first
 include :file:`stdio.h`, so you can create a file with the following two
 lines in e.g. :file:`readline1.h`:
@@ -4620,7 +4636,7 @@ support for C headers. As a result, you will need to modify the resulting
 bindings by hand more extensively when using C++ headers.
 
 In this mode, C++ classes will be mapped to Ada tagged types, constructors
-will be mapped using the `CPP_Constructor` pragma, and when possible,
+will be mapped using the ``CPP_Constructor`` pragma, and when possible,
 multiple inheritance of abstract classes will be mapped to Ada interfaces
 (see the *Interfacing to C++* section in the :title:`GNAT Reference Manual`
 for additional information on interfacing to C++).
@@ -4717,25 +4733,25 @@ Switches
 
 .. index:: -fdump-ada-spec (gcc)
 
-:samp:`-fdump-ada-spec`
+:switch:`-fdump-ada-spec`
   Generate Ada spec files for the given header files transitively (including
   all header files that these headers depend upon).
 
 .. index:: -fdump-ada-spec-slim (gcc)
 
-:samp:`-fdump-ada-spec-slim`
+:switch:`-fdump-ada-spec-slim`
   Generate Ada spec files for the header files specified on the command line
   only.
 
 .. index:: -fada-spec-parent (gcc)
 
-:samp:`-fada-spec-parent={unit}`
-  Specifies that all files generated by *-fdump-ada-spec** are
+:switch:`-fada-spec-parent={unit}`
+  Specifies that all files generated by :switch:`-fdump-ada-spec` are
   to be child units of the specified parent unit.
 
 .. index:: -C (gcc)
 
-:samp:`-C`
+:switch:`-C`
   Extract comments from headers and generate Ada comments in the Ada spec files.
 
 .. _Generating_C_Headers_for_Ada_Specifications:
@@ -4762,7 +4778,7 @@ Running the C Header Generator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 The C header generator is part of the GNAT compiler and can be invoked via
-the *-gnatceg* combination of switches, which will generate a :file:`.h`
+the :switch:`-gnatceg` combination of switches, which will generate a :file:`.h`
 file corresponding to the given input file (Ada spec or body). Note that
 only spec files are processed in any case, so giving a spec or a body file
 as input is equivalent. For example:
@@ -4799,7 +4815,7 @@ For instance, given the following Ada files:
       procedure Proc2 (R : in out Rec);
    end Pack1;
 
-The above `gcc` command will generate the following :file:`pack1.h` file:
+The above ``gcc`` command will generate the following :file:`pack1.h` file:
 
 .. code-block:: c
 
@@ -4821,7 +4837,7 @@ The above `gcc` command will generate the following :file:`pack1.h` file:
    extern void pack1__proc2(pack1__rec *r);
    #endif /* PACK1_ADS */
 
-You can then `include` :file:`pack1.h` from a C source file and use the types,
+You can then ``include`` :file:`pack1.h` from a C source file and use the types,
 call subprograms, reference objects, and constants.
 
 .. _GNAT_and_Other_Compilation_Models:
@@ -4842,7 +4858,7 @@ Comparison between GNAT and C/C++ Compilation Models
 The GNAT model of compilation is close to the C and C++ models. You can
 think of Ada specs as corresponding to header files in C. As in C, you
 don't need to compile specs; they are compiled when they are used. The
-Ada |with| is similar in effect to the `#include` of a C
+Ada |with| is similar in effect to the ``#include`` of a C
 header.
 
 One notable difference is that, in Ada, you may compile specs separately
@@ -4864,7 +4880,7 @@ The other important function of the binder is to deal with elaboration
 issues. There are also elaboration issues in C++ that are handled
 automatically. This automatic handling has the advantage of being
 simpler to use, but the C++ programmer has no control over elaboration.
-Where `gnatbind` might complain there was no valid order of
+Where ``gnatbind`` might complain there was no valid order of
 elaboration, a C++ compiler would simply construct a program that
 malfunctioned at run time.
 
@@ -4971,9 +4987,9 @@ we have the following package spec:
 
 .. index:: pragma Export
 
-The variable `MN` has a full expanded Ada name of `QRS.MN`, so
-the corresponding link name is `qrs__mn`.
-Of course if a `pragma Export` is used this may be overridden:
+The variable ``MN`` has a full expanded Ada name of ``QRS.MN``, so
+the corresponding link name is ``qrs__mn``.
+Of course if a ``pragma Export`` is used this may be overridden:
 
 .. code-block:: ada
 
@@ -4984,23 +5000,23 @@ Of course if a `pragma Export` is used this may be overridden:
         pragma Export (Var2, C, Link_Name => "var2_link_name");
      end Exports;
 
-In this case, the link name for `Var1` is whatever link name the
-C compiler would assign for the C function `var1_name`. This typically
-would be either `var1_name` or `_var1_name`, depending on operating
+In this case, the link name for ``Var1`` is whatever link name the
+C compiler would assign for the C function ``var1_name``. This typically
+would be either ``var1_name`` or ``_var1_name``, depending on operating
 system conventions, but other possibilities exist. The link name for
-`Var2` is `var2_link_name`, and this is not operating system
+``Var2`` is ``var2_link_name``, and this is not operating system
 dependent.
 
 One exception occurs for library level procedures. A potential ambiguity
-arises between the required name `_main` for the C main program,
+arises between the required name ``_main`` for the C main program,
 and the name we would otherwise assign to an Ada library level procedure
-called `Main` (which might well not be the main program).
+called ``Main`` (which might well not be the main program).
 
-To avoid this ambiguity, we attach the prefix `_ada_` to such
+To avoid this ambiguity, we attach the prefix ``_ada_`` to such
 names. So if we have a library level procedure such as:
 
 .. code-block:: ada
 
      procedure Hello (S : String);
 
-the external name of this procedure will be `_ada_hello`.
+the external name of this procedure will be ``_ada_hello``.
