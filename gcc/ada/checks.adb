@@ -7401,9 +7401,15 @@ package body Checks is
               Suppress => Validity_Check);
 
             Set_Validated_Object (Var_Id, New_Copy_Tree (Exp));
-
             Rewrite (Exp, New_Occurrence_Of (Var_Id, Loc));
             PV := New_Occurrence_Of (Var_Id, Loc);
+
+            --  Copy the Do_Range_Check flag over to the new Exp, so it doesn't
+            --  get lost. Floating point types are handled elsewhere.
+
+            if not Is_Floating_Point_Type (Typ) then
+               Set_Do_Range_Check (Exp, Do_Range_Check (Original_Node (Exp)));
+            end if;
 
          --  Otherwise the expression does not denote a variable. Force its
          --  evaluation by capturing its value in a constant. Generate:

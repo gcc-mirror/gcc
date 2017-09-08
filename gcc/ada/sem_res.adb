@@ -8009,8 +8009,8 @@ package body Sem_Res is
            and then Entity (R) = Standard_True
            and then
              ((Is_Entity_Name (L) and then Is_Object (Entity (L)))
-                or else
-              Nkind (L) in N_Op)
+                 or else
+               Nkind (L) in N_Op)
          then
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);

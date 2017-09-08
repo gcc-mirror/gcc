@@ -3060,8 +3060,12 @@ package body Sem_Ch6 is
 
             --  We must duplicate the expression with semantic information to
             --  inherit the decoration of global entities in generic instances.
+            --  Set the parent of the new node to be the parent of the original
+            --  to get the proper context, which is needed for complete error
+            --  reporting and for semantic analysis.
 
             Dup_Expr := New_Copy_Tree (Expression (Return_Stmt));
+            Set_Parent (Dup_Expr, Return_Stmt);
 
             --  Replace the defining identifier of iterators and loop param
             --  specifications by a clone to ensure that the cloned expression

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2004-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2004-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -329,12 +329,15 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       C : Count_Type;
 
    begin
-      if Capacity = 0 then
+      if Capacity < Source.Length then
+         if Checks and then Capacity /= 0 then
+            raise Capacity_Error
+              with "Requested capacity is less than Source length";
+         end if;
+
          C := Source.Length;
-      elsif Capacity >= Source.Length then
+      else
          C := Capacity;
-      elsif Checks then
-         raise Capacity_Error with "Capacity value too small";
       end if;
 
       return Target : List (Capacity => C) do
@@ -1014,7 +1017,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
    is
       New_Item : Element_Type;
       pragma Unmodified (New_Item);
-      --  OK to reference, see below
+      --  OK to reference, see below. Needed to suppress front end warning.
 
    begin
       --  There is no explicit element provided, but in an instance the element
@@ -1023,7 +1026,9 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  initialization, so insert the specified number of possibly
       --  initialized elements at the given position.
 
+      pragma Warnings (Off); -- Needed to suppress back end warning
       Insert (Container, Before, New_Item, Position, Count);
+      pragma Warnings (On);
    end Insert;
 
    ---------------------

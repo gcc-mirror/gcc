@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -627,47 +627,61 @@ package body Ada.Strings.Fixed is
      (Source : String;
       Side   : Trim_End) return String
    is
-      Low, High : Integer;
-
    begin
-      Low := Index_Non_Blank (Source, Forward);
+      case Side is
+         when Strings.Left =>
+            declare
+               Low : constant Natural := Index_Non_Blank (Source, Forward);
+            begin
+               --  All blanks case
 
-      --  All blanks case
+               if Low = 0 then
+                  return "";
+               end if;
 
-      if Low = 0 then
-         return "";
-
-      --  At least one non-blank
-
-      else
-         High := Index_Non_Blank (Source, Backward);
-
-         case Side is
-            when Strings.Left =>
                declare
                   subtype Result_Type is String (1 .. Source'Last - Low + 1);
-
                begin
                   return Result_Type (Source (Low .. Source'Last));
                end;
+            end;
 
-            when Strings.Right =>
+         when Strings.Right =>
+            declare
+               High : constant Natural := Index_Non_Blank (Source, Backward);
+            begin
+               --  All blanks case
+
+               if High = 0 then
+                  return "";
+               end if;
+
                declare
                   subtype Result_Type is String (1 .. High - Source'First + 1);
-
                begin
                   return Result_Type (Source (Source'First .. High));
                end;
+            end;
 
-            when Strings.Both =>
+         when Strings.Both =>
+            declare
+               Low : constant Natural := Index_Non_Blank (Source, Forward);
+            begin
+               --  All blanks case
+
+               if Low = 0 then
+                  return "";
+               end if;
+
                declare
+                  High : constant Natural :=
+                    Index_Non_Blank (Source, Backward);
                   subtype Result_Type is String (1 .. High - Low + 1);
-
                begin
                   return Result_Type (Source (Low .. High));
                end;
-         end case;
-      end if;
+            end;
+      end case;
    end Trim;
 
    procedure Trim

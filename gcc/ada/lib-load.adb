@@ -328,6 +328,9 @@ package body Lib.Load is
 
          if Main_Source_File /= No_Source_File then
             Version := Source_Checksum (Main_Source_File);
+         else
+            Error_Msg_File_1 := Fname;
+            Error_Msg ("file{ not found", Load_Msg_Sloc);
          end if;
 
          Units.Table (Main_Unit) :=

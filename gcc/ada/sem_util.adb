@@ -12395,13 +12395,14 @@ package body Sem_Util is
 
       if Is_Single_Task_Object (Context_Id) then
          return Scope_Within_Or_Same (Etype (Context_Id), Ref_Id);
+
       else
-         pragma Assert
-           (Is_Entry (Context_Id)
-              or else
-            Ekind_In (Context_Id, E_Function,
-                                  E_Procedure,
-                                  E_Task_Type));
+         pragma Assert (Ekind_In (Context_Id, E_Entry,
+                                              E_Entry_Family,
+                                              E_Function,
+                                              E_Package,
+                                              E_Procedure,
+                                              E_Task_Type));
 
          return Scope_Within_Or_Same (Context_Id, Ref_Id);
       end if;

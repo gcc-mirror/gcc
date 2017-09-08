@@ -28793,7 +28793,8 @@ package body Sem_Prag is
       Look_For_Body : constant Boolean :=
                         Nam_In (Prag_Nam, Name_Refined_Depends,
                                           Name_Refined_Global,
-                                          Name_Refined_Post);
+                                          Name_Refined_Post,
+                                          Name_Refined_State);
       --  Refinement pragmas must be associated with a subprogram body [stub]
 
    --  Start of processing for Find_Related_Declaration_Or_Body
@@ -28892,6 +28893,11 @@ package body Sem_Prag is
       elsif Nkind (Context) = N_Handled_Sequence_Of_Statements then
          return Parent (Context);
 
+      --  The pragma appears inside the declarative part of a package body
+
+      elsif Nkind (Context) = N_Package_Body then
+         return Context;
+
       --  The pragma appears inside the declarative part of a subprogram body
 
       elsif Nkind (Context) = N_Subprogram_Body then
@@ -28901,6 +28907,11 @@ package body Sem_Prag is
 
       elsif Nkind (Context) = N_Task_Body then
          return Context;
+
+      --  The pragma appears inside the visible part of a package specification
+
+      elsif Nkind (Context) = N_Package_Specification then
+         return Parent (Context);
 
       --  The pragma is a byproduct of aspect expansion, return the related
       --  context of the original aspect. This case has a lower priority as

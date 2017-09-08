@@ -31,36 +31,32 @@
 
 --  Run-time symbolic traceback support
 
---  The routines provided in this package assume that your application has
---  been compiled with debugging information turned on, since this information
---  is used to build a symbolic traceback.
+--  The routines provided in this package assume that your application has been
+--  compiled with debugging information turned on, since this information is
+--  used to build a symbolic traceback.
 
 --  If you want to retrieve tracebacks from exception occurrences, it is also
 --  necessary to invoke the binder with -E switch. Please refer to the gnatbind
 --  documentation for more information.
 
 --  Note that it is also possible (and often recommended) to compute symbolic
---  traceback outside the program execution, which in addition allows you
---  to distribute the executable with no debug info:
+--  traceback outside the program execution, which in addition allows you to
+--  distribute the executable with no debug info:
 --
---  - build your executable with debug info
---  - archive this executable
---  - strip a copy of the executable and distribute/deploy this version
---  - at run time, compute absolute traceback (-bargs -E) from your
---    executable and log it using Ada.Exceptions.Exception_Information
---  - off line, compute the symbolic traceback using the executable archived
---    with debug info and addr2line or gdb (using info line *<addr>) on the
---    absolute addresses logged by your application.
+--     - build your executable with debug info
+--     - archive this executable
+--     - strip a copy of the executable and distribute/deploy this version
+--     - at run time, compute absolute traceback (-bargs -E) from your
+--       executable and log it using Ada.Exceptions.Exception_Information
+--     - off line, compute the symbolic traceback using the executable archived
+--       with debug info and addr2line or gdb (using info line *<addr>) on the
+--       absolute addresses logged by your application.
 
 --  In order to retrieve symbolic information, functions in this package will
 --  read on disk all the debug information of the executable file (found via
 --  Argument (0), and looked in the PATH if needed) or shared libraries using
 --  OS facilities, and load them in memory, causing a significant cpu and
 --  memory overhead.
-
---  On platforms where the full capability is not supported, function
---  Symbolic_Traceback return a list of addresses expressed as "0x..."
---  separated by line feed.
 
 pragma Polling (Off);
 --  We must turn polling off for this unit, because otherwise we can get
@@ -73,22 +69,30 @@ package System.Traceback.Symbolic is
 
    function Symbolic_Traceback
      (Traceback : System.Traceback_Entries.Tracebacks_Array) return String;
-   --  Build a string containing a symbolic traceback of the given call chain.
-   --  Note: This procedure may be installed by Set_Trace_Decorator, to get a
-   --  symbolic traceback on all exceptions raised (see
+   function Symbolic_Traceback_No_Hex
+     (Traceback : System.Traceback_Entries.Tracebacks_Array) return String;
+   --  Build a string containing a symbolic traceback of the given call
+   --  chain. Note: These procedures may be installed by Set_Trace_Decorator,
+   --  to get a symbolic traceback on all exceptions raised (see
    --  System.Exception_Traces).
 
    function Symbolic_Traceback
      (E : Ada.Exceptions.Exception_Occurrence) return String;
+   function Symbolic_Traceback_No_Hex
+     (E : Ada.Exceptions.Exception_Occurrence) return String;
    --  Build string containing symbolic traceback of given exception occurrence
+
+   --  In the above, _No_Hex means do not print any hexadecimal addresses, even
+   --  if the symbol is not available. This is useful for getting deterministic
+   --  output from tests.
 
    procedure Enable_Cache (Include_Modules : Boolean := False);
    --  Read symbolic information from binary files and cache them in memory.
-   --  This will speed up the above functions but will require more memory.
-   --  If Include_Modules is true, shared modules (or DLL) will also be cached.
+   --  This will speed up the above functions but will require more memory. If
+   --  Include_Modules is true, shared modules (or DLL) will also be cached.
    --  This procedure may do nothing if not supported. The profile of this
-   --  subprogram may change in the future (new parameters can be added with
-   --  default value), but backward compatibility for direct calls is
-   --  supported.
+   --  subprogram may change in the future (new parameters can be added
+   --  with default value), but backward compatibility for direct calls
+   --  is supported.
 
 end System.Traceback.Symbolic;

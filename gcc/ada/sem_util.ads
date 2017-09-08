@@ -2329,9 +2329,7 @@ package Sem_Util is
    procedure Reset_Analyzed_Flags (N : Node_Id);
    --  Reset the Analyzed flags in all nodes of the tree whose root is N
 
-   procedure Restore_SPARK_Mode
-     (Mode : SPARK_Mode_Type;
-      Prag : Node_Id);
+   procedure Restore_SPARK_Mode (Mode : SPARK_Mode_Type; Prag : Node_Id);
    --  Set the current SPARK_Mode to Mode and SPARK_Mode_Pragma to Prag. This
    --  routine must be used in tandem with Set_SPARK_Mode.
 

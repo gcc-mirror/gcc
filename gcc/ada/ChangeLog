@@ -1,3 +1,48 @@
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+PR ada/80888
+	* a-textio.adb, a-witeio.adb, a-ztexio.adb (Set_WCEM): Use
+	Default_WCEM by default (i.e. if the encoding is not specified
+	by the Form string).
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* s-trasym.ads (Hexa_Traceback): If
+	Suppress_Hex is True, print "..." instead of a hexadecimal
+	address.
+	* s-trasym.adb: Ignore No_Hex in this version.
+	Misc cleanup.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* debug.adb: Minor reformatting.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* a-cbdlli.adb, a-cohama.adb, a-cohase.adb (Copy): Rewrite the
+	code so it doesn't trigger an "uninit var" warning.
+
+2017-09-08  Nicolas Roche  <roche@adacore.com>
+
+	* s-hibaen.ads: Remove obsolete file.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* a-locale.ads: Add comment explaining the state of this package.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.adb (Is_CCT_Instance): Allow calls in the context
+	of packages.
+	* sem_prag.ads, sem_prag.adb (Find_Related_Declaration_Or_Body):
+	allow calls in the context of package spec (for pragma
+	Initializes) and bodies (for pragma Refined_State).
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Copy the Do_Range_Check flag to the
+	new Exp.
+
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* debug.adb (dA): Adjust comment.
