@@ -89,6 +89,7 @@ package System.Rident is
       --  does not violate the restriction.
 
      (Simple_Barriers,                           -- Ada 2012 (D.7 (10.9/3))
+      Pure_Barriers,                             -- GNAT
       No_Abort_Statements,                       -- (RM D.7(5), H.4(3))
       No_Access_Parameter_Allocators,            -- Ada 2012 (RM H.4 (8.3/3))
       No_Access_Subprograms,                     -- (RM H.4(17))
@@ -182,7 +183,6 @@ package System.Rident is
       No_Elaboration_Code,                       -- GNAT
       No_Obsolescent_Features,                   -- Ada 2005 AI-368
       No_Wide_Characters,                        -- GNAT
-      Pure_Barriers,                             -- GNAT
       SPARK_05,                                  -- GNAT
 
       --  The following cases require a parameter value

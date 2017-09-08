@@ -3837,10 +3837,17 @@ package body Exp_Attr is
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
-                  --  initialize a dummy tag value:
-
+                  --  initialize a dummy tag value. We used to generate:
+                  --
                   --     Descendant_Tag (String'Input (Strm), P_Type);
-
+                  --
+                  --  which turns into a call to String_Input_Blk_IO. However,
+                  --  if the input is malformed, that could try to read an
+                  --  enormous String, causing chaos. So instead we call
+                  --  String_Input_Tag, which does the same thing as
+                  --  String_Input_Blk_IO, except that if the String is
+                  --  absurdly long, it raises an exception.
+                  --
                   --  This value is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
                   --  called rather than Internal_Tag to ensure that we have a
@@ -3860,11 +3867,11 @@ package body Exp_Attr is
                       Name                   =>
                         New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
                       Parameter_Associations => New_List (
-                        Make_Attribute_Reference (Loc,
-                          Prefix         =>
-                            New_Occurrence_Of (Standard_String, Loc),
-                          Attribute_Name => Name_Input,
-                          Expressions    => New_List (
+                        Make_Function_Call (Loc,
+                          Name =>
+                            New_Occurrence_Of
+                              (RTE (RE_String_Input_Tag), Loc),
+                          Parameter_Associations => New_List (
                             Relocate_Node (Duplicate_Subexpr (Strm)))),
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (P_Type, Loc),

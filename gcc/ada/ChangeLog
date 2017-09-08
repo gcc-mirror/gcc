@@ -1,5 +1,37 @@
 2017-09-08  Bob Duff  <duff@adacore.com>
 
+	* s-ststop.ads, s-ststop.adb, rtsfind.ads (String_Input_Tag):
+	New routine to read the Tag robustly.
+	* exp_attr.adb (Input): Change the expansion of 'Input,
+	in the class-wide case, to call String_Input_Tag instead of
+	String_Input_Blk_IO.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-rident.ads (Restriction_Id): reorder enum
+	literals, so that Pure_Barriers is no longer in range of the
+	Cunit_Boolean_Restrictions subtype.
+
+2017-09-08  Nicolas Roche  <roche@adacore.com>
+
+	* a-taster.ads, a-taster.adb: Move to libgnarl
+	* gcc-interface/Makefile.in: Remove obsolete targets. Code cleanups.
+	Add support for files in libgnarl.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Type_Conversion): Do not apply
+	accessibility check to an interface conversion, whose purpose
+	is to perform a pointer adjustment in a dispatching call.
+	* exp_ch6.adb (Expand_Call_JHelper): Add accessibility checks
+	when the actual is a construct that involves a dereference of an
+	expression that includes a formal of the enclosing subprogram,
+	In such cases, the accessibility level of the actual is that of
+	the corresponding formal, which is passed in as an additional
+	actual in the outer call.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
 	* exp_intr.adb (Add_Source_Info): Do not decode
 	file names; they were not encoded in the first place.
 
