@@ -2208,6 +2208,20 @@ package body Sem_Ch13 is
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Chars (Id));
 
+                  --  Linker_Section does not need delaying, as its argument
+                  --  must be a static string. Furthermore, if applied to
+                  --  an object with an explicit initialization, the object
+                  --  must be frozen in order to elaborate the initialization
+                  --  code. (This is already done for types with implicit
+                  --  initialization, such as protected types.)
+
+                  if A_Id = Aspect_Linker_Section
+                    and then Nkind (N) = N_Object_Declaration
+                    and then Has_Init_Expression (N)
+                  then
+                     Delay_Required := False;
+                  end if;
+
                --  Synchronization
 
                --  Corresponds to pragma Implemented, construct the pragma

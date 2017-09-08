@@ -283,9 +283,9 @@ package body Sem_Prag is
    --  reference for future checks (see Analyze_Refined_State_In_Decls).
 
    procedure Resolve_State (N : Node_Id);
-   --  Handle the overloading of state names by functions. When N denotes a
-   --  function, this routine finds the corresponding state and sets the entity
-   --  of N to that of the state.
+   --  Handle the overloading of state names by parameterless functions. When N
+   --  denotes a function, this routine finds the corresponding state and sets
+   --  the entity of N to that of the state.
 
    procedure Rewrite_Assertion_Kind
      (N           : Node_Id;
@@ -30229,16 +30229,20 @@ package body Sem_Prag is
          --  homonym chain looking for an abstract state.
 
          if Ekind (Func) = E_Function and then Has_Homonym (Func) then
+            pragma Assert (Is_Overloaded (N));
+
             State := Homonym (Func);
             while Present (State) loop
-
-               --  Resolve the overloading by setting the proper entity of the
-               --  reference to that of the state.
-
                if Ekind (State) = E_Abstract_State then
-                  Set_Etype           (N, Standard_Void_Type);
-                  Set_Entity          (N, State);
-                  Set_Associated_Node (N, State);
+
+                  --  Resolve the overloading by setting the proper entity of
+                  --  the reference to that of the state.
+
+                  Set_Etype         (N, Standard_Void_Type);
+                  Set_Entity        (N, State);
+                  Set_Is_Overloaded (N, False);
+
+                  Generate_Reference (State, N);
                   return;
                end if;
 
