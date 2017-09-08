@@ -5896,6 +5896,16 @@ package body Exp_Disp is
                   --  handling of renamings and eliminated primitives.
 
                   E        := Ultimate_Alias (Prim);
+
+                  --  If the alias is not a primitive operation then Prim does
+                  --  not rename another primitive, but rather an operation
+                  --  declared elsewhere (e.g. in another scope) and therefore
+                  --  Prim is a new primitive.
+
+                  if No (Find_Dispatching_Type (E)) then
+                     E := Prim;
+                  end if;
+
                   Prim_Pos := UI_To_Int (DT_Position (E));
 
                   --  Skip predefined primitives because they are located in a
@@ -7781,24 +7791,36 @@ package body Exp_Disp is
                Set_DT_Position_Value (Alias (Prim), DT_Position (E));
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
 
-            --  Overriding primitives must use the same entry as the
-            --  overridden primitive.
+            --  Overriding primitives must use the same entry as the overridden
+            --  primitive. Note that the Alias of the operation is set when the
+            --  operation is declared by a renaming, in which case it is not
+            --  overriding. If it renames another primitive it will use the
+            --  same dispatch table slot, but if it renames an operation in a
+            --  nested package it's a new primitive and will have its own slot.
 
             elsif not Present (Interface_Alias (Prim))
               and then Present (Alias (Prim))
               and then Chars (Prim) = Chars (Alias (Prim))
-              and then Find_Dispatching_Type (Alias (Prim)) /= Typ
-              and then Is_Ancestor
-                         (Find_Dispatching_Type (Alias (Prim)), Typ,
-                          Use_Full_View => True)
-              and then Present (DTC_Entity (Alias (Prim)))
+              and then Nkind (Unit_Declaration_Node (Prim)) /=
+                         N_Subprogram_Renaming_Declaration
             then
-               E := Alias (Prim);
-               Set_DT_Position_Value (Prim, DT_Position (E));
+               declare
+                  Par_Type : constant Entity_Id :=
+                    Find_Dispatching_Type (Alias (Prim));
+               begin
+                  if Present (Par_Type)
+                    and then Par_Type /= Typ
+                    and then Is_Ancestor (Par_Type, Typ, Use_Full_View => True)
+                    and then Present (DTC_Entity (Alias (Prim)))
+                  then
+                     E := Alias (Prim);
+                     Set_DT_Position_Value (Prim, DT_Position (E));
 
-               if not Is_Predefined_Dispatching_Alias (E) then
-                  Set_Fixed_Prim (UI_To_Int (DT_Position (E)));
-               end if;
+                     if not Is_Predefined_Dispatching_Alias (E) then
+                        Set_Fixed_Prim (UI_To_Int (DT_Position (E)));
+                     end if;
+                  end if;
+               end;
             end if;
 
             Next_Elmt (Prim_Elmt);

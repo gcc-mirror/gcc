@@ -1,3 +1,59 @@
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_N_Object_Renaming_Declaration):
+	Reimplemented.
+	(Expand_SPARK_Potential_Renaming): Code clean up.
+	* sem_prag.adb (Analyze_Initialization_Item): Add a guard in case
+	the item does not have a proper entity.
+	(Analyze_Input_Item): Add a guard in case the item does not have a
+	proper entity.
+	(Collect_States_And_Objects): Include object renamings in the
+	items being collected.
+	(Resolve_State): Update the documentation of this routine.
+	* sem_util.adb (Entity_Of): Add circuitry to handle
+	renamings of function results.
+	(Remove_Entity): New routine.
+	(Remove_Overloaded_Entity): Take advantage of factorization.
+	* sem_util.ads (Entity_Of): Update the documentation
+	of this routine.
+	(Remove_Entity): New routine.
+	(Remove_Overloaded_Entity): Update the documentation of this
+	routine.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Record_Info): During first loop,
+	do not override the normalized position and first bit
+	if they have already been set.	Move fallback code
+	for the packed case to the case where it belongs.
+	* sem_ch13.adb (Adjust_Record_For_Reverse_Bit_Order):
+	Also adjust the normalized position of components.
+	(Adjust_Record_For_Reverse_Bit_Order_Ada_95): Likewise.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_disp.adb (Make_DT, Set_All_DT_Position): Handle properly
+	the placement of a primitive operation O that renames an operation
+	R declared in an inner package, and which is thus not a primitive
+	of the dispatching type of O. In this case O is a new primitive
+	and does not inherit its dispatch table position from R (which
+	has none).
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_dim.adb (Analyze_Dimension_If_Expression,
+	Analyze_Dimension_Case_Expression): new subprograms to verify
+	the dimensional correctness of Ada2012 conditional expressions,
+	and set properly the dimensions of the construct.
+	* sem_res.adb (Resolve_If_Expression, Resolve_Case_Expression)):
+	call Analyze_Dimension.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_type.adb (Expand_Interface_Conversion): Prevent an infinite
+	loop on an interface declared as a private extension of another
+	synchronized interface.
+
 2017-09-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Check_Generic_Parent): New procedure within

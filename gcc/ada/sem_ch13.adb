@@ -627,6 +627,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
+                  Set_Normalized_Position  (Comp, Pos + NFB / SSU);
                   Set_Normalized_First_Bit (Comp, NFB mod SSU);
                end;
             end loop;
@@ -749,6 +750,9 @@ package body Sem_Ch13 is
                     (Storage_Unit_Offset * System_Storage_Unit) +
                       (System_Storage_Unit - 1) -
                       (Start_Bit + CSZ - 1));
+
+                  Set_Normalized_Position (Comp,
+                    Component_Bit_Offset (Comp) / System_Storage_Unit);
 
                   Set_Normalized_First_Bit (Comp,
                     Component_Bit_Offset (Comp) mod System_Storage_Unit);

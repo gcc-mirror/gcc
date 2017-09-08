@@ -6772,6 +6772,7 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
+      Analyze_Dimension (N);
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -8357,6 +8358,8 @@ package body Sem_Res is
       if not Error_Posted (N) then
          Eval_If_Expression (N);
       end if;
+
+      Analyze_Dimension (N);
    end Resolve_If_Expression;
 
    -------------------------------

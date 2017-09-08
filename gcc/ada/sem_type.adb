@@ -2947,11 +2947,14 @@ package body Sem_Type is
             --  Continue climbing
 
             else
-               --  Use the full-view of private types (if allowed)
+               --  Use the full-view of private types (if allowed).
+               --  Guard against infinite loops when full view has same
+               --  type as parent, as can happen with interface extensions,
 
                if Use_Full_View
                  and then Is_Private_Type (Par)
                  and then Present (Full_View (Par))
+                 and then Par /= Etype (Full_View (Par))
                then
                   Par := Etype (Full_View (Par));
                else

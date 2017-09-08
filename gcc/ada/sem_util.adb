@@ -7117,23 +7117,46 @@ package body Sem_Util is
    ---------------
 
    function Entity_Of (N : Node_Id) return Entity_Id is
-      Id : Entity_Id;
+      Id  : Entity_Id;
+      Ren : Node_Id;
 
    begin
+      --  Assume that the arbitrary node does not have an entity
+
       Id := Empty;
 
       if Is_Entity_Name (N) then
          Id := Entity (N);
 
-         --  Follow a possible chain of renamings to reach the root renamed
-         --  object.
+         --  Follow a possible chain of renamings to reach the earliest renamed
+         --  source object.
 
          while Present (Id)
            and then Is_Object (Id)
            and then Present (Renamed_Object (Id))
          loop
-            if Is_Entity_Name (Renamed_Object (Id)) then
-               Id := Entity (Renamed_Object (Id));
+            Ren := Renamed_Object (Id);
+
+            --  The reference renames an abstract state or a whole object
+
+            --    Obj : ...;
+            --    Ren : ... renames Obj;
+
+            if Is_Entity_Name (Ren) then
+               Id := Entity (Ren);
+
+            --  The reference renames a function result. Check the original
+            --  node in case expansion relocates the function call.
+
+            --    Ren : ... renames Func_Call;
+
+            elsif Nkind (Original_Node (Ren)) = N_Function_Call then
+               exit;
+
+            --  Otherwise the reference renames something which does not yield
+            --  an abstract state or a whole object. Treat the reference as not
+            --  having a proper entity for SPARK legality purposes.
+
             else
                Id := Empty;
                exit;
@@ -20369,6 +20392,61 @@ package body Sem_Util is
       end if;
    end References_Generic_Formal_Type;
 
+   -------------------
+   -- Remove_Entity --
+   -------------------
+
+   procedure Remove_Entity (Id : Entity_Id) is
+      Scop    : constant Entity_Id := Scope (Id);
+      Prev_Id : Entity_Id;
+
+   begin
+      --  Remove the entity from the homonym chain. When the entity is the
+      --  head of the chain, associate the entry in the name table with its
+      --  homonym effectively making it the new head of the chain.
+
+      if Current_Entity (Id) = Id then
+         Set_Name_Entity_Id (Chars (Id), Homonym (Id));
+
+      --  Otherwise link the previous and next homonyms
+
+      else
+         Prev_Id := Current_Entity (Id);
+         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
+            Prev_Id := Homonym (Prev_Id);
+         end loop;
+
+         Set_Homonym (Prev_Id, Homonym (Id));
+      end if;
+
+      --  Remove the entity from the scope entity chain. When the entity is
+      --  the head of the chain, set the next entity as the new head of the
+      --  chain.
+
+      if First_Entity (Scop) = Id then
+         Prev_Id := Empty;
+         Set_First_Entity (Scop, Next_Entity (Id));
+
+      --  Otherwise the entity is either in the middle of the chain or it acts
+      --  as its tail. Traverse and link the previous and next entities.
+
+      else
+         Prev_Id := First_Entity (Scop);
+         while Present (Prev_Id) and then Next_Entity (Prev_Id) /= Id loop
+            Next_Entity (Prev_Id);
+         end loop;
+
+         Set_Next_Entity (Prev_Id, Next_Entity (Id));
+      end if;
+
+      --  Handle the case where the entity acts as the tail of the scope entity
+      --  chain.
+
+      if Last_Entity (Scop) = Id then
+         Set_Last_Entity (Scop, Prev_Id);
+      end if;
+   end Remove_Entity;
+
    --------------------
    -- Remove_Homonym --
    --------------------
@@ -20428,57 +20506,14 @@ package body Sem_Util is
 
       --  Local variables
 
-      Scop    : constant Entity_Id := Scope (Id);
-      Formal  : Entity_Id;
-      Prev_Id : Entity_Id;
+      Formal : Entity_Id;
 
    --  Start of processing for Remove_Overloaded_Entity
 
    begin
-      --  Remove the entity from the homonym chain. When the entity is the
-      --  head of the chain, associate the entry in the name table with its
-      --  homonym effectively making it the new head of the chain.
+      --  Remove the entity from both the homonym and scope chains
 
-      if Current_Entity (Id) = Id then
-         Set_Name_Entity_Id (Chars (Id), Homonym (Id));
-
-      --  Otherwise link the previous and next homonyms
-
-      else
-         Prev_Id := Current_Entity (Id);
-         while Present (Prev_Id) and then Homonym (Prev_Id) /= Id loop
-            Prev_Id := Homonym (Prev_Id);
-         end loop;
-
-         Set_Homonym (Prev_Id, Homonym (Id));
-      end if;
-
-      --  Remove the entity from the scope entity chain. When the entity is
-      --  the head of the chain, set the next entity as the new head of the
-      --  chain.
-
-      if First_Entity (Scop) = Id then
-         Prev_Id := Empty;
-         Set_First_Entity (Scop, Next_Entity (Id));
-
-      --  Otherwise the entity is either in the middle of the chain or it acts
-      --  as its tail. Traverse and link the previous and next entities.
-
-      else
-         Prev_Id := First_Entity (Scop);
-         while Present (Prev_Id) and then Next_Entity (Prev_Id) /= Id loop
-            Next_Entity (Prev_Id);
-         end loop;
-
-         Set_Next_Entity (Prev_Id, Next_Entity (Id));
-      end if;
-
-      --  Handle the case where the entity acts as the tail of the scope entity
-      --  chain.
-
-      if Last_Entity (Scop) = Id then
-         Set_Last_Entity (Scop, Prev_Id);
-      end if;
+      Remove_Entity (Id);
 
       --  The entity denotes a primitive subprogram. Remove it from the list of
       --  primitives of the associated controlling type.

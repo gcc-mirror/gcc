@@ -194,6 +194,8 @@ package body Sem_Dim is
 
    OK_For_Dimension : constant array (Node_Kind) of Boolean :=
      (N_Attribute_Reference       => True,
+      N_Case_Expression           => True,
+      N_If_Expression             => True,
       N_Expanded_Name             => True,
       N_Explicit_Dereference      => True,
       N_Defining_Identifier       => True,
@@ -253,6 +255,12 @@ package body Sem_Dim is
    --    N_Slice
    --    N_Type_Conversion
    --    N_Unchecked_Type_Conversion
+
+   procedure Analyze_Dimension_Case_Expression (N : Node_Id);
+   --  Verify that all alternatives have the same dimension
+
+   procedure Analyze_Dimension_If_Expression (N : Node_Id);
+   --  Verify that all alternatives have the same dimension
 
    procedure Analyze_Dimension_Number_Declaration (N : Node_Id);
    --  Procedure to analyze dimension of expression in a number declaration.
@@ -1179,6 +1187,12 @@ package body Sem_Dim is
          =>
             Analyze_Dimension_Has_Etype (N);
 
+         when N_Case_Expression =>
+            Analyze_Dimension_Case_Expression (N);
+
+         when N_If_Expression =>
+            Analyze_Dimension_If_Expression (N);
+
          --  In the presence of a repaired syntax error, an identifier
          --  may be introduced without a usable type.
 
@@ -1768,6 +1782,27 @@ package body Sem_Dim is
       end if;
    end Analyze_Dimension_Call;
 
+   ---------------------------------------
+   -- Analyze_Dimension_Case_Expression --
+   ---------------------------------------
+
+   procedure Analyze_Dimension_Case_Expression (N : Node_Id) is
+      Alt : Node_Id;
+      Frst : constant Node_Id := First (Alternatives (N));
+      Dims : constant Dimension_Type := Dimensions_Of (Expression (Frst));
+   begin
+      Alt := Next (Frst);
+      while Present (Alt) loop
+         if Dimensions_Of (Expression (Alt)) /= Dims then
+            Error_Msg_N ("dimension mismatch in case expression", Alt);
+            exit;
+         end if;
+
+         Next (Alt);
+      end loop;
+      Copy_Dimensions (Expression (Frst), N);
+   end Analyze_Dimension_Case_Expression;
+
    ---------------------------------------------
    -- Analyze_Dimension_Component_Declaration --
    ---------------------------------------------
@@ -2101,6 +2136,21 @@ package body Sem_Dim is
             null;
       end case;
    end Analyze_Dimension_Has_Etype;
+
+   -------------------------------------
+   -- Analyze_Dimension_If_Expression --
+   -------------------------------------
+
+   procedure Analyze_Dimension_If_Expression (N : Node_Id) is
+      Then_Expr : constant Node_Id := Next (First (Expressions (N)));
+      Else_Expr : constant Node_Id := Next (Then_Expr);
+   begin
+      if Dimensions_Of (Then_Expr) /= Dimensions_Of (Else_Expr) then
+         Error_Msg_N ("dimensions mismatch in conditional expression", N);
+      else
+         Copy_Dimensions (Then_Expr, N);
+      end if;
+   end Analyze_Dimension_If_Expression;
 
    ------------------------------------------
    -- Analyze_Dimension_Number_Declaration --
