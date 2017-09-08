@@ -21556,9 +21556,11 @@ package body Sem_Ch3 is
                Error_Msg_N ("invalid subtype mark in subtype indication", S);
          end case;
 
-         --  Size and Convention are always inherited from the base type
+         --  Size, Alignment, Representation aspects and Convention are always
+         --  inherited from the base type.
 
          Set_Size_Info  (Def_Id,            (Subtype_Mark_Id));
+         Set_Rep_Info   (Def_Id,            (Subtype_Mark_Id));
          Set_Convention (Def_Id, Convention (Subtype_Mark_Id));
 
          return Def_Id;

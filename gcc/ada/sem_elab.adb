@@ -721,22 +721,25 @@ package body Sem_Elab is
         and then not Is_Call_Of_Generic_Formal (N)
       then
          return;
-      end if;
 
       --  If this is a rewrite of a Valid_Scalars attribute, then nothing to
       --  check, we don't mind in this case if the call occurs before the body
       --  since this is all generated code.
 
-      if Nkind (Original_Node (N)) = N_Attribute_Reference
+      elsif Nkind (Original_Node (N)) = N_Attribute_Reference
         and then Attribute_Name (Original_Node (N)) = Name_Valid_Scalars
       then
          return;
-      end if;
 
       --  Intrinsics such as instances of Unchecked_Deallocation do not have
       --  any body, so elaboration checking is not needed, and would be wrong.
 
-      if Is_Intrinsic_Subprogram (E) then
+      elsif Is_Intrinsic_Subprogram (E) then
+         return;
+
+      --  Do not consider references to internal variables for SPARK semantics
+
+      elsif Variable_Case and then not Comes_From_Source (E) then
          return;
       end if;
 

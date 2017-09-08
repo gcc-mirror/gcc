@@ -2473,6 +2473,12 @@ package Sem_Util is
    --  (Referenced_As_LHS if Out_Param is False, Referenced_As_Out_Parameter
    --  if Out_Param is True) is set True, and the other flag set False.
 
+   procedure Set_Rep_Info (T1, T2 : Entity_Id);
+   pragma Inline (Set_Rep_Info);
+   --  Copies the Is_Atomic, Is_Independent and Is_Volatile_Full_Access flags
+   --  from sub(type) entity T2 to (sub)type entity T1, as well as Is_Volatile
+   --  if T1 is a base type.
+
    procedure Set_Scope_Is_Transient (V : Boolean := True);
    --  Set the flag Is_Transient of the current scope
 

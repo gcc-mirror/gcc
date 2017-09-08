@@ -1,3 +1,25 @@
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_elab.adb (Check_A_Call): Do not consider
+	references to internal variables for SPARK semantics.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* inline.adb (In_Package_Spec): refine type of
+	the parameter from Node_Id to Entity_Id.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Loop):
+	Reset the scope of the loop parameter after it is reanalyzed.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Set_Rep_Info): New inline procedure.
+	* sem_util.adb (Set_Rep_Info): Implement it.
+	* sem_ch3.adb (Process_Subtype): If the case of a constraint present,
+	always copy the representation aspects onto the subtype.
+
 2017-09-08  Georges-Alex Jaloyan  <jaloyan@adacore.com>
 
 	* g-dynhta.adb, g-dynhta.ads (Get_First_Key, Get_Next_key):
