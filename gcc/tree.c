@@ -13220,9 +13220,7 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-  /* FIXME: this is violated by the C++ FE as discussed in PR70029, when
-     FUNCTION_*_QUALIFIED flags are set.  */
-  if (0 && TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
+  if (TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
    {
       error ("TYPE_CANONICAL of main variant is not main variant");
       debug_tree (ct);

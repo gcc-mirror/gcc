@@ -1,3 +1,14 @@
+2017-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* langhooks.h (struct lang_hooks_for_types): Add
+	copy_lang_qualifiers.
+	* attribs.c (build_type_attribute_qual_variant): Use it.
+	* langhooks-def.h (LANG_HOOKS_COPY_LANG_QUALIFIERS): Default to
+	NULL.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use it.
+	* tree.c (verify_type): Re-enable TYPE_CANONICAL main variant check.
+
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/81988

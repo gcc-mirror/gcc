@@ -123,6 +123,10 @@ struct lang_hooks_for_types
      FUNCTION_TYPE or METHOD_TYPE.  */
   bool (*type_hash_eq) (const_tree, const_tree);
 
+  /* If non-NULL, return TYPE1 with any language-specific modifiers copied from
+     TYPE2.  */
+  tree (*copy_lang_qualifiers) (const_tree, const_tree);
+
   /* Return TRUE if TYPE uses a hidden descriptor and fills in information
      for the debugger about the array bounds, strides, etc.  */
   bool (*get_array_descr_info) (const_tree, struct array_descr_info *);
