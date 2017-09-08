@@ -205,7 +205,7 @@ package body Sem_Util is
             Nod := Type_Definition (Parent (Typ));
          end if;
 
-      --  It's not the kind of type that can implement interfaces
+      --  Otherwise the type is of a kind which does not implement interfaces
 
       else
          return Empty_List;
@@ -12381,6 +12381,52 @@ package body Sem_Util is
                   Is_RTE (Root_Type (Under), RO_WI_Super_String) or else
                   Is_RTE (Root_Type (Under), RO_WW_Super_String));
    end Is_Bounded_String;
+
+   ---------------------
+   -- Is_CCT_Instance --
+   ---------------------
+
+   function Is_CCT_Instance
+     (Ref_Id     : Entity_Id;
+      Context_Id : Entity_Id) return Boolean
+   is
+   begin
+      pragma Assert
+        (Is_Entry (Context_Id)
+           or else
+         Ekind_In (Context_Id, E_Function,
+                               E_Procedure,
+                               E_Protected_Type,
+                               E_Task_Type)
+           or else
+         Is_Single_Concurrent_Object (Context_Id));
+
+      --  When the reference denotes a single protected type, the context is
+      --  either a protected subprogram or its body.
+
+      if Is_Single_Protected_Object (Ref_Id) then
+         return Scope_Within (Context_Id, Etype (Ref_Id));
+
+      --  When the reference denotes a single task type, the context is either
+      --  the same type or if inside the body, the anonymous task object.
+
+      elsif Is_Single_Task_Object (Ref_Id) then
+         if Is_Single_Task_Object (Context_Id) then
+            return Context_Id = Ref_Id;
+
+         elsif Ekind (Context_Id) = E_Task_Type then
+            return Context_Id = Etype (Ref_Id);
+
+         else
+            return Scope_Within_Or_Same (Context_Id, Etype (Ref_Id));
+         end if;
+
+      else
+         pragma Assert (Ekind_In (Ref_Id, E_Protected_Type, E_Task_Type));
+
+         return Scope_Within_Or_Same (Context_Id, Ref_Id);
+      end if;
+   end Is_CCT_Instance;
 
    -------------------------
    -- Is_Child_Or_Sibling --

@@ -9580,6 +9580,7 @@ package body Sem_Ch3 is
       --  type, and from any interfaces.
 
       Inherit_Rep_Item_Chain (Derived_Type, Parent_Type);
+
       declare
          Iface : Node_Id := First (Abstract_Interface_List (Derived_Type));
       begin
