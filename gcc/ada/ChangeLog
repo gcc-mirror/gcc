@@ -1,3 +1,36 @@
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Generic_Parent): New procedure within
+	Analyze_Associations, to handle actual packages that depend on
+	previous instances.  If a package IAP that is an instantiation is
+	used as an actual in a subsequent instantiation SI in the same
+	scope, and IAP has a body, IAP must be frozen before SI. If
+	the generic parent of IAP is itself declared in a previous
+	instantiation in the same scope, that instantiation must also
+	be frozen before SI.
+	(Install_Body): Prevent double insertion of freeze node for
+	instance.
+
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Resolve_State): Update the
+	comment on documentation. Generate a reference to the state once
+	resolution takes place.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Specifications, case
+	Linker_Section): If the aspect applies to an object declaration
+	with explicit initialization, do not delay the freezing of the
+	object, to prevent access-before-elaboration in the generated
+	initialization code.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* a-wtdeio.adb (Put, all versions): Use Long_Long_Integer
+	(Integer_Value (Item)) when the size of the fixed decimal type
+	is larger than Integer.
+
 2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/82127
