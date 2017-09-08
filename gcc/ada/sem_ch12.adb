@@ -12080,7 +12080,10 @@ package body Sem_Ch12 is
          --  for static matching has failed. The case where both the component
          --  type and the array type are separate formals, and the component
          --  type is a private view may also require special checking in
-         --  Subtypes_Match.
+         --  Subtypes_Match. Finally, we assume that a child instance where
+         --  the component type comes from a formal of a parent instance is
+         --  correct because the generic was correct. A more precise check
+         --  seems too complex to install???
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
@@ -12088,6 +12091,9 @@ package body Sem_Ch12 is
                Subtypes_Match
                  (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
                   Component_Type (Act_T))
+            or else
+              (not Inside_A_Generic
+                 and then Is_Child_Unit (Scope (Component_Type (A_Gen_T))))
          then
             null;
          else

@@ -971,7 +971,7 @@ package body Sem_Prag is
                      --  (SPARK RM 6.1.4).
 
                      elsif Is_Single_Task_Object (Item_Id)
-                       and then Is_CCT_Instance (Item_Id, Spec_Id)
+                       and then Is_CCT_Instance (Etype (Item_Id), Spec_Id)
                      then
                         Current_Task_Instance_Seen;
                      end if;
@@ -2218,7 +2218,7 @@ package body Sem_Prag is
                --  is the same single type (SPARK RM 6.1.4).
 
                elsif Is_Single_Concurrent_Object (Item_Id)
-                 and then Is_CCT_Instance (Item_Id, Spec_Id)
+                 and then Is_CCT_Instance (Etype (Item_Id), Spec_Id)
                then
                   --  Pragma [Refined_]Global associated with a protected
                   --  subprogram cannot mention the current instance of a
