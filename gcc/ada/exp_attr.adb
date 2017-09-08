@@ -423,6 +423,10 @@ package body Exp_Attr is
    --       return True;
    --    end _Valid_Scalars;
 
+   --  If the record type is an unchecked union, we can only check components
+   --  in the invariant part, given that there are no discriminant values to
+   --  select a variant.
+
    function Build_Record_VS_Func
      (R_Type : Entity_Id;
       Nod    : Node_Id) return Entity_Id
@@ -475,7 +479,9 @@ package body Exp_Attr is
       begin
          Append_To (Result, Make_VS_If (E, Component_Items (CL)));
 
-         if No (Variant_Part (CL)) then
+         if No (Variant_Part (CL))
+           or else Is_Unchecked_Union (R_Type)
+         then
             return Result;
          end if;
 
@@ -562,6 +568,11 @@ package body Exp_Attr is
                --  Don't bother with tag, always valid, and not scalar anyway
 
                elsif Field_Name = Name_uTag then
+                  null;
+
+               elsif Ekind (Def_Id) = E_Discriminant
+                 and then Is_Unchecked_Union (R_Type)
+               then
                   null;
 
                --  Don't bother with component with no scalar components

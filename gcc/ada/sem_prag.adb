@@ -17916,10 +17916,40 @@ package body Sem_Prag is
 
             Variant := First (Pragma_Argument_Associations (N));
             while Present (Variant) loop
-               if not Nam_In (Chars (Variant), Name_Decreases,
-                                               Name_Increases)
+               if Chars (Variant) = No_Name then
+                  Error_Pragma_Arg ("expect name `Increases`", Variant);
+
+               elsif not Nam_In (Chars (Variant), Name_Decreases,
+                                                  Name_Increases)
                then
-                  Error_Pragma_Arg ("wrong change modifier", Variant);
+                  declare
+                     Name : constant String :=
+                       Get_Name_String (Chars (Variant));
+                  begin
+                     --  It is a common mistake to write "Increasing" for
+                     --  "Increases" or "Decreasing" for "Decreases". Recognize
+                     --  specially names starting with "Incr" or "Decr" to
+                     --  suggest the corresponding name.
+
+                     if Name'Length >= 4
+                       and then (Name (1 .. 4) = "Incr"
+                                   or else Name (1 .. 4) = "incr")
+                     then
+                        Error_Pragma_Arg_Ident
+                          ("expect name `Increases`", Variant);
+
+                     elsif Name'Length >= 4
+                       and then (Name (1 .. 4) = "Decr"
+                                   or else Name (1 .. 4) = "decr")
+                     then
+                        Error_Pragma_Arg_Ident
+                          ("expect name `Decreases`", Variant);
+
+                     else
+                        Error_Pragma_Arg_Ident
+                          ("expect name `Increases` or `Decreases`", Variant);
+                     end if;
+                  end;
                end if;
 
                Preanalyze_Assert_Expression

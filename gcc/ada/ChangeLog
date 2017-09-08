@@ -1,3 +1,20 @@
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Issue more precise error messages on
+	Loop_Variant.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_attr.adb (Build_Record_VS_Func): If the record is an
+	unchecked union, do not emit checks for its (non-existent)
+	discriminants, or for variant parts that depend on them.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch4.adb (Find_Equality_Types.Try_One_Interp,
+	Find_Comparison_Type.Try_One_Interp): Add check for generic
+	instances.
+
 2017-09-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_ch3.adb, layout.adb, layout.ads, exp_attr.adb, debug.adb,
