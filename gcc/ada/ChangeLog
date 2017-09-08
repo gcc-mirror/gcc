@@ -1,3 +1,36 @@
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb: Use System.Case_Util.To_Lower to simplify code.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* opt.ads (Include_Subprogram_In_Messages): New variable.
+	* errout.ads (Current_Subprogram_Ptr): New variable.
+	* errout.adb (Error_Msg): Prepend current subprogram info
+	in messages if Include_Subprogram_In_Messages is set.
+	* sem_util.adb (elab code): Initialize Current_Subprogram_Ptr to
+	Current_Subprogram.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Include_Subprogram_In_Messages when -gnatdJ is set.
+	* debug.adb: Document and reserve -gnatdJ.
+
+2017-09-08  Georges-Axel Jaloyan  <jaloyan@adacore.com>
+
+	* g-dynhta.adb, g-dynhta.ads (Get_First_Key, Get_Next_Key): New
+	functions to iterate over simple hastables.
+	(Load_Factor_HTable): Remove obsolete and inefficient implementation.
+
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.adb (Unqual_BIP_Function_Call): Adding
+	missing checks on the presence of Entity() before checking the
+	entity attributes.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Reorder some
+	statements, use local variable and remove unnecessary processing.
+
 2017-09-08  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch6.ads (Make_Build_In_Place_Iface_Call_In_Allocator): New

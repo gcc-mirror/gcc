@@ -9100,6 +9100,7 @@ package body Exp_Ch6 is
          --  Recurse on object renamings
 
          elsif Nkind (Expr) = N_Identifier
+           and then Present (Entity (Expr))
            and then Ekind_In (Entity (Expr), E_Constant, E_Variable)
            and then Nkind (Parent (Entity (Expr))) =
                       N_Object_Renaming_Declaration
@@ -9112,6 +9113,7 @@ package body Exp_Ch6 is
 
          elsif not On_Object_Declaration
            and then Nkind (Expr) = N_Identifier
+           and then Present (Entity (Expr))
            and then Ekind_In (Entity (Expr), E_Constant, E_Variable)
            and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
            and then Present (Expression (Parent (Entity (Expr))))
@@ -9125,6 +9127,7 @@ package body Exp_Ch6 is
 
          elsif Nkind (Expr) = N_Function_Call
            and then Nkind (Name (Expr)) in N_Has_Entity
+           and then Present (Entity (Name (Expr)))
            and then RTU_Loaded (Ada_Tags)
            and then RTE_Available (RE_Displace)
            and then Is_RTE (Entity (Name (Expr)), RE_Displace)
