@@ -343,7 +343,6 @@ package body Sem_Ch6 is
          ----------------------
 
          function Freeze_Type_Refs (Node : Node_Id) return Traverse_Result is
-
             procedure Check_And_Freeze_Type (Typ : Entity_Id);
             --  Check that Typ is fully declared and freeze it if so
 
@@ -371,8 +370,7 @@ package body Sem_Ch6 is
                   if Has_Private_Component (Typ)
                     and then not Is_Private_Type (Typ)
                   then
-                     Error_Msg_NE
-                       ("\type& has private component", Node, Typ);
+                     Error_Msg_NE ("\type& has private component", Node, Typ);
                   end if;
 
                else

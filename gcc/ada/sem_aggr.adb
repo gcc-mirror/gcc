@@ -1694,13 +1694,16 @@ package body Sem_Aggr is
          --  may have several choices, each one leading to a loop, so we create
          --  this variable only once to prevent homonyms in this scope.
          --  The expression has to be analyzed once the index variable is
-         --  directly visible.
+         --  directly visible. Mark the variable as referenced to prevent
+         --  spurious warnings, given that subsequent uses of its name in the
+         --  expression will reference the internal (synonym) loop variable.
 
          if No (Scope (Id)) then
             Enter_Name (Id);
             Set_Etype (Id, Index_Typ);
             Set_Ekind (Id, E_Variable);
             Set_Scope (Id, Ent);
+            Set_Referenced (Id);
          end if;
 
          Push_Scope (Ent);

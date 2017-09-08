@@ -29,65 +29,66 @@
 --  to complete the syntax checks. Certain pragmas are handled partially or
 --  completely by the parser (see Par.Prag for further details).
 
-with Aspects;          use Aspects;
-with Atree;            use Atree;
-with Casing;           use Casing;
-with Checks;           use Checks;
-with Contracts;        use Contracts;
-with Csets;            use Csets;
-with Debug;            use Debug;
-with Einfo;            use Einfo;
-with Elists;           use Elists;
-with Errout;           use Errout;
-with Exp_Dist;         use Exp_Dist;
-with Exp_Util;         use Exp_Util;
-with Freeze;           use Freeze;
-with Ghost;            use Ghost;
-with Gnatvsn;          use Gnatvsn;
-with Lib;              use Lib;
-with Lib.Writ;         use Lib.Writ;
-with Lib.Xref;         use Lib.Xref;
-with Namet.Sp;         use Namet.Sp;
-with Nlists;           use Nlists;
-with Nmake;            use Nmake;
-with Output;           use Output;
-with Par_SCO;          use Par_SCO;
-with Restrict;         use Restrict;
-with Rident;           use Rident;
-with Rtsfind;          use Rtsfind;
-with Sem;              use Sem;
-with Sem_Aux;          use Sem_Aux;
-with Sem_Ch3;          use Sem_Ch3;
-with Sem_Ch6;          use Sem_Ch6;
-with Sem_Ch8;          use Sem_Ch8;
-with Sem_Ch12;         use Sem_Ch12;
-with Sem_Ch13;         use Sem_Ch13;
-with Sem_Disp;         use Sem_Disp;
-with Sem_Dist;         use Sem_Dist;
-with Sem_Elim;         use Sem_Elim;
-with Sem_Eval;         use Sem_Eval;
-with Sem_Intr;         use Sem_Intr;
-with Sem_Mech;         use Sem_Mech;
-with Sem_Res;          use Sem_Res;
-with Sem_Type;         use Sem_Type;
-with Sem_Util;         use Sem_Util;
-with Sem_Warn;         use Sem_Warn;
-with Stand;            use Stand;
-with Sinfo;            use Sinfo;
-with Sinfo.CN;         use Sinfo.CN;
-with Sinput;           use Sinput;
-with Stringt;          use Stringt;
-with Stylesw;          use Stylesw;
-with System.Case_Util;
+with Aspects;   use Aspects;
+with Atree;     use Atree;
+with Casing;    use Casing;
+with Checks;    use Checks;
+with Contracts; use Contracts;
+with Csets;     use Csets;
+with Debug;     use Debug;
+with Einfo;     use Einfo;
+with Elists;    use Elists;
+with Errout;    use Errout;
+with Exp_Dist;  use Exp_Dist;
+with Exp_Util;  use Exp_Util;
+with Freeze;    use Freeze;
+with Ghost;     use Ghost;
+with Gnatvsn;   use Gnatvsn;
+with Lib;       use Lib;
+with Lib.Writ;  use Lib.Writ;
+with Lib.Xref;  use Lib.Xref;
+with Namet.Sp;  use Namet.Sp;
+with Nlists;    use Nlists;
+with Nmake;     use Nmake;
+with Output;    use Output;
+with Par_SCO;   use Par_SCO;
+with Restrict;  use Restrict;
+with Rident;    use Rident;
+with Rtsfind;   use Rtsfind;
+with Sem;       use Sem;
+with Sem_Aux;   use Sem_Aux;
+with Sem_Ch3;   use Sem_Ch3;
+with Sem_Ch6;   use Sem_Ch6;
+with Sem_Ch8;   use Sem_Ch8;
+with Sem_Ch12;  use Sem_Ch12;
+with Sem_Ch13;  use Sem_Ch13;
+with Sem_Disp;  use Sem_Disp;
+with Sem_Dist;  use Sem_Dist;
+with Sem_Elim;  use Sem_Elim;
+with Sem_Eval;  use Sem_Eval;
+with Sem_Intr;  use Sem_Intr;
+with Sem_Mech;  use Sem_Mech;
+with Sem_Res;   use Sem_Res;
+with Sem_Type;  use Sem_Type;
+with Sem_Util;  use Sem_Util;
+with Sem_Warn;  use Sem_Warn;
+with Stand;     use Stand;
+with Sinfo;     use Sinfo;
+with Sinfo.CN;  use Sinfo.CN;
+with Sinput;    use Sinput;
+with Stringt;   use Stringt;
+with Stylesw;   use Stylesw;
 with Table;
-with Targparm;         use Targparm;
-with Tbuild;           use Tbuild;
+with Targparm;  use Targparm;
+with Tbuild;    use Tbuild;
 with Ttypes;
-with Uintp;            use Uintp;
-with Uname;            use Uname;
-with Urealp;           use Urealp;
-with Validsw;          use Validsw;
-with Warnsw;           use Warnsw;
+with Uintp;     use Uintp;
+with Uname;     use Uname;
+with Urealp;    use Urealp;
+with Validsw;   use Validsw;
+with Warnsw;    use Warnsw;
+
+with System.Case_Util;
 
 package body Sem_Prag is
 
@@ -17924,8 +17925,8 @@ package body Sem_Prag is
                                                   Name_Increases)
                then
                   declare
-                     Name : String :=
-                              Get_Name_String (Chars (Variant));
+                     Name : String := Get_Name_String (Chars (Variant));
+
                   begin
                      --  It is a common mistake to write "Increasing" for
                      --  "Increases" or "Decreasing" for "Decreases". Recognize

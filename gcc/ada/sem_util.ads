@@ -105,6 +105,12 @@ package Sem_Util is
    --  irrelevant. Also called for array aggregates, but only named notation,
    --  because those are the only dynamic cases.
 
+   procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id);
+   --  Recursive procedure to construct string for qualified name of enclosing
+   --  program unit. The qualification stops at an enclosing scope has no
+   --  source name (block or loop). If entity is a subprogram instance, skip
+   --  enclosing wrapper package. The name is appended to Buf.
+
    procedure Append_Inherited_Subprogram (S : Entity_Id);
    --  If the parent of the operation is declared in the visible part of
    --  the current scope, the inherited operation is visible even though the
@@ -2473,7 +2479,7 @@ package Sem_Util is
    --  (Referenced_As_LHS if Out_Param is False, Referenced_As_Out_Parameter
    --  if Out_Param is True) is set True, and the other flag set False.
 
-   procedure Set_Rep_Info (T1, T2 : Entity_Id);
+   procedure Set_Rep_Info (T1 : Entity_Id; T2 : Entity_Id);
    pragma Inline (Set_Rep_Info);
    --  Copies the Is_Atomic, Is_Independent and Is_Volatile_Full_Access flags
    --  from sub(type) entity T2 to (sub)type entity T1, as well as Is_Volatile

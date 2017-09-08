@@ -338,17 +338,22 @@ package body Exp_Prag is
       ------------------------------------------
 
       procedure Replace_Discriminals_Of_Protected_Op (Expr : Node_Id) is
-         function Find_Corresponding_Discriminal (E : Entity_Id)
-           return Entity_Id;
-         --  Find the local entity that renames a discriminant of the
-         --  enclosing protected type, and has a matching name.
+         function Find_Corresponding_Discriminal
+           (E : Entity_Id) return Entity_Id;
+         --  Find the local entity that renames a discriminant of the enclosing
+         --  protected type, and has a matching name.
+
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
+         --  Replace a reference to a discriminant of the original protected
+         --  type by the local renaming declaration of the discriminant of
+         --  the target object.
 
          ------------------------------------
-         -- find_Corresponding_Discriminal --
+         -- Find_Corresponding_Discriminal --
          ------------------------------------
 
-         function Find_Corresponding_Discriminal (E : Entity_Id)
-           return Entity_Id
+         function Find_Corresponding_Discriminal
+           (E : Entity_Id) return Entity_Id
          is
             R : Entity_Id;
 
@@ -369,34 +374,34 @@ package body Exp_Prag is
             return Empty;
          end Find_Corresponding_Discriminal;
 
-         function  Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
-         --  Replace a reference to a discriminant of the original protected
-         --  type by the local renaming declaration of the discriminant of
-         --  the target object.
-
          -----------------------
          -- Replace_Discr_Ref --
          -----------------------
 
-         function  Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
             R : Entity_Id;
 
          begin
             if Is_Entity_Name (N)
-               and then Present (Discriminal_Link (Entity (N)))
+              and then Present (Discriminal_Link (Entity (N)))
             then
                R := Find_Corresponding_Discriminal (Entity (N));
                Rewrite (N, New_Occurrence_Of (R, Sloc (N)));
             end if;
+
             return OK;
          end Replace_Discr_Ref;
 
          procedure Replace_Discriminant_References is
            new Traverse_Proc (Replace_Discr_Ref);
 
+      --  Start of processing for Replace_Discriminals_Of_Protected_Op
+
       begin
          Replace_Discriminant_References (Expr);
       end Replace_Discriminals_Of_Protected_Op;
+
+   --  Start of processing for Expand_Pragma_Check
 
    begin
       --  Nothing to do if pragma is ignored
