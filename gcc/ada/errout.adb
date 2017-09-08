@@ -1434,10 +1434,6 @@ package body Errout is
             if Errors.Table (E).Info then
                Warning_Info_Messages := Warning_Info_Messages - 1;
             end if;
-
-            if Errors.Table (E).Warn_Err then
-               Warnings_Treated_As_Errors := Warnings_Treated_As_Errors - 1;
-            end if;
          end if;
       end Delete_Warning;
 

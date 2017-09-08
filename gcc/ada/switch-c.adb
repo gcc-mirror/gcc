@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1143,19 +1143,24 @@ package body Switch.C is
                while Ptr <= Max loop
                   C := Switch_Chars (Ptr);
 
-                  if C in '1' .. '3' then
+                  case C is
+
+                  when '0' .. '3' =>
                      List_Representation_Info :=
                        Character'Pos (C) - Character'Pos ('0');
 
-                  elsif Switch_Chars (Ptr) = 's' then
+                  when 's' =>
                      List_Representation_Info_To_File := True;
 
-                  elsif Switch_Chars (Ptr) = 'm' then
+                  when 'm' =>
                      List_Representation_Info_Mechanisms := True;
 
-                  else
+                  when 'e' =>
+                     List_Representation_Info_Extended := True;
+
+                  when others =>
                      Bad_Switch ("-gnatR" & Switch_Chars (Ptr .. Max));
-                  end if;
+                  end case;
 
                   Ptr := Ptr + 1;
                end loop;

@@ -540,7 +540,7 @@ procedure Gnat1drv is
          Configurable_Run_Time_Mode := True;
       end if;
 
-      --  Set -gnatR3m mode if debug flag A set
+      --  Set -gnatRm mode if debug flag A set
 
       if Debug_Flag_AA then
          Back_Annotate_Rep_Info := True;
