@@ -640,7 +640,11 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
   GCC_SPEC_FILES+=vxworks-gnat-crtbe-link.spec
 
   ifeq ($(strip $(filter-out vxworks7%, $(target_os))),)
-    GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
+    ifeq ($(strip $(filter-out powerpc64, $(target_cpu))),)
+      GCC_SPEC_FILES+=vxworks7-ppc64-rtp-base-link.spec
+    else
+      GCC_SPEC_FILES+=vxworks7-rtp-base-link.spec
+    endif
   else
     GCC_SPEC_FILES+=vxworks-$(ARCH_STR)-link.spec
     GCC_SPEC_FILES+=vxworks-cert-$(ARCH_STR)-link.spec
