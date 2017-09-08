@@ -12499,6 +12499,7 @@ package body Sem_Util is
                                               E_Function,
                                               E_Package,
                                               E_Procedure,
+                                              E_Protected_Type,
                                               E_Task_Type));
 
          return Scope_Within_Or_Same (Context_Id, Ref_Id);
