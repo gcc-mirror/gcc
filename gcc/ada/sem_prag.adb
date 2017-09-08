@@ -3247,6 +3247,7 @@ package body Sem_Prag is
             SPARK_Msg_NE
               ("\& is not part of the hidden state of package %",
                Indic, Item_Id);
+            return;
 
          --  The item appears in the visible state space of some package. In
          --  general this scenario does not warrant Part_Of except when the
@@ -3283,6 +3284,7 @@ package body Sem_Prag is
                     ("indicator Part_Of must denote abstract state or public "
                      & "descendant of & (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
+                  return;
 
                elsif Scope (Encap_Id) = Parent_Unit
                  or else
@@ -3296,6 +3298,7 @@ package body Sem_Prag is
                     ("indicator Part_Of must denote abstract state or public "
                      & "descendant of & (SPARK RM 7.2.6(3))",
                      Indic, Parent_Unit);
+                  return;
                end if;
 
             --  Indicator Part_Of is not needed when the related package is not
@@ -3309,6 +3312,7 @@ package body Sem_Prag is
                SPARK_Msg_NE
                  ("\& is declared in the visible part of package %",
                   Indic, Item_Id);
+               return;
             end if;
 
          --  When the item appears in the private state space of a package, the
@@ -3323,6 +3327,7 @@ package body Sem_Prag is
                SPARK_Msg_NE
                  ("\& is declared in the private part of package %",
                   Indic, Item_Id);
+               return;
             end if;
 
          --  Items declared in the body state space of a package do not need
@@ -3338,6 +3343,8 @@ package body Sem_Prag is
                SPARK_Msg_NE
                  ("\& is declared in the body of package %", Indic, Item_Id);
             end if;
+
+            return;
          end if;
 
       --  The encapsulator is a single concurrent type
@@ -3358,6 +3365,7 @@ package body Sem_Prag is
             SPARK_Msg_NE
               (Fix_Msg (Encap_Typ, "constant & cannot act as constituent of "
                & "single protected type %"), Indic, Item_Id);
+            return;
 
          --  The constituent is a package instantiation
 
@@ -3366,6 +3374,7 @@ package body Sem_Prag is
             SPARK_Msg_NE
               (Fix_Msg (Encap_Typ, "package instantiation & cannot act as "
                & "constituent of single protected type %"), Indic, Item_Id);
+            return;
          end if;
 
          --  When the item denotes an abstract state of a nested package, use
@@ -3392,7 +3401,51 @@ package body Sem_Prag is
               (Fix_Msg (Encap_Typ, "constituent & must be declared "
                & "immediately within the same region as single protected "
                & "type %"), Indic, Item_Id);
+            return;
          end if;
+
+         --  The declaration of the item should follow the declaration of its
+         --  encapsulating single concurrent type and must appear in the same
+         --  declarative region (SPARK RM 9.3).
+
+         declare
+            N : Node_Id;
+
+         begin
+            N := Next (Declaration_Node (Encap_Id));
+            while Present (N) loop
+               exit when N = Item_Decl;
+               Next (N);
+            end loop;
+
+            --  The single concurrent type might be in the visible part of a
+            --  package, and the declaration of the item in the private part
+            --  of the same package.
+
+            if No (N) then
+               declare
+                  Pack : constant Node_Id :=
+                    Parent (Declaration_Node (Encap_Id));
+               begin
+                  if Nkind (Pack) = N_Package_Specification
+                    and then not In_Private_Part (Encap_Id)
+                  then
+                     N := First (Private_Declarations (Pack));
+                     while Present (N) loop
+                        exit when N = Item_Decl;
+                        Next (N);
+                     end loop;
+                  end if;
+               end;
+            end if;
+
+            if No (N) then
+               SPARK_Msg_N
+                 ("indicator Part_Of must denote a previously declared "
+                  & "single protected type or single task type", Encap);
+               return;
+            end if;
+         end;
       end if;
 
       Legal := True;
