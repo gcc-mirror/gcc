@@ -1,3 +1,10 @@
+2017-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* tree.c (cxx_copy_lang_qualifiers): New.
+	* cp-tree.h: Declare it.
+	* cp-objcp-common.h: Define LANG_HOOKS_COPY_LANG_QUALIFIERS.
+
 2017-09-06  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82053 - ICE with default argument in lambda in template
