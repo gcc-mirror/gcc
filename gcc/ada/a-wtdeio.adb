@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2009, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -112,16 +112,11 @@ package body Ada.Wide_Text_IO.Decimal_IO is
    begin
       if Num'Size > Integer'Size then
          Aux.Put_LLD
---           (TFT (File), Long_Long_Integer'Integer_Value (Item),
---  ???
-           (TFT (File), Long_Long_Integer (Item),
+           (TFT (File), Long_Long_Integer'Integer_Value (Item),
             Fore, Aft, Exp, Scale);
       else
          Aux.Put_Dec
---           (TFT (File), Integer'Integer_Value (Item), Fore, Aft, Exp, Scale);
---  ???
-           (TFT (File), Integer (Item), Fore, Aft, Exp, Scale);
-
+           (TFT (File), Integer'Integer_Value (Item), Fore, Aft, Exp, Scale);
       end if;
    end Put;
 
@@ -145,15 +140,11 @@ package body Ada.Wide_Text_IO.Decimal_IO is
 
    begin
       if Num'Size > Integer'Size then
---       Aux.Puts_LLD
---         (S, Long_Long_Integer'Integer_Value (Item), Aft, Exp, Scale);
---  ???
          Aux.Puts_LLD
-           (S, Long_Long_Integer (Item), Aft, Exp, Scale);
+           (S, Long_Long_Integer'Integer_Value (Item), Aft, Exp, Scale);
+
       else
---       Aux.Puts_Dec (S, Integer'Integer_Value (Item), Aft, Exp, Scale);
---  ???
-         Aux.Puts_Dec (S, Integer (Item), Aft, Exp, Scale);
+         Aux.Puts_Dec (S, Integer'Integer_Value (Item), Aft, Exp, Scale);
       end if;
 
       for J in S'Range loop

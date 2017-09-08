@@ -1908,10 +1908,40 @@ package body Sem_Ch12 is
                         Needs_Freezing : Boolean;
                         S              : Entity_Id;
 
+                        procedure Check_Generic_Parent;
+                        --  The actual may be an instantiation of a unit
+                        --  declared in a previous instantiation. If that
+                        --  one is also in the current compilation, it must
+                        --  itself be frozen before the actual.
+                        --  Should this itself be recursive ???
+
+                        --------------------------
+                        -- Check_Generic_Parent --
+                        --------------------------
+
+                        procedure Check_Generic_Parent is
+                           Par            : Entity_Id;
+                        begin
+                           if Nkind (Parent (Actual)) = N_Package_Specification
+                           then
+                              Par := Scope (Generic_Parent (Parent (Actual)));
+                              if Is_Generic_Instance (Par)
+                                and then Scope (Par) = Current_Scope
+                                and then (No (Freeze_Node (Par))
+                                  or else
+                                    not Is_List_Member (Freeze_Node (Par)))
+                              then
+                                 Set_Has_Delayed_Freeze (Par);
+                                 Append_Elmt (Par, Actuals_To_Freeze);
+                              end if;
+                           end if;
+                        end Check_Generic_Parent;
+
                      begin
                         if not Expander_Active
                           or else not Has_Completion (Actual)
                           or else not In_Same_Source_Unit (I_Node, Actual)
+                          or else Is_Frozen (Actual)
                           or else
                             (Present (Renamed_Entity (Actual))
                               and then not
@@ -1943,6 +1973,7 @@ package body Sem_Ch12 is
                            end loop;
 
                            if Needs_Freezing then
+                              Check_Generic_Parent;
                               Set_Has_Delayed_Freeze (Actual);
                               Append_Elmt (Actual, Actuals_To_Freeze);
                            end if;
@@ -9281,7 +9312,10 @@ package body Sem_Ch12 is
       --  if no delay is needed, we place the freeze node at the end of the
       --  current declarative part.
 
-      if Expander_Active then
+      if Expander_Active
+        and then (No (Freeze_Node (Act_Id))
+          or else not Is_List_Member (Freeze_Node (Act_Id)))
+      then
          Ensure_Freeze_Node (Act_Id);
          F_Node := Freeze_Node (Act_Id);
 
