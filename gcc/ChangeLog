@@ -1,3 +1,7 @@
+2017-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_print_operand) <case 'S'>: Remove.
+
 2017-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* sancov.c: Include memmodel.h.
