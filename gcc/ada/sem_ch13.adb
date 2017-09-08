@@ -12800,6 +12800,15 @@ package body Sem_Ch13 is
                         end;
                      end if;
 
+                  --  The expression for Default_Value is a static expression
+                  --  of the type, but this expression does not freeze the
+                  --  type, so it can still appear in a representation clause
+                  --  before the actual freeze point.
+
+                  when Aspect_Default_Value =>
+                     Set_Must_Not_Freeze (Expr);
+                     Preanalyze_Spec_Expression (Expr, E);
+
                   when others =>
                      if Present (Expr) then
                         case Aspect_Argument (A_Id) is

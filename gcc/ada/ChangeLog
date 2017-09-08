@@ -1,3 +1,63 @@
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Use New_Copy_Tree instead
+	of New_Copy because the latter leaves the syntactic structure of
+	the tree inconsistent (a child is accessible through two parents)
+	and prevents proper replication of itypes by subsequent calls
+	to New_Copy_Tree.
+	* exp_ch4.adb (Expand_Concatenate): Use New_Copy_Tree instead of
+	New_Copy because the latter leaves the syntactic structure of the
+	tree inconsistent (a child is accessible through two parents)
+	and prevents proper replication of itypes by subsequent calls
+	to New_Copy_Tree.
+	* sem_util.adb (In_Subtree): New routine.
+	(New_Copy_Tree): Reimplemented.
+	* sem_util.ads (In_Subtree): New routine.
+	(New_Copy_Tree): Reimplemented.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expressions): The expression
+	for aspect Default_Value is a static scalar value, but it does
+	not freeze the type. Yhis allows for subsequent representation
+	clauses for the type.
+
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch8.adb (Find_Direct_Name.Undefined): Do
+	not add entries into the undefined reference table when we are
+	compiling with errors ignored.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Check_Formal_Packages): Do not apply conformance
+	check if the instance is within an enclosing instance body. The
+	formal package was legal in the enclosing generic, and is
+	legal in the enclosing instantiation.  This optimisation may be
+	applicable elsewhere, and it also removes spurious errors that
+	may arise with on-the-fly processing  of instantiations that
+	contain Inline_Always subprograms.
+
+2017-09-08  Vincent Celier  <celier@adacore.com>
+
+	* gnatcmd.adb: Disregard empty argument of GNAT driver.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* checks.adb (Insert_Valid_Check): Manually decorate
+	the generated temporary for range valdity checks.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* usage.adb (Usage): Document new -gnatw.q/-gnatw.Q switches.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* switch-c.adb (Scan_Front_End_Switches): Add new warning switch
+	case to handle underscore flags.
+	* warnsw.adb, warnsw.ads (Set_Underscore_Warning_Switch): Create
+	new procedure to handle underscores.
+
 2017-09-08  Javier Miranda  <miranda@adacore.com>
 
 	* exp_ch4.adb (Expand_N_Op_Divide): Reordering code that handles

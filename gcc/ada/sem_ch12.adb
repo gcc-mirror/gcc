@@ -6419,7 +6419,18 @@ package body Sem_Ch12 is
 
                else
                   Formal_P := Next_Entity (E);
-                  Check_Formal_Package_Instance (Formal_P, E);
+
+                  --  If the instance is within an enclosing instance body
+                  --  there is no need to vertify the legqlity of current
+                  --  formsl psckages because they were legal in the generic
+                  --  body. This optimixation may be applicable elsewhere,
+                  --  and it also removes spurious errors that may arise with
+                  --  on-the-fly inlining and confusion between private and
+                  --  full views.
+
+                  if not In_Instance_Body then
+                     Check_Formal_Package_Instance (Formal_P, E);
+                  end if;
 
                   --  After checking, remove the internal validating package.
                   --  It is only needed for semantic checks, and as it may

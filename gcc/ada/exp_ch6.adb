@@ -2857,7 +2857,8 @@ package body Exp_Ch6 is
             Thunk_Formal  := Extra_Formals (Current_Scope);
             while Present (Target_Formal) loop
                Add_Extra_Actual
-                 (New_Occurrence_Of (Thunk_Formal, Loc), Thunk_Formal);
+                 (Expr => New_Occurrence_Of (Thunk_Formal, Loc),
+                  EF   => Thunk_Formal);
 
                Target_Formal := Extra_Formal (Target_Formal);
                Thunk_Formal  := Extra_Formal (Thunk_Formal);
@@ -2922,15 +2923,15 @@ package body Exp_Ch6 is
               and then not Has_Discriminants (Base_Type (Etype (Prev)))
             then
                Add_Extra_Actual
-                 (New_Occurrence_Of (Standard_False, Loc),
-                  Extra_Constrained (Formal));
+                 (Expr => New_Occurrence_Of (Standard_False, Loc),
+                  EF   => Extra_Constrained (Formal));
 
             elsif Is_Constrained (Etype (Formal))
               or else not Has_Discriminants (Etype (Prev))
             then
                Add_Extra_Actual
-                 (New_Occurrence_Of (Standard_True, Loc),
-                  Extra_Constrained (Formal));
+                 (Expr => New_Occurrence_Of (Standard_True, Loc),
+                  EF   => Extra_Constrained (Formal));
 
             --  Do not produce extra actuals for Unchecked_Union parameters.
             --  Jump directly to the end of the loop.
@@ -2967,17 +2968,18 @@ package body Exp_Ch6 is
                     and then Nkind (Act_Prev) = N_Explicit_Dereference
                   then
                      Add_Extra_Actual
-                       (New_Occurrence_Of (Standard_False, Loc),
-                        Extra_Constrained (Formal));
+                       (Expr => New_Occurrence_Of (Standard_False, Loc),
+                        EF   => Extra_Constrained (Formal));
 
                   else
                      Add_Extra_Actual
-                       (Make_Attribute_Reference (Sloc (Prev),
-                        Prefix =>
-                          Duplicate_Subexpr_No_Checks
-                            (Act_Prev, Name_Req => True),
-                        Attribute_Name => Name_Constrained),
-                        Extra_Constrained (Formal));
+                       (Expr =>
+                          Make_Attribute_Reference (Sloc (Prev),
+                            Prefix         =>
+                              Duplicate_Subexpr_No_Checks
+                                (Act_Prev, Name_Req => True),
+                            Attribute_Name => Name_Constrained),
+                        EF   => Extra_Constrained (Formal));
                   end if;
                end;
             end if;
@@ -3046,8 +3048,9 @@ package body Exp_Ch6 is
                   end if;
 
                   Add_Extra_Actual
-                    (New_Occurrence_Of (Extra_Accessibility (Parm_Ent), Loc),
-                     Extra_Accessibility (Formal));
+                    (Expr =>
+                       New_Occurrence_Of (Extra_Accessibility (Parm_Ent), Loc),
+                     EF   => Extra_Accessibility (Formal));
                end;
 
             elsif Is_Entity_Name (Prev_Orig) then
@@ -3078,9 +3081,10 @@ package body Exp_Ch6 is
 
                      if Present (Extra_Accessibility (Parm_Ent)) then
                         Add_Extra_Actual
-                          (New_Occurrence_Of
-                             (Extra_Accessibility (Parm_Ent), Loc),
-                           Extra_Accessibility (Formal));
+                          (Expr =>
+                             New_Occurrence_Of
+                               (Extra_Accessibility (Parm_Ent), Loc),
+                           EF   => Extra_Accessibility (Formal));
 
                      --  If the actual access parameter does not have an
                      --  associated extra formal providing its scope level,
@@ -3089,9 +3093,10 @@ package body Exp_Ch6 is
 
                      else
                         Add_Extra_Actual
-                          (Make_Integer_Literal (Loc,
-                             Intval => Scope_Depth (Standard_Standard)),
-                           Extra_Accessibility (Formal));
+                          (Expr =>
+                             Make_Integer_Literal (Loc,
+                               Intval => Scope_Depth (Standard_Standard)),
+                           EF   => Extra_Accessibility (Formal));
                      end if;
                   end;
 
@@ -3100,8 +3105,8 @@ package body Exp_Ch6 is
 
                else
                   Add_Extra_Actual
-                    (Dynamic_Accessibility_Level (Prev_Orig),
-                     Extra_Accessibility (Formal));
+                    (Expr => Dynamic_Accessibility_Level (Prev_Orig),
+                     EF   => Extra_Accessibility (Formal));
                end if;
 
             --  If the actual is an access discriminant, then pass the level
@@ -3114,9 +3119,10 @@ package body Exp_Ch6 is
                                                        E_Anonymous_Access_Type
             then
                Add_Extra_Actual
-                 (Make_Integer_Literal (Loc,
-                    Intval => Object_Access_Level (Prefix (Prev_Orig))),
-                  Extra_Accessibility (Formal));
+                 (Expr =>
+                    Make_Integer_Literal (Loc,
+                      Intval => Object_Access_Level (Prefix (Prev_Orig))),
+                  EF   => Extra_Accessibility (Formal));
 
             --  All other cases
 
@@ -3129,19 +3135,18 @@ package body Exp_Ch6 is
 
                         when Attribute_Access =>
 
-                           --  Accessibility level of S'Access is that of A.
+                           --  Accessibility level of S'Access is that of A
 
                            Prev_Orig := Prefix (Prev_Orig);
 
-                           --  If the expression is a view conversion,
-                           --  the accessibility level is that of the
-                           --  expression.
+                           --  If the expression is a view conversion, the
+                           --  accessibility level is that of the expression.
 
-                           if Nkind (Original_Node (Prev_Orig))
-                             = N_Type_Conversion
+                           if Nkind (Original_Node (Prev_Orig)) =
+                                N_Type_Conversion
                              and then
-                               Nkind (Expression (Original_Node (Prev_Orig)))
-                                  = N_Explicit_Dereference
+                               Nkind (Expression (Original_Node (Prev_Orig))) =
+                                 N_Explicit_Dereference
                            then
                               Prev_Orig :=
                                 Expression (Original_Node (Prev_Orig));
@@ -3171,8 +3176,7 @@ package body Exp_Ch6 is
                               Pref_Entity := Entity (Prev_Orig);
 
                            elsif Nkind (Prev_Orig) = N_Explicit_Dereference
-                           and then
-                              Is_Entity_Name (Prefix (Prev_Orig))
+                             and then Is_Entity_Name (Prefix (Prev_Orig))
                            then
                               Pref_Entity := Entity (Prefix ((Prev_Orig)));
 
@@ -3184,28 +3188,31 @@ package body Exp_Ch6 is
                              and then Is_Type (Entity (Prev_Orig))
                            then
                               Add_Extra_Actual
-                                (Make_Integer_Literal (Loc,
-                                   Intval => Type_Access_Level (Pref_Entity)),
-                                 Extra_Accessibility (Formal));
+                                (Expr =>
+                                   Make_Integer_Literal (Loc,
+                                     Intval =>
+                                       Type_Access_Level (Pref_Entity)),
+                                 EF   => Extra_Accessibility (Formal));
 
                            elsif Nkind (Prev_Orig) = N_Explicit_Dereference
                              and then Present (Pref_Entity)
                              and then Is_Formal (Pref_Entity)
                              and then Present
-                               (Extra_Accessibility (Pref_Entity))
+                                        (Extra_Accessibility (Pref_Entity))
                            then
-                              Add_Extra_Actual (
-                                New_Occurrence_Of
-                                 (Extra_Accessibility (Pref_Entity), Loc),
-                                 Extra_Accessibility (Formal));
+                              Add_Extra_Actual
+                                (Expr =>
+                                   New_Occurrence_Of
+                                     (Extra_Accessibility (Pref_Entity), Loc),
+                                 EF   => Extra_Accessibility (Formal));
 
                            else
                               Add_Extra_Actual
-                                (Make_Integer_Literal (Loc,
-                                   Intval =>
-                                     Object_Access_Level
-                                       (Prev_Orig)),
-                                 Extra_Accessibility (Formal));
+                                (Expr =>
+                                   Make_Integer_Literal (Loc,
+                                     Intval =>
+                                       Object_Access_Level (Prev_Orig)),
+                                 EF   => Extra_Accessibility (Formal));
                            end if;
 
                         --  Treat the unchecked attributes as library-level
@@ -3214,9 +3221,10 @@ package body Exp_Ch6 is
                            | Attribute_Unrestricted_Access
                         =>
                            Add_Extra_Actual
-                             (Make_Integer_Literal (Loc,
-                                Intval => Scope_Depth (Standard_Standard)),
-                              Extra_Accessibility (Formal));
+                             (Expr =>
+                                Make_Integer_Literal (Loc,
+                                  Intval => Scope_Depth (Standard_Standard)),
+                              EF   => Extra_Accessibility (Formal));
 
                         --  No other cases of attributes returning access
                         --  values that can be passed to access parameters.
@@ -3232,9 +3240,10 @@ package body Exp_Ch6 is
 
                   when N_Allocator =>
                      Add_Extra_Actual
-                       (Make_Integer_Literal (Loc,
-                          Intval => Scope_Depth (Current_Scope) + 1),
-                        Extra_Accessibility (Formal));
+                       (Expr =>
+                          Make_Integer_Literal (Loc,
+                            Intval => Scope_Depth (Current_Scope) + 1),
+                        EF   => Extra_Accessibility (Formal));
 
                   --  For most other cases we simply pass the level of the
                   --  actual's access type. The type is retrieved from
@@ -3244,8 +3253,8 @@ package body Exp_Ch6 is
 
                   when others =>
                      Add_Extra_Actual
-                       (Dynamic_Accessibility_Level (Prev),
-                        Extra_Accessibility (Formal));
+                       (Expr => Dynamic_Accessibility_Level (Prev),
+                        EF   => Extra_Accessibility (Formal));
                end case;
             end if;
          end if;
@@ -3572,8 +3581,9 @@ package body Exp_Ch6 is
                end if;
 
                Add_Extra_Actual
-                 (Level,
-                  Extra_Accessibility_Of_Result (Ultimate_Alias (Subp)));
+                 (Expr => Level,
+                  EF   =>
+                    Extra_Accessibility_Of_Result (Ultimate_Alias (Subp)));
             end if;
          end;
       end if;

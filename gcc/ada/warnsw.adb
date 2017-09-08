@@ -471,6 +471,24 @@ package body Warnsw is
       return True;
    end Set_Dot_Warning_Switch;
 
+   -----------------------------------
+   -- Set_Underscore_Warning_Switch --
+   -----------------------------------
+
+   function Set_Underscore_Warning_Switch (C : Character) return Boolean is
+   begin
+      case C is
+         when others =>
+            if Ignore_Unrecognized_VWY_Switches then
+               Write_Line ("unrecognized switch -gnatw_" & C & " ignored");
+            else
+               return False;
+            end if;
+      end case;
+
+      return True;
+   end Set_Underscore_Warning_Switch;
+
    ----------------------------
    -- Set_GNAT_Mode_Warnings --
    ----------------------------

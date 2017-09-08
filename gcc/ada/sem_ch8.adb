@@ -5328,9 +5328,10 @@ package body Sem_Ch8 is
          --  Make entry in undefined references table unless the full errors
          --  switch is set, in which case by refraining from generating the
          --  table entry, we guarantee that we get an error message for every
-         --  undefined reference.
+         --  undefined reference. The entry is not added if we are ignoring
+         --  errors.
 
-         if not All_Errors_Mode then
+         if not All_Errors_Mode and then Ignore_Errors_Enable = 0 then
             Urefs.Append (
               (Node => N,
                Err  => Emsg,

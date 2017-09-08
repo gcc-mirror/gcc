@@ -7393,6 +7393,13 @@ package body Checks is
          if Is_Variable (Exp) then
             Var_Id := Make_Temporary (Loc, 'T', Exp);
 
+            --  Because we could be dealing with a transient scope which would
+            --  cause our object declaration to remain unanalyzed we must do
+            --  some manual decoration.
+
+            Set_Ekind (Var_Id, E_Variable);
+            Set_Etype (Var_Id, Typ);
+
             Insert_Action (Exp,
               Make_Object_Declaration (Loc,
                 Defining_Identifier => Var_Id,
