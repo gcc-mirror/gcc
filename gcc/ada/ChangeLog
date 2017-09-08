@@ -1,3 +1,9 @@
+2017-09-08  Georges-Alex Jaloyan  <jaloyan@adacore.com>
+
+	* g-dynhta.adb, g-dynhta.ads (Get_First_Key, Get_Next_key):
+	Correction of the return type from access type to option type.
+	(Simple_HTable): Moving the Instance_Data to ads file.
+
 2017-09-08  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb: Use System.Case_Util.To_Lower to simplify code.
