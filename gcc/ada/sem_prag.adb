@@ -6350,10 +6350,10 @@ package body Sem_Prag is
          Comp  : Node_Id;
 
       begin
-         Comp := First (Component_Items (Clist));
+         Comp := First_Non_Pragma (Component_Items (Clist));
          while Present (Comp) loop
             Check_Component (Comp, UU_Typ, In_Variant_Part => True);
-            Next (Comp);
+            Next_Non_Pragma (Comp);
          end loop;
       end Check_Variant;
 
@@ -23316,20 +23316,20 @@ package body Sem_Prag is
 
                --  Check components
 
-               Comp := First (Component_Items (Clist));
+               Comp := First_Non_Pragma (Component_Items (Clist));
                while Present (Comp) loop
                   Check_Component (Comp, Typ);
-                  Next (Comp);
+                  Next_Non_Pragma (Comp);
                end loop;
 
                --  Check variant part
 
                Vpart := Variant_Part (Clist);
 
-               Variant := First (Variants (Vpart));
+               Variant := First_Non_Pragma (Variants (Vpart));
                while Present (Variant) loop
                   Check_Variant (Variant, Typ);
-                  Next (Variant);
+                  Next_Non_Pragma (Variant);
                end loop;
             end if;
 

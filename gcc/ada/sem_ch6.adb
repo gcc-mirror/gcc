@@ -267,8 +267,8 @@ package body Sem_Ch6 is
       LocX : constant Source_Ptr := Sloc (Expr);
       Spec : constant Node_Id    := Specification (N);
 
-      procedure Freeze_Expr_Types (Spec_Id : Entity_Id);
-      --  N is an expression function that is a completion and Spec_Id its
+      procedure Freeze_Expr_Types (Def_Id : Entity_Id);
+      --  N is an expression function that is a completion and Def_Id its
       --  defining entity. Freeze before N all the types referenced by the
       --  expression of the function.
 
@@ -276,7 +276,7 @@ package body Sem_Ch6 is
       -- Freeze_Expr_Types --
       -----------------------
 
-      procedure Freeze_Expr_Types (Spec_Id : Entity_Id) is
+      procedure Freeze_Expr_Types (Def_Id : Entity_Id) is
          function Cloned_Expression return Node_Id;
          --  Build a duplicate of the expression of the return statement that
          --  has no defining entities shared with the original expression.
@@ -355,7 +355,7 @@ package body Sem_Ch6 is
                --  Skip Itypes created by the preanalysis
 
                if Is_Itype (Typ)
-                 and then Scope_Within_Or_Same (Scope (Typ), Spec_Id)
+                 and then Scope_Within_Or_Same (Scope (Typ), Def_Id)
                then
                   return;
                end if;
@@ -419,8 +419,8 @@ package body Sem_Ch6 is
 
          --  Local variables
 
-         Saved_First_Entity : constant Entity_Id := First_Entity (Spec_Id);
-         Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Spec_Id);
+         Saved_First_Entity : constant Entity_Id := First_Entity (Def_Id);
+         Saved_Last_Entity  : constant Entity_Id := Last_Entity  (Def_Id);
          Dup_Expr           : constant Node_Id   := Cloned_Expression;
 
       --  Start of processing for Freeze_Expr_Types
@@ -433,24 +433,24 @@ package body Sem_Ch6 is
          --  spurious errors on Ghost entities (since the expression is not
          --  fully analyzed).
 
-         Push_Scope (Spec_Id);
-         Install_Formals (Spec_Id);
+         Push_Scope (Def_Id);
+         Install_Formals (Def_Id);
          Ignore_Errors_Enable := Ignore_Errors_Enable + 1;
 
-         Preanalyze_Spec_Expression (Dup_Expr, Etype (Spec_Id));
+         Preanalyze_Spec_Expression (Dup_Expr, Etype (Def_Id));
 
          Ignore_Errors_Enable := Ignore_Errors_Enable - 1;
          End_Scope;
 
-         --  Restore certain attributes of Spec_Id since the preanalysis may
+         --  Restore certain attributes of Def_Id since the preanalysis may
          --  have introduced itypes to this scope, thus modifying attributes
          --  First_Entity and Last_Entity.
 
-         Set_First_Entity (Spec_Id, Saved_First_Entity);
-         Set_Last_Entity  (Spec_Id, Saved_Last_Entity);
+         Set_First_Entity (Def_Id, Saved_First_Entity);
+         Set_Last_Entity  (Def_Id, Saved_Last_Entity);
 
-         if Present (Last_Entity (Spec_Id)) then
-            Set_Next_Entity (Last_Entity (Spec_Id), Empty);
+         if Present (Last_Entity (Def_Id)) then
+            Set_Next_Entity (Last_Entity (Def_Id), Empty);
          end if;
 
          --  Freeze all types referenced in the expression

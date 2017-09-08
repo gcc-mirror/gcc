@@ -3319,7 +3319,7 @@ package body Ch4 is
       Set_Expression (Assoc_Node, P_Expression);
 
       if Ada_Version < Ada_2020 then
-         Error_Msg_SC ("Iterated component  is an Ada 2020 extension");
+         Error_Msg_SC ("iterated component is an Ada 2020 extension");
          Error_Msg_SC ("\compile with -gnatX");
       end if;
 

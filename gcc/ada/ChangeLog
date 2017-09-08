@@ -1,3 +1,33 @@
+2017-09-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* par-ch4.adb: Reformatting of an error message.
+
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Resolve_Name): Under ASIS mode analyze overloaded
+	identifiers to ensure their correct decoration of names on
+	aspect expressions.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* exp_attr.adb (Expand_Loop_Entry_Attribute): Do
+	not skip a loop coming from source which is rewritten into a loop.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Wrap_Imported_Subprogram): Indicate that the
+	wrapper has convention Ada, to prevent spurious warnings on
+	unconstrained array parameters.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Check_Variant): Use First_Non_Pragma/Next_Non_Pragma.
+	(Analyze_Pragma) <Pragma_Unchecked_Union>: Likewise.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Freeze_Expr_Types): Rename Spec_Id into Def_Id.
+
 2017-09-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* exp_intr.adb (Append_Entity_Name): Move to ...

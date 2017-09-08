@@ -1086,7 +1086,8 @@ package body Exp_Attr is
          Loop_Stmt := N;
          while Present (Loop_Stmt) loop
             if Nkind (Loop_Stmt) = N_Loop_Statement
-              and then Comes_From_Source (Loop_Stmt)
+              and then Nkind (Original_Node (Loop_Stmt)) = N_Loop_Statement
+              and then Comes_From_Source (Original_Node (Loop_Stmt))
             then
                exit;
             end if;
