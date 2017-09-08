@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2014, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1652,11 +1652,10 @@ package body Ada.Wide_Text_IO is
       Stop  : Natural;
 
    begin
-      File.WC_Method := WCEM_Brackets;
       FIO.Form_Parameter (File.Form.all, "wcem", Start, Stop);
 
       if Start = 0 then
-         File.WC_Method := WCEM_Brackets;
+         File.WC_Method := Default_WCEM;
 
       else
          if Stop = Start then
