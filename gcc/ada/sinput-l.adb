@@ -45,8 +45,6 @@ with System;   use System;
 
 with System.OS_Lib; use System.OS_Lib;
 
-with Unchecked_Conversion;
-
 package body Sinput.L is
 
    Prep_Buffer : Text_Buffer_Ptr := null;

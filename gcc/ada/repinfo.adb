@@ -894,6 +894,7 @@ package body Repinfo is
             Cfbit := Component_Bit_Offset (Comp);
 
             if Rep_Not_Constant (Cfbit) then
+
                --  If the record is not packed, then we know that all fields
                --  whose position is not specified have a starting normalized
                --  bit position of zero.

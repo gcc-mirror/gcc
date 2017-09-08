@@ -5895,7 +5895,7 @@ package body Exp_Disp is
                   --  Retrieve the ultimate alias of the primitive for proper
                   --  handling of renamings and eliminated primitives.
 
-                  E        := Ultimate_Alias (Prim);
+                  E := Ultimate_Alias (Prim);
 
                   --  If the alias is not a primitive operation then Prim does
                   --  not rename another primitive, but rather an operation
@@ -7806,7 +7806,8 @@ package body Exp_Disp is
             then
                declare
                   Par_Type : constant Entity_Id :=
-                    Find_Dispatching_Type (Alias (Prim));
+                               Find_Dispatching_Type (Alias (Prim));
+
                begin
                   if Present (Par_Type)
                     and then Par_Type /= Typ

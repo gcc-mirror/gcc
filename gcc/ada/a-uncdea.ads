@@ -20,4 +20,4 @@ generic
 procedure Ada.Unchecked_Deallocation (X : in out Name);
 pragma Preelaborate (Unchecked_Deallocation);
 
-pragma Import (Intrinsic, Unchecked_Deallocation);
+pragma Import (Intrinsic, Ada.Unchecked_Deallocation);
