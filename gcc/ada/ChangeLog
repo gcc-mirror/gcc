@@ -1,3 +1,18 @@
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Divide): Reordering code that handles
+	divisions with fixed point results to avoid generating twice
+	the runtime check on divide by zero.
+	* checks.adb (Apply_Divide_Checks): Ensure that operands are
+	not evaluated twice (once for their runtime checks and once for
+	their regular computation).
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_prag.adb (Analyze_Part_Of): Add missing
+	return statements after issuing errors.  Add detection of
+	out-of-order item and single concurrent type.
+
 2017-09-08  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/Makefile.in, a-extiti.ads, s-taprop-linux.adb,
