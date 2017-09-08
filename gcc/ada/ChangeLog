@@ -1,3 +1,8 @@
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb: (Aggr_Assignment_OK_For_Backend): Add early return for
+	access types.
+
 2017-09-08  Bob Duff  <duff@adacore.com>
 
 	* par-prag.adb, sem_prag.adb, snames.ads-tmpl: Implement pragma
