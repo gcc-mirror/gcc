@@ -7997,11 +7997,20 @@ package body Sem_Res is
             Check_Restriction (No_Dispatching_Calls, N);
          end if;
 
+         --  Only warn for redundant equality comparison to True for objects
+         --  (e.g. "X = True") and operations (e.g. "(X < Y) = True"). For
+         --  other expressions, it may be a matter of preference to write
+         --  "Expr = True" or "Expr".
+
          if Warn_On_Redundant_Constructs
            and then Comes_From_Source (N)
            and then Comes_From_Source (R)
            and then Is_Entity_Name (R)
            and then Entity (R) = Standard_True
+           and then
+             ((Is_Entity_Name (L) and then Is_Object (Entity (L)))
+                or else
+              Nkind (L) in N_Op)
          then
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);

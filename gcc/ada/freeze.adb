@@ -3423,16 +3423,12 @@ package body Freeze is
       --------------------
 
       function Freeze_Profile (E : Entity_Id) return Boolean is
-         F_Type    : Entity_Id;
-         R_Type    : Entity_Id;
-         Warn_Node : Node_Id;
-
          function Has_Incomplete_Component (T : Entity_Id) return Boolean;
-         --  If a type includes a private component from an enclosing scope
-         --  it cannot be frozen yet. This can happen in a package nested
-         --  within another, when freezing an expression function whose
-         --  profile depends on a type in some outer scope. Those types will
-         --  be frozen at a later time in the enclosing unit.
+         --  If a type includes a private component from an enclosing scope it
+         --  cannot be frozen yet. This can happen in a package nested within
+         --  another, when freezing an expression function whose profile
+         --  depends on a type in some outer scope. Those types will be frozen
+         --  at a later time in the enclosing unit.
 
          ------------------------------
          -- Has_Incomplete_Component --
@@ -3456,6 +3452,7 @@ package body Freeze is
 
                while Present (Comp) loop
                   Comp_Typ := Etype (Comp);
+
                   if Ekind_In (Comp, E_Component, E_Discriminant)
                     and then Is_Private_Type (Comp_Typ)
                     and then No (Full_View (Comp_Typ))
@@ -3464,6 +3461,7 @@ package body Freeze is
                   then
                      return True;
                   end if;
+
                   Comp := Next_Entity (Comp);
                end loop;
 
@@ -3471,15 +3469,25 @@ package body Freeze is
 
             elsif Is_Array_Type (T) then
                Comp_Typ := Component_Type (T);
-               return Is_Private_Type (Comp_Typ)
-                 and then No (Full_View (Comp_Typ))
-                 and then In_Open_Scopes (Scope (Comp_Typ))
-                 and then Scope (Comp_Typ) /= Current_Scope;
+
+               return
+                 Is_Private_Type (Comp_Typ)
+                   and then No (Full_View (Comp_Typ))
+                   and then In_Open_Scopes (Scope (Comp_Typ))
+                   and then Scope (Comp_Typ) /= Current_Scope;
 
             else
                return False;
             end if;
          end Has_Incomplete_Component;
+
+         --  Local variables
+
+         F_Type    : Entity_Id;
+         R_Type    : Entity_Id;
+         Warn_Node : Node_Id;
+
+      --  Start of processing for Freeze_Profile
 
       begin
          --  Loop through formals

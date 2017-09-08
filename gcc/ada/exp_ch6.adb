@@ -2751,32 +2751,70 @@ package body Exp_Ch6 is
          end;
       end if;
 
-      --  When generating C code, transform a function call that returns a
-      --  constrained array type into procedure form.
-
       if Modify_Tree_For_C
         and then Nkind (Call_Node) = N_Function_Call
         and then Is_Entity_Name (Name (Call_Node))
-        and then Rewritten_For_C (Ultimate_Alias (Entity (Name (Call_Node))))
       then
-         --  For internally generated calls ensure that they reference the
-         --  entity of the spec of the called function (needed since the
-         --  expander may generate calls using the entity of their body).
-         --  See for example Expand_Boolean_Operator().
+         declare
+            Func_Id : constant Entity_Id :=
+                        Ultimate_Alias (Entity (Name (Call_Node)));
+         begin
+            --  When generating C code, transform a function call that returns
+            --  a constrained array type into procedure form.
 
-         if not (Comes_From_Source (Call_Node))
-           and then Nkind (Unit_Declaration_Node
-                            (Ultimate_Alias (Entity (Name (Call_Node))))) =
-                              N_Subprogram_Body
-         then
-            Set_Entity (Name (Call_Node),
-              Corresponding_Function
-                (Corresponding_Procedure
-                  (Ultimate_Alias (Entity (Name (Call_Node))))));
-         end if;
+            if Rewritten_For_C (Func_Id) then
 
-         Rewrite_Function_Call_For_C (Call_Node);
-         return;
+               --  For internally generated calls ensure that they reference
+               --  the entity of the spec of the called function (needed since
+               --  the expander may generate calls using the entity of their
+               --  body). See for example Expand_Boolean_Operator().
+
+               if not (Comes_From_Source (Call_Node))
+                 and then Nkind (Unit_Declaration_Node (Func_Id)) =
+                            N_Subprogram_Body
+               then
+                  Set_Entity (Name (Call_Node),
+                    Corresponding_Function
+                      (Corresponding_Procedure (Func_Id)));
+               end if;
+
+               Rewrite_Function_Call_For_C (Call_Node);
+               return;
+
+            --  Also introduce a temporary for functions that return a record
+            --  called within another procedure or function call, since records
+            --  are passed by pointer in the generated C code, and we cannot
+            --  take a pointer from a subprogram call.
+
+            elsif Nkind (Parent (Call_Node)) in N_Subprogram_Call
+              and then Is_Record_Type (Etype (Func_Id))
+            then
+               declare
+                  Temp_Id : constant Entity_Id := Make_Temporary (Loc, 'T');
+                  Decl    : Node_Id;
+
+               begin
+                  --  Generate:
+                  --    Temp : ... := Func_Call (...);
+
+                  Decl :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Temp_Id,
+                      Object_Definition   =>
+                        New_Occurrence_Of (Etype (Func_Id), Loc),
+                      Expression          =>
+                        Make_Function_Call (Loc,
+                          Name                   =>
+                            New_Occurrence_Of (Func_Id, Loc),
+                          Parameter_Associations =>
+                            Parameter_Associations (Call_Node)));
+
+                  Insert_Action (Parent (Call_Node), Decl);
+                  Rewrite (Call_Node, New_Occurrence_Of (Temp_Id, Loc));
+                  return;
+               end;
+            end if;
+         end;
       end if;
 
       --  First step, compute extra actuals, corresponding to any Extra_Formals

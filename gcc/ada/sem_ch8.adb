@@ -3437,7 +3437,7 @@ package body Sem_Ch8 is
          --  addition the renamed entity may depend on the generic formals of
          --  the enclosing generic.
 
-         if Is_Actual and not Inside_A_Generic then
+         if Is_Actual and then not Inside_A_Generic then
             Freeze_Before (N, Old_S);
             Freeze_Actual_Profile;
             Set_Has_Delayed_Freeze (New_S, False);
@@ -6000,6 +6000,21 @@ package body Sem_Ch8 is
                Candidate        := Get_Full_View (Non_Limited_View (Id));
                Is_New_Candidate := True;
 
+            --  An unusual case arises with a fully qualified name for an
+            --  entity local to a generic child unit package, within an
+            --  instantiation of that package. The name of the unit now
+            --  denotes the renaming created within the instance. This is
+            --  only relevant in an instance body, see below.
+
+            elsif Is_Generic_Instance (Scope (Id))
+              and then In_Open_Scopes (Scope (Id))
+              and then In_Instance_Body
+              and then Ekind (Scope (Id)) = E_Package
+              and then Ekind (Id) = E_Package
+              and then Renamed_Entity (Id) = Scope (Id)
+            then
+               Is_New_Candidate := True;
+
             else
                Is_New_Candidate := False;
             end if;
@@ -6246,6 +6261,10 @@ package body Sem_Ch8 is
                      end;
 
                   else
+                     --  Might be worth specializing the case when the prefix
+                     --  is a limited view.
+                     --  ... not declared in limited view of...
+
                      Error_Msg_NE ("& not declared in&", N, Selector);
                   end if;
 

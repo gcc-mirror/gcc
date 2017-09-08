@@ -1476,6 +1476,14 @@ package Sem_Util is
    function Is_CPP_Constructor_Call (N : Node_Id) return Boolean;
    --  Returns True if N is a call to a CPP constructor
 
+   function Is_CCT_Instance
+     (Ref_Id     : Entity_Id;
+      Context_Id : Entity_Id) return Boolean;
+   --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
+   --  Global. Determine whether entity Ref_Id denotes the current instance of
+   --  a concurrent type. Context_Id denotes the associated context where the
+   --  pragma appears.
+
    function Is_Child_Or_Sibling
      (Pack_1 : Entity_Id;
       Pack_2 : Entity_Id) return Boolean;

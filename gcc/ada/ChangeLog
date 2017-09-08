@@ -1,3 +1,47 @@
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_util.ads, sem_util.adb (Is_CCT_Instance): moved from
+	sem_prag.adb to make it available for GNATprove; for concurrent
+	types replace custom scope climbing with Scope_Same_Or_Within; for
+	single concurrent objects add scope climbing (with Scope_Within),
+	which was not there (that's the primary semantic change of this
+	commit); also, when comparing a single concurrent object with
+	its corresponding concurrent type rely on equality of types,
+	not of objects (because that's simpler to code).
+	* sem_prag.adb (Is_CCT_Instance): lifted to sem_util.ads.
+	(Analyze_Global_Item): adjust special-casing of references to the
+	current instance of a concurrent unit in the Global contracts
+	of task types and single tasks objects; similar for references
+	in the protected operations and entries of protected types and
+	single protected objects (in all these cases the current instance
+	behaves as an implicit parameter and must not be mentioned in
+	the Global contract).
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Introduce temporary for
+	function calls returning a record within a subprogram call,
+	for C generation.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Handle properly an expanded
+	name that designates the current instance of a child unit in its
+	own body and appears as the prefix of a reference to an entity
+	local to the child unit.
+	* exp_ch6.adb, freeze.adb, sem_ch3.adb, sem_prag.adb, sem_util.adb:
+	Minor reformatting.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_res.adb (Resolve_Equality_Op): Do not warn on comparisons that
+	may be intentional.
+
+2017-09-08  Tristan Gingold  <gingold@adacore.com>
+
+	* sem_warn.adb (Check_Unused_Withs): Remove test that disabled
+	warnings on internal units in configurable run time mode.
+
 2017-09-08  Bob Duff  <duff@adacore.com>
 
 	* sem_ch3.adb (Build_Derived_Private_Type): Inherit

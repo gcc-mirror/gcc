@@ -259,14 +259,6 @@ package body Sem_Prag is
    --  Determine whether dependency clause Clause is surrounded by extra
    --  parentheses. If this is the case, issue an error message.
 
-   function Is_CCT_Instance
-     (Ref_Id     : Entity_Id;
-      Context_Id : Entity_Id) return Boolean;
-   --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
-   --  Global. Determine whether entity Ref_Id denotes the current instance of
-   --  a concurrent type. Context_Id denotes the associated context where the
-   --  pragma appears.
-
    function Is_Unconstrained_Or_Tagged_Item (Item : Entity_Id) return Boolean;
    --  Subsidiary to Collect_Subprogram_Inputs_Outputs and the analysis of
    --  pragma Depends. Determine whether the type of dependency item Item is
@@ -2188,24 +2180,28 @@ package body Sem_Prag is
                      --  formal parameter.
 
                      if Ekind (Item_Id) = E_Protected_Type then
-                        Error_Msg_Name_1 := Chars (Item_Id);
-                        SPARK_Msg_NE
-                          (Fix_Msg (Spec_Id, "global item of subprogram & "
-                           & "cannot reference current instance of protected "
-                           & "type %"), Item, Spec_Id);
-                        return;
+                        if Scope (Spec_Id) = Item_Id then
+                           Error_Msg_Name_1 := Chars (Item_Id);
+                           SPARK_Msg_NE
+                             (Fix_Msg (Spec_Id, "global item of subprogram & "
+                              & "cannot reference current instance of "
+                              & "protected type %"), Item, Spec_Id);
+                           return;
+                        end if;
 
                      --  Pragma [Refined_]Global associated with a task type
                      --  cannot mention the current instance of a task type
                      --  because the instance behaves as a formal parameter.
 
                      else pragma Assert (Ekind (Item_Id) = E_Task_Type);
-                        Error_Msg_Name_1 := Chars (Item_Id);
-                        SPARK_Msg_NE
-                          (Fix_Msg (Spec_Id, "global item of subprogram & "
-                           & "cannot reference current instance of task type "
-                           & "%"), Item, Spec_Id);
-                        return;
+                        if Spec_Id = Item_Id then
+                           Error_Msg_Name_1 := Chars (Item_Id);
+                           SPARK_Msg_NE
+                             (Fix_Msg (Spec_Id, "global item of subprogram & "
+                              & "cannot reference current instance of task "
+                              & "type %"), Item, Spec_Id);
+                           return;
+                        end if;
                      end if;
 
                   --  Otherwise the global item denotes a subtype mark that is
@@ -2230,24 +2226,28 @@ package body Sem_Prag is
                   --  parameter.
 
                   if Is_Single_Protected_Object (Item_Id) then
-                     Error_Msg_Name_1 := Chars (Item_Id);
-                     SPARK_Msg_NE
-                       (Fix_Msg (Spec_Id, "global item of subprogram & cannot "
-                        & "reference current instance of protected type %"),
-                        Item, Spec_Id);
-                     return;
+                     if Scope (Spec_Id) = Etype (Item_Id) then
+                        Error_Msg_Name_1 := Chars (Item_Id);
+                        SPARK_Msg_NE
+                          (Fix_Msg (Spec_Id, "global item of subprogram & "
+                           & "cannot reference current instance of protected "
+                           & "type %"), Item, Spec_Id);
+                        return;
+                     end if;
 
                   --  Pragma [Refined_]Global associated with a task type
                   --  cannot mention the current instance of a task type
                   --  because the instance behaves as a formal parameter.
 
                   else pragma Assert (Is_Single_Task_Object (Item_Id));
-                     Error_Msg_Name_1 := Chars (Item_Id);
-                     SPARK_Msg_NE
-                       (Fix_Msg (Spec_Id, "global item of subprogram & cannot "
-                        & "reference current instance of task type %"),
-                        Item, Spec_Id);
-                     return;
+                     if Spec_Id = Item_Id then
+                        Error_Msg_Name_1 := Chars (Item_Id);
+                        SPARK_Msg_NE
+                          (Fix_Msg (Spec_Id, "global item of subprogram & "
+                           & "cannot reference current instance of task "
+                           & "type %"), Item, Spec_Id);
+                        return;
+                     end if;
                   end if;
 
                --  A formal object may act as a global item inside a generic
@@ -29242,63 +29242,6 @@ package body Sem_Prag is
 
       return Add_Config_Static_String (Arg);
    end Is_Config_Static_String;
-
-   ---------------------
-   -- Is_CCT_Instance --
-   ---------------------
-
-   function Is_CCT_Instance
-     (Ref_Id     : Entity_Id;
-      Context_Id : Entity_Id) return Boolean
-   is
-      S   : Entity_Id;
-      Typ : Entity_Id;
-
-   begin
-      --  When the reference denotes a single protected type, the context is
-      --  either a protected subprogram or its body.
-
-      if Is_Single_Protected_Object (Ref_Id) then
-         Typ := Scope (Context_Id);
-
-         return
-           Ekind (Typ) = E_Protected_Type
-             and then Present (Anonymous_Object (Typ))
-             and then Anonymous_Object (Typ) = Ref_Id;
-
-      --  When the reference denotes a single task type, the context is either
-      --  the same type or if inside the body, the anonymous task type.
-
-      elsif Is_Single_Task_Object (Ref_Id) then
-         if Ekind (Context_Id) = E_Task_Type then
-            return
-              Present (Anonymous_Object (Context_Id))
-                and then Anonymous_Object (Context_Id) = Ref_Id;
-         else
-            return Ref_Id = Context_Id;
-         end if;
-
-      --  Otherwise the reference denotes a protected or a task type. Climb the
-      --  scope chain looking for an enclosing concurrent type that matches the
-      --  referenced entity.
-
-      else
-         pragma Assert (Ekind_In (Ref_Id, E_Protected_Type, E_Task_Type));
-
-         S := Current_Scope;
-         while Present (S) and then S /= Standard_Standard loop
-            if Ekind_In (S, E_Protected_Type, E_Task_Type)
-              and then S = Ref_Id
-            then
-               return True;
-            end if;
-
-            S := Scope (S);
-         end loop;
-      end if;
-
-      return False;
-   end Is_CCT_Instance;
 
    -------------------------------
    -- Is_Elaboration_SPARK_Mode --
