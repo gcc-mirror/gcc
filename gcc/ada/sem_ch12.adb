@@ -5445,7 +5445,29 @@ package body Sem_Ch12 is
             Ignore_SPARK_Mode_Pragmas_In_Instance := True;
          end if;
 
+         --  If the context of an instance is not subject to SPARK_Mode "off",
+         --  and the generic spec is subject to an explicit SPARK_Mode pragma,
+         --  the latter should be the one applicable to the instance.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then Saved_SM /= Off
+           and then Present (SPARK_Pragma (Gen_Unit))
+         then
+            Set_SPARK_Mode (Gen_Unit);
+         end if;
+
          Analyze_Instance_And_Renamings;
+
+         --  Restore SPARK_Mode from the context after analysis of the package
+         --  declaration, so that the SPARK_Mode on the generic spec does not
+         --  apply to the pending instance for the instance body.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then Saved_SM /= Off
+           and then Present (SPARK_Pragma (Gen_Unit))
+         then
+            Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         end if;
 
          --  If the generic is marked Import (Intrinsic), then so is the
          --  instance. This indicates that there is no body to instantiate. If
@@ -11511,7 +11533,9 @@ package body Sem_Ch12 is
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
 
-      --  Install the SPARK mode which applies to the subprogram body
+      --  Install the SPARK mode which applies to the subprogram body from the
+      --  instantiation context. This may be refined further if an explicit
+      --  SPARK_Mode pragma applies to the generic body.
 
       Install_SPARK_Mode (Body_Info.SPARK_Mode, Body_Info.SPARK_Mode_Pragma);
 
@@ -11571,6 +11595,17 @@ package body Sem_Ch12 is
            or else Ignore_SPARK_Mode_Pragmas (Act_Decl_Id)
          then
             Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
+         --  If the context of an instance is not subject to SPARK_Mode "off",
+         --  and the generic body is subject to an explicit SPARK_Mode pragma,
+         --  the latter should be the one applicable to the instance.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then SPARK_Mode /= Off
+           and then Present (SPARK_Pragma (Gen_Body_Id))
+         then
+            Set_SPARK_Mode (Gen_Body_Id);
          end if;
 
          Current_Sem_Unit := Body_Info.Current_Sem_Unit;

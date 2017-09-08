@@ -1943,6 +1943,12 @@ package Sem_Util is
    --  for something actually declared as volatile, not for an object that gets
    --  treated as volatile (see Einfo.Treat_As_Volatile).
 
+   generic
+      with procedure Handle_Parameter (Formal : Entity_Id; Actual : Node_Id);
+   procedure Iterate_Call_Parameters (Call : Node_Id);
+   --  Calls Handle_Parameter for each pair of formal and actual parameters of
+   --  a function, procedure, or entry call.
+
    function Itype_Has_Declaration (Id : Entity_Id) return Boolean;
    --  Applies to Itypes. True if the Itype is attached to a declaration for
    --  the type through its Parent field, which may or not be present in the
