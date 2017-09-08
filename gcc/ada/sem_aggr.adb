@@ -4048,9 +4048,7 @@ package body Sem_Aggr is
             end if;
          end Rewrite_Bound;
 
-         ---------------------
-         -- Local Variables --
-         ---------------------
+         --  Local variables
 
          Low, High : Node_Id;
          Disc      : Entity_Id;

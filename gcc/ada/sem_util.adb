@@ -17316,6 +17316,13 @@ package body Sem_Util is
    function NCT_Table_Hash (Key : Node_Or_Entity_Id) return NCT_Table_Index;
    --  Obtain the hash value of node or entity Key
 
+   NCT_Tables_In_Use : Boolean := False;
+   --  This flag keeps track of whether the two tables NCT_New_Entities and
+   --  NCT_Pending_Itypes are in use. The flag is part of an optimization
+   --  where certain operations are not performed if the tables are not in
+   --  use. This saves up to 8% of the entire compilation time spent in the
+   --  front end.
+
    --------------------
    -- NCT_Table_Hash --
    --------------------
@@ -17388,13 +17395,6 @@ package body Sem_Util is
       EWA_Inner_Scope_Level : Nat := 0;
       --  This counter keeps track of how many scoping constructs appear within
       --  an N_Expression_With_Actions node.
-
-      NCT_Tables_In_Use : Boolean := False;
-      --  This flag keeps track of whether the two tables NCT_New_Entities and
-      --  NCT_Pending_Itypes are in use. The flag is part of an optimization
-      --  where certain operations are not performed if the tables are not in
-      --  use. This saves up to 8% of the entire compilation time spent in the
-      --  front end.
 
       procedure Add_New_Entity (Old_Id : Entity_Id; New_Id : Entity_Id);
       pragma Inline (Add_New_Entity);
@@ -18744,8 +18744,12 @@ package body Sem_Util is
       --  NCT_Pending_Itypes in case a previous call to New_Copy_Tree left some
       --  data inside.
 
-      NCT_New_Entities.Reset;
-      NCT_Pending_Itypes.Reset;
+      if NCT_Tables_In_Use then
+         NCT_Tables_In_Use := False;
+
+         NCT_New_Entities.Reset;
+         NCT_Pending_Itypes.Reset;
+      end if;
 
       --  Populate tables NCT_New_Entities and NCT_Pending_Itypes with data
       --  supplied by a linear entity map. The tables offer faster access to
