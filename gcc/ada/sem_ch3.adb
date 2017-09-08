@@ -9576,9 +9576,18 @@ package body Sem_Ch3 is
          Set_Has_Predicates (Derived_Type);
       end if;
 
-      --  The derived type inherits the representation clauses of the parent
+      --  The derived type inherits representation clauses from the parent
+      --  type, and from any interfaces.
 
       Inherit_Rep_Item_Chain (Derived_Type, Parent_Type);
+      declare
+         Iface : Node_Id := First (Abstract_Interface_List (Derived_Type));
+      begin
+         while Present (Iface) loop
+            Inherit_Rep_Item_Chain (Derived_Type, Entity (Iface));
+            Next (Iface);
+         end loop;
+      end;
 
       --  If the parent type has delayed rep aspects, then mark the derived
       --  type as possibly inheriting a delayed rep aspect.

@@ -1,3 +1,24 @@
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* sem_ch3.adb (Build_Derived_Private_Type): Inherit
+	representation items from interfaces that the derived type
+	implements, not just from the parent type.
+	* sem_util.ads, sem_util.adb (Abstract_Interface_List): Change
+	this to return an empty list when there are no interfaces.
+	* einfo.ads, sem_ch13.adb: Minor comment fixes.
+	* sem_attr.adb: Minor comment fix.
+
+2017-09-08  Doug Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks.c [i386]: Adjust the kernel context for
+	x86-vx7.
+
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Allocator): Generate a
+	call to Allocate_Any_Controlled when the allocation does not
+	require any initialization.
+
 2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_util.adb (Copy_Node_With_Replacement):

@@ -198,12 +198,17 @@ package body Sem_Util is
 
          return Abstract_Interface_List (Etype (Typ));
 
-      else pragma Assert ((Ekind (Typ)) = E_Record_Type);
+      elsif Ekind (Typ) = E_Record_Type then
          if Nkind (Parent (Typ)) = N_Formal_Type_Declaration then
             Nod := Formal_Type_Definition (Parent (Typ));
          else
             Nod := Type_Definition (Parent (Typ));
          end if;
+
+      --  It's not the kind of type that can implement interfaces
+
+      else
+         return Empty_List;
       end if;
 
       return Interface_List (Nod);

@@ -37,8 +37,9 @@ with Urealp;  use Urealp;
 package Sem_Util is
 
    function Abstract_Interface_List (Typ : Entity_Id) return List_Id;
-   --  Given a type that implements interfaces look for its associated
-   --  definition node and return its list of interfaces.
+   --  The list of interfaces implemented by Typ. Empty if there are none,
+   --  including the cases where there can't be any because e.g. the type is
+   --  not tagged.
 
    procedure Add_Access_Type_To_Process (E : Entity_Id; A : Entity_Id);
    --  Add A to the list of access types to process when expanding the
