@@ -21659,6 +21659,20 @@ package body Sem_Util is
       end if;
    end Set_Referenced_Modified;
 
+   ------------------
+   -- Set_Rep_Info --
+   ------------------
+
+   procedure Set_Rep_Info (T1, T2 : Entity_Id) is
+   begin
+      Set_Is_Atomic               (T1, Is_Atomic (T2));
+      Set_Is_Independent          (T1, Is_Independent (T2));
+      Set_Is_Volatile_Full_Access (T1, Is_Volatile_Full_Access (T2));
+      if Is_Base_Type (T1) then
+         Set_Is_Volatile          (T1, Is_Volatile (T2));
+      end if;
+   end Set_Rep_Info;
+
    ----------------------------
    -- Set_Scope_Is_Transient --
    ----------------------------

@@ -1187,7 +1187,7 @@ package body Inline is
       --  Return True if subprogram Id defines a compilation unit
       --  Shouldn't this be in Sem_Aux???
 
-      function In_Package_Spec (Id : Node_Id) return Boolean;
+      function In_Package_Spec (Id : Entity_Id) return Boolean;
       --  Return True if subprogram Id is defined in the package specification,
       --  either its visible or private part.
 
@@ -1292,7 +1292,7 @@ package body Inline is
       -- In_Package_Spec --
       ---------------------
 
-      function In_Package_Spec (Id : Node_Id) return Boolean is
+      function In_Package_Spec (Id : Entity_Id) return Boolean is
          P : constant Node_Id := Parent (Subprogram_Spec (Id));
          --  Parent of the subprogram's declaration
 

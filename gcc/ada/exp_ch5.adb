@@ -3126,8 +3126,14 @@ package body Exp_Ch5 is
       --  as a legal form of assignment to remedy this side effect.
 
       Set_Assignment_OK (Name (Advance));
-
       Analyze (N);
+
+      --  Because we have to analyze the initial declaration of the loop
+      --  parameter multiple times its scope is incorrectly set at this point
+      --  to the one surrounding the block statement - so set the scope
+      --  manually to be the actual block statement.
+
+      Set_Scope (Defining_Identifier (Init_Decl), Entity (Identifier (N)));
    end Expand_Formal_Container_Loop;
 
    ------------------------------------------
