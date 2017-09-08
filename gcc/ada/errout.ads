@@ -68,11 +68,6 @@ package Errout is
    --  error message tag. The -gnatw.d switch sets this flag True, -gnatw.D
    --  sets this flag False.
 
-   type Current_Subprogram_Type is access function return Entity_Id;
-   Current_Subprogram_Ptr : Current_Subprogram_Type := null;
-   --  Indirect call to Sem_Util.Current_Subprogram to break circular
-   --  dependency with the static elaboration model.
-
    -----------------------------------
    -- Suppression of Error Messages --
    -----------------------------------
@@ -691,9 +686,13 @@ package Errout is
    --  Output list of messages, including messages giving number of detected
    --  errors and warnings.
 
-   procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
+   procedure Error_Msg
+     (Msg : String; Flag_Location : Source_Ptr);
+   procedure Error_Msg
+     (Msg : String; Flag_Location : Source_Ptr; N : Node_Id);
    --  Output a message at specified location. Can be called from the parser
-   --  or the semantic analyzer.
+   --  or the semantic analyzer. If N is set, points to the relevant node for
+   --  this message.
 
    procedure Error_Msg_S (Msg : String);
    --  Output a message at current scan pointer location. This routine can be

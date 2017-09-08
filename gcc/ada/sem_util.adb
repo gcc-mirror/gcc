@@ -32,6 +32,7 @@ with Checks;   use Checks;
 with Debug;    use Debug;
 with Elists;   use Elists;
 with Errout;   use Errout;
+with Erroutc;  use Erroutc;
 with Exp_Ch11; use Exp_Ch11;
 with Exp_Disp; use Exp_Disp;
 with Exp_Util; use Exp_Util;
@@ -136,6 +137,10 @@ package body Sem_Util is
    --  routine will be removed eventially when New_Requires_Transient_Scope
    --  becomes Requires_Transient_Scope and Old_Requires_Transient_Scope is
    --  eliminated.
+
+   function Subprogram_Name (N : Node_Id) return String;
+   --  Return the fully qualified name of the enclosing subprogram for the
+   --  given node N.
 
    ------------------------------
    --  Abstract_Interface_List --
@@ -571,6 +576,98 @@ package body Sem_Util is
             raise Program_Error;
       end case;
    end All_Composite_Constraints_Static;
+
+   ------------------------
+   -- Append_Entity_Name --
+   ------------------------
+
+   procedure Append_Entity_Name (Buf : in out Bounded_String; E : Entity_Id) is
+      Temp : Bounded_String;
+
+      procedure Inner (E : Entity_Id);
+      --  Inner recursive routine, keep outer routine nonrecursive to ease
+      --  debugging when we get strange results from this routine.
+
+      -----------
+      -- Inner --
+      -----------
+
+      procedure Inner (E : Entity_Id) is
+      begin
+         --  If entity has an internal name, skip by it, and print its scope.
+         --  Note that we strip a final R from the name before the test; this
+         --  is needed for some cases of instantiations.
+
+         declare
+            E_Name : Bounded_String;
+
+         begin
+            Append (E_Name, Chars (E));
+
+            if E_Name.Chars (E_Name.Length) = 'R' then
+               E_Name.Length := E_Name.Length - 1;
+            end if;
+
+            if Is_Internal_Name (E_Name) then
+               Inner (Scope (E));
+               return;
+            end if;
+         end;
+
+         --  Just print entity name if its scope is at the outer level
+
+         if Scope (E) = Standard_Standard then
+            null;
+
+         --  If scope comes from source, write scope and entity
+
+         elsif Comes_From_Source (Scope (E)) then
+            Append_Entity_Name (Temp, Scope (E));
+            Append (Temp, '.');
+
+         --  If in wrapper package skip past it
+
+         elsif Is_Wrapper_Package (Scope (E)) then
+            Append_Entity_Name (Temp, Scope (Scope (E)));
+            Append (Temp, '.');
+
+         --  Otherwise nothing to output (happens in unnamed block statements)
+
+         else
+            null;
+         end if;
+
+         --  Output the name
+
+         declare
+            E_Name : Bounded_String;
+
+         begin
+            Append_Unqualified_Decoded (E_Name, Chars (E));
+
+            --  Remove trailing upper-case letters from the name (useful for
+            --  dealing with some cases of internal names generated in the case
+            --  of references from within a generic).
+
+            while E_Name.Length > 1
+              and then E_Name.Chars (E_Name.Length) in 'A' .. 'Z'
+            loop
+               E_Name.Length := E_Name.Length - 1;
+            end loop;
+
+            --  Adjust casing appropriately (gets name from source if possible)
+
+            Adjust_Name_Case (E_Name, Sloc (E));
+            Append (Temp, E_Name);
+         end;
+      end Inner;
+
+   --  Start of processing for Append_Entity_Name
+
+   begin
+      Inner (E);
+      Append (Buf, Temp);
+   end Append_Entity_Name;
 
    ---------------------------------
    -- Append_Inherited_Subprogram --
@@ -21663,11 +21760,12 @@ package body Sem_Util is
    -- Set_Rep_Info --
    ------------------
 
-   procedure Set_Rep_Info (T1, T2 : Entity_Id) is
+   procedure Set_Rep_Info (T1 : Entity_Id; T2 : Entity_Id) is
    begin
       Set_Is_Atomic               (T1, Is_Atomic (T2));
       Set_Is_Independent          (T1, Is_Independent (T2));
       Set_Is_Volatile_Full_Access (T1, Is_Volatile_Full_Access (T2));
+
       if Is_Base_Type (T1) then
          Set_Is_Volatile          (T1, Is_Volatile (T2));
       end if;
@@ -21854,6 +21952,49 @@ package body Sem_Util is
          return Scope_Depth (Enclosing_Dynamic_Scope (Subp));
       end if;
    end Subprogram_Access_Level;
+
+   ---------------------
+   -- Subprogram_Name --
+   ---------------------
+
+   function Subprogram_Name (N : Node_Id) return String is
+      Buf : Bounded_String;
+      Ent : Node_Id := N;
+
+   begin
+      while Present (Ent) loop
+         case Nkind (Ent) is
+            when N_Subprogram_Body =>
+               Ent := Defining_Unit_Name (Specification (Ent));
+               exit;
+
+            when N_Package_Body
+               | N_Package_Specification
+               | N_Subprogram_Specification
+            =>
+               Ent := Defining_Unit_Name (Ent);
+               exit;
+
+            when N_Protected_Body
+               | N_Protected_Type_Declaration
+               | N_Task_Body
+            =>
+               exit;
+
+            when others =>
+               null;
+         end case;
+
+         Ent := Parent (Ent);
+      end loop;
+
+      if No (Ent) then
+         return "unknown subprogram";
+      end if;
+
+      Append_Entity_Name (Buf, Ent);
+      return +Buf;
+   end Subprogram_Name;
 
    -------------------------------
    -- Support_Atomic_Primitives --
@@ -23188,5 +23329,5 @@ package body Sem_Util is
    end Yields_Universal_Type;
 
 begin
-   Errout.Current_Subprogram_Ptr := Current_Subprogram'Access;
+   Erroutc.Subprogram_Name_Ptr := Subprogram_Name'Access;
 end Sem_Util;

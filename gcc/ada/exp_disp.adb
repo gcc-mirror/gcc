@@ -1204,7 +1204,7 @@ package body Exp_Disp is
 
    procedure Expand_Interface_Conversion (N : Node_Id) is
       function Underlying_Record_Type (Typ : Entity_Id) return Entity_Id;
-      --  Return the underlying record type of Typ.
+      --  Return the underlying record type of Typ
 
       ----------------------------
       -- Underlying_Record_Type --

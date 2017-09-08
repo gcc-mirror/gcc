@@ -1,3 +1,30 @@
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* exp_intr.adb (Append_Entity_Name): Move to ...
+	* sem_util.ads, sem_util.adb: ... here to share it.
+	(Subprogram_Name): New subprogram, to compute the name of the enclosing
+	subprogram/entity.
+	* errutil.adb (Error_Msg): Fill new field Node.
+	* erroutc.ads (Subprogram_Name_Ptr): New.
+	(Error_Msg_Object): New field Node.
+	* erroutc.adb (dmsg, Output_Msg_Text): Take new field Node into account.
+	* errout.adb (Error_Msg): New variant with node id parameter.
+	Fill new parameter Node when emitting messages. Revert previous
+	changes for Include_Subprogram_In_Messages.
+	* sem_ch5.adb (Check_Unreachable_Code): Supply Node parameter when
+	generating warning message.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* par-ch4.adb (P_Iterated_Component_Association): Place construct
+	under -gnat2020 flag, given that it is a future feature of
+	the language.
+	* sem_aggr.adb (Resolve_Iterated_Component_Association): Mark
+	defining identifier as referenced to prevent spurious warnings:
+	corresponding loop is expanded into one or more loops whose
+	variable has the same name, and the expression uses those names
+	and not the original one.
+
 2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* sem_elab.adb (Check_A_Call): Do not consider

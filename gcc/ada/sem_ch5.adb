@@ -3745,7 +3745,8 @@ package body Sem_Ch5 is
                      Check_SPARK_05_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else
-                     Error_Msg ("??unreachable code!", Sloc (Error_Node));
+                     Error_Msg
+                       ("??unreachable code!", Sloc (Error_Node), Error_Node);
                   end if;
                end if;
 

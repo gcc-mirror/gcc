@@ -132,6 +132,11 @@ package Erroutc is
    --  output. This is used for internal processing for the case of an
    --  illegal instantiation. See Error_Msg routine for further details.
 
+   type Subprogram_Name_Type is access function (N : Node_Id) return String;
+   Subprogram_Name_Ptr : Subprogram_Name_Type;
+   --  Indirect call to Sem_Util.Subprogram_Name to break circular
+   --  dependency with the static elaboration model.
+
    ----------------------------
    -- Message ID Definitions --
    ----------------------------
@@ -251,6 +256,11 @@ package Erroutc is
       Deleted : Boolean;
       --  If this flag is set, the message is not printed. This is used
       --  in the circuit for deleting duplicate/redundant error messages.
+
+      Node : Node_Id;
+      --  If set, points to the node relevant for this message which will be
+      --  used to compute the enclosing subprogram name if
+      --  Opt.Include_Subprogram_In_Messages is set.
    end record;
 
    package Errors is new Table.Table (
