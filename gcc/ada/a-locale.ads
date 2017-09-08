@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2010-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2010-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT.  In accordance with the copyright of that document, you can freely --
@@ -14,6 +14,10 @@
 -- modified version,  any changes that you have made are clearly indicated. --
 --                                                                          --
 ------------------------------------------------------------------------------
+
+--  Note that this package is currently not implemented on any platform and
+--  functions Language and Country will always return
+--  Language_Unknown/Country_Unknown.
 
 package Ada.Locales is
    pragma Preelaborate (Locales);

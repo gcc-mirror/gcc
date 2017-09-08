@@ -282,6 +282,9 @@ package body Binde is
    Num_Chosen : Nat;
    --  Number of units chosen in the elaboration order so far
 
+   Diagnose_Elaboration_Problem_Called : Boolean := False;
+   --  True if Diagnose_Elaboration_Problem was called. Used in an assertion.
+
    -----------------------
    -- Local Subprograms --
    -----------------------
@@ -429,9 +432,9 @@ package body Binde is
 
       procedure Find_Elab_Order (Elab_Order : out Unit_Id_Table);
 
-      Illegal_Elab_All : Boolean := False;
-      --  Set true if Find_Elab_Order found an illegal pragma Elaborate_All
-      --  (explicit or implicit).
+      Elab_Cycle_Found : Boolean := False;
+      --  Set True if Find_Elab_Order found a cycle (usually an illegal pragma
+      --  Elaborate_All, explicit or implicit).
 
       function SCC (U : Unit_Id) return Unit_Id;
       --  The root of the strongly connected component containing U
@@ -1027,22 +1030,23 @@ package body Binde is
 
       if No_Pred = Chosen then
          No_Pred := UNR.Table (Chosen).Nextnp;
-
       else
-         --  Note that we just ignore the situation where it does not
-         --  appear in the No_Pred list, this happens in calls from the
-         --  Diagnose_Elaboration_Problem routine, where cycles are being
-         --  removed arbitrarily from the graph.
-
          U := No_Pred;
          while U /= No_Unit_Id loop
             if UNR.Table (U).Nextnp = Chosen then
                UNR.Table (U).Nextnp := UNR.Table (Chosen).Nextnp;
-               exit;
+               goto Done_Removal;
             end if;
 
             U := UNR.Table (U).Nextnp;
          end loop;
+
+         --  Here if we didn't find it on the No_Pred list. This can happen
+         --  only in calls from the Diagnose_Elaboration_Problem routine,
+         --  where cycles are being removed arbitrarily from the graph.
+
+         pragma Assert (Errors_Detected > 0);
+         <<Done_Removal>> null;
       end if;
 
       --  For all successors, decrement the number of predecessors, and if it
@@ -1268,6 +1272,7 @@ package body Binde is
    --  Start of processing for Diagnose_Elaboration_Problem
 
    begin
+      Diagnose_Elaboration_Problem_Called := True;
       Set_Standard_Error;
 
       --  Output state of things if debug flag N set
@@ -1279,10 +1284,8 @@ package body Binde is
          begin
             Write_Eol;
             Write_Eol;
-            Write_Str ("Diagnose_Elaboration_Problem called");
-            Write_Eol;
-            Write_Str ("List of remaining unchosen units and predecessors");
-            Write_Eol;
+            Write_Line ("Diagnose_Elaboration_Problem called");
+            Write_Line ("List of remaining unchosen units and predecessors");
 
             for U in Units.First .. Units.Last loop
                if UNR.Table (U).Elab_Position = 0 then
@@ -1294,17 +1297,14 @@ package body Binde is
                   Write_Unit_Name (Units.Table (U).Uname);
                   Write_Str (" (Num_Pred = ");
                   Write_Int (NP);
-                  Write_Char (')');
-                  Write_Eol;
+                  Write_Line (")");
 
                   if NP = 0 then
                      if Units.Table (U).Elaborate_Body then
-                        Write_Str
+                        Write_Line
                           ("    (not chosen because of Elaborate_Body)");
-                        Write_Eol;
                      else
-                        Write_Str ("  ****************** why not chosen?");
-                        Write_Eol;
+                        Write_Line ("  ****************** why not chosen?");
                      end if;
                   end if;
 
@@ -1329,8 +1329,7 @@ package body Binde is
                   end loop;
 
                   if NP /= 0 then
-                     Write_Str ("  **************** Num_Pred value wrong!");
-                     Write_Eol;
+                     Write_Line ("  **************** Num_Pred value wrong!");
                   end if;
                end if;
             end loop;
@@ -1635,7 +1634,7 @@ package body Binde is
         or Pessimistic_Elab_Order
         or Debug_Flag_Old
         or Debug_Flag_Older
-        or Illegal_Elab_All
+        or Elab_Cycle_Found
       then
          if Debug_Flag_V then
             Write_Line ("Doing old...");
@@ -1645,6 +1644,9 @@ package body Binde is
          Init;
          Elab_Old.Find_Elab_Order (Old_Elab_Order);
       end if;
+
+      pragma Assert (Elab_Cycle_Found <= -- implies
+                       Diagnose_Elaboration_Problem_Called);
 
       declare
          Old_Order : Unit_Id_Array renames
@@ -2386,8 +2388,7 @@ package body Binde is
 
       if not Zero_Formatting then
          Write_Eol;
-         Write_Str ("REFERENCED SOURCES");
-         Write_Eol;
+         Write_Line ("REFERENCED SOURCES");
       end if;
 
       for J in reverse Order'Range loop
@@ -2406,8 +2407,7 @@ package body Binde is
                Write_Str ("   ");
             end if;
 
-            Write_Str (Get_Name_String (Source));
-            Write_Eol;
+            Write_Line (Get_Name_String (Source));
          end if;
       end loop;
 
@@ -2430,8 +2430,7 @@ package body Binde is
                Write_Str ("   ");
             end if;
 
-            Write_Str (Get_Name_String (Source));
-            Write_Eol;
+            Write_Line (Get_Name_String (Source));
          end if;
       end loop;
 
@@ -2448,8 +2447,7 @@ package body Binde is
    begin
       if not Zero_Formatting then
          Write_Eol;
-         Write_Str ("                 ELABORATION ORDER DEPENDENCIES");
-         Write_Eol;
+         Write_Line ("                 ELABORATION ORDER DEPENDENCIES");
          Write_Eol;
       end if;
 
@@ -2535,8 +2533,7 @@ package body Binde is
    begin
       if Title /= "" then
          Write_Eol;
-         Write_Str (Title);
-         Write_Eol;
+         Write_Line (Title);
       end if;
 
       for J in Order'Range loop
@@ -2751,8 +2748,7 @@ package body Binde is
                Write_Unit_Name (Units.Table (Root).Uname);
                Write_Str (" -- ");
                Write_Int (Nodes'Length);
-               Write_Str (" units:");
-               Write_Eol;
+               Write_Line (" units:");
 
                for J in Nodes'Range loop
                   Write_Str ("   ");
@@ -2901,12 +2897,12 @@ package body Binde is
                        or else Withs.Table (W).Elab_All_Desirable
                      then
                         if SCC (U) = SCC (Withed_Unit) then
-                           Illegal_Elab_All := True; -- ????
+                           Elab_Cycle_Found := True; -- ???
 
                            --  We could probably give better error messages
                            --  than Elab_Old here, but for now, to avoid
                            --  disruption, we don't give any error here.
-                           --  Instead, we set the Illegal_Elab_All flag above,
+                           --  Instead, we set the Elab_Cycle_Found flag above,
                            --  and then run the Elab_Old algorithm to issue the
                            --  error message. Ideally, we would like to print
                            --  multiple errors rather than stopping after the
@@ -2958,6 +2954,9 @@ package body Binde is
          --  nodes have been chosen.
 
          Outer : loop
+            if Debug_Flag_N then
+               Write_Line ("Outer loop");
+            end if;
 
             --  If there are no nodes with predecessors, then either we are
             --  done, as indicated by Num_Left being set to zero, or we have
@@ -3003,16 +3002,28 @@ package body Binde is
                  and then Better_Choice (U, Best_So_Far)
                then
                   if Debug_Flag_N then
-                     Write_Str ("    tentatively chosen (best so far)");
-                     Write_Eol;
+                     Write_Line ("    tentatively chosen (best so far)");
                   end if;
 
                   Best_So_Far := U;
+               else
+                  if Debug_Flag_N then
+                     Write_Line ("    SCC not ready");
+                  end if;
                end if;
 
                U := UNR.Table (U).Nextnp;
                exit No_Pred_Search when U = No_Unit_Id;
             end loop No_Pred_Search;
+
+            --  If there are no units on the No_Pred list whose SCC is ready,
+            --  there must be a cycle. Defer to Elab_Old to print an error
+            --  message.
+
+            if Best_So_Far = No_Unit_Id then
+               Elab_Cycle_Found := True;
+               return;
+            end if;
 
             --  Choose the best candidate found
 
@@ -3200,8 +3211,7 @@ package body Binde is
 
                if Better_Choice (U, Best_So_Far) then
                   if Debug_Flag_N then
-                     Write_Str ("    tentatively chosen (best so far)");
-                     Write_Eol;
+                     Write_Line ("    tentatively chosen (best so far)");
                   end if;
 
                   Best_So_Far := U;

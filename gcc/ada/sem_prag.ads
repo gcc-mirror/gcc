@@ -375,6 +375,7 @@ package Sem_Prag is
    --    Depends
    --    Extensions_Visible
    --    Global
+   --    Initializes
    --    Max_Queue_Length
    --    Post
    --    Post_Class
@@ -385,6 +386,7 @@ package Sem_Prag is
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
+   --    Refined_State
    --    Test_Case
    --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2010, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -31,10 +31,10 @@
 
 --  This package contains the search functions from Ada.Strings.Fixed. They
 --  are separated out because they are shared by Ada.Strings.Bounded and
---  Ada.Strings.Unbounded, and we don't want to drag other irrelevant stuff
---  from Ada.Strings.Fixed when using the other two packages. We make this
---  a private package, since user programs should access these subprograms
---  via one of the standard string packages.
+--  Ada.Strings.Unbounded, and we don't want to drag in other irrelevant stuff
+--  from Ada.Strings.Fixed when using the other two packages. We make this a
+--  private package, since user programs should access these subprograms via
+--  one of the standard string packages.
 
 with Ada.Strings.Maps;
 

@@ -608,7 +608,7 @@ package body Debug is
    --       calls a procedure in another package, the static elaboration
    --       machinery adds an implicit Elaborate_All on the other package. This
    --       switch disables the addition of the implicit pragma in such cases.
-   --
+
    --  d.z  Restore previous front-end support for Inline_Always. In default
    --       mode, for targets that use the GCC back end, Inline_Always is
    --       handled by the back end. Use of this switch restores the previous

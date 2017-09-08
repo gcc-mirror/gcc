@@ -854,7 +854,6 @@ package body Repinfo is
    ----------------------
 
    procedure List_Record_Info (Ent : Entity_Id; Bytes_Big_Endian : Boolean) is
-
       procedure Compute_Max_Length
         (Ent                : Entity_Id;
          Starting_Position  : Uint := Uint_0;
@@ -882,7 +881,7 @@ package body Repinfo is
          Starting_First_Bit : Uint := Uint_0;
          Prefix_Length      : Natural := 0)
       is
-         Comp  : Entity_Id;
+         Comp : Entity_Id;
 
       begin
          Comp := First_Component_Or_Discriminant (Ent);
@@ -905,7 +904,9 @@ package body Repinfo is
                Fbit : Uint;
                Spos : Uint;
                Sbit : Uint;
+
                Name_Length : Natural;
+
             begin
                Get_Decoded_Name_String (Chars (Comp));
                Name_Length := Prefix_Length + Name_Len;
@@ -936,6 +937,7 @@ package body Repinfo is
 
                   Spos := Starting_Position  + Npos;
                   Sbit := Starting_First_Bit + Fbit;
+
                   if Sbit >= SSU then
                      Spos := Spos + 1;
                      Sbit := Sbit - SSU;
@@ -974,7 +976,7 @@ package body Repinfo is
          Starting_First_Bit : Uint := Uint_0;
          Prefix             : String := "")
       is
-         Comp  : Entity_Id;
+         Comp : Entity_Id;
 
       begin
          Comp := First_Component_Or_Discriminant (Ent);
@@ -1014,12 +1016,15 @@ package body Repinfo is
                then
                   Spos := Starting_Position  + Npos;
                   Sbit := Starting_First_Bit + Fbit;
+
                   if Sbit >= SSU then
                      Spos := Spos + 1;
                      Sbit := Sbit - SSU;
                   end if;
+
                   List_Record_Layout (Ctyp,
                     Spos, Sbit, Prefix & Name_Buffer (1 .. Name_Len) & ".");
+
                   goto Continue;
                end if;
 
@@ -1036,9 +1041,11 @@ package body Repinfo is
                if Known_Static_Normalized_Position (Comp) then
                   Spos := Starting_Position  + Npos;
                   Sbit := Starting_First_Bit + Fbit;
+
                   if Sbit >= SSU then
                      Spos := Spos + 1;
                   end if;
+
                   UI_Image (Spos);
                   Spaces (Max_Spos_Length - UI_Image_Length);
                   Write_Str (UI_Image_Buffer (1 .. UI_Image_Length));
@@ -1048,6 +1055,7 @@ package body Repinfo is
                then
                   Spaces (Max_Spos_Length - 2);
                   Write_Str ("bit offset");
+
                   if Starting_Position /= Uint_0
                     or else Starting_First_Bit /= Uint_0
                   then
@@ -1055,21 +1063,25 @@ package body Repinfo is
                      UI_Write (Starting_Position * SSU + Starting_First_Bit);
                      Write_Str (" +");
                   end if;
+
                   Write_Val (Bofs, Paren => True);
                   Write_Str (" size in bits = ");
                   Write_Val (Esiz, Paren => True);
                   Write_Eol;
+
                   goto Continue;
 
                elsif Known_Normalized_Position (Comp)
                  and then List_Representation_Info = 3
                then
                   Spaces (Max_Spos_Length - 2);
+
                   if Starting_Position /= Uint_0 then
                      Write_Char (' ');
                      UI_Write (Starting_Position);
                      Write_Str (" +");
                   end if;
+
                   Write_Val (Npos);
 
                else
@@ -1089,9 +1101,11 @@ package body Repinfo is
 
                Write_Str (" range  ");
                Sbit := Starting_First_Bit + Fbit;
+
                if Sbit >= SSU then
                   Sbit := Sbit - SSU;
                end if;
+
                UI_Write (Sbit);
                Write_Str (" .. ");
 
@@ -1157,6 +1171,8 @@ package body Repinfo is
             Next_Component_Or_Discriminant (Comp);
          end loop;
       end List_Record_Layout;
+
+   --  Start of processing for List_Record_Info
 
    begin
       Blank_Line;

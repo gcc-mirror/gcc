@@ -42,6 +42,8 @@ with System.Address_Image;
 
 package body System.Traceback.Symbolic is
 
+   --  Note that Suppress_Hex is ignored in this version of this package.
+
    ------------------------
    -- Symbolic_Traceback --
    ------------------------
@@ -63,11 +65,11 @@ package body System.Traceback.Symbolic is
          begin
             for J in Traceback'Range loop
                Img := System.Address_Image (Traceback (J));
-               Result (Last + 1 .. Last + 2) := "0x";
-               Last := Last + 2;
+               Result (Last + 1 .. Last + 2)          := "0x";
+               Last                                   := Last + 2;
                Result (Last + 1 .. Last + Img'Length) := Img;
-               Last := Last + Img'Length + 1;
-               Result (Last) := ' ';
+               Last                                   := Last + Img'Length + 1;
+               Result (Last)                          := ' ';
             end loop;
 
             Result (Last) := ASCII.LF;
@@ -76,12 +78,27 @@ package body System.Traceback.Symbolic is
       end if;
    end Symbolic_Traceback;
 
+   --  "No_Hex" is ignored in this version, because otherwise we have nothing
+   --  at all to print.
+
+   function Symbolic_Traceback_No_Hex
+     (Traceback : System.Traceback_Entries.Tracebacks_Array) return String is
+   begin
+      return Symbolic_Traceback (Traceback);
+   end Symbolic_Traceback_No_Hex;
+
    function Symbolic_Traceback
      (E : Ada.Exceptions.Exception_Occurrence) return String
    is
    begin
       return Symbolic_Traceback (Ada.Exceptions.Traceback.Tracebacks (E));
    end Symbolic_Traceback;
+
+   function Symbolic_Traceback_No_Hex
+     (E : Ada.Exceptions.Exception_Occurrence) return String is
+   begin
+      return Symbolic_Traceback (E);
+   end Symbolic_Traceback_No_Hex;
 
    ------------------
    -- Enable_Cache --

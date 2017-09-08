@@ -738,6 +738,19 @@ package body SPARK_Specific is
 
               and then Get_Scope_Num (Ref.Ent_Scope) /= No_Scope
               and then Get_Scope_Num (Ref.Ref_Scope) /= No_Scope
+
+              --  Discard references to loop parameters introduced within
+              --  expression functions, as they give two references: one from
+              --  the analysis of the expression function itself and one from
+              --  the analysis of the expanded body. We don't lose any globals
+              --  by discarding them, because such loop parameters can only be
+              --  accessed locally from within the expression function body.
+
+              and then not
+                (Ekind (Ref.Ent) = E_Loop_Parameter
+                  and then Scope_Within
+                             (Ref.Ent, Unique_Entity (Ref.Ref_Scope))
+                  and then Is_Expression_Function (Ref.Ref_Scope))
             then
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Index;
