@@ -689,8 +689,9 @@ package Sem_Util is
    --  are entered using Sem_Ch6.Enter_Overloadable_Entity.
 
    function Entity_Of (N : Node_Id) return Entity_Id;
-   --  Return the entity of N or Empty. If N is a renaming, return the entity
-   --  of the root renamed object.
+   --  Obtain the entity of arbitrary node N. If N is a renaming, return the
+   --  entity of the earliest renamed source abstract state or whole object.
+   --  If no suitable entity is available, return Empty.
 
    procedure Explain_Limited_Type (T : Entity_Id; N : Node_Id);
    --  This procedure is called after issuing a message complaining about an
@@ -2265,14 +2266,20 @@ package Sem_Util is
    --  Returns True if the expression Expr contains any references to a generic
    --  type. This can only happen within a generic template.
 
+   procedure Remove_Entity (Id : Entity_Id);
+   --  Remove arbitrary entity Id from both the homonym and scope chains. Use
+   --  Remove_Overloaded_Entity for overloadable entities. Note: the removal
+   --  performed by this routine does not affect the visibility of existing
+   --  homonyms.
+
    procedure Remove_Homonym (E : Entity_Id);
    --  Removes E from the homonym chain
 
    procedure Remove_Overloaded_Entity (Id : Entity_Id);
    --  Remove arbitrary entity Id from the homonym chain, the scope chain and
-   --  the primitive operations list of the associated controlling type. NOTE:
-   --  the removal performed by this routine does not affect the visibility of
-   --  existing homonyms.
+   --  the primitive operations list of the associated controlling type. Use
+   --  Remove_Entity for non-overloadable entities. Note: the removal performed
+   --  by this routine does not affect the visibility of existing homonyms.
 
    function Remove_Suffix (E : Entity_Id; Suffix : Character) return Name_Id;
    --  Returns the name of E without Suffix

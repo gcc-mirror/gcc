@@ -894,30 +894,30 @@ package body Repinfo is
             Cfbit := Component_Bit_Offset (Comp);
 
             if Rep_Not_Constant (Cfbit) then
-               UI_Image_Length := 2;
+               --  If the record is not packed, then we know that all fields
+               --  whose position is not specified have a starting normalized
+               --  bit position of zero.
 
+               if Unknown_Normalized_First_Bit (Comp)
+                 and then not Is_Packed (Ent)
+               then
+                  Set_Normalized_First_Bit (Comp, Uint_0);
+               end if;
+
+               UI_Image_Length := 2; -- For "??" marker
             else
                --  Complete annotation in case not done
 
-               Set_Normalized_Position (Comp, Cfbit / SSU);
-               Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
+               if Unknown_Normalized_First_Bit (Comp) then
+                  Set_Normalized_Position (Comp, Cfbit / SSU);
+                  Set_Normalized_First_Bit (Comp, Cfbit mod SSU);
+               end if;
 
                Sunit := Cfbit / SSU;
                UI_Image (Sunit);
             end if;
 
-            --  If the record is not packed, then we know that all fields
-            --  whose position is not specified have a starting normalized
-            --  bit position of zero.
-
-            if Unknown_Normalized_First_Bit (Comp)
-              and then not Is_Packed (Ent)
-            then
-               Set_Normalized_First_Bit (Comp, Uint_0);
-            end if;
-
-            Max_Suni_Length :=
-              Natural'Max (Max_Suni_Length, UI_Image_Length);
+            Max_Suni_Length := Natural'Max (Max_Suni_Length, UI_Image_Length);
          end if;
 
          Next_Component_Or_Discriminant (Comp);

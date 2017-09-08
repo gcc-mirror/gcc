@@ -283,9 +283,9 @@ package body Sem_Prag is
    --  reference for future checks (see Analyze_Refined_State_In_Decls).
 
    procedure Resolve_State (N : Node_Id);
-   --  Handle the overloading of state names by parameterless functions. When N
-   --  denotes a function, this routine finds the corresponding state and sets
-   --  the entity of N to that of the state.
+   --  Handle the overloading of state names by functions. When N denotes a
+   --  function, this routine finds the corresponding state and sets the entity
+   --  of N to that of the state.
 
    procedure Rewrite_Assertion_Kind
      (N           : Node_Id;
@@ -2811,9 +2811,10 @@ package body Sem_Prag is
             if Is_Entity_Name (Item) then
                Item_Id := Entity_Of (Item);
 
-               if Ekind_In (Item_Id, E_Abstract_State,
-                                     E_Constant,
-                                     E_Variable)
+               if Present (Item_Id)
+                 and then Ekind_In (Item_Id, E_Abstract_State,
+                                             E_Constant,
+                                             E_Variable)
                then
                   --  The state or variable must be declared in the visible
                   --  declarations of the package (SPARK RM 7.1.5(7)).
@@ -2918,14 +2919,15 @@ package body Sem_Prag is
                if Is_Entity_Name (Input) then
                   Input_Id := Entity_Of (Input);
 
-                  if Ekind_In (Input_Id, E_Abstract_State,
-                                         E_Constant,
-                                         E_Generic_In_Out_Parameter,
-                                         E_Generic_In_Parameter,
-                                         E_In_Parameter,
-                                         E_In_Out_Parameter,
-                                         E_Out_Parameter,
-                                         E_Variable)
+                  if Present (Input_Id)
+                    and then Ekind_In (Input_Id, E_Abstract_State,
+                                                 E_Constant,
+                                                 E_Generic_In_Out_Parameter,
+                                                 E_Generic_In_Parameter,
+                                                 E_In_Parameter,
+                                                 E_In_Out_Parameter,
+                                                 E_Out_Parameter,
+                                                 E_Variable)
                   then
                      --  The input cannot denote states or objects declared
                      --  within the related package (SPARK RM 7.1.5(4)).
@@ -3073,7 +3075,8 @@ package body Sem_Prag is
             Decl := First (Visible_Declarations (Pack_Spec));
             while Present (Decl) loop
                if Comes_From_Source (Decl)
-                 and then Nkind (Decl) = N_Object_Declaration
+                 and then Nkind_In (Decl, N_Object_Declaration,
+                                          N_Object_Renaming_Declaration)
                then
                   Append_New_Elmt (Defining_Entity (Decl), States_And_Objs);
 
