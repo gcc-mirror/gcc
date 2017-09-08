@@ -429,6 +429,25 @@ X86_64_TARGET_PAIRS = \
   a-numaux.adb<a-numaux-x86.adb \
   s-atocou.adb<s-atocou-builtin.adb
 
+# Implementation of symbolic traceback based on dwarf
+TRASYM_DWARF_UNIX_PAIRS = \
+  s-trasym.adb<s-trasym-dwarf.adb \
+  s-mmosin.ads<s-mmosin-unix.ads \
+  s-mmosin.adb<s-mmosin-unix.adb \
+  s-mmauni.ads<s-mmauni-long.ads
+
+TRASYM_DWARF_MINGW_PAIRS = \
+  s-trasym.adb<s-trasym-dwarf.adb \
+  s-mmosin.ads<s-mmosin-mingw.ads \
+  s-mmosin.adb<s-mmosin-mingw.adb
+
+TRASYM_DWARF_COMMON_OBJS = s-objrea$(objext) s-dwalin$(objext) s-mmap$(objext) \
+  s-mmosin$(objext)
+
+TRASYM_DWARF_UNIX_OBJS = $(TRASYM_DWARF_COMMON_OBJS) s-mmauni$(objext)
+
+TRASYM_DWARF_MINGW_OBJS = $(TRASYM_DWARF_COMMON_OBJS)
+
 # Shared library version
 LIB_VERSION = $(strip $(shell grep ' Library_Version :' $(fsrcpfx)ada/gnatvsn.ads | sed -e 's/.*"\(.*\)".*/\1/'))
 
@@ -1085,7 +1104,9 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   s-inmaop.adb<s-inmaop-posix.adb \
   s-intman.adb<s-intman-posix.adb \
   s-tpopsp.adb<s-tpopsp-tls.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
   g-sercom.adb<g-sercom-linux.adb \
+  s-tsmona.adb<s-tsmona-linux.adb \
   a-exetim.adb<a-exetim-posix.adb \
   a-exetim.ads<a-exetim-default.ads \
   s-linux.ads<s-linux.ads \
@@ -1111,6 +1132,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   EH_MECHANISM=-gcc
   THREADSLIB = -lpthread -lrt
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
@@ -1907,6 +1929,8 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<s-tpopsp-tls.adb \
   s-taspri.ads<s-taspri-posix.ads \
   g-sercom.adb<g-sercom-linux.adb \
+  $(TRASYM_DWARF_UNIX_PAIRS) \
+  s-tsmona.adb<s-tsmona-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
   system.ads<system-linux-x86.ads
@@ -1914,6 +1938,7 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS += g-sse.o g-ssvety.o
+  EXTRA_GNATRTL_NONTASKING_OBJS += $(TRASYM_DWARF_UNIX_OBJS)
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o a-exetim.o
 
   EH_MECHANISM=-gcc
