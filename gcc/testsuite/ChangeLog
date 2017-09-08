@@ -1,4 +1,4 @@
-2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr81988.c: New test.
 
