@@ -2235,7 +2235,7 @@ package body Exp_Attr is
          --  issues are taken care of by the virtual machine.
 
          elsif Is_Class_Wide_Type (Ptyp)
-           and then Is_Interface (Ptyp)
+           and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
@@ -6241,7 +6241,7 @@ package body Exp_Attr is
 
          elsif Comes_From_Source (N)
             and then Is_Class_Wide_Type (Etype (Prefix (N)))
-            and then Is_Interface (Etype (Prefix (N)))
+            and then Is_Interface (Underlying_Type (Etype (Prefix (N))))
          then
             --  Generate:
             --    (To_Tag_Ptr (Prefix'Address)).all

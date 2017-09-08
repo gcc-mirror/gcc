@@ -9300,6 +9300,15 @@ package body Einfo is
       if Ekind (Id) = E_Record_Type_With_Private then
          return Full_View (Id);
 
+      --  If we have a class-wide type that comes from the limited view then
+      --  we return the Underlying_Type of its nonlimited view.
+
+      elsif Ekind (Id) = E_Class_Wide_Type
+        and then From_Limited_With (Id)
+        and then Present (Non_Limited_View (Id))
+      then
+         return Underlying_Type (Non_Limited_View (Id));
+
       elsif Ekind (Id) in Incomplete_Or_Private_Kind then
 
          --  If we have an incomplete or private type with a full view,
@@ -9324,9 +9333,8 @@ package body Einfo is
          then
             return Underlying_Type (Underlying_Full_View (Id));
 
-         --  If we have an incomplete entity that comes from the limited
-         --  view then we return the Underlying_Type of its non-limited
-         --  view.
+         --  If we have an incomplete entity that comes from the limited view
+         --  then we return the Underlying_Type of its nonlimited view.
 
          elsif From_Limited_With (Id)
            and then Present (Non_Limited_View (Id))

@@ -1,3 +1,63 @@
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* style.adb: Fix typo.
+
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.adb (Underlying_Type): Add missing support for class-wide
+	types that come from the limited view.
+	* exp_attr.adb (Attribute_Address): Check class-wide type
+	interfaces using the underlying type to handle limited-withed
+	types.
+	(Attribute_Tag): Check class-wide type interfaces using
+	the underlying type to handle limited-withed types.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch5.adb (Expand_Predicated_Loop): Handle properly a loop
+	over a subtype of a type with a static predicate, taking into
+	account the predicate function of the parent type and the bounds
+	given in the loop specification.
+	* sem_ch3.adb (Inherit_Predicate_Flags): For qn Itype created for
+	a loop specification that is a subtype indication whose type mark
+	is a type with a static predicate, inherit predicate function,
+	used to build case statement for rewritten loop.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* lib-load.adb: Modify printing of error message to exclude file
+	line number.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* inline.adb (Can_Be_Inlined_In_GNATprove_Mode):
+	don't inline subprograms declared in both visible and private
+	parts of a package.
+	(In_Package_Spec): previously In_Package_Visible_Spec; now
+	detects subprograms declared both in visible and private parts
+	of a package spec.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_util.adb (Build_Invariant_Procedure_Declaration): If
+	the type is an anonymous array in an object declaration, whose
+	component type has an invariant, use the object declaration
+	as the insertion point for the invariant procedure, given that
+	there is no explicit type declaration for an anonymous array type.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* a-cbprqu.ads, a-cbdlli.adb: Suppress warnings.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* a-strfix.adb (Trim): Compute Low and High only if needed.
+
+2017-09-08  Justin Squirek  <squirek@adacore.com>
+
+	* lib-load.adb (Load_Main_Source): Add error output in the case a
+	source file is missing.
+
 2017-09-08  Bob Duff  <duff@adacore.com>
 
 PR ada/80888
