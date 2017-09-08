@@ -3427,6 +3427,60 @@ package body Freeze is
          R_Type    : Entity_Id;
          Warn_Node : Node_Id;
 
+         function Has_Incomplete_Component (T : Entity_Id) return Boolean;
+         --  If a type includes a private component from an enclosing scope
+         --  it cannot be frozen yet. This can happen in a package nested
+         --  within another, when freezing an expression function whose
+         --  profile depends on a type in some outer scope. Those types will
+         --  be frozen at a later time in the enclosing unit.
+
+         ------------------------------
+         -- Has_Incomplete_Component --
+         ------------------------------
+
+         function Has_Incomplete_Component (T : Entity_Id) return Boolean is
+            Comp     : Entity_Id;
+            Comp_Typ : Entity_Id;
+
+         begin
+            if Nkind (N) /= N_Subprogram_Body
+              or else not Was_Expression_Function (N)
+            then
+               return False;
+
+            elsif In_Instance then
+               return False;
+
+            elsif Is_Record_Type (T) then
+               Comp := First_Entity (T);
+
+               while Present (Comp) loop
+                  Comp_Typ := Etype (Comp);
+                  if Ekind_In (Comp, E_Component, E_Discriminant)
+                    and then Is_Private_Type (Comp_Typ)
+                    and then No (Full_View (Comp_Typ))
+                    and then In_Open_Scopes (Scope (Comp_Typ))
+                    and then Scope (Comp_Typ) /= Current_Scope
+                  then
+                     return True;
+                  end if;
+                  Comp := Next_Entity (Comp);
+               end loop;
+
+               return False;
+
+            elsif Is_Array_Type (T) then
+               Comp_Typ := Component_Type (T);
+               return Is_Private_Type (Comp_Typ)
+                 and then No (Full_View (Comp_Typ))
+                 and then In_Open_Scopes (Scope (Comp_Typ))
+                 and then Scope (Comp_Typ) /= Current_Scope;
+
+            else
+               return False;
+            end if;
+         end Has_Incomplete_Component;
+
       begin
          --  Loop through formals
 
@@ -3444,6 +3498,12 @@ package body Freeze is
             then
                F_Type := Full_View (F_Type);
                Set_Etype (Formal, F_Type);
+            end if;
+
+            if Has_Incomplete_Component (F_Type) then
+               Set_Is_Frozen (E, False);
+               Result := No_List;
+               return False;
             end if;
 
             if not From_Limited_With (F_Type) then

@@ -1353,9 +1353,9 @@ begin
                Write_Str (" (subunit)");
                Write_Eol;
 
-               --  Force generation of ALI file, for backward compatibility
-
-               Opt.Force_ALI_Tree_File := True;
+               --  Do not generate an ALI file in this case, because it would
+               --  become obsolete when the parent is compiled, and thus
+               --  confuse tools such as gnatfind.
 
             elsif Main_Unit_Kind = N_Subprogram_Declaration then
                Write_Str (" (subprogram spec)");

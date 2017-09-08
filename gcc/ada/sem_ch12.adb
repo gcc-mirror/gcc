@@ -1902,7 +1902,7 @@ package body Sem_Ch12 is
                      --  only uses them to elaborate entities in a package
                      --  body.
 
-                     declare
+                     Explicit_Freeze_Check : declare
                         Actual : constant Entity_Id := Entity (Match);
 
                         Needs_Freezing : Boolean;
@@ -1920,22 +1920,28 @@ package body Sem_Ch12 is
                         --------------------------
 
                         procedure Check_Generic_Parent is
-                           Par            : Entity_Id;
+                           Par : Entity_Id;
+
                         begin
-                           if Nkind (Parent (Actual)) = N_Package_Specification
+                           if Nkind (Parent (Actual)) =
+                                N_Package_Specification
                            then
                               Par := Scope (Generic_Parent (Parent (Actual)));
+
                               if Is_Generic_Instance (Par)
                                 and then Scope (Par) = Current_Scope
-                                and then (No (Freeze_Node (Par))
-                                  or else
-                                    not Is_List_Member (Freeze_Node (Par)))
+                                and then
+                                  (No (Freeze_Node (Par))
+                                    or else
+                                      not Is_List_Member (Freeze_Node (Par)))
                               then
                                  Set_Has_Delayed_Freeze (Par);
                                  Append_Elmt (Par, Actuals_To_Freeze);
                               end if;
                            end if;
                         end Check_Generic_Parent;
+
+                     --  Start of processing for Explicit_Freeze_Check
 
                      begin
                         if not Expander_Active
@@ -1944,9 +1950,9 @@ package body Sem_Ch12 is
                           or else Is_Frozen (Actual)
                           or else
                             (Present (Renamed_Entity (Actual))
-                              and then not
-                                In_Same_Source_Unit
-                                  (I_Node, (Renamed_Entity (Actual))))
+                              and then
+                                not In_Same_Source_Unit
+                                      (I_Node, (Renamed_Entity (Actual))))
                         then
                            null;
 
@@ -1978,7 +1984,7 @@ package body Sem_Ch12 is
                               Append_Elmt (Actual, Actuals_To_Freeze);
                            end if;
                         end if;
-                     end;
+                     end Explicit_Freeze_Check;
                   end if;
 
                --  For use type and use package appearing in the generic part,
@@ -9297,8 +9303,8 @@ package body Sem_Ch12 is
           and then (Nkind_In (Gen_Unit, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                      or else (Gen_Unit = Body_Unit
-                               and then True_Sloc (N, Act_Unit)
-                                          < Sloc (Orig_Body)))
+                               and then True_Sloc (N, Act_Unit) <
+                                          Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Original_Node (Gen_Unit))
           and then In_Same_Scope (Gen_Id, Act_Id));
 
@@ -9314,7 +9320,7 @@ package body Sem_Ch12 is
 
       if Expander_Active
         and then (No (Freeze_Node (Act_Id))
-          or else not Is_List_Member (Freeze_Node (Act_Id)))
+                   or else not Is_List_Member (Freeze_Node (Act_Id)))
       then
          Ensure_Freeze_Node (Act_Id);
          F_Node := Freeze_Node (Act_Id);

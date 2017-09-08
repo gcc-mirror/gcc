@@ -11852,8 +11852,8 @@ package Sinfo is
      N_Case_Expression_Alternative =>
        (1 => False,   --  Actions (List1-Sem)
         2 => False,   --  unused
-        3 => True,    --  Statements (List3)
-        4 => True,    --  Expression (Node4)
+        3 => True,    --  Expression (Node3)
+        4 => True,    --  Discrete_Choices (List4)
         5 => False),  --  unused
 
      N_Case_Statement =>

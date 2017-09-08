@@ -1,5 +1,45 @@
 2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
+	* sem_util.adb (Copy_Node_With_Replacement):
+	Update the Renamed_Object field of a replicated object renaming
+	declaration.
+
+2017-09-08  Patrick Bernardi  <bernardi@adacore.com>
+
+	* exp_ch9.adb (Is_Pure_Barrier): Allow type
+	conversions and components of objects. Simplified the detection
+	of the Count attribute by identifying the corresponding run-time
+	calls.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* exp_ch9.adb, exp_disp.adb, repinfo.adb, sem_ch12.adb, sem_dim.adb,
+	sem_type.adb, sinfo.ads: Minor reformatting.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* freeze.adb (Has_Incomplete_Compoent): New predicate, subsidiary
+	of Freeze_Profile, used to inhibit the freezing of the profile
+	of an expression function declared within a nested package, when
+	some type in the profile depends on a private type declared in
+	an enclosing package.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* gnat1drv.adb (Gnat1drv): Do not set the Force_ALI_Tree_File flag in
+	the subunit case. It's still OK to set it in the "missing subunits"
+	case, because that won't cause the obsolete .ali files that cause
+	confusion.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* sinput-l.adb: Remove unused "with Unchecked_Conversion;". It's
+	unclear why this didn't cause a warning.
+	* a-uncdea.ads, a-unccon.ads: Add "Ada." to names in the
+	pragmas. It's unclear why this didn't cause an error.
+
+2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
+
 	* exp_spark.adb (Expand_SPARK_N_Object_Renaming_Declaration):
 	Reimplemented.
 	(Expand_SPARK_Potential_Renaming): Code clean up.

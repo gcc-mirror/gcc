@@ -17659,8 +17659,8 @@ package body Sem_Util is
                  (New_Node, Default_Node.Comes_From_Source);
             end if;
 
-            --  If the node is a call and has named associations, set the
-            --  corresponding links in the copy.
+            --  Update the named association links for calls to mention the
+            --  copied actual parameters.
 
             if Nkind_In (Old_Node, N_Entry_Call_Statement,
                                    N_Function_Call,
@@ -17668,6 +17668,13 @@ package body Sem_Util is
               and then Present (First_Named_Actual (Old_Node))
             then
                Adjust_Named_Associations (Old_Node, New_Node);
+
+            --  Update the Renamed_Object attribute of an object renaming
+            --  declaration to mention the replicated name.
+
+            elsif Nkind (Old_Node) = N_Object_Renaming_Declaration then
+               Set_Renamed_Object
+                 (Defining_Entity (New_Node), Name (New_Node));
             end if;
 
             --  Reset First_Real_Statement for Handled_Sequence_Of_Statements.
@@ -17679,8 +17686,9 @@ package body Sem_Util is
               and then Present (First_Real_Statement (Old_Node))
             then
                declare
-                  Old_F  : constant Node_Id := First_Real_Statement (Old_Node);
-                  N1, N2 : Node_Id;
+                  Old_F : constant Node_Id := First_Real_Statement (Old_Node);
+                  N1    : Node_Id;
+                  N2    : Node_Id;
 
                begin
                   N1 := First (Statements (Old_Node));
