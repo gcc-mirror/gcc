@@ -982,6 +982,11 @@ package Opt is
    --  Set true by -gnatRm switch. Causes information on mechanisms to be
    --  included in the representation output information.
 
+   List_Representation_Info_Extended : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRe switch. Causes extended information for record types
+   --  to be included in the representation output information.
+
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP
    --  Set to True if symbols for preprocessing a source are to be listed

@@ -1,3 +1,32 @@
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* debug.adb (dA): Adjust comment.
+	* gnat1drv.adb (Gnat1drv): Likewise.
+	* opt.ads (List_Representation_Info_Extended): New variable.
+	* repinfo.adb (List_Record_Info): Split implementation into...
+	(Compute_Max_Length): ...this.	Recurse on records if requested.
+	(List_Record_Layout): Likewise.
+	* switch-c.adb (Scan_Front_End_Switches) <'R'>: Use case
+	statement, accept '0' and set List_Representation_Info_Extended
+	on 'e'.
+	* usage.adb (Usage): Document new -gnatRe variant.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma, case Default_Storage_Pool):
+	Do not save the given entity in the global variable Default_Pool
+	if the pragma appears within a generic unit.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* errout.adb (Delete_Warning): Do not
+	decrement Warnings_Treated_As_Errors. This is called before
+	Warnings_Treated_As_Errors has been incremented to account for
+	this warning. Decrementing it here can lead to negative values
+	of Warnings_Treated_As_Errors, raising Constraint_Error in
+	checks-on builds, and causing the compiler to return an error
+	code in checks-off builds.
+
 2017-09-08  Arnaud Charlet  <charlet@adacore.com>
 
 	* sem_util.ads, sem_util.adb (Is_CCT_Instance): Only expect

@@ -14393,9 +14393,13 @@ package body Sem_Prag is
 
                --  Record the pool name (or null). Freeze.Freeze_Entity for an
                --  access type will use this information to set the appropriate
-               --  attributes of the access type.
+               --  attributes of the access type. If the pragma appears in a
+               --  generic unit it is ignored, given that it may refer to a
+               --  local entity.
 
-               Default_Pool := Pool;
+               if not Inside_A_Generic then
+                  Default_Pool := Pool;
+               end if;
             end if;
          end Default_Storage_Pool;
 
