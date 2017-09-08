@@ -2122,9 +2122,6 @@ package body Sem_Util is
       --  second occurrence, the error is reported, and the tree traversal
       --  is abandoned.
 
-      function Get_Function_Id (Call : Node_Id) return Entity_Id;
-      --  Return the entity associated with the function call
-
       procedure Preanalyze_Without_Errors (N : Node_Id);
       --  Preanalyze N without reporting errors. Very dubious, you can't just
       --  go analyzing things more than once???
@@ -2212,7 +2209,7 @@ package body Sem_Util is
                      Formal : Node_Id;
 
                   begin
-                     Id := Get_Function_Id (Call);
+                     Id := Get_Called_Entity (Call);
 
                      --  In case of previous error, no check is possible
 
@@ -2358,32 +2355,6 @@ package body Sem_Util is
          Do_Traversal (N);
       end Collect_Identifiers;
 
-      ---------------------
-      -- Get_Function_Id --
-      ---------------------
-
-      function Get_Function_Id (Call : Node_Id) return Entity_Id is
-         Nam : constant Node_Id := Name (Call);
-         Id  : Entity_Id;
-
-      begin
-         if Nkind (Nam) = N_Explicit_Dereference then
-            Id := Etype (Nam);
-            pragma Assert (Ekind (Id) = E_Subprogram_Type);
-
-         elsif Nkind (Nam) = N_Selected_Component then
-            Id := Entity (Selector_Name (Nam));
-
-         elsif Nkind (Nam) = N_Indexed_Component then
-            Id := Entity (Selector_Name (Prefix (Nam)));
-
-         else
-            Id := Entity (Nam);
-         end if;
-
-         return Id;
-      end Get_Function_Id;
-
       -------------------------------
       -- Preanalyze_Without_Errors --
       -------------------------------
@@ -2523,7 +2494,7 @@ package body Sem_Util is
             | N_Subprogram_Call
          =>
             declare
-               Id     : constant Entity_Id := Get_Function_Id (N);
+               Id     : constant Entity_Id := Get_Called_Entity (N);
                Formal : Node_Id;
                Actual : Node_Id;
 
@@ -16390,6 +16361,22 @@ package body Sem_Util is
          return False;
       end if;
    end Is_Volatile_Object;
+
+   -----------------------------
+   -- Iterate_Call_Parameters --
+   -----------------------------
+
+   procedure Iterate_Call_Parameters (Call : Node_Id) is
+      Formal : Entity_Id := First_Formal (Get_Called_Entity (Call));
+      Actual : Node_Id   := First_Actual (Call);
+
+   begin
+      while Present (Formal) and then Present (Actual) loop
+         Handle_Parameter (Formal, Actual);
+         Formal := Next_Formal (Formal);
+         Actual := Next_Actual (Actual);
+      end loop;
+   end Iterate_Call_Parameters;
 
    ---------------------------
    -- Itype_Has_Declaration --

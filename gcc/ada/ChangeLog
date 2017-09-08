@@ -1,3 +1,23 @@
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_aux.adb, sem_aux.ads (Get_Called_Entity): New function to
+	return the entity associated with the call.
+	* sem_util.adb, sem_util.ads (Check_Function_Writable_Actuals):
+	Replace the internal Get_Function_Id with the new
+	Sem_Aux.Get_Called_Entity.
+	(Iterate_Call_Parameters): New
+	procedure to iterate on formals and actuals at the same time.
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation):
+	Set SPARK_Mode from spec when set, for analysis
+	of instance. Restore after analysis of instance.
+	(Instantiate_Subprogram_Body): Set SPARK_Mode from body when
+	set, for analysis of body instance. Restored automatically at
+	the end of the subprogram.
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Check_Validity_Of_Parameters to False in GNATprove mode.
+	* opt.ads (Check_Validity_Of_Parameters): Document switch to
+	set option.
+
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_util.adb (NCT_Tables_In_Use): Move to library level from...

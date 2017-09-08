@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -161,8 +161,11 @@ package Sem_Aux is
    --  referencing this entity. It is an error to call this function if Ekind
    --  (Op) /= E_Operator.
 
+   function Get_Called_Entity (Call : Node_Id) return Entity_Id;
+   --  Returns the entity associated with the call
+
    function Get_Low_Bound (E : Entity_Id) return Node_Id;
-   --  For an index subtype or string literal subtype, return its low bound
+   --  For an index subtype or string literal subtype, returns its low bound
 
    function Get_Unary_Nkind (Op : Entity_Id) return Node_Kind;
    --  Op must be an entity with an Ekind of E_Operator. This function returns
