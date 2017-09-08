@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- This specification is derived from the Ada Reference Manual for use with --
 -- GNAT. The copyright notice above, and the license provisions that follow --
@@ -88,9 +88,13 @@ package Ada.Containers.Bounded_Priority_Queues is
 
       --  We need a better data structure here, such as a proper heap.  ???
 
+      pragma Warnings (Off);
+      --  Otherwise, we get warnings for the uninitialized variable in Insert
+      --  in Ada.Containers.Bounded_Doubly_Linked_Lists.
       package List_Types is new Bounded_Doubly_Linked_Lists
         (Element_Type => Queue_Interfaces.Element_Type,
          "="          => Queue_Interfaces."=");
+      pragma Warnings (On);
 
       type List_Type (Capacity : Count_Type) is tagged limited record
          Container  : List_Types.List (Capacity);

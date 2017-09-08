@@ -1015,9 +1015,10 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       Position  : out Cursor;
       Count     : Count_Type := 1)
    is
+      pragma Warnings (Off);
       New_Item : Element_Type;
-      pragma Unmodified (New_Item);
-      --  OK to reference, see below. Needed to suppress front end warning.
+      --  OK to reference, see below. Note that we need to suppress both the
+      --  front end warning and the back end warning.
 
    begin
       --  There is no explicit element provided, but in an instance the element
@@ -1026,7 +1027,6 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  initialization, so insert the specified number of possibly
       --  initialized elements at the given position.
 
-      pragma Warnings (Off); -- Needed to suppress back end warning
       Insert (Container, Before, New_Item, Position, Count);
       pragma Warnings (On);
    end Insert;

@@ -329,8 +329,14 @@ package body Lib.Load is
          if Main_Source_File /= No_Source_File then
             Version := Source_Checksum (Main_Source_File);
          else
-            Error_Msg_File_1 := Fname;
-            Error_Msg ("file{ not found", Load_Msg_Sloc);
+            --  To avoid emitting a source location (since there is no file),
+            --  we write a custom error message instead of using the machinery
+            --  in errout.adb.
+
+            Set_Standard_Error;
+            Write_Str ("file """ & Get_Name_String (Fname) & """ not found");
+            Write_Eol;
+            Set_Standard_Output;
          end if;
 
          Units.Table (Main_Unit) :=

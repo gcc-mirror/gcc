@@ -291,7 +291,7 @@ package body Style is
 
          elsif Nkind (N) = N_Abstract_Subprogram_Declaration then
             Error_Msg_NE -- CODEFIX
-              ("(style) missing OVERRIDING indicator in deckaration of&",
+              ("(style) missing OVERRIDING indicator in declaration of&",
                 Specification (N), E);
 
          else

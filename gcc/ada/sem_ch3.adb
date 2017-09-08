@@ -18449,6 +18449,19 @@ package body Sem_Ch3 is
         (Subt, Has_Static_Predicate_Aspect (Par));
       Set_Has_Dynamic_Predicate_Aspect
         (Subt, Has_Dynamic_Predicate_Aspect (Par));
+
+      --  A named subtype does not inherit the predicate function of its
+      --  parent but an itype declared for a loop index needs the discrete
+      --  predicate information of its parent to execute the loop properly.
+
+      if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
+         Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
+
+         if Has_Static_Predicate (Par) then
+            Set_Static_Discrete_Predicate
+              (Subt, Static_Discrete_Predicate (Par));
+         end if;
+      end if;
    end Inherit_Predicate_Flags;
 
    ----------------------
