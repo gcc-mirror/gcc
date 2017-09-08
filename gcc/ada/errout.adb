@@ -310,6 +310,8 @@ package body Errout is
       --  Original location of Flag_Location (i.e. location in original
       --  template in instantiation case, otherwise unchanged).
 
+      Entity : Bounded_String;
+
    begin
       --  Return if all errors are to be ignored
 
@@ -335,6 +337,18 @@ package body Errout is
       Sindex := Get_Source_File_Index (Flag_Location);
       Prescan_Message (Msg);
       Orig_Loc := Original_Location (Flag_Location);
+
+      if Include_Subprogram_In_Messages then
+         declare
+            Ent : constant Entity_Id := Current_Subprogram_Ptr.all;
+         begin
+            if Present (Ent) then
+               Append_Unqualified_Decoded (Entity, Chars (Ent));
+            else
+               Append (Entity, "unknown subprogram");
+            end if;
+         end;
+      end if;
 
       --  If the current location is in an instantiation, the issue arises of
       --  whether to post the message on the template or the instantiation.
@@ -405,7 +419,14 @@ package body Errout is
       --  Error_Msg_Internal to place the message in the requested location.
 
       if Instantiation (Sindex) = No_Location then
-         Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False);
+         if Include_Subprogram_In_Messages then
+            Append (Entity, ": ");
+            Append (Entity, Msg);
+            Error_Msg_Internal (+Entity, Flag_Location, Flag_Location, False);
+         else
+            Error_Msg_Internal (Msg, Flag_Location, Flag_Location, False);
+         end if;
+
          return;
       end if;
 
@@ -555,8 +576,15 @@ package body Errout is
 
          --  Here we output the original message on the outer instantiation
 
-         Error_Msg_Internal
-           (Msg, Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+         if Include_Subprogram_In_Messages then
+            Append (Entity, ": ");
+            Append (Entity, Msg);
+            Error_Msg_Internal
+              (+Entity, Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+         else
+            Error_Msg_Internal
+              (Msg, Actual_Error_Loc, Flag_Location, Msg_Cont_Status);
+         end if;
       end;
    end Error_Msg;
 

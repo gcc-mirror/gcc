@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -67,6 +67,11 @@ package Errout is
    --  (Off,..) and Warning_As_Pragma(...) but do not result in adding the
    --  error message tag. The -gnatw.d switch sets this flag True, -gnatw.D
    --  sets this flag False.
+
+   type Current_Subprogram_Type is access function return Entity_Id;
+   Current_Subprogram_Ptr : Current_Subprogram_Type := null;
+   --  Indirect call to Sem_Util.Current_Subprogram to break circular
+   --  dependency with the static elaboration model.
 
    -----------------------------------
    -- Suppression of Error Messages --

@@ -178,6 +178,13 @@ procedure Gnat1drv is
          Error_To_Warning := True;
       end if;
 
+      --  -gnatdJ sets Include_Subprogram_In_Messages, adding the related
+      --  subprogram as part of the error and warning messages.
+
+      if Debug_Flag_JJ then
+         Include_Subprogram_In_Messages := True;
+      end if;
+
       --  Disable CodePeer_Mode in Check_Syntax, since we need front-end
       --  expansion.
 

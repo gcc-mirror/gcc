@@ -23173,4 +23173,6 @@ package body Sem_Util is
       end if;
    end Yields_Universal_Type;
 
+begin
+   Errout.Current_Subprogram_Ptr := Current_Subprogram'Access;
 end Sem_Util;

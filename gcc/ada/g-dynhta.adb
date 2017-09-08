@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2002-2016, AdaCore                     --
+--                     Copyright (C) 2002-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -256,6 +256,20 @@ package body GNAT.Dynamic_HTables is
          end if;
       end Get_First;
 
+      -------------------
+      -- Get_First_Key --
+      -------------------
+
+      function Get_First_Key (T : Instance) return access constant Key is
+         Tmp : aliased constant Elmt_Ptr := Tab.Get_First (Tab.Instance (T));
+      begin
+         if Tmp = null then
+            return null;
+         else
+            return Tmp.all.K'Access;
+         end if;
+      end Get_First_Key;
+
       -------------
       -- Get_Key --
       -------------
@@ -278,6 +292,20 @@ package body GNAT.Dynamic_HTables is
             return Tmp.E;
          end if;
       end Get_Next;
+
+      ------------------
+      -- Get_Next_Key --
+      ------------------
+
+      function Get_Next_Key (T : Instance) return access constant Key is
+         Tmp : aliased constant Elmt_Ptr := Tab.Get_Next (Tab.Instance (T));
+      begin
+         if Tmp = null then
+            return null;
+         else
+            return Tmp.all.K'Access;
+         end if;
+      end Get_Next_Key;
 
       ----------
       -- Next --
@@ -346,365 +374,5 @@ package body GNAT.Dynamic_HTables is
       end Set_Next;
 
    end Simple_HTable;
-
-   ------------------------
-   -- Load_Factor_HTable --
-   ------------------------
-
-   package body Load_Factor_HTable is
-
-      Min_Size_Increase : constant := 5;
-      --  The minimum increase expressed as number of buckets. This value is
-      --  used to determine the new size of small tables and/or small growth
-      --  percentages.
-
-      procedure Attach
-        (Elmt  : not null Element_Ptr;
-         Chain : not null Element_Ptr);
-      --  Prepend an element to a bucket chain. Elmt is inserted after the
-      --  dummy head of Chain.
-
-      function Create_Buckets (Size : Positive) return Buckets_Array_Ptr;
-      --  Allocate and initialize a new set of buckets. The buckets are created
-      --  in the range Range_Type'First .. Range_Type'First + Size - 1.
-
-      procedure Detach (Elmt : not null Element_Ptr);
-      --  Remove an element from an arbitrary bucket chain
-
-      function Find
-        (Key   : Key_Type;
-         Chain : not null Element_Ptr) return Element_Ptr;
-      --  Try to locate the element which contains a particular key within a
-      --  bucket chain. If no such element exists, return No_Element.
-
-      procedure Free is
-        new Ada.Unchecked_Deallocation (Buckets_Array, Buckets_Array_Ptr);
-
-      procedure Free is
-        new Ada.Unchecked_Deallocation (Element, Element_Ptr);
-
-      function Is_Empty_Chain (Chain : not null Element_Ptr) return Boolean;
-      --  Determine whether a bucket chain contains only one element, namely
-      --  the dummy head.
-
-      ------------
-      -- Attach --
-      ------------
-
-      procedure Attach
-        (Elmt  : not null Element_Ptr;
-         Chain : not null Element_Ptr)
-      is
-      begin
-         Chain.Next.Prev := Elmt;
-         Elmt.Next  := Chain.Next;
-         Chain.Next := Elmt;
-         Elmt.Prev  := Chain;
-      end Attach;
-
-      --------------------
-      -- Create_Buckets --
-      --------------------
-
-      function Create_Buckets (Size : Positive) return Buckets_Array_Ptr is
-         Low_Bound : constant Range_Type := Range_Type'First;
-         Buckets   : Buckets_Array_Ptr;
-
-      begin
-         Buckets :=
-           new Buckets_Array (Low_Bound .. Low_Bound + Range_Type (Size) - 1);
-
-         --  Ensure that the dummy head of each bucket chain points to itself
-         --  in both directions.
-
-         for Index in Buckets'Range loop
-            declare
-               Bucket : Element renames Buckets (Index);
-
-            begin
-               Bucket.Prev := Bucket'Unchecked_Access;
-               Bucket.Next := Bucket'Unchecked_Access;
-            end;
-         end loop;
-
-         return Buckets;
-      end Create_Buckets;
-
-      ------------------
-      -- Current_Size --
-      ------------------
-
-      function Current_Size (T : Table) return Positive is
-      begin
-         --  The table should have been properly initialized during object
-         --  elaboration.
-
-         if T.Buckets = null then
-            raise Program_Error;
-
-         --  The size of the table is determined by the number of buckets
-
-         else
-            return T.Buckets'Length;
-         end if;
-      end Current_Size;
-
-      ------------
-      -- Detach --
-      ------------
-
-      procedure Detach (Elmt : not null Element_Ptr) is
-      begin
-         if Elmt.Prev /= null and Elmt.Next /= null then
-            Elmt.Prev.Next := Elmt.Next;
-            Elmt.Next.Prev := Elmt.Prev;
-            Elmt.Prev := null;
-            Elmt.Next := null;
-         end if;
-      end Detach;
-
-      --------------
-      -- Finalize --
-      --------------
-
-      procedure Finalize (T : in out Table) is
-         Bucket : Element_Ptr;
-         Elmt   : Element_Ptr;
-
-      begin
-         --  Inspect the buckets and deallocate bucket chains
-
-         for Index in T.Buckets'Range loop
-            Bucket := T.Buckets (Index)'Unchecked_Access;
-
-            --  The current bucket chain contains an element other than the
-            --  dummy head.
-
-            while not Is_Empty_Chain (Bucket) loop
-
-               --  Skip the dummy head, remove and deallocate the element
-
-               Elmt := Bucket.Next;
-               Detach (Elmt);
-               Free   (Elmt);
-            end loop;
-         end loop;
-
-         --  Deallocate the buckets
-
-         Free (T.Buckets);
-      end Finalize;
-
-      ----------
-      -- Find --
-      ----------
-
-      function Find
-        (Key   : Key_Type;
-         Chain : not null Element_Ptr) return Element_Ptr
-      is
-         Elmt : Element_Ptr;
-
-      begin
-         --  Skip the dummy head, inspect the bucket chain for an element whose
-         --  key matches the requested key. Since each bucket chain is circular
-         --  the search must stop once the dummy head is encountered.
-
-         Elmt := Chain.Next;
-         while Elmt /= Chain loop
-            if Equal (Elmt.Key, Key) then
-               return Elmt;
-            end if;
-
-            Elmt := Elmt.Next;
-         end loop;
-
-         return No_Element;
-      end Find;
-
-      ---------
-      -- Get --
-      ---------
-
-      function Get (T : Table; Key : Key_Type) return Value_Type is
-         Bucket : Element_Ptr;
-         Elmt   : Element_Ptr;
-
-      begin
-         --  Obtain the bucket chain where the (key, value) pair should reside
-         --  by calculating the proper hash location.
-
-         Bucket := T.Buckets (Hash (Key, Current_Size (T)))'Unchecked_Access;
-
-         --  Try to find an element whose key matches the requested key
-
-         Elmt := Find (Key, Bucket);
-
-         --  The hash table does not contain a matching (key, value) pair
-
-         if Elmt = No_Element then
-            return No_Value;
-         else
-            return Elmt.Val;
-         end if;
-      end Get;
-
-      ----------------
-      -- Initialize --
-      ----------------
-
-      procedure Initialize (T : in out Table) is
-      begin
-         pragma Assert (T.Buckets = null);
-
-         T.Buckets       := Create_Buckets (Initial_Size);
-         T.Element_Count := 0;
-      end Initialize;
-
-      --------------------
-      -- Is_Empty_Chain --
-      --------------------
-
-      function Is_Empty_Chain (Chain : not null Element_Ptr) return Boolean is
-      begin
-         return Chain.Next = Chain and Chain.Prev = Chain;
-      end Is_Empty_Chain;
-
-      ------------
-      -- Remove --
-      ------------
-
-      procedure Remove (T : in out Table; Key : Key_Type) is
-         Bucket : Element_Ptr;
-         Elmt   : Element_Ptr;
-
-      begin
-         --  Obtain the bucket chain where the (key, value) pair should reside
-         --  by calculating the proper hash location.
-
-         Bucket := T.Buckets (Hash (Key, Current_Size (T)))'Unchecked_Access;
-
-         --  Try to find an element whose key matches the requested key
-
-         Elmt := Find (Key, Bucket);
-
-         --  Remove and deallocate the (key, value) pair
-
-         if Elmt /= No_Element then
-            Detach (Elmt);
-            Free   (Elmt);
-         end if;
-      end Remove;
-
-      ---------
-      -- Set --
-      ---------
-
-      procedure Set
-        (T   : in out Table;
-         Key : Key_Type;
-         Val : Value_Type)
-      is
-         Curr_Size : constant Positive := Current_Size (T);
-
-         procedure Grow;
-         --  Grow the table to a new size according to the desired percentage
-         --  and relocate all existing elements to the new buckets.
-
-         ----------
-         -- Grow --
-         ----------
-
-         procedure Grow is
-            Buckets     : Buckets_Array_Ptr;
-            Elmt        : Element_Ptr;
-            Hash_Loc    : Range_Type;
-            Old_Bucket  : Element_Ptr;
-            Old_Buckets : Buckets_Array_Ptr := T.Buckets;
-            Size        : Positive;
-
-         begin
-            --  Calculate the new size and allocate a new set of buckets. Note
-            --  that a table with a small size or a small growth percentage may
-            --  not always grow (for example, 10 buckets and 3% increase). In
-            --  that case, enforce a minimum increase.
-
-            Size :=
-              Positive'Max (Curr_Size * ((100 + Growth_Percentage) / 100),
-                            Min_Size_Increase);
-            Buckets := Create_Buckets (Size);
-
-            --  Inspect the old buckets and transfer all elements by rehashing
-            --  all (key, value) pairs in the new buckets.
-
-            for Index in Old_Buckets'Range loop
-               Old_Bucket := Old_Buckets (Index)'Unchecked_Access;
-
-               --  The current bucket chain contains an element other than the
-               --  dummy head.
-
-               while not Is_Empty_Chain (Old_Bucket) loop
-
-                  --  Skip the dummy head and find the new hash location
-
-                  Elmt     := Old_Bucket.Next;
-                  Hash_Loc := Hash (Elmt.Key, Size);
-
-                  --  Remove the element from the old buckets and insert it
-                  --  into the new buckets. Note that there is no need to check
-                  --  for duplicates because the hash table did not have any to
-                  --  begin with.
-
-                  Detach (Elmt);
-                  Attach
-                    (Elmt  => Elmt,
-                     Chain => Buckets (Hash_Loc)'Unchecked_Access);
-               end loop;
-            end loop;
-
-            --  Associate the new buckets with the table and reclaim the
-            --  storage occupied by the old buckets.
-
-            T.Buckets := Buckets;
-
-            Free (Old_Buckets);
-         end Grow;
-
-         --  Local variables
-
-         subtype LLF is Long_Long_Float;
-
-         Count    : Natural renames T.Element_Count;
-         Bucket   : Element_Ptr;
-         Hash_Loc : Range_Type;
-
-      --  Start of processing for Set
-
-      begin
-         --  Find the bucket where the (key, value) pair should be inserted by
-         --  computing the proper hash location.
-
-         Hash_Loc := Hash (Key, Curr_Size);
-         Bucket   := T.Buckets (Hash_Loc)'Unchecked_Access;
-
-         --  Ensure that the key is not already present in the bucket in order
-         --  to avoid duplicates.
-
-         if Find (Key, Bucket) = No_Element then
-            Attach
-              (Elmt  => new Element'(Key, Val, null, null),
-               Chain => Bucket);
-            Count := Count + 1;
-
-            --  Multiple insertions may cause long bucket chains and decrease
-            --  the performance of basic operations. If this is the case, grow
-            --  the table and rehash all existing elements.
-
-            if (LLF (Count) / LLF (Curr_Size)) > LLF (Load_Factor) then
-               Grow;
-            end if;
-         end if;
-      end Set;
-   end Load_Factor_HTable;
 
 end GNAT.Dynamic_HTables;

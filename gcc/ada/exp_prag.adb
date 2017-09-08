@@ -324,7 +324,7 @@ package body Exp_Prag is
       --  Discriminants of the enclosing protected object may be referenced
       --  in the expression of a precondition of a protected operation.
       --  In the body of the operation these references must be replaced by
-      --  the discriminal created for them, which area renamings of the
+      --  the discriminal created for them, which are renamings of the
       --  discriminants of the object that is the target of the operation.
       --  This replacement is done by visibility when the references appear
       --  in the subprogram body, but in the case of a condition which appears
