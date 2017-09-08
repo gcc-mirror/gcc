@@ -61,6 +61,7 @@ with Stand;    use Stand;
 with Stringt;  use Stringt;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Urealp;   use Urealp;
 
 package body Exp_Aggr is
 
@@ -4894,7 +4895,7 @@ package body Exp_Aggr is
       --    4. The array type has no null ranges (the purpose of this is to
       --       avoid a bogus warning for an out-of-range value).
 
-      --    5. The component type is discrete
+      --    5. The component type is elementary
 
       --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
@@ -4970,7 +4971,13 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         if not Is_Discrete_Type (Ctyp) then
+         --  All elementary types are supported except for fat pointers
+         --  because they are not really elementary for the backend.
+
+         if not Is_Elementary_Type (Ctyp)
+           or else (Is_Access_Type (Ctyp)
+                     and then Esize (Ctyp) /= System_Address_Size)
+         then
             return False;
          end if;
 
@@ -4989,6 +4996,14 @@ package body Exp_Aggr is
          if not Compile_Time_Known_Value (Expr) then
             return False;
          end if;
+
+         --  The only supported value for floating point is 0.0
+
+         if Is_Floating_Point_Type (Ctyp) then
+            return Expr_Value_R (Expr) = Ureal_0;
+         end if;
+
+         --  For other types, we can look into the value as an integer
 
          Value := Expr_Value (Expr);
 

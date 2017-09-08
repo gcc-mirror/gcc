@@ -538,10 +538,14 @@ package body SPARK_Specific is
       --------------------
 
       function Is_SPARK_Scope (E : Entity_Id) return Boolean is
+         Can_Be_Renamed : constant Boolean :=
+           Present (E)
+             and then (Is_Subprogram_Or_Entry (E)
+                        or else Ekind (E) = E_Package);
       begin
          return Present (E)
            and then not Is_Generic_Unit (E)
-           and then Renamed_Entity (E) = Empty
+           and then (not Can_Be_Renamed or else Renamed_Entity (E) = Empty)
            and then Get_Scope_Num (E) /= No_Scope;
       end Is_SPARK_Scope;
 

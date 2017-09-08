@@ -1,3 +1,42 @@
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* par-prag.adb, sem_prag.adb, snames.ads-tmpl: Implement pragma
+	Ada_2020, along the same lines as the other Ada version pragmas.
+
+2017-09-08  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_ch12.adb: Minor typo fixes and reformatting.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_aggr.adb (Resolve_Record_Aggregate):
+	Rewrite bounds of aggregate subexpressions which may depend on
+	discriminants of the enclosing aggregate.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch5.adb: Prevent assertion failure on illegal code.
+
+2017-09-08  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb (Add_SPARK_Xrefs.Is_SPARK_Scope): Avoid
+	calling Renamed_Entity on an entity which cannot be a renaming.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb: Add with & use clause for Urealp.
+	(Aggr_Assignment_OK_For_Backend): Accept (almost all)
+	elementary types instead of just discrete types.
+	* sem_eval.adb (Expr_Value): Deal with N_Null for access types.
+	* gcc-interface/trans.c (gnat_to_gnu) <N_Assignment_Statement>:
+	Be prepared for the FP zero value in the memset case.  Add small
+	guard.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* s-htable.adb (Static_HTable.Reset): Use aggregate instead
+	of loop.
+
 2017-09-08  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* exp_aggr.adb (Expand_Array_Aggregate): Use New_Copy_Tree instead

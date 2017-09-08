@@ -4199,6 +4199,12 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          Val := Corresponding_Integer_Value (N);
 
+      --  The NULL access value
+
+      elsif Kind = N_Null then
+         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N))));
+         Val := Uint_0;
+
       --  Otherwise must be character literal
 
       else
