@@ -11835,7 +11835,7 @@ package body Sem_Prag is
 
          --  The one argument form is used for managing the transition from Ada
          --  2005 to Ada 2012 in the run-time library. If an entity is marked
-         --  as Ada_201 only, then referencing the entity in any pre-Ada_2012
+         --  as Ada_2012 only, then referencing the entity in any pre-Ada_2012
          --  mode will generate a warning. In addition, in any pre-Ada_2012
          --  mode, a preference rule is established which does not choose
          --  such an entity unless it is unambiguously specified. This avoids
@@ -11882,6 +11882,28 @@ package body Sem_Prag is
                Ada_Version_Pragma   := N;
             end if;
          end;
+
+         --------------
+         -- Ada_2020 --
+         --------------
+
+         --  pragma Ada_2020;
+
+         --  Note: this pragma also has some specific processing in Par.Prag
+         --  because we want to set the Ada 2020 version mode during parsing.
+
+         when Pragma_Ada_2020 =>
+            GNAT_Pragma;
+
+            Check_Arg_Count (0);
+
+            Check_Valid_Configuration_Pragma;
+
+            --  Now set appropriate Ada mode
+
+            Ada_Version          := Ada_2020;
+            Ada_Version_Explicit := Ada_2020;
+            Ada_Version_Pragma   := N;
 
          ----------------------
          -- All_Calls_Remote --
@@ -29419,6 +29441,7 @@ package body Sem_Prag is
       Pragma_Ada_2005                       => -1,
       Pragma_Ada_12                         => -1,
       Pragma_Ada_2012                       => -1,
+      Pragma_Ada_2020                       => -1,
       Pragma_All_Calls_Remote               => -1,
       Pragma_Allow_Integer_Address          => -1,
       Pragma_Annotate                       => 93,

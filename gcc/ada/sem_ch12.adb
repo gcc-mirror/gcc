@@ -6421,10 +6421,10 @@ package body Sem_Ch12 is
                   Formal_P := Next_Entity (E);
 
                   --  If the instance is within an enclosing instance body
-                  --  there is no need to vertify the legqlity of current
-                  --  formsl psckages because they were legal in the generic
-                  --  body. This optimixation may be applicable elsewhere,
-                  --  and it also removes spurious errors that may arise with
+                  --  there is no need to verify the legality of current formal
+                  --  packages because they were legal in the generic body.
+                  --  This optimization may be applicable elsewhere, and it
+                  --  also removes spurious errors that may arise with
                   --  on-the-fly inlining and confusion between private and
                   --  full views.
 

@@ -7037,14 +7037,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	  /* Or else, use memset when the conditions are met.  */
 	  else if (use_memset_p)
 	    {
-	      tree value = fold_convert (integer_type_node, gnu_rhs);
+	      tree value
+		= real_zerop (gnu_rhs)
+		  ? integer_zero_node
+		  : fold_convert (integer_type_node, gnu_rhs);
 	      tree to = gnu_lhs;
 	      tree type = TREE_TYPE (to);
 	      tree size
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
 	      tree to_ptr = build_fold_addr_expr (to);
 	      tree t = builtin_decl_explicit (BUILT_IN_MEMSET);
-	      if (TREE_CODE (value) == INTEGER_CST)
+	      if (TREE_CODE (value) == INTEGER_CST && !integer_zerop (value))
 		{
 		  tree mask
 		    = build_int_cst (integer_type_node,
