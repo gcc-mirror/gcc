@@ -1297,11 +1297,11 @@ package Sem_Util is
    --  Returns true if the last character of E is Suffix. Used in Assertions.
 
    function Has_Tagged_Component (Typ : Entity_Id) return Boolean;
-   --  Returns True if Typ is a composite type (array or record) which is
-   --  either itself a tagged type, or has a component (recursively) which is
-   --  a tagged type. Returns False for non-composite type, or if no tagged
-   --  component is present. This function is used to check if "=" has to be
-   --  expanded into a bunch component comparisons.
+   --  Returns True if Typ is a composite type (array or record) that is either
+   --  a tagged type or has a subcomponent that is tagged. Returns False for a
+   --  noncomposite type, or if no tagged subcomponents are present. This
+   --  function is used to check if "=" has to be expanded into a bunch
+   --  component comparisons.
 
    function Has_Undefined_Reference (Expr : Node_Id) return Boolean;
    --  Given arbitrary expression Expr, determine whether it contains at
@@ -1480,8 +1480,9 @@ package Sem_Util is
      (Ref_Id     : Entity_Id;
       Context_Id : Entity_Id) return Boolean;
    --  Subsidiary to the analysis of pragmas [Refined_]Depends and [Refined_]
-   --  Global. Determine whether entity Ref_Id denotes the current instance of
-   --  a concurrent type. Context_Id denotes the associated context where the
+   --  Global. Determine whether entity Ref_Id (which must represent either
+   --  a protected type or a task type) denotes the current instance of a
+   --  concurrent type. Context_Id denotes the associated context where the
    --  pragma appears.
 
    function Is_Child_Or_Sibling

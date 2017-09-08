@@ -1,5 +1,31 @@
 2017-09-08  Arnaud Charlet  <charlet@adacore.com>
 
+	* sem_util.ads, sem_util.adb (Is_CCT_Instance): Only expect
+	entities of named concurrent types as Ref_Id and not of anonymous
+	concurrent objects (because callers already know when a conversion
+	is necessary and can easily do it); also, do not expect protected
+	types or protected objects as Context_Id (because no flow-related
+	SPARK pragmas are attached there); reflect these changes in a
+	more precise comment.
+
+2017-09-08  Olivier Hainque  <hainque@adacore.com>
+
+	* g-altive.ads: Add documentation.
+
+2017-09-08  Bob Duff  <duff@adacore.com>
+
+	* sem_util.ads, debug.adb: Minor comment fix.
+	* erroutc.ads: Comment fix.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Validate_Array_Type_Instance): Suppress check
+	for compatibility of component types of formal and actual in an
+	instantiation of a child unit,	when the component type of the
+	formal is itself a formal of an enclosing generic.
+
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
 	* sem_util.ads, sem_util.adb (Is_CCT_Instance): moved from
 	sem_prag.adb to make it available for GNATprove; for concurrent
 	types replace custom scope climbing with Scope_Same_Or_Within; for

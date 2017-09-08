@@ -12391,38 +12391,17 @@ package body Sem_Util is
       Context_Id : Entity_Id) return Boolean
    is
    begin
-      pragma Assert
-        (Is_Entry (Context_Id)
-           or else
-         Ekind_In (Context_Id, E_Function,
-                               E_Procedure,
-                               E_Protected_Type,
-                               E_Task_Type)
-           or else
-         Is_Single_Concurrent_Object (Context_Id));
+      pragma Assert (Ekind_In (Ref_Id, E_Protected_Type, E_Task_Type));
 
-      --  When the reference denotes a single protected type, the context is
-      --  either a protected subprogram or its body.
-
-      if Is_Single_Protected_Object (Ref_Id) then
-         return Scope_Within (Context_Id, Etype (Ref_Id));
-
-      --  When the reference denotes a single task type, the context is either
-      --  the same type or if inside the body, the anonymous task object.
-
-      elsif Is_Single_Task_Object (Ref_Id) then
-         if Is_Single_Task_Object (Context_Id) then
-            return Context_Id = Ref_Id;
-
-         elsif Ekind (Context_Id) = E_Task_Type then
-            return Context_Id = Etype (Ref_Id);
-
-         else
-            return Scope_Within_Or_Same (Context_Id, Etype (Ref_Id));
-         end if;
-
+      if Is_Single_Task_Object (Context_Id) then
+         return Scope_Within_Or_Same (Etype (Context_Id), Ref_Id);
       else
-         pragma Assert (Ekind_In (Ref_Id, E_Protected_Type, E_Task_Type));
+         pragma Assert
+           (Is_Entry (Context_Id)
+              or else
+            Ekind_In (Context_Id, E_Function,
+                                  E_Procedure,
+                                  E_Task_Type));
 
          return Scope_Within_Or_Same (Context_Id, Ref_Id);
       end if;

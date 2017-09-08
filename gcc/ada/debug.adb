@@ -548,7 +548,7 @@ package body Debug is
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.
-   --       It is useful only in -gnat05 mode.
+   --       It is useful only in Ada 2005 and later.
 
    --  d.m  When -gnatl is used, the normal output includes full listings of
    --       all files in the extended main source (body/spec/subunits). If this
