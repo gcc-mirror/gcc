@@ -67,7 +67,6 @@ with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
 with Stand;    use Stand;
 with Snames;   use Snames;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Validsw;  use Validsw;
@@ -957,10 +956,6 @@ package body Exp_Ch3 is
          --  label all components of that variant with the function's name.
          --  We only Generate a discriminant-checking function when the
          --  variant is not empty, to prevent the creation of dead code.
-         --  The exception to that is when Frontend_Layout_On_Target is set,
-         --  because the variant record size function generated in package
-         --  Layout needs to generate calls to all discriminant-checking
-         --  functions, including those for empty variants.
 
          Discr_Name := Entity (Name (Variant_Part_Node));
          Variant := First_Non_Pragma (Variants (Variant_Part_Node));
@@ -968,9 +963,7 @@ package body Exp_Ch3 is
          while Present (Variant) loop
             Component_List_Node := Component_List (Variant);
 
-            if not Null_Present (Component_List_Node)
-              or else Frontend_Layout_On_Target
-            then
+            if not Null_Present (Component_List_Node) then
                Func_Id := Build_Dcheck_Function (Discr_Name, Variant);
 
                Decl :=

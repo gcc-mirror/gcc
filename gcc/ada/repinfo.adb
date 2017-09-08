@@ -62,9 +62,6 @@ package body Repinfo is
    -- Representation of GCC Expressions --
    ---------------------------------------
 
-   --    This table is used only if Frontend_Layout_On_Target is False, so gigi
-   --    lays out dynamic size/offset fields using encoded GCC expressions.
-
    --    A table internal to this unit is used to hold the values of back
    --    annotated expressions. This table is written out by -gnatt and read
    --    back in for ASIS processing.

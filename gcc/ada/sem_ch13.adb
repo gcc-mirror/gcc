@@ -11530,9 +11530,10 @@ package body Sem_Ch13 is
       Compile_Time_Warnings_Errors.Init;
       Unchecked_Conversions.Init;
 
-      if AAMP_On_Target then
-         Independence_Checks.Init;
-      end if;
+      --  ??? Might be needed in the future for some non GCC back-ends
+      --  if AAMP_On_Target then
+      --     Independence_Checks.Init;
+      --  end if;
    end Initialize;
 
    ---------------------------

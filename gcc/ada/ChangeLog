@@ -1,3 +1,11 @@
+2017-09-08  Arnaud Charlet  <charlet@adacore.com>
+
+	* sem_ch3.adb, layout.adb, layout.ads, exp_attr.adb, debug.adb,
+	exp_pakd.adb, sem_prag.adb, gnat1drv.adb, targparm.adb, targparm.ads,
+	repinfo.adb, exp_ch6.adb, exp_aggr.adb, sem_eval.adb, sem_ch13.adb,
+	exp_ch3.adb: Remove references to Frontend_Layout_On_Target and
+	remaining references to AAMP_On_Target.
+
 2017-09-08  Ed Schonberg  <schonberg@adacore.com>
 
 	* style.adb: Fix typo.
