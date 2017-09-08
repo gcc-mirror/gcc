@@ -6275,7 +6275,7 @@ package body Exp_Aggr is
               New_List (
                 Make_Assignment_Statement (Loc,
                   Name       => Target,
-                  Expression => New_Copy (N)));
+                  Expression => New_Copy_Tree (N)));
 
          else
             Aggr_Code :=

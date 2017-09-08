@@ -647,11 +647,13 @@ package body Ada.Tags is
       Res : Tag := null;
 
    begin
-      --  Raise Tag_Error for empty strings, and for absurdly long strings.
-      --  This is to make T'Class'Input robust in the case of bad data, for
-      --  example a String(123456789..1234). The limit of 10,000 characters is
-      --  arbitrary, but is unlikely to be exceeded by legitimate external tag
-      --  names.
+      --  Raise Tag_Error for empty strings and very long strings. This makes
+      --  T'Class'Input robust in the case of bad data, for example
+      --
+      --    String (123456789..1234)
+      --
+      --  The limit of 10,000 characters is arbitrary, but is unlikely to be
+      --  exceeded by legitimate external tag names.
 
       if External'Length not in 1 .. 10_000 then
          raise Tag_Error;

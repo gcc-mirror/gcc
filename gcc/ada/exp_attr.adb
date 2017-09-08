@@ -3868,14 +3868,16 @@ package body Exp_Attr is
                         New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
                       Parameter_Associations => New_List (
                         Make_Function_Call (Loc,
-                          Name =>
+                          Name                   =>
                             New_Occurrence_Of
                               (RTE (RE_String_Input_Tag), Loc),
                           Parameter_Associations => New_List (
                             Relocate_Node (Duplicate_Subexpr (Strm)))),
+
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (P_Type, Loc),
                           Attribute_Name => Name_Tag)));
+
                   Set_Etype (Expr, RTE (RE_Tag));
 
                   --  Now we need to get the entity for the call, and construct

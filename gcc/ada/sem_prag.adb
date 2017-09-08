@@ -3425,7 +3425,7 @@ package body Sem_Prag is
             if No (N) then
                declare
                   Pack : constant Node_Id :=
-                    Parent (Declaration_Node (Encap_Id));
+                           Parent (Declaration_Node (Encap_Id));
                begin
                   if Nkind (Pack) = N_Package_Specification
                     and then not In_Private_Part (Encap_Id)

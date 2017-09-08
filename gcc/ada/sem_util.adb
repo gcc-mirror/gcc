@@ -11715,6 +11715,26 @@ package body Sem_Util is
       end loop;
    end In_Subprogram_Or_Concurrent_Unit;
 
+   ----------------
+   -- In_Subtree --
+   ----------------
+
+   function In_Subtree (Root : Node_Id; N : Node_Id) return Boolean is
+      Curr : Node_Id;
+
+   begin
+      Curr := N;
+      while Present (Curr) loop
+         if Curr = Root then
+            return True;
+         end if;
+
+         Curr := Parent (Curr);
+      end loop;
+
+      return False;
+   end In_Subtree;
+
    ---------------------
    -- In_Visible_Part --
    ---------------------
@@ -17278,72 +17298,70 @@ package body Sem_Util is
       end if;
    end New_Copy_List_Tree;
 
-   --------------------------------------------------
-   -- New_Copy_Tree Auxiliary Data and Subprograms --
-   --------------------------------------------------
-
-   use Atree.Unchecked_Access;
-   use Atree_Private_Part;
-
-   --  Our approach here requires a two pass traversal of the tree. The
-   --  first pass visits all nodes that eventually will be copied looking
-   --  for defining Itypes. If any defining Itypes are found, then they are
-   --  copied, and an entry is added to the replacement map. In the second
-   --  phase, the tree is copied, using the replacement map to replace any
-   --  Itype references within the copied tree.
-
-   --  The following hash tables are used to speed up access to the map. They
-   --  are declared at library level to avoid elaborating them for every call
-   --  to New_Copy_Tree. This can save up to 2% of the entire compilation time
-   --  spent in the front end.
-
-   subtype NCT_Header_Num is Int range 0 .. 511;
-   --  Defines range of headers in hash tables (512 headers)
-
-   function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num;
-   --  Hash function used for hash operations
-
    -------------------
-   -- New_Copy_Hash --
+   -- New_Copy_Tree --
    -------------------
 
-   function New_Copy_Hash (E : Entity_Id) return NCT_Header_Num is
+   --  The following tables play a key role in replicating entities and Itypes.
+   --  They are intentionally declared at the library level rather than within
+   --  New_Copy_Tree to avoid elaborating them on each call. This performance
+   --  optimization saves up to 2% of the entire compilation time spent in the
+   --  front end. Care should be taken to reset the tables on each new call to
+   --  New_Copy_Tree.
+
+   NCT_Table_Max : constant := 511;
+
+   subtype NCT_Table_Index is Nat range 0 .. NCT_Table_Max - 1;
+
+   function NCT_Table_Hash (Key : Node_Or_Entity_Id) return NCT_Table_Index;
+   --  Obtain the hash value of node or entity Key
+
+   --------------------
+   -- NCT_Table_Hash --
+   --------------------
+
+   function NCT_Table_Hash (Key : Node_Or_Entity_Id) return NCT_Table_Index is
    begin
-      return Nat (E) mod (NCT_Header_Num'Last + 1);
-   end New_Copy_Hash;
+      return NCT_Table_Index (Key mod NCT_Table_Max);
+   end NCT_Table_Hash;
 
-   ---------------
-   -- NCT_Assoc --
-   ---------------
+   ----------------------
+   -- NCT_New_Entities --
+   ----------------------
 
-   --  The hash table NCT_Assoc associates old entities in the table with their
-   --  corresponding new entities (i.e. the pairs of entries presented in the
-   --  original Map argument are Key-Element pairs).
+   --  The following table maps old entities and Itypes to their corresponding
+   --  new entities and Itypes.
 
-   package NCT_Assoc is new Simple_HTable (
-     Header_Num => NCT_Header_Num,
+   --    Aaa -> Xxx
+
+   package NCT_New_Entities is new Simple_HTable (
+     Header_Num => NCT_Table_Index,
      Element    => Entity_Id,
      No_Element => Empty,
      Key        => Entity_Id,
-     Hash       => New_Copy_Hash,
-     Equal      => Types."=");
+     Hash       => NCT_Table_Hash,
+     Equal      => "=");
 
-   ---------------------
-   -- NCT_Itype_Assoc --
-   ---------------------
+   ------------------------
+   -- NCT_Pending_Itypes --
+   ------------------------
 
-   --  The hash table NCT_Itype_Assoc contains entries only for those old
-   --  nodes which have a non-empty Associated_Node_For_Itype set. The key
-   --  is the associated node, and the element is the new node itself (NOT
-   --  the associated node for the new node).
+   --  The following table maps old Associated_Node_For_Itype nodes to a set of
+   --  new itypes. Given a set of old Itypes Aaa, Bbb, and Ccc, where all three
+   --  have the same Associated_Node_For_Itype Ppp, and their corresponding new
+   --  Itypes Xxx, Yyy, Zzz, the table contains the following mapping:
 
-   package NCT_Itype_Assoc is new Simple_HTable (
-     Header_Num => NCT_Header_Num,
-     Element    => Node_Or_Entity_Id,
-     No_Element => Empty,
-     Key        => Entity_Id,
-     Hash       => New_Copy_Hash,
-     Equal      => Types."=");
+   --    Ppp -> (Xxx, Yyy, Zzz)
+
+   --  The set is expressed as an Elist
+
+   package NCT_Pending_Itypes is new Simple_HTable (
+     Header_Num => NCT_Table_Index,
+     Element    => Elist_Id,
+     No_Element => No_Elist,
+     Key        => Node_Id,
+     Hash       => NCT_Table_Hash,
+     Equal      => "=");
 
    -------------------
    -- New_Copy_Tree --
@@ -17355,504 +17373,639 @@ package body Sem_Util is
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id
    is
+      --  This routine performs low-level tree manipulations and needs access
+      --  to the internals of the tree.
+
+      use Atree.Unchecked_Access;
+      use Atree_Private_Part;
+
       EWA_Level : Nat := 0;
-      --  By default, copying of defining identifiers is prohibited because
-      --  this would introduce an entirely new entity into the tree. The
-      --  exception to this general rule is declaration of constants and
-      --  variables located in Expression_With_Action nodes.
+      --  This counter keeps track of how many N_Expression_With_Actions nodes
+      --  are encountered during a depth-first traversal of the subtree. These
+      --  nodes may define new entities in their Actions lists and thus require
+      --  special processing.
 
       EWA_Inner_Scope_Level : Nat := 0;
-      --  Level of internal scope of defined in EWAs. Used to avoid creating
-      --  variables for declarations located in blocks or subprograms defined
-      --  in Expression_With_Action nodes.
+      --  This counter keeps track of how many scoping constructs appear within
+      --  an N_Expression_With_Actions node.
 
-      NCT_Hash_Tables_Used : Boolean := False;
-      --  Set to True if hash tables are in use. It is intended to speed up the
-      --  common case, which is no hash tables in use. This can save up to 8%
-      --  of the entire compilation time spent in the front end.
+      NCT_Tables_In_Use : Boolean := False;
+      --  This flag keeps track of whether the two tables NCT_New_Entities and
+      --  NCT_Pending_Itypes are in use. The flag is part of an optimization
+      --  where certain operations are not performed if the tables are not in
+      --  use. This saves up to 8% of the entire compilation time spent in the
+      --  front end.
 
-      function Assoc (N : Node_Or_Entity_Id) return Node_Id;
-      --  Called during second phase to map entities into their corresponding
-      --  copies using the hash table. If the argument is not an entity, or is
-      --  not in the hash table, then it is returned unchanged.
+      procedure Add_New_Entity (Old_Id : Entity_Id; New_Id : Entity_Id);
+      pragma Inline (Add_New_Entity);
+      --  Add an entry in the NCT_New_Entities table which maps key Old_Id to
+      --  value New_Id. Old_Id is an entity which appears within the Actions
+      --  list of an N_Expression_With_Actions node, or within an entity map.
+      --  New_Id is the corresponding new entity generated during Phase 1.
 
-      procedure Build_NCT_Hash_Tables;
-      --  Builds hash tables
+      procedure Add_Pending_Itype (Assoc_Nod : Node_Id; Itype : Entity_Id);
+      pragma Inline (Add_New_Entity);
+      --  Add an entry in the NCT_Pending_Itypes which maps key Assoc_Nod to
+      --  value Itype. Assoc_Nod is the associated node of an itype. Itype is
+      --  an itype.
 
-      function Copy_Elist_With_Replacement
-        (Old_Elist : Elist_Id) return Elist_Id;
-      --  Called during second phase to copy element list doing replacements
+      procedure Build_NCT_Tables (Entity_Map : Elist_Id);
+      pragma Inline (Build_NCT_Tables);
+      --  Populate tables NCT_New_Entities and NCT_Pending_Itypes with the
+      --  information supplied in entity map Entity_Map. The format of the
+      --  entity map must be as follows:
+      --
+      --    Old_Id1, New_Id1, Old_Id2, New_Id2, .., Old_IdN, New_IdN
 
-      procedure Copy_Entity_With_Replacement (New_Entity : Entity_Id);
-      --  Called during the second phase to process a copied Entity. The actual
-      --  copy happened during the first phase (so that we could make the entry
-      --  in the mapping), but we still have to deal with the descendants of
-      --  the copied Entity and copy them where necessary.
+      function Copy_Any_Node_With_Replacement
+        (N : Node_Or_Entity_Id) return Node_Or_Entity_Id;
+      pragma Inline (Copy_Any_Node_With_Replacement);
+      --  Replicate entity or node N by invoking one of the following routines:
+      --
+      --    Copy_Node_With_Replacement
+      --    Corresponding_Entity
 
-      function Copy_List_With_Replacement (Old_List : List_Id) return List_Id;
-      --  Called during second phase to copy list doing replacements
+      function Copy_Elist_With_Replacement (List : Elist_Id) return Elist_Id;
+      --  Replicate the elements of entity list List
 
-      function Copy_Node_With_Replacement (Old_Node : Node_Id) return Node_Id;
-      --  Called during second phase to copy node doing replacements
+      function Copy_Field_With_Replacement
+        (Field    : Union_Id;
+         Old_Par  : Node_Id := Empty;
+         New_Par  : Node_Id := Empty;
+         Semantic : Boolean := False) return Union_Id;
+      --  Replicate field Field by invoking one of the following routines:
+      --
+      --    Copy_Elist_With_Replacement
+      --    Copy_List_With_Replacement
+      --    Copy_Node_With_Replacement
+      --    Corresponding_Entity
+      --
+      --  If the field is not an entity list, entity, itype, syntactic list,
+      --  or node, then the field is returned unchanged. The routine always
+      --  replicates entities, itypes, and valid syntactic fields. Old_Par is
+      --  the expected parent of a syntactic field. New_Par is the new parent
+      --  associated with a replicated syntactic field. Flag Semantic should
+      --  be set when the input is a semantic field.
 
-      function In_Map (E : Entity_Id) return Boolean;
-      --  Return True if E is one of the old entities specified in the set of
-      --  mappings to be applied to entities in the tree (i.e. Map).
+      function Copy_List_With_Replacement (List : List_Id) return List_Id;
+      --  Replicate the elements of syntactic list List
 
-      procedure Visit_Elist (E : Elist_Id);
-      --  Called during first phase to visit all elements of an Elist
+      function Copy_Node_With_Replacement (N : Node_Id) return Node_Id;
+      --  Replicate node N
 
-      procedure Visit_Entity (Old_Entity : Entity_Id);
-      --  Called during first phase to visit subsidiary fields of a defining
-      --  entity which is not an itype, and also create a copy and make an
-      --  entry in the replacement map for the new copy.
+      function Corresponding_Entity (Id : Entity_Id) return Entity_Id;
+      pragma Inline (Corresponding_Entity);
+      --  Return the corresponding new entity of Id generated during Phase 1.
+      --  If there is no such entity, return Id.
 
-      procedure Visit_Field (F : Union_Id; N : Node_Id);
-      --  Visit a single field, recursing to call Visit_Node or Visit_List if
-      --  the field is a syntactic descendant of the current node (i.e. its
-      --  parent is Node N).
+      function In_Entity_Map
+        (Id         : Entity_Id;
+         Entity_Map : Elist_Id) return Boolean;
+      pragma Inline (In_Entity_Map);
+      --  Determine whether entity Id is one of the old ids specified in entity
+      --  map Entity_Map. The format of the entity map must be as follows:
+      --
+      --    Old_Id1, New_Id1, Old_Id2, New_Id2, .., Old_IdN, New_IdN
 
-      procedure Visit_Itype (Old_Itype : Entity_Id);
-      --  Called during first phase to visit subsidiary fields of a defining
-      --  Itype, and also create a copy and make an entry in the replacement
-      --  map for the new copy.
+      procedure Update_CFS_Sloc (N : Node_Or_Entity_Id);
+      pragma Inline (Update_CFS_Sloc);
+      --  Update the Comes_From_Source and Sloc attributes of node or entity N
 
-      procedure Visit_List (L : List_Id);
-      --  Called during first phase to visit all elements of a List
+      procedure Update_First_Real_Statement
+        (Old_HSS : Node_Id;
+         New_HSS : Node_Id);
+      pragma Inline (Update_First_Real_Statement);
+      --  Update semantic attribute First_Real_Statement of handled sequence of
+      --  statements New_HSS based on handled sequence of statements Old_HSS.
 
-      procedure Visit_Node (N : Node_Or_Entity_Id);
-      --  Called during first phase to visit a node and all its subtrees
+      procedure Update_Named_Associations
+        (Old_Call : Node_Id;
+         New_Call : Node_Id);
+      pragma Inline (Update_Named_Associations);
+      --  Update semantic chain First/Next_Named_Association of call New_call
+      --  based on call Old_Call.
 
-      -----------
-      -- Assoc --
-      -----------
+      procedure Update_New_Entities (Entity_Map : Elist_Id);
+      pragma Inline (Update_New_Entities);
+      --  Update the semantic attributes of all new entities generated during
+      --  Phase 1 that do not appear in entity map Entity_Map. The format of
+      --  the entity map must be as follows:
+      --
+      --    Old_Id1, New_Id1, Old_Id2, New_Id2, .., Old_IdN, New_IdN
 
-      function Assoc (N : Node_Or_Entity_Id) return Node_Id is
-         Ent : Entity_Id;
+      procedure Update_Pending_Itypes
+        (Old_Assoc : Node_Id;
+         New_Assoc : Node_Id);
+      pragma Inline (Update_Pending_Itypes);
+      --  Update semantic attribute Associated_Node_For_Itype to refer to node
+      --  New_Assoc for all itypes whose associated node is Old_Assoc.
+
+      procedure Update_Semantic_Fields (Id : Entity_Id);
+      pragma Inline (Update_Semantic_Fields);
+      --  Subsidiary to Update_New_Entities. Update semantic fields of entity
+      --  or itype Id.
+
+      procedure Visit_Any_Node (N : Node_Or_Entity_Id);
+      pragma Inline (Visit_Any_Node);
+      --  Visit entity of node N by invoking one of the following routines:
+      --
+      --    Visit_Entity
+      --    Visit_Itype
+      --    Visit_Node
+
+      procedure Visit_Elist (List : Elist_Id);
+      --  Visit the elements of entity list List
+
+      procedure Visit_Entity (Id : Entity_Id);
+      --  Visit entity Id. This action may create a new entity of Id and save
+      --  it in table NCT_New_Entities.
+
+      procedure Visit_Field
+        (Field    : Union_Id;
+         Par_Nod  : Node_Id := Empty;
+         Semantic : Boolean := False);
+      --  Visit field Field by invoking one of the following routines:
+      --
+      --    Visit_Elist
+      --    Visit_Entity
+      --    Visit_Itype
+      --    Visit_List
+      --    Visit_Node
+      --
+      --  If the field is not an entity list, entity, itype, syntactic list,
+      --  or node, then the field is not visited. The routine always visits
+      --  valid syntactic fields. Par_Nod is the expected parent of the
+      --  syntactic field. Flag Semantic should be set when the input is a
+      --  semantic field.
+
+      procedure Visit_Itype (Itype : Entity_Id);
+      --  Visit itype Itype. This action may create a new entity for Itype and
+      --  save it in table NCT_New_Entities. In addition, the routine may map
+      --  the associated node of Itype to the new itype in NCT_Pending_Itypes.
+
+      procedure Visit_List (List : List_Id);
+      --  Visit the elements of syntactic list List
+
+      procedure Visit_Node (N : Node_Id);
+      --  Visit node N
+
+      procedure Visit_Semantic_Fields (Id : Entity_Id);
+      pragma Inline (Visit_Semantic_Fields);
+      --  Subsidiary to Visit_Entity and Visit_Itype. Visit common semantic
+      --  fields of entity or itype Id.
+
+      --------------------
+      -- Add_New_Entity --
+      --------------------
+
+      procedure Add_New_Entity (Old_Id : Entity_Id; New_Id : Entity_Id) is
+      begin
+         pragma Assert (Present (Old_Id));
+         pragma Assert (Present (New_Id));
+         pragma Assert (Nkind (Old_Id) in N_Entity);
+         pragma Assert (Nkind (New_Id) in N_Entity);
+
+         NCT_Tables_In_Use := True;
+
+         --  Sanity check the NCT_New_Entities table. No previous mapping with
+         --  key Old_Id should exist.
+
+         pragma Assert (No (NCT_New_Entities.Get (Old_Id)));
+
+         --  Establish the mapping
+
+         --    Old_Id -> New_Id
+
+         NCT_New_Entities.Set (Old_Id, New_Id);
+      end Add_New_Entity;
+
+      -----------------------
+      -- Add_Pending_Itype --
+      -----------------------
+
+      procedure Add_Pending_Itype (Assoc_Nod : Node_Id; Itype : Entity_Id) is
+         Itypes : Elist_Id;
 
       begin
-         if Nkind (N) not in N_Entity or else not NCT_Hash_Tables_Used then
-            return N;
+         pragma Assert (Present (Assoc_Nod));
+         pragma Assert (Present (Itype));
+         pragma Assert (Nkind (Itype) in N_Entity);
+         pragma Assert (Is_Itype (Itype));
 
-         else
-            Ent := NCT_Assoc.Get (Entity_Id (N));
+         NCT_Tables_In_Use := True;
 
-            if Present (Ent) then
-               return Ent;
-            end if;
+         --  It is not possible to sanity check the NCT_Pendint_Itypes table
+         --  directly because a single node may act as the associated node for
+         --  multiple itypes.
+
+         Itypes := NCT_Pending_Itypes.Get (Assoc_Nod);
+
+         if No (Itypes) then
+            Itypes := New_Elmt_List;
+            NCT_Pending_Itypes.Set (Assoc_Nod, Itypes);
          end if;
 
-         return N;
-      end Assoc;
+         --  Establish the mapping
 
-      ---------------------------
-      -- Build_NCT_Hash_Tables --
-      ---------------------------
+         --    Assoc_Nod -> (Itype, ...)
 
-      procedure Build_NCT_Hash_Tables is
-         Assoc : Entity_Id;
-         Elmt  : Elmt_Id;
-         Key   : Entity_Id;
-         Value : Entity_Id;
+         --  Avoid inserting the same itype multiple times. This involves a
+         --  linear search, however the set of itypes with the same associated
+         --  node is very small.
+
+         Append_Unique_Elmt (Itype, Itypes);
+      end Add_Pending_Itype;
+
+      ----------------------
+      -- Build_NCT_Tables --
+      ----------------------
+
+      procedure Build_NCT_Tables (Entity_Map : Elist_Id) is
+         Elmt   : Elmt_Id;
+         Old_Id : Entity_Id;
+         New_Id : Entity_Id;
 
       begin
-         if No (Map) then
+         --  Nothing to do when there is no entity map
+
+         if No (Entity_Map) then
             return;
          end if;
 
-         --  Clear both hash tables associated with entry replication since
-         --  multiple calls to New_Copy_Tree could cause multiple collisions
-         --  and produce long linked lists in individual buckets.
-
-         NCT_Assoc.Reset;
-         NCT_Itype_Assoc.Reset;
-
-         Elmt := First_Elmt (Map);
+         Elmt := First_Elmt (Entity_Map);
          while Present (Elmt) loop
 
-            --  Extract a (key, value) pair from the map
+            --  Extract the (Old_Id, New_Id) pair from the entity map
 
-            Key := Node (Elmt);
+            Old_Id := Node (Elmt);
             Next_Elmt (Elmt);
-            Value := Node (Elmt);
 
-            --  Add the pair in the association hash table
+            New_Id := Node (Elmt);
+            Next_Elmt (Elmt);
 
-            NCT_Assoc.Set (Key, Value);
+            --  Establish the following mapping within table NCT_New_Entities
 
-            --  Add a link between the associated node of the old Itype and the
-            --  new Itype, for updating later when node is copied.
+            --    Old_Id -> New_Id
 
-            if Is_Type (Key) then
-               Assoc := Associated_Node_For_Itype (Key);
+            Add_New_Entity (Old_Id, New_Id);
 
-               if Present (Assoc) then
-                  NCT_Itype_Assoc.Set (Assoc, Value);
-               end if;
+            --  Establish the following mapping within table NCT_Pending_Itypes
+            --  when the new entity is an itype.
+
+            --    Assoc_Nod -> (New_Id, ...)
+
+            --  IMPORTANT: the associated node is that of the old itype because
+            --  the node will be replicated in Phase 2.
+
+            if Is_Itype (Old_Id) then
+               Add_Pending_Itype
+                 (Assoc_Nod => Associated_Node_For_Itype (Old_Id),
+                  Itype     => New_Id);
             end if;
-
-            Next_Elmt (Elmt);
          end loop;
+      end Build_NCT_Tables;
 
-         NCT_Hash_Tables_Used := True;
-      end Build_NCT_Hash_Tables;
+      ------------------------------------
+      -- Copy_Any_Node_With_Replacement --
+      ------------------------------------
+
+      function Copy_Any_Node_With_Replacement
+        (N : Node_Or_Entity_Id) return Node_Or_Entity_Id
+      is
+      begin
+         if Nkind (N) in N_Entity then
+            return Corresponding_Entity (N);
+         else
+            return Copy_Node_With_Replacement (N);
+         end if;
+      end Copy_Any_Node_With_Replacement;
 
       ---------------------------------
       -- Copy_Elist_With_Replacement --
       ---------------------------------
 
-      function Copy_Elist_With_Replacement
-        (Old_Elist : Elist_Id) return Elist_Id
-      is
-         M         : Elmt_Id;
-         New_Elist : Elist_Id;
+      function Copy_Elist_With_Replacement (List : Elist_Id) return Elist_Id is
+         Elmt   : Elmt_Id;
+         Result : Elist_Id;
 
       begin
-         if No (Old_Elist) then
-            return No_Elist;
+         --  Copy the contents of the old list. Note that the list itself may
+         --  be empty, in which case the routine returns a new empty list. This
+         --  avoids sharing lists between subtrees. The element of an entity
+         --  list could be an entity or a node, hence the invocation of routine
+         --  Copy_Any_Node_With_Replacement.
+
+         if Present (List) then
+            Result := New_Elmt_List;
+
+            Elmt := First_Elmt (List);
+            while Present (Elmt) loop
+               Append_Elmt
+                 (Copy_Any_Node_With_Replacement (Node (Elmt)), Result);
+
+               Next_Elmt (Elmt);
+            end loop;
+
+         --  Otherwise the list does not exist
 
          else
-            New_Elist := New_Elmt_List;
-
-            M := First_Elmt (Old_Elist);
-            while Present (M) loop
-               Append_Elmt (Copy_Node_With_Replacement (Node (M)), New_Elist);
-               Next_Elmt (M);
-            end loop;
+            Result := No_Elist;
          end if;
 
-         return New_Elist;
+         return Result;
       end Copy_Elist_With_Replacement;
 
-      ----------------------------------
-      -- Copy_Entity_With_Replacement --
-      ----------------------------------
+      ---------------------------------
+      -- Copy_Field_With_Replacement --
+      ---------------------------------
 
-      --  This routine exactly parallels its phase one analog Visit_Itype
-
-      procedure Copy_Entity_With_Replacement (New_Entity : Entity_Id) is
+      function Copy_Field_With_Replacement
+        (Field    : Union_Id;
+         Old_Par  : Node_Id := Empty;
+         New_Par  : Node_Id := Empty;
+         Semantic : Boolean := False) return Union_Id
+      is
       begin
-         --  Translate Next_Entity, Scope, and Etype fields, in case they
-         --  reference entities that have been mapped into copies.
+         --  The field is empty
 
-         Set_Next_Entity (New_Entity, Assoc (Next_Entity (New_Entity)));
-         Set_Etype       (New_Entity, Assoc (Etype       (New_Entity)));
+         if Field = Union_Id (Empty) then
+            return Field;
 
-         if Present (New_Scope) then
-            Set_Scope    (New_Entity, New_Scope);
+         --  The field is an entity/itype/node
+
+         elsif Field in Node_Range then
+            declare
+               Old_N     : constant Node_Id := Node_Id (Field);
+               Syntactic : constant Boolean := Parent (Old_N) = Old_Par;
+
+               New_N : Node_Id;
+
+            begin
+               --  The field is an entity/itype
+
+               if Nkind (Old_N) in N_Entity then
+
+                  --  An entity/itype is always replicated
+
+                  New_N := Corresponding_Entity (Old_N);
+
+                  --  Update the parent pointer when the entity is a syntactic
+                  --  field. Note that itypes do not have parent pointers.
+
+                  if Syntactic and then New_N /= Old_N then
+                     Set_Parent (New_N, New_Par);
+                  end if;
+
+               --  The field is a node
+
+               else
+                  --  A node is replicated when it is either a syntactic field
+                  --  or when the caller treats it as a semantic attribute.
+
+                  if Syntactic or else Semantic then
+                     New_N := Copy_Node_With_Replacement (Old_N);
+
+                     --  Update the parent pointer when the node is a syntactic
+                     --  field.
+
+                     if Syntactic and then New_N /= Old_N then
+                        Set_Parent (New_N, New_Par);
+                     end if;
+
+                  --  Otherwise the node is returned unchanged
+
+                  else
+                     New_N := Old_N;
+                  end if;
+               end if;
+
+               return Union_Id (New_N);
+            end;
+
+         --  The field is an entity list
+
+         elsif Field in Elist_Range then
+            return Union_Id (Copy_Elist_With_Replacement (Elist_Id (Field)));
+
+         --  The field is a syntactic list
+
+         elsif Field in List_Range then
+            declare
+               Old_List  : constant List_Id := List_Id (Field);
+               Syntactic : constant Boolean := Parent (Old_List) = Old_Par;
+
+               New_List : List_Id;
+
+            begin
+               --  A list is replicated when it is either a syntactic field or
+               --  when the caller treats it as a semantic attribute.
+
+               if Syntactic or else Semantic then
+                  New_List := Copy_List_With_Replacement (Old_List);
+
+                  --  Update the parent pointer when the list is a syntactic
+                  --  field.
+
+                  if Syntactic and then New_List /= Old_List then
+                     Set_Parent (New_List, New_Par);
+                  end if;
+
+               --  Otherwise the list is returned unchanged
+
+               else
+                  New_List := Old_List;
+               end if;
+
+               return Union_Id (New_List);
+            end;
+
+         --  Otherwise the field denotes an attribute that does not need to be
+         --  replicated (Chars, literals, etc).
+
          else
-            Set_Scope    (New_Entity, Assoc (Scope       (New_Entity)));
+            return Field;
          end if;
-
-         --  Copy referenced fields
-
-         if Is_Discrete_Type (New_Entity) then
-            Set_Scalar_Range (New_Entity,
-              Copy_Node_With_Replacement (Scalar_Range (New_Entity)));
-
-         elsif Has_Discriminants (Base_Type (New_Entity)) then
-            Set_Discriminant_Constraint (New_Entity,
-              Copy_Elist_With_Replacement
-                (Discriminant_Constraint (New_Entity)));
-
-         elsif Is_Array_Type (New_Entity) then
-            if Present (First_Index (New_Entity)) then
-               Set_First_Index (New_Entity,
-                 First (Copy_List_With_Replacement
-                         (List_Containing (First_Index (New_Entity)))));
-            end if;
-
-            if Is_Packed (New_Entity) then
-               Set_Packed_Array_Impl_Type (New_Entity,
-                 Copy_Node_With_Replacement
-                   (Packed_Array_Impl_Type (New_Entity)));
-            end if;
-         end if;
-      end Copy_Entity_With_Replacement;
+      end Copy_Field_With_Replacement;
 
       --------------------------------
       -- Copy_List_With_Replacement --
       --------------------------------
 
-      function Copy_List_With_Replacement
-        (Old_List : List_Id) return List_Id
-      is
-         New_List : List_Id;
-         E        : Node_Id;
+      function Copy_List_With_Replacement (List : List_Id) return List_Id is
+         Elmt   : Node_Id;
+         Result : List_Id;
 
       begin
-         if Old_List = No_List then
-            return No_List;
+         --  Copy the contents of the old list. Note that the list itself may
+         --  be empty, in which case the routine returns a new empty list. This
+         --  avoids sharing lists between subtrees. The element of a syntactic
+         --  list is always a node, never an entity or itype, hence the call to
+         --  routine Copy_Node_With_Replacement.
 
-         else
-            New_List := Empty_List;
+         if Present (List) then
+            Result := New_List;
 
-            E := First (Old_List);
-            while Present (E) loop
-               Append (Copy_Node_With_Replacement (E), New_List);
-               Next (E);
+            Elmt := First (List);
+            while Present (Elmt) loop
+               Append (Copy_Node_With_Replacement (Elmt), Result);
+
+               Next (Elmt);
             end loop;
 
-            return New_List;
+         --  Otherwise the list does not exist
+
+         else
+            Result := No_List;
          end if;
+
+         return Result;
       end Copy_List_With_Replacement;
 
       --------------------------------
       -- Copy_Node_With_Replacement --
       --------------------------------
 
-      function Copy_Node_With_Replacement
-        (Old_Node : Node_Id) return Node_Id
-      is
-         New_Node : Node_Id;
-
-         procedure Adjust_Named_Associations
-           (Old_Node : Node_Id;
-            New_Node : Node_Id);
-         --  If a call node has named associations, these are chained through
-         --  the First_Named_Actual, Next_Named_Actual links. These must be
-         --  propagated separately to the new parameter list, because these
-         --  are not syntactic fields.
-
-         function Copy_Field_With_Replacement
-           (Field : Union_Id) return Union_Id;
-         --  Given Field, which is a field of Old_Node, return a copy of it
-         --  if it is a syntactic field (i.e. its parent is Node), setting
-         --  the parent of the copy to poit to New_Node. Otherwise returns
-         --  the field (possibly mapped if it is an entity).
-
-         -------------------------------
-         -- Adjust_Named_Associations --
-         -------------------------------
-
-         procedure Adjust_Named_Associations
-           (Old_Node : Node_Id;
-            New_Node : Node_Id)
-         is
-            Old_E : Node_Id;
-            New_E : Node_Id;
-
-            Old_Next : Node_Id;
-            New_Next : Node_Id;
-
-         begin
-            Old_E := First (Parameter_Associations (Old_Node));
-            New_E := First (Parameter_Associations (New_Node));
-            while Present (Old_E) loop
-               if Nkind (Old_E) = N_Parameter_Association
-                 and then Present (Next_Named_Actual (Old_E))
-               then
-                  if First_Named_Actual (Old_Node) =
-                       Explicit_Actual_Parameter (Old_E)
-                  then
-                     Set_First_Named_Actual
-                       (New_Node, Explicit_Actual_Parameter (New_E));
-                  end if;
-
-                  --  Now scan parameter list from the beginning, to locate
-                  --  next named actual, which can be out of order.
-
-                  Old_Next := First (Parameter_Associations (Old_Node));
-                  New_Next := First (Parameter_Associations (New_Node));
-                  while Nkind (Old_Next) /= N_Parameter_Association
-                    or else Explicit_Actual_Parameter (Old_Next) /=
-                                              Next_Named_Actual (Old_E)
-                  loop
-                     Next (Old_Next);
-                     Next (New_Next);
-                  end loop;
-
-                  Set_Next_Named_Actual
-                    (New_E, Explicit_Actual_Parameter (New_Next));
-               end if;
-
-               Next (Old_E);
-               Next (New_E);
-            end loop;
-         end Adjust_Named_Associations;
-
-         ---------------------------------
-         -- Copy_Field_With_Replacement --
-         ---------------------------------
-
-         function Copy_Field_With_Replacement
-           (Field : Union_Id) return Union_Id
-         is
-         begin
-            if Field = Union_Id (Empty) then
-               return Field;
-
-            elsif Field in Node_Range then
-               declare
-                  Old_N : constant Node_Id := Node_Id (Field);
-                  New_N : Node_Id;
-
-               begin
-                  --  If syntactic field, as indicated by the parent pointer
-                  --  being set, then copy the referenced node recursively.
-
-                  if Parent (Old_N) = Old_Node then
-                     New_N := Copy_Node_With_Replacement (Old_N);
-
-                     if New_N /= Old_N then
-                        Set_Parent (New_N, New_Node);
-                     end if;
-
-                  --  For semantic fields, update possible entity reference
-                  --  from the replacement map.
-
-                  else
-                     New_N := Assoc (Old_N);
-                  end if;
-
-                  return Union_Id (New_N);
-               end;
-
-            elsif Field in List_Range then
-               declare
-                  Old_L : constant List_Id := List_Id (Field);
-                  New_L : List_Id;
-
-               begin
-                  --  If syntactic field, as indicated by the parent pointer,
-                  --  then recursively copy the entire referenced list.
-
-                  if Parent (Old_L) = Old_Node then
-                     New_L := Copy_List_With_Replacement (Old_L);
-                     Set_Parent (New_L, New_Node);
-
-                  --  For semantic list, just returned unchanged
-
-                  else
-                     New_L := Old_L;
-                  end if;
-
-                  return Union_Id (New_L);
-               end;
-
-            --  Anything other than a list or a node is returned unchanged
-
-            else
-               return Field;
-            end if;
-         end Copy_Field_With_Replacement;
-
-      --  Start of processing for Copy_Node_With_Replacement
+      function Copy_Node_With_Replacement (N : Node_Id) return Node_Id is
+         Result : Node_Id;
 
       begin
-         if Old_Node <= Empty_Or_Error then
-            return Old_Node;
+         --  Assume that the node must be returned unchanged
 
-         elsif Nkind (Old_Node) in N_Entity then
-            return Assoc (Old_Node);
+         Result := N;
 
-         else
-            New_Node := New_Copy (Old_Node);
+         if N > Empty_Or_Error then
+            pragma Assert (Nkind (N) not in N_Entity);
 
-            --  If the node we are copying is the associated node of a
-            --  previously copied Itype, then adjust the associated node
-            --  of the copy of that Itype accordingly.
+            Result := New_Copy (N);
 
-            declare
-               Ent : constant Entity_Id := NCT_Itype_Assoc.Get (Old_Node);
+            Set_Field1 (Result,
+              Copy_Field_With_Replacement
+                (Field   => Field1 (Result),
+                 Old_Par => N,
+                 New_Par => Result));
 
-            begin
-               if Present (Ent) then
-                  Set_Associated_Node_For_Itype (Ent, New_Node);
-               end if;
-            end;
+            Set_Field2 (Result,
+              Copy_Field_With_Replacement
+                (Field   => Field2 (Result),
+                 Old_Par => N,
+                 New_Par => Result));
 
-            --  Recursively copy descendants
+            Set_Field3 (Result,
+              Copy_Field_With_Replacement
+                (Field   => Field3 (Result),
+                 Old_Par => N,
+                 New_Par => Result));
 
-            Set_Field1
-              (New_Node, Copy_Field_With_Replacement (Field1 (New_Node)));
-            Set_Field2
-              (New_Node, Copy_Field_With_Replacement (Field2 (New_Node)));
-            Set_Field3
-              (New_Node, Copy_Field_With_Replacement (Field3 (New_Node)));
-            Set_Field4
-              (New_Node, Copy_Field_With_Replacement (Field4 (New_Node)));
-            Set_Field5
-              (New_Node, Copy_Field_With_Replacement (Field5 (New_Node)));
+            Set_Field4 (Result,
+              Copy_Field_With_Replacement
+                (Field   => Field4 (Result),
+                 Old_Par => N,
+                 New_Par => Result));
 
-            --  Adjust Sloc of new node if necessary
+            Set_Field5 (Result,
+              Copy_Field_With_Replacement
+                (Field   => Field5 (Result),
+                 Old_Par => N,
+                 New_Par => Result));
 
-            if New_Sloc /= No_Location then
-               Set_Sloc (New_Node, New_Sloc);
+            --  Update the Comes_From_Source and Sloc attributes of the node
+            --  in case the caller has supplied new values.
 
-               --  If we adjust the Sloc, then we are essentially making a
-               --  completely new node, so the Comes_From_Source flag should
-               --  be reset to the proper default value.
+            Update_CFS_Sloc (Result);
 
-               Set_Comes_From_Source
-                 (New_Node, Default_Node.Comes_From_Source);
-            end if;
+            --  Update the Associated_Node_For_Itype attribute of all itypes
+            --  created during Phase 1 whose associated node is N. As a result
+            --  the Associated_Node_For_Itype refers to the replicated node.
+            --  No action needs to be taken when the Associated_Node_For_Itype
+            --  refers to an entity because this was already handled during
+            --  Phase 1, in Visit_Itype.
 
-            --  Update the named association links for calls to mention the
-            --  copied actual parameters.
+            Update_Pending_Itypes
+              (Old_Assoc => N,
+               New_Assoc => Result);
 
-            if Nkind_In (Old_Node, N_Entry_Call_Statement,
-                                   N_Function_Call,
-                                   N_Procedure_Call_Statement)
-              and then Present (First_Named_Actual (Old_Node))
+            --  Update the First/Next_Named_Association chain for a replicated
+            --  call.
+
+            if Nkind_In (N, N_Entry_Call_Statement,
+                            N_Function_Call,
+                            N_Procedure_Call_Statement)
             then
-               Adjust_Named_Associations (Old_Node, New_Node);
+               Update_Named_Associations
+                 (Old_Call => N,
+                  New_Call => Result);
 
-            --  Update the Renamed_Object attribute of an object renaming
-            --  declaration to mention the replicated name.
+            --  Update the Renamed_Object attribute of a replicated object
+            --  declaration.
 
-            elsif Nkind (Old_Node) = N_Object_Renaming_Declaration then
-               Set_Renamed_Object
-                 (Defining_Entity (New_Node), Name (New_Node));
-            end if;
+            elsif Nkind (N) = N_Object_Renaming_Declaration then
+               Set_Renamed_Object (Defining_Entity (Result), Name (Result));
 
-            --  Reset First_Real_Statement for Handled_Sequence_Of_Statements.
-            --  The replacement mechanism applies to entities, and is not used
-            --  here. Eventually we may need a more general graph-copying
-            --  routine. For now, do a sequential search to find desired node.
+            --  Update the First_Real_Statement attribute of a replicated
+            --  handled sequence of statements.
 
-            if Nkind (Old_Node) = N_Handled_Sequence_Of_Statements
-              and then Present (First_Real_Statement (Old_Node))
-            then
-               declare
-                  Old_F : constant Node_Id := First_Real_Statement (Old_Node);
-                  N1    : Node_Id;
-                  N2    : Node_Id;
-
-               begin
-                  N1 := First (Statements (Old_Node));
-                  N2 := First (Statements (New_Node));
-
-                  while N1 /= Old_F loop
-                     Next (N1);
-                     Next (N2);
-                  end loop;
-
-                  Set_First_Real_Statement (New_Node, N2);
-               end;
+            elsif Nkind (N) = N_Handled_Sequence_Of_Statements then
+               Update_First_Real_Statement
+                 (Old_HSS => N,
+                  New_HSS => Result);
             end if;
          end if;
 
-         --  All done, return copied node
-
-         return New_Node;
+         return Result;
       end Copy_Node_With_Replacement;
 
-      ------------
-      -- In_Map --
-      ------------
+      --------------------------
+      -- Corresponding_Entity --
+      --------------------------
 
-      function In_Map (E : Entity_Id) return Boolean is
-         Elmt : Elmt_Id;
-         Ent  : Entity_Id;
+      function Corresponding_Entity (Id : Entity_Id) return Entity_Id is
+         New_Id : Entity_Id;
+         Result : Entity_Id;
 
       begin
-         if Present (Map) then
-            Elmt := First_Elmt (Map);
-            while Present (Elmt) loop
-               Ent := Node (Elmt);
+         --  Assume that the entity must be returned unchanged
 
-               if Ent = E then
+         Result := Id;
+
+         if Id > Empty_Or_Error then
+            pragma Assert (Nkind (Id) in N_Entity);
+
+            --  Determine whether the entity has a corresponding new entity
+            --  generated during Phase 1 and if it does, use it.
+
+            if NCT_Tables_In_Use then
+               New_Id := NCT_New_Entities.Get (Id);
+
+               if Present (New_Id) then
+                  Result := New_Id;
+               end if;
+            end if;
+         end if;
+
+         return Result;
+      end Corresponding_Entity;
+
+      -------------------
+      -- In_Entity_Map --
+      -------------------
+
+      function In_Entity_Map
+        (Id         : Entity_Id;
+         Entity_Map : Elist_Id) return Boolean
+      is
+         Elmt   : Elmt_Id;
+         Old_Id : Entity_Id;
+
+      begin
+         --  The entity map contains pairs (Old_Id, New_Id). The advancement
+         --  step always skips the New_Id portion of the pair.
+
+         if Present (Entity_Map) then
+            Elmt := First_Elmt (Entity_Map);
+            while Present (Elmt) loop
+               Old_Id := Node (Elmt);
+
+               if Old_Id = Id then
                   return True;
                end if;
 
@@ -17862,20 +18015,268 @@ package body Sem_Util is
          end if;
 
          return False;
-      end In_Map;
+      end In_Entity_Map;
+
+      ---------------------
+      -- Update_CFS_Sloc --
+      ---------------------
+
+      procedure Update_CFS_Sloc (N : Node_Or_Entity_Id) is
+      begin
+         --  A new source location defaults the Comes_From_Source attribute
+
+         if New_Sloc /= No_Location then
+            Set_Comes_From_Source (N, Default_Node.Comes_From_Source);
+            Set_Sloc              (N, New_Sloc);
+         end if;
+      end Update_CFS_Sloc;
+
+      ---------------------------------
+      -- Update_First_Real_Statement --
+      ---------------------------------
+
+      procedure Update_First_Real_Statement
+        (Old_HSS : Node_Id;
+         New_HSS : Node_Id)
+      is
+         Old_First_Stmt : constant Node_Id := First_Real_Statement (Old_HSS);
+
+         New_Stmt : Node_Id;
+         Old_Stmt : Node_Id;
+
+      begin
+         --  Recreate the First_Real_Statement attribute of a handled sequence
+         --  of statements by traversing the statement lists of both sequences
+         --  in parallel.
+
+         if Present (Old_First_Stmt) then
+            New_Stmt := First (Statements (New_HSS));
+            Old_Stmt := First (Statements (Old_HSS));
+            while Present (Old_Stmt) and then Old_Stmt /= Old_First_Stmt loop
+               Next (New_Stmt);
+               Next (Old_Stmt);
+            end loop;
+
+            pragma Assert (Present (New_Stmt));
+            pragma Assert (Present (Old_Stmt));
+
+            Set_First_Real_Statement (New_HSS, New_Stmt);
+         end if;
+      end Update_First_Real_Statement;
+
+      -------------------------------
+      -- Update_Named_Associations --
+      -------------------------------
+
+      procedure Update_Named_Associations
+        (Old_Call : Node_Id;
+         New_Call : Node_Id)
+      is
+         New_Act  : Node_Id;
+         New_Next : Node_Id;
+         Old_Act  : Node_Id;
+         Old_Next : Node_Id;
+
+      begin
+         --  Recreate the First/Next_Named_Actual chain of a call by traversing
+         --  the chains of both the old and new calls in parallel.
+
+         New_Act := First (Parameter_Associations (New_Call));
+         Old_Act := First (Parameter_Associations (Old_Call));
+         while Present (Old_Act) loop
+            if Nkind (Old_Act) = N_Parameter_Association
+              and then Present (Next_Named_Actual (Old_Act))
+            then
+               if First_Named_Actual (Old_Call) =
+                    Explicit_Actual_Parameter (Old_Act)
+               then
+                  Set_First_Named_Actual (New_Call,
+                    Explicit_Actual_Parameter (New_Act));
+               end if;
+
+               --  Scan the actual parameter list to find the next suitable
+               --  named actual. Note that the list may be out of order.
+
+               New_Next := First (Parameter_Associations (New_Call));
+               Old_Next := First (Parameter_Associations (Old_Call));
+               while Nkind (Old_Next) /= N_Parameter_Association
+                 or else Explicit_Actual_Parameter (Old_Next) /=
+                           Next_Named_Actual (Old_Act)
+               loop
+                  Next (New_Next);
+                  Next (Old_Next);
+               end loop;
+
+               Set_Next_Named_Actual (New_Act,
+                 Explicit_Actual_Parameter (New_Next));
+            end if;
+
+            Next (New_Act);
+            Next (Old_Act);
+         end loop;
+      end Update_Named_Associations;
+
+      -------------------------
+      -- Update_New_Entities --
+      -------------------------
+
+      procedure Update_New_Entities (Entity_Map : Elist_Id) is
+         New_Id : Entity_Id := Empty;
+         Old_Id : Entity_Id := Empty;
+
+      begin
+         if NCT_Tables_In_Use then
+            NCT_New_Entities.Get_First (Old_Id, New_Id);
+
+            --  Update the semantic fields of all new entities created during
+            --  Phase 1 which were not supplied via an entity map.
+            --  ??? Is there a better way of distinguishing those?
+
+            while Present (Old_Id) and then Present (New_Id) loop
+               if not (Present (Entity_Map)
+                        and then In_Entity_Map (Old_Id, Entity_Map))
+               then
+                  Update_Semantic_Fields (New_Id);
+               end if;
+
+               NCT_New_Entities.Get_Next (Old_Id, New_Id);
+            end loop;
+         end if;
+      end Update_New_Entities;
+
+      ---------------------------
+      -- Update_Pending_Itypes --
+      ---------------------------
+
+      procedure Update_Pending_Itypes
+        (Old_Assoc : Node_Id;
+         New_Assoc : Node_Id)
+      is
+         Item   : Elmt_Id;
+         Itypes : Elist_Id;
+
+      begin
+         if NCT_Tables_In_Use then
+            Itypes := NCT_Pending_Itypes.Get (Old_Assoc);
+
+            --  Update the Associated_Node_For_Itype attribute for all itypes
+            --  which originally refer to Old_Assoc to designate New_Assoc.
+
+            if Present (Itypes) then
+               Item := First_Elmt (Itypes);
+               while Present (Item) loop
+                  Set_Associated_Node_For_Itype (Node (Item), New_Assoc);
+
+                  Next_Elmt (Item);
+               end loop;
+            end if;
+         end if;
+      end Update_Pending_Itypes;
+
+      ----------------------------
+      -- Update_Semantic_Fields --
+      ----------------------------
+
+      procedure Update_Semantic_Fields (Id : Entity_Id) is
+      begin
+         --  Discriminant_Constraint
+
+         if Has_Discriminants (Base_Type (Id)) then
+            Set_Discriminant_Constraint (Id, Elist_Id (
+              Copy_Field_With_Replacement
+                (Field    => Union_Id (Discriminant_Constraint (Id)),
+                 Semantic => True)));
+         end if;
+
+         --  Etype
+
+         Set_Etype (Id, Node_Id (
+           Copy_Field_With_Replacement
+             (Field    => Union_Id (Etype (Id)),
+              Semantic => True)));
+
+         --  First_Index
+         --  Packed_Array_Impl_Type
+
+         if Is_Array_Type (Id) then
+            if Present (First_Index (Id)) then
+               Set_First_Index (Id, First (List_Id (
+                 Copy_Field_With_Replacement
+                   (Field    => Union_Id (List_Containing (First_Index (Id))),
+                    Semantic => True))));
+            end if;
+
+            if Is_Packed (Id) then
+               Set_Packed_Array_Impl_Type (Id, Node_Id (
+                 Copy_Field_With_Replacement
+                   (Field    => Union_Id (Packed_Array_Impl_Type (Id)),
+                    Semantic => True)));
+            end if;
+         end if;
+
+         --  Next_Entity
+
+         Set_Next_Entity (Id, Node_Id (
+           Copy_Field_With_Replacement
+             (Field    => Union_Id (Next_Entity (Id)),
+              Semantic => True)));
+
+         --  Scalar_Range
+
+         if Is_Discrete_Type (Id) then
+            Set_Scalar_Range (Id, Node_Id (
+              Copy_Field_With_Replacement
+                (Field    => Union_Id (Scalar_Range (Id)),
+                 Semantic => True)));
+         end if;
+
+         --  Scope
+
+         --  Update the scope when the caller specified an explicit one
+
+         if Present (New_Scope) then
+            Set_Scope (Id, New_Scope);
+         else
+            Set_Scope (Id, Node_Id (
+              Copy_Field_With_Replacement
+                (Field    => Union_Id (Scope (Id)),
+                 Semantic => True)));
+         end if;
+      end Update_Semantic_Fields;
+
+      --------------------
+      -- Visit_Any_Node --
+      --------------------
+
+      procedure Visit_Any_Node (N : Node_Or_Entity_Id) is
+      begin
+         if Nkind (N) in N_Entity then
+            if Is_Itype (N) then
+               Visit_Itype (N);
+            else
+               Visit_Entity (N);
+            end if;
+         else
+            Visit_Node (N);
+         end if;
+      end Visit_Any_Node;
 
       -----------------
       -- Visit_Elist --
       -----------------
 
-      procedure Visit_Elist (E : Elist_Id) is
+      procedure Visit_Elist (List : Elist_Id) is
          Elmt : Elmt_Id;
-      begin
-         if Present (E) then
-            Elmt := First_Elmt (E);
 
-            while Elmt /= No_Elmt loop
-               Visit_Node (Node (Elmt));
+      begin
+         --  The element of an entity list could be an entity, itype, or a
+         --  node, hence the call to Visit_Any_Node.
+
+         if Present (List) then
+            Elmt := First_Elmt (List);
+            while Present (Elmt) loop
+               Visit_Any_Node (Node (Elmt));
+
                Next_Elmt (Elmt);
             end loop;
          end if;
@@ -17885,108 +18286,153 @@ package body Sem_Util is
       -- Visit_Entity --
       ------------------
 
-      procedure Visit_Entity (Old_Entity : Entity_Id) is
-         New_E : Entity_Id;
+      procedure Visit_Entity (Id : Entity_Id) is
+         New_Id : Entity_Id;
 
       begin
-         pragma Assert (not Is_Itype (Old_Entity));
-         pragma Assert (Nkind (Old_Entity) in N_Entity);
+         pragma Assert (Nkind (Id) in N_Entity);
+         pragma Assert (not Is_Itype (Id));
 
-         --  Do not duplicate an entity when it is declared within an inner
-         --  scope enclosed by an expression with actions.
+         --  Nothing to do if the entity is not defined in the Actions list of
+         --  an N_Expression_With_Actions node.
 
-         if EWA_Inner_Scope_Level > 0 then
+         if EWA_Level = 0 then
             return;
 
-         --  Entity duplication is currently performed only for objects and
-         --  types. Relaxing this restriction leads to a performance penalty.
+         --  Nothing to do if the entity is defined within a scoping construct
+         --  of an N_Expression_With_Actions node.
 
-         elsif Ekind_In (Old_Entity, E_Constant, E_Variable) then
-            null;
+         elsif EWA_Inner_Scope_Level > 0 then
+            return;
 
-         elsif Is_Type (Old_Entity) then
-            null;
+         --  Nothing to do if the entity is not an object or a type. Relaxing
+         --  this restriction leads to a performance penalty.
 
-         else
+         elsif not Ekind_In (Id, E_Constant, E_Variable)
+           and then not Is_Type (Id)
+         then
+            return;
+
+         --  Nothing to do if the entity was already visited
+
+         elsif NCT_Tables_In_Use
+           and then Present (NCT_New_Entities.Get (Id))
+         then
+            return;
+
+         --  Nothing to do if the declaration node of the entity is not within
+         --  the subtree being replicated.
+
+         elsif not In_Subtree
+                     (Root => Source,
+                      N    => Declaration_Node (Id))
+         then
             return;
          end if;
 
-         New_E := New_Copy (Old_Entity);
+         --  Create a new entity by directly copying the old entity. This
+         --  action causes all attributes of the old entity to be inherited.
 
-         --  The new entity has all the attributes of the old one, however it
-         --  requires a new name for debugging purposes.
+         New_Id := New_Copy (Id);
 
-         Set_Chars (New_E, New_Internal_Name ('T'));
+         --  Create a new name for the new entity because the back end needs
+         --  distinct names for debugging purposes.
 
-         --  Add new association to map
+         Set_Chars (New_Id, New_Internal_Name ('T'));
 
-         NCT_Assoc.Set (Old_Entity, New_E);
-         NCT_Hash_Tables_Used := True;
+         --  Update the Comes_From_Source and Sloc attributes of the entity in
+         --  case the caller has supplied new values.
 
-         --  Visit descendants that eventually get copied
+         Update_CFS_Sloc (New_Id);
 
-         Visit_Field (Union_Id (Etype (Old_Entity)), Old_Entity);
+         --  Establish the following mapping within table NCT_New_Entities:
+
+         --    Id -> New_Id
+
+         Add_New_Entity (Id, New_Id);
+
+         --  Deal with the semantic fields of entities. The fields are visited
+         --  because they may mention entities which reside within the subtree
+         --  being copied.
+
+         Visit_Semantic_Fields (Id);
       end Visit_Entity;
 
       -----------------
       -- Visit_Field --
       -----------------
 
-      procedure Visit_Field (F : Union_Id; N : Node_Id) is
+      procedure Visit_Field
+        (Field    : Union_Id;
+         Par_Nod  : Node_Id := Empty;
+         Semantic : Boolean := False)
+      is
       begin
-         if F = Union_Id (Empty) then
+         --  The field is empty
+
+         if Field = Union_Id (Empty) then
             return;
 
-         elsif F in Node_Range then
+         --  The field is an entity/itype/node
 
-            --  Copy node if it is syntactic, i.e. its parent pointer is
-            --  set to point to the field that referenced it (certain
-            --  Itypes will also meet this criterion, which is fine, since
-            --  these are clearly Itypes that do need to be copied, since
-            --  we are copying their parent.)
+         elsif Field in Node_Range then
+            declare
+               N : constant Node_Id := Node_Id (Field);
 
-            if Parent (Node_Id (F)) = N then
-               Visit_Node (Node_Id (F));
-               return;
+            begin
+               --  The field is an entity/itype
 
-            --  Another case, if we are pointing to an Itype, then we want
-            --  to copy it if its associated node is somewhere in the tree
-            --  being copied.
+               if Nkind (N) in N_Entity then
 
-            --  Note: the exclusion of self-referential copies is just an
-            --  optimization, since the search of the already copied list
-            --  would catch it, but it is a common case (Etype pointing to
-            --  itself for an Itype that is a base type).
+                  --  Itypes are always visited
 
-            elsif Nkind (Node_Id (F)) in N_Entity
-              and then Is_Itype (Entity_Id (F))
-              and then Node_Id (F) /= N
-            then
-               declare
-                  P : Node_Id;
+                  if Is_Itype (N) then
+                     Visit_Itype (N);
 
-               begin
-                  P := Associated_Node_For_Itype (Node_Id (F));
-                  while Present (P) loop
-                     if P = Source then
-                        Visit_Node (Node_Id (F));
-                        return;
-                     else
-                        P := Parent (P);
-                     end if;
-                  end loop;
+                  --  An entity is visited when it is either a syntactic field
+                  --  or when the caller treats it as a semantic attribute.
 
-                  --  An Itype whose parent is not being copied definitely
-                  --  should NOT be copied, since it does not belong in any
-                  --  sense to the copied subtree.
+                  elsif Parent (N) = Par_Nod or else Semantic then
+                     Visit_Entity (N);
+                  end if;
 
-                  return;
-               end;
-            end if;
+               --  The field is a node
 
-         elsif F in List_Range and then Parent (List_Id (F)) = N then
-            Visit_List (List_Id (F));
-            return;
+               else
+                  --  A node is visited when it is either a syntactic field or
+                  --  when the caller treats it as a semantic attribute.
+
+                  if Parent (N) = Par_Nod or else Semantic then
+                     Visit_Node (N);
+                  end if;
+               end if;
+            end;
+
+         --  The field is an entity list
+
+         elsif Field in Elist_Range then
+            Visit_Elist (Elist_Id (Field));
+
+         --  The field is a syntax list
+
+         elsif Field in List_Range then
+            declare
+               List : constant List_Id := List_Id (Field);
+
+            begin
+               --  A syntax list is visited when it is either a syntactic field
+               --  or when the caller treats it as a semantic attribute.
+
+               if Parent (List) = Par_Nod or else Semantic then
+                  Visit_List (List);
+               end if;
+            end;
+
+         --  Otherwise the field denotes information which does not need to be
+         --  visited (chars, literals, etc.).
+
+         else
+            null;
          end if;
       end Visit_Field;
 
@@ -17994,110 +18440,139 @@ package body Sem_Util is
       -- Visit_Itype --
       -----------------
 
-      procedure Visit_Itype (Old_Itype : Entity_Id) is
+      procedure Visit_Itype (Itype : Entity_Id) is
+         New_Assoc : Node_Id;
          New_Itype : Entity_Id;
-         Ent       : Entity_Id;
+         Old_Assoc : Node_Id;
 
       begin
+         pragma Assert (Nkind (Itype) in N_Entity);
+         pragma Assert (Is_Itype (Itype));
+
          --  Itypes that describe the designated type of access to subprograms
          --  have the structure of subprogram declarations, with signatures,
          --  etc. Either we duplicate the signatures completely, or choose to
          --  share such itypes, which is fine because their elaboration will
          --  have no side effects.
 
-         if Ekind (Old_Itype) = E_Subprogram_Type then
+         if Ekind (Itype) = E_Subprogram_Type then
+            return;
+
+         --  Nothing to do if the itype was already visited
+
+         elsif NCT_Tables_In_Use
+           and then Present (NCT_New_Entities.Get (Itype))
+         then
+            return;
+
+         --  Nothing to do if the associated node of the itype is not within
+         --  the subtree being replicated.
+
+         elsif not In_Subtree
+                     (Root => Source,
+                      N    => Associated_Node_For_Itype (Itype))
+         then
             return;
          end if;
 
-         New_Itype := New_Copy (Old_Itype);
+         --  Create a new itype by directly copying the old itype. This action
+         --  causes all attributes of the old itype to be inherited.
 
-         --  The new Itype has all the attributes of the old one, and we
-         --  just copy the contents of the entity. However, the back-end
-         --  needs different names for debugging purposes, so we create a
-         --  new internal name for it in all cases.
+         New_Itype := New_Copy (Itype);
+
+         --  Create a new name for the new itype because the back end requires
+         --  distinct names for debugging purposes.
 
          Set_Chars (New_Itype, New_Internal_Name ('T'));
 
-         --  If our associated node is an entity that has already been copied,
-         --  then set the associated node of the copy to point to the right
-         --  copy. If we have copied an Itype that is itself the associated
-         --  node of some previously copied Itype, then we set the right
-         --  pointer in the other direction.
+         --  Update the Comes_From_Source and Sloc attributes of the itype in
+         --  case the caller has supplied new values.
 
-         Ent := NCT_Assoc.Get (Associated_Node_For_Itype (Old_Itype));
+         Update_CFS_Sloc (New_Itype);
 
-         if Present (Ent) then
-            Set_Associated_Node_For_Itype (New_Itype, Ent);
-         end if;
+         --  Establish the following mapping within table NCT_New_Entities:
 
-         Ent := NCT_Itype_Assoc.Get (Old_Itype);
+         --    Itype -> New_Itype
 
-         if Present (Ent) then
-            Set_Associated_Node_For_Itype (Ent, New_Itype);
+         Add_New_Entity (Itype, New_Itype);
 
-         --  If the hash table has no association for this Itype and its
-         --  associated node, enter one now.
-
-         else
-            NCT_Itype_Assoc.Set
-              (Associated_Node_For_Itype (Old_Itype), New_Itype);
-         end if;
+         --  The new itype must be unfrozen because the resulting subtree may
+         --  be inserted anywhere and cause an earlier or later freezing.
 
          if Present (Freeze_Node (New_Itype)) then
-            Set_Is_Frozen (New_Itype, False);
             Set_Freeze_Node (New_Itype, Empty);
+            Set_Is_Frozen   (New_Itype, False);
          end if;
-
-         --  Add new association to map
-
-         NCT_Assoc.Set (Old_Itype, New_Itype);
-         NCT_Hash_Tables_Used := True;
 
          --  If a record subtype is simply copied, the entity list will be
          --  shared. Thus cloned_Subtype must be set to indicate the sharing.
+         --  ??? What does this do?
 
-         if Ekind_In (Old_Itype, E_Class_Wide_Subtype, E_Record_Subtype) then
-            Set_Cloned_Subtype (New_Itype, Old_Itype);
+         if Ekind_In (Itype, E_Class_Wide_Subtype, E_Record_Subtype) then
+            Set_Cloned_Subtype (New_Itype, Itype);
          end if;
 
-         --  Visit descendants that eventually get copied
+         --  The associated node may denote an entity, in which case it may
+         --  already have a new corresponding entity created during a prior
+         --  call to Visit_Entity or Visit_Itype for the same subtree.
 
-         Visit_Field (Union_Id (Etype (Old_Itype)), Old_Itype);
+         --    Given
+         --       Old_Assoc ---------> New_Assoc
 
-         if Is_Discrete_Type (Old_Itype) then
-            Visit_Field (Union_Id (Scalar_Range (Old_Itype)), Old_Itype);
+         --    Created by Visit_Itype
+         --       Itype -------------> New_Itype
+         --       ANFI = Old_Assoc     ANFI = Old_Assoc  <  must be updated
 
-         elsif Has_Discriminants (Base_Type (Old_Itype)) then
-            --  ??? This should involve call to Visit_Field
-            Visit_Elist (Discriminant_Constraint (Old_Itype));
+         --  In the example above, Old_Assoc is an arbitrary entity that was
+         --  already visited for the same subtree and has a corresponding new
+         --  entity New_Assoc. Old_Assoc was inherited by New_Itype by virtue
+         --  of copying entities, however it must be updated to New_Assoc.
 
-         elsif Is_Array_Type (Old_Itype) then
-            if Present (First_Index (Old_Itype)) then
-               Visit_Field
-                 (Union_Id (List_Containing (First_Index (Old_Itype))),
-                  Old_Itype);
+         Old_Assoc := Associated_Node_For_Itype (Itype);
+
+         if Nkind (Old_Assoc) in N_Entity then
+            if NCT_Tables_In_Use then
+               New_Assoc := NCT_New_Entities.Get (Old_Assoc);
+
+               if Present (New_Assoc) then
+                  Set_Associated_Node_For_Itype (New_Itype, New_Assoc);
+               end if;
             end if;
 
-            if Is_Packed (Old_Itype) then
-               Visit_Field
-                 (Union_Id (Packed_Array_Impl_Type (Old_Itype)), Old_Itype);
-            end if;
+         --  Otherwise the associated node denotes a node. Postpone the update
+         --  until Phase 2 when the node is replicated. Establish the following
+         --  mapping within table NCT_Pending_Itypes:
+
+         --    Old_Assoc -> (New_Type, ...)
+
+         else
+            Add_Pending_Itype (Old_Assoc, New_Itype);
          end if;
+
+         --  Deal with the semantic fields of itypes. The fields are visited
+         --  because they may mention entities that reside within the subtree
+         --  being copied.
+
+         Visit_Semantic_Fields (Itype);
       end Visit_Itype;
 
       ----------------
       -- Visit_List --
       ----------------
 
-      procedure Visit_List (L : List_Id) is
-         N : Node_Id;
-      begin
-         if L /= No_List then
-            N := First (L);
+      procedure Visit_List (List : List_Id) is
+         Elmt : Node_Id;
 
-            while Present (N) loop
-               Visit_Node (N);
-               Next (N);
+      begin
+         --  Note that the element of a syntactic list is always a node, never
+         --  an entity or itype, hence the call to Visit_Node.
+
+         if Present (List) then
+            Elmt := First (List);
+            while Present (Elmt) loop
+               Visit_Node (Elmt);
+
+               Next (Elmt);
             end loop;
          end if;
       end Visit_List;
@@ -18108,6 +18583,8 @@ package body Sem_Util is
 
       procedure Visit_Node (N : Node_Or_Entity_Id) is
       begin
+         pragma Assert (Nkind (N) not in N_Entity);
+
          if Nkind (N) = N_Expression_With_Actions then
             EWA_Level := EWA_Level + 1;
 
@@ -18117,41 +18594,27 @@ package body Sem_Util is
                                  N_Subprogram_Declaration)
          then
             EWA_Inner_Scope_Level := EWA_Inner_Scope_Level + 1;
-
-         --  Handle case of an Itype, which must be copied
-
-         elsif Nkind (N) in N_Entity and then Is_Itype (N) then
-
-            --  Nothing to do if already in the list. This can happen with an
-            --  Itype entity that appears more than once in the tree. Note that
-            --  we do not want to visit descendants in this case.
-
-            if Present (NCT_Assoc.Get (Entity_Id (N))) then
-               return;
-            end if;
-
-            Visit_Itype (N);
-
-         --  Handle defining entities in Expression_With_Action nodes
-
-         elsif Nkind (N) in N_Entity and then EWA_Level > 0 then
-
-            --  Nothing to do if already in the hash table
-
-            if Present (NCT_Assoc.Get (Entity_Id (N))) then
-               return;
-            end if;
-
-            Visit_Entity (N);
          end if;
 
-         --  Visit descendants
+         Visit_Field
+          (Field   => Field1 (N),
+           Par_Nod => N);
 
-         Visit_Field (Field1 (N), N);
-         Visit_Field (Field2 (N), N);
-         Visit_Field (Field3 (N), N);
-         Visit_Field (Field4 (N), N);
-         Visit_Field (Field5 (N), N);
+         Visit_Field
+          (Field   => Field2 (N),
+           Par_Nod => N);
+
+         Visit_Field
+          (Field   => Field3 (N),
+           Par_Nod => N);
+
+         Visit_Field
+          (Field   => Field4 (N),
+           Par_Nod => N);
+
+         Visit_Field
+          (Field   => Field5 (N),
+           Par_Nod => N);
 
          if EWA_Level > 0
            and then Nkind_In (N, N_Block_Statement,
@@ -18165,57 +18628,171 @@ package body Sem_Util is
          end if;
       end Visit_Node;
 
+      ---------------------------
+      -- Visit_Semantic_Fields --
+      ---------------------------
+
+      procedure Visit_Semantic_Fields (Id : Entity_Id) is
+      begin
+         pragma Assert (Nkind (Id) in N_Entity);
+
+         --  Discriminant_Constraint
+
+         if Has_Discriminants (Base_Type (Id)) then
+            Visit_Field
+              (Field    => Union_Id (Discriminant_Constraint (Id)),
+               Semantic => True);
+         end if;
+
+         --  Etype
+
+         Visit_Field
+           (Field    => Union_Id (Etype (Id)),
+            Semantic => True);
+
+         --  First_Index
+         --  Packed_Array_Impl_Type
+
+         if Is_Array_Type (Id) then
+            if Present (First_Index (Id)) then
+               Visit_Field
+                 (Field    => Union_Id (List_Containing (First_Index (Id))),
+                  Semantic => True);
+            end if;
+
+            if Is_Packed (Id) then
+               Visit_Field
+                 (Field    => Union_Id (Packed_Array_Impl_Type (Id)),
+                  Semantic => True);
+            end if;
+         end if;
+
+         --  Scalar_Range
+
+         if Is_Discrete_Type (Id) then
+            Visit_Field
+              (Field    => Union_Id (Scalar_Range (Id)),
+               Semantic => True);
+         end if;
+      end Visit_Semantic_Fields;
+
    --  Start of processing for New_Copy_Tree
 
    begin
-      Build_NCT_Hash_Tables;
+      --  Routine New_Copy_Tree performs a deep copy of a subtree by creating
+      --  shallow copies for each node within, and then updating the child and
+      --  parent pointers accordingly. This process is straightforward, however
+      --  the routine must deal with the following complications:
 
-      --  Hash table set up if required, now start phase one by visiting top
-      --  node (we will recursively visit the descendants).
+      --    * Entities defined within N_Expression_With_Actions nodes must be
+      --      replicated rather than shared to avoid introducing two identical
+      --      symbols within the same scope. Note that no other expression can
+      --      currently define entities.
 
-      Visit_Node (Source);
+      --        do
+      --           Source_Low  : ...;
+      --           Source_High : ...;
 
-      --  Now the second phase of the copy can start. First we process all the
-      --  mapped entities, copying their descendants.
+      --           <reference to Source_Low>
+      --           <reference to Source_High>
+      --        in ... end;
 
-      if NCT_Hash_Tables_Used then
-         declare
-            Old_E : Entity_Id := Empty;
-            New_E : Entity_Id;
+      --      New_Copy_Tree handles this case by first creating new entities
+      --      and then updating all existing references to point to these new
+      --      entities.
 
-         begin
-            NCT_Assoc.Get_First (Old_E, New_E);
-            while Present (New_E) loop
+      --        do
+      --           New_Low  : ...;
+      --           New_High : ...;
 
-               --  Skip entities that were not created in the first phase
-               --  (that is, old entities specified by the caller in the set of
-               --  mappings to be applied to the tree).
+      --           <reference to New_Low>
+      --           <reference to New_High>
+      --        in ... end;
 
-               if Is_Itype (New_E)
-                 or else No (Map)
-                 or else not In_Map (Old_E)
-               then
-                  Copy_Entity_With_Replacement (New_E);
-               end if;
+      --    * Itypes defined within the subtree must be replicated to avoid any
+      --      dependencies on invalid or inaccessible data.
 
-               NCT_Assoc.Get_Next (Old_E, New_E);
-            end loop;
-         end;
-      end if;
+      --        subtype Source_Itype is ... range Source_Low .. Source_High;
 
-      --  Now we can copy the actual tree
+      --      New_Copy_Tree handles this case by first creating a new itype in
+      --      the same fashion as entities, and then updating various relevant
+      --      constraints.
 
-      declare
-         Result : constant Node_Id := Copy_Node_With_Replacement (Source);
+      --        subtype New_Itype is ... range New_Low .. New_High;
 
-      begin
-         if NCT_Hash_Tables_Used then
-            NCT_Assoc.Reset;
-            NCT_Itype_Assoc.Reset;
-         end if;
+      --    * The Associated_Node_For_Itype field of itypes must be updated to
+      --      reference the proper replicated entity or node.
 
-         return Result;
-      end;
+      --    * Semantic fields of entities such as Etype and Scope must be
+      --      updated to reference the proper replicated entities.
+
+      --    * Semantic fields of nodes such as First_Real_Statement must be
+      --      updated to reference the proper replicated nodes.
+
+      --  To meet all these demands, routine New_Copy_Tree is split into two
+      --  phases.
+
+      --  Phase 1 traverses the tree in order to locate entities and itypes
+      --  defined within the subtree. New entities are generated and saved in
+      --  table NCT_New_Entities. The semantic fields of all new entities and
+      --  itypes are then updated accordingly.
+
+      --  Phase 2 traverses the tree in order to replicate each node. Various
+      --  semantic fields of nodes and entities are updated accordingly.
+
+      --  Preparatory phase. Clear the contents of tables NCT_New_Entities and
+      --  NCT_Pending_Itypes in case a previous call to New_Copy_Tree left some
+      --  data inside.
+
+      NCT_New_Entities.Reset;
+      NCT_Pending_Itypes.Reset;
+
+      --  Populate tables NCT_New_Entities and NCT_Pending_Itypes with data
+      --  supplied by a linear entity map. The tables offer faster access to
+      --  the same data.
+
+      Build_NCT_Tables (Map);
+
+      --  Execute Phase 1. Traverse the subtree and generate new entities for
+      --  the following cases:
+
+      --    * An entity defined within an N_Expression_With_Actions node
+
+      --    * An itype referenced within the subtree where the associated node
+      --      is also in the subtree.
+
+      --  All new entities are accessible via table NCT_New_Entities, which
+      --  contains mappings of the form:
+
+      --    Old_Entity -> New_Entity
+      --    Old_Itype  -> New_Itype
+
+      --  In addition, the associated nodes of all new itypes are mapped in
+      --  table NCT_Pending_Itypes:
+
+      --    Assoc_Nod -> (New_Itype1, New_Itype2, .., New_ItypeN)
+
+      Visit_Any_Node (Source);
+
+      --  Update the semantic attributes of all new entities generated during
+      --  Phase 1 before starting Phase 2. The updates could be performed in
+      --  routine Corresponding_Entity, however this may cause the same entity
+      --  to be updated multiple times, effectively generating useless nodes.
+      --  Keeping the updates separates from Phase 2 ensures that only one set
+      --  of attributes is generated for an entity at any one time.
+
+      Update_New_Entities (Map);
+
+      --  Execute Phase 2. Replicate the source subtree one node at a time.
+      --  The following transformations take place:
+
+      --    * References to entities and itypes are updated to refer to the
+      --      new entities and itypes generated during Phase 1.
+
+      --    * All Associated_Node_For_Itype attributes of itypes are updated
+      --      to refer to the new replicated Associated_Node_For_Itype.
+
+      return Copy_Node_With_Replacement (Source);
    end New_Copy_Tree;
 
    -------------------------

@@ -1268,7 +1268,19 @@ package body Switch.C is
                         Bad_Switch ("-gnatw." & Switch_Chars (Ptr .. Max));
                      end if;
 
-                     --  Normal case, no dot
+                  --  Case of underscore switch
+
+                  elsif C = '_' and then Ptr < Max then
+                     Ptr := Ptr + 1;
+                     C := Switch_Chars (Ptr);
+
+                     if Set_Underscore_Warning_Switch (C) then
+                        Store_Compilation_Switch ("-gnatw_" & C);
+                     else
+                        Bad_Switch ("-gnatw_" & Switch_Chars (Ptr .. Max));
+                     end if;
+
+                  --  Normal case, no dot
 
                   else
                      if Set_Warning_Switch (C) then

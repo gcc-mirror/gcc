@@ -549,6 +549,10 @@ begin
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
+   Write_Line ("        .q+  turn on warnings for questionable layout of " &
+                                                  "record types");
+   Write_Line ("        .Q*  turn off warnings for questionable layout of " &
+                                                  "record types");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");

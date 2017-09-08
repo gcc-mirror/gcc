@@ -1371,6 +1371,9 @@ package Sem_Util is
    --  appearing anywhere within such a construct (that is it does not need
    --  to be directly within).
 
+   function In_Subtree (Root : Node_Id; N : Node_Id) return Boolean;
+   --  Determine whether node N is within the subtree rooted at Root
+
    function In_Visible_Part (Scope_Id : Entity_Id) return Boolean;
    --  Determine whether a declaration occurs within the visible part of a
    --  package specification. The package must be on the scope stack, and the
@@ -2057,46 +2060,75 @@ package Sem_Util is
       Map       : Elist_Id   := No_Elist;
       New_Sloc  : Source_Ptr := No_Location;
       New_Scope : Entity_Id  := Empty) return Node_Id;
-   --  Given a node that is the root of a subtree, New_Copy_Tree copies the
-   --  entire syntactic subtree, including recursively any descendants whose
-   --  parent field references a copied node (descendants not linked to a
-   --  copied node by the parent field are not copied, instead the copied tree
-   --  references the same descendant as the original in this case, which is
-   --  appropriate for non-syntactic fields such as Etype). The parent pointers
-   --  in the copy are properly set. New_Copy_Tree (Empty/Error) returns
-   --  Empty/Error. The one exception to the rule of not copying semantic
-   --  fields is that any implicit types attached to the subtree are
-   --  duplicated, so that the copy contains a distinct set of implicit type
-   --  entities. Thus this function is used when it is necessary to duplicate
-   --  an analyzed tree, declared in the same or some other compilation unit.
-   --  This function is declared here rather than in atree because it uses
-   --  semantic information in particular concerning the structure of itypes
-   --  and the generation of public symbols.
-
-   --  The Map argument, if set to a non-empty Elist, specifies a set of
-   --  mappings to be applied to entities in the tree. The map has the form:
+   --  Perform a deep copy of the subtree rooted at Source. Entities, itypes,
+   --  and nodes are handled separately as follows:
    --
-   --     old entity 1
-   --     new entity to replace references to entity 1
-   --     old entity 2
-   --     new entity to replace references to entity 2
-   --     ...
+   --    * A node is replicated by first creating a shallow copy, then copying
+   --      its syntactic fields, where all Parent pointers of the fields are
+   --      updated to refer to the copy. In addition, the following semantic
+   --      fields are recreated after the replication takes place.
    --
-   --  The call destroys the contents of Map in this case
+   --        First_Named_Actual
+   --        First_Real_Statement
+   --        Next_Named_Actual
    --
-   --  The parameter New_Sloc, if set to a value other than No_Location, is
-   --  used as the Sloc value for all nodes in the new copy. If New_Sloc is
-   --  set to its default value No_Location, then the Sloc values of the
-   --  nodes in the copy are simply copied from the corresponding original.
+   --      If applicable, the Etype field (if any) is updated to refer to a
+   --      local itype or type (see below).
    --
-   --  The Comes_From_Source indication is unchanged if New_Sloc is set to
-   --  the default No_Location value, but is reset if New_Sloc is given, since
-   --  in this case the result clearly is neither a source node or an exact
-   --  copy of a source node.
+   --    * An entity defined within an N_Expression_With_Actions node in the
+   --      subtree is given a new entity, and all references to the original
+   --      entity are updated to refer to the new entity. In addition, the
+   --      following semantic fields are replicated and/or updated to refer
+   --      to a local entity or itype.
    --
-   --  The parameter New_Scope, if set to a value other than Empty, is the
-   --  value to use as the Scope for any Itypes that are copied. The most
-   --  typical value for this parameter, if given, is Current_Scope.
+   --        Discriminant_Constraint
+   --        Etype
+   --        First_Index
+   --        Next_Entity
+   --        Packed_Array_Impl_Type
+   --        Scalar_Range
+   --        Scope
+   --
+   --      Note that currently no other expression can define entities.
+   --
+   --    * An itype whose Associated_Node_For_Itype node is in the subtree
+   --      is given a new entity, and all references to the original itype
+   --      are updated to refer to the new itype. In addition, the following
+   --      semantic fields are replicated and/or updated to refer to a local
+   --      entity or itype.
+   --
+   --        Discriminant_Constraint
+   --        Etype
+   --        First_Index
+   --        Next_Entity
+   --        Packed_Array_Impl_Type
+   --        Scalar_Range
+   --        Scope
+   --
+   --      The Associated_Node_For_Itype is updated to refer to a replicated
+   --      node.
+   --
+   --  The routine can replicate both analyzed and unanalyzed trees. Copying an
+   --  Empty or Error node yields the same node.
+   --
+   --  Parameter Map may be used to specify a set of mappings between entities.
+   --  These mappings are then taken into account when replicating entities.
+   --  The format of Map must be as follows:
+   --
+   --    old entity 1
+   --    new entity to replace references to entity 1
+   --    old entity 2
+   --    new entity to replace references to entity 2
+   --    ...
+   --
+   --  Map and its contents are left unchanged.
+   --
+   --  Parameter New_Sloc may be used to specify a new source location for all
+   --  replicated entities, itypes, and nodes. The Comes_From_Source indicator
+   --  is defaulted if a new source location is provided.
+   --
+   --  Parameter New_Scope may be used to specify a new scope for all copied
+   --  entities and itypes.
 
    function New_External_Entity
      (Kind         : Entity_Kind;
@@ -2177,7 +2209,7 @@ package Sem_Util is
    --  allowed as actuals for this function.
 
    function Original_Aspect_Pragma_Name (N : Node_Id) return Name_Id;
-   --  Retrieve the name of aspect or pragma N taking into account a possible
+   --  Retrieve the name of aspect or pragma N, taking into account a possible
    --  rewrite and whether the pragma is generated from an aspect as the names
    --  may be different. The routine also deals with 'Class in which case it
    --  returns the following values:

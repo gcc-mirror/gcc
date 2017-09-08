@@ -394,7 +394,7 @@ begin
       begin
          --  Check if an argument file is specified
 
-         if The_Arg (The_Arg'First) = '@' then
+         if The_Arg'Length > 0 and then The_Arg (The_Arg'First) = '@' then
             declare
                Arg_File : Ada.Text_IO.File_Type;
                Line     : String (1 .. 256);
@@ -432,7 +432,7 @@ begin
                Close (Arg_File);
             end;
 
-         else
+         elsif The_Arg'Length > 0 then
             --  It is not an argument file; just put the argument in
             --  the Last_Switches table.
 

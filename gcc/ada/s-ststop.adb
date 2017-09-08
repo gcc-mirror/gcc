@@ -133,9 +133,10 @@ package body System.Strings.Stream_Ops is
          Max_Length : Long_Integer := Long_Integer'Last) return Array_Type
       is
          pragma Unsuppress (All_Checks);
-         --  To make T'Class'Input robust in the case of bad data. The
+         --  The above makes T'Class'Input robust in the case of bad data. The
          --  declaration of Item below could raise Storage_Error if the length
-         --  is huge.
+         --  is too big.
+
       begin
          if Strm = null then
             raise Constraint_Error;
