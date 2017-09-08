@@ -37,31 +37,31 @@ the unit is not implemented.
 
 
 ``Ada.Assertions`` *(11.4.2)*
-  `Assertions` provides the `Assert` subprograms, and also
-  the declaration of the `Assertion_Error` exception.
+  ``Assertions`` provides the ``Assert`` subprograms, and also
+  the declaration of the ``Assertion_Error`` exception.
 
 
 ``Ada.Asynchronous_Task_Control`` *(D.11)*
-  `Asynchronous_Task_Control` provides low level facilities for task
+  ``Asynchronous_Task_Control`` provides low level facilities for task
   synchronization. It is typically not implemented. See package spec for details.
 
 
 ``Ada.Calendar`` *(9.6)*
-  `Calendar` provides time of day access, and routines for
+  ``Calendar`` provides time of day access, and routines for
   manipulating times and durations.
 
 
 ``Ada.Calendar.Arithmetic`` *(9.6.1)*
   This package provides additional arithmetic
-  operations for `Calendar`.
+  operations for ``Calendar``.
 
 
 ``Ada.Calendar.Formatting`` *(9.6.1)*
-  This package provides formatting operations for `Calendar`.
+  This package provides formatting operations for ``Calendar``.
 
 
 ``Ada.Calendar.Time_Zones`` *(9.6.1)*
-  This package provides additional `Calendar` facilities
+  This package provides additional ``Calendar`` facilities
   for handling time zones.
 
 
@@ -84,14 +84,14 @@ the unit is not implemented.
   that appear in type CHARACTER.  It is useful for writing programs that
   will run in international environments.  For example, if you want an
   upper case E with an acute accent in a string, it is often better to use
-  the definition of `UC_E_Acute` in this package.  Then your program
+  the definition of ``UC_E_Acute`` in this package.  Then your program
   will print in an understandable manner even if your environment does not
   support these extended characters.
 
 
 ``Ada.Command_Line`` *(A.15)*
   This package provides access to the command line parameters and the name
-  of the current program (analogous to the use of `argc` and `argv`
+  of the current program (analogous to the use of ``argc`` and ``argv``
   in C), and also allows the exit status for the program to be set in a
   system-independent manner.
 
@@ -272,7 +272,9 @@ the unit is not implemented.
 
 ``Ada.Locales`` *(A.19)*
   This package provides declarations providing information (Language
-  and Country) about the current locale.
+  and Country) about the current locale. This package is currently not
+  implemented other than by providing stubs which will always return
+  Language_Unknown/Country_Unknown.
 
 
 ``Ada.Numerics``
@@ -289,14 +291,14 @@ the unit is not implemented.
 ``Ada.Numerics.Complex_Elementary_Functions``
   Provides the implementation of standard elementary functions (such as
   log and trigonometric functions) operating on complex numbers using the
-  standard `Float` and the `Complex` and `Imaginary` types
-  created by the package `Numerics.Complex_Types`.
+  standard ``Float`` and the ``Complex`` and ``Imaginary`` types
+  created by the package ``Numerics.Complex_Types``.
 
 
 ``Ada.Numerics.Complex_Types``
   This is a predefined instantiation of
-  `Numerics.Generic_Complex_Types` using `Standard.Float` to
-  build the type `Complex` and `Imaginary`.
+  ``Numerics.Generic_Complex_Types`` using ``Standard.Float`` to
+  build the type ``Complex`` and ``Imaginary``.
 
 
 ``Ada.Numerics.Discrete_Random``
@@ -318,15 +320,15 @@ the unit is not implemented.
 
   * ``Short_Float``
 
-    `Ada.Numerics.Short_Complex_Elementary_Functions`
+    ``Ada.Numerics.Short_Complex_Elementary_Functions``
 
   * ``Float``
 
-    `Ada.Numerics.Complex_Elementary_Functions`
+    ``Ada.Numerics.Complex_Elementary_Functions``
 
   * ``Long_Float``
 
-    `Ada.Numerics.Long_Complex_Elementary_Functions`
+    ``Ada.Numerics.Long_Complex_Elementary_Functions``
 
 ``Ada.Numerics.Generic_Complex_Types``
   This is a generic package that allows the creation of complex types,
@@ -336,15 +338,15 @@ the unit is not implemented.
 
   * ``Short_Float``
 
-    `Ada.Numerics.Short_Complex_Complex_Types`
+    ``Ada.Numerics.Short_Complex_Complex_Types``
 
   * ``Float``
 
-    `Ada.Numerics.Complex_Complex_Types`
+    ``Ada.Numerics.Complex_Complex_Types``
 
   * ``Long_Float``
 
-    `Ada.Numerics.Long_Complex_Complex_Types`
+    ``Ada.Numerics.Long_Complex_Complex_Types``
 
 ``Ada.Numerics.Generic_Elementary_Functions``
   This is a generic package that provides the implementation of standard
@@ -355,15 +357,15 @@ the unit is not implemented.
 
   * ``Short_Float``
 
-    `Ada.Numerics.Short_Elementary_Functions`
+    ``Ada.Numerics.Short_Elementary_Functions``
 
   * ``Float``
 
-    `Ada.Numerics.Elementary_Functions`
+    ``Ada.Numerics.Elementary_Functions``
 
   * ``Long_Float``
 
-    `Ada.Numerics.Long_Elementary_Functions`
+    ``Ada.Numerics.Long_Elementary_Functions``
 
 ``Ada.Numerics.Generic_Real_Arrays`` *(G.3.1)*
   Generic operations on arrays of reals
@@ -372,7 +374,7 @@ the unit is not implemented.
   Preinstantiation of Ada.Numerics.Generic_Real_Arrays (Float).
 
 ``Ada.Real_Time`` *(D.8)*
-  This package provides facilities similar to those of `Calendar`, but
+  This package provides facilities similar to those of ``Calendar``, but
   operating with a finer clock suitable for real time control. Note that
   annex D requires that there be no backward clock jumps, and GNAT generally
   guarantees this behavior, but of course if the external clock on which
@@ -394,12 +396,12 @@ the unit is not implemented.
 
 ``Ada.Streams`` *(13.13.1)*
   This is a generic package that provides the basic support for the
-  concept of streams as used by the stream attributes (`Input`,
-  `Output`, `Read` and `Write`).
+  concept of streams as used by the stream attributes (``Input``,
+  ``Output``, ``Read`` and ``Write``).
 
 ``Ada.Streams.Stream_IO`` *(A.12.1)*
-  This package is a specialization of the type `Streams` defined in
-  package `Streams` together with a set of operations providing
+  This package is a specialization of the type ``Streams`` defined in
+  package ``Streams`` together with a set of operations providing
   Stream_IO capability.  The Stream_IO model permits both random and
   sequential access to a file which can contain an arbitrary set of values
   of one or more Ada types.
@@ -511,8 +513,8 @@ the unit is not implemented.
 ``Ada.Strings.Wide_Unbounded`` *(A.4.7)*
   These packages provide analogous capabilities to the corresponding
   packages without ``Wide_`` in the name, but operate with the types
-  `Wide_String` and `Wide_Character` instead of `String`
-  and `Character`. Versions of all the child packages are available.
+  ``Wide_String`` and ``Wide_Character`` instead of ``String``
+  and ``Character``. Versions of all the child packages are available.
 
 ``Ada.Strings.Wide_Wide_Bounded`` *(A.4.7)*
 
@@ -523,8 +525,8 @@ the unit is not implemented.
 ``Ada.Strings.Wide_Wide_Unbounded`` *(A.4.7)*
   These packages provide analogous capabilities to the corresponding
   packages without ``Wide_`` in the name, but operate with the types
-  `Wide_Wide_String` and `Wide_Wide_Character` instead
-  of `String` and `Character`.
+  ``Wide_Wide_String`` and ``Wide_Wide_Character`` instead
+  of ``String`` and ``Character``.
 
 ``Ada.Synchronous_Barriers`` *(D.10.1)*
   This package provides facilities for synchronizing tasks at a low level
@@ -578,15 +580,15 @@ the unit is not implemented.
 
   * ``Short_Float``
 
-    `Short_Float_Text_IO`
+    ``Short_Float_Text_IO``
 
   * ``Float``
 
-    `Float_Text_IO`
+    ``Float_Text_IO``
 
   * ``Long_Float``
 
-    `Long_Float_Text_IO`
+    ``Long_Float_Text_IO``
 
 ``Ada.Text_IO.Integer_IO``
   Provides input-output facilities for integer types.  The following
@@ -594,23 +596,23 @@ the unit is not implemented.
 
   * ``Short_Short_Integer``
 
-    `Ada.Short_Short_Integer_Text_IO`
+    ``Ada.Short_Short_Integer_Text_IO``
 
   * ``Short_Integer``
 
-    `Ada.Short_Integer_Text_IO`
+    ``Ada.Short_Integer_Text_IO``
 
   * ``Integer``
 
-    `Ada.Integer_Text_IO`
+    ``Ada.Integer_Text_IO``
 
   * ``Long_Integer``
 
-    `Ada.Long_Integer_Text_IO`
+    ``Ada.Long_Integer_Text_IO``
 
   * ``Long_Long_Integer``
 
-    `Ada.Long_Long_Integer_Text_IO`
+    ``Ada.Long_Long_Integer_Text_IO``
 
 ``Ada.Text_IO.Modular_IO``
   Provides input-output facilities for modular (unsigned) types.
@@ -691,17 +693,17 @@ the unit is not implemented.
   allocated by use of an allocator.
 
 ``Ada.Wide_Text_IO`` *(A.11)*
-  This package is similar to `Ada.Text_IO`, except that the external
+  This package is similar to ``Ada.Text_IO``, except that the external
   file supports wide character representations, and the internal types are
-  `Wide_Character` and `Wide_String` instead of `Character`
-  and `String`. The corresponding set of nested packages and child
+  ``Wide_Character`` and ``Wide_String`` instead of ``Character``
+  and ``String``. The corresponding set of nested packages and child
   packages are defined.
 
 ``Ada.Wide_Wide_Text_IO`` *(A.11)*
-  This package is similar to `Ada.Text_IO`, except that the external
+  This package is similar to ``Ada.Text_IO``, except that the external
   file supports wide character representations, and the internal types are
-  `Wide_Character` and `Wide_String` instead of `Character`
-  and `String`. The corresponding set of nested packages and child
+  ``Wide_Character`` and ``Wide_String`` instead of ``Character``
+  and ``String``. The corresponding set of nested packages and child
   packages are defined.
 
 For packages in Interfaces and System, all the RM defined packages are

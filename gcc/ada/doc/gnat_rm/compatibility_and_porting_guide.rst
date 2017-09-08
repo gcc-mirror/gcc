@@ -16,7 +16,7 @@ Writing Portable Fixed-Point Declarations
 =========================================
 
 The Ada Reference Manual gives an implementation freedom to choose bounds
-that are narrower by `Small` from the given bounds.
+that are narrower by ``Small`` from the given bounds.
 For example, if we write
 
 .. code-block:: ada
@@ -31,7 +31,7 @@ look at this, and figure out how to avoid these problems.
 
 First, why does this freedom exist, and why would an implementation
 take advantage of it? To answer this, take a closer look at the type
-declaration for `F1` above. If the compiler uses the given bounds,
+declaration for ``F1`` above. If the compiler uses the given bounds,
 it would need 9 bits to hold the largest positive value (and typically
 that means 16 bits on all machines). But if the implementation chooses
 the +127.0 bound then it can fit values of the type in 8 bits.
@@ -67,7 +67,7 @@ We could imagine three types of implementation:
 (a) those that narrow the range automatically if they can figure
     out that the narrower range will allow storage in a smaller machine unit,
 
-(b) those that will narrow only if forced to by a `'Size` clause, and
+(b) those that will narrow only if forced to by a ``'Size`` clause, and
 
 (c) those that will never narrow.
 
@@ -90,9 +90,9 @@ and no real compiler would do this. All real compilers will fall into one of
 the categories (a), (b) or (c) above.
 
 So, how do you get the compiler to do what you want? The answer is give the
-actual bounds you want, and then use a `'Small` clause and a
-`'Size` clause to absolutely pin down what the compiler does.
-E.g., for `F2` above, we will write:
+actual bounds you want, and then use a ``'Small`` clause and a
+``'Size`` clause to absolutely pin down what the compiler does.
+E.g., for ``F2`` above, we will write:
 
 .. code-block:: ada
 
@@ -161,7 +161,7 @@ Ada 95 and later versions of the standard:
 * *Character literals*
 
   Some uses of character literals are ambiguous.  Since Ada 95 has introduced
-  `Wide_Character` as a new predefined character type, some uses of
+  ``Wide_Character`` as a new predefined character type, some uses of
   character literals that were legal in Ada 83 are illegal in Ada 95.
   For example:
 
@@ -170,7 +170,7 @@ Ada 95 and later versions of the standard:
        for Char in 'A' .. 'Z' loop ... end loop;
 
   The problem is that 'A' and 'Z' could be from either
-  `Character` or `Wide_Character`.  The simplest correction
+  ``Character`` or ``Wide_Character``.  The simplest correction
   is to make the type explicit; e.g.:
 
   .. code-block:: ada
@@ -179,8 +179,8 @@ Ada 95 and later versions of the standard:
 
 * *New reserved words*
 
-  The identifiers `abstract`, `aliased`, `protected`,
-  `requeue`, `tagged`, and `until` are reserved in Ada 95.
+  The identifiers ``abstract``, ``aliased``, ``protected``,
+  ``requeue``, ``tagged``, and ``until`` are reserved in Ada 95.
   Existing Ada 83 code using any of these identifiers must be edited to
   use some alternative name.
 
@@ -207,38 +207,38 @@ Ada 95 and later versions of the standard:
   body if it is empty, or, if it is non-empty, introduce a dummy declaration
   into the spec that makes the body required.  One approach is to add a private
   part to the package declaration (if necessary), and define a parameterless
-  procedure called `Requires_Body`, which must then be given a dummy
+  procedure called ``Requires_Body``, which must then be given a dummy
   procedure body in the package body, which then becomes required.
   Another approach (assuming that this does not introduce elaboration
-  circularities) is to add an `Elaborate_Body` pragma to the package spec,
+  circularities) is to add an ``Elaborate_Body`` pragma to the package spec,
   since one effect of this pragma is to require the presence of a package body.
 
 * *Numeric_Error is the same exception as Constraint_Error*
 
-  In Ada 95, the exception `Numeric_Error` is a renaming of `Constraint_Error`.
+  In Ada 95, the exception ``Numeric_Error`` is a renaming of ``Constraint_Error``.
   This means that it is illegal to have separate exception handlers for
   the two exceptions.  The fix is simply to remove the handler for the
-  `Numeric_Error` case (since even in Ada 83, a compiler was free to raise
-  `Constraint_Error` in place of `Numeric_Error` in all cases).
+  ``Numeric_Error`` case (since even in Ada 83, a compiler was free to raise
+  ``Constraint_Error`` in place of ``Numeric_Error`` in all cases).
 
 * *Indefinite subtypes in generics*
 
-  In Ada 83, it was permissible to pass an indefinite type (e.g, `String`)
+  In Ada 83, it was permissible to pass an indefinite type (e.g, ``String``)
   as the actual for a generic formal private type, but then the instantiation
   would be illegal if there were any instances of declarations of variables
   of this type in the generic body.  In Ada 95, to avoid this clear violation
   of the methodological principle known as the 'contract model',
   the generic declaration explicitly indicates whether
   or not such instantiations are permitted.  If a generic formal parameter
-  has explicit unknown discriminants, indicated by using `(<>)` after the
+  has explicit unknown discriminants, indicated by using ``(<>)`` after the
   subtype name, then it can be instantiated with indefinite types, but no
   stand-alone variables can be declared of this type.  Any attempt to declare
   such a variable will result in an illegality at the time the generic is
-  declared.  If the `(<>)` notation is not used, then it is illegal
+  declared.  If the ``(<>)`` notation is not used, then it is illegal
   to instantiate the generic with an indefinite type.
   This is the potential incompatibility issue when porting Ada 83 code to Ada 95.
   It will show up as a compile time error, and
-  the fix is usually simply to add the `(<>)` to the generic declaration.
+  the fix is usually simply to add the ``(<>)`` to the generic declaration.
 
 
 .. _More_deterministic_semantics:
@@ -273,21 +273,21 @@ The worst kind of incompatibility is one where a program that is legal in
 Ada 83 is also legal in Ada 95 but can have an effect in Ada 95 that was not
 possible in Ada 83.  Fortunately this is extremely rare, but the one
 situation that you should be alert to is the change in the predefined type
-`Character` from 7-bit ASCII to 8-bit Latin-1.
+``Character`` from 7-bit ASCII to 8-bit Latin-1.
 
     .. index:: Latin-1
 
-* *Range of type `Character`*
+* *Range of type ``Character``*
 
-  The range of `Standard.Character` is now the full 256 characters
+  The range of ``Standard.Character`` is now the full 256 characters
   of Latin-1, whereas in most Ada 83 implementations it was restricted
   to 128 characters. Although some of the effects of
   this change will be manifest in compile-time rejection of legal
   Ada 83 programs it is possible for a working Ada 83 program to have
   a different effect in Ada 95, one that was not permitted in Ada 83.
   As an example, the expression
-  `Character'Pos(Character'Last)` returned `127` in Ada 83 and now
-  delivers `255` as its value.
+  ``Character'Pos(Character'Last)`` returned ``127`` in Ada 83 and now
+  delivers ``255`` as its value.
   In general, you should look at the logic of any
   character-processing Ada 83 program and see whether it needs to be adapted
   to work correctly with Latin-1.  Note that the predefined Ada 95 API has a
@@ -313,7 +313,7 @@ Other language compatibility issues
   as identifiers as in Ada 83.  However,
   in practice, it is usually advisable to make the necessary modifications
   to the program to remove the need for using this switch.
-  See the `Compiling Different Versions of Ada` section in
+  See the ``Compiling Different Versions of Ada`` section in
   the :title:`GNAT User's Guide`.
 
 
@@ -324,8 +324,8 @@ Other language compatibility issues
   compilers are allowed, but not required, to implement these missing
   elements.  In contrast with some other compilers, GNAT implements all
   such pragmas and attributes, eliminating this compatibility concern.  These
-  include `pragma Interface` and the floating point type attributes
-  (`Emax`, `Mantissa`, etc.), among other items.
+  include ``pragma Interface`` and the floating point type attributes
+  (``Emax``, ``Mantissa``, etc.), among other items.
 
 
 .. _Compatibility_between_Ada_95_and_Ada_2005:
@@ -343,7 +343,7 @@ for a complete description please see the
 
 * *New reserved words.*
 
-  The words `interface`, `overriding` and `synchronized` are
+  The words ``interface``, ``overriding`` and ``synchronized`` are
   reserved in Ada 2005.
   A pre-Ada 2005 program that uses any of these as an identifier will be
   illegal.
@@ -351,12 +351,12 @@ for a complete description please see the
 * *New declarations in predefined packages.*
 
   A number of packages in the predefined environment contain new declarations:
-  `Ada.Exceptions`, `Ada.Real_Time`, `Ada.Strings`,
-  `Ada.Strings.Fixed`, `Ada.Strings.Bounded`,
-  `Ada.Strings.Unbounded`, `Ada.Strings.Wide_Fixed`,
-  `Ada.Strings.Wide_Bounded`, `Ada.Strings.Wide_Unbounded`,
-  `Ada.Tags`, `Ada.Text_IO`, and `Interfaces.C`.
-  If an Ada 95 program does a `with` and `use` of any of these
+  ``Ada.Exceptions``, ``Ada.Real_Time``, ``Ada.Strings``,
+  ``Ada.Strings.Fixed``, ``Ada.Strings.Bounded``,
+  ``Ada.Strings.Unbounded``, ``Ada.Strings.Wide_Fixed``,
+  ``Ada.Strings.Wide_Bounded``, ``Ada.Strings.Wide_Unbounded``,
+  ``Ada.Tags``, ``Ada.Text_IO``, and ``Interfaces.C``.
+  If an Ada 95 program does a ``with`` and ``use`` of any of these
   packages, the new declarations may cause name clashes.
 
 * *Access parameters.*
@@ -382,7 +382,7 @@ for a complete description please see the
   are now ambiguous.
   The ambiguity may be resolved either by applying a type conversion to the
   expression, or by explicitly invoking the operation from package
-  `Standard`.
+  ``Standard``.
 
 * *Return-by-reference types.*
 
@@ -411,17 +411,17 @@ Implementation-defined pragmas
 
 Ada compilers are allowed to supplement the language-defined pragmas, and
 these are a potential source of non-portability.  All GNAT-defined pragmas
-are described in the `Implementation Defined Pragmas` chapter of the
-:title:`GNAT Reference Manual`, and these include several that are specifically
+are described in :ref:`Implementation_Defined_Pragmas`,
+and these include several that are specifically
 intended to correspond to other vendors' Ada 83 pragmas.
-For migrating from VADS, the pragma `Use_VADS_Size` may be useful.
+For migrating from VADS, the pragma ``Use_VADS_Size`` may be useful.
 For compatibility with HP Ada 83, GNAT supplies the pragmas
-`Extend_System`, `Ident`, `Inline_Generic`,
-`Interface_Name`, `Passive`, `Suppress_All`,
-and `Volatile`.
-Other relevant pragmas include `External` and `Link_With`.
+``Extend_System``, ``Ident``, ``Inline_Generic``,
+``Interface_Name``, ``Passive``, ``Suppress_All``,
+and ``Volatile``.
+Other relevant pragmas include ``External`` and ``Link_With``.
 Some vendor-specific
-Ada 83 pragmas (`Share_Generic`, `Subtitle`, and `Title`) are
+Ada 83 pragmas (``Share_Generic``, ``Subtitle``, and ``Title``) are
 recognized, thus
 avoiding compiler rejection of units that contain such pragmas; they are not
 relevant in a GNAT context and hence are not otherwise implemented.
@@ -434,12 +434,12 @@ Implementation-defined attributes
 
 Analogous to pragmas, the set of attributes may be extended by an
 implementation.  All GNAT-defined attributes are described in
-`Implementation Defined Attributes` section of the
-:title:`GNAT Reference Manual`, and these include several that are specifically intended
+:ref:`Implementation_Defined_Attributes`,
+and these include several that are specifically intended
 to correspond to other vendors' Ada 83 attributes.  For migrating from VADS,
-the attribute `VADS_Size` may be useful.  For compatibility with HP
-Ada 83, GNAT supplies the attributes `Bit`, `Machine_Size` and
-`Type_Class`.
+the attribute ``VADS_Size`` may be useful.  For compatibility with HP
+Ada 83, GNAT supplies the attributes ``Bit``, ``Machine_Size`` and
+``Type_Class``.
 
 .. _Libraries:
 
@@ -474,11 +474,11 @@ Program_Error being raised due to an 'Access Before Elaboration': an attempt
 to invoke a subprogram before its body has been elaborated, or to instantiate
 a generic before the generic body has been elaborated.  By default GNAT
 attempts to choose a safe order (one that will not encounter access before
-elaboration problems) by implicitly inserting `Elaborate` or
-`Elaborate_All` pragmas where
+elaboration problems) by implicitly inserting ``Elaborate`` or
+``Elaborate_All`` pragmas where
 needed.  However, this can lead to the creation of elaboration circularities
 and a resulting rejection of the program by gnatbind.  This issue is
-thoroughly described in the `Elaboration Order Handling in GNAT` appendix
+thoroughly described in the *Elaboration Order Handling in GNAT* appendix
 in the :title:`GNAT User's Guide`.
 In brief, there are several
 ways to deal with this situation:
@@ -486,12 +486,12 @@ ways to deal with this situation:
 * Modify the program to eliminate the circularities, e.g., by moving
   elaboration-time code into explicitly-invoked procedures
 
-* Constrain the elaboration order by including explicit `Elaborate_Body` or
-  `Elaborate` pragmas, and then inhibit the generation of implicit
-  `Elaborate_All`
+* Constrain the elaboration order by including explicit ``Elaborate_Body`` or
+  ``Elaborate`` pragmas, and then inhibit the generation of implicit
+  ``Elaborate_All``
   pragmas either globally (as an effect of the *-gnatE* switch) or locally
   (by selectively suppressing elaboration checks via pragma
-  `Suppress(Elaboration_Check)` when it is safe to do so).
+  ``Suppress(Elaboration_Check)`` when it is safe to do so).
 
 
 .. _Target-specific_aspects:
@@ -581,14 +581,14 @@ the cases most likely to arise in existing Ada 83 code.
   Reference Manuals as implementation advice that is followed by GNAT.
   The problem will show up as an error
   message rejecting the size clause.  The fix is simply to provide
-  the explicit pragma `Pack`, or for more fine tuned control, provide
+  the explicit pragma ``Pack``, or for more fine tuned control, provide
   a Component_Size clause.
 
 * *Meaning of Size Attribute*
 
   The Size attribute in Ada 95 (and Ada 2005) for discrete types is defined as
   the minimal number of bits required to hold values of the type.  For example,
-  on a 32-bit machine, the size of `Natural` will typically be 31 and not
+  on a 32-bit machine, the size of ``Natural`` will typically be 31 and not
   32 (since no sign bit is required).  Some Ada 83 compilers gave 31, and
   some 32 in this situation.  This problem will usually show up as a compile
   time error, but not always.  It is a good idea to check all uses of the

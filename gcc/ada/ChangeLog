@@ -1,3 +1,42 @@
+2017-09-08  Arnaud Charlet <charlet@adacore.com>
+
+	* gnat_rm.texi, gnat_ugn.texi,
+	doc/gnat_ugn/the_gnat_compilation_model.rst,
+	doc/gnat_ugn/getting_started_with_gnat.rst,
+	doc/gnat_ugn/inline_assembler.rst,
+	doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/elaboration_order_handling_in_gnat.rst,
+	doc/gnat_ugn/about_this_guide.rst,
+	doc/gnat_ugn/platform_specific_information.rst,
+	doc/gnat_ugn/example_of_binder_output.rst,
+	doc/gnat_ugn/gnat_and_program_execution.rst,
+	doc/gnat_ugn/gnat_utility_programs.rst,
+	doc/gnat_rm/implementation_of_specific_ada_features.rst,
+	doc/gnat_rm/interfacing_to_other_languages.rst,
+	doc/gnat_rm/implementation_defined_aspects.rst,
+	doc/gnat_rm/intrinsic_subprograms.rst,
+	doc/gnat_rm/implementation_defined_characteristics.rst,
+	doc/gnat_rm/implementation_advice.rst,
+	doc/gnat_rm/implementation_defined_attributes.rst,
+	doc/gnat_rm/compatibility_and_porting_guide.rst,
+	doc/gnat_rm/standard_library_routines.rst,
+	doc/gnat_rm/the_gnat_library.rst,
+	doc/gnat_rm/implementation_defined_pragmas.rst,
+	doc/gnat_rm/representation_clauses_and_pragmas.rst,
+	doc/gnat_rm/standard_and_implementation_defined_restrictions.rst,
+	doc/gnat_rm/obsolescent_features.rst,
+	doc/gnat_rm/about_this_guide.rst,
+	doc/gnat_rm/the_implementation_of_standard_i_o.rst,
+	doc/gnat_rm/implementation_of_ada_2012_features.rst,
+	doc/gnat_ugn.rst,
+	doc/gnat_rm.rst: Update documentation.
+
+2017-09-08  Arnaud Charlet <charlet@adacore.com>
+
+	* s-dwalin.ads, s-dwalin.adb, s-trasym-dwarf.adb, s-objrea.ads,
+	s-objrea.adb, s-tsmona-linux.adb, s-tsmona-mingw.adb: New.
+	* gcc-interface/Makefile.in: Enable s-trasym-dwarf.adb on x86*linux.
+
 2017-09-08  Bob Duff  <duff@adacore.com>
 
 	* s-ststop.ads, s-ststop.adb, rtsfind.ads (String_Input_Tag):
