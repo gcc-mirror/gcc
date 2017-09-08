@@ -39,15 +39,6 @@ package body GNAT.Dynamic_HTables is
 
    package body Static_HTable is
 
-      type Table_Type is array (Header_Num) of Elmt_Ptr;
-
-      type Instance_Data is record
-         Table            : Table_Type;
-         Iterator_Index   : Header_Num;
-         Iterator_Ptr     : Elmt_Ptr;
-         Iterator_Started : Boolean := False;
-      end record;
-
       function Get_Non_Null (T : Instance) return Elmt_Ptr;
       --  Returns Null_Ptr if Iterator_Started is False or if the Table is
       --  empty. Returns Iterator_Ptr if non null, or the next non null
@@ -260,13 +251,13 @@ package body GNAT.Dynamic_HTables is
       -- Get_First_Key --
       -------------------
 
-      function Get_First_Key (T : Instance) return access constant Key is
-         Tmp : aliased constant Elmt_Ptr := Tab.Get_First (Tab.Instance (T));
+      function Get_First_Key (T : Instance) return Key_Option is
+         Tmp : constant Elmt_Ptr := Tab.Get_First (Tab.Instance (T));
       begin
          if Tmp = null then
-            return null;
+            return Key_Option'(Present => False);
          else
-            return Tmp.all.K'Access;
+            return Key_Option'(Present => True, K => Tmp.all.K);
          end if;
       end Get_First_Key;
 
@@ -297,13 +288,13 @@ package body GNAT.Dynamic_HTables is
       -- Get_Next_Key --
       ------------------
 
-      function Get_Next_Key (T : Instance) return access constant Key is
-         Tmp : aliased constant Elmt_Ptr := Tab.Get_Next (Tab.Instance (T));
+      function Get_Next_Key (T : Instance) return Key_Option is
+         Tmp : constant Elmt_Ptr := Tab.Get_Next (Tab.Instance (T));
       begin
          if Tmp = null then
-            return null;
+            return Key_Option'(Present => False);
          else
-            return Tmp.all.K'Access;
+            return Key_Option'(Present => True, K => Tmp.all.K);
          end if;
       end Get_Next_Key;
 

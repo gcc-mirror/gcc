@@ -133,8 +133,17 @@ package GNAT.Dynamic_HTables is
       --  elements of the Htable will be traversed.
 
    private
-      type Instance_Data;
+      type Table_Type is array (Header_Num) of Elmt_Ptr;
+
+      type Instance_Data is record
+         Table            : Table_Type;
+         Iterator_Index   : Header_Num;
+         Iterator_Ptr     : Elmt_Ptr;
+         Iterator_Started : Boolean := False;
+      end record;
+
       type Instance is access all Instance_Data;
+
       Nil : constant Instance := null;
    end Static_HTable;
 
@@ -168,6 +177,13 @@ package GNAT.Dynamic_HTables is
       type Instance is private;
       Nil : constant Instance;
 
+      type Key_Option (Present : Boolean := False) is record
+         case Present is
+            when True  => K : Key;
+            when False => null;
+         end case;
+      end record;
+
       procedure Set (T : in out Instance; K : Key; E : Element);
       --  Associates an element with a given key. Overrides any previously
       --  associated element.
@@ -178,12 +194,12 @@ package GNAT.Dynamic_HTables is
       --  access to the table).
 
       function Get (T : Instance; K : Key) return Element;
-      --  Returns the Element associated with a key or No_Element if the
-      --  given key has not associated element
+      --  Returns the Element associated with a key or No_Element if the given
+      --  key has not associated element
 
       procedure Remove (T : Instance; K : Key);
-      --  Removes the latest inserted element pointer associated with the
-      --  given key if any, does nothing if none.
+      --  Removes the latest inserted element pointer associated with the given
+      --  key if any, does nothing if none.
 
       function Get_First (T : Instance) return Element;
       --  Returns No_Element if the Htable is empty, otherwise returns one
@@ -191,11 +207,13 @@ package GNAT.Dynamic_HTables is
       --  function will return the same element, if the Htable has been
       --  modified between the two calls.
 
-      function Get_First_Key (T : Instance) return access constant Key;
-      --  Returns Null if the Htable is empty, otherwise returns one
-      --  unspecified key. There is no guarantee that two calls to this
-      --  function will return the same key, if the Htable has been modified
-      --  between the two calls.
+      function Get_First_Key (T : Instance) return Key_Option;
+      --  Returns an option type giving an unspecified key. If the Htable
+      --  is empty, the discriminant will have field Present set to False,
+      --  otherwise its Present field is set to True and the field K contains
+      --  the key. There is no guarantee that two calls to this function will
+      --  return the same key, if the Htable has been modified between the two
+      --  calls.
 
       function Get_Next (T : Instance) return Element;
       --  Returns an unspecified element that has not been returned by the
@@ -207,18 +225,19 @@ package GNAT.Dynamic_HTables is
       --  between a call to Get_First and subsequent consecutive calls to
       --  Get_Next, until one of these calls returns No_Element.
 
-      function Get_Next_Key (T : Instance) return access constant Key;
-      --  Same as Get_Next except that this returns an unspecified access
-      --  to constant key that has not been returned by either Get_First_Key
-      --  or this very same function (or null if there is none). The same
-      --  restrictions apply as Get_Next.
+      function Get_Next_Key (T : Instance) return Key_Option;
+      --  Same as Get_Next except that this returns an option type having field
+      --  Present set either to False if there no key never returned before by
+      --  either Get_First_Key or this very same function, or to True if there
+      --  is one, with the field K containing the key specified as before. The
+      --  same restrictions apply as Get_Next.
 
    private
 
       type Element_Wrapper;
       type Elmt_Ptr is access all Element_Wrapper;
       type Element_Wrapper is record
-         K    : aliased Key;
+         K    : Key;
          E    : Element;
          Next : Elmt_Ptr;
       end record;
