@@ -10169,14 +10169,18 @@ package body Sem_Prag is
       -------------------------------
 
       procedure Record_Independence_Check (N : Node_Id; E : Entity_Id) is
+         pragma Unreferenced (N, E);
       begin
          --  For GCC back ends the validation is done a priori
+         --  ??? This code is dead, might be useful in the future
 
-         if not AAMP_On_Target then
-            return;
-         end if;
+         --  if not AAMP_On_Target then
+         --     return;
+         --  end if;
 
-         Independence_Checks.Append ((N, E));
+         --  Independence_Checks.Append ((N, E));
+
+         return;
       end Record_Independence_Check;
 
       ------------------

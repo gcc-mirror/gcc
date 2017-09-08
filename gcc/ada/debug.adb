@@ -69,7 +69,7 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Front end data layout enabled
+   --  dF
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
@@ -382,10 +382,6 @@ package body Debug is
 
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
-
-   --  dF   Front end data layout enabled. Normally front end data layout
-   --       is only enabled if the target parameter Backend_Layout is False.
-   --       This debugging switch enables it unconditionally.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also

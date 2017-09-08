@@ -59,7 +59,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
@@ -6262,7 +6261,6 @@ package body Exp_Aggr is
          --  then we could go into an infinite recursion.
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
-           and then not AAMP_On_Target
            and then not CodePeer_Mode
            and then not Modify_Tree_For_C
            and then not Possible_Bit_Aligned_Component (Target)

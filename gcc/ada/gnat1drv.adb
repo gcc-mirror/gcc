@@ -560,13 +560,13 @@ procedure Gnat1drv is
          Atree.Num_Extension_Nodes := Atree.Num_Extension_Nodes + 1;
       end if;
 
-      --  Disable static allocation of dispatch tables if -gnatd.t or if layout
-      --  is enabled. The front end's layout phase currently treats types that
-      --  have discriminant-dependent arrays as not being static even when a
+      --  Disable static allocation of dispatch tables if -gnatd.t is enabled.
+      --  The front end's layout phase currently treats types that have
+      --  discriminant-dependent arrays as not being static even when a
       --  discriminant constraint on the type is static, and this leads to
       --  problems with subtypes of type Ada.Tags.Dispatch_Table_Wrapper. ???
 
-      if Debug_Flag_Dot_T or else Frontend_Layout_On_Target then
+      if Debug_Flag_Dot_T then
          Static_Dispatch_Tables := False;
       end if;
 
@@ -574,12 +574,6 @@ procedure Gnat1drv is
 
       if Debug_Flag_8 then
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
-      end if;
-
-      --  Activate front-end layout if debug flag -gnatdF is set
-
-      if Debug_Flag_FF then
-         Targparm.Frontend_Layout_On_Target := True;
       end if;
 
       --  Set and check exception mechanism. This is only meaningful when
@@ -966,10 +960,11 @@ procedure Gnat1drv is
       --  Validate independence pragmas (again using values annotated by the
       --  back end for component layout where possible) but only for non-GCC
       --  back ends, as this is done a priori for GCC back ends.
-
-      if AAMP_On_Target then
-         Sem_Ch13.Validate_Independence;
-      end if;
+      --  ??? We use to test for AAMP_On_Target which is now gone, consider
+      --
+      --  if AAMP_On_Target then
+      --     Sem_Ch13.Validate_Independence;
+      --  end if;
    end Post_Compilation_Validation_Checks;
 
    --  Local variables
@@ -1421,7 +1416,6 @@ begin
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Unit_Kind = N_Subunit
-            or else Frontend_Layout_On_Target
             or else ASIS_GNSA_Mode)
       then
          Post_Compilation_Validation_Checks;

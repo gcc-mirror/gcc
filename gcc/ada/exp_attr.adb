@@ -62,7 +62,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -8233,7 +8232,6 @@ package body Exp_Attr is
       function Is_GCC_Target return Boolean is
       begin
          return not CodePeer_Mode
-           and then not AAMP_On_Target
            and then not Modify_Tree_For_C;
       end Is_GCC_Target;
 
@@ -8243,7 +8241,7 @@ package body Exp_Attr is
       --  Machine and Model can be expanded by the GCC and AAMP back ends only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return Is_GCC_Target or else AAMP_On_Target;
+         return Is_GCC_Target;
 
       --  Remaining cases handled by all back ends are Rounding and Truncation
       --  when appearing as the operand of a conversion to some integer type.

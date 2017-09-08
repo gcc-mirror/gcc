@@ -14467,23 +14467,6 @@ package body Sem_Ch3 is
 
          Set_Parent (New_Compon, Parent (Old_Compon));
 
-         --  If the old component's Esize was already determined and is a
-         --  static value, then the new component simply inherits it. Otherwise
-         --  the old component's size may require run-time determination, but
-         --  the new component's size still might be statically determinable
-         --  (if, for example it has a static constraint). In that case we want
-         --  Layout_Type to recompute the component's size, so we reset its
-         --  size and positional fields.
-
-         if Frontend_Layout_On_Target
-           and then not Known_Static_Esize (Old_Compon)
-         then
-            Set_Esize (New_Compon, Uint_0);
-            Init_Normalized_First_Bit    (New_Compon);
-            Init_Normalized_Position     (New_Compon);
-            Init_Normalized_Position_Max (New_Compon);
-         end if;
-
          --  We do not want this node marked as Comes_From_Source, since
          --  otherwise it would get first class status and a separate cross-
          --  reference line would be generated. Illegitimate children do not

@@ -5767,8 +5767,9 @@ package body Sem_Eval is
 
       --  No match if sizes different (from use of 'Object_Size). This test
       --  is excluded if Formal_Derived_Matching is True, as the base types
-      --  can be different in that case and typically have different sizes
-      --  (and Esizes can be set when Frontend_Layout_On_Target is True).
+      --  can be different in that case and typically have different sizes.
+      --  ??? Frontend_Layout_On_Target used to set Esizes but this is no
+      --  longer the case, consider removing the last test below.
 
       elsif not Formal_Derived_Matching
         and then Known_Static_Esize (T1)
