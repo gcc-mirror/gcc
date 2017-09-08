@@ -1,5 +1,9 @@
 2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
-	
+
+	* gcc.dg/pr81988.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gnat.dg/opt67.adb: New test.
 	* gnat.dg/opt67_pkg.ad[sb]: New helper.
 
