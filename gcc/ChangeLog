@@ -1,3 +1,10 @@
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/81988
+	* config/sparc/sparc.md (mulsi3): Rename into *mulsi3_sp32.
+	(*mulsi3_sp64): New instruction.
+	(mulsi3): New expander.
+
 2017-09-07  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
