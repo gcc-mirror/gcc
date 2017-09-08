@@ -3159,9 +3159,14 @@ preprocessing in a file, either run ``gnatprep``
 in standalone mode or else supply the :switch:`-gnateG` switch
 (described below) to the compiler.
 
-The ``gnatmake`` switch :switch:`-s` should be used with integrated
-preprocessing; otherwise the use of a different preprocessor data file
-without changing the sources will not cause recompilation.
+When using project files:
+
+   *    the builder switch :switch:`-x` should be used if any Ada source is
+        compiled with :switch:`gnatep=`, so that the compiler finds the
+        *preprocessor data file*.
+
+   *    the preprocessing data file and the symbol definition files should be
+        located in the source directories of the project.
 
 Note that the ``gnatmake`` switch :switch:`-m` will almost
 always trigger recompilation for sources that are preprocessed,
