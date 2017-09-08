@@ -4829,8 +4829,7 @@ package body Exp_Ch5 is
                end if;
 
             else
-
-               --  Initial value is smallest value in predicate.
+               --  Initial value is smallest value in predicate
 
                if Is_Itype (Ltype) then
                   D :=
@@ -4891,14 +4890,14 @@ package body Exp_Ch5 is
                end if;
 
                S :=
-                  Make_Assignment_Statement (Loc,
-                    Name       => New_Occurrence_Of (Loop_Id, Loc),
-                    Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix => New_Occurrence_Of (Ltype, Loc),
-                        Attribute_Name => Name_Next,
-                        Expressions    => New_List (
-                          New_Occurrence_Of (Loop_Id, Loc))));
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (Loop_Id, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Ltype, Loc),
+                       Attribute_Name => Name_Next,
+                       Expressions    => New_List (
+                         New_Occurrence_Of (Loop_Id, Loc))));
                Set_Suppress_Assignment_Checks (S);
             end;
 

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,40 @@ package Exp_Ch6 is
    --  for which Is_Build_In_Place_Call is True, or an N_Qualified_Expression
    --  node applied to such a function call.
 
+   procedure Make_Build_In_Place_Iface_Call_In_Allocator
+     (Allocator     : Node_Id;
+      Function_Call : Node_Id);
+   --  Ada 2005 (AI-318-02): Handle a call to a build-in-place function that
+   --  occurs as the expression initializing an allocator, by passing access
+   --  to the allocated object as an additional parameter of the function call.
+   --  Function_Call must denote an expression containing a BIP function call
+   --  and an enclosing call to Ada.Tags.Displace to displace the pointer to
+   --  the returned BIP object to reference the secondary dispatch table of
+   --  an interface.
+
+   procedure Make_Build_In_Place_Iface_Call_In_Anonymous_Context
+     (Function_Call : Node_Id);
+   --  Ada 2005 (AI-318-02): Handle a call to a build-in-place function that
+   --  occurs in a context that does not provide a separate object. A temporary
+   --  object is created to act as the return object and an access to the
+   --  temporary is passed as an additional parameter of the call. This occurs
+   --  in contexts such as subprogram call actuals and object renamings.
+   --  Function_Call must denote an expression containing a BIP function call
+   --  and an enclosing call to Ada.Tags.Displace to displace the pointer to
+   --  the returned BIP object to reference the secondary dispatch table of
+   --  an interface.
+
+   procedure Make_Build_In_Place_Iface_Call_In_Object_Declaration
+     (Obj_Decl      : Node_Id;
+      Function_Call : Node_Id);
+   --  Ada 2005 (AI-318-02): Handle a call to a build-in-place function that
+   --  occurs as the expression initializing an object declaration by passsing
+   --  access to the declared object as an additional parameter of the function
+   --  call. Function_Call must denote an expression containing a BIP function
+   --  call and an enclosing call to Ada.Tags.Displace to displace the pointer
+   --  to the returned BIP object to reference the secondary dispatch table of
+   --  an interface.
+
    procedure Make_CPP_Constructor_Call_In_Allocator
      (Allocator     : Node_Id;
       Function_Call : Node_Id);
@@ -210,5 +244,13 @@ package Exp_Ch6 is
    --  Ada 2012 (AI05-0234): Return True if the function needs an implicit
    --  parameter to identify the accessibility level of the function result
    --  "determined by the point of call".
+
+   function Unqual_BIP_Iface_Function_Call (Expr : Node_Id) return Node_Id;
+   --  Return the inner BIP function call removing any qualification from Expr
+   --  including qualified expressions, type conversions, references, unchecked
+   --  conversions and calls to displace the pointer to the object, if Expr is
+   --  an expression containing a call displacing the pointer to the BIP object
+   --  to reference the secondary dispatch table of an interface; otherwise
+   --  return Empty.
 
 end Exp_Ch6;

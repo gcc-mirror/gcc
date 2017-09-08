@@ -6284,7 +6284,6 @@ package body Sem_Ch4 is
 
       procedure Try_One_Interp (T1 : Entity_Id) is
       begin
-
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
          --  universal, the context will impose the correct type. Note that we
@@ -6480,8 +6479,8 @@ package body Sem_Ch4 is
             --  Note that we avoid returning if we are currently within a
             --  generic instance due to the fact that the generic package
             --  declaration has already been successfully analyzed and
-            --  Defined_In_Scope expects the base type to be defined within the
-            --  instance which will never be the case.
+            --  Defined_In_Scope expects the base type to be defined within
+            --  the instance which will never be the case.
 
             if Defined_In_Scope (T1, Scop)
               or else In_Instance

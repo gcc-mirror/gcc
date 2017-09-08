@@ -3406,13 +3406,14 @@ package body Exp_Util is
       if Present (Priv_Typ) then
          Typ_Decl := Declaration_Node (Priv_Typ);
 
-      --  Derived types with the full view as parent do not have a partial
-      --  view. Insert the invariant procedure after the derived type.
       --  Anonymous arrays in object declarations have no explicit declaration
       --  so use the related object declaration as the insertion point.
 
       elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ)  then
          Typ_Decl := Associated_Node_For_Itype (Work_Typ);
+
+      --  Derived types with the full view as parent do not have a partial
+      --  view. Insert the invariant procedure after the derived type.
 
       else
          Typ_Decl := Declaration_Node (Full_Typ);

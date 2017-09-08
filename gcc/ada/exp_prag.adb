@@ -320,6 +320,84 @@ package body Exp_Prag is
       --  Assert_Failure, so that coverage analysis tools can relate the
       --  call to the failed check.
 
+      procedure Replace_Discriminals_Of_Protected_Op (Expr : Node_Id);
+      --  Discriminants of the enclosing protected object may be referenced
+      --  in the expression of a precondition of a protected operation.
+      --  In the body of the operation these references must be replaced by
+      --  the discriminal created for them, which area renamings of the
+      --  discriminants of the object that is the target of the operation.
+      --  This replacement is done by visibility when the references appear
+      --  in the subprogram body, but in the case of a condition which appears
+      --  on the specification of the subprogram it has be done separately
+      --  because the condition has been replaced by a Check pragma and
+      --  analyzed earlier, before the creation of the discriminal renaming
+      --  declarations that are added to the subprogram body.
+
+      ------------------------------------------
+      -- Replace_Discriminals_Of_Protected_Op --
+      ------------------------------------------
+
+      procedure Replace_Discriminals_Of_Protected_Op (Expr : Node_Id) is
+         function Find_Corresponding_Discriminal (E : Entity_Id)
+           return Entity_Id;
+         --  Find the local entity that renames a discriminant of the
+         --  enclosing protected type, and has a matching name.
+
+         ------------------------------------
+         -- find_Corresponding_Discriminal --
+         ------------------------------------
+
+         function Find_Corresponding_Discriminal (E : Entity_Id)
+           return Entity_Id
+         is
+            R : Entity_Id;
+
+         begin
+            R := First_Entity (Current_Scope);
+
+            while Present (R) loop
+               if Nkind (Parent (R)) = N_Object_Renaming_Declaration
+                 and then Present (Discriminal_Link (R))
+                 and then Chars (Discriminal_Link (R)) = Chars (E)
+               then
+                  return R;
+               end if;
+
+               Next_Entity (R);
+            end loop;
+
+            return Empty;
+         end Find_Corresponding_Discriminal;
+
+         function  Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
+         --  Replace a reference to a discriminant of the original protected
+         --  type by the local renaming declaration of the discriminant of
+         --  the target object.
+
+         -----------------------
+         -- Replace_Discr_Ref --
+         -----------------------
+
+         function  Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
+            R : Entity_Id;
+
+         begin
+            if Is_Entity_Name (N)
+               and then Present (Discriminal_Link (Entity (N)))
+            then
+               R := Find_Corresponding_Discriminal (Entity (N));
+               Rewrite (N, New_Occurrence_Of (R, Sloc (N)));
+            end if;
+            return OK;
+         end Replace_Discr_Ref;
+
+         procedure Replace_Discriminant_References is
+           new Traverse_Proc (Replace_Discr_Ref);
+
+      begin
+         Replace_Discriminant_References (Expr);
+      end Replace_Discriminals_Of_Protected_Op;
+
    begin
       --  Nothing to do if pragma is ignored
 
@@ -454,6 +532,16 @@ package body Exp_Prag is
 
                Msg := Make_String_Literal (Loc, Name_Buffer (1 .. Name_Len));
             end;
+         end if;
+
+         --  For a precondition, replace references to discriminants of a
+         --  protected type with the local discriminals.
+
+         if Is_Protected_Type (Scope (Current_Scope))
+           and then Has_Discriminants (Scope (Current_Scope))
+           and then From_Aspect_Specification (N)
+         then
+            Replace_Discriminals_Of_Protected_Op (Cond);
          end if;
 
          --  Now rewrite as an if statement

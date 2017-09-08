@@ -6243,6 +6243,24 @@ package body Exp_Ch3 is
 
             return;
 
+         --  Ada 2005 (AI-318-02): Specialization of the previous case for
+         --  expressions containing a build-in-place function call whose
+         --  returned object covers interface types, and Expr_Q has calls to
+         --  Ada.Tags.Displace to displace the pointer to the returned build-
+         --  in-place object to reference the secondary dispatch table of a
+         --  covered interface type.
+
+         elsif Ada_Version >= Ada_2005
+           and then Present (Unqual_BIP_Iface_Function_Call (Expr_Q))
+         then
+            Make_Build_In_Place_Iface_Call_In_Object_Declaration (N, Expr_Q);
+
+            --  The previous call expands the expression initializing the
+            --  built-in-place object into further code that will be analyzed
+            --  later. No further expansion needed here.
+
+            return;
+
          --  Ada 2005 (AI-251): Rewrite the expression that initializes a
          --  class-wide interface object to ensure that we copy the full
          --  object, unless we are targetting a VM where interfaces are handled
