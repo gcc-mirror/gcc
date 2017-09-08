@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -1519,6 +1519,7 @@ package Rtsfind is
 
      RE_String_Input,                    -- System.Strings.Stream_Ops
      RE_String_Input_Blk_IO,             -- System.Strings.Stream_Ops
+     RE_String_Input_Tag,                -- System.Strings.Stream_Ops
      RE_String_Output,                   -- System.Strings.Stream_Ops
      RE_String_Output_Blk_IO,            -- System.Strings.Stream_Ops
      RE_String_Read,                     -- System.Strings.Stream_Ops
@@ -2756,6 +2757,7 @@ package Rtsfind is
 
      RE_String_Input                     => System_Strings_Stream_Ops,
      RE_String_Input_Blk_IO              => System_Strings_Stream_Ops,
+     RE_String_Input_Tag                 => System_Strings_Stream_Ops,
      RE_String_Output                    => System_Strings_Stream_Ops,
      RE_String_Output_Blk_IO             => System_Strings_Stream_Ops,
      RE_String_Read                      => System_Strings_Stream_Ops,

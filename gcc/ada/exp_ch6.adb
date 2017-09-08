@@ -2623,6 +2623,7 @@ package body Exp_Ch6 is
       Param_Count   : Natural := 0;
       Parent_Formal : Entity_Id;
       Parent_Subp   : Entity_Id;
+      Pref_Entity   : Entity_Id;
       Scop          : Entity_Id;
       Subp          : Entity_Id;
 
@@ -3010,6 +3011,9 @@ package body Exp_Ch6 is
               and then In_Open_Scopes (Scope (Entity (Actual)))
             then
                Prev_Orig := Prev;
+
+            elsif Nkind (Prev_Orig) = N_Type_Conversion then
+               Prev_Orig := Expression (Prev_Orig);
             end if;
 
             --  Ada 2005 (AI-251): Thunks must propagate the extra actuals of
@@ -3125,6 +3129,24 @@ package body Exp_Ch6 is
 
                         when Attribute_Access =>
 
+                           --  Accessibility level of S'Access is that of A.
+
+                           Prev_Orig := Prefix (Prev_Orig);
+
+                           --  If the expression is a view conversion,
+                           --  the accessibility level is that of the
+                           --  expression.
+
+                           if Nkind (Original_Node (Prev_Orig))
+                             = N_Type_Conversion
+                             and then
+                               Nkind (Expression (Original_Node (Prev_Orig)))
+                                  = N_Explicit_Dereference
+                           then
+                              Prev_Orig :=
+                                Expression (Original_Node (Prev_Orig));
+                           end if;
+
                            --  If this is an Access attribute applied to the
                            --  the current instance object passed to a type
                            --  initialization procedure, then use the level
@@ -3140,14 +3162,41 @@ package body Exp_Ch6 is
                            --  which can be one level too deep in some cases.
                            --  ???
 
-                           if Is_Entity_Name (Prefix (Prev_Orig))
-                             and then Is_Type (Entity (Prefix (Prev_Orig)))
+                           --  A further case that requires special handling
+                           --  is the common idiom E.all'access.  If E is a
+                           --  formal of the enclosing subprogram, the
+                           --  accessibility of the expression is that of E.
+
+                           if Is_Entity_Name (Prev_Orig) then
+                              Pref_Entity := Entity (Prev_Orig);
+
+                           elsif Nkind (Prev_Orig) = N_Explicit_Dereference
+                           and then
+                              Is_Entity_Name (Prefix (Prev_Orig))
+                           then
+                              Pref_Entity := Entity (Prefix ((Prev_Orig)));
+
+                           else
+                              Pref_Entity := Empty;
+                           end if;
+
+                           if Is_Entity_Name (Prev_Orig)
+                             and then Is_Type (Entity (Prev_Orig))
                            then
                               Add_Extra_Actual
                                 (Make_Integer_Literal (Loc,
-                                   Intval =>
-                                     Type_Access_Level
-                                       (Entity (Prefix (Prev_Orig)))),
+                                   Intval => Type_Access_Level (Pref_Entity)),
+                                 Extra_Accessibility (Formal));
+
+                           elsif Nkind (Prev_Orig) = N_Explicit_Dereference
+                             and then Present (Pref_Entity)
+                             and then Is_Formal (Pref_Entity)
+                             and then Present
+                               (Extra_Accessibility (Pref_Entity))
+                           then
+                              Add_Extra_Actual (
+                                New_Occurrence_Of
+                                 (Extra_Accessibility (Pref_Entity), Loc),
                                  Extra_Accessibility (Formal));
 
                            else
@@ -3155,7 +3204,7 @@ package body Exp_Ch6 is
                                 (Make_Integer_Literal (Loc,
                                    Intval =>
                                      Object_Access_Level
-                                       (Prefix (Prev_Orig))),
+                                       (Prev_Orig)),
                                  Extra_Accessibility (Formal));
                            end if;
 

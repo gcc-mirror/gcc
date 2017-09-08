@@ -11230,7 +11230,8 @@ package body Exp_Ch4 is
 
          --  Apply an accessibility check when the conversion operand is an
          --  access parameter (or a renaming thereof), unless conversion was
-         --  expanded from an Unchecked_ or Unrestricted_Access attribute.
+         --  expanded from an Unchecked_ or Unrestricted_Access attribute,
+         --  or for the actual of a class-wide interface parameter.
          --  Note that other checks may still need to be applied below (such
          --  as tagged type checks).
 
@@ -11240,8 +11241,19 @@ package body Exp_Ch4 is
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
-            Apply_Accessibility_Check
-              (Operand, Target_Type, Insert_Node => Operand);
+            if not Comes_From_Source (N)
+              and then Nkind_In (Parent (N),
+                N_Function_Call,
+                N_Procedure_Call_Statement)
+              and then Is_Interface (Designated_Type (Target_Type))
+              and then Is_Class_Wide_Type (Designated_Type (Target_Type))
+            then
+               null;
+
+            else
+               Apply_Accessibility_Check
+                 (Operand, Target_Type, Insert_Node => Operand);
+            end if;
 
          --  If the level of the operand type is statically deeper than the
          --  level of the target type, then force Program_Error. Note that this

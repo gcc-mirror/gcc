@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2009-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 2009-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -154,6 +154,12 @@ package System.Strings.Stream_Ops is
    function String_Input_Blk_IO
      (Strm : access Ada.Streams.Root_Stream_Type'Class)
       return String;
+
+   function String_Input_Tag
+     (Strm : access Ada.Streams.Root_Stream_Type'Class)
+      return String;
+   --  Same as String_Input_Blk_IO, except raises an exception for overly long
+   --  Strings. See expansion of Attribute_Input in Exp_Attr for details.
 
    procedure String_Output
      (Strm : access Ada.Streams.Root_Stream_Type'Class;

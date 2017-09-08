@@ -58,8 +58,11 @@ package body System.Strings.Stream_Ops is
 
    package Stream_Ops_Internal is
       function Input
-        (Strm : access Root_Stream_Type'Class;
-         IO   : IO_Kind) return Array_Type;
+        (Strm       : access Root_Stream_Type'Class;
+         IO         : IO_Kind;
+         Max_Length : Long_Integer := Long_Integer'Last) return Array_Type;
+      --  Raises an exception if you try to read a String that is longer than
+      --  Max_Length. See expansion of Attribute_Input in Exp_Attr for details.
 
       procedure Output
         (Strm : access Root_Stream_Type'Class;
@@ -125,8 +128,9 @@ package body System.Strings.Stream_Ops is
       -----------
 
       function Input
-        (Strm : access Root_Stream_Type'Class;
-         IO   : IO_Kind) return Array_Type
+        (Strm       : access Root_Stream_Type'Class;
+         IO         : IO_Kind;
+         Max_Length : Long_Integer := Long_Integer'Last) return Array_Type
       is
          pragma Unsuppress (All_Checks);
          --  To make T'Class'Input robust in the case of bad data. The
@@ -145,6 +149,10 @@ package body System.Strings.Stream_Ops is
 
             Index_Type'Read (Strm, Low);
             Index_Type'Read (Strm, High);
+
+            if Long_Integer (High) - Long_Integer (Low) > Max_Length then
+               raise Constraint_Error;
+            end if;
 
             --  Read the character content of the string
 
@@ -631,6 +639,17 @@ package body System.Strings.Stream_Ops is
    begin
       return String_Ops.Input (Strm, Block_IO);
    end String_Input_Blk_IO;
+
+   -------------------------
+   -- String_Input_Tag --
+   -------------------------
+
+   function String_Input_Tag
+     (Strm : access Ada.Streams.Root_Stream_Type'Class) return String
+   is
+   begin
+      return String_Ops.Input (Strm, Block_IO, Max_Length => 10_000);
+   end String_Input_Tag;
 
    -------------------
    -- String_Output --
