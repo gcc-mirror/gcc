@@ -4971,14 +4971,30 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  All elementary types are supported except for fat pointers
-         --  because they are not really elementary for the backend.
+         --  All elementary types are supported
 
-         if not Is_Elementary_Type (Ctyp)
-           or else (Is_Access_Type (Ctyp)
-                     and then Esize (Ctyp) /= System_Address_Size)
-         then
+         if not Is_Elementary_Type (Ctyp) then
             return False;
+         end if;
+
+         --  However access types need to be dealt with specially
+
+         if Is_Access_Type (Ctyp) then
+
+            --  Fat pointers are rejected as they are not really elementary
+            --  for the backend.
+
+            if Esize (Ctyp) /= System_Address_Size then
+               return False;
+            end if;
+
+            --  The supported expressions are NULL and constants, others are
+            --  rejected upfront to avoid being analyzed below, which can be
+            --  problematic for some of them, for example allocators.
+
+            if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
+               return False;
+            end if;
          end if;
 
          --  The expression needs to be analyzed if True is returned
