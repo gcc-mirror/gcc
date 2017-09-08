@@ -359,7 +359,7 @@ a-intnam.ads<libgnarl/a-intnam-dummy.ads \
 s-inmaop.adb<libgnarl/s-inmaop-dummy.adb \
 s-intman.adb<libgnarl/s-intman-dummy.adb \
 s-osinte.ads<libgnarl/s-osinte-dummy.ads \
-s-osprim.adb<s-osprim-posix.adb \
+s-osprim.adb<libgnat/s-osprim-posix.adb \
 s-taprop.adb<libgnarl/s-taprop-dummy.adb \
 s-taspri.ads<libgnarl/s-taspri-dummy.ads
 
@@ -388,58 +388,58 @@ GNATRTL_SOCKETS_OBJS = g-soccon$(objext) g-socket$(objext) g-socthi$(objext) \
   g-soliop$(objext) g-sothco$(objext)
 
 DUMMY_SOCKETS_TARGET_PAIRS = \
-  g-socket.adb<g-socket-dummy.adb \
-  g-socket.ads<g-socket-dummy.ads \
-  g-socthi.adb<g-socthi-dummy.adb \
-  g-socthi.ads<g-socthi-dummy.ads \
-  g-sothco.adb<g-sothco-dummy.adb \
-  g-sothco.ads<g-sothco-dummy.ads
+  g-socket.adb<libgnat/g-socket-dummy.adb \
+  g-socket.ads<libgnat/g-socket-dummy.ads \
+  g-socthi.adb<libgnat/g-socthi-dummy.adb \
+  g-socthi.ads<libgnat/g-socthi-dummy.ads \
+  g-sothco.adb<libgnat/g-sothco-dummy.adb \
+  g-sothco.ads<libgnat/g-sothco-dummy.ads
 
 # On platforms where atomic increment/decrement operations are supported,
 # special version of Ada.Strings.Unbounded package can be used.
 
 ATOMICS_TARGET_PAIRS = \
-  a-coinho.adb<a-coinho-shared.adb \
-  a-coinho.ads<a-coinho-shared.ads \
-  a-stunau.adb<a-stunau-shared.adb \
-  a-suteio.adb<a-suteio-shared.adb \
-  a-strunb.ads<a-strunb-shared.ads \
-  a-strunb.adb<a-strunb-shared.adb \
-  a-stwiun.adb<a-stwiun-shared.adb \
-  a-stwiun.ads<a-stwiun-shared.ads \
-  a-swunau.adb<a-swunau-shared.adb \
-  a-swuwti.adb<a-swuwti-shared.adb \
-  a-stzunb.adb<a-stzunb-shared.adb \
-  a-stzunb.ads<a-stzunb-shared.ads \
-  a-szunau.adb<a-szunau-shared.adb \
-  a-szuzti.adb<a-szuzti-shared.adb
+  a-coinho.adb<libgnat/a-coinho-shared.adb \
+  a-coinho.ads<libgnat/a-coinho-shared.ads \
+  a-stunau.adb<libgnat/a-stunau-shared.adb \
+  a-suteio.adb<libgnat/a-suteio-shared.adb \
+  a-strunb.ads<libgnat/a-strunb-shared.ads \
+  a-strunb.adb<libgnat/a-strunb-shared.adb \
+  a-stwiun.adb<libgnat/a-stwiun-shared.adb \
+  a-stwiun.ads<libgnat/a-stwiun-shared.ads \
+  a-swunau.adb<libgnat/a-swunau-shared.adb \
+  a-swuwti.adb<libgnat/a-swuwti-shared.adb \
+  a-stzunb.adb<libgnat/a-stzunb-shared.adb \
+  a-stzunb.ads<libgnat/a-stzunb-shared.ads \
+  a-szunau.adb<libgnat/a-szunau-shared.adb \
+  a-szuzti.adb<libgnat/a-szuzti-shared.adb
 
 ATOMICS_BUILTINS_TARGET_PAIRS = \
-  s-atocou.adb<s-atocou-builtin.adb
+  s-atocou.adb<libgnat/s-atocou-builtin.adb
 
 # Special version of units for x86 and x86-64 platforms.
 
 X86_TARGET_PAIRS = \
-  a-numaux.ads<a-numaux-x86.ads \
-  a-numaux.adb<a-numaux-x86.adb \
-  s-atocou.adb<s-atocou-x86.adb
+  a-numaux.ads<libgnat/a-numaux-x86.ads \
+  a-numaux.adb<libgnat/a-numaux-x86.adb \
+  s-atocou.adb<libgnat/s-atocou-x86.adb
 
 X86_64_TARGET_PAIRS = \
-  a-numaux.ads<a-numaux-x86.ads \
-  a-numaux.adb<a-numaux-x86.adb \
-  s-atocou.adb<s-atocou-builtin.adb
+  a-numaux.ads<libgnat/a-numaux-x86.ads \
+  a-numaux.adb<libgnat/a-numaux-x86.adb \
+  s-atocou.adb<libgnat/s-atocou-builtin.adb
 
 # Implementation of symbolic traceback based on dwarf
 TRASYM_DWARF_UNIX_PAIRS = \
-  s-trasym.adb<s-trasym-dwarf.adb \
-  s-mmosin.ads<s-mmosin-unix.ads \
-  s-mmosin.adb<s-mmosin-unix.adb \
-  s-mmauni.ads<s-mmauni-long.ads
+  s-trasym.adb<libgnat/s-trasym-dwarf.adb \
+  s-mmosin.ads<libgnat/s-mmosin-unix.ads \
+  s-mmosin.adb<libgnat/s-mmosin-unix.adb \
+  s-mmauni.ads<libgnat/s-mmauni-long.ads
 
 TRASYM_DWARF_MINGW_PAIRS = \
-  s-trasym.adb<s-trasym-dwarf.adb \
-  s-mmosin.ads<s-mmosin-mingw.ads \
-  s-mmosin.adb<s-mmosin-mingw.adb
+  s-trasym.adb<libgnat/s-trasym-dwarf.adb \
+  s-mmosin.ads<libgnat/s-mmosin-mingw.ads \
+  s-mmosin.adb<libgnat/s-mmosin-mingw.adb
 
 TRASYM_DWARF_COMMON_OBJS = s-objrea$(objext) s-dwalin$(objext) s-mmap$(objext) \
   s-mmosin$(objext)
@@ -507,22 +507,22 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
+  a-numaux.ads<libgnat/a-numaux-vxworks.ads \
   s-inmaop.adb<libgnarl/s-inmaop-vxworks.adb \
   s-intman.ads<libgnarl/s-intman-vxworks.ads \
   s-intman.adb<libgnarl/s-intman-vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte-vxworks.ads \
   s-osinte.adb<libgnarl/s-osinte-vxworks.adb \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-parame.adb<s-parame-vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim-vxworks.adb \
+  s-parame.ads<libgnat/s-parame-vxworks.ads \
+  s-parame.adb<libgnat/s-parame-vxworks.adb \
   s-taprop.adb<libgnarl/s-taprop-vxworks.adb \
   s-tasinf.ads<libgnarl/s-tasinf-vxworks.ads \
   s-taspri.ads<libgnarl/s-taspri-vxworks.ads \
   s-vxwork.ads<libgnarl/s-vxwork-ppc.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  g-stsifd.adb<g-stsifd-sockets.adb \
+  g-socthi.ads<libgnat/g-socthi-vxworks.ads \
+  g-socthi.adb<libgnat/g-socthi-vxworks.adb \
+  g-stsifd.adb<libgnat/g-stsifd-sockets.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
@@ -535,8 +535,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
 
   ifeq ($(strip $(filter-out default,$(THREAD_KIND))),)
     LIBGNAT_TARGET_PAIRS += \
-      s-stchop.ads<s-stchop-limit.ads \
-      s-stchop.adb<s-stchop-vxworks.adb
+      s-stchop.ads<libgnat/s-stchop-limit.ads \
+      s-stchop.adb<libgnat/s-stchop-vxworks.adb
     EXTRA_GNATRTL_NONTASKING_OBJS+=s-stchop.o
   endif
 
@@ -546,8 +546,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
     LIBGNAT_TARGET_PAIRS += \
     s-vxwext.ads<libgnarl/s-vxwext-rtp.ads \
     s-vxwext.adb<libgnarl/s-vxwext-rtp.adb \
-    s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
-    system.ads<system-vxworks-$(ARCH_STR)-rtp.ads
+    s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-rtp.adb \
+    system.ads<libgnat/system-vxworks-$(ARCH_STR)-rtp.ads
 
     EH_MECHANISM=-gcc
   else
@@ -557,7 +557,7 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
       s-vxwext.ads<libgnarl/s-vxwext-rtp.ads \
       s-vxwext.adb<libgnarl/s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
-      system.ads<$(SVX)-$(ARCH_STR)-rtp-smp.ads
+      system.ads<libgnat/$(SVX)-$(ARCH_STR)-rtp-smp.ads
 
       EH_MECHANISM=-gcc
       EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -568,8 +568,8 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
         s-mudido.adb<libgnarl/s-mudido-affinity.adb \
         s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<libgnarl/s-vxwext-kernel.ads \
-        s-vxwext.adb<s-vxwext-kernel-smp.adb \
-        system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
+        s-vxwext.adb<libgnarl/s-vxwext-kernel-smp.adb \
+        system.ads<libgnat/system-vxworks-$(ARCH_STR)-kernel.ads
 
         EH_MECHANISM=-gcc
         EXTRA_LIBGNAT_OBJS+=affinity.o
@@ -583,10 +583,10 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<libgnarl/s-vxwext-kernel.ads \
           s-vxwext.adb<libgnarl/s-vxwext-kernel.adb \
-          system.ads<system-vxworks-$(ARCH_STR)-kernel.ads
+          system.ads<libgnat/system-vxworks-$(ARCH_STR)-kernel.ads
         else
           LIBGNAT_TARGET_PAIRS += \
-          system.ads<system-vxworks-ppc.ads
+          system.ads<libgnat/system-vxworks-ppc.ads
         endif
       endif
       EXTRA_GNATRTL_NONTASKING_OBJS+=i-vxinco.o i-vxwork.o i-vxwoio.o
@@ -614,129 +614,6 @@ ifeq ($(strip $(filter-out powerpc% wrs vxworks vxworksspe vxworks7 vxworks7spe,
   endif
 endif
 
-# PowerPC and e500v2 VxWorks 653
-ifeq ($(strip $(filter-out powerpc% wrs vxworksae vxworksaespe,$(target_cpu) $(target_vendor) $(target_os))),)
-
-  ifeq ($(strip $(filter-out e500%, $(target_alias))),)
-     ARCH_STR=e500
-     # gcc config translates the target e500v2-wrs-vxworks to
-     # powerpc-wrs-vxworksspe. Let's keep the original alias here when
-     # generating s-oscons.ads.
-     target=$(target_alias)
-  else
-     ARCH_STR=ppc
-  endif
-
-  # target pairs for vthreads runtime
-  LIBGNAT_TARGET_PAIRS = \
-  a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
-  a-intnam.ads<libgnarl/a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  g-io.adb<g-io-vxworks-ppc-cert.adb \
-  s-inmaop.adb<libgnarl/s-inmaop-vxworks.adb \
-  s-interr.adb<libgnarl/s-interr-vxworks.adb \
-  s-intman.ads<libgnarl/s-intman-vxworks.ads \
-  s-intman.adb<libgnarl/s-intman-vxworks.adb \
-  s-osinte.adb<libgnarl/s-osinte-vxworks.adb \
-  s-osinte.ads<libgnarl/s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-ae653.ads \
-  s-parame.adb<s-parame-vxworks.adb \
-  s-taprop.adb<libgnarl/s-taprop-vxworks.adb \
-  s-tasinf.ads<libgnarl/s-tasinf-vxworks.ads \
-  s-taspri.ads<libgnarl/s-taspri-vxworks.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp-vxworks.adb \
-  s-vxwext.adb<s-vxwext-noints.adb \
-  s-vxwext.ads<libgnarl/s-vxwext-vthreads.ads \
-  s-vxwork.ads<libgnarl/s-vxwork-ppc.ads \
-  system.ads<system-vxworks-$(ARCH_STR)-vthread.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
-
-  EH_MECHANISM=-gcc
-
-  TOOLS_TARGET_PAIRS=indepsw.adb<indepsw-gnu.adb
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o
-  EXTRA_GNATRTL_TASKING_OBJS=i-vxinco.o s-vxwork.o s-vxwext.o
-
-  EXTRA_LIBGNAT_OBJS+=sigtramp-vxworks.o
-  EXTRA_LIBGNAT_SRCS+=$(VX_SIGTRAMP_EXTRA_SRCS)
-
-  # Extra pairs for the vthreads runtime
-  ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
-    LIBGNAT_TARGET_PAIRS += \
-    s-thread.adb<s-thread-ae653.adb \
-    s-osvers.ads<s-osvers-vxworks-653.ads \
-    $(DUMMY_SOCKETS_TARGET_PAIRS)
-
-    GNATRTL_SOCKETS_OBJS =
-    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o s-osvers.o
-  else
-    LIBGNAT_TARGET_PAIRS += \
-    g-socthi.ads<g-socthi-vxworks.ads \
-    g-socthi.adb<g-socthi-vxworks.adb \
-    g-stsifd.adb<g-stsifd-sockets.adb
-  endif
-
-endif
-
-# VxWorksae / VxWorks 653 for x86 (vxsim) - ?? VxWorks mils not implemented
-ifeq ($(strip $(filter-out %86 wrs vxworksae,$(target_cpu) $(target_vendor) $(target_os))),)
-  # target pairs for kernel + vthreads runtime
-  LIBGNAT_TARGET_PAIRS = \
-  a-elchha.adb<a-elchha-vxworks-ppc-full.adb \
-  a-intnam.ads<libgnarl/a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
-  g-io.adb<g-io-vxworks-ppc-cert.adb \
-  s-inmaop.adb<libgnarl/s-inmaop-vxworks.adb \
-  s-interr.adb<libgnarl/s-interr-vxworks.adb \
-  s-intman.ads<libgnarl/s-intman-vxworks.ads \
-  s-intman.adb<libgnarl/s-intman-vxworks.adb \
-  s-osinte.adb<libgnarl/s-osinte-vxworks.adb \
-  s-osinte.ads<libgnarl/s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-ae653.ads \
-  s-parame.adb<s-parame-vxworks.adb \
-  s-taprop.adb<libgnarl/s-taprop-vxworks.adb \
-  s-tasinf.ads<libgnarl/s-tasinf-vxworks.ads \
-  s-taspri.ads<libgnarl/s-taspri-vxworks.ads \
-  s-tpopsp.adb<libgnarl/s-tpopsp-vxworks.adb \
-  s-vxwext.adb<s-vxwext-noints.adb \
-  s-vxwext.ads<libgnarl/s-vxwext-vthreads.ads \
-  s-vxwork.ads<libgnarl/s-vxwork-x86.ads \
-  system.ads<system-vxworks-x86-vthread.ads \
-  $(ATOMICS_TARGET_PAIRS) \
-  $(ATOMICS_BUILTINS_TARGET_PAIRS)
-
-  EH_MECHANISM=-gcc
-
-  TOOLS_TARGET_PAIRS=indepsw.adb<indepsw-gnu.adb
-
-  EXTRA_GNATRTL_NONTASKING_OBJS=i-vxwork.o i-vxwoio.o s-thread.o
-  EXTRA_GNATRTL_TASKING_OBJS=i-vxinco.o s-vxwork.o s-vxwext.o
-
-  EXTRA_LIBGNAT_OBJS+=vx_stack_info.o
-  GNATRTL_SOCKETS_OBJS =
-
-  # Extra pairs for the vthreads runtime
-  ifeq ($(strip $(filter-out vthreads,$(THREAD_KIND))),)
-    LIBGNAT_TARGET_PAIRS += \
-    s-thread.adb<s-thread-ae653.adb \
-    s-osvers.ads<s-osvers-vxworks-653.ads \
-    $(DUMMY_SOCKETS_TARGET_PAIRS)
-
-    GNATRTL_SOCKETS_OBJS =
-    EXTRA_GNATRTL_NONTASKING_OBJS += s-thread.o s-osvers.o
-  else
-    LIBGNAT_TARGET_PAIRS += \
-    g-socthi.ads<g-socthi-vxworks.ads \
-    g-socthi.adb<g-socthi-vxworks.adb \
-    g-stsifd.adb<g-stsifd-sockets.adb
-  endif
-
-endif
-
 # x86/x86_64 VxWorks
 ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(target_vendor) $(target_os))),)
 
@@ -750,32 +627,32 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
 
   ifeq ($(strip $(filter-out x86_64, $(target_cpu))),)
      X86CPU=x86_64
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<s-atocou-builtin.adb
+     LIBGNAT_TARGET_PAIRS=s-atocou.adb<libgnat/s-atocou-builtin.adb
   else
      X86CPU=x86
-     LIBGNAT_TARGET_PAIRS=s-atocou.adb<s-atocou-x86.adb
+     LIBGNAT_TARGET_PAIRS=s-atocou.adb<libgnat/s-atocou-x86.adb
   endif
 
   LIBGNAT_TARGET_PAIRS+= \
   a-intnam.ads<libgnarl/a-intnam-vxworks.ads \
-  i-vxwork.ads<i-vxwork-x86.ads \
+  i-vxwork.ads<libgnat/i-vxwork-x86.ads \
   s-osinte.adb<libgnarl/s-osinte-vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte-vxworks.ads \
   s-inmaop.adb<libgnarl/s-inmaop-vxworks.adb \
   s-intman.ads<libgnarl/s-intman-vxworks.ads \
   s-intman.adb<libgnarl/s-intman-vxworks.adb \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-parame.adb<s-parame-vxworks.adb \
-  s-stchop.ads<s-stchop-limit.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim-vxworks.adb \
+  s-parame.ads<libgnat/s-parame-vxworks.ads \
+  s-parame.adb<libgnat/s-parame-vxworks.adb \
+  s-stchop.ads<libgnat/s-stchop-limit.ads \
+  s-stchop.adb<libgnat/s-stchop-vxworks.adb \
   s-taprop.adb<libgnarl/s-taprop-vxworks.adb \
   s-tasinf.ads<libgnarl/s-tasinf-vxworks.ads \
   s-taspri.ads<libgnarl/s-taspri-vxworks.ads \
   s-vxwork.ads<libgnarl/s-vxwork-x86.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  g-stsifd.adb<g-stsifd-sockets.adb \
+  g-socthi.ads<libgnat/g-socthi-vxworks.ads \
+  g-socthi.adb<libgnat/g-socthi-vxworks.adb \
+  g-stsifd.adb<libgnat/g-stsifd-sockets.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(CERTMATH_TARGET_PAIRS) \
   $(CERTMATH_TARGET_PAIRS_SQRT_FPU) \
@@ -824,8 +701,8 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
     LIBGNAT_TARGET_PAIRS += \
     s-vxwext.ads<libgnarl/s-vxwext-rtp.ads \
     s-vxwext.adb<libgnarl/s-vxwext-rtp.adb \
-    s-tpopsp.adb<s-tpopsp-vxworks-rtp.adb \
-    system.ads<system-vxworks-x86-rtp.ads
+    s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-rtp.adb \
+    system.ads<libgnat/system-vxworks-x86-rtp.ads
   else
     ifeq ($(strip $(filter-out rtp-smp, $(THREAD_KIND))),)
       LIBGNAT_TARGET_PAIRS += \
@@ -833,7 +710,7 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
       s-vxwext.ads<libgnarl/s-vxwext-rtp.ads \
       s-vxwext.adb<libgnarl/s-vxwext-rtp-smp.adb \
       s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
-      system.ads<$(SVX)-$(X86CPU)-rtp-smp.ads
+      system.ads<libgnat/$(SVX)-$(X86CPU)-rtp-smp.ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o
     else
@@ -843,8 +720,8 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
         s-mudido.adb<libgnarl/s-mudido-affinity.adb \
         s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
         s-vxwext.ads<libgnarl/s-vxwext-kernel.ads \
-        s-vxwext.adb<s-vxwext-kernel-smp.adb \
-        system.ads<$(SVX)-$(X86CPU)-kernel.ads
+        s-vxwext.adb<libgnarl/s-vxwext-kernel-smp.adb \
+        system.ads<libgnat/$(SVX)-$(X86CPU)-kernel.ads
 
         EXTRA_LIBGNAT_OBJS+=affinity.o
       else
@@ -857,10 +734,10 @@ ifeq ($(strip $(filter-out %86 x86_64 wrs vxworks vxworks7,$(target_cpu) $(targe
           LIBGNAT_TARGET_PAIRS += \
           s-vxwext.ads<libgnarl/s-vxwext-kernel.ads \
           s-vxwext.adb<libgnarl/s-vxwext-kernel.adb \
-          system.ads<$(SVX)-x86-kernel.ads
+          system.ads<libgnat/$(SVX)-x86-kernel.ads
         else
           LIBGNAT_TARGET_PAIRS += \
-          system.ads<system-vxworks-x86.ads
+          system.ads<libgnat/system-vxworks-x86.ads
         endif
       endif
 
@@ -905,25 +782,25 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
 
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam-vxworks.ads \
-  a-numaux.ads<a-numaux-vxworks.ads \
+  a-numaux.ads<libgnat/a-numaux-vxworks.ads \
   s-inmaop.adb<libgnarl/s-inmaop-vxworks.adb \
   s-interr.adb<libgnarl/s-interr-vxworks.adb \
   s-intman.ads<libgnarl/s-intman-vxworks.ads \
   s-intman.adb<libgnarl/s-intman-vxworks.adb \
   s-osinte.adb<libgnarl/s-osinte-vxworks.adb \
   s-osinte.ads<libgnarl/s-osinte-vxworks.ads \
-  s-osprim.adb<s-osprim-vxworks.adb \
-  s-parame.ads<s-parame-vxworks.ads \
-  s-parame.adb<s-parame-vxworks.adb \
-  s-stchop.ads<s-stchop-limit.ads \
-  s-stchop.adb<s-stchop-vxworks.adb \
+  s-osprim.adb<libgnat/s-osprim-vxworks.adb \
+  s-parame.ads<libgnat/s-parame-vxworks.ads \
+  s-parame.adb<libgnat/s-parame-vxworks.adb \
+  s-stchop.ads<libgnat/s-stchop-limit.ads \
+  s-stchop.adb<libgnat/s-stchop-vxworks.adb \
   s-taprop.adb<libgnarl/s-taprop-vxworks.adb \
   s-tasinf.ads<libgnarl/s-tasinf-vxworks.ads \
   s-taspri.ads<libgnarl/s-taspri-vxworks.ads \
   s-vxwork.ads<libgnarl/s-vxwork-arm.ads \
-  g-socthi.ads<g-socthi-vxworks.ads \
-  g-socthi.adb<g-socthi-vxworks.adb \
-  g-stsifd.adb<g-stsifd-sockets.adb
+  g-socthi.ads<libgnat/g-socthi-vxworks.ads \
+  g-socthi.adb<libgnat/g-socthi-vxworks.adb \
+  g-stsifd.adb<libgnat/g-stsifd-sockets.adb
 
   TOOLS_TARGET_PAIRS=indepsw.adb<indepsw-gnu.adb
 
@@ -933,7 +810,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     s-vxwext.ads<libgnarl/s-vxwext-rtp.ads \
     s-vxwext.adb<libgnarl/s-vxwext-rtp-smp.adb \
     s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
-    system.ads<$(SVX)-arm-rtp-smp.ads
+    system.ads<libgnat/$(SVX)-arm-rtp-smp.ads
 
     EXTRA_LIBGNAT_OBJS+=affinity.o
 
@@ -945,8 +822,8 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
       s-mudido.adb<libgnarl/s-mudido-affinity.adb \
       s-tpopsp.adb<libgnarl/s-tpopsp-vxworks-tls.adb \
       s-vxwext.ads<libgnarl/s-vxwext-kernel.ads \
-      s-vxwext.adb<s-vxwext-kernel-smp.adb \
-      system.ads<$(SVX)-arm.ads
+      s-vxwext.adb<libgnarl/s-vxwext-kernel-smp.adb \
+      system.ads<libgnat/$(SVX)-arm.ads
 
       EXTRA_LIBGNAT_OBJS+=affinity.o
 
@@ -955,7 +832,7 @@ ifeq ($(strip $(filter-out arm% coff wrs vx%,$(target_cpu) $(target_vendor) $(ta
     else
       LIBGNAT_TARGET_PAIRS += \
       s-tpopsp.adb<libgnarl/s-tpopsp-vxworks.adb \
-      system.ads<$(SVX)-arm.ads
+      system.ads<libgnat/$(SVX)-arm.ads
 
       ifeq ($(strip $(filter-out kernel,$(THREAD_KIND))),)
         LIBGNAT_TARGET_PAIRS += \
@@ -995,13 +872,13 @@ ifeq ($(strip $(filter-out arm% linux-androideabi,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux-android.ads \
   s-osinte.adb<libgnarl/s-osinte-android.adb \
   s-osinte.ads<libgnarl/s-osinte-android.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-arm.ads
+  system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1023,16 +900,16 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-solaris.adb \
   s-osinte.ads<libgnarl/s-osinte-solaris.ads \
-  s-osprim.adb<s-osprim-solaris.adb \
+  s-osprim.adb<libgnat/s-osprim-solaris.adb \
   s-taprop.adb<libgnarl/s-taprop-solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf-solaris.adb \
   s-tasinf.ads<libgnarl/s-tasinf-solaris.ads \
   s-taspri.ads<libgnarl/s-taspri-solaris.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-solaris.adb \
-  g-soliop.ads<g-soliop-solaris.ads \
+  g-soliop.ads<libgnat/g-soliop-solaris.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-solaris-sparc.ads
+  system.ads<libgnat/system-solaris-sparc.ads
 
   EH_MECHANISM=-gcc
   THREADSLIB = -lposix4 -lthread
@@ -1056,15 +933,15 @@ ifeq ($(strip $(filter-out %86 %x86_64 solaris2%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-solaris.adb \
   s-osinte.ads<libgnarl/s-osinte-solaris.ads \
-  s-osprim.adb<s-osprim-solaris.adb \
+  s-osprim.adb<libgnat/s-osprim-solaris.adb \
   s-taprop.adb<libgnarl/s-taprop-solaris.adb \
   s-tasinf.adb<libgnarl/s-tasinf-solaris.adb \
   s-tasinf.ads<libgnarl/s-tasinf-solaris.ads \
   s-taspri.ads<libgnarl/s-taspri-solaris.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-solaris.adb \
-  g-soliop.ads<g-soliop-solaris.ads \
+  g-soliop.ads<libgnat/g-soliop-solaris.ads \
   $(ATOMICS_TARGET_PAIRS) \
-  system.ads<system-solaris-x86.ads
+  system.ads<libgnat/system-solaris-x86.ads
 
   ifeq ($(strip $(filter-out %86 solaris2%,$(target_cpu) $(target_os))),)
     ifeq ($(strip $(MULTISUBDIR)),/amd64)
@@ -1105,14 +982,14 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
-  g-sercom.adb<g-sercom-linux.adb \
-  s-tsmona.adb<s-tsmona-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
+  s-tsmona.adb<libgnat/s-tsmona-linux.adb \
   a-exetim.adb<libgnarl/a-exetim-posix.adb \
   a-exetim.ads<libgnarl/a-exetim-default.ads \
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
-  system.ads<system-linux-x86.ads
+  system.ads<libgnat/system-linux-x86.ads
 
   ifeq ($(strip $(MULTISUBDIR)),/64)
     LIBGNAT_TARGET_PAIRS += $(X86_64_TARGET_PAIRS)
@@ -1123,7 +1000,7 @@ ifeq ($(strip $(filter-out %86 linux%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS += \
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
@@ -1150,14 +1027,14 @@ ifeq ($(strip $(filter-out %86 kfreebsd%,$(target_cpu) $(target_os))),)
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
-  s-osinte.ads<s-osinte-kfreebsd-gnu.ads \
-  s-osprim.adb<libgnarl/s-osprim-posix.adb \
+  s-osinte.ads<libgnarl/s-osinte-kfreebsd-gnu.ads \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1179,17 +1056,15 @@ ifeq ($(strip $(filter-out %86 pc gnu,$(target_cpu) $(target_vendor) $(target_os
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-gnu.adb \
   s-osinte.ads<libgnarl/s-osinte-gnu.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
-  TOOLS_TARGET_PAIRS =  \
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb
+  TOOLS_TARGET_PAIRS =  indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
 
@@ -1203,17 +1078,17 @@ endif
 ifeq ($(strip $(filter-out x86_64 kfreebsd%,$(target_cpu) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
   a-intnam.ads<libgnarl/a-intnam-freebsd.ads \
-  a-numaux.adb<a-numaux-x86.adb \
-  a-numaux.ads<a-numaux-x86.ads \
+  a-numaux.adb<libgnat/a-numaux-x86.adb \
+  a-numaux.ads<libgnat/a-numaux-x86.ads \
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-kfreebsd-gnu.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1233,16 +1108,14 @@ ifeq ($(strip $(filter-out %aarch64 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte-freebsd.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
-  TOOLS_TARGET_PAIRS = \
-  mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb
   GNATLIB_SHARED = gnatlib-shared-dual
 
   EH_MECHANISM=-gcc
@@ -1261,13 +1134,13 @@ ifeq ($(strip $(filter-out %86 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte-freebsd.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_TARGET_PAIRS) \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
   GNATLIB_SHARED = gnatlib-shared-dual
 
@@ -1289,13 +1162,13 @@ ifeq ($(strip $(filter-out %86_64 freebsd%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-freebsd.adb \
   s-osinte.ads<libgnarl/s-osinte-freebsd.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
-  system.ads<system-freebsd.ads
+  system.ads<libgnat/system-freebsd.ads
 
   GNATLIB_SHARED = gnatlib-shared-dual
 
@@ -1317,16 +1190,14 @@ ifeq ($(strip $(filter-out %86_64 dragonfly%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.adb<libgnarl/s-osinte-dragonfly.adb \
   s-osinte.ads<libgnarl/s-osinte-dragonfly.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
-  system.ads<system-dragonfly-x86_64.ads
+  system.ads<libgnat/system-dragonfly-x86_64.ads
 
-  TOOLS_TARGET_PAIRS = \
-  mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb
   GNATLIB_SHARED = gnatlib-shared-dual
 
   EXTRA_GNATRTL_NONTASKING_OBJS=g-sse.o g-ssvety.o
@@ -1347,13 +1218,13 @@ ifeq ($(strip $(filter-out s390% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-linux-s390.ads
+  system.ads<libgnat/system-linux-s390.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1367,19 +1238,19 @@ endif
 # HP/PA HP-UX 10
 ifeq ($(strip $(filter-out hppa% hp hpux10%,$(target_cpu) $(target_vendor) $(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
-  a-excpol.adb<a-excpol-abort.adb \
+  a-excpol.adb<libgnat/a-excpol-abort.adb \
   a-intnam.ads<libgnarl/a-intnam-hpux.ads \
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
   s-interr.adb<libgnarl/s-interr-sigaction.adb \
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-hpux-dce.adb \
   s-osinte.ads<libgnarl/s-osinte-hpux-dce.ads \
-  s-parame.ads<s-parame-hpux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-parame.ads<libgnat/s-parame-hpux.ads \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-hpux-dce.adb \
   s-taspri.ads<libgnarl/s-taspri-hpux-dce.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
-  system.ads<system-hpux.ads
+  system.ads<libgnat/system-hpux.ads
 
   EH_MECHANISM=-gcc
 endif
@@ -1392,13 +1263,13 @@ ifeq ($(strip $(filter-out hppa% hp hpux11%,$(target_cpu) $(target_vendor) $(tar
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-hpux.ads \
-  s-parame.ads<s-parame-hpux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
-  s-traceb.adb<s-traceb-hpux.adb \
+  s-parame.ads<libgnat/s-parame-hpux.ads \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
+  s-traceb.adb<libgnat/s-traceb-hpux.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-hpux.ads
+  system.ads<libgnat/system-hpux.ads
 
   EH_MECHANISM=-gcc
   TGT_LIB = /usr/lib/libcl.a
@@ -1418,13 +1289,13 @@ ifeq ($(strip $(filter-out ibm aix%,$(target_vendor) $(target_os))),)
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-aix.adb \
   s-osinte.ads<libgnarl/s-osinte-aix.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-aix.ads
+  system.ads<libgnat/system-aix.ads
 
   ifeq ($(findstring ppc64, \
 	  $(shell $(GCC_FOR_TARGET) $(GNATLIBCFLAGS) \
@@ -1444,18 +1315,18 @@ endif
 # RTEMS
 ifeq ($(strip $(filter-out rtems%,$(target_os))),)
   LIBGNAT_TARGET_PAIRS = \
-  system.ads<system-rtems.ads \
-  a-intnam.ads<a-intnam-rtems.ads \
+  system.ads<libgnat/system-rtems.ads \
+  a-intnam.ads<libgnarl/a-intnam-rtems.ads \
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-rtems.adb \
   s-osinte.ads<libgnarl/s-osinte-rtems.ads \
-  s-osprim.adb<s-osprim-posix.adb \
-  s-parame.adb<s-parame-rtems.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
+  s-parame.adb<libgnat/s-parame-rtems.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
-  s-tpopsp.adb<s-tpopsp-tls.adb \
-  s-stchop.adb<s-stchop-rtems.adb \
+  s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
+  s-stchop.adb<libgnat/s-stchop-rtems.adb \
   s-interr.adb<libgnarl/s-interr-hwint.adb
 endif
 
@@ -1477,10 +1348,10 @@ ifeq ($(strip $(filter-out %djgpp,$(target_os))),)
 	s-inmaop.adb<libgnarl/s-inmaop-dummy.adb \
 	s-intman.adb<libgnarl/s-intman-dummy.adb \
 	s-osinte.ads<libgnarl/s-osinte-dummy.ads \
-	s-osprim.adb<s-osprim-unix.adb \
+	s-osprim.adb<libgnat/s-osprim-unix.adb \
 	s-taprop.adb<libgnarl/s-taprop-dummy.adb \
 	s-taspri.ads<libgnarl/s-taspri-dummy.ads \
-	system.ads<system-djgpp.ads \
+	system.ads<libgnat/system-djgpp.ads \
 	$(DUMMY_SOCKETS_TARGET_PAIRS)
 
   EH_MECHANISM=-gcc
@@ -1496,39 +1367,39 @@ ifeq ($(strip $(filter-out cygwin% mingw32% pe,$(target_os))),)
   # a long-term project to disentangle them.
   ifeq ($(strip $(filter-out cygwin%,$(target_os))),)
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<s-memory.adb \
-    g-socthi.ads<g-socthi.ads \
-    g-socthi.adb<g-socthi.adb
+    s-memory.adb<libgnat/s-memory.adb \
+    g-socthi.ads<libgnat/g-socthi.ads \
+    g-socthi.adb<libgnat/g-socthi.adb
   else
     LIBGNAT_TARGET_PAIRS = \
-    s-memory.adb<s-memory-mingw.adb \
-    g-socthi.ads<g-socthi-mingw.ads \
-    g-socthi.adb<g-socthi-mingw.adb
+    s-memory.adb<libgnat/s-memory-mingw.adb \
+    g-socthi.ads<libgnat/g-socthi-mingw.ads \
+    g-socthi.adb<libgnat/g-socthi-mingw.adb
   endif
   LIBGNAT_TARGET_PAIRS += \
-  a-dirval.adb<a-dirval-mingw.adb \
-  a-excpol.adb<a-excpol-abort.adb \
-  s-gloloc.adb<s-gloloc-mingw.adb \
+  a-dirval.adb<libgnat/a-dirval-mingw.adb \
+  a-excpol.adb<libgnat/a-excpol-abort.adb \
+  s-gloloc.adb<libgnat/s-gloloc-mingw.adb \
   s-inmaop.adb<libgnarl/s-inmaop-dummy.adb \
   s-taspri.ads<libgnarl/s-taspri-mingw.ads \
   s-tasinf.adb<libgnarl/s-tasinf-mingw.adb \
   s-tasinf.ads<libgnarl/s-tasinf-mingw.ads \
-  g-stsifd.adb<g-stsifd-sockets.adb \
-  g-soliop.ads<g-soliop-mingw.ads \
+  g-stsifd.adb<libgnat/g-stsifd-sockets.adb \
+  g-soliop.ads<libgnat/g-soliop-mingw.ads \
   $(ATOMICS_TARGET_PAIRS) \
-  system.ads<system-mingw.ads
+  system.ads<libgnat/system-mingw.ads
 
   LIBGNAT_TARGET_PAIRS += \
   a-exetim.adb<libgnarl/a-exetim-mingw.adb \
   a-exetim.ads<libgnarl/a-exetim-mingw.ads \
   a-intnam.ads<libgnarl/a-intnam-mingw.ads \
-  g-sercom.adb<g-sercom-mingw.adb \
-  s-tsmona.adb<s-tsmona-mingw.adb \
+  g-sercom.adb<libgnat/g-sercom-mingw.adb \
+  s-tsmona.adb<libgnat/s-tsmona-mingw.adb \
   s-interr.adb<libgnarl/s-interr-sigaction.adb \
   s-intman.adb<libgnarl/s-intman-mingw.adb \
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-mingw.ads \
-  s-osprim.adb<s-osprim-mingw.adb \
+  s-osprim.adb<libgnat/s-osprim-mingw.adb \
   s-taprop.adb<libgnarl/s-taprop-mingw.adb
 
   ifeq ($(strip $(filter-out x86_64%,$(target_cpu))),)
@@ -1579,14 +1450,14 @@ ifeq ($(strip $(filter-out mips% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux-mips.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  g-sercom.adb<g-sercom-linux.adb \
-  system.ads<system-linux-mips.ads
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
+  system.ads<libgnat/system-linux-mips.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1611,16 +1482,16 @@ ifeq ($(strip $(filter-out powerpc% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-ppc.ads
+  system.ads<libgnat/system-linux-ppc.ads
 
   LIBGNAT_TARGET_PAIRS = \
     $(LIBGNAT_TARGET_PAIRS_COMMON) \
     s-mudido.adb<libgnarl/s-mudido-affinity.adb \
     s-osinte.ads<libgnarl/s-osinte-linux.ads \
-    s-osprim.adb<s-osprim-posix.adb \
+    s-osprim.adb<libgnat/s-osprim-posix.adb \
     s-taprop.adb<libgnarl/s-taprop-linux.adb \
     s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
     s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
@@ -1646,7 +1517,7 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
@@ -1654,7 +1525,7 @@ ifeq ($(strip $(filter-out arm% linux-gnueabi%,$(target_cpu) $(target_os))),)
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-arm.ads
+  system.ads<libgnat/system-linux-arm.ads
 
   ifeq ($(strip $(filter-out arm%b,$(target_cpu))),)
     EH_MECHANISM=
@@ -1685,16 +1556,16 @@ ifeq ($(strip $(filter-out aarch64% linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-arm.ads
+  system.ads<libgnat/system-linux-arm.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1715,13 +1586,13 @@ ifeq ($(strip $(filter-out sparc% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux-sparc.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
-  system.ads<system-linux-sparc.ads
+  system.ads<libgnat/system-linux-sparc.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1742,13 +1613,13 @@ ifeq ($(strip $(filter-out hppa% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux-hppa.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-linux-hppa.ads
+  system.ads<libgnat/system-linux-hppa.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1766,20 +1637,18 @@ ifeq ($(strip $(filter-out m68k% linux%,$(target_cpu) $(target_os))),)
   a-intnam.ads<libgnarl/a-intnam-linux.ads \
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
   s-intman.adb<libgnarl/s-intman-posix.adb \
-  s-linux.ads<s-linux.ads \
+  s-linux.ads<libgnat/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-linux-m68k.ads
+  system.ads<libgnat/system-linux-m68k.ads
 
-  TOOLS_TARGET_PAIRS =  \
-    mlib-tgt-specific.adb<mlib-tgt-specific-linux.adb \
-    indepsw.adb<indepsw-gnu.adb
+  TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
   EXTRA_GNATRTL_TASKING_OBJS=s-linux.o
   EH_MECHANISM=-gcc
@@ -1798,13 +1667,13 @@ ifeq ($(strip $(filter-out sh4% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
-  system.ads<system-linux-sh4.ads
+  system.ads<libgnat/system-linux-sh4.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-linux.adb
 
@@ -1823,7 +1692,7 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   a-exetim.adb<libgnarl/a-exetim-posix.adb \
   a-exetim.ads<libgnarl/a-exetim-default.ads \
   a-intnam.ads<libgnarl/a-intnam-linux.ads \
-  a-numaux.ads<a-numaux-libc-x86.ads \
+  a-numaux.ads<libgnat/a-numaux-libc-x86.ads \
   a-synbar.adb<libgnarl/a-synbar-posix.adb \
   a-synbar.ads<libgnarl/a-synbar-posix.ads \
   s-inmaop.adb<libgnarl/s-inmaop-posix.adb \
@@ -1832,16 +1701,16 @@ ifeq ($(strip $(filter-out %ia64 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-ia64.ads
+  system.ads<libgnat/system-linux-ia64.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1862,13 +1731,13 @@ ifeq ($(strip $(filter-out ia64% hp hpux%,$(target_cpu) $(target_vendor) $(targe
   s-intman.adb<libgnarl/s-intman-posix.adb \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
   s-osinte.ads<libgnarl/s-osinte-hpux.ads \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-posix.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
   s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-hpux-ia64.ads
+  system.ads<libgnat/system-hpux-ia64.ads
 
   MISCLIB=
   EH_MECHANISM=-gcc
@@ -1889,7 +1758,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
   s-linux.ads<libgnarl/s-linux-alpha.ads \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
@@ -1897,7 +1766,7 @@ ifeq ($(strip $(filter-out alpha% linux%,$(target_cpu) $(target_os))),)
   s-taspri.ads<libgnarl/s-taspri-posix-noaltstack.ads \
   $(ATOMICS_TARGET_PAIRS) \
   $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-  system.ads<system-linux-alpha.ads
+  system.ads<libgnat/system-linux-alpha.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1923,18 +1792,18 @@ ifeq ($(strip $(filter-out %x86_64 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-posix.adb \
-  s-osprim.adb<s-osprim-posix.adb \
+  s-osprim.adb<libgnat/s-osprim-posix.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
   $(TRASYM_DWARF_UNIX_PAIRS) \
-  s-tsmona.adb<s-tsmona-linux.adb \
+  s-tsmona.adb<libgnat/s-tsmona-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
-  system.ads<system-linux-x86.ads
+  system.ads<libgnat/system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1963,16 +1832,16 @@ ifeq ($(strip $(filter-out %x32 linux%,$(target_cpu) $(target_os))),)
   s-mudido.adb<libgnarl/s-mudido-affinity.adb \
   s-osinte.ads<libgnarl/s-osinte-linux.ads \
   s-osinte.adb<libgnarl/s-osinte-x32.adb \
-  s-osprim.adb<s-osprim-x32.adb \
+  s-osprim.adb<libgnat/s-osprim-x32.adb \
   s-taprop.adb<libgnarl/s-taprop-linux.adb \
   s-tasinf.ads<libgnarl/s-tasinf-linux.ads \
   s-tasinf.adb<libgnarl/s-tasinf-linux.adb \
   s-tpopsp.adb<libgnarl/s-tpopsp-tls.adb \
   s-taspri.ads<libgnarl/s-taspri-posix.ads \
-  g-sercom.adb<g-sercom-linux.adb \
+  g-sercom.adb<libgnat/g-sercom-linux.adb \
   $(ATOMICS_TARGET_PAIRS) \
   $(X86_64_TARGET_PAIRS) \
-  system.ads<system-linux-x86.ads
+  system.ads<libgnat/system-linux-x86.ads
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-gnu.adb
 
@@ -1995,15 +1864,15 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
     s-osinte.ads<libgnarl/s-osinte-darwin.ads \
     s-taprop.adb<libgnarl/s-taprop-posix.adb \
     s-taspri.ads<libgnarl/s-taspri-posix.ads \
-    g-sercom.adb<g-sercom-linux.adb \
+    g-sercom.adb<libgnat/g-sercom-linux.adb \
     s-tpopsp.adb<libgnarl/s-tpopsp-posix-foreign.adb
 
   ifeq ($(strip $(filter-out %86,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman-susv3.adb \
-      s-osprim.adb<s-osprim-darwin.adb \
+      s-osprim.adb<libgnat/s-osprim-darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
-      system.ads<system-darwin-x86.ads
+      system.ads<libgnat/system-darwin-x86.ads
 
     ifeq ($(strip $(MULTISUBDIR)),/x86_64)
       SO_OPTS += -m64
@@ -2018,11 +1887,11 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   ifeq ($(strip $(filter-out %x86_64,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman-susv3.adb \
-      s-osprim.adb<s-osprim-darwin.adb \
+      s-osprim.adb<libgnat/s-osprim-darwin.adb \
       a-exetim.ads<libgnarl/a-exetim-default.ads \
       a-exetim.adb<libgnarl/a-exetim-darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
-      system.ads<system-darwin-x86.ads
+      system.ads<libgnat/system-darwin-x86.ads
 
     ifeq ($(strip $(MULTISUBDIR)),/i386)
       SO_OPTS += -m32
@@ -2038,12 +1907,12 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   ifeq ($(strip $(filter-out powerpc%,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman-posix.adb \
-      s-osprim.adb<s-osprim-posix.adb \
-      a-numaux.ads<a-numaux-darwin.ads \
-      a-numaux.adb<a-numaux-darwin.adb \
+      s-osprim.adb<libgnat/s-osprim-posix.adb \
+      a-numaux.ads<libgnat/a-numaux-darwin.ads \
+      a-numaux.adb<libgnat/a-numaux-darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
       $(ATOMICS_BUILTINS_TARGET_PAIRS) \
-      system.ads<system-darwin-ppc.ads
+      system.ads<libgnat/system-darwin-ppc.ads
 
     ifeq ($(strip $(MULTISUBDIR)),/ppc64)
         SO_OPTS += -m64
@@ -2053,25 +1922,25 @@ ifeq ($(strip $(filter-out darwin%,$(target_os))),)
   ifeq ($(strip $(filter-out arm,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman-susv3.adb \
-      s-osprim.adb<s-osprim-darwin.adb \
+      s-osprim.adb<libgnat/s-osprim-darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
       $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-arm.ads
+      system.ads<libgnat/system-darwin-arm.ads
   endif
 
   ifeq ($(strip $(filter-out arm64 aarch64,$(target_cpu))),)
     LIBGNAT_TARGET_PAIRS += \
       s-intman.adb<libgnarl/s-intman-susv3.adb \
-      s-osprim.adb<s-osprim-darwin.adb \
+      s-osprim.adb<libgnat/s-osprim-darwin.adb \
       $(ATOMICS_TARGET_PAIRS) \
       $(ATOMICS_BUILTINS_TARGET_PAIRS)
 
     EXTRA_LIBGNAT_OBJS+=sigtramp-ios.o
     EXTRA_LIBGNAT_SRCS+=sigtramp.h
     LIBGNAT_TARGET_PAIRS += \
-      system.ads<system-darwin-arm.ads
+      system.ads<libgnat/system-darwin-arm.ads
   endif
 
   TOOLS_TARGET_PAIRS = indepsw.adb<indepsw-darwin.adb
@@ -2086,16 +1955,16 @@ endif
 
 ifeq ($(EH_MECHANISM),-gcc)
   LIBGNAT_TARGET_PAIRS += \
-    s-excmac.ads<s-excmac-gcc.ads \
-    s-excmac.adb<s-excmac-gcc.adb
+    s-excmac.ads<libgnat/s-excmac-gcc.ads \
+    s-excmac.adb<libgnat/s-excmac-gcc.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
 
 ifeq ($(EH_MECHANISM),-arm)
   LIBGNAT_TARGET_PAIRS += \
-    s-excmac.ads<s-excmac-arm.ads \
-    s-excmac.adb<s-excmac-arm.adb
+    s-excmac.ads<libgnat/s-excmac-arm.ads \
+    s-excmac.adb<libgnat/s-excmac-arm.adb
   EXTRA_LIBGNAT_OBJS+=raise-gcc.o
   EXTRA_GNATRTL_NONTASKING_OBJS+=g-cppexc.o s-excmac.o
 endif
@@ -2138,12 +2007,21 @@ GNATRTL_OBJS = $(GNATRTL_NONTASKING_OBJS) $(GNATRTL_TASKING_OBJS) \
   memtrack.o
 
 # Run time source files
+# Note that libgnat contains a significant number of files. In orde to avoid
+# command line length limitations the source regexp has been split for that
+# directory.
 ADA_INCLUDE_SRCS =\
- ada.ads calendar.ads directio.ads gnat.ads interfac.ads ioexcept.ads \
- machcode.ads text_io.ads unchconv.ads unchdeal.ads \
- sequenio.ads system.ads memtrack.adb \
- a-[a-o]*.adb a-[p-z]*.adb a-[a-o]*.ads a-[p-z]*.ads g-*.ad? i-*.ad? \
- s-[a-o]*.adb s-[p-z]*.adb s-[a-o]*.ads s-[p-z]*.ads \
+ libgnat/ada.ads libgnat/calendar.ads libgnat/directio.ads libgnat/gnat.ads libgnat/interfac.ads libgnat/ioexcept.ads \
+ libgnat/machcode.ads libgnat/text_io.ads libgnat/unchconv.ads libgnat/unchdeal.ads \
+ libgnat/sequenio.ads libgnat/system.ads libgnat/memtrack.adb \
+ libgnat/a-[a-o]*.adb libgnat/a-[a-o]*.ads \
+ libgnat/a-[p-z]*.adb libgnat/a-[p-z]*.ads \
+ libgnat/g-[a-o]*.adb libgnat/g-[a-o]*.ads \
+ libgnat/g-[p-z]*.adb libgnat/g-[p-z]*.ads \
+ libgnat/s-[a-o]*.adb libgnat/s-[a-o]*.ads \
+ libgnat/s-[p-z]*.adb libgnat/s-[p-z]*.ads \
+ libgnat/i-[a-o]*.adb libgnat/i-[a-o]*.ads \
+ libgnat/i-[p-z]*.adb libgnat/i-[p-z]*.ads \
  libgnarl/[agis]-[a-z]*.ad[sb]
 
 # Files that are in ADA_INCLUDE_SRCS but not in all configurations.
