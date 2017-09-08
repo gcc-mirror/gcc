@@ -8199,7 +8199,8 @@ package body Sem_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators (placeholder ???)
+      --  Attributes related to Ada 2012 iterators; nothing to evaluate for
+      --  these.
 
       when Attribute_Constant_Indexing
          | Attribute_Default_Iterator
