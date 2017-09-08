@@ -1214,10 +1214,10 @@ package body Exp_Disp is
          E : Entity_Id := Typ;
 
       begin
-         --  Handle access to class-wide interface types
+         --  Handle access types
 
          if Is_Access_Type (E) then
-            E := Etype (Directly_Designated_Type (E));
+            E := Directly_Designated_Type (E);
          end if;
 
          --  Handle class-wide types. This conversion can appear explicitly in
@@ -1521,11 +1521,6 @@ package body Exp_Disp is
             Insert_Action (N, Func, Suppress => All_Checks);
 
             if Is_Access_Type (Etype (Expression (N))) then
-
-               Apply_Accessibility_Check
-                 (N           => Expression (N),
-                  Typ         => Etype (N),
-                  Insert_Node => N);
 
                --  Generate: Func (Address!(Expression))
 

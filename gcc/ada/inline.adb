@@ -1179,29 +1179,29 @@ package body Inline is
       --  types.
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id has any contract (Pre, Post,
-      --  Global, Depends, etc.) The presence of Extensions_Visible
-      --  or Volatile_Function is also considered as a contract here.
+      --  Return True if subprogram Id has any contract. The presence of
+      --  Extensions_Visible or Volatile_Function is also considered as a
+      --  contract here.
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id defines a compilation unit
+      --  Return True if subprogram Id defines a compilation unit
       --  Shouldn't this be in Sem_Aux???
 
       function In_Package_Spec (Id : Node_Id) return Boolean;
-      --  Returns True if subprogram Id is defined in the package
-      --  specification, either its visible or private part.
+      --  Return True if subprogram Id is defined in the package specification,
+      --  either its visible or private part.
 
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
 
       function Has_Formal_With_Discriminant_Dependent_Fields
-        (Id : Entity_Id) return Boolean is
-
+        (Id : Entity_Id) return Boolean
+      is
          function Has_Discriminant_Dependent_Component
            (Typ : Entity_Id) return Boolean;
-         --  Determine whether unconstrained record type Typ has at least
-         --  one component that depends on a discriminant.
+         --  Determine whether unconstrained record type Typ has at least one
+         --  component that depends on a discriminant.
 
          ------------------------------------------
          -- Has_Discriminant_Dependent_Component --
@@ -1213,8 +1213,8 @@ package body Inline is
             Comp : Entity_Id;
 
          begin
-            --  Inspect all components of the record type looking for one
-            --  that depends on a discriminant.
+            --  Inspect all components of the record type looking for one that
+            --  depends on a discriminant.
 
             Comp := First_Component (Typ);
             while Present (Comp) loop

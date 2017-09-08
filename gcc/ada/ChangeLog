@@ -1,3 +1,73 @@
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_ch6.ads (Make_Build_In_Place_Iface_Call_In_Allocator): New
+	subprogram.
+	(Make_Build_In_Place_Iface_Call_In_Anonymous_Context): New subprogram.
+	(Make_Build_In_Place_Iface_Call_In_Object_Declaration): New
+	subprogram.
+	(Unqual_BIP_Iface_Function_Call): New subprogram.
+	* exp_ch6.adb (Replace_Renaming_Declaration_Id): New
+	subprogram containing code that was previously inside
+	Make_Build_In_Place_Call_In_Object_Declaration since it is also
+	required for one of the new subprograms.
+	(Expand_Actuals):
+	Invoke Make_Build_In_Place_Iface_Call_In_Anonymous_Context
+	(Expand_N_Extended_Return_Statement): Extend the
+	cases covered by an assertion on expected BIP object
+	declarations.
+	(Make_Build_In_Place_Call_In_Assignment):
+	Removing unused code; found working on this ticket.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Move the code
+	that replaces the internal name of the renaming declaration
+	into the new subprogram Replace_Renaming_Declaration_Id.
+	(Make_Build_In_Place_Iface_Call_In_Allocator): New subprogram.
+	(Make_Build_In_Place_Iface_Call_In_Anonymous_Context):
+	New subprogram.
+	(Make_Build_In_Place_Iface_Call_In_Object_Declaration): New
+	subprogram.
+	(Unqual_BIP_Iface_Function_Call): New subprogram.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Invoke the new
+	subprogram Make_Build_In_Place_Iface_Call_In_Object_Declaration.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Invoke the new
+	subprogram Make_Build_In_Place_Iface_Call_In_Anonymous_Context.
+	* exp_ch4.adb (Expand_Allocator_Expression): Invoke the new
+	subprogram Make_Build_In_Place_Iface_Call_In_Allocator.
+	(Expand_N_Indexed_Component): Invoke the new subprogram
+	Make_Build_In_Place_Iface_Call_In_Anonymous_Context.
+	(Expand_N_Selected_Component): Invoke the new subprogram
+	Make_Build_In_Place_Iface_Call_In_Anonymous_Context.
+	(Expand_N_Slice): Invoke the new subprogram
+	Make_Build_In_Place_Iface_Call_In_Anonymous_Context.
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration):
+	Invoke the new subprogram
+	Make_Build_In_Place_Iface_Call_In_Anonymous_Context.
+
+2017-09-08  Javier Miranda  <miranda@adacore.com>
+
+	* exp_disp.adb (Expand_Interface_Conversion): Fix handling of
+	access to interface types.  Remove also the accessibility check.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch6.adb (Freeze_Expr_Types): Really freeze
+	all the types that are referenced by the expression.
+	(Analyze_Expression_Function): Call Freeze_Expr_Types for
+	a completion instead of manually freezing the type of the
+	expression.
+	(Analyze_Subprogram_Body_Helper): Do not call Freeze_Expr_Types here.
+
+2017-09-08  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_prag.adb (Replace_Discriminals_Of_Protected_Op):
+	New procedure, auxiliary to Expand_Pragma_Check, to handle
+	references to the discriminants of a protected type within a
+	precondition of a protected operation. This is needed because
+	the original precondition has been analyzed in the context of
+	the protected declaration, but in the body of the operation
+	references to the discriminants have been replaved by references
+	to the discriminants of the target object, and these references
+	are only created when expanding the protected body.
+
 2017-09-08  Yannick Moy  <moy@adacore.com>
 
 	* sem_prag.adb (Analyze_Pragma): Issue more precise error messages on

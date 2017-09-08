@@ -30,6 +30,7 @@ with Debug;     use Debug;
 with Einfo;     use Einfo;
 with Errout;    use Errout;
 with Elists;    use Elists;
+with Expander;  use Expander;
 with Exp_Aggr;  use Exp_Aggr;
 with Exp_Atag;  use Exp_Atag;
 with Exp_Ch2;   use Exp_Ch2;
@@ -45,6 +46,7 @@ with Exp_Tss;   use Exp_Tss;
 with Exp_Util;  use Exp_Util;
 with Freeze;    use Freeze;
 with Inline;    use Inline;
+with Itypes;    use Itypes;
 with Lib;       use Lib;
 with Namet;     use Namet;
 with Nlists;    use Nlists;
@@ -244,6 +246,19 @@ package body Exp_Ch6 is
    procedure Insert_Post_Call_Actions (N : Node_Id; Post_Call : List_Id);
    --  Insert the Post_Call list previously produced by routine Expand_Actuals
    --  or Expand_Call_Helper into the tree.
+
+   procedure Replace_Renaming_Declaration_Id
+      (New_Decl  : Node_Id;
+       Orig_Decl : Node_Id);
+   --  Replace the internal identifier of the new renaming declaration New_Decl
+   --  with the identifier of its original declaration Orig_Decl exchanging the
+   --  entities containing their defining identifiers to ensure the correct
+   --  replacement of the object declaration by the object renaming declaration
+   --  to avoid homograph conflicts (since the object declaration's defining
+   --  identifier was already entered in the current scope). The Next_Entity
+   --  links of the two entities are also swapped since the entities are part
+   --  of the return scope's entity list and the list structure would otherwise
+   --  be corrupted. The homonym chain is preserved as well.
 
    procedure Rewrite_Function_Call_For_C (N : Node_Id);
    --  When generating C code, replace a call to a function that returns an
@@ -1878,6 +1893,13 @@ package body Exp_Ch6 is
 
             if Is_Build_In_Place_Function_Call (Actual) then
                Make_Build_In_Place_Call_In_Anonymous_Context (Actual);
+
+            --  Ada 2005 (AI-318-02): Specialization of the previous case for
+            --  actuals containing build-in-place function calls whose returned
+            --  object covers interface types.
+
+            elsif Present (Unqual_BIP_Iface_Function_Call (Actual)) then
+               Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Actual);
             end if;
 
             Apply_Constraint_Check (Actual, E_Formal);
@@ -4793,8 +4815,19 @@ package body Exp_Ch6 is
          then
             pragma Assert
               (Nkind (Original_Node (Ret_Obj_Decl)) = N_Object_Declaration
-                and then Is_Build_In_Place_Function_Call
-                           (Expression (Original_Node (Ret_Obj_Decl))));
+                and then
+
+                  --  It is a regular BIP object declaration
+
+                  (Is_Build_In_Place_Function_Call
+                     (Expression (Original_Node (Ret_Obj_Decl)))
+
+                  --  It is a BIP object declaration that displaces the pointer
+                  --  to the object to reference a convered interface type.
+
+                  or else
+                    Present (Unqual_BIP_Iface_Function_Call
+                              (Expression (Original_Node (Ret_Obj_Decl))))));
 
             --  Return the build-in-place result by reference
 
@@ -7952,7 +7985,6 @@ package body Exp_Ch6 is
       Ptr_Typ_Decl : Node_Id;
       New_Expr     : Node_Id;
       Result_Subt  : Entity_Id;
-      Target       : Node_Id;
 
    begin
       --  If the call has already been processed to add build-in-place actuals
@@ -8038,26 +8070,6 @@ package body Exp_Ch6 is
       Insert_After_And_Analyze (Ptr_Typ_Decl, Obj_Decl);
 
       Rewrite (Assign, Make_Null_Statement (Loc));
-
-      --  Retrieve the target of the assignment
-
-      if Nkind (Lhs) = N_Selected_Component then
-         Target := Selector_Name (Lhs);
-      elsif Nkind (Lhs) = N_Type_Conversion then
-         Target := Expression (Lhs);
-      else
-         Target := Lhs;
-      end if;
-
-      --  If we are assigning to a return object or this is an expression of
-      --  an extension aggregate, the target should either be an identifier
-      --  or a simple expression. All other cases imply a different scenario.
-
-      if Nkind (Target) in N_Has_Entity then
-         Target := Entity (Target);
-      else
-         return;
-      end if;
    end Make_Build_In_Place_Call_In_Assignment;
 
    ----------------------------------------------------
@@ -8406,44 +8418,8 @@ package body Exp_Ch6 is
             end if;
 
             Analyze (Obj_Decl);
-
-            --  Replace the internal identifier of the renaming declaration's
-            --  entity with identifier of the original object entity. We also
-            --  have to exchange the entities containing their defining
-            --  identifiers to ensure the correct replacement of the object
-            --  declaration by the object renaming declaration to avoid
-            --  homograph conflicts (since the object declaration's defining
-            --  identifier was already entered in current scope). The
-            --  Next_Entity links of the two entities also have to be swapped
-            --  since the entities are part of the return scope's entity list
-            --  and the list structure would otherwise be corrupted. Finally,
-            --  the homonym chain must be preserved as well.
-
-            declare
-               Ren_Id  : constant Entity_Id := Defining_Entity (Obj_Decl);
-               Next_Id : constant Entity_Id := Next_Entity (Ren_Id);
-
-            begin
-               Set_Chars (Ren_Id, Chars (Obj_Def_Id));
-
-               --  Swap next entity links in preparation for exchanging
-               --  entities.
-
-               Set_Next_Entity (Ren_Id, Next_Entity (Obj_Def_Id));
-               Set_Next_Entity (Obj_Def_Id, Next_Id);
-               Set_Homonym     (Ren_Id, Homonym (Obj_Def_Id));
-
-               Exchange_Entities (Ren_Id, Obj_Def_Id);
-
-               --  Preserve source indication of original declaration, so that
-               --  xref information is properly generated for the right entity.
-
-               Preserve_Comes_From_Source (Obj_Decl, Original_Node (Obj_Decl));
-               Preserve_Comes_From_Source
-                 (Obj_Def_Id, Original_Node (Obj_Decl));
-
-               Set_Comes_From_Source (Ren_Id, False);
-            end;
+            Replace_Renaming_Declaration_Id
+              (Obj_Decl, Original_Node (Obj_Decl));
          end if;
       end;
 
@@ -8459,6 +8435,185 @@ package body Exp_Ch6 is
          Set_Etype (Defining_Identifier (Obj_Decl), Result_Subt);
       end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
+
+   -------------------------------------------------
+   -- Make_Build_In_Place_Iface_Call_In_Allocator --
+   -------------------------------------------------
+
+   procedure Make_Build_In_Place_Iface_Call_In_Allocator
+     (Allocator     : Node_Id;
+      Function_Call : Node_Id)
+   is
+      BIP_Func_Call : constant Node_Id :=
+                        Unqual_BIP_Iface_Function_Call (Function_Call);
+      Loc           : constant Source_Ptr := Sloc (Function_Call);
+
+      Anon_Type : Entity_Id;
+      Tmp_Decl  : Node_Id;
+      Tmp_Id    : Entity_Id;
+
+   begin
+      --  No action of the call has already been processed
+
+      if Is_Expanded_Build_In_Place_Call (BIP_Func_Call) then
+         return;
+      end if;
+
+      Tmp_Id := Make_Temporary (Loc, 'D');
+
+      --  Insert a temporary before N initialized with the BIP function call
+      --  without its enclosing type conversions and analyze it without its
+      --  expansion. This temporary facilitates us reusing the BIP machinery,
+      --  which takes care of adding the extra build-in-place actuals and
+      --  transforms this object declaration into an object renaming
+      --  declaration.
+
+      Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
+      Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
+      Set_Etype (Anon_Type, Anon_Type);
+
+      Tmp_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tmp_Id,
+          Object_Definition   => New_Occurrence_Of (Anon_Type, Loc),
+          Expression          =>
+            Make_Allocator (Loc,
+              Expression =>
+                Make_Qualified_Expression (Loc,
+                  Subtype_Mark =>
+                    New_Occurrence_Of (Etype (BIP_Func_Call), Loc),
+                  Expression   => New_Copy_Tree (BIP_Func_Call))));
+
+      Expander_Mode_Save_And_Set (False);
+      Insert_Action (Allocator, Tmp_Decl);
+      Expander_Mode_Restore;
+
+      Make_Build_In_Place_Call_In_Allocator
+        (Allocator     => Expression (Tmp_Decl),
+         Function_Call => Expression (Expression (Tmp_Decl)));
+
+      Rewrite (Allocator, New_Occurrence_Of (Tmp_Id, Loc));
+   end Make_Build_In_Place_Iface_Call_In_Allocator;
+
+   ---------------------------------------------------------
+   -- Make_Build_In_Place_Iface_Call_In_Anonymous_Context --
+   ---------------------------------------------------------
+
+   procedure Make_Build_In_Place_Iface_Call_In_Anonymous_Context
+     (Function_Call : Node_Id)
+   is
+      BIP_Func_Call : constant Node_Id :=
+                        Unqual_BIP_Iface_Function_Call (Function_Call);
+      Loc           : constant Source_Ptr := Sloc (Function_Call);
+
+      Tmp_Decl : Node_Id;
+      Tmp_Id   : Entity_Id;
+
+   begin
+      --  No action of the call has already been processed
+
+      if Is_Expanded_Build_In_Place_Call (BIP_Func_Call) then
+         return;
+      end if;
+
+      pragma Assert (Needs_Finalization (Etype (BIP_Func_Call)));
+
+      --  Insert a temporary before the call initialized with function call to
+      --  reuse the BIP machinery which takes care of adding the extra build-in
+      --  place actuals and transforms this object declaration into an object
+      --  renaming declaration.
+
+      Tmp_Id := Make_Temporary (Loc, 'D');
+
+      Tmp_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tmp_Id,
+          Object_Definition   =>
+            New_Occurrence_Of (Etype (Function_Call), Loc),
+          Expression          => Relocate_Node (Function_Call));
+
+      Expander_Mode_Save_And_Set (False);
+      Insert_Action (Function_Call, Tmp_Decl);
+      Expander_Mode_Restore;
+
+      Make_Build_In_Place_Iface_Call_In_Object_Declaration
+        (Obj_Decl      => Tmp_Decl,
+         Function_Call => Expression (Tmp_Decl));
+   end Make_Build_In_Place_Iface_Call_In_Anonymous_Context;
+
+   ----------------------------------------------------------
+   -- Make_Build_In_Place_Iface_Call_In_Object_Declaration --
+   ----------------------------------------------------------
+
+   procedure Make_Build_In_Place_Iface_Call_In_Object_Declaration
+     (Obj_Decl      : Node_Id;
+      Function_Call : Node_Id)
+   is
+      BIP_Func_Call : constant Node_Id :=
+                        Unqual_BIP_Iface_Function_Call (Function_Call);
+      Loc           : constant Source_Ptr := Sloc (Function_Call);
+      Obj_Id        : constant Entity_Id := Defining_Entity (Obj_Decl);
+
+      Tmp_Decl : Node_Id;
+      Tmp_Id   : Entity_Id;
+
+   begin
+      --  No action of the call has already been processed
+
+      if Is_Expanded_Build_In_Place_Call (BIP_Func_Call) then
+         return;
+      end if;
+
+      Tmp_Id := Make_Temporary (Loc, 'D');
+
+      --  Insert a temporary before N initialized with the BIP function call
+      --  without its enclosing type conversions and analyze it without its
+      --  expansion. This temporary facilitates us reusing the BIP machinery,
+      --  which takes care of adding the extra build-in-place actuals and
+      --  transforms this object declaration into an object renaming
+      --  declaration.
+
+      Tmp_Decl :=
+        Make_Object_Declaration (Loc,
+          Defining_Identifier => Tmp_Id,
+          Object_Definition   =>
+            New_Occurrence_Of (Etype (BIP_Func_Call), Loc),
+          Expression          => New_Copy_Tree (BIP_Func_Call));
+
+      Expander_Mode_Save_And_Set (False);
+      Insert_Action (Obj_Decl, Tmp_Decl);
+      Expander_Mode_Restore;
+
+      Make_Build_In_Place_Call_In_Object_Declaration
+        (Obj_Decl      => Tmp_Decl,
+         Function_Call => Expression (Tmp_Decl));
+
+      pragma Assert (Nkind (Tmp_Decl) = N_Object_Renaming_Declaration);
+
+      --  Replace the original build-in-place function call by a reference to
+      --  the resulting temporary object renaming declaration. In this way,
+      --  all the interface conversions performed in the original Function_Call
+      --  on the build-in-place object are preserved.
+
+      Rewrite (BIP_Func_Call, New_Occurrence_Of (Tmp_Id, Loc));
+
+      --  Replace the original object declaration by an internal object
+      --  renaming declaration. This leaves the generated code more clean (the
+      --  build-in-place function call in an object renaming declaration and
+      --  displacements of the pointer to the build-in-place object in another
+      --  renaming declaration) and allows us to invoke the routine that takes
+      --  care of replacing the identifier of the renaming declaration (routine
+      --  originally developed for the regular build-in-place management).
+
+      Rewrite (Obj_Decl,
+        Make_Object_Renaming_Declaration (Loc,
+          Defining_Identifier => Make_Temporary (Loc, 'D'),
+          Subtype_Mark        => New_Occurrence_Of (Etype (Obj_Id), Loc),
+          Name                => Function_Call));
+      Analyze (Obj_Decl);
+
+      Replace_Renaming_Declaration_Id (Obj_Decl, Original_Node (Obj_Decl));
+   end Make_Build_In_Place_Iface_Call_In_Object_Declaration;
 
    --------------------------------------------
    -- Make_CPP_Constructor_Call_In_Allocator --
@@ -8713,6 +8868,41 @@ package body Exp_Ch6 is
       end if;
    end Needs_Result_Accessibility_Level;
 
+   -------------------------------------
+   -- Replace_Renaming_Declaration_Id --
+   -------------------------------------
+
+   procedure Replace_Renaming_Declaration_Id
+      (New_Decl  : Node_Id;
+       Orig_Decl : Node_Id)
+   is
+      New_Id  : constant Entity_Id := Defining_Entity (New_Decl);
+      Orig_Id : constant Entity_Id := Defining_Entity (Orig_Decl);
+
+   begin
+      Set_Chars (New_Id, Chars (Orig_Id));
+
+      --  Swap next entity links in preparation for exchanging entities
+
+      declare
+         Next_Id : constant Entity_Id := Next_Entity (New_Id);
+      begin
+         Set_Next_Entity (New_Id, Next_Entity (Orig_Id));
+         Set_Next_Entity (Orig_Id, Next_Id);
+      end;
+
+      Set_Homonym (New_Id, Homonym (Orig_Id));
+      Exchange_Entities (New_Id, Orig_Id);
+
+      --  Preserve source indication of original declaration, so that xref
+      --  information is properly generated for the right entity.
+
+      Preserve_Comes_From_Source (New_Decl, Orig_Decl);
+      Preserve_Comes_From_Source (Orig_Id, Orig_Decl);
+
+      Set_Comes_From_Source (New_Id, False);
+   end Replace_Renaming_Declaration_Id;
+
    ---------------------------------
    -- Rewrite_Function_Call_For_C --
    ---------------------------------
@@ -8865,5 +9055,101 @@ package body Exp_Ch6 is
          P := Parent (P);
       end loop;
    end Set_Enclosing_Sec_Stack_Return;
+
+   ------------------------------------
+   -- Unqual_BIP_Iface_Function_Call --
+   ------------------------------------
+
+   function Unqual_BIP_Iface_Function_Call (Expr : Node_Id) return Node_Id is
+      Has_Pointer_Displacement : Boolean := False;
+      On_Object_Declaration    : Boolean := False;
+      --  Remember if processing the renaming expressions on recursion we have
+      --  traversed an object declaration, since we can traverse many object
+      --  declaration renamings but just one regular object declaration.
+
+      function Unqual_BIP_Function_Call (Expr : Node_Id) return Node_Id;
+      --  Search for a build-in-place function call skipping any qualification
+      --  including qualified expressions, type conversions, references, calls
+      --  to displace the pointer to the object, and renamings. Return Empty if
+      --  no build-in-place function call is found.
+
+      ------------------------------
+      -- Unqual_BIP_Function_Call --
+      ------------------------------
+
+      function Unqual_BIP_Function_Call (Expr : Node_Id) return Node_Id is
+      begin
+         --  Recurse to handle case of multiple levels of qualification and/or
+         --  conversion.
+
+         if Nkind_In (Expr, N_Qualified_Expression,
+                            N_Type_Conversion,
+                            N_Unchecked_Type_Conversion)
+         then
+            return Unqual_BIP_Function_Call (Expression (Expr));
+
+         --  Recurse to handle case of multiple levels of references and
+         --  explicit dereferences.
+
+         elsif Nkind_In (Expr, N_Attribute_Reference,
+                               N_Explicit_Dereference,
+                               N_Reference)
+         then
+            return Unqual_BIP_Function_Call (Prefix (Expr));
+
+         --  Recurse on object renamings
+
+         elsif Nkind (Expr) = N_Identifier
+           and then Ekind_In (Entity (Expr), E_Constant, E_Variable)
+           and then Nkind (Parent (Entity (Expr))) =
+                      N_Object_Renaming_Declaration
+           and then Present (Renamed_Object (Entity (Expr)))
+         then
+            return Unqual_BIP_Function_Call (Renamed_Object (Entity (Expr)));
+
+         --  Recurse on the initializing expression of the first reference of
+         --  an object declaration.
+
+         elsif not On_Object_Declaration
+           and then Nkind (Expr) = N_Identifier
+           and then Ekind_In (Entity (Expr), E_Constant, E_Variable)
+           and then Nkind (Parent (Entity (Expr))) = N_Object_Declaration
+           and then Present (Expression (Parent (Entity (Expr))))
+         then
+            On_Object_Declaration := True;
+            return
+               Unqual_BIP_Function_Call (Expression (Parent (Entity (Expr))));
+
+         --  Recurse to handle calls to displace the pointer to the object to
+         --  reference a secondary dispatch table.
+
+         elsif Nkind (Expr) = N_Function_Call
+           and then Nkind (Name (Expr)) in N_Has_Entity
+           and then RTU_Loaded (Ada_Tags)
+           and then RTE_Available (RE_Displace)
+           and then Is_RTE (Entity (Name (Expr)), RE_Displace)
+         then
+            Has_Pointer_Displacement := True;
+            return
+              Unqual_BIP_Function_Call (First (Parameter_Associations (Expr)));
+
+         --  Normal case: check if the inner expression is a BIP function call
+         --  and the pointer to the object is displaced.
+
+         elsif Has_Pointer_Displacement
+           and then Is_Build_In_Place_Function_Call (Expr)
+         then
+            return Expr;
+
+         else
+            return Empty;
+         end if;
+      end Unqual_BIP_Function_Call;
+
+   --  Start of processing for Unqual_BIP_Iface_Function_Call
+
+   begin
+      return Unqual_BIP_Function_Call (Expr);
+   end Unqual_BIP_Iface_Function_Call;
 
 end Exp_Ch6;

@@ -17924,7 +17924,7 @@ package body Sem_Prag is
                then
                   declare
                      Name : constant String :=
-                       Get_Name_String (Chars (Variant));
+                              Get_Name_String (Chars (Variant));
                   begin
                      --  It is a common mistake to write "Increasing" for
                      --  "Increases" or "Decreasing" for "Decreases". Recognize
