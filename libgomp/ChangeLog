@@ -1,3 +1,46 @@
+2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi (Top): www.openacc.org now uses https.
+	(Enabling OpenACC): Ditto.
+	(acc_get_num_devices): Ditto.
+	(acc_set_device_type): Ditto.
+	(acc_get_device_type): Ditto.
+	(acc_set_device_num): Ditto.
+	(acc_get_device_num): Ditto.
+	(acc_async_test): Ditto.
+	(acc_async_test_all): Ditto.
+	(acc_wait): Ditto.
+	(acc_wait_all): Ditto.
+	(acc_wait_all_async): Ditto.
+	(acc_wait_async): Ditto.
+	(acc_init): Ditto.
+	(acc_shutdown): Ditto.
+	(acc_on_device): Ditto.
+	(acc_malloc): Ditto.
+	(acc_free): Ditto.
+	(acc_copyin): Ditto.
+	(acc_present_or_copyin): Ditto.
+	(acc_create): Ditto.
+	(acc_present_or_create): Ditto.
+	(acc_copyout): Ditto.
+	(acc_delete): Ditto.
+	(acc_update_device): Ditto.
+	(acc_update_self): Ditto.
+	(acc_map_data): Ditto.
+	(acc_unmap_data): Ditto.
+	(acc_deviceptr): Ditto.
+	(acc_hostptr): Ditto.
+	(acc_is_present): Ditto.
+	(acc_memcpy_to_device): Ditto.
+	(acc_memcpy_from_device): Ditto.
+	(acc_get_current_cuda_device): Ditto.
+	(acc_get_current_cuda_context): Ditto.
+	(acc_get_cuda_stream): Ditto.
+	(acc_set_cuda_stream): Ditto.
+	(ACC_DEVICE_TYPE): Ditto.
+	(ACC_DEVICE_NUM): Ditto.
+	(OpenACC Library Interoperability): Ditto.
+
 2017-08-09  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81687
