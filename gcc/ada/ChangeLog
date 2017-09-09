@@ -1,5 +1,10 @@
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (components_to_record): Do not reorder in non-
+	packed record types if pragma Optimize_Alignment (Space) is enabled.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Disregard inlining
 	limits for expression functions.
 	(gnat_to_gnu) <N_Object_Declaration>: Fix formatting.

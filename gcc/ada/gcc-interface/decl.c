@@ -7683,7 +7683,9 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
      of a byte, so that they don't cause the regular fields to be either at
      self-referential/variable offset or misaligned.  Note, in the latter
      case, that this can only happen in packed record types so the alignment
-     is effectively capped to the byte for the whole record.
+     is effectively capped to the byte for the whole record.  But we don't
+     do it for non-packed record types if pragma Optimize_Alignment (Space)
+     is specified because this can prevent alignment gaps from being filled.
 
      Optionally, if the layout warning is enabled, keep track of the above 4
      different kinds of fields and issue a warning if some of them would be
@@ -7694,6 +7696,8 @@ components_to_record (Node_Id gnat_component_list, Entity_Id gnat_record_type,
   const bool do_reorder
     = (Convention (gnat_record_type) == Convention_Ada
        && !No_Reordering (gnat_record_type)
+       && (!Optimize_Alignment_Space (gnat_record_type)
+	   || Is_Packed (gnat_record_type))
        && !debug__debug_flag_dot_r);
   const bool w_reorder
     = (Convention (gnat_record_type) == Convention_Ada
