@@ -1423,6 +1423,19 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    gnu_size = NULL_TREE;
 	  }
 
+	/* If this is an aggregate constant initialized to a constant, force it
+	   to be statically allocated.  This saves an initialization copy.  */
+	if (!static_flag
+	    && const_flag
+	    && gnu_expr
+	    && TREE_CONSTANT (gnu_expr)
+	    && AGGREGATE_TYPE_P (gnu_type)
+	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (gnu_type))
+	    && !(TYPE_IS_PADDING_P (gnu_type)
+		 && !tree_fits_uhwi_p (TYPE_SIZE_UNIT
+				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
+	  static_flag = true;
+
 	/* If this is an aliased object with an unconstrained array nominal
 	   subtype, we make its type a thin reference, i.e. the reference
 	   counterpart of a thin pointer, so it points to the array part.
@@ -1473,18 +1486,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	    || (Present (Interface_Name (gnat_entity))
 		&& No (Address_Clause (gnat_entity))))
 	  gnu_ext_name = create_concat_name (gnat_entity, NULL);
-
-	/* If this is an aggregate constant initialized to a constant, force it
-	   to be statically allocated.  This saves an initialization copy.  */
-	if (!static_flag
-	    && const_flag
-	    && gnu_expr && TREE_CONSTANT (gnu_expr)
-	    && AGGREGATE_TYPE_P (gnu_type)
-	    && tree_fits_uhwi_p (TYPE_SIZE_UNIT (gnu_type))
-	    && !(TYPE_IS_PADDING_P (gnu_type)
-		 && !tree_fits_uhwi_p (TYPE_SIZE_UNIT
-				       (TREE_TYPE (TYPE_FIELDS (gnu_type))))))
-	  static_flag = true;
 
 	/* Deal with a pragma Linker_Section on a constant or variable.  */
 	if ((kind == E_Constant || kind == E_Variable)
