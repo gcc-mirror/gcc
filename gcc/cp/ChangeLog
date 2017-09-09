@@ -1,3 +1,10 @@
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/81926
+	* cp-objcp-common.c (struct debug_type_hasher): New class.
+	(debug_type_hash): New variable.
+	(cp_get_debug_type): Associate the OFFSET_TYPEs with the types.
+
 2017-09-08  Jason Merrill  <jason@redhat.com>
 
 	PR c++/70029 - ICE with ref-qualifier and -flto
