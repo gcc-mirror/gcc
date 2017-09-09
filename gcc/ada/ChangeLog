@@ -1,5 +1,12 @@
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Only set the TYPE_ALIGN_OK
+	and TYPE_BY_REFERENCE_P flags on types after various promotions.
+	* gcc-interface/trans.c (node_has_volatile_full_access) <N_Identifier>:
+	Consider all kinds of entities.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/utils.c (convert): When converting to a padding type,
 	reuse an existing CONSTRUCTOR if it has got the right size.
 
