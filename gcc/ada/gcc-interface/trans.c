@@ -3777,6 +3777,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   Sloc_to_locus (Sloc (gnat_node), &locus);
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
+  /* If the body comes from an expression function, arrange it to be inlined
+     in almost all cases.  */
+  if (Was_Expression_Function (gnat_node))
+    DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
+
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
   gnu_subprog_language = ggc_cleared_alloc<language_function> ();
@@ -6140,7 +6145,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  && (((Is_Array_Type (Etype (gnat_temp))
 		|| Is_Record_Type (Etype (gnat_temp)))
 	       && !Is_Constrained (Etype (gnat_temp)))
-	    || Is_Concurrent_Type (Etype (gnat_temp))))
+	      || Is_Concurrent_Type (Etype (gnat_temp))))
 	break;
 
       if (Present (Expression (gnat_node))
