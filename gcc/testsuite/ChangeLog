@@ -1,3 +1,11 @@
+2017-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pdt_1.f03 : New test.
+	* gfortran.dg/pdt_2.f03 : New test.
+	* gfortran.dg/pdt_3.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : New test.
+	* gfortran.dg/pdt_5.f03 : New test.
+
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr81988.c: New test.

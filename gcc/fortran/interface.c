@@ -645,7 +645,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
     return false;
 
   if (!(derived1->attr.sequence && derived2->attr.sequence)
-      && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c))
+      && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c)
+      && !(derived1->attr.pdt_type && derived2->attr.pdt_type))
     return false;
 
   /* Protect against null components.  */

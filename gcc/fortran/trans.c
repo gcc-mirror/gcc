@@ -2302,7 +2302,8 @@ gfc_deferred_strlen (gfc_component *c, tree *decl)
 {
   char name[GFC_MAX_SYMBOL_LEN+9];
   gfc_component *strlen;
-  if (!(c->ts.type == BT_CHARACTER && c->ts.deferred))
+  if (!(c->ts.type == BT_CHARACTER
+	&& (c->ts.deferred || c->attr.pdt_string)))
     return false;
   sprintf (name, "_%s_length", c->name);
   for (strlen = c; strlen; strlen = strlen->next)
