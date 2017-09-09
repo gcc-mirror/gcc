@@ -1,5 +1,13 @@
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/decl.c (promote_object_alignment): New function taken
+	from...
+	(gnat_to_gnu_entity) <E_Variable>: ...here.  Invoke it.
+	(gnat_to_gnu_field): If the field is Atomic or VFA, invoke it and
+	create a padding type on success before doing the atomic check.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Variable>: Apply the
 	promotion to static memory earlier in the processing.
 
