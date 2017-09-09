@@ -3287,15 +3287,15 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      }
 
 	/* If this is a derived type with discriminants and these discriminants
-	   affect the initial shape it has inherited, factor them in.  But for
-	   an Unchecked_Union (it must be an Itype), just process the type.  */
+	   affect the initial shape it has inherited, factor them in.  */
 	if (has_discr
 	    && !is_extension
 	    && !Has_Record_Rep_Clause (gnat_entity)
 	    && Stored_Constraint (gnat_entity) != No_Elist
 	    && (gnat_parent_type = Underlying_Type (Etype (gnat_entity)))
 	    && Is_Record_Type (gnat_parent_type)
-	    && !Is_Unchecked_Union (gnat_parent_type)
+	    && Is_Unchecked_Union (gnat_entity)
+	       == Is_Unchecked_Union (gnat_parent_type)
 	    && No_Reordering (gnat_entity) == No_Reordering (gnat_parent_type))
 	  {
 	    tree gnu_parent_type
@@ -9328,7 +9328,9 @@ copy_and_substitute_in_size (tree new_type, tree old_type,
 static inline bool
 is_stored_discriminant (Entity_Id discr, Entity_Id record_type)
 {
-  if (Is_Tagged_Type (record_type))
+  if (Is_Unchecked_Union (record_type))
+    return false;
+  else if (Is_Tagged_Type (record_type))
     return No (Corresponding_Discriminant (discr));
   else if (Ekind (record_type) == E_Record_Type)
     return Original_Record_Component (discr) == discr;
