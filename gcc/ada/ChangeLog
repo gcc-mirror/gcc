@@ -1,3 +1,14 @@
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_util.ads (Set_Rep_Info): New inline procedure.
+	* sem_util.adb (Set_Rep_Info): Implement it.
+	* sem_ch3.adb (Process_Subtype): If the case of a constraint present,
+	always copy the representation aspects onto the subtype.
+	* gcc-interface/decl.c (gnat_to_gnu_entity): Only set the TYPE_ALIGN_OK
+	and TYPE_BY_REFERENCE_P flags on types after various promotions.
+	* gcc-interface/trans.c (node_has_volatile_full_access) <N_Identifier>:
+	Consider all kinds of entities.
+
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/62235

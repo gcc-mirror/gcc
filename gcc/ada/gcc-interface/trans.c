@@ -4058,8 +4058,6 @@ node_has_volatile_full_access (Node_Id gnat_node)
     case N_Identifier:
     case N_Expanded_Name:
       gnat_entity = Entity (gnat_node);
-      if (Ekind (gnat_entity) != E_Variable)
-	break;
       return Is_Volatile_Full_Access (gnat_entity)
 	     || Is_Volatile_Full_Access (Etype (gnat_entity));
 

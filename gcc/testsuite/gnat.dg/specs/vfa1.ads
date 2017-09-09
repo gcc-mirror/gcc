@@ -1,7 +1,7 @@
 -- { dg-do compile }
 -- { dg-options "-g" }
 
-package VFA is
+package VFA1 is
 
   type Rec is record
     A : Short_Integer;
@@ -11,4 +11,4 @@ package VFA is
   type Rec_VFA is new Rec;
   pragma Volatile_Full_Access (Rec_VFA);
 
-end VFA;
+end VFA1;
