@@ -1,3 +1,8 @@
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.c (convert): When converting to a padding type,
+	reuse an existing CONSTRUCTOR if it has got the right size.
+
 2017-09-08  Nicolas Roche  <roche@adacore.com>
 
 	* gcc-interface/Make-lang.in, gcc-interface/Makefile.in: Find runtime
