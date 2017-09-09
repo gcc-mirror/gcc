@@ -1,5 +1,11 @@
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* gcc-interface/trans.c (Subprogram_Body_to_gnu): Disregard inlining
+	limits for expression functions.
+	(gnat_to_gnu) <N_Object_Declaration>: Fix formatting.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Copy the
 	layout of the record from the parent type only if both are or are not
 	unchecked unions.
