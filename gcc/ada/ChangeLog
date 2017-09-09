@@ -1,3 +1,10 @@
+2017-09-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Don't
+	generate debug info for inner record types if -fgnat-encodings=minimal.
+	(gnat_to_gnu_entity) <E_Record_Subtype>: Use the ultimate base record
+	type as the debug type.
+
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/decl.c (components_to_record): Do not reorder in non-

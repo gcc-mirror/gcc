@@ -3308,10 +3308,14 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      = build_subst_list (gnat_entity, gnat_parent_type, definition);
 
 	    /* Set the layout of the type to match that of the parent type,
-	       doing required substitutions.  */
-	    copy_and_substitute_in_layout (gnat_entity, gnat_parent_type,
-					   gnu_type, gnu_parent_type,
-					   gnu_subst_list, debug_info_p);
+	       doing required substitutions.  If we are in minimal GNAT
+	       encodings mode, we don't need debug info for the inner record
+	       types, as they will be part of the embedding variant record's
+	       debug info.  */
+	    copy_and_substitute_in_layout
+	      (gnat_entity, gnat_parent_type, gnu_type, gnu_parent_type,
+	       gnu_subst_list,
+	       debug_info_p && gnat_encodings != DWARF_GNAT_ENCODINGS_MINIMAL);
 	  }
 	else
 	  {
@@ -3439,7 +3443,17 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	      gnu_type = make_node (RECORD_TYPE);
 	      TYPE_NAME (gnu_type) = gnu_entity_name;
 	      if (gnat_encodings == DWARF_GNAT_ENCODINGS_MINIMAL)
-		SET_TYPE_DEBUG_TYPE (gnu_type, gnu_base_type);
+		{
+		  /* Use the ultimate base record type as the debug type.
+		     Subtypes and derived types bring no useful
+		     information.  */
+		  Entity_Id gnat_debug_type = gnat_entity;
+		  while (Etype (gnat_debug_type) != gnat_debug_type)
+		    gnat_debug_type = Etype (gnat_debug_type);
+		  tree gnu_debug_type
+		    = TYPE_MAIN_VARIANT (gnat_to_gnu_type (gnat_debug_type));
+		  SET_TYPE_DEBUG_TYPE (gnu_type, gnu_debug_type);
+		}
 	      TYPE_PACKED (gnu_type) = TYPE_PACKED (gnu_base_type);
 	      TYPE_REVERSE_STORAGE_ORDER (gnu_type)
 		= Reverse_Storage_Order (gnat_entity);
