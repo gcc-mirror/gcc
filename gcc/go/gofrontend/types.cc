@@ -11829,6 +11829,12 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  go_assert(st != NULL);
 	  if (type->struct_type() == NULL)
 	    {
+              if (dereferenced)
+                {
+                  go_error_at(location, "pointer type has no field %qs",
+                              Gogo::message_name(name).c_str());
+                  return Expression::make_error(location);
+                }
 	      go_assert(type->points_to() != NULL);
 	      expr = Expression::make_unary(OPERATOR_MULT, expr,
 					    location);
