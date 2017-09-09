@@ -2350,6 +2350,12 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   if (init && TREE_CODE (init) == NULL_EXPR)
     return build1 (NULL_EXPR, result_type, TREE_OPERAND (init, 0));
 
+  /* If we are just annotating types, also return a NULL_EXPR.  */
+  else if (type_annotate_only)
+    return build1 (NULL_EXPR, result_type,
+		   build_call_raise (CE_Range_Check_Failed, gnat_node,
+				     N_Raise_Constraint_Error));
+
   /* If the initializer, if present, is a COND_EXPR, deal with each branch.  */
   else if (init && TREE_CODE (init) == COND_EXPR)
     return build3 (COND_EXPR, result_type, TREE_OPERAND (init, 0),
