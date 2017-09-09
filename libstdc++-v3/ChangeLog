@@ -1,3 +1,8 @@
+2017-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link for Hoard.
+	* doc/html/manual/memory.html: Regenerate.
+
 2017-09-04  Daniel Kruegler  <daniel.kruegler@gmail.com>
 
 	PR libstdc++/79162
