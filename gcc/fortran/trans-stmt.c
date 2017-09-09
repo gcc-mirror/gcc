@@ -5545,6 +5545,7 @@ gfc_trans_allocate (gfc_code * code)
   bool needs_caf_sync, caf_refs_comp;
   gfc_symtree *newsym = NULL;
   symbol_attribute caf_attr;
+  gfc_actual_arglist *param_list;
 
   if (!code->ext.alloc.list)
     return NULL_TREE;
@@ -6326,6 +6327,35 @@ gfc_trans_allocate (gfc_code * code)
 	    gfc_free_expr (rhs);
 	  gfc_add_expr_to_block (&block, tmp);
 	}
+      /* Set KIND and LEN PDT components and allocate those that are
+         parameterized.  */
+      else if (expr->ts.type == BT_DERIVED
+	       && expr->ts.u.derived->attr.pdt_type)
+	{
+	  if (code->expr3 && code->expr3->param_list)
+	    param_list = code->expr3->param_list;
+	  else if (expr->param_list)
+	    param_list = expr->param_list;
+	  else
+	    param_list = expr->symtree->n.sym->param_list;
+	  tmp = gfc_allocate_pdt_comp (expr->ts.u.derived, se.expr,
+				       expr->rank, param_list);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      /* Ditto for CLASS expressions.  */
+      else if (expr->ts.type == BT_CLASS
+	       && CLASS_DATA (expr)->ts.u.derived->attr.pdt_type)
+	{
+	  if (code->expr3 && code->expr3->param_list)
+	    param_list = code->expr3->param_list;
+	  else if (expr->param_list)
+	    param_list = expr->param_list;
+	  else
+	    param_list = expr->symtree->n.sym->param_list;
+	  tmp = gfc_allocate_pdt_comp (CLASS_DATA (expr)->ts.u.derived,
+				       se.expr, expr->rank, param_list);
+	  gfc_add_expr_to_block (&block, tmp);
+	}
       else if (code->expr3 && code->expr3->mold
 	       && code->expr3->ts.type == BT_CLASS)
 	{
@@ -6532,6 +6562,21 @@ gfc_trans_deallocate (gfc_code *code)
       se.want_pointer = 1;
       se.descriptor_only = 1;
       gfc_conv_expr (&se, expr);
+
+      /* Deallocate PDT components that are parameterized.  */
+      tmp = NULL;
+      if (expr->ts.type == BT_DERIVED
+	  && expr->ts.u.derived->attr.pdt_type
+	  && expr->symtree->n.sym->param_list)
+	tmp = gfc_deallocate_pdt_comp (expr->ts.u.derived, se.expr, expr->rank);
+      else if (expr->ts.type == BT_CLASS
+	       && CLASS_DATA (expr)->ts.u.derived->attr.pdt_type
+	       && expr->symtree->n.sym->param_list)
+	tmp = gfc_deallocate_pdt_comp (CLASS_DATA (expr)->ts.u.derived,
+				       se.expr, expr->rank);
+
+      if (tmp)
+	gfc_add_expr_to_block (&block, tmp);
 
       if (flag_coarray == GFC_FCOARRAY_LIB
 	  || flag_coarray == GFC_FCOARRAY_SINGLE)

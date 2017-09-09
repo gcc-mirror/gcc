@@ -8073,7 +8073,10 @@ gfc_caf_is_dealloc_only (int caf_mode)
    function for the functions named in this enum.  */
 
 enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP,
-      COPY_ALLOC_COMP, COPY_ONLY_ALLOC_COMP, REASSIGN_CAF_COMP};
+      COPY_ALLOC_COMP, COPY_ONLY_ALLOC_COMP, REASSIGN_CAF_COMP,
+      ALLOCATE_PDT_COMP, DEALLOCATE_PDT_COMP, CHECK_PDT_DUMMY};
+
+static gfc_actual_arglist *pdt_param_list;
 
 static tree
 structure_alloc_comps (gfc_symbol * der_type, tree decl,
@@ -8735,6 +8738,255 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl,
 
 	  break;
 
+	case ALLOCATE_PDT_COMP:
+
+	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				  decl, cdecl, NULL_TREE);
+
+	  /* Set the PDT KIND and LEN fields.  */
+	  if (c->attr.pdt_kind || c->attr.pdt_len)
+	    {
+	      gfc_se tse;
+	      gfc_expr *c_expr = NULL;
+	      gfc_actual_arglist *param = pdt_param_list;
+	      gfc_init_se (&tse, NULL);
+	      for (; param; param = param->next)
+		if (!strcmp (c->name, param->name))
+		  c_expr = param->expr;
+
+	      if (!c_expr)
+		c_expr = c->initializer;
+
+	      if (c_expr)
+		{
+		  gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+		  gfc_add_modify (&fnblock, comp, tse.expr);
+		}
+	    }
+
+	  if (c->attr.pdt_string)
+	    {
+	      gfc_se tse;
+	      gfc_init_se (&tse, NULL);
+	      tree strlen;
+	      /* Convert the parameterized string length to its value. The
+		 string length is stored in a hidden field in the same way as
+		 deferred string lengths.  */
+	      gfc_insert_parameter_exprs (c->ts.u.cl->length, pdt_param_list);
+	      if (gfc_deferred_strlen (c, &strlen) && strlen != NULL_TREE)
+		{
+		  gfc_conv_expr_type (&tse, c->ts.u.cl->length,
+				      TREE_TYPE (strlen));
+		  strlen = fold_build3_loc (input_location, COMPONENT_REF,
+					    TREE_TYPE (strlen),
+					    decl, strlen, NULL_TREE);
+		  gfc_add_modify (&fnblock, strlen, tse.expr);
+		  c->ts.u.cl->backend_decl = strlen;
+		}
+	      /* Scalar parameterizied strings can be allocated now.  */
+	      if (!c->as)
+		{
+		  tmp = fold_convert (gfc_array_index_type, strlen);
+		  tmp = size_of_string_in_bytes (c->ts.kind, tmp);
+		  tmp = gfc_evaluate_now (tmp, &fnblock);
+		  tmp = gfc_call_malloc (&fnblock, TREE_TYPE (comp), tmp);
+		  gfc_add_modify (&fnblock, comp, tmp);
+		}
+	    }
+
+	  /* Allocate paramterized arrays of parameterized derived types.  */
+	  if (!(c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
+	      && !((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+		   && (c->ts.u.derived && c->ts.u.derived->attr.pdt_type)))
+	    continue;
+
+	  if (c->ts.type == BT_CLASS)
+	    comp = gfc_class_data_get (comp);
+
+	  if (c->attr.pdt_array)
+	    {
+	      gfc_se tse;
+	      int i;
+	      tree size = gfc_index_one_node;
+	      tree offset = gfc_index_zero_node;
+	      tree lower, upper;
+	      gfc_expr *e;
+
+	      /* This chunk takes the expressions for 'lower' and 'upper'
+		 in the arrayspec and substitutes in the expressions for
+		 the parameters from 'pdt_param_list'. The descriptor
+		 fields can then be filled from the values so obtained.  */
+	      gcc_assert (GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (comp)));
+	      for (i = 0; i < c->as->rank; i++)
+		{
+		  gfc_init_se (&tse, NULL);
+		  e = gfc_copy_expr (c->as->lower[i]);
+		  gfc_insert_parameter_exprs (e, pdt_param_list);
+		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
+		  gfc_free_expr (e);
+		  lower = tse.expr;
+		  gfc_conv_descriptor_lbound_set (&fnblock, comp,
+						  gfc_rank_cst[i],
+						  lower);
+		  e = gfc_copy_expr (c->as->upper[i]);
+		  gfc_insert_parameter_exprs (e, pdt_param_list);
+		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
+		  gfc_free_expr (e);
+		  upper = tse.expr;
+		  gfc_conv_descriptor_ubound_set (&fnblock, comp,
+						  gfc_rank_cst[i],
+						  upper);
+		  gfc_conv_descriptor_stride_set (&fnblock, comp,
+						  gfc_rank_cst[i],
+						  size);
+		  size = gfc_evaluate_now (size, &fnblock);
+		  offset = fold_build2_loc (input_location,
+					    MINUS_EXPR,
+					    gfc_array_index_type,
+					    offset, size);
+		  offset = gfc_evaluate_now (offset, &fnblock);
+		  tmp = fold_build2_loc (input_location, MINUS_EXPR,
+					 gfc_array_index_type,
+					 upper, lower);
+		  tmp = fold_build2_loc (input_location, PLUS_EXPR,
+					 gfc_array_index_type,
+					 tmp, gfc_index_one_node);
+		  size = fold_build2_loc (input_location, MULT_EXPR,
+					  gfc_array_index_type, size, tmp);
+		}
+	      gfc_conv_descriptor_offset_set (&fnblock, comp, offset);
+	      if (c->ts.type == BT_CLASS)
+		{
+		  tmp = gfc_get_vptr_from_expr (comp);
+		  if (POINTER_TYPE_P (TREE_TYPE (tmp)))
+		    tmp = build_fold_indirect_ref_loc (input_location, tmp);
+		  tmp = gfc_vptr_size_get (tmp);
+		}
+	      else
+		tmp = TYPE_SIZE_UNIT (gfc_get_element_type (ctype));
+	      tmp = fold_convert (gfc_array_index_type, tmp);
+	      size = fold_build2_loc (input_location, MULT_EXPR,
+				      gfc_array_index_type, size, tmp);
+	      size = gfc_evaluate_now (size, &fnblock);
+	      tmp = gfc_call_malloc (&fnblock, NULL, size);
+	      gfc_conv_descriptor_data_set (&fnblock, comp, tmp);
+	      tmp = gfc_conv_descriptor_dtype (comp);
+	      gfc_add_modify (&fnblock, tmp, gfc_get_dtype (ctype));
+	    }
+
+	  /* Recurse in to PDT components.  */
+	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
+	    {
+	      bool is_deferred = false;
+	      gfc_actual_arglist *tail = c->param_list;
+
+	      for (; tail; tail = tail->next)
+		if (!tail->expr)
+		  is_deferred = true;
+
+	      tail = is_deferred ? pdt_param_list : c->param_list;
+	      tmp = gfc_allocate_pdt_comp (c->ts.u.derived, comp,
+					   c->as ? c->as->rank : 0,
+					   tail);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+
+	  break;
+
+	case DEALLOCATE_PDT_COMP:
+	  /* Deallocate array or parameterized string length components
+	     of parameterized derived types.  */
+	  if (!(c->attr.pdt_array && c->as && c->as->type == AS_EXPLICIT)
+	      && !c->attr.pdt_string
+	      && !((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+		   && (c->ts.u.derived && c->ts.u.derived->attr.pdt_type)))
+	    continue;
+
+	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				  decl, cdecl, NULL_TREE);
+	  if (c->ts.type == BT_CLASS)
+	    comp = gfc_class_data_get (comp);
+
+	  /* Recurse in to PDT components.  */
+	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
+	    {
+	      tmp = gfc_deallocate_pdt_comp (c->ts.u.derived, comp,
+					     c->as ? c->as->rank : 0);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+
+	  if (c->attr.pdt_array)
+	    {
+	      tmp = gfc_conv_descriptor_data_get (comp);
+	      tmp = gfc_call_free (tmp);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	      gfc_conv_descriptor_data_set (&fnblock, comp, null_pointer_node);
+	    }
+	  else if (c->attr.pdt_string)
+	    {
+	      tmp = gfc_call_free (comp);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	      tmp = fold_convert (TREE_TYPE (comp), null_pointer_node);
+	      gfc_add_modify (&fnblock, comp, tmp);
+	    }
+
+	  break;
+
+	case CHECK_PDT_DUMMY:
+
+	  comp = fold_build3_loc (input_location, COMPONENT_REF, ctype,
+				  decl, cdecl, NULL_TREE);
+	  if (c->ts.type == BT_CLASS)
+	    comp = gfc_class_data_get (comp);
+
+	  /* Recurse in to PDT components.  */
+	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
+	    {
+	      tmp = gfc_check_pdt_dummy (c->ts.u.derived, comp,
+					 c->as ? c->as->rank : 0,
+					 pdt_param_list);
+	      gfc_add_expr_to_block (&fnblock, tmp);
+	    }
+
+	  if (!c->attr.pdt_len)
+	    continue;
+	  else
+	    {
+	      gfc_se tse;
+	      gfc_expr *c_expr = NULL;
+	      gfc_actual_arglist *param = pdt_param_list;
+
+	      gfc_init_se (&tse, NULL);
+	      for (; param; param = param->next)
+		if (!strcmp (c->name, param->name))
+		  c_expr = param->expr;
+
+	      if (c_expr)
+		{
+		  tree error, cond, cname;
+		  gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+		  cond = fold_build2_loc (input_location, NE_EXPR,
+					  boolean_type_node,
+					  comp, tse.expr);
+		  cname = gfc_build_cstring_const (c->name);
+		  cname = gfc_build_addr_expr (pchar_type_node, cname);
+		  error = gfc_trans_runtime_error (true, NULL,
+						   "The value of the PDT LEN "
+						   "parameter '%s' does not "
+						   "agree with that in the "
+						   "dummy declaration",
+						   cname);
+		  tmp = fold_build3_loc (input_location, COND_EXPR,
+					 void_type_node, cond, error,
+					 build_empty_stmt (input_location));
+		  gfc_add_expr_to_block (&fnblock, tmp);
+		}
+	    }
+	  break;
+
 	default:
 	  gcc_unreachable ();
 	  break;
@@ -8811,6 +9063,50 @@ gfc_copy_only_alloc_comp (gfc_symbol * der_type, tree decl, tree dest, int rank)
 {
   return structure_alloc_comps (der_type, decl, dest, rank,
 				COPY_ONLY_ALLOC_COMP, 0);
+}
+
+
+/* Recursively traverse an object of paramterized derived type, generating
+   code to allocate parameterized components.  */
+
+tree
+gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
+		       gfc_actual_arglist *param_list)
+{
+  tree res;
+  gfc_actual_arglist *old_param_list = pdt_param_list;
+  pdt_param_list = param_list;
+  res = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
+			       ALLOCATE_PDT_COMP, 0);
+  pdt_param_list = old_param_list;
+  return res;
+}
+
+/* Recursively traverse an object of paramterized derived type, generating
+   code to deallocate parameterized components.  */
+
+tree
+gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
+{
+  return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
+				DEALLOCATE_PDT_COMP, 0);
+}
+
+
+/* Recursively traverse a dummy of paramterized derived type to check the
+   values of LEN parameters.  */
+
+tree
+gfc_check_pdt_dummy (gfc_symbol * der_type, tree decl, int rank,
+		     gfc_actual_arglist *param_list)
+{
+  tree res;
+  gfc_actual_arglist *old_param_list = pdt_param_list;
+  pdt_param_list = param_list;
+  res = structure_alloc_comps (der_type, decl, NULL_TREE, rank,
+			       CHECK_PDT_DUMMY, 0);
+  pdt_param_list = old_param_list;
+  return res;
 }
 
 

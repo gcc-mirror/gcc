@@ -2441,6 +2441,8 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   gfc_namespace *ns;
   tree tmp;
 
+  gcc_assert (!derived->attr.pdt_template);
+
   if (derived->attr.unlimited_polymorphic
       || (flag_coarray == GFC_FCOARRAY_LIB
 	  && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
@@ -2635,7 +2637,8 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
         field_type = c->ts.u.derived->backend_decl;
       else
 	{
-	  if (c->ts.type == BT_CHARACTER && !c->ts.deferred)
+	  if (c->ts.type == BT_CHARACTER
+	      && !c->ts.deferred && !c->attr.pdt_string)
 	    {
 	      /* Evaluate the string length.  */
 	      gfc_conv_const_charlen (c->ts.u.cl);
@@ -2652,7 +2655,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
          required.  */
       if ((c->attr.dimension || c->attr.codimension) && !c->attr.proc_pointer )
 	{
-	  if (c->attr.pointer || c->attr.allocatable)
+	  if (c->attr.pointer || c->attr.allocatable || c->attr.pdt_array)
 	    {
 	      enum gfc_array_kind akind;
 	      if (c->attr.pointer)
@@ -2673,7 +2676,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 						    PACKED_STATIC,
 						    !c->attr.target);
 	}
-      else if ((c->attr.pointer || c->attr.allocatable)
+      else if ((c->attr.pointer || c->attr.allocatable || c->attr.pdt_string)
 	       && !c->attr.proc_pointer
 	       && !(unlimited_entity && c == derived->components))
 	field_type = build_pointer_type (field_type);

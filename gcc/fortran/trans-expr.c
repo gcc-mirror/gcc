@@ -7286,7 +7286,7 @@ gfc_trans_subcomponent_assign (tree dest, gfc_component * cm, gfc_expr * expr,
     {
       if (cm->attr.allocatable && expr->expr_type == EXPR_NULL)
  	gfc_conv_descriptor_data_set (&block, dest, null_pointer_node);
-      else if (cm->attr.allocatable)
+      else if (cm->attr.allocatable || cm->attr.pdt_array)
 	{
 	  tmp = gfc_trans_alloc_subarray_assign (dest, cm, expr);
 	  gfc_add_expr_to_block (&block, tmp);

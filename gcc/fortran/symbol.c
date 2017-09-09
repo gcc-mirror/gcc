@@ -1106,6 +1106,32 @@ gfc_add_optional (symbol_attribute *attr, locus *where)
   return check_conflict (attr, NULL, where);
 }
 
+bool
+gfc_add_kind (symbol_attribute *attr, locus *where)
+{
+  if (attr->pdt_kind)
+    {
+      duplicate_attr ("KIND", where);
+      return false;
+    }
+
+  attr->pdt_kind = 1;
+  return check_conflict (attr, NULL, where);
+}
+
+bool
+gfc_add_len (symbol_attribute *attr, locus *where)
+{
+  if (attr->pdt_len)
+    {
+      duplicate_attr ("LEN", where);
+      return false;
+    }
+
+  attr->pdt_len = 1;
+  return check_conflict (attr, NULL, where);
+}
+
 
 bool
 gfc_add_pointer (symbol_attribute *attr, locus *where)
@@ -2447,6 +2473,10 @@ free_components (gfc_component *p)
 
       gfc_free_array_spec (p->as);
       gfc_free_expr (p->initializer);
+      if (p->kind_expr)
+	gfc_free_expr (p->kind_expr);
+      if (p->param_list)
+	gfc_free_actual_arglist (p->param_list);
       free (p->tb);
 
       free (p);
@@ -2929,6 +2959,9 @@ gfc_free_symbol (gfc_symbol *sym)
 
   set_symbol_common_block (sym, NULL);
 
+  if (sym->param_list)
+    gfc_free_actual_arglist (sym->param_list);
+
   free (sym);
 }
 
@@ -3091,7 +3124,25 @@ gfc_find_sym_tree (const char *name, gfc_namespace *ns, int parent_flag,
     }
   while (ns != NULL);
 
+  if (gfc_current_state() == COMP_DERIVED
+      && gfc_current_block ()->attr.pdt_template)
+    {
+      gfc_symbol *der = gfc_current_block ();
+      for (; der; der = gfc_get_derived_super_type (der))
+	{
+	  if (der->f2k_derived && der->f2k_derived->sym_root)
+	    {
+	      st = gfc_find_symtree (der->f2k_derived->sym_root, name);
+	      if (st)
+		break;
+	    }
+	}
+      *result = st;
+      return 0;
+    }
+
   *result = NULL;
+
   return 0;
 }
 
@@ -3890,6 +3941,7 @@ gfc_free_namespace (gfc_namespace *ns)
   ns->refs--;
   if (ns->refs > 0)
     return;
+
   gcc_assert (ns->refs == 0);
 
   gfc_free_statements (ns->code);

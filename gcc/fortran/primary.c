@@ -1609,10 +1609,10 @@ match_actual_arg (gfc_expr **result)
 }
 
 
-/* Match a keyword argument.  */
+/* Match a keyword argument or type parameter spec list..  */
 
 static match
-match_keyword_arg (gfc_actual_arglist *actual, gfc_actual_arglist *base)
+match_keyword_arg (gfc_actual_arglist *actual, gfc_actual_arglist *base, bool pdt)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   gfc_actual_arglist *a;
@@ -1630,12 +1630,28 @@ match_keyword_arg (gfc_actual_arglist *actual, gfc_actual_arglist *base)
       goto cleanup;
     }
 
+  if (pdt)
+    {
+      if (gfc_match_char ('*') == MATCH_YES)
+	{
+	  actual->spec_type = SPEC_ASSUMED;
+	  goto add_name;
+	}
+      else if (gfc_match_char (':') == MATCH_YES)
+	{
+	  actual->spec_type = SPEC_DEFERRED;
+	  goto add_name;
+	}
+      else
+	actual->spec_type = SPEC_EXPLICIT;
+    }
+
   m = match_actual_arg (&actual->expr);
   if (m != MATCH_YES)
     goto cleanup;
 
   /* Make sure this name has not appeared yet.  */
-
+add_name:
   if (name[0] != '\0')
     {
       for (a = base; a; a = a->next)
@@ -1737,10 +1753,15 @@ cleanup:
    list is assumed to allow keyword arguments because we don't know if
    the symbol associated with the procedure has an implicit interface
    or not.  We make sure keywords are unique. If sub_flag is set,
-   we're matching the argument list of a subroutine.  */
+   we're matching the argument list of a subroutine.
+
+   NOTE: An alternative use for this function is to match type parameter
+   spec lists, which are so similar to actual argument lists that the
+   machinery can be reused. This use is flagged by the optional argument
+   'pdt'.  */
 
 match
-gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
+gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp, bool pdt)
 {
   gfc_actual_arglist *head, *tail;
   int seen_keyword;
@@ -1758,6 +1779,7 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
 
   if (gfc_match_char (')') == MATCH_YES)
     return MATCH_YES;
+
   head = NULL;
 
   matching_actual_arglist++;
@@ -1772,8 +1794,13 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
 	  tail = tail->next;
 	}
 
-      if (sub_flag && gfc_match_char ('*') == MATCH_YES)
+      if (sub_flag && !pdt && gfc_match_char ('*') == MATCH_YES)
 	{
+	  if (pdt)
+	    {
+	      tail->spec_type = SPEC_ASSUMED;
+	      goto next;
+	    }
 	  m = gfc_match_st_label (&label);
 	  if (m == MATCH_NO)
 	    gfc_error ("Expected alternate return label at %C");
@@ -1788,11 +1815,27 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
 	  goto next;
 	}
 
+      if (pdt && !seen_keyword)
+	{
+	  if (gfc_match_char (':') == MATCH_YES)
+	    {
+	      tail->spec_type = SPEC_DEFERRED;
+	      goto next;
+	    }
+	  else if (gfc_match_char ('*') == MATCH_YES)
+	    {
+	      tail->spec_type = SPEC_ASSUMED;
+	      goto next;
+	    }
+	  else
+	    tail->spec_type = SPEC_EXPLICIT;
+	}
+
       /* After the first keyword argument is seen, the following
 	 arguments must also have keywords.  */
       if (seen_keyword)
 	{
-	  m = match_keyword_arg (tail, head);
+	  m = match_keyword_arg (tail, head, pdt);
 
 	  if (m == MATCH_ERROR)
 	    goto cleanup;
@@ -1813,7 +1856,7 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp)
 	  /* See if we have the first keyword argument.  */
 	  if (m == MATCH_NO)
 	    {
-	      m = match_keyword_arg (tail, head);
+	      m = match_keyword_arg (tail, head, false);
 	      if (m == MATCH_YES)
 		seen_keyword = 1;
 	      if (m == MATCH_ERROR)
@@ -2948,7 +2991,7 @@ gfc_match_structure_constructor (gfc_symbol *sym, gfc_expr **result)
      expression here.  */
   if (gfc_in_match_data ())
     gfc_reduce_init_expr (e);
- 
+
   *result = e;
   return MATCH_YES;
 }
@@ -3662,7 +3705,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
 	implicit_ns = gfc_current_ns;
       else
 	implicit_ns = sym->ns;
-	
+
       old_loc = gfc_current_locus;
       if (gfc_match_member_sep (sym) == MATCH_YES
 	  && sym->ts.type == BT_UNKNOWN
