@@ -1,3 +1,8 @@
+2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_threadsafe_static_init.
+
 2017-09-04  Marek Polacek  <polacek@redhat.com>
 
 	PR c/81783
