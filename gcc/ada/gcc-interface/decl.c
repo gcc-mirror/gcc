@@ -4508,18 +4508,6 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
 	 already defined so we cannot pass true for IN_PLACE here.  */
       process_attributes (&gnu_type, &attr_list, false, gnat_entity);
 
-      /* Tell the middle-end that objects of tagged types are guaranteed to
-	 be properly aligned.  This is necessary because conversions to the
-	 class-wide type are translated into conversions to the root type,
-	 which can be less aligned than some of its derived types.  */
-      if (Is_Tagged_Type (gnat_entity)
-	  || Is_Class_Wide_Equivalent_Type (gnat_entity))
-	TYPE_ALIGN_OK (gnu_type) = 1;
-
-      /* Record whether the type is passed by reference.  */
-      if (!VOID_TYPE_P (gnu_type) && Is_By_Reference_Type (gnat_entity))
-	TYPE_BY_REFERENCE_P (gnu_type) = 1;
-
       /* ??? Don't set the size for a String_Literal since it is either
 	 confirming or we don't handle it properly (if the low bound is
 	 non-constant).  */
@@ -4729,17 +4717,29 @@ gnat_to_gnu_entity (Entity_Id gnat_entity, tree gnu_expr, bool definition)
       /* If this is not an unconstrained array type, set some flags.  */
       if (TREE_CODE (gnu_type) != UNCONSTRAINED_ARRAY_TYPE)
 	{
+	  /* Tell the middle-end that objects of tagged types are guaranteed to
+	     be properly aligned.  This is necessary because conversions to the
+	     class-wide type are translated into conversions to the root type,
+	     which can be less aligned than some of its derived types.  */
+	  if (Is_Tagged_Type (gnat_entity)
+	      || Is_Class_Wide_Equivalent_Type (gnat_entity))
+	    TYPE_ALIGN_OK (gnu_type) = 1;
+
+	  /* Record whether the type is passed by reference.  */
+	  if (Is_By_Reference_Type (gnat_entity) && !VOID_TYPE_P (gnu_type))
+	    TYPE_BY_REFERENCE_P (gnu_type) = 1;
+
+	  /* Record whether an alignment clause was specified.  */
 	  if (Present (Alignment_Clause (gnat_entity)))
 	    TYPE_USER_ALIGN (gnu_type) = 1;
 
+	  /* Record whether a pragma Universal_Aliasing was specified.  */
 	  if (Universal_Aliasing (gnat_entity) && !TYPE_IS_DUMMY_P (gnu_type))
 	    TYPE_UNIVERSAL_ALIASING_P (gnu_type) = 1;
 
 	  /* If it is passed by reference, force BLKmode to ensure that
 	     objects of this type will always be put in memory.  */
-	  if (TYPE_MODE (gnu_type) != BLKmode
-	      && AGGREGATE_TYPE_P (gnu_type)
-	      && TYPE_BY_REFERENCE_P (gnu_type))
+	  if (AGGREGATE_TYPE_P (gnu_type) && TYPE_BY_REFERENCE_P (gnu_type))
 	    SET_TYPE_MODE (gnu_type, BLKmode);
 	}
 

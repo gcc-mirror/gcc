@@ -1,3 +1,9 @@
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/vfa.ads: Rename into...
+	* gnat.dg/specs/vfa1.ads: ...this.
+	* gnat.dg/specs/vfa2.ads: New test.
+
 2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc.dg/pr81988.c: New test.
