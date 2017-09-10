@@ -5766,8 +5766,20 @@ rs6000_builtin_vectorization_cost (enum vect_cost_for_stmt type_of_cost,
 	if (SCALAR_FLOAT_TYPE_P (elem_type)
 	    && TYPE_PRECISION (elem_type) == 32)
 	  return 5;
+	/* On POWER9, integer vector types are built up in GPRs and then
+           use a direct move (2 cycles).  For POWER8 this is even worse,
+           as we need two direct moves and a merge, and the direct moves
+	   are five cycles.  */
+	else if (INTEGRAL_TYPE_P (elem_type))
+	  {
+	    if (TARGET_P9_VECTOR)
+	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 2;
+	    else
+	      return TYPE_VECTOR_SUBPARTS (vectype) - 1 + 5;
+	  }
 	else
-	  return max (2, TYPE_VECTOR_SUBPARTS (vectype) - 1);
+	  /* V2DFmode doesn't need a direct move.  */
+	  return 2;
 
       default:
         gcc_unreachable ();
