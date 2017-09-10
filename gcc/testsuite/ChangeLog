@@ -1,3 +1,12 @@
+2017-09-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* g++.dg/cpp1y/feat-cxx11.C: Check __cpp_threadsafe_static_init.
+	* g++.dg/cpp1y/feat-cxx14.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx98.C: Likewise.
+	* g++.dg/cpp1y/feat-neg.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+
 2017-09-06  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline:

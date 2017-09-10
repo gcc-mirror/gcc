@@ -106,6 +106,12 @@
 #  error "__cpp_alias_templates != 200704"
 #endif
 
+#ifndef __cpp_threadsafe_static_init
+#  error "__cpp_threadsafe_static_init"
+#elif __cpp_threadsafe_static_init != 200806
+#  error "__cpp_threadsafe_static_init != 200806"
+#endif
+
 //  C++14 features:
 
 #ifndef __cpp_binary_literals
