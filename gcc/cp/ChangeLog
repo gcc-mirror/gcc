@@ -1,3 +1,8 @@
+2017-09-09  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (reduced_constant_expression_p): If
+	CONSTRUCTOR_NO_IMPLICIT_ZERO, check that all fields are initialized.
+
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/81926
