@@ -1531,6 +1531,8 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
   int n;
   tree charlen;
   bool need_len_assign;
+  bool whole_array = true;
+  gfc_ref *ref;
 
   gcc_assert (sym->assoc);
   e = sym->assoc->target;
@@ -1540,6 +1542,15 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 			|| gfc_is_class_array_ref (e, NULL));
 
   unlimited = UNLIMITED_POLY (e);
+
+  for (ref = e->ref; ref; ref = ref->next)
+    if (ref->type == REF_ARRAY
+	&& ref->u.ar.type == AR_FULL
+	&& ref->next)
+      {
+	whole_array =  false;
+	break;
+      }
 
   /* Assignments to the string length need to be generated, when
      ( sym is a char array or
@@ -1583,11 +1594,13 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 
       /* If we didn't already do the pointer assignment, set associate-name
 	 descriptor to the one generated for the temporary.  */
-      if (!sym->assoc->variable && !cst_array_ctor)
+      if ((!sym->assoc->variable && !cst_array_ctor)
+	  || !whole_array)
 	{
 	  int dim;
 
-	  gfc_add_modify (&se.pre, desc, se.expr);
+	  if (whole_array)
+	    gfc_add_modify (&se.pre, desc, se.expr);
 
 	  /* The generated descriptor has lower bound zero (as array
 	     temporary), shift bounds so we get lower bounds of 1.  */
@@ -1606,7 +1619,7 @@ trans_associate_var (gfc_symbol *sym, gfc_wrapped_block *block)
 	      : e->symtree->n.sym->backend_decl;
 	  tmp = gfc_get_element_type (TREE_TYPE (tmp));
 	  tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
-	  gfc_add_modify (&se.pre, GFC_DECL_SPAN(desc), tmp);
+	  gfc_conv_descriptor_span_set (&se.pre, desc, tmp);
 	}
 
       /* Done, register stuff as init / cleanup code.  */

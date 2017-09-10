@@ -995,6 +995,11 @@ is_subref_array (gfc_expr * e)
   if (e->symtree->n.sym->attr.subref_array_pointer)
     return true;
 
+  if (e->symtree->n.sym->ts.type == BT_CLASS
+      && e->symtree->n.sym->attr.dummy
+      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
+    return true;
+
   seen_array = false;
   for (ref = e->ref; ref; ref = ref->next)
     {

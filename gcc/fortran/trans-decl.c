@@ -1532,6 +1532,9 @@ gfc_get_symbol_decl (gfc_symbol * sym)
       /* Dummy variables should already have been created.  */
       gcc_assert (sym->backend_decl);
 
+      if (sym->attr.pointer && sym->attr.dimension && sym->ts.type != BT_CLASS)
+	GFC_DECL_PTR_ARRAY_P (sym->backend_decl) = 1;
+
       /* Create a character length variable.  */
       if (sym->ts.type == BT_CHARACTER)
 	{
@@ -1766,27 +1769,18 @@ gfc_get_symbol_decl (gfc_symbol * sym)
   if (sym->ts.type == BT_CHARACTER)
     /* Character variables need special handling.  */
     gfc_allocate_lang_decl (decl);
-  else if (sym->attr.subref_array_pointer)
-    /* We need the span for these beasts.  */
-    gfc_allocate_lang_decl (decl);
 
-  if (sym->attr.subref_array_pointer)
-    {
-      tree span;
-      GFC_DECL_SUBREF_ARRAY_P (decl) = 1;
-      span = build_decl (input_location,
-			 VAR_DECL, create_tmp_var_name ("span"),
-			 gfc_array_index_type);
-      gfc_finish_var_decl (span, sym);
-      TREE_STATIC (span) = TREE_STATIC (decl);
-      DECL_ARTIFICIAL (span) = 1;
+  if (sym->assoc && sym->attr.subref_array_pointer)
+    sym->attr.pointer = 1;
 
-      GFC_DECL_SPAN (decl) = span;
-      GFC_TYPE_ARRAY_SPAN (TREE_TYPE (decl)) = span;
-    }
+  if (sym->attr.pointer && sym->attr.dimension
+      && !sym->ts.deferred
+      && !(sym->attr.select_type_temporary
+	   && !sym->attr.subref_array_pointer))
+    GFC_DECL_PTR_ARRAY_P (decl) = 1;
 
   if (sym->ts.type == BT_CLASS)
-	GFC_DECL_CLASS(decl) = 1;
+    GFC_DECL_CLASS(decl) = 1;
 
   sym->backend_decl = decl;
 
@@ -4347,13 +4341,15 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	    }
 	}
 
-      if (sym->attr.subref_array_pointer
-	  && GFC_DECL_SPAN (sym->backend_decl)
-	  && !TREE_STATIC (GFC_DECL_SPAN (sym->backend_decl)))
+      if (sym->attr.pointer && sym->attr.dimension
+	  && !sym->attr.use_assoc
+	  && !sym->attr.host_assoc
+	  && !sym->attr.dummy
+	  && GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (sym->backend_decl)))
 	{
 	  gfc_init_block (&tmpblock);
-	  gfc_add_modify (&tmpblock, GFC_DECL_SPAN (sym->backend_decl),
-			  build_int_cst (gfc_array_index_type, 0));
+	  gfc_conv_descriptor_span_set (&tmpblock, sym->backend_decl,
+				build_int_cst (gfc_array_index_type, 0));
 	  gfc_add_init_cleanup (block, gfc_finish_block (&tmpblock),
 				NULL_TREE);
 	}
