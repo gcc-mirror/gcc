@@ -5413,7 +5413,8 @@ gfc_conv_procedure_call (gfc_se * se, gfc_symbol * sym,
 		}
 
 	      if (e->expr_type == EXPR_VARIABLE
-		    && is_subref_array (e))
+		    && is_subref_array (e)
+		    && !(fsym && fsym->attr.pointer))
 		/* The actual argument is a component reference to an
 		   array of derived types.  In this case, the argument
 		   is converted to a temporary, which is passed and then
@@ -8223,7 +8224,6 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
   stmtblock_t block;
   tree desc;
   tree tmp;
-  tree decl;
   bool scalar, non_proc_pointer_assign;
   gfc_ss *ss;
 
@@ -8412,29 +8412,23 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  gfc_conv_expr_descriptor (&lse, expr2);
 	  strlen_rhs = lse.string_length;
 
-	  /* If this is a subreference array pointer assignment, use the rhs
-	     descriptor element size for the lhs span.  */
-	  if (expr1->symtree->n.sym->attr.subref_array_pointer)
-	    {
-	      decl = expr1->symtree->n.sym->backend_decl;
-	      gfc_init_se (&rse, NULL);
-	      rse.descriptor_only = 1;
-	      gfc_conv_expr (&rse, expr2);
-	      if (expr1->ts.type == BT_CLASS)
-		trans_class_vptr_len_assignment (&block, expr1, expr2, &rse,
-						 NULL, NULL);
-	      tmp = gfc_get_element_type (TREE_TYPE (rse.expr));
-	      tmp = fold_convert (gfc_array_index_type, size_in_bytes (tmp));
-	      if (!INTEGER_CST_P (tmp))
-		gfc_add_block_to_block (&lse.post, &rse.pre);
-	      gfc_add_modify (&lse.post, GFC_DECL_SPAN(decl), tmp);
-	    }
-	  else if (expr1->ts.type == BT_CLASS)
+	  if (expr1->ts.type == BT_CLASS)
 	    {
 	      rse.expr = NULL_TREE;
 	      rse.string_length = NULL_TREE;
 	      trans_class_vptr_len_assignment (&block, expr1, expr2, &rse,
 					       NULL, NULL);
+	    }
+
+	  if (remap == NULL)
+	    {
+	      /* If the target is not a whole array, use the target array
+		 reference for remap.  */
+	      for (remap = expr2->ref; remap; remap = remap->next)
+		if (remap->type == REF_ARRAY
+		    && remap->u.ar.type == AR_FULL
+		    && remap->next)
+		  break;
 	    }
 	}
       else if (expr2->expr_type == EXPR_FUNCTION && expr2->ts.type == BT_CLASS)
@@ -8446,7 +8440,12 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	    {
 	      rse.expr = gfc_class_data_get (rse.expr);
 	      gfc_add_modify (&lse.pre, desc, rse.expr);
-	    }
+	      /* Set the lhs span.  */
+	      tmp = TREE_TYPE (rse.expr);
+	      tmp = TYPE_SIZE_UNIT (gfc_get_element_type (tmp));
+	      tmp = fold_convert (gfc_array_index_type, tmp);
+	      gfc_conv_descriptor_span_set (&lse.pre, desc, tmp);
+ 	    }
 	  else
 	    {
 	      expr1_vptr = trans_class_vptr_len_assignment (&block, expr1,
@@ -8492,7 +8491,7 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 		 converted in rse and now have to build the correct LHS
 		 descriptor for it.  */
 
-	      tree dtype, data;
+	      tree dtype, data, span;
 	      tree offs, stride;
 	      tree lbound, ubound;
 
@@ -8504,6 +8503,18 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	      /* Copy data pointer.  */
 	      data = gfc_conv_descriptor_data_get (rse.expr);
 	      gfc_conv_descriptor_data_set (&block, desc, data);
+
+	      /* Copy the span.  */
+	      if (TREE_CODE (rse.expr) == VAR_DECL
+		  && GFC_DECL_PTR_ARRAY_P (rse.expr))
+		span = gfc_conv_descriptor_span_get (rse.expr);
+	      else
+		{
+		  tmp = TREE_TYPE (rse.expr);
+		  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (tmp));
+		  span = fold_convert (gfc_array_index_type, tmp);
+		}
+	      gfc_conv_descriptor_span_set (&block, desc, span);
 
 	      /* Copy offset but adjust it such that it would correspond
 		 to a lbound of zero.  */
@@ -8586,12 +8597,18 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 		{
 		  gfc_se lbound_se;
 
-		  gcc_assert (remap->u.ar.start[dim]);
 		  gcc_assert (!remap->u.ar.end[dim]);
 		  gfc_init_se (&lbound_se, NULL);
-		  gfc_conv_expr (&lbound_se, remap->u.ar.start[dim]);
-
-		  gfc_add_block_to_block (&block, &lbound_se.pre);
+		  if (remap->u.ar.start[dim])
+		    {
+		      gfc_conv_expr (&lbound_se, remap->u.ar.start[dim]);
+		      gfc_add_block_to_block (&block, &lbound_se.pre);
+		    }
+		  else
+		    /* This remap arises from a target that is not a whole
+		       array. The start expressions will be NULL but we need
+		       the lbounds to be one.  */
+		    lbound_se.expr = gfc_index_one_node;
 		  gfc_conv_shift_descriptor_lbound (&block, desc,
 						    dim, lbound_se.expr);
 		  gfc_add_block_to_block (&block, &lbound_se.post);

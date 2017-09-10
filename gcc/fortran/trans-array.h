@@ -156,9 +156,13 @@ tree gfc_conv_array_ubound (tree, int);
 void gfc_trans_array_cobounds (tree, stmtblock_t *, const gfc_symbol *);
 
 /* Build expressions for accessing components of an array descriptor.  */
+void gfc_get_descriptor_offsets_for_info (const_tree, tree *, tree *, tree *, tree *,
+					  tree *, tree *, tree *);
+
 tree gfc_conv_descriptor_data_get (tree);
 tree gfc_conv_descriptor_data_addr (tree);
 tree gfc_conv_descriptor_offset_get (tree);
+tree gfc_conv_descriptor_span_get (tree);
 tree gfc_conv_descriptor_dtype (tree);
 tree gfc_conv_descriptor_rank (tree);
 tree gfc_get_descriptor_dimension (tree);
@@ -169,6 +173,7 @@ tree gfc_conv_descriptor_token (tree);
 
 void gfc_conv_descriptor_data_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_offset_set (stmtblock_t *, tree, tree);
+void gfc_conv_descriptor_span_set (stmtblock_t *, tree, tree);
 void gfc_conv_descriptor_stride_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_lbound_set (stmtblock_t *, tree, tree, tree);
 void gfc_conv_descriptor_ubound_set (stmtblock_t *, tree, tree, tree);

@@ -1,3 +1,31 @@
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	* gfortran.dg/associate_24.f90: New test.
+	* gfortran.dg/assumed_type_2.f90: Adjust some of the tree dump
+	checks.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+	* gfortran.dg/pointer_array_1.f90: New test.
+	* gfortran.dg/pointer_array_2.f90: New test.
+	* gfortran.dg/pointer_array_7.f90: New test.
+	* gfortran.dg/pointer_array_8.f90: New test.
+	* gfortran.dg/pointer_array_component_1.f90: New test.
+	* gfortran.dg/pointer_array_component_2.f90: New test.
+	* gfortran.dg/goacc/kernels-alias-4.f95: Bump up both tree scan
+	counts by 1.
+
+	PR fortran/40737
+	* gfortran.dg/pointer_array_3.f90: New test.
+
+	PR fortran/57116
+	* gfortran.dg/pointer_array_4.f90: New test.
+
+	PR fortran/55763
+	* gfortran.dg/pointer_array_5.f90: New test.
+
+	PR fortran/57019
+	* gfortran.dg/pointer_array_6.f90: New test.
+
 2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/81852
