@@ -162,7 +162,8 @@ package Sem_Aux is
    --  (Op) /= E_Operator.
 
    function Get_Called_Entity (Call : Node_Id) return Entity_Id;
-   --  Returns the entity associated with the call
+   --  Obtain the entity of the entry, operator, or subprogram being invoked
+   --  by call Call.
 
    function Get_Low_Bound (E : Entity_Id) return Node_Id;
    --  For an index subtype or string literal subtype, returns its low bound
