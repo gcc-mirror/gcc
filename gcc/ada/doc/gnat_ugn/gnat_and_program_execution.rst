@@ -3545,6 +3545,134 @@ then the output includes:
        Final velocity: 98.10 m.s**(-1)
 
 
+  .. index:: Dimensionable type
+  .. index:: Dimensioned subtype
+
+The type ``Mks_Type`` is said to be a *dimensionable type* since it has a
+``Dimension_System`` aspect, and the subtypes ``Length``, ``Mass``, etc.,
+are said to be *dimensioned subtypes* since each one has a ``Dimension``
+aspect.
+
+  .. index:: Dimension Vector (for a dimensioned subtype)
+  .. index:: Dimension aspect
+  .. index:: Dimension_System aspect
+  
+The ``Dimension`` aspect of a dimensioned subtype ``S`` defines a mapping
+from the base type's Unit_Names to integer (or, more generally, rational)
+values. This mapping is the *dimension vector* (also referred to as the
+*dimensionality*) for that subtype, denoted by ``DV(S)``, and thus for each
+object of that subtype. Intuitively, the value specified for each
+``Unit_Name`` is the exponent associated with that unit; a zero value
+means that the unit is not used. For example:
+
+   .. code-block:: ada
+
+      declare
+         Acc : Acceleration;
+         ...
+      begin
+         ...
+      end;
+
+Here ``DV(Acc)`` = ``DV(Acceleration)`` =
+``(Meter=>1, Kilogram=>0, Second => -2, Ampere=>0, Kelvin=>0, Mole=>0, Candela => 0)``.
+Symbolically, we can express this as ``Meter / Second**2``. 
+
+The dimension vector of an arithmetic expression is synthesized from the
+dimension vectors of its components, with compile-time dimensionality checks
+that help prevent mismatches such as using an ``Acceleration`` where a
+``Length`` is required.
+
+The dimension vector of the result of an arithmetic expression *expr*, or
+:samp:`DV({expr})`, is defined as follows, assuming conventional
+mathematical definitions for the vector operations that are used:
+
+* If *expr* is of the type *universal_real*, or is not of a dimensioned subtype,
+  then *expr* is dimensionless; :samp:`DV({expr})` is the empty vector.
+
+* :samp:`DV({op expr})`, where *op* is a unary operator, is :samp:`DV({expr})`
+
+* :samp:`DV({expr1 op expr2})` where *op* is "+" or "-" is :samp:`DV({expr1})`
+  provided that :samp:`DV({expr1})` = :samp:`DV({expr2})`. 
+  If this condition is not met then the construct is illegal.
+
+* :samp:`DV({expr1} * {expr2})` is :samp:`DV({expr1})` + :samp:`DV({expr2})`,
+  and :samp:`DV({expr1} / {expr2})` = :samp:`DV({expr1})` - :samp:`DV({expr2})`.
+  In this context if one of the *expr*\ s is dimensionless then its empty
+  dimension vector is treated as ``(others => 0)``.
+
+* :samp:`DV({expr} ** {power})` is *power* * :samp:`DV({expr})`,
+  provided that *power* is a static rational value. If this condition is not
+  met then the construct is illegal.
+
+Note that, by the above rules, it is illegal to use binary "+" or "-" to
+combine a dimensioned and dimensionless value.  Thus an expression such as
+``acc-10.0`` is illegal, where ``acc`` is an object of subtype
+``Acceleration``.
+
+The dimensionality checks for relationals use the same rules as
+for "+" and "-"; thus
+
+  .. code-block:: ada
+
+        acc > 10.0
+
+is equivalent to
+
+  .. code-block:: ada
+
+       acc-10.0 > 0.0
+
+and is thus illegal. Analogously a conditional expression
+requires the same dimension vector for each branch.  
+
+The dimension vector of a type conversion :samp:`T({expr})` is defined
+as follows, based on the nature of ``T``:
+
+* If ``T`` is a dimensioned subtype then :samp:`DV(T({expr}))` is ``DV(T)``
+  provided that either *expr* is dimensionless or
+  :samp:`DV(T)` = :samp:`DV({expr})`. The conversion is illegal
+  if *expr* is dimensioned and :samp:`DV({expr})` /= ``DV(T)``.
+  Note that vector equality does not require that the corresponding
+  Unit_Names be the same.
+
+  As a consequence of the above rule, it is possible to convert between
+  different dimension systems that follow the same international system
+  of units, with the seven physical components given in the standard order
+  (length, mass, time, etc.). Thus a length in meters can be converted to
+  a length in inches (with a suitable conversion factor) but cannot be
+  converted, for example, to a mass in pounds.
+
+* If ``T`` is the base type for *expr* (and the dimensionless root type of
+  the dimension system), then :samp:`DV(T({expr}))` is ``DV(expr)``.
+  Thus, if *expr* is of a dimensioned subtype of ``T``, the conversion may
+  be regarded as a "view conversion" that preserves dimensionality.
+
+  This rule makes it possible to write generic code that can be instantiated 
+  with compatible dimensioned subtypes.  The generic unit will contain
+  conversions that will consequently be present in instantiations, but
+  conversions to the base type will preserve dimensionality and make it
+  possible to write generic code that is correct with respect to
+  dimensionality.
+
+* Otherwise (i.e., ``T`` is neither a dimensioned subtype nor a dimensionable
+  base type), :samp:`DV(T({expr}))` is the empty vector. Thus a dimensioned
+  value can be explicitly converted to a non-dimensioned subtype, which
+  of course then escapes dimensionality analysis.
+
+The dimension vector for a type qualification :samp:`T'({expr})` is the same
+as for the type conversion :samp:`T({expr})`.
+
+An assignment statement 
+
+   .. code-block:: ada
+   
+         Source := Target;
+
+requires ``DV(Source)`` = ``DV(Target)``, and analogously for parameter
+passing (the dimension vector for the actual parameter must be equal to the
+dimension vector for the formal parameter).
+
 
 .. _Stack_Related_Facilities:
 

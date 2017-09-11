@@ -26,14 +26,9 @@ Run-Time Libraries
 .. index:: Run-time libraries (platform-specific information)
 
 The GNAT run-time implementation may vary with respect to both the
-underlying threads library and the exception handling scheme.
-For threads support, one or more of the following are supplied:
-
-* **native threads library**, a binding to the thread package from
-  the underlying operating system
-
-* **pthreads library** (Sparc Solaris only), a binding to the Solaris
-  POSIX thread package
+underlying threads library and the exception-handling scheme.
+For threads support, the default run-time will bind to the thread
+package of the underlying operating system.
 
 For exception handling, either or both of two models are supplied:
 
@@ -72,45 +67,17 @@ Summary of Run-Time Configurations
 +-----------------+--------------+-------------------------+------------+
 | Platform        | Run-Time     | Tasking                 | Exceptions |
 +=================+==============+=========================+============+
-| ppc-aix         | rts-native   | native AIX threads      | ZCX        |
-|                 | (default)    |                         |            |
-|                 +--------------+-------------------------+------------+
-|                 | rts-sjlj     | native AIX threads      | SJLJ       |
-+-----------------+--------------+-------------------------+------------+
-| sparc-solaris   | rts-native   | native Solaris          | ZCX        |
-|                 | (default)    | threads library         |            |
-|                 +--------------+-------------------------+------------+
-|                 | rts-pthread  | pthread library         | ZCX        |
-|                 +--------------+-------------------------+------------+
-|                 | rts-sjlj     | native Solaris          | SJLJ       |
-|                 |              | threads library         |            |
-+-----------------+--------------+-------------------------+------------+
-| sparc64-solaris | rts-native   | native Solaris          | ZCX        |
-|                 | (default)    | threads library         |            |
-+-----------------+--------------+-------------------------+------------+
-| x86-linux       | rts-native   | pthread library         | ZCX        |
+| GNU/Linux       | rts-native   | pthread library         | ZCX        |
 |                 | (default)    |                         |            |
 |                 +--------------+-------------------------+------------+
 |                 | rts-sjlj     | pthread library         | SJLJ       |
 +-----------------+--------------+-------------------------+------------+
-| x86-lynx        | rts-native   | native LynxOS threads   | SJLJ       |
-|                 | (default)    |                         |            |
-+-----------------+--------------+-------------------------+------------+
-| x86-solaris     | rts-native   | native Solaris          | ZCX        |
-|                 | (default)    | threads library         |            |
-|                 +--------------+-------------------------+------------+
-|                 | rts-sjlj     | native Solaris          | SJLJ       |
-|                 |              | threads library         |            |
-+-----------------+--------------+-------------------------+------------+
-| x86-windows     | rts-native   | native Win32 threads    | ZCX        |
+| Windows         | rts-native   | native Win32 threads    | ZCX        |
 |                 | (default)    |                         |            |
 |                 +--------------+-------------------------+------------+
 |                 | rts-sjlj     | native Win32 threads    | SJLJ       |
 +-----------------+--------------+-------------------------+------------+
-| x86_64-linux    | rts-native   | pthread library         | ZCX        |
-|                 | (default)    |                         |            |
-|                 +--------------+-------------------------+------------+
-|                 | rts-sjlj     | pthread library         | SJLJ       |
+| Mac OS          | rts-native   | pthread library         | ZCX        |
 +-----------------+--------------+-------------------------+------------+
 
 
@@ -136,7 +103,7 @@ below explains the differences between the different libraries in terms of
 their thread support.
 
 The default run-time library (when GNAT is installed) is *rts-native*.
-This default run time is selected by the means of soft links.
+This default run-time is selected by the means of soft links.
 For example on x86-linux::
 
    --
@@ -252,95 +219,7 @@ this in a library package body in your application:
 It gets the effective user id, and if it's not 0 (i.e. root), it raises
 Program_Error.
 
-
-.. index:: Solaris Sparc threads libraries
-
-.. _Solaris-Specific_Considerations:
-
-Solaris-Specific Considerations
--------------------------------
-
-This section addresses some topics related to the various threads libraries
-on Sparc Solaris.
-
-.. index:: rts-pthread threads library
-
-.. _Solaris_Threads_Issues:
-
-Solaris Threads Issues
-----------------------
-
-GNAT under Solaris/Sparc 32 bits comes with an alternate tasking run-time
-library based on POSIX threads --- *rts-pthread*.
-
-.. index:: PTHREAD_PRIO_INHERIT policy (under rts-pthread)
-.. index:: PTHREAD_PRIO_PROTECT policy (under rts-pthread)
-.. index:: pragma Locking_Policy (under rts-pthread)
-.. index:: Inheritance_Locking (under rts-pthread)
-.. index:: Ceiling_Locking (under rts-pthread)
-
-This run-time library has the advantage of being mostly shared across all
-POSIX-compliant thread implementations, and it also provides under
-Solaris |nbsp| 8 the ``PTHREAD_PRIO_INHERIT``
-and ``PTHREAD_PRIO_PROTECT``
-semantics that can be selected using the predefined pragma
-``Locking_Policy``
-with respectively
-``Inheritance_Locking`` and ``Ceiling_Locking`` as the policy.
-
-As explained above, the native run-time library is based on the Solaris thread
-library (``libthread``) and is the default library.
-
-.. index:: GNAT_PROCESSOR environment variable (on Sparc Solaris)
-
-When the Solaris threads library is used (this is the default), programs
-compiled with GNAT can automatically take advantage of
-and can thus execute on multiple processors.
-The user can alternatively specify a processor on which the program should run
-to emulate a single-processor system. The multiprocessor / uniprocessor choice
-is made by
-setting the environment variable :envvar:`GNAT_PROCESSOR`
-to one of the following:
-
-  ========================= ===================================================================
-  ``GNAT_PROCESSOR`` Value             Effect
-  ========================= ===================================================================
-  ``-2``                    Use the default configuration (run the program on all
-                            available processors) - this is the same as having ``GNAT_PROCESSOR``
-                            unset
-  ``-1``                    Let the run-time implementation choose one processor and run the
-                            program on that processor
-  ``0 .. Last_Proc``        Run the program on the specified processor.
-                            ``Last_Proc`` is equal to ``_SC_NPROCESSORS_CONF - 1``
-                            (where ``_SC_NPROCESSORS_CONF`` is a system variable).
-  ========================= ===================================================================
-
-
-.. _AIX-Specific_Considerations:
-
-AIX-Specific Considerations
----------------------------
-
-.. index:: AIX resolver library
-
-On AIX, the resolver library initializes some internal structure on
-the first call to ``get*by*`` functions, which are used to implement
-``GNAT.Sockets.Get_Host_By_Name`` and
-``GNAT.Sockets.Get_Host_By_Address``.
-If such initialization occurs within an Ada task, and the stack size for
-the task is the default size, a stack overflow may occur.
-
-To avoid this overflow, the user should either ensure that the first call
-to ``GNAT.Sockets.Get_Host_By_Name`` or
-``GNAT.Sockets.Get_Host_By_Addrss``
-occurs in the environment task, or use ``pragma Storage_Size`` to
-specify a sufficiently large size for the stack of the task that contains
-this call.
-
-
-.. index:: Windows NT
-.. index:: Windows 95
-.. index:: Windows 98
+.. index:: Windows
 
 .. _Microsoft_Windows_Topics:
 
@@ -1252,11 +1131,11 @@ Limitations When Using Ada DLLs from Ada
 """"""""""""""""""""""""""""""""""""""""
 
 When using Ada DLLs from Ada applications there is a limitation users
-should be aware of. Because on Windows the GNAT run time is not in a DLL of
-its own, each Ada DLL includes a part of the GNAT run time. Specifically,
-each Ada DLL includes the services of the GNAT run time that are necessary
+should be aware of. Because on Windows the GNAT run-time is not in a DLL of
+its own, each Ada DLL includes a part of the GNAT run-time. Specifically,
+each Ada DLL includes the services of the GNAT run-time that are necessary
 to the Ada code inside the DLL. As a result, when an Ada program uses an
-Ada DLL there are two independent GNAT run times: one in the Ada DLL and
+Ada DLL there are two independent GNAT run-times: one in the Ada DLL and
 one in the main program.
 
 It is therefore not possible to exchange GNAT run-time objects between the
@@ -1395,7 +1274,7 @@ initialization routine. Unfortunately, it is not possible to call
 ``adainit`` from the ``DllMain`` if your program has library level
 tasks because access to the ``DllMain`` entry point is serialized by
 the system (that is, only a single thread can execute 'through' it at a
-time), which means that the GNAT run time will deadlock waiting for the
+time), which means that the GNAT run-time will deadlock waiting for the
 newly created task to complete its initialization.
 
 

@@ -11450,13 +11450,29 @@ package body Sem_Res is
 
    begin
       --  Do not perform this transformation within a pre/postcondition,
-      --  because the expression will be re-analyzed, and the transformation
+      --  because the expression will be reanalyzed, and the transformation
       --  might affect the visibility of the operator, e.g. in an instance.
       --  Note that fully analyzed and expanded pre/postconditions appear as
       --  pragma Check equivalents.
 
       if In_Pre_Post_Condition (N) then
          return;
+      end if;
+
+      --  Likewise when an expression function is being preanalyzed, since the
+      --  expression will be reanalyzed as part of the generated body.
+
+      if In_Spec_Expression then
+         declare
+            S : constant Entity_Id := Current_Scope_No_Loops;
+         begin
+            if Ekind (S) = E_Function
+              and then Nkind (Original_Node (Unit_Declaration_Node (S)))
+                                                        = N_Expression_Function
+            then
+               return;
+            end if;
+         end;
       end if;
 
       --  Rewrite the operator node using the real operator, not its renaming.
