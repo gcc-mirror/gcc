@@ -3117,13 +3117,13 @@ Note that although the substitution of strings within a string literal
 is not possible, it is possible to have a symbol whose defined value is
 a string literal. So instead of setting XYZ to ``hello`` and writing:
 
-.. code-block:: c
+.. code-block:: ada
 
      Header : String := "$XYZ";
 
 you should set XYZ to ``"hello"`` and write:
 
-.. code-block:: c
+.. code-block:: ada
 
      Header : String := $XYZ;
 

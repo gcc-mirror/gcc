@@ -1,3 +1,28 @@
+2017-09-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* doc/gnat_ugn/the_gnat_compilation_model.rst: Fix sphinx warning.
+	* doc/gnat_ugn/platform_specific_information.rst: Remove doc
+	for no longer supported platforms.
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Added detailed
+	description of the semantics for dimensionality analysis.
+	* gnat_ugn.texi: Regenerated.
+
+2017-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* freeze.adb (Has_Incomplete_Compoent): Delete.
+	(Freeze_Profile):
+	Do not inhibit the freezing of the profile of an expression
+	function here.
+	(Freeze_Subprogram): Do not re-create extra formals.
+	* sem_ch6.adb (Analyze_Expression_Function): Always
+	pre-analyze the expression if the function is not a completion.
+	(Analyze_Subprogram_Body_Helper): For the body generated
+	from an expression function that is not a completion, do
+	not freeze the profile and temporary mask the types declared
+	outside the expression that are not yet frozen.
+	* sem_res.adb (Rewrite_Renamed_Operator): Also bail out if invoked
+	during the pre-analysis of an expression function.
+
 2017-09-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/gigi.h (enum standard_datatypes): Minor tweak.
