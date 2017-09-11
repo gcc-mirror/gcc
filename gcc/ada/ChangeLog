@@ -1,3 +1,10 @@
+2017-09-11  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Set
+	Check_Validity_Of_Parameters to False in GNATprove mode.
+	* opt.ads (Check_Validity_Of_Parameters): Document switch to
+	set option.
+
 2017-09-09  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* gcc-interface/decl.c (gnat_to_gnu_entity) <E_Record_Type>: Don't
