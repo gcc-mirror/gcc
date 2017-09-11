@@ -615,6 +615,7 @@ xtensa_mem_offset (unsigned v, machine_mode mode)
     case E_HImode:
       return xtensa_uimm8x2 (v);
 
+    case E_DImode:
     case E_DFmode:
       return (xtensa_uimm8x4 (v) && xtensa_uimm8x4 (v + 4));
 

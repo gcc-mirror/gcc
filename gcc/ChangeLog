@@ -1,3 +1,9 @@
+2017-09-11  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/82181
+	* config/xtensa/xtensa.c (xtensa_mem_offset): Check that both
+	words of E_DImode object are reachable by xtensa_uimm8x4 access.
+
 2017-09-11  Vidya Praveen  <vidyapraveen@arm.com>
 
 	Revert r251800 and r251799.
