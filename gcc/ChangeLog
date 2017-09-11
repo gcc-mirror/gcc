@@ -1,3 +1,7 @@
+2017-09-11  Vidya Praveen  <vidyapraveen@arm.com>
+
+	Revert r251800 and r251799.
+
 2017-09-11  Martin Jambor  <mjambor@suse.cz>
 
 	PR hsa/82119
