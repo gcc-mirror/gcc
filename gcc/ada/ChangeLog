@@ -1,3 +1,13 @@
+2017-09-11  Yannick Moy  <moy@adacore.com>
+
+	* lib-xref-spark_specific.adb: Minor rewrite.
+
+2017-09-11  Jerome Lambourg  <lambourg@adacore.com>
+
+        * libgnat: Rename ?-[a-z]*-* into ?-[a-z]*__*
+        * gcc-interface/Makefile.in, gcc-interface/Make-lang.in: Take this
+	renaming into account.
+
 2017-09-11  Jerome Lambourg  <lambourg@adacore.com>
 
 	* libgnarl: Rename ?-[a-z]*-* into ?-[a-z]*__*

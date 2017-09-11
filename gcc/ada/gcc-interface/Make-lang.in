@@ -636,11 +636,11 @@ CFLAGS-ada/raise-gcc.o += -I$(srcdir)/../libgcc -DEH_MECHANISM_$(EH_MECHANISM)
 
 ada/libgnat/s-excmac.o: ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
 
-ada/libgnat/s-excmac.ads: $(srcdir)/ada/libgnat/s-excmac-$(EH_MECHANISM).ads
+ada/libgnat/s-excmac.ads: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).ads
 	mkdir -p ada/libgnat
 	$(CP) $< $@
 
-ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac-$(EH_MECHANISM).adb
+ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
 	mkdir -p ada/libgnat
 	$(CP) $< $@
 
