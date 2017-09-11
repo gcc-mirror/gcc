@@ -1,3 +1,13 @@
+2017-09-11  Jerome Lambourg  <lambourg@adacore.com>
+
+	* libgnarl: Rename ?-[a-z]*-* into ?-[a-z]*__*
+	* gcc-interface/Makefile.in: Take this renaming into account.
+
+2017-09-11  Arnaud Charlet  <charlet@adacore.com>
+
+	* s-auxdec-empty.ads, s-auxdec-empty.adb, 9drpc.adb: Removed, no
+	longer used.
+
 2017-09-11  Yannick Moy  <moy@adacore.com>
 
 	* sem_util.adb (Check_Result_And_Post_State):
