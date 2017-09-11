@@ -1,3 +1,62 @@
+2017-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70483
+	* include/bits/string_view.tcc (basic_string_view::find)
+	(basic_string_view::rfind, basic_string_view::find_first_of)
+	(basic_string_view::find_last_of, basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of): Add constexpr specifier.
+	* include/std/string_view (basic_string_view::operator=)
+	(basic_string_view::rbegin, basic_string_view::rend)
+	(basic_string_view::crbegin, basic_string_view::crend)
+	(basic_string_view::remove_prefix, basic_string_view::remove_suffix)
+	(basic_string_view::swap, basic_string_view::compare)
+	(basic_string_view::find, basic_string_view::rfind)
+	(basic_string_view::find_first_of, basic_string_view::find_last_of)
+	(basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of, basic_string_view::_M_check)
+	(basic_string_view::_M_limit, operator==, operator!=, operator<)
+	(operator>, operator<=, operator>=): Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	char/1.cc: Repeat tests in constexpr context.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc: Test
+	cbegin, cend, rbegin, rend, crbegin and crend.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/1.cc:
+	Remove trailing whitespace.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/
+	1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/char/1.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/wchar_t/1.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/2.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/
+	2.cc: New.
+
 2017-09-11  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
