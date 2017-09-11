@@ -1,3 +1,8 @@
+2017-09-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/gigi.h (enum standard_datatypes): Minor tweak.
+	(gigi): Likewise.
+
 2017-09-11  Yannick Moy  <moy@adacore.com>
 
 	* lib-xref-spark_specific.adb: Minor rewrite.
