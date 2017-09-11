@@ -1,3 +1,8 @@
+2017-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS (Reviewers): Move myself from here...
+	(CPU Port Maintainers): ... to here.
+
 2017-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* MAINTAINERS (James Greenhalgh): Move to AArch64 maintainers.
