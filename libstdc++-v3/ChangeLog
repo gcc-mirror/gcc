@@ -1,3 +1,10 @@
+2017-09-11  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/71500
+	* include/bits/regex_executor.tcc: Support icase in regex_tratis<...>
+	for back reference matches.
+	* testsuite/28_regex/regression.cc: Test case.
+
 2017-09-11  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/21_strings/basic_string/lwg2946.cc: Adjust for

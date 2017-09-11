@@ -335,6 +335,54 @@ namespace __detail
 	  _M_states._M_queue(__state._M_next, _M_cur_results);
     }
 
+  template<typename _BiIter, typename _TraitsT>
+    struct _Backref_matcher
+    {
+      _Backref_matcher(bool __icase, const _TraitsT& __traits)
+      : _M_traits(__traits) { }
+
+      bool
+      _M_apply(_BiIter __expected_begin,
+	       _BiIter __expected_end, _BiIter __actual_begin,
+	       _BiIter __actual_end)
+      {
+	return _M_traits.transform(__expected_begin, __expected_end)
+	    == _M_traits.transform(__actual_begin, __actual_end);
+      }
+
+      const _TraitsT& _M_traits;
+    };
+
+  template<typename _BiIter, typename _CharT>
+    struct _Backref_matcher<_BiIter, std::regex_traits<_CharT>>
+    {
+      using _TraitsT = std::regex_traits<_CharT>;
+      _Backref_matcher(bool __icase, const _TraitsT& __traits)
+      : _M_icase(__icase), _M_traits(__traits) { }
+
+      bool
+      _M_apply(_BiIter __expected_begin,
+	       _BiIter __expected_end, _BiIter __actual_begin,
+	       _BiIter __actual_end)
+      {
+	if (!_M_icase)
+	  return std::equal(__expected_begin, __expected_end,
+			    __actual_begin, __actual_end);
+	typedef std::ctype<_CharT> __ctype_type;
+	const auto& __fctyp = use_facet<__ctype_type>(_M_traits.getloc());
+	return std::equal(__expected_begin, __expected_end,
+			  __actual_begin, __actual_end,
+			  [this, &__fctyp](_CharT __lhs, _CharT __rhs)
+			  {
+			    return __fctyp.tolower(__lhs)
+				== __fctyp.tolower(__rhs);
+			  });
+      }
+
+      bool _M_icase;
+      const _TraitsT& _M_traits;
+    };
+
   // First fetch the matched result from _M_cur_results as __submatch;
   // then compare it with
   // (_M_current, _M_current + (__submatch.second - __submatch.first)).
@@ -355,9 +403,10 @@ namespace __detail
 	   __last != _M_end && __tmp != __submatch.second;
 	   ++__tmp)
 	++__last;
-      if (_M_re._M_automaton->_M_traits.transform(__submatch.first,
-						  __submatch.second)
-	  == _M_re._M_automaton->_M_traits.transform(_M_current, __last))
+      if (_Backref_matcher<_BiIter, _TraitsT>(
+	      _M_re.flags() & regex_constants::icase,
+	      _M_re._M_automaton->_M_traits)._M_apply(
+		  __submatch.first, __submatch.second, _M_current, __last))
 	{
 	  if (__last != _M_current)
 	    {

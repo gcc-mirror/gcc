@@ -93,6 +93,17 @@ test06()
   }
 }
 
+// PR libstdc++/71500
+void
+test07()
+{
+  bool test [[gnu::unused]] = true;
+
+  VERIFY(regex_match_debug("abc abc", regex("([a-z]+) \\1", regex::icase)));
+  VERIFY(regex_match_debug("Abc abc", regex("([a-z]+) \\1", regex::icase)));
+  VERIFY(regex_match_debug("abc Abc", regex("([a-z]+) \\1", regex::icase)));
+}
+
 int
 main()
 {
@@ -102,6 +113,7 @@ main()
   test04();
   test05();
   test06();
+  test07();
   return 0;
 }
 
