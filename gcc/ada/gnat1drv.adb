@@ -356,6 +356,7 @@ procedure Gnat1drv is
          Reset_Validity_Check_Options;
          Validity_Check_Default       := True;
          Validity_Check_Copies        := True;
+         Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options and ignore any style check pragmas
          --  since we are not interested in any front-end warnings when we are
@@ -508,6 +509,7 @@ procedure Gnat1drv is
          --  data is directly detected by GNATprove's flow analysis.
 
          Validity_Checks_On := False;
+         Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options since we are not interested in any
          --  front-end warnings when we are getting SPARK output.
