@@ -1,3 +1,8 @@
+2017-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/lwg2946.cc: Adjust for
+	compatibility with old COW std::string.
+
 2017-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/allocator.xml: Adjust link for Hoard.
