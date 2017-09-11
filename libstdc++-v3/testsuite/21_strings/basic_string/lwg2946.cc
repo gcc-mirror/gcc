@@ -29,7 +29,7 @@ int main()
   s.assign({"abc", 1});
   s.insert(0, {"abc", 1});
   s.replace(0, 1, {"abc", 1});
-  s.replace(s.cbegin(), s.cbegin(), {"abc", 1});
+  s.replace(s.begin(), s.begin(), {"abc", 1});
   s.find({"abc", 1});
   s.rfind({"abc", 1});
   s.find_first_of({"abc", 1});
