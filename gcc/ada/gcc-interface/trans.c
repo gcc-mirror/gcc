@@ -396,26 +396,26 @@ gigi (Node_Id gnat_root,
   ptr_void_ftype = build_pointer_type (void_ftype);
 
   /* Now declare run-time functions.  */
-  ftype = build_function_type_list (ptr_type_node, sizetype, NULL_TREE);
   malloc_decl
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (ptr_type_node, sizetype,
+						     NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
-  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (void_type_node,
+						     ptr_type_node, NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
 
-  ftype = build_function_type_list (ptr_type_node, ptr_type_node, sizetype,
-				    NULL_TREE);
   realloc_decl
     = create_subprog_decl (get_identifier ("__gnat_realloc"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (ptr_type_node,
+						     ptr_type_node, sizetype,
+						     NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
 

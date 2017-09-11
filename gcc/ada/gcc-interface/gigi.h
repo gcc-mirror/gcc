@@ -423,7 +423,8 @@ enum standard_datatypes
   ADT_all_others_decl,
   ADT_unhandled_others_decl,
 
-  ADT_LAST};
+  ADT_LAST
+};
 
 /* Define kind of exception information associated with raise statements.  */
 enum exception_info_kind
