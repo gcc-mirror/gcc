@@ -4022,7 +4022,6 @@ package body Sem_Aggr is
       -------------------
 
       procedure Rewrite_Range (Root_Type : Entity_Id; Rge : Node_Id) is
-
          procedure Rewrite_Bound
            (Bound     : Node_Id;
             Disc      : Entity_Id;
@@ -4063,9 +4062,8 @@ package body Sem_Aggr is
             Low := Low_Bound (Rge);
             High := High_Bound (Rge);
 
-            Disc := First_Discriminant (Root_Type);
-            Expr_Disc :=
-              First_Elmt (Stored_Constraint (Etype (N)));
+            Disc      := First_Discriminant (Root_Type);
+            Expr_Disc := First_Elmt (Stored_Constraint (Etype (N)));
             while Present (Disc) loop
                Rewrite_Bound (Low, Disc, Node (Expr_Disc));
                Rewrite_Bound (High, Disc, Node (Expr_Disc));
@@ -4081,9 +4079,9 @@ package body Sem_Aggr is
       --  Components is the list of the record components whose value must be
       --  provided in the aggregate. This list does include discriminants.
 
-      Expr            : Node_Id;
       Component       : Entity_Id;
       Component_Elmt  : Elmt_Id;
+      Expr            : Node_Id;
       Positional_Expr : Node_Id;
 
    --  Start of processing for Resolve_Record_Aggregate
@@ -4669,10 +4667,11 @@ package body Sem_Aggr is
 
                   if Is_Array_Type (Etype (Expr)) then
                      declare
-                        --  Root record type whose discriminants may be used
-                        --  as bounds in range nodes.
-                        Root_Type : constant Entity_Id := Scope (Component);
-                        Index     : Node_Id;
+                        Rec_Typ : constant Entity_Id := Scope (Component);
+                        --  Root record type whose discriminants may be used as
+                        --  bounds in range nodes.
+
+                        Index : Node_Id;
 
                      begin
                         --  Rewrite the range nodes occurring in the indexes
@@ -4680,9 +4679,10 @@ package body Sem_Aggr is
 
                         Index := First_Index (Etype (Expr));
                         while Present (Index) loop
-                           Rewrite_Range (Root_Type, Index);
+                           Rewrite_Range (Rec_Typ, Index);
                            Rewrite_Range
-                             (Root_Type, Scalar_Range (Etype (Index)));
+                             (Rec_Typ, Scalar_Range (Etype (Index)));
+
                            Next_Index (Index);
                         end loop;
 
@@ -4692,7 +4692,7 @@ package body Sem_Aggr is
                         if Nkind (Expr) = N_Aggregate
                           and then Present (Aggregate_Bounds (Expr))
                         then
-                           Rewrite_Range (Root_Type, Aggregate_Bounds (Expr));
+                           Rewrite_Range (Rec_Typ, Aggregate_Bounds (Expr));
                         end if;
                      end;
                   end if;

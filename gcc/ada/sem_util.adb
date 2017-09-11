@@ -3501,6 +3501,14 @@ package body Sem_Util is
             --  Returns True if the message applies to a conjunct in the
             --  expression, instead of the whole expression.
 
+            function Has_Global_Output (Subp : Entity_Id) return Boolean;
+            --  Returns True if Subp has an output in its Global contract
+
+            function Has_No_Output (Subp : Entity_Id) return Boolean;
+            --  Returns True if Subp has no declared output: no function
+            --  result, no output parameter, and no output in its Global
+            --  contract.
+
             --------------------
             -- Adjust_Message --
             --------------------
@@ -3534,6 +3542,96 @@ package body Sem_Util is
                  or else Split_PPC (Prag);
             end Applied_On_Conjunct;
 
+            -----------------------
+            -- Has_Global_Output --
+            -----------------------
+
+            function Has_Global_Output (Subp : Entity_Id) return Boolean is
+               Global : constant Node_Id := Get_Pragma (Subp, Pragma_Global);
+               List   : Node_Id;
+               Assoc  : Node_Id;
+
+            begin
+               if No (Global) then
+                  return False;
+               end if;
+
+               List := Expression (Get_Argument (Global, Subp));
+
+               --  Empty list (no global items) or single global item
+               --  declaration (only input items).
+
+               if Nkind_In (List, N_Null,
+                                  N_Expanded_Name,
+                                  N_Identifier,
+                                  N_Selected_Component)
+               then
+                  return False;
+
+               --  Simple global list (only input items) or moded global list
+               --  declaration.
+
+               elsif Nkind (List) = N_Aggregate then
+                  if Present (Expressions (List)) then
+                     return False;
+
+                  else
+                     Assoc := First (Component_Associations (List));
+                     while Present (Assoc) loop
+                        if Chars (First (Choices (Assoc))) /= Name_Input then
+                           return True;
+                        end if;
+
+                        Next (Assoc);
+                     end loop;
+
+                     return False;
+                  end if;
+
+               --  To accommodate partial decoration of disabled SPARK
+               --  features, this routine may be called with illegal input.
+               --  If this is the case, do not raise Program_Error.
+
+               else
+                  return False;
+               end if;
+            end Has_Global_Output;
+
+            -------------------
+            -- Has_No_Output --
+            -------------------
+
+            function Has_No_Output (Subp : Entity_Id) return Boolean is
+               Param : Node_Id;
+
+            begin
+               --  A function has its result as output
+
+               if Ekind (Subp) = E_Function then
+                  return False;
+               end if;
+
+               --  An OUT or IN OUT parameter is an output
+
+               Param := First_Formal (Subp);
+               while Present (Param) loop
+                  if Ekind_In (Param, E_Out_Parameter, E_In_Out_Parameter) then
+                     return False;
+                  end if;
+
+                  Next_Formal (Param);
+               end loop;
+
+               --  An item of mode Output or In_Out in the Global contract is
+               --  an output.
+
+               if Has_Global_Output (Subp) then
+                  return False;
+               end if;
+
+               return True;
+            end Has_No_Output;
+
             --  Local variables
 
             Err_Node : Node_Id;
@@ -3549,8 +3647,14 @@ package body Sem_Util is
                Err_Node := Prag;
             end if;
 
+            --  Do not report missing reference to outcome in postcondition if
+            --  either the postcondition is trivially True or False, or if the
+            --  subprogram is ghost and has no declared output.
+
             if not Is_Trivial_Boolean (Expr)
               and then not Mentions_Post_State (Expr)
+              and then not (Is_Ghost_Entity (Subp_Id)
+                             and then Has_No_Output (Subp_Id))
             then
                if Pragma_Name (Prag) = Name_Contract_Cases then
                   Error_Msg_NE (Adjust_Message
@@ -17303,13 +17407,6 @@ package body Sem_Util is
    function NCT_Table_Hash (Key : Node_Or_Entity_Id) return NCT_Table_Index;
    --  Obtain the hash value of node or entity Key
 
-   NCT_Tables_In_Use : Boolean := False;
-   --  This flag keeps track of whether the two tables NCT_New_Entities and
-   --  NCT_Pending_Itypes are in use. The flag is part of an optimization
-   --  where certain operations are not performed if the tables are not in
-   --  use. This saves up to 8% of the entire compilation time spent in the
-   --  front end.
-
    --------------------
    -- NCT_Table_Hash --
    --------------------
@@ -17356,6 +17453,13 @@ package body Sem_Util is
      Key        => Node_Id,
      Hash       => NCT_Table_Hash,
      Equal      => "=");
+
+   NCT_Tables_In_Use : Boolean := False;
+   --  This flag keeps track of whether the two tables NCT_New_Entities and
+   --  NCT_Pending_Itypes are in use. The flag is part of an optimization
+   --  where certain operations are not performed if the tables are not in
+   --  use. This saves up to 8% of the entire compilation time spent in the
+   --  front end.
 
    -------------------
    -- New_Copy_Tree --
