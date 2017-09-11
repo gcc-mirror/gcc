@@ -545,7 +545,7 @@ package body SPARK_Specific is
       begin
          return Present (E)
            and then not Is_Generic_Unit (E)
-           and then (not Can_Be_Renamed or else Renamed_Entity (E) = Empty)
+           and then (not Can_Be_Renamed or else No (Renamed_Entity (E)))
            and then Get_Scope_Num (E) /= No_Scope;
       end Is_SPARK_Scope;
 
