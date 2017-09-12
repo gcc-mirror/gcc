@@ -1376,12 +1376,11 @@ v850_reorg (void)
 		 for the register */
 	      if (GET_CODE (dest) == REG)
 		{
-		  machine_mode mode = GET_MODE (dest);
 		  int regno;
 		  int endregno;
 
 		  regno = REGNO (dest);
-		  endregno = regno + HARD_REGNO_NREGS (regno, mode);
+		  endregno = END_REGNO (dest);
 
 		  if (!use_ep)
 		    {
