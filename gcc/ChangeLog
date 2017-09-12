@@ -1,5 +1,22 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Use
+	end_hard_regno instead of hard_regno_nregs.
+	* config/s390/s390.c (s390_reg_clobbered_rtx): Likewise.
+	* config/sparc/sparc.h (ASM_DECLARE_REGISTER_GLOBAL): Likewise.
+	* config/visium/visium.c (visium_hard_regno_mode_ok): Likewise.
+	* ira-color.c (improve_allocation): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-lives.c (mark_regno_live): Likewise.
+	(mark_regno_dead): Likewise.
+	* lra-remat.c (operand_to_remat): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	* postreload.c (reload_combine_note_store): Likewise.
+	(move2add_valid_value_p): Likewise.
+	* reload.c (regno_clobbered_p): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/frv/frv.c (FOR_EACH_REGNO): Use END_REGNO instead of
 	hard_regno_nregs.
 	* config/v850/v850.c (v850_reorg): Likewise.

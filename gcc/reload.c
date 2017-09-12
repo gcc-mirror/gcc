@@ -7180,13 +7180,10 @@ int
 regno_clobbered_p (unsigned int regno, rtx_insn *insn, machine_mode mode,
 		   int sets)
 {
-  unsigned int nregs, endregno;
-
   /* regno must be a hard register.  */
   gcc_assert (regno < FIRST_PSEUDO_REGISTER);
 
-  nregs = hard_regno_nregs[regno][mode];
-  endregno = regno + nregs;
+  unsigned int endregno = end_hard_regno (mode, regno);
 
   if ((GET_CODE (PATTERN (insn)) == CLOBBER
        || (sets == 1 && GET_CODE (PATTERN (insn)) == SET))

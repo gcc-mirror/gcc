@@ -1106,8 +1106,7 @@ aarch64_hard_regno_mode_ok (unsigned regno, machine_mode mode)
   if (FP_REGNUM_P (regno))
     {
       if (aarch64_vect_struct_mode_p (mode))
-	return
-	  (regno + aarch64_hard_regno_nregs (regno, mode) - 1) <= V31_REGNUM;
+	return end_hard_regno (mode, regno) - 1 <= V31_REGNUM;
       else
 	return true;
     }

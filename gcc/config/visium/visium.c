@@ -857,7 +857,7 @@ static bool
 visium_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GP_REGISTER_P (regno))
-    return GP_REGISTER_P (regno + HARD_REGNO_NREGS (regno, mode) - 1);
+    return GP_REGISTER_P (end_hard_regno (mode, regno) - 1);
 
   if (FP_REGISTER_P (regno))
     return mode == SFmode || (mode == SImode && TARGET_FPU_IEEE);

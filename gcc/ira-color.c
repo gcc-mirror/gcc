@@ -2893,7 +2893,7 @@ improve_allocation (void)
 	      conflict_nregs
 		= hard_regno_nregs[conflict_hregno][ALLOCNO_MODE (conflict_a)];
 	      for (r = conflict_hregno;
-		   r >= 0 && r + hard_regno_nregs[r][mode] > conflict_hregno;
+		   r >= 0 && (int) end_hard_regno (mode, r) > conflict_hregno;
 		   r--)
 		if (check_hard_reg_p (a, r,
 				      conflicting_regs, profitable_hard_regs))
