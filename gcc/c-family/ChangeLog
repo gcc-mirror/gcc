@@ -1,3 +1,10 @@
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (field_decl_cmp, resort_data, resort_field_decl_cmp,
+	resort_sorted_fields): Move to c/c-decl.c.
+	* c-common.h (field_decl_cmp, resort_sorted_fields): Delete.
+	(struct sorted_fields_type): Move to c/c-lang.h.
+
 2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/81852
