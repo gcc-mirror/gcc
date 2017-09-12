@@ -100,7 +100,7 @@
 ;; Store pair are single issued
 (define_insn_reservation "thunderx_storepair" 1
   (and (eq_attr "tune" "thunderx")
-       (eq_attr "type" "store_8"))
+       (eq_attr "type" "store_8,store_16"))
   "thunderx_pipe0 + thunderx_pipe1")
 
 ;; Prefetch are single issued
@@ -112,7 +112,7 @@
 ;; loads (and load pairs) from L1 take 3 cycles in pipe 0
 (define_insn_reservation "thunderx_load" 3
   (and (eq_attr "tune" "thunderx")
-       (eq_attr "type" "load_4, load_8"))
+       (eq_attr "type" "load_4, load_8, load_16"))
   "thunderx_pipe0")
 
 (define_insn_reservation "thunderx_brj" 1

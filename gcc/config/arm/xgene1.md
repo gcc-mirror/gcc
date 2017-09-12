@@ -92,12 +92,12 @@
 
 (define_insn_reservation "xgene1_load_pair" 6
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load_8"))
+       (eq_attr "type" "load_8, load_16"))
   "xgene1_decodeIsolated")
 
 (define_insn_reservation "xgene1_store_pair" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "store_8"))
+       (eq_attr "type" "store_8, store_16"))
   "xgene1_decodeIsolated")
 
 (define_insn_reservation "xgene1_fp_load1" 10

@@ -387,6 +387,11 @@
 ;; 32-bit version and "%x0" in the 64-bit version.
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
+;; The size of access, in bytes.
+(define_mode_attr ldst_sz [(SI "4") (DI "8")])
+;; Likewise for load/store pair.
+(define_mode_attr ldpstp_sz [(SI "8") (DI "16")])
+
 ;; For inequal width int to float conversion
 (define_mode_attr w1 [(HF "w") (SF "w") (DF "x")])
 (define_mode_attr w2 [(HF "x") (SF "x") (DF "w")])

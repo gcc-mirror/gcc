@@ -1,5 +1,34 @@
 2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
+	* config/aarch64/aarch64.md (movdi_aarch64): Set load/store
+	types correctly.
+	(movti_aarch64): Likewise.
+	(movdf_aarch64): Likewise.
+	(movtf_aarch64): Likewise.
+	(load_pairdi): Likewise.
+	(store_pairdi): Likewise.
+	(load_pairdf): Likewise.
+	(store_pairdf): Likewise.
+	(loadwb_pair<GPI:mode>_<P:mode>): Likewise.
+	(storewb_pair<GPI:mode>_<P:mode>): Likewise.
+	(ldr_got_small_<mode>): Likewise.
+	(ldr_got_small_28k_<mode>): Likewise.
+	(ldr_got_tiny): Likewise.
+	* config/aarch64/iterators.md (ldst_sz): New.
+	(ldpstp_sz): Likewise.
+	* config/aarch64/thunderx.md (thunderx_storepair): Split store_8
+	to store_16.
+	(thunderx_load): Split load_8 to load_16.
+	* config/aarch64/thunderx2t99.md (thunderx2t99_loadpair): Split
+	load_8 to load_16.
+	(thunderx2t99_storepair_basic): Split store_8 to store_16.
+	* config/arm/xgene1.md (xgene1_load_pair): Split load_8 to load_16.
+	(xgene1_store_pair): Split store_8 to store_16.
+	* config/aarch64/falkor.md (falkor_ld_3_ld): Split load_8 to load_16.
+	(falkor_st_0_st_sd): Split store_8 to store_16.
+
+2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
 	* config/arm/types.md (type): Rename load1/2/3/4 to load_4/8/12/16
 	and store1/2/3/4 to store_4/8/12/16.
 	* config/aarch64/aarch64.md: Update for rename.
