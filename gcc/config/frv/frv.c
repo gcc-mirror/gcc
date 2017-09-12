@@ -135,9 +135,7 @@ struct frv_io {
 
 /* Loop with REG set to each hard register in rtx X.  */
 #define FOR_EACH_REGNO(REG, X)						\
-  for (REG = REGNO (X);							\
-       REG < REGNO (X) + HARD_REGNO_NREGS (REGNO (X), GET_MODE (X));	\
-       REG++)
+  for (REG = REGNO (X); REG < END_REGNO (X); REG++)
 
 /* This structure contains machine specific function data.  */
 struct GTY(()) machine_function

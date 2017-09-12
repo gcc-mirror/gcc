@@ -6439,10 +6439,7 @@ refers_to_regno_for_reload_p (unsigned int regno, unsigned int endregno,
 	  return 0;
 	}
 
-      return (endregno > r
-	      && regno < r + (r < FIRST_PSEUDO_REGISTER
-			      ? hard_regno_nregs[r][GET_MODE (x)]
-			      : 1));
+      return endregno > r && regno < END_REGNO (x);
 
     case SUBREG:
       /* If this is a SUBREG of a hard reg, we can see exactly which
@@ -6889,15 +6886,11 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
     {
       int i;
       for (i = 0; i < n_reloads; i++)
-	if (rld[i].reg_rtx != 0 && rld[i].in)
-	  {
-	    int regno1 = REGNO (rld[i].reg_rtx);
-	    int nregs1 = hard_regno_nregs[regno1]
-					 [GET_MODE (rld[i].reg_rtx)];
-	    if (regno1 < valueno + valuenregs
-		&& regno1 + nregs1 > valueno)
-	      return 0;
-	  }
+	if (rld[i].reg_rtx != 0
+	    && rld[i].in
+	    && (int) REGNO (rld[i].reg_rtx) < valueno + valuenregs
+	    && (int) END_REGNO (rld[i].reg_rtx) > valueno)
+	  return 0;
     }
 
   if (goal_mem)
@@ -6963,15 +6956,11 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 	      if (REG_P (dest))
 		{
 		  int xregno = REGNO (dest);
-		  int xnregs;
-		  if (REGNO (dest) < FIRST_PSEUDO_REGISTER)
-		    xnregs = hard_regno_nregs[xregno][GET_MODE (dest)];
-		  else
-		    xnregs = 1;
-		  if (xregno < regno + nregs && xregno + xnregs > regno)
+		  int end_xregno = END_REGNO (dest);
+		  if (xregno < regno + nregs && end_xregno > regno)
 		    return 0;
 		  if (xregno < valueno + valuenregs
-		      && xregno + xnregs > valueno)
+		      && end_xregno > valueno)
 		    return 0;
 		  if (goal_mem_addr_varies
 		      && reg_overlap_mentioned_for_reload_p (dest, goal))
@@ -7006,16 +6995,12 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		      if (REG_P (dest))
 			{
 			  int xregno = REGNO (dest);
-			  int xnregs;
-			  if (REGNO (dest) < FIRST_PSEUDO_REGISTER)
-			    xnregs = hard_regno_nregs[xregno][GET_MODE (dest)];
-			  else
-			    xnregs = 1;
+			  int end_xregno = END_REGNO (dest);
 			  if (xregno < regno + nregs
-			      && xregno + xnregs > regno)
+			      && end_xregno > regno)
 			    return 0;
 			  if (xregno < valueno + valuenregs
-			      && xregno + xnregs > valueno)
+			      && end_xregno > valueno)
 			    return 0;
 			  if (goal_mem_addr_varies
 			      && reg_overlap_mentioned_for_reload_p (dest,
@@ -7052,14 +7037,13 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
 		      if (REG_P (dest))
 			{
 			  int xregno = REGNO (dest);
-			  int xnregs
-			    = hard_regno_nregs[xregno][GET_MODE (dest)];
+			  int end_xregno = END_REGNO (dest);
 
 			  if (xregno < regno + nregs
-			      && xregno + xnregs > regno)
+			      && end_xregno > regno)
 			    return 0;
 			  else if (xregno < valueno + valuenregs
-				   && xregno + xnregs > valueno)
+				   && end_xregno > valueno)
 			    return 0;
 			  else if (goal_mem_addr_varies
 				   && reg_overlap_mentioned_for_reload_p (dest,

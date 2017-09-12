@@ -1,5 +1,14 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/frv/frv.c (FOR_EACH_REGNO): Use END_REGNO instead of
+	hard_regno_nregs.
+	* config/v850/v850.c (v850_reorg): Likewise.
+	* reload.c (refers_to_regno_for_reload_p): Likewise.
+	(find_equiv_reg): Likewise.
+	* reload1.c (reload_reg_reaches_end_p): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* caller-save.c (add_used_regs): Use REG_NREGS instead of
 	hard_regno_nregs.
 	* config/aarch64/aarch64.c (aarch64_split_combinev16qi): Likewise.

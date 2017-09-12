@@ -5349,15 +5349,13 @@ reload_reg_reaches_end_p (unsigned int regno, int reloadnum)
   for (i = reloadnum + 1; i < n_reloads; i++)
     {
       rtx reg;
-      int nregs;
 
       if (rld[i].opnum != opnum || rld[i].when_needed != type)
 	continue;
       reg = rld[i].reg_rtx;
       if (reg == NULL_RTX)
 	continue;
-      nregs = hard_regno_nregs[REGNO (reg)][GET_MODE (reg)];
-      if (regno >= REGNO (reg) && regno < REGNO (reg) + nregs)
+      if (regno >= REGNO (reg) && regno < END_REGNO (reg))
 	return 0;
     }
   
