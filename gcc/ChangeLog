@@ -1,3 +1,16 @@
+2017-09-12  Carl Love  <cel@us.ibm.com>
+
+        * config/rs6000/altivec.md (vec_widen_umult_even_v4si,
+	vec_widen_smult_even_v4si): Add define expands for vmuleuw, vmulesw,
+	vmulouw, vmulosw.
+        * config/rs6000/rs6000-builtin.def (VMLEUW, VMULESW, VMULOUW,
+        VMULOSW): Add definitions.
+        * config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+        ALTIVEC_BUILTIN_VMULESW, ALTIVEC_BUILTIN_VMULEUW,
+        ALTIVEC_BUILTIN_VMULOSW, ALTIVEC_BUILTIN_VMULOUW entries.
+        * config/rs6000/rs6000.c (rs6000_gimple_fold_builtin,
+        builtin_function_type): Add ALTIVEC_BUILTIN_* case statements.
+
 2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
 
 	* config/aarch64/aarch64.md (movdi_aarch64): Set load/store
