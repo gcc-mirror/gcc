@@ -8093,6 +8093,124 @@ package body Sem_Util is
       end if;
    end First_Actual;
 
+   ------------------
+   -- First_Global --
+   ------------------
+
+   function First_Global
+     (Subp        : Entity_Id;
+      Global_Mode : Name_Id;
+      Refined     : Boolean := False) return Node_Id
+   is
+      function First_From_Global_List
+        (List        : Node_Id;
+         Global_Mode : Name_Id := Name_Input) return Entity_Id;
+      --  Get the first item with suitable mode from List
+
+      ----------------------------
+      -- First_From_Global_List --
+      ----------------------------
+
+      function First_From_Global_List
+        (List        : Node_Id;
+         Global_Mode : Name_Id := Name_Input) return Entity_Id
+      is
+         Assoc : Node_Id;
+
+      begin
+         --  Empty list (no global items)
+
+         if Nkind (List) = N_Null then
+            return Empty;
+
+         --  Single global item declaration (only input items)
+
+         elsif Nkind_In (List, N_Expanded_Name,
+                               N_Identifier,
+                               N_Selected_Component)
+         then
+            if Global_Mode = Name_Input then
+               return List;
+            else
+               return Empty;
+            end if;
+
+         --  Simple global list (only input items) or moded global list
+         --  declaration.
+
+         elsif Nkind (List) = N_Aggregate then
+            if Present (Expressions (List)) then
+               if Global_Mode = Name_Input then
+                  return First (Expressions (List));
+               else
+                  return Empty;
+               end if;
+
+            else
+               Assoc := First (Component_Associations (List));
+               while Present (Assoc) loop
+
+                  --  When we find the desired mode in an association, call
+                  --  recursively First_From_Global_List as if the mode was
+                  --  Name_Input, in order to reuse the existing machinery
+                  --  for the other cases.
+
+                  if Chars (First (Choices (Assoc))) = Global_Mode then
+                     return First_From_Global_List (Expression (Assoc));
+                  end if;
+
+                  Next (Assoc);
+               end loop;
+
+               return Empty;
+            end if;
+
+            --  To accommodate partial decoration of disabled SPARK features,
+            --  this routine may be called with illegal input. If this is the
+            --  case, do not raise Program_Error.
+
+         else
+            return Empty;
+         end if;
+      end First_From_Global_List;
+
+      --  Local variables
+
+      Global  : Node_Id := Empty;
+      Body_Id : Entity_Id;
+
+   begin
+      pragma Assert (Global_Mode = Name_Input
+                      or else Global_Mode = Name_Output
+                      or else Global_Mode = Name_In_Out
+                      or else Global_Mode = Name_Proof_In);
+
+      --  Retrieve the suitable pragma Global or Refined_Global. In the second
+      --  case, it can only be located on the body entity.
+
+      if Refined then
+         Body_Id := Subprogram_Body_Entity (Subp);
+         if Present (Body_Id) then
+            Global := Get_Pragma (Body_Id, Pragma_Refined_Global);
+         end if;
+      else
+         Global := Get_Pragma (Subp, Pragma_Global);
+      end if;
+
+      --  No corresponding global if pragma is not present
+
+      if No (Global) then
+         return Empty;
+
+      --  Otherwise retrieve the corresponding list of items depending on the
+      --  Global_Mode.
+
+      else
+         return First_From_Global_List
+           (Expression (Get_Argument (Global, Subp)), Global_Mode);
+      end if;
+   end First_Global;
+
    -------------
    -- Fix_Msg --
    -------------
@@ -18979,6 +19097,27 @@ package body Sem_Util is
    begin
       Actual_Id := Next_Actual (Actual_Id);
    end Next_Actual;
+
+   -----------------
+   -- Next_Global --
+   -----------------
+
+   function Next_Global (Node : Node_Id) return Node_Id is
+   begin
+      --  The global item may either be in a list, or by itself, in which case
+      --  there is no next global item with the same mode.
+
+      if Is_List_Member (Node) then
+         return Next (Node);
+      else
+         return Empty;
+      end if;
+   end Next_Global;
+
+   procedure Next_Global (Node : in out Node_Id) is
+   begin
+      Node := Next_Global (Node);
+   end Next_Global;
 
    ----------------------------------
    -- New_Requires_Transient_Scope --
