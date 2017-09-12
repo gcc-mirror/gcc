@@ -994,8 +994,8 @@
        aarch64_expand_mov_immediate (operands[0], operands[1]);
        DONE;
     }"
-  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_4,\
-                     load_4,store_4,store_4,adr,adr,f_mcr,f_mrc,fmov,neon_move")
+  [(set_attr "type" "mov_reg,mov_reg,mov_reg,mov_imm,mov_imm,mov_imm,load_8,\
+                     load_8,store_8,store_8,adr,adr,f_mcr,f_mrc,fmov,neon_move")
    (set_attr "fp" "*,*,*,*,*,*,*,yes,*,yes,*,*,yes,yes,yes,*")
    (set_attr "simd" "*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,yes")]
 )
@@ -1039,7 +1039,8 @@
    ldr\\t%q0, %1
    str\\t%q1, %0"
   [(set_attr "type" "multiple,f_mcr,f_mrc,neon_logic_q, \
-		             load_8,store_8,store_8,f_loadd,f_stored")
+		             load_16,store_16,store_16,\
+                             load_16,store_16")
    (set_attr "length" "8,8,8,4,4,4,4,4,4")
    (set_attr "simd" "*,*,*,yes,*,*,*,*,*")
    (set_attr "fp" "*,*,*,*,*,*,*,yes,yes")]
@@ -1142,7 +1143,7 @@
    mov\\t%x0, %x1
    mov\\t%x0, %1"
   [(set_attr "type" "neon_move,f_mcr,f_mrc,fmov,fconstd,neon_move,\
-		     f_loadd,f_stored,load_4,store_4,mov_reg,\
+		     f_loadd,f_stored,load_8,store_8,mov_reg,\
 		     fconstd")
    (set_attr "simd" "yes,*,*,*,*,yes,*,*,*,*,*,*")]
 )
@@ -1187,7 +1188,7 @@
    stp\\t%1, %H1, %0
    stp\\txzr, xzr, %0"
   [(set_attr "type" "logic_reg,multiple,f_mcr,f_mrc,neon_move_q,f_mcr,\
-                     f_loadd,f_stored,load_8,store_8,store_8")
+                     f_loadd,f_stored,load_16,store_16,store_16")
    (set_attr "length" "4,8,8,8,4,4,4,4,4,4,4")
    (set_attr "simd" "yes,*,*,*,yes,*,*,*,*,*,*")]
 )
@@ -1251,7 +1252,7 @@
   "@
    ldp\\t%x0, %x2, %1
    ldp\\t%d0, %d2, %1"
-  [(set_attr "type" "load_8,neon_load1_2reg")
+  [(set_attr "type" "load_16,neon_load1_2reg")
    (set_attr "fp" "*,yes")]
 )
 
@@ -1286,7 +1287,7 @@
   "@
    stp\\t%x1, %x3, %0
    stp\\t%d1, %d3, %0"
-  [(set_attr "type" "store_8,neon_store1_2reg")
+  [(set_attr "type" "store_16,neon_store1_2reg")
    (set_attr "fp" "*,yes")]
 )
 
@@ -1320,7 +1321,7 @@
   "@
    ldp\\t%d0, %d2, %1
    ldp\\t%x0, %x2, %1"
-  [(set_attr "type" "neon_load1_2reg,load_8")
+  [(set_attr "type" "neon_load1_2reg,load_16")
    (set_attr "fp" "yes,*")]
 )
 
@@ -1354,7 +1355,7 @@
   "@
    stp\\t%d1, %d3, %0
    stp\\t%x1, %x3, %0"
-  [(set_attr "type" "neon_store1_2reg,store_8")
+  [(set_attr "type" "neon_store1_2reg,store_16")
    (set_attr "fp" "yes,*")]
 )
 
@@ -1372,7 +1373,7 @@
                    (match_operand:P 5 "const_int_operand" "n"))))])]
   "INTVAL (operands[5]) == GET_MODE_SIZE (<GPI:MODE>mode)"
   "ldp\\t%<w>2, %<w>3, [%1], %4"
-  [(set_attr "type" "load_8")]
+  [(set_attr "type" "load_<ldpstp_sz>")]
 )
 
 (define_insn "loadwb_pair<GPF:mode>_<P:mode>"
@@ -1405,7 +1406,7 @@
           (match_operand:GPI 3 "register_operand" "r"))])]
   "INTVAL (operands[5]) == INTVAL (operands[4]) + GET_MODE_SIZE (<GPI:MODE>mode)"
   "stp\\t%<w>2, %<w>3, [%0, %4]!"
-  [(set_attr "type" "store_8")]
+  [(set_attr "type" "store_<ldpstp_sz>")]
 )
 
 (define_insn "storewb_pair<GPF:mode>_<P:mode>"
@@ -5355,7 +5356,7 @@
 		    UNSPEC_GOTSMALLPIC))]
   ""
   "ldr\\t%<w>0, [%1, #:got_lo12:%a2]"
-  [(set_attr "type" "load_4")]
+  [(set_attr "type" "load_<ldst_sz>")]
 )
 
 (define_insn "ldr_got_small_sidi"
@@ -5378,7 +5379,7 @@
 		    UNSPEC_GOTSMALLPIC28K))]
   ""
   "ldr\\t%<w>0, [%1, #:<got_modifier>:%a2]"
-  [(set_attr "type" "load_4")]
+  [(set_attr "type" "load_<ldst_sz>")]
 )
 
 (define_insn "ldr_got_small_28k_sidi"
@@ -5399,7 +5400,7 @@
 		   UNSPEC_GOTTINYPIC))]
   ""
   "ldr\\t%0, %L1"
-  [(set_attr "type" "load_4")]
+  [(set_attr "type" "load_8")]
 )
 
 (define_insn "aarch64_load_tp_hard"
