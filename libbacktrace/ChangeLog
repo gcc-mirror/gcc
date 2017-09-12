@@ -1,3 +1,9 @@
+2017-09-12  Steve Ellcey  <sellcey@cavium.com>
+
+	PR other/81096
+	* libbacktrace/Makefile.in
+	(HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS): Add $(AM_CFLAGS)
+
 2017-08-02  David Edelsohn  <dje.gcc@gmail.com>
 
 	PR bootstrap/81638
