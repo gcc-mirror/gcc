@@ -1015,9 +1015,10 @@ proper position among the other output files.  */
 #endif
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
-/* %{static|no-pie:} simply prevents an error message:
+/* %{static|no-pie|static-pie:} simply prevents an error message:
    1. If the target machine doesn't handle -static.
    2. If PIE isn't enabled by default.
+   3. If the target machine doesn't handle -static-pie.
  */
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
@@ -1035,7 +1036,7 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
-    %{static|no-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
+    %{static|no-pie|static-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
@@ -1670,17 +1671,19 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
 {
   char *buf;
 
-  buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name, "}"
-		"%{!static:%{!static-libgcc:"
 #if USE_LD_AS_NEEDED
+  buf = concat ("%{static|static-libgcc|static-pie:", static_name, " ", eh_name, "}"
+		"%{!static:%{!static-libgcc:%{!static-pie:"
 		"%{!shared-libgcc:",
 		static_name, " " LD_AS_NEEDED_OPTION " ",
 		shared_name, " " LD_NO_AS_NEEDED_OPTION
 		"}"
 		"%{shared-libgcc:",
 		shared_name, "%{!shared: ", static_name, "}"
-		"}"
+		"}}"
 #else
+  buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name, "}"
+		"%{!static:%{!static-libgcc:"
 		"%{!shared:"
 		"%{!shared-libgcc:", static_name, " ", eh_name, "}"
 		"%{shared-libgcc:", shared_name, " ", static_name, "}"
@@ -1788,8 +1791,8 @@ init_spec (void)
 			    "-lgcc_eh"
 #ifdef USE_LIBUNWIND_EXCEPTIONS
 # ifdef HAVE_LD_STATIC_DYNAMIC
-			    " %{!static:" LD_STATIC_OPTION "} -lunwind"
-			    " %{!static:" LD_DYNAMIC_OPTION "}"
+			    " %{!static:%{!static-pie:" LD_STATIC_OPTION "}} -lunwind"
+			    " %{!static:%{!static-pie:" LD_DYNAMIC_OPTION "}}"
 # else
 			    " -lunwind"
 # endif
@@ -3478,7 +3481,8 @@ display_help (void)
   fputs (_("  -S                       Compile only; do not assemble or link.\n"), stdout);
   fputs (_("  -c                       Compile and assemble, but do not link.\n"), stdout);
   fputs (_("  -o <file>                Place the output into <file>.\n"), stdout);
-  fputs (_("  -pie                     Create a position independent executable.\n"), stdout);
+  fputs (_("  -pie                     Create a dynamically linked position independent\n\
+                           executable.\n"), stdout);
   fputs (_("  -shared                  Create a shared library.\n"), stdout);
   fputs (_("\
   -x <language>            Specify the language of the following input files.\n\
