@@ -1,3 +1,11 @@
+2017-09-12  Bob Duff  <duff@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Call
+	Check_Dynamically_Tagged_Expression.
+	* sem_util.adb (Check_Dynamically_Tagged_Expression): Remove
+	"and then Is_Tagged_Type (Typ)" because there is an earlier
+	"Assert (Is_Tagged_Type (Typ))".
+
 2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (SPARC/Solaris): Remove obsolete stuff.
