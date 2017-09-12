@@ -1016,9 +1016,13 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       Count     : Count_Type := 1)
    is
       pragma Warnings (Off);
-      New_Item : Element_Type;
+      Default_Initialized_Item : Element_Type;
+      pragma Unmodified (Default_Initialized_Item);
       --  OK to reference, see below. Note that we need to suppress both the
-      --  front end warning and the back end warning.
+      --  front end warning and the back end warning. In addition, pragma
+      --  Unmodified is needed to suppress the warning ``actual type for
+      --  "Element_Type" should be fully initialized type'' on certain
+      --  instantiations.
 
    begin
       --  There is no explicit element provided, but in an instance the element
@@ -1027,7 +1031,7 @@ package body Ada.Containers.Bounded_Doubly_Linked_Lists is
       --  initialization, so insert the specified number of possibly
       --  initialized elements at the given position.
 
-      Insert (Container, Before, New_Item, Position, Count);
+      Insert (Container, Before, Default_Initialized_Item, Position, Count);
       pragma Warnings (On);
    end Insert;
 

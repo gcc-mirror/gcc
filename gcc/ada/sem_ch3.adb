@@ -2676,14 +2676,11 @@ package body Sem_Ch3 is
               and then not Is_Child_Unit (Current_Scope)
               and then No (Generic_Parent (Parent (L)))
             then
-               --  This is needed in all cases to catch visibility errors in
-               --  aspect expressions, but several large user tests are now
-               --  rejected. Pending notification we restrict this call to
-               --  ASIS mode.
+               --  ARM rule 13.1.1(11/3): usage names in aspect definitions are
+               --  resolved at the end of the immediately enclosing declaration
+               --  list (AI05-0183-1).
 
-               if ASIS_Mode then
-                  Resolve_Aspects;
-               end if;
+               Resolve_Aspects;
 
             elsif L /= Visible_Declarations (Parent (L))
               or else No (Private_Declarations (Parent (L)))

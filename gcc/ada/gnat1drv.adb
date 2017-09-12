@@ -66,7 +66,7 @@ with Sem_Type;
 with Set_Targ;
 with Sinfo;    use Sinfo;
 with Sinput.L; use Sinput.L;
-with Snames;
+with Snames;   use Snames;
 with Sprint;   use Sprint;
 with Stringt;
 with Stylesw;  use Stylesw;
@@ -272,9 +272,13 @@ procedure Gnat1drv is
          Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
          Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
-         --  Enable pragma Ignore_Pragma (Global) to support legacy code
+         --  Enable pragma Ignore_Pragma (Global) to support legacy code. As a
+         --  consequence, Refined_Global pragma should be ignored as well, as
+         --  it is only allowed on a body when pragma Global is given for the
+         --  spec.
 
-         Set_Name_Table_Boolean3 (Name_Id'(Name_Find ("global")), True);
+         Set_Name_Table_Boolean3 (Name_Global, True);
+         Set_Name_Table_Boolean3 (Name_Refined_Global, True);
 
          --  Suppress division by zero checks since they are handled
          --  implicitly by CodePeer.

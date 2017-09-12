@@ -578,8 +578,9 @@ package body Ada.Containers.Bounded_Hashed_Maps is
       -----------------
 
       procedure Assign_Key (Node : in out Node_Type) is
-         New_Item : Element_Type;
-         pragma Unmodified (New_Item);
+         pragma Warnings (Off);
+         Default_Initialized_Item : Element_Type;
+         pragma Unmodified (Default_Initialized_Item);
          --  Default-initialized element (ok to reference, see below)
 
       begin
@@ -591,7 +592,8 @@ package body Ada.Containers.Bounded_Hashed_Maps is
          --  default initialization, so insert a possibly initialized element
          --  under the given key.
 
-         Node.Element := New_Item;
+         Node.Element := Default_Initialized_Item;
+         pragma Warnings (On);
       end Assign_Key;
 
       --------------

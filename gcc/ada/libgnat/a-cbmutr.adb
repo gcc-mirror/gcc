@@ -1581,8 +1581,9 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       First : Count_Type;
       Last  : Count_Type;
 
-      New_Item : Element_Type;
-      pragma Unmodified (New_Item);
+      pragma Warnings (Off);
+      Default_Initialized_Item : Element_Type;
+      pragma Unmodified (Default_Initialized_Item);
       --  OK to reference, see below
 
    begin
@@ -1629,12 +1630,13 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       --  initialization, so insert the specified number of possibly
       --  initialized elements at the given position.
 
-      Allocate_Node (Container, New_Item, First);
+      Allocate_Node (Container, Default_Initialized_Item, First);
       Nodes (First).Parent := Parent.Node;
 
       Last := First;
       for J in Count_Type'(2) .. Count loop
-         Allocate_Node (Container, New_Item, Nodes (Last).Next);
+         Allocate_Node
+           (Container, Default_Initialized_Item, Nodes (Last).Next);
          Nodes (Nodes (Last).Next).Parent := Parent.Node;
          Nodes (Nodes (Last).Next).Prev := Last;
 
@@ -1651,6 +1653,7 @@ package body Ada.Containers.Bounded_Multiway_Trees is
       Container.Count := Container.Count + Count;
 
       Position := Cursor'(Parent.Container, First);
+      pragma Warnings (On);
    end Insert_Child;
 
    -------------------------
