@@ -1,3 +1,8 @@
+2017-09-12  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/82114
+	* gcc.dg/gimplefe-14.c (main): Add handling of case 0.
+
 2017-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82157
