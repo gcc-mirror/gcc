@@ -482,15 +482,14 @@ Feature-testing recommendations for C++</link>.
     </row>
 
     <row>
-      <?dbhtml bgcolor="#B0B0B0" ?>
       <entry> Constexpr for <code>std::char_traits</code> </entry>
       <entry>
 	<link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2016/p0426r1.html">
 	P0426R1
 	</link>
       </entry>
-      <entry align="center"> 7 (partial) </entry>
-      <entry><code> ??? </code></entry>
+      <entry align="center"> 7.3 </entry>
+      <entry><code> __cpp_lib_constexpr_char_traits >= 201611 </code></entry>
     </row>
 
     <row>
