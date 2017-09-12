@@ -1,3 +1,9 @@
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/82185
+	* expmed.c (emit_store_flag_int): Only test tem if it has been
+	initialized.
+
 2017-09-12  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82149
