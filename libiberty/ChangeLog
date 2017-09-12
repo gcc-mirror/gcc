@@ -1,3 +1,7 @@
+2017-09-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* dwarfnames.c (DW_CFA_DUP): New define.
+
 2017-09-01  Martin Liska  <mliska@suse.cz>
 
 	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
