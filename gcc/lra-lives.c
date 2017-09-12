@@ -726,7 +726,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		 but implicitly it can be used in natural mode as a
 		 part of multi-register group.  Process this case
 		 here.  */
-	      for (i = 1; i < hard_regno_nregs[regno][reg->biggest_mode]; i++)
+	      for (i = 1; i < hard_regno_nregs (regno, reg->biggest_mode); i++)
 		if (partial_subreg_p (lra_reg_info[regno + i].biggest_mode,
 				      GET_MODE (regno_reg_rtx[regno + i])))
 		  lra_reg_info[regno + i].biggest_mode

@@ -23306,8 +23306,8 @@ rs6000_cannot_change_mode_class (machine_mode from,
 
       if (reg_classes_intersect_p (xclass, rclass))
 	{
-	  unsigned to_nregs = hard_regno_nregs[FIRST_FPR_REGNO][to];
-	  unsigned from_nregs = hard_regno_nregs[FIRST_FPR_REGNO][from];
+	  unsigned to_nregs = hard_regno_nregs (FIRST_FPR_REGNO, to);
+	  unsigned from_nregs = hard_regno_nregs (FIRST_FPR_REGNO, from);
 	  bool to_float128_vector_p = FLOAT128_VECTOR_P (to);
 	  bool from_float128_vector_p = FLOAT128_VECTOR_P (from);
 
@@ -23365,8 +23365,8 @@ rs6000_cannot_change_mode_class (machine_mode from,
   if (TARGET_VSX && VSX_REG_CLASS_P (rclass))
     {
       unsigned num_regs = (from_size + 15) / 16;
-      if (hard_regno_nregs[FIRST_FPR_REGNO][to] > num_regs
-	  || hard_regno_nregs[FIRST_FPR_REGNO][from] > num_regs)
+      if (hard_regno_nregs (FIRST_FPR_REGNO, to) > num_regs
+	  || hard_regno_nregs (FIRST_FPR_REGNO, from) > num_regs)
 	return true;
 
       return (from_size != 8 && from_size != 16);
@@ -26769,7 +26769,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
   reg = REG_P (dst) ? REGNO (dst) : REGNO (src);
   mode = GET_MODE (dst);
-  nregs = hard_regno_nregs[reg][mode];
+  nregs = hard_regno_nregs (reg, mode);
   if (FP_REGNO_P (reg))
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : 
 	((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? DFmode : SFmode);
@@ -37836,18 +37836,18 @@ rs6000_register_move_cost (machine_mode mode,
 		|| rs6000_cpu == PROCESSOR_POWER8
 		|| rs6000_cpu == PROCESSOR_POWER9)
 	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
-        ret = 6 * hard_regno_nregs[0][mode];
+        ret = 6 * hard_regno_nregs (0, mode);
 
       else
 	/* A move will cost one instruction per GPR moved.  */
-	ret = 2 * hard_regno_nregs[0][mode];
+	ret = 2 * hard_regno_nregs (0, mode);
     }
 
   /* If we have VSX, we can easily move between FPR or Altivec registers.  */
   else if (VECTOR_MEM_VSX_P (mode)
 	   && reg_classes_intersect_p (to, VSX_REGS)
 	   && reg_classes_intersect_p (from, VSX_REGS))
-    ret = 2 * hard_regno_nregs[FIRST_FPR_REGNO][mode];
+    ret = 2 * hard_regno_nregs (FIRST_FPR_REGNO, mode);
 
   /* Moving between two similar registers is just one instruction.  */
   else if (reg_classes_intersect_p (to, from))
@@ -37884,12 +37884,12 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
     dbg_cost_ctrl++;
 
   if (reg_classes_intersect_p (rclass, GENERAL_REGS))
-    ret = 4 * hard_regno_nregs[0][mode];
+    ret = 4 * hard_regno_nregs (0, mode);
   else if ((reg_classes_intersect_p (rclass, FLOAT_REGS)
 	    || reg_classes_intersect_p (rclass, VSX_REGS)))
-    ret = 4 * hard_regno_nregs[32][mode];
+    ret = 4 * hard_regno_nregs (32, mode);
   else if (reg_classes_intersect_p (rclass, ALTIVEC_REGS))
-    ret = 4 * hard_regno_nregs[FIRST_ALTIVEC_REGNO][mode];
+    ret = 4 * hard_regno_nregs (FIRST_ALTIVEC_REGNO, mode);
   else
     ret = 4 + rs6000_register_move_cost (mode, rclass, GENERAL_REGS);
 

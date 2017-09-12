@@ -2308,7 +2308,7 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
      If so, mark all of them just like the first.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      int i = hard_regno_nregs[regno][mode];
+      int i = hard_regno_nregs (regno, mode);
       if (ref == SET)
 	{
 	  while (--i >= 0)

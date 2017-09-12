@@ -294,7 +294,8 @@ assign_spill_hard_regs (int *pseudo_regnos, int n)
       spill_hard_reg[regno]
 	= gen_raw_REG (PSEUDO_REGNO_MODE (regno), hard_regno);
       for (nr = 0;
-	   nr < hard_regno_nregs[hard_regno][lra_reg_info[regno].biggest_mode];
+	   nr < hard_regno_nregs (hard_regno,
+				  lra_reg_info[regno].biggest_mode);
 	   nr++)
 	/* Just loop.  */
 	df_set_regs_ever_live (hard_regno + nr, true);

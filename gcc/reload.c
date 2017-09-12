@@ -1625,8 +1625,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	    && targetm.hard_regno_mode_ok (regno, outmode))
 	  {
 	    unsigned int offs;
-	    unsigned int nregs = MAX (hard_regno_nregs[regno][inmode],
-				      hard_regno_nregs[regno][outmode]);
+	    unsigned int nregs = MAX (hard_regno_nregs (regno, inmode),
+				      hard_regno_nregs (regno, outmode));
 
 	    for (offs = 0; offs < nregs; offs++)
 	      if (fixed_regs[regno + offs]
@@ -1905,7 +1905,7 @@ combine_reloads (void)
 	&& targetm.hard_regno_mode_ok (regno, rld[output_reload].outmode)
 	&& TEST_HARD_REG_BIT (reg_class_contents[(int) rld[output_reload].rclass],
 			      regno)
-	&& (hard_regno_nregs[regno][rld[output_reload].outmode]
+	&& (hard_regno_nregs (regno, rld[output_reload].outmode)
 	    <= REG_NREGS (XEXP (note, 0)))
 	/* Ensure that a secondary or tertiary reload for this output
 	   won't want this register.  */
@@ -2005,7 +2005,7 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
       && REGNO (out) < FIRST_PSEUDO_REGISTER)
     {
       unsigned int regno = REGNO (out) + out_offset;
-      unsigned int nwords = hard_regno_nregs[regno][outmode];
+      unsigned int nwords = hard_regno_nregs (regno, outmode);
       rtx saved_rtx;
 
       /* When we consider whether the insn uses OUT,
@@ -2090,7 +2090,7 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 	      && REG_NREGS (in) == 1)))
     {
       unsigned int regno = REGNO (in) + in_offset;
-      unsigned int nwords = hard_regno_nregs[regno][inmode];
+      unsigned int nwords = hard_regno_nregs (regno, inmode);
 
       if (! refers_to_regno_for_reload_p (regno, regno + nwords, out, (rtx*) 0)
 	  && ! hard_reg_set_here_p (regno, regno + nwords,
@@ -2264,13 +2264,13 @@ operands_match_p (rtx x, rtx y)
 	  && is_a <scalar_int_mode> (GET_MODE (x), &xmode)
 	  && GET_MODE_SIZE (xmode) > UNITS_PER_WORD
 	  && i < FIRST_PSEUDO_REGISTER)
-	i += hard_regno_nregs[i][xmode] - 1;
+	i += hard_regno_nregs (i, xmode) - 1;
       scalar_int_mode ymode;
       if (REG_WORDS_BIG_ENDIAN
 	  && is_a <scalar_int_mode> (GET_MODE (y), &ymode)
 	  && GET_MODE_SIZE (ymode) > UNITS_PER_WORD
 	  && j < FIRST_PSEUDO_REGISTER)
-	j += hard_regno_nregs[j][ymode] - 1;
+	j += hard_regno_nregs (j, ymode) - 1;
 
       return i == j;
     }
@@ -4576,7 +4576,7 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	    && TEST_HARD_REG_BIT (reg_class_contents[rld[i].rclass], regno)
 	    && targetm.hard_regno_mode_ok (regno, rld[i].mode))
 	  {
-	    int nr = hard_regno_nregs[regno][rld[i].mode];
+	    int nr = hard_regno_nregs (regno, rld[i].mode);
 	    int ok = 1, nri;
 
 	    for (nri = 1; nri < nr; nri ++)
@@ -6856,10 +6856,10 @@ find_equiv_reg (rtx goal, rtx_insn *insn, enum reg_class rclass, int other,
   /* Reject registers that overlap GOAL.  */
 
   if (regno >= 0 && regno < FIRST_PSEUDO_REGISTER)
-    nregs = hard_regno_nregs[regno][mode];
+    nregs = hard_regno_nregs (regno, mode);
   else
     nregs = 1;
-  valuenregs = hard_regno_nregs[valueno][mode];
+  valuenregs = hard_regno_nregs (valueno, mode);
 
   if (!goal_mem && !goal_const
       && regno + nregs > valueno && regno < valueno + valuenregs)
@@ -7234,7 +7234,8 @@ reload_adjust_reg_for_mode (rtx reloadreg, machine_mode mode)
   regno = REGNO (reloadreg);
 
   if (REG_WORDS_BIG_ENDIAN)
-    regno += (int) REG_NREGS (reloadreg) - (int) hard_regno_nregs[regno][mode];
+    regno += ((int) REG_NREGS (reloadreg)
+	      - (int) hard_regno_nregs (regno, mode));
 
   return gen_rtx_REG (mode, regno);
 }

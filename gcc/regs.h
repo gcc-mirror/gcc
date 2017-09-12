@@ -232,9 +232,6 @@ extern struct target_regs *this_target_regs;
 #else
 #define this_target_regs (&default_target_regs)
 #endif
-
-#define hard_regno_nregs \
-  (this_target_regs->x_hard_regno_nregs)
 #define reg_raw_mode \
   (this_target_regs->x_reg_raw_mode)
 #define have_regs_of_mode \
@@ -250,13 +247,21 @@ extern struct target_regs *this_target_regs;
 #define float_extend_from_mem \
   (this_target_regs->x_float_extend_from_mem)
 
+/* Return the number of hard registers in (reg:MODE REGNO).  */
+
+ALWAYS_INLINE unsigned char
+hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  return this_target_regs->x_hard_regno_nregs[regno][mode];
+}
+
 /* Return an exclusive upper bound on the registers occupied by hard
    register (reg:MODE REGNO).  */
 
 static inline unsigned int
 end_hard_regno (machine_mode mode, unsigned int regno)
 {
-  return regno + hard_regno_nregs[regno][(int) mode];
+  return regno + hard_regno_nregs (regno, mode);
 }
 
 /* Add to REGS all the registers required to store a value of mode MODE

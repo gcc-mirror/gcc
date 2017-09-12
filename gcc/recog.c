@@ -3163,7 +3163,7 @@ peep2_find_free_register (int from, int to, const char *class_str,
 	continue;
 
       success = 1;
-      for (j = 0; success && j < hard_regno_nregs[regno][mode]; j++)
+      for (j = 0; success && j < hard_regno_nregs (regno, mode); j++)
 	{
 	  /* Don't allocate fixed registers.  */
 	  if (fixed_regs[regno + j])

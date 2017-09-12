@@ -1432,7 +1432,7 @@ make_decl_rtl (tree decl)
 	      name = IDENTIFIER_POINTER (DECL_NAME (decl));
 	      ASM_DECLARE_REGISTER_GLOBAL (asm_out_file, decl, reg_number, name);
 #endif
-	      nregs = hard_regno_nregs[reg_number][mode];
+	      nregs = hard_regno_nregs (reg_number, mode);
 	      while (nregs > 0)
 		globalize_reg (decl, reg_number + --nregs);
 	    }
