@@ -2916,7 +2916,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  -fno-signaling-nans.  */
        bool exception_p
          = real_isnan (cst) && (cst->signalling
-				|| (cmp != EQ_EXPR || cmp != NE_EXPR));
+				|| (cmp != EQ_EXPR && cmp != NE_EXPR));
        /* INT?_MIN is power-of-two so it takes
 	  only one mantissa bit.  */
        bool signed_p = isign == SIGNED;
