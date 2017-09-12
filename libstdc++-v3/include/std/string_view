@@ -35,9 +35,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 #include <limits>
 #include <iosfwd>
@@ -48,6 +46,8 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+#define __cpp_lib_string_view 201603
 
   /**
    *  @class basic_string_view <string_view>

@@ -36,9 +36,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
