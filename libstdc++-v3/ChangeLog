@@ -1,6 +1,51 @@
 2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79433
+	* include/Makefile.am: Remove <bits/c++14_warning.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++14_warning.h: Remove.
+	* include/experimental/algorithm: Do not include <c++14_warning.h>.
+	* include/experimental/any: Likewise.
+	* include/experimental/array: Likewise.
+	* include/experimental/bits/erase_if.h: Likewise.
+	* include/experimental/bits/lfts_config.h: Likewise.
+	* include/experimental/bits/shared_ptr.h: Likewise.
+	* include/experimental/bits/string_view.tcc: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/deque: Likewise.
+	* include/experimental/filesystem: Do not include <c++0x_warning.h>.
+	* include/experimental/forward_list: Do not include <c++14_warning.h>.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/numeric: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/vector: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/experimental/array/neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+	PR libstdc++/79433
 	* doc/xml/manual/status_cxx2017.xml: Update feature-test macros.
 	* doc/html/*: Regenerate.
 	* include/Makefile.am: Remove <bits/c++17_warning.h>.
