@@ -1,6 +1,12 @@
 2017-09-12  Steve Ellcey  <sellcey@cavium.com>
 
 	PR other/81096
+	* Makefile.am (ttest_CFLAGS): Add $(AM_CFLAGS)
+	* Makefile.in: Regenerate.
+
+2017-09-12  Steve Ellcey  <sellcey@cavium.com>
+
+	PR other/81096
 	* libbacktrace/Makefile.in
 	(HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS): Add $(AM_CFLAGS)
 
