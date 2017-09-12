@@ -1311,36 +1311,37 @@ get_class_binding_direct (tree klass, tree name, int type_or_fns)
    special function creation as necessary.  */
 
 tree
-get_class_binding (tree type, tree name, int type_or_fns)
+get_class_binding (tree klass, tree name, int type_or_fns)
 {
-  type = complete_type (type);
+  klass = complete_type (klass);
 
-  if (COMPLETE_TYPE_P (type))
+  if (COMPLETE_TYPE_P (klass))
     {
+      /* Lazily declare functions, if we're going to search these.  */
       if (IDENTIFIER_CTOR_P (name))
 	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
-	    lazily_declare_fn (sfk_constructor, type);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
-	    lazily_declare_fn (sfk_copy_constructor, type);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
-	    lazily_declare_fn (sfk_move_constructor, type);
-	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
-	    lazily_declare_fn (sfk_copy_assignment, type);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
-	    lazily_declare_fn (sfk_move_assignment, type);
+	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
+	    lazily_declare_fn (sfk_constructor, klass);
+	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
+	    lazily_declare_fn (sfk_copy_constructor, klass);
+	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
+	    lazily_declare_fn (sfk_move_constructor, klass);
 	}
       else if (IDENTIFIER_DTOR_P (name))
 	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (type))
-	    lazily_declare_fn (sfk_destructor, type);
+	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
+	    lazily_declare_fn (sfk_destructor, klass);
+	}
+      else if (name == cp_assignment_operator_id (NOP_EXPR))
+	{
+	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
+	    lazily_declare_fn (sfk_copy_assignment, klass);
+	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
+	    lazily_declare_fn (sfk_move_assignment, klass);
 	}
     }
 
-  return get_class_binding_direct (type, name, type_or_fns);
+  return get_class_binding_direct (klass, name, type_or_fns);
 }
 
 /* Find the slot containing overloads called 'NAME'.  If there is no
@@ -1411,56 +1412,58 @@ get_method_slot (tree klass, tree name)
   return slot;
 }
 
+/* Comparison function to compare two TYPE_METHOD_VEC entries by
+   name.  */
+
+static int
+method_name_cmp (const void *a_p, const void *b_p)
+{
+  tree a = *(const tree *)a_p;
+  tree b = *(const tree *)b_p;
+  tree name_a = DECL_NAME (TREE_CODE (a) == OVERLOAD ? OVL_FUNCTION (a) : a);
+  tree name_b = DECL_NAME (TREE_CODE (b) == OVERLOAD ? OVL_FUNCTION (b) : b);
+
+  gcc_checking_assert (name_a && name_b && name_a != name_b);
+  return name_a < name_b ? -1 : +1;
+}
+
 static struct {
   gt_pointer_operator new_value;
   void *cookie;
 } resort_data;
 
-/* Comparison function to compare two TYPE_METHOD_VEC entries by name.  */
-
-static int
-method_name_cmp (const void* m1_p, const void* m2_p)
-{
-  const tree *const m1 = (const tree *) m1_p;
-  const tree *const m2 = (const tree *) m2_p;
-
-  if (OVL_NAME (*m1) < OVL_NAME (*m2))
-    return -1;
-  return 1;
-}
-
 /* This routine compares two fields like method_name_cmp but using the
-   pointer operator in resort_field_decl_data.  */
+   pointer operator in resort_field_decl_data.  We don't have to deal
+   with duplicates here.  */
 
 static int
-resort_method_name_cmp (const void* m1_p, const void* m2_p)
+resort_method_name_cmp (const void *a_p, const void *b_p)
 {
-  const tree *const m1 = (const tree *) m1_p;
-  const tree *const m2 = (const tree *) m2_p;
+  tree a = *(const tree *)a_p;
+  tree b = *(const tree *)b_p;
+  tree name_a = OVL_NAME (a);
+  tree name_b = OVL_NAME (b);
 
-  tree n1 = OVL_NAME (*m1);
-  tree n2 = OVL_NAME (*m2);
-  resort_data.new_value (&n1, resort_data.cookie);
-  resort_data.new_value (&n2, resort_data.cookie);
-  if (n1 < n2)
-    return -1;
-  return 1;
+  resort_data.new_value (&name_a, resort_data.cookie);
+  resort_data.new_value (&name_b, resort_data.cookie);
+
+  gcc_checking_assert (name_a != name_b);
+
+  return name_a < name_b ? -1 : +1;
 }
 
 /* Resort TYPE_METHOD_VEC because pointers have been reordered.  */
 
 void
-resort_type_method_vec (void* obj,
-			void* /*orig_obj*/,
-			gt_pointer_operator new_value,
-			void* cookie)
+resort_type_method_vec (void *obj, void */*orig_obj*/,
+			gt_pointer_operator new_value, void* cookie)
 {
   if (vec<tree, va_gc> *method_vec = (vec<tree, va_gc> *) obj)
     {
       resort_data.new_value = new_value;
       resort_data.cookie = cookie;
-      qsort (method_vec->address (), method_vec->length (), sizeof (tree),
-	     resort_method_name_cmp);
+      qsort (method_vec->address (), method_vec->length (),
+	     sizeof (tree), resort_method_name_cmp);
     }
 }
 

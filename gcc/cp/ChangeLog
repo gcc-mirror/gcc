@@ -1,3 +1,11 @@
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (get_class_binding): Rename TYPE arg to KLASS for
+	consistency.
+	(restort_data): Move later.
+	(method_name_cmp, resort_method_name_cmp): Simplify.
+	(resort_type_method_vec): Reformat.
+
 2017-09-09  Jason Merrill  <jason@redhat.com>
 
 	* constexpr.c (reduced_constant_expression_p): If
