@@ -823,8 +823,7 @@ combine_reaching_defs (ext_cand *cand, const_rtx set_pat, ext_state *state)
 	return false;
 
       /* Ensure the number of hard registers of the copy match.  */
-      if (HARD_REGNO_NREGS (REGNO (src_reg), dst_mode)
-	  != HARD_REGNO_NREGS (REGNO (src_reg), GET_MODE (src_reg)))
+      if (HARD_REGNO_NREGS (REGNO (src_reg), dst_mode) != REG_NREGS (src_reg))
 	return false;
 
       /* There's only one reaching def.  */
@@ -1136,8 +1135,7 @@ add_removable_extension (const_rtx expr, rtx_insn *insn,
 
 	 We allow this when the registers are different because the
 	 code in combine_reaching_defs will handle that case correctly.  */
-      if ((HARD_REGNO_NREGS (REGNO (dest), mode)
-	   != HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg)))
+      if (HARD_REGNO_NREGS (REGNO (dest), mode) != REG_NREGS (reg)
 	  && reg_overlap_mentioned_p (dest, reg))
 	return;
 

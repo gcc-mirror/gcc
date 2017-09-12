@@ -440,8 +440,7 @@ create_pre_exit (int n_entities, int *entity_map, const int *num_modes)
 			|| short_block
 			|| !(targetm.class_likely_spilled_p
 			     (REGNO_REG_CLASS (ret_start)))
-			|| (nregs
-			    != hard_regno_nregs[ret_start][GET_MODE (ret_reg)])
+			|| nregs != REG_NREGS (ret_reg)
 			/* For multi-hard-register floating point
 		   	   values, sometimes the likely-spilled part
 		   	   is ordinarily copied first, then the other

@@ -1348,7 +1348,7 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
       gcc_assert (mode == GET_MODE (orig_dest));
 
       regno = REGNO (orig_dest);
-      for (i = 0, n = hard_regno_nregs[regno][mode]; i < n; i++)
+      for (i = 0, n = REG_NREGS (orig_dest); i < n; i++)
         if (TEST_HARD_REG_BIT (hard_regs_used, regno + i))
           break;
 
@@ -1463,7 +1463,7 @@ choose_best_pseudo_reg (regset used_regs,
       if (HARD_REGISTER_NUM_P (orig_regno))
 	{
 	  int j, n;
-	  for (j = 0, n = hard_regno_nregs[orig_regno][mode]; j < n; j++)
+	  for (j = 0, n = REG_NREGS (dest); j < n; j++)
 	    if (REGNO_REG_SET_P (used_regs, orig_regno + j))
 	      break;
 	  if (j < n)
