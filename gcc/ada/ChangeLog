@@ -1,3 +1,7 @@
+2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/Makefile.in (SPARC/Solaris): Remove obsolete stuff.
+
 2017-09-11  Arnaud Charlet  <charlet@adacore.com>
 
 	* doc/gnat_ugn/the_gnat_compilation_model.rst: Fix sphinx warning.
