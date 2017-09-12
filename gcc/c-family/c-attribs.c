@@ -1754,9 +1754,12 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
       This formally comes from the c++11 specification but we are
       doing it for the GNU attribute syntax as well.  */
     *no_add_attrs = true;
-  else if (TREE_CODE (decl) == FUNCTION_DECL
+  else if (!warn_if_not_aligned_p
+	   && TREE_CODE (decl) == FUNCTION_DECL
 	   && DECL_ALIGN (decl) > (1U << i) * BITS_PER_UNIT)
     {
+      /* Don't warn function alignment here if warn_if_not_aligned_p is
+	 true.  It will be warned later.  */
       if (DECL_USER_ALIGN (decl))
 	error ("alignment for %q+D was previously specified as %d "
 	       "and may not be decreased", decl,
