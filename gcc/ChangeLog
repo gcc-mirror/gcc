@@ -1,5 +1,10 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* ira-costs.c (record_operand_costs): Use in_hard_reg_set_p
+	instead of hard_regno_nregs.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Use
 	end_hard_regno instead of hard_regno_nregs.
 	* config/s390/s390.c (s390_reg_clobbered_rtx): Likewise.
