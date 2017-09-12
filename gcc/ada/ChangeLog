@@ -1,5 +1,28 @@
 2017-09-12  Bob Duff  <duff@adacore.com>
 
+	* sem_ch6.adb (Analyze_Expression_Function): Initialize Def_Id to
+	Empty.
+
+2017-09-12  Georges-Axel Jaloyan  <jaloyan@adacore.com>
+
+	* debug.adb: Reserving flag -gnatdF for safe pointer checking.
+	* gnat1drv.adb (gnat1drv): Adding the call to the analysis on
+	dF flag.
+	* sem_spark.adb, sem_spark.ads: Implementation of the analysis,
+	in preparation for the evolution of the SPARK language that
+	includes a pointer analysis for checking non-aliasing of access
+	types. The Check_Safe_Pointers function is the entry point, and
+	will traverse the AST and raise compile-time errors everytime
+	it detects non-begign aliasing.  Detailed comments are present
+	in the sem_spark.ads file.
+	* sem_util.adb, sem_util.ads (First_Global, Next_Global): New
+	functions to iterate over the list of globals of a subprogram.
+	* libgnat/system.ads: Add restriction No_Finalization.
+	* gcc-interface/Make-lang.in: Add new file sem_spark.adb and
+	dependency on g-dynhta.adb.
+
+2017-09-12  Bob Duff  <duff@adacore.com>
+
 	* sem_ch6.adb (Analyze_Expression_Function): Call
 	Check_Dynamically_Tagged_Expression.
 	* sem_util.adb (Check_Dynamically_Tagged_Expression): Remove

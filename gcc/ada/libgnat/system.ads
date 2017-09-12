@@ -44,6 +44,12 @@ pragma Restrictions (No_Implicit_Dynamic_Code);
 --  which prevent execution of code on the stack, e.g. in windows environments
 --  with DEP (Data Execution Protection) enabled.
 
+pragma Restrictions (No_Finalization);
+--  Use restriction No_Finalization to avoid pulling finalization (not allowed
+--  in GNAT) inside sem_spark.adb, when defining type Perm_Tree_Access as an
+--  access type on incomplete type Perm_Tree_Wrapper (which is required for
+--  defining a recursive type).
+
 package System is
    pragma Pure;
    --  Note that we take advantage of the implementation permission to make

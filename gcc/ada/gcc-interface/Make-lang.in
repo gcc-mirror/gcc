@@ -312,6 +312,7 @@ GNAT_ADA_OBJS =	\
  ada/freeze.o	\
  ada/frontend.o	\
  ada/libgnat/g-byorma.o	\
+ ada/libgnat/g-dynhta.o	\
  ada/libgnat/g-hesora.o	\
  ada/libgnat/g-htable.o	\
  ada/libgnat/g-spchge.o	\
@@ -443,6 +444,7 @@ GNAT_ADA_OBJS =	\
  ada/sem_res.o	\
  ada/sem_scil.o	\
  ada/sem_smem.o	\
+ ada/sem_spark.o	\
  ada/sem_type.o	\
  ada/sem_util.o	\
  ada/sem_warn.o	\

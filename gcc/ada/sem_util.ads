@@ -885,6 +885,17 @@ package Sem_Util is
    --  Note that the value returned is always the expression (not the
    --  N_Parameter_Association nodes, even if named association is used).
 
+   function First_Global
+     (Subp        : Entity_Id;
+      Global_Mode : Name_Id;
+      Refined     : Boolean := False) return Node_Id;
+   --  Returns the first global item of mode Global_Mode (which can be
+   --  Name_Input, Name_Output, Name_In_Out or Name_Proof_In) associated to
+   --  subprogram Subp, or Empty otherwise. If Refined is True, the global item
+   --  is retrieved from the Refined_Global aspect/pragma associated to the
+   --  body of Subp if present. Next_Global can be used to get the next global
+   --  item with the same mode.
+
    function Fix_Msg (Id : Entity_Id; Msg : String) return String;
    --  Replace all occurrences of a particular word in string Msg depending on
    --  the Ekind of Id as follows:
@@ -2176,6 +2187,16 @@ package Sem_Util is
    --  actual previously returned by a call to First_Actual or Next_Actual.
    --  Note that the result produced is always an expression, not a parameter
    --  association node, even if named notation was used.
+
+   procedure Next_Global (Node : in out Node_Id);
+   pragma Inline (Next_Actual);
+   --  Next_Global (N) is equivalent to N := Next_Global (N). Note that we
+   --  inline this procedural form, but not the functional form that follows.
+
+   function Next_Global (Node : Node_Id) return Node_Id;
+   --  Node is a global item from a list, obtained through calling First_Global
+   --  and possibly Next_Global a number of times. Returns the next global item
+   --  with the same mode.
 
    function No_Heap_Finalization (Typ : Entity_Id) return Boolean;
    --  Determine whether type Typ is subject to pragma No_Heap_Finalization

@@ -466,7 +466,7 @@ package body Sem_Ch6 is
       Orig_N   : Node_Id;
       Ret      : Node_Id;
 
-      Def_Id   : Entity_Id;
+      Def_Id   : Entity_Id := Empty;
       Prev     : Entity_Id;
       --  If the expression is a completion, Prev is the entity whose
       --  declaration is completed. Def_Id is needed to analyze the spec.
