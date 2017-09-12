@@ -1,3 +1,9 @@
+2017-09-02 Simon Wright <simon@pushface.org>
+
+	PR target/80204
+	* config/darwin-driver.c (darwin_find_version_from_kernel): Eliminate
+	calculation of the minor version, always output as 0.
+
 2017-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82112
