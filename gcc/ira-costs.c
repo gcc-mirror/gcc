@@ -1386,7 +1386,7 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 	  cost_classes_t cost_classes_ptr = regno_cost_classes[regno];
 	  enum reg_class *cost_classes = cost_classes_ptr->classes;
 	  reg_class_t rclass;
-	  int k, nr;
+	  int k;
 
 	  i = regno == (int) REGNO (src) ? 1 : 0;
 	  for (k = cost_classes_ptr->num - 1; k >= 0; k--)
@@ -1398,18 +1398,9 @@ record_operand_costs (rtx_insn *insn, enum reg_class *pref)
 		{
 		  if (reg_class_size[rclass] == 1)
 		    op_costs[i]->cost[k] = -frequency;
-		  else
-		    {
-		      for (nr = 0;
-			   nr < hard_regno_nregs[other_regno][mode];
-			   nr++)
-			if (! TEST_HARD_REG_BIT (reg_class_contents[rclass],
-						 other_regno + nr))
-			  break;
-		      
-		      if (nr == hard_regno_nregs[other_regno][mode])
-			op_costs[i]->cost[k] = -frequency;
-		    }
+		  else if (in_hard_reg_set_p (reg_class_contents[rclass],
+					      mode, other_regno))
+		    op_costs[i]->cost[k] = -frequency;
 		}
 	    }
 	}
