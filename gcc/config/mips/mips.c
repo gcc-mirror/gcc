@@ -598,6 +598,7 @@ static const struct attribute_spec mips_attribute_table[] = {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        om_diagnostic } */
   { "long_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",  0, 0, false, true,  true,  NULL, false },
   { "far",     	   0, 0, false, true,  true,  NULL, false },
   { "near",        0, 0, false, true,  true,  NULL, false },
   /* We would really like to treat "mips16" and "nomips16" as type
@@ -1171,13 +1172,14 @@ mflip_mips16_use_mips16_p (tree decl)
   return *slot;
 }
 
-/* Predicates to test for presence of "near" and "far"/"long_call"
+/* Predicates to test for presence of "near"/"short_call" and "far"/"long_call"
    attributes on the given TYPE.  */
 
 static bool
 mips_near_type_p (const_tree type)
 {
-  return lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL;
+  return (lookup_attribute ("short_call", TYPE_ATTRIBUTES (type)) != NULL
+	  || lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL);
 }
 
 static bool
