@@ -1,6 +1,4 @@
-// { dg-options "-std=gnu++17" }
-
-// Copyright (C) 2013-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,45 +15,21 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include <string_view>
-#include <testsuite_hooks.h>
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++1z } }
 
-void
+#include <string_view>
+
+constexpr bool
 test01()
 {
   using std::wstring_view;
 
-  wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
-  str0.remove_prefix(4);
-  VERIFY( str0.data() == p + 4);
-  VERIFY( str0.length() == 8 );
-  VERIFY( str0 == wstring_view{L"pus mons"} );
+  wstring_view s1{L"last"};
+  wstring_view s2{L"first"};
+
+  s1.swap(s2);
+  return s1 == L"first" && s2 == L"last";
 }
 
-constexpr bool
-test02()
-{
-  using std::wstring_view;
-
-  wstring_view str0{L"olympus mons"};
-  wstring_view::pointer p = str0.data();
-  str0.remove_prefix(4);
-  if ( str0.data() != p + 4)
-    return false;
-  if ( str0.length() != 8 )
-    return false;
-  if ( str0 != wstring_view{L"pus mons"} )
-    return false;
-
-  return true;
-}
-
-int
-main()
-{ 
-  test01();
-  static_assert( test02() );
-
-  return 0;
-}
+static_assert( test01() );

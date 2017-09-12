@@ -62,9 +62,9 @@ test_value(int result, want_value expected)
   VERIFY(pass);
   return 0;
 }
- 
 
-int 
+
+int
 test01()
 {
   using std::wstring_view;
@@ -74,7 +74,7 @@ test01()
   wstring_view 	str_2;
 
   //sanity check
-  test_value(wcscmp(L"costa marbella", L"costa rica"), lt); 
+  test_value(wcscmp(L"costa marbella", L"costa rica"), lt);
   test_value(wcscmp(L"costa rica", L"costa rica"), z);
   test_value(wcscmp(str_1.data(), str_0.data()), lt);
   test_value(wcscmp(str_0.data(), str_1.data()), gt);
@@ -100,8 +100,8 @@ test01()
   test_value(str_1.compare(0, 4, str_2), z);
   test_value(str_1.compare(0, 5, str_2), gt);
 
-  // int compare(size_type pos1, size_type n1, const basic_string_view& str, 
-  //		 size_type pos2, size_type n2) const;	
+  // int compare(size_type pos1, size_type n1, const basic_string_view& str,
+  //		 size_type pos2, size_type n2) const;
   test_value(str_1.compare(0, 6, str_0, 0, 6), z);
   test_value(str_1.compare(0, 7, str_0, 0, 7), lt);
   test_value(str_0.compare(0, 7, str_1, 0, 7), gt);
@@ -111,21 +111,21 @@ test01()
   test_value(str_1.compare(L"costa rica"), lt);
   str_2 = str_0;
   test_value(str_2.compare(L"costa rica"), z);
-  test_value(str_2.compare(L"cost"), gt);			
-  test_value(str_2.compare(L"costa ricans"), lt);	   
+  test_value(str_2.compare(L"cost"), gt);
+  test_value(str_2.compare(L"costa ricans"), lt);
 
   // int compare(size_type pos, size_type n1, const charT* str,
   //             size_type n2 = npos) const;
-  test_value(str_1.compare(0, 6, L"costa rica", 0, 6), z); 
-  test_value(str_1.compare(0, 7, L"costa rica", 0, 7), lt); 
-  test_value(str_0.compare(0, 7, L"costa marbella", 0, 7), gt); 
+  test_value(str_1.compare(0, 6, L"costa rica", 0, 6), z);
+  test_value(str_1.compare(0, 7, L"costa rica", 0, 7), lt);
+  test_value(str_0.compare(0, 7, L"costa marbella", 0, 7), gt);
 
   return 0;
 }
 
 
-int 
-main() 
+int
+main()
 {
   test01();
 
