@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -538,10 +538,14 @@ package body SPARK_Specific is
       --------------------
 
       function Is_SPARK_Scope (E : Entity_Id) return Boolean is
+         Can_Be_Renamed : constant Boolean :=
+                            Present (E)
+                              and then (Is_Subprogram_Or_Entry (E)
+                                         or else Ekind (E) = E_Package);
       begin
          return Present (E)
            and then not Is_Generic_Unit (E)
-           and then Renamed_Entity (E) = Empty
+           and then (not Can_Be_Renamed or else No (Renamed_Entity (E)))
            and then Get_Scope_Num (E) /= No_Scope;
       end Is_SPARK_Scope;
 
@@ -738,6 +742,19 @@ package body SPARK_Specific is
 
               and then Get_Scope_Num (Ref.Ent_Scope) /= No_Scope
               and then Get_Scope_Num (Ref.Ref_Scope) /= No_Scope
+
+              --  Discard references to loop parameters introduced within
+              --  expression functions, as they give two references: one from
+              --  the analysis of the expression function itself and one from
+              --  the analysis of the expanded body. We don't lose any globals
+              --  by discarding them, because such loop parameters can only be
+              --  accessed locally from within the expression function body.
+
+              and then not
+                (Ekind (Ref.Ent) = E_Loop_Parameter
+                  and then Scope_Within
+                             (Ref.Ent, Unique_Entity (Ref.Ref_Scope))
+                  and then Is_Expression_Function (Ref.Ref_Scope))
             then
                Nrefs         := Nrefs + 1;
                Rnums (Nrefs) := Index;
@@ -1307,8 +1324,18 @@ package body SPARK_Specific is
             when N_Protected_Type_Declaration =>
                Traverse_Visible_And_Private_Parts (Protected_Definition (N));
 
-            when N_Task_Definition =>
-               Traverse_Visible_And_Private_Parts (N);
+            when N_Task_Type_Declaration =>
+
+               --  Task type definition is optional (unlike protected type
+               --  definition, which is mandatory).
+
+               declare
+                  Task_Def : constant Node_Id := Task_Definition (N);
+               begin
+                  if Present (Task_Def) then
+                     Traverse_Visible_And_Private_Parts (Task_Def);
+                  end if;
+               end;
 
             when N_Task_Body =>
                Traverse_Task_Body (N);

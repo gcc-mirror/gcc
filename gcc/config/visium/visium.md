@@ -2145,7 +2145,7 @@
 ;; mantissa) to a quiet NaN (-1). This is acceptable when the data to be
 ;; moved is in fact a floating-point number, but to avoid nasty surprises
 ;; integers must in general be kept out of the floating-point registers.
-;; HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
+;; TARGET_HARD_REGNO_MODE_OK thus only allows SFmode in these registers.
 ;; However, since FTOI and ITOF use floating-point registers for both their
 ;; inputs and outputs, to use these instructions integers must transiently
 ;; occupy such registers. To disguise this from the compiler, UNSPECs are

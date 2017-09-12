@@ -47,69 +47,69 @@
 (define_insn_reservation "store_wbuf" 5
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "yes")
-       	    (eq_attr "type" "store1")))
+       	    (eq_attr "type" "store_4")))
   "core+write_buf*3+write_blockage*5")
 
 (define_insn_reservation "store2_wbuf" 7
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "yes")
-	    (eq_attr "type" "store2")))
+	    (eq_attr "type" "store_8")))
   "core+write_buf*4+write_blockage*7")
 
 (define_insn_reservation "store3_wbuf" 9
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "yes")
-	    (eq_attr "type" "store3")))
+	    (eq_attr "type" "store_12")))
   "core+write_buf*5+write_blockage*9")
 
 (define_insn_reservation "store4_wbuf" 11
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "yes")
-            (eq_attr "type" "store4")))
+            (eq_attr "type" "store_16")))
   "core+write_buf*6+write_blockage*11")
 
 (define_insn_reservation "store2" 3
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "no")
-            (eq_attr "type" "store2")))
+            (eq_attr "type" "store_8")))
   "core*3")
 
 (define_insn_reservation "store3" 4
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "no")
-            (eq_attr "type" "store3")))
+            (eq_attr "type" "store_12")))
   "core*4")
 
 (define_insn_reservation "store4" 5
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "model_wbuf" "no")
-	    (eq_attr "type" "store4")))
+	    (eq_attr "type" "store_16")))
   "core*5")
 
 (define_insn_reservation "store_ldsched" 1
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (eq_attr "type" "store1")))
+	    (eq_attr "type" "store_4")))
   "core")
 
 (define_insn_reservation "load_ldsched_xscale" 3
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "type" "load_byte,load1")
+	    (and (eq_attr "type" "load_byte,load_4")
 	         (eq_attr "tune" "xscale,iwmmxt,iwmmxt2"))))
   "core")
 
 (define_insn_reservation "load_ldsched" 2
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "yes") 
-	    (and (eq_attr "type" "load_byte,load1")
+	    (and (eq_attr "type" "load_byte,load_4")
 	         (eq_attr "tune" "!xscale,iwmmxt,iwmmxt2"))))
   "core")
 
 (define_insn_reservation "load_or_store" 2
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "ldsched" "!yes") 
-	    (eq_attr "type" "load_byte,load1,load2,load3,load4,store1")))
+	    (eq_attr "type" "load_byte,load_4,load_8,load_12,load_16,store_4")))
   "core*2")
 
 (define_insn_reservation "mult" 16
@@ -140,8 +140,8 @@
 (define_insn_reservation "multi_cycle" 32
   (and (eq_attr "generic_sched" "yes")
        (and (eq_attr "core_cycles" "multi")
-            (and (eq_attr "type" "!load_byte,load1,load2,load3,load4,\
-                                  store1,store2,store3,store4")
+            (and (eq_attr "type" "!load_byte,load_4,load_8,load_12,load_16,\
+                                  store_4,store_8,store_12,store_16")
 		 (not (ior (eq_attr "mul32" "yes")
 			   (eq_attr "mul64" "yes"))))))
   "core*32")

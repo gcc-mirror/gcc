@@ -392,7 +392,7 @@ begin
 
    Write_Switch_Char ("R?");
    Write_Line
-     ("List rep info (?=0/1/2/3/m for none/types/all/variable/mechanisms)");
+     ("List rep info (?=0/1/2/3/e/m for none/types/all/symbolic/ext/mech)");
    Write_Switch_Char ("R?s");
    Write_Line ("List rep info to file.rep instead of standard output");
 
@@ -549,6 +549,10 @@ begin
                                                   "missing parenthesis");
    Write_Line ("        Q    turn off warnings for questionable " &
                                                   "missing parenthesis");
+   Write_Line ("        .q+  turn on warnings for questionable layout of " &
+                                                  "record types");
+   Write_Line ("        .Q*  turn off warnings for questionable layout of " &
+                                                  "record types");
    Write_Line ("        r+   turn on warnings for redundant construct");
    Write_Line ("        R*   turn off warnings for redundant construct");
    Write_Line ("        .r+  turn on warnings for object renaming function");

@@ -497,7 +497,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib  -pie  -pthread  -rdynamic @gol
--s  -static  -static-libgcc  -static-libstdc++ @gol
+-s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -static-libmpx  -static-libmpxwrappers @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -614,7 +614,7 @@ Objective-C and Objective-C++ Dialects}.
 -mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape @gol
 -mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof @gol
 -mlong-calls  -mmedium-calls  -msdata -mirq-ctrl-saved @gol
--mrgf-banked-regs @gol
+-mrgf-banked-regs -mlpc-width=@var{width} -G @var{num} @gol
 -mvolatile-cache  -mtp-regno=@var{regno} @gol
 -malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc @gol
 -mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi @gol
@@ -2039,7 +2039,7 @@ freestanding and hosted environments.
 Enable handling of OpenACC directives @code{#pragma acc} in C/C++ and
 @code{!$acc} in Fortran.  When @option{-fopenacc} is specified, the
 compiler generates accelerated code according to the OpenACC Application
-Programming Interface v2.0 @w{@uref{http://www.openacc.org/}}.  This option
+Programming Interface v2.0 @w{@uref{https://www.openacc.org}}.  This option
 implies @option{-pthread}, and thus is only supported on targets that
 have support for @option{-pthread}.
 
@@ -5492,6 +5492,14 @@ int i = 1;
 @dots{}
 if (i > i) @{ @dots{} @}
 @end smallexample
+
+This warning also warns about bitwise comparisons that always evaluate
+to true or false, for instance:
+@smallexample
+if ((a & 16) == 10) @{ @dots{} @}
+@end smallexample
+will always be false.
+
 This warning is enabled by @option{-Wall}.
 
 @item -Wtrampolines
@@ -11074,6 +11082,12 @@ This option enables instrumentation of C++ member function calls, member
 accesses and some conversions between pointers to base and derived classes,
 to verify the referenced object has the correct dynamic type.
 
+@item -fsanitize=pointer-overflow
+@opindex fsanitize=pointer-overflow
+
+This option enables instrumentation of pointer arithmetics.  If the pointer
+arithmetics overflows, a run-time error is issued.
+
 @end table
 
 While @option{-ftrapv} causes traps for signed overflows to be emitted,
@@ -11154,6 +11168,20 @@ is usable even in freestanding environments.
 @opindex fsanitize-coverage=trace-pc
 Enable coverage-guided fuzzing code instrumentation.
 Inserts a call to @code{__sanitizer_cov_trace_pc} into every basic block.
+
+@item -fsanitize-coverage=trace-cmp
+@opindex fsanitize-coverage=trace-cmp
+Enable dataflow guided fuzzing code instrumentation.
+Inserts a call to @code{__sanitizer_cov_trace_cmp1},
+@code{__sanitizer_cov_trace_cmp2}, @code{__sanitizer_cov_trace_cmp4} or
+@code{__sanitizer_cov_trace_cmp8} for integral comparison with both operands
+variable or @code{__sanitizer_cov_trace_const_cmp1},
+@code{__sanitizer_cov_trace_const_cmp2},
+@code{__sanitizer_cov_trace_const_cmp4} or
+@code{__sanitizer_cov_trace_const_cmp8} for integral comparison with one
+operand constant, @code{__sanitizer_cov_trace_cmpf} or
+@code{__sanitizer_cov_trace_cmpd} for float or double comparisons and
+@code{__sanitizer_cov_trace_switch} for switch statements.
 
 @item -fbounds-check
 @opindex fbounds-check
@@ -11797,14 +11825,23 @@ GNU Compiler Collection (GCC) Internals}.)
 
 @item -pie
 @opindex pie
-Produce a position independent executable on targets that support it.
-For predictable results, you must also specify the same set of options
-used for compilation (@option{-fpie}, @option{-fPIE},
+Produce a dynamically linked position independent executable on targets
+that support it.  For predictable results, you must also specify the same
+set of options used for compilation (@option{-fpie}, @option{-fPIE},
 or model suboptions) when you specify this linker option.
 
 @item -no-pie
 @opindex no-pie
-Don't produce a position independent executable.
+Don't produce a dynamically linked position independent executable.
+
+@item -static-pie
+@opindex static-pie
+Produce a static position independent executable on targets that support
+it.  A static position independent executable is similar to a static
+executable, but can be loaded at any address without a dynamic linker.
+For predictable results, you must also specify the same set of options
+used for compilation (@option{-fpie}, @option{-fPIE}, or model
+suboptions) when you specify this linker option.
 
 @item -pthread
 @opindex pthread
@@ -11828,8 +11865,9 @@ Remove all symbol table and relocation information from the executable.
 
 @item -static
 @opindex static
-On systems that support dynamic linking, this prevents linking with the shared
-libraries.  On other systems, this option has no effect.
+On systems that support dynamic linking, this overrides @option{-pie}
+and prevents linking with the shared libraries.  On other systems, this
+option has no effect.
 
 @item -shared
 @opindex shared
@@ -14779,6 +14817,18 @@ registers to avoid memory transactions during interrupt entry and exit
 sequences.  Use this option when you are using fast interrupts in an
 ARC V2 family processor.  Permitted values are 4, 8, 16, and 32.
 
+@item -mlpc-width=@var{width}
+@opindex mlpc-width
+Specify the width of the @code{lp_count} register.  Valid values for
+@var{width} are 8, 16, 20, 24, 28 and 32 bits.  The default width is
+fixed to 32 bits.  If the width is less than 32, the compiler does not
+attempt to transform loops in your program to use the zero-delay loop
+mechanism unless it is known that the @code{lp_count} register can
+hold the required loop-counter value.  Depending on the width
+specified, the compiler and run-time library might continue to use the
+loop mechanism for various needs.  This option defines macro
+@code{__ARC_LPC_WIDTH__} with the value of @var{width}.
+
 @end table
 
 The following options are passed through to the assembler, and also
@@ -14895,6 +14945,13 @@ instruction.  Conditional execution of function calls is suppressed, to
 allow use of the 25-bit range, rather than the 21-bit range with
 conditional branch-and-link.  This is the default for tool chains built
 for @w{@code{arc-linux-uclibc}} and @w{@code{arceb-linux-uclibc}} targets.
+
+@item -G @var{num}
+@opindex G
+Put definitions of externally-visible data in a small data section if
+that data is no bigger than @var{num} bytes.  The default value of
+@var{num} is 4 for any ARC configuration, or 8 when we have double
+load/store operations.
 
 @item -mno-sdata
 @opindex mno-sdata
@@ -21967,15 +22024,21 @@ Enable/disable the @var{__float128} keyword for IEEE 128-bit floating point
 and use either software emulation for IEEE 128-bit floating point or
 hardware instructions.
 
-The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7}, or
-@option{-mcpu=power8}) must be enabled to use the @option{-mfloat128}
-option.  The @option{-mfloat128} option only works on PowerPC 64-bit
-Linux systems.
+The VSX instruction set (@option{-mvsx}, @option{-mcpu=power7},
+@option{-mcpu=power8}), or @option{-mcpu=power9} must be enabled to
+use the IEEE 128-bit floating point support.  The IEEE 128-bit
+floating point support only works on PowerPC Linux systems.
 
-If you use the ISA 3.0 instruction set (@option{-mcpu=power9}), the
-@option{-mfloat128} option will also enable the generation of ISA 3.0
-IEEE 128-bit floating point instructions.  Otherwise, IEEE 128-bit
-floating point will be done with software emulation.
+The default for @option{-mfloat128} is enabled on PowerPC Linux
+systems using the VSX instruction set, and disabled on other systems.
+
+If you use the ISA 3.0 instruction set (@option{-mpower9-vector} or
+@option{-mcpu=power9}) on a 64-bit system, the IEEE 128-bit floating
+point support will also enable the generation of ISA 3.0 IEEE 128-bit
+floating point instructions.  Otherwise, if you do not specify to
+generate ISA 3.0 instructions or you are targeting a 32-bit big endian
+system, IEEE 128-bit floating point will be done with software
+emulation.
 
 @item -mfloat128-hardware
 @itemx -mno-float128-hardware
@@ -21984,12 +22047,9 @@ floating point will be done with software emulation.
 Enable/disable using ISA 3.0 hardware instructions to support the
 @var{__float128} data type.
 
-If you use @option{-mfloat128-hardware}, it will enable the option
-@option{-mfloat128} as well.
-
-If you select ISA 3.0 instructions with @option{-mcpu=power9}, but do
-not use either @option{-mfloat128} or @option{-mfloat128-hardware},
-the IEEE 128-bit floating point support will not be enabled.
+The default for @option{-mfloat128-hardware} is enabled on PowerPC
+Linux systems using the ISA 3.0 instruction set, and disabled on other
+systems.
 
 @item -mfloat-gprs=@var{yes/single/double/no}
 @itemx -mfloat-gprs

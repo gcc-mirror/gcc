@@ -216,7 +216,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
    example:
 
      tree ovlid = cp_assignment_operator_id (NOP_EXPR);
-     tree overloads = lookup_fnfields_slot (type, ovlid);
+     tree overloads = get_class_binding (type, ovlid);
      for (ovl_iterator it (overloads); it; ++it) { ... }
 
    iterates over the set of implicitly and explicitly defined overloads
@@ -456,6 +456,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_CONSTRAINT_VAR_P (in a PARM_DECL)
       TEMPLATE_DECL_COMPLEX_ALIAS_P (in TEMPLATE_DECL)
       DECL_INSTANTIATING_NSDMI_P (in a FIELD_DECL)
+      LABEL_DECL_CDTOR (in LABEL_DECL)
    3: DECL_IN_AGGR_P.
    4: DECL_C_BIT_FIELD (in a FIELD_DECL)
       DECL_ANON_UNION_VAR_P (in a VAR_DECL)
@@ -1216,8 +1217,9 @@ struct GTY (()) tree_trait_expr {
   (CLASS_TYPE_P (NODE) && CLASSTYPE_LAMBDA_EXPR (NODE))
 
 /* Test if FUNCTION_DECL is a lambda function.  */
-#define LAMBDA_FUNCTION_P(FNDECL) \
-  (DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR \
+#define LAMBDA_FUNCTION_P(FNDECL)			\
+  (DECL_DECLARES_FUNCTION_P (FNDECL)			\
+   && DECL_OVERLOADED_OPERATOR_P (FNDECL) == CALL_EXPR	\
    && LAMBDA_TYPE_P (CP_DECL_CONTEXT (FNDECL)))
 
 enum cp_lambda_default_capture_mode_type {
@@ -1253,11 +1255,6 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_MUTABLE_P(NODE) \
   TREE_LANG_FLAG_1 (LAMBDA_EXPR_CHECK (NODE))
 
-/* The return type in the expression.
- * NULL_TREE indicates that none was specified.  */
-#define LAMBDA_EXPR_RETURN_TYPE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->return_type)
-
 /* The source location of the lambda.  */
 #define LAMBDA_EXPR_LOCATION(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->locus)
@@ -1276,20 +1273,17 @@ enum cp_lambda_default_capture_mode_type {
 #define LAMBDA_EXPR_PENDING_PROXIES(NODE) \
   (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->pending_proxies)
 
-/* The closure type of the lambda.  Note that the TREE_TYPE of a
-   LAMBDA_EXPR is always NULL_TREE, because we need to instantiate the
-   LAMBDA_EXPR in order to instantiate the type.  */
+/* The closure type of the lambda, which is also the type of the
+   LAMBDA_EXPR.  */
 #define LAMBDA_EXPR_CLOSURE(NODE) \
-  (((struct tree_lambda_expr *)LAMBDA_EXPR_CHECK (NODE))->closure)
+  (TREE_TYPE (LAMBDA_EXPR_CHECK (NODE)))
 
 struct GTY (()) tree_lambda_expr
 {
   struct tree_typed typed;
   tree capture_list;
   tree this_capture;
-  tree return_type;
   tree extra_scope;
-  tree closure;
   vec<tree, va_gc> *pending_proxies;
   location_t locus;
   enum cp_lambda_default_capture_mode_type default_capture_mode;
@@ -2014,10 +2008,6 @@ struct GTY(()) lang_type {
      as a list of adopted protocols or a pointer to a corresponding
      @interface.  See objc/objc-act.h for details.  */
   tree objc_info;
-
-  /* Map from IDENTIFIER nodes to DECLS.  */
-  hash_map<lang_identifier *, tree> *bindings;
-
   /* FIXME reuse another field?  */
   tree lambda_expr;
 };
@@ -2158,14 +2148,14 @@ struct GTY(()) lang_type {
 /* A FUNCTION_DECL or OVERLOAD for the constructors for NODE.  These
    are the constructors that take an in-charge parameter.  */
 #define CLASSTYPE_CONSTRUCTORS(NODE) \
-  (lookup_fnfields_slot_nolazy (NODE, ctor_identifier))
+  (get_class_binding_direct (NODE, ctor_identifier))
 
 /* A FUNCTION_DECL for the destructor for NODE.  This is the
    destructors that take an in-charge parameter.  If
    CLASSTYPE_LAZY_DESTRUCTOR is true, then this entry will be NULL
    until the destructor is created with lazily_declare_fn.  */
 #define CLASSTYPE_DESTRUCTOR(NODE) \
-  (lookup_fnfields_slot_nolazy (NODE, dtor_identifier))
+  (get_class_binding_direct (NODE, dtor_identifier))
 
 /* A dictionary of the nested user-defined-types (class-types, or enums)
    found within this class.  This table includes nested member class
@@ -2457,7 +2447,7 @@ struct GTY(()) lang_decl_base {
   unsigned anticipated_p : 1;		   /* fn, type or template */
   /* anticipated_p reused as DECL_OMP_PRIVATIZED_MEMBER in var */
   unsigned friend_or_tls : 1;		   /* var, fn, type or template */
-  unsigned template_conv_p : 1;		   /* var or template */
+  unsigned unknown_bound_p : 1;		   /* var */
   unsigned odr_used : 1;		   /* var or fn */
   unsigned u2sel : 1;
   unsigned concept_p : 1;                  /* applies to vars and functions */
@@ -2813,28 +2803,20 @@ struct GTY(()) lang_decl {
        || DECL_BASE_DESTRUCTOR_P (NODE)))
 
 /* Nonzero if NODE is a user-defined conversion operator.  */
-#define DECL_CONV_FN_P(NODE) \
-  (DECL_NAME (NODE) && IDENTIFIER_CONV_OP_P (DECL_NAME (NODE)))
+#define DECL_CONV_FN_P(NODE) IDENTIFIER_CONV_OP_P (DECL_NAME (NODE))
 
-/* If FN is a conversion operator, the type to which it converts.
-   Otherwise, NULL_TREE.  */
+/* The type to which conversion operator FN converts to.   */
 #define DECL_CONV_FN_TYPE(FN) \
-  (DECL_CONV_FN_P (FN) ? TREE_TYPE (DECL_NAME (FN)) : NULL_TREE)
-
-/* Nonzero if NODE, which is a TEMPLATE_DECL, is a template
-   conversion operator to a type dependent on the innermost template
-   args.  */
-#define DECL_TEMPLATE_CONV_FN_P(NODE) \
-  (DECL_LANG_SPECIFIC (TEMPLATE_DECL_CHECK (NODE))->u.base.template_conv_p)
+  TREE_TYPE ((gcc_checking_assert (DECL_CONV_FN_P (FN)), DECL_NAME (FN)))
 
 /* Nonzero if NODE, a static data member, was declared in its class as an
    array of unknown bound.  */
 #define VAR_HAD_UNKNOWN_BOUND(NODE)			\
   (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))		\
-   ? DECL_LANG_SPECIFIC (NODE)->u.base.template_conv_p	\
+   ? DECL_LANG_SPECIFIC (NODE)->u.base.unknown_bound_p	\
    : false)
 #define SET_VAR_HAD_UNKNOWN_BOUND(NODE) \
-  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.template_conv_p = true)
+  (DECL_LANG_SPECIFIC (VAR_DECL_CHECK (NODE))->u.base.unknown_bound_p = true)
 
 /* Set the overloaded operator code for NODE to CODE.  */
 #define SET_OVERLOADED_OPERATOR_CODE(NODE, CODE) \
@@ -3242,10 +3224,6 @@ extern void decl_shadowed_for_var_insert (tree, tree);
    && TYPE_NAME (NODE)				\
    && TREE_CODE (TYPE_NAME (NODE)) == TYPE_DECL	\
    && TYPE_DECL_ALIAS_P (TYPE_NAME (NODE)))
-
-/* The binding map for a class (not always present).  */
-#define CLASSTYPE_BINDINGS(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->bindings)
 
 /* If non-NULL for a VAR_DECL, FUNCTION_DECL, TYPE_DECL or
    TEMPLATE_DECL, the entity is either a template specialization (if
@@ -3838,6 +3816,11 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
 /* Nonzero if NODE is the target for genericization of 'continue' stmts.  */
 #define LABEL_DECL_CONTINUE(NODE) \
   DECL_LANG_FLAG_1 (LABEL_DECL_CHECK (NODE))
+
+/* Nonzero if NODE is the target for genericization of 'return' stmts
+   in constructors/destructors of targetm.cxx.cdtor_returns_this targets.  */
+#define LABEL_DECL_CDTOR(NODE) \
+  DECL_LANG_FLAG_2 (LABEL_DECL_CHECK (NODE))
 
 /* True if NODE was declared with auto in its return type, but it has
    started compilation and so the return type might have been changed by
@@ -5117,9 +5100,10 @@ enum unification_kind_t {
 // An RAII class used to create a new pointer map for local
 // specializations. When the stack goes out of scope, the
 // previous pointer map is restored.
+enum lss_policy { lss_blank, lss_copy };
 struct local_specialization_stack
 {
-  local_specialization_stack ();
+  local_specialization_stack (lss_policy = lss_blank);
   ~local_specialization_stack ();
 
   hash_map<tree, tree> *saved;
@@ -5957,8 +5941,6 @@ extern tree convert_to_base_statically		(tree, tree);
 extern tree build_vtbl_ref			(tree, tree);
 extern tree build_vfn_ref			(tree, tree);
 extern tree get_vtable_decl			(tree, int);
-extern void resort_type_method_vec		(void *, void *,
-						 gt_pointer_operator, void *);
 extern bool add_method				(tree, tree, bool);
 extern tree declared_access			(tree);
 extern tree currently_open_class		(tree);
@@ -6465,7 +6447,7 @@ extern tree maybe_process_partial_specialization (tree);
 extern tree most_specialized_instantiation	(tree);
 extern void print_candidates			(tree);
 extern void instantiate_pending_templates	(int);
-extern tree tsubst_default_argument		(tree, tree, tree,
+extern tree tsubst_default_argument		(tree, int, tree, tree,
 						 tsubst_flags_t);
 extern tree tsubst (tree, tree, tsubst_flags_t, tree);
 extern tree tsubst_copy_and_build		(tree, tree, tsubst_flags_t,
@@ -6830,11 +6812,17 @@ extern tree current_nonlambda_function		(void);
 extern tree nonlambda_method_basetype		(void);
 extern tree current_nonlambda_scope		(void);
 extern bool generic_lambda_fn_p			(tree);
+extern bool lambda_fn_in_template_p		(tree);
 extern void maybe_add_lambda_conv_op            (tree);
 extern bool is_lambda_ignored_entity            (tree);
 extern bool lambda_static_thunk_p		(tree);
 extern tree finish_builtin_launder		(location_t, tree,
 						 tsubst_flags_t);
+extern void start_lambda_scope			(tree);
+extern void record_lambda_scope			(tree);
+extern void finish_lambda_scope			(void);
+extern tree start_lambda_function		(tree fn, tree lambda_expr);
+extern void finish_lambda_function		(tree body);
 
 /* in tree.c */
 extern int cp_tree_operand_length		(const_tree);
@@ -6966,6 +6954,7 @@ extern tree convert_bitfield_to_declared_type   (tree);
 extern tree cp_save_expr			(tree);
 extern bool cast_valid_in_integral_constant_expression_p (tree);
 extern bool cxx_type_hash_eq			(const_tree, const_tree);
+extern tree cxx_copy_lang_qualifiers		(const_tree, const_tree);
 
 extern void cxx_print_statistics		(void);
 extern bool maybe_warn_zero_as_null_pointer_constant (tree, location_t);
@@ -7325,11 +7314,13 @@ extern bool is_valid_constexpr_fn		(tree, bool);
 extern bool check_constexpr_ctor_body           (tree, tree, bool);
 extern tree ensure_literal_type_for_constexpr_object (tree);
 extern bool potential_constant_expression       (tree);
-extern bool potential_nondependent_constant_expression (tree);
-extern bool potential_nondependent_static_init_expression (tree);
-extern bool potential_static_init_expression    (tree);
+extern bool is_constant_expression (tree);
+extern bool is_nondependent_constant_expression (tree);
+extern bool is_nondependent_static_init_expression (tree);
+extern bool is_static_init_expression    (tree);
 extern bool potential_rvalue_constant_expression (tree);
 extern bool require_potential_constant_expression (tree);
+extern bool require_constant_expression (tree);
 extern bool require_potential_rvalue_constant_expression (tree);
 extern tree cxx_constant_value			(tree, tree = NULL_TREE);
 extern tree maybe_constant_value		(tree, tree = NULL_TREE);

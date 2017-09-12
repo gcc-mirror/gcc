@@ -1232,7 +1232,6 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
       off_t offset;
       off_t length;
       int ret;
-      const char *errmsg;
       simple_object_write_section *dest;
       off_t flags;
       unsigned char *buf;
@@ -1349,9 +1348,11 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 
 		  if (discard)
 		    {
-		      /* Make discarded symbols undefined and unnamed.  */
-		      ELF_SET_FIELD (type_functions, ei_class, Sym,
-				     ent, st_name, Elf_Word, 0);
+		      /* Make discarded symbols undefined and unnamed
+		         in case it is local.  */
+		      if (ELF_ST_BIND (*st_info) == STB_LOCAL)
+			ELF_SET_FIELD (type_functions, ei_class, Sym,
+				       ent, st_name, Elf_Word, 0);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,
 				     ent, st_value, Elf_Addr, 0);
 		      ELF_SET_FIELD (type_functions, ei_class, Sym,

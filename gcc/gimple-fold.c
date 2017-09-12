@@ -748,31 +748,29 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 	  unsigned ilen = tree_to_uhwi (len);
 	  if (pow2p_hwi (ilen))
 	    {
+	      scalar_int_mode mode;
 	      tree type = lang_hooks.types.type_for_size (ilen * 8, 1);
 	      if (type
-		  && TYPE_MODE (type) != BLKmode
-		  && (GET_MODE_SIZE (TYPE_MODE (type)) * BITS_PER_UNIT
-		      == ilen * 8)
+		  && is_a <scalar_int_mode> (TYPE_MODE (type), &mode)
+		  && GET_MODE_SIZE (mode) * BITS_PER_UNIT == ilen * 8
 		  /* If the destination pointer is not aligned we must be able
 		     to emit an unaligned store.  */
-		  && (dest_align >= GET_MODE_ALIGNMENT (TYPE_MODE (type))
-		      || !SLOW_UNALIGNED_ACCESS (TYPE_MODE (type), dest_align)
-		      || (optab_handler (movmisalign_optab, TYPE_MODE (type))
+		  && (dest_align >= GET_MODE_ALIGNMENT (mode)
+		      || !targetm.slow_unaligned_access (mode, dest_align)
+		      || (optab_handler (movmisalign_optab, mode)
 			  != CODE_FOR_nothing)))
 		{
 		  tree srctype = type;
 		  tree desttype = type;
-		  if (src_align < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		  if (src_align < GET_MODE_ALIGNMENT (mode))
 		    srctype = build_aligned_type (type, src_align);
 		  tree srcmem = fold_build2 (MEM_REF, srctype, src, off0);
 		  tree tem = fold_const_aggregate_ref (srcmem);
 		  if (tem)
 		    srcmem = tem;
-		  else if (src_align < GET_MODE_ALIGNMENT (TYPE_MODE (type))
-			   && SLOW_UNALIGNED_ACCESS (TYPE_MODE (type),
-						     src_align)
-			   && (optab_handler (movmisalign_optab,
-					      TYPE_MODE (type))
+		  else if (src_align < GET_MODE_ALIGNMENT (mode)
+			   && targetm.slow_unaligned_access (mode, src_align)
+			   && (optab_handler (movmisalign_optab, mode)
 			       == CODE_FOR_nothing))
 		    srcmem = NULL_TREE;
 		  if (srcmem)
@@ -788,7 +786,7 @@ gimple_fold_builtin_memory_op (gimple_stmt_iterator *gsi,
 			  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
 			  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 			}
-		      if (dest_align < GET_MODE_ALIGNMENT (TYPE_MODE (type)))
+		      if (dest_align < GET_MODE_ALIGNMENT (mode))
 			desttype = build_aligned_type (type, dest_align);
 		      new_stmt
 			= gimple_build_assign (fold_build2 (MEM_REF, desttype,
@@ -1232,7 +1230,7 @@ gimple_fold_builtin_memset (gimple_stmt_iterator *gsi, tree c, tree len)
     return NULL_TREE;
 
   length = tree_to_uhwi (len);
-  if (GET_MODE_SIZE (TYPE_MODE (etype)) != length
+  if (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (etype)) != length
       || get_pointer_alignment (dest) / BITS_PER_UNIT < length)
     return NULL_TREE;
 
@@ -3938,17 +3936,42 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 					gimple_call_arg (stmt, 2));
 	  break;
 	case IFN_UBSAN_OBJECT_SIZE:
-	  if (integer_all_onesp (gimple_call_arg (stmt, 2))
-	      || (TREE_CODE (gimple_call_arg (stmt, 1)) == INTEGER_CST
-		  && TREE_CODE (gimple_call_arg (stmt, 2)) == INTEGER_CST
-		  && tree_int_cst_le (gimple_call_arg (stmt, 1),
-				      gimple_call_arg (stmt, 2))))
+	  {
+	    tree offset = gimple_call_arg (stmt, 1);
+	    tree objsize = gimple_call_arg (stmt, 2);
+	    if (integer_all_onesp (objsize)
+		|| (TREE_CODE (offset) == INTEGER_CST
+		    && TREE_CODE (objsize) == INTEGER_CST
+		    && tree_int_cst_le (offset, objsize)))
+	      {
+		replace_call_with_value (gsi, NULL_TREE);
+		return true;
+	      }
+	  }
+	  break;
+	case IFN_UBSAN_PTR:
+	  if (integer_zerop (gimple_call_arg (stmt, 1)))
 	    {
-	      gsi_replace (gsi, gimple_build_nop (), false);
-	      unlink_stmt_vdef (stmt);
-	      release_defs (stmt);
+	      replace_call_with_value (gsi, NULL_TREE);
 	      return true;
 	    }
+	  break;
+	case IFN_UBSAN_BOUNDS:
+	  {
+	    tree index = gimple_call_arg (stmt, 1);
+	    tree bound = gimple_call_arg (stmt, 2);
+	    if (TREE_CODE (index) == INTEGER_CST
+		&& TREE_CODE (bound) == INTEGER_CST)
+	      {
+		index = fold_convert (TREE_TYPE (bound), index);
+		if (TREE_CODE (index) == INTEGER_CST
+		    && tree_int_cst_le (index, bound))
+		  {
+		    replace_call_with_value (gsi, NULL_TREE);
+		    return true;
+		  }
+	      }
+	  }
 	  break;
 	case IFN_GOACC_DIM_SIZE:
 	case IFN_GOACC_DIM_POS:

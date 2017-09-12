@@ -1,3 +1,435 @@
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* gcc.target/powerpc/pr82112.c: New test.
+	* g++.dg/ext/altivec-18.C: New test.
+
+2017-09-12  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/82114
+	* gcc.dg/gimplefe-14.c (main): Add handling of case 0.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82157
+	* gcc.dg/torture/pr82157.c: New testcase.
+
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* gcc.target/mips/near-far-1.c: Add check for 'short_call'
+	attribute.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-c++-common/pr82112.c: New test.
+	* gcc.dg/pr82112.c: New test.
+
+2017-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/79441
+	* gnat.dg/pack9.adb: Robustify.
+
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	* gfortran.dg/associate_24.f90: New test.
+	* gfortran.dg/assumed_type_2.f90: Adjust some of the tree dump
+	checks.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+	* gfortran.dg/pointer_array_1.f90: New test.
+	* gfortran.dg/pointer_array_2.f90: New test.
+	* gfortran.dg/pointer_array_7.f90: New test.
+	* gfortran.dg/pointer_array_8.f90: New test.
+	* gfortran.dg/pointer_array_component_1.f90: New test.
+	* gfortran.dg/pointer_array_component_2.f90: New test.
+	* gfortran.dg/goacc/kernels-alias-4.f95: Bump up both tree scan
+	counts by 1.
+
+	PR fortran/40737
+	* gfortran.dg/pointer_array_3.f90: New test.
+
+	PR fortran/57116
+	* gfortran.dg/pointer_array_4.f90: New test.
+
+	PR fortran/55763
+	* gfortran.dg/pointer_array_5.f90: New test.
+
+	PR fortran/57019
+	* gfortran.dg/pointer_array_6.f90: New test.
+
+2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* g++.dg/cpp1y/feat-cxx11.C: Check __cpp_threadsafe_static_init.
+	* g++.dg/cpp1y/feat-cxx14.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx98.C: Likewise.
+	* g++.dg/cpp1y/feat-neg.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+
+2017-09-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug14.adb: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic3.ads: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/vfa.ads: Rename into...
+	* gnat.dg/specs/vfa1.ads: ...this.
+	* gnat.dg/specs/vfa2.ads: New test.
+
+2017-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pdt_1.f03 : New test.
+	* gfortran.dg/pdt_2.f03 : New test.
+	* gfortran.dg/pdt_3.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : New test.
+	* gfortran.dg/pdt_5.f03 : New test.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr81988.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt67.adb: New test.
+	* gnat.dg/opt67_pkg.ad[sb]: New helper.
+
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* gcc.dg/pr81979.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82126
+	* gnat.dg/alignment3.adb: Add pragma No_Component_Reordering.
+
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-thread-12.c: XFAIL third FSM threading
+	opportunity.
+
+2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-1.c: Update options to know that
+	-mfloat128 is now on by default on PowerPC VSX systems.  Remove
+	-static-libgcc option which is no longer needed.  Use -mvsx or
+	-mpower9-vector to enable VSX or hardware IEEE support, rather
+	than specifying a particular CPU.
+	* gcc.target/powerpc/float128-2.c: Likewise.
+	* gcc.target/powerpc/float128-cmp.c: Likewise.
+	* gcc.target/powerpc/float128-complex-1.c: Likewise.
+	* gcc.target/powerpc/float128-complex-2.c: Likewise.
+	* gcc.target/powerpc/float128-hw.c: Likewise.
+	* gcc.target/powerpc/float128-mix.c: Likewise.
+	* gcc.target/powerpc/float128-type-1.c: Likewise.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/float128-3.c: New test.
+	* gcc.target/powerpc/float128-4.c: Likewise.
+	* gcc.target/powerpc/float128-5.c: Likewise.
+
+2017-09-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/78468
+	* gcc.dg/pr78468.c: Add alignment test.
+
+2017-09-06  Wish Wu  <wishwu007@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/sancov/cmp0.c: New test.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20050604-1.c: Adjust to be a better
+	test for correctness of vector lowering.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82108
+	* gcc.dg/vect/pr82108.c: New testcase.
+
+2017-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82078
+	* gcc.dg/tree-ssa/pr82078.c: New test.
+
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82095
+	* gcc.dg/tls/pr82095.c: New test.
+
+2017-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-2.c: New test.
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-1.c: New test.
+
+2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81833
+	* gcc.target/powerpc/pr81833-1.c: New file.
+	* gcc.target/powerpc/pr81833-2.c: New file.
+
+2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59501
+	PR target/81624
+	PR target/81769
+	* gcc.target/i386/pr59501-4a.c: Remove xfail.
+	* gcc.target/i386/pr81769-1a.c: New test.
+	* gcc.target/i386/pr81769-1b.c: Likewise.
+	* gcc.target/i386/pr81769-2.c: Likewise.
+
+2017-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072-2.c: New test.
+
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* g++.dg/cpp1y/constexpr-return3.C: New.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete5.ad[sb]: New test.
+	* gnat.dg/incomplete5_pkg.ad[sb]: New helper.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/uc2.ads: New test.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/taft_type4.adb: New test.
+	* gnat.dg/taft_type4_pkg.ad[sb]: New helper.
+
+2017-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82102
+	* gcc.dg/torture/pr82102.c: New testcase.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/gnat.dg/array29.ad[sb]: New test.
+
+2017-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82032
+	* g++.dg/other/pr82032.C: New test.
+	* gcc.dg/tree-ssa/pr68198.c: Update scanned pattern.
+	* gcc.dg/tree-ssa/vrp34.c: Likewise.
+	* gcc.dg/switch-10.c: Likewise.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-os-support.h: New file.
+	* gcc.target/i386/mpx/mpx-check.h: Include mpx-os-support.h.
+
+2017-09-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* gcc.target/arm/pr77308-1.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* g++.dg/torture/pr82084.C: New testcase.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* c-c++-common/Wtautological-compare-5.c: New test.
+
+2017-09-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* gcc.dg/tree-ssa/pr64910-2.c: New test.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82060
+	* g++.dg/torture/pr82060.C: New testcase.
+
+2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57448
+	PR target/67458
+	PR target/81316
+	* gcc.dg/atomic/pr80640-2.c: New testcase.
+	* gcc.dg/atomic/pr81316.c: New testcase.
+
+2017-09-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c (fn2): Add parameters corresponding to
+	call in fn11.
+
+2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81981
+	* gcc.dg/ubsan/pr81981.c: New test.
+
+	PR tree-optimization/70043
+	PR testsuite/82093
+	* gfortran.dg/vect/pr70043.f90 (fn1): Start loop from 1 instead of 0.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/adx-check.h (main): Use __get_cpuid_count.
+	* gcc.target/i386/bmi-check.h (main): Ditto.
+	* gcc.target/i386/bmi2-check.h (main): Ditto.
+	* gcc.target/i386/rtm-check.h (main): Ditto.
+	* gcc.target/i386/sha-check.h (main): Ditto.
+	* gcc.target/i386/avx2-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.
+	* gcc.target/i386/avx512-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.  Reorder conditions.
+	* gcc.target/i386/mpx/mpx-check.h (check_osxsave): New function.
+	(main): Use check_osxsave.
+
+2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-check.h (main): Use __get_cpuid_count
+	and return NORUNRES on failure.
+	* gcc.target/i386/mpx/va-arg-pack-1-lbv.c (foo1): Use
+	__builtin_va_arg_pack instead of __va_arg_pack.
+	* gcc.target/i386/mpx/va-arg-pack-1-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-1-ubv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-lbv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-ubv.c (foo1): Ditto.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81766
+	* gcc.target/i386/pr81766.c: New test.
+
+2017-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* gcc.target/i386/excess-precision-7.c: New test.
+
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* gcc.target/s390/target-attribute/pr82012.c: New test.
+
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/const-in-bss.c: New test.
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81923
+	* gcc.dg/asan/pr81923.c: New test.
+
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82059
+	* gcc.dg/tree-ssa/pr82059.c: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/loop-1.c: Deleted.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/arc.exp: Test also cpp files.
+	* gcc.target/arc/tdelay_slots.cpp: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001184797.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* c-c++-common/gomp/pr81887.c: New test.
+	* gfortran.dg/gomp/pr81887.f90: New test.
+
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* g++.dg/warn/Wbool-operation-1.C: New test.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-5.c: New test.
+	* gcc.target/arc/arc700-stld-hazard.c: Update test options.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-3.c: New file.
+	* gcc.target/arc/sdata-4.c: Likewise.
+
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82054
+	* g++.dg/gomp/pr82054.C: New testcase.
+
+2017-08-31  Renlin Li  <renlin.li@arm.com>
+	    Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.dg/memcmp-1.c: Use memcpy instead of strcpy.
+
+2017-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81987
+	* g++.dg/torture/pr81987.C: New file.
+
+2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr22.ad[sb]: New test.
+
+2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/cr_shrink-wrap.c: New.
+
+2017-08-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/82015
+	* gcc.target/powerpc/pr82015.c: Fix up error message.
+
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
+	PR inline-asm/82001
+	* gcc.dg/ipa/pr82001.c: New test.
+
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/vrp104.c: Change dump file name.
+
+2017-08-30  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr78112-2.C: Do not expect duplicate DW_AT_object_pointer.
+
+2017-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/82015
+	* gcc.target/powerpc/pr82015.c: New test.
+
+2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/*.c: Remove excess braces from target selectors.
+
 2017-08-29  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/20030926-1.c: Add dg-additional-options.

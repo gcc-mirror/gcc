@@ -1339,21 +1339,21 @@ You would most commonly define this macro if the @code{allocate_stack}
 pattern needs to support both a 32- and a 64-bit mode.
 @end defmac
 
-@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_LIBGCC_CMP_RETURN_MODE (void)
 This target hook should return the mode to be used for the return value
 of compare instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_LIBGCC_SHIFT_COUNT_MODE (void)
 This target hook should return the mode to be used for the shift count operand
 of shift instructions expanded to libgcc calls.  If not defined
 @code{word_mode} is returned which is the right choice for a majority of
 targets.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_UNWIND_WORD_MODE (void)
+@deftypefn {Target Hook} scalar_int_mode TARGET_UNWIND_WORD_MODE (void)
 Return machine mode to be used for @code{_Unwind_Word} type.
 The default is to use @code{word_mode}.
 @end deftypefn
@@ -1869,16 +1869,19 @@ This macro is optional.  If not specified, it defaults to the value
 of @code{CALL_USED_REGISTERS}.
 @end defmac
 
-@defmac HARD_REGNO_CALL_PART_CLOBBERED (@var{regno}, @var{mode})
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-A C expression that is nonzero if it is not permissible to store a
-value of mode @var{mode} in hard register number @var{regno} across a
-call without some part of it being clobbered.  For most machines this
-macro need not be defined.  It is only required for machines that do not
-preserve the entire contents of a register across a call.
-@end defmac
+@deftypefn {Target Hook} bool TARGET_HARD_REGNO_CALL_PART_CLOBBERED (unsigned int @var{regno}, machine_mode @var{mode})
+This hook should return true if @var{regno} is partly call-saved and
+partly call-clobbered, and if a value of mode @var{mode} would be partly
+clobbered by a call.  For example, if the low 32 bits of @var{regno} are
+preserved across a call but higher bits are clobbered, this hook should
+return true for a 64-bit mode but false for a 32-bit mode.
+
+The default implementation returns false, which is correct
+for targets that don't have partly call-clobbered registers.
+@end deftypefn
 
 @findex fixed_regs
 @findex call_used_regs
@@ -2010,22 +2013,16 @@ This section discusses the macros that describe which kinds of values
 (specifically, which machine modes) each register can hold, and how many
 consecutive registers are needed for a given mode.
 
-@defmac HARD_REGNO_NREGS (@var{regno}, @var{mode})
-A C expression for the number of consecutive hard registers, starting
+@deftypefn {Target Hook} {unsigned int} TARGET_HARD_REGNO_NREGS (unsigned int @var{regno}, machine_mode @var{mode})
+This hook returns the number of consecutive hard registers, starting
 at register number @var{regno}, required to hold a value of mode
-@var{mode}.  This macro must never return zero, even if a register
-cannot hold the requested mode - indicate that with HARD_REGNO_MODE_OK
-and/or CANNOT_CHANGE_MODE_CLASS instead.
+@var{mode}.  This hook must never return zero, even if a register
+cannot hold the requested mode - indicate that with
+@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}
+instead.
 
-On a machine where all registers are exactly one word, a suitable
-definition of this macro is
-
-@smallexample
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-    / UNITS_PER_WORD)
-@end smallexample
-@end defmac
+The default definition returns the number of words in @var{mode}.
+@end deftypefn
 
 @defmac HARD_REGNO_NREGS_HAS_PADDING (@var{regno}, @var{mode})
 A C expression that is nonzero if a value of mode @var{mode}, stored
@@ -2033,7 +2030,7 @@ in memory, ends with padding that causes it to take up more space than
 in registers starting at register number @var{regno} (as determined by
 multiplying GCC's notion of the size of the register when containing
 this mode by the number of registers returned by
-@code{HARD_REGNO_NREGS}).  By default this is zero.
+@code{TARGET_HARD_REGNO_NREGS}).  By default this is zero.
 
 For example, if a floating-point value is stored in three 32-bit
 registers but takes up 128 bits in memory, then this would be
@@ -2063,22 +2060,18 @@ happens for example on SPARC 64-bit where the natural size of
 floating-point registers is still 32-bit.
 @end defmac
 
-@defmac HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
-A C expression that is nonzero if it is permissible to store a value
+@deftypefn {Target Hook} bool TARGET_HARD_REGNO_MODE_OK (unsigned int @var{regno}, machine_mode @var{mode})
+This hook returns true if it is permissible to store a value
 of mode @var{mode} in hard register number @var{regno} (or in several
-registers starting with that one).  For a machine where all registers
-are equivalent, a suitable definition is
-
-@smallexample
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-@end smallexample
+registers starting with that one).  The default definition returns true
+unconditionally.
 
 You need not include code to check for the numbers of fixed registers,
 because the allocation mechanism considers them to be always occupied.
 
 @cindex register pairs
 On some machines, double-precision values must be kept in even/odd
-register pairs.  You can implement that by defining this macro to reject
+register pairs.  You can implement that by defining this hook to reject
 odd register numbers for such modes.
 
 The minimum requirement for a mode to be OK in a register is that the
@@ -2088,11 +2081,11 @@ value into the register and back out not alter it.
 
 Since the same instruction used to move @code{word_mode} will work for
 all narrower integer modes, it is not necessary on any machine for
-@code{HARD_REGNO_MODE_OK} to distinguish between these modes, provided
-you define patterns @samp{movhi}, etc., to take advantage of this.  This
-is useful because of the interaction between @code{HARD_REGNO_MODE_OK}
-and @code{MODES_TIEABLE_P}; it is very desirable for all integer modes
-to be tieable.
+this hook to distinguish between these modes, provided you define
+patterns @samp{movhi}, etc., to take advantage of this.  This is
+useful because of the interaction between @code{TARGET_HARD_REGNO_MODE_OK}
+and @code{TARGET_MODES_TIEABLE_P}; it is very desirable for all integer
+modes to be tieable.
 
 Many machines have special registers for floating point arithmetic.
 Often people assume that floating point machine modes are allowed only
@@ -2105,16 +2098,16 @@ On some machines, though, the converse is true: fixed-point machine
 modes may not go in floating registers.  This is true if the floating
 registers normalize any value stored in them, because storing a
 non-floating value there would garble it.  In this case,
-@code{HARD_REGNO_MODE_OK} should reject fixed-point machine modes in
+@code{TARGET_HARD_REGNO_MODE_OK} should reject fixed-point machine modes in
 floating registers.  But if the floating registers do not automatically
 normalize, if you can store any bit pattern in one and retrieve it
 unchanged without a trap, then any machine mode may go in a floating
-register, so you can define this macro to say so.
+register, so you can define this hook to say so.
 
 The primary significance of special floating registers is rather that
 they are the registers acceptable in floating point arithmetic
 instructions.  However, this is of no concern to
-@code{HARD_REGNO_MODE_OK}.  You handle it by writing the proper
+@code{TARGET_HARD_REGNO_MODE_OK}.  You handle it by writing the proper
 constraints for those instructions.
 
 On some machines, the floating registers are especially slow to access,
@@ -2122,7 +2115,7 @@ so that it is better to store a value in a stack frame than in such a
 register if floating point arithmetic is not being done.  As long as the
 floating registers are not in class @code{GENERAL_REGS}, they will not
 be used unless some pattern's constraint asks for one.
-@end defmac
+@end deftypefn
 
 @defmac HARD_REGNO_RENAME_OK (@var{from}, @var{to})
 A C expression that is nonzero if it is OK to rename a hard register
@@ -2135,21 +2128,22 @@ handler.
 The default is always nonzero.
 @end defmac
 
-@defmac MODES_TIEABLE_P (@var{mode1}, @var{mode2})
-A C expression that is nonzero if a value of mode
-@var{mode1} is accessible in mode @var{mode2} without copying.
+@deftypefn {Target Hook} bool TARGET_MODES_TIEABLE_P (machine_mode @var{mode1}, machine_mode @var{mode2})
+This hook returns true if a value of mode @var{mode1} is accessible
+in mode @var{mode2} without copying.
 
-If @code{HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
-@code{HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always the same for
-any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
-should be nonzero.  If they differ for any @var{r}, you should define
-this macro to return zero unless some other mechanism ensures the
+If @code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
+@code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always
+the same for any @var{r}, then
+@code{TARGET_MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
+should be true.  If they differ for any @var{r}, you should define
+this hook to return false unless some other mechanism ensures the
 accessibility of the value in a narrower mode.
 
-You should define this macro to return nonzero in as many cases as
+You should define this hook to return true in as many cases as
 possible since doing so will allow GCC to perform better register
-allocation.
-@end defmac
+allocation.  The default definition returns true unconditionally.
+@end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_HARD_REGNO_SCRATCH_OK (unsigned int @var{regno})
 This target hook should return @code{true} if it is OK to use a hard register
@@ -2328,7 +2322,7 @@ When a value occupying several consecutive registers is expected in a
 certain class, all the registers used must belong to that class.
 Therefore, register classes cannot be used to enforce a requirement for
 a register pair to start with an even-numbered register.  The way to
-specify this requirement is with @code{HARD_REGNO_MODE_OK}.
+specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK}.
 
 Register classes used for input-operands of bitwise-and or shift
 instructions have a special requirement: each such class must have, for
@@ -2797,10 +2791,10 @@ pressure.
 A target hook returns the maximum number of consecutive registers
 of class @var{rclass} needed to hold a value of mode @var{mode}.
 
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
-the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.
+In fact, the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},
 @var{mode})} target hook should be the maximum value of
-@code{HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}
+@code{TARGET_HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}
 values in the class @var{rclass}.
 
 This target hook helps control the handling of multiple-word values
@@ -2814,9 +2808,9 @@ in words.
 A C expression for the maximum number of consecutive registers
 of class @var{class} needed to hold a value of mode @var{mode}.
 
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.  In fact,
 the value of the macro @code{CLASS_MAX_NREGS (@var{class}, @var{mode})}
-should be the maximum value of @code{HARD_REGNO_NREGS (@var{regno},
+should be the maximum value of @code{TARGET_HARD_REGNO_NREGS (@var{regno},
 @var{mode})} for all @var{regno} values in the class @var{class}.
 
 This macro helps control the handling of multiple-word values
@@ -2902,7 +2896,7 @@ This hook defines a class of registers which could be used for spilling  pseudos
 This hook should return @code{true} if given class of registers should  be an allocno class in any way.  Usually RA uses only one register  class from all classes containing the same register set.  In some  complicated cases, you need to have two or more such classes as  allocno ones for RA correct work.  Not defining this hook is  equivalent to returning @code{false} for all inputs.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
+@deftypefn {Target Hook} scalar_int_mode TARGET_CSTORE_MODE (enum insn_code @var{icode})
 This hook defines the machine mode to use for the boolean result of  conditional store patterns.  The ICODE argument is the instruction code  for the cstore being performed.  Not definiting this hook is the same  as accepting the mode encoded into operand 0 of the cstore expander  patterns.
 @end deftypefn
 
@@ -4095,21 +4089,21 @@ slot that is in the middle of the quad word instead of starting at the
 top.
 @end defmac
 
-@defmac FUNCTION_ARG_PADDING (@var{mode}, @var{type})
-If defined, a C expression which determines whether, and in which direction,
-to pad out an argument with extra space.  The value should be of type
-@code{enum direction}: either @code{upward} to pad above the argument,
-@code{downward} to pad below, or @code{none} to inhibit padding.
+@deftypefn {Target Hook} pad_direction TARGET_FUNCTION_ARG_PADDING (machine_mode @var{mode}, const_tree @var{type})
+This hook determines whether, and in which direction, to pad out
+an argument of mode @var{mode} and type @var{type}.  It returns
+@code{PAD_UPWARD} to insert padding above the argument, @code{PAD_DOWNWARD}
+to insert padding below the argument, or @code{PAD_NONE} to inhibit padding.
 
-The @emph{amount} of padding is not controlled by this macro, but by the
-target hook @code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is
-always just enough to reach the next multiple of that boundary. 
+The @emph{amount} of padding is not controlled by this hook, but by
+@code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is always just enough
+to reach the next multiple of that boundary.
 
-This macro has a default definition which is right for most systems.
+This hook has a default definition that is right for most systems.
 For little-endian machines, the default is to pad upward.  For
 big-endian machines, the default is to pad downward for an argument of
 constant size shorter than an @code{int}, and upward otherwise.
-@end defmac
+@end deftypefn
 
 @defmac PAD_VARARGS_DOWN
 If defined, a C expression which determines whether the default
@@ -4203,7 +4197,7 @@ arguments to @code{va_arg}; the latter two are as in
 @code{gimplify.c:gimplify_expr}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_VALID_POINTER_MODE (scalar_int_mode @var{mode})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode}.  The default version of this
 hook returns true for both @code{ptr_mode} and @code{Pmode}.
@@ -4213,7 +4207,7 @@ hook returns true for both @code{ptr_mode} and @code{Pmode}.
 Define this to return nonzero if the memory reference @var{ref}  may alias with the system C library errno location.  The default  version of this hook assumes the system C library errno location  is either a declaration of type int or accessed by dereferencing  a pointer to int.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_SCALAR_MODE_SUPPORTED_P (scalar_mode @var{mode})
 Define this to return nonzero if the port is prepared to handle
 insns involving scalar mode @var{mode}.  For a scalar mode to be
 considered supported, all the basic arithmetic and comparisons
@@ -4259,7 +4253,7 @@ If this hook allows @code{val} to have a scalar mode, then
 @code{int8x8x3_t}s in registers rather than forcing them onto the stack.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (machine_mode @var{mode})
+@deftypefn {Target Hook} bool TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P (scalar_float_mode @var{mode})
 Define this to return nonzero if libgcc provides support for the 
 floating-point mode @var{mode}, which is known to pass 
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this 
@@ -4267,22 +4261,22 @@ hook returns true for all of @code{SFmode}, @code{DFmode},
 @code{XFmode} and @code{TFmode}, if such modes exist.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
+@deftypefn {Target Hook} opt_scalar_float_mode TARGET_FLOATN_MODE (int @var{n}, bool @var{extended})
 Define this to return the machine mode to use for the type 
 @code{_Float@var{n}}, if @var{extended} is false, or the type 
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type 
-is not supported, return @code{VOIDmode}.  The default version of this 
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for 
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not
+supported, return @code{opt_scalar_float_mode ()}.  The default version of
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for 
 @code{_Float128}, if those modes exist and satisfy the requirements for 
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and 
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it 
 returns the first of @code{XFmode} and @code{TFmode} that exists and 
 satisfies the same requirements; for other types, it returns 
-@code{VOIDmode}.  The hook is only called for values of @var{n} and 
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that 
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or 
-greater than 128 and a multiple of 32.
+@code{opt_scalar_float_mode ()}.  The hook is only called for values
+of @var{n} and @var{extended} that are valid according to
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P (machine_mode @var{mode})
@@ -5805,7 +5799,7 @@ the elements in the vectors should be of type @var{type}.  @var{is_packed}
 parameter is true if the memory access is defined in a packed struct.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (machine_mode @var{mode})
+@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_PREFERRED_SIMD_MODE (scalar_mode @var{mode})
 This hook should return the preferred mode for vectorizing scalar
 mode @var{mode}.  The default is
 equal to @code{word_mode}, because the vectorizer can do some
@@ -5819,10 +5813,16 @@ mode returned by @code{TARGET_VECTORIZE_PREFERRED_SIMD_MODE}.
 The default is zero which means to not iterate over other vector sizes.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
-This hook returns mode to be used for a mask to be used for a vector
-of specified @var{length} with @var{nunits} elements.  By default an integer
-vector mode of a proper size is returned.
+@deftypefn {Target Hook} opt_machine_mode TARGET_VECTORIZE_GET_MASK_MODE (unsigned @var{nunits}, unsigned @var{length})
+A vector mask is a value that holds one boolean result for every element
+in a vector.  This hook returns the machine mode that should be used to
+represent such a mask when the vector in question is @var{length} bytes
+long and contains @var{nunits} elements.  The hook returns an empty
+@code{opt_machine_mode} if no such mode exists.
+
+The default implementation returns the mode of an integer vector that
+is @var{length} bytes long and that contains @var{nunits} elements,
+if such a mode exists.
 @end deftypefn
 
 @deftypefn {Target Hook} {void *} TARGET_VECTORIZE_INIT_COST (struct loop *@var{loop_info})
@@ -6379,23 +6379,22 @@ may eliminate subsequent memory access if subsequent accesses occur to
 other fields in the same word of the structure, but to different bytes.
 @end defmac
 
-@defmac SLOW_UNALIGNED_ACCESS (@var{mode}, @var{alignment})
-Define this macro to be the value 1 if memory accesses described by the
+@deftypefn {Target Hook} bool TARGET_SLOW_UNALIGNED_ACCESS (machine_mode @var{mode}, unsigned int @var{align})
+This hook returns true if memory accesses described by the
 @var{mode} and @var{alignment} parameters have a cost many times greater
-than aligned accesses, for example if they are emulated in a trap
-handler.  This macro is invoked only for unaligned accesses, i.e. when
+than aligned accesses, for example if they are emulated in a trap handler.
+This hook is invoked only for unaligned accesses, i.e. when
 @code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.
 
-When this macro is nonzero, the compiler will act as if
-@code{STRICT_ALIGNMENT} were nonzero when generating code for block
+When this hook returns true, the compiler will act as if
+@code{STRICT_ALIGNMENT} were true when generating code for block
 moves.  This can cause significantly more instructions to be produced.
-Therefore, do not set this macro nonzero if unaligned accesses only add a
-cycle or two to the time for a memory access.
+Therefore, do not make this hook return true if unaligned accesses only
+add a cycle or two to the time for a memory access.
 
-If the value of this macro is always zero, it need not be defined.  If
-this macro is defined, it should produce a nonzero value when
-@code{STRICT_ALIGNMENT} is nonzero.
-@end defmac
+The hook must return true whenever @code{STRICT_ALIGNMENT} is true.
+The default implementation returns @code{STRICT_ALIGNMENT}.
+@end deftypefn
 
 @defmac MOVE_RATIO (@var{speed})
 The threshold of number of scalar memory-to-memory move insns, @emph{below}
@@ -10527,19 +10526,19 @@ named address space #1:
 c_register_addr_space ("__ea", ADDR_SPACE_EA);
 @end smallexample
 
-@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_POINTER_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for pointers to
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{ptr_mode}.
 @end deftypefn
 
-@deftypefn {Target Hook} machine_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
+@deftypefn {Target Hook} scalar_int_mode TARGET_ADDR_SPACE_ADDRESS_MODE (addr_space_t @var{address_space})
 Define this to return the machine mode to use for addresses in
 @var{address_space} if the target supports named address spaces.
 The default version of this hook returns @code{Pmode}.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (machine_mode @var{mode}, addr_space_t @var{as})
+@deftypefn {Target Hook} bool TARGET_ADDR_SPACE_VALID_POINTER_MODE (scalar_int_mode @var{mode}, addr_space_t @var{as})
 Define this to return nonzero if the port can handle pointers
 with machine mode @var{mode} to address space @var{as}.  This target
 hook is the same as the @code{TARGET_VALID_POINTER_MODE} target hook,
@@ -10796,13 +10795,13 @@ On many machines, this expression can be 1.
 
 @c rearranged this, removed the phrase "it is reported that".  this was
 @c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for
-modes for which @code{MODES_TIEABLE_P} is 0, suboptimal code can result.
+When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
+for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
 If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
 such cases may improve things.
 @end defmac
 
-@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (machine_mode @var{mode}, machine_mode @var{rep_mode})
+@deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (scalar_int_mode @var{mode}, scalar_int_mode @var{rep_mode})
 The representation of an integral mode can be such that the values
 are always extended to a wider integral mode.  Return
 @code{SIGN_EXTEND} if values of @var{mode} are represented in

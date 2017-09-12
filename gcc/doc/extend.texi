@@ -4528,10 +4528,12 @@ void __attribute__ ((interrupt("vector=hw3"))) v9 ();
 @end smallexample
 
 @item long_call
+@itemx short_call
 @itemx near
 @itemx far
 @cindex indirect calls, MIPS
 @cindex @code{long_call} function attribute, MIPS
+@cindex @code{short_call} function attribute, MIPS
 @cindex @code{near} function attribute, MIPS
 @cindex @code{far} function attribute, MIPS
 These attributes specify how a particular function is called on MIPS@.
@@ -4539,8 +4541,9 @@ The attributes override the @option{-mlong-calls} (@pxref{MIPS Options})
 command-line switch.  The @code{long_call} and @code{far} attributes are
 synonyms, and cause the compiler to always call
 the function by first loading its address into a register, and then using
-the contents of that register.  The @code{near} attribute has the opposite
-effect; it specifies that non-PIC calls should be made using the more
+the contents of that register.  The @code{short_call} and @code{near}
+attributes are synonyms, and have the opposite
+effect; they specify that non-PIC calls should be made using the more
 efficient @code{jal} instruction.
 
 @item mips16

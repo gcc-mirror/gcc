@@ -231,11 +231,15 @@ struct pad_type_hasher : ggc_cache_ptr_hash<pad_type_hash>
 {
   static inline hashval_t hash (pad_type_hash *t) { return t->hash; }
   static bool equal (pad_type_hash *a, pad_type_hash *b);
-  static int keep_cache_entry (pad_type_hash *&);
+
+  static int
+  keep_cache_entry (pad_type_hash *&t)
+  {
+    return ggc_marked_p (t->type);
+  }
 };
 
-static GTY ((cache))
-  hash_table<pad_type_hasher> *pad_type_hash_table;
+static GTY ((cache)) hash_table<pad_type_hasher> *pad_type_hash_table;
 
 static tree merge_sizes (tree, tree, tree, bool, bool);
 static tree fold_bit_position (const_tree);
@@ -750,7 +754,7 @@ gnat_pushdecl (tree decl, Node_Id gnat_node)
   TREE_NO_WARNING (decl) = (No (gnat_node) || Warnings_Off (gnat_node));
 
   /* Set the location of DECL and emit a declaration for it.  */
-  if (Present (gnat_node) && !renaming_from_generic_instantiation_p (gnat_node))
+  if (Present (gnat_node) && !renaming_from_instantiation_p (gnat_node))
     Sloc_to_locus (Sloc (gnat_node), &DECL_SOURCE_LOCATION (decl));
 
   add_decl_expr (decl, gnat_node);
@@ -1076,7 +1080,8 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
      in case the record itself contains a BLKmode field.  */
   if (in_record && TYPE_MODE (new_type) == BLKmode)
     SET_TYPE_MODE (new_type,
-		   mode_for_size_tree (TYPE_SIZE (new_type), MODE_INT, 1));
+		   mode_for_size_tree (TYPE_SIZE (new_type),
+				       MODE_INT, 1).else_blk ());
 
   /* If neither mode nor size nor alignment shrunk, return the old type.  */
   if (TYPE_MODE (new_type) == BLKmode && new_size >= size && max_align == 0)
@@ -1166,8 +1171,9 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
 	 may need to return the thin pointer.  */
       if (TYPE_FAT_POINTER_P (type) && size < POINTER_SIZE * 2)
 	{
-	  machine_mode p_mode = mode_for_size (size, MODE_INT, 0);
-	  if (!targetm.valid_pointer_mode (p_mode))
+	  scalar_int_mode p_mode;
+	  if (!int_mode_for_size (size, 0).exists (&p_mode)
+	      || !targetm.valid_pointer_mode (p_mode))
 	    p_mode = ptr_mode;
 	  return
 	    build_pointer_type_for_mode
@@ -1189,14 +1195,6 @@ make_type_from_size (tree type, tree size_tree, bool for_biased)
     }
 
   return type;
-}
-
-/* See if the data pointed to by the hash table slot is marked.  */
-
-int
-pad_type_hasher::keep_cache_entry (pad_type_hash *&t)
-{
-  return ggc_marked_p (t->type);
 }
 
 /* Return true iff the padded types are equivalent.  */
@@ -2898,10 +2896,10 @@ value_factor_p (tree value, HOST_WIDE_INT factor)
    initialization is likely to disturb debugging.  */
 
 bool
-renaming_from_generic_instantiation_p (Node_Id gnat_node)
+renaming_from_instantiation_p (Node_Id gnat_node)
 {
   if (Nkind (gnat_node) != N_Defining_Identifier
-      || !IN (Ekind (gnat_node), Object_Kind)
+      || !Is_Object (gnat_node)
       || Comes_From_Source (gnat_node)
       || !Present (Renamed_Object (gnat_node)))
     return false;
@@ -3464,11 +3462,14 @@ gnat_type_for_mode (machine_mode mode, int unsignedp)
   if (COMPLEX_MODE_P (mode))
     return NULL_TREE;
 
-  if (SCALAR_FLOAT_MODE_P (mode))
-    return float_type_for_precision (GET_MODE_PRECISION (mode), mode);
+  scalar_float_mode float_mode;
+  if (is_a <scalar_float_mode> (mode, &float_mode))
+    return float_type_for_precision (GET_MODE_PRECISION (float_mode),
+				     float_mode);
 
-  if (SCALAR_INT_MODE_P (mode))
-    return gnat_type_for_size (GET_MODE_BITSIZE (mode), unsignedp);
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (mode, &int_mode))
+    return gnat_type_for_size (GET_MODE_BITSIZE (int_mode), unsignedp);
 
   if (VECTOR_MODE_P (mode))
     {
@@ -4218,8 +4219,6 @@ convert (tree type, tree expr)
      constructor to build the record, unless a variable size is involved.  */
   else if (code == RECORD_TYPE && TYPE_PADDING_P (type))
     {
-      vec<constructor_elt, va_gc> *v;
-
       /* If we previously converted from another type and our type is
 	 of variable size, remove the conversion to avoid the need for
 	 variable-sized temporaries.  Likewise for a conversion between
@@ -4271,9 +4270,21 @@ convert (tree type, tree expr)
 					   expr),
 				  false);
 
+      tree t = convert (TREE_TYPE (TYPE_FIELDS (type)), expr);
+
+      /* If converting to the inner type has already created a CONSTRUCTOR with
+         the right size, then reuse it instead of creating another one.  This
+         can happen for the padding type built to overalign local variables.  */
+      if (TREE_CODE (t) == VIEW_CONVERT_EXPR
+	  && TREE_CODE (TREE_OPERAND (t, 0)) == CONSTRUCTOR
+	  && TREE_CONSTANT (TYPE_SIZE (TREE_TYPE (TREE_OPERAND (t, 0))))
+	  && tree_int_cst_equal (TYPE_SIZE (type),
+				 TYPE_SIZE (TREE_TYPE (TREE_OPERAND (t, 0)))))
+	return build1 (VIEW_CONVERT_EXPR, type, TREE_OPERAND (t, 0));
+
+      vec<constructor_elt, va_gc> *v;
       vec_alloc (v, 1);
-      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type),
-			      convert (TREE_TYPE (TYPE_FIELDS (type)), expr));
+      CONSTRUCTOR_APPEND_ELT (v, TYPE_FIELDS (type), t);
       return gnat_build_constructor (type, v);
     }
 
@@ -5257,20 +5268,26 @@ unchecked_convert (tree type, tree expr, bool notrunc_p)
 					? TYPE_RM_SIZE (etype)
 					: TYPE_SIZE (etype)) == 0)))
     {
-      tree base_type
-	= gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
-			      type_unsigned_for_rm (type));
-      tree shift_expr
-	= convert (base_type,
-		   size_binop (MINUS_EXPR,
-			       TYPE_SIZE (type), TYPE_RM_SIZE (type)));
-      expr
-	= convert (type,
-		   build_binary_op (RSHIFT_EXPR, base_type,
-				    build_binary_op (LSHIFT_EXPR, base_type,
-						     convert (base_type, expr),
-						     shift_expr),
-				    shift_expr));
+      if (integer_zerop (TYPE_RM_SIZE (type)))
+	expr = build_int_cst (type, 0);
+      else
+	{
+	  tree base_type
+	    = gnat_type_for_size (TREE_INT_CST_LOW (TYPE_SIZE (type)),
+				  type_unsigned_for_rm (type));
+	  tree shift_expr
+	    = convert (base_type,
+		       size_binop (MINUS_EXPR,
+				   TYPE_SIZE (type), TYPE_RM_SIZE (type)));
+	  expr
+	    = convert (type,
+		       build_binary_op (RSHIFT_EXPR, base_type,
+				        build_binary_op (LSHIFT_EXPR, base_type,
+							 convert (base_type,
+								  expr),
+							 shift_expr),
+				        shift_expr));
+	}
     }
 
   /* An unchecked conversion should never raise Constraint_Error.  The code

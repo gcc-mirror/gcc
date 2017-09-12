@@ -556,58 +556,12 @@
    50, 51, 52,                             /* flags, arg, frame */ \
    0, 34 }                                 /* r0, f0 */
 
-/* `HARD_REGNO_NREGS (REGNO, MODE)'
-
-   A C expression for the number of consecutive hard registers,
-   starting at register number REGNO, required to hold a value of mode
-   MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((REGNO) == MDB_REGNUM ?                    \
-  ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* `HARD_REGNO_RENAME_OK (OLD_REG, NEW_REG)'
 
    A C expression which is nonzero if hard register NEW_REG can be
    considered for use as a rename register for hard register OLD_REG. */
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   visium_hard_regno_rename_ok (OLD_REG, NEW_REG)
-
-/*  `HARD_REGNO_MODE_OK (REGNO, MODE)'
-
-    A C expression that is nonzero if it is permissible to store a
-    value of mode MODE in hard register number REGNO (or in several
-    registers starting with that one). 
-
-    Modes with sizes which cross from the one register class to the
-    other cannot be allowed. Only single floats are allowed in the
-    floating point registers, and only fixed point values in the EAM
-    registers. */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)                         \
- (GP_REGISTER_P (REGNO) ?                                       \
-     GP_REGISTER_P (REGNO + HARD_REGNO_NREGS (REGNO, MODE) - 1) \
-  : FP_REGISTER_P (REGNO) ?                                     \
-     (MODE) == SFmode || ((MODE) == SImode && TARGET_FPU_IEEE)  \
-  : GET_MODE_CLASS (MODE) == MODE_INT                           \
-    && HARD_REGNO_NREGS (REGNO, MODE) == 1)
-
-/* `MODES_TIEABLE_P (MODE1, MODE2)'
-
-   A C expression that is nonzero if a value of mode MODE1 is
-   accessible in mode MODE2 without copying.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are always the same for any R, then `MODES_TIEABLE_P
-   (MODE1, MODE2)' should be nonzero.  If they differ for any R, you
-   should define this macro to return zero unless some other mechanism
-   ensures the accessibility of the value in a narrower mode.
-
-   You should define this macro to return nonzero in as many cases as
-   possible since doing so will allow GNU CC to perform better
-   register allocation. */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((GET_MODE_CLASS (MODE1) == MODE_INT) \
-  && (GET_MODE_CLASS (MODE2) == MODE_INT))
 
 /* Register Classes
 
@@ -787,18 +741,6 @@ enum reg_class
 #define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
   (CLASS == MDB ? (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)) : 0)
 
-/* `CLASS_MAX_NREGS (CLASS, MODE)'
-
-   A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact,
-   the value of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be
-   the maximum value of `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO
-   values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)    \
   ((CLASS) == MDB ?                     \
   ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
@@ -1288,7 +1230,7 @@ do									\
    On many machines, this expression can be 1.
 
    When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
-   modes for which `MODES_TIEABLE_P' is 0, suboptimal code can result.
+   modes for which `TARGET_MODES_TIEABLE_P' is 0, suboptimal code can result.
    If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
    such cases may improve things. */
 #define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
@@ -1528,13 +1470,13 @@ do									\
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)  		\
   switch (GET_MODE (BODY))						\
     {									\
-    case SImode:							\
+    case E_SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case HImode:							\
+    case E_HImode:							\
       asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case QImode:							\
+    case E_QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
     default:								\

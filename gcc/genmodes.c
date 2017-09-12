@@ -983,7 +983,7 @@ mode_size_inline (machine_mode mode)\n\
 
   for_all_modes (c, m)
     if (!m->need_bytesize_adj)
-      printf ("    case %smode: return %u;\n", m->name, m->bytesize);
+      printf ("    case E_%smode: return %u;\n", m->name, m->bytesize);
 
   puts ("\
     default: return mode_size[mode];\n\
@@ -1013,7 +1013,7 @@ mode_nunits_inline (machine_mode mode)\n\
     {");
 
   for_all_modes (c, m)
-    printf ("    case %smode: return %u;\n", m->name, m->ncomponents);
+    printf ("    case E_%smode: return %u;\n", m->name, m->ncomponents);
 
   puts ("\
     default: return mode_nunits[mode];\n\
@@ -1043,7 +1043,7 @@ mode_inner_inline (machine_mode mode)\n\
     {");
 
   for_all_modes (c, m)
-    printf ("    case %smode: return %smode;\n", m->name,
+    printf ("    case E_%smode: return E_%smode;\n", m->name,
 	    c != MODE_PARTIAL_INT && m->component
 	    ? m->component->name : m->name);
 
@@ -1082,7 +1082,7 @@ mode_unit_size_inline (machine_mode mode)\n\
       if (c != MODE_PARTIAL_INT && m2->component)
 	m2 = m2->component;
       if (!m2->need_bytesize_adj)
-	printf ("    case %smode: return %u;\n", name, m2->bytesize);
+	printf ("    case E_%smode: return %u;\n", name, m2->bytesize);
     }
 
   puts ("\
@@ -1117,9 +1117,9 @@ mode_unit_precision_inline (machine_mode mode)\n\
       struct mode_data *m2
 	= (c != MODE_PARTIAL_INT && m->component) ? m->component : m;
       if (m2->precision != (unsigned int)-1)
-	printf ("    case %smode: return %u;\n", m->name, m2->precision);
+	printf ("    case E_%smode: return %u;\n", m->name, m2->precision);
       else
-	printf ("    case %smode: return %u*BITS_PER_UNIT;\n",
+	printf ("    case E_%smode: return %u*BITS_PER_UNIT;\n",
 		m->name, m2->bytesize);
     }
 
@@ -1127,6 +1127,38 @@ mode_unit_precision_inline (machine_mode mode)\n\
     default: return mode_unit_precision[mode];\n\
     }\n\
 }\n");
+}
+
+/* Return the best machine mode class for MODE, or null if machine_mode
+   should be used.  */
+
+static const char *
+get_mode_class (struct mode_data *mode)
+{
+  switch (mode->cl)
+    {
+    case MODE_INT:
+    case MODE_PARTIAL_INT:
+      return "scalar_int_mode";
+
+    case MODE_FRACT:
+    case MODE_UFRACT:
+    case MODE_ACCUM:
+    case MODE_UACCUM:
+    case MODE_POINTER_BOUNDS:
+      return "scalar_mode";
+
+    case MODE_FLOAT:
+    case MODE_DECIMAL_FLOAT:
+      return "scalar_float_mode";
+
+    case MODE_COMPLEX_INT:
+    case MODE_COMPLEX_FLOAT:
+      return "complex_mode";
+
+    default:
+      return NULL;
+    }
 }
 
 static void
@@ -1151,10 +1183,20 @@ enum machine_mode\n{");
   for (c = 0; c < MAX_MODE_CLASS; c++)
     for (m = modes[c]; m; m = m->next)
       {
-	int count_ = printf ("  %smode,", m->name);
+	int count_ = printf ("  E_%smode,", m->name);
 	printf ("%*s/* %s:%d */\n", 27 - count_, "",
 		 trim_filename (m->file), m->line);
 	printf ("#define HAVE_%smode\n", m->name);
+	printf ("#ifdef USE_ENUM_MODES\n");
+	printf ("#define %smode E_%smode\n", m->name, m->name);
+	printf ("#else\n");
+	if (const char *mode_class = get_mode_class (m))
+	  printf ("#define %smode (%s ((%s::from_int) E_%smode))\n",
+		  m->name, mode_class, mode_class, m->name);
+	else
+	  printf ("#define %smode ((void) 0, E_%smode)\n",
+		  m->name, m->name);
+	printf ("#endif\n");
       }
 
   puts ("  MAX_MACHINE_MODE,\n");
@@ -1174,11 +1216,11 @@ enum machine_mode\n{");
 	first = first->next;
 
       if (first && last)
-	printf ("  MIN_%s = %smode,\n  MAX_%s = %smode,\n\n",
+	printf ("  MIN_%s = E_%smode,\n  MAX_%s = E_%smode,\n\n",
 		 mode_class_names[c], first->name,
 		 mode_class_names[c], last->name);
       else
-	printf ("  MIN_%s = %smode,\n  MAX_%s = %smode,\n\n",
+	printf ("  MIN_%s = E_%smode,\n  MAX_%s = E_%smode,\n\n",
 		 mode_class_names[c], void_mode->name,
 		 mode_class_names[c], void_mode->name);
     }
@@ -1350,7 +1392,7 @@ emit_mode_wider (void)
   print_decl ("unsigned char", "mode_wider", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    tagged_printf ("%smode",
+    tagged_printf ("E_%smode",
 		   m->wider ? m->wider->name : void_mode->name,
 		   m->name);
 
@@ -1397,7 +1439,7 @@ emit_mode_wider (void)
 	}
       if (m2 == void_mode)
 	m2 = 0;
-      tagged_printf ("%smode",
+      tagged_printf ("E_%smode",
 		     m2 ? m2->name : void_mode->name,
 		     m->name);
     }
@@ -1414,7 +1456,7 @@ emit_mode_complex (void)
   print_decl ("unsigned char", "mode_complex", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    tagged_printf ("%smode",
+    tagged_printf ("E_%smode",
 		   m->complex ? m->complex->name : void_mode->name,
 		   m->name);
 
@@ -1454,7 +1496,7 @@ emit_mode_inner (void)
   print_decl ("unsigned char", "mode_inner", "NUM_MACHINE_MODES");
 
   for_all_modes (c, m)
-    tagged_printf ("%smode",
+    tagged_printf ("E_%smode",
 		   c != MODE_PARTIAL_INT && m->component
 		   ? m->component->name : m->name,
 		   m->name);
@@ -1597,9 +1639,9 @@ emit_mode_adjustments (void)
     {
       printf ("\n  /* %s:%d */\n  s = %s;\n",
 	      a->file, a->line, a->adjustment);
-      printf ("  mode_size[%smode] = s;\n", a->mode->name);
-      printf ("  mode_unit_size[%smode] = s;\n", a->mode->name);
-      printf ("  mode_base_align[%smode] = s & (~s + 1);\n",
+      printf ("  mode_size[E_%smode] = s;\n", a->mode->name);
+      printf ("  mode_unit_size[E_%smode] = s;\n", a->mode->name);
+      printf ("  mode_base_align[E_%smode] = s & (~s + 1);\n",
 	      a->mode->name);
 
       for (m = a->mode->contained; m; m = m->next_cont)
@@ -1608,9 +1650,9 @@ emit_mode_adjustments (void)
 	    {
 	    case MODE_COMPLEX_INT:
 	    case MODE_COMPLEX_FLOAT:
-	      printf ("  mode_size[%smode] = 2*s;\n", m->name);
-	      printf ("  mode_unit_size[%smode] = s;\n", m->name);
-	      printf ("  mode_base_align[%smode] = s & (~s + 1);\n",
+	      printf ("  mode_size[E_%smode] = 2*s;\n", m->name);
+	      printf ("  mode_unit_size[E_%smode] = s;\n", m->name);
+	      printf ("  mode_base_align[E_%smode] = s & (~s + 1);\n",
 		      m->name);
 	      break;
 
@@ -1620,10 +1662,10 @@ emit_mode_adjustments (void)
 	    case MODE_VECTOR_UFRACT:
 	    case MODE_VECTOR_ACCUM:
 	    case MODE_VECTOR_UACCUM:
-	      printf ("  mode_size[%smode] = %d*s;\n",
+	      printf ("  mode_size[E_%smode] = %d*s;\n",
 		      m->name, m->ncomponents);
-	      printf ("  mode_unit_size[%smode] = s;\n", m->name);
-	      printf ("  mode_base_align[%smode] = (%d*s) & (~(%d*s)+1);\n",
+	      printf ("  mode_unit_size[E_%smode] = s;\n", m->name);
+	      printf ("  mode_base_align[E_%smode] = (%d*s) & (~(%d*s)+1);\n",
 		      m->name, m->ncomponents, m->ncomponents);
 	      break;
 
@@ -1642,7 +1684,7 @@ emit_mode_adjustments (void)
     {
       printf ("\n  /* %s:%d */\n  s = %s;\n",
 	      a->file, a->line, a->adjustment);
-      printf ("  mode_base_align[%smode] = s;\n", a->mode->name);
+      printf ("  mode_base_align[E_%smode] = s;\n", a->mode->name);
 
       for (m = a->mode->contained; m; m = m->next_cont)
 	{
@@ -1650,7 +1692,7 @@ emit_mode_adjustments (void)
 	    {
 	    case MODE_COMPLEX_INT:
 	    case MODE_COMPLEX_FLOAT:
-	      printf ("  mode_base_align[%smode] = s;\n", m->name);
+	      printf ("  mode_base_align[E_%smode] = s;\n", m->name);
 	      break;
 
 	    case MODE_VECTOR_INT:
@@ -1659,7 +1701,7 @@ emit_mode_adjustments (void)
 	    case MODE_VECTOR_UFRACT:
 	    case MODE_VECTOR_ACCUM:
 	    case MODE_VECTOR_UACCUM:
-	      printf ("  mode_base_align[%smode] = %d*s;\n",
+	      printf ("  mode_base_align[E_%smode] = %d*s;\n",
 		      m->name, m->ncomponents);
 	      break;
 
@@ -1677,7 +1719,7 @@ emit_mode_adjustments (void)
     {
       printf ("\n  /* %s:%d */\n  s = %s;\n",
 	      a->file, a->line, a->adjustment);
-      printf ("  mode_ibit[%smode] = s;\n", a->mode->name);
+      printf ("  mode_ibit[E_%smode] = s;\n", a->mode->name);
     }
 
   /* Fbit adjustments don't have to propagate.  */
@@ -1685,12 +1727,12 @@ emit_mode_adjustments (void)
     {
       printf ("\n  /* %s:%d */\n  s = %s;\n",
 	      a->file, a->line, a->adjustment);
-      printf ("  mode_fbit[%smode] = s;\n", a->mode->name);
+      printf ("  mode_fbit[E_%smode] = s;\n", a->mode->name);
     }
 
   /* Real mode formats don't have to propagate anywhere.  */
   for (a = adj_format; a; a = a->next)
-    printf ("\n  /* %s:%d */\n  REAL_MODE_FORMAT (%smode) = %s;\n",
+    printf ("\n  /* %s:%d */\n  REAL_MODE_FORMAT (E_%smode) = %s;\n",
 	    a->file, a->line, a->mode->name, a->adjustment);
 
   puts ("}");
@@ -1768,7 +1810,7 @@ emit_mode_int_n (void)
       m = mode_sort[i];
       printf(" {\n");
       tagged_printf ("%u", m->int_n, m->name);
-      printf ("%smode,", m->name);
+      printf ("{ E_%smode },", m->name);
       printf(" },\n");
     }
 

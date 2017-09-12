@@ -1,3 +1,12 @@
+2017-09-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*-*-vxworks7): Widen scope to vxworks7*.
+
+2017-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now
+	match as powerpc-wrs-vxworks*.
+
 2017-08-07  Jonathan Yong  <10walls@gmail.com>
 
 	* config.host (*-cygwin): Include file from mingw

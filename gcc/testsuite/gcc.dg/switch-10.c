@@ -1,6 +1,4 @@
 /* { dg-options "-O2 -fdump-tree-cfg" }  */
-/* { dg-final { scan-tree-dump "case 0:" "cfg" } }  */
-/* { dg-final { scan-tree-dump-not "case 1 ... 255:" "cfg" } }  */
 #include <stdint.h>
 
 void foo (void);
@@ -20,3 +18,6 @@ test (uint8_t ch)
      break;
    }
 }
+
+/* Switch statement is converted to GIMPLE condition.  */
+/* { dg-final { scan-tree-dump-not "switch" "cfg" } }  */

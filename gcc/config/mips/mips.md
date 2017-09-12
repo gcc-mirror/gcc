@@ -6415,14 +6415,14 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case HImode:
+    case E_HImode:
       output_asm_insn ("sll\t%3,%0,1", operands);
       output_asm_insn ("<d>la\t%2,%1", operands);
       output_asm_insn ("<d>addu\t%3,%2,%3", operands);
       output_asm_insn ("lh\t%3,0(%3)", operands);
       break;
 
-    case SImode:
+    case E_SImode:
       output_asm_insn ("sll\t%3,%0,2", operands);
       output_asm_insn ("<d>la\t%2,%1", operands);
       output_asm_insn ("<d>addu\t%3,%2,%3", operands);
@@ -7363,7 +7363,7 @@
 {
   gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
   assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
-		 GET_MODE (operands[0]),
+		 as_a <scalar_float_mode> (GET_MODE (operands[0])),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }

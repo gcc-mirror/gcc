@@ -1190,7 +1190,7 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
     }
 
   emit_library_call (unwind_sjlj_register_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (fc, 0), Pmode);
+		     XEXP (fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1232,7 +1232,7 @@ sjlj_emit_function_exit (void)
   start_sequence ();
 
   emit_library_call (unwind_sjlj_unregister_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (crtl->eh.sjlj_fc, 0), Pmode);
+		     XEXP (crtl->eh.sjlj_fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1251,8 +1251,8 @@ sjlj_emit_function_exit (void)
 static void
 sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 {
-  machine_mode unwind_word_mode = targetm.unwind_word_mode ();
-  machine_mode filter_mode = targetm.eh_return_filter_mode ();
+  scalar_int_mode unwind_word_mode = targetm.unwind_word_mode ();
+  scalar_int_mode filter_mode = targetm.eh_return_filter_mode ();
   eh_landing_pad lp;
   rtx mem, fc, exc_ptr_reg, filter_reg;
   rtx_insn *seq;
@@ -2073,7 +2073,7 @@ expand_builtin_eh_copy_values (tree exp)
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 0));
   eh_region src
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 1));
-  machine_mode fmode = targetm.eh_return_filter_mode ();
+  scalar_int_mode fmode = targetm.eh_return_filter_mode ();
 
   if (dst->exc_ptr_reg == NULL)
     dst->exc_ptr_reg = gen_reg_rtx (ptr_mode);

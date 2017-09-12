@@ -7976,13 +7976,13 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case SImode:
+    case E_SImode:
       return   "shll2	%1"	"\n"
 	     "	mov.l	@(r0,%1),%0";
-    case HImode:
+    case E_HImode:
       return   "add	%1,%1"	"\n"
 	     "	mov.w	@(r0,%1),%0";
-    case QImode:
+    case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	return         "mov.b	@(r0,%1),%0"	"\n"
 	       "	extu.b	%0,%0";
@@ -8011,17 +8011,17 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case SImode:
+    case E_SImode:
       return   "shll2	%1"		"\n"
 	     "	add	r0,%1"		"\n"
 	     "	mova	%O3,r0"		"\n"
 	     "  mov.l	@(r0,%1),%0";
-    case HImode:
+    case E_HImode:
       return   "add	%1,%1"		"\n"
 	     "	add	r0,%1"		"\n"
 	     "	mova	%O3,r0"		"\n"
 	     "	mov.w	@(r0,%1),%0";
-    case QImode:
+    case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	return	       "add	r0,%1"		"\n"
 		"	mova	%O3,r0"		"\n"

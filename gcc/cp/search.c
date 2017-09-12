@@ -974,23 +974,7 @@ lookup_field_r (tree binfo, void *data)
       && !BINFO_VIRTUAL_P (binfo))
     return dfs_skip_bases;
 
-  /* First, look for a function.  There can't be a function and a data
-     member with the same name, and if there's a function and a type
-     with the same name, the type is hidden by the function.  */
-  if (!lfi->want_type)
-    nval = lookup_fnfields_slot (type, lfi->name);
-
-  if (!nval)
-    /* Look for a data member or type.  */
-    nval = lookup_field_1 (type, lfi->name, lfi->want_type);
-  else if (TREE_CODE (nval) == OVERLOAD && OVL_USING_P (nval))
-    {
-      /* If we have both dependent and non-dependent using-declarations, return
-	 the dependent one rather than an incomplete list of functions.  */
-      tree dep_using = lookup_field_1 (type, lfi->name, lfi->want_type);
-      if (dep_using && TREE_CODE (dep_using) == USING_DECL)
-	nval = dep_using;
-    }
+  nval = get_class_binding (type, lfi->name, lfi->want_type);
 
   /* If we're looking up a type (as with an elaborated type specifier)
      we ignore all non-types we find.  */
@@ -2048,7 +2032,7 @@ look_for_overrides (tree type, tree fndecl)
 tree
 look_for_overrides_here (tree type, tree fndecl)
 {
-  tree ovl = lookup_fnfields_slot (type, DECL_NAME (fndecl));
+  tree ovl = get_class_binding (type, DECL_NAME (fndecl));
 
   for (ovl_iterator iter (ovl); iter; ++iter)
     {
@@ -2370,8 +2354,7 @@ lookup_conversions_r (tree binfo, int virtual_depth, int virtualness,
     virtual_depth++;
 
   /* First, locate the unhidden ones at this level.  */
-  tree conv = lookup_fnfields_slot_nolazy (BINFO_TYPE (binfo),
-					   conv_op_identifier);
+  if (tree conv = get_class_binding (BINFO_TYPE (binfo), conv_op_identifier))
   for (ovl_iterator iter (conv); iter; ++iter)
     {
       tree fn = *iter;

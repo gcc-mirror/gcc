@@ -291,23 +291,22 @@ finalize_size_functions (void)
   vec_free (size_functions);
 }
 
-/* Return the machine mode to use for a nonscalar of SIZE bits.  The
-   mode must be in class MCLASS, and have exactly that many value bits;
-   it may have padding as well.  If LIMIT is nonzero, modes of wider
-   than MAX_FIXED_MODE_SIZE will not be used.  */
+/* Return a machine mode of class MCLASS with SIZE bits of precision,
+   if one exists.  The mode may have padding bits as well the SIZE
+   value bits.  If LIMIT is nonzero, disregard modes wider than
+   MAX_FIXED_MODE_SIZE.  */
 
-machine_mode
+opt_machine_mode
 mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 {
   machine_mode mode;
   int i;
 
   if (limit && size > MAX_FIXED_MODE_SIZE)
-    return BLKmode;
+    return opt_machine_mode ();
 
   /* Get the first mode which has this size, in the specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (GET_MODE_PRECISION (mode) == size)
       return mode;
 
@@ -317,28 +316,28 @@ mode_for_size (unsigned int size, enum mode_class mclass, int limit)
 	  && int_n_enabled_p[i])
 	return int_n_data[i].m;
 
-  return BLKmode;
+  return opt_machine_mode ();
 }
 
 /* Similar, except passed a tree node.  */
 
-machine_mode
+opt_machine_mode
 mode_for_size_tree (const_tree size, enum mode_class mclass, int limit)
 {
   unsigned HOST_WIDE_INT uhwi;
   unsigned int ui;
 
   if (!tree_fits_uhwi_p (size))
-    return BLKmode;
+    return opt_machine_mode ();
   uhwi = tree_to_uhwi (size);
   ui = uhwi;
   if (uhwi != ui)
-    return BLKmode;
+    return opt_machine_mode ();
   return mode_for_size (ui, mclass, limit);
 }
 
-/* Similar, but never return BLKmode; return the narrowest mode that
-   contains at least the requested number of value bits.  */
+/* Return the narrowest mode of class MCLASS that contains at least
+   SIZE bits.  Abort if no such mode exists.  */
 
 machine_mode
 smallest_mode_for_size (unsigned int size, enum mode_class mclass)
@@ -348,8 +347,7 @@ smallest_mode_for_size (unsigned int size, enum mode_class mclass)
 
   /* Get the first mode which has at least this size, in the
      specified class.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (mclass); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (GET_MODE_PRECISION (mode) >= size)
       break;
 
@@ -366,16 +364,16 @@ smallest_mode_for_size (unsigned int size, enum mode_class mclass)
   return mode;
 }
 
-/* Find an integer mode of the exact same size, or BLKmode on failure.  */
+/* Return an integer mode of exactly the same size as MODE, if one exists.  */
 
-machine_mode
+opt_scalar_int_mode
 int_mode_for_mode (machine_mode mode)
 {
   switch (GET_MODE_CLASS (mode))
     {
     case MODE_INT:
     case MODE_PARTIAL_INT:
-      break;
+      return as_a <scalar_int_mode> (mode);
 
     case MODE_COMPLEX_INT:
     case MODE_COMPLEX_FLOAT:
@@ -392,12 +390,11 @@ int_mode_for_mode (machine_mode mode)
     case MODE_VECTOR_UFRACT:
     case MODE_VECTOR_UACCUM:
     case MODE_POINTER_BOUNDS:
-      mode = mode_for_size (GET_MODE_BITSIZE (mode), MODE_INT, 0);
-      break;
+      return int_mode_for_size (GET_MODE_BITSIZE (mode), 0);
 
     case MODE_RANDOM:
       if (mode == BLKmode)
-	break;
+	return opt_scalar_int_mode ();
 
       /* fall through */
 
@@ -405,20 +402,20 @@ int_mode_for_mode (machine_mode mode)
     default:
       gcc_unreachable ();
     }
-
-  return mode;
 }
 
-/* Find a mode that can be used for efficient bitwise operations on MODE.
-   Return BLKmode if no such mode exists.  */
+/* Find a mode that can be used for efficient bitwise operations on MODE,
+   if one exists.  */
 
-machine_mode
+opt_machine_mode
 bitwise_mode_for_mode (machine_mode mode)
 {
   /* Quick exit if we already have a suitable mode.  */
   unsigned int bitsize = GET_MODE_BITSIZE (mode);
-  if (SCALAR_INT_MODE_P (mode) && bitsize <= MAX_FIXED_MODE_SIZE)
-    return mode;
+  scalar_int_mode int_mode;
+  if (is_a <scalar_int_mode> (mode, &int_mode)
+      && GET_MODE_BITSIZE (int_mode) <= MAX_FIXED_MODE_SIZE)
+    return int_mode;
 
   /* Reuse the sanity checks from int_mode_for_mode.  */
   gcc_checking_assert ((int_mode_for_mode (mode), true));
@@ -429,9 +426,8 @@ bitwise_mode_for_mode (machine_mode mode)
   if (COMPLEX_MODE_P (mode))
     {
       machine_mode trial = mode;
-      if (GET_MODE_CLASS (mode) != MODE_COMPLEX_INT)
-	trial = mode_for_size (bitsize, MODE_COMPLEX_INT, false);
-      if (trial != BLKmode
+      if ((GET_MODE_CLASS (trial) == MODE_COMPLEX_INT
+	   || mode_for_size (bitsize, MODE_COMPLEX_INT, false).exists (&trial))
 	  && have_regs_of_mode[GET_MODE_INNER (trial)])
 	return trial;
     }
@@ -441,9 +437,8 @@ bitwise_mode_for_mode (machine_mode mode)
   if (VECTOR_MODE_P (mode) || bitsize > MAX_FIXED_MODE_SIZE)
     {
       machine_mode trial = mode;
-      if (GET_MODE_CLASS (mode) != MODE_VECTOR_INT)
-	trial = mode_for_size (bitsize, MODE_VECTOR_INT, 0);
-      if (trial != BLKmode
+      if ((GET_MODE_CLASS (trial) == MODE_VECTOR_INT
+	   || mode_for_size (bitsize, MODE_VECTOR_INT, 0).exists (&trial))
 	  && have_regs_of_mode[trial]
 	  && targetm.vector_mode_supported_p (trial))
 	return trial;
@@ -459,8 +454,7 @@ bitwise_mode_for_mode (machine_mode mode)
 tree
 bitwise_type_for_mode (machine_mode mode)
 {
-  mode = bitwise_mode_for_mode (mode);
-  if (mode == BLKmode)
+  if (!bitwise_mode_for_mode (mode).exists (&mode))
     return NULL_TREE;
 
   unsigned int inner_size = GET_MODE_UNIT_BITSIZE (mode);
@@ -476,12 +470,12 @@ bitwise_type_for_mode (machine_mode mode)
   return inner_type;
 }
 
-/* Find a mode that is suitable for representing a vector with
-   NUNITS elements of mode INNERMODE.  Returns BLKmode if there
-   is no suitable mode.  */
+/* Find a mode that is suitable for representing a vector with NUNITS
+   elements of mode INNERMODE, if one exists.  The returned mode can be
+   either an integer mode or a vector mode.  */
 
-machine_mode
-mode_for_vector (machine_mode innermode, unsigned nunits)
+opt_machine_mode
+mode_for_vector (scalar_mode innermode, unsigned nunits)
 {
   machine_mode mode;
 
@@ -501,23 +495,36 @@ mode_for_vector (machine_mode innermode, unsigned nunits)
 
   /* Do not check vector_mode_supported_p here.  We'll do that
      later in vector_type_mode.  */
-  for (; mode != VOIDmode ; mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_NUNITS (mode) == nunits
 	&& GET_MODE_INNER (mode) == innermode)
-      break;
+      return mode;
 
   /* For integers, try mapping it to a same-sized scalar mode.  */
-  if (mode == VOIDmode
-      && GET_MODE_CLASS (innermode) == MODE_INT)
-    mode = mode_for_size (nunits * GET_MODE_BITSIZE (innermode),
-			  MODE_INT, 0);
+  if (GET_MODE_CLASS (innermode) == MODE_INT)
+    {
+      unsigned int nbits = nunits * GET_MODE_BITSIZE (innermode);
+      if (int_mode_for_size (nbits, 0).exists (&mode)
+	  && have_regs_of_mode[mode])
+	return mode;
+    }
 
-  if (mode == VOIDmode
-      || (GET_MODE_CLASS (mode) == MODE_INT
-	  && !have_regs_of_mode[mode]))
-    return BLKmode;
+  return opt_machine_mode ();
+}
 
-  return mode;
+/* Return the mode for a vector that has NUNITS integer elements of
+   INT_BITS bits each, if such a mode exists.  The mode can be either
+   an integer mode or a vector mode.  */
+
+opt_machine_mode
+mode_for_int_vector (unsigned int int_bits, unsigned int nunits)
+{
+  scalar_int_mode int_mode;
+  machine_mode vec_mode;
+  if (int_mode_for_size (int_bits, 0).exists (&int_mode)
+      && mode_for_vector (int_mode, nunits).exists (&vec_mode))
+    return vec_mode;
+  return opt_machine_mode ();
 }
 
 /* Return the alignment of MODE. This will be bounded by 1 and
@@ -555,7 +562,7 @@ mode_for_array (tree elem_type, tree size)
 					     int_size / int_elem_size))
 	limit_p = false;
     }
-  return mode_for_size_tree (size, MODE_INT, limit_p);
+  return mode_for_size_tree (size, MODE_INT, limit_p).else_blk ();
 }
 
 /* Subroutine of layout_decl: Force alignment required for the data type.
@@ -675,17 +682,18 @@ layout_decl (tree decl, unsigned int known_align)
 	      && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
 	      && GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT)
 	    {
-	      machine_mode xmode
-		= mode_for_size_tree (DECL_SIZE (decl), MODE_INT, 1);
-	      unsigned int xalign = GET_MODE_ALIGNMENT (xmode);
-
-	      if (xmode != BLKmode
-		  && !(xalign > BITS_PER_UNIT && DECL_PACKED (decl))
-		  && (known_align == 0 || known_align >= xalign))
+	      machine_mode xmode;
+	      if (mode_for_size_tree (DECL_SIZE (decl),
+				      MODE_INT, 1).exists (&xmode))
 		{
-		  SET_DECL_ALIGN (decl, MAX (xalign, DECL_ALIGN (decl)));
-		  SET_DECL_MODE (decl, xmode);
-		  DECL_BIT_FIELD (decl) = 0;
+		  unsigned int xalign = GET_MODE_ALIGNMENT (xmode);
+		  if (!(xalign > BITS_PER_UNIT && DECL_PACKED (decl))
+		      && (known_align == 0 || known_align >= xalign))
+		    {
+		      SET_DECL_ALIGN (decl, MAX (xalign, DECL_ALIGN (decl)));
+		      SET_DECL_MODE (decl, xmode);
+		      DECL_BIT_FIELD (decl) = 0;
+		    }
 		}
 	    }
 
@@ -1748,22 +1756,24 @@ compute_record_mode (tree type)
   if (TREE_CODE (type) == RECORD_TYPE && mode != VOIDmode
       && tree_fits_uhwi_p (TYPE_SIZE (type))
       && GET_MODE_BITSIZE (mode) == tree_to_uhwi (TYPE_SIZE (type)))
-    SET_TYPE_MODE (type, mode);
+    ;
   else
-    SET_TYPE_MODE (type, mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1));
+    mode = mode_for_size_tree (TYPE_SIZE (type), MODE_INT, 1).else_blk ();
 
   /* If structure's known alignment is less than what the scalar
      mode would need, and it matters, then stick with BLKmode.  */
-  if (TYPE_MODE (type) != BLKmode
+  if (mode != BLKmode
       && STRICT_ALIGNMENT
       && ! (TYPE_ALIGN (type) >= BIGGEST_ALIGNMENT
-	    || TYPE_ALIGN (type) >= GET_MODE_ALIGNMENT (TYPE_MODE (type))))
+	    || TYPE_ALIGN (type) >= GET_MODE_ALIGNMENT (mode)))
     {
       /* If this is the only reason this type is BLKmode, then
 	 don't force containing types to be BLKmode.  */
       TYPE_NO_FORCE_BLK (type) = 1;
-      SET_TYPE_MODE (type, BLKmode);
+      mode = BLKmode;
     }
+
+  SET_TYPE_MODE (type, mode);
 }
 
 /* Compute TYPE_SIZE and TYPE_ALIGN for TYPE, once it has been laid
@@ -1891,7 +1901,6 @@ static void
 finish_bitfield_representative (tree repr, tree field)
 {
   unsigned HOST_WIDE_INT bitsize, maxbitsize;
-  machine_mode mode;
   tree nextf, size;
 
   size = size_diffop (DECL_FIELD_OFFSET (field),
@@ -1956,16 +1965,15 @@ finish_bitfield_representative (tree repr, tree field)
   gcc_assert (maxbitsize % BITS_PER_UNIT == 0);
 
   /* Find the smallest nice mode to use.  */
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT); mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
-    if (GET_MODE_BITSIZE (mode) >= bitsize)
+  opt_scalar_int_mode mode_iter;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
+    if (GET_MODE_BITSIZE (mode_iter.require ()) >= bitsize)
       break;
-  if (mode != VOIDmode
-      && (GET_MODE_BITSIZE (mode) > maxbitsize
-	  || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE))
-    mode = VOIDmode;
 
-  if (mode == VOIDmode)
+  scalar_int_mode mode;
+  if (!mode_iter.exists (&mode)
+      || GET_MODE_BITSIZE (mode) > maxbitsize
+      || GET_MODE_BITSIZE (mode) > MAX_FIXED_MODE_SIZE)
     {
       /* We really want a BLKmode representative only as a last resort,
          considering the member b in
@@ -2200,28 +2208,37 @@ layout_type (tree type)
     case BOOLEAN_TYPE:
     case INTEGER_TYPE:
     case ENUMERAL_TYPE:
-      SET_TYPE_MODE (type,
-		     smallest_mode_for_size (TYPE_PRECISION (type), MODE_INT));
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      /* Don't set TYPE_PRECISION here, as it may be set by a bitfield.  */
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      break;
+      {
+	scalar_int_mode mode
+	  = smallest_int_mode_for_size (TYPE_PRECISION (type));
+	SET_TYPE_MODE (type, mode);
+	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
+	/* Don't set TYPE_PRECISION here, as it may be set by a bitfield.  */
+	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
+	break;
+      }
 
     case REAL_TYPE:
-      /* Allow the caller to choose the type mode, which is how decimal
-	 floats are distinguished from binary ones.  */
-      if (TYPE_MODE (type) == VOIDmode)
-	SET_TYPE_MODE (type,
-		       mode_for_size (TYPE_PRECISION (type), MODE_FLOAT, 0));
-      TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-      TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-      break;
+      {
+	/* Allow the caller to choose the type mode, which is how decimal
+	   floats are distinguished from binary ones.  */
+	if (TYPE_MODE (type) == VOIDmode)
+	  SET_TYPE_MODE
+	    (type, float_mode_for_size (TYPE_PRECISION (type)).require ());
+	scalar_float_mode mode = as_a <scalar_float_mode> (TYPE_MODE (type));
+	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
+	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
+	break;
+      }
 
    case FIXED_POINT_TYPE:
-     /* TYPE_MODE (type) has been set already.  */
-     TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (TYPE_MODE (type)));
-     TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (TYPE_MODE (type)));
-     break;
+     {
+       /* TYPE_MODE (type) has been set already.  */
+       scalar_mode mode = SCALAR_TYPE_MODE (type);
+       TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
+       TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
+       break;
+     }
 
     case COMPLEX_TYPE:
       TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
@@ -2242,7 +2259,8 @@ layout_type (tree type)
 	/* Find an appropriate mode for the vector type.  */
 	if (TYPE_MODE (type) == VOIDmode)
 	  SET_TYPE_MODE (type,
-			 mode_for_vector (TYPE_MODE (innertype), nunits));
+			 mode_for_vector (SCALAR_TYPE_MODE (innertype),
+					  nunits).else_blk ());
 
 	TYPE_SATURATING (type) = TYPE_SATURATING (TREE_TYPE (type));
         TYPE_UNSIGNED (type) = TYPE_UNSIGNED (TREE_TYPE (type));
@@ -2290,7 +2308,7 @@ layout_type (tree type)
       TYPE_SIZE_UNIT (type) = size_int (POINTER_SIZE_UNITS);
       /* A pointer might be MODE_PARTIAL_INT, but ptrdiff_t must be
 	 integral, which may be an __intN.  */
-      SET_TYPE_MODE (type, mode_for_size (POINTER_SIZE, MODE_INT, 0));
+      SET_TYPE_MODE (type, int_mode_for_size (POINTER_SIZE, 0).require ());
       TYPE_PRECISION (type) = POINTER_SIZE;
       break;
 
@@ -2299,7 +2317,8 @@ layout_type (tree type)
       /* It's hard to see what the mode and size of a function ought to
 	 be, but we do know the alignment is FUNCTION_BOUNDARY, so
 	 make it consistent with that.  */
-      SET_TYPE_MODE (type, mode_for_size (FUNCTION_BOUNDARY, MODE_INT, 0));
+      SET_TYPE_MODE (type,
+		     int_mode_for_size (FUNCTION_BOUNDARY, 0).else_blk ());
       TYPE_SIZE (type) = bitsize_int (FUNCTION_BOUNDARY);
       TYPE_SIZE_UNIT (type) = size_int (FUNCTION_BOUNDARY / BITS_PER_UNIT);
       break;
@@ -2307,7 +2326,7 @@ layout_type (tree type)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
       {
-	machine_mode mode = TYPE_MODE (type);
+	scalar_int_mode mode = SCALAR_INT_TYPE_MODE (type);
 	TYPE_SIZE (type) = bitsize_int (GET_MODE_BITSIZE (mode));
 	TYPE_SIZE_UNIT (type) = size_int (GET_MODE_SIZE (mode));
 	TYPE_UNSIGNED (type) = 1;
@@ -2535,13 +2554,9 @@ make_fract_type (int precision, int unsignedp, int satp)
     TYPE_SATURATING (type) = 1;
 
   /* Lay out the type: set its alignment, size, etc.  */
-  if (unsignedp)
-    {
-      TYPE_UNSIGNED (type) = 1;
-      SET_TYPE_MODE (type, mode_for_size (precision, MODE_UFRACT, 0));
-    }
-  else
-    SET_TYPE_MODE (type, mode_for_size (precision, MODE_FRACT, 0));
+  TYPE_UNSIGNED (type) = unsignedp;
+  enum mode_class mclass = unsignedp ? MODE_UFRACT : MODE_FRACT;
+  SET_TYPE_MODE (type, mode_for_size (precision, mclass, 0).require ());
   layout_type (type);
 
   return type;
@@ -2561,13 +2576,9 @@ make_accum_type (int precision, int unsignedp, int satp)
     TYPE_SATURATING (type) = 1;
 
   /* Lay out the type: set its alignment, size, etc.  */
-  if (unsignedp)
-    {
-      TYPE_UNSIGNED (type) = 1;
-      SET_TYPE_MODE (type, mode_for_size (precision, MODE_UACCUM, 0));
-    }
-  else
-    SET_TYPE_MODE (type, mode_for_size (precision, MODE_ACCUM, 0));
+  TYPE_UNSIGNED (type) = unsignedp;
+  enum mode_class mclass = unsignedp ? MODE_UACCUM : MODE_ACCUM;
+  SET_TYPE_MODE (type, mode_for_size (precision, mclass, 0).require ());
   layout_type (type);
 
   return type;
@@ -2611,8 +2622,7 @@ initialize_sizetypes (void)
 
   bprecision
     = MIN (precision + LOG2_BITS_PER_UNIT + 1, MAX_FIXED_MODE_SIZE);
-  bprecision
-    = GET_MODE_PRECISION (smallest_mode_for_size (bprecision, MODE_INT));
+  bprecision = GET_MODE_PRECISION (smallest_int_mode_for_size (bprecision));
   if (bprecision > HOST_BITS_PER_DOUBLE_INT)
     bprecision = HOST_BITS_PER_DOUBLE_INT;
 
@@ -2627,17 +2637,18 @@ initialize_sizetypes (void)
   TYPE_UNSIGNED (bitsizetype) = 1;
 
   /* Now layout both types manually.  */
-  SET_TYPE_MODE (sizetype, smallest_mode_for_size (precision, MODE_INT));
+  scalar_int_mode mode = smallest_int_mode_for_size (precision);
+  SET_TYPE_MODE (sizetype, mode);
   SET_TYPE_ALIGN (sizetype, GET_MODE_ALIGNMENT (TYPE_MODE (sizetype)));
   TYPE_SIZE (sizetype) = bitsize_int (precision);
-  TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (TYPE_MODE (sizetype)));
+  TYPE_SIZE_UNIT (sizetype) = size_int (GET_MODE_SIZE (mode));
   set_min_and_max_values_for_integral_type (sizetype, precision, UNSIGNED);
 
-  SET_TYPE_MODE (bitsizetype, smallest_mode_for_size (bprecision, MODE_INT));
+  mode = smallest_int_mode_for_size (bprecision);
+  SET_TYPE_MODE (bitsizetype, mode);
   SET_TYPE_ALIGN (bitsizetype, GET_MODE_ALIGNMENT (TYPE_MODE (bitsizetype)));
   TYPE_SIZE (bitsizetype) = bitsize_int (bprecision);
-  TYPE_SIZE_UNIT (bitsizetype)
-    = size_int (GET_MODE_SIZE (TYPE_MODE (bitsizetype)));
+  TYPE_SIZE_UNIT (bitsizetype) = size_int (GET_MODE_SIZE (mode));
   set_min_and_max_values_for_integral_type (bitsizetype, bprecision, UNSIGNED);
 
   /* Create the signed variants of *sizetype.  */
@@ -2721,7 +2732,7 @@ bit_field_mode_iterator
 			   HOST_WIDE_INT bitregion_start,
 			   HOST_WIDE_INT bitregion_end,
 			   unsigned int align, bool volatilep)
-: m_mode (GET_CLASS_NARROWEST_MODE (MODE_INT)), m_bitsize (bitsize),
+: m_mode (NARROWEST_INT_MODE), m_bitsize (bitsize),
   m_bitpos (bitpos), m_bitregion_start (bitregion_start),
   m_bitregion_end (bitregion_end), m_align (align),
   m_volatilep (volatilep), m_count (0)
@@ -2746,14 +2757,15 @@ bit_field_mode_iterator
    available, storing it in *OUT_MODE if so.  */
 
 bool
-bit_field_mode_iterator::next_mode (machine_mode *out_mode)
+bit_field_mode_iterator::next_mode (scalar_int_mode *out_mode)
 {
-  for (; m_mode != VOIDmode; m_mode = GET_MODE_WIDER_MODE (m_mode))
+  scalar_int_mode mode;
+  for (; m_mode.exists (&mode); m_mode = GET_MODE_WIDER_MODE (mode))
     {
-      unsigned int unit = GET_MODE_BITSIZE (m_mode);
+      unsigned int unit = GET_MODE_BITSIZE (mode);
 
       /* Skip modes that don't have full precision.  */
-      if (unit != GET_MODE_PRECISION (m_mode))
+      if (unit != GET_MODE_PRECISION (mode))
 	continue;
 
       /* Stop if the mode is too wide to handle efficiently.  */
@@ -2780,12 +2792,12 @@ bit_field_mode_iterator::next_mode (machine_mode *out_mode)
 	break;
 
       /* Stop if the mode requires too much alignment.  */
-      if (GET_MODE_ALIGNMENT (m_mode) > m_align
-	  && SLOW_UNALIGNED_ACCESS (m_mode, m_align))
+      if (GET_MODE_ALIGNMENT (mode) > m_align
+	  && targetm.slow_unaligned_access (mode, m_align))
 	break;
 
-      *out_mode = m_mode;
-      m_mode = GET_MODE_WIDER_MODE (m_mode);
+      *out_mode = mode;
+      m_mode = GET_MODE_WIDER_MODE (mode);
       m_count++;
       return true;
     }
@@ -2812,11 +2824,13 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    memory access to that range.  Otherwise, we are allowed to touch
    any adjacent non bit-fields.
 
-   The underlying object is known to be aligned to a boundary of ALIGN bits.
-   If LARGEST_MODE is not VOIDmode, it means that we should not use a mode
-   larger than LARGEST_MODE (usually SImode).
+   The chosen mode must have no more than LARGEST_MODE_BITSIZE bits.
+   INT_MAX is a suitable value for LARGEST_MODE_BITSIZE if the caller
+   doesn't want to apply a specific limit.
 
    If no mode meets all these conditions, we return VOIDmode.
+
+   The underlying object is known to be aligned to a boundary of ALIGN bits.
 
    If VOLATILEP is false and SLOW_BYTE_ACCESS is false, we return the
    smallest mode meeting these conditions.
@@ -2828,17 +2842,18 @@ bit_field_mode_iterator::prefer_smaller_modes ()
    If VOLATILEP is true the narrow_volatile_bitfields target hook is used to
    decide which of the above modes should be used.  */
 
-machine_mode
+bool
 get_best_mode (int bitsize, int bitpos,
 	       unsigned HOST_WIDE_INT bitregion_start,
 	       unsigned HOST_WIDE_INT bitregion_end,
 	       unsigned int align,
-	       machine_mode largest_mode, bool volatilep)
+	       unsigned HOST_WIDE_INT largest_mode_bitsize, bool volatilep,
+	       scalar_int_mode *best_mode)
 {
   bit_field_mode_iterator iter (bitsize, bitpos, bitregion_start,
 				bitregion_end, align, volatilep);
-  machine_mode widest_mode = VOIDmode;
-  machine_mode mode;
+  scalar_int_mode mode;
+  bool found = false;
   while (iter.next_mode (&mode)
 	 /* ??? For historical reasons, reject modes that would normally
 	    receive greater alignment, even if unaligned accesses are
@@ -2897,22 +2912,23 @@ get_best_mode (int bitsize, int bitpos,
 	    so that the final bitfield reference still has a MEM_EXPR
 	    and MEM_OFFSET.  */
 	 && GET_MODE_ALIGNMENT (mode) <= align
-	 && (largest_mode == VOIDmode
-	     || GET_MODE_SIZE (mode) <= GET_MODE_SIZE (largest_mode)))
+	 && GET_MODE_BITSIZE (mode) <= largest_mode_bitsize)
     {
-      widest_mode = mode;
+      *best_mode = mode;
+      found = true;
       if (iter.prefer_smaller_modes ())
 	break;
     }
-  return widest_mode;
+
+  return found;
 }
 
 /* Gets minimal and maximal values for MODE (signed or unsigned depending on
    SIGN).  The returned constants are made to be usable in TARGET_MODE.  */
 
 void
-get_mode_bounds (machine_mode mode, int sign,
-		 machine_mode target_mode,
+get_mode_bounds (scalar_int_mode mode, int sign,
+		 scalar_int_mode target_mode,
 		 rtx *mmin, rtx *mmax)
 {
   unsigned size = GET_MODE_PRECISION (mode);

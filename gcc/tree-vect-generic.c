@@ -288,7 +288,6 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
 			enum tree_code code)
 {
   tree result, compute_type;
-  machine_mode mode;
   int n_words = tree_to_uhwi (TYPE_SIZE_UNIT (type)) / UNITS_PER_WORD;
   location_t loc = gimple_location (gsi_stmt (*gsi));
 
@@ -312,7 +311,8 @@ expand_vector_parallel (gimple_stmt_iterator *gsi, elem_op_func f, tree type,
   else
     {
       /* Use a single scalar operation with a mode no wider than word_mode.  */
-      mode = mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), MODE_INT, 0);
+      scalar_int_mode mode
+	= int_mode_for_size (tree_to_uhwi (TYPE_SIZE (type)), 0).require ();
       compute_type = lang_hooks.types.type_for_mode (mode, 1);
       result = f (gsi, compute_type, a, b, NULL_TREE, NULL_TREE, code, type);
       warning_at (loc, OPT_Wvector_operation_performance,
@@ -1154,7 +1154,7 @@ type_for_widest_vector_mode (tree type, optab op)
   else
     mode = MIN_MODE_VECTOR_INT;
 
-  for (; mode != VOIDmode; mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_FROM (mode, mode)
     if (GET_MODE_INNER (mode) == inner_mode
         && GET_MODE_NUNITS (mode) > best_nunits
 	&& optab_handler (op, mode) != CODE_FOR_nothing)
@@ -1638,7 +1638,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
       || code == VEC_UNPACK_FLOAT_LO_EXPR)
-    type = TREE_TYPE (rhs1);
+    {
+      type = TREE_TYPE (rhs1);
+      /* We do not know how to scalarize those.  */
+      return;
+    }
 
   /* For widening/narrowing vector operations, the relevant type is of the
      arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
@@ -1655,7 +1659,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_PACK_FIX_TRUNC_EXPR
       || code == VEC_WIDEN_LSHIFT_HI_EXPR
       || code == VEC_WIDEN_LSHIFT_LO_EXPR)
-    type = TREE_TYPE (rhs1);
+    {
+      type = TREE_TYPE (rhs1);
+      /* We do not know how to scalarize those.  */
+      return;
+    }
 
   /* Choose between vector shift/rotate by vector and vector shift/rotate by
      scalar */

@@ -166,7 +166,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    point registers are 64 bits wide.  Snake fp regs are treated as
    32 bits wide since the left and right parts are independently
    accessible.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
+#define PA_HARD_REGNO_NREGS(REGNO, MODE)				\
   (FP_REGNO_P (REGNO)							\
    ? (!TARGET_PA_11							\
       ? COMPLEX_MODE_P (MODE) ? 2 : 1					\
@@ -206,7 +206,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    supported under HP-UX using libcalls.  Since TFmode values are passed
    by reference, they never need to be loaded into the floating-point
    registers.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
+#define PA_HARD_REGNO_MODE_OK(REGNO, MODE) \
   ((REGNO) == 0 ? (MODE) == CCmode || (MODE) == CCFPmode		\
    : (REGNO) == 88 ? SCALAR_INT_MODE_P (MODE)				\
    : !TARGET_PA_11 && FP_REGNO_P (REGNO)				\

@@ -60,15 +60,14 @@ static bool
 vect_lanes_optab_supported_p (const char *name, convert_optab optab,
 			      tree vectype, unsigned HOST_WIDE_INT count)
 {
-  machine_mode mode, array_mode;
+  machine_mode mode;
+  scalar_int_mode array_mode;
   bool limit_p;
 
   mode = TYPE_MODE (vectype);
   limit_p = !targetm.array_mode_supported_p (mode, count);
-  array_mode = mode_for_size (count * GET_MODE_BITSIZE (mode),
-			      MODE_INT, limit_p);
-
-  if (array_mode == BLKmode)
+  if (!int_mode_for_size (count * GET_MODE_BITSIZE (mode),
+			  limit_p).exists (&array_mode))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

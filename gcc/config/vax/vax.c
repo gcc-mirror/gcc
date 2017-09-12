@@ -822,18 +822,18 @@ vax_rtx_costs (rtx x, machine_mode mode, int outer_code,
     case MULT:
       switch (mode)
 	{
-	case DFmode:
+	case E_DFmode:
 	  *total = 16;		/* 4 on VAX 9000 */
 	  break;
-	case SFmode:
+	case E_SFmode:
 	  *total = 9;		/* 4 on VAX 9000, 12 on VAX 2 */
 	  break;
-	case DImode:
+	case E_DImode:
 	  *total = 16;		/* 6 on VAX 9000, 28 on VAX 2 */
 	  break;
-	case SImode:
-	case HImode:
-	case QImode:
+	case E_SImode:
+	case E_HImode:
+	case E_QImode:
 	  *total = 10;		/* 3-4 on VAX 9000, 20-28 on VAX 2 */
 	  break;
 	default:
@@ -1144,7 +1144,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       if (operands[1] == const0_rtx)
 	return "clrq %0";
       if (TARGET_QMATH && optimize_size
@@ -1257,7 +1257,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	}
       return "movq %1,%0";
 
-    case SImode:
+    case E_SImode:
       if (symbolic_operand (operands[1], SImode))
 	{
 	  if (push_operand (operands[0], SImode))
@@ -1300,7 +1300,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	return "pushl %1";
       return "movl %1,%0";
 
-    case HImode:
+    case E_HImode:
       if (CONST_INT_P (operands[1]))
 	{
 	  HOST_WIDE_INT i = INTVAL (operands[1]);
@@ -1317,7 +1317,7 @@ vax_output_int_move (rtx insn ATTRIBUTE_UNUSED, rtx *operands,
 	}
       return "movw %1,%0";
 
-    case QImode:
+    case E_QImode:
       if (CONST_INT_P (operands[1]))
 	{
 	  HOST_WIDE_INT i = INTVAL (operands[1]);
@@ -1352,7 +1352,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       {
 	rtx low[3];
 	const char *pattern;
@@ -1438,7 +1438,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 	return "adwc %2,%0";
       }
 
-    case SImode:
+    case E_SImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1514,7 +1514,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 
       return "addl3 %1,%2,%0";
 
-    case HImode:
+    case E_HImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1533,7 +1533,7 @@ vax_output_int_add (rtx insn, rtx *operands, machine_mode mode)
 	return "subw3 $%n2,%1,%0";
       return "addw3 %1,%2,%0";
 
-    case QImode:
+    case E_QImode:
       if (rtx_equal_p (operands[0], operands[1]))
 	{
 	  if (operands[2] == const1_rtx)
@@ -1562,7 +1562,7 @@ vax_output_int_subtract (rtx insn, rtx *operands, machine_mode mode)
 {
   switch (mode)
     {
-    case DImode:
+    case E_DImode:
       {
 	rtx low[3];
 	const char *pattern;

@@ -596,25 +596,6 @@ enum nds32_builtins
    own cost calculations.  */
 #define HONOR_REG_ALLOC_ORDER optimize_size
 
-/* The number of consecutive hard regs needed starting at
-   reg "regno" for holding a value of mode "mode".  */
-#define HARD_REGNO_NREGS(regno, mode) nds32_hard_regno_nregs (regno, mode)
-
-/* Value is 1 if hard register "regno" can hold a value
-   of machine-mode "mode".  */
-#define HARD_REGNO_MODE_OK(regno, mode) nds32_hard_regno_mode_ok (regno, mode)
-
-/* A C expression that is nonzero if a value of mode1
-   is accessible in mode2 without copying.
-   Define this macro to return nonzero in as many cases as possible
-   since doing so will allow GCC to perform better register allocation.
-   We can use general registers to tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(mode1, mode2)          \
-  (GET_MODE_CLASS (mode1) == MODE_INT          \
-   && GET_MODE_CLASS (mode2) == MODE_INT       \
-   && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD  \
-   && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD)
-
 
 /* Register Classes.  */
 
@@ -897,13 +878,13 @@ enum reg_class
     {                                                                   \
       switch (GET_MODE (body))                                          \
         {                                                               \
-        case QImode:                                                    \
+        case E_QImode:                                                    \
           asm_fprintf (stream, "\t.byte\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
-        case HImode:                                                    \
+        case E_HImode:                                                    \
           asm_fprintf (stream, "\t.short\t.L%d-.L%d\n", value, rel);    \
           break;                                                        \
-        case SImode:                                                    \
+        case E_SImode:                                                    \
           asm_fprintf (stream, "\t.word\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
         default:                                                        \

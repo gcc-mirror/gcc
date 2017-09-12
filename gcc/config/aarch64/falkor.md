@@ -581,7 +581,7 @@
 
 (define_insn_reservation "falkor_ld_3_ld" 3
   (and (eq_attr "tune" "falkor")
-       (eq_attr "type" "load1,load2"))
+       (eq_attr "type" "load_4,load_8,load_16"))
   "falkor_ld")
 
 ;; Miscellaneous Data-Processing Instructions
@@ -663,7 +663,7 @@
 
 (define_insn_reservation "falkor_st_0_st_sd" 0
   (and (eq_attr "tune" "falkor")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8,store_16"))
   "falkor_st+falkor_sd")
 
 ;; Muliply bypasses.

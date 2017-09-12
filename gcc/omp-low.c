@@ -3442,24 +3442,24 @@ omp_clause_aligned_alignment (tree clause)
 
   /* Otherwise return implementation defined alignment.  */
   unsigned int al = 1;
-  machine_mode mode, vmode;
+  opt_scalar_mode mode_iter;
   int vs = targetm.vectorize.autovectorize_vector_sizes ();
   if (vs)
     vs = 1 << floor_log2 (vs);
   static enum mode_class classes[]
     = { MODE_INT, MODE_VECTOR_INT, MODE_FLOAT, MODE_VECTOR_FLOAT };
   for (int i = 0; i < 4; i += 2)
-    for (mode = GET_CLASS_NARROWEST_MODE (classes[i]);
-	 mode != VOIDmode;
-	 mode = GET_MODE_WIDER_MODE (mode))
+    /* The for loop above dictates that we only walk through scalar classes.  */
+    FOR_EACH_MODE_IN_CLASS (mode_iter, classes[i])
       {
-	vmode = targetm.vectorize.preferred_simd_mode (mode);
+	scalar_mode mode = mode_iter.require ();
+	machine_mode vmode = targetm.vectorize.preferred_simd_mode (mode);
 	if (GET_MODE_CLASS (vmode) != classes[i + 1])
 	  continue;
 	while (vs
 	       && GET_MODE_SIZE (vmode) < vs
-	       && GET_MODE_2XWIDER_MODE (vmode) != VOIDmode)
-	  vmode = GET_MODE_2XWIDER_MODE (vmode);
+	       && GET_MODE_2XWIDER_MODE (vmode).exists ())
+	  vmode = GET_MODE_2XWIDER_MODE (vmode).require ();
 
 	tree type = lang_hooks.types.type_for_mode (mode, 1);
 	if (type == NULL_TREE || TYPE_MODE (type) != mode)
@@ -6923,10 +6923,14 @@ lower_omp_for (gimple_stmt_iterator *gsi_p, omp_context *ctx)
       rhs_p = gimple_omp_for_initial_ptr (stmt, i);
       if (!is_gimple_min_invariant (*rhs_p))
 	*rhs_p = get_formal_tmp_var (*rhs_p, &body);
+      else if (TREE_CODE (*rhs_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*rhs_p);
 
       rhs_p = gimple_omp_for_final_ptr (stmt, i);
       if (!is_gimple_min_invariant (*rhs_p))
 	*rhs_p = get_formal_tmp_var (*rhs_p, &body);
+      else if (TREE_CODE (*rhs_p) == ADDR_EXPR)
+	recompute_tree_invariant_for_addr_expr (*rhs_p);
 
       rhs_p = &TREE_OPERAND (gimple_omp_for_incr (stmt, i), 1);
       if (!is_gimple_min_invariant (*rhs_p))

@@ -574,6 +574,18 @@ rs6000_target_modify_macros (bool define_p, HOST_WIDE_INT flags,
      2. If TARGET_ALTIVEC is turned off.  */
   if ((flags & OPTION_MASK_CRYPTO) != 0)
     rs6000_define_or_undefine_macro (define_p, "__CRYPTO__");
+  if ((flags & OPTION_MASK_FLOAT128_KEYWORD) != 0)
+    {
+      rs6000_define_or_undefine_macro (define_p, "__FLOAT128__");
+      if (define_p)
+	rs6000_define_or_undefine_macro (true, "__float128=__ieee128");
+      else
+	rs6000_define_or_undefine_macro (false, "__float128");
+    }
+  /* OPTION_MASK_FLOAT128_HARDWARE can be turned on if -mcpu=power9 is used or
+     via the target attribute/pragma.  */
+  if ((flags & OPTION_MASK_FLOAT128_HW) != 0)
+    rs6000_define_or_undefine_macro (define_p, "__FLOAT128_HARDWARE__");
 
   /* options from the builtin masks.  */
   /* Note that RS6000_BTM_PAIRED is enabled only if
@@ -601,23 +613,13 @@ rs6000_cpu_cpp_builtins (cpp_reader *pfile)
     builtin_define ("__RSQRTE__");
   if (TARGET_FRSQRTES)
     builtin_define ("__RSQRTEF__");
-  if (TARGET_FLOAT128_KEYWORD)
-    builtin_define ("__FLOAT128__");
   if (TARGET_FLOAT128_TYPE)
     builtin_define ("__FLOAT128_TYPE__");
-  if (TARGET_FLOAT128_HW)
-    builtin_define ("__FLOAT128_HARDWARE__");
   if (TARGET_LONG_DOUBLE_128 && FLOAT128_IBM_P (TFmode))
     builtin_define ("__ibm128=long double");
 #ifdef TARGET_LIBC_PROVIDES_HWCAP_IN_TCB
   builtin_define ("__BUILTIN_CPU_SUPPORTS__");
 #endif
-
-  /* We needed to create a keyword if -mfloat128-type was used but not -mfloat,
-     so we used __ieee128.  If -mfloat128 was used, create a #define back to
-     the real keyword in case somebody used it.  */
-  if (TARGET_FLOAT128_KEYWORD)
-    builtin_define ("__ieee128=__float128");
 
   if (TARGET_EXTRA_BUILTINS && cpp_get_options (pfile)->lang != CLK_ASM)
     {
@@ -2210,6 +2212,10 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_V4SI, RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V8HI, 0 },
   { ALTIVEC_BUILTIN_VEC_VMULESH, ALTIVEC_BUILTIN_VMULESH,
     RS6000_BTI_V4SI, RS6000_BTI_V8HI, RS6000_BTI_V8HI, 0 },
+  { ALTIVEC_BUILTIN_VEC_VMULEUW, ALTIVEC_BUILTIN_VMULEUW,
+    RS6000_BTI_V2DI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { ALTIVEC_BUILTIN_VEC_VMULESW, ALTIVEC_BUILTIN_VMULESW,
+    RS6000_BTI_V2DI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
   { ALTIVEC_BUILTIN_VEC_MULO, ALTIVEC_BUILTIN_VMULOUB,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_MULO, ALTIVEC_BUILTIN_VMULOSB,
@@ -2231,6 +2237,11 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_V8HI, RS6000_BTI_V16QI, RS6000_BTI_V16QI, 0 },
   { ALTIVEC_BUILTIN_VEC_VMULOUB, ALTIVEC_BUILTIN_VMULOUB,
     RS6000_BTI_unsigned_V8HI, RS6000_BTI_unsigned_V16QI, RS6000_BTI_unsigned_V16QI, 0 },
+  { ALTIVEC_BUILTIN_VEC_VMULOUW, ALTIVEC_BUILTIN_VMULOUW,
+    RS6000_BTI_V2DI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+  { ALTIVEC_BUILTIN_VEC_VMULOSW, ALTIVEC_BUILTIN_VMULOSW,
+    RS6000_BTI_V2DI, RS6000_BTI_V4SI, RS6000_BTI_V4SI, 0 },
+
   { ALTIVEC_BUILTIN_VEC_NABS, ALTIVEC_BUILTIN_NABS_V16QI,
     RS6000_BTI_V16QI, RS6000_BTI_V16QI, 0, 0 },
   { ALTIVEC_BUILTIN_VEC_NABS, ALTIVEC_BUILTIN_NABS_V8HI,
@@ -5828,23 +5839,23 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
       switch (TYPE_MODE (TREE_TYPE (arg0_type)))
 	{
-	  case QImode:
-	  case HImode:
-	  case SImode:
-	  case DImode:
-	  case TImode:
+	  case E_QImode:
+	  case E_HImode:
+	  case E_SImode:
+	  case E_DImode:
+	  case E_TImode:
 	    {
 	      /* For scalar types just use a multiply expression.  */
 	      return fold_build2_loc (loc, MULT_EXPR, TREE_TYPE (arg0), arg0,
 				      fold_convert (TREE_TYPE (arg0), arg1));
 	    }
-	  case SFmode:
+	  case E_SFmode:
 	    {
 	      /* For floats use the xvmulsp instruction directly.  */
 	      tree call = rs6000_builtin_decls[VSX_BUILTIN_XVMULSP];
 	      return build_call_expr (call, 2, arg0, arg1);
 	    }
-	  case DFmode:
+	  case E_DFmode:
 	    {
 	      /* For doubles use the xvmuldp instruction directly.  */
 	      tree call = rs6000_builtin_decls[VSX_BUILTIN_XVMULDP];
@@ -5892,13 +5903,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		 vec_cmpeq (va, vb)).  */
 	      /* Note:  vec_nand also works but opt changes vec_nand's
 		 to vec_nor's anyway.  */
-	    case QImode:
-	    case HImode:
-	    case SImode:
-	    case DImode:
-	    case TImode:
-	    case SFmode:
-	    case DFmode:
+	    case E_QImode:
+	    case E_HImode:
+	    case E_SImode:
+	    case E_DImode:
+	    case E_TImode:
+	    case E_SFmode:
+	    case E_DFmode:
 	      {
 		/* call = vec_cmpeq (va, vb)
 		   result = vec_nor (call, call).  */
@@ -5961,7 +5972,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 						   vec_and (carryv, 1)).
 	     vec_sube (va, vb, carryv) == vec_sub (vec_sub (va, vb),
 						   vec_and (carryv, 1)).  */
-	  case SImode:
+	  case E_SImode:
 	    {
 	      tree add_sub_builtin;
 
@@ -5989,7 +6000,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    }
 	  /* For {un}signed __int128s use the vaddeuqm instruction
 		directly.  */
-	  case TImode:
+	  case E_TImode:
 	    {
 	       tree bii;
 
@@ -6044,7 +6055,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 				vec_or (vec_addc (va, vb),
 					vec_addc (vec_add (va, vb),
 						  vec_and (carryv, 0x1))).  */
-	  case SImode:
+	  case E_SImode:
 	    {
 	    /* Use save_expr to ensure that operands used more than once
 		that may have side effects (like calls) are only evaluated
@@ -6095,7 +6106,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    }
 	  /* For {un}signed __int128s use the vaddecuq/vsubbecuq
 	     instructions.  */
-	  case TImode:
+	  case E_TImode:
 	    {
 	       tree bii;
 
@@ -6148,28 +6159,28 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       unsigned_p = TYPE_UNSIGNED (type);
       switch (TYPE_MODE (type))
 	{
-	  case TImode:
+	  case E_TImode:
 	    type = (unsigned_p ? unsigned_V1TI_type_node : V1TI_type_node);
 	    size = 1;
 	    break;
-	  case DImode:
+	  case E_DImode:
 	    type = (unsigned_p ? unsigned_V2DI_type_node : V2DI_type_node);
 	    size = 2;
 	    break;
-	  case SImode:
+	  case E_SImode:
 	    type = (unsigned_p ? unsigned_V4SI_type_node : V4SI_type_node);
 	    size = 4;
 	    break;
-	  case HImode:
+	  case E_HImode:
 	    type = (unsigned_p ? unsigned_V8HI_type_node : V8HI_type_node);
 	    size = 8;
 	    break;
-	  case QImode:
+	  case E_QImode:
 	    type = (unsigned_p ? unsigned_V16QI_type_node : V16QI_type_node);
 	    size = 16;
 	    break;
-	  case SFmode: type = V4SF_type_node; size = 4; break;
-	  case DFmode: type = V2DF_type_node; size = 2; break;
+	  case E_SFmode: type = V4SF_type_node; size = 4; break;
+	  case E_DFmode: type = V2DF_type_node; size = 2; break;
 	  default:
 	    goto bad;
 	}
@@ -6241,33 +6252,33 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		default:
 		  break;
 
-		case V1TImode:
+		case E_V1TImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V1TI];
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DF];
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DI];
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SF];
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SI];
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V8HI];
 		  break;
 
-		case V16QImode:
+		case E_V16QImode:
 		  if (TARGET_DIRECT_MOVE_64BIT)
 		    call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V16QI];
 		  break;
@@ -6283,27 +6294,27 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 		default:
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DF];
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  call = rs6000_builtin_decls[VSX_BUILTIN_VEC_EXT_V2DI];
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SF];
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V4SI];
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V8HI];
 		  break;
 
-		case V16QImode:
+		case E_V16QImode:
 		  call = rs6000_builtin_decls[ALTIVEC_BUILTIN_VEC_EXT_V16QI];
 		  break;
 		}
@@ -6478,7 +6489,13 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 
       /* Strip qualifiers like "const" from the pointer arg.  */
       tree arg1_type = TREE_TYPE (arg1);
-      if (!POINTER_TYPE_P (arg1_type) && TREE_CODE (arg1_type) != ARRAY_TYPE)
+      if (TREE_CODE (arg1_type) == ARRAY_TYPE && c_dialect_cxx ())
+	{
+	  /* Force array-to-pointer decay for C++.  */
+	  arg1 = default_conversion (arg1);
+	  arg1_type = TREE_TYPE (arg1);
+	}
+      if (!POINTER_TYPE_P (arg1_type))
 	goto bad;
 
       tree inner_type = TREE_TYPE (arg1_type);
@@ -6497,15 +6514,6 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	{
 	  if (!ptrofftype_p (TREE_TYPE (arg0)))
 	    arg0 = build1 (NOP_EXPR, sizetype, arg0);
-
-	  tree arg1_type = TREE_TYPE (arg1);
-	  if (TREE_CODE (arg1_type) == ARRAY_TYPE)
-	    {
-	      arg1_type = TYPE_POINTER_TO (TREE_TYPE (arg1_type));
-	      tree const0 = build_int_cstu (sizetype, 0);
-	      tree arg1_elt0 = build_array_ref (loc, arg1, const0);
-	      arg1 = build1 (ADDR_EXPR, arg1_type, arg1_elt0);
-	    }
 
 	  tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg1_type,
 				       arg1, arg0);
@@ -6561,12 +6569,11 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
 	    arg1 = build1 (NOP_EXPR, sizetype, arg1);
 
 	  tree arg2_type = TREE_TYPE (arg2);
-	  if (TREE_CODE (arg2_type) == ARRAY_TYPE)
+	  if (TREE_CODE (arg2_type) == ARRAY_TYPE && c_dialect_cxx ())
 	    {
-	      arg2_type = TYPE_POINTER_TO (TREE_TYPE (arg2_type));
-	      tree const0 = build_int_cstu (sizetype, 0);
-	      tree arg2_elt0 = build_array_ref (loc, arg2, const0);
-	      arg2 = build1 (ADDR_EXPR, arg2_type, arg2_elt0);
+	      /* Force array-to-pointer decay for C++.  */
+	      arg2 = default_conversion (arg2);
+	      arg2_type = TREE_TYPE (arg2);
 	    }
 
 	  /* Find the built-in to make sure a compatible one exists; if not
@@ -6729,7 +6736,7 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
     else if (fcode == P9V_BUILTIN_VEC_VSIEDP)
       {
 	int overloaded_code;
-	int arg1_mode = TYPE_MODE (types[0]);
+	machine_mode arg1_mode = TYPE_MODE (types[0]);
 
 	if (nargs != 2)
 	  {

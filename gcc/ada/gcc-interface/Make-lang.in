@@ -68,7 +68,7 @@ ALL_ADAFLAGS = \
   $(CFLAGS) $(ADA_CFLAGS) $(ADAFLAGS) $(CHECKING_ADAFLAGS) $(WARN_ADAFLAGS)
 FORCE_DEBUG_ADAFLAGS = -g
 ADA_CFLAGS =
-ADA_INCLUDES = -nostdinc -I- -I. -Iada/generated -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface
+ADA_INCLUDES = -nostdinc -I- -I. -Iada/generated -Iada -I$(srcdir)/ada -I$(srcdir)/ada/gcc-interface -Iada/libgnat -I$(srcdir)/ada/libgnat
 GNATLIBFLAGS= -W -Wall -gnatpg -nostdinc
 GNATLIBCFLAGS= -g -O2 $(TCFLAGS)
 ADA_INCLUDE_DIR = $(libsubdir)/adainclude
@@ -104,23 +104,41 @@ ada/%.o: ada/gcc-interface/%.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
-# Function that dumps the dependencies of an Ada object file by parsing the
-# associated ALI file.  We match the lines starting with D to achieve that.
-ADA_DEPS=case $@ in \
-            *sdefault.o);; \
-            *)a="`echo $@ | sed -e 's/.o$$/.ali/'`"; \
-                echo "$@: `cat $$a | \
-                sed -ne 's;^D \([a-z0-9_\.-]*\).*;ada/\1;gp' | \
-                sed -e 's;ada/gnatvsn.ads;ada/generated/gnatvsn.ads;g' | \
-                tr -d '\015' | tr '\n' ' '`" > $(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@));; \
-         esac;
+# Function that dumps the dependencies of an Ada object. Dependency only work
+# fully if the compiler support -gnatd.n. Otherwise a fallback mechanism is
+# used. The fallback mechanism add dependency on all ada sources in the same
+# directory as the original source.
+ifeq ($(findstring -gnatd.n,$(ALL_ADAFLAGS)),)
+ADA_DEPS=\
+   mkdir -p $(dir $@)/$(DEPDIR); \
+   (o="$@: $<"; \
+    for d in $(dir $<)/*.ad[sb]; do \
+       o="$$o $$d"; \
+    done; \
+    echo "$$o"; echo) \
+    >$(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@))
+ADA_OUTPUT_OPTION = $(OUTPUT_OPTION)
+else
+ADA_DEPS=\
+   mkdir -p $(dir $@)/$(DEPDIR); \
+   (o="$@: $<"; \
+    for d in `cat $@.gnatd.n`; do \
+       o="$$o $$d"; \
+    done; \
+    echo "$$o"; echo) \
+   >$(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@))
+ADA_OUTPUT_OPTION = $(OUTPUT_OPTION) > $@.gnatd.n
+endif
+
 
 .adb.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	mkdir -p $(dir $@)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 .ads.o:
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	mkdir -p $(dir $@)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 # Define the names for selecting Ada in LANGUAGES.
@@ -229,13 +247,13 @@ GNAT1_C_OBJS = ada/adadecode.o ada/adaint.o ada/argv.o ada/cio.o \
 
 # Object files from Ada sources that are used by gnat1
 GNAT_ADA_OBJS =	\
- ada/a-charac.o	\
- ada/a-chlat1.o	\
- ada/a-elchha.o	\
- ada/a-except.o	\
- ada/a-exctra.o \
- ada/a-ioexce.o	\
- ada/ada.o	\
+ ada/libgnat/a-charac.o	\
+ ada/libgnat/a-chlat1.o	\
+ ada/libgnat/a-elchha.o	\
+ ada/libgnat/a-except.o	\
+ ada/libgnat/a-exctra.o \
+ ada/libgnat/a-ioexce.o	\
+ ada/libgnat/ada.o	\
  ada/spark_xrefs.o	\
  ada/ali.o	\
  ada/alloc.o	\
@@ -293,21 +311,22 @@ GNAT_ADA_OBJS =	\
  ada/fname.o	\
  ada/freeze.o	\
  ada/frontend.o	\
- ada/g-byorma.o	\
- ada/g-hesora.o	\
- ada/g-htable.o	\
- ada/g-spchge.o	\
- ada/g-speche.o	\
- ada/g-u3spch.o	\
+ ada/libgnat/g-byorma.o	\
+ ada/libgnat/g-dynhta.o	\
+ ada/libgnat/g-hesora.o	\
+ ada/libgnat/g-htable.o	\
+ ada/libgnat/g-spchge.o	\
+ ada/libgnat/g-speche.o	\
+ ada/libgnat/g-u3spch.o	\
  ada/get_spark_xrefs.o	\
  ada/get_targ.o	\
  ada/ghost.o	\
- ada/gnat.o	\
+ ada/libgnat/gnat.o	\
  ada/gnatvsn.o	\
  ada/hostparm.o	\
  ada/impunit.o	\
  ada/inline.o	\
- ada/interfac.o	\
+ ada/libgnat/interfac.o	\
  ada/itypes.o	\
  ada/krunch.o	\
  ada/layout.o	\
@@ -335,60 +354,60 @@ GNAT_ADA_OBJS =	\
  ada/restrict.o	\
  ada/rident.o	\
  ada/rtsfind.o	\
- ada/s-addope.o	\
- ada/s-addima.o \
- ada/s-assert.o	\
- ada/s-bitops.o	\
- ada/s-carun8.o	\
- ada/s-casuti.o	\
- ada/s-conca2.o	\
- ada/s-conca3.o	\
- ada/s-conca4.o	\
- ada/s-conca5.o	\
- ada/s-conca6.o	\
- ada/s-conca7.o	\
- ada/s-conca8.o	\
- ada/s-conca9.o	\
- ada/s-crc32.o	\
- ada/s-crtl.o	\
- ada/s-excdeb.o	\
- ada/s-except.o	\
- ada/s-exctab.o	\
- ada/s-excmac.o \
- ada/s-htable.o	\
- ada/s-imenne.o	\
- ada/s-imgenu.o	\
- ada/s-imgint.o \
- ada/s-mastop.o	\
- ada/s-memory.o	\
- ada/s-os_lib.o	\
- ada/s-parame.o	\
- ada/s-purexc.o	\
- ada/s-restri.o	\
- ada/s-secsta.o	\
- ada/s-soflin.o	\
- ada/s-sopco3.o	\
- ada/s-sopco4.o	\
- ada/s-sopco5.o	\
- ada/s-stache.o	\
- ada/s-stalib.o	\
- ada/s-stoele.o	\
- ada/s-strcom.o	\
- ada/s-strhas.o	\
- ada/s-string.o	\
- ada/s-strops.o	\
- ada/s-traceb.o \
- ada/s-traent.o	\
- ada/s-trasym.o \
- ada/s-unstyp.o	\
- ada/s-utf_32.o	\
- ada/s-valint.o	\
- ada/s-valuns.o	\
- ada/s-valuti.o	\
- ada/s-wchcnv.o	\
- ada/s-wchcon.o	\
- ada/s-wchjis.o	\
- ada/s-wchstw.o \
+ ada/libgnat/s-addope.o	\
+ ada/libgnat/s-addima.o \
+ ada/libgnat/s-assert.o	\
+ ada/libgnat/s-bitops.o	\
+ ada/libgnat/s-carun8.o	\
+ ada/libgnat/s-casuti.o	\
+ ada/libgnat/s-conca2.o	\
+ ada/libgnat/s-conca3.o	\
+ ada/libgnat/s-conca4.o	\
+ ada/libgnat/s-conca5.o	\
+ ada/libgnat/s-conca6.o	\
+ ada/libgnat/s-conca7.o	\
+ ada/libgnat/s-conca8.o	\
+ ada/libgnat/s-conca9.o	\
+ ada/libgnat/s-crc32.o	\
+ ada/libgnat/s-crtl.o	\
+ ada/libgnat/s-excdeb.o	\
+ ada/libgnat/s-except.o	\
+ ada/libgnat/s-exctab.o	\
+ ada/libgnat/s-excmac.o \
+ ada/libgnat/s-htable.o	\
+ ada/libgnat/s-imenne.o	\
+ ada/libgnat/s-imgenu.o	\
+ ada/libgnat/s-imgint.o \
+ ada/libgnat/s-mastop.o	\
+ ada/libgnat/s-memory.o	\
+ ada/libgnat/s-os_lib.o	\
+ ada/libgnat/s-parame.o	\
+ ada/libgnat/s-purexc.o	\
+ ada/libgnat/s-restri.o	\
+ ada/libgnat/s-secsta.o	\
+ ada/libgnat/s-soflin.o	\
+ ada/libgnat/s-sopco3.o	\
+ ada/libgnat/s-sopco4.o	\
+ ada/libgnat/s-sopco5.o	\
+ ada/libgnat/s-stache.o	\
+ ada/libgnat/s-stalib.o	\
+ ada/libgnat/s-stoele.o	\
+ ada/libgnat/s-strcom.o	\
+ ada/libgnat/s-strhas.o	\
+ ada/libgnat/s-string.o	\
+ ada/libgnat/s-strops.o	\
+ ada/libgnat/s-traceb.o \
+ ada/libgnat/s-traent.o	\
+ ada/libgnat/s-trasym.o \
+ ada/libgnat/s-unstyp.o	\
+ ada/libgnat/s-utf_32.o	\
+ ada/libgnat/s-valint.o	\
+ ada/libgnat/s-valuns.o	\
+ ada/libgnat/s-valuti.o	\
+ ada/libgnat/s-wchcnv.o	\
+ ada/libgnat/s-wchcon.o	\
+ ada/libgnat/s-wchjis.o	\
+ ada/libgnat/s-wchstw.o \
  ada/scans.o	\
  ada/scil_ll.o	\
  ada/scn.o	\
@@ -425,6 +444,7 @@ GNAT_ADA_OBJS =	\
  ada/sem_res.o	\
  ada/sem_scil.o	\
  ada/sem_smem.o	\
+ ada/sem_spark.o	\
  ada/sem_type.o	\
  ada/sem_util.o	\
  ada/sem_warn.o	\
@@ -443,7 +463,7 @@ GNAT_ADA_OBJS =	\
  ada/stylesw.o	\
  ada/switch-c.o	\
  ada/switch.o	\
- ada/system.o	\
+ ada/libgnat/system.o	\
  ada/table.o	\
  ada/targparm.o	\
  ada/tbuild.o	\
@@ -468,11 +488,9 @@ GNAT1_ADA_OBJS = $(GNAT_ADA_OBJS) ada/back_end.o ada/gnat1drv.o
 GNAT1_OBJS = $(GNAT1_C_OBJS) $(GNAT1_ADA_OBJS) ada/b_gnat1.o
 
 GNATBIND_OBJS = \
- ada/a-clrefi.o   \
- ada/a-comlin.o   \
- ada/a-elchha.o   \
- ada/a-except.o   \
- ada/ada.o        \
+ ada/libgnat/a-elchha.o   \
+ ada/libgnat/a-except.o   \
+ ada/libgnat/ada.o        \
  ada/adaint.o     \
  ada/ali-util.o   \
  ada/ali.o        \
@@ -502,16 +520,16 @@ GNATBIND_OBJS = \
  ada/fmap.o       \
  ada/fname-uf.o   \
  ada/fname.o      \
- ada/g-byorma.o   \
- ada/g-hesora.o   \
- ada/g-htable.o   \
- ada/gnat.o       \
+ ada/libgnat/g-byorma.o   \
+ ada/libgnat/g-hesora.o   \
+ ada/libgnat/g-htable.o   \
+ ada/libgnat/gnat.o       \
  ada/gnatbind.o   \
  ada/gnatvsn.o    \
  ada/hostparm.o   \
  ada/init.o       \
  ada/initialize.o \
- ada/interfac.o   \
+ ada/libgnat/interfac.o   \
  ada/krunch.o     \
  ada/lib.o        \
  ada/link.o       \
@@ -527,52 +545,53 @@ GNATBIND_OBJS = \
  ada/rident.o     \
  ada/rtfinal.o    \
  ada/rtinit.o     \
- ada/s-addope.o   \
- ada/s-assert.o   \
- ada/s-carun8.o   \
- ada/s-casuti.o   \
- ada/s-conca2.o   \
- ada/s-conca3.o   \
- ada/s-conca4.o   \
- ada/s-conca5.o   \
- ada/s-conca6.o   \
- ada/s-conca7.o   \
- ada/s-conca8.o   \
- ada/s-conca9.o   \
- ada/s-crc32.o    \
- ada/s-crtl.o     \
- ada/s-excdeb.o   \
- ada/s-except.o   \
- ada/s-excmac.o   \
- ada/s-exctab.o   \
- ada/s-htable.o   \
- ada/s-imenne.o   \
- ada/s-imgenu.o   \
- ada/s-imgint.o   \
- ada/s-mastop.o   \
- ada/s-memory.o   \
- ada/s-os_lib.o   \
- ada/s-parame.o   \
- ada/s-restri.o   \
- ada/s-secsta.o   \
- ada/s-soflin.o   \
- ada/s-sopco3.o   \
- ada/s-sopco4.o   \
- ada/s-sopco5.o   \
- ada/s-stache.o   \
- ada/s-stalib.o   \
- ada/s-stoele.o   \
- ada/s-strhas.o   \
- ada/s-string.o   \
- ada/s-strops.o   \
- ada/s-traent.o   \
- ada/s-traceb.o   \
- ada/s-unstyp.o   \
- ada/s-utf_32.o   \
- ada/s-wchcnv.o   \
- ada/s-wchcon.o   \
- ada/s-wchjis.o   \
- ada/s-wchstw.o   \
+ ada/libgnat/s-addope.o   \
+ ada/libgnat/s-assert.o   \
+ ada/libgnat/s-carun8.o   \
+ ada/libgnat/s-casuti.o   \
+ ada/libgnat/s-conca2.o   \
+ ada/libgnat/s-conca3.o   \
+ ada/libgnat/s-conca4.o   \
+ ada/libgnat/s-conca5.o   \
+ ada/libgnat/s-conca6.o   \
+ ada/libgnat/s-conca7.o   \
+ ada/libgnat/s-conca8.o   \
+ ada/libgnat/s-conca9.o   \
+ ada/libgnat/s-crc32.o    \
+ ada/libgnat/s-crtl.o     \
+ ada/libgnat/s-excdeb.o   \
+ ada/libgnat/s-except.o   \
+ ada/libgnat/s-excmac.o   \
+ ada/libgnat/s-exctab.o   \
+ ada/libgnat/s-htable.o   \
+ ada/libgnat/s-imenne.o   \
+ ada/libgnat/s-imgenu.o   \
+ ada/libgnat/s-imgint.o   \
+ ada/libgnat/s-mastop.o   \
+ ada/libgnat/s-memory.o   \
+ ada/libgnat/s-os_lib.o   \
+ ada/libgnat/s-parame.o   \
+ ada/libgnat/s-resfil.o   \
+ ada/libgnat/s-restri.o   \
+ ada/libgnat/s-secsta.o   \
+ ada/libgnat/s-soflin.o   \
+ ada/libgnat/s-sopco3.o   \
+ ada/libgnat/s-sopco4.o   \
+ ada/libgnat/s-sopco5.o   \
+ ada/libgnat/s-stache.o   \
+ ada/libgnat/s-stalib.o   \
+ ada/libgnat/s-stoele.o   \
+ ada/libgnat/s-strhas.o   \
+ ada/libgnat/s-string.o   \
+ ada/libgnat/s-strops.o   \
+ ada/libgnat/s-traent.o   \
+ ada/libgnat/s-traceb.o   \
+ ada/libgnat/s-unstyp.o   \
+ ada/libgnat/s-utf_32.o   \
+ ada/libgnat/s-wchcnv.o   \
+ ada/libgnat/s-wchcon.o   \
+ ada/libgnat/s-wchjis.o   \
+ ada/libgnat/s-wchstw.o   \
  ada/scans.o      \
  ada/scil_ll.o    \
  ada/scng.o       \
@@ -590,7 +609,7 @@ GNATBIND_OBJS = \
  ada/stylesw.o    \
  ada/switch-b.o   \
  ada/switch.o     \
- ada/system.o     \
+ ada/libgnat/system.o     \
  ada/table.o      \
  ada/targext.o    \
  ada/targparm.o   \
@@ -617,12 +636,14 @@ endif
 # For unwind-pe.h
 CFLAGS-ada/raise-gcc.o += -I$(srcdir)/../libgcc -DEH_MECHANISM_$(EH_MECHANISM)
 
-ada/s-excmac.o: ada/s-excmac.ads ada/s-excmac.adb
+ada/libgnat/s-excmac.o: ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
 
-ada/s-excmac.ads: $(srcdir)/ada/s-excmac-$(EH_MECHANISM).ads
+ada/libgnat/s-excmac.ads: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).ads
+	mkdir -p ada/libgnat
 	$(CP) $< $@
 
-ada/s-excmac.adb: $(srcdir)/ada/s-excmac-$(EH_MECHANISM).adb
+ada/libgnat/s-excmac.adb: $(srcdir)/ada/libgnat/s-excmac__$(EH_MECHANISM).adb
+	mkdir -p ada/libgnat
 	$(CP) $< $@
 
 # Needs to be built with CC=gcc
@@ -978,16 +999,16 @@ ada/b_gnat1.o : ada/b_gnat1.adb
         # Do not use ADAFLAGS to get rid of -gnatg which generates a lot
         # of style messages.
 	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) -gnatp -gnatws $(ADA_INCLUDES) \
-	    $< $(OUTPUT_OPTION)
+	    $< $(ADA_OUTPUT_OPTION)
 
-ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o ada/interfac.o
+ada/b_gnatb.adb : $(GNATBIND_OBJS) ada/gnatbind.o ada/libgnat/interfac.o
         # Old gnatbind do not allow a path for -o.
 	$(GNATBIND) $(ADA_INCLUDES) -o b_gnatb.adb ada/gnatbind.ali
 	$(MV) b_gnatb.adb b_gnatb.ads ada/
 
 ada/b_gnatb.o : ada/b_gnatb.adb
 	$(CC) -c $(CFLAGS) $(ADA_CFLAGS) -gnatp -gnatws $(ADA_INCLUDES) \
-	    $< $(OUTPUT_OPTION)
+	    $< $(ADA_OUTPUT_OPTION)
 
 include $(srcdir)/ada/Make-generated.in
 
@@ -996,35 +1017,35 @@ update-sources : ada/treeprs.ads ada/einfo.h ada/sinfo.h ada/nmake.adb \
 	$(RM) $(addprefix $(srcdir)/ada/,$(notdir $^))
 	$(CP) $^ $(srcdir)/ada
 
-ada/sdefault.o : ada/ada.ads ada/a-except.ads ada/a-unccon.ads \
-   ada/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads ada/namet.ads \
+ada/sdefault.o : ada/libgnat/ada.ads ada/libgnat/a-except.ads ada/libgnat/a-unccon.ads \
+   ada/libgnat/a-uncdea.ads ada/alloc.ads ada/debug.ads ada/hostparm.ads ada/namet.ads \
    ada/opt.ads ada/osint.ads ada/output.ads ada/sdefault.ads ada/sdefault.adb \
-   ada/s-exctab.ads ada/s-memory.ads ada/s-os_lib.ads ada/s-parame.ads \
-   ada/s-stalib.ads ada/s-strops.ads ada/s-sopco3.ads ada/s-sopco4.ads \
-   ada/s-sopco5.ads ada/s-string.ads ada/s-traent.ads ada/s-unstyp.ads \
-   ada/s-wchcon.ads ada/system.ads ada/table.adb ada/table.ads ada/tree_io.ads \
-   ada/types.ads ada/unchdeal.ads ada/unchconv.ads
+   ada/libgnat/s-exctab.ads ada/libgnat/s-memory.ads ada/libgnat/s-os_lib.ads ada/libgnat/s-parame.ads \
+   ada/libgnat/s-stalib.ads ada/libgnat/s-strops.ads ada/libgnat/s-sopco3.ads ada/libgnat/s-sopco4.ads \
+   ada/libgnat/s-sopco5.ads ada/libgnat/s-string.ads ada/libgnat/s-traent.ads ada/libgnat/s-unstyp.ads \
+   ada/libgnat/s-wchcon.ads ada/libgnat/system.ads ada/table.adb ada/table.ads ada/tree_io.ads \
+   ada/types.ads ada/libgnat/unchdeal.ads ada/libgnat/unchconv.ads
 
 # Special flags - see gcc-interface/Makefile.in for the template.
 
-ada/a-except.o : ada/a-except.adb ada/a-except.ads ada/s-excmac.ads ada/s-excmac.adb
+ada/libgnat/a-except.o : ada/libgnat/a-except.adb ada/libgnat/a-except.ads ada/libgnat/s-excmac.ads ada/libgnat/s-excmac.adb
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O1 -fno-inline \
-	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	 $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
-ada/s-excdeb.o : ada/s-excdeb.adb ada/s-excdeb.ads
+ada/libgnat/s-excdeb.o : ada/libgnat/s-excdeb.adb ada/libgnat/s-excdeb.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) -O0 \
-	 $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	 $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
-ada/s-assert.o  : ada/s-assert.adb ada/s-assert.ads
+ada/libgnat/s-assert.o  : ada/libgnat/s-assert.adb ada/libgnat/s-assert.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
-	  $< $(OUTPUT_OPTION)
+	  $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
-ada/a-tags.o  : ada/a-tags.adb ada/a-tags.ads
+ada/libgnat/a-tags.o  : ada/libgnat/a-tags.adb ada/libgnat/a-tags.ads
 	$(CC) -c $(ALL_ADAFLAGS) $(FORCE_DEBUG_ADAFLAGS) $(ADA_INCLUDES) \
-	  $< $(OUTPUT_OPTION)
+	  $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 # Handling of gnatvsn version string
@@ -1042,19 +1063,19 @@ ada/generated/gnatvsn.ads: ada/gnatvsn.ads BASE-VER ada/GNAT_DATE
 	cat $< | sed -e "/Version/s/(\([0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]\).*)/($$d$$s)/g" >$@
 
 ada/gnatvsn.o : ada/gnatvsn.adb ada/generated/gnatvsn.ads
-	$(CC) -c $(ALL_ADAFLAGS) -Iada/generated -I../ada/generated $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) -Iada/generated -I../ada/generated $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 	@$(ADA_DEPS)
 
 # Dependencies for windows specific tool (mdll)
 
 ada/mdll.o : ada/mdll.adb ada/mdll.ads ada/mdll-fil.ads ada/mdll-utl.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 
 ada/mdll-fil.o : ada/mdll-fil.adb ada/mdll.ads ada/mdll-fil.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 
 ada/mdll-utl.o : ada/mdll-utl.adb ada/mdll.ads ada/mdll-utl.ads ada/sdefault.ads ada/types.ads
-	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(OUTPUT_OPTION)
+	$(CC) -c $(ALL_ADAFLAGS) $(ADA_INCLUDES) $< $(ADA_OUTPUT_OPTION)
 
 ada_generated_files = ada/sinfo.h ada/einfo.h ada/nmake.adb ada/nmake.ads \
 		      ada/treeprs.ads ada/snames.ads ada/snames.adb ada/snames.h \

@@ -405,7 +405,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
 
   /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
      with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
 	      > 2 * HOST_BITS_PER_WIDE_INT))
     return VR_VARYING;
 

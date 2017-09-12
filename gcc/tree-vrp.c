@@ -3572,6 +3572,7 @@ extract_range_basic (value_range *vr, gimple *stmt)
       int mini, maxi, zerov = 0, prec;
       enum tree_code subcode = ERROR_MARK;
       combined_fn cfn = gimple_call_combined_fn (stmt);
+      scalar_int_mode mode;
 
       switch (cfn)
 	{
@@ -3632,10 +3633,9 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
 	  maxi = prec;
-	  if (optab_handler (clz_optab, TYPE_MODE (TREE_TYPE (arg)))
-	      != CODE_FOR_nothing
-	      && CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (arg)),
-					    zerov)
+	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
 	      /* Handle only the single common value.  */
 	      && zerov != prec)
 	    /* Magic value to give up, unless vr0 proves
@@ -3684,10 +3684,9 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
 	  maxi = prec - 1;
-	  if (optab_handler (ctz_optab, TYPE_MODE (TREE_TYPE (arg)))
-	      != CODE_FOR_nothing
-	      && CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (arg)),
-					    zerov))
+	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
 	    {
 	      /* Handle only the two common values.  */
 	      if (zerov == -1)
@@ -10094,8 +10093,9 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range *vr = get_value_range (rhs1);
-  machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
-  machine_mode mode;
+  scalar_float_mode fltmode
+    = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
+  scalar_int_mode mode;
   tree tem;
   gassign *conv;
 
@@ -10106,21 +10106,21 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
     return false;
 
   /* First check if we can use a signed type in place of an unsigned.  */
+  scalar_int_mode rhs_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs1));
   if (TYPE_UNSIGNED (TREE_TYPE (rhs1))
-      && (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)), 0)
-	  != CODE_FOR_nothing)
+      && can_float_p (fltmode, rhs_mode, 0) != CODE_FOR_nothing
       && range_fits_type_p (vr, TYPE_PRECISION (TREE_TYPE (rhs1)), SIGNED))
-    mode = TYPE_MODE (TREE_TYPE (rhs1));
+    mode = rhs_mode;
   /* If we can do the conversion in the current input mode do nothing.  */
-  else if (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)),
+  else if (can_float_p (fltmode, rhs_mode,
 			TYPE_UNSIGNED (TREE_TYPE (rhs1))) != CODE_FOR_nothing)
     return false;
   /* Otherwise search for a mode we can use, starting from the narrowest
      integer mode available.  */
   else
     {
-      mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-      do
+      mode = NARROWEST_INT_MODE;
+      for (;;)
 	{
 	  /* If we cannot do a signed conversion to float from mode
 	     or if the value-range does not fit in the signed type
@@ -10129,15 +10129,12 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 	      && range_fits_type_p (vr, GET_MODE_PRECISION (mode), SIGNED))
 	    break;
 
-	  mode = GET_MODE_WIDER_MODE (mode);
 	  /* But do not widen the input.  Instead leave that to the
 	     optabs expansion code.  */
-	  if (GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
+	  if (!GET_MODE_WIDER_MODE (mode).exists (&mode)
+	      || GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
 	    return false;
 	}
-      while (mode != VOIDmode);
-      if (mode == VOIDmode)
-	return false;
     }
 
   /* It works, insert a truncation or sign-change before the

@@ -74,6 +74,49 @@ remove_fallthru_edge (vec<edge, va_gc> *ev)
   return false;
 }
 
+/* Convert a SWTCH with single non-default case to gcond and replace it
+   at GSI.  */
+
+static bool
+convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
+{
+  if (gimple_switch_num_labels (swtch) != 2)
+    return false;
+
+  tree index = gimple_switch_index (swtch);
+  tree default_label = CASE_LABEL (gimple_switch_default_label (swtch));
+  tree label = gimple_switch_label (swtch, 1);
+  tree low = CASE_LOW (label);
+  tree high = CASE_HIGH (label);
+
+  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block case_bb = label_to_block_fn (cfun, CASE_LABEL (label));
+
+  basic_block bb = gimple_bb (swtch);
+  gcond *cond;
+
+  /* Replace switch statement with condition statement.  */
+  if (high)
+    {
+      tree lhs, rhs;
+      generate_range_test (bb, index, low, high, &lhs, &rhs);
+      cond = gimple_build_cond (LE_EXPR, lhs, rhs, NULL_TREE, NULL_TREE);
+    }
+  else
+    cond = gimple_build_cond (EQ_EXPR, index,
+			      fold_convert (TREE_TYPE (index), low),
+			      NULL_TREE, NULL_TREE);
+
+  gsi_replace (&gsi, cond, true);
+
+  /* Update edges.  */
+  edge case_edge = find_edge (bb, case_bb);
+  edge default_edge = find_edge (bb, default_bb);
+
+  case_edge->flags |= EDGE_TRUE_VALUE;
+  default_edge->flags |= EDGE_FALSE_VALUE;
+  return true;
+}
 
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
@@ -92,6 +135,12 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
       edge_iterator ei;
       bool warned;
       tree val = NULL_TREE;
+
+      /* Try to convert a switch with just a single non-default case to
+	 GIMPLE condition.  */
+      if (gimple_code (stmt) == GIMPLE_SWITCH
+	  && convert_single_case_switch (as_a<gswitch *> (stmt), gsi))
+	stmt = gsi_stmt (gsi);
 
       fold_defer_overflow_warnings ();
       switch (gimple_code (stmt))

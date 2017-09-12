@@ -812,11 +812,11 @@ c_common_type (tree t1, tree t2)
   if (code1 == FIXED_POINT_TYPE || code2 == FIXED_POINT_TYPE)
     {
       unsigned int unsignedp = 0, satp = 0;
-      machine_mode m1, m2;
+      scalar_mode m1, m2;
       unsigned int fbit1, ibit1, fbit2, ibit2, max_fbit, max_ibit;
 
-      m1 = TYPE_MODE (t1);
-      m2 = TYPE_MODE (t2);
+      m1 = SCALAR_TYPE_MODE (t1);
+      m2 = SCALAR_TYPE_MODE (t2);
 
       /* If one input type is saturating, the result type is saturating.  */
       if (TYPE_SATURATING (t1) || TYPE_SATURATING (t2))
@@ -848,7 +848,8 @@ c_common_type (tree t1, tree t2)
 		mclass = MODE_ACCUM;
 	      else
 		gcc_unreachable ();
-	      m1 = mode_for_size (GET_MODE_PRECISION (m1), mclass, 0);
+	      m1 = as_a <scalar_mode>
+		(mode_for_size (GET_MODE_PRECISION (m1), mclass, 0));
 	    }
 	  if (code2 == FIXED_POINT_TYPE && TYPE_UNSIGNED (t2))
 	    {
@@ -859,7 +860,8 @@ c_common_type (tree t1, tree t2)
 		mclass = MODE_ACCUM;
 	      else
 		gcc_unreachable ();
-	      m2 = mode_for_size (GET_MODE_PRECISION (m2), mclass, 0);
+	      m2 = as_a <scalar_mode>
+		(mode_for_size (GET_MODE_PRECISION (m2), mclass, 0));
 	    }
 	}
 
@@ -3917,7 +3919,9 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
   tree lhs_type = TREE_TYPE (lhs);
   tree lhs_addr = build_unary_op (loc, ADDR_EXPR, lhs, false);
   tree seq_cst = build_int_cst (integer_type_node, MEMMODEL_SEQ_CST);
-  tree rhs_type = TREE_TYPE (rhs);
+  tree rhs_semantic_type = TREE_TYPE (rhs);
+  tree nonatomic_rhs_semantic_type;
+  tree rhs_type;
 
   gcc_assert (TYPE_ATOMIC (lhs_type));
 
@@ -3931,6 +3935,15 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
      with a loop.  */
   compound_stmt = c_begin_compound_stmt (false);
 
+  /* Remove any excess precision (which is only present here in the
+     case of compound assignments).  */
+  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+    {
+      gcc_assert (modifycode != NOP_EXPR);
+      rhs = TREE_OPERAND (rhs, 0);
+    }
+  rhs_type = TREE_TYPE (rhs);
+
   /* Fold the RHS if it hasn't already been folded.  */
   if (modifycode != NOP_EXPR)
     rhs = c_fully_fold (rhs, false, NULL);
@@ -3939,6 +3952,8 @@ build_atomic_assign (location_t loc, tree lhs, enum tree_code modifycode,
      the VAL temp variable to hold the RHS.  */
   nonatomic_lhs_type = build_qualified_type (lhs_type, TYPE_UNQUALIFIED);
   nonatomic_rhs_type = build_qualified_type (rhs_type, TYPE_UNQUALIFIED);
+  nonatomic_rhs_semantic_type = build_qualified_type (rhs_semantic_type,
+						      TYPE_UNQUALIFIED);
   val = create_tmp_var_raw (nonatomic_rhs_type);
   TREE_ADDRESSABLE (val) = 1;
   TREE_NO_WARNING (val) = 1;
@@ -4098,8 +4113,17 @@ cas_loop:
   add_stmt (loop_label);
 
   /* newval = old + val;  */
+  if (rhs_type != rhs_semantic_type)
+    val = build1 (EXCESS_PRECISION_EXPR, nonatomic_rhs_semantic_type, val);
   rhs = build_binary_op (loc, modifycode, old, val, true);
-  rhs = c_fully_fold (rhs, false, NULL);
+  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+    {
+      tree eptype = TREE_TYPE (rhs);
+      rhs = c_fully_fold (TREE_OPERAND (rhs, 0), false, NULL);
+      rhs = build1 (EXCESS_PRECISION_EXPR, eptype, rhs);
+    }
+  else
+    rhs = c_fully_fold (rhs, false, NULL);
   rhs = convert_for_assignment (loc, UNKNOWN_LOCATION, nonatomic_lhs_type,
 				rhs, NULL_TREE, ic_assign, false, NULL_TREE,
 				NULL_TREE, 0);
@@ -5725,7 +5749,6 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
   tree result;
   tree newrhs;
   tree rhseval = NULL_TREE;
-  tree rhs_semantic_type = NULL_TREE;
   tree lhstype = TREE_TYPE (lhs);
   tree olhstype = lhstype;
   bool npc;
@@ -5751,12 +5774,6 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
     return error_mark_node;
 
   is_atomic_op = really_atomic_lvalue (lhs);
-
-  if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
-    {
-      rhs_semantic_type = TREE_TYPE (rhs);
-      rhs = TREE_OPERAND (rhs, 0);
-    }
 
   newrhs = rhs;
 
@@ -5792,8 +5809,14 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 	     that modify LHS.  */
 	  if (TREE_SIDE_EFFECTS (rhs))
 	    {
-	      newrhs = save_expr (rhs);
+	      if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+		newrhs = save_expr (TREE_OPERAND (rhs, 0));
+	      else
+		newrhs = save_expr (rhs);
 	      rhseval = newrhs;
+	      if (TREE_CODE (rhs) == EXCESS_PRECISION_EXPR)
+		newrhs = build1 (EXCESS_PRECISION_EXPR, TREE_TYPE (rhs),
+				 newrhs);
 	    }
 	  newrhs = build_binary_op (location,
 				    modifycode, lhs, newrhs, true);
@@ -5808,7 +5831,10 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
     {
       /* Check if we are modifying an Objective-C property reference;
 	 if so, we need to generate setter calls.  */
-      result = objc_maybe_build_modify_expr (lhs, newrhs);
+      if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+	result = objc_maybe_build_modify_expr (lhs, TREE_OPERAND (newrhs, 0));
+      else
+	result = objc_maybe_build_modify_expr (lhs, newrhs);
       if (result)
 	goto return_result;
 
@@ -5885,6 +5911,12 @@ build_modify_expr (location_t location, tree lhs, tree lhs_origtype,
 
   if (!(is_atomic_op && modifycode != NOP_EXPR))
     {
+      tree rhs_semantic_type = NULL_TREE;
+      if (TREE_CODE (newrhs) == EXCESS_PRECISION_EXPR)
+	{
+	  rhs_semantic_type = TREE_TYPE (newrhs);
+	  newrhs = TREE_OPERAND (newrhs, 0);
+	}
       npc = null_pointer_constant_p (newrhs);
       newrhs = c_fully_fold (newrhs, false, NULL);
       if (rhs_semantic_type)
@@ -11414,7 +11446,8 @@ build_binary_op (location_t location, enum tree_code code,
 
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+					 (SCALAR_TYPE_MODE
+					  (TREE_TYPE (type0))), 0);
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;
@@ -11573,7 +11606,8 @@ build_binary_op (location_t location, enum tree_code code,
 
           /* Always construct signed integer vector type.  */
           intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+					 (SCALAR_TYPE_MODE
+					  (TREE_TYPE (type0))), 0);
           result_type = build_opaque_vector_type (intt,
 						  TYPE_VECTOR_SUBPARTS (type0));
           converted = 1;

@@ -63,7 +63,7 @@
    of a size that is a power of 2.  For example it can try to emit a 40-bit
    store as a 32-bit store followed by an 8-bit store.
    We try to emit as wide stores as we can while respecting STRICT_ALIGNMENT or
-   SLOW_UNALIGNED_ACCESS rules.
+   TARGET_SLOW_UNALIGNED_ACCESS rules.
 
    Note on endianness and example:
    Consider 2 contiguous 16-bit stores followed by 2 contiguous 8-bit stores:
@@ -354,7 +354,7 @@ encode_tree_to_bitpos (tree expr, unsigned char *ptr, int bitlen, int bitpos,
   tree tmp_int = expr;
   bool sub_byte_op_p = ((bitlen % BITS_PER_UNIT)
 			|| (bitpos % BITS_PER_UNIT)
-			|| mode_for_size (bitlen, MODE_INT, 0) == BLKmode);
+			|| !int_mode_for_size (bitlen, 0).exists ());
 
   if (!sub_byte_op_p)
     return (native_encode_expr (tmp_int, ptr + first_byte, total_bytes, 0)

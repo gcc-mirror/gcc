@@ -121,7 +121,11 @@ namespace __detail
 
 #if __cplusplus > 201402L
 
+#define __cpp_lib_gcd_lcm 201606
+// These were used in drafts of SD-6:
 #define __cpp_lib_gcd 201606
+#define __cpp_lib_lcm 201606
+
   /// Greatest common divisor
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>
@@ -134,7 +138,6 @@ namespace __detail
       return __detail::__gcd(__m, __n);
     }
 
-#define __cpp_lib_lcm 201606
   /// Least common multiple
   template<typename _Mn, typename _Nn>
     constexpr common_type_t<_Mn, _Nn>

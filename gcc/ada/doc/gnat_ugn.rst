@@ -1,38 +1,40 @@
 GNAT User's Guide for Native Platforms
 ======================================
 
-*GNAT, The GNU Ada Development Environment*
+.. only:: not latex
 
-.. only:: PRO
+    *GNAT, The GNU Ada Development Environment*
 
-   *GNAT Pro Edition*
+    .. only:: PRO
 
-   | Version |version|
-   | Date: |today|
+       *GNAT Pro Edition*
 
-.. only:: GPL
+       | Version |version|
+       | Date: |today|
 
-   *GNAT GPL Edition*
+    .. only:: GPL
 
-   | Version |version|
-   | Date: |today|
+       *GNAT GPL Edition*
 
-.. only:: FSF
+       | Version |version|
+       | Date: |today|
 
-   .. raw:: texinfo
+    .. only:: FSF
 
-      @include gcc-common.texi
-      GCC version @value{version-GCC}@*
+       .. raw:: texinfo
 
-AdaCore
+          @include gcc-common.texi
+          GCC version @value{version-GCC}@*
 
-Permission is granted to copy, distribute and/or modify this document
-under the terms of the GNU Free Documentation License, Version 1.3 or
-any later version published by the Free Software Foundation; with no
-Invariant Sections, with the Front-Cover Texts being
-"GNAT User's Guide for Native Platforms",
-and with no Back-Cover Texts.  A copy of the license is
-included in the section entitled :ref:`gnu_fdl`.
+    AdaCore
+
+    Permission is granted to copy, distribute and/or modify this document
+    under the terms of the GNU Free Documentation License, Version 1.3 or
+    any later version published by the Free Software Foundation; with no
+    Invariant Sections, with the Front-Cover Texts being
+    "GNAT User's Guide for Native Platforms",
+    and with no Back-Cover Texts.  A copy of the license is
+    included in the section entitled :ref:`gnu_fdl`.
 
 .. toctree::
    :maxdepth: 3

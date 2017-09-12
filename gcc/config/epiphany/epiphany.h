@@ -302,28 +302,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HARD_REGNO_RENAME_OK(SRC, DST) epiphany_regno_rename_ok (SRC, DST)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern const unsigned int epiphany_hard_regno_mode_ok[];
-extern unsigned int epiphany_mode_class[];
-#define HARD_REGNO_MODE_OK(REGNO, MODE) hard_regno_mode_ok((REGNO), (MODE))
-
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
-   MODE2)' must be zero.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
 /* Register classes and constants.  */
 
 /* Define the classes of registers for register constraints in the
@@ -641,7 +619,8 @@ typedef struct GTY (()) machine_function
 
 #define RTX_OK_FOR_OFFSET_P(MODE, X) \
   RTX_OK_FOR_OFFSET_1 (GET_MODE_CLASS (MODE) == MODE_VECTOR_INT \
-		       && epiphany_vect_align == 4 ? SImode : (MODE), X)
+		       && epiphany_vect_align == 4 \
+		       ? (machine_mode) SImode : (machine_mode) (MODE), X)
 #define RTX_OK_FOR_OFFSET_1(MODE, X) \
   (GET_CODE (X) == CONST_INT \
    && !(INTVAL (X) & (GET_MODE_SIZE (MODE) - 1)) \

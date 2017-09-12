@@ -162,7 +162,7 @@ static void pdp11_function_arg_advance (cumulative_args_t,
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (machine_mode, rtx);
 
-static bool pdp11_scalar_mode_supported_p (machine_mode);
+static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -235,6 +235,14 @@ static bool pdp11_scalar_mode_supported_p (machine_mode);
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P pdp11_scalar_mode_supported_p
+
+#undef  TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS pdp11_hard_regno_nregs
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK pdp11_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P pdp11_modes_tieable_p
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1911,7 +1919,7 @@ pdp11_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
-pdp11_scalar_mode_supported_p (machine_mode mode)
+pdp11_scalar_mode_supported_p (scalar_mode mode)
 {
   /* Support SFmode even with -mfloat64.  */
   if (mode == SFmode)
@@ -1923,6 +1931,43 @@ int
 pdp11_branch_cost ()
 {
   return (TARGET_BRANCH_CHEAP ? 0 : 1);
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+pdp11_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno <= PC_REGNUM)
+    return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the pdp, the cpu registers
+   can hold any mode other than float (because otherwise we may end up
+   being asked to move from CPU to FPU register, which isn't a valid
+   operation on the PDP11).  For CPU registers, check alignment.
+
+   FPU accepts SF and DF but actually holds a DF - simplifies life!  */
+
+static bool
+pdp11_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (regno <= PC_REGNUM)
+    return (GET_MODE_BITSIZE (mode) <= 16
+	    || (GET_MODE_BITSIZE (mode) >= 32
+		&& !(regno & 1)
+		&& !FLOAT_MODE_P (mode)));
+
+  return FLOAT_MODE_P (mode);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+pdp11_modes_tieable_p (machine_mode, machine_mode)
+{
+  return false;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

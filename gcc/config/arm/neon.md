@@ -2532,12 +2532,12 @@
            but we will never expand to UNSPECs for the integer comparisons.  */
         switch (<MODE>mode)
           {
-            case V2SFmode:
+            case E_V2SFmode:
               emit_insn (gen_neon_vc<cmp_op>v2sf_insn_unspec (operands[0],
                                                               operands[1],
                                                               operands[2]));
               break;
-            case V4SFmode:
+            case E_V4SFmode:
               emit_insn (gen_neon_vc<cmp_op>v4sf_insn_unspec (operands[0],
                                                               operands[1],
                                                               operands[2]));

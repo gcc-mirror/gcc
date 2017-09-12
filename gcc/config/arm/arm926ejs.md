@@ -133,43 +133,43 @@
 ;; most common and (b) the pessimistic assumption will lead to fewer stalls.
 (define_insn_reservation "9_load1_op" 3
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "load1,load_byte"))
+      (eq_attr "type" "load_4,load_byte"))
  "e*2,m,w")
 
 (define_insn_reservation "9_store1_op" 0
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "store1"))
+      (eq_attr "type" "store_4"))
  "e,m,w")
 
 ;; multiple word loads and stores
 (define_insn_reservation "9_load2_op" 3
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "load2"))
+      (eq_attr "type" "load_8"))
  "e,m*2,w")
 
 (define_insn_reservation "9_load3_op" 4
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "load3"))
+      (eq_attr "type" "load_12"))
  "e,m*3,w")
 
 (define_insn_reservation "9_load4_op" 5
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "load4"))
+      (eq_attr "type" "load_16"))
  "e,m*4,w")
 
 (define_insn_reservation "9_store2_op" 0
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "store2"))
+      (eq_attr "type" "store_8"))
  "e,m*2,w")
 
 (define_insn_reservation "9_store3_op" 0
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "store3"))
+      (eq_attr "type" "store_12"))
  "e,m*3,w")
 
 (define_insn_reservation "9_store4_op" 0
  (and (eq_attr "tune" "arm926ejs")
-      (eq_attr "type" "store4"))
+      (eq_attr "type" "store_16"))
  "e,m*4,w")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

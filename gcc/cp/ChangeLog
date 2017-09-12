@@ -1,3 +1,359 @@
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	Kill CLASSTYPE_SORTED_FIELDS.
+	* cp-tree.h (struct lang_type): Lose sorted_fields member.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	* name-lookup.h (set_class_bindings): Add EXTRA arg.
+	* name-lookup.c (fields_linear_search): New, broken out of ...
+	(lookup_field_1): ... here.  Delete remainder of function.
+	(get_class_binding_direct): Reimplement without sorted_fields.
+	(get_class_binding): Rename TYPE arg to KLASS, for consistency.
+	(get_method_slot): Call set_class_binding when creating method_vec
+	on complete type.
+	(method_name_cmp): Order identically named slots.
+	(sorted_fields_type_new): Delete.
+	(field_vc_append_class_fields): Rename to ...
+	(method_vec_append_class_fields): ... here.  Adjust.
+	(field_vec_append_enum_values): Renme to ...
+	(method_vec_append_enum_values): ... here. Adjust.
+	(method_vec_dedup): New.
+	(set_class_bindings): Reimplement.
+	(insert_late_enum_def_bindings): Reimplement.
+
+	* name-lookup.c (get_class_binding): Rename TYPE arg to KLASS for
+	consistency.
+	(restort_data): Move later.
+	(method_name_cmp, resort_method_name_cmp): Simplify.
+	(resort_type_method_vec): Reformat.
+
+2017-09-09  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (reduced_constant_expression_p): If
+	CONSTRUCTOR_NO_IMPLICIT_ZERO, check that all fields are initialized.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/81926
+	* cp-objcp-common.c (struct debug_type_hasher): New class.
+	(debug_type_hash): New variable.
+	(cp_get_debug_type): Associate the OFFSET_TYPEs with the types.
+
+2017-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* tree.c (cxx_copy_lang_qualifiers): New.
+	* cp-tree.h: Declare it.
+	* cp-objcp-common.h: Define LANG_HOOKS_COPY_LANG_QUALIFIERS.
+
+2017-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82053 - ICE with default argument in lambda in template
+	* pt.c (tsubst_arg_types): Substitute default arguments for lambdas
+	in templates.
+	(retrieve_specialization): Use lambda_fn_in_template_p.
+	* cp-tree.h: Declare it.
+
+	PR c++/82070 - error with nested lambda capture
+	* pt.c (tsubst_expr) [DECL_EXPR]: Register capture proxies with
+	register_local_specialization.
+
+2017-09-06  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.h (lookup_field_1): Delete.
+	(get_class_binding_direct, get_class_binding): Add type_or_fns arg.
+	* name-lookup.c	(lookup_field_1): make static
+	(method_vec_binary_search, method_vec_linear_search): New.  Broken
+	out of ...
+	(get_class_binding_direct): ... here.  Add TYPE_OR_FNS argument.
+	Do complete search of this level.
+	(get_class_binding): Adjust.
+	* decl.c (reshape_init_class): Call get_class_binding.
+	* search.c (lookup_field_r): Move field searching into
+	get_class_binding_direct.
+
+	* class.c (warn_hidden): Don't barf on non-functions.
+	* decl2.c (check_classfn): Likewise.  Check template match earlier.
+
+	* name-lookup.c (count_fields): Rename to ...
+	(count_class_fields): ... here.  Take a class, don't count
+	NULL-named fields.
+	(add_fields_to_record_type): Rename to ...
+	(field_vec_append_class_fields): ... here.  Take a class, don't
+	add NULL-named fields.
+	(add_enum_fields_to_record_type): Rename to ...
+	(field_vec_append_enum_values): ... here.
+	(set_class_bindings): Adjust, assert we added expected number.
+	(insert_late_enum_def_bindings): Reimplement.  Create vector if
+	there are now sufficient entries.
+
+	* name-lookup.h (lookup_fnfields_slot_nolazy,
+	lookup_fnfields_slot): Rename to ...
+	(get_class_binding_direct, get_class_binding): ... here.
+	* name-lookup.c (lookup_fnfields_slot_nolazy,
+	lookup_fnfields_slot): Rename to ...
+	(get_class_binding_direct, get_class_binding): ... here.
+	* cp-tree.h (CLASSTYPE_CONSTRUCTORS, CLASSTYPE_DESTRUCTOR): Adjust.
+	* call.c (build_user_type_conversion_1): Adjust.
+	(has_trivial_copy_assign_p): Adjust.
+	(has_trivial_copy_p): Adjust.
+	* class.c (get_basefndecls) Adjust.
+	(vbase_has_user_provided_move_assign) Adjust.
+	(classtype_has_move_assign_or_move_ctor_p): Adjust.
+	(type_build_ctor_call, type_build_dtor_call): Adjust.
+	* decl.c (register_dtor_fn): Adjust.
+	* decl2.c (check_classfn): Adjust.
+	* pt.c (retrieve_specialization): Adjust.
+	(check_explicit_specialization): Adjust.
+	(do_class_deduction): Adjust.
+	* search.c (lookup_field_r): Adjust.
+	(look_for_overrides_here, lookup_conversions_r): Adjust.
+	* semantics.c (classtype_has_nothrow_assign_or_copy_p): Adjust.
+	* tree.c (type_has_nontrivial_copy_init): Adjust.
+	* method.c (lazily_declare_fn): Adjust comment.
+
+2017-09-05  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (do_class_using_decl): Elide read-once temps.
+	Move declarations to initializations.
+
+	* class.c (add_method): Move slot search and insertion to ...
+	* name-lookup.c (get_method_slot): ... this new function.
+	(lookup_fnfields_slot_nolazy): Cope with NULL slot.
+	* name-lookup.h (get_method_slot): Declare.
+	* decl.c (cxx_init_decl_processinng): Give conv_op_marker a more
+	realistic type.
+	(grok_special_member_properties): Set
+	TYPE_HAS_CONVERSION. Expicitly look at DECL_NAME for specialness.
+	Improve TYPE_HAS_CONSTEXPR_CTOR setting.	
+
+	* cp-tree.h (lang_decl_base): Rename template_conv_p to
+	unknown_bound_p.
+	(DECL_CONV_FN_P): Don't check NULL DECL_NAME.
+	(DECL_CONV_FN_TYPE): FN must be conv op.
+	(DECL_TEMPLATE_CONV_FN_P): Delete.
+	(VAR_HAD_UNKNOWN_BOUND, SET_VAR_HAD_UNKNOWN_BOUND): Adjust.
+	* pt.c (push_template_decl_real): Delete DECL_TEMPLATE_CONV_FN_P
+	setting.
+
+	* class.c (unreverse_member_declarations): Remove extraneous if.
+	* pt.c (push_template_decl_real): Use string concatenation, not
+	\<newline>.  Add %<..%>.
+
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* cp-tree.h (LABEL_DECL_CDTOR): Add and document.
+	* decl.c (start_preparsed_function): Set LABEL_DECL_CDTOR when
+	creating cdtor_label.
+	* constexpr.c (returns): Add the case of a constructor/destructor
+	returning via a LABEL_DECL_CDTOR label.
+	(cxx_eval_constant_expression, case [GOTO_EXPR]): Likewise.
+
+2017-09-01  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-tree.h (resort_type_method_vec): Move declaration to ...
+	* name-lookup.h (resort_type_method_vec): ... here.
+	(set_class_bindings): Lose 2nd arg.
+	* class.c (finish_struct_1, finish_struct): Adjust
+	set_class_bindings call.  Don't call finish_struct_methods.
+	(resort_data, method_name_cmp, resort_method_name_cmp,
+	resort_type_method_vec, finish_struct_methods): Move to ...
+	* name-lookup.c (resort_data, method_name_cmp,
+	resort_method_name_cmp, resort_type_method_vec): ... here.
+	(set_class_bindings): Lose fields arg.  Swallow finish_struct_methods.
+
+	* class.c (finish_struct): Call set_class_bindings for the
+	template case too.
+
+	* class.c (finish_struct_methods): Dont clear DECL_IN_AGGR_P here.
+	Don't call maybe_warn_about_overly_private_class here.
+	(warn_hidden): Cleanup declarations and comments.
+	(type_has_user_provided_constructor): No need to check
+	CLASSTYPE_METHOD_VEC.
+	(type_has_user_provided_or_explicit_constructor): Likewise.
+	(classtype_has_move_assign_or_move_ctor_p): Likewise.
+	(check_bases_and_members): Don't call finish_struct_methods here.
+	(finish_struct_1): Call finish_struct_methods and
+	set_class_bindings immediately after layout.  Clear DECL_IN_AGGR_P
+	here.
+	(finish_struct): For templates process USING_DECLS and clear
+	DECL_IN_AGGR_P before calling finish_struct_methods. Call
+	maybe_warn_about_overly_private_class here.
+
+	Revert 2017-08-28  Nathan Sidwell  <nathan@acm.org>
+	Restore sorted_fields vector.
+	* cp-tree.h (lang_type): Restore sorted_fields vector.
+	(CLASSTYPE_SORTED_FIELDS): Restore.
+	(CLASSTYPE_BINDINGS): Delete.
+	* name-lookup.c (lookup_field_1): Restore binary search.
+	(sorted_fields_type_new, count_fields,
+	add_fields_to_record_type, add_enum_fields_to_record_type): Restore
+	(set_class_bindings): Revert.
+	(insert_late_enum_def_binding): Restore field_vec insertion.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* parser.c (cp_parser_omp_ordered): Handle -fopenmp-simd.
+
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* typeck.c (cp_build_unary_op): Avoid re-entering reporting routines.
+
+2017-08-30  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82029 - __PRETTY_FUNCTION__ in lambda in template
+	* pt.c (enclosing_instantiation_of, lambda_fn_in_template_p)
+	(regenerated_lambda_fn_p): New.
+	(tsubst_decl) [VAR_DECL]: Use enclosing_instantiation_of.
+	(tsubst_copy) [VAR_DECL]: Likewise.
+
+	PR c++/82030 - ICE inheriting from multiple lambdas
+	PR c++/80767
+	* call.c (compare_ics): Handle null candidate.
+
+2017-08-30  Ville Voutilainen  <ville.voutilainen@gmail.com>
+
+	Make taking the address of an overloaded function a non-deduced context
+
+	* pt.c (unify_overload_resolution_failure): Remove.
+	(unify_one_argument): Adjust.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* typeck.c (cp_build_binary_op): Use SCALAR_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* cvt.c (cp_convert_to_pointer): Use SCALAR_INT_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* mangle.c (write_real_cst): Use SCALAR_FLOAT_TYPE_MODE
+	instead of TYPE_MODE.
+
+2017-08-29  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81236 - ICE with template-id in generic lambda
+	* semantics.c (finish_id_expression): Remove special dependent case.
+	Avoid some later pieces when dependent.
+	(finish_qualified_id_expr): Do normal BASELINK handling in a
+	template.  Always build a SCOPE_REF for a destructor BIT_NOT_EXPR.
+	(parsing_default_capturing_generic_lambda_in_template): Remove.
+	* parser.c (cp_parser_postfix_dot_deref_expression): Always give an
+	error for types that will never be complete.
+	* mangle.c (write_expression): Add sanity check.
+	* tree.c (build_qualified_name): Add sanity check.
+	(cp_walk_subtrees): Walk into the class context of a BASELINK.
+	* lambda.c (add_capture): Improve diagnostic for generic lambda
+	capture failure.
+	* call.c (build_new_method_call_1): Print the right constructor
+	name.
+
+	Reimplement handling of lambdas in templates.
+	* cp-tree.h (LAMBDA_FUNCTION_P): Check DECL_DECLARES_FUNCTION_P.
+	* decl.c (start_preparsed_function): Call start_lambda_scope.
+	(finish_function): Call finish_lambda_scope.
+	* init.c (get_nsdmi): Call start/finish_lambda_scope.
+	* lambda.c (start_lambda_scope): Only ignore VAR_DECL in a function.
+	* parser.c (cp_parser_function_definition_after_declarator): Don't
+	call start/finish_lambda_scope.
+	* pt.c (retrieve_specialization): Ignore lambda functions in
+	templates.
+	(find_parameter_packs_r): Ignore capture proxies.  Look into
+	lambdas.
+	(check_for_bare_parameter_packs): Allow bare packs in lambdas.
+	(tsubst_default_argument): Call start/finish_lambda_scope.
+	(tsubst_function_decl): Handle lambda functions differently.
+	(tsubst_template_decl): Likewise.
+	(tsubst_expr) [DECL_EXPR]: Skip closure declarations and capture
+	proxies.
+	(tsubst_lambda_expr): Create a new closure rather than instantiate
+	the one from the template.
+	(tsubst_copy_and_build): Don't register a specialization of a pack.
+	(regenerate_decl_from_template): Call start/finish_lambda_scope.
+	(instantiate_decl): Remove special lambda function handling.
+	* semantics.c (process_outer_var_ref): Remove special generic lambda
+	handling.  Don't implicitly capture in a lambda in a template.  Look
+	for an existing proxy.
+	* class.c (current_nonlambda_class_type): Use decl_type_context.
+
+	* cp-tree.h (LAMBDA_EXPR_CLOSURE): Use TREE_TYPE.
+	(LAMBDA_EXPR_RETURN_TYPE): Remove.
+	(struct tree_lambda_expr): Remove closure and return_type fields.
+	* lambda.c (build_lambda_expr): Don't set LAMBDA_EXPR_RETURN_TYPE.
+	* pt.c (tsubst_copy_and_build): Likewise.
+	* parser.c (cp_parser_lambda_declarator_opt): Track return type.
+	(cp_parser_lambda_body): Adjust unspecified return type check.
+	* ptree.c (cxx_print_lambda_node): Don't print closure or
+	return type.
+
+	PR c++/80935 - wrong C++17 error with lambda
+	* decl.c (check_for_uninitialized_const_var): Check
+	is_instantiation_of_constexpr.
+	* constexpr.c (ensure_literal_type_for_constexpr_object): Check
+	is_instantiation_of_constexpr.
+	(potential_constant_expression_1): Check var_in_maybe_constexpr_fn.
+
+	* lambda.c (build_lambda_object): Check for error_mark_node.
+	* pt.c (make_pack_expansion): Set PACK_EXPANSION_LOCAL_P on the type
+	pack as well.
+	(tsubst_decl) [FUNCTION_DECL]: Set DECL_CONTEXT on the parameters.
+	(tsubst) [TEMPLATE_PARM_INDEX]: Check for error_mark_node.
+
+	PR c++/80767 - unnecessary instantiation of generic lambda
+	* call.c (convert_like_real): Call build_user_type_conversion_1 if
+	cand is null.
+	(add_conv_candidate): Build a ck_user conversion with no candidate.
+
+	Fix lambdas in template default argument of inherited ctor.
+	* method.c (synthesized_method_base_walk): Replace an inherited
+	template with its specialization.
+	(synthesized_method_walk): Make inheriting_ctor a pointer.
+	(maybe_explain_implicit_delete, explain_implicit_non_constexpr)
+	(deduce_inheriting_ctor, implicitly_declare_fn): Adjust.
+
+	* pt.c (build_deduction_guide): Set DECL_ABSTRACT_ORIGIN on the
+	template, not the function.
+	(template_guide_p): Adjust.
+
+	Support copying local_specializations.
+	* cp-tree.h (enum lss_policy): New.
+	(local_specialization_stack): Add policy parameter to default ctor.
+	* pt.c (local_specialization_stack): Copy local_specializations if
+	lss_copy.
+
+	* constexpr.c (potential_constant_expression_1): Add "now" parm.
+	(is_constant_expression, require_constant_expression): New.
+	(is_static_init_expression, is_nondependent_constant_expression)
+	(is_nondependent_static_init_expression): Drop "potential".
+	* except.c (build_must_not_throw_expr): Do type conversion on
+	value-dependent argument.
+	* pt.c, semantics.c, typeck2.c: Use variants without "potential".
+
+	Instantiate default arguments/member initializers once.
+	* init.c (get_nsdmi): Remember NSDMI instantiations.
+	* parser.c (inject_this_parameter): Be more picky about
+	current_class_ptr.
+	* pt.c (tsubst_copy): Simplify 'this' handling.
+	(tsubst_default_argument): Remember default argument
+	instantiations.  Take parameter number.
+	(tsubst_default_arguments): Pass it.
+	* call.c (convert_default_arg): Likewise.
+
+	Fix default argument conversion failure and SFINAE.
+	* call.c (build_over_call): Check convert_default_arg result for
+	error_mark_node.
+	* parser.c (cp_parser_late_parsing_default_args): Remember
+	error_mark_node.
+
 2017-08-28  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-tree.h (lang_type): Replace sorted_fields vector with

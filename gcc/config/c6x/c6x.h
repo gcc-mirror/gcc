@@ -181,19 +181,6 @@ extern c6x_cpu_t c6x_arch;
     REG_A1, REG_A2, REG_B0, REG_B1, REG_B2, REG_ILC			\
   }
 
-#define HARD_REGNO_NREGS(regno, mode)		\
-  ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1)  \
-   / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(reg, mode) (GET_MODE_SIZE (mode) <= UNITS_PER_WORD \
-				       ? 1 : ((reg) & 1) == 0)
-
-#define MODES_TIEABLE_P(mode1, mode2)	       \
-  ((mode1) == (mode2) ||		       \
-   (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD && \
-    GET_MODE_SIZE (mode2) <= UNITS_PER_WORD))
-
-
 /* Register Classes.  */
 
 enum reg_class
@@ -353,7 +340,7 @@ struct c6x_args {
   c6x_init_cumulative_args (&cum, fntype, libname, n_named_args)
 
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (c6x_block_reg_pad_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 #define FUNCTION_ARG_REGNO_P(r) \
     (((r) >= REG_A4 && (r) <= REG_A13) || ((r) >= REG_B4 && (r) <= REG_B13))

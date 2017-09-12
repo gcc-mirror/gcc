@@ -102,6 +102,8 @@ static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 static bool m32r_legitimate_constant_p (machine_mode, rtx);
 static bool m32r_attribute_identifier (const_tree);
+static bool m32r_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool m32r_modes_tieable_p (machine_mode, machine_mode);
 
 /* M32R specific attributes.  */
 
@@ -209,6 +211,12 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P m32r_legitimate_constant_p
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK m32r_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m32r_modes_tieable_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by m32r_option_override to initialize various things.  */
@@ -270,14 +278,14 @@ enum m32r_mode_class
 
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-const unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
+static const unsigned int m32r_hard_regno_modes[FIRST_PSEUDO_REGISTER] =
 {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, S_MODES, S_MODES, S_MODES,
   S_MODES, C_MODES, A_MODES, A_MODES
 };
 
-unsigned int m32r_mode_class [NUM_MACHINE_MODES];
+static unsigned int m32r_mode_class [NUM_MACHINE_MODES];
 
 enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
@@ -2493,7 +2501,7 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
   emit_library_call (m32r_function_symbol ("memcpy"), LCT_NORMAL,
-		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
+		     VOIDmode, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TYPE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
@@ -2747,6 +2755,25 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
     }
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+m32r_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (m32r_hard_regno_modes[regno] & m32r_mode_class[mode]) != 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  Tie QI/HI/SI modes together.  */
+
+static bool
+m32r_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+}
+
 /* Return true if using NEW_REG in place of OLD_REG is ok.  */
 
 int
@@ -2796,7 +2823,7 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		gen_int_mode (m32r_cache_flush_trap, SImode)));
   else if (m32r_cache_flush_func && m32r_cache_flush_func[0])
     emit_library_call (m32r_function_symbol (m32r_cache_flush_func),
-		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
+		       LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
 }

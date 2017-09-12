@@ -186,6 +186,7 @@ static rtx arm_function_arg (cumulative_args_t, machine_mode,
 			     const_tree, bool);
 static void arm_function_arg_advance (cumulative_args_t, machine_mode,
 				      const_tree, bool);
+static pad_direction arm_function_arg_padding (machine_mode, const_tree);
 static unsigned int arm_function_arg_boundary (machine_mode, const_tree);
 static rtx aapcs_allocate_return_reg (machine_mode, const_tree,
 				      const_tree);
@@ -257,7 +258,7 @@ static bool arm_output_addr_const_extra (FILE *, rtx);
 static bool arm_allocate_stack_slots_for_args (void);
 static bool arm_warn_func_return (tree);
 static tree arm_promoted_type (const_tree t);
-static bool arm_scalar_mode_supported_p (machine_mode);
+static bool arm_scalar_mode_supported_p (scalar_mode);
 static bool arm_frame_pointer_required (void);
 static bool arm_can_eliminate (const int, const int);
 static void arm_asm_trampoline_template (FILE *);
@@ -269,7 +270,7 @@ static bool xscale_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
 static bool fa726te_sched_adjust_cost (rtx_insn *, int, rtx_insn *, int *);
 static bool arm_array_mode_supported_p (machine_mode,
 					unsigned HOST_WIDE_INT);
-static machine_mode arm_preferred_simd_mode (machine_mode);
+static machine_mode arm_preferred_simd_mode (scalar_mode);
 static bool arm_class_likely_spilled_p (reg_class_t);
 static HOST_WIDE_INT arm_vector_alignment (const_tree type);
 static bool arm_vector_alignment_reachable (const_tree type, bool is_packed);
@@ -312,7 +313,10 @@ static bool arm_asm_elf_flags_numeric (unsigned int flags, unsigned int *num);
 static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 						int reloc);
 static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
-static machine_mode arm_floatn_mode (int, bool);
+static opt_scalar_float_mode arm_floatn_mode (int, bool);
+static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
+static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool arm_modes_tieable_p (machine_mode, machine_mode);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -534,6 +538,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #define TARGET_FUNCTION_ARG arm_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE arm_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING arm_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY arm_function_arg_boundary
 
@@ -780,6 +786,13 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS arm_fixed_condition_code_regs
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS arm_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK arm_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P arm_modes_tieable_p
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -2553,52 +2566,52 @@ arm_init_libfuncs (void)
   {
     const arm_fixed_mode_set fixed_arith_modes[] =
       {
-	{ QQmode, "qq" },
-	{ UQQmode, "uqq" },
-	{ HQmode, "hq" },
-	{ UHQmode, "uhq" },
-	{ SQmode, "sq" },
-	{ USQmode, "usq" },
-	{ DQmode, "dq" },
-	{ UDQmode, "udq" },
-	{ TQmode, "tq" },
-	{ UTQmode, "utq" },
-	{ HAmode, "ha" },
-	{ UHAmode, "uha" },
-	{ SAmode, "sa" },
-	{ USAmode, "usa" },
-	{ DAmode, "da" },
-	{ UDAmode, "uda" },
-	{ TAmode, "ta" },
-	{ UTAmode, "uta" }
+	{ E_QQmode, "qq" },
+	{ E_UQQmode, "uqq" },
+	{ E_HQmode, "hq" },
+	{ E_UHQmode, "uhq" },
+	{ E_SQmode, "sq" },
+	{ E_USQmode, "usq" },
+	{ E_DQmode, "dq" },
+	{ E_UDQmode, "udq" },
+	{ E_TQmode, "tq" },
+	{ E_UTQmode, "utq" },
+	{ E_HAmode, "ha" },
+	{ E_UHAmode, "uha" },
+	{ E_SAmode, "sa" },
+	{ E_USAmode, "usa" },
+	{ E_DAmode, "da" },
+	{ E_UDAmode, "uda" },
+	{ E_TAmode, "ta" },
+	{ E_UTAmode, "uta" }
       };
     const arm_fixed_mode_set fixed_conv_modes[] =
       {
-	{ QQmode, "qq" },
-	{ UQQmode, "uqq" },
-	{ HQmode, "hq" },
-	{ UHQmode, "uhq" },
-	{ SQmode, "sq" },
-	{ USQmode, "usq" },
-	{ DQmode, "dq" },
-	{ UDQmode, "udq" },
-	{ TQmode, "tq" },
-	{ UTQmode, "utq" },
-	{ HAmode, "ha" },
-	{ UHAmode, "uha" },
-	{ SAmode, "sa" },
-	{ USAmode, "usa" },
-	{ DAmode, "da" },
-	{ UDAmode, "uda" },
-	{ TAmode, "ta" },
-	{ UTAmode, "uta" },
-	{ QImode, "qi" },
-	{ HImode, "hi" },
-	{ SImode, "si" },
-	{ DImode, "di" },
-	{ TImode, "ti" },
-	{ SFmode, "sf" },
-	{ DFmode, "df" }
+	{ E_QQmode, "qq" },
+	{ E_UQQmode, "uqq" },
+	{ E_HQmode, "hq" },
+	{ E_UHQmode, "uhq" },
+	{ E_SQmode, "sq" },
+	{ E_USQmode, "usq" },
+	{ E_DQmode, "dq" },
+	{ E_UDQmode, "udq" },
+	{ E_TQmode, "tq" },
+	{ E_UTQmode, "utq" },
+	{ E_HAmode, "ha" },
+	{ E_UHAmode, "uha" },
+	{ E_SAmode, "sa" },
+	{ E_USAmode, "usa" },
+	{ E_DAmode, "da" },
+	{ E_UDAmode, "uda" },
+	{ E_TAmode, "ta" },
+	{ E_UTAmode, "uta" },
+	{ E_QImode, "qi" },
+	{ E_HImode, "hi" },
+	{ E_SImode, "si" },
+	{ E_DImode, "di" },
+	{ E_TImode, "ti" },
+	{ E_SFmode, "sf" },
+	{ E_DFmode, "df" }
       };
     unsigned int i, j;
 
@@ -2863,20 +2876,12 @@ arm_option_params_internal (void)
       targetm.max_anchor_offset = TARGET_MAX_ANCHOR_OFFSET;
     }
 
-  if (optimize_size)
-    {
-      /* If optimizing for size, bump the number of instructions that we
-         are prepared to conditionally execute (even on a StrongARM).  */
-      max_insns_skipped = 6;
+  /* Increase the number of conditional instructions with -Os.  */
+  max_insns_skipped = optimize_size ? 4 : current_tune->max_insns_skipped;
 
-      /* For THUMB2, we limit the conditional sequence to one IT block.  */
-      if (TARGET_THUMB2)
-        max_insns_skipped = arm_restrict_it ? 1 : 4;
-    }
-  else
-    /* When -mrestrict-it is in use tone down the if-conversion.  */
-    max_insns_skipped = (TARGET_THUMB2 && arm_restrict_it)
-      ? 1 : current_tune->max_insns_skipped;
+  /* For THUMB2, we limit the conditional sequence to one IT block.  */
+  if (TARGET_THUMB2)
+    max_insns_skipped = MIN (max_insns_skipped, MAX_INSN_PER_IT_BLOCK);
 }
 
 /* True if -mflip-thumb should next add an attribute for the default
@@ -3888,7 +3893,7 @@ arm_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   a_tramp = XEXP (m_tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, a_tramp, Pmode,
+		     LCT_NORMAL, VOIDmode, a_tramp, Pmode,
 		     plus_constant (Pmode, a_tramp, TRAMPOLINE_SIZE), Pmode);
 }
 
@@ -5348,7 +5353,7 @@ arm_function_value(const_tree type, const_tree func,
       if (size % UNITS_PER_WORD != 0)
 	{
 	  size += UNITS_PER_WORD - size % UNITS_PER_WORD;
-	  mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  mode = int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
 	}
     }
 
@@ -6305,7 +6310,7 @@ aapcs_allocate_return_reg (machine_mode mode, const_tree type,
       if (size % UNITS_PER_WORD != 0)
 	{
 	  size += UNITS_PER_WORD - size % UNITS_PER_WORD;
-	  mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  mode = int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
 	}
     }
 
@@ -7922,6 +7927,8 @@ arm_legitimate_index_p (machine_mode mode, rtx index, RTX_CODE outer,
 	{
 	  HOST_WIDE_INT val = INTVAL (index);
 
+	  /* Assume we emit ldrd or 2x ldr if !TARGET_LDRD.
+	     If vldr is selected it uses arm_coproc_mem_operand.  */
 	  if (TARGET_LDRD)
 	    return val > -256 && val < 256;
 	  else
@@ -8049,11 +8056,13 @@ thumb2_legitimate_index_p (machine_mode mode, rtx index, int strict_p)
       if (code == CONST_INT)
 	{
 	  HOST_WIDE_INT val = INTVAL (index);
-	  /* ??? Can we assume ldrd for thumb2?  */
-	  /* Thumb-2 ldrd only has reg+const addressing modes.  */
-	  /* ldrd supports offsets of +-1020.
-	     However the ldr fallback does not.  */
-	  return val > -256 && val < 256 && (val & 3) == 0;
+	  /* Thumb-2 ldrd only has reg+const addressing modes.
+	     Assume we emit ldrd or 2x ldr if !TARGET_LDRD.
+	     If vldr is selected it uses arm_coproc_mem_operand.  */
+	  if (TARGET_LDRD)
+	    return IN_RANGE (val, -1020, 1020) && (val & 3) == 0;
+	  else
+	    return IN_RANGE (val, -255, 4095 - 4);
 	}
       else
 	return 0;
@@ -8364,7 +8373,7 @@ arm_call_tls_get_addr (rtx x, rtx reg, rtx *valuep, int reloc)
 
   *valuep = emit_library_call_value (get_tls_get_addr (), NULL_RTX,
 				     LCT_PURE, /* LCT_CONST?  */
-				     Pmode, 1, reg, Pmode);
+				     Pmode, reg, Pmode);
 
   rtx_insn *insns = get_insns ();
   end_sequence ();
@@ -9069,15 +9078,15 @@ thumb1_size_rtx_costs (rtx x, enum rtx_code code, enum rtx_code outer)
       /* XXX still guessing.  */
       switch (GET_MODE (XEXP (x, 0)))
         {
-          case QImode:
+          case E_QImode:
             return (1 + (mode == DImode ? 4 : 0)
                     + (MEM_P (XEXP (x, 0)) ? 10 : 0));
 
-          case HImode:
+          case E_HImode:
             return (4 + (mode == DImode ? 4 : 0)
                     + (MEM_P (XEXP (x, 0)) ? 10 : 0));
 
-          case SImode:
+          case E_SImode:
             return (1 + (MEM_P (XEXP (x, 0)) ? 10 : 0));
 
           default:
@@ -11302,8 +11311,8 @@ cortexa7_older_only (rtx_insn *insn)
     case TYPE_SHIFT_IMM:
     case TYPE_SHIFT_REG:
     case TYPE_LOAD_BYTE:
-    case TYPE_LOAD1:
-    case TYPE_STORE1:
+    case TYPE_LOAD_4:
+    case TYPE_STORE_4:
     case TYPE_FFARITHS:
     case TYPE_FADDS:
     case TYPE_FFARITHD:
@@ -12243,31 +12252,31 @@ neon_expand_vector_init (rtx target, rtx vals)
       x = copy_to_mode_reg (inner_mode, XVECEXP (vals, 0, one_var));
       switch (mode)
 	{
-	case V8QImode:
+	case E_V8QImode:
 	  emit_insn (gen_neon_vset_lanev8qi (target, x, target, index));
 	  break;
-	case V16QImode:
+	case E_V16QImode:
 	  emit_insn (gen_neon_vset_lanev16qi (target, x, target, index));
 	  break;
-	case V4HImode:
+	case E_V4HImode:
 	  emit_insn (gen_neon_vset_lanev4hi (target, x, target, index));
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  emit_insn (gen_neon_vset_lanev8hi (target, x, target, index));
 	  break;
-	case V2SImode:
+	case E_V2SImode:
 	  emit_insn (gen_neon_vset_lanev2si (target, x, target, index));
 	  break;
-	case V4SImode:
+	case E_V4SImode:
 	  emit_insn (gen_neon_vset_lanev4si (target, x, target, index));
 	  break;
-	case V2SFmode:
+	case E_V2SFmode:
 	  emit_insn (gen_neon_vset_lanev2sf (target, x, target, index));
 	  break;
-	case V4SFmode:
+	case E_V4SFmode:
 	  emit_insn (gen_neon_vset_lanev4sf (target, x, target, index));
 	  break;
-	case V2DImode:
+	case E_V2DImode:
 	  emit_insn (gen_neon_vset_lanev2di (target, x, target, index));
 	  break;
 	default:
@@ -15148,22 +15157,21 @@ arm_must_pass_in_stack (machine_mode mode, const_tree type)
 }
 
 
-/* For use by FUNCTION_ARG_PADDING (MODE, TYPE).
-   Return true if an argument passed on the stack should be padded upwards,
-   i.e. if the least-significant byte has useful data.
-   For legacy APCS ABIs we use the default.  For AAPCS based ABIs small
-   aggregate types are placed in the lowest memory address.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING; return PAD_UPWARD if the lowest
+   byte of a stack argument has useful data.  For legacy APCS ABIs we use
+   the default.  For AAPCS based ABIs small aggregate types are placed
+   in the lowest memory address.  */
 
-bool
-arm_pad_arg_upward (machine_mode mode ATTRIBUTE_UNUSED, const_tree type)
+static pad_direction
+arm_function_arg_padding (machine_mode mode, const_tree type)
 {
   if (!TARGET_AAPCS_BASED)
-    return DEFAULT_FUNCTION_ARG_PADDING(mode, type) == upward;
+    return default_function_arg_padding (mode, type);
 
   if (type && BYTES_BIG_ENDIAN && INTEGRAL_TYPE_P (type))
-    return false;
+    return PAD_DOWNWARD;
 
-  return true;
+  return PAD_UPWARD;
 }
 
 
@@ -18584,7 +18592,7 @@ output_move_neon (rtx *operands)
 
   gcc_assert (REG_P (reg));
   regno = REGNO (reg);
-  nregs = HARD_REGNO_NREGS (regno, mode) / 2;
+  nregs = REG_NREGS (reg) / 2;
   gcc_assert (VFP_REGNO_OK_FOR_DOUBLE (regno)
 	      || NEON_REGNO_OK_FOR_QUAD (regno));
   gcc_assert (VALID_NEON_DREG_MODE (mode)
@@ -18699,12 +18707,12 @@ arm_attr_length_move_neon (rtx_insn *insn)
       mode = GET_MODE (recog_data.operand[0]);
       switch (mode)
 	{
-	case EImode:
-	case OImode:
+	case E_EImode:
+	case E_OImode:
 	  return 8;
-	case CImode:
+	case E_CImode:
 	  return 12;
-	case XImode:
+	case E_XImode:
 	  return 16;
 	default:
 	  gcc_unreachable ();
@@ -18717,7 +18725,6 @@ arm_attr_length_move_neon (rtx_insn *insn)
 
   gcc_assert (MEM_P (mem));
 
-  mode = GET_MODE (reg);
   addr = XEXP (mem, 0);
 
   /* Strip off const from addresses like (const (plus (...))).  */
@@ -18726,7 +18733,7 @@ arm_attr_length_move_neon (rtx_insn *insn)
 
   if (GET_CODE (addr) == LABEL_REF || GET_CODE (addr) == PLUS)
     {
-      int insns = HARD_REGNO_NREGS (REGNO (reg), mode) / 2;
+      int insns = REG_NREGS (reg) / 2;
       return insns * 4;
     }
   else
@@ -22667,8 +22674,9 @@ arm_assemble_integer (rtx x, unsigned int size, int aligned_p)
         for (i = 0; i < units; i++)
           {
             rtx elt = CONST_VECTOR_ELT (x, i);
-            assemble_real
-              (*CONST_DOUBLE_REAL_VALUE (elt), GET_MODE_INNER (mode),
+	    assemble_real
+	      (*CONST_DOUBLE_REAL_VALUE (elt),
+	       as_a <scalar_float_mode> (GET_MODE_INNER (mode)),
 	       i == 0 ? BIGGEST_ALIGNMENT : size * BITS_PER_UNIT);
           }
 
@@ -22783,16 +22791,16 @@ maybe_get_arm_condition_code (rtx comparison)
 
   switch (mode)
     {
-    case CC_DNEmode: code = ARM_NE; goto dominance;
-    case CC_DEQmode: code = ARM_EQ; goto dominance;
-    case CC_DGEmode: code = ARM_GE; goto dominance;
-    case CC_DGTmode: code = ARM_GT; goto dominance;
-    case CC_DLEmode: code = ARM_LE; goto dominance;
-    case CC_DLTmode: code = ARM_LT; goto dominance;
-    case CC_DGEUmode: code = ARM_CS; goto dominance;
-    case CC_DGTUmode: code = ARM_HI; goto dominance;
-    case CC_DLEUmode: code = ARM_LS; goto dominance;
-    case CC_DLTUmode: code = ARM_CC;
+    case E_CC_DNEmode: code = ARM_NE; goto dominance;
+    case E_CC_DEQmode: code = ARM_EQ; goto dominance;
+    case E_CC_DGEmode: code = ARM_GE; goto dominance;
+    case E_CC_DGTmode: code = ARM_GT; goto dominance;
+    case E_CC_DLEmode: code = ARM_LE; goto dominance;
+    case E_CC_DLTmode: code = ARM_LT; goto dominance;
+    case E_CC_DGEUmode: code = ARM_CS; goto dominance;
+    case E_CC_DGTUmode: code = ARM_HI; goto dominance;
+    case E_CC_DLEUmode: code = ARM_LS; goto dominance;
+    case E_CC_DLTUmode: code = ARM_CC;
 
     dominance:
       if (comp_code == EQ)
@@ -22801,7 +22809,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	return code;
       return ARM_NV;
 
-    case CC_NOOVmode:
+    case E_CC_NOOVmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -22811,7 +22819,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_Zmode:
+    case E_CC_Zmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -22819,7 +22827,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_Nmode:
+    case E_CC_Nmode:
       switch (comp_code)
 	{
 	case NE: return ARM_MI;
@@ -22827,8 +22835,8 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CCFPEmode:
-    case CCFPmode:
+    case E_CCFPEmode:
+    case E_CCFPmode:
       /* We can handle all cases except UNEQ and LTGT.  */
       switch (comp_code)
 	{
@@ -22850,7 +22858,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_SWPmode:
+    case E_CC_SWPmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -22866,7 +22874,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_Cmode:
+    case E_CC_Cmode:
       switch (comp_code)
 	{
 	case LTU: return ARM_CS;
@@ -22876,7 +22884,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_CZmode:
+    case E_CC_CZmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -22888,7 +22896,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_NCVmode:
+    case E_CC_NCVmode:
       switch (comp_code)
 	{
 	case GE: return ARM_GE;
@@ -22898,7 +22906,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CC_Vmode:
+    case E_CC_Vmode:
       switch (comp_code)
 	{
 	case NE: return ARM_VS;
@@ -22906,7 +22914,7 @@ maybe_get_arm_condition_code (rtx comparison)
 	default: return ARM_NV;
 	}
 
-    case CCmode:
+    case E_CCmode:
       switch (comp_code)
 	{
 	case NE: return ARM_NE;
@@ -23343,9 +23351,23 @@ thumb2_asm_output_opcode (FILE * stream)
     }
 }
 
-/* Returns true if REGNO is a valid register
-   for holding a quantity of type MODE.  */
-int
+/* Implement TARGET_HARD_REGNO_NREGS.  On the ARM core regs are
+   UNITS_PER_WORD bytes wide.  */
+static unsigned int
+arm_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_32BIT
+      && regno > PC_REGNUM
+      && regno != FRAME_POINTER_REGNUM
+      && regno != ARG_POINTER_REGNUM
+      && !IS_VFP_REGNUM (regno))
+    return 1;
+
+  return ARM_NUM_REGS (mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+static bool
 arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GET_MODE_CLASS (mode) == MODE_CC)
@@ -23389,7 +23411,7 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 	       || (mode == CImode && NEON_REGNO_OK_FOR_NREGS (regno, 6))
 	       || (mode == XImode && NEON_REGNO_OK_FOR_NREGS (regno, 8));
 
-      return FALSE;
+      return false;
     }
 
   if (TARGET_REALLY_IWMMXT)
@@ -23408,10 +23430,10 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   if (regno <= LAST_ARM_REGNUM)
     {
       if (ARM_NUM_REGS (mode) > 4)
-	  return FALSE;
+	return false;
 
       if (TARGET_THUMB2)
-	return TRUE;
+	return true;
 
       return !(TARGET_LDRD && GET_MODE_SIZE (mode) > 4 && (regno & 1) != 0);
     }
@@ -23421,12 +23443,12 @@ arm_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
     /* We only allow integers in the fake hard registers.  */
     return GET_MODE_CLASS (mode) == MODE_INT;
 
-  return FALSE;
+  return false;
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 arm_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == GET_MODE_CLASS (mode2))
@@ -23600,7 +23622,7 @@ arm_promoted_type (const_tree t)
    special-cased in the default hook.  */
 
 static bool
-arm_scalar_mode_supported_p (machine_mode mode)
+arm_scalar_mode_supported_p (scalar_mode mode)
 {
   if (mode == HFmode)
     return (arm_fp16_format != ARM_FP16_FORMAT_NONE);
@@ -23655,11 +23677,15 @@ arm_excess_precision (enum excess_precision_type type)
 /* Implement TARGET_FLOATN_MODE.  Make very sure that we don't provide
    _Float16 if we are using anything other than ieee format for 16-bit
    floating point.  Otherwise, punt to the default implementation.  */
-static machine_mode
+static opt_scalar_float_mode
 arm_floatn_mode (int n, bool extended)
 {
   if (!extended && n == 16)
-    return arm_fp16_format == ARM_FP16_FORMAT_IEEE ? HFmode : VOIDmode;
+    {
+      if (arm_fp16_format == ARM_FP16_FORMAT_IEEE)
+	return HFmode;
+      return opt_scalar_float_mode ();
+    }
 
   return default_floatn_mode (n, extended);
 }
@@ -23704,7 +23730,7 @@ neon_split_vcombine (rtx operands[3])
   unsigned int src1 = REGNO (operands[1]);
   unsigned int src2 = REGNO (operands[2]);
   machine_mode halfmode = GET_MODE (operands[1]);
-  unsigned int halfregs = HARD_REGNO_NREGS (src1, halfmode);
+  unsigned int halfregs = REG_NREGS (operands[1]);
   rtx destlo, desthi;
 
   if (src1 == dest && src2 == dest + halfregs)
@@ -26565,9 +26591,9 @@ arm_emit_vector_const (FILE *file, rtx x)
 
   switch (GET_MODE (x))
     {
-    case V2SImode: pattern = "%08x"; break;
-    case V4HImode: pattern = "%04x"; break;
-    case V8QImode: pattern = "%02x"; break;
+    case E_V2SImode: pattern = "%08x"; break;
+    case E_V4HImode: pattern = "%04x"; break;
+    case E_V8QImode: pattern = "%02x"; break;
     default:       gcc_unreachable ();
     }
 
@@ -26945,20 +26971,20 @@ arm_array_mode_supported_p (machine_mode mode,
    widths are supported properly by the middle-end.  */
 
 static machine_mode
-arm_preferred_simd_mode (machine_mode mode)
+arm_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_NEON)
     switch (mode)
       {
-      case SFmode:
+      case E_SFmode:
 	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SFmode : V4SFmode;
-      case SImode:
+      case E_SImode:
 	return TARGET_NEON_VECTORIZE_DOUBLE ? V2SImode : V4SImode;
-      case HImode:
+      case E_HImode:
 	return TARGET_NEON_VECTORIZE_DOUBLE ? V4HImode : V8HImode;
-      case QImode:
+      case E_QImode:
 	return TARGET_NEON_VECTORIZE_DOUBLE ? V8QImode : V16QImode;
-      case DImode:
+      case E_DImode:
 	if (!TARGET_NEON_VECTORIZE_DOUBLE)
 	  return V2DImode;
 	break;
@@ -26969,11 +26995,11 @@ arm_preferred_simd_mode (machine_mode mode)
   if (TARGET_REALLY_IWMMXT)
     switch (mode)
       {
-      case SImode:
+      case E_SImode:
 	return V2SImode;
-      case HImode:
+      case E_HImode:
 	return V4HImode;
-      case QImode:
+      case E_QImode:
 	return V8QImode;
 
       default:;
@@ -27675,13 +27701,13 @@ arm_output_iwmmxt_tinsr (rtx *operands)
   {
     switch (GET_MODE (operands[0]))
       {
-      case V8QImode:
+      case E_V8QImode:
 	sprintf (templ, "tinsrb%%?\t%%0, %%2, #%d", i);
 	break;
-      case V4HImode:
+      case E_V4HImode:
 	sprintf (templ, "tinsrh%%?\t%%0, %%2, #%d", i);
 	break;
-      case V2SImode:
+      case E_V2SImode:
 	sprintf (templ, "tinsrw%%?\t%%0, %%2, #%d", i);
 	break;
       default:
@@ -27703,13 +27729,13 @@ thumb1_output_casesi (rtx *operands)
 
   switch (GET_MODE(diff_vec))
     {
-    case QImode:
+    case E_QImode:
       return (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned ?
 	      "bl\t%___gnu_thumb1_case_uqi" : "bl\t%___gnu_thumb1_case_sqi");
-    case HImode:
+    case E_HImode:
       return (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned ?
 	      "bl\t%___gnu_thumb1_case_uhi" : "bl\t%___gnu_thumb1_case_shi");
-    case SImode:
+    case E_SImode:
       return "bl\t%___gnu_thumb1_case_si";
     default:
       gcc_unreachable ();
@@ -27728,11 +27754,11 @@ thumb2_output_casesi (rtx *operands)
   output_asm_insn ("bhi\t%l3", operands);
   switch (GET_MODE(diff_vec))
     {
-    case QImode:
+    case E_QImode:
       return "tbb\t[%|pc, %0]";
-    case HImode:
+    case E_HImode:
       return "tbh\t[%|pc, %0, lsl #1]";
-    case SImode:
+    case E_SImode:
       if (flag_pic)
 	{
 	  output_asm_insn ("adr\t%4, %l2", operands);
@@ -28208,10 +28234,10 @@ arm_emit_load_exclusive (machine_mode mode, rtx rval, rtx mem, bool acq)
     {
       switch (mode)
         {
-        case QImode: gen = gen_arm_load_acquire_exclusiveqi; break;
-        case HImode: gen = gen_arm_load_acquire_exclusivehi; break;
-        case SImode: gen = gen_arm_load_acquire_exclusivesi; break;
-        case DImode: gen = gen_arm_load_acquire_exclusivedi; break;
+        case E_QImode: gen = gen_arm_load_acquire_exclusiveqi; break;
+        case E_HImode: gen = gen_arm_load_acquire_exclusivehi; break;
+        case E_SImode: gen = gen_arm_load_acquire_exclusivesi; break;
+        case E_DImode: gen = gen_arm_load_acquire_exclusivedi; break;
         default:
           gcc_unreachable ();
         }
@@ -28220,10 +28246,10 @@ arm_emit_load_exclusive (machine_mode mode, rtx rval, rtx mem, bool acq)
     {
       switch (mode)
         {
-        case QImode: gen = gen_arm_load_exclusiveqi; break;
-        case HImode: gen = gen_arm_load_exclusivehi; break;
-        case SImode: gen = gen_arm_load_exclusivesi; break;
-        case DImode: gen = gen_arm_load_exclusivedi; break;
+        case E_QImode: gen = gen_arm_load_exclusiveqi; break;
+        case E_HImode: gen = gen_arm_load_exclusivehi; break;
+        case E_SImode: gen = gen_arm_load_exclusivesi; break;
+        case E_DImode: gen = gen_arm_load_exclusivedi; break;
         default:
           gcc_unreachable ();
         }
@@ -28242,10 +28268,10 @@ arm_emit_store_exclusive (machine_mode mode, rtx bval, rtx rval,
     {
       switch (mode)
         {
-        case QImode: gen = gen_arm_store_release_exclusiveqi; break;
-        case HImode: gen = gen_arm_store_release_exclusivehi; break;
-        case SImode: gen = gen_arm_store_release_exclusivesi; break;
-        case DImode: gen = gen_arm_store_release_exclusivedi; break;
+        case E_QImode: gen = gen_arm_store_release_exclusiveqi; break;
+        case E_HImode: gen = gen_arm_store_release_exclusivehi; break;
+        case E_SImode: gen = gen_arm_store_release_exclusivesi; break;
+        case E_DImode: gen = gen_arm_store_release_exclusivedi; break;
         default:
           gcc_unreachable ();
         }
@@ -28254,10 +28280,10 @@ arm_emit_store_exclusive (machine_mode mode, rtx bval, rtx rval,
     {
       switch (mode)
         {
-        case QImode: gen = gen_arm_store_exclusiveqi; break;
-        case HImode: gen = gen_arm_store_exclusivehi; break;
-        case SImode: gen = gen_arm_store_exclusivesi; break;
-        case DImode: gen = gen_arm_store_exclusivedi; break;
+        case E_QImode: gen = gen_arm_store_exclusiveqi; break;
+        case E_HImode: gen = gen_arm_store_exclusivehi; break;
+        case E_SImode: gen = gen_arm_store_exclusivesi; break;
+        case E_DImode: gen = gen_arm_store_exclusivedi; break;
         default:
           gcc_unreachable ();
         }
@@ -28305,22 +28331,22 @@ arm_expand_compare_and_swap (rtx operands[])
 
   switch (mode)
     {
-    case QImode:
-    case HImode:
+    case E_QImode:
+    case E_HImode:
       /* For narrow modes, we're going to perform the comparison in SImode,
 	 so do the zero-extension now.  */
       rval = gen_reg_rtx (SImode);
       oldval = convert_modes (SImode, mode, oldval, true);
       /* FALLTHRU */
 
-    case SImode:
+    case E_SImode:
       /* Force the value into a register if needed.  We waited until after
 	 the zero-extension above to do this properly.  */
       if (!arm_add_operand (oldval, SImode))
 	oldval = force_reg (SImode, oldval);
       break;
 
-    case DImode:
+    case E_DImode:
       if (!cmpdi_operand (oldval, mode))
 	oldval = force_reg (mode, oldval);
       break;
@@ -28333,10 +28359,10 @@ arm_expand_compare_and_swap (rtx operands[])
     {
       switch (mode)
 	{
-	case QImode: gen = gen_atomic_compare_and_swapt1qi_1; break;
-	case HImode: gen = gen_atomic_compare_and_swapt1hi_1; break;
-	case SImode: gen = gen_atomic_compare_and_swapt1si_1; break;
-	case DImode: gen = gen_atomic_compare_and_swapt1di_1; break;
+	case E_QImode: gen = gen_atomic_compare_and_swapt1qi_1; break;
+	case E_HImode: gen = gen_atomic_compare_and_swapt1hi_1; break;
+	case E_SImode: gen = gen_atomic_compare_and_swapt1si_1; break;
+	case E_DImode: gen = gen_atomic_compare_and_swapt1di_1; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -28345,10 +28371,10 @@ arm_expand_compare_and_swap (rtx operands[])
     {
       switch (mode)
 	{
-	case QImode: gen = gen_atomic_compare_and_swap32qi_1; break;
-	case HImode: gen = gen_atomic_compare_and_swap32hi_1; break;
-	case SImode: gen = gen_atomic_compare_and_swap32si_1; break;
-	case DImode: gen = gen_atomic_compare_and_swap32di_1; break;
+	case E_QImode: gen = gen_atomic_compare_and_swap32qi_1; break;
+	case E_HImode: gen = gen_atomic_compare_and_swap32hi_1; break;
+	case E_SImode: gen = gen_atomic_compare_and_swap32si_1; break;
+	case E_DImode: gen = gen_atomic_compare_and_swap32di_1; break;
 	default:
 	  gcc_unreachable ();
 	}
@@ -28769,16 +28795,16 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
-    case V16QImode: gen = gen_neon_vuzpv16qi_internal; break;
-    case V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
-    case V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
-    case V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
-    case V8HFmode:  gen = gen_neon_vuzpv8hf_internal;  break;
-    case V4HFmode:  gen = gen_neon_vuzpv4hf_internal;  break;
-    case V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
-    case V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
-    case V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
-    case V4SFmode:  gen = gen_neon_vuzpv4sf_internal;  break;
+    case E_V16QImode: gen = gen_neon_vuzpv16qi_internal; break;
+    case E_V8QImode:  gen = gen_neon_vuzpv8qi_internal;  break;
+    case E_V8HImode:  gen = gen_neon_vuzpv8hi_internal;  break;
+    case E_V4HImode:  gen = gen_neon_vuzpv4hi_internal;  break;
+    case E_V8HFmode:  gen = gen_neon_vuzpv8hf_internal;  break;
+    case E_V4HFmode:  gen = gen_neon_vuzpv4hf_internal;  break;
+    case E_V4SImode:  gen = gen_neon_vuzpv4si_internal;  break;
+    case E_V2SImode:  gen = gen_neon_vuzpv2si_internal;  break;
+    case E_V2SFmode:  gen = gen_neon_vuzpv2sf_internal;  break;
+    case E_V4SFmode:  gen = gen_neon_vuzpv4sf_internal;  break;
     default:
       gcc_unreachable ();
     }
@@ -28844,16 +28870,16 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
-    case V16QImode: gen = gen_neon_vzipv16qi_internal; break;
-    case V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
-    case V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
-    case V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
-    case V8HFmode:  gen = gen_neon_vzipv8hf_internal;  break;
-    case V4HFmode:  gen = gen_neon_vzipv4hf_internal;  break;
-    case V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
-    case V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
-    case V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
-    case V4SFmode:  gen = gen_neon_vzipv4sf_internal;  break;
+    case E_V16QImode: gen = gen_neon_vzipv16qi_internal; break;
+    case E_V8QImode:  gen = gen_neon_vzipv8qi_internal;  break;
+    case E_V8HImode:  gen = gen_neon_vzipv8hi_internal;  break;
+    case E_V4HImode:  gen = gen_neon_vzipv4hi_internal;  break;
+    case E_V8HFmode:  gen = gen_neon_vzipv8hf_internal;  break;
+    case E_V4HFmode:  gen = gen_neon_vzipv4hf_internal;  break;
+    case E_V4SImode:  gen = gen_neon_vzipv4si_internal;  break;
+    case E_V2SImode:  gen = gen_neon_vzipv2si_internal;  break;
+    case E_V2SFmode:  gen = gen_neon_vzipv2sf_internal;  break;
+    case E_V4SFmode:  gen = gen_neon_vzipv4sf_internal;  break;
     default:
       gcc_unreachable ();
     }
@@ -28889,8 +28915,8 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
     case 7:
       switch (d->vmode)
 	{
-	case V16QImode: gen = gen_neon_vrev64v16qi; break;
-	case V8QImode:  gen = gen_neon_vrev64v8qi;  break;
+	case E_V16QImode: gen = gen_neon_vrev64v16qi; break;
+	case E_V8QImode:  gen = gen_neon_vrev64v8qi;  break;
 	default:
 	  return false;
 	}
@@ -28898,12 +28924,12 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
     case 3:
       switch (d->vmode)
 	{
-	case V16QImode: gen = gen_neon_vrev32v16qi; break;
-	case V8QImode:  gen = gen_neon_vrev32v8qi;  break;
-	case V8HImode:  gen = gen_neon_vrev64v8hi;  break;
-	case V4HImode:  gen = gen_neon_vrev64v4hi;  break;
-	case V8HFmode:  gen = gen_neon_vrev64v8hf;  break;
-	case V4HFmode:  gen = gen_neon_vrev64v4hf;  break;
+	case E_V16QImode: gen = gen_neon_vrev32v16qi; break;
+	case E_V8QImode:  gen = gen_neon_vrev32v8qi;  break;
+	case E_V8HImode:  gen = gen_neon_vrev64v8hi;  break;
+	case E_V4HImode:  gen = gen_neon_vrev64v4hi;  break;
+	case E_V8HFmode:  gen = gen_neon_vrev64v8hf;  break;
+	case E_V4HFmode:  gen = gen_neon_vrev64v4hf;  break;
 	default:
 	  return false;
 	}
@@ -28911,14 +28937,14 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
     case 1:
       switch (d->vmode)
 	{
-	case V16QImode: gen = gen_neon_vrev16v16qi; break;
-	case V8QImode:  gen = gen_neon_vrev16v8qi;  break;
-	case V8HImode:  gen = gen_neon_vrev32v8hi;  break;
-	case V4HImode:  gen = gen_neon_vrev32v4hi;  break;
-	case V4SImode:  gen = gen_neon_vrev64v4si;  break;
-	case V2SImode:  gen = gen_neon_vrev64v2si;  break;
-	case V4SFmode:  gen = gen_neon_vrev64v4sf;  break;
-	case V2SFmode:  gen = gen_neon_vrev64v2sf;  break;
+	case E_V16QImode: gen = gen_neon_vrev16v16qi; break;
+	case E_V8QImode:  gen = gen_neon_vrev16v8qi;  break;
+	case E_V8HImode:  gen = gen_neon_vrev32v8hi;  break;
+	case E_V4HImode:  gen = gen_neon_vrev32v4hi;  break;
+	case E_V4SImode:  gen = gen_neon_vrev64v4si;  break;
+	case E_V2SImode:  gen = gen_neon_vrev64v2si;  break;
+	case E_V4SFmode:  gen = gen_neon_vrev64v4sf;  break;
+	case E_V2SFmode:  gen = gen_neon_vrev64v2sf;  break;
 	default:
 	  return false;
 	}
@@ -28983,16 +29009,16 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
-    case V16QImode: gen = gen_neon_vtrnv16qi_internal; break;
-    case V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
-    case V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
-    case V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
-    case V8HFmode:  gen = gen_neon_vtrnv8hf_internal;  break;
-    case V4HFmode:  gen = gen_neon_vtrnv4hf_internal;  break;
-    case V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
-    case V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
-    case V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
-    case V4SFmode:  gen = gen_neon_vtrnv4sf_internal;  break;
+    case E_V16QImode: gen = gen_neon_vtrnv16qi_internal; break;
+    case E_V8QImode:  gen = gen_neon_vtrnv8qi_internal;  break;
+    case E_V8HImode:  gen = gen_neon_vtrnv8hi_internal;  break;
+    case E_V4HImode:  gen = gen_neon_vtrnv4hi_internal;  break;
+    case E_V8HFmode:  gen = gen_neon_vtrnv8hf_internal;  break;
+    case E_V4HFmode:  gen = gen_neon_vtrnv4hf_internal;  break;
+    case E_V4SImode:  gen = gen_neon_vtrnv4si_internal;  break;
+    case E_V2SImode:  gen = gen_neon_vtrnv2si_internal;  break;
+    case E_V2SFmode:  gen = gen_neon_vtrnv2sf_internal;  break;
+    case E_V4SFmode:  gen = gen_neon_vtrnv4sf_internal;  break;
     default:
       gcc_unreachable ();
     }
@@ -29058,17 +29084,17 @@ arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 
   switch (d->vmode)
     {
-    case V16QImode: gen = gen_neon_vextv16qi; break;
-    case V8QImode: gen = gen_neon_vextv8qi; break;
-    case V4HImode: gen = gen_neon_vextv4hi; break;
-    case V8HImode: gen = gen_neon_vextv8hi; break;
-    case V2SImode: gen = gen_neon_vextv2si; break;
-    case V4SImode: gen = gen_neon_vextv4si; break;
-    case V4HFmode: gen = gen_neon_vextv4hf; break;
-    case V8HFmode: gen = gen_neon_vextv8hf; break;
-    case V2SFmode: gen = gen_neon_vextv2sf; break;
-    case V4SFmode: gen = gen_neon_vextv4sf; break;
-    case V2DImode: gen = gen_neon_vextv2di; break;
+    case E_V16QImode: gen = gen_neon_vextv16qi; break;
+    case E_V8QImode: gen = gen_neon_vextv8qi; break;
+    case E_V4HImode: gen = gen_neon_vextv4hi; break;
+    case E_V8HImode: gen = gen_neon_vextv8hi; break;
+    case E_V2SImode: gen = gen_neon_vextv2si; break;
+    case E_V4SImode: gen = gen_neon_vextv4si; break;
+    case E_V4HFmode: gen = gen_neon_vextv4hf; break;
+    case E_V8HFmode: gen = gen_neon_vextv8hf; break;
+    case E_V2SFmode: gen = gen_neon_vextv2sf; break;
+    case E_V4SFmode: gen = gen_neon_vextv4sf; break;
+    case E_V2DImode: gen = gen_neon_vextv2di; break;
     default:
       return false;
     }
@@ -29613,21 +29639,21 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
 
   switch (mode)
     {
-    case SImode:
+    case E_SImode:
       if (!arm_add_operand (*op1, mode))
 	*op1 = force_reg (mode, *op1);
       if (!arm_add_operand (*op2, mode))
 	*op2 = force_reg (mode, *op2);
       return true;
 
-    case DImode:
+    case E_DImode:
       if (!cmpdi_operand (*op1, mode))
 	*op1 = force_reg (mode, *op1);
       if (!cmpdi_operand (*op2, mode))
 	*op2 = force_reg (mode, *op2);
       return true;
 
-    case HFmode:
+    case E_HFmode:
       if (!TARGET_VFP_FP16INST)
 	break;
       /* FP16 comparisons are done in SF mode.  */
@@ -29635,8 +29661,8 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
       *op1 = convert_to_mode (mode, *op1, 1);
       *op2 = convert_to_mode (mode, *op2, 1);
       /* Fall through.  */
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       if (!vfp_compare_operand (*op1, mode))
 	*op1 = force_reg (mode, *op1);
       if (!vfp_compare_operand (*op2, mode))
@@ -31092,11 +31118,11 @@ arm_expand_divmod_libfunc (rtx libfunc, machine_mode mode,
   if (mode == SImode)
     gcc_assert (!TARGET_IDIV);
 
-  machine_mode libval_mode = smallest_mode_for_size (2 * GET_MODE_BITSIZE (mode),
-						     MODE_INT);
+  scalar_int_mode libval_mode
+    = smallest_int_mode_for_size (2 * GET_MODE_BITSIZE (mode));
 
   rtx libval = emit_library_call_value (libfunc, NULL_RTX, LCT_CONST,
-					libval_mode, 2,
+					libval_mode,
 					op0, GET_MODE (op0),
 					op1, GET_MODE (op1));
 

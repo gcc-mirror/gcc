@@ -16,5 +16,5 @@ program main
 end program main
 
 ! Only the omp_data_i related loads should be annotated with cliques.
-! { dg-final { scan-tree-dump-times "clique 1 base 1" 3 "ealias" } }
-! { dg-final { scan-tree-dump-times "(?n)clique 1 base 0" 4 "ealias" } }
+! { dg-final { scan-tree-dump-times "clique 1 base 1" 4 "ealias" } }
+! { dg-final { scan-tree-dump-times "(?n)clique 1 base 0" 5 "ealias" } }

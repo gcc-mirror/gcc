@@ -204,8 +204,6 @@ cxx_print_lambda_node (FILE *file, tree node, int indent)
   fprintf (file, "] ");
   print_node (file, "capture_list", LAMBDA_EXPR_CAPTURE_LIST (node), indent + 4);
   print_node (file, "this_capture", LAMBDA_EXPR_THIS_CAPTURE (node), indent + 4);
-  print_node (file, "return_type", LAMBDA_EXPR_RETURN_TYPE (node), indent + 4);
-  print_node (file, "closure", LAMBDA_EXPR_CLOSURE (node), indent + 4);
 }
 
 void

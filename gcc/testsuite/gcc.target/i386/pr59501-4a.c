@@ -5,4 +5,4 @@
 #include "pr59501-3a.c"
 
 /* Verify no dynamic realignment is performed.  */
-/* { dg-final { scan-assembler-not "and\[^\n\r]*sp" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "and\[^\n\r]*sp" } } */

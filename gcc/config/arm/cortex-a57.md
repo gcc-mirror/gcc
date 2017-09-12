@@ -357,25 +357,25 @@
 ;; Loads of up to two words.
 (define_insn_reservation "cortex_a57_load1" 5
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "load_byte,load1,load2"))
+       (eq_attr "type" "load_byte,load_4,load_8"))
   "ca57_load_model")
 
 ;; Loads of three or four words.
 (define_insn_reservation "cortex_a57_load3" 5
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "ca57_ls_issue*2,ca57_load_model")
 
 ;; Stores of up to two words.
 (define_insn_reservation "cortex_a57_store1" 0
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8"))
   "ca57_store_model")
 
 ;; Stores of three or four words.
 (define_insn_reservation "cortex_a57_store3" 0
   (and (eq_attr "tune" "cortexa57")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "ca57_ls_issue*2,ca57_store_model")
 
 ;; Advanced SIMD Unit - Integer Arithmetic Instructions.

@@ -1828,6 +1828,9 @@ package body Sem_Eval is
 
             return True;
 
+         elsif Nkind (Op) = N_Qualified_Expression then
+            return Compile_Time_Known_Value_Or_Aggr (Expression (Op));
+
          --  All other types of values are not known at compile time
 
          else
@@ -4196,6 +4199,12 @@ package body Sem_Eval is
          pragma Assert (Is_Fixed_Point_Type (Underlying_Type (Etype (N))));
          Val := Corresponding_Integer_Value (N);
 
+      --  The NULL access value
+
+      elsif Kind = N_Null then
+         pragma Assert (Is_Access_Type (Underlying_Type (Etype (N))));
+         Val := Uint_0;
+
       --  Otherwise must be character literal
 
       else
@@ -5764,8 +5773,9 @@ package body Sem_Eval is
 
       --  No match if sizes different (from use of 'Object_Size). This test
       --  is excluded if Formal_Derived_Matching is True, as the base types
-      --  can be different in that case and typically have different sizes
-      --  (and Esizes can be set when Frontend_Layout_On_Target is True).
+      --  can be different in that case and typically have different sizes.
+      --  ??? Frontend_Layout_On_Target used to set Esizes but this is no
+      --  longer the case, consider removing the last test below.
 
       elsif not Formal_Derived_Matching
         and then Known_Static_Esize (T1)

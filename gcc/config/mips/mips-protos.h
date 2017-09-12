@@ -246,7 +246,6 @@ extern bool mips_expand_block_move (rtx, rtx, rtx);
 extern void mips_expand_synci_loop (rtx, rtx);
 
 extern void mips_init_cumulative_args (CUMULATIVE_ARGS *, tree);
-extern bool mips_pad_arg_upward (machine_mode, const_tree);
 extern bool mips_pad_reg_upward (machine_mode, tree);
 
 extern bool mips_expand_ext_as_unaligned_load (rtx, rtx, HOST_WIDE_INT,
@@ -300,7 +299,6 @@ extern bool mips_secondary_memory_needed (enum reg_class, enum reg_class,
 extern bool mips_cannot_change_mode_class (machine_mode,
 					   machine_mode, enum reg_class);
 extern bool mips_dangerous_for_la25_p (rtx);
-extern bool mips_modes_tieable_p (machine_mode, machine_mode);
 extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   machine_mode,
 						   rtx, bool);
@@ -325,7 +323,6 @@ extern const char *mips_output_division (const char *, rtx *);
 extern const char *mips_msa_output_division (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern bool mips_hard_regno_rename_ok (unsigned int, unsigned int);
-extern unsigned int mips_hard_regno_nregs (int, machine_mode);
 extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int mips_dspalu_bypass_p (rtx, rtx);

@@ -1136,7 +1136,7 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 		  && (call_used_regs[i] || df_regs_ever_live_p (i))
 		  && (!frame_pointer_needed || i != HARD_FRAME_POINTER_REGNUM)
 		  && !fixed_regs[i] && !global_regs[i]
-		  && hard_regno_nregs[i][GET_MODE (reg)] == 1
+		  && hard_regno_nregs (i, GET_MODE (reg)) == 1
 		  && targetm.hard_regno_scratch_ok (i))
 		{
 		  index_reg = gen_rtx_REG (GET_MODE (reg), i);
@@ -1453,7 +1453,7 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (SET_DEST (set)) == ZERO_EXTRACT
       || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
-      for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+      for (i = end_hard_regno (mode, regno) - 1; i >= regno; i--)
 	{
 	  reg_state[i].use_index = -1;
 	  reg_state[i].store_ruid = reload_combine_ruid;
@@ -1462,7 +1462,7 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
     }
   else
     {
-      for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+      for (i = end_hard_regno (mode, regno) - 1; i >= regno; i--)
 	{
 	  reg_state[i].store_ruid = reload_combine_ruid;
 	  if (GET_CODE (set) == SET)
@@ -1692,21 +1692,23 @@ move2add_record_sym_value (rtx reg, rtx sym, rtx off)
 /* Check if REGNO contains a valid value in MODE.  */
 
 static bool
-move2add_valid_value_p (int regno, machine_mode mode)
+move2add_valid_value_p (int regno, scalar_int_mode mode)
 {
   if (reg_set_luid[regno] <= move2add_last_label_luid)
     return false;
 
   if (mode != reg_mode[regno])
     {
-      if (!MODES_OK_FOR_MOVE2ADD (mode, reg_mode[regno]))
+      scalar_int_mode old_mode;
+      if (!is_a <scalar_int_mode> (reg_mode[regno], &old_mode)
+	  || !MODES_OK_FOR_MOVE2ADD (mode, old_mode))
 	return false;
       /* The value loaded into regno in reg_mode[regno] is also valid in
 	 mode after truncation only if (REG:mode regno) is the lowpart of
 	 (REG:reg_mode[regno] regno).  Now, for big endian, the starting
 	 regno of the lowpart might be different.  */
-      int s_off = subreg_lowpart_offset (mode, reg_mode[regno]);
-      s_off = subreg_regno_offset (regno, reg_mode[regno], s_off, mode);
+      int s_off = subreg_lowpart_offset (mode, old_mode);
+      s_off = subreg_regno_offset (regno, old_mode, s_off, mode);
       if (s_off != 0)
 	/* We could in principle adjust regno, check reg_mode[regno] to be
 	   BLKmode, and return s_off to the caller (vs. -1 for failure),
@@ -1715,27 +1717,27 @@ move2add_valid_value_p (int regno, machine_mode mode)
 	return false;
     }
 
-  for (int i = hard_regno_nregs[regno][mode] - 1; i > 0; i--)
-    if (reg_mode[regno + i] != BLKmode)
+  for (int i = end_hard_regno (mode, regno) - 1; i > regno; i--)
+    if (reg_mode[i] != BLKmode)
       return false;
   return true;
 }
 
-/* This function is called with INSN that sets REG to (SYM + OFF),
-   while REG is known to already have value (SYM + offset).
+/* This function is called with INSN that sets REG (of mode MODE)
+   to (SYM + OFF), while REG is known to already have value (SYM + offset).
    This function tries to change INSN into an add instruction
    (set (REG) (plus (REG) (OFF - offset))) using the known value.
    It also updates the information about REG's known value.
    Return true if we made a change.  */
 
 static bool
-move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
+move2add_use_add2_insn (scalar_int_mode mode, rtx reg, rtx sym, rtx off,
+			rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   rtx src = SET_SRC (pat);
   int regno = REGNO (reg);
-  rtx new_src = gen_int_mode (UINTVAL (off) - reg_offset[regno],
-			      GET_MODE (reg));
+  rtx new_src = gen_int_mode (UINTVAL (off) - reg_offset[regno], mode);
   bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
   bool changed = false;
 
@@ -1757,7 +1759,7 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
   else
     {
       struct full_rtx_costs oldcst, newcst;
-      rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
+      rtx tem = gen_rtx_PLUS (mode, reg, new_src);
 
       get_full_set_rtx_cost (pat, &oldcst);
       SET_SRC (pat) = tem;
@@ -1767,13 +1769,10 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
       if (costs_lt_p (&newcst, &oldcst, speed)
 	  && have_add2_insn (reg, new_src))
 	changed = validate_change (insn, &SET_SRC (pat), tem, 0);	
-      else if (sym == NULL_RTX && GET_MODE (reg) != BImode)
+      else if (sym == NULL_RTX && mode != BImode)
 	{
-	  machine_mode narrow_mode;
-	  for (narrow_mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	       narrow_mode != VOIDmode
-		 && narrow_mode != GET_MODE (reg);
-	       narrow_mode = GET_MODE_WIDER_MODE (narrow_mode))
+	  scalar_int_mode narrow_mode;
+	  FOR_EACH_MODE_UNTIL (narrow_mode, mode)
 	    {
 	      if (have_insn_for (STRICT_LOW_PART, narrow_mode)
 		  && ((reg_offset[regno] & ~GET_MODE_MASK (narrow_mode))
@@ -1803,9 +1802,9 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
 }
 
 
-/* This function is called with INSN that sets REG to (SYM + OFF),
-   but REG doesn't have known value (SYM + offset).  This function
-   tries to find another register which is known to already have
+/* This function is called with INSN that sets REG (of mode MODE) to
+   (SYM + OFF), but REG doesn't have known value (SYM + offset).  This
+   function tries to find another register which is known to already have
    value (SYM + offset) and change INSN into an add instruction
    (set (REG) (plus (the found register) (OFF - offset))) if such
    a register is found.  It also updates the information about
@@ -1813,7 +1812,8 @@ move2add_use_add2_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
    Return true iff we made a change.  */
 
 static bool
-move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
+move2add_use_add3_insn (scalar_int_mode mode, rtx reg, rtx sym, rtx off,
+			rtx_insn *insn)
 {
   rtx pat = PATTERN (insn);
   rtx src = SET_SRC (pat);
@@ -1832,7 +1832,7 @@ move2add_use_add3_insn (rtx reg, rtx sym, rtx off, rtx_insn *insn)
   SET_SRC (pat) = plus_expr;
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
-    if (move2add_valid_value_p (i, GET_MODE (reg))
+    if (move2add_valid_value_p (i, mode)
 	&& reg_base_reg[i] < 0
 	&& reg_symbol_ref[i] != NULL_RTX
 	&& rtx_equal_p (sym, reg_symbol_ref[i]))
@@ -1922,8 +1922,10 @@ reload_cse_move2add (rtx_insn *first)
       pat = PATTERN (insn);
       /* For simplicity, we only perform this optimization on
 	 straightforward SETs.  */
+      scalar_int_mode mode;
       if (GET_CODE (pat) == SET
-	  && REG_P (SET_DEST (pat)))
+	  && REG_P (SET_DEST (pat))
+	  && is_a <scalar_int_mode> (GET_MODE (SET_DEST (pat)), &mode))
 	{
 	  rtx reg = SET_DEST (pat);
 	  int regno = REGNO (reg);
@@ -1931,7 +1933,7 @@ reload_cse_move2add (rtx_insn *first)
 
 	  /* Check if we have valid information on the contents of this
 	     register in the mode of REG.  */
-	  if (move2add_valid_value_p (regno, GET_MODE (reg))
+	  if (move2add_valid_value_p (regno, mode)
               && dbg_cnt (cse2_move2add))
 	    {
 	      /* Try to transform (set (REGX) (CONST_INT A))
@@ -1951,7 +1953,8 @@ reload_cse_move2add (rtx_insn *first)
 		  && reg_base_reg[regno] < 0
 		  && reg_symbol_ref[regno] == NULL_RTX)
 		{
-		  changed |= move2add_use_add2_insn (reg, NULL_RTX, src, insn);
+		  changed |= move2add_use_add2_insn (mode, reg, NULL_RTX,
+						     src, insn);
 		  continue;
 		}
 
@@ -1968,7 +1971,7 @@ reload_cse_move2add (rtx_insn *first)
 	      else if (REG_P (src)
 		       && reg_set_luid[regno] == reg_set_luid[REGNO (src)]
 		       && reg_base_reg[regno] == reg_base_reg[REGNO (src)]
-		       && move2add_valid_value_p (REGNO (src), GET_MODE (reg)))
+		       && move2add_valid_value_p (REGNO (src), mode))
 		{
 		  rtx_insn *next = next_nonnote_nondebug_insn (insn);
 		  rtx set = NULL_RTX;
@@ -1988,7 +1991,7 @@ reload_cse_move2add (rtx_insn *first)
 			gen_int_mode (added_offset
 				      + base_offset
 				      - regno_offset,
-				      GET_MODE (reg));
+				      mode);
 		      bool success = false;
 		      bool speed = optimize_bb_for_speed_p (BLOCK_FOR_INSN (insn));
 
@@ -2000,11 +2003,11 @@ reload_cse_move2add (rtx_insn *first)
 			{
 			  rtx old_src = SET_SRC (set);
 			  struct full_rtx_costs oldcst, newcst;
-			  rtx tem = gen_rtx_PLUS (GET_MODE (reg), reg, new_src);
+			  rtx tem = gen_rtx_PLUS (mode, reg, new_src);
 
 			  get_full_set_rtx_cost (set, &oldcst);
 			  SET_SRC (set) = tem;
-			  get_full_set_src_cost (tem, GET_MODE (reg), &newcst);
+			  get_full_set_src_cost (tem, mode, &newcst);
 			  SET_SRC (set) = old_src;
 			  costs_add_n_insns (&oldcst, 1);
 
@@ -2024,7 +2027,7 @@ reload_cse_move2add (rtx_insn *first)
 		      move2add_record_mode (reg);
 		      reg_offset[regno]
 			= trunc_int_for_mode (added_offset + base_offset,
-					      GET_MODE (reg));
+					      mode);
 		      continue;
 		    }
 		}
@@ -2060,16 +2063,16 @@ reload_cse_move2add (rtx_insn *first)
 
 	      /* If the reg already contains the value which is sum of
 		 sym and some constant value, we can use an add2 insn.  */
-	      if (move2add_valid_value_p (regno, GET_MODE (reg))
+	      if (move2add_valid_value_p (regno, mode)
 		  && reg_base_reg[regno] < 0
 		  && reg_symbol_ref[regno] != NULL_RTX
 		  && rtx_equal_p (sym, reg_symbol_ref[regno]))
-		changed |= move2add_use_add2_insn (reg, sym, off, insn);
+		changed |= move2add_use_add2_insn (mode, reg, sym, off, insn);
 
 	      /* Otherwise, we have to find a register whose value is sum
 		 of sym and some constant value.  */
 	      else
-		changed |= move2add_use_add3_insn (reg, sym, off, insn);
+		changed |= move2add_use_add3_insn (mode, reg, sym, off, insn);
 
 	      continue;
 	    }
@@ -2157,7 +2160,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 {
   rtx_insn *insn = (rtx_insn *) data;
   unsigned int regno = 0;
-  machine_mode mode = GET_MODE (dst);
+  scalar_int_mode mode;
 
   /* Some targets do argument pushes without adding REG_INC notes.  */
 
@@ -2177,8 +2180,10 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
   else
     return;
 
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_CODE (set) == SET)
+  if (!is_a <scalar_int_mode> (GET_MODE (dst), &mode))
+    goto invalidate;
+
+  if (GET_CODE (set) == SET)
     {
       rtx note, sym = NULL_RTX;
       rtx off;
@@ -2205,8 +2210,7 @@ move2add_note_store (rtx dst, const_rtx set, void *data)
 	}
     }
 
-  if (SCALAR_INT_MODE_P (mode)
-      && GET_CODE (set) == SET
+  if (GET_CODE (set) == SET
       && GET_CODE (SET_DEST (set)) != ZERO_EXTRACT
       && GET_CODE (SET_DEST (set)) != STRICT_LOW_PART)
     {

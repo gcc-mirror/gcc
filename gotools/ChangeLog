@@ -1,3 +1,15 @@
+2017-08-30  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Substitute GOC_FOR_TARGET and GCC_FOR_TARGET.
+	* Makefile.am (MOSTLYCLEANFILES): Add check-gcc.
+	(check-gccgo): Create via a temporary file.
+	(check-gcc): New target.
+	(CHECK_ENV): Set CC.
+	(ECHO_ENV): Report CC.
+	(check-go-tool): Depend on check-gcc.
+	(check-runtime, check-cgo-test, check-carchive-test): Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2017-07-26  Ian Lance Taylor  <iant@golang.org>
 
 	PR go/81548

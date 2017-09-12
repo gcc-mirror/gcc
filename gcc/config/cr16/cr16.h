@@ -197,21 +197,8 @@ while (0)
 
 /* Returns 1 if the register is longer than word size, 0 otherwise.  */
 #define LONG_REG_P(REGNO)                                                    \
-  (HARD_REGNO_NREGS (REGNO,                                                  \
-		     GET_MODE_WIDER_MODE (smallest_mode_for_size	     \
-					 (BITS_PER_WORD, MODE_INT))) == 1)
-
-#define HARD_REGNO_NREGS(REGNO, MODE)                                         \
- ((REGNO >= CR16_FIRST_DWORD_REGISTER)                                        \
-  ? ((GET_MODE_SIZE (MODE) + CR16_UNITS_PER_DWORD - 1) / CR16_UNITS_PER_DWORD)\
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD       - 1) / UNITS_PER_WORD))
-
-/* Nonzero if it is permissible to store a value of mode @var{mode} in hard
-   register number @var{regno} (or in several registers starting with that
-   one).  On the CR16 architecture, all registers can hold all modes,
-   except that double precision floats (and double ints) must fall on
-   even-register boundaries.  */ 
-#define HARD_REGNO_MODE_OK(REGNO, MODE) cr16_hard_regno_mode_ok (REGNO, MODE)
+  (targetm.hard_regno_nregs (REGNO,                                          \
+			     GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
 
 #define NOTICE_UPDATE_CC(EXP, INSN) \
    notice_update_cc ((EXP))
@@ -253,9 +240,6 @@ while (0)
 #define RETURN_ADDR_RTX(COUNT, FRAME) 			  		\
   (0 == COUNT)	?  gen_rtx_PLUS (Pmode, gen_rtx_RA, gen_rtx_RA)		\
 		:  const0_rtx
-
-#define MODES_TIEABLE_P(MODE1, MODE2)  \
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2))
 
 enum reg_class
 {

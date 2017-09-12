@@ -1742,8 +1742,8 @@ find_candidates_dom_walker::before_dom_children (basic_block bb)
 	slsr_process_ref (gs);
 
       else if (is_gimple_assign (gs)
-	       && SCALAR_INT_MODE_P
-	            (TYPE_MODE (TREE_TYPE (gimple_assign_lhs (gs)))))
+	       && (INTEGRAL_TYPE_P (TREE_TYPE (gimple_assign_lhs (gs)))
+		   || POINTER_TYPE_P (TREE_TYPE (gimple_assign_lhs (gs)))))
 	{
 	  tree rhs1 = NULL_TREE, rhs2 = NULL_TREE;
 
@@ -3339,6 +3339,23 @@ insert_initializers (slsr_cand_t c)
 	 with this increment.  If there is at least one candidate in
 	 that block, the earliest one will be returned in WHERE.  */
       bb = nearest_common_dominator_for_cands (c, incr, &where);
+
+      /* If the NCD is not dominated by the block containing the
+	 definition of the stride, we can't legally insert a
+	 single initializer.  Mark the increment as unprofitable
+	 so we don't make any replacements.  FIXME: Multiple
+	 initializers could be placed with more analysis.  */
+      gimple *stride_def = SSA_NAME_DEF_STMT (c->stride);
+      basic_block stride_bb = gimple_bb (stride_def);
+
+      if (stride_bb && !dominated_by_p (CDI_DOMINATORS, bb, stride_bb))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    fprintf (dump_file,
+		     "Initializer #%d cannot be legally placed\n", i);
+	  incr_vec[i].cost = COST_INFINITE;
+	  continue;
+	}
 
       /* If the nominal stride has a different type than the recorded
 	 stride type, build a cast from the nominal stride to that type.  */

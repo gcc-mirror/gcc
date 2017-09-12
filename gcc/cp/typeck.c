@@ -4952,8 +4952,8 @@ cp_build_binary_op (location_t location,
 	    }
 
 	  /* Always construct signed integer vector type.  */
-	  intt = c_common_type_for_size (GET_MODE_BITSIZE
-					   (TYPE_MODE (TREE_TYPE (type0))), 0);
+	  intt = c_common_type_for_size
+	    (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (type0))), 0);
 	  if (!intt)
 	    {
 	      if (complain & tf_error)
@@ -5982,6 +5982,7 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	{
 	  /* Warn if the expression has boolean value.  */
 	  if (TREE_CODE (TREE_TYPE (arg)) == BOOLEAN_TYPE
+	      && (complain & tf_warning)
 	      && warning_at (location, OPT_Wbool_operation,
 			     "%<~%> on an expression of type bool"))
 	    inform (location, "did you mean to use logical not (%<!%>)?");

@@ -4070,7 +4070,6 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
   vec<tree> interm_types = vNULL;
   tree last_oprnd, intermediate_type, cvt_type = NULL_TREE;
   int op_type;
-  machine_mode rhs_mode;
   unsigned short fltsz;
 
   /* Is STMT a vectorizable conversion?   */
@@ -4213,6 +4212,11 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
      needs to be generated.  */
   gcc_assert (ncopies >= 1);
 
+  bool found_mode = false;
+  scalar_mode lhs_mode = SCALAR_TYPE_MODE (lhs_type);
+  scalar_mode rhs_mode = SCALAR_TYPE_MODE (rhs_type);
+  opt_scalar_mode rhs_mode_iter;
+
   /* Supportable by target?  */
   switch (modifier)
     {
@@ -4241,16 +4245,16 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
 
       if (code != FLOAT_EXPR
-	  || (GET_MODE_SIZE (TYPE_MODE (lhs_type))
-	      <= GET_MODE_SIZE (TYPE_MODE (rhs_type))))
+	  || GET_MODE_SIZE (lhs_mode) <= GET_MODE_SIZE (rhs_mode))
 	goto unsupported;
 
-      rhs_mode = TYPE_MODE (rhs_type);
-      fltsz = GET_MODE_SIZE (TYPE_MODE (lhs_type));
-      for (rhs_mode = GET_MODE_2XWIDER_MODE (TYPE_MODE (rhs_type));
-	   rhs_mode != VOIDmode && GET_MODE_SIZE (rhs_mode) <= fltsz;
-	   rhs_mode = GET_MODE_2XWIDER_MODE (rhs_mode))
+      fltsz = GET_MODE_SIZE (lhs_mode);
+      FOR_EACH_2XWIDER_MODE (rhs_mode_iter, rhs_mode)
 	{
+	  rhs_mode = rhs_mode_iter.require ();
+	  if (GET_MODE_SIZE (rhs_mode) > fltsz)
+	    break;
+
 	  cvt_type
 	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
 	  cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
@@ -4274,10 +4278,13 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	  if (supportable_widening_operation (NOP_EXPR, stmt, cvt_type,
 					      vectype_in, &code1, &code2,
 					      &multi_step_cvt, &interm_types))
-	    break;
+	    {
+	      found_mode = true;
+	      break;
+	    }
 	}
 
-      if (rhs_mode == VOIDmode || GET_MODE_SIZE (rhs_mode) > fltsz)
+      if (!found_mode)
 	goto unsupported;
 
       if (GET_MODE_SIZE (rhs_mode) == fltsz)
@@ -4298,11 +4305,9 @@ vectorizable_conversion (gimple *stmt, gimple_stmt_iterator *gsi,
 	break;
 
       if (code != FIX_TRUNC_EXPR
-	  || (GET_MODE_SIZE (TYPE_MODE (lhs_type))
-	      >= GET_MODE_SIZE (TYPE_MODE (rhs_type))))
+	  || GET_MODE_SIZE (lhs_mode) >= GET_MODE_SIZE (rhs_mode))
 	goto unsupported;
 
-      rhs_mode = TYPE_MODE (rhs_type);
       cvt_type
 	= build_nonstandard_integer_type (GET_MODE_BITSIZE (rhs_mode), 0);
       cvt_type = get_same_sized_vectype (cvt_type, vectype_in);
@@ -5728,6 +5733,12 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   op = gimple_assign_rhs1 (stmt);
 
+  /* In the case this is a store from a STRING_CST make sure
+     native_encode_expr can handle it.  */
+  if (TREE_CODE (op) == STRING_CST
+      && ! can_native_encode_string_p (op))
+    return false;
+
   if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt, &rhs_vectype))
     {
       if (dump_enabled_p ())
@@ -6026,9 +6037,10 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
 	      /* First check if vec_extract optab doesn't support extraction
 		 of vector elts directly.  */
-	      machine_mode elmode = TYPE_MODE (elem_type);
-	      machine_mode vmode = mode_for_vector (elmode, group_size);
-	      if (! VECTOR_MODE_P (vmode)
+	      scalar_mode elmode = SCALAR_TYPE_MODE (elem_type);
+	      machine_mode vmode;
+	      if (!mode_for_vector (elmode, group_size).exists (&vmode)
+		  || !VECTOR_MODE_P (vmode)
 		  || (convert_optab_handler (vec_extract_optab,
 					     TYPE_MODE (vectype), vmode)
 		      == CODE_FOR_nothing))
@@ -6040,12 +6052,13 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		     supported.  */
 		  unsigned lsize
 		    = group_size * GET_MODE_BITSIZE (elmode);
-		  elmode = mode_for_size (lsize, MODE_INT, 0);
-		  vmode = mode_for_vector (elmode, nunits / group_size);
+		  elmode = int_mode_for_size (lsize, 0).require ();
 		  /* If we can't construct such a vector fall back to
 		     element extracts from the original vector type and
 		     element size stores.  */
-		  if (VECTOR_MODE_P (vmode)
+		  if (mode_for_vector (elmode,
+				       nunits / group_size).exists (&vmode)
+		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_extract_optab,
 						 vmode, elmode)
 			  != CODE_FOR_nothing))
@@ -6498,7 +6511,7 @@ vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
   mask_elt_type = lang_hooks.types.type_for_mode
-		    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
+    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
   mask_elts = XALLOCAVEC (tree, nunits);
@@ -7064,9 +7077,10 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	    {
 	      /* First check if vec_init optab supports construction from
 		 vector elts directly.  */
-	      machine_mode elmode = TYPE_MODE (TREE_TYPE (vectype));
-	      machine_mode vmode = mode_for_vector (elmode, group_size);
-	      if (VECTOR_MODE_P (vmode)
+	      scalar_mode elmode = SCALAR_TYPE_MODE (TREE_TYPE (vectype));
+	      machine_mode vmode;
+	      if (mode_for_vector (elmode, group_size).exists (&vmode)
+		  && VECTOR_MODE_P (vmode)
 		  && (convert_optab_handler (vec_init_optab,
 					     TYPE_MODE (vectype), vmode)
 		      != CODE_FOR_nothing))
@@ -7086,11 +7100,12 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 		     to a larger load.  */
 		  unsigned lsize
 		    = group_size * TYPE_PRECISION (TREE_TYPE (vectype));
-		  elmode = mode_for_size (lsize, MODE_INT, 0);
-		  vmode = mode_for_vector (elmode, nunits / group_size);
+		  elmode = int_mode_for_size (lsize, 0).require ();
 		  /* If we can't construct such a vector fall back to
 		     element loads of the original vector type.  */
-		  if (VECTOR_MODE_P (vmode)
+		  if (mode_for_vector (elmode,
+				       nunits / group_size).exists (&vmode)
+		      && VECTOR_MODE_P (vmode)
 		      && (convert_optab_handler (vec_init_optab, vmode, elmode)
 			  != CODE_FOR_nothing))
 		    {
@@ -7198,7 +7213,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-      int group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
@@ -7241,7 +7255,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    {
 	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	      group_gap_adj = group_gap;
+	      group_gap_adj
+		= group_size - SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
 	    }
     	}
       else
@@ -9047,18 +9062,16 @@ static tree
 get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
 {
   tree orig_scalar_type = scalar_type;
-  machine_mode inner_mode = TYPE_MODE (scalar_type);
+  scalar_mode inner_mode;
   machine_mode simd_mode;
-  unsigned int nbytes = GET_MODE_SIZE (inner_mode);
   int nunits;
   tree vectype;
 
-  if (nbytes == 0)
+  if (!is_int_mode (TYPE_MODE (scalar_type), &inner_mode)
+      && !is_float_mode (TYPE_MODE (scalar_type), &inner_mode))
     return NULL_TREE;
 
-  if (GET_MODE_CLASS (inner_mode) != MODE_INT
-      && GET_MODE_CLASS (inner_mode) != MODE_FLOAT)
-    return NULL_TREE;
+  unsigned int nbytes = GET_MODE_SIZE (inner_mode);
 
   /* For vector types of elements whose mode precision doesn't
      match their types precision we use a element type of mode
@@ -9095,10 +9108,11 @@ get_vectype_for_scalar_type_and_size (tree scalar_type, unsigned size)
      lookup a vector mode of the specified size.  */
   if (size == 0)
     simd_mode = targetm.vectorize.preferred_simd_mode (inner_mode);
-  else
-    simd_mode = mode_for_vector (inner_mode, size / nbytes);
+  else if (!mode_for_vector (inner_mode, size / nbytes).exists (&simd_mode))
+    return NULL_TREE;
   nunits = GET_MODE_SIZE (simd_mode) / nbytes;
-  if (nunits <= 1)
+  /* NOTE: nunits == 1 is allowed to support single element vector types.  */
+  if (nunits < 1)
     return NULL_TREE;
 
   vectype = build_vector_type (scalar_type, nunits);

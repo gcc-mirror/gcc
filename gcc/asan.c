@@ -1347,7 +1347,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
       snprintf (buf, sizeof buf, "__asan_stack_malloc_%d",
 		use_after_return_class);
       ret = init_one_libfunc (buf);
-      ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 1,
+      ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
 				     GEN_INT (asan_frame_size
 					      + base_align_bias),
 				     TYPE_MODE (pointer_sized_int_node));
@@ -1477,7 +1477,7 @@ asan_emit_stack_protection (rtx base, rtx pbase, unsigned int alignb,
 	  ret = init_one_libfunc (buf);
 	  rtx addr = convert_memory_address (ptr_mode, base);
 	  rtx orig_addr = convert_memory_address (ptr_mode, orig_base);
-	  emit_library_call (ret, LCT_NORMAL, ptr_mode, 3, addr, ptr_mode,
+	  emit_library_call (ret, LCT_NORMAL, ptr_mode, addr, ptr_mode,
 			     GEN_INT (asan_frame_size + base_align_bias),
 			     TYPE_MODE (pointer_sized_int_node),
 			     orig_addr, ptr_mode);
@@ -1573,8 +1573,8 @@ asan_emit_allocas_unpoison (rtx top, rtx bot, rtx_insn *before)
   rtx ret = init_one_libfunc ("__asan_allocas_unpoison");
   top = convert_memory_address (ptr_mode, top);
   bot = convert_memory_address (ptr_mode, bot);
-  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode, 2, top,
-				 ptr_mode, bot, ptr_mode);
+  ret = emit_library_call_value (ret, NULL_RTX, LCT_NORMAL, ptr_mode,
+				 top, ptr_mode, bot, ptr_mode);
 
   do_pending_stack_adjust ();
   rtx_insn *insns = get_insns ();
@@ -2527,9 +2527,12 @@ create_odr_indicator (tree decl, tree type)
   /* DECL_NAME theoretically might be NULL.  Bail out with 0 in this case.  */
   if (decl_name == NULL_TREE)
     return build_int_cst (uptr, 0);
-  size_t len = strlen (IDENTIFIER_POINTER (decl_name)) + sizeof ("__odr_asan_");
+  const char *dname = IDENTIFIER_POINTER (decl_name);
+  if (HAS_DECL_ASSEMBLER_NAME_P (decl))
+    dname = targetm.strip_name_encoding (dname);
+  size_t len = strlen (dname) + sizeof ("__odr_asan_");
   name = XALLOCAVEC (char, len);
-  snprintf (name, len, "__odr_asan_%s", IDENTIFIER_POINTER (decl_name));
+  snprintf (name, len, "__odr_asan_%s", dname);
 #ifndef NO_DOT_IN_LABEL
   name[sizeof ("__odr_asan") - 1] = '.';
 #elif !defined(NO_DOLLAR_IN_LABEL)
@@ -2706,6 +2709,29 @@ initialize_sanitizer_builtins (void)
   tree BT_FN_SIZE_CONST_PTR_INT
     = build_function_type_list (size_type_node, const_ptr_type_node,
 				integer_type_node, NULL_TREE);
+
+  tree BT_FN_VOID_UINT8_UINT8
+    = build_function_type_list (void_type_node, unsigned_char_type_node,
+				unsigned_char_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT16_UINT16
+    = build_function_type_list (void_type_node, uint16_type_node,
+				uint16_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT32_UINT32
+    = build_function_type_list (void_type_node, uint32_type_node,
+				uint32_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT64_UINT64
+    = build_function_type_list (void_type_node, uint64_type_node,
+				uint64_type_node, NULL_TREE);
+  tree BT_FN_VOID_FLOAT_FLOAT
+    = build_function_type_list (void_type_node, float_type_node,
+				float_type_node, NULL_TREE);
+  tree BT_FN_VOID_DOUBLE_DOUBLE
+    = build_function_type_list (void_type_node, double_type_node,
+				double_type_node, NULL_TREE);
+  tree BT_FN_VOID_UINT64_PTR
+    = build_function_type_list (void_type_node, uint64_type_node,
+				ptr_type_node, NULL_TREE);
+
   tree BT_FN_BOOL_VPTR_PTR_IX_INT_INT[5];
   tree BT_FN_IX_CONST_VPTR_INT[5];
   tree BT_FN_IX_VPTR_IX_INT[5];

@@ -1227,10 +1227,9 @@ conv_expr_ref_to_caf_ref (stmtblock_t *block, gfc_expr *expr)
 	      && ref->u.c.component->attr.dimension)
 	    {
 	      tree arr_desc_token_offset;
-	      /* Get the token from the descriptor.  */
-	      arr_desc_token_offset = gfc_advance_chain (
-		    TYPE_FIELDS (TREE_TYPE (ref->u.c.component->backend_decl)),
-		    4 /* CAF_TOKEN_FIELD  */);
+	      /* Get the token field from the descriptor.  */
+	      arr_desc_token_offset = TREE_OPERAND (
+		    gfc_conv_descriptor_token (ref->u.c.component->backend_decl), 1);
 	      arr_desc_token_offset
 		  = compute_component_offset (arr_desc_token_offset,
 					      TREE_TYPE (tmp));
@@ -8143,6 +8142,11 @@ conv_isocbinding_subroutine (gfc_code *code)
   gfc_conv_expr_descriptor (&fptrse, arg->next->expr);
   gfc_add_block_to_block (&block, &fptrse.pre);
   desc = fptrse.expr;
+
+  /* Set the span field.  */
+  tmp = TYPE_SIZE_UNIT (gfc_get_element_type (TREE_TYPE (desc)));
+  tmp = fold_convert (gfc_array_index_type, tmp);
+  gfc_conv_descriptor_span_set (&block, desc, tmp);
 
   /* Set data value, dtype, and offset.  */
   tmp = GFC_TYPE_ARRAY_DATAPTR_TYPE (TREE_TYPE (desc));

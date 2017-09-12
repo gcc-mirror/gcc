@@ -171,18 +171,6 @@ extern GTY(()) int spu_tune;
 }
 
 
-/* Values in Registers */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-    ((GET_MODE_BITSIZE(MODE)+MAX_FIXED_MODE_SIZE-1)/MAX_FIXED_MODE_SIZE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  (GET_MODE_BITSIZE (MODE1) <= MAX_FIXED_MODE_SIZE \
-   && GET_MODE_BITSIZE (MODE2) <= MAX_FIXED_MODE_SIZE)
-
-
 /* Register Classes */
 
 enum reg_class { 
@@ -334,8 +322,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 (((TYPE) && INTEGRAL_TYPE_P (TYPE) && GET_MODE_SIZE (MODE) < 4)		\
  ? (4 - GET_MODE_SIZE (MODE))						\
  : 0)
-
-#define FUNCTION_ARG_PADDING(MODE,TYPE) upward
 
 #define PAD_VARARGS_DOWN 0
 

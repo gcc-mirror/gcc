@@ -627,6 +627,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
+                  Set_Normalized_Position  (Comp, Pos + NFB / SSU);
                   Set_Normalized_First_Bit (Comp, NFB mod SSU);
                end;
             end loop;
@@ -749,6 +750,9 @@ package body Sem_Ch13 is
                     (Storage_Unit_Offset * System_Storage_Unit) +
                       (System_Storage_Unit - 1) -
                       (Start_Bit + CSZ - 1));
+
+                  Set_Normalized_Position (Comp,
+                    Component_Bit_Offset (Comp) / System_Storage_Unit);
 
                   Set_Normalized_First_Bit (Comp,
                     Component_Bit_Offset (Comp) mod System_Storage_Unit);
@@ -2207,6 +2211,20 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Chars (Id));
+
+                  --  Linker_Section does not need delaying, as its argument
+                  --  must be a static string. Furthermore, if applied to
+                  --  an object with an explicit initialization, the object
+                  --  must be frozen in order to elaborate the initialization
+                  --  code. (This is already done for types with implicit
+                  --  initialization, such as protected types.)
+
+                  if A_Id = Aspect_Linker_Section
+                    and then Nkind (N) = N_Object_Declaration
+                    and then Has_Init_Expression (N)
+                  then
+                     Delay_Required := False;
+                  end if;
 
                --  Synchronization
 
@@ -3956,7 +3974,7 @@ package body Sem_Ch13 is
 
       procedure Check_Iterator_Functions;
       --  Check that there is a single function in Default_Iterator attribute
-      --  has the proper type structure.
+      --  that has the proper type structure.
 
       function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
       --  Common legality check for the previous two
@@ -8700,6 +8718,9 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
+            Set_Ekind (SIdB, E_Function);
+            Set_Is_Predicate_Function (SIdB);
+
             --  The predicate function is shared between views of a type
 
             if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
@@ -9277,7 +9298,11 @@ package body Sem_Ch13 is
             T := Standard_Integer;
 
          when Aspect_Small =>
-            T := Universal_Real;
+
+            --  Note that the expression can be of any real type (not just a
+            --  real universal literal) as long as it is a static constant.
+
+            T := Any_Real;
 
          --  For a simple storage pool, we have to retrieve the type of the
          --  pool object associated with the aspect's corresponding attribute
@@ -9806,12 +9831,12 @@ package body Sem_Ch13 is
       --  checking for overlap, since no overlap is possible.
 
       Tagged_Parent : Entity_Id := Empty;
-      --  This is set in the case of a derived tagged type for which we have
-      --  Is_Fully_Repped_Tagged_Type True (indicating that all components are
-      --  positioned by record representation clauses). In this case we must
-      --  check for overlap between components of this tagged type, and the
-      --  components of its parent. Tagged_Parent will point to this parent
-      --  type. For all other cases Tagged_Parent is left set to Empty.
+      --  This is set in the case of an extension for which we have either a
+      --  size clause or Is_Fully_Repped_Tagged_Type True (indicating that all
+      --  components are positioned by record representation clauses) on the
+      --  parent type. In this case we check for overlap between components of
+      --  this tagged type and the parent component. Tagged_Parent will point
+      --  to this parent type. For all other cases, Tagged_Parent is Empty.
 
       Parent_Last_Bit : Uint;
       --  Relevant only if Tagged_Parent is set, Parent_Last_Bit indicates the
@@ -9959,9 +9984,9 @@ package body Sem_Ch13 is
 
       if Rectype = Any_Type then
          return;
-      else
-         Rectype := Underlying_Type (Rectype);
       end if;
+
+      Rectype := Underlying_Type (Rectype);
 
       --  See if we have a fully repped derived tagged type
 
@@ -9969,7 +9994,11 @@ package body Sem_Ch13 is
          PS : constant Entity_Id := Parent_Subtype (Rectype);
 
       begin
-         if Present (PS) and then Is_Fully_Repped_Tagged_Type (PS) then
+         if Present (PS) and then Known_Static_RM_Size (PS) then
+            Tagged_Parent := PS;
+            Parent_Last_Bit := RM_Size (PS) - 1;
+
+         elsif Present (PS) and then Is_Fully_Repped_Tagged_Type (PS) then
             Tagged_Parent := PS;
 
             --  Find maximum bit of any component of the parent type
@@ -10063,7 +10092,7 @@ package body Sem_Ch13 is
                  ("bit number out of range of specified size",
                   Last_Bit (CC));
 
-               --  Check for overlap with tag component
+               --  Check for overlap with tag or parent component
 
             else
                if Is_Tagged_Type (Rectype)
@@ -10073,26 +10102,19 @@ package body Sem_Ch13 is
                     ("component overlaps tag field of&",
                      Component_Name (CC), Rectype);
                   Overlap_Detected := True;
+
+               elsif Present (Tagged_Parent)
+                 and then Fbit <= Parent_Last_Bit
+               then
+                  Error_Msg_NE
+                    ("component overlaps parent field of&",
+                     Component_Name (CC), Rectype);
+                  Overlap_Detected := True;
                end if;
 
                if Hbit < Lbit then
                   Hbit := Lbit;
                end if;
-            end if;
-
-            --  Check parent overlap if component might overlap parent field
-
-            if Present (Tagged_Parent) and then Fbit <= Parent_Last_Bit then
-               Pcomp := First_Component_Or_Discriminant (Tagged_Parent);
-               while Present (Pcomp) loop
-                  if not Is_Tag (Pcomp)
-                    and then Chars (Pcomp) /= Name_uParent
-                  then
-                     Check_Component_Overlap (Comp, Pcomp);
-                  end if;
-
-                  Next_Component_Or_Discriminant (Pcomp);
-               end loop;
             end if;
          end if;
 
@@ -11508,9 +11530,10 @@ package body Sem_Ch13 is
       Compile_Time_Warnings_Errors.Init;
       Unchecked_Conversions.Init;
 
-      if AAMP_On_Target then
-         Independence_Checks.Init;
-      end if;
+      --  ??? Might be needed in the future for some non GCC back-ends
+      --  if AAMP_On_Target then
+      --     Independence_Checks.Init;
+      --  end if;
    end Initialize;
 
    ---------------------------
@@ -12649,10 +12672,6 @@ package body Sem_Ch13 is
    --------------------------------
 
    procedure Resolve_Aspect_Expressions (E : Entity_Id) is
-      ASN  : Node_Id;
-      A_Id : Aspect_Id;
-      Expr : Node_Id;
-
       function Resolve_Name (N : Node_Id) return Traverse_Result;
       --  Verify that all identifiers in the expression, with the exception
       --  of references to the current entity, denote visible entities. This
@@ -12670,6 +12689,8 @@ package body Sem_Ch13 is
       ------------------
 
       function Resolve_Name (N : Node_Id) return Traverse_Result is
+         Dummy : Traverse_Result;
+
       begin
          if Nkind (N) = N_Selected_Component then
             if Nkind (Prefix (N)) = N_Identifier
@@ -12683,9 +12704,24 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
 
-            if not ASIS_Mode then
+            --  In ASIS mode we must analyze overloaded identifiers to ensure
+            --  their correct decoration because expansion is disabled (and
+            --  the expansion of freeze nodes takes care of resolving aspect
+            --  expressions).
+
+            if ASIS_Mode then
+               if Is_Overloaded (N) then
+                  Analyze (Parent (N));
+               end if;
+            else
                Set_Entity (N, Empty);
             end if;
+
+         --  The name is component association needs no resolution.
+
+         elsif Nkind (N) = N_Component_Association then
+            Dummy := Resolve_Name (Expression (N));
+            return Skip;
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;
@@ -12696,84 +12732,110 @@ package body Sem_Ch13 is
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
 
+      --  Local variables
+
+      ASN : Node_Id := First_Rep_Item (E);
+
    --  Start of processing for Resolve_Aspect_Expressions
 
    begin
-      ASN := First_Rep_Item (E);
+      --  Need to make sure discriminants, if any, are directly visible
+
+      Push_Scope_And_Install_Discriminants (E);
+
       while Present (ASN) loop
          if Nkind (ASN) = N_Aspect_Specification and then Entity (ASN) = E then
-            A_Id := Get_Aspect_Id (ASN);
-            Expr := Expression (ASN);
+            declare
+               A_Id : constant Aspect_Id := Get_Aspect_Id (ASN);
+               Expr : constant Node_Id   := Expression (ASN);
 
-            case A_Id is
+            begin
+               case A_Id is
 
-               --  For now we only deal with aspects that do not generate
-               --  subprograms, or that may mention current instances of
-               --  types. These will require special handling (???TBD).
+                  --  For now we only deal with aspects that do not generate
+                  --  subprograms, or that may mention current instances of
+                  --  types. These will require special handling (???TBD).
 
-               when Aspect_Invariant
-                  | Aspect_Predicate
-                  | Aspect_Predicate_Failure
-               =>
-                  null;
+                  when Aspect_Invariant
+                     | Aspect_Predicate
+                     | Aspect_Predicate_Failure
+                  =>
+                     null;
 
-               when Aspect_Dynamic_Predicate
-                  | Aspect_Static_Predicate
-               =>
-                  --  Build predicate function specification and preanalyze
-                  --  expression after type replacement.
+                  when Aspect_Dynamic_Predicate
+                     | Aspect_Static_Predicate
+                  =>
+                     --  Build predicate function specification and preanalyze
+                     --  expression after type replacement. The function
+                     --  declaration must be analyzed in the scope of the
+                     --  type, but the expression must see components.
 
-                  if No (Predicate_Function (E)) then
-                     declare
-                        FDecl : constant Node_Id :=
-                                  Build_Predicate_Function_Declaration (E);
-                        pragma Unreferenced (FDecl);
-                     begin
-                        Resolve_Aspect_Expression (Expr);
-                     end;
-                  end if;
+                     if No (Predicate_Function (E)) then
+                        Uninstall_Discriminants_And_Pop_Scope (E);
+                        declare
+                           FDecl : constant Node_Id :=
+                                     Build_Predicate_Function_Declaration (E);
+                           pragma Unreferenced (FDecl);
 
-               when Pre_Post_Aspects =>
-                  null;
+                        begin
+                           Push_Scope_And_Install_Discriminants (E);
+                           Resolve_Aspect_Expression (Expr);
+                        end;
+                     end if;
 
-               when Aspect_Iterable =>
-                  if Nkind (Expr) = N_Aggregate then
-                     declare
-                        Assoc : Node_Id;
+                  when Pre_Post_Aspects =>
+                     null;
 
-                     begin
-                        Assoc := First (Component_Associations (Expr));
-                        while Present (Assoc) loop
-                           Find_Direct_Name (Expression (Assoc));
-                           Next (Assoc);
-                        end loop;
-                     end;
-                  end if;
+                  when Aspect_Iterable =>
+                     if Nkind (Expr) = N_Aggregate then
+                        declare
+                           Assoc : Node_Id;
 
-               when others =>
-                  if Present (Expr) then
-                     case Aspect_Argument (A_Id) is
-                        when Expression
-                           | Optional_Expression
-                        =>
-                           Analyze_And_Resolve (Expression (ASN));
+                        begin
+                           Assoc := First (Component_Associations (Expr));
+                           while Present (Assoc) loop
+                              Find_Direct_Name (Expression (Assoc));
+                              Next (Assoc);
+                           end loop;
+                        end;
+                     end if;
 
-                        when Name
-                           | Optional_Name
-                        =>
-                           if Nkind (Expr) = N_Identifier then
-                              Find_Direct_Name (Expr);
+                  --  The expression for Default_Value is a static expression
+                  --  of the type, but this expression does not freeze the
+                  --  type, so it can still appear in a representation clause
+                  --  before the actual freeze point.
 
-                           elsif Nkind (Expr) = N_Selected_Component then
-                              Find_Selected_Component (Expr);
-                           end if;
-                     end case;
-                  end if;
-            end case;
+                  when Aspect_Default_Value =>
+                     Set_Must_Not_Freeze (Expr);
+                     Preanalyze_Spec_Expression (Expr, E);
+
+                  when others =>
+                     if Present (Expr) then
+                        case Aspect_Argument (A_Id) is
+                           when Expression
+                              | Optional_Expression
+                           =>
+                              Analyze_And_Resolve (Expr);
+
+                           when Name
+                              | Optional_Name
+                           =>
+                              if Nkind (Expr) = N_Identifier then
+                                 Find_Direct_Name (Expr);
+
+                              elsif Nkind (Expr) = N_Selected_Component then
+                                 Find_Selected_Component (Expr);
+                              end if;
+                        end case;
+                     end if;
+               end case;
+            end;
          end if;
 
          ASN := Next_Rep_Item (ASN);
       end loop;
+
+      Uninstall_Discriminants_And_Pop_Scope (E);
    end Resolve_Aspect_Expressions;
 
    -------------------------
@@ -12799,7 +12861,8 @@ package body Sem_Ch13 is
          return True;
       end if;
 
-      --  Tagged types never have differing representations
+      --  Tagged types always have the same representation, because it is not
+      --  possible to specify different representations for common fields.
 
       if Is_Tagged_Type (T1) then
          return True;
@@ -12837,6 +12900,15 @@ package body Sem_Ch13 is
          end if;
       end if;
 
+      --  For records, representations are different if reorderings differ
+
+      if Is_Record_Type (T1)
+        and then Is_Record_Type (T2)
+        and then No_Reordering (T1) /= No_Reordering (T2)
+      then
+         return False;
+      end if;
+
       --  Types definitely have same representation if neither has non-standard
       --  representation since default representations are always consistent.
       --  If only one has non-standard representation, and the other does not,
@@ -12860,12 +12932,6 @@ package body Sem_Ch13 is
 
       if Is_Array_Type (T1) then
          return Component_Size (T1) = Component_Size (T2);
-
-      --  Tagged types always have the same representation, because it is not
-      --  possible to specify different representations for common fields.
-
-      elsif Is_Tagged_Type (T1) then
-         return True;
 
       --  Case of record types
 

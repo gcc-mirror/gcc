@@ -45,7 +45,7 @@ There are no variations from the standard.
   "Which code_statements cause external
   interactions.  See 1.1.3(10)."
 
-Any `code_statement` can potentially cause external interactions.
+Any *code_statement* can potentially cause external interactions.
 
 *
   "The coded representation for the text of an Ada
@@ -80,16 +80,16 @@ length of a lexical element is the same as the maximum line length.
 See :ref:`Implementation_Defined_Pragmas`.
 
 *
-  "Effect of pragma `Optimize`.  See 2.8(27)."
+  "Effect of pragma ``Optimize``.  See 2.8(27)."
 
-Pragma `Optimize`, if given with a `Time` or `Space`
+Pragma ``Optimize``, if given with a ``Time`` or ``Space``
 parameter, checks that the optimization flag is set, and aborts if it is
 not.
 
 *
   "The sequence of characters of the value returned by
   ``S'Image`` when some of the graphic characters of
-  ``S'Wide_Image`` are not defined in `Character`.  See
+  ``S'Wide_Image`` are not defined in ``Character``.  See
   3.5(37)."
 
 The sequence of characters is as defined by the wide character encoding
@@ -98,7 +98,7 @@ further details.
 
 *
   "The predefined integer types declared in
-  `Standard`.  See 3.5.4(25)."
+  ``Standard``.  See 3.5.4(25)."
 
 ====================== =======================================
 Type                   Representation
@@ -132,7 +132,7 @@ The precision and range is as defined by the IEEE standard.
 
 *
   "The predefined floating point types declared in
-  `Standard`.  See 3.5.7(16)."
+  ``Standard``.  See 3.5.7(16)."
 
 ====================== ====================================================
 Type                   Representation
@@ -146,14 +146,14 @@ Type                   Representation
 *
   "The small of an ordinary fixed point type.  See 3.5.9(8)."
 
-`Fine_Delta` is 2**(-63)
+``Fine_Delta`` is 2**(-63)
 
 *
   "What combinations of small, range, and digits are
   supported for fixed point types.  See 3.5.9(10)."
 
 Any combinations are permitted that do not result in a small less than
-`Fine_Delta` and do not result in a mantissa larger than 63 bits.
+``Fine_Delta`` and do not result in a mantissa larger than 63 bits.
 If the mantissa is larger than 53 bits on machines where Long_Long_Float
 is 64 bits (true of all architectures except ia32), then the output from
 Text_IO is accurate to only 53 bits, rather than the full mantissa.  This
@@ -161,10 +161,10 @@ is because floating-point conversions are used to convert fixed point.
 
 
 *
-  "The result of `Tags.Expanded_Name` for types declared
-  within an unnamed `block_statement`.  See 3.9(10)."
+  "The result of ``Tags.Expanded_Name`` for types declared
+  within an unnamed *block_statement*.  See 3.9(10)."
 
-Block numbers of the form `B`nnn``, where `nnn` is a
+Block numbers of the form :samp:`B{nnn}`, where *nnn* is a
 decimal integer are allocated.
 
 *
@@ -181,33 +181,33 @@ There are no implementation-defined time types.
   "The time base associated with relative delays."
 
 See 9.6(20).  The time base used is that provided by the C library
-function `gettimeofday`.
+function ``gettimeofday``.
 
 *
-  "The time base of the type `Calendar.Time`.  See
+  "The time base of the type ``Calendar.Time``.  See
   9.6(23)."
 
 The time base used is that provided by the C library function
-`gettimeofday`.
+``gettimeofday``.
 
 *
-  "The time zone used for package `Calendar`
+  "The time zone used for package ``Calendar``
   operations.  See 9.6(24)."
 
-The time zone used by package `Calendar` is the current system time zone
+The time zone used by package ``Calendar`` is the current system time zone
 setting for local time, as accessed by the C library function
-`localtime`.
+``localtime``.
 
 *
-  "Any limit on `delay_until_statements` of
-  `select_statements`.  See 9.6(29)."
+  "Any limit on *delay_until_statements* of
+  *select_statements*.  See 9.6(29)."
 
 There are no such limits.
 
 *
   "Whether or not two non-overlapping parts of a composite
   object are independently addressable, in the case where packing, record
-  layout, or `Component_Size` is specified for the object.  See
+  layout, or ``Component_Size`` is specified for the object.  See
   9.10(1)."
 
 Separate components are independently addressable if they do not share
@@ -253,7 +253,7 @@ provides the binder options *-z* and *-n* respectively, and in
 this case a list of units can be explicitly supplied to the binder for
 inclusion in the partition (all units needed by these units will also
 be included automatically).  For full details on the use of these
-options, refer to the `GNAT Make Program gnatmake` in the
+options, refer to *GNAT Make Program gnatmake* in the
 :title:`GNAT User's Guide`.
 
 *
@@ -274,7 +274,7 @@ The main program is designated by providing the name of the
 corresponding :file:`ALI` file as the input parameter to the binder.
 
 *
-  "The order of elaboration of `library_items`.  See
+  "The order of elaboration of *library_items*.  See
   10.2(18)."
 
 The first constraint on ordering is that it meets the requirements of
@@ -293,7 +293,7 @@ where a choice still remains.
 The main program has no parameters.  It may be a procedure, or a function
 returning an integer type.  In the latter case, the returned integer
 value is the return code of the program (overriding any value that
-may have been set by a call to `Ada.Command_Line.Set_Exit_Status`).
+may have been set by a call to ``Ada.Command_Line.Set_Exit_Status``).
 
 *
   "The mechanisms for building and running partitions.  See
@@ -320,24 +320,24 @@ provided by the operating system.  See the GLADE reference manual for
 further details.
 
 *
-  "The information returned by `Exception_Message`.  See
+  "The information returned by ``Exception_Message``.  See
   11.4.1(10)."
 
 Exception message returns the null string unless a specific message has
 been passed by the program.
 
 *
-  "The result of `Exceptions.Exception_Name` for types
-  declared within an unnamed `block_statement`.  See 11.4.1(12)."
+  "The result of ``Exceptions.Exception_Name`` for types
+  declared within an unnamed *block_statement*.  See 11.4.1(12)."
 
-Blocks have implementation defined names of the form `B`nnn``
-where `nnn` is an integer.
+Blocks have implementation defined names of the form :samp:`B{nnn}`
+where *nnn* is an integer.
 
 *
   "The information returned by
-  `Exception_Information`.  See 11.4.1(13)."
+  ``Exception_Information``.  See 11.4.1(13)."
 
-`Exception_Information` returns a string in the following format::
+``Exception_Information`` returns a string in the following format::
 
   *Exception_Name:* nnnnn
   *Message:* mmmmm
@@ -348,12 +348,12 @@ where `nnn` is an integer.
 
 where
 
-  *  `nnnn` is the fully qualified name of the exception in all upper
+  *  ``nnnn`` is the fully qualified name of the exception in all upper
      case letters. This line is always present.
 
-  *  `mmmm` is the message (this line present only if message is non-null)
+  *  ``mmmm`` is the message (this line present only if message is non-null)
 
-  *  `ppp` is the Process Id value as a decimal integer (this line is
+  *  ``ppp`` is the Process Id value as a decimal integer (this line is
      present only if the Process Id is nonzero). Currently we are
      not making use of this field.
 
@@ -364,7 +364,7 @@ where
      the main executable. The values are given in C style format, with lower case
      letters for a-f, and only as many digits present as are necessary.
      The line terminator sequence at the end of each line, including
-     the last line is a single `LF` character (`16#0A#`).
+     the last line is a single ``LF`` character (``16#0A#``).
 
 *
   "Implementation-defined check names.  See 11.5(27)."
@@ -373,7 +373,7 @@ The implementation defined check names include Alignment_Check,
 Atomic_Synchronization, Duplicated_Tag_Check, Container_Checks,
 Tampering_Check, Predicate_Check, and Validity_Check. In addition, a user
 program can add implementation-defined check names by means of the pragma
-Check_Name. See the description of pragma `Suppress` for full details.
+Check_Name. See the description of pragma ``Suppress`` for full details.
 
 *
   "The interpretation of each aspect of representation.  See
@@ -388,7 +388,7 @@ See separate section on data representations.
 See separate section on data representations.
 
 *
-  "The meaning of `Size` for indefinite subtypes.  See
+  "The meaning of ``Size`` for indefinite subtypes.  See
   13.3(48)."
 
 Size for an indefinite subtype is the maximum possible size, except that
@@ -416,15 +416,15 @@ The only implementation defined component is the tag for a tagged type,
 which contains a pointer to the dispatching table.
 
 *
-  "If `Word_Size` = `Storage_Unit`, the default bit
+  "If ``Word_Size`` = ``Storage_Unit``, the default bit
   ordering.  See 13.5.3(5)."
 
-`Word_Size` (32) is not the same as `Storage_Unit` (8) for this
+``Word_Size`` (32) is not the same as ``Storage_Unit`` (8) for this
 implementation, so no non-default bit ordering is supported.  The default
 bit ordering corresponds to the natural endianness of the target architecture.
 
 *
-  "The contents of the visible part of package `System`
+  "The contents of the visible part of package ``System``
   and its language-defined children.  See 13.7(2)."
 
 See the definition of these packages in files :file:`system.ads` and
@@ -438,8 +438,8 @@ System.
 
 *
   "The contents of the visible part of package
-  `System.Machine_Code`, and the meaning of
-  `code_statements`.  See 13.8(7)."
+  ``System.Machine_Code``, and the meaning of
+  *code_statements*.  See 13.8(7)."
 
 See the definition and documentation in file :file:`s-maccod.ads`.
 
@@ -487,14 +487,14 @@ on the simple assignment of the invalid negative value from Y to Z.
 
 *
   "The manner of choosing a storage pool for an access type
-  when `Storage_Pool` is not specified for the type.  See 13.11(17)."
+  when ``Storage_Pool`` is not specified for the type.  See 13.11(17)."
 
 There are 3 different standard pools used by the compiler when
-`Storage_Pool` is not specified depending whether the type is local
+``Storage_Pool`` is not specified depending whether the type is local
 to a subprogram or defined at the library level and whether
-`Storage_Size`is specified or not.  See documentation in the runtime
-library units `System.Pool_Global`, `System.Pool_Size` and
-`System.Pool_Local` in files :file:`s-poosiz.ads`,
+``Storage_Size``is specified or not.  See documentation in the runtime
+library units ``System.Pool_Global``, ``System.Pool_Size`` and
+``System.Pool_Local`` in files :file:`s-poosiz.ads`,
 :file:`s-pooglo.ads` and :file:`s-pooloc.ads` for full details on the
 default pools used.
 
@@ -503,13 +503,13 @@ default pools used.
   names for the standard pool type(s).  See 13.11(17)."
 
 See documentation in the sources of the run time mentioned in the previous
-paragraph.  All these pools are accessible by means of `with`'ing
+paragraph.  All these pools are accessible by means of `with`\ ing
 these units.
 
 *
-  "The meaning of `Storage_Size`.  See 13.11(18)."
+  "The meaning of ``Storage_Size``.  See 13.11(18)."
 
-`Storage_Size` is measured in storage units, and refers to the
+``Storage_Size`` is measured in storage units, and refers to the
 total space available for an access type collection, or to the primary
 stack space for a task.
 
@@ -523,21 +523,21 @@ for details on GNAT-defined aspects of storage pools.
 
 *
   "The set of restrictions allowed in a pragma
-  `Restrictions`.  See 13.12(7)."
+  ``Restrictions``.  See 13.12(7)."
 
 See :ref:`Standard_and_Implementation_Defined_Restrictions`.
 
 *
   "The consequences of violating limitations on
-  `Restrictions` pragmas.  See 13.12(9)."
+  ``Restrictions`` pragmas.  See 13.12(9)."
 
 Restrictions that can be checked at compile time result in illegalities
 if violated.  Currently there are no other consequences of violating
 restrictions.
 
 *
-  "The representation used by the `Read` and
-  `Write` attributes of elementary types in terms of stream
+  "The representation used by the ``Read`` and
+  ``Write`` attributes of elementary types in terms of stream
   elements.  See 13.13.2(9)."
 
 The representation is the in-memory representation of the base type of
@@ -546,15 +546,15 @@ the type, using the number of bits corresponding to the
 
 *
   "The names and characteristics of the numeric subtypes
-  declared in the visible part of package `Standard`.  See A.1(3)."
+  declared in the visible part of package ``Standard``.  See A.1(3)."
 
 See items describing the integer and floating-point types supported.
 
 *
-  "The string returned by `Character_Set_Version`.
+  "The string returned by ``Character_Set_Version``.
   See A.3.5(3)."
 
-`Ada.Wide_Characters.Handling.Character_Set_Version` returns
+``Ada.Wide_Characters.Handling.Character_Set_Version`` returns
 the string "Unicode 4.0", referring to version 4.0 of the
 Unicode specification.
 
@@ -567,21 +567,21 @@ library.  Only fast math mode is implemented.
 
 *
   "The sign of a zero result from some of the operators or
-  functions in `Numerics.Generic_Elementary_Functions`, when
-  `Float_Type'Signed_Zeros` is `True`.  See A.5.1(46)."
+  functions in ``Numerics.Generic_Elementary_Functions``, when
+  ``Float_Type'Signed_Zeros`` is ``True``.  See A.5.1(46)."
 
 The sign of zeroes follows the requirements of the IEEE 754 standard on
 floating-point.
 
 *
   "The value of
-  `Numerics.Float_Random.Max_Image_Width`.  See A.5.2(27)."
+  ``Numerics.Float_Random.Max_Image_Width``.  See A.5.2(27)."
 
 Maximum image width is 6864, see library file :file:`s-rannum.ads`.
 
 *
   "The value of
-  `Numerics.Discrete_Random.Max_Image_Width`.  See A.5.2(27)."
+  ``Numerics.Discrete_Random.Max_Image_Width``.  See A.5.2(27)."
 
 Maximum image width is 6864, see library file :file:`s-rannum.ads`.
 
@@ -610,13 +610,13 @@ The minimum period between reset calls to guarantee distinct series of
 random numbers is one microsecond.
 
 *
-  "The values of the `Model_Mantissa`,
-  `Model_Emin`, `Model_Epsilon`, `Model`,
-  `Safe_First`, and `Safe_Last` attributes, if the Numerics
+  "The values of the ``Model_Mantissa``,
+  ``Model_Emin``, ``Model_Epsilon``, ``Model``,
+  ``Safe_First``, and ``Safe_Last`` attributes, if the Numerics
   Annex is not supported.  See A.5.3(72)."
 
 Run the compiler with *-gnatS* to produce a listing of package
-`Standard`, has the values of all numeric attributes.
+``Standard``, has the values of all numeric attributes.
 
 *
   "Any implementation-defined characteristics of the
@@ -626,10 +626,10 @@ There are no special implementation defined characteristics for these
 packages.
 
 *
-  "The value of `Buffer_Size` in `Storage_IO`.  See
+  "The value of ``Buffer_Size`` in ``Storage_IO``.  See
   A.9(10)."
 
-All type representations are contiguous, and the `Buffer_Size` is
+All type representations are contiguous, and the ``Buffer_Size`` is
 the value of ``type'Size`` rounded up to the next storage unit
 boundary.
 
@@ -641,7 +641,7 @@ These files are mapped onto the files provided by the C streams
 libraries.  See source file :file:`i-cstrea.ads` for further details.
 
 *
-  "The accuracy of the value produced by `Put`.  See
+  "The accuracy of the value produced by ``Put``.  See
   A.10.9(36)."
 
 If more digits are requested in the output than are represented by the
@@ -649,30 +649,30 @@ precision of the value, zeroes are output in the corresponding least
 significant digit positions.
 
 *
-  "The meaning of `Argument_Count`, `Argument`, and
-  `Command_Name`.  See A.15(1)."
+  "The meaning of ``Argument_Count``, ``Argument``, and
+  ``Command_Name``.  See A.15(1)."
 
-These are mapped onto the `argv` and `argc` parameters of the
+These are mapped onto the ``argv`` and ``argc`` parameters of the
 main program in the natural manner.
 
 *
-  "The interpretation of the `Form` parameter in procedure
-  `Create_Directory`.  See A.16(56)."
+  "The interpretation of the ``Form`` parameter in procedure
+  ``Create_Directory``.  See A.16(56)."
 
-The `Form` parameter is not used.
-
-*
-  "The interpretation of the `Form` parameter in procedure
-  `Create_Path`.  See A.16(60)."
-
-The `Form` parameter is not used.
+The ``Form`` parameter is not used.
 
 *
-  "The interpretation of the `Form` parameter in procedure
-  `Copy_File`.  See A.16(68)."
+  "The interpretation of the ``Form`` parameter in procedure
+  ``Create_Path``.  See A.16(60)."
 
-The `Form` parameter is case-insensitive.
-Two fields are recognized in the `Form` parameter::
+The ``Form`` parameter is not used.
+
+*
+  "The interpretation of the ``Form`` parameter in procedure
+  ``Copy_File``.  See A.16(68)."
+
+The ``Form`` parameter is case-insensitive.
+Two fields are recognized in the ``Form`` parameter::
 
   *preserve=<value>*
   *mode=<value>*
@@ -721,13 +721,13 @@ Examples of incorrect Forms::
   Form => "mode=internal, preserve=timestamps"
 
 *
-  "The interpretation of the `Pattern` parameter, when not the null string,
-  in the `Start_Search` and `Search` procedures.
+  "The interpretation of the ``Pattern`` parameter, when not the null string,
+  in the ``Start_Search`` and ``Search`` procedures.
   See A.16(104) and A.16(112)."
 
-When the `Pattern` parameter is not the null string, it is interpreted
+When the ``Pattern`` parameter is not the null string, it is interpreted
 according to the syntax of regular expressions as defined in the
-`GNAT.Regexp` package.
+``GNAT.Regexp`` package.
 
 See :ref:`GNAT.Regexp_(g-regexp.ads)`.
 
@@ -757,7 +757,7 @@ Convention Name         Interpretation
 *Default*               Treated the same as C
 *External*              Treated the same as C
 *Fortran*               Fortran
-*Intrinsic*             For support of pragma `Import` with convention Intrinsic, see
+*Intrinsic*             For support of pragma ``Import`` with convention Intrinsic, see
                         separate section on Intrinsic Subprograms.
 *Stdcall*               Stdcall (used for Windows implementations only).  This convention correspond
                         to the WINAPI (previously called Pascal convention) C/C++ convention under
@@ -767,8 +767,8 @@ Convention Name         Interpretation
 *Win32*                 Synonym for Stdcall
 *Stubbed*               Stubbed is a special convention used to indicate that the body of the
                         subprogram will be entirely ignored.  Any call to the subprogram
-                        is converted into a raise of the `Program_Error` exception.  If a
-                        pragma `Import` specifies convention `stubbed` then no body need
+                        is converted into a raise of the ``Program_Error`` exception.  If a
+                        pragma ``Import`` specifies convention ``stubbed`` then no body need
                         be present at all.  This convention is useful during development for the
                         inclusion of subprograms whose body has not yet been written.
                         In addition, all otherwise unrecognized convention names are also
@@ -792,9 +792,9 @@ external language, interpreting the Ada name as being in all lower case
 letters.
 
 *
-  "The effect of pragma `Linker_Options`.  See B.1(37)."
+  "The effect of pragma ``Linker_Options``.  See B.1(37)."
 
-The string passed to `Linker_Options` is presented uninterpreted as
+The string passed to ``Linker_Options`` is presented uninterpreted as
 an argument to the link command, unless it contains ASCII.NUL characters.
 NUL characters if they appear act as argument separators, so for example
 
@@ -802,7 +802,7 @@ NUL characters if they appear act as argument separators, so for example
 
   pragma Linker_Options ("-labc" & ASCII.NUL & "-ldef");
 
-causes two separate arguments `-labc` and `-ldef` to be passed to the
+causes two separate arguments ``-labc`` and ``-ldef`` to be passed to the
 linker. The order of linker options is preserved for a given unit. The final
 list of options passed to the linker is in reverse order of the elaboration
 order. For example, linker options for a body always appear before the options
@@ -810,23 +810,23 @@ from the corresponding package spec.
 
 *
   "The contents of the visible part of package
-  `Interfaces` and its language-defined descendants.  See B.2(1)."
+  ``Interfaces`` and its language-defined descendants.  See B.2(1)."
 
 See files with prefix :file:`i-` in the distributed library.
 
 *
   "Implementation-defined children of package
-  `Interfaces`.  The contents of the visible part of package
-  `Interfaces`.  See B.2(11)."
+  ``Interfaces``.  The contents of the visible part of package
+  ``Interfaces``.  See B.2(11)."
 
 See files with prefix :file:`i-` in the distributed library.
 
 *
-  "The types `Floating`, `Long_Floating`,
-  `Binary`, `Long_Binary`, `Decimal_ Element`, and
-  `COBOL_Character`; and the initialization of the variables
-  `Ada_To_COBOL` and `COBOL_To_Ada`, in
-  `Interfaces.COBOL`.  See B.4(50)."
+  "The types ``Floating``, ``Long_Floating``,
+  ``Binary``, ``Long_Binary``, ``Decimal_ Element``, and
+  ``COBOL_Character``; and the initialization of the variables
+  ``Ada_To_COBOL`` and ``COBOL_To_Ada``, in
+  ``Interfaces.COBOL``.  See B.4(50)."
 
 ===================== ====================================
 COBOL                 Ada
@@ -857,7 +857,7 @@ See documentation in file :file:`s-maccod.ads` in the distributed library.
 
 Interrupts are mapped to signals or conditions as appropriate.  See
 definition of unit
-`Ada.Interrupt_Names` in source file :file:`a-intnam.ads` for details
+``Ada.Interrupt_Names`` in source file :file:`a-intnam.ads` for details
 on the interrupts supported on a particular target.
 
 *
@@ -868,25 +868,25 @@ GNAT does not permit a partition to be restarted without reloading,
 except under control of the debugger.
 
 *
-  "The semantics of pragma `Discard_Names`.  See C.5(7)."
+  "The semantics of pragma ``Discard_Names``.  See C.5(7)."
 
-Pragma `Discard_Names` causes names of enumeration literals to
+Pragma ``Discard_Names`` causes names of enumeration literals to
 be suppressed.  In the presence of this pragma, the Image attribute
 provides the image of the Pos of the literal, and Value accepts
 Pos values.
 
 *
-  "The result of the `Task_Identification.Image`
+  "The result of the ``Task_Identification.Image``
   attribute.  See C.7.1(7)."
 
 The result of this attribute is a string that identifies
-the object or component that denotes a given task. If a variable `Var`
-has a task type, the image for this task will have the form `Var_`XXXXXXXX``,
-where the suffix
+the object or component that denotes a given task. If a variable ``Var``
+has a task type, the image for this task will have the form :samp:`Var_{XXXXXXXX}`,
+where the suffix *XXXXXXXX*
 is the hexadecimal representation of the virtual address of the corresponding
 task control block. If the variable is an array of tasks, the image of each
 task will have the form of an indexed component indicating the position of a
-given task in the array, e.g., `Group(5)_`XXXXXXX``. If the task is a
+given task in the array, e.g., :samp:`Group(5)_{XXXXXXX}`. If the task is a
 component of a record, the image of the task will have the form of a selected
 component. These rules are fully recursive, so that the image of a task that
 is a subcomponent of a composite object corresponds to the expression that
@@ -904,28 +904,30 @@ the numeric suffix, that is to say the hexadecimal representation of the
 virtual address of the control block of the task.
 
 *
-  "The value of `Current_Task` when in a protected entry
+  "The value of ``Current_Task`` when in a protected entry
   or interrupt handler.  See C.7.1(17)."
 
 Protected entries or interrupt handlers can be executed by any
-convenient thread, so the value of `Current_Task` is undefined.
+convenient thread, so the value of ``Current_Task`` is undefined.
 
 *
-  "The effect of calling `Current_Task` from an entry
+  "The effect of calling ``Current_Task`` from an entry
   body or interrupt handler.  See C.7.1(19)."
 
-The effect of calling `Current_Task` from an entry body or
-interrupt handler is to return the identification of the task currently
-executing the code.
+When GNAT can determine statically that ``Current_Task`` is called directly in
+the body of an entry (or barrier) then a warning is emitted and ``Program_Error``
+is raised at run time. Otherwise, the effect of calling ``Current_Task`` from an
+entry body or interrupt handler is to return the identification of the task
+currently executing the code.
 
 *
   "Implementation-defined aspects of
-  `Task_Attributes`.  See C.7.2(19)."
+  ``Task_Attributes``.  See C.7.2(19)."
 
-There are no implementation-defined aspects of `Task_Attributes`.
+There are no implementation-defined aspects of ``Task_Attributes``.
 
 *
-  "Values of all `Metrics`.  See D(2)."
+  "Values of all ``Metrics``.  See D(2)."
 
 The metrics information for GNAT depends on the performance of the
 underlying operating system.  The sources of the run-time for tasking
@@ -937,8 +939,8 @@ on the exact target in use, this information can be used to determine
 the required metrics.
 
 *
-  "The declarations of `Any_Priority` and
-  `Priority`.  See D.1(11)."
+  "The declarations of ``Any_Priority`` and
+  ``Priority``.  See D.1(11)."
 
 See declarations in file :file:`system.ads`.
 
@@ -963,8 +965,8 @@ and appropriate, these threads correspond to native threads of the
 underlying operating system.
 
 *
-  "Implementation-defined `policy_identifiers` allowed
-  in a pragma `Task_Dispatching_Policy`.  See D.2.2(3)."
+  "Implementation-defined *policy_identifiers* allowed
+  in a pragma ``Task_Dispatching_Policy``.  See D.2.2(3)."
 
 There are no implementation-defined policy-identifiers allowed in this
 pragma.
@@ -982,16 +984,16 @@ of delay expirations for lower priority tasks.
 The policy is the same as that of the underlying threads implementation.
 
 *
-  "Implementation-defined `policy_identifiers` allowed
-  in a pragma `Locking_Policy`.  See D.3(4)."
+  "Implementation-defined *policy_identifiers* allowed
+  in a pragma ``Locking_Policy``.  See D.3(4)."
 
 The two implementation defined policies permitted in GNAT are
-`Inheritance_Locking` and  `Concurrent_Readers_Locking`. On
-targets that support the `Inheritance_Locking` policy, locking is
+``Inheritance_Locking`` and  ``Concurrent_Readers_Locking``. On
+targets that support the ``Inheritance_Locking`` policy, locking is
 implemented by inheritance, i.e., the task owning the lock operates
 at a priority equal to the highest priority of any task currently
 requesting the lock. On targets that support the
-`Concurrent_Readers_Locking` policy, locking is implemented with a
+``Concurrent_Readers_Locking`` policy, locking is implemented with a
 read/write lock allowing multiple protected object functions to enter
 concurrently.
 
@@ -999,7 +1001,7 @@ concurrently.
   "Default ceiling priorities.  See D.3(10)."
 
 The ceiling priority of protected objects of the type
-`System.Interrupt_Priority'Last` as described in the Ada
+``System.Interrupt_Priority'Last`` as described in the Ada
 Reference Manual D.3(10),
 
 *
@@ -1007,7 +1009,7 @@ Reference Manual D.3(10),
   the implementation.  See D.3(16)."
 
 The ceiling priority of internal protected objects is
-`System.Priority'Last`.
+``System.Priority'Last``.
 
 *
   "Implementation-defined queuing policies.  See D.4(1)."
@@ -1031,25 +1033,25 @@ task creation.
 
 *
   "What happens when a task terminates in the presence of
-  pragma `No_Task_Termination`. See D.7(15)."
+  pragma ``No_Task_Termination``. See D.7(15)."
 
 Execution is erroneous in that case.
 
 *
   "Implementation-defined aspects of pragma
-  `Restrictions`.  See D.7(20)."
+  ``Restrictions``.  See D.7(20)."
 
 There are no such implementation-defined aspects.
 
 *
   "Implementation-defined aspects of package
-  `Real_Time`.  See D.8(17)."
+  ``Real_Time``.  See D.8(17)."
 
-There are no implementation defined aspects of package `Real_Time`.
+There are no implementation defined aspects of package ``Real_Time``.
 
 *
   "Implementation-defined aspects of
-  `delay_statements`.  See D.9(8)."
+  *delay_statements*.  See D.9(8)."
 
 Any difference greater than one microsecond will cause the task to be
 delayed (see D.9(7)).
@@ -1114,7 +1116,7 @@ implementation defined interfaces.
 
 *
   "The values of named numbers in the package
-  `Decimal`.  See F.2(7)."
+  ``Decimal``.  See F.2(7)."
 
 ==================== ==========
 Named Number         Value
@@ -1127,14 +1129,14 @@ Named Number         Value
 ==================== ==========
 
 *
-  "The value of `Max_Picture_Length` in the package
-  `Text_IO.Editing`.  See F.3.3(16)."
+  "The value of ``Max_Picture_Length`` in the package
+  ``Text_IO.Editing``.  See F.3.3(16)."
 
 64
 
 *
-  "The value of `Max_Picture_Length` in the package
-  `Wide_Text_IO.Editing`.  See F.3.4(5)."
+  "The value of ``Max_Picture_Length`` in the package
+  ``Wide_Text_IO.Editing``.  See F.3.4(5)."
 
 64
 
@@ -1147,8 +1149,8 @@ operations.  Only fast math mode is currently supported.
 
 *
   "The sign of a zero result (or a component thereof) from
-  any operator or function in `Numerics.Generic_Complex_Types`, when
-  `Real'Signed_Zeros` is True.  See G.1.1(53)."
+  any operator or function in ``Numerics.Generic_Complex_Types``, when
+  ``Real'Signed_Zeros`` is True.  See G.1.1(53)."
 
 The signs of zero values are as recommended by the relevant
 implementation advice.
@@ -1156,8 +1158,8 @@ implementation advice.
 *
   "The sign of a zero result (or a component thereof) from
   any operator or function in
-  `Numerics.Generic_Complex_Elementary_Functions`, when
-  `Real'Signed_Zeros` is `True`.  See G.1.2(45)."
+  ``Numerics.Generic_Complex_Elementary_Functions``, when
+  ``Real'Signed_Zeros`` is ``True``.  See G.1.2(45)."
 
 The signs of zero values are as recommended by the relevant
 implementation advice.
@@ -1179,8 +1181,8 @@ floating-point format.
 
 *
   "The result of a floating point arithmetic operation in
-  overflow situations, when the `Machine_Overflows` attribute of the
-  result type is `False`.  See G.2.1(13)."
+  overflow situations, when the ``Machine_Overflows`` attribute of the
+  result type is ``False``.  See G.2.1(13)."
 
 Infinite and NaN values are produced as dictated by the IEEE
 floating-point standard.
@@ -1208,7 +1210,7 @@ floating-point, the operation is done in floating-point, and the result
 is converted to the target type.
 
 *
-  "Conditions on a `universal_real` operand of a fixed
+  "Conditions on a *universal_real* operand of a fixed
   point multiplication or division for which the result shall be in the
   perfect result set.  See G.2.3(22)."
 
@@ -1218,16 +1220,16 @@ representable in 64-bits.
 
 *
   "The result of a fixed point arithmetic operation in
-  overflow situations, when the `Machine_Overflows` attribute of the
-  result type is `False`.  See G.2.3(27)."
+  overflow situations, when the ``Machine_Overflows`` attribute of the
+  result type is ``False``.  See G.2.3(27)."
 
-Not relevant, `Machine_Overflows` is `True` for fixed-point
+Not relevant, ``Machine_Overflows`` is ``True`` for fixed-point
 types.
 
 *
   "The result of an elementary function reference in
-  overflow situations, when the `Machine_Overflows` attribute of the
-  result type is `False`.  See G.2.4(4)."
+  overflow situations, when the ``Machine_Overflows`` attribute of the
+  result type is ``False``.  See G.2.4(4)."
 
 IEEE infinite and Nan values are produced as appropriate.
 
@@ -1248,8 +1250,8 @@ Information on this subject is not yet available.
 *
   "The result of a complex arithmetic operation or complex
   elementary function reference in overflow situations, when the
-  `Machine_Overflows` attribute of the corresponding real type is
-  `False`.  See G.2.6(5)."
+  ``Machine_Overflows`` attribute of the corresponding real type is
+  ``False``.  See G.2.6(5)."
 
 IEEE infinite and Nan values are produced as appropriate.
 
@@ -1268,21 +1270,21 @@ Information on this subject is not yet available.
 
 *
   "Implementation-defined aspects of pragma
-  `Inspection_Point`.  See H.3.2(8)."
+  ``Inspection_Point``.  See H.3.2(8)."
 
-Pragma `Inspection_Point` ensures that the variable is live and can
+Pragma ``Inspection_Point`` ensures that the variable is live and can
 be examined by the debugger at the inspection point.
 
 *
   "Implementation-defined aspects of pragma
-  `Restrictions`.  See H.4(25)."
+  ``Restrictions``.  See H.4(25)."
 
-There are no implementation-defined aspects of pragma `Restrictions`.  The
-use of pragma `Restrictions [No_Exceptions]` has no effect on the
-generated code.  Checks must suppressed by use of pragma `Suppress`.
+There are no implementation-defined aspects of pragma ``Restrictions``.  The
+use of pragma ``Restrictions [No_Exceptions]`` has no effect on the
+generated code.  Checks must suppressed by use of pragma ``Suppress``.
 
 *
-  "Any restrictions on pragma `Restrictions`.  See
+  "Any restrictions on pragma ``Restrictions``.  See
   H.4(27)."
 
-There are no restrictions on pragma `Restrictions`.
+There are no restrictions on pragma ``Restrictions``.

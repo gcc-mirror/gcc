@@ -3499,7 +3499,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   /* The generic VEC_PERM_EXPR code always uses an integral type of the
      same size as the vector element being permuted.  */
   mask_element_type = lang_hooks.types.type_for_mode
-		(int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))), 1);
+    (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
   mask = XALLOCAVEC (unsigned char, nunits);
@@ -3754,7 +3754,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  v1 = SLP_TREE_VEC_STMTS (node).copy ();
 	  SLP_TREE_VEC_STMTS (node).truncate (0);
 	  tree meltype = build_nonstandard_integer_type
-	      (GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (vectype))), 1);
+	      (GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (vectype))), 1);
 	  tree mvectype = get_same_sized_vectype (meltype, vectype);
 	  unsigned k = 0, l;
 	  for (j = 0; j < v0.length (); ++j)

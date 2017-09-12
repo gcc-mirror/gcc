@@ -60,11 +60,17 @@ along with GCC; see the file COPYING3.  If not see
 
 #define SUBTARGET_EXTRA_SPECS /* none needed */
 
-/* VxWorks and VxWorksAE (aka 653) expect different CPU values to designate
-   SPE on 8548.  We define a dedicated macro for the base VxWorks here, which
-   the AE configuration will override.  */
+/* Arrange to infer -DCPU, which VxWorks headers require, from -mcpu.  */
 
+/* Different flavors of VxWorks expect different CPU values to designate SPE
+   on 8548.  We define a dedicated macro for the base VxWorks here, which the
+   AE configuration might also override.  */
+
+#if TARGET_VXWORKS7
+#define VXCPU_FOR_8548 "PPCE500V2"
+#else
 #define VXCPU_FOR_8548 "PPC85XX"
+#endif
 
 /* FIXME: The only reason we allow no -mcpu switch at all is because
    config-ml.in insists on a "." multilib. */

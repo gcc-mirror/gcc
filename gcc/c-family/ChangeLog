@@ -1,3 +1,95 @@
+2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	* c-attribs.c (common_handle_aligned_attribute): Don't warn
+	function alignment if warn_if_not_aligned_p is true.
+
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	* c-common.c (field_decl_cmp, resort_data, resort_field_decl_cmp,
+	resort_sorted_fields): Move to c/c-decl.c.
+	* c-common.h (field_decl_cmp, resort_sorted_fields): Delete.
+	(struct sorted_fields_type): Move to c/c-lang.h.
+
+2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* c-cppbuiltin.c (c_cpp_builtins): Define __cpp_threadsafe_static_init.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* c-warn.c (warn_tautological_bitwise_comparison): New function.
+	(warn_tautological_cmp): Call it.
+
+2017-09-01  Boris Kolpackov <boris@codesynthesis.com>
+
+	* c-opts.c (c_common_finish): Write dependency information even if
+	there are errors.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* c-pragma.c (omp_pragmas): Move "ordered" entry from here to ...
+	(omp_pragmas_simd): ... here.
+	* c-omp.c (c_finish_omp_ordered): If clauses isn't simd clause alone,
+	create new clauses list containing just simd clause.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-attribs.c (vector_mode_valid_p) Fold GET_MODE_INNER call
+	into scalar_mode_supported_p call.
+	(handle_mode_attribute): Update call to scalar_mode_supported_p.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_fixed_point_type_for_size): Use opt_scalar_mode
+	for the mode iterator.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-lex.c (interpret_fixed): Use SCALAR_TYPE_MODE.
+	* c-common.c (c_build_vec_perm_expr): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_type_for_mode): Use as_a <scalar_int_mode>.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-attribs.c (handle_mode_attribute): Check for a scalar_int_mode
+	before calling targetm.addr_space.valid_pointer_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (c_cpp_builtins): Use opt_scalar_float_mode.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+            Alan Hayward  <alan.hayward@arm.com>
+            David Sherwood  <david.sherwood@arm.com>
+
+	* c-common.c (c_common_fixed_point_type_for_size): Use new mode
+	iterators.
+	* c-cppbuiltin.c (c_cpp_builtins): Likewise.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* c-cppbuiltin.c (mode_has_fma): Prefix mode names with E_ in
+	case statements.
+
 2017-08-29  Martin Liska  <mliska@suse.cz>
 
 	PR other/39851

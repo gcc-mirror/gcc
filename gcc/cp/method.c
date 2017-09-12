@@ -1458,7 +1458,7 @@ static tree
 synthesized_method_base_walk (tree binfo, tree base_binfo, 
 			      int quals, bool copy_arg_p,
 			      bool move_p, bool ctor_p,
-			      tree inheriting_ctor, tree inherited_parms,
+			      tree *inheriting_ctor, tree inherited_parms,
 			      tree fnname, int flags, bool diag,
 			      tree *spec_p, bool *trivial_p,
 			      bool *deleted_p, bool *constexpr_p)
@@ -1469,8 +1469,9 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
 
   if (copy_arg_p)
     argtype = build_stub_type (BINFO_TYPE (base_binfo), quals, move_p);
-  else if ((inherited_binfo
-	    = binfo_inherited_from (binfo, base_binfo, inheriting_ctor)))
+  else if (inheriting_ctor
+	   && (inherited_binfo
+	       = binfo_inherited_from (binfo, base_binfo, *inheriting_ctor)))
     {
       argtype = inherited_parms;
       /* Don't check access on the inherited constructor.  */
@@ -1491,6 +1492,12 @@ synthesized_method_base_walk (tree binfo, tree base_binfo,
 			       diag ? tf_warning_or_error : tf_none);
   if (defer != dk_no_deferred)
     pop_deferring_access_checks ();
+
+  /* Replace an inherited template with the appropriate specialization.  */
+  if (inherited_binfo && rval
+      && DECL_P (*inheriting_ctor) && DECL_P (rval)
+      && DECL_CONTEXT (*inheriting_ctor) == DECL_CONTEXT (rval))
+    *inheriting_ctor = DECL_CLONED_FUNCTION (rval);
 
   process_subob_fn (rval, spec_p, trivial_p, deleted_p,
 		    constexpr_p, diag, BINFO_TYPE (base_binfo));
@@ -1526,7 +1533,7 @@ static void
 synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
 			 tree *spec_p, bool *trivial_p, bool *deleted_p,
 			 bool *constexpr_p, bool diag,
-			 tree inheriting_ctor, tree inherited_parms)
+			 tree *inheriting_ctor, tree inherited_parms)
 {
   tree binfo, base_binfo, fnname;
   int i;
@@ -1581,7 +1588,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
     }
 
   gcc_assert ((sfk == sfk_inheriting_constructor)
-	      == (inheriting_ctor != NULL_TREE));
+	      == (inheriting_ctor && *inheriting_ctor != NULL_TREE));
 
   /* If that user-written default constructor would satisfy the
      requirements of a constexpr constructor (7.1.5), the
@@ -1656,7 +1663,7 @@ synthesized_method_walk (tree ctype, special_function_kind sfk, bool const_p,
   tree scope = push_scope (ctype);
 
   int flags = LOOKUP_NORMAL | LOOKUP_SPECULATIVE;
-  if (!inheriting_ctor)
+  if (sfk != sfk_inheriting_constructor)
     flags |= LOOKUP_DEFAULTED;
 
   tsubst_flags_t complain = diag ? tf_warning_or_error : tf_none;
@@ -1770,9 +1777,9 @@ get_defaulted_eh_spec (tree decl, tsubst_flags_t complain)
   bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
   tree spec = empty_except_spec;
   bool diag = !DECL_DELETED_FN (decl) && (complain & tf_error);
+  tree inh = DECL_INHERITED_CTOR (decl);
   synthesized_method_walk (ctype, sfk, const_p, &spec, NULL, NULL,
-			   NULL, diag, DECL_INHERITED_CTOR (decl),
-			   parms);
+			   NULL, diag, &inh, parms);
   return spec;
 }
 
@@ -1847,10 +1854,11 @@ maybe_explain_implicit_delete (tree decl)
 	  tree raises = NULL_TREE;
 	  bool deleted_p = false;
 	  tree scope = push_scope (ctype);
+	  tree inh = DECL_INHERITED_CTOR (decl);
 
 	  synthesized_method_walk (ctype, sfk, const_p,
 				   &raises, NULL, &deleted_p, NULL, false,
-				   DECL_INHERITED_CTOR (decl), parms);
+				   &inh, parms);
 	  if (deleted_p)
 	    {
 	      inform (DECL_SOURCE_LOCATION (decl),
@@ -1858,7 +1866,7 @@ maybe_explain_implicit_delete (tree decl)
 		      "definition would be ill-formed:", decl);
 	      synthesized_method_walk (ctype, sfk, const_p,
 				       NULL, NULL, NULL, NULL, true,
-				       DECL_INHERITED_CTOR (decl), parms);
+				       &inh, parms);
 	    }
 	  else if (!comp_except_specs
 		   (TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl)),
@@ -1887,11 +1895,12 @@ explain_implicit_non_constexpr (tree decl)
 {
   tree parm_type = TREE_VALUE (FUNCTION_FIRST_USER_PARMTYPE (decl));
   bool const_p = CP_TYPE_CONST_P (non_reference (parm_type));
+  tree inh = DECL_INHERITED_CTOR (decl);
   bool dummy;
   synthesized_method_walk (DECL_CLASS_CONTEXT (decl),
 			   special_function_p (decl), const_p,
 			   NULL, NULL, NULL, &dummy, true,
-			   DECL_INHERITED_CTOR (decl),
+			   &inh,
 			   FUNCTION_FIRST_USER_PARMTYPE (decl));
 }
 
@@ -1906,22 +1915,25 @@ deduce_inheriting_ctor (tree decl)
   gcc_assert (DECL_INHERITED_CTOR (decl));
   tree spec;
   bool trivial, constexpr_, deleted;
+  tree inh = DECL_INHERITED_CTOR (decl);
   synthesized_method_walk (DECL_CONTEXT (decl), sfk_inheriting_constructor,
 			   false, &spec, &trivial, &deleted, &constexpr_,
 			   /*diag*/false,
-			   DECL_INHERITED_CTOR (decl),
+			   &inh,
 			   FUNCTION_FIRST_USER_PARMTYPE (decl));
   if (TREE_CODE (inherited_ctor_binfo (decl)) != TREE_BINFO)
     /* Inherited the same constructor from different base subobjects.  */
     deleted = true;
   DECL_DELETED_FN (decl) = deleted;
   TREE_TYPE (decl) = build_exception_variant (TREE_TYPE (decl), spec);
+  SET_DECL_INHERITED_CTOR (decl, inh);
 
   tree clone;
   FOR_EACH_CLONE (clone, decl)
     {
       DECL_DELETED_FN (clone) = deleted;
       TREE_TYPE (clone) = build_exception_variant (TREE_TYPE (clone), spec);
+      SET_DECL_INHERITED_CTOR (clone, inh);
     }
 }
 
@@ -2035,12 +2047,12 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       raises = noexcept_deferred_spec;
       synthesized_method_walk (type, kind, const_p, NULL, &trivial_p,
 			       &deleted_p, &constexpr_p, false,
-			       inherited_ctor, inherited_parms);
+			       &inherited_ctor, inherited_parms);
     }
   else
     synthesized_method_walk (type, kind, const_p, &raises, &trivial_p,
 			     &deleted_p, &constexpr_p, false,
-			     inherited_ctor, inherited_parms);
+			     &inherited_ctor, inherited_parms);
   /* Don't bother marking a deleted constructor as constexpr.  */
   if (deleted_p)
     constexpr_p = false;
@@ -2153,7 +2165,7 @@ implicitly_declare_fn (special_function_kind kind, tree type,
       input_location = DECL_SOURCE_LOCATION (fn);
       synthesized_method_walk (type, kind, const_p,
 			       NULL, NULL, NULL, NULL, true,
-			       NULL_TREE, NULL_TREE);
+			       NULL, NULL_TREE);
       input_location = loc;
     }
 
@@ -2396,7 +2408,7 @@ lazily_declare_fn (special_function_kind sfk, tree type)
       || sfk == sfk_copy_assignment)
     check_for_override (fn, type);
 
-  /* Add it to CLASSTYPE_METHOD_VEC.  */
+  /* Add it to the class  */
   bool added = add_method (type, fn, false);
   gcc_assert (added);
 

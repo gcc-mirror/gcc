@@ -84,10 +84,78 @@ test03()
   VERIFY( csz01 == npos );
 }
 
+constexpr bool
+test04()
+{
+  typedef std::string_view::size_type csize_type;
+  csize_type npos = std::string_view::npos;
+  csize_type csz01 = 0;
+
+  const std::string_view str01("Bob Rock, per me");
+  const char str_lit01[] = "Bob Rock";
+  std::string_view str02("ovvero Trivi");
+  std::string_view str03(str_lit01);
+  std::string_view str04;
+
+#undef VERIFY
+#define VERIFY(x) if(!(x)) return false
+
+  // size_type find_first_not_of(const string_view&, size_type pos = 0) const;
+  csz01 = str01.find_first_not_of(str01);
+  VERIFY( csz01 == npos );
+  csz01 = str01.find_first_not_of(str02, 0);
+  VERIFY( csz01 == 0 );
+  csz01 = str01.find_first_not_of(str02, 10);
+  VERIFY( csz01 == 10 );
+  csz01 = str01.find_first_not_of(str02, 12);
+  VERIFY( csz01 == 14 );
+  csz01 = str01.find_first_not_of(str03, 0);
+  VERIFY( csz01 == 8 );
+  csz01 = str01.find_first_not_of(str03, 15);
+  VERIFY( csz01 == 15 );
+  csz01 = str01.find_first_not_of(str03, 16);
+  VERIFY( csz01 == npos );
+  csz01 = str01.find_first_not_of(str04, 0);
+  VERIFY( csz01 == 0 );
+  csz01 = str01.find_first_not_of(str04, 12);
+  VERIFY( csz01 == 12 );
+  csz01 = str03.find_first_not_of(str01, 0);
+  VERIFY( csz01 == npos );
+  csz01 = str04.find_first_not_of(str02, 0);
+  VERIFY( csz01 == npos );
+
+  // size_type find_first_not_of(const char* s, size_type pos, size_type n) const;
+  csz01 = str01.find_first_not_of(str_lit01, 0, 0);
+  VERIFY( csz01 == 0 );
+  csz01 = str01.find_first_not_of(str_lit01, 0, 8);
+  VERIFY( csz01 == 8 );
+  csz01 = str01.find_first_not_of(str_lit01, 10, 0);
+  VERIFY( csz01 == 10 );
+
+  // size_type find_first_not_of(const char* s, size_type pos = 0) const;
+  csz01 = str01.find_first_not_of(str_lit01);
+  VERIFY( csz01 == 8 );
+  csz01 = str02.find_first_not_of(str_lit01, 2);
+  VERIFY( csz01 == 2 );
+
+  // size_type find_first_not_of(char c, size_type pos = 0) const;
+  csz01 = str01.find_first_not_of('B');
+  VERIFY( csz01 == 1 );
+  csz01 = str01.find_first_not_of('o', 1);
+  VERIFY( csz01 == 2 );
+  csz01 = str02.find_first_not_of('z');
+  VERIFY( csz01 == 0 );
+  csz01 = str04.find_first_not_of('S');
+  VERIFY( csz01 == npos );
+
+  return true;
+}
+
 int
 main()
-{ 
+{
   test03();
+  static_assert( test04() );
 
   return 0;
 }

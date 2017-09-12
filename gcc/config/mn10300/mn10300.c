@@ -279,18 +279,18 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 
 	    switch (GET_MODE (x))
 	      {
-	      case DFmode:
+	      case E_DFmode:
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[0]);
 		break;;
-	      case SFmode:
+	      case E_SFmode:
 		REAL_VALUE_TO_TARGET_SINGLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val[0]);
 		fprintf (file, "0x%lx", val[0]);
 		break;;
-	      case VOIDmode:
-	      case DImode:
+	      case E_VOIDmode:
+	      case E_DImode:
 		mn10300_print_operand_address (file,
 					       GEN_INT (CONST_DOUBLE_LOW (x)));
 		break;
@@ -338,15 +338,15 @@ mn10300_print_operand (FILE *file, rtx x, int code)
 
 	    switch (GET_MODE (x))
 	      {
-	      case DFmode:
+	      case E_DFmode:
 		REAL_VALUE_TO_TARGET_DOUBLE
 		  (*CONST_DOUBLE_REAL_VALUE (x), val);
 		fprintf (file, "0x%lx", val[1]);
 		break;;
-	      case SFmode:
+	      case E_SFmode:
 		gcc_unreachable ();
-	      case VOIDmode:
-	      case DImode:
+	      case E_VOIDmode:
+	      case E_DImode:
 		mn10300_print_operand_address (file,
 					       GEN_INT (CONST_DOUBLE_HIGH (x)));
 		break;
@@ -2626,7 +2626,9 @@ mn10300_can_output_mi_thunk (const_tree    thunk_fndecl ATTRIBUTE_UNUSED,
   return true;
 }
 
-bool
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
 mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (REGNO_REG_CLASS (regno) == FP_REGS
@@ -2648,8 +2650,10 @@ mn10300_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
   return false;
 }
 
-bool
-mn10300_modes_tieable (machine_mode mode1, machine_mode mode2)
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+mn10300_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if (GET_MODE_CLASS (mode1) == MODE_FLOAT
       && GET_MODE_CLASS (mode2) != MODE_FLOAT)
@@ -2672,13 +2676,13 @@ cc_flags_for_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case CCmode:
+    case E_CCmode:
       return CC_FLAG_Z | CC_FLAG_N | CC_FLAG_C | CC_FLAG_V;
-    case CCZNCmode:
+    case E_CCZNCmode:
       return CC_FLAG_Z | CC_FLAG_N | CC_FLAG_C;
-    case CCZNmode:
+    case E_CCZNmode:
       return CC_FLAG_Z | CC_FLAG_N;
-    case CC_FLOATmode:
+    case E_CC_FLOATmode:
       return -1;
     default:
       gcc_unreachable ();
@@ -3424,5 +3428,11 @@ mn10300_reorg (void)
 
 #undef  TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM  CC_REG
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mn10300_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mn10300_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

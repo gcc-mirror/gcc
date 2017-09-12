@@ -1,3 +1,208 @@
+2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79433
+	* include/Makefile.am: Remove <bits/c++14_warning.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++14_warning.h: Remove.
+	* include/experimental/algorithm: Do not include <c++14_warning.h>.
+	* include/experimental/any: Likewise.
+	* include/experimental/array: Likewise.
+	* include/experimental/bits/erase_if.h: Likewise.
+	* include/experimental/bits/lfts_config.h: Likewise.
+	* include/experimental/bits/shared_ptr.h: Likewise.
+	* include/experimental/bits/string_view.tcc: Likewise.
+	* include/experimental/chrono: Likewise.
+	* include/experimental/deque: Likewise.
+	* include/experimental/filesystem: Do not include <c++0x_warning.h>.
+	* include/experimental/forward_list: Do not include <c++14_warning.h>.
+	* include/experimental/functional: Likewise.
+	* include/experimental/iterator: Likewise.
+	* include/experimental/list: Likewise.
+	* include/experimental/map: Likewise.
+	* include/experimental/memory: Likewise.
+	* include/experimental/numeric: Likewise.
+	* include/experimental/optional: Likewise.
+	* include/experimental/propagate_const: Likewise.
+	* include/experimental/ratio: Likewise.
+	* include/experimental/regex: Likewise.
+	* include/experimental/set: Likewise.
+	* include/experimental/string: Likewise.
+	* include/experimental/string_view: Likewise.
+	* include/experimental/system_error: Likewise.
+	* include/experimental/tuple: Likewise.
+	* include/experimental/type_traits: Likewise.
+	* include/experimental/unordered_map: Likewise.
+	* include/experimental/unordered_set: Likewise.
+	* include/experimental/vector: Likewise.
+	* testsuite/experimental/any/misc/any_cast_neg.cc: Adjust dg-error
+	line number.
+	* testsuite/experimental/array/neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/assignment/move_neg.cc:
+	Likewise.
+	* testsuite/experimental/propagate_const/cons/move_neg.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements2.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements3.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements4.cc: Likewise.
+	* testsuite/experimental/propagate_const/requirements5.cc: Likewise.
+
+	PR libstdc++/79433
+	* doc/xml/manual/status_cxx2017.xml: Update feature-test macros.
+	* doc/html/*: Regenerate.
+	* include/Makefile.am: Remove <bits/c++17_warning.h>.
+	* include/Makefile.in: Regenerate.
+	* include/bits/c++17_warning.h: Remove.
+	* include/bits/string_view.tcc: Do not include <bits/c++17_warning.h>
+	for pre-C++17 modes.
+	* include/std/any: Likewise.
+	(__cpp_lib_any): Define.
+	* include/std/mutex (__cpp_lib_scoped_lock): Adjust value as per new
+	SD-6 draft.
+	* include/std/numeric (__cpp_lib_gcd_lcm): Define as per new SD-6
+	draft.
+	* include/std/optional: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_optional): Define.
+	* include/std/shared_mutex: Do not include <bits/c++14_warning.h>.
+	* include/std/string_view: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_string_view): Define.
+	* include/std/variant: Do not include <bits/c++17_warning.h>.
+	(__cpp_lib_variant): Define.
+	* testsuite/20_util/optional/cons/value_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/26_numerics/gcd/1.cc: Test for __cpp_lib_gcd_lcm.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/26_numerics/lcm/1.cc: Test for __cpp_lib_gcd_lcm.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Adjust dg-error line
+	numbers.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc: Adjust
+	expected value of __cpp_lib_scoped_lock.
+
+	PR libstdc++/70483
+	* include/experimental/bits/string_view.tcc (basic_string_view::find)
+	(basic_string_view::rfind, basic_string_view::find_first_of)
+	(basic_string_view::find_last_of, basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of): Add constexpr specifier.
+	* include/experimental/string_view (basic_string_view::remove_prefix)
+	(basic_string_view::remove_suffix, basic_string_view::swap)
+	(basic_string_view::compare, basic_string_view::find)
+	(basic_string_view::rfind, basic_string_view::find_first_of)
+	(basic_string_view::find_last_of, basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of, operator==, operator!=)
+	(operator<, operator>, operator<=, operator>=): Likewise.
+	* testsuite/experimental/string_view/operations/compare/char/70483.cc:
+	New.
+
+2017-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/70483
+	* include/bits/string_view.tcc (basic_string_view::find)
+	(basic_string_view::rfind, basic_string_view::find_first_of)
+	(basic_string_view::find_last_of, basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of): Add constexpr specifier.
+	* include/std/string_view (basic_string_view::operator=)
+	(basic_string_view::rbegin, basic_string_view::rend)
+	(basic_string_view::crbegin, basic_string_view::crend)
+	(basic_string_view::remove_prefix, basic_string_view::remove_suffix)
+	(basic_string_view::swap, basic_string_view::compare)
+	(basic_string_view::find, basic_string_view::rfind)
+	(basic_string_view::find_first_of, basic_string_view::find_last_of)
+	(basic_string_view::find_first_not_of)
+	(basic_string_view::find_last_not_of, basic_string_view::_M_check)
+	(basic_string_view::_M_limit, operator==, operator!=, operator<)
+	(operator>, operator<=, operator>=): Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	char/1.cc: Repeat tests in constexpr context.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_prefix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	char/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/remove_suffix/
+	wchar_t/1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/char/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/find/wchar_t/3.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operators/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/range_access/char/1.cc: Test
+	cbegin, cend, rbegin, rend, crbegin and crend.
+	* testsuite/21_strings/basic_string_view/range_access/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/1.cc:
+	Remove trailing whitespace.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/
+	1.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/char/1.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/wchar_t/1.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/2.cc:
+	New.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/
+	2.cc: New.
+
+2017-09-11  Tim Shen  <timshen@google.com>
+
+	PR libstdc++/71500
+	* include/bits/regex_executor.tcc: Support icase in regex_tratis<...>
+	for back reference matches.
+	* testsuite/28_regex/regression.cc: Test case.
+
+2017-09-11  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/21_strings/basic_string/lwg2946.cc: Adjust for
+	compatibility with old COW std::string.
+
+2017-09-09  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/allocator.xml: Adjust link for Hoard.
+	* doc/html/manual/memory.html: Regenerate.
+
+2017-09-04  Daniel Kruegler  <daniel.kruegler@gmail.com>
+
+	PR libstdc++/79162
+	Implement LWG 2946, LWG 2758's resolution missed further corrections
+	* include/bits/basic_string.h (basic_string::compare): Add missing
+	required noexcept specifications.
+	(basic_string): Introduce internal _S_to_string_view and __sv_wrapper
+	for implicit string_view conversion.
+	(basic_string::basic_string): Fix explicit string_view conversion by
+	implicit conversion using _S_to_string_view and __sv_wrapper.
+	(basic_string): Introduce internal basic_string(__sv_wrapper, Alloc)
+	constructor.
+	(basic_string): Fix operator=(T) template by operator=(const T&)
+	template for uncopyable types (PR 79162).
+	(basic_string::operator+=, basic_string::append, basic_string::assign)
+	(basic_string::insert, basic_string::replace, basic_string::find)
+	(basic_string::rfind, basic_string::find_first_of)
+	(basic_string::find_last_of, basic_string::find_first_not_of)
+	(basic_string::find_last_not_of, basic_string::compare): Replace
+	__sv_type argument by template const T& (LWG 2946) and correct
+	documentation describing __sv_type argument.
+	(basic_string::find, basic_string::rfind, basic_string::find_first_of)
+	(basic_string::find_last_of, basic_string::find_first_not_of)
+	(basic_string::find_last_not_of, basic_string::compare): Replace
+	unconditional noexcept specification by conditional noexcept
+	specification to partially balance the removal of noexcept by LWG 2946.
+	* testsuite/21_strings/basic_string/79162.cc: New.
+	* testsuite/21_strings/basic_string/lwg2946.cc: New.
+
+2017-08-31  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/82039
+	* include/ext/new_allocator.h (__gnu_cxx::new_allocator::allocate):
+	Adjust null pointer constant to avoid warning.
+
 2017-08-24  François Dumont  <fdumont@gcc.gnu.org>
 
 	* include/bits/stl_list.h

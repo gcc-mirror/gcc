@@ -720,13 +720,14 @@ preferable (int cost_a, int regcost_a, int cost_b, int regcost_b)
 static int
 notreg_cost (rtx x, machine_mode mode, enum rtx_code outer, int opno)
 {
+  scalar_int_mode int_mode, inner_mode;
   return ((GET_CODE (x) == SUBREG
 	   && REG_P (SUBREG_REG (x))
-	   && GET_MODE_CLASS (mode) == MODE_INT
-	   && GET_MODE_CLASS (GET_MODE (SUBREG_REG (x))) == MODE_INT
-	   && GET_MODE_SIZE (mode) < GET_MODE_SIZE (GET_MODE (SUBREG_REG (x)))
+	   && is_int_mode (mode, &int_mode)
+	   && is_int_mode (GET_MODE (SUBREG_REG (x)), &inner_mode)
+	   && GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (inner_mode)
 	   && subreg_lowpart_p (x)
-	   && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (SUBREG_REG (x))))
+	   && TRULY_NOOP_TRUNCATION_MODES_P (int_mode, inner_mode))
 	  ? 0
 	  : rtx_cost (x, mode, outer, opno, optimize_this_for_speed_p) * 2);
 }
@@ -3952,10 +3953,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
      if we test MODE instead, we can get an infinite recursion
      alternating between two modes each wider than MODE.  */
 
-  if (code == NE && GET_CODE (op0) == SUBREG
-      && subreg_lowpart_p (op0)
-      && (GET_MODE_SIZE (GET_MODE (op0))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op0)))))
+  if (code == NE
+      && partial_subreg_p (op0)
+      && subreg_lowpart_p (op0))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op0));
       rtx tem = record_jump_cond_subreg (inner_mode, op1);
@@ -3964,10 +3964,9 @@ record_jump_cond (enum rtx_code code, machine_mode mode, rtx op0,
 			  reversed_nonequality);
     }
 
-  if (code == NE && GET_CODE (op1) == SUBREG
-      && subreg_lowpart_p (op1)
-      && (GET_MODE_SIZE (GET_MODE (op1))
-	  < GET_MODE_SIZE (GET_MODE (SUBREG_REG (op1)))))
+  if (code == NE
+      && partial_subreg_p (op1)
+      && subreg_lowpart_p (op1))
     {
       machine_mode inner_mode = GET_MODE (SUBREG_REG (op1));
       rtx tem = record_jump_cond_subreg (inner_mode, op0);
@@ -4551,14 +4550,17 @@ cse_insn (rtx_insn *insn)
 	       && CONST_INT_P (XEXP (SET_DEST (sets[0].rtl), 2)))
 	{
 	  rtx dest_reg = XEXP (SET_DEST (sets[0].rtl), 0);
+	  /* This is the mode of XEXP (tem, 0) as well.  */
+	  scalar_int_mode dest_mode
+	    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 	  rtx width = XEXP (SET_DEST (sets[0].rtl), 1);
 	  rtx pos = XEXP (SET_DEST (sets[0].rtl), 2);
 	  HOST_WIDE_INT val = INTVAL (XEXP (tem, 0));
 	  HOST_WIDE_INT mask;
 	  unsigned int shift;
 	  if (BITS_BIG_ENDIAN)
-	    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
-	      - INTVAL (pos) - INTVAL (width);
+	    shift = (GET_MODE_PRECISION (dest_mode)
+		     - INTVAL (pos) - INTVAL (width));
 	  else
 	    shift = INTVAL (pos);
 	  if (INTVAL (width) == HOST_BITS_PER_WIDE_INT)
@@ -4603,6 +4605,7 @@ cse_insn (rtx_insn *insn)
       /* Set nonzero if we need to call force_const_mem on with the
 	 contents of src_folded before using it.  */
       int src_folded_force_flag = 0;
+      scalar_int_mode int_mode;
 
       dest = SET_DEST (sets[i].rtl);
       src = SET_SRC (sets[i].rtl);
@@ -4840,17 +4843,16 @@ cse_insn (rtx_insn *insn)
 	 wider mode.  */
 
       if (src_const && src_related == 0 && CONST_INT_P (src_const)
-	  && GET_MODE_CLASS (mode) == MODE_INT
-	  && GET_MODE_PRECISION (mode) < BITS_PER_WORD)
+	  && is_int_mode (mode, &int_mode)
+	  && GET_MODE_PRECISION (int_mode) < BITS_PER_WORD)
 	{
-	  machine_mode wider_mode;
-
-	  for (wider_mode = GET_MODE_WIDER_MODE (mode);
-	       wider_mode != VOIDmode
-	       && GET_MODE_PRECISION (wider_mode) <= BITS_PER_WORD
-	       && src_related == 0;
-	       wider_mode = GET_MODE_WIDER_MODE (wider_mode))
+	  opt_scalar_int_mode wider_mode_iter;
+	  FOR_EACH_WIDER_MODE (wider_mode_iter, int_mode)
 	    {
+	      scalar_int_mode wider_mode = wider_mode_iter.require ();
+	      if (GET_MODE_PRECISION (wider_mode) > BITS_PER_WORD)
+		break;
+
 	      struct table_elt *const_elt
 		= lookup (src_const, HASH (src_const, wider_mode), wider_mode);
 
@@ -4861,9 +4863,12 @@ cse_insn (rtx_insn *insn)
 		   const_elt; const_elt = const_elt->next_same_value)
 		if (REG_P (const_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode, const_elt->exp);
+		    src_related = gen_lowpart (int_mode, const_elt->exp);
 		    break;
 		  }
+
+	      if (src_related != 0)
+		break;
 	    }
 	}
 
@@ -4874,16 +4879,19 @@ cse_insn (rtx_insn *insn)
 	 value.  */
 
       if (flag_expensive_optimizations && ! src_related
+	  && is_a <scalar_int_mode> (mode, &int_mode)
 	  && GET_CODE (src) == AND && CONST_INT_P (XEXP (src, 1))
-	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	  && GET_MODE_SIZE (int_mode) < UNITS_PER_WORD)
 	{
-	  machine_mode tmode;
+	  opt_scalar_int_mode tmode_iter;
 	  rtx new_and = gen_rtx_AND (VOIDmode, NULL_RTX, XEXP (src, 1));
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  FOR_EACH_WIDER_MODE (tmode_iter, int_mode)
 	    {
+	      scalar_int_mode tmode = tmode_iter.require ();
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
+
 	      rtx inner = gen_lowpart (tmode, XEXP (src, 0));
 	      struct table_elt *larger_elt;
 
@@ -4900,7 +4908,7 @@ cse_insn (rtx_insn *insn)
 		    if (REG_P (larger_elt->exp))
 		      {
 			src_related
-			  = gen_lowpart (mode, larger_elt->exp);
+			  = gen_lowpart (int_mode, larger_elt->exp);
 			break;
 		      }
 
@@ -4918,11 +4926,11 @@ cse_insn (rtx_insn *insn)
       rtx_code extend_op;
       if (flag_expensive_optimizations && src_related == 0
 	  && MEM_P (src) && ! do_not_record
-	  && (extend_op = load_extend_op (mode)) != UNKNOWN)
+	  && is_a <scalar_int_mode> (mode, &int_mode)
+	  && (extend_op = load_extend_op (int_mode)) != UNKNOWN)
 	{
 	  struct rtx_def memory_extend_buf;
 	  rtx memory_extend_rtx = &memory_extend_buf;
-	  machine_mode tmode;
 
 	  /* Set what we are trying to extend and the operation it might
 	     have been extended with.  */
@@ -4930,11 +4938,14 @@ cse_insn (rtx_insn *insn)
 	  PUT_CODE (memory_extend_rtx, extend_op);
 	  XEXP (memory_extend_rtx, 0) = src;
 
-	  for (tmode = GET_MODE_WIDER_MODE (mode);
-	       GET_MODE_SIZE (tmode) <= UNITS_PER_WORD;
-	       tmode = GET_MODE_WIDER_MODE (tmode))
+	  opt_scalar_int_mode tmode_iter;
+	  FOR_EACH_WIDER_MODE (tmode_iter, int_mode)
 	    {
 	      struct table_elt *larger_elt;
+
+	      scalar_int_mode tmode = tmode_iter.require ();
+	      if (GET_MODE_SIZE (tmode) > UNITS_PER_WORD)
+		break;
 
 	      PUT_MODE (memory_extend_rtx, tmode);
 	      larger_elt = lookup (memory_extend_rtx,
@@ -4946,7 +4957,7 @@ cse_insn (rtx_insn *insn)
 		   larger_elt; larger_elt = larger_elt->next_same_value)
 		if (REG_P (larger_elt->exp))
 		  {
-		    src_related = gen_lowpart (mode, larger_elt->exp);
+		    src_related = gen_lowpart (int_mode, larger_elt->exp);
 		    break;
 		  }
 
@@ -5000,8 +5011,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (p->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (p->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (p->exp)))))
 	    continue;
 
 	  if (src && GET_CODE (src) == code && rtx_equal_p (src, p->exp))
@@ -5111,8 +5122,8 @@ cse_insn (rtx_insn *insn)
 	      && ! (src != 0
 		    && GET_CODE (src) == SUBREG
 		    && GET_MODE (src) == GET_MODE (elt->exp)
-		    && (GET_MODE_SIZE (GET_MODE (SUBREG_REG (src)))
-			< GET_MODE_SIZE (GET_MODE (SUBREG_REG (elt->exp))))))
+		    && partial_subreg_p (GET_MODE (SUBREG_REG (src)),
+					 GET_MODE (SUBREG_REG (elt->exp)))))
 	    {
 	      elt = elt->next_same_value;
 	      continue;
@@ -5223,8 +5234,11 @@ cse_insn (rtx_insn *insn)
 		  HOST_WIDE_INT val = INTVAL (dest_cst);
 		  HOST_WIDE_INT mask;
 		  unsigned int shift;
+		  /* This is the mode of DEST_CST as well.  */
+		  scalar_int_mode dest_mode
+		    = as_a <scalar_int_mode> (GET_MODE (dest_reg));
 		  if (BITS_BIG_ENDIAN)
-		    shift = GET_MODE_PRECISION (GET_MODE (dest_reg))
+		    shift = GET_MODE_PRECISION (dest_mode)
 			    - INTVAL (pos) - INTVAL (width);
 		  else
 		    shift = INTVAL (pos);
@@ -5234,7 +5248,7 @@ cse_insn (rtx_insn *insn)
 		    mask = (HOST_WIDE_INT_1 << INTVAL (width)) - 1;
 		  val &= ~(mask << shift);
 		  val |= (INTVAL (trial) & mask) << shift;
-		  val = trunc_int_for_mode (val, GET_MODE (dest_reg));
+		  val = trunc_int_for_mode (val, dest_mode);
 		  validate_unshare_change (insn, &SET_DEST (sets[i].rtl),
 					   dest_reg, 1);
 		  validate_unshare_change (insn, &SET_SRC (sets[i].rtl),
@@ -5951,8 +5965,7 @@ cse_insn (rtx_insn *insn)
 	    && (((GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))) - 1)
 		 / UNITS_PER_WORD)
 		== (GET_MODE_SIZE (GET_MODE (dest)) - 1) / UNITS_PER_WORD)
-	    && (GET_MODE_SIZE (GET_MODE (dest))
-		>= GET_MODE_SIZE (GET_MODE (SUBREG_REG (dest))))
+	    && !partial_subreg_p (dest)
 	    && sets[i].src_elt != 0)
 	  {
 	    machine_mode new_mode = GET_MODE (SUBREG_REG (dest));

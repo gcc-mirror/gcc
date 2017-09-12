@@ -140,23 +140,6 @@
 #define REG_ALLOC_ORDER { 7, 6, 5, 4, 3, 2, 1, 0, 9, 8, 10, 11, 12, 13, 14, 15, 16 }
 
 
-/* How Values Fit in Registers.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) 				\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) ((REGNO) != 16 || (MODE) == BImode)
-
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
-   ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
-   zero.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) ((MODE1) != BImode && (MODE2) != BImode)
-
-
 /* Register Classes.  */
 
 enum reg_class

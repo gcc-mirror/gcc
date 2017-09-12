@@ -1573,7 +1573,7 @@ find_shift_sequence (int access_size,
 		     int shift, bool speed, bool require_cst)
 {
   machine_mode store_mode = GET_MODE (store_info->mem);
-  machine_mode new_mode;
+  scalar_int_mode new_mode;
   rtx read_reg = NULL;
 
   /* Some machines like the x86 have shift insns for each size of
@@ -1583,14 +1583,17 @@ find_shift_sequence (int access_size,
      justify the value we want to read but is available in one insn on
      the machine.  */
 
-  for (new_mode = smallest_mode_for_size (access_size * BITS_PER_UNIT,
-					  MODE_INT);
-       GET_MODE_BITSIZE (new_mode) <= BITS_PER_WORD;
-       new_mode = GET_MODE_WIDER_MODE (new_mode))
+  opt_scalar_int_mode new_mode_iter;
+  FOR_EACH_MODE_FROM (new_mode_iter,
+		      smallest_int_mode_for_size (access_size * BITS_PER_UNIT))
     {
       rtx target, new_reg, new_lhs;
       rtx_insn *shift_seq, *insn;
       int cost;
+
+      new_mode = new_mode_iter.require ();
+      if (GET_MODE_BITSIZE (new_mode) > BITS_PER_WORD)
+	break;
 
       /* If a constant was stored into memory, try to simplify it here,
 	 otherwise the cost of the shift might preclude this optimization
@@ -1628,7 +1631,7 @@ find_shift_sequence (int access_size,
       /* Also try a wider mode if the necessary punning is either not
 	 desirable or not possible.  */
       if (!CONSTANT_P (store_info->rhs)
-	  && !MODES_TIEABLE_P (new_mode, store_mode))
+	  && !targetm.modes_tieable_p (new_mode, store_mode))
 	continue;
 
       new_reg = gen_reg_rtx (new_mode);
@@ -1732,12 +1735,12 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
     {
       /* The store is a memset (addr, const_val, const_size).  */
       gcc_assert (CONST_INT_P (store_info->rhs));
-      store_mode = int_mode_for_mode (read_mode);
-      if (store_mode == BLKmode)
+      scalar_int_mode int_store_mode;
+      if (!int_mode_for_mode (read_mode).exists (&int_store_mode))
 	read_reg = NULL_RTX;
       else if (store_info->rhs == const0_rtx)
-	read_reg = extract_low_bits (read_mode, store_mode, const0_rtx);
-      else if (GET_MODE_BITSIZE (store_mode) > HOST_BITS_PER_WIDE_INT
+	read_reg = extract_low_bits (read_mode, int_store_mode, const0_rtx);
+      else if (GET_MODE_BITSIZE (int_store_mode) > HOST_BITS_PER_WIDE_INT
 	       || BITS_PER_UNIT >= HOST_BITS_PER_WIDE_INT)
 	read_reg = NULL_RTX;
       else
@@ -1751,8 +1754,8 @@ get_stored_val (store_info *store_info, machine_mode read_mode,
 	      c |= (c << shift);
 	      shift <<= 1;
 	    }
-	  read_reg = gen_int_mode (c, store_mode);
-	  read_reg = extract_low_bits (read_mode, store_mode, read_reg);
+	  read_reg = gen_int_mode (c, int_store_mode);
+	  read_reg = extract_low_bits (read_mode, int_store_mode, read_reg);
 	}
     }
   else if (store_info->const_rhs
@@ -2182,11 +2185,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
        arg != void_list_node && idx < nargs;
        arg = TREE_CHAIN (arg), idx++)
     {
-      machine_mode mode = TYPE_MODE (TREE_VALUE (arg));
+      scalar_int_mode mode;
       rtx reg, link, tmp;
+
+      if (!is_int_mode (TYPE_MODE (TREE_VALUE (arg)), &mode))
+	return false;
+
       reg = targetm.calls.function_arg (args_so_far, mode, NULL_TREE, true);
-      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode
-	  || GET_MODE_CLASS (mode) != MODE_INT)
+      if (!reg || !REG_P (reg) || GET_MODE (reg) != mode)
 	return false;
 
       for (link = CALL_INSN_FUNCTION_USAGE (call_insn);
@@ -2194,15 +2200,14 @@ get_call_args (rtx call_insn, tree fn, rtx *args, int nargs)
 	   link = XEXP (link, 1))
 	if (GET_CODE (XEXP (link, 0)) == USE)
 	  {
+	    scalar_int_mode arg_mode;
 	    args[idx] = XEXP (XEXP (link, 0), 0);
 	    if (REG_P (args[idx])
 		&& REGNO (args[idx]) == REGNO (reg)
 		&& (GET_MODE (args[idx]) == mode
-		    || (GET_MODE_CLASS (GET_MODE (args[idx])) == MODE_INT
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    <= UNITS_PER_WORD)
-			&& (GET_MODE_SIZE (GET_MODE (args[idx]))
-			    > GET_MODE_SIZE (mode)))))
+		    || (is_int_mode (GET_MODE (args[idx]), &arg_mode)
+			&& (GET_MODE_SIZE (arg_mode) <= UNITS_PER_WORD)
+			&& (GET_MODE_SIZE (arg_mode) > GET_MODE_SIZE (mode)))))
 	      break;
 	  }
       if (!link)

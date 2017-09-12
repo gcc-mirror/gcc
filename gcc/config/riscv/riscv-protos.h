@@ -39,7 +39,6 @@ enum riscv_symbol_type {
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
 extern int riscv_regno_mode_ok_for_base_p (int, machine_mode, bool);
-extern bool riscv_hard_regno_mode_ok_p (unsigned int, machine_mode);
 extern int riscv_address_insns (rtx, machine_mode, bool);
 extern int riscv_const_insns (rtx);
 extern int riscv_split_const_insns (rtx);
@@ -69,7 +68,6 @@ extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (bool);
 extern bool riscv_can_use_return_insn (void);
 extern rtx riscv_function_value (const_tree, const_tree, machine_mode);
-extern unsigned int riscv_hard_regno_nregs (int, machine_mode);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

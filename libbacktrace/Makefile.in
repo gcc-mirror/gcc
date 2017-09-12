@@ -352,7 +352,7 @@ TESTS = $(check_PROGRAMS)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = -pthread
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = $(AM_CFLAGS) -pthread
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDADD = libbacktrace.la
 
 # We can't use automake's automatic dependency tracking, because it

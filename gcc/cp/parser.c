@@ -7446,11 +7446,14 @@ cp_parser_postfix_dot_deref_expression (cp_parser *parser,
 	      /* In a template, be permissive by treating an object expression
 		 of incomplete type as dependent (after a pedwarn).  */
 	      diagnostic_t kind = (processing_template_decl
+				   && MAYBE_CLASS_TYPE_P (scope)
 				   ? DK_PEDWARN
 				   : DK_ERROR);
 	      cxx_incomplete_type_diagnostic
 		(location_of (postfix_expression),
 		 postfix_expression, scope, kind);
+	      if (!MAYBE_CLASS_TYPE_P (scope))
+		return error_mark_node;
 	      if (processing_template_decl)
 		{
 		  dependent_p = true;
@@ -9982,57 +9985,6 @@ cp_parser_trait_expr (cp_parser* parser, enum rid keyword)
     }
 }
 
-/* Lambdas that appear in variable initializer or default argument scope
-   get that in their mangling, so we need to record it.  We might as well
-   use the count for function and namespace scopes as well.  */
-static GTY(()) tree lambda_scope;
-static GTY(()) int lambda_count;
-struct GTY(()) tree_int
-{
-  tree t;
-  int i;
-};
-static GTY(()) vec<tree_int, va_gc> *lambda_scope_stack;
-
-static void
-start_lambda_scope (tree decl)
-{
-  tree_int ti;
-  gcc_assert (decl);
-  /* Once we're inside a function, we ignore other scopes and just push
-     the function again so that popping works properly.  */
-  if (current_function_decl && TREE_CODE (decl) != FUNCTION_DECL)
-    decl = current_function_decl;
-  ti.t = lambda_scope;
-  ti.i = lambda_count;
-  vec_safe_push (lambda_scope_stack, ti);
-  if (lambda_scope != decl)
-    {
-      /* Don't reset the count if we're still in the same function.  */
-      lambda_scope = decl;
-      lambda_count = 0;
-    }
-}
-
-static void
-record_lambda_scope (tree lambda)
-{
-  LAMBDA_EXPR_EXTRA_SCOPE (lambda) = lambda_scope;
-  LAMBDA_EXPR_DISCRIMINATOR (lambda) = lambda_count++;
-}
-
-static void
-finish_lambda_scope (void)
-{
-  tree_int *p = &lambda_scope_stack->last ();
-  if (lambda_scope != p->t)
-    {
-      lambda_scope = p->t;
-      lambda_count = p->i;
-    }
-  lambda_scope_stack->pop ();
-}
-
 /* Parse a lambda expression.
 
    lambda-expression:
@@ -10416,6 +10368,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
   tree exception_spec = NULL_TREE;
   tree template_param_list = NULL_TREE;
   tree tx_qual = NULL_TREE;
+  tree return_type = NULL_TREE;
   cp_decl_specifier_seq lambda_specs;
   clear_decl_specs (&lambda_specs);
 
@@ -10490,8 +10443,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
       if (cp_lexer_next_token_is (parser->lexer, CPP_DEREF))
         {
           cp_lexer_consume_token (parser->lexer);
-          LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
-	    = cp_parser_trailing_type_id (parser);
+          return_type = cp_parser_trailing_type_id (parser);
         }
 
       /* The function parameters must be in scope all the way until after the
@@ -10514,8 +10466,8 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
     void *p;
 
     clear_decl_specs (&return_type_specs);
-    if (LAMBDA_EXPR_RETURN_TYPE (lambda_expr))
-      return_type_specs.type = LAMBDA_EXPR_RETURN_TYPE (lambda_expr);
+    if (return_type)
+      return_type_specs.type = return_type;
     else
       /* Maybe we will deduce the return type later.  */
       return_type_specs.type = make_auto ();
@@ -10555,7 +10507,7 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 	DECL_ARTIFICIAL (fco) = 1;
 	/* Give the object parameter a different name.  */
 	DECL_NAME (DECL_ARGUMENTS (fco)) = get_identifier ("__closure");
-	if (LAMBDA_EXPR_RETURN_TYPE (lambda_expr))
+	if (return_type)
 	  TYPE_HAS_LATE_RETURN_TYPE (TREE_TYPE (fco)) = 1;
       }
     if (template_param_list)
@@ -10605,28 +10557,13 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
      + ctor_initializer_opt_and_function_body  */
   {
     tree fco = lambda_function (lambda_expr);
-    tree body;
+    tree body = start_lambda_function (fco, lambda_expr);
     bool done = false;
     tree compound_stmt;
-    tree cap;
-
-    /* Let the front end know that we are going to be defining this
-       function.  */
-    start_preparsed_function (fco,
-			      NULL_TREE,
-			      SF_PRE_PARSED | SF_INCLASS_INLINE);
-
-    start_lambda_scope (fco);
-    body = begin_function_body ();
 
     matching_braces braces;
     if (!braces.require_open (parser))
       goto out;
-
-    /* Push the proxies for any explicit captures.  */
-    for (cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
-	 cap = TREE_CHAIN (cap))
-      build_capture_proxy (TREE_PURPOSE (cap));
 
     compound_stmt = begin_compound_stmt (0);
 
@@ -10645,7 +10582,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
        nor a deducible form, errors should be reported for return statements
        in the body.  Since we used void as the placeholder return type, parsing
        the body as usual will give such desired behavior.  */
-    if (!LAMBDA_EXPR_RETURN_TYPE (lambda_expr)
+    if (is_auto (TREE_TYPE (TREE_TYPE (fco)))
         && cp_lexer_peek_nth_token (parser->lexer, 1)->keyword == RID_RETURN
         && cp_lexer_peek_nth_token (parser->lexer, 2)->type != CPP_SEMICOLON)
       {
@@ -10691,15 +10628,7 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
     finish_compound_stmt (compound_stmt);
 
   out:
-    finish_function_body (body);
-    finish_lambda_scope ();
-
-    /* Finish the function and generate code for it if necessary.  */
-    tree fn = finish_function (/*inline*/2);
-
-    /* Only expand if the call op is not a template.  */
-    if (!DECL_TEMPLATE_INFO (fco))
-      expand_or_defer_fn (fn);
+    finish_lambda_function (body);
   }
 
   restore_omp_privatization_clauses (omp_privatization_save);
@@ -20715,7 +20644,9 @@ inject_this_parameter (tree ctype, cp_cv_quals quals)
     {
       /* We don't clear this between NSDMIs.  Is it already what we want?  */
       tree type = TREE_TYPE (TREE_TYPE (current_class_ptr));
-      if (same_type_ignoring_top_level_qualifiers_p (ctype, type)
+      if (DECL_P (current_class_ptr)
+	  && DECL_CONTEXT (current_class_ptr) == NULL_TREE
+	  && same_type_ignoring_top_level_qualifiers_p (ctype, type)
 	  && cp_type_quals (type) == quals)
 	return;
     }
@@ -20741,33 +20672,6 @@ parsing_nsdmi (void)
       && DECL_CONTEXT (current_class_ptr) == NULL_TREE)
     return true;
   return false;
-}
-
-/* Return true iff our current scope is a default capturing generic lambda
-   defined within a template.  FIXME: This is part of a workaround (see
-   semantics.c) to handle building lambda closure types correctly in templates
-   which we ultimately want to defer to instantiation time. */
-
-bool
-parsing_default_capturing_generic_lambda_in_template (void)
-{
-  if (!processing_template_decl || !current_class_type)
-    return false;
-
-  tree lam = CLASSTYPE_LAMBDA_EXPR (current_class_type);
-  if (!lam || LAMBDA_EXPR_DEFAULT_CAPTURE_MODE (lam) == CPLD_NONE)
-    return false;
-
-  tree callop = lambda_function (lam);
-  if (!callop)
-    return false;
-
-  return (DECL_TEMPLATE_INFO (callop)
-	  && (DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop)
-	  && ((current_nonlambda_class_type ()
-	       && CLASSTYPE_TEMPLATE_INFO (current_nonlambda_class_type ()))
-	      || ((current_nonlambda_function ()
-		   && DECL_TEMPLATE_INFO (current_nonlambda_function ())))));
 }
 
 /* Parse a late-specified return type, if any.  This is not a separate
@@ -26575,8 +26479,6 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
     = parser->num_template_parameter_lists;
   parser->num_template_parameter_lists = 0;
 
-  start_lambda_scope (current_function_decl);
-
   /* If the next token is `try', `__transaction_atomic', or
      `__transaction_relaxed`, then we are looking at either function-try-block
      or function-transaction-block.  Note that all of these include the
@@ -26593,8 +26495,6 @@ cp_parser_function_definition_after_declarator (cp_parser* parser,
   else
     ctor_initializer_p = cp_parser_ctor_initializer_opt_and_function_body
       (parser, /*in_function_try_block=*/false);
-
-  finish_lambda_scope ();
 
   /* Finish the function.  */
   fn = finish_function ((ctor_initializer_p ? 1 : 0) |
@@ -27645,11 +27545,6 @@ cp_parser_late_parsing_default_args (cp_parser *parser, tree fn)
 	= cp_parser_late_parse_one_default_arg (parser, parmdecl,
 						default_arg,
 						TREE_VALUE (parm));
-      if (parsed_arg == error_mark_node)
-	{
-	  continue;
-	}
-
       TREE_PURPOSE (parm) = parsed_arg;
 
       /* Update any instantiations we've already created.  */
@@ -35406,6 +35301,11 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
 
       if (strcmp (p, "depend") == 0)
 	{
+	  if (!flag_openmp)	/* flag_openmp_simd */
+	    {
+	      cp_parser_skip_to_pragma_eol (parser, pragma_tok);
+	      return false;
+	    }
 	  if (context == pragma_stmt)
 	    {
 	      error_at (pragma_tok->location, "%<#pragma omp ordered%> with "
@@ -35426,6 +35326,11 @@ cp_parser_omp_ordered (cp_parser *parser, cp_token *pragma_tok,
   tree clauses
     = cp_parser_omp_all_clauses (parser, OMP_ORDERED_CLAUSE_MASK,
 				 "#pragma omp ordered", pragma_tok);
+
+  if (!flag_openmp     /* flag_openmp_simd  */
+      && omp_find_clause (clauses, OMP_CLAUSE_SIMD) == NULL_TREE)
+    return false;
+
   c_finish_omp_ordered (loc, clauses,
 			cp_parser_omp_structured_block (parser, if_p));
   return true;

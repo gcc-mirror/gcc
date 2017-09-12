@@ -1194,6 +1194,10 @@ package body Lib.Writ is
          Write_Info_Char (Partition_Elaboration_Policy);
       end if;
 
+      if No_Component_Reordering_Config then
+         Write_Info_Str (" NC");
+      end if;
+
       if not Object then
          Write_Info_Str (" NO");
       end if;

@@ -52,6 +52,7 @@
 #define DW_ATE(name, value) , name = value
 #define DW_ATE_DUP(name, value) , name = value
 #define DW_CFA(name, value) , name = value
+#define DW_CFA_DUP(name, value) , name = value
 #define DW_IDX(name, value) , name = value
 #define DW_IDX_DUP(name, value) , name = value
 
@@ -104,6 +105,7 @@
 #undef DW_ATE
 #undef DW_ATE_DUP
 #undef DW_CFA
+#undef DW_CFA_DUP
 #undef DW_IDX
 #undef DW_IDX_DUP
 

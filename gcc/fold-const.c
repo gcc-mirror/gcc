@@ -1944,7 +1944,7 @@ fold_convert_const_int_from_fixed (tree type, const_tree arg1)
 {
   tree t;
   double_int temp, temp_trunc;
-  unsigned int mode;
+  scalar_mode mode;
 
   /* Right shift FIXED_CST to temp by fbit.  */
   temp = TREE_FIXED_CST (arg1).data;
@@ -2032,7 +2032,8 @@ fold_convert_const_real_from_fixed (tree type, const_tree arg1)
   REAL_VALUE_TYPE value;
   tree t;
 
-  real_convert_from_fixed (&value, TYPE_MODE (type), &TREE_FIXED_CST (arg1));
+  real_convert_from_fixed (&value, SCALAR_FLOAT_TYPE_MODE (type),
+			   &TREE_FIXED_CST (arg1));
   t = build_real (type, value);
 
   TREE_OVERFLOW (t) = TREE_OVERFLOW (arg1);
@@ -2049,8 +2050,8 @@ fold_convert_const_fixed_from_fixed (tree type, const_tree arg1)
   tree t;
   bool overflow_p;
 
-  overflow_p = fixed_convert (&value, TYPE_MODE (type), &TREE_FIXED_CST (arg1),
-			      TYPE_SATURATING (type));
+  overflow_p = fixed_convert (&value, SCALAR_TYPE_MODE (type),
+			      &TREE_FIXED_CST (arg1), TYPE_SATURATING (type));
   t = build_fixed (type, value);
 
   /* Propagate overflow flags.  */
@@ -2078,7 +2079,7 @@ fold_convert_const_fixed_from_int (tree type, const_tree arg1)
   else
     di.high = TREE_INT_CST_ELT (arg1, 1);
 
-  overflow_p = fixed_convert_from_int (&value, TYPE_MODE (type), di,
+  overflow_p = fixed_convert_from_int (&value, SCALAR_TYPE_MODE (type), di,
 				       TYPE_UNSIGNED (TREE_TYPE (arg1)),
 				       TYPE_SATURATING (type));
   t = build_fixed (type, value);
@@ -2099,7 +2100,7 @@ fold_convert_const_fixed_from_real (tree type, const_tree arg1)
   tree t;
   bool overflow_p;
 
-  overflow_p = fixed_convert_from_real (&value, TYPE_MODE (type),
+  overflow_p = fixed_convert_from_real (&value, SCALAR_TYPE_MODE (type),
 					&TREE_REAL_CST (arg1),
 					TYPE_SATURATING (type));
   t = build_fixed (type, value);
@@ -3933,7 +3934,8 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
   tree type = TREE_TYPE (lhs);
   tree unsigned_type;
   int const_p = TREE_CODE (rhs) == INTEGER_CST;
-  machine_mode lmode, rmode, nmode;
+  machine_mode lmode, rmode;
+  scalar_int_mode nmode;
   int lunsignedp, runsignedp;
   int lreversep, rreversep;
   int lvolatilep = 0, rvolatilep = 0;
@@ -3980,12 +3982,11 @@ optimize_bit_field_compare (location_t loc, enum tree_code code,
 
   /* See if we can find a mode to refer to this field.  We should be able to,
      but fail if we can't.  */
-  nmode = get_best_mode (lbitsize, lbitpos, bitstart, bitend,
-			 const_p ? TYPE_ALIGN (TREE_TYPE (linner))
-			 : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
-				TYPE_ALIGN (TREE_TYPE (rinner))),
-			 word_mode, false);
-  if (nmode == VOIDmode)
+  if (!get_best_mode (lbitsize, lbitpos, bitstart, bitend,
+		      const_p ? TYPE_ALIGN (TREE_TYPE (linner))
+		      : MIN (TYPE_ALIGN (TREE_TYPE (linner)),
+			     TYPE_ALIGN (TREE_TYPE (rinner))),
+		      BITS_PER_WORD, false, &nmode))
     return 0;
 
   /* Set signed and unsigned types of the precision of this mode for the
@@ -5393,6 +5394,7 @@ fold_range_test (location_t loc, enum tree_code code, tree type,
      short-circuited branch and the underlying object on both sides
      is the same, make a non-short-circuit operation.  */
   else if (LOGICAL_OP_NON_SHORT_CIRCUIT
+	   && !flag_sanitize_coverage
 	   && lhs != 0 && rhs != 0
 	   && (code == TRUTH_ANDIF_EXPR
 	       || code == TRUTH_ORIF_EXPR)
@@ -5440,7 +5442,7 @@ static tree
 unextend (tree c, int p, int unsignedp, tree mask)
 {
   tree type = TREE_TYPE (c);
-  int modesize = GET_MODE_BITSIZE (TYPE_MODE (type));
+  int modesize = GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type));
   tree temp;
 
   if (p == modesize || unsignedp)
@@ -5590,7 +5592,7 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
   int ll_unsignedp, lr_unsignedp, rl_unsignedp, rr_unsignedp;
   int ll_reversep, lr_reversep, rl_reversep, rr_reversep;
   machine_mode ll_mode, lr_mode, rl_mode, rr_mode;
-  machine_mode lnmode, rnmode;
+  scalar_int_mode lnmode, rnmode;
   tree ll_mask, lr_mask, rl_mask, rr_mask;
   tree ll_and_mask, lr_and_mask, rl_and_mask, rr_and_mask;
   tree l_const, r_const;
@@ -5776,10 +5778,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
      to be relative to a field of that size.  */
   first_bit = MIN (ll_bitpos, rl_bitpos);
   end_bit = MAX (ll_bitpos + ll_bitsize, rl_bitpos + rl_bitsize);
-  lnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			  TYPE_ALIGN (TREE_TYPE (ll_inner)), word_mode,
-			  volatilep);
-  if (lnmode == VOIDmode)
+  if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
+		      TYPE_ALIGN (TREE_TYPE (ll_inner)), BITS_PER_WORD,
+		      volatilep, &lnmode))
     return 0;
 
   lnbitsize = GET_MODE_BITSIZE (lnmode);
@@ -5841,10 +5842,9 @@ fold_truth_andor_1 (location_t loc, enum tree_code code, tree truth_type,
 
       first_bit = MIN (lr_bitpos, rr_bitpos);
       end_bit = MAX (lr_bitpos + lr_bitsize, rr_bitpos + rr_bitsize);
-      rnmode = get_best_mode (end_bit - first_bit, first_bit, 0, 0,
-			      TYPE_ALIGN (TREE_TYPE (lr_inner)), word_mode,
-			      volatilep);
-      if (rnmode == VOIDmode)
+      if (!get_best_mode (end_bit - first_bit, first_bit, 0, 0,
+			  TYPE_ALIGN (TREE_TYPE (lr_inner)), BITS_PER_WORD,
+			  volatilep, &rnmode))
 	return 0;
 
       rnbitsize = GET_MODE_BITSIZE (rnmode);
@@ -6030,8 +6030,9 @@ extract_muldiv_1 (tree t, tree c, enum tree_code code, tree wide_type,
 {
   tree type = TREE_TYPE (t);
   enum tree_code tcode = TREE_CODE (t);
-  tree ctype = (wide_type != 0 && (GET_MODE_SIZE (TYPE_MODE (wide_type))
-				   > GET_MODE_SIZE (TYPE_MODE (type)))
+  tree ctype = (wide_type != 0
+		&& (GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (wide_type))
+		    > GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type)))
 		? wide_type : type);
   tree t1, t2;
   int same_p = tcode == code;
@@ -6668,7 +6669,7 @@ fold_single_bit_test (location_t loc, enum tree_code code,
       tree inner = TREE_OPERAND (arg0, 0);
       tree type = TREE_TYPE (arg0);
       int bitnum = tree_log2 (TREE_OPERAND (arg0, 1));
-      machine_mode operand_mode = TYPE_MODE (type);
+      scalar_int_mode operand_mode = SCALAR_INT_TYPE_MODE (type);
       int ops_unsigned;
       tree signed_type, unsigned_type, intermediate_type;
       tree tem, one;
@@ -6979,7 +6980,7 @@ static int
 native_encode_int (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
   int byte, offset, word, words;
   unsigned char value;
 
@@ -7027,7 +7028,7 @@ static int
 native_encode_fixed (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  machine_mode mode = TYPE_MODE (type);
+  scalar_mode mode = SCALAR_TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   FIXED_VALUE_TYPE value;
   tree i_value, i_type;
@@ -7057,7 +7058,7 @@ static int
 native_encode_real (const_tree expr, unsigned char *ptr, int len, int off)
 {
   tree type = TREE_TYPE (expr);
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_FLOAT_TYPE_MODE (type));
   int byte, offset, word, words, bitpos;
   unsigned char value;
 
@@ -7129,7 +7130,7 @@ native_encode_complex (const_tree expr, unsigned char *ptr, int len, int off)
     return 0;
   part = TREE_IMAGPART (expr);
   if (off != -1)
-    off = MAX (0, off - GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (part))));
+    off = MAX (0, off - GET_MODE_SIZE (SCALAR_TYPE_MODE (TREE_TYPE (part))));
   isize = native_encode_expr (part, ptr+rsize, len-rsize, off);
   if (off == -1
       && isize != rsize)
@@ -7153,7 +7154,7 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
   offset = 0;
   count = VECTOR_CST_NELTS (expr);
   itype = TREE_TYPE (TREE_TYPE (expr));
-  size = GET_MODE_SIZE (TYPE_MODE (itype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (itype));
   for (i = 0; i < count; i++)
     {
       if (off >= size)
@@ -7184,15 +7185,10 @@ native_encode_vector (const_tree expr, unsigned char *ptr, int len, int off)
 static int
 native_encode_string (const_tree expr, unsigned char *ptr, int len, int off)
 {
-  tree type = TREE_TYPE (expr);
-  HOST_WIDE_INT total_bytes;
-
-  if (TREE_CODE (type) != ARRAY_TYPE
-      || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
-      || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (type))) != BITS_PER_UNIT
-      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
+  if (! can_native_encode_string_p (expr))
     return 0;
-  total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (type));
+
+  HOST_WIDE_INT total_bytes = tree_to_shwi (TYPE_SIZE_UNIT (TREE_TYPE (expr)));
   if ((off == -1 && total_bytes > len)
       || off >= total_bytes)
     return 0;
@@ -7261,7 +7257,7 @@ native_encode_expr (const_tree expr, unsigned char *ptr, int len, int off)
 static tree
 native_interpret_int (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  int total_bytes = GET_MODE_SIZE (SCALAR_INT_TYPE_MODE (type));
 
   if (total_bytes > len
       || total_bytes * BITS_PER_UNIT > HOST_BITS_PER_DOUBLE_INT)
@@ -7280,7 +7276,8 @@ native_interpret_int (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_fixed (tree type, const unsigned char *ptr, int len)
 {
-  int total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
+  scalar_mode mode = SCALAR_TYPE_MODE (type);
+  int total_bytes = GET_MODE_SIZE (mode);
   double_int result;
   FIXED_VALUE_TYPE fixed_value;
 
@@ -7289,7 +7286,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
     return NULL_TREE;
 
   result = double_int::from_buffer (ptr, total_bytes);
-  fixed_value = fixed_from_double_int (result, TYPE_MODE (type));
+  fixed_value = fixed_from_double_int (result, mode);
 
   return build_fixed (type, fixed_value);
 }
@@ -7302,7 +7299,7 @@ native_interpret_fixed (tree type, const unsigned char *ptr, int len)
 static tree
 native_interpret_real (tree type, const unsigned char *ptr, int len)
 {
-  machine_mode mode = TYPE_MODE (type);
+  scalar_float_mode mode = SCALAR_FLOAT_TYPE_MODE (type);
   int total_bytes = GET_MODE_SIZE (mode);
   unsigned char value;
   /* There are always 32 bits in each long, no matter the size of
@@ -7311,7 +7308,6 @@ native_interpret_real (tree type, const unsigned char *ptr, int len)
   REAL_VALUE_TYPE r;
   long tmp[6];
 
-  total_bytes = GET_MODE_SIZE (TYPE_MODE (type));
   if (total_bytes > len || total_bytes > 24)
     return NULL_TREE;
   int words = (32 / BITS_PER_UNIT) / UNITS_PER_WORD;
@@ -7366,7 +7362,7 @@ native_interpret_complex (tree type, const unsigned char *ptr, int len)
   int size;
 
   etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
   if (size * 2 > len)
     return NULL_TREE;
   rpart = native_interpret_expr (etype, ptr, size);
@@ -7391,7 +7387,7 @@ native_interpret_vector (tree type, const unsigned char *ptr, int len)
   tree *elements;
 
   etype = TREE_TYPE (type);
-  size = GET_MODE_SIZE (TYPE_MODE (etype));
+  size = GET_MODE_SIZE (SCALAR_TYPE_MODE (etype));
   count = TYPE_VECTOR_SUBPARTS (type);
   if (size * count > len)
     return NULL_TREE;
@@ -7484,6 +7480,24 @@ can_native_encode_type_p (tree type)
     default:
       return false;
     }
+}
+
+/* Return true iff a STRING_CST S is accepted by
+   native_encode_expr.  */
+
+bool
+can_native_encode_string_p (const_tree expr)
+{
+  tree type = TREE_TYPE (expr);
+
+  /* Wide-char strings are encoded in target byte-order so native
+     encoding them is trivial.  */
+  if (BITS_PER_UNIT != CHAR_BIT
+      || TREE_CODE (type) != ARRAY_TYPE
+      || TREE_CODE (TREE_TYPE (type)) != INTEGER_TYPE
+      || !tree_fits_shwi_p (TYPE_SIZE_UNIT (type)))
+    return false;
+  return true;
 }
 
 /* Fold a VIEW_CONVERT_EXPR of a constant expression EXPR to type
@@ -8034,6 +8048,7 @@ fold_truth_andor (location_t loc, enum tree_code code, tree type,
     return tem;
 
   if (LOGICAL_OP_NON_SHORT_CIRCUIT
+      && !flag_sanitize_coverage
       && (code == TRUTH_AND_EXPR
           || code == TRUTH_ANDIF_EXPR
           || code == TRUTH_OR_EXPR
@@ -13651,14 +13666,15 @@ fold_read_from_constant_string (tree exp)
 	  string = exp1;
 	}
 
+      scalar_int_mode char_mode;
       if (string
 	  && TYPE_MODE (TREE_TYPE (exp)) == TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))
 	  && TREE_CODE (string) == STRING_CST
 	  && TREE_CODE (index) == INTEGER_CST
 	  && compare_tree_int (index, TREE_STRING_LENGTH (string)) < 0
-	  && (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (TREE_TYPE (string))))
-	      == MODE_INT)
-	  && (GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (string)))) == 1))
+	  && is_int_mode (TYPE_MODE (TREE_TYPE (TREE_TYPE (string))),
+			  &char_mode)
+	  && GET_MODE_SIZE (char_mode) == 1)
 	return build_int_cst_type (TREE_TYPE (exp),
 				   (TREE_STRING_POINTER (string)
 				    [TREE_INT_CST_LOW (index)]));

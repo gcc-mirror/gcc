@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -485,8 +485,9 @@ package Scans is
    --  about the case of Wide_Wide_Characters???
 
    Inside_Depends : Boolean := False;
-   --  True while parsing the argument of a Depends pragma or aspect (used to
-   --  allow/require non-standard style rules for =>+ with -gnatyt).
+   --  True while parsing the argument of a Depends or Refined_Depends pragma
+   --  or aspect. Used to allow/require nonstandard style rules for =>+ with
+   --  -gnatyt.
 
    Inside_If_Expression : Nat := 0;
    --  This is a counter that is set non-zero while scanning out an if

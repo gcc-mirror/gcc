@@ -232,7 +232,7 @@ expand_builtin_dwarf_sp_column (void)
    which has mode MODE.  Initialize column C as a return address column.  */
 
 static void
-init_return_column_size (machine_mode mode, rtx mem, unsigned int c)
+init_return_column_size (scalar_int_mode mode, rtx mem, unsigned int c)
 {
   HOST_WIDE_INT offset = c * GET_MODE_SIZE (mode);
   HOST_WIDE_INT size = GET_MODE_SIZE (Pmode);
@@ -299,7 +299,7 @@ void
 expand_builtin_init_dwarf_reg_sizes (tree address)
 {
   unsigned int i;
-  machine_mode mode = TYPE_MODE (char_type_node);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (char_type_node);
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
 

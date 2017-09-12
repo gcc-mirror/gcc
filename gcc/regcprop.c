@@ -34,6 +34,7 @@
 #include "tree-pass.h"
 #include "rtl-iter.h"
 #include "cfgrtl.h"
+#include "target.h"
 
 /* The following code does forward propagation of hard register copies.
    The object is to eliminate as many dependencies as possible, so that
@@ -175,7 +176,7 @@ kill_value_regno (unsigned int regno, unsigned int nregs,
       unsigned int i, n;
       if (vd->e[j].mode == VOIDmode)
 	continue;
-      n = hard_regno_nregs[j][vd->e[j].mode];
+      n = hard_regno_nregs (j, vd->e[j].mode);
       if (j + n > regno)
 	for (i = 0; i < n; ++i)
 	  kill_value_one_regno (j + i, vd);
@@ -208,7 +209,7 @@ set_value_regno (unsigned int regno, machine_mode mode,
 
   vd->e[regno].mode = mode;
 
-  nregs = hard_regno_nregs[regno][mode];
+  nregs = hard_regno_nregs (regno, mode);
   if (nregs > vd->max_value_regs)
     vd->max_value_regs = nregs;
 }
@@ -343,7 +344,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
 
      We can't properly represent the latter case in our tables, so don't
      record anything then.  */
-  else if (sn < (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode]
+  else if (sn < hard_regno_nregs (sr, vd->e[sr].mode)
 	   && (GET_MODE_SIZE (vd->e[sr].mode) > UNITS_PER_WORD
 	       ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
     return;
@@ -351,7 +352,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   /* If SRC had been assigned a mode narrower than the copy, we can't
      link DEST into the chain, because not all of the pieces of the
      copy came from oldest_regno.  */
-  else if (sn > (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode])
+  else if (sn > hard_regno_nregs (sr, vd->e[sr].mode))
     return;
 
   /* Link DR at the end of the value chain used by SR.  */
@@ -372,7 +373,7 @@ static bool
 mode_change_ok (machine_mode orig_mode, machine_mode new_mode,
 		unsigned int regno ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (orig_mode) < GET_MODE_SIZE (new_mode))
+  if (partial_subreg_p (orig_mode, new_mode))
     return false;
 
 #ifdef CANNOT_CHANGE_MODE_CLASS
@@ -392,8 +393,8 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
 		   machine_mode new_mode, unsigned int regno,
 		   unsigned int copy_regno ATTRIBUTE_UNUSED)
 {
-  if (GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (orig_mode)
-      && GET_MODE_SIZE (copy_mode) < GET_MODE_SIZE (new_mode))
+  if (partial_subreg_p (copy_mode, orig_mode)
+      && partial_subreg_p (copy_mode, new_mode))
     return NULL_RTX;
 
   /* Avoid creating multiple copies of the stack pointer.  Some ports
@@ -407,8 +408,8 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
     return gen_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))
     {
-      int copy_nregs = hard_regno_nregs[copy_regno][copy_mode];
-      int use_nregs = hard_regno_nregs[copy_regno][new_mode];
+      int copy_nregs = hard_regno_nregs (copy_regno, copy_mode);
+      int use_nregs = hard_regno_nregs (copy_regno, new_mode);
       int copy_offset
 	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
       int offset
@@ -419,7 +420,7 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
       offset = ((WORDS_BIG_ENDIAN ? wordoffset : 0)
 		+ (BYTES_BIG_ENDIAN ? byteoffset : 0));
       regno += subreg_regno_offset (regno, orig_mode, offset, new_mode);
-      if (HARD_REGNO_MODE_OK (regno, new_mode))
+      if (targetm.hard_regno_mode_ok (regno, new_mode))
 	return gen_raw_REG (new_mode, regno);
     }
   return NULL_RTX;
@@ -443,12 +444,9 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 	(set (reg:SI r10) (...))
 	(set (...) (reg:DI r9))
      Replacing r9 with r11 is invalid.  */
-  if (mode != vd->e[regno].mode)
-    {
-      if (hard_regno_nregs[regno][mode]
-	  > hard_regno_nregs[regno][vd->e[regno].mode])
-	return NULL_RTX;
-    }
+  if (mode != vd->e[regno].mode
+      && REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode))
+    return NULL_RTX;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     {
@@ -870,14 +868,13 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     set it in, make sure that the replacement is valid.  */
 	  if (mode != vd->e[regno].mode)
 	    {
-	      if (hard_regno_nregs[regno][mode]
-		  > hard_regno_nregs[regno][vd->e[regno].mode])
+	      if (REG_NREGS (src)
+		  > hard_regno_nregs (regno, vd->e[regno].mode))
 		goto no_move_special_case;
 
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
-	      if (hard_regno_nregs[regno][mode]
-		  < hard_regno_nregs[regno][vd->e[regno].mode]
+	      if (REG_NREGS (src) < hard_regno_nregs (regno, vd->e[regno].mode)
 		  && (GET_MODE_SIZE (vd->e[regno].mode) > UNITS_PER_WORD
 		      ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
 		goto no_move_special_case;
@@ -1055,7 +1052,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 				  regs_invalidated_by_call);
 	  for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 	    if ((TEST_HARD_REG_BIT (regs_invalidated_by_this_call, regno)
-		 || HARD_REGNO_CALL_PART_CLOBBERED (regno, vd->e[regno].mode))
+		 || (targetm.hard_regno_call_part_clobbered
+		     (regno, vd->e[regno].mode)))
 		&& (regno < set_regno || regno >= set_regno + set_nregs))
 	      kill_value_regno (regno, 1, vd);
 
@@ -1076,8 +1074,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
       /* If a noop move is using narrower mode than we have recorded,
 	 we need to either remove the noop move, or kill_set_value.  */
       if (noop_p
-	  && (GET_MODE_BITSIZE (GET_MODE (SET_DEST (set)))
-	      < GET_MODE_BITSIZE (vd->e[REGNO (SET_DEST (set))].mode)))
+	  && partial_subreg_p (GET_MODE (SET_DEST (set)),
+			       vd->e[REGNO (SET_DEST (set))].mode))
 	{
 	  if (noop_move_p (insn))
 	    {

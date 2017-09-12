@@ -107,7 +107,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 
 (define_insn_reservation "cortex_a9_load1_2" 4
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "load1, load2, load_byte, f_loads, f_loadd"))
+       (eq_attr "type" "load_4, load_8, load_byte, f_loads, f_loadd"))
   "cortex_a9_ls")
 
 ;; Loads multiples and store multiples can't be issued for 2 cycles in a
@@ -116,12 +116,12 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 
 (define_insn_reservation "cortex_a9_load3_4" 5
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "load3, load4"))
+       (eq_attr "type" "load_12, load_16"))
   "cortex_a9_ls, cortex_a9_ls")
 
 (define_insn_reservation "cortex_a9_store1_2" 0
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "store1, store2, f_stores, f_stored"))
+       (eq_attr "type" "store_4, store_8, f_stores, f_stored"))
   "cortex_a9_ls")
 
 ;; Almost all our store multiples use an auto-increment
@@ -130,7 +130,7 @@ cortex_a9_p1_e2 + cortex_a9_p0_e1 + cortex_a9_p1_e1")
 
 (define_insn_reservation "cortex_a9_store3_4" 0
   (and (eq_attr "tune" "cortexa9")
-       (eq_attr "type" "store3, store4"))
+       (eq_attr "type" "store_12, store_16"))
   "cortex_a9_ls+(cortex_a9_p0_default | cortex_a9_p1_default), cortex_a9_ls")
 
 ;; We get 16*16 multiply / mac results in 3 cycles.

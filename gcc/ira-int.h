@@ -1393,7 +1393,7 @@ ira_hard_reg_set_intersection_p (int hard_regno, machine_mode mode,
   int i;
 
   gcc_assert (hard_regno >= 0);
-  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
       return true;
   return false;
@@ -1421,7 +1421,7 @@ ira_hard_reg_in_set_p (int hard_regno, machine_mode mode,
   int i;
 
   ira_assert (hard_regno >= 0);
-  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (!TEST_HARD_REG_BIT (hard_regset, hard_regno + i))
       return false;
   return true;

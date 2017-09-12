@@ -58,12 +58,14 @@ extern bool msp430x;
   "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
   "%{msilicon-errata=*:-msilicon-errata=%*} " /* Pass on -msilicon-errata.  */ \
   "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " /* Pass on -msilicon-errata-warn.  */ \
-  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */
+  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */ \
+  "%{mdata-region=*:-mdata-region=%*} " /* Pass on -mdata-region.  */
 
 /* Enable linker section garbage collection by default, unless we
    are creating a relocatable binary (gc does not work) or debugging
    is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
-#define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}}"
+#define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
+  "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
 
 extern const char * msp430_select_hwmult_lib (int, const char **);
 # define EXTRA_SPEC_FUNCTIONS				\
@@ -329,15 +331,6 @@ typedef struct
 
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
     fprintf (FILE, "\tcall\t__mcount\n");
-
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-  msp430_hard_regno_nregs (REGNO, MODE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
-  msp430_hard_regno_mode_ok (REGNO, MODE)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)				\
-  msp430_modes_tieable_p (MODE1, MODE2)
 
 /* Exception Handling */
 

@@ -31,9 +31,9 @@ test01()
   std::gcd(0.1, 0.1);   // { dg-error "from here" }
 }
 
-// { dg-error "integers" "" { target *-*-* } 130 }
-// { dg-error "integers" "" { target *-*-* } 131 }
-// { dg-error "not bools" "" { target *-*-* } 132 }
-// { dg-error "not bools" "" { target *-*-* } 133 }
+// { dg-error "integers" "" { target *-*-* } 134 }
+// { dg-error "integers" "" { target *-*-* } 135 }
+// { dg-error "not bools" "" { target *-*-* } 136 }
+// { dg-error "not bools" "" { target *-*-* } 137 }
 // { dg-prune-output "deleted function" }
 // { dg-prune-output "invalid operands" }

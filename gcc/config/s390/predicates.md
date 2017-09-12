@@ -278,25 +278,25 @@
 
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCL1mode:
+    case E_CCL1mode:
       return GET_CODE (op) == LTU;
 
-    case CCL2mode:
+    case E_CCL2mode:
       return GET_CODE (op) == LEU;
 
-    case CCL3mode:
+    case E_CCL3mode:
       return GET_CODE (op) == GEU;
 
-    case CCUmode:
+    case E_CCUmode:
       return GET_CODE (op) == GTU;
 
-    case CCURmode:
+    case E_CCURmode:
       return GET_CODE (op) == LTU;
 
-    case CCSmode:
+    case E_CCSmode:
       return GET_CODE (op) == UNGT;
 
-    case CCSRmode:
+    case E_CCSRmode:
       return GET_CODE (op) == UNLT;
 
     default:
@@ -323,25 +323,25 @@
 
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCL1mode:
+    case E_CCL1mode:
       return GET_CODE (op) == GEU;
 
-    case CCL2mode:
+    case E_CCL2mode:
       return GET_CODE (op) == GTU;
 
-    case CCL3mode:
+    case E_CCL3mode:
       return GET_CODE (op) == LTU;
 
-    case CCUmode:
+    case E_CCUmode:
       return GET_CODE (op) == LEU;
 
-    case CCURmode:
+    case E_CCURmode:
       return GET_CODE (op) == GEU;
 
-    case CCSmode:
+    case E_CCSmode:
       return GET_CODE (op) == LE;
 
-    case CCSRmode:
+    case E_CCSRmode:
       return GET_CODE (op) == GE;
 
     default:

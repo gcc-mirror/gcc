@@ -155,7 +155,7 @@
                                  (const_int 8)
                                  (const_int 4))]
                               (const_int 4)))
-   (set_attr "type" "*,*,*,load2,store2,*,*,*,*,*,f_mcrr,f_mrrc,\
+   (set_attr "type" "*,*,*,load_8,store_8,*,*,*,*,*,f_mcrr,f_mrrc,\
                      ffarithd,f_loadd,f_stored")
    (set_attr "arm_pool_range" "*,*,*,1020,*,*,*,*,*,*,*,*,*,1020,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1008,*,*,*,*,*,*,*,*,*,1008,*")]
@@ -188,7 +188,7 @@
      default:
        gcc_unreachable ();
      }"
-  [(set_attr "type"           "*,*,*,*,load1,store1,*,*,*,*,f_mcr,f_mrc,\
+  [(set_attr "type"           "*,*,*,*,load_4,store_4,*,*,*,*,f_mcr,f_mrc,\
                                fmov,f_loads,f_stores")
    (set_attr "length"         "*,*,*,*,*,        *,*,*,  16,     *,*,*,*,*,*")
    (set_attr "pool_range"     "*,*,*,*,4096,     *,*,*,1024,     *,*,*,*,1020,*")
@@ -227,7 +227,7 @@
    case 4: return \"tmcr%?\\t%0, %1\";
    default: return \"tmrc%?\\t%0, %1\";
   }"
-  [(set_attr "type"           "*,*,load1,store1,*,*")
+  [(set_attr "type"           "*,*,load_4,store_4,*,*")
    (set_attr "pool_range"     "*,*,4096,     *,*,*")
    (set_attr "neg_pool_range" "*,*,4084,     *,*,*")]
 )
@@ -249,7 +249,7 @@
    }"
   [(set_attr "predicable" "yes")
    (set_attr "length"         "4,     4,   4,4,4,8,   8,8")
-   (set_attr "type"           "wmmx_wmov,wmmx_wstr,wmmx_wldr,wmmx_tmrrc,wmmx_tmcrr,*,load1,store1")
+   (set_attr "type"           "wmmx_wmov,wmmx_wstr,wmmx_wldr,wmmx_tmrrc,wmmx_tmcrr,*,load_4,store_4")
    (set_attr "pool_range"     "*,     *, 256,*,*,*, 256,*")
    (set_attr "neg_pool_range" "*,     *, 244,*,*,*, 244,*")]
 )

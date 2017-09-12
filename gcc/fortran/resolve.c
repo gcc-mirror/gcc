@@ -1130,6 +1130,89 @@ resolve_contained_functions (gfc_namespace *ns)
 }
 
 
+
+/* A Parameterized Derived Type constructor must contain values for
+   the PDT KIND parameters or they must have a default initializer.
+   Go through the constructor picking out the KIND expressions,
+   storing them in 'param_list' and then call gfc_get_pdt_instance
+   to obtain the PDT instance.  */
+
+static gfc_actual_arglist *param_list, *param_tail, *param;
+
+static bool
+get_pdt_spec_expr (gfc_component *c, gfc_expr *expr)
+{
+  param = gfc_get_actual_arglist ();
+  if (!param_list)
+    param_list = param_tail = param;
+  else
+    {
+      param_tail->next = param;
+      param_tail = param_tail->next;
+    }
+
+  param_tail->name = c->name;
+  if (expr)
+    param_tail->expr = gfc_copy_expr (expr);
+  else if (c->initializer)
+    param_tail->expr = gfc_copy_expr (c->initializer);
+  else
+    {
+      param_tail->spec_type = SPEC_ASSUMED;
+      if (c->attr.pdt_kind)
+	{
+	  gfc_error ("The KIND parameter in the PDT constructor "
+		     "at %C has no value");
+	  return false;
+	}
+    }
+
+  return true;
+}
+
+static bool
+get_pdt_constructor (gfc_expr *expr, gfc_constructor **constr,
+		     gfc_symbol *derived)
+{
+  gfc_constructor *cons;
+  gfc_component *comp;
+  bool t = true;
+
+  if (expr && expr->expr_type == EXPR_STRUCTURE)
+    cons = gfc_constructor_first (expr->value.constructor);
+  else if (constr)
+    cons = *constr;
+  gcc_assert (cons);
+
+  comp = derived->components;
+
+  for (; comp && cons; comp = comp->next, cons = gfc_constructor_next (cons))
+    {
+      if (cons->expr->expr_type == EXPR_STRUCTURE
+	  && comp->ts.type == BT_DERIVED)
+	{
+	  t = get_pdt_constructor (cons->expr, NULL, comp->ts.u.derived);
+	  if (!t)
+	    return t;
+	}
+      else if (comp->ts.type == BT_DERIVED)
+	{
+	  t = get_pdt_constructor (NULL, &cons, comp->ts.u.derived);
+	  if (!t)
+	    return t;
+	}
+     else if ((comp->attr.pdt_kind || comp->attr.pdt_len)
+	       && derived->attr.pdt_template)
+	{
+	  t = get_pdt_spec_expr (comp, cons->expr);
+	  if (!t)
+	    return t;
+	}
+    }
+  return t;
+}
+
+
 static bool resolve_fl_derived0 (gfc_symbol *sym);
 static bool resolve_fl_struct (gfc_symbol *sym);
 
@@ -1154,6 +1237,25 @@ resolve_structure_cons (gfc_expr *expr, int init)
         resolve_fl_derived0 (expr->ts.u.derived);
       else
         resolve_fl_struct (expr->ts.u.derived);
+
+      /* If this is a Parameterized Derived Type template, find the
+	 instance corresponding to the PDT kind parameters.  */
+      if (expr->ts.u.derived->attr.pdt_template)
+	{
+	  param_list = NULL;
+	  t = get_pdt_constructor (expr, NULL, expr->ts.u.derived);
+	  if (!t)
+	    return t;
+	  gfc_get_pdt_instance (param_list, &expr->ts.u.derived, NULL);
+
+	  expr->param_list = gfc_copy_actual_arglist (param_list);
+
+	  if (param_list)
+	    gfc_free_actual_arglist (param_list);
+
+	  if (!expr->ts.u.derived->attr.pdt_type)
+	    return false;
+	}
     }
 
   cons = gfc_constructor_first (expr->value.constructor);
@@ -13559,7 +13661,9 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     }
 
   /* Add the hidden deferred length field.  */
-  if (c->ts.type == BT_CHARACTER && c->ts.deferred && !c->attr.function
+  if (c->ts.type == BT_CHARACTER
+      && (c->ts.deferred || c->attr.pdt_string)
+      && !c->attr.function
       && !sym->attr.is_class)
     {
       char name[GFC_MAX_SYMBOL_LEN+9];
@@ -13659,6 +13763,7 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
     return false;
 
   if (c->initializer && !sym->attr.vtype
+      && !c->attr.pdt_kind && !c->attr.pdt_len
       && !gfc_check_assign_symbol (sym, c, c->initializer))
     return false;
 
@@ -14285,6 +14390,15 @@ resolve_symbol (gfc_symbol *sym)
     {
       gfc_error ("%qs at %L cannot have the VALUE attribute because "
 		 "it is not a dummy argument", sym->name, &sym->declared_at);
+      return;
+    }
+
+  if (sym->attr.dummy && sym->ts.type == BT_DERIVED
+      && sym->ts.u.derived->attr.pdt_type
+      && gfc_spec_list_type (sym->param_list, NULL) == SPEC_DEFERRED)
+    {
+      gfc_error ("%qs at %L cannot have DEFERRED type parameters because "
+		 "it is a dummy argument", sym->name, &sym->declared_at);
       return;
     }
 

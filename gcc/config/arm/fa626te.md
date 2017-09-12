@@ -123,32 +123,32 @@
 
 (define_insn_reservation "626te_load1_op" 3
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "load1,load_byte"))
+      (eq_attr "type" "load_4,load_byte"))
  "fa626te_core")
 
 (define_insn_reservation "626te_load2_op" 4
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "load2,load3"))
+      (eq_attr "type" "load_8,load_12"))
  "fa626te_core*2")
 
 (define_insn_reservation "626te_load3_op" 5
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "load4"))
+      (eq_attr "type" "load_16"))
  "fa626te_core*3")
 
 (define_insn_reservation "626te_store1_op" 0
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "store1"))
+      (eq_attr "type" "store_4"))
  "fa626te_core")
 
 (define_insn_reservation "626te_store2_op" 1
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "store2,store3"))
+      (eq_attr "type" "store_8,store_12"))
  "fa626te_core*2")
 
 (define_insn_reservation "626te_store3_op" 2
  (and (eq_attr "tune" "fa626,fa626te")
-      (eq_attr "type" "store4"))
+      (eq_attr "type" "store_16"))
  "fa626te_core*3")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

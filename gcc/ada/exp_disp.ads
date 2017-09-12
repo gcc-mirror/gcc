@@ -4,9 +4,9 @@
 --                                                                          --
 --                             E X P _ D I S P                              --
 --                                                                          --
---                                 GS p e c                                  --
+--                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -213,6 +213,12 @@ package Exp_Disp is
    function CPP_Num_Prims (Typ : Entity_Id) return Nat;
    --  Return the number of primitives of the C++ part of the dispatch table.
    --  For types that are not derivations of CPP types return 0.
+
+   function Elab_Flag_Needed (Typ : Entity_Id) return Boolean;
+   --  Return True if the elaboration of the tagged type Typ is completed at
+   --  run time by the execution of code located in the IP routine and the
+   --  expander must generate an extra elaboration flag to avoid performing
+   --  such elaboration twice.
 
    procedure Expand_Dispatching_Call (Call_Node : Node_Id);
    --  Expand the call to the operation through the dispatch table and perform

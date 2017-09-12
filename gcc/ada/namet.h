@@ -45,11 +45,11 @@ struct Name_Entry
 };
 
 /* Pointer to names table vector. */
-#define Names_Ptr namet__name_entries__tab__the_instance
+#define Names_Ptr namet__name_entries__table
 extern struct Name_Entry *Names_Ptr;
 
 /* Pointer to name characters table. */
-#define Name_Chars_Ptr namet__name_chars__tab__the_instance
+#define Name_Chars_Ptr namet__name_chars__table
 extern char *Name_Chars_Ptr;
 
 /* This is Hostparm.Max_Line_Length.  */

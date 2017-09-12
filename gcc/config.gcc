@@ -318,7 +318,7 @@ arc*-*-*)
 	cpu_type=arc
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
-	extra_options="${extra_options} arc/arc-tables.opt"
+	extra_options="${extra_options} arc/arc-tables.opt g.opt"
 	extra_headers="arc-simd.h"
 	;;
 arm*-*-*)
@@ -2544,14 +2544,14 @@ powerpc*-*-linux*)
 		    ;;
 	esac
 	;;
-powerpc-wrs-vxworksspe)
+powerpc-wrs-vxworks*spe)
 	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
 	extra_options="${extra_options} powerpcspe/sysv4.opt"
 	extra_headers=ppc-asm.h
 	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
+powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"

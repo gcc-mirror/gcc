@@ -4517,12 +4517,27 @@ visl")
 ;; The 32-bit multiply/divide instructions are deprecated on v9, but at
 ;; least in UltraSPARC I, II and IIi it is a win tick-wise.
 
-(define_insn "mulsi3"
+(define_expand "mulsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(mult:SI (match_operand:SI 1 "arith_operand" "")
+		 (match_operand:SI 2 "arith_operand" "")))]
+  "TARGET_HARD_MUL || TARGET_ARCH64"
+  "")
+
+(define_insn "*mulsi3_sp32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_HARD_MUL"
   "smul\t%1, %2, %0"
+  [(set_attr "type" "imul")])
+
+(define_insn "*mulsi3_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
+		 (match_operand:SI 2 "arith_operand" "rI")))]
+  "TARGET_ARCH64"
+  "mulx\t%1, %2, %0"
   [(set_attr "type" "imul")])
 
 (define_expand "muldi3"

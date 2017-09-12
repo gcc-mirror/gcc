@@ -209,7 +209,7 @@ static void alpha_override_options_after_change (void);
 
 #if TARGET_ABI_OPEN_VMS
 static void alpha_write_linkage (FILE *, const char *);
-static bool vms_valid_pointer_mode (machine_mode);
+static bool vms_valid_pointer_mode (scalar_int_mode);
 #else
 #define vms_patch_builtins()  gcc_unreachable()
 #endif
@@ -691,22 +691,22 @@ resolve_reload_operand (rtx op)
    indicates only DFmode.  */
 
 static bool
-alpha_scalar_mode_supported_p (machine_mode mode)
+alpha_scalar_mode_supported_p (scalar_mode mode)
 {
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case DImode:
-    case TImode: /* via optabs.c */
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_DImode:
+    case E_TImode: /* via optabs.c */
       return true;
 
-    case SFmode:
-    case DFmode:
+    case E_SFmode:
+    case E_DFmode:
       return true;
 
-    case TFmode:
+    case E_TFmode:
       return TARGET_HAS_XFLOATING_LIBS;
 
     default:
@@ -819,7 +819,7 @@ alpha_in_small_data_p (const_tree exp)
 
 #if TARGET_ABI_OPEN_VMS
 static bool
-vms_valid_pointer_mode (machine_mode mode)
+vms_valid_pointer_mode (scalar_int_mode mode)
 {
   return (mode == SImode || mode == DImode);
 }
@@ -2783,7 +2783,7 @@ alpha_emit_conditional_move (rtx cmp, machine_mode mode)
       emit_insn (gen_rtx_SET (tem, gen_rtx_fmt_ee (cmp_code, cmp_mode,
 						   op0, op1)));
 
-      cmp_mode = cmp_mode == DImode ? DFmode : DImode;
+      cmp_mode = cmp_mode == DImode ? E_DFmode : E_DImode;
       op0 = gen_lowpart (cmp_mode, tem);
       op1 = CONST0_RTX (cmp_mode);
       cmp = gen_rtx_fmt_ee (code, VOIDmode, op0, op1);
@@ -3076,20 +3076,20 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
     {
       switch (GET_MODE (operands[i]))
 	{
-	case TFmode:
+	case E_TFmode:
 	  reg = gen_rtx_REG (TFmode, regno);
 	  regno += 2;
 	  break;
 
-	case DFmode:
+	case E_DFmode:
 	  reg = gen_rtx_REG (DFmode, regno + 32);
 	  regno += 1;
 	  break;
 
-	case VOIDmode:
+	case E_VOIDmode:
 	  gcc_assert (CONST_INT_P (operands[i]));
 	  /* FALLTHRU */
-	case DImode:
+	case E_DImode:
 	  reg = gen_rtx_REG (DImode, regno);
 	  regno += 1;
 	  break;
@@ -3104,13 +3104,13 @@ alpha_emit_xfloating_libcall (rtx func, rtx target, rtx operands[],
 
   switch (GET_MODE (target))
     {
-    case TFmode:
+    case E_TFmode:
       reg = gen_rtx_REG (TFmode, 16);
       break;
-    case DFmode:
+    case E_DFmode:
       reg = gen_rtx_REG (DFmode, 32);
       break;
-    case DImode:
+    case E_DImode:
       reg = gen_rtx_REG (DImode, 0);
       break;
     default:
@@ -4383,16 +4383,16 @@ emit_insxl (machine_mode mode, rtx op1, rtx op2)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       fn = gen_insbl;
       break;
-    case HImode:
+    case E_HImode:
       fn = gen_inswl;
       break;
-    case SImode:
+    case E_SImode:
       fn = gen_insll;
       break;
-    case DImode:
+    case E_DImode:
       fn = gen_insql;
       break;
     default:
@@ -5294,17 +5294,6 @@ alpha_print_operand (FILE *file, rtx x, int code)
       fprintf (file, HOST_WIDE_INT_PRINT_DEC, INTVAL (x) / 8);
       break;
 
-    case 'S':
-      /* Same, except compute (64 - c) / 8 */
-
-      if (!CONST_INT_P (x)
-	  && (unsigned HOST_WIDE_INT) INTVAL (x) >= 64
-	  && (INTVAL (x) & 7) != 8)
-	output_operand_lossage ("invalid %%s value");
-
-      fprintf (file, HOST_WIDE_INT_PRINT_DEC, (64 - INTVAL (x)) / 8);
-      break;
-
     case 'C': case 'D': case 'c': case 'd':
       /* Write out comparison name.  */
       {
@@ -5562,7 +5551,7 @@ alpha_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
       emit_insn (gen_imb ());
 #ifdef HAVE_ENABLE_EXECUTE_STACK
       emit_library_call (init_one_libfunc ("__enable_execute_stack"),
-			 LCT_NORMAL, VOIDmode, 1, XEXP (m_tramp, 0), Pmode);
+			 LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode);
 #endif
     }
 }
@@ -9574,9 +9563,9 @@ alpha_arg_type (machine_mode mode)
 {
   switch (mode)
     {
-    case SFmode:
+    case E_SFmode:
       return TARGET_FLOAT_VAX ? FF : FS;
-    case DFmode:
+    case E_DFmode:
       return TARGET_FLOAT_VAX ? FD : FT;
     default:
       return I64;
@@ -9891,6 +9880,33 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 		    build2 (COMPOUND_EXPR, void_type_node,
 			    reload_fenv, restore_fnenv), update_call);
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On Alpha, the integer registers
+   can hold any mode.  The floating-point registers can hold 64-bit
+   integers as well, but not smaller values.  */
+
+static bool
+alpha_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (IN_RANGE (regno, 32, 62))
+    return (mode == SFmode
+	    || mode == DFmode
+	    || mode == DImode
+	    || mode == SCmode
+	    || mode == DCmode);
+  return true;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  This asymmetric test is true when
+   MODE1 could be put in an FP register but MODE2 could not.  */
+
+static bool
+alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (alpha_hard_regno_mode_ok (32, mode1)
+	  ? alpha_hard_regno_mode_ok (32, mode2)
+	  : true);
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10084,6 +10100,12 @@ alpha_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
 #undef TARGET_ATOMIC_ASSIGN_EXPAND_FENV
 #define TARGET_ATOMIC_ASSIGN_EXPAND_FENV alpha_atomic_assign_expand_fenv
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK alpha_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P alpha_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

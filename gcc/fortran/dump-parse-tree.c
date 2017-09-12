@@ -627,7 +627,12 @@ static void
 show_attr (symbol_attribute *attr, const char * module)
 {
   if (attr->flavor != FL_UNKNOWN)
+    {
+      if (attr->flavor == FL_DERIVED && attr->pdt_template)
+	fputs (" (PDT template", dumpfile);
+      else
     fprintf (dumpfile, "(%s ", gfc_code2string (flavors, attr->flavor));
+    }
   if (attr->access != ACCESS_UNKNOWN)
     fprintf (dumpfile, "%s ", gfc_code2string (access_types, attr->access));
   if (attr->proc != PROC_UNKNOWN)
@@ -653,6 +658,10 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" INTRINSIC", dumpfile);
   if (attr->optional)
     fputs (" OPTIONAL", dumpfile);
+  if (attr->pdt_kind)
+    fputs (" KIND", dumpfile);
+  if (attr->pdt_len)
+    fputs (" LEN", dumpfile);
   if (attr->pointer)
     fputs (" POINTER", dumpfile);
   if (attr->is_protected)
@@ -724,10 +733,26 @@ show_components (gfc_symbol *sym)
 
   for (c = sym->components; c; c = c->next)
     {
+      show_indent ();
       fprintf (dumpfile, "(%s ", c->name);
       show_typespec (&c->ts);
+      if (c->kind_expr)
+	{
+	  fputs (" kind_expr: ", dumpfile);
+	  show_expr (c->kind_expr);
+	}
+      if (c->param_list)
+	{
+	  fputs ("PDT parameters", dumpfile);
+	  show_actual_arglist (c->param_list);
+	}
+
       if (c->attr.allocatable)
 	fputs (" ALLOCATABLE", dumpfile);
+      if (c->attr.pdt_kind)
+	fputs (" KIND", dumpfile);
+      if (c->attr.pdt_len)
+	fputs (" LEN", dumpfile);
       if (c->attr.pointer)
 	fputs (" POINTER", dumpfile);
       if (c->attr.proc_pointer)
@@ -934,6 +959,15 @@ show_symbol (gfc_symbol *sym)
       show_indent ();
       fputs ("Formal namespace", dumpfile);
       show_namespace (sym->formal_ns);
+    }
+
+  if (sym->attr.flavor == FL_VARIABLE
+      && sym->param_list)
+    {
+      show_indent ();
+      fputs ("PDT parameters", dumpfile);
+      show_actual_arglist (sym->param_list);
+
     }
   --show_level;
 }

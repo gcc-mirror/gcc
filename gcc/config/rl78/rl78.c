@@ -87,12 +87,12 @@ struct mduc_reg_type
 
 struct mduc_reg_type  mduc_regs[] =
 {
-  {0xf00e8, QImode},
-  {0xffff0, HImode},
-  {0xffff2, HImode},
-  {0xf2224, HImode},
-  {0xf00e0, HImode},
-  {0xf00e2, HImode}
+  {0xf00e8, E_QImode},
+  {0xffff0, E_HImode},
+  {0xffff2, E_HImode},
+  {0xf2224, E_HImode},
+  {0xf00e0, E_HImode},
+  {0xf00e2, E_HImode}
 };
 
 struct GTY(()) machine_function
@@ -449,9 +449,11 @@ rl78_real_insns_ok (void)
   return false;
 }
 
-/* Implements HARD_REGNO_NREGS.  */
-int
-rl78_hard_regno_nregs (int regno, machine_mode mode)
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS rl78_hard_regno_nregs
+
+static unsigned int
+rl78_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   int rs = register_sizes[regno];
   if (rs < 1)
@@ -459,34 +461,48 @@ rl78_hard_regno_nregs (int regno, machine_mode mode)
   return ((GET_MODE_SIZE (mode) + rs - 1) / rs);
 }
 
-/* Implements HARD_REGNO_MODE_OK.  */
-int
-rl78_hard_regno_mode_ok (int regno, machine_mode mode)
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK rl78_hard_regno_mode_ok
+
+static bool
+rl78_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   int s = GET_MODE_SIZE (mode);
 
   if (s < 1)
-    return 0;
+    return false;
   /* These are not to be used by gcc.  */
   if (regno == 23 || regno == ES_REG || regno == CS_REG)
-    return 0;
+    return false;
   /* $fp can always be accessed as a 16-bit value.  */
   if (regno == FP_REG && s == 2)
-    return 1;
+    return true;
   if (regno < SP_REG)
     {
       /* Since a reg-reg move is really a reg-mem move, we must
 	 enforce alignment.  */
       if (s > 1 && (regno % 2))
-	return 0;
-      return 1;
+	return false;
+      return true;
     }
   if (s == CC_REGNUM)
     return (mode == BImode);
   /* All other registers must be accessed in their natural sizes.  */
   if (s == register_sizes [regno])
-    return 1;
-  return 0;
+    return true;
+  return false;
+}
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P rl78_modes_tieable_p
+
+static bool
+rl78_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 /* Simplify_gen_subreg() doesn't handle memory references the way we
@@ -998,7 +1014,7 @@ rl78_hl_b_c_addr_p (rtx op)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE rl78_addr_space_address_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_addr_space_address_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1038,7 +1054,7 @@ rl78_far_p (rtx x)
 #undef  TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE rl78_addr_space_pointer_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1059,7 +1075,7 @@ rl78_addr_space_pointer_mode (addr_space_t addrspace)
 #define TARGET_VALID_POINTER_MODE rl78_valid_pointer_mode
 
 static bool
-rl78_valid_pointer_mode (machine_mode m)
+rl78_valid_pointer_mode (scalar_int_mode m)
 {
   return (m == HImode || m == SImode);
 }
@@ -4638,7 +4654,7 @@ rl78_asm_out_integer (rtx x, unsigned int size, int aligned_p)
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE rl78_unwind_word_mode
 
-static machine_mode
+static scalar_int_mode
 rl78_unwind_word_mode (void)
 {
   return HImode;

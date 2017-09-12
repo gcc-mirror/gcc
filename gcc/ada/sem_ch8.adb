@@ -2892,6 +2892,7 @@ package body Sem_Ch8 is
       --  Case of Renaming_As_Body
 
       if Present (Rename_Spec) then
+         Check_Previous_Null_Procedure (N, Rename_Spec);
 
          --  Renaming declaration is the completion of the declaration of
          --  Rename_Spec. We build an actual body for it at the freezing point.
@@ -2944,6 +2945,14 @@ package body Sem_Ch8 is
          Set_Convention (New_S, Convention (Rename_Spec));
          Check_Fully_Conformant (New_S, Rename_Spec);
          Set_Public_Status (New_S);
+
+         if No_Return (Rename_Spec)
+           and then not No_Return (Entity (Nam))
+         then
+            Error_Msg_N ("renaming completes a No_Return procedure", N);
+            Error_Msg_N
+              ("\renamed procedure must be nonreturning (RM 6.5.1 (7/2))", N);
+         end if;
 
          --  The specification does not introduce new formals, but only
          --  repeats the formals of the original subprogram declaration.
@@ -3428,7 +3437,7 @@ package body Sem_Ch8 is
          --  addition the renamed entity may depend on the generic formals of
          --  the enclosing generic.
 
-         if Is_Actual and not Inside_A_Generic then
+         if Is_Actual and then not Inside_A_Generic then
             Freeze_Before (N, Old_S);
             Freeze_Actual_Profile;
             Set_Has_Delayed_Freeze (New_S, False);
@@ -5319,9 +5328,10 @@ package body Sem_Ch8 is
          --  Make entry in undefined references table unless the full errors
          --  switch is set, in which case by refraining from generating the
          --  table entry, we guarantee that we get an error message for every
-         --  undefined reference.
+         --  undefined reference. The entry is not added if we are ignoring
+         --  errors.
 
-         if not All_Errors_Mode then
+         if not All_Errors_Mode and then Ignore_Errors_Enable = 0 then
             Urefs.Append (
               (Node => N,
                Err  => Emsg,
@@ -5991,6 +6001,21 @@ package body Sem_Ch8 is
                Candidate        := Get_Full_View (Non_Limited_View (Id));
                Is_New_Candidate := True;
 
+            --  An unusual case arises with a fully qualified name for an
+            --  entity local to a generic child unit package, within an
+            --  instantiation of that package. The name of the unit now
+            --  denotes the renaming created within the instance. This is
+            --  only relevant in an instance body, see below.
+
+            elsif Is_Generic_Instance (Scope (Id))
+              and then In_Open_Scopes (Scope (Id))
+              and then In_Instance_Body
+              and then Ekind (Scope (Id)) = E_Package
+              and then Ekind (Id) = E_Package
+              and then Renamed_Entity (Id) = Scope (Id)
+            then
+               Is_New_Candidate := True;
+
             else
                Is_New_Candidate := False;
             end if;
@@ -6237,6 +6262,10 @@ package body Sem_Ch8 is
                      end;
 
                   else
+                     --  Might be worth specializing the case when the prefix
+                     --  is a limited view.
+                     --  ... not declared in limited view of...
+
                      Error_Msg_NE ("& not declared in&", N, Selector);
                   end if;
 
@@ -7376,7 +7405,7 @@ package body Sem_Ch8 is
                      --  synchronized type itself, with minimal semantic
                      --  attributes, to catch other errors in some ACATS tests.
 
-                     pragma Assert (Serious_Errors_Detected > 0);
+                     pragma Assert (Serious_Errors_Detected /= 0);
                      Make_Class_Wide_Type (T);
                      C := Class_Wide_Type (T);
                      Set_First_Entity (C, First_Entity (T));
