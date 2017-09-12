@@ -1,3 +1,25 @@
+2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/81498
+	* common.opt (-static-pie): New alias.
+	(shared): Negate static-pie.
+	(-no-pie): Update help text.
+	(-pie): Likewise.
+	(static-pie): New option.
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Add
+	-static-pie support.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Likewise.
+	(LINK_EH_SPEC): Likewise.
+	(LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/i386/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): Likewise.
+	* config/i386/gnu-user64.h (GNU_USER_TARGET_LINK_SPEC): Likewise.
+	* gcc.c (LINK_COMMAND_SPEC): Likewise.
+	(init_gcc_specs): Likewise.
+	(init_spec): Likewise.
+	(display_help): Update help message for -pie.
+	* doc/invoke.texi: Update -pie, -no-pie and -static.  Document
+	-static-pie.
+
 2017-09-12  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	* config/aarch64/aarch64.md (movsi_aarch64): Remove all '*'.

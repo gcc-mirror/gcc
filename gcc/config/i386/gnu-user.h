@@ -77,9 +77,10 @@ along with GCC; see the file COPYING3.  If not see
 #define GNU_USER_TARGET_LINK_SPEC "-m %(link_emulation) %{shared:-shared} \
   %{!shared: \
     %{!static: \
-      %{rdynamic:-export-dynamic} \
-      -dynamic-linker %(dynamic_linker)} \
-      %{static:-static}}"
+      %{!static-pie: \
+	%{rdynamic:-export-dynamic} \
+	-dynamic-linker %(dynamic_linker)}} \
+      %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
 #undef	LINK_SPEC
 #define LINK_SPEC GNU_USER_TARGET_LINK_SPEC

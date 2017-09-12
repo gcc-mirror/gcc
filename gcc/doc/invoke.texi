@@ -497,7 +497,7 @@ Objective-C and Objective-C++ Dialects}.
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library} @gol
 -nostartfiles  -nodefaultlibs  -nostdlib  -pie  -pthread  -rdynamic @gol
--s  -static  -static-libgcc  -static-libstdc++ @gol
+-s  -static -static-pie -static-libgcc  -static-libstdc++ @gol
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan @gol
 -static-libmpx  -static-libmpxwrappers @gol
 -shared  -shared-libgcc  -symbolic @gol
@@ -11825,14 +11825,23 @@ GNU Compiler Collection (GCC) Internals}.)
 
 @item -pie
 @opindex pie
-Produce a position independent executable on targets that support it.
-For predictable results, you must also specify the same set of options
-used for compilation (@option{-fpie}, @option{-fPIE},
+Produce a dynamically linked position independent executable on targets
+that support it.  For predictable results, you must also specify the same
+set of options used for compilation (@option{-fpie}, @option{-fPIE},
 or model suboptions) when you specify this linker option.
 
 @item -no-pie
 @opindex no-pie
-Don't produce a position independent executable.
+Don't produce a dynamically linked position independent executable.
+
+@item -static-pie
+@opindex static-pie
+Produce a static position independent executable on targets that support
+it.  A static position independent executable is similar to a static
+executable, but can be loaded at any address without a dynamic linker.
+For predictable results, you must also specify the same set of options
+used for compilation (@option{-fpie}, @option{-fPIE}, or model
+suboptions) when you specify this linker option.
 
 @item -pthread
 @opindex pthread
@@ -11856,8 +11865,9 @@ Remove all symbol table and relocation information from the executable.
 
 @item -static
 @opindex static
-On systems that support dynamic linking, this prevents linking with the shared
-libraries.  On other systems, this option has no effect.
+On systems that support dynamic linking, this overrides @option{-pie}
+and prevents linking with the shared libraries.  On other systems, this
+option has no effect.
 
 @item -shared
 @opindex shared
