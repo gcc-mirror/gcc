@@ -1,3 +1,9 @@
+2017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* decl.c (start_decl): Early return error_mark_node if duplicate_decls
+	returns it; avoid misleading error message.
+
 2017-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	Kill CLASSTYPE_SORTED_FIELDS.

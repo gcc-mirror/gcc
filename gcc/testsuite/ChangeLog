@@ -1,3 +1,8 @@
+017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* g++.dg/torture/pr70621.C: New.
+
 2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173
