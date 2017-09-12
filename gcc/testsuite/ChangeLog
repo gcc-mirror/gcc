@@ -1,3 +1,11 @@
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* gcc.target/mips/near-far-1.c: Add check for 'short_call'
+	attribute.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
 2017-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82112

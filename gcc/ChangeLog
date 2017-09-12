@@ -1,3 +1,11 @@
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* config/mips/mips.c (mips_attribute_table): Add 'short_call'
+	attribute.
+	(mips_near_type_p): Add 'short_call' attribute as a synonym
+	for 'near'.
+	* doc/extend.texi (short_call): Document new function attribute.
+
 2017-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82112
