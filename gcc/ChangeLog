@@ -1,3 +1,12 @@
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): For
+	ALTIVEC_BUILTIN_VEC_LD if arg1 has array type call default_conversion
+	on it early, rather than manual conversion late.  For
+	ALTIVEC_BUILTIN_VEC_ST if arg2 has array type call default_conversion
+	instead of performing manual conversion.
+
 2017-09-12  Carl Love  <cel@us.ibm.com>
 
         * config/rs6000/altivec.md (vec_widen_umult_even_v4si,
