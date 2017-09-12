@@ -1,3 +1,9 @@
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82157
+	* tree-ssa-pre.c (remove_dead_inserted_code): Do not remove
+	stmts with side-effects.
+
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood <david.sherwood@arm.com>
