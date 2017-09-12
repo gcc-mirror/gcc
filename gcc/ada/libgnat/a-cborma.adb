@@ -851,8 +851,9 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       ------------
 
       procedure Assign (Node : in out Node_Type) is
-         New_Item : Element_Type;
-         pragma Unmodified (New_Item);
+         pragma Warnings (Off);
+         Default_Initialized_Item : Element_Type;
+         pragma Unmodified (Default_Initialized_Item);
          --  Default-initialized element (ok to reference, see below)
 
       begin
@@ -863,7 +864,8 @@ package body Ada.Containers.Bounded_Ordered_Maps is
       --  with such a scalar component or with defaulted components, so insert
       --  possibly initialized elements at the given position.
 
-         Node.Element := New_Item;
+         Node.Element := Default_Initialized_Item;
+         pragma Warnings (On);
       end Assign;
 
       --------------

@@ -2798,6 +2798,7 @@ package body Sem_Warn is
 
          --  Note: use of OR instead of OR ELSE here is deliberate, we want
          --  to mess with Unmodified flags on both body and spec entities.
+         --  Has_Unmodified has side effects!
 
          return Has_Unmodified (E)
                   or

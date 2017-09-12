@@ -1,5 +1,33 @@
 2017-09-12  Bob Duff  <duff@adacore.com>
 
+	* sem_warn.adb: Minor comment.
+
+2017-09-12  Bob Duff  <duff@adacore.com>
+
+	* libgnat/a-cbdlli.adb, libgnat/a-cbhama.adb,
+	libgnat/a-cbmutr.adb, libgnat/a-cborma.adb: Rename New_Item to
+	be Default_Initialized_Item, and apply pragma Unmodified to it,
+	to suppress the warning.
+
+2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Aggr_Assignment_OK_For_Backend): Add early return
+	for access types.
+
+2017-09-12  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb (Adjust_Global_Switches): Consider Refined_Global
+	together with Global when ignoring one in CodePeer mode.
+
+2017-09-12  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): In nested
+	package declarations that have a private part enable missing check
+	of the RM rule 13.1.1(11/3): usage names in aspect definitions are
+	resolved at the end of the immediately enclosing declaration list.
+
+2017-09-12  Bob Duff  <duff@adacore.com>
+
 	* sem_ch6.adb (Analyze_Expression_Function): Initialize Def_Id to
 	Empty.
 
