@@ -300,12 +300,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 #define STRICT_ALIGNMENT 1
 
-/* Set this nonzero if unaligned move instructions are extremely slow.
-
-   On the Alpha, they trap.  */
-
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Standard register usage.  */
 
 /* Number of actual hardware registers.

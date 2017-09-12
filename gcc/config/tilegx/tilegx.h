@@ -94,9 +94,6 @@
 #define BIGGEST_FIELD_ALIGNMENT 128
 #define WIDEST_HARDWARE_FP_SIZE 64
 
-/* Unaligned moves trap and are very slow.  */
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Make strings word-aligned so strcpy from constants will be
    faster.  */
 #define CONSTANT_ALIGNMENT(EXP, ALIGN)  \

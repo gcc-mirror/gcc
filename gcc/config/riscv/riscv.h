@@ -130,8 +130,6 @@ along with GCC; see the file COPYING3.  If not see
    of the privileged architecture.  */
 #define STRICT_ALIGNMENT TARGET_STRICT_ALIGN
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) riscv_slow_unaligned_access
-
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain
    them.
@@ -854,7 +852,6 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
-extern bool riscv_slow_unaligned_access;
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \

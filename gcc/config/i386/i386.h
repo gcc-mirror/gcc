@@ -2017,20 +2017,6 @@ do {							\
 /* Nonzero if access to memory by shorts is slow and undesirable.  */
 #define SLOW_SHORT_ACCESS 0
 
-/* Define this macro to be the value 1 if unaligned accesses have a
-   cost many times greater than aligned accesses, for example if they
-   are emulated in a trap handler.
-
-   When this macro is nonzero, the compiler will act as if
-   `STRICT_ALIGNMENT' were nonzero when generating code for block
-   moves.  This can cause significantly more instructions to be
-   produced.  Therefore, do not set this macro nonzero if unaligned
-   accesses only add a cycle or two to the time for a memory access.
-
-   If the value of this macro is always zero, it need not be defined.  */
-
-/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
-
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
 

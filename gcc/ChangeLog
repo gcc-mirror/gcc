@@ -1,4 +1,65 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood <david.sherwood@arm.com>
+
+	* defaults.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* target.def (slow_unaligned_access): New hook.
+	* targhooks.h (default_slow_unaligned_access): Declare.
+	* targhooks.c (default_slow_unaligned_access): New function.
+	* doc/tm.texi.in (SLOW_UNALIGNED_ACCESS): Replace with...
+	(TARGET_SLOW_UNALIGNED_ACCESS): ...this.
+	* doc/tm.texi: Regenerate.
+	* config/alpha/alpha.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/arm/arm.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/i386/i386.h (SLOW_UNALIGNED_ACCESS): Delete commented-out
+	definition.
+	* config/powerpcspe/powerpcspe.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_SLOW_UNALIGNED_ACCESS):
+	Redefine.
+	(rs6000_slow_unaligned_access): New function.
+	(rs6000_emit_move): Use it instead of SLOW_UNALIGNED_ACCESS.
+	(expand_block_compare): Likewise.
+	(expand_strn_compare): Likewise.
+	(rs6000_rtx_costs): Likewise.
+	* config/riscv/riscv.h (SLOW_UNALIGNED_ACCESS): Delete.
+	(riscv_slow_unaligned_access): Likewise.
+	* config/riscv/riscv.c (riscv_slow_unaligned_access): Rename to...
+	(riscv_slow_unaligned_access_p): ...this and make static.
+	(riscv_option_override): Update accordingly.
+	(riscv_slow_unaligned_access): New function.
+	(TARGET_SLOW_UNALIGNED_ACCESS): Redefine.
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/rs6000/rs6000.c (TARGET_SLOW_UNALIGNED_ACCESS): Redefine.
+	(rs6000_slow_unaligned_access): New function.
+	(rs6000_emit_move): Use it instead of SLOW_UNALIGNED_ACCESS.
+	(rs6000_rtx_costs): Likewise.
+	* config/rs6000/rs6000-string.c (expand_block_compare)
+	(expand_strn_compare): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* config/tilegx/tilegx.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/tilepro/tilepro.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* calls.c (expand_call): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* expmed.c (simple_mem_bitfield_p): Likewise.
+	* expr.c (alignment_for_piecewise_move): Likewise.
+	(emit_group_load_1): Likewise.
+	(emit_group_store): Likewise.
+	(copy_blkmode_from_reg): Likewise.
+	(emit_push_insn): Likewise.
+	(expand_assignment): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_1): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Likewise.
+	* lra-constraints.c (simplify_operand_subreg): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::next_mode): Likewise.
+	* gimple-ssa-store-merging.c: Likewise in block comment at start
+	of file.
+	* tree-ssa-strlen.c: Include target.h.
+	(handle_builtin_memcmp): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* system.h (SLOW_UNALIGNED_ACCESS): Poison.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR rtl-optimization/82185
 	* expmed.c (emit_store_flag_int): Only test tem if it has been

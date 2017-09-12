@@ -217,7 +217,7 @@ struct riscv_cpu_info {
 /* Global variables for machine-dependent things.  */
 
 /* Whether unaligned accesses execute very slowly.  */
-bool riscv_slow_unaligned_access;
+static bool riscv_slow_unaligned_access_p;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -3744,8 +3744,8 @@ riscv_option_override (void)
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
      the performance cost is too great, even for -Os.  */
-  riscv_slow_unaligned_access = (cpu->tune_info->slow_unaligned_access
-				 || TARGET_STRICT_ALIGN);
+  riscv_slow_unaligned_access_p = (cpu->tune_info->slow_unaligned_access
+				   || TARGET_STRICT_ALIGN);
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
@@ -3966,6 +3966,14 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
   return recog_memoized (insn) >= 0 && get_attr_cannot_copy (insn);
 }
 
+/* Implement TARGET_SLOW_UNALIGNED_ACCESS.  */
+
+static bool
+riscv_slow_unaligned_access (machine_mode, unsigned int)
+{
+  return riscv_slow_unaligned_access_p;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4101,6 +4109,9 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P riscv_modes_tieable_p
+
+#undef TARGET_SLOW_UNALIGNED_ACCESS
+#define TARGET_SLOW_UNALIGNED_ACCESS riscv_slow_unaligned_access
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

@@ -3512,6 +3512,25 @@ negative number from this hook.",
  default_compare_by_pieces_branch_ratio)
 
 DEFHOOK
+(slow_unaligned_access,
+ "This hook returns true if memory accesses described by the\n\
+@var{mode} and @var{alignment} parameters have a cost many times greater\n\
+than aligned accesses, for example if they are emulated in a trap handler.\n\
+This hook is invoked only for unaligned accesses, i.e. when\n\
+@code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.\n\
+\n\
+When this hook returns true, the compiler will act as if\n\
+@code{STRICT_ALIGNMENT} were true when generating code for block\n\
+moves.  This can cause significantly more instructions to be produced.\n\
+Therefore, do not make this hook return true if unaligned accesses only\n\
+add a cycle or two to the time for a memory access.\n\
+\n\
+The hook must return true whenever @code{STRICT_ALIGNMENT} is true.\n\
+The default implementation returns @code{STRICT_ALIGNMENT}.",
+ bool, (machine_mode mode, unsigned int align),
+ default_slow_unaligned_access)
+
+DEFHOOK
 (optab_supported_p,
  "Return true if the optimizers should use optab @var{op} with\n\
 modes @var{mode1} and @var{mode2} for optimization type @var{opt_type}.\n\

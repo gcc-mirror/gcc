@@ -1917,8 +1917,6 @@ enum arm_auto_incmodes
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts

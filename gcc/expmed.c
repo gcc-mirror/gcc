@@ -569,7 +569,7 @@ simple_mem_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
   return (MEM_P (op0)
 	  && bitnum % BITS_PER_UNIT == 0
 	  && bitsize == GET_MODE_BITSIZE (mode)
-	  && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
+	  && (!targetm.slow_unaligned_access (mode, MEM_ALIGN (op0))
 	      || (bitnum % GET_MODE_ALIGNMENT (mode) == 0
 		  && MEM_ALIGN (op0) >= GET_MODE_ALIGNMENT (mode))));
 }
