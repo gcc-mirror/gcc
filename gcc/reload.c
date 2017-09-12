@@ -862,7 +862,7 @@ reload_inner_reg_of_subreg (rtx x, machine_mode mode, bool output)
 	  && GET_MODE_SIZE (mode) <= UNITS_PER_WORD
 	  && GET_MODE_SIZE (GET_MODE (inner)) > UNITS_PER_WORD
 	  && ((GET_MODE_SIZE (GET_MODE (inner)) / UNITS_PER_WORD)
-	      != (int) hard_regno_nregs[REGNO (inner)][GET_MODE (inner)]));
+	      != REG_NREGS (inner)));
 }
 
 /* Return nonzero if IN can be reloaded into REGNO with mode MODE without
@@ -1086,8 +1086,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 		       > UNITS_PER_WORD)
 		   && ((GET_MODE_SIZE (GET_MODE (SUBREG_REG (in)))
 			/ UNITS_PER_WORD)
-		       != (int) hard_regno_nregs[REGNO (SUBREG_REG (in))]
-						[GET_MODE (SUBREG_REG (in))]))
+		       != REG_NREGS (SUBREG_REG (in))))
 		  || !targetm.hard_regno_mode_ok (subreg_regno (in), inmode)))
 	  || (secondary_reload_class (1, rclass, inmode, in) != NO_REGS
 	      && (secondary_reload_class (1, rclass, GET_MODE (SUBREG_REG (in)),
@@ -1597,7 +1596,7 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	    && (ORIGINAL_REGNO (XEXP (note, 0)) < FIRST_PSEUDO_REGISTER
 		|| (! bitmap_bit_p (DF_LR_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 				    ORIGINAL_REGNO (XEXP (note, 0)))
-		    && hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))] == 1))
+		    && REG_NREGS (XEXP (note, 0)) == 1))
 	    && ! refers_to_regno_for_reload_p (regno,
 					       end_hard_regno (rel_mode,
 							       regno),
@@ -1907,7 +1906,7 @@ combine_reloads (void)
 	&& TEST_HARD_REG_BIT (reg_class_contents[(int) rld[output_reload].rclass],
 			      regno)
 	&& (hard_regno_nregs[regno][rld[output_reload].outmode]
-	    <= hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))])
+	    <= REG_NREGS (XEXP (note, 0)))
 	/* Ensure that a secondary or tertiary reload for this output
 	   won't want this register.  */
 	&& ((secondary_out = rld[output_reload].secondary_out_reload) == -1
@@ -1922,7 +1921,7 @@ combine_reloads (void)
 	&& (ORIGINAL_REGNO (XEXP (note, 0)) < FIRST_PSEUDO_REGISTER
 	    || (!bitmap_bit_p (DF_LR_OUT (ENTRY_BLOCK_PTR_FOR_FN (cfun)),
 			       ORIGINAL_REGNO (XEXP (note, 0)))
-		&& hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))] == 1)))
+		&& REG_NREGS (XEXP (note, 0)) == 1)))
       {
 	rld[output_reload].reg_rtx
 	  = gen_rtx_REG (rld[output_reload].outmode, regno);
@@ -2088,7 +2087,7 @@ find_dummy_reload (rtx real_in, rtx real_out, rtx *inloc, rtx *outloc,
 		 because only another subword of the hardreg is actually
 		 used in the insn.  This cannot happen if the pseudo has
 		 been assigned exactly one hardreg.  See PR 33732.  */
-	      && hard_regno_nregs[REGNO (in)][GET_MODE (in)] == 1)))
+	      && REG_NREGS (in) == 1)))
     {
       unsigned int regno = REGNO (in) + in_offset;
       unsigned int nwords = hard_regno_nregs[regno][inmode];
@@ -7254,8 +7253,7 @@ reload_adjust_reg_for_mode (rtx reloadreg, machine_mode mode)
   regno = REGNO (reloadreg);
 
   if (REG_WORDS_BIG_ENDIAN)
-    regno += (int) hard_regno_nregs[regno][GET_MODE (reloadreg)]
-      - (int) hard_regno_nregs[regno][mode];
+    regno += (int) REG_NREGS (reloadreg) - (int) hard_regno_nregs[regno][mode];
 
   return gen_rtx_REG (mode, regno);
 }

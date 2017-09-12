@@ -444,12 +444,9 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 	(set (reg:SI r10) (...))
 	(set (...) (reg:DI r9))
      Replacing r9 with r11 is invalid.  */
-  if (mode != vd->e[regno].mode)
-    {
-      if (hard_regno_nregs[regno][mode]
-	  > hard_regno_nregs[regno][vd->e[regno].mode])
-	return NULL_RTX;
-    }
+  if (mode != vd->e[regno].mode
+      && REG_NREGS (reg) > hard_regno_nregs[regno][vd->e[regno].mode])
+    return NULL_RTX;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     {
@@ -871,14 +868,13 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     set it in, make sure that the replacement is valid.  */
 	  if (mode != vd->e[regno].mode)
 	    {
-	      if (hard_regno_nregs[regno][mode]
+	      if (REG_NREGS (src)
 		  > hard_regno_nregs[regno][vd->e[regno].mode])
 		goto no_move_special_case;
 
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
-	      if (hard_regno_nregs[regno][mode]
-		  < hard_regno_nregs[regno][vd->e[regno].mode]
+	      if (REG_NREGS (src) < hard_regno_nregs[regno][vd->e[regno].mode]
 		  && (GET_MODE_SIZE (vd->e[regno].mode) > UNITS_PER_WORD
 		      ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
 		goto no_move_special_case;

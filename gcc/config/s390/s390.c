@@ -13241,9 +13241,7 @@ s390_call_saved_register_used (tree call_expr)
 
        if (REG_P (parm_rtx))
   	 {
-	   for (reg = 0;
-		reg < HARD_REGNO_NREGS (REGNO (parm_rtx), GET_MODE (parm_rtx));
-		reg++)
+	   for (reg = 0; reg < REG_NREGS (parm_rtx); reg++)
 	     if (!call_used_regs[reg + REGNO (parm_rtx)])
  	       return true;
 	 }
@@ -13258,9 +13256,7 @@ s390_call_saved_register_used (tree call_expr)
 
 	       gcc_assert (REG_P (r));
 
-	       for (reg = 0;
-		    reg < HARD_REGNO_NREGS (REGNO (r), GET_MODE (r));
-		    reg++)
+	       for (reg = 0; reg < REG_NREGS (r); reg++)
 		 if (!call_used_regs[reg + REGNO (r)])
 		   return true;
 	     }

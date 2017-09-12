@@ -1,4 +1,38 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* caller-save.c (add_used_regs): Use REG_NREGS instead of
+	hard_regno_nregs.
+	* config/aarch64/aarch64.c (aarch64_split_combinev16qi): Likewise.
+	* config/arm/arm.c (output_move_neon): Likewise.
+	(arm_attr_length_move_neon): Likewise.
+	(neon_split_vcombine): Likewise.
+	* config/c6x/c6x.c (c6x_mark_reg_read): Likewise.
+	(c6x_mark_reg_written): Likewise.
+	(c6x_dwarf_register_span): Likewise.
+	* config/i386/i386.c (ix86_save_reg): Likewise.
+	* config/ia64/ia64.c (mark_reg_gr_used_mask): Likewise.
+	(rws_access_reg): Likewise.
+	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
+	* mode-switching.c (create_pre_exit): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	(add_removable_extension): Likewise.
+	* regcprop.c (find_oldest_value_reg): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* reload.c (reload_inner_reg_of_subreg): Likewise.
+	(push_reload): Likewise.
+	(combine_reloads): Likewise.
+	(find_dummy_reload): Likewise.
+	(reload_adjust_reg_for_mode): Likewise.
+	* reload1.c (find_reload_regs): Likewise.
+	(forget_old_reloads_1): Likewise.
+	(reload_reg_free_for_value_p): Likewise.
+	(reload_adjust_reg_for_temp): Likewise.
+	(emit_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* sel-sched.c (choose_best_reg_1): Likewise.
+	(choose_best_pseudo_reg): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood <david.sherwood@arm.com>
 

@@ -2653,7 +2653,7 @@ mark_reg_gr_used_mask (rtx reg, void *data ATTRIBUTE_UNUSED)
   unsigned int regno = REGNO (reg);
   if (regno < 32)
     {
-      unsigned int i, n = hard_regno_nregs[regno][GET_MODE (reg)];
+      unsigned int i, n = REG_NREGS (reg);
       for (i = 0; i < n; ++i)
 	current_frame_info.gr_used_mask |= 1 << (regno + i);
     }
@@ -6399,7 +6399,7 @@ static int
 rws_access_reg (rtx reg, struct reg_flags flags, int pred)
 {
   int regno = REGNO (reg);
-  int n = HARD_REGNO_NREGS (REGNO (reg), GET_MODE (reg));
+  int n = REG_NREGS (reg);
 
   if (n == 1)
     return rws_access_regno (regno, flags, pred);

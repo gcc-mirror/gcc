@@ -12719,7 +12719,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
       if (reg)
 	{
 	  unsigned int i = REGNO (reg);
-	  unsigned int nregs = hard_regno_nregs[i][GET_MODE (reg)];
+	  unsigned int nregs = REG_NREGS (reg);
 	  while (nregs-- > 0)
 	    if ((i + nregs) == regno)
 	      return false;
@@ -12728,7 +12728,7 @@ ix86_save_reg (unsigned int regno, bool maybe_eh_return, bool ignore_outlined)
 	  if (reg)
 	    {
 	      i = REGNO (reg);
-	      nregs = hard_regno_nregs[i][GET_MODE (reg)];
+	      nregs = REG_NREGS (reg);
 	      while (nregs-- > 0)
 		if ((i + nregs) == regno)
 		  return false;

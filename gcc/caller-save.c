@@ -1354,8 +1354,7 @@ add_used_regs (rtx *loc, void *data)
 	{
 	  unsigned int regno = REGNO (x);
 	  if (HARD_REGISTER_NUM_P (regno))
-	    bitmap_set_range ((regset) data, regno,
-			      hard_regno_nregs[regno][GET_MODE (x)]);
+	    bitmap_set_range ((regset) data, regno, REG_NREGS (x));
 	  else
 	    gcc_checking_assert (reg_renumber[regno] < 0);
 	}
