@@ -812,17 +812,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
   1,      1,      0,      0,						\
 }
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the SH all but the XD regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-   (XD_REGISTER_P (REGNO) \
-    ? ((GET_MODE_SIZE (MODE) + (2*UNITS_PER_WORD - 1)) / (2*UNITS_PER_WORD)) \
-    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* Specify the modes required to caller save a given hard regno.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)	\
   sh_hard_regno_caller_save_mode ((REGNO), (NREGS), (MODE))

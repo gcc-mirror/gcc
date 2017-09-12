@@ -236,9 +236,6 @@ extern const char * const *h8_reg_names;
 /* r0 r1 r2 r3 r4 r5 r6 r7 mac ap rap  fp */	\
   { 2, 3, 0, 1, 4, 5, 6, 8,  7, 9, 10, 11 }
 
-#define HARD_REGNO_NREGS(REGNO, MODE)		\
-  h8300_hard_regno_nregs ((REGNO), (MODE))
-
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register */
 

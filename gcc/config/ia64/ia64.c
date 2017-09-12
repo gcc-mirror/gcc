@@ -336,6 +336,7 @@ static section * ia64_hpux_function_section (tree, enum node_frequency,
 static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 					      const unsigned char *sel);
 
+static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool ia64_modes_tieable_p (machine_mode, machine_mode);
 
@@ -659,6 +660,8 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 0
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS ia64_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK ia64_hard_regno_mode_ok
 
@@ -4261,6 +4264,30 @@ ia64_hard_regno_rename_ok (int from, int to)
     return (from & 1) == (to & 1);
 
   return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.
+
+   ??? We say that BImode PR values require two registers.  This allows us to
+   easily store the normal and inverted values.  We use CCImode to indicate
+   a single predicate register.  */
+
+static unsigned int
+ia64_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == PR_REG (0) && mode == DImode)
+    return 64;
+  if (PR_REGNO_P (regno) && (mode) == BImode)
+    return 2;
+  if ((PR_REGNO_P (regno) || GR_REGNO_P (regno)) && mode == CCImode)
+    return 1;
+  if (FR_REGNO_P (regno) && mode == XFmode)
+    return 1;
+  if (FR_REGNO_P (regno) && mode == RFmode)
+    return 1;
+  if (FR_REGNO_P (regno) && mode == XCmode)
+    return 2;
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

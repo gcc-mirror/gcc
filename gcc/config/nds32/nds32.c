@@ -2746,20 +2746,13 @@ nds32_init_expanders (void)
 
 /* -- How Values Fit in Registers.  */
 
-int
-nds32_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
-			machine_mode mode)
-{
-  return ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD);
-}
-
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
 nds32_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Restrict double-word quantities to even register pairs.  */
-  if (HARD_REGNO_NREGS (regno, mode) == 1
+  if (targetm.hard_regno_nregs (regno, mode) == 1
       || !((regno) & 1))
     return true;
 

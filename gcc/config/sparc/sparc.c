@@ -676,6 +676,7 @@ static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static unsigned int sparc_min_arithmetic_precision (void);
+static unsigned int sparc_hard_regno_nregs (unsigned int, machine_mode);
 static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 
@@ -905,6 +906,8 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS sparc_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK sparc_hard_regno_mode_ok
 
@@ -13147,6 +13150,28 @@ sparc_regmode_natural_size (machine_mode mode)
     }
 
   return size;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.
+
+   On SPARC, ordinary registers hold 32 bits worth; this means both
+   integer and floating point registers.  On v9, integer regs hold 64
+   bits worth; floating point regs hold 32 bits worth (this includes the
+   new fp regs as even the odd ones are included in the hard register
+   count).  */
+
+static unsigned int
+sparc_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == SPARC_GSR_REG)
+    return 1;
+  if (TARGET_ARCH64)
+    {
+      if (SPARC_INT_REG_P (regno) || regno == FRAME_POINTER_REGNUM)
+	return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+      return CEIL (GET_MODE_SIZE (mode), 4);
+    }
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.

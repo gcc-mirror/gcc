@@ -164,18 +164,6 @@ extern const struct real_format pdp11_d_format;
  0, 0, 0, 0, 0, 0, 1, 1 }
 
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-*/
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-((REGNO <= PC_REGNUM)?							\
-    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)	\
-    :1)
-    
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

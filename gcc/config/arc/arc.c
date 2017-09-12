@@ -590,6 +590,8 @@ static void arc_finalize_pic (void);
 #undef TARGET_DWARF_REGISTER_SPAN
 #define TARGET_DWARF_REGISTER_SPAN arc_dwarf_register_span
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS arc_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK arc_hard_regno_mode_ok
 
@@ -1875,6 +1877,19 @@ arc_conditional_register_usage (void)
 
     arc_hard_regno_modes[ACC_REG_FIRST] = D_MODES;
   }
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+arc_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (GET_MODE_SIZE (mode) == 16
+      && regno >= ARC_FIRST_SIMD_VR_REG
+      && regno <= ARC_LAST_SIMD_VR_REG)
+    return 1;
+
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

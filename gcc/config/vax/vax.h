@@ -135,14 +135,6 @@ along with GCC; see the file COPYING3.  If not see
    Aside from that, you can include as many other registers as you like.  */
 #define CALL_USED_REGISTERS {1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-   On the VAX, all registers are one word long.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

@@ -26,13 +26,6 @@
 extern void nds32_init_expanders (void);
 
 
-/* Register Usage.  */
-
-/* -- How Values Fit in Registers.  */
-
-extern int nds32_hard_regno_nregs (int, machine_mode);
-
-
 /* Register Classes.  */
 
 extern enum reg_class nds32_regno_reg_class (int);

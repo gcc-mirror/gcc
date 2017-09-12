@@ -1067,9 +1067,9 @@ aarch64_array_mode_supported_p (machine_mode mode,
   return false;
 }
 
-/* Implement HARD_REGNO_NREGS.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-int
+static unsigned int
 aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
 {
   switch (aarch64_regno_regclass (regno))
@@ -15686,6 +15686,8 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 4
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS aarch64_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK aarch64_hard_regno_mode_ok
 

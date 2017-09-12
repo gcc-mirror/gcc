@@ -496,7 +496,7 @@ struct GTY(()) machine_function
         CONST_OK_FOR_CONSTRAINT_P((x), 'O', "On")
 
 #define REGNO_PAIR_OK(REGNO, MODE)                               \
-  (HARD_REGNO_NREGS ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
+  (s390_hard_regno_nregs ((REGNO), (MODE)) == 1 || !((REGNO) & 1))
 
 /* That's the read ahead of the dynamic branch prediction unit in
    bytes on a z10 (or higher) CPU.  */
@@ -10383,7 +10383,32 @@ s390_optimize_nonescaping_tx (void)
   return;
 }
 
-/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  Because all registers in a class
+   have the same size, this is equivalent to CLASS_MAX_NREGS.  */
+
+static unsigned int
+s390_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  return s390_class_max_nregs (REGNO_REG_CLASS (regno), mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   Integer modes <= word size fit into any GPR.
+   Integer modes > word size fit into successive GPRs, starting with
+   an even-numbered register.
+   SImode and DImode fit into FPRs as well.
+
+   Floating point modes <= word size fit into any FPR or GPR.
+   Floating point modes > word size (i.e. DFmode on 32-bit) fit
+   into any FPR, or an even-odd GPR pair.
+   TFmode fits only into an even-odd FPR pair.
+
+   Complex floating point modes fit either into two FPRs, or into
+   successive GPRs (again starting with an even number).
+   TCmode fits only into two successive even-odd FPR pairs.
+
+   Condition code modes fit only into the CC register.  */
 
 static bool
 s390_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
@@ -15977,6 +16002,8 @@ s390_asan_shadow_offset (void)
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK s390_hard_regno_scratch_ok
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS s390_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK s390_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P

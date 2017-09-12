@@ -1073,25 +1073,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   Actually there are no two word move instructions for consecutive
-   registers.  And only registers 0-3 may have mov byte instructions
-   applied to them.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (GENERAL_REGNO_P (REGNO)						\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : ((MODE) == XCmode						\
-	 ? (TARGET_64BIT ? 4 : 6)					\
-	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)))		\
-   : (COMPLEX_MODE_P (MODE) ? 2 :					\
-      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1)))
-
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   (TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT				\
    && GENERAL_REGNO_P (REGNO)						\

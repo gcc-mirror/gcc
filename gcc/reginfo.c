@@ -509,7 +509,7 @@ init_reg_modes_target (void)
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     for (j = 0; j < MAX_MACHINE_MODE; j++)
       this_target_regs->x_hard_regno_nregs[i][j]
-	= HARD_REGNO_NREGS (i, (machine_mode)j);
+	= targetm.hard_regno_nregs (i, (machine_mode) j);
 
   for (i = 0; i < FIRST_PSEUDO_REGISTER; i++)
     {

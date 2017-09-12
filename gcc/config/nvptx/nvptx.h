@@ -95,8 +95,6 @@
 #define FIXED_REGISTERS	    { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define CALL_USED_REGISTERS { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
-#define HARD_REGNO_NREGS(REG, MODE)		\
-  ((void)(REG), (void)(MODE), 1)
 #define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS)	\
   ((void)(M1), (void)(M2), (void)(CLS), true)
 

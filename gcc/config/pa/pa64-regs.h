@@ -137,7 +137,7 @@ along with GCC; see the file COPYING3.  If not see
    WORD_SIZE bits.  Note that SCmode values are placed in a single FPR.
    Thus, any patterns defined to operate on these values would have to
    use the 32-bit addressability of the FPR registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
+#define PA_HARD_REGNO_NREGS(REGNO, MODE)				\
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
 
 /* These are the valid FP modes.  */

@@ -314,6 +314,7 @@ static unsigned int arm_elf_section_type_flags (tree decl, const char *name,
 						int reloc);
 static void arm_expand_divmod_libfunc (rtx, machine_mode, rtx, rtx, rtx *, rtx *);
 static opt_scalar_float_mode arm_floatn_mode (int, bool);
+static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
 
@@ -785,6 +786,8 @@ static const struct attribute_spec arm_attribute_table[] =
 #undef TARGET_FIXED_CONDITION_CODE_REGS
 #define TARGET_FIXED_CONDITION_CODE_REGS arm_fixed_condition_code_regs
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS arm_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK arm_hard_regno_mode_ok
 
@@ -23346,6 +23349,21 @@ thumb2_asm_output_opcode (FILE * stream)
 		  arm_condition_codes[arm_current_cc]);
       arm_condexec_mask = 0;
     }
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  On the ARM core regs are
+   UNITS_PER_WORD bytes wide.  */
+static unsigned int
+arm_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_32BIT
+      && regno > PC_REGNUM
+      && regno != FRAME_POINTER_REGNUM
+      && regno != ARG_POINTER_REGNUM
+      && !IS_VFP_REGNUM (regno))
+    return 1;
+
+  return ARM_NUM_REGS (mode);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

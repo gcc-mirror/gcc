@@ -321,13 +321,6 @@ extern int leaf_function;
 #define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define ACC_REG_P(REGNO) ((unsigned) ((REGNO) - ACC_REG_FIRST) < ACC_REG_NUM)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REG_P (REGNO) ?							\
-	((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) : \
-	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
 

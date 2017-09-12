@@ -1959,8 +1959,6 @@ FP_ASM_SPEC "\
    : COP3_REG_P (REGNO) ? '3' : '?')
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
-
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG)				\
   mips_hard_regno_rename_ok (OLD_REG, NEW_REG)
 

@@ -2114,6 +2114,18 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+bfin_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (mode == PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 1;
+  if (mode == V2PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 2;
+  return CLASS_MAX_NREGS (GENERAL_REGS, mode);
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.
 
    Do not allow to store a value in REG_CC for any mode.
@@ -5862,6 +5874,8 @@ bfin_conditional_register_usage (void)
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P bfin_can_use_doloop_p
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS bfin_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK bfin_hard_regno_mode_ok
 

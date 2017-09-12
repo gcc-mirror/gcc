@@ -187,6 +187,7 @@ static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 static enum flt_eval_method
 m68k_excess_precision (enum excess_precision_type);
+static unsigned int m68k_hard_regno_nregs (unsigned int, machine_mode);
 static bool m68k_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 
@@ -336,6 +337,8 @@ static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 128
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS m68k_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK m68k_hard_regno_mode_ok
 
@@ -5176,6 +5179,20 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
     return 0;
 
   return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.
+
+   On the m68k, ordinary registers hold 32 bits worth;
+   for the 68881 registers, a single register is always enough for
+   anything that can be stored in them at all.  */
+
+static unsigned int
+m68k_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno >= 16)
+    return GET_MODE_NUNITS (mode);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  On the 68000, we let the cpu

@@ -1202,11 +1202,6 @@ enum data_align { align_abi, align_opt, align_both };
   (INT_REGNO_P (N) || ALTIVEC_REGNO_P (N)				\
    || (TARGET_VSX && FP_REGNO_P (N)))					\
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
-
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
    enough space to account for vectors in FP regs.  However, TFmode/TDmode
    should not use VSX instructions to do a caller save. */

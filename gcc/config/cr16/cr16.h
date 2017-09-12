@@ -197,12 +197,8 @@ while (0)
 
 /* Returns 1 if the register is longer than word size, 0 otherwise.  */
 #define LONG_REG_P(REGNO)                                                    \
-  (HARD_REGNO_NREGS (REGNO, GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
-
-#define HARD_REGNO_NREGS(REGNO, MODE)                                         \
- ((REGNO >= CR16_FIRST_DWORD_REGISTER)                                        \
-  ? ((GET_MODE_SIZE (MODE) + CR16_UNITS_PER_DWORD - 1) / CR16_UNITS_PER_DWORD)\
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD       - 1) / UNITS_PER_WORD))
+  (targetm.hard_regno_nregs (REGNO,                                          \
+			     GET_MODE_WIDER_MODE (word_mode).require ()) == 1)
 
 #define NOTICE_UPDATE_CC(EXP, INSN) \
    notice_update_cc ((EXP))

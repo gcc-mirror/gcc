@@ -238,15 +238,6 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 /*}}}*/ 
-/*{{{  How Values Fit in Registers.  */ 
-
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) 			\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/*}}}*/ 
 /*{{{  Register Classes.  */ 
 
 /* An enumeral type that must be defined with all the register class names as
@@ -345,16 +336,7 @@ enum reg_class
    will reload one or both registers only if neither labeling works.  */
 #define REGNO_OK_FOR_INDEX_P(NUM) 1
 
-/* A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact, the value
-   of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be the maximum value of
-   `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.  */
-#define CLASS_MAX_NREGS(CLASS, MODE) HARD_REGNO_NREGS (0, MODE)
+#define CLASS_MAX_NREGS(CLASS, MODE) targetm.hard_regno_nregs (0, MODE)
 
 /*}}}*/ 
 /*{{{  Basic Stack Layout.  */ 

@@ -380,12 +380,6 @@ struct GTY(()) machine_function
 /* The default one.  */
 #define REG_ALLOC_ORDER MMIX_MMIXWARE_ABI_REG_ALLOC_ORDER
 
-/* Node: Values in Registers */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)            	\
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  	\
-    / UNITS_PER_WORD)
-
 /* Node: Leaf Functions */
 /* (empty) */
 
@@ -438,7 +432,7 @@ enum reg_class
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
  mmix_secondary_reload_class (CLASS, MODE, X, 0)
 
-#define CLASS_MAX_NREGS(CLASS, MODE) HARD_REGNO_NREGS (CLASS, MODE)
+#define CLASS_MAX_NREGS(CLASS, MODE) targetm.hard_regno_nregs (CLASS, MODE)
 
 
 /* Node: Frame Layout */

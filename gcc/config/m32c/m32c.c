@@ -539,11 +539,11 @@ m32c_conditional_register_usage (void)
 
 /* How Values Fit in Registers */
 
-/* Implements HARD_REGNO_NREGS.  This is complicated by the fact that
+/* Implements TARGET_HARD_REGNO_NREGS.  This is complicated by the fact that
    different registers are different sizes from each other, *and* may
    be different sizes in different chip families.  */
-static int
-m32c_hard_regno_nregs_1 (int regno, machine_mode mode)
+static unsigned int
+m32c_hard_regno_nregs_1 (unsigned int regno, machine_mode mode)
 {
   if (regno == FLG_REGNO && mode == CCmode)
     return 1;
@@ -568,10 +568,10 @@ m32c_hard_regno_nregs_1 (int regno, machine_mode mode)
   return 0;
 }
 
-int
-m32c_hard_regno_nregs (int regno, machine_mode mode)
+static unsigned int
+m32c_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
-  int rv = m32c_hard_regno_nregs_1 (regno, mode);
+  unsigned int rv = m32c_hard_regno_nregs_1 (regno, mode);
   return rv ? rv : 1;
 }
 
@@ -4489,6 +4489,8 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 #undef TARGET_FRAME_POINTER_REQUIRED
 #define TARGET_FRAME_POINTER_REQUIRED hook_bool_void_true
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS m32c_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK m32c_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P

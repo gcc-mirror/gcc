@@ -441,15 +441,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,		\
   27, 28, 29, 30, 31, 63}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) == 16 \
-  && REGNO >= ARC_FIRST_SIMD_VR_REG && REGNO <= ARC_LAST_SIMD_VR_REG) ? 1 \
- : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Internal macros to classify a register number as to whether it's a
    general purpose register for compact insns (r0-r3,r12-r15), or
    stack pointer (r28).  */

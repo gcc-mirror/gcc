@@ -121,9 +121,6 @@
       66						\
 }
 
-#define HARD_REGNO_NREGS(REGNO, MODE)	\
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Register that holds an address into the text segment that can be
    used by pic code.  */
 #define TILEPRO_PIC_TEXT_LABEL_REGNUM (flag_pic ? 50 : INVALID_REGNUM)

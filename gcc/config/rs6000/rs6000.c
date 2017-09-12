@@ -1967,6 +1967,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_OPTION_FUNCTION_VERSIONS
 #define TARGET_OPTION_FUNCTION_VERSIONS common_function_versions
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS rs6000_hard_regno_nregs_hook
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK rs6000_hard_regno_mode_ok
 
@@ -2139,6 +2141,14 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
      and it must be able to fit within the register set.  */
 
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+rs6000_hard_regno_nregs_hook (unsigned int regno, machine_mode mode)
+{
+  return rs6000_hard_regno_nregs[mode][regno];
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

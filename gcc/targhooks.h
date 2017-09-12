@@ -165,6 +165,7 @@ extern int default_reloc_rw_mask (void);
 extern tree default_mangle_decl_assembler_name (tree, tree);
 extern tree default_emutls_var_fields (tree, tree *);
 extern tree default_emutls_var_init (tree, tree, tree);
+extern unsigned int default_hard_regno_nregs (unsigned int, machine_mode);
 extern bool default_hard_regno_scratch_ok (unsigned int);
 extern bool default_mode_dependent_address_p (const_rtx, addr_space_t);
 extern bool default_target_option_valid_attribute_p (tree, tree, tree, int);

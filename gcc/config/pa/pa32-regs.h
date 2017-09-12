@@ -166,7 +166,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    point registers are 64 bits wide.  Snake fp regs are treated as
    32 bits wide since the left and right parts are independently
    accessible.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
+#define PA_HARD_REGNO_NREGS(REGNO, MODE)				\
   (FP_REGNO_P (REGNO)							\
    ? (!TARGET_PA_11							\
       ? COMPLEX_MODE_P (MODE) ? 2 : 1					\

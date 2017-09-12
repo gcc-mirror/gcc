@@ -598,22 +598,6 @@ while (0)
 
 /* How Values Fit in Registers */
 
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.  */
-
-/* ??? We say that BImode PR values require two registers.  This allows us to
-   easily store the normal and inverted values.  We use CCImode to indicate
-   a single predicate register.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
-   : PR_REGNO_P (REGNO) && (MODE) == BImode ? 2				\
-   : (PR_REGNO_P (REGNO) || GR_REGNO_P (REGNO)) && (MODE) == CCImode ? 1\
-   : FR_REGNO_P (REGNO) && (MODE) == XFmode ? 1				\
-   : FR_REGNO_P (REGNO) && (MODE) == RFmode ? 1				\
-   : FR_REGNO_P (REGNO) && (MODE) == XCmode ? 2				\
-   : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Specify the modes required to caller save a given hard regno.
    We need to ensure floating pt regs are not saved as DImode.  */
 
@@ -803,7 +787,7 @@ enum reg_class
 
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
-   This is closely related to the macro `HARD_REGNO_NREGS'.  */
+   This is closely related to TARGET_HARD_REGNO_NREGS.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((MODE) == BImode && (CLASS) == PR_REGS ? 2			\
