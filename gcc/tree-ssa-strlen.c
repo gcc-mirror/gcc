@@ -45,6 +45,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-chkp.h"
 #include "tree-hash-traits.h"
 #include "builtins.h"
+#include "target.h"
 
 /* A vector indexed by SSA_NAME_VERSION.  0 means unknown, positive value
    is an index into strinfo vector, negative value stands for
@@ -2124,7 +2125,7 @@ handle_builtin_memcmp (gimple_stmt_iterator *gsi)
       unsigned align = MIN (align1, align2);
       scalar_int_mode mode;
       if (int_mode_for_size (leni, 1).exists (&mode)
-	  && (align >= leni || !SLOW_UNALIGNED_ACCESS (mode, align)))
+	  && (align >= leni || !targetm.slow_unaligned_access (mode, align)))
 	{
 	  location_t loc = gimple_location (stmt2);
 	  tree type, off;

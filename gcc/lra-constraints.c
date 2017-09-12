@@ -1557,9 +1557,10 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
 		&& WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
-		    && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (subst)))
+		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
 		  || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
-		      && SLOW_UNALIGNED_ACCESS (innermode, MEM_ALIGN (reg)))))
+		      && targetm.slow_unaligned_access (innermode,
+							MEM_ALIGN (reg)))))
 	    return true;
 
 	  *curr_id->operand_loc[nop] = operand;

@@ -730,7 +730,7 @@ alignment_for_piecewise_move (unsigned int max_pieces, unsigned int align)
 	{
 	  tmode = mode_iter.require ();
 	  if (GET_MODE_SIZE (tmode) > max_pieces
-	      || SLOW_UNALIGNED_ACCESS (tmode, align))
+	      || targetm.slow_unaligned_access (tmode, align))
 	    break;
 	  xmode = tmode;
 	}
@@ -2179,7 +2179,7 @@ emit_group_load_1 (rtx *tmps, rtx dst, rtx orig_src, tree type, int ssize)
 
       /* Optimize the access just a bit.  */
       if (MEM_P (src)
-	  && (! SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (src))
+	  && (! targetm.slow_unaligned_access (mode, MEM_ALIGN (src))
 	      || MEM_ALIGN (src) >= GET_MODE_ALIGNMENT (mode))
 	  && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	  && bytelen == GET_MODE_SIZE (mode))
@@ -2584,7 +2584,7 @@ emit_group_store (rtx orig_dst, rtx src, tree type ATTRIBUTE_UNUSED, int ssize)
 
       /* Optimize the access just a bit.  */
       else if (MEM_P (dest)
-	       && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (dest))
+	       && (!targetm.slow_unaligned_access (mode, MEM_ALIGN (dest))
 		   || MEM_ALIGN (dest) >= GET_MODE_ALIGNMENT (mode))
 	       && bytepos * BITS_PER_UNIT % GET_MODE_ALIGNMENT (mode) == 0
 	       && bytelen == GET_MODE_SIZE (mode))
@@ -2653,7 +2653,7 @@ copy_blkmode_from_reg (rtx target, rtx srcreg, tree type)
 
   /* We can use a single move if we have an exact mode for the size.  */
   else if (MEM_P (target)
-	   && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target))
+	   && (!targetm.slow_unaligned_access (mode, MEM_ALIGN (target))
 	       || MEM_ALIGN (target) >= GET_MODE_ALIGNMENT (mode))
 	   && bytes == GET_MODE_SIZE (mode))
   {
@@ -4348,7 +4348,7 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
 	  /* Here we avoid the case of a structure whose weak alignment
 	     forces many pushes of a small amount of data,
 	     and such small pushes do rounding that causes trouble.  */
-	  && ((! SLOW_UNALIGNED_ACCESS (word_mode, align))
+	  && ((!targetm.slow_unaligned_access (word_mode, align))
 	      || align >= BIGGEST_ALIGNMENT
 	      || (PUSH_ROUNDING (align / BITS_PER_UNIT)
 		  == (align / BITS_PER_UNIT)))
@@ -4947,7 +4947,7 @@ expand_assignment (tree to, tree from, bool nontemporal)
 	  < GET_MODE_ALIGNMENT (mode))
       && (((icode = optab_handler (movmisalign_optab, mode))
 	   != CODE_FOR_nothing)
-	  || SLOW_UNALIGNED_ACCESS (mode, align)))
+	  || targetm.slow_unaligned_access (mode, align)))
     {
       rtx reg, mem;
 
@@ -6783,7 +6783,7 @@ store_field (rtx target, HOST_WIDE_INT bitsize, HOST_WIDE_INT bitpos,
       || (mode != BLKmode
 	  && ((((MEM_ALIGN (target) < GET_MODE_ALIGNMENT (mode))
 		|| bitpos % GET_MODE_ALIGNMENT (mode))
-	       && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (target)))
+	       && targetm.slow_unaligned_access (mode, MEM_ALIGN (target)))
 	      || (bitpos % BITS_PER_UNIT != 0)))
       || (bitsize >= 0 && mode != BLKmode
 	  && GET_MODE_BITSIZE (mode) > bitsize)
@@ -10229,7 +10229,7 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		expand_insn (icode, 2, ops);
 		temp = ops[0].value;
 	      }
-	    else if (SLOW_UNALIGNED_ACCESS (mode, align))
+	    else if (targetm.slow_unaligned_access (mode, align))
 	      temp = extract_bit_field (temp, GET_MODE_BITSIZE (mode),
 					0, TYPE_UNSIGNED (TREE_TYPE (exp)),
 					(modifier == EXPAND_STACK_PARM
@@ -10663,7 +10663,8 @@ expand_expr_real_1 (tree exp, rtx target, machine_mode tmode,
 		     && ((modifier == EXPAND_CONST_ADDRESS
 			  || modifier == EXPAND_INITIALIZER)
 			 ? STRICT_ALIGNMENT
-			 : SLOW_UNALIGNED_ACCESS (mode1, MEM_ALIGN (op0))))
+			 : targetm.slow_unaligned_access (mode1,
+							  MEM_ALIGN (op0))))
 		    || (bitpos % BITS_PER_UNIT != 0)))
 	    /* If the type and the field are a constant size and the
 	       size of the type isn't the same size as the bitfield,

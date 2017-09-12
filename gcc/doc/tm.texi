@@ -6386,23 +6386,22 @@ may eliminate subsequent memory access if subsequent accesses occur to
 other fields in the same word of the structure, but to different bytes.
 @end defmac
 
-@defmac SLOW_UNALIGNED_ACCESS (@var{mode}, @var{alignment})
-Define this macro to be the value 1 if memory accesses described by the
+@deftypefn {Target Hook} bool TARGET_SLOW_UNALIGNED_ACCESS (machine_mode @var{mode}, unsigned int @var{align})
+This hook returns true if memory accesses described by the
 @var{mode} and @var{alignment} parameters have a cost many times greater
-than aligned accesses, for example if they are emulated in a trap
-handler.  This macro is invoked only for unaligned accesses, i.e. when
+than aligned accesses, for example if they are emulated in a trap handler.
+This hook is invoked only for unaligned accesses, i.e. when
 @code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.
 
-When this macro is nonzero, the compiler will act as if
-@code{STRICT_ALIGNMENT} were nonzero when generating code for block
+When this hook returns true, the compiler will act as if
+@code{STRICT_ALIGNMENT} were true when generating code for block
 moves.  This can cause significantly more instructions to be produced.
-Therefore, do not set this macro nonzero if unaligned accesses only add a
-cycle or two to the time for a memory access.
+Therefore, do not make this hook return true if unaligned accesses only
+add a cycle or two to the time for a memory access.
 
-If the value of this macro is always zero, it need not be defined.  If
-this macro is defined, it should produce a nonzero value when
-@code{STRICT_ALIGNMENT} is nonzero.
-@end defmac
+The hook must return true whenever @code{STRICT_ALIGNMENT} is true.
+The default implementation returns @code{STRICT_ALIGNMENT}.
+@end deftypefn
 
 @defmac MOVE_RATIO (@var{speed})
 The threshold of number of scalar memory-to-memory move insns, @emph{below}

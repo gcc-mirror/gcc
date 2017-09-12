@@ -3135,8 +3135,8 @@ expand_call (tree exp, rtx target, int ignore)
 	    && target
 	    && MEM_P (target)
 	    && !(MEM_ALIGN (target) < TYPE_ALIGN (rettype)
-		 && SLOW_UNALIGNED_ACCESS (TYPE_MODE (rettype),
-					   MEM_ALIGN (target))))
+		 && targetm.slow_unaligned_access (TYPE_MODE (rettype),
+						   MEM_ALIGN (target))))
 	  structure_value_addr = XEXP (target, 0);
 	else
 	  {
