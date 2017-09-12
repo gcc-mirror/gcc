@@ -2022,7 +2022,6 @@ package body Sem_Util is
            or else In_Generic_Actual (Expr))
         and then (Is_Class_Wide_Type (Etype (Expr))
                    or else Is_Dynamically_Tagged (Expr))
-        and then Is_Tagged_Type (Typ)
         and then not Is_Class_Wide_Type (Typ)
       then
          Error_Msg_N ("dynamically tagged expression not allowed!", Expr);

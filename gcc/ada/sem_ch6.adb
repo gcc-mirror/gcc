@@ -741,6 +741,21 @@ package body Sem_Ch6 is
          end;
       end if;
 
+      --  Check incorrect use of dynamically tagged expression. This doesn't
+      --  fall out automatically when analyzing the generated function body,
+      --  because Check_Dynamically_Tagged_Expression deliberately ignores
+      --  nodes that don't come from source.
+
+      if Present (Def_Id)
+        and then Nkind (Def_Id) in N_Has_Etype
+        and then Is_Tagged_Type (Etype (Def_Id))
+      then
+         Check_Dynamically_Tagged_Expression
+           (Expr => Expr,
+            Typ  => Etype (Def_Id),
+            Related_Nod => Original_Node (N));
+      end if;
+
       --  If the return expression is a static constant, we suppress warning
       --  messages on unused formals, which in most cases will be noise.
 
