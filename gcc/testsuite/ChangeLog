@@ -1,3 +1,9 @@
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* gcc.target/powerpc/pr82112.c: New test.
+	* g++.dg/ext/altivec-18.C: New test.
+
 2017-09-12  Martin Liska  <mliska@suse.cz>
 
 	PR testsuite/82114
