@@ -220,6 +220,8 @@ static const struct attribute_spec cr16_attribute_table[] = {
 #undef TARGET_ASM_UNALIGNED_DI_OP
 #define TARGET_ASM_UNALIGNED_DI_OP 	TARGET_ASM_ALIGNED_DI_OP
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS		cr16_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK	cr16_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
@@ -466,6 +468,16 @@ cr16_regno_reg_class (int regno)
     return LONG_REGS;
 
   return NO_REGS;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+cr16_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno >= CR16_FIRST_DWORD_REGISTER)
+    return CEIL (GET_MODE_SIZE (mode), CR16_UNITS_PER_DWORD);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  On the CR16 architecture, all
@@ -1371,7 +1383,7 @@ cr16_memory_move_cost (machine_mode mode,
 {
   /* One LD or ST takes twice the time of a simple reg-reg move.  */
   if (reg_classes_intersect_p (rclass, GENERAL_REGS))
-    return (4 * HARD_REGNO_NREGS (0, mode));
+    return (4 * cr16_hard_regno_nregs (0, mode));
   else
     return (100);
 }

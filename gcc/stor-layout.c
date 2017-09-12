@@ -2793,7 +2793,7 @@ bit_field_mode_iterator::next_mode (scalar_int_mode *out_mode)
 
       /* Stop if the mode requires too much alignment.  */
       if (GET_MODE_ALIGNMENT (mode) > m_align
-	  && SLOW_UNALIGNED_ACCESS (mode, m_align))
+	  && targetm.slow_unaligned_access (mode, m_align))
 	break;
 
       *out_mode = mode;

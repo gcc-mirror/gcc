@@ -676,6 +676,7 @@ static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
 static unsigned int sparc_min_arithmetic_precision (void);
+static unsigned int sparc_hard_regno_nregs (unsigned int, machine_mode);
 static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 
@@ -905,6 +906,8 @@ char sparc_hard_reg_printed[8];
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS sparc_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK sparc_hard_regno_mode_ok
 
@@ -2159,8 +2162,24 @@ sparc_emit_set_const32 (rtx op0, rtx op1)
 void
 sparc_emit_set_symbolic_const64 (rtx op0, rtx op1, rtx temp)
 {
-  rtx temp1, temp2, temp3, temp4, temp5;
+  rtx cst, temp1, temp2, temp3, temp4, temp5;
   rtx ti_temp = 0;
+
+  /* Deal with too large offsets.  */
+  if (GET_CODE (op1) == CONST
+      && GET_CODE (XEXP (op1, 0)) == PLUS
+      && CONST_INT_P (cst = XEXP (XEXP (op1, 0), 1))
+      && trunc_int_for_mode (INTVAL (cst), SImode) != INTVAL (cst))
+    {
+      gcc_assert (!temp);
+      temp1 = gen_reg_rtx (DImode);
+      temp2 = gen_reg_rtx (DImode);
+      sparc_emit_set_const64 (temp2, cst);
+      sparc_emit_set_symbolic_const64 (temp1, XEXP (XEXP (op1, 0), 0),
+				       NULL_RTX);
+      emit_insn (gen_rtx_SET (op0, gen_rtx_PLUS (DImode, temp1, temp2)));
+      return;
+    }
 
   if (temp && GET_MODE (temp) == TImode)
     {
@@ -6163,7 +6182,9 @@ output_return (rtx_insn *insn)
 
       if (final_sequence)
 	{
-	  rtx delay, pat;
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
 
 	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
@@ -6178,9 +6199,15 @@ output_return (rtx_insn *insn)
 	  else
 	    {
 	      output_asm_insn ("jmp\t%%i7+%)", NULL);
-	      output_restore (pat);
+
+	      /* We're going to output the insn in the delay slot manually.
+		 Make sure to output its source location first.  */
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
+	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	      output_restore (pat);
 	    }
 	}
       else
@@ -6236,13 +6263,23 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 
       if (final_sequence)
 	{
-	  rtx_insn *delay = NEXT_INSN (insn);
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
+
+	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
 
-	  output_restore (PATTERN (delay));
+	  pat = PATTERN (delay);
 
+	  /* We're going to output the insn in the delay slot manually.
+	     Make sure to output its source location first.  */
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
+	  final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	  INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	  output_restore (pat);
 	}
       else
 	output_restore (NULL_RTX);
@@ -13131,6 +13168,28 @@ sparc_regmode_natural_size (machine_mode mode)
     }
 
   return size;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.
+
+   On SPARC, ordinary registers hold 32 bits worth; this means both
+   integer and floating point registers.  On v9, integer regs hold 64
+   bits worth; floating point regs hold 32 bits worth (this includes the
+   new fp regs as even the odd ones are included in the hard register
+   count).  */
+
+static unsigned int
+sparc_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == SPARC_GSR_REG)
+    return 1;
+  if (TARGET_ARCH64)
+    {
+      if (SPARC_INT_REG_P (regno) || regno == FRAME_POINTER_REGNUM)
+	return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+      return CEIL (GET_MODE_SIZE (mode), 4);
+    }
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.

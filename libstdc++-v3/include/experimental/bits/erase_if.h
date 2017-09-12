@@ -32,9 +32,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 #include <experimental/bits/lfts_config.h>
 
 namespace std

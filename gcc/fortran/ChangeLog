@@ -1,3 +1,208 @@
+2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	PR fortran/82168
+	* decl.c (variable_decl): Check pdt template components for
+	appearance of KIND/LEN components in the type parameter name
+	list, that components corresponding to type parameters have
+	either KIND or LEN attributes and that KIND or LEN components
+	are scalar. Copy the initializer to the parameter value.
+	(gfc_get_pdt_instance): Add a label 'error_return' and follow
+	it with repeated code, while replacing this code with a jump.
+	Check if a parameter appears as a component in the template.
+	Make sure that the parameter expressions are integer. Validate
+	KIND expressions.
+	(gfc_match_decl_type_spec): Search for pdt_types in the parent
+	namespace since they are instantiated in the template ns.
+	* expr.c (gfc_extract_int): Use a KIND parameter if it
+	appears as a component expression.
+	(gfc_check_init_expr): Allow expressions with the pdt_kind
+	attribute.
+	*primary.c (gfc_match_actual_arglist): Make sure that the first
+	keyword argument is recognised when 'pdt' is set.
+
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	PR fortran/40737
+	PR fortran/55763
+	PR fortran/57019
+	PR fortran/57116
+
+	* expr.c (is_subref_array): Add class pointer array dummies
+	to the list of expressions that return true.
+	* trans-array.c: Add SPAN_FIELD and update indices for
+	subsequent fields.
+	(gfc_conv_descriptor_span, gfc_conv_descriptor_span_get,
+	gfc_conv_descriptor_span_set, is_pointer_array,
+	get_array_span): New functions.
+	(gfc_get_descriptor_offsets_for_info): New function to preserve
+	API for access to descriptor fields for trans-types.c.
+	(gfc_conv_scalarized_array_ref): If the expression is a subref
+	array, make sure that info->descriptor is a descriptor type.
+	Otherwise, if info->descriptor is a pointer array, set 'decl'
+	and fix it if it is a component reference.
+	(build_array_ref): Simplify handling of class array refs by
+	passing the vptr to gfc_build_array_ref rather than generating
+	the pointer arithmetic in this function.
+	(gfc_conv_array_ref): As in gfc_conv_scalarized_array_ref, set
+	'decl'.
+	(gfc_array_allocate): Set the span field if this is a pointer
+	array. Use the expr3 element size if it is available, so that
+	the dynamic type element size is used.
+	(gfc_conv_expr_descriptor): Set the span field for pointer
+	assignments.
+	* trans-array.h: Prototypes for gfc_conv_descriptor_span_get
+	gfc_conv_descriptor_span_set and
+	gfc_get_descriptor_offsets_for_info added.
+	trans-decl.c (gfc_get_symbol_decl): If a non-class pointer
+	array, mark the declaration as a GFC_DECL_PTR_ARRAY_P. Remove
+	the setting of GFC_DECL_SPAN.
+	(gfc_trans_deferred_vars): Set the span field to zero in thge
+	originating scope.
+	* trans-expr.c (gfc_conv_procedure_call): Do not use copy-in/
+	copy-out to pass subref expressions to a pointer dummy.
+	(gfc_trans_pointer_assignment): Remove code for setting of
+	GFC_DECL_SPAN. Set the 'span' field for non-class pointers to
+	class function results. Likewise for rank remap. In the case
+	that the target is not a whole array, use the target array ref
+	for remap and, since the 'start' indices are missing, set the
+	lbounds to one, as required by the standard.
+	* trans-intrinsic.c (conv_expr_ref_to_caf_ref): Pick up the
+	'token' offset from the field decl in the descriptor.
+	(conv_isocbinding_subroutine): Set the 'span' field.
+	* trans-io.c (gfc_trans_transfer): Always scalarize pointer
+	array io.
+	* trans-stmt.c (trans_associate_var): Set the 'span' field.
+	* trans-types.c (gfc_get_array_descriptor_base): Add the 'span'
+	field to the array descriptor.
+	(gfc_get_derived_type): Pointer array components are marked as
+	GFC_DECL_PTR_ARRAY_P.
+	(gfc_get_array_descr_info): Replaced API breaking code for
+	descriptor offset calling gfc_get_descriptor_offsets_for_info.
+	* trans.c (get_array_span): New function.
+	(gfc_build_array_ref): Simplify by calling get_array_span and
+	obtain 'span' if 'decl' or 'vptr' present.
+	* trans.h : Rename DECL_LANG_FLAG_6, GFC_DECL_SUBREF_ARRAY_P,
+	as GFC_DECL_PTR_ARRAY_P.
+
+2017-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* decl.c : Add decl_type_param_list, type_param_spec_list as
+	static variables to hold PDT spec lists.
+	(build_sym): Copy 'type_param_spec_list' to symbol spec_list.
+	(build_struct): Copy the 'saved_kind_expr' to the component
+	'kind_expr'. Check that KIND or LEN components appear in the
+	decl_type_param_list. These should appear as symbols in the
+	f2k_derived namespace. If the component is itself a PDT type,
+	copy the decl_type_param_list to the component param_list.
+	(gfc_match_kind_spec): If the KIND expression is parameterized
+	set KIND to zero and store the expression in 'saved_kind_expr'.
+	(insert_parameter_exprs): New function.
+	(gfc_insert_kind_parameter_exprs): New function.
+	(gfc_insert_parameter_exprs): New function.
+	(gfc_get_pdt_instance): New function.
+	(gfc_match_decl_type_spec): Match the decl_type_spec_list if it
+	is present. If it is, call 'gfc_get_pdt_instance' to obtain the
+	specific instance of the PDT.
+	(match_attr_spec): Match KIND and LEN attributes. Check for the
+	standard and for type/kind of the parameter. They are also not
+	allowed outside a derived type definition.
+	(gfc_match_data_decl): Null the decl_type_param_list and the
+	type_param_spec_list on entry and free them on exit.
+	(gfc_match_formal_arglist): If 'typeparam' is true, add the
+	formal symbol to the f2k_derived namespace.
+	(gfc_match_derived_decl): Register the decl_type_param_list
+	if this is a PDT. If this is a type extension, gather up all
+	the type parameters and put them in the right order.
+	*dump-parse-tree.c (show_attr): Signal PDT templates and the
+	parameter attributes.
+	(show_components): Output parameter atrributes and component
+	parameter list.
+	(show_symbol): Show variable parameter lists.
+	* expr.c (expr.c): Copy the expression parameter list.
+	(gfc_is_constant_expr): Pass on symbols representing PDT
+	parameters.
+	(gfc_check_init_expr): Break on PDT KIND parameters and
+	PDT parameter expressions.
+	(gfc_check_assign): Assigning to KIND or LEN components is an
+	error.
+	(derived_parameter_expr): New function.
+	(gfc_derived_parameter_expr): New function.
+	(gfc_spec_list_type): New function.
+	* gfortran.h : Add enum gfc_param_spec_type. Add the PDT attrs
+	to the structure symbol_attr. Add the 'kind_expr' and
+	'param_list' field to the gfc_component structure. Comment on
+	the reuse of the gfc_actual_arglist structure as storage for
+	type parameter spec lists. Add the new field 'spec_type' to
+	this structure. Add 'param_list' fields to gfc_symbol and
+	gfc_expr. Add prototypes for gfc_insert_kind_parameter_exprs,
+	gfc_insert_parameter_exprs, gfc_add_kind, gfc_add_len,
+	gfc_derived_parameter_expr and gfc_spec_list_type.
+	* interface.c (gfc_compare_derived_types): Treat PDTs in the
+	same way as sequence types.
+	* match.c : Add variable 'type_param_spec_list'.
+	(gfc_op2string, gfc_match_member_sep, gfc_match_label): Remove
+	trailing whitespace.
+	(match_derived_type_spec): Match PDTs and find specific
+	instance.
+	(gfc_match_type_spec): Remove more trailing whitespace.
+	(gfc_match_allocate): Assumed or deferred parameters cannot
+	appear here. Copy the type parameter spec list to the expr for
+	the allocatable entity. Free 'type_param_spec_list'.
+	(gfc_match_common, gfc_match_namelist, gfc_match_module): Still
+	more trailing whitespace to remove.
+	(gfc_match_type_is): Allow PDT typespecs.
+	* match.h : Modify prototypes for gfc_match_formal_arglist and
+	gfc_match_actual_arglist.
+	* module.c (ab_attribute, mstring attr_bits): PDT attributes
+	added.
+	(mio_symbol_attribute): PDT attributes handled.
+	(mio_component): Deal with 'kind_expr' field.
+	(mio_full_f2k_derived): For PDT templates, transfer the formal
+	namespace symroot to the f2k_derived namespace.
+	*primary.c (match_keyword_arg, gfc_match_actual_arglist): Add
+	modifications to handle PDT spec lists. These are flagged in
+	both cases by new boolean arguments, whose prototype defaults
+	are false.
+	(gfc_match_structure_constructor, match_variable): Remove yet
+	more trailing whitespace.
+	* resolve.c (get_pdt_spec_expr, get_pdt_constructor): New
+	functions.
+	(resolve_structure_cons): If the constructor is a PDT template,
+	call get_pdt_constructor to build it using the parameter lists
+	and then get the specific instance of the PDT.
+	(resolve_component): PDT strings need a hidden string length
+	component like deferred characters.
+	(resolve_symbol): Dummy PDTs cannot have deferred parameters.
+	* symbol.c (gfc_add_kind, gfc_add_len): New functions.
+	(free_components): Free 'kind_expr' and 'param_list' fields.
+	(gfc_free_symbol): Free the 'param_list' field.
+	(gfc_find_sym_tree): If the current state is a PDT template,
+	look for the symtree in the f2k_derived namspaces.
+	trans-array.c (structure_alloc_comps): Allocate and deallocate
+	PDTs. Check dummy arguments for compliance of LEN parameters.
+	Add the new functions to the preceeding enum.
+	(gfc_allocate_pdt_comp, gfc_deallocate_pdt_comp and
+	gfc_check_pdt_dummy): New functions calling above.
+	* trans-array.h : Add prototypes for these functions.
+	trans-decl.c (gfc_get_symbol_decl): Call gfc_defer_symbol_init
+	as appropriate for PDT symbols.
+	(gfc_trans_deferred_vars): Allocate/deallocate PDT entities as
+	they come into and out of scope. Exclude pdt_types from being
+	'gcc_unreachable'.
+	(gfc_trans_subcomponent_assign): PDT array components must be
+	handles as if they are allocatable.
+	* trans-stmt.c (gfc_trans_allocate): Handle initialization of
+	PDT entities.
+	(gfc_trans_deallocate): Likewise.
+	* trans-types.c (gfc_get_derived_type): PDT templates must not
+	arrive here. PDT string components are handles as if deferred.
+	Similarly, PDT arrays are treated as if allocatable. PDT
+	strings are pointer types.
+	* trans.c (gfc_deferred_strlen): Handle PDT strings in the same
+	way as deferred characters.
+
 2017-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81887

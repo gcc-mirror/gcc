@@ -73,7 +73,6 @@ GNATRTL_TASKING_OBJS= \
   s-tpoben$(objext) \
   s-tpobop$(objext) \
   s-tposen$(objext) \
-  s-tratas$(objext) \
   thread$(objext) \
   $(EXTRA_GNATRTL_TASKING_OBJS)
 
@@ -673,7 +672,6 @@ GNATRTL_NONTASKING_OBJS= \
   s-ststop$(objext) \
   s-tasloc$(objext) \
   s-traceb$(objext) \
-  s-traces$(objext) \
   s-traent$(objext) \
   s-unstyp$(objext) \
   s-utf_32$(objext) \

@@ -3406,6 +3406,12 @@ package body Exp_Util is
       if Present (Priv_Typ) then
          Typ_Decl := Declaration_Node (Priv_Typ);
 
+      --  Anonymous arrays in object declarations have no explicit declaration
+      --  so use the related object declaration as the insertion point.
+
+      elsif Is_Itype (Work_Typ) and then Is_Array_Type (Work_Typ)  then
+         Typ_Decl := Associated_Node_For_Itype (Work_Typ);
+
       --  Derived types with the full view as parent do not have a partial
       --  view. Insert the invariant procedure after the derived type.
 
@@ -8274,79 +8280,6 @@ package body Exp_Util is
           and then not Is_Build_In_Place_Function_Call (Prefix (Expr));
    end Is_Non_BIP_Func_Call;
 
-   ------------------------------------
-   -- Is_Object_Access_BIP_Func_Call --
-   ------------------------------------
-
-   function Is_Object_Access_BIP_Func_Call
-      (Expr   : Node_Id;
-       Obj_Id : Entity_Id) return Boolean
-   is
-      Access_Nam : Name_Id := No_Name;
-      Actual     : Node_Id;
-      Call       : Node_Id;
-      Formal     : Node_Id;
-      Param      : Node_Id;
-
-   begin
-      --  Build-in-place calls usually appear in 'reference format. Note that
-      --  the accessibility check machinery may add an extra 'reference due to
-      --  side effect removal.
-
-      Call := Expr;
-      while Nkind (Call) = N_Reference loop
-         Call := Prefix (Call);
-      end loop;
-
-      if Nkind_In (Call, N_Qualified_Expression,
-                         N_Unchecked_Type_Conversion)
-      then
-         Call := Expression (Call);
-      end if;
-
-      if Is_Build_In_Place_Function_Call (Call) then
-
-         --  Examine all parameter associations of the function call
-
-         Param := First (Parameter_Associations (Call));
-         while Present (Param) loop
-            if Nkind (Param) = N_Parameter_Association
-              and then Nkind (Selector_Name (Param)) = N_Identifier
-            then
-               Formal := Selector_Name (Param);
-               Actual := Explicit_Actual_Parameter (Param);
-
-               --  Construct the name of formal BIPaccess. It is much easier to
-               --  extract the name of the function using an arbitrary formal's
-               --  scope rather than the Name field of Call.
-
-               if Access_Nam = No_Name and then Present (Entity (Formal)) then
-                  Access_Nam :=
-                    New_External_Name
-                      (Chars (Scope (Entity (Formal))),
-                       BIP_Formal_Suffix (BIP_Object_Access));
-               end if;
-
-               --  A match for BIPaccess => Obj_Id'Unrestricted_Access has been
-               --  found.
-
-               if Chars (Formal) = Access_Nam
-                 and then Nkind (Actual) = N_Attribute_Reference
-                 and then Attribute_Name (Actual) = Name_Unrestricted_Access
-                 and then Nkind (Prefix (Actual)) = N_Identifier
-                 and then Entity (Prefix (Actual)) = Obj_Id
-               then
-                  return True;
-               end if;
-            end if;
-
-            Next (Param);
-         end loop;
-      end if;
-
-      return False;
-   end Is_Object_Access_BIP_Func_Call;
-
    ----------------------------------
    -- Is_Possibly_Unaligned_Object --
    ----------------------------------
@@ -8739,11 +8672,7 @@ package body Exp_Util is
          Call := Prefix (Call);
       end loop;
 
-      if Nkind_In (Call, N_Qualified_Expression,
-                         N_Unchecked_Type_Conversion)
-      then
-         Call := Expression (Call);
-      end if;
+      Call := Unqual_Conv (Call);
 
       if Is_Build_In_Place_Function_Call (Call) then
 

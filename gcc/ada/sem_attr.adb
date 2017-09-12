@@ -1394,6 +1394,7 @@ package body Sem_Attr is
 
          elsif not Nkind_In (Subp_Decl, N_Abstract_Subprogram_Declaration,
                                         N_Entry_Declaration,
+                                        N_Expression_Function,
                                         N_Generic_Subprogram_Declaration,
                                         N_Subprogram_Body,
                                         N_Subprogram_Body_Stub,
@@ -3555,7 +3556,7 @@ package body Sem_Attr is
 
          elsif Nkind (P) = N_Indexed_Component then
             if not Is_Entity_Name (Prefix (P))
-              or else  No (Entity (Prefix (P)))
+              or else No (Entity (Prefix (P)))
               or else Ekind (Entity (Prefix (P))) /= E_Entry_Family
             then
                if Nkind (Prefix (P)) = N_Selected_Component
@@ -8198,7 +8199,8 @@ package body Sem_Attr is
 
       case Id is
 
-      --  Attributes related to Ada 2012 iterators (placeholder ???)
+      --  Attributes related to Ada 2012 iterators; nothing to evaluate for
+      --  these.
 
       when Attribute_Constant_Indexing
          | Attribute_Default_Iterator

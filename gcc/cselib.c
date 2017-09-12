@@ -530,7 +530,8 @@ cselib_reset_table (unsigned int num)
       n_used_regs = new_used_regs;
       used_regs[0] = regno;
       max_value_regs
-	= hard_regno_nregs[regno][GET_MODE (cfa_base_preserved_val->locs->loc)];
+	= hard_regno_nregs (regno,
+			    GET_MODE (cfa_base_preserved_val->locs->loc));
     }
   else
     {
@@ -2001,7 +2002,7 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 
       if (i < FIRST_PSEUDO_REGISTER)
 	{
-	  unsigned int n = hard_regno_nregs[i][mode];
+	  unsigned int n = hard_regno_nregs (i, mode);
 
 	  if (n > max_value_regs)
 	    max_value_regs = n;
@@ -2040,7 +2041,7 @@ cselib_lookup_1 (rtx x, machine_mode mode,
 	      {
 		struct elt_loc_list *el;
 		if (i < FIRST_PSEUDO_REGISTER
-		    && hard_regno_nregs[i][lmode] != 1)
+		    && hard_regno_nregs (i, lmode) != 1)
 		  continue;
 		for (el = l->elt->locs; el; el = el->next)
 		  if (!REG_P (el->loc))

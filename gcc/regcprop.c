@@ -176,7 +176,7 @@ kill_value_regno (unsigned int regno, unsigned int nregs,
       unsigned int i, n;
       if (vd->e[j].mode == VOIDmode)
 	continue;
-      n = hard_regno_nregs[j][vd->e[j].mode];
+      n = hard_regno_nregs (j, vd->e[j].mode);
       if (j + n > regno)
 	for (i = 0; i < n; ++i)
 	  kill_value_one_regno (j + i, vd);
@@ -209,7 +209,7 @@ set_value_regno (unsigned int regno, machine_mode mode,
 
   vd->e[regno].mode = mode;
 
-  nregs = hard_regno_nregs[regno][mode];
+  nregs = hard_regno_nregs (regno, mode);
   if (nregs > vd->max_value_regs)
     vd->max_value_regs = nregs;
 }
@@ -344,7 +344,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
 
      We can't properly represent the latter case in our tables, so don't
      record anything then.  */
-  else if (sn < (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode]
+  else if (sn < hard_regno_nregs (sr, vd->e[sr].mode)
 	   && (GET_MODE_SIZE (vd->e[sr].mode) > UNITS_PER_WORD
 	       ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
     return;
@@ -352,7 +352,7 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
   /* If SRC had been assigned a mode narrower than the copy, we can't
      link DEST into the chain, because not all of the pieces of the
      copy came from oldest_regno.  */
-  else if (sn > (unsigned int) hard_regno_nregs[sr][vd->e[sr].mode])
+  else if (sn > hard_regno_nregs (sr, vd->e[sr].mode))
     return;
 
   /* Link DR at the end of the value chain used by SR.  */
@@ -408,8 +408,8 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
     return gen_raw_REG (new_mode, regno);
   else if (mode_change_ok (orig_mode, new_mode, regno))
     {
-      int copy_nregs = hard_regno_nregs[copy_regno][copy_mode];
-      int use_nregs = hard_regno_nregs[copy_regno][new_mode];
+      int copy_nregs = hard_regno_nregs (copy_regno, copy_mode);
+      int use_nregs = hard_regno_nregs (copy_regno, new_mode);
       int copy_offset
 	= GET_MODE_SIZE (copy_mode) / copy_nregs * (copy_nregs - use_nregs);
       int offset
@@ -444,12 +444,9 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
 	(set (reg:SI r10) (...))
 	(set (...) (reg:DI r9))
      Replacing r9 with r11 is invalid.  */
-  if (mode != vd->e[regno].mode)
-    {
-      if (hard_regno_nregs[regno][mode]
-	  > hard_regno_nregs[regno][vd->e[regno].mode])
-	return NULL_RTX;
-    }
+  if (mode != vd->e[regno].mode
+      && REG_NREGS (reg) > hard_regno_nregs (regno, vd->e[regno].mode))
+    return NULL_RTX;
 
   for (i = vd->e[regno].oldest_regno; i != regno; i = vd->e[i].next_regno)
     {
@@ -871,14 +868,13 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	     set it in, make sure that the replacement is valid.  */
 	  if (mode != vd->e[regno].mode)
 	    {
-	      if (hard_regno_nregs[regno][mode]
-		  > hard_regno_nregs[regno][vd->e[regno].mode])
+	      if (REG_NREGS (src)
+		  > hard_regno_nregs (regno, vd->e[regno].mode))
 		goto no_move_special_case;
 
 	      /* And likewise, if we are narrowing on big endian the transformation
 		 is also invalid.  */
-	      if (hard_regno_nregs[regno][mode]
-		  < hard_regno_nregs[regno][vd->e[regno].mode]
+	      if (REG_NREGS (src) < hard_regno_nregs (regno, vd->e[regno].mode)
 		  && (GET_MODE_SIZE (vd->e[regno].mode) > UNITS_PER_WORD
 		      ? WORDS_BIG_ENDIAN : BYTES_BIG_ENDIAN))
 		goto no_move_special_case;

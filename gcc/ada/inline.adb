@@ -1179,29 +1179,29 @@ package body Inline is
       --  types.
 
       function Has_Some_Contract (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id has any contract (Pre, Post,
-      --  Global, Depends, etc.) The presence of Extensions_Visible
-      --  or Volatile_Function is also considered as a contract here.
+      --  Return True if subprogram Id has any contract. The presence of
+      --  Extensions_Visible or Volatile_Function is also considered as a
+      --  contract here.
 
       function Is_Unit_Subprogram (Id : Entity_Id) return Boolean;
-      --  Returns True if subprogram Id defines a compilation unit
+      --  Return True if subprogram Id defines a compilation unit
       --  Shouldn't this be in Sem_Aux???
 
-      function In_Package_Visible_Spec (Id : Node_Id) return Boolean;
-      --  Returns True if subprogram Id is defined in the visible part of a
-      --  package specification.
+      function In_Package_Spec (Id : Entity_Id) return Boolean;
+      --  Return True if subprogram Id is defined in the package specification,
+      --  either its visible or private part.
 
       ---------------------------------------------------
       -- Has_Formal_With_Discriminant_Dependent_Fields --
       ---------------------------------------------------
 
       function Has_Formal_With_Discriminant_Dependent_Fields
-        (Id : Entity_Id) return Boolean is
-
+        (Id : Entity_Id) return Boolean
+      is
          function Has_Discriminant_Dependent_Component
            (Typ : Entity_Id) return Boolean;
-         --  Determine whether unconstrained record type Typ has at least
-         --  one component that depends on a discriminant.
+         --  Determine whether unconstrained record type Typ has at least one
+         --  component that depends on a discriminant.
 
          ------------------------------------------
          -- Has_Discriminant_Dependent_Component --
@@ -1213,8 +1213,8 @@ package body Inline is
             Comp : Entity_Id;
 
          begin
-            --  Inspect all components of the record type looking for one
-            --  that depends on a discriminant.
+            --  Inspect all components of the record type looking for one that
+            --  depends on a discriminant.
 
             Comp := First_Component (Typ);
             while Present (Comp) loop
@@ -1288,24 +1288,17 @@ package body Inline is
          return False;
       end Has_Some_Contract;
 
-      -----------------------------
-      -- In_Package_Visible_Spec --
-      -----------------------------
+      ---------------------
+      -- In_Package_Spec --
+      ---------------------
 
-      function In_Package_Visible_Spec  (Id : Node_Id) return Boolean is
-         Decl : Node_Id := Parent (Parent (Id));
-         P    : Node_Id;
+      function In_Package_Spec (Id : Entity_Id) return Boolean is
+         P : constant Node_Id := Parent (Subprogram_Spec (Id));
+         --  Parent of the subprogram's declaration
 
       begin
-         if Nkind (Parent (Id)) = N_Defining_Program_Unit_Name then
-            Decl := Parent (Decl);
-         end if;
-
-         P := Parent (Decl);
-
-         return Nkind (P) = N_Package_Specification
-           and then List_Containing (Decl) = Visible_Declarations (P);
-      end In_Package_Visible_Spec;
+         return Nkind (Enclosing_Declaration (P)) = N_Package_Declaration;
+      end In_Package_Spec;
 
       ------------------------
       -- Is_Unit_Subprogram --
@@ -1351,9 +1344,11 @@ package body Inline is
       if Is_Unit_Subprogram (Id) then
          return False;
 
-      --  Do not inline subprograms declared in the visible part of a package
+      --  Do not inline subprograms declared in package specs, because they are
+      --  not local, i.e. can be called either from anywhere (if declared in
+      --  visible part) or from the child units (if declared in private part).
 
-      elsif In_Package_Visible_Spec (Id) then
+      elsif In_Package_Spec (Id) then
          return False;
 
       --  Do not inline subprograms declared in other units. This is important

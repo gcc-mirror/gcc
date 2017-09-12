@@ -178,6 +178,7 @@ static bool xtensa_member_type_forces_blk (const_tree,
 					   machine_mode mode);
 
 static void xtensa_conditional_register_usage (void);
+static unsigned int xtensa_hard_regno_nregs (unsigned int, machine_mode);
 static bool xtensa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 
@@ -308,6 +309,8 @@ static bool xtensa_modes_tieable_p (machine_mode, machine_mode);
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE xtensa_conditional_register_usage
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS xtensa_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK xtensa_hard_regno_mode_ok
 
@@ -615,6 +618,7 @@ xtensa_mem_offset (unsigned v, machine_mode mode)
     case E_HImode:
       return xtensa_uimm8x2 (v);
 
+    case E_DImode:
     case E_DFmode:
       return (xtensa_uimm8x4 (v) && xtensa_uimm8x4 (v + 4));
 
@@ -1154,11 +1158,11 @@ xtensa_copy_incoming_a7 (rtx opnd)
     }
   if (GET_CODE (reg) != REG
       || REGNO (reg) > A7_REG
-      || REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) <= A7_REG)
+      || REGNO (reg) + hard_regno_nregs (A7_REG, mode) <= A7_REG)
     return opnd;
 
   /* 1-word args will always be in a7; 2-word args in a6/a7.  */
-  gcc_assert (REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) - 1 == A7_REG);
+  gcc_assert (REGNO (reg) + hard_regno_nregs (A7_REG, mode) - 1 == A7_REG);
 
   cfun->machine->need_a7_copy = false;
 
@@ -2259,6 +2263,16 @@ xtensa_option_override (void)
       flag_reorder_blocks_and_partition = 0;
       flag_reorder_blocks = 1;
     }
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+xtensa_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (FP_REG_P (regno))
+    return CEIL (GET_MODE_SIZE (mode), UNITS_PER_FPREG);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

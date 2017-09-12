@@ -6772,6 +6772,7 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
+      Analyze_Dimension (N);
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -7996,11 +7997,20 @@ package body Sem_Res is
             Check_Restriction (No_Dispatching_Calls, N);
          end if;
 
+         --  Only warn for redundant equality comparison to True for objects
+         --  (e.g. "X = True") and operations (e.g. "(X < Y) = True"). For
+         --  other expressions, it may be a matter of preference to write
+         --  "Expr = True" or "Expr".
+
          if Warn_On_Redundant_Constructs
            and then Comes_From_Source (N)
            and then Comes_From_Source (R)
            and then Is_Entity_Name (R)
            and then Entity (R) = Standard_True
+           and then
+             ((Is_Entity_Name (L) and then Is_Object (Entity (L)))
+                 or else
+               Nkind (L) in N_Op)
          then
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);
@@ -8357,6 +8367,8 @@ package body Sem_Res is
       if not Error_Posted (N) then
          Eval_If_Expression (N);
       end if;
+
+      Analyze_Dimension (N);
    end Resolve_If_Expression;
 
    -------------------------------
@@ -9363,6 +9375,7 @@ package body Sem_Res is
             return;
 
          elsif Nkind (Parent (N)) in N_Op
+           and then Present (Etype (Parent (N)))
            and then Is_Fixed_Point_Type (Etype (Parent (N)))
            and then Etype (N) = Universal_Real
            and then Comes_From_Source (N)
@@ -11437,13 +11450,29 @@ package body Sem_Res is
 
    begin
       --  Do not perform this transformation within a pre/postcondition,
-      --  because the expression will be re-analyzed, and the transformation
+      --  because the expression will be reanalyzed, and the transformation
       --  might affect the visibility of the operator, e.g. in an instance.
       --  Note that fully analyzed and expanded pre/postconditions appear as
       --  pragma Check equivalents.
 
       if In_Pre_Post_Condition (N) then
          return;
+      end if;
+
+      --  Likewise when an expression function is being preanalyzed, since the
+      --  expression will be reanalyzed as part of the generated body.
+
+      if In_Spec_Expression then
+         declare
+            S : constant Entity_Id := Current_Scope_No_Loops;
+         begin
+            if Ekind (S) = E_Function
+              and then Nkind (Original_Node (Unit_Declaration_Node (S)))
+                                                        = N_Expression_Function
+            then
+               return;
+            end if;
+         end;
       end if;
 
       --  Rewrite the operator node using the real operator, not its renaming.

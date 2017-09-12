@@ -639,7 +639,7 @@ extern int rs6000_vector_align[];
 #define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
 #define MASK_DLMZB			OPTION_MASK_DLMZB
 #define MASK_EABI			OPTION_MASK_EABI
-#define MASK_FLOAT128_TYPE		OPTION_MASK_FLOAT128_TYPE
+#define MASK_FLOAT128_KEYWORD		OPTION_MASK_FLOAT128_KEYWORD
 #define MASK_FPRND			OPTION_MASK_FPRND
 #define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
 #define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
@@ -968,19 +968,6 @@ enum data_align { align_abi, align_opt, align_both };
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a cost
-   many times greater than aligned accesses, for example if they are
-   emulated in a trap handler.  */
-/* Altivec vector memory instructions simply ignore the low bits; VSX memory
-   instructions are aligned to 4 or 8 bytes.  */
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
-  (STRICT_ALIGNMENT							\
-   || (!TARGET_EFFICIENT_UNALIGNED_VSX					\
-       && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE) && (ALIGN) < 32)	\
-	   || ((VECTOR_MODE_P (MODE) || FLOAT128_VECTOR_P (MODE))	\
-	       && (int) (ALIGN) < VECTOR_ALIGN (MODE)))))
-
 
 /* Standard register usage.  */
 
@@ -1214,11 +1201,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define VLOGICAL_REGNO_P(N)						\
   (INT_REGNO_P (N) || ALTIVEC_REGNO_P (N)				\
    || (TARGET_VSX && FP_REGNO_P (N)))					\
-
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
 
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
    enough space to account for vectors in FP regs.  However, TFmode/TDmode
@@ -2531,7 +2513,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
-#define RS6000_BTM_FLOAT128	MASK_FLOAT128_TYPE /* IEEE 128-bit float.  */
+#define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\

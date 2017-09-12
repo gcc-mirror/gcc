@@ -5054,12 +5054,13 @@ package body Freeze is
 
             Prag := Copy_Import_Pragma;
 
-            --  Fix up spec to be not imported any more
+            --  Fix up spec so it is no longer imported and has convention Ada
 
             Set_Has_Completion (E, False);
             Set_Import_Pragma  (E, Empty);
             Set_Interface_Name (E, Empty);
             Set_Is_Imported    (E, False);
+            Set_Convention     (E, Convention_Ada);
 
             --  Grab the subprogram declaration and specification
 
@@ -8233,7 +8234,9 @@ package body Freeze is
       --  that we know the convention.
 
       if not Has_Foreign_Convention (E) then
-         Create_Extra_Formals (E);
+         if No (Extra_Formals (E)) then
+            Create_Extra_Formals (E);
+         end if;
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd

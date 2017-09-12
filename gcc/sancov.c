@@ -28,6 +28,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "basic-block.h"
 #include "options.h"
 #include "flags.h"
+#include "memmodel.h"
+#include "tm_p.h"
 #include "stmt.h"
 #include "gimple-iterator.h"
 #include "gimple-builder.h"

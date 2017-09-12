@@ -332,9 +332,6 @@ typedef struct
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
     fprintf (FILE, "\tcall\t__mcount\n");
 
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-  msp430_hard_regno_nregs (REGNO, MODE)
-
 /* Exception Handling */
 
 /* R12,R13,R14 - EH data

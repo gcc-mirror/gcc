@@ -537,6 +537,7 @@ extern section *mergeable_constant_section (machine_mode,
 extern section *function_section (tree);
 extern section *unlikely_text_section (void);
 extern section *current_function_section (void);
+extern void switch_to_other_text_partition (void);
 
 /* Return the numbered .ctors.N (if CONSTRUCTOR_P) or .dtors.N (if
    not) section for PRIORITY.  */

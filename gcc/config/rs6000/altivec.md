@@ -1428,6 +1428,32 @@
   DONE;
 })
 
+(define_expand "vec_widen_umult_even_v4si"
+  [(use (match_operand:V2DI 0 "register_operand"))
+   (use (match_operand:V4SI 1 "register_operand"))
+   (use (match_operand:V4SI 2 "register_operand"))]
+  "TARGET_P8_VECTOR"
+{
+ if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_altivec_vmuleuw (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulouw (operands[0], operands[1], operands[2]));
+ DONE;
+})
+
+(define_expand "vec_widen_smult_even_v4si"
+  [(use (match_operand:V2DI 0 "register_operand"))
+   (use (match_operand:V4SI 1 "register_operand"))
+   (use (match_operand:V4SI 2 "register_operand"))]
+  "TARGET_P8_VECTOR"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_altivec_vmulesw (operands[0], operands[1], operands[2]));
+ else
+    emit_insn (gen_altivec_vmulosw (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
 (define_expand "vec_widen_umult_odd_v16qi"
   [(use (match_operand:V8HI 0 "register_operand" ""))
    (use (match_operand:V16QI 1 "register_operand" ""))
@@ -1477,6 +1503,32 @@
     emit_insn (gen_altivec_vmulosh (operands[0], operands[1], operands[2]));
   else
     emit_insn (gen_altivec_vmulesh (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_umult_odd_v4si"
+  [(use (match_operand:V2DI 0 "register_operand"))
+   (use (match_operand:V4SI 1 "register_operand"))
+   (use (match_operand:V4SI 2 "register_operand"))]
+  "TARGET_P8_VECTOR"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_altivec_vmulouw (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmuleuw (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_expand "vec_widen_smult_odd_v4si"
+  [(use (match_operand:V2DI 0 "register_operand"))
+   (use (match_operand:V4SI 1 "register_operand"))
+   (use (match_operand:V4SI 2 "register_operand"))]
+  "TARGET_P8_VECTOR"
+{
+  if (VECTOR_ELT_ORDER_BIG)
+    emit_insn (gen_altivec_vmulosw (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_altivec_vmulesw (operands[0], operands[1], operands[2]));
   DONE;
 })
 

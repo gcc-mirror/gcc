@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "expmed.h"
 #include "optabs.h"
+#include "regs.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
@@ -569,7 +570,7 @@ simple_mem_bitfield_p (rtx op0, unsigned HOST_WIDE_INT bitsize,
   return (MEM_P (op0)
 	  && bitnum % BITS_PER_UNIT == 0
 	  && bitsize == GET_MODE_BITSIZE (mode)
-	  && (!SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (op0))
+	  && (!targetm.slow_unaligned_access (mode, MEM_ALIGN (op0))
 	      || (bitnum % GET_MODE_ALIGNMENT (mode) == 0
 		  && MEM_ALIGN (op0) >= GET_MODE_ALIGNMENT (mode))));
 }
@@ -952,7 +953,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && GET_MODE_SIZE (op0_mode.require ()) > UNITS_PER_WORD
       && (!REG_P (op0)
 	  || !HARD_REGISTER_P (op0)
-	  || HARD_REGNO_NREGS (REGNO (op0), op0_mode.require ()) != 1))
+	  || hard_regno_nregs (REGNO (op0), op0_mode.require ()) != 1))
     {
       if (bitnum % BITS_PER_WORD + bitsize > BITS_PER_WORD)
 	{
@@ -5601,7 +5602,6 @@ emit_store_flag_int (rtx target, rtx subtarget, enum rtx_code code, rtx op0,
 {
   machine_mode target_mode = target ? GET_MODE (target) : VOIDmode;
   rtx_insn *last = get_last_insn ();
-  rtx tem;
 
   /* If this is an equality comparison of integers, we can try to exclusive-or
      (or subtract) the two operands and use a recursive call to try the
@@ -5610,8 +5610,8 @@ emit_store_flag_int (rtx target, rtx subtarget, enum rtx_code code, rtx op0,
 
   if ((code == EQ || code == NE) && op1 != const0_rtx)
     {
-      tem = expand_binop (mode, xor_optab, op0, op1, subtarget, 1,
-			  OPTAB_WIDEN);
+      rtx tem = expand_binop (mode, xor_optab, op0, op1, subtarget, 1,
+			      OPTAB_WIDEN);
 
       if (tem == 0)
 	tem = expand_binop (mode, sub_optab, op0, op1, subtarget, 1,
@@ -5643,26 +5643,28 @@ emit_store_flag_int (rtx target, rtx subtarget, enum rtx_code code, rtx op0,
 	  && rtx_cost (GEN_INT (normalizep), mode, PLUS, 1,
 		       optimize_insn_for_speed_p ()) == 0)
 	{
-	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
-				   STORE_FLAG_VALUE, target_mode);
+	  rtx tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       STORE_FLAG_VALUE, target_mode);
 	  if (tem != 0)
 	    tem = expand_binop (target_mode, add_optab, tem,
 				gen_int_mode (normalizep, target_mode),
 				target, 0, OPTAB_WIDEN);
+	  if (tem != 0)
+	    return tem;
 	}
       else if (!want_add
 	       && rtx_cost (trueval, mode, XOR, 1,
 			    optimize_insn_for_speed_p ()) == 0)
 	{
-	  tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
-				   normalizep, target_mode);
+	  rtx tem = emit_store_flag_1 (subtarget, rcode, op0, op1, mode, 0,
+				       normalizep, target_mode);
 	  if (tem != 0)
 	    tem = expand_binop (target_mode, xor_optab, tem, trueval, target,
 				INTVAL (trueval) >= 0, OPTAB_WIDEN);
+	  if (tem != 0)
+	    return tem;
 	}
 
-      if (tem != 0)
-	return tem;
       delete_insns_since (last);
     }
 
@@ -5680,7 +5682,7 @@ emit_store_flag_int (rtx target, rtx subtarget, enum rtx_code code, rtx op0,
   /* Try to put the result of the comparison in the sign bit.  Assume we can't
      do the necessary operation below.  */
 
-  tem = 0;
+  rtx tem = 0;
 
   /* To see if A <= 0, compute (A | (A - 1)).  A <= 0 iff that result has
      the sign bit set.  */

@@ -1079,7 +1079,7 @@ init_regs_for_mode (machine_mode mode)
       if (!targetm.hard_regno_mode_ok (cur_reg, mode))
         continue;
 
-      nregs = hard_regno_nregs[cur_reg][mode];
+      nregs = hard_regno_nregs (cur_reg, mode);
 
       for (i = nregs - 1; i >= 0; --i)
         if (fixed_regs[cur_reg + i]
@@ -1262,7 +1262,7 @@ mark_unavailable_hard_regs (def_t def, struct reg_rename *reg_rename_p,
       int nregs;
       int i;
 
-      nregs = hard_regno_nregs[cur_reg][mode];
+      nregs = hard_regno_nregs (cur_reg, mode);
       gcc_assert (nregs > 0);
 
       for (i = nregs - 1; i >= 0; --i)
@@ -1348,7 +1348,7 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
       gcc_assert (mode == GET_MODE (orig_dest));
 
       regno = REGNO (orig_dest);
-      for (i = 0, n = hard_regno_nregs[regno][mode]; i < n; i++)
+      for (i = 0, n = REG_NREGS (orig_dest); i < n; i++)
         if (TEST_HARD_REG_BIT (hard_regs_used, regno + i))
           break;
 
@@ -1372,7 +1372,7 @@ choose_best_reg_1 (HARD_REG_SET hard_regs_used,
     if (! TEST_HARD_REG_BIT (hard_regs_used, cur_reg))
       {
 	/* Check that all hard regs for mode are available.  */
-	for (i = 1, n = hard_regno_nregs[cur_reg][mode]; i < n; i++)
+	for (i = 1, n = hard_regno_nregs (cur_reg, mode); i < n; i++)
 	  if (TEST_HARD_REG_BIT (hard_regs_used, cur_reg + i)
 	      || !TEST_HARD_REG_BIT (reg_rename_p->available_for_renaming,
 				     cur_reg + i))
@@ -1463,7 +1463,7 @@ choose_best_pseudo_reg (regset used_regs,
       if (HARD_REGISTER_NUM_P (orig_regno))
 	{
 	  int j, n;
-	  for (j = 0, n = hard_regno_nregs[orig_regno][mode]; j < n; j++)
+	  for (j = 0, n = REG_NREGS (dest); j < n; j++)
 	    if (REGNO_REG_SET_P (used_regs, orig_regno + j))
 	      break;
 	  if (j < n)
@@ -1535,7 +1535,7 @@ verify_target_availability (expr_t expr, regset used_regs,
   regno = expr_dest_regno (expr);
   mode = GET_MODE (EXPR_LHS (expr));
   target_available = EXPR_TARGET_AVAILABLE (expr) == 1;
-  n = HARD_REGISTER_NUM_P (regno) ? hard_regno_nregs[regno][mode] : 1;
+  n = HARD_REGISTER_NUM_P (regno) ? hard_regno_nregs (regno, mode) : 1;
 
   live_available = hard_available = true;
   for (i = 0; i < n; i++)

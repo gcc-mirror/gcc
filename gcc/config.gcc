@@ -593,7 +593,7 @@ x86_64-*-*)
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 arm*-*-*)
-	tm_p_file="arm/arm-flags.h ${tm_p_file} arm/aarch-common-protos.h"
+	tm_p_file="arm/arm-flags.h arm/arm-isa.h ${tm_p_file} arm/aarch-common-protos.h"
 	tm_file="vxworks-dummy.h ${tm_file}"
 	;;
 mips*-*-* | sh*-*-* | sparc*-*-*)
@@ -2544,7 +2544,7 @@ powerpc*-*-linux*)
 		    ;;
 	esac
 	;;
-powerpc-wrs-vxworksspe)
+powerpc-wrs-vxworks*spe)
 	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
 	extra_options="${extra_options} powerpcspe/sysv4.opt"

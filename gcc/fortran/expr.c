@@ -394,6 +394,9 @@ gfc_copy_expr (gfc_expr *p)
 
   q->ref = gfc_copy_ref (p->ref);
 
+  if (p->param_list)
+    q->param_list = gfc_copy_actual_arglist (p->param_list);
+
   return q;
 }
 
@@ -499,6 +502,8 @@ free_expr0 (gfc_expr *e)
 
   gfc_free_ref_list (e->ref);
 
+  gfc_free_actual_arglist (e->param_list);
+
   memset (e, '\0', sizeof (gfc_expr));
 }
 
@@ -525,6 +530,7 @@ gfc_free_actual_arglist (gfc_actual_arglist *a1)
   while (a1)
     {
       a2 = a1->next;
+      if (a1->expr)
       gfc_free_expr (a1->expr);
       free (a1);
       a1 = a2;
@@ -618,6 +624,20 @@ gfc_replace_expr (gfc_expr *dest, gfc_expr *src)
 bool
 gfc_extract_int (gfc_expr *expr, int *result, int report_error)
 {
+  gfc_ref *ref;
+
+  /* A KIND component is a parameter too. The expression for it
+     is stored in the initializer and should be consistent with
+     the tests below.  */
+  if (gfc_expr_attr(expr).pdt_kind)
+    {
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	   if (ref->u.c.component->attr.pdt_kind)
+	     expr = ref->u.c.component->initializer;
+	}
+    }
+
   if (expr->expr_type != EXPR_CONSTANT)
     {
       if (report_error > 0)
@@ -917,6 +937,11 @@ gfc_is_constant_expr (gfc_expr *e)
 		  || gfc_is_constant_expr (e->value.op.op2)));
 
     case EXPR_VARIABLE:
+      /* The only context in which this can occur is in a parameterized
+	 derived type declaration, so returning true is OK.  */
+      if (e->symtree->n.sym->attr.pdt_len
+	  || e->symtree->n.sym->attr.pdt_kind)
+        return true;
       return false;
 
     case EXPR_FUNCTION:
@@ -982,6 +1007,11 @@ is_subref_array (gfc_expr * e)
     return false;
 
   if (e->symtree->n.sym->attr.subref_array_pointer)
+    return true;
+
+  if (e->symtree->n.sym->ts.type == BT_CLASS
+      && e->symtree->n.sym->attr.dummy
+      && CLASS_DATA (e->symtree->n.sym)->attr.class_pointer)
     return true;
 
   seen_array = false;
@@ -2531,6 +2561,10 @@ gfc_check_init_expr (gfc_expr *e)
     case EXPR_VARIABLE:
       t = true;
 
+      /* This occurs when parsing pdt templates.  */
+      if (gfc_expr_attr (e).pdt_kind)
+	break;
+
       if (gfc_check_iter_variable (e))
 	break;
 
@@ -2696,6 +2730,13 @@ gfc_match_init_expr (gfc_expr **result)
   m = gfc_match_expr (&expr);
   if (m != MATCH_YES)
     {
+      gfc_init_expr_flag = false;
+      return m;
+    }
+
+  if (gfc_derived_parameter_expr (expr))
+    {
+      *result = expr;
       gfc_init_expr_flag = false;
       return m;
     }
@@ -3280,6 +3321,14 @@ gfc_check_assign (gfc_expr *lvalue, gfc_expr *rvalue, int conform,
 		       "%<-fno-range-check%>", &rvalue->where);
 	  return false;
 	}
+    }
+
+  if (gfc_expr_attr (lvalue).pdt_kind || gfc_expr_attr (lvalue).pdt_len)
+    {
+      gfc_error ("The assignment to a KIND or LEN component of a "
+		 "parameterized type at %L is not allowed",
+		 &lvalue->where);
+      return false;
     }
 
   if (gfc_compare_types (&lvalue->ts, &rvalue->ts))
@@ -4834,6 +4883,76 @@ gfc_expr_check_typed (gfc_expr* e, gfc_namespace* ns, bool strict)
   error_found = gfc_traverse_expr (e, NULL, &expr_check_typed_help, 0);
 
   return error_found ? false : true;
+}
+
+
+/* This function returns true if it contains any references to PDT KIND
+   or LEN parameters.  */
+
+static bool
+derived_parameter_expr (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
+			int* f ATTRIBUTE_UNUSED)
+{
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  gcc_assert (e->symtree);
+  if (e->symtree->n.sym->attr.pdt_kind
+      || e->symtree->n.sym->attr.pdt_len)
+    return true;
+
+  return false;
+}
+
+
+bool
+gfc_derived_parameter_expr (gfc_expr *e)
+{
+  return gfc_traverse_expr (e, NULL, &derived_parameter_expr, 0);
+}
+
+
+/* This function returns the overall type of a type parameter spec list.
+   If all the specs are explicit, SPEC_EXPLICIT is returned. If any of the
+   parameters are assumed/deferred then SPEC_ASSUMED/DEFERRED is returned
+   unless derived is not NULL.  In this latter case, all the LEN parameters
+   must be either assumed or deferred for the return argument to be set to
+   anything other than SPEC_EXPLICIT.  */
+
+gfc_param_spec_type
+gfc_spec_list_type (gfc_actual_arglist *param_list, gfc_symbol *derived)
+{
+  gfc_param_spec_type res = SPEC_EXPLICIT;
+  gfc_component *c;
+  bool seen_assumed = false;
+  bool seen_deferred = false;
+
+  if (derived == NULL)
+    {
+      for (; param_list; param_list = param_list->next)
+	if (param_list->spec_type == SPEC_ASSUMED
+	    || param_list->spec_type == SPEC_DEFERRED)
+	  return param_list->spec_type;
+    }
+  else
+    {
+      for (; param_list; param_list = param_list->next)
+	{
+	  c = gfc_find_component (derived, param_list->name,
+				  true, true, NULL);
+	  gcc_assert (c != NULL);
+	  if (c->attr.pdt_kind)
+	    continue;
+	  else if (param_list->spec_type == SPEC_EXPLICIT)
+	    return SPEC_EXPLICIT;
+	  seen_assumed = param_list->spec_type == SPEC_ASSUMED;
+	  seen_deferred = param_list->spec_type == SPEC_DEFERRED;
+	  if (seen_assumed && seen_deferred)
+	    return SPEC_EXPLICIT;
+	}
+      res = seen_assumed ? SPEC_ASSUMED : SPEC_DEFERRED;
+    }
+  return res;
 }
 
 

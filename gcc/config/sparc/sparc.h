@@ -745,25 +745,6 @@ extern enum cmodel sparc_cmodel;
 				\
   1, 1, 1, 1, 1, 1, 1}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On SPARC, ordinary registers hold 32 bits worth;
-   this means both integer and floating point registers.
-   On v9, integer regs hold 64 bits worth; floating point regs hold
-   32 bits worth (this includes the new fp regs as even the odd ones are
-   included in the hard register count).  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((REGNO) == SPARC_GSR_REG ? 1 :					\
-   (TARGET_ARCH64							\
-    ? (SPARC_INT_REG_P (REGNO) || (REGNO) == FRAME_POINTER_REGNUM			\
-       ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
-       : (GET_MODE_SIZE (MODE) + 3) / 4)				\
-    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
-
 /* Due to the ARCH64 discrepancy above we must override this next
    macro too.  */
 #define REGMODE_NATURAL_SIZE(MODE) sparc_regmode_natural_size (MODE)
@@ -1248,7 +1229,7 @@ extern GTY(()) char sparc_hard_reg_printed[8];
 do {									\
   if (TARGET_ARCH64)							\
     {									\
-      int end = HARD_REGNO_NREGS ((REGNO), DECL_MODE (decl)) + (REGNO); \
+      int end = end_hard_regno (DECL_MODE (decl), REGNO);		\
       int reg;								\
       for (reg = (REGNO); reg < 8 && reg < end; reg++)			\
 	if ((reg & ~1) == 2 || (reg & ~1) == 6)				\

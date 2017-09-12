@@ -39,13 +39,15 @@ their own patches from other maintainers or reviewers.
 
 			CPU Port Maintainers	(CPU alphabetical order)
 
-aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
+aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
+aarch64 port		Marcus Shawcroft	<marcus.shawcroft@arm.com>
 alpha port		Richard Henderson	<rth@twiddle.net>
 arc port		Joern Rennecke		<gnu@amylaar.uk>
 arm port		Nick Clifton		<nickc@redhat.com>
 arm port		Richard Earnshaw	<richard.earnshaw@arm.com>
 arm port		Ramana Radhakrishnan	<ramana.radhakrishnan@arm.com>
+arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 avr port		Denis Chertykov		<chertykov@gmail.com>
 bfin port		Jie Zhang		<jzhang918@gmail.com>
 c6x port		Bernd Schmidt		<bernds_cb1@t-online.de>
@@ -249,10 +251,8 @@ check in changes outside of the parts of the compiler they maintain.
 
 			Reviewers
 
-aarch64 port		James Greenhalgh	<james.greenhalgh@arm.com>
 arc port		Andrew Burgess		<andrew.burgess@embecosm.com>
 arc port		Claudiu Zissulescu	<claziss@synopsys.com>
-arm port		Kyrylo Tkachov		<kyrylo.tkachov@arm.com>
 C front end		Marek Polacek		<polacek@redhat.com>
 dataflow		Paolo Bonzini		<bonzini@gnu.org>
 dataflow		Seongbae Park		<seongbae.park@gmail.com>

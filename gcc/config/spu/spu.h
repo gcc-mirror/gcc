@@ -171,12 +171,6 @@ extern GTY(()) int spu_tune;
 }
 
 
-/* Values in Registers */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-    ((GET_MODE_BITSIZE(MODE)+MAX_FIXED_MODE_SIZE-1)/MAX_FIXED_MODE_SIZE)
-
-
 /* Register Classes */
 
 enum reg_class { 

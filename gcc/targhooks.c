@@ -1424,6 +1424,14 @@ default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* The defualt implementation of TARGET_HARD_REGNO_NREGS.  */
+
+unsigned int
+default_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
 bool
 default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 {
@@ -1556,6 +1564,14 @@ default_register_move_cost (machine_mode mode ATTRIBUTE_UNUSED,
 #else
   return REGISTER_MOVE_COST (mode, (enum reg_class) from, (enum reg_class) to);
 #endif
+}
+
+/* The default implementation of TARGET_SLOW_UNALIGNED_ACCESS.  */
+
+bool
+default_slow_unaligned_access (machine_mode, unsigned int)
+{
+  return STRICT_ALIGNMENT;
 }
 
 /* For hooks which use the MOVE_RATIO macro, this gives the legacy default

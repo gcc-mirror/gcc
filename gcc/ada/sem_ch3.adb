@@ -2676,14 +2676,11 @@ package body Sem_Ch3 is
               and then not Is_Child_Unit (Current_Scope)
               and then No (Generic_Parent (Parent (L)))
             then
-               --  This is needed in all cases to catch visibility errors in
-               --  aspect expressions, but several large user tests are now
-               --  rejected. Pending notification we restrict this call to
-               --  ASIS mode.
+               --  ARM rule 13.1.1(11/3): usage names in aspect definitions are
+               --  resolved at the end of the immediately enclosing declaration
+               --  list (AI05-0183-1).
 
-               if ASIS_Mode then
-                  Resolve_Aspects;
-               end if;
+               Resolve_Aspects;
 
             elsif L /= Visible_Declarations (Parent (L))
               or else No (Private_Declarations (Parent (L)))
@@ -9352,6 +9349,7 @@ package body Sem_Ch3 is
          New_Decl :=
            New_Copy_Tree
              (Parent (Parent_Base), Map => Assoc_List, New_Sloc => Loc);
+         Copy_Dimensions_Of_Components (Derived_Type);
 
          --  Restore the fields saved prior to the New_Copy_Tree call
          --  and compute the stored constraint.
@@ -9575,9 +9573,19 @@ package body Sem_Ch3 is
          Set_Has_Predicates (Derived_Type);
       end if;
 
-      --  The derived type inherits the representation clauses of the parent
+      --  The derived type inherits representation clauses from the parent
+      --  type, and from any interfaces.
 
       Inherit_Rep_Item_Chain (Derived_Type, Parent_Type);
+
+      declare
+         Iface : Node_Id := First (Abstract_Interface_List (Derived_Type));
+      begin
+         while Present (Iface) loop
+            Inherit_Rep_Item_Chain (Derived_Type, Entity (Iface));
+            Next (Iface);
+         end loop;
+      end;
 
       --  If the parent type has delayed rep aspects, then mark the derived
       --  type as possibly inheriting a delayed rep aspect.
@@ -11883,7 +11891,7 @@ package body Sem_Ch3 is
          --  or protected interfaces.
 
          elsif Nkind (N) = N_Full_Type_Declaration
-           and then  Protected_Present (Type_Def)
+           and then Protected_Present (Type_Def)
          then
             if Limited_Present (Iface_Def)
               or else Synchronized_Present (Iface_Def)
@@ -14456,23 +14464,6 @@ package body Sem_Ch3 is
 
          Set_Parent (New_Compon, Parent (Old_Compon));
 
-         --  If the old component's Esize was already determined and is a
-         --  static value, then the new component simply inherits it. Otherwise
-         --  the old component's size may require run-time determination, but
-         --  the new component's size still might be statically determinable
-         --  (if, for example it has a static constraint). In that case we want
-         --  Layout_Type to recompute the component's size, so we reset its
-         --  size and positional fields.
-
-         if Frontend_Layout_On_Target
-           and then not Known_Static_Esize (Old_Compon)
-         then
-            Set_Esize (New_Compon, Uint_0);
-            Init_Normalized_First_Bit    (New_Compon);
-            Init_Normalized_Position     (New_Compon);
-            Init_Normalized_Position_Max (New_Compon);
-         end if;
-
          --  We do not want this node marked as Comes_From_Source, since
          --  otherwise it would get first class status and a separate cross-
          --  reference line would be generated. Illegitimate children do not
@@ -16795,7 +16786,7 @@ package body Sem_Ch3 is
 
    procedure Diagnose_Interface (N : Node_Id;  E : Entity_Id) is
    begin
-      if not Is_Interface (E) and then  E /= Any_Type then
+      if not Is_Interface (E) and then E /= Any_Type then
          Error_Msg_NE ("(Ada 2005) & must be an interface", N, E);
       end if;
    end Diagnose_Interface;
@@ -18438,6 +18429,19 @@ package body Sem_Ch3 is
         (Subt, Has_Static_Predicate_Aspect (Par));
       Set_Has_Dynamic_Predicate_Aspect
         (Subt, Has_Dynamic_Predicate_Aspect (Par));
+
+      --  A named subtype does not inherit the predicate function of its
+      --  parent but an itype declared for a loop index needs the discrete
+      --  predicate information of its parent to execute the loop properly.
+
+      if Is_Itype (Subt) and then Present (Predicate_Function (Par)) then
+         Set_Subprograms_For_Type (Subt, Subprograms_For_Type (Par));
+
+         if Has_Static_Predicate (Par) then
+            Set_Static_Discrete_Predicate
+              (Subt, Static_Discrete_Predicate (Par));
+         end if;
+      end if;
    end Inherit_Predicate_Flags;
 
    ----------------------
@@ -21450,7 +21454,7 @@ package body Sem_Ch3 is
                Constrain_Access (Def_Id, S, Related_Nod);
 
                if Expander_Active
-                 and then  Is_Itype (Designated_Type (Def_Id))
+                 and then Is_Itype (Designated_Type (Def_Id))
                  and then Nkind (Related_Nod) = N_Subtype_Declaration
                  and then not Is_Incomplete_Type (Designated_Type (Def_Id))
                then
@@ -21549,9 +21553,11 @@ package body Sem_Ch3 is
                Error_Msg_N ("invalid subtype mark in subtype indication", S);
          end case;
 
-         --  Size and Convention are always inherited from the base type
+         --  Size, Alignment, Representation aspects and Convention are always
+         --  inherited from the base type.
 
          Set_Size_Info  (Def_Id,            (Subtype_Mark_Id));
+         Set_Rep_Info   (Def_Id,            (Subtype_Mark_Id));
          Set_Convention (Def_Id, Convention (Subtype_Mark_Id));
 
          return Def_Id;

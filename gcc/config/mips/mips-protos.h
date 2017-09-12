@@ -323,7 +323,6 @@ extern const char *mips_output_division (const char *, rtx *);
 extern const char *mips_msa_output_division (const char *, rtx *);
 extern const char *mips_output_probe_stack_range (rtx, rtx);
 extern bool mips_hard_regno_rename_ok (unsigned int, unsigned int);
-extern unsigned int mips_hard_regno_nregs (int, machine_mode);
 extern bool mips_linked_madd_p (rtx_insn *, rtx_insn *);
 extern bool mips_store_data_bypass_p (rtx_insn *, rtx_insn *);
 extern int mips_dspalu_bypass_p (rtx, rtx);

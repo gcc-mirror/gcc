@@ -1170,10 +1170,6 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define ATTRIBUTE_ALIGNED_VALUE BIGGEST_ALIGNMENT
 #endif
 
-#ifndef SLOW_UNALIGNED_ACCESS
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) STRICT_ALIGNMENT
-#endif
-
 /* For most ports anything that evaluates to a constant symbolic
    or integer value is acceptable as a constant address.  */
 #ifndef CONSTANT_ADDRESS_P

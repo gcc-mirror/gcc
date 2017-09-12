@@ -63,7 +63,7 @@
    of a size that is a power of 2.  For example it can try to emit a 40-bit
    store as a 32-bit store followed by an 8-bit store.
    We try to emit as wide stores as we can while respecting STRICT_ALIGNMENT or
-   SLOW_UNALIGNED_ACCESS rules.
+   TARGET_SLOW_UNALIGNED_ACCESS rules.
 
    Note on endianness and example:
    Consider 2 contiguous 16-bit stores followed by 2 contiguous 8-bit stores:

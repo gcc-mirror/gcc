@@ -959,8 +959,9 @@ build_decl_attribute_variant (tree ddecl, tree attribute)
    Record such modified types already made so we don't make duplicates.  */
 
 tree
-build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
+build_type_attribute_qual_variant (tree otype, tree attribute, int quals)
 {
+  tree ttype = otype;
   if (! attribute_list_equal (TYPE_ATTRIBUTES (ttype), attribute))
     {
       tree ntype;
@@ -983,6 +984,11 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	}
 
       ttype = build_qualified_type (ttype, TYPE_UNQUALIFIED);
+      if (lang_hooks.types.copy_lang_qualifiers
+	  && otype != TYPE_MAIN_VARIANT (otype))
+	ttype = (lang_hooks.types.copy_lang_qualifiers
+		 (ttype, TYPE_MAIN_VARIANT (otype)));
+
       ntype = build_distinct_type_copy (ttype);
 
       TYPE_ATTRIBUTES (ntype) = attribute;
@@ -1000,6 +1006,9 @@ build_type_attribute_qual_variant (tree ttype, tree attribute, int quals)
 	TYPE_CANONICAL (ntype) = TYPE_CANONICAL (ttype);
 
       ttype = build_qualified_type (ntype, quals);
+      if (lang_hooks.types.copy_lang_qualifiers
+	  && otype != TYPE_MAIN_VARIANT (otype))
+	ttype = lang_hooks.types.copy_lang_qualifiers (ttype, otype);
     }
   else if (TYPE_QUALS (ttype) != quals)
     ttype = build_qualified_type (ttype, quals);
@@ -1574,4 +1583,26 @@ attribute_list_contained (const_tree l1, const_tree l2)
     }
 
   return 1;
+}
+
+/* The backbone of lookup_attribute().  ATTR_LEN is the string length
+   of ATTR_NAME, and LIST is not NULL_TREE.
+
+   The function is called from lookup_attribute in order to optimize
+   for size.  */
+
+tree
+private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
+{
+  while (list)
+    {
+      tree attr = get_attribute_name (list);
+      size_t ident_len = IDENTIFIER_LENGTH (attr);
+      if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
+		       ident_len))
+	break;
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
 }

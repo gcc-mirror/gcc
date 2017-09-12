@@ -2513,7 +2513,10 @@ package body Sem_Ch5 is
                & "iteration", Discrete_Subtype_Definition (N),
                T, Suggest_Static => True);
 
-         elsif Inside_A_Generic and then Is_Generic_Formal (T) then
+         elsif Inside_A_Generic
+           and then Is_Generic_Formal (T)
+           and then Is_Discrete_Type (T)
+         then
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
@@ -3745,7 +3748,8 @@ package body Sem_Ch5 is
                      Check_SPARK_05_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else
-                     Error_Msg ("??unreachable code!", Sloc (Error_Node));
+                     Error_Msg
+                       ("??unreachable code!", Sloc (Error_Node), Error_Node);
                   end if;
                end if;
 

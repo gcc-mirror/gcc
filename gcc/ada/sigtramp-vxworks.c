@@ -6,7 +6,7 @@
  *                                                                          *
  *                         Asm Implementation File                          *
  *                                                                          *
- *         Copyright (C) 2011-2015, Free Software Foundation, Inc.          *
+ *         Copyright (C) 2011-2017, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -39,6 +39,9 @@
 #include <vxWorks.h>
 #include <arch/../regs.h>
 #ifndef __RTP__
+#if defined(__i386__)
+#include <version.h>
+#endif
 #include <sigLib.h>
 #else
 #include <signal.h>
@@ -127,11 +130,13 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
        containing a complete REG_SET just before the field 'sc_pregs', this
        adds a 208 bytes offset to get the value of 'sc_pregs'.
      * on x86-vx7: the same offset is used on vx7: 3 32-bit values are present
-       at the enf of the reg set, but the padding is then of 0xc4 characters.
+       at the end of the reg set, but the padding is then of 0xc4 characters.
      * on x86_64-vx7: two 64-bit values are added at the beginning of the
        REG_SET. This adds a 16 bytes offset to get the value of 'sc_pregs',
        and another 16 bytes offset within the pregs structure to retrieve the
        registers list.
+
+     * See header file regsSimlinux.h.
   */
 
   /* Retrieve the registers to restore : */
@@ -141,7 +146,9 @@ void __gnat_sigtramp (int signo, void *si, void *sc,
   /* move sctx 208 bytes further, so that the vxsim's sc_pregs field coincide
      with the expected x86 one */
   struct sigcontext * sctx =
-    (struct sigcontext *) (sc + (__gnat_is_vxsim ? 208 : 0));
+    (struct sigcontext *) (sc + (__gnat_is_vxsim ?
+				 (_WRS_VXWORKS_MAJOR == 7 ? 204 : 208)
+				 : 0));
 #elif defined(__x86_64__)
   /* move sctx 16 bytes further, so that the vxsim's sc_pregs field coincide
      with the expected x86_64 one */

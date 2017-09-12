@@ -228,6 +228,8 @@ static void visium_init_libfuncs (void);
 
 static unsigned int visium_reorg (void);
 
+static unsigned int visium_hard_regno_nregs (unsigned int, machine_mode);
+
 static bool visium_hard_regno_mode_ok (unsigned int, machine_mode);
 
 static bool visium_modes_tieable_p (machine_mode, machine_mode);
@@ -342,6 +344,9 @@ static bool visium_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_FLAGS_REGNUM
 #define TARGET_FLAGS_REGNUM FLAGS_REGNUM
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS visium_hard_regno_nregs
 
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK visium_hard_regno_mode_ok
@@ -846,6 +851,16 @@ visium_hard_regno_rename_ok (unsigned int from ATTRIBUTE_UNUSED,
   return 1;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+visium_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno == MDB_REGNUM)
+    return CEIL (GET_MODE_SIZE (mode), 2 * UNITS_PER_WORD);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.
 
    Modes with sizes which cross from the one register class to the
@@ -857,13 +872,13 @@ static bool
 visium_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (GP_REGISTER_P (regno))
-    return GP_REGISTER_P (regno + HARD_REGNO_NREGS (regno, mode) - 1);
+    return GP_REGISTER_P (end_hard_regno (mode, regno) - 1);
 
   if (FP_REGISTER_P (regno))
     return mode == SFmode || (mode == SImode && TARGET_FPU_IEEE);
 
   return (GET_MODE_CLASS (mode) == MODE_INT
-	  && HARD_REGNO_NREGS (regno, mode) == 1);
+	  && visium_hard_regno_nregs (regno, mode) == 1);
 }
 
 /* Implement TARGET_MODES_TIEABLE_P.  */

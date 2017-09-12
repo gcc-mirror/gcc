@@ -1073,25 +1073,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   Actually there are no two word move instructions for consecutive
-   registers.  And only registers 0-3 may have mov byte instructions
-   applied to them.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (GENERAL_REGNO_P (REGNO)						\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : ((MODE) == XCmode						\
-	 ? (TARGET_64BIT ? 4 : 6)					\
-	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)))		\
-   : (COMPLEX_MODE_P (MODE) ? 2 :					\
-      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1)))
-
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   (TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT				\
    && GENERAL_REGNO_P (REGNO)						\
@@ -2016,20 +1997,6 @@ do {							\
 
 /* Nonzero if access to memory by shorts is slow and undesirable.  */
 #define SLOW_SHORT_ACCESS 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a
-   cost many times greater than aligned accesses, for example if they
-   are emulated in a trap handler.
-
-   When this macro is nonzero, the compiler will act as if
-   `STRICT_ALIGNMENT' were nonzero when generating code for block
-   moves.  This can cause significantly more instructions to be
-   produced.  Therefore, do not set this macro nonzero if unaligned
-   accesses only add a cycle or two to the time for a memory access.
-
-   If the value of this macro is always zero, it need not be defined.  */
-
-/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.

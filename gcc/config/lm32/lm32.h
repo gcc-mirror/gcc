@@ -163,9 +163,6 @@ do {                                                    \
   0, 0, 0, 0, 0, 0, 0, 0,   \
   0, 0, 1, 0, 1, 0, 1, 1}
 
-#define HARD_REGNO_NREGS(REGNO, MODE)                                   \
-    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 #define AVOID_CCMODE_COPIES
 
 /*----------------------------------*/

@@ -5657,8 +5657,37 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
   hphi = new hsa_insn_phi (count, dest);
   hphi->m_bb = hbb->m_bb;
 
-  tree lhs = gimple_phi_result (phi_stmt);
+  auto_vec <tree, 8> aexprs;
+  auto_vec <hsa_op_reg *, 8> aregs;
 
+  /* Calling split_edge when processing a PHI node messes up with the order of
+     gimple phi node arguments (it moves the one associated with the edge to
+     the end).  We need to keep the order of edges and arguments of HSA phi
+     node arguments consistent, so we do all required splitting as the first
+     step, and in reverse order as to not be affected by the re-orderings.  */
+  for (unsigned j = count; j != 0; j--)
+    {
+      unsigned i = j - 1;
+      tree op = gimple_phi_arg_def (phi_stmt, i);
+      if (TREE_CODE (op) != ADDR_EXPR)
+	continue;
+
+      edge e = gimple_phi_arg_edge (as_a <gphi *> (phi_stmt), i);
+      hsa_bb *hbb_src = hsa_init_new_bb (split_edge (e));
+      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
+					   hbb_src);
+
+      hsa_op_reg *dest
+	= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
+      hsa_insn_basic *insn
+	= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
+			      dest, addr);
+      hbb_src->append_insn (insn);
+      aexprs.safe_push (op);
+      aregs.safe_push (dest);
+    }
+
+  tree lhs = gimple_phi_result (phi_stmt);
   for (unsigned i = 0; i < count; i++)
     {
       tree op = gimple_phi_arg_def (phi_stmt, i);
@@ -5684,18 +5713,14 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
 	    }
 	  else if (TREE_CODE (op) == ADDR_EXPR)
 	    {
-	      edge e = gimple_phi_arg_edge (as_a <gphi *> (phi_stmt), i);
-	      hsa_bb *hbb_src = hsa_init_new_bb (split_edge (e));
-	      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
-						   hbb_src);
-
-	      hsa_op_reg *dest
-		= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
-	      hsa_insn_basic *insn
-		= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
-				      dest, addr);
-	      hbb_src->append_insn (insn);
-
+	      hsa_op_reg *dest = NULL;
+	      for (unsigned a_idx = 0; a_idx < aexprs.length (); a_idx++)
+		if (aexprs[a_idx] == op)
+		  {
+		    dest = aregs[a_idx];
+		    break;
+		  }
+	      gcc_assert (dest);
 	      hphi->set_op (i, dest);
 	    }
 	  else

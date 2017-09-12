@@ -62,7 +62,6 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Ttypes;   use Ttypes;
 with Uintp;    use Uintp;
@@ -424,6 +423,10 @@ package body Exp_Attr is
    --       return True;
    --    end _Valid_Scalars;
 
+   --  If the record type is an unchecked union, we can only check components
+   --  in the invariant part, given that there are no discriminant values to
+   --  select a variant.
+
    function Build_Record_VS_Func
      (R_Type : Entity_Id;
       Nod    : Node_Id) return Entity_Id
@@ -476,7 +479,9 @@ package body Exp_Attr is
       begin
          Append_To (Result, Make_VS_If (E, Component_Items (CL)));
 
-         if No (Variant_Part (CL)) then
+         if No (Variant_Part (CL))
+           or else Is_Unchecked_Union (R_Type)
+         then
             return Result;
          end if;
 
@@ -563,6 +568,11 @@ package body Exp_Attr is
                --  Don't bother with tag, always valid, and not scalar anyway
 
                elsif Field_Name = Name_uTag then
+                  null;
+
+               elsif Ekind (Def_Id) = E_Discriminant
+                 and then Is_Unchecked_Union (R_Type)
+               then
                   null;
 
                --  Don't bother with component with no scalar components
@@ -1076,7 +1086,8 @@ package body Exp_Attr is
          Loop_Stmt := N;
          while Present (Loop_Stmt) loop
             if Nkind (Loop_Stmt) = N_Loop_Statement
-              and then Comes_From_Source (Loop_Stmt)
+              and then Nkind (Original_Node (Loop_Stmt)) = N_Loop_Statement
+              and then Comes_From_Source (Original_Node (Loop_Stmt))
             then
                exit;
             end if;
@@ -1751,6 +1762,15 @@ package body Exp_Attr is
         and then Is_Build_In_Place_Function_Call (Pref)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+
+      --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
+      --  containing build-in-place function calls whose returned object covers
+      --  interface types.
+
+      elsif Ada_Version >= Ada_2005
+        and then Present (Unqual_BIP_Iface_Function_Call (Pref))
+      then
+         Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Pref);
       end if;
 
       --  If prefix is a protected type name, this is a reference to the
@@ -2235,7 +2255,7 @@ package body Exp_Attr is
          --  issues are taken care of by the virtual machine.
 
          elsif Is_Class_Wide_Type (Ptyp)
-           and then Is_Interface (Ptyp)
+           and then Is_Interface (Underlying_Type (Ptyp))
            and then Tagged_Type_Expansion
            and then not (Nkind (Pref) in N_Has_Entity
                           and then Is_Subprogram (Entity (Pref)))
@@ -2670,6 +2690,18 @@ package body Exp_Attr is
             Rewrite (N,
               New_Occurrence_Of
                 (Extra_Constrained (Formal_Ent), Sloc (N)));
+
+         --  If the prefix is an access to object, the attribute applies to
+         --  the designated object, so rewrite with an explicit dereference.
+
+         elsif Is_Access_Type (Etype (Pref))
+           and then
+             (not Is_Entity_Name (Pref) or else Is_Object (Entity (Pref)))
+         then
+            Rewrite (Pref,
+              Make_Explicit_Dereference (Loc, Relocate_Node (Pref)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+            return;
 
          --  For variables with a Extra_Constrained field, we use the
          --  corresponding entity.
@@ -3805,10 +3837,17 @@ package body Exp_Attr is
 
                begin
                   --  Read the internal tag (RM 13.13.2(34)) and use it to
-                  --  initialize a dummy tag value:
-
+                  --  initialize a dummy tag value. We used to generate:
+                  --
                   --     Descendant_Tag (String'Input (Strm), P_Type);
-
+                  --
+                  --  which turns into a call to String_Input_Blk_IO. However,
+                  --  if the input is malformed, that could try to read an
+                  --  enormous String, causing chaos. So instead we call
+                  --  String_Input_Tag, which does the same thing as
+                  --  String_Input_Blk_IO, except that if the String is
+                  --  absurdly long, it raises an exception.
+                  --
                   --  This value is used only to provide a controlling
                   --  argument for the eventual _Input call. Descendant_Tag is
                   --  called rather than Internal_Tag to ensure that we have a
@@ -3828,15 +3867,17 @@ package body Exp_Attr is
                       Name                   =>
                         New_Occurrence_Of (RTE (RE_Descendant_Tag), Loc),
                       Parameter_Associations => New_List (
-                        Make_Attribute_Reference (Loc,
-                          Prefix         =>
-                            New_Occurrence_Of (Standard_String, Loc),
-                          Attribute_Name => Name_Input,
-                          Expressions    => New_List (
+                        Make_Function_Call (Loc,
+                          Name                   =>
+                            New_Occurrence_Of
+                              (RTE (RE_String_Input_Tag), Loc),
+                          Parameter_Associations => New_List (
                             Relocate_Node (Duplicate_Subexpr (Strm)))),
+
                         Make_Attribute_Reference (Loc,
                           Prefix         => New_Occurrence_Of (P_Type, Loc),
                           Attribute_Name => Name_Tag)));
+
                   Set_Etype (Expr, RTE (RE_Tag));
 
                   --  Now we need to get the entity for the call, and construct
@@ -6229,7 +6270,7 @@ package body Exp_Attr is
 
          elsif Comes_From_Source (N)
             and then Is_Class_Wide_Type (Etype (Prefix (N)))
-            and then Is_Interface (Etype (Prefix (N)))
+            and then Is_Interface (Underlying_Type (Etype (Prefix (N))))
          then
             --  Generate:
             --    (To_Tag_Ptr (Prefix'Address)).all
@@ -8221,7 +8262,6 @@ package body Exp_Attr is
       function Is_GCC_Target return Boolean is
       begin
          return not CodePeer_Mode
-           and then not AAMP_On_Target
            and then not Modify_Tree_For_C;
       end Is_GCC_Target;
 
@@ -8231,7 +8271,7 @@ package body Exp_Attr is
       --  Machine and Model can be expanded by the GCC and AAMP back ends only
 
       if Id = Attribute_Machine or else Id = Attribute_Model then
-         return Is_GCC_Target or else AAMP_On_Target;
+         return Is_GCC_Target;
 
       --  Remaining cases handled by all back ends are Rounding and Truncation
       --  when appearing as the operand of a conversion to some integer type.

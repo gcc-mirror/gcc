@@ -1,4 +1,5 @@
---  { dg-options "-cargs -O2 -g -margs" }
+-- { dg-do compile }
+-- { dg-options "-O2 -g" }
 
 package body Debug13 is
 

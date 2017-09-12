@@ -396,26 +396,26 @@ gigi (Node_Id gnat_root,
   ptr_void_ftype = build_pointer_type (void_ftype);
 
   /* Now declare run-time functions.  */
-  ftype = build_function_type_list (ptr_type_node, sizetype, NULL_TREE);
   malloc_decl
     = create_subprog_decl (get_identifier ("__gnat_malloc"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (ptr_type_node, sizetype,
+						     NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
   DECL_IS_MALLOC (malloc_decl) = 1;
 
-  ftype = build_function_type_list (void_type_node, ptr_type_node, NULL_TREE);
   free_decl
     = create_subprog_decl (get_identifier ("__gnat_free"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (void_type_node,
+						     ptr_type_node, NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
 
-  ftype = build_function_type_list (ptr_type_node, ptr_type_node, sizetype,
-				    NULL_TREE);
   realloc_decl
     = create_subprog_decl (get_identifier ("__gnat_realloc"), NULL_TREE,
-			   ftype,
+			   build_function_type_list (ptr_type_node,
+						     ptr_type_node, sizetype,
+						     NULL_TREE),
 			   NULL_TREE, is_disabled, true, true, true, false,
 			   false, NULL, Empty);
 
@@ -3777,6 +3777,11 @@ Subprogram_Body_to_gnu (Node_Id gnat_node)
   Sloc_to_locus (Sloc (gnat_node), &locus);
   DECL_SOURCE_LOCATION (gnu_subprog_decl) = locus;
 
+  /* If the body comes from an expression function, arrange it to be inlined
+     in almost all cases.  */
+  if (Was_Expression_Function (gnat_node))
+    DECL_DISREGARD_INLINE_LIMITS (gnu_subprog_decl) = 1;
+
   /* Initialize the information structure for the function.  */
   allocate_struct_function (gnu_subprog_decl, false);
   gnu_subprog_language = ggc_cleared_alloc<language_function> ();
@@ -4075,8 +4080,6 @@ node_has_volatile_full_access (Node_Id gnat_node)
     case N_Identifier:
     case N_Expanded_Name:
       gnat_entity = Entity (gnat_node);
-      if (Ekind (gnat_entity) != E_Variable)
-	break;
       return Is_Volatile_Full_Access (gnat_entity)
 	     || Is_Volatile_Full_Access (Etype (gnat_entity));
 
@@ -6142,7 +6145,7 @@ gnat_to_gnu (Node_Id gnat_node)
 	  && (((Is_Array_Type (Etype (gnat_temp))
 		|| Is_Record_Type (Etype (gnat_temp)))
 	       && !Is_Constrained (Etype (gnat_temp)))
-	    || Is_Concurrent_Type (Etype (gnat_temp))))
+	      || Is_Concurrent_Type (Etype (gnat_temp))))
 	break;
 
       if (Present (Expression (gnat_node))
@@ -6465,17 +6468,6 @@ gnat_to_gnu (Node_Id gnat_node)
 	  {
 	    tree gnu_field = gnat_to_gnu_field_decl (gnat_field);
 
-	    /* If the prefix has incomplete type, try again to translate it.
-	       The idea is that the translation of the field just above may
-	       have completed it through gnat_to_gnu_entity, in case it is
-	       the dereference of an access to Taft Amendment type used in
-	       the instantiation of a generic body from an external unit.  */
-	    if (!COMPLETE_TYPE_P (TREE_TYPE (gnu_prefix)))
-	      {
-		gnu_prefix = gnat_to_gnu (gnat_prefix);
-		gnu_prefix = maybe_implicit_deref (gnu_prefix);
-	      }
-		
 	    gnu_result
 	      = build_component_ref (gnu_prefix, gnu_field,
 				     (Nkind (Parent (gnat_node))
@@ -7048,14 +7040,17 @@ gnat_to_gnu (Node_Id gnat_node)
 	  /* Or else, use memset when the conditions are met.  */
 	  else if (use_memset_p)
 	    {
-	      tree value = fold_convert (integer_type_node, gnu_rhs);
+	      tree value
+		= real_zerop (gnu_rhs)
+		  ? integer_zero_node
+		  : fold_convert (integer_type_node, gnu_rhs);
 	      tree to = gnu_lhs;
 	      tree type = TREE_TYPE (to);
 	      tree size
 	        = SUBSTITUTE_PLACEHOLDER_IN_EXPR (TYPE_SIZE_UNIT (type), to);
 	      tree to_ptr = build_fold_addr_expr (to);
 	      tree t = builtin_decl_explicit (BUILT_IN_MEMSET);
-	      if (TREE_CODE (value) == INTEGER_CST)
+	      if (TREE_CODE (value) == INTEGER_CST && !integer_zerop (value))
 		{
 		  tree mask
 		    = build_int_cst (integer_type_node,

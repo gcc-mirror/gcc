@@ -24,5 +24,5 @@ int main()
 {
   int dummy;
   auto bad = std::experimental::make_array(std::ref(dummy));
-  // { dg-error "explicit target type" "" { target *-*-* } 78 }
+  // { dg-error "explicit target type" "" { target *-*-* } 76 }
 }

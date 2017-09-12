@@ -1874,10 +1874,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
 	{
 	  oldargs[i] = gimple_call_arg (def_stmt, i);
-	  if (TREE_CODE (oldargs[i]) == SSA_NAME
-	      && VN_INFO (oldargs[i])->valnum != oldargs[i])
+	  tree val = vn_valueize (oldargs[i]);
+	  if (val != oldargs[i])
 	    {
-	      gimple_call_set_arg (def_stmt, i, VN_INFO (oldargs[i])->valnum);
+	      gimple_call_set_arg (def_stmt, i, val);
 	      valueized_anything = true;
 	    }
 	}
@@ -3956,9 +3956,10 @@ visit_use (tree use)
 
   mark_use_processed (use);
 
-  gcc_assert (!SSA_NAME_IN_FREE_LIST (use));
-  if (dump_file && (dump_flags & TDF_DETAILS)
-      && !SSA_NAME_IS_DEFAULT_DEF (use))
+  gcc_assert (!SSA_NAME_IN_FREE_LIST (use)
+	      && !SSA_NAME_IS_DEFAULT_DEF (use));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Value numbering ");
       print_generic_expr (dump_file, use);
@@ -3966,10 +3967,7 @@ visit_use (tree use)
       print_gimple_stmt (dump_file, stmt, 0);
     }
 
-  /* Handle uninitialized uses.  */
-  if (SSA_NAME_IS_DEFAULT_DEF (use))
-    changed = set_ssa_val_to (use, use);
-  else if (gimple_code (stmt) == GIMPLE_PHI)
+  if (gimple_code (stmt) == GIMPLE_PHI)
     changed = visit_phi (stmt);
   else if (gimple_has_volatile_ops (stmt))
     changed = defs_to_varying (stmt);
@@ -4554,7 +4552,8 @@ init_scc_vn (void)
 
   XDELETE (rpo_numbers_temp);
 
-  VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
+  VN_TOP = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		       get_identifier ("VN_TOP"), error_mark_node);
 
   renumber_gimple_stmt_uids ();
 
@@ -4583,7 +4582,9 @@ init_scc_vn (void)
       switch (TREE_CODE (SSA_NAME_VAR (name)))
 	{
 	case VAR_DECL:
-	  /* Undefined vars keep TOP.  */
+	  /* All undefined vars are VARYING.  */
+	  VN_INFO (name)->valnum = name; 
+	  VN_INFO (name)->visited = true;
 	  break;
 
 	case PARM_DECL:
@@ -4610,12 +4611,10 @@ init_scc_vn (void)
 
 	case RESULT_DECL:
 	  /* If the result is passed by invisible reference the default
-	     def is initialized, otherwise it's uninitialized.  */
-	  if (DECL_BY_REFERENCE (SSA_NAME_VAR (name)))
-	    {
-	      VN_INFO (name)->visited = true;
-	      VN_INFO (name)->valnum = name; 
-	    }
+	     def is initialized, otherwise it's uninitialized.  Still
+	     undefined is varying.  */
+	  VN_INFO (name)->visited = true;
+	  VN_INFO (name)->valnum = name; 
 	  break;
 
 	default:
@@ -5008,14 +5007,13 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   /* Initialize the value ids and prune out remaining VN_TOPs
      from dead code.  */
   tree name;
-
   FOR_EACH_SSA_NAME (i, name, cfun)
     {
       vn_ssa_aux_t info = VN_INFO (name);
-      if (!info->visited)
-	info->valnum = name;
-      if (info->valnum == name
+      if (!info->visited
 	  || info->valnum == VN_TOP)
+	info->valnum = name;
+      if (info->valnum == name)
 	info->value_id = get_next_value_id ();
       else if (is_gimple_min_invariant (info->valnum))
 	info->value_id = get_or_alloc_constant_value_id (info->valnum);

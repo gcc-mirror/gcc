@@ -900,11 +900,11 @@ msp430_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
 
 /* Register Usage */
 
-/* Implements HARD_REGNO_NREGS.  MSP430X registers can hold a single
-   PSImode value, but not an SImode value.  */
-int
-msp430_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
-			 machine_mode mode)
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS msp430_hard_regno_nregs
+
+static unsigned int
+msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 {
   if (mode == PSImode && msp430x)
     return 1;

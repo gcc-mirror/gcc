@@ -217,7 +217,7 @@ struct riscv_cpu_info {
 /* Global variables for machine-dependent things.  */
 
 /* Whether unaligned accesses execute very slowly.  */
-bool riscv_slow_unaligned_access;
+static bool riscv_slow_unaligned_access_p;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -3519,6 +3519,18 @@ riscv_register_move_cost (machine_mode mode,
   return SECONDARY_MEMORY_NEEDED (from, to, mode) ? 8 : 2;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (FP_REG_P (regno))
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
+
+  /* All other registers are word-sized.  */
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -3569,18 +3581,6 @@ riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return (mode1 == mode2
 	  || !(GET_MODE_CLASS (mode1) == MODE_FLOAT
 	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
-}
-
-/* Implement HARD_REGNO_NREGS.  */
-
-unsigned int
-riscv_hard_regno_nregs (int regno, machine_mode mode)
-{
-  if (FP_REG_P (regno))
-    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
-
-  /* All other registers are word-sized.  */
-  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
 }
 
 /* Implement CLASS_MAX_NREGS.  */
@@ -3744,8 +3744,8 @@ riscv_option_override (void)
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
      the performance cost is too great, even for -Os.  */
-  riscv_slow_unaligned_access = (cpu->tune_info->slow_unaligned_access
-				 || TARGET_STRICT_ALIGN);
+  riscv_slow_unaligned_access_p = (cpu->tune_info->slow_unaligned_access
+				   || TARGET_STRICT_ALIGN);
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
@@ -3966,6 +3966,14 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
   return recog_memoized (insn) >= 0 && get_attr_cannot_copy (insn);
 }
 
+/* Implement TARGET_SLOW_UNALIGNED_ACCESS.  */
+
+static bool
+riscv_slow_unaligned_access (machine_mode, unsigned int)
+{
+  return riscv_slow_unaligned_access_p;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4096,11 +4104,16 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN riscv_expand_builtin
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS riscv_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK riscv_hard_regno_mode_ok
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P riscv_modes_tieable_p
+
+#undef TARGET_SLOW_UNALIGNED_ACCESS
+#define TARGET_SLOW_UNALIGNED_ACCESS riscv_slow_unaligned_access
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

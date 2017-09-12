@@ -291,7 +291,7 @@ in_class_p (rtx reg, enum reg_class cl, enum reg_class *new_class)
       for (i = 0; i < class_size; i++)
 	{
 	  hard_regno = ira_class_hard_regs[common_class][i];
-	  nregs = hard_regno_nregs[hard_regno][reg_mode];
+	  nregs = hard_regno_nregs (hard_regno, reg_mode);
 	  if (nregs == 1)
 	    return true;
 	  for (j = 0; j < nregs; j++)
@@ -676,7 +676,7 @@ lra_constraint_offset (int regno, machine_mode mode)
   if (WORDS_BIG_ENDIAN
       && is_a <scalar_int_mode> (mode, &int_mode)
       && GET_MODE_SIZE (int_mode) > UNITS_PER_WORD)
-    return hard_regno_nregs[regno][mode] - 1;
+    return hard_regno_nregs (regno, mode) - 1;
   return 0;
 }
 
@@ -1557,9 +1557,10 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
 		&& GET_MODE_SIZE (innermode) <= UNITS_PER_WORD
 		&& WORD_REGISTER_OPERATIONS)
 	      && (!(MEM_ALIGN (subst) < GET_MODE_ALIGNMENT (mode)
-		    && SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (subst)))
+		    && targetm.slow_unaligned_access (mode, MEM_ALIGN (subst)))
 		  || (MEM_ALIGN (reg) < GET_MODE_ALIGNMENT (innermode)
-		      && SLOW_UNALIGNED_ACCESS (innermode, MEM_ALIGN (reg)))))
+		      && targetm.slow_unaligned_access (innermode,
+							MEM_ALIGN (reg)))))
 	    return true;
 
 	  *curr_id->operand_loc[nop] = operand;
@@ -1654,8 +1655,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
        && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
        /* Don't reload paradoxical subregs because we could be looping
 	  having repeatedly final regno out of hard regs range.  */
-       && (hard_regno_nregs[hard_regno][innermode]
-	   >= hard_regno_nregs[hard_regno][mode])
+       && (hard_regno_nregs (hard_regno, innermode)
+	   >= hard_regno_nregs (hard_regno, mode))
        && simplify_subreg_regno (hard_regno, innermode,
 				 SUBREG_BYTE (operand), mode) < 0
        /* Don't reload subreg for matching reload.  It is actually
@@ -1725,8 +1726,8 @@ simplify_operand_subreg (int nop, machine_mode reg_mode)
   else if (REG_P (reg)
 	   && REGNO (reg) >= FIRST_PSEUDO_REGISTER
 	   && (hard_regno = lra_get_regno_hard_regno (REGNO (reg))) >= 0
-	   && (hard_regno_nregs[hard_regno][innermode]
-	       < hard_regno_nregs[hard_regno][mode])
+	   && (hard_regno_nregs (hard_regno, innermode)
+	       < hard_regno_nregs (hard_regno, mode))
 	   && (regclass = lra_get_allocno_class (REGNO (reg)))
 	   && (type != OP_IN
 	       || !in_hard_reg_set_p (reg_class_contents[regclass],
@@ -4667,7 +4668,7 @@ lra_constraints (bool first_p)
       {
 	int j, nregs;
 
-	nregs = hard_regno_nregs[hard_regno][lra_reg_info[i].biggest_mode];
+	nregs = hard_regno_nregs (hard_regno, lra_reg_info[i].biggest_mode);
 	for (j = 0; j < nregs; j++)
 	  df_set_regs_ever_live (hard_regno + j, true);
       }
@@ -4864,7 +4865,8 @@ lra_constraints (bool first_p)
 	if (lra_reg_info[i].nrefs != 0
 	    && (hard_regno = lra_get_regno_hard_regno (i)) >= 0)
 	  {
-	    int j, nregs = hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (i)];
+	    int j, nregs = hard_regno_nregs (hard_regno,
+					     PSEUDO_REGNO_MODE (i));
 
 	    for (j = 0; j < nregs; j++)
 	      lra_assert (df_regs_ever_live_p (hard_regno + j));
@@ -5476,7 +5478,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
     {
       mode = PSEUDO_REGNO_MODE (original_regno);
       hard_regno = reg_renumber[original_regno];
-      nregs = hard_regno_nregs[hard_regno][mode];
+      nregs = hard_regno_nregs (hard_regno, mode);
       rclass = lra_get_allocno_class (original_regno);
       original_reg = regno_reg_rtx[original_regno];
       call_save_p = need_for_call_save_p (original_regno);
@@ -5489,7 +5491,7 @@ split_reg (bool before_p, int original_regno, rtx_insn *insn,
   if (call_save_p)
     {
       mode = HARD_REGNO_CALLER_SAVE_MODE (hard_regno,
-					  hard_regno_nregs[hard_regno][mode],
+					  hard_regno_nregs (hard_regno, mode),
 					  mode);
       new_reg = lra_create_new_reg (mode, NULL_RTX, NO_REGS, "save");
     }
@@ -5638,7 +5640,7 @@ split_if_necessary (int regno, machine_mode mode,
   rtx next_usage_insns;
 
   if (regno < FIRST_PSEUDO_REGISTER)
-    nregs = hard_regno_nregs[regno][mode];
+    nregs = hard_regno_nregs (regno, mode);
   for (i = 0; i < nregs; i++)
     if (usage_insns[regno + i].check == curr_usage_insns_check
 	&& (next_usage_insns = usage_insns[regno + i].insns) != NULL_RTX
@@ -5684,7 +5686,7 @@ invariant_p (const_rtx x)
 	  || TEST_HARD_REG_BIT (eliminable_regset, regno)
 	  || GET_MODE_CLASS (GET_MODE (x)) == MODE_CC)
 	return false;
-      nregs = hard_regno_nregs[regno][mode];
+      nregs = hard_regno_nregs (regno, mode);
       for (i = 0; i < nregs; i++)
 	if (! fixed_regs[regno + i]
 	    /* A hard register may be clobbered in the current insn
@@ -6206,7 +6208,8 @@ inherit_in_ebb (rtx_insn *head, rtx_insn *tail)
 			usage_insns[dst_regno].check = -(int) INSN_UID (curr_insn);
 		      else
 			{
-			  nregs = hard_regno_nregs[dst_regno][reg->biggest_mode];
+			  nregs = hard_regno_nregs (dst_regno,
+						    reg->biggest_mode);
 			  for (i = 0; i < nregs; i++)
 			    usage_insns[dst_regno + i].check
 			      = -(int) INSN_UID (curr_insn);

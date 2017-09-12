@@ -21288,7 +21288,7 @@ gen_formal_parameter_die (tree node, tree origin, bool emit_name_p,
   tree ultimate_origin;
   dw_die_ref parm_die = NULL;
   
-  if (TREE_CODE_CLASS (TREE_CODE (node_or_origin)) == tcc_declaration)
+  if (DECL_P (node_or_origin))
     {
       parm_die = lookup_decl_die (node);
 

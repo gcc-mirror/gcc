@@ -1079,7 +1079,7 @@ package body Lib.Xref is
          --  original discriminant, which gets the reference.
 
          elsif Ekind (E) = E_In_Parameter
-           and then  Present (Discriminal_Link (E))
+           and then Present (Discriminal_Link (E))
          then
             Ent := Discriminal_Link (E);
             Set_Referenced (Ent);
@@ -1126,6 +1126,21 @@ package body Lib.Xref is
          --  Comment needed here for special SPARK code ???
 
          if GNATprove_Mode then
+
+            --  Ignore references to an entity which is a Part_Of single
+            --  concurrent object. Ideally we would prefer to add it as a
+            --  reference to the corresponding concurrent type, but it is quite
+            --  difficult (as such references are not currently added even for)
+            --  reads/writes of private protected components) and not worth the
+            --  effort.
+
+            if Ekind_In (Ent, E_Abstract_State, E_Constant, E_Variable)
+              and then Present (Encapsulating_State (Ent))
+              and then Is_Single_Concurrent_Object (Encapsulating_State (Ent))
+            then
+               return;
+            end if;
+
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 
@@ -2702,7 +2717,7 @@ package body Lib.Xref is
                   if XE.Key.Loc /= No_Location
                     and then
                       (XE.Key.Loc /= Crloc
-                        or else (Prevt = 'm' and then  XE.Key.Typ = 'r'))
+                        or else (Prevt = 'm' and then XE.Key.Typ = 'r'))
                   then
                      Crloc := XE.Key.Loc;
                      Prevt := XE.Key.Typ;

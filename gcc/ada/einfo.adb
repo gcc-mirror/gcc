@@ -249,6 +249,7 @@ package body Einfo is
    --    BIP_Initialization_Call         Node29
    --    Subprograms_For_Type            Elist29
 
+   --    Access_Disp_Table_Elab_Flag     Node30
    --    Anonymous_Object                Node30
    --    Corresponding_Equality          Node30
    --    Last_Aggregate_Assignment       Node30
@@ -718,11 +719,19 @@ package body Einfo is
 
    function Access_Disp_Table (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Type,
-                                   E_Record_Type_With_Private,
-                                   E_Record_Subtype));
+      pragma Assert (Ekind_In (Id, E_Record_Subtype,
+                                   E_Record_Type,
+                                   E_Record_Type_With_Private));
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
+
+   function Access_Disp_Table_Elab_Flag (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Record_Subtype,
+                                   E_Record_Type,
+                                   E_Record_Type_With_Private));
+      return Node30 (Implementation_Base_Type (Id));
+   end Access_Disp_Table_Elab_Flag;
 
    function Activation_Record_Component (Id : E) return E is
    begin
@@ -3816,6 +3825,14 @@ package body Einfo is
       pragma Assert (V = No_Elist or else Is_Tagged_Type (Id));
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
+
+   procedure Set_Access_Disp_Table_Elab_Flag (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+        and then Id = Implementation_Base_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Node30 (Id, V);
+   end Set_Access_Disp_Table_Elab_Flag;
 
    procedure Set_Anonymous_Designated_Type (Id : E; V : E) is
    begin
@@ -9276,17 +9293,26 @@ package body Einfo is
 
    function Underlying_Type (Id : E) return E is
    begin
-      --  For record_with_private the underlying type is always the direct
-      --  full view. Never try to take the full view of the parent it
-      --  doesn't make sense.
+      --  For record_with_private the underlying type is always the direct full
+      --  view. Never try to take the full view of the parent it does not make
+      --  sense.
 
       if Ekind (Id) = E_Record_Type_With_Private then
          return Full_View (Id);
 
+      --  If we have a class-wide type that comes from the limited view then we
+      --  return the Underlying_Type of its nonlimited view.
+
+      elsif Ekind (Id) = E_Class_Wide_Type
+        and then From_Limited_With (Id)
+        and then Present (Non_Limited_View (Id))
+      then
+         return Underlying_Type (Non_Limited_View (Id));
+
       elsif Ekind (Id) in Incomplete_Or_Private_Kind then
 
-         --  If we have an incomplete or private type with a full view,
-         --  then we return the Underlying_Type of this full view.
+         --  If we have an incomplete or private type with a full view, then we
+         --  return the Underlying_Type of this full view.
 
          if Present (Full_View (Id)) then
             if Id = Full_View (Id) then
@@ -9307,9 +9333,8 @@ package body Einfo is
          then
             return Underlying_Type (Underlying_Full_View (Id));
 
-         --  If we have an incomplete entity that comes from the limited
-         --  view then we return the Underlying_Type of its non-limited
-         --  view.
+         --  If we have an incomplete entity that comes from the limited view
+         --  then we return the Underlying_Type of its nonlimited view.
 
          elsif From_Limited_With (Id)
            and then Present (Non_Limited_View (Id))
@@ -9322,10 +9347,9 @@ package body Einfo is
          elsif Etype (Id) /= Id then
             return Underlying_Type (Etype (Id));
 
-         --  Otherwise we have an incomplete or private type that has
-         --  no full view, which means that we have not encountered the
-         --  completion, so return Empty to indicate the underlying type
-         --  is not yet known.
+         --  Otherwise we have an incomplete or private type that has no full
+         --  view, which means that we have not encountered the completion, so
+         --  return Empty to indicate the underlying type is not yet known.
 
          else
             return Empty;
@@ -10855,6 +10879,11 @@ package body Einfo is
    procedure Write_Field30_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Record_Type
+            | E_Record_Type_With_Private
+         =>
+            Write_Str ("Access_Disp_Table_Elab_Flag");
+
          when E_Protected_Type
             | E_Task_Type
          =>

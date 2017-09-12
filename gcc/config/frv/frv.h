@@ -747,22 +747,6 @@
 }
 
 
-/* How Values Fit in Registers.  */
-
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.
-
-   On a machine where all registers are exactly one word, a suitable definition
-   of this macro is
-
-        #define HARD_REGNO_NREGS(REGNO, MODE)            \
-           ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-            / UNITS_PER_WORD))  */
-
-/* On the FRV, make the CC modes take 3 words in the integer registers, so that
-   we can build the appropriate instructions to properly reload the values.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) frv_hard_regno_nregs (REGNO, MODE)
-
 /* Define this macro if the compiler should avoid copies to/from CCmode
    registers.  You should only define this macro if support fo copying to/from
    CCmode is incomplete.  */
@@ -930,17 +914,6 @@ extern enum reg_class regno_reg_class[];
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X) \
   frv_secondary_reload_class (CLASS, MODE, X)
 
-/* A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact, the value
-   of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be the maximum value of
-   `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.
-
-   This declaration is required.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) frv_class_max_nregs (CLASS, MODE)
 
 #define ZERO_P(x) (x == CONST0_RTX (GET_MODE (x)))

@@ -69,11 +69,11 @@ package body Debug is
    --  dC   Output debugging information on check suppression
    --  dD   Delete elaboration checks in inner level routines
    --  dE   Apply elaboration checks to predefined units
-   --  dF   Front end data layout enabled
+   --  dF   Perform the new SPARK checking rules for pointer aliasing
    --  dG   Generate all warnings including those normally suppressed
    --  dH   Hold (kill) call to gigi
    --  dI   Inhibit internal name numbering in gnatG listing
-   --  dJ
+   --  dJ   Prepend subprogram name in messages
    --  dK   Kill all error messages
    --  dL   Output trace information on elaboration checking
    --  dM   Assume all variables are modified (no current values)
@@ -115,7 +115,7 @@ package body Debug is
    --  d.v
    --  d.w  Do not check for infinite loops
    --  d.x  No exception handlers
-   --  d.y
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies
    --  d.z  Restore previous support for frontend handling of Inline_Always
 
    --  d.A  Read/write Aspect_Specifications hash table to tree
@@ -357,7 +357,7 @@ package body Debug is
    --       information for all internal type and object entities, as well
    --       as all user defined type and object entities including private
    --       and incomplete types. This debug switch also automatically sets
-   --       the equivalent of -gnatR3m.
+   --       the equivalent of -gnatRm.
 
    --  dB   Output debug encodings for types and variants. See Exp_Dbug for
    --       exact form of the generated output.
@@ -383,9 +383,10 @@ package body Debug is
    --  dE   Apply compile time elaboration checking for with relations between
    --       predefined units. Normally no checks are made.
 
-   --  dF   Front end data layout enabled. Normally front end data layout
-   --       is only enabled if the target parameter Backend_Layout is False.
-   --       This debugging switch enables it unconditionally.
+   --  dF   Perform the new SPARK checking rules for pointer aliasing. This is
+   --       only activated in GNATprove mode and on SPARK code. These rules are
+   --       not yet part of the official SPARK language, but are expected to be
+   --       included in a future version of SPARK.
 
    --  dG   Generate all warnings. Normally Errout suppresses warnings on
    --       units that are not part of the main extended source, and also
@@ -403,6 +404,11 @@ package body Debug is
    --       a name is replaced by <uppercase-letter>...<lowercase-letter>. This
    --       is used in the fixed bugs run to minimize system and version
    --       dependency in filed -gnatD or -gnatG output.
+
+   --  dJ   Prepend the name of the enclosing subprogram in compiler messages
+   --       (errors, warnings, style checks). This is useful in particular to
+   --       integrate compiler warnings in static analysis tools such as
+   --       CodePeer.
 
    --  dK   Kill all error messages. This debug flag suppresses the output
    --       of all error messages. It is used in regression tests where the
@@ -548,7 +554,7 @@ package body Debug is
 
    --  d.l  Use Ada 95 semantics for limited function returns. This may be
    --       used to work around the incompatibility introduced by AI-318-2.
-   --       It is useful only in -gnat05 mode.
+   --       It is useful only in Ada 2005 and later.
 
    --  d.m  When -gnatl is used, the normal output includes full listings of
    --       all files in the extended main source (body/spec/subunits). If this
@@ -602,6 +608,12 @@ package body Debug is
    --       handlers to be eliminated from the generated code. They are still
    --       fully compiled and analyzed, they just get eliminated from the
    --       code generation step.
+
+   --  d.y  Disable implicit pragma Elaborate_All on task bodies. When a task
+   --       body calls a procedure in the same package, and that procedure
+   --       calls a procedure in another package, the static elaboration
+   --       machinery adds an implicit Elaborate_All on the other package. This
+   --       switch disables the addition of the implicit pragma in such cases.
 
    --  d.z  Restore previous front-end support for Inline_Always. In default
    --       mode, for targets that use the GCC back end, Inline_Always is

@@ -5878,17 +5878,6 @@ h8300_legitimate_address_p (machine_mode mode, rtx x, bool strict)
   return 0;
 }
 
-/* Worker function for HARD_REGNO_NREGS.
-
-   We pretend the MAC register is 32bits -- we don't have any data
-   types on the H8 series to handle more than 32bits.  */
-
-int
-h8300_hard_regno_nregs (int regno ATTRIBUTE_UNUSED, machine_mode mode)
-{
-  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
-}
-
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool

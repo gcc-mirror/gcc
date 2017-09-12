@@ -793,7 +793,7 @@ package body Targparm is
                   Result := (System_Text (P) = 'T');
 
                   case K is
-                     when AAM => AAMP_On_Target                      := Result;
+                     when AAM => null;
                      when ACR => Always_Compatible_Rep_On_Target     := Result;
                      when ASD => Atomic_Sync_Default_On_Target       := Result;
                      when BDC => Backend_Divide_Checks_On_Target     := Result;
@@ -803,7 +803,7 @@ package body Targparm is
                      when D32 => Duration_32_Bits_On_Target          := Result;
                      when DEN => Denorm_On_Target                    := Result;
                      when EXS => Exit_Status_Supported_On_Target     := Result;
-                     when FEL => Frontend_Layout_On_Target           := Result;
+                     when FEL => null;
                      when FEX => Frontend_Exceptions_On_Target       := Result;
                      when FFO => Fractional_Fixed_Ops_On_Target      := Result;
                      when MOV => Machine_Overflows_On_Target         := Result;

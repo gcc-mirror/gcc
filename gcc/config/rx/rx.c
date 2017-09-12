@@ -3434,6 +3434,14 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
     emit_insn (gen_mvtc (GEN_INT (CTRLREG_PSW), m_prev_psw_reg));
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+rx_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CLASS_MAX_NREGS (0, mode);
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -3606,6 +3614,8 @@ rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 #undef  TARGET_LRA_P
 #define TARGET_LRA_P 				rx_enable_lra
 
+#undef  TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS			rx_hard_regno_nregs
 #undef  TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK		rx_hard_regno_mode_ok
 

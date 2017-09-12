@@ -2834,7 +2834,7 @@ c6x_expand_prologue (void)
 				 reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   gcc_assert (nsaved == frame.nregs);
@@ -2922,7 +2922,7 @@ c6x_expand_epilogue (bool sibcall)
 	  emit_move_insn (reg, adjust_address (mem, save_mode, off));
 
 	  off += GET_MODE_SIZE (save_mode);
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   if (!frame_pointer_needed)
@@ -4025,7 +4025,7 @@ static void
 c6x_mark_reg_read (rtx reg, bool cross)
 {
   unsigned regno = REGNO (reg);
-  unsigned nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  unsigned nregs = REG_NREGS (reg);
 
   while (nregs-- > 0)
     c6x_mark_regno_read (regno + nregs, cross);
@@ -4037,7 +4037,7 @@ static void
 c6x_mark_reg_written (rtx reg, int cycles)
 {
   unsigned regno = REGNO (reg);
-  unsigned nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  unsigned nregs = REG_NREGS (reg);
 
   while (nregs-- > 0)
     ss.reg_set_in_cycle[regno + nregs] = cycles;
@@ -6336,7 +6336,7 @@ c6x_dwarf_register_span (rtx rtl)
     rtx p;
 
     regno = REGNO (rtl);
-    nregs = HARD_REGNO_NREGS (regno, GET_MODE (rtl));
+    nregs = REG_NREGS (rtl);
     if (nregs == 1)
       return  NULL_RTX;
 

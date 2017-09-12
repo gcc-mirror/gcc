@@ -1,3 +1,9 @@
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	* libgfortran/libgfortran.h: Add span field to descriptor.
+	* libgfortran/libtool-version : Bump up version number to 5:0:0.
+
 2017-08-27  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libgfortran/78387

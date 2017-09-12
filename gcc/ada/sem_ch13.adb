@@ -627,6 +627,7 @@ package body Sem_Ch13 is
                   end if;
 
                   Set_Component_Bit_Offset (Comp, Pos * SSU + NFB);
+                  Set_Normalized_Position  (Comp, Pos + NFB / SSU);
                   Set_Normalized_First_Bit (Comp, NFB mod SSU);
                end;
             end loop;
@@ -749,6 +750,9 @@ package body Sem_Ch13 is
                     (Storage_Unit_Offset * System_Storage_Unit) +
                       (System_Storage_Unit - 1) -
                       (Start_Bit + CSZ - 1));
+
+                  Set_Normalized_Position (Comp,
+                    Component_Bit_Offset (Comp) / System_Storage_Unit);
 
                   Set_Normalized_First_Bit (Comp,
                     Component_Bit_Offset (Comp) mod System_Storage_Unit);
@@ -2207,6 +2211,20 @@ package body Sem_Ch13 is
                        Make_Pragma_Argument_Association (Sloc (Expr),
                          Expression => Relocate_Node (Expr))),
                      Pragma_Name                  => Chars (Id));
+
+                  --  Linker_Section does not need delaying, as its argument
+                  --  must be a static string. Furthermore, if applied to
+                  --  an object with an explicit initialization, the object
+                  --  must be frozen in order to elaborate the initialization
+                  --  code. (This is already done for types with implicit
+                  --  initialization, such as protected types.)
+
+                  if A_Id = Aspect_Linker_Section
+                    and then Nkind (N) = N_Object_Declaration
+                    and then Has_Init_Expression (N)
+                  then
+                     Delay_Required := False;
+                  end if;
 
                --  Synchronization
 
@@ -3956,7 +3974,7 @@ package body Sem_Ch13 is
 
       procedure Check_Iterator_Functions;
       --  Check that there is a single function in Default_Iterator attribute
-      --  has the proper type structure.
+      --  that has the proper type structure.
 
       function Check_Primitive_Function (Subp : Entity_Id) return Boolean;
       --  Common legality check for the previous two
@@ -8700,6 +8718,9 @@ package body Sem_Ch13 is
             FBody : Node_Id;
 
          begin
+            Set_Ekind (SIdB, E_Function);
+            Set_Is_Predicate_Function (SIdB);
+
             --  The predicate function is shared between views of a type
 
             if Is_Private_Type (Typ) and then Present (Full_View (Typ)) then
@@ -9277,7 +9298,11 @@ package body Sem_Ch13 is
             T := Standard_Integer;
 
          when Aspect_Small =>
-            T := Universal_Real;
+
+            --  Note that the expression can be of any real type (not just a
+            --  real universal literal) as long as it is a static constant.
+
+            T := Any_Real;
 
          --  For a simple storage pool, we have to retrieve the type of the
          --  pool object associated with the aspect's corresponding attribute
@@ -11505,9 +11530,10 @@ package body Sem_Ch13 is
       Compile_Time_Warnings_Errors.Init;
       Unchecked_Conversions.Init;
 
-      if AAMP_On_Target then
-         Independence_Checks.Init;
-      end if;
+      --  ??? Might be needed in the future for some non GCC back-ends
+      --  if AAMP_On_Target then
+      --     Independence_Checks.Init;
+      --  end if;
    end Initialize;
 
    ---------------------------
@@ -12646,7 +12672,6 @@ package body Sem_Ch13 is
    --------------------------------
 
    procedure Resolve_Aspect_Expressions (E : Entity_Id) is
-
       function Resolve_Name (N : Node_Id) return Traverse_Result;
       --  Verify that all identifiers in the expression, with the exception
       --  of references to the current entity, denote visible entities. This
@@ -12664,6 +12689,8 @@ package body Sem_Ch13 is
       ------------------
 
       function Resolve_Name (N : Node_Id) return Traverse_Result is
+         Dummy : Traverse_Result;
+
       begin
          if Nkind (N) = N_Selected_Component then
             if Nkind (Prefix (N)) = N_Identifier
@@ -12677,9 +12704,24 @@ package body Sem_Ch13 is
          elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
             Find_Direct_Name (N);
 
-            if not ASIS_Mode then
+            --  In ASIS mode we must analyze overloaded identifiers to ensure
+            --  their correct decoration because expansion is disabled (and
+            --  the expansion of freeze nodes takes care of resolving aspect
+            --  expressions).
+
+            if ASIS_Mode then
+               if Is_Overloaded (N) then
+                  Analyze (Parent (N));
+               end if;
+            else
                Set_Entity (N, Empty);
             end if;
+
+         --  The name is component association needs no resolution.
+
+         elsif Nkind (N) = N_Component_Association then
+            Dummy := Resolve_Name (Expression (N));
+            return Skip;
 
          elsif Nkind (N) = N_Quantified_Expression then
             return Skip;
@@ -12689,6 +12731,8 @@ package body Sem_Ch13 is
       end Resolve_Name;
 
       procedure Resolve_Aspect_Expression is new Traverse_Proc (Resolve_Name);
+
+      --  Local variables
 
       ASN : Node_Id := First_Rep_Item (E);
 
@@ -12722,14 +12766,19 @@ package body Sem_Ch13 is
                      | Aspect_Static_Predicate
                   =>
                      --  Build predicate function specification and preanalyze
-                     --  expression after type replacement.
+                     --  expression after type replacement. The function
+                     --  declaration must be analyzed in the scope of the
+                     --  type, but the expression must see components.
 
                      if No (Predicate_Function (E)) then
+                        Uninstall_Discriminants_And_Pop_Scope (E);
                         declare
                            FDecl : constant Node_Id :=
                                      Build_Predicate_Function_Declaration (E);
                            pragma Unreferenced (FDecl);
+
                         begin
+                           Push_Scope_And_Install_Discriminants (E);
                            Resolve_Aspect_Expression (Expr);
                         end;
                      end if;
@@ -12750,6 +12799,15 @@ package body Sem_Ch13 is
                            end loop;
                         end;
                      end if;
+
+                  --  The expression for Default_Value is a static expression
+                  --  of the type, but this expression does not freeze the
+                  --  type, so it can still appear in a representation clause
+                  --  before the actual freeze point.
+
+                  when Aspect_Default_Value =>
+                     Set_Must_Not_Freeze (Expr);
+                     Preanalyze_Spec_Expression (Expr, E);
 
                   when others =>
                      if Present (Expr) then

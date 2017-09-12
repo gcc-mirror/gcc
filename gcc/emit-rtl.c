@@ -419,7 +419,7 @@ void
 set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
 {
   unsigned int nregs = (HARD_REGISTER_NUM_P (regno)
-			? hard_regno_nregs[regno][mode]
+			? hard_regno_nregs (regno, mode)
 			: 1);
   PUT_MODE_RAW (x, mode);
   set_regno_raw (x, regno, nregs);

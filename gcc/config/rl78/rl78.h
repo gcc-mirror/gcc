@@ -407,10 +407,6 @@ typedef unsigned int CUMULATIVE_ARGS;
     fprintf (FILE, "\tbsr\t__mcount\n");
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-  rl78_hard_regno_nregs (REGNO, MODE)
-
-
 #define TEXT_SECTION_ASM_OP ".text"
 #define DATA_SECTION_ASM_OP ".data"
 #define BSS_SECTION_ASM_OP ".bss"

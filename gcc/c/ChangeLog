@@ -1,3 +1,9 @@
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	* c-decl.c (field_decl_cmp, resort_data, resort_field_decl_cmp,
+	resort_sorted_fields): Moved from c-family/c-common.c.
+	* c-lang.h (struct sorted_fields_type): Moved from c-family/c-common.h.
+
 2017-09-01  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/82071

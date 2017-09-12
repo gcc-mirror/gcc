@@ -239,15 +239,6 @@ extern char * mcore_current_function_name;
  /* r7  r6  r5  r4  r3  r2  r15 r14 r13 r12 r11 r10  r9  r8  r1  r0  ap  c   fp x19*/ \
   {  7,  6,  5,  4,  3,  2,  15, 14, 13, 12, 11, 10,  9,  8,  1,  0, 16, 17, 18, 19}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the MCore regs are UNITS_PER_WORD bits wide; */
-#define HARD_REGNO_NREGS(REGNO, MODE)  \
-   (((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* Definitions for register eliminations.
 
    We have two registers that can be eliminated on the MCore.  First, the

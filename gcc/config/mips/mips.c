@@ -598,6 +598,7 @@ static const struct attribute_spec mips_attribute_table[] = {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        om_diagnostic } */
   { "long_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",  0, 0, false, true,  true,  NULL, false },
   { "far",     	   0, 0, false, true,  true,  NULL, false },
   { "near",        0, 0, false, true,  true,  NULL, false },
   /* We would really like to treat "mips16" and "nomips16" as type
@@ -1171,13 +1172,14 @@ mflip_mips16_use_mips16_p (tree decl)
   return *slot;
 }
 
-/* Predicates to test for presence of "near" and "far"/"long_call"
+/* Predicates to test for presence of "near"/"short_call" and "far"/"long_call"
    attributes on the given TYPE.  */
 
 static bool
 mips_near_type_p (const_tree type)
 {
-  return lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL;
+  return (lookup_attribute ("short_call", TYPE_ATTRIBUTES (type)) != NULL
+	  || lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL);
 }
 
 static bool
@@ -12875,7 +12877,7 @@ static bool
 mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
 {
   if (TARGET_FLOATXX
-      && hard_regno_nregs[regno][mode] == 1
+      && hard_regno_nregs (regno, mode) == 1
       && FP_REG_P (regno)
       && (regno & 1) != 0)
     return true;
@@ -12886,10 +12888,10 @@ mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
   return false;
 }
 
-/* Implement HARD_REGNO_NREGS.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-unsigned int
-mips_hard_regno_nregs (int regno, machine_mode mode)
+static unsigned int
+mips_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   if (ST_REG_P (regno))
     /* The size of FP status registers is always 4, because they only hold
@@ -22589,6 +22591,8 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS mips_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK mips_hard_regno_mode_ok
 

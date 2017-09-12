@@ -122,7 +122,7 @@ extern tree arm_fp16_type_node;
 /* Use hardware floating point instructions. */
 #define TARGET_HARD_FLOAT	(arm_float_abi != ARM_FLOAT_ABI_SOFT	\
 				 && bitmap_bit_p (arm_active_target.isa, \
-						  isa_bit_vfpv2))
+						  isa_bit_VFPv2))
 #define TARGET_SOFT_FLOAT	(!TARGET_HARD_FLOAT)
 /* User has permitted use of FP instructions, if they exist for this
    target.  */
@@ -169,10 +169,10 @@ extern tree arm_fp16_type_node;
 #define TARGET_VFPD32 (bitmap_bit_p (arm_active_target.isa, isa_bit_fp_d32))
 
 /* FPU supports VFPv3 instructions.  */
-#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv3))
+#define TARGET_VFP3 (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv3))
 
 /* FPU supports FPv5 instructions.  */
-#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_fpv5))
+#define TARGET_VFP5 (bitmap_bit_p (arm_active_target.isa, isa_bit_FPv5))
 
 /* FPU only supports VFP single-precision instructions.  */
 #define TARGET_VFP_SINGLE (!TARGET_VFP_DOUBLE)
@@ -194,7 +194,7 @@ extern tree arm_fp16_type_node;
   (TARGET_HARD_FLOAT && (TARGET_FP16 && TARGET_VFP5))
 
 /* FPU supports fused-multiply-add operations.  */
-#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_vfpv4))
+#define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
 
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
@@ -976,20 +976,6 @@ extern int arm_arch_cmse;
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the ARM core regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  	\
-  ((TARGET_32BIT			\
-    && REGNO > PC_REGNUM		\
-    && REGNO != FRAME_POINTER_REGNUM	\
-    && REGNO != ARG_POINTER_REGNUM)	\
-    && !IS_VFP_REGNUM (REGNO)		\
-   ? 1 : ARM_NUM_REGS (MODE))
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
@@ -1211,7 +1197,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : ((CLASS) != LO_REGS && (CLASS) != BASE_REGS			\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS))
 
@@ -1219,7 +1205,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : (CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS)
 
@@ -1916,8 +1902,6 @@ enum arm_auto_incmodes
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
-
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
 
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note

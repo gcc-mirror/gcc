@@ -998,20 +998,6 @@ enum data_align { align_abi, align_opt, align_both };
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a cost
-   many times greater than aligned accesses, for example if they are
-   emulated in a trap handler.  */
-/* Altivec vector memory instructions simply ignore the low bits; SPE vector
-   memory instructions trap on unaligned accesses; VSX memory instructions are
-   aligned to 4 or 8 bytes.  */
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
-  (STRICT_ALIGNMENT							\
-   || (!TARGET_EFFICIENT_UNALIGNED_VSX					\
-       && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE) && (ALIGN) < 32)	\
-	   || ((VECTOR_MODE_P (MODE) || FLOAT128_VECTOR_P (MODE))	\
-	       && (int) (ALIGN) < VECTOR_ALIGN (MODE)))))
-
 
 /* Standard register usage.  */
 
@@ -1276,11 +1262,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define VLOGICAL_REGNO_P(N)						\
   (INT_REGNO_P (N) || ALTIVEC_REGNO_P (N)				\
    || (TARGET_VSX && FP_REGNO_P (N)))					\
-
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
 
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
    enough space to account for vectors in FP regs.  However, TFmode/TDmode

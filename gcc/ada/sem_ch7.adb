@@ -402,6 +402,18 @@ package body Sem_Ch7 is
                      end if;
                   end if;
 
+               --  Freeze node
+
+               elsif Nkind (Decl) = N_Freeze_Entity then
+                  declare
+                     Discard : Boolean;
+                     pragma Unreferenced (Discard);
+                  begin
+                     --  Inspect the actions to find references to subprograms
+
+                     Discard := Has_Referencer (Actions (Decl));
+                  end;
+
                --  Exceptions, objects and renamings do not need to be public
                --  if they are not followed by a construct which can reference
                --  and export them. The Is_Public flag is reset on top level
@@ -426,6 +438,23 @@ package body Sem_Ch7 is
                                   and then not Subprogram_Table.Get (Decl_Id)))
                   then
                      Set_Is_Public (Decl_Id, False);
+                  end if;
+
+                  --  For a subprogram renaming, if the entity is referenced,
+                  --  then so is the renamed subprogram. But there is an issue
+                  --  with generic bodies because instantiations are not done
+                  --  yet and, therefore, cannot be scanned for referencers.
+                  --  That's why we use an approximation and test that we have
+                  --  at least one subprogram referenced by an inlined body
+                  --  instead of precisely the entity of this renaming.
+
+                  if Nkind (Decl) = N_Subprogram_Renaming_Declaration
+                    and then Subprogram_Table.Get_First
+                    and then Is_Entity_Name (Name (Decl))
+                    and then Present (Entity (Name (Decl)))
+                    and then Is_Subprogram (Entity (Name (Decl)))
+                  then
+                     Subprogram_Table.Set (Entity (Name (Decl)), True);
                   end if;
                end if;
 
@@ -484,7 +513,7 @@ package body Sem_Ch7 is
 
          --  Local variables
 
-         Discard : Boolean := True;
+         Discard : Boolean;
          pragma Unreferenced (Discard);
 
       --  Start of processing for Hide_Public_Entities
@@ -545,6 +574,12 @@ package body Sem_Ch7 is
          --  mean implementing a more thorough tree traversal of the bodies,
          --  i.e. not just syntactic, and the gain would very likely be worth
          --  neither the hassle nor the slowdown of the compiler.
+
+         --  Finally, an important thing to be aware of is that, at this point,
+         --  instantiations are not done yet so we cannot directly see inlined
+         --  bodies coming from them. That's not catastrophic because only the
+         --  actual parameters of the instantiations matter here, and they are
+         --  present in the declarations list of the instantiated packages.
 
          Subprogram_Table.Reset;
          Discard := Has_Referencer (Decls, Top_Level => True);
@@ -1376,7 +1411,7 @@ package body Sem_Ch7 is
          Gen_Par :=
            Generic_Parent (Specification (Unit_Declaration_Node (Inst_Par)));
          while Present (Gen_Par) and then Is_Child_Unit (Gen_Par) loop
-            Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+            Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
             if Nkind_In (Inst_Node, N_Package_Instantiation,
                                     N_Formal_Package_Declaration)

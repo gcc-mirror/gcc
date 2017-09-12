@@ -721,22 +721,25 @@ package body Sem_Elab is
         and then not Is_Call_Of_Generic_Formal (N)
       then
          return;
-      end if;
 
       --  If this is a rewrite of a Valid_Scalars attribute, then nothing to
       --  check, we don't mind in this case if the call occurs before the body
       --  since this is all generated code.
 
-      if Nkind (Original_Node (N)) = N_Attribute_Reference
+      elsif Nkind (Original_Node (N)) = N_Attribute_Reference
         and then Attribute_Name (Original_Node (N)) = Name_Valid_Scalars
       then
          return;
-      end if;
 
       --  Intrinsics such as instances of Unchecked_Deallocation do not have
       --  any body, so elaboration checking is not needed, and would be wrong.
 
-      if Is_Intrinsic_Subprogram (E) then
+      elsif Is_Intrinsic_Subprogram (E) then
+         return;
+
+      --  Do not consider references to internal variables for SPARK semantics
+
+      elsif Variable_Case and then not Comes_From_Source (E) then
          return;
       end if;
 
@@ -2961,19 +2964,21 @@ package body Sem_Elab is
          Next_Elmt (Elmt);
       end loop;
 
-      --  For tasks declared in the current unit, trace other calls within
-      --  the task procedure bodies, which are available.
+      --  For tasks declared in the current unit, trace other calls within the
+      --  task procedure bodies, which are available.
 
-      In_Task_Activation := True;
+      if not Debug_Flag_Dot_Y then
+         In_Task_Activation := True;
 
-      Elmt := First_Elmt (Intra_Procs);
-      while Present (Elmt) loop
-         Ent := Node (Elmt);
-         Check_Internal_Call_Continue (N, Ent, Enclosing, Ent);
-         Next_Elmt (Elmt);
-      end loop;
+         Elmt := First_Elmt (Intra_Procs);
+         while Present (Elmt) loop
+            Ent := Node (Elmt);
+            Check_Internal_Call_Continue (N, Ent, Enclosing, Ent);
+            Next_Elmt (Elmt);
+         end loop;
 
-      In_Task_Activation := False;
+         In_Task_Activation := False;
+      end if;
    end Check_Task_Activation;
 
    -------------------------------

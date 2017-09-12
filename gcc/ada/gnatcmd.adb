@@ -394,7 +394,7 @@ begin
       begin
          --  Check if an argument file is specified
 
-         if The_Arg (The_Arg'First) = '@' then
+         if The_Arg'Length > 0 and then The_Arg (The_Arg'First) = '@' then
             declare
                Arg_File : Ada.Text_IO.File_Type;
                Line     : String (1 .. 256);
@@ -432,7 +432,7 @@ begin
                Close (Arg_File);
             end;
 
-         else
+         elsif The_Arg'Length > 0 then
             --  It is not an argument file; just put the argument in
             --  the Last_Switches table.
 
@@ -573,9 +573,9 @@ begin
       --  report an error indicating that the command is no longer supporting
       --  project files.
 
-      if The_Command = Find or else  The_Command = Xref then
+      if The_Command = Find or else The_Command = Xref then
          declare
-            Argv    : String_Access;
+            Argv : String_Access;
          begin
             for Arg_Num in 1 .. Last_Switches.Last loop
                Argv := Last_Switches.Table (Arg_Num);

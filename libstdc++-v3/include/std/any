@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 #include <typeinfo>
 #include <new>
@@ -67,6 +65,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __builtin_abort();
 #endif
   }
+
+#define __cpp_lib_any 201603
 
   /**
    *  @brief A type-safe container of any type.

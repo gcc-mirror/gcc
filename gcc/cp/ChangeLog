@@ -1,3 +1,68 @@
+2017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* decl.c (start_decl): Early return error_mark_node if duplicate_decls
+	returns it; avoid misleading error message.
+
+2017-09-12  Nathan Sidwell  <nathan@acm.org>
+
+	Kill CLASSTYPE_SORTED_FIELDS.
+	* cp-tree.h (struct lang_type): Lose sorted_fields member.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	* name-lookup.h (set_class_bindings): Add EXTRA arg.
+	* name-lookup.c (fields_linear_search): New, broken out of ...
+	(lookup_field_1): ... here.  Delete remainder of function.
+	(get_class_binding_direct): Reimplement without sorted_fields.
+	(get_class_binding): Rename TYPE arg to KLASS, for consistency.
+	(get_method_slot): Call set_class_binding when creating method_vec
+	on complete type.
+	(method_name_cmp): Order identically named slots.
+	(sorted_fields_type_new): Delete.
+	(field_vc_append_class_fields): Rename to ...
+	(method_vec_append_class_fields): ... here.  Adjust.
+	(field_vec_append_enum_values): Renme to ...
+	(method_vec_append_enum_values): ... here. Adjust.
+	(method_vec_dedup): New.
+	(set_class_bindings): Reimplement.
+	(insert_late_enum_def_bindings): Reimplement.
+
+	* name-lookup.c (get_class_binding): Rename TYPE arg to KLASS for
+	consistency.
+	(restort_data): Move later.
+	(method_name_cmp, resort_method_name_cmp): Simplify.
+	(resort_type_method_vec): Reformat.
+
+2017-09-09  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.c (reduced_constant_expression_p): If
+	CONSTRUCTOR_NO_IMPLICIT_ZERO, check that all fields are initialized.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/81926
+	* cp-objcp-common.c (struct debug_type_hasher): New class.
+	(debug_type_hash): New variable.
+	(cp_get_debug_type): Associate the OFFSET_TYPEs with the types.
+
+2017-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* tree.c (cxx_copy_lang_qualifiers): New.
+	* cp-tree.h: Declare it.
+	* cp-objcp-common.h: Define LANG_HOOKS_COPY_LANG_QUALIFIERS.
+
+2017-09-06  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82053 - ICE with default argument in lambda in template
+	* pt.c (tsubst_arg_types): Substitute default arguments for lambdas
+	in templates.
+	(retrieve_specialization): Use lambda_fn_in_template_p.
+	* cp-tree.h: Declare it.
+
+	PR c++/82070 - error with nested lambda capture
+	* pt.c (tsubst_expr) [DECL_EXPR]: Register capture proxies with
+	register_local_specialization.
+
 2017-09-06  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.h (lookup_field_1): Delete.

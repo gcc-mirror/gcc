@@ -352,6 +352,9 @@ Common Alias(pedantic-errors)
 -pie
 Driver Alias(pie)
 
+-static-pie
+Driver Alias(static-pie)
+
 -pipe
 Driver Alias(pipe)
 
@@ -3065,7 +3068,7 @@ x
 Driver Joined Separate
 
 shared
-Driver RejectNegative Negative(pie)
+Driver RejectNegative Negative(static-pie)
 Create a shared library.
 
 shared-libgcc
@@ -3111,11 +3114,15 @@ Driver
 
 no-pie
 Driver RejectNegative Negative(shared)
-Don't create a position independent executable.
+Don't create a dynamically linked position independent executable.
 
 pie
 Driver RejectNegative Negative(no-pie)
-Create a position independent executable.
+Create a dynamically linked position independent executable.
+
+static-pie
+Driver RejectNegative Negative(pie)
+Create a static position independent executable.
 
 z
 Driver Joined Separate

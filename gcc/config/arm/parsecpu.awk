@@ -22,7 +22,6 @@
 #	data: Print the standard 'C' data tables for the CPUs
 #	common-data: Print the 'C' data for shared driver/compiler files
 #	headers: Print the standard 'C' headers for the CPUs
-#	isa: Generate the arm-isa.h header
 #	md: Print the machine description fragment
 #	opt: Print the option tables fragment
 #	chkcpu <name>: Checks that <name> is a valid CPU
@@ -32,8 +31,7 @@
 
 function fatal (m) {
     print "error ("lineno"): " m > "/dev/stderr"
-    fatal_err = 1
-    if (parse_done) exit 1
+    exit 1
 }
 
 function toplevel () {
@@ -85,44 +83,9 @@ function tune_flag_pfx (f) {
     return "TF_" f
 }
 
-# Print out the bits for the features in FLIST, which may be a
-# mixture of fgroup and individual bits.  Print each feature needed
-# exactly once.  Terminate the list with isa_nobit.  Prefix each line by
-# INDENT.  Does not print a new line at the end.
-function print_isa_bits_for (flist, indent) {
-    nbits = split (flist, bits)
-
-    for (bit = 1; bit <= nbits; bit++) {
-	if (bits[bit] in features) {
-	    pbit[bits[bit]] = 1
-	} else if (bits[bit] in fgroup) {
-	    for (gbits in fgrp_bits) {
-		split (gbits, bitsep, SUBSEP)
-		if (bitsep[1] == bits[bit]) {
-		    pbit[bitsep[2]] = 1
-		}
-	    }
-	} else fatal("feature " bits[bit] " not declared")
-    }
-    zbit = ORS
-    ORS = ""
-    print indent "{\n" indent "  "
-    ORS = ", "
-    count = 0
-    for (bname in pbit) {
-	print "isa_bit_" bname
-	count++
-	if (count == 4) {
-	    count = 0
-	    ORS = ""
-	    print "\n" indent "  "
-	    ORS = ", "
-	}
-    }
-    ORS = ""
-    print "isa_nobit\n" indent "}"
-    ORS = zbit
-    delete pbit
+function isa_pfx (f) {
+    if (f ~ /^(bit|quirk)_.*/) return "isa_" f
+    return "ISA_" f
 }
 
 function gen_headers () {
@@ -162,35 +125,6 @@ function gen_headers () {
     print "};"
 }
 
-function gen_isa () {
-    boilerplate("C")
-    print "enum isa_feature {"
-    print "  isa_nobit = 0,"
-    for (fbit in features) {
-	print "  isa_bit_" fbit ","
-    }
-    print "  isa_num_bits"
-    print "};\n"
-
-    for (fgrp in fgroup) {
-	print "#define ISA_"fgrp " \\"
-	z = ORS
-	ORS = ""
-	first = 1
-	for (bitcomb in fgrp_bits) {
-	    split (bitcomb, bitsep, SUBSEP)
-	    if (bitsep[1] == fgrp) {
-		if (first) {
-		    first = 0
-		} else print ", \\\n"
-		print "  isa_bit_" bitsep[2]
-	    }
-	}
-	ORS = z
-	print "\n"
-    }
-}
-
 function gen_data () {
     boilerplate("C")
 
@@ -221,6 +155,7 @@ function gen_data () {
     }
     print "  {TARGET_CPU_arm_none, 0, NULL}"
     print "};"
+    
 }
 
 function gen_comm_data () {
@@ -237,8 +172,8 @@ function gen_comm_data () {
 		print "  {"
 		print "    \"" opts[opt] "\", " \
 		    cpu_opt_remove[cpus[n],opts[opt]] ", false,"
-		print_isa_bits_for(cpu_opt_isa[cpus[n],opts[opt]], "    ")
-		print "\n  },"
+		print "    { " cpu_opt_isa[cpus[n],opts[opt]] ", isa_nobit }"
+		print "  },"
 	    }
 	    if (cpus[n] in cpu_optaliases) {
 		naliases = split (cpu_optaliases[cpus[n]], aliases)
@@ -253,8 +188,8 @@ function gen_comm_data () {
 		    print "  {"
 		    print "    \"" aliases[alias] "\", " \
 			cpu_opt_remove[cpus[n],equiv] ", true, "
-		    print_isa_bits_for(cpu_opt_isa[cpus[n],equiv], "    ")
-		    print "\n  },"
+		    print "    { " cpu_opt_isa[cpus[n],equiv] ", isa_nobit }"
+		    print "  },"
 		}
 	    }
 	    print "  { NULL, false, false, {isa_nobit}}"
@@ -279,7 +214,8 @@ function gen_comm_data () {
 	if (! (feats[1] in arch_isa)) {
 	    fatal("unknown arch " feats[1] " for cpu " cpus[n])
 	}
-	all_isa_bits = arch_isa[feats[1]]
+	print "      {"
+	print "        " arch_isa[feats[1]] ","
 	for (m = 2; m <= nfeats; m++) {
 	    if (! ((feats[1], feats[m]) in arch_opt_isa)) {
 		fatal("unknown feature " feats[m] " for architecture " feats[1])
@@ -287,16 +223,42 @@ function gen_comm_data () {
 	    if (arch_opt_remove[feats[1],feats[m]] == "true") {
 		fatal("cannot remove features from architecture specs")
 	    }
-	    all_isa_bits = all_isa_bits " " arch_opt_isa[feats[1],feats[m]]
+	    # The isa_features array that is being initialized here has a length
+	    # of max isa_bit_num, which is the last entry in the enum.
+	    # Logically this means that the number of features is implicitly
+	    # never more than the number of feature bits we have.  This is only
+	    # true if we don't emit duplicates here.  So keep track of which
+	    # options we have already emitted so we don't emit them twice.
+	    nopts = split (arch_opt_isa[feats[1],feats[m]], opts, ",")
+	    for (i = 1; i <= nopts; i++) {
+		if (! (opts[i] in seen)) {
+		  print "        " opts[i] ","
+		  seen[opts[i]]
+		}
+	    }
 	}
 	if (cpus[n] in cpu_fpu) {
-	    all_isa_bits = all_isa_bits " " fpu_isa[cpu_fpu[cpus[n]]]
+	    nopts = split (fpu_isa[cpu_fpu[cpus[n]]], opts, ",")
+	    for (i = 1; i <= nopts; i++) {
+		if (! (opts[i] in seen)) {
+		  print "        " opts[i] ","
+		  seen[opts[i]]
+		}
+	    }
 	}
 	if (cpus[n] in cpu_isa) {
-	    all_isa_bits = all_isa_bits " " cpu_isa[cpus[n]]
+	    nopts = split (cpu_isa[cpus[n]], opts, ",")
+	    for (i = 1; i <= nopts; i++) {
+		if (! (opts[i] in seen)) {
+		  print "        " opts[i] ","
+		  seen[opts[i]]
+		}
+	    }
 	}
-	print_isa_bits_for(all_isa_bits, "      ")
-	print "\n    },"
+	delete seen
+	print "        isa_nobit"
+	print "      }"
+	print "    },"
 	# arch
 	print "    TARGET_ARCH_" arch_cnames[feats[1]]
 	print "  },"
@@ -316,8 +278,8 @@ function gen_comm_data () {
 		print "  {"
 		print "    \"" opts[opt] "\", " \
 		    arch_opt_remove[archs[n],opts[opt]] ", false,"
-		print_isa_bits_for(arch_opt_isa[archs[n],opts[opt]], "    ")
-		print "\n  },"
+		print "    { " arch_opt_isa[archs[n],opts[opt]] ", isa_nobit }"
+		print "  },"
 	    }
 	    if (archs[n] in arch_optaliases) {
 		naliases = split (arch_optaliases[archs[n]], aliases)
@@ -332,8 +294,8 @@ function gen_comm_data () {
 		    print "  {"
 		    print "    \"" aliases[alias] "\", " \
 			arch_opt_remove[archs[n],equiv] ", true, "
-		    print_isa_bits_for(arch_opt_isa[archs[n],equiv], "    ")
-		    print "\n  },"
+		    print "    { " arch_opt_isa[archs[n],equiv] ", isa_nobit }"
+		    print "  },"
 		}
 	    }
 	    print "  { NULL, false, false, {isa_nobit}}"
@@ -359,8 +321,10 @@ function gen_comm_data () {
 	    print "    arch_opttab_" arch_cnames[archs[n]] ","
 	} else print "    NULL,"
 	# common.isa_bits
-	print_isa_bits_for(arch_isa[archs[n]], "    ")
-	print ","
+	print "    {"
+	print "      " arch_isa[archs[n]] ","
+	print "      isa_nobit"
+	print "    },"
 	# arch, base_arch
 	print "    \"" arch_base[archs[n]] "\", BASE_ARCH_" \
 	    arch_base[archs[n]] ","
@@ -387,8 +351,11 @@ function gen_comm_data () {
     for (n = 1; n <= nfpus; n++) {
 	print "  {"
 	print "    \"" fpus[n] "\","
-	print_isa_bits_for(fpu_isa[fpus[n]], "    ")
-	print "\n  },"
+	print "    {"
+	print "      " fpu_isa[fpus[n]] ","
+	print "      isa_nobit"
+	print "    }"
+	print "  },"
     }
 
     print "};"
@@ -503,68 +470,25 @@ BEGIN {
     arch_name = ""
     fpu_name = ""
     lineno = 0
-    fatal_err = 0
-    parse_done = 0
     if (cmd == "") fatal("Usage parsecpu.awk -v cmd=<xyz>")
 }
 
-# New line.  Reset parse status and increment line count for error messages
 // {
     lineno++
     parse_ok = 0
 }
 
-# Comments must be on a line on their own.
 /^#/ {
     parse_ok = 1
 }
 
-/^define feature / {
-    if (NF != 3) fatal("syntax: define feature <name>")
-    toplevel()
-    fbit = $3
-    if (fbit in features) fatal("feature " fbit " already defined")
-    features[fbit] = 1
-    parse_ok = 1
-}
-
-/^define fgroup / {
-    if (NF < 4) fatal("syntax: define fgroup <name> <feature> [<feature>]*")
-    toplevel()
-    fgrp = $3
-    if (fgrp in fgroup) fatal("feature group " fgrp " already defined")
-    if (fgrp in features) fatal("feature group " fgrp " aliases a feature")
-    fcount = NF
-    for (n = 4; n <= fcount; n++) {
-	feat = $n
-	if (feat in features) {
-	    fgrp_bits[fgrp,feat] = 1
-	} else if (feat in fgroup) {
-	    # fgroups may reference other fgroups, copy their bits
-	    # to our bits.  To avoid recursion we don't set fgroup[fgrp]
-	    # until after we have done this, so such attempts will result
-	    # in an invalid group definition.
-	    for (bitcomb in fgrp_bits) {
-		split (bitcomb, bitsep, SUBSEP)
-		if (bitsep[1] == feat) {
-		    fgrp_bits[fgrp,bitsep[2]] = 1
-		}
-	    }
-	} else fatal("feature group member " feat " unrecognized")
-    }
-    fgroup[fgrp] = 1
-    parse_ok = 1
-}
-
 /^begin fpu / {
-    if (NF != 3) fatal("syntax: begin fpu <name>")
     toplevel()
     fpu_name = $3
     parse_ok = 1
 }
 
 /^end fpu / {
-    if (NF != 3) fatal("syntax: end fpu <name>")
     if (fpu_name != $3) fatal("mimatched end fpu")
     if (! (fpu_name in fpu_isa)) {
 	fatal("fpu definition \"" fpu_name "\" lacks an \"isa\" statement")
@@ -577,28 +501,24 @@ BEGIN {
 }
 
 /^begin arch / {
-    if (NF != 3) fatal("syntax: begin arch <name>")
     toplevel()
     arch_name = $3
     parse_ok = 1
 }
 
 /^[ 	]*base / {
-    if (NF != 2) fatal("syntax: base <architecture-base-name>")
     if (arch_name == "") fatal("\"base\" statement outside of arch block")
     arch_base[arch_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*profile / {
-    if (NF != 2) fatal("syntax: profile <profile-name>")
     if (arch_name == "") fatal("\"profile\" statement outside of arch block")
     arch_prof[arch_name] = $2
     parse_ok = 1
 }
 
 /^end arch / {
-    if (NF != 3) fatal("syntax: end arch <name>")
     if (arch_name != $3) fatal("mimatched end arch")
     if (! arch_name in arch_tune_for) {
 	fatal("arch definition lacks a \"tune for\" statement")
@@ -614,21 +534,18 @@ BEGIN {
 }
 
 /^begin cpu / {
-    if (NF != 3) fatal("syntax: begin cpu <name>")
     toplevel()
     cpu_name = $3
     parse_ok = 1
 }
 
 /^[ 	]*cname / {
-    if (NF != 2) fatal("syntax: cname <identifier>")
     if (cpu_name == "") fatal("\"cname\" outside of cpu block")
     cpu_cnames[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*tune for / {
-    if (NF != 3) fatal("syntax: tune for <cpu-name>")
     if (cpu_name != "") {
 	cpu_tune_for[cpu_name] = $3
     } else if (arch_name != "") {
@@ -638,7 +555,6 @@ BEGIN {
 }
 
 /^[ 	]*tune flags / {
-    if (NF < 3) fatal("syntax: tune flags <flag> [<flag>]*")
     flags=""
     flag_count = NF
     for (n = 3; n <= flag_count; n++) {
@@ -655,27 +571,24 @@ BEGIN {
 }
 
 /^[ 	]*architecture / {
-    if (NF != 2) fatal("syntax: architecture <arch-name>")
     if (cpu_name == "") fatal("\"architecture\" outside of cpu block")
     cpu_arch[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*fpu / {
-    if (NF != 2) fatal("syntax: fpu <fpu-name>")
     if (cpu_name == "") fatal("\"fpu\" outside of cpu block")
     cpu_fpu[cpu_name] = $2
     parse_ok = 1
 }
 
 /^[ 	]*isa / {
-    if (NF < 2) fatal("syntax: isa <feature-or-fgroup> [<feature-or-fgroup>]*")
     flags=""
     flag_count = NF
     for (n = 2; n <= flag_count; n++) {
 	if (n == 2) {
-	    flags = $n
-	} else flags = flags " " $n
+	    flags = isa_pfx($n)
+	} else flags = flags "," isa_pfx($n)
     }
     if (cpu_name != "") {
 	cpu_isa[cpu_name] = flags
@@ -688,7 +601,6 @@ BEGIN {
 }
 
 /^[ 	]*option / {
-    if (NF < 4) fatal("syntax: option <name> add|remove <feature-or-fgroup>+")
     name=$2
     if ($3 == "add") {
 	remove = "false"
@@ -699,8 +611,8 @@ BEGIN {
     flag_count = NF
     for (n = 4; n <= flag_count; n++) {
 	if (n == 4) {
-	    flags = $n
-	} else flags = flags " " $n
+	    flags = isa_pfx($n)
+	} else flags = flags "," isa_pfx($n)
     }
     if (cpu_name != "") {
 	cpu_opts[cpu_name] = cpu_opts[cpu_name] " " name
@@ -715,7 +627,6 @@ BEGIN {
 }
 
 /^[ 	]*optalias / {
-    if (NF != 3) fatal("syntax: optalias <name> <option-name>")
     name=$2
     alias=$3
     if (cpu_name != "") {
@@ -729,14 +640,12 @@ BEGIN {
 }
 
 /^[ 	]*costs / {
-    if (NF != 2) fatal("syntax: costs <identifier>")
     if (cpu_name == "") fatal("\"costs\" outside of cpu block")
     cpu_cost[cpu_name] = $2
     parse_ok = 1
 }
 
 /^end cpu / {
-    if (NF != 3) fatal("syntax: end cpu <name>")
     if (cpu_name != $3) fatal("mimatched end cpu")
     if (! (cpu_name in cpu_cnames)) {
 	cpu_cnames[cpu_name] = cpu_name
@@ -753,8 +662,6 @@ BEGIN {
 }
 
 END {
-    parse_done = 1
-    if (fatal_err) exit 1
     toplevel()
     if (cmd == "data") {
 	gen_data()
@@ -762,8 +669,6 @@ END {
 	gen_comm_data()
     } else if (cmd == "headers") {
 	gen_headers()
-    } else if (cmd == "isa") {
-	gen_isa()
     } else if (cmd == "md") {
 	gen_md()
     } else if (cmd == "opt") {

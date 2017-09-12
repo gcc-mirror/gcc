@@ -87,6 +87,14 @@ extern tree handle_dll_attribute (tree *, tree, tree, int, bool *);
 extern int attribute_list_equal (const_tree, const_tree);
 extern int attribute_list_contained (const_tree, const_tree);
 
+/* The backbone of lookup_attribute().  ATTR_LEN is the string length
+   of ATTR_NAME, and LIST is not NULL_TREE.
+
+   The function is called from lookup_attribute in order to optimize
+   for size.  */
+extern tree private_lookup_attribute (const char *attr_name, size_t attr_len,
+				      tree list);
+
 /* For a given IDENTIFIER_NODE, strip leading and trailing '_' characters
    so that we have a canonical form of attribute names.  */
 
@@ -151,17 +159,7 @@ lookup_attribute (const char *attr_name, tree list)
       /* Do the strlen() before calling the out-of-line implementation.
 	 In most cases attr_name is a string constant, and the compiler
 	 will optimize the strlen() away.  */
-      while (list)
-	{
-	  tree attr = get_attribute_name (list);
-	  size_t ident_len = IDENTIFIER_LENGTH (attr);
-	  if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
-			   ident_len))
-	    break;
-	  list = TREE_CHAIN (list);
-	}
-
-      return list;
+      return private_lookup_attribute (attr_name, attr_len, list);
     }
 }
 

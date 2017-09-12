@@ -3317,6 +3317,12 @@ package body Ch4 is
       Set_Discrete_Choices (Assoc_Node, P_Discrete_Choice_List);
       TF_Arrow;
       Set_Expression (Assoc_Node, P_Expression);
+
+      if Ada_Version < Ada_2020 then
+         Error_Msg_SC ("iterated component is an Ada 2020 extension");
+         Error_Msg_SC ("\compile with -gnatX");
+      end if;
+
       return Assoc_Node;
    end P_Iterated_Component_Association;
 

@@ -32,6 +32,7 @@
 #include "explow.h"
 #include "expr.h"
 #include "output.h"
+#include "target.h"
 
 /* Expand a block clear operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -338,9 +339,9 @@ expand_block_compare (rtx operands[])
 
   unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
-      || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
+      || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
@@ -729,9 +730,9 @@ expand_strn_compare (rtx operands[], int no_length)
   int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
   int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, align1)
-      || SLOW_UNALIGNED_ACCESS (word_mode, align2))
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, align1)
+      || targetm.slow_unaligned_access (word_mode, align2))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);

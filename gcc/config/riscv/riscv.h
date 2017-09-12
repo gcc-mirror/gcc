@@ -130,8 +130,6 @@ along with GCC; see the file COPYING3.  If not see
    of the privileged architecture.  */
 #define STRICT_ALIGNMENT TARGET_STRICT_ALIGN
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) riscv_slow_unaligned_access
-
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain
    them.
@@ -293,8 +291,6 @@ along with GCC; see the file COPYING3.  If not see
   ((unsigned int) ((int) (REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
-
-#define HARD_REGNO_NREGS(REGNO, MODE) riscv_hard_regno_nregs (REGNO, MODE)
 
 /* Use s0 as the frame pointer if it is so requested.  */
 #define HARD_FRAME_POINTER_REGNUM 8
@@ -854,7 +850,6 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
-extern bool riscv_slow_unaligned_access;
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \

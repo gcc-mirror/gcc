@@ -366,7 +366,7 @@ package Opt is
    Check_Validity_Of_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to check for proper scalar initialization of subprogram
-   --  parameters on both entry and exit. Turned on by??? turned off by???
+   --  parameters on both entry and exit. This is turned on by -gnateV.
 
    Check_Withs : Boolean := False;
    --  GNAT
@@ -848,6 +848,10 @@ package Opt is
    --  cause implicit packing instead of generating an error message. Set by
    --  use of pragma Implicit_Packing.
 
+   Include_Subprogram_In_Messages : Boolean := False;
+   --  GNAT
+   --  Set True to include the enclosing subprogram in compiler messages.
+
    Ineffective_Inline_Warnings : Boolean := False;
    --  GNAT
    --  Set True to activate warnings if front-end inlining (-gnatN) is not able
@@ -981,6 +985,11 @@ package Opt is
    --  GNAT
    --  Set true by -gnatRm switch. Causes information on mechanisms to be
    --  included in the representation output information.
+
+   List_Representation_Info_Extended : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRe switch. Causes extended information for record types
+   --  to be included in the representation output information.
 
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP

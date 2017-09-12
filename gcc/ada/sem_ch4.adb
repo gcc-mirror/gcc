@@ -6284,13 +6284,18 @@ package body Sem_Ch4 is
 
       procedure Try_One_Interp (T1 : Entity_Id) is
       begin
-
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
-         --  universal, the context will impose the correct type.
+         --  universal, the context will impose the correct type. Note that we
+         --  also avoid returning if we are currently within a generic instance
+         --  due to the fact that the generic package declaration has already
+         --  been successfully analyzed and Defined_In_Scope expects the base
+         --  type to be defined within the instance which will never be the
+         --  case.
 
          if Present (Scop)
            and then not Defined_In_Scope (T1, Scop)
+           and then not In_Instance
            and then T1 /= Universal_Integer
            and then T1 /= Universal_Real
            and then T1 /= Any_String
@@ -6311,7 +6316,6 @@ package body Sem_Ch4 is
                else
                   T_F := It.Typ;
                end if;
-
             else
                Found := True;
                T_F   := T1;
@@ -6320,7 +6324,6 @@ package body Sem_Ch4 is
 
             Set_Etype (L, T_F);
             Find_Non_Universal_Interpretations (N, R, Op_Id, T1);
-
          end if;
       end Try_One_Interp;
 
@@ -6472,7 +6475,15 @@ package body Sem_Ch4 is
          --  is declared in Standard, and preference rules apply to it.
 
          if Present (Scop) then
+
+            --  Note that we avoid returning if we are currently within a
+            --  generic instance due to the fact that the generic package
+            --  declaration has already been successfully analyzed and
+            --  Defined_In_Scope expects the base type to be defined within
+            --  the instance which will never be the case.
+
             if Defined_In_Scope (T1, Scop)
+              or else In_Instance
               or else T1 = Universal_Integer
               or else T1 = Universal_Real
               or else T1 = Any_Access

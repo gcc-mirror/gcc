@@ -3126,8 +3126,14 @@ package body Exp_Ch5 is
       --  as a legal form of assignment to remedy this side effect.
 
       Set_Assignment_OK (Name (Advance));
-
       Analyze (N);
+
+      --  Because we have to analyze the initial declaration of the loop
+      --  parameter multiple times its scope is incorrectly set at this point
+      --  to the one surrounding the block statement - so set the scope
+      --  manually to be the actual block statement.
+
+      Set_Scope (Defining_Identifier (Init_Decl), Entity (Identifier (N)));
    end Expand_Formal_Container_Loop;
 
    ------------------------------------------
@@ -4698,6 +4704,10 @@ package body Exp_Ch5 is
       --        end loop;
       --     end;
 
+      --  In addition, if the loop specification is given by a subtype
+      --  indication that constrains a predicated type, the bounds of
+      --  iteration are given by those of the subtype indication.
+
       else
          Static_Predicate : declare
             S    : Node_Id;
@@ -4705,6 +4715,11 @@ package body Exp_Ch5 is
             P    : Node_Id;
             Alts : List_Id;
             Cstm : Node_Id;
+
+            --  If the domain is an itype, note the bounds of its range.
+
+            L_Hi  : Node_Id;
+            L_Lo  : Node_Id;
 
             function Lo_Val (N : Node_Id) return Node_Id;
             --  Given static expression or static range, returns an identifier
@@ -4760,6 +4775,11 @@ package body Exp_Ch5 is
 
             Set_Warnings_Off (Loop_Id);
 
+            if Is_Itype (Ltype) then
+               L_Hi := High_Bound (Scalar_Range (Ltype));
+               L_Lo := Low_Bound  (Scalar_Range (Ltype));
+            end if;
+
             --  Loop to create branches of case statement
 
             Alts := New_List;
@@ -4768,11 +4788,20 @@ package body Exp_Ch5 is
 
                --  Initial value is largest value in predicate.
 
-               D :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Loop_Id,
-                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                   Expression          => Hi_Val (Last (Stat)));
+               if Is_Itype (Ltype) then
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => L_Hi);
+
+               else
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => Hi_Val (Last (Stat)));
+               end if;
 
                P := Last (Stat);
                while Present (P) loop
@@ -4794,15 +4823,33 @@ package body Exp_Ch5 is
                   Prev (P);
                end loop;
 
+               if Is_Itype (Ltype)
+                 and then Is_OK_Static_Expression (L_Lo)
+                 and then
+                   Expr_Value (L_Lo) /= Expr_Value (Lo_Val (First (Stat)))
+               then
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (Make_Exit_Statement (Loc)),
+                      Discrete_Choices => New_List (L_Lo)));
+               end if;
+
             else
+               --  Initial value is smallest value in predicate
 
-               --  Initial value is smallest value in predicate.
-
-               D :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Loop_Id,
-                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                   Expression          => Lo_Val (First (Stat)));
+               if Is_Itype (Ltype) then
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => L_Lo);
+               else
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => Lo_Val (First (Stat)));
+               end if;
 
                P := First (Stat);
                while Present (P) loop
@@ -4823,6 +4870,17 @@ package body Exp_Ch5 is
 
                   Next (P);
                end loop;
+
+               if Is_Itype (Ltype)
+                 and then Is_OK_Static_Expression (L_Hi)
+                 and then
+                   Expr_Value (L_Hi) /= Expr_Value (Lo_Val (Last (Stat)))
+               then
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (Make_Exit_Statement (Loc)),
+                      Discrete_Choices => New_List (L_Hi)));
+               end if;
             end if;
 
             --  Add others choice
@@ -4838,14 +4896,14 @@ package body Exp_Ch5 is
                end if;
 
                S :=
-                  Make_Assignment_Statement (Loc,
-                    Name       => New_Occurrence_Of (Loop_Id, Loc),
-                    Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix => New_Occurrence_Of (Ltype, Loc),
-                        Attribute_Name => Name_Next,
-                        Expressions    => New_List (
-                          New_Occurrence_Of (Loop_Id, Loc))));
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (Loop_Id, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Ltype, Loc),
+                       Attribute_Name => Name_Next,
+                       Expressions    => New_List (
+                         New_Occurrence_Of (Loop_Id, Loc))));
                Set_Suppress_Assignment_Checks (S);
             end;
 

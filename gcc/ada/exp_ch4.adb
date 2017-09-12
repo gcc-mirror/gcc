@@ -804,6 +804,20 @@ package body Exp_Ch4 is
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
             Apply_Accessibility_Check (N, Built_In_Place => True);
             return;
+
+         --  Ada 2005 (AI-318-02): Specialization of the previous case for
+         --  expressions containing a build-in-place function call whose
+         --  returned object covers interface types, and Expr has calls to
+         --  Ada.Tags.Displace to displace the pointer to the returned build-
+         --  in-place object to reference the secondary dispatch table of a
+         --  covered interface type.
+
+         elsif Ada_Version >= Ada_2005
+           and then Present (Unqual_BIP_Iface_Function_Call (Exp))
+         then
+            Make_Build_In_Place_Iface_Call_In_Allocator (N, Exp);
+            Apply_Accessibility_Check (N, Built_In_Place => True);
+            return;
          end if;
 
          --  Actions inserted before:
@@ -3180,7 +3194,7 @@ package body Exp_Ch4 is
                 Object_Definition   => New_Occurrence_Of (Artyp, Loc),
                 Expression          =>
                   Make_Op_Add (Loc,
-                    Left_Opnd  => New_Copy (Aggr_Length (NN - 1)),
+                    Left_Opnd  => New_Copy_Tree (Aggr_Length (NN - 1)),
                     Right_Opnd => Clen)));
 
             Aggr_Length (NN) := Make_Identifier (Loc, Chars => Chars (Ent));
@@ -3261,7 +3275,7 @@ package body Exp_Ch4 is
             function Get_Known_Bound (J : Nat) return Node_Id is
             begin
                if Is_Fixed_Length (J) or else J = NN then
-                  return New_Copy (Opnd_Low_Bound (J));
+                  return New_Copy_Tree (Opnd_Low_Bound (J));
 
                else
                   return
@@ -3274,7 +3288,7 @@ package body Exp_Ch4 is
                           Right_Opnd =>
                             Make_Integer_Literal (Loc, 0)),
 
-                        New_Copy (Opnd_Low_Bound (J)),
+                        New_Copy_Tree (Opnd_Low_Bound (J)),
                         Get_Known_Bound (J + 1)));
                end if;
             end Get_Known_Bound;
@@ -3299,10 +3313,10 @@ package body Exp_Ch4 is
       High_Bound :=
         To_Ityp
           (Make_Op_Add (Loc,
-             Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
+             Left_Opnd  => To_Artyp (New_Copy_Tree (Low_Bound)),
              Right_Opnd =>
                Make_Op_Subtract (Loc,
-                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                 Left_Opnd  => New_Copy_Tree (Aggr_Length (NN)),
                  Right_Opnd => Make_Artyp_Literal (1))));
 
       --  Note that calculation of the high bound may cause overflow in some
@@ -3327,7 +3341,7 @@ package body Exp_Ch4 is
            Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                 Left_Opnd  => New_Copy_Tree (Aggr_Length (NN)),
                  Right_Opnd => Make_Artyp_Literal (0)),
                Last_Opnd_Low_Bound,
                Low_Bound));
@@ -3336,7 +3350,7 @@ package body Exp_Ch4 is
            Make_If_Expression (Loc,
              Expressions => New_List (
                Make_Op_Eq (Loc,
-                 Left_Opnd  => New_Copy (Aggr_Length (NN)),
+                 Left_Opnd  => New_Copy_Tree (Aggr_Length (NN)),
                  Right_Opnd => Make_Artyp_Literal (0)),
                Last_Opnd_High_Bound,
                High_Bound));
@@ -3474,12 +3488,12 @@ package body Exp_Ch4 is
          declare
             Lo : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
+                     Left_Opnd  => To_Artyp (New_Copy_Tree (Low_Bound)),
                      Right_Opnd => Aggr_Length (J - 1));
 
             Hi : constant Node_Id :=
                    Make_Op_Add (Loc,
-                     Left_Opnd  => To_Artyp (New_Copy (Low_Bound)),
+                     Left_Opnd  => To_Artyp (New_Copy_Tree (Low_Bound)),
                      Right_Opnd =>
                        Make_Op_Subtract (Loc,
                          Left_Opnd  => Aggr_Length (J),
@@ -4632,7 +4646,9 @@ package body Exp_Ch4 is
             --  No initialization required
 
             else
-               null;
+               Build_Allocate_Deallocate_Proc
+                 (N           => N,
+                  Is_Allocate => True);
             end if;
 
          --  Case of initialization procedure present, must be called
@@ -6560,6 +6576,15 @@ package body Exp_Ch4 is
         and then Is_Build_In_Place_Function_Call (P)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
+
+      --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
+      --  containing build-in-place function calls whose returned object covers
+      --  interface types.
+
+      elsif Ada_Version >= Ada_2005
+        and then Present (Unqual_BIP_Iface_Function_Call (P))
+      then
+         Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
       --  If the prefix is an access type, then we unconditionally rewrite if
@@ -6990,7 +7015,7 @@ package body Exp_Ch4 is
 
          if Debug_Flag_Dot_H then
             declare
-               Cnod : constant Node_Id   := Relocate_Node (Cnode);
+               Cnod : constant Node_Id   := New_Copy_Tree (Cnode);
                Typ  : constant Entity_Id := Base_Type (Etype (Cnode));
 
             begin
@@ -7089,13 +7114,26 @@ package body Exp_Ch4 is
 
       if Is_Fixed_Point_Type (Typ) then
 
+         --  No special processing if Treat_Fixed_As_Integer is set, since
+         --  from a semantic point of view such operations are simply integer
+         --  operations and will be treated that way.
+
+         if not Treat_Fixed_As_Integer (N) then
+            if Is_Integer_Type (Rtyp) then
+               Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
+            else
+               Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
+            end if;
+         end if;
+
          --  Deal with divide-by-zero check if back end cannot handle them
          --  and the flag is set indicating that we need such a check. Note
          --  that we don't need to bother here with the case of mixed-mode
          --  (Right operand an integer type), since these will be rewritten
          --  with conversions to a divide with a fixed-point right operand.
 
-         if Do_Division_Check (N)
+         if Nkind (N) = N_Op_Divide
+           and then Do_Division_Check (N)
            and then not Backend_Divide_Checks_On_Target
            and then not Is_Integer_Type (Rtyp)
          then
@@ -7107,18 +7145,6 @@ package body Exp_Ch4 is
                     Left_Opnd  => Duplicate_Subexpr_Move_Checks (Ropnd),
                     Right_Opnd => Make_Real_Literal (Loc, Ureal_0)),
                   Reason  => CE_Divide_By_Zero));
-         end if;
-
-         --  No special processing if Treat_Fixed_As_Integer is set, since
-         --  from a semantic point of view such operations are simply integer
-         --  operations and will be treated that way.
-
-         if not Treat_Fixed_As_Integer (N) then
-            if Is_Integer_Type (Rtyp) then
-               Expand_Divide_Fixed_By_Integer_Giving_Fixed (N);
-            else
-               Expand_Divide_Fixed_By_Fixed_Giving_Fixed (N);
-            end if;
          end if;
 
       --  Other cases of division of fixed-point operands. Again we exclude the
@@ -10199,6 +10225,15 @@ package body Exp_Ch4 is
         and then Is_Build_In_Place_Function_Call (P)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
+
+      --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
+      --  containing build-in-place function calls whose returned object covers
+      --  interface types.
+
+      elsif Ada_Version >= Ada_2005
+        and then Present (Unqual_BIP_Iface_Function_Call (P))
+      then
+         Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
       --  Gigi cannot handle unchecked conversions that are the prefix of a
@@ -10556,6 +10591,15 @@ package body Exp_Ch4 is
         and then Is_Build_In_Place_Function_Call (Pref)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
+
+      --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
+      --  containing build-in-place function calls whose returned object covers
+      --  interface types.
+
+      elsif Ada_Version >= Ada_2005
+        and then Present (Unqual_BIP_Iface_Function_Call (Pref))
+      then
+         Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Pref);
       end if;
 
       --  The remaining case to be handled is packed slices. We can leave
@@ -11187,9 +11231,10 @@ package body Exp_Ch4 is
 
          --  Apply an accessibility check when the conversion operand is an
          --  access parameter (or a renaming thereof), unless conversion was
-         --  expanded from an Unchecked_ or Unrestricted_Access attribute.
-         --  Note that other checks may still need to be applied below (such
-         --  as tagged type checks).
+         --  expanded from an Unchecked_ or Unrestricted_Access attribute,
+         --  or for the actual of a class-wide interface parameter. Note that
+         --  other checks may still need to be applied below (such as tagged
+         --  type checks).
 
          elsif Is_Entity_Name (Operand)
            and then Has_Extra_Accessibility (Entity (Operand))
@@ -11197,8 +11242,18 @@ package body Exp_Ch4 is
            and then (Nkind (Original_Node (N)) /= N_Attribute_Reference
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
          then
-            Apply_Accessibility_Check
-              (Operand, Target_Type, Insert_Node => Operand);
+            if not Comes_From_Source (N)
+              and then Nkind_In (Parent (N), N_Function_Call,
+                                             N_Procedure_Call_Statement)
+              and then Is_Interface (Designated_Type (Target_Type))
+              and then Is_Class_Wide_Type (Designated_Type (Target_Type))
+            then
+               null;
+
+            else
+               Apply_Accessibility_Check
+                 (Operand, Target_Type, Insert_Node => Operand);
+            end if;
 
          --  If the level of the operand type is statically deeper than the
          --  level of the target type, then force Program_Error. Note that this

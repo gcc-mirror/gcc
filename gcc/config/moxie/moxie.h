@@ -176,13 +176,6 @@ enum reg_class
 #define REGNO_REG_CLASS(R) ((R < MOXIE_PC) ? GENERAL_REGS :		\
                             (R == MOXIE_CC ? CC_REGS : SPECIAL_REGS))
 
-/* A C expression for the number of consecutive hard registers,
-   starting at register number REGNO, required to hold a value of mode
-   MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)			   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)		   \
-   / UNITS_PER_WORD)
-
 /* The Overall Framework of an Assembler File */
 
 #undef  ASM_SPEC

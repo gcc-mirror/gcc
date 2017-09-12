@@ -1977,6 +1977,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 1
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS rs6000_hard_regno_nregs_hook
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK rs6000_hard_regno_mode_ok
 
@@ -1986,6 +1988,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   rs6000_hard_regno_call_part_clobbered
+
+#undef TARGET_SLOW_UNALIGNED_ACCESS
+#define TARGET_SLOW_UNALIGNED_ACCESS rs6000_slow_unaligned_access
 
 
 /* Processor table.  */
@@ -2169,6 +2174,14 @@ rs6000_hard_regno_mode_ok_uncached (int regno, machine_mode mode)
      and it must be able to fit within the register set.  */
 
   return GET_MODE_SIZE (mode) <= UNITS_PER_WORD;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+rs6000_hard_regno_nregs_hook (unsigned int regno, machine_mode mode)
+{
+  return rs6000_hard_regno_nregs[mode][regno];
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
@@ -8366,6 +8379,21 @@ rs6000_data_alignment (tree type, unsigned int align, enum data_align how)
   return align;
 }
 
+/* Implement TARGET_SLOW_UNALIGNED_ACCESS.  Altivec vector memory
+   instructions simply ignore the low bits; SPE vector memory
+   instructions trap on unaligned accesses; VSX memory instructions are
+   aligned to 4 or 8 bytes.  */
+
+static bool
+rs6000_slow_unaligned_access (machine_mode mode, unsigned int align)
+{
+  return (STRICT_ALIGNMENT
+	  || (!TARGET_EFFICIENT_UNALIGNED_VSX
+	      && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (mode) && align < 32)
+		  || ((VECTOR_MODE_P (mode) || FLOAT128_VECTOR_P (mode))
+		      && (int) align < VECTOR_ALIGN (mode)))));
+}
+
 /* Previous GCC releases forced all vector types to have 16-byte alignment.  */
 
 bool
@@ -11015,13 +11043,14 @@ rs6000_emit_move (rtx dest, rtx source, machine_mode mode)
   if (GET_CODE (operands[0]) == MEM
       && GET_CODE (operands[1]) == MEM
       && mode == DImode
-      && (SLOW_UNALIGNED_ACCESS (DImode, MEM_ALIGN (operands[0]))
-	  || SLOW_UNALIGNED_ACCESS (DImode, MEM_ALIGN (operands[1])))
-      && ! (SLOW_UNALIGNED_ACCESS (SImode, (MEM_ALIGN (operands[0]) > 32
-					    ? 32 : MEM_ALIGN (operands[0])))
-	    || SLOW_UNALIGNED_ACCESS (SImode, (MEM_ALIGN (operands[1]) > 32
-					       ? 32
-					       : MEM_ALIGN (operands[1]))))
+      && (rs6000_slow_unaligned_access (DImode, MEM_ALIGN (operands[0]))
+	  || rs6000_slow_unaligned_access (DImode, MEM_ALIGN (operands[1])))
+      && ! (rs6000_slow_unaligned_access (SImode,
+					  (MEM_ALIGN (operands[0]) > 32
+					   ? 32 : MEM_ALIGN (operands[0])))
+	    || rs6000_slow_unaligned_access (SImode,
+					     (MEM_ALIGN (operands[1]) > 32
+					      ? 32 : MEM_ALIGN (operands[1]))))
       && ! MEM_VOLATILE_P (operands [0])
       && ! MEM_VOLATILE_P (operands [1]))
     {
@@ -19989,9 +20018,9 @@ expand_block_compare (rtx operands[])
 
   unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
-      || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
+  /* rs6000_slow_unaligned_access -- don't do unaligned stuff.  */
+  if (rs6000_slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
+      || rs6000_slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
@@ -20380,9 +20409,9 @@ expand_strn_compare (rtx operands[], int no_length)
   int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
   int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, align1)
-      || SLOW_UNALIGNED_ACCESS (word_mode, align2))
+  /* rs6000_slow_unaligned_access -- don't do unaligned stuff.  */
+  if (rs6000_slow_unaligned_access (word_mode, align1)
+      || rs6000_slow_unaligned_access (word_mode, align2))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
@@ -23287,8 +23316,8 @@ rs6000_cannot_change_mode_class (machine_mode from,
 
       if (reg_classes_intersect_p (xclass, rclass))
 	{
-	  unsigned to_nregs = hard_regno_nregs[FIRST_FPR_REGNO][to];
-	  unsigned from_nregs = hard_regno_nregs[FIRST_FPR_REGNO][from];
+	  unsigned to_nregs = hard_regno_nregs (FIRST_FPR_REGNO, to);
+	  unsigned from_nregs = hard_regno_nregs (FIRST_FPR_REGNO, from);
 	  bool to_float128_vector_p = FLOAT128_VECTOR_P (to);
 	  bool from_float128_vector_p = FLOAT128_VECTOR_P (from);
 
@@ -23346,8 +23375,8 @@ rs6000_cannot_change_mode_class (machine_mode from,
   if (TARGET_VSX && VSX_REG_CLASS_P (rclass))
     {
       unsigned num_regs = (from_size + 15) / 16;
-      if (hard_regno_nregs[FIRST_FPR_REGNO][to] > num_regs
-	  || hard_regno_nregs[FIRST_FPR_REGNO][from] > num_regs)
+      if (hard_regno_nregs (FIRST_FPR_REGNO, to) > num_regs
+	  || hard_regno_nregs (FIRST_FPR_REGNO, from) > num_regs)
 	return true;
 
       return (from_size != 8 && from_size != 16);
@@ -26750,7 +26779,7 @@ rs6000_split_multireg_move (rtx dst, rtx src)
 
   reg = REG_P (dst) ? REGNO (dst) : REGNO (src);
   mode = GET_MODE (dst);
-  nregs = hard_regno_nregs[reg][mode];
+  nregs = hard_regno_nregs (reg, mode);
   if (FP_REGNO_P (reg))
     reg_mode = DECIMAL_FLOAT_MODE_P (mode) ? DDmode : 
 	((TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT) ? DFmode : SFmode);
@@ -37439,7 +37468,7 @@ rs6000_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	 than generating address, e.g., (plus (reg) (const)).
 	 L1 cache latency is about two instructions.  */
       *total = !speed ? COSTS_N_INSNS (1) + 1 : COSTS_N_INSNS (2);
-      if (SLOW_UNALIGNED_ACCESS (mode, MEM_ALIGN (x)))
+      if (rs6000_slow_unaligned_access (mode, MEM_ALIGN (x)))
 	*total += COSTS_N_INSNS (100);
       return true;
 
@@ -37817,18 +37846,18 @@ rs6000_register_move_cost (machine_mode mode,
 		|| rs6000_cpu == PROCESSOR_POWER8
 		|| rs6000_cpu == PROCESSOR_POWER9)
 	       && reg_classes_intersect_p (rclass, LINK_OR_CTR_REGS))
-        ret = 6 * hard_regno_nregs[0][mode];
+        ret = 6 * hard_regno_nregs (0, mode);
 
       else
 	/* A move will cost one instruction per GPR moved.  */
-	ret = 2 * hard_regno_nregs[0][mode];
+	ret = 2 * hard_regno_nregs (0, mode);
     }
 
   /* If we have VSX, we can easily move between FPR or Altivec registers.  */
   else if (VECTOR_MEM_VSX_P (mode)
 	   && reg_classes_intersect_p (to, VSX_REGS)
 	   && reg_classes_intersect_p (from, VSX_REGS))
-    ret = 2 * hard_regno_nregs[FIRST_FPR_REGNO][mode];
+    ret = 2 * hard_regno_nregs (FIRST_FPR_REGNO, mode);
 
   /* Moving between two similar registers is just one instruction.  */
   else if (reg_classes_intersect_p (to, from))
@@ -37865,12 +37894,12 @@ rs6000_memory_move_cost (machine_mode mode, reg_class_t rclass,
     dbg_cost_ctrl++;
 
   if (reg_classes_intersect_p (rclass, GENERAL_REGS))
-    ret = 4 * hard_regno_nregs[0][mode];
+    ret = 4 * hard_regno_nregs (0, mode);
   else if ((reg_classes_intersect_p (rclass, FLOAT_REGS)
 	    || reg_classes_intersect_p (rclass, VSX_REGS)))
-    ret = 4 * hard_regno_nregs[32][mode];
+    ret = 4 * hard_regno_nregs (32, mode);
   else if (reg_classes_intersect_p (rclass, ALTIVEC_REGS))
-    ret = 4 * hard_regno_nregs[FIRST_ALTIVEC_REGNO][mode];
+    ret = 4 * hard_regno_nregs (FIRST_ALTIVEC_REGNO, mode);
   else
     ret = 4 + rs6000_register_move_cost (mode, rclass, GENERAL_REGS);
 

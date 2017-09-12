@@ -112,14 +112,25 @@ if os.path.isfile('favicon.ico'):
 
 html_static_path = ['_static']
 
+latex_additional_files = ['gnat.sty']
+
+copyright_macros = {
+    'date': time.strftime("%b %d, %Y"),
+    'edition': 'GNAT %s Edition' % 'Pro' if get_gnat_build_type() == 'PRO'
+               else 'GPL',
+    'name': u'GNU Ada',
+    'tool': u'GNAT',
+    'version': version}
+
 latex_elements = {
-    'preamble': latex_elements.TOC_DEPTH +
+    'preamble': '\\usepackage{gnat}\n' +
+    latex_elements.TOC_DEPTH +
     latex_elements.PAGE_BLANK +
     latex_elements.TOC_CMD +
     latex_elements.LATEX_HYPHEN +
     latex_elements.doc_settings(DOCS[doc_name]['title'],
                                 get_gnat_version()),
-    'tableofcontents': latex_elements.TOC}
+    'tableofcontents': latex_elements.TOC % copyright_macros}
 
 latex_documents = [
     (master_doc, '%s.tex' % doc_name, project, u'AdaCore', 'manual')]

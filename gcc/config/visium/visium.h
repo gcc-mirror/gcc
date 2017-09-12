@@ -556,16 +556,6 @@
    50, 51, 52,                             /* flags, arg, frame */ \
    0, 34 }                                 /* r0, f0 */
 
-/* `HARD_REGNO_NREGS (REGNO, MODE)'
-
-   A C expression for the number of consecutive hard registers,
-   starting at register number REGNO, required to hold a value of mode
-   MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((REGNO) == MDB_REGNUM ?                    \
-  ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
-  : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* `HARD_REGNO_RENAME_OK (OLD_REG, NEW_REG)'
 
    A C expression which is nonzero if hard register NEW_REG can be
@@ -751,18 +741,6 @@ enum reg_class
 #define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
   (CLASS == MDB ? (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)) : 0)
 
-/* `CLASS_MAX_NREGS (CLASS, MODE)'
-
-   A C expression for the maximum number of consecutive registers of
-   class CLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact,
-   the value of the macro `CLASS_MAX_NREGS (CLASS, MODE)' should be
-   the maximum value of `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO
-   values in the class CLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)    \
   ((CLASS) == MDB ?                     \
   ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \

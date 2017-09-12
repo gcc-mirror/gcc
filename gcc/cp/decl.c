@@ -5022,11 +5022,12 @@ start_decl (const cp_declarator *declarator,
 		 about this situation, and so we check here.  */
 	      if (initialized && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
-	      if (duplicate_decls (decl, field, /*newdecl_is_friend=*/false))
+	      field = duplicate_decls (decl, field,
+				       /*newdecl_is_friend=*/false);
+	      if (field == error_mark_node)
+		return error_mark_node;
+	      else if (field)
 		decl = field;
-              if (decl_spec_seq_has_spec_p (declspecs, ds_constexpr)
-                  && !DECL_DECLARED_CONSTEXPR_P (field))
-                error ("%qD declared %<constexpr%> outside its class", field);
 	    }
 	}
       else
@@ -14320,6 +14321,7 @@ finish_enum_value_list (tree enumtype)
       && UNSCOPED_ENUM_P (enumtype))
     {
       insert_late_enum_def_bindings (current_class_type, enumtype);
+      /* TYPE_FIELDS needs fixup.  */
       fixup_type_variants (current_class_type);
     }
 

@@ -24,18 +24,15 @@
 ------------------------------------------------------------------------------
 
 with ALI;       use ALI;
-with Csets;
 with Make_Util; use Make_Util;
 with Namet;     use Namet;
 with Opt;       use Opt;
 with Osint;     use Osint;
 with Osint.M;   use Osint.M;
-with Snames;
-with Stringt;
-with Switch;   use Switch;
+with Switch;    use Switch;
 with Table;
-with Targparm; use Targparm;
-with Types;    use Types;
+with Targparm;  use Targparm;
+with Types;     use Types;
 
 with Ada.Command_Line;          use Ada.Command_Line;
 
@@ -45,10 +42,6 @@ with GNAT.IO;                   use GNAT.IO;
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 
 package body Clean is
-
-   Initialized : Boolean := False;
-   --  Set to True by the first call to Initialize to avoid reinitialization of
-   --  some packages.
 
    --  Suffixes of various files
 
@@ -492,6 +485,7 @@ package body Clean is
       end if;
 
       Osint.Add_Default_Search_Dirs;
+      Targparm.Get_Target_Parameters;
 
       if Osint.Number_Of_Files = 0 then
          if Argument_Count = 0 then
@@ -577,23 +571,6 @@ package body Clean is
 
    procedure Initialize is
    begin
-      if not Initialized then
-         Initialized := True;
-
-         --  Get default search directories to locate system.ads when calling
-         --  Targparm.Get_Target_Parameters.
-
-         Osint.Add_Default_Search_Dirs;
-
-         --  Initialize some packages
-
-         Csets.Initialize;
-         Snames.Initialize;
-         Stringt.Initialize;
-
-         Targparm.Get_Target_Parameters;
-      end if;
-
       --  Reset global variables
 
       Free (Object_Directory_Path);
@@ -701,6 +678,9 @@ package body Clean is
 
                      if Success then
                         Exit_Program (E_Success);
+
+                     else
+                        Exit_Program (E_Fatal);
                      end if;
                   end;
                end if;

@@ -1,3 +1,735 @@
+2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (output_return): Output the source location of
+	the insn in the delay slot, if any.
+	(output_sibcall): Likewise.
+
+2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR driver/81498
+	* common.opt (-static-pie): New alias.
+	(shared): Negate static-pie.
+	(-no-pie): Update help text.
+	(-pie): Likewise.
+	(static-pie): New option.
+	* config/gnu-user.h (GNU_USER_TARGET_STARTFILE_SPEC): Add
+	-static-pie support.
+	(GNU_USER_TARGET_ENDFILE_SPEC): Likewise.
+	(LINK_EH_SPEC): Likewise.
+	(LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/i386/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): Likewise.
+	* config/i386/gnu-user64.h (GNU_USER_TARGET_LINK_SPEC): Likewise.
+	* gcc.c (LINK_COMMAND_SPEC): Likewise.
+	(init_gcc_specs): Likewise.
+	(init_spec): Likewise.
+	(display_help): Update help message for -pie.
+	* doc/invoke.texi: Update -pie, -no-pie and -static.  Document
+	-static-pie.
+
+2017-09-12  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* config/aarch64/aarch64.md (movsi_aarch64): Remove all '*'.
+	(movdi_aarch64): Likewise.
+	(movti_aarch64): Likewise.
+
+2017-09-12 Simon Wright <simon@pushface.org>
+
+	PR target/80204
+	* config/darwin-driver.c (darwin_find_version_from_kernel): Eliminate
+	calculation of the minor version, always output as 0.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin): For
+	ALTIVEC_BUILTIN_VEC_LD if arg1 has array type call default_conversion
+	on it early, rather than manual conversion late.  For
+	ALTIVEC_BUILTIN_VEC_ST if arg2 has array type call default_conversion
+	instead of performing manual conversion.
+
+2017-09-12  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/altivec.md (vec_widen_umult_even_v4si,
+	vec_widen_smult_even_v4si): Add define expands for vmuleuw, vmulesw,
+	vmulouw, vmulosw.
+	* config/rs6000/rs6000-builtin.def (VMLEUW, VMULESW, VMULOUW,
+	VMULOSW): Add definitions.
+	* config/rs6000/rs6000-c.c (altivec_overloaded_builtins): Add
+	ALTIVEC_BUILTIN_VMULESW, ALTIVEC_BUILTIN_VMULEUW,
+	ALTIVEC_BUILTIN_VMULOSW, ALTIVEC_BUILTIN_VMULOUW entries.
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin,
+	builtin_function_type): Add ALTIVEC_BUILTIN_* case statements.
+
+2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/aarch64/aarch64.md (movdi_aarch64): Set load/store
+	types correctly.
+	(movti_aarch64): Likewise.
+	(movdf_aarch64): Likewise.
+	(movtf_aarch64): Likewise.
+	(load_pairdi): Likewise.
+	(store_pairdi): Likewise.
+	(load_pairdf): Likewise.
+	(store_pairdf): Likewise.
+	(loadwb_pair<GPI:mode>_<P:mode>): Likewise.
+	(storewb_pair<GPI:mode>_<P:mode>): Likewise.
+	(ldr_got_small_<mode>): Likewise.
+	(ldr_got_small_28k_<mode>): Likewise.
+	(ldr_got_tiny): Likewise.
+	* config/aarch64/iterators.md (ldst_sz): New.
+	(ldpstp_sz): Likewise.
+	* config/aarch64/thunderx.md (thunderx_storepair): Split store_8
+	to store_16.
+	(thunderx_load): Split load_8 to load_16.
+	* config/aarch64/thunderx2t99.md (thunderx2t99_loadpair): Split
+	load_8 to load_16.
+	(thunderx2t99_storepair_basic): Split store_8 to store_16.
+	* config/arm/xgene1.md (xgene1_load_pair): Split load_8 to load_16.
+	(xgene1_store_pair): Split store_8 to store_16.
+	* config/aarch64/falkor.md (falkor_ld_3_ld): Split load_8 to load_16.
+	(falkor_st_0_st_sd): Split store_8 to store_16.
+
+2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types.md (type): Rename load1/2/3/4 to load_4/8/12/16
+	and store1/2/3/4 to store_4/8/12/16.
+	* config/aarch64/aarch64.md: Update for rename.
+	* config/arm/arm.md: Likewise.: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/thumb2.md: Likewise.
+	* config/arm/vfp.md: Likewise.
+	* config/arm/arm-generic.md: Likewise.
+	* config/arm/arm1020e.md: Likewise.
+	* config/arm/arm1026ejs.md: Likewise.
+	* config/arm/arm1136jfs.md: Likewise.
+	* config/arm/arm926ejs.md: Likewise.
+	* config/arm/cortex-a15.md: Likewise.
+	* config/arm/cortex-a17.md: Likewise.
+	* config/arm/cortex-a5.md: Likewise.
+	* config/arm/cortex-a53.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/cortex-a7.md: Likewise.
+	* config/arm/cortex-a8.md: Likewise.
+	* config/arm/cortex-a9.md: Likewise.
+	* config/arm/cortex-m4.md: Likewise.
+	* config/arm/cortex-m7.md: Likewise.
+	* config/arm/cortex-r4.md: Likewise.
+	* config/arm/exynos-m1.md: Likewise.
+	* config/arm/fa526.md: Likewise.
+	* config/arm/fa606te.md: Likewise.
+	* config/arm/fa626te.md: Likewise.
+	* config/arm/fa726te.md: Likewise.
+	* config/arm/fmp626.md: Likewise.
+	* config/arm/iwmmxt.md: Likewise.
+	* config/arm/ldmstm.md: Likewise.
+	* config/arm/marvell-pj4.md: Likewise.
+	* config/arm/xgene1.md: Likewise.
+	* config/aarch64/thunderx.md: Likewise.
+	* config/aarch64/thunderx2t99.md: Likewise.
+	* config/aarch64/falkor.md: Likewise.
+
+2017-09-12  Martin Liska  <mliska@suse.cz>
+
+	* attribs.c (private_lookup_attribute): New function.
+	* attribs.h (private_lookup_attribute): Declared here.
+	(lookup_attribute): Called from this place.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82157
+	* tree-ssa-pre.c (remove_dead_inserted_code): Do not remove
+	stmts with side-effects.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood <david.sherwood@arm.com>
+
+	* target.def (hard_regno_nregs): New hook.
+	(class_max_nregs): Refer to it instead of HARD_REGNO_NREGS.
+	* targhooks.h (default_hard_regno_nregs): Declare.
+	* targhooks.c (default_hard_regno_nregs): New function.
+	* doc/tm.texi.in (HARD_REGNO_NREGS): Replace with...
+	(TARGET_HARD_REGNO_NREGS): ...this hook.
+	(HARD_REGNO_NREGS_HAS_PADDING): Update accordingly.
+	(CLASS_MAX_NREGS): Likewise.
+	* doc/tm.texi: Regenerate.
+	* reginfo.c (init_reg_modes_target): Use targetm.hard_regno_nregs
+	instead of HARD_REGNO_NREGS.
+	* rtl.h (REG_NREGS): Refer to TARGET_HARD_REGNO_NREGS rather than
+	HARD_REGNO_NREGS in the comment.
+	* config/aarch64/aarch64.h (HARD_REGNO_NREGS): Delete.
+	* config/aarch64/aarch64-protos.h (aarch64_hard_regno_nregs): Delete.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_nregs): Make static.
+	Return an unsigned int.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/alpha/alpha.h (HARD_REGNO_NREGS): Delete.
+	* config/arc/arc.h (HARD_REGNO_NREGS): Delete.
+	* config/arc/arc.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(arc_hard_regno_nregs): New function.
+	* config/arm/arm.h (HARD_REGNO_NREGS): Delete.
+	* config/arm/arm.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(arm_hard_regno_nregs): New function.
+	* config/avr/avr.h (HARD_REGNO_NREGS): Delete.
+	* config/bfin/bfin.h (HARD_REGNO_NREGS): Delete.
+	* config/bfin/bfin.c (bfin_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/c6x/c6x.h (HARD_REGNO_NREGS): Delete.
+	* config/cr16/cr16.h (LONG_REG_P): Use targetm.hard_regno_nregs.
+	(HARD_REGNO_NREGS): Delete.
+	* config/cr16/cr16.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(cr16_hard_regno_nregs): New function.
+	(cr16_memory_move_cost): Use it instead of HARD_REGNO_NREGS.
+	* config/cris/cris.h (HARD_REGNO_NREGS): Delete.
+	* config/cris/cris.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(cris_hard_regno_nregs): New function.
+	* config/epiphany/epiphany.h (HARD_REGNO_NREGS): Delete.
+	* config/fr30/fr30.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Use targetm.hard_regno_nregs.
+	* config/frv/frv.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Remove outdated copy of documentation.
+	* config/frv/frv-protos.h (frv_hard_regno_nregs): Delete.
+	* config/frv/frv.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(frv_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	(frv_class_max_nregs): Remove outdated copy of documentation.
+	* config/ft32/ft32.h (HARD_REGNO_NREGS): Delete.
+	* config/h8300/h8300.h (HARD_REGNO_NREGS): Delete.
+	* config/h8300/h8300-protos.h (h8300_hard_regno_nregs): Delete.
+	* config/h8300/h8300.c (h8300_hard_regno_nregs): Delete.
+	* config/i386/i386.h (HARD_REGNO_NREGS): Delete.
+	* config/i386/i386.c (ix86_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/ia64/ia64.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Update comment.
+	* config/ia64/ia64.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(ia64_hard_regno_nregs): New function.
+	* config/iq2000/iq2000.h (HARD_REGNO_NREGS): Delete.
+	* config/lm32/lm32.h (HARD_REGNO_NREGS): Delete.
+	* config/m32c/m32c.h (HARD_REGNO_NREGS): Delete.
+	* config/m32c/m32c-protos.h (m32c_hard_regno_nregs): Delete.
+	* config/m32c/m32c.c (m32c_hard_regno_nregs_1): Take and return
+	an unsigned int.
+	(m32c_hard_regno_nregs): Likewise.  Make static.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/m32r/m32r.h (HARD_REGNO_NREGS): Delete.
+	* config/m68k/m68k.h (HARD_REGNO_NREGS): Delete.
+	* config/m68k/m68k.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(m68k_hard_regno_nregs): New function.
+	* config/mcore/mcore.h (HARD_REGNO_NREGS): Delete.
+	* config/microblaze/microblaze.h (HARD_REGNO_NREGS): Delete.
+	* config/mips/mips.h (HARD_REGNO_NREGS): Delete.
+	* config/mips/mips-protos.h (mips_hard_regno_nregs): Delete.
+	* config/mips/mips.c (mips_hard_regno_nregs): Make static.
+	Take and return an unsigned int.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/mmix/mmix.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Use targetm.hard_regno_nregs.
+	* config/mn10300/mn10300.h (HARD_REGNO_NREGS): Delete.
+	* config/moxie/moxie.h (HARD_REGNO_NREGS): Delete.
+	* config/msp430/msp430.h (HARD_REGNO_NREGS): Delete.
+	* config/msp430/msp430-protos.h (msp430_hard_regno_nregs): Delete.
+	* config/msp430/msp430.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(msp430_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	* config/nds32/nds32.h (HARD_REGNO_NREGS): Delete.
+	* config/nds32/nds32-protos.h (nds32_hard_regno_nregs): Delete.
+	* config/nds32/nds32.c (nds32_hard_regno_nregs): Delete.
+	(nds32_hard_regno_mode_ok): Use targetm.hard_regno_nregs.
+	* config/nios2/nios2.h (HARD_REGNO_NREGS): Delete.
+	* config/nvptx/nvptx.h (HARD_REGNO_NREGS): Delete.
+	* config/nvptx/nvptx.c (nvptx_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/pa/pa32-regs.h (HARD_REGNO_NREGS): Rename to...
+	(PA_HARD_REGNO_NREGS): ...this.
+	* config/pa/pa64-regs.h (HARD_REGNO_NREGS): Rename to...
+	(PA_HARD_REGNO_NREGS): ...this.
+	* config/pa/pa.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(pa_hard_regno_nregs): New function.
+	* config/pdp11/pdp11.h (HARD_REGNO_NREGS): Delete.
+	* config/pdp11/pdp11.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(pdp11_hard_regno_nregs): New function.
+	* config/powerpcspe/powerpcspe.h (HARD_REGNO_NREGS): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(rs6000_hard_regno_nregs_hook): New function.
+	* config/riscv/riscv.h (HARD_REGNO_NREGS): Delete.
+	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): Delete.
+	* config/riscv/riscv.c (riscv_hard_regno_nregs): Make static.
+	Take and return an unsigned int.  Move earlier in file.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/rl78/rl78.h (HARD_REGNO_NREGS): Delete.
+	* config/rl78/rl78-protos.h (rl78_hard_regno_nregs): Delete.
+	* config/rl78/rl78.c (TARGET_HARD_REGNO_NREGS): Reefine.
+	(rl78_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	* config/rs6000/rs6000.h (HARD_REGNO_NREGS): Delete.
+	* config/rs6000/rs6000.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(rs6000_hard_regno_nregs_hook): New function.
+	* config/rx/rx.h (HARD_REGNO_NREGS): Delete.
+	* config/rx/rx.c (rx_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/s390/s390.h (HARD_REGNO_NREGS): Delete.
+	* config/s390/s390.c (REGNO_PAIR_OK): Use s390_hard_regno_nregs
+	instead of HARD_REGNO_NREGS.
+	(s390_hard_regno_nregs): New function.
+	(s390_hard_regno_mode_ok): Add comment from s390.h.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/sh/sh.h (HARD_REGNO_NREGS): Delete.
+	* config/sh/sh.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(sh_hard_regno_nregs): New function.
+	(sh_pass_in_reg_p): Use it.
+	* config/sparc/sparc.h (HARD_REGNO_NREGS): Delete.
+	* config/sparc/sparc.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(sparc_hard_regno_nregs): New function.
+	* config/spu/spu.h (HARD_REGNO_NREGS): Delete.
+	* config/spu/spu.c (spu_hard_regno_nregs): New function.
+	(spu_function_arg_advance): Use it, supplying a valid register number.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/stormy16/stormy16.h (HARD_REGNO_NREGS): Delete.
+	* config/tilegx/tilegx.h (HARD_REGNO_NREGS): Delete.
+	* config/tilepro/tilepro.h (HARD_REGNO_NREGS): Delete.
+	* config/v850/v850.h (HARD_REGNO_NREGS): Delete.
+	* config/vax/vax.h (HARD_REGNO_NREGS): Delete.
+	* config/visium/visium.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Remove copy of old documentation.
+	* config/visium/visium.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(visium_hard_regno_nregs): New function.
+	(visium_hard_regno_mode_ok): Use it instead of HARD_REGNO_NREGS.
+	* config/xtensa/xtensa.h (HARD_REGNO_NREGS): Delete.
+	* config/xtensa/xtensa.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	xtensa_hard_regno_nregs): New function.
+	* system.h (HARD_REGNO_NREGS): Poison.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/arm/arm.h (THUMB_SECONDARY_INPUT_RELOAD_CLASS): Use
+	hard_regno_nregs instead of HARD_REGNO_NREGS.
+	(THUMB_SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	* config/c6x/c6x.c (c6x_expand_prologue): Likewise.
+	(c6x_expand_epilogue): Likewise.
+	* config/frv/frv.c (frv_alloc_temp_reg): Likewise.
+	(frv_read_iacc_argument): Likewise.
+	* config/sh/sh.c: Include regs.h.
+	(sh_print_operand): Use hard_regno_nregs instead of HARD_REGNO_NREGS.
+	(regs_used): Likewise.
+	(output_stack_adjust): Likewise.
+	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Likewise.
+	* expmed.c: Include regs.h.
+	(store_bit_field_1): Use hard_regno_nregs instead of HARD_REGNO_NREGS.
+	* ree.c: Include regs.h.
+	(combine_reaching_defs): Use hard_regno_nregs instead of
+	HARD_REGNO_NREGS.
+	(add_removable_extension): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* regs.h (hard_regno_nregs): Turn into a function.
+	(end_hard_regno): Update accordingly.
+	* caller-save.c (setup_save_areas): Likewise.
+	(save_call_clobbered_regs): Likewise.
+	(replace_reg_with_saved_mem): Likewise.
+	(insert_restore): Likewise.
+	(insert_save): Likewise.
+	* combine.c (can_change_dest_mode): Likewise.
+	(move_deaths): Likewise.
+	(distribute_notes): Likewise.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_cannot_change_mode_class)
+	(rs6000_split_multireg_move): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_memory_move_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_cannot_change_mode_class): Likewise.
+	(rs6000_split_multireg_move): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_memory_move_cost): Likewise.
+	* cselib.c (cselib_reset_table): Likewise.
+	(cselib_lookup_1): Likewise.
+	* emit-rtl.c (set_mode_and_regno): Likewise.
+	* function.c (aggregate_value_p): Likewise.
+	* ira-color.c (setup_profitable_hard_regs): Likewise.
+	(check_hard_reg_p): Likewise.
+	(calculate_saved_nregs): Likewise.
+	(assign_hard_reg): Likewise.
+	(improve_allocation): Likewise.
+	(calculate_spill_cost): Likewise.
+	* ira-emit.c (modify_move_list): Likewise.
+	* ira-int.h (ira_hard_reg_set_intersection_p): Likewise.
+	(ira_hard_reg_in_set_p): Likewise.
+	* ira.c (setup_reg_mode_hard_regset): Likewise.
+	(clarify_prohibited_class_mode_regs): Likewise.
+	(check_allocation): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	(lra_setup_reg_renumber): Likewise.
+	(setup_try_hard_regno_pseudos): Likewise.
+	(spill_for): Likewise.
+	(assign_hard_regno): Likewise.
+	(setup_live_pseudos_and_spill_after_risky_transforms): Likewise.
+	* lra-constraints.c (in_class_p): Likewise.
+	(lra_constraint_offset): Likewise.
+	(simplify_operand_subreg): Likewise.
+	(lra_constraints): Likewise.
+	(split_reg): Likewise.
+	(split_if_necessary): Likewise.
+	(invariant_p): Likewise.
+	(inherit_in_ebb): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra-remat.c (reg_overlap_for_remat_p): Likewise.
+	(get_hard_regs): Likewise.
+	(do_remat): Likewise.
+	* lra-spills.c (assign_spill_hard_regs): Likewise.
+	* mode-switching.c (create_pre_exit): Likewise.
+	* postreload.c (reload_combine_recognize_pattern): Likewise.
+	* recog.c (peep2_find_free_register): Likewise.
+	* regcprop.c (kill_value_regno): Likewise.
+	(set_value_regno): Likewise.
+	(copy_value): Likewise.
+	(maybe_mode_change): Likewise.
+	(find_oldest_value_reg): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	(regrename_do_replace): Likewise.
+	* reload.c (push_reload): Likewise.
+	(combine_reloads): Likewise.
+	(find_dummy_reload): Likewise.
+	(operands_match_p): Likewise.
+	(find_reloads): Likewise.
+	(find_equiv_reg): Likewise.
+	(reload_adjust_reg_for_mode): Likewise.
+	* reload1.c (count_pseudo): Likewise.
+	(count_spilled_pseudo): Likewise.
+	(find_reg): Likewise.
+	(clear_reload_reg_in_use): Likewise.
+	(free_for_value_p): Likewise.
+	(allocate_reload_reg): Likewise.
+	(choose_reload_regs): Likewise.
+	(reload_adjust_reg_for_temp): Likewise.
+	(emit_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* rtlanal.c (subreg_get_info): Likewise.
+	* sched-deps.c (sched_analyze_reg): Likewise.
+	* sel-sched.c (init_regs_for_mode): Likewise.
+	(mark_unavailable_hard_regs): Likewise.
+	(choose_best_reg_1): Likewise.
+	(verify_target_availability): Likewise.
+	* valtrack.c (dead_debug_insert_temp): Likewise.
+	* var-tracking.c (track_loc_p): Likewise.
+	(emit_note_insn_var_location): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	(init_reg_modes_target): Refer directly to
+	this_target_regs->x_hard_regno_nregs.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* ira-costs.c (record_operand_costs): Use in_hard_reg_set_p
+	instead of hard_regno_nregs.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_hard_regno_mode_ok): Use
+	end_hard_regno instead of hard_regno_nregs.
+	* config/s390/s390.c (s390_reg_clobbered_rtx): Likewise.
+	* config/sparc/sparc.h (ASM_DECLARE_REGISTER_GLOBAL): Likewise.
+	* config/visium/visium.c (visium_hard_regno_mode_ok): Likewise.
+	* ira-color.c (improve_allocation): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	* lra-lives.c (mark_regno_live): Likewise.
+	(mark_regno_dead): Likewise.
+	* lra-remat.c (operand_to_remat): Likewise.
+	* lra.c (collect_non_operand_hard_regs): Likewise.
+	* postreload.c (reload_combine_note_store): Likewise.
+	(move2add_valid_value_p): Likewise.
+	* reload.c (regno_clobbered_p): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* config/frv/frv.c (FOR_EACH_REGNO): Use END_REGNO instead of
+	hard_regno_nregs.
+	* config/v850/v850.c (v850_reorg): Likewise.
+	* reload.c (refers_to_regno_for_reload_p): Likewise.
+	(find_equiv_reg): Likewise.
+	* reload1.c (reload_reg_reaches_end_p): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* caller-save.c (add_used_regs): Use REG_NREGS instead of
+	hard_regno_nregs.
+	* config/aarch64/aarch64.c (aarch64_split_combinev16qi): Likewise.
+	* config/arm/arm.c (output_move_neon): Likewise.
+	(arm_attr_length_move_neon): Likewise.
+	(neon_split_vcombine): Likewise.
+	* config/c6x/c6x.c (c6x_mark_reg_read): Likewise.
+	(c6x_mark_reg_written): Likewise.
+	(c6x_dwarf_register_span): Likewise.
+	* config/i386/i386.c (ix86_save_reg): Likewise.
+	* config/ia64/ia64.c (mark_reg_gr_used_mask): Likewise.
+	(rws_access_reg): Likewise.
+	* config/s390/s390.c (s390_call_saved_register_used): Likewise.
+	* mode-switching.c (create_pre_exit): Likewise.
+	* ree.c (combine_reaching_defs): Likewise.
+	(add_removable_extension): Likewise.
+	* regcprop.c (find_oldest_value_reg): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* reload.c (reload_inner_reg_of_subreg): Likewise.
+	(push_reload): Likewise.
+	(combine_reloads): Likewise.
+	(find_dummy_reload): Likewise.
+	(reload_adjust_reg_for_mode): Likewise.
+	* reload1.c (find_reload_regs): Likewise.
+	(forget_old_reloads_1): Likewise.
+	(reload_reg_free_for_value_p): Likewise.
+	(reload_adjust_reg_for_temp): Likewise.
+	(emit_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* sel-sched.c (choose_best_reg_1): Likewise.
+	(choose_best_pseudo_reg): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood <david.sherwood@arm.com>
+
+	* defaults.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* target.def (slow_unaligned_access): New hook.
+	* targhooks.h (default_slow_unaligned_access): Declare.
+	* targhooks.c (default_slow_unaligned_access): New function.
+	* doc/tm.texi.in (SLOW_UNALIGNED_ACCESS): Replace with...
+	(TARGET_SLOW_UNALIGNED_ACCESS): ...this.
+	* doc/tm.texi: Regenerate.
+	* config/alpha/alpha.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/arm/arm.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/i386/i386.h (SLOW_UNALIGNED_ACCESS): Delete commented-out
+	definition.
+	* config/powerpcspe/powerpcspe.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_SLOW_UNALIGNED_ACCESS):
+	Redefine.
+	(rs6000_slow_unaligned_access): New function.
+	(rs6000_emit_move): Use it instead of SLOW_UNALIGNED_ACCESS.
+	(expand_block_compare): Likewise.
+	(expand_strn_compare): Likewise.
+	(rs6000_rtx_costs): Likewise.
+	* config/riscv/riscv.h (SLOW_UNALIGNED_ACCESS): Delete.
+	(riscv_slow_unaligned_access): Likewise.
+	* config/riscv/riscv.c (riscv_slow_unaligned_access): Rename to...
+	(riscv_slow_unaligned_access_p): ...this and make static.
+	(riscv_option_override): Update accordingly.
+	(riscv_slow_unaligned_access): New function.
+	(TARGET_SLOW_UNALIGNED_ACCESS): Redefine.
+	* config/rs6000/rs6000.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/rs6000/rs6000.c (TARGET_SLOW_UNALIGNED_ACCESS): Redefine.
+	(rs6000_slow_unaligned_access): New function.
+	(rs6000_emit_move): Use it instead of SLOW_UNALIGNED_ACCESS.
+	(rs6000_rtx_costs): Likewise.
+	* config/rs6000/rs6000-string.c (expand_block_compare)
+	(expand_strn_compare): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* config/tilegx/tilegx.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* config/tilepro/tilepro.h (SLOW_UNALIGNED_ACCESS): Delete.
+	* calls.c (expand_call): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* expmed.c (simple_mem_bitfield_p): Likewise.
+	* expr.c (alignment_for_piecewise_move): Likewise.
+	(emit_group_load_1): Likewise.
+	(emit_group_store): Likewise.
+	(copy_blkmode_from_reg): Likewise.
+	(emit_push_insn): Likewise.
+	(expand_assignment): Likewise.
+	(store_field): Likewise.
+	(expand_expr_real_1): Likewise.
+	* gimple-fold.c (gimple_fold_builtin_memory_op): Likewise.
+	* lra-constraints.c (simplify_operand_subreg): Likewise.
+	* stor-layout.c (bit_field_mode_iterator::next_mode): Likewise.
+	* gimple-ssa-store-merging.c: Likewise in block comment at start
+	of file.
+	* tree-ssa-strlen.c: Include target.h.
+	(handle_builtin_memcmp): Use targetm.slow_unaligned_access instead
+	of SLOW_UNALIGNED_ACCESS.
+	* system.h (SLOW_UNALIGNED_ACCESS): Poison.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR rtl-optimization/82185
+	* expmed.c (emit_store_flag_int): Only test tem if it has been
+	initialized.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82149
+	* match.pd ((FTYPE) N CMP CST): Fix typo.
+
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* config/mips/mips.c (mips_attribute_table): Add 'short_call'
+	attribute.
+	(mips_near_type_p): Add 'short_call' attribute as a synonym
+	for 'near'.
+	* doc/extend.texi (short_call): Document new function attribute.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-common.c (sync_resolve_size): Instead of c_dialect_cxx ()
+	assertion check that in the condition.
+	(get_atomic_generic_size): Likewise.  Before testing if parameter
+	has pointer type, if it has array type, call for C++
+	default_conversion to perform array-to-pointer conversion.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-generic.c (expand_vector_operations_1): Do nothing
+	for operations we cannot scalarize.
+
+2017-09-12  Aldy Hernandez  <aldyh@redhat.com>
+
+	* tree-ssa-threadbackward.c (fsm_find_thread_path): Make GC
+	vectors heap vectors.  Clean up comments.
+	Make visited_bbs a reference.
+	(profitable_jump_thread_path): Make GC
+	vectors heap vectors.  Clean up comments.
+	Misc cleanups.
+	(convert_and_register_jump_thread_path): Make GC vectors heap
+	vectors.
+	(check_subpath_and_update_thread_path): Same.  Clean up comments.
+	Make visited_bbs a reference.
+	(handle_phi): Abstract common code to to
+	register_jump_thread_path_if_profitable.
+	Rename VAR_BB to DEF_BB.
+	Update comments.
+	Make GC vectors heap vectors.
+	Make visited_bbs a reference.
+	(handle_assignment): Same.
+	(register_jump_thread_path_if_profitable): New.
+	(fsm_find_control_statement_thread_paths): Rename VAR_BB to
+	DEF_BB.
+	Make GC	vectors heap vectors.  Clean up comments.
+	Make visited_bbs a reference.
+	(find_jump_threads_backwards): Make visited_bbs live in the stack.
+	* tree-ssa-threadupdate.c (delete_jump_thread_path): Fix typo in
+	comment.
+
+2017-09-11  Max Filippov  <jcmvbkbc@gmail.com>
+
+	PR target/82181
+	* config/xtensa/xtensa.c (xtensa_mem_offset): Check that both
+	words of E_DImode object are reachable by xtensa_uimm8x4 access.
+
+2017-09-11  Vidya Praveen  <vidyapraveen@arm.com>
+
+	Revert r251800 and r251799.
+
+2017-09-11  Martin Jambor  <mjambor@suse.cz>
+
+	PR hsa/82119
+	* hsa-gen.c (gen_hsa_phi_from_gimple_phi): Process ADDR_EXPRs in
+	arguments in advance.
+	* hsa-regalloc.c (naive_process_phi): New parameter predecessors,
+	use it to find predecessor edges.
+	(naive_outof_ssa): Collect vector of predecessors.
+
+2017-09-08  Jason Merrill  <jason@redhat.com>
+
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* langhooks.h (struct lang_hooks_for_types): Add
+	copy_lang_qualifiers.
+	* attribs.c (build_type_attribute_qual_variant): Use it.
+	* langhooks-def.h (LANG_HOOKS_COPY_LANG_QUALIFIERS): Default to
+	NULL.
+	(LANG_HOOKS_FOR_TYPES_INITIALIZER): Use it.
+	* tree.c (verify_type): Re-enable TYPE_CANONICAL main variant check.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/81988
+	* config/sparc/sparc.md (mulsi3): Rename into *mulsi3_sp32.
+	(*mulsi3_sp64): New instruction.
+	(mulsi3): New expander.
+
+2017-09-08  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/alpha/alpha.c (alpha_print_operand) <case 'S'>: Remove.
+
+2017-09-08  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* sancov.c: Include memmodel.h.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/80897
+	* config/sparc/sparc.c (sparc_emit_set_symbolic_const64): Deal with too
+	large offsets.
+
+2017-09-07  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/vsx.md (define_insn "*stxvl"): Add missing argument to
+	the sldi instruction.
+
+2017-09-07  David Edelsohn  <dje.gcc@gmail.com>
+
+	* sancov.c: Include tm_p.h.
+
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* output.h (switch_to_other_text_partition): New declaration.
+	* varasm.c (switch_to_other_text_partition): New function.
+	* config/rs6000/rs6000.c (uses_TOC): Return 2 if
+	NOTE_INSN_SWITCH_TEXT_SECTIONS is seen before finding load_toc_* insn.
+	(rs6000_elf_declare_function_name): If uses_TOC returned 2, switch
+	to the other text partition before emitting LCL label and switch back
+	after emitting the word after it.
+
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* passes.def (pass_split_crit_edges): Remove instance before PRE.
+	* tree-ssa-pre.c (pass_pre::execute): Instead manually split
+	critical edges here, after loop init.
+	(pass_data_pre): Remove PROP_no_crit_edges flags.
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Use vn_valueize
+	for valueization of call args to avoid leaking VN_TOP.
+	(visit_use): Assert we do not visit default defs.
+	(init_scc_vn): Use build_decl for VN_TOP to make name nicer.
+	Use error_mark_node to more easily detect leaking VN_TOP.
+	All default-defs are varying, not VN_TOP.  Mark them visited.
+	(run_scc_vn): Make code match comment.
+
+2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-cpus.def (OTHER_VSX_VECTOR_MASKS): Delete
+	OPTION_MASK_FLOAT128_KEYWORD.
+	(POWERPC_MASKS): Likewise.
+	* config/rs6000/rs6000-c.c (rs6000_target_modify_macros): Delete
+	support for the -mfloat128-type option, and make -mfloat128
+	default on PowerPC Linux systems.  Define or undefine
+	__FLOAT128__ and  __FLOAT128_HARDWARE__ for the current options.
+	Define __float128 to be __ieee128 if IEEE 128-bit support is
+	enabled, or undefine it.
+	(rs6000_cpu_cpp_builtins): Delete defining __FLOAT128__ here.
+	Delete defining __FLOAT128_TYPE__.
+	* config/rs6000/rs6000.opt (x_TARGET_FLOAT128_TYPE): Delete the
+	-mfloat128-type option and make -mfloat128 default on PowerPC
+	Linux systems.
+	(TARGET_FLOAT128_TYPE): Likewise.
+	(-mfloat128-type): Likewise.
+	* config/rs6000/rs6000.c (rs6000_option_override_internal):
+	Delete the -mfloat128-type option and make -mfloat128 default on
+	PowerPC Linux systems.  Always use __ieee128 to be the keyword for
+	the IEEE 128-bit type, and map __float128 to __ieee128 if IEEE
+	128-bit floating point is enabled.  Change tests from using
+	-mfloat128-type to -mfloat128.
+	(rs6000_mangle_type): Use the correct mangling for the __float128
+	type even if normal long double is restricted to 64-bits.
+	(floatn_mode): Enable the _Float128 type by default on VSX Linux
+	systems.
+	* config/rs6000/rs6000.h (MASK_FLOAT128_TYPE): Delete.
+	(MASK_FLOAT128_KEYWORD): Define new shortcut macro.
+	(RS6000BTM_FLOAT128): Define in terms of -mfloat128, not
+	-mfloat128-type.
+	* doc/invoke.texi (RS/6000 and PowerPC Options): Update
+	documentation for -mfloat128.
+
+2017-09-06  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc-wrs-vxworksspe): Now match as vxworks*spe.
+
 2017-09-06  Wish Wu  <wishwu007@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -1199,7 +1199,7 @@ fields_linear_search (tree klass, tree name, bool want_type)
 	}
 
       if (DECL_DECLARES_FUNCTION_P (decl))
-	/* Functions are kep separately, at the moment.  */
+	/* Functions are found separately.  */
 	continue;
 
       if (!want_type || DECL_DECLARES_TYPE_P (decl))
@@ -1358,7 +1358,12 @@ get_method_slot (tree klass, tree name)
 
       if (fn_name == name)
 	{
-	  // FIXME: DEAL with STAT_HACK creation?
+	  /* If we found an existing slot, it must be a function set.
+	     Even with insertion after completion, because those only
+	     happen with artificial fns that have unspellable names.
+	     This means we do not have to deal with the stat hack
+	     either.  */
+	  gcc_checking_assert (OVL_P (*slot));
 	  if (name == conv_op_identifier)
 	    {
 	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);

@@ -596,10 +596,6 @@ enum nds32_builtins
    own cost calculations.  */
 #define HONOR_REG_ALLOC_ORDER optimize_size
 
-/* The number of consecutive hard regs needed starting at
-   reg "regno" for holding a value of mode "mode".  */
-#define HARD_REGNO_NREGS(regno, mode) nds32_hard_regno_nregs (regno, mode)
-
 
 /* Register Classes.  */
 

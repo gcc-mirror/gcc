@@ -1694,13 +1694,16 @@ package body Sem_Aggr is
          --  may have several choices, each one leading to a loop, so we create
          --  this variable only once to prevent homonyms in this scope.
          --  The expression has to be analyzed once the index variable is
-         --  directly visible.
+         --  directly visible. Mark the variable as referenced to prevent
+         --  spurious warnings, given that subsequent uses of its name in the
+         --  expression will reference the internal (synonym) loop variable.
 
          if No (Scope (Id)) then
             Enter_Name (Id);
             Set_Etype (Id, Index_Typ);
             Set_Ekind (Id, E_Variable);
             Set_Scope (Id, Ent);
+            Set_Referenced (Id);
          end if;
 
          Push_Scope (Ent);
@@ -3279,14 +3282,6 @@ package body Sem_Aggr is
       --  An error message is emitted if the components taking their value from
       --  the others choice do not have same type.
 
-      function New_Copy_Tree_And_Copy_Dimensions
-        (Source    : Node_Id;
-         Map       : Elist_Id   := No_Elist;
-         New_Sloc  : Source_Ptr := No_Location;
-         New_Scope : Entity_Id  := Empty) return Node_Id;
-      --  Same as New_Copy_Tree (defined in Sem_Util), except that this routine
-      --  also copies the dimensions of Source to the returned node.
-
       procedure Propagate_Discriminants
         (Aggr       : Node_Id;
          Assoc_List : List_Id);
@@ -3301,6 +3296,12 @@ package body Sem_Aggr is
       --  will be attached to the final record aggregate. Note that if the
       --  Parent pointer of Expr is not set then Expr was produced with a
       --  New_Copy_Tree or some such.
+
+      procedure Rewrite_Range (Root_Type : Entity_Id; Rge : Node_Id);
+      --  Rewrite a range node Rge when its bounds refer to non-stored
+      --  discriminants from Root_Type, to replace them with the stored
+      --  discriminant values. This is required in GNATprove mode, and is
+      --  adopted in all modes to avoid special-casing GNATprove mode.
 
       ---------------------
       -- Add_Association --
@@ -3733,26 +3734,6 @@ package body Sem_Aggr is
          return Expr;
       end Get_Value;
 
-      ---------------------------------------
-      -- New_Copy_Tree_And_Copy_Dimensions --
-      ---------------------------------------
-
-      function New_Copy_Tree_And_Copy_Dimensions
-        (Source    : Node_Id;
-         Map       : Elist_Id   := No_Elist;
-         New_Sloc  : Source_Ptr := No_Location;
-         New_Scope : Entity_Id  := Empty) return Node_Id
-      is
-         New_Copy : constant Node_Id :=
-                      New_Copy_Tree (Source, Map, New_Sloc, New_Scope);
-
-      begin
-         --  Move the dimensions of Source to New_Copy
-
-         Copy_Dimensions (Source, New_Copy);
-         return New_Copy;
-      end New_Copy_Tree_And_Copy_Dimensions;
-
       -----------------------------
       -- Propagate_Discriminants --
       -----------------------------
@@ -4036,15 +4017,71 @@ package body Sem_Aggr is
          Add_Association (New_C, New_Expr, New_Assoc_List);
       end Resolve_Aggr_Expr;
 
+      -------------------
+      -- Rewrite_Range --
+      -------------------
+
+      procedure Rewrite_Range (Root_Type : Entity_Id; Rge : Node_Id) is
+         procedure Rewrite_Bound
+           (Bound     : Node_Id;
+            Disc      : Entity_Id;
+            Expr_Disc : Node_Id);
+         --  Rewrite a bound of the range Bound, when it is equal to the
+         --  non-stored discriminant Disc, into the stored discriminant
+         --  value Expr_Disc.
+
+         -------------------
+         -- Rewrite_Bound --
+         -------------------
+
+         procedure Rewrite_Bound
+           (Bound     : Node_Id;
+            Disc      : Entity_Id;
+            Expr_Disc : Node_Id)
+         is
+         begin
+            if Nkind (Bound) = N_Identifier
+              and then Entity (Bound) = Disc
+            then
+               Rewrite (Bound, New_Copy_Tree (Expr_Disc));
+            end if;
+         end Rewrite_Bound;
+
+         --  Local variables
+
+         Low, High : Node_Id;
+         Disc      : Entity_Id;
+         Expr_Disc : Elmt_Id;
+
+      --  Start of processing for Rewrite_Range
+
+      begin
+         if Has_Discriminants (Root_Type)
+           and then Nkind (Rge) = N_Range
+         then
+            Low := Low_Bound (Rge);
+            High := High_Bound (Rge);
+
+            Disc      := First_Discriminant (Root_Type);
+            Expr_Disc := First_Elmt (Stored_Constraint (Etype (N)));
+            while Present (Disc) loop
+               Rewrite_Bound (Low, Disc, Node (Expr_Disc));
+               Rewrite_Bound (High, Disc, Node (Expr_Disc));
+               Next_Discriminant (Disc);
+               Next_Elmt (Expr_Disc);
+            end loop;
+         end if;
+      end Rewrite_Range;
+
       --  Local variables
 
       Components : constant Elist_Id := New_Elmt_List;
       --  Components is the list of the record components whose value must be
       --  provided in the aggregate. This list does include discriminants.
 
-      Expr            : Node_Id;
       Component       : Entity_Id;
       Component_Elmt  : Elmt_Id;
+      Expr            : Node_Id;
       Positional_Expr : Node_Id;
 
    --  Start of processing for Resolve_Record_Aggregate
@@ -4620,6 +4657,45 @@ package body Sem_Aggr is
                       (Expression (Parent (Component)),
                        New_Scope => Current_Scope,
                        New_Sloc  => Sloc (N));
+
+                  --  As the type of the copied default expression may refer
+                  --  to discriminants of the record type declaration, these
+                  --  non-stored discriminants need to be rewritten into stored
+                  --  discriminant values for the aggregate. This is required
+                  --  in GNATprove mode, and is adopted in all modes to avoid
+                  --  special-casing GNATprove mode.
+
+                  if Is_Array_Type (Etype (Expr)) then
+                     declare
+                        Rec_Typ : constant Entity_Id := Scope (Component);
+                        --  Root record type whose discriminants may be used as
+                        --  bounds in range nodes.
+
+                        Index : Node_Id;
+
+                     begin
+                        --  Rewrite the range nodes occurring in the indexes
+                        --  and their types.
+
+                        Index := First_Index (Etype (Expr));
+                        while Present (Index) loop
+                           Rewrite_Range (Rec_Typ, Index);
+                           Rewrite_Range
+                             (Rec_Typ, Scalar_Range (Etype (Index)));
+
+                           Next_Index (Index);
+                        end loop;
+
+                        --  Rewrite the range nodes occurring as aggregate
+                        --  bounds.
+
+                        if Nkind (Expr) = N_Aggregate
+                          and then Present (Aggregate_Bounds (Expr))
+                        then
+                           Rewrite_Range (Rec_Typ, Aggregate_Bounds (Expr));
+                        end if;
+                     end;
+                  end if;
 
                   Add_Association
                     (Component  => Component,

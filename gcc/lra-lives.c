@@ -314,9 +314,7 @@ mark_regno_live (int regno, machine_mode mode, int point)
 
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      for (last = regno + hard_regno_nregs[regno][mode];
-	   regno < last;
-	   regno++)
+      for (last = end_hard_regno (mode, regno); regno < last; regno++)
 	make_hard_regno_born (regno, false);
     }
   else
@@ -343,9 +341,7 @@ mark_regno_dead (int regno, machine_mode mode, int point)
 
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      for (last = regno + hard_regno_nregs[regno][mode];
-	   regno < last;
-	   regno++)
+      for (last = end_hard_regno (mode, regno); regno < last; regno++)
 	make_hard_regno_dead (regno);
     }
   else
@@ -730,7 +726,7 @@ process_bb_lives (basic_block bb, int &curr_point, bool dead_insn_p)
 		 but implicitly it can be used in natural mode as a
 		 part of multi-register group.  Process this case
 		 here.  */
-	      for (i = 1; i < hard_regno_nregs[regno][reg->biggest_mode]; i++)
+	      for (i = 1; i < hard_regno_nregs (regno, reg->biggest_mode); i++)
 		if (partial_subreg_p (lra_reg_info[regno + i].biggest_mode,
 				      GET_MODE (regno_reg_rtx[regno + i])))
 		  lra_reg_info[regno + i].biggest_mode

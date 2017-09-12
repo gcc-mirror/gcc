@@ -1,3 +1,162 @@
+017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* g++.dg/torture/pr70621.C: New.
+
+2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_4.f03 : Remove the 'is being used before it
+	is defined' error.
+	* gfortran.dg/pdt_6.f03 : New test.
+	* gfortran.dg/pdt_7.f03 : New test.
+	* gfortran.dg/pdt_8.f03 : New test.
+
+	PR fortran/82168
+	* gfortran.dg/pdt_9.f03 : New test.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* gcc.target/powerpc/pr82112.c: New test.
+	* g++.dg/ext/altivec-18.C: New test.
+
+2017-09-12  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/82114
+	* gcc.dg/gimplefe-14.c (main): Add handling of case 0.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82157
+	* gcc.dg/torture/pr82157.c: New testcase.
+
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* gcc.target/mips/near-far-1.c: Add check for 'short_call'
+	attribute.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-c++-common/pr82112.c: New test.
+	* gcc.dg/pr82112.c: New test.
+
+2017-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/79441
+	* gnat.dg/pack9.adb: Robustify.
+
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	* gfortran.dg/associate_24.f90: New test.
+	* gfortran.dg/assumed_type_2.f90: Adjust some of the tree dump
+	checks.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+	* gfortran.dg/pointer_array_1.f90: New test.
+	* gfortran.dg/pointer_array_2.f90: New test.
+	* gfortran.dg/pointer_array_7.f90: New test.
+	* gfortran.dg/pointer_array_8.f90: New test.
+	* gfortran.dg/pointer_array_component_1.f90: New test.
+	* gfortran.dg/pointer_array_component_2.f90: New test.
+	* gfortran.dg/goacc/kernels-alias-4.f95: Bump up both tree scan
+	counts by 1.
+
+	PR fortran/40737
+	* gfortran.dg/pointer_array_3.f90: New test.
+
+	PR fortran/57116
+	* gfortran.dg/pointer_array_4.f90: New test.
+
+	PR fortran/55763
+	* gfortran.dg/pointer_array_5.f90: New test.
+
+	PR fortran/57019
+	* gfortran.dg/pointer_array_6.f90: New test.
+
+2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* g++.dg/cpp1y/feat-cxx11.C: Check __cpp_threadsafe_static_init.
+	* g++.dg/cpp1y/feat-cxx14.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx98.C: Likewise.
+	* g++.dg/cpp1y/feat-neg.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+
+2017-09-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug14.adb: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic3.ads: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/vfa.ads: Rename into...
+	* gnat.dg/specs/vfa1.ads: ...this.
+	* gnat.dg/specs/vfa2.ads: New test.
+
+2017-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pdt_1.f03 : New test.
+	* gfortran.dg/pdt_2.f03 : New test.
+	* gfortran.dg/pdt_3.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : New test.
+	* gfortran.dg/pdt_5.f03 : New test.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr81988.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt67.adb: New test.
+	* gnat.dg/opt67_pkg.ad[sb]: New helper.
+
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* gcc.dg/pr81979.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82126
+	* gnat.dg/alignment3.adb: Add pragma No_Component_Reordering.
+
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-thread-12.c: XFAIL third FSM threading
+	opportunity.
+
+2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-1.c: Update options to know that
+	-mfloat128 is now on by default on PowerPC VSX systems.  Remove
+	-static-libgcc option which is no longer needed.  Use -mvsx or
+	-mpower9-vector to enable VSX or hardware IEEE support, rather
+	than specifying a particular CPU.
+	* gcc.target/powerpc/float128-2.c: Likewise.
+	* gcc.target/powerpc/float128-cmp.c: Likewise.
+	* gcc.target/powerpc/float128-complex-1.c: Likewise.
+	* gcc.target/powerpc/float128-complex-2.c: Likewise.
+	* gcc.target/powerpc/float128-hw.c: Likewise.
+	* gcc.target/powerpc/float128-mix.c: Likewise.
+	* gcc.target/powerpc/float128-type-1.c: Likewise.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/float128-3.c: New test.
+	* gcc.target/powerpc/float128-4.c: Likewise.
+	* gcc.target/powerpc/float128-5.c: Likewise.
+
+2017-09-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/78468
+	* gcc.dg/pr78468.c: Add alignment test.
+
 2017-09-06  Wish Wu  <wishwu007@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
