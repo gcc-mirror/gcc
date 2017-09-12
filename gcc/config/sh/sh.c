@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "context.h"
 #include "builtins.h"
 #include "rtl-iter.h"
+#include "regs.h"
 
 /* This file should be included last.  */
 #include "target-def.h"
@@ -1392,8 +1393,8 @@ sh_print_operand (FILE *stream, rtx x, int code)
 	    /* Floating point register pairs are always big endian;
 	       general purpose registers are 64 bit wide.  */
 	    regno = REGNO (inner);
-	    regno = (HARD_REGNO_NREGS (regno, inner_mode)
-		     - HARD_REGNO_NREGS (regno, mode))
+	    regno = (hard_regno_nregs (regno, inner_mode)
+		     - hard_regno_nregs (regno, mode))
 		     + offset;
 	    x = inner;
 	    goto reg;
@@ -5371,7 +5372,7 @@ regs_used (rtx x, int is_dest)
     {
     case REG:
       if (REGNO (x) < 16)
-	return (((1 << HARD_REGNO_NREGS (0, GET_MODE (x))) - 1)
+	return (((1 << hard_regno_nregs (0, GET_MODE (x))) - 1)
 		<< (REGNO (x) + is_dest));
       return 0;
     case SUBREG:
@@ -5381,7 +5382,7 @@ regs_used (rtx x, int is_dest)
 	if (!REG_P (y))
 	  break;
 	if (REGNO (y) < 16)
-	  return (((1 << HARD_REGNO_NREGS (0, GET_MODE (x))) - 1)
+	  return (((1 << hard_regno_nregs (0, GET_MODE (x))) - 1)
 		  << (REGNO (y) +
 		      subreg_regno_offset (REGNO (y),
 					   GET_MODE (y),
@@ -6687,7 +6688,7 @@ output_stack_adjust (int size, rtx reg, int epilogue_p,
 		      machine_mode mode;
 		      mode = GET_MODE (crtl->return_rtx);
 		      if (BASE_RETURN_VALUE_REG (mode) == FIRST_RET_REG)
-			nreg = HARD_REGNO_NREGS (FIRST_RET_REG, mode);
+			nreg = hard_regno_nregs (FIRST_RET_REG, mode);
 		    }
 		  for (i = 0; i < nreg; i++)
 		    CLEAR_HARD_REG_BIT (temps, FIRST_RET_REG + i);

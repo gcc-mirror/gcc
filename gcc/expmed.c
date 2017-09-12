@@ -31,6 +31,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "expmed.h"
 #include "optabs.h"
+#include "regs.h"
 #include "emit-rtl.h"
 #include "diagnostic-core.h"
 #include "fold-const.h"
@@ -952,7 +953,7 @@ store_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && GET_MODE_SIZE (op0_mode.require ()) > UNITS_PER_WORD
       && (!REG_P (op0)
 	  || !HARD_REGISTER_P (op0)
-	  || HARD_REGNO_NREGS (REGNO (op0), op0_mode.require ()) != 1))
+	  || hard_regno_nregs (REGNO (op0), op0_mode.require ()) != 1))
     {
       if (bitnum % BITS_PER_WORD + bitsize > BITS_PER_WORD)
 	{

@@ -1,5 +1,26 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* config/arm/arm.h (THUMB_SECONDARY_INPUT_RELOAD_CLASS): Use
+	hard_regno_nregs instead of HARD_REGNO_NREGS.
+	(THUMB_SECONDARY_OUTPUT_RELOAD_CLASS): Likewise.
+	* config/c6x/c6x.c (c6x_expand_prologue): Likewise.
+	(c6x_expand_epilogue): Likewise.
+	* config/frv/frv.c (frv_alloc_temp_reg): Likewise.
+	(frv_read_iacc_argument): Likewise.
+	* config/sh/sh.c: Include regs.h.
+	(sh_print_operand): Use hard_regno_nregs instead of HARD_REGNO_NREGS.
+	(regs_used): Likewise.
+	(output_stack_adjust): Likewise.
+	* config/xtensa/xtensa.c (xtensa_copy_incoming_a7): Likewise.
+	* expmed.c: Include regs.h.
+	(store_bit_field_1): Use hard_regno_nregs instead of HARD_REGNO_NREGS.
+	* ree.c: Include regs.h.
+	(combine_reaching_defs): Use hard_regno_nregs instead of
+	HARD_REGNO_NREGS.
+	(add_removable_extension): Likewise.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* regs.h (hard_regno_nregs): Turn into a function.
 	(end_hard_regno): Update accordingly.
 	* caller-save.c (setup_save_areas): Likewise.

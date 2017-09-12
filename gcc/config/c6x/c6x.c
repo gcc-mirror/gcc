@@ -2834,7 +2834,7 @@ c6x_expand_prologue (void)
 				 reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   gcc_assert (nsaved == frame.nregs);
@@ -2922,7 +2922,7 @@ c6x_expand_epilogue (bool sibcall)
 	  emit_move_insn (reg, adjust_address (mem, save_mode, off));
 
 	  off += GET_MODE_SIZE (save_mode);
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   if (!frame_pointer_needed)
