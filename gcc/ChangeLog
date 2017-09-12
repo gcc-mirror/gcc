@@ -1,3 +1,9 @@
+2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* config/sparc/sparc.c (output_return): Output the source location of
+	the insn in the delay slot, if any.
+	(output_sibcall): Likewise.
+
 2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR driver/81498
