@@ -480,7 +480,7 @@ setup_save_areas (void)
 	  if (r < 0 || regno_reg_rtx[regno] == cheap)
 	    continue;
 
-	  bound = r + hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+	  bound = r + hard_regno_nregs (r, PSEUDO_REGNO_MODE (regno));
 	  for (; r < bound; r++)
 	    if (TEST_HARD_REG_BIT (used_regs, r))
 	      {
@@ -559,7 +559,7 @@ setup_save_areas (void)
 	      if (r < 0 || regno_reg_rtx[regno] == cheap)
 		continue;
 
-	      bound = r + hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+	      bound = r + hard_regno_nregs (r, PSEUDO_REGNO_MODE (regno));
 	      for (; r < bound; r++)
 		if (TEST_HARD_REG_BIT (used_regs, r))
 		  call_saved_regs[call_saved_regs_num++] = hard_reg_map[r];
@@ -835,7 +835,7 @@ save_call_clobbered_regs (void)
 
 		  if (r < 0 || regno_reg_rtx[regno] == cheap)
 		    continue;
-		  nregs = hard_regno_nregs[r][PSEUDO_REGNO_MODE (regno)];
+		  nregs = hard_regno_nregs (r, PSEUDO_REGNO_MODE (regno));
 		  mode = HARD_REGNO_CALLER_SAVE_MODE
 		    (r, nregs, PSEUDO_REGNO_MODE (regno));
 		  if (partial_subreg_p (save_mode[r], mode))
@@ -1103,7 +1103,7 @@ replace_reg_with_saved_mem (rtx *loc,
 			    int regno,
 			    void *arg)
 {
-  unsigned int i, nregs = hard_regno_nregs [regno][mode];
+  unsigned int i, nregs = hard_regno_nregs (regno, mode);
   rtx mem;
   machine_mode *save_mode = (machine_mode *)arg;
 
@@ -1125,7 +1125,7 @@ replace_reg_with_saved_mem (rtx *loc,
     {
       mem = copy_rtx (regno_save_mem[regno][nregs]);
 
-      if (nregs == (unsigned int) hard_regno_nregs[regno][save_mode[regno]])
+      if (nregs == hard_regno_nregs (regno, save_mode[regno]))
 	mem = adjust_address_nv (mem, save_mode[regno], 0);
 
       if (GET_MODE (mem) != mode)
@@ -1159,7 +1159,7 @@ replace_reg_with_saved_mem (rtx *loc,
 	  {
 	    machine_mode smode = save_mode[regno];
 	    gcc_assert (smode != VOIDmode);
-	    if (hard_regno_nregs [regno][smode] > 1)
+	    if (hard_regno_nregs (regno, smode) > 1)
 	      smode = mode_for_size (GET_MODE_SIZE (mode) / nregs,
 				     GET_MODE_CLASS (mode), 0).require ();
 	    XVECEXP (mem, 0, i) = gen_rtx_REG (smode, regno + i);
@@ -1232,7 +1232,7 @@ insert_restore (struct insn_chain *chain, int before_p, int regno,
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == (unsigned int) hard_regno_nregs[regno][save_mode [regno]]
+      && numregs == hard_regno_nregs (regno, save_mode [regno])
       /* Check that insn to restore REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)
@@ -1311,7 +1311,7 @@ insert_save (struct insn_chain *chain, int before_p, int regno,
   mem = regno_save_mem [regno][numregs];
   if (save_mode [regno] != VOIDmode
       && save_mode [regno] != GET_MODE (mem)
-      && numregs == (unsigned int) hard_regno_nregs[regno][save_mode [regno]]
+      && numregs == hard_regno_nregs (regno, save_mode [regno])
       /* Check that insn to save REGNO in save_mode[regno] is
 	 correct.  */
       && reg_save_code (regno, save_mode[regno]) >= 0)

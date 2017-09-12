@@ -12877,7 +12877,7 @@ static bool
 mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
 {
   if (TARGET_FLOATXX
-      && hard_regno_nregs[regno][mode] == 1
+      && hard_regno_nregs (regno, mode) == 1
       && FP_REG_P (regno)
       && (regno & 1) != 0)
     return true;

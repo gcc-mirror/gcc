@@ -1136,7 +1136,7 @@ reload_combine_recognize_pattern (rtx_insn *insn)
 		  && (call_used_regs[i] || df_regs_ever_live_p (i))
 		  && (!frame_pointer_needed || i != HARD_FRAME_POINTER_REGNUM)
 		  && !fixed_regs[i] && !global_regs[i]
-		  && hard_regno_nregs[i][GET_MODE (reg)] == 1
+		  && hard_regno_nregs (i, GET_MODE (reg)) == 1
 		  && targetm.hard_regno_scratch_ok (i))
 		{
 		  index_reg = gen_rtx_REG (GET_MODE (reg), i);

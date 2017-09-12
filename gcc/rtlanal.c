@@ -3667,8 +3667,8 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
       gcc_assert (nregs_xmode
 		  == (nunits
 		      * HARD_REGNO_NREGS_WITH_PADDING (xregno, xmode_unit)));
-      gcc_assert (hard_regno_nregs[xregno][xmode]
-		  == hard_regno_nregs[xregno][xmode_unit] * nunits);
+      gcc_assert (hard_regno_nregs (xregno, xmode)
+		  == hard_regno_nregs (xregno, xmode_unit) * nunits);
 
       /* You can only ask for a SUBREG of a value with holes in the middle
 	 if you don't cross the holes.  (Such a SUBREG should be done by
@@ -3687,9 +3687,9 @@ subreg_get_info (unsigned int xregno, machine_mode xmode,
 	}
     }
   else
-    nregs_xmode = hard_regno_nregs[xregno][xmode];
+    nregs_xmode = hard_regno_nregs (xregno, xmode);
 
-  nregs_ymode = hard_regno_nregs[xregno][ymode];
+  nregs_ymode = hard_regno_nregs (xregno, ymode);
 
   /* Paradoxical subregs are otherwise valid.  */
   if (!rknown && offset == 0 && ysize > xsize)

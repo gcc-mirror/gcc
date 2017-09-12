@@ -1,5 +1,103 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* regs.h (hard_regno_nregs): Turn into a function.
+	(end_hard_regno): Update accordingly.
+	* caller-save.c (setup_save_areas): Likewise.
+	(save_call_clobbered_regs): Likewise.
+	(replace_reg_with_saved_mem): Likewise.
+	(insert_restore): Likewise.
+	(insert_save): Likewise.
+	* combine.c (can_change_dest_mode): Likewise.
+	(move_deaths): Likewise.
+	(distribute_notes): Likewise.
+	* config/mips/mips.c (mips_hard_regno_call_part_clobbered): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_cannot_change_mode_class)
+	(rs6000_split_multireg_move): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_memory_move_cost): Likewise.
+	* config/rs6000/rs6000.c (rs6000_cannot_change_mode_class): Likewise.
+	(rs6000_split_multireg_move): Likewise.
+	(rs6000_register_move_cost): Likewise.
+	(rs6000_memory_move_cost): Likewise.
+	* cselib.c (cselib_reset_table): Likewise.
+	(cselib_lookup_1): Likewise.
+	* emit-rtl.c (set_mode_and_regno): Likewise.
+	* function.c (aggregate_value_p): Likewise.
+	* ira-color.c (setup_profitable_hard_regs): Likewise.
+	(check_hard_reg_p): Likewise.
+	(calculate_saved_nregs): Likewise.
+	(assign_hard_reg): Likewise.
+	(improve_allocation): Likewise.
+	(calculate_spill_cost): Likewise.
+	* ira-emit.c (modify_move_list): Likewise.
+	* ira-int.h (ira_hard_reg_set_intersection_p): Likewise.
+	(ira_hard_reg_in_set_p): Likewise.
+	* ira.c (setup_reg_mode_hard_regset): Likewise.
+	(clarify_prohibited_class_mode_regs): Likewise.
+	(check_allocation): Likewise.
+	* lra-assigns.c (find_hard_regno_for_1): Likewise.
+	(lra_setup_reg_renumber): Likewise.
+	(setup_try_hard_regno_pseudos): Likewise.
+	(spill_for): Likewise.
+	(assign_hard_regno): Likewise.
+	(setup_live_pseudos_and_spill_after_risky_transforms): Likewise.
+	* lra-constraints.c (in_class_p): Likewise.
+	(lra_constraint_offset): Likewise.
+	(simplify_operand_subreg): Likewise.
+	(lra_constraints): Likewise.
+	(split_reg): Likewise.
+	(split_if_necessary): Likewise.
+	(invariant_p): Likewise.
+	(inherit_in_ebb): Likewise.
+	* lra-lives.c (process_bb_lives): Likewise.
+	* lra-remat.c (reg_overlap_for_remat_p): Likewise.
+	(get_hard_regs): Likewise.
+	(do_remat): Likewise.
+	* lra-spills.c (assign_spill_hard_regs): Likewise.
+	* mode-switching.c (create_pre_exit): Likewise.
+	* postreload.c (reload_combine_recognize_pattern): Likewise.
+	* recog.c (peep2_find_free_register): Likewise.
+	* regcprop.c (kill_value_regno): Likewise.
+	(set_value_regno): Likewise.
+	(copy_value): Likewise.
+	(maybe_mode_change): Likewise.
+	(find_oldest_value_reg): Likewise.
+	(copyprop_hardreg_forward_1): Likewise.
+	* regrename.c (check_new_reg_p): Likewise.
+	(regrename_do_replace): Likewise.
+	* reload.c (push_reload): Likewise.
+	(combine_reloads): Likewise.
+	(find_dummy_reload): Likewise.
+	(operands_match_p): Likewise.
+	(find_reloads): Likewise.
+	(find_equiv_reg): Likewise.
+	(reload_adjust_reg_for_mode): Likewise.
+	* reload1.c (count_pseudo): Likewise.
+	(count_spilled_pseudo): Likewise.
+	(find_reg): Likewise.
+	(clear_reload_reg_in_use): Likewise.
+	(free_for_value_p): Likewise.
+	(allocate_reload_reg): Likewise.
+	(choose_reload_regs): Likewise.
+	(reload_adjust_reg_for_temp): Likewise.
+	(emit_reload_insns): Likewise.
+	(delete_output_reload): Likewise.
+	* rtlanal.c (subreg_get_info): Likewise.
+	* sched-deps.c (sched_analyze_reg): Likewise.
+	* sel-sched.c (init_regs_for_mode): Likewise.
+	(mark_unavailable_hard_regs): Likewise.
+	(choose_best_reg_1): Likewise.
+	(verify_target_availability): Likewise.
+	* valtrack.c (dead_debug_insert_temp): Likewise.
+	* var-tracking.c (track_loc_p): Likewise.
+	(emit_note_insn_var_location): Likewise.
+	* varasm.c (make_decl_rtl): Likewise.
+	* reginfo.c (choose_hard_reg_mode): Likewise.
+	(init_reg_modes_target): Refer directly to
+	this_target_regs->x_hard_regno_nregs.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* ira-costs.c (record_operand_costs): Use in_hard_reg_set_p
 	instead of hard_regno_nregs.
 

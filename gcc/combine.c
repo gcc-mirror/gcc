@@ -2456,7 +2456,7 @@ can_change_dest_mode (rtx x, int added_sets, machine_mode mode)
      registers than the old mode.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     return (targetm.hard_regno_mode_ok (regno, mode)
-	    && REG_NREGS (x) >= hard_regno_nregs[regno][mode]);
+	    && REG_NREGS (x) >= hard_regno_nregs (regno, mode));
 
   /* Or a pseudo that is only used once.  */
   return (regno < reg_n_sets_max
@@ -13925,7 +13925,7 @@ move_deaths (rtx x, rtx maybe_kill_insn, int from_luid, rtx_insn *to_insn,
 	      rtx oldnotes = 0;
 
 	      if (note)
-		offset = hard_regno_nregs[regno][GET_MODE (XEXP (note, 0))];
+		offset = hard_regno_nregs (regno, GET_MODE (XEXP (note, 0)));
 	      else
 		offset = 1;
 
@@ -14537,7 +14537,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 			 not already dead or set.  */
 
 		      for (i = regno; i < endregno;
-			   i += hard_regno_nregs[i][reg_raw_mode[i]])
+			   i += hard_regno_nregs (i, reg_raw_mode[i]))
 			{
 			  rtx piece = regno_reg_rtx[i];
 			  basic_block bb = this_basic_block;
