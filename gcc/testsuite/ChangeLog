@@ -1,3 +1,15 @@
+2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_4.f03 : Remove the 'is being used before it
+	is defined' error.
+	* gfortran.dg/pdt_6.f03 : New test.
+	* gfortran.dg/pdt_7.f03 : New test.
+	* gfortran.dg/pdt_8.f03 : New test.
+
+	PR fortran/82168
+	* gfortran.dg/pdt_9.f03 : New test.
+
 2017-09-12  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82112

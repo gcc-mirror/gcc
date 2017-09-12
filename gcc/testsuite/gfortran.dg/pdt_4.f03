@@ -81,8 +81,8 @@ end module
   end select
   deallocate (cz)
 contains
-  subroutine foo(arg)               ! { dg-error "has no IMPLICIT type" }
-    type (mytype(4, *)) :: arg      ! { dg-error "is being used before it is defined" }
+  subroutine foo(arg)
+    type (mytype(4, *)) :: arg      ! used to have an invalid "is being used before it is defined"
   end subroutine
   subroutine bar(arg)               ! { dg-error "cannot have DEFERRED type parameters" }
     type (thytype(8, :, 4) :: arg

@@ -2537,6 +2537,39 @@ variable_decl (int elem)
       goto cleanup;
     }
 
+  if (gfc_current_state () == COMP_DERIVED
+      && gfc_current_block ()->attr.pdt_template)
+    {
+      gfc_symbol *param;
+      gfc_find_symbol (name, gfc_current_block ()->f2k_derived,
+		       0, &param);
+      if (!param && (current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component with KIND or LEN attribute at %C does not "
+		     "not appear in the type parameter list at %L",
+		     &gfc_current_block ()->declared_at);
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (param && !(current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component at %C that appears in the type parameter "
+		     "list at %L has neither the KIND nor LEN attribute",
+		     &gfc_current_block ()->declared_at);
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (as && (current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component at %C which is a type parameter must be "
+		     "a scalar");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (param && initializer)
+	param->value = gfc_copy_expr (initializer);
+    }
+
   /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a
      declaration *must* have an initialization expression.  */
@@ -3193,8 +3226,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    {
 	      gfc_error ("The type parameter spec list at %C cannot contain "
 			 "both ASSUMED and DEFERRED parameters");
-	      gfc_free_actual_arglist (type_param_spec_list);
-	      return MATCH_ERROR;
+	      goto error_return;
 	    }
 	}
 
@@ -3202,10 +3234,27 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	name_seen = true;
       param = type_param_name_list->sym;
 
+      c1 = gfc_find_component (pdt, param->name, false, true, NULL);
+      if (!pdt->attr.use_assoc && !c1)
+	{
+	  gfc_error ("The type parameter name list at %L contains a parameter "
+		     "'%qs' , which is not declared as a component of the type",
+		     &pdt->declared_at, param->name);
+	  goto error_return;
+	}
+
       kind_expr = NULL;
       if (!name_seen)
 	{
-	  if (actual_param && actual_param->spec_type == SPEC_EXPLICIT)
+	  if (!actual_param && !(c1 && c1->initializer))
+	    {
+	      gfc_error ("The type parameter spec list at %C does not contain "
+			 "enough parameter expressions");
+	      goto error_return;
+	    }
+	  else if (!actual_param && c1 && c1->initializer)
+	    kind_expr = gfc_copy_expr (c1->initializer);
+	  else if (actual_param && actual_param->spec_type == SPEC_EXPLICIT)
 	    kind_expr = gfc_copy_expr (actual_param->expr);
 	}
       else
@@ -3225,7 +3274,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 		{
 		  gfc_error ("The derived parameter '%qs' at %C does not "
 			     "have a default value", param->name);
-		  return MATCH_ERROR;
+		  goto error_return;
 		}
 	    }
 	}
@@ -3247,6 +3296,17 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
       if (kind_expr)
 	{
+	  /* Variable expressions seem to default to BT_PROCEDURE.
+	     TODO find out why this is and fix it.  */
+	  if (kind_expr->ts.type != BT_INTEGER
+	      && kind_expr->ts.type != BT_PROCEDURE)
+	    {
+	      gfc_error ("The parameter expression at %C must be of "
+		         "INTEGER type and not %s type",
+			 gfc_basic_typename (kind_expr->ts.type));
+	      goto error_return;
+	    }
+
 	  tail->expr = gfc_copy_expr (kind_expr);
 	  /* Try simplification even for LEN expressions.  */
 	  gfc_simplify_expr (tail->expr, 1);
@@ -3257,7 +3317,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
       if (!param->attr.pdt_kind)
 	{
-	  if (!name_seen)
+	  if (!name_seen && actual_param)
 	    actual_param = actual_param->next;
 	  if (kind_expr)
 	    {
@@ -3273,16 +3333,14 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	{
 	  gfc_error ("The KIND parameter '%qs' at %C cannot either be "
 		     "ASSUMED or DEFERRED", param->name);
-	  gfc_free_actual_arglist (type_param_spec_list);
-	  return MATCH_ERROR;
+	  goto error_return;
 	}
 
       if (!kind_expr || !gfc_is_constant_expr (kind_expr))
 	{
 	  gfc_error ("The value for the KIND parameter '%qs' at %C does not "
 		     "reduce to a constant expression", param->name);
-	  gfc_free_actual_arglist (type_param_spec_list);
-	  return MATCH_ERROR;
+	  goto error_return;
 	}
 
       gfc_extract_int (kind_expr, &kind_value);
@@ -3293,12 +3351,19 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       gfc_free_expr (kind_expr);
     }
 
+  if (!name_seen && actual_param)
+    {
+      gfc_error ("The type parameter spec list at %C contains too many "
+		 "parameter expressions");
+      goto error_return;
+    }
+
   /* Now we search for the PDT instance 'name'. If it doesn't exist, we
      build it, using 'pdt' as a template.  */
   if (gfc_get_symbol (name, pdt->ns, &instance))
     {
       gfc_error ("Parameterized derived type at %C is ambiguous");
-      return MATCH_ERROR;
+      goto error_return;
     }
 
   m = MATCH_YES;
@@ -3370,7 +3435,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	      gfc_error ("Maximum extension level reached with type %qs at %L",
 			 c2->ts.u.derived->name,
 			 &c2->ts.u.derived->declared_at);
-	      return MATCH_ERROR;
+	      goto error_return;
 	    }
 	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
 
@@ -3390,6 +3455,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  gfc_insert_kind_parameter_exprs (e);
 	  gfc_extract_int (e, &c2->ts.kind);
 	  gfc_free_expr (e);
+	  if (gfc_validate_kind (c2->ts.type, c2->ts.kind, true) < 0)
+	    {
+	      gfc_error ("Kind %d not supported for type %s at %C",
+			 c2->ts.kind, gfc_basic_typename (c2->ts.type));
+	      goto error_return;
+	    }
 	}
 
       /* Similarly, set the string length if parameterized.  */
@@ -3499,6 +3570,10 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
     *ext_param_list = type_param_spec_list;
   *sym = instance;
   return m;
+
+error_return:
+  gfc_free_actual_arglist (type_param_spec_list);
+  return MATCH_ERROR;
 }
 
 
@@ -3829,6 +3904,19 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	}
       if (sym->generic && !dt_sym)
 	dt_sym = gfc_find_dt_in_generic (sym);
+
+      /* Host associated PDTs can get confused with their constructors
+	 because they ar instantiated in the template's namespace.  */
+      if (!dt_sym)
+	{
+	  if (gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
+	    {
+	      gfc_error ("Type name %qs at %C is ambiguous", name);
+	      return MATCH_ERROR;
+	    }
+	  if (dt_sym && !dt_sym->attr.pdt_type)
+	    dt_sym = NULL;
+	}
     }
   else if (ts->kind == -1)
     {
@@ -3861,14 +3949,14 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   if (sym && sym->attr.flavor == FL_DERIVED
       && sym->attr.pdt_template
       && gfc_current_state () != COMP_DERIVED)
-	{
-	  m = gfc_get_pdt_instance (decl_type_param_list, &sym, NULL);
-	  if (m != MATCH_YES)
-	    return m;
-	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
-	  ts->u.derived = sym;
-	  strcpy (name, gfc_dt_lower_string (sym->name));
-	}
+    {
+      m = gfc_get_pdt_instance (decl_type_param_list, &sym, NULL);
+      if (m != MATCH_YES)
+	return m;
+      gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
+      ts->u.derived = sym;
+      strcpy (name, gfc_dt_lower_string (sym->name));
+    }
 
   gfc_save_symbol_data (sym);
   gfc_set_sym_referenced (sym);

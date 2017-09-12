@@ -1,3 +1,26 @@
+2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	PR fortran/82168
+	* decl.c (variable_decl): Check pdt template components for
+	appearance of KIND/LEN components in the type parameter name
+	list, that components corresponding to type parameters have
+	either KIND or LEN attributes and that KIND or LEN components
+	are scalar. Copy the initializer to the parameter value.
+	(gfc_get_pdt_instance): Add a label 'error_return' and follow
+	it with repeated code, while replacing this code with a jump.
+	Check if a parameter appears as a component in the template.
+	Make sure that the parameter expressions are integer. Validate
+	KIND expressions.
+	(gfc_match_decl_type_spec): Search for pdt_types in the parent
+	namespace since they are instantiated in the template ns.
+	* expr.c (gfc_extract_int): Use a KIND parameter if it
+	appears as a component expression.
+	(gfc_check_init_expr): Allow expressions with the pdt_kind
+	attribute.
+	*primary.c (gfc_match_actual_arglist): Make sure that the first
+	keyword argument is recognised when 'pdt' is set.
+
 2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/34640
