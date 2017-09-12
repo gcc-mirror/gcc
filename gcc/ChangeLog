@@ -1,3 +1,43 @@
+2017-09-12  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* config/arm/types.md (type): Rename load1/2/3/4 to load_4/8/12/16
+	and store1/2/3/4 to store_4/8/12/16.
+	* config/aarch64/aarch64.md: Update for rename.
+	* config/arm/arm.md: Likewise.: Likewise.
+	* config/arm/arm.c: Likewise.
+	* config/arm/thumb1.md: Likewise.
+	* config/arm/thumb2.md: Likewise.
+	* config/arm/vfp.md: Likewise.
+	* config/arm/arm-generic.md: Likewise.
+	* config/arm/arm1020e.md: Likewise.
+	* config/arm/arm1026ejs.md: Likewise.
+	* config/arm/arm1136jfs.md: Likewise.
+	* config/arm/arm926ejs.md: Likewise.
+	* config/arm/cortex-a15.md: Likewise.
+	* config/arm/cortex-a17.md: Likewise.
+	* config/arm/cortex-a5.md: Likewise.
+	* config/arm/cortex-a53.md: Likewise.
+	* config/arm/cortex-a57.md: Likewise.
+	* config/arm/cortex-a7.md: Likewise.
+	* config/arm/cortex-a8.md: Likewise.
+	* config/arm/cortex-a9.md: Likewise.
+	* config/arm/cortex-m4.md: Likewise.
+	* config/arm/cortex-m7.md: Likewise.
+	* config/arm/cortex-r4.md: Likewise.
+	* config/arm/exynos-m1.md: Likewise.
+	* config/arm/fa526.md: Likewise.
+	* config/arm/fa606te.md: Likewise.
+	* config/arm/fa626te.md: Likewise.
+	* config/arm/fa726te.md: Likewise.
+	* config/arm/fmp626.md: Likewise.
+	* config/arm/iwmmxt.md: Likewise.
+	* config/arm/ldmstm.md: Likewise.
+	* config/arm/marvell-pj4.md: Likewise.
+	* config/arm/xgene1.md: Likewise.
+	* config/aarch64/thunderx.md: Likewise.
+	* config/aarch64/thunderx2t99.md: Likewise.
+	* config/aarch64/falkor.md: Likewise.
+
 2017-09-12  Martin Liska  <mliska@suse.cz>
 
 	* attribs.c (private_lookup_attribute): New function.

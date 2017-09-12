@@ -92,28 +92,28 @@
 
 (define_insn_reservation "xgene1_load_pair" 6
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "xgene1_decodeIsolated")
 
 (define_insn_reservation "xgene1_store_pair" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "xgene1_decodeIsolated")
 
 (define_insn_reservation "xgene1_fp_load1" 10
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load1")
+       (eq_attr "type" "load_4")
        (eq_attr "fp" "yes"))
   "xgene1_decode1op")
 
 (define_insn_reservation "xgene1_load1" 5
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "load1"))
+       (eq_attr "type" "load_4"))
   "xgene1_decode1op")
 
 (define_insn_reservation "xgene1_store1" 2
   (and (eq_attr "tune" "xgene1")
-       (eq_attr "type" "store1"))
+       (eq_attr "type" "store_4"))
   "xgene1_decode2op")
 
 (define_insn_reservation "xgene1_move" 1

@@ -111,48 +111,48 @@
 
 (define_insn_reservation "606te_load1_op" 2
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "load1,load_byte"))
+      (eq_attr "type" "load_4,load_byte"))
  "fa606te_core")
 
 (define_insn_reservation "606te_load2_op" 3
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "load2"))
+      (eq_attr "type" "load_8"))
  "fa606te_core*2")
 
 (define_insn_reservation "606te_load3_op" 4
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "load3"))
+      (eq_attr "type" "load_12"))
  "fa606te_core*3")
 
 (define_insn_reservation "606te_load4_op" 5
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "load4"))
+      (eq_attr "type" "load_16"))
  "fa606te_core*4")
 
 (define_insn_reservation "606te_store1_op" 0
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "store1"))
+      (eq_attr "type" "store_4"))
  "fa606te_core")
 
 (define_insn_reservation "606te_store2_op" 1
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "store2"))
+      (eq_attr "type" "store_8"))
  "fa606te_core*2")
 
 (define_insn_reservation "606te_store3_op" 2
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "store3"))
+      (eq_attr "type" "store_12"))
  "fa606te_core*3")
 
 (define_insn_reservation "606te_store4_op" 3
  (and (eq_attr "tune" "fa606te")
-      (eq_attr "type" "store4"))
+      (eq_attr "type" "store_16"))
  "fa606te_core*4")
 
 
 ;;(define_insn_reservation "606te_ldm_op" 9
 ;; (and (eq_attr "tune" "fa606te")
-;;      (eq_attr "type" "load2,load3,load4,store2,store3,store4"))
+;;      (eq_attr "type" "load_8,load_12,load_16,store_8,store_12,store_16"))
 ;; "fa606te_core*7")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

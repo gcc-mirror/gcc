@@ -314,7 +314,7 @@
 ; to stall the processor.  Used with model_wbuf above.
 (define_attr "write_conflict" "no,yes"
   (if_then_else (eq_attr "type"
-		 "block,call,load1")
+		 "block,call,load_4")
 		(const_string "yes")
 		(const_string "no")))
 
@@ -3819,7 +3819,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,8,12")
-   (set_attr "type" "store1")]
+   (set_attr "type" "store_4")]
 )
 
 (define_expand "uminsi3"
@@ -3852,7 +3852,7 @@
   ""
   [(set_attr "conds" "clob")
    (set_attr "length" "8,8,12")
-   (set_attr "type" "store1")]
+   (set_attr "type" "store_4")]
 )
 
 (define_insn "*store_minmaxsi"
@@ -3877,7 +3877,7 @@
 	(if_then_else (eq_attr "is_thumb" "yes")
 		      (const_int 14)
 		      (const_int 12)))
-   (set_attr "type" "store1")]
+   (set_attr "type" "store_4")]
 )
 
 ; Reject the frame pointer in operand[1], since reloading this after
@@ -4544,7 +4544,7 @@
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
-   (set_attr "type" "load1")])
+   (set_attr "type" "load_4")])
 
 (define_insn "unaligned_loadhis"
   [(set (match_operand:SI 0 "s_register_operand" "=l,r")
@@ -4582,7 +4582,7 @@
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
-   (set_attr "type" "store1")])
+   (set_attr "type" "store_4")])
 
 (define_insn "unaligned_storehi"
   [(set (match_operand:HI 0 "memory_operand" "=Uw,m")
@@ -4594,7 +4594,7 @@
    (set_attr "length" "2,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no")
-   (set_attr "type" "store1")])
+   (set_attr "type" "store_4")])
 
 
 (define_insn "*extv_reg"
@@ -5935,7 +5935,7 @@
     }
   "
   [(set_attr "length" "8,12,16,8,8")
-   (set_attr "type" "multiple,multiple,multiple,load2,store2")
+   (set_attr "type" "multiple,multiple,multiple,load_8,store_8")
    (set_attr "arm_pool_range" "*,*,*,1020,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
    (set_attr "thumb2_pool_range" "*,*,*,4094,*")
@@ -6156,7 +6156,7 @@
    movw%?\\t%0, %1
    ldr%?\\t%0, %1
    str%?\\t%1, %0"
-  [(set_attr "type" "mov_reg,mov_imm,mvn_imm,mov_imm,load1,store1")
+  [(set_attr "type" "mov_reg,mov_imm,mvn_imm,mov_imm,load_4,store_4")
    (set_attr "predicable" "yes")
    (set_attr "arch" "*,*,*,v6t2,*,*")
    (set_attr "pool_range" "*,*,*,*,4096,*")
@@ -6286,7 +6286,7 @@
   (set (match_dup 0) (unspec:SI [(match_dup 0) (match_dup 3)
        		     		 (match_dup 2)] UNSPEC_PIC_BASE))]
  "operands[3] = TARGET_THUMB ? GEN_INT (4) : GEN_INT (8);"
- [(set_attr "type" "load1,load1,load1")
+ [(set_attr "type" "load_4,load_4,load_4")
   (set_attr "pool_range" "4096,4094,1022")
   (set_attr "neg_pool_range" "4084,0,0")
   (set_attr "arch"  "a,t2,t1")    
@@ -6302,7 +6302,7 @@
 	(unspec:SI [(match_operand:SI 1 "" "mX")] UNSPEC_PIC_SYM))]
   "TARGET_32BIT && flag_pic"
   "ldr%?\\t%0, %1"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set (attr "pool_range")
 	(if_then_else (eq_attr "is_thumb" "no")
 		      (const_int 4096)
@@ -6318,7 +6318,7 @@
 	(unspec:SI [(match_operand:SI 1 "" "mX")] UNSPEC_PIC_SYM))]
   "TARGET_THUMB1 && flag_pic"
   "ldr\\t%0, %1"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set (attr "pool_range") (const_int 1018))]
 )
 
@@ -6367,7 +6367,7 @@
     return \"ldr%?\\t%0, [%|pc, %1]\t\t@ tls_load_dot_plus_eight\";
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "load1")]
+   (set_attr "type" "load_4")]
 )
 
 ;; PIC references to local variables can generate pic_add_dot_plus_eight
@@ -6398,7 +6398,7 @@
 				    UNSPEC_PIC_OFFSET))))]
   "TARGET_VXWORKS_RTP && TARGET_ARM && flag_pic"
   "ldr%?\\t%0, [%1,%2]"
-  [(set_attr "type" "load1")]
+  [(set_attr "type" "load_4")]
 )
 
 (define_expand "builtin_setjmp_receiver"
@@ -6814,8 +6814,8 @@
                                         (const_string "mov_reg"))
                           (const_string "mvn_imm")
                           (const_string "mov_imm")
-                          (const_string "store1")
-                          (const_string "load1")])]
+                          (const_string "store_4")
+                          (const_string "load_4")])]
 )
 
 (define_insn "*movhi_bytes"
@@ -6949,7 +6949,7 @@
    strb%?\\t%1, %0
    ldrb%?\\t%0, %1
    strb%?\\t%1, %0"
-  [(set_attr "type" "mov_reg,mov_reg,mov_imm,mov_imm,mvn_imm,load1,store1,load1,store1")
+  [(set_attr "type" "mov_reg,mov_reg,mov_imm,mov_imm,mvn_imm,load_4,store_4,load_4,store_4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,yes,no,yes,no,no,no,no,no")
    (set_attr "arch" "t2,any,any,t2,any,t2,t2,any,any")
@@ -7016,7 +7016,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,mov_reg,multiple")
+   (set_attr "type" "load_4,store_4,mov_reg,multiple")
    (set_attr "length" "4,4,4,8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")]
@@ -7073,7 +7073,7 @@
    str%?\\t%1, %0\\t%@ float"
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
-   (set_attr "type" "mov_reg,load1,store1")
+   (set_attr "type" "mov_reg,load_4,store_4")
    (set_attr "arm_pool_range" "*,4096,*")
    (set_attr "thumb2_pool_range" "*,4094,*")
    (set_attr "arm_neg_pool_range" "*,4084,*")
@@ -7162,7 +7162,7 @@
     }
   "
   [(set_attr "length" "8,12,16,8,8")
-   (set_attr "type" "multiple,multiple,multiple,load2,store2")
+   (set_attr "type" "multiple,multiple,multiple,load_8,store_8")
    (set_attr "arm_pool_range" "*,*,*,1020,*")
    (set_attr "thumb2_pool_range" "*,*,*,1018,*")
    (set_attr "arm_neg_pool_range" "*,*,*,1004,*")
@@ -8489,7 +8489,7 @@
       }
     return output_return_instruction (const_true_rtx, true, false, false);
   }"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set_attr "length" "12")
    (set_attr "predicable" "yes")]
 )
@@ -8513,7 +8513,7 @@
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
-   (set_attr "type" "load1")]
+   (set_attr "type" "load_4")]
 )
 
 (define_insn "*cond_<return_str>return_inverted"
@@ -8535,7 +8535,7 @@
   }"
   [(set_attr "conds" "use")
    (set_attr "length" "12")
-   (set_attr "type" "load1")]
+   (set_attr "type" "load_4")]
 )
 
 (define_insn "*arm_simple_return"
@@ -8718,7 +8718,7 @@
         (unspec:SI [(const_int 0)] UNSPEC_PROBE_STACK))]
   "TARGET_32BIT"
   "str%?\\tr0, %0"
-  [(set_attr "type" "store1")
+  [(set_attr "type" "store_4")
    (set_attr "predicable" "yes")]
 )
 
@@ -8828,7 +8828,7 @@
 	(match_operand:SI 0 "memory_operand" "m"))]
   "TARGET_ARM"
   "ldr%?\\t%|pc, %0\\t%@ indirect memory jump"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set_attr "pool_range" "4096")
    (set_attr "neg_pool_range" "4084")
    (set_attr "predicable" "yes")]
@@ -10739,7 +10739,7 @@
   }"
   [(set_attr "length" "12")
    (set_attr "predicable" "yes")
-   (set_attr "type" "load1")]
+   (set_attr "type" "load_4")]
 )
 
 ; This pattern is never tried by combine, so do it as a peephole
@@ -11086,7 +11086,7 @@
 
     return \"\";
   }"
-  [(set_attr "type" "store4")
+  [(set_attr "type" "store_16")
    (set (attr "length")
 	(symbol_ref "arm_attr_length_push_multi (operands[2], operands[1])"))]
 )
@@ -11122,7 +11122,7 @@
     return \"\";
   }
   "
-  [(set_attr "type" "load4")
+  [(set_attr "type" "load_16")
    (set_attr "predicable" "yes")
    (set (attr "length")
 	(symbol_ref "arm_attr_length_pop_multi (operands,
@@ -11155,7 +11155,7 @@
     return \"\";
   }
   "
-  [(set_attr "type" "load4")
+  [(set_attr "type" "load_16")
    (set_attr "predicable" "yes")
    (set (attr "length")
 	(symbol_ref "arm_attr_length_pop_multi (operands, /*return_pc=*/true,
@@ -11178,7 +11178,7 @@
     return \"\";
   }
   "
-  [(set_attr "type" "load4")
+  [(set_attr "type" "load_16")
    (set_attr "predicable" "yes")
    (set (attr "length")
 	(symbol_ref "arm_attr_length_pop_multi (operands, /*return_pc=*/true,
@@ -11192,7 +11192,7 @@
         (mem:SI (post_inc:SI (match_operand:SI 0 "s_register_operand" "+rk"))))]
   "TARGET_32BIT && (reload_in_progress || reload_completed)"
   "ldr%?\t%|pc, [%0], #4"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set_attr "predicable" "yes")]
 )
 ;; Pop for floating point registers (as used in epilogue RTL)
@@ -11225,7 +11225,7 @@
     return \"\";
   }
   "
-  [(set_attr "type" "load4")
+  [(set_attr "type" "load_16")
    (set_attr "conds" "unconditional")
    (set_attr "predicable" "no")]
 )
@@ -11407,7 +11407,7 @@
 	     (match_operand:SI 2 "" ""))]
   "TARGET_32BIT && arm_arch5e"
   "pld\\t%a0"
-  [(set_attr "type" "load1")]
+  [(set_attr "type" "load_4")]
 )
 
 ;; General predication pattern
@@ -11794,7 +11794,7 @@
                                   operands[1], INTVAL (operands[2]),
                                   false, true))"
   "ldrd%?\t%0, %3, [%1, %2]"
-  [(set_attr "type" "load2")
+  [(set_attr "type" "load_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
@@ -11808,7 +11808,7 @@
      && (operands_ok_ldrd_strd (operands[0], operands[2],
                                   operands[1], 0, false, true))"
   "ldrd%?\t%0, %2, [%1]"
-  [(set_attr "type" "load2")
+  [(set_attr "type" "load_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
@@ -11822,7 +11822,7 @@
      && (operands_ok_ldrd_strd (operands[0], operands[2],
                                   operands[1], -4, false, true))"
   "ldrd%?\t%0, %2, [%1, #-4]"
-  [(set_attr "type" "load2")
+  [(set_attr "type" "load_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
@@ -11839,7 +11839,7 @@
                                   operands[0], INTVAL (operands[1]),
                                   false, false))"
   "strd%?\t%2, %4, [%0, %1]"
-  [(set_attr "type" "store2")
+  [(set_attr "type" "store_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
@@ -11853,7 +11853,7 @@
      && (operands_ok_ldrd_strd (operands[1], operands[2],
                                   operands[0], 0, false, false))"
   "strd%?\t%1, %2, [%0]"
-  [(set_attr "type" "store2")
+  [(set_attr "type" "store_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 
@@ -11867,7 +11867,7 @@
      && (operands_ok_ldrd_strd (operands[1], operands[2],
                                   operands[0], -4, false, false))"
   "strd%?\t%1, %2, [%0, #-4]"
-  [(set_attr "type" "store2")
+  [(set_attr "type" "store_8")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")])
 

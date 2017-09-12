@@ -123,22 +123,22 @@
 
 (define_insn_reservation "thunderx2t99_load_basic" 4
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "load1"))
+       (eq_attr "type" "load_4"))
   "thunderx2t99_ls01")
 
 (define_insn_reservation "thunderx2t99_loadpair" 5
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "thunderx2t99_i012,thunderx2t99_ls01")
 
 (define_insn_reservation "thunderx2t99_store_basic" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "store1"))
+       (eq_attr "type" "store_4"))
   "thunderx2t99_ls01,thunderx2t99_sd")
 
 (define_insn_reservation "thunderx2t99_storepair_basic" 1
   (and (eq_attr "tune" "thunderx2t99")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "thunderx2t99_ls01,thunderx2t99_sd")
 
 ;; FP data processing instructions.
