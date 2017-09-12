@@ -1,3 +1,8 @@
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82149
+	* match.pd ((FTYPE) N CMP CST): Fix typo.
+
 2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
 
 	* config/mips/mips.c (mips_attribute_table): Add 'short_call'
