@@ -234,12 +234,12 @@
 
 (define_insn_reservation "cortex_r4_load_1_2" 3
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "load1,load2"))
+       (eq_attr "type" "load_4,load_8"))
   "cortex_r4_load_store")
 
 (define_insn_reservation "cortex_r4_load_3_4" 4
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "cortex_r4_load_store_2")
 
 ;; If a producing load is followed by an instruction consuming only
@@ -289,11 +289,11 @@
 
 (define_insn_reservation "cortex_r4_store_1_2" 0
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8"))
   "cortex_r4_load_store")
 
 (define_insn_reservation "cortex_r4_store_3_4" 0
   (and (eq_attr "tune_cortexr4" "yes")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "cortex_r4_load_store_2")
 

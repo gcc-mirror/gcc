@@ -144,13 +144,13 @@
 
 (define_insn_reservation "726te_load1_op" 3
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "load1,load_byte"))
+      (eq_attr "type" "load_4,load_byte"))
  "(fa726te_issue+fa726te_lsu_pipe_e+fa726te_lsu_pipe_w)\
   | (fa726te_issue+fa726te_lsu1_pipe_e+fa726te_lsu1_pipe_w,fa726te_blockage)")
 
 (define_insn_reservation "726te_store1_op" 1
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "store1"))
+      (eq_attr "type" "store_4"))
  "fa726te_blockage*2")
 
 ;; Load/Store Multiple blocks all pipelines in EX stages until WB.
@@ -161,22 +161,22 @@
 ;; the pipe 1 is stalled.
 (define_insn_reservation "726te_ldm2_op" 4
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "load2,load3"))
+      (eq_attr "type" "load_8,load_12"))
  "fa726te_blockage*4")
 
 (define_insn_reservation "726te_ldm3_op" 5
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "load4"))
+      (eq_attr "type" "load_16"))
  "fa726te_blockage*5")
 
 (define_insn_reservation "726te_stm2_op" 2
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "store2,store3"))
+      (eq_attr "type" "store_8,store_12"))
  "fa726te_blockage*3")
 
 (define_insn_reservation "726te_stm3_op" 3
  (and (eq_attr "tune" "fa726te")
-      (eq_attr "type" "store4"))
+      (eq_attr "type" "store_16"))
  "fa726te_blockage*4")
 
 (define_bypass 1 "726te_load1_op,726te_ldm2_op,726te_ldm3_op" "726te_store1_op,\

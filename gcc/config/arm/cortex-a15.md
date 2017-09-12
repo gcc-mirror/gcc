@@ -139,25 +139,25 @@
 ;; Loads of up to two words.
 (define_insn_reservation "cortex_a15_load1" 4
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "load_byte,load1,load2"))
+       (eq_attr "type" "load_byte,load_4,load_8"))
   "ca15_issue1,ca15_ls,ca15_ldr,nothing")
 
 ;; Loads of three or four words.
 (define_insn_reservation "cortex_a15_load3" 5
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "ca15_issue2,ca15_ls1+ca15_ls2,ca15_ldr,ca15_ldr,nothing")
 
 ;; Stores of up to two words.
 (define_insn_reservation "cortex_a15_store1" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8"))
   "ca15_issue1,ca15_ls,ca15_str")
 
 ;; Stores of three or four words.
 (define_insn_reservation "cortex_a15_store3" 0
   (and (eq_attr "tune" "cortexa15")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "ca15_issue2,ca15_ls1+ca15_ls2,ca15_str,ca15_str")
 
 ;; We include Neon.md here to ensure that the branch can block the Neon units.

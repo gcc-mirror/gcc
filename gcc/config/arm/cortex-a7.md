@@ -196,42 +196,42 @@
 
 (define_insn_reservation "cortex_a7_load1" 2
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "load_byte,load1"))
+       (eq_attr "type" "load_byte,load_4"))
   "cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_store1" 0
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "store1"))
+       (eq_attr "type" "store_4"))
   "cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_load2" 2
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "cortex_a7_both")
 
 (define_insn_reservation "cortex_a7_store2" 0
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "cortex_a7_both")
 
 (define_insn_reservation "cortex_a7_load3" 3
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "load3"))
+       (eq_attr "type" "load_12"))
   "cortex_a7_both, cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_store3" 0
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "store4"))
+       (eq_attr "type" "store_16"))
   "cortex_a7_both, cortex_a7_ex1")
 
 (define_insn_reservation "cortex_a7_load4" 3
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "load4"))
+       (eq_attr "type" "load_16"))
   "cortex_a7_both, cortex_a7_both")
 
 (define_insn_reservation "cortex_a7_store4" 0
   (and (eq_attr "tune" "cortexa7")
-       (eq_attr "type" "store3"))
+       (eq_attr "type" "store_12"))
   "cortex_a7_both, cortex_a7_both")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

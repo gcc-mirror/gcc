@@ -239,7 +239,7 @@
         (mem:SI (post_inc:SI (reg:SI SP_REGNUM))))]
   "TARGET_THUMB2 && (reload_in_progress || reload_completed)"
   "pop\t{%0}"
-  [(set_attr "type" "load1")
+  [(set_attr "type" "load_4")
    (set_attr "length" "2")
    (set_attr "predicable" "yes")]
 )
@@ -265,7 +265,7 @@
    ldr%?\\t%0, %1
    str%?\\t%1, %0
    str%?\\t%1, %0"
-  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load1,load1,store1,store1")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mvn_imm,mov_imm,load_4,load_4,store_4,store_4")
    (set_attr "length" "2,4,2,4,4,4,4,4,4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no")
@@ -305,7 +305,7 @@
    movw%?\\t%0, %L1\\t%@ movhi
    strh%?\\t%1, %0\\t%@ movhi
    ldrh%?\\t%0, %1\\t%@ movhi"
-  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mov_imm,store1,load1")
+  [(set_attr "type" "mov_reg,mov_imm,mov_imm,mov_imm,store_4,load_4")
    (set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no")
    (set_attr "length" "2,4,2,4,4,4")
@@ -325,7 +325,7 @@
   "TARGET_THUMB2
    && INTVAL (operands[5]) == INTVAL (operands[2]) + 4"
   "strd\\t%3, %4, [%0, %2]!"
-  [(set_attr "type" "store2")]
+  [(set_attr "type" "store_8")]
 )
 
 (define_insn "*thumb2_cmpsi_neg_shiftsi"

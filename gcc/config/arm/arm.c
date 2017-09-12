@@ -11311,8 +11311,8 @@ cortexa7_older_only (rtx_insn *insn)
     case TYPE_SHIFT_IMM:
     case TYPE_SHIFT_REG:
     case TYPE_LOAD_BYTE:
-    case TYPE_LOAD1:
-    case TYPE_STORE1:
+    case TYPE_LOAD_4:
+    case TYPE_STORE_4:
     case TYPE_FFARITHS:
     case TYPE_FADDS:
     case TYPE_FFARITHD:

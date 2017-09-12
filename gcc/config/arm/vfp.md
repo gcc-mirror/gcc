@@ -60,8 +60,8 @@
      (const_string "mov_reg"))
     (const_string "mvn_imm")
     (const_string "mov_imm")
-    (const_string "store1")
-    (const_string "load1")
+    (const_string "store_4")
+    (const_string "load_4")
     (const_string "f_mcr")
     (const_string "f_mrc")
     (const_string "fmov")])
@@ -107,7 +107,7 @@
   (set_attr "predicable_short_it"
    "yes, no, yes, no, no, no, no, no, no")
   (set_attr "type"
-   "mov_reg, mov_imm, mov_imm, mov_imm, store1, load1,\
+   "mov_reg, mov_imm, mov_imm, mov_imm, store_4, load_4,\
     f_mcr, f_mrc, fmov")
   (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
@@ -156,8 +156,8 @@
      (const_string "mov_reg"))
     (const_string "mvn_imm")
     (const_string "mov_imm")
-    (const_string "store1")
-    (const_string "load1")
+    (const_string "store_4")
+    (const_string "load_4")
     (const_string "f_mcr")
     (const_string "f_mrc")
     (const_string "fmov")])
@@ -203,7 +203,7 @@
   (set_attr "predicable_short_it"
    "yes, no, yes, no, no, no, no, no, no")
   (set_attr "type"
-   "mov_reg, mov_imm, mov_imm, mov_imm, store1, load1,\
+   "mov_reg, mov_imm, mov_imm, mov_imm, store_4, load_4,\
     f_mcr, f_mrc, fmov")
   (set_attr "arch" "*, *, *, v6t2, *, *, *, *, *")
   (set_attr "pool_range" "*, *, *, *, *, 4094, *, *, *")
@@ -246,7 +246,7 @@
     }
   "
   [(set_attr "predicable" "yes")
-   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load1,store1,
+   (set_attr "type" "mov_reg,mov_reg,mvn_imm,mov_imm,load_4,store_4,
 		     f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "pool_range"     "*,*,*,*,4096,*,*,*,*,1020,*")
    (set_attr "neg_pool_range" "*,*,*,*,4084,*,*,*,*,1008,*")]
@@ -294,7 +294,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "yes,no,yes,no,no,no,no,no,no,no,no,no,no,no")
-   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load1,load1,store1,store1,f_mcr,f_mrc,fmov,f_loads,f_stores")
+   (set_attr "type" "mov_reg,mov_reg,mov_reg,mvn_reg,mov_imm,load_4,load_4,store_4,store_4,f_mcr,f_mrc,fmov,f_loads,f_stores")
    (set_attr "length" "2,4,2,4,4,4,4,4,4,4,4,4,4,4")
    (set_attr "pool_range"     "*,*,*,*,*,1018,4094,*,*,*,*,*,1018,*")
    (set_attr "neg_pool_range" "*,*,*,*,*,   0,   0,*,*,*,*,*,1008,*")]
@@ -338,7 +338,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "multiple,multiple,multiple,multiple,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
+  [(set_attr "type" "multiple,multiple,multiple,multiple,load_8,load_8,store_8,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1,4,5,6") (const_int 8)
                               (eq_attr "alternative" "2") (const_int 12)
                               (eq_attr "alternative" "3") (const_int 16)
@@ -386,7 +386,7 @@
       gcc_unreachable ();
     }
   "
-  [(set_attr "type" "multiple,multiple,multiple,multiple,load2,load2,store2,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
+  [(set_attr "type" "multiple,multiple,multiple,multiple,load_8,load_8,store_8,f_mcrr,f_mrrc,ffarithd,f_loadd,f_stored")
    (set (attr "length") (cond [(eq_attr "alternative" "1") (const_int 8)
                                (eq_attr "alternative" "2") (const_int 12)
                                (eq_attr "alternative" "3") (const_int 16)
@@ -461,7 +461,7 @@
 				    no, no, no, no,\
 				    no, no")
    (set_attr_alternative "type"
-    [(const_string "load1") (const_string "store1")
+    [(const_string "load_4") (const_string "store_4")
      (const_string "fmov") (const_string "mov_reg")
      (const_string "f_mcr") (const_string "f_mrc")
      (const_string "fconsts") (const_string "neon_load1_1reg")
@@ -531,7 +531,7 @@
   "
   [(set_attr "conds" "unconditional")
    (set_attr "type" "neon_load1_1reg,neon_store1_1reg,\
-                     load1,store1,fmov,mov_reg,f_mcr,f_mrc,multiple")
+                     load_4,store_4,fmov,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,4,4,8")]
 )
 
@@ -583,7 +583,7 @@
     }
   "
   [(set_attr "conds" "unconditional")
-   (set_attr "type" "load1,store1,fmov,mov_reg,f_mcr,f_mrc,multiple")
+   (set_attr "type" "load_4,store_4,fmov,mov_reg,f_mcr,f_mrc,multiple")
    (set_attr "length" "4,4,4,4,4,4,8")]
 )
 
@@ -623,7 +623,7 @@
   "
   [(set_attr "predicable" "yes")
    (set_attr "type"
-     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fmov,mov_reg")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load_4,store_4,fmov,mov_reg")
    (set_attr "pool_range" "*,*,*,1020,*,4096,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,4080,*,*,*")]
 )
@@ -660,7 +660,7 @@
   [(set_attr "predicable" "yes")
    (set_attr "predicable_short_it" "no")
    (set_attr "type"
-     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load1,store1,fmov,mov_reg")
+     "f_mcr,f_mrc,fconsts,f_loads,f_stores,load_4,store_4,fmov,mov_reg")
    (set_attr "pool_range" "*,*,*,1018,*,4090,*,*,*")
    (set_attr "neg_pool_range" "*,*,*,1008,*,0,*,*,*")]
 )
@@ -704,7 +704,7 @@
     }
   "
   [(set_attr "type" "f_mcrr,f_mrrc,fconstd,neon_move,f_loadd,f_stored,\
-                     load2,store2,ffarithd,multiple")
+                     load_8,store_8,ffarithd,multiple")
    (set (attr "length") (cond [(eq_attr "alternative" "6,7,9") (const_int 8)
 			       (eq_attr "alternative" "8")
 				(if_then_else
@@ -753,7 +753,7 @@
     }
   "
   [(set_attr "type" "f_mcrr,f_mrrc,fconstd,neon_move,f_loadd,\
-                     f_stored,load2,store2,ffarithd,multiple")
+                     f_stored,load_8,store_8,ffarithd,multiple")
    (set (attr "length") (cond [(eq_attr "alternative" "6,7,9") (const_int 8)
 			       (eq_attr "alternative" "8")
 				(if_then_else
