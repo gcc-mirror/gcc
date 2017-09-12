@@ -1,5 +1,25 @@
 2017-09-12  Nathan Sidwell  <nathan@acm.org>
 
+	Kill CLASSTYPE_SORTED_FIELDS.
+	* cp-tree.h (struct lang_type): Lose sorted_fields member.
+	(CLASSTYPE_SORTED_FIELDS): Delete.
+	* name-lookup.h (set_class_bindings): Add EXTRA arg.
+	* name-lookup.c (fields_linear_search): New, broken out of ...
+	(lookup_field_1): ... here.  Delete remainder of function.
+	(get_class_binding_direct): Reimplement without sorted_fields.
+	(get_class_binding): Rename TYPE arg to KLASS, for consistency.
+	(get_method_slot): Call set_class_binding when creating method_vec
+	on complete type.
+	(method_name_cmp): Order identically named slots.
+	(sorted_fields_type_new): Delete.
+	(field_vc_append_class_fields): Rename to ...
+	(method_vec_append_class_fields): ... here.  Adjust.
+	(field_vec_append_enum_values): Renme to ...
+	(method_vec_append_enum_values): ... here. Adjust.
+	(method_vec_dedup): New.
+	(set_class_bindings): Reimplement.
+	(insert_late_enum_def_bindings): Reimplement.
+
 	* name-lookup.c (get_class_binding): Rename TYPE arg to KLASS for
 	consistency.
 	(restort_data): Move later.

@@ -324,7 +324,7 @@ extern tree get_class_binding (tree, tree, int type_or_fns = -1);
 extern tree *get_method_slot (tree klass, tree name);
 extern void resort_type_method_vec (void *, void *,
 				    gt_pointer_operator, void *);
-extern void set_class_bindings (tree);
+extern void set_class_bindings (tree, unsigned extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
 extern tree innermost_non_namespace_value (tree);
 extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
