@@ -1155,11 +1155,11 @@ xtensa_copy_incoming_a7 (rtx opnd)
     }
   if (GET_CODE (reg) != REG
       || REGNO (reg) > A7_REG
-      || REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) <= A7_REG)
+      || REGNO (reg) + hard_regno_nregs (A7_REG, mode) <= A7_REG)
     return opnd;
 
   /* 1-word args will always be in a7; 2-word args in a6/a7.  */
-  gcc_assert (REGNO (reg) + HARD_REGNO_NREGS (A7_REG, mode) - 1 == A7_REG);
+  gcc_assert (REGNO (reg) + hard_regno_nregs (A7_REG, mode) - 1 == A7_REG);
 
   cfun->machine->need_a7_copy = false;
 

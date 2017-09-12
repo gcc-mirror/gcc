@@ -1509,7 +1509,7 @@ frv_alloc_temp_reg (
 	}
     }
 
-  nr = HARD_REGNO_NREGS (regno, mode);
+  nr = hard_regno_nregs (regno, mode);
   info->next_reg[ (int)rclass ] = regno + nr;
 
   if (mark_as_used)
@@ -8650,7 +8650,7 @@ frv_read_iacc_argument (machine_mode mode, tree call,
      avoid creating lots of unnecessary call_insn rtl when IACCs aren't
      being used.  */
   regno = INTVAL (op) + IACC_FIRST;
-  for (i = 0; i < HARD_REGNO_NREGS (regno, mode); i++)
+  for (i = 0; i < hard_regno_nregs (regno, mode); i++)
     global_regs[regno + i] = 1;
 
   return gen_rtx_REG (mode, regno);
