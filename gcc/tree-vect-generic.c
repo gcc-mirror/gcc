@@ -1638,7 +1638,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
   /* The signedness is determined from input argument.  */
   if (code == VEC_UNPACK_FLOAT_HI_EXPR
       || code == VEC_UNPACK_FLOAT_LO_EXPR)
-    type = TREE_TYPE (rhs1);
+    {
+      type = TREE_TYPE (rhs1);
+      /* We do not know how to scalarize those.  */
+      return;
+    }
 
   /* For widening/narrowing vector operations, the relevant type is of the
      arguments, not the widened result.  VEC_UNPACK_FLOAT_*_EXPR is
@@ -1655,7 +1659,11 @@ expand_vector_operations_1 (gimple_stmt_iterator *gsi)
       || code == VEC_PACK_FIX_TRUNC_EXPR
       || code == VEC_WIDEN_LSHIFT_HI_EXPR
       || code == VEC_WIDEN_LSHIFT_LO_EXPR)
-    type = TREE_TYPE (rhs1);
+    {
+      type = TREE_TYPE (rhs1);
+      /* We do not know how to scalarize those.  */
+      return;
+    }
 
   /* Choose between vector shift/rotate by vector and vector shift/rotate by
      scalar */

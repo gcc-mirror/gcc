@@ -1,3 +1,8 @@
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-generic.c (expand_vector_operations_1): Do nothing
+	for operations we cannot scalarize.
+
 2017-09-12  Aldy Hernandez  <aldyh@redhat.com>
 
 	* tree-ssa-threadbackward.c (fsm_find_thread_path): Make GC
