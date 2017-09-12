@@ -1584,3 +1584,25 @@ attribute_list_contained (const_tree l1, const_tree l2)
 
   return 1;
 }
+
+/* The backbone of lookup_attribute().  ATTR_LEN is the string length
+   of ATTR_NAME, and LIST is not NULL_TREE.
+
+   The function is called from lookup_attribute in order to optimize
+   for size.  */
+
+tree
+private_lookup_attribute (const char *attr_name, size_t attr_len, tree list)
+{
+  while (list)
+    {
+      tree attr = get_attribute_name (list);
+      size_t ident_len = IDENTIFIER_LENGTH (attr);
+      if (cmp_attribs (attr_name, attr_len, IDENTIFIER_POINTER (attr),
+		       ident_len))
+	break;
+      list = TREE_CHAIN (list);
+    }
+
+  return list;
+}
