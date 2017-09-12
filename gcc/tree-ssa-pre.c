@@ -4913,6 +4913,8 @@ remove_dead_inserted_code (void)
 	continue;
 
       gimple *t = SSA_NAME_DEF_STMT (def);
+      if (gimple_has_side_effects (t))
+	continue;
 
       /* Add uses to the worklist.  */
       ssa_op_iter iter;
