@@ -918,10 +918,6 @@ ifeq ($(strip $(filter-out sparc% sun solaris%,$(target_cpu) $(target_vendor) $(
   GNATLIB_SHARED = gnatlib-shared-dual
   GMEM_LIB = gmemlib
   LIBRARY_VERSION := $(LIB_VERSION)
-
-  ifeq ($(strip $(filter-out m64,$(THREAD_KIND))),)
-    LIBGNAT_TARGET_PAIRS = $(LIBGNAT_TARGET_PAIRS_64)
-  endif
 endif
 
 # x86 and x86-64 solaris
