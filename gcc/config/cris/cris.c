@@ -163,6 +163,7 @@ static rtx cris_function_value(const_tree, const_tree, bool);
 static rtx cris_libcall_value (machine_mode, const_rtx);
 static bool cris_function_value_regno_p (const unsigned int);
 static void cris_file_end (void);
+static unsigned int cris_hard_regno_nregs (unsigned int, machine_mode);
 static bool cris_hard_regno_mode_ok (unsigned int, machine_mode);
 
 /* This is the parsed result of the "-max-stack-stackframe=" option.  If
@@ -281,6 +282,8 @@ int cris_cpu_version = CRIS_DEFAULT_CPU_VERSION;
 #undef TARGET_FUNCTION_VALUE_REGNO_P
 #define TARGET_FUNCTION_VALUE_REGNO_P cris_function_value_regno_p
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS cris_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK cris_hard_regno_mode_ok
 
@@ -4294,6 +4297,19 @@ cris_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   /* Note that there is no need to do anything with the cache for
      sake of a trampoline.  */
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.
+
+   The VOIDmode test is so we can omit mode on anonymous insns.  FIXME:
+   Still needed in 2.9x, at least for Axis-20000319.  */
+
+static unsigned int
+cris_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  if (mode == VOIDmode)
+    return 1;
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.

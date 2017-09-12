@@ -199,6 +199,7 @@ static unsigned int pa_section_type_flags (tree, const char *, int);
 static bool pa_legitimate_address_p (machine_mode, rtx, bool);
 static bool pa_callee_copies (cumulative_args_t, machine_mode,
 			      const_tree, bool);
+static unsigned int pa_hard_regno_nregs (unsigned int, machine_mode);
 static bool pa_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool pa_modes_tieable_p (machine_mode, machine_mode);
 
@@ -409,6 +410,8 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_LRA_P
 #define TARGET_LRA_P hook_bool_void_false
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS pa_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK pa_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
@@ -10763,6 +10766,14 @@ pa_callee_copies (cumulative_args_t cum ATTRIBUTE_UNUSED,
 		  bool named ATTRIBUTE_UNUSED)
 {
   return !TARGET_CALLER_COPIES;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+pa_hard_regno_nregs (unsigned int regno ATTRIBUTE_UNUSED, machine_mode mode)
+{
+  return PA_HARD_REGNO_NREGS (regno, mode);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */

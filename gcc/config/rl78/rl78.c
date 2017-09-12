@@ -449,9 +449,11 @@ rl78_real_insns_ok (void)
   return false;
 }
 
-/* Implements HARD_REGNO_NREGS.  */
-int
-rl78_hard_regno_nregs (int regno, machine_mode mode)
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS rl78_hard_regno_nregs
+
+static unsigned int
+rl78_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   int rs = register_sizes[regno];
   if (rs < 1)

@@ -389,13 +389,6 @@
 }
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG) \
   m32r_hard_regno_rename_ok (OLD_REG, NEW_REG)
 

@@ -1,4 +1,163 @@
 2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood <david.sherwood@arm.com>
+
+	* target.def (hard_regno_nregs): New hook.
+	(class_max_nregs): Refer to it instead of HARD_REGNO_NREGS.
+	* targhooks.h (default_hard_regno_nregs): Declare.
+	* targhooks.c (default_hard_regno_nregs): New function.
+	* doc/tm.texi.in (HARD_REGNO_NREGS): Replace with...
+	(TARGET_HARD_REGNO_NREGS): ...this hook.
+	(HARD_REGNO_NREGS_HAS_PADDING): Update accordingly.
+	(CLASS_MAX_NREGS): Likewise.
+	* doc/tm.texi: Regenerate.
+	* reginfo.c (init_reg_modes_target): Use targetm.hard_regno_nregs
+	instead of HARD_REGNO_NREGS.
+	* rtl.h (REG_NREGS): Refer to TARGET_HARD_REGNO_NREGS rather than
+	HARD_REGNO_NREGS in the comment.
+	* config/aarch64/aarch64.h (HARD_REGNO_NREGS): Delete.
+	* config/aarch64/aarch64-protos.h (aarch64_hard_regno_nregs): Delete.
+	* config/aarch64/aarch64.c (aarch64_hard_regno_nregs): Make static.
+	Return an unsigned int.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/alpha/alpha.h (HARD_REGNO_NREGS): Delete.
+	* config/arc/arc.h (HARD_REGNO_NREGS): Delete.
+	* config/arc/arc.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(arc_hard_regno_nregs): New function.
+	* config/arm/arm.h (HARD_REGNO_NREGS): Delete.
+	* config/arm/arm.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(arm_hard_regno_nregs): New function.
+	* config/avr/avr.h (HARD_REGNO_NREGS): Delete.
+	* config/bfin/bfin.h (HARD_REGNO_NREGS): Delete.
+	* config/bfin/bfin.c (bfin_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/c6x/c6x.h (HARD_REGNO_NREGS): Delete.
+	* config/cr16/cr16.h (LONG_REG_P): Use targetm.hard_regno_nregs.
+	(HARD_REGNO_NREGS): Delete.
+	* config/cr16/cr16.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(cr16_hard_regno_nregs): New function.
+	(cr16_memory_move_cost): Use it instead of HARD_REGNO_NREGS.
+	* config/cris/cris.h (HARD_REGNO_NREGS): Delete.
+	* config/cris/cris.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(cris_hard_regno_nregs): New function.
+	* config/epiphany/epiphany.h (HARD_REGNO_NREGS): Delete.
+	* config/fr30/fr30.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Use targetm.hard_regno_nregs.
+	* config/frv/frv.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Remove outdated copy of documentation.
+	* config/frv/frv-protos.h (frv_hard_regno_nregs): Delete.
+	* config/frv/frv.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(frv_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	(frv_class_max_nregs): Remove outdated copy of documentation.
+	* config/ft32/ft32.h (HARD_REGNO_NREGS): Delete.
+	* config/h8300/h8300.h (HARD_REGNO_NREGS): Delete.
+	* config/h8300/h8300-protos.h (h8300_hard_regno_nregs): Delete.
+	* config/h8300/h8300.c (h8300_hard_regno_nregs): Delete.
+	* config/i386/i386.h (HARD_REGNO_NREGS): Delete.
+	* config/i386/i386.c (ix86_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/ia64/ia64.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Update comment.
+	* config/ia64/ia64.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(ia64_hard_regno_nregs): New function.
+	* config/iq2000/iq2000.h (HARD_REGNO_NREGS): Delete.
+	* config/lm32/lm32.h (HARD_REGNO_NREGS): Delete.
+	* config/m32c/m32c.h (HARD_REGNO_NREGS): Delete.
+	* config/m32c/m32c-protos.h (m32c_hard_regno_nregs): Delete.
+	* config/m32c/m32c.c (m32c_hard_regno_nregs_1): Take and return
+	an unsigned int.
+	(m32c_hard_regno_nregs): Likewise.  Make static.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/m32r/m32r.h (HARD_REGNO_NREGS): Delete.
+	* config/m68k/m68k.h (HARD_REGNO_NREGS): Delete.
+	* config/m68k/m68k.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(m68k_hard_regno_nregs): New function.
+	* config/mcore/mcore.h (HARD_REGNO_NREGS): Delete.
+	* config/microblaze/microblaze.h (HARD_REGNO_NREGS): Delete.
+	* config/mips/mips.h (HARD_REGNO_NREGS): Delete.
+	* config/mips/mips-protos.h (mips_hard_regno_nregs): Delete.
+	* config/mips/mips.c (mips_hard_regno_nregs): Make static.
+	Take and return an unsigned int.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/mmix/mmix.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Use targetm.hard_regno_nregs.
+	* config/mn10300/mn10300.h (HARD_REGNO_NREGS): Delete.
+	* config/moxie/moxie.h (HARD_REGNO_NREGS): Delete.
+	* config/msp430/msp430.h (HARD_REGNO_NREGS): Delete.
+	* config/msp430/msp430-protos.h (msp430_hard_regno_nregs): Delete.
+	* config/msp430/msp430.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(msp430_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	* config/nds32/nds32.h (HARD_REGNO_NREGS): Delete.
+	* config/nds32/nds32-protos.h (nds32_hard_regno_nregs): Delete.
+	* config/nds32/nds32.c (nds32_hard_regno_nregs): Delete.
+	(nds32_hard_regno_mode_ok): Use targetm.hard_regno_nregs.
+	* config/nios2/nios2.h (HARD_REGNO_NREGS): Delete.
+	* config/nvptx/nvptx.h (HARD_REGNO_NREGS): Delete.
+	* config/nvptx/nvptx.c (nvptx_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/pa/pa32-regs.h (HARD_REGNO_NREGS): Rename to...
+	(PA_HARD_REGNO_NREGS): ...this.
+	* config/pa/pa64-regs.h (HARD_REGNO_NREGS): Rename to...
+	(PA_HARD_REGNO_NREGS): ...this.
+	* config/pa/pa.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(pa_hard_regno_nregs): New function.
+	* config/pdp11/pdp11.h (HARD_REGNO_NREGS): Delete.
+	* config/pdp11/pdp11.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(pdp11_hard_regno_nregs): New function.
+	* config/powerpcspe/powerpcspe.h (HARD_REGNO_NREGS): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(rs6000_hard_regno_nregs_hook): New function.
+	* config/riscv/riscv.h (HARD_REGNO_NREGS): Delete.
+	* config/riscv/riscv-protos.h (riscv_hard_regno_nregs): Delete.
+	* config/riscv/riscv.c (riscv_hard_regno_nregs): Make static.
+	Take and return an unsigned int.  Move earlier in file.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/rl78/rl78.h (HARD_REGNO_NREGS): Delete.
+	* config/rl78/rl78-protos.h (rl78_hard_regno_nregs): Delete.
+	* config/rl78/rl78.c (TARGET_HARD_REGNO_NREGS): Reefine.
+	(rl78_hard_regno_nregs): Make static.  Take and return an
+	unsigned int.
+	* config/rs6000/rs6000.h (HARD_REGNO_NREGS): Delete.
+	* config/rs6000/rs6000.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(rs6000_hard_regno_nregs_hook): New function.
+	* config/rx/rx.h (HARD_REGNO_NREGS): Delete.
+	* config/rx/rx.c (rx_hard_regno_nregs): New function.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/s390/s390.h (HARD_REGNO_NREGS): Delete.
+	* config/s390/s390.c (REGNO_PAIR_OK): Use s390_hard_regno_nregs
+	instead of HARD_REGNO_NREGS.
+	(s390_hard_regno_nregs): New function.
+	(s390_hard_regno_mode_ok): Add comment from s390.h.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/sh/sh.h (HARD_REGNO_NREGS): Delete.
+	* config/sh/sh.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(sh_hard_regno_nregs): New function.
+	(sh_pass_in_reg_p): Use it.
+	* config/sparc/sparc.h (HARD_REGNO_NREGS): Delete.
+	* config/sparc/sparc.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(sparc_hard_regno_nregs): New function.
+	* config/spu/spu.h (HARD_REGNO_NREGS): Delete.
+	* config/spu/spu.c (spu_hard_regno_nregs): New function.
+	(spu_function_arg_advance): Use it, supplying a valid register number.
+	(TARGET_HARD_REGNO_NREGS): Redefine.
+	* config/stormy16/stormy16.h (HARD_REGNO_NREGS): Delete.
+	* config/tilegx/tilegx.h (HARD_REGNO_NREGS): Delete.
+	* config/tilepro/tilepro.h (HARD_REGNO_NREGS): Delete.
+	* config/v850/v850.h (HARD_REGNO_NREGS): Delete.
+	* config/vax/vax.h (HARD_REGNO_NREGS): Delete.
+	* config/visium/visium.h (HARD_REGNO_NREGS): Delete.
+	(CLASS_MAX_NREGS): Remove copy of old documentation.
+	* config/visium/visium.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	(visium_hard_regno_nregs): New function.
+	(visium_hard_regno_mode_ok): Use it instead of HARD_REGNO_NREGS.
+	* config/xtensa/xtensa.h (HARD_REGNO_NREGS): Delete.
+	* config/xtensa/xtensa.c (TARGET_HARD_REGNO_NREGS): Redefine.
+	xtensa_hard_regno_nregs): New function.
+	* system.h (HARD_REGNO_NREGS): Poison.
+
+2017-09-12  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/arm/arm.h (THUMB_SECONDARY_INPUT_RELOAD_CLASS): Use
 	hard_regno_nregs instead of HARD_REGNO_NREGS.

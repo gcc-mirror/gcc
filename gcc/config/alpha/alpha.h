@@ -371,14 +371,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
    29, 30, 31, 63		/* gp, sp, ap, sfp */			\
 }
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-  CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 

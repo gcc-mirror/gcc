@@ -292,9 +292,6 @@ extern enum pipeline_type microblaze_pipe;
 #define GP_REG_P(REGNO) ((unsigned) ((REGNO) - GP_REG_FIRST) < GP_REG_NUM)
 #define ST_REG_P(REGNO) ((REGNO) == ST_REG)
 
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 #define STACK_POINTER_REGNUM   (GP_REG_FIRST + MB_ABI_STACK_POINTER_REGNUM)
 
 #define STACK_POINTER_OFFSET   FIRST_PARM_OFFSET(FNDECL)

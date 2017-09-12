@@ -1804,23 +1804,7 @@ This section discusses the macros that describe which kinds of values
 (specifically, which machine modes) each register can hold, and how many
 consecutive registers are needed for a given mode.
 
-@defmac HARD_REGNO_NREGS (@var{regno}, @var{mode})
-A C expression for the number of consecutive hard registers, starting
-at register number @var{regno}, required to hold a value of mode
-@var{mode}.  This macro must never return zero, even if a register
-cannot hold the requested mode - indicate that with
-@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}
-instead.
-
-On a machine where all registers are exactly one word, a suitable
-definition of this macro is
-
-@smallexample
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-    / UNITS_PER_WORD)
-@end smallexample
-@end defmac
+@hook TARGET_HARD_REGNO_NREGS
 
 @defmac HARD_REGNO_NREGS_HAS_PADDING (@var{regno}, @var{mode})
 A C expression that is nonzero if a value of mode @var{mode}, stored
@@ -1828,7 +1812,7 @@ in memory, ends with padding that causes it to take up more space than
 in registers starting at register number @var{regno} (as determined by
 multiplying GCC's notion of the size of the register when containing
 this mode by the number of registers returned by
-@code{HARD_REGNO_NREGS}).  By default this is zero.
+@code{TARGET_HARD_REGNO_NREGS}).  By default this is zero.
 
 For example, if a floating-point value is stored in three 32-bit
 registers but takes up 128 bits in memory, then this would be
@@ -2372,9 +2356,9 @@ is @code{BITS_PER_WORD} bits wide is correct for your machine.
 A C expression for the maximum number of consecutive registers
 of class @var{class} needed to hold a value of mode @var{mode}.
 
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.  In fact,
 the value of the macro @code{CLASS_MAX_NREGS (@var{class}, @var{mode})}
-should be the maximum value of @code{HARD_REGNO_NREGS (@var{regno},
+should be the maximum value of @code{TARGET_HARD_REGNO_NREGS (@var{regno},
 @var{mode})} for all @var{regno} values in the class @var{class}.
 
 This macro helps control the handling of multiple-word values

@@ -5345,10 +5345,10 @@ DEFHOOK
  "A target hook returns the maximum number of consecutive registers\n\
 of class @var{rclass} needed to hold a value of mode @var{mode}.\n\
 \n\
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,\n\
-the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},\n\
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.\n\
+In fact, the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},\n\
 @var{mode})} target hook should be the maximum value of\n\
-@code{HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}\n\
+@code{TARGET_HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}\n\
 values in the class @var{rclass}.\n\
 \n\
 This target hook helps control the handling of multiple-word values\n\
@@ -5423,6 +5423,19 @@ DEFHOOK
 that are not actually in any insns yet, but will be later.",
  void, (void),
  hook_void_void)
+
+DEFHOOK
+(hard_regno_nregs,
+ "This hook returns the number of consecutive hard registers, starting\n\
+at register number @var{regno}, required to hold a value of mode\n\
+@var{mode}.  This hook must never return zero, even if a register\n\
+cannot hold the requested mode - indicate that with\n\
+@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}\n\
+instead.\n\
+\n\
+The default definition returns the number of words in @var{mode}.",
+ unsigned int, (unsigned int regno, machine_mode mode),
+ default_hard_regno_nregs)
 
 DEFHOOK
 (hard_regno_mode_ok,

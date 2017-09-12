@@ -381,13 +381,6 @@ along with GCC; see the file COPYING3.  If not see
 }
 
 
-/* On the m68k, ordinary registers hold 32 bits worth;
-   for the 68881 registers, a single register is always enough for
-   anything that can be stored in them at all.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-  ((REGNO) >= 16 ? GET_MODE_NUNITS (MODE)	\
-   : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
 /* A C expression that is nonzero if hard register NEW_REG can be
    considered for use as a rename register for OLD_REG register.  */
 

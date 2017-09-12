@@ -302,13 +302,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define HARD_REGNO_RENAME_OK(SRC, DST) epiphany_regno_rename_ok (SRC, DST)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 /* Register classes and constants.  */
 
 /* Define the classes of registers for register constraints in the

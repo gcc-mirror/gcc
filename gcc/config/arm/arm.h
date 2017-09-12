@@ -976,20 +976,6 @@ extern int arm_arch_cmse;
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the ARM core regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  	\
-  ((TARGET_32BIT			\
-    && REGNO > PC_REGNUM		\
-    && REGNO != FRAME_POINTER_REGNUM	\
-    && REGNO != ARG_POINTER_REGNUM)	\
-    && !IS_VFP_REGNUM (REGNO)		\
-   ? 1 : ARM_NUM_REGS (MODE))
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 

@@ -912,7 +912,8 @@ extern void fancy_abort (const char *, int, const char *)
 	CLEAR_BY_PIECES_P MOVE_BY_PIECES_P SET_BY_PIECES_P		\
 	STORE_BY_PIECES_P TARGET_FLT_EVAL_METHOD			\
 	HARD_REGNO_CALL_PART_CLOBBERED HARD_REGNO_MODE_OK		\
-	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS
+	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS	\
+	HARD_REGNO_NREGS
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */

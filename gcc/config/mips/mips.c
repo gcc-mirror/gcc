@@ -12888,10 +12888,10 @@ mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
   return false;
 }
 
-/* Implement HARD_REGNO_NREGS.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-unsigned int
-mips_hard_regno_nregs (int regno, machine_mode mode)
+static unsigned int
+mips_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   if (ST_REG_P (regno))
     /* The size of FP status registers is always 4, because they only hold
@@ -22591,6 +22591,8 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS mips_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK mips_hard_regno_mode_ok
 

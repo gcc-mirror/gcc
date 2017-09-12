@@ -397,6 +397,7 @@ static bool frv_can_eliminate			(const int, const int);
 static void frv_conditional_register_usage	(void);
 static void frv_trampoline_init			(rtx, tree, rtx);
 static bool frv_class_likely_spilled_p 		(reg_class_t);
+static unsigned int frv_hard_regno_nregs	(unsigned int, machine_mode);
 static bool frv_hard_regno_mode_ok		(unsigned int, machine_mode);
 static bool frv_modes_tieable_p			(machine_mode, machine_mode);
 
@@ -516,6 +517,8 @@ static bool frv_modes_tieable_p			(machine_mode, machine_mode);
 #undef TARGET_LIBCALL_VALUE
 #define TARGET_LIBCALL_VALUE frv_libcall_value
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS frv_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK frv_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
@@ -6600,23 +6603,15 @@ frv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 }
 
 
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.
+/* Implement TARGET_HARD_REGNO_NREGS.
 
-   On a machine where all registers are exactly one word, a suitable definition
-   of this macro is
-
-        #define HARD_REGNO_NREGS(REGNO, MODE)            \
-           ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-            / UNITS_PER_WORD))  */
-
-/* On the FRV, make the CC_FP mode take 3 words in the integer registers, so
+   On the FRV, make the CC_FP mode take 3 words in the integer registers, so
    that we can build the appropriate instructions to properly reload the
    values.  Also, make the byte-sized accumulator guards use one guard
    for each byte.  */
 
-int
-frv_hard_regno_nregs (int regno, machine_mode mode)
+static unsigned int
+frv_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   if (ACCG_P (regno))
     return GET_MODE_SIZE (mode);
@@ -6625,17 +6620,7 @@ frv_hard_regno_nregs (int regno, machine_mode mode)
 }
 
 
-/* A C expression for the maximum number of consecutive registers of
-   class RCLASS needed to hold a value of mode MODE.
-
-   This is closely related to the macro `HARD_REGNO_NREGS'.  In fact, the value
-   of the macro `CLASS_MAX_NREGS (RCLASS, MODE)' should be the maximum value of
-   `HARD_REGNO_NREGS (REGNO, MODE)' for all REGNO values in the class RCLASS.
-
-   This macro helps control the handling of multiple-word values in
-   the reload pass.
-
-   This declaration is required.  */
+/* Implement CLASS_MAX_NREGS.  */
 
 int
 frv_class_max_nregs (enum reg_class rclass, machine_mode mode)

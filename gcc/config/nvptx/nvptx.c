@@ -5521,6 +5521,14 @@ nvptx_modes_tieable_p (machine_mode, machine_mode)
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+nvptx_hard_regno_nregs (unsigned int, machine_mode)
+{
+  return 1;
+}
+
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE nvptx_option_override
 
@@ -5647,6 +5655,9 @@ nvptx_modes_tieable_p (machine_mode, machine_mode)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P nvptx_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS nvptx_hard_regno_nregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

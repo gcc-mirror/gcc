@@ -1424,6 +1424,14 @@ default_addr_space_convert (rtx op ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* The defualt implementation of TARGET_HARD_REGNO_NREGS.  */
+
+unsigned int
+default_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
 bool
 default_hard_regno_scratch_ok (unsigned int regno ATTRIBUTE_UNUSED)
 {

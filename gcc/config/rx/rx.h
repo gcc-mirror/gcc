@@ -331,10 +331,6 @@ typedef unsigned int CUMULATIVE_ARGS;
     fprintf (FILE, "\tbsr\t__mcount\n");
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE)   CLASS_MAX_NREGS (0, MODE)
-
-
-
 #define REGISTER_NAMES						\
   {								\
     "r0",  "r1",  "r2",   "r3",   "r4",   "r5",   "r6",   "r7",	\

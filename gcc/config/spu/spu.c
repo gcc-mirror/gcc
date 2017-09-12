@@ -281,6 +281,14 @@ spu_option_override (void)
   REAL_MODE_FORMAT (SFmode) = &spu_single_format;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+spu_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CEIL (GET_MODE_BITSIZE (mode), MAX_FIXED_MODE_SIZE);
+}
+
 /* Handle an attribute requiring a FUNCTION_DECL; arguments as in
    struct attribute_spec.handler.  */
 
@@ -3870,7 +3878,7 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   ? ((int_size_in_bytes (type) + 15) / 16)
 	   : mode == VOIDmode
 	   ? 1
-	   : HARD_REGNO_NREGS (cum, mode));
+	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
 }
 
 /* Implement TARGET_FUNCTION_ARG_PADDING.  */
@@ -7381,6 +7389,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P spu_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS spu_hard_regno_nregs
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

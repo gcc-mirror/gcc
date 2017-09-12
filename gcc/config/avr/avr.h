@@ -209,9 +209,6 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define ADJUST_REG_ALLOC_ORDER avr_adjust_reg_alloc_order()
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE)                                   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
 enum reg_class {
   NO_REGS,
   R0_REG,			/* r0 */

@@ -41410,6 +41410,32 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
   return 2;
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  This is ordinarily the length in
+   words of a value of mode MODE but can be less for certain modes in
+   special long registers.
+
+   Actually there are no two word move instructions for consecutive
+   registers.  And only registers 0-3 may have mov byte instructions
+   applied to them.  */
+
+static unsigned int
+ix86_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (GENERAL_REGNO_P (regno))
+    {
+      if (mode == XFmode)
+	return TARGET_64BIT ? 2 : 3;
+      if (mode == XCmode)
+	return TARGET_64BIT ? 4 : 6;
+      return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+    }
+  if (COMPLEX_MODE_P (mode))
+    return 2;
+  if (mode == V64SFmode || mode == V64SImode)
+    return 4;
+  return 1;
+}
+
 /* Implement TARGET_HARD_REGNO_MODE_OK.  */
 
 static bool
@@ -53376,6 +53402,8 @@ ix86_run_selftests (void)
 #undef TARGET_NOCE_CONVERSION_PROFITABLE_P
 #define TARGET_NOCE_CONVERSION_PROFITABLE_P ix86_noce_conversion_profitable_p
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS ix86_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK ix86_hard_regno_mode_ok
 

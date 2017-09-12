@@ -322,6 +322,7 @@ static bool sh_legitimate_combined_insn (rtx_insn* insn);
 static bool sh_fixed_condition_code_regs (unsigned int* p1, unsigned int* p2);
 
 static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
+static unsigned int sh_hard_regno_nregs (unsigned int, machine_mode);
 static bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sh_modes_tieable_p (machine_mode, machine_mode);
 
@@ -644,6 +645,8 @@ static const struct attribute_spec sh_attribute_table[] =
 #undef TARGET_CANNOT_FORCE_CONST_MEM
 #define TARGET_CANNOT_FORCE_CONST_MEM sh_cannot_force_const_mem_p
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS sh_hard_regno_nregs
 #undef TARGET_HARD_REGNO_MODE_OK
 #define TARGET_HARD_REGNO_MODE_OK sh_hard_regno_mode_ok
 
@@ -7954,7 +7957,7 @@ sh_pass_in_reg_p (const CUMULATIVE_ARGS& cum, machine_mode mode,
 	      + int_size_in_bytes (type))
 	     <= NPARM_REGS (SImode) * UNITS_PER_WORD)
 	  : ((sh_round_reg (cum, mode)
-	      + HARD_REGNO_NREGS (BASE_ARG_REG (mode), mode))
+	      + sh_hard_regno_nregs (BASE_ARG_REG (mode), mode))
 	     <= NPARM_REGS (mode)))
        : sh_round_reg (cum, mode) < NPARM_REGS (mode)));
 }
@@ -10501,6 +10504,17 @@ sh_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
     return NULL_RTX;
   emit_insn (pat);
   return target;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  On the SH all but the XD regs are
+   UNITS_PER_WORD bits wide.  */
+
+static unsigned int
+sh_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (XD_REGISTER_P (regno))
+    return CEIL (GET_MODE_SIZE (mode), 2 * UNITS_PER_WORD);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
 }
 
 /* Implement TARGET_HARD_REGNO_MODE_OK.

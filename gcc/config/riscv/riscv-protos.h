@@ -68,7 +68,6 @@ extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (bool);
 extern bool riscv_can_use_return_insn (void);
 extern rtx riscv_function_value (const_tree, const_tree, machine_mode);
-extern unsigned int riscv_hard_regno_nregs (int, machine_mode);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);

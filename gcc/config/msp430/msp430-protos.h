@@ -29,7 +29,6 @@ void	msp430_expand_helper (rtx *operands, const char *, bool);
 void	msp430_expand_prologue (void);
 const char * msp430x_extendhisi (rtx *);
 void	msp430_fixup_compare_operands (machine_mode, rtx *);
-int	msp430_hard_regno_nregs (int, machine_mode);
 int	msp430_hard_regno_nregs_has_padding (int, machine_mode);
 int	msp430_hard_regno_nregs_with_padding (int, machine_mode);
 bool    msp430_hwmult_enabled (void);

@@ -255,7 +255,6 @@ machine_function;
 
 /* How Values Fit in Registers */
 
-#define HARD_REGNO_NREGS(R,M) m32c_hard_regno_nregs (R, M)
 #define AVOID_CCMODE_COPIES
 
 /* Register Classes */

@@ -1802,7 +1802,7 @@ set_label_ref_label (rtx ref, rtx_insn *label)
 #define SET_REGNO(RTX, N) (df_ref_change_reg_with_loc (RTX, N))
 
 /* Return the number of consecutive registers in a REG.  This is always
-   1 for pseudo registers and is determined by HARD_REGNO_NREGS for
+   1 for pseudo registers and is determined by TARGET_HARD_REGNO_NREGS for
    hard registers.  */
 #define REG_NREGS(RTX) (REG_CHECK (RTX)->nregs)
 
