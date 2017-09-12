@@ -2577,7 +2577,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   return retval;
 }
 
-/* Delete the jump threading path PATH.  We have to explcitly delete
+/* Delete the jump threading path PATH.  We have to explicitly delete
    each entry in the vector, then the container.  */
 
 void
