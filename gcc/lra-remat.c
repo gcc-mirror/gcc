@@ -367,8 +367,7 @@ operand_to_remat (rtx_insn *insn)
 	    if (reg2->type == OP_OUT
 		&& reg->regno <= reg2->regno
 		&& (reg2->regno
-		    < (reg->regno
-		       + hard_regno_nregs[reg->regno][reg->biggest_mode])))
+		    < (int) end_hard_regno (reg->biggest_mode, reg->regno)))
 	      return -1;
       }
   /* Check hard coded insn registers.  */

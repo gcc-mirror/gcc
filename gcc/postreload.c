@@ -1453,7 +1453,7 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
   if (GET_CODE (SET_DEST (set)) == ZERO_EXTRACT
       || GET_CODE (SET_DEST (set)) == STRICT_LOW_PART)
     {
-      for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+      for (i = end_hard_regno (mode, regno) - 1; i >= regno; i--)
 	{
 	  reg_state[i].use_index = -1;
 	  reg_state[i].store_ruid = reload_combine_ruid;
@@ -1462,7 +1462,7 @@ reload_combine_note_store (rtx dst, const_rtx set, void *data ATTRIBUTE_UNUSED)
     }
   else
     {
-      for (i = hard_regno_nregs[regno][mode] - 1 + regno; i >= regno; i--)
+      for (i = end_hard_regno (mode, regno) - 1; i >= regno; i--)
 	{
 	  reg_state[i].store_ruid = reload_combine_ruid;
 	  if (GET_CODE (set) == SET)
@@ -1717,8 +1717,8 @@ move2add_valid_value_p (int regno, scalar_int_mode mode)
 	return false;
     }
 
-  for (int i = hard_regno_nregs[regno][mode] - 1; i > 0; i--)
-    if (reg_mode[regno + i] != BLKmode)
+  for (int i = end_hard_regno (mode, regno) - 1; i > regno; i--)
+    if (reg_mode[i] != BLKmode)
       return false;
   return true;
 }

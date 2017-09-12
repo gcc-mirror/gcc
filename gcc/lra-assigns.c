@@ -578,7 +578,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	       hr++)
 	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
 	  for (hr = conflict_hr - 1;
-	       hr >= 0 && hr + hard_regno_nregs[hr][biggest_mode] > conflict_hr;
+	       hr >= 0 && (int) end_hard_regno (biggest_mode, hr) > conflict_hr;
 	       hr--)
 	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
 	}

@@ -9630,7 +9630,7 @@ s390_reg_clobbered_rtx (rtx setreg, const_rtx set_insn ATTRIBUTE_UNUSED, void *d
     return;
 
   for (i = regno;
-       i < regno + HARD_REGNO_NREGS (regno, mode);
+       i < end_hard_regno (mode, regno);
        i++)
     regs_ever_clobbered[i] = 1;
 }

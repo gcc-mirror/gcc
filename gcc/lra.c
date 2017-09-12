@@ -846,9 +846,7 @@ collect_non_operand_hard_regs (rtx *x, lra_insn_recog_data_t data,
 	return list;
       /* Process all regs even unallocatable ones as we need info
 	 about all regs for rematerialization pass.  */
-      for (last = regno + hard_regno_nregs[regno][mode];
-	   regno < last;
-	   regno++)
+      for (last = end_hard_regno (mode, regno); regno < last; regno++)
 	{
 	  for (curr = list; curr != NULL; curr = curr->next)
 	    if (curr->regno == regno && curr->subreg_p == subreg_p

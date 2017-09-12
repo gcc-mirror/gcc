@@ -1248,7 +1248,7 @@ extern GTY(()) char sparc_hard_reg_printed[8];
 do {									\
   if (TARGET_ARCH64)							\
     {									\
-      int end = HARD_REGNO_NREGS ((REGNO), DECL_MODE (decl)) + (REGNO); \
+      int end = end_hard_regno (DECL_MODE (decl), REGNO);		\
       int reg;								\
       for (reg = (REGNO); reg < 8 && reg < end; reg++)			\
 	if ((reg & ~1) == 2 || (reg & ~1) == 6)				\
