@@ -308,7 +308,7 @@ gfc_set_default_type (gfc_symbol *sym, int error_flag, gfc_namespace *ns)
           sym->ts.f90_type = sym->ts.type;
         }
     }
-  
+
   return true;
 }
 
@@ -464,7 +464,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  case FL_NAMELIST:
 	    gfc_error ("Namelist group name at %L cannot have the "
 		       "SAVE attribute", where);
-	    return false; 
+	    return false;
 	  case FL_PROCEDURE:
 	    /* Conflicts between SAVE and PROCEDURE will be checked at
 	       resolution stage, see "resolve_fl_procedure".  */
@@ -513,7 +513,7 @@ check_conflict (symbol_attribute *attr, const char *name, locus *where)
   if ((attr->if_source == IFSRC_DECL && !attr->procedure) || attr->contained)
     conf (external, subroutine);
 
-  if (attr->proc_pointer && !gfc_notify_std (GFC_STD_F2003, 
+  if (attr->proc_pointer && !gfc_notify_std (GFC_STD_F2003,
 					     "Procedure pointer at %C"))
     return false;
 
@@ -1197,8 +1197,8 @@ gfc_add_protected (symbol_attribute *attr, const char *name, locus *where)
 
   if (attr->is_protected)
     {
-	if (!gfc_notify_std (GFC_STD_LEGACY, 
-			     "Duplicate PROTECTED attribute specified at %L", 
+	if (!gfc_notify_std (GFC_STD_LEGACY,
+			     "Duplicate PROTECTED attribute specified at %L",
 			     where))
 	  return false;
     }
@@ -1241,8 +1241,8 @@ gfc_add_save (symbol_attribute *attr, save_state s, const char *name,
 
   if (s == SAVE_EXPLICIT && attr->save == SAVE_EXPLICIT)
     {
-	if (!gfc_notify_std (GFC_STD_LEGACY, 
-			     "Duplicate SAVE attribute specified at %L", 
+	if (!gfc_notify_std (GFC_STD_LEGACY,
+			     "Duplicate SAVE attribute specified at %L",
 			     where))
 	  return false;
     }
@@ -1261,8 +1261,8 @@ gfc_add_value (symbol_attribute *attr, const char *name, locus *where)
 
   if (attr->value)
     {
-	if (!gfc_notify_std (GFC_STD_LEGACY, 
-			     "Duplicate VALUE attribute specified at %L", 
+	if (!gfc_notify_std (GFC_STD_LEGACY,
+			     "Duplicate VALUE attribute specified at %L",
 			     where))
 	  return false;
     }
@@ -1280,8 +1280,8 @@ gfc_add_volatile (symbol_attribute *attr, const char *name, locus *where)
      given a VOLATILE attribute - unless it is a coarray (F2008, C560).  */
 
   if (attr->volatile_ && attr->volatile_ns == gfc_current_ns)
-    if (!gfc_notify_std (GFC_STD_LEGACY, 
-			 "Duplicate VOLATILE attribute specified at %L", 
+    if (!gfc_notify_std (GFC_STD_LEGACY,
+			 "Duplicate VOLATILE attribute specified at %L",
 			 where))
       return false;
 
@@ -1299,8 +1299,8 @@ gfc_add_asynchronous (symbol_attribute *attr, const char *name, locus *where)
      given a ASYNCHRONOUS attribute.  */
 
   if (attr->asynchronous && attr->asynchronous_ns == gfc_current_ns)
-    if (!gfc_notify_std (GFC_STD_LEGACY, 
-			 "Duplicate ASYNCHRONOUS attribute specified at %L", 
+    if (!gfc_notify_std (GFC_STD_LEGACY,
+			 "Duplicate ASYNCHRONOUS attribute specified at %L",
 			 where))
       return false;
 
@@ -1814,10 +1814,10 @@ gfc_add_is_bind_c (symbol_attribute *attr, const char *name, locus *where,
     gfc_error_now ("Duplicate BIND attribute specified at %L", where);
   else
     attr->is_bind_c = 1;
-  
+
   if (where == NULL)
     where = &gfc_current_locus;
-   
+
   if (!gfc_notify_std (GFC_STD_F2003, "BIND(C) at %L", where))
     return false;
 
@@ -1970,7 +1970,7 @@ bool
 gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
 {
   int is_proc_lang_bind_spec;
-  
+
   /* In line with the other attributes, we only add bits but do not remove
      them; cf. also PR 41034.  */
   dest->ext_attr |= src->ext_attr;
@@ -2081,7 +2081,7 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     dest->is_c_interop = 1;
   if (src->is_iso_c)
     dest->is_iso_c = 1;
-  
+
   if (src->external && !gfc_add_external (dest, where))
     goto fail;
   if (src->intrinsic && !gfc_add_intrinsic (dest, where))
@@ -2341,7 +2341,7 @@ find_union_component (gfc_symbol *un, const char *name,
    not found or the components are private.  If noaccess is set, no access
    checks are done.  If silent is set, an error will not be generated if
    the component cannot be found or accessed.
-   
+
    If ref is not NULL, *ref is set to represent the chain of components
    required to get to the ultimate component.
 
@@ -2530,7 +2530,7 @@ free_st_labels (gfc_st_label *label)
 
   free_st_labels (label->left);
   free_st_labels (label->right);
-  
+
   if (label->format != NULL)
     gfc_free_expr (label->format);
   free (label);
@@ -3022,7 +3022,7 @@ gfc_new_symbol (const char *name, gfc_namespace *ns)
   p->f2k_derived = NULL;
   p->assoc = NULL;
   p->fn_result_spec = 0;
-  
+
   return p;
 }
 
@@ -3379,7 +3379,7 @@ find_common_symtree (gfc_symtree *st, gfc_common_head *head)
     return st;
 
   result = find_common_symtree (st->left, head);
-  if (!result)  
+  if (!result)
     result = find_common_symtree (st->right, head);
 
   return result;
@@ -3403,7 +3403,7 @@ gfc_new_undo_checkpoint (gfc_undo_change_set &chg_syms)
 
 
 /* Restore previous state of symbol.  Just copy simple stuff.  */
-  
+
 static void
 restore_old_symbol (gfc_symbol *p)
 {
@@ -3645,10 +3645,10 @@ free_old_symbol (gfc_symbol *sym)
   if (sym->old_symbol == NULL)
     return;
 
-  if (sym->old_symbol->as != sym->as) 
+  if (sym->old_symbol->as != sym->as)
     gfc_free_array_spec (sym->old_symbol->as);
 
-  if (sym->old_symbol->value != sym->value) 
+  if (sym->old_symbol->value != sym->value)
     gfc_free_expr (sym->old_symbol->value);
 
   if (sym->old_symbol->formal != sym->formal)
@@ -3741,7 +3741,7 @@ free_common_tree (gfc_symtree * common_tree)
   free_common_tree (common_tree->right);
 
   free (common_tree);
-}  
+}
 
 
 /* Recursive function that deletes an entire tree and all the common
@@ -3890,7 +3890,7 @@ gfc_new_charlen (gfc_namespace *ns, gfc_charlen *old_cl)
 }
 
 
-/* Free the charlen list from cl to end (end is not freed). 
+/* Free the charlen list from cl to end (end is not freed).
    Free the whole list if end is NULL.  */
 
 void
@@ -4047,7 +4047,7 @@ do_traverse_symtree (gfc_symtree *st, void (*st_func) (gfc_symtree *),
   gcc_assert ((st_func && !sym_func) || (!st_func && sym_func));
   nodes = count_st_nodes (st);
   st_vec = XALLOCAVEC (gfc_symtree *, nodes);
-  node_cntr = 0; 
+  node_cntr = 0;
   fill_st_vector (st, st_vec, node_cntr);
 
   if (sym_func)
@@ -4265,7 +4265,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   gfc_component *curr_comp = NULL;
   bool is_c_interop = false;
   bool retval = true;
-   
+
   if (derived_sym == NULL)
     gfc_internal_error ("verify_bind_c_derived_type(): Given symbol is "
                         "unexpectedly NULL");
@@ -4274,7 +4274,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
      so we don't repeat warnings/errors.  */
   if (derived_sym->ts.is_c_interop)
     return true;
-  
+
   /* The derived type must have the BIND attribute to be interoperable
      J3/04-007, Section 15.2.3.  */
   if (derived_sym->attr.is_bind_c != 1)
@@ -4285,7 +4285,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
                      &(derived_sym->declared_at));
       retval = false;
     }
-  
+
   curr_comp = derived_sym->components;
 
   /* Fortran 2003 allows an empty derived type.  C99 appears to disallow an
@@ -4310,12 +4310,12 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
   /* Initialize the derived type as being C interoperable.
      If we find an error in the components, this will be set false.  */
   derived_sym->ts.is_c_interop = 1;
-  
+
   /* Loop through the list of components to verify that the kind of
      each is a C interoperable type.  */
   do
     {
-      /* The components cannot be pointers (fortran sense).  
+      /* The components cannot be pointers (fortran sense).
          J3/04-007, Section 15.2.3, C1505.	*/
       if (curr_comp->attr.pointer != 0)
         {
@@ -4347,10 +4347,10 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
                      derived_sym->name, &(derived_sym->declared_at));
           retval = false;
         }
-      
+
       /* BIND(C) derived types must have interoperable components.  */
       if (curr_comp->ts.type == BT_DERIVED
-	  && curr_comp->ts.u.derived->ts.is_iso_c != 1 
+	  && curr_comp->ts.u.derived->ts.is_iso_c != 1
           && curr_comp->ts.u.derived != derived_sym)
         {
           /* This should be allowed; the draft says a derived-type can not
@@ -4361,9 +4361,9 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
 	}
       else
 	{
-	  /* Grab the typespec for the given component and test the kind.  */ 
+	  /* Grab the typespec for the given component and test the kind.  */
 	  is_c_interop = gfc_verify_c_interop (&(curr_comp->ts));
-	  
+
 	  if (!is_c_interop)
 	    {
 	      /* Report warning and continue since not fatal.  The
@@ -4395,9 +4395,9 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
                              &(curr_comp->loc));
 	    }
 	}
-      
+
       curr_comp = curr_comp->next;
-    } while (curr_comp != NULL); 
+    } while (curr_comp != NULL);
 
 
   /* Make sure we don't have conflicts with the attributes.  */
@@ -4422,7 +4422,7 @@ verify_bind_c_derived_type (gfc_symbol *derived_sym)
      it's interoperable.  */
   if (!retval)
     derived_sym->ts.is_c_interop = 0;
-  
+
   return retval;
 }
 
@@ -4445,7 +4445,7 @@ gen_special_c_interop_ptr (gfc_symbol *tmp_sym, gfc_symtree *dt_symtree)
   tmp_sym->ts.f90_type = BT_VOID;
   tmp_sym->attr.flavor = FL_PARAMETER;
   tmp_sym->ts.u.derived = dt_symtree->n.sym;
-  
+
   /* Set the c_address field of c_null_ptr and c_null_funptr to
      the value of NULL.	 */
   tmp_sym->value = gfc_get_expr ();
@@ -4480,10 +4480,10 @@ add_formal_arg (gfc_formal_arglist **head,
       (*tail)->next = formal_arg;
       (*tail) = formal_arg;
     }
-   
+
   (*tail)->sym = param_sym;
   (*tail)->next = NULL;
-   
+
   return;
 }
 
@@ -4696,7 +4696,7 @@ generate_isocbinding_symbol (const char *mod_name, iso_c_binding_symbol s,
   switch (s)
     {
 
-#define NAMED_INTCST(a,b,c,d) case a : 
+#define NAMED_INTCST(a,b,c,d) case a :
 #define NAMED_REALCST(a,b,c,d) case a :
 #define NAMED_CMPXCST(a,b,c,d) case a :
 #define NAMED_LOGCST(a,b,c) case a :

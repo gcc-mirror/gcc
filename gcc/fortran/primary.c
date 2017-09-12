@@ -1796,11 +1796,6 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp, bool pdt)
 
       if (sub_flag && !pdt && gfc_match_char ('*') == MATCH_YES)
 	{
-	  if (pdt)
-	    {
-	      tail->spec_type = SPEC_ASSUMED;
-	      goto next;
-	    }
 	  m = gfc_match_st_label (&label);
 	  if (m == MATCH_NO)
 	    gfc_error ("Expected alternate return label at %C");
@@ -1829,6 +1824,15 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp, bool pdt)
 	    }
 	  else
 	    tail->spec_type = SPEC_EXPLICIT;
+
+	  m = match_keyword_arg (tail, head, pdt);
+	  if (m == MATCH_YES)
+	    {
+	      seen_keyword = 1;
+	      goto next;
+	    }
+	  if (m == MATCH_ERROR)
+	    goto cleanup;
 	}
 
       /* After the first keyword argument is seen, the following

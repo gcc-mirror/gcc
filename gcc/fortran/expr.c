@@ -624,6 +624,20 @@ gfc_replace_expr (gfc_expr *dest, gfc_expr *src)
 bool
 gfc_extract_int (gfc_expr *expr, int *result, int report_error)
 {
+  gfc_ref *ref;
+
+  /* A KIND component is a parameter too. The expression for it
+     is stored in the initializer and should be consistent with
+     the tests below.  */
+  if (gfc_expr_attr(expr).pdt_kind)
+    {
+      for (ref = expr->ref; ref; ref = ref->next)
+	{
+	   if (ref->u.c.component->attr.pdt_kind)
+	     expr = ref->u.c.component->initializer;
+	}
+    }
+
   if (expr->expr_type != EXPR_CONSTANT)
     {
       if (report_error > 0)
@@ -2548,7 +2562,7 @@ gfc_check_init_expr (gfc_expr *e)
       t = true;
 
       /* This occurs when parsing pdt templates.  */
-      if (e->symtree->n.sym->attr.pdt_kind)
+      if (gfc_expr_attr (e).pdt_kind)
 	break;
 
       if (gfc_check_iter_variable (e))
