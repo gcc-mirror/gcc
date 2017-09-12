@@ -6182,7 +6182,9 @@ output_return (rtx_insn *insn)
 
       if (final_sequence)
 	{
-	  rtx delay, pat;
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
 
 	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
@@ -6197,9 +6199,15 @@ output_return (rtx_insn *insn)
 	  else
 	    {
 	      output_asm_insn ("jmp\t%%i7+%)", NULL);
-	      output_restore (pat);
+
+	      /* We're going to output the insn in the delay slot manually.
+		 Make sure to output its source location first.  */
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
+	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	      output_restore (pat);
 	    }
 	}
       else
@@ -6255,13 +6263,23 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 
       if (final_sequence)
 	{
-	  rtx_insn *delay = NEXT_INSN (insn);
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
+
+	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
 
-	  output_restore (PATTERN (delay));
+	  pat = PATTERN (delay);
 
+	  /* We're going to output the insn in the delay slot manually.
+	     Make sure to output its source location first.  */
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
+	  final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	  INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	  output_restore (pat);
 	}
       else
 	output_restore (NULL_RTX);
