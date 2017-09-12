@@ -20,9 +20,9 @@
 
 #include <numeric>
 
-#ifndef __cpp_lib_gcd
+#ifndef __cpp_lib_gcd_lcm
 # error "Feature-test macro for gcd missing"
-#elif __cpp_lib_gcd != 201606
+#elif __cpp_lib_gcd_lcm != 201606
 # error "Feature-test macro for gcd has wrong value"
 #endif
 
