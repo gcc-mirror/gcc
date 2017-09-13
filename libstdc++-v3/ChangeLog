@@ -1,3 +1,22 @@
+2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/allocated_ptr.h (__allocated_ptr::get): Use
+	__to_address.
+	(__allocated_ptr::_S_raw_ptr): Remove.
+	* include/bits/forward_list.h (_Fwd_list_base::_M_get_node): Use
+	__to_address.
+	* include/bits/hashtable_policy.h (_Hashtable_alloc): Likewise.
+	* include/bits/ptr_traits.h (__to_address): Define new function
+	template.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Use __to_address.
+	(__shared_ptr::_S_raw_ptr): Remove.
+	* include/bits/stl_vector.h [__cplusplus >= 201103L]
+	(vector::_M_data_ptr): Use __to_address.
+	[__cplusplus < 201103L] (vector::_M_data_ptr): Don't dereference
+	possibly invalid pointers.
+	* include/ext/alloc_traits.h (__alloc_traits::construct)
+	(__alloc_traits::destroy): Use __to_address.
+
 2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79433

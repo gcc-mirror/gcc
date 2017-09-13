@@ -2048,7 +2048,7 @@ namespace __detail
       _Hashtable_alloc<_NodeAlloc>::_M_allocate_node(_Args&&... __args)
       {
 	auto __nptr = __node_alloc_traits::allocate(_M_node_allocator(), 1);
-	__node_type* __n = std::__addressof(*__nptr);
+	__node_type* __n = std::__to_address(__nptr);
 	__try
 	  {
 	    ::new ((void*)__n) __node_type;
@@ -2094,7 +2094,7 @@ namespace __detail
       __bucket_alloc_type __alloc(_M_node_allocator());
 
       auto __ptr = __bucket_alloc_traits::allocate(__alloc, __n);
-      __bucket_type* __p = std::__addressof(*__ptr);
+      __bucket_type* __p = std::__to_address(__ptr);
       __builtin_memset(__p, 0, __n * sizeof(__bucket_type));
       return __p;
     }
