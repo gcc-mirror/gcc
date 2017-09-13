@@ -1626,8 +1626,8 @@ ia64_split_tmode_move (rtx operands[])
 
 /* ??? Fixing GR->FR XFmode moves during reload is hard.  You need to go
    through memory plus an extra GR scratch register.  Except that you can
-   either get the first from SECONDARY_MEMORY_NEEDED or the second from
-   SECONDARY_RELOAD_CLASS, but not both.
+   either get the first from TARGET_SECONDARY_MEMORY_NEEDED or the second
+   from SECONDARY_RELOAD_CLASS, but not both.
 
    We got into problems in the first place by allowing a construct like
    (subreg:XF (reg:TI)), which we got from a union containing a long double.

@@ -4409,6 +4409,35 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   We need secondary memory to move data between GPRs and FPRs.
+
+   - With DFP the ldgr lgdr instructions are available.  Due to the
+     different alignment we cannot use them for SFmode.  For 31 bit a
+     64 bit value in GPR would be a register pair so here we still
+     need to go via memory.
+
+   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
+     overlapping of FPRs and VRs we still disallow TF/TD modes to be
+     in full VRs so as before also on z13 we do these moves via
+     memory.
+
+     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
+
+static bool
+s390_secondary_memory_needed (machine_mode mode,
+			      reg_class_t class1, reg_class_t class2)
+{
+  return (((reg_classes_intersect_p (class1, VEC_REGS)
+	    && reg_classes_intersect_p (class2, GENERAL_REGS))
+	   || (reg_classes_intersect_p (class1, GENERAL_REGS)
+	       && reg_classes_intersect_p (class2, VEC_REGS)))
+	  && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (mode) != 8)
+	  && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (mode)
+			     && GET_MODE_SIZE (mode) > 8)));
+}
+
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
 
    get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
@@ -15972,6 +16001,8 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD s390_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED s390_secondary_memory_needed
 #undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
 #define TARGET_SECONDARY_MEMORY_NEEDED_MODE s390_secondary_memory_needed_mode
 

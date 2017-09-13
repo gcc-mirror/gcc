@@ -1519,11 +1519,6 @@ enum reg_class
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
-
 /* Return a class of registers that cannot change FROM mode to TO mode.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \

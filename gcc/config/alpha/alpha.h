@@ -479,13 +479,6 @@ enum reg_class {
 
 #define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
 
-/* If we are copying between general and FP registers, we need a memory
-   location unless the FIX extension is available.  */
-
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- (! TARGET_FIX && (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS) \
-                   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS)))
-
 /* Return the class of registers that cannot change mode from FROM to TO.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\

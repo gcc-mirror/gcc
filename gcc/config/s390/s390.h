@@ -577,29 +577,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
 
 
-/* We need secondary memory to move data between GPRs and FPRs.
-
-   - With DFP the ldgr lgdr instructions are available.  Due to the
-     different alignment we cannot use them for SFmode.  For 31 bit a
-     64 bit value in GPR would be a register pair so here we still
-     need to go via memory.
-
-   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
-     overlapping of FPRs and VRs we still disallow TF/TD modes to be
-     in full VRs so as before also on z13 we do these moves via
-     memory.
-
-     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((reg_classes_intersect_p ((CLASS1), VEC_REGS)			\
-     && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))		\
-    || (reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
-	&& reg_classes_intersect_p ((CLASS2), VEC_REGS)))		\
-   && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
-   && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
-			  && GET_MODE_SIZE (MODE) > 8)))
-
-
 /* Stack layout and calling conventions.  */
 
 /* Our stack grows from higher to lower addresses.  However, local variables

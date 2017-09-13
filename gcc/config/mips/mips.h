@@ -2298,19 +2298,6 @@ enum reg_class
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   mips_secondary_reload_class (CLASS, MODE, X, false)
 
-/* When targeting the o32 FPXX ABI, all moves with a length of doubleword
-   or greater must be performed by FR-mode-aware instructions.
-   This can be achieved using MFHC1/MTHC1 when these instructions are
-   available but otherwise moves must go via memory.
-   For the o32 FP64A ABI, all odd-numbered moves with a length of
-   doubleword or greater are required to use memory.  Using MTC1/MFC1
-   to access the lower-half of these registers would require a forbidden
-   single-precision access.  We require all double-word moves to use
-   memory because adding even and odd floating-point registers classes
-   would have a significant impact on the backend.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  mips_secondary_memory_needed ((CLASS1), (CLASS2), (MODE))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 

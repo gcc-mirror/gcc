@@ -672,6 +672,8 @@ static void sparc_print_operand_address (FILE *, machine_mode, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   machine_mode,
 					   secondary_reload_info *);
+static bool sparc_secondary_memory_needed (machine_mode, reg_class_t,
+					   reg_class_t);
 static machine_mode sparc_secondary_memory_needed_mode (machine_mode);
 static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
@@ -860,6 +862,8 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sparc_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED sparc_secondary_memory_needed
 #undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
 #define TARGET_SECONDARY_MEMORY_NEEDED_MODE sparc_secondary_memory_needed_mode
 
@@ -13051,6 +13055,21 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
     }
 
   return NO_REGS;
+}
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   On SPARC when not VIS3 it is not possible to directly move data
+   between GENERAL_REGS and FP_REGS.  */
+
+static bool
+sparc_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			       reg_class_t class2)
+{
+  return ((FP_REG_CLASS_P (class1) != FP_REG_CLASS_P (class2))
+	  && (! TARGET_VIS3
+	      || GET_MODE_SIZE (mode) > 8
+	      || GET_MODE_SIZE (mode) < 4));
 }
 
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.

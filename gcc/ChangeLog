@@ -2,6 +2,104 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (secondary_memory_needed): New hook.
+	(secondary_reload): Refer to TARGET_SECONDARY_MEMORY_NEEDED
+	instead of SECONDARY_MEMORY_NEEDED.
+	(secondary_memory_needed_mode): Likewise.
+	* hooks.h (hook_bool_mode_reg_class_t_reg_class_t_false): Declare.
+	* hooks.c (hook_bool_mode_reg_class_t_reg_class_t_false): New function.
+	* doc/tm.texi.in (SECONDARY_MEMORY_NEEDED): Replace with...
+	(TARGET_SECONDARY_MEMORY_NEEDED): ...this.
+	(SECONDARY_MEMORY_NEEDED_RTX): Update reference accordingly.
+	* doc/tm.texi: Regenerate.
+	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/alpha/alpha.c (alpha_secondary_memory_needed): New function.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/i386/i386-protos.h (ix86_secondary_memory_needed): Delete.
+	* config/i386/i386.c (inline_secondary_memory_needed): Put the
+	mode argument first and change the reg_class arguments to reg_class_t.
+	(ix86_secondary_memory_needed): Likewise.  Remove the strict parameter.
+	Make static.  Update the call to inline_secondary_memory_needed.
+	(ix86_register_move_cost): Update the call to
+	inline_secondary_memory_needed.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	* config/ia64/ia64.h (SECONDARY_MEMORY_NEEDED): Delete commented-out
+	definition.
+	* config/ia64/ia64.c (spill_xfmode_rfmode_operand): Refer to
+	TARGET_SECONDARY_MEMORY_NEEDED rather than SECONDARY_MEMORY_NEEDED
+	in comment.
+	* config/mips/mips.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/mips/mips-protos.h (mips_secondary_memory_needed): Delete.
+	* config/mips/mips.c (mips_secondary_memory_needed): Make static
+	and match hook interface.  Add comment from mips.h.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	* config/mmix/mmix.md (truncdfsf2): Refer to
+	TARGET_SECONDARY_MEMORY_NEEDED rather than SECONDARY_MEMORY_NEEDED
+	in comment.
+	* config/pa/pa-64.h (SECONDARY_MEMORY_NEEDED): Rename to...
+	(PA_SECONDARY_MEMORY_NEEDED): ...this, and put the mode argument first.
+	* config/pa/pa.c (TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	(pa_secondary_memory_needed): New function.
+	* config/pdp11/pdp11.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/pdp11/pdp11-protos.h (pdp11_secondary_memory_needed): Delete.
+	* config/pdp11/pdp11.c (TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	(pdp11_secondary_memory_needed): Make static and match hook interface.
+	* config/powerpcspe/powerpcspe.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/powerpcspe/powerpcspe-protos.h
+	(rs6000_secondary_memory_needed_ptr): Delete.
+	* config/powerpcspe/powerpcspe.c (rs6000_secondary_memory_needed_ptr):
+	Delete.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	(rs6000_option_override_internal): Assign to
+	targetm.secondary_memory_needed rather than
+	rs6000_secondary_memory_needed_ptr.
+	(rs6000_secondary_memory_needed): Match hook interface.
+	(rs6000_debug_secondary_memory_needed): Likewise.
+	* config/riscv/riscv.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/riscv/riscv.c (riscv_secondary_memory_needed): New function.
+	(riscv_register_move_cost): Use it instead of SECONDARY_MEMORY_NEEDED.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	* config/rs6000/rs6000.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_memory_needed_ptr):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_secondary_memory_needed_ptr): Delete.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	(rs6000_option_override_internal): Assign to
+	targetm.secondary_memory_needed rather than
+	rs6000_secondary_memory_needed_ptr.
+	(rs6000_secondary_memory_needed): Match hook interface.
+	(rs6000_debug_secondary_memory_needed): Likewise.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/s390/s390.c (s390_secondary_memory_needed): New function.
+	(TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED): Delete.
+	* config/sparc/sparc.c (TARGET_SECONDARY_MEMORY_NEEDED): Redefine.
+	(sparc_secondary_memory_needed): New function.
+	* lra-constraints.c (check_and_process_move): Refer to
+	TARGET_SECONDARY_MEMORY_NEEDED rather than SECONDARY_MEMORY_NEEDED
+	in comment.
+	(curr_insn_transform): Likewise.
+	(process_alt_operands): Use targetm.secondary_memory_needed
+	instead of TARGET_SECONDARY_MEMORY_NEEDED.
+	(check_secondary_memory_needed_p): Likewise.
+	(choose_split_class): Likewise.
+	* reload.c: Unconditionally include code that was previously
+	conditional on SECONDARY_MEMORY_NEEDED.
+	(push_secondary_reload): Use targetm.secondary_memory_needed
+	instead of TARGET_SECONDARY_MEMORY_NEEDED.
+	(push_reload): Likewise.
+	* reload1.c: Unconditionally include code that was previously
+	conditional on SECONDARY_MEMORY_NEEDED.
+	(choose_reload_regs): Use targetm.secondary_memory_needed
+	instead of TARGET_SECONDARY_MEMORY_NEEDED.
+	(gen_reload): Likewise.
+	* system.h (SECONDARY_MEMORY_NEEDED): Poison.
+
+2017-09-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (secondary_memory_needed_mode): New hook:
 	* targhooks.c (default_secondary_memory_needed_mode): Declare.
 	* targhooks.h (default_secondary_memory_needed_mode): New function.

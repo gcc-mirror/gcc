@@ -13201,11 +13201,22 @@ mips_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 	  + memory_move_secondary_cost (mode, rclass, in));
 } 
 
-/* Implement SECONDARY_MEMORY_NEEDED.  */
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
-bool
-mips_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      machine_mode mode)
+   When targeting the o32 FPXX ABI, all moves with a length of doubleword
+   or greater must be performed by FR-mode-aware instructions.
+   This can be achieved using MFHC1/MTHC1 when these instructions are
+   available but otherwise moves must go via memory.
+   For the o32 FP64A ABI, all odd-numbered moves with a length of
+   doubleword or greater are required to use memory.  Using MTC1/MFC1
+   to access the lower-half of these registers would require a forbidden
+   single-precision access.  We require all double-word moves to use
+   memory because adding even and odd floating-point registers classes
+   would have a significant impact on the backend.  */
+
+static bool
+mips_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			      reg_class_t class2)
 {
   /* Ignore spilled pseudos.  */
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
@@ -22606,6 +22617,9 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
+
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED mips_secondary_memory_needed
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

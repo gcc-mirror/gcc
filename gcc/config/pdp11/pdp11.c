@@ -243,6 +243,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P pdp11_modes_tieable_p
+
+#undef  TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED pdp11_secondary_memory_needed
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1453,14 +1456,13 @@ pdp11_secondary_reload (bool in_p ATTRIBUTE_UNUSED,
   return LOAD_FPU_REGS;
 }
 
-/* Target routine to check if register to register move requires memory.
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
    The answer is yes if we're going between general register and FPU 
    registers.  The mode doesn't matter in making this check.
 */
-bool 
-pdp11_secondary_memory_needed (reg_class_t c1, reg_class_t c2, 
-			       machine_mode mode ATTRIBUTE_UNUSED)
+static bool
+pdp11_secondary_memory_needed (machine_mode, reg_class_t c1, reg_class_t c2)
 {
   int fromfloat = (c1 == LOAD_FPU_REGS || c1 == NO_LOAD_FPU_REGS || 
 		   c1 == FPU_REGS);

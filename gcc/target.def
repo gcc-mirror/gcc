@@ -5252,7 +5252,7 @@ in memory and the hard register number if it is in a register.\n\
 \n\
 Scratch operands in memory (constraint @code{\"=m\"} / @code{\"=&m\"}) are\n\
 currently not supported.  For the time being, you will have to continue\n\
-to use @code{SECONDARY_MEMORY_NEEDED} for that purpose.\n\
+to use @code{TARGET_SECONDARY_MEMORY_NEEDED} for that purpose.\n\
 \n\
 @code{copy_cost} also uses this target hook to find out how values are\n\
 copied.  If you want it to include some extra cost for the need to allocate\n\
@@ -5266,8 +5266,20 @@ forwarding logic, you can set @code{sri->extra_cost} to a negative amount.",
  default_secondary_reload)
 
 DEFHOOK
+(secondary_memory_needed,
+ "Certain machines have the property that some registers cannot be copied\n\
+to some other registers without using memory.  Define this hook on\n\
+those machines to return true if objects of mode @var{m} in registers\n\
+of @var{class1} can only be copied to registers of class @var{class2} by\n\
+ storing a register of @var{class1} into memory and loading that memory\n\
+location into a register of @var{class2}.  The default definition returns\n\
+false for all inputs.",
+ bool, (machine_mode mode, reg_class_t class1, reg_class_t class2),
+ hook_bool_mode_reg_class_t_reg_class_t_false)
+
+DEFHOOK
 (secondary_memory_needed_mode,
- "If @code{SECONDARY_MEMORY_NEEDED} tells the compiler to use memory\n\
+ "If @code{TARGET_SECONDARY_MEMORY_NEEDED} tells the compiler to use memory\n\
 when moving between two particular registers of mode @var{mode},\n\
 this hook specifies the mode that the memory should have.\n\
 \n\

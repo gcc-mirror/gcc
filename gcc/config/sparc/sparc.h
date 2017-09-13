@@ -1047,14 +1047,6 @@ extern char leaf_reg_remap[];
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
 
-/* On SPARC when not VIS3 it is not possible to directly move data
-   between GENERAL_REGS and FP_REGS.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ((FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)) \
-   && (! TARGET_VIS3 \
-       || GET_MODE_SIZE (MODE) > 8 \
-       || GET_MODE_SIZE (MODE) < 4))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 /* On SPARC, this is the size of MODE in words.  */

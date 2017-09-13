@@ -1159,8 +1159,8 @@ emit_spill_move (bool to_p, rtx mem_pseudo, rtx val)
 
 /* Process a special case insn (register move), return true if we
    don't need to process it anymore.  INSN should be a single set
-   insn.  Set up that RTL was changed through CHANGE_P and macro
-   SECONDARY_MEMORY_NEEDED says to use secondary memory through
+   insn.  Set up that RTL was changed through CHANGE_P and that hook
+   TARGET_SECONDARY_MEMORY_NEEDED says to use secondary memory through
    SEC_MEM_P.  */
 static bool
 check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
@@ -1201,8 +1201,7 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
     return false;
   if (sclass == NO_REGS && dclass == NO_REGS)
     return false;
-#ifdef SECONDARY_MEMORY_NEEDED
-  if (SECONDARY_MEMORY_NEEDED (sclass, dclass, GET_MODE (src))
+  if (targetm.secondary_memory_needed (GET_MODE (src), sclass, dclass)
       && ((sclass != NO_REGS && dclass != NO_REGS)
 	  || (GET_MODE (src)
 	      != targetm.secondary_memory_needed_mode (GET_MODE (src)))))
@@ -1210,7 +1209,6 @@ check_and_process_move (bool *change_p, bool *sec_mem_p ATTRIBUTE_UNUSED)
       *sec_mem_p = true;
       return false;
     }
-#endif
   if (! REG_P (dreg) || ! REG_P (sreg))
     return false;
   sri.prev_sri = NULL;
@@ -2739,19 +2737,18 @@ process_alt_operands (int only_alternative)
 		  reject += 3;
 		}
 	      
-#ifdef SECONDARY_MEMORY_NEEDED
 	      /* If reload requires moving value through secondary
 		 memory, it will need one more insn at least.  */
 	      if (this_alternative != NO_REGS 
 		  && REG_P (op) && (cl = get_reg_class (REGNO (op))) != NO_REGS
 		  && ((curr_static_id->operand[nop].type != OP_OUT
-		       && SECONDARY_MEMORY_NEEDED (cl, this_alternative,
-						   GET_MODE (op)))
+		       && targetm.secondary_memory_needed (GET_MODE (op), cl,
+							   this_alternative))
 		      || (curr_static_id->operand[nop].type != OP_IN
-			  && SECONDARY_MEMORY_NEEDED (this_alternative, cl,
-						      GET_MODE (op)))))
+			  && (targetm.secondary_memory_needed
+			      (GET_MODE (op), this_alternative, cl)))))
 		losers++;
-#endif
+
 	      /* Input reloads can be inherited more often than output
 		 reloads can be removed, so penalize output
 		 reloads.  */
@@ -3716,9 +3713,7 @@ curr_insn_transform (bool check_only_p)
   /* Flag that the insn has been changed through a transformation.  */
   bool change_p;
   bool sec_mem_p;
-#ifdef SECONDARY_MEMORY_NEEDED
   bool use_sec_mem_p;
-#endif
   int max_regno_before;
   int reused_alternative_num;
 
@@ -3899,8 +3894,7 @@ curr_insn_transform (bool check_only_p)
       change_p = true;
     }
 
-#ifdef SECONDARY_MEMORY_NEEDED
-  /* Some target macros SECONDARY_MEMORY_NEEDED (e.g. x86) are defined
+  /* Some targets' TARGET_SECONDARY_MEMORY_NEEDED (e.g. x86) are defined
      too conservatively.  So we use the secondary memory only if there
      is no any alternative without reloads.  */
   use_sec_mem_p = false;
@@ -3985,7 +3979,6 @@ curr_insn_transform (bool check_only_p)
       lra_update_insn_regno_info (curr_insn);
       return true;
     }
-#endif
 
   lra_assert (goal_alt_number >= 0);
   lra_set_used_insn_alternative (curr_insn, goal_alt_number);
@@ -5084,9 +5077,6 @@ static bool
 check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
 				 rtx usage_insns ATTRIBUTE_UNUSED)
 {
-#ifndef SECONDARY_MEMORY_NEEDED
-  return false;
-#else
   rtx_insn *insn;
   rtx set, dest;
   enum reg_class cl;
@@ -5103,8 +5093,7 @@ check_secondary_memory_needed_p (enum reg_class inher_cl ATTRIBUTE_UNUSED,
   lra_assert (inher_cl != NO_REGS);
   cl = get_reg_class (REGNO (dest));
   return (cl != NO_REGS && cl != ALL_REGS
-	  && SECONDARY_MEMORY_NEEDED (inher_cl, cl, GET_MODE (dest)));
-#endif
+	  && targetm.secondary_memory_needed (GET_MODE (dest), inher_cl, cl));
 }
 
 /* Registers involved in inheritance/split in the current EBB
@@ -5364,28 +5353,24 @@ choose_split_class (enum reg_class allocno_class,
 		    int hard_regno ATTRIBUTE_UNUSED,
 		    machine_mode mode ATTRIBUTE_UNUSED)
 {
-#ifndef SECONDARY_MEMORY_NEEDED
-  return allocno_class;
-#else
   int i;
   enum reg_class cl, best_cl = NO_REGS;
   enum reg_class hard_reg_class ATTRIBUTE_UNUSED
     = REGNO_REG_CLASS (hard_regno);
 
-  if (! SECONDARY_MEMORY_NEEDED (allocno_class, allocno_class, mode)
+  if (! targetm.secondary_memory_needed (mode, allocno_class, allocno_class)
       && TEST_HARD_REG_BIT (reg_class_contents[allocno_class], hard_regno))
     return allocno_class;
   for (i = 0;
        (cl = reg_class_subclasses[allocno_class][i]) != LIM_REG_CLASSES;
        i++)
-    if (! SECONDARY_MEMORY_NEEDED (cl, hard_reg_class, mode)
-	&& ! SECONDARY_MEMORY_NEEDED (hard_reg_class, cl, mode)
+    if (! targetm.secondary_memory_needed (mode, cl, hard_reg_class)
+	&& ! targetm.secondary_memory_needed (mode, hard_reg_class, cl)
 	&& TEST_HARD_REG_BIT (reg_class_contents[cl], hard_regno)
 	&& (best_cl == NO_REGS
 	    || ira_class_hard_regs_num[best_cl] < ira_class_hard_regs_num[cl]))
       best_cl = cl;
   return best_cl;
-#endif
 }
 
 /* Copy any equivalence information from ORIGINAL_REGNO to NEW_REGNO.

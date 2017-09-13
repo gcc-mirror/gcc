@@ -41102,8 +41102,8 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
    To optimize register_move_cost performance, define inline variant.  */
 
 static inline bool
-inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-				machine_mode mode, int strict)
+inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+				reg_class_t class2, int strict)
 {
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
     return false;
@@ -41155,11 +41155,13 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return false;
 }
 
-bool
-ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      machine_mode mode, int strict)
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.  */
+
+static bool
+ix86_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			      reg_class_t class2)
 {
-  return inline_secondary_memory_needed (class1, class2, mode, strict);
+  return inline_secondary_memory_needed (mode, class1, class2, true);
 }
 
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
@@ -41380,7 +41382,7 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
      by load.  In order to avoid bad register allocation choices, we need
      for this to be *at least* as high as the symmetric MEMORY_MOVE_COST.  */
 
-  if (inline_secondary_memory_needed (class1, class2, mode, 0))
+  if (inline_secondary_memory_needed (mode, class1, class2, false))
     {
       int cost = 1;
 
@@ -53220,6 +53222,8 @@ ix86_run_selftests (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED ix86_secondary_memory_needed
 #undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
 #define TARGET_SECONDARY_MEMORY_NEEDED_MODE ix86_secondary_memory_needed_mode
 

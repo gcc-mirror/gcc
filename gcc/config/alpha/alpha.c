@@ -1689,6 +1689,20 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   If we are copying between general and FP registers, we need a memory
+   location unless the FIX extension is available.  */
+
+static bool
+alpha_secondary_memory_needed (machine_mode, reg_class_t class1,
+			       reg_class_t class2)
+{
+  return (!TARGET_FIX
+	  && ((class1 == FLOAT_REGS && class2 != FLOAT_REGS)
+	      || (class2 == FLOAT_REGS && class1 != FLOAT_REGS)));
+}
+
 /* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.  If MODE is
    floating-point, use it.  Otherwise, widen to a word like the default.
    This is needed because we always store integers in FP registers in
@@ -10077,6 +10091,8 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED alpha_secondary_memory_needed
 #undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
 #define TARGET_SECONDARY_MEMORY_NEEDED_MODE alpha_secondary_memory_needed_mode
 
