@@ -17,7 +17,7 @@ This chapter describes a number of utility programs:
   * :ref:`The_Cross-Referencing_Tools_gnatxref_and_gnatfind`
   * :ref:`The_Ada_to_HTML_Converter_gnathtml`
   * :ref:`The_Ada-to-XML_Converter_gnat2xml`
-  * :ref:`The_Program_Property_Verifier_gnatcheck`
+  * :ref:`The_Coding_Standard_Verifier_gnatcheck`
   * :ref:`The_GNAT_Metrics_Tool_gnatmetric`
   * :ref:`The_GNAT_Pretty-Printer_gnatpp`
   * :ref:`The_Body_Stub_Generator_gnatstub`
@@ -209,9 +209,6 @@ The GNAT Library Browser ``gnatls``
 units. It gives the relationship between objects, unit names and source
 files. It can also be used to check the source dependencies of a unit
 as well as various characteristics.
-
-Note: to invoke `gnatls` with a project file, use the `gnat`
-driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
 
 .. _Running_gnatls:
 
@@ -504,9 +501,6 @@ To use these tools, you must not compile your application using the
 :switch:`-gnatx` switch on the ``gnatmake`` command line
 (see :ref:`The_GNAT_Make_Program_gnatmake`). Otherwise, cross-referencing
 information will not be generated.
-
-Note: to invoke `gnatxref` or `gnatfind` with a project file,
-use the `gnat` driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
 
 .. _gnatxref_Switches:
 
@@ -1755,7 +1749,7 @@ Alternatively, you may run the script using the following command line:
 
 .. only:: PRO or GPL
 
-  .. _The_Program_Property_Verifier_gnatcheck:
+  .. _The_Coding_Standard_Verifier_gnatcheck:
 
   The Coding Standard Verifier ``gnatcheck``
   ==========================================
@@ -1800,9 +1794,7 @@ Alternatively, you may run the script using the following command line:
   compiler and generates and uses the ASIS tree for the input source;
   thus the input must be legal Ada code, and the tool should have all the
   information needed to compile the input source. To provide this information,
-  you may specify as a tool parameter the project file the input source belongs to
-  (or you may call *gnatmetric*
-  through the *gnat* driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
+  you may specify as a tool parameter the project file the input source belongs to.
   Another possibility is to specify the source search
   path and needed configuration files in :switch:`-cargs` section of ``gnatmetric``
   call, see the description of the ``gnatmetric`` switches below.
@@ -2821,9 +2813,7 @@ Alternatively, you may run the script using the following command line:
    compiler and generates and uses the ASIS tree for the input source;
    thus the input must be legal Ada code, and the tool should have all the
    information needed to compile the input source. To provide this information,
-   you may specify as a tool parameter the project file the input source belongs to
-   (or you may call *gnatpp*
-   through the *gnat* driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
+   you may specify as a tool parameter the project file the input source belongs to.
    Another possibility is to specify the source search
    path and needed configuration files in ``-cargs`` section of ``gnatpp``
    call, see the description of the ``gnatpp`` switches below.
@@ -3834,9 +3824,7 @@ Alternatively, you may run the script using the following command line:
   compiler and generates and uses the ASIS tree for the input source;
   thus the input must be legal Ada code, and the tool should have all the
   information needed to compile the input source. To provide this information,
-  you may specify as a tool parameter the project file the input source belongs to
-  (or you may call *gnatstub*
-  through the *gnat* driver (see :ref:`The_GNAT_Driver_and_Project_Files`).
+  you may specify as a tool parameter the project file the input source belongs to.
   Another possibility is to specify the source search
   path and needed configuration files in ``-cargs`` section of ``gnatstub``
   call, see the description of the ``gnatstub`` switches below.
@@ -4548,7 +4536,7 @@ Alternatively, you may run the script using the following command line:
        ``--additional-tests`` switch.
 
   * ``Skeletons_Default``
-       is used to specify the default behavior of test skeletons, otherwise
+       is used to specify the default behaviour of test skeletons, otherwise
        specified by ``--skeleton-default`` option. The value of this attribute
        should be either ``pass`` or ``fail``.
 
