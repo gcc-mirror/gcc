@@ -1,3 +1,15 @@
+2017-09-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Add -static-pie
+	support.
+	(ENDFILE_LINUX_SPEC): Likewise.
+	(LINK_EH_SPEC): Likewise.
+	* config/rs6000/linux64.h (LINK_SHLIB_SPEC): Likewise.
+	(LINK_OS_LINUX_SPEC32): Likewise.
+	(LINK_OS_LINUX_SPEC64): Likewise.
+	* config/rs6000/linux.h (LINK_SHLIB_SPEC): Likewise.
+	(LINK_OS_LINUX_SPEC): Likewise.
+
 2017-09-13  Martin Liska  <mliska@suse.cz>
 
 	PR middle-end/82154
