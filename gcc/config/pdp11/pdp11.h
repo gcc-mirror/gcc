@@ -236,10 +236,6 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* Hook for testing if memory is needed for moving between registers.  */
-#define SECONDARY_MEMORY_NEEDED(class1, class2, m) \
-  pdp11_secondary_memory_needed (class1, class2, m)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\

@@ -167,8 +167,6 @@ extern int ix86_reg_parm_stack_space (const_tree);
 
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx);
-extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,
-					  machine_mode, int);
 extern bool ix86_cannot_change_mode_class (machine_mode,
 					   machine_mode, enum reg_class);
 

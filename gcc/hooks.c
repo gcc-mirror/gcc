@@ -495,3 +495,12 @@ hook_bool_reg_class_t_false (reg_class_t regclass ATTRIBUTE_UNUSED)
   return false;
 }
 
+/* Generic hook that takes a machine_mode and 2 register classes
+   and returns false.  */
+bool
+hook_bool_mode_reg_class_t_reg_class_t_false (machine_mode, reg_class_t,
+					      reg_class_t)
+{
+  return false;
+}
+

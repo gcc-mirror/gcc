@@ -767,24 +767,6 @@ enum reg_class
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
  ia64_secondary_reload_class (CLASS, MODE, X)
 
-/* Certain machines have the property that some registers cannot be copied to
-   some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is nonzero if objects of mode M in
-   registers of CLASS1 can only be copied to registers of class CLASS2 by
-   storing a register of CLASS1 into memory and loading that memory location
-   into a register of CLASS2.  */
-
-#if 0
-/* ??? May need this, but since we've disallowed XFmode in GR_REGS,
-   I'm not quite sure how it could be invoked.  The normal problems
-   with unions should be solved with the addressof fiddling done by
-   movxf and friends.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((MODE) == XFmode || (MODE) == XCmode)				\
-   && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)			\
-       || ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
-#endif
-
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
    This is closely related to TARGET_HARD_REGNO_NREGS.  */

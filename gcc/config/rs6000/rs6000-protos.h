@@ -110,9 +110,6 @@ extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 							    machine_mode,
 							    rtx);
-extern bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class,
-						   enum reg_class,
-						   machine_mode);
 extern bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
 						    machine_mode,
 						    enum reg_class);

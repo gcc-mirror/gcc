@@ -172,8 +172,6 @@ struct decomposition
   HOST_WIDE_INT end;	/* Ending offset or register number.  */
 };
 
-#ifdef SECONDARY_MEMORY_NEEDED
-
 /* Save MEMs needed to copy from one class of registers to another.  One MEM
    is used per mode, but normally only one or two modes are ever used.
 
@@ -185,7 +183,6 @@ struct decomposition
 static rtx secondary_memlocs[NUM_MACHINE_MODES];
 static rtx secondary_memlocs_elim[NUM_MACHINE_MODES][MAX_RECOG_OPERANDS];
 static int secondary_memlocs_elim_used = 0;
-#endif
 
 /* The instruction we are doing reloads for;
    so we can test whether a register dies in it.  */
@@ -456,14 +453,13 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
   if (s_reload == n_reloads)
     {
-#ifdef SECONDARY_MEMORY_NEEDED
       /* If we need a memory location to copy between the two reload regs,
 	 set it up now.  Note that we do the input case before making
 	 the reload and the output case after.  This is due to the
 	 way reloads are output.  */
 
       if (in_p && icode == CODE_FOR_nothing
-	  && SECONDARY_MEMORY_NEEDED (rclass, reload_class, mode))
+	  && targetm.secondary_memory_needed (mode, rclass, reload_class))
 	{
 	  get_secondary_mem (x, reload_mode, opnum, type);
 
@@ -471,7 +467,6 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 	     the new reload at the end.  */
 	  s_reload = n_reloads;
 	}
-#endif
 
       /* We need to make a new secondary reload for this register class.  */
       rld[s_reload].in = rld[s_reload].out = 0;
@@ -497,11 +492,9 @@ push_secondary_reload (int in_p, rtx x, int opnum, int optional,
 
       n_reloads++;
 
-#ifdef SECONDARY_MEMORY_NEEDED
       if (! in_p && icode == CODE_FOR_nothing
-	  && SECONDARY_MEMORY_NEEDED (reload_class, rclass, mode))
+	  && targetm.secondary_memory_needed (mode, reload_class, rclass))
 	get_secondary_mem (x, mode, opnum, type);
-#endif
     }
 
   *picode = icode;
@@ -556,8 +549,6 @@ scratch_reload_class (enum insn_code icode)
   return rclass;
 }
 
-#ifdef SECONDARY_MEMORY_NEEDED
-
 /* Return a memory location that will be used to copy X in mode MODE.
    If we haven't already made a location for this mode in this insn,
    call find_reloads_address on the location being returned.  */
@@ -634,7 +625,6 @@ clear_secondary_mem (void)
 {
   memset (secondary_memlocs, 0, sizeof secondary_memlocs);
 }
-#endif /* SECONDARY_MEMORY_NEEDED */
 
 
 /* Find the largest class which has at least one register valid in
@@ -1353,7 +1343,6 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
       /* We found no existing reload suitable for re-use.
 	 So add an additional reload.  */
 
-#ifdef SECONDARY_MEMORY_NEEDED
       if (subreg_in_class == NO_REGS
 	  && in != 0
 	  && (REG_P (in)
@@ -1362,9 +1351,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	subreg_in_class = REGNO_REG_CLASS (reg_or_subregno (in));
       /* If a memory location is needed for the copy, make one.  */
       if (subreg_in_class != NO_REGS
-	  && SECONDARY_MEMORY_NEEDED (subreg_in_class, rclass, inmode))
+	  && targetm.secondary_memory_needed (inmode, subreg_in_class, rclass))
 	get_secondary_mem (in, inmode, opnum, type);
-#endif
 
       i = n_reloads;
       rld[i].in = in;
@@ -1388,16 +1376,13 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 
       n_reloads++;
 
-#ifdef SECONDARY_MEMORY_NEEDED
       if (out != 0
           && (REG_P (out)
 	      || (GET_CODE (out) == SUBREG && REG_P (SUBREG_REG (out))))
 	  && reg_or_subregno (out) < FIRST_PSEUDO_REGISTER
-	  && SECONDARY_MEMORY_NEEDED (rclass,
-				      REGNO_REG_CLASS (reg_or_subregno (out)),
-				      outmode))
+	  && (targetm.secondary_memory_needed
+	      (outmode, rclass, REGNO_REG_CLASS (reg_or_subregno (out)))))
 	get_secondary_mem (out, outmode, opnum, type);
-#endif
     }
   else
     {
@@ -1797,14 +1782,12 @@ combine_reloads (void)
 				       [(int) rld[output_reload].outmode])
 	&& rld[i].inc == 0
 	&& rld[i].reg_rtx == 0
-#ifdef SECONDARY_MEMORY_NEEDED
 	/* Don't combine two reloads with different secondary
 	   memory locations.  */
 	&& (secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[i].opnum] == 0
 	    || secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[output_reload].opnum] == 0
 	    || rtx_equal_p (secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[i].opnum],
 			    secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[output_reload].opnum]))
-#endif
 	&& (targetm.small_register_classes_for_mode_p (VOIDmode)
 	    ? (rld[i].rclass == rld[output_reload].rclass)
 	    : (reg_class_subset_p (rld[i].rclass,
@@ -1854,12 +1837,10 @@ combine_reloads (void)
 	      = rld[output_reload].secondary_out_icode;
 	  }
 
-#ifdef SECONDARY_MEMORY_NEEDED
 	/* Copy any secondary MEM.  */
 	if (secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[output_reload].opnum] != 0)
 	  secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[i].opnum]
 	    = secondary_memlocs_elim[(int) rld[output_reload].outmode][rld[output_reload].opnum];
-#endif
 	/* If required, minimize the register class.  */
 	if (reg_class_subset_p (rld[output_reload].rclass,
 				rld[i].rclass))
@@ -2668,7 +2649,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
   if (HAVE_cc0 && reg_set_p (cc0_rtx, PATTERN (insn)))
     no_output_reloads = 1;
 
-#ifdef SECONDARY_MEMORY_NEEDED
   /* The eliminated forms of any secondary memory locations are per-insn, so
      clear them out here.  */
 
@@ -2678,7 +2658,6 @@ find_reloads (rtx_insn *insn, int replace, int ind_levels, int live_known,
 	      sizeof (secondary_memlocs_elim[0]) * secondary_memlocs_elim_used);
       secondary_memlocs_elim_used = 0;
     }
-#endif
 
   /* Dispose quickly of (set (reg..) (reg..)) if both have hard regs and it
      is cheap to move between them.  If it is not, there may not be an insn
