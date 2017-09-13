@@ -1,3 +1,9 @@
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61135
+	* g++.dg/cpp0x/lambda/lambda-ice18.C: New.
+	* g++.dg/cpp1y/lambda-ice2.C: Likewise.
+
 2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* gcc.target/aarch64/simd/vect_str_zero.c: Update testcase.
