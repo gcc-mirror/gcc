@@ -1,5 +1,27 @@
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81468
+	* include/std/chrono (__enable_if_is_duration)
+	(__disable_if_is_duration): New alias templates to simplify SFINAE.
+	(duration_cast, floor, ceil): Use __enable_if_is_duration.
+	(duration::__is_float, duration::__is_harmonic): New alias templates
+	to simplify SFINAE.
+	(duration::duration(const _Rep2&)): Use _Require, __is_float and
+	__is_harmonic.
+	(duration::duration(const duration<_Rep2, _Period2>&)): Likewise.
+	(__common_rep_type): Remove, replace with ...
+	(__common_rep_t): New alias template.
+	(operator*, operator/, operator%): Use __common_rep_t and
+	__disable_if_is_duration.
+	(time_point::time_point(const time_point<clock, _Dur2>&)): Add missing
+	constraint from LWG DR 1177.
+	* testsuite/20_util/duration/cons/dr1177.cc: New.
+	* testsuite/20_util/duration/literals/range.cc: Update dg-error line.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/time_point/cons/81468.cc: New.
+
 	* doc/doxygen/mainpage.html: Fix broken URLs.
 
 	PR libstdc++/81835
