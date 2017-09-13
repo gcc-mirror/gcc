@@ -1,3 +1,8 @@
+2017-09-13  Nicolas Roche  <roche@adacore.com>
+
+	* Make-lang.in: In the fallback mechanim, parse the associated .ali
+	file and try to guess the locations of dependencies.
+
 2017-09-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch13.adb (Register_Address_Clause_Check): New procedure to save
