@@ -1,3 +1,13 @@
+2017-09-13  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/80925
+	* gfortran.dg/vect/vect-2.f90: Add
+	--param vect-max-peeling-for-alignment=0 option.
+	Remove unaligned access and peeling checks.
+	* gfortran.dg/vect/vect-3.f90: Ditto.
+	* gfortran.dg/vect/vect-4.f90: Ditto.
+	* gfortran.dg/vect/vect-5.f90: Ditto.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61135
