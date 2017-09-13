@@ -519,7 +519,7 @@ package body Clean is
             Find_Program_Name;
 
             if Name_Len > 10
-              and then Name_Buffer (Name_Len - 7 .. Name_Len) = "gnatclean"
+              and then Name_Buffer (Name_Len - 8 .. Name_Len) = "gnatclean"
             then
                Target  := new String'(Name_Buffer (1 .. Name_Len - 9));
                Arg_Len := Arg_Len + 1;
