@@ -1,3 +1,7 @@
+2017-09-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/aarch64/pr63304_1.c: Remove-mno-fix-cortex-a53-843419.
+
 017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70621
