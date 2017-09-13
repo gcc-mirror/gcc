@@ -1,3 +1,8 @@
+2017-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_10.f03 : New test.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68177

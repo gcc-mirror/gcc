@@ -1,3 +1,12 @@
+2017-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* decl.c (match_char_kind): If the kind expression is
+	parameterized, save it in saved_kind_expr and set kind = 0.
+	(gfc_get_pdt_instance): Resolve and simplify before emitting
+	error on expression kind. Insert a missing simplification after
+	insertion of kind expressions.
+
 2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173
