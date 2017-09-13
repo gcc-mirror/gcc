@@ -1,3 +1,9 @@
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61362
+	* g++.dg/cpp0x/lambda/lambda-ice19.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ice20.C: Likewise.
+
 2017-09-13  Steve Ellcey  <sellcey@cavium.com>
 
 	PR tree-optimization/80925
