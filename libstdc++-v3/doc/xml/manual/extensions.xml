@@ -502,7 +502,7 @@ get_temporary_buffer(5, (int*)0);
     <quote>demangling.</quote>
   </para>
   <para>
-    If you have read the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/a01115.html">source
+    If you have read the <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/onlinedocs/libstdc++/latest-doxygen/namespaces.html">source
     documentation for <code>namespace abi</code></link> then you are
     aware of the cross-vendor C++ ABI in use by GCC.  One of the
     exposed functions is used for demangling,
