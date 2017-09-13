@@ -1,3 +1,37 @@
+2017-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Register_Address_Clause_Check): New procedure to save
+	the suppression status of Alignment_Check on the current scope.
+	(Alignment_Checks_Suppressed): New function to use the saved instead of
+	the current suppression status of Alignment_Check.
+	(Address_Clause_Check_Record): Add Alignment_Checks_Suppressed field.
+	(Analyze_Attribute_Definition_Clause): Instead of manually appending to
+	the table, call Register_Address_Clause_Check.
+	(Validate_Address_Clauses): Call Alignment_Checks_Suppressed on the
+	recorded address clause instead of its entity.
+
+2017-09-13  Jerome Guitton  <guitton@adacore.com>
+
+	* libgnarl/s-tpopsp__vxworks-tls.adb,
+	libgnarl/s-tpopsp__vxworks-rtp.adb, libgnarl/s-tpopsp__vxworks.adb
+	(Self): Register thread if task id is null.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-htable.adb, libgnat/s-htable.ads: Minor style tuning.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref-spark_specific.adb (Scopes): simplify hash map; now it maps
+	from an entity to only scope index, as a mapping from an entity to the
+	same entity was useless.
+	(Get_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Set_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Is_Constant_Object_Without_Variable_Input): remove local "Result"
+	variable, just use return statements.
+
 2017-09-13  Arnaud Charlet  <charlet@adacore.com>
 
 	* libgnarl/s-vxwext__kernel-smp.adb,

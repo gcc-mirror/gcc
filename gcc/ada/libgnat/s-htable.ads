@@ -61,7 +61,7 @@ package System.HTable is
 
       No_Element : Element;
       --  The object that is returned by Get when no element has been set for
-      --  a given key
+      --  a given key.
 
       type Key is private;
       with function Hash  (F : Key)      return Header_Num;
