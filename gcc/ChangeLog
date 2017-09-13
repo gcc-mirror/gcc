@@ -1,3 +1,8 @@
+2017-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* gimple-ssa-store-merging.c (sort_by_bitpos): Compare store order
+	when bitposition is the same.
+
 2017-09-13  Richard Biener  <rguenther@suse.de>
 
 	* dwarf2out.c (output_die_symbol): Remove.
