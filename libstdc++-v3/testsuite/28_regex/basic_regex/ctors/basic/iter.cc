@@ -15,7 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-do compile { target c++11 } }
+// { dg-options "-std=gnu++11" }
+// { dg-do compile }
 
 #include <regex>
 #include <testsuite_iterators.h>
@@ -24,7 +25,8 @@ void
 test01()
 {
   char s[] = "";
-  __gnu_test::test_container<char, __gnu_test::forward_iterator_wrapper> c(s);
+  __gnu_test::test_container<char, __gnu_test::forward_iterator_wrapper>
+    c(s, s+1);
   std::regex r1(c.begin(), c.end());
   std::regex r2(c.begin(), c.end(), std::regex_constants::grep);
 }

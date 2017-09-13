@@ -1,5 +1,11 @@
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/20_util/reference_wrapper/80504.cc: Do not use invalid
+	effective-target.
+	* testsuite/22_locale/conversions/buffer/2.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/basic/iter.cc: Likewise. Fix
+	use of test_container.
+
 	PR libstdc++/81468
 	* include/std/chrono (time_point(const time_point<_Dur2>&)): Add
 	missing constraint from LWG DR 1177.
