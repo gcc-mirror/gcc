@@ -1,6 +1,4 @@
-// { dg-do compile { target c++14 } }
-
-// Copyright (C) 2014-2017 Free Software Foundation, Inc.
+// Copyright (C) 2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -17,15 +15,20 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+// { dg-do compile { target c++11 } }
+
 #include <chrono>
+#include <type_traits>
 
-void
-test01()
-{
-  using namespace std::literals::chrono_literals;
+using namespace std;
+using namespace std::chrono;
 
-  // std::numeric_limits<int64_t>::max() == 9223372036854775807;
-  auto h = 9223372036854775808h;
-  // { dg-error "cannot be represented" "" { target *-*-* } 893 }
-}
-// { dg-prune-output "in constexpr expansion" } // needed for -O0
+template <class Duration>
+    using sys_time = time_point<system_clock, Duration>;
+
+static_assert(is_constructible<sys_time<milliseconds>, sys_time<seconds>>{},
+    "Can construct time_point from one with lower precision duration");
+
+// PR libstdc++/81468 - DR 1177
+static_assert(!is_constructible<sys_time<seconds>, sys_time<milliseconds>>{},
+    "Cannot construct time_point from one with higher precision duration");
