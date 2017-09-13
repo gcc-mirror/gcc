@@ -1,3 +1,7 @@
+2017-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: Remove email address of Jim Norris.
+
 2017-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* MAINTAINERS (Reviewers): Move myself from here...
