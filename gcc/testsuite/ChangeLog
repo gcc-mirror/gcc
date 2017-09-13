@@ -1,3 +1,8 @@
+2017-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82154
+	* g++.dg/torture/pr82154.C: New test.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61362
