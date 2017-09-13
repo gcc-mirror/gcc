@@ -1,5 +1,7 @@
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	* doc/doxygen/mainpage.html: Fix broken URLs.
+
 	PR libstdc++/81835
 	* doc/xml/manual/extensions.xml: Replace unstable URL.
 	* doc/html/manual/ext_demangling.html: Regenerate.
