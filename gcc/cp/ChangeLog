@@ -1,3 +1,38 @@
+2017-09-13  Nathan Sidwell  <nathan@acm.org>
+
+	Conv-op identifers not in identifier hash table
+	* lex.c (conv_type_hasher): Make member fns inline.
+	(make_conv_op_name): Directly clone conv_op_identifier.
+
+	Rename CLASSTYPE_METHOD_VEC to CLASSTYPE_MEMBER_VEC.
+	* cp-tree.h (struct lang_type): Rename methods to members.
+	(CLASSTYPE_METHOD_VEC): Rename to ...
+	(CLASSTYPE_MEMBER_VEC): ... this.
+	* name-lookup.h (get_method_slot): Rename to ...
+	(get_member_slot): ... this.
+	(resort_type_method_vec): Rename to ...
+	(resort_type_member_vec): ... this.
+	* class.c (add_method, warn_hidden): Adjust.
+	* search.c (dfs_locate_field_accessor_pre): Adjust.
+	* name-lookup.c (method_vec_binary_search): Rename to ...
+	(member_vec_binary_search): ... this and adjust.
+	(method_vec_linear_search): Rename to ...
+	(member_vec_linear_search): ... this and adjust.
+	(fields_linear_search, get_class_binding_direct): Adjust.
+	(get_method_slot): Rename to ...
+	(get_member_slot): ... this and adjust.
+	(method_name_slot): Rename to ...
+	(member_name_slot): ... this and adjust.
+	(resort_type_method_vec): Rename to ...
+	(resort_type_member_vec): ... this and adjust.
+	(method_vec_append_class_fields): Rename to ...
+	(member_vec_append_class_fields): ... this and adjust.
+	(method_vec_append_enum_values): Rename to ...
+	(member_vec_append_enum_values): ... this and adjust.
+	(method_vec_dedup): Rename to ...
+	(member_vec_dedup): ... this and adjust.
+	(set_class_bindings, insert_late_enum_def_bindings): Adjust.
+	
 2017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70621

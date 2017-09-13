@@ -4951,7 +4951,7 @@ package body Exp_Ch3 is
            and then
              (Has_Controlled_Component (Comp_Typ)
                or else (Chars (Comp) /= Name_uParent
-                         and then (Is_Controlled_Active (Comp_Typ))))
+                         and then Is_Controlled (Comp_Typ)))
          then
             Set_Has_Controlled_Component (Typ);
          end if;

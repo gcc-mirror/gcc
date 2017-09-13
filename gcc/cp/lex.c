@@ -531,10 +531,24 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   return unqualified_name_lookup_error (name, loc);
 }
 
+
+/* Hasher for the conversion operator name hash table.  */
 struct conv_type_hasher : ggc_ptr_hash<tree_node>
 {
-  static hashval_t hash (tree);
-  static bool equal (tree, tree);
+  /* Hash NODE, an identifier node in the table.  TYPE_UID is
+     suitable, as we're not concerned about matching canonicalness
+     here.  */
+  static hashval_t hash (tree node)
+  {
+    return (hashval_t) TYPE_UID (TREE_TYPE (node));
+  }
+
+  /* Compare NODE, an identifier node in the table, against TYPE, an
+     incoming TYPE being looked up.  */
+  static bool equal (tree node, tree type)
+  {
+    return TREE_TYPE (node) == type;
+  }
 };
 
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
@@ -543,28 +557,13 @@ struct conv_type_hasher : ggc_ptr_hash<tree_node>
 
 static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
 
-/* Hash a node (VAL1) in the table.  */
-
-hashval_t
-conv_type_hasher::hash (tree val)
-{
-  return (hashval_t) TYPE_UID (TREE_TYPE (val));
-}
-
-/* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
-
-bool
-conv_type_hasher::equal (tree val1, tree val2)
-{
-  return TREE_TYPE (val1) == val2;
-}
-
 /* Return an identifier for a conversion operator to TYPE.  We can get
    from the returned identifier to the type.  We store TYPE, which is
-   not necessarily the canonical type.  That allows us to report the
+   not necessarily the canonical type,  which allows us to report the
    form the user used in error messages.  All these identifiers are
    not in the identifier hash table, and have the same string name.
-   This allows them to be looked up by name.  */
+   These IDENTIFIERS are not in the identifier hash table, and all
+   have the same IDENTIFIER_STRING.  */
 
 tree
 make_conv_op_name (tree type)

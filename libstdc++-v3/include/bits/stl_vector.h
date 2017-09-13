@@ -1695,7 +1695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Ptr>
 	typename std::pointer_traits<_Ptr>::element_type*
 	_M_data_ptr(_Ptr __ptr) const
-	{ return empty() ? nullptr : std::__addressof(*__ptr); }
+	{ return empty() ? nullptr : std::__to_address(__ptr); }
 #else
       template<typename _Up>
 	_Up*
@@ -1705,12 +1705,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Ptr>
 	value_type*
 	_M_data_ptr(_Ptr __ptr)
-	{ return __ptr.operator->(); }
+	{ return empty() ? (value_type*)0 : __ptr.operator->(); }
 
       template<typename _Ptr>
 	const value_type*
 	_M_data_ptr(_Ptr __ptr) const
-	{ return __ptr.operator->(); }
+	{ return empty() ? (const value_type*)0 : __ptr.operator->(); }
 #endif
     };
 

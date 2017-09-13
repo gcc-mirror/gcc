@@ -209,7 +209,8 @@ the unit is not implemented.
 
 
 ``Ada.Execution_Time`` *(D.14)*
-  Not implemented in GNAT.
+  This package provides CPU clock functionalities. It is not implemented on
+  all targets (see package spec for details).
 
 
 ``Ada.Execution_Time.Group_Budgets`` *(D.14.2)*

@@ -521,7 +521,9 @@ sort_by_bitpos (const void *x, const void *y)
   else if ((*tmp)->bitpos > (*tmp2)->bitpos)
     return 1;
   else
-    return 0;
+    /* If they are the same let's use the order which is guaranteed to
+       be different.  */
+    return (*tmp)->order - (*tmp2)->order;
 }
 
 /* Sorting function for store_immediate_info objects.

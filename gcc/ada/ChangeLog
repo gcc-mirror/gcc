@@ -1,3 +1,101 @@
+2017-09-13  Nicolas Roche  <roche@adacore.com>
+
+	* Make-lang.in: In the fallback mechanim, parse the associated .ali
+	file and try to guess the locations of dependencies.
+
+2017-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Register_Address_Clause_Check): New procedure to save
+	the suppression status of Alignment_Check on the current scope.
+	(Alignment_Checks_Suppressed): New function to use the saved instead of
+	the current suppression status of Alignment_Check.
+	(Address_Clause_Check_Record): Add Alignment_Checks_Suppressed field.
+	(Analyze_Attribute_Definition_Clause): Instead of manually appending to
+	the table, call Register_Address_Clause_Check.
+	(Validate_Address_Clauses): Call Alignment_Checks_Suppressed on the
+	recorded address clause instead of its entity.
+
+2017-09-13  Jerome Guitton  <guitton@adacore.com>
+
+	* libgnarl/s-tpopsp__vxworks-tls.adb,
+	libgnarl/s-tpopsp__vxworks-rtp.adb, libgnarl/s-tpopsp__vxworks.adb
+	(Self): Register thread if task id is null.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-htable.adb, libgnat/s-htable.ads: Minor style tuning.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref-spark_specific.adb (Scopes): simplify hash map; now it maps
+	from an entity to only scope index, as a mapping from an entity to the
+	same entity was useless.
+	(Get_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Set_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Is_Constant_Object_Without_Variable_Input): remove local "Result"
+	variable, just use return statements.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-vxwext__kernel-smp.adb,
+	libgnarl/s-tpopsp__vxworks-rtp.adb, libgnarl/s-vxwext__noints.adb:
+	New file.
+
+2017-09-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag42 is now Is_Controlled_Active.
+	(Is_Controlled): This attribute is now synthesized.
+	(Is_Controlled_Active): This attribute is now an explicit flag rather
+	than a synthesized attribute.	(Set_Is_Controlled): Removed.
+	(Set_Is_Controlled_Active): New routine.
+	(Write_Entity_Flags): Update the output for Flag42.
+	* einfo.ads: Update the documentation of the following attributes:
+	Disable_Controlled, Is_Controlled, Is_Controlled_Active, Is_Controlled
+	and Is_Controlled_Active have swapped their functionality.
+	(Is_Controlled): Renamed to Is_Controlled_Active.
+	(Is_Controlled_Active): Renamed to Is_Controlled.
+	(Set_Is_Controlled): Renamed to Set_Is_Controlled_Active.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Restore the original use of
+	Is_Controlled.
+	* exp_util.adb (Has_Some_Controlled_Component): Code clean up.
+	(Needs_Finalization): Code clean up. Remove the tests for
+	Disable_Controlled because a) they were incorrect as they would reject
+	a type which is sublect to the aspect, but may contain controlled
+	components, and b) they are no longer necessary.
+	* exp_util.ads (Needs_Finalization): Update comment on documentation.
+	* freeze.adb (Freeze_Array_Type): Restore the original use of
+	Is_Controlled.
+	(Freeze_Record_Type): Restore the original use of Is_Controlled.
+	* sem_ch3.adb (Analyze_Object_Declaration): Restore the original use of
+	Is_Controlled.
+	(Array_Type_Declaration): Restore the original use of Is_Controlled.
+	(Build_Derived_Private_Type): Restore the original use of
+	Is_Controlled.
+	(Build_Derived_Record_Type): Set the Is_Controlled_Active flag of a
+	type derived from Ada.Finalization.[Limited_]Controlled.
+	(Build_Derived_Type): Restore the original use of Is_Controlled.
+	(Record_Type_Definition): Restore the original use of Is_Controlled.
+	* sem_ch7.adb (Preserve_Full_Attributes): Restore the original use of
+	Is_Controlled.
+	* sem_ch13.adb (Analyze_Aspect_Disable_Controlled): New routine.
+	(Analyze_Aspect_Specifications): Use routine
+	Analyze_Aspect_Disable_Controlled to process aspect Disable_Controlled.
+
+2017-09-13  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Gnatclean): Fix error when looking for target
+	of <target>-gnatclean
+
+2017-09-13  Javier Miranda  <miranda@adacore.com>
+            Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Complete code that identifies an
+	expanded name that designates the current instance of a child unit in
+	its own body and appears as the prefix of a reference to an entity
+	local to the child unit.
+
 2017-09-12  Bob Duff  <duff@adacore.com>
 
 	* sem_warn.adb: Minor comment.

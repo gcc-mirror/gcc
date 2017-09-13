@@ -82,8 +82,8 @@ package body System.HTable is
       function Get_First return Elmt_Ptr is
       begin
          Iterator_Started := True;
-         Iterator_Index := Table'First;
-         Iterator_Ptr := Table (Iterator_Index);
+         Iterator_Index   := Table'First;
+         Iterator_Ptr     := Table (Iterator_Index);
          return Get_Non_Null;
       end Get_First;
 

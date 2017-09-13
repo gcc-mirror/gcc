@@ -144,7 +144,7 @@ the new document structure.
     - :ref:`The_Cross-Referencing_Tools_gnatxref_and_gnatfind`
     - :ref:`The_Ada_to_HTML_Converter_gnathtml`
     - :ref:`The_Ada-to-XML_Converter_gnat2xml`
-    - :ref:`The_Program_Property_Verifier_gnatcheck`
+    - :ref:`The_Coding_Standard_Verifier_gnatcheck`
     - :ref:`The_GNAT_Metrics_Tool_gnatmetric`
     - :ref:`The_GNAT_Pretty-Printer_gnatpp`
     - :ref:`The_Body_Stub_Generator_gnatstub`

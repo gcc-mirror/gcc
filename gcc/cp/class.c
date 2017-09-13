@@ -1014,7 +1014,7 @@ add_method (tree type, tree method, bool via_using)
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  tree *slot = get_method_slot (type, DECL_NAME (method));
+  tree *slot = get_member_slot (type, DECL_NAME (method));
   tree current_fns = *slot;
 
   gcc_assert (!DECL_EXTERN_C_P (method));
@@ -2818,10 +2818,10 @@ check_for_override (tree decl, tree ctype)
 static void
 warn_hidden (tree t)
 {
-  if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t))
-    for (unsigned ix = method_vec->length (); ix--;)
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (t))
+    for (unsigned ix = member_vec->length (); ix--;)
       {
-	tree fns = (*method_vec)[ix];
+	tree fns = (*member_vec)[ix];
 
 	if (!OVL_P (fns))
 	  continue;
@@ -4594,7 +4594,7 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 
 /* Produce declarations for all appropriate clones of FN.  If
    UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_METHOD_VEC.  */
+   CLASSTYPE_MEMBER_VEC.  */
 
 void
 clone_function_decl (tree fn, bool update_methods)

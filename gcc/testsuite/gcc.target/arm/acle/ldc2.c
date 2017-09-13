@@ -5,7 +5,8 @@
 /* { dg-require-effective-target arm_coproc2_ok } */
 
 #include "arm_acle.h"
-#if (__ARM_FEATURE_COPROC & 0x2) == 0
+#if (__ARM_ARCH < 8 || !defined (__ARM_ARCH_ISA_ARM)) \
+    && (__ARM_FEATURE_COPROC & 0x2) == 0
   #error "__ARM_FEATURE_COPROC does not have correct feature bits set"
 #endif
 

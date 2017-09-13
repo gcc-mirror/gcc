@@ -8986,17 +8986,6 @@ aarch64_override_options_after_change_1 (struct gcc_options *opts)
   if (opts->x_pcrelative_literal_loads == 1)
     aarch64_pcrelative_literal_loads = true;
 
-  /* This is PR70113. When building the Linux kernel with
-     CONFIG_ARM64_ERRATUM_843419, support for relocations
-     R_AARCH64_ADR_PREL_PG_HI21 and R_AARCH64_ADR_PREL_PG_HI21_NC is
-     removed from the kernel to avoid loading objects with possibly
-     offending sequences.  Without -mpc-relative-literal-loads we would
-     generate such relocations, preventing the kernel build from
-     succeeding.  */
-  if (opts->x_pcrelative_literal_loads == 2
-      && TARGET_FIX_ERR_A53_843419)
-    aarch64_pcrelative_literal_loads = true;
-
   /* In the tiny memory model it makes no sense to disallow PC relative
      literal pool loads.  */
   if (aarch64_cmodel == AARCH64_CMODEL_TINY

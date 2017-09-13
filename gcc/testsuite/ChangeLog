@@ -1,3 +1,72 @@
+2017-09-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-char.c: New.
+	* gcc.target/powerpc/fold-vec-ld-double.c: New.
+	* gcc.target/powerpc/fold-vec-ld-float.c: New.
+	* gcc.target/powerpc/fold-vec-ld-int.c: New.
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-ld-short.c: New.
+
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/pr62178.c: Updated testcase
+	to scan for two ldrs and an mla.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59949
+	* g++.dg/cpp0x/lambda/lambda-defarg7.C: New.
+
+2017-09-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/vmov_n_1.c: Update dup scan-assembler.
+
+2017-09-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/acle/cdp.c: Skip __ARM_FEATURE_COPROC check for
+	ARMv8-A and ARMv8-R.
+	* gcc.target/arm/acle/cdp2.c: Likewise.
+	* gcc.target/arm/acle/ldc.c: Likewise.
+	* gcc.target/arm/acle/ldc2.c: Likewise.
+	* gcc.target/arm/acle/ldc2l.c: Likewise.
+	* gcc.target/arm/acle/ldcl.c: Likewise.
+	* gcc.target/arm/acle/mcr.c: Likewise.
+	* gcc.target/arm/acle/mcr2.c: Likewise.
+	* gcc.target/arm/acle/mcrr.c: Likewise.
+	* gcc.target/arm/acle/mcrr2.c: Likewise.
+	* gcc.target/arm/acle/mrc.c: Likewise.
+	* gcc.target/arm/acle/mrc2.c: Likewise.
+	* gcc.target/arm/acle/mrrc.c: Likewise.
+	* gcc.target/arm/acle/mrrc2.c: Likewise.
+	* gcc.target/arm/acle/stc.c: Likewise.
+	* gcc.target/arm/acle/stc2.c: Likewise.
+	* gcc.target/arm/acle/stc2l.c: Likewise.
+	* gcc.target/arm/acle/stcl.c: Likewise.
+	* lib/target-supports.exp:
+	(check_effective_target_arm_coproc1_ok_nocache): Mention ldcl
+	and stcl in the comment.
+	(check_effective_target_arm_coproc2_ok_nocache): Allow Thumb-2 targets
+	and disable Thumb-1 targets.
+	(check_effective_target_arm_coproc3_ok_nocache): Likewise.
+	(check_effective_target_arm_coproc4_ok_nocache): Likewise.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47226
+	* g++.dg/cpp0x/lambda/lambda-variadic4.C: New.
+	* g++.dg/cpp0x/lambda/lambda-variadic5.C: Likewise.
+
+2017-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82128
+	* gimple-fold.c (gimple_fold_call): Update SSA name in-place to
+	default-def to avoid breaking iterator update with the weird
+	interaction with cgraph_update_edges_for_call_stmt_node.
+
+2017-09-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/aarch64/pr63304_1.c: Remove-mno-fix-cortex-a53-843419.
+
 017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/70621
