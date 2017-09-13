@@ -1,3 +1,7 @@
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/simd/vect_str_zero.c: Update testcase.
+
 2017-09-13  Marek Polacek  <polacek@redhat.com>
 
 	PR c/82167

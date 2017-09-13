@@ -1,3 +1,10 @@
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* config/aarch64/constraints.md (Umq): New constraint.
+	* config/aarch64/aarch64-simd.md (*aarch64_simd_mov<mode>):
+	Change to use Umq.
+	(mov<mode>): Update condition.
+
 2017-09-13  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
 
 	* gimple-ssa-store-merging.c (sort_by_bitpos): Compare store order
