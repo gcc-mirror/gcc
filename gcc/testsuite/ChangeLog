@@ -1,3 +1,12 @@
+2017-09-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-char.c: New.
+	* gcc.target/powerpc/fold-vec-ld-double.c: New.
+	* gcc.target/powerpc/fold-vec-ld-float.c: New.
+	* gcc.target/powerpc/fold-vec-ld-int.c: New.
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-ld-short.c: New.
+
 2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* gcc.target/aarch64/pr62178.c: Updated testcase
