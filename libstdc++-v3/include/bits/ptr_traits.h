@@ -146,6 +146,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Ptr, typename _Tp>
     using __ptr_rebind = typename pointer_traits<_Ptr>::template rebind<_Tp>;
 
+  template<typename _Tp>
+    constexpr _Tp*
+    __to_address(_Tp* __ptr) noexcept
+    { return __ptr; }
+
+  template<typename _Ptr>
+    constexpr typename std::pointer_traits<_Ptr>::element_type*
+    __to_address(const _Ptr& __ptr)
+    { return std::__to_address(__ptr.operator->()); }
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

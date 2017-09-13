@@ -81,7 +81,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       construct(_Alloc& __a, _Ptr __p, _Args&&... __args)
       {
-	_Base_type::construct(__a, std::addressof(*__p),
+	_Base_type::construct(__a, std::__to_address(__p),
 			      std::forward<_Args>(__args)...);
       }
 
@@ -89,7 +89,7 @@ template<typename _Alloc, typename = typename _Alloc::value_type>
     template<typename _Ptr>
       static typename std::enable_if<__is_custom_pointer<_Ptr>::value>::type
       destroy(_Alloc& __a, _Ptr __p)
-      { _Base_type::destroy(__a, std::addressof(*__p)); }
+      { _Base_type::destroy(__a, std::__to_address(__p)); }
 
     static _Alloc _S_select_on_copy(const _Alloc& __a)
     { return _Base_type::select_on_container_copy_construction(__a); }

@@ -82,16 +82,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       /// Get the address that the owned pointer refers to.
-      value_type* get() { return _S_raw_ptr(_M_ptr); }
+      value_type* get() { return std::__to_address(_M_ptr); }
 
     private:
-      static value_type* _S_raw_ptr(value_type* __ptr) { return __ptr; }
-
-      template<typename _Ptr>
-	static auto
-	_S_raw_ptr(_Ptr __ptr) -> decltype(_S_raw_ptr(__ptr.operator->()))
-	{ return _S_raw_ptr(__ptr.operator->()); }
-
       _Alloc* _M_alloc;
       pointer _M_ptr;
     };
