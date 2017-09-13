@@ -1,3 +1,9 @@
+2017-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82167
+	* c-typeck.c (c_expr_sizeof_expr): Use the type of expr.value rather
+	than expr.original_type.
+
 2017-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	* c-decl.c (field_decl_cmp, resort_data, resort_field_decl_cmp,
