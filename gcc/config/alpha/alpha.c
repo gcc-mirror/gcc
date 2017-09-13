@@ -1688,6 +1688,21 @@ alpha_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
 
   return NO_REGS;
 }
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.  If MODE is
+   floating-point, use it.  Otherwise, widen to a word like the default.
+   This is needed because we always store integers in FP registers in
+   quadword format.  This whole area is very tricky!  */
+
+static machine_mode
+alpha_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT)
+    return mode;
+  if (GET_MODE_SIZE (mode) >= 4)
+    return mode;
+  return mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (mode), 0).require ();
+}
 
 /* Given SEQ, which is an INSN list, look for any MEMs in either
    a SET_DEST or a SET_SRC and copy the in-struct, unchanging, and
@@ -10062,6 +10077,8 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD alpha_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE alpha_secondary_memory_needed_mode
 
 #undef TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P alpha_scalar_mode_supported_p

@@ -599,13 +599,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
    && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
 			  && GET_MODE_SIZE (MODE) > 8)))
 
-/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
-   because the movsi and movsf patterns don't handle r/f moves.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
- (GET_MODE_BITSIZE (MODE) < 32					\
-  ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()	\
-  : (MODE))
-
 
 /* Stack layout and calling conventions.  */
 

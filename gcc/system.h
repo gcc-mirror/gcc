@@ -913,7 +913,7 @@ extern void fancy_abort (const char *, int, const char *)
 	STORE_BY_PIECES_P TARGET_FLT_EVAL_METHOD			\
 	HARD_REGNO_CALL_PART_CLOBBERED HARD_REGNO_MODE_OK		\
 	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS	\
-	HARD_REGNO_NREGS
+	HARD_REGNO_NREGS SECONDARY_MEMORY_NEEDED_MODE
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */

@@ -2324,29 +2324,7 @@ Do not define this macro if you do not define
 @code{SECONDARY_MEMORY_NEEDED}.
 @end defmac
 
-@defmac SECONDARY_MEMORY_NEEDED_MODE (@var{mode})
-When the compiler needs a secondary memory location to copy between two
-registers of mode @var{mode}, it normally allocates sufficient memory to
-hold a quantity of @code{BITS_PER_WORD} bits and performs the store and
-load operations in a mode that many bits wide and whose class is the
-same as that of @var{mode}.
-
-This is right thing to do on most machines because it ensures that all
-bits of the register are copied and prevents accesses to the registers
-in a narrower mode, which some machines prohibit for floating-point
-registers.
-
-However, this default behavior is not correct on some machines, such as
-the DEC Alpha, that store short integers in floating-point registers
-differently than in integer registers.  On those machines, the default
-widening will not work correctly and you must define this macro to
-suppress that widening in some cases.  See the file @file{alpha.h} for
-details.
-
-Do not define this macro if you do not define
-@code{SECONDARY_MEMORY_NEEDED} or if widening @var{mode} to a mode that
-is @code{BITS_PER_WORD} bits wide is correct for your machine.
-@end defmac
+@hook TARGET_SECONDARY_MEMORY_NEEDED_MODE
 
 @hook TARGET_CLASS_LIKELY_SPILLED_P
 

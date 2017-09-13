@@ -1,3 +1,47 @@
+2017-09-13  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (secondary_memory_needed_mode): New hook:
+	* targhooks.c (default_secondary_memory_needed_mode): Declare.
+	* targhooks.h (default_secondary_memory_needed_mode): New function.
+	* doc/tm.texi.in (SECONDARY_MEMORY_NEEDED_MODE): Replace with...
+	(TARGET_SECONDARY_MEMORY_NEEDED_MODE): ...this.
+	* doc/tm.texi: Regenerate.
+	* lra-constraints.c (check_and_process_move): Use
+	targetm.secondary_memory_needed_mode instead of
+	TARGET_SECONDARY_MEMORY_NEEDED_MODE.
+	(curr_insn_transform): Likewise.
+	* reload.c (get_secondary_mem): Likewise.
+	* config/alpha/alpha.h (SECONDARY_MEMORY_NEEDED_MODE): Delete.
+	* config/alpha/alpha.c (alpha_secondary_memory_needed_mode): New
+	function.
+	(TARGET_SECONDARY_MEMORY_NEEDED_MODE): Redefine.
+	* config/i386/i386.h (SECONDARY_MEMORY_NEEDED_MODE): Delete.
+	* config/i386/i386.c (ix86_secondary_memory_needed_mode): New function.
+	(TARGET_SECONDARY_MEMORY_NEEDED_MODE): Redefine.
+	* config/powerpcspe/powerpcspe.h (SECONDARY_MEMORY_NEEDED_MODE):
+	Delete.
+	* config/powerpcspe/powerpcspe-protos.h
+	(rs6000_secondary_memory_needed_mode): Delete.
+	* config/powerpcspe/powerpcspe.c
+	(TARGET_SECONDARY_MEMORY_NEEDED_MODE): Redefine.
+	(rs6000_secondary_memory_needed_mode): Make static.
+	* config/rs6000/rs6000.h (SECONDARY_MEMORY_NEEDED_MODE): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_secondary_memory_needed_mode):
+	Delete.
+	* config/rs6000/rs6000.c (TARGET_SECONDARY_MEMORY_NEEDED_MODE):
+	Redefine.
+	(rs6000_secondary_memory_needed_mode): Make static.
+	* config/s390/s390.h (SECONDARY_MEMORY_NEEDED_MODE): Delete.
+	* config/s390/s390.c (s390_secondary_memory_needed_mode): New function.
+	(TARGET_SECONDARY_MEMORY_NEEDED_MODE): Redefine.
+	* config/sparc/sparc.h (SECONDARY_MEMORY_NEEDED_MODE): Delete.
+	* config/sparc/sparc.c (TARGET_SECONDARY_MEMORY_NEEDED_MODE):
+	Redefine.
+	(sparc_secondary_memory_needed_mode): New function.
+	* system.h (TARGET_SECONDARY_MEMORY_NEEDED_MODE): Poison.
+
 2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	* config/aarch64/constraints.md (Umq): New constraint.

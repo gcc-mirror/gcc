@@ -4409,6 +4409,19 @@ s390_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
+
+   get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
+   because the movsi and movsf patterns don't handle r/f moves.  */
+
+static machine_mode
+s390_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (GET_MODE_BITSIZE (mode) < 32)
+    return mode_for_size (32, GET_MODE_CLASS (mode), 0).require ();
+  return mode;
+}
+
 /* Generate code to load SRC, which is PLUS that is not a
    legitimate operand for the LA instruction, into TARGET.
    SCRATCH may be used as scratch register.  */
@@ -15959,6 +15972,8 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD s390_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE s390_secondary_memory_needed_mode
 
 #undef TARGET_LIBGCC_CMP_RETURN_MODE
 #define TARGET_LIBGCC_CMP_RETURN_MODE s390_libgcc_cmp_return_mode
