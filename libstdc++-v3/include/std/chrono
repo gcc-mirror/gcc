@@ -558,7 +558,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	{ }
 
 	// conversions
-	template<typename _Dur2>
+	template<typename _Dur2,
+		 typename = _Require<is_convertible<_Dur2, _Dur>>>
 	  constexpr time_point(const time_point<clock, _Dur2>& __t)
 	  : __d(__t.time_since_epoch())
 	  { }

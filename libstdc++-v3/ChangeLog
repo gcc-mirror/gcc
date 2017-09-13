@@ -1,5 +1,12 @@
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81468
+	* include/std/chrono (time_point(const time_point<_Dur2>&)): Add
+	missing constraint from LWG DR 1177.
+	* testsuite/20_util/duration/cons/dr1177.cc: New.
+	* testsuite/20_util/time_point/cons/81468.cc: New.
+	* testsuite/20_util/duration/literals/range.cc: Update dg-error line.
+
 	* doc/doxygen/mainpage.html: Fix broken URLs.
 
 	PR libstdc++/81835
