@@ -215,24 +215,20 @@ package body SPARK_Specific is
            --  Packages
 
            or else Nkind_In (N, N_Package_Body,
-                                N_Package_Body_Stub,
                                 N_Package_Declaration)
            --  Protected units
 
            or else Nkind_In (N, N_Protected_Body,
-                                N_Protected_Body_Stub,
                                 N_Protected_Type_Declaration)
 
            --  Subprograms
 
            or else Nkind_In (N, N_Subprogram_Body,
-                                N_Subprogram_Body_Stub,
                                 N_Subprogram_Declaration)
 
            --  Task units
 
            or else Nkind_In (N, N_Task_Body,
-                                N_Task_Body_Stub,
                                 N_Task_Type_Declaration)
          then
             Add_SPARK_Scope (N);
@@ -310,8 +306,8 @@ package body SPARK_Specific is
       function Get_Entity_Type (E : Entity_Id) return Character;
       --  Return a character representing the type of entity
 
-      function Get_Scope_Num (N : Entity_Id) return Nat;
-      --  Return the scope number associated to entity N
+      function Get_Scope_Num (E : Entity_Id) return Nat;
+      --  Return the scope number associated with the entity E
 
       function Is_Constant_Object_Without_Variable_Input
         (E : Entity_Id) return Boolean;
@@ -339,8 +335,8 @@ package body SPARK_Specific is
       procedure Move (From : Natural; To : Natural);
       --  Move procedure for Sort call
 
-      procedure Set_Scope_Num (N : Entity_Id; Num : Nat);
-      --  Associate entity N to scope number Num
+      procedure Set_Scope_Num (E : Entity_Id; Num : Nat);
+      --  Associate entity E with the scope number Num
 
       procedure Update_Scope_Range
         (S    : Scope_Index;
@@ -353,16 +349,10 @@ package body SPARK_Specific is
       No_Scope : constant Nat := 0;
       --  Initial scope counter
 
-      type Scope_Rec is record
-         Num    : Nat;
-         Entity : Entity_Id;
-      end record;
-      --  Type used to relate an entity and a scope number
-
       package Scopes is new GNAT.HTable.Simple_HTable
         (Header_Num => Entity_Hashed_Range,
-         Element    => Scope_Rec,
-         No_Element => (Num => No_Scope, Entity => Empty),
+         Element    => Nat,
+         No_Element => No_Scope,
          Key        => Entity_Id,
          Hash       => Entity_Hash,
          Equal      => "=");
@@ -411,10 +401,7 @@ package body SPARK_Specific is
       -- Get_Scope_Num --
       -------------------
 
-      function Get_Scope_Num (N : Entity_Id) return Nat is
-      begin
-         return Scopes.Get (N).Num;
-      end Get_Scope_Num;
+      function Get_Scope_Num (E : Entity_Id) return Nat renames Scopes.Get;
 
       -----------------------------------------------
       -- Is_Constant_Object_Without_Variable_Input --
@@ -423,8 +410,6 @@ package body SPARK_Specific is
       function Is_Constant_Object_Without_Variable_Input
         (E : Entity_Id) return Boolean
       is
-         Result : Boolean;
-
       begin
          case Ekind (E) is
 
@@ -445,23 +430,21 @@ package body SPARK_Specific is
                   end if;
 
                   if Is_Imported (E) then
-                     Result := False;
+                     return False;
                   else
                      pragma Assert (Present (Expression (Decl)));
-                     Result := Is_Static_Expression (Expression (Decl));
+                     return Is_Static_Expression (Expression (Decl));
                   end if;
                end;
 
             when E_In_Parameter
                | E_Loop_Parameter
             =>
-               Result := True;
+               return True;
 
             when others =>
-               Result := False;
+               return False;
          end case;
-
-         return Result;
       end Is_Constant_Object_Without_Variable_Input;
 
       ----------------------------
@@ -663,10 +646,7 @@ package body SPARK_Specific is
       -- Set_Scope_Num --
       -------------------
 
-      procedure Set_Scope_Num (N : Entity_Id; Num : Nat) is
-      begin
-         Scopes.Set (K => N, E => Scope_Rec'(Num => Num, Entity => N));
-      end Set_Scope_Num;
+      procedure Set_Scope_Num (E : Entity_Id; Num : Nat) renames Scopes.Set;
 
       ------------------------
       -- Update_Scope_Range --
@@ -1430,7 +1410,11 @@ package body SPARK_Specific is
               or else Nkind (N) in N_Later_Decl_Item
               or else Nkind (N) = N_Entry_Body
             then
-               Process (N);
+               if Nkind (N) in N_Body_Stub then
+                  Process (Get_Body_From_Stub (N));
+               else
+                  Process (N);
+               end if;
             end if;
 
             Traverse_Declaration_Or_Statement (N);

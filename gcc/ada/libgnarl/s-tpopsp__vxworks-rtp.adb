@@ -72,9 +72,29 @@ package body Specific is
    -- Self --
    ----------
 
+   --  To make Ada tasks and C threads interoperate better, we have added some
+   --  functionality to Self. Suppose a C main program (with threads) calls an
+   --  Ada procedure and the Ada procedure calls the tasking runtime system.
+   --  Eventually, a call will be made to self. Since the call is not coming
+   --  from an Ada task, there will be no corresponding ATCB.
+
+   --  What we do in Self is to catch references that do not come from
+   --  recognized Ada tasks, and create an ATCB for the calling thread.
+
+   --  The new ATCB will be "detached" from the normal Ada task master
+   --  hierarchy, much like the existing implicitly created signal-server
+   --  tasks.
+
    function Self return Task_Id is
+      Result : constant Task_Id := To_Task_Id (tlsValueGet (ATCB_Key));
    begin
-      return To_Task_Id (tlsValueGet (ATCB_Key));
+      if Result /= null then
+         return Result;
+      else
+         --  If the value is Null then it is a non-Ada task
+
+         return Register_Foreign_Thread;
+      end if;
    end Self;
 
 end Specific;
