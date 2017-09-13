@@ -2000,7 +2000,7 @@ struct GTY(()) lang_type {
   tree as_base;
   vec<tree, va_gc> *pure_virtuals;
   tree friend_classes;
-  vec<tree, va_gc> * GTY((reorder ("resort_type_method_vec"))) methods;
+  vec<tree, va_gc> * GTY((reorder ("resort_type_member_vec"))) members;
   tree key_method;
   tree decl_list;
   tree befriending_classes;
@@ -2125,19 +2125,11 @@ struct GTY(()) lang_type {
    if there is no key function or if this is a class template */
 #define CLASSTYPE_KEY_METHOD(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->key_method)
 
-/* Vector member functions defined in this class.  Each element is
-   either a FUNCTION_DECL, a TEMPLATE_DECL, or an OVERLOAD.  All
-   functions with the same name end up in the same slot.  The first
-   two elements are for constructors, and destructors, respectively.
-   All template conversion operators to innermost template dependent
-   types are overloaded on the next slot, if they exist.  Note, the
-   names for these functions will not all be the same.  The
-   non-template conversion operators & templated conversions to
-   non-innermost template types are next, followed by ordinary member
-   functions.  There may be empty entries at the end of the vector.
-   The conversion operators are unsorted. The ordinary member
-   functions are sorted, once the class is complete.  */
-#define CLASSTYPE_METHOD_VEC(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->methods)
+/* Vector of members.  During definition, it is unordered and only
+   member functions are present.  After completion it is sorted and
+   contains both member functions and non-functions.  STAT_HACK is
+   involved to preserve oneslot per name invariant.  */
+#define CLASSTYPE_MEMBER_VEC(NODE) (LANG_TYPE_CLASS_CHECK (NODE)->members)
 
 /* For class templates, this is a TREE_LIST of all member data,
    functions, types, and friends in the order of declaration.

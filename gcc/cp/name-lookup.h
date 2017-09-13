@@ -321,8 +321,8 @@ extern tree do_class_using_decl (tree, tree);
 extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
 extern tree get_class_binding_direct (tree, tree, int type_or_fns = -1);
 extern tree get_class_binding (tree, tree, int type_or_fns = -1);
-extern tree *get_method_slot (tree klass, tree name);
-extern void resort_type_method_vec (void *, void *,
+extern tree *get_member_slot (tree klass, tree name);
+extern void resort_type_member_vec (void *, void *,
 				    gt_pointer_operator, void *);
 extern void set_class_bindings (tree, unsigned extra = 0);
 extern void insert_late_enum_def_bindings (tree, tree);
