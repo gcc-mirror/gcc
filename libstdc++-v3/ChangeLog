@@ -1,5 +1,10 @@
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81835
+	* doc/xml/manual/extensions.xml: Replace unstable URL.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+	* libsupc++/cxxabi.h (__cxa_demangle): Fix broken URL.
+
 	* include/bits/allocated_ptr.h (__allocated_ptr::get): Use
 	__to_address.
 	(__allocated_ptr::_S_raw_ptr): Remove.
