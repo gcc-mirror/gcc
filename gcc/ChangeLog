@@ -1,3 +1,9 @@
+2017-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82154
+	* stmt.c (expand_sjlj_dispatch_table): Use CASE_LOW when
+	CASE_HIGH is NULL_TREE.
+
 2017-09-13  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
