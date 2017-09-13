@@ -334,7 +334,7 @@ package body Einfo is
    --    Body_Needed_For_SAL             Flag40
 
    --    Treat_As_Volatile               Flag41
-   --    Is_Controlled                   Flag42
+   --    Is_Controlled_Active            Flag42
    --    Has_Controlled_Component        Flag43
    --    Is_Pure                         Flag44
    --    In_Private_Part                 Flag45
@@ -2189,10 +2189,10 @@ package body Einfo is
       return Flag76 (Id);
    end Is_Constructor;
 
-   function Is_Controlled (Id : E) return B is
+   function Is_Controlled_Active (Id : E) return B is
    begin
       return Flag42 (Base_Type (Id));
-   end Is_Controlled;
+   end Is_Controlled_Active;
 
    function Is_Controlling_Formal (Id : E) return B is
    begin
@@ -5341,11 +5341,11 @@ package body Einfo is
       Set_Flag76 (Id, V);
    end Set_Is_Constructor;
 
-   procedure Set_Is_Controlled (Id : E; V : B := True) is
+   procedure Set_Is_Controlled_Active (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
       Set_Flag42 (Id, V);
-   end Set_Is_Controlled;
+   end Set_Is_Controlled_Active;
 
    procedure Set_Is_Controlling_Formal (Id : E; V : B := True) is
    begin
@@ -7902,14 +7902,14 @@ package body Einfo is
         K = E_Constant or else K = E_In_Parameter or else K = E_Loop_Parameter;
    end Is_Constant_Object;
 
-   --------------------------
-   -- Is_Controlled_Active --
-   --------------------------
+   -------------------
+   -- Is_Controlled --
+   -------------------
 
-   function Is_Controlled_Active (Id : E) return B is
+   function Is_Controlled (Id : E) return B is
    begin
-      return Is_Controlled (Id) and then not Disable_Controlled (Id);
-   end Is_Controlled_Active;
+      return Is_Controlled_Active (Id) and then not Disable_Controlled (Id);
+   end Is_Controlled;
 
    --------------------
    -- Is_Discriminal --
@@ -9549,7 +9549,7 @@ package body Einfo is
       W ("Is_Constr_Subt_For_U_Nominal",    Flag80  (Id));
       W ("Is_Constrained",                  Flag12  (Id));
       W ("Is_Constructor",                  Flag76  (Id));
-      W ("Is_Controlled",                   Flag42  (Id));
+      W ("Is_Controlled_Active",            Flag42  (Id));
       W ("Is_Controlling_Formal",           Flag97  (Id));
       W ("Is_Descendant_Of_Address",        Flag223 (Id));
       W ("Is_DIC_Procedure",                Flag132 (Id));

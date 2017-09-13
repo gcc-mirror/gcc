@@ -1595,6 +1595,9 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Convention;
             --  Perform analysis of aspect Convention
 
+            procedure Analyze_Aspect_Disable_Controlled;
+            --  Perform analysis of aspect Disable_Controlled
+
             procedure Analyze_Aspect_Export_Import;
             --  Perform analysis of aspects Export or Import
 
@@ -1677,6 +1680,60 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                end if;
             end Analyze_Aspect_Convention;
+
+            ---------------------------------------
+            -- Analyze_Aspect_Disable_Controlled --
+            ---------------------------------------
+
+            procedure Analyze_Aspect_Disable_Controlled is
+            begin
+               --  The aspect applies only to controlled records
+
+               if not (Ekind (E) = E_Record_Type
+                        and then Is_Controlled_Active (E))
+               then
+                  Error_Msg_N
+                    ("aspect % requires controlled record type", Aspect);
+                  return;
+               end if;
+
+               --  Preanalyze the expression (if any) when the aspect resides
+               --  in a generic unit.
+
+               if Inside_A_Generic then
+                  if Present (Expr) then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+               --  Otherwise the aspect resides in a nongeneric context
+
+               else
+                  --  A controlled record type loses its controlled semantics
+                  --  when the expression statically evaluates to True.
+
+                  if Present (Expr) then
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+
+                     if Is_OK_Static_Expression (Expr) then
+                        if Is_True (Static_Boolean (Expr)) then
+                           Set_Disable_Controlled (E);
+                        end if;
+
+                     --  Otherwise the expression is not static
+
+                     else
+                        Error_Msg_N
+                          ("expression of aspect % must be static", Aspect);
+                     end if;
+
+                  --  Otherwise the aspect appears without an expression and
+                  --  defaults to True.
+
+                  else
+                     Set_Disable_Controlled (E);
+                  end if;
+               end if;
+            end Analyze_Aspect_Disable_Controlled;
 
             ----------------------------------
             -- Analyze_Aspect_Export_Import --
@@ -3468,34 +3525,7 @@ package body Sem_Ch13 is
                   --  Disable_Controlled
 
                   elsif A_Id = Aspect_Disable_Controlled then
-                     if Ekind (E) /= E_Record_Type
-                       or else not Is_Controlled (E)
-                     then
-                        Error_Msg_N
-                          ("aspect % requires controlled record type", Aspect);
-                        goto Continue;
-                     end if;
-
-                     --  If we're in a generic template, we don't want to try
-                     --  to disable controlled types, because typical usage is
-                     --  "Disable_Controlled => not <some_check>'Enabled", and
-                     --  the value of Enabled is not known until we see a
-                     --  particular instance. In such a context, we just need
-                     --  to preanalyze the expression for legality.
-
-                     if Expander_Active then
-                        Analyze_And_Resolve (Expr, Standard_Boolean);
-
-                        if not Present (Expr)
-                          or else Is_True (Static_Boolean (Expr))
-                        then
-                           Set_Disable_Controlled (E);
-                        end if;
-
-                     elsif Serious_Errors_Detected = 0 then
-                        Preanalyze_And_Resolve (Expr, Standard_Boolean);
-                     end if;
-
+                     Analyze_Aspect_Disable_Controlled;
                      goto Continue;
                   end if;
 
@@ -10839,8 +10869,8 @@ package body Sem_Ch13 is
 
       E : constant Entity_Id := Entity (N);
 
-      Non_Generic_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
-      --  True in non-generic case. Some of the processing here is skipped
+      Nongeneric_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
+      --  True in nongeneric case. Some of the processing here is skipped
       --  for the generic case since it is not needed. Basically in the
       --  generic case, we only need to do stuff that might generate error
       --  messages or warnings.
@@ -10867,7 +10897,7 @@ package body Sem_Ch13 is
       --  This is not needed in the generic case
 
       if Ada_Version >= Ada_2005
-        and then Non_Generic_Case
+        and then Nongeneric_Case
         and then Ekind (E) = E_Record_Type
         and then Is_Tagged_Type (E)
         and then not Is_Interface (E)
@@ -11003,7 +11033,7 @@ package body Sem_Ch13 is
       --  predefined primitives.
 
       if Is_Type (E)
-        and then Non_Generic_Case
+        and then Nongeneric_Case
         and then not Within_Internal_Subprogram
         and then Has_Predicates (E)
       then
@@ -11019,7 +11049,7 @@ package body Sem_Ch13 is
 
       --  This is also not needed in the generic case
 
-      if Non_Generic_Case
+      if Nongeneric_Case
         and then Has_Delayed_Aspects (E)
         and then Scope (E) = Current_Scope
       then

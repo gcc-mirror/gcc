@@ -2574,7 +2574,7 @@ package body Freeze is
 
             --  Propagate flags for component type
 
-            if Is_Controlled_Active (Component_Type (Arr))
+            if Is_Controlled (Component_Type (Arr))
               or else Has_Controlled_Component (Ctyp)
             then
                Set_Has_Controlled_Component (Arr);
@@ -4508,7 +4508,7 @@ package body Freeze is
                    (Has_Controlled_Component (Etype (Comp))
                      or else
                        (Chars (Comp) /= Name_uParent
-                         and then Is_Controlled_Active (Etype (Comp)))
+                         and then Is_Controlled (Etype (Comp)))
                      or else
                        (Is_Protected_Type (Etype (Comp))
                          and then

@@ -6013,6 +6013,7 @@ package body Sem_Ch8 is
               and then Ekind (Scope (Id)) = E_Package
               and then Ekind (Id) = E_Package
               and then Renamed_Entity (Id) = Scope (Id)
+              and then Is_Immediately_Visible (P_Name)
             then
                Is_New_Candidate := True;
 
