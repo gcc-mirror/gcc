@@ -1,3 +1,8 @@
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/pr62178.c: Updated testcase
+	to scan for two ldrs and an mla.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/59949
