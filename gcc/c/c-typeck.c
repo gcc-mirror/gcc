@@ -2909,7 +2909,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
 	  if (warning_at (loc, OPT_Wsizeof_array_argument,
 			  "%<sizeof%> on array function parameter %qE will "
 			  "return size of %qT", expr.value,
-			  expr.original_type))
+			  TREE_TYPE (expr.value)))
 	    inform (DECL_SOURCE_LOCATION (expr.value), "declared here");
 	}
       tree folded_expr = c_fully_fold (expr.value, require_constant_value,
