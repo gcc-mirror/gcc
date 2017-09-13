@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *              Copyright (C) 2017, Free Software Foundation, Inc.          *
+ *              Copyright (C) 2016, Free Software Foundation, Inc.          *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -38,6 +38,10 @@
 
 #define CDTOR_VISIBILITY static
 #include "vx_crtbegin.inc"
+
+/* Diab C++ for ppc64-vx7 crtbegin wants to declare a
+   char dso_handle = 0;
+   here. ???  */
 
 typedef void (*func_ptr) (void);
 func_ptr _dtors [] = {DTOR_NAME, 0};
