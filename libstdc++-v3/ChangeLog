@@ -1,3 +1,10 @@
+2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81835
+	* doc/xml/manual/extensions.xml: Replace unstable URL.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+	* libsupc++/cxxabi.h (__cxa_demangle): Fix broken URL.
+
 2017-09-05  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/20_util/owner_less/noexcept.cc: Remove owner_less<void>
