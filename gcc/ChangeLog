@@ -1,5 +1,10 @@
 2017-09-13  Richard Biener  <rguenther@suse.de>
 
+	* dwarf2out.c (output_die_symbol): Remove.
+	(output_die): Do not output a DIEs symbol.
+
+2017-09-13  Richard Biener  <rguenther@suse.de>
+
 	PR middle-end/82128
 	* gimple-fold.c (gimple_fold_call): Update SSA name in-place to
 	default-def to avoid breaking iterator update with the weird

@@ -3472,7 +3472,6 @@ static enum dwarf_form value_format (dw_attr_node *);
 static void output_value_format (dw_attr_node *);
 static void output_abbrev_section (void);
 static void output_die_abbrevs (unsigned long, dw_die_ref);
-static void output_die_symbol (dw_die_ref);
 static void output_die (dw_die_ref);
 static void output_compilation_unit_header (enum dwarf_unit_type);
 static void output_comp_unit (dw_die_ref, int, const unsigned char *);
@@ -9625,27 +9624,6 @@ output_abbrev_section (void)
   dw2_asm_output_data (1, 0, NULL);
 }
 
-/* Output a symbol we can use to refer to this DIE from another CU.  */
-
-static inline void
-output_die_symbol (dw_die_ref die)
-{
-  const char *sym = die->die_id.die_symbol;
-
-  gcc_assert (!die->comdat_type_p);
-
-  if (sym == 0)
-    return;
-
-  if (strncmp (sym, DIE_LABEL_PREFIX, sizeof (DIE_LABEL_PREFIX) - 1) == 0)
-    /* We make these global, not weak; if the target doesn't support
-       .linkonce, it doesn't support combining the sections, so debugging
-       will break.  */
-    targetm.asm_out.globalize_label (asm_out_file, sym);
-
-  ASM_OUTPUT_LABEL (asm_out_file, sym);
-}
-
 /* Return a new location list, given the begin and end range, and the
    expression.  */
 
@@ -10003,15 +9981,6 @@ output_die (dw_die_ref die)
   dw_die_ref c;
   unsigned long size;
   unsigned ix;
-
-  /* If someone in another CU might refer to us, set up a symbol for
-     them to point to.  */
-  if (! die->comdat_type_p && die->die_id.die_symbol
-      /* Don't output the symbol twice.  For LTO we want the label
-         on the section beginning, not on the actual DIE.  */
-      && ((!flag_generate_lto && !flag_generate_offload)
-	  || die->die_tag != DW_TAG_compile_unit))
-    output_die_symbol (die);
 
   dw2_asm_output_data_uleb128 (die->die_abbrev, "(DIE (%#lx) %s)",
 			       (unsigned long)die->die_offset,
