@@ -1,3 +1,32 @@
+2017-09-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/acle/cdp.c: Skip __ARM_FEATURE_COPROC check for
+	ARMv8-A and ARMv8-R.
+	* gcc.target/arm/acle/cdp2.c: Likewise.
+	* gcc.target/arm/acle/ldc.c: Likewise.
+	* gcc.target/arm/acle/ldc2.c: Likewise.
+	* gcc.target/arm/acle/ldc2l.c: Likewise.
+	* gcc.target/arm/acle/ldcl.c: Likewise.
+	* gcc.target/arm/acle/mcr.c: Likewise.
+	* gcc.target/arm/acle/mcr2.c: Likewise.
+	* gcc.target/arm/acle/mcrr.c: Likewise.
+	* gcc.target/arm/acle/mcrr2.c: Likewise.
+	* gcc.target/arm/acle/mrc.c: Likewise.
+	* gcc.target/arm/acle/mrc2.c: Likewise.
+	* gcc.target/arm/acle/mrrc.c: Likewise.
+	* gcc.target/arm/acle/mrrc2.c: Likewise.
+	* gcc.target/arm/acle/stc.c: Likewise.
+	* gcc.target/arm/acle/stc2.c: Likewise.
+	* gcc.target/arm/acle/stc2l.c: Likewise.
+	* gcc.target/arm/acle/stcl.c: Likewise.
+	* lib/target-supports.exp:
+	(check_effective_target_arm_coproc1_ok_nocache): Mention ldcl
+	and stcl in the comment.
+	(check_effective_target_arm_coproc2_ok_nocache): Allow Thumb-2 targets
+	and disable Thumb-1 targets.
+	(check_effective_target_arm_coproc3_ok_nocache): Likewise.
+	(check_effective_target_arm_coproc4_ok_nocache): Likewise.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/47226
