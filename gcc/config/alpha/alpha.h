@@ -486,16 +486,6 @@ enum reg_class {
  (! TARGET_FIX && (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS) \
                    || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS)))
 
-/* Specify the mode to be used for memory when a secondary memory
-   location is needed.  If MODE is floating-point, use it.  Otherwise,
-   widen to a word like the default.  This is needed because we always
-   store integers in FP registers in quadword format.  This whole
-   area is very tricky! */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT ? (MODE)		\
-   : GET_MODE_SIZE (MODE) >= 4 ? (MODE)			\
-   : mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0).require ())
-
 /* Return the class of registers that cannot change mode from FROM to TO.  */
 
 #define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\

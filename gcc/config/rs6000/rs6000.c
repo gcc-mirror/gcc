@@ -1876,6 +1876,8 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD rs6000_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE rs6000_secondary_memory_needed_mode
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P rs6000_legitimate_address_p
@@ -19242,10 +19244,9 @@ mems_ok_for_quad_peep (rtx mem1, rtx mem2)
   return 1;
 }
 
-/* Return the mode to be used for memory when a secondary memory
-   location is needed.  For SDmode values we need to use DDmode, in
-   all other cases we can use the same mode.  */
-machine_mode
+/* Implement TARGET_SECONDARY_RELOAD_NEEDED_MODE.  For SDmode values we
+   need to use DDmode, in all other cases we can use the same mode.  */
+static machine_mode
 rs6000_secondary_memory_needed_mode (machine_mode mode)
 {
   if (lra_in_progress && mode == SDmode)

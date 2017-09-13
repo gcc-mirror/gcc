@@ -574,13 +574,7 @@ get_secondary_mem (rtx x ATTRIBUTE_UNUSED, machine_mode mode,
      locations do not support short load and stores from all registers
      (e.g., FP registers).  */
 
-#ifdef SECONDARY_MEMORY_NEEDED_MODE
-  mode = SECONDARY_MEMORY_NEEDED_MODE (mode);
-#else
-  if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD && INTEGRAL_MODE_P (mode))
-    mode = mode_for_size (BITS_PER_WORD,
-			  GET_MODE_CLASS (mode), 0).require ();
-#endif
+  mode = targetm.secondary_memory_needed_mode (mode);
 
   /* If we already have made a MEM for this operand in MODE, return it.  */
   if (secondary_memlocs_elim[(int) mode][opnum] != 0)

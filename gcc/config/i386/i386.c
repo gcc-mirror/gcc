@@ -41162,6 +41162,20 @@ ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return inline_secondary_memory_needed (class1, class2, mode, strict);
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
+
+   get_secondary_mem widens integral modes to BITS_PER_WORD.
+   There is no need to emit full 64 bit move on 64 bit targets
+   for integral modes that can be moved using 32 bit move.  */
+
+static machine_mode
+ix86_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (GET_MODE_BITSIZE (mode) < 32 && INTEGRAL_MODE_P (mode))
+    return mode_for_size (32, GET_MODE_CLASS (mode), 0).require ();
+  return mode;
+}
+
 /* Implement the TARGET_CLASS_MAX_NREGS hook.
 
    On the 80386, this is the size of MODE in words,
@@ -53206,6 +53220,8 @@ ix86_run_selftests (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE ix86_secondary_memory_needed_mode
 
 #undef TARGET_CLASS_MAX_NREGS
 #define TARGET_CLASS_MAX_NREGS ix86_class_max_nregs

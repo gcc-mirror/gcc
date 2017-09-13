@@ -5265,6 +5265,30 @@ forwarding logic, you can set @code{sri->extra_cost} to a negative amount.",
   secondary_reload_info *sri),
  default_secondary_reload)
 
+DEFHOOK
+(secondary_memory_needed_mode,
+ "If @code{SECONDARY_MEMORY_NEEDED} tells the compiler to use memory\n\
+when moving between two particular registers of mode @var{mode},\n\
+this hook specifies the mode that the memory should have.\n\
+\n\
+The default depends on @code{TARGET_LRA_P}.  Without LRA, the default\n\
+is to use a word-sized mode for integral modes that are smaller than a\n\
+a word.  This is right thing to do on most machines because it ensures\n\
+that all bits of the register are copied and prevents accesses to the\n\
+registers in a narrower mode, which some machines prohibit for\n\
+floating-point registers.\n\
+\n\
+However, this default behavior is not correct on some machines, such as\n\
+the DEC Alpha, that store short integers in floating-point registers\n\
+differently than in integer registers.  On those machines, the default\n\
+widening will not work correctly and you must define this hook to\n\
+suppress that widening in some cases.  See the file @file{alpha.c} for\n\
+details.\n\
+\n\
+With LRA, the default is to use @var{mode} unmodified.",
+ machine_mode, (machine_mode mode),
+ default_secondary_memory_needed_mode)
+
 /* Given an rtx X being reloaded into a reg required to be in class CLASS,
    return the class of reg to actually use.  */
 DEFHOOK
