@@ -63,6 +63,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h" /* for fnotice */
 #include "stringpool.h"
 #include "attribs.h"
+#include "ssa-range-gen.h"
 
 using namespace gcc;
 
@@ -2554,6 +2555,12 @@ execute_one_pass (opt_pass *pass)
 
   if (!current_function_decl)
     symtab->process_new_functions ();
+
+  if (pass->name && !strcmp (pass->name, "ssa"))
+    {
+      path_ranger r;
+      r.exercise (dump_file);
+    }
 
   pass_fini_dump_file (pass);
 
