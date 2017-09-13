@@ -106,14 +106,20 @@ ada/%.o: ada/gcc-interface/%.c
 
 # Function that dumps the dependencies of an Ada object. Dependency only work
 # fully if the compiler support -gnatd.n. Otherwise a fallback mechanism is
-# used. The fallback mechanism add dependency on all ada sources in the same
-# directory as the original source.
+# used. The fallback mechanism parse the ali files to get the list of
+# dependencies and try to guess their location. If the location cannot be found
+# then the dependency is ignored.
 ifeq ($(findstring -gnatd.n,$(ALL_ADAFLAGS)),)
 ADA_DEPS=\
    mkdir -p $(dir $@)/$(DEPDIR); \
    (o="$@: $<"; \
-    for d in $(dir $<)/*.ad[sb]; do \
-       o="$$o $$d"; \
+    a="`echo $@ | sed -e 's/.o$$/.ali/'`"; \
+    for d in `cat $$a | sed -ne 's;^D \([a-z0-9_\.-]*\).*;\1;gp'`; do \
+       for l in ada $(srcdir)/ada ada/libgnat $(srcdir)/ada/libgnat; do \
+          if test -f $$l/$$d; then \
+             o="$$o $$l/$$d"; \
+          fi; \
+       done; \
     done; \
     echo "$$o"; echo) \
     >$(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@))
@@ -121,11 +127,9 @@ ADA_OUTPUT_OPTION = $(OUTPUT_OPTION)
 else
 ADA_DEPS=\
    mkdir -p $(dir $@)/$(DEPDIR); \
-   (o="$@: $<"; \
-    for d in `cat $@.gnatd.n`; do \
-       o="$$o $$d"; \
-    done; \
-    echo "$$o"; echo) \
+   (echo "$@: $< " | tr -d '\015' | tr -d '\n'; \
+    cat $@.gnatd.n | tr -d '\015' | tr '\n' ' '; \
+    echo; echo) \
    >$(dir $@)/$(DEPDIR)/$(patsubst %.o,%.Po,$(notdir $@))
 ADA_OUTPUT_OPTION = $(OUTPUT_OPTION) > $@.gnatd.n
 endif
@@ -861,9 +865,11 @@ ada.uninstall:
 
 ada.mostlyclean:
 	-$(RM) ada/*$(objext) ada/*.ali ada/b_gnat*.ads ada/b_gnat*.adb
+	-$(RM) ada/*$(objext).gnatd.n
 	-$(RM) ada/*$(coverageexts)
 	-$(RM) ada/sdefault.adb ada/stamp-sdefault ada/stamp-snames
 	-$(RMDIR) ada/tools
+	-$(RMDIR) ada/libgnat
 	-$(RM) gnatbind$(exeext) gnat1$(exeext)
 ada.clean:
 ada.distclean:
