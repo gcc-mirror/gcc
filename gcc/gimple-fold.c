@@ -3862,24 +3862,18 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  gimple *new_stmt = gimple_build_call (fndecl, 0);
 		  gimple_set_location (new_stmt, gimple_location (stmt));
+		  /* If the call had a SSA name as lhs morph that into
+		     an uninitialized value.  */
 		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		    {
 		      tree var = create_tmp_var (TREE_TYPE (lhs));
-		      tree def = get_or_create_ssa_default_def (cfun, var);
-
-		      /* To satisfy condition for
-			 cgraph_update_edges_for_call_stmt_node,
-			 we need to preserve GIMPLE_CALL statement
-			 at position of GSI iterator.  */
-		      update_call_from_tree (gsi, def);
-		      gsi_insert_before (gsi, new_stmt, GSI_NEW_STMT);
+		      SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, var);
+		      SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
+		      set_ssa_default_def (cfun, var, lhs);
 		    }
-		  else
-		    {
-		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-		      gsi_replace (gsi, new_stmt, false);
-		    }
+		  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		  gsi_replace (gsi, new_stmt, false);
 		  return true;
 		}
 	    }

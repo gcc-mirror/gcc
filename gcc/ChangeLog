@@ -1,5 +1,12 @@
 2017-09-13  Richard Biener  <rguenther@suse.de>
 
+	PR middle-end/82128
+	* gimple-fold.c (gimple_fold_call): Update SSA name in-place to
+	default-def to avoid breaking iterator update with the weird
+	interaction with cgraph_update_edges_for_call_stmt_node.
+
+2017-09-13  Richard Biener  <rguenther@suse.de>
+
 	* tree-cfg.c (verify_gimple_assign_binary): Add verification
 	for WIDEN_SUM_EXPR, VEC_WIDEN_MULT_{HI,LO,EVEN,ODD}_EXPR,
 	VEC_PACK_{TRUNC,SAT,FIX_TRUNC}_EXPR.
