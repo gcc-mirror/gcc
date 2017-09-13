@@ -1,3 +1,9 @@
+2017-09-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* config/aarch64/aarch64.c (aarch64_override_options_after_change_1):
+	Disable pc relative literal load irrespective of TARGET_FIX_ERR_A53_84341
+	for default.
+
 2017-09-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* config/sparc/sparc.c (output_return): Output the source location of
