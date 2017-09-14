@@ -197,6 +197,7 @@ extern void tree_cfg_c_tests ();
 extern void vec_c_tests ();
 extern void wide_int_cc_tests ();
 extern void predict_c_tests ();
+extern void irange_tests ();
 
 extern int num_passes;
 

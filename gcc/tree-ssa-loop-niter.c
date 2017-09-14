@@ -226,7 +226,7 @@ refine_value_range_using_guard (tree type, tree var,
     }
   else if (TREE_CODE (varc1) == SSA_NAME
 	   && INTEGRAL_TYPE_P (type)
-	   && get_range_info (varc1, &minv, &maxv) == VR_RANGE)
+	   && get_range_info (varc1, &minv, &maxv))
     {
       gcc_assert (wi::le_p (minv, maxv, sgn));
       wi::to_mpz (minv, minc1, sgn);
@@ -348,8 +348,6 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
   int cnt = 0;
   mpz_t minm, maxm;
   basic_block bb;
-  wide_int minv, maxv;
-  enum value_range_type rtype = VR_VARYING;
 
   /* If the expression is a constant, we know its value exactly.  */
   if (integer_zerop (var))
@@ -369,7 +367,8 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
       gphi_iterator gsi;
 
       /* Either for VAR itself...  */
-      rtype = get_range_info (var, &minv, &maxv);
+      wide_int minv, maxv;
+      bool have_range = get_range_info (var, &minv, &maxv);
       /* Or for PHI results in loop->header where VAR is used as
 	 PHI argument from the loop preheader edge.  */
       for (gsi = gsi_start_phis (loop->header); !gsi_end_p (gsi); gsi_next (&gsi))
@@ -377,12 +376,11 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 	  gphi *phi = gsi.phi ();
 	  wide_int minc, maxc;
 	  if (PHI_ARG_DEF_FROM_EDGE (phi, e) == var
-	      && (get_range_info (gimple_phi_result (phi), &minc, &maxc)
-		  == VR_RANGE))
+	      && get_range_info (gimple_phi_result (phi), &minc, &maxc))
 	    {
-	      if (rtype != VR_RANGE)
+	      if (!have_range)
 		{
-		  rtype = VR_RANGE;
+		  have_range = true;
 		  minv = minc;
 		  maxv = maxc;
 		}
@@ -396,7 +394,7 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 		     involved.  */
 		  if (wi::gt_p (minv, maxv, sgn))
 		    {
-		      rtype = get_range_info (var, &minv, &maxv);
+		      have_range = get_range_info (var, &minv, &maxv);
 		      break;
 		    }
 		}
@@ -404,16 +402,16 @@ determine_value_range (struct loop *loop, tree type, tree var, mpz_t off,
 	}
       mpz_init (minm);
       mpz_init (maxm);
-      if (rtype != VR_RANGE)
-	{
-	  mpz_set (minm, min);
-	  mpz_set (maxm, max);
-	}
-      else
+      if (have_range)
 	{
 	  gcc_assert (wi::le_p (minv, maxv, sgn));
 	  wi::to_mpz (minv, minm, sgn);
 	  wi::to_mpz (maxv, maxm, sgn);
+	}
+      else
+	{
+	  mpz_set (minm, min);
+	  mpz_set (maxm, max);
 	}
       /* Now walk the dominators of the loop header and use the entry
 	 guards to refine the estimates.  */
@@ -3223,7 +3221,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (high) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && (get_range_info (orig_base, &min, &max)
 	      || get_cst_init_from_scev (orig_base, &max, false))
 	  && wi::gts_p (high, max))
 	base = wide_int_to_tree (unsigned_type, max);
@@ -3241,7 +3239,7 @@ record_nonwrapping_iv (struct loop *loop, tree base, tree step, gimple *stmt,
       if (TREE_CODE (orig_base) == SSA_NAME
 	  && TREE_CODE (low) == INTEGER_CST
 	  && INTEGRAL_TYPE_P (TREE_TYPE (orig_base))
-	  && (get_range_info (orig_base, &min, &max) == VR_RANGE
+	  && (get_range_info (orig_base, &min, &max)
 	      || get_cst_init_from_scev (orig_base, &min, true))
 	  && wi::gts_p (min, low))
 	base = wide_int_to_tree (unsigned_type, min);
@@ -4477,7 +4475,6 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
 {
   tree type;
   wide_int minv, maxv, diff, step_wi;
-  enum value_range_type rtype;
 
   if (TREE_CODE (step) != INTEGER_CST || !INTEGRAL_TYPE_P (TREE_TYPE (var)))
     return false;
@@ -4488,8 +4485,7 @@ scev_var_range_cant_overflow (tree var, tree step, struct loop *loop)
   if (!def_bb || !dominated_by_p (CDI_DOMINATORS, loop->latch, def_bb))
     return false;
 
-  rtype = get_range_info (var, &minv, &maxv);
-  if (rtype != VR_RANGE)
+  if (!get_range_info (var, &minv, &maxv))
     return false;
 
   /* VAR is a scev whose evolution part is STEP and value range info

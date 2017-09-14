@@ -216,13 +216,12 @@ alloca_call_type_by_arg (tree arg, tree arg_casted, edge e, unsigned max_size)
       && TREE_CODE (limit) == SSA_NAME)
     {
       wide_int min, max;
-      value_range_type range_type = get_range_info (limit, &min, &max);
 
-      if (range_type == VR_UNDEFINED || range_type == VR_VARYING)
+      if (!get_range_info (limit, &min, &max))
 	return alloca_type_and_limit (ALLOCA_BOUND_UNKNOWN);
 
       // ?? It looks like the above `if' is unnecessary, as we never
-      // get any VR_RANGE or VR_ANTI_RANGE here.  If we had a range
+      // get any range information here.  If we had a range
       // for LIMIT, I suppose we would have taken care of it in
       // alloca_call_type(), or handled above where we handle (ARG .COND. N).
       //
@@ -252,13 +251,12 @@ cast_from_signed_p (tree ssa, tree *invalid_casted_type)
   return false;
 }
 
-// Return TRUE if X has a maximum range of MAX, basically covering the
-// entire domain, in which case it's no range at all.
+// Return TRUE if TYPE has a maximum range of MAX.
 
 static bool
-is_max (tree x, wide_int max)
+is_max (tree type, wide_int max)
 {
-  return wi::max_value (TREE_TYPE (x)) == max;
+  return wi::max_value (type) == max;
 }
 
 // Analyze the alloca call in STMT and return the alloca type with its
@@ -284,104 +282,103 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 
   // Adjust warn_alloca_max_size for VLAs, by taking the underlying
   // type into account.
-  unsigned HOST_WIDE_INT max_size;
+  unsigned HOST_WIDE_INT max_user_size;
   if (is_vla)
-    max_size = (unsigned HOST_WIDE_INT) warn_vla_limit;
+    max_user_size = (unsigned HOST_WIDE_INT) warn_vla_limit;
   else
-    max_size = (unsigned HOST_WIDE_INT) warn_alloca_limit;
+    max_user_size = (unsigned HOST_WIDE_INT) warn_alloca_limit;
 
   // Check for the obviously bounded case.
   if (TREE_CODE (len) == INTEGER_CST)
     {
-      if (tree_to_uhwi (len) > max_size)
+      if (tree_to_uhwi (len) > max_user_size)
 	return alloca_type_and_limit (ALLOCA_BOUND_DEFINITELY_LARGE, len);
       if (integer_zerop (len))
 	return alloca_type_and_limit (ALLOCA_ARG_IS_ZERO);
       ret = alloca_type_and_limit (ALLOCA_OK);
     }
   // Check the range info if available.
-  else if (TREE_CODE (len) == SSA_NAME)
+  else if (TREE_CODE (len) == SSA_NAME && get_range_info (len, &min, &max))
     {
-      value_range_type range_type = get_range_info (len, &min, &max);
-      if (range_type == VR_RANGE)
+      irange r (len);
+      if (wi::leu_p (max, max_user_size))
+	ret = alloca_type_and_limit (ALLOCA_OK);
+      else if (is_max (TREE_TYPE (len), max)
+	       && !r.range_for_type_p ()
+	       && cast_from_signed_p (len, invalid_casted_type))
 	{
-	  if (wi::leu_p (max, max_size))
-	    ret = alloca_type_and_limit (ALLOCA_OK);
-	  else
-	    {
-	      // A cast may have created a range we don't care
-	      // about.  For instance, a cast from 16-bit to
-	      // 32-bit creates a range of 0..65535, even if there
-	      // is not really a determinable range in the
-	      // underlying code.  In this case, look through the
-	      // cast at the original argument, and fall through
-	      // to look at other alternatives.
-	      //
-	      // We only look at through the cast when its from
-	      // unsigned to unsigned, otherwise we may risk
-	      // looking at SIGNED_INT < N, which is clearly not
-	      // what we want.  In this case, we'd be interested
-	      // in a VR_RANGE of [0..N].
-	      //
-	      // Note: None of this is perfect, and should all go
-	      // away with better range information.  But it gets
-	      // most of the cases.
-	      gimple *def = SSA_NAME_DEF_STMT (len);
-	      if (gimple_assign_cast_p (def))
-		{
-		  tree rhs1 = gimple_assign_rhs1 (def);
-		  tree rhs1type = TREE_TYPE (rhs1);
-
-		  // Bail if the argument type is not valid.
-		  if (!INTEGRAL_TYPE_P (rhs1type))
-		    return alloca_type_and_limit (ALLOCA_OK);
-
-		  if (TYPE_UNSIGNED (rhs1type))
-		    {
-		      len_casted = rhs1;
-		      range_type = get_range_info (len_casted, &min, &max);
-		    }
-		}
-	      // An unknown range or a range of the entire domain is
-	      // really no range at all.
-	      if (range_type == VR_VARYING
-		  || (!len_casted && is_max (len, max))
-		  || (len_casted && is_max (len_casted, max)))
-		{
-		  // Fall through.
-		}
-	      else if (range_type == VR_ANTI_RANGE)
-		return alloca_type_and_limit (ALLOCA_UNBOUNDED);
-	      else if (range_type != VR_VARYING)
-		return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
-	    }
-	}
-      else if (range_type == VR_ANTI_RANGE)
-	{
-	  // There may be some wrapping around going on.  Catch it
-	  // with this heuristic.  Hopefully, this VR_ANTI_RANGE
-	  // nonsense will go away, and we won't have to catch the
-	  // sign conversion problems with this crap.
+	  // A cast from signed to unsigned may cause us to have very
+	  // large numbers that can be caught with the above
+	  // heuristic.
 	  //
 	  // This is here to catch things like:
 	  // void foo(signed int n) {
 	  //   if (n < 100)
-	  //     alloca(n);
+	  //     {
+	  //       # RANGE [0,99][0xff80, 0xffff]
+	  //       unsigned int _1 = (unsigned int) n;
+	  //       alloca (_1);
+	  //     }
 	  //   ...
 	  // }
-	  if (cast_from_signed_p (len, invalid_casted_type))
+	  //
+	  // Unfortunately it also triggers:
+	  //
+	  // __SIZE_TYPE__ n = (__SIZE_TYPE__)blah;
+	  // if (n < 100)
+	  //   alloca(n);
+	  //
+	  // ...which is clearly bounded.  So, double check that
+	  // the paths leading up to the size definitely don't
+	  // have a bound.
+	  tentative_cast_from_signed = true;
+	}
+      else
+	{
+	  // A cast may have created a range we don't care
+	  // about.  For instance, a cast from 16-bit to
+	  // 32-bit creates a range of 0..65535, even if there
+	  // is not really a determinable range in the
+	  // underlying code.  In this case, look through the
+	  // cast at the original argument, and fall through
+	  // to look at other alternatives.
+	  //
+	  // We only look through the cast when it's from unsigned to
+	  // unsigned, otherwise we risk looking at SIGNED_INT < N,
+	  // which is clearly not what we want.  In this case, we'd be
+	  // interested in a VR_RANGE of [0..N].
+	  //
+	  // Note: None of this is perfect, and should all go
+	  // away with better range information.  But it gets
+	  // most of the cases.
+	  gimple *def = SSA_NAME_DEF_STMT (len);
+	  bool have_range = true;
+	  if (gimple_assign_cast_p (def))
+
 	    {
-	      // Unfortunately this also triggers:
-	      //
-	      // __SIZE_TYPE__ n = (__SIZE_TYPE__)blah;
-	      // if (n < 100)
-	      //   alloca(n);
-	      //
-	      // ...which is clearly bounded.  So, double check that
-	      // the paths leading up to the size definitely don't
-	      // have a bound.
-	      tentative_cast_from_signed = true;
+	      tree rhs1 = gimple_assign_rhs1 (def);
+	      tree rhs1type = TREE_TYPE (rhs1);
+
+	      // Bail if the argument type is not valid.
+	      if (!INTEGRAL_TYPE_P (rhs1type))
+		return alloca_type_and_limit (ALLOCA_OK);
+
+	      if (TYPE_UNSIGNED (rhs1type))
+		{
+		  len_casted = rhs1;
+		  have_range = get_range_info (len_casted, &min, &max);
+		}
 	    }
+	  // An unknown range or a range of the entire domain is
+	  // really no range at all.
+	  if (!have_range
+	      || (!len_casted && is_max (TREE_TYPE (len), max))
+	      || (len_casted && is_max (TREE_TYPE (len_casted), max)))
+	    {
+	      // Fall through.
+	    }
+	  else
+	    return alloca_type_and_limit (ALLOCA_BOUND_MAYBE_LARGE, max);
 	}
       // No easily determined range and try other things.
     }
@@ -397,7 +394,7 @@ alloca_call_type (gimple *stmt, bool is_vla, tree *invalid_casted_type)
 	{
 	  gcc_assert (!len_casted || TYPE_UNSIGNED (TREE_TYPE (len_casted)));
 	  ret = alloca_call_type_by_arg (len, len_casted,
-					 EDGE_PRED (bb, ix), max_size);
+					 EDGE_PRED (bb, ix), max_user_size);
 	  if (ret.type != ALLOCA_OK)
 	    break;
 	}

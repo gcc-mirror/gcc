@@ -38,6 +38,6 @@ extern bool pass_by_reference (CUMULATIVE_ARGS *, machine_mode,
 extern bool reference_callee_copied (CUMULATIVE_ARGS *, machine_mode,
 				     tree, bool);
 extern void maybe_warn_alloc_args_overflow (tree, tree, tree[2], int[2]);
-extern bool get_size_range (tree, tree[2]);
+extern bool get_size_range (tree, tree[2], unsigned range_starts_at = 1);
 
 #endif // GCC_CALLS_H

@@ -1065,11 +1065,11 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
 	  SSA_NAME_RANGE_INFO (lhs) = NULL;
 	  /* If available, we can use VR of phi result at least.  */
 	  tree phires = gimple_phi_result (phi);
-	  struct range_info_def *phires_range_info
+	  irange_storage *phires_range_info
 	    = SSA_NAME_RANGE_INFO (phires);
 	  if (phires_range_info)
-	    duplicate_ssa_name_range_info (lhs, SSA_NAME_RANGE_TYPE (phires),
-					   phires_range_info);
+	    duplicate_ssa_name_range_info (lhs, phires_range_info,
+					   TREE_TYPE (phires));
 	}
       gimple_stmt_iterator gsi_from = gsi_for_stmt (assign);
       gsi_move_before (&gsi_from, &gsi);

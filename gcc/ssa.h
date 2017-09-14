@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stringpool.h"
 #include "gimple-ssa.h"
 #include "tree-vrp.h"
+#include "range.h"
 #include "tree-ssanames.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h" 

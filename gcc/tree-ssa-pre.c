@@ -1496,12 +1496,8 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		    && ! SSA_NAME_IS_DEFAULT_DEF (result))
 		  {
 		    if (! VN_INFO (result)->info.range_info)
-		      {
-			VN_INFO (result)->info.range_info
-			  = SSA_NAME_RANGE_INFO (result);
-			VN_INFO (result)->range_info_anti_range_p
-			  = SSA_NAME_ANTI_RANGE_P (result);
-		      }
+		      VN_INFO (result)->info.range_info
+			= SSA_NAME_RANGE_INFO (result);
 		    if (dump_file && (dump_flags & TDF_DETAILS))
 		      {
 			fprintf (dump_file, "clearing range info of ");
@@ -3147,12 +3143,11 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
       && SSA_NAME_RANGE_INFO (expr->u.nary->op[0]))
     {
       wide_int min, max;
-      if (get_range_info (expr->u.nary->op[0], &min, &max) == VR_RANGE
+      if (get_range_info (expr->u.nary->op[0], &min, &max)
 	  && !wi::neg_p (min, SIGNED)
 	  && !wi::neg_p (max, SIGNED))
 	/* Just handle extension and sign-changes of all-positive ranges.  */
-	set_range_info (temp,
-			SSA_NAME_RANGE_TYPE (expr->u.nary->op[0]),
+	set_range_info (temp, VR_RANGE,
 			wide_int_storage::from (min, TYPE_PRECISION (type),
 						TYPE_SIGN (type)),
 			wide_int_storage::from (max, TYPE_PRECISION (type),
@@ -4354,8 +4349,8 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		       && ! VN_INFO_RANGE_INFO (sprime)
 		       && b == sprime_b)
 		duplicate_ssa_name_range_info (sprime,
-					       VN_INFO_RANGE_TYPE (lhs),
-					       VN_INFO_RANGE_INFO (lhs));
+					       VN_INFO_RANGE_INFO (lhs),
+					       TREE_TYPE (lhs));
 	    }
 
 	  /* Inhibit the use of an inserted PHI on a loop header when

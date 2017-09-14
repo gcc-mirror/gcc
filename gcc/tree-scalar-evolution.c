@@ -3332,7 +3332,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     base_min = base_max = base;
   else if (TREE_CODE (base) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (base))
-	   && get_range_info (base, &base_min, &base_max) == VR_RANGE)
+	   && get_range_info (base, &base_min, &base_max))
     ;
   else
     return true;
@@ -3341,7 +3341,7 @@ iv_can_overflow_p (struct loop *loop, tree type, tree base, tree step)
     step_min = step_max = step;
   else if (TREE_CODE (step) == SSA_NAME
 	   && INTEGRAL_TYPE_P (TREE_TYPE (step))
-	   && get_range_info (step, &step_min, &step_max) == VR_RANGE)
+	   && get_range_info (step, &step_min, &step_max))
     ;
   else
     return true;

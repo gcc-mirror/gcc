@@ -2895,7 +2895,7 @@ vect_recog_divmod_pattern (vec<gimple *> *stmts,
 
       wide_int oprnd0_min, oprnd0_max;
       int msb = 1;
-      if (get_range_info (oprnd0, &oprnd0_min, &oprnd0_max) == VR_RANGE)
+      if (get_range_info (oprnd0, &oprnd0_min, &oprnd0_max))
 	{
 	  if (!wi::neg_p (oprnd0_min, TYPE_SIGN (itype)))
 	    msb = 0;

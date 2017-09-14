@@ -3389,11 +3389,7 @@ set_ssa_val_to (tree from, tree to)
 		{
 		  /* Save old info.  */
 		  if (! VN_INFO (to)->info.range_info)
-		    {
-		      VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
-		      VN_INFO (to)->range_info_anti_range_p
-			= SSA_NAME_ANTI_RANGE_P (to);
-		    }
+		    VN_INFO (to)->info.range_info = SSA_NAME_RANGE_INFO (to);
 		  /* Rather than allocating memory and unioning the info
 		     just clear it.  */
 		  if (dump_file && (dump_flags & TDF_DETAILS))
@@ -4642,11 +4638,7 @@ scc_vn_restore_ssa_info (void)
 	    SSA_NAME_PTR_INFO (name) = VN_INFO (name)->info.ptr_info;
 	  else if (INTEGRAL_TYPE_P (TREE_TYPE (name))
 		   && VN_INFO (name)->info.range_info)
-	    {
-	      SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
-	      SSA_NAME_ANTI_RANGE_P (name)
-		= VN_INFO (name)->range_info_anti_range_p;
-	    }
+	    SSA_NAME_RANGE_INFO (name) = VN_INFO (name)->info.range_info;
 	}
     }
 }

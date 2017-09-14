@@ -1341,6 +1341,7 @@ private:
 public:
   void set_precision (unsigned int);
   trailing_wide_int operator [] (unsigned int);
+  const trailing_wide_int operator [] (unsigned int) const;
   static size_t extra_size (unsigned int);
 };
 
@@ -1411,6 +1412,17 @@ trailing_wide_ints <N>::operator [] (unsigned int index)
 {
   return trailing_wide_int_storage (m_precision, &m_len[index],
 				    &m_val[index * m_max_len]);
+}
+
+/* Return an RVAL to element INDEX.  */
+template <int N>
+inline const trailing_wide_int
+trailing_wide_ints<N>::operator [] (unsigned int index) const
+{
+  return trailing_wide_int_storage
+    (m_precision,
+     const_cast<unsigned char *>(&m_len[index]),
+     const_cast<HOST_WIDE_INT *>(&m_val[index * m_max_len]));
 }
 
 /* Return how many extra bytes need to be added to the end of the structure

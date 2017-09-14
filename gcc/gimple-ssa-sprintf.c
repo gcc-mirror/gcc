@@ -1133,8 +1133,7 @@ get_int_range (tree arg, HOST_WIDE_INT *pmin, HOST_WIDE_INT *pmax,
 	{
 	  /* Try to determine the range of values of the integer argument.  */
 	  wide_int min, max;
-	  enum value_range_type range_type = get_range_info (arg, &min, &max);
-	  if (range_type == VR_RANGE)
+	  if (get_range_info (arg, &min, &max))
 	    {
 	      HOST_WIDE_INT type_min
 		= (TYPE_UNSIGNED (argtype)
@@ -1433,8 +1432,7 @@ format_integer (const directive &dir, tree arg)
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
       wide_int min, max;
-      enum value_range_type range_type = get_range_info (arg, &min, &max);
-      if (range_type == VR_RANGE)
+      if (get_range_info (arg, &min, &max))
 	{
 	  argmin = wide_int_to_tree (argtype, min);
 	  argmax = wide_int_to_tree (argtype, max);
@@ -1450,11 +1448,7 @@ format_integer (const directive &dir, tree arg)
 	  res.argmin = argmin;
 	  res.argmax = argmax;
 	}
-      else if (range_type == VR_ANTI_RANGE)
-	{
-	  /* Handle anti-ranges if/when bug 71690 is resolved.  */
-	}
-      else if (range_type == VR_VARYING)
+      else
 	{
 	  /* The argument here may be the result of promoting the actual
 	     argument to int.  Try to determine the type of the actual
@@ -3878,9 +3872,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	     and use the greater of the two at level 1 and the smaller
 	     of them at level 2.  */
 	  wide_int min, max;
-	  enum value_range_type range_type
-	    = get_range_info (size, &min, &max);
-	  if (range_type == VR_RANGE)
+	  if (get_range_info (size, &min, &max))
 	    {
 	      dstsize
 		= (warn_level < 2

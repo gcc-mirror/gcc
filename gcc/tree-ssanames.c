@@ -331,35 +331,31 @@ set_range_info_raw (tree name, enum value_range_type range_type,
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  irange_storage *ri = SSA_NAME_RANGE_INFO (name);
   unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
 
   /* Allocate if not available.  */
   if (ri == NULL)
     {
-      size_t size = (sizeof (range_info_def)
-		     + trailing_wide_ints <3>::extra_size (precision));
-      ri = static_cast<range_info_def *> (ggc_internal_alloc (size));
-      ri->ints.set_precision (precision);
+      ri = irange_storage::ggc_alloc (precision);
       SSA_NAME_RANGE_INFO (name) = ri;
       ri->set_nonzero_bits (wi::shwi (-1, precision));
     }
 
-  /* Record the range type.  */
-  if (SSA_NAME_RANGE_TYPE (name) != range_type)
-    SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
-
-  /* Set the values.  */
-  ri->set_min (min);
-  ri->set_max (max);
+  signop sign = TYPE_SIGN (TREE_TYPE (name));
+  irange local (TREE_TYPE (name),
+		wide_int_storage::from (min, precision, sign),
+		wide_int_storage::from (max, precision, sign),
+		range_type == VR_ANTI_RANGE ? irange::INVERSE : irange::PLAIN);
+  ri->set_irange (local);
 
   /* If it is a range, try to improve nonzero_bits from the min/max.  */
   if (range_type == VR_RANGE)
     {
-      wide_int xorv = ri->get_min () ^ ri->get_max ();
+      wide_int xorv = min ^ max;
       if (xorv != 0)
 	xorv = wi::mask (precision - wi::clz (xorv), false, precision);
-      ri->set_nonzero_bits (ri->get_nonzero_bits () & (ri->get_min () | xorv));
+      ri->set_nonzero_bits (ri->get_nonzero_bits () & (min | xorv));
     }
 }
 
@@ -377,7 +373,7 @@ set_range_info (tree name, enum value_range_type range_type,
   if (min == wi::min_value (TYPE_PRECISION (type), TYPE_SIGN (type))
       && max == wi::max_value (TYPE_PRECISION (type), TYPE_SIGN (type)))
     {
-      range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+      irange_storage *ri = SSA_NAME_RANGE_INFO (name);
       if (ri == NULL)
 	return;
       if (ri->get_nonzero_bits () == -1)
@@ -392,26 +388,28 @@ set_range_info (tree name, enum value_range_type range_type,
 }
 
 
-/* Gets range information MIN, MAX and returns enum value_range_type
-   corresponding to tree ssa_name NAME.  enum value_range_type returned
-   is used to determine if MIN and MAX are valid values.  */
+/* If there is range information available for the given ssa_name
+   NAME, returns TRUE and sets MIN, MAX accordingly.  */
 
-enum value_range_type
+bool
 get_range_info (const_tree name, wide_int *min, wide_int *max)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (min && max);
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
 
   /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
      with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
-	      > 2 * HOST_BITS_PER_WIDE_INT))
-    return VR_VARYING;
+  if (!SSA_NAME_RANGE_INFO (name)
+      // FIXME: ?? Do we need this precision stuff ??
+      || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
+	  > 2 * HOST_BITS_PER_WIDE_INT))
+    return false;
 
-  *min = ri->get_min ();
-  *max = ri->get_max ();
-  return SSA_NAME_RANGE_TYPE (name);
+  irange ri (name);
+  gcc_assert (ri.valid_p ());
+  *min = ri.lower_bound ();
+  *max = ri.upper_bound ();
+  return true;
 }
 
 /* Set nonnull attribute to pointer NAME.  */
@@ -446,7 +444,7 @@ get_ptr_nonnull (const_tree name)
 /* Change non-zero bits bitmask of NAME.  */
 
 void
-set_nonzero_bits (tree name, const wide_int_ref &mask)
+set_nonzero_bits (tree name, const wide_int &mask)
 {
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   if (SSA_NAME_RANGE_INFO (name) == NULL)
@@ -457,7 +455,7 @@ set_nonzero_bits (tree name, const wide_int_ref &mask)
 			  TYPE_MIN_VALUE (TREE_TYPE (name)),
 			  TYPE_MAX_VALUE (TREE_TYPE (name)));
     }
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  irange_storage *ri = SSA_NAME_RANGE_INFO (name);
   ri->set_nonzero_bits (mask);
 }
 
@@ -482,7 +480,7 @@ get_nonzero_bits (const_tree name)
       return wi::shwi (-1, precision);
     }
 
-  range_info_def *ri = SSA_NAME_RANGE_INFO (name);
+  irange_storage *ri = SSA_NAME_RANGE_INFO (name);
   if (!ri)
     return wi::shwi (-1, precision);
 
@@ -716,29 +714,38 @@ duplicate_ssa_name_ptr_info (tree name, struct ptr_info_def *ptr_info)
   SSA_NAME_PTR_INFO (name) = new_ptr_info;
 }
 
-/* Creates a duplicate of the range_info_def at RANGE_INFO of type
-   RANGE_TYPE for use by the SSA name NAME.  */
+/* Creates a duplicate of the range info at OLD_RANGE_INFO for use by the
+   SSA name NAME.  */
 void
-duplicate_ssa_name_range_info (tree name, enum value_range_type range_type,
-			       struct range_info_def *range_info)
+duplicate_ssa_name_range_info (tree name, irange_storage *old_range_info,
+			       tree old_type)
 {
-  struct range_info_def *new_range_info;
-
   gcc_assert (!POINTER_TYPE_P (TREE_TYPE (name)));
   gcc_assert (!SSA_NAME_RANGE_INFO (name));
 
-  if (!range_info)
+  if (!old_range_info)
     return;
 
   unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
-  size_t size = (sizeof (range_info_def)
-		 + trailing_wide_ints <3>::extra_size (precision));
-  new_range_info = static_cast<range_info_def *> (ggc_internal_alloc (size));
-  memcpy (new_range_info, range_info, size);
-
-  gcc_assert (range_type == VR_RANGE || range_type == VR_ANTI_RANGE);
-  SSA_NAME_ANTI_RANGE_P (name) = (range_type == VR_ANTI_RANGE);
+  irange_storage *new_range_info = irange_storage::ggc_alloc (precision);
   SSA_NAME_RANGE_INFO (name) = new_range_info;
+  /* If NAME was created with copy_ssa_name_fn(), we may have gotten
+     the TYPE_MAIN_VARIANT for the original type, which may be a
+     different typedef of the original type.  If so, convert the range
+     to be consistent.
+
+     NOTE: I have also seen tree-ssa-pre.c copy the range of an
+     'unsigned long long' onto the range of a 'unsigned long'.  So the
+     two types are not necessarily of the same size.  */
+  if (TREE_TYPE (name) != old_type)
+    {
+      irange ir (old_range_info, old_type);
+      ir.cast (TREE_TYPE (name));
+      new_range_info->set_irange (ir);
+      new_range_info->set_nonzero_bits (old_range_info->get_nonzero_bits ());
+      return;
+    }
+  memcpy (new_range_info, old_range_info, irange_storage::size (precision));
 }
 
 
@@ -759,11 +766,11 @@ duplicate_ssa_name_fn (struct function *fn, tree name, gimple *stmt)
     }
   else
     {
-      struct range_info_def *old_range_info = SSA_NAME_RANGE_INFO (name);
+      irange_storage *old_range_info = SSA_NAME_RANGE_INFO (name);
 
       if (old_range_info)
-	duplicate_ssa_name_range_info (new_name, SSA_NAME_RANGE_TYPE (name),
-				       old_range_info);
+	duplicate_ssa_name_range_info (new_name,
+				       old_range_info, TREE_TYPE (name));
     }
 
   return new_name;

@@ -45,14 +45,12 @@ struct GTY(()) ptr_info_def
   unsigned int misalign;
 };
 
-/* Value range information for SSA_NAMEs representing non-pointer variables.  */
+/* Used bits information for SSA_NAMEs representing non-pointer variables.  */
 
-struct GTY ((variable_size)) range_info_def {
-  /* Minimum, maximum and nonzero bits.  */
-  TRAILING_WIDE_INT_ACCESSOR (min, ints, 0)
-  TRAILING_WIDE_INT_ACCESSOR (max, ints, 1)
-  TRAILING_WIDE_INT_ACCESSOR (nonzero_bits, ints, 2)
-  trailing_wide_ints <3> ints;
+struct GTY ((variable_size)) nonzero_bits_def {
+  /* Mask representing which bits are known to be used in an integer.  */
+  TRAILING_WIDE_INT_ACCESSOR (nonzero_bits, ints, 0)
+  trailing_wide_ints <1> ints;
 };
 
 
@@ -73,9 +71,8 @@ extern void set_range_info_raw (tree, enum value_range_type,
 				const wide_int_ref &,
 				const wide_int_ref &);
 /* Gets the value range from SSA.  */
-extern enum value_range_type get_range_info (const_tree, wide_int *,
-					     wide_int *);
-extern void set_nonzero_bits (tree, const wide_int_ref &);
+extern bool get_range_info (const_tree, wide_int *, wide_int *);
+extern void set_nonzero_bits (tree, const wide_int &);
 extern wide_int get_nonzero_bits (const_tree);
 extern bool ssa_name_has_boolean_range (tree);
 extern void init_ssanames (struct function *, int);
@@ -98,8 +95,7 @@ extern bool get_ptr_nonnull (const_tree);
 extern tree copy_ssa_name_fn (struct function *, tree, gimple *);
 extern void duplicate_ssa_name_ptr_info (tree, struct ptr_info_def *);
 extern tree duplicate_ssa_name_fn (struct function *, tree, gimple *);
-extern void duplicate_ssa_name_range_info (tree, enum value_range_type,
-					   struct range_info_def *);
+extern void duplicate_ssa_name_range_info (tree, irange_storage *, tree);
 extern void reset_flow_sensitive_info (tree);
 extern void reset_flow_sensitive_info_in_bb (basic_block);
 extern void release_defs (gimple *);

@@ -1894,7 +1894,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	  value_range_type type;
 	  if (TREE_CODE (arg) == SSA_NAME
 	      && param_type
-	      && (type = get_range_info (arg, &min, &max))
+	      && (type = get_range_info_as_value_range (arg, &min, &max))
 	      && (type == VR_RANGE || type == VR_ANTI_RANGE))
 	    {
 	      value_range tmpvr,resvr;
@@ -1904,6 +1904,18 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      tmpvr.max = wide_int_to_tree (TREE_TYPE (arg), max);
 	      tmpvr.equiv = NULL;
 	      memset (&resvr, 0, sizeof (resvr));
+	      /* FIXME: Can we rewrite this to avoid calling the
+		 internals of VRP here?  We should really get rid of
+		 the call to get_range_info_as_value_range() above,
+		 and this value_range business throughout this file.
+
+		 At this point, we should only be looking at
+		 SSA_NAME_RANGE_INFO (through get_range_info()).
+
+		 Perhaps we could look at all the uses of value_range
+		 in this file, and if they are only used on
+		 INTEGRAL_TYPE_P's, rewrite this to use the irage
+		 class.  */
 	      extract_range_from_unary_expr (&resvr, NOP_EXPR, param_type,
 					     &tmpvr, TREE_TYPE (arg));
 	      if (resvr.type == VR_RANGE || resvr.type == VR_ANTI_RANGE)

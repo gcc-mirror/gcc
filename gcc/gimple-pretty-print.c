@@ -2145,22 +2145,17 @@ dump_ssaname_info (pretty_printer *buffer, tree node, int spc)
 	}
     }
 
-  if (!POINTER_TYPE_P (TREE_TYPE (node))
-      && SSA_NAME_RANGE_INFO (node))
+  if (!POINTER_TYPE_P (TREE_TYPE (node)) && SSA_NAME_RANGE_INFO (node))
     {
-      wide_int min, max, nonzero_bits;
-      value_range_type range_type = get_range_info (node, &min, &max);
+      irange ri (node);
+      wide_int nonzero_bits;
 
-      if (range_type == VR_VARYING)
+      if (ri.empty_p ())
 	pp_printf (buffer, "# RANGE VR_VARYING");
-      else if (range_type == VR_RANGE || range_type == VR_ANTI_RANGE)
+      else
 	{
 	  pp_printf (buffer, "# RANGE ");
-	  pp_printf (buffer, "%s[", range_type == VR_RANGE ? "" : "~");
-	  pp_wide_int (buffer, min, TYPE_SIGN (TREE_TYPE (node)));
-	  pp_printf (buffer, ", ");
-	  pp_wide_int (buffer, max, TYPE_SIGN (TREE_TYPE (node)));
-	  pp_printf (buffer, "]");
+	  ri.dump (buffer);
 	}
       nonzero_bits = get_nonzero_bits (node);
       if (nonzero_bits != -1)

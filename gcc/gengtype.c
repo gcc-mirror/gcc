@@ -1715,6 +1715,7 @@ open_base_files (void)
       "optabs.h", "libfuncs.h", "debug.h", "internal-fn.h", "gimple-fold.h",
       "tree-eh.h", "gimple-iterator.h", "gimple-ssa.h", "tree-cfg.h",
       "tree-vrp.h", "tree-phinodes.h", "ssa-iterators.h", "stringpool.h",
+      "range.h",
       "tree-ssanames.h", "tree-ssa-loop.h", "tree-ssa-loop-ivopts.h",
       "tree-ssa-loop-manip.h", "tree-ssa-loop-niter.h", "tree-into-ssa.h",
       "tree-dfa.h", "tree-ssa.h", "reload.h", "cpp-id-data.h", "tree-chrec.h",

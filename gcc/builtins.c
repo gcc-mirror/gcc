@@ -34,6 +34,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "stringpool.h"
 #include "tree-vrp.h"
+#include "range.h"
 #include "tree-ssanames.h"
 #include "expmed.h"
 #include "optabs.h"
@@ -2894,6 +2895,52 @@ builtin_memcpy_read_str (void *data, HOST_WIDE_INT offset,
   return c_readstr (str + offset, mode);
 }
 
+/* If a range IR may have wrapped in such a way that we can guess the
+   range is positive, return TRUE and set PROBABLE_MAX_SIZE.
+   Otherwise, return FALSE and leave PROBABLE_MAX_SIZE unchanged.  */
+
+static bool
+range_may_have_wrapped (irange ir,
+			unsigned HOST_WIDE_INT *probable_max_size)
+{
+  /* Code like:
+
+       signed int n;
+       if (n < 100)
+         {
+           # RANGE [0, 99][0xffff8000, 0xffffffff]
+	   _1 = (unsigned) n;
+	   memcpy (a, b, _1)
+         }
+
+     Produce a range allowing negative values of N.  We can still use
+     the information and make a guess that N is not negative.  */
+  if (ir.num_pairs () != 2
+      || ir.lower_bound () != 0)
+    return false;
+
+  const_tree type = ir.get_type ();
+  unsigned precision = TYPE_PRECISION (type);
+  gcc_assert (TYPE_UNSIGNED (type));
+
+  /* Build a range with all the negatives: [0xffff8000, 0xffffffff].  */
+  wide_int minus_one = wi::bit_not (wide_int::from (0, precision, UNSIGNED));
+  wide_int smallest_neg = wi::lshift (minus_one, precision / 2 - 1);
+  irange negatives (type, smallest_neg, minus_one);
+
+  irange orig_range = ir;
+  ir.intersect (negatives);
+  if (ir == negatives)
+    {
+      wide_int max = orig_range.upper_bound (0); // Get the 99 in [0, 99].
+      if (!wi::fits_uhwi_p (max))
+	return false;
+      *probable_max_size = max.to_uhwi ();
+      return true;
+    }
+  return false;
+}
+
 /* LEN specify length of the block of memcpy/memset operation.
    Figure out its range and put it into MIN_SIZE/MAX_SIZE. 
    In some cases we can make very likely guess on max size, then we
@@ -2913,7 +2960,6 @@ determine_block_size (tree len, rtx len_rtx,
   else
     {
       wide_int min, max;
-      enum value_range_type range_type = VR_UNDEFINED;
 
       /* Determine bounds from the type.  */
       if (tree_fits_uhwi_p (TYPE_MIN_VALUE (TREE_TYPE (len))))
@@ -2926,34 +2972,18 @@ determine_block_size (tree len, rtx len_rtx,
       else
 	*probable_max_size = *max_size = GET_MODE_MASK (GET_MODE (len_rtx));
 
-      if (TREE_CODE (len) == SSA_NAME)
-	range_type = get_range_info (len, &min, &max);
-      if (range_type == VR_RANGE)
+      if (TREE_CODE (len) == SSA_NAME && get_range_info (len, &min, &max))
 	{
-	  if (wi::fits_uhwi_p (min) && *min_size < min.to_uhwi ())
-	    *min_size = min.to_uhwi ();
-	  if (wi::fits_uhwi_p (max) && *max_size > max.to_uhwi ())
-	    *probable_max_size = *max_size = max.to_uhwi ();
-	}
-      else if (range_type == VR_ANTI_RANGE)
-	{
-	  /* Anti range 0...N lets us to determine minimal size to N+1.  */
-	  if (min == 0)
+	  irange ir (len);
+	  if (range_may_have_wrapped (ir, probable_max_size))
+	    ;
+	  else
 	    {
-	      if (wi::fits_uhwi_p (max) && max.to_uhwi () + 1 != 0)
-		*min_size = max.to_uhwi () + 1;
+	      if (wi::fits_uhwi_p (min) && *min_size < min.to_uhwi ())
+		*min_size = min.to_uhwi ();
+	      if (wi::fits_uhwi_p (max) && *max_size > max.to_uhwi ())
+		*probable_max_size = *max_size = max.to_uhwi ();
 	    }
-	  /* Code like
-
-	     int n;
-	     if (n < 100)
-	       memcpy (a, b, n)
-
-	     Produce anti range allowing negative values of N.  We still
-	     can use the information and make a guess that N is not negative.
-	     */
-	  else if (!wi::leu_p (max, 1 << 30) && wi::fits_uhwi_p (min))
-	    *probable_max_size = min.to_uhwi () - 1;
 	}
     }
   gcc_checking_assert (*max_size <=
@@ -3061,7 +3091,7 @@ check_sizes (int opt, tree exp, tree size, tree maxlen, tree src, tree objsize)
   bool exactsize = size && tree_fits_uhwi_p (size);
 
   if (size)
-    get_size_range (size, range);
+    get_size_range (size, range, /*range_starts_at=*/0);
 
   /* First check the number of bytes to be written against the maximum
      object size.  */

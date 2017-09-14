@@ -300,6 +300,13 @@ require_template_declaration (const char *tmpl_name)
 	{
 	  if (T.code == '*')
 	    {
+	      /* Handle simple multiplication by a constant.  Do not
+		 treat it like indirection.  */
+	      if (token () == NUM)
+		{
+		  str = concat (str, advance (), (char *) 0);
+		  continue;
+		}
 	      id = "*";
 	      if (num_indirections++)
 		parse_error ("only one level of indirection is supported"

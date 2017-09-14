@@ -33,7 +33,7 @@ struct function;
 struct real_value;
 struct fixed_value;
 struct ptr_info_def;
-struct range_info_def;
+class irange_storage;
 struct die_struct;
 
 
@@ -1050,9 +1050,6 @@ struct GTY(()) tree_base {
        TRANSACTION_EXPR_OUTER in
 	   TRANSACTION_EXPR
 
-       SSA_NAME_ANTI_RANGE_P in
-	   SSA_NAME
-
        MUST_TAIL_CALL in
 	   CALL_EXPR
 
@@ -1410,6 +1407,7 @@ struct GTY(()) ssa_use_operand_t {
   tree *GTY((skip(""))) use;
 };
 
+class irange;
 struct GTY(()) tree_ssa_name {
   struct tree_typed typed;
 
@@ -1423,8 +1421,8 @@ struct GTY(()) tree_ssa_name {
   union ssa_name_info_type {
     /* Pointer attributes used for alias analysis.  */
     struct GTY ((tag ("0"))) ptr_info_def *ptr_info;
-    /* Value range attributes used for zero/sign extension elimination.  */
-    struct GTY ((tag ("1"))) range_info_def *range_info;
+    /* Value range attributes.  */
+    class GTY ((tag ("1"))) irange_storage *range_info;
   } GTY ((desc ("%1.typed.type ?" \
 		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
 

@@ -574,7 +574,8 @@ irange::union_ (const wide_int &x, const wide_int &y)
 	      bounds[1] = y;
 	    else
 	      bounds[1] = bounds[i];
-	    remove (2, i);
+	    if (i >= 2)
+	      remove (2, i);
 	    gcc_assert (!CHECKING_P || valid_p ());
 	    return *this;
 	  }

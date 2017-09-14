@@ -7475,6 +7475,16 @@
 	* config/sparc/sparc.opt (mfsmuld): New option.
 	* doc/invoke.texi (mfsmuld): Document option.
 
+2017-08-24  Aldy Hernandez  <aldyh@redhat.com>
+
+	PR middle-end/81931
+	* tree-ssanames.c (get_nonzero_bits): Use element_precision
+	instead of TYPE_PRECISION.
+
+2017-08-22  Aldy Hernandez  <aldyh@redhat.com>
+
+	* wide-int.h (hwi_with_prec::hwi_with_prec): Sign extend.
+
 2017-07-26  Marek Polacek  <polacek@redhat.com>
 
 	PR middle-end/70992

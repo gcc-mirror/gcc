@@ -60,4 +60,6 @@ extern void extract_range_from_unary_expr (value_range *vr,
 					   value_range *vr0_,
 					   tree op0_type);
 
+enum value_range_type get_range_info_as_value_range (const_tree ssa,
+						     wide_int *min, wide_int *max);
 #endif /* GCC_TREE_VRP_H */

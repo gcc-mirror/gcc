@@ -507,7 +507,7 @@ get_min_precision (tree arg, signop sign)
   if (TREE_CODE (arg) != SSA_NAME)
     return prec + (orig_sign != sign);
   wide_int arg_min, arg_max;
-  while (get_range_info (arg, &arg_min, &arg_max) != VR_RANGE)
+  while (!get_range_info (arg, &arg_min, &arg_max))
     {
       gimple *g = SSA_NAME_DEF_STMT (arg);
       if (is_gimple_assign (g)
