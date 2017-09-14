@@ -2,6 +2,44 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.h (vec_perm_indices): New typedef.
+	(auto_vec_perm_indices): Likewise.
+	* optabs-query.h: Include target.h
+	(can_vec_perm_p): Take a vec_perm_indices *.
+	* optabs-query.c (can_vec_perm_p): Likewise.
+	(can_mult_highpart_p): Update accordingly.  Use auto_vec_perm_indices.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-vect-generic.c (lower_vec_perm): Likewise.
+	* tree-vect-data-refs.c (vect_grouped_store_supported): Likewise.
+	(vect_grouped_load_supported): Likewise.
+	(vect_shift_permute_load_chain): Likewise.
+	(vect_permute_store_chain): Use auto_vec_perm_indices.
+	(vect_permute_load_chain): Likewise.
+	* fold-const.c (fold_vec_perm): Take vec_perm_indices.
+	(fold_ternary_loc): Update accordingly.  Use auto_vec_perm_indices.
+	Update uses of can_vec_perm_p.
+	* tree-vect-loop.c (calc_vec_perm_mask_for_shift): Replace the
+	mode with a number of elements.  Take a vec_perm_indices *.
+	(vect_create_epilog_for_reduction): Update accordingly.
+	Use auto_vec_perm_indices.
+	(have_whole_vector_shift): Likewise.  Update call to can_vec_perm_p.
+	* tree-vect-slp.c (vect_build_slp_tree_1): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Use auto_vec_perm_indices.
+	* tree-vectorizer.h (vect_gen_perm_mask_any): Take a vec_perm_indices.
+	(vect_gen_perm_mask_checked): Likewise.
+	* tree-vect-stmts.c (vect_gen_perm_mask_any): Take a vec_perm_indices.
+	(vect_gen_perm_mask_checked): Likewise.
+	(vectorizable_mask_load_store): Use auto_vec_perm_indices.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(perm_mask_for_reverse): Likewise.  Update call to can_vec_perm_p.
+	(vectorizable_bswap): Likewise.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.h (build_vector): Take a vec<tree> instead of a tree *.
 	* tree.c (build_vector): Likewise.
 	(build_vector_from_ctor): Update accordingly.
