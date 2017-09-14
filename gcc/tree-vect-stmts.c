@@ -4869,7 +4869,6 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
   bool scalar_shift_arg = true;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
-  int vf;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -4936,11 +4935,6 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
                          "use not simple.\n");
       return false;
     }
-
-  if (loop_vinfo)
-    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  else
-    vf = 1;
 
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
@@ -5086,8 +5080,8 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
                          "op not supported by target.\n");
       /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-          || (vf < vect_min_worthwhile_factor (code)
-              && !vec_stmt))
+	  || (!vec_stmt
+	      && !vect_worthwhile_without_simd_p (vinfo, code)))
         return false;
       if (dump_enabled_p ())
         dump_printf_loc (MSG_NOTE, vect_location,
@@ -5095,9 +5089,9 @@ vectorizable_shift (gimple *stmt, gimple_stmt_iterator *gsi,
     }
 
   /* Worthwhile without SIMD support?  Check only during analysis.  */
-  if (!VECTOR_MODE_P (TYPE_MODE (vectype))
-      && vf < vect_min_worthwhile_factor (code)
-      && !vec_stmt)
+  if (!vec_stmt
+      && !VECTOR_MODE_P (TYPE_MODE (vectype))
+      && !vect_worthwhile_without_simd_p (vinfo, code))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -5241,7 +5235,6 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   tree vop0, vop1, vop2;
   bb_vec_info bb_vinfo = STMT_VINFO_BB_VINFO (stmt_info);
   vec_info *vinfo = stmt_info->vinfo;
-  int vf;
 
   if (!STMT_VINFO_RELEVANT_P (stmt_info) && !bb_vinfo)
     return false;
@@ -5368,11 +5361,6 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
 	}
     }
 
-  if (loop_vinfo)
-    vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  else
-    vf = 1;
-
   /* Multiple types in SLP are handled by creating the appropriate number of
      vectorized stmts for each SLP node.  Hence, NCOPIES is always 1 in
      case of SLP.  */
@@ -5414,7 +5402,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
                          "op not supported by target.\n");
       /* Check only during analysis.  */
       if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-	  || (!vec_stmt && vf < vect_min_worthwhile_factor (code)))
+	  || (!vec_stmt && !vect_worthwhile_without_simd_p (vinfo, code)))
         return false;
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
@@ -5424,7 +5412,7 @@ vectorizable_operation (gimple *stmt, gimple_stmt_iterator *gsi,
   /* Worthwhile without SIMD support?  Check only during analysis.  */
   if (!VECTOR_MODE_P (vec_mode)
       && !vec_stmt
-      && vf < vect_min_worthwhile_factor (code))
+      && !vect_worthwhile_without_simd_p (vinfo, code))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
