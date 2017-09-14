@@ -2051,7 +2051,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     }
   else
     {
-      tree mask_type, *mask_elts;
+      tree mask_type;
 
       if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
 	return false;
@@ -2062,9 +2062,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
 	     != GET_MODE_SIZE (TYPE_MODE (type)))
 	return false;
-      mask_elts = XALLOCAVEC (tree, nelts);
+      auto_vec<tree, 32> mask_elts (nelts);
       for (i = 0; i < nelts; i++)
-	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
+	mask_elts.quick_push (build_int_cst (TREE_TYPE (mask_type), sel[i]));
       op2 = build_vector (mask_type, mask_elts);
       if (conv_code == ERROR_MARK)
 	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);

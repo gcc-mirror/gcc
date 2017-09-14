@@ -11446,7 +11446,7 @@ sparc_vis_mul8x16 (int e8, int e16)
    the result into the array N_ELTS, whose elements are of INNER_TYPE.  */
 
 static void
-sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
+sparc_handle_vis_mul8x16 (vec<tree> *n_elts, enum sparc_builtins fncode,
 			  tree inner_type, tree cst0, tree cst1)
 {
   unsigned i, num = VECTOR_CST_NELTS (cst0);
@@ -11460,7 +11460,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, i)));
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11472,7 +11472,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11484,7 +11484,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11533,14 +11533,15 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree *n_elts;
 	  unsigned i;
 
-	  n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
+	  auto_vec<tree, 32> n_elts (VECTOR_CST_NELTS (arg0));
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
-	    n_elts[i] = build_int_cst (inner_type,
-				       TREE_INT_CST_LOW
-				         (VECTOR_CST_ELT (arg0, i)) << 4);
+	    {
+	      unsigned HOST_WIDE_INT val
+		= TREE_INT_CST_LOW (VECTOR_CST_ELT (arg0, i));
+	      n_elts.quick_push (build_int_cst (inner_type, val << 4));
+	    }
 	  return build_vector (rtype, n_elts);
 	}
       break;
@@ -11556,8 +11557,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree *n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
-	  sparc_handle_vis_mul8x16 (n_elts, code, inner_type, arg0, arg1);
+	  auto_vec<tree, 32> n_elts (VECTOR_CST_NELTS (arg0));
+	  sparc_handle_vis_mul8x16 (&n_elts, code, inner_type, arg0, arg1);
 	  return build_vector (rtype, n_elts);
 	}
       break;
@@ -11570,12 +11571,12 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
-	  tree *n_elts = XALLOCAVEC (tree, 2 * VECTOR_CST_NELTS (arg0));
+	  auto_vec<tree, 32> n_elts (2 * VECTOR_CST_NELTS (arg0));
 	  unsigned i;
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      n_elts[2*i] = VECTOR_CST_ELT (arg0, i);
-	      n_elts[2*i+1] = VECTOR_CST_ELT (arg1, i);
+	      n_elts.quick_push (VECTOR_CST_ELT (arg0, i));
+	      n_elts.quick_push (VECTOR_CST_ELT (arg1, i));
 	    }
 
 	  return build_vector (rtype, n_elts);

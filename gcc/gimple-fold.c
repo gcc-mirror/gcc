@@ -5919,18 +5919,18 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		       && (CONSTRUCTOR_NELTS (rhs)
 			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
 		{
-		  unsigned i;
-		  tree val, *vec;
+		  unsigned i, nelts;
+		  tree val;
 
-		  vec = XALLOCAVEC (tree,
-				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)));
+		  nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+		  auto_vec<tree, 32> vec (nelts);
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
 		      val = (*valueize) (val);
 		      if (TREE_CODE (val) == INTEGER_CST
 			  || TREE_CODE (val) == REAL_CST
 			  || TREE_CODE (val) == FIXED_CST)
-			vec[i] = val;
+			vec.quick_push (val);
 		      else
 			return NULL_TREE;
 		    }

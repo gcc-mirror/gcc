@@ -3105,7 +3105,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   unsigned nunits;
   tree vec_cst;
-  tree *elts;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
   tree vop;
@@ -3158,7 +3157,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
-  elts = XALLOCAVEC (tree, nunits);
+  auto_vec<tree, 32> elts (nunits);
+  elts.quick_grow (nunits);
   bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
     {
@@ -3600,10 +3600,10 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  
 		  if (! noop_p)
 		    {
-		      tree *mask_elts = XALLOCAVEC (tree, nunits);
+		      auto_vec<tree, 32> mask_elts (nunits);
 		      for (int l = 0; l < nunits; ++l)
-			mask_elts[l] = build_int_cst (mask_element_type,
-						      mask[l]);
+			mask_elts.quick_push (build_int_cst (mask_element_type,
+							     mask[l]));
 		      mask_vec = build_vector (mask_type, mask_elts);
 		    }
 
@@ -3759,13 +3759,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  unsigned k = 0, l;
 	  for (j = 0; j < v0.length (); ++j)
 	    {
-	      tree *melts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (vectype));
-	      for (l = 0; l < TYPE_VECTOR_SUBPARTS (vectype); ++l)
+	      unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	      auto_vec<tree, 32> melts (nunits);
+	      for (l = 0; l < nunits; ++l)
 		{
 		  if (k >= group_size)
 		    k = 0;
-		  melts[l] = build_int_cst
-		      (meltype, mask[k++] * TYPE_VECTOR_SUBPARTS (vectype) + l);
+		  tree t = build_int_cst (meltype, mask[k++] * nunits + l);
+		  melts.quick_push (t);
 		}
 	      tmask = build_vector (mvectype, melts);
 
