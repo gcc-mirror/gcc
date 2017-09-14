@@ -26645,10 +26645,7 @@ dwarf2out_source_line (unsigned int line, unsigned int column,
       putc (' ', asm_out_file);
       fprint_ul (asm_out_file, line);
       putc (' ', asm_out_file);
-      if (debug_column_info)
-	fprint_ul (asm_out_file, column);
-      else
-	putc ('0', asm_out_file);
+      fprint_ul (asm_out_file, column);
 
       if (is_stmt != table->is_stmt)
 	{
