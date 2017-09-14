@@ -1,5 +1,11 @@
 2017-09-14  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81325
+	* cfgbuild.c (find_bb_boundaries): Ignore debug insns in decisions
+	if and where to split a bb, except for splitting before debug insn
+	sequences followed by non-label real insn.  Delete debug insns
+	in between basic blocks.
+
 	* combine.c (make_compound_operation_int): Formatting fixes.
 
 	* config/alpha/elf.h (LINK_EH_SPEC): Add -static-pie support.
