@@ -6044,35 +6044,46 @@ Binary_expression::do_get_backend(Translate_context* context)
     {
       go_assert(left_type->integer_type() != NULL);
 
-      mpz_t bitsval;
       int bits = left_type->integer_type()->bits();
-      mpz_init_set_ui(bitsval, bits);
-      Bexpression* bits_expr =
-          gogo->backend()->integer_constant_expression(right_btype, bitsval);
-      Bexpression* compare =
-          gogo->backend()->binary_expression(OPERATOR_LT,
-                                             right, bits_expr, loc);
 
-      Bexpression* zero_expr =
-          gogo->backend()->integer_constant_expression(left_btype, zero);
-      overflow = zero_expr;
-      Bfunction* bfn = context->function()->func_value()->get_decl();
-      if (this->op_ == OPERATOR_RSHIFT
-	  && !left_type->integer_type()->is_unsigned())
+      Numeric_constant nc;
+      unsigned long ul;
+      if (!this->right_->numeric_constant_value(&nc)
+	  || nc.to_unsigned_long(&ul) != Numeric_constant::NC_UL_VALID
+	  || ul >= static_cast<unsigned long>(bits))
 	{
-          Bexpression* neg_expr =
-              gogo->backend()->binary_expression(OPERATOR_LT, left,
-                                                 zero_expr, loc);
-          Bexpression* neg_one_expr =
-              gogo->backend()->integer_constant_expression(left_btype, neg_one);
-          overflow = gogo->backend()->conditional_expression(bfn,
-                                                             btype, neg_expr,
-                                                             neg_one_expr,
-                                                             zero_expr, loc);
+	  mpz_t bitsval;
+	  mpz_init_set_ui(bitsval, bits);
+	  Bexpression* bits_expr =
+	    gogo->backend()->integer_constant_expression(right_btype, bitsval);
+	  Bexpression* compare =
+	    gogo->backend()->binary_expression(OPERATOR_LT,
+					       right, bits_expr, loc);
+
+	  Bexpression* zero_expr =
+	    gogo->backend()->integer_constant_expression(left_btype, zero);
+	  overflow = zero_expr;
+	  Bfunction* bfn = context->function()->func_value()->get_decl();
+	  if (this->op_ == OPERATOR_RSHIFT
+	      && !left_type->integer_type()->is_unsigned())
+	    {
+	      Bexpression* neg_expr =
+		gogo->backend()->binary_expression(OPERATOR_LT, left,
+						   zero_expr, loc);
+	      Bexpression* neg_one_expr =
+		gogo->backend()->integer_constant_expression(left_btype,
+							     neg_one);
+	      overflow = gogo->backend()->conditional_expression(bfn,
+								 btype,
+								 neg_expr,
+								 neg_one_expr,
+								 zero_expr,
+								 loc);
+	    }
+	  ret = gogo->backend()->conditional_expression(bfn, btype, compare,
+							ret, overflow, loc);
+	  mpz_clear(bitsval);
 	}
-      ret = gogo->backend()->conditional_expression(bfn, btype, compare, ret,
-                                                    overflow, loc);
-      mpz_clear(bitsval);
     }
 
   // Add checks for division by zero and division overflow as needed.

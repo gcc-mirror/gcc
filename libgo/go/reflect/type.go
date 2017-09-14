@@ -370,11 +370,19 @@ type sliceType struct {
 
 // Struct field
 type structField struct {
-	name    *string // nil for embedded fields
-	pkgPath *string // nil for exported Names; otherwise import path
-	typ     *rtype  // type of field
-	tag     *string // nil if no tag
-	offset  uintptr // byte offset of field within struct
+	name       *string // name is always non-empty
+	pkgPath    *string // nil for exported Names; otherwise import path
+	typ        *rtype  // type of field
+	tag        *string // nil if no tag
+	offsetAnon uintptr // byte offset of field<<1 | isAnonymous
+}
+
+func (f *structField) offset() uintptr {
+	return f.offsetAnon >> 1
+}
+
+func (f *structField) anon() bool {
+	return f.offsetAnon&1 != 0
 }
 
 // structType represents a struct type.
@@ -880,23 +888,15 @@ func (t *structType) Field(i int) (f StructField) {
 	}
 	p := &t.fields[i]
 	f.Type = toType(p.typ)
-	if p.name != nil {
-		f.Name = *p.name
-	} else {
-		t := f.Type
-		if t.Kind() == Ptr {
-			t = t.Elem()
-		}
-		f.Name = t.Name()
-		f.Anonymous = true
-	}
+	f.Name = *p.name
+	f.Anonymous = p.anon()
 	if p.pkgPath != nil {
 		f.PkgPath = *p.pkgPath
 	}
 	if p.tag != nil {
 		f.Tag = StructTag(*p.tag)
 	}
-	f.Offset = p.offset
+	f.Offset = p.offset()
 
 	// NOTE(rsc): This is the only allocation in the interface
 	// presented by a reflect.Type. It would be nice to avoid,
@@ -984,18 +984,15 @@ func (t *structType) FieldByNameFunc(match func(string) bool) (result StructFiel
 			for i := range t.fields {
 				f := &t.fields[i]
 				// Find name and type for field f.
-				var fname string
+				fname := *f.name
 				var ntyp *rtype
-				if f.name != nil {
-					fname = *f.name
-				} else {
+				if f.anon() {
 					// Anonymous field of type T or *T.
 					// Name taken from type.
 					ntyp = f.typ
 					if ntyp.Kind() == Ptr {
 						ntyp = ntyp.Elem().common()
 					}
-					fname = ntyp.Name()
 				}
 
 				// Does it match?
@@ -1053,12 +1050,11 @@ func (t *structType) FieldByName(name string) (f StructField, present bool) {
 	if name != "" {
 		for i := range t.fields {
 			tf := &t.fields[i]
-			if tf.name == nil {
-				hasAnon = true
-				continue
-			}
 			if *tf.name == name {
 				return t.Field(i), true
+			}
+			if tf.anon() {
+				hasAnon = true
 			}
 		}
 	}
@@ -1390,7 +1386,7 @@ func haveIdenticalUnderlyingType(T, V *rtype, cmpTags bool) bool {
 			if cmpTags && tf.tag != vf.tag && (tf.tag == nil || vf.tag == nil || *tf.tag != *vf.tag) {
 				return false
 			}
-			if tf.offset != vf.offset {
+			if tf.offsetAnon != vf.offsetAnon {
 				return false
 			}
 		}
@@ -1946,11 +1942,10 @@ func StructOf(fields []StructField) Type {
 			hasPtr = true
 		}
 
-		name := ""
 		// Update string and hash
+		name := *f.name
 		hash = (hash << 1) + ft.hash
-		if f.name != nil {
-			name = *f.name
+		if !f.anon() {
 			repr = append(repr, (" " + name)...)
 		} else {
 			// Embedded field
@@ -2009,11 +2004,12 @@ func StructOf(fields []StructField) Type {
 		comparable = comparable && (ft.equalfn != nil)
 		hashable = hashable && (ft.hashfn != nil)
 
-		f.offset = align(size, uintptr(ft.fieldAlign))
+		offset := align(size, uintptr(ft.fieldAlign))
 		if int8(ft.fieldAlign) > typalign {
 			typalign = int8(ft.fieldAlign)
 		}
-		size = f.offset + ft.size
+		size = offset + ft.size
+		f.offsetAnon |= offset << 1
 
 		if ft.size == 0 {
 			lastzero = size
@@ -2148,7 +2144,7 @@ func StructOf(fields []StructField) Type {
 		typ.hashfn = func(p unsafe.Pointer, seed uintptr) uintptr {
 			o := seed
 			for _, ft := range typ.fields {
-				pi := unsafe.Pointer(uintptr(p) + ft.offset)
+				pi := unsafe.Pointer(uintptr(p) + ft.offset())
 				o = ft.typ.hashfn(pi, o)
 			}
 			return o
@@ -2160,8 +2156,8 @@ func StructOf(fields []StructField) Type {
 	if comparable {
 		typ.equalfn = func(p, q unsafe.Pointer) bool {
 			for _, ft := range typ.fields {
-				pi := unsafe.Pointer(uintptr(p) + ft.offset)
-				qi := unsafe.Pointer(uintptr(q) + ft.offset)
+				pi := unsafe.Pointer(uintptr(p) + ft.offset())
+				qi := unsafe.Pointer(uintptr(q) + ft.offset())
 				if !ft.typ.equalfn(pi, qi) {
 					return false
 				}
@@ -2196,6 +2192,11 @@ func runtimeStructField(field StructField) structField {
 		}
 	}
 
+	offsetAnon := uintptr(0)
+	if field.Anonymous {
+		offsetAnon |= 1
+	}
+
 	var pkgPath *string
 	if field.PkgPath != "" {
 		s := field.PkgPath
@@ -2212,11 +2213,11 @@ func runtimeStructField(field StructField) structField {
 	}
 
 	return structField{
-		name:    name,
-		pkgPath: pkgPath,
-		typ:     field.Type.common(),
-		tag:     tag,
-		offset:  0,
+		name:       name,
+		pkgPath:    pkgPath,
+		typ:        field.Type.common(),
+		tag:        tag,
+		offsetAnon: offsetAnon,
 	}
 }
 
@@ -2239,7 +2240,7 @@ func typeptrdata(t *rtype) uintptr {
 			}
 		}
 		f := st.fields[field]
-		return f.offset + f.typ.ptrdata
+		return f.offset() + f.typ.ptrdata
 
 	default:
 		panic("reflect.typeptrdata: unexpected type, " + t.String())
@@ -2513,7 +2514,7 @@ func addTypeBits(bv *bitVector, offset uintptr, t *rtype) {
 		tt := (*structType)(unsafe.Pointer(t))
 		for i := range tt.fields {
 			f := &tt.fields[i]
-			addTypeBits(bv, offset+f.offset, f.typ)
+			addTypeBits(bv, offset+f.offset(), f.typ)
 		}
 	}
 }
