@@ -15339,6 +15339,21 @@ Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @findex __builtin_nansq
 @end table
 
+The following built-in functions are available on Linux 64-bit systems
+that use the ISA 3.0 instruction set.
+
+@table @code
+@item __float128 __builtin_sqrtf128 (__float128)
+Similar to @code{__builtin_sqrtf}, except the return and input types
+are @code{__float128}.
+@findex __builtin_sqrtf128
+
+@item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
+Similar to @code{__builtin_fma}, except the return and input types are
+@code{__float128}.
+@findex __builtin_fmaf128
+@end table
+
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.05 or later (@option{-mcpu=power6}
 or @option{-mcmpb}):
