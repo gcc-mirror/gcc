@@ -2,6 +2,20 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (_loop_vec_info): Add max_vectorization_factor.
+	(LOOP_VINFO_MAX_VECT_FACTOR): New macro.
+	(LOOP_VINFO_ORIG_VECT_FACTOR): Replace with...
+	(LOOP_VINFO_ORIG_MAX_VECT_FACTOR): ...this new macro.
+	* tree-vect-data-refs.c (vect_analyze_data_ref_dependences): Update
+	accordingly.
+	* tree-vect-loop.c (_loop_vec_info::_loop_vec_info): Initialize
+	max_vectorization_factor.
+	(vect_analyze_loop_2): Set LOOP_VINFO_MAX_VECT_FACTOR.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (vect_min_worthwhile_factor): Delete.
 	(vect_worthwhile_without_simd_p): Declare.
 	* tree-vect-loop.c (vect_worthwhile_without_simd_p): New function.
