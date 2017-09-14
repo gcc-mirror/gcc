@@ -1,3 +1,8 @@
+2017-09-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/80996
+	* gcc.dg/vect/vect-multitypes-12.c: Remove sparc*-*-* handling.
+
 2017-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81325
