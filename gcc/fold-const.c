@@ -410,7 +410,7 @@ negate_expr_p (tree t)
 	if (FLOAT_TYPE_P (TREE_TYPE (type)) || TYPE_OVERFLOW_WRAPS (type))
 	  return true;
 
-	int count = TYPE_VECTOR_SUBPARTS (type), i;
+	int count = VECTOR_CST_NELTS (t), i;
 
 	for (i = 0; i < count; i++)
 	  if (!negate_expr_p (VECTOR_CST_ELT (t, i)))
@@ -564,7 +564,7 @@ fold_negate_expr_1 (location_t loc, tree t)
 
     case VECTOR_CST:
       {
-	int count = TYPE_VECTOR_SUBPARTS (type), i;
+	int count = VECTOR_CST_NELTS (t), i;
 	tree *elts = XALLOCAVEC (tree, count);
 
 	for (i = 0; i < count; i++)
@@ -1413,7 +1413,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       && TREE_CODE (arg2) == VECTOR_CST)
     {
       tree type = TREE_TYPE (arg1);
-      int count = TYPE_VECTOR_SUBPARTS (type), i;
+      int count = VECTOR_CST_NELTS (arg1), i;
       tree *elts = XALLOCAVEC (tree, count);
 
       for (i = 0; i < count; i++)
@@ -1437,7 +1437,7 @@ const_binop (enum tree_code code, tree arg1, tree arg2)
       && TREE_CODE (arg2) == INTEGER_CST)
     {
       tree type = TREE_TYPE (arg1);
-      int count = TYPE_VECTOR_SUBPARTS (type), i;
+      int count = VECTOR_CST_NELTS (arg1), i;
       tree *elts = XALLOCAVEC (tree, count);
 
       for (i = 0; i < count; i++)
@@ -1481,21 +1481,24 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
     case VEC_PACK_TRUNC_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
       {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
 	tree *elts;
+	unsigned int out_nelts, in_nelts, i;
 
-	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts / 2
-		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2)) == nelts / 2);
 	if (TREE_CODE (arg1) != VECTOR_CST
 	    || TREE_CODE (arg2) != VECTOR_CST)
 	  return NULL_TREE;
 
-	elts = XALLOCAVEC (tree, nelts);
+	in_nelts = VECTOR_CST_NELTS (arg1);
+	out_nelts = in_nelts * 2;
+	gcc_assert (in_nelts == VECTOR_CST_NELTS (arg2)
+		    && out_nelts == TYPE_VECTOR_SUBPARTS (type));
+
+	elts = XALLOCAVEC (tree, out_nelts);
 	if (!vec_cst_ctor_to_array (arg1, elts)
-	    || !vec_cst_ctor_to_array (arg2, elts + nelts / 2))
+	    || !vec_cst_ctor_to_array (arg2, elts + in_nelts))
 	  return NULL_TREE;
 
-	for (i = 0; i < nelts; i++)
+	for (i = 0; i < out_nelts; i++)
 	  {
 	    elts[i] = fold_convert_const (code == VEC_PACK_TRUNC_EXPR
 					  ? NOP_EXPR : FIX_TRUNC_EXPR,
@@ -1512,33 +1515,35 @@ const_binop (enum tree_code code, tree type, tree arg1, tree arg2)
     case VEC_WIDEN_MULT_EVEN_EXPR:
     case VEC_WIDEN_MULT_ODD_EXPR:
       {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
-	unsigned int out, ofs, scale;
+	unsigned int out_nelts, in_nelts, out, ofs, scale;
 	tree *elts;
 
-	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts * 2
-		    && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg2)) == nelts * 2);
 	if (TREE_CODE (arg1) != VECTOR_CST || TREE_CODE (arg2) != VECTOR_CST)
 	  return NULL_TREE;
 
-	elts = XALLOCAVEC (tree, nelts * 4);
+	in_nelts = VECTOR_CST_NELTS (arg1);
+	out_nelts = in_nelts / 2;
+	gcc_assert (in_nelts == VECTOR_CST_NELTS (arg2)
+		    && out_nelts == TYPE_VECTOR_SUBPARTS (type));
+
+	elts = XALLOCAVEC (tree, in_nelts * 2);
 	if (!vec_cst_ctor_to_array (arg1, elts)
-	    || !vec_cst_ctor_to_array (arg2, elts + nelts * 2))
+	    || !vec_cst_ctor_to_array (arg2, elts + in_nelts))
 	  return NULL_TREE;
 
 	if (code == VEC_WIDEN_MULT_LO_EXPR)
-	  scale = 0, ofs = BYTES_BIG_ENDIAN ? nelts : 0;
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? out_nelts : 0;
 	else if (code == VEC_WIDEN_MULT_HI_EXPR)
-	  scale = 0, ofs = BYTES_BIG_ENDIAN ? 0 : nelts;
+	  scale = 0, ofs = BYTES_BIG_ENDIAN ? 0 : out_nelts;
 	else if (code == VEC_WIDEN_MULT_EVEN_EXPR)
 	  scale = 1, ofs = 0;
 	else /* if (code == VEC_WIDEN_MULT_ODD_EXPR) */
 	  scale = 1, ofs = 1;
 
-	for (out = 0; out < nelts; out++)
+	for (out = 0; out < out_nelts; out++)
 	  {
 	    unsigned int in1 = (out << scale) + ofs;
-	    unsigned int in2 = in1 + nelts * 2;
+	    unsigned int in2 = in1 + in_nelts;
 	    tree t1, t2;
 
 	    t1 = fold_convert_const (NOP_EXPR, TREE_TYPE (type), elts[in1]);
@@ -1671,28 +1676,31 @@ const_unop (enum tree_code code, tree type, tree arg0)
     case VEC_UNPACK_FLOAT_LO_EXPR:
     case VEC_UNPACK_FLOAT_HI_EXPR:
       {
-	unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	unsigned int out_nelts, in_nelts, i;
 	tree *elts;
 	enum tree_code subcode;
 
-	gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts * 2);
 	if (TREE_CODE (arg0) != VECTOR_CST)
 	  return NULL_TREE;
 
-	elts = XALLOCAVEC (tree, nelts * 2);
+	in_nelts = VECTOR_CST_NELTS (arg0);
+	out_nelts = in_nelts / 2;
+	gcc_assert (out_nelts == TYPE_VECTOR_SUBPARTS (type));
+
+	elts = XALLOCAVEC (tree, in_nelts);
 	if (!vec_cst_ctor_to_array (arg0, elts))
 	  return NULL_TREE;
 
 	if ((!BYTES_BIG_ENDIAN) ^ (code == VEC_UNPACK_LO_EXPR
 				   || code == VEC_UNPACK_FLOAT_LO_EXPR))
-	  elts += nelts;
+	  elts += out_nelts;
 
 	if (code == VEC_UNPACK_LO_EXPR || code == VEC_UNPACK_HI_EXPR)
 	  subcode = NOP_EXPR;
 	else
 	  subcode = FLOAT_EXPR;
 
-	for (i = 0; i < nelts; i++)
+	for (i = 0; i < out_nelts; i++)
 	  {
 	    elts[i] = fold_convert_const (subcode, TREE_TYPE (type), elts[i]);
 	    if (elts[i] == NULL_TREE || !CONSTANT_CLASS_P (elts[i]))
@@ -1712,7 +1720,7 @@ const_unop (enum tree_code code, tree type, tree arg0)
 
 	if (TREE_CODE (arg0) != VECTOR_CST)
 	  return NULL_TREE;
-        nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0));
+	nelts = VECTOR_CST_NELTS (arg0);
 
 	elts = XALLOCAVEC (tree, nelts);
 	if (!vec_cst_ctor_to_array (arg0, elts))
@@ -2153,7 +2161,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       if (TREE_CODE (arg1) == VECTOR_CST
 	  && TYPE_VECTOR_SUBPARTS (type) == VECTOR_CST_NELTS (arg1))
 	{
-	  int len = TYPE_VECTOR_SUBPARTS (type);
+	  int len = VECTOR_CST_NELTS (arg1);
 	  tree elttype = TREE_TYPE (type);
 	  tree *v = XALLOCAVEC (tree, len);
 	  for (int i = 0; i < len; ++i)
@@ -11311,9 +11319,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      && (TREE_CODE (arg2) == VECTOR_CST
 		  || TREE_CODE (arg2) == CONSTRUCTOR))
 	    {
-	      unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+	      unsigned int nelts = VECTOR_CST_NELTS (arg0), i;
 	      unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
-	      gcc_assert (nelts == VECTOR_CST_NELTS (arg0));
+	      gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
 	      for (i = 0; i < nelts; i++)
 		{
 		  tree val = VECTOR_CST_ELT (arg0, i);
@@ -11642,7 +11650,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
     case VEC_PERM_EXPR:
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
-	  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i, mask, mask2;
+	  unsigned int nelts = VECTOR_CST_NELTS (arg2), i, mask, mask2;
 	  unsigned char *sel = XALLOCAVEC (unsigned char, 2 * nelts);
 	  unsigned char *sel2 = sel + nelts;
 	  bool need_mask_canon = false;
@@ -11655,7 +11663,7 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 
 	  mask2 = 2 * nelts - 1;
 	  mask = single_arg ? (nelts - 1) : mask2;
-	  gcc_assert (nelts == VECTOR_CST_NELTS (arg2));
+	  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
 	  for (i = 0; i < nelts; i++)
 	    {
 	      tree val = VECTOR_CST_ELT (arg2, i);
@@ -11766,9 +11774,9 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		return arg0;
 	      else
 		{
-		  tree *elts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
-		  memcpy (elts, VECTOR_CST_ELTS (arg0),
-			  sizeof (tree) * TYPE_VECTOR_SUBPARTS (type));
+		  unsigned int nelts = VECTOR_CST_NELTS (arg0);
+		  tree *elts = XALLOCAVEC (tree, nelts);
+		  memcpy (elts, VECTOR_CST_ELTS (arg0), sizeof (tree) * nelts);
 		  elts[k] = arg1;
 		  return build_vector (type, elts);
 		}

@@ -1,3 +1,28 @@
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-core.h (tree_base::u): Add an "nelts" field.
+	(tree_vector): Use VECTOR_CST_NELTS as the length.
+	* tree.c (tree_size): Likewise.
+	(make_vector): Initialize VECTOR_CST_NELTS.
+	* tree.h (VECTOR_CST_NELTS): Use the u.nelts field.
+	* cfgexpand.c (expand_debug_expr): Use VECTOR_CST_NELTS instead of
+	TYPE_VECTOR_SUBPARTS.
+	* expr.c (const_vector_mask_from_tree): Consistently use "units"
+	as the number of units, setting it from VECTOR_CST_NELTS.
+	(const_vector_from_tree): Likewise.
+	* fold-const.c (negate_expr_p): Use VECTOR_CST_NELTS instead of
+	TYPE_VECTOR_SUBPARTS for the number of elements in a VECTOR_CST.
+	(fold_negate_expr_1): Likewise.
+	(fold_convert_const): Likewise.
+	(const_binop): Likewise.  Differentiate the number of output and
+	input elements.
+	(const_unop): Likewise.
+	(fold_ternary_loc): Use VECTOR_CST_NELTS for the number of elements
+	in a VECTOR_CST, asserting that it is the same as TYPE_VECTOR_SUBPARTS
+	in cases that did the opposite.
+
 2017-09-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-ssa-sccvn.c (visit_phi): Merge undefined values similar
