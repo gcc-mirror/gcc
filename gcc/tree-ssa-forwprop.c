@@ -1952,7 +1952,6 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   unsigned elem_size, nelts, i;
   enum tree_code code, conv_code;
   constructor_elt *elt;
-  unsigned char *sel;
   bool maybe_ident;
 
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
@@ -1965,7 +1964,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
-  sel = XALLOCAVEC (unsigned char, nelts);
+  auto_vec_perm_indices sel (nelts);
   orig = NULL;
   conv_code = ERROR_MARK;
   maybe_ident = true;
@@ -2023,8 +2022,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	}
       if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
 	return false;
-      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
-      if (sel[i] != i) maybe_ident = false;
+      unsigned int elt = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
+      if (elt != i)
+	maybe_ident = false;
+      sel.quick_push (elt);
     }
   if (i < nelts)
     return false;
@@ -2053,7 +2054,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     {
       tree mask_type;
 
-      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
+      if (!can_vec_perm_p (TYPE_MODE (type), false, &sel))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),

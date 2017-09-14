@@ -1300,13 +1300,13 @@ lower_vec_perm (gimple_stmt_iterator *gsi)
 
   if (TREE_CODE (mask) == VECTOR_CST)
     {
-      unsigned char *sel_int = XALLOCAVEC (unsigned char, elements);
+      auto_vec_perm_indices sel_int (elements);
 
       for (i = 0; i < elements; ++i)
-	sel_int[i] = (TREE_INT_CST_LOW (VECTOR_CST_ELT (mask, i))
-		      & (2 * elements - 1));
+	sel_int.quick_push (TREE_INT_CST_LOW (VECTOR_CST_ELT (mask, i))
+			    & (2 * elements - 1));
 
-      if (can_vec_perm_p (TYPE_MODE (vect_type), false, sel_int))
+      if (can_vec_perm_p (TYPE_MODE (vect_type), false, &sel_int))
 	{
 	  gimple_assign_set_rhs3 (stmt, mask);
 	  update_stmt (stmt);

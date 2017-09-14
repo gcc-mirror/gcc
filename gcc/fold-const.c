@@ -8786,12 +8786,14 @@ vec_cst_ctor_to_array (tree arg, unsigned int nelts, tree *elts)
    NULL_TREE otherwise.  */
 
 static tree
-fold_vec_perm (tree type, tree arg0, tree arg1, const unsigned char *sel)
+fold_vec_perm (tree type, tree arg0, tree arg1, vec_perm_indices sel)
 {
-  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type), i;
+  unsigned int i;
   bool need_ctor = false;
 
-  gcc_assert (TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts
+  unsigned int nelts = sel.length ();
+  gcc_assert (TYPE_VECTOR_SUBPARTS (type) == nelts
+	      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg0)) == nelts
 	      && TYPE_VECTOR_SUBPARTS (TREE_TYPE (arg1)) == nelts);
   if (TREE_TYPE (TREE_TYPE (arg0)) != TREE_TYPE (type)
       || TREE_TYPE (TREE_TYPE (arg1)) != TREE_TYPE (type))
@@ -11312,15 +11314,15 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 		  || TREE_CODE (arg2) == CONSTRUCTOR))
 	    {
 	      unsigned int nelts = VECTOR_CST_NELTS (arg0), i;
-	      unsigned char *sel = XALLOCAVEC (unsigned char, nelts);
 	      gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
+	      auto_vec_perm_indices sel (nelts);
 	      for (i = 0; i < nelts; i++)
 		{
 		  tree val = VECTOR_CST_ELT (arg0, i);
 		  if (integer_all_onesp (val))
-		    sel[i] = i;
+		    sel.quick_push (i);
 		  else if (integer_zerop (val))
-		    sel[i] = nelts + i;
+		    sel.quick_push (nelts + i);
 		  else /* Currently unreachable.  */
 		    return NULL_TREE;
 		}
@@ -11643,8 +11645,6 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
       if (TREE_CODE (arg2) == VECTOR_CST)
 	{
 	  unsigned int nelts = VECTOR_CST_NELTS (arg2), i, mask, mask2;
-	  unsigned char *sel = XALLOCAVEC (unsigned char, 2 * nelts);
-	  unsigned char *sel2 = sel + nelts;
 	  bool need_mask_canon = false;
 	  bool need_mask_canon2 = false;
 	  bool all_in_vec0 = true;
@@ -11656,6 +11656,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	  mask2 = 2 * nelts - 1;
 	  mask = single_arg ? (nelts - 1) : mask2;
 	  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
+	  auto_vec_perm_indices sel (nelts);
+	  auto_vec_perm_indices sel2 (nelts);
 	  for (i = 0; i < nelts; i++)
 	    {
 	      tree val = VECTOR_CST_ELT (arg2, i);
@@ -11667,16 +11669,19 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	      wide_int t = val;
 	      need_mask_canon |= wi::gtu_p (t, mask);
 	      need_mask_canon2 |= wi::gtu_p (t, mask2);
-	      sel[i] = t.to_uhwi () & mask;
-	      sel2[i] = t.to_uhwi () & mask2;
+	      unsigned int elt = t.to_uhwi () & mask;
+	      unsigned int elt2 = t.to_uhwi () & mask2;
 
-	      if (sel[i] < nelts)
+	      if (elt < nelts)
 		all_in_vec1 = false;
 	      else
 		all_in_vec0 = false;
 
-	      if ((sel[i] & (nelts-1)) != i)
+	      if ((elt & (nelts - 1)) != i)
 		maybe_identity = false;
+
+	      sel.quick_push (elt);
+	      sel2.quick_push (elt2);
 	    }
 
 	  if (maybe_identity)
@@ -11714,8 +11719,8 @@ fold_ternary_loc (location_t loc, enum tree_code code, tree type,
 	     argument permutation while still allowing an equivalent
 	     2-argument version.  */
 	  if (need_mask_canon && arg2 == op2
-	      && !can_vec_perm_p (TYPE_MODE (type), false, sel)
-	      && can_vec_perm_p (TYPE_MODE (type), false, sel2))
+	      && !can_vec_perm_p (TYPE_MODE (type), false, &sel)
+	      && can_vec_perm_p (TYPE_MODE (type), false, &sel2))
 	    {
 	      need_mask_canon = need_mask_canon2;
 	      sel = sel2;
