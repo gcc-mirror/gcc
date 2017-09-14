@@ -1,3 +1,27 @@
+2017-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_1_HW): New macros
+	to support float128 built-in functions that require the ISA 3.0
+	hardware.
+	(BU_FLOAT128_3_HW): Likewise.
+	(SQRTF128): Add support for the IEEE 128-bit square root and fma
+	built-in functions.
+	(FMAF128): Likewise.
+	(FMAQ): Likewise.
+	* config/rs6000/rs6000.c (rs6000_builtin_mask_calculate): Add
+	support for built-in functions that need the ISA 3.0 IEEE 128-bit
+	floating point instructions.
+	(rs6000_invalid_builtin): Likewise.
+	(rs6000_builtin_mask_names): Likewise.
+	* config/rs6000/rs6000.h (MASK_FLOAT128_HW): Likewise.
+	(RS6000_BTM_FLOAT128_HW): Likewise.
+	(RS6000_BTM_COMMON): Likewise.
+	* config/rs6000/rs6000.md (fma<mode>4_hw): Add a generator
+	function.
+	* doc/extend.texi (RS/6000 built-in functions): Document the
+	IEEE 128-bit floating point square root and fused multiply-add
+	built-in functions.
+
 2017-09-14  Pat Haugen  <pthaugen@us.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_set_up_by_prologue): Make sure the TOC

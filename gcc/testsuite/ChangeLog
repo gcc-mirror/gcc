@@ -1,3 +1,14 @@
+2017-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/abs128-1.c: Use __builtin_fabsf128 instead of
+	__builtin_fabsq.
+	* gcc.target/powerpc/float128-5.c: Use __builtin_fabsf128 instead
+	of __builtin_fabsq.  Prevent the test from running on 32-bit.
+	* gcc.target/powerpc/float128-fma1.c: New test.
+	* gcc.target/powerpc/float128-fma2.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt1.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt2.c: Likewise.
+
 2017-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/82174

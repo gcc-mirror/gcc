@@ -640,6 +640,7 @@ extern int rs6000_vector_align[];
 #define MASK_DLMZB			OPTION_MASK_DLMZB
 #define MASK_EABI			OPTION_MASK_EABI
 #define MASK_FLOAT128_KEYWORD		OPTION_MASK_FLOAT128_KEYWORD
+#define MASK_FLOAT128_HW		OPTION_MASK_FLOAT128_HW
 #define MASK_FPRND			OPTION_MASK_FPRND
 #define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
 #define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
@@ -2499,6 +2500,7 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
 #define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
+#define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2517,7 +2519,8 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_DFP			\
 				 | RS6000_BTM_HARD_FLOAT		\
 				 | RS6000_BTM_LDBL128			\
-				 | RS6000_BTM_FLOAT128)
+				 | RS6000_BTM_FLOAT128			\
+				 | RS6000_BTM_FLOAT128_HW)
 
 /* Define builtin enum index.  */
 
