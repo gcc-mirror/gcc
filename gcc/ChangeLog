@@ -1,3 +1,8 @@
+2017-09-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_set_up_by_prologue): Make sure the TOC
+	reg (r2) isn't in the set of registers defined in the prologue.
+
 2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
