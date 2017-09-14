@@ -1,7 +1,7 @@
 /* Verify that overloaded built-ins for vec_ld* with long long
    inputs produce the right code.  */
 
-/* { dg-do compile } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-options "-mpower8-vector -O2" } */
 
