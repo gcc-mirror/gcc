@@ -14463,15 +14463,14 @@ Receive_expression::do_get_backend(Translate_context* context)
       go_assert(this->channel_->type()->is_error());
       return context->backend()->error_expression();
     }
-  Expression* td = Expression::make_type_descriptor(channel_type, loc);
 
   Expression* recv_ref =
     Expression::make_temporary_reference(this->temp_receiver_, loc);
   Expression* recv_addr =
     Expression::make_temporary_reference(this->temp_receiver_, loc);
   recv_addr = Expression::make_unary(OPERATOR_AND, recv_addr, loc);
-  Expression* recv = Runtime::make_call(Runtime::CHANRECV1, loc, 3,
-					td, this->channel_, recv_addr);
+  Expression* recv = Runtime::make_call(Runtime::CHANRECV1, loc, 2,
+					this->channel_, recv_addr);
   return Expression::make_compound(recv, recv_ref, loc)->get_backend(context);
 }
 
