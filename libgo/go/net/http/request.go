@@ -27,8 +27,6 @@ import (
 	"sync"
 
 	"golang_org/x/net/idna"
-	"golang_org/x/text/unicode/norm"
-	"golang_org/x/text/width"
 )
 
 const (
@@ -331,6 +329,16 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 	r2 := new(Request)
 	*r2 = *r
 	r2.ctx = ctx
+
+	// Deep copy the URL because it isn't
+	// a map and the URL is mutable by users
+	// of WithContext.
+	if r.URL != nil {
+		r2URL := new(url.URL)
+		*r2URL = *r.URL
+		r2.URL = r2URL
+	}
+
 	return r2
 }
 
@@ -339,18 +347,6 @@ func (r *Request) WithContext(ctx context.Context) *Request {
 func (r *Request) ProtoAtLeast(major, minor int) bool {
 	return r.ProtoMajor > major ||
 		r.ProtoMajor == major && r.ProtoMinor >= minor
-}
-
-// protoAtLeastOutgoing is like ProtoAtLeast, but is for outgoing
-// requests (see issue 18407) where these fields aren't supposed to
-// matter.  As a minor fix for Go 1.8, at least treat (0, 0) as
-// matching HTTP/1.1 or HTTP/1.0.  Only HTTP/1.1 is used.
-// TODO(bradfitz): ideally remove this whole method. It shouldn't be used.
-func (r *Request) protoAtLeastOutgoing(major, minor int) bool {
-	if r.ProtoMajor == 0 && r.ProtoMinor == 0 && major == 1 && minor <= 1 {
-		return true
-	}
-	return r.ProtoAtLeast(major, minor)
 }
 
 // UserAgent returns the client's User-Agent, if sent in the request.
@@ -621,6 +617,9 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, wai
 	// Write body and trailer
 	err = tw.WriteBody(w)
 	if err != nil {
+		if tw.bodyReadError == err {
+			err = requestBodyReadError{err}
+		}
 		return err
 	}
 
@@ -630,17 +629,25 @@ func (req *Request) write(w io.Writer, usingProxy bool, extraHeaders Header, wai
 	return nil
 }
 
+// requestBodyReadError wraps an error from (*Request).write to indicate
+// that the error came from a Read call on the Request.Body.
+// This error type should not escape the net/http package to users.
+type requestBodyReadError struct{ error }
+
 func idnaASCII(v string) (string, error) {
+	// TODO: Consider removing this check after verifying performance is okay.
+	// Right now punycode verification, length checks, context checks, and the
+	// permissible character tests are all omitted. It also prevents the ToASCII
+	// call from salvaging an invalid IDN, when possible. As a result it may be
+	// possible to have two IDNs that appear identical to the user where the
+	// ASCII-only version causes an error downstream whereas the non-ASCII
+	// version does not.
+	// Note that for correct ASCII IDNs ToASCII will only do considerably more
+	// work, but it will not cause an allocation.
 	if isASCII(v) {
 		return v, nil
 	}
-	// The idna package doesn't do everything from
-	// https://tools.ietf.org/html/rfc5895 so we do it here.
-	// TODO(bradfitz): should the idna package do this instead?
-	v = strings.ToLower(v)
-	v = width.Fold.String(v)
-	v = norm.NFC.String(v)
-	return idna.ToASCII(v)
+	return idna.Lookup.ToASCII(v)
 }
 
 // cleanHost cleans up the host sent in request's Host header.
@@ -755,7 +762,7 @@ func validMethod(method string) bool {
 // exact value (instead of -1), GetBody is populated (so 307 and 308
 // redirects can replay the body), and Body is set to NoBody if the
 // ContentLength is 0.
-func NewRequest(method, urlStr string, body io.Reader) (*Request, error) {
+func NewRequest(method, url string, body io.Reader) (*Request, error) {
 	if method == "" {
 		// We document that "" means "GET" for Request.Method, and people have
 		// relied on that from NewRequest, so keep that working.
@@ -765,7 +772,7 @@ func NewRequest(method, urlStr string, body io.Reader) (*Request, error) {
 	if !validMethod(method) {
 		return nil, fmt.Errorf("net/http: invalid method %q", method)
 	}
-	u, err := url.Parse(urlStr)
+	u, err := parseURL(url) // Just url.Parse (url is shadowed for godoc).
 	if err != nil {
 		return nil, err
 	}
@@ -930,6 +937,9 @@ func readRequest(b *bufio.Reader, deleteHostHeader bool) (req *Request, err erro
 	if !ok {
 		return nil, &badStringError{"malformed HTTP request", s}
 	}
+	if !validMethod(req.Method) {
+		return nil, &badStringError{"invalid method", req.Method}
+	}
 	rawurl := req.RequestURI
 	if req.ProtoMajor, req.ProtoMinor, ok = ParseHTTPVersion(req.Proto); !ok {
 		return nil, &badStringError{"malformed HTTP version", req.Proto}
@@ -1019,11 +1029,6 @@ type maxBytesReader struct {
 	r   io.ReadCloser // underlying reader
 	n   int64         // max bytes remaining
 	err error         // sticky error
-}
-
-func (l *maxBytesReader) tooLarge() (n int, err error) {
-	l.err = errors.New("http: request body too large")
-	return 0, l.err
 }
 
 func (l *maxBytesReader) Read(p []byte) (n int, err error) {
@@ -1297,7 +1302,7 @@ func (r *Request) closeBody() {
 }
 
 func (r *Request) isReplayable() bool {
-	if r.Body == nil {
+	if r.Body == nil || r.Body == NoBody || r.GetBody != nil {
 		switch valueOrDefault(r.Method, "GET") {
 		case "GET", "HEAD", "OPTIONS", "TRACE":
 			return true

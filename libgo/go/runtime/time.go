@@ -31,6 +31,7 @@ var timers struct {
 	created      bool
 	sleeping     bool
 	rescheduling bool
+	sleepUntil   int64
 	waitnote     note
 	t            []*timer
 }
@@ -50,7 +51,12 @@ func timeSleep(ns int64) {
 		return
 	}
 
-	t := new(timer)
+	t := getg().timer
+	if t == nil {
+		t = new(timer)
+		getg().timer = t
+	}
+	*t = timer{}
 	t.when = nanotime() + ns
 	t.f = goroutineReady
 	t.arg = getg()
@@ -207,6 +213,7 @@ func timerproc() {
 		}
 		// At least one timer pending. Sleep until then.
 		timers.sleeping = true
+		timers.sleepUntil = now + delta
 		noteclear(&timers.waitnote)
 		unlock(&timers.lock)
 		notetsleepg(&timers.waitnote, delta)
@@ -295,8 +302,8 @@ func siftdownTimer(i int) {
 
 // Entry points for net, time to call nanotime.
 
-//go:linkname net_runtimeNano net.runtimeNano
-func net_runtimeNano() int64 {
+//go:linkname poll_runtimeNano internal_poll.runtimeNano
+func poll_runtimeNano() int64 {
 	return nanotime()
 }
 
@@ -304,3 +311,5 @@ func net_runtimeNano() int64 {
 func time_runtimeNano() int64 {
 	return nanotime()
 }
+
+var startNano int64 = nanotime()

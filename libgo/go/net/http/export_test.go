@@ -8,24 +8,29 @@
 package http
 
 import (
+	"context"
 	"net"
 	"sort"
 	"sync"
+	"testing"
 	"time"
 )
 
 var (
-	DefaultUserAgent             = defaultUserAgent
-	NewLoggingConn               = newLoggingConn
-	ExportAppendTime             = appendTime
-	ExportRefererForURL          = refererForURL
-	ExportServerNewConn          = (*Server).newConn
-	ExportCloseWriteAndWait      = (*conn).closeWriteAndWait
-	ExportErrRequestCanceled     = errRequestCanceled
-	ExportErrRequestCanceledConn = errRequestCanceledConn
-	ExportServeFile              = serveFile
-	ExportScanETag               = scanETag
-	ExportHttp2ConfigureServer   = http2ConfigureServer
+	DefaultUserAgent                  = defaultUserAgent
+	NewLoggingConn                    = newLoggingConn
+	ExportAppendTime                  = appendTime
+	ExportRefererForURL               = refererForURL
+	ExportServerNewConn               = (*Server).newConn
+	ExportCloseWriteAndWait           = (*conn).closeWriteAndWait
+	ExportErrRequestCanceled          = errRequestCanceled
+	ExportErrRequestCanceledConn      = errRequestCanceledConn
+	ExportErrServerClosedIdle         = errServerClosedIdle
+	ExportServeFile                   = serveFile
+	ExportScanETag                    = scanETag
+	ExportHttp2ConfigureServer        = http2ConfigureServer
+	Export_shouldCopyHeaderOnRedirect = shouldCopyHeaderOnRedirect
+	Export_writeStatusLine            = writeStatusLine
 )
 
 func init() {
@@ -186,8 +191,6 @@ func ExportHttp2ConfigureTransport(t *Transport) error {
 	return nil
 }
 
-var Export_shouldCopyHeaderOnRedirect = shouldCopyHeaderOnRedirect
-
 func (s *Server) ExportAllConnsIdle() bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -198,4 +201,8 @@ func (s *Server) ExportAllConnsIdle() bool {
 		}
 	}
 	return true
+}
+
+func (r *Request) WithT(t *testing.T) *Request {
+	return r.WithContext(context.WithValue(r.Context(), tLogKey{}, t.Logf))
 }

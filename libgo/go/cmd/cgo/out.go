@@ -190,7 +190,7 @@ func (p *Package) writeDefs() {
 	for _, key := range nameKeys(p.Name) {
 		n := p.Name[key]
 		if n.Const != "" {
-			fmt.Fprintf(fgo2, "const _Cconst_%s = %s\n", n.Go, n.Const)
+			fmt.Fprintf(fgo2, "const %s = %s\n", n.Mangle, n.Const)
 		}
 	}
 	fmt.Fprintf(fgo2, "\n")
@@ -1303,7 +1303,7 @@ const gccProlog = `
 */
 #define __cgo_compile_assert_eq(x, y, name) typedef char name[(x-y)*(x-y)*-2+1];
 
-// Check at compile time that the sizes we use match our expectations.
+/* Check at compile time that the sizes we use match our expectations. */
 #define __cgo_size_assert(t, n) __cgo_compile_assert_eq(sizeof(t), n, _cgo_sizeof_##t##_is_not_##n)
 
 __cgo_size_assert(char, 1)
@@ -1328,6 +1328,27 @@ const noTsanProlog = `
 `
 
 // This must match the TSAN code in runtime/cgo/libcgo.h.
+// This is used when the code is built with the C/C++ Thread SANitizer,
+// which is not the same as the Go race detector.
+// __tsan_acquire tells TSAN that we are acquiring a lock on a variable,
+// in this case _cgo_sync. __tsan_release releases the lock.
+// (There is no actual lock, we are just telling TSAN that there is.)
+//
+// When we call from Go to C we call _cgo_tsan_acquire.
+// When the C function returns we call _cgo_tsan_release.
+// Similarly, when C calls back into Go we call _cgo_tsan_release
+// and then call _cgo_tsan_acquire when we return to C.
+// These calls tell TSAN that there is a serialization point at the C call.
+//
+// This is necessary because TSAN, which is a C/C++ tool, can not see
+// the synchronization in the Go code. Without these calls, when
+// multiple goroutines call into C code, TSAN does not understand
+// that the calls are properly synchronized on the Go side.
+//
+// To be clear, if the calls are not properly synchronized on the Go side,
+// we will be hiding races. But when using TSAN on mixed Go C/C++ code
+// it is more important to avoid false positives, which reduce confidence
+// in the tool, than to avoid false negatives.
 const yesTsanProlog = `
 #line 1 "cgo-tsan-prolog"
 #define CGO_NO_SANITIZE_THREAD __attribute__ ((no_sanitize_thread))

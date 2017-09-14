@@ -61,6 +61,8 @@ import "errors"
 // RFC822, RFC822Z, RFC1123, and RFC1123Z are useful for formatting;
 // when used with time.Parse they do not accept all the time formats
 // permitted by the RFCs.
+// The RFC3339Nano format removes trailing zeros from the seconds field
+// and thus may not sort correctly once formatted.
 const (
 	ANSIC       = "Mon Jan _2 15:04:05 2006"
 	UnixDate    = "Mon Jan _2 15:04:05 MST 2006"
@@ -424,8 +426,41 @@ func formatNano(b []byte, nanosec uint, n int, trim bool) []byte {
 
 // String returns the time formatted using the format string
 //	"2006-01-02 15:04:05.999999999 -0700 MST"
+//
+// If the time has a monotonic clock reading, the returned string
+// includes a final field "m=±<value>", where value is the monotonic
+// clock reading formatted as a decimal number of seconds.
+//
+// The returned string is meant for debugging; for a stable serialized
+// representation, use t.MarshalText, t.MarshalBinary, or t.Format
+// with an explicit format string.
 func (t Time) String() string {
-	return t.Format("2006-01-02 15:04:05.999999999 -0700 MST")
+	s := t.Format("2006-01-02 15:04:05.999999999 -0700 MST")
+
+	// Format monotonic clock reading as m=±ddd.nnnnnnnnn.
+	if t.wall&hasMonotonic != 0 {
+		m2 := uint64(t.ext)
+		sign := byte('+')
+		if t.ext < 0 {
+			sign = '-'
+			m2 = -m2
+		}
+		m1, m2 := m2/1e9, m2%1e9
+		m0, m1 := m1/1e9, m1%1e9
+		var buf []byte
+		buf = append(buf, " m="...)
+		buf = append(buf, sign)
+		wid := 0
+		if m0 != 0 {
+			buf = appendInt(buf, int(m0), 0)
+			wid = 9
+		}
+		buf = appendInt(buf, int(m1), wid)
+		buf = append(buf, '.')
+		buf = appendInt(buf, int(m2), 9)
+		s += string(buf)
+	}
+	return s
 }
 
 // Format returns a textual representation of the time value formatted
@@ -725,11 +760,6 @@ func skip(value, prefix string) (string, error) {
 // location and zone in the returned time. Otherwise it records the time as
 // being in a fabricated location with time fixed at the given zone offset.
 //
-// No checking is done that the day of the month is within the month's
-// valid dates; any one- or two-digit value is accepted. For example
-// February 31 and even February 99 are valid dates, specifying dates
-// in March and May. This behavior is consistent with time.Date.
-//
 // When parsing a time with a zone abbreviation like MST, if the zone abbreviation
 // has a defined offset in the current location, then that offset is used.
 // The zone abbreviation "UTC" is recognized as UTC regardless of location.
@@ -1022,11 +1052,11 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 
 	if zoneOffset != -1 {
 		t := Date(year, Month(month), day, hour, min, sec, nsec, UTC)
-		t.sec -= int64(zoneOffset)
+		t.addSec(-int64(zoneOffset))
 
 		// Look for local zone with the given offset.
 		// If that zone was in effect at the given time, use it.
-		name, offset, _, _, _ := local.lookup(t.sec + internalToUnix)
+		name, offset, _, _, _ := local.lookup(t.unixSec())
 		if offset == zoneOffset && (zoneName == "" || name == zoneName) {
 			t.setLoc(local)
 			return t, nil
@@ -1041,9 +1071,9 @@ func parse(layout, value string, defaultLocation, local *Location) (Time, error)
 		t := Date(year, Month(month), day, hour, min, sec, nsec, UTC)
 		// Look for local zone with the given offset.
 		// If that zone was in effect at the given time, use it.
-		offset, _, ok := local.lookupName(zoneName, t.sec+internalToUnix)
+		offset, _, ok := local.lookupName(zoneName, t.unixSec())
 		if ok {
-			t.sec -= int64(offset)
+			t.addSec(-int64(offset))
 			t.setLoc(local)
 			return t, nil
 		}

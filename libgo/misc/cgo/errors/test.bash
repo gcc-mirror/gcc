@@ -17,7 +17,7 @@ check() {
 expect() {
 	file=$1
 	shift
-	if go build $file >errs 2>&1; then
+	if go build -gcflags=-C $file >errs 2>&1; then
 		echo 1>&2 misc/cgo/errors/test.bash: BUG: expected cgo to fail on $file but it succeeded
 		exit 1
 	fi
@@ -47,6 +47,8 @@ expect issue13635.go C.uchar C.schar C.ushort C.uint C.ulong C.longlong C.ulongl
 check issue13830.go
 check issue16116.go
 check issue16591.go
+check issue18889.go
+expect issue18452.go issue18452.go:16 issue18452.go:17
 
 if ! go build issue14669.go; then
 	exit 1

@@ -5,6 +5,7 @@
 package crc32
 
 import (
+	"fmt"
 	"hash"
 	"math/rand"
 	"testing"
@@ -75,8 +76,9 @@ func testCrossCheck(t *testing.T, crcFunc1, crcFunc2 func(crc uint32, b []byte) 
 	// The AMD64 implementation has some cutoffs at lengths 168*3=504 and
 	// 1344*3=4032. We should make sure lengths around these values are in the
 	// list.
-	lengths := []int{0, 1, 2, 3, 4, 5, 10, 16, 50, 100, 128,
-		500, 501, 502, 503, 504, 505, 512, 1000, 1024, 2000,
+	lengths := []int{0, 1, 2, 3, 4, 5, 10, 16, 50, 63, 64, 65, 100,
+		127, 128, 129, 255, 256, 257, 300, 312, 384, 416, 448, 480,
+		500, 501, 502, 503, 504, 505, 512, 513, 1000, 1024, 2000,
 		4030, 4031, 4032, 4033, 4036, 4040, 4048, 4096, 5000, 10000}
 	for _, length := range lengths {
 		p := make([]byte, length)
@@ -196,68 +198,28 @@ func TestGolden(t *testing.T) {
 	}
 }
 
-func BenchmarkIEEECrc40B(b *testing.B) {
-	benchmark(b, NewIEEE(), 40, 0)
+func BenchmarkCRC32(b *testing.B) {
+	b.Run("poly=IEEE", benchmarkAll(NewIEEE()))
+	b.Run("poly=Castagnoli", benchmarkAll(New(MakeTable(Castagnoli))))
+	b.Run("poly=Koopman", benchmarkAll(New(MakeTable(Koopman))))
 }
 
-func BenchmarkIEEECrc1KB(b *testing.B) {
-	benchmark(b, NewIEEE(), 1<<10, 0)
-}
-
-func BenchmarkIEEECrc4KB(b *testing.B) {
-	benchmark(b, NewIEEE(), 4<<10, 0)
-}
-
-func BenchmarkIEEECrc32KB(b *testing.B) {
-	benchmark(b, NewIEEE(), 32<<10, 0)
-}
-
-func BenchmarkCastagnoliCrc15B(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 15, 0)
-}
-
-func BenchmarkCastagnoliCrc15BMisaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 15, 1)
-}
-
-func BenchmarkCastagnoliCrc40B(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 40, 0)
-}
-
-func BenchmarkCastagnoliCrc40BMisaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 40, 1)
-}
-
-func BenchmarkCastagnoliCrc512(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 512, 0)
-}
-
-func BenchmarkCastagnoliCrc512Misaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 512, 1)
-}
-
-func BenchmarkCastagnoliCrc1KB(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 1<<10, 0)
-}
-
-func BenchmarkCastagnoliCrc1KBMisaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 1<<10, 1)
-}
-
-func BenchmarkCastagnoliCrc4KB(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 4<<10, 0)
-}
-
-func BenchmarkCastagnoliCrc4KBMisaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 4<<10, 1)
-}
-
-func BenchmarkCastagnoliCrc32KB(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 32<<10, 0)
-}
-
-func BenchmarkCastagnoliCrc32KBMisaligned(b *testing.B) {
-	benchmark(b, New(MakeTable(Castagnoli)), 32<<10, 1)
+func benchmarkAll(h hash.Hash32) func(b *testing.B) {
+	return func(b *testing.B) {
+		for _, size := range []int{15, 40, 512, 1 << 10, 4 << 10, 32 << 10} {
+			name := fmt.Sprint(size)
+			if size >= 1024 {
+				name = fmt.Sprintf("%dkB", size/1024)
+			}
+			b.Run("size="+name, func(b *testing.B) {
+				for align := 0; align <= 1; align++ {
+					b.Run(fmt.Sprintf("align=%d", align), func(b *testing.B) {
+						benchmark(b, h, int64(size), int64(align))
+					})
+				}
+			})
+		}
+	}
 }
 
 func benchmark(b *testing.B, h hash.Hash32, n, alignment int64) {

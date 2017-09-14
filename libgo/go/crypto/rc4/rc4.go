@@ -4,10 +4,10 @@
 
 // Package rc4 implements RC4 encryption, as defined in Bruce Schneier's
 // Applied Cryptography.
+//
+// RC4 is cryptographically broken and should not be used for secure
+// applications.
 package rc4
-
-// BUG(agl): RC4 is in common use but has design weaknesses that make
-// it a poor choice for new protocols.
 
 import "strconv"
 

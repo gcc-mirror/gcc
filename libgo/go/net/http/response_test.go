@@ -318,7 +318,7 @@ var respTests = []respTest{
 	{
 		"HTTP/1.0 303\r\n\r\n",
 		Response{
-			Status:        "303 ",
+			Status:        "303",
 			StatusCode:    303,
 			Proto:         "HTTP/1.0",
 			ProtoMajor:    1,
@@ -531,6 +531,29 @@ some body`,
 			ContentLength: 23,
 		},
 		"\x1f\x8b\b\x00\x00\x00\x00\x00\x00\x00s\xf3\xf7\a\x00\xab'\xd4\x1a\x03\x00\x00\x00",
+	},
+
+	// Issue 19989: two spaces between HTTP version and status.
+	{
+		"HTTP/1.0  401 Unauthorized\r\n" +
+			"Content-type: text/html\r\n" +
+			"WWW-Authenticate: Basic realm=\"\"\r\n\r\n" +
+			"Your Authentication failed.\r\n",
+		Response{
+			Status:     "401 Unauthorized",
+			StatusCode: 401,
+			Proto:      "HTTP/1.0",
+			ProtoMajor: 1,
+			ProtoMinor: 0,
+			Request:    dummyReq("GET"),
+			Header: Header{
+				"Content-Type":     {"text/html"},
+				"Www-Authenticate": {`Basic realm=""`},
+			},
+			Close:         true,
+			ContentLength: -1,
+		},
+		"Your Authentication failed.\r\n",
 	},
 }
 
@@ -924,5 +947,31 @@ func TestNeedsSniff(t *testing.T) {
 	r.handlerHeader = Header{"Content-Type": nil}
 	if got, want := r.needsSniff(), false; got != want {
 		t.Errorf("needsSniff empty Content-Type = %t; want %t", got, want)
+	}
+}
+
+// A response should only write out single Connection: close header. Tests #19499.
+func TestResponseWritesOnlySingleConnectionClose(t *testing.T) {
+	const connectionCloseHeader = "Connection: close"
+
+	res, err := ReadResponse(bufio.NewReader(strings.NewReader("HTTP/1.0 200 OK\r\n\r\nAAAA")), nil)
+	if err != nil {
+		t.Fatalf("ReadResponse failed %v", err)
+	}
+
+	var buf1 bytes.Buffer
+	if err = res.Write(&buf1); err != nil {
+		t.Fatalf("Write failed %v", err)
+	}
+	if res, err = ReadResponse(bufio.NewReader(&buf1), nil); err != nil {
+		t.Fatalf("ReadResponse failed %v", err)
+	}
+
+	var buf2 bytes.Buffer
+	if err = res.Write(&buf2); err != nil {
+		t.Fatalf("Write failed %v", err)
+	}
+	if count := strings.Count(buf2.String(), connectionCloseHeader); count != 1 {
+		t.Errorf("Found %d %q header", count, connectionCloseHeader)
 	}
 }

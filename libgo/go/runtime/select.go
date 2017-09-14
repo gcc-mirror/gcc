@@ -98,7 +98,6 @@ func selectsend(sel *hselect, c *hchan, elem unsafe.Pointer) {
 		return
 	}
 	cas := (*scase)(add(unsafe.Pointer(&sel.scase), uintptr(i)*unsafe.Sizeof(sel.scase[0])))
-
 	cas.pc = pc
 	cas.c = c
 	cas.kind = caseSend
@@ -246,7 +245,7 @@ func selectgo(sel *hselect) int {
 	pollslice := slice{unsafe.Pointer(sel.pollorder), int(sel.ncase), int(sel.ncase)}
 	pollorder := *(*[]uint16)(unsafe.Pointer(&pollslice))
 	for i := 1; i < int(sel.ncase); i++ {
-		j := int(fastrand()) % (i + 1)
+		j := fastrandn(uint32(i + 1))
 		pollorder[i] = pollorder[j]
 		pollorder[j] = uint16(i)
 	}
@@ -408,7 +407,7 @@ loop:
 
 	// wait for someone to wake us up
 	gp.param = nil
-	gopark(selparkcommit, nil, "select", traceEvGoBlockSelect, 2)
+	gopark(selparkcommit, nil, "select", traceEvGoBlockSelect, 1)
 
 	// While we were asleep, some goroutine came along and completed
 	// one of the cases in the select and woke us up (called ready).
@@ -602,7 +601,7 @@ bufsend:
 
 recv:
 	// can receive from sleeping sender (sg)
-	recv(c, sg, cas.elem, func() { selunlock(scases, lockorder) })
+	recv(c, sg, cas.elem, func() { selunlock(scases, lockorder) }, 2)
 	if debugSelect {
 		print("syncrecv: sel=", sel, " c=", c, "\n")
 	}
@@ -633,7 +632,7 @@ send:
 	if msanenabled {
 		msanread(cas.elem, c.elemtype.size)
 	}
-	send(c, sg, cas.elem, func() { selunlock(scases, lockorder) })
+	send(c, sg, cas.elem, func() { selunlock(scases, lockorder) }, 2)
 	if debugSelect {
 		print("syncsend: sel=", sel, " c=", c, "\n")
 	}
@@ -641,7 +640,7 @@ send:
 
 retc:
 	if cas.releasetime > 0 {
-		blockevent(cas.releasetime-t0, 2)
+		blockevent(cas.releasetime-t0, 1)
 	}
 	return casi
 

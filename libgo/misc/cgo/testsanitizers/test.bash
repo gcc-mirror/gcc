@@ -72,12 +72,12 @@ testmsanshared() {
   goos=$(go env GOOS)
   suffix="-installsuffix testsanitizers"
   libext="so"
-  if [ "$goos" == "darwin" ]; then
+  if [ "$goos" = "darwin" ]; then
 	  libext="dylib"
   fi
   go build -msan -buildmode=c-shared $suffix -o ${TMPDIR}/libmsanshared.$libext msan_shared.go
 
-	echo 'int main() { return 0; }' > ${TMPDIR}/testmsanshared.c
+  echo 'int main() { return 0; }' > ${TMPDIR}/testmsanshared.c
   $CC $(go env GOGCCFLAGS) -fsanitize=memory -o ${TMPDIR}/testmsanshared ${TMPDIR}/testmsanshared.c ${TMPDIR}/libmsanshared.$libext
 
   if ! LD_LIBRARY_PATH=. ${TMPDIR}/testmsanshared; then
@@ -131,21 +131,43 @@ if test "$msan" = "yes"; then
     testmsanshared
 fi
 
+testtsanshared() {
+  goos=$(go env GOOS)
+  suffix="-installsuffix tsan"
+  libext="so"
+  if [ "$goos" = "darwin" ]; then
+	  libext="dylib"
+  fi
+  go build -buildmode=c-shared $suffix -o ${TMPDIR}/libtsanshared.$libext tsan_shared.go
+
+  echo 'int main() { return 0; }' > ${TMPDIR}/testtsanshared.c
+  $CC $(go env GOGCCFLAGS) -fsanitize=thread -o ${TMPDIR}/testtsanshared ${TMPDIR}/testtsanshared.c ${TMPDIR}/libtsanshared.$libext
+
+  if ! LD_LIBRARY_PATH=. ${TMPDIR}/testtsanshared; then
+    echo "FAIL: tsan_shared"
+    status=1
+  fi
+  rm -f ${TMPDIR}/{testtsanshared,testtsanshared.c,libtsanshared.$libext}
+}
+
 if test "$tsan" = "yes"; then
     echo 'int main() { return 0; }' > ${TMPDIR}/testsanitizers$$.c
     ok=yes
     if ! $CC -fsanitize=thread ${TMPDIR}/testsanitizers$$.c -o ${TMPDIR}/testsanitizers$$ &> ${TMPDIR}/testsanitizers$$.err; then
 	ok=no
     fi
-     if grep "unrecognized" ${TMPDIR}/testsanitizers$$.err >& /dev/null; then
+    if grep "unrecognized" ${TMPDIR}/testsanitizers$$.err >& /dev/null; then
 	echo "skipping tsan tests: -fsanitize=thread not supported"
 	tsan=no
-     elif test "$ok" != "yes"; then
-	 cat ${TMPDIR}/testsanitizers$$.err
-	 echo "skipping tsan tests: -fsanitizer=thread build failed"
-	 tsan=no
-     fi
-     rm -f ${TMPDIR}/testsanitizers$$*
+    elif test "$ok" != "yes"; then
+	cat ${TMPDIR}/testsanitizers$$.err
+	echo "skipping tsan tests: -fsanitizer=thread build failed"
+	tsan=no
+    elif ! ${TMPDIR}/testsanitizers$$ 2>&1; then
+	echo "skipping tsan tests: running tsan program failed"
+	tsan=no
+    fi
+    rm -f ${TMPDIR}/testsanitizers$$*
 fi
 
 # Run a TSAN test.
@@ -177,8 +199,10 @@ if test "$tsan" = "yes"; then
     # These tests are only reliable using clang or GCC version 7 or later.
     # Otherwise runtime/cgo/libcgo.h can't tell whether TSAN is in use.
     ok=false
+    clang=false
     if ${CC} --version | grep clang >/dev/null 2>&1; then
 	ok=true
+	clang=true
     else
 	ver=$($CC -dumpversion)
 	major=$(echo $ver | sed -e 's/\([0-9]*\).*/\1/')
@@ -190,14 +214,19 @@ if test "$tsan" = "yes"; then
     fi
 
     if test "$ok" = "true"; then
-	# This test requires rebuilding os/user with -fsanitize=thread.
+	# These tests require rebuilding os/user with -fsanitize=thread.
 	testtsan tsan5.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
-
-	# This test requires rebuilding runtime/cgo with -fsanitize=thread.
 	testtsan tsan6.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
-
-	# This test requires rebuilding runtime/cgo with -fsanitize=thread.
 	testtsan tsan7.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
+
+	# The remaining tests reportedly hang when built with GCC; issue #21196.
+	if test "$clang" = "true"; then
+	    testtsan tsan10.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
+	    testtsan tsan11.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
+	    testtsan tsan12.go "CGO_CFLAGS=-fsanitize=thread CGO_LDFLAGS=-fsanitize=thread" "-installsuffix=tsan"
+	fi
+
+	testtsanshared
     fi
 fi
 

@@ -32,9 +32,13 @@ func netpollinit() {
 	kq = kqueue()
 	if kq < 0 {
 		println("netpollinit: kqueue failed with", errno())
-		throw("netpollinit: kqueue failed")
+		throw("runtime: netpollinit failed")
 	}
 	closeonexec(kq)
+}
+
+func netpolldescriptor() uintptr {
+	return uintptr(kq)
 }
 
 func netpollopen(fd uintptr, pd *pollDesc) int32 {
@@ -64,7 +68,7 @@ func netpollclose(fd uintptr) int32 {
 }
 
 func netpollarm(pd *pollDesc, mode int) {
-	throw("unused")
+	throw("runtime: unused")
 }
 
 // Polls for ready network connections.
@@ -85,7 +89,7 @@ retry:
 		e := errno()
 		if e != _EINTR {
 			println("runtime: kevent on fd", kq, "failed with", e)
-			throw("kevent failed")
+			throw("runtime: netpoll failed")
 		}
 		goto retry
 	}

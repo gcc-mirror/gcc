@@ -33,7 +33,9 @@
 //            }
 //            defer pprof.StopCPUProfile()
 //        }
-//        ...
+//
+//        // ... rest of the program ...
+//
 //        if *memprofile != "" {
 //            f, err := os.Create(*memprofile)
 //            if err != nil {
@@ -73,15 +75,14 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
-	"internal/pprof/profile"
 	"io"
 	"runtime"
-	"runtime/pprof/internal/protopprof"
 	"sort"
 	"strings"
 	"sync"
 	"text/tabwriter"
 	"time"
+	"unsafe"
 )
 
 // BUG(rsc): Profiles are only as good as the kernel support used to generate them.
@@ -183,6 +184,8 @@ func unlockProfiles() {
 // If a profile with that name already exists, NewProfile panics.
 // The convention is to use a 'import/path.' prefix to create
 // separate name spaces for each package.
+// For compatibility with various tools that read pprof data,
+// profile names should not contain spaces.
 func NewProfile(name string) *Profile {
 	lockProfiles()
 	defer unlockProfiles()
@@ -264,13 +267,18 @@ func (p *Profile) Add(value interface{}, skip int) {
 
 	stk := make([]uintptr, 32)
 	n := runtime.Callers(skip+1, stk[:])
+	stk = stk[:n]
+	if len(stk) == 0 {
+		// The value for skip is too large, and there's no stack trace to record.
+		stk = []uintptr{funcPC(lostProfileEvent) + 1}
+	}
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 	if p.m[value] != nil {
 		panic("pprof: Profile.Add of duplicate value")
 	}
-	p.m[value] = stk[:n]
+	p.m[value] = stk
 }
 
 // Remove removes the execution stack associated with value from the profile.
@@ -303,8 +311,8 @@ func (p *Profile) WriteTo(w io.Writer, debug int) error {
 	}
 
 	// Obtain consistent snapshot under lock; then process without lock.
-	all := make([][]uintptr, 0, len(p.m))
 	p.mu.Lock()
+	all := make([][]uintptr, 0, len(p.m))
 	for _, stk := range p.m {
 		all = append(all, stk)
 	}
@@ -380,35 +388,29 @@ func printCountProfile(w io.Writer, debug int, name string, p countProfile) erro
 	}
 
 	// Output profile in protobuf form.
-	prof := &profile.Profile{
-		PeriodType: &profile.ValueType{Type: name, Unit: "count"},
-		Period:     1,
-		Sample:     make([]*profile.Sample, 0, len(keys)),
-		SampleType: []*profile.ValueType{{Type: name, Unit: "count"}},
-	}
-	locMap := make(map[uintptr]*profile.Location)
+	b := newProfileBuilder(w)
+	b.pbValueType(tagProfile_PeriodType, name, "count")
+	b.pb.int64Opt(tagProfile_Period, 1)
+	b.pbValueType(tagProfile_SampleType, name, "count")
+
+	values := []int64{0}
+	var locs []uint64
 	for _, k := range keys {
-		stk := p.Stack(index[k])
-		c := count[k]
-		locs := make([]*profile.Location, len(stk))
-		for i, addr := range stk {
-			loc := locMap[addr]
-			if loc == nil {
-				loc = &profile.Location{
-					ID:      uint64(len(locMap) + 1),
-					Address: uint64(addr - 1),
-				}
-				prof.Location = append(prof.Location, loc)
-				locMap[addr] = loc
+		values[0] = int64(count[k])
+		locs = locs[:0]
+		for _, addr := range p.Stack(index[k]) {
+			// For count profiles, all stack addresses are
+			// return PCs, which is what locForPC expects.
+			l := b.locForPC(addr)
+			if l == 0 { // runtime.goexit
+				continue
 			}
-			locs[i] = loc
+			locs = append(locs, l)
 		}
-		prof.Sample = append(prof.Sample, &profile.Sample{
-			Location: locs,
-			Value:    []int64{int64(c)},
-		})
+		b.pbSample(values, locs, nil)
 	}
-	return prof.Write(w)
+	b.build()
+	return nil
 }
 
 // keysByCount sorts keys with higher counts first, breaking ties by key string order.
@@ -510,8 +512,7 @@ func writeHeap(w io.Writer, debug int) error {
 	}
 
 	if debug == 0 {
-		pp := protopprof.EncodeMemProfile(p, int64(runtime.MemProfileRate), time.Now())
-		return pp.Write(w)
+		return writeHeapProto(w, p, int64(runtime.MemProfileRate))
 	}
 
 	sort.Slice(p, func(i, j int) bool { return p[i].InUseBytes() > p[j].InUseBytes() })
@@ -576,8 +577,12 @@ func writeHeap(w io.Writer, debug int) error {
 	fmt.Fprintf(w, "# OtherSys = %d\n", s.OtherSys)
 
 	fmt.Fprintf(w, "# NextGC = %d\n", s.NextGC)
+	fmt.Fprintf(w, "# LastGC = %d\n", s.LastGC)
 	fmt.Fprintf(w, "# PauseNs = %d\n", s.PauseNs)
+	fmt.Fprintf(w, "# PauseEnd = %d\n", s.PauseEnd)
 	fmt.Fprintf(w, "# NumGC = %d\n", s.NumGC)
+	fmt.Fprintf(w, "# NumForcedGC = %d\n", s.NumForcedGC)
+	fmt.Fprintf(w, "# GCCPUFraction = %v\n", s.GCCPUFraction)
 	fmt.Fprintf(w, "# DebugGC = %v\n", s.DebugGC)
 
 	tw.Flush()
@@ -703,30 +708,32 @@ func StartCPUProfile(w io.Writer) error {
 	return nil
 }
 
+// readProfile, provided by the runtime, returns the next chunk of
+// binary CPU profiling stack trace data, blocking until data is available.
+// If profiling is turned off and all the profile data accumulated while it was
+// on has been returned, readProfile returns eof=true.
+// The caller must save the returned data and tags before calling readProfile again.
+func readProfile() (data []uint64, tags []unsafe.Pointer, eof bool)
+
 func profileWriter(w io.Writer) {
-	startTime := time.Now()
-	// This will buffer the entire profile into buf and then
-	// translate it into a profile.Profile structure. This will
-	// create two copies of all the data in the profile in memory.
-	// TODO(matloob): Convert each chunk of the proto output and
-	// stream it out instead of converting the entire profile.
-	var buf bytes.Buffer
+	b := newProfileBuilder(w)
+	var err error
 	for {
-		data := runtime.CPUProfile()
-		if data == nil {
+		time.Sleep(100 * time.Millisecond)
+		data, tags, eof := readProfile()
+		if e := b.addCPUData(data, tags); e != nil && err == nil {
+			err = e
+		}
+		if eof {
 			break
 		}
-		buf.Write(data)
 	}
-
-	profile, err := protopprof.TranslateCPUProfile(buf.Bytes(), startTime)
 	if err != nil {
 		// The runtime should never produce an invalid or truncated profile.
 		// It drops records that can't fit into its log buffers.
-		panic(fmt.Errorf("could not translate binary profile to proto format: %v", err))
+		panic("runtime/pprof: converting profile: " + err.Error())
 	}
-
-	profile.Write(w)
+	b.build()
 	cpu.done <- true
 }
 

@@ -14,6 +14,7 @@ package big
 import (
 	"fmt"
 	"math"
+	"math/bits"
 )
 
 const debugFloat = false // enable for debugging
@@ -97,7 +98,7 @@ const (
 // the slice may (but doesn't have to) be shorter if the mantissa contains
 // trailing 0 bits. x.mant is normalized if the msb of x.mant == 1 (i.e.,
 // the msb is shifted all the way "to the left"). Thus, if the mantissa has
-// trailing 0 bits or x.prec is not a multiple of the the Word size _W,
+// trailing 0 bits or x.prec is not a multiple of the Word size _W,
 // x.mant[0] has trailing zero bits. The msb of the mantissa corresponds
 // to the value 0.5; the exponent x.exp shifts the binary point as needed.
 //
@@ -498,8 +499,8 @@ func (z *Float) setBits64(neg bool, x uint64) *Float {
 	}
 	// x != 0
 	z.form = finite
-	s := nlz64(x)
-	z.mant = z.mant.setUint64(x << s)
+	s := bits.LeadingZeros64(x)
+	z.mant = z.mant.setUint64(x << uint(s))
 	z.exp = int32(64 - s) // always fits
 	if z.prec < 64 {
 		z.round(0)
@@ -1438,8 +1439,16 @@ func (z *Float) Add(x, y *Float) *Float {
 
 	if x.form == finite && y.form == finite {
 		// x + y (common case)
+
+		// Below we set z.neg = x.neg, and when z aliases y this will
+		// change the y operand's sign. This is fine, because if an
+		// operand aliases the receiver it'll be overwritten, but we still
+		// want the original x.neg and y.neg values when we evaluate
+		// x.neg != y.neg, so we need to save y.neg before setting z.neg.
+		yneg := y.neg
+
 		z.neg = x.neg
-		if x.neg == y.neg {
+		if x.neg == yneg {
 			// x + y == x + y
 			// (-x) + (-y) == -(x + y)
 			z.uadd(x, y)
@@ -1501,8 +1510,9 @@ func (z *Float) Sub(x, y *Float) *Float {
 
 	if x.form == finite && y.form == finite {
 		// x - y (common case)
+		yneg := y.neg
 		z.neg = x.neg
-		if x.neg != y.neg {
+		if x.neg != yneg {
 			// x - (-y) == x + y
 			// (-x) - y == -(x + y)
 			z.uadd(x, y)

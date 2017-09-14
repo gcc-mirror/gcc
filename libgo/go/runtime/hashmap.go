@@ -129,6 +129,11 @@ type hmap struct {
 	oldbuckets unsafe.Pointer // previous bucket array of half the size, non-nil only when growing
 	nevacuate  uintptr        // progress counter for evacuation (buckets less than this have been evacuated)
 
+	extra *mapextra // optional fields
+}
+
+// mapextra holds fields that are not present on all maps.
+type mapextra struct {
 	// If both key and value do not contain pointers and are inline, then we mark bucket
 	// type as containing no pointers. This avoids scanning such maps.
 	// However, bmap.overflow is a pointer. In order to keep overflow buckets
@@ -136,9 +141,11 @@ type hmap struct {
 	// Overflow is used only if key and value do not contain pointers.
 	// overflow[0] contains overflow buckets for hmap.buckets.
 	// overflow[1] contains overflow buckets for hmap.oldbuckets.
-	// The first indirection allows us to reduce static size of hmap.
-	// The second indirection allows to store a pointer to the slice in hiter.
-	overflow *[2]*[]*bmap
+	// The indirection allows to store a pointer to the slice in hiter.
+	overflow [2]*[]*bmap
+
+	// nextOverflow holds a pointer to a free overflow bucket.
+	nextOverflow *bmap
 }
 
 // A bucket for a Go map.
@@ -183,6 +190,10 @@ func (b *bmap) overflow(t *maptype) *bmap {
 	return *(**bmap)(add(unsafe.Pointer(b), uintptr(t.bucketsize)-sys.PtrSize))
 }
 
+func (b *bmap) setoverflow(t *maptype, ovf *bmap) {
+	*(**bmap)(add(unsafe.Pointer(b), uintptr(t.bucketsize)-sys.PtrSize)) = ovf
+}
+
 // incrnoverflow increments h.noverflow.
 // noverflow counts the number of overflow buckets.
 // This is used to trigger same-size map growth.
@@ -209,21 +220,40 @@ func (h *hmap) incrnoverflow() {
 	}
 }
 
-func (h *hmap) setoverflow(t *maptype, b, ovf *bmap) {
+func (h *hmap) newoverflow(t *maptype, b *bmap) *bmap {
+	var ovf *bmap
+	if h.extra != nil && h.extra.nextOverflow != nil {
+		// We have preallocated overflow buckets available.
+		// See makeBucketArray for more details.
+		ovf = h.extra.nextOverflow
+		if ovf.overflow(t) == nil {
+			// We're not at the end of the preallocated overflow buckets. Bump the pointer.
+			h.extra.nextOverflow = (*bmap)(add(unsafe.Pointer(ovf), uintptr(t.bucketsize)))
+		} else {
+			// This is the last preallocated overflow bucket.
+			// Reset the overflow pointer on this bucket,
+			// which was set to a non-nil sentinel value.
+			ovf.setoverflow(t, nil)
+			h.extra.nextOverflow = nil
+		}
+	} else {
+		ovf = (*bmap)(newobject(t.bucket))
+	}
 	h.incrnoverflow()
 	if t.bucket.kind&kindNoPointers != 0 {
 		h.createOverflow()
-		*h.overflow[0] = append(*h.overflow[0], ovf)
+		*h.extra.overflow[0] = append(*h.extra.overflow[0], ovf)
 	}
-	*(**bmap)(add(unsafe.Pointer(b), uintptr(t.bucketsize)-sys.PtrSize)) = ovf
+	b.setoverflow(t, ovf)
+	return ovf
 }
 
 func (h *hmap) createOverflow() {
-	if h.overflow == nil {
-		h.overflow = new([2]*[]*bmap)
+	if h.extra == nil {
+		h.extra = new(mapextra)
 	}
-	if h.overflow[0] == nil {
-		h.overflow[0] = new([]*bmap)
+	if h.extra.overflow[0] == nil {
+		h.extra.overflow[0] = new([]*bmap)
 	}
 }
 
@@ -238,9 +268,8 @@ func makemap(t *maptype, hint int64, h *hmap, bucket unsafe.Pointer) *hmap {
 		throw("bad hmap size")
 	}
 
-	if hint < 0 || int64(int32(hint)) != hint {
-		panic(plainError("makemap: size out of range"))
-		// TODO: make hint an int, then none of this nonsense
+	if hint < 0 || hint > int64(maxSliceCap(t.bucket.size)) {
+		hint = 0
 	}
 
 	if !ismapkey(t.key) {
@@ -290,8 +319,14 @@ func makemap(t *maptype, hint int64, h *hmap, bucket unsafe.Pointer) *hmap {
 	// if B == 0, the buckets field is allocated lazily later (in mapassign)
 	// If hint is large zeroing this memory could take a while.
 	buckets := bucket
+	var extra *mapextra
 	if B != 0 {
-		buckets = newarray(t.bucket, 1<<B)
+		var nextOverflow *bmap
+		buckets, nextOverflow = makeBucketArray(t, B)
+		if nextOverflow != nil {
+			extra = new(mapextra)
+			extra.nextOverflow = nextOverflow
+		}
 	}
 
 	// initialize Hmap
@@ -300,6 +335,7 @@ func makemap(t *maptype, hint int64, h *hmap, bucket unsafe.Pointer) *hmap {
 	}
 	h.count = 0
 	h.B = B
+	h.extra = extra
 	h.flags = 0
 	h.hash0 = fastrand()
 	h.buckets = buckets
@@ -514,11 +550,13 @@ func mapassign(t *maptype, h *hmap, key unsafe.Pointer) unsafe.Pointer {
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map writes")
 	}
-	h.flags |= hashWriting
-
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
 	hash := hashfn(key, uintptr(h.hash0))
+
+	// Set hashWriting after calling alg.hash, since alg.hash may panic,
+	// in which case we have not actually done a write.
+	h.flags |= hashWriting
 
 	if h.buckets == nil {
 		h.buckets = newarray(t.bucket, 1)
@@ -580,8 +618,7 @@ again:
 
 	if inserti == nil {
 		// all current buckets are full, allocate a new one.
-		newb := (*bmap)(newobject(t.bucket))
-		h.setoverflow(t, b, newb)
+		newb := h.newoverflow(t, b)
 		inserti = &newb.tophash[0]
 		insertk = add(unsafe.Pointer(newb), dataOffset)
 		val = add(insertk, bucketCnt*uintptr(t.keysize))
@@ -628,11 +665,15 @@ func mapdelete(t *maptype, h *hmap, key unsafe.Pointer) {
 	if h.flags&hashWriting != 0 {
 		throw("concurrent map writes")
 	}
-	h.flags |= hashWriting
 
 	hashfn := t.key.hashfn
 	equalfn := t.key.equalfn
 	hash := hashfn(key, uintptr(h.hash0))
+
+	// Set hashWriting after calling alg.hash, since alg.hash may panic,
+	// in which case we have not actually done a write (delete).
+	h.flags |= hashWriting
+
 	bucket := hash & (uintptr(1)<<h.B - 1)
 	if h.growing() {
 		growWork(t, h, bucket)
@@ -720,7 +761,7 @@ func mapiterinit(t *maptype, h *hmap, it *hiter) {
 		// the table grows and/or overflow buckets are added to the table
 		// while we are iterating.
 		h.createOverflow()
-		it.overflow = *h.overflow
+		it.overflow = h.extra.overflow
 	}
 
 	// decide where to start
@@ -886,6 +927,36 @@ next:
 	goto next
 }
 
+func makeBucketArray(t *maptype, b uint8) (buckets unsafe.Pointer, nextOverflow *bmap) {
+	base := uintptr(1 << b)
+	nbuckets := base
+	// For small b, overflow buckets are unlikely.
+	// Avoid the overhead of the calculation.
+	if b >= 4 {
+		// Add on the estimated number of overflow buckets
+		// required to insert the median number of elements
+		// used with this value of b.
+		nbuckets += 1 << (b - 4)
+		sz := t.bucket.size * nbuckets
+		up := roundupsize(sz)
+		if up != sz {
+			nbuckets = up / t.bucket.size
+		}
+	}
+	buckets = newarray(t.bucket, int(nbuckets))
+	if base != nbuckets {
+		// We preallocated some overflow buckets.
+		// To keep the overhead of tracking these overflow buckets to a minimum,
+		// we use the convention that if a preallocated overflow bucket's overflow
+		// pointer is nil, then there are more available by bumping the pointer.
+		// We need a safe non-nil pointer for the last overflow bucket; just use buckets.
+		nextOverflow = (*bmap)(add(buckets, base*uintptr(t.bucketsize)))
+		last := (*bmap)(add(buckets, (nbuckets-1)*uintptr(t.bucketsize)))
+		last.setoverflow(t, (*bmap)(buckets))
+	}
+	return buckets, nextOverflow
+}
+
 func hashGrow(t *maptype, h *hmap) {
 	// If we've hit the load factor, get bigger.
 	// Otherwise, there are too many overflow buckets,
@@ -896,7 +967,8 @@ func hashGrow(t *maptype, h *hmap) {
 		h.flags |= sameSizeGrow
 	}
 	oldbuckets := h.buckets
-	newbuckets := newarray(t.bucket, 1<<(h.B+bigger))
+	newbuckets, nextOverflow := makeBucketArray(t, h.B+bigger)
+
 	flags := h.flags &^ (iterator | oldIterator)
 	if h.flags&iterator != 0 {
 		flags |= oldIterator
@@ -909,13 +981,19 @@ func hashGrow(t *maptype, h *hmap) {
 	h.nevacuate = 0
 	h.noverflow = 0
 
-	if h.overflow != nil {
+	if h.extra != nil && h.extra.overflow[0] != nil {
 		// Promote current overflow buckets to the old generation.
-		if h.overflow[1] != nil {
+		if h.extra.overflow[1] != nil {
 			throw("overflow is not nil")
 		}
-		h.overflow[1] = h.overflow[0]
-		h.overflow[0] = nil
+		h.extra.overflow[1] = h.extra.overflow[0]
+		h.extra.overflow[0] = nil
+	}
+	if nextOverflow != nil {
+		if h.extra == nil {
+			h.extra = new(mapextra)
+		}
+		h.extra.nextOverflow = nextOverflow
 	}
 
 	// the actual copying of the hash table data is done incrementally
@@ -925,7 +1003,7 @@ func hashGrow(t *maptype, h *hmap) {
 // overLoadFactor reports whether count items placed in 1<<B buckets is over loadFactor.
 func overLoadFactor(count int64, B uint8) bool {
 	// TODO: rewrite to use integer math and comparison?
-	return count >= bucketCnt && float32(count) >= loadFactor*float32((uintptr(1)<<B))
+	return count >= bucketCnt && float32(count) >= loadFactor*float32((uint64(1)<<B))
 }
 
 // tooManyOverflowBuckets reports whether noverflow buckets is too many for a map with 1<<B buckets.
@@ -975,6 +1053,11 @@ func growWork(t *maptype, h *hmap, bucket uintptr) {
 	if h.growing() {
 		evacuate(t, h, h.nevacuate)
 	}
+}
+
+func bucketEvacuated(t *maptype, h *hmap, bucket uintptr) bool {
+	b := (*bmap)(add(h.oldbuckets, bucket*uintptr(t.bucketsize)))
+	return evacuated(b)
 }
 
 func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
@@ -1054,8 +1137,7 @@ func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
 				if useX {
 					b.tophash[i] = evacuatedX
 					if xi == bucketCnt {
-						newx := (*bmap)(newobject(t.bucket))
-						h.setoverflow(t, x, newx)
+						newx := h.newoverflow(t, x)
 						x = newx
 						xi = 0
 						xk = add(unsafe.Pointer(x), dataOffset)
@@ -1078,8 +1160,7 @@ func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
 				} else {
 					b.tophash[i] = evacuatedY
 					if yi == bucketCnt {
-						newy := (*bmap)(newobject(t.bucket))
-						h.setoverflow(t, y, newy)
+						newy := h.newoverflow(t, y)
 						y = newy
 						yi = 0
 						yk = add(unsafe.Pointer(y), dataOffset)
@@ -1118,14 +1199,23 @@ func evacuate(t *maptype, h *hmap, oldbucket uintptr) {
 	// Advance evacuation mark
 	if oldbucket == h.nevacuate {
 		h.nevacuate = oldbucket + 1
-		if oldbucket+1 == newbit { // newbit == # of oldbuckets
+		// Experiments suggest that 1024 is overkill by at least an order of magnitude.
+		// Put it in there as a safeguard anyway, to ensure O(1) behavior.
+		stop := h.nevacuate + 1024
+		if stop > newbit {
+			stop = newbit
+		}
+		for h.nevacuate != stop && bucketEvacuated(t, h, h.nevacuate) {
+			h.nevacuate++
+		}
+		if h.nevacuate == newbit { // newbit == # of oldbuckets
 			// Growing is all done. Free old main bucket array.
 			h.oldbuckets = nil
 			// Can discard old overflow buckets as well.
 			// If they are still referenced by an iterator,
 			// then the iterator holds a pointers to the slice.
-			if h.overflow != nil {
-				h.overflow[1] = nil
+			if h.extra != nil {
+				h.extra.overflow[1] = nil
 			}
 			h.flags &^= sameSizeGrow
 		}
@@ -1139,8 +1229,8 @@ func ismapkey(t *_type) bool {
 // Reflect stubs. Called from ../reflect/asm_*.s
 
 //go:linkname reflect_makemap reflect.makemap
-func reflect_makemap(t *maptype) *hmap {
-	return makemap(t, 0, nil, nil)
+func reflect_makemap(t *maptype, cap int) *hmap {
+	return makemap(t, int64(cap), nil, nil)
 }
 
 //go:linkname reflect_mapaccess reflect.mapaccess

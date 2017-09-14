@@ -30,9 +30,9 @@ const ptrSize = 4 << (^uintptr(0) >> 63) // unsafe.Sizeof(uintptr(0)) but an ide
 // the underlying Go value can be used concurrently for the equivalent
 // direct operations.
 //
-// Using == on two Values does not compare the underlying values
-// they represent, but rather the contents of the Value structs.
 // To compare two Values, compare the results of the Interface method.
+// Using == on two Values does not compare the underlying values
+// they represent.
 type Value struct {
 	// typ holds the type of the value represented by a Value.
 	typ *rtype
@@ -1000,7 +1000,7 @@ func (v Value) Method(i int) Value {
 	return Value{v.typ, v.ptr, fl}
 }
 
-// NumMethod returns the number of methods in the value's method set.
+// NumMethod returns the number of exported methods in the value's method set.
 func (v Value) NumMethod() int {
 	if v.typ == nil {
 		panic(&ValueError{"reflect.Value.NumMethod", Invalid})
@@ -1933,12 +1933,18 @@ func MakeChan(typ Type, buffer int) Value {
 	return Value{typ.common(), unsafe.Pointer(&ch), flag(Chan) | flagIndir}
 }
 
-// MakeMap creates a new map of the specified type.
+// MakeMap creates a new map with the specified type.
 func MakeMap(typ Type) Value {
+	return MakeMapWithSize(typ, 0)
+}
+
+// MakeMapWithSize creates a new map with the specified type
+// and initial space for approximately n elements.
+func MakeMapWithSize(typ Type, n int) Value {
 	if typ.Kind() != Map {
-		panic("reflect.MakeMap of non-map type")
+		panic("reflect.MakeMapWithSize of non-map type")
 	}
-	m := makemap(typ.(*rtype))
+	m := makemap(typ.(*rtype), n)
 	return Value{typ.common(), unsafe.Pointer(&m), flag(Map) | flagIndir}
 }
 
@@ -2015,7 +2021,6 @@ func (v Value) assignTo(context string, dst *rtype, target unsafe.Pointer) Value
 	case directlyAssignable(dst, v.typ):
 		// Overwrite type so that they match.
 		// Same memory layout, so no harm done.
-		v.typ = dst
 		fl := v.flag & (flagRO | flagAddr | flagIndir)
 		fl |= flag(dst.Kind())
 		return Value{dst, v.ptr, fl}
@@ -2333,7 +2338,7 @@ func chanrecv(ch unsafe.Pointer, nb bool, val unsafe.Pointer) (selected, receive
 func chansend(ch unsafe.Pointer, val unsafe.Pointer, nb bool) bool
 
 func makechan(typ *rtype, size uint64) (ch unsafe.Pointer)
-func makemap(t *rtype) (m unsafe.Pointer)
+func makemap(t *rtype, cap int) (m unsafe.Pointer)
 
 //go:noescape
 func mapaccess(t *rtype, m unsafe.Pointer, key unsafe.Pointer) (val unsafe.Pointer)

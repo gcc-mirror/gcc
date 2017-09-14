@@ -47,15 +47,14 @@ var traceback_env uint32
 //go:nosplit
 func gotraceback() (level int32, all, crash bool) {
 	_g_ := getg()
-	all = _g_.m.throwing > 0
-	if _g_.m.traceback != 0 {
-		level = int32(_g_.m.traceback)
-		return
-	}
 	t := atomic.Load(&traceback_cache)
 	crash = t&tracebackCrash != 0
-	all = all || t&tracebackAll != 0
-	level = int32(t >> tracebackShift)
+	all = _g_.m.throwing > 0 || t&tracebackAll != 0
+	if _g_.m.traceback != 0 {
+		level = int32(_g_.m.traceback)
+	} else {
+		level = int32(t >> tracebackShift)
+	}
 	return
 }
 
@@ -330,34 +329,22 @@ type dbgVar struct {
 // except for "memprofilerate" since there is an
 // existing int var for that value, which may
 // already have an initial value.
-
-// For gccgo we use a named type so that the C code can see the
-// definition.
-type debugVars struct {
-	allocfreetrace    int32
-	cgocheck          int32
-	efence            int32
-	gccheckmark       int32
-	gcpacertrace      int32
-	gcshrinkstackoff  int32
-	gcstackbarrieroff int32
-	gcstackbarrierall int32
-	gcrescanstacks    int32
-	gcstoptheworld    int32
-	gctrace           int32
-	invalidptr        int32
-	sbrk              int32
-	scavenge          int32
-	scheddetail       int32
-	schedtrace        int32
-	wbshadow          int32
+var debug struct {
+	allocfreetrace   int32
+	cgocheck         int32
+	efence           int32
+	gccheckmark      int32
+	gcpacertrace     int32
+	gcshrinkstackoff int32
+	gcrescanstacks   int32
+	gcstoptheworld   int32
+	gctrace          int32
+	invalidptr       int32
+	sbrk             int32
+	scavenge         int32
+	scheddetail      int32
+	schedtrace       int32
 }
-
-var debug debugVars
-
-// For gccgo's C code.
-//extern runtime_setdebug
-func runtime_setdebug(*debugVars)
 
 var dbgvars = []dbgVar{
 	{"allocfreetrace", &debug.allocfreetrace},
@@ -366,8 +353,6 @@ var dbgvars = []dbgVar{
 	{"gccheckmark", &debug.gccheckmark},
 	{"gcpacertrace", &debug.gcpacertrace},
 	{"gcshrinkstackoff", &debug.gcshrinkstackoff},
-	{"gcstackbarrieroff", &debug.gcstackbarrieroff},
-	{"gcstackbarrierall", &debug.gcstackbarrierall},
 	{"gcrescanstacks", &debug.gcrescanstacks},
 	{"gcstoptheworld", &debug.gcstoptheworld},
 	{"gctrace", &debug.gctrace},
@@ -376,7 +361,6 @@ var dbgvars = []dbgVar{
 	{"scavenge", &debug.scavenge},
 	{"scheddetail", &debug.scheddetail},
 	{"schedtrace", &debug.schedtrace},
-	{"wbshadow", &debug.wbshadow},
 }
 
 func parsedebugvars() {
@@ -430,26 +414,12 @@ func parsedebugvars() {
 	setTraceback(gogetenv("GOTRACEBACK"))
 	traceback_env = traceback_cache
 
-	if debug.gcrescanstacks == 0 {
-		// Without rescanning, there's no need for stack
-		// barriers.
-		debug.gcstackbarrieroff = 1
-		debug.gcstackbarrierall = 0
-	}
-
-	// if debug.gcstackbarrierall > 0 {
-	// 	firstStackBarrierOffset = 0
-	// }
-
 	// For cgocheck > 1, we turn on the write barrier at all times
 	// and check all pointer writes.
 	if debug.cgocheck > 1 {
 		writeBarrier.cgo = true
 		writeBarrier.enabled = true
 	}
-
-	// Tell the C code what the value is.
-	runtime_setdebug(&debug)
 }
 
 //go:linkname setTraceback runtime_debug.SetTraceback

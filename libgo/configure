@@ -2494,7 +2494,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
 ac_config_headers="$ac_config_headers config.h"
 
 
-libtool_VERSION=11:0:0
+libtool_VERSION=12:0:0
 
 
 # Default to --enable-multilib

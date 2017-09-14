@@ -38,20 +38,20 @@ import (
 // When following redirects, the Client will forward all headers set on the
 // initial Request except:
 //
-//	* when forwarding sensitive headers like "Authorization",
-//	  "WWW-Authenticate", and "Cookie" to untrusted targets.
-//	  These headers will be ignored when following a redirect to a domain
-//	  that is not a subdomain match or exact match of the initial domain.
-//	  For example, a redirect from "foo.com" to either "foo.com" or "sub.foo.com"
-//	  will forward the sensitive headers, but a redirect to "bar.com" will not.
+// • when forwarding sensitive headers like "Authorization",
+// "WWW-Authenticate", and "Cookie" to untrusted targets.
+// These headers will be ignored when following a redirect to a domain
+// that is not a subdomain match or exact match of the initial domain.
+// For example, a redirect from "foo.com" to either "foo.com" or "sub.foo.com"
+// will forward the sensitive headers, but a redirect to "bar.com" will not.
 //
-//	* when forwarding the "Cookie" header with a non-nil cookie Jar.
-//	  Since each redirect may mutate the state of the cookie jar,
-//	  a redirect may possibly alter a cookie set in the initial request.
-//	  When forwarding the "Cookie" header, any mutated cookies will be omitted,
-//	  with the expectation that the Jar will insert those mutated cookies
-//	  with the updated values (assuming the origin matches).
-//	  If Jar is nil, the initial cookies are forwarded without change.
+// • when forwarding the "Cookie" header with a non-nil cookie Jar.
+// Since each redirect may mutate the state of the cookie jar,
+// a redirect may possibly alter a cookie set in the initial request.
+// When forwarding the "Cookie" header, any mutated cookies will be omitted,
+// with the expectation that the Jar will insert those mutated cookies
+// with the updated values (assuming the origin matches).
+// If Jar is nil, the initial cookies are forwarded without change.
 //
 type Client struct {
 	// Transport specifies the mechanism by which individual
@@ -494,17 +494,21 @@ func (c *Client) Do(req *Request) (*Response, error) {
 	}
 
 	var (
-		deadline    = c.deadline()
-		reqs        []*Request
-		resp        *Response
-		copyHeaders = c.makeHeadersCopier(req)
+		deadline      = c.deadline()
+		reqs          []*Request
+		resp          *Response
+		copyHeaders   = c.makeHeadersCopier(req)
+		reqBodyClosed = false // have we closed the current req.Body?
 
 		// Redirect behavior:
 		redirectMethod string
 		includeBody    bool
 	)
 	uerr := func(err error) error {
-		req.closeBody()
+		// the body may have been closed already by c.send()
+		if !reqBodyClosed {
+			req.closeBody()
+		}
 		method := valueOrDefault(reqs[0].Method, "GET")
 		var urlStr string
 		if resp != nil && resp.Request != nil {
@@ -524,10 +528,12 @@ func (c *Client) Do(req *Request) (*Response, error) {
 		if len(reqs) > 0 {
 			loc := resp.Header.Get("Location")
 			if loc == "" {
+				resp.closeBody()
 				return nil, uerr(fmt.Errorf("%d response missing Location header", resp.StatusCode))
 			}
 			u, err := req.URL.Parse(loc)
 			if err != nil {
+				resp.closeBody()
 				return nil, uerr(fmt.Errorf("failed to parse Location header %q: %v", loc, err))
 			}
 			ireq := reqs[0]
@@ -542,6 +548,7 @@ func (c *Client) Do(req *Request) (*Response, error) {
 			if includeBody && ireq.GetBody != nil {
 				req.Body, err = ireq.GetBody()
 				if err != nil {
+					resp.closeBody()
 					return nil, uerr(err)
 				}
 				req.ContentLength = ireq.ContentLength
@@ -593,6 +600,8 @@ func (c *Client) Do(req *Request) (*Response, error) {
 		var err error
 		var didTimeout func() bool
 		if resp, didTimeout, err = c.send(req, deadline); err != nil {
+			// c.send() always closes req.Body
+			reqBodyClosed = true
 			if !deadline.IsZero() && didTimeout() {
 				err = &httpError{
 					err:     err.Error() + " (Client.Timeout exceeded while awaiting headers)",
