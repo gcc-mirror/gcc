@@ -168,5 +168,5 @@ extern int alpha_this_gpdisp_sequence_number;
    I imagine that other systems will catch up.  In the meantime, it
    doesn't harm to make sure that the data exists to be used later.  */
 #if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif

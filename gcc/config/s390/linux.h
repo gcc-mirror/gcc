@@ -82,10 +82,11 @@ along with GCC; see the file COPYING3.  If not see
    %{shared:-shared} \
    %{!shared: \
       %{static:-static} \
-      %{!static: \
+      %{!static:%{!static-pie: \
 	%{rdynamic:-export-dynamic} \
 	%{m31:-dynamic-linker " GNU_USER_DYNAMIC_LINKER32 "} \
-	%{m64:-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}}"
+	%{m64:-dynamic-linker " GNU_USER_DYNAMIC_LINKER64 "}}}} \
+   %{static-pie:-static -pie --no-dynamic-linker -z text}"
 
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"
 

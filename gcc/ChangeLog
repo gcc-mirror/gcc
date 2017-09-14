@@ -1,3 +1,20 @@
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/alpha/elf.h (LINK_EH_SPEC): Add -static-pie support.
+	* config/alpha/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/netbsd.h (LINK_EH_SPEC): Likewise.
+	* config/sol2.h (LINK_EH_SPEC): Likewise.
+	* config/arm/uclinux-elf.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/s390/linux.h (LINK_SPEC): Likewise.
+	* config/freebsd.h (LINK_EH_SPEC): Likewise.
+	* config/openbsd.h (LINK_EH_SPEC): Likewise.
+	* config/lm32/uclinux-elf.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/aarch64/aarch64-linux.h (LINUX_TARGET_LINK_SPEC): Likewise.
+	* config/powerpcspe/sysv4.h (LINK_EH_SPEC): Likewise.
+	* config/bfin/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
+	* config/i386/gnu-user64.h (GNU_USER_TARGET_LINK_SPEC): Fix a typo.
+	* config/i386/gnu-user.h (GNU_USER_TARGET_LINK_SPEC): Formatting fix.
+
 2017-09-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/sysv4.h (STARTFILE_LINUX_SPEC): Add -static-pie
