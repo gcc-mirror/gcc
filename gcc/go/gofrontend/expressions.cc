@@ -210,7 +210,11 @@ Expression::convert_type_to_interface(Type* lhs_type, Expression* rhs,
     }
 
   // This should have been checked already.
-  go_assert(lhs_interface_type->implements_interface(rhs_type, NULL));
+  if (!lhs_interface_type->implements_interface(rhs_type, NULL))
+    {
+      go_assert(saw_errors());
+      return Expression::make_error(location);
+    }
 
   // An interface is a tuple.  If LHS_TYPE is an empty interface type,
   // then the first field is the type descriptor for RHS_TYPE.
