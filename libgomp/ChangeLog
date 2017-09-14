@@ -1,3 +1,8 @@
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* testsuite/libgomp.c++/pr81314.C: New test.
+
 2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* libgomp.texi (Top): www.openacc.org now uses https.
