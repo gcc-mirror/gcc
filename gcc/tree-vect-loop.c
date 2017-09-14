@@ -6839,18 +6839,21 @@ vectorizable_induction (gimple *phi,
     {
       /* iv_loop is the loop to be vectorized. Generate:
 	  vec_step = [VF*S, VF*S, VF*S, VF*S]  */
+      gimple_seq seq = NULL;
       if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
 	{
 	  expr = build_int_cst (integer_type_node, vf);
-	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	  expr = gimple_build (&seq, FLOAT_EXPR, TREE_TYPE (step_expr), expr);
 	}
       else
 	expr = build_int_cst (TREE_TYPE (step_expr), vf);
-      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			      expr, step_expr);
-      if (TREE_CODE (step_expr) == SSA_NAME)
-	new_name = vect_init_vector (phi, new_name,
-				     TREE_TYPE (step_expr), NULL);
+      new_name = gimple_build (&seq, MULT_EXPR, TREE_TYPE (step_expr),
+			       expr, step_expr);
+      if (seq)
+	{
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+	  gcc_assert (!new_bb);
+	}
     }
 
   t = unshare_expr (new_name);
@@ -6899,6 +6902,7 @@ vectorizable_induction (gimple *phi,
 
   if (ncopies > 1)
     {
+      gimple_seq seq = NULL;
       stmt_vec_info prev_stmt_vinfo;
       /* FORNOW. This restriction should be relaxed.  */
       gcc_assert (!nested_in_vect_loop);
@@ -6907,15 +6911,18 @@ vectorizable_induction (gimple *phi,
       if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (step_expr)))
 	{
 	  expr = build_int_cst (integer_type_node, nunits);
-	  expr = fold_convert (TREE_TYPE (step_expr), expr);
+	  expr = gimple_build (&seq, FLOAT_EXPR, TREE_TYPE (step_expr), expr);
 	}
       else
 	expr = build_int_cst (TREE_TYPE (step_expr), nunits);
-      new_name = fold_build2 (MULT_EXPR, TREE_TYPE (step_expr),
-			      expr, step_expr);
-      if (TREE_CODE (step_expr) == SSA_NAME)
-	new_name = vect_init_vector (phi, new_name,
-				     TREE_TYPE (step_expr), NULL);
+      new_name = gimple_build (&seq, MULT_EXPR, TREE_TYPE (step_expr),
+			       expr, step_expr);
+      if (seq)
+	{
+	  new_bb = gsi_insert_seq_on_edge_immediate (pe, seq);
+	  gcc_assert (!new_bb);
+	}
+
       t = unshare_expr (new_name);
       gcc_assert (CONSTANT_CLASS_P (new_name)
 		  || TREE_CODE (new_name) == SSA_NAME);

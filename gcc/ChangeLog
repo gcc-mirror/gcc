@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop.c (vectorizable_induction): Use gimple_build instead
+	of vect_init_vector.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* gimple-fold.h (gimple_build_vector_from_val): Declare, and provide
 	an inline wrapper that provides a location.
 	(gimple_build_vector): Likewise.
