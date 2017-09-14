@@ -1,3 +1,7 @@
+2017-09-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/r2_shrink-wrap.c: New.
+
 2017-09-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-ld-longlong.c: Add

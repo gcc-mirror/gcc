@@ -37804,6 +37804,11 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
   if (cfun->machine->split_stack_argp_used)
     add_to_hard_reg_set (&set->set, Pmode, 12);
+
+  /* Make sure the hard reg set doesn't include r2, which was possibly added
+     via PIC_OFFSET_TABLE_REGNUM.  */
+  if (TARGET_TOC)
+    remove_from_hard_reg_set (&set->set, Pmode, TOC_REGNUM);
 }
 
 
