@@ -1076,6 +1076,20 @@ unlimited_cost_model (loop_p loop)
   return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
 }
 
+/* Return the number of copies needed for loop vectorization when
+   a statement operates on vectors of type VECTYPE.  This is the
+   vectorization factor divided by the number of elements in
+   VECTYPE and is always known at compile time.  */
+
+static inline unsigned int
+vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
+{
+  gcc_checking_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+		       % TYPE_VECTOR_SUBPARTS (vectype) == 0);
+  return (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	  / TYPE_VECTOR_SUBPARTS (vectype));
+}
+
 /* Source location */
 extern source_location vect_location;
 

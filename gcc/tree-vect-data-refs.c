@@ -1181,10 +1181,13 @@ vect_get_data_access_cost (struct data_reference *dr,
 {
   gimple *stmt = DR_STMT (dr);
   stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
-  int nunits = TYPE_VECTOR_SUBPARTS (STMT_VINFO_VECTYPE (stmt_info));
   loop_vec_info loop_vinfo = STMT_VINFO_LOOP_VINFO (stmt_info);
-  int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-  int ncopies = MAX (1, vf / nunits); /* TODO: Handle SLP properly  */
+  int ncopies;
+
+  if (PURE_SLP_STMT (stmt_info))
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, STMT_VINFO_VECTYPE (stmt_info));
 
   if (DR_IS_READ (dr))
     vect_get_load_cost (dr, ncopies, true, inside_cost, outside_cost,

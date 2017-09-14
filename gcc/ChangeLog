@@ -2,6 +2,28 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vect_get_num_copies): New function.
+	* tree-vect-data-refs.c (vect_get_data_access_cost): Use it.
+	* tree-vect-loop.c (vectorizable_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	(vectorizable_live_operation): Likewise.
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Likewise.
+	(vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vectorizable_conversion): Likewise.
+	(vectorizable_assignment): Likewise.
+	(vectorizable_shift): Likewise.
+	(vectorizable_operation): Likewise.
+	(vectorizable_store): Likewise.
+	(vectorizable_load): Likewise.
+	(vectorizable_condition): Likewise.
+	(vectorizable_comparison): Likewise.
+	(vect_analyze_stmt): Pass the slp node to vectorizable_live_operation.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-loop.c (vectorizable_induction): Use gimple_build instead
 	of vect_init_vector.
 

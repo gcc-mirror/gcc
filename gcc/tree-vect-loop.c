@@ -5683,8 +5683,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
       if (slp_node)
 	ncopies = 1;
       else
-	ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-		   / TYPE_VECTOR_SUBPARTS (vectype_in));
+	ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
 
       use_operand_p use_p;
       gimple *use_stmt;
@@ -5980,8 +5979,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
   if (slp_node)
     ncopies = 1;
   else
-    ncopies = (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-               / TYPE_VECTOR_SUBPARTS (vectype_in));
+    ncopies = vect_get_num_copies (loop_vinfo, vectype_in);
 
   gcc_assert (ncopies >= 1);
 
@@ -6550,7 +6548,7 @@ vectorizable_induction (gimple *phi,
   if (slp_node)
     ncopies = 1;
   else
-    ncopies = vf / nunits;
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
   gcc_assert (ncopies >= 1);
 
   /* FORNOW. These restrictions should be relaxed.  */
@@ -7013,11 +7011,16 @@ vectorizable_live_operation (gimple *stmt,
   tree lhs, lhs_type, bitsize, vec_bitsize;
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  int ncopies = LOOP_VINFO_VECT_FACTOR (loop_vinfo) / nunits;
+  int ncopies;
   gimple *use_stmt;
   auto_vec<tree> vec_oprnds;
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
+
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
     return false;
