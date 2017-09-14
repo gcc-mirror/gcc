@@ -1,3 +1,8 @@
+2017-09-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-sccvn.c (visit_phi): Merge undefined values similar
+	to VN_TOP.
+
 2017-09-14  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* dwarf2out.c (dwarf2out_source_line): Remove superfluous test.
