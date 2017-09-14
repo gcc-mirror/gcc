@@ -241,6 +241,10 @@ typedef struct _loop_vec_info : public vec_info {
   /* Unrolling factor  */
   int vectorization_factor;
 
+  /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
+     if there is no particular limit.  */
+  unsigned HOST_WIDE_INT max_vectorization_factor;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct data_reference *unaligned_dr;
 
@@ -355,6 +359,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
+#define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->datarefs
@@ -400,8 +405,8 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_EPILOGUE_P(L) \
   (LOOP_VINFO_ORIG_LOOP_INFO (L) != NULL)
 
-#define LOOP_VINFO_ORIG_VECT_FACTOR(L) \
-  (LOOP_VINFO_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
+#define LOOP_VINFO_ORIG_MAX_VECT_FACTOR(L) \
+  (LOOP_VINFO_MAX_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
 
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)

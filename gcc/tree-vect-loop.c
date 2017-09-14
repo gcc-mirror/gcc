@@ -1111,6 +1111,7 @@ _loop_vec_info::_loop_vec_info (struct loop *loop_in)
     num_iters_assumptions (NULL_TREE),
     th (0),
     vectorization_factor (0),
+    max_vectorization_factor (0),
     unaligned_dr (NULL),
     peeling_for_alignment (0),
     ptr_mask (0),
@@ -1920,6 +1921,7 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal)
 			     "bad data dependence.\n");
       return false;
     }
+  LOOP_VINFO_MAX_VECT_FACTOR (loop_vinfo) = max_vf;
 
   ok = vect_determine_vectorization_factor (loop_vinfo);
   if (!ok)
