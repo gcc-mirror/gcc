@@ -2,6 +2,24 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* gimple-fold.h (gimple_build_vector_from_val): Declare, and provide
+	an inline wrapper that provides a location.
+	(gimple_build_vector): Likewise.
+	* gimple-fold.c (gimple_build_vector_from_val): New function.
+	(gimple_build_vector): Likewise.
+	* tree-vect-loop.c (get_initial_def_for_reduction): Use the new
+	functions to build the initial value.  Always return a gimple value.
+	(get_initial_defs_for_reduction): Likewise.  Only compute
+	neutral_vec once.
+	(vect_create_epilog_for_reduction): Don't call force_gimple_operand or
+	vect_init_vector on the results from get_initial_def(s)_for_reduction.
+	(vectorizable_induction): Use gimple_build_vector rather than
+	vect_init_vector.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.h (vec_perm_indices): New typedef.
 	(auto_vec_perm_indices): Likewise.
 	* optabs-query.h: Include target.h
