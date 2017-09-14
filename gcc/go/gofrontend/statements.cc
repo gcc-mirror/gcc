@@ -1517,14 +1517,12 @@ Tuple_receive_assignment_statement::do_lower(Gogo*, Named_object*,
 			      NULL, loc);
   b->add_statement(closed_temp);
 
-  // closed_temp = chanrecv2(type, channel, &val_temp)
-  Expression* td = Expression::make_type_descriptor(this->channel_->type(),
-						    loc);
+  // closed_temp = chanrecv2(channel, &val_temp)
   Temporary_reference_expression* ref =
     Expression::make_temporary_reference(val_temp, loc);
   Expression* p2 = Expression::make_unary(OPERATOR_AND, ref, loc);
   Expression* call = Runtime::make_call(Runtime::CHANRECV2,
-					loc, 3, td, this->channel_, p2);
+					loc, 2, this->channel_, p2);
   ref = Expression::make_temporary_reference(closed_temp, loc);
   ref->set_is_lvalue();
   Statement* s = Statement::make_assignment(ref, call, loc);
@@ -4516,9 +4514,6 @@ Send_statement::do_get_backend(Translate_context* context)
       && val->temporary_reference_expression() == NULL)
     can_take_address = false;
 
-  Expression* td = Expression::make_type_descriptor(this->channel_->type(),
-						    loc);
-
   Bstatement* btemp = NULL;
   if (can_take_address)
     {
@@ -4539,7 +4534,7 @@ Send_statement::do_get_backend(Translate_context* context)
       btemp = temp->get_backend(context);
     }
 
-  Expression* call = Runtime::make_call(Runtime::CHANSEND, loc, 3, td,
+  Expression* call = Runtime::make_call(Runtime::CHANSEND, loc, 2,
 					this->channel_, val);
 
   context->gogo()->lower_expression(context->function(), NULL, &call);
@@ -4621,13 +4616,10 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
   Expression* selref = Expression::make_temporary_reference(sel, loc);
   selref = Expression::make_unary(OPERATOR_AND, selref, loc);
 
-  Expression* index_expr = Expression::make_integer_ul(this->index_, NULL,
-						       loc);
-
   if (this->is_default_)
     {
       go_assert(this->channel_ == NULL && this->val_ == NULL);
-      this->lower_default(b, selref, index_expr);
+      this->lower_default(b, selref);
       this->is_lowered_ = true;
       return;
     }
@@ -4641,9 +4633,9 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 							     loc);
 
   if (this->is_send_)
-    this->lower_send(b, selref, chanref, index_expr);
+    this->lower_send(b, selref, chanref);
   else
-    this->lower_recv(gogo, function, b, selref, chanref, index_expr);
+    this->lower_recv(gogo, function, b, selref, chanref);
 
   // Now all references should be handled through the statements, not
   // through here.
@@ -4654,12 +4646,11 @@ Select_clauses::Select_clause::lower(Gogo* gogo, Named_object* function,
 // Lower a default clause in a select statement.
 
 void
-Select_clauses::Select_clause::lower_default(Block* b, Expression* selref,
-					     Expression* index_expr)
+Select_clauses::Select_clause::lower_default(Block* b, Expression* selref)
 {
   Location loc = this->location_;
-  Expression* call = Runtime::make_call(Runtime::SELECTDEFAULT, loc, 2, selref,
-					index_expr);
+  Expression* call = Runtime::make_call(Runtime::SELECTDEFAULT, loc, 1,
+					selref);
   b->add_statement(Statement::make_statement(call, true));
 }
 
@@ -4667,8 +4658,7 @@ Select_clauses::Select_clause::lower_default(Block* b, Expression* selref,
 
 void
 Select_clauses::Select_clause::lower_send(Block* b, Expression* selref,
-					  Expression* chanref,
-					  Expression* index_expr)
+					  Expression* chanref)
 {
   Location loc = this->location_;
 
@@ -4687,8 +4677,8 @@ Select_clauses::Select_clause::lower_send(Block* b, Expression* selref,
   Expression* valref = Expression::make_temporary_reference(val, loc);
   Expression* valaddr = Expression::make_unary(OPERATOR_AND, valref, loc);
 
-  Expression* call = Runtime::make_call(Runtime::SELECTSEND, loc, 4, selref,
-					chanref, valaddr, index_expr);
+  Expression* call = Runtime::make_call(Runtime::SELECTSEND, loc, 3, selref,
+					chanref, valaddr);
   b->add_statement(Statement::make_statement(call, true));
 }
 
@@ -4697,8 +4687,7 @@ Select_clauses::Select_clause::lower_send(Block* b, Expression* selref,
 void
 Select_clauses::Select_clause::lower_recv(Gogo* gogo, Named_object* function,
 					  Block* b, Expression* selref,
-					  Expression* chanref,
-					  Expression* index_expr)
+					  Expression* chanref)
 {
   Location loc = this->location_;
 
@@ -4715,10 +4704,9 @@ Select_clauses::Select_clause::lower_recv(Gogo* gogo, Named_object* function,
 
   Temporary_statement* closed_temp = NULL;
 
-  Expression* call;
+  Expression* caddr;
   if (this->closed_ == NULL && this->closedvar_ == NULL)
-    call = Runtime::make_call(Runtime::SELECTRECV, loc, 4, selref, chanref,
-			      valaddr, index_expr);
+    caddr = Expression::make_nil(loc);
   else
     {
       closed_temp = Statement::make_temporary(Type::lookup_bool_type(), NULL,
@@ -4726,10 +4714,11 @@ Select_clauses::Select_clause::lower_recv(Gogo* gogo, Named_object* function,
       b->add_statement(closed_temp);
       Expression* cref = Expression::make_temporary_reference(closed_temp,
 							      loc);
-      Expression* caddr = Expression::make_unary(OPERATOR_AND, cref, loc);
-      call = Runtime::make_call(Runtime::SELECTRECV2, loc, 5, selref, chanref,
-				valaddr, caddr, index_expr);
+      caddr = Expression::make_unary(OPERATOR_AND, cref, loc);
     }
+
+  Expression* call = Runtime::make_call(Runtime::SELECTRECV, loc, 4, selref,
+					chanref, valaddr, caddr);
 
   b->add_statement(Statement::make_statement(call, true));
 
@@ -4958,15 +4947,14 @@ Select_clauses::get_backend(Translate_context* context,
   std::vector<std::vector<Bexpression*> > cases(count);
   std::vector<Bstatement*> clauses(count);
 
-  Type* int32_type = Type::lookup_integer_type("int32");
+  Type* int_type = Type::lookup_integer_type("int");
 
   int i = 0;
   for (Clauses::iterator p = this->clauses_.begin();
        p != this->clauses_.end();
        ++p, ++i)
     {
-      int index = p->index();
-      Expression* index_expr = Expression::make_integer_ul(index, int32_type,
+      Expression* index_expr = Expression::make_integer_ul(i, int_type,
 							   location);
       cases[i].push_back(index_expr->get_backend(context));
 
