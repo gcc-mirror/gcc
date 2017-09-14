@@ -2480,10 +2480,10 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
   if (! char_vectype)
     return false;
 
-  unsigned char *elts
-    = XALLOCAVEC (unsigned char, TYPE_VECTOR_SUBPARTS (char_vectype));
+  unsigned int num_bytes = TYPE_VECTOR_SUBPARTS (char_vectype);
+  unsigned char *elts = XALLOCAVEC (unsigned char, num_bytes);
   unsigned char *elt = elts;
-  unsigned word_bytes = TYPE_VECTOR_SUBPARTS (char_vectype) / nunits;
+  unsigned word_bytes = num_bytes / nunits;
   for (unsigned i = 0; i < nunits; ++i)
     for (unsigned j = 0; j < word_bytes; ++j)
       *elt++ = (i + 1) * word_bytes - j - 1;
@@ -2507,9 +2507,9 @@ vectorizable_bswap (gimple *stmt, gimple_stmt_iterator *gsi,
       return true;
     }
 
-  tree *telts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (char_vectype));
-  for (unsigned i = 0; i < TYPE_VECTOR_SUBPARTS (char_vectype); ++i)
-    telts[i] = build_int_cst (char_type_node, elts[i]);
+  auto_vec<tree, 32> telts (num_bytes);
+  for (unsigned i = 0; i < num_bytes; ++i)
+    telts.quick_push (build_int_cst (char_type_node, elts[i]));
   tree bswap_vconst = build_vector (char_vectype, telts);
 
   /* Transform.  */
@@ -2928,10 +2928,10 @@ vectorizable_call (gimple *gs, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  if (gimple_call_internal_p (stmt)
 	      && gimple_call_internal_fn (stmt) == IFN_GOMP_SIMD_LANE)
 	    {
-	      tree *v = XALLOCAVEC (tree, nunits_out);
-	      int k;
-	      for (k = 0; k < nunits_out; ++k)
-		v[k] = build_int_cst (unsigned_type_node, j * nunits_out + k);
+	      auto_vec<tree, 32> v (nunits_out);
+	      for (int k = 0; k < nunits_out; ++k)
+		v.quick_push (build_int_cst (unsigned_type_node,
+					     j * nunits_out + k));
 	      tree cst = build_vector (vectype_out, v);
 	      tree new_var
 		= vect_get_new_ssa_name (vectype_out, vect_simple_var, "cst_");
@@ -6505,7 +6505,7 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 tree
 vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
 {
-  tree mask_elt_type, mask_type, mask_vec, *mask_elts;
+  tree mask_elt_type, mask_type, mask_vec;
   int i, nunits;
 
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
@@ -6514,9 +6514,9 @@ vect_gen_perm_mask_any (tree vectype, const unsigned char *sel)
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_elt_type);
 
-  mask_elts = XALLOCAVEC (tree, nunits);
-  for (i = nunits - 1; i >= 0; i--)
-    mask_elts[i] = build_int_cst (mask_elt_type, sel[i]);
+  auto_vec<tree, 32> mask_elts (nunits);
+  for (i = 0; i < nunits; ++i)
+    mask_elts.quick_push (build_int_cst (mask_elt_type, sel[i]));
   mask_vec = build_vector (mask_type, mask_elts);
 
   return mask_vec;

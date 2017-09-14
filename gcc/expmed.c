@@ -5180,15 +5180,14 @@ make_tree (tree type, rtx x)
       {
 	int units = CONST_VECTOR_NUNITS (x);
 	tree itype = TREE_TYPE (type);
-	tree *elts;
 	int i;
 
 	/* Build a tree with vector elements.  */
-	elts = XALLOCAVEC (tree, units);
-	for (i = units - 1; i >= 0; --i)
+	auto_vec<tree, 32> elts (units);
+	for (i = 0; i < units; ++i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
-	    elts[i] = make_tree (itype, elt);
+	    elts.quick_push (make_tree (itype, elt));
 	  }
 
 	return build_vector (type, elts);

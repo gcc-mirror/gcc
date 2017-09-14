@@ -3969,7 +3969,6 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
   enum tree_code code = gimple_assign_rhs_code (stmt);
   tree def_for_init;
   tree init_def;
-  tree *elts;
   int i;
   bool nested_in_vect_loop = false;
   REAL_VALUE_TYPE real_init_val = dconst0;
@@ -4015,15 +4014,16 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 
   switch (code)
     {
-      case WIDEN_SUM_EXPR:
-      case DOT_PROD_EXPR:
-      case SAD_EXPR:
-      case PLUS_EXPR:
-      case MINUS_EXPR:
-      case BIT_IOR_EXPR:
-      case BIT_XOR_EXPR:
-      case MULT_EXPR:
-      case BIT_AND_EXPR:
+    case WIDEN_SUM_EXPR:
+    case DOT_PROD_EXPR:
+    case SAD_EXPR:
+    case PLUS_EXPR:
+    case MINUS_EXPR:
+    case BIT_IOR_EXPR:
+    case BIT_XOR_EXPR:
+    case MULT_EXPR:
+    case BIT_AND_EXPR:
+      {
         /* ADJUSMENT_DEF is NULL when called from
            vect_create_epilog_for_reduction to vectorize double reduction.  */
         if (adjustment_def)
@@ -4044,17 +4044,19 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
           def_for_init = build_int_cst (scalar_type, int_init_val);
 
         /* Create a vector of '0' or '1' except the first element.  */
-	elts = XALLOCAVEC (tree, nunits);
+	auto_vec<tree, 32> elts (nunits);
+	elts.quick_grow (nunits);
         for (i = nunits - 2; i >= 0; --i)
 	  elts[i + 1] = def_for_init;
 
         /* Option1: the first element is '0' or '1' as well.  */
-        if (adjustment_def)
-          {
+	if (adjustment_def)
+	  {
 	    elts[0] = def_for_init;
-            init_def = build_vector (vectype, elts);
-            break;
-          }
+
+	    init_def = build_vector (vectype, elts);
+	    break;
+	  }
 
         /* Option2: the first element is INIT_VAL.  */
 	elts[0] = init_val;
@@ -4069,12 +4071,13 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 	      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[i]);
 	    init_def = build_constructor (vectype, v);
 	  }
+      }
+      break;
 
-        break;
-
-      case MIN_EXPR:
-      case MAX_EXPR:
-      case COND_EXPR:
+    case MIN_EXPR:
+    case MAX_EXPR:
+    case COND_EXPR:
+      {
 	if (adjustment_def)
           {
 	    *adjustment_def = NULL_TREE;
@@ -4088,10 +4091,11 @@ get_initial_def_for_reduction (gimple *stmt, tree init_val,
 	if (! gimple_seq_empty_p (stmts))
 	  gsi_insert_seq_on_edge_immediate (loop_preheader_edge (loop), stmts);
 	init_def = build_vector_from_val (vectype, init_val);
-	break;
+      }
+      break;
 
-      default:
-        gcc_unreachable ();
+    default:
+      gcc_unreachable ();
     }
 
   return init_def;
@@ -4111,7 +4115,6 @@ get_initial_defs_for_reduction (slp_tree slp_node,
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   unsigned nunits;
   tree vec_cst;
-  tree *elts;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type, scalar_type;
   tree vop;
@@ -4195,7 +4198,8 @@ get_initial_defs_for_reduction (slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
-  elts = XALLOCAVEC (tree, nunits);
+  auto_vec<tree, 32> elts (nunits);
+  elts.quick_grow (nunits);
   for (j = 0; j < number_of_copies; j++)
     {
       for (i = group_size - 1; stmts.iterate (i, &stmt); i--)
@@ -4533,9 +4537,9 @@ vect_create_epilog_for_reduction (vec<tree> vect_defs, gimple *stmt,
 	 vector size (STEP).  */
 
       /* Create a {1,2,3,...} vector.  */
-      tree *vtemp = XALLOCAVEC (tree, nunits_out);
+      auto_vec<tree, 32> vtemp (nunits_out);
       for (k = 0; k < nunits_out; ++k)
-	vtemp[k] = build_int_cst (cr_index_scalar_type, k + 1);
+	vtemp.quick_push (build_int_cst (cr_index_scalar_type, k + 1));
       tree series_vect = build_vector (cr_index_vector_type, vtemp);
 
       /* Create a vector of the step value.  */
@@ -6731,7 +6735,7 @@ vectorizable_induction (gimple *phi,
       unsigned ivn;
       for (ivn = 0; ivn < nivs; ++ivn)
 	{
-	  tree *elts = XALLOCAVEC (tree, nunits);
+	  auto_vec<tree, 32> elts (nunits);
 	  bool constant_p = true;
 	  for (unsigned eltn = 0; eltn < nunits; ++eltn)
 	    {
@@ -6749,7 +6753,7 @@ vectorizable_induction (gimple *phi,
 		}
 	      if (! CONSTANT_CLASS_P (elt))
 		constant_p = false;
-	      elts[eltn] = elt;
+	      elts.quick_push (elt);
 	    }
 	  if (constant_p)
 	    new_vec = build_vector (vectype, elts);

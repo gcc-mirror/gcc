@@ -2,6 +2,52 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.h (build_vector): Take a vec<tree> instead of a tree *.
+	* tree.c (build_vector): Likewise.
+	(build_vector_from_ctor): Update accordingly.
+	(build_vector_from_val): Likewise.
+	* gimple-fold.c (gimple_fold_stmt_to_constant_1): Likewise.
+	* tree-ssa-forwprop.c (simplify_vector_constructor): Likewise.
+	* tree-vect-generic.c (add_rshift): Likewise.
+	(expand_vector_divmod): Likewise.
+	(optimize_vector_constructor): Likewise.
+	* tree-vect-slp.c (vect_get_constant_vectors): Likewise.
+	(vect_transform_slp_perm_load): Likewise.
+	(vect_schedule_slp_instance): Likewise.
+	* tree-vect-stmts.c (vectorizable_bswap): Likewise.
+	(vectorizable_call): Likewise.
+	(vect_gen_perm_mask_any): Likewise.  Add elements in order.
+	* expmed.c (make_tree): Likewise.
+	* fold-const.c (fold_negate_expr_1): Use auto_vec<tree> when building
+	a vector passed to build_vector.
+	(fold_convert_const): Likewise.
+	(exact_inverse): Likewise.
+	(fold_ternary_loc): Likewise.
+	(fold_relational_const): Likewise.
+	(const_binop): Likewise.  Use VECTOR_CST_ELT directly when operating
+	on VECTOR_CSTs, rather than going through vec_cst_ctor_to_array.
+	(const_unop): Likewise.  Store the reduction accumulator in a
+	variable rather than an array.
+	(vec_cst_ctor_to_array): Take the number of elements as a parameter.
+	(fold_vec_perm): Update calls accordingly.  Use auto_vec<tree> for
+	the new vector, rather than constructing it after the input arrays.
+	(native_interpret_vector): Use auto_vec<tree> when building
+	a vector passed to build_vector.  Add elements in order.
+	* tree-vect-loop.c (get_initial_defs_for_reduction): Use
+	auto_vec<tree> when building a vector passed to build_vector.
+	(vect_create_epilog_for_reduction): Likewise.
+	(vectorizable_induction): Likewise.
+	(get_initial_def_for_reduction): Likewise.  Fix indentation of
+	case statements.
+	* config/sparc/sparc.c (sparc_handle_vis_mul8x16): Change n_elts
+	to a vec<tree> *.
+	(sparc_fold_builtin): Use auto_vec<tree> when building a vector
+	passed to build_vector.
+
+2017-09-14  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-core.h (tree_base::u): Add an "nelts" field.
 	(tree_vector): Use VECTOR_CST_NELTS as the length.
 	* tree.c (tree_size): Likewise.

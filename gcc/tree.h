@@ -4026,7 +4026,7 @@ extern tree build_int_cst (tree, HOST_WIDE_INT);
 extern tree build_int_cstu (tree type, unsigned HOST_WIDE_INT cst);
 extern tree build_int_cst_type (tree, HOST_WIDE_INT);
 extern tree make_vector (unsigned CXX_MEM_STAT_INFO);
-extern tree build_vector (tree, tree * CXX_MEM_STAT_INFO);
+extern tree build_vector (tree, vec<tree> CXX_MEM_STAT_INFO);
 extern tree build_vector_from_ctor (tree, vec<constructor_elt, va_gc> *);
 extern tree build_vector_from_val (tree, tree);
 extern void recompute_constructor_flags (tree);
