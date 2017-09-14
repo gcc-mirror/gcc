@@ -1298,154 +1298,73 @@ func f(x int) { y := x; print(y) }
 	}
 }
 
-// Alias-related code. Keep for now.
-/*
-func TestAliases(t *testing.T) {
-	testenv.MustHaveGoBuild(t)
-
-	const src = `
-package b
-
-import (
-	"./testdata/alias"
-	a "./testdata/alias"
-	"math"
-)
-
-const (
-	c1 = alias.Pi1
-	c2 => a.Pi1
-	c3 => a.Pi2
-	c4 => math.Pi
-)
-
-var (
-	v1 => alias.Default
-	v2 => a.Default
-	v3 = f1
-)
-
-type (
-	t1 => alias.Context
-	t2 => a.Context
-)
-
-func f1 => alias.Sin
-func f2 => a.Sin
-
-func _() {
-	assert(c1 == alias.Pi1 && c2 == a.Pi1 && c3 == a.Pi2 && c4 == math.Pi)
-	assert(c2 == c2 && c2 == c3 && c3 == c4)
-	v1 = v2 // must be assignable
-	var _ *t1 = new(t2) // must be assignable
-	var _ t2 = alias.Default
-	f1(1) // must be callable
-	f2(1)
-	_ = alias.Sin(1)
-	_ = a.Sin(1)
-}
-`
-
-	if out := compile(t, "testdata", "alias.go"); out != "" {
-		defer os.Remove(out)
-	}
-
-	DefPredeclaredTestFuncs() // declare assert built-in for testing
-	mustTypecheck(t, "Aliases", src, nil)
-}
-
-func compile(t *testing.T, dirname, filename string) string {
-	cmd := exec.Command(testenv.GoToolPath(t), "tool", "compile", filename)
-	cmd.Dir = dirname
-	out, err := cmd.CombinedOutput()
-	if err != nil {
-		t.Logf("%s", out)
-		t.Fatalf("go tool compile %s failed: %s", filename, err)
-	}
-	// filename should end with ".go"
-	return filepath.Join(dirname, filename[:len(filename)-2]+"o")
-}
-
-func TestAliasDefUses(t *testing.T) {
+// TestFailedImport tests that we don't get follow-on errors
+// elsewhere in a package due to failing to import a package.
+func TestFailedImport(t *testing.T) {
 	testenv.MustHaveGoBuild(t)
 
 	const src = `
 package p
 
-import(
-	"go/build"
-	"go/types"
-)
+import "foo" // should only see an error here
 
-// Defs
-const Invalid => types.Invalid
-type Struct => types.Struct
-var Default => build.Default
-func Implements => types.Implements
-
-// Uses
-const _ = Invalid
-var _ types.Struct = Struct{} // types must be identical
-var _ build.Context = Default
-var _ = Implements(nil, nil)
+const c = foo.C
+type T = foo.T
+var v T = c
+func f(x T) T { return foo.F(x) }
 `
-
-	info := Info{
-		Defs: make(map[*ast.Ident]Object),
-		Uses: make(map[*ast.Ident]Object),
+	fset := token.NewFileSet()
+	f, err := parser.ParseFile(fset, "src", src, 0)
+	if err != nil {
+		t.Fatal(err)
 	}
-	mustTypecheck(t, "TestAliasDefUses", src, &info)
+	files := []*ast.File{f}
 
-	// verify Defs
-	defs := map[string]string{
-		"Invalid":    "types.Invalid",
-		"Struct":     "types.Struct",
-		"Default":    "build.Default",
-		"Implements": "types.Implements",
-	}
-
-	for ident, obj := range info.Defs {
-		if alias, ok := obj.(*Alias); ok {
-			if want := defs[ident.Name]; want != "" {
-				orig := alias.Orig()
-				if got := orig.Pkg().Name() + "." + orig.Name(); got != want {
-					t.Errorf("%v: got %v, want %v", ident, got, want)
+	// type-check using all possible importers
+	for _, compiler := range []string{"gc", "gccgo", "source"} {
+		errcount := 0
+		conf := Config{
+			Error: func(err error) {
+				// we should only see the import error
+				if errcount > 0 || !strings.Contains(err.Error(), "could not import foo") {
+					t.Errorf("for %s importer, got unexpected error: %v", compiler, err)
 				}
-				delete(defs, ident.Name) // mark as found
-			} else {
-				t.Errorf("unexpected alias def of %v", ident)
+				errcount++
+			},
+			Importer: importer.For(compiler, nil),
+		}
+
+		info := &Info{
+			Uses: make(map[*ast.Ident]Object),
+		}
+		pkg, _ := conf.Check("p", fset, files, info)
+		if pkg == nil {
+			t.Errorf("for %s importer, type-checking failed to return a package", compiler)
+			continue
+		}
+
+		imports := pkg.Imports()
+		if len(imports) != 1 {
+			t.Errorf("for %s importer, got %d imports, want 1", compiler, len(imports))
+			continue
+		}
+		imp := imports[0]
+		if imp.Name() != "foo" {
+			t.Errorf(`for %s importer, got %q, want "foo"`, compiler, imp.Name())
+			continue
+		}
+
+		// verify that all uses of foo refer to the imported package foo (imp)
+		for ident, obj := range info.Uses {
+			if ident.Name == "foo" {
+				if obj, ok := obj.(*PkgName); ok {
+					if obj.Imported() != imp {
+						t.Errorf("%s resolved to %v; want %v", ident, obj.Imported(), imp)
+					}
+				} else {
+					t.Errorf("%s resolved to %v; want package name", ident, obj)
+				}
 			}
 		}
-	}
-
-	if len(defs) != 0 {
-		t.Errorf("missing aliases: %v", defs)
-	}
-
-	// verify Uses
-	uses := map[string]string{
-		"Invalid":    "types.Invalid",
-		"Struct":     "types.Struct",
-		"Default":    "build.Default",
-		"Implements": "types.Implements",
-	}
-
-	for ident, obj := range info.Uses {
-		if alias, ok := obj.(*Alias); ok {
-			if want := uses[ident.Name]; want != "" {
-				orig := alias.Orig()
-				if got := orig.Pkg().Name() + "." + orig.Name(); got != want {
-					t.Errorf("%v: got %v, want %v", ident, got, want)
-				}
-				delete(uses, ident.Name) // mark as found
-			} else {
-				t.Errorf("unexpected alias use of %v", ident)
-			}
-		}
-	}
-
-	if len(uses) != 0 {
-		t.Errorf("missing aliases: %v", defs)
 	}
 }
-*/

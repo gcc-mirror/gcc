@@ -205,13 +205,8 @@ func rtof(x ratVal) floatVal {
 
 func vtoc(x Value) complexVal { return complexVal{x, int64Val(0)} }
 
-var (
-	minInt64 = big.NewInt(-1 << 63)
-	maxInt64 = big.NewInt(1<<63 - 1)
-)
-
 func makeInt(x *big.Int) Value {
-	if minInt64.Cmp(x) <= 0 && x.Cmp(maxInt64) <= 0 {
+	if x.IsInt64() {
 		return int64Val(x.Int64())
 	}
 	return intVal{x}
@@ -252,6 +247,13 @@ func makeFloatFromLiteral(lit string) Value {
 	if f, ok := newFloat().SetString(lit); ok {
 		if smallRat(f) {
 			// ok to use rationals
+			if f.Sign() == 0 {
+				// Issue 20228: If the float underflowed to zero, parse just "0".
+				// Otherwise, lit might contain a value with a large negative exponent,
+				// such as -6e-1886451601. As a float, that will underflow to 0,
+				// but it'll take forever to parse as a Rat.
+				lit = "0"
+			}
 			r, _ := newRat().SetString(lit)
 			return ratVal{r}
 		}
@@ -413,7 +415,7 @@ func Uint64Val(x Value) (uint64, bool) {
 	case int64Val:
 		return uint64(x), x >= 0
 	case intVal:
-		return x.val.Uint64(), x.val.Sign() >= 0 && x.val.BitLen() <= 64
+		return x.val.Uint64(), x.val.IsUint64()
 	case unknownVal:
 		return 0, false
 	default:

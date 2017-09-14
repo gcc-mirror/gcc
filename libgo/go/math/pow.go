@@ -36,6 +36,13 @@ func isOddInt(x float64) bool {
 //	Pow(-Inf, y) = Pow(-0, -y)
 //	Pow(x, y) = NaN for finite x < 0 and finite non-integer y
 func Pow(x, y float64) float64 {
+	return libc_pow(x, y)
+}
+
+//extern pow
+func libc_pow(float64, float64) float64
+
+func pow(x, y float64) float64 {
 	switch {
 	case y == 0 || x == 1:
 		return 1

@@ -887,8 +887,6 @@ func (p *printer) expr1(expr ast.Expr, prec1, depth int) {
 	default:
 		panic("unreachable")
 	}
-
-	return
 }
 
 func (p *printer) possibleSelectorExpr(expr ast.Expr, prec1, depth int) bool {
@@ -1268,8 +1266,6 @@ func (p *printer) stmt(stmt ast.Stmt, nextIsRBrace bool) {
 	default:
 		panic("unreachable")
 	}
-
-	return
 }
 
 // ----------------------------------------------------------------------------
@@ -1447,6 +1443,9 @@ func (p *printer) spec(spec ast.Spec, n int, doIndent bool) {
 		} else {
 			p.print(vtab)
 		}
+		if s.Assign.IsValid() {
+			p.print(token.ASSIGN, blank)
+		}
 		p.expr(s.Type)
 		p.setComment(s.Comment)
 
@@ -1531,6 +1530,16 @@ func (p *printer) nodeSize(n ast.Node, maxSize int) (size int) {
 		p.nodeSizes[n] = size
 	}
 	return
+}
+
+// numLines returns the number of lines spanned by node n in the original source.
+func (p *printer) numLines(n ast.Node) int {
+	if from := n.Pos(); from.IsValid() {
+		if to := n.End(); to.IsValid() {
+			return p.lineFor(to) - p.lineFor(from) + 1
+		}
+	}
+	return infinity
 }
 
 // bodySize is like nodeSize but it is specialized for *ast.BlockStmt's.
@@ -1669,7 +1678,9 @@ func (p *printer) declList(list []ast.Decl) {
 			if prev != tok || getDoc(d) != nil {
 				min = 2
 			}
-			p.linebreak(p.lineFor(d.Pos()), min, ignore, false)
+			// start a new section if the next declaration is a function
+			// that spans multiple lines (see also issue #19544)
+			p.linebreak(p.lineFor(d.Pos()), min, ignore, tok == token.FUNC && p.numLines(d) > 1)
 		}
 		p.decl(d)
 	}

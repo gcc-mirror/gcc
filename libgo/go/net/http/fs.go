@@ -30,21 +30,51 @@ import (
 // value is a filename on the native file system, not a URL, so it is separated
 // by filepath.Separator, which isn't necessarily '/'.
 //
+// Note that Dir will allow access to files and directories starting with a
+// period, which could expose sensitive directories like a .git directory or
+// sensitive files like .htpasswd. To exclude files with a leading period,
+// remove the files/directories from the server or create a custom FileSystem
+// implementation.
+//
 // An empty Dir is treated as ".".
 type Dir string
 
+// mapDirOpenError maps the provided non-nil error from opening name
+// to a possibly better non-nil error. In particular, it turns OS-specific errors
+// about opening files in non-directories into os.ErrNotExist. See Issue 18984.
+func mapDirOpenError(originalErr error, name string) error {
+	if os.IsNotExist(originalErr) || os.IsPermission(originalErr) {
+		return originalErr
+	}
+
+	parts := strings.Split(name, string(filepath.Separator))
+	for i := range parts {
+		if parts[i] == "" {
+			continue
+		}
+		fi, err := os.Stat(strings.Join(parts[:i+1], string(filepath.Separator)))
+		if err != nil {
+			return originalErr
+		}
+		if !fi.IsDir() {
+			return os.ErrNotExist
+		}
+	}
+	return originalErr
+}
+
 func (d Dir) Open(name string) (File, error) {
-	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) ||
-		strings.Contains(name, "\x00") {
+	if filepath.Separator != '/' && strings.ContainsRune(name, filepath.Separator) {
 		return nil, errors.New("http: invalid character in file path")
 	}
 	dir := string(d)
 	if dir == "" {
 		dir = "."
 	}
-	f, err := os.Open(filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name))))
+	fullName := filepath.Join(dir, filepath.FromSlash(path.Clean("/"+name)))
+	f, err := os.Open(fullName)
 	if err != nil {
-		return nil, err
+		return nil, mapDirOpenError(err, fullName)
 	}
 	return f, nil
 }
@@ -291,7 +321,7 @@ func scanETag(s string) (etag string, remain string) {
 		case c == '"':
 			return string(s[:i+1]), s[i+1:]
 		default:
-			break
+			return "", ""
 		}
 	}
 	return "", ""
@@ -349,7 +379,7 @@ func checkIfMatch(w ResponseWriter, r *Request) condResult {
 	return condFalse
 }
 
-func checkIfUnmodifiedSince(w ResponseWriter, r *Request, modtime time.Time) condResult {
+func checkIfUnmodifiedSince(r *Request, modtime time.Time) condResult {
 	ius := r.Header.Get("If-Unmodified-Since")
 	if ius == "" || isZeroTime(modtime) {
 		return condNone
@@ -394,7 +424,7 @@ func checkIfNoneMatch(w ResponseWriter, r *Request) condResult {
 	return condTrue
 }
 
-func checkIfModifiedSince(w ResponseWriter, r *Request, modtime time.Time) condResult {
+func checkIfModifiedSince(r *Request, modtime time.Time) condResult {
 	if r.Method != "GET" && r.Method != "HEAD" {
 		return condNone
 	}
@@ -479,7 +509,7 @@ func checkPreconditions(w ResponseWriter, r *Request, modtime time.Time) (done b
 	// This function carefully follows RFC 7232 section 6.
 	ch := checkIfMatch(w, r)
 	if ch == condNone {
-		ch = checkIfUnmodifiedSince(w, r, modtime)
+		ch = checkIfUnmodifiedSince(r, modtime)
 	}
 	if ch == condFalse {
 		w.WriteHeader(StatusPreconditionFailed)
@@ -495,7 +525,7 @@ func checkPreconditions(w ResponseWriter, r *Request, modtime time.Time) (done b
 			return true, ""
 		}
 	case condNone:
-		if checkIfModifiedSince(w, r, modtime) == condFalse {
+		if checkIfModifiedSince(r, modtime) == condFalse {
 			writeNotModified(w)
 			return true, ""
 		}
@@ -580,7 +610,7 @@ func serveFile(w ResponseWriter, r *Request, fs FileSystem, name string, redirec
 
 	// Still a directory? (we didn't find an index.html file)
 	if d.IsDir() {
-		if checkIfModifiedSince(w, r, d.ModTime()) == condFalse {
+		if checkIfModifiedSince(r, d.ModTime()) == condFalse {
 			writeNotModified(w)
 			return
 		}

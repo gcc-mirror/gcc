@@ -26,6 +26,7 @@ type SysProcAttr struct {
 // Implemented in runtime package.
 func runtime_BeforeFork()
 func runtime_AfterFork()
+func runtime_AfterForkInChild()
 
 // Fork, dup fd onto 0..len(fd), and exec(argv0, argvv, envv) in child.
 // If a dup or exec fails, write the errno error to pipe.
@@ -77,6 +78,8 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 
 	// Fork succeeded, now in child.
 
+	runtime_AfterForkInChild()
+
 	// Enable tracing if requested.
 	if sys.Ptrace {
 		err1 = raw_ptrace(_PTRACE_TRACEME, 0, nil, nil)
@@ -126,27 +129,24 @@ func forkAndExecInChild(argv0 *byte, argv, envv []*byte, chroot, dir *byte, attr
 	// User and groups
 	if cred := sys.Credential; cred != nil {
 		ngroups := len(cred.Groups)
-		if ngroups == 0 {
-			err2 := setgroups(0, nil)
-			if err2 == nil {
-				err1 = 0
-			} else {
-				err1 = err2.(Errno)
-			}
-		} else {
-			groups := make([]Gid_t, ngroups)
+		var groups *Gid_t
+		if ngroups > 0 {
+			gids := make([]Gid_t, ngroups)
 			for i, v := range cred.Groups {
-				groups[i] = Gid_t(v)
+				gids[i] = Gid_t(v)
 			}
-			err2 := setgroups(ngroups, &groups[0])
+			groups = &gids[0]
+		}
+		if !cred.NoSetGroups {
+			err2 := setgroups(ngroups, groups)
 			if err2 == nil {
 				err1 = 0
 			} else {
 				err1 = err2.(Errno)
 			}
-		}
-		if err1 != 0 {
-			goto childerror
+			if err1 != 0 {
+				goto childerror
+			}
 		}
 		err2 := Setgid(int(cred.Gid))
 		if err2 != nil {
@@ -254,18 +254,4 @@ childerror:
 	for {
 		raw_exit(253)
 	}
-}
-
-// Try to open a pipe with O_CLOEXEC set on both file descriptors.
-func forkExecPipe(p []int) error {
-	err := Pipe(p)
-	if err != nil {
-		return err
-	}
-	_, err = fcntl(p[0], F_SETFD, FD_CLOEXEC)
-	if err != nil {
-		return err
-	}
-	_, err = fcntl(p[1], F_SETFD, FD_CLOEXEC)
-	return err
 }

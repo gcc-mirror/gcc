@@ -25,7 +25,8 @@ shift
 files=$*
 deps=`for f in $files; do cat $f; done | 
   sed -n -e '/^import.*"/p; /^import[ 	]*(/,/^)/p' |
-  grep '"' |
+  sed -e 's/^import //' |
+  grep '^[ 	]*"' |
   grep -v '"unsafe"' |
   sed -e 's/^.*"\([^"]*\)".*$/\1/' -e 's/$/.gox/' |
   sort -u`

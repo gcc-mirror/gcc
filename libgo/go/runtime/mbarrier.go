@@ -156,6 +156,11 @@ func gcmarkwb_m(slot *uintptr, ptr uintptr) {
 		// combine the read and the write. Checking inheap is
 		// insufficient since we need to track changes to
 		// roots outside the heap.
+		//
+		// Note: profbuf.go omits a barrier during signal handler
+		// profile logging; that's safe only because this deletion barrier exists.
+		// If we remove the deletion barrier, we'll have to work out
+		// a new way to handle the profile logging.
 		if slot1 := uintptr(unsafe.Pointer(slot)); slot1 >= minPhysPageSize {
 			if optr := *slot; optr != 0 {
 				shade(optr)
@@ -238,6 +243,7 @@ func writebarrierptr_prewrite(dst *uintptr, src uintptr) {
 }
 
 // typedmemmove copies a value of type t to dst from src.
+// Must be nosplit, see #16026.
 //go:nosplit
 func typedmemmove(typ *_type, dst, src unsafe.Pointer) {
 	if typ.kind&kindNoPointers == 0 {

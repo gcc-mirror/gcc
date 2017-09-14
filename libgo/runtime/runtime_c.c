@@ -10,6 +10,10 @@
 #include <cpuid.h>
 #endif
 
+#ifdef __linux__
+#include <syscall.h>
+#endif
+
 #include "config.h"
 
 #include "runtime.h"
@@ -79,13 +83,6 @@ runtime_signalstack(byte *p, uintptr n)
 		st.ss_flags = SS_DISABLE;
 	if(sigaltstack(&st, nil) < 0)
 		*(int *)0xf1 = 0xf1;
-}
-
-struct debugVars	runtime_debug;
-
-void
-runtime_setdebug(struct debugVars* d) {
-  runtime_debug = *d;
 }
 
 int32 go_open(char *, int32, int32)
@@ -184,3 +181,18 @@ publicationBarrier()
 {
   __atomic_thread_fence(__ATOMIC_RELEASE);
 }
+
+#ifdef __linux__
+
+/* Currently sbrk0 is only called on GNU/Linux.  */
+
+uintptr sbrk0(void)
+  __asm__ (GOSYM_PREFIX "runtime.sbrk0");
+
+uintptr
+sbrk0()
+{
+  return syscall(SYS_brk, (uintptr)(0));
+}
+
+#endif /* __linux__ */

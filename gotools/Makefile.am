@@ -28,6 +28,8 @@ STAMP = echo timestamp >
 libgodir = ../$(target_noncanonical)/libgo
 LIBGODEP = $(libgodir)/libgo.la
 
+LIBGOTOOL = $(libgodir)/libgotool.a
+
 if NATIVE
 # Use the compiler we just built.
 GOCOMPILER = $(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET)
@@ -48,34 +50,8 @@ libgomiscdir = $(srcdir)/../libgo/misc
 
 go_cmd_go_files = \
 	$(cmdsrcdir)/go/alldocs.go \
-	$(cmdsrcdir)/go/bug.go \
-	$(cmdsrcdir)/go/build.go \
-	$(cmdsrcdir)/go/clean.go \
-	$(cmdsrcdir)/go/context.go \
-	$(cmdsrcdir)/go/discovery.go \
-	$(cmdsrcdir)/go/doc.go \
-	$(cmdsrcdir)/go/env.go \
-	$(cmdsrcdir)/go/fix.go \
-	$(cmdsrcdir)/go/fmt.go \
-	$(cmdsrcdir)/go/generate.go \
-	$(cmdsrcdir)/go/get.go \
 	$(cmdsrcdir)/go/go11.go \
-	$(cmdsrcdir)/go/help.go \
-	$(cmdsrcdir)/go/http.go \
-	$(cmdsrcdir)/go/list.go \
-	$(cmdsrcdir)/go/main.go \
-	$(cmdsrcdir)/go/note.go \
-	$(cmdsrcdir)/go/pkg.go \
-	$(cmdsrcdir)/go/run.go \
-	$(cmdsrcdir)/go/signal.go \
-	$(cmdsrcdir)/go/signal_unix.go \
-	$(cmdsrcdir)/go/test.go \
-	$(cmdsrcdir)/go/testflag.go \
-	$(cmdsrcdir)/go/tool.go \
-	$(cmdsrcdir)/go/vcs.go \
-	$(cmdsrcdir)/go/version.go \
-	$(cmdsrcdir)/go/vet.go \
-	$(libgodir)/zstdpkglist.go
+	$(cmdsrcdir)/go/main.go
 
 go_cmd_gofmt_files = \
 	$(cmdsrcdir)/gofmt/doc.go \
@@ -124,8 +100,8 @@ bin_PROGRAMS = go$(EXEEXT) gofmt$(EXEEXT)
 noinst_PROGRAMS = cgo$(EXEEXT)
 man_MANS = go.1 gofmt.1
 
-go$(EXEEXT): $(go_cmd_go_files) zdefaultcc.go $(LIBGODEP)
-	$(GOLINK) $(go_cmd_go_files) zdefaultcc.go $(LIBS) $(NET_LIBS)
+go$(EXEEXT): $(go_cmd_go_files) $(LIBGOTOOL) $(LIBGODEP)
+	$(GOLINK) $(go_cmd_go_files) $(LIBGOTOOL) $(LIBS) $(NET_LIBS)
 gofmt$(EXEEXT): $(go_cmd_gofmt_files) $(LIBGODEP)
 	$(GOLINK) $(go_cmd_gofmt_files) $(LIBS) $(NET_LIBS)
 cgo$(EXEEXT): $(go_cmd_cgo_files) zdefaultcc.go $(LIBGODEP)
@@ -175,6 +151,8 @@ check-gcc: Makefile
 
 # CHECK_ENV sets up the environment to run the newly built go tool.
 # If you change this, change ECHO_ENV, below.
+# The fl shell variable is used to avoid having FAIL appear
+# in the log unnecessarily.
 CHECK_ENV = \
 	PATH=`echo $(abs_builddir):$${PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export PATH; \
@@ -190,7 +168,8 @@ CHECK_ENV = \
 	LD_LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LD_LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LD_LIBRARY_PATH; \
 	GOROOT=$${abs_libgodir}; \
-	export GOROOT;
+	export GOROOT; \
+	fl1="FA"; fl2="IL"; fl="$${fl1}$${fl2}";
 
 # ECHO_ENV is a variant of CHECK_ENV to put into a testlog file.
 # It assumes that abs_libgodir is set.
@@ -201,16 +180,18 @@ check-go-tool: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	rm -rf check-go-dir cmd_go-testlog
 	$(MKDIR_P) check-go-dir/src/cmd/go
 	cp $(cmdsrcdir)/go/*.go check-go-dir/src/cmd/go/
-	cp $(libgodir)/zstdpkglist.go check-go-dir/src/cmd/go/
-	cp zdefaultcc.go check-go-dir/src/cmd/go/
+	cp -r $(cmdsrcdir)/go/internal check-go-dir/src/cmd/go/
+	cp $(libgodir)/zstdpkglist.go check-go-dir/src/cmd/go/internal/load/
+	cp $(libgodir)/zdefaultcc.go check-go-dir/src/cmd/go/internal/cfg/
 	cp -r $(cmdsrcdir)/go/testdata check-go-dir/src/cmd/go/
+	cp -r $(cmdsrcdir)/internal check-go-dir/src/cmd/
 	@abs_libgodir=`cd $(libgodir) && $(PWD_COMMAND)`; \
 	abs_checkdir=`cd check-go-dir && $(PWD_COMMAND)`; \
 	echo "cd check-go-dir/src/cmd/go && $(ECHO_ENV) GOPATH=$${abs_checkdir} $(abs_builddir)/go$(EXEEXT) test -test.short -test.v" > cmd_go-testlog
 	$(CHECK_ENV) \
 	GOPATH=`cd check-go-dir && $(PWD_COMMAND)`; \
 	export GOPATH; \
-	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) > cmd_go-testlog 2>&1 || true
+	(cd check-go-dir/src/cmd/go && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cmd_go-testlog 2>&1 || echo "--- $${fl} go test cmd/go (0.00s)" >> cmd_go-testlog
 	grep '^--- ' cmd_go-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # check-runtime runs `go test runtime` in our environment.
@@ -232,7 +213,7 @@ check-runtime: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	GOARCH=`$(abs_builddir)/go$(EXEEXT) env GOARCH`; \
 	GOOS=`$(abs_builddir)/go$(EXEEXT) env GOOS`; \
 	files=`$(SHELL) $(libgosrcdir)/../match.sh --goarch=$${GOARCH} --goos=$${GOOS} --srcdir=$(libgosrcdir)/runtime --extrafiles="$(libgodir)/runtime_sysinfo.go $(libgodir)/sigtab.go" --tag=libffi`; \
-	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" -test.v >> runtime-testlog 2>&1 || true
+	$(SHELL) $(libgosrcdir)/../testsuite/gotest --goarch=$${GOARCH} --goos=$${GOOS} --basedir=$(libgosrcdir)/.. --srcdir=$(libgosrcdir)/runtime --pkgpath=runtime --pkgfiles="$${files}" -test.v >> runtime-testlog 2>&1 || echo "--- $${fl} go test runtime (0.00s)" >> runtime-testlog
 	grep '^--- ' runtime-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # check-cgo-test runs `go test misc/cgo/test` in our environment.
@@ -245,7 +226,7 @@ check-cgo-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	$(CHECK_ENV) \
 	GOTRACEBACK=2; \
 	export GOTRACEBACK; \
-	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cgo-testlog 2>&1 || true
+	(cd cgo-test-dir/misc/cgo/test && $(abs_builddir)/go$(EXEEXT) test -test.short -test.v) >> cgo-testlog 2>&1 || echo "--- $${fl} go test misc/cgo/test (0.00s)" >> cgo-testlog
 	grep '^--- ' cgo-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # check-carchive-test runs `go test misc/cgo/testcarchive/carchive_test.go`
@@ -259,7 +240,7 @@ check-carchive-test: go$(EXEEXT) cgo$(EXEEXT) check-head check-gccgo check-gcc
 	$(CHECK_ENV) \
 	LIBRARY_PATH=`echo $${abs_libgodir}/.libs:$${LIBRARY_PATH} | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; \
 	export LIBRARY_PATH; \
-	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || true
+	(cd carchive-test-dir/misc/cgo/testcarchive && $(abs_builddir)/go$(EXEEXT) test -test.v carchive_test.go) >> carchive-testlog 2>&1 || echo "--- $${fl} go test misc/cgo/testcarchive (0.00s)" >> carchive-testlog
 	grep '^--- ' carchive-testlog | sed -e 's/^--- \(.*\) ([^)]*)$$/\1/'
 
 # The check targets runs the tests and assembles the output files.
