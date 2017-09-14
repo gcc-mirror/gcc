@@ -112,8 +112,8 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
 	}
       else
 	{
-	  get_operand_range (op1_true, TREE_TYPE (name));
-	  get_operand_range (op1_false, TREE_TYPE (name));
+	  get_operand_range (op1_true, name);
+	  get_operand_range (op1_false, name);
 	}
 
       if (op2_in_chain)
@@ -125,8 +125,8 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
 	}
       else
 	{
-	  get_operand_range (op2_true, TREE_TYPE (name));
-	  get_operand_range (op2_false, TREE_TYPE (name));
+	  get_operand_range (op2_true, name);
+	  get_operand_range (op2_false, name);
 	}
       if (!stmt.combine_range (r, lhs, op1_true, op1_false, op2_true,
 			       op2_false))

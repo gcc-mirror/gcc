@@ -127,7 +127,13 @@ range_stmt::determine_state (tree t1, tree t2)
       if (ssa1)
 	{
 	  if (ssa2)
-	    st = RS_SS;
+	    {
+	      /* Resolving 2 SSA names is only allowed with relational and
+		 logical operations.  */
+	      if ((code >= LT_EXPR && code <= NE_EXPR)
+	          || combine_range_p (TREE_TYPE (t1)))
+		st = RS_SS;
+	    }
 	  else
 	    if (TREE_CODE (t2) == INTEGER_CST && !TREE_OVERFLOW (t2))
 	      st = RS_SI;
@@ -326,18 +332,6 @@ range_stmt::operator= (gimple *s)
   from_stmt (s);
   g = s;
   return *this;
-}
-
-bool
-range_stmt::is_relational()
-{
-  if (code >= TRUTH_ANDIF_EXPR && code <= NE_EXPR)
-    return true;
-  if (code >= BIT_AND_EXPR && code <= BIT_NOT_EXPR &&
-      types_compatible_p (TREE_TYPE (op1), boolean_type_node))
-    return true;
-
-  return false;
 }
 
 /* THis function will attempt to resolve the expression to a constant. 
@@ -583,8 +577,7 @@ get_operand_range (irange& r, tree op)
     if (TREE_CODE (op) == SSA_NAME)
       {
 	/* Eventually we may go look for an on-demand range... */
-	/* But at least should look for what we currently know. */
-	r.set_range_for_type (TREE_TYPE (op));
+	r = op;
 	return true;
       }
 

@@ -65,7 +65,6 @@ public:
   bool valid () const;
   gimple *get_gimple () const;
   tree_code get_code () const;
-  bool is_relational ();
 
   tree operand1 () const;
   tree operand2 () const;
