@@ -7976,8 +7976,8 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && (i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	{
 	  new_rtx = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
-	  new_rtx = make_extraction (mode, new_rtx, 0, XEXP (XEXP (x, 0), 1), i, 1,
-				 0, in_code == COMPARE);
+	  new_rtx = make_extraction (mode, new_rtx, 0, XEXP (XEXP (x, 0), 1),
+				     i, 1, 0, in_code == COMPARE);
 	}
 
       /* Same as previous, but for (subreg (lshiftrt ...)) in first op.  */
@@ -8016,10 +8016,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  /* Apply the distributive law, and then try to make extractions.  */
 	  new_rtx = gen_rtx_fmt_ee (GET_CODE (XEXP (x, 0)), mode,
-				gen_rtx_AND (mode, XEXP (XEXP (x, 0), 0),
-					     XEXP (x, 1)),
-				gen_rtx_AND (mode, XEXP (XEXP (x, 0), 1),
-					     XEXP (x, 1)));
+				    gen_rtx_AND (mode, XEXP (XEXP (x, 0), 0),
+						 XEXP (x, 1)),
+				    gen_rtx_AND (mode, XEXP (XEXP (x, 0), 1),
+						 XEXP (x, 1)));
 	  new_rtx = make_compound_operation (new_rtx, in_code);
 	}
 
@@ -8033,9 +8033,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  new_rtx = make_compound_operation (XEXP (XEXP (x, 0), 0), next_code);
 	  new_rtx = make_extraction (mode, new_rtx,
-				 (GET_MODE_PRECISION (mode)
-				  - INTVAL (XEXP (XEXP (x, 0), 1))),
-				 NULL_RTX, i, 1, 0, in_code == COMPARE);
+				     (GET_MODE_PRECISION (mode)
+				      - INTVAL (XEXP (XEXP (x, 0), 1))),
+				     NULL_RTX, i, 1, 0, in_code == COMPARE);
 	}
 
       /* On machines without logical shifts, if the operand of the AND is
@@ -8055,8 +8055,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  if ((INTVAL (XEXP (x, 1)) & ~mask) == 0)
 	    SUBST (XEXP (x, 0),
 		   gen_rtx_ASHIFTRT (mode,
-				     make_compound_operation
-				     (XEXP (XEXP (x, 0), 0), next_code),
+				     make_compound_operation (XEXP (XEXP (x,
+									  0),
+								    0),
+							      next_code),
 				     XEXP (XEXP (x, 0), 1)));
 	}
 
@@ -8066,9 +8068,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	 we are in a COMPARE.  */
       else if ((i = exact_log2 (UINTVAL (XEXP (x, 1)) + 1)) >= 0)
 	new_rtx = make_extraction (mode,
-			       make_compound_operation (XEXP (x, 0),
-							next_code),
-			       0, NULL_RTX, i, 1, 0, in_code == COMPARE);
+				   make_compound_operation (XEXP (x, 0),
+							    next_code),
+				   0, NULL_RTX, i, 1, 0, in_code == COMPARE);
 
       /* If we are in a comparison and this is an AND with a power of two,
 	 convert this into the appropriate bit extract.  */
@@ -8119,9 +8121,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && (nonzero_bits (XEXP (x, 0), mode) & (1 << (mode_width - 1))) == 0)
 	{
 	  new_rtx = gen_rtx_ASHIFTRT (mode,
-				  make_compound_operation (XEXP (x, 0),
-							   next_code),
-				  XEXP (x, 1));
+				      make_compound_operation (XEXP (x, 0),
+							       next_code),
+				      XEXP (x, 1));
 	  break;
 	}
 
@@ -8142,9 +8144,9 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	{
 	  new_rtx = make_compound_operation (XEXP (lhs, 0), next_code);
 	  new_rtx = make_extraction (mode, new_rtx,
-				 INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
-				 NULL_RTX, mode_width - INTVAL (rhs),
-				 code == LSHIFTRT, 0, in_code == COMPARE);
+				     INTVAL (rhs) - INTVAL (XEXP (lhs, 1)),
+				     NULL_RTX, mode_width - INTVAL (rhs),
+				     code == LSHIFTRT, 0, in_code == COMPARE);
 	  break;
 	}
 
@@ -8161,9 +8163,10 @@ make_compound_operation_int (scalar_int_mode mode, rtx *x_ptr,
 	  && INTVAL (rhs) < HOST_BITS_PER_WIDE_INT
 	  && INTVAL (rhs) < mode_width
 	  && (new_rtx = extract_left_shift (mode, lhs, INTVAL (rhs))) != 0)
-	new_rtx = make_extraction (mode, make_compound_operation (new_rtx, next_code),
-			       0, NULL_RTX, mode_width - INTVAL (rhs),
-			       code == LSHIFTRT, 0, in_code == COMPARE);
+	new_rtx = make_extraction (mode, make_compound_operation (new_rtx,
+								  next_code),
+				   0, NULL_RTX, mode_width - INTVAL (rhs),
+				   code == LSHIFTRT, 0, in_code == COMPARE);
 
       break;
 

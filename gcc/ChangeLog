@@ -1,5 +1,7 @@
 2017-09-14  Jakub Jelinek  <jakub@redhat.com>
 
+	* combine.c (make_compound_operation_int): Formatting fixes.
+
 	* config/alpha/elf.h (LINK_EH_SPEC): Add -static-pie support.
 	* config/alpha/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Likewise.
 	* config/netbsd.h (LINK_EH_SPEC): Likewise.
