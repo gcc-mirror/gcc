@@ -11700,18 +11700,17 @@ static rtx
 const_vector_mask_from_tree (tree exp)
 {
   rtvec v;
-  unsigned i;
-  int units;
+  unsigned i, units;
   tree elt;
   machine_mode inner, mode;
 
   mode = TYPE_MODE (TREE_TYPE (exp));
-  units = GET_MODE_NUNITS (mode);
+  units = VECTOR_CST_NELTS (exp);
   inner = GET_MODE_INNER (mode);
 
   v = rtvec_alloc (units);
 
-  for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+  for (i = 0; i < units; ++i)
     {
       elt = VECTOR_CST_ELT (exp, i);
 
@@ -11756,8 +11755,7 @@ static rtx
 const_vector_from_tree (tree exp)
 {
   rtvec v;
-  unsigned i;
-  int units;
+  unsigned i, units;
   tree elt;
   machine_mode inner, mode;
 
@@ -11769,12 +11767,12 @@ const_vector_from_tree (tree exp)
   if (VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (exp)))
     return const_vector_mask_from_tree (exp);
 
-  units = GET_MODE_NUNITS (mode);
+  units = VECTOR_CST_NELTS (exp);
   inner = GET_MODE_INNER (mode);
 
   v = rtvec_alloc (units);
 
-  for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+  for (i = 0; i < units; ++i)
     {
       elt = VECTOR_CST_ELT (exp, i);
 
