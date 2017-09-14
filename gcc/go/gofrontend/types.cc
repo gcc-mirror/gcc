@@ -747,16 +747,16 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     return true;
 
   // A pointer to a regular type may not be converted to a pointer to
-  // a type that may not live in the heap, except when converting to
+  // a type that may not live in the heap, except when converting from
   // unsafe.Pointer.
   if (lhs->points_to() != NULL
       && rhs->points_to() != NULL
-      && !rhs->points_to()->in_heap()
-      && lhs->points_to()->in_heap()
-      && !lhs->is_unsafe_pointer_type())
+      && !lhs->points_to()->in_heap()
+      && rhs->points_to()->in_heap()
+      && !rhs->is_unsafe_pointer_type())
     {
       if (reason != NULL)
-	reason->assign(_("conversion from notinheap type to normal type"));
+	reason->assign(_("conversion from normal type to notinheap type"));
       return false;
     }
 
