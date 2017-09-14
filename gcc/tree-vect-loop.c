@@ -6030,8 +6030,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
             dump_printf (MSG_NOTE, "op not supported by target.\n");
 
           if (GET_MODE_SIZE (vec_mode) != UNITS_PER_WORD
-              || LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-	          < vect_min_worthwhile_factor (code))
+	      || !vect_worthwhile_without_simd_p (loop_vinfo, code))
             return false;
 
           if (dump_enabled_p ())
@@ -6040,8 +6039,7 @@ vectorizable_reduction (gimple *stmt, gimple_stmt_iterator *gsi,
 
       /* Worthwhile without SIMD support?  */
       if (!VECTOR_MODE_P (TYPE_MODE (vectype_in))
-          && LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-   	     < vect_min_worthwhile_factor (code))
+	  && !vect_worthwhile_without_simd_p (loop_vinfo, code))
         {
           if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -6492,6 +6490,18 @@ vect_min_worthwhile_factor (enum tree_code code)
     }
 }
 
+/* Return true if VINFO indicates we are doing loop vectorization and if
+   it is worth decomposing CODE operations into scalar operations for
+   that loop's vectorization factor.  */
+
+bool
+vect_worthwhile_without_simd_p (vec_info *vinfo, tree_code code)
+{
+  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
+  return (loop_vinfo
+	  && (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	      >= vect_min_worthwhile_factor (code)));
+}
 
 /* Function vectorizable_induction
 

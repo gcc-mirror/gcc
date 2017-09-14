@@ -1230,7 +1230,7 @@ extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
 				    gimple **, slp_tree);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
-extern int vect_min_worthwhile_factor (enum tree_code);
+extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *,
