@@ -1,3 +1,11 @@
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR ipa/81128
+	* gcc.target/i386/pr81128.c: New test.
+
 2017-09-12  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
