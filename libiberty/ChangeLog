@@ -1,3 +1,12 @@
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (is_fnqual_component_type): Reimplement using
+	FNQUAL_COMPONENT_CASE.
+	(d_encoding): Hold bare_function_type in local var.
+	(d_local_name): Build name in both cases and build result once.
+	Collapse switch-if to single conditional.
+	* testsuite/demangle-expected: Realign blank lines with tests.
+
 2017-09-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* dwarfnames.c (DW_CFA_DUP): New define.
