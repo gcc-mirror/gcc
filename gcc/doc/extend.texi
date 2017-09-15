@@ -3299,7 +3299,8 @@ or separate the options with a comma (@samp{,}) within a single string.
 
 The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
-@ref{ARM Function Attributes},and @ref{Nios II Function Attributes},
+@ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
+@ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
 for details.
 
 @item target_clones (@var{options})
@@ -21854,7 +21855,7 @@ function.  The parenthesis around the options is optional.
 @code{target} attribute and the attribute syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
-x86, PowerPC, and Nios II targets only.
+x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
 @end table
 
 @table @code

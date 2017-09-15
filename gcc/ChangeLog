@@ -1,3 +1,11 @@
+2017-09-15  Steve Ellcey  <sellcey@cavium.com>
+
+	PR target/82066
+	* doc/extend.texi (Common Function Attributes): Add 
+	references to ARM, AArch64, and S/390 specific attributes.
+	(Function Specific Option Pragmas): Add AArch64 and S/390
+	to list of back ends that support the target pragma.
+
 2017-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	* doc/standards.texi: Fix C++17 description.  Update URLs for
