@@ -1,3 +1,8 @@
+2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* gcc/testsuire/gcc.dg/fold-div-1.c: Use -O1.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* lib/g++-dg.exp (g++-dg-runtest): Use 17 instead of 1z.
