@@ -7638,6 +7638,11 @@ Array_type::get_backend_length(Gogo* gogo)
   go_assert(this->length_ != NULL);
   if (this->blength_ == NULL)
     {
+      if (this->length_->is_error_expression())
+        {
+          this->blength_ = gogo->backend()->error_expression();
+          return this->blength_;
+        }
       Numeric_constant nc;
       mpz_t val;
       if (this->length_->numeric_constant_value(&nc) && nc.to_int(&val))
