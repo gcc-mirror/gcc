@@ -1,3 +1,12 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* cp-gimplify.c (omp_var_to_track): Look through references.
+	(omp_cxx_notice_variable): Likewise.
+
 2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/81926
