@@ -1,3 +1,9 @@
+2017-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82184
+	trans-decl.c (gfc_trans_deferred_vars): Do not null the 'span'
+	field if the symbol is either implicitly or explicitly saved.
+
 2017-09-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173
