@@ -813,7 +813,7 @@ handle_pragma_diagnostic(cpp_reader *ARG_UNUSED(dummy))
     }
 
   struct cl_option_handlers handlers;
-  set_default_handlers (&handlers);
+  set_default_handlers (&handlers, NULL);
   const char *arg = NULL;
   if (cl_options[option_index].flags & CL_JOINED)
     arg = option_string + 1 + cl_options[option_index].opt_len;

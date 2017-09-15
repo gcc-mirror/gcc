@@ -9601,7 +9601,7 @@ parse_optimize_options (tree args, bool attr_p)
 						&decoded_options_count);
   decode_options (&global_options, &global_options_set,
 		  decoded_options, decoded_options_count,
-		  input_location, global_dc);
+		  input_location, global_dc, NULL);
 
   targetm.override_options_after_change();
 
