@@ -1,6 +1,12 @@
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-c++-common/pr82112.c: New test.
+	* gcc.dg/pr82112.c: New test.
+
 	2017-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81768
