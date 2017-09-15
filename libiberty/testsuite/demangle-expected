@@ -4720,18 +4720,19 @@ _ZdvMMMMMMMMMMMMMrrrrA_DTdvfp_fp_Eededilfdfdfdfd
 
 _Z1MA_aMMMMA_MMA_MMMMMMMMSt1MS_o11T0000000000t2M0oooozoooo
 _Z1MA_aMMMMA_MMA_MMMMMMMMSt1MS_o11T0000000000t2M0oooozoooo
-
 #
 # demangler/80513 Test for overflow in d_number
-_Z4294967297x
-_Z4294967297x
 
+_Z4294967297x
+_Z4294967297x
 #
 # demangler/80513 Test for bogus characters after __thunk_
-__thunk_16a_$_1x
-__thunk_16a_$_1x
 
+__thunk_16a_$_1x
+__thunk_16a_$_1x
 #
 # demangler/80513 Test for overflow in consume_count
+
 __thunk_4294967297__$_1x
 __thunk_4294967297__$_1x
+#
