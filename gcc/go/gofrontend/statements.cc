@@ -3707,6 +3707,12 @@ Case_clauses::get_backend(Translate_context* context,
       std::vector<Bexpression*> cases;
       Bstatement* stat = p->get_backend(context, break_label, &case_constants,
 					&cases);
+      // The final clause can't fall through.
+      if (i == c - 1 && p->is_fallthrough())
+        {
+          go_assert(saw_errors());
+          stat = context->backend()->error_statement();
+        }
       (*all_cases)[i].swap(cases);
       (*all_statements)[i] = stat;
     }
