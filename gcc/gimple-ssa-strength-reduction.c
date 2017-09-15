@@ -2278,7 +2278,7 @@ create_add_on_incoming_edge (slsr_cand_t c, tree basis_name,
 		   e->src->index, e->dest->index);
 	  print_gimple_stmt (dump_file, cast_stmt, 0, 0);
 	}
-      fprintf (dump_file, "Inserting in block %d: ", e->src->index,
+      fprintf (dump_file, "Inserting on edge %d->%d: ", e->src->index,
 	       e->dest->index);
       print_gimple_stmt (dump_file, new_stmt, 0, 0);
     }
