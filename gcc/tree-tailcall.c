@@ -289,8 +289,7 @@ process_assignment (gassign *stmt,
 	     type is smaller than mode's precision,
 	     reduce_to_bit_field_precision would generate additional code.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
-		  > TYPE_PRECISION (TREE_TYPE (dest))))
+	      && !type_has_mode_precision_p (TREE_TYPE (dest)))
 	    return FAIL;
 	}
 

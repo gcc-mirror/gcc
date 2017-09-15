@@ -167,12 +167,6 @@ extern int ix86_reg_parm_stack_space (const_tree);
 
 extern void ix86_split_fp_branch (enum rtx_code code, rtx, rtx,
 				  rtx, rtx, rtx);
-extern bool ix86_hard_regno_mode_ok (int, machine_mode);
-extern bool ix86_modes_tieable_p (machine_mode, machine_mode);
-extern bool ix86_secondary_memory_needed (enum reg_class, enum reg_class,
-					  machine_mode, int);
-extern bool ix86_cannot_change_mode_class (machine_mode,
-					   machine_mode, enum reg_class);
 
 extern bool ix86_libc_has_function (enum function_class fn_class);
 
@@ -201,6 +195,8 @@ extern void ix86_expand_truncdf_32 (rtx, rtx);
 
 extern void ix86_expand_vecop_qihi (enum rtx_code, rtx, rtx, rtx);
 
+extern rtx ix86_split_stack_guard (void);
+
 #ifdef TREE_CODE
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree, int);
 #endif	/* TREE_CODE  */
@@ -225,6 +221,8 @@ extern unsigned int ix86_get_callcvt (const_tree);
 #endif
 
 extern rtx ix86_tls_module_base (void);
+extern bool ix86_tls_address_pattern_p (rtx);
+extern rtx ix86_rewrite_tls_address (rtx);
 
 extern void ix86_expand_vector_init (bool, rtx, rtx);
 extern void ix86_expand_vector_set (bool, rtx, rtx, int);

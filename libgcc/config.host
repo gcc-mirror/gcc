@@ -305,7 +305,7 @@ case ${host} in
   tmake_file="vms/t-vms"
   extra_parts="crt0.o crtbegin.o crtbeginS.o crtend.o crtendS.o"
   ;;
-*-*-vxworks7)
+*-*-vxworks7*)
   tmake_file=t-vxworks7
   ;;
 *-*-vxworks*)
@@ -322,6 +322,9 @@ case ${host} in
   enable_execute_stack=enable-execute-stack-mprotect.c
   ;;
 i[34567]86-*-mingw* | x86_64-*-mingw*)
+  enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
+  ;;
+i[34567]86-*-cygwin* | x86_64-*-cygwin*)
   enable_execute_stack=config/i386/enable-execute-stack-mingw32.c
   ;;
 *)
@@ -388,9 +391,18 @@ arc*-*-linux*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	extra_parts="$extra_parts crttls.o"
 	;;
-arm-wrs-vxworks)
+arm-wrs-vxworks|arm-wrs-vxworks7)
 	tmake_file="$tmake_file arm/t-arm arm/t-elf t-softfp-sfdf t-softfp-excl arm/t-softfp t-softfp"
 	extra_parts="$extra_parts crti.o crtn.o"
+	case ${host} in
+	*-*-vxworks7)
+	  # Note that arm/t-bpabi will reset the LIB2ADDEH macro.
+	  # This is intentional.
+	  tmake_file="$tmake_file arm/t-bpabi arm/t-vxworks7"
+	  tm_file="$tm_file arm/bpabi-lib.h"
+	  unwind_header=config/arm/unwind-arm.h
+	  ;;
+	esac
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tmake_file="${tmake_file} arm/t-arm t-fixedpoint-gnu-prefix arm/t-elf"
@@ -581,12 +593,12 @@ hppa*-*-openbsd*)
 	tmake_file="$tmake_file pa/t-openbsd"
 	;;
 i[34567]86-*-darwin*)
-	tmake_file="$tmake_file i386/t-crtpc t-crtfm"
+	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
 x86_64-*-darwin*)
-	tmake_file="$tmake_file i386/t-crtpc t-crtfm"
+	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	tm_file="$tm_file i386/darwin-lib.h"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	;;
@@ -663,7 +675,7 @@ i[34567]86-*-rtems*)
 	extra_parts="$extra_parts crti.o crtn.o"
 	;;
 i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
-	tmake_file="$tmake_file i386/t-crtpc t-crtfm"
+	tmake_file="$tmake_file i386/t-crtpc t-crtfm i386/t-msabi"
 	extra_parts="$extra_parts crtprec32.o crtprec64.o crtprec80.o crtfastmath.o"
 	tm_file="${tm_file} i386/elf-lib.h"
 	md_unwind_header=i386/sol2-unwind.h
@@ -1092,7 +1104,7 @@ powerpc*-*-linux*)
 	extra_parts="$extra_parts ecrti.o ecrtn.o ncrti.o ncrtn.o"
 	md_unwind_header=rs6000/linux-unwind.h
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
+powerpc-wrs-vxworks*)
 	tmake_file="$tmake_file rs6000/t-ppccomm rs6000/t-savresfgpr t-fdpbit"
 	;;
 powerpc-*-lynxos*)

@@ -44,6 +44,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 #elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
@@ -56,8 +58,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief Return the Carlson elliptic function @f$ R_F(x,y,z) @f$
      *          of the first kind.
@@ -745,12 +745,12 @@ namespace tr1
             return __Pi + _Tp(2) * __n * __comp_ellint_3(__k, __nu);
         }
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_ELL_INTEGRAL_TCC

@@ -44,12 +44,13 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   using std::size_t;
   using std::ptrdiff_t;
 
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
     /** @class  __mini_vector bitmap_allocator.h bitmap_allocator.h
      *
      *  @brief  __mini_vector<> is a stripped down version of the
@@ -501,11 +502,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
       size_t __mask = 1 << __pos;
       *__pbmap |= __mask;
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /** @brief  Generic Version of the bsf instruction.
    */
@@ -1134,4 +1131,3 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
 
 #endif 
-

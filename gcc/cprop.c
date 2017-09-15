@@ -1161,7 +1161,7 @@ local_cprop_find_used_regs (rtx *xptr, void *data)
       return;
 
     case SUBREG:
-      if (df_read_modify_subreg_p (x))
+      if (read_modify_subreg_p (x))
 	return;
       break;
 

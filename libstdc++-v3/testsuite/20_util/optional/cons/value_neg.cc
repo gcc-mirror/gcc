@@ -37,8 +37,8 @@ int main()
     std::optional<std::unique_ptr<int>> oup2 = new int;  // { dg-error "conversion" }
     struct U { explicit U(std::in_place_t); };
     std::optional<U> ou(std::in_place); // { dg-error "no matching" }
-    // { dg-error "no type" "" { target { *-*-* } } 493 }
-    // { dg-error "no type" "" { target { *-*-* } } 503 }
-    // { dg-error "no type" "" { target { *-*-* } } 560 }
+    // { dg-error "no type" "" { target { *-*-* } } 495 }
+    // { dg-error "no type" "" { target { *-*-* } } 505 }
+    // { dg-error "no type" "" { target { *-*-* } } 562 }
   }
 }

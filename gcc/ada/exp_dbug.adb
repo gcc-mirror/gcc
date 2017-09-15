@@ -426,11 +426,20 @@ package body Exp_Dbug is
 
             when N_Selected_Component =>
                declare
-                  First_Bit : constant Uint :=
-                                Normalized_First_Bit
-                                  (Entity (Selector_Name (Ren)));
+                  Sel_Id    : constant Entity_Id :=
+                                Entity (Selector_Name (Ren));
+                  First_Bit : Uint;
 
                begin
+                  --  If the renaming involves a call to a primitive function,
+                  --  we are out of the scope of renaming encodings. We will
+                  --  very likely create a variable to hold the renamed value
+                  --  anyway, so the renaming entity will be available in
+                  --  debuggers.
+
+                  exit when not Ekind_In (Sel_Id, E_Component, E_Discriminant);
+
+                  First_Bit := Normalized_First_Bit (Sel_Id);
                   Enable :=
                     Enable
                       or else Is_Packed

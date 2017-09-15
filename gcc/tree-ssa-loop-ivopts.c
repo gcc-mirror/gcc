@@ -3960,7 +3960,7 @@ adjust_setup_cost (struct ivopts_data *data, unsigned cost,
    the cost in COST.  */
 
 static bool
-get_shiftadd_cost (tree expr, machine_mode mode, comp_cost cost0,
+get_shiftadd_cost (tree expr, scalar_int_mode mode, comp_cost cost0,
 		   comp_cost cost1, tree mult, bool speed, comp_cost *cost)
 {
   comp_cost res;
@@ -4011,6 +4011,7 @@ force_expr_to_var_cost (tree expr, bool speed)
   tree op0, op1;
   comp_cost cost0, cost1, cost;
   machine_mode mode;
+  scalar_int_mode int_mode;
 
   if (!costs_initialized)
     {
@@ -4133,8 +4134,9 @@ force_expr_to_var_cost (tree expr, bool speed)
 	    mult = op0;
 
 	  if (mult != NULL_TREE
+	      && is_a <scalar_int_mode> (mode, &int_mode)
 	      && cst_and_fits_in_hwi (TREE_OPERAND (mult, 1))
-	      && get_shiftadd_cost (expr, mode, cost0, cost1, mult,
+	      && get_shiftadd_cost (expr, int_mode, cost0, cost1, mult,
 				    speed, &sa_cost))
 	    return sa_cost;
 	}
@@ -5284,13 +5286,13 @@ set_autoinc_for_original_candidates (struct ivopts_data *data)
 static void
 relate_compare_use_with_all_cands (struct ivopts_data *data)
 {
-  unsigned i, max_id = data->vcands.length () - 1;
+  unsigned i, count = data->vcands.length ();
   for (i = 0; i < data->vgroups.length (); i++)
     {
       struct iv_group *group = data->vgroups[i];
 
       if (group->type == USE_COMPARE)
-	bitmap_set_range (group->related_cands, 0, max_id);
+	bitmap_set_range (group->related_cands, 0, count);
     }
 }
 

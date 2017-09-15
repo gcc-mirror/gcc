@@ -1,15 +1,18 @@
 /* { dg-do run } */
 
-struct 
+struct v
 {
   int v;
-} a[2];
+};
 
-int b; 
+struct v a[2];
+
+struct v *gp;
 
 void __attribute__((noinline,noclone))
-check ()
+check (struct v *p)
 {
+  gp = p;
   if (a[0].v != 1)
     __builtin_abort ();
 }

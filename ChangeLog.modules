@@ -1,3 +1,7 @@
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	Merge trunk 252831.
+
 2017-07-20  Boris Kolpackov <boris@codesynthesis.com>
 
 	Add -fmodule-output & -fmodule-file options.

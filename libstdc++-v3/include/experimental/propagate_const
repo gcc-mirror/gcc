@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <type_traits>
 #include <bits/functional_hash.h>
@@ -43,12 +41,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @defgroup propagate_const Const-propagating wrapper
    * @ingroup experimental
@@ -424,7 +422,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   // @} group propagate_const
-  _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
 
@@ -533,6 +530,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
      typedef experimental::propagate_const<_Tp> second_argument_type;
      typedef bool result_type;
    };
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

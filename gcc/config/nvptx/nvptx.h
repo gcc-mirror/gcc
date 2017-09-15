@@ -52,12 +52,14 @@
 
 /* Alignments in bits.  */
 #define PARM_BOUNDARY 32
-#define STACK_BOUNDARY 64
+#define STACK_BOUNDARY 128
 #define FUNCTION_BOUNDARY 32
-#define BIGGEST_ALIGNMENT 64
+#define BIGGEST_ALIGNMENT 128
 #define STRICT_ALIGNMENT 1
 
 #define MAX_STACK_ALIGNMENT (1024 * 8)
+
+#define DATA_ALIGNMENT nvptx_data_alignment
 
 /* Copied from elf.h and other places.  We'd otherwise use
    BIGGEST_ALIGNMENT and fail a number of testcases.  */
@@ -93,13 +95,6 @@
 #define FIXED_REGISTERS	    { 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0 }
 #define CALL_USED_REGISTERS { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 }
 
-#define HARD_REGNO_NREGS(REG, MODE)		\
-  ((void)(REG), (void)(MODE), 1)
-#define CANNOT_CHANGE_MODE_CLASS(M1, M2, CLS)	\
-  ((void)(M1), (void)(M2), (void)(CLS), true)
-#define HARD_REGNO_MODE_OK(REG, MODE)		\
-     ((void)(REG), (void)(MODE), true)
-
 /* Register Classes.  */
 enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 #define REG_CLASS_NAMES    { "NO_REGS",  "ALL_REGS" }
@@ -116,8 +111,6 @@ enum reg_class             {  NO_REGS,    ALL_REGS,	LIM_REG_CLASSES };
 
 #define CLASS_MAX_NREGS(class, mode) \
   ((GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define MODES_TIEABLE_P(M1, M2) false
 
 #define PROMOTE_MODE(MODE, UNSIGNEDP, TYPE)		\
   if ((MODE) == QImode || (MODE) == HImode)		\
@@ -317,7 +310,6 @@ struct GTY(()) machine_function
 #define CASE_VECTOR_MODE SImode
 #define MOVE_MAX 8
 #define MOVE_RATIO(SPEED) 4
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define FUNCTION_MODE QImode
 #define HAS_INIT_SECTION 1
 

@@ -128,6 +128,22 @@ func HasExec() bool {
 	return true
 }
 
+// HasSrc reports whether the entire source tree is available under GOROOT.
+func HasSrc() bool {
+	switch runtime.GOOS {
+	case "nacl":
+		return false
+	case "darwin":
+		if strings.HasPrefix(runtime.GOARCH, "arm") {
+			return false
+		}
+	}
+	if runtime.Compiler == "gccgo" {
+		return false
+	}
+	return true
+}
+
 // MustHaveExec checks that the current system can start new processes
 // using os.StartProcess or (more commonly) exec.Command.
 // If not, MustHaveExec calls t.Skip with an explanation.

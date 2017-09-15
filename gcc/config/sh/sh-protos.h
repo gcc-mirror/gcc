@@ -324,8 +324,6 @@ extern bool sh_cfun_interrupt_handler_p (void);
 extern bool sh_cfun_resbank_handler_p (void);
 extern bool sh_attr_renesas_p (const_tree);
 extern bool sh_cfun_attr_renesas_p (void);
-extern bool sh_cannot_change_mode_class
-	      (machine_mode, machine_mode, enum reg_class);
 extern bool sh_small_register_classes_for_mode_p (machine_mode);
 extern void sh_mark_label (rtx, int);
 extern bool check_use_sfunc_addr (rtx_insn *, rtx);
@@ -361,7 +359,6 @@ extern bool sh_loads_bankedreg_p (rtx);
 extern int sh2a_get_function_vector_number (rtx);
 extern bool sh2a_is_function_vector_call (rtx);
 extern void sh_fix_range (const char *);
-extern bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 extern machine_mode sh_hard_regno_caller_save_mode (unsigned int, unsigned int,
 						    machine_mode);
 extern bool sh_can_use_simple_return_p (void);

@@ -37,12 +37,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "expr.h"
 #include "langhooks.h"
 
-static bool prefer_and_bit_test (machine_mode, int);
-static void do_jump_by_parts_greater (tree, tree, int,
+static bool prefer_and_bit_test (scalar_int_mode, int);
+static void do_jump_by_parts_greater (scalar_int_mode, tree, tree, int,
 				      rtx_code_label *, rtx_code_label *,
 				      profile_probability);
-static void do_jump_by_parts_equality (tree, tree, rtx_code_label *,
-				       rtx_code_label *, profile_probability);
+static void do_jump_by_parts_equality (scalar_int_mode, tree, tree,
+				       rtx_code_label *, rtx_code_label *,
+				       profile_probability);
 static void do_compare_and_jump	(tree, tree, enum rtx_code, enum rtx_code,
 				 rtx_code_label *, rtx_code_label *,
 				 profile_probability);
@@ -160,7 +161,7 @@ static GTY(()) rtx shift_test;
    is preferred.  */
 
 static bool
-prefer_and_bit_test (machine_mode mode, int bitnum)
+prefer_and_bit_test (scalar_int_mode mode, int bitnum)
 {
   bool speed_p;
   wide_int mask = wi::set_bit_in_zero (bitnum, GET_MODE_PRECISION (mode));
@@ -203,6 +204,7 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 {
   machine_mode mode;
   rtx_code_label *drop_through_label = 0;
+  scalar_int_mode int_mode;
 
   switch (code)
     {
@@ -218,10 +220,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
         if (integer_zerop (op1))
 	  do_jump (op0, if_true_label, if_false_label,
 		   prob.invert ());
-        else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-                 && !can_compare_p (EQ, TYPE_MODE (inner_type), ccp_jump))
-	  do_jump_by_parts_equality (op0, op1, if_false_label, if_true_label,
-				     prob);
+	else if (is_int_mode (TYPE_MODE (inner_type), &int_mode)
+		 && !can_compare_p (EQ, int_mode, ccp_jump))
+	  do_jump_by_parts_equality (int_mode, op0, op1, if_false_label,
+				     if_true_label, prob);
         else
 	  do_compare_and_jump (op0, op1, EQ, EQ, if_false_label, if_true_label,
 			       prob);
@@ -239,10 +241,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
         if (integer_zerop (op1))
 	  do_jump (op0, if_false_label, if_true_label, prob);
-        else if (GET_MODE_CLASS (TYPE_MODE (inner_type)) == MODE_INT
-           && !can_compare_p (NE, TYPE_MODE (inner_type), ccp_jump))
-	  do_jump_by_parts_equality (op0, op1, if_true_label, if_false_label,
-				     prob.invert ());
+	else if (is_int_mode (TYPE_MODE (inner_type), &int_mode)
+		 && !can_compare_p (NE, int_mode, ccp_jump))
+	  do_jump_by_parts_equality (int_mode, op0, op1, if_true_label,
+				     if_false_label, prob.invert ());
         else
 	  do_compare_and_jump (op0, op1, NE, NE, if_false_label, if_true_label,
 			       prob);
@@ -251,10 +253,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case LT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (LT, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 1, if_false_label, if_true_label,
-				  prob);
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (LT, int_mode, ccp_jump))
+	do_jump_by_parts_greater (int_mode, op0, op1, 1, if_false_label,
+				  if_true_label, prob);
       else
 	do_compare_and_jump (op0, op1, LT, LTU, if_false_label, if_true_label,
 			     prob);
@@ -262,10 +264,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case LE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (LE, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 0, if_true_label, if_false_label,
-				  prob.invert ());
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (LE, int_mode, ccp_jump))
+	do_jump_by_parts_greater (int_mode, op0, op1, 0, if_true_label,
+				  if_false_label, prob.invert ());
       else
 	do_compare_and_jump (op0, op1, LE, LEU, if_false_label, if_true_label,
 			     prob);
@@ -273,10 +275,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case GT_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (GT, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 0, if_false_label, if_true_label,
-				  prob);
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (GT, int_mode, ccp_jump))
+	do_jump_by_parts_greater (int_mode, op0, op1, 0, if_false_label,
+				  if_true_label, prob);
       else
 	do_compare_and_jump (op0, op1, GT, GTU, if_false_label, if_true_label,
 			     prob);
@@ -284,10 +286,10 @@ do_jump_1 (enum tree_code code, tree op0, tree op1,
 
     case GE_EXPR:
       mode = TYPE_MODE (TREE_TYPE (op0));
-      if (GET_MODE_CLASS (mode) == MODE_INT
-          && ! can_compare_p (GE, mode, ccp_jump))
-	do_jump_by_parts_greater (op0, op1, 1, if_true_label, if_false_label,
-				  prob.invert ());
+      if (is_int_mode (mode, &int_mode)
+	  && ! can_compare_p (GE, int_mode, ccp_jump))
+	do_jump_by_parts_greater (int_mode, op0, op1, 1, if_true_label,
+				  if_false_label, prob.invert ());
       else
 	do_compare_and_jump (op0, op1, GE, GEU, if_false_label, if_true_label,
 			     prob);
@@ -425,7 +427,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
   rtx temp;
   int i;
   tree type;
-  machine_mode mode;
+  scalar_int_mode mode;
   rtx_code_label *drop_through_label = NULL;
 
   switch (code)
@@ -570,7 +572,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
 	      if (TREE_CODE (shift) == INTEGER_CST
 		  && compare_tree_int (shift, 0) >= 0
 		  && compare_tree_int (shift, HOST_BITS_PER_WIDE_INT) < 0
-		  && prefer_and_bit_test (TYPE_MODE (argtype),
+		  && prefer_and_bit_test (SCALAR_INT_TYPE_MODE (argtype),
 					  TREE_INT_CST_LOW (shift)))
 		{
 		  unsigned HOST_WIDE_INT mask
@@ -594,7 +596,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
           && TREE_CODE (TREE_OPERAND (exp, 1)) == INTEGER_CST
           && TYPE_PRECISION (TREE_TYPE (exp)) <= HOST_BITS_PER_WIDE_INT
           && (i = tree_floor_log2 (TREE_OPERAND (exp, 1))) >= 0
-          && (mode = mode_for_size (i + 1, MODE_INT, 0)) != BLKmode
+	  && int_mode_for_size (i + 1, 0).exists (&mode)
           && (type = lang_hooks.types.type_for_mode (mode, 1)) != 0
           && TYPE_PRECISION (type) < TYPE_PRECISION (TREE_TYPE (exp))
           && have_insn_for (COMPARE, TYPE_MODE (type)))
@@ -666,7 +668,7 @@ do_jump (tree exp, rtx_code_label *if_false_label,
    Jump to IF_TRUE_LABEL if OP0 is greater, IF_FALSE_LABEL otherwise.  */
 
 static void
-do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
+do_jump_by_parts_greater_rtx (scalar_int_mode mode, int unsignedp, rtx op0,
 			      rtx op1, rtx_code_label *if_false_label,
 			      rtx_code_label *if_true_label,
 			      profile_probability prob)
@@ -742,17 +744,16 @@ do_jump_by_parts_greater_rtx (machine_mode mode, int unsignedp, rtx op0,
 /* Given a comparison expression EXP for values too wide to be compared
    with one insn, test the comparison and jump to the appropriate label.
    The code of EXP is ignored; we always test GT if SWAP is 0,
-   and LT if SWAP is 1.  */
+   and LT if SWAP is 1.  MODE is the mode of the two operands.  */
 
 static void
-do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
-			  rtx_code_label *if_false_label,
+do_jump_by_parts_greater (scalar_int_mode mode, tree treeop0, tree treeop1,
+			  int swap, rtx_code_label *if_false_label,
 			  rtx_code_label *if_true_label,
 			  profile_probability prob)
 {
   rtx op0 = expand_normal (swap ? treeop1 : treeop0);
   rtx op1 = expand_normal (swap ? treeop0 : treeop1);
-  machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (treeop0));
 
   do_jump_by_parts_greater_rtx (mode, unsignedp, op0, op1, if_false_label,
@@ -765,7 +766,7 @@ do_jump_by_parts_greater (tree treeop0, tree treeop1, int swap,
    to indicate drop through.  */
 
 static void
-do_jump_by_parts_zero_rtx (machine_mode mode, rtx op0,
+do_jump_by_parts_zero_rtx (scalar_int_mode mode, rtx op0,
 			   rtx_code_label *if_false_label,
 			   rtx_code_label *if_true_label,
 			   profile_probability prob)
@@ -816,7 +817,7 @@ do_jump_by_parts_zero_rtx (machine_mode mode, rtx op0,
    to indicate drop through.  */
 
 static void
-do_jump_by_parts_equality_rtx (machine_mode mode, rtx op0, rtx op1,
+do_jump_by_parts_equality_rtx (scalar_int_mode mode, rtx op0, rtx op1,
 			       rtx_code_label *if_false_label,
 			       rtx_code_label *if_true_label,
 			       profile_probability prob)
@@ -854,17 +855,17 @@ do_jump_by_parts_equality_rtx (machine_mode mode, rtx op0, rtx op1,
 }
 
 /* Given an EQ_EXPR expression EXP for values too wide to be compared
-   with one insn, test the comparison and jump to the appropriate label.  */
+   with one insn, test the comparison and jump to the appropriate label.
+   MODE is the mode of the two operands.  */
 
 static void
-do_jump_by_parts_equality (tree treeop0, tree treeop1,
+do_jump_by_parts_equality (scalar_int_mode mode, tree treeop0, tree treeop1,
 			   rtx_code_label *if_false_label,
 			   rtx_code_label *if_true_label,
 			   profile_probability prob)
 {
   rtx op0 = expand_normal (treeop0);
   rtx op1 = expand_normal (treeop1);
-  machine_mode mode = TYPE_MODE (TREE_TYPE (treeop0));
   do_jump_by_parts_equality_rtx (mode, op0, op1, if_false_label,
 				 if_true_label, prob);
 }
@@ -1024,62 +1025,63 @@ do_compare_rtx_and_jump (rtx op0, rtx op1, enum rtx_code code, int unsignedp,
   if (! if_true_label)
     dummy_label = if_true_label = gen_label_rtx ();
 
-  if (GET_MODE_CLASS (mode) == MODE_INT
-      && ! can_compare_p (code, mode, ccp_jump))
+  scalar_int_mode int_mode;
+  if (is_int_mode (mode, &int_mode)
+      && ! can_compare_p (code, int_mode, ccp_jump))
     {
       switch (code)
 	{
 	case LTU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op1, op0,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case LEU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op0, op1,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case GTU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op0, op1,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case GEU:
-	  do_jump_by_parts_greater_rtx (mode, 1, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 1, op1, op0,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case LT:
-	  do_jump_by_parts_greater_rtx (mode, 0, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op1, op0,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case LE:
-	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op0, op1,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case GT:
-	  do_jump_by_parts_greater_rtx (mode, 0, op0, op1,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op0, op1,
 					if_false_label, if_true_label, prob);
 	  break;
 
 	case GE:
-	  do_jump_by_parts_greater_rtx (mode, 0, op1, op0,
+	  do_jump_by_parts_greater_rtx (int_mode, 0, op1, op0,
 					if_true_label, if_false_label,
 					prob.invert ());
 	  break;
 
 	case EQ:
-	  do_jump_by_parts_equality_rtx (mode, op0, op1, if_false_label,
+	  do_jump_by_parts_equality_rtx (int_mode, op0, op1, if_false_label,
 					 if_true_label, prob);
 	  break;
 
 	case NE:
-	  do_jump_by_parts_equality_rtx (mode, op0, op1, if_true_label,
+	  do_jump_by_parts_equality_rtx (int_mode, op0, op1, if_true_label,
 					 if_false_label,
 					 prob.invert ());
 	  break;
@@ -1188,17 +1190,14 @@ do_compare_and_jump (tree treeop0, tree treeop1, enum rtx_code signed_code,
     return;
 
   type = TREE_TYPE (treeop0);
-  mode = TYPE_MODE (type);
   if (TREE_CODE (treeop0) == INTEGER_CST
       && (TREE_CODE (treeop1) != INTEGER_CST
-          || (GET_MODE_BITSIZE (mode)
-              > GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (treeop1))))))
-    {
-      /* op0 might have been replaced by promoted constant, in which
-         case the type of second argument should be used.  */
-      type = TREE_TYPE (treeop1);
-      mode = TYPE_MODE (type);
-    }
+	  || (GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (type))
+	      > GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (treeop1))))))
+    /* op0 might have been replaced by promoted constant, in which
+       case the type of second argument should be used.  */
+    type = TREE_TYPE (treeop1);
+  mode = TYPE_MODE (type);
   unsignedp = TYPE_UNSIGNED (type);
   code = unsignedp ? unsigned_code : signed_code;
 

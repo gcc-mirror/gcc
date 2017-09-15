@@ -5819,7 +5819,7 @@
               (set (match_dup 2)
                    (unspec_volatile:BLK [(match_dup 2)]
                                         UNSPECV_MEMORY_BARRIER))])]
-  "TARGET_GASISR_PROLOGUES"
+  "avr_gasisr_prologues"
   {
     operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
     MEM_VOLATILE_P (operands[2]) = 1;
@@ -5833,7 +5833,7 @@
         (unspec_volatile:HI [(reg:HI REG_SP)] UNSPECV_GASISR))
    (set (match_operand:BLK 2)
         (unspec_volatile:BLK [(match_dup 2)] UNSPECV_MEMORY_BARRIER))]
-  "TARGET_GASISR_PROLOGUES"
+  "avr_gasisr_prologues"
   "__gcc_isr %0"
   [(set_attr "length" "6,5")
    (set_attr "cc" "clobber")])

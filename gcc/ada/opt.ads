@@ -366,7 +366,7 @@ package Opt is
    Check_Validity_Of_Parameters : Boolean := False;
    --  GNAT
    --  Set to True to check for proper scalar initialization of subprogram
-   --  parameters on both entry and exit. Turned on by??? turned off by???
+   --  parameters on both entry and exit. This is turned on by -gnateV.
 
    Check_Withs : Boolean := False;
    --  GNAT
@@ -848,6 +848,10 @@ package Opt is
    --  cause implicit packing instead of generating an error message. Set by
    --  use of pragma Implicit_Packing.
 
+   Include_Subprogram_In_Messages : Boolean := False;
+   --  GNAT
+   --  Set True to include the enclosing subprogram in compiler messages.
+
    Ineffective_Inline_Warnings : Boolean := False;
    --  GNAT
    --  Set True to activate warnings if front-end inlining (-gnatN) is not able
@@ -982,6 +986,11 @@ package Opt is
    --  Set true by -gnatRm switch. Causes information on mechanisms to be
    --  included in the representation output information.
 
+   List_Representation_Info_Extended : Boolean := False;
+   --  GNAT
+   --  Set true by -gnatRe switch. Causes extended information for record types
+   --  to be included in the representation output information.
+
    List_Preprocessing_Symbols : Boolean := False;
    --  GNAT, GNATPREP
    --  Set to True if symbols for preprocessing a source are to be listed
@@ -1106,6 +1115,10 @@ package Opt is
    No_Backup : Boolean := False;
    --  GNATNAME
    --  Do not create backup copies of project files. Set by switch --no-backup.
+
+   No_Component_Reordering : Boolean := False;
+   --  GNAT
+   --  Set True if pragma No_Component_Reordering with no parameter encountered
 
    No_Deletion : Boolean := False;
    --  GNATPREP
@@ -2025,6 +2038,14 @@ package Opt is
    --  This switch is not set when the pragma appears ahead of a given
    --  unit, so it does not affect the compilation of other units.
 
+   No_Component_Reordering_Config : Boolean;
+   --  GNAT
+   --  This is the value of the configuration switch that is set by the
+   --  pragma No_Component_Reordering when it appears in the gnat.adc file.
+   --  This flag is used to set the initial value of No_Component_Reordering
+   --  at the start of each compilation unit, except that it is always set
+   --  False for predefined units.
+
    No_Exit_Message : Boolean := False;
    --  GNATMAKE, GPRBUILD
    --  Set with switch --no-exit-message. When True, if there are compilation
@@ -2089,8 +2110,7 @@ package Opt is
 
    procedure Save_Opt_Config_Switches (Save : out Config_Switches_Type);
    --  This procedure saves the current values of the switches which are
-   --  initialized from the above Config values, and then resets these switches
-   --  according to the Config value settings.
+   --  initialized from the above Config values.
 
    procedure Set_Opt_Config_Switches
      (Internal_Unit : Boolean;
@@ -2306,6 +2326,7 @@ private
       External_Name_Imp_Casing       : External_Casing_Type;
       Fast_Math                      : Boolean;
       Initialize_Scalars             : Boolean;
+      No_Component_Reordering        : Boolean;
       Normalize_Scalars              : Boolean;
       Optimize_Alignment             : Character;
       Optimize_Alignment_Local       : Boolean;

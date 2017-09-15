@@ -442,9 +442,10 @@ find_bb_boundaries (basic_block bb)
   rtx_insn *end = BB_END (bb), *x;
   rtx_jump_table_data *table;
   rtx_insn *flow_transfer_insn = NULL;
+  rtx_insn *debug_insn = NULL;
   edge fallthru = NULL;
 
-  if (insn == BB_END (bb))
+  if (insn == end)
     return;
 
   if (LABEL_P (insn))
@@ -455,22 +456,43 @@ find_bb_boundaries (basic_block bb)
     {
       enum rtx_code code = GET_CODE (insn);
 
+      if (code == DEBUG_INSN)
+	{
+	  if (flow_transfer_insn && !debug_insn)
+	    debug_insn = insn;
+	}
       /* In case we've previously seen an insn that effects a control
 	 flow transfer, split the block.  */
-      if ((flow_transfer_insn || code == CODE_LABEL)
-	  && inside_basic_block_p (insn))
+      else if ((flow_transfer_insn || code == CODE_LABEL)
+	       && inside_basic_block_p (insn))
 	{
-	  fallthru = split_block (bb, PREV_INSN (insn));
+	  rtx_insn *prev = PREV_INSN (insn);
+
+	  /* If the first non-debug inside_basic_block_p insn after a control
+	     flow transfer is not a label, split the block before the debug
+	     insn instead of before the non-debug insn, so that the debug
+	     insns are not lost.  */
+	  if (debug_insn && code != CODE_LABEL && code != BARRIER)
+	    prev = PREV_INSN (debug_insn);
+	  fallthru = split_block (bb, prev);
 	  if (flow_transfer_insn)
 	    {
 	      BB_END (bb) = flow_transfer_insn;
 
+	      rtx_insn *next;
 	      /* Clean up the bb field for the insns between the blocks.  */
 	      for (x = NEXT_INSN (flow_transfer_insn);
 		   x != BB_HEAD (fallthru->dest);
-		   x = NEXT_INSN (x))
-		if (!BARRIER_P (x))
-		  set_block_for_insn (x, NULL);
+		   x = next)
+		{
+		  next = NEXT_INSN (x);
+		  /* Debug insns should not be in between basic blocks,
+		     drop them on the floor.  */
+		  if (DEBUG_INSN_P (x))
+		    delete_insn (x);
+		  else if (!BARRIER_P (x))
+		    set_block_for_insn (x, NULL);
+		}
 	    }
 
 	  bb = fallthru->dest;
@@ -480,6 +502,7 @@ find_bb_boundaries (basic_block bb)
 	  bb->frequency = 0;
 	  bb->count = profile_count::uninitialized ();
 	  flow_transfer_insn = NULL;
+	  debug_insn = NULL;
 	  if (code == CODE_LABEL && LABEL_ALT_ENTRY_P (insn))
 	    make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, 0);
 	}
@@ -502,17 +525,23 @@ find_bb_boundaries (basic_block bb)
   /* In case expander replaced normal insn by sequence terminating by
      return and barrier, or possibly other sequence not behaving like
      ordinary jump, we need to take care and move basic block boundary.  */
-  if (flow_transfer_insn)
+  if (flow_transfer_insn && flow_transfer_insn != end)
     {
       BB_END (bb) = flow_transfer_insn;
 
       /* Clean up the bb field for the insns that do not belong to BB.  */
-      x = flow_transfer_insn;
-      while (x != end)
+      rtx_insn *next;
+      for (x = NEXT_INSN (flow_transfer_insn); ; x = next)
 	{
-	  x = NEXT_INSN (x);
-	  if (!BARRIER_P (x))
+	  next = NEXT_INSN (x);
+	  /* Debug insns should not be in between basic blocks,
+	     drop them on the floor.  */
+	  if (DEBUG_INSN_P (x))
+	    delete_insn (x);
+	  else if (!BARRIER_P (x))
 	    set_block_for_insn (x, NULL);
+	  if (x == end)
+	    break;
 	}
     }
 
@@ -673,10 +702,18 @@ find_many_sub_basic_blocks (sbitmap blocks)
 		     && profile_status_for_fn (cfun) != PROFILE_READ))
 	      bb->count = profile_count::uninitialized ();
 	  }
-	else
-	  /* If nothing changed, there is no need to create new BBs.  */
-	  if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
+ 	/* If nothing changed, there is no need to create new BBs.  */
+	else if (EDGE_COUNT (bb->succs) == n_succs[bb->index])
+	  {
+	    /* In rare occassions RTL expansion might have mistakely assigned
+	       a probabilities different from what is in CFG.  This happens
+	       when we try to split branch to two but optimize out the
+	       second branch during the way. See PR81030.  */
+	    if (JUMP_P (BB_END (bb)) && any_condjump_p (BB_END (bb))
+		&& EDGE_COUNT (bb->succs) >= 2)
+	      update_br_prob_note (bb);
 	    continue;
+	  }
 
 	compute_outgoing_frequencies (bb);
       }

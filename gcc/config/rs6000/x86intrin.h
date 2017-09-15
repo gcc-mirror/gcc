@@ -35,9 +35,14 @@
 #ifndef _X86INTRIN_H_INCLUDED
 #define _X86INTRIN_H_INCLUDED
 
+#ifdef __ALTIVEC__
+#include <mmintrin.h>
+
+#include <xmmintrin.h>
+#endif /* __ALTIVEC__ */
+
 #include <bmiintrin.h>
 
 #include <bmi2intrin.h>
-
 
 #endif /* _X86INTRIN_H_INCLUDED */

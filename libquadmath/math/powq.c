@@ -147,7 +147,7 @@ __float128
 powq (__float128 x, __float128 y)
 {
   __float128 z, ax, z_h, z_l, p_h, p_l;
-  __float128 y1, t1, t2, r, s, t, u, v, w;
+  __float128 y1, t1, t2, r, s, sgn, t, u, v, w;
   __float128 s2, s_h, s_l, t_h, t_l, ay;
   int32_t i, j, k, yisint, n;
   uint32_t ix, iy;
@@ -261,6 +261,11 @@ powq (__float128 x, __float128 y)
   if (((((uint32_t) hx >> 31) - 1) | yisint) == 0)
     return (x - x) / (x - x);
 
+  /* sgn (sign of result -ve**odd) = -1 else = 1 */
+  sgn = one;
+  if (((((uint32_t) hx >> 31) - 1) | (yisint - 1)) == 0)
+    sgn = -one;				/* (-ve)**(odd int) */
+
   /* |y| is huge.
      2^-16495 = 1/2 of smallest representable value.
      If (1 - 1/131072)^y underflows, y > 1.4986e9 */
@@ -276,9 +281,9 @@ powq (__float128 x, __float128 y)
 	}
       /* over/underflow if x is not close to one */
       if (ix < 0x3ffeffff)
-	return (hy < 0) ? huge * huge : tiny * tiny;
+	return (hy < 0) ? sgn * huge * huge : sgn * tiny * tiny;
       if (ix > 0x3fff0000)
-	return (hy > 0) ? huge * huge : tiny * tiny;
+	return (hy > 0) ? sgn * huge * huge : sgn * tiny * tiny;
     }
 
   ay = y > 0 ? y : -y;
@@ -365,11 +370,6 @@ powq (__float128 x, __float128 y)
   t1 = o.value;
   t2 = z_l - (((t1 - t) - dp_h[k]) - z_h);
 
-  /* s (sign of result -ve**odd) = -1 else = 1 */
-  s = one;
-  if (((((uint32_t) hx >> 31) - 1) | (yisint - 1)) == 0)
-    s = -one;			/* (-ve)**(odd int) */
-
   /* split up y into y1+y2 and compute (y1+y2)*(t1+t2) */
   y1 = y;
   o.value = y1;
@@ -385,11 +385,11 @@ powq (__float128 x, __float128 y)
     {
       /* if z > 16384 */
       if (((j - 0x400d0000) | o.words32.w1 | o.words32.w2 | o.words32.w3) != 0)
-	return s * huge * huge;	/* overflow */
+	return sgn * huge * huge;	/* overflow */
       else
 	{
 	  if (p_l + ovt > z - p_h)
-	    return s * huge * huge;	/* overflow */
+	    return sgn * huge * huge;	/* overflow */
 	}
     }
   else if ((j & 0x7fffffff) >= 0x400d01b9)	/* z <= -16495 */
@@ -397,11 +397,11 @@ powq (__float128 x, __float128 y)
       /* z < -16495 */
       if (((j - 0xc00d01bc) | o.words32.w1 | o.words32.w2 | o.words32.w3)
 	  != 0)
-	return s * tiny * tiny;	/* underflow */
+	return sgn * tiny * tiny;	/* underflow */
       else
 	{
 	  if (p_l <= z - p_h)
-	    return s * tiny * tiny;	/* underflow */
+	    return sgn * tiny * tiny;	/* underflow */
 	}
     }
   /* compute 2**(p_h+p_l) */
@@ -434,11 +434,15 @@ powq (__float128 x, __float128 y)
   j = o.words32.w0;
   j += (n << 16);
   if ((j >> 16) <= 0)
-    z = scalbnq (z, n);	/* subnormal output */
+    {
+      z = scalbnq (z, n);	/* subnormal output */
+      __float128 force_underflow = z * z;
+      math_force_eval (force_underflow);
+    }
   else
     {
       o.words32.w0 = j;
       z = o.value;
     }
-  return s * z;
+  return sgn * z;
 }

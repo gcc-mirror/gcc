@@ -984,14 +984,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __niter_base(__gnu_cxx::__normal_iterator<_Iterator, _Container> __it)
     { return __it.base(); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #if __cplusplus >= 201103L
-
-namespace std _GLIBCXX_VISIBILITY(default)
-{
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /**
    * @addtogroup iterators
@@ -1243,9 +1236,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> decltype(__miter_base(__it.base()))
     { return __miter_base(__it.base()); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace
-
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) std::make_move_iterator(_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) \
   std::__make_move_if_noexcept_iterator(_Iter)
@@ -1253,6 +1243,9 @@ _GLIBCXX_END_NAMESPACE_VERSION
 #define _GLIBCXX_MAKE_MOVE_ITERATOR(_Iter) (_Iter)
 #define _GLIBCXX_MAKE_MOVE_IF_NOEXCEPT_ITERATOR(_Iter) (_Iter)
 #endif // C++11
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 
 #ifdef _GLIBCXX_DEBUG
 # include <debug/stl_iterator.h>

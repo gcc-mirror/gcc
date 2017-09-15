@@ -32,7 +32,10 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "ipa-chkp.h"
 #include "gomp-constants.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
+#include "opts.h"
 
 
 /* Read a STRING_CST from the string table in DATA_IN using input
@@ -208,7 +211,7 @@ static void
 unpack_ts_fixed_cst_value_fields (struct bitpack_d *bp, tree expr)
 {
   FIXED_VALUE_TYPE *fp = ggc_alloc<fixed_value> ();
-  fp->mode = bp_unpack_machine_mode (bp);
+  fp->mode = as_a <scalar_mode> (bp_unpack_machine_mode (bp));
   fp->data.low = bp_unpack_var_len_int (bp);
   fp->data.high = bp_unpack_var_len_int (bp);
   TREE_FIXED_CST_PTR (expr) = fp;
@@ -688,10 +691,7 @@ lto_input_ts_decl_common_tree_pointers (struct lto_input_block *ib,
   DECL_SIZE (expr) = stream_read_tree (ib, data_in);
   DECL_SIZE_UNIT (expr) = stream_read_tree (ib, data_in);
   DECL_ATTRIBUTES (expr) = stream_read_tree (ib, data_in);
-
-  /* Do not stream DECL_ABSTRACT_ORIGIN.  We cannot handle debug information
-     for early inlining so drop it on the floor instead of ICEing in
-     dwarf2out.c.  */
+  DECL_ABSTRACT_ORIGIN (expr) = stream_read_tree (ib, data_in);
 
   if ((VAR_P (expr) || TREE_CODE (expr) == PARM_DECL)
       && DECL_HAS_VALUE_EXPR_P (expr))
@@ -769,6 +769,21 @@ lto_input_ts_function_decl_tree_pointers (struct lto_input_block *ib,
   DECL_FUNCTION_SPECIFIC_TARGET (expr) = stream_read_tree (ib, data_in);
 #endif
   DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = stream_read_tree (ib, data_in);
+#ifdef ACCEL_COMPILER
+  {
+    tree opts = DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr);
+    if (opts)
+      {
+	struct gcc_options tmp;
+	init_options_struct (&tmp, NULL);
+	cl_optimization_restore (&tmp, TREE_OPTIMIZATION (opts));
+	finish_options (&tmp, &global_options_set, UNKNOWN_LOCATION);
+	opts = build_optimization_node (&tmp);
+	finalize_options_struct (&tmp);
+	DECL_FUNCTION_SPECIFIC_OPTIMIZATION (expr) = opts;
+      }
+  }
+#endif
 
   /* If the file contains a function with an EH personality set,
      then it was compiled with -fexceptions.  In that case, initialize
@@ -821,10 +836,8 @@ lto_input_ts_type_non_common_tree_pointers (struct lto_input_block *ib,
     TYPE_ARG_TYPES (expr) = stream_read_tree (ib, data_in);
 
   if (!POINTER_TYPE_P (expr))
-    TYPE_MINVAL (expr) = stream_read_tree (ib, data_in);
-  TYPE_MAXVAL (expr) = stream_read_tree (ib, data_in);
-  if (RECORD_OR_UNION_TYPE_P (expr))
-    TYPE_BINFO (expr) = stream_read_tree (ib, data_in);
+    TYPE_MIN_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
+  TYPE_MAX_VALUE_RAW (expr) = stream_read_tree (ib, data_in);
 }
 
 

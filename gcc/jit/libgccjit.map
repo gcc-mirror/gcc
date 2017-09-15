@@ -155,3 +155,8 @@ LIBGCCJIT_ABI_7 {
   global:
     gcc_jit_type_get_aligned;
 } LIBGCCJIT_ABI_6;
+
+LIBGCCJIT_ABI_8 {
+  global:
+    gcc_jit_type_get_vector;
+} LIBGCCJIT_ABI_7;

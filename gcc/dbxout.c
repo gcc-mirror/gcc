@@ -371,7 +371,9 @@ const struct gcc_debug_hooks dbx_debug_hooks =
   dbxout_early_global_decl,		 /* early_global_decl */
   dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
-  debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
+  debug_nothing_tree_tree_tree_bool_bool,/* imported_module_or_decl */
+  debug_false_tree_charstarstar_uhwistar,/* die_ref_for_decl */
+  debug_nothing_tree_charstar_uhwi,      /* register_external_die */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
   debug_nothing_rtx_code_label,	         /* label */
@@ -411,7 +413,9 @@ const struct gcc_debug_hooks xcoff_debug_hooks =
   dbxout_early_global_decl,		 /* early_global_decl */
   dbxout_late_global_decl,		 /* late_global_decl */
   dbxout_type_decl,			 /* type_decl */
-  debug_nothing_tree_tree_tree_bool,	 /* imported_module_or_decl */
+  debug_nothing_tree_tree_tree_bool_bool,/* imported_module_or_decl */
+  debug_false_tree_charstarstar_uhwistar,/* die_ref_for_decl */
+  debug_nothing_tree_charstar_uhwi,      /* register_external_die */
   debug_nothing_tree,		         /* deferred_inline_function */
   debug_nothing_tree,		         /* outlining_inline_function */
   debug_nothing_rtx_code_label,	         /* label */
@@ -1481,6 +1485,8 @@ dbxout_type_fields (tree type)
       /* Omit here local type decls until we know how to support them.  */
       if (TREE_CODE (tem) == TYPE_DECL
 	  || TREE_CODE (tem) == TEMPLATE_DECL
+	  /* Member functions emitted after fields.  */
+	  || TREE_CODE (tem) == FUNCTION_DECL
 	  /* Omit here the nameless fields that are used to skip bits.  */
 	  || DECL_IGNORED_P (tem)
 	  /* Omit fields whose position or size are variable or too large to
@@ -1586,54 +1592,37 @@ dbxout_type_method_1 (tree decl)
     }
 }
 
-/* Subroutine of `dbxout_type'.  Output debug info about the methods defined
-   in TYPE.  */
+/* Subroutine of `dbxout_type'.  Output debug info about the member
+   functions defined in TYPE.  */
 
 static void
 dbxout_type_methods (tree type)
 {
-  /* C++: put out the method names and their parameter lists */
-  tree methods = TYPE_METHODS (type);
-  tree fndecl;
-  tree last;
-
-  if (methods == NULL_TREE)
-    return;
-
-  if (TREE_CODE (methods) != TREE_VEC)
-    fndecl = methods;
-  else if (TREE_VEC_ELT (methods, 0) != NULL_TREE)
-    fndecl = TREE_VEC_ELT (methods, 0);
-  else
-    fndecl = TREE_VEC_ELT (methods, 1);
-
-  while (fndecl)
+  for (tree fndecl = TYPE_FIELDS (type); fndecl;)
     {
       int need_prefix = 1;
 
       /* Group together all the methods for the same operation.
 	 These differ in the types of the arguments.  */
-      for (last = NULL_TREE;
+      for (tree last = NULL_TREE;
 	   fndecl && (last == NULL_TREE || DECL_NAME (fndecl) == DECL_NAME (last));
 	   fndecl = DECL_CHAIN (fndecl))
 	/* Output the name of the field (after overloading), as
 	   well as the name of the field before overloading, along
 	   with its parameter list */
 	{
-	  /* Skip methods that aren't FUNCTION_DECLs.  (In C++, these
-	     include TEMPLATE_DECLs.)  The debugger doesn't know what
-	     to do with such entities anyhow.  */
+	  /* Skip non-functions.  */
 	  if (TREE_CODE (fndecl) != FUNCTION_DECL)
 	    continue;
-
-	  CONTIN;
-
-	  last = fndecl;
 
 	  /* Also ignore abstract methods; those are only interesting to
 	     the DWARF backends.  */
 	  if (DECL_IGNORED_P (fndecl) || DECL_ABSTRACT_P (fndecl))
 	    continue;
+
+	  CONTIN;
+
+	  last = fndecl;
 
 	  /* Redundantly output the plain name, since that's what gdb
 	     expects.  */
@@ -2209,10 +2198,8 @@ dbxout_type (tree type, int full)
 
       /* Write out the field declarations.  */
       dbxout_type_fields (type);
-      if (use_gnu_debug_info_extensions && TYPE_METHODS (type) != NULL_TREE)
-	{
-	  dbxout_type_methods (type);
-	}
+      if (use_gnu_debug_info_extensions)
+	dbxout_type_methods (type);
 
       stabstr_C (';');
 

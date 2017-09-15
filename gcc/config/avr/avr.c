@@ -26,6 +26,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cgraph.h"
 #include "c-family/c-common.h"
 #include "cfghooks.h"
@@ -283,7 +285,7 @@ avr_to_int_mode (rtx x)
 
   return VOIDmode == mode
     ? x
-    : simplify_gen_subreg (int_mode_for_mode (mode), x, mode, 0);
+    : simplify_gen_subreg (int_mode_for_mode (mode).require (), x, mode, 0);
 }
 
 namespace {
@@ -553,9 +555,9 @@ avr_optimize_casesi (rtx_insn *insns[6], rtx *xop)
   HOST_WIDE_INT hig_idx = low_idx + num_idx;
 
   // Maximum ranges of (un)signed QImode resp. HImode.
-  int imin = QImode == mode ? INT8_MIN : INT16_MIN;
-  int imax = QImode == mode ? INT8_MAX : INT16_MAX;
-  unsigned umax = QImode == mode ? UINT8_MAX : UINT16_MAX;
+  unsigned umax = QImode == mode ? 0xff : 0xffff;
+  int imax = QImode == mode ? 0x7f : 0x7fff;
+  int imin = -imax - 1;
 
   // Testing the case range and whether it fits into the range of the
   // (un)signed mode.  This test should actually always pass because it
@@ -775,7 +777,7 @@ avr_option_override (void)
     warning (OPT_fPIE, "-fPIE is not supported");
 
 #if !defined (HAVE_AS_AVR_MGCCISR_OPTION)
-  TARGET_GASISR_PROLOGUES = 0;
+  avr_gasisr_prologues = 0;
 #endif
 
   if (!avr_set_core_architecture())
@@ -882,7 +884,7 @@ avr_regno_reg_class (int r)
 /* Implement `TARGET_SCALAR_MODE_SUPPORTED_P'.  */
 
 static bool
-avr_scalar_mode_supported_p (machine_mode mode)
+avr_scalar_mode_supported_p (scalar_mode mode)
 {
   if (ALL_FIXED_POINT_MODE_P (mode))
     return true;
@@ -1109,7 +1111,7 @@ avr_set_current_function (tree decl)
       || 0 == strcmp ("INTERRUPT", name)
       || 0 == strcmp ("SIGNAL", name))
     {
-      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved indentifier"
+      warning_at (loc, OPT_Wmisspelled_isr, "%qs is a reserved identifier"
                   " in AVR-LibC.  Consider %<#include <avr/interrupt.h>%>"
                   " before using the %qs macro", name, name);
     }
@@ -1457,7 +1459,7 @@ public:
 
   virtual unsigned int execute (function *fun)
   {
-    if (TARGET_GASISR_PROLOGUES
+    if (avr_gasisr_prologues
         // Whether this function is an ISR worth scanning at all.
         && !fun->machine->is_no_gccisr
         && (fun->machine->is_interrupt
@@ -7737,7 +7739,7 @@ avr_out_plus_1 (rtx *xop, int *plen, enum rtx_code code, int *pcc,
   machine_mode mode = GET_MODE (xop[0]);
 
   /* INT_MODE of the same size.  */
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
 
   /* Number of bytes to operate on.  */
   int n_bytes = GET_MODE_SIZE (mode);
@@ -8240,7 +8242,7 @@ avr_out_plus (rtx insn, rtx *xop, int *plen, int *pcc, bool out_label)
   rtx xpattern = INSN_P (insn) ? single_set (as_a <rtx_insn *> (insn)) : insn;
   rtx xdest = SET_DEST (xpattern);
   machine_mode mode = GET_MODE (xdest);
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
   int n_bytes = GET_MODE_SIZE (mode);
   enum rtx_code code_sat = GET_CODE (SET_SRC (xpattern));
   enum rtx_code code
@@ -9174,8 +9176,8 @@ avr_out_fract (rtx_insn *insn, rtx operands[], bool intsigned, int *plen)
 const char*
 avr_out_round (rtx_insn *insn ATTRIBUTE_UNUSED, rtx *xop, int *plen)
 {
-  machine_mode mode = GET_MODE (xop[0]);
-  machine_mode imode = int_mode_for_mode (mode);
+  scalar_mode mode = as_a <scalar_mode> (GET_MODE (xop[0]));
+  scalar_int_mode imode = int_mode_for_mode (mode).require ();
   // The smallest fractional bit not cleared by the rounding is 2^(-RP).
   int fbit = (int) GET_MODE_FBIT (mode);
   double_int i_add = double_int_zero.set_bit (fbit-1 - INTVAL (xop[2]));
@@ -9788,10 +9790,12 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
   bool io_p = (strncmp (IDENTIFIER_POINTER (name), "io", 2) == 0);
   location_t loc = DECL_SOURCE_LOCATION (*node);
 
-  if (TREE_CODE (*node) != VAR_DECL)
+  if (!VAR_P (*node))
     {
-      warning_at (loc, 0, "%qE attribute only applies to variables", name);
+      warning_at (loc, OPT_Wattributes, "%qE attribute only applies to "
+		  "variables", name);
       *no_add = true;
+      return NULL_TREE;
     }
 
   if (args != NULL_TREE)
@@ -9801,8 +9805,8 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
       tree arg = TREE_VALUE (args);
       if (TREE_CODE (arg) != INTEGER_CST)
 	{
-	  warning (0, "%qE attribute allows only an integer constant argument",
-		   name);
+	  warning_at (loc, OPT_Wattributes, "%qE attribute allows only an "
+		      "integer constant argument", name);
 	  *no_add = true;
 	}
       else if (io_p
@@ -9811,19 +9815,20 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
 			? low_io_address_operand : io_address_operand)
 			 (GEN_INT (TREE_INT_CST_LOW (arg)), QImode)))
 	{
-	  warning_at (loc, 0, "%qE attribute address out of range", name);
+	  warning_at (loc, OPT_Wattributes, "%qE attribute address "
+		      "out of range", name);
 	  *no_add = true;
 	}
       else
 	{
 	  tree attribs = DECL_ATTRIBUTES (*node);
-	  const char *names[] = { "io", "io_low", "address", NULL } ;
+	  const char *names[] = { "io", "io_low", "address", NULL };
 	  for (const char **p = names; *p; p++)
 	    {
 	      tree other = lookup_attribute (*p, attribs);
 	      if (other && TREE_VALUE (other))
 		{
-		  warning_at (loc, 0,
+		  warning_at (loc, OPT_Wattributes,
 			      "both %s and %qE attribute provide address",
 			      *p, name);
 		  *no_add = true;
@@ -9834,7 +9839,8 @@ avr_handle_addr_attribute (tree *node, tree name, tree args,
     }
 
   if (*no_add == false && io_p && !TREE_THIS_VOLATILE (*node))
-    warning_at (loc, 0, "%qE attribute on non-volatile variable", name);
+    warning_at (loc, OPT_Wattributes, "%qE attribute on non-volatile variable",
+		name);
 
   return NULL_TREE;
 }
@@ -9884,11 +9890,11 @@ avr_attribute_table[] =
     false },
   { "OS_main",   0, 0, false, true,  true,   avr_handle_fntype_attribute,
     false },
-  { "io",        0, 1, false, false, false,  avr_handle_addr_attribute,
+  { "io",        0, 1, true, false, false,  avr_handle_addr_attribute,
     false },
-  { "io_low",    0, 1, false, false, false,  avr_handle_addr_attribute,
+  { "io_low",    0, 1, true, false, false,  avr_handle_addr_attribute,
     false },
-  { "address",   1, 1, false, false, false,  avr_handle_addr_attribute,
+  { "address",   1, 1, true, false, false,  avr_handle_addr_attribute,
     false },
   { "absdata",   0, 0, true, false, false,  avr_handle_absdata_attribute,
     false },
@@ -10800,14 +10806,14 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case NEG:
       switch (mode)
 	{
-	case QImode:
-	case SFmode:
+	case E_QImode:
+	case E_SFmode:
 	  *total = COSTS_N_INSNS (1);
 	  break;
 
-        case HImode:
-        case PSImode:
-        case SImode:
+        case E_HImode:
+        case E_PSImode:
+        case E_SImode:
           *total = COSTS_N_INSNS (2 * GET_MODE_SIZE (mode) - 1);
           break;
 
@@ -10820,8 +10826,8 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ABS:
       switch (mode)
 	{
-	case QImode:
-	case SFmode:
+	case E_QImode:
+	case E_SFmode:
 	  *total = COSTS_N_INSNS (1);
 	  break;
 
@@ -10853,7 +10859,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case PLUS:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
           if (AVR_HAVE_MUL
               && MULT == GET_CODE (XEXP (x, 0))
               && register_operand (XEXP (x, 1), QImode))
@@ -10870,7 +10876,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total += avr_operand_rtx_cost (XEXP (x, 1), mode, code, 1, speed);
 	  break;
 
-	case HImode:
+	case E_HImode:
           if (AVR_HAVE_MUL
               && (MULT == GET_CODE (XEXP (x, 0))
                   || ASHIFT == GET_CODE (XEXP (x, 0)))
@@ -10897,7 +10903,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total = COSTS_N_INSNS (2);
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (3);
@@ -10910,7 +10916,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
             *total = COSTS_N_INSNS (3);
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (4);
@@ -10988,7 +10994,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case MULT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (AVR_HAVE_MUL)
 	    *total = COSTS_N_INSNS (!speed ? 3 : 4);
 	  else if (!speed)
@@ -10997,7 +11003,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    return false;
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (AVR_HAVE_MUL)
             {
               rtx op0 = XEXP (x, 0);
@@ -11041,15 +11047,15 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    return false;
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!speed)
             *total = COSTS_N_INSNS (AVR_HAVE_JMP_CALL ? 2 : 1);
           else
             *total = 10;
           break;
 
-	case SImode:
-	case DImode:
+	case E_SImode:
+	case E_DImode:
 	  if (AVR_HAVE_MUL)
             {
               if (!speed)
@@ -11107,19 +11113,19 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ROTATE:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 4)
 	    *total = COSTS_N_INSNS (1);
 
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) == 8)
 	    *total = COSTS_N_INSNS (3);
 
 	  break;
 
-	case SImode:
+	case E_SImode:
 	  if (CONST_INT_P (XEXP (x, 1)))
 	    switch (INTVAL (XEXP (x, 1)))
 	      {
@@ -11142,7 +11148,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11161,7 +11167,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
           if (AVR_HAVE_MUL)
             {
               if (const_2_to_7_operand (XEXP (x, 1), HImode)
@@ -11226,7 +11232,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11251,7 +11257,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11294,7 +11300,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case ASHIFTRT:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11315,7 +11321,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -11361,7 +11367,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11388,7 +11394,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11437,7 +11443,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 4 : 17);
@@ -11456,7 +11462,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    }
 	  break;
 
-	case HImode:
+	case E_HImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 5 : 41);
@@ -11505,7 +11511,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	      }
 	  break;
 
-        case PSImode:
+        case E_PSImode:
           if (!CONST_INT_P (XEXP (x, 1)))
             {
               *total = COSTS_N_INSNS (!speed ? 6 : 73);
@@ -11530,7 +11536,7 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
               }
           break;
 
-	case SImode:
+	case E_SImode:
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    {
 	      *total = COSTS_N_INSNS (!speed ? 7 : 113);
@@ -11573,14 +11579,14 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
     case COMPARE:
       switch (GET_MODE (XEXP (x, 0)))
 	{
-	case QImode:
+	case E_QImode:
 	  *total = COSTS_N_INSNS (1);
 	  if (!CONST_INT_P (XEXP (x, 1)))
 	    *total += avr_operand_rtx_cost (XEXP (x, 1), QImode, code,
 					    1, speed);
 	  break;
 
-        case HImode:
+        case E_HImode:
 	  *total = COSTS_N_INSNS (2);
 	  if (!CONST_INT_P (XEXP (x, 1)))
             *total += avr_operand_rtx_cost (XEXP (x, 1), HImode, code,
@@ -11589,13 +11595,13 @@ avr_rtx_costs_1 (rtx x, machine_mode mode, int outer_code,
 	    *total += COSTS_N_INSNS (1);
           break;
 
-        case PSImode:
+        case E_PSImode:
           *total = COSTS_N_INSNS (3);
           if (CONST_INT_P (XEXP (x, 1)) && INTVAL (XEXP (x, 1)) != 0)
             *total += COSTS_N_INSNS (2);
           break;
 
-        case SImode:
+        case E_SImode:
           *total = COSTS_N_INSNS (4);
           if (!CONST_INT_P (XEXP (x, 1)))
             *total += avr_operand_rtx_cost (XEXP (x, 1), SImode, code,
@@ -12143,14 +12149,12 @@ jump_over_one_insn_p (rtx_insn *insn, rtx dest)
 }
 
 
-/* Worker function for `HARD_REGNO_MODE_OK'.  */
-/* Returns 1 if a value of mode MODE can be stored starting with hard
-   register number REGNO.  On the enhanced core, anything larger than
-   1 byte must start in even numbered register for "movw" to work
-   (this way we don't have to check for odd registers everywhere).  */
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the enhanced core, anything
+   larger than 1 byte must start in even numbered register for "movw" to
+   work (this way we don't have to check for odd registers everywhere).  */
 
-int
-avr_hard_regno_mode_ok (int regno, machine_mode mode)
+static bool
+avr_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* NOTE: 8-bit values must not be disallowed for R28 or R29.
         Disallowing QI et al. in these regs might lead to code like
@@ -12163,7 +12167,7 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
   /* Any GENERAL_REGS register can hold 8-bit values.  */
 
   if (GET_MODE_SIZE (mode) == 1)
-    return 1;
+    return true;
 
   /* FIXME: Ideally, the following test is not needed.
         However, it turned out that it can reduce the number
@@ -12172,7 +12176,7 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
 
   if (GET_MODE_SIZE (mode) >= 4
       && regno >= REG_X)
-    return 0;
+    return false;
 
   /* All modes larger than 8 bits should start in an even register.  */
 
@@ -12180,9 +12184,9 @@ avr_hard_regno_mode_ok (int regno, machine_mode mode)
 }
 
 
-/* Implement `HARD_REGNO_CALL_PART_CLOBBERED'.  */
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  */
 
-int
+static bool
 avr_hard_regno_call_part_clobbered (unsigned regno, machine_mode mode)
 {
   /* FIXME: This hook gets called with MODE:REGNO combinations that don't
@@ -12923,7 +12927,7 @@ avr_case_values_threshold (void)
 
 /* Implement `TARGET_ADDR_SPACE_ADDRESS_MODE'.  */
 
-static machine_mode
+static scalar_int_mode
 avr_addr_space_address_mode (addr_space_t as)
 {
   return avr_addrspace[as].pointer_size == 3 ? PSImode : HImode;
@@ -12932,7 +12936,7 @@ avr_addr_space_address_mode (addr_space_t as)
 
 /* Implement `TARGET_ADDR_SPACE_POINTER_MODE'.  */
 
-static machine_mode
+static scalar_int_mode
 avr_addr_space_pointer_mode (addr_space_t as)
 {
   return avr_addr_space_address_mode (as);
@@ -14685,8 +14689,14 @@ avr_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED, tree *arg,
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE avr_conditional_register_usage
 
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK avr_hard_regno_mode_ok
 #undef  TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK avr_hard_regno_scratch_ok
+#undef  TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  avr_hard_regno_call_part_clobbered
+
 #undef  TARGET_CASE_VALUES_THRESHOLD
 #define TARGET_CASE_VALUES_THRESHOLD avr_case_values_threshold
 

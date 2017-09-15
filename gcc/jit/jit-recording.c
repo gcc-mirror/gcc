@@ -236,7 +236,16 @@ class reproducer : public dump
     GNU_PRINTF(2, 3);
 
  private:
-  hash_map<recording::memento *, const char *> m_identifiers;
+  const char * ensure_identifier_is_unique (const char *candidate, void *ptr);
+
+ private:
+  hash_map<recording::memento *, const char *> m_map_memento_to_identifier;
+
+  struct hash_traits : public string_hash
+  {
+    static void remove (const char *) {}
+  };
+  hash_set<const char *, hash_traits> m_set_identifiers;
   allocator m_allocator;
 };
 
@@ -245,7 +254,8 @@ class reproducer : public dump
 reproducer::reproducer (recording::context &ctxt,
 			const char *filename) :
   dump (ctxt, filename, 0),
-  m_identifiers (),
+  m_map_memento_to_identifier (),
+  m_set_identifiers (),
   m_allocator ()
 {
 }
@@ -286,6 +296,35 @@ reproducer::write_args (const vec <recording::context *> &contexts)
     }
 }
 
+/* Ensure that STR is a valid C identifier by overwriting
+   any invalid chars in-place with underscores.
+
+   This doesn't special-case the first character.  */
+
+static void
+convert_to_identifier (char *str)
+{
+  for (char *p = str; *p; p++)
+    if (!ISALNUM (*p))
+      *p = '_';
+}
+
+/* Given CANDIDATE, a possible C identifier for use in a reproducer,
+   ensure that it is unique within the generated source file by
+   appending PTR to it if necessary.  Return the resulting string.
+
+   The reproducer will eventually clean up the buffer in its dtor.  */
+
+const char *
+reproducer::ensure_identifier_is_unique (const char *candidate, void *ptr)
+{
+  if (m_set_identifiers.contains (candidate))
+    candidate = m_allocator.xstrdup_printf ("%s_%p", candidate, ptr);
+  gcc_assert (!m_set_identifiers.contains (candidate));
+  m_set_identifiers.add (candidate);
+  return candidate;
+}
+
 /* Generate a C identifier for the given memento, associating the generated
    buffer with the memento (for future calls to get_identifier et al).
 
@@ -293,21 +332,20 @@ reproducer::write_args (const vec <recording::context *> &contexts)
 const char *
 reproducer::make_identifier (recording::memento *m, const char *prefix)
 {
-  char *result;
+  const char *result;
   if (strlen (m->get_debug_string ()) < 100)
     {
-      result = m_allocator.xstrdup_printf ("%s_%s_%p",
-					   prefix,
-					   m->get_debug_string (),
-					   (void *) m);
-      for (char *p = result; *p; p++)
-	if (!ISALNUM (*p))
-	  *p = '_';
+      char *buf = m_allocator.xstrdup_printf ("%s_%s",
+					      prefix,
+					      m->get_debug_string ());
+      convert_to_identifier (buf);
+      result = buf;
     }
   else
     result = m_allocator.xstrdup_printf ("%s_%p",
 					 prefix, (void *) m);
-  m_identifiers.put (m, result);
+  result = ensure_identifier_is_unique (result, m);
+  m_map_memento_to_identifier.put (m, result);
   return result;
 }
 
@@ -350,7 +388,7 @@ reproducer::get_identifier (recording::memento *m)
     if (!loc->created_by_user ())
       return "NULL";
 
-  const char **slot = m_identifiers.get (m);
+  const char **slot = m_map_memento_to_identifier.get (m);
   if (!slot)
     {
       get_context ().add_error (NULL,
@@ -1988,6 +2026,20 @@ recording::type::get_aligned (size_t alignment_in_bytes)
   return result;
 }
 
+/* Given a type, get a vector version of the type.
+
+   Implements the post-error-checking part of
+   gcc_jit_type_get_vector.  */
+
+recording::type *
+recording::type::get_vector (size_t num_units)
+{
+  recording::type *result
+    = new memento_of_get_vector (this, num_units);
+  m_ctxt->record (result);
+  return result;
+}
+
 const char *
 recording::type::access_as_type (reproducer &r)
 {
@@ -2457,7 +2509,7 @@ recording::memento_of_get_aligned::make_debug_string ()
 			      m_alignment_in_bytes);
 }
 
-/* Implementation of recording::memento::write_reproducer for volatile
+/* Implementation of recording::memento::write_reproducer for aligned
    types. */
 
 void
@@ -2469,6 +2521,46 @@ recording::memento_of_get_aligned::write_reproducer (reproducer &r)
 	   id,
 	   r.get_identifier_as_type (m_other_type),
 	   m_alignment_in_bytes);
+}
+
+/* The implementation of class gcc::jit::recording::memento_of_get_vector.  */
+
+/* Implementation of pure virtual hook recording::memento::replay_into
+   for recording::memento_of_get_vector.  */
+
+void
+recording::memento_of_get_vector::replay_into (replayer *)
+{
+  set_playback_obj
+    (m_other_type->playback_type ()->get_vector (m_num_units));
+}
+
+/* Implementation of recording::memento::make_debug_string for
+   results of get_vector.  */
+
+recording::string *
+recording::memento_of_get_vector::make_debug_string ()
+{
+  return string::from_printf
+    (m_ctxt,
+     "%s  __attribute__((vector_size(sizeof (%s) * %zi)))",
+     m_other_type->get_debug_string (),
+     m_other_type->get_debug_string (),
+     m_num_units);
+}
+
+/* Implementation of recording::memento::write_reproducer for volatile
+   types. */
+
+void
+recording::memento_of_get_vector::write_reproducer (reproducer &r)
+{
+  const char *id = r.make_identifier (this, "type");
+  r.write ("  gcc_jit_type *%s =\n"
+	   "    gcc_jit_type_get_vector (%s, %zi);\n",
+	   id,
+	   r.get_identifier_as_type (m_other_type),
+	   m_num_units);
 }
 
 /* The implementation of class gcc::jit::recording::array_type */

@@ -469,29 +469,6 @@ extern int cris_cpu_version;
  {15, 9, 13, 12, 11, 10, 0, 1, 2, 3, 4, 5, 6, 7, 8, 17, 16, 14, 18, 19}
 
 
-/* Node: Values in Registers */
-
-/* The VOIDmode test is so we can omit mode on anonymous insns.  FIXME:
-   Still needed in 2.9x, at least for Axis-20000319.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)	\
- (MODE == VOIDmode \
-  ? 1 : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* CRIS permits all registers to hold all modes.  Well, except for the
-   condition-code register.  And we can't hold larger-than-register size
-   modes in the last special register that can hold a full 32 bits.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)		\
- (((MODE) == CCmode				\
-   || (REGNO) != CRIS_CC0_REGNUM)		\
-  && (GET_MODE_SIZE (MODE) <= UNITS_PER_WORD	\
-      || ((REGNO) != CRIS_MOF_REGNUM && (REGNO) != CRIS_ACR_REGNUM)))
-
-/* Because CCmode isn't covered by the "narrower mode" statement in
-   tm.texi, we can still say all modes are tieable despite not having an
-   always 1 HARD_REGNO_MODE_OK.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
-
 /* Node: Leaf Functions */
 /* (no definitions) */
 
@@ -1060,8 +1037,6 @@ enum cris_symbol_type
 #define MOVE_MAX 4
 
 /* Maybe SHIFT_COUNT_TRUNCATED is safe to define?  FIXME: Check later.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)

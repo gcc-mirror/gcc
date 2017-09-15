@@ -591,7 +591,7 @@ scale_loop_profile (struct loop *loop, profile_probability p,
 	      determined = true;
 	    }
 	}
-      if (!determined)
+      if (!determined && loop->header->frequency)
 	{
 	  int freq_in = 0;
 

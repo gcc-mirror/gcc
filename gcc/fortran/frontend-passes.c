@@ -238,21 +238,25 @@ realloc_string_callback (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
     return 0;
 
   expr2 = gfc_discard_nops (co->expr2);
-  if (expr2->expr_type != EXPR_VARIABLE)
-    return 0;
 
-  found_substr = false;
-  for (ref = expr2->ref; ref; ref = ref->next)
+  if (expr2->expr_type == EXPR_VARIABLE)
     {
-      if (ref->type == REF_SUBSTRING)
+      found_substr = false;
+      for (ref = expr2->ref; ref; ref = ref->next)
 	{
-	  found_substr = true;
-	  break;
+	  if (ref->type == REF_SUBSTRING)
+	    {
+	      found_substr = true;
+	      break;
+	    }
 	}
+      if (!found_substr)
+	return 0;
     }
-  if (!found_substr)
+  else if (expr2->expr_type != EXPR_OP
+	   || expr2->value.op.op != INTRINSIC_CONCAT)
     return 0;
-
+  
   if (!gfc_check_dependency (expr1, expr2, true))
     return 0;
 
@@ -625,7 +629,8 @@ constant_string_length (gfc_expr *e)
 
   /* Return length of char symbol, if constant.  */
 
-  if (e->symtree->n.sym->ts.u.cl && e->symtree->n.sym->ts.u.cl->length
+  if (e->symtree && e->symtree->n.sym->ts.u.cl
+      && e->symtree->n.sym->ts.u.cl->length
       && e->symtree->n.sym->ts.u.cl->length->expr_type == EXPR_CONSTANT)
     return gfc_copy_expr (e->symtree->n.sym->ts.u.cl->length);
 
@@ -3832,14 +3837,25 @@ inline_matmul_assign (gfc_code **c, int *walk_subtrees,
       gcc_unreachable();
     }
 
+  /* Build the conjg call around the variables.  Set the typespec manually
+     because gfc_build_intrinsic_call sometimes gets this wrong.  */
   if (conjg_a)
-    ascalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
-					matrix_a->where, 1, ascalar);
+    {
+      gfc_typespec ts;
+      ts = matrix_a->ts;
+      ascalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
+					  matrix_a->where, 1, ascalar);
+      ascalar->ts = ts;
+    }
 
   if (conjg_b)
-    bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
-					matrix_b->where, 1, bscalar);
-
+    {
+      gfc_typespec ts;
+      ts = matrix_b->ts;
+      bscalar = gfc_build_intrinsic_call (ns, GFC_ISYM_CONJG, "conjg",
+					  matrix_b->where, 1, bscalar);
+      bscalar->ts = ts;
+    }
   /* First loop comes after the zero assignment.  */
   assign_zero->next = do_1;
 

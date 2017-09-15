@@ -2251,7 +2251,7 @@ compilation.
 @tindex OACC_UPDATE
 
 All the statements starting with @code{OACC_} represent directives and
-clauses used by the OpenACC API @w{@uref{http://www.openacc.org/}}.
+clauses used by the OpenACC API @w{@uref{https://www.openacc.org}}.
 
 @table @code
 @item OACC_CACHE
@@ -2820,7 +2820,6 @@ This function cannot be used with namespaces that have
 @findex BINFO_TYPE
 @findex TYPE_FIELDS
 @findex TYPE_VFIELD
-@findex TYPE_METHODS
 
 Besides namespaces, the other high-level scoping construct in C++ is the
 class.  (Throughout this manual the term @dfn{class} is used to mean the
@@ -2837,7 +2836,7 @@ macro to discern whether or not a particular type is a @code{class} as
 opposed to a @code{struct}.  This macro will be true only for classes
 declared with the @code{class} tag.
 
-Almost all non-function members are available on the @code{TYPE_FIELDS}
+Almost all members are available on the @code{TYPE_FIELDS}
 list.  Given one member, the next can be found by following the
 @code{TREE_CHAIN}.  You should not depend in any way on the order in
 which fields appear on this list.  All nodes on this list will be
@@ -2849,21 +2848,17 @@ list, if the enumeration type was declared in the class.  (Of course,
 the @code{TYPE_DECL} for the enumeration type will appear here as well.)
 There are no entries for base classes on this list.  In particular,
 there is no @code{FIELD_DECL} for the ``base-class portion'' of an
-object.
+object.  If a function member is overloaded, each of the overloaded
+functions appears; no @code{OVERLOAD} nodes appear on the @code{TYPE_FIELDS}
+list.  Implicitly declared functions (including default constructors,
+copy constructors, assignment operators, and destructors) will appear on
+this list as well.
 
 The @code{TYPE_VFIELD} is a compiler-generated field used to point to
 virtual function tables.  It may or may not appear on the
 @code{TYPE_FIELDS} list.  However, back ends should handle the
 @code{TYPE_VFIELD} just like all the entries on the @code{TYPE_FIELDS}
 list.
-
-The function members are available on the @code{TYPE_METHODS} list.
-Again, subsequent members are found by following the @code{TREE_CHAIN}
-field.  If a function is overloaded, each of the overloaded functions
-appears; no @code{OVERLOAD} nodes appear on the @code{TYPE_METHODS}
-list.  Implicitly declared functions (including default constructors,
-copy constructors, assignment operators, and destructors) will appear on
-this list as well.
 
 Every class has an associated @dfn{binfo}, which can be obtained with
 @code{TYPE_BINFO}.  Binfos are used to represent base-classes.  The

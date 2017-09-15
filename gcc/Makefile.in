@@ -3780,7 +3780,7 @@ install-mkheaders: stmp-int-hdrs install-itoolsdirs \
 	set -e; for ml in `cat fixinc_list`; do \
 	  multi_dir=`echo $${ml} | sed -e 's/^[^;]*;//'`; \
 	  $(mkinstalldirs) $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}; \
-	  $(INSTALL_DATA) include-fixed$${multidir}/limits.h $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}/limits.h; \
+	  $(INSTALL_DATA) include-fixed$${multi_dir}/limits.h $(DESTDIR)$(itoolsdatadir)/include$${multi_dir}/limits.h; \
 	done
 	$(INSTALL_SCRIPT) $(srcdir)/../mkinstalldirs \
 		$(DESTDIR)$(itoolsdir)/mkinstalldirs ; \

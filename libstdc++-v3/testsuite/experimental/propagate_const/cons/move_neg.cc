@@ -25,10 +25,10 @@
 using std::experimental::propagate_const;
 using std::unique_ptr;
 
-// { dg-error "no type" "" { target *-*-* } 120 }
-// { dg-error "no type" "" { target *-*-* } 127 }
-// { dg-error "no type" "" { target *-*-* } 136 }
-// { dg-error "no type" "" { target *-*-* } 145 }
+// { dg-error "no type" "" { target *-*-* } 118 }
+// { dg-error "no type" "" { target *-*-* } 125 }
+// { dg-error "no type" "" { target *-*-* } 134 }
+// { dg-error "no type" "" { target *-*-* } 143 }
 
 int main()
 {

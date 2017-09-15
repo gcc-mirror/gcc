@@ -98,6 +98,7 @@ extern const char *predictor_name (enum br_predictor);
 extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
 extern void force_edge_cold (edge, bool);
+extern void propagate_unlikely_bbs_forward (void);
 
 extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 

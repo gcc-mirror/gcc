@@ -189,8 +189,9 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
 {
   int maxsize = 2 * BITS_PER_WORD;
   int minsize = BITS_PER_WORD;
+  scalar_int_mode int_mode;
 
-  if (GET_MODE_CLASS (mode) != MODE_INT)
+  if (!is_int_mode (mode, &int_mode))
     return;
   if (maxsize < LONG_LONG_TYPE_SIZE)
     maxsize = LONG_LONG_TYPE_SIZE;
@@ -198,10 +199,10 @@ gen_int_libfunc (optab optable, const char *opname, char suffix,
       && (trapv_binoptab_p (optable)
 	  || trapv_unoptab_p (optable)))
     minsize = INT_TYPE_SIZE;
-  if (GET_MODE_BITSIZE (mode) < minsize
-      || GET_MODE_BITSIZE (mode) > maxsize)
+  if (GET_MODE_BITSIZE (int_mode) < minsize
+      || GET_MODE_BITSIZE (int_mode) > maxsize)
     return;
-  gen_libfunc (optable, opname, suffix, mode);
+  gen_libfunc (optable, opname, suffix, int_mode);
 }
 
 /* Like gen_libfunc, but verify that FP and set decimal prefix if needed.  */
@@ -579,24 +580,20 @@ gen_trunc_conv_libfunc (convert_optab tab,
 			machine_mode tmode,
 			machine_mode fmode)
 {
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) <= GET_MODE_PRECISION (tmode))
+  scalar_float_mode float_tmode, float_fmode;
+  if (!is_a <scalar_float_mode> (fmode, &float_fmode)
+      || !is_a <scalar_float_mode> (tmode, &float_tmode)
+      || float_tmode == float_fmode)
     return;
 
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
-    gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
+  if (GET_MODE_CLASS (float_tmode) != GET_MODE_CLASS (float_fmode))
+    gen_interclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
+
+  if (GET_MODE_PRECISION (float_fmode) <= GET_MODE_PRECISION (float_tmode))
+    return;
+
+  if (GET_MODE_CLASS (float_tmode) == GET_MODE_CLASS (float_fmode))
+    gen_intraclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
 }
 
 /* Pick proper libcall for extend_optab.  We need to chose if we do
@@ -608,23 +605,19 @@ gen_extend_conv_libfunc (convert_optab tab,
 			 machine_mode tmode,
 			 machine_mode fmode)
 {
-  if (GET_MODE_CLASS (tmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (tmode))
-    return;
-  if (GET_MODE_CLASS (fmode) != MODE_FLOAT && !DECIMAL_FLOAT_MODE_P (fmode))
-    return;
-  if (tmode == fmode)
-    return;
-
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (fmode))
-      || (GET_MODE_CLASS (fmode) == MODE_FLOAT && DECIMAL_FLOAT_MODE_P (tmode)))
-     gen_interclass_conv_libfunc (tab, opname, tmode, fmode);
-
-  if (GET_MODE_PRECISION (fmode) > GET_MODE_PRECISION (tmode))
+  scalar_float_mode float_tmode, float_fmode;
+  if (!is_a <scalar_float_mode> (fmode, &float_fmode)
+      || !is_a <scalar_float_mode> (tmode, &float_tmode)
+      || float_tmode == float_fmode)
     return;
 
-  if ((GET_MODE_CLASS (tmode) == MODE_FLOAT
-       && GET_MODE_CLASS (fmode) == MODE_FLOAT)
-      || (DECIMAL_FLOAT_MODE_P (fmode) && DECIMAL_FLOAT_MODE_P (tmode)))
+  if (GET_MODE_CLASS (float_tmode) != GET_MODE_CLASS (float_fmode))
+    gen_interclass_conv_libfunc (tab, opname, float_tmode, float_fmode);
+
+  if (GET_MODE_PRECISION (float_fmode) > GET_MODE_PRECISION (float_tmode))
+    return;
+
+  if (GET_MODE_CLASS (float_tmode) == GET_MODE_CLASS (float_fmode))
     gen_intraclass_conv_libfunc (tab, opname, tmode, fmode);
 }
 
@@ -866,8 +859,10 @@ init_optabs (void)
   /* The ffs function operates on `int'.  Fall back on it if we do not
      have a libgcc2 function for that width.  */
   if (INT_TYPE_SIZE < BITS_PER_WORD)
-    set_optab_libfunc (ffs_optab, mode_for_size (INT_TYPE_SIZE, MODE_INT, 0),
-		       "ffs");
+    {
+      scalar_int_mode mode = int_mode_for_size (INT_TYPE_SIZE, 0).require ();
+      set_optab_libfunc (ffs_optab, mode, "ffs");
+    }
 
   /* Explicitly initialize the bswap libfuncs since we need them to be
      valid for things other than word_mode.  */
@@ -918,9 +913,10 @@ init_sync_libfuncs_1 (optab tab, const char *base, int max)
   mode = QImode;
   for (i = 1; i <= max; i *= 2)
     {
+      if (i > 1)
+	mode = GET_MODE_2XWIDER_MODE (mode).require ();
       buf[len + 1] = '0' + i;
       set_optab_libfunc (tab, mode, buf);
-      mode = GET_MODE_2XWIDER_MODE (mode);
     }
 }
 

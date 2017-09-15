@@ -50,6 +50,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 # define _GLIBCXX_MATH_NS ::std
 #elif defined(_GLIBCXX_TR1_CMATH)
@@ -64,8 +66,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /**
      *   @brief Compute the gamma functions required by the Temme series
      *          expansions of @f$ N_\nu(x) @f$ and @f$ K_\nu(x) @f$.
@@ -626,13 +626,13 @@ namespace tr1
           return __n_n;
         }
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #undef _GLIBCXX_MATH_NS
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_BESSEL_FUNCTION_TCC

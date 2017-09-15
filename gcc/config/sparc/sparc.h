@@ -438,7 +438,8 @@ extern enum cmodel sparc_cmodel;
 /* Mask of all CPU feature flags.  */
 #define MASK_FEATURES						\
   (MASK_FPU + MASK_HARD_QUAD + MASK_VIS + MASK_VIS2 + MASK_VIS3	\
-   + MASK_VIS4 + MASK_CBCOND + MASK_FMAF + MASK_POPC + MASK_SUBXC)
+   + MASK_VIS4 + MASK_CBCOND + MASK_FMAF + MASK_FSMULD		\
+   + MASK_POPC + MASK_SUBXC)
  
 /* TARGET_HARD_MUL: Use 32-bit hardware multiply instructions but not %y.  */
 #define TARGET_HARD_MUL				\
@@ -744,46 +745,14 @@ extern enum cmodel sparc_cmodel;
 				\
   1, 1, 1, 1, 1, 1, 1}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On SPARC, ordinary registers hold 32 bits worth;
-   this means both integer and floating point registers.
-   On v9, integer regs hold 64 bits worth; floating point regs hold
-   32 bits worth (this includes the new fp regs as even the odd ones are
-   included in the hard register count).  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-  ((REGNO) == SPARC_GSR_REG ? 1 :					\
-   (TARGET_ARCH64							\
-    ? (SPARC_INT_REG_P (REGNO) || (REGNO) == FRAME_POINTER_REGNUM			\
-       ? (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD	\
-       : (GET_MODE_SIZE (MODE) + 3) / 4)				\
-    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)))
-
 /* Due to the ARCH64 discrepancy above we must override this next
    macro too.  */
 #define REGMODE_NATURAL_SIZE(MODE) sparc_regmode_natural_size (MODE)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   See sparc.c for how we initialize this.  */
-extern const int *hard_regno_mode_classes;
-extern int sparc_mode_class[];
-
-/* ??? Because of the funny way we pass parameters we should allow certain
-   ??? types of float/complex values to be in integer registers during
-   ??? RTL generation.  This only matters on arch32.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  ((hard_regno_mode_classes[REGNO] & sparc_mode_class[MODE]) != 0)
 
 /* Value is 1 if it is OK to rename a hard register FROM to another hard
    register TO.  We cannot rename %g1 as it may be used before the save
    register window instruction in the prologue.  */
 #define HARD_REGNO_RENAME_OK(FROM, TO) ((FROM) != 1)
-
-#define MODES_TIEABLE_P(MODE1, MODE2) sparc_modes_tieable_p (MODE1, MODE2)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -877,10 +846,10 @@ extern int sparc_mode_class[];
 
    For v9 we must distinguish between the upper and lower floating point
    registers because the upper ones can't hold SFmode values.
-   HARD_REGNO_MODE_OK won't help here because reload assumes that register(s)
-   satisfying a group need for a class will also satisfy a single need for
-   that class.  EXTRA_FP_REGS is a bit of a misnomer as it covers all 64 fp
-   regs.
+   TARGET_HARD_REGNO_MODE_OK won't help here because reload assumes that
+   register(s) satisfying a group need for a class will also satisfy a
+   single need for that class.  EXTRA_FP_REGS is a bit of a misnomer as
+   it covers all 64 fp regs.
 
    It is important that one class contains all the general and all the standard
    fp regs.  Otherwise find_reg() won't properly allocate int regs for moves,
@@ -937,23 +906,6 @@ enum reg_class { NO_REGS, FPCC_REGS, I64_REGS, GENERAL_REGS, FP_REGS,
 extern enum reg_class sparc_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
 #define REGNO_REG_CLASS(REGNO) sparc_regno_reg_class[(REGNO)]
-
-/* Defines invalid mode changes.  Borrowed from the PA port.
-
-   SImode loads to floating-point registers are not zero-extended.
-   The definition for LOAD_EXTEND_OP specifies that integer loads
-   narrower than BITS_PER_WORD will be zero-extended.  As a result,
-   we inhibit changes from SImode unless they are to a mode that is
-   identical in size.
-
-   Likewise for SFmode, since word-mode paradoxical subregs are
-   problematic on big-endian architectures.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_ARCH64						\
-   && GET_MODE_SIZE (FROM) == 4					\
-   && GET_MODE_SIZE (TO) != 4					\
-   ? reg_classes_intersect_p (CLASS, FP_REGS) : 0)
 
 /* This is the order in which to allocate registers normally.
 
@@ -1077,26 +1029,6 @@ extern char leaf_reg_remap[];
 /* Version of the above predicate for SImode constants and below.  */
 #define SPARC_SETHI32_P(X) \
   (SPARC_SETHI_P ((unsigned HOST_WIDE_INT) (X) & GET_MODE_MASK (SImode)))
-
-/* On SPARC when not VIS3 it is not possible to directly move data
-   between GENERAL_REGS and FP_REGS.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ((FP_REG_CLASS_P (CLASS1) != FP_REG_CLASS_P (CLASS2)) \
-   && (! TARGET_VIS3 \
-       || GET_MODE_SIZE (MODE) > 8 \
-       || GET_MODE_SIZE (MODE) < 4))
-
-/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
-   because the movsi and movsf patterns don't handle r/f moves.
-   For v8 we copy the default definition.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE) \
-  (TARGET_ARCH64						\
-   ? (GET_MODE_BITSIZE (MODE) < 32				\
-      ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
-      : MODE)							\
-   : (GET_MODE_BITSIZE (MODE) < BITS_PER_WORD			\
-      ? mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0)	\
-      : MODE))
 
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
@@ -1227,14 +1159,6 @@ struct sparc_args {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, FNDECL, N_NAMED_ARGS) \
 init_cumulative_args (& (CUM), (FNTYPE), (LIBNAME), (FNDECL));
 
-/* If defined, a C expression which determines whether, and in which direction,
-   to pad out an argument with extra space.  The value should be of type
-   `enum direction': either `upward' to pad above the argument,
-   `downward' to pad below, or `none' to inhibit padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-function_arg_padding ((MODE), (TYPE))
-
 
 /* Generate the special assembly code needed to tell the assembler whatever
    it might need to know about the return value of a function.
@@ -1268,7 +1192,7 @@ extern GTY(()) char sparc_hard_reg_printed[8];
 do {									\
   if (TARGET_ARCH64)							\
     {									\
-      int end = HARD_REGNO_NREGS ((REGNO), DECL_MODE (decl)) + (REGNO); \
+      int end = end_hard_regno (DECL_MODE (decl), REGNO);		\
       int reg;								\
       for (reg = (REGNO); reg < 8 && reg < end; reg++)			\
 	if ((reg & ~1) == 2 || (reg & ~1) == 6)				\
@@ -1522,10 +1446,6 @@ do {									   \
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* For SImode, we make sure the top 32-bits of the register are clear and
    then we subtract 32 from the lzd instruction result.  */

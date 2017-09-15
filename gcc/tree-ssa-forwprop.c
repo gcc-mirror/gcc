@@ -1529,7 +1529,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
   /* Only create rotates in complete modes.  Other cases are not
      expanded properly.  */
   if (!INTEGRAL_TYPE_P (rtype)
-      || TYPE_PRECISION (rtype) != GET_MODE_PRECISION (TYPE_MODE (rtype)))
+      || !type_has_mode_precision_p (rtype))
     return false;
 
   for (i = 0; i < 2; i++)
@@ -1609,8 +1609,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (cdef_arg1[i]))
 	      && TYPE_PRECISION (TREE_TYPE (cdef_arg1[i]))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-	      && TYPE_PRECISION (TREE_TYPE (cdef_arg1[i]))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (cdef_arg1[i]))))
+	      && type_has_mode_precision_p (TREE_TYPE (cdef_arg1[i])))
 	    {
 	      def_arg2_alt[i] = cdef_arg1[i];
 	      defcodefor_name (def_arg2_alt[i], &cdef_code[i],
@@ -1639,8 +1638,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem)))
+		&& type_has_mode_precision_p (TREE_TYPE (tem))
 		&& (tem == def_arg2[1 - i]
 		    || tem == def_arg2_alt[1 - i]))
 	      {
@@ -1667,8 +1665,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		&& INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		&& TYPE_PRECISION (TREE_TYPE (tem))
 		 > floor_log2 (TYPE_PRECISION (rtype))
-		&& TYPE_PRECISION (TREE_TYPE (tem))
-		 == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem))))
+		&& type_has_mode_precision_p (TREE_TYPE (tem)))
 	      defcodefor_name (tem, &code, &tem, NULL);
 
 	    if (code == NEGATE_EXPR)
@@ -1683,8 +1680,7 @@ simplify_rotate (gimple_stmt_iterator *gsi)
 		    && INTEGRAL_TYPE_P (TREE_TYPE (tem))
 		    && TYPE_PRECISION (TREE_TYPE (tem))
 		       > floor_log2 (TYPE_PRECISION (rtype))
-		    && TYPE_PRECISION (TREE_TYPE (tem))
-		       == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (tem)))
+		    && type_has_mode_precision_p (TREE_TYPE (tem))
 		    && (tem == def_arg2[1 - i]
 			|| tem == def_arg2_alt[1 - i]))
 		  {
@@ -1956,7 +1952,6 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   unsigned elem_size, nelts, i;
   enum tree_code code, conv_code;
   constructor_elt *elt;
-  unsigned char *sel;
   bool maybe_ident;
 
   gcc_checking_assert (gimple_assign_rhs_code (stmt) == CONSTRUCTOR);
@@ -1969,7 +1964,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   elem_type = TREE_TYPE (type);
   elem_size = TREE_INT_CST_LOW (TYPE_SIZE (elem_type));
 
-  sel = XALLOCAVEC (unsigned char, nelts);
+  auto_vec_perm_indices sel (nelts);
   orig = NULL;
   conv_code = ERROR_MARK;
   maybe_ident = true;
@@ -2027,8 +2022,10 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	}
       if (TREE_INT_CST_LOW (TREE_OPERAND (op1, 1)) != elem_size)
 	return false;
-      sel[i] = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
-      if (sel[i] != i) maybe_ident = false;
+      unsigned int elt = TREE_INT_CST_LOW (TREE_OPERAND (op1, 2)) / elem_size;
+      if (elt != i)
+	maybe_ident = false;
+      sel.quick_push (elt);
     }
   if (i < nelts)
     return false;
@@ -2055,9 +2052,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
     }
   else
     {
-      tree mask_type, *mask_elts;
+      tree mask_type;
 
-      if (!can_vec_perm_p (TYPE_MODE (type), false, sel))
+      if (!can_vec_perm_p (TYPE_MODE (type), false, &sel))
 	return false;
       mask_type
 	= build_vector_type (build_nonstandard_integer_type (elem_size, 1),
@@ -2066,9 +2063,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  || GET_MODE_SIZE (TYPE_MODE (mask_type))
 	     != GET_MODE_SIZE (TYPE_MODE (type)))
 	return false;
-      mask_elts = XALLOCAVEC (tree, nelts);
+      auto_vec<tree, 32> mask_elts (nelts);
       for (i = 0; i < nelts; i++)
-	mask_elts[i] = build_int_cst (TREE_TYPE (mask_type), sel[i]);
+	mask_elts.quick_push (build_int_cst (TREE_TYPE (mask_type), sel[i]));
       op2 = build_vector (mask_type, mask_elts);
       if (conv_code == ERROR_MARK)
 	gimple_assign_set_rhs_with_ops (gsi, VEC_PERM_EXPR, orig, orig, op2);

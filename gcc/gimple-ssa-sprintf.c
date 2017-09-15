@@ -528,8 +528,9 @@ get_format_string (tree format, location_t *ploc)
 
   tree type = TREE_TYPE (format);
 
-  if (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (type))) != MODE_INT
-      || GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type))) != 1)
+  scalar_int_mode char_mode;
+  if (!is_int_mode (TYPE_MODE (TREE_TYPE (type)), &char_mode)
+      || GET_MODE_SIZE (char_mode) != 1)
     {
       /* Wide format string.  */
       return NULL;
@@ -3868,7 +3869,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	    }
 	  else if (dstsize > target_int_max ())
 	    warning_at (gimple_location (info.callstmt), info.warnopt (),
-			"specified bound %wu exceeds %<INT_MAX %>",
+			"specified bound %wu exceeds %<INT_MAX%>",
 			dstsize);
 	}
       else if (TREE_CODE (size) == SSA_NAME)

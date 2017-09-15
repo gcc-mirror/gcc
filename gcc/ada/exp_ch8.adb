@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -185,6 +185,15 @@ package body Exp_Ch8 is
         and then Is_Build_In_Place_Function_Call (Nam)
       then
          Make_Build_In_Place_Call_In_Anonymous_Context (Nam);
+
+      --  Ada 2005 (AI-318-02): Specialization of previous case for renaming
+      --  containing build-in-place function calls whose returned object covers
+      --  interface types.
+
+      elsif Ada_Version >= Ada_2005
+        and then Present (Unqual_BIP_Iface_Function_Call (Nam))
+      then
+         Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Nam);
       end if;
 
       --  Create renaming entry for debug information. Mark the entity as

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -211,7 +211,8 @@ package body Exp_Ch5 is
             Make_Iteration_Scheme (Loc,
               Condition =>
                 Make_Function_Call (Loc,
-                  Name => New_Occurrence_Of (Has_Element_Op, Loc),
+                  Name                   =>
+                    New_Occurrence_Of (Has_Element_Op, Loc),
                   Parameter_Associations => New_List (
                     New_Occurrence_Of (Container, Loc),
                     New_Occurrence_Of (Cursor, Loc)))),
@@ -1448,9 +1449,20 @@ package body Exp_Ch5 is
             U_U : Boolean := False) return Node_Id
          is
             A    : Node_Id;
+            Disc : Entity_Id;
             Expr : Node_Id;
 
          begin
+            --  The discriminant entity to be used in the retrieval below must
+            --  be one in the corresponding type, given that the assignment may
+            --  be between derived and parent types.
+
+            if Is_Derived_Type (Etype (Rhs)) then
+               Disc := Find_Component (R_Typ, C);
+            else
+               Disc := C;
+            end if;
+
             --  In the case of an Unchecked_Union, use the discriminant
             --  constraint value as on the right-hand side of the assignment.
 
@@ -1463,7 +1475,7 @@ package body Exp_Ch5 is
                Expr :=
                  Make_Selected_Component (Loc,
                    Prefix        => Duplicate_Subexpr (Rhs),
-                   Selector_Name => New_Occurrence_Of (C, Loc));
+                   Selector_Name => New_Occurrence_Of (Disc, Loc));
             end if;
 
             A :=
@@ -1578,6 +1590,49 @@ package body Exp_Ch5 is
                   Next_Discriminant (F);
                end;
             end loop;
+
+            --  If the derived type has a stored constraint, assign the value
+            --  of the corresponding discriminants explicitly, skipping those
+            --  that are renamed discriminants. We cannot just retrieve them
+            --  from the Rhs by selected component because they are invisible
+            --  in the type of the right-hand side.
+
+            if Stored_Constraint (R_Typ) /= No_Elist then
+               declare
+                  Assign    : Node_Id;
+                  Discr_Val : Elmt_Id;
+
+               begin
+                  Discr_Val := First_Elmt (Stored_Constraint (R_Typ));
+                  F := First_Entity (R_Typ);
+                  while Present (F) loop
+                     if Ekind (F) = E_Discriminant
+                       and then Is_Completely_Hidden (F)
+                       and then Present (Corresponding_Record_Component (F))
+                       and then
+                         (not Is_Entity_Name (Node (Discr_Val))
+                           or else Ekind (Entity (Node (Discr_Val))) /=
+                                     E_Discriminant)
+                     then
+                        Assign :=
+                          Make_Assignment_Statement (Loc,
+                            Name       =>
+                              Make_Selected_Component (Loc,
+                                Prefix        => Duplicate_Subexpr (Lhs),
+                                Selector_Name =>
+                                  New_Occurrence_Of
+                                    (Corresponding_Record_Component (F), Loc)),
+                            Expression => New_Copy (Node (Discr_Val)));
+
+                        Set_Assignment_OK (Name (Assign));
+                        Insert_Action (N, Assign);
+                        Next_Elmt (Discr_Val);
+                     end if;
+
+                     Next_Entity (F);
+                  end loop;
+               end;
+            end if;
          end if;
 
          --  We know the underlying type is a record, but its current view
@@ -3027,15 +3082,15 @@ package body Exp_Ch5 is
       Container : constant Node_Id    := Entity (Name (I_Spec));
       Stats     : constant List_Id    := Statements (N);
 
-      Advance  : Node_Id;
-      Blk_Nod  : Node_Id;
-      Init     : Node_Id;
-      New_Loop : Node_Id;
+      Advance   : Node_Id;
+      Init_Decl : Node_Id;
+      New_Loop  : Node_Id;
 
    begin
-      --  The expansion resembles the one for Ada containers, but the
-      --  primitives mention the domain of iteration explicitly, and
-      --  function First applied to the container yields a cursor directly.
+      --  The expansion of a formal container loop resembles the one for Ada
+      --  containers. The only difference is that the primitives mention the
+      --  domain of iteration explicitly, and function First applied to the
+      --  container yields a cursor directly.
 
       --    Cursor : Cursor_type := First (Container);
       --    while Has_Element (Cursor, Container) loop
@@ -3044,22 +3099,41 @@ package body Exp_Ch5 is
       --    end loop;
 
       Build_Formal_Container_Iteration
-        (N, Container, Cursor, Init, Advance, New_Loop);
+        (N, Container, Cursor, Init_Decl, Advance, New_Loop);
 
-      Set_Ekind (Cursor, E_Variable);
       Append_To (Stats, Advance);
 
-      --  Build block to capture declaration of cursor entity.
+      --  Build a block to capture declaration of the cursor
 
-      Blk_Nod :=
+      Rewrite (N,
         Make_Block_Statement (Loc,
-          Declarations               => New_List (Init),
+          Declarations               => New_List (Init_Decl),
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc,
-              Statements => New_List (New_Loop)));
+              Statements => New_List (New_Loop))));
 
-      Rewrite (N, Blk_Nod);
+      --  The loop parameter is declared by an object declaration, but within
+      --  the loop we must prevent user assignments to it, so we analyze the
+      --  declaration and reset the entity kind, before analyzing the rest of
+      --  the loop.
+
+      Analyze (Init_Decl);
+      Set_Ekind (Defining_Identifier (Init_Decl), E_Loop_Parameter);
+
+      --  The cursor was marked as a loop parameter to prevent user assignments
+      --  to it, however this renders the advancement step illegal as it is not
+      --  possible to change the value of a constant. Flag the advancement step
+      --  as a legal form of assignment to remedy this side effect.
+
+      Set_Assignment_OK (Name (Advance));
       Analyze (N);
+
+      --  Because we have to analyze the initial declaration of the loop
+      --  parameter multiple times its scope is incorrectly set at this point
+      --  to the one surrounding the block statement - so set the scope
+      --  manually to be the actual block statement.
+
+      Set_Scope (Defining_Identifier (Init_Decl), Entity (Identifier (N)));
    end Expand_Formal_Container_Loop;
 
    ------------------------------------------
@@ -3182,7 +3256,7 @@ package body Exp_Ch5 is
       --  The loop parameter is declared by an object declaration, but within
       --  the loop we must prevent user assignments to it, so we analyze the
       --  declaration and reset the entity kind, before analyzing the rest of
-      --  the loop;
+      --  the loop.
 
       Analyze (Elmt_Decl);
       Set_Ekind (Defining_Identifier (Elmt_Decl), E_Loop_Parameter);
@@ -3880,9 +3954,9 @@ package body Exp_Ch5 is
 
             function Get_Default_Iterator
               (T : Entity_Id) return Entity_Id;
-            --  If the container is a derived type, the aspect holds the parent
-            --  operation. The required one is a primitive of the derived type
-            --  and is either inherited or overridden. Also sets Container_Arg.
+            --  Return the default iterator for a specific type. If the type is
+            --  derived, we return the inherited or overridden one if
+            --  appropriate.
 
             --------------------------
             -- Get_Default_Iterator --
@@ -3899,11 +3973,11 @@ package body Exp_Ch5 is
             begin
                Container_Arg := New_Copy_Tree (Container);
 
-               --  A previous version of GNAT allowed indexing aspects to
-               --  be redefined on derived container types, while the
-               --  default iterator was inherited from the parent type.
-               --  This non-standard extension is preserved temporarily for
-               --  use by the modelling project under debug flag d.X.
+               --  A previous version of GNAT allowed indexing aspects to be
+               --  redefined on derived container types, while the default
+               --  iterator was inherited from the parent type. This
+               --  nonstandard extension is preserved for use by the
+               --  modeling project under debug flag -gnatd.X.
 
                if Debug_Flag_Dot_XX then
                   if Base_Type (Etype (Container)) /=
@@ -3941,9 +4015,11 @@ package body Exp_Ch5 is
                      Next_Elmt (Prim);
                   end loop;
 
-                  --  Default iterator must exist
+                  --  If we didn't find it, then our parent type is not
+                  --  iterable, so we return the Default_Iterator aspect of
+                  --  this type.
 
-                  pragma Assert (False);
+                  return Iter;
 
                --  Otherwise not a derived type
 
@@ -4628,6 +4704,10 @@ package body Exp_Ch5 is
       --        end loop;
       --     end;
 
+      --  In addition, if the loop specification is given by a subtype
+      --  indication that constrains a predicated type, the bounds of
+      --  iteration are given by those of the subtype indication.
+
       else
          Static_Predicate : declare
             S    : Node_Id;
@@ -4635,6 +4715,11 @@ package body Exp_Ch5 is
             P    : Node_Id;
             Alts : List_Id;
             Cstm : Node_Id;
+
+            --  If the domain is an itype, note the bounds of its range.
+
+            L_Hi  : Node_Id;
+            L_Lo  : Node_Id;
 
             function Lo_Val (N : Node_Id) return Node_Id;
             --  Given static expression or static range, returns an identifier
@@ -4690,6 +4775,11 @@ package body Exp_Ch5 is
 
             Set_Warnings_Off (Loop_Id);
 
+            if Is_Itype (Ltype) then
+               L_Hi := High_Bound (Scalar_Range (Ltype));
+               L_Lo := Low_Bound  (Scalar_Range (Ltype));
+            end if;
+
             --  Loop to create branches of case statement
 
             Alts := New_List;
@@ -4698,11 +4788,20 @@ package body Exp_Ch5 is
 
                --  Initial value is largest value in predicate.
 
-               D :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Loop_Id,
-                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                   Expression          => Hi_Val (Last (Stat)));
+               if Is_Itype (Ltype) then
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => L_Hi);
+
+               else
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => Hi_Val (Last (Stat)));
+               end if;
 
                P := Last (Stat);
                while Present (P) loop
@@ -4724,15 +4823,33 @@ package body Exp_Ch5 is
                   Prev (P);
                end loop;
 
+               if Is_Itype (Ltype)
+                 and then Is_OK_Static_Expression (L_Lo)
+                 and then
+                   Expr_Value (L_Lo) /= Expr_Value (Lo_Val (First (Stat)))
+               then
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (Make_Exit_Statement (Loc)),
+                      Discrete_Choices => New_List (L_Lo)));
+               end if;
+
             else
+               --  Initial value is smallest value in predicate
 
-               --  Initial value is smallest value in predicate.
-
-               D :=
-                 Make_Object_Declaration (Loc,
-                   Defining_Identifier => Loop_Id,
-                   Object_Definition   => New_Occurrence_Of (Ltype, Loc),
-                   Expression          => Lo_Val (First (Stat)));
+               if Is_Itype (Ltype) then
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => L_Lo);
+               else
+                  D :=
+                    Make_Object_Declaration (Loc,
+                      Defining_Identifier => Loop_Id,
+                      Object_Definition   => New_Occurrence_Of (Ltype, Loc),
+                      Expression          => Lo_Val (First (Stat)));
+               end if;
 
                P := First (Stat);
                while Present (P) loop
@@ -4753,6 +4870,17 @@ package body Exp_Ch5 is
 
                   Next (P);
                end loop;
+
+               if Is_Itype (Ltype)
+                 and then Is_OK_Static_Expression (L_Hi)
+                 and then
+                   Expr_Value (L_Hi) /= Expr_Value (Lo_Val (Last (Stat)))
+               then
+                  Append_To (Alts,
+                    Make_Case_Statement_Alternative (Loc,
+                      Statements       => New_List (Make_Exit_Statement (Loc)),
+                      Discrete_Choices => New_List (L_Hi)));
+               end if;
             end if;
 
             --  Add others choice
@@ -4768,14 +4896,14 @@ package body Exp_Ch5 is
                end if;
 
                S :=
-                  Make_Assignment_Statement (Loc,
-                    Name       => New_Occurrence_Of (Loop_Id, Loc),
-                    Expression =>
-                      Make_Attribute_Reference (Loc,
-                        Prefix => New_Occurrence_Of (Ltype, Loc),
-                        Attribute_Name => Name_Next,
-                        Expressions    => New_List (
-                          New_Occurrence_Of (Loop_Id, Loc))));
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of (Loop_Id, Loc),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Ltype, Loc),
+                       Attribute_Name => Name_Next,
+                       Expressions    => New_List (
+                         New_Occurrence_Of (Loop_Id, Loc))));
                Set_Suppress_Assignment_Checks (S);
             end;
 

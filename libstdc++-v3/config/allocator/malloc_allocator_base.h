@@ -52,4 +52,8 @@ namespace std
 # define __allocator_base  __gnu_cxx::malloc_allocator
 #endif
 
+#if defined(__SANITIZE_ADDRESS__) && !defined(_GLIBCXX_SANITIZE_STD_ALLOCATOR)
+# define _GLIBCXX_SANITIZE_STD_ALLOCATOR 1
+#endif
+
 #endif

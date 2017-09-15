@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 // Check that we can fold over all of the operators required
 // by the standard in every possible way.

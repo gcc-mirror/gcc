@@ -800,5 +800,6 @@ const struct simple_object_functions simple_object_coff_functions =
   simple_object_coff_release_attributes,
   simple_object_coff_start_write,
   simple_object_coff_write_to_file,
-  simple_object_coff_release_write
+  simple_object_coff_release_write,
+  NULL
 };

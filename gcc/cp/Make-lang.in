@@ -176,13 +176,14 @@ c++.srcman: doc/g++.1
 # entry point.  We feed the former to the latter here.
 check-c++ : check-g++
 
-# Run the testsuite in C++1z mode.
-check-c++1z:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS)" GXX_TESTSUITE_STDS=1z check-g++
+# Run the testsuite in C++17 mode.
+check-c++1z: check-c++17
+check-c++17:
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS)" GXX_TESTSUITE_STDS=17 check-g++
 
 # Run the testsuite in all standard conformance levels.
 check-c++-all:
-	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,1z,concepts" check-g++
+	$(MAKE) RUNTESTFLAGS="$(RUNTESTFLAGS) --stds=98,11,14,17,concepts" check-g++
 
 # Run the testsuite with garbage collection at every opportunity.
 check-g++-strict-gc:

@@ -57,7 +57,8 @@ BACKTRACE_FILES = \
 FORMAT_FILES = \
 	elf.c \
 	pecoff.c \
-	unknown.c
+	unknown.c \
+	xcoff.c
 
 VIEW_FILES = \
 	read.c \
@@ -116,7 +117,7 @@ if HAVE_PTHREAD
 check_PROGRAMS += ttest
 
 ttest_SOURCES = ttest.c testlib.c
-ttest_CFLAGS = -pthread
+ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
 
 endif HAVE_PTHREAD
@@ -155,3 +156,5 @@ sort.lo: config.h backtrace.h internal.h
 stest.lo: config.h backtrace.h internal.h
 state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
+xcoff.lo: config.h backtrace.h internal.h
+

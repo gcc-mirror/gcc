@@ -76,6 +76,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa.h"
 #include "cfgloop.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "rtl-iter.h"
 #include "print-rtl.h"
@@ -217,9 +219,6 @@ static void leaf_renumber_regs (rtx_insn *);
 #if HAVE_cc0
 static int alter_cond (rtx);
 #endif
-#ifndef ADDR_VEC_ALIGN
-static int final_addr_vec_align (rtx_insn *);
-#endif
 static int align_fuzz (rtx, rtx, int, unsigned);
 static void collect_fn_hard_reg_usage (void);
 static tree get_call_fndecl (rtx_insn *);
@@ -242,8 +241,7 @@ init_final (const char *filename ATTRIBUTE_UNUSED)
    If not overridden for epilogue code, then the function body itself
    contains return instructions wherever needed.  */
 void
-default_function_pro_epilogue (FILE *file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+default_function_pro_epilogue (FILE *)
 {
 }
 
@@ -517,9 +515,9 @@ default_jump_align_max_skip (rtx_insn *insn ATTRIBUTE_UNUSED)
 
 #ifndef ADDR_VEC_ALIGN
 static int
-final_addr_vec_align (rtx_insn *addr_vec)
+final_addr_vec_align (rtx_jump_table_data *addr_vec)
 {
-  int align = GET_MODE_SIZE (GET_MODE (PATTERN (addr_vec)));
+  int align = GET_MODE_SIZE (addr_vec->get_data_mode ());
 
   if (align > BIGGEST_ALIGNMENT / BITS_PER_UNIT)
     align = BIGGEST_ALIGNMENT / BITS_PER_UNIT;
@@ -936,45 +934,41 @@ shorten_branches (rtx_insn *first)
       if (INSN_P (insn))
 	continue;
 
-      if (LABEL_P (insn))
+      if (rtx_code_label *label = dyn_cast <rtx_code_label *> (insn))
 	{
-	  rtx_insn *next;
-	  bool next_is_jumptable;
-
 	  /* Merge in alignments computed by compute_alignments.  */
-	  log = LABEL_TO_ALIGNMENT (insn);
+	  log = LABEL_TO_ALIGNMENT (label);
 	  if (max_log < log)
 	    {
 	      max_log = log;
-	      max_skip = LABEL_TO_MAX_SKIP (insn);
+	      max_skip = LABEL_TO_MAX_SKIP (label);
 	    }
 
-	  next = next_nonnote_insn (insn);
-	  next_is_jumptable = next && JUMP_TABLE_DATA_P (next);
-	  if (!next_is_jumptable)
+	  rtx_jump_table_data *table = jump_table_for_label (label);
+	  if (!table)
 	    {
-	      log = LABEL_ALIGN (insn);
+	      log = LABEL_ALIGN (label);
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = targetm.asm_out.label_align_max_skip (insn);
+		  max_skip = targetm.asm_out.label_align_max_skip (label);
 		}
 	    }
 	  /* ADDR_VECs only take room if read-only data goes into the text
 	     section.  */
 	  if ((JUMP_TABLES_IN_TEXT_SECTION
 	       || readonly_data_section == text_section)
-	      && next_is_jumptable)
+	      && table)
 	    {
-	      log = ADDR_VEC_ALIGN (next);
+	      log = ADDR_VEC_ALIGN (table);
 	      if (max_log < log)
 		{
 		  max_log = log;
-		  max_skip = targetm.asm_out.label_align_max_skip (insn);
+		  max_skip = targetm.asm_out.label_align_max_skip (label);
 		}
 	    }
-	  LABEL_TO_ALIGNMENT (insn) = max_log;
-	  LABEL_TO_MAX_SKIP (insn) = max_skip;
+	  LABEL_TO_ALIGNMENT (label) = max_log;
+	  LABEL_TO_MAX_SKIP (label) = max_skip;
 	  max_log = 0;
 	  max_skip = 0;
 	}
@@ -1130,7 +1124,7 @@ shorten_branches (rtx_insn *first)
 	continue;
 
       body = PATTERN (insn);
-      if (JUMP_TABLE_DATA_P (insn))
+      if (rtx_jump_table_data *table = dyn_cast <rtx_jump_table_data *> (insn))
 	{
 	  /* This only takes room if read-only data goes into the text
 	     section.  */
@@ -1138,7 +1132,7 @@ shorten_branches (rtx_insn *first)
 	      || readonly_data_section == text_section)
 	    insn_lengths[uid] = (XVECLEN (body,
 					  GET_CODE (body) == ADDR_DIFF_VEC)
-				 * GET_MODE_SIZE (GET_MODE (body)));
+				 * GET_MODE_SIZE (table->get_data_mode ()));
 	  /* Alignment is handled by ADDR_VEC_ALIGN.  */
 	}
       else if (GET_CODE (body) == ASM_INPUT || asm_noperands (body) >= 0)
@@ -1218,28 +1212,27 @@ shorten_branches (rtx_insn *first)
 
 	  uid = INSN_UID (insn);
 
-	  if (LABEL_P (insn))
+	  if (rtx_code_label *label = dyn_cast <rtx_code_label *> (insn))
 	    {
-	      int log = LABEL_TO_ALIGNMENT (insn);
+	      int log = LABEL_TO_ALIGNMENT (label);
 
 #ifdef CASE_VECTOR_SHORTEN_MODE
 	      /* If the mode of a following jump table was changed, we
 		 may need to update the alignment of this label.  */
-	      rtx_insn *next;
-	      bool next_is_jumptable;
 
-	      next = next_nonnote_insn (insn);
-	      next_is_jumptable = next && JUMP_TABLE_DATA_P (next);
-	      if ((JUMP_TABLES_IN_TEXT_SECTION
-		   || readonly_data_section == text_section)
-		  && next_is_jumptable)
+	      if (JUMP_TABLES_IN_TEXT_SECTION
+		  || readonly_data_section == text_section)
 		{
-		  int newlog = ADDR_VEC_ALIGN (next);
-		  if (newlog != log)
+		  rtx_jump_table_data *table = jump_table_for_label (label);
+		  if (table)
 		    {
-		      log = newlog;
-		      LABEL_TO_ALIGNMENT (insn) = log;
-		      something_changed = 1;
+		      int newlog = ADDR_VEC_ALIGN (table);
+		      if (newlog != log)
+			{
+			  log = newlog;
+			  LABEL_TO_ALIGNMENT (insn) = log;
+			  something_changed = 1;
+			}
 		    }
 		}
 #endif
@@ -1270,6 +1263,7 @@ shorten_branches (rtx_insn *first)
 	      && JUMP_TABLE_DATA_P (insn)
 	      && GET_CODE (PATTERN (insn)) == ADDR_DIFF_VEC)
 	    {
+	      rtx_jump_table_data *table = as_a <rtx_jump_table_data *> (insn);
 	      rtx body = PATTERN (insn);
 	      int old_length = insn_lengths[uid];
 	      rtx_insn *rel_lab =
@@ -1282,7 +1276,7 @@ shorten_branches (rtx_insn *first)
 	      rtx_insn *prev;
 	      int rel_align = 0;
 	      addr_diff_vec_flags flags;
-	      machine_mode vec_mode;
+	      scalar_int_mode vec_mode;
 
 	      /* Avoid automatic aggregate initialization.  */
 	      flags = ADDR_DIFF_VEC_FLAGS (body);
@@ -1365,13 +1359,14 @@ shorten_branches (rtx_insn *first)
 						   max_addr - rel_addr, body);
 	      if (!increasing
 		  || (GET_MODE_SIZE (vec_mode)
-		      >= GET_MODE_SIZE (GET_MODE (body))))
+		      >= GET_MODE_SIZE (table->get_data_mode ())))
 		PUT_MODE (body, vec_mode);
 	      if (JUMP_TABLES_IN_TEXT_SECTION
 		  || readonly_data_section == text_section)
 		{
 		  insn_lengths[uid]
-		    = (XVECLEN (body, 1) * GET_MODE_SIZE (GET_MODE (body)));
+		    = (XVECLEN (body, 1)
+		       * GET_MODE_SIZE (table->get_data_mode ()));
 		  insn_current_address += insn_lengths[uid];
 		  if (insn_lengths[uid] != old_length)
 		    something_changed = 1;
@@ -1843,7 +1838,7 @@ final_start_function (rtx_insn *first, FILE *file,
   }
 
   /* First output the function prologue: code to set up the stack frame.  */
-  targetm.asm_out.function_prologue (file, get_frame_size ());
+  targetm.asm_out.function_prologue (file);
 
   /* If the machine represents the prologue as RTL, the profiling code must
      be emitted when NOTE_INSN_PROLOGUE_END is scanned.  */
@@ -1916,7 +1911,7 @@ final_end_function (void)
 
   /* Finally, output the function epilogue:
      code to restore the stack frame and return to the caller.  */
-  targetm.asm_out.function_epilogue (asm_out_file, get_frame_size ());
+  targetm.asm_out.function_epilogue (asm_out_file);
 
   /* And debug output.  */
   if (!DECL_IGNORED_P (current_function_decl))
@@ -2190,6 +2185,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
   rtx set;
 #endif
   rtx_insn *next;
+  rtx_jump_table_data *table;
 
   insn_counter++;
 
@@ -2447,11 +2443,11 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 
       app_disable ();
 
-      next = next_nonnote_insn (insn);
       /* If this label is followed by a jump-table, make sure we put
 	 the label in the read-only section.  Also possibly write the
 	 label and jump table together.  */
-      if (next != 0 && JUMP_TABLE_DATA_P (next))
+      table = jump_table_for_label (as_a <rtx_code_label *> (insn));
+      if (table)
 	{
 #if defined(ASM_OUTPUT_ADDR_VEC) || defined(ASM_OUTPUT_ADDR_DIFF_VEC)
 	  /* In this case, the case vector is being moved by the
@@ -2466,7 +2462,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 				 (current_function_decl));
 
 #ifdef ADDR_VEC_ALIGN
-	      log_align = ADDR_VEC_ALIGN (next);
+	      log_align = ADDR_VEC_ALIGN (table);
 #else
 	      log_align = exact_log2 (BIGGEST_ALIGNMENT / BITS_PER_UNIT);
 #endif
@@ -2476,8 +2472,7 @@ final_scan_insn (rtx_insn *insn, FILE *file, int optimize_p ATTRIBUTE_UNUSED,
 	    switch_to_section (current_function_section ());
 
 #ifdef ASM_OUTPUT_CASE_LABEL
-	  ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn),
-				 next);
+	  ASM_OUTPUT_CASE_LABEL (file, "L", CODE_LABEL_NUMBER (insn), table);
 #else
 	  targetm.asm_out.internal_label (file, "L", CODE_LABEL_NUMBER (insn));
 #endif
@@ -3203,8 +3198,7 @@ alter_subreg (rtx *xp, bool final_p)
 
       /* For paradoxical subregs on big-endian machines, SUBREG_BYTE
 	 contains 0 instead of the proper offset.  See simplify_subreg.  */
-      if (offset == 0
-	  && GET_MODE_SIZE (GET_MODE (y)) < GET_MODE_SIZE (GET_MODE (x)))
+      if (paradoxical_subreg_p (x))
         {
           int difference = GET_MODE_SIZE (GET_MODE (y))
 			   - GET_MODE_SIZE (GET_MODE (x));
@@ -4492,7 +4486,8 @@ rest_of_handle_final (void)
   assemble_start_function (current_function_decl, fnname);
   final_start_function (get_insns (), asm_out_file, optimize);
   final (get_insns (), asm_out_file, optimize);
-  if (flag_ipa_ra)
+  if (flag_ipa_ra
+      && !lookup_attribute ("noipa", DECL_ATTRIBUTES (current_function_decl)))
     collect_fn_hard_reg_usage ();
   final_end_function ();
 

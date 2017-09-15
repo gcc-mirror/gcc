@@ -66,10 +66,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace rel_ops
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     /** @namespace std::rel_ops
      *  @brief  The generated relational operators are sequestered here.
      */
@@ -125,10 +125,9 @@ namespace std _GLIBCXX_VISIBILITY(default)
       inline bool
       operator>=(const _Tp& __x, const _Tp& __y)
       { return !(__x < __y); }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace rel_ops
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_RELOPS_H */

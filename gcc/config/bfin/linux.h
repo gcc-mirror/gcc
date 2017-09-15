@@ -35,8 +35,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %{mfast-fp:-lbffastfp} %G %L %{static:--end-group} \
-   %{!static:%{mfast-fp:-lbffastfp} %G}"
+  "%{static|static-pie:--start-group} %{mfast-fp:-lbffastfp} %G %L \
+   %{static|static-pie:--end-group} \
+   %{!static:%{!static-pie:%{mfast-fp:-lbffastfp} %G}}"
 
 #undef CPP_SPEC
 #define CPP_SPEC "%{posix:-D_POSIX_SOURCE} %{pthread:-D_REENTRANT}"

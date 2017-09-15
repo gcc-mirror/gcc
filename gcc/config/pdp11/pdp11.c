@@ -25,6 +25,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -160,7 +162,7 @@ static void pdp11_function_arg_advance (cumulative_args_t,
 static void pdp11_conditional_register_usage (void);
 static bool pdp11_legitimate_constant_p (machine_mode, rtx);
 
-static bool pdp11_scalar_mode_supported_p (machine_mode);
+static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_BYTE_OP
@@ -233,6 +235,20 @@ static bool pdp11_scalar_mode_supported_p (machine_mode);
 
 #undef  TARGET_SCALAR_MODE_SUPPORTED_P
 #define TARGET_SCALAR_MODE_SUPPORTED_P pdp11_scalar_mode_supported_p
+
+#undef  TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS pdp11_hard_regno_nregs
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK pdp11_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P pdp11_modes_tieable_p
+
+#undef  TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED pdp11_secondary_memory_needed
+
+#undef  TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS pdp11_can_change_mode_class
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1359,20 +1375,20 @@ legitimate_const_double_p (rtx address)
   return 0;
 }
 
-/* Implement CANNOT_CHANGE_MODE_CLASS.  */
-bool
-pdp11_cannot_change_mode_class (machine_mode from,
-				machine_mode to,
-				enum reg_class rclass)
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+static bool
+pdp11_can_change_mode_class (machine_mode from,
+			     machine_mode to,
+			     reg_class_t rclass)
 {
   /* Also, FPU registers contain a whole float value and the parts of
      it are not separately accessible.
 
      So we disallow all mode changes involving FPRs.  */
   if (FLOAT_MODE_P (from) != FLOAT_MODE_P (to))
-    return true;
+    return false;
   
-  return reg_classes_intersect_p (FPU_REGS, rclass);
+  return !reg_classes_intersect_p (FPU_REGS, rclass);
 }
 
 /* TARGET_PREFERRED_RELOAD_CLASS
@@ -1443,14 +1459,13 @@ pdp11_secondary_reload (bool in_p ATTRIBUTE_UNUSED,
   return LOAD_FPU_REGS;
 }
 
-/* Target routine to check if register to register move requires memory.
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
    The answer is yes if we're going between general register and FPU 
    registers.  The mode doesn't matter in making this check.
 */
-bool 
-pdp11_secondary_memory_needed (reg_class_t c1, reg_class_t c2, 
-			       machine_mode mode ATTRIBUTE_UNUSED)
+static bool
+pdp11_secondary_memory_needed (machine_mode, reg_class_t c1, reg_class_t c2)
 {
   int fromfloat = (c1 == LOAD_FPU_REGS || c1 == NO_LOAD_FPU_REGS || 
 		   c1 == FPU_REGS);
@@ -1909,7 +1924,7 @@ pdp11_legitimate_constant_p (machine_mode mode ATTRIBUTE_UNUSED, rtx x)
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
-pdp11_scalar_mode_supported_p (machine_mode mode)
+pdp11_scalar_mode_supported_p (scalar_mode mode)
 {
   /* Support SFmode even with -mfloat64.  */
   if (mode == SFmode)
@@ -1921,6 +1936,43 @@ int
 pdp11_branch_cost ()
 {
   return (TARGET_BRANCH_CHEAP ? 0 : 1);
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+pdp11_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno <= PC_REGNUM)
+    return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+  return 1;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the pdp, the cpu registers
+   can hold any mode other than float (because otherwise we may end up
+   being asked to move from CPU to FPU register, which isn't a valid
+   operation on the PDP11).  For CPU registers, check alignment.
+
+   FPU accepts SF and DF but actually holds a DF - simplifies life!  */
+
+static bool
+pdp11_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  if (regno <= PC_REGNUM)
+    return (GET_MODE_BITSIZE (mode) <= 16
+	    || (GET_MODE_BITSIZE (mode) >= 32
+		&& !(regno & 1)
+		&& !FLOAT_MODE_P (mode)));
+
+  return FLOAT_MODE_P (mode);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+pdp11_modes_tieable_p (machine_mode, machine_mode)
+{
+  return false;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

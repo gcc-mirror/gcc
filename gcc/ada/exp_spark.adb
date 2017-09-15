@@ -292,10 +292,55 @@ package body Exp_SPARK is
    ------------------------------------------------
 
    procedure Expand_SPARK_N_Object_Renaming_Declaration (N : Node_Id) is
-   begin
-      --  Unconditionally remove all side effects from the name
+      CFS    : constant Boolean    := Comes_From_Source (N);
+      Loc    : constant Source_Ptr := Sloc (N);
+      Obj_Id : constant Entity_Id  := Defining_Entity (N);
+      Nam    : constant Node_Id    := Name (N);
+      Typ    : constant Entity_Id  := Etype (Subtype_Mark (N));
 
-      Evaluate_Name (Name (N));
+   begin
+      --  Transform a renaming of the form
+
+      --    Obj_Id : <subtype mark> renames <function call>;
+
+      --  into
+
+      --    Obj_Id : constant <subtype mark> := <function call>;
+
+      --  Invoking Evaluate_Name and ultimately Remove_Side_Effects introduces
+      --  a temporary to capture the function result. Once potential renamings
+      --  are rewritten for SPARK, the temporary may be leaked out into source
+      --  constructs and lead to confusing error diagnostics. Using an object
+      --  declaration prevents this unwanted side effect.
+
+      if Nkind (Nam) = N_Function_Call then
+         Rewrite (N,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Obj_Id,
+             Constant_Present    => True,
+             Object_Definition   => New_Occurrence_Of (Typ, Loc),
+             Expression          => Nam));
+
+         --  Inherit the original Comes_From_Source status of the renaming
+
+         Set_Comes_From_Source (N, CFS);
+
+         --  Sever the link to the renamed function result because the entity
+         --  will no longer alias anything.
+
+         Set_Renamed_Object (Obj_Id, Empty);
+
+         --  Remove the entity of the renaming declaration from visibility as
+         --  the analysis of the object declaration will reintroduce it again.
+
+         Remove_Entity (Obj_Id);
+         Analyze (N);
+
+      --  Otherwise unconditionally remove all side effects from the name
+
+      else
+         Evaluate_Name (Nam);
+      end if;
    end Expand_SPARK_N_Object_Renaming_Declaration;
 
    ------------------------
@@ -324,29 +369,30 @@ package body Exp_SPARK is
 
    procedure Expand_SPARK_Potential_Renaming (N : Node_Id) is
       Loc    : constant Source_Ptr := Sloc (N);
-      Ren_Id : constant Entity_Id  := Entity (N);
+      Obj_Id : constant Entity_Id  := Entity (N);
       Typ    : constant Entity_Id  := Etype (N);
-      Obj_Id : Node_Id;
+      Ren    : Node_Id;
 
    begin
       --  Replace a reference to a renaming with the actual renamed object
 
-      if Ekind (Ren_Id) in Object_Kind then
-         Obj_Id := Renamed_Object (Ren_Id);
+      if Ekind (Obj_Id) in Object_Kind then
+         Ren := Renamed_Object (Obj_Id);
 
-         if Present (Obj_Id) then
+         if Present (Ren) then
 
-            --  The renamed object is an entity when instantiating generics
-            --  or inlining bodies. In this case the renaming is part of the
-            --  mapping "prologue" which links actuals to formals.
+            --  Instantiations and inlining of subprograms employ "prologues"
+            --  which map actual to formal parameters by means of renamings.
+            --  Replace a reference to a formal by the corresponding actual
+            --  parameter.
 
-            if Nkind (Obj_Id) in N_Entity then
-               Rewrite (N, New_Occurrence_Of (Obj_Id, Loc));
+            if Nkind (Ren) in N_Entity then
+               Rewrite (N, New_Occurrence_Of (Ren, Loc));
 
             --  Otherwise the renamed object denotes a name
 
             else
-               Rewrite (N, New_Copy_Tree (Obj_Id, New_Sloc => Loc));
+               Rewrite (N, New_Copy_Tree (Ren, New_Sloc => Loc));
                Reset_Analyzed_Flags (N);
             end if;
 

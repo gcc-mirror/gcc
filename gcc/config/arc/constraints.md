@@ -355,15 +355,15 @@
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
-	(match_test "compact_sda_memory_operand (op, VOIDmode)")))
+	(match_test "compact_sda_memory_operand (op, VOIDmode, true)")))
 
+; Usc constant is only used for storing long constants, hence we can
+; have only [b,s9], and [b] types of addresses.
 (define_memory_constraint "Usc"
   "@internal
    A valid memory operand for storing constants"
   (and (match_code "mem")
-       (match_test "!CONSTANT_P (XEXP (op,0))")
-;; ??? the assembler rejects stores of immediates to small data.
-       (match_test "!compact_sda_memory_operand (op, VOIDmode)")))
+       (match_test "!CONSTANT_P (XEXP (op,0))")))
 
 (define_constraint "Us<"
   "@internal

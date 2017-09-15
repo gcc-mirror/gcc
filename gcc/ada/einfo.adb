@@ -249,6 +249,7 @@ package body Einfo is
    --    BIP_Initialization_Call         Node29
    --    Subprograms_For_Type            Elist29
 
+   --    Access_Disp_Table_Elab_Flag     Node30
    --    Anonymous_Object                Node30
    --    Corresponding_Equality          Node30
    --    Last_Aggregate_Assignment       Node30
@@ -333,7 +334,7 @@ package body Einfo is
    --    Body_Needed_For_SAL             Flag40
 
    --    Treat_As_Volatile               Flag41
-   --    Is_Controlled                   Flag42
+   --    Is_Controlled_Active            Flag42
    --    Has_Controlled_Component        Flag43
    --    Is_Pure                         Flag44
    --    In_Private_Part                 Flag45
@@ -548,7 +549,7 @@ package body Einfo is
    --    Warnings_Off_Used               Flag236
    --    Warnings_Off_Used_Unmodified    Flag237
    --    Warnings_Off_Used_Unreferenced  Flag238
-   --    OK_To_Reorder_Components        Flag239
+   --    No_Reordering                   Flag239
    --    Has_Expanded_Contract           Flag240
 
    --    Optimize_Alignment_Space        Flag241
@@ -718,11 +719,19 @@ package body Einfo is
 
    function Access_Disp_Table (Id : E) return L is
    begin
-      pragma Assert (Ekind_In (Id, E_Record_Type,
-                                   E_Record_Type_With_Private,
-                                   E_Record_Subtype));
+      pragma Assert (Ekind_In (Id, E_Record_Subtype,
+                                   E_Record_Type,
+                                   E_Record_Type_With_Private));
       return Elist16 (Implementation_Base_Type (Id));
    end Access_Disp_Table;
+
+   function Access_Disp_Table_Elab_Flag (Id : E) return E is
+   begin
+      pragma Assert (Ekind_In (Id, E_Record_Subtype,
+                                   E_Record_Type,
+                                   E_Record_Type_With_Private));
+      return Node30 (Implementation_Base_Type (Id));
+   end Access_Disp_Table_Elab_Flag;
 
    function Activation_Record_Component (Id : E) return E is
    begin
@@ -1490,7 +1499,7 @@ package body Einfo is
 
    function Has_Complex_Representation (Id : E) return B is
    begin
-      pragma Assert (Is_Type (Id));
+      pragma Assert (Is_Record_Type (Id));
       return Flag140 (Implementation_Base_Type (Id));
    end Has_Complex_Representation;
 
@@ -2180,10 +2189,10 @@ package body Einfo is
       return Flag76 (Id);
    end Is_Constructor;
 
-   function Is_Controlled (Id : E) return B is
+   function Is_Controlled_Active (Id : E) return B is
    begin
       return Flag42 (Base_Type (Id));
-   end Is_Controlled;
+   end Is_Controlled_Active;
 
    function Is_Controlling_Formal (Id : E) return B is
    begin
@@ -2756,7 +2765,7 @@ package body Einfo is
    function Linker_Section_Pragma (Id : E) return N is
    begin
       pragma Assert
-        (Is_Type (Id) or else Is_Object (Id) or else Is_Subprogram (Id));
+        (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       return Node33 (Id);
    end Linker_Section_Pragma;
 
@@ -2864,6 +2873,12 @@ package body Einfo is
       return Flag275 (Id);
    end No_Predicate_On_Actual;
 
+   function No_Reordering (Id : E) return B is
+   begin
+      pragma Assert (Is_Record_Type (Id));
+      return Flag239 (Implementation_Base_Type (Id));
+   end No_Reordering;
+
    function No_Return (Id : E) return B is
    begin
       return Flag113 (Id);
@@ -2927,12 +2942,6 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Variable);
       return Flag247 (Id);
    end OK_To_Rename;
-
-   function OK_To_Reorder_Components (Id : E) return B is
-   begin
-      pragma Assert (Is_Record_Type (Id));
-      return Flag239 (Base_Type (Id));
-   end OK_To_Reorder_Components;
 
    function Optimize_Alignment_Space (Id : E) return B is
    begin
@@ -3371,7 +3380,9 @@ package body Einfo is
 
    function Status_Flag_Or_Transient_Decl (Id : E) return N is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Loop_Parameter,
+                                   E_Variable));
       return Node15 (Id);
    end Status_Flag_Or_Transient_Decl;
 
@@ -3762,6 +3773,13 @@ package body Einfo is
       return Ekind (Id) in Subprogram_Kind;
    end Is_Subprogram;
 
+   function Is_Subprogram_Or_Entry              (Id : E) return B is
+   begin
+      return Ekind (Id) in Subprogram_Kind
+               or else
+             Ekind (Id) in Entry_Kind;
+   end Is_Subprogram_Or_Entry;
+
    function Is_Subprogram_Or_Generic_Subprogram (Id : E) return B is
    begin
       return Ekind (Id) in Subprogram_Kind
@@ -3807,6 +3825,14 @@ package body Einfo is
       pragma Assert (V = No_Elist or else Is_Tagged_Type (Id));
       Set_Elist16 (Id, V);
    end Set_Access_Disp_Table;
+
+   procedure Set_Access_Disp_Table_Elab_Flag (Id : E; V : E) is
+   begin
+      pragma Assert (Ekind (Id) = E_Record_Type
+        and then Id = Implementation_Base_Type (Id));
+      pragma Assert (Is_Tagged_Type (Id));
+      Set_Node30 (Id, V);
+   end Set_Access_Disp_Table_Elab_Flag;
 
    procedure Set_Anonymous_Designated_Type (Id : E; V : E) is
    begin
@@ -4584,7 +4610,7 @@ package body Einfo is
 
    procedure Set_Has_Complex_Representation (Id : E; V : B := True) is
    begin
-      pragma Assert (Ekind (Id) = E_Record_Type);
+      pragma Assert (Is_Record_Type (Id) and then Is_Base_Type (Id));
       Set_Flag140 (Id, V);
    end Set_Has_Complex_Representation;
 
@@ -5315,11 +5341,11 @@ package body Einfo is
       Set_Flag76 (Id, V);
    end Set_Is_Constructor;
 
-   procedure Set_Is_Controlled (Id : E; V : B := True) is
+   procedure Set_Is_Controlled_Active (Id : E; V : B := True) is
    begin
       pragma Assert (Id = Base_Type (Id));
       Set_Flag42 (Id, V);
-   end Set_Is_Controlled;
+   end Set_Is_Controlled_Active;
 
    procedure Set_Is_Controlling_Formal (Id : E; V : B := True) is
    begin
@@ -5909,9 +5935,8 @@ package body Einfo is
 
    procedure Set_Linker_Section_Pragma (Id : E; V : N) is
    begin
-      pragma Assert (Is_Type (Id)
-        or else Ekind_In (Id, E_Constant, E_Variable)
-        or else Is_Subprogram (Id));
+      pragma Assert
+        (Is_Object (Id) or else Is_Subprogram (Id) or else Is_Type (Id));
       Set_Node33 (Id, V);
    end Set_Linker_Section_Pragma;
 
@@ -6020,6 +6045,12 @@ package body Einfo is
       Set_Flag275 (Id, V);
    end Set_No_Predicate_On_Actual;
 
+   procedure Set_No_Reordering (Id : E; V : B := True) is
+   begin
+      pragma Assert (Is_Record_Type (Id) and then Is_Base_Type (Id));
+      Set_Flag239 (Id, V);
+   end Set_No_Reordering;
+
    procedure Set_No_Return (Id : E; V : B := True) is
    begin
       pragma Assert
@@ -6084,13 +6115,6 @@ package body Einfo is
       pragma Assert (Ekind (Id) = E_Variable);
       Set_Flag247 (Id, V);
    end Set_OK_To_Rename;
-
-   procedure Set_OK_To_Reorder_Components (Id : E; V : B := True) is
-   begin
-      pragma Assert
-        (Is_Record_Type (Id) and then Is_Base_Type (Id));
-      Set_Flag239 (Id, V);
-   end Set_OK_To_Reorder_Components;
 
    procedure Set_Optimize_Alignment_Space (Id : E; V : B := True) is
    begin
@@ -6547,7 +6571,9 @@ package body Einfo is
 
    procedure Set_Status_Flag_Or_Transient_Decl (Id : E; V : E) is
    begin
-      pragma Assert (Ekind_In (Id, E_Constant, E_Variable));
+      pragma Assert (Ekind_In (Id, E_Constant,
+                                   E_Loop_Parameter,
+                                   E_Variable));
       Set_Node15 (Id, V);
    end Set_Status_Flag_Or_Transient_Decl;
 
@@ -7132,7 +7158,7 @@ package body Einfo is
       loop
          if Nkind_In (P, N_Selected_Component, N_Expanded_Name)
            or else (Nkind (P) = N_Defining_Program_Unit_Name
-                    and then Is_Child_Unit (Id))
+                     and then Is_Child_Unit (Id))
          then
             P := Parent (P);
          else
@@ -7151,13 +7177,13 @@ package body Einfo is
    begin
       Desig_Type := Directly_Designated_Type (Id);
 
-      if Ekind (Desig_Type) = E_Incomplete_Type
+      if Is_Incomplete_Type (Desig_Type)
         and then Present (Full_View (Desig_Type))
       then
          return Full_View (Desig_Type);
 
       elsif Is_Class_Wide_Type (Desig_Type)
-        and then Ekind (Etype (Desig_Type)) = E_Incomplete_Type
+        and then Is_Incomplete_Type (Etype (Desig_Type))
         and then Present (Full_View (Etype (Desig_Type)))
         and then Present (Class_Wide_Type (Full_View (Etype (Desig_Type))))
       then
@@ -7358,17 +7384,50 @@ package body Einfo is
       return Empty;
    end Get_Attribute_Definition_Clause;
 
+   ---------------------------
+   -- Get_Class_Wide_Pragma --
+   ---------------------------
+
+   function Get_Class_Wide_Pragma
+     (E  : Entity_Id;
+      Id : Pragma_Id) return Node_Id
+    is
+      Item  : Node_Id;
+      Items : Node_Id;
+
+   begin
+      Items := Contract (E);
+
+      if No (Items) then
+         return Empty;
+      end if;
+
+      Item := Pre_Post_Conditions (Items);
+      while Present (Item) loop
+         if Nkind (Item) = N_Pragma
+           and then Get_Pragma_Id (Pragma_Name_Unmapped (Item)) = Id
+           and then Class_Present (Item)
+         then
+            return Item;
+         end if;
+
+         Item := Next_Pragma (Item);
+      end loop;
+
+      return Empty;
+   end Get_Class_Wide_Pragma;
+
    -------------------
    -- Get_Full_View --
    -------------------
 
    function Get_Full_View (T : Entity_Id) return Entity_Id is
    begin
-      if Ekind (T) = E_Incomplete_Type and then Present (Full_View (T)) then
+      if Is_Incomplete_Type (T) and then Present (Full_View (T)) then
          return Full_View (T);
 
       elsif Is_Class_Wide_Type (T)
-        and then Ekind (Root_Type (T)) = E_Incomplete_Type
+        and then Is_Incomplete_Type (Root_Type (T))
         and then Present (Full_View (Root_Type (T)))
       then
          return Class_Wide_Type (Full_View (Root_Type (T)));
@@ -7800,7 +7859,7 @@ package body Einfo is
 
    Entity_Is_Base_Type : constant array (Entity_Kind) of Boolean :=
      (E_Enumeration_Subtype          |
-      E_Incomplete_Type              |
+      E_Incomplete_Subtype           |
       E_Signed_Integer_Subtype       |
       E_Modular_Integer_Subtype      |
       E_Floating_Point_Subtype       |
@@ -7843,14 +7902,14 @@ package body Einfo is
         K = E_Constant or else K = E_In_Parameter or else K = E_Loop_Parameter;
    end Is_Constant_Object;
 
-   --------------------------
-   -- Is_Controlled_Active --
-   --------------------------
+   -------------------
+   -- Is_Controlled --
+   -------------------
 
-   function Is_Controlled_Active (Id : E) return B is
+   function Is_Controlled (Id : E) return B is
    begin
-      return Is_Controlled (Id) and then not Disable_Controlled (Id);
-   end Is_Controlled_Active;
+      return Is_Controlled_Active (Id) and then not Disable_Controlled (Id);
+   end Is_Controlled;
 
    --------------------
    -- Is_Discriminal --
@@ -9174,6 +9233,9 @@ package body Einfo is
          when Enumeration_Kind =>
             Kind := E_Enumeration_Subtype;
 
+         when E_Incomplete_Type =>
+            Kind := E_Incomplete_Subtype;
+
          when Float_Kind =>
             Kind := E_Floating_Point_Subtype;
 
@@ -9231,17 +9293,26 @@ package body Einfo is
 
    function Underlying_Type (Id : E) return E is
    begin
-      --  For record_with_private the underlying type is always the direct
-      --  full view. Never try to take the full view of the parent it
-      --  doesn't make sense.
+      --  For record_with_private the underlying type is always the direct full
+      --  view. Never try to take the full view of the parent it does not make
+      --  sense.
 
       if Ekind (Id) = E_Record_Type_With_Private then
          return Full_View (Id);
 
+      --  If we have a class-wide type that comes from the limited view then we
+      --  return the Underlying_Type of its nonlimited view.
+
+      elsif Ekind (Id) = E_Class_Wide_Type
+        and then From_Limited_With (Id)
+        and then Present (Non_Limited_View (Id))
+      then
+         return Underlying_Type (Non_Limited_View (Id));
+
       elsif Ekind (Id) in Incomplete_Or_Private_Kind then
 
-         --  If we have an incomplete or private type with a full view,
-         --  then we return the Underlying_Type of this full view.
+         --  If we have an incomplete or private type with a full view, then we
+         --  return the Underlying_Type of this full view.
 
          if Present (Full_View (Id)) then
             if Id = Full_View (Id) then
@@ -9262,9 +9333,8 @@ package body Einfo is
          then
             return Underlying_Type (Underlying_Full_View (Id));
 
-         --  If we have an incomplete entity that comes from the limited
-         --  view then we return the Underlying_Type of its non-limited
-         --  view.
+         --  If we have an incomplete entity that comes from the limited view
+         --  then we return the Underlying_Type of its nonlimited view.
 
          elsif From_Limited_With (Id)
            and then Present (Non_Limited_View (Id))
@@ -9277,10 +9347,9 @@ package body Einfo is
          elsif Etype (Id) /= Id then
             return Underlying_Type (Etype (Id));
 
-         --  Otherwise we have an incomplete or private type that has
-         --  no full view, which means that we have not encountered the
-         --  completion, so return Empty to indicate the underlying type
-         --  is not yet known.
+         --  Otherwise we have an incomplete or private type that has no full
+         --  view, which means that we have not encountered the completion, so
+         --  return Empty to indicate the underlying type is not yet known.
 
          else
             return Empty;
@@ -9480,7 +9549,7 @@ package body Einfo is
       W ("Is_Constr_Subt_For_U_Nominal",    Flag80  (Id));
       W ("Is_Constrained",                  Flag12  (Id));
       W ("Is_Constructor",                  Flag76  (Id));
-      W ("Is_Controlled",                   Flag42  (Id));
+      W ("Is_Controlled_Active",            Flag42  (Id));
       W ("Is_Controlling_Formal",           Flag97  (Id));
       W ("Is_Descendant_Of_Address",        Flag223 (Id));
       W ("Is_DIC_Procedure",                Flag132 (Id));
@@ -9590,12 +9659,12 @@ package body Einfo is
       W ("No_Dynamic_Predicate_On_actual",  Flag276 (Id));
       W ("No_Pool_Assigned",                Flag131 (Id));
       W ("No_Predicate_On_actual",          Flag275 (Id));
+      W ("No_Reordering",                   Flag239 (Id));
       W ("No_Return",                       Flag113 (Id));
       W ("No_Strict_Aliasing",              Flag136 (Id));
       W ("Non_Binary_Modulus",              Flag58  (Id));
       W ("Nonzero_Is_True",                 Flag162 (Id));
       W ("OK_To_Rename",                    Flag247 (Id));
-      W ("OK_To_Reorder_Components",        Flag239 (Id));
       W ("Optimize_Alignment_Space",        Flag241 (Id));
       W ("Optimize_Alignment_Time",         Flag242 (Id));
       W ("Overlays_Constant",               Flag243 (Id));
@@ -10085,6 +10154,7 @@ package body Einfo is
             Write_Str ("Related_Instance");
 
          when E_Constant
+            | E_Loop_Parameter
             | E_Variable
          =>
             Write_Str ("Status_Flag_Or_Transient_Decl");
@@ -10809,6 +10879,11 @@ package body Einfo is
    procedure Write_Field30_Name (Id : Entity_Id) is
    begin
       case Ekind (Id) is
+         when E_Record_Type
+            | E_Record_Type_With_Private
+         =>
+            Write_Str ("Access_Disp_Table_Elab_Flag");
+
          when E_Protected_Type
             | E_Task_Type
          =>

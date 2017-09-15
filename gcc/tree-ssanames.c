@@ -405,7 +405,7 @@ get_range_info (const_tree name, wide_int *min, wide_int *max)
 
   /* Return VR_VARYING for SSA_NAMEs with NULL RANGE_INFO or SSA_NAMEs
      with integral types width > 2 * HOST_BITS_PER_WIDE_INT precision.  */
-  if (!ri || (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (name)))
+  if (!ri || (GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (name)))
 	      > 2 * HOST_BITS_PER_WIDE_INT))
     return VR_VARYING;
 
@@ -470,7 +470,9 @@ get_nonzero_bits (const_tree name)
   if (TREE_CODE (name) == INTEGER_CST)
     return name;
 
-  unsigned int precision = TYPE_PRECISION (TREE_TYPE (name));
+  /* Use element_precision instead of TYPE_PRECISION so complex and
+     vector types get a non-zero precision.  */
+  unsigned int precision = element_precision (TREE_TYPE (name));
   if (POINTER_TYPE_P (TREE_TYPE (name)))
     {
       struct ptr_info_def *pi = SSA_NAME_PTR_INFO (name);

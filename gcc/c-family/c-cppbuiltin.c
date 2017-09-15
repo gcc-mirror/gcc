@@ -73,22 +73,22 @@ mode_has_fma (machine_mode mode)
   switch (mode)
     {
 #ifdef HAVE_fmasf4
-    case SFmode:
+    case E_SFmode:
       return !!HAVE_fmasf4;
 #endif
 
 #ifdef HAVE_fmadf4
-    case DFmode:
+    case E_DFmode:
       return !!HAVE_fmadf4;
 #endif
 
 #ifdef HAVE_fmaxf4
-    case XFmode:
+    case E_XFmode:
       return !!HAVE_fmaxf4;
 #endif
 
 #ifdef HAVE_fmatf4
-    case TFmode:
+    case E_TFmode:
       return !!HAVE_fmatf4;
 #endif
 
@@ -991,6 +991,8 @@ c_cpp_builtins (cpp_reader *pfile)
 	}
       if (flag_new_ttp)
 	cpp_define (pfile, "__cpp_template_template_args=201611");
+      if (flag_threadsafe_statics)
+	cpp_define (pfile, "__cpp_threadsafe_static_init=200806");
     }
   /* Note that we define this for C as well, so that we know if
      __attribute__((cleanup)) will interface with EH.  */
@@ -1190,10 +1192,10 @@ c_cpp_builtins (cpp_reader *pfile)
   if (flag_building_libgcc)
     {
       /* Properties of floating-point modes for libgcc2.c.  */
-      for (machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      opt_scalar_float_mode mode_iter;
+      FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_FLOAT)
 	{
+	  scalar_float_mode mode = mode_iter.require ();
 	  const char *name = GET_MODE_NAME (mode);
 	  char *macro_name
 	    = (char *) alloca (strlen (name)

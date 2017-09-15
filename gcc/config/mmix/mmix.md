@@ -623,7 +623,7 @@ DIVU %1,%1,%2\;GET %0,:rR\;NEGU %2,0,%0\;CSNN %0,$255,%2")
 ;; possible to do that?  Bug in GCC?  Anyway, this used to be a simple
 ;; pattern with a memory_operand predicate, but was split up with a
 ;; define_expand with the old pattern as "anonymous".
-;; FIXME: Perhaps with SECONDARY_MEMORY_NEEDED?
+;; FIXME: Perhaps with TARGET_SECONDARY_MEMORY_NEEDED?
 (define_expand "truncdfsf2"
   [(set (match_operand:SF 0 "nonimmediate_operand")
 	(float_truncate:SF (match_operand:DF 1 "register_operand")))]

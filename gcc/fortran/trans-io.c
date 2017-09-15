@@ -2214,18 +2214,24 @@ get_dtio_proc (gfc_typespec * ts, gfc_code * code, gfc_symbol **dtio_sub)
   bool formatted = false;
   gfc_dt *dt = code->ext.dt;
 
-  if (dt && dt->format_expr)
+  if (dt)
     {
-      char *fmt;
-      fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
-				  -1);
-      if (strtok (fmt, "DT") != NULL)
+      char *fmt = NULL;
+
+      if (dt->format_label == &format_asterisk)
+	{
+	  /* List directed io must call the formatted DTIO procedure.  */
+	  formatted = true;
+	}
+      else if (dt->format_expr)
+	fmt = gfc_widechar_to_char (dt->format_expr->value.character.string,
+				      -1);
+      else if (dt->format_label)
+	fmt = gfc_widechar_to_char (dt->format_label->format->value.character.string,
+				      -1);
+      if (fmt && strtok (fmt, "DT") != NULL)
 	formatted = true;
-    }
-  else if (dt && dt->format_label == &format_asterisk)
-    {
-      /* List directed io must call the formatted DTIO procedure.  */
-      formatted = true;
+
     }
 
   if (ts->type == BT_CLASS)
@@ -2563,6 +2569,12 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
+      if (expr->ts.type != BT_CLASS
+	 && expr->expr_type == EXPR_VARIABLE
+	 && gfc_expr_attr (expr).pointer)
+	goto scalarize;
+
+
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)
 	    && ref && ref->next == NULL
@@ -2597,6 +2609,7 @@ gfc_trans_transfer (gfc_code * code)
 	  goto finish_block_label;
 	}
 
+scalarize:
       /* Initialize the scalarizer.  */
       ss = gfc_walk_expr (expr);
       gfc_init_loopinfo (&loop);
@@ -2612,7 +2625,9 @@ gfc_trans_transfer (gfc_code * code)
 
       gfc_copy_loopinfo_to_se (&se, &loop);
       se.ss = ss;
+
       gfc_conv_expr_reference (&se, expr);
+
       if (expr->ts.type == BT_CLASS)
 	vptr = gfc_get_vptr_from_expr (ss->info->data.array.descriptor);
       else

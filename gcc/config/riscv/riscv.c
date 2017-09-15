@@ -31,6 +31,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "output.h"
 #include "alias.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "varasm.h"
 #include "stor-layout.h"
 #include "calls.h"
@@ -215,7 +217,7 @@ struct riscv_cpu_info {
 /* Global variables for machine-dependent things.  */
 
 /* Whether unaligned accesses execute very slowly.  */
-bool riscv_slow_unaligned_access;
+static bool riscv_slow_unaligned_access_p;
 
 /* Which tuning parameters to use.  */
 static const struct riscv_tune_info *tune_info;
@@ -3508,19 +3510,44 @@ riscv_can_use_return_insn (void)
   return reload_completed && cfun->machine->frame.total_size == 0;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   When floating-point registers are wider than integer ones, moves between
+   them must go through memory.  */
+
+static bool
+riscv_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			       reg_class_t class2)
+{
+  return (GET_MODE_SIZE (mode) > UNITS_PER_WORD
+	  && (class1 == FP_REGS) != (class2 == FP_REGS));
+}
+
 /* Implement TARGET_REGISTER_MOVE_COST.  */
 
 static int
 riscv_register_move_cost (machine_mode mode,
 			  reg_class_t from, reg_class_t to)
 {
-  return SECONDARY_MEMORY_NEEDED (from, to, mode) ? 8 : 2;
+  return riscv_secondary_memory_needed (mode, from, to) ? 8 : 2;
 }
 
-/* Return true if register REGNO can store a value of mode MODE.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-bool
-riscv_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
+static unsigned int
+riscv_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (FP_REG_P (regno))
+    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
+
+  /* All other registers are word-sized.  */
+  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+riscv_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   unsigned int nregs = riscv_hard_regno_nregs (regno, mode);
 
@@ -3556,16 +3583,17 @@ riscv_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
   return true;
 }
 
-/* Implement HARD_REGNO_NREGS.  */
+/* Implement TARGET_MODES_TIEABLE_P.
 
-unsigned int
-riscv_hard_regno_nregs (int regno, machine_mode mode)
+   Don't allow floating-point modes to be tied, since type punning of
+   single-precision and double-precision is implementation defined.  */
+
+static bool
+riscv_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
-  if (FP_REG_P (regno))
-    return (GET_MODE_SIZE (mode) + UNITS_PER_FP_REG - 1) / UNITS_PER_FP_REG;
-
-  /* All other registers are word-sized.  */
-  return (GET_MODE_SIZE (mode) + UNITS_PER_WORD - 1) / UNITS_PER_WORD;
+  return (mode1 == mode2
+	  || !(GET_MODE_CLASS (mode1) == MODE_FLOAT
+	       && GET_MODE_CLASS (mode2) == MODE_FLOAT));
 }
 
 /* Implement CLASS_MAX_NREGS.  */
@@ -3729,8 +3757,8 @@ riscv_option_override (void)
   /* Use -mtune's setting for slow_unaligned_access, even when optimizing
      for size.  For architectures that trap and emulate unaligned accesses,
      the performance cost is too great, even for -Os.  */
-  riscv_slow_unaligned_access = (cpu->tune_info->slow_unaligned_access
-				 || TARGET_STRICT_ALIGN);
+  riscv_slow_unaligned_access_p = (cpu->tune_info->slow_unaligned_access
+				   || TARGET_STRICT_ALIGN);
 
   /* If the user hasn't specified a branch cost, use the processor's
      default.  */
@@ -3951,6 +3979,22 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
   return recog_memoized (insn) >= 0 && get_attr_cannot_copy (insn);
 }
 
+/* Implement TARGET_SLOW_UNALIGNED_ACCESS.  */
+
+static bool
+riscv_slow_unaligned_access (machine_mode, unsigned int)
+{
+  return riscv_slow_unaligned_access_p;
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
+{
+  return !reg_classes_intersect_p (FP_REGS, rclass);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4080,6 +4124,23 @@ riscv_cannot_copy_insn_p (rtx_insn *insn)
 
 #undef TARGET_EXPAND_BUILTIN
 #define TARGET_EXPAND_BUILTIN riscv_expand_builtin
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS riscv_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK riscv_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P riscv_modes_tieable_p
+
+#undef TARGET_SLOW_UNALIGNED_ACCESS
+#define TARGET_SLOW_UNALIGNED_ACCESS riscv_slow_unaligned_access
+
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED riscv_secondary_memory_needed
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS riscv_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

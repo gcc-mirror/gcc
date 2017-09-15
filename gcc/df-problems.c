@@ -2819,7 +2819,7 @@ df_word_lr_mark_ref (df_ref ref, bool is_set, regset live)
     return true;
 
   if (GET_CODE (orig_reg) == SUBREG
-      && df_read_modify_subreg_p (orig_reg))
+      && read_modify_subreg_p (orig_reg))
     {
       gcc_assert (DF_REF_FLAGS_IS_SET (ref, DF_REF_PARTIAL));
       if (subreg_lowpart_p (orig_reg))

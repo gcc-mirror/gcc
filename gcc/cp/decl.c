@@ -1088,28 +1088,8 @@ decls_match (tree newdecl, tree olddecl)
       if (types_match
 	  && !DECL_EXTERN_C_P (newdecl)
 	  && !DECL_EXTERN_C_P (olddecl)
-	  && targetm.target_option.function_versions (newdecl, olddecl))
-	{
-	  /* Mark functions as versions if necessary.  Modify the mangled decl
-	     name if necessary.  */
-	  if (DECL_FUNCTION_VERSIONED (newdecl)
-	      && DECL_FUNCTION_VERSIONED (olddecl))
-	    return 0;
-	  if (!DECL_FUNCTION_VERSIONED (newdecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (newdecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
-	        mangle_decl (newdecl);
-	    }
-	  if (!DECL_FUNCTION_VERSIONED (olddecl))
-	    {
-	      DECL_FUNCTION_VERSIONED (olddecl) = 1;
-	      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
-	       mangle_decl (olddecl);
-	    }
-	  cgraph_node::record_function_versions (olddecl, newdecl);
-	  return 0;
-	}
+	  && maybe_version_functions (newdecl, olddecl))
+	return 0;
     }
   else if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
@@ -1163,6 +1143,40 @@ decls_match (tree newdecl, tree olddecl)
     types_match = equivalently_constrained (newdecl, olddecl);
 
   return types_match;
+}
+
+/* NEWDECL and OLDDECL have identical signatures.  If they are
+   different versions adjust them and return true.  */
+
+bool
+maybe_version_functions (tree newdecl, tree olddecl)
+{
+  if (!targetm.target_option.function_versions (newdecl, olddecl))
+    return false;
+
+  bool record = false;
+
+  if (!DECL_FUNCTION_VERSIONED (olddecl))
+    {
+      record = true;
+      DECL_FUNCTION_VERSIONED (olddecl) = 1;
+      if (DECL_ASSEMBLER_NAME_SET_P (olddecl))
+	mangle_decl (olddecl);
+    }
+
+  if (!DECL_FUNCTION_VERSIONED (newdecl))
+    {
+      record = true;
+      DECL_FUNCTION_VERSIONED (newdecl) = 1;
+      if (DECL_ASSEMBLER_NAME_SET_P (newdecl))
+	mangle_decl (newdecl);
+    }
+
+  /* Only record if at least one was not already versions.  */
+  if (record)
+    cgraph_node::record_function_versions (olddecl, newdecl);
+
+  return true;
 }
 
 /* If NEWDECL is `static' and an `extern' was seen previously,
@@ -2519,6 +2533,10 @@ next_arg:;
       DECL_USER_ALIGN (newdecl) |= DECL_USER_ALIGN (olddecl);
     }
   DECL_USER_ALIGN (olddecl) = DECL_USER_ALIGN (newdecl);
+  if (DECL_WARN_IF_NOT_ALIGN (olddecl)
+      > DECL_WARN_IF_NOT_ALIGN (newdecl))
+    SET_DECL_WARN_IF_NOT_ALIGN (newdecl,
+				DECL_WARN_IF_NOT_ALIGN (olddecl));
   if (TREE_CODE (newdecl) == FIELD_DECL)
     DECL_PACKED (olddecl) = DECL_PACKED (newdecl);
 
@@ -2900,7 +2918,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 if the variable is defined within the class with constexpr
 	 specifier is declaration rather than definition (and
 	 deprecated).  */
-      if (cxx_dialect >= cxx1z
+      if (cxx_dialect >= cxx17
 	  && DECL_CLASS_SCOPE_P (olddecl)
 	  && DECL_DECLARED_CONSTEXPR_P (olddecl)
 	  && !DECL_INITIAL (newdecl))
@@ -3970,6 +3988,7 @@ initialize_predefined_identifiers (void)
     {"__dt_base ", &base_dtor_identifier, cik_dtor},
     {"__dt_comp ", &complete_dtor_identifier, cik_dtor},
     {"__dt_del ", &deleting_dtor_identifier, cik_dtor},
+    {"__conv_op ", &conv_op_identifier, cik_conv_op},
     {"__in_chrg", &in_charge_identifier, cik_normal},
     {"__as_base", &as_base_identifier, cik_normal},
     {"this", &this_identifier, cik_normal},
@@ -4047,7 +4066,7 @@ cxx_init_decl_processing (void)
   mangle_namespace = current_namespace;
   pop_namespace ();
 
-  flag_noexcept_type = (cxx_dialect >= cxx1z);
+  flag_noexcept_type = (cxx_dialect >= cxx17);
 
   c_common_nodes_and_builtins ();
 
@@ -4083,6 +4102,12 @@ cxx_init_decl_processing (void)
 					     ptr_type_node, NULL_TREE);
   void_ftype_ptr
     = build_exception_variant (void_ftype_ptr, empty_except_spec);
+
+  /* Create the conversion operator marker.  This operator's DECL_NAME
+     is in the identifier table, so we can use identifier equality to
+     find it.  */
+  conv_op_marker = build_lang_decl (FUNCTION_DECL, conv_op_identifier,
+				    void_ftype);
 
   /* C++ extensions */
 
@@ -4141,7 +4166,7 @@ cxx_init_decl_processing (void)
       aligned_new_threshold = 1;
     }
   if (aligned_new_threshold == -1)
-    aligned_new_threshold = (cxx_dialect >= cxx1z) ? 1 : 0;
+    aligned_new_threshold = (cxx_dialect >= cxx17) ? 1 : 0;
   if (aligned_new_threshold == 1)
     aligned_new_threshold = malloc_alignment () / BITS_PER_UNIT;
 
@@ -4565,8 +4590,6 @@ push_throw_library_fn (tree name, tree type)
 void
 fixup_anonymous_aggr (tree t)
 {
-  tree *q;
-
   /* Wipe out memory of synthesized methods.  */
   TYPE_HAS_USER_CONSTRUCTOR (t) = 0;
   TYPE_HAS_DEFAULT_CONSTRUCTOR (t) = 0;
@@ -4575,29 +4598,12 @@ fixup_anonymous_aggr (tree t)
   TYPE_HAS_COPY_ASSIGN (t) = 0;
   TYPE_HAS_CONST_COPY_ASSIGN (t) = 0;
 
-  /* Splice the implicitly generated functions out of the TYPE_METHODS
-     list.  */
-  q = &TYPE_METHODS (t);
-  while (*q)
-    {
-      if (DECL_ARTIFICIAL (*q))
-	*q = TREE_CHAIN (*q);
-      else
-	q = &DECL_CHAIN (*q);
-    }
-
-  /* ISO C++ 9.5.3.  Anonymous unions may not have function members.  */
-  if (TYPE_METHODS (t))
-    {
-      tree decl = TYPE_MAIN_DECL (t);
-
-      if (TREE_CODE (t) != UNION_TYPE)
-	error_at (DECL_SOURCE_LOCATION (decl), 
-		  "an anonymous struct cannot have function members");
-      else
-	error_at (DECL_SOURCE_LOCATION (decl),
-		  "an anonymous union cannot have function members");
-    }
+  /* Splice the implicitly generated functions out of TYPE_FIELDS.  */
+  for (tree probe, *prev_p = &TYPE_FIELDS (t); (probe = *prev_p);)
+    if (TREE_CODE (probe) == FUNCTION_DECL && DECL_ARTIFICIAL (probe))
+      *prev_p = DECL_CHAIN (probe);
+    else
+      prev_p = &DECL_CHAIN (probe);
 
   /* Anonymous aggregates cannot have fields with ctors, dtors or complex
      assignment operators (because they cannot have these methods themselves).
@@ -5032,11 +5038,12 @@ start_decl (const cp_declarator *declarator,
 		 about this situation, and so we check here.  */
 	      if (initialized && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
-	      if (duplicate_decls (decl, field, /*newdecl_is_friend=*/false))
+	      field = duplicate_decls (decl, field,
+				       /*newdecl_is_friend=*/false);
+	      if (field == error_mark_node)
+		return error_mark_node;
+	      else if (field)
 		decl = field;
-              if (decl_spec_seq_has_spec_p (declspecs, ds_constexpr)
-                  && !DECL_DECLARED_CONSTEXPR_P (field))
-                error ("%qD declared %<constexpr%> outside its class", field);
 	    }
 	}
       else
@@ -5534,9 +5541,10 @@ check_for_uninitialized_const_var (tree decl)
 		   "uninitialized const %qD", decl);
       else
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "uninitialized variable %qD in %<constexpr%> function",
-		    decl);
+	  if (!is_instantiation_of_constexpr (current_function_decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "uninitialized variable %qD in %<constexpr%> function",
+		      decl);
 	  cp_function_chain->invalid_constexpr = true;
 	}
 
@@ -5581,7 +5589,7 @@ next_initializable_field (tree field)
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
 	     || (DECL_ARTIFICIAL (field)
-		 && !(cxx_dialect >= cxx1z && DECL_FIELD_IS_BASE (field)))))
+		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
     field = DECL_CHAIN (field);
 
   return field;
@@ -5593,7 +5601,7 @@ next_initializable_field (tree field)
 bool
 is_direct_enum_init (tree type, tree init)
 {
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && TREE_CODE (type) == ENUMERAL_TYPE
       && ENUM_FIXED_UNDERLYING_TYPE_P (type)
       && TREE_CODE (init) == CONSTRUCTOR
@@ -5755,7 +5763,7 @@ reshape_init_class (tree type, reshape_iter *d, bool first_initializer_p,
 	    /* We already reshaped this.  */
 	    gcc_assert (d->cur->index == field);
 	  else if (TREE_CODE (d->cur->index) == IDENTIFIER_NODE)
-	    field = lookup_field_1 (type, d->cur->index, /*want_type=*/false);
+	    field = get_class_binding (type, d->cur->index, false);
 	  else
 	    {
 	      if (complain & tf_error)
@@ -6359,7 +6367,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
       if (cxx_dialect < cxx11)
 	error ("initializer invalid for static member with constructor");
-      else if (cxx_dialect < cxx1z)
+      else if (cxx_dialect < cxx17)
 	error ("non-constant in-class initialization invalid for static "
 	       "member %qD", decl);
       else
@@ -6735,9 +6743,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      or local register variable extension.  */
   if (VAR_P (decl) && DECL_REGISTER (decl) && asmspec_tree == NULL_TREE)
     {
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
-		 "ISO C++1z does not allow %<register%> storage "
+		 "ISO C++17 does not allow %<register%> storage "
 		 "class specifier");
       else
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
@@ -7618,6 +7626,7 @@ declare_global_var (tree name, tree type)
   TREE_PUBLIC (decl) = 1;
   DECL_EXTERNAL (decl) = 1;
   DECL_ARTIFICIAL (decl) = 1;
+  DECL_CONTEXT (decl) = FROB_CONTEXT (global_namespace);
   /* If the user has explicitly declared this variable (perhaps
      because the code we are compiling is part of a low-level runtime
      library), then it is possible that our declaration will be merged
@@ -7865,7 +7874,7 @@ register_dtor_fn (tree decl)
   use_dtor = ob_parm && CLASS_TYPE_P (type);
   if (use_dtor)
     {
-      cleanup = lookup_fnfields_slot (type, complete_dtor_identifier);
+      cleanup = get_class_binding (type, complete_dtor_identifier);
 
       /* Make sure it is accessible.  */
       perform_or_defer_access_check (TYPE_BINFO (type), cleanup, cleanup,
@@ -9519,7 +9528,8 @@ compute_array_index_type (tree name, tree size, tsubst_flags_t complain)
 
 	  stabilize_vla_size (itype);
 
-	  if (sanitize_flags_p (SANITIZE_VLA))
+	  if (sanitize_flags_p (SANITIZE_VLA)
+	      && current_function_decl != NULL_TREE)
 	    {
 	      /* We have to add 1 -- in the ubsan routine we generate
 		 LE_EXPR rather than LT_EXPR.  */
@@ -9795,10 +9805,10 @@ mark_inline_variable (tree decl)
 	     "%qD declared at block scope", decl);
       inlinep = false;
     }
-  else if (cxx_dialect < cxx1z)
+  else if (cxx_dialect < cxx17)
     pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 	     "inline variables are only available "
-	     "with -std=c++1z or -std=gnu++1z");
+	     "with -std=c++17 or -std=gnu++17");
   if (inlinep)
     {
       retrofit_lang_decl (decl);
@@ -10530,7 +10540,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* We might have ignored or rejected some of the qualifiers.  */
   type_quals = cp_type_quals (type);
 
-  if (cxx_dialect >= cxx1z && type && is_auto (type)
+  if (cxx_dialect >= cxx17 && type && is_auto (type)
       && innermost_code != cdk_function
       && id_declarator && declarator != id_declarator)
     if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (type))
@@ -11738,7 +11748,7 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("cannot use %<::%> in parameter declaration");
 
       if (type_uses_auto (type)
-	  && !(cxx_dialect >= cxx1z && template_parm_flag))
+	  && !(cxx_dialect >= cxx17 && template_parm_flag))
 	{
 	  if (cxx_dialect >= cxx14)
 	    error ("%<auto%> parameter not permitted in this context");
@@ -12071,7 +12081,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  mark_inline_variable (decl);
 
 		if (!DECL_VAR_DECLARED_INLINE_P (decl)
-		    && !(cxx_dialect >= cxx1z && constexpr_p))
+		    && !(cxx_dialect >= cxx17 && constexpr_p))
 		  /* Even if there is an in-class initialization, DECL
 		     is considered undefined until an out-of-class
 		     definition is provided, unless this is an inline
@@ -12340,9 +12350,9 @@ grokdeclarator (const cp_declarator *declarator,
 	/* Warn about register storage specifiers on PARM_DECLs.  */
 	if (TREE_CODE (decl) == PARM_DECL)
 	  {
-	    if (cxx_dialect >= cxx1z)
+	    if (cxx_dialect >= cxx17)
 	      pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
-		       "ISO C++1z does not allow %<register%> storage "
+		       "ISO C++17 does not allow %<register%> storage "
 		       "class specifier");
 	    else
 	      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
@@ -12609,8 +12619,7 @@ grokparms (tree parmlist, tree *parms)
 	    }
 	  else if (abstract_virtuals_error (decl, type))
 	    any_error = 1;  /* Seems like a good idea.  */
-	  else if (cxx_dialect < cxx1z
-		   && POINTER_TYPE_P (type))
+	  else if (cxx_dialect < cxx17 && POINTER_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
 		 [dcl.fct]/6, parameter types cannot contain pointers
@@ -12801,7 +12810,7 @@ grok_special_member_properties (tree decl)
     return;
 
   class_type = DECL_CONTEXT (decl);
-  if (DECL_CONSTRUCTOR_P (decl))
+  if (IDENTIFIER_CTOR_P (DECL_NAME (decl)))
     {
       int ctor = copy_fn_p (decl);
 
@@ -12831,10 +12840,10 @@ grok_special_member_properties (tree decl)
 	TYPE_HAS_LIST_CTOR (class_type) = 1;
 
       if (DECL_DECLARED_CONSTEXPR_P (decl)
-	  && !copy_fn_p (decl) && !move_fn_p (decl))
+	  && !ctor && !move_fn_p (decl))
 	TYPE_HAS_CONSTEXPR_CTOR (class_type) = 1;
     }
-  else if (DECL_OVERLOADED_OPERATOR_P (decl) == NOP_EXPR)
+  else if (DECL_NAME (decl) == cp_assignment_operator_id (NOP_EXPR))
     {
       /* [class.copy]
 
@@ -12855,6 +12864,9 @@ grok_special_member_properties (tree decl)
       else if (move_fn_p (decl) && user_provided_p (decl))
 	TYPE_HAS_COMPLEX_MOVE_ASSIGN (class_type) = 1;
     }
+  else if (IDENTIFIER_CONV_OP_P (DECL_NAME (decl)))
+    TYPE_HAS_CONVERSION (class_type) = true;
+  
   /* Destructors are handled in check_methods.  */
 }
 
@@ -13810,7 +13822,7 @@ xref_basetypes (tree ref, tree base_list)
 
       /* Before C++17, an aggregate cannot have base classes.  In C++17, an
 	 aggregate can't have virtual, private, or protected base classes.  */
-      if (cxx_dialect < cxx1z
+      if (cxx_dialect < cxx17
 	  || access != access_public_node
 	  || via_virtual)
 	CLASSTYPE_NON_AGGREGATE (ref) = true;
@@ -15082,7 +15094,10 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   if (DECL_DESTRUCTOR_P (decl1)
       || (DECL_CONSTRUCTOR_P (decl1)
 	  && targetm.cxx.cdtor_returns_this ()))
-    cdtor_label = create_artificial_label (input_location);
+    {
+      cdtor_label = create_artificial_label (input_location);
+      LABEL_DECL_CDTOR (cdtor_label) = true;
+    }
 
   start_fname_decls ();
 
@@ -15106,6 +15121,8 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
       && !DECL_CLONED_FUNCTION_P (decl1)
       && !implicit_default_ctor_p (decl1))
     cp_ubsan_maybe_initialize_vtbl_ptrs (current_class_ptr);
+
+  start_lambda_scope (decl1);
 
   return true;
 }
@@ -15472,6 +15489,8 @@ finish_function (int flags)
   if (fndecl == NULL_TREE)
     return error_mark_node;
 
+  finish_lambda_scope ();
+
   if (c_dialect_objc ())
     objc_finish_function ();
 
@@ -15574,12 +15593,12 @@ finish_function (int flags)
     check_function_concept (fndecl);
 
   /* Lambda closure members are implicitly constexpr if possible.  */
-  if (cxx_dialect >= cxx1z
-      && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl))
-      && (processing_template_decl
+  if (cxx_dialect >= cxx17
+      && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl)))
+    DECL_DECLARED_CONSTEXPR_P (fndecl)
+      = ((processing_template_decl
 	  || is_valid_constexpr_fn (fndecl, /*complain*/false))
-      && potential_constant_expression (DECL_SAVED_TREE (fndecl)))
-    DECL_DECLARED_CONSTEXPR_P (fndecl) = true;
+	 && potential_constant_expression (DECL_SAVED_TREE (fndecl)));
 
   /* Save constexpr function body before it gets munged by
      the NRV transformation.   */

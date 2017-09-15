@@ -34,12 +34,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #include "../shared/hashtable-aux.cc"
 
 namespace __detail
 {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // Return a prime no smaller than n.
   std::size_t
   _Prime_rehash_policy::_M_next_bkt(std::size_t __n) const
@@ -111,7 +111,7 @@ namespace __detail
     else
       return std::make_pair(false, 0);
   }
+} // namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __detail
 } // namespace std

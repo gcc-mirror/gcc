@@ -27,6 +27,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -1732,7 +1734,7 @@ nios2_emit_expensive_div (rtx *operands, machine_mode mode)
 
   start_sequence ();
   final_result = emit_library_call_value (libfunc, NULL_RTX,
-                                          LCT_CONST, SImode, 2,
+                                          LCT_CONST, SImode,
                                           operands[1], SImode,
                                           operands[2], SImode);
 
@@ -2798,7 +2800,7 @@ nios2_asm_file_end (void)
 
 /* Implement TARGET_ASM_FUNCTION_PROLOGUE.  */
 static void
-nios2_asm_function_prologue (FILE *file, HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+nios2_asm_function_prologue (FILE *file)
 {
   if (flag_verbose_asm || flag_debug_asm)
     {
@@ -2981,30 +2983,31 @@ nios2_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
     cum->regs_used += param_size;
 }
 
-enum direction
+static pad_direction
 nios2_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return upward;
+    return PAD_UPWARD;
 
   /* Otherwise, integral types are padded downward: the last byte of a
      stack argument is passed in the last byte of the stack slot.  */
   if (type != 0
       ? INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type)
       : GET_MODE_CLASS (mode) == MODE_INT)
-    return downward;
+    return PAD_DOWNWARD;
 
   /* Arguments smaller than a stack slot are padded downward.  */
   if (mode != BLKmode)
-    return (GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY) ? upward : downward;
+    return (GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY
+	    ? PAD_UPWARD : PAD_DOWNWARD);
 
   return ((int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT))
-	  ? upward : downward);
+	  ? PAD_UPWARD : PAD_DOWNWARD);
 }
 
-enum direction
+pad_direction
 nios2_block_reg_padding (machine_mode mode, tree type,
                          int first ATTRIBUTE_UNUSED)
 {
@@ -3023,7 +3026,7 @@ nios2_trampoline_init (rtx m_tramp, tree fndecl, rtx cxt)
   rtx addr = force_reg (Pmode, XEXP (m_tramp, 0));
 
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__trampoline_setup"),
-		     LCT_NORMAL, VOIDmode, 3, addr, Pmode, fnaddr, Pmode,
+		     LCT_NORMAL, VOIDmode, addr, Pmode, fnaddr, Pmode,
 		     ctx_reg, Pmode);
 }
 
@@ -5006,6 +5009,9 @@ nios2_adjust_reg_alloc_order (void)
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE nios2_function_arg_advance
+
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING nios2_function_arg_padding
 
 #undef TARGET_ARG_PARTIAL_BYTES
 #define TARGET_ARG_PARTIAL_BYTES nios2_arg_partial_bytes

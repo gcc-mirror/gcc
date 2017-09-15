@@ -646,6 +646,13 @@ enum gfc_reverse
   GFC_INHIBIT_REVERSE
 };
 
+enum gfc_param_spec_type
+{
+  SPEC_EXPLICIT,
+  SPEC_ASSUMED,
+  SPEC_DEFERRED
+};
+
 /************************* Structures *****************************/
 
 /* Used for keeping things in balanced binary trees.  */
@@ -869,6 +876,11 @@ typedef struct
      variable for SELECT_TYPE or ASSOCIATE.  */
   unsigned select_type_temporary:1, associate_var:1;
 
+  /* These are the attributes required for parameterized derived
+     types.  */
+  unsigned pdt_kind:1, pdt_len:1, pdt_type:1, pdt_template:1,
+	   pdt_array:1, pdt_string:1;
+
   /* This is omp_{out,in,priv,orig} artificial variable in
      !$OMP DECLARE REDUCTION.  */
   unsigned omp_udr_artificial_var:1;
@@ -1012,6 +1024,7 @@ typedef struct
   int is_iso_c;
   bt f90_type;
   bool deferred;
+  gfc_symbol *interop_kind;
 }
 gfc_typespec;
 
@@ -1052,6 +1065,11 @@ typedef struct gfc_component
   tree norestrict_decl;
   locus loc;
   struct gfc_expr *initializer;
+  /* Used in parameterized derived type declarations to store parameterized
+     kind expressions.  */
+  struct gfc_expr *kind_expr;
+  struct gfc_actual_arglist *param_list;
+
   struct gfc_component *next;
 
   /* Needed for procedure pointer components.  */
@@ -1076,7 +1094,8 @@ gfc_formal_arglist;
 #define gfc_get_formal_arglist() XCNEW (gfc_formal_arglist)
 
 
-/* The gfc_actual_arglist structure is for actual arguments.  */
+/* The gfc_actual_arglist structure is for actual arguments and
+   for type parameter specification lists.  */
 typedef struct gfc_actual_arglist
 {
   const char *name;
@@ -1087,6 +1106,8 @@ typedef struct gfc_actual_arglist
      argument. This is used to determine if a hidden string length
      argument has to be added to a function call.  */
   bt missing_arg_type;
+
+  gfc_param_spec_type spec_type;
 
   struct gfc_expr *expr;
   struct gfc_actual_arglist *next;
@@ -1505,6 +1526,9 @@ typedef struct gfc_symbol
   gfc_formal_arglist *formal;
   struct gfc_namespace *formal_ns;
   struct gfc_namespace *f2k_derived;
+
+  /* List of PDT parameter expressions  */
+  struct gfc_actual_arglist *param_list;
 
   struct gfc_expr *value;	/* Parameter/Initializer value */
   gfc_array_spec *as;
@@ -2178,6 +2202,9 @@ typedef struct gfc_expr
   }
   value;
 
+  /* Used to store PDT expression lists associated with expressions.  */
+  gfc_actual_arglist *param_list;
+
 }
 gfc_expr;
 
@@ -2698,6 +2725,12 @@ gfc_finalizer;
 bool gfc_in_match_data (void);
 match gfc_match_char_spec (gfc_typespec *);
 
+/* Handling Parameterized Derived Types  */
+bool gfc_insert_kind_parameter_exprs (gfc_expr *);
+bool gfc_insert_parameter_exprs (gfc_expr *, gfc_actual_arglist *);
+match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
+			    gfc_actual_arglist **);
+
 /* scanner.c */
 void gfc_scanner_done_1 (void);
 void gfc_scanner_init_1 (void);
@@ -2879,6 +2912,8 @@ bool gfc_add_dimension (symbol_attribute *, const char *, locus *);
 bool gfc_add_external (symbol_attribute *, locus *);
 bool gfc_add_intrinsic (symbol_attribute *, locus *);
 bool gfc_add_optional (symbol_attribute *, locus *);
+bool gfc_add_kind (symbol_attribute *, locus *);
+bool gfc_add_len (symbol_attribute *, locus *);
 bool gfc_add_pointer (symbol_attribute *, locus *);
 bool gfc_add_cray_pointer (symbol_attribute *, locus *);
 bool gfc_add_cray_pointee (symbol_attribute *, locus *);
@@ -3142,7 +3177,8 @@ bool gfc_traverse_expr (gfc_expr *, gfc_symbol *,
 			int);
 void gfc_expr_set_symbols_referenced (gfc_expr *);
 bool gfc_expr_check_typed (gfc_expr*, gfc_namespace*, bool);
-
+bool gfc_derived_parameter_expr (gfc_expr *);
+gfc_param_spec_type gfc_spec_list_type (gfc_actual_arglist *, gfc_symbol *);
 gfc_component * gfc_get_proc_ptr_comp (gfc_expr *);
 bool gfc_is_proc_ptr_comp (gfc_expr *);
 bool gfc_is_alloc_class_scalar_function (gfc_expr *);
@@ -3311,6 +3347,7 @@ void gfc_delete_bbt (void *, void *, compare_fn);
 
 /* dump-parse-tree.c */
 void gfc_dump_parse_tree (gfc_namespace *, FILE *);
+void gfc_dump_c_prototypes (gfc_namespace *, FILE *);
 
 /* parse.c */
 bool gfc_parse_file (void);

@@ -5999,8 +5999,9 @@ package body Exp_Ch9 is
          Renamed : Node_Id;
 
       begin
-         --  Check for case of _object.all.field (note that the explicit
-         --  dereference gets inserted by analyze/expand of _object.field).
+         --  Check if the name is a component of the protected object. If
+         --  the expander is active, the component has been transformed into
+         --  a renaming of _object.all.component.
 
          if Expander_Active then
             Renamed := Renamed_Object (Entity (N));
@@ -6010,7 +6011,7 @@ package body Exp_Ch9 is
                 and then Nkind (Renamed) = N_Selected_Component
                 and then Chars (Prefix (Prefix (Renamed))) = Name_uObject;
          else
-            return Scope (Entity (N)) = Current_Scope;
+            return Is_Protected_Component (Entity (N));
          end if;
       end Is_Simple_Barrier_Name;
 
@@ -6019,25 +6020,6 @@ package body Exp_Ch9 is
       ---------------------
 
       function Is_Pure_Barrier (N : Node_Id) return Traverse_Result is
-         function Is_Count_Attribute (N : Node_Id) return Boolean;
-         --  Check whether N is part of an expansion of the Count attribute.
-         --  Return True if N represents the expanded function call.
-
-         ------------------------
-         -- Is_Count_Attribute --
-         ------------------------
-
-         function Is_Count_Attribute (N : Node_Id) return Boolean is
-         begin
-            return
-              Nkind (N) = N_Function_Call
-                and then Present (Original_Node (N))
-                and then Nkind (Original_Node (N)) = N_Attribute_Reference
-                and then Attribute_Name (Original_Node (N)) = Name_Count;
-         end Is_Count_Attribute;
-
-      --  Start of processing for Is_Pure_Barrier
-
       begin
          case Nkind (N) is
             when N_Expanded_Name
@@ -6045,11 +6027,8 @@ package body Exp_Ch9 is
             =>
                if No (Entity (N)) then
                   return Abandon;
-               end if;
 
-               if Present (Parent (N))
-                 and then Is_Count_Attribute (Parent (N))
-               then
+               elsif Is_Universal_Numeric_Type (Entity (N)) then
                   return OK;
                end if;
 
@@ -6062,13 +6041,22 @@ package body Exp_Ch9 is
                   =>
                      return OK;
 
-                  when E_Component
-                     | E_Variable
-                  =>
-                     --  A variable in the protected type is expanded as a
-                     --  component.
+                  when E_Component =>
+                     return OK;
 
+                  when E_Variable =>
                      if Is_Simple_Barrier_Name (N) then
+                        return OK;
+                     end if;
+
+                  when E_Function =>
+
+                     --  The count attribute has been transformed into run-time
+                     --  calls.
+
+                     if Is_RTE (Entity (N), RE_Protected_Count)
+                       or else Is_RTE (Entity (N), RE_Protected_Count_Entry)
+                     then
                         return OK;
                      end if;
 
@@ -6077,9 +6065,11 @@ package body Exp_Ch9 is
                end case;
 
             when N_Function_Call =>
-               if Is_Count_Attribute (N) then
-                  return OK;
-               end if;
+
+               --  Function call checks are carried out as part of the analysis
+               --  of the function call name.
+
+               return OK;
 
             when N_Character_Literal
                | N_Integer_Literal
@@ -6095,6 +6085,27 @@ package body Exp_Ch9 is
                end if;
 
             when N_Short_Circuit =>
+               return OK;
+
+            when N_Indexed_Component
+               | N_Selected_Component
+            =>
+               if not Is_Access_Type (Etype (Prefix (N))) then
+                  return OK;
+               end if;
+
+            when N_Type_Conversion =>
+
+               --  Conversions to Universal_Integer will not raise constraint
+               --  errors.
+
+               if Cannot_Raise_Constraint_Error (N)
+                 or else Etype (N) = Universal_Integer
+               then
+                  return OK;
+               end if;
+
+            when N_Unchecked_Type_Conversion =>
                return OK;
 
             when others =>

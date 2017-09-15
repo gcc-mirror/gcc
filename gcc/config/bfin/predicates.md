@@ -79,7 +79,7 @@
   if (GET_CODE (op) == SUBREG)
     op = SUBREG_REG (op);
   if (REGNO (op) < FIRST_PSEUDO_REGISTER)
-    return HARD_REGNO_MODE_OK (REGNO (op), mode);
+    return targetm.hard_regno_mode_ok (REGNO (op), mode);
   return 1;
 })
 

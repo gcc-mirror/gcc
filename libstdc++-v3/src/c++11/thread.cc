@@ -180,12 +180,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     return __n;
   }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 namespace this_thread
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   void
   __sleep_for(chrono::seconds __s, chrono::nanoseconds __ns)
   {
@@ -217,10 +213,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     ::Sleep(chrono::milliseconds(__s).count() + ms);
 #endif
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _GLIBCXX_HAS_GTHREADS && _GLIBCXX_USE_C99_STDINT_TR1

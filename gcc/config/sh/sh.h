@@ -689,7 +689,8 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /* The mode that should be generally used to store a register by
    itself in the stack, or to load it back.  */
 #define REGISTER_NATURAL_MODE(REGNO) \
-  (FP_REGISTER_P (REGNO) ? SFmode : XD_REGISTER_P (REGNO) ? DFmode : SImode)
+  (FP_REGISTER_P (REGNO) ? E_SFmode \
+   : XD_REGISTER_P (REGNO) ? E_DFmode : E_SImode)
 
 
 #define FIRST_PSEUDO_REGISTER 156
@@ -810,35 +811,6 @@ extern char sh_additional_register_names[ADDREGNAMES_SIZE] \
 /*"rap",  "sfp","fpscr0","fpscr1"  */					\
   1,      1,      0,      0,						\
 }
-
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO,MODE) (false)
-
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the SH all but the XD regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-   (XD_REGISTER_P (REGNO) \
-    ? ((GET_MODE_SIZE (MODE) + (2*UNITS_PER_WORD - 1)) / (2*UNITS_PER_WORD)) \
-    : ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)	\
-  sh_hard_regno_mode_ok ((REGNO), (MODE))
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.
-   That's the case for xd registers: we don't hold SFmode values in
-   them, so we can't tie an SFmode pseudos with one in another
-   floating-point mode.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ((MODE1) == (MODE2) \
-   || (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2) \
-       && (((MODE1) != SFmode && (MODE2) != SFmode))))
 
 /* Specify the modes required to caller save a given hard regno.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE)	\
@@ -1115,13 +1087,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    Otherwise we will need at most one register per word.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.
-   ??? We need to renumber the internal numbers for the frnn registers
-   when in little endian in order to allow mode size changes.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  sh_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1465,8 +1430,6 @@ extern bool current_function_interrupt;
 #define MAYBE_BASE_REGISTER_RTX_P(X, STRICT)			\
   ((REG_P (X) && REG_OK_FOR_BASE_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))),	\
-				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
        && REG_P (SUBREG_REG (X))			\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X), STRICT)))
 
@@ -1476,8 +1439,6 @@ extern bool current_function_interrupt;
 #define MAYBE_INDEX_REGISTER_RTX_P(X, STRICT)				\
   ((REG_P (X) && REG_OK_FOR_INDEX_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))), \
-				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
        && REG_P (SUBREG_REG (X))		\
        && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_BYTE (X), STRICT)))
 
@@ -1591,9 +1552,6 @@ extern bool current_function_interrupt;
    truncation in the library function call patterns, as this gives slightly
    more compact code.  */
 #define SHIFT_COUNT_TRUNCATED (0)
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC) (true)
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
@@ -1792,13 +1750,13 @@ extern bool current_function_interrupt;
 #define ASM_OUTPUT_ADDR_DIFF_ELT(STREAM,BODY,VALUE,REL)			\
   switch (GET_MODE (BODY))						\
     {									\
-    case SImode:							\
+    case E_SImode:							\
       asm_fprintf ((STREAM), "\t.long\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case HImode:							\
+    case E_HImode:							\
       asm_fprintf ((STREAM), "\t.word\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
-    case QImode:							\
+    case E_QImode:							\
       asm_fprintf ((STREAM), "\t.byte\t%LL%d-%LL%d\n", (VALUE),(REL));	\
       break;								\
     default:								\

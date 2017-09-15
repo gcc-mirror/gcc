@@ -1576,9 +1576,11 @@ func BenchmarkCallArgCopy(b *testing.B) {
 			args := []Value{size.arg}
 			b.SetBytes(int64(size.arg.Len()))
 			b.ResetTimer()
-			for i := 0; i < b.N; i++ {
-				size.fv.Call(args)
-			}
+			b.RunParallel(func(pb *testing.PB) {
+				for pb.Next() {
+					size.fv.Call(args)
+				}
+			})
 		}
 		name := fmt.Sprintf("size=%v", size.arg.Len())
 		b.Run(name, bench)
@@ -2557,6 +2559,28 @@ func TestPtrToGC(t *testing.T) {
 			t.Errorf("lost x[%d] = %d, want %d", i, k, i)
 		}
 	}
+}
+
+func BenchmarkPtrTo(b *testing.B) {
+	// Construct a type with a zero ptrToThis.
+	type T struct{ int }
+	t := SliceOf(TypeOf(T{}))
+	ptrToThis := ValueOf(t).Elem().FieldByName("ptrToThis")
+	if !ptrToThis.IsValid() {
+		b.Fatalf("%v has no ptrToThis field; was it removed from rtype?", t)
+	}
+	if ptrToThis.Int() != 0 {
+		b.Fatalf("%v.ptrToThis unexpectedly nonzero", t)
+	}
+	b.ResetTimer()
+
+	// Now benchmark calling PtrTo on it: we'll have to hit the ptrMap cache on
+	// every call.
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			PtrTo(t)
+		}
+	})
 }
 
 func TestAddr(t *testing.T) {
@@ -3738,7 +3762,7 @@ func checkSameType(t *testing.T, x, y interface{}) {
 
 func TestArrayOf(t *testing.T) {
 	// check construction and use of type not in binary
-	for _, table := range []struct {
+	tests := []struct {
 		n          int
 		value      func(i int) interface{}
 		comparable bool
@@ -3816,7 +3840,9 @@ func TestArrayOf(t *testing.T) {
 			comparable: true,
 			want:       "[{0 0} {1 1} {2 2} {3 3} {4 4} {5 5} {6 6} {7 7} {8 8} {9 9}]",
 		},
-	} {
+	}
+
+	for _, table := range tests {
 		at := ArrayOf(table.n, TypeOf(table.value(0)))
 		v := New(at).Elem()
 		vok := New(at).Elem()
@@ -4045,6 +4071,54 @@ func TestSliceOfGC(t *testing.T) {
 	}
 }
 
+func TestStructOfFieldName(t *testing.T) {
+	// invalid field name "1nvalid"
+	shouldPanic(func() {
+		StructOf([]StructField{
+			StructField{Name: "valid", Type: TypeOf("")},
+			StructField{Name: "1nvalid", Type: TypeOf("")},
+		})
+	})
+
+	// invalid field name "+"
+	shouldPanic(func() {
+		StructOf([]StructField{
+			StructField{Name: "val1d", Type: TypeOf("")},
+			StructField{Name: "+", Type: TypeOf("")},
+		})
+	})
+
+	// no field name
+	shouldPanic(func() {
+		StructOf([]StructField{
+			StructField{Name: "", Type: TypeOf("")},
+		})
+	})
+
+	// verify creation of a struct with valid struct fields
+	validFields := []StructField{
+		StructField{
+			Name: "φ",
+			Type: TypeOf(""),
+		},
+		StructField{
+			Name: "ValidName",
+			Type: TypeOf(""),
+		},
+		StructField{
+			Name: "Val1dNam5",
+			Type: TypeOf(""),
+		},
+	}
+
+	validStruct := StructOf(validFields)
+
+	const structStr = `struct { φ string; ValidName string; Val1dNam5 string }`
+	if got, want := validStruct.String(), structStr; got != want {
+		t.Errorf("StructOf(validFields).String()=%q, want %q", got, want)
+	}
+}
+
 func TestStructOf(t *testing.T) {
 	// check construction and use of type not in binary
 	fields := []StructField{
@@ -4184,50 +4258,58 @@ func TestStructOfExportRules(t *testing.T) {
 		f()
 	}
 
-	for i, test := range []struct {
+	tests := []struct {
 		field     StructField
 		mustPanic bool
 		exported  bool
 	}{
 		{
-			field:     StructField{Name: "", Type: TypeOf(S1{})},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "S1", Anonymous: true, Type: TypeOf(S1{})},
+			exported: true,
 		},
 		{
-			field:     StructField{Name: "", Type: TypeOf((*S1)(nil))},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "S1", Anonymous: true, Type: TypeOf((*S1)(nil))},
+			exported: true,
 		},
 		{
-			field:     StructField{Name: "", Type: TypeOf(s2{})},
-			mustPanic: false,
-			exported:  false,
-		},
-		{
-			field:     StructField{Name: "", Type: TypeOf((*s2)(nil))},
-			mustPanic: false,
-			exported:  false,
-		},
-		{
-			field:     StructField{Name: "", Type: TypeOf(S1{}), PkgPath: "other/pkg"},
+			field:     StructField{Name: "s2", Anonymous: true, Type: TypeOf(s2{})},
 			mustPanic: true,
-			exported:  true,
 		},
 		{
-			field:     StructField{Name: "", Type: TypeOf((*S1)(nil)), PkgPath: "other/pkg"},
+			field:     StructField{Name: "s2", Anonymous: true, Type: TypeOf((*s2)(nil))},
 			mustPanic: true,
-			exported:  true,
 		},
 		{
-			field:     StructField{Name: "", Type: TypeOf(s2{}), PkgPath: "other/pkg"},
+			field:     StructField{Name: "Name", Type: nil, PkgPath: ""},
 			mustPanic: true,
-			exported:  false,
 		},
 		{
-			field:     StructField{Name: "", Type: TypeOf((*s2)(nil)), PkgPath: "other/pkg"},
+			field:     StructField{Name: "", Type: TypeOf(S1{}), PkgPath: ""},
 			mustPanic: true,
-			exported:  false,
+		},
+		{
+			field:     StructField{Name: "S1", Anonymous: true, Type: TypeOf(S1{}), PkgPath: "other/pkg"},
+			mustPanic: true,
+		},
+		{
+			field:     StructField{Name: "S1", Anonymous: true, Type: TypeOf((*S1)(nil)), PkgPath: "other/pkg"},
+			mustPanic: true,
+		},
+		{
+			field:     StructField{Name: "s2", Anonymous: true, Type: TypeOf(s2{}), PkgPath: "other/pkg"},
+			mustPanic: true,
+		},
+		{
+			field:     StructField{Name: "s2", Anonymous: true, Type: TypeOf((*s2)(nil)), PkgPath: "other/pkg"},
+			mustPanic: true,
+		},
+		{
+			field:     StructField{Name: "s2", Type: TypeOf(int(0)), PkgPath: "other/pkg"},
+			mustPanic: true,
+		},
+		{
+			field:     StructField{Name: "s2", Type: TypeOf(int(0)), PkgPath: "other/pkg"},
+			mustPanic: true,
 		},
 		{
 			field:     StructField{Name: "S", Type: TypeOf(S1{})},
@@ -4235,81 +4317,68 @@ func TestStructOfExportRules(t *testing.T) {
 			exported:  true,
 		},
 		{
-			field:     StructField{Name: "S", Type: TypeOf((*S1)(nil))},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "S", Type: TypeOf((*S1)(nil))},
+			exported: true,
 		},
 		{
-			field:     StructField{Name: "S", Type: TypeOf(s2{})},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "S", Type: TypeOf(s2{})},
+			exported: true,
 		},
 		{
-			field:     StructField{Name: "S", Type: TypeOf((*s2)(nil))},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "S", Type: TypeOf((*s2)(nil))},
+			exported: true,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf(S1{})},
 			mustPanic: true,
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf((*S1)(nil))},
 			mustPanic: true,
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf(s2{})},
 			mustPanic: true,
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf((*s2)(nil))},
 			mustPanic: true,
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf(S1{}), PkgPath: "other/pkg"},
 			mustPanic: true, // TODO(sbinet): creating a name with a package path
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf((*S1)(nil)), PkgPath: "other/pkg"},
 			mustPanic: true, // TODO(sbinet): creating a name with a package path
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf(s2{}), PkgPath: "other/pkg"},
 			mustPanic: true, // TODO(sbinet): creating a name with a package path
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "s", Type: TypeOf((*s2)(nil)), PkgPath: "other/pkg"},
 			mustPanic: true, // TODO(sbinet): creating a name with a package path
-			exported:  false,
 		},
 		{
 			field:     StructField{Name: "", Type: TypeOf(ΦType{})},
-			mustPanic: false,
-			exported:  true,
+			mustPanic: true,
 		},
 		{
 			field:     StructField{Name: "", Type: TypeOf(φType{})},
-			mustPanic: false,
-			exported:  false,
+			mustPanic: true,
 		},
 		{
-			field:     StructField{Name: "Φ", Type: TypeOf(0)},
-			mustPanic: false,
-			exported:  true,
+			field:    StructField{Name: "Φ", Type: TypeOf(0)},
+			exported: true,
 		},
 		{
-			field:     StructField{Name: "φ", Type: TypeOf(0)},
-			mustPanic: false,
-			exported:  false,
+			field:    StructField{Name: "φ", Type: TypeOf(0)},
+			exported: false,
 		},
-	} {
+	}
+
+	for i, test := range tests {
 		testPanic(i, test.mustPanic, func() {
 			typ := StructOf([]StructField{test.field})
 			if typ == nil {
@@ -4319,7 +4388,7 @@ func TestStructOfExportRules(t *testing.T) {
 			field := typ.Field(0)
 			n := field.Name
 			if n == "" {
-				n = field.Type.Name()
+				panic("field.Name must not be empty")
 			}
 			exported := isExported(n)
 			if exported != test.exported {
@@ -4397,7 +4466,7 @@ func TestStructOfGenericAlg(t *testing.T) {
 		{Name: "S1", Type: st1},
 	})
 
-	for _, table := range []struct {
+	tests := []struct {
 		rt  Type
 		idx []int
 	}{
@@ -4478,7 +4547,9 @@ func TestStructOfGenericAlg(t *testing.T) {
 			),
 			idx: []int{2},
 		},
-	} {
+	}
+
+	for _, table := range tests {
 		v1 := New(table.rt).Elem()
 		v2 := New(table.rt).Elem()
 
@@ -4587,18 +4658,21 @@ func TestStructOfWithInterface(t *testing.T) {
 	type Iface interface {
 		Get() int
 	}
-	for i, table := range []struct {
+	tests := []struct {
+		name string
 		typ  Type
 		val  Value
 		impl bool
 	}{
 		{
+			name: "StructI",
 			typ:  TypeOf(StructI(want)),
 			val:  ValueOf(StructI(want)),
 			impl: true,
 		},
 		{
-			typ: PtrTo(TypeOf(StructI(want))),
+			name: "StructI",
+			typ:  PtrTo(TypeOf(StructI(want))),
 			val: ValueOf(func() interface{} {
 				v := StructI(want)
 				return &v
@@ -4606,7 +4680,8 @@ func TestStructOfWithInterface(t *testing.T) {
 			impl: true,
 		},
 		{
-			typ: PtrTo(TypeOf(StructIPtr(want))),
+			name: "StructIPtr",
+			typ:  PtrTo(TypeOf(StructIPtr(want))),
 			val: ValueOf(func() interface{} {
 				v := StructIPtr(want)
 				return &v
@@ -4614,6 +4689,7 @@ func TestStructOfWithInterface(t *testing.T) {
 			impl: true,
 		},
 		{
+			name: "StructIPtr",
 			typ:  TypeOf(StructIPtr(want)),
 			val:  ValueOf(StructIPtr(want)),
 			impl: false,
@@ -4623,41 +4699,70 @@ func TestStructOfWithInterface(t *testing.T) {
 		//	val:  ValueOf(StructI(want)),
 		//	impl: true,
 		// },
-	} {
-		rt := StructOf(
-			[]StructField{
-				{
-					Name:    "",
+	}
+
+	for i, table := range tests {
+		for j := 0; j < 2; j++ {
+			var fields []StructField
+			if j == 1 {
+				fields = append(fields, StructField{
+					Name:    "Dummy",
 					PkgPath: "",
-					Type:    table.typ,
-				},
-			},
-		)
-		rv := New(rt).Elem()
-		rv.Field(0).Set(table.val)
-
-		if _, ok := rv.Interface().(Iface); ok != table.impl {
-			if table.impl {
-				t.Errorf("test-%d: type=%v fails to implement Iface.\n", i, table.typ)
-			} else {
-				t.Errorf("test-%d: type=%v should NOT implement Iface\n", i, table.typ)
+					Type:    TypeOf(int(0)),
+				})
 			}
-			continue
-		}
+			fields = append(fields, StructField{
+				Name:      table.name,
+				Anonymous: true,
+				PkgPath:   "",
+				Type:      table.typ,
+			})
 
-		if !table.impl {
-			continue
-		}
+			// We currently do not correctly implement methods
+			// for anonymous fields other than the first.
+			// Therefore, for now, we expect those methods
+			// to not exist.  See issues 15924 and 20824.
+			// When those issues are fixed, this test of panic
+			// should be removed.
+			if j == 1 && table.impl {
+				func() {
+					defer func() {
+						if err := recover(); err == nil {
+							t.Errorf("test-%d-%d did not panic", i, j)
+						}
+					}()
+					_ = StructOf(fields)
+				}()
+				continue
+			}
 
-		v := rv.Interface().(Iface).Get()
-		if v != want {
-			t.Errorf("test-%d: x.Get()=%v. want=%v\n", i, v, want)
-		}
+			rt := StructOf(fields)
+			rv := New(rt).Elem()
+			rv.Field(j).Set(table.val)
 
-		fct := rv.MethodByName("Get")
-		out := fct.Call(nil)
-		if !DeepEqual(out[0].Interface(), want) {
-			t.Errorf("test-%d: x.Get()=%v. want=%v\n", i, out[0].Interface(), want)
+			if _, ok := rv.Interface().(Iface); ok != table.impl {
+				if table.impl {
+					t.Errorf("test-%d-%d: type=%v fails to implement Iface.\n", i, j, table.typ)
+				} else {
+					t.Errorf("test-%d-%d: type=%v should NOT implement Iface\n", i, j, table.typ)
+				}
+				continue
+			}
+
+			if !table.impl {
+				continue
+			}
+
+			v := rv.Interface().(Iface).Get()
+			if v != want {
+				t.Errorf("test-%d-%d: x.Get()=%v. want=%v\n", i, j, v, want)
+			}
+
+			fct := rv.MethodByName("Get")
+			out := fct.Call(nil)
+			if !DeepEqual(out[0].Interface(), want) {
+				t.Errorf("test-%d-%d: x.Get()=%v. want=%v\n", i, j, out[0].Interface(), want)
+			}
 		}
 	}
 }
@@ -4919,16 +5024,20 @@ type B1 struct {
 
 func BenchmarkFieldByName1(b *testing.B) {
 	t := TypeOf(B1{})
-	for i := 0; i < b.N; i++ {
-		t.FieldByName("Z")
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			t.FieldByName("Z")
+		}
+	})
 }
 
 func BenchmarkFieldByName2(b *testing.B) {
 	t := TypeOf(S3{})
-	for i := 0; i < b.N; i++ {
-		t.FieldByName("B")
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			t.FieldByName("B")
+		}
+	})
 }
 
 type R0 struct {
@@ -5011,9 +5120,11 @@ func TestEmbed(t *testing.T) {
 
 func BenchmarkFieldByName3(b *testing.B) {
 	t := TypeOf(R0{})
-	for i := 0; i < b.N; i++ {
-		t.FieldByName("X")
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			t.FieldByName("X")
+		}
+	})
 }
 
 type S struct {
@@ -5023,9 +5134,11 @@ type S struct {
 
 func BenchmarkInterfaceBig(b *testing.B) {
 	v := ValueOf(S{})
-	for i := 0; i < b.N; i++ {
-		v.Interface()
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			v.Interface()
+		}
+	})
 	b.StopTimer()
 }
 
@@ -5041,9 +5154,11 @@ func TestAllocsInterfaceBig(t *testing.T) {
 
 func BenchmarkInterfaceSmall(b *testing.B) {
 	v := ValueOf(int64(0))
-	for i := 0; i < b.N; i++ {
-		v.Interface()
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			v.Interface()
+		}
+	})
 }
 
 func TestAllocsInterfaceSmall(t *testing.T) {
@@ -5840,7 +5955,7 @@ func TestTypeOfTypeOf(t *testing.T) {
 	check("SliceOf", SliceOf(TypeOf(T{})))
 }
 
-type XM struct{}
+type XM struct{ _ bool }
 
 func (*XM) String() string { return "" }
 
@@ -5866,6 +5981,24 @@ func TestMapAlloc(t *testing.T) {
 	if allocs > 0.5 {
 		t.Errorf("allocs per map assignment: want 0 got %f", allocs)
 	}
+
+	const size = 1000
+	tmp := 0
+	val := ValueOf(&tmp).Elem()
+	allocs = testing.AllocsPerRun(100, func() {
+		mv := MakeMapWithSize(TypeOf(map[int]int{}), size)
+		// Only adding half of the capacity to not trigger re-allocations due too many overloaded buckets.
+		for i := 0; i < size/2; i++ {
+			val.SetInt(int64(i))
+			mv.SetMapIndex(val, val)
+		}
+	})
+	if allocs > 10 {
+		t.Errorf("allocs per map assignment: want at most 10 got %f", allocs)
+	}
+	// Empirical testing shows that with capacity hint single run will trigger 3 allocations and without 91. I set
+	// the threshold to 10, to not make it overly brittle if something changes in the initial allocation of the
+	// map, but to still catch a regression where we keep re-allocating in the hashmap as new entries are added.
 }
 
 func TestChanAlloc(t *testing.T) {
@@ -5989,6 +6122,8 @@ func TestTypeStrings(t *testing.T) {
 		{TypeOf(new(XM)).Method(0).Type, "func(*reflect_test.XM) string"},
 		{ChanOf(3, TypeOf(XM{})), "chan reflect_test.XM"},
 		{MapOf(TypeOf(int(0)), TypeOf(XM{})), "map[int]reflect_test.XM"},
+		{ArrayOf(3, TypeOf(XM{})), "[3]reflect_test.XM"},
+		{ArrayOf(3, TypeOf(struct{}{})), "[3]struct {}"},
 	}
 
 	for i, test := range stringTests {
@@ -6019,9 +6154,11 @@ func TestOffsetLock(t *testing.T) {
 
 func BenchmarkNew(b *testing.B) {
 	v := TypeOf(XM{})
-	for i := 0; i < b.N; i++ {
-		New(v)
-	}
+	b.RunParallel(func(pb *testing.PB) {
+		for pb.Next() {
+			New(v)
+		}
+	})
 }
 
 func TestSwapper(t *testing.T) {
@@ -6096,6 +6233,7 @@ func TestSwapper(t *testing.T) {
 			want: []pairPtr{{5, 6, &c}, {3, 4, &b}, {1, 2, &a}},
 		},
 	}
+
 	for i, tt := range tests {
 		inStr := fmt.Sprint(tt.in)
 		Swapper(tt.in)(tt.i, tt.j)
@@ -6120,4 +6258,37 @@ func TestUnaddressableField(t *testing.T) {
 	shouldPanic(func() {
 		lv.Set(rv)
 	})
+}
+
+type Tint int
+
+type Tint2 = Tint
+
+type Talias1 struct {
+	byte
+	uint8
+	int
+	int32
+	rune
+}
+
+type Talias2 struct {
+	Tint
+	Tint2
+}
+
+func TestAliasNames(t *testing.T) {
+	t1 := Talias1{byte: 1, uint8: 2, int: 3, int32: 4, rune: 5}
+	out := fmt.Sprintf("%#v", t1)
+	want := "reflect_test.Talias1{byte:0x1, uint8:0x2, int:3, int32:4, rune:5}"
+	if out != want {
+		t.Errorf("Talias1 print:\nhave: %s\nwant: %s", out, want)
+	}
+
+	t2 := Talias2{Tint: 1, Tint2: 2}
+	out = fmt.Sprintf("%#v", t2)
+	want = "reflect_test.Talias2{Tint:1, Tint2:2}"
+	if out != want {
+		t.Errorf("Talias2 print:\nhave: %s\nwant: %s", out, want)
+	}
 }

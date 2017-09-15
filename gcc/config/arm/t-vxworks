@@ -16,9 +16,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-MULTILIB_OPTIONS = \
-  mrtp fPIC \
-  t4/t4be/t4t/t4tbe/t5/t5be/t5t/t5tbe/tstrongarm/txscale/txscalebe
-MULTILIB_MATCHES = fPIC=fpic
-# Don't build -fPIC multilibs for kernel or Thumb code.
-MULTILIB_EXCEPTIONS = fPIC* mrtp/fPIC/*t[45]t*
+MULTILIB_OPTIONS = mrtp fPIC
+
+# -fPIC alone is not supported, only together with -mrtp
+MULTILIB_EXCEPTIONS = fPIC

@@ -1,3 +1,56 @@
+2017-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82174
+	* jit-builtins.c (matches_builtin): Ignore entries with a NULL
+	name.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	PR tree-optimization/46805
+	* dummy-frontend.c (jit_langhook_parse_file): Handle vector types.
+
+2017-08-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c (class gcc::jit::reproducer): Rename field
+	"m_identifiers" to "m_map_memento_to_identifier".  Add field
+	"m_set_identifiers" and struct hash_traits for it.
+	(gcc::jit::reproducer::reproducer): Update for above.
+	(convert_to_identifier): New function.
+	(gcc::jit::reproducer::ensure_identifier_is_unique): New method.
+	(gcc::jit::reproducer::make_identifier): Avoid appending the %p
+	unless necessary for uniqueness.  Update for field renaming.
+	(gcc::jit::reproducer::get_identifier): Update for field renaming.
+
+2017-08-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/types.rst (Vector types): New section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_8): New tag.
+	* docs/topics/types.rst (gcc_jit_context_get_type): Fix typo in
+	example.
+	(Vector types): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-playback.c (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-playback.h (gcc::jit::playback::type::get_vector): New
+	method.
+	* jit-recording.c: In namespace gcc::jit::recording::
+	(type::get_vector): New method.
+	(memento_of_get_aligned::write_reproducer): Fix typo
+	in leading comment.
+	(memento_of_get_vector::replay_into): New method.
+	(memento_of_get_vector::make_debug_string): New method.
+	(memento_of_get_vector::write_reproducer): New method.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(type::get_vector): New
+	 method.
+	(class memento_of_get_vector): New class.
+	* libgccjit++.h (gccjit::type::get_vector): New method.
+	* libgccjit.c (gcc_jit_type_get_vector): New public entrypoint.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_type_get_vector): New
+	define.
+	(gcc_jit_type_get_vector): New decl.
+	* libgccjit.map (LIBGCCJIT_ABI_8): New ABI tag.
+
 2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

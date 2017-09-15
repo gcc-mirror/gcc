@@ -1015,7 +1015,7 @@
 }
   [(set_attr "itanium_class" "mmshf")])
 
-(define_expand "vec_initv2si"
+(define_expand "vec_initv2sisi"
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand 1 "" "")]
   ""
@@ -1299,7 +1299,7 @@
   "fselect %0 = %F2, %F3, %1"
   [(set_attr "itanium_class" "fmisc")])
 
-(define_expand "vec_initv2sf"
+(define_expand "vec_initv2sfsf"
   [(match_operand:V2SF 0 "fr_register_operand" "")
    (match_operand 1 "" "")]
   ""
@@ -1483,7 +1483,7 @@
   operands[1] = gen_rtx_REG (SFmode, REGNO (operands[1]));
 })
 
-(define_expand "vec_extractv2sf"
+(define_expand "vec_extractv2sfsf"
   [(set (match_operand:SF 0 "register_operand" "")
 	(unspec:SF [(match_operand:V2SF 1 "register_operand" "")
 		    (match_operand:DI 2 "const_int_operand" "")]

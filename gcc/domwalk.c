@@ -128,19 +128,45 @@ along with GCC; see the file COPYING3.  If not see
     which is currently an abstraction over walking tree statements.  Thus
     the dominator walker is currently only useful for trees.  */
 
+/* Reverse postorder index of each basic block.  */
 static int *bb_postorder;
 
 static int
 cmp_bb_postorder (const void *a, const void *b)
 {
-  basic_block bb1 = *(basic_block *)const_cast<void *>(a);
-  basic_block bb2 = *(basic_block *)const_cast<void *>(b);
-  if (bb1->index == bb2->index)
-    return 0;
+  basic_block bb1 = *(const basic_block *)(a);
+  basic_block bb2 = *(const basic_block *)(b);
   /* Place higher completion number first (pop off lower number first).  */
-  if (bb_postorder[bb1->index] > bb_postorder[bb2->index])
-    return -1;
-  return 1;
+  return bb_postorder[bb2->index] - bb_postorder[bb1->index];
+}
+
+/* Permute array BBS of N basic blocks in postorder,
+   i.e. by descending number in BB_POSTORDER array.  */
+
+static void
+sort_bbs_postorder (basic_block *bbs, int n)
+{
+  if (__builtin_expect (n == 2, true))
+    {
+      basic_block bb0 = bbs[0], bb1 = bbs[1];
+      if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	bbs[0] = bb1, bbs[1] = bb0;
+    }
+  else if (__builtin_expect (n == 3, true))
+    {
+      basic_block bb0 = bbs[0], bb1 = bbs[1], bb2 = bbs[2];
+      if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	std::swap (bb0, bb1);
+      if (bb_postorder[bb1->index] < bb_postorder[bb2->index])
+	{
+	  std::swap (bb1, bb2);
+	  if (bb_postorder[bb0->index] < bb_postorder[bb1->index])
+	    std::swap (bb0, bb1);
+	}
+      bbs[0] = bb0, bbs[1] = bb1, bbs[2] = bb2;
+    }
+  else
+    qsort (bbs, n, sizeof *bbs, cmp_bb_postorder);
 }
 
 /* Constructor for a dom walker.
@@ -284,16 +310,8 @@ dom_walker::walk (basic_block bb)
 	  for (dest = first_dom_son (m_dom_direction, bb);
 	       dest; dest = next_dom_son (m_dom_direction, dest))
 	    worklist[sp++] = dest;
-	  if (m_dom_direction == CDI_DOMINATORS)
-	    switch (sp - saved_sp)
-	      {
-	      case 0:
-	      case 1:
-		break;
-	      default:
-		qsort (&worklist[saved_sp], sp - saved_sp,
-		       sizeof (basic_block), cmp_bb_postorder);
-	      }
+	  if (sp - saved_sp > 1 && m_dom_direction == CDI_DOMINATORS)
+	    sort_bbs_postorder (&worklist[saved_sp], sp - saved_sp);
 	}
       /* NULL is used to mark pop operations in the recursion stack.  */
       while (sp > 0 && !worklist[sp - 1])

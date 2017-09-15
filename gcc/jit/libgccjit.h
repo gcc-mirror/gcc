@@ -1403,6 +1403,21 @@ extern gcc_jit_type *
 gcc_jit_type_get_aligned (gcc_jit_type *type,
 			  size_t alignment_in_bytes);
 
+#define LIBGCCJIT_HAVE_gcc_jit_type_get_vector
+
+/* Given type "T", get type:
+
+     T  __attribute__ ((vector_size (sizeof(T) * num_units))
+
+   T must be integral/floating point; num_units must be a power of two.
+
+   This API entrypoint was added in LIBGCCJIT_ABI_8; you can test for its
+   presence using
+     #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_vector
+*/
+extern gcc_jit_type *
+gcc_jit_type_get_vector (gcc_jit_type *type, size_t num_units);
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -1375,8 +1375,8 @@ build_array_notation_ref (location_t loc, tree array, tree start, tree length,
 		    "using array notation with array of unknown bound");
 	  return error_mark_node;
 	}
-      start = cp_fold_convert (ptrdiff_type_node, TYPE_MINVAL (domain));
-      length = size_binop (PLUS_EXPR, TYPE_MAXVAL (domain), size_one_node);
+      start = cp_fold_convert (ptrdiff_type_node, TYPE_MIN_VALUE (domain));
+      length = size_binop (PLUS_EXPR, TYPE_MAX_VALUE (domain), size_one_node);
       length = cp_fold_convert (ptrdiff_type_node, length);
     }
     

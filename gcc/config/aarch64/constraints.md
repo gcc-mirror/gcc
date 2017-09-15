@@ -156,6 +156,14 @@
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
 
+(define_memory_constraint "Umq"
+  "@internal
+   A memory address which uses a base register with an offset small enough for
+   a load/store pair operation in DI mode."
+   (and (match_code "mem")
+	(match_test "aarch64_legitimate_address_p (DImode, XEXP (op, 0),
+						   PARALLEL, false)")))
+
 (define_memory_constraint "Ump"
   "@internal
   A memory address suitable for a load/store pair operation."
@@ -175,6 +183,12 @@
    FMOV immediate operation."
   (and (match_code "const_double")
        (match_test "aarch64_float_const_representable_p (op)")))
+
+(define_constraint "Uvi"
+  "A floating point constant which can be used with a\
+   MOVI immediate operation."
+  (and (match_code "const_double")
+       (match_test "aarch64_can_const_movi_rtx_p (op, GET_MODE (op))")))
 
 (define_constraint "Dn"
   "@internal
@@ -220,9 +234,17 @@
 
 (define_constraint "Dd"
   "@internal
- A constraint that matches an immediate operand valid for AdvSIMD scalar."
+ A constraint that matches an integer immediate operand valid\
+ for AdvSIMD scalar operations in DImode."
  (and (match_code "const_int")
-      (match_test "aarch64_simd_imm_scalar_p (op, GET_MODE (op))")))
+      (match_test "aarch64_can_const_movi_rtx_p (op, DImode)")))
+
+(define_constraint "Ds"
+  "@internal
+ A constraint that matches an integer immediate operand valid\
+ for AdvSIMD scalar operations in SImode."
+ (and (match_code "const_int")
+      (match_test "aarch64_can_const_movi_rtx_p (op, SImode)")))
 
 (define_address_constraint "Dp"
   "@internal

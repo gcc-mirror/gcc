@@ -253,10 +253,9 @@ pseudo_compare_func (const void *v1p, const void *v2p)
 
   /* Assign hard reg to static chain pointer first pseudo when
      non-local goto is used.  */
-  if (non_spilled_static_chain_regno_p (r1))
-    return -1;
-  else if (non_spilled_static_chain_regno_p (r2))
-    return 1;
+  if ((diff = (non_spilled_static_chain_regno_p (r2)
+	       - non_spilled_static_chain_regno_p (r1))) != 0)
+    return diff;
 
   /* Prefer to assign more frequently used registers first.  */
   if ((diff = lra_reg_info[r2].freq - lra_reg_info[r1].freq) != 0)
@@ -569,8 +568,8 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
       if (lra_reg_val_equal_p (conflict_regno, val, offset))
 	{
 	  conflict_hr = live_pseudos_reg_renumber[conflict_regno];
-	  nregs = (hard_regno_nregs[conflict_hr]
-		   [lra_reg_info[conflict_regno].biggest_mode]);
+	  nregs = hard_regno_nregs (conflict_hr,
+				    lra_reg_info[conflict_regno].biggest_mode);
 	  /* Remember about multi-register pseudos.  For example, 2
 	     hard register pseudos can start on the same hard register
 	     but can not start on HR and HR+1/HR-1.  */
@@ -579,7 +578,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	       hr++)
 	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
 	  for (hr = conflict_hr - 1;
-	       hr >= 0 && hr + hard_regno_nregs[hr][biggest_mode] > conflict_hr;
+	       hr >= 0 && (int) end_hard_regno (biggest_mode, hr) > conflict_hr;
 	       hr--)
 	    SET_HARD_REG_BIT (impossible_start_hard_regs, hr);
 	}
@@ -588,12 +587,12 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	  machine_mode biggest_conflict_mode
 	    = lra_reg_info[conflict_regno].biggest_mode;
 	  int biggest_conflict_nregs
-	    = hard_regno_nregs[conflict_hr][biggest_conflict_mode];
+	    = hard_regno_nregs (conflict_hr, biggest_conflict_mode);
 	  
-	  nregs_diff = (biggest_conflict_nregs
-			- (hard_regno_nregs
-			   [conflict_hr]
-			   [PSEUDO_REGNO_MODE (conflict_regno)]));
+	  nregs_diff
+	    = (biggest_conflict_nregs
+	       - hard_regno_nregs (conflict_hr,
+				   PSEUDO_REGNO_MODE (conflict_regno)));
 	  add_to_hard_reg_set (&conflict_set,
 			       biggest_conflict_mode,
 			       conflict_hr
@@ -628,9 +627,9 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
   rclass_size = ira_class_hard_regs_num[rclass];
   best_hard_regno = -1;
   hard_regno = ira_class_hard_regs[rclass][0];
-  biggest_nregs = hard_regno_nregs[hard_regno][biggest_mode];
+  biggest_nregs = hard_regno_nregs (hard_regno, biggest_mode);
   nregs_diff = (biggest_nregs
-		- hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (regno)]);
+		- hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno)));
   COPY_HARD_REG_SET (available_regs, reg_class_contents[rclass]);
   AND_COMPL_HARD_REG_SET (available_regs, lra_no_alloc_regs);
   for (i = 0; i < rclass_size; i++)
@@ -641,7 +640,8 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	hard_regno = ira_class_hard_regs[rclass][i];
       if (! overlaps_hard_reg_set_p (conflict_set,
 				     PSEUDO_REGNO_MODE (regno), hard_regno)
-	  && HARD_REGNO_MODE_OK (hard_regno, PSEUDO_REGNO_MODE (regno))
+	  && targetm.hard_regno_mode_ok (hard_regno,
+					 PSEUDO_REGNO_MODE (regno))
 	  /* We can not use prohibited_class_mode_regs for all classes
 	     because it is not defined for all classes.  */
 	  && (ira_allocno_class_translate[rclass] != rclass
@@ -664,7 +664,7 @@ find_hard_regno_for_1 (int regno, int *cost, int try_only_hard_regno,
 	      hard_regno_costs[hard_regno] = 0;
 	    }
 	  for (j = 0;
-	       j < hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (regno)];
+	       j < hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno));
 	       j++)
 	    if (! TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + j)
 		&& ! df_regs_ever_live_p (hard_regno + j))
@@ -799,7 +799,7 @@ lra_setup_reg_renumber (int regno, int hard_regno, bool print_p)
     hr = reg_renumber[regno];
   reg_renumber[regno] = hard_regno;
   lra_assert (hr >= 0);
-  for (i = 0; i < hard_regno_nregs[hr][PSEUDO_REGNO_MODE (regno)]; i++)
+  for (i = 0; i < hard_regno_nregs (hr, PSEUDO_REGNO_MODE (regno)); i++)
     if (hard_regno < 0)
       lra_hard_reg_usage[hr + i] -= lra_reg_info[regno].freq;
     else
@@ -851,7 +851,7 @@ setup_try_hard_regno_pseudos (int p, enum reg_class rclass)
       if (overlaps_hard_reg_set_p (reg_class_contents[rclass],
 				   mode, hard_regno))
 	{
-	  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+	  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
 	    {
 	      if (try_hard_reg_pseudos_check[hard_regno + i]
 		  != curr_pseudo_check)
@@ -974,7 +974,7 @@ spill_for (int regno, bitmap spilled_pseudo_bitmap, bool first_p)
     {
       hard_regno = ira_class_hard_regs[rclass][i];
       bitmap_clear (&spill_pseudos_bitmap);
-      for (j = hard_regno_nregs[hard_regno][mode] - 1; j >= 0; j--)
+      for (j = hard_regno_nregs (hard_regno, mode) - 1; j >= 0; j--)
 	{
 	  if (try_hard_reg_pseudos_check[hard_regno + j] != curr_pseudo_check)
 	    continue;
@@ -1132,7 +1132,7 @@ assign_hard_regno (int hard_regno, int regno)
   lra_setup_reg_renumber (regno, hard_regno, true);
   update_lives (regno, false);
   for (i = 0;
-       i < hard_regno_nregs[hard_regno][lra_reg_info[regno].biggest_mode];
+       i < hard_regno_nregs (hard_regno, lra_reg_info[regno].biggest_mode);
        i++)
     df_set_regs_ever_live (hard_regno + i, true);
 }
@@ -1214,11 +1214,12 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	  {
 	    int conflict_hard_regno = reg_renumber[conflict_regno];
 	    machine_mode biggest_mode = lra_reg_info[conflict_regno].biggest_mode;
-	    int biggest_nregs = hard_regno_nregs[conflict_hard_regno][biggest_mode];
-	    int nregs_diff = (biggest_nregs
-			      - (hard_regno_nregs
-				 [conflict_hard_regno]
-				 [PSEUDO_REGNO_MODE (conflict_regno)]));
+	    int biggest_nregs = hard_regno_nregs (conflict_hard_regno,
+						  biggest_mode);
+	    int nregs_diff
+	      = (biggest_nregs
+		 - hard_regno_nregs (conflict_hard_regno,
+				     PSEUDO_REGNO_MODE (conflict_regno)));
 	    add_to_hard_reg_set (&conflict_set,
 				 biggest_mode,
 				 conflict_hard_regno
@@ -1231,7 +1232,7 @@ setup_live_pseudos_and_spill_after_risky_transforms (bitmap
 	}
       bitmap_set_bit (spilled_pseudo_bitmap, regno);
       for (j = 0;
-	   j < hard_regno_nregs[hard_regno][PSEUDO_REGNO_MODE (regno)];
+	   j < hard_regno_nregs (hard_regno, PSEUDO_REGNO_MODE (regno));
 	   j++)
 	lra_hard_reg_usage[hard_regno + j] -= lra_reg_info[regno].freq;
       reg_renumber[regno] = -1;

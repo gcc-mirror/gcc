@@ -100,9 +100,14 @@ get_traditional_extraction_insn (extraction_insn *insn,
     pos_mode = word_mode;
 
   insn->icode = icode;
-  insn->field_mode = field_mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? byte_mode : struct_mode);
-  insn->pos_mode = pos_mode;
+  insn->field_mode = as_a <scalar_int_mode> (field_mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = byte_mode;
+  else if (struct_mode == BLKmode)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = as_a <scalar_int_mode> (struct_mode);
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 
@@ -126,12 +131,17 @@ get_optab_extraction_insn (struct extraction_insn *insn,
 
   const struct insn_data_d *data = &insn_data[icode];
 
+  machine_mode pos_mode = data->operand[pos_op].mode;
+  if (pos_mode == VOIDmode)
+    pos_mode = word_mode;
+
   insn->icode = icode;
-  insn->field_mode = mode;
-  insn->struct_mode = (type == ET_unaligned_mem ? BLKmode : mode);
-  insn->pos_mode = data->operand[pos_op].mode;
-  if (insn->pos_mode == VOIDmode)
-    insn->pos_mode = word_mode;
+  insn->field_mode = as_a <scalar_int_mode> (mode);
+  if (type == ET_unaligned_mem)
+    insn->struct_mode = opt_scalar_int_mode ();
+  else
+    insn->struct_mode = insn->field_mode;
+  insn->pos_mode = as_a <scalar_int_mode> (pos_mode);
   return true;
 }
 
@@ -193,22 +203,23 @@ get_best_extraction_insn (extraction_insn *insn,
 			  unsigned HOST_WIDE_INT struct_bits,
 			  machine_mode field_mode)
 {
-  machine_mode mode = smallest_mode_for_size (struct_bits, MODE_INT);
-  while (mode != VOIDmode)
+  opt_scalar_int_mode mode_iter;
+  FOR_EACH_MODE_FROM (mode_iter, smallest_int_mode_for_size (struct_bits))
     {
+      scalar_int_mode mode = mode_iter.require ();
       if (get_extraction_insn (insn, pattern, type, mode))
 	{
-	  while (mode != VOIDmode
-		 && GET_MODE_SIZE (mode) <= GET_MODE_SIZE (field_mode)
-		 && !TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
-						    field_mode))
+	  FOR_EACH_MODE_FROM (mode_iter, mode)
 	    {
+	      mode = mode_iter.require ();
+	      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (field_mode)
+		  || TRULY_NOOP_TRUNCATION_MODES_P (insn->field_mode,
+						    field_mode))
+		break;
 	      get_extraction_insn (insn, pattern, type, mode);
-	      mode = GET_MODE_WIDER_MODE (mode);
 	    }
 	  return true;
 	}
-      mode = GET_MODE_WIDER_MODE (mode);
     }
   return false;
 }
@@ -342,8 +353,7 @@ can_conditionally_move_p (machine_mode mode)
    zeroes; this case is not dealt with here.  */
 
 bool
-can_vec_perm_p (machine_mode mode, bool variable,
-		const unsigned char *sel)
+can_vec_perm_p (machine_mode mode, bool variable, vec_perm_indices *sel)
 {
   machine_mode qimode;
 
@@ -357,7 +367,7 @@ can_vec_perm_p (machine_mode mode, bool variable,
       if (direct_optab_handler (vec_perm_const_optab, mode) != CODE_FOR_nothing
 	  && (sel == NULL
 	      || targetm.vectorize.vec_perm_const_ok == NULL
-	      || targetm.vectorize.vec_perm_const_ok (mode, sel)))
+	      || targetm.vectorize.vec_perm_const_ok (mode, &(*sel)[0])))
 	return true;
     }
 
@@ -365,10 +375,9 @@ can_vec_perm_p (machine_mode mode, bool variable,
     return true;
 
   /* We allow fallback to a QI vector mode, and adjust the mask.  */
-  if (GET_MODE_INNER (mode) == QImode)
-    return false;
-  qimode = mode_for_vector (QImode, GET_MODE_SIZE (mode));
-  if (!VECTOR_MODE_P (qimode))
+  if (GET_MODE_INNER (mode) == QImode
+      || !mode_for_vector (QImode, GET_MODE_SIZE (mode)).exists (&qimode)
+      || !VECTOR_MODE_P (qimode))
     return false;
 
   /* ??? For completeness, we ought to check the QImode version of
@@ -426,7 +435,7 @@ find_widening_optab_handler_and_mode (optab op, machine_mode to_mode,
   for (; (permit_non_widening || from_mode != to_mode)
 	 && GET_MODE_SIZE (from_mode) <= GET_MODE_SIZE (to_mode)
 	 && from_mode != VOIDmode;
-       from_mode = GET_MODE_WIDER_MODE (from_mode))
+       from_mode = GET_MODE_WIDER_MODE (from_mode).else_void ())
     {
       enum insn_code handler = widening_optab_handler (op, to_mode,
 						       from_mode);
@@ -450,7 +459,6 @@ int
 can_mult_highpart_p (machine_mode mode, bool uns_p)
 {
   optab op;
-  unsigned char *sel;
   unsigned i, nunits;
 
   op = uns_p ? umul_highpart_optab : smul_highpart_optab;
@@ -462,7 +470,6 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
     return 0;
 
   nunits = GET_MODE_NUNITS (mode);
-  sel = XALLOCAVEC (unsigned char, nunits);
 
   op = uns_p ? vec_widen_umult_even_optab : vec_widen_smult_even_optab;
   if (optab_handler (op, mode) != CODE_FOR_nothing)
@@ -470,9 +477,12 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_odd_optab : vec_widen_smult_odd_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
+	  auto_vec_perm_indices sel (nunits);
 	  for (i = 0; i < nunits; ++i)
-	    sel[i] = !BYTES_BIG_ENDIAN + (i & ~1) + ((i & 1) ? nunits : 0);
-	  if (can_vec_perm_p (mode, false, sel))
+	    sel.quick_push (!BYTES_BIG_ENDIAN
+			    + (i & ~1)
+			    + ((i & 1) ? nunits : 0));
+	  if (can_vec_perm_p (mode, false, &sel))
 	    return 2;
 	}
     }
@@ -483,9 +493,10 @@ can_mult_highpart_p (machine_mode mode, bool uns_p)
       op = uns_p ? vec_widen_umult_lo_optab : vec_widen_smult_lo_optab;
       if (optab_handler (op, mode) != CODE_FOR_nothing)
 	{
+	  auto_vec_perm_indices sel (nunits);
 	  for (i = 0; i < nunits; ++i)
-	    sel[i] = 2 * i + (BYTES_BIG_ENDIAN ? 0 : 1);
-	  if (can_vec_perm_p (mode, false, sel))
+	    sel.quick_push (2 * i + (BYTES_BIG_ENDIAN ? 0 : 1));
+	  if (can_vec_perm_p (mode, false, &sel))
 	    return 3;
 	}
     }
@@ -513,16 +524,17 @@ can_vec_mask_load_store_p (machine_mode mode,
 
   /* See if there is any chance the mask load or store might be
      vectorized.  If not, punt.  */
-  vmode = targetm.vectorize.preferred_simd_mode (mode);
+  scalar_mode smode;
+  if (!is_a <scalar_mode> (mode, &smode))
+    return false;
+
+  vmode = targetm.vectorize.preferred_simd_mode (smode);
   if (!VECTOR_MODE_P (vmode))
     return false;
 
-  mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-					       GET_MODE_SIZE (vmode));
-  if (mask_mode == VOIDmode)
-    return false;
-
-  if (convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
+  if ((targetm.vectorize.get_mask_mode
+       (GET_MODE_NUNITS (vmode), GET_MODE_SIZE (vmode)).exists (&mask_mode))
+      && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
     return true;
 
   vector_sizes = targetm.vectorize.autovectorize_vector_sizes ();
@@ -530,12 +542,12 @@ can_vec_mask_load_store_p (machine_mode mode,
     {
       unsigned int cur = 1 << floor_log2 (vector_sizes);
       vector_sizes &= ~cur;
-      if (cur <= GET_MODE_SIZE (mode))
+      if (cur <= GET_MODE_SIZE (smode))
 	continue;
-      vmode = mode_for_vector (mode, cur / GET_MODE_SIZE (mode));
-      mask_mode = targetm.vectorize.get_mask_mode (GET_MODE_NUNITS (vmode),
-						   cur);
-      if (VECTOR_MODE_P (vmode)
+      unsigned int nunits = cur / GET_MODE_SIZE (smode);
+      if (mode_for_vector (smode, nunits).exists (&vmode)
+	  && VECTOR_MODE_P (vmode)
+	  && targetm.vectorize.get_mask_mode (nunits, cur).exists (&mask_mode)
 	  && convert_optab_handler (op, vmode, mask_mode) != CODE_FOR_nothing)
 	return true;
     }

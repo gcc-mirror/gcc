@@ -667,6 +667,23 @@
 		     | RS6000_BTC_UNARY),                               \
 		    CODE_FOR_ ## ICODE)                 /* ICODE */
 
+/* IEEE 128-bit floating-point builtins that need the ISA 3.0 hardware.  */
+#define BU_FLOAT128_1_HW(ENUM, NAME, ATTR, ICODE)                       \
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_UNARY),                               \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+#define BU_FLOAT128_3_HW(ENUM, NAME, ATTR, ICODE)                       \
+  RS6000_BUILTIN_3 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_TERNARY),                             \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
 /* Miscellaneous builtins for instructions added in ISA 3.0.  These
    instructions don't require either the DFP or VSX options, just the basic
    ISA 3.0 enablement since they operate on general purpose registers.  */
@@ -1735,6 +1752,14 @@ BU_VSX_X (LXVW4X_V4SF,	      "lxvw4x_v4sf",	MEM)
 BU_VSX_X (LXVW4X_V4SI,        "lxvw4x_v4si",	MEM)
 BU_VSX_X (LXVW4X_V8HI,        "lxvw4x_v8hi",	MEM)
 BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	MEM)
+
+BU_VSX_X (XL_BE_V16QI, "xl_be_v16qi", MEM)
+BU_VSX_X (XL_BE_V8HI, "xl_be_v8hi", MEM)
+BU_VSX_X (XL_BE_V4SI, "xl_be_v4si", MEM)
+BU_VSX_X (XL_BE_V2DI, "xl_be_v2di", MEM)
+BU_VSX_X (XL_BE_V4SF, "xl_be_v4sf", MEM)
+BU_VSX_X (XL_BE_V2DF, "xl_be_v2df", MEM)
+
 BU_VSX_X (STXSDX,	      "stxsdx",		MEM)
 BU_VSX_X (STXVD2X_V1TI,	      "stxvd2x_v1ti",	MEM)
 BU_VSX_X (STXVD2X_V2DF,	      "stxvd2x_v2df",	MEM)
@@ -1835,6 +1860,7 @@ BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
+BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
 /* 2 argument CMPB instructions added in ISA 2.05. */
@@ -2066,6 +2092,9 @@ BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
 
 BU_P9V_OVERLOAD_1 (REVB,	"revb")
 
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth")
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl")
+
 /* ISA 3.0 vector scalar overloaded 2 argument functions.  */
 BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")
 
@@ -2084,6 +2113,8 @@ BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
 BU_P9V_VSX_1 (VEESP, "extract_exp_sp", CONST, xvxexpsp)
 BU_P9V_VSX_1 (VESDP, "extract_sig_dp", CONST, xvxsigdp)
 BU_P9V_VSX_1 (VESSP, "extract_sig_sp", CONST, xvxsigsp)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth", CONST, vextract_fp_from_shorth)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl", CONST, vextract_fp_from_shortl)
 
 /* 2 argument vsx vector functions added in ISA 3.0 (power9).  */
 BU_P9V_VSX_2 (VIEDP, "insert_exp_dp", CONST, xviexpdp)
@@ -2309,11 +2340,18 @@ BU_P9_OVERLOAD_2 (CMPRB,	"byte_in_range")
 BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
-/* 1 argument IEEE 128-bit floating-point functions.  */
+/* 1 and 2 argument IEEE 128-bit floating-point functions.  These functions use
+   the older 'q' suffix from libquadmath.  The standard built-in functions
+   support fabsf128 and copysignf128, but older code used these 'q' versions,
+   so keep them around.  */
 BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
-
-/* 2 argument IEEE 128-bit floating-point functions.  */
 BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
+
+/* 1 and 3 argument IEEE 128-bit floating point functions that require ISA 3.0
+   hardware.  These functions use the new 'f128' suffix.  Eventually these
+   should be folded into the common built-in function handling. */
+BU_FLOAT128_1_HW (SQRTF128,	"sqrtf128",	CONST, sqrtkf2)
+BU_FLOAT128_3_HW (FMAF128,	"fmaf128",	CONST, fmakf4_hw)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)

@@ -81,10 +81,10 @@ along with GCC; see the file COPYING3.  If not see
    instantiated outside of the template, and A is the type used
    without parameters inside the template.  */
 #define CLASSTYPE_TEMPLATE_ID_P(NODE)					\
-  (TYPE_LANG_SPECIFIC (NODE) != NULL					\
-   && (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
-       || (CLASSTYPE_TEMPLATE_INFO (NODE) != NULL			\
-	   && (PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))))
+  (TREE_CODE (NODE) == BOUND_TEMPLATE_TEMPLATE_PARM			\
+   || (CLASS_TYPE_P (NODE)						\
+       && CLASSTYPE_TEMPLATE_INFO (NODE) != NULL			\
+       && PRIMARY_TEMPLATE_P (CLASSTYPE_TI_TEMPLATE (NODE))))
 
 /* For deciding whether to set G.need_abi_warning, we need to consider both
    warn_abi_version and flag_abi_compat_version.  */
@@ -116,7 +116,7 @@ struct GTY(()) globals {
   bool need_abi_warning;
 
   /* True if the mangling will be different in C++17 mode.  */
-  bool need_cxx1z_warning;
+  bool need_cxx17_warning;
 };
 
 static GTY (()) globals G;
@@ -362,7 +362,7 @@ write_exception_spec (tree spec)
 
   if (!flag_noexcept_type)
     {
-      G.need_cxx1z_warning = true;
+      G.need_cxx17_warning = true;
       return;
     }
 
@@ -1827,7 +1827,7 @@ write_real_cst (const tree value)
   int i, limit, dir;
 
   tree type = TREE_TYPE (value);
-  int words = GET_MODE_BITSIZE (TYPE_MODE (type)) / 32;
+  int words = GET_MODE_BITSIZE (SCALAR_FLOAT_TYPE_MODE (type)) / 32;
 
   real_to_target (target_real, &TREE_REAL_CST (value),
 		  TYPE_MODE (type));
@@ -3054,6 +3054,7 @@ write_expression (tree expr)
 	{
 	  scope = TREE_OPERAND (expr, 0);
 	  member = TREE_OPERAND (expr, 1);
+	  gcc_assert (!BASELINK_P (member));
 	}
       else
 	{
@@ -3704,7 +3705,7 @@ start_mangling (const tree entity)
 {
   G.entity = entity;
   G.need_abi_warning = false;
-  G.need_cxx1z_warning = false;
+  G.need_cxx17_warning = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
@@ -3877,7 +3878,7 @@ mangle_decl (const tree decl)
     }
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
-  if (G.need_cxx1z_warning
+  if (G.need_cxx17_warning
       && (TREE_PUBLIC (decl) || DECL_REALLY_EXTERN (decl)))
     warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wnoexcept_type,
 		"mangled name for %qD will change in C++17 because the "

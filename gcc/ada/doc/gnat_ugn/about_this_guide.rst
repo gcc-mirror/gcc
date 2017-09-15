@@ -117,7 +117,7 @@ the new document structure.
 * :ref:`The_GNAT_Compilation_Model` has been extended so that it now covers
   the following material:
 
-  - The `gnatname`, `gnatkr`, and `gnatchop` tools
+  - The ``gnatname``, ``gnatkr``, and ``gnatchop`` tools
   - :ref:`Configuration_Pragmas`
   - :ref:`GNAT_and_Libraries`
   - :ref:`Conditional_Compilation` including :ref:`Preprocessing_with_gnatprep`
@@ -144,7 +144,7 @@ the new document structure.
     - :ref:`The_Cross-Referencing_Tools_gnatxref_and_gnatfind`
     - :ref:`The_Ada_to_HTML_Converter_gnathtml`
     - :ref:`The_Ada-to-XML_Converter_gnat2xml`
-    - :ref:`The_Program_Property_Verifier_gnatcheck`
+    - :ref:`The_Coding_Standard_Verifier_gnatcheck`
     - :ref:`The_GNAT_Metrics_Tool_gnatmetric`
     - :ref:`The_GNAT_Pretty-Printer_gnatpp`
     - :ref:`The_Body_Stub_Generator_gnatstub`
@@ -173,9 +173,9 @@ the new document structure.
   - :ref:`Microsoft_Windows_Topics`
   - :ref:`Mac_OS_Topics`
 
-* The `Compatibility and Porting Guide` appendix has been moved to the
+* The *Compatibility and Porting Guide* appendix has been moved to the
   :title:`GNAT Reference Manual`. It now includes a section
-  `Writing Portable Fixed-Point Declarations` which was previously
+  *Writing Portable Fixed-Point Declarations* which was previously
   a separate chapter in the :title:`GNAT User's Guide`.
 
 
@@ -188,14 +188,14 @@ Conventions
 Following are examples of the typographical and graphic conventions used
 in this guide:
 
-* `Functions`, `utility program names`, `standard names`,
-  and `classes`.
+* ``Functions``, ``utility program names``, ``standard names``,
+  and ``classes``.
 
-* `Option flags`
+* ``Option flags``
 
 * :file:`File names`
 
-* `Variables`
+* ``Variables``
 
 * *Emphasis*
 

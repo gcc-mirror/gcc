@@ -921,9 +921,13 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 		 and MEM_REF is meaningless, but we can look futher.  */
 	      if (TREE_CODE (base) == MEM_REF)
 		{
+		  offset_int o = mem_ref_offset (base) * BITS_PER_UNIT;
+		  o += offset;
+		  o += offset2;
+		  if (!wi::fits_shwi_p (o))
+		    break;
 		  base_pointer = TREE_OPERAND (base, 0);
-		  offset
-		    += offset2 + mem_ref_offset (base).to_short_addr () * BITS_PER_UNIT;
+		  offset = o.to_shwi ();
 		  outer_type = NULL;
 		}
 	      /* We found base object.  In this case the outer_type
@@ -961,10 +965,15 @@ ipa_polymorphic_call_context::ipa_polymorphic_call_context (tree fndecl,
 	    break;
 	}
       else if (TREE_CODE (base_pointer) == POINTER_PLUS_EXPR
-	       && tree_fits_uhwi_p (TREE_OPERAND (base_pointer, 1)))
+	       && TREE_CODE (TREE_OPERAND (base_pointer, 1)) == INTEGER_CST)
 	{
-	  offset += tree_to_shwi (TREE_OPERAND (base_pointer, 1))
-		    * BITS_PER_UNIT;
+	  offset_int o = offset_int::from (TREE_OPERAND (base_pointer, 1),
+					   SIGNED);
+	  o *= BITS_PER_UNIT;
+	  o += offset;
+	  if (!wi::fits_shwi_p (o))
+	    break;
+	  offset = o.to_shwi ();
 	  base_pointer = TREE_OPERAND (base_pointer, 0);
 	}
       else

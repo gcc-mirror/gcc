@@ -85,6 +85,30 @@ test_vss_mradds_vss_vss (vector signed short x, vector signed short y,
 	return vec_mradds (x, y, z);
 }
 
+vector signed long long
+test_vsll_mule_vsi_vsi (vector signed int x, vector signed int y)
+{
+	return vec_mule (x, y);
+}
+
+vector unsigned long long
+test_vull_mule_vui_vui (vector unsigned int x, vector unsigned int y)
+{
+	return vec_mule (x, y);
+}
+
+vector signed long long
+test_vsll_mulo_vsi_vsi (vector signed int x, vector signed int y)
+{
+	return vec_mulo (x, y);
+}
+
+vector unsigned long long
+test_vull_mulo_vui_vui (vector unsigned int x, vector unsigned int y)
+{
+	return vec_mulo (x, y);
+}
+
 /* Expected test results:
 
      test_eq_long_long                         1 vcmpequd inst
@@ -98,7 +122,12 @@ test_vss_mradds_vss_vss (vector signed short x, vector signed short y,
      test_unsigned_int_popcnt_signed_int       2 vpopcntw
      test_unsigned_int_popcnt_unsigned_int     1 vpopcntd
      test_unsigned_long_long_popcnt_unsigned_long 1 vpopcntd
-     test_vss_mradds_vss_vsss                  1 vmhraddshs */
+     test_vss_mradds_vss_vsss                  1 vmhraddshs
+     test_vsll_mulo_vsi_vsi                    1 vmulosw
+     test_vull_mulo_vui_vui                    1 vmulouw
+     test_vsll_mule_vsi_vsi                    1 vmulesw
+     test_vull_mule_vui_vui                    1 vmuleuw
+ */
 
 /* { dg-final { scan-assembler-times "vcmpequd" 1 } } */
 /* { dg-final { scan-assembler-times "vpkudum"  1 } } */
@@ -109,3 +138,7 @@ test_vss_mradds_vss_vss (vector signed short x, vector signed short y,
 /* { dg-final { scan-assembler-times "vpopcntw" 2 } } */
 /* { dg-final { scan-assembler-times "vpopcntd" 2 } } */
 /* { dg-final { scan-assembler-times "vmhraddshs"  1 } } */
+/* { dg-final { scan-assembler-times "vmulosw"  1 } } */
+/* { dg-final { scan-assembler-times "vmulouw"  1 } } */
+/* { dg-final { scan-assembler-times "vmulesw"  1 } } */
+/* { dg-final { scan-assembler-times "vmuleuw"  1 } } */

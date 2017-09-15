@@ -255,10 +255,14 @@ union external_auxent
 #define IMAGE_SYM_TYPE \
   ((IMAGE_SYM_DTYPE_NULL << 4) | IMAGE_SYM_TYPE_NULL)
 
+#define C_EXT		(2)
 #define C_STAT		(3)
 #define C_FILE		(103)
+#define C_HIDEXT	(107)
 
-#define DBXMASK		0x80
+#define XTY_SD		(1)	/* section definition */
+
+#define XMC_XO		(7)	/* extended operation */
 
 /* Private data for an simple_object_read.  */
 
@@ -400,6 +404,7 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
   size_t scnhdr_size;
   unsigned char *scnbuf;
   const char *errmsg;
+  unsigned short (*fetch_16) (const unsigned char *);
   unsigned int (*fetch_32) (const unsigned char *);
   ulong_type (*fetch_64) (const unsigned char *);
   unsigned int nscns;
@@ -407,7 +412,6 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
   size_t strtab_size;
   struct external_syment *symtab = NULL;
   unsigned int i;
-  off_t textptr = 0;
 
   scnhdr_size = u64 ? SCNHSZ64 : SCNHSZ32;
   scnbuf = XNEWVEC (unsigned char, scnhdr_size * ocr->nscns);
@@ -420,6 +424,7 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
       return errmsg;
     }
 
+  fetch_16 = simple_object_fetch_big_16;
   fetch_32 = simple_object_fetch_big_32;
   fetch_64 = simple_object_fetch_big_64;
 
@@ -433,7 +438,7 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
       char namebuf[SCNNMLEN + 1];
       char *name;
       off_t scnptr;
-      unsigned int size;
+      off_t size;
 
       scnhdr = scnbuf + i * scnhdr_size;
       scnname = scnhdr + offsetof (struct external_scnhdr, s_name);
@@ -489,24 +494,24 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 					      u.xcoff32.s_size));
 	}
 
-      if (strcmp (name, ".text") == 0)
-	textptr = scnptr;
       if (!(*pfn) (data, name, scnptr, size))
 	break;
     }
 
-  /* Special handling for .go_export CSECT. */
-  if (textptr != 0 && ocr->nsyms > 0)
+  /* Special handling for .go_export csect.  */
+  if (ocr->nsyms > 0)
     {
-      unsigned char *sym, *aux;
+      unsigned char *sym;
       const char *n_name;
-      unsigned long n_value, n_offset, n_zeroes, x_scnlen;
+      off_t size, n_value;
+      unsigned int n_numaux, n_offset, n_zeroes;
+      short n_scnum;
 
-      /* Read symbol table. */
+      /* Read symbol table.  */
       symtab = XNEWVEC (struct external_syment, ocr->nsyms * SYMESZ);
       if (!simple_object_internal_read (sobj->descriptor,
 					sobj->offset + ocr->symptr,
-					(unsigned char *)symtab,
+					(unsigned char *) symtab,
 					ocr->nsyms * SYMESZ,
 					&errmsg, err))
 	{
@@ -515,17 +520,25 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 	  return NULL;
 	}
 
-      /* Search in symbol table if we have a ".go_export" symbol. */
-      for (i = 0; i < ocr->nsyms; ++i)
+      /* Search in symbol table if we have a ".go_export" symbol.  */
+      for (i = 0; i < ocr->nsyms; i += n_numaux + 1)
 	{
-	  sym = (unsigned char *)&symtab[i];
+	  sym = (unsigned char *) &symtab[i];
+	  n_numaux = symtab[i].n_numaux[0];
 
-	  if (symtab[i].n_sclass[0] & DBXMASK)
-	    {
-	      /* Skip debug symbols whose names are in stabs. */
-	      i += symtab[i].n_numaux[0];
-	      continue;
-	    }
+	  if (symtab[i].n_sclass[0] != C_EXT
+	      && symtab[i].n_sclass[0] != C_HIDEXT)
+	    continue;
+
+	  /* Must have at least one csect auxiliary entry.  */
+	  if (n_numaux < 1 || i + n_numaux >= ocr->nsyms)
+	    continue;
+
+	  n_scnum = fetch_16 (sym + offsetof (struct external_syment,
+					      n_scnum));
+	  if (n_scnum < 1 || (unsigned int) n_scnum > nscns)
+	    continue;
+
 	  if (u64)
 	    {
 	      n_value = fetch_64 (sym + offsetof (struct external_syment,
@@ -535,67 +548,96 @@ simple_object_xcoff_find_sections (simple_object_read *sobj,
 	    }
 	  else
 	    {
-	      /* ".go_export" is longer than N_SYMNMLEN */
+	      /* ".go_export" is longer than N_SYMNMLEN.  */
 	      n_zeroes = fetch_32 (sym + offsetof (struct external_syment,
 						   u.xcoff32.n.n.n_zeroes));
 	      if (n_zeroes != 0)
-		{
-		  /* Skip auxiliary entries. */
-		  i += symtab[i].n_numaux[0];
-		  continue;
-		}
+		continue;
+
 	      n_value = fetch_32 (sym + offsetof (struct external_syment,
 						  u.xcoff32.n_value));
 	      n_offset = fetch_32 (sym + offsetof (struct external_syment,
 						   u.xcoff32.n.n.n_offset));
 	    }
 
-	  /* The real section name is found in the string table.  */
+	  /* The real symbol name is found in the string table.  */
 	  if (strtab == NULL)
 	    {
 	      strtab = simple_object_xcoff_read_strtab (sobj,
-	  					        &strtab_size,
+	  						&strtab_size,
 							&errmsg, err);
 	      if (strtab == NULL)
-	        {
-                  XDELETEVEC (symtab);
-	          XDELETEVEC (scnbuf);
+		{
+		  XDELETEVEC (symtab);
+		  XDELETEVEC (scnbuf);
 		  return errmsg;
-	        }
+		}
 	    }
 
 	  if (n_offset >= strtab_size)
-            {
+	    {
 	      XDELETEVEC (strtab);
 	      XDELETEVEC (symtab);
 	      XDELETEVEC (scnbuf);
 	      *err = 0;
-   	      return "section string index out of range";
-            }
-          n_name = strtab + n_offset;
+	      return "symbol string index out of range";
+	    }
+	  n_name = strtab + n_offset;
 
-	  if (!strcmp(n_name, ".go_export"))
+	  if (!strcmp (n_name, ".go_export"))
 	    {
-	      /* Found .go_export symbol, read auxiliary entry. */
-	      if (i + 1 >= ocr->nsyms)
-		break;
+	      union external_auxent *auxent;
+	      unsigned char *aux, *scnhdr;
+	      off_t scnptr, x_scnlen;
 
-	      aux = (unsigned char *)&symtab[i + 1];
+	      /* Found .go_export symbol, read its csect auxiliary entry.
+		 By convention, it is the last auxiliary entry.  */
+	      auxent = (union external_auxent *) &symtab[i + n_numaux];
+	      aux = (unsigned char *) auxent;
 	      if (u64)
 		{
+		  if ((auxent->u.xcoff64.x_csect.x_smtyp & 0x7) != XTY_SD
+		      || auxent->u.xcoff64.x_csect.x_smclas != XMC_XO)
+		    continue;
+
 		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
+						       u.xcoff64.x_csect.x_scnlen_hi));
+		  x_scnlen = x_scnlen << 32
+			   | fetch_32 (aux + offsetof (union external_auxent,
 						       u.xcoff64.x_csect.x_scnlen_lo));
 		}
 	      else
 		{
+		  if ((auxent->u.xcoff32.x_csect.x_smtyp & 0x7) != XTY_SD
+		      || auxent->u.xcoff32.x_csect.x_smclas != XMC_XO)
+		    continue;
+
 		  x_scnlen = fetch_32 (aux + offsetof (union external_auxent,
 						       u.xcoff32.x_csect.x_scnlen));
 		}
-	      (*pfn) (data, ".go_export", textptr + n_value, x_scnlen);
+
+	      /* Get header of containing section.  */
+	      scnhdr = scnbuf + (n_scnum - 1) * scnhdr_size;
+	      if (u64)
+		{
+		  scnptr = fetch_64 (scnhdr + offsetof (struct external_scnhdr,
+							u.xcoff64.s_scnptr));
+		  size = fetch_64 (scnhdr + offsetof (struct external_scnhdr,
+						      u.xcoff64.s_size));
+		}
+	      else
+		{
+		  scnptr = fetch_32 (scnhdr + offsetof (struct external_scnhdr,
+							u.xcoff32.s_scnptr));
+		  size = fetch_32 (scnhdr + offsetof (struct external_scnhdr,
+						      u.xcoff32.s_size));
+		}
+	      if (n_value + x_scnlen > size)
+		break;
+
+	      (*pfn) (data, ".go_export", scnptr + n_value, x_scnlen);
 	      break;
 	    }
-	  /* Skip auxiliary entries. */
-	  i += symtab[i].n_numaux[0];
 	}
     }
 
@@ -1006,5 +1048,6 @@ const struct simple_object_functions simple_object_xcoff_functions =
   simple_object_xcoff_release_attributes,
   simple_object_xcoff_start_write,
   simple_object_xcoff_write_to_file,
-  simple_object_xcoff_release_write
+  simple_object_xcoff_release_write,
+  NULL
 };

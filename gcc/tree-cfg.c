@@ -1701,8 +1701,9 @@ group_case_labels_stmt (gswitch *stmt)
       gcc_assert (base_case);
       base_bb = label_to_block (CASE_LABEL (base_case));
 
-      /* Discard cases that have the same destination as the default case.  */
-      if (base_bb == default_bb)
+      /* Discard cases that have the same destination as the default case or
+	 whose destiniation blocks have already been removed as unreachable.  */
+      if (base_bb == NULL || base_bb == default_bb)
 	{
 	  i++;
 	  continue;
@@ -2843,10 +2844,11 @@ gimple_split_edge (edge edge_in)
   new_bb = create_empty_bb (after_bb);
   new_bb->frequency = EDGE_FREQUENCY (edge_in);
   new_bb->count = edge_in->count;
-  new_edge = make_single_succ_edge (new_bb, dest, EDGE_FALLTHRU);
 
   e = redirect_edge_and_branch (edge_in, new_bb);
   gcc_assert (e == edge_in);
+
+  new_edge = make_single_succ_edge (new_bb, dest, EDGE_FALLTHRU);
   reinstall_phi_args (new_edge, e);
 
   return new_bb;
@@ -3053,7 +3055,9 @@ verify_expr (tree *tp, int *walk_subtrees, void *data ATTRIBUTE_UNUSED)
 	  tree t1 = TREE_OPERAND (t, 1);
 	  tree t2 = TREE_OPERAND (t, 2);
 	  if (!tree_fits_uhwi_p (t1)
-	      || !tree_fits_uhwi_p (t2))
+	      || !tree_fits_uhwi_p (t2)
+	      || !types_compatible_p (bitsizetype, TREE_TYPE (t1))
+	      || !types_compatible_p (bitsizetype, TREE_TYPE (t2)))
 	    {
 	      error ("invalid position or size operand to BIT_FIELD_REF");
 	      return t;
@@ -4009,15 +4013,80 @@ verify_gimple_assign_binary (gassign *stmt)
 	      || (TYPE_PRECISION (rhs1_type) != TYPE_PRECISION (rhs2_type)));
 
     case WIDEN_SUM_EXPR:
+      {
+        if (((TREE_CODE (rhs1_type) != VECTOR_TYPE
+	      || TREE_CODE (lhs_type) != VECTOR_TYPE)
+	     && ((!INTEGRAL_TYPE_P (rhs1_type)
+		  && !SCALAR_FLOAT_TYPE_P (rhs1_type))
+		 || (!INTEGRAL_TYPE_P (lhs_type)
+		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
+	    || !useless_type_conversion_p (lhs_type, rhs2_type)
+	    || (GET_MODE_SIZE (element_mode (rhs2_type))
+		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+          {
+            error ("type mismatch in widening sum reduction");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+        return false;
+      }
+
     case VEC_WIDEN_MULT_HI_EXPR:
     case VEC_WIDEN_MULT_LO_EXPR:
     case VEC_WIDEN_MULT_EVEN_EXPR:
     case VEC_WIDEN_MULT_ODD_EXPR:
+      {
+        if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+            || TREE_CODE (lhs_type) != VECTOR_TYPE
+	    || !types_compatible_p (rhs1_type, rhs2_type)
+            || (GET_MODE_SIZE (element_mode (lhs_type))
+		!= 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+          {
+            error ("type mismatch in vector widening multiplication");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+        return false;
+      }
+
     case VEC_PACK_TRUNC_EXPR:
+      /* ???  We currently use VEC_PACK_TRUNC_EXPR to simply concat
+	 vector boolean types.  */
+      if (VECTOR_BOOLEAN_TYPE_P (lhs_type)
+	  && VECTOR_BOOLEAN_TYPE_P (rhs1_type)
+	  && types_compatible_p (rhs1_type, rhs2_type)
+	  && (TYPE_VECTOR_SUBPARTS (lhs_type)
+	      == 2 * TYPE_VECTOR_SUBPARTS (rhs1_type)))
+	return false;
+
+      /* Fallthru.  */
     case VEC_PACK_SAT_EXPR:
     case VEC_PACK_FIX_TRUNC_EXPR:
-      /* FIXME.  */
-      return false;
+      {
+        if (TREE_CODE (rhs1_type) != VECTOR_TYPE
+            || TREE_CODE (lhs_type) != VECTOR_TYPE
+            || !((rhs_code == VEC_PACK_FIX_TRUNC_EXPR
+		  && SCALAR_FLOAT_TYPE_P (TREE_TYPE (rhs1_type))
+		  && INTEGRAL_TYPE_P (TREE_TYPE (lhs_type)))
+		 || (INTEGRAL_TYPE_P (TREE_TYPE (rhs1_type))
+		     == INTEGRAL_TYPE_P (TREE_TYPE (lhs_type))))
+	    || !types_compatible_p (rhs1_type, rhs2_type)
+            || (GET_MODE_SIZE (element_mode (rhs1_type))
+		!= 2 * GET_MODE_SIZE (element_mode (lhs_type))))
+          {
+            error ("type mismatch in vector pack expression");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+
+        return false;
+      }
 
     case MULT_EXPR:
     case MULT_HIGHPART_EXPR:
@@ -4187,8 +4256,8 @@ verify_gimple_assign_ternary (gassign *stmt)
 	}
 
       if (TREE_CODE (TREE_TYPE (rhs3_type)) != INTEGER_TYPE
-	  || GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs3_type)))
-	     != GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (rhs1_type))))
+	  || GET_MODE_BITSIZE (SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs3_type)))
+	     != GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (rhs1_type))))
 	{
 	  error ("invalid mask type in vector permute expression");
 	  debug_generic_expr (lhs_type);
@@ -4247,6 +4316,7 @@ verify_gimple_assign_ternary (gassign *stmt)
 	  return true;
 	}
       if (! tree_fits_uhwi_p (rhs3)
+	  || ! types_compatible_p (bitsizetype, TREE_TYPE (rhs3))
 	  || ! tree_fits_uhwi_p (TYPE_SIZE (rhs2_type)))
 	{
 	  error ("invalid position or size in BIT_INSERT_EXPR");
@@ -4276,6 +4346,27 @@ verify_gimple_assign_ternary (gassign *stmt)
       return false;
 
     case DOT_PROD_EXPR:
+      {
+        if (((TREE_CODE (rhs1_type) != VECTOR_TYPE
+	      || TREE_CODE (lhs_type) != VECTOR_TYPE)
+	     && ((!INTEGRAL_TYPE_P (rhs1_type)
+		  && !SCALAR_FLOAT_TYPE_P (rhs1_type))
+		 || (!INTEGRAL_TYPE_P (lhs_type)
+		     && !SCALAR_FLOAT_TYPE_P (lhs_type))))
+	    || !types_compatible_p (rhs1_type, rhs2_type)
+	    || !useless_type_conversion_p (lhs_type, rhs3_type)
+	    || (GET_MODE_SIZE (element_mode (rhs3_type))
+		< 2 * GET_MODE_SIZE (element_mode (rhs1_type))))
+          {
+            error ("type mismatch in dot product reduction");
+            debug_generic_expr (lhs_type);
+            debug_generic_expr (rhs1_type);
+            debug_generic_expr (rhs2_type);
+            return true;
+          }
+        return false;
+      }
+
     case REALIGN_LOAD_EXPR:
       /* FIXME.  */
       return false;
@@ -6714,7 +6805,15 @@ move_stmt_op (tree *tp, int *walk_subtrees, void *data)
 		*tp = t = out->to;
 	    }
 
-	  DECL_CONTEXT (t) = p->to_context;
+	  /* For FORCED_LABELs we can end up with references from other
+	     functions if some SESE regions are outlined.  It is UB to
+	     jump in between them, but they could be used just for printing
+	     addresses etc.  In that case, DECL_CONTEXT on the label should
+	     be the function containing the glabel stmt with that LABEL_DECL,
+	     rather than whatever function a reference to the label was seen
+	     last time.  */
+	  if (!FORCED_LABEL (t) && !DECL_NONLOCAL (t))
+	    DECL_CONTEXT (t) = p->to_context;
 	}
       else if (p->remap_decls_p)
 	{
@@ -6832,6 +6931,21 @@ move_stmt_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
     case GIMPLE_OMP_RETURN:
     case GIMPLE_OMP_CONTINUE:
       break;
+
+    case GIMPLE_LABEL:
+      {
+	/* For FORCED_LABEL, move_stmt_op doesn't adjust DECL_CONTEXT,
+	   so that such labels can be referenced from other regions.
+	   Make sure to update it when seeing a GIMPLE_LABEL though,
+	   that is the owner of the label.  */
+	walk_gimple_op (stmt, move_stmt_op, wi);
+	*handled_ops_p = true;
+	tree label = gimple_label_label (as_a <glabel *> (stmt));
+	if (FORCED_LABEL (label) || DECL_NONLOCAL (label))
+	  DECL_CONTEXT (label) = p->to_context;
+      }
+      break;
+
     default:
       if (is_gimple_omp (stmt))
 	{
@@ -8899,7 +9013,31 @@ extract_true_false_controlled_edges (basic_block dom, basic_block phiblock,
   return true;
 }
 
+/* Generate a range test LHS CODE RHS that determines whether INDEX is in the
+    range [low, high].  Place associated stmts before *GSI.  */
 
+void
+generate_range_test (basic_block bb, tree index, tree low, tree high,
+		     tree *lhs, tree *rhs)
+{
+  tree type = TREE_TYPE (index);
+  tree utype = unsigned_type_for (type);
+
+  low = fold_convert (type, low);
+  high = fold_convert (type, high);
+
+  tree tmp = make_ssa_name (type);
+  gassign *sub1
+    = gimple_build_assign (tmp, MINUS_EXPR, index, low);
+
+  *lhs = make_ssa_name (utype);
+  gassign *a = gimple_build_assign (*lhs, NOP_EXPR, tmp);
+
+  *rhs = fold_build2 (MINUS_EXPR, utype, high, low);
+  gimple_stmt_iterator gsi = gsi_last_bb (bb);
+  gsi_insert_before (&gsi, sub1, GSI_SAME_STMT);
+  gsi_insert_before (&gsi, a, GSI_SAME_STMT);
+}
 
 /* Emit return warnings.  */
 

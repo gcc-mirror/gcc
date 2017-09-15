@@ -83,6 +83,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "calls.h"
 #include "varasm.h"
+#include "ipa-utils.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Return true when NODE can not be local. Worker for cgraph_local_node_p.  */
 
@@ -91,10 +94,11 @@ non_local_p (struct cgraph_node *node, void *data ATTRIBUTE_UNUSED)
 {
   return !(node->only_called_directly_or_aliased_p ()
 	   /* i386 would need update to output thunk with local calling
-	      convetions.  */
+	      conventions.  */
 	   && !node->thunk.thunk_p
 	   && node->definition
 	   && !DECL_EXTERNAL (node->decl)
+	   && !lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl))
 	   && !node->externally_visible
 	   && !node->used_from_other_partition
 	   && !node->in_other_partition
@@ -209,6 +213,8 @@ cgraph_externally_visible_p (struct cgraph_node *node,
     return true;
   if (lookup_attribute ("externally_visible",
 			DECL_ATTRIBUTES (node->decl)))
+    return true;
+  if (lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)))
     return true;
   if (TARGET_DLLIMPORT_DECL_ATTRIBUTES
       && lookup_attribute ("dllexport",
@@ -333,10 +339,10 @@ varpool_node::externally_visible_p (void)
 static bool
 can_replace_by_local_alias (symtab_node *node)
 {
-#ifndef ASM_OUTPUT_DEF
   /* If aliases aren't supported, we can't do replacement.  */
-  return false;
-#endif
+  if (!TARGET_SUPPORTS_ALIASES)
+    return false;
+
   /* Weakrefs have a reason to be non-local.  Be sure we do not replace
      them.  */
   while (node->transparent_alias && node->definition && !node->weakref)
@@ -457,11 +463,6 @@ update_visibility_by_resolution_info (symtab_node * node)
 static void
 optimize_weakref (symtab_node *node)
 {
-#ifdef ASM_OUTPUT_DEF
-  bool aliases_supported = true;
-#else
-  bool aliases_supported = false;
-#endif
   bool strip_weakref = false;
   bool static_alias = false;
 
@@ -480,8 +481,8 @@ optimize_weakref (symtab_node *node)
 
   /* If we have definition of weakref's target and we know it binds locally,
      we can turn weakref to static alias.  */
-  if (target->definition && decl_binds_to_current_def_p (target->decl)
-      && aliases_supported)
+  if (TARGET_SUPPORTS_ALIASES
+      && target->definition && decl_binds_to_current_def_p (target->decl))
     strip_weakref = static_alias = true;
   /* Otherwise we can turn weakref into transparent alias.  This transformation
      may break asm statements which directly refers to symbol name and expect
@@ -614,8 +615,41 @@ function_and_variable_visibility (bool whole_program)
   struct cgraph_node *node;
   varpool_node *vnode;
 
-  /* All aliases should be procssed at this point.  */
+  /* All aliases should be processed at this point.  */
   gcc_checking_assert (!alias_pairs || !alias_pairs->length ());
+
+#ifdef ASM_OUTPUT_DEF
+  FOR_EACH_DEFINED_FUNCTION (node)
+    {
+      if (node->get_availability () != AVAIL_INTERPOSABLE
+	  || DECL_EXTERNAL (node->decl)
+	  || node->has_aliases_p ())
+	continue;
+
+      cgraph_node *alias = 0;
+      for (cgraph_edge *e = node->callees; e; e = e->next_callee)
+	{
+	  /* Recursive function calls usually can't be interposed.  */
+
+	  if (!e->recursive_p ())
+	    continue;
+
+	  if (!alias)
+	    {
+	      alias = dyn_cast<cgraph_node *> (node->noninterposable_alias ());
+	      gcc_assert (alias && alias != node);
+	    }
+
+	  e->redirect_callee (alias);
+	  if (gimple_has_body_p (e->caller->decl))
+	    {
+	      push_cfun (DECL_STRUCT_FUNCTION (e->caller->decl));
+	      e->redirect_call_stmt_to_callee ();
+	      pop_cfun ();
+	    }
+	}
+    }
+#endif
 
   FOR_EACH_FUNCTION (node)
     {

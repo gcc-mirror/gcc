@@ -40,6 +40,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "builtins.h"
 #include "gomp-constants.h"
+#include "debug.h"
 
 
 static void lto_write_tree (struct output_block*, tree, bool);
@@ -406,6 +407,26 @@ lto_write_tree_1 (struct output_block *ob, tree expr, bool ref_p)
 			 (ob->decl_state->symtab_node_encoder, expr);
       stream_write_tree (ob, initial, ref_p);
     }
+
+  /* Stream references to early generated DIEs.  Keep in sync with the
+     trees handled in dwarf2out_die_ref_for_decl.  */
+  if ((DECL_P (expr)
+       && TREE_CODE (expr) != FIELD_DECL
+       && TREE_CODE (expr) != DEBUG_EXPR_DECL
+       && TREE_CODE (expr) != TYPE_DECL)
+      || TREE_CODE (expr) == BLOCK)
+    {
+      const char *sym;
+      unsigned HOST_WIDE_INT off;
+      if (debug_info_level > DINFO_LEVEL_NONE
+	  && debug_hooks->die_ref_for_decl (expr, &sym, &off))
+	{
+	  streamer_write_string (ob, ob->main_stream, sym, true);
+	  streamer_write_uhwi (ob, off);
+	}
+      else
+	streamer_write_string (ob, ob->main_stream, NULL, true);
+    }
 }
 
 /* Write a physical representation of tree node EXPR to output block
@@ -745,7 +766,11 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	;
       else
 	DFS_follow_tree_edge (DECL_NAME (expr));
-      DFS_follow_tree_edge (DECL_CONTEXT (expr));
+      if (TREE_CODE (expr) != TRANSLATION_UNIT_DECL
+	  && ! DECL_CONTEXT (expr))
+	DFS_follow_tree_edge ((*all_translation_units)[0]);
+      else
+	DFS_follow_tree_edge (DECL_CONTEXT (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_DECL_COMMON))
@@ -765,6 +790,7 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	 declarations which should be eliminated by decl merging. Be sure none
 	 leaks to this point.  */
       gcc_assert (DECL_ABSTRACT_ORIGIN (expr) != error_mark_node);
+      DFS_follow_tree_edge (DECL_ABSTRACT_ORIGIN (expr));
 
       if ((VAR_P (expr)
 	   || TREE_CODE (expr) == PARM_DECL)
@@ -835,10 +861,8 @@ DFS::DFS_write_tree_body (struct output_block *ob,
 	DFS_follow_tree_edge (TYPE_ARG_TYPES (expr));
 
       if (!POINTER_TYPE_P (expr))
-	DFS_follow_tree_edge (TYPE_MINVAL (expr));
-      DFS_follow_tree_edge (TYPE_MAXVAL (expr));
-      if (RECORD_OR_UNION_TYPE_P (expr))
-	DFS_follow_tree_edge (TYPE_BINFO (expr));
+	DFS_follow_tree_edge (TYPE_MIN_VALUE_RAW (expr));
+      DFS_follow_tree_edge (TYPE_MAX_VALUE_RAW (expr));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -1271,10 +1295,8 @@ hash_tree (struct streamer_tree_cache_d *cache, hash_map<tree, hashval_t> *map, 
 	       || code == METHOD_TYPE)
 	visit (TYPE_ARG_TYPES (t));
       if (!POINTER_TYPE_P (t))
-	visit (TYPE_MINVAL (t));
-      visit (TYPE_MAXVAL (t));
-      if (RECORD_OR_UNION_TYPE_P (t))
-	visit (TYPE_BINFO (t));
+	visit (TYPE_MIN_VALUE_RAW (t));
+      visit (TYPE_MAX_VALUE_RAW (t));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -2060,6 +2082,17 @@ output_function (struct cgraph_node *node)
   /* Output decls for parameters and args.  */
   stream_write_tree (ob, DECL_RESULT (function), true);
   streamer_write_chain (ob, DECL_ARGUMENTS (function), true);
+
+  /* Output debug args if available. */
+  vec<tree, va_gc> **debugargs = decl_debug_args_lookup (function);
+  if (! debugargs)
+    streamer_write_uhwi (ob, 0);
+  else
+    {
+      streamer_write_uhwi (ob, (*debugargs)->length ());
+      for (unsigned i = 0; i < (*debugargs)->length (); ++i)
+	stream_write_tree (ob, (**debugargs)[i], true);
+    }
 
   /* Output DECL_INITIAL for the function, which contains the tree of
      lexical scopes.  */

@@ -99,7 +99,7 @@ extern void test_no_sha (void)			__attribute__((__target__("no-sha")));
 extern void test_no_pclmul (void)		__attribute__((__target__("no-pclmul")));
 extern void test_no_sse2 (void)			__attribute__((__target__("no-sse2")));
 extern void test_no_sse (void)			__attribute__((__target__("no-sse")));
-extern void test_no_3dnowa (void)		__attribute__((__target__("3dnowa")));
+extern void test_no_3dnowa (void)		__attribute__((__target__("no-3dnowa")));
 extern void test_no_3dnow (void)		__attribute__((__target__("no-3dnow")));
 extern void test_no_mmx (void)			__attribute__((__target__("no-mmx")));
 extern void test_no_rtm (void)			__attribute__((__target__("no-rtm")));

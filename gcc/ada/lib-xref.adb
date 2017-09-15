@@ -413,17 +413,60 @@ package body Lib.Xref is
       ---------------------------
 
       function Get_Through_Renamings (E : Entity_Id) return Entity_Id is
-         Result : Entity_Id := E;
-
       begin
-         while Present (Result)
-           and then Is_Object (Result)
-           and then Present (Renamed_Object (Result))
-         loop
-            Result := Get_Enclosing_Object (Renamed_Object (Result));
-         end loop;
+         case Ekind (E) is
 
-         return Result;
+            --  For subprograms we just need to check once if they are have a
+            --  Renamed_Entity, because Renamed_Entity is set transitively.
+
+            when Subprogram_Kind =>
+               declare
+                  Renamed : constant Entity_Id := Renamed_Entity (E);
+
+               begin
+                  if Present (Renamed) then
+                     return Renamed;
+                  else
+                     return E;
+                  end if;
+               end;
+
+            --  For objects we need to repeatedly call Renamed_Object, because
+            --  it is not transitive.
+
+            when Object_Kind =>
+               declare
+                  Obj : Entity_Id := E;
+
+               begin
+                  loop
+                     pragma Assert (Present (Obj));
+
+                     declare
+                        Renamed : constant Entity_Id := Renamed_Object (Obj);
+
+                     begin
+                        if Present (Renamed) then
+                           Obj := Get_Enclosing_Object (Renamed);
+
+                           --  The renamed expression denotes a non-object,
+                           --  e.g. function call, slicing of a function call,
+                           --  pointer dereference, etc.
+
+                           if No (Obj) then
+                              return Empty;
+                           end if;
+                        else
+                           return Obj;
+                        end if;
+                     end;
+                  end loop;
+               end;
+
+            when others =>
+               return E;
+
+         end case;
       end Get_Through_Renamings;
 
       ---------------
@@ -1036,7 +1079,7 @@ package body Lib.Xref is
          --  original discriminant, which gets the reference.
 
          elsif Ekind (E) = E_In_Parameter
-           and then  Present (Discriminal_Link (E))
+           and then Present (Discriminal_Link (E))
          then
             Ent := Discriminal_Link (E);
             Set_Referenced (Ent);
@@ -1083,6 +1126,21 @@ package body Lib.Xref is
          --  Comment needed here for special SPARK code ???
 
          if GNATprove_Mode then
+
+            --  Ignore references to an entity which is a Part_Of single
+            --  concurrent object. Ideally we would prefer to add it as a
+            --  reference to the corresponding concurrent type, but it is quite
+            --  difficult (as such references are not currently added even for)
+            --  reads/writes of private protected components) and not worth the
+            --  effort.
+
+            if Ekind_In (Ent, E_Abstract_State, E_Constant, E_Variable)
+              and then Present (Encapsulating_State (Ent))
+              and then Is_Single_Concurrent_Object (Encapsulating_State (Ent))
+            then
+               return;
+            end if;
+
             Ref := Sloc (Nod);
             Def := Sloc (Ent);
 
@@ -2659,7 +2717,7 @@ package body Lib.Xref is
                   if XE.Key.Loc /= No_Location
                     and then
                       (XE.Key.Loc /= Crloc
-                        or else (Prevt = 'm' and then  XE.Key.Typ = 'r'))
+                        or else (Prevt = 'm' and then XE.Key.Typ = 'r'))
                   then
                      Crloc := XE.Key.Loc;
                      Prevt := XE.Key.Typ;

@@ -25,6 +25,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "gimple.h"
 #include "df.h"
 #include "memmodel.h"
@@ -2615,6 +2617,22 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
   const HOST_WIDE_INT size = int_size_in_bytes (type);
   return (size == -1 || size > UNITS_PER_WORD * NUM_ARGUMENT_REGISTERS);
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+xstormy16_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return regno != 16 || mode == BImode;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+xstormy16_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return mode1 != BImode && mode2 != BImode;
+}
 
 #undef  TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.hword\t"
@@ -2691,6 +2709,11 @@ xstormy16_return_in_memory (const_tree type, const_tree fntype ATTRIBUTE_UNUSED)
 
 #undef TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT xstormy16_trampoline_init
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK xstormy16_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P xstormy16_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

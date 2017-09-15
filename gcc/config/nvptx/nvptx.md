@@ -184,6 +184,7 @@
 (define_mode_iterator SDCM [SC DC])
 (define_mode_iterator BITS [SI SF])
 (define_mode_iterator BITD [DI DF])
+(define_mode_iterator VECIM [V2SI V2DI])
 
 ;; This mode iterator allows :P to be used for patterns that operate on
 ;; pointer-sized quantities.  Exactly one of the two alternatives will match.
@@ -199,6 +200,20 @@
    %.\\tmov%t0\\t%0, %1;
    %.\\tsetp.eq.u32\\t%0, 1, 0;
    %.\\tsetp.eq.u32\\t%0, 1, 1;")
+
+(define_insn "*mov<mode>_insn"
+  [(set (match_operand:VECIM 0 "nonimmediate_operand" "=R,R,m")
+	(match_operand:VECIM 1 "general_operand" "Ri,m,R"))]
+  "!MEM_P (operands[0]) || REG_P (operands[1])"
+{
+  if (which_alternative == 1)
+    return "%.\\tld%A1%u1\\t%0, %1;";
+  if (which_alternative == 2)
+    return "%.\\tst%A0%u0\\t%0, %1;";
+
+  return nvptx_output_mov_insn (operands[0], operands[1]);
+}
+  [(set_attr "subregs_ok" "true")])
 
 (define_insn "*mov<mode>_insn"
   [(set (match_operand:QHSDIM 0 "nonimmediate_operand" "=R,R,m")
@@ -241,6 +256,20 @@
 			UNSPEC_ARG_REG))]
   ""
   "%.\\tmov%t0\\t%0, %%ar%1;")
+
+ (define_expand "mov<mode>"
+  [(set (match_operand:VECIM 0 "nonimmediate_operand" "")
+	(match_operand:VECIM 1 "general_operand" ""))]
+  ""
+{
+  if (MEM_P (operands[0]) && !REG_P (operands[1]))
+    {
+      rtx tmp = gen_reg_rtx (<MODE>mode);
+      emit_move_insn (tmp, operands[1]);
+      emit_move_insn (operands[0], tmp);
+      DONE;
+    }
+})
 
 (define_expand "mov<mode>"
   [(set (match_operand:QHSDISDFM 0 "nonimmediate_operand" "")

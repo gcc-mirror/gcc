@@ -17,7 +17,7 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// 24.6.5, range access [iterator.range]
+// C++ 2014 24.7, range access [iterator.range]
 
 #include <iterator>
 #include <vector>

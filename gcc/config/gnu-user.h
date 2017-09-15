@@ -50,19 +50,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #if defined HAVE_LD_PIE
 #define GNU_USER_TARGET_STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;: \
-    %{" PIE_SPEC ":Scrt1.o%s} %{" NO_PIE_SPEC ":crt1.o%s}}} \
-   crti.o%s %{static:crtbeginT.o%s;: %{shared:crtbeginS.o%s} \
-	      %{" PIE_SPEC ":crtbeginS.o%s} \
-	      %{" NO_PIE_SPEC ":crtbegin.o%s}} \
+  "%{shared:; \
+     pg|p|profile:gcrt1.o%s; \
+     static:crt1.o%s; \
+     static-pie|" PIE_SPEC ":Scrt1.o%s; \
+     :crt1.o%s} \
+   crti.o%s \
+   %{static:crtbeginT.o%s; \
+     shared|static-pie|" PIE_SPEC ":crtbeginS.o%s; \
+     :crtbegin.o%s} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
      fvtable-verify=std:vtv_start.o%s} \
    " CRTOFFLOADBEGIN
 #else
 #define GNU_USER_TARGET_STARTFILE_SPEC \
-  "%{!shared: %{pg|p|profile:gcrt1.o%s;:crt1.o%s}} \
-   crti.o%s %{static:crtbeginT.o%s;shared|pie:crtbeginS.o%s;:crtbegin.o%s} \
+  "%{shared:; \
+     pg|p|profile:gcrt1.o%s; \
+     :crt1.o%s} \
+   crti.o%s \
+   %{static:crtbeginT.o%s; \
+     shared|pie|static-pie:crtbeginS.o%s; \
+     :crtbegin.o%s} \
    %{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_start_preinit.o%s; \
      fvtable-verify=std:vtv_start.o%s} \
@@ -82,15 +91,20 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
-   %{shared:crtendS.o%s;: %{" PIE_SPEC ":crtendS.o%s} \
-   %{" NO_PIE_SPEC ":crtend.o%s}} crtn.o%s \
+   %{static:crtend.o%s; \
+     shared|static-pie|" PIE_SPEC ":crtendS.o%s; \
+     :crtend.o%s} \
+   crtn.o%s \
    " CRTOFFLOADEND
 #else
 #define GNU_USER_TARGET_ENDFILE_SPEC \
   "%{fvtable-verify=none:%s; \
      fvtable-verify=preinit:vtv_end_preinit.o%s; \
      fvtable-verify=std:vtv_end.o%s} \
-   %{shared|pie:crtendS.o%s;:crtend.o%s} crtn.o%s \
+   %{static:crtend.o%s; \
+     shared|pie|static-pie:crtendS.o%s; \
+     :crtend.o%s} \
+   crtn.o%s \
    " CRTOFFLOADEND
 #endif
 #undef  ENDFILE_SPEC
@@ -118,12 +132,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LIB_SPEC GNU_USER_TARGET_LIB_SPEC
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static:--start-group} %G %L %{static:--end-group}%{!static:%G}"
+  "%{static|static-pie:--start-group} %G %L \
+   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED

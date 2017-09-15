@@ -50,13 +50,6 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	gcshrinkstackoff: setting gcshrinkstackoff=1 disables moving goroutines
 	onto smaller stacks. In this mode, a goroutine's stack can only grow.
 
-	gcstackbarrieroff: setting gcstackbarrieroff=1 disables the use of stack barriers
-	that allow the garbage collector to avoid repeating a stack scan during the
-	mark termination phase.
-
-	gcstackbarrierall: setting gcstackbarrierall=1 installs stack barriers
-	in every stack frame, rather than in exponentially-spaced frames.
-
 	gcrescanstacks: setting gcrescanstacks=1 enables stack
 	re-scanning during the STW mark termination phase. This is
 	helpful for debugging if objects are being prematurely
@@ -85,7 +78,7 @@ It is a comma-separated list of name=val pairs setting these named variables:
 	for mark/scan are broken down in to assist time (GC performed in
 	line with allocation), background GC time, and idle GC time.
 	If the line ends with "(forced)", this GC was forced by a
-	runtime.GC() call and all phases are STW.
+	runtime.GC() call.
 
 	Setting gctrace to any value > 0 also causes the garbage collector
 	to emit a summary when memory is released back to the system.
@@ -173,7 +166,7 @@ func Gosched()
 // to ascend, with 0 identifying the caller of Caller.  (For historical reasons the
 // meaning of skip differs between Caller and Callers.) The return values report the
 // program counter, file name, and line number within the file of the corresponding
-// call.  The boolean ok is false if it was not possible to recover the information.
+// call. The boolean ok is false if it was not possible to recover the information.
 func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 
 // Callers fills the slice pc with the return program counters of function invocations
@@ -181,6 +174,14 @@ func Caller(skip int) (pc uintptr, file string, line int, ok bool)
 // to skip before recording in pc, with 0 identifying the frame for Callers itself and
 // 1 identifying the caller of Callers.
 // It returns the number of entries written to pc.
+//
+// To translate these PCs into symbolic information such as function
+// names and line numbers, use CallersFrames. CallersFrames accounts
+// for inlined functions and adjusts the return program counters into
+// call program counters. Iterating over the returned slice of PCs
+// directly is discouraged, as is using FuncForPC on any of the
+// returned PCs, since these cannot account for inlining or return
+// program counter adjustment.
 func Callers(skip int, pc []uintptr) int
 
 // GOROOT returns the root of the Go tree.
@@ -206,7 +207,7 @@ func Version() string {
 const GOOS string = sys.GOOS
 
 // GOARCH is the running program's architecture target:
-// 386, amd64, arm, or s390x.
+// one of 386, amd64, arm, s390x, and so on.
 const GOARCH string = sys.GOARCH
 
 // GCCGOTOOLDIR is the Tool Dir for the gccgo build

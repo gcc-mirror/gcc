@@ -183,8 +183,7 @@ extern const struct real_format *
 			: (gcc_unreachable (), 0)])
 
 #define FLOAT_MODE_FORMAT(MODE) \
-  (REAL_MODE_FORMAT (SCALAR_FLOAT_MODE_P (MODE)? (MODE) \
-					       : GET_MODE_INNER (MODE)))
+  (REAL_MODE_FORMAT (as_a <scalar_float_mode> (GET_MODE_INNER (MODE))))
 
 /* The following macro determines whether the floating point format is
    composite, i.e. may contain non-consecutive mantissa bits, in which
@@ -212,7 +211,7 @@ class format_helper
 {
 public:
   format_helper (const real_format *format) : m_format (format) {}
-  format_helper (machine_mode m);
+  template<typename T> format_helper (const T &);
   const real_format *operator-> () const { return m_format; }
   operator const real_format *() const { return m_format; }
 
@@ -222,7 +221,8 @@ private:
   const real_format *m_format;
 };
 
-inline format_helper::format_helper (machine_mode m)
+template<typename T>
+inline format_helper::format_helper (const T &m)
   : m_format (m == VOIDmode ? 0 : REAL_MODE_FORMAT (m))
 {}
 
@@ -383,27 +383,28 @@ extern const struct real_format arm_half_format;
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #define REAL_VALUE_TO_TARGET_LONG_DOUBLE(IN, OUT)			\
   real_to_target (OUT, &(IN),						\
-		  mode_for_size (LONG_DOUBLE_TYPE_SIZE, MODE_FLOAT, 0))
+		  float_mode_for_size (LONG_DOUBLE_TYPE_SIZE).require ())
 
 #define REAL_VALUE_TO_TARGET_DOUBLE(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (64, MODE_FLOAT, 0))
+  real_to_target (OUT, &(IN), float_mode_for_size (64).require ())
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_SINGLE(IN, OUT) \
-  ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_FLOAT, 0)))
+  ((OUT) = real_to_target (NULL, &(IN), float_mode_for_size (32).require ()))
 
 /* Real values to IEEE 754 decimal floats.  */
 
 /* IN is a REAL_VALUE_TYPE.  OUT is an array of longs.  */
 #define REAL_VALUE_TO_TARGET_DECIMAL128(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (128, MODE_DECIMAL_FLOAT, 0))
+  real_to_target (OUT, &(IN), decimal_float_mode_for_size (128).require ())
 
 #define REAL_VALUE_TO_TARGET_DECIMAL64(IN, OUT) \
-  real_to_target (OUT, &(IN), mode_for_size (64, MODE_DECIMAL_FLOAT, 0))
+  real_to_target (OUT, &(IN), decimal_float_mode_for_size (64).require ())
 
 /* IN is a REAL_VALUE_TYPE.  OUT is a long.  */
 #define REAL_VALUE_TO_TARGET_DECIMAL32(IN, OUT) \
-  ((OUT) = real_to_target (NULL, &(IN), mode_for_size (32, MODE_DECIMAL_FLOAT, 0)))
+  ((OUT) = real_to_target (NULL, &(IN), \
+			   decimal_float_mode_for_size (32).require ()))
 
 extern REAL_VALUE_TYPE real_value_truncate (format_helper, REAL_VALUE_TYPE);
 

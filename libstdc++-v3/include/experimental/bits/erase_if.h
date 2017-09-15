@@ -32,20 +32,19 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 #include <experimental/bits/lfts_config.h>
 
 namespace std
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
   namespace __detail
   {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Container, typename _Predicate>
       void
       __erase_nodes_if(_Container& __cont, _Predicate __pred)
@@ -59,10 +58,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    ++__iter;
 	}
       }
-_GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 } // inline namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

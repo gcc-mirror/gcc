@@ -197,7 +197,9 @@ const struct gcc_debug_hooks vmsdbg_debug_hooks
    vmsdbgout_early_global_decl,
    vmsdbgout_late_global_decl,
    vmsdbgout_type_decl,		  /* type_decl */
-   debug_nothing_tree_tree_tree_bool, /* imported_module_or_decl */
+   debug_nothing_tree_tree_tree_bool_bool, /* imported_module_or_decl */
+   debug_false_tree_charstarstar_uhwistar, /* die_ref_for_decl */
+   debug_nothing_tree_charstar_uhwi, /* register_external_die */
    debug_nothing_tree,		  /* deferred_inline_function */
    vmsdbgout_abstract_function,
    debug_nothing_rtx_code_label,  /* label */

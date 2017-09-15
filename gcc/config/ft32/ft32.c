@@ -25,6 +25,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -790,7 +792,7 @@ ft32_is_mem_pm (rtx o)
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE ft32_valid_pointer_mode
 static bool
-ft32_valid_pointer_mode (machine_mode mode)
+ft32_valid_pointer_mode (scalar_int_mode mode)
 {
   if (mode == SImode)
     return 1;
@@ -799,7 +801,7 @@ ft32_valid_pointer_mode (machine_mode mode)
 
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE ft32_addr_space_pointer_mode
-static machine_mode
+static scalar_int_mode
 ft32_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return Pmode;
@@ -807,7 +809,7 @@ ft32_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE ft32_addr_space_address_mode
-static machine_mode
+static scalar_int_mode
 ft32_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return Pmode;

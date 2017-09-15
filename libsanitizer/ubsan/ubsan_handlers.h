@@ -146,6 +146,13 @@ struct NonNullArgData {
 /// \brief Handle passing null pointer to function with nonnull attribute.
 RECOVERABLE(nonnull_arg, NonNullArgData *Data)
 
+struct PointerOverflowData {
+  SourceLocation Loc;
+};
+
+RECOVERABLE(pointer_overflow, PointerOverflowData *Data, ValueHandle Base,
+            ValueHandle Result)
+
 /// \brief Known CFI check kinds.
 /// Keep in sync with the enum of the same name in CodeGenFunction.h
 enum CFITypeCheckKind : unsigned char {

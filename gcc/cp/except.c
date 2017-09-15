@@ -261,13 +261,19 @@ build_must_not_throw_expr (tree body, tree cond)
   if (!flag_exceptions)
     return body;
 
-  if (cond && !value_dependent_expression_p (cond))
+  if (!cond)
+    /* OK, unconditional.  */;
+  else
     {
-      cond = perform_implicit_conversion_flags (boolean_type_node, cond,
-						tf_warning_or_error,
-						LOOKUP_NORMAL);
-      cond = instantiate_non_dependent_expr (cond);
-      cond = cxx_constant_value (cond);
+      tree conv = NULL_TREE;
+      if (!type_dependent_expression_p (cond))
+	conv = perform_implicit_conversion_flags (boolean_type_node, cond,
+						  tf_warning_or_error,
+						  LOOKUP_NORMAL);
+      if (tree inst = instantiate_non_dependent_or_null (conv))
+	cond = cxx_constant_value (inst);
+      else
+	require_constant_expression (cond);
       if (integer_zerop (cond))
 	return body;
       else if (integer_onep (cond))
@@ -665,6 +671,7 @@ build_throw (tree exp)
 	{
 	  int flags = LOOKUP_NORMAL | LOOKUP_ONLYCONVERTING;
 	  vec<tree, va_gc> *exp_vec;
+	  bool converted = false;
 
 	  /* Under C++0x [12.8/16 class.copy], a thrown lvalue is sometimes
 	     treated as an rvalue for the purposes of overload resolution
@@ -675,14 +682,31 @@ build_throw (tree exp)
 	      && ! TREE_STATIC (exp)
 	      /* The variable must not have the `volatile' qualifier.  */
 	      && !(cp_type_quals (TREE_TYPE (exp)) & TYPE_QUAL_VOLATILE))
-	    flags = flags | LOOKUP_PREFER_RVALUE;
+	    {
+	      tree moved = move (exp);
+	      exp_vec = make_tree_vector_single (moved);
+	      moved = (build_special_member_call
+		       (object, complete_ctor_identifier, &exp_vec,
+			TREE_TYPE (object), flags|LOOKUP_PREFER_RVALUE,
+			tf_none));
+	      release_tree_vector (exp_vec);
+	      if (moved != error_mark_node)
+		{
+		  exp = moved;
+		  converted = true;
+		}
+	    }
 
 	  /* Call the copy constructor.  */
-	  exp_vec = make_tree_vector_single (exp);
-	  exp = (build_special_member_call
-		 (object, complete_ctor_identifier, &exp_vec,
-		  TREE_TYPE (object), flags, tf_warning_or_error));
-	  release_tree_vector (exp_vec);
+	  if (!converted)
+	    {
+	      exp_vec = make_tree_vector_single (exp);
+	      exp = (build_special_member_call
+		     (object, complete_ctor_identifier, &exp_vec,
+		      TREE_TYPE (object), flags, tf_warning_or_error));
+	      release_tree_vector (exp_vec);
+	    }
+
 	  if (exp == error_mark_node)
 	    {
 	      error ("  in thrown expression");

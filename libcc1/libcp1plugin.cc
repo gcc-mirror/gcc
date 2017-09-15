@@ -1550,7 +1550,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 
   if ((ctor || dtor)
       /* Don't crash after a duplicate declaration of a cdtor.  */
-      && TYPE_METHODS (current_class_type) == decl)
+      && TYPE_FIELDS (current_class_type) == decl)
     {
       /* ctors and dtors clones are chained after DECL.
 	 However, we create the clones before TYPE_METHODS is
@@ -1562,9 +1562,9 @@ plugin_build_decl (cc1_plugin::connection *self,
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
       clone_function_decl (decl, /*update_methods=*/true);
-      gcc_assert (TYPE_METHODS (current_class_type) == decl);
-      TYPE_METHODS (current_class_type)
-	= nreverse (TYPE_METHODS (current_class_type));
+      gcc_assert (TYPE_FIELDS (current_class_type) == decl);
+      TYPE_FIELDS (current_class_type)
+	= nreverse (TYPE_FIELDS (current_class_type));
       DECL_CHAIN (decl) = save;
     }
 

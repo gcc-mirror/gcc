@@ -539,14 +539,14 @@ namespace __gnu_test
   struct test_container
   {
     typename ItType<T>::ContainerType bounds;
-    test_container(T* _first, T* _last):bounds(_first, _last)
+    test_container(T* _first, T* _last) : bounds(_first, _last)
     { }
 
 #if __cplusplus >= 201103L
-      template<std::size_t N>
-	explicit
-	test_container(T (&arr)[N]) : test_container(arr, arr+N)
-	{ }
+    template<std::size_t N>
+      explicit
+      test_container(T (&arr)[N]) : test_container(arr, arr+N)
+      { }
 #endif
 
     ItType<T>
@@ -574,6 +574,6 @@ namespace __gnu_test
     ItType<T>
     end()
     { return it(bounds.last); }
-   };
+  };
 }
 #endif

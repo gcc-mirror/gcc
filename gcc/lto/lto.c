@@ -53,6 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "lto-symtab.h"
 #include "stringpool.h"
 #include "fold-const.h"
+#include "attribs.h"
 
 
 /* Number of parallel tasks to run, -1 if we want to use GNU Make jobserver.  */
@@ -646,11 +647,11 @@ mentions_vars_p_type (tree t)
   CHECK_NO_VAR (TYPE_ATTRIBUTES (t));
   CHECK_NO_VAR (TYPE_NAME (t));
 
-  CHECK_VAR (TYPE_MINVAL (t));
-  CHECK_VAR (TYPE_MAXVAL (t));
+  CHECK_VAR (TYPE_MIN_VALUE_RAW (t));
+  CHECK_VAR (TYPE_MAX_VALUE_RAW (t));
 
   /* Accessor is for derived node types only. */
-  CHECK_NO_VAR (t->type_non_common.binfo);
+  CHECK_NO_VAR (TYPE_LANG_SLOT_1 (t));
 
   CHECK_VAR (TYPE_CONTEXT (t));
   CHECK_NO_VAR (TYPE_CANONICAL (t));
@@ -1409,14 +1410,14 @@ compare_tree_sccs_1 (tree t1, tree t2, tree **map)
 	       f1 || f2;
 	       f1 = TREE_CHAIN (f1), f2 = TREE_CHAIN (f2))
 	    compare_tree_edges (f1, f2);
-	  compare_tree_edges (TYPE_BINFO (t1), TYPE_BINFO (t2));
 	}
       else if (code == FUNCTION_TYPE
 	       || code == METHOD_TYPE)
 	compare_tree_edges (TYPE_ARG_TYPES (t1), TYPE_ARG_TYPES (t2));
+
       if (!POINTER_TYPE_P (t1))
-	compare_tree_edges (TYPE_MINVAL (t1), TYPE_MINVAL (t2));
-      compare_tree_edges (TYPE_MAXVAL (t1), TYPE_MAXVAL (t2));
+	compare_tree_edges (TYPE_MIN_VALUE_RAW (t1), TYPE_MIN_VALUE_RAW (t2));
+      compare_tree_edges (TYPE_MAX_VALUE_RAW (t1), TYPE_MAX_VALUE_RAW (t2));
     }
 
   if (CODE_CONTAINS_STRUCT (code, TS_LIST))
@@ -1632,6 +1633,9 @@ unify_scc (struct data_in *data_in, unsigned from,
 	      free_node (scc->entries[i]);
 	    }
 
+	  /* Drop DIE references.  */
+	  dref_queue.truncate (0);
+
 	  break;
 	}
 
@@ -1707,8 +1711,7 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 						     from);
 	  if (len == 1
 	      && (TREE_CODE (first) == IDENTIFIER_NODE
-		  || TREE_CODE (first) == INTEGER_CST
-		  || TREE_CODE (first) == TRANSLATION_UNIT_DECL))
+		  || TREE_CODE (first) == INTEGER_CST))
 	    continue;
 
 	  /* Try to unify the SCC with already existing ones.  */
@@ -1747,16 +1750,6 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 	      if (TREE_CODE (t) == INTEGER_CST
 		  && !TREE_OVERFLOW (t))
 		cache_integer_cst (t);
-	      /* Register TYPE_DECLs with the debuginfo machinery.  */
-	      if (!flag_wpa
-		  && TREE_CODE (t) == TYPE_DECL)
-		{
-		  /* Dwarf2out needs location information.
-		     TODO: Moving this out of the streamer loop may noticealy
-		     improve ltrans linemap memory use.  */
-		  data_in->location_cache.apply_location_cache ();
-		  debug_hooks->type_decl (t, !DECL_FILE_SCOPE_P (t));
-		}
 	      if (!flag_ltrans)
 		{
 		  /* Register variables and functions with the
@@ -1772,6 +1765,14 @@ lto_read_decls (struct lto_file_decl_data *decl_data, const void *data,
 		    vec_safe_push (tree_with_vars, t);
 		}
 	    }
+
+	  /* Register DECLs with the debuginfo machinery.  */
+	  while (!dref_queue.is_empty ())
+	    {
+	      dref_entry e = dref_queue.pop ();
+	      debug_hooks->register_external_die (e.decl, e.sym, e.off);
+	    }
+
 	  if (seen_type)
 	    num_type_scc_trees += len;
 	}
@@ -1951,7 +1952,12 @@ lto_section_with_id (const char *name, unsigned HOST_WIDE_INT *id)
   if (strncmp (name, section_name_prefix, strlen (section_name_prefix)))
     return 0;
   s = strrchr (name, '.');
-  return s && sscanf (s, "." HOST_WIDE_INT_PRINT_HEX_PURE, id) == 1;
+  if (!s)
+    return 0;
+  /* If the section is not suffixed with an ID return.  */
+  if ((size_t)(s - name) == strlen (section_name_prefix))
+    return 0;
+  return sscanf (s, "." HOST_WIDE_INT_PRINT_HEX_PURE, id) == 1;
 }
 
 /* Create file_data of each sub file id */
@@ -2580,9 +2586,9 @@ lto_fixup_prevailing_decls (tree t)
       LTO_NO_PREVAIL (TYPE_ATTRIBUTES (t));
       LTO_NO_PREVAIL (TYPE_NAME (t));
 
-      LTO_SET_PREVAIL (TYPE_MINVAL (t));
-      LTO_SET_PREVAIL (TYPE_MAXVAL (t));
-      LTO_NO_PREVAIL (t->type_non_common.binfo);
+      LTO_SET_PREVAIL (TYPE_MIN_VALUE_RAW (t));
+      LTO_SET_PREVAIL (TYPE_MAX_VALUE_RAW (t));
+      LTO_NO_PREVAIL (TYPE_LANG_SLOT_1 (t));
 
       LTO_SET_PREVAIL (TYPE_CONTEXT (t));
 

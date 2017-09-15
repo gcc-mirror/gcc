@@ -99,7 +99,7 @@ extern tree make_unsigned_type (int);
    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.
    The value is BLKmode if no other mode is found.  This is like
    mode_for_size, but is passed a tree.  */
-extern machine_mode mode_for_size_tree (const_tree, enum mode_class, int);
+extern opt_machine_mode mode_for_size_tree (const_tree, enum mode_class, int);
 
 extern tree bitwise_type_for_mode (machine_mode);
 
@@ -113,8 +113,5 @@ extern void relayout_decl (tree);
    to compute the value at the right time when the data type
    belongs to a function parameter.  */
 extern tree variable_size (tree);
-
-/* Vector types need to check target flags to determine type.  */
-extern machine_mode vector_type_mode (const_tree);
 
 #endif  // GCC_STOR_LAYOUT_H

@@ -273,6 +273,11 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 	      && gimple_has_location (stmt))
 	    {
 	      tree rhs = gimple_assign_rhs1 (stmt);
+	      tree lhs = gimple_assign_lhs (stmt);
+	      bool has_bit_insert = false;
+	      use_operand_p luse_p;
+	      imm_use_iterator liter;
+
 	      if (TREE_NO_WARNING (rhs))
 		continue;
 
@@ -298,6 +303,26 @@ warn_uninitialized_vars (bool warn_possibly_uninitialized)
 			  && TREE_CODE (DECL_SIZE (base)) == INTEGER_CST
 			  && compare_tree_int (DECL_SIZE (base),
 					       ref.offset) <= 0)))
+		continue;
+
+	      /* Do not warn if the access is then used for a BIT_INSERT_EXPR. */
+	      if (TREE_CODE (lhs) == SSA_NAME)
+	        FOR_EACH_IMM_USE_FAST (luse_p, liter, lhs)
+		  {
+		    gimple *use_stmt = USE_STMT (luse_p);
+                    /* BIT_INSERT_EXPR first operand should not be considered
+		       a use for the purpose of uninit warnings.  */
+		    if (gassign *ass = dyn_cast <gassign *> (use_stmt))
+		      {
+			if (gimple_assign_rhs_code (ass) == BIT_INSERT_EXPR
+			    && luse_p->use == gimple_assign_rhs1_ptr (ass))
+			  {
+			    has_bit_insert = true;
+			    break;
+			  }
+		      }
+		  }
+	      if (has_bit_insert)
 		continue;
 
 	      /* Limit the walking to a constant number of stmts after

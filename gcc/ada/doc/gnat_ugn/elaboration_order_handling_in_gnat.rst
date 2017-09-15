@@ -1,3 +1,5 @@
+.. role:: switch(samp)
+
 .. |with| replace:: *with*
 .. |withs| replace:: *with*\ s
 .. |withed| replace:: *with*\ ed
@@ -40,7 +42,7 @@ in three contexts:
 
 * *Package initialization code*
 
-  Code in a `BEGIN-END` section at the outer level of a package body is
+  Code in a ``begin`` ... `` end`` section at the outer level of a package body is
   executed as part of the package body elaboration code.
 
 * *Library level task allocators*
@@ -60,12 +62,12 @@ we have to be sure that it is executed in an appropriate order. What we
 have is a series of elaboration code sections, potentially one section
 for each unit in the program. It is important that these execute
 in the correct order. Correctness here means that, taking the above
-example of the declaration of `Sqrt_Half`,
+example of the declaration of ``Sqrt_Half``,
 if some other piece of
-elaboration code references `Sqrt_Half`,
+elaboration code references ``Sqrt_Half``,
 then it must run after the
 section of elaboration code that contains the declaration of
-`Sqrt_Half`.
+``Sqrt_Half``.
 
 There would never be any order of elaboration problem if we made a rule
 that whenever you |with| a unit, you must elaborate both the spec and body
@@ -76,8 +78,8 @@ of that unit before elaborating the unit doing the |withing|:
      with Unit_1;
      package Unit_2 is ...
 
-would require that both the body and spec of `Unit_1` be elaborated
-before the spec of `Unit_2`. However, a rule like that would be far too
+would require that both the body and spec of ``Unit_1`` be elaborated
+before the spec of ``Unit_2``. However, a rule like that would be far too
 restrictive. In particular, it would make it impossible to have routines
 in separate packages that were mutually recursive.
 
@@ -86,16 +88,16 @@ elaboration code and determine an appropriate correct order of elaboration,
 but in the general case, this is not possible. Consider the following
 example.
 
-In the body of `Unit_1`, we have a procedure `Func_1`
+In the body of ``Unit_1``, we have a procedure ``Func_1``
 that references
-the variable `Sqrt_1`, which is declared in the elaboration code
-of the body of `Unit_1`:
+the variable ``Sqrt_1``, which is declared in the elaboration code
+of the body of ``Unit_1``:
 
 .. code-block:: ada
 
      Sqrt_1 : Float := Sqrt (0.1);
 
-The elaboration code of the body of `Unit_1` also contains:
+The elaboration code of the body of ``Unit_1`` also contains:
 
 .. code-block:: ada
 
@@ -103,16 +105,16 @@ The elaboration code of the body of `Unit_1` also contains:
         Q := Unit_2.Func_2;
      end if;
 
-`Unit_2` is exactly parallel,
-it has a procedure `Func_2` that references
-the variable `Sqrt_2`, which is declared in the elaboration code of
-the body `Unit_2`:
+``Unit_2`` is exactly parallel,
+it has a procedure ``Func_2`` that references
+the variable ``Sqrt_2``, which is declared in the elaboration code of
+the body ``Unit_2``:
 
 .. code-block:: ada
 
       Sqrt_2 : Float := Sqrt (0.1);
 
-The elaboration code of the body of `Unit_2` also contains:
+The elaboration code of the body of ``Unit_2`` also contains:
 
 .. code-block:: ada
 
@@ -141,23 +143,23 @@ or
 
 If you carefully analyze the flow here, you will see that you cannot tell
 at compile time the answer to this question.
-If `expression_1` is not equal to 1,
-and `expression_2` is not equal to 2,
+If ``expression_1`` is not equal to 1,
+and ``expression_2`` is not equal to 2,
 then either order is acceptable, because neither of the function calls is
 executed. If both tests evaluate to true, then neither order is acceptable
 and in fact there is no correct order.
 
 If one of the two expressions is true, and the other is false, then one
 of the above orders is correct, and the other is incorrect. For example,
-if `expression_1` /= 1 and `expression_2` = 2,
-then the call to `Func_1`
-will occur, but not the call to `Func_2.`
+if ``expression_1`` /= 1 and ``expression_2`` = 2,
+then the call to ``Func_1``
+will occur, but not the call to ``Func_2.``
 This means that it is essential
-to elaborate the body of `Unit_1` before
-the body of `Unit_2`, so the first
+to elaborate the body of ``Unit_1`` before
+the body of ``Unit_2``, so the first
 order of elaboration is correct and the second is wrong.
 
-By making `expression_1` and `expression_2`
+By making ``expression_1`` and ``expression_2``
 depend on input data, or perhaps
 the time of day, we can make it impossible for the compiler or binder
 to figure out which of these expressions will be true, and hence it
@@ -193,7 +195,7 @@ of defense:
 
   Dynamic checks are made at run time, so that if some entity is accessed
   before it is elaborated (typically  by means of a subprogram call)
-  then the exception (`Program_Error`) is raised.
+  then the exception (``Program_Error``) is raised.
 
 * *Elaboration control*
 
@@ -214,7 +216,7 @@ easier to state:
   has been elaborated. The rules for elaboration given above guarantee
   that the spec of the subprogram has been elaborated before the
   call, but not the body. If this rule is violated, then the
-  exception `Program_Error` is raised.
+  exception ``Program_Error`` is raised.
 
 * *Restrictions on instantiations*
 
@@ -222,7 +224,7 @@ easier to state:
   unit has been elaborated. Again, the rules for elaboration given above
   guarantee that the spec of the generic unit has been elaborated
   before the instantiation, but not the body. If this rule is
-  violated, then the exception `Program_Error` is raised.
+  violated, then the exception ``Program_Error`` is raised.
 
 The idea is that if the body has been elaborated, then any variables
 it references must have been elaborated; by checking for the body being
@@ -237,14 +239,14 @@ A plausible implementation can be described as follows.
 A Boolean variable is associated with each subprogram
 and each generic unit. This variable is initialized to False, and is set to
 True at the point body is elaborated. Every call or instantiation checks the
-variable, and raises `Program_Error` if the variable is False.
+variable, and raises ``Program_Error`` if the variable is False.
 
 Note that one might think that it would be good enough to have one Boolean
 variable for each package, but that would not deal with cases of trying
 to call a body in the same package as the call
 that has not been elaborated yet.
 Of course a compiler may be able to do enough analysis to optimize away
-some of the Boolean variables as unnecessary, and `GNAT` indeed
+some of the Boolean variables as unnecessary, and GNAT indeed
 does such optimizations, but still the easiest conceptual model is to
 think of there being one variable per subprogram.
 
@@ -254,7 +256,7 @@ Controlling the Elaboration Order
 =================================
 
 In the previous section we discussed the rules in Ada which ensure
-that `Program_Error` is raised if an incorrect elaboration order is
+that ``Program_Error`` is raised if an incorrect elaboration order is
 chosen. This prevents erroneous executions, but we need mechanisms to
 specify a correct execution and avoid the exception altogether.
 To achieve this, Ada provides a number of features for controlling
@@ -280,8 +282,8 @@ unit has no elaboration problems:
           end Subp;
        end Definitions;
 
-  A package that |withs| `Definitions` may safely instantiate
-  `Definitions.Subp` because the compiler can determine that there
+  A package that |withs| ``Definitions`` may safely instantiate
+  ``Definitions.Subp`` because the compiler can determine that there
   definitely is no package body to worry about in this case
 
 .. index:: pragma Pure
@@ -309,22 +311,22 @@ unit has no elaboration problems:
 * *pragma Elaborate_Body*
 
   This pragma requires that the body of a unit be elaborated immediately
-  after its spec. Suppose a unit `A` has such a pragma,
-  and unit `B` does
-  a |with| of unit `A`. Recall that the standard rules require
-  the spec of unit `A`
+  after its spec. Suppose a unit ``A`` has such a pragma,
+  and unit ``B`` does
+  a |with| of unit ``A``. Recall that the standard rules require
+  the spec of unit ``A``
   to be elaborated before the |withing| unit; given the pragma in
-  `A`, we also know that the body of `A`
-  will be elaborated before `B`, so
-  that calls to `A` are safe and do not need a check.
+  ``A``, we also know that the body of ``A``
+  will be elaborated before ``B``, so
+  that calls to ``A`` are safe and do not need a check.
 
-  Note that, unlike pragma `Pure` and pragma `Preelaborate`,
-  the use of `Elaborate_Body` does not guarantee that the program is
+  Note that, unlike pragma ``Pure`` and pragma ``Preelaborate``,
+  the use of ``Elaborate_Body`` does not guarantee that the program is
   free of elaboration problems, because it may not be possible
   to satisfy the requested elaboration order.
-  Let's go back to the example with `Unit_1` and `Unit_2`.
-  If a programmer marks `Unit_1` as `Elaborate_Body`,
-  and not `Unit_2,` then the order of
+  Let's go back to the example with ``Unit_1`` and ``Unit_2``.
+  If a programmer marks ``Unit_1`` as ``Elaborate_Body``,
+  and not ``Unit_2,`` then the order of
   elaboration will be::
 
        Spec of Unit_2
@@ -332,27 +334,27 @@ unit has no elaboration problems:
        Body of Unit_1
        Body of Unit_2
 
-  Now that means that the call to `Func_1` in `Unit_2`
+  Now that means that the call to ``Func_1`` in ``Unit_2``
   need not be checked,
-  it must be safe. But the call to `Func_2` in
-  `Unit_1` may still fail if
-  `Expression_1` is equal to 1,
+  it must be safe. But the call to ``Func_2`` in
+  ``Unit_1`` may still fail if
+  ``Expression_1`` is equal to 1,
   and the programmer must still take
   responsibility for this not being the case.
 
-  If all units carry a pragma `Elaborate_Body`, then all problems are
+  If all units carry a pragma ``Elaborate_Body``, then all problems are
   eliminated, except for calls entirely within a body, which are
   in any case fully under programmer control. However, using the pragma
   everywhere is not always possible.
-  In particular, for our `Unit_1`/`Unit_2` example, if
-  we marked both of them as having pragma `Elaborate_Body`, then
+  In particular, for our ``Unit_1``/`Unit_2` example, if
+  we marked both of them as having pragma ``Elaborate_Body``, then
   clearly there would be no possible elaboration order.
 
 The above pragmas allow a server to guarantee safe use by clients, and
 clearly this is the preferable approach. Consequently a good rule
-is to mark units as `Pure` or `Preelaborate` if possible,
+is to mark units as ``Pure`` or ``Preelaborate`` if possible,
 and if this is not possible,
-mark them as `Elaborate_Body` if possible.
+mark them as ``Elaborate_Body`` if possible.
 As we have seen, there are situations where neither of these
 three pragmas can be used.
 So we also provide methods for clients to control the
@@ -380,20 +382,20 @@ order of elaboration of the servers on which they depend:
         Unit B |withs| unit C, and B.Func calls C.Func
 
 
-  Now if we put a pragma `Elaborate (B)`
-  in unit `A`, this ensures that the
-  body of `B` is elaborated before the call, but not the
-  body of `C`, so
-  the call to `C.Func` could still cause `Program_Error` to
+  Now if we put a pragma ``Elaborate (B)``
+  in unit ``A``, this ensures that the
+  body of ``B`` is elaborated before the call, but not the
+  body of ``C``, so
+  the call to ``C.Func`` could still cause ``Program_Error`` to
   be raised.
 
-  The effect of a pragma `Elaborate_All` is stronger, it requires
+  The effect of a pragma ``Elaborate_All`` is stronger, it requires
   not only that the body of the named unit be elaborated before the
   unit doing the |with|, but also the bodies of all units that the
   named unit uses, following |with| links transitively. For example,
-  if we put a pragma `Elaborate_All (B)` in unit `A`,
-  then it requires not only that the body of `B` be elaborated before `A`,
-  but also the body of `C`, because `B` |withs| `C`.
+  if we put a pragma ``Elaborate_All (B)`` in unit ``A``,
+  then it requires not only that the body of ``B`` be elaborated before ``A``,
+  but also the body of ``C``, because ``B`` |withs| ``C``.
 
 We are now in a position to give a usage rule in Ada for avoiding
 elaboration problems, at least if dynamic dispatching and access to
@@ -406,14 +408,14 @@ The rule is simple:
 indirectly make a call to a subprogram in a |withed| unit, or instantiate
 a generic package in a |withed| unit,
 then if the |withed| unit does not have
-pragma `Pure` or `Preelaborate`, then the client should have
-a pragma `Elaborate_All`for the |withed| unit.**
+pragma ``Pure`` or ``Preelaborate``, then the client should have
+a pragma ``Elaborate_All``for the |withed| unit.**
 
 By following this rule a client is
 assured that calls can be made without risk of an exception.
 
 For generic subprogram instantiations, the rule can be relaxed to
-require only a pragma `Elaborate` since elaborating the body
+require only a pragma ``Elaborate`` since elaborating the body
 of a subprogram cannot cause any transitive elaboration (we are
 not calling the subprogram in this case, just elaborating its
 declaration).
@@ -424,8 +426,8 @@ states:
 * *No order exists*
 
   No order of elaboration exists which follows the rules, taking into
-  account any `Elaborate`, `Elaborate_All`,
-  or `Elaborate_Body` pragmas. In
+  account any ``Elaborate``, ``Elaborate_All``,
+  or ``Elaborate_Body`` pragmas. In
   this case, an Ada compiler must diagnose the situation at bind
   time, and refuse to build an executable program.
 
@@ -433,7 +435,7 @@ states:
 
   One or more acceptable elaboration orders exist, and all of them
   generate an elaboration order problem. In this case, the binder
-  can build an executable program, but `Program_Error` will be raised
+  can build an executable program, but ``Program_Error`` will be raised
   when the program is run.
 
 * *Several orders exist, some right, some incorrect*
@@ -454,7 +456,7 @@ states:
   may be true even if the rule is not followed.
 
 Note that one additional advantage of following our rules on the use
-of `Elaborate` and `Elaborate_All`
+of ``Elaborate`` and ``Elaborate_All``
 is that the program continues to stay in the ideal (all orders OK) state
 even if maintenance
 changes some bodies of some units. Conversely, if a program that does
@@ -462,10 +464,10 @@ not follow this rule happens to be safe at some point, this state of affairs
 may deteriorate silently as a result of maintenance changes.
 
 You may have noticed that the above discussion did not mention
-the use of `Elaborate_Body`. This was a deliberate omission. If you
-|with| an `Elaborate_Body` unit, it still may be the case that
+the use of ``Elaborate_Body``. This was a deliberate omission. If you
+|with| an ``Elaborate_Body`` unit, it still may be the case that
 code in the body makes calls to some other unit, so it is still necessary
-to use `Elaborate_All` on such units.
+to use ``Elaborate_All`` on such units.
 
 
 .. _Controlling_Elaboration_in_GNAT_-_Internal_Calls:
@@ -489,9 +491,9 @@ example writing:
           return 1.0;
      end One;
 
-will obviously raise `Program_Error` at run time, because function
+will obviously raise ``Program_Error`` at run time, because function
 One will be called before its body is elaborated. In this case GNAT will
-generate a warning that the call will raise `Program_Error`::
+generate a warning that the call will raise ``Program_Error``::
 
      1. procedure y is
      2.    function One return Float;
@@ -513,13 +515,13 @@ generate a warning that the call will raise `Program_Error`::
 
 
 Note that in this particular case, it is likely that the call is safe, because
-the function `One` does not access any global variables.
+the function ``One`` does not access any global variables.
 Nevertheless in Ada, we do not want the validity of the check to depend on
 the contents of the body (think about the separate compilation case), so this
 is still wrong, as we discussed in the previous sections.
 
 The error is easily corrected by rearranging the declarations so that the
-body of `One` appears before the declaration containing the call
+body of ``One`` appears before the declaration containing the call
 (note that in Ada 95 as well as later versions of the Ada standard,
 declarations can appear in any order, so there is no restriction that
 would prevent this reordering, and if we write:
@@ -536,7 +538,7 @@ would prevent this reordering, and if we write:
      Q : Float := One;
 
 then all is well, no warning is generated, and no
-`Program_Error` exception
+``Program_Error`` exception
 will be raised.
 Things are more complicated when a chain of subprograms is executed:
 
@@ -553,16 +555,16 @@ Things are more complicated when a chain of subprograms is executed:
 
      function A return Integer is begin return 1; end;
 
-Now the call to `C`
-at elaboration time in the declaration of `X` is correct, because
-the body of `C` is already elaborated,
-and the call to `B` within the body of
-`C` is correct, but the call
-to `A` within the body of `B` is incorrect, because the body
-of `A` has not been elaborated, so `Program_Error`
-will be raised on the call to `A`.
+Now the call to ``C``
+at elaboration time in the declaration of ``X`` is correct, because
+the body of ``C`` is already elaborated,
+and the call to ``B`` within the body of
+``C`` is correct, but the call
+to ``A`` within the body of ``B`` is incorrect, because the body
+of ``A`` has not been elaborated, so ``Program_Error``
+will be raised on the call to ``A``.
 In this case GNAT will generate a
-warning that `Program_Error` may be
+warning that ``Program_Error`` may be
 raised at the point of the call. Let's look at the warning::
 
      1. procedure x is
@@ -590,9 +592,9 @@ raised at the point of the call. Let's look at the warning::
 
 Note that the message here says 'may raise', instead of the direct case,
 where the message says 'will be raised'. That's because whether
-`A` is
+``A`` is
 actually called depends in general on run-time flow of control.
-For example, if the body of `B` said
+For example, if the body of ``B`` said
 
 .. code-block:: ada
 
@@ -606,10 +608,10 @@ For example, if the body of `B` said
      end B;
 
 then we could not know until run time whether the incorrect call to A would
-actually occur, so `Program_Error` might
+actually occur, so ``Program_Error`` might
 or might not be raised. It is possible for a compiler to
 do a better job of analyzing bodies, to
-determine whether or not `Program_Error`
+determine whether or not ``Program_Error``
 might be raised, but it certainly
 couldn't do a perfect job (that would require solving the halting problem
 and is provably impossible), and because this is a warning anyway, it does
@@ -622,22 +624,22 @@ real errors, and should be examined carefully and eliminated.
 In the rare case where a warning is bogus, it can be suppressed by any of
 the following methods:
 
-* Compile with the *-gnatws* switch set
+* Compile with the :switch:`-gnatws` switch set
 
-* Suppress `Elaboration_Check` for the called subprogram
+* Suppress ``Elaboration_Check`` for the called subprogram
 
-* Use pragma `Warnings_Off` to turn warnings off for the call
+* Use pragma ``Warnings_Off`` to turn warnings off for the call
 
 For the internal elaboration check case,
 GNAT by default generates the
 necessary run-time checks to ensure
-that `Program_Error` is raised if any
+that ``Program_Error`` is raised if any
 call fails an elaboration check. Of course this can only happen if a
 warning has been issued as described above. The use of pragma
-`Suppress (Elaboration_Check)` may (but is not guaranteed to) suppress
+``Suppress (Elaboration_Check)`` may (but is not guaranteed to) suppress
 some of these checks, meaning that it may be possible (but is not
 guaranteed) for a program to be able to call a subprogram whose body
-is not yet elaborated, without raising a `Program_Error` exception.
+is not yet elaborated, without raising a ``Program_Error`` exception.
 
 
 .. _Controlling_Elaboration_in_GNAT_-_External_Calls:
@@ -678,21 +680,21 @@ Consider the following:
          ...
       end Main;
 
-where `Main` is the main program. When this program is executed, the
+where ``Main`` is the main program. When this program is executed, the
 elaboration code must first be executed, and one of the jobs of the
 binder is to determine the order in which the units of a program are
 to be elaborated. In this case we have four units: the spec and body
-of `Math`,
-the spec of `Stuff` and the body of `Main`).
+of ``Math``,
+the spec of ``Stuff`` and the body of ``Main``).
 In what order should the four separate sections of elaboration code
 be executed?
 
 There are some restrictions in the order of elaboration that the binder
 can choose. In particular, if unit U has a |with|
-for a package `X`, then you
-are assured that the spec of `X`
+for a package ``X``, then you
+are assured that the spec of ``X``
 is elaborated before U , but you are
-not assured that the body of `X`
+not assured that the body of ``X``
 is elaborated before U.
 This means that in the above case, the binder is allowed to choose the
 order::
@@ -702,11 +704,11 @@ order::
      body of Math
      body of Main
 
-but that's not good, because now the call to `Math.Sqrt`
+but that's not good, because now the call to ``Math.Sqrt``
 that happens during
-the elaboration of the `Stuff`
-spec happens before the body of `Math.Sqrt` is
-elaborated, and hence causes `Program_Error` exception to be raised.
+the elaboration of the ``Stuff``
+spec happens before the body of ``Math.Sqrt`` is
+elaborated, and hence causes ``Program_Error`` exception to be raised.
 At first glance, one might say that the binder is misbehaving, because
 obviously you want to elaborate the body of something you |with| first, but
 that is not a general rule that can be followed in all cases. Consider
@@ -727,19 +729,19 @@ This is a common arrangement, and, apart from the order of elaboration
 problems that might arise in connection with elaboration code, this works fine.
 A rule that says that you must first elaborate the body of anything you
 |with| cannot work in this case:
-the body of `X` |withs| `Y`,
+the body of ``X`` |withs| ``Y``,
 which means you would have to
-elaborate the body of `Y` first, but that |withs| `X`,
+elaborate the body of ``Y`` first, but that |withs| ``X``,
 which means
-you have to elaborate the body of `X` first, but ... and we have a
+you have to elaborate the body of ``X`` first, but ... and we have a
 loop that cannot be broken.
 
 It is true that the binder can in many cases guess an order of elaboration
-that is unlikely to cause a `Program_Error`
+that is unlikely to cause a ``Program_Error``
 exception to be raised, and it tries to do so (in the
-above example of `Math/Stuff/Spec`, the GNAT binder will
+above example of ``Math/Stuff/Spec``, the GNAT binder will
 by default
-elaborate the body of `Math` right after its spec, so all will be well).
+elaborate the body of ``Math`` right after its spec, so all will be well).
 
 However, a program that blindly relies on the binder to be helpful can
 get into trouble, as we discussed in the previous sections, so GNAT
@@ -759,36 +761,36 @@ rule we previously described as the right approach. Let's restate it:
 *If a unit has elaboration code that can directly or indirectly make a
 call to a subprogram in a |withed| unit, or instantiate a generic
 package in a |withed| unit, then if the |withed| unit
-does not have pragma `Pure` or `Preelaborate`, then the client should have an
-`Elaborate_All` pragma for the |withed| unit.*
+does not have pragma ``Pure`` or ``Preelaborate``, then the client should have an
+``Elaborate_All`` pragma for the |withed| unit.*
 
 *In the case of instantiating a generic subprogram, it is always
-sufficient to have only an `Elaborate` pragma for the
+sufficient to have only an ``Elaborate`` pragma for the
 |withed| unit.*
 
 By following this rule a client is assured that calls and instantiations
 can be made without risk of an exception.
 
 In this mode GNAT traces all calls that are potentially made from
-elaboration code, and puts in any missing implicit `Elaborate`
-and `Elaborate_All` pragmas.
+elaboration code, and puts in any missing implicit ``Elaborate``
+and ``Elaborate_All`` pragmas.
 The advantage of this approach is that no elaboration problems
 are possible if the binder can find an elaboration order that is
-consistent with these implicit `Elaborate` and
-`Elaborate_All` pragmas. The
+consistent with these implicit ``Elaborate`` and
+``Elaborate_All`` pragmas. The
 disadvantage of this approach is that no such order may exist.
 
 If the binder does not generate any diagnostics, then it means that it has
 found an elaboration order that is guaranteed to be safe. However, the binder
-may still be relying on implicitly generated `Elaborate` and
-`Elaborate_All` pragmas so portability to other compilers than GNAT is not
+may still be relying on implicitly generated ``Elaborate`` and
+``Elaborate_All`` pragmas so portability to other compilers than GNAT is not
 guaranteed.
 
 If it is important to guarantee portability, then the compilations should
-use the *-gnatel*
+use the :switch:`-gnatel`
 (info messages for elaboration pragmas) switch. This will cause info messages
-to be generated indicating the missing `Elaborate` and
-`Elaborate_All` pragmas.
+to be generated indicating the missing ``Elaborate`` and
+``Elaborate_All`` pragmas.
 Consider the following source program:
 
 .. code-block:: ada
@@ -799,12 +801,12 @@ Consider the following source program:
      end;
 
 where it is clear that there
-should be a pragma `Elaborate_All`
-for unit `k`. An implicit pragma will be generated, and it is
+should be a pragma ``Elaborate_All``
+for unit ``k``. An implicit pragma will be generated, and it is
 likely that the binder will be able to honor it. However, if you want
 to port this program to some other Ada compiler than GNAT.
 it is safer to include the pragma explicitly in the source. If this
-unit is compiled with the *-gnatel*
+unit is compiled with the :switch:`-gnatel`
 switch, then the compiler outputs an information message::
 
      1. with k;
@@ -820,7 +822,7 @@ and these messages can be used as a guide for supplying manually
 the missing pragmas. It is usually a bad idea to use this
 option during development. That's because it will tell you when
 you need to put in a pragma, but cannot tell you when it is time
-to take it out. So the use of pragma `Elaborate_All` may lead to
+to take it out. So the use of pragma ``Elaborate_All`` may lead to
 unnecessary dependencies and even false circularities.
 
 This default mode is more restrictive than the Ada Reference
@@ -834,8 +836,8 @@ and in particular must have the capability of implementing the
 standard dynamic model of elaboration with run-time checks.
 
 In GNAT, this standard mode can be achieved either by the use of
-the *-gnatE* switch on the compiler (*gcc* or
-*gnatmake*) command, or by the use of the configuration pragma:
+the :switch:`-gnatE` switch on the compiler (``gcc`` or
+``gnatmake``) command, or by the use of the configuration pragma:
 
 .. code-block:: ada
 
@@ -865,36 +867,36 @@ Treatment of Pragma Elaborate
 
 .. index:: Pragma Elaborate
 
-The use of `pragma Elaborate`
+The use of ``pragma Elaborate``
 should generally be avoided in Ada 95 and Ada 2005 programs,
 since there is no guarantee that transitive calls
 will be properly handled. Indeed at one point, this pragma was placed
 in Annex J (Obsolescent Features), on the grounds that it is never useful.
 
 Now that's a bit restrictive. In practice, the case in which
-`pragma Elaborate` is useful is when the caller knows that there
+``pragma Elaborate`` is useful is when the caller knows that there
 are no transitive calls, or that the called unit contains all necessary
-transitive `pragma Elaborate` statements, and legacy code often
+transitive ``pragma Elaborate`` statements, and legacy code often
 contains such uses.
 
 Strictly speaking the static mode in GNAT should ignore such pragmas,
 since there is no assurance at compile time that the necessary safety
 conditions are met. In practice, this would cause GNAT to be incompatible
 with correctly written Ada 83 code that had all necessary
-`pragma Elaborate` statements in place. Consequently, we made the
+``pragma Elaborate`` statements in place. Consequently, we made the
 decision that GNAT in its default mode will believe that if it encounters
-a `pragma Elaborate` then the programmer knows what they are doing,
+a ``pragma Elaborate`` then the programmer knows what they are doing,
 and it will trust that no elaboration errors can occur.
 
 The result of this decision is two-fold. First to be safe using the
-static mode, you should remove all `pragma Elaborate` statements.
+static mode, you should remove all ``pragma Elaborate`` statements.
 Second, when fixing circularities in existing code, you can selectively
-use `pragma Elaborate` statements to convince the static mode of
-GNAT that it need not generate an implicit `pragma Elaborate_All`
+use ``pragma Elaborate`` statements to convince the static mode of
+GNAT that it need not generate an implicit ``pragma Elaborate_All``
 statement.
 
-When using the static mode with *-gnatwl*, any use of
-`pragma Elaborate` will generate a warning about possible
+When using the static mode with :switch:`-gnatwl`, any use of
+``pragma Elaborate`` will generate a warning about possible
 problems.
 
 
@@ -979,54 +981,54 @@ the following example
 
 If the above example is compiled in the default static elaboration
 mode, then a circularity occurs. The circularity comes from the call
-`Utils.Put_Val` in the task body of `Decls.Lib_Task`. Since
+``Utils.Put_Val`` in the task body of ``Decls.Lib_Task``. Since
 this call occurs in elaboration code, we need an implicit pragma
-`Elaborate_All` for `Utils`. This means that not only must
-the spec and body of `Utils` be elaborated before the body
-of `Decls`, but also the spec and body of any unit that is
-|withed| by the body of `Utils` must also be elaborated before
-the body of `Decls`. This is the transitive implication of
-pragma `Elaborate_All` and it makes sense, because in general
-the body of `Put_Val` might have a call to something in a
+``Elaborate_All`` for ``Utils``. This means that not only must
+the spec and body of ``Utils`` be elaborated before the body
+of ``Decls``, but also the spec and body of any unit that is
+|withed| by the body of ``Utils`` must also be elaborated before
+the body of ``Decls``. This is the transitive implication of
+pragma ``Elaborate_All`` and it makes sense, because in general
+the body of ``Put_Val`` might have a call to something in a
 |withed| unit.
 
 In this case, the body of Utils (actually its spec) |withs|
-`Decls`. Unfortunately this means that the body of `Decls`
+``Decls``. Unfortunately this means that the body of ``Decls``
 must be elaborated before itself, in case there is a call from the
-body of `Utils`.
+body of ``Utils``.
 
 Here is the exact chain of events we are worrying about:
 
-* In the body of `Decls` a call is made from within the body of a library
-  task to a subprogram in the package `Utils`. Since this call may
+* In the body of ``Decls`` a call is made from within the body of a library
+  task to a subprogram in the package ``Utils``. Since this call may
   occur at elaboration time (given that the task is activated at elaboration
   time), we have to assume the worst, i.e., that the
   call does happen at elaboration time.
 
-* This means that the body and spec of `Util` must be elaborated before
-  the body of `Decls` so that this call does not cause an access before
+* This means that the body and spec of ``Util`` must be elaborated before
+  the body of ``Decls`` so that this call does not cause an access before
   elaboration.
 
-* Within the body of `Util`, specifically within the body of
-  `Util.Put_Val` there may be calls to any unit |withed|
+* Within the body of ``Util``, specifically within the body of
+  ``Util.Put_Val`` there may be calls to any unit |withed|
   by this package.
 
-* One such |withed| package is package `Decls`, so there
-  might be a call to a subprogram in `Decls` in `Put_Val`.
+* One such |withed| package is package ``Decls``, so there
+  might be a call to a subprogram in ``Decls`` in ``Put_Val``.
   In fact there is such a call in this example, but we would have to
   assume that there was such a call even if it were not there, since
-  we are not supposed to write the body of `Decls` knowing what
-  is in the body of `Utils`; certainly in the case of the
+  we are not supposed to write the body of ``Decls`` knowing what
+  is in the body of ``Utils``; certainly in the case of the
   static elaboration model, the compiler does not know what is in
   other bodies and must assume the worst.
 
-* This means that the spec and body of `Decls` must also be
+* This means that the spec and body of ``Decls`` must also be
   elaborated before we elaborate the unit containing the call, but
-  that unit is `Decls`! This means that the body of `Decls`
+  that unit is ``Decls``! This means that the body of ``Decls``
   must be elaborated before itself, and that's a circularity.
 
-Indeed, if you add an explicit pragma `Elaborate_All` for `Utils` in
-the body of `Decls` you will get a true Ada Reference Manual
+Indeed, if you add an explicit pragma ``Elaborate_All`` for ``Utils`` in
+the body of ``Decls`` you will get a true Ada Reference Manual
 circularity that makes the program illegal.
 
 In practice, we have found that problems with the static model of
@@ -1034,7 +1036,7 @@ elaboration in existing code often arise from library tasks, so
 we must address this particular situation.
 
 Note that if we compile and run the program above, using the dynamic model of
-elaboration (that is to say use the *-gnatE* switch),
+elaboration (that is to say use the :switch:`-gnatE` switch),
 then it compiles, binds,
 links, and runs, printing the expected result of 2. Therefore in some sense
 the circularity here is only apparent, and we need to capture
@@ -1046,10 +1048,10 @@ We have four possible answers to this question:
 
 * Use the dynamic model of elaboration.
 
-  If we use the *-gnatE* switch, then as noted above, the program works.
+  If we use the :switch:`-gnatE` switch, then as noted above, the program works.
   Why is this? If we examine the task body, it is apparent that the task cannot
   proceed past the
-  `accept` statement until after elaboration has been completed, because
+  ``accept`` statement until after elaboration has been completed, because
   the corresponding entry call comes from the main program, not earlier.
   This is why the dynamic model works here. But that's really giving
   up on a precise analysis, and we prefer to take this approach only if we cannot
@@ -1114,7 +1116,7 @@ We have four possible answers to this question:
       end;
 
 
-  All we have done is to split `Decls` into two packages, one
+  All we have done is to split ``Decls`` into two packages, one
   containing the library task, and one containing everything else. Now
   there is no cycle, and the program compiles, binds, links and executes
   using the default static model of elaboration.
@@ -1181,14 +1183,14 @@ We have four possible answers to this question:
       end;
 
 
-  What we have done here is to replace the `task` declaration in
-  package `Decls` with a `task type` declaration. Then we
-  introduce a separate package `Declst` to contain the actual
+  What we have done here is to replace the ``task`` declaration in
+  package ``Decls`` with a ``task type`` declaration. Then we
+  introduce a separate package ``Declst`` to contain the actual
   task object. This separates the elaboration issues for
-  the `task type`
+  the ``task type``
   declaration, which causes no trouble, from the elaboration issues
   of the task object, which is also unproblematic, since it is now independent
-  of the elaboration of  `Utils`.
+  of the elaboration of  ``Utils``.
   This separation of concerns also corresponds to
   a generally sound engineering principle of separating declarations
   from instances. This version of the program also compiles, binds, links,
@@ -1205,7 +1207,7 @@ We have four possible answers to this question:
 
   Let us consider more carefully why our original sample program works
   under the dynamic model of elaboration. The reason is that the code
-  in the task body blocks immediately on the `accept`
+  in the task body blocks immediately on the ``accept``
   statement. Now of course there is nothing to prohibit elaboration
   code from making entry calls (for example from another library level task),
   so we cannot tell in isolation that
@@ -1213,8 +1215,8 @@ We have four possible answers to this question:
 
   However, in practice it is very unusual to see elaboration code
   make any entry calls, and the pattern of tasks starting
-  at elaboration time and then immediately blocking on `accept` or
-  `select` statements is very common. What this means is that
+  at elaboration time and then immediately blocking on ``accept`` or
+  ``select`` statements is very common. What this means is that
   the compiler is being too pessimistic when it analyzes the
   whole package body as though it might be executed at elaboration
   time.
@@ -1233,8 +1235,8 @@ We have four possible answers to this question:
   in the presence of a :file:`gnat.adc` containing the above pragma,
   then once again, we can compile, bind, link, and execute, obtaining
   the expected result. In the presence of this pragma, the compiler does
-  not trace calls in a task body, that appear after the first `accept`
-  or `select` statement, and therefore does not report a potential
+  not trace calls in a task body, that appear after the first ``accept``
+  or ``select`` statement, and therefore does not report a potential
   circularity in the original program.
 
   The compiler will check to the extent it can that the above
@@ -1260,7 +1262,7 @@ The basic rule is that
 be |withed| by a unit compiled with the dynamic model**.
 The reason for this is that in the static model, a unit assumes that
 its clients guarantee to use (the equivalent of) pragma
-`Elaborate_All` so that no elaboration checks are required
+``Elaborate_All`` so that no elaboration checks are required
 in inner subprograms, and this assumption is violated if the
 client is compiled with dynamic checks.
 
@@ -1270,7 +1272,7 @@ following criteria:
 
 
 * The |withed| unit is itself compiled with dynamic elaboration
-  checks (that is with the *-gnatE* switch.
+  checks (that is with the :switch:`-gnatE` switch.
 
 * The |withed| unit is an internal GNAT implementation unit from
   the System, Interfaces, Ada, or GNAT hierarchies.
@@ -1278,12 +1280,12 @@ following criteria:
 * The |withed| unit has pragma Preelaborate or pragma Pure.
 
 * The |withing| unit (that is the client) has an explicit pragma
-  `Elaborate_All` for the |withed| unit.
+  ``Elaborate_All`` for the |withed| unit.
 
 
 If this rule is violated, that is if a unit with dynamic elaboration
 checks |withs| a unit that does not meet one of the above four
-criteria, then the binder (`gnatbind`) will issue a warning
+criteria, then the binder (``gnatbind``) will issue a warning
 similar to that in the following example::
 
      warning: "x.ads" has dynamic elaboration checks and with's
@@ -1291,7 +1293,7 @@ similar to that in the following example::
 
 These warnings indicate that the rule has been violated, and that as a result
 elaboration checks may be missed in the resulting executable file.
-This warning may be suppressed using the *-ws* binder switch
+This warning may be suppressed using the :switch:`-ws` binder switch
 in the usual manner.
 
 One useful application of this mixing rule is in the case of a subsystem
@@ -1324,14 +1326,14 @@ diagnostics. For example::
      info:     reason: pragma Elaborate in unit "proc (body)"
 
 In this case we have a cycle that the binder cannot break. On the one
-hand, there is an explicit pragma Elaborate in `proc` for
-`pack`. This means that the body of `pack` must be elaborated
-before the body of `proc`. On the other hand, there is elaboration
-code in `pack` that calls a subprogram in `proc`. This means
+hand, there is an explicit pragma Elaborate in ``proc`` for
+``pack``. This means that the body of ``pack`` must be elaborated
+before the body of ``proc``. On the other hand, there is elaboration
+code in ``pack`` that calls a subprogram in ``proc``. This means
 that for maximum safety, there should really be a pragma
-Elaborate_All in `pack` for `proc` which would require that
-the body of `proc` be elaborated before the body of
-`pack`. Clearly both requirements cannot be satisfied.
+Elaborate_All in ``pack`` for ``proc`` which would require that
+the body of ``proc`` be elaborated before the body of
+``pack``. Clearly both requirements cannot be satisfied.
 Faced with a circularity of this kind, you have three different options.
 
 
@@ -1348,14 +1350,14 @@ Faced with a circularity of this kind, you have three different options.
 
 * *Perform dynamic checks*
 
-  If the compilations are done using the *-gnatE*
+  If the compilations are done using the :switch:`-gnatE`
   (dynamic elaboration check) switch, then GNAT behaves in a quite different
   manner. Dynamic checks are generated for all calls that could possibly result
   in raising an exception. With this switch, the compiler does not generate
-  implicit `Elaborate` or `Elaborate_All` pragmas. The behavior then is
+  implicit ``Elaborate`` or ``Elaborate_All`` pragmas. The behavior then is
   exactly as specified in the :title:`Ada Reference Manual`.
   The binder will generate
-  an executable program that may or may not raise `Program_Error`, and then
+  an executable program that may or may not raise ``Program_Error``, and then
   it is the programmer's job to ensure that it does not raise an exception. Note
   that it is important to compile all units with the switch, it cannot be used
   selectively.
@@ -1367,18 +1369,18 @@ Faced with a circularity of this kind, you have three different options.
   are absolutely sure that your program cannot raise any elaboration
   exceptions, and you still want to use the dynamic elaboration model,
   then you can use the configuration pragma
-  `Suppress (Elaboration_Check)` to suppress all such checks. For
+  ``Suppress (Elaboration_Check)`` to suppress all such checks. For
   example this pragma could be placed in the :file:`gnat.adc` file.
 
 * *Suppress checks selectively*
 
   When you know that certain calls or instantiations in elaboration code cannot
   possibly lead to an elaboration error, and the binder nevertheless complains
-  about implicit `Elaborate` and `Elaborate_All` pragmas that lead to
+  about implicit ``Elaborate`` and ``Elaborate_All`` pragmas that lead to
   elaboration circularities, it is possible to remove those warnings locally and
   obtain a program that will bind. Clearly this can be unsafe, and it is the
   responsibility of the programmer to make sure that the resulting program has no
-  elaboration anomalies. The pragma `Suppress (Elaboration_Check)` can be
+  elaboration anomalies. The pragma ``Suppress (Elaboration_Check)`` can be
   used with different granularity to suppress warnings and break elaboration
   circularities:
 
@@ -1399,11 +1401,11 @@ Faced with a circularity of this kind, you have three different options.
   * Use Pragma Elaborate.
 
     As previously described in section :ref:`Treatment_of_Pragma_Elaborate`,
-    GNAT in static mode assumes that a `pragma` Elaborate indicates correctly
+    GNAT in static mode assumes that a ``pragma`` Elaborate indicates correctly
     that no elaboration checks are required on calls to the designated unit.
     There may be cases in which the caller knows that no transitive calls
-    can occur, so that a `pragma Elaborate` will be sufficient in a
-    case where `pragma Elaborate_All` would cause a circularity.
+    can occur, so that a ``pragma Elaborate`` will be sufficient in a
+    case where ``pragma Elaborate_All`` would cause a circularity.
 
   These five cases are listed in order of decreasing safety, and therefore
   require increasing programmer care in their application. Consider the
@@ -1474,35 +1476,35 @@ Faced with a circularity of this kind, you have three different options.
        info:             which is withed by:
        info:          "pack1 (body)"
 
-  The sources of the circularity are the two calls to `Pack2.Pure` and
-  `Pack2.F2` in the body of `Pack1`. We can see that the call to
+  The sources of the circularity are the two calls to ``Pack2.Pure`` and
+  ``Pack2.F2`` in the body of ``Pack1``. We can see that the call to
   F2 is safe, even though F2 calls F1, because the call appears after the
   elaboration of the body of F1. Therefore the pragma (1) is safe, and will
   remove the warning on the call. It is also possible to use pragma (2)
   because there are no other potentially unsafe calls in the block.
 
-  The call to `Pure` is safe because this function does not depend on the
-  state of `Pack2`. Therefore any call to this function is safe, and it
+  The call to ``Pure`` is safe because this function does not depend on the
+  state of ``Pack2``. Therefore any call to this function is safe, and it
   is correct to place pragma (3) in the corresponding package spec.
 
-  Finally, we could place pragma (4) in the spec of `Pack2` to disable
+  Finally, we could place pragma (4) in the spec of ``Pack2`` to disable
   warnings on all calls to functions declared therein. Note that this is not
   necessarily safe, and requires more detailed examination of the subprogram
-  bodies involved. In particular, a call to `F2` requires that `F1`
+  bodies involved. In particular, a call to ``F2`` requires that ``F1``
   be already elaborated.
 
 It is hard to generalize on which of these four approaches should be
 taken. Obviously if it is possible to fix the program so that the default
 treatment works, this is preferable, but this may not always be practical.
-It is certainly simple enough to use *-gnatE*
+It is certainly simple enough to use :switch:`-gnatE`
 but the danger in this case is that, even if the GNAT binder
 finds a correct elaboration order, it may not always do so,
 and certainly a binder from another Ada compiler might not. A
 combination of testing and analysis (for which the
-information messages generated with the *-gnatel*
+information messages generated with the :switch:`-gnatel`
 switch can be useful) must be used to ensure that the program is free
 of errors. One switch that is useful in this testing is the
-*-p (pessimistic elaboration order)* switch for `gnatbind`.
+:switch:`-p` (pessimistic elaboration order) switch for ``gnatbind``.
 Normally the binder tries to find an order that has the best chance
 of avoiding elaboration problems. However, if this switch is used, the binder
 plays a devil's advocate role, and tries to choose the order that
@@ -1519,7 +1521,7 @@ that the compiler can handle cases where it is impossible to determine
 a correct order statically, and it checks that an exception is indeed
 raised at run time.
 
-This one test must be compiled and run using the *-gnatE*
+This one test must be compiled and run using the :switch:`-gnatE`
 switch, and then it passes. Alternatively, the entire suite can
 be run using this switch. It is never wrong to run with the dynamic
 elaboration switch if your code is correct, and we assume that the
@@ -1539,26 +1541,26 @@ In rare cases, the static elaboration model fails to prevent
 dispatching calls to not-yet-elaborated subprograms. In such cases, we
 fall back to run-time checks; premature calls to any primitive
 operation of a tagged type before the body of the operation has been
-elaborated will raise `Program_Error`.
+elaborated will raise ``Program_Error``.
 
 Access-to-subprogram types, however, are handled conservatively in many
 cases. This was not true in earlier versions of the compiler; you can use
-the *-gnatd.U* debug switch to revert to the old behavior if the new
+the :switch:`-gnatd.U` debug switch to revert to the old behavior if the new
 conservative behavior causes elaboration cycles. Here, 'conservative' means
-that if you do `P'Access` during elaboration, the compiler will normally
-assume that you might call `P` indirectly during elaboration, so it adds an
-implicit `pragma Elaborate_All` on the library unit containing `P`. The
-*-gnatd.U* switch is safe if you know there are no such calls. If the
-program worked before, it will continue to work with *-gnatd.U*. But beware
+that if you do ``P'Access`` during elaboration, the compiler will normally
+assume that you might call ``P`` indirectly during elaboration, so it adds an
+implicit ``pragma Elaborate_All`` on the library unit containing ``P``. The
+:switch:`-gnatd.U` switch is safe if you know there are no such calls. If the
+program worked before, it will continue to work with :switch:`-gnatd.U`. But beware
 that code modifications such as adding an indirect call can cause erroneous
-behavior in the presence of *-gnatd.U*.
+behavior in the presence of :switch:`-gnatd.U`.
 
 These implicit Elaborate_All pragmas are not added in all cases, because
 they cause elaboration cycles in certain common code patterns. If you want
-even more conservative handling of P'Access, you can use the *-gnatd.o*
+even more conservative handling of P'Access, you can use the :switch:`-gnatd.o`
 switch.
 
-See `debug.adb` for documentation on the *-gnatd...* debug switches.
+See :file:`debug.adb` for documentation on the :switch:`-gnatd...` debug switches.
 
 
 .. _Summary_of_Procedures_for_Elaboration_Control:
@@ -1574,16 +1576,16 @@ binds your program, then you can be confident that, apart from issues
 raised by the use of access-to-subprogram types and dynamic dispatching,
 the program is free of elaboration errors. If it is important that the
 program be portable to other compilers than GNAT, then use the
-*-gnatel*
-switch to generate messages about missing `Elaborate` or
-`Elaborate_All` pragmas, and supply the missing pragmas.
+:switch:`-gnatel`
+switch to generate messages about missing ``Elaborate`` or
+``Elaborate_All`` pragmas, and supply the missing pragmas.
 
 If the program fails to bind using the default static elaboration
 handling, then you can fix the program to eliminate the binder
 message, or recompile the entire program with the
-*-gnatE* switch to generate dynamic elaboration checks,
+:switch:`-gnatE` switch to generate dynamic elaboration checks,
 and, if you are sure there really are no elaboration problems,
-use a global pragma `Suppress (Elaboration_Check)`.
+use a global pragma ``Suppress (Elaboration_Check)``.
 
 
 .. _Other_Elaboration_Order_Considerations:
@@ -1669,10 +1671,10 @@ and
 There is no language rule to prefer one or the other, both are correct
 from an order of elaboration point of view. But the programmatic effects
 of the two orders are very different. In the first, the elaboration routine
-of `Calc` initializes `Z` to zero, and then the main program
+of ``Calc`` initializes ``Z`` to zero, and then the main program
 runs with this value of zero. But in the second order, the elaboration
-routine of `Calc` runs after the body of Init_Constants has set
-`X` and `Y` and thus `Z` is set to 7 before `Main` runs.
+routine of ``Calc`` runs after the body of Init_Constants has set
+``X`` and ``Y`` and thus ``Z`` is set to 7 before ``Main`` runs.
 
 One could perhaps by applying pretty clever non-artificial intelligence
 to the situation guess that it is more likely that the second order of
@@ -1690,14 +1692,14 @@ case, that could have been achieved by adding to the spec of Calc:
 
      pragma Elaborate_All (Constants);
 
-which requires that the body (if any) and spec of `Constants`,
+which requires that the body (if any) and spec of ``Constants``,
 as well as the body and spec of any unit |withed| by
-`Constants` be elaborated before `Calc` is elaborated.
+``Constants`` be elaborated before ``Calc`` is elaborated.
 
 Clearly no automatic method can always guess which alternative you require,
 and if you are working with legacy code that had constraints of this kind
-which were not properly specified by adding `Elaborate` or
-`Elaborate_All` pragmas, then indeed it is possible that two different
+which were not properly specified by adding ``Elaborate`` or
+``Elaborate_All`` pragmas, then indeed it is possible that two different
 compilers can choose different orders.
 
 However, GNAT does attempt to diagnose the common situation where there
@@ -1707,13 +1709,13 @@ indirectly initializes one or more of these variables. This is the situation
 in which a pragma Elaborate_Body is usually desirable, and GNAT will generate
 a warning that suggests this addition if it detects this situation.
 
-The `gnatbind` *-p* switch may be useful in smoking
+The ``gnatbind` :switch:`-p` switch may be useful in smoking
 out problems. This switch causes bodies to be elaborated as late as possible
 instead of as early as possible. In the example above, it would have forced
 the choice of the first elaboration order. If you get different results
 when using this switch, and particularly if one set of results is right,
 and one is wrong as far as you are concerned, it shows that you have some
-missing `Elaborate` pragmas. For the example above, we have the
+missing ``Elaborate`` pragmas. For the example above, we have the
 following output:
 
 .. code-block:: sh
@@ -1729,7 +1731,7 @@ It is of course quite unlikely that both these results are correct, so
 it is up to you in a case like this to investigate the source of the
 difference, by looking at the two elaboration orders that are chosen,
 and figuring out which is correct, and then adding the necessary
-`Elaborate` or `Elaborate_All` pragmas to ensure the desired order.
+``Elaborate`` or ``Elaborate_All`` pragmas to ensure the desired order.
 
 
 .. _Determining_the_Chosen_Elaboration_Order:
@@ -1780,7 +1782,7 @@ flag that the corresponding body is now elaborated.
 
 You can also ask the binder to generate a more
 readable list of the elaboration order using the
-`-l` switch when invoking the binder. Here is
+:switch:`-l` switch when invoking the binder. Here is
 an example of the output generated by this switch::
 
      ada (spec)

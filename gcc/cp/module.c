@@ -2049,7 +2049,6 @@ void
 cpms_out::define_class (tree type)
 {
   chained_decls (TYPE_FIELDS (type));
-  chained_decls (TYPE_METHODS (type));
   tree_node (TYPE_VFIELD (type));
   tree_node (TYPE_BINFO (type));
   if (TYPE_LANG_SPECIFIC (type))
@@ -2062,7 +2061,7 @@ cpms_out::define_class (tree type)
       tree_node (CLASSTYPE_PRIMARY_BINFO (type));
       tree_vec (CLASSTYPE_VBASECLASSES (type));
 
-      tree_vec (CLASSTYPE_METHOD_VEC (type));
+      tree_vec (CLASSTYPE_MEMBER_VEC (type));
       tree_node (CLASSTYPE_FRIEND_CLASSES (type));
       tree_node (CLASSTYPE_LAMBDA_EXPR (type));
 
@@ -2086,8 +2085,10 @@ cpms_out::define_class (tree type)
   // lang->template_info
 
   /* Now define all the members.  */
-  for (tree method = TYPE_METHODS (type); method; method = TREE_CHAIN (method))
-    maybe_tag_definition (method);
+  for (tree member = TYPE_FIELDS (type); member; member = TREE_CHAIN (member))
+    // FIXME:non-members and whatnot
+    if (DECL_DECLARES_FUNCTION_P (member))
+      maybe_tag_definition (member);
   tree_node (NULL_TREE);
 }
 
@@ -2104,11 +2105,10 @@ cpms_in::define_class (tree type)
   gcc_assert (TYPE_MAIN_VARIANT (type) == type);
 
   tree fields = chained_decls ();
-  tree methods = chained_decls ();
   tree vfield = tree_node ();
   tree binfo = tree_node ();
   tree base = NULL_TREE;
-  vec<tree, va_gc> *method_vec = NULL;
+  vec<tree, va_gc> *member_vec = NULL;
   tree primary = NULL_TREE;
   vec<tree, va_gc> *vbases = NULL;
   vec<tree, va_gc> *pure_virts = NULL;
@@ -2124,7 +2124,7 @@ cpms_in::define_class (tree type)
       primary = tree_node ();
       vbases = tree_vec ();
 
-      method_vec = tree_vec ();
+      member_vec = tree_vec ();
       friends = tree_node ();
       lambda = tree_node ();
 
@@ -2150,7 +2150,6 @@ cpms_in::define_class (tree type)
     return NULL_TREE;
 
   TYPE_FIELDS (type) = fields;
-  TYPE_METHODS (type) = methods;
   TYPE_VFIELD (type) = vfield;
   TYPE_BINFO (type) = binfo;
 
@@ -2163,7 +2162,7 @@ cpms_in::define_class (tree type)
       CLASSTYPE_FRIEND_CLASSES (type) = friends;
       CLASSTYPE_LAMBDA_EXPR (type) = lambda;
 
-      CLASSTYPE_METHOD_VEC (type) = method_vec;
+      CLASSTYPE_MEMBER_VEC (type) = member_vec;
       CLASSTYPE_PURE_VIRTUALS (type) = pure_virts;
       CLASSTYPE_VCALL_INDICES (type) = vcall_indices;
 
@@ -2176,9 +2175,9 @@ cpms_in::define_class (tree type)
       for (; vtables; vtables = TREE_CHAIN (vtables))
 	DECL_INITIAL (vtables) = tree_node ();
 
+      // FIXME: create proper entry point
       /* Resort things that need to be sorted.  */
-      resort_type_method_vec (method_vec, NULL, nop, NULL);
-      set_class_bindings (type, fields);
+      resort_type_member_vec (member_vec, NULL, nop, NULL);
     }
 
   /* Propagate to all variants.  */
@@ -2837,7 +2836,6 @@ cpms_out::lang_decl_bools (tree t)
   WB (lang->u.base.threadprivate_or_deleted_p);
   WB (lang->u.base.anticipated_p);
   WB (lang->u.base.friend_or_tls);
-  WB (lang->u.base.template_conv_p);
   WB (lang->u.base.odr_used);
   WB (lang->u.base.u2sel);
   WB (lang->u.base.concept_p);
@@ -2892,7 +2890,6 @@ cpms_in::lang_decl_bools (tree t)
   RB (lang->u.base.threadprivate_or_deleted_p);
   RB (lang->u.base.anticipated_p);
   RB (lang->u.base.friend_or_tls);
-  RB (lang->u.base.template_conv_p);
   RB (lang->u.base.odr_used);
   RB (lang->u.base.u2sel);
   RB (lang->u.base.concept_p);
@@ -3165,8 +3162,8 @@ cpms_out::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      /* Records and unions hold FIELDS, METHODS, VFIELD & BINFO
-	 on these things.  */
+      /* Records and unions hold FIELDS, VFIELD & BINFO on these
+	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  WT (t->type_non_common.values);
@@ -3191,7 +3188,7 @@ cpms_out::core_vals (tree t)
 	  else
 	    WT (t->type_non_common.minval);
 	  WT (t->type_non_common.maxval);
-	  WT (t->type_non_common.binfo);
+	  WT (t->type_non_common.lang_1);
 	}
     }
 
@@ -3424,8 +3421,8 @@ cpms_in::core_vals (tree t)
 
   if (CODE_CONTAINS_STRUCT (code, TS_TYPE_NON_COMMON))
     {
-      /* Records and unions hold FIELDS, METHODS, VFIELD & BINFO
-	 on these things.  */
+      /* Records and unions hold FIELDS, VFIELD & BINFO on these
+	 things.  */
       if (!RECORD_OR_UNION_CODE_P (code))
 	{
 	  RT (t->type_non_common.values);
@@ -3440,7 +3437,7 @@ cpms_in::core_vals (tree t)
 	      r.bad ();
 	    }
 	  RT (t->type_non_common.maxval);
-	  RT (t->type_non_common.binfo);
+	  RT (t->type_non_common.lang_1);
 	}
     }
 
@@ -3688,19 +3685,14 @@ cpms_out::ident_imported_decl (tree ctx, unsigned mod, tree decl)
     }
   else if (TYPE_P (ctx))
     {
+      // FIXME: use get_class_binding_direct
       /* Until class scopes look like namespace scopes, we'll have to
 	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
-      int key = 0, inc = +1;
+      int key = 0;
       tree probe = TYPE_FIELDS (ctx);
 
-      if (DECL_DECLARES_FUNCTION_P (decl))
-	{
-	  inc = -1;
-	  key = -1;
-	  probe = TYPE_METHODS (ctx);
-	}
       for (; probe != decl; probe = TREE_CHAIN (probe))
-	key += inc;
+	key++;
       w.s (key);
     }
   else
@@ -3719,22 +3711,17 @@ cpms_in::ident_imported_decl (tree ctx, unsigned mod, tree name)
     }
   else if (TYPE_P (ctx))
     {
+      // FIXME: See above
       /* Until class scopes look like namespace scopes, we'll have to
 	 search the TYPE_FIELDS and TYPE_METHODS array.  Ew.  */
-      int key = r.s (), inc = 1;
+      int key = r.s ();
       tree probe = TYPE_FIELDS (ctx);
 
-      if (key < 0)
-	{
-	  inc = -1;
-	  key -= inc;
-	  probe = TYPE_METHODS (ctx);
-	}
       for (; key; probe = TREE_CHAIN (probe))
 	{
 	  if (!probe)
 	    break;
-	  key -= inc;
+	  key--;
 	}
       res = probe;
     }

@@ -933,8 +933,7 @@ ifcvt_can_use_mask_load_store (gimple *stmt)
   /* Mask should be integer mode of the same size as the load/store
      mode.  */
   mode = TYPE_MODE (TREE_TYPE (lhs));
-  if (int_mode_for_mode (mode) == BLKmode
-      || VECTOR_MODE_P (mode))
+  if (!int_mode_for_mode (mode).exists () || VECTOR_MODE_P (mode))
     return false;
 
   if (can_vec_mask_load_store_p (mode, VOIDmode, is_load))
@@ -2219,7 +2218,7 @@ predicate_mem_writes (loop_p loop)
 	    tree lhs = gimple_assign_lhs (stmt);
 	    tree rhs = gimple_assign_rhs1 (stmt);
 	    tree ref, addr, ptr, mask;
-	    gimple *new_stmt;
+	    gcall *new_stmt;
 	    gimple_seq stmts = NULL;
 	    int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (lhs)));
 	    ref = TREE_CODE (lhs) == SSA_NAME ? rhs : lhs;
@@ -2281,6 +2280,7 @@ predicate_mem_writes (loop_p loop)
 		gimple_set_vdef (new_stmt, gimple_vdef (stmt));
 		SSA_NAME_DEF_STMT (gimple_vdef (new_stmt)) = new_stmt;
 	      }
+	    gimple_call_set_nothrow (new_stmt, true);
 
 	    gsi_replace (&gsi, new_stmt, true);
 	  }

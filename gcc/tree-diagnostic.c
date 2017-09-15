@@ -25,6 +25,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree.h"
 #include "diagnostic.h"
 #include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "tree-diagnostic.h"
 #include "langhooks.h"
 #include "intl.h"
@@ -275,8 +276,13 @@ default_tree_printer (pretty_printer *pp, text_info *text, const char *spec,
       t = va_arg (*text->args_ptr, tree);
       break;
 
+    case 'G':
+      percent_G_format (text);
+      return true;
+
     case 'K':
-      percent_K_format (text);
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, t);
       return true;
 
     default:

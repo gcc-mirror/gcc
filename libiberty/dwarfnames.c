@@ -75,6 +75,7 @@ Boston, MA 02110-1301, USA.  */
 #define DW_ATE(name, value) case name: return # name ;
 #define DW_ATE_DUP(name, value)
 #define DW_CFA(name, value) case name: return # name ;
+#define DW_CFA_DUP(name, value)
 #define DW_IDX(name, value) case name: return # name ;
 #define DW_IDX_DUP(name, value)
 
@@ -105,5 +106,6 @@ Boston, MA 02110-1301, USA.  */
 #undef DW_ATE
 #undef DW_ATE_DUP
 #undef DW_CFA
+#undef DW_CFA_DUP
 #undef DW_IDX
 #undef DW_IDX_DUP

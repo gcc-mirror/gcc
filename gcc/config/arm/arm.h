@@ -976,26 +976,6 @@ extern int arm_arch_cmse;
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the ARM core regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  	\
-  ((TARGET_32BIT			\
-    && REGNO > PC_REGNUM		\
-    && REGNO != FRAME_POINTER_REGNUM	\
-    && REGNO != ARG_POINTER_REGNUM)	\
-    && !IS_VFP_REGNUM (REGNO)		\
-   ? 1 : ARM_NUM_REGS (MODE))
-
-/* Return true if REGNO is suitable for holding a quantity of type MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  arm_hard_regno_mode_ok ((REGNO), (MODE))
-
-#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
@@ -1172,23 +1152,6 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
-/* In VFPv1, VFP registers could only be accessed in the mode they
-   were set, so subregs would be invalid there.  However, we don't
-   support VFPv1 at the moment, and the restriction was lifted in
-   VFPv2.
-   In big-endian mode, modes greater than word size (i.e. DFmode) are stored in
-   VFP registers in little-endian order.  We can't describe that accurately to
-   GCC, so avoid taking subregs of such values.
-   The only exception is going from a 128-bit to a 64-bit type.  In that case
-   the data layout happens to be consistent for big-endian, so we explicitly allow
-   that case.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_BIG_END						\
-   && !(GET_MODE_SIZE (FROM) == 16 && GET_MODE_SIZE (TO) == 8)	\
-   && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
-       || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
-   && reg_classes_intersect_p (VFP_REGS, (CLASS)))
-
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : CORE_REGS)
@@ -1217,7 +1180,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : ((CLASS) != LO_REGS && (CLASS) != BASE_REGS			\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS))
 
@@ -1225,7 +1188,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : (CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS)
 
@@ -1486,11 +1449,8 @@ typedef struct
 } CUMULATIVE_ARGS;
 #endif
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
-
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 /* For AAPCS, padding should never be below the argument. For other ABIs,
  * mimic the default.  */
@@ -1926,8 +1886,6 @@ enum arm_auto_incmodes
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -1938,9 +1896,6 @@ enum arm_auto_incmodes
    On the arm, Y in a register is used modulo 256 for the shift. Only for
    rotates is modulo 32 used.  */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 /* Calling from registers is a massive pain.  */
 #define NO_FUNCTION_CSE 1

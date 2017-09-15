@@ -438,6 +438,67 @@ func TestEncodePalettes(t *testing.T) {
 	}
 }
 
+func TestEncodeBadPalettes(t *testing.T) {
+	const w, h = 5, 5
+	for _, n := range []int{256, 257} {
+		for _, nilColors := range []bool{false, true} {
+			pal := make(color.Palette, n)
+			if !nilColors {
+				for i := range pal {
+					pal[i] = color.Black
+				}
+			}
+
+			err := EncodeAll(ioutil.Discard, &GIF{
+				Image: []*image.Paletted{
+					image.NewPaletted(image.Rect(0, 0, w, h), pal),
+				},
+				Delay:    make([]int, 1),
+				Disposal: make([]byte, 1),
+				Config: image.Config{
+					ColorModel: pal,
+					Width:      w,
+					Height:     h,
+				},
+			})
+
+			got := err != nil
+			want := n > 256 || nilColors
+			if got != want {
+				t.Errorf("n=%d, nilColors=%t: err != nil: got %t, want %t", n, nilColors, got, want)
+			}
+		}
+	}
+}
+
+func TestEncodeCroppedSubImages(t *testing.T) {
+	// This test means to ensure that Encode honors the Bounds and Strides of
+	// images correctly when encoding.
+	whole := image.NewPaletted(image.Rect(0, 0, 100, 100), palette.Plan9)
+	subImages := []image.Rectangle{
+		image.Rect(0, 0, 50, 50),
+		image.Rect(50, 0, 100, 50),
+		image.Rect(0, 50, 50, 50),
+		image.Rect(50, 50, 100, 100),
+		image.Rect(25, 25, 75, 75),
+		image.Rect(0, 0, 100, 50),
+		image.Rect(0, 50, 100, 100),
+		image.Rect(0, 0, 50, 100),
+		image.Rect(50, 0, 100, 100),
+	}
+	for _, sr := range subImages {
+		si := whole.SubImage(sr)
+		buf := bytes.NewBuffer(nil)
+		if err := Encode(buf, si, nil); err != nil {
+			t.Errorf("Encode: sr=%v: %v", sr, err)
+			continue
+		}
+		if _, err := Decode(buf); err != nil {
+			t.Errorf("Decode: sr=%v: %v", sr, err)
+		}
+	}
+}
+
 func BenchmarkEncode(b *testing.B) {
 	b.StopTimer()
 

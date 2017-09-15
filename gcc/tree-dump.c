@@ -490,7 +490,6 @@ dequeue_and_dump (dump_info_p di)
 	dump_string_field (di, "tag", "union");
 
       dump_child ("flds", TYPE_FIELDS (t));
-      dump_child ("fncs", TYPE_METHODS (t));
       queue_and_dump_index (di, "binf", TYPE_BINFO (t),
 			    DUMP_BINFO);
       break;

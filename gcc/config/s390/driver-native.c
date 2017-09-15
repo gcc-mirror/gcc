@@ -112,10 +112,14 @@ s390_host_detect_local_cpu (int argc, const char **argv)
 	      cpu = "zEC12";
 	      break;
 	    case 0x2964:
+	    case 0x2965:
 	      cpu = "z13";
 	      break;
+	    case 0x3906:
+	      cpu = "z14";
+	      break;
 	    default:
-	      cpu = "arch12";
+	      cpu = "z14";
 	      break;
 	    }
 	}

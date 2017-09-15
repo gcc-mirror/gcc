@@ -270,11 +270,11 @@ Target RejectNegative Var(arc_tune, TUNE_ARC700_4_2_XMAC)
 Tune for ARC700 R4.2 Cpu with XMAC block.
 
 mindexed-loads
-Target Var(TARGET_INDEXED_LOADS)
+Target Var(TARGET_INDEXED_LOADS) Init(TARGET_INDEXED_LOADS_DEFAULT)
 Enable the use of indexed loads.
 
 mauto-modify-reg
-Target Var(TARGET_AUTO_MODIFY_REG)
+Target Var(TARGET_AUTO_MODIFY_REG) Init(TARGET_AUTO_MODIFY_REG_DEFAULT)
 Enable the use of pre/post modify with register displacement.
 
 mmul32x16
@@ -328,7 +328,7 @@ Target Var(TARGET_Q_CLASS)
 Enable 'q' instruction alternatives.
 
 mexpand-adddi
-Target Var(TARGET_EXPAND_ADDDI)
+Target Warn(%qs is deprecated)
 Expand adddi3 and subdi3 at rtl generation time into add.f / adc etc.
 
 
@@ -494,3 +494,28 @@ Specifies the registers that the processor saves on an interrupt entry and exit.
 mrgf-banked-regs=
 Target RejectNegative Joined Var(arc_deferred_options) Defer
 Specifies the number of registers replicated in second register bank on entry to fast interrupt.
+
+mlpc-width=
+Target RejectNegative Joined Enum(arc_lpc) Var(arc_lpcwidth) Init(32)
+Sets LP_COUNT register width.  Possible values are 8, 16, 20, 24, 28, and 32.
+
+Enum
+Name(arc_lpc) Type(int)
+
+EnumValue
+Enum(arc_lpc) String(8) Value(8)
+
+EnumValue
+Enum(arc_lpc) String(16) Value(16)
+
+EnumValue
+Enum(arc_lpc) String(20) Value(20)
+
+EnumValue
+Enum(arc_lpc) String(24) Value(24)
+
+EnumValue
+Enum(arc_lpc) String(28) Value(28)
+
+EnumValue
+Enum(arc_lpc) String(32) Value(32)

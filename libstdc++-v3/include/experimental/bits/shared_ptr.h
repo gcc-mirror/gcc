@@ -32,21 +32,19 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <memory>
 #include <experimental/type_traits>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // 8.2.1
 
   template<typename _Tp> class shared_ptr;
@@ -659,12 +657,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       mutable weak_ptr<_Tp> _M_weak_this;
     };
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   /// std::hash specialization for shared_ptr.
   template<typename _Tp>

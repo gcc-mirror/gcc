@@ -43,6 +43,7 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /**
@@ -335,7 +336,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       _M_get_node()
       {
 	auto __ptr = _Node_alloc_traits::allocate(_M_get_Node_allocator(), 1);
-	return std::__addressof(*__ptr);
+	return std::__to_address(__ptr);
       }
 
       template<typename... _Args>
@@ -1440,6 +1441,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __lx.swap(__ly); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // _FORWARD_LIST_H

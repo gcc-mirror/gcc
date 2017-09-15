@@ -582,8 +582,9 @@ find_loop_guard (struct loop *loop)
   gcond *cond;
   do
     {
+      basic_block next = NULL;
       if (single_succ_p (header))
-	header = single_succ (header);
+	next = single_succ (header);
       else
 	{
 	  cond = dyn_cast <gcond *> (last_stmt (header));
@@ -593,12 +594,16 @@ find_loop_guard (struct loop *loop)
 	  /* Make sure to skip earlier hoisted guards that are left
 	     in place as if (true).  */
 	  if (gimple_cond_true_p (cond))
-	    header = te->dest;
+	    next = te->dest;
 	  else if (gimple_cond_false_p (cond))
-	    header = fe->dest;
+	    next = fe->dest;
 	  else
 	    break;
 	}
+      /* Never traverse a backedge.  */
+      if (header->loop_father->header == next)
+	return NULL;
+      header = next;
     }
   while (1);
   if (!flow_bb_inside_loop_p (loop, te->dest)

@@ -220,7 +220,8 @@ package body Errutil is
             Serious  => Is_Serious_Error,
             Uncond   => Is_Unconditional_Msg,
             Msg_Cont => Continuation,
-            Deleted  => False));
+            Deleted  => False,
+            Node     => Empty));
 
       Cur_Msg  := Errors.Last;
       Prev_Msg := No_Error_Msg;

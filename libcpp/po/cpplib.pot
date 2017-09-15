@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: https://gcc.gnu.org/bugs/\n"
-"POT-Creation-Date: 2017-05-01 22:24+0000\n"
+"POT-Creation-Date: 2017-08-04 22:19+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -789,7 +789,7 @@ msgstr ""
 msgid "multi-line comment"
 msgstr ""
 
-#: lex.c:3248
+#: lex.c:3255
 #, c-format
 msgid "unspellable token %s"
 msgstr ""

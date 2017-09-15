@@ -106,45 +106,45 @@
 
 (define_insn_reservation "cortex_a5_load1" 2
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "load_byte,load1"))
+       (eq_attr "type" "load_byte,load_4"))
   "cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_store1" 0
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "store1"))
+       (eq_attr "type" "store_4"))
   "cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_load2" 3
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_store2" 0
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_load3" 4
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "load3"))
+       (eq_attr "type" "load_12"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1+cortex_a5_branch,\
    cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_store3" 0
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "store3"))
+       (eq_attr "type" "store_12"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1+cortex_a5_branch,\
    cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_load4" 5
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "load3"))
+       (eq_attr "type" "load_12"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1+cortex_a5_branch,\
    cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 
 (define_insn_reservation "cortex_a5_store4" 0
   (and (eq_attr "tune" "cortexa5")
-       (eq_attr "type" "store3"))
+       (eq_attr "type" "store_12"))
   "cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1+cortex_a5_branch,\
    cortex_a5_ex1+cortex_a5_branch, cortex_a5_ex1")
 

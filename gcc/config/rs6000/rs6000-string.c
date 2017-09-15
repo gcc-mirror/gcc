@@ -32,6 +32,7 @@
 #include "explow.h"
 #include "expr.h"
 #include "output.h"
+#include "target.h"
 
 /* Expand a block clear operation, and return 1 if successful.  Return 0
    if we should let the compiler generate normal code.
@@ -152,13 +153,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 {
   switch (GET_MODE (reg))
     {
-    case DImode:
+    case E_DImode:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_zero_extendqidi2 (reg, mem));
 	  break;
-	case HImode:
+	case E_HImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -169,7 +170,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendhidi2 (reg, src));
 	    break;
 	  }
-	case SImode:
+	case E_SImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -180,7 +181,7 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendsidi2 (reg, src));
 	  }
 	  break;
-	case DImode:
+	case E_DImode:
 	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapdi2 (reg, mem));
 	  else
@@ -191,13 +192,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	}
       break;
 
-    case SImode:
+    case E_SImode:
       switch (mode)
 	{
-	case QImode:
+	case E_QImode:
 	  emit_insn (gen_zero_extendqisi2 (reg, mem));
 	  break;
-	case HImode:
+	case E_HImode:
 	  {
 	    rtx src = mem;
 	    if (!BYTES_BIG_ENDIAN)
@@ -208,13 +209,13 @@ do_load_for_compare (rtx reg, rtx mem, machine_mode mode)
 	    emit_insn (gen_zero_extendhisi2 (reg, src));
 	    break;
 	  }
-	case SImode:
+	case E_SImode:
 	  if (!BYTES_BIG_ENDIAN)
 	    emit_insn (gen_bswapsi2 (reg, mem));
 	  else
 	    emit_insn (gen_movsi (reg, mem));
 	  break;
-	case DImode:
+	case E_DImode:
 	  /* DImode is larger than the destination reg so is not expected.  */
 	  gcc_unreachable ();
 	  break;
@@ -338,9 +339,9 @@ expand_block_compare (rtx operands[])
 
   unsigned int base_align = UINTVAL (align_rtx) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src1))
-      || SLOW_UNALIGNED_ACCESS (word_mode, MEM_ALIGN (orig_src2)))
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src1))
+      || targetm.slow_unaligned_access (word_mode, MEM_ALIGN (orig_src2)))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
@@ -729,9 +730,9 @@ expand_strn_compare (rtx operands[], int no_length)
   int align1 = MEM_ALIGN (orig_src1) / BITS_PER_UNIT;
   int align2 = MEM_ALIGN (orig_src2) / BITS_PER_UNIT;
 
-  /* SLOW_UNALIGNED_ACCESS -- don't do unaligned stuff.  */
-  if (SLOW_UNALIGNED_ACCESS (word_mode, align1)
-      || SLOW_UNALIGNED_ACCESS (word_mode, align2))
+  /* targetm.slow_unaligned_access -- don't do unaligned stuff.  */
+  if (targetm.slow_unaligned_access (word_mode, align1)
+      || targetm.slow_unaligned_access (word_mode, align2))
     return false;
 
   gcc_assert (GET_MODE (target) == SImode);
@@ -843,7 +844,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -862,7 +863,7 @@ expand_strn_compare (rtx operands[], int no_length)
 
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));
@@ -1109,7 +1110,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	{
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 2,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode);
 	}
@@ -1124,7 +1125,7 @@ expand_strn_compare (rtx operands[], int no_length)
 	  emit_move_insn (len_rtx, GEN_INT (bytes - compare_length));
 	  tree fun = builtin_decl_explicit (BUILT_IN_STRNCMP);
 	  emit_library_call_value (XEXP (DECL_RTL (fun), 0),
-				   target, LCT_NORMAL, GET_MODE (target), 3,
+				   target, LCT_NORMAL, GET_MODE (target),
 				   force_reg (Pmode, XEXP (src1, 0)), Pmode,
 				   force_reg (Pmode, XEXP (src2, 0)), Pmode,
 				   len_rtx, GET_MODE (len_rtx));

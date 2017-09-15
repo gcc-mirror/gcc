@@ -301,6 +301,76 @@ struct ggc_cache_ptr_hash : pointer_hash <T>, ggc_cache_remove <T *> {};
 
 struct nofree_string_hash : string_hash, typed_noop_remove <const char *> {};
 
+/* Traits for pairs of values, using the first to record empty and
+   deleted slots.  */
+
+template <typename T1, typename T2>
+struct pair_hash
+{
+  typedef std::pair <typename T1::value_type,
+		     typename T2::value_type> value_type;
+  typedef std::pair <typename T1::compare_type,
+		     typename T2::compare_type> compare_type;
+
+  static inline hashval_t hash (const value_type &);
+  static inline bool equal (const value_type &, const compare_type &);
+  static inline void remove (value_type &);
+  static inline void mark_deleted (value_type &);
+  static inline void mark_empty (value_type &);
+  static inline bool is_deleted (const value_type &);
+  static inline bool is_empty (const value_type &);
+};
+
+template <typename T1, typename T2>
+inline hashval_t
+pair_hash <T1, T2>::hash (const value_type &x)
+{
+  return iterative_hash_hashval_t (T1::hash (x.first), T2::hash (x.second));
+}
+
+template <typename T1, typename T2>
+inline bool
+pair_hash <T1, T2>::equal (const value_type &x, const compare_type &y)
+{
+  return T1::equal (x.first, y.first) && T2::equal (x.second, y.second);
+}
+
+template <typename T1, typename T2>
+inline void
+pair_hash <T1, T2>::remove (value_type &x)
+{
+  T1::remove (x.first);
+  T2::remove (x.second);
+}
+
+template <typename T1, typename T2>
+inline void
+pair_hash <T1, T2>::mark_deleted (value_type &x)
+{
+  T1::mark_deleted (x.first);
+}
+
+template <typename T1, typename T2>
+inline void
+pair_hash <T1, T2>::mark_empty (value_type &x)
+{
+  T1::mark_empty (x.first);
+}
+
+template <typename T1, typename T2>
+inline bool
+pair_hash <T1, T2>::is_deleted (const value_type &x)
+{
+  return T1::is_deleted (x.first);
+}
+
+template <typename T1, typename T2>
+inline bool
+pair_hash <T1, T2>::is_empty (const value_type &x)
+{
+  return T1::is_empty (x.first);
+}
+
 template <typename T> struct default_hash_traits : T {};
 
 template <typename T>

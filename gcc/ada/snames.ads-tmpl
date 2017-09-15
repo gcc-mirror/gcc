@@ -388,6 +388,7 @@ package Snames is
    Name_Ada_2005                       : constant Name_Id := N + $; -- GNAT
    Name_Ada_12                         : constant Name_Id := N + $; -- GNAT
    Name_Ada_2012                       : constant Name_Id := N + $; -- GNAT
+   Name_Ada_2020                       : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
@@ -432,6 +433,7 @@ package Snames is
    Name_Interrupt_State                : constant Name_Id := N + $; -- GNAT
    Name_License                        : constant Name_Id := N + $; -- GNAT
    Name_Locking_Policy                 : constant Name_Id := N + $;
+   Name_No_Component_Reordering        : constant Name_Id := N + $; -- GNAT
    Name_No_Heap_Finalization           : constant Name_Id := N + $; -- GNAT
    Name_No_Run_Time                    : constant Name_Id := N + $; -- GNAT
    Name_No_Strict_Aliasing             : constant Name_Id := N + $; -- GNAT
@@ -1778,6 +1780,9 @@ package Snames is
       Pragma_Ada_2005,
       Pragma_Ada_12,
       Pragma_Ada_2012,
+      Pragma_Ada_2020,
+      --  Note that there is no Pragma_Ada_20. Pragma_Ada_05/12 are for
+      --  compatibility reasons only; the full year names are preferred.
       Pragma_Allow_Integer_Address,
       Pragma_Annotate,
       Pragma_Assertion_Policy,
@@ -1810,6 +1815,7 @@ package Snames is
       Pragma_Interrupt_State,
       Pragma_License,
       Pragma_Locking_Policy,
+      Pragma_No_Component_Reordering,
       Pragma_No_Heap_Finalization,
       Pragma_No_Run_Time,
       Pragma_No_Strict_Aliasing,

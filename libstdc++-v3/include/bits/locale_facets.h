@@ -1487,7 +1487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     protected:
       virtual
-      ~ctype_byname() { };
+      ~ctype_byname() { }
     };
 
   /// 22.2.1.4  Class ctype_byname specializations.
@@ -2486,7 +2486,7 @@ _GLIBCXX_BEGIN_NAMESPACE_LDBL
 
       /// Destructor.
       virtual
-      ~num_put() { };
+      ~num_put() { }
 
       //@{
       /**

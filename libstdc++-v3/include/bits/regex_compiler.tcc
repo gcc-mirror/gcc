@@ -55,10 +55,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace __detail
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace __detail
+{
   template<typename _TraitsT>
     _Compiler<_TraitsT>::
     _Compiler(_IterT __b, _IterT __e,
@@ -633,7 +633,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return false;
       }() ^ _M_is_non_matching;
     }
+} // namespace __detail
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace __detail
 } // namespace

@@ -1,3 +1,45 @@
+2017-09-12  Steve Ellcey  <sellcey@cavium.com>
+
+	PR other/81096
+	* Makefile.am (ttest_CFLAGS): Add $(AM_CFLAGS)
+	* Makefile.in: Regenerate.
+
+2017-09-12  Steve Ellcey  <sellcey@cavium.com>
+
+	PR other/81096
+	* libbacktrace/Makefile.in
+	(HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS): Add $(AM_CFLAGS)
+
+2017-08-02  David Edelsohn  <dje.gcc@gmail.com>
+
+	PR bootstrap/81638
+	* xcoff.c (xcoff_process_linenos): Initialize incl to NULL.
+
+2017-07-28  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c: Don't leak a file descriptor if an archive is malformed.
+
+2017-07-28  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* fileline.c (fileline_initialize): Print pid_t as long.
+
+2017-07-26  Tony Reix  <tony.reix@atos.net>
+
+	* configure.ac: Check for XCOFF32/XCOFF64.  Check for loadquery.
+	* filetype.awk: Separate AIX XCOFF32 and XCOFF64.
+	* xcoff.c: Add support for AIX XCOFF32 and XCOFF64 formats.
+	* configure, config.h.in: Regenerate.
+
+2017-07-21  Tony Reix  <tony.reix@atos.net>
+
+	* filetype.awk: Add AIX XCOFF type detection.
+	* configure.ac: Recognize xcoff format.
+	* Makefile.am (FORMAT_FILES): Add xcoff.c.
+	* fileline.c: Include <unistd.h>.
+	(fileline_initialize): Add case for AIX procfs.
+	* xcoff.c: New file.
+	* configure, Makefile.in: Rebuild.
+
 2017-06-21  Richard Biener  <rguenther@suse.de>
 
 	* configure.ac: Add AC_SYS_LARGEFILE.

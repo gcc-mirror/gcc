@@ -560,6 +560,7 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
   rtx x = *loc;
   enum rtx_code code = GET_CODE (x);
   rtx new_rtx = NULL_RTX;
+  scalar_int_mode is_mode;
 
   if (SWAPPABLE_OPERANDS_P (x)
       && swap_commutative_operands_p (XEXP (x, 0), XEXP (x, 1)))
@@ -655,32 +656,25 @@ simplify_while_replacing (rtx *loc, rtx to, rtx_insn *object,
          happen, we might just fail in some cases).  */
 
       if (MEM_P (XEXP (x, 0))
+	  && is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &is_mode)
 	  && CONST_INT_P (XEXP (x, 1))
 	  && CONST_INT_P (XEXP (x, 2))
 	  && !mode_dependent_address_p (XEXP (XEXP (x, 0), 0),
 					MEM_ADDR_SPACE (XEXP (x, 0)))
 	  && !MEM_VOLATILE_P (XEXP (x, 0)))
 	{
-	  machine_mode wanted_mode = VOIDmode;
-	  machine_mode is_mode = GET_MODE (XEXP (x, 0));
 	  int pos = INTVAL (XEXP (x, 2));
-
+	  machine_mode new_mode = is_mode;
 	  if (GET_CODE (x) == ZERO_EXTRACT && targetm.have_extzv ())
-	    {
-	      wanted_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
-	    }
+	    new_mode = insn_data[targetm.code_for_extzv].operand[1].mode;
 	  else if (GET_CODE (x) == SIGN_EXTRACT && targetm.have_extv ())
-	    {
-	      wanted_mode = insn_data[targetm.code_for_extv].operand[1].mode;
-	      if (wanted_mode == VOIDmode)
-		wanted_mode = word_mode;
-	    }
+	    new_mode = insn_data[targetm.code_for_extv].operand[1].mode;
+	  scalar_int_mode wanted_mode = (new_mode == VOIDmode
+					 ? word_mode
+					 : as_a <scalar_int_mode> (new_mode));
 
 	  /* If we have a narrower mode, we can do something.  */
-	  if (wanted_mode != VOIDmode
-	      && GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
+	  if (GET_MODE_SIZE (wanted_mode) < GET_MODE_SIZE (is_mode))
 	    {
 	      int offset = pos / BITS_PER_UNIT;
 	      rtx newmem;
@@ -1002,7 +996,7 @@ general_operand (rtx op, machine_mode mode)
 	 However, we must allow them after reload so that they can
 	 get cleaned up by cleanup_subreg_operands.  */
       if (!reload_completed && MEM_P (sub)
-	  && GET_MODE_SIZE (mode) > GET_MODE_SIZE (GET_MODE (sub)))
+	  && paradoxical_subreg_p (op))
 	return 0;
 #endif
       /* Avoid memories with nonzero SUBREG_BYTE, as offsetting the memory
@@ -1015,10 +1009,9 @@ general_operand (rtx op, machine_mode mode)
 	  && MEM_P (sub))
 	return 0;
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
       if (REG_P (sub)
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
-	  && REG_CANNOT_CHANGE_MODE_P (REGNO (sub), GET_MODE (sub), mode)
+	  && !REG_CAN_CHANGE_MODE_P (REGNO (sub), GET_MODE (sub), mode)
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_INT
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_FLOAT
 	  /* LRA can generate some invalid SUBREGS just for matched
@@ -1026,7 +1019,6 @@ general_operand (rtx op, machine_mode mode)
 	     valid.  */
 	  && ! LRA_SUBREG_P (op))
 	return 0;
-#endif
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */
@@ -1037,7 +1029,7 @@ general_operand (rtx op, machine_mode mode)
 	     size of floating point mode can be less than the integer
 	     mode.  */
 	  && ! lra_in_progress 
-	  && GET_MODE_SIZE (GET_MODE (op)) > GET_MODE_SIZE (GET_MODE (sub)))
+	  && paradoxical_subreg_p (op))
 	return 0;
 
       op = sub;
@@ -1188,8 +1180,9 @@ const_scalar_int_operand (rtx op, machine_mode mode)
 
   if (mode != VOIDmode)
     {
-      int prec = GET_MODE_PRECISION (mode);
-      int bitsize = GET_MODE_BITSIZE (mode);
+      scalar_int_mode int_mode = as_a <scalar_int_mode> (mode);
+      int prec = GET_MODE_PRECISION (int_mode);
+      int bitsize = GET_MODE_BITSIZE (int_mode);
 
       if (CONST_WIDE_INT_NUNITS (op) * HOST_BITS_PER_WIDE_INT > bitsize)
 	return 0;
@@ -3164,11 +3157,11 @@ peep2_find_free_register (int from, int to, const char *class_str,
 #endif
 
       /* Can it support the mode we need?  */
-      if (! HARD_REGNO_MODE_OK (regno, mode))
+      if (!targetm.hard_regno_mode_ok (regno, mode))
 	continue;
 
       success = 1;
-      for (j = 0; success && j < hard_regno_nregs[regno][mode]; j++)
+      for (j = 0; success && j < hard_regno_nregs (regno, mode); j++)
 	{
 	  /* Don't allocate fixed registers.  */
 	  if (fixed_regs[regno + j])

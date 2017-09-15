@@ -378,11 +378,11 @@ C++ ObjC++ Var(warn_cxx14_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
 Warn about C++ constructs whose meaning differs between ISO C++ 2011 and ISO C++ 2014.
 
 Wc++1z-compat
-C++ ObjC++ Var(warn_cxx1z_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
-Warn about C++ constructs whose meaning differs between ISO C++ 2014 and (forthcoming) ISO C++ 201z(7?).
+C++ ObjC++ Warning Alias(Wc++17-compat) Undocumented
 
 Wc++17-compat
-C++ ObjC++ Warning Alias(Wc++1z-compat) Undocumented
+C++ ObjC++ Var(warn_cxx17_compat) Warning LangEnabledBy(C++ ObjC++,Wall)
+Warn about C++ constructs whose meaning differs between ISO C++ 2014 and ISO C++ 2017.
 
 Wcast-qual
 C ObjC C++ ObjC++ Var(warn_cast_qual) Warning
@@ -579,6 +579,10 @@ Wformat-truncation=
 C ObjC C++ ObjC++ Joined RejectNegative UInteger Var(warn_format_trunc) Warning LangEnabledBy(C ObjC C++ ObjC++,Wformat=, warn_format >= 1, 0) IntegerRange(0, 2)
 Warn about calls to snprintf and similar functions that truncate output.
 
+Wif-not-aligned
+C ObjC C++ ObjC++ Var(warn_if_not_aligned) Init(1) Warning
+Warn when the field in a struct is not aligned.
+
 Wignored-qualifiers
 C C++ Var(warn_ignored_qualifiers) Warning EnabledBy(Wextra)
 Warn whenever type qualifiers are ignored.
@@ -710,6 +714,10 @@ Wnamespaces
 C++ ObjC++ Var(warn_namespaces) Warning
 Warn on namespace definition.
 
+Wpacked-not-aligned
+C ObjC C++ ObjC++ Var(warn_packed_not_aligned) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
+Warn when fields in a struct with the packed attribute are misaligned.
+
 Wsized-deallocation
 C++ ObjC++ Var(warn_sized_deallocation) Warning EnabledBy(Wextra)
 Warn about missing sized deallocation functions.
@@ -801,8 +809,8 @@ C++ ObjC++ Var(warn_noexcept) Warning
 Warn when a noexcept expression evaluates to false even though the expression can't actually throw.
 
 Wnoexcept-type
-C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++1z-compat)
-Warn if C++1z noexcept function type will change the mangled name of a symbol.
+C++ ObjC++ Warning Var(warn_noexcept_type) LangEnabledBy(C++ ObjC++,Wabi || Wc++17-compat)
+Warn if C++17 noexcept function type will change the mangled name of a symbol.
 
 Wnon-template-friend
 C++ ObjC++ Var(warn_nontemplate_friend) Init(1) Warning
@@ -1929,11 +1937,12 @@ C++ ObjC++
 Conform to the ISO 2014 C++ standard.
 
 std=c++1z
-C++ ObjC++
-Conform to the ISO 2017(?) C++ draft standard (experimental and incomplete support).
+C++ ObjC++ Alias(std=c++17) Undocumented
+Deprecated in favor of -std=c++17.
 
 std=c++17
-C++ ObjC++ Alias(std=c++1z) Undocumented
+C++ ObjC++
+Conform to the ISO 2017 C++ standard.
 
 std=c11
 C ObjC
@@ -1986,11 +1995,12 @@ C++ ObjC++
 Conform to the ISO 2014 C++ standard with GNU extensions.
 
 std=gnu++1z
-C++ ObjC++
-Conform to the ISO 201z(7?) C++ draft standard with GNU extensions (experimental and incomplete support).
+C++ ObjC++ Alias(std=gnu++17) Undocumented
+Deprecated in favor of -std=gnu++17.
 
 std=gnu++17
-C++ ObjC++ Alias(std=gnu++1z) Undocumented
+C++ ObjC++
+Conform to the ISO 2017 C++ standard with GNU extensions.
 
 std=gnu11
 C ObjC

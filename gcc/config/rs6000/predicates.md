@@ -622,17 +622,17 @@
 
   switch (mode)
     {
-    case KFmode:
-    case IFmode:
-    case TFmode:
-    case DFmode:
-    case SFmode:
+    case E_KFmode:
+    case E_IFmode:
+    case E_TFmode:
+    case E_DFmode:
+    case E_SFmode:
       return 0;
 
-    case DImode:
+    case E_DImode:
       return (num_insns_constant (op, DImode) <= 2);
 
-    case SImode:
+    case E_SImode:
       return 1;
 
     default:
@@ -783,10 +783,8 @@
   (and (and (match_code "mem")
 	    (match_test "MEM_VOLATILE_P (op)"))
        (if_then_else (match_test "reload_completed")
-         (match_operand 0 "memory_operand")
-         (if_then_else (match_test "reload_in_progress")
-	   (match_test "strict_memory_address_p (mode, XEXP (op, 0))")
-	   (match_test "memory_address_p (mode, XEXP (op, 0))")))))
+	 (match_operand 0 "memory_operand")
+	 (match_test "memory_address_p (mode, XEXP (op, 0))"))))
 
 ;; Return 1 if the operand is an offsettable memory operand.
 (define_predicate "offsettable_mem_operand"
@@ -829,7 +827,7 @@
 (define_predicate "vsx_quad_dform_memory_operand"
   (match_code "mem")
 {
-  if (!TARGET_P9_DFORM_VECTOR || !MEM_P (op) || GET_MODE_SIZE (mode) != 16)
+  if (!TARGET_P9_VECTOR || !MEM_P (op) || GET_MODE_SIZE (mode) != 16)
     return false;
 
   return quad_address_p (XEXP (op, 0), mode, false);
@@ -1142,7 +1140,7 @@
       if (! volatile_ok && MEM_VOLATILE_P (op))
 	return 0;
 
-      if (reload_in_progress || lra_in_progress || reload_completed)
+      if (lra_in_progress || reload_completed)
 	return indexed_or_indirect_address (addr, vmode);
       else
 	return memory_address_addr_space_p (vmode, addr, MEM_ADDR_SPACE (op));
@@ -1836,12 +1834,12 @@
 
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       break;
 
-    case DImode:
+    case E_DImode:
       if (!TARGET_POWERPC64)
 	return 0;
       break;
@@ -1896,20 +1894,20 @@
 
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       break;
 
     /* Do not fuse 64-bit DImode in 32-bit since it splits into two
        separate instructions.  */
-    case DImode:
+    case E_DImode:
       if (!TARGET_POWERPC64)
 	return 0;
       break;
 
     /* ISA 2.08/power8 only had fusion of GPR loads.  */
-    case SFmode:
+    case E_SFmode:
       if (!TARGET_P9_FUSION)
 	return 0;
       break;
@@ -1917,7 +1915,7 @@
     /* ISA 2.08/power8 only had fusion of GPR loads.  Do not allow 64-bit
        DFmode in 32-bit if -msoft-float since it splits into two separate
        instructions.  */
-    case DFmode:
+    case E_DFmode:
       if ((!TARGET_POWERPC64 && !TARGET_DF_FPR) || !TARGET_P9_FUSION)
 	return 0;
       break;
@@ -1961,15 +1959,15 @@
 
   switch (mode)
     {
-    case QImode:
-    case HImode:
-    case SImode:
-    case SFmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
+    case E_SFmode:
       break;
 
     /* Do not fuse 64-bit DImode in 32-bit since it splits into two
        separate instructions.  */
-    case DImode:
+    case E_DImode:
       if (!TARGET_POWERPC64)
 	return 0;
       break;
@@ -1977,7 +1975,7 @@
     /* Do not allow 64-bit DFmode in 32-bit if -msoft-float since it splits
        into two separate instructions.  Do allow fusion if we have hardware
        floating point.  */
-    case DFmode:
+    case E_DFmode:
       if (!TARGET_POWERPC64 && !TARGET_DF_FPR)
 	return 0;
       break;

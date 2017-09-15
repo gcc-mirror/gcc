@@ -44,7 +44,7 @@ nearbyintq(__float128 x)
 	fenv_t env;
 #endif
 	int64_t i0,j0,sx;
-	uint64_t i1;
+	uint64_t i1 __attribute__ ((unused));
 	__float128 w,t;
 	GET_FLT128_WORDS64(i0,i1,x);
 	sx = (((uint64_t)i0)>>63);
@@ -56,6 +56,7 @@ nearbyintq(__float128 x)
 #endif
 	        w = TWO112[sx]+x;
 	        t = w-TWO112[sx];
+		math_force_eval (t);
 #ifdef USE_FENV_H
 	        fesetenv (&env);
 #endif
@@ -72,6 +73,7 @@ nearbyintq(__float128 x)
 #endif
 	w = TWO112[sx]+x;
 	t = w-TWO112[sx];
+	math_force_eval (t);
 #ifdef USE_FENV_H	
 	fesetenv (&env);
 #endif

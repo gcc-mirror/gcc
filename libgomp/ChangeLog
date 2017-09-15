@@ -1,3 +1,89 @@
+2017-09-14  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.c++/cancel-taskgroup-1.C: Remove.
+	* testsuite/libgomp.c/cancel-taskgroup-1.c: Move to ...
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-1.c: ... here.
+	* testsuite/libgomp.c/c.exp: Include test-cases from
+	libgomp.c-c++-common.
+	* testsuite/libgomp.c++/c++.exp: Same.  Force c++-mode compilation of .c
+	files.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* testsuite/libgomp.c++/pr81314.C: New test.
+
+2017-09-03  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* libgomp.texi (Top): www.openacc.org now uses https.
+	(Enabling OpenACC): Ditto.
+	(acc_get_num_devices): Ditto.
+	(acc_set_device_type): Ditto.
+	(acc_get_device_type): Ditto.
+	(acc_set_device_num): Ditto.
+	(acc_get_device_num): Ditto.
+	(acc_async_test): Ditto.
+	(acc_async_test_all): Ditto.
+	(acc_wait): Ditto.
+	(acc_wait_all): Ditto.
+	(acc_wait_all_async): Ditto.
+	(acc_wait_async): Ditto.
+	(acc_init): Ditto.
+	(acc_shutdown): Ditto.
+	(acc_on_device): Ditto.
+	(acc_malloc): Ditto.
+	(acc_free): Ditto.
+	(acc_copyin): Ditto.
+	(acc_present_or_copyin): Ditto.
+	(acc_create): Ditto.
+	(acc_present_or_create): Ditto.
+	(acc_copyout): Ditto.
+	(acc_delete): Ditto.
+	(acc_update_device): Ditto.
+	(acc_update_self): Ditto.
+	(acc_map_data): Ditto.
+	(acc_unmap_data): Ditto.
+	(acc_deviceptr): Ditto.
+	(acc_hostptr): Ditto.
+	(acc_is_present): Ditto.
+	(acc_memcpy_to_device): Ditto.
+	(acc_memcpy_from_device): Ditto.
+	(acc_get_current_cuda_device): Ditto.
+	(acc_get_current_cuda_context): Ditto.
+	(acc_get_cuda_stream): Ditto.
+	(acc_set_cuda_stream): Ditto.
+	(ACC_DEVICE_TYPE): Ditto.
+	(ACC_DEVICE_NUM): Ditto.
+	(OpenACC Library Interoperability): Ditto.
+
+2017-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81687
+	* testsuite/libgomp.c/pr81687-1.c: New test.
+	* testsuite/libgomp.c/pr81687-2.c: New test.
+
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/69389
+	* testsuite/libgomp.c/pr69389.c: New test.
+	* testsuite/libgomp.c++/pr69389.C: New test.
+
+2017-08-07  Tom de Vries  <tom@codesourcery.com>
+
+	PR middle-end/78266
+	* testsuite/libgomp.oacc-c-c++-common/vprop-2.c: New test.
+	* testsuite/libgomp.oacc-c-c++-common/vprop.c: Remove xfail.
+
+2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/45784
+	* testsuite/libgomp.c/pr45784.c: New test.
+	* testsuite/libgomp.c++/pr45784.C: New test.
+
+2017-07-19  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c/vec.c: New test.
+
 2017-07-03  Tom de Vries  <tom@codesourcery.com>
 
 	* plugin/plugin-hsa.c: Fix secure_getenv.h include.

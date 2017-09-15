@@ -540,8 +540,6 @@ static void bitmap_set_copy (bitmap_set_t, bitmap_set_t);
 static void bitmap_set_and (bitmap_set_t, bitmap_set_t);
 static bool bitmap_set_contains_value (bitmap_set_t, unsigned int);
 static void bitmap_insert_into_set (bitmap_set_t, pre_expr);
-static void bitmap_insert_into_set_1 (bitmap_set_t, pre_expr,
-				      unsigned int, bool);
 static bitmap_set_t bitmap_set_new (void);
 static tree create_expression_by_pieces (basic_block, pre_expr, gimple_seq *,
 					 tree);
@@ -732,25 +730,20 @@ bitmap_remove_from_set (bitmap_set_t set, pre_expr expr)
     }
 }
 
-static void
-bitmap_insert_into_set_1 (bitmap_set_t set, pre_expr expr,
-			  unsigned int val, bool allow_constants)
-{
-  if (allow_constants || !value_id_constant_p (val))
-    {
-      /* We specifically expect this and only this function to be able to
-	 insert constants into a set.  */
-      bitmap_set_bit (&set->values, val);
-      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
-    }
-}
-
 /* Insert an expression EXPR into a bitmapped set.  */
 
 static void
 bitmap_insert_into_set (bitmap_set_t set, pre_expr expr)
 {
-  bitmap_insert_into_set_1 (set, expr, get_expr_value_id (expr), false);
+  unsigned int val = get_expr_value_id (expr);
+  if (! value_id_constant_p (val))
+    {
+      /* Note this is the only function causing multiple expressions
+         for the same value to appear in a set.  This is needed for
+	 TMP_GEN, PHI_GEN and NEW_SETs.  */
+      bitmap_set_bit (&set->values, val);
+      bitmap_set_bit (&set->expressions, get_or_alloc_expression_id (expr));
+    }
 }
 
 /* Copy a bitmapped set ORIG, into bitmapped set DEST.  */
@@ -837,7 +830,7 @@ bitmap_set_and (bitmap_set_t dest, bitmap_set_t orig)
     }
 }
 
-/* Subtract all values and expressions contained in ORIG from DEST.  */
+/* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
 bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
@@ -859,7 +852,7 @@ bitmap_set_subtract (bitmap_set_t dest, bitmap_set_t orig)
   return result;
 }
 
-/* Subtract all the values in bitmap set B from bitmap set A.  */
+/* Subtract all values in bitmap set B from bitmap set A.  */
 
 static void
 bitmap_set_subtract_values (bitmap_set_t a, bitmap_set_t b)
@@ -987,6 +980,11 @@ bitmap_value_insert_into_set (bitmap_set_t set, pre_expr expr)
 static void
 print_pre_expr (FILE *outfile, const pre_expr expr)
 {
+  if (! expr)
+    {
+      fprintf (outfile, "NULL");
+      return;
+    }
   switch (expr->kind)
     {
     case CONSTANT:
@@ -1489,6 +1487,45 @@ phi_translate_1 (pre_expr expr, bitmap_set_t set1, bitmap_set_t set2,
 		PRE_EXPR_NARY (expr) = nary;
 		new_val_id = nary->value_id;
 		get_or_alloc_expression_id (expr);
+		/* When we end up re-using a value number make sure that
+		   doesn't have unrelated (which we can't check here)
+		   range or points-to info on it.  */
+		if (result
+		    && INTEGRAL_TYPE_P (TREE_TYPE (result))
+		    && SSA_NAME_RANGE_INFO (result)
+		    && ! SSA_NAME_IS_DEFAULT_DEF (result))
+		  {
+		    if (! VN_INFO (result)->info.range_info)
+		      {
+			VN_INFO (result)->info.range_info
+			  = SSA_NAME_RANGE_INFO (result);
+			VN_INFO (result)->range_info_anti_range_p
+			  = SSA_NAME_ANTI_RANGE_P (result);
+		      }
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "clearing range info of ");
+			print_generic_expr (dump_file, result);
+			fprintf (dump_file, "\n");
+		      }
+		    SSA_NAME_RANGE_INFO (result) = NULL;
+		  }
+		else if (result
+			 && POINTER_TYPE_P (TREE_TYPE (result))
+			 && SSA_NAME_PTR_INFO (result)
+			 && ! SSA_NAME_IS_DEFAULT_DEF (result))
+		  {
+		    if (! VN_INFO (result)->info.ptr_info)
+		      VN_INFO (result)->info.ptr_info
+			= SSA_NAME_PTR_INFO (result);
+		    if (dump_file && (dump_flags & TDF_DETAILS))
+		      {
+			fprintf (dump_file, "clearing points-to info of ");
+			print_generic_expr (dump_file, result);
+			fprintf (dump_file, "\n");
+		      }
+		    SSA_NAME_PTR_INFO (result) = NULL;
+		  }
 	      }
 	    else
 	      {
@@ -2076,21 +2113,21 @@ static sbitmap has_abnormal_preds;
      ANTIC_OUT[BLOCK] = phi_translate (ANTIC_IN[succ(BLOCK)])
 
    ANTIC_IN[BLOCK] = clean(ANTIC_OUT[BLOCK] U EXP_GEN[BLOCK] - TMP_GEN[BLOCK])
-*/
+
+   Note that clean() is deferred until after the iteration.  */
 
 static bool
 compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 {
-  bool changed = false;
   bitmap_set_t S, old, ANTIC_OUT;
   bitmap_iterator bi;
   unsigned int bii;
   edge e;
   edge_iterator ei;
-  bool was_visited = BB_VISITED (block);
 
-  old = ANTIC_OUT = S = NULL;
+  bool changed = ! BB_VISITED (block);
   BB_VISITED (block) = 1;
+  old = ANTIC_OUT = S = NULL;
 
   /* If any edges from predecessors are abnormal, antic_in is empty,
      so do nothing.  */
@@ -2176,9 +2213,10 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
     bitmap_value_insert_into_set (ANTIC_IN (block),
 				  expression_for_id (bii));
 
-  clean (ANTIC_IN (block));
+  /* clean (ANTIC_IN (block)) is defered to after the iteration converged
+     because it can cause non-convergence, see for example PR81181.  */
 
-  if (!was_visited || !bitmap_set_equal (old, ANTIC_IN (block)))
+  if (!bitmap_set_equal (old, ANTIC_IN (block)))
     changed = true;
 
  maybe_dump_sets:
@@ -2357,9 +2395,6 @@ compute_antic (void)
 	if (e->flags & EDGE_ABNORMAL)
 	  {
 	    bitmap_set_bit (has_abnormal_preds, block->index);
-
-	    /* We also anticipate nothing.  */
-	    BB_VISITED (block) = 1;
 	    break;
 	  }
 
@@ -2379,7 +2414,9 @@ compute_antic (void)
   inverted_post_order_compute (&postorder);
 
   auto_sbitmap worklist (last_basic_block_for_fn (cfun) + 1);
-  bitmap_ones (worklist);
+  bitmap_clear (worklist);
+  FOR_EACH_EDGE (e, ei, EXIT_BLOCK_PTR_FOR_FN (cfun)->preds)
+    bitmap_set_bit (worklist, e->src->index);
   while (changed)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
@@ -2410,6 +2447,12 @@ compute_antic (void)
       gcc_checking_assert (num_iterations < 500);
     }
 
+  /* We have to clean after the dataflow problem converged as cleaning
+     can cause non-convergence because it is based on expressions
+     rather than values.  */
+  FOR_EACH_BB_FN (block, cfun)
+    clean (ANTIC_IN (block));
+
   statistics_histogram_event (cfun, "compute_antic iterations",
 			      num_iterations);
 
@@ -2417,7 +2460,8 @@ compute_antic (void)
     {
       /* For partial antic we ignore backedges and thus we do not need
          to perform any iteration when we process blocks in postorder.  */
-      int postorder_num = pre_and_rev_post_order_compute (NULL, postorder.address (), false);
+      int postorder_num
+	= pre_and_rev_post_order_compute (NULL, postorder.address (), false);
       for (i = postorder_num - 1 ; i >= 0; i--)
 	{
 	  basic_block block = BASIC_BLOCK_FOR_FN (cfun, postorder[i]);
@@ -2709,8 +2753,6 @@ find_or_generate_expression (basic_block block, tree op, gimple_seq *stmts)
   return NULL_TREE;
 }
 
-#define NECESSARY GF_PLF_1
-
 /* Create an expression in pieces, so that we can handle very complex
    expressions that may be ANTIC, but not necessary GIMPLE.
    BLOCK is the basic block the expression will be inserted into,
@@ -2928,7 +2970,6 @@ create_expression_by_pieces (basic_block block, pre_expr expr,
 	    }
 
 	  bitmap_set_bit (inserted_exprs, SSA_NAME_VERSION (forcedname));
-	  gimple_set_plf (stmt, NECESSARY, false);
 	}
       gimple_seq_add_seq (stmts, forced_stmts);
     }
@@ -3051,7 +3092,6 @@ insert_into_preds_of_block (basic_block block, unsigned int exprnum,
   temp = make_temp_ssa_name (type, NULL, "prephitmp");
   phi = create_phi_node (temp, block);
 
-  gimple_set_plf (phi, NECESSARY, false);
   VN_INFO_GET (temp)->value_id = val;
   VN_INFO (temp)->valnum = sccvn_valnum_from_value_id (val);
   if (VN_INFO (temp)->valnum == NULL_TREE)
@@ -3298,7 +3338,6 @@ do_pre_regular_insertion (basic_block block, basic_block dom)
 	      gimple_stmt_iterator gsi = gsi_after_labels (block);
 	      gsi_insert_before (&gsi, assign, GSI_NEW_STMT);
 
-	      gimple_set_plf (assign, NECESSARY, false);
 	      VN_INFO_GET (temp)->value_id = val;
 	      VN_INFO (temp)->valnum = sccvn_valnum_from_value_id (val);
 	      if (VN_INFO (temp)->valnum == NULL_TREE)
@@ -4160,9 +4199,6 @@ eliminate_insert (gimple_stmt_iterator *gsi, tree val)
     {
       gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
       VN_INFO_GET (res)->valnum = val;
-
-      if (TREE_CODE (leader) == SSA_NAME)
-	gimple_set_plf (SSA_NAME_DEF_STMT (leader), NECESSARY, true);
     }
 
   pre_stats.insertions++;
@@ -4247,17 +4283,9 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 
 	  remove_phi_node (&gsi, false);
 
-	  if (inserted_exprs
-	      && !bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (res))
-	      && TREE_CODE (sprime) == SSA_NAME)
-	    gimple_set_plf (SSA_NAME_DEF_STMT (sprime), NECESSARY, true);
-
 	  if (!useless_type_conversion_p (TREE_TYPE (res), TREE_TYPE (sprime)))
 	    sprime = fold_convert (TREE_TYPE (res), sprime);
 	  gimple *stmt = gimple_build_assign (res, sprime);
-	  /* ???  It cannot yet be necessary (DOM walk).  */
-	  gimple_set_plf (stmt, NECESSARY, gimple_plf (phi, NECESSARY));
-
 	  gimple_stmt_iterator gsi2 = gsi_after_labels (b);
 	  gsi_insert_before (&gsi2, stmt, GSI_NEW_STMT);
 	  continue;
@@ -4434,10 +4462,6 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  print_gimple_stmt (dump_file, stmt, 0);
 		}
 
-	      if (TREE_CODE (sprime) == SSA_NAME)
-		gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
-				NECESSARY, true);
-
 	      pre_stats.eliminations++;
 	      gimple *orig_stmt = stmt;
 	      if (!useless_type_conversion_p (TREE_TYPE (lhs),
@@ -4548,6 +4572,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
       /* If we didn't replace the whole stmt (or propagate the result
          into all uses), replace all uses on this stmt with their
 	 leaders.  */
+      bool modified = false;
       use_operand_p use_p;
       ssa_op_iter iter;
       FOR_EACH_SSA_USE_OPERAND (use_p, stmt, iter, SSA_OP_USE)
@@ -4569,81 +4594,20 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		  || !bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (sprime))))
 	    {
 	      propagate_value (use_p, sprime);
-	      gimple_set_modified (stmt, true);
-	      if (TREE_CODE (sprime) == SSA_NAME
-		  && !is_gimple_debug (stmt))
-		gimple_set_plf (SSA_NAME_DEF_STMT (sprime),
-				NECESSARY, true);
+	      modified = true;
 	    }
 	}
 
-      /* Visit indirect calls and turn them into direct calls if
-	 possible using the devirtualization machinery.  */
-      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
-	{
-	  tree fn = gimple_call_fn (call_stmt);
-	  if (fn
-	      && flag_devirtualize
-	      && virtual_method_call_p (fn))
-	    {
-	      tree otr_type = obj_type_ref_class (fn);
-	      tree instance;
-	      ipa_polymorphic_call_context context (current_function_decl, fn, stmt, &instance);
-	      bool final;
-
-	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn), otr_type, stmt);
-
-	      vec <cgraph_node *>targets
-		= possible_polymorphic_call_targets (obj_type_ref_class (fn),
-						     tree_to_uhwi
-						       (OBJ_TYPE_REF_TOKEN (fn)),
-						     context,
-						     &final);
-	      if (dump_file)
-		dump_possible_polymorphic_call_targets (dump_file, 
-							obj_type_ref_class (fn),
-							tree_to_uhwi
-							  (OBJ_TYPE_REF_TOKEN (fn)),
-							context);
-	      if (final && targets.length () <= 1 && dbg_cnt (devirt))
-		{
-		  tree fn;
-		  if (targets.length () == 1)
-		    fn = targets[0]->decl;
-		  else
-		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
-		  if (dump_enabled_p ())
-		    {
-		      location_t loc = gimple_location_safe (stmt);
-		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-				       "converting indirect call to "
-				       "function %s\n",
-				       lang_hooks.decl_printable_name (fn, 2));
-		    }
-		  gimple_call_set_fndecl (call_stmt, fn);
-		  /* If changing the call to __builtin_unreachable
-		     or similar noreturn function, adjust gimple_call_fntype
-		     too.  */
-		  if (gimple_call_noreturn_p (call_stmt)
-		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
-		      && TYPE_ARG_TYPES (TREE_TYPE (fn))
-		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)))
-			  == void_type_node))
-		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
-		  maybe_remove_unused_call_args (cfun, call_stmt);
-		  gimple_set_modified (stmt, true);
-		}
-	    }
-	}
-
-      if (gimple_modified_p (stmt))
+      /* Fold the stmt if modified, this canonicalizes MEM_REFs we propagated
+         into which is a requirement for the IPA devirt machinery.  */
+      gimple *old_stmt = stmt;
+      if (modified)
 	{
 	  /* If a formerly non-invariant ADDR_EXPR is turned into an
 	     invariant one it was on a separate stmt.  */
 	  if (gimple_assign_single_p (stmt)
 	      && TREE_CODE (gimple_assign_rhs1 (stmt)) == ADDR_EXPR)
 	    recompute_tree_invariant_for_addr_expr (gimple_assign_rhs1 (stmt));
-	  gimple *old_stmt = stmt;
 	  gimple_stmt_iterator prev = gsi;
 	  gsi_prev (&prev);
 	  if (fold_stmt (&gsi))
@@ -4675,6 +4639,71 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 		while (1);
 	    }
 	  stmt = gsi_stmt (gsi);
+	  /* In case we folded the stmt away schedule the NOP for removal.  */
+	  if (gimple_nop_p (stmt))
+	    el_to_remove.safe_push (stmt);
+	}
+
+      /* Visit indirect calls and turn them into direct calls if
+	 possible using the devirtualization machinery.  Do this before
+	 checking for required EH/abnormal/noreturn cleanup as devird
+	 may expose more of those.  */
+      if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
+	{
+	  tree fn = gimple_call_fn (call_stmt);
+	  if (fn
+	      && flag_devirtualize
+	      && virtual_method_call_p (fn))
+	    {
+	      tree otr_type = obj_type_ref_class (fn);
+	      unsigned HOST_WIDE_INT otr_tok
+		= tree_to_uhwi (OBJ_TYPE_REF_TOKEN (fn));
+	      tree instance;
+	      ipa_polymorphic_call_context context (current_function_decl,
+						    fn, stmt, &instance);
+	      context.get_dynamic_type (instance, OBJ_TYPE_REF_OBJECT (fn),
+					otr_type, stmt);
+	      bool final;
+	      vec <cgraph_node *> targets
+		= possible_polymorphic_call_targets (obj_type_ref_class (fn),
+						     otr_tok, context, &final);
+	      if (dump_file)
+		dump_possible_polymorphic_call_targets (dump_file, 
+							obj_type_ref_class (fn),
+							otr_tok, context);
+	      if (final && targets.length () <= 1 && dbg_cnt (devirt))
+		{
+		  tree fn;
+		  if (targets.length () == 1)
+		    fn = targets[0]->decl;
+		  else
+		    fn = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
+		  if (dump_enabled_p ())
+		    {
+		      location_t loc = gimple_location (stmt);
+		      dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+				       "converting indirect call to "
+				       "function %s\n",
+				       lang_hooks.decl_printable_name (fn, 2));
+		    }
+		  gimple_call_set_fndecl (call_stmt, fn);
+		  /* If changing the call to __builtin_unreachable
+		     or similar noreturn function, adjust gimple_call_fntype
+		     too.  */
+		  if (gimple_call_noreturn_p (call_stmt)
+		      && VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fn)))
+		      && TYPE_ARG_TYPES (TREE_TYPE (fn))
+		      && (TREE_VALUE (TYPE_ARG_TYPES (TREE_TYPE (fn)))
+			  == void_type_node))
+		    gimple_call_set_fntype (call_stmt, TREE_TYPE (fn));
+		  maybe_remove_unused_call_args (cfun, call_stmt);
+		  modified = true;
+		}
+	    }
+	}
+
+      if (modified)
+	{
 	  /* When changing a call into a noreturn call, cfg cleanup
 	     is needed to fix up the noreturn call.  */
 	  if (!was_noreturn
@@ -4734,11 +4763,7 @@ eliminate_dom_walker::before_dom_children (basic_block b)
 	    continue;
 	  tree sprime = eliminate_avail (arg);
 	  if (sprime && may_propagate_copy (arg, sprime))
-	    {
-	      propagate_value (use_p, sprime);
-	      if (TREE_CODE (sprime) == SSA_NAME)
-		gimple_set_plf (SSA_NAME_DEF_STMT (sprime), NECESSARY, true);
-	    }
+	    propagate_value (use_p, sprime);
 	}
   return NULL;
 }
@@ -4799,17 +4824,6 @@ fini_eliminate (void)
   while (!el_to_remove.is_empty ())
     {
       stmt = el_to_remove.pop ();
-
-      tree lhs;
-      if (gimple_code (stmt) == GIMPLE_PHI)
-	lhs = gimple_phi_result (stmt);
-      else
-	lhs = gimple_get_lhs (stmt);
-
-      if (inserted_exprs
-	  && TREE_CODE (lhs) == SSA_NAME
-	  && bitmap_bit_p (inserted_exprs, SSA_NAME_VERSION (lhs)))
-	continue;
 
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -4872,36 +4886,9 @@ fini_eliminate (void)
   return todo;
 }
 
-/* Borrow a bit of tree-ssa-dce.c for the moment.
-   XXX: In 4.1, we should be able to just run a DCE pass after PRE, though
-   this may be a bit faster, and we may want critical edges kept split.  */
+/* Cheap DCE of a known set of possibly dead stmts.
 
-/* If OP's defining statement has not already been determined to be necessary,
-   mark that statement necessary. Return the stmt, if it is newly
-   necessary.  */
-
-static inline gimple *
-mark_operand_necessary (tree op)
-{
-  gimple *stmt;
-
-  gcc_assert (op);
-
-  if (TREE_CODE (op) != SSA_NAME)
-    return NULL;
-
-  stmt = SSA_NAME_DEF_STMT (op);
-  gcc_assert (stmt);
-
-  if (gimple_plf (stmt, NECESSARY)
-      || gimple_nop_p (stmt))
-    return NULL;
-
-  gimple_set_plf (stmt, NECESSARY, true);
-  return stmt;
-}
-
-/* Because we don't follow exactly the standard PRE algorithm, and decide not
+   Because we don't follow exactly the standard PRE algorithm, and decide not
    to insert PHI nodes sometimes, and because value numbering of casts isn't
    perfect, we sometimes end up inserting dead code.   This simple DCE-like
    pass removes any insertions we made that weren't actually used.  */
@@ -4909,99 +4896,52 @@ mark_operand_necessary (tree op)
 static void
 remove_dead_inserted_code (void)
 {
-  unsigned i;
-  bitmap_iterator bi;
-  gimple *t;
-
-  auto_bitmap worklist;
-  EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
+  /* ???  Re-use inserted_exprs as worklist not only as initial set.
+     This may end up removing non-inserted code as well.  If we
+     keep inserted_exprs unchanged we could restrict new worklist
+     elements to members of inserted_exprs.  */
+  bitmap worklist = inserted_exprs;
+  while (! bitmap_empty_p (worklist))
     {
-      t = SSA_NAME_DEF_STMT (ssa_name (i));
-      if (gimple_plf (t, NECESSARY))
-	bitmap_set_bit (worklist, i);
-    }
-  while (!bitmap_empty_p (worklist))
-    {
-      i = bitmap_first_set_bit (worklist);
+      /* Pop item.  */
+      unsigned i = bitmap_first_set_bit (worklist);
       bitmap_clear_bit (worklist, i);
-      t = SSA_NAME_DEF_STMT (ssa_name (i));
 
-      /* PHI nodes are somewhat special in that each PHI alternative has
-	 data and control dependencies.  All the statements feeding the
-	 PHI node's arguments are always necessary. */
+      tree def = ssa_name (i);
+      /* Removed by somebody else or still in use.  */
+      if (! def || ! has_zero_uses (def))
+	continue;
+
+      gimple *t = SSA_NAME_DEF_STMT (def);
+      if (gimple_has_side_effects (t))
+	continue;
+
+      /* Add uses to the worklist.  */
+      ssa_op_iter iter;
+      use_operand_p use_p;
+      FOR_EACH_PHI_OR_STMT_USE (use_p, t, iter, SSA_OP_USE)
+	{
+	  tree use = USE_FROM_PTR (use_p);
+	  if (TREE_CODE (use) == SSA_NAME
+	      && ! SSA_NAME_IS_DEFAULT_DEF (use))
+	    bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
+	}
+
+      /* Remove stmt.  */
+      if (dump_file && (dump_flags & TDF_DETAILS))
+	{
+	  fprintf (dump_file, "Removing unnecessary insertion:");
+	  print_gimple_stmt (dump_file, t, 0);
+	}
+      gimple_stmt_iterator gsi = gsi_for_stmt (t);
       if (gimple_code (t) == GIMPLE_PHI)
-	{
-	  unsigned k;
-
-	  for (k = 0; k < gimple_phi_num_args (t); k++)
-	    {
-	      tree arg = PHI_ARG_DEF (t, k);
-	      if (TREE_CODE (arg) == SSA_NAME)
-		{
-		  gimple *n = mark_operand_necessary (arg);
-		  if (n)
-		    bitmap_set_bit (worklist, SSA_NAME_VERSION (arg));
-		}
-	    }
-	}
+	remove_phi_node (&gsi, true);
       else
 	{
-	  /* Propagate through the operands.  Examine all the USE, VUSE and
-	     VDEF operands in this statement.  Mark all the statements
-	     which feed this statement's uses as necessary.  */
-	  ssa_op_iter iter;
-	  tree use;
-
-	  /* The operands of VDEF expressions are also needed as they
-	     represent potential definitions that may reach this
-	     statement (VDEF operands allow us to follow def-def
-	     links).  */
-
-	  FOR_EACH_SSA_TREE_OPERAND (use, t, iter, SSA_OP_ALL_USES)
-	    {
-	      gimple *n = mark_operand_necessary (use);
-	      if (n)
-		bitmap_set_bit (worklist, SSA_NAME_VERSION (use));
-	    }
+	  gsi_remove (&gsi, true);
+	  release_defs (t);
 	}
     }
-
-  unsigned int to_clear = -1U;
-  EXECUTE_IF_SET_IN_BITMAP (inserted_exprs, 0, i, bi)
-    {
-      if (to_clear != -1U)
-	{
-	  bitmap_clear_bit (inserted_exprs, to_clear);
-	  to_clear = -1U;
-	}
-      t = SSA_NAME_DEF_STMT (ssa_name (i));
-      if (!gimple_plf (t, NECESSARY))
-	{
-	  gimple_stmt_iterator gsi;
-
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "Removing unnecessary insertion:");
-	      print_gimple_stmt (dump_file, t, 0);
-	    }
-
-	  gsi = gsi_for_stmt (t);
-	  if (gimple_code (t) == GIMPLE_PHI)
-	    remove_phi_node (&gsi, true);
-	  else
-	    {
-	      gsi_remove (&gsi, true);
-	      release_defs (t);
-	    }
-	}
-      else
-	/* eliminate_fini will skip stmts marked for removal if we
-	   already removed it and uses inserted_exprs for this, so
-	   clear those we didn't end up removing.  */
-	to_clear = i;
-    }
-  if (to_clear != -1U)
-    bitmap_clear_bit (inserted_exprs, to_clear);
 }
 
 
@@ -5068,11 +5008,9 @@ const pass_data pass_data_pre =
   "pre", /* name */
   OPTGROUP_NONE, /* optinfo_flags */
   TV_TREE_PRE, /* tv_id */
-  /* PROP_no_crit_edges is ensured by placing pass_split_crit_edges before
-     pass_pre.  */
-  ( PROP_no_crit_edges | PROP_cfg | PROP_ssa ), /* properties_required */
+  ( PROP_cfg | PROP_ssa ), /* properties_required */
   0, /* properties_provided */
-  PROP_no_crit_edges, /* properties_destroyed */
+  0, /* properties_destroyed */
   TODO_rebuild_alias, /* todo_flags_start */
   0, /* todo_flags_finish */
 };
@@ -5102,6 +5040,7 @@ pass_pre::execute (function *fun)
   /* This has to happen before SCCVN runs because
      loop_optimizer_init may create new phis, etc.  */
   loop_optimizer_init (LOOPS_NORMAL);
+  split_critical_edges ();
 
   run_scc_vn (VN_WALK);
 
@@ -5142,10 +5081,10 @@ pass_pre::execute (function *fun)
   statistics_counter_event (fun, "Eliminated", pre_stats.eliminations);
 
   clear_expression_ids ();
-  remove_dead_inserted_code ();
 
   scev_finalize ();
   todo |= fini_eliminate ();
+  remove_dead_inserted_code ();
   fini_pre ();
   loop_optimizer_finalize ();
 

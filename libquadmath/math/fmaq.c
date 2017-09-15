@@ -1,5 +1,5 @@
 /* Compute x * y + z as ternary operation.
-   Copyright (C) 2010-2012 Free Software Foundation, Inc.
+   Copyright (C) 2010-2017 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Contributed by Jakub Jelinek <jakub@redhat.com>, 2010.
 
@@ -97,8 +97,8 @@ fmaq (__float128 x, __float128 y, __float128 z)
 		     && w.ieee.mant_low == 0
 		     && w.ieee.mant_high == 0)))
 	    {
-	      volatile __float128 force_underflow = x * y;
-	      (void) force_underflow;
+	      __float128 force_underflow = x * y;
+	      math_force_eval (force_underflow);
 	    }
 	  return v.value * 0x1p-114Q;
 	}
@@ -161,15 +161,15 @@ fmaq (__float128 x, __float128 y, __float128 z)
 		  <= IEEE854_FLOAT128_BIAS + FLT128_MANT_DIG) */
 	{
 	  if (u.ieee.exponent > v.ieee.exponent)
-	    u.ieee.exponent += 2 * FLT128_MANT_DIG;
+	    u.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
 	  else
-	    v.ieee.exponent += 2 * FLT128_MANT_DIG;
-	  if (w.ieee.exponent <= 4 * FLT128_MANT_DIG + 4)
+	    v.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
+	  if (w.ieee.exponent <= 4 * FLT128_MANT_DIG + 6)
 	    {
 	      if (w.ieee.exponent)
-		w.ieee.exponent += 2 * FLT128_MANT_DIG;
+		w.ieee.exponent += 2 * FLT128_MANT_DIG + 2;
 	      else
-		w.value *= 0x1p226Q;
+		w.value *= 0x1p228Q;
 	      adjust = -1;
 	    }
 	  /* Otherwise x * y should just affect inexact
@@ -182,7 +182,10 @@ fmaq (__float128 x, __float128 y, __float128 z)
 
   /* Ensure correct sign of exact 0 + 0.  */
   if (__builtin_expect ((x == 0 || y == 0) && z == 0, 0))
-    return x * y + z;
+    {
+      x = math_opt_barrier (x);
+      return x * y + z;
+    }
 
 #ifdef USE_FENV_H
   fenv_t env;
@@ -208,23 +211,23 @@ fmaq (__float128 x, __float128 y, __float128 z)
   t1 = m1 - t1;
   t2 = z - t2;
   __float128 a2 = t1 + t2;
+  /* Ensure the arithmetic is not scheduled after feclearexcept call.  */
+  math_force_eval (m2);
+  math_force_eval (a2);
 #ifdef USE_FENV_H
   feclearexcept (FE_INEXACT);
 #endif
 
-  /* If the result is an exact zero, ensure it has the correct
-     sign.  */
+  /* If the result is an exact zero, ensure it has the correct sign.  */
   if (a1 == 0 && m2 == 0)
     {
 #ifdef USE_FENV_H
       feupdateenv (&env);
 #endif
-      /* Ensure that round-to-nearest value of z + m1 is not
-	 reused.  */
-      asm volatile ("" : "=m" (z) : "m" (z));
+      /* Ensure that round-to-nearest value of z + m1 is not reused.  */
+      z = math_opt_barrier (z);
       return z + m1;
     }
-
 
 #ifdef USE_FENV_H
   fesetround (FE_TOWARDZERO);
@@ -273,19 +276,19 @@ fmaq (__float128 x, __float128 y, __float128 z)
       /* If a1 + u.value is exact, the only rounding happens during
 	 scaling down.  */
       if (j == 0)
-	return v.value * 0x1p-226Q;
+	return v.value * 0x1p-228Q;
       /* If result rounded to zero is not subnormal, no double
 	 rounding will occur.  */
-      if (v.ieee.exponent > 226)
-	return (a1 + u.value) * 0x1p-226Q;
-      /* If v.value * 0x1p-226Q with round to zero is a subnormal above
-	 or equal to FLT128_MIN / 2, then v.value * 0x1p-226Q shifts mantissa
+      if (v.ieee.exponent > 228)
+	return (a1 + u.value) * 0x1p-228Q;
+      /* If v.value * 0x1p-228Q with round to zero is a subnormal above
+	 or equal to FLT128_MIN / 2, then v.value * 0x1p-228Q shifts mantissa
 	 down just by 1 bit, which means v.ieee.mant_low |= j would
 	 change the round bit, not sticky or guard bit.
-	 v.value * 0x1p-226Q never normalizes by shifting up,
+	 v.value * 0x1p-228Q never normalizes by shifting up,
 	 so round bit plus sticky bit should be already enough
 	 for proper rounding.  */
-      if (v.ieee.exponent == 226)
+      if (v.ieee.exponent == 228)
 	{
 	  /* If the exponent would be in the normal range when
 	     rounding to normal precision with unbounded exponent
@@ -295,8 +298,8 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  if (TININESS_AFTER_ROUNDING)
 	    {
 	      w.value = a1 + u.value;
-	      if (w.ieee.exponent == 227)
-		return w.value * 0x1p-226Q;
+	      if (w.ieee.exponent == 229)
+		return w.value * 0x1p-228Q;
 	    }
 	  /* v.ieee.mant_low & 2 is LSB bit of the result before rounding,
 	     v.ieee.mant_low & 1 is the round bit and j is our sticky
@@ -305,11 +308,11 @@ fmaq (__float128 x, __float128 y, __float128 z)
 	  w.ieee.mant_low = ((v.ieee.mant_low & 3) << 1) | j;
 	  w.ieee.negative = v.ieee.negative;
 	  v.ieee.mant_low &= ~3U;
-	  v.value *= 0x1p-226Q;
+	  v.value *= 0x1p-228Q;
 	  w.value *= 0x1p-2Q;
 	  return v.value + w.value;
 	}
       v.ieee.mant_low |= j;
-      return v.value * 0x1p-226Q;
+      return v.value * 0x1p-228Q;
     }
 }

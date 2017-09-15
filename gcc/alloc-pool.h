@@ -240,8 +240,9 @@ base_pool_allocator <TBlockAllocator>::base_pool_allocator (
 				const char *name, size_t size MEM_STAT_DECL):
   m_name (name), m_id (0), m_elts_per_block (0), m_returned_free_list (NULL),
   m_virgin_free_list (NULL), m_virgin_elts_remaining (0), m_elts_allocated (0),
-  m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL), m_size (size),
-  m_initialized (false), m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
+  m_elts_free (0), m_blocks_allocated (0), m_block_list (NULL), m_elt_size (0),
+  m_size (size), m_initialized (false),
+  m_location (ALLOC_POOL_ORIGIN, false PASS_MEM_STAT) {}
 
 /* Initialize a pool allocator.  */
 

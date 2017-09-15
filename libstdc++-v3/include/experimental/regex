@@ -31,22 +31,21 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <regex>
 #include <experimental/string>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
 namespace pmr
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CXX11
 
   template<typename _BidirectionalIterator>
@@ -60,11 +59,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
   typedef match_results<wstring::const_iterator> wsmatch;
 
 _GLIBCXX_END_NAMESPACE_CXX11
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace pmr
 
 } // namespace fundamentals_v2
 } // namespace experimental
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

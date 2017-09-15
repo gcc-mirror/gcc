@@ -737,23 +737,24 @@ post_order_compute (int *post_order, bool include_entry_exit,
 basic_block
 dfs_find_deadend (basic_block bb)
 {
-  bitmap visited = BITMAP_ALLOC (NULL);
+  auto_bitmap visited;
+  basic_block next = bb;
 
   for (;;)
     {
-      if (EDGE_COUNT (bb->succs) == 0
-	  || ! bitmap_set_bit (visited, bb->index))
-        {
-          BITMAP_FREE (visited);
-          return bb;
-        }
+      if (EDGE_COUNT (next->succs) == 0)
+	return next;
 
+      if (! bitmap_set_bit (visited, next->index))
+	return bb;
+
+      bb = next;
       /* If we are in an analyzed cycle make sure to try exiting it.
          Note this is a heuristic only and expected to work when loop
 	 fixup is needed as well.  */
       if (! bb->loop_father
 	  || ! loop_outer (bb->loop_father))
-	bb = EDGE_SUCC (bb, 0)->dest;
+	next = EDGE_SUCC (bb, 0)->dest;
       else
 	{
 	  edge_iterator ei;
@@ -761,7 +762,7 @@ dfs_find_deadend (basic_block bb)
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    if (loop_exit_edge_p (bb->loop_father, e))
 	      break;
-	  bb = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
+	  next = e ? e->dest : EDGE_SUCC (bb, 0)->dest;
 	}
     }
 

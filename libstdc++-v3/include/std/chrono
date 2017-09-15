@@ -45,6 +45,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   /**
    * @defgroup chrono Time
    * @ingroup utilities
@@ -58,18 +60,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
    */
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _Rep, typename _Period = ratio<1>>
       struct duration;
 
     template<typename _Clock, typename _Dur = typename _Clock::duration>
       struct time_point;
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   }
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // 20.11.4.3 specialization of common_type (for duration, sfinae-friendly)
 
@@ -117,12 +113,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
              common_type<_Duration1, _Duration2>>::type, _Clock>::type
     { };
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     // Primary template for duration_cast impl.
     template<typename _ToDur, typename _CF, typename _CR,
 	     bool _NumIsOne = false, bool _DenIsOne = false>
@@ -187,10 +179,17 @@ _GLIBCXX_END_NAMESPACE_VERSION
       : std::true_type
       { };
 
+    template<typename _Tp>
+      using __enable_if_is_duration
+	= typename enable_if<__is_duration<_Tp>::value, _Tp>::type;
+
+    template<typename _Tp>
+      using __disable_if_is_duration
+	= typename enable_if<!__is_duration<_Tp>::value, _Tp>::type;
+
     /// duration_cast
     template<typename _ToDur, typename _Rep, typename _Period>
-      constexpr typename enable_if<__is_duration<_ToDur>::value,
-				   _ToDur>::type
+      constexpr __enable_if_is_duration<_ToDur>
       duration_cast(const duration<_Rep, _Period>& __d)
       {
 	typedef typename _ToDur::period				__to_period;
@@ -219,7 +218,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 # define __cpp_lib_chrono 201510
 
     template<typename _ToDur, typename _Rep, typename _Period>
-      constexpr enable_if_t<__is_duration<_ToDur>::value, _ToDur>
+      constexpr __enable_if_is_duration<_ToDur>
       floor(const duration<_Rep, _Period>& __d)
       {
 	auto __to = chrono::duration_cast<_ToDur>(__d);
@@ -229,7 +228,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
       }
 
     template<typename _ToDur, typename _Rep, typename _Period>
-      constexpr enable_if_t<__is_duration<_ToDur>::value, _ToDur>
+      constexpr __enable_if_is_duration<_ToDur>
       ceil(const duration<_Rep, _Period>& __d)
       {
 	auto __to = chrono::duration_cast<_ToDur>(__d);
@@ -302,6 +301,17 @@ _GLIBCXX_END_NAMESPACE_VERSION
     template<typename _Rep, typename _Period>
       struct duration
       {
+      private:
+	template<typename _Rep2>
+	  using __is_float = treat_as_floating_point<_Rep2>;
+
+	// _Period2 is an exact multiple of _Period
+	template<typename _Period2>
+	  using __is_harmonic
+	    = __bool_constant<ratio_divide<_Period2, _Period>::den == 1>;
+
+      public:
+
 	typedef _Rep						rep;
 	typedef _Period 					period;
 
@@ -313,22 +323,18 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	// 20.11.5.1 construction / copy / destroy
 	constexpr duration() = default;
 
-	// NB: Make constexpr implicit. This cannot be explicitly
-	// constexpr, as any UDT that is not a literal type with a
-	// constexpr copy constructor will be ill-formed.
 	duration(const duration&) = default;
 
-	template<typename _Rep2, typename = typename
-	       enable_if<is_convertible<_Rep2, rep>::value
-			 && (treat_as_floating_point<rep>::value
-			     || !treat_as_floating_point<_Rep2>::value)>::type>
+	template<typename _Rep2, typename = _Require<
+		 is_convertible<_Rep2, rep>,
+		 __or_<__is_float<rep>, __not_<__is_float<_Rep2>>>>>
 	  constexpr explicit duration(const _Rep2& __rep)
 	  : __r(static_cast<rep>(__rep)) { }
 
-	template<typename _Rep2, typename _Period2, typename = typename
-	       enable_if<treat_as_floating_point<rep>::value
-			 || (ratio_divide<_Period2, period>::den == 1
-			     && !treat_as_floating_point<_Rep2>::value)>::type>
+	template<typename _Rep2, typename _Period2, typename = _Require<
+		 __or_<__is_float<rep>,
+		       __and_<__is_harmonic<_Period2>,
+			      __not_<__is_float<_Rep2>>>>>>
 	  constexpr duration(const duration<_Rep2, _Period2>& __d)
 	  : __r(duration_cast<duration>(__d).count()) { }
 
@@ -463,18 +469,15 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	return __cd(__cd(__lhs).count() - __cd(__rhs).count());
       }
 
-    template<typename _Rep1, typename _Rep2, bool =
-	     is_convertible<_Rep2,
-			    typename common_type<_Rep1, _Rep2>::type>::value>
-      struct __common_rep_type { };
-
-    template<typename _Rep1, typename _Rep2>
-      struct __common_rep_type<_Rep1, _Rep2, true>
-      { typedef typename common_type<_Rep1, _Rep2>::type type; };
+    // SFINAE helper to obtain common_type<_Rep1, _Rep2> only if _Rep2
+    // is implicitly convertible to it.
+    template<typename _Rep1, typename _Rep2,
+	     typename _CRep = typename common_type<_Rep1, _Rep2>::type>
+      using __common_rep_t
+	= typename enable_if<is_convertible<_Rep2, _CRep>::value, _CRep>::type;
 
     template<typename _Rep1, typename _Period, typename _Rep2>
-      constexpr
-      duration<typename __common_rep_type<_Rep1, _Rep2>::type, _Period>
+      constexpr duration<__common_rep_t<_Rep1, _Rep2>, _Period>
       operator*(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
 	typedef duration<typename common_type<_Rep1, _Rep2>::type, _Period>
@@ -483,14 +486,13 @@ _GLIBCXX_END_NAMESPACE_VERSION
       }
 
     template<typename _Rep1, typename _Rep2, typename _Period>
-      constexpr
-      duration<typename __common_rep_type<_Rep2, _Rep1>::type, _Period>
+      constexpr duration<__common_rep_t<_Rep2, _Rep1>, _Period>
       operator*(const _Rep1& __s, const duration<_Rep2, _Period>& __d)
       { return __d * __s; }
 
     template<typename _Rep1, typename _Period, typename _Rep2>
-      constexpr duration<typename __common_rep_type<_Rep1, typename
-	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
+      constexpr
+      duration<__common_rep_t<_Rep1, __disable_if_is_duration<_Rep2>>, _Period>
       operator/(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
 	typedef duration<typename common_type<_Rep1, _Rep2>::type, _Period>
@@ -512,8 +514,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
     // DR 934.
     template<typename _Rep1, typename _Period, typename _Rep2>
-      constexpr duration<typename __common_rep_type<_Rep1, typename
-	enable_if<!__is_duration<_Rep2>::value, _Rep2>::type>::type, _Period>
+      constexpr
+      duration<__common_rep_t<_Rep1, __disable_if_is_duration<_Rep2>>, _Period>
       operator%(const duration<_Rep1, _Period>& __d, const _Rep2& __s)
       {
 	typedef duration<typename common_type<_Rep1, _Rep2>::type, _Period>
@@ -622,7 +624,8 @@ _GLIBCXX_END_NAMESPACE_VERSION
 	{ }
 
 	// conversions
-	template<typename _Dur2>
+	template<typename _Dur2,
+		 typename = _Require<is_convertible<_Dur2, _Dur>>>
 	  constexpr time_point(const time_point<clock, _Dur2>& __t)
 	  : __d(__t.time_since_epoch())
 	  { }
@@ -871,8 +874,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
     using high_resolution_clock = system_clock;
 
     } // end inline namespace _V2
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace chrono
 
 #if __cplusplus > 201103L
@@ -883,8 +884,6 @@ _GLIBCXX_END_NAMESPACE_VERSION
   {
   inline namespace chrono_literals
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _Rep, unsigned long long _Val>
       struct _Checked_integral_constant
       : integral_constant<_Rep, static_cast<_Rep>(_Val)>
@@ -959,22 +958,19 @@ _GLIBCXX_END_NAMESPACE_VERSION
       operator""ns()
       { return __check_overflow<chrono::nanoseconds, _Digits...>(); }
 
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // inline namespace chrono_literals
   } // inline namespace literals
 
   namespace chrono
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  using namespace literals::chrono_literals;
-
-  _GLIBCXX_END_NAMESPACE_VERSION
+    using namespace literals::chrono_literals;
   } // namespace chrono
 
 #endif // __cplusplus > 201103L
 
   // @} group chrono
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif //_GLIBCXX_USE_C99_STDINT_TR1

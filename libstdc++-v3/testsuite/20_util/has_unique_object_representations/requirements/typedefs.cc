@@ -1,5 +1,5 @@
-// { dg-options "-std=gnu++1z" }
-// { dg-do compile { target c++1z } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 // Copyright (C) 2016-2017 Free Software Foundation, Inc.
 //

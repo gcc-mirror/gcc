@@ -3,6 +3,9 @@
 /* ELF size: 32 or 64 */
 #undef BACKTRACE_ELF_SIZE
 
+/* XCOFF size: 32 or 64 */
+#undef BACKTRACE_XCOFF_SIZE
+
 /* Define to 1 if you have the __atomic functions */
 #undef HAVE_ATOMIC_FUNCTIONS
 
@@ -31,6 +34,9 @@
 /* Define to 1 if you have the <link.h> header file. */
 #undef HAVE_LINK_H
 
+/* Define if AIX loadquery is available. */
+#undef HAVE_LOADQUERY
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
@@ -48,6 +54,9 @@
 
 /* Define to 1 if you have the __sync functions */
 #undef HAVE_SYNC_FUNCTIONS
+
+/* Define to 1 if you have the <sys/ldr.h> header file. */
+#undef HAVE_SYS_LDR_H
 
 /* Define to 1 if you have the <sys/mman.h> header file. */
 #undef HAVE_SYS_MMAN_H

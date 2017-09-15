@@ -4517,12 +4517,27 @@ visl")
 ;; The 32-bit multiply/divide instructions are deprecated on v9, but at
 ;; least in UltraSPARC I, II and IIi it is a win tick-wise.
 
-(define_insn "mulsi3"
+(define_expand "mulsi3"
+  [(set (match_operand:SI 0 "register_operand" "")
+	(mult:SI (match_operand:SI 1 "arith_operand" "")
+		 (match_operand:SI 2 "arith_operand" "")))]
+  "TARGET_HARD_MUL || TARGET_ARCH64"
+  "")
+
+(define_insn "*mulsi3_sp32"
   [(set (match_operand:SI 0 "register_operand" "=r")
 	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
 		 (match_operand:SI 2 "arith_operand" "rI")))]
   "TARGET_HARD_MUL"
   "smul\t%1, %2, %0"
+  [(set_attr "type" "imul")])
+
+(define_insn "*mulsi3_sp64"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(mult:SI (match_operand:SI 1 "arith_operand" "%r")
+		 (match_operand:SI 2 "arith_operand" "rI")))]
+  "TARGET_ARCH64"
+  "mulx\t%1, %2, %0"
   [(set_attr "type" "imul")])
 
 (define_expand "muldi3"
@@ -6121,7 +6136,7 @@ visl")
   [(set (match_operand:DF 0 "register_operand" "=e")
 	(mult:DF (float_extend:DF (match_operand:SF 1 "register_operand" "f"))
 		 (float_extend:DF (match_operand:SF 2 "register_operand" "f"))))]
-  "(TARGET_V8 || TARGET_V9) && TARGET_FPU && !sparc_fix_ut699"
+  "TARGET_FSMULD"
   "fsmuld\t%1, %2, %0"
   [(set_attr "type" "fpmul")
    (set_attr "fptype" "double")])
@@ -8621,6 +8636,8 @@ visl")
 (define_mode_attr vfptype [(V1SI "single") (V2HI "single") (V4QI "single")
 			   (V1DI "double") (V2SI "double") (V4HI "double")
 			   (V8QI "double")])
+(define_mode_attr veltmode [(V1SI "si") (V2HI "hi") (V4QI "qi") (V1DI "di")
+			    (V2SI "si") (V4HI "hi") (V8QI "qi")])
 
 (define_expand "mov<VMALL:mode>"
   [(set (match_operand:VMALL 0 "nonimmediate_operand" "")
@@ -8762,7 +8779,7 @@ visl")
   DONE;
 })
 
-(define_expand "vec_init<VMALL:mode>"
+(define_expand "vec_init<VMALL:mode><VMALL:veltmode>"
   [(match_operand:VMALL 0 "register_operand" "")
    (match_operand:VMALL 1 "" "")]
   "TARGET_VIS"

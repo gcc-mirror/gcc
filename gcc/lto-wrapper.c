@@ -70,6 +70,7 @@ static char **output_names;
 static char **offload_names;
 static char *offload_objects_file_name;
 static char *makefile;
+static char *debug_obj;
 
 const char tool_name[] = "lto-wrapper";
 
@@ -88,6 +89,8 @@ tool_cleanup (bool)
     maybe_unlink (offload_objects_file_name);
   if (makefile)
     maybe_unlink (makefile);
+  if (debug_obj)
+    maybe_unlink (debug_obj);
   for (i = 0; i < nr; ++i)
     {
       maybe_unlink (input_names[i]);
@@ -960,6 +963,67 @@ find_and_merge_options (int fd, off_t file_offset, const char *prefix,
   return true;
 }
 
+/* Copy early debug info sections from INFILE to a new file whose name
+   is returned.  Return NULL on error.  */
+
+const char *
+debug_objcopy (const char *infile)
+{
+  const char *outfile;
+  const char *errmsg;
+  int err;
+
+  const char *p;
+  off_t inoff = 0;
+  long loffset;
+  int consumed;
+  if ((p = strrchr (infile, '@'))
+      && p != infile
+      && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+      && strlen (p) == (unsigned int) consumed)
+    {
+      char *fname = xstrdup (infile);
+      fname[p - infile] = '\0';
+      infile = fname;
+      inoff = (off_t) loffset;
+    }
+  int infd = open (infile, O_RDONLY);
+  if (infd == -1)
+    return NULL;
+  simple_object_read *inobj = simple_object_start_read (infd, inoff,
+							"__GNU_LTO",
+							&errmsg, &err);
+  if (!inobj)
+    return NULL;
+
+  off_t off, len;
+  if (simple_object_find_section (inobj, ".gnu.debuglto_.debug_info",
+				  &off, &len, &errmsg, &err) != 1)
+    {
+      if (errmsg)
+	fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+
+      simple_object_release_read (inobj);
+      close (infd);
+      return NULL;
+    }
+
+  outfile = make_temp_file ("debugobjtem");
+  errmsg = simple_object_copy_lto_debug_sections (inobj, outfile, &err);
+  if (errmsg)
+    {
+      unlink_if_ordinary (outfile);
+      fatal_error (0, "%s: %s\n", errmsg, xstrerror (err));
+    }
+
+  simple_object_release_read (inobj);
+  close (infd);
+
+  return outfile;
+}
+
+
+
 /* Execute gcc. ARGC is the number of arguments. ARGV contains the arguments. */
 
 static void
@@ -984,8 +1048,10 @@ run_gcc (unsigned argc, char *argv[])
   int new_head_argc;
   bool have_lto = false;
   bool have_offload = false;
-  unsigned lto_argc = 0;
-  char **lto_argv;
+  unsigned lto_argc = 0, ltoobj_argc = 0;
+  char **lto_argv, **ltoobj_argv;
+  bool skip_debug = false;
+  unsigned n_debugobj;
 
   /* Get the driver and options.  */
   collect_gcc = getenv ("COLLECT_GCC");
@@ -1004,6 +1070,7 @@ run_gcc (unsigned argc, char *argv[])
   /* Allocate array for input object files with LTO IL,
      and for possible preceding arguments.  */
   lto_argv = XNEWVEC (char *, argc);
+  ltoobj_argv = XNEWVEC (char *, argc);
 
   /* Look at saved options in the IL files.  */
   for (i = 1; i < argc; ++i)
@@ -1046,7 +1113,7 @@ run_gcc (unsigned argc, char *argv[])
 				  collect_gcc))
 	{
 	  have_lto = true;
-	  lto_argv[lto_argc++] = argv[i];
+	  ltoobj_argv[ltoobj_argc++] = argv[i];
 	}
       close (fd);
     }
@@ -1105,6 +1172,17 @@ run_gcc (unsigned argc, char *argv[])
 	default:
 	  break;
 	}
+    }
+
+  /* Output lto-wrapper invocation command.  */
+  if (verbose)
+    {
+      for (i = 0; i < argc; ++i)
+	{
+	  fputs (argv[i], stderr);
+	  fputc (' ', stderr);
+	}
+      fputc ('\n', stderr);
     }
 
   if (no_partition)
@@ -1296,18 +1374,105 @@ cont1:
         obstack_ptr_grow (&argv_obstack, "-fwpa");
     }
 
-  /* Append the input objects and possible preceding arguments.  */
+  /* Append input arguments.  */
   for (i = 0; i < lto_argc; ++i)
     obstack_ptr_grow (&argv_obstack, lto_argv[i]);
+  /* Append the input objects.  */
+  for (i = 0; i < ltoobj_argc; ++i)
+    obstack_ptr_grow (&argv_obstack, ltoobj_argv[i]);
   obstack_ptr_grow (&argv_obstack, NULL);
 
   new_argv = XOBFINISH (&argv_obstack, const char **);
   argv_ptr = &new_argv[new_head_argc];
   fork_execute (new_argv[0], CONST_CAST (char **, new_argv), true);
 
+  /* Handle early generated debug information.  At compile-time
+     we output early DWARF debug info into .gnu.debuglto_ prefixed
+     sections.  LTRANS object DWARF debug info refers to that.
+     So we need to transfer the .gnu.debuglto_ sections to the final
+     link.  Ideally the linker plugin interface would allow us to
+     not claim those sections and instruct the linker to keep
+     them, renaming them in the process.  For now we extract and
+     rename those sections via a simple-object interface to produce
+     regular objects containing only the early debug info.  We
+     then partially link those to a single early debug info object
+     and pass that as additional output back to the linker plugin.  */
+
+  /* Prepare the partial link to gather the compile-time generated
+     debug-info into a single input for the final link.  */
+  debug_obj = make_temp_file ("debugobj");
+  obstack_ptr_grow (&argv_obstack, collect_gcc);
+  for (i = 1; i < decoded_options_count; ++i)
+    {
+      /* Retain linker choice and -B.  */
+      if (decoded_options[i].opt_index == OPT_B
+	  || decoded_options[i].opt_index == OPT_fuse_ld_bfd
+	  || decoded_options[i].opt_index == OPT_fuse_ld_gold)
+	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
+      /* Retain all target options, this preserves -m32 for example.  */
+      if (cl_options[decoded_options[i].opt_index].flags & CL_TARGET)
+	append_linker_options (&argv_obstack, &decoded_options[i-1], 2);
+      /* Recognize -g0.  */
+      if (decoded_options[i].opt_index == OPT_g
+	  && strcmp (decoded_options[i].arg, "0") == 0)
+	skip_debug = true;
+    }
+  obstack_ptr_grow (&argv_obstack, "-r");
+  obstack_ptr_grow (&argv_obstack, "-nostdlib");
+  obstack_ptr_grow (&argv_obstack, "-o");
+  obstack_ptr_grow (&argv_obstack, debug_obj);
+
+  /* Copy the early generated debug info from the objects to temporary
+     files and append those to the partial link commandline.  */
+  n_debugobj = 0;
+  if (! skip_debug)
+    for (i = 0; i < ltoobj_argc; ++i)
+      {
+	const char *tem;
+	if ((tem = debug_objcopy (ltoobj_argv[i])))
+	  {
+	    obstack_ptr_grow (&argv_obstack, tem);
+	    n_debugobj++;
+	  }
+      }
+
+  /* Link them all into a single object.  Ideally this would reduce
+     disk space usage mainly due to .debug_str merging but unfortunately
+     GNU ld doesn't perform this with -r.  */
+  if (n_debugobj)
+    {
+      obstack_ptr_grow (&argv_obstack, NULL);
+      const char **debug_link_argv = XOBFINISH (&argv_obstack, const char **);
+      fork_execute (debug_link_argv[0],
+		    CONST_CAST (char **, debug_link_argv), false);
+
+      /* And dispose the temporaries.  */
+      for (i = 0; debug_link_argv[i]; ++i)
+	;
+      for (--i; i > 0; --i)
+	{
+	  if (strcmp (debug_link_argv[i], debug_obj) == 0)
+	    break;
+	  maybe_unlink (debug_link_argv[i]);
+	}
+    }
+  else
+    {
+      unlink_if_ordinary (debug_obj);
+      free (debug_obj);
+      debug_obj = NULL;
+      skip_debug = true;
+    }
+
   if (lto_mode == LTO_MODE_LTO)
     {
       printf ("%s\n", flto_out);
+      if (!skip_debug)
+	{
+	  printf ("%s\n", debug_obj);
+	  free (debug_obj);
+	  debug_obj = NULL;
+	}
       free (flto_out);
       flto_out = NULL;
     }
@@ -1455,6 +1620,12 @@ cont:
 	  makefile = NULL;
 	  for (i = 0; i < nr; ++i)
 	    maybe_unlink (input_names[i]);
+	}
+      if (!skip_debug)
+	{
+	  printf ("%s\n", debug_obj);
+	  free (debug_obj);
+	  debug_obj = NULL;
 	}
       for (i = 0; i < nr; ++i)
 	{

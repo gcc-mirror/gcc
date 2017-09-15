@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "backend.h"
 #include "cfghooks.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "rtl.h"
 #include "df.h"
 #include "alias.h"
@@ -185,6 +187,9 @@ static bool m68k_output_addr_const_extra (FILE *, rtx);
 static void m68k_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 static enum flt_eval_method
 m68k_excess_precision (enum excess_precision_type);
+static unsigned int m68k_hard_regno_nregs (unsigned int, machine_mode);
+static bool m68k_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool m68k_modes_tieable_p (machine_mode, machine_mode);
 
 /* Initialize the GCC target structure.  */
 
@@ -331,6 +336,14 @@ m68k_excess_precision (enum excess_precision_type);
 /* The value stored by TAS.  */
 #undef TARGET_ATOMIC_TEST_AND_SET_TRUEVAL
 #define TARGET_ATOMIC_TEST_AND_SET_TRUEVAL 128
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS m68k_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK m68k_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m68k_modes_tieable_p
 
 static const struct attribute_spec m68k_attribute_table[] =
 {
@@ -1619,11 +1632,11 @@ output_dbcc_and_branch (rtx *operands)
      to compensate for the fact that dbcc decrements in HImode.  */
   switch (GET_MODE (operands[0]))
     {
-      case SImode:
+      case E_SImode:
         output_asm_insn ("clr%.w %0\n\tsubq%.l #1,%0\n\tjpl %l1", operands);
         break;
 
-      case HImode:
+      case E_HImode:
         break;
 
       default:
@@ -2538,7 +2551,7 @@ m68k_call_tls_get_addr (rtx x, rtx eqv, enum m68k_reloc reloc)
 
   m68k_libcall_value_in_a0_p = true;
   a0 = emit_library_call_value (m68k_get_tls_get_addr (), NULL_RTX, LCT_PURE,
-				Pmode, 1, x, Pmode);
+				Pmode, x, Pmode);
   m68k_libcall_value_in_a0_p = false;
   
   insns = get_insns ();
@@ -2587,7 +2600,7 @@ m68k_call_m68k_read_tp (void)
   /* Emit the call sequence.  */
   m68k_libcall_value_in_a0_p = true;
   a0 = emit_library_call_value (m68k_get_m68k_read_tp (), NULL_RTX, LCT_PURE,
-				Pmode, 0);
+				Pmode);
   m68k_libcall_value_in_a0_p = false;
   insns = get_insns ();
   end_sequence ();
@@ -5168,12 +5181,26 @@ m68k_hard_regno_rename_ok (unsigned int old_reg ATTRIBUTE_UNUSED,
   return 1;
 }
 
-/* Value is true if hard register REGNO can hold a value of machine-mode
-   MODE.  On the 68000, we let the cpu registers can hold any mode, but
-   restrict the 68881 registers to floating-point modes.  */
+/* Implement TARGET_HARD_REGNO_NREGS.
 
-bool
-m68k_regno_mode_ok (int regno, machine_mode mode)
+   On the m68k, ordinary registers hold 32 bits worth;
+   for the 68881 registers, a single register is always enough for
+   anything that can be stored in them at all.  */
+
+static unsigned int
+m68k_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (regno >= 16)
+    return GET_MODE_NUNITS (mode);
+  return CEIL (GET_MODE_SIZE (mode), UNITS_PER_WORD);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  On the 68000, we let the cpu
+   registers can hold any mode, but restrict the 68881 registers to
+   floating-point modes.  */
+
+static bool
+m68k_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   if (DATA_REGNO_P (regno))
     {
@@ -5196,6 +5223,18 @@ m68k_regno_mode_ok (int regno, machine_mode mode)
 	return true;
     }
   return false;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+m68k_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (!TARGET_HARD_FLOAT
+	  || ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	       || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	      == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+		  || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT)));
 }
 
 /* Implement SECONDARY_RELOAD_CLASS.  */
@@ -5268,9 +5307,9 @@ rtx
 m68k_libcall_value (machine_mode mode)
 {
   switch (mode) {
-  case SFmode:
-  case DFmode:
-  case XFmode:
+  case E_SFmode:
+  case E_DFmode:
+  case E_XFmode:
     if (TARGET_68881)
       return gen_rtx_REG (mode, FP0_REG);
     break;
@@ -5291,9 +5330,9 @@ m68k_function_value (const_tree valtype, const_tree func ATTRIBUTE_UNUSED)
 
   mode = TYPE_MODE (valtype);
   switch (mode) {
-  case SFmode:
-  case DFmode:
-  case XFmode:
+  case E_SFmode:
+  case E_DFmode:
+  case E_XFmode:
     if (TARGET_68881)
       return gen_rtx_REG (mode, FP0_REG);
     break;
@@ -5519,11 +5558,11 @@ sched_attr_op_type (rtx_insn *insn, bool opx_p, bool address_p)
     {
       switch (GET_MODE (op))
 	{
-	case SFmode:
+	case E_SFmode:
 	  return OP_TYPE_IMM_W;
 
-	case VOIDmode:
-	case DFmode:
+	case E_VOIDmode:
+	case E_DFmode:
 	  return OP_TYPE_IMM_L;
 
 	default:
@@ -5537,13 +5576,13 @@ sched_attr_op_type (rtx_insn *insn, bool opx_p, bool address_p)
     {
       switch (GET_MODE (op))
 	{
-	case QImode:
+	case E_QImode:
 	  return OP_TYPE_IMM_Q;
 
-	case HImode:
+	case E_HImode:
 	  return OP_TYPE_IMM_W;
 
-	case SImode:
+	case E_SImode:
 	  return OP_TYPE_IMM_L;
 
 	default:

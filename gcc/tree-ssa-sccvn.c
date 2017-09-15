@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "domwalk.h"
 #include "gimple-iterator.h"
 #include "gimple-match.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* This algorithm is based on the SCC algorithm presented by Keith
    Cooper and L. Taylor Simpson in "SCC-Based Value numbering"
@@ -1644,13 +1646,25 @@ static unsigned mprts_hook_cnt;
 /* Hook for maybe_push_res_to_seq, lookup the expression in the VN tables.  */
 
 static tree
-vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops)
+vn_lookup_simplify_result (code_helper rcode, tree type, tree *ops_)
 {
   if (!rcode.is_tree_code ())
     return NULL_TREE;
+  tree *ops = ops_;
+  unsigned int length = TREE_CODE_LENGTH ((tree_code) rcode);
+  if (rcode == CONSTRUCTOR
+      /* ???  We're arriving here with SCCVNs view, decomposed CONSTRUCTOR
+         and GIMPLEs / match-and-simplifies, CONSTRUCTOR as GENERIC tree.  */
+      && TREE_CODE (ops_[0]) == CONSTRUCTOR)
+    {
+      length = CONSTRUCTOR_NELTS (ops_[0]);
+      ops = XALLOCAVEC (tree, length);
+      for (unsigned i = 0; i < length; ++i)
+	ops[i] = CONSTRUCTOR_ELT (ops_[0], i)->value;
+    }
   vn_nary_op_t vnresult = NULL;
-  tree res = vn_nary_op_lookup_pieces (TREE_CODE_LENGTH ((tree_code) rcode),
-				       (tree_code) rcode, type, ops, &vnresult);
+  tree res = vn_nary_op_lookup_pieces (length, (tree_code) rcode,
+				       type, ops, &vnresult);
   /* We can end up endlessly recursing simplifications if the lookup above
      presents us with a def-use chain that mirrors the original simplification.
      See PR80887 for an example.  Limit successful lookup artificially
@@ -1860,10 +1874,10 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       for (unsigned i = 0; i < gimple_call_num_args (def_stmt); ++i)
 	{
 	  oldargs[i] = gimple_call_arg (def_stmt, i);
-	  if (TREE_CODE (oldargs[i]) == SSA_NAME
-	      && VN_INFO (oldargs[i])->valnum != oldargs[i])
+	  tree val = vn_valueize (oldargs[i]);
+	  if (val != oldargs[i])
 	    {
-	      gimple_call_set_arg (def_stmt, i, VN_INFO (oldargs[i])->valnum);
+	      gimple_call_set_arg (def_stmt, i, val);
 	      valueized_anything = true;
 	    }
 	}
@@ -2320,7 +2334,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *vr_,
       memset (&op, 0, sizeof (op));
       op.type = vr->type;
       op.opcode = MEM_REF;
-      op.op0 = build_int_cst (ptr_type_node, at - rhs_offset);
+      op.op0 = build_int_cst (ptr_type_node, at - lhs_offset + rhs_offset);
       op.off = at - lhs_offset + rhs_offset;
       vr->operands[0] = op;
       op.type = TREE_TYPE (rhs);
@@ -2635,6 +2649,14 @@ vn_nary_op_eq (const_vn_nary_op_t const vno1, const_vn_nary_op_t const vno2)
   for (i = 0; i < vno1->length; ++i)
     if (!expressions_equal_p (vno1->op[i], vno2->op[i]))
       return false;
+
+  /* BIT_INSERT_EXPR has an implict operand as the type precision
+     of op1.  Need to check to make sure they are the same.  */
+  if (vno1->opcode == BIT_INSERT_EXPR
+      && TREE_CODE (vno1->op[1]) == INTEGER_CST
+      && TYPE_PRECISION (TREE_TYPE (vno1->op[1]))
+	 != TYPE_PRECISION (TREE_TYPE (vno2->op[1])))
+    return false;
 
   return true;
 }
@@ -3838,11 +3860,11 @@ visit_reference_op_store (tree lhs, tree op, gimple *stmt)
 static bool
 visit_phi (gimple *phi)
 {
-  bool changed = false;
-  tree result;
-  tree sameval = VN_TOP;
-  bool allsame = true;
+  tree result, sameval = VN_TOP, seen_undef = NULL_TREE;
   unsigned n_executable = 0;
+  bool allsame = true;
+  edge_iterator ei;
+  edge e;
 
   /* TODO: We could check for this in init_sccvn, and replace this
      with a gcc_assert.  */
@@ -3851,8 +3873,6 @@ visit_phi (gimple *phi)
 
   /* See if all non-TOP arguments have the same value.  TOP is
      equivalent to everything, so we can ignore it.  */
-  edge_iterator ei;
-  edge e;
   FOR_EACH_EDGE (e, ei, gimple_bb (phi)->preds)
     if (e->flags & EDGE_EXECUTABLE)
       {
@@ -3862,8 +3882,12 @@ visit_phi (gimple *phi)
 	if (TREE_CODE (def) == SSA_NAME)
 	  def = SSA_VAL (def);
 	if (def == VN_TOP)
-	  continue;
-	if (sameval == VN_TOP)
+	  ;
+	/* Ignore undefined defs for sameval but record one.  */
+	else if (TREE_CODE (def) == SSA_NAME
+		 && ssa_undefined_value_p (def, false))
+	  seen_undef = def;
+	else if (sameval == VN_TOP)
 	  sameval = def;
 	else if (!expressions_equal_p (def, sameval))
 	  {
@@ -3871,30 +3895,36 @@ visit_phi (gimple *phi)
 	    break;
 	  }
       }
-  
-  /* If none of the edges was executable or all incoming values are
-     undefined keep the value-number at VN_TOP.  If only a single edge
-     is exectuable use its value.  */
-  if (sameval == VN_TOP
-      || n_executable == 1)
-    return set_ssa_val_to (PHI_RESULT (phi), sameval);
 
+
+  /* If none of the edges was executable keep the value-number at VN_TOP,
+     if only a single edge is exectuable use its value.  */
+  if (n_executable <= 1)
+    result = seen_undef ? seen_undef : sameval;
+  /* If we saw only undefined values and VN_TOP use one of the
+     undefined values.  */
+  else if (sameval == VN_TOP)
+    result = seen_undef ? seen_undef : sameval;
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
-  result = vn_phi_lookup (phi);
-  if (result)
-    changed = set_ssa_val_to (PHI_RESULT (phi), result);
-  /* Otherwise all value numbered to the same value, the phi node has that
-     value.  */
-  else if (allsame)
-    changed = set_ssa_val_to (PHI_RESULT (phi), sameval);
+  else if ((result = vn_phi_lookup (phi)))
+    ;
+  /* If all values are the same use that, unless we've seen undefined
+     values as well and the value isn't constant.
+     CCP/copyprop have the same restriction to not remove uninit warnings.  */
+  else if (allsame
+	   && (! seen_undef || is_gimple_min_invariant (sameval)))
+    result = sameval;
   else
     {
-      vn_phi_insert (phi, PHI_RESULT (phi));
-      changed = set_ssa_val_to (PHI_RESULT (phi), PHI_RESULT (phi));
+      result = PHI_RESULT (phi);
+      /* Only insert PHIs that are varying, for constant value numbers
+         we mess up equivalences otherwise as we are only comparing
+	 the immediate controlling predicates.  */
+      vn_phi_insert (phi, result);
     }
 
-  return changed;
+  return set_ssa_val_to (PHI_RESULT (phi), result);
 }
 
 /* Try to simplify RHS using equivalences and constant folding.  */
@@ -3934,9 +3964,10 @@ visit_use (tree use)
 
   mark_use_processed (use);
 
-  gcc_assert (!SSA_NAME_IN_FREE_LIST (use));
-  if (dump_file && (dump_flags & TDF_DETAILS)
-      && !SSA_NAME_IS_DEFAULT_DEF (use))
+  gcc_assert (!SSA_NAME_IN_FREE_LIST (use)
+	      && !SSA_NAME_IS_DEFAULT_DEF (use));
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
     {
       fprintf (dump_file, "Value numbering ");
       print_generic_expr (dump_file, use);
@@ -3944,10 +3975,7 @@ visit_use (tree use)
       print_gimple_stmt (dump_file, stmt, 0);
     }
 
-  /* Handle uninitialized uses.  */
-  if (SSA_NAME_IS_DEFAULT_DEF (use))
-    changed = set_ssa_val_to (use, use);
-  else if (gimple_code (stmt) == GIMPLE_PHI)
+  if (gimple_code (stmt) == GIMPLE_PHI)
     changed = visit_phi (stmt);
   else if (gimple_has_volatile_ops (stmt))
     changed = defs_to_varying (stmt);
@@ -4532,7 +4560,8 @@ init_scc_vn (void)
 
   XDELETE (rpo_numbers_temp);
 
-  VN_TOP = create_tmp_var_raw (void_type_node, "vn_top");
+  VN_TOP = build_decl (UNKNOWN_LOCATION, VAR_DECL,
+		       get_identifier ("VN_TOP"), error_mark_node);
 
   renumber_gimple_stmt_uids ();
 
@@ -4561,7 +4590,9 @@ init_scc_vn (void)
       switch (TREE_CODE (SSA_NAME_VAR (name)))
 	{
 	case VAR_DECL:
-	  /* Undefined vars keep TOP.  */
+	  /* All undefined vars are VARYING.  */
+	  VN_INFO (name)->valnum = name; 
+	  VN_INFO (name)->visited = true;
 	  break;
 
 	case PARM_DECL:
@@ -4588,12 +4619,10 @@ init_scc_vn (void)
 
 	case RESULT_DECL:
 	  /* If the result is passed by invisible reference the default
-	     def is initialized, otherwise it's uninitialized.  */
-	  if (DECL_BY_REFERENCE (SSA_NAME_VAR (name)))
-	    {
-	      VN_INFO (name)->visited = true;
-	      VN_INFO (name)->valnum = name; 
-	    }
+	     def is initialized, otherwise it's uninitialized.  Still
+	     undefined is varying.  */
+	  VN_INFO (name)->visited = true;
+	  VN_INFO (name)->valnum = name; 
 	  break;
 
 	default:
@@ -4986,14 +5015,13 @@ run_scc_vn (vn_lookup_kind default_vn_walk_kind_)
   /* Initialize the value ids and prune out remaining VN_TOPs
      from dead code.  */
   tree name;
-
   FOR_EACH_SSA_NAME (i, name, cfun)
     {
       vn_ssa_aux_t info = VN_INFO (name);
-      if (!info->visited)
-	info->valnum = name;
-      if (info->valnum == name
+      if (!info->visited
 	  || info->valnum == VN_TOP)
+	info->valnum = name;
+      if (info->valnum == name)
 	info->value_id = get_next_value_id ();
       else if (is_gimple_min_invariant (info->valnum))
 	info->value_id = get_or_alloc_constant_value_id (info->valnum);

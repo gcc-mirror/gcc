@@ -2308,7 +2308,7 @@ sched_analyze_reg (struct deps_desc *deps, int regno, machine_mode mode,
      If so, mark all of them just like the first.  */
   if (regno < FIRST_PSEUDO_REGISTER)
     {
-      int i = hard_regno_nregs[regno][mode];
+      int i = hard_regno_nregs (regno, mode);
       if (ref == SET)
 	{
 	  while (--i >= 0)
@@ -2419,7 +2419,7 @@ sched_analyze_1 (struct deps_desc *deps, rtx x, rtx_insn *insn)
     {
       if (GET_CODE (dest) == STRICT_LOW_PART
 	 || GET_CODE (dest) == ZERO_EXTRACT
-	 || df_read_modify_subreg_p (dest))
+	 || read_modify_subreg_p (dest))
         {
 	  /* These both read and modify the result.  We must handle
              them as writes to get proper dependencies for following
@@ -3706,7 +3706,8 @@ deps_analyze_insn (struct deps_desc *deps, rtx_insn *insn)
              Since we only have a choice between 'might be clobbered'
              and 'definitely not clobbered', we must include all
              partly call-clobbered registers here.  */
-            else if (HARD_REGNO_CALL_PART_CLOBBERED (i, reg_raw_mode[i])
+	    else if (targetm.hard_regno_call_part_clobbered (i,
+							     reg_raw_mode[i])
                      || TEST_HARD_REG_BIT (regs_invalidated_by_call, i))
               SET_REGNO_REG_SET (reg_pending_clobbers, i);
           /* We don't know what set of fixed registers might be used

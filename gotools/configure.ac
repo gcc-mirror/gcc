@@ -46,6 +46,11 @@ AC_PROG_INSTALL
 AC_PROG_CC
 AC_PROG_GO
 
+# These should be defined by the top-level configure.
+# Copy them into Makefile.
+AC_SUBST(GOC_FOR_TARGET)
+AC_SUBST(GCC_FOR_TARGET)
+
 AM_CONDITIONAL(NATIVE, test "$host_alias" = "$target_alias")
 
 dnl Test for -lsocket and -lnsl.  Copied from libjava/configure.ac.

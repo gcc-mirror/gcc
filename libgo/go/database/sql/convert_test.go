@@ -10,6 +10,7 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 )
@@ -17,9 +18,11 @@ import (
 var someTime = time.Unix(123, 0)
 var answer int64 = 42
 
-type userDefined float64
-
-type userDefinedSlice []int
+type (
+	userDefined       float64
+	userDefinedSlice  []int
+	userDefinedString string
+)
 
 type conversionTest struct {
 	s, d interface{} // source and destination
@@ -39,6 +42,7 @@ type conversionTest struct {
 	wantptr    *int64 // if non-nil, *d's pointed value must be equal to *wantptr
 	wantnil    bool   // if true, *d must be *int64(nil)
 	wantusrdef userDefined
+	wantusrstr userDefinedString
 }
 
 // Target variables for scanning into.
@@ -171,6 +175,7 @@ var conversionTests = []conversionTest{
 	{s: int64(123), d: new(userDefined), wantusrdef: 123},
 	{s: "1.5", d: new(userDefined), wantusrdef: 1.5},
 	{s: []byte{1, 2, 3}, d: new(userDefinedSlice), wanterr: `unsupported Scan, storing driver.Value type []uint8 into type *sql.userDefinedSlice`},
+	{s: "str", d: new(userDefinedString), wantusrstr: "str"},
 
 	// Other errors
 	{s: complex(1, 2), d: &scanstr, wanterr: `unsupported Scan, storing driver.Value type complex128 into type *string`},
@@ -259,6 +264,9 @@ func TestConversions(t *testing.T) {
 		}
 		if ct.wantusrdef != 0 && ct.wantusrdef != *ct.d.(*userDefined) {
 			errf("want userDefined %f, got %f", ct.wantusrdef, *ct.d.(*userDefined))
+		}
+		if len(ct.wantusrstr) != 0 && ct.wantusrstr != *ct.d.(*userDefinedString) {
+			errf("want userDefined %q, got %q", ct.wantusrstr, *ct.d.(*userDefinedString))
 		}
 	}
 }
@@ -461,8 +469,8 @@ func TestDriverArgs(t *testing.T) {
 		},
 	}
 	for i, tt := range tests {
-		ds := new(driverStmt)
-		got, err := driverArgs(ds, tt.args)
+		ds := &driverStmt{Locker: &sync.Mutex{}, si: stubDriverStmt{nil}}
+		got, err := driverArgs(nil, ds, tt.args)
 		if err != nil {
 			t.Errorf("test[%d]: %v", i, err)
 			continue

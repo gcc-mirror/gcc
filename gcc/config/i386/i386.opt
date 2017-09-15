@@ -440,7 +440,7 @@ Target RejectNegative Mask(SSEREGPARM) Save
 Use SSE register passing conventions for SF and DF mode.
 
 mstackrealign
-Target Report Var(ix86_force_align_arg_pointer) Init(-1)
+Target Report Var(ix86_force_align_arg_pointer)
 Realign stack in prologue.
 
 mstack-arg-probe
@@ -514,11 +514,11 @@ Target RejectNegative Joined Var(ix86_tune_ctrl_string)
 Fine grain control of tune features.
 
 mno-default
-Target RejectNegative Var(ix86_tune_no_default) Init(0)
+Target RejectNegative Var(ix86_tune_no_default)
 Clear all tune features.
 
 mdump-tune-features
-Target RejectNegative Var(ix86_dump_tunes) Init(0)
+Target RejectNegative Var(ix86_dump_tunes)
 
 miamcu
 Target Report Mask(IAMCU)
@@ -862,20 +862,20 @@ Target Report Mask(ISA_PREFETCHWT1) Var(ix86_isa_flags) Save
 Support PREFETCHWT1 built-in functions and code generation.
 
 mfentry
-Target Report Var(flag_fentry) Init(-1)
+Target Report Var(flag_fentry)
 Emit profiling counter call at function entry before prologue.
 
 mrecord-mcount
-Target Report Var(flag_record_mcount) Init(0)
+Target Report Var(flag_record_mcount)
 Generate __mcount_loc section with all mcount or __fentry__ calls.
 
 mnop-mcount
-Target Report Var(flag_nop_mcount) Init(0)
+Target Report Var(flag_nop_mcount)
 Generate mcount/__fentry__ calls as nops. To activate they need to be
 patched in.
 
 mskip-rax-setup
-Target Report Var(flag_skip_rax_setup) Init(0)
+Target Report Var(flag_skip_rax_setup)
 Skip setting up RAX register when passing variable arguments.
 
 m8bit-idiv
@@ -924,8 +924,26 @@ Enum(stack_protector_guard) String(tls) Value(SSP_TLS)
 EnumValue
 Enum(stack_protector_guard) String(global) Value(SSP_GLOBAL)
 
+mstack-protector-guard-reg=
+Target RejectNegative Joined Var(ix86_stack_protector_guard_reg_str)
+Use the given base register for addressing the stack-protector guard.
+
+TargetVariable
+addr_space_t ix86_stack_protector_guard_reg = ADDR_SPACE_GENERIC
+
+mstack-protector-guard-offset=
+Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_offset_str)
+Use the given offset for addressing the stack-protector guard.
+
+TargetVariable
+HOST_WIDE_INT ix86_stack_protector_guard_offset = 0
+
+mstack-protector-guard-symbol=
+Target RejectNegative Joined Integer Var(ix86_stack_protector_guard_symbol_str)
+Use the given symbol for addressing the stack-protector guard.
+
 mmitigate-rop
-Target Var(flag_mitigate_rop) Init(0)
+Target Var(flag_mitigate_rop)
 Attempt to avoid generating instruction sequences containing ret bytes.
 
 mgeneral-regs-only

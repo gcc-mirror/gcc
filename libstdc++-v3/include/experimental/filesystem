@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus < 201103L
-# include <bits/c++0x_warning.h>
-#else
+#if __cplusplus >= 201103L
 
 #include <experimental/bits/fs_fwd.h>
 #include <experimental/bits/fs_path.h>
@@ -44,14 +42,14 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 namespace filesystem
 {
 inline namespace v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   /**
    * @ingroup filesystem
    */
@@ -65,11 +63,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __what += " [" + _M_path2.string() + ']';
       return __what;
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

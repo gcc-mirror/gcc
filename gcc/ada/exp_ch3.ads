@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -94,15 +94,17 @@ package Exp_Ch3 is
    procedure Init_Secondary_Tags
      (Typ            : Entity_Id;
       Target         : Node_Id;
+      Init_Tags_List : List_Id;
       Stmts_List     : List_Id;
       Fixed_Comps    : Boolean := True;
       Variable_Comps : Boolean := True);
    --  Ada 2005 (AI-251): Initialize the tags of the secondary dispatch tables
    --  of Typ. The generated code referencing tag fields of Target is appended
-   --  to Stmts_List. If Fixed_Comps is True then the tag components located at
-   --  fixed positions of Target are initialized; if Variable_Comps is True
-   --  then tags components located at variable positions of Target are
-   --  initialized.
+   --  to Init_Tags_List and the code required to complete the elaboration of
+   --  the dispatch tables of Typ is appended to Stmts_List. If Fixed_Comps is
+   --  True then the tag components located at fixed positions of Target are
+   --  initialized; if Variable_Comps is True then tags components located at
+   --  variable positions of Target are initialized.
 
    function Make_Tag_Assignment (N : Node_Id) return Node_Id;
    --  An object declaration that has an initialization for a tagged object

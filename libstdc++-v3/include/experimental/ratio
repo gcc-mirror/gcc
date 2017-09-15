@@ -35,21 +35,19 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <ratio>
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 // See C++14 §20.11.5, ratio comparison
 template <typename _R1, typename _R2>
   constexpr bool ratio_equal_v = ratio_equal<_R1, _R2>::value;
@@ -63,10 +61,10 @@ template <typename _R1, typename _R2>
   constexpr bool ratio_greater_v = ratio_greater<_R1, _R2>::value;
 template <typename _R1, typename _R2>
   constexpr bool ratio_greater_equal_v = ratio_greater_equal<_R1, _R2>::value;
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

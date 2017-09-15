@@ -680,8 +680,7 @@ propagate_rtx (rtx x, machine_mode mode, rtx old_rtx, rtx new_rtx,
       || CONSTANT_P (new_rtx)
       || (GET_CODE (new_rtx) == SUBREG
 	  && REG_P (SUBREG_REG (new_rtx))
-	  && (GET_MODE_SIZE (mode)
-	      <= GET_MODE_SIZE (GET_MODE (SUBREG_REG (new_rtx))))))
+	  && !paradoxical_subreg_p (mode, GET_MODE (SUBREG_REG (new_rtx)))))
     flags |= PR_CAN_APPEAR;
   if (!varying_mem_p (new_rtx))
     flags |= PR_HANDLE_MEM;
@@ -1096,6 +1095,7 @@ forward_propagate_subreg (df_ref use, rtx_insn *def_insn, rtx def_set)
   rtx use_reg = DF_REF_REG (use);
   rtx_insn *use_insn;
   rtx src;
+  scalar_int_mode int_use_mode, src_mode;
 
   /* Only consider subregs... */
   machine_mode use_mode = GET_MODE (use_reg);
@@ -1103,9 +1103,7 @@ forward_propagate_subreg (df_ref use, rtx_insn *def_insn, rtx def_set)
       || !REG_P (SET_DEST (def_set)))
     return false;
 
-  /* If this is a paradoxical SUBREG...  */
-  if (GET_MODE_SIZE (use_mode)
-      > GET_MODE_SIZE (GET_MODE (SUBREG_REG (use_reg))))
+  if (paradoxical_subreg_p (use_reg))
     {
       /* If this is a paradoxical SUBREG, we have no idea what value the
 	 extra bits would have.  However, if the operand is equivalent to
@@ -1139,17 +1137,19 @@ forward_propagate_subreg (df_ref use, rtx_insn *def_insn, rtx def_set)
      definition of Y or, failing that, allow A to be deleted after
      reload through register tying.  Introducing more uses of Y
      prevents both optimisations.  */
-  else if (subreg_lowpart_p (use_reg))
+  else if (is_a <scalar_int_mode> (use_mode, &int_use_mode)
+	   && subreg_lowpart_p (use_reg))
     {
       use_insn = DF_REF_INSN (use);
       src = SET_SRC (def_set);
       if ((GET_CODE (src) == ZERO_EXTEND
 	   || GET_CODE (src) == SIGN_EXTEND)
+	  && is_a <scalar_int_mode> (GET_MODE (src), &src_mode)
 	  && REG_P (XEXP (src, 0))
 	  && REGNO (XEXP (src, 0)) >= FIRST_PSEUDO_REGISTER
 	  && GET_MODE (XEXP (src, 0)) == use_mode
 	  && !free_load_extend (src, def_insn)
-	  && (targetm.mode_rep_extended (use_mode, GET_MODE (src))
+	  && (targetm.mode_rep_extended (int_use_mode, src_mode)
 	      != (int) GET_CODE (src))
 	  && all_uses_available_at (def_insn, use_insn))
 	return try_fwprop_subst (use, DF_REF_LOC (use), XEXP (src, 0),

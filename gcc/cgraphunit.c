@@ -204,6 +204,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-chkp.h"
 #include "lto-section-names.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -2462,10 +2464,6 @@ symbol_table::compile (void)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
 
-  /* Offloading requires LTO infrastructure.  */
-  if (!in_lto_p && g->have_offload)
-    flag_generate_offload = 1;
-
   /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
   if (flag_generate_lto || flag_generate_offload)
     lto_streamer_hooks_init ();
@@ -2611,6 +2609,10 @@ symbol_table::finalize_compilation_unit (void)
 
   /* Gimplify and lower thunks.  */
   analyze_functions (/*first_time=*/false);
+
+  /* Offloading requires LTO infrastructure.  */
+  if (!in_lto_p && g->have_offload)
+    flag_generate_offload = 1;
 
   if (!seen_error ())
     {

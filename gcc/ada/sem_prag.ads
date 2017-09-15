@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -202,7 +202,7 @@ package Sem_Prag is
 
    procedure Analyze_Global_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Global. This routine is also
-   --  capable of performing basic analysis of pragma Refind_Global.
+   --  capable of performing basic analysis of pragma Refined_Global.
 
    procedure Analyze_Initial_Condition_In_Decl_Part (N : Node_Id);
    --  Perform full analysis of delayed pragma Initial_Condition
@@ -375,6 +375,7 @@ package Sem_Prag is
    --    Depends
    --    Extensions_Visible
    --    Global
+   --    Initializes
    --    Max_Queue_Length
    --    Post
    --    Post_Class
@@ -385,6 +386,7 @@ package Sem_Prag is
    --    Refined_Depends
    --    Refined_Global
    --    Refined_Post
+   --    Refined_State
    --    Test_Case
    --    Volatile_Function
    --  as well as attributes 'Old and 'Result. Find the declaration of the

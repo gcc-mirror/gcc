@@ -991,6 +991,24 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
     </listitem></varlistentry>
     </variablelist>
 
+    <varlistentry><term><code>_GLIBCXX_SANITIZE_VECTOR</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined, <classname>std::vector</classname>
+        operations will be annotated so that AddressSanitizer can detect
+        invalid accesses to the unused capacity of a
+        <classname>std::vector</classname>. These annotations are only
+        enabled for
+        <classname>std::vector&lt;T, std::allocator&lt;T&gt;&gt;</classname>
+        and only when <classname>std::allocator</classname> is derived from
+        <xref linkend="allocator.impl"><classname>new_allocator</classname>
+        or <classname>malloc_allocator</classname></xref>. The annotations
+        must be present on all vector operations or none, so this macro must
+        be defined to the same value for all translation units that create,
+        destroy or modify vectors.
+      </para>
+    </listitem></varlistentry>
+
   </section>
 
 <section xml:id="manual.intro.using.abi" xreflabel="Dual ABI">

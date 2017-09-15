@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <map>
 #include <experimental/bits/erase_if.h>
@@ -41,12 +39,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _Key, typename _Tp, typename _Compare, typename _Alloc,
 	   typename _Predicate>
     inline void
@@ -59,26 +57,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     erase_if(multimap<_Key, _Tp, _Compare, _Alloc>& __cont, _Predicate __pred)
     { __detail::__erase_nodes_if(__cont, __pred); }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
-namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
-  template<typename _Key, typename _Tp, typename _Compare = less<_Key>>
-    using map
+  namespace pmr {
+    template<typename _Key, typename _Tp, typename _Compare = less<_Key>>
+      using map
       = std::map<_Key, _Tp, _Compare,
 		 polymorphic_allocator<pair<const _Key, _Tp>>>;
 
-  template<typename _Key, typename _Tp, typename _Compare = less<_Key>>
-    using multimap
+    template<typename _Key, typename _Tp, typename _Compare = less<_Key>>
+      using multimap
       = std::multimap<_Key, _Tp, _Compare,
 		      polymorphic_allocator<pair<const _Key, _Tp>>>;
-
-_GLIBCXX_END_NAMESPACE_VERSION
-} // namespace pmr
-
+  } // namespace pmr
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

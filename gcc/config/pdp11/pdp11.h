@@ -164,40 +164,6 @@ extern const struct real_format pdp11_d_format;
  0, 0, 0, 0, 0, 0, 1, 1 }
 
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-*/
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-((REGNO <= PC_REGNUM)?							\
-    ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)	\
-    :1)
-    
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On the pdp, the cpu registers can hold any mode other than float
-   (because otherwise we may end up being asked to move from CPU to FPU
-   register, which isn't a valid operation on the PDP11).
-   For CPU registers, check alignment.
-
-   FPU accepts SF and DF but actually holds a DF - simplifies life!
-*/
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-(((REGNO) <= PC_REGNUM)?				\
-  ((GET_MODE_BITSIZE(MODE) <= 16) 			\
-   || (GET_MODE_BITSIZE(MODE) >= 32 &&      		\
-       !((REGNO) & 1) && !FLOAT_MODE_P (MODE)))		\
-  :FLOAT_MODE_P (MODE))
-    
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) 0
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
@@ -270,10 +236,6 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
 #define INDEX_REG_CLASS GENERAL_REGS
 #define BASE_REG_CLASS GENERAL_REGS
 
-/* Hook for testing if memory is needed for moving between registers.  */
-#define SECONDARY_MEMORY_NEEDED(class1, class2, m) \
-  pdp11_secondary_memory_needed (class1, class2, m)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)	\
@@ -281,9 +243,6 @@ enum reg_class { NO_REGS, MUL_REGS, GENERAL_REGS, LOAD_FPU_REGS, NO_LOAD_FPU_REG
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD):	\
   1									\
 )
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  pdp11_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -472,10 +431,6 @@ extern int may_call_alloca;
 
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode

@@ -33,6 +33,9 @@ bool gfc_matching_prefix = false;
 /* Stack of SELECT TYPE statements.  */
 gfc_select_type_stack *select_type_stack = NULL;
 
+/* List of type parameter expressions.  */
+gfc_actual_arglist *type_param_spec_list;
+
 /* For debugging and diagnostic purposes.  Return the textual representation
    of the intrinsic operator OP.  */
 const char *
@@ -132,12 +135,12 @@ gfc_op2string (gfc_intrinsic_op op)
      (1) If any user defined operator ".y." exists, this is always y(x,z)
          (even if ".y." is the wrong type and/or x has a member y).
      (2) Otherwise if x has a member y, and y is itself a derived type,
-         this is (x->y)->z, even if an intrinsic operator exists which 
-         can handle (x,z). 
-     (3) If x has no member y or (x->y) is not a derived type but ".y." 
+         this is (x->y)->z, even if an intrinsic operator exists which
+         can handle (x,z).
+     (3) If x has no member y or (x->y) is not a derived type but ".y."
          is an intrinsic operator (such as ".eq."), this is y(x,z).
      (4) Lastly if there is no operator ".y." and x has no member "y", it is an
-         error.  
+         error.
    It is worth noting that the logic here does not support mixed use of member
    accessors within a single string. That is, even if x has component y and y
    has component z, the following are all syntax errors:
@@ -165,7 +168,7 @@ gfc_match_member_sep(gfc_symbol *sym)
   tsym = NULL;
 
   /* We may be given either a derived type variable or the derived type
-    declaration itself (which actually contains the components); 
+    declaration itself (which actually contains the components);
     we need the latter to search for components.  */
   if (gfc_fl_struct (sym->attr.flavor))
     tsym = sym;
@@ -205,7 +208,7 @@ gfc_match_member_sep(gfc_symbol *sym)
   if (gfc_find_uop (name, sym->ns) != NULL)
     goto no;
 
-  /* Match accesses to existing derived-type components for 
+  /* Match accesses to existing derived-type components for
     derived-type vars: "x.y.z" = (x->y)->z  */
   c = gfc_find_component(tsym, name, false, true, NULL);
   if (c && (gfc_bt_struct (c->ts.type) || c->ts.type == BT_CLASS))
@@ -216,7 +219,7 @@ gfc_match_member_sep(gfc_symbol *sym)
   if (gfc_match_intrinsic_op (&iop) != MATCH_YES)
     {
       /* If ".y." is not an intrinsic operator but y was a valid non-
-        structure component, match and leave the trailing dot to be 
+        structure component, match and leave the trailing dot to be
         dealt with later.  */
       if (c)
         goto yes;
@@ -623,7 +626,7 @@ gfc_match_label (void)
       return MATCH_ERROR;
     }
 
-  if (!gfc_add_flavor (&gfc_new_block->attr, FL_LABEL, 
+  if (!gfc_add_flavor (&gfc_new_block->attr, FL_LABEL,
 		       gfc_new_block->name, NULL))
     return MATCH_ERROR;
 
@@ -1955,7 +1958,10 @@ match_derived_type_spec (gfc_typespec *ts)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
   locus old_locus;
-  gfc_symbol *derived;
+  gfc_symbol *derived, *der_type;
+  match m = MATCH_YES;
+  gfc_actual_arglist *decl_type_param_list = NULL;
+  bool is_pdt_template = false;
 
   old_locus = gfc_current_locus;
 
@@ -1967,8 +1973,50 @@ match_derived_type_spec (gfc_typespec *ts)
 
   gfc_find_symbol (name, NULL, 1, &derived);
 
+  /* Match the PDT spec list, if there.  */
+  if (derived && derived->attr.flavor == FL_PROCEDURE)
+    {
+      gfc_find_symbol (gfc_dt_upper_string (name), NULL, 1, &der_type);
+      is_pdt_template = der_type
+			&& der_type->attr.flavor == FL_DERIVED
+			&& der_type->attr.pdt_template;
+    }
+
+  if (is_pdt_template)
+    m = gfc_match_actual_arglist (1, &decl_type_param_list, true);
+
+  if (m == MATCH_ERROR)
+    {
+      gfc_free_actual_arglist (decl_type_param_list);
+      return m;
+    }
+
   if (derived && derived->attr.flavor == FL_PROCEDURE && derived->attr.generic)
     derived = gfc_find_dt_in_generic (derived);
+
+  /* If this is a PDT, find the specific instance.  */
+  if (m == MATCH_YES && is_pdt_template)
+    {
+      gfc_namespace *old_ns;
+
+      old_ns = gfc_current_ns;
+      while (gfc_current_ns && gfc_current_ns->parent)
+	gfc_current_ns = gfc_current_ns->parent;
+
+      if (type_param_spec_list)
+	gfc_free_actual_arglist (type_param_spec_list);
+      m = gfc_get_pdt_instance (decl_type_param_list, &der_type,
+				&type_param_spec_list);
+      gfc_free_actual_arglist (decl_type_param_list);
+
+      if (m != MATCH_YES)
+	return m;
+      derived = der_type;
+      gcc_assert (!derived->attr.pdt_template && derived->attr.pdt_type);
+      gfc_set_sym_referenced (derived);
+
+      gfc_current_ns = old_ns;
+    }
 
   if (derived && derived->attr.flavor == FL_DERIVED)
     {
@@ -1999,6 +2047,7 @@ gfc_match_type_spec (gfc_typespec *ts)
   gfc_clear_ts (ts);
   gfc_gobble_whitespace ();
   old_locus = gfc_current_locus;
+  type_param_spec_list = NULL;
 
   if (match_derived_type_spec (ts) == MATCH_YES)
     {
@@ -2869,7 +2918,7 @@ gfc_match_stopcode (gfc_statement st)
 				 | GFC_STD_F2008_OBS);
 
   /* Set f03 for -std=f2003.  */
-  f03 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77 
+  f03 = gfc_option.allow_std == (GFC_STD_F95_OBS | GFC_STD_F95 | GFC_STD_F77
 				 | GFC_STD_F2008_OBS | GFC_STD_F2003);
 
   /* Look for a blank between STOP and the stop-code for F2008 or later.  */
@@ -3935,7 +3984,7 @@ gfc_match_allocate (void)
     {
       if (gfc_match (" :: ") == MATCH_YES)
 	{
-	  if (!gfc_notify_std (GFC_STD_F2003, "typespec in ALLOCATE at %L", 
+	  if (!gfc_notify_std (GFC_STD_F2003, "typespec in ALLOCATE at %L",
 			       &old_locus))
 	    goto cleanup;
 
@@ -3948,6 +3997,16 @@ gfc_match_allocate (void)
 
 	  if (ts.type == BT_CHARACTER)
 	    ts.u.cl->length_from_typespec = true;
+
+	  /* TODO understand why this error does not appear but, instead,
+	     the derived type is caught as a variable in primary.c.  */
+	  if (gfc_spec_list_type (type_param_spec_list, NULL) != SPEC_EXPLICIT)
+	    {
+	      gfc_error ("The type parameter spec list in the type-spec at "
+			 "%L cannot contain ASSUMED or DEFERRED parameters",
+			 &old_locus);
+	      goto cleanup;
+	    }
 	}
       else
 	{
@@ -4059,6 +4118,9 @@ gfc_match_allocate (void)
       if (tail->expr->ts.type == BT_DERIVED)
 	tail->expr->ts.u.derived = gfc_use_derived (tail->expr->ts.u.derived);
 
+      if (type_param_spec_list)
+	tail->expr->param_list = gfc_copy_actual_arglist (type_param_spec_list);
+
       saw_unlimited = saw_unlimited | UNLIMITED_POLY (tail->expr);
 
       if (gfc_peek_ascii_char () == '(' && !sym->attr.dimension)
@@ -4143,7 +4205,7 @@ alloc_opt_list:
 
 	  if (head->next
 	      && !gfc_notify_std (GFC_STD_F2008, "SOURCE tag at %L"
-				  " with more than a single allocate object", 
+				  " with more than a single allocate object",
 				  &tmp->where))
 	    goto cleanup;
 
@@ -4236,6 +4298,9 @@ alloc_opt_list:
   new_st.ext.alloc.list = head;
   new_st.ext.alloc.ts = ts;
 
+  if (type_param_spec_list)
+    gfc_free_actual_arglist (type_param_spec_list);
+
   return MATCH_YES;
 
 syntax:
@@ -4248,6 +4313,8 @@ cleanup:
   gfc_free_expr (mold);
   if (tmp && tmp->expr_type) gfc_free_expr (tmp);
   gfc_free_alloc_list (head);
+  if (type_param_spec_list)
+    gfc_free_actual_arglist (type_param_spec_list);
   return MATCH_ERROR;
 }
 
@@ -4901,7 +4968,7 @@ gfc_match_common (void)
 	       || sym->attr.data) && gfc_current_state () != COMP_BLOCK_DATA)
 	    {
 	      if (!gfc_notify_std (GFC_STD_GNU, "Initialized symbol %qs at "
-				   "%C can only be COMMON in BLOCK DATA", 
+				   "%C can only be COMMON in BLOCK DATA",
 				   sym->name))
 		goto cleanup;
 	    }
@@ -5114,7 +5181,7 @@ gfc_match_namelist (void)
 	return MATCH_ERROR;
 
       if (group_name->attr.flavor != FL_NAMELIST
-	  && !gfc_add_flavor (&group_name->attr, FL_NAMELIST, 
+	  && !gfc_add_flavor (&group_name->attr, FL_NAMELIST,
 			      group_name->name, NULL))
 	return MATCH_ERROR;
 
@@ -5193,7 +5260,7 @@ gfc_match_module (void)
   if (m != MATCH_YES)
     return m;
 
-  if (!gfc_add_flavor (&gfc_new_block->attr, FL_MODULE, 
+  if (!gfc_add_flavor (&gfc_new_block->attr, FL_MODULE,
 		       gfc_new_block->name, NULL))
     return MATCH_ERROR;
 
@@ -6114,13 +6181,23 @@ gfc_match_type_is (void)
       return MATCH_ERROR;
     }
 
+  if (c->ts.type == BT_DERIVED
+      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
+      && gfc_spec_list_type (type_param_spec_list, c->ts.u.derived)
+							!= SPEC_ASSUMED)
+    {
+      gfc_error ("All the LEN type parameters in the TYPE IS statement "
+		 "at %C must be ASSUMED");
+      return MATCH_ERROR;
+    }
+
   /* Create temporary variable.  */
   select_type_set_tmp (&c->ts);
 
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in TYPE IS specification at %C");
+  gfc_error ("Ssyntax error in TYPE IS specification at %C");
 
 cleanup:
   if (c != NULL)

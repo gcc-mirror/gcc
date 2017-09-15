@@ -1,4 +1,4 @@
-// { dg-do run }
+// { dg-do run { target c++17 } }
 // { dg-options "-std=gnu++17" }
 
 // Copyright (C) 2015-2017 Free Software Foundation, Inc.
@@ -62,7 +62,6 @@ test03()
   static_assert(s == 3);
   constexpr auto e = std::empty(il3);
   static_assert(!e);
-
 }
 
 void

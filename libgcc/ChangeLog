@@ -1,3 +1,67 @@
+2017-09-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (*-*-vxworks7): Widen scope to vxworks7*.
+
+2017-08-31  Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (powerpc-wrs-vxworks|vxworksae|vxworksmils): Now
+	match as powerpc-wrs-vxworks*.
+
+2017-08-07  Jonathan Yong  <10walls@gmail.com>
+
+	* config.host (*-cygwin): Include file from mingw
+	config/i386/enable-execute-stack-mingw32.c
+
+2017-08-01  Jerome Lambourg  <lambourg@adacore.com>
+            Doug Rupp  <rupp@adacore.com>
+            Olivier Hainque  <hainque@adacore.com>
+
+	* config.host (arm-wrs-vxworks*): Rework to handle arm-wrs-vxworks7
+	as well as arm-wrs-vxworks.
+	* config/arm/t-vxworks7: New file.  Add unwind-arm-vxworks.c to
+	LIB2ADDEH.
+	* config/arm/unwind-arm-vxworks.c: New file. Provide dummy
+	__exidx_start and __exidx_end for downloadable modules.
+
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks (LIBGCC2_INCLUDES): Start with -I. after -nostdinc.
+	* config/t-vxworks7: Likewise.
+
+2017-08-01  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: Instead of redefining LIB2ADD,
+	augment LIB2ADDEH with vxlib.c and vxlib-tls.c.
+
+2017-07-28  Sebastian Huber  <sebastian.huber@embedded-brains.de>
+
+	* config/rs6000/ibm-ldouble.c: Disable if defined __rtems__.
+
+2017-07-24  Daniel Santos  <daniel.santos@pobox.com>
+
+	PR testsuite/80759
+	* config.host: include i386/t-msabi for darwin and solaris.
+	* config/i386/i386-asm.h
+	(ELFFN): Rename to FN_TYPE.
+	(FN_SIZE): New macro.
+	(FN_HIDDEN): Likewise.
+	(ASMNAME): Likewise.
+	(FUNC_START): Rename to FUNC_BEGIN, use ASMNAME, replace .global with
+	.globl.
+	(HIDDEN_FUNC): Use ASMNAME and .globl instead of .global.
+	(SSE_SAVE): Convert to cpp macro, hard-code offset (always 0x60).
+	* config/i386/resms64.S: Use SSE_SAVE as cpp macro instead of gas
+	.macro.
+	* config/i386/resms64f.S: Likewise.
+	* config/i386/resms64fx.S: Likewise.
+	* config/i386/resms64x.S: Likewise.
+	* config/i386/savms64.S: Likewise.
+	* config/i386/savms64f.S: Likewise.
+
+2017-07-19  John Marino  <gnugcc@marino.st>
+
+	* config/i386/dragonfly-unwind.h: Handle sigtramp relocation.
+
 2017-07-12  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/81193

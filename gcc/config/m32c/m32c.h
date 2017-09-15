@@ -255,9 +255,6 @@ machine_function;
 
 /* How Values Fit in Registers */
 
-#define HARD_REGNO_NREGS(R,M) m32c_hard_regno_nregs (R, M)
-#define HARD_REGNO_MODE_OK(R,M) m32c_hard_regno_ok (R, M)
-#define MODES_TIEABLE_P(M1,M2) m32c_modes_tieable_p (M1, M2)
 #define AVOID_CCMODE_COPIES
 
 /* Register Classes */
@@ -413,8 +410,6 @@ enum reg_class
   (enum reg_class) m32c_secondary_reload_class (CLASS, MODE, X)
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
-
-#define CANNOT_CHANGE_MODE_CLASS(F,T,C) m32c_cannot_change_mode_class(F,T,C)
 
 /* STACK AND CALLING */
 
@@ -634,7 +629,6 @@ typedef struct m32c_cumulative_args
 #define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
 
 #define MOVE_MAX 4
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 #define STORE_FLAG_VALUE 1
 

@@ -14,7 +14,7 @@ subroutine dummy(i1,r1,c1,l1,i2,r2,c2,l2)
   real, intent(inout) :: r2
   character, intent(inout) :: c2
   logical, intent(inout) :: l2
-  print *, i1, i2, l1, l2, c1, c2, r1, r2
+  print *, i1, i2, l1, l2, ichar(c1), ichar(c2), r1, r2
   if ( i1 .ne. 0 .or. i2 .ne. 0 ) call abort()
   if ( l1 .or. l2 ) call abort()
   if ( c1 .ne. achar(0) .or. c2 .ne. achar(0) ) call abort()

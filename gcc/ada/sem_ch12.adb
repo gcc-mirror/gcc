@@ -1894,6 +1894,97 @@ package body Sem_Ch12 is
                        (Instantiate_Formal_Package
                          (Formal, Match, Analyzed_Formal),
                         Assoc_List);
+
+                     --  Determine whether the actual package needs an explicit
+                     --  freeze node. This is only the case if the actual is
+                     --  declared in the same unit and has a body. Normally
+                     --  packages do not have explicit freeze nodes, and gigi
+                     --  only uses them to elaborate entities in a package
+                     --  body.
+
+                     Explicit_Freeze_Check : declare
+                        Actual : constant Entity_Id := Entity (Match);
+
+                        Needs_Freezing : Boolean;
+                        S              : Entity_Id;
+
+                        procedure Check_Generic_Parent;
+                        --  The actual may be an instantiation of a unit
+                        --  declared in a previous instantiation. If that
+                        --  one is also in the current compilation, it must
+                        --  itself be frozen before the actual.
+                        --  Should this itself be recursive ???
+
+                        --------------------------
+                        -- Check_Generic_Parent --
+                        --------------------------
+
+                        procedure Check_Generic_Parent is
+                           Par : Entity_Id;
+
+                        begin
+                           if Nkind (Parent (Actual)) =
+                                N_Package_Specification
+                           then
+                              Par := Scope (Generic_Parent (Parent (Actual)));
+
+                              if Is_Generic_Instance (Par)
+                                and then Scope (Par) = Current_Scope
+                                and then
+                                  (No (Freeze_Node (Par))
+                                    or else
+                                      not Is_List_Member (Freeze_Node (Par)))
+                              then
+                                 Set_Has_Delayed_Freeze (Par);
+                                 Append_Elmt (Par, Actuals_To_Freeze);
+                              end if;
+                           end if;
+                        end Check_Generic_Parent;
+
+                     --  Start of processing for Explicit_Freeze_Check
+
+                     begin
+                        if not Expander_Active
+                          or else not Has_Completion (Actual)
+                          or else not In_Same_Source_Unit (I_Node, Actual)
+                          or else Is_Frozen (Actual)
+                          or else
+                            (Present (Renamed_Entity (Actual))
+                              and then
+                                not In_Same_Source_Unit
+                                      (I_Node, (Renamed_Entity (Actual))))
+                        then
+                           null;
+
+                        else
+                           --  Finally we want to exclude such freeze nodes
+                           --  from statement sequences, which freeze
+                           --  everything before them.
+                           --  Is this strictly necessary ???
+
+                           Needs_Freezing := True;
+
+                           S := Current_Scope;
+                           while Present (S) loop
+                              if Ekind_In (S, E_Block,
+                                              E_Function,
+                                              E_Loop,
+                                              E_Procedure)
+                              then
+                                 Needs_Freezing := False;
+                                 exit;
+                              end if;
+
+                              S := Scope (S);
+                           end loop;
+
+                           if Needs_Freezing then
+                              Check_Generic_Parent;
+                              Set_Has_Delayed_Freeze (Actual);
+                              Append_Elmt (Actual, Actuals_To_Freeze);
+                           end if;
+                        end if;
+                     end Explicit_Freeze_Check;
                   end if;
 
                --  For use type and use package appearing in the generic part,
@@ -2601,7 +2692,9 @@ package body Sem_Ch12 is
                    (Generic_Formal_Declarations (Original_Node (Gen_Decl)));
                while Present (Formal_Decl) loop
                   Append_To
-                    (Decls, Copy_Generic_Node (Formal_Decl, Empty, True));
+                    (Decls,
+                     Copy_Generic_Node
+                       (Formal_Decl, Empty, Instantiating => True));
                   Next (Formal_Decl);
                end loop;
             end;
@@ -5342,7 +5435,39 @@ package body Sem_Ch12 is
            (Original_Node (Gen_Decl), Renaming_List);
 
          Build_Subprogram_Renaming;
+
+         --  If the context of the instance is subject to SPARK_Mode "off" or
+         --  the annotation is altogether missing, set the global flag which
+         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
+         --  the instance. This should be done prior to analyzing the instance.
+
+         if SPARK_Mode /= On then
+            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
+         --  If the context of an instance is not subject to SPARK_Mode "off",
+         --  and the generic spec is subject to an explicit SPARK_Mode pragma,
+         --  the latter should be the one applicable to the instance.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then Saved_SM /= Off
+           and then Present (SPARK_Pragma (Gen_Unit))
+         then
+            Set_SPARK_Mode (Gen_Unit);
+         end if;
+
          Analyze_Instance_And_Renamings;
+
+         --  Restore SPARK_Mode from the context after analysis of the package
+         --  declaration, so that the SPARK_Mode on the generic spec does not
+         --  apply to the pending instance for the instance body.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then Saved_SM /= Off
+           and then Present (SPARK_Pragma (Gen_Unit))
+         then
+            Restore_SPARK_Mode (Saved_SM, Saved_SMP);
+         end if;
 
          --  If the generic is marked Import (Intrinsic), then so is the
          --  instance. This indicates that there is no body to instantiate. If
@@ -5382,23 +5507,25 @@ package body Sem_Ch12 is
          Set_Has_Pragma_Inline (Act_Decl_Id, Has_Pragma_Inline (Gen_Unit));
          Set_Has_Pragma_Inline (Anon_Id,     Has_Pragma_Inline (Gen_Unit));
 
+         --  Propagate No_Return if pragma applied to generic unit. This must
+         --  be done explicitly because pragma does not appear in generic
+         --  declaration (unlike the aspect case).
+
+         if No_Return (Gen_Unit) then
+            Set_No_Return (Act_Decl_Id);
+            Set_No_Return (Anon_Id);
+         end if;
+
          Set_Has_Pragma_Inline_Always
            (Act_Decl_Id, Has_Pragma_Inline_Always (Gen_Unit));
          Set_Has_Pragma_Inline_Always
            (Anon_Id,     Has_Pragma_Inline_Always (Gen_Unit));
 
-         --  If the context of the instance is subject to SPARK_Mode "off" or
-         --  the annotation is altogether missing, set the global flag which
-         --  signals Analyze_Pragma to ignore all SPARK_Mode pragmas within
-         --  the instance.
+         --  Mark both the instance spec and the anonymous package in case the
+         --  body is instantiated at a later pass. This preserves the original
+         --  context in effect for the body.
 
          if SPARK_Mode /= On then
-            Ignore_SPARK_Mode_Pragmas_In_Instance := True;
-
-            --  Mark both the instance spec and the anonymous package in case
-            --  the body is instantiated at a later pass. This preserves the
-            --  original context in effect for the body.
-
             Set_Ignore_SPARK_Mode_Pragmas (Act_Decl_Id);
             Set_Ignore_SPARK_Mode_Pragmas (Anon_Id);
          end if;
@@ -5530,7 +5657,7 @@ package body Sem_Ch12 is
             Assoc := Associated_Node (Assoc);
          end loop;
 
-         --  Follow and additional link in case the final node was rewritten.
+         --  Follow an additional link in case the final node was rewritten.
          --  This can only happen with nested generic units.
 
          if (Nkind (Assoc) = N_Identifier or else Nkind (Assoc) in N_Op)
@@ -5547,7 +5674,7 @@ package body Sem_Ch12 is
          --  An additional special case: an unconstrained type in an object
          --  declaration may have been rewritten as a local subtype constrained
          --  by the expression in the declaration. We need to recover the
-         --  original entity which may be global.
+         --  original entity, which may be global.
 
          if Present (Original_Node (Assoc))
            and then Nkind (Parent (N)) = N_Object_Declaration
@@ -6314,7 +6441,18 @@ package body Sem_Ch12 is
 
                else
                   Formal_P := Next_Entity (E);
-                  Check_Formal_Package_Instance (Formal_P, E);
+
+                  --  If the instance is within an enclosing instance body
+                  --  there is no need to verify the legality of current formal
+                  --  packages because they were legal in the generic body.
+                  --  This optimization may be applicable elsewhere, and it
+                  --  also removes spurious errors that may arise with
+                  --  on-the-fly inlining and confusion between private and
+                  --  full views.
+
+                  if not In_Instance_Body then
+                     Check_Formal_Package_Instance (Formal_P, E);
+                  end if;
 
                   --  After checking, remove the internal validating package.
                   --  It is only needed for semantic checks, and as it may
@@ -7394,7 +7532,16 @@ package body Sem_Ch12 is
            (New_N, Copy_Generic_List (Aspect_Specifications (N), Parent_Id));
       end if;
 
-      if Instantiating then
+      --  If we are instantiating, we want to adjust the sloc based on the
+      --  current S_Adjustment. However, if this is the root node of a subunit,
+      --  we need to defer that adjustment to below (see "elsif Instantiating
+      --  and Was_Stub"), so it comes after Create_Instantiation_Source has
+      --  computed the adjustment.
+
+      if Instantiating
+        and then not (Nkind (N) in N_Proper_Body
+                       and then Was_Originally_Stub (N))
+      then
          Adjust_Instantiation_Sloc (New_N, S_Adjustment);
       end if;
 
@@ -7538,18 +7685,16 @@ package body Sem_Ch12 is
             Set_Selector_Name (New_N,
               Copy_Generic_Node (Selector_Name (N), New_N, Instantiating));
 
-         --  For operators, we must copy the right operand
+         --  For operators, copy the operands
 
          elsif Nkind (N) in N_Op then
-            Set_Right_Opnd (New_N,
-              Copy_Generic_Node (Right_Opnd (N), New_N, Instantiating));
-
-            --  And for binary operators, the left operand as well
-
             if Nkind (N) in N_Binary_Op then
                Set_Left_Opnd (New_N,
                  Copy_Generic_Node (Left_Opnd (N), New_N, Instantiating));
             end if;
+
+            Set_Right_Opnd (New_N,
+              Copy_Generic_Node (Right_Opnd (N), New_N, Instantiating));
          end if;
 
       --  Establish a link between an entity from the generic template and the
@@ -7695,14 +7840,16 @@ package body Sem_Ch12 is
            Copy_Generic_List (Context_Items (N), New_N));
 
          Set_Unit (New_N,
-           Copy_Generic_Node (Unit (N), New_N, False));
+           Copy_Generic_Node (Unit (N), New_N, Instantiating => False));
 
          Set_First_Inlined_Subprogram (New_N,
            Copy_Generic_Node
-             (First_Inlined_Subprogram (N), New_N, False));
+             (First_Inlined_Subprogram (N), New_N, Instantiating => False));
 
-         Set_Aux_Decls_Node (New_N,
-           Copy_Generic_Node (Aux_Decls_Node (N), New_N, False));
+         Set_Aux_Decls_Node
+           (New_N,
+            Copy_Generic_Node
+              (Aux_Decls_Node (N), New_N, Instantiating => False));
 
       --  For an assignment node, the assignment is known to be semantically
       --  legal if we are instantiating the template. This avoids incorrect
@@ -7817,13 +7964,14 @@ package body Sem_Ch12 is
       elsif Nkind (N) in N_Proper_Body then
          declare
             Save_Adjustment : constant Sloc_Adjustment := S_Adjustment;
-
          begin
             if Instantiating and then Was_Originally_Stub (N) then
                Create_Instantiation_Source
                  (Instantiation_Node,
                   Defining_Entity (N),
                   S_Adjustment);
+
+               Adjust_Instantiation_Sloc (New_N, S_Adjustment);
             end if;
 
             --  Now copy the fields of the proper body, using the new
@@ -7831,7 +7979,7 @@ package body Sem_Ch12 is
 
             Copy_Descendants;
 
-            --  Restore the original adjustment factor in case changed
+            --  Restore the original adjustment factor
 
             S_Adjustment := Save_Adjustment;
          end;
@@ -8353,7 +8501,7 @@ package body Sem_Ch12 is
          --  The parent was a premature instantiation. Insert freeze node at
          --  the end the current declarative part.
 
-         if ABE_Is_Certain (Get_Package_Instantiation_Node (Par)) then
+         if ABE_Is_Certain (Get_Unit_Instantiation_Node (Par)) then
             Insert_Freeze_Node_For_Instance (Inst_Node, F_Node);
 
          --  Handle the following case:
@@ -8374,7 +8522,7 @@ package body Sem_Ch12 is
          --  after that of Parent_Inst. This relation is established by
          --  comparing the Slocs of Parent_Inst freeze node and Inst.
 
-         elsif List_Containing (Get_Package_Instantiation_Node (Par)) =
+         elsif List_Containing (Get_Unit_Instantiation_Node (Par)) =
                List_Containing (Inst_Node)
            and then Sloc (Freeze_Node (Par)) < Sloc (Inst_Node)
          then
@@ -8496,11 +8644,11 @@ package body Sem_Ch12 is
       end if;
    end Get_Instance_Of;
 
-   ------------------------------------
-   -- Get_Package_Instantiation_Node --
-   ------------------------------------
+   ---------------------------------
+   -- Get_Unit_Instantiation_Node --
+   ---------------------------------
 
-   function Get_Package_Instantiation_Node (A : Entity_Id) return Node_Id is
+   function Get_Unit_Instantiation_Node (A : Entity_Id) return Node_Id is
       Decl : Node_Id := Unit_Declaration_Node (A);
       Inst : Node_Id;
 
@@ -8546,7 +8694,10 @@ package body Sem_Ch12 is
             Decl := Unit_Declaration_Node (Corresponding_Body (Decl));
          end if;
 
-         if Nkind (Original_Node (Decl)) = N_Package_Instantiation then
+         if Nkind_In (Original_Node (Decl), N_Function_Instantiation,
+                                            N_Package_Instantiation,
+                                            N_Procedure_Instantiation)
+         then
             return Original_Node (Decl);
          else
             return Unit (Parent (Decl));
@@ -8559,15 +8710,17 @@ package body Sem_Ch12 is
 
       else
          Inst := Next (Decl);
-         while not Nkind_In (Inst, N_Package_Instantiation,
-                                   N_Formal_Package_Declaration)
+         while not Nkind_In (Inst, N_Formal_Package_Declaration,
+                                   N_Function_Instantiation,
+                                   N_Package_Instantiation,
+                                   N_Procedure_Instantiation)
          loop
             Next (Inst);
          end loop;
 
          return Inst;
       end if;
-   end Get_Package_Instantiation_Node;
+   end Get_Unit_Instantiation_Node;
 
    ------------------------
    -- Has_Been_Exchanged --
@@ -9183,8 +9336,8 @@ package body Sem_Ch12 is
           and then (Nkind_In (Gen_Unit, N_Generic_Package_Declaration,
                                         N_Package_Declaration)
                      or else (Gen_Unit = Body_Unit
-                               and then True_Sloc (N, Act_Unit)
-                                          < Sloc (Orig_Body)))
+                               and then True_Sloc (N, Act_Unit) <
+                                          Sloc (Orig_Body)))
           and then Is_In_Main_Unit (Original_Node (Gen_Unit))
           and then In_Same_Scope (Gen_Id, Act_Id));
 
@@ -9198,7 +9351,10 @@ package body Sem_Ch12 is
       --  if no delay is needed, we place the freeze node at the end of the
       --  current declarative part.
 
-      if Expander_Active then
+      if Expander_Active
+        and then (No (Freeze_Node (Act_Id))
+                   or else not Is_List_Member (Freeze_Node (Act_Id)))
+      then
          Ensure_Freeze_Node (Act_Id);
          F_Node := Freeze_Node (Act_Id);
 
@@ -9233,7 +9389,7 @@ package body Sem_Ch12 is
                --  Parent_Inst. This relation is established by comparing
                --  the Slocs of Parent_Inst freeze node and Inst.
 
-               if List_Containing (Get_Package_Instantiation_Node (Par)) =
+               if List_Containing (Get_Unit_Instantiation_Node (Par)) =
                   List_Containing (N)
                  and then Sloc (Freeze_Node (Par)) < Sloc (N)
                then
@@ -9494,7 +9650,7 @@ package body Sem_Ch12 is
 
          --  Load grandparent instance as well
 
-         Inst_Node := Get_Package_Instantiation_Node (Inst_Par);
+         Inst_Node := Get_Unit_Instantiation_Node (Inst_Par);
 
          if Nkind (Name (Inst_Node)) = N_Expanded_Name then
             Inst_Par := Entity (Prefix (Name (Inst_Node)));
@@ -11377,7 +11533,9 @@ package body Sem_Ch12 is
       Opt.Ada_Version_Pragma   := Body_Info.Version_Pragma;
       Restore_Warnings (Body_Info.Warnings);
 
-      --  Install the SPARK mode which applies to the subprogram body
+      --  Install the SPARK mode which applies to the subprogram body from the
+      --  instantiation context. This may be refined further if an explicit
+      --  SPARK_Mode pragma applies to the generic body.
 
       Install_SPARK_Mode (Body_Info.SPARK_Mode, Body_Info.SPARK_Mode_Pragma);
 
@@ -11437,6 +11595,17 @@ package body Sem_Ch12 is
            or else Ignore_SPARK_Mode_Pragmas (Act_Decl_Id)
          then
             Ignore_SPARK_Mode_Pragmas_In_Instance := True;
+         end if;
+
+         --  If the context of an instance is not subject to SPARK_Mode "off",
+         --  and the generic body is subject to an explicit SPARK_Mode pragma,
+         --  the latter should be the one applicable to the instance.
+
+         if not Ignore_SPARK_Mode_Pragmas_In_Instance
+           and then SPARK_Mode /= Off
+           and then Present (SPARK_Pragma (Gen_Body_Id))
+         then
+            Set_SPARK_Mode (Gen_Body_Id);
          end if;
 
          Current_Sem_Unit := Body_Info.Current_Sem_Unit;
@@ -11957,7 +12126,10 @@ package body Sem_Ch12 is
          --  for static matching has failed. The case where both the component
          --  type and the array type are separate formals, and the component
          --  type is a private view may also require special checking in
-         --  Subtypes_Match.
+         --  Subtypes_Match. Finally, we assume that a child instance where
+         --  the component type comes from a formal of a parent instance is
+         --  correct because the generic was correct. A more precise check
+         --  seems too complex to install???
 
          if Subtypes_Match
            (Component_Type (A_Gen_T), Component_Type (Act_T))
@@ -11965,6 +12137,9 @@ package body Sem_Ch12 is
                Subtypes_Match
                  (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
                   Component_Type (Act_T))
+            or else
+              (not Inside_A_Generic
+                 and then Is_Child_Unit (Scope (Component_Type (A_Gen_T))))
          then
             null;
          else

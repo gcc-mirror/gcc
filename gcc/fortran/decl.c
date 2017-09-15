@@ -54,6 +54,7 @@ static gfc_typespec current_ts;
 static symbol_attribute current_attr;
 static gfc_array_spec *current_as;
 static int colon_seen;
+static int attr_seen;
 
 /* The current binding label (if any).  */
 static const char* curr_binding_label;
@@ -93,6 +94,15 @@ static enumerator_history *max_enum = NULL;
 gfc_symbol *gfc_new_block;
 
 bool gfc_matching_function;
+
+/* If a kind expression of a component of a parameterized derived type is
+   parameterized, temporarily store the expression here.  */
+static gfc_expr *saved_kind_expr = NULL;
+
+/* Used to store the parameter list arising in a PDT declaration and
+   in the typespec of a PDT variable or component.  */
+static gfc_actual_arglist *decl_type_param_list;
+static gfc_actual_arglist *type_param_spec_list;
 
 
 /********************* DATA statement subroutines *********************/
@@ -1499,6 +1509,11 @@ build_sym (const char *name, gfc_charlen *cl, bool cl_deferred,
 
   sym->attr.implied_index = 0;
 
+  /* Use the parameter expressions for a parameterized derived type.  */
+  if ((sym->ts.type == BT_DERIVED || sym->ts.type == BT_CLASS)
+      && sym->ts.u.derived->attr.pdt_type && type_param_spec_list)
+    sym->param_list = gfc_copy_actual_arglist (type_param_spec_list);
+
   if (sym->ts.type == BT_CLASS)
     return gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as);
 
@@ -1945,6 +1960,11 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
   c->ts = current_ts;
   if (c->ts.type == BT_CHARACTER)
     c->ts.u.cl = cl;
+
+  if (c->ts.type != BT_CLASS && c->ts.type != BT_DERIVED
+      && c->ts.kind == 0 && saved_kind_expr != NULL)
+    c->kind_expr = gfc_copy_expr (saved_kind_expr);
+
   c->attr = current_attr;
 
   c->initializer = *init;
@@ -1997,6 +2017,31 @@ build_struct (const char *name, gfc_charlen *cl, gfc_expr **init,
 scalar:
   if (c->ts.type == BT_CLASS)
     return gfc_build_class_symbol (&c->ts, &c->attr, &c->as);
+
+  if (c->attr.pdt_kind || c->attr.pdt_len)
+    {
+      gfc_symbol *sym;
+      gfc_find_symbol (c->name, gfc_current_block ()->f2k_derived,
+		       0, &sym);
+      if (sym == NULL)
+	{
+	  gfc_error ("Type parameter %qs at %C has no corresponding entry "
+		     "in the type parameter name list at %L",
+		     c->name, &gfc_current_block ()->declared_at);
+	  return false;
+	}
+      sym->ts = c->ts;
+      sym->attr.pdt_kind = c->attr.pdt_kind;
+      sym->attr.pdt_len = c->attr.pdt_len;
+      if (c->initializer)
+	sym->value = gfc_copy_expr (c->initializer);
+      sym->attr.flavor = FL_VARIABLE;
+    }
+
+  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+      && c->ts.u.derived && c->ts.u.derived->attr.pdt_template
+      && decl_type_param_list)
+    c->param_list = gfc_copy_actual_arglist (decl_type_param_list);
 
   return true;
 }
@@ -2140,6 +2185,7 @@ static match
 variable_decl (int elem)
 {
   char name[GFC_MAX_SYMBOL_LEN + 1];
+  static unsigned int fill_id = 0;
   gfc_expr *initializer, *char_len;
   gfc_array_spec *as;
   gfc_array_spec *cp_as; /* Extra copy for Cray Pointees.  */
@@ -2157,9 +2203,47 @@ variable_decl (int elem)
   /* When we get here, we've just matched a list of attributes and
      maybe a type and a double colon.  The next thing we expect to see
      is the name of the symbol.  */
-  m = gfc_match_name (name);
+
+  /* If we are parsing a structure with legacy support, we allow the symbol
+     name to be '%FILL' which gives it an anonymous (inaccessible) name.  */
+  m = MATCH_NO;
+  gfc_gobble_whitespace ();
+  if (gfc_peek_ascii_char () == '%')
+    {
+      gfc_next_ascii_char ();
+      m = gfc_match ("fill");
+    }
+
   if (m != MATCH_YES)
-    goto cleanup;
+    {
+      m = gfc_match_name (name);
+      if (m != MATCH_YES)
+	goto cleanup;
+    }
+
+  else
+    {
+      m = MATCH_ERROR;
+      if (gfc_current_state () != COMP_STRUCTURE)
+	{
+	  if (flag_dec_structure)
+	    gfc_error ("%qs not allowed outside STRUCTURE at %C", "%FILL");
+	  else
+	    gfc_error ("%qs at %C is a DEC extension, enable with "
+		       "%<-fdec-structure%>", "%FILL");
+	  goto cleanup;
+	}
+
+      if (attr_seen)
+	{
+	  gfc_error ("%qs entity cannot have attributes at %C", "%FILL");
+	  goto cleanup;
+	}
+
+      /* %FILL components are given invalid fortran names.  */
+      snprintf (name, GFC_MAX_SYMBOL_LEN + 1, "%%FILL%u", fill_id++);
+      m = MATCH_YES;
+    }
 
   var_locus = gfc_current_locus;
 
@@ -2258,6 +2342,14 @@ variable_decl (int elem)
 		     gfc_current_ns->proc_name->name);
 	  goto cleanup;
 	}
+    }
+
+  /* %FILL components may not have initializers.  */
+  if (strncmp (name, "%FILL", 5) == 0 && gfc_match_eos () != MATCH_YES)
+    {
+      gfc_error ("%qs entity cannot have an initializer at %C", "%FILL");
+      m = MATCH_ERROR;
+      goto cleanup;
     }
 
   /*  If this symbol has already shown up in a Cray Pointer declaration,
@@ -2445,6 +2537,39 @@ variable_decl (int elem)
       goto cleanup;
     }
 
+  if (gfc_current_state () == COMP_DERIVED
+      && gfc_current_block ()->attr.pdt_template)
+    {
+      gfc_symbol *param;
+      gfc_find_symbol (name, gfc_current_block ()->f2k_derived,
+		       0, &param);
+      if (!param && (current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component with KIND or LEN attribute at %C does not "
+		     "not appear in the type parameter list at %L",
+		     &gfc_current_block ()->declared_at);
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (param && !(current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component at %C that appears in the type parameter "
+		     "list at %L has neither the KIND nor LEN attribute",
+		     &gfc_current_block ()->declared_at);
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (as && (current_attr.pdt_kind || current_attr.pdt_len))
+	{
+	  gfc_error ("The component at %C which is a type parameter must be "
+		     "a scalar");
+	  m = MATCH_ERROR;
+	  goto cleanup;
+	}
+      else if (param && initializer)
+	param->value = gfc_copy_expr (initializer);
+    }
+
   /* Add the initializer.  Note that it is fine if initializer is
      NULL here, because we sometimes also need to check if a
      declaration *must* have an initialization expression.  */
@@ -2564,6 +2689,7 @@ gfc_match_kind_spec (gfc_typespec *ts, bool kind_expr_only)
   m = MATCH_NO;
   n = MATCH_YES;
   e = NULL;
+  saved_kind_expr = NULL;
 
   where = loc = gfc_current_locus;
 
@@ -2580,7 +2706,15 @@ gfc_match_kind_spec (gfc_typespec *ts, bool kind_expr_only)
   loc = gfc_current_locus;
 
 kind_expr:
+
   n = gfc_match_init_expr (&e);
+
+  if (gfc_derived_parameter_expr (e))
+    {
+      ts->kind = 0;
+      saved_kind_expr = gfc_copy_expr (e);
+      goto close_brackets;
+    }
 
   if (n != MATCH_YES)
     {
@@ -2631,6 +2765,8 @@ kind_expr:
 	 of the named constants from iso_c_binding.  */
       ts->is_c_interop = e->ts.is_iso_c;
       ts->f90_type = e->ts.f90_type;
+      if (e->symtree)
+	ts->interop_kind = e->symtree->n.sym;
     }
 
   gfc_free_expr (e);
@@ -2656,6 +2792,8 @@ kind_expr:
     gfc_warning_now (0, "C kind type parameter is for type %s but type at %L "
 		     "is %s", gfc_basic_typename (ts->f90_type), &where,
 		     gfc_basic_typename (ts->type));
+
+close_brackets:
 
   gfc_gobble_whitespace ();
   if ((c = gfc_next_ascii_char ()) != ')'
@@ -2744,6 +2882,13 @@ match_char_kind (int * kind, int * is_iso_c)
       gfc_error ("Expected scalar initialization expression at %C");
       m = MATCH_ERROR;
       goto no_match;
+    }
+
+  if (gfc_derived_parameter_expr (e))
+    {
+      saved_kind_expr = e;
+      *kind = 0;
+      return MATCH_YES;
     }
 
   fail = gfc_extract_int (e, kind, 1);
@@ -2980,6 +3125,467 @@ match_record_decl (char *name)
   return MATCH_ERROR;
 }
 
+
+/* This function uses the gfc_actual_arglist 'type_param_spec_list' as a source
+   of expressions to substitute into the possibly parameterized expression
+   'e'. Using a list is inefficient but should not be too bad since the
+   number of type parameters is not likely to be large.  */
+static bool
+insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
+			int* f)
+{
+  gfc_actual_arglist *param;
+  gfc_expr *copy;
+
+  if (e->expr_type != EXPR_VARIABLE)
+    return false;
+
+  gcc_assert (e->symtree);
+  if (e->symtree->n.sym->attr.pdt_kind
+      || (*f != 0 && e->symtree->n.sym->attr.pdt_len))
+    {
+      for (param = type_param_spec_list; param; param = param->next)
+	if (strcmp (e->symtree->n.sym->name, param->name) == 0)
+	  break;
+
+      if (param)
+	{
+	  copy = gfc_copy_expr (param->expr);
+	  *e = *copy;
+	  free (copy);
+	}
+    }
+
+  return false;
+}
+
+
+bool
+gfc_insert_kind_parameter_exprs (gfc_expr *e)
+{
+  return gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 0);
+}
+
+
+bool
+gfc_insert_parameter_exprs (gfc_expr *e, gfc_actual_arglist *param_list)
+{
+  gfc_actual_arglist *old_param_spec_list = type_param_spec_list;
+  type_param_spec_list = param_list;
+  return gfc_traverse_expr (e, NULL, &insert_parameter_exprs, 1);
+  type_param_spec_list = NULL;
+  type_param_spec_list = old_param_spec_list;
+}
+
+/* Determines the instance of a parameterized derived type to be used by
+   matching determining the values of the kind parameters and using them
+   in the name of the instance. If the instance exists, it is used, otherwise
+   a new derived type is created.  */
+match
+gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
+		      gfc_actual_arglist **ext_param_list)
+{
+  /* The PDT template symbol.  */
+  gfc_symbol *pdt = *sym;
+  /* The symbol for the parameter in the template f2k_namespace.  */
+  gfc_symbol *param;
+  /* The hoped for instance of the PDT.  */
+  gfc_symbol *instance;
+  /* The list of parameters appearing in the PDT declaration.  */
+  gfc_formal_arglist *type_param_name_list;
+  /* Used to store the parameter specification list during recursive calls.  */
+  gfc_actual_arglist *old_param_spec_list;
+  /* Pointers to the parameter specification being used.  */
+  gfc_actual_arglist *actual_param;
+  gfc_actual_arglist *tail = NULL;
+  /* Used to build up the name of the PDT instance. The prefix uses 4
+     characters and each KIND parameter 2 more.  Allow 8 of the latter. */
+  char name[GFC_MAX_SYMBOL_LEN + 21];
+
+  bool name_seen = (param_list == NULL);
+  bool assumed_seen = false;
+  bool deferred_seen = false;
+  bool spec_error = false;
+  int kind_value, i;
+  gfc_expr *kind_expr;
+  gfc_component *c1, *c2;
+  match m;
+
+  type_param_spec_list = NULL;
+
+  type_param_name_list = pdt->formal;
+  actual_param = param_list;
+  sprintf (name, "Pdt%s", pdt->name);
+
+  /* Run through the parameter name list and pick up the actual
+     parameter values or use the default values in the PDT declaration.  */
+  for (; type_param_name_list;
+       type_param_name_list = type_param_name_list->next)
+    {
+      if (actual_param && actual_param->spec_type != SPEC_EXPLICIT)
+	{
+	  if (actual_param->spec_type == SPEC_ASSUMED)
+	    spec_error = deferred_seen;
+	  else
+	    spec_error = assumed_seen;
+
+	  if (spec_error)
+	    {
+	      gfc_error ("The type parameter spec list at %C cannot contain "
+			 "both ASSUMED and DEFERRED parameters");
+	      goto error_return;
+	    }
+	}
+
+      if (actual_param && actual_param->name)
+	name_seen = true;
+      param = type_param_name_list->sym;
+
+      c1 = gfc_find_component (pdt, param->name, false, true, NULL);
+      if (!pdt->attr.use_assoc && !c1)
+	{
+	  gfc_error ("The type parameter name list at %L contains a parameter "
+		     "'%qs' , which is not declared as a component of the type",
+		     &pdt->declared_at, param->name);
+	  goto error_return;
+	}
+
+      kind_expr = NULL;
+      if (!name_seen)
+	{
+	  if (!actual_param && !(c1 && c1->initializer))
+	    {
+	      gfc_error ("The type parameter spec list at %C does not contain "
+			 "enough parameter expressions");
+	      goto error_return;
+	    }
+	  else if (!actual_param && c1 && c1->initializer)
+	    kind_expr = gfc_copy_expr (c1->initializer);
+	  else if (actual_param && actual_param->spec_type == SPEC_EXPLICIT)
+	    kind_expr = gfc_copy_expr (actual_param->expr);
+	}
+      else
+	{
+	  actual_param = param_list;
+	  for (;actual_param; actual_param = actual_param->next)
+	    if (actual_param->name
+	        && strcmp (actual_param->name, param->name) == 0)
+	      break;
+	  if (actual_param && actual_param->spec_type == SPEC_EXPLICIT)
+	    kind_expr = gfc_copy_expr (actual_param->expr);
+	  else
+	    {
+	      if (param->value)
+		kind_expr = gfc_copy_expr (param->value);
+	      else if (!(actual_param && param->attr.pdt_len))
+		{
+		  gfc_error ("The derived parameter '%qs' at %C does not "
+			     "have a default value", param->name);
+		  goto error_return;
+		}
+	    }
+	}
+
+      /* Store the current parameter expressions in a temporary actual
+	 arglist 'list' so that they can be substituted in the corresponding
+	 expressions in the PDT instance.  */
+      if (type_param_spec_list == NULL)
+	{
+	  type_param_spec_list = gfc_get_actual_arglist ();
+	  tail = type_param_spec_list;
+	}
+      else
+	{
+	  tail->next = gfc_get_actual_arglist ();
+	  tail = tail->next;
+	}
+      tail->name = param->name;
+
+      if (kind_expr)
+	{
+	  /* Try simplification even for LEN expressions.  */
+	  gfc_resolve_expr (kind_expr);
+	  gfc_simplify_expr (kind_expr, 1);
+	  /* Variable expressions seem to default to BT_PROCEDURE.
+	     TODO find out why this is and fix it.  */
+	  if (kind_expr->ts.type != BT_INTEGER
+	      && kind_expr->ts.type != BT_PROCEDURE)
+	    {
+	      gfc_error ("The parameter expression at %C must be of "
+		         "INTEGER type and not %s type",
+			 gfc_basic_typename (kind_expr->ts.type));
+	      goto error_return;
+	    }
+
+	  tail->expr = gfc_copy_expr (kind_expr);
+	}
+
+      if (actual_param)
+	tail->spec_type = actual_param->spec_type;
+
+      if (!param->attr.pdt_kind)
+	{
+	  if (!name_seen && actual_param)
+	    actual_param = actual_param->next;
+	  if (kind_expr)
+	    {
+	      gfc_free_expr (kind_expr);
+	      kind_expr = NULL;
+	    }
+	  continue;
+	}
+
+      if (actual_param
+	  && (actual_param->spec_type == SPEC_ASSUMED
+	      || actual_param->spec_type == SPEC_DEFERRED))
+	{
+	  gfc_error ("The KIND parameter '%qs' at %C cannot either be "
+		     "ASSUMED or DEFERRED", param->name);
+	  goto error_return;
+	}
+
+      if (!kind_expr || !gfc_is_constant_expr (kind_expr))
+	{
+	  gfc_error ("The value for the KIND parameter '%qs' at %C does not "
+		     "reduce to a constant expression", param->name);
+	  goto error_return;
+	}
+
+      gfc_extract_int (kind_expr, &kind_value);
+      sprintf (name, "%s_%d", name, kind_value);
+
+      if (!name_seen && actual_param)
+	actual_param = actual_param->next;
+      gfc_free_expr (kind_expr);
+    }
+
+  if (!name_seen && actual_param)
+    {
+      gfc_error ("The type parameter spec list at %C contains too many "
+		 "parameter expressions");
+      goto error_return;
+    }
+
+  /* Now we search for the PDT instance 'name'. If it doesn't exist, we
+     build it, using 'pdt' as a template.  */
+  if (gfc_get_symbol (name, pdt->ns, &instance))
+    {
+      gfc_error ("Parameterized derived type at %C is ambiguous");
+      goto error_return;
+    }
+
+  m = MATCH_YES;
+
+  if (instance->attr.flavor == FL_DERIVED
+      && instance->attr.pdt_type)
+    {
+      instance->refs++;
+      if (ext_param_list)
+        *ext_param_list = type_param_spec_list;
+      *sym = instance;
+      gfc_commit_symbols ();
+      return m;
+    }
+
+  /* Start building the new instance of the parameterized type.  */
+  gfc_copy_attr (&instance->attr, &pdt->attr, &pdt->declared_at);
+  instance->attr.pdt_template = 0;
+  instance->attr.pdt_type = 1;
+  instance->declared_at = gfc_current_locus;
+
+  /* Add the components, replacing the parameters in all expressions
+     with the expressions for their values in 'type_param_spec_list'.  */
+  c1 = pdt->components;
+  tail = type_param_spec_list;
+  for (; c1; c1 = c1->next)
+    {
+      gfc_add_component (instance, c1->name, &c2);
+      c2->ts = c1->ts;
+      c2->attr = c1->attr;
+
+      /* Deal with type extension by recursively calling this function
+	 to obtain the instance of the extended type.  */
+      if (gfc_current_state () != COMP_DERIVED
+	  && c1 == pdt->components
+	  && (c1->ts.type == BT_DERIVED || c1->ts.type == BT_CLASS)
+	  && c1->ts.u.derived && c1->ts.u.derived->attr.pdt_template
+	  && gfc_get_derived_super_type (*sym) == c2->ts.u.derived)
+	{
+	  gfc_formal_arglist *f;
+
+	  old_param_spec_list = type_param_spec_list;
+
+	  /* Obtain a spec list appropriate to the extended type..*/
+	  actual_param = gfc_copy_actual_arglist (type_param_spec_list);
+	  type_param_spec_list = actual_param;
+	  for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
+	    actual_param = actual_param->next;
+	  if (actual_param)
+	    {
+	      gfc_free_actual_arglist (actual_param->next);
+	      actual_param->next = NULL;
+	    }
+
+	  /* Now obtain the PDT instance for the extended type.  */
+	  c2->param_list = type_param_spec_list;
+	  m = gfc_get_pdt_instance (type_param_spec_list, &c2->ts.u.derived,
+				    NULL);
+	  type_param_spec_list = old_param_spec_list;
+
+	  c2->ts.u.derived->refs++;
+	  gfc_set_sym_referenced (c2->ts.u.derived);
+
+	  /* Set extension level.  */
+	  if (c2->ts.u.derived->attr.extension == 255)
+	    {
+	      /* Since the extension field is 8 bit wide, we can only have
+		 up to 255 extension levels.  */
+	      gfc_error ("Maximum extension level reached with type %qs at %L",
+			 c2->ts.u.derived->name,
+			 &c2->ts.u.derived->declared_at);
+	      goto error_return;
+	    }
+	  instance->attr.extension = c2->ts.u.derived->attr.extension + 1;
+
+	  /* Advance the position in the spec list by the number of
+	     parameters in the extended type.  */
+	  tail = type_param_spec_list;
+	  for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
+	    tail = tail->next;
+
+	  continue;
+	}
+
+      /* Set the component kind using the parameterized expression.  */
+      if (c1->ts.kind == 0 && c1->kind_expr != NULL)
+	{
+	  gfc_expr *e = gfc_copy_expr (c1->kind_expr);
+	  gfc_insert_kind_parameter_exprs (e);
+	  gfc_simplify_expr (e, 1);
+	  gfc_extract_int (e, &c2->ts.kind);
+	  gfc_free_expr (e);
+	  if (gfc_validate_kind (c2->ts.type, c2->ts.kind, true) < 0)
+	    {
+	      gfc_error ("Kind %d not supported for type %s at %C",
+			 c2->ts.kind, gfc_basic_typename (c2->ts.type));
+	      goto error_return;
+	    }
+	}
+
+      /* Similarly, set the string length if parameterized.  */
+      if (c1->ts.type == BT_CHARACTER
+	  && c1->ts.u.cl->length
+	  && gfc_derived_parameter_expr (c1->ts.u.cl->length))
+	{
+	  gfc_expr *e;
+	  e = gfc_copy_expr (c1->ts.u.cl->length);
+	  gfc_insert_kind_parameter_exprs (e);
+	  gfc_simplify_expr (e, 1);
+	  c2->ts.u.cl = gfc_new_charlen (gfc_current_ns, NULL);
+	  c2->ts.u.cl->length = e;
+	  c2->attr.pdt_string = 1;
+	}
+
+      /* Set up either the KIND/LEN initializer, if constant,
+	 or the parameterized expression. Use the template
+	 initializer if one is not already set in this instance.  */
+      if (c2->attr.pdt_kind || c2->attr.pdt_len)
+	{
+	  if (tail && tail->expr && gfc_is_constant_expr (tail->expr))
+	    c2->initializer = gfc_copy_expr (tail->expr);
+	  else if (tail && tail->expr)
+	    {
+	      c2->param_list = gfc_get_actual_arglist ();
+	      c2->param_list->name = tail->name;
+	      c2->param_list->expr = gfc_copy_expr (tail->expr);
+	      c2->param_list->next = NULL;
+	    }
+
+	  if (!c2->initializer && c1->initializer)
+	    c2->initializer = gfc_copy_expr (c1->initializer);
+
+	  tail = tail->next;
+	}
+
+      /* Copy the array spec.  */
+      c2->as = gfc_copy_array_spec (c1->as);
+      if (c1->ts.type == BT_CLASS)
+	CLASS_DATA (c2)->as = gfc_copy_array_spec (CLASS_DATA (c1)->as);
+
+      /* Determine if an array spec is parameterized. If so, substitute
+	 in the parameter expressions for the bounds and set the pdt_array
+	 attribute. Notice that this attribute must be unconditionally set
+	 if this is an array of parameterized character length.  */
+      if (c1->as && c1->as->type == AS_EXPLICIT)
+	{
+	  bool pdt_array = false;
+
+	  /* Are the bounds of the array parameterized?  */
+	  for (i = 0; i < c1->as->rank; i++)
+	    {
+	      if (gfc_derived_parameter_expr (c1->as->lower[i]))
+		pdt_array = true;
+	      if (gfc_derived_parameter_expr (c1->as->upper[i]))
+		pdt_array = true;
+	    }
+
+	  /* If they are, free the expressions for the bounds and
+	     replace them with the template expressions with substitute
+	     values.  */
+	  for (i = 0; pdt_array && i < c1->as->rank; i++)
+	    {
+	      gfc_expr *e;
+	      e = gfc_copy_expr (c1->as->lower[i]);
+	      gfc_insert_kind_parameter_exprs (e);
+	      gfc_simplify_expr (e, 1);
+	      gfc_free_expr (c2->as->lower[i]);
+	      c2->as->lower[i] = e;
+	      e = gfc_copy_expr (c1->as->upper[i]);
+	      gfc_insert_kind_parameter_exprs (e);
+	      gfc_simplify_expr (e, 1);
+	      gfc_free_expr (c2->as->upper[i]);
+	      c2->as->upper[i] = e;
+	    }
+	  c2->attr.pdt_array = pdt_array ? 1 : c2->attr.pdt_string;
+	}
+
+      /* Recurse into this function for PDT components.  */
+      if ((c1->ts.type == BT_DERIVED || c1->ts.type == BT_CLASS)
+	  && c1->ts.u.derived && c1->ts.u.derived->attr.pdt_template)
+	{
+	  gfc_actual_arglist *params;
+	  /* The component in the template has a list of specification
+	     expressions derived from its declaration.  */
+	  params = gfc_copy_actual_arglist (c1->param_list);
+	  actual_param = params;
+	  /* Substitute the template parameters with the expressions
+	     from the specification list.  */
+	  for (;actual_param; actual_param = actual_param->next)
+	    gfc_insert_parameter_exprs (actual_param->expr,
+					type_param_spec_list);
+
+	  /* Now obtain the PDT instance for the component.  */
+	  old_param_spec_list = type_param_spec_list;
+	  m = gfc_get_pdt_instance (params, &c2->ts.u.derived, NULL);
+	  type_param_spec_list = old_param_spec_list;
+
+	  c2->param_list = params;
+	  c2->initializer = gfc_default_initializer (&c2->ts);
+	}
+    }
+
+  gfc_commit_symbol (instance);
+  if (ext_param_list)
+    *ext_param_list = type_param_spec_list;
+  *sym = instance;
+  return m;
+
+error_return:
+  gfc_free_actual_arglist (type_param_spec_list);
+  return MATCH_ERROR;
+}
+
+
 /* Matches a declaration-type-spec (F03:R502).  If successful, sets the ts
    structure to the matched specification.  This is necessary for FUNCTION and
    IMPLICIT statements.
@@ -2997,6 +3603,8 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   char c;
   bool seen_deferred_kind, matched_type;
   const char *dt_name;
+
+  decl_type_param_list = NULL;
 
   /* A belt and braces check that the typespec is correctly being treated
      as a deferred characteristic association.  */
@@ -3146,7 +3754,13 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
     }
 
   if (matched_type)
+    {
+      m = gfc_match_actual_arglist (1, &decl_type_param_list, true);
+      if (m == MATCH_ERROR)
+	return m;
+
     m = gfc_match_char (')');
+    }
 
   if (m != MATCH_YES)
     m = match_record_decl (name);
@@ -3161,6 +3775,19 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
           gfc_error ("Type name %qs at %C is ambiguous", name);
           return MATCH_ERROR;
         }
+
+      if (sym && sym->attr.flavor == FL_DERIVED
+	  && sym->attr.pdt_template
+	  && gfc_current_state () != COMP_DERIVED)
+	{
+	  m = gfc_get_pdt_instance (decl_type_param_list, &sym,  NULL);
+	  if (m != MATCH_YES)
+	    return m;
+	  gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
+	  ts->u.derived = sym;
+	  strcpy (name, gfc_dt_lower_string (sym->name));
+	}
+
       if (sym && sym->attr.flavor == FL_STRUCT)
         {
           ts->u.derived = sym;
@@ -3229,13 +3856,27 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	  return m;
 	}
 
-      m = gfc_match (" class ( %n )", name);
+      m = gfc_match (" class (");
+
+      if (m == MATCH_YES)
+	m = gfc_match ("%n", name);
+      else
+	return m;
+
       if (m != MATCH_YES)
 	return m;
       ts->type = BT_CLASS;
 
       if (!gfc_notify_std (GFC_STD_F2003, "CLASS statement at %C"))
 	return MATCH_ERROR;
+
+      m = gfc_match_actual_arglist (1, &decl_type_param_list, true);
+      if (m == MATCH_ERROR)
+	return m;
+
+      m = gfc_match_char (')');
+      if (m != MATCH_YES)
+	return m;
     }
 
   /* Defer association of the derived type until the end of the
@@ -3272,6 +3913,19 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	}
       if (sym->generic && !dt_sym)
 	dt_sym = gfc_find_dt_in_generic (sym);
+
+      /* Host associated PDTs can get confused with their constructors
+	 because they ar instantiated in the template's namespace.  */
+      if (!dt_sym)
+	{
+	  if (gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
+	    {
+	      gfc_error ("Type name %qs at %C is ambiguous", name);
+	      return MATCH_ERROR;
+	    }
+	  if (dt_sym && !dt_sym->attr.pdt_type)
+	    dt_sym = NULL;
+	}
     }
   else if (ts->kind == -1)
     {
@@ -3301,6 +3955,18 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       return MATCH_ERROR;
     }
 
+  if (sym && sym->attr.flavor == FL_DERIVED
+      && sym->attr.pdt_template
+      && gfc_current_state () != COMP_DERIVED)
+    {
+      m = gfc_get_pdt_instance (decl_type_param_list, &sym, NULL);
+      if (m != MATCH_YES)
+	return m;
+      gcc_assert (!sym->attr.pdt_template && sym->attr.pdt_type);
+      ts->u.derived = sym;
+      strcpy (name, gfc_dt_lower_string (sym->name));
+    }
+
   gfc_save_symbol_data (sym);
   gfc_set_sym_referenced (sym);
   if (!sym->attr.generic
@@ -3310,6 +3976,16 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
   if (!sym->attr.function
       && !gfc_add_function (&sym->attr, sym->name, NULL))
     return MATCH_ERROR;
+
+  if (dt_sym && dt_sym->attr.flavor == FL_DERIVED
+      && dt_sym->attr.pdt_template
+      && gfc_current_state () != COMP_DERIVED)
+    {
+      m = gfc_get_pdt_instance (decl_type_param_list, &dt_sym, NULL);
+      if (m != MATCH_YES)
+	return m;
+      gcc_assert (!dt_sym->attr.pdt_template && dt_sym->attr.pdt_type);
+    }
 
   if (!dt_sym)
     {
@@ -3840,7 +4516,7 @@ match_attr_spec (void)
     DECL_STATIC, DECL_AUTOMATIC,
     DECL_PUBLIC, DECL_SAVE, DECL_TARGET, DECL_VALUE, DECL_VOLATILE,
     DECL_IS_BIND_C, DECL_CODIMENSION, DECL_ASYNCHRONOUS, DECL_CONTIGUOUS,
-    DECL_NONE, GFC_DECL_END /* Sentinel */
+    DECL_LEN, DECL_KIND, DECL_NONE, GFC_DECL_END /* Sentinel */
   };
 
 /* GFC_DECL_END is the sentinel, index starts at 0.  */
@@ -3858,6 +4534,7 @@ match_attr_spec (void)
 
   current_as = NULL;
   colon_seen = 0;
+  attr_seen = 0;
 
   /* See if we get all of the keywords up to the final double colon.  */
   for (d = GFC_DECL_BEGIN; d != GFC_DECL_END; d++)
@@ -3980,6 +4657,16 @@ match_attr_spec (void)
 			}
 		    }
 		}
+	      break;
+
+	    case 'k':
+	      if (match_string_p ("kind"))
+		d = DECL_KIND;
+	      break;
+
+	    case 'l':
+	      if (match_string_p ("len"))
+		d = DECL_LEN;
 	      break;
 
 	    case 'o':
@@ -4175,6 +4862,12 @@ match_attr_spec (void)
 	  case DECL_OPTIONAL:
 	    attr = "OPTIONAL";
 	    break;
+	  case DECL_KIND:
+	    attr = "KIND";
+	    break;
+	  case DECL_LEN:
+	    attr = "LEN";
+	    break;
 	  case DECL_PARAMETER:
 	    attr = "PARAMETER";
 	    break;
@@ -4226,6 +4919,8 @@ match_attr_spec (void)
     {
       if (seen[d] == 0)
 	continue;
+      else
+        attr_seen = 1;
 
       if ((d == DECL_STATIC || d == DECL_AUTOMATIC)
 	  && !flag_dec_static)
@@ -4250,6 +4945,54 @@ match_attr_spec (void)
 	      if (!gfc_notify_std (GFC_STD_F2003, "ALLOCATABLE "
 				   "attribute at %C in a TYPE definition"))
 		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	    }
+	  else if (d == DECL_KIND)
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2003, "KIND "
+				   "attribute at %C in a TYPE definition"))
+		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      if (current_ts.type != BT_INTEGER)
+		{
+		  gfc_error ("Component with KIND attribute at %C must be "
+			     "INTEGER");
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      if (current_ts.kind != gfc_default_integer_kind)
+		{
+		  gfc_error ("Component with KIND attribute at %C must be "
+			     "default integer kind (%d)",
+			      gfc_default_integer_kind);
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	    }
+	  else if (d == DECL_LEN)
+	    {
+	      if (!gfc_notify_std (GFC_STD_F2003, "LEN "
+				   "attribute at %C in a TYPE definition"))
+		{
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      if (current_ts.type != BT_INTEGER)
+		{
+		  gfc_error ("Component with LEN attribute at %C must be "
+			     "INTEGER");
+		  m = MATCH_ERROR;
+		  goto cleanup;
+		}
+	      if (current_ts.kind != gfc_default_integer_kind)
+		{
+		  gfc_error ("Component with LEN attribute at %C must be "
+			     "default integer kind (%d)",
+			      gfc_default_integer_kind);
 		  m = MATCH_ERROR;
 		  goto cleanup;
 		}
@@ -4289,6 +5032,15 @@ match_attr_spec (void)
 	      m = MATCH_ERROR;
 	      goto cleanup;
 	    }
+	}
+
+      if (gfc_current_state () != COMP_DERIVED
+	  && (d == DECL_KIND || d == DECL_LEN))
+	{
+	  gfc_error ("Attribute at %L is not allowed outside a TYPE "
+		     "definition", &seen_at[d]);
+	  m = MATCH_ERROR;
+	  goto cleanup;
 	}
 
       switch (d)
@@ -4341,6 +5093,14 @@ match_attr_spec (void)
 
 	case DECL_OPTIONAL:
 	  t = gfc_add_optional (&current_attr, &seen_at[d]);
+	  break;
+
+	case DECL_KIND:
+	  t = gfc_add_kind (&current_attr, &seen_at[d]);
+	  break;
+
+	case DECL_LEN:
+	  t = gfc_add_len (&current_attr, &seen_at[d]);
 	  break;
 
 	case DECL_PARAMETER:
@@ -4434,6 +5194,7 @@ cleanup:
   gfc_current_locus = start;
   gfc_free_array_spec (current_as);
   current_as = NULL;
+  attr_seen = 0;
   return m;
 }
 
@@ -4832,6 +5593,9 @@ gfc_match_data_decl (void)
   match m;
   int elem;
 
+  type_param_spec_list = NULL;
+  decl_type_param_list = NULL;
+
   num_idents_on_line = 0;
 
   m = gfc_match_decl_type_spec (&current_ts, 0);
@@ -4946,6 +5710,13 @@ ok:
   gfc_free_data_all (gfc_current_ns);
 
 cleanup:
+  if (saved_kind_expr)
+    gfc_free_expr (saved_kind_expr);
+  if (type_param_spec_list)
+    gfc_free_actual_arglist (type_param_spec_list);
+  if (decl_type_param_list)
+    gfc_free_actual_arglist (decl_type_param_list);
+  saved_kind_expr = NULL;
   gfc_free_array_spec (current_as);
   current_as = NULL;
   return m;
@@ -5119,10 +5890,12 @@ copy_prefix (symbol_attribute *dest, locus *where)
 }
 
 
-/* Match a formal argument list.  */
+/* Match a formal argument list or, if typeparam is true, a
+   type_param_name_list.  */
 
 match
-gfc_match_formal_arglist (gfc_symbol *progname, int st_flag, int null_flag)
+gfc_match_formal_arglist (gfc_symbol *progname, int st_flag,
+			  int null_flag, bool typeparam)
 {
   gfc_formal_arglist *head, *tail, *p, *q;
   char name[GFC_MAX_SYMBOL_LEN + 1];
@@ -5174,7 +5947,10 @@ gfc_match_formal_arglist (gfc_symbol *progname, int st_flag, int null_flag)
 	  if (m != MATCH_YES)
 	    goto cleanup;
 
-	  if (gfc_get_symbol (name, NULL, &sym))
+	  if (!typeparam && gfc_get_symbol (name, NULL, &sym))
+	    goto cleanup;
+	  else if (typeparam
+		   && gfc_get_symbol (name, progname->f2k_derived, &sym))
 	    goto cleanup;
 	}
 
@@ -8891,6 +9667,8 @@ gfc_match_derived_decl (void)
   match is_type_attr_spec = MATCH_NO;
   bool seen_attr = false;
   gfc_interface *intr = NULL, *head;
+  bool parameterized_type = false;
+  bool seen_colons = false;
 
   if (gfc_comp_struct (gfc_current_state ()))
     return MATCH_NO;
@@ -8918,14 +9696,36 @@ gfc_match_derived_decl (void)
   if (parent[0] && !extended)
     return MATCH_ERROR;
 
-  if (gfc_match (" ::") != MATCH_YES && seen_attr)
+  m = gfc_match (" ::");
+  if (m == MATCH_YES)
+    {
+      seen_colons = true;
+    }
+  else if (seen_attr)
     {
       gfc_error ("Expected :: in TYPE definition at %C");
       return MATCH_ERROR;
     }
 
-  m = gfc_match (" %n%t", name);
+  m = gfc_match (" %n ", name);
   if (m != MATCH_YES)
+    return m;
+
+  /* Make sure that we don't identify TYPE IS (...) as a parameterized
+     derived type named 'is'.
+     TODO Expand the check, when 'name' = "is" by matching " (tname) "
+     and checking if this is a(n intrinsic) typename. his picks up
+     misplaced TYPE IS statements such as in select_type_1.f03.  */
+  if (gfc_peek_ascii_char () == '(')
+    {
+      if (gfc_current_state () == COMP_SELECT_TYPE
+	  || (!seen_colons && !strcmp (name, "is")))
+	return MATCH_NO;
+      parameterized_type = true;
+    }
+
+  m = gfc_match_eos ();
+  if (m != MATCH_YES && !parameterized_type)
     return m;
 
   /* Make sure the name is not the name of an intrinsic type.  */
@@ -9008,9 +9808,21 @@ gfc_match_derived_decl (void)
   if (!sym->f2k_derived)
     sym->f2k_derived = gfc_get_namespace (NULL, 0);
 
+  if (parameterized_type)
+    {
+      m = gfc_match_formal_arglist (sym, 0, 0, true);
+      if (m != MATCH_YES)
+	return m;
+      m = gfc_match_eos ();
+      if (m != MATCH_YES)
+	return m;
+      sym->attr.pdt_template = 1;
+    }
+
   if (extended && !sym->components)
     {
       gfc_component *p;
+      gfc_formal_arglist *f, *g, *h;
 
       /* Add the extended derived type as the first component.  */
       gfc_add_component (sym, parent, &p);
@@ -9035,6 +9847,31 @@ gfc_match_derived_decl (void)
       /* Provide the links between the extended type and its extension.  */
       if (!extended->f2k_derived)
 	extended->f2k_derived = gfc_get_namespace (NULL, 0);
+
+      /* Copy the extended type-param-name-list from the extended type,
+	 append those of the extension and add the whole lot to the
+	 extension.  */
+      if (extended->attr.pdt_template)
+	{
+	  g = h = NULL;
+	  sym->attr.pdt_template = 1;
+	  for (f = extended->formal; f; f = f->next)
+	    {
+	      if (f == extended->formal)
+		{
+		  g = gfc_get_formal_arglist ();
+		  h = g;
+		}
+	      else
+		{
+		  g->next = gfc_get_formal_arglist ();
+		  g = g->next;
+		}
+	      g->sym = f->sym;
+	    }
+	  g->next = sym->formal;
+	  sym->formal = h;
+	}
     }
 
   if (!sym->hash_value)

@@ -645,7 +645,8 @@ gfc_compare_derived_types (gfc_symbol *derived1, gfc_symbol *derived2)
     return false;
 
   if (!(derived1->attr.sequence && derived2->attr.sequence)
-      && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c))
+      && !(derived1->attr.is_bind_c && derived2->attr.is_bind_c)
+      && !(derived1->attr.pdt_type && derived2->attr.pdt_type))
     return false;
 
   /* Protect against null components.  */
@@ -3294,7 +3295,7 @@ argpair;
    order:
     - p->a->expr == NULL
     - p->a->expr->expr_type != EXPR_VARIABLE
-    - growing p->a->expr->symbol.  */
+    - by gfc_symbol pointer value (larger first).  */
 
 static int
 pair_cmp (const void *p1, const void *p2)
@@ -3320,6 +3321,8 @@ pair_cmp (const void *p1, const void *p2)
     }
   if (a2->expr->expr_type != EXPR_VARIABLE)
     return 1;
+  if (a1->expr->symtree->n.sym > a2->expr->symtree->n.sym)
+    return -1;
   return a1->expr->symtree->n.sym < a2->expr->symtree->n.sym;
 }
 

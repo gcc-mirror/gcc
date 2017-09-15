@@ -367,8 +367,7 @@ operand_to_remat (rtx_insn *insn)
 	    if (reg2->type == OP_OUT
 		&& reg->regno <= reg2->regno
 		&& (reg2->regno
-		    < (reg->regno
-		       + hard_regno_nregs[reg->regno][reg->biggest_mode])))
+		    < (int) end_hard_regno (reg->biggest_mode, reg->regno)))
 	      return -1;
       }
   /* Check hard coded insn registers.  */
@@ -668,7 +667,7 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
   if (regno >= FIRST_PSEUDO_REGISTER)
     nregs = 1;
   else
-    nregs = hard_regno_nregs[regno][reg->biggest_mode];
+    nregs = hard_regno_nregs (regno, reg->biggest_mode);
 
   struct lra_insn_reg *reg2;
 
@@ -684,10 +683,10 @@ reg_overlap_for_remat_p (lra_insn_reg *reg, rtx_insn *insn)
 
 	if (regno2 >= FIRST_PSEUDO_REGISTER && reg_renumber[regno2] >= 0)
 	  regno2 = reg_renumber[regno2];
-	if (regno >= FIRST_PSEUDO_REGISTER)
+	if (regno2 >= FIRST_PSEUDO_REGISTER)
 	  nregs2 = 1;
 	else
-	  nregs2 = hard_regno_nregs[regno2][reg->biggest_mode];
+	  nregs2 = hard_regno_nregs (regno2, reg->biggest_mode);
 
 	if ((regno2 + nregs2 - 1 >= regno && regno2 < regno + nregs)
 	    || (regno + nregs - 1 >= regno2 && regno < regno2 + nregs2))
@@ -1012,7 +1011,7 @@ get_hard_regs (struct lra_insn_reg *reg, int &nregs)
   int hard_regno = regno < FIRST_PSEUDO_REGISTER ? regno : reg_renumber[regno];
 
   if (hard_regno >= 0)
-    nregs = hard_regno_nregs[hard_regno][reg->biggest_mode];
+    nregs = hard_regno_nregs (hard_regno, reg->biggest_mode);
   return hard_regno;
 }
 
@@ -1136,7 +1135,7 @@ do_remat (void)
 		? dst_regno : reg_renumber[dst_regno];
 	      gcc_assert (dst_hard_regno >= 0);
 	      machine_mode mode = GET_MODE (SET_DEST (set));
-	      dst_nregs = hard_regno_nregs[dst_hard_regno][mode];
+	      dst_nregs = hard_regno_nregs (dst_hard_regno, mode);
 
 	      for (reg = cand_id->regs; reg != NULL; reg = reg->next)
 		if (reg->type != OP_IN && reg->regno != ignore_regno)

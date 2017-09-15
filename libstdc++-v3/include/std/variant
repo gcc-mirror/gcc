@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 #include <type_traits>
 #include <utility>
@@ -50,12 +48,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace __detail
 {
 namespace __variant
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<size_t _Np, typename... _Types>
     struct _Nth_type;
 
@@ -67,11 +65,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Nth_type<0, _First, _Rest...>
     { using type = _First; };
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __variant
 } // namespace __detail
 
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
+#define __cpp_lib_variant 201603
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
@@ -141,13 +138,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr variant_alternative_t<_Np, variant<_Types...>> const&&
     get(const variant<_Types...>&&);
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 namespace __detail
 {
 namespace __variant
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Returns the first apparence of _Tp in _Types.
   // Returns sizeof...(_Types) if _Tp is not in _Types.
   template<typename _Tp, typename... _Types>
@@ -299,40 +293,40 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct _Traits
     {
       static constexpr bool _S_default_ctor =
-          is_default_constructible_v<typename _Nth_type<0, _Types...>::type>;
+	  is_default_constructible_v<typename _Nth_type<0, _Types...>::type>;
       static constexpr bool _S_copy_ctor =
-          (is_copy_constructible_v<_Types> && ...);
+	  (is_copy_constructible_v<_Types> && ...);
       static constexpr bool _S_move_ctor =
-          (is_move_constructible_v<_Types> && ...);
+	  (is_move_constructible_v<_Types> && ...);
       static constexpr bool _S_copy_assign =
-          _S_copy_ctor && _S_move_ctor
-          && (is_copy_assignable_v<_Types> && ...);
+	  _S_copy_ctor && _S_move_ctor
+	  && (is_copy_assignable_v<_Types> && ...);
       static constexpr bool _S_move_assign =
-          _S_move_ctor
-          && (is_move_assignable_v<_Types> && ...);
+	  _S_move_ctor
+	  && (is_move_assignable_v<_Types> && ...);
 
       static constexpr bool _S_trivial_dtor =
-          (is_trivially_destructible_v<_Types> && ...);
+	  (is_trivially_destructible_v<_Types> && ...);
       static constexpr bool _S_trivial_copy_ctor =
-          (is_trivially_copy_constructible_v<_Types> && ...);
+	  (is_trivially_copy_constructible_v<_Types> && ...);
       static constexpr bool _S_trivial_move_ctor =
-          (is_trivially_move_constructible_v<_Types> && ...);
+	  (is_trivially_move_constructible_v<_Types> && ...);
       static constexpr bool _S_trivial_copy_assign =
-          _S_trivial_dtor && (is_trivially_copy_assignable_v<_Types> && ...);
+	  _S_trivial_dtor && (is_trivially_copy_assignable_v<_Types> && ...);
       static constexpr bool _S_trivial_move_assign =
-          _S_trivial_dtor && (is_trivially_move_assignable_v<_Types> && ...);
+	  _S_trivial_dtor && (is_trivially_move_assignable_v<_Types> && ...);
 
       // The following nothrow traits are for non-trivial SMFs. Trivial SMFs
       // are always nothrow.
       static constexpr bool _S_nothrow_default_ctor =
-          is_nothrow_default_constructible_v<
-              typename _Nth_type<0, _Types...>::type>;
+	  is_nothrow_default_constructible_v<
+	      typename _Nth_type<0, _Types...>::type>;
       static constexpr bool _S_nothrow_copy_ctor = false;
       static constexpr bool _S_nothrow_move_ctor =
-          (is_nothrow_move_constructible_v<_Types> && ...);
+	  (is_nothrow_move_constructible_v<_Types> && ...);
       static constexpr bool _S_nothrow_copy_assign = false;
       static constexpr bool _S_nothrow_move_assign =
-          _S_nothrow_move_ctor && (is_nothrow_move_assignable_v<_Types> && ...);
+	  _S_nothrow_move_ctor && (is_nothrow_move_assignable_v<_Types> && ...);
     };
 
   // Defines members and ctors.
@@ -452,7 +446,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     using _Variant_storage_alias =
-        _Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
+	_Variant_storage<_Traits<_Types...>::_S_trivial_dtor, _Types...>;
 
   // The following are (Copy|Move) (ctor|assign) layers for forwarding
   // triviality and handling non-trivial SMF behaviors.
@@ -464,7 +458,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Base::_Base;
 
       _Copy_ctor_base(const _Copy_ctor_base& __rhs)
-          noexcept(_Traits<_Types...>::_S_nothrow_copy_ctor)
+	  noexcept(_Traits<_Types...>::_S_nothrow_copy_ctor)
       {
 	if (__rhs._M_valid())
 	  {
@@ -489,7 +483,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     using _Copy_ctor_alias =
-        _Copy_ctor_base<_Traits<_Types...>::_S_trivial_copy_ctor, _Types...>;
+	_Copy_ctor_base<_Traits<_Types...>::_S_trivial_copy_ctor, _Types...>;
 
   template<bool, typename... _Types>
     struct _Move_ctor_base : _Copy_ctor_alias<_Types...>
@@ -498,7 +492,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Base::_Base;
 
       _Move_ctor_base(_Move_ctor_base&& __rhs)
-          noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
+	  noexcept(_Traits<_Types...>::_S_nothrow_move_ctor)
       {
 	if (__rhs._M_valid())
 	  {
@@ -523,7 +517,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     using _Move_ctor_alias =
-        _Move_ctor_base<_Traits<_Types...>::_S_trivial_move_ctor, _Types...>;
+	_Move_ctor_base<_Traits<_Types...>::_S_trivial_move_ctor, _Types...>;
 
   template<bool, typename... _Types>
     struct _Copy_assign_base : _Move_ctor_alias<_Types...>
@@ -533,7 +527,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Copy_assign_base&
       operator=(const _Copy_assign_base& __rhs)
-          noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
+	  noexcept(_Traits<_Types...>::_S_nothrow_copy_assign)
       {
 	if (this->_M_index == __rhs._M_index)
 	  {
@@ -576,8 +570,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     using _Copy_assign_alias =
-        _Copy_assign_base<_Traits<_Types...>::_S_trivial_copy_assign,
-                          _Types...>;
+	_Copy_assign_base<_Traits<_Types...>::_S_trivial_copy_assign,
+			  _Types...>;
 
   template<bool, typename... _Types>
     struct _Move_assign_base : _Copy_assign_alias<_Types...>
@@ -601,7 +595,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       _Move_assign_base&
       operator=(_Move_assign_base&& __rhs)
-          noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
+	  noexcept(_Traits<_Types...>::_S_nothrow_move_assign)
       {
 	if (this->_M_index == __rhs._M_index)
 	  {
@@ -644,8 +638,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename... _Types>
     using _Move_assign_alias =
-        _Move_assign_base<_Traits<_Types...>::_S_trivial_move_assign,
-                          _Types...>;
+	_Move_assign_base<_Traits<_Types...>::_S_trivial_move_assign,
+			  _Types...>;
 
   template<typename... _Types>
     struct _Variant_base : _Move_assign_alias<_Types...>
@@ -654,7 +648,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       constexpr
       _Variant_base()
-          noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
+	  noexcept(_Traits<_Types...>::_S_nothrow_default_ctor)
       : _Variant_base(in_place_index<0>) { }
 
       template<size_t _Np, typename... _Args>
@@ -879,11 +873,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			      std::index_sequence<__indices...>>
     : _Base_dedup<__indices, __poison_hash<remove_const_t<_Types>>>... { };
 
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __variant
 } // namespace __detail
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename... _Types>
     inline constexpr bool holds_alternative(const variant<_Types...>& __v)
@@ -1041,13 +1032,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class variant
     : private __detail::__variant::_Variant_base<_Types...>,
       private _Enable_default_constructor<
-        __detail::__variant::_Traits<_Types...>::_S_default_ctor,
+	__detail::__variant::_Traits<_Types...>::_S_default_ctor,
 	  variant<_Types...>>,
       private _Enable_copy_move<
-        __detail::__variant::_Traits<_Types...>::_S_copy_ctor,
-        __detail::__variant::_Traits<_Types...>::_S_copy_assign,
-        __detail::__variant::_Traits<_Types...>::_S_move_ctor,
-        __detail::__variant::_Traits<_Types...>::_S_move_assign,
+	__detail::__variant::_Traits<_Types...>::_S_copy_ctor,
+	__detail::__variant::_Traits<_Types...>::_S_copy_assign,
+	__detail::__variant::_Traits<_Types...>::_S_move_ctor,
+	__detail::__variant::_Traits<_Types...>::_S_move_assign,
 	variant<_Types...>>
     {
     private:
@@ -1060,9 +1051,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       using _Base = __detail::__variant::_Variant_base<_Types...>;
       using _Default_ctor_enabler =
-        _Enable_default_constructor<
-          __detail::__variant::_Traits<_Types...>::_S_default_ctor,
-            variant<_Types...>>;
+	_Enable_default_constructor<
+	  __detail::__variant::_Traits<_Types...>::_S_default_ctor,
+	    variant<_Types...>>;
 
       template<typename _Tp>
 	static constexpr bool
@@ -1108,7 +1099,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	variant(_Tp&& __t)
 	noexcept(is_nothrow_constructible_v<__accepted_type<_Tp&&>, _Tp&&>)
 	: variant(in_place_index<__accepted_index<_Tp&&>>,
-                  std::forward<_Tp>(__t))
+		  std::forward<_Tp>(__t))
 	{ __glibcxx_assert(holds_alternative<__accepted_type<_Tp&&>>(*this)); }
 
       template<typename _Tp, typename... _Args,
@@ -1117,7 +1108,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	constexpr explicit
 	variant(in_place_type_t<_Tp>, _Args&&... __args)
 	: variant(in_place_index<__index_of<_Tp>>,
-                  std::forward<_Args>(__args)...)
+		  std::forward<_Args>(__args)...)
 	{ __glibcxx_assert(holds_alternative<_Tp>(*this)); }
 
       template<typename _Tp, typename _Up, typename... _Args,
@@ -1288,7 +1279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr bool \
 	(*_S_erased_##__NAME[])(const variant&, const variant&) = \
 	  { &__detail::__variant::__erased_##__NAME< \
-                const variant&, __indices>... }; \
+		const variant&, __indices>... }; \
       template<size_t... __indices> \
 	constexpr inline bool \
 	_M_##__NAME(const variant& __rhs, \
@@ -1312,18 +1303,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #undef _VARIANT_RELATION_FUNCTION_TEMPLATE
 
       template<size_t _Np, typename _Vp>
-	friend constexpr decltype(auto) __detail::__variant::
-#if _GLIBCXX_INLINE_VERSION
-        __8:: // Required due to PR c++/59256
-#endif
-	__get(_Vp&& __v);
+	friend constexpr decltype(auto) __detail::__variant::__get(_Vp&& __v);
 
       template<typename _Vp>
-	friend void* __detail::__variant::
-#if _GLIBCXX_INLINE_VERSION
-        __8:: // Required due to PR c++/59256
-#endif
-        __get_storage(_Vp&& __v);
+	friend void* __detail::__variant::__get_storage(_Vp&& __v);
 
 #define _VARIANT_RELATION_FUNCTION_TEMPLATE(__OP) \
       template<typename... _Tp> \
@@ -1434,7 +1417,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename... _Types>
     struct hash<variant<_Types...>>
     : private __detail::__variant::_Variant_hash_base<
-        variant<_Types...>, std::index_sequence_for<_Types...>>,
+	variant<_Types...>, std::index_sequence_for<_Types...>>,
       public __variant_hash_call_base<_Types...>
     {
       using result_type = size_t;

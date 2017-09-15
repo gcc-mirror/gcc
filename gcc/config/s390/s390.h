@@ -273,13 +273,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 
 #define STACK_SIZE_MODE (Pmode)
 
-/* Vector arguments are left-justified when placed on the stack during
-   parameter passing.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE)			\
-  (s390_function_arg_vector ((MODE), (TYPE))			\
-   ? upward							\
-   : DEFAULT_FUNCTION_ARG_PADDING ((MODE), (TYPE)))
-
 #ifndef IN_LIBGCC2
 
 /* Width of a word, in units (bytes).  */
@@ -476,59 +469,13 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
      15, 32, 33, 34, 35, 36, 37 }
 
 
-/* Fitting values into registers.  */
-
-/* Integer modes <= word size fit into any GPR.
-   Integer modes > word size fit into successive GPRs, starting with
-   an even-numbered register.
-   SImode and DImode fit into FPRs as well.
-
-   Floating point modes <= word size fit into any FPR or GPR.
-   Floating point modes > word size (i.e. DFmode on 32-bit) fit
-   into any FPR, or an even-odd GPR pair.
-   TFmode fits only into an even-odd FPR pair.
-
-   Complex floating point modes fit either into two FPRs, or into
-   successive GPRs (again starting with an even number).
-   TCmode fits only into two successive even-odd FPR pairs.
-
-   Condition code modes fit only into the CC register.  */
-
-/* Because all registers in a class have the same size HARD_REGNO_NREGS
-   is equivalent to CLASS_MAX_NREGS.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)                           \
-  s390_class_max_nregs (REGNO_REG_CLASS (REGNO), (MODE))
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)         \
-  s390_hard_regno_mode_ok ((REGNO), (MODE))
-
 #define HARD_REGNO_RENAME_OK(FROM, TO)          \
   s390_hard_regno_rename_ok ((FROM), (TO))
-
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-   (((MODE1) == SFmode || (MODE1) == DFmode)	\
-   == ((MODE2) == SFmode || (MODE2) == DFmode))
-
-/* When generating code that runs in z/Architecture mode,
-   but conforms to the 31-bit ABI, GPRs can hold 8 bytes;
-   the ABI guarantees only that the lower 4 bytes are
-   saved across calls, however.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  ((!TARGET_64BIT && TARGET_ZARCH					\
-    && GET_MODE_SIZE (MODE) > 4						\
-    && (((REGNO) >= 6 && (REGNO) <= 15) || (REGNO) == 32))		\
-   || (TARGET_VX							\
-       && GET_MODE_SIZE (MODE) > 8					\
-       && (((TARGET_64BIT && (REGNO) >= 24 && (REGNO) <= 31))		\
-	   || (!TARGET_64BIT && ((REGNO) == 18 || (REGNO) == 19)))))
 
 /* Maximum number of registers to represent a value of mode MODE
    in a register of class CLASS.  */
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
   s390_class_max_nregs ((CLASS), (MODE))
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
-  s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
 
 /* We can reverse a CC mode safely if we know whether it comes from a
    floating point compare or not.  With the vector modes it is encoded
@@ -625,36 +572,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
       && REGNO_REG_CLASS ((REGNO)) == ADDR_REGS) 			\
      || ADDR_REGNO_P (reg_renumber[REGNO]))
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
-
-
-/* We need secondary memory to move data between GPRs and FPRs.
-
-   - With DFP the ldgr lgdr instructions are available.  Due to the
-     different alignment we cannot use them for SFmode.  For 31 bit a
-     64 bit value in GPR would be a register pair so here we still
-     need to go via memory.
-
-   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
-     overlapping of FPRs and VRs we still disallow TF/TD modes to be
-     in full VRs so as before also on z13 we do these moves via
-     memory.
-
-     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((reg_classes_intersect_p ((CLASS1), VEC_REGS)			\
-     && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))		\
-    || (reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
-	&& reg_classes_intersect_p ((CLASS2), VEC_REGS)))		\
-   && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
-   && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
-			  && GET_MODE_SIZE (MODE) > 8)))
-
-/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
-   because the movsi and movsf patterns don't handle r/f moves.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
- (GET_MODE_BITSIZE (MODE) < 32				\
-  ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)	\
-  : (MODE))
 
 
 /* Stack layout and calling conventions.  */
@@ -1046,14 +963,10 @@ do {									\
    tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-#define Pmode ((machine_mode) (TARGET_64BIT ? DImode : SImode))
+#define Pmode (TARGET_64BIT ? DImode : SImode)
 
 /* This is -1 for "pointer mode" extend.  See ptr_extend in s390.md.  */
 #define POINTERS_EXTEND_UNSIGNED -1

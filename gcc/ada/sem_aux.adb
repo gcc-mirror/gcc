@@ -459,6 +459,32 @@ package body Sem_Aux is
       end case;
    end Get_Binary_Nkind;
 
+   -----------------------
+   -- Get_Called_Entity --
+   -----------------------
+
+   function Get_Called_Entity (Call : Node_Id) return Entity_Id is
+      Nam : constant Node_Id := Name (Call);
+      Id  : Entity_Id;
+
+   begin
+      if Nkind (Nam) = N_Explicit_Dereference then
+         Id := Etype (Nam);
+         pragma Assert (Ekind (Id) = E_Subprogram_Type);
+
+      elsif Nkind (Nam) = N_Selected_Component then
+         Id := Entity (Selector_Name (Nam));
+
+      elsif Nkind (Nam) = N_Indexed_Component then
+         Id := Entity (Selector_Name (Prefix (Nam)));
+
+      else
+         Id := Entity (Nam);
+      end if;
+
+      return Id;
+   end Get_Called_Entity;
+
    -------------------
    -- Get_Low_Bound --
    -------------------
@@ -1053,9 +1079,12 @@ package body Sem_Aux is
 
          return
            Nkind_In (Kind, N_Formal_Object_Declaration,
-                           N_Formal_Package_Declaration,
                            N_Formal_Type_Declaration)
-             or else Is_Formal_Subprogram (E);
+             or else Is_Formal_Subprogram (E)
+             or else
+               (Ekind (E) = E_Package
+                 and then Nkind (Original_Node (Unit_Declaration_Node (E))) =
+                            N_Formal_Package_Declaration);
       end if;
    end Is_Generic_Formal;
 

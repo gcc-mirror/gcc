@@ -319,7 +319,8 @@ BACKTRACE_FILES = \
 FORMAT_FILES = \
 	elf.c \
 	pecoff.c \
-	unknown.c
+	unknown.c \
+	xcoff.c
 
 VIEW_FILES = \
 	read.c \
@@ -351,7 +352,7 @@ TESTS = $(check_PROGRAMS)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = -pthread
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = $(AM_CFLAGS) -pthread
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDADD = libbacktrace.la
 
 # We can't use automake's automatic dependency tracking, because it
@@ -817,6 +818,7 @@ sort.lo: config.h backtrace.h internal.h
 stest.lo: config.h backtrace.h internal.h
 state.lo: config.h backtrace.h backtrace-supported.h internal.h
 unknown.lo: config.h backtrace.h internal.h
+xcoff.lo: config.h backtrace.h internal.h
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

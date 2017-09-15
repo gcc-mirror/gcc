@@ -256,6 +256,13 @@
 			  (V2DI  "DI")
 			  (V4SF  "SF")
 			  (V2DF  "DF")])
+;; Like above, but in lower case
+(define_mode_attr inner_l [(V16QI "qi")
+			   (V8HI  "hi")
+			   (V4SI  "si")
+			   (V2DI  "di")
+			   (V4SF  "sf")
+			   (V2DF  "df")])
 (define_mode_attr vmult  [(V16QI "1")
 			  (V8HI  "2")
 			  (V4SI  "4")
@@ -857,9 +864,10 @@
     {
        start_sequence ();
        value =
-         emit_library_call_value (convert_optab_libfunc (ufloat_optab,
-                                                         DFmode, SImode),
-                   NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], SImode);
+	 emit_library_call_value (convert_optab_libfunc (ufloat_optab,
+							 DFmode, SImode),
+				  NULL_RTX, LCT_NORMAL, DFmode,
+				  operands[1], SImode);
        rtx_insn *insns = get_insns ();
        end_sequence ();
        emit_libcall_block (insns, operands[0], value,
@@ -952,7 +960,8 @@
       value =
          emit_library_call_value (convert_optab_libfunc (ufloat_optab,
                                                          DFmode, DImode),
-                   NULL_RTX, LCT_NORMAL, DFmode, 1, operands[1], DImode);
+				  NULL_RTX, LCT_NORMAL, DFmode,
+				  operands[1], DImode);
       rtx_insn *insns = get_insns ();
       end_sequence ();
       emit_libcall_block (insns, operands[0], value,
@@ -4318,7 +4327,7 @@ selb\t%0,%4,%0,%3"
 ;; vector patterns
 
 ;; Vector initialization
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><inner_l>"
   [(match_operand:V 0 "register_operand" "")
    (match_operand 1 "" "")]
   ""
@@ -4347,7 +4356,7 @@ selb\t%0,%4,%0,%3"
     operands[6] = GEN_INT (size);
   })
 
-(define_expand "vec_extract<mode>"
+(define_expand "vec_extract<mode><inner_l>"
   [(set (match_operand:<inner> 0 "spu_reg_operand" "=r")
 	(vec_select:<inner> (match_operand:V 1 "spu_reg_operand" "r")
 			    (parallel [(match_operand 2 "const_int_operand" "i")])))]

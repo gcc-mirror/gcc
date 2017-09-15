@@ -33,10 +33,29 @@ test01()
   VERIFY( str0 == string_view{"pus mons"} );
 }
 
+constexpr bool
+test02()
+{
+  using std::string_view;
+
+  string_view str0{"olympus mons"};
+  string_view::pointer p = str0.data();
+  str0.remove_prefix(4);
+  if ( str0.data() != p + 4)
+    return false;
+  if ( str0.length() != 8 )
+    return false;
+  if ( str0 != string_view{"pus mons"} )
+    return false;
+
+  return true;
+}
+
 int
 main()
 { 
   test01();
+  static_assert( test02() );
 
   return 0;
 }

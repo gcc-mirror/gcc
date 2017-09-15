@@ -32,6 +32,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "alias.h"
 #include "lto-symtab.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Replace the cgraph node NODE with PREVAILING_NODE in the cgraph, merging
    all edges and removing the old node.  */

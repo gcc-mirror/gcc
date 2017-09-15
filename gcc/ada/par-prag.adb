@@ -326,13 +326,15 @@ begin
 
    case Prag_Id is
 
+      --  Ada version pragmas must be processed at parse time, because we want
+      --  to set the Ada version properly at parse time to recognize the
+      --  appropriate Ada version syntax. However, pragma Ada_2005 and higher
+      --  have an optional argument; it is only the zero argument form that
+      --  must be processed at parse time.
+
       ------------
       -- Ada_83 --
       ------------
-
-      --  This pragma must be processed at parse time, since we want to set
-      --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax.
 
       when Pragma_Ada_83 =>
          if not Latest_Ada_Only then
@@ -345,10 +347,6 @@ begin
       -- Ada_95 --
       ------------
 
-      --  This pragma must be processed at parse time, since we want to set
-      --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax.
-
       when Pragma_Ada_95 =>
          if not Latest_Ada_Only then
             Ada_Version := Ada_95;
@@ -359,11 +357,6 @@ begin
       ---------------------
       -- Ada_05/Ada_2005 --
       ---------------------
-
-      --  These pragmas must be processed at parse time, since we want to set
-      --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax. However, it is only the zero argument form that
-      --  must be processed at parse time.
 
       when Pragma_Ada_05
          | Pragma_Ada_2005
@@ -378,17 +371,23 @@ begin
       -- Ada_12/Ada_2012 --
       ---------------------
 
-      --  These pragmas must be processed at parse time, since we want to set
-      --  the Ada version properly at parse time to recognize the appropriate
-      --  Ada version syntax. However, it is only the zero argument form that
-      --  must be processed at parse time.
-
       when Pragma_Ada_12
          | Pragma_Ada_2012
       =>
          if Arg_Count = 0 then
             Ada_Version := Ada_2012;
             Ada_Version_Explicit := Ada_2012;
+            Ada_Version_Pragma := Pragma_Node;
+         end if;
+
+      --------------
+      -- Ada_2020 --
+      --------------
+
+      when Pragma_Ada_2020 =>
+         if Arg_Count = 0 then
+            Ada_Version := Ada_2020;
+            Ada_Version_Explicit := Ada_2020;
             Ada_Version_Pragma := Pragma_Node;
          end if;
 
@@ -1414,6 +1413,7 @@ begin
          | Pragma_Max_Queue_Length
          | Pragma_Memory_Size
          | Pragma_No_Body
+         | Pragma_No_Component_Reordering
          | Pragma_No_Elaboration_Code_All
          | Pragma_No_Heap_Finalization
          | Pragma_No_Inline

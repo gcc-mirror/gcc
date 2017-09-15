@@ -49,6 +49,8 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 #if _GLIBCXX_USE_STD_SPEC_FUNCS
 #elif defined(_GLIBCXX_TR1_CMATH)
 namespace tr1
@@ -61,8 +63,6 @@ namespace tr1
   // Implementation-space details.
   namespace __detail
   {
-  _GLIBCXX_BEGIN_NAMESPACE_VERSION
-
     template<typename _Tp> _Tp __expint_E1(_Tp);
 
     /**
@@ -522,12 +522,12 @@ namespace tr1
       else
         return __expint_Ei(__x);
     }
-
-  _GLIBCXX_END_NAMESPACE_VERSION
   } // namespace __detail
 #if ! _GLIBCXX_USE_STD_SPEC_FUNCS && defined(_GLIBCXX_TR1_CMATH)
 } // namespace tr1
 #endif
+
+_GLIBCXX_END_NAMESPACE_VERSION
 }
 
 #endif // _GLIBCXX_TR1_EXP_INTEGRAL_TCC

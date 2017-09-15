@@ -54,5 +54,6 @@ extern void cfg_layout_initialize (int);
 extern void cfg_layout_finalize (void);
 extern void break_superblocks (void);
 extern void init_rtl_bb_info (basic_block);
+extern void find_bbs_reachable_by_hot_paths (hash_set <basic_block> *);
 
 #endif /* GCC_CFGRTL_H */

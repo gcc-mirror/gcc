@@ -1,3 +1,35 @@
+2017-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: Remove email address of Jim Norris.
+
+2017-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS (Reviewers): Move myself from here...
+	(CPU Port Maintainers): ... to here.
+
+2017-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS (James Greenhalgh): Move to AArch64 maintainers.
+
+2017-07-31  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+        * MAINTAINERS (write after approval): Add myself.
+
+2017-07-28  Tony Reix  <tony.reix@atos.net>
+
+	* configure.ac (target-libffi): Don't disable for AIX.
+	(go): Don't add to unsupported_languages on AIX.
+	(target-libgo): Don't disable for AIX.
+	* configure: Regenerate.
+
+2017-07-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* MAINTAINERS: Add myself.
+
+2017-07-18  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* MAINTAINERS: Update my email address.
+
 2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
 
 	* contrib/gcc_update (files_and_dependencies): Remove stamp rules for

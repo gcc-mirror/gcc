@@ -444,6 +444,14 @@
                           (V2SF "SF") (V4SF "SF")
                           (DI "DI")   (V2DI "DI")])
 
+;; As above but in lower case.
+(define_mode_attr V_elem_l [(V8QI "qi") (V16QI "qi")
+			    (V4HI "hi") (V8HI "hi")
+			    (V4HF "hf") (V8HF "hf")
+			    (V2SI "si") (V4SI "si")
+			    (V2SF "sf") (V4SF "sf")
+			    (DI "di")   (V2DI "di")])
+
 ;; Element modes for vector extraction, padded up to register size.
 
 (define_mode_attr V_ext [(V8QI "SI") (V16QI "SI")

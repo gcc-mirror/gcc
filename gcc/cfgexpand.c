@@ -68,6 +68,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-outof-ssa.h"
 #include "cfgloop.h"
 #include "insn-attr.h" /* For INSN_SCHEDULING.  */
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "tree-ssa-address.h"
 #include "output.h"
@@ -3960,15 +3962,13 @@ round_udiv_adjust (machine_mode mode, rtx mod, rtx op1)
    any rtl.  */
 
 static rtx
-convert_debug_memory_address (machine_mode mode, rtx x,
+convert_debug_memory_address (scalar_int_mode mode, rtx x,
 			      addr_space_t as)
 {
-  machine_mode xmode = GET_MODE (x);
-
 #ifndef POINTERS_EXTEND_UNSIGNED
   gcc_assert (mode == Pmode
 	      || mode == targetm.addr_space.address_mode (as));
-  gcc_assert (xmode == mode || xmode == VOIDmode);
+  gcc_assert (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode);
 #else
   rtx temp;
 
@@ -3977,6 +3977,8 @@ convert_debug_memory_address (machine_mode mode, rtx x,
   if (GET_MODE (x) == mode || GET_MODE (x) == VOIDmode)
     return x;
 
+  /* X must have some form of address mode already.  */
+  scalar_int_mode xmode = as_a <scalar_int_mode> (GET_MODE (x));
   if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (xmode))
     x = lowpart_subreg (mode, x, xmode);
   else if (POINTERS_EXTEND_UNSIGNED > 0)
@@ -4137,6 +4139,7 @@ expand_debug_expr (tree exp)
   machine_mode inner_mode = VOIDmode;
   int unsignedp = TYPE_UNSIGNED (TREE_TYPE (exp));
   addr_space_t as;
+  scalar_int_mode op0_mode, op1_mode, addr_mode;
 
   switch (TREE_CODE_CLASS (TREE_CODE (exp)))
     {
@@ -4186,16 +4189,10 @@ expand_debug_expr (tree exp)
 	case WIDEN_LSHIFT_EXPR:
 	  /* Ensure second operand isn't wider than the first one.  */
 	  inner_mode = TYPE_MODE (TREE_TYPE (TREE_OPERAND (exp, 1)));
-	  if (SCALAR_INT_MODE_P (inner_mode))
-	    {
-	      machine_mode opmode = mode;
-	      if (VECTOR_MODE_P (mode))
-		opmode = GET_MODE_INNER (mode);
-	      if (SCALAR_INT_MODE_P (opmode)
-		  && (GET_MODE_PRECISION (opmode)
-		      < GET_MODE_PRECISION (inner_mode)))
-		op1 = lowpart_subreg (opmode, op1, inner_mode);
-	    }
+	  if (is_a <scalar_int_mode> (inner_mode, &op1_mode)
+	      && (GET_MODE_UNIT_PRECISION (mode)
+		  < GET_MODE_PRECISION (op1_mode)))
+	    op1 = lowpart_subreg (GET_MODE_INNER (mode), op1, op1_mode);
 	  break;
 	default:
 	  break;
@@ -4495,7 +4492,7 @@ expand_debug_expr (tree exp)
 	  {
 	    if (mode1 == VOIDmode)
 	      /* Bitfield.  */
-	      mode1 = smallest_mode_for_size (bitsize, MODE_INT);
+	      mode1 = smallest_int_mode_for_size (bitsize);
 	    if (bitpos >= BITS_PER_UNIT)
 	      {
 		op0 = adjust_address_nv (op0, mode1, bitpos / BITS_PER_UNIT);
@@ -4584,23 +4581,23 @@ expand_debug_expr (tree exp)
 	 size_t, we need to check for mis-matched modes and correct
 	 the addend.  */
       if (op0 && op1
-	  && GET_MODE (op0) != VOIDmode && GET_MODE (op1) != VOIDmode
-	  && GET_MODE (op0) != GET_MODE (op1))
+	  && is_a <scalar_int_mode> (GET_MODE (op0), &op0_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (op1), &op1_mode)
+	  && op0_mode != op1_mode)
 	{
-	  if (GET_MODE_BITSIZE (GET_MODE (op0)) < GET_MODE_BITSIZE (GET_MODE (op1))
-	      /* If OP0 is a partial mode, then we must truncate, even if it has
-		 the same bitsize as OP1 as GCC's representation of partial modes
-		 is opaque.  */
-	      || (GET_MODE_CLASS (GET_MODE (op0)) == MODE_PARTIAL_INT
-		  && GET_MODE_BITSIZE (GET_MODE (op0)) == GET_MODE_BITSIZE (GET_MODE (op1))))
-	    op1 = simplify_gen_unary (TRUNCATE, GET_MODE (op0), op1,
-				      GET_MODE (op1));
+	  if (GET_MODE_BITSIZE (op0_mode) < GET_MODE_BITSIZE (op1_mode)
+	      /* If OP0 is a partial mode, then we must truncate, even
+		 if it has the same bitsize as OP1 as GCC's
+		 representation of partial modes is opaque.  */
+	      || (GET_MODE_CLASS (op0_mode) == MODE_PARTIAL_INT
+		  && (GET_MODE_BITSIZE (op0_mode)
+		      == GET_MODE_BITSIZE (op1_mode))))
+	    op1 = simplify_gen_unary (TRUNCATE, op0_mode, op1, op1_mode);
 	  else
 	    /* We always sign-extend, regardless of the signedness of
 	       the operand, because the operand is always unsigned
 	       here even if the original C expression is signed.  */
-	    op1 = simplify_gen_unary (SIGN_EXTEND, GET_MODE (op0), op1,
-				      GET_MODE (op1));
+	    op1 = simplify_gen_unary (SIGN_EXTEND, op0_mode, op1, op1_mode);
 	}
       /* Fall through.  */
     case PLUS_EXPR:
@@ -4826,7 +4823,7 @@ expand_debug_expr (tree exp)
 						   GET_MODE_INNER (mode)));
       else
 	{
-	  machine_mode imode = GET_MODE_INNER (mode);
+	  scalar_mode imode = GET_MODE_INNER (mode);
 	  rtx re, im;
 
 	  if (MEM_P (op0))
@@ -4836,10 +4833,11 @@ expand_debug_expr (tree exp)
 	    }
 	  else
 	    {
-	      machine_mode ifmode = int_mode_for_mode (mode);
-	      machine_mode ihmode = int_mode_for_mode (imode);
+	      scalar_int_mode ifmode;
+	      scalar_int_mode ihmode;
 	      rtx halfsize;
-	      if (ifmode == BLKmode || ihmode == BLKmode)
+	      if (!int_mode_for_mode (mode).exists (&ifmode)
+		  || !int_mode_for_mode (imode).exists (&ihmode))
 		return NULL;
 	      halfsize = GEN_INT (GET_MODE_BITSIZE (ihmode));
 	      re = op0;
@@ -4916,18 +4914,19 @@ expand_debug_expr (tree exp)
 	}
 
       as = TYPE_ADDR_SPACE (TREE_TYPE (TREE_TYPE (exp)));
-      op0 = convert_debug_memory_address (mode, XEXP (op0, 0), as);
+      addr_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (exp));
+      op0 = convert_debug_memory_address (addr_mode, XEXP (op0, 0), as);
 
       return op0;
 
     case VECTOR_CST:
       {
-	unsigned i;
+	unsigned i, nelts;
 
-	op0 = gen_rtx_CONCATN
-	  (mode, rtvec_alloc (TYPE_VECTOR_SUBPARTS (TREE_TYPE (exp))));
+	nelts = VECTOR_CST_NELTS (exp);
+	op0 = gen_rtx_CONCATN (mode, rtvec_alloc (nelts));
 
-	for (i = 0; i < VECTOR_CST_NELTS (exp); ++i)
+	for (i = 0; i < nelts; ++i)
 	  {
 	    op1 = expand_debug_expr (VECTOR_CST_ELT (exp, i));
 	    if (!op1)
@@ -6080,7 +6079,7 @@ expand_main_function (void)
      || (!defined(HAS_INIT_SECTION)			\
 	 && !defined(INIT_SECTION_ASM_OP)		\
 	 && !defined(INIT_ARRAY_SECTION_ASM_OP)))
-  emit_library_call (init_one_libfunc (NAME__MAIN), LCT_NORMAL, VOIDmode, 0);
+  emit_library_call (init_one_libfunc (NAME__MAIN), LCT_NORMAL, VOIDmode);
 #endif
 }
 
@@ -6480,6 +6479,11 @@ pass_expand::execute (function *fun)
   if (fun->eh->region_tree != NULL)
     finish_eh_generation ();
 
+  /* BB subdivision may have created basic blocks that are are only reachable
+     from unlikely bbs but not marked as such in the profile.  */
+  if (optimize)
+    propagate_unlikely_bbs_forward ();
+
   /* Remove unreachable blocks, otherwise we cannot compute dominators
      which are needed for loop state verification.  As a side-effect
      this also compacts blocks.
@@ -6521,12 +6525,6 @@ pass_expand::execute (function *fun)
 	if (TREE_CODE (parent) == FUNCTION_DECL)
 	  TREE_SYMBOL_REFERENCED (DECL_ASSEMBLER_NAME (parent)) = 1;
     }
-
-  /* We are now committed to emitting code for this function.  Do any
-     preparation, such as emitting abstract debug info for the inline
-     before it gets mangled by optimization.  */
-  if (cgraph_function_possibly_inlined_p (current_function_decl))
-    (*debug_hooks->outlining_inline_function) (current_function_decl);
 
   TREE_ASM_WRITTEN (current_function_decl) = 1;
 

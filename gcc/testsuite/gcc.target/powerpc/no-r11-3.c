@@ -6,7 +6,7 @@
 extern void ext_call (int (func) (void));
 
 int
-outer_func (int init)	/* { dg-error "-mno-pointers-to-nested-functions option" } */
+outer_func (int init)	/* { dg-error "'-mno-pointers-to-nested-functions' option" } */
 {
   int value = init;
 

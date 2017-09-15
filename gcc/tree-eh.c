@@ -43,6 +43,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "gimple-low.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
@@ -1414,11 +1416,12 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       x = gimple_build_assign (finally_tmp,
 			       build_int_cst (integer_type_node,
 					      fallthru_index));
+      gimple_set_location (x, finally_loc);
       gimple_seq_add_stmt (&tf->top_p_seq, x);
 
       tmp = build_int_cst (integer_type_node, fallthru_index);
       last_case = build_case_label (tmp, NULL,
-				    create_artificial_label (tf_loc));
+				    create_artificial_label (finally_loc));
       case_label_vec.quick_push (last_case);
       last_case_index++;
 
@@ -1427,7 +1430,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       tmp = lower_try_finally_fallthru_label (tf);
       x = gimple_build_goto (tmp);
-      gimple_set_location (x, tf_loc);
+      gimple_set_location (x, finally_loc);
       gimple_seq_add_stmt (&switch_body, x);
     }
 

@@ -84,11 +84,11 @@
 ; fmul[d,s]          double/single floating point multiply.
 ; fsqrt[d,s]         double/single precision floating point square root.
 ; load_acq           load-acquire.
-; load_byte          load byte(s) from memory to arm registers.
-; load1              load 1 word from memory to arm registers.
-; load2              load 2 words from memory to arm registers.
-; load3              load 3 words from memory to arm registers.
-; load4              load 4 words from memory to arm registers.
+; load_byte          load 1 byte from memory.
+; load_4             load 4 bytes from memory.
+; load_8             load 8 bytes from memory.
+; load_12            load 12 bytes from memory.
+; load_16            load 16 bytes from memory.
 ; logic_imm          any logical instruction that doesn't have a shifted
 ;                    operand and has an immediate operand.
 ; logic_reg          any logical instruction that doesn't have a shifted
@@ -152,10 +152,10 @@
 ; smusd              signed dual multiply subtract.
 ; smusdx             signed dual multiply subtract reverse.
 ; store_rel          store-release.
-; store1             store 1 word to memory from arm registers.
-; store2             store 2 words to memory from arm registers.
-; store3             store 3 words to memory from arm registers.
-; store4             store 4 (or more) words to memory from arm registers.
+; store_4            store 4 bytes to memory.
+; store_8            store 8 bytes to memory.
+; store_12           store 12 bytes to memory.
+; store_16           store 16 bytes (or more) to memory.
 ; trap               cause a trap in the kernel.
 ; udiv               unsigned division.
 ; umaal              unsigned multiply accumulate accumulate long.
@@ -613,10 +613,10 @@
   fsqrtd,\
   load_acq,\
   load_byte,\
-  load1,\
-  load2,\
-  load3,\
-  load4,\
+  load_4,\
+  load_8,\
+  load_12,\
+  load_16,\
   logic_imm,\
   logic_reg,\
   logic_shift_imm,\
@@ -670,10 +670,10 @@
   smusd,\
   smusdx,\
   store_rel,\
-  store1,\
-  store2,\
-  store3,\
-  store4,\
+  store_4,\
+  store_8,\
+  store_12,\
+  store_16,\
   trap,\
   udiv,\
   umaal,\

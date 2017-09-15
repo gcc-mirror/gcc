@@ -28,9 +28,13 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include <sys/types.h>
 #include <sys/sysctl.h>
+#include <sys/param.h>
 #include <signal.h>
 #include <sys/ucontext.h>
 #include <machine/sigframe.h>
+#if __DragonFly_version > 400800
+#include <sys/kinfo.h>
+#endif
 
 
 #define REG_NAME(reg)	sf_uc.uc_mcontext.mc_## reg
@@ -39,20 +43,44 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define MD_FALLBACK_FRAME_STATE_FOR x86_64_dragonfly_fallback_frame_state
 
 
-static void
-x86_64_sigtramp_range (unsigned char **start, unsigned char **end)
+static int
+x86_64_outside_sigtramp_range (unsigned char *pc)
 {
-  unsigned long ps_strings;
-  int mib[2];
-  size_t len;
+  static int sigtramp_range_determined = 0;
+  static unsigned char *sigtramp_start, *sigtramp_end;
 
-  mib[0] = CTL_KERN;
-  mib[1] = KERN_PS_STRINGS;
-  len = sizeof (ps_strings);
-  sysctl (mib, 2, &ps_strings, &len, NULL, 0);
+  if (sigtramp_range_determined == 0)
+    {
+#if __DragonFly_version > 400800
+      struct kinfo_sigtramp kst = {0};
+      size_t len = sizeof (kst);
+      int mib[3] = { CTL_KERN, KERN_PROC, KERN_PROC_SIGTRAMP };
 
-  *start = (unsigned char *)ps_strings - 32;
-  *end   = (unsigned char *)ps_strings;
+      sigtramp_range_determined = 1;
+      if (sysctl (mib, 3, &kst, &len, NULL, 0) == 0)
+      {
+        sigtramp_range_determined = 2;
+        sigtramp_start = kst.ksigtramp_start;
+        sigtramp_end   = kst.ksigtramp_end;
+      }
+#else
+      unsigned long ps_strings;
+      size_t len = sizeof (ps_strings);
+      int mib[2] = { CTL_KERN, KERN_PS_STRINGS };
+
+      sigtramp_range_determined = 1;
+      if (sysctl (mib, 2, &ps_strings, &len, NULL, 0) == 0)
+      {
+        sigtramp_range_determined = 2;
+        sigtramp_start = (unsigned char *)ps_strings - 32;
+        sigtramp_end   = (unsigned char *)ps_strings;
+      }
+#endif
+    }
+  if (sigtramp_range_determined < 2)  /* sysctl failed if < 2 */
+    return 1;
+
+  return (pc < sigtramp_start || pc >= sigtramp_end );
 }
 
 
@@ -60,13 +88,10 @@ static _Unwind_Reason_Code
 x86_64_dragonfly_fallback_frame_state
 (struct _Unwind_Context *context, _Unwind_FrameState *fs)
 {
-  unsigned char *pc = context->ra;
-  unsigned char *sigtramp_start, *sigtramp_end;
   struct sigframe *sf;
   long new_cfa;
 
-  x86_64_sigtramp_range(&sigtramp_start, &sigtramp_end);
-  if (pc >= sigtramp_end || pc < sigtramp_start)
+  if (x86_64_outside_sigtramp_range(context->ra))
     return _URC_END_OF_STACK;
 
   sf = (struct sigframe *) context->cfa;

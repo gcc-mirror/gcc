@@ -8,7 +8,7 @@ import (
 	"unsafe"
 )
 
-// Temporary for C code to call:
+// For C code to call:
 //go:linkname minit runtime.minit
 
 func goenvs() {

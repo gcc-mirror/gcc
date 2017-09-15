@@ -355,6 +355,7 @@
 #define vec_vsx_ld __builtin_vec_vsx_ld
 #define vec_vsx_st __builtin_vec_vsx_st
 #define vec_xl __builtin_vec_vsx_ld
+#define vec_xl_be __builtin_vec_xl_be
 #define vec_xst __builtin_vec_vsx_st
 
 /* Note, xxsldi and xxpermdi were added as __builtin_vsx_<xxx> functions
@@ -448,6 +449,9 @@
 #define vec_extract_sig __builtin_vec_extract_sig
 #define vec_insert_exp __builtin_vec_insert_exp
 #define vec_test_data_class __builtin_vec_test_data_class
+
+#define vec_extract_fp_from_shorth __builtin_vec_vextract_fp_from_shorth
+#define vec_extract_fp_from_shortl __builtin_vec_vextract_fp_from_shortl
 
 #define scalar_extract_exp __builtin_vec_scalar_extract_exp
 #define scalar_extract_sig __builtin_vec_scalar_extract_sig

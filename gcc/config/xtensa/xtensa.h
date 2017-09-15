@@ -321,30 +321,6 @@ extern int leaf_function;
 #define FP_REG_P(REGNO) ((unsigned) ((REGNO) - FP_REG_FIRST) < FP_REG_NUM)
 #define ACC_REG_P(REGNO) ((unsigned) ((REGNO) - ACC_REG_FIRST) < ACC_REG_NUM)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (FP_REG_P (REGNO) ?							\
-	((GET_MODE_SIZE (MODE) + UNITS_PER_FPREG - 1) / UNITS_PER_FPREG) : \
-	((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD))
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode
-   MODE.  */
-extern char xtensa_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  xtensa_hard_regno_mode_ok[(int) (MODE)][(REGNO)]
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)					\
-  ((GET_MODE_CLASS (MODE1) == MODE_FLOAT ||				\
-    GET_MODE_CLASS (MODE1) == MODE_COMPLEX_FLOAT)			\
-   == (GET_MODE_CLASS (MODE2) == MODE_FLOAT ||				\
-       GET_MODE_CLASS (MODE2) == MODE_COMPLEX_FLOAT))
-
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 1)
 
@@ -692,10 +668,6 @@ typedef struct xtensa_args
 
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = -1, 1)

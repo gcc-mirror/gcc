@@ -300,12 +300,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 
 #define STRICT_ALIGNMENT 1
 
-/* Set this nonzero if unaligned move instructions are extremely slow.
-
-   On the Alpha, they trap.  */
-
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Standard register usage.  */
 
 /* Number of actual hardware registers.
@@ -376,35 +370,6 @@ extern enum alpha_fp_trap_mode alpha_fptm;
 									\
    29, 30, 31, 63		/* gp, sp, ap, sfp */			\
 }
-
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)   \
-  CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.
-   On Alpha, the integer registers can hold any mode.  The floating-point
-   registers can hold 64-bit integers as well, but not smaller values.  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 				\
-  (IN_RANGE ((REGNO), 32, 62)						\
-   ? (MODE) == SFmode || (MODE) == DFmode || (MODE) == DImode		\
-     || (MODE) == SCmode || (MODE) == DCmode				\
-   : 1)
-
-/* A C expression that is nonzero if a value of mode
-   MODE1 is accessible in mode MODE2 without copying.
-
-   This asymmetric test is true when MODE1 could be put
-   in an FP register but MODE2 could not.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) 				\
-  (HARD_REGNO_MODE_OK (32, (MODE1))				\
-   ? HARD_REGNO_MODE_OK (32, (MODE2))				\
-   : 1)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -513,29 +478,6 @@ enum reg_class {
    in some cases it is preferable to use a more restrictive class.  */
 
 #define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
-
-/* If we are copying between general and FP registers, we need a memory
-   location unless the FIX extension is available.  */
-
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- (! TARGET_FIX && (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS) \
-                   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS)))
-
-/* Specify the mode to be used for memory when a secondary memory
-   location is needed.  If MODE is floating-point, use it.  Otherwise,
-   widen to a word like the default.  This is needed because we always
-   store integers in FP registers in quadword format.  This whole
-   area is very tricky! */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT ? (MODE)		\
-   : GET_MODE_SIZE (MODE) >= 4 ? (MODE)			\
-   : mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0))
-
-/* Return the class of registers that cannot change mode from FROM to TO.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FLOAT_REGS, CLASS) : 0)
 
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST(speed_p, predictable_p) 5
@@ -857,10 +799,6 @@ do {									     \
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* The CIX ctlz and cttz instructions return 64 for zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, \

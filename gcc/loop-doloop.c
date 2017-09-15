@@ -418,7 +418,7 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   int nonneg = 0;
   bool increment_count;
   basic_block loop_end = desc->out_edge->src;
-  machine_mode mode;
+  scalar_int_mode mode;
   widest_int iterations;
 
   jump_insn = BB_END (loop_end);
@@ -440,7 +440,8 @@ doloop_modify (struct loop *loop, struct niter_desc *desc,
   counter_reg = XEXP (condition, 0);
   if (GET_CODE (counter_reg) == PLUS)
     counter_reg = XEXP (counter_reg, 0);
-  mode = GET_MODE (counter_reg);
+  /* These patterns must operate on integer counters.  */
+  mode = as_a <scalar_int_mode> (GET_MODE (counter_reg));
 
   increment_count = false;
   switch (GET_CODE (condition))
@@ -608,7 +609,7 @@ record_reg_sets (rtx x, const_rtx pat ATTRIBUTE_UNUSED, void *data)
 static bool
 doloop_optimize (struct loop *loop)
 {
-  machine_mode mode;
+  scalar_int_mode mode;
   rtx doloop_reg;
   rtx count;
   widest_int iterations, iterations_max;

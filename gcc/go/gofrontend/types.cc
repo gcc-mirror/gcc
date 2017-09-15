@@ -747,16 +747,16 @@ Type::are_convertible(const Type* lhs, const Type* rhs, std::string* reason)
     return true;
 
   // A pointer to a regular type may not be converted to a pointer to
-  // a type that may not live in the heap, except when converting to
+  // a type that may not live in the heap, except when converting from
   // unsafe.Pointer.
   if (lhs->points_to() != NULL
       && rhs->points_to() != NULL
-      && !rhs->points_to()->in_heap()
-      && lhs->points_to()->in_heap()
-      && !lhs->is_unsafe_pointer_type())
+      && !lhs->points_to()->in_heap()
+      && rhs->points_to()->in_heap()
+      && !rhs->is_unsafe_pointer_type())
     {
       if (reason != NULL)
-	reason->assign(_("conversion from notinheap type to normal type"));
+	reason->assign(_("conversion from normal type to notinheap type"));
       return false;
     }
 
@@ -1057,6 +1057,8 @@ Type::get_backend_placeholder(Gogo* gogo)
       {
 	Location loc = Linemap::unknown_location();
 	bt = gogo->backend()->placeholder_pointer_type("", loc, false);
+	Pointer_type* pt = this->convert<Pointer_type, TYPE_POINTER>();
+	Type::placeholder_pointers.push_back(pt);
       }
       break;
 
@@ -5516,19 +5518,58 @@ Pointer_type::do_import(Import* imp)
   return Type::make_pointer_type(to);
 }
 
+// Cache of pointer types. Key is "to" type, value is pointer type
+// that points to key.
+
+Type::Pointer_type_table Type::pointer_types;
+
+// A list of placeholder pointer types.  We keep this so we can ensure
+// they are finalized.
+
+std::vector<Pointer_type*> Type::placeholder_pointers;
+
 // Make a pointer type.
 
 Pointer_type*
 Type::make_pointer_type(Type* to_type)
 {
-  typedef Unordered_map(Type*, Pointer_type*) Hashtable;
-  static Hashtable pointer_types;
-  Hashtable::const_iterator p = pointer_types.find(to_type);
+  Pointer_type_table::const_iterator p = pointer_types.find(to_type);
   if (p != pointer_types.end())
     return p->second;
   Pointer_type* ret = new Pointer_type(to_type);
   pointer_types[to_type] = ret;
   return ret;
+}
+
+// This helper is invoked immediately after named types have been
+// converted, to clean up any unresolved pointer types remaining in
+// the pointer type cache.
+//
+// The motivation for this routine: occasionally the compiler creates
+// some specific pointer type as part of a lowering operation (ex:
+// pointer-to-void), then Type::backend_type_size() is invoked on the
+// type (which creates a Btype placeholder for it), that placeholder
+// passed somewhere along the line to the back end, but since there is
+// no reference to the type in user code, there is never a call to
+// Type::finish_backend for the type (hence the Btype remains as an
+// unresolved placeholder).  Calling this routine will clean up such
+// instances.
+
+void
+Type::finish_pointer_types(Gogo* gogo)
+{
+  // We don't use begin() and end() because it is possible to add new
+  // placeholder pointer types as we finalized existing ones.
+  for (size_t i = 0; i < Type::placeholder_pointers.size(); i++)
+    {
+      Pointer_type* pt = Type::placeholder_pointers[i];
+      Type_btypes::iterator tbti = Type::type_btypes.find(pt);
+      if (tbti != Type::type_btypes.end() && tbti->second.is_placeholder)
+        {
+          pt->finish_backend(gogo, tbti->second.btype);
+          tbti->second.is_placeholder = false;
+        }
+    }
 }
 
 // The nil type.  We use a special type for nil because it is not the
@@ -6331,7 +6372,7 @@ Struct_type::make_struct_type_descriptor_type()
 				       "pkgPath", pointer_string_type,
 				       "typ", ptdt,
 				       "tag", pointer_string_type,
-				       "offset", uintptr_type);
+				       "offsetAnon", uintptr_type);
       Type* nsf = Type::make_builtin_named_type("structField", sf);
 
       Type* slice_type = Type::make_array_type(nsf, NULL);
@@ -6388,14 +6429,9 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 
       Struct_field_list::const_iterator q = f->begin();
       go_assert(q->is_field_name("name"));
-      if (pf->is_anonymous())
-	fvals->push_back(Expression::make_nil(bloc));
-      else
-	{
-	  std::string n = Gogo::unpack_hidden_name(pf->field_name());
-	  Expression* s = Expression::make_string(n, bloc);
-	  fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
-	}
+      std::string n = Gogo::unpack_hidden_name(pf->field_name());
+      Expression* s = Expression::make_string(n, bloc);
+      fvals->push_back(Expression::make_unary(OPERATOR_AND, s, bloc));
 
       ++q;
       go_assert(q->is_field_name("pkgPath"));
@@ -6428,8 +6464,15 @@ Struct_type::do_type_descriptor(Gogo* gogo, Named_type* name)
 	}
 
       ++q;
-      go_assert(q->is_field_name("offset"));
-      fvals->push_back(Expression::make_struct_field_offset(this, &*pf));
+      go_assert(q->is_field_name("offsetAnon"));
+      Type* uintptr_type = Type::lookup_integer_type("uintptr");
+      Expression* o = Expression::make_struct_field_offset(this, &*pf);
+      Expression* one = Expression::make_integer_ul(1, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_LSHIFT, o, one, bloc);
+      int av = pf->is_anonymous() ? 1 : 0;
+      Expression* anon = Expression::make_integer_ul(av, uintptr_type, bloc);
+      o = Expression::make_binary(OPERATOR_OR, o, anon, bloc);
+      fvals->push_back(o);
 
       Expression* v = Expression::make_struct_composite_literal(element_type,
 								fvals, bloc);
@@ -10994,13 +11037,13 @@ Named_type::do_get_backend(Gogo* gogo)
       if (this->seen_in_get_backend_)
 	{
 	  this->is_circular_ = true;
-	  return gogo->backend()->circular_pointer_type(bt, false);
+	  return gogo->backend()->circular_pointer_type(bt, true);
 	}
       this->seen_in_get_backend_ = true;
       bt1 = Type::get_named_base_btype(gogo, base);
       this->seen_in_get_backend_ = false;
       if (this->is_circular_)
-	bt1 = gogo->backend()->circular_pointer_type(bt, false);
+	bt1 = gogo->backend()->circular_pointer_type(bt, true);
       if (!gogo->backend()->set_placeholder_pointer_type(bt, bt1))
 	bt = gogo->backend()->error_type();
       return bt;
@@ -11788,6 +11831,12 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	  go_assert(st != NULL);
 	  if (type->struct_type() == NULL)
 	    {
+              if (dereferenced)
+                {
+                  go_error_at(location, "pointer type has no field %qs",
+                              Gogo::message_name(name).c_str());
+                  return Expression::make_error(location);
+                }
 	      go_assert(type->points_to() != NULL);
 	      expr = Expression::make_unary(OPERATOR_MULT, expr,
 					    location);
