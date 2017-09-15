@@ -4,6 +4,9 @@
 	2017-09-05  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-2.c: New test.
+
+	PR middle-end/81768
 	* gcc.dg/gomp/pr81768-1.c: New test.
 
 	2017-08-08  Richard Biener  <rguenther@suse.de>
