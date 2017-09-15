@@ -3517,6 +3517,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!HONOR_SNANS (type))
    @0))
 
+ (for op (plus minus)
+  /* Simplify (A / C) +- (B / C) -> (A +- B) / C.  */
+  (simplify
+   (op (rdiv @0 @1)
+       (rdiv @2 @1))
+   (rdiv (op @0 @2) @1)))
+
  /* Simplify sqrt(x) * sqrt(y) -> sqrt(x*y).  */
  (for root (SQRT CBRT)
   (simplify

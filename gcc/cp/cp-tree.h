@@ -3884,7 +3884,7 @@ more_aggr_init_expr_args_p (const aggr_init_expr_arg_iterator *iter)
    declared with constexpr specifier are implicitly inline variables.  */
 #define DECL_INLINE_VAR_P(NODE) \
   (DECL_VAR_DECLARED_INLINE_P (NODE)				\
-   || (cxx_dialect >= cxx1z					\
+   || (cxx_dialect >= cxx17					\
        && DECL_DECLARED_CONSTEXPR_P (NODE)			\
        && DECL_CLASS_SCOPE_P (NODE)))
 

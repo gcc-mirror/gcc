@@ -1,3 +1,20 @@
+2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* match.pd: Move RDIV patterns from fold-const.c
+	* fold-const.c (distribute_real_division): Removed.
+	(fold_binary_loc): Remove calls to distribute_real_divison.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi: Document -std=c++17 and -std=gnu++17 and document
+	c++1z and gnu++1z as deprecated.  Change other references to
+	-std=c++1z to -std=c++17 and -std=gnu++1z to -std=gnu++17.
+	Change -Wc++1z-compat to -Wc++17-compat.
+	* doc/cpp.texi: Document -std=c++17 defines __cplusplus 201703L.
+	* dwarf2out.c (highest_c_language): Handle C++17.
+	(gen_compile_unit_die): Likewise.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR rtl-optimization/82192

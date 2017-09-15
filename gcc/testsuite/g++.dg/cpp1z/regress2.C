@@ -1,5 +1,5 @@
 // PR c++/67142
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 namespace detail {
 template <int> int split_at;

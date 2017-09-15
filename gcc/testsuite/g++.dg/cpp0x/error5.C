@@ -41,7 +41,7 @@ struct bad_alloc { };
 
 void* operator new(std::size_t)
 #if __cplusplus <= 201402L
-throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { ! c++1z } } }
+throw (std::bad_alloc)			// { dg-warning "deprecated" "" { target { ! c++17 } } }
 #endif
 ;
 

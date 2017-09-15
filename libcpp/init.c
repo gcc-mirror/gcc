@@ -108,8 +108,8 @@ static const struct lang_flags lang_defaults[] =
   /* CXX11    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    0,     0,     1,   0 },
   /* GNUCXX14 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   0 },
   /* CXX14    */  { 1,  1,  0,  1,  1,  1,  1,   1,   1,   1,    1,     1,     1,   0 },
-  /* GNUCXX1Z */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1 },
-  /* CXX1Z    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1 },
+  /* GNUCXX17 */  { 1,  1,  1,  1,  1,  0,  1,   1,   1,   1,    1,     1,     0,   1 },
+  /* CXX17    */  { 1,  1,  1,  1,  1,  1,  1,   1,   1,   1,    1,     1,     0,   1 },
   /* ASM      */  { 0,  0,  1,  0,  0,  0,  0,   0,   0,   0,    0,     0,     0,   0 }
 };
 
@@ -497,8 +497,8 @@ cpp_init_builtins (cpp_reader *pfile, int hosted)
 
   if (CPP_OPTION (pfile, cplusplus))
     {
-      if (CPP_OPTION (pfile, lang) == CLK_CXX1Z
-	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX1Z)
+      if (CPP_OPTION (pfile, lang) == CLK_CXX17
+	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX17)
 	_cpp_define_builtin (pfile, "__cplusplus 201703L");
       else if (CPP_OPTION (pfile, lang) == CLK_CXX14
 	  || CPP_OPTION (pfile, lang) == CLK_GNUCXX14)

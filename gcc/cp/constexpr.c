@@ -3304,7 +3304,7 @@ var_in_constexpr_fn (tree t)
 bool
 var_in_maybe_constexpr_fn (tree t)
 {
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && DECL_FUNCTION_SCOPE_P (t)
       && LAMBDA_FUNCTION_P (DECL_CONTEXT (t)))
     return true;

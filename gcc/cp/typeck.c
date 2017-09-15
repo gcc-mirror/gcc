@@ -6177,11 +6177,11 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	      }
 	    else
 	      {
-		if (cxx_dialect >= cxx1z)
+		if (cxx_dialect >= cxx17)
 		  {
 		    if (complain & tf_error)
 		      error ("use of an operand of type %qT in "
-			     "%<operator++%> is forbidden in C++1z",
+			     "%<operator++%> is forbidden in C++17",
 			     boolean_type_node);
 		    return error_mark_node;
 		  }

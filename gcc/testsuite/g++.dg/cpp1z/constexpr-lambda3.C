@@ -1,4 +1,4 @@
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 constexpr auto add = [] (int n, int m) {
   auto L = [=] { return n; };

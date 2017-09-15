@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
+// { dg-options "-std=c++17 -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
 
 //  C++98 features:
 

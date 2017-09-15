@@ -1,5 +1,5 @@
 // Test for exception handling.
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 // { dg-do run }
 
 void f() {}
