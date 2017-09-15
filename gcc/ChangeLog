@@ -1,3 +1,13 @@
+2017-09-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/67591
+	* config/arm/arm.md (*cmp_and): Add enabled_for_depr_it attribute.
+	(*cmp_ior): Likewise.
+	(*ior_scc_scc): Add alternative for enabled_for_depr_it attribute.
+	(*ior_scc_scc_cmp): Likewise.
+	(*and_scc_scc): Likewise.
+	(*and_scc_scc_cmp): Likewise.
+
 2017-09-15  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayard  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
