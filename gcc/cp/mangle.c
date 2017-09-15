@@ -116,7 +116,7 @@ struct GTY(()) globals {
   bool need_abi_warning;
 
   /* True if the mangling will be different in C++17 mode.  */
-  bool need_cxx1z_warning;
+  bool need_cxx17_warning;
 };
 
 static GTY (()) globals G;
@@ -362,7 +362,7 @@ write_exception_spec (tree spec)
 
   if (!flag_noexcept_type)
     {
-      G.need_cxx1z_warning = true;
+      G.need_cxx17_warning = true;
       return;
     }
 
@@ -3666,7 +3666,7 @@ start_mangling (const tree entity)
 {
   G.entity = entity;
   G.need_abi_warning = false;
-  G.need_cxx1z_warning = false;
+  G.need_cxx17_warning = false;
   obstack_free (&name_obstack, name_base);
   mangle_obstack = &name_obstack;
   name_base = obstack_alloc (&name_obstack, 0);
@@ -3853,7 +3853,7 @@ mangle_decl (const tree decl)
     }
   SET_DECL_ASSEMBLER_NAME (decl, id);
 
-  if (G.need_cxx1z_warning
+  if (G.need_cxx17_warning
       && (TREE_PUBLIC (decl) || DECL_REALLY_EXTERN (decl)))
     warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wnoexcept_type,
 		"mangled name for %qD will change in C++17 because the "

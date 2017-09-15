@@ -1,3 +1,22 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wc++1z-compat): Change from option to undocumented alias.
+	(Wc++17-compat): Change from undocumented alias to option.
+	(Wnoexcept-type): Enable by Wc++17-compat instead of Wc++1z-compat,
+	change C++1z to C++17 in description.
+	(std=c++1z, std=gnu++1z): Change from option to undocumented
+	deprecated alias.
+	(std=c++17, std=gnu++17): Change from undocumented alias to option.
+	Adjust description.
+	* c-common.h (enum cxx_dialect): Rename cxx1z to cxx17.
+	* c-opts.c (set_std_cxx1z): Rename to ...
+	(set_std_cxx17): ... this.
+	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
+	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
+	caller.  
+	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
+	comments.
+
 2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* c-attribs.c (common_handle_aligned_attribute): Don't warn

@@ -1,5 +1,5 @@
 // PR c++/68377
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 struct Sink { } s;
 template <class T> Sink& operator<<(Sink&, const T&);

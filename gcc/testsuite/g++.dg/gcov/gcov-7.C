@@ -9,7 +9,7 @@ struct foo
 {
   foo ()
 #if __cplusplus <= 201402L
-    throw (int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+    throw (int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
     {			/* count (-) */
       throw (1);

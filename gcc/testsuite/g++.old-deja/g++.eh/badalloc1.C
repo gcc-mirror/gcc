@@ -88,7 +88,7 @@ extern "C" void *realloc (void *p, size_t size)
 
 void fn_throw()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   throw 1;
@@ -96,7 +96,7 @@ throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } }
 
 void fn_rethrow()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   try{fn_throw();}
@@ -106,7 +106,7 @@ throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } }
 
 void fn_catchthrow()
 #if __cplusplus <= 201402L
-throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw(int)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   try{fn_throw();}
