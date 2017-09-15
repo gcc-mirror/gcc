@@ -1,3 +1,12 @@
+2017-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* c-typeck.c (ep_convert_and_check): Just call convert_and_check
+	for C11.
+	(build_conditional_expr): For C11, generate result with excess
+	precision when one argument is an integer and the other is of a
+	type using excess precision.
+
 2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-typeck.c (build_c_cast): Implement -Wcast-align=strict.
