@@ -629,17 +629,48 @@ extern const char * const cgraph_availability_names[];
 extern const char * const ld_plugin_symbol_resolution_names[];
 extern const char * const tls_model_names[];
 
-/* Information about thunk, used only for same body aliases.  */
+/* Sub-structure of cgraph_node.  Holds information about thunk, used only for
+   same body aliases.
+
+   Thunks are basically wrappers around methods which are introduced in case
+   of multiple inheritance in order to adjust the value of the "this" pointer
+   or of the returned value.
+
+   In the case of this-adjusting thunks, each back-end can override the
+   can_output_mi_thunk/output_mi_thunk target hooks to generate a minimal thunk
+   (with a tail call for instance) directly as assembly.  For the default hook
+   or for the case where the can_output_mi_thunk hooks return false, the thunk
+   is gimplified and lowered using the regular machinery.  */
 
 struct GTY(()) cgraph_thunk_info {
-  /* Information about the thunk.  */
+  /* Offset used to adjust "this".  */
   HOST_WIDE_INT fixed_offset;
+
+  /* Offset in the virtual table to get the offset to adjust "this".  Valid iff
+     VIRTUAL_OFFSET_P is true.  */
   HOST_WIDE_INT virtual_value;
+
+  /* Thunk target, i.e. the method that this thunk wraps.  Depending on the
+     TARGET_USE_LOCAL_THUNK_ALIAS_P macro, this may have to be a new alias.  */
   tree alias;
+
+  /* Nonzero for a "this" adjusting thunk and zero for a result adjusting
+     thunk.  */
   bool this_adjusting;
+
+  /* If true, this thunk is what we call a virtual thunk.  In this case:
+     * for this-adjusting thunks, after the FIXED_OFFSET based adjustment is
+       done, add to the result the offset found in the vtable at:
+	 vptr + VIRTUAL_VALUE
+     * for result-adjusting thinks, the FIXED_OFFSET adjustment is done after
+       the virtual one.  */
   bool virtual_offset_p;
+
+  /* ??? True for special kind of thunks, seems related to instrumentation.  */
   bool add_pointer_bounds_args;
-  /* Set to true when alias node is thunk.  */
+
+  /* Set to true when alias node (the cgraph_node to which this struct belong)
+     is a thunk.  Access to any other fields is invalid if this is false.  */
   bool thunk_p;
 };
 
@@ -983,7 +1014,7 @@ public:
 
   /* Add thunk alias into callgraph.  The alias declaration is ALIAS and it
      aliases DECL with an adjustments made into the first parameter.
-     See comments in thunk_adjust for detail on the parameters.  */
+     See comments in struct cgraph_thunk_info for detail on the parameters.  */
   cgraph_node * create_thunk (tree alias, tree, bool this_adjusting,
 			      HOST_WIDE_INT fixed_offset,
 			      HOST_WIDE_INT virtual_value,
