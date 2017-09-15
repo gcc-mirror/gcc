@@ -425,7 +425,7 @@ is_ctor_dtor_or_conversion (struct demangle_component *);
 
 static struct demangle_component *d_encoding (struct d_info *, int);
 
-static struct demangle_component *d_name (struct d_info *);
+static struct demangle_component *d_name (struct d_info *, int);
 
 static struct demangle_component *d_nested_name (struct d_info *);
 
@@ -484,7 +484,7 @@ static struct demangle_component *d_expression (struct d_info *);
 
 static struct demangle_component *d_expr_primary (struct d_info *);
 
-static struct demangle_component *d_local_name (struct d_info *);
+static struct demangle_component *d_local_name (struct d_info *, int);
 
 static int d_discriminator (struct d_info *);
 
@@ -1308,7 +1308,7 @@ d_encoding (struct d_info *di, int top_level)
     {
       struct demangle_component *dc, *dcr;
 
-      dc = d_name (di);
+      dc = d_name (di, top_level);
 
       if (dc != NULL && top_level && (di->options & DMGL_PARAMS) == 0)
 	{
@@ -1383,7 +1383,7 @@ d_abi_tags (struct d_info *di, struct demangle_component *dc)
 */
 
 static struct demangle_component *
-d_name (struct d_info *di)
+d_name (struct d_info *di, int top_level)
 {
   char peek = d_peek_char (di);
   struct demangle_component *dc;
@@ -1394,7 +1394,7 @@ d_name (struct d_info *di)
       return d_nested_name (di);
 
     case 'Z':
-      return d_local_name (di);
+      return d_local_name (di, top_level);
 
     case 'U':
       return d_unqualified_name (di);
@@ -2079,11 +2079,11 @@ d_special_name (struct d_info *di)
 
 	case 'H':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_INIT,
-			      d_name (di), NULL);
+			      d_name (di, 0), NULL);
 
 	case 'W':
 	  return d_make_comp (di, DEMANGLE_COMPONENT_TLS_WRAPPER,
-			      d_name (di), NULL);
+			      d_name (di, 0), NULL);
 
 	default:
 	  return NULL;
@@ -2094,11 +2094,12 @@ d_special_name (struct d_info *di)
       switch (d_next_char (di))
 	{
 	case 'V':
-	  return d_make_comp (di, DEMANGLE_COMPONENT_GUARD, d_name (di), NULL);
+	  return d_make_comp (di, DEMANGLE_COMPONENT_GUARD,
+			      d_name (di, 0), NULL);
 
 	case 'R':
 	  {
-	    struct demangle_component *name = d_name (di);
+	    struct demangle_component *name = d_name (di, 0);
 	    return d_make_comp (di, DEMANGLE_COMPONENT_REFTEMP, name,
 				d_number_component (di));
 	  }
@@ -2934,7 +2935,7 @@ d_bare_function_type (struct d_info *di, int has_return_type)
 static struct demangle_component *
 d_class_enum_type (struct d_info *di)
 {
-  return d_name (di);
+  return d_name (di, 0);
 }
 
 /* <array-type> ::= A <(positive dimension) number> _ <(element) type>
@@ -3567,7 +3568,7 @@ d_expr_primary (struct d_info *di)
 */
 
 static struct demangle_component *
-d_local_name (struct d_info *di)
+d_local_name (struct d_info *di, int top_level)
 {
   struct demangle_component *function;
   struct demangle_component *name;
@@ -3600,14 +3601,30 @@ d_local_name (struct d_info *di)
 	    return NULL;
 	}
 
-      name = d_name (di);
+      name = d_name (di, 0);
+
       if (name
-	  /* Lambdas and unnamed types have internal discriminators.  */
+	  /* Lambdas and unnamed types have internal discriminators
+	     and are not functions.  */
 	  && name->type != DEMANGLE_COMPONENT_LAMBDA
-	  && name->type != DEMANGLE_COMPONENT_UNNAMED_TYPE
-	  /* Otherwise read and ignore an optional discriminator.  */
-	  && ! d_discriminator (di))
-	return NULL;
+	  && name->type != DEMANGLE_COMPONENT_UNNAMED_TYPE)
+	{
+	  if (!top_level
+	      && d_peek_char (di) != 0 /* Not end of string.  */
+	      && d_peek_char (di) != 'E' /* Not end of nested encoding.  */
+	      && d_peek_char (di) != '_') /* Not discriminator.  */
+	    {
+	      struct demangle_component *args;
+
+	      args = d_bare_function_type (di, has_return_type (name));
+	      name = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
+				  name, args);
+	    }
+
+	  /* Read and ignore an optional discriminator.  */
+	  if (! d_discriminator (di))
+	    return NULL;
+	}
 
       if (num >= 0)
 	name = d_make_default_arg (di, num, name);
