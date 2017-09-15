@@ -799,10 +799,6 @@ typedef struct {
 
 #define NOTICE_UPDATE_CC(EXPR, INSN) 0
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* Max number of bytes we can move from memory to memory
    in one reasonably fast instruction.  */
 #define MOVE_MAX UNITS_PER_WORD

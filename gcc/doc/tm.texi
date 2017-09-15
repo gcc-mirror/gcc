@@ -10783,21 +10783,17 @@ nevertheless truncate the shift count, you may get better code
 by overriding it.
 @end deftypefn
 
-@defmac TRULY_NOOP_TRUNCATION (@var{outprec}, @var{inprec})
-A C expression which is nonzero if on this machine it is safe to
-``convert'' an integer of @var{inprec} bits to one of @var{outprec}
-bits (where @var{outprec} is smaller than @var{inprec}) by merely
-operating on it as if it had only @var{outprec} bits.
+@deftypefn {Target Hook} bool TARGET_TRULY_NOOP_TRUNCATION (unsigned int @var{outprec}, unsigned int @var{inprec})
+This hook returns true if it is safe to ``convert'' a value of
+@var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is
+smaller than @var{inprec}) by merely operating on it as if it had only
+@var{outprec} bits.  The default returns true unconditionally, which
+is correct for most machines.
 
-On many machines, this expression can be 1.
-
-@c rearranged this, removed the phrase "it is reported that".  this was
-@c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
-for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
-If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
-such cases may improve things.
-@end defmac
+If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,
+suboptimal code can result if this hook returns true for the corresponding
+mode sizes.  Making this hook return false in such cases may improve things.
+@end deftypefn
 
 @deftypefn {Target Hook} int TARGET_MODE_REP_EXTENDED (scalar_int_mode @var{mode}, scalar_int_mode @var{rep_mode})
 The representation of an integral mode can be such that the values
@@ -10823,7 +10819,7 @@ to define @code{LOAD_EXTEND_OP (mode)} to return the same type of
 extension.
 
 In order to enforce the representation of @code{mode},
-@code{TRULY_NOOP_TRUNCATION} should return false when truncating to
+@code{TARGET_TRULY_NOOP_TRUNCATION} should return false when truncating to
 @code{mode}.
 @end deftypefn
 

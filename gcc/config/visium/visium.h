@@ -1202,21 +1202,6 @@ do									\
    bitfield instructions. */
 #define SHIFT_COUNT_TRUNCATED 0
 
-/* `TRULY_NOOP_TRUNCATION (OUTPREC, INPREC)'
-
-   A C expression which is nonzero if on this machine it is safe to
-   "convert" an integer of INPREC bits to one of OUTPREC bits (where
-   OUTPREC is smaller than INPREC) by merely operating on it as if it
-   had only OUTPREC bits.
-
-   On many machines, this expression can be 1.
-
-   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
-   modes for which `TARGET_MODES_TIEABLE_P' is 0, suboptimal code can result.
-   If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
-   such cases may improve things. */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* `STORE_FLAG_VALUE'
 
    A C expression describing the value returned by a comparison

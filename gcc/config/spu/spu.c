@@ -7173,6 +7173,14 @@ spu_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
 	  || (GET_MODE_SIZE (from) <= 4 && GET_MODE_SIZE (to) <= 4)
 	  || (GET_MODE_SIZE (from) >= 16 && GET_MODE_SIZE (to) >= 16));
 }
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return inprec <= 32 && outprec <= inprec;
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7406,6 +7414,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS spu_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

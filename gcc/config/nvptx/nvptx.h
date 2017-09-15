@@ -310,7 +310,6 @@ struct GTY(()) machine_function
 #define CASE_VECTOR_MODE SImode
 #define MOVE_MAX 8
 #define MOVE_RATIO(SPEED) 4
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define FUNCTION_MODE QImode
 #define HAS_INIT_SECTION 1
 

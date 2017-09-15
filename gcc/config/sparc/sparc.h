@@ -1447,10 +1447,6 @@ do {									   \
    few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* For SImode, we make sure the top 32-bits of the register are clear and
    then we subtract 32 from the lzd instruction result.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \

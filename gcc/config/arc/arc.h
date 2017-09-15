@@ -1449,10 +1449,6 @@ do { \
 */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 #define STORE_FLAG_VALUE 1

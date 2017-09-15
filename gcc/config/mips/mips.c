@@ -22328,6 +22328,14 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   *punsignedp = unsignedp;
   return mode;
 }
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return !TARGET_64BIT || inprec <= 32 || outprec > 32;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22622,6 +22630,9 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS mips_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

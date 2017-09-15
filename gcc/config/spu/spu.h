@@ -487,8 +487,6 @@ do {									\
 
 #define MOVE_MAX 16 
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) ((INPREC) <= 32 && (OUTPREC) <= (INPREC))
-
 #define STORE_FLAG_VALUE -1
 
 #define Pmode SImode

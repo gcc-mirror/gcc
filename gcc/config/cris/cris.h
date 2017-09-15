@@ -1038,8 +1038,6 @@ enum cris_symbol_type
 
 /* Maybe SHIFT_COUNT_TRUNCATED is safe to define?  FIXME: Check later.  */
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 

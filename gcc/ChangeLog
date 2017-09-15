@@ -1,3 +1,92 @@
+2017-09-15  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayard  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (truly_noop_truncation): New hook.
+	(mode_rep_extended): Refer to TARGET_TRULY_NOOP_TRUNCATION rather
+	than TRULY_NOOP_TRUNCATION.
+	* hooks.h (hook_bool_uint_uint_true): Declare.
+	* hooks.c (hook_bool_uint_uint_true): New function.
+	* doc/tm.texi.in (TRULY_NOOP_TRUNCATION): Replace with...
+	(TARGET_TRULY_NOOP_TRUNCATION): ...this.
+	* doc/tm.texi: Regenerate.
+	* combine.c (make_extraction): Refer to TARGET_TRULY_NOOP_TRUNCATION
+	rather than TRULY_NOOP_TRUNCATION in comments.
+	(simplify_comparison): Likewise.
+	(record_truncated_value): Likewise.
+	* expmed.c (extract_bit_field_1): Likewise.
+	(extract_split_bit_field): Likewise.
+	* convert.c (convert_to_integer_1): Use targetm.truly_noop_truncation
+	instead of TRULY_NOOP_TRUNCATION.
+	* function.c (assign_parm_setup_block): Likewise.
+	* machmode.h (TRULY_NOOP_TRUNCATION_MODES_P): Likewise.
+	* rtlhooks.c: Include target.h.
+	* config/aarch64/aarch64.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/alpha/alpha.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/arc/arc.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/arm/arm.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/avr/avr.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/bfin/bfin.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/c6x/c6x.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/cr16/cr16.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/cris/cris.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/epiphany/epiphany.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/fr30/fr30.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/frv/frv.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/ft32/ft32.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/h8300/h8300.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/i386/i386.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/ia64/ia64.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/iq2000/iq2000.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/lm32/lm32.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/m32c/m32c.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/m32r/m32r.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/m68k/m68k.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/mcore/mcore.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/microblaze/microblaze.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/mips/mips.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/mips/mips.c (mips_truly_noop_truncation): New function.
+	(TARGET_TRULY_NOOP_TRUNCATION): Redefine.
+	* config/mips/mips.md: Refer to TARGET_TRULY_NOOP_TRUNCATION
+	rather than TRULY_NOOP_TRUNCATION in comments.
+	* config/mmix/mmix.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/mn10300/mn10300.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/moxie/moxie.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/msp430/msp430.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/nds32/nds32.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/nios2/nios2.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/nvptx/nvptx.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/pa/pa.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/pdp11/pdp11.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/powerpcspe/powerpcspe.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/riscv/riscv.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/riscv/riscv.md: Refer to TARGET_TRULY_NOOP_TRUNCATION
+	rather than TRULY_NOOP_TRUNCATION in comments.
+	* config/rl78/rl78.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/rs6000/rs6000.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/rx/rx.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/s390/s390.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/sh/sh.h (MAYBE_BASE_REGISTER_RTX_P): Remove
+	TRULY_NOOP_TRUNCATION condition.
+	(MAYBE_INDEX_REGISTER_RTX_P): Likewise.
+	(TRULY_NOOP_TRUNCATION): Delete.
+	* config/sparc/sparc.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/spu/spu.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/spu/spu.c (spu_truly_noop_truncation): New function.
+	(TARGET_TRULY_NOOP_TRUNCATION): Redefine.
+	* config/stormy16/stormy16.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/tilegx/tilegx.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/tilegx/tilegx.c (tilegx_truly_noop_truncation): New fuction.
+	(TARGET_TRULY_NOOP_TRUNCATION): Redefine.
+	* config/tilegx/tilegx.md: Refer to TARGET_TRULY_NOOP_TRUNCATION
+	rather than TRULY_NOOP_TRUNCATION in comments.
+	* config/tilepro/tilepro.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/v850/v850.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/vax/vax.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/visium/visium.h (TRULY_NOOP_TRUNCATION): Delete.
+	* config/xtensa/xtensa.h (TRULY_NOOP_TRUNCATION): Delete.
+	* system.h (TRULY_NOOP_TRUNCATION): Poison.
+
 2017-09-15  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/67591

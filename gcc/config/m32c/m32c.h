@@ -629,7 +629,6 @@ typedef struct m32c_cumulative_args
 #define LOAD_EXTEND_OP(MEM) ZERO_EXTEND
 
 #define MOVE_MAX 4
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 #define STORE_FLAG_VALUE 1
 

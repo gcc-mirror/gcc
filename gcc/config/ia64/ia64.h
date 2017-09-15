@@ -1567,12 +1567,6 @@ do {									\
    memory to memory.  */
 #define MOVE_MAX 8
 
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of INPREC bits to one of OUTPREC bits (where OUTPREC is smaller
-   than INPREC) by merely operating on it as if it had only OUTPREC bits.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* A C expression describing the value returned by a comparison operator with
    an integral mode and stored by a store-flag instruction (`sCOND') when the
    condition is true.  */

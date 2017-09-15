@@ -432,10 +432,6 @@ extern int may_call_alloca;
 /* Do not break .stabs pseudos into continuations.  */
 #define DBX_CONTIN_LENGTH 0
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* Give a comparison code (EQ, NE etc) and the first operand of a COMPARE,
    return the mode to be used for the comparison.  For floating-point, CCFPmode
    should be used.  */
