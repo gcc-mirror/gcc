@@ -1546,7 +1546,7 @@ finish_anon_union (tree anon_union_decl)
     return;
   if (main_decl == NULL_TREE)
     {
-      warning (0, "anonymous union with no members");
+      pedwarn (input_location, 0, "anonymous union with no members");
       return;
     }
 

@@ -1,3 +1,11 @@
+2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64644
+	* g++.dg/other/anon-union4.C: New.
+	* g++.old-deja/g++.law/union4.C: Adjust.
+	* g++.old-deja/g++.other/anon1.C: Likewise.
+
 2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* c-c++-common/Wcast-align.c: New test.

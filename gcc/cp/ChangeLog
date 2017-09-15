@@ -1,3 +1,10 @@
+2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64644
+	* decl2.c (finish_anon_union): Complain about "anonymous union with
+	no members" with a pedwarn.
+
 2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* typeck.c (build_reinterpret_cast_1,
