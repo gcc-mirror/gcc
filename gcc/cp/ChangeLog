@@ -1,3 +1,8 @@
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck.c (build_reinterpret_cast_1,
+	build_const_cast_1): Implement -Wcast-align=strict.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl.c (redeclaration_error_message): Use cxx17 instead of cxx1z,

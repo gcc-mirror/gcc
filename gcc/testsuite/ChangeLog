@@ -1,3 +1,7 @@
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/Wcast-align.c: New test.
+
 2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/sso-1.C: New test.
