@@ -1,4 +1,21 @@
 2017-09-15  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (function_arg_offset): New hook.
+	* targhooks.h (default_function_arg_offset): Declare.
+	* targhooks.c (default_function_arg_offset): New function.
+	* function.c (locate_and_pad_parm): Use
+	targetm.calls.function_arg_offset instead of FUNCTION_ARG_OFFSET.
+	* doc/tm.texi.in (FUNCTION_ARG_OFFSET): Replace with...
+	(TARGET_FUNCTION_ARG_OFFSET): ...this.
+	* doc/tm.texi: Regenerate.
+	* config/spu/spu.h (FUNCTION_ARG_OFFSET): Delete.
+	* config/spu/spu.c (spu_function_arg_offset): New function.
+	(TARGET_FUNCTION_ARG_OFFSET): Redefine.
+	* system.h (FUNCTION_ARG_OFFSET): Poison.
+
+2017-09-15  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayard  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

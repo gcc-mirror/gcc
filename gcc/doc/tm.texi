@@ -4079,13 +4079,13 @@ on the stack.  The compiler knows how to track the amount of stack space
 used for arguments without any special help.
 @end deftypefn
 
-@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
-If defined, a C expression that is the number of bytes to add to the
-offset of the argument passed in memory.  This is needed for the SPU,
-which passes @code{char} and @code{short} arguments in the preferred
-slot that is in the middle of the quad word instead of starting at the
-top.
-@end defmac
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_FUNCTION_ARG_OFFSET (machine_mode @var{mode}, const_tree @var{type})
+This hook returns the number of bytes to add to the offset of an
+argument of type @var{type} and mode @var{mode} when passed in memory.
+This is needed for the SPU, which passes @code{char} and @code{short}
+arguments in the preferred slot that is in the middle of the quad word
+instead of starting at the top.  The default implementation returns 0.
+@end deftypefn
 
 @deftypefn {Target Hook} pad_direction TARGET_FUNCTION_ARG_PADDING (machine_mode @var{mode}, const_tree @var{type})
 This hook determines whether, and in which direction, to pad out

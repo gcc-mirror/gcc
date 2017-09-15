@@ -915,7 +915,7 @@ extern void fancy_abort (const char *, int, const char *)
 	MODES_TIEABLE_P FUNCTION_ARG_PADDING SLOW_UNALIGNED_ACCESS	\
 	HARD_REGNO_NREGS SECONDARY_MEMORY_NEEDED_MODE			\
 	SECONDARY_MEMORY_NEEDED CANNOT_CHANGE_MODE_CLASS		\
-	TRULY_NOOP_TRUNCATION
+	TRULY_NOOP_TRUNCATION FUNCTION_ARG_OFFSET
 
 /* Target macros only used for code built for the target, that have
    moved to libgcc-tm.h or have never been present elsewhere.  */

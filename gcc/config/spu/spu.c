@@ -3881,6 +3881,18 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
 }
 
+/* Implement TARGET_FUNCTION_ARG_OFFSET.  The SPU ABI wants 32/64-bit
+   types at offset 0 in the quad-word on the stack.  8/16-bit types
+   should be at offsets 3/2 respectively.  */
+
+static HOST_WIDE_INT
+spu_function_arg_offset (machine_mode mode, const_tree type)
+{
+  if (type && INTEGRAL_TYPE_P (type) && GET_MODE_SIZE (mode) < 4)
+    return 4 - GET_MODE_SIZE (mode);
+  return 0;
+}
+
 /* Implement TARGET_FUNCTION_ARG_PADDING.  */
 
 static pad_direction
@@ -7299,6 +7311,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
+
+#undef TARGET_FUNCTION_ARG_OFFSET
+#define TARGET_FUNCTION_ARG_OFFSET spu_function_arg_offset
 
 #undef TARGET_FUNCTION_ARG_PADDING
 #define TARGET_FUNCTION_ARG_PADDING spu_function_arg_padding
