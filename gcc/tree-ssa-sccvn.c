@@ -3901,13 +3901,10 @@ visit_phi (gimple *phi)
      if only a single edge is exectuable use its value.  */
   if (n_executable <= 1)
     result = seen_undef ? seen_undef : sameval;
-  /* If we saw only undefined values create a new undef SSA name to
-     avoid false equivalences.  */
+  /* If we saw only undefined values and VN_TOP use one of the
+     undefined values.  */
   else if (sameval == VN_TOP)
-    {
-      gcc_assert (seen_undef);
-      result = seen_undef;
-    }
+    result = seen_undef ? seen_undef : sameval;
   /* First see if it is equivalent to a phi node in this block.  We prefer
      this as it allows IV elimination - see PRs 66502 and 67167.  */
   else if ((result = vn_phi_lookup (phi)))
