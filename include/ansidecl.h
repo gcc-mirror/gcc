@@ -334,22 +334,28 @@ So instead we use the macro below and test it against specific values.  */
    For gcc, use "-std=c++11" to enable C++11 support; gcc 6 onwards enables
    this by default (actually GNU++14).  */
 
-#if __cplusplus >= 201103
-/* C++11 claims to be available: use it.  final/override were only
-   implemented in 4.7, though.  */
-# if GCC_VERSION < 4007
+#if defined __cplusplus
+# if __cplusplus >= 201103
+   /* C++11 claims to be available: use it.  Final/override were only
+      implemented in 4.7, though.  */
+#  if GCC_VERSION < 4007
+#   define OVERRIDE
+#   define FINAL
+#  else
+#   define OVERRIDE override
+#   define FINAL final
+#  endif
+# elif GCC_VERSION >= 4007
+   /* G++ 4.7 supports __final in C++98.  */
+#  define OVERRIDE
+#  define FINAL __final
+# else
+   /* No C++11 support; leave the macros empty.  */
 #  define OVERRIDE
 #  define FINAL
-# else
-#  define OVERRIDE override
-#  define FINAL final
 # endif
-#elif GCC_VERSION >= 4007
-/* G++ 4.7 supports __final in C++98.  */
-# define OVERRIDE
-# define FINAL __final
 #else
-/* No C++11 support; leave the macros empty: */
+  /* No C++11 support; leave the macros empty.  */
 # define OVERRIDE
 # define FINAL
 #endif
