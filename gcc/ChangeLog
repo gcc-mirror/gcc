@@ -1,3 +1,8 @@
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* doc/standards.texi: Fix C++17 description.  Update URLs for
+	C++11 & 14.
+
 2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
 
 	* common.opt (Wcast-align=strict): New warning option.
