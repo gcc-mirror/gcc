@@ -7989,9 +7989,14 @@ handle_alias_ifunc_attribute (bool is_alias, tree *node, tree name, tree args,
 	TREE_STATIC (decl) = 1;
 
       if (!is_alias)
-	/* ifuncs are also aliases, so set that attribute too. */
-	DECL_ATTRIBUTES (decl)
-	  = tree_cons (get_identifier ("alias"), args, DECL_ATTRIBUTES (decl));
+	{
+	  /* ifuncs are also aliases, so set that attribute too.  */
+	  DECL_ATTRIBUTES (decl)
+	    = tree_cons (get_identifier ("alias"), args,
+			 DECL_ATTRIBUTES (decl));
+	  DECL_ATTRIBUTES (decl) = tree_cons (get_identifier ("ifunc"),
+					      NULL, DECL_ATTRIBUTES (decl));
+	}
     }
   else
     {
