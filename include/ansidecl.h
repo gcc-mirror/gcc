@@ -360,6 +360,32 @@ So instead we use the macro below and test it against specific values.  */
 # define FINAL
 #endif
 
+/* A macro to disable the copy constructor and assignment operator.
+   When building with C++11 and above, the methods are explicitly
+   deleted, causing a compile-time error if something tries to copy.
+   For C++03, this just declares the methods, causing a link-time
+   error if the methods end up called (assuming you don't
+   define them).  For C++03, for best results, place the macro
+   under the private: access specifier, like this,
+
+   class name_lookup
+   {
+     private:
+       DISABLE_COPY_AND_ASSIGN (name_lookup);
+   };
+
+   so that most attempts at copy are caught at compile-time.  */
+
+#if __cplusplus >= 201103
+#define DISABLE_COPY_AND_ASSIGN(TYPE)		\
+  TYPE (const TYPE&) = delete;			\
+  void operator= (const TYPE &) = delete
+  #else
+#define DISABLE_COPY_AND_ASSIGN(TYPE)		\
+  TYPE (const TYPE&);				\
+  void operator= (const TYPE &)
+#endif /* __cplusplus >= 201103 */
+
 #ifdef __cplusplus
 }
 #endif
