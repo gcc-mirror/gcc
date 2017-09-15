@@ -415,7 +415,19 @@ handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
   tree x;
 
   if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-    error ("scalar_storage_order is not supported");
+    {
+      error ("scalar_storage_order is not supported because endianness "
+	     "is not uniform");
+      return;
+    }
+
+  if (c_dialect_cxx ())
+    {
+      if (warn_unknown_pragmas > in_system_header_at (input_location))
+	warning (OPT_Wunknown_pragmas,
+		 "%<#pragma scalar_storage_order%> is not supported for C++");
+      return;
+    }
 
   token = pragma_lex (&x);
   if (token != CPP_NAME)
