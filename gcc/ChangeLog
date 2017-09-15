@@ -1,3 +1,9 @@
+2017-09-15  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* cgraph.h (cgraph_thunk_info): Add comments.
+	* cgraph.c (cgraph_node::create_thunk): Adjust comment, make
+	assert for VIRTUAL_* arguments stricter.
+
 2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
 
 	PR tree-optimization/71026
