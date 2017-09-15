@@ -24,7 +24,7 @@ struct D
 {
   D ()
 #if __cplusplus <= 201402L
-  throw (int)			// { dg-warning "deprecated" "" { target { ! c++1z } } }
+  throw (int)			// { dg-warning "deprecated" "" { target { ! c++17 } } }
 #endif
   ;
 };

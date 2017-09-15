@@ -15,7 +15,7 @@ struct B
 #if __cplusplus > 201402L
 #define THROW_INT
 #else
-#define THROW_INT throw(int)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+#define THROW_INT throw(int)	// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 
 struct C 

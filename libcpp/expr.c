@@ -636,7 +636,7 @@ cpp_classify_number (cpp_reader *pfile, const cpp_token *token,
 	{
 	  if (CPP_OPTION (pfile, cplusplus))
 	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
-				 "use of C++1z hexadecimal floating constant");
+				 "use of C++17 hexadecimal floating constant");
 	  else
 	    cpp_error_with_line (pfile, CPP_DL_PEDWARN, virtual_location, 0,
 				 "use of C99 hexadecimal floating constant");

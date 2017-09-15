@@ -4551,7 +4551,7 @@ mark_template_parm (tree t, void* data)
     }
 
   /* In C++17 the type of a non-type argument is a deduced context.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && TREE_CODE (t) == TEMPLATE_PARM_INDEX)
     for_each_template_parm (TREE_TYPE (t),
 			    &mark_template_parm,
@@ -6475,7 +6475,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 	   to leave it in that form rather than lower it to a
 	   CONSTRUCTOR.  */;
       else if (INTEGRAL_OR_ENUMERATION_TYPE_P (type)
-	       || cxx_dialect >= cxx1z)
+	       || cxx_dialect >= cxx17)
 	{
 	  /* C++17: A template-argument for a non-type template-parameter shall
 	     be a converted constant expression (8.20) of the type of the
@@ -6663,7 +6663,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
 		       orig_expr, type, decl);
 	      return NULL_TREE;
 	    }
-	  else if ((cxx_dialect >= cxx11 && cxx_dialect < cxx1z)
+	  else if ((cxx_dialect >= cxx11 && cxx_dialect < cxx17)
 		   && decl_linkage (decl) == lk_none)
 	    {
 	      if (complain & tf_error)
@@ -10817,7 +10817,7 @@ instantiate_class_template_1 (tree type)
       tree decl = lambda_function (type);
       if (decl)
 	{
-	  if (cxx_dialect >= cxx1z)
+	  if (cxx_dialect >= cxx17)
 	    CLASSTYPE_LITERAL_P (type) = true;
 
 	  if (!DECL_TEMPLATE_INFO (decl)
@@ -19543,7 +19543,7 @@ type_unification_real (tree tparms,
       tsubst_flags_t complain = (explain_p
 				 ? tf_warning_or_error
 				 : tf_none);
-      bool tried_array_deduction = (cxx_dialect < cxx1z);
+      bool tried_array_deduction = (cxx_dialect < cxx17);
 
       for (i = 0; i < ntparms; i++)
 	{
@@ -20918,7 +20918,7 @@ unify (tree tparms, tree targs, tree parm, tree arg, int strict,
       else if (uses_template_parms (tparm))
 	{
 	  /* We haven't deduced the type of this parameter yet.  */
-	  if (cxx_dialect >= cxx1z
+	  if (cxx_dialect >= cxx17
 	      /* We deduce from array bounds in try_array_deduction.  */
 	      && !(strict & UNIFY_ALLOW_INTEGER))
 	    {
@@ -21890,7 +21890,7 @@ get_partial_spec_bindings (tree tmpl, tree spec_tmpl, tree args)
   else
     deduced_args = innermost_deduced_args;
 
-  bool tried_array_deduction = (cxx_dialect < cxx1z);
+  bool tried_array_deduction = (cxx_dialect < cxx17);
  again:
   if (unify (tparms, deduced_args,
 	     INNERMOST_TEMPLATE_ARGS (spec_args),
@@ -23707,7 +23707,7 @@ dependent_type_p_r (tree type)
 	   arg_type = TREE_CHAIN (arg_type))
 	if (dependent_type_p (TREE_VALUE (arg_type)))
 	  return true;
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	{
 	  /* A value-dependent noexcept-specifier makes the type dependent.  */
 	  tree spec = TYPE_RAISES_EXCEPTIONS (type);

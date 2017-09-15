@@ -1,5 +1,5 @@
 // PR c++/80465
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 int foo(...);
 int main() {

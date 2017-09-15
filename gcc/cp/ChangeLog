@@ -1,3 +1,42 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (redeclaration_error_message): Use cxx17 instead of cxx1z,
+	adjust diagnostics refering to C++1z or -std=gnu++1z or -std=c++1z
+	to C++17 or -std=gnu++17 or -std=c++17.  Adjust comments.
+	(cxx_init_decl_processing, next_initializable_field,
+	is_direct_enum_init, check_initializer, cp_finish_decl,
+	mark_inline_variable, grokdeclarator, grokparms, xref_basetypes,
+	finish_function): Likewise.
+	* cp-tree.h (DECL_INLINE_VAR_P): Likewise.
+	* pt.c (mark_template_parm, convert_nontype_argument,
+	instantiate_class_template_1, type_unification_real, unify,
+	get_partial_spec_bindings, dependent_type_p_r): Likewise.
+	* typeck.c (cp_build_unary_op): Likewise.
+	* constexpr.c (var_in_maybe_constexpr_fn): Likewise.
+	* call.c (build_user_type_conversion_1, build_over_call,
+	build_special_member_call): Likewise.
+	* lambda.c (begin_lambda_type): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* class.c (build_base_field, finalize_literal_type_property,
+	explain_non_literal_class): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name,
+	cp_parser_primary_expression, cp_parser_lambda_introducer,
+	cp_parser_lambda_declarator_opt, cp_parser_selection_statement,
+	cp_convert_range_for, cp_parser_perform_range_for_lookup,
+	cp_parser_decomposition_declaration, cp_parser_linkage_specification,
+	cp_parser_static_assert, cp_parser_simple_type_specifier,
+	cp_parser_namespace_definition, cp_parser_using_declaration,
+	cp_parser_init_declarator, cp_parser_type_parameter_key,
+	cp_parser_exception_specification_opt, cp_parser_std_attribute_spec,
+	cp_parser_constructor_declarator_p): Likewise.
+	* mangle.c (struct globals): Rename need_cxx1z_warning to
+	need_cxx17_warning.
+	(write_exception_spec, start_mangling, mangle_decl): Likewise.
+	* Make-lang.in (check-c++1z): Rename to check-c++17, depend on
+	it.
+	(check-c++17): New goal.  Use 17 instead of 1z.
+	(check-c++-all): Use 17 instead of 1z.
+
 2017-09-14  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/81314

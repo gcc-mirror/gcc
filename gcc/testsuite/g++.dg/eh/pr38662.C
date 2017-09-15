@@ -4,7 +4,7 @@ class E { };
 class T {
   int foo(bool a)
 #if __cplusplus <= 201402L
-  throw (E)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+  throw (E)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
   __attribute__((regparm(1)));
   int bar(bool b) __attribute__((regparm(1)));

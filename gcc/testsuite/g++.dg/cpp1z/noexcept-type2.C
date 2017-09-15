@@ -1,5 +1,5 @@
 // Test for function pointer conversion on template arguments.
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <void (*P)()> struct A { };
 

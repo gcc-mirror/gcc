@@ -155,7 +155,7 @@ begin_lambda_type (tree lambda)
 
   /* In C++17, assume the closure is literal; we'll clear the flag later if
      necessary.  */
-  if (cxx_dialect >= cxx1z)
+  if (cxx_dialect >= cxx17)
     CLASSTYPE_LITERAL_P (type) = true;
 
   /* Clear base types.  */
