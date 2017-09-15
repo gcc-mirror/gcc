@@ -1,3 +1,9 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82145
+	* postreload.c (reload_cse_simplify_operands): Skip
+	NOTE_INSN_DELETED_LABEL similarly to skipping CODE_LABEL.
+
 2017-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/68823

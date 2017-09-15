@@ -1,3 +1,8 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82145
+	* gcc.target/i386/pr82145.c: New test.
+
 2017-09-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82184
