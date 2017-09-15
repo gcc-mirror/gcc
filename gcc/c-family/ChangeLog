@@ -1,3 +1,8 @@
+2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-pragma.c (handle_pragma_scalar_storage_order): Expand on error
+	message for non-uniform endianness and issue a warning in C++.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wc++1z-compat): Change from option to undocumented alias.

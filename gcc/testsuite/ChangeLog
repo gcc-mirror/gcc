@@ -1,4 +1,9 @@
-2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/sso-1.C: New test.
+	* g++.dg/sso-2.C: Likewise.
+
+2017-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/78648
 	* g++.dg/cpp0x/lambda/lambda-ice21.C: New.
