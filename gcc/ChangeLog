@@ -1,6 +1,15 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR c++/81355
+	* c-attribs.c (handle_target_attribute):
+	Report warning for an empty string argument of target attribute.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-08-08  Martin Liska  <mliska@suse.cz>
 
 	PR tree-opt/81696
