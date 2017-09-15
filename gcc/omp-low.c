@@ -1559,6 +1559,8 @@ omp_copy_decl (tree var, copy_body_data *cb)
 
   if (TREE_CODE (var) == LABEL_DECL)
     {
+      if (FORCED_LABEL (var) || DECL_NONLOCAL (var))
+	return var;
       new_var = create_artificial_label (DECL_SOURCE_LOCATION (var));
       DECL_CONTEXT (new_var) = current_function_decl;
       insert_decl_map (&ctx->cb, var, new_var);
