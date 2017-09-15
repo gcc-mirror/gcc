@@ -1038,9 +1038,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
   scalar_int_mode inner_mode;
   if (in != 0 && GET_CODE (in) == SUBREG
       && (subreg_lowpart_p (in) || strict_low)
-#ifdef CANNOT_CHANGE_MODE_CLASS
-      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (in)), inmode, rclass)
-#endif
+      && targetm.can_change_mode_class (GET_MODE (SUBREG_REG (in)),
+					inmode, rclass)
       && contains_allocatable_reg_of_mode[rclass][GET_MODE (SUBREG_REG (in))]
       && (CONSTANT_P (SUBREG_REG (in))
 	  || GET_CODE (SUBREG_REG (in)) == PLUS
@@ -1076,13 +1075,10 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	      && (secondary_reload_class (1, rclass, GET_MODE (SUBREG_REG (in)),
 					  SUBREG_REG (in))
 		  == NO_REGS))
-#ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (REG_P (SUBREG_REG (in))
 	      && REGNO (SUBREG_REG (in)) < FIRST_PSEUDO_REGISTER
-	      && REG_CANNOT_CHANGE_MODE_P
-	      (REGNO (SUBREG_REG (in)), GET_MODE (SUBREG_REG (in)), inmode))
-#endif
-	  ))
+	      && !REG_CAN_CHANGE_MODE_P (REGNO (SUBREG_REG (in)),
+					 GET_MODE (SUBREG_REG (in)), inmode))))
     {
 #ifdef LIMIT_RELOAD_CLASS
       in_subreg_loc = inloc;
@@ -1143,9 +1139,8 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
      label it input-output.)  */
   if (out != 0 && GET_CODE (out) == SUBREG
       && (subreg_lowpart_p (out) || strict_low)
-#ifdef CANNOT_CHANGE_MODE_CLASS
-      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SUBREG_REG (out)), outmode, rclass)
-#endif
+      && targetm.can_change_mode_class (GET_MODE (SUBREG_REG (out)),
+					outmode, rclass)
       && contains_allocatable_reg_of_mode[rclass][GET_MODE (SUBREG_REG (out))]
       && (CONSTANT_P (SUBREG_REG (out))
 	  || strict_low
@@ -1170,14 +1165,11 @@ push_reload (rtx in, rtx out, rtx *inloc, rtx *outloc,
 	      && (secondary_reload_class (0, rclass, GET_MODE (SUBREG_REG (out)),
 					  SUBREG_REG (out))
 		  == NO_REGS))
-#ifdef CANNOT_CHANGE_MODE_CLASS
 	  || (REG_P (SUBREG_REG (out))
 	      && REGNO (SUBREG_REG (out)) < FIRST_PSEUDO_REGISTER
-	      && REG_CANNOT_CHANGE_MODE_P (REGNO (SUBREG_REG (out)),
-					   GET_MODE (SUBREG_REG (out)),
-					   outmode))
-#endif
-	  ))
+	      && !REG_CAN_CHANGE_MODE_P (REGNO (SUBREG_REG (out)),
+					 GET_MODE (SUBREG_REG (out)),
+					 outmode))))
     {
 #ifdef LIMIT_RELOAD_CLASS
       out_subreg_loc = outloc;

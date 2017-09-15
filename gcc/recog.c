@@ -1009,10 +1009,9 @@ general_operand (rtx op, machine_mode mode)
 	  && MEM_P (sub))
 	return 0;
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
       if (REG_P (sub)
 	  && REGNO (sub) < FIRST_PSEUDO_REGISTER
-	  && REG_CANNOT_CHANGE_MODE_P (REGNO (sub), GET_MODE (sub), mode)
+	  && !REG_CAN_CHANGE_MODE_P (REGNO (sub), GET_MODE (sub), mode)
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_INT
 	  && GET_MODE_CLASS (GET_MODE (sub)) != MODE_COMPLEX_FLOAT
 	  /* LRA can generate some invalid SUBREGS just for matched
@@ -1020,7 +1019,6 @@ general_operand (rtx op, machine_mode mode)
 	     valid.  */
 	  && ! LRA_SUBREG_P (op))
 	return 0;
-#endif
 
       /* FLOAT_MODE subregs can't be paradoxical.  Combine will occasionally
 	 create such rtl, and we must reject it.  */

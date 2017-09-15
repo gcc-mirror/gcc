@@ -49,8 +49,6 @@ extern void s390_function_profiler (FILE *, int);
 extern void s390_set_has_landing_pad_p (bool);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
-extern int s390_cannot_change_mode_class (machine_mode, machine_mode,
-					  enum reg_class);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,

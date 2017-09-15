@@ -29,8 +29,6 @@ extern const char *output_move_multiple (rtx *);
 extern const char *output_block_move (rtx *);
 extern const char *output_jump (enum rtx_code, int, int);
 extern void print_operand_address (FILE *, rtx);
-extern bool pdp11_cannot_change_mode_class (machine_mode,
-                                            machine_mode, enum reg_class);
 typedef enum { no_action, dec_before, inc_after } pdp11_action;
 typedef enum { little, either, big } pdp11_partorder;
 extern bool pdp11_expand_operands (rtx *, rtx [][2], int, 

@@ -109,9 +109,6 @@ extern enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx,
 extern enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 							    machine_mode,
 							    rtx);
-extern bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
-						    machine_mode,
-						    enum reg_class);
 extern void rs6000_secondary_reload_inner (rtx, rtx, rtx, bool);
 extern void rs6000_secondary_reload_gpr (rtx, rtx, rtx, bool);
 extern int paired_emit_vector_cond_expr (rtx, rtx, rtx,

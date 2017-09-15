@@ -411,8 +411,6 @@ enum reg_class
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
-#define CANNOT_CHANGE_MODE_CLASS(F,T,C) m32c_cannot_change_mode_class(F,T,C)
-
 /* STACK AND CALLING */
 
 /* Frame Layout */

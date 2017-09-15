@@ -10630,13 +10630,12 @@ s390_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + reg_size - 1) / reg_size;
 }
 
-/* Return TRUE if changing mode from FROM to TO should not be allowed
-   for register class CLASS.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-int
-s390_cannot_change_mode_class (machine_mode from_mode,
-			       machine_mode to_mode,
-			       enum reg_class rclass)
+static bool
+s390_can_change_mode_class (machine_mode from_mode,
+			    machine_mode to_mode,
+			    reg_class_t rclass)
 {
   machine_mode small_mode;
   machine_mode big_mode;
@@ -10646,10 +10645,10 @@ s390_cannot_change_mode_class (machine_mode from_mode,
   if (reg_classes_intersect_p (VEC_REGS, rclass)
       && ((from_mode == V1TFmode && to_mode == TFmode)
 	  || (from_mode == TFmode && to_mode == V1TFmode)))
-    return 1;
+    return false;
 
   if (GET_MODE_SIZE (from_mode) == GET_MODE_SIZE (to_mode))
-    return 0;
+    return true;
 
   if (GET_MODE_SIZE (from_mode) < GET_MODE_SIZE (to_mode))
     {
@@ -10672,14 +10671,14 @@ s390_cannot_change_mode_class (machine_mode from_mode,
   if (reg_classes_intersect_p (VEC_REGS, rclass)
       && (GET_MODE_SIZE (small_mode) < 8
 	  || s390_class_max_nregs (VEC_REGS, big_mode) == 1))
-    return 1;
+    return false;
 
   /* Likewise for access registers, since they have only half the
      word size on 64-bit.  */
   if (reg_classes_intersect_p (ACCESS_REGS, rclass))
-    return 1;
+    return false;
 
-  return 0;
+  return true;
 }
 
 /* Return true if we use LRA instead of reload pass.  */
@@ -16114,6 +16113,9 @@ s390_asan_shadow_offset (void)
 
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE s390_function_specific_restore
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS s390_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

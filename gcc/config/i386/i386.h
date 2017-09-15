@@ -1518,11 +1518,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
-
-/* Return a class of registers that cannot change FROM mode to TO mode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  ix86_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 

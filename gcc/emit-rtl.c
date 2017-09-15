@@ -866,13 +866,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
     {
       unsigned int regno = REGNO (reg);
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
       if ((COMPLEX_MODE_P (imode) || VECTOR_MODE_P (imode))
 	  && GET_MODE_INNER (imode) == omode)
 	;
-      else if (REG_CANNOT_CHANGE_MODE_P (regno, imode, omode))
+      else if (!REG_CAN_CHANGE_MODE_P (regno, imode, omode))
 	return false;
-#endif
 
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }

@@ -335,12 +335,8 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	      && !REG_P (SET_SRC (set))))
 	{
 	  if (extend_op != UNKNOWN
-#ifdef CANNOT_CHANGE_MODE_CLASS
-	      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
-					    word_mode,
-					    REGNO_REG_CLASS (REGNO (SET_DEST (set))))
-#endif
-	      )
+	      && REG_CAN_CHANGE_MODE_P (REGNO (SET_DEST (set)),
+					GET_MODE (SET_DEST (set)), word_mode))
 	    {
 	      rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
 	      ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
@@ -437,15 +433,13 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		   || GET_CODE (SET_SRC (set)) == ZERO_EXTEND
 		   || GET_CODE (SET_SRC (set)) == SIGN_EXTEND)
 	    ; /* Continue ordinary processing.  */
-#ifdef CANNOT_CHANGE_MODE_CLASS
 	  /* If the register cannot change mode to word_mode, it follows that
 	     it cannot have been used in word_mode.  */
 	  else if (REG_P (SET_DEST (set))
-		   && CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
-						word_mode,
-						REGNO_REG_CLASS (REGNO (SET_DEST (set)))))
+		   && !REG_CAN_CHANGE_MODE_P (REGNO (SET_DEST (set)),
+					      GET_MODE (SET_DEST (set)),
+					      word_mode))
 	    ; /* Continue ordinary processing.  */
-#endif
 	  /* If this is a straight load, make the extension explicit.  */
 	  else if (REG_P (SET_DEST (set))
 		   && recog_data.n_operands == 2

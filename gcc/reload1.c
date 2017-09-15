@@ -6557,14 +6557,12 @@ choose_reload_regs (struct insn_chain *chain)
 		  && reg_last_reload_reg[regno] != 0
 		  && (GET_MODE_SIZE (GET_MODE (reg_last_reload_reg[regno]))
 		      >= GET_MODE_SIZE (mode) + byte)
-#ifdef CANNOT_CHANGE_MODE_CLASS
 		  /* Verify that the register it's in can be used in
 		     mode MODE.  */
-		  && !REG_CANNOT_CHANGE_MODE_P (REGNO (reg_last_reload_reg[regno]),
-						GET_MODE (reg_last_reload_reg[regno]),
-						mode)
-#endif
-		  )
+		  && (REG_CAN_CHANGE_MODE_P
+		      (REGNO (reg_last_reload_reg[regno]),
+		       GET_MODE (reg_last_reload_reg[regno]),
+		       mode)))
 		{
 		  enum reg_class rclass = rld[r].rclass, last_class;
 		  rtx last_reg = reg_last_reload_reg[regno];
@@ -8035,12 +8033,8 @@ inherit_piecemeal_p (int dest ATTRIBUTE_UNUSED,
 		     int src ATTRIBUTE_UNUSED,
 		     machine_mode mode ATTRIBUTE_UNUSED)
 {
-#ifdef CANNOT_CHANGE_MODE_CLASS
-  return (!REG_CANNOT_CHANGE_MODE_P (dest, mode, reg_raw_mode[dest])
-	  && !REG_CANNOT_CHANGE_MODE_P (src, mode, reg_raw_mode[src]));
-#else
-  return true;
-#endif
+  return (REG_CAN_CHANGE_MODE_P (dest, mode, reg_raw_mode[dest])
+	  && REG_CAN_CHANGE_MODE_P (src, mode, reg_raw_mode[src]));
 }
 
 /* Output insns to reload values in and out of the chosen reload regs.  */

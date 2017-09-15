@@ -3861,15 +3861,13 @@ simplify_subreg_regno (unsigned int xregno, machine_mode xmode,
   struct subreg_info info;
   unsigned int yregno;
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
   /* Give the backend a chance to disallow the mode change.  */
   if (GET_MODE_CLASS (xmode) != MODE_COMPLEX_INT
       && GET_MODE_CLASS (xmode) != MODE_COMPLEX_FLOAT
-      && REG_CANNOT_CHANGE_MODE_P (xregno, xmode, ymode)
+      && !REG_CAN_CHANGE_MODE_P (xregno, xmode, ymode)
       /* We can use mode change in LRA for some transformations.  */
       && ! lra_in_progress)
     return -1;
-#endif
 
   /* We shouldn't simplify stack-related registers.  */
   if ((!reload_completed || frame_pointer_needed)

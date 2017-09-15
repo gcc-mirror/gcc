@@ -41204,20 +41204,19 @@ ix86_class_max_nregs (reg_class_t rclass, machine_mode mode)
     }
 }
 
-/* Return true if the registers in CLASS cannot represent the change from
-   modes FROM to TO.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-bool
-ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
-			       enum reg_class regclass)
+static bool
+ix86_can_change_mode_class (machine_mode from, machine_mode to,
+			    reg_class_t regclass)
 {
   if (from == to)
-    return false;
+    return true;
 
   /* x87 registers can't do subreg at all, as all values are reformatted
      to extended precision.  */
   if (MAYBE_FLOAT_CLASS_P (regclass))
-    return true;
+    return false;
 
   if (MAYBE_SSE_CLASS_P (regclass) || MAYBE_MMX_CLASS_P (regclass))
     {
@@ -41226,10 +41225,10 @@ ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.  */
       if (GET_MODE_SIZE (from) < 4)
-	return true;
+	return false;
     }
 
-  return false;
+  return true;
 }
 
 /* Return the cost of moving data of mode M between a
@@ -53433,6 +53432,9 @@ ix86_run_selftests (void)
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   ix86_hard_regno_call_part_clobbered
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

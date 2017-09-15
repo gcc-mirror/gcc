@@ -407,14 +407,6 @@ typedef struct
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
   ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode : choose_hard_reg_mode ((REGNO), (NREGS), false))
 
-/* Also stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
-  (   ((TO) == PSImode && (FROM) == SImode)	\
-   || ((TO) == SImode  && (FROM) == PSImode)    \
-   || ((TO) == DImode  && (FROM) == PSImode)    \
-   || ((TO) == PSImode && (FROM) == DImode)     \
-      )
-
 #define ACCUMULATE_OUTGOING_ARGS 1
 
 #undef  ASM_DECLARE_FUNCTION_NAME

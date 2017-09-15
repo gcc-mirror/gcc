@@ -799,17 +799,17 @@ m32c_class_max_nregs (reg_class_t regclass, machine_mode mode)
   return max;
 }
 
-/* Implements CANNOT_CHANGE_MODE_CLASS.  Only r0 and r1 can change to
+/* Implements TARGET_CAN_CHANGE_MODE_CLASS.  Only r0 and r1 can change to
    QI (r0l, r1l) because the chip doesn't support QI ops on other
    registers (well, it does on a0/a1 but if we let gcc do that, reload
    suffers).  Otherwise, we allow changes to larger modes.  */
-int
-m32c_cannot_change_mode_class (machine_mode from,
-			       machine_mode to, int rclass)
+static bool
+m32c_can_change_mode_class (machine_mode from,
+			    machine_mode to, reg_class_t rclass)
 {
   int rn;
 #if DEBUG0
-  fprintf (stderr, "cannot change from %s to %s in %s\n",
+  fprintf (stderr, "can change from %s to %s in %s\n",
 	   mode_name[from], mode_name[to], class_names[rclass]);
 #endif
 
@@ -818,18 +818,18 @@ m32c_cannot_change_mode_class (machine_mode from,
   for (rn = 0; rn < FIRST_PSEUDO_REGISTER; rn++)
     if (class_contents[rclass][0] & (1 << rn))
       if (! m32c_hard_regno_mode_ok (rn, to))
-	return 1;
+	return false;
 
   if (to == QImode)
-    return (class_contents[rclass][0] & 0x1ffa);
+    return (class_contents[rclass][0] & 0x1ffa) == 0;
 
   if (class_contents[rclass][0] & 0x0005	/* r0, r1 */
       && GET_MODE_SIZE (from) > 1)
-    return 0;
+    return true;
   if (GET_MODE_SIZE (from) > 2)	/* all other regs */
-    return 0;
+    return true;
 
-  return 1;
+  return false;
 }
 
 /* Helpers for the rest of the file.  */
@@ -4495,6 +4495,9 @@ m32c_output_compare (rtx_insn *insn, rtx *operands)
 #define TARGET_HARD_REGNO_MODE_OK m32c_hard_regno_mode_ok
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P m32c_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS m32c_can_change_mode_class
 
 /* The Global `targetm' Variable. */
 

@@ -477,9 +477,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
   s390_class_max_nregs ((CLASS), (MODE))
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
-  s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
-
 /* We can reverse a CC mode safely if we know whether it comes from a
    floating point compare or not.  With the vector modes it is encoded
    as part of the mode.

@@ -456,9 +456,6 @@ enum reg_class
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  reg_classes_intersect_p (FP_REGS, CLASS)
-
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1

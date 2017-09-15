@@ -479,12 +479,6 @@ enum reg_class {
 
 #define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
 
-/* Return the class of registers that cannot change mode from FROM to TO.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FLOAT_REGS, CLASS) : 0)
-
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST(speed_p, predictable_p) 5
 

@@ -246,6 +246,9 @@ static bool pdp11_scalar_mode_supported_p (scalar_mode);
 
 #undef  TARGET_SECONDARY_MEMORY_NEEDED
 #define TARGET_SECONDARY_MEMORY_NEEDED pdp11_secondary_memory_needed
+
+#undef  TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS pdp11_can_change_mode_class
 
 /* A helper function to determine if REGNO should be saved in the
    current function's stack frame.  */
@@ -1372,20 +1375,20 @@ legitimate_const_double_p (rtx address)
   return 0;
 }
 
-/* Implement CANNOT_CHANGE_MODE_CLASS.  */
-bool
-pdp11_cannot_change_mode_class (machine_mode from,
-				machine_mode to,
-				enum reg_class rclass)
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+static bool
+pdp11_can_change_mode_class (machine_mode from,
+			     machine_mode to,
+			     reg_class_t rclass)
 {
   /* Also, FPU registers contain a whole float value and the parts of
      it are not separately accessible.
 
      So we disallow all mode changes involving FPRs.  */
   if (FLOAT_MODE_P (from) != FLOAT_MODE_P (to))
-    return true;
+    return false;
   
-  return reg_classes_intersect_p (FPU_REGS, rclass);
+  return !reg_classes_intersect_p (FPU_REGS, rclass);
 }
 
 /* TARGET_PREFERRED_RELOAD_CLASS

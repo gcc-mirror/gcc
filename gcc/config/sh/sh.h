@@ -1087,13 +1087,6 @@ extern enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    Otherwise we will need at most one register per word.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* If defined, gives a class of registers that cannot be used as the
-   operand of a SUBREG that changes the mode of the object illegally.
-   ??? We need to renumber the internal numbers for the frnn registers
-   when in little endian in order to allow mode size changes.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  sh_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
