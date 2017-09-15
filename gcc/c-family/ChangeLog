@@ -1,3 +1,13 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-07-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/45784
+	* c-omp.c (c_finish_omp_for): If the condition is wrapped in
+	rhs of COMPOUND_EXPR(s), skip them and readd their lhs into
+	new COMPOUND_EXPRs around the rhs of the comparison.
+
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
