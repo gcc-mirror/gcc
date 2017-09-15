@@ -1,3 +1,8 @@
+2017-09-15  Yao Qi  <yao.qi@linaro.org>
+	    Pedro Alves  <palves@redhat.com>
+
+	* ansidecl.h (DISABLE_COPY_AND_ASSIGN): New macro.
+
 2017-09-12  Jiong Wang  <jiong.wang@arm.com>
 
 	* dwarf2.def (DW_CFA_AARCH64_negate_ra_state): New DW_CFA_DUP.
