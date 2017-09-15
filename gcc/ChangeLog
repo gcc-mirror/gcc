@@ -1,3 +1,8 @@
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* common.opt (Wcast-align=strict): New warning option.
+	* doc/invoke.texi: Document -Wcast-align=strict. 
+
 2017-09-15  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* cgraph.h (cgraph_thunk_info): Add comments.

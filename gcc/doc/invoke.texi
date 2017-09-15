@@ -266,7 +266,8 @@ Objective-C and Objective-C++ Dialects}.
 -Wno-attributes  -Wbool-compare  -Wbool-operation @gol
 -Wno-builtin-declaration-mismatch @gol
 -Wno-builtin-macro-redefined  -Wc90-c99-compat  -Wc99-c11-compat @gol
--Wc++-compat  -Wc++11-compat  -Wc++14-compat  -Wcast-align  -Wcast-qual  @gol
+-Wc++-compat  -Wc++11-compat  -Wc++14-compat  @gol
+-Wcast-align  -Wcast-align=strict  -Wcast-qual  @gol
 -Wchar-subscripts  -Wchkp  -Wcatch-value  -Wcatch-value=@var{n} @gol
 -Wclobbered  -Wcomment  -Wconditionally-supported @gol
 -Wconversion  -Wcoverage-mismatch  -Wno-cpp  -Wdangling-else  -Wdate-time @gol
@@ -5930,6 +5931,12 @@ Warn whenever a pointer is cast such that the required alignment of the
 target is increased.  For example, warn if a @code{char *} is cast to
 an @code{int *} on machines where integers can only be accessed at
 two- or four-byte boundaries.
+
+@item -Wcast-align=strict
+@opindex Wcast-align=strict
+Warn whenever a pointer is cast such that the required alignment of the
+target is increased.  For example, warn if a @code{char *} is cast to
+an @code{int *} regardless of the target machine.
 
 @item -Wwrite-strings
 @opindex Wwrite-strings
