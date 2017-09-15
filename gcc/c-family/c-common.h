@@ -703,7 +703,9 @@ enum cxx_dialect {
   /* C++14 */
   cxx14,
   /* C++17 */
-  cxx17
+  cxx17,
+  /* C++2a (C++20?) */
+  cxx2a
 };
 
 /* The C++ dialect being used. C++98 is the default.  */

@@ -1,3 +1,11 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* doc/cpp.texi (__cplusplus): Document value for -std=c++2a
+	or -std=gnu+2a.
+	* doc/invoke.texi: Document -std=c++2a and -std=gnu++2a.
+
 2017-09-15  Steve Ellcey  <sellcey@cavium.com>
 
 	PR target/82066
