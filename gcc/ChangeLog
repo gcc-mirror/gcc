@@ -1,3 +1,10 @@
+2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* match.pd: Move RDIV patterns from fold-const.c
+	* fold-const.c (distribute_real_division): Removed.
+	(fold_binary_loc): Remove calls to distribute_real_divison.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* doc/invoke.texi: Document -std=c++17 and -std=gnu++17 and document
