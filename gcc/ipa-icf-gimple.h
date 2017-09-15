@@ -215,9 +215,9 @@ public:
      is returned.  */
   bool compare_operand (tree t1, tree t2);
 
-  /* Compares two tree list operands T1 and T2 and returns true if these
-     two trees are semantically equivalent.  */
-  bool compare_tree_list_operand (tree t1, tree t2);
+  /* Compares GIMPLE ASM inputs (or outputs) where we iterate tree chain
+     and compare both TREE_PURPOSEs and TREE_VALUEs.  */
+  bool compare_asm_inputs_outputs (tree t1, tree t2);
 
   /* Verifies that trees T1 and T2, representing function declarations
      are equivalent from perspective of ICF.  */
