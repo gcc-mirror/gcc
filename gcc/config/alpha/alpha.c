@@ -9936,6 +9936,16 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	  ? alpha_hard_regno_mode_ok (32, mode2)
 	  : true);
 }
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+alpha_can_change_mode_class (machine_mode from, machine_mode to,
+			     reg_class_t rclass)
+{
+  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+	  || !reg_classes_intersect_p (FLOAT_REGS, rclass));
+}
 
 /* Initialize the GCC target structure.  */
 #if TARGET_ABI_OPEN_VMS
@@ -10139,6 +10149,9 @@ alpha_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P alpha_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS alpha_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

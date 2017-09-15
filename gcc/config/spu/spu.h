@@ -211,13 +211,6 @@ enum reg_class {
 #define INT_REG_OK_FOR_BASE_P(X,STRICT) \
 	((!(STRICT) || REGNO_OK_FOR_BASE_P (REGNO (X))))
 
-/* GCC assumes that modes are in the lowpart of a register, which is
-   only true for SPU. */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-        ((GET_MODE_SIZE (FROM) > 4 || GET_MODE_SIZE (TO) > 4) \
-	 && (GET_MODE_SIZE (FROM) < 16 || GET_MODE_SIZE (TO) < 16) \
-	 && GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO))
-
 #define REGISTER_TARGET_PRAGMAS() do {					\
 c_register_addr_space ("__ea", ADDR_SPACE_EA);				\
 targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
@@ -315,13 +308,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
 		((CUM) = 0)
-
-/* The SPU ABI wants 32/64-bit types at offset 0 in the quad-word on the
-   stack.  8/16-bit types should be at offsets 3/2 respectively.  */
-#define FUNCTION_ARG_OFFSET(MODE, TYPE)					\
-(((TYPE) && INTEGRAL_TYPE_P (TYPE) && GET_MODE_SIZE (MODE) < 4)		\
- ? (4 - GET_MODE_SIZE (MODE))						\
- : 0)
 
 #define PAD_VARARGS_DOWN 0
 
@@ -493,8 +479,6 @@ do {									\
 #define CASE_VECTOR_MODE SImode
 
 #define MOVE_MAX 16 
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) ((INPREC) <= 32 && (OUTPREC) <= (INPREC))
 
 #define STORE_FLAG_VALUE -1
 

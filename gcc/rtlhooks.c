@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "rtlhooks-def.h"
 #include "explow.h"
+#include "target.h"
 
 
 /* For speed, we will copy the RTX hooks struct member-by-member

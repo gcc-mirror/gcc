@@ -39,6 +39,7 @@ extern bool hook_bool_const_rtx_insn_const_rtx_insn_true (const rtx_insn *,
 							  const rtx_insn *);
 extern bool hook_bool_mode_uhwi_false (machine_mode,
 				       unsigned HOST_WIDE_INT);
+extern bool hook_bool_uint_uint_true (unsigned int, unsigned int);
 extern bool hook_bool_uint_mode_false (unsigned int, machine_mode);
 extern bool hook_bool_uint_mode_true (unsigned int, machine_mode);
 extern bool hook_bool_tree_false (tree);
@@ -59,6 +60,8 @@ extern bool hook_bool_rtx_false (rtx);
 extern bool hook_bool_rtx_insn_int_false (rtx_insn *, int);
 extern bool hook_bool_uintp_uintp_false (unsigned int *, unsigned int *);
 extern bool hook_bool_reg_class_t_false (reg_class_t regclass);
+extern bool hook_bool_mode_mode_reg_class_t_true (machine_mode, machine_mode,
+						  reg_class_t);
 extern bool hook_bool_mode_reg_class_t_reg_class_t_false (machine_mode,
 							  reg_class_t,
 							  reg_class_t);

@@ -80,7 +80,7 @@ along with GCC; see the file COPYING3.  If not see
       %{!static-pie: \
 	%{rdynamic:-export-dynamic} \
 	-dynamic-linker %(dynamic_linker)}} \
-      %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
+    %{static:-static} %{static-pie:-static -pie --no-dynamic-linker -z text}}"
 
 #undef	LINK_SPEC
 #define LINK_SPEC GNU_USER_TARGET_LINK_SPEC

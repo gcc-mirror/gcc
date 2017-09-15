@@ -6,7 +6,7 @@ package runtime
 
 import (
 	"runtime/internal/atomic"
-	_ "unsafe"
+	"unsafe"
 )
 
 // For historical reasons these functions are called as though they
@@ -41,6 +41,7 @@ func Cgocall() {
 	mp := getg().m
 	mp.ncgocall++
 	mp.ncgo++
+	mp.incgo = true
 	entersyscall(0)
 }
 
@@ -50,6 +51,7 @@ func CgocallDone() {
 	if gp == nil {
 		throw("no g in CgocallDone")
 	}
+	gp.m.incgo = false
 	gp.m.ncgo--
 
 	// If we are invoked because the C function called _cgo_panic,
@@ -68,15 +70,18 @@ func CgocallDone() {
 //     gofunction()
 //go:nosplit
 func CgocallBack() {
-	if getg() == nil || getg().m == nil {
+	gp := getg()
+	if gp == nil || gp.m == nil {
 		needm(0)
-		mp := getg().m
+		gp = getg()
+		mp := gp.m
 		mp.dropextram = true
 	}
 
 	exitsyscall(0)
+	gp.m.incgo = false
 
-	if getg().m.ncgo == 0 {
+	if gp.m.ncgo == 0 {
 		// The C call to Go came from a thread created by C.
 		// The C call to Go came from a thread not currently running
 		// any Go. In the case of -buildmode=c-archive or c-shared,
@@ -85,7 +90,7 @@ func CgocallBack() {
 		<-main_init_done
 	}
 
-	mp := getg().m
+	mp := gp.m
 	if mp.needextram || atomic.Load(&extraMWaiters) > 0 {
 		mp.needextram = false
 		newextram()
@@ -120,6 +125,7 @@ func CgocallBackDone() {
 		drop = true
 	}
 
+	gp.m.incgo = true
 	entersyscall(0)
 
 	if drop {
@@ -133,3 +139,8 @@ func _cgo_panic(p *byte) {
 	exitsyscall(0)
 	panic(gostringnocopy(p))
 }
+
+// cgo_yield exists in the gc toolchain to let TSAN deliver a signal.
+// gccgo does not need this.
+var cgo_yield = &_cgo_yield
+var _cgo_yield unsafe.Pointer

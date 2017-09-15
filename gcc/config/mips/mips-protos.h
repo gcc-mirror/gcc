@@ -294,8 +294,6 @@ extern bool mips_const_vector_bitimm_set_p (rtx, machine_mode);
 extern bool mips_const_vector_bitimm_clr_p (rtx, machine_mode);
 extern rtx mips_msa_vec_parallel_const_half (machine_mode, bool);
 extern rtx mips_gen_const_int_vector (machine_mode, HOST_WIDE_INT);
-extern bool mips_cannot_change_mode_class (machine_mode,
-					   machine_mode, enum reg_class);
 extern bool mips_dangerous_for_la25_p (rtx);
 extern enum reg_class mips_secondary_reload_class (enum reg_class,
 						   machine_mode,

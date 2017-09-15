@@ -1158,70 +1158,84 @@ simple_object_elf_copy_lto_debug_sections (simple_object_read *sobj,
 
   /* Mark sections as preserved that are required by to be preserved
      sections.  */
-  for (i = 1; i < shnum; ++i)
+  int changed;
+  do
     {
-      unsigned char *shdr;
-      unsigned int sh_type, sh_info, sh_link;
-      off_t offset;
-      off_t length;
+      changed = 0;
+      for (i = 1; i < shnum; ++i)
+	{
+	  unsigned char *shdr;
+	  unsigned int sh_type, sh_info, sh_link;
+	  off_t offset;
+	  off_t length;
 
-      shdr = shdrs + (i - 1) * shdr_size;
-      sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				 shdr, sh_type, Elf_Word);
-      sh_info = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				 shdr, sh_info, Elf_Word);
-      sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				 shdr, sh_link, Elf_Word);
-      if (sh_type == SHT_GROUP)
-	{
-	  /* Mark groups containing copied sections.  */
-	  unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-					      shdr, sh_entsize, Elf_Addr);
-	  unsigned char *ent, *buf;
-	  int keep = 0;
-	  offset = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				    shdr, sh_offset, Elf_Addr);
-	  length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
-				    shdr, sh_size, Elf_Addr);
-	  buf = XNEWVEC (unsigned char, length);
-	  if (!simple_object_internal_read (sobj->descriptor,
-					    sobj->offset + offset, buf,
-					    (size_t) length, &errmsg, err))
+	  shdr = shdrs + (i - 1) * shdr_size;
+	  sh_type = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				     shdr, sh_type, Elf_Word);
+	  sh_info = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				     shdr, sh_info, Elf_Word);
+	  sh_link = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+				     shdr, sh_link, Elf_Word);
+	  if (sh_type == SHT_GROUP)
 	    {
-	      XDELETEVEC (buf);
-	      XDELETEVEC (names);
-	      XDELETEVEC (shdrs);
-	      return errmsg;
+	      /* Mark groups containing copied sections.  */
+	      unsigned entsize = ELF_FETCH_FIELD (type_functions, ei_class,
+						  Shdr, shdr, sh_entsize,
+						  Elf_Addr);
+	      unsigned char *ent, *buf;
+	      int keep = 0;
+	      offset = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					shdr, sh_offset, Elf_Addr);
+	      length = ELF_FETCH_FIELD (type_functions, ei_class, Shdr,
+					shdr, sh_size, Elf_Addr);
+	      buf = XNEWVEC (unsigned char, length);
+	      if (!simple_object_internal_read (sobj->descriptor,
+						sobj->offset + offset, buf,
+						(size_t) length, &errmsg, err))
+		{
+		  XDELETEVEC (buf);
+		  XDELETEVEC (names);
+		  XDELETEVEC (shdrs);
+		  return errmsg;
+		}
+	      for (ent = buf + entsize; ent < buf + length; ent += entsize)
+		{
+		  unsigned sec = type_functions->fetch_Elf_Word (ent);
+		  if (pfnret[sec - 1] == 0)
+		    keep = 1;
+		}
+	      if (keep)
+		{
+		  changed |= (pfnret[sh_link - 1] == -1
+			      || pfnret[i - 1] == -1);
+		  pfnret[sh_link - 1] = 0;
+		  pfnret[i - 1] = 0;
+		}
 	    }
-	  for (ent = buf + entsize; ent < buf + length; ent += entsize)
+	  if (sh_type == SHT_RELA
+	      || sh_type == SHT_REL)
 	    {
-	      unsigned sec = type_functions->fetch_Elf_Word (ent);
-	      if (pfnret[sec - 1] == 0)
-		keep = 1;
+	      /* Mark relocation sections and symtab of copied sections.  */
+	      if (pfnret[sh_info - 1] == 0)
+		{
+		  changed |= (pfnret[sh_link - 1] == -1
+			      || pfnret[i - 1] == -1);
+		  pfnret[sh_link - 1] = 0;
+		  pfnret[i - 1] = 0;
+		}
 	    }
-	  if (keep)
+	  if (sh_type == SHT_SYMTAB)
 	    {
-	      pfnret[sh_link - 1] = 0;
-	      pfnret[i - 1] = 0;
+	      /* Mark strings sections of copied symtabs.  */
+	      if (pfnret[i - 1] == 0)
+		{
+		  changed |= pfnret[sh_link - 1] == -1;
+		  pfnret[sh_link - 1] = 0;
+		}
 	    }
-	}
-      if (sh_type == SHT_RELA
-	  || sh_type == SHT_REL)
-	{
-	  /* Mark relocation sections and symtab of copied sections.  */
-	  if (pfnret[sh_info - 1] == 0)
-	    {
-	      pfnret[sh_link - 1] = 0;
-	      pfnret[i - 1] = 0;
-	    }
-	}
-      if (sh_type == SHT_SYMTAB)
-	{
-	  /* Mark strings sections of copied symtabs.  */
-	  if (pfnret[i - 1] == 0)
-	    pfnret[sh_link - 1] = 0;
 	}
     }
+  while (changed);
 
   /* Then perform the actual copying.  */
   for (i = 1; i < shnum; ++i)

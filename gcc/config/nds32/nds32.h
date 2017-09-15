@@ -998,11 +998,6 @@ enum reg_class
    of bits needed to represent the size of the object being shifted.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of 'inprec' bits to one of 'outprec' bits by merely operating
-   on it as if it had only 'outprec' bits.  */
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
-
 /* A C expression describing the value returned by a comparison operator with
    an integral mode and stored by a store-flag instruction ('cstoremode4')
    when the condition is true.  */

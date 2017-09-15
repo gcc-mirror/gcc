@@ -2997,7 +2997,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 to the value directly in mode MODE, otherwise we must
 		 start with the register in word_mode and explicitly
 		 convert it.  */
-	      if (TRULY_NOOP_TRUNCATION (size * BITS_PER_UNIT, BITS_PER_WORD))
+	      if (targetm.truly_noop_truncation (size * BITS_PER_UNIT,
+						 BITS_PER_WORD))
 		reg = gen_rtx_REG (mode, REGNO (entry_parm));
 	      else
 		{
@@ -4248,9 +4249,8 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
       locate->size.constant -= part_size_in_regs;
     }
 
-#ifdef FUNCTION_ARG_OFFSET
-  locate->offset.constant += FUNCTION_ARG_OFFSET (passed_mode, type);
-#endif
+  locate->offset.constant
+    += targetm.calls.function_arg_offset (passed_mode, type);
 }
 
 /* Round the stack offset in *OFFSET_PTR up to a multiple of BOUNDARY.

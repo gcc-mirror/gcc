@@ -7,9 +7,9 @@ package net
 import (
 	"bufio"
 	"context"
+	"internal/poll"
 	"internal/testenv"
 	"io"
-	"net/internal/socktest"
 	"runtime"
 	"sync"
 	"testing"
@@ -31,7 +31,7 @@ func TestProhibitionaryDialArg(t *testing.T) {
 	case "plan9":
 		t.Skipf("not supported on %s", runtime.GOOS)
 	}
-	if !supportsIPv4map {
+	if !supportsIPv4map() {
 		t.Skip("mapping ipv4 address inside ipv6 address not supported")
 	}
 
@@ -72,70 +72,6 @@ func TestDialLocal(t *testing.T) {
 	c.Close()
 }
 
-func TestDialTimeoutFDLeak(t *testing.T) {
-	switch runtime.GOOS {
-	case "plan9":
-		t.Skipf("%s does not have full support of socktest", runtime.GOOS)
-	case "openbsd":
-		testenv.SkipFlaky(t, 15157)
-	}
-
-	const T = 100 * time.Millisecond
-
-	switch runtime.GOOS {
-	case "plan9", "windows":
-		origTestHookDialChannel := testHookDialChannel
-		testHookDialChannel = func() { time.Sleep(2 * T) }
-		defer func() { testHookDialChannel = origTestHookDialChannel }()
-		if runtime.GOOS == "plan9" {
-			break
-		}
-		fallthrough
-	default:
-		sw.Set(socktest.FilterConnect, func(so *socktest.Status) (socktest.AfterFilter, error) {
-			time.Sleep(2 * T)
-			return nil, errTimeout
-		})
-		defer sw.Set(socktest.FilterConnect, nil)
-	}
-
-	// Avoid tracking open-close jitterbugs between netFD and
-	// socket that leads to confusion of information inside
-	// socktest.Switch.
-	// It may happen when the Dial call bumps against TCP
-	// simultaneous open. See selfConnect in tcpsock_posix.go.
-	defer func() { sw.Set(socktest.FilterClose, nil) }()
-	var mu sync.Mutex
-	var attempts int
-	sw.Set(socktest.FilterClose, func(so *socktest.Status) (socktest.AfterFilter, error) {
-		mu.Lock()
-		attempts++
-		mu.Unlock()
-		return nil, nil
-	})
-
-	const N = 100
-	var wg sync.WaitGroup
-	wg.Add(N)
-	for i := 0; i < N; i++ {
-		go func() {
-			defer wg.Done()
-			// This dial never starts to send any SYN
-			// segment because of above socket filter and
-			// test hook.
-			c, err := DialTimeout("tcp", "127.0.0.1:0", T)
-			if err == nil {
-				t.Errorf("unexpectedly established: tcp:%s->%s", c.LocalAddr(), c.RemoteAddr())
-				c.Close()
-			}
-		}()
-	}
-	wg.Wait()
-	if attempts < N {
-		t.Errorf("got %d; want >= %d", attempts, N)
-	}
-}
-
 func TestDialerDualStackFDLeak(t *testing.T) {
 	switch runtime.GOOS {
 	case "plan9":
@@ -145,7 +81,7 @@ func TestDialerDualStackFDLeak(t *testing.T) {
 	case "openbsd":
 		testenv.SkipFlaky(t, 15157)
 	}
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -254,7 +190,7 @@ func dialClosedPort() (actual, expected time.Duration) {
 func TestDialParallel(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
 
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -425,7 +361,7 @@ func lookupSlowFast(ctx context.Context, fn func(context.Context, string) ([]IPA
 func TestDialerFallbackDelay(t *testing.T) {
 	testenv.MustHaveExternalNetwork(t)
 
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -491,7 +427,7 @@ func TestDialerFallbackDelay(t *testing.T) {
 }
 
 func TestDialParallelSpuriousConnection(t *testing.T) {
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -585,22 +521,22 @@ func TestDialerPartialDeadline(t *testing.T) {
 		{now, noDeadline, 1, noDeadline, nil},
 		// Step the clock forward and cross the deadline.
 		{now.Add(-1 * time.Millisecond), now, 1, now, nil},
-		{now.Add(0 * time.Millisecond), now, 1, noDeadline, errTimeout},
-		{now.Add(1 * time.Millisecond), now, 1, noDeadline, errTimeout},
+		{now.Add(0 * time.Millisecond), now, 1, noDeadline, poll.ErrTimeout},
+		{now.Add(1 * time.Millisecond), now, 1, noDeadline, poll.ErrTimeout},
 	}
 	for i, tt := range testCases {
 		deadline, err := partialDeadline(tt.now, tt.deadline, tt.addrs)
 		if err != tt.expectErr {
 			t.Errorf("#%d: got %v; want %v", i, err, tt.expectErr)
 		}
-		if deadline != tt.expectDeadline {
+		if !deadline.Equal(tt.expectDeadline) {
 			t.Errorf("#%d: got %v; want %v", i, deadline, tt.expectDeadline)
 		}
 	}
 }
 
 func TestDialerLocalAddr(t *testing.T) {
-	if !supportsIPv4 || !supportsIPv6 {
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -654,7 +590,7 @@ func TestDialerLocalAddr(t *testing.T) {
 		{"tcp", "::1", &UnixAddr{}, &AddrError{Err: "some error"}},
 	}
 
-	if supportsIPv4map {
+	if supportsIPv4map() {
 		tests = append(tests, test{
 			"tcp", "127.0.0.1", &TCPAddr{IP: ParseIP("::")}, nil,
 		})
@@ -714,12 +650,9 @@ func TestDialerLocalAddr(t *testing.T) {
 }
 
 func TestDialerDualStack(t *testing.T) {
-	// This test is known to be flaky. Don't frighten regular
-	// users about it; only fail on the build dashboard.
-	if testenv.Builder() == "" {
-		testenv.SkipFlaky(t, 13324)
-	}
-	if !supportsIPv4 || !supportsIPv6 {
+	testenv.SkipFlaky(t, 13324)
+
+	if !supportsIPv4() || !supportsIPv6() {
 		t.Skip("both IPv4 and IPv6 are required")
 	}
 
@@ -822,7 +755,7 @@ func TestDialCancel(t *testing.T) {
 	}
 
 	blackholeIPPort := JoinHostPort(slowDst4, "1234")
-	if !supportsIPv4 {
+	if !supportsIPv4() {
 		blackholeIPPort = JoinHostPort(slowDst6, "1234")
 	}
 
@@ -953,4 +886,25 @@ func TestCancelAfterDial(t *testing.T) {
 	for i := 0; i < 10; i++ {
 		try()
 	}
+}
+
+// Issue 18806: it should always be possible to net.Dial a
+// net.Listener().Addr().String when the listen address was ":n", even
+// if the machine has halfway configured IPv6 such that it can bind on
+// "::" not connect back to that same address.
+func TestDialListenerAddr(t *testing.T) {
+	if testenv.Builder() == "" {
+		testenv.MustHaveExternalNetwork(t)
+	}
+	ln, err := Listen("tcp", ":0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer ln.Close()
+	addr := ln.Addr().String()
+	c, err := Dial("tcp", addr)
+	if err != nil {
+		t.Fatalf("for addr %q, dial error: %v", addr, err)
+	}
+	c.Close()
 }

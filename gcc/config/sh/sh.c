@@ -325,6 +325,7 @@ static void sh_init_sync_libfuncs (void) ATTRIBUTE_UNUSED;
 static unsigned int sh_hard_regno_nregs (unsigned int, machine_mode);
 static bool sh_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sh_modes_tieable_p (machine_mode, machine_mode);
+static bool sh_can_change_mode_class (machine_mode, machine_mode, reg_class_t);
 
 static const struct attribute_spec sh_attribute_table[] =
 {
@@ -652,6 +653,9 @@ static const struct attribute_spec sh_attribute_table[] =
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P sh_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS sh_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -10628,11 +10632,10 @@ sh_hard_regno_caller_save_mode (unsigned int regno, unsigned int nregs,
   return choose_hard_reg_mode (regno, nregs, false);
 }
 
-/* Return the class of registers for which a mode change from FROM to TO
-   is invalid.  */
-bool
-sh_cannot_change_mode_class (machine_mode from, machine_mode to,
-			     enum reg_class rclass)
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+static bool
+sh_can_change_mode_class (machine_mode from, machine_mode to,
+			  reg_class_t rclass)
 {
   /* We want to enable the use of SUBREGs as a means to
      VEC_SELECT a single element of a vector.  */
@@ -10642,22 +10645,22 @@ sh_cannot_change_mode_class (machine_mode from, machine_mode to,
      on the stack with displacement addressing, as it happens with -O0.
      Thus we disallow the mode change for -O0.  */
   if (to == SFmode && VECTOR_MODE_P (from) && GET_MODE_INNER (from) == SFmode)
-    return optimize ? (reg_classes_intersect_p (GENERAL_REGS, rclass)) : false;
+    return optimize ? !reg_classes_intersect_p (GENERAL_REGS, rclass) : true;
 
   if (GET_MODE_SIZE (from) != GET_MODE_SIZE (to))
     {
       if (TARGET_LITTLE_ENDIAN)
 	{
 	  if (GET_MODE_SIZE (to) < 8 || GET_MODE_SIZE (from) < 8)
-	    return reg_classes_intersect_p (DF_REGS, rclass);
+	    return !reg_classes_intersect_p (DF_REGS, rclass);
 	}
       else
 	{
 	  if (GET_MODE_SIZE (from) < 8)
-	    return reg_classes_intersect_p (DF_REGS, rclass);
+	    return !reg_classes_intersect_p (DF_REGS, rclass);
 	}
     }
-  return false;
+  return true;
 }
 
 /* Return true if registers in machine mode MODE will likely be

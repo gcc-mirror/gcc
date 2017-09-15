@@ -241,6 +241,10 @@ typedef struct _loop_vec_info : public vec_info {
   /* Unrolling factor  */
   int vectorization_factor;
 
+  /* Maximum runtime vectorization factor, or MAX_VECTORIZATION_FACTOR
+     if there is no particular limit.  */
+  unsigned HOST_WIDE_INT max_vectorization_factor;
+
   /* Unknown DRs according to which loop was peeled.  */
   struct data_reference *unaligned_dr;
 
@@ -355,6 +359,7 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_COST_MODEL_THRESHOLD(L) (L)->th
 #define LOOP_VINFO_VECTORIZABLE_P(L)       (L)->vectorizable
 #define LOOP_VINFO_VECT_FACTOR(L)          (L)->vectorization_factor
+#define LOOP_VINFO_MAX_VECT_FACTOR(L)      (L)->max_vectorization_factor
 #define LOOP_VINFO_PTR_MASK(L)             (L)->ptr_mask
 #define LOOP_VINFO_LOOP_NEST(L)            (L)->loop_nest
 #define LOOP_VINFO_DATAREFS(L)             (L)->datarefs
@@ -400,8 +405,8 @@ typedef struct _loop_vec_info : public vec_info {
 #define LOOP_VINFO_EPILOGUE_P(L) \
   (LOOP_VINFO_ORIG_LOOP_INFO (L) != NULL)
 
-#define LOOP_VINFO_ORIG_VECT_FACTOR(L) \
-  (LOOP_VINFO_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
+#define LOOP_VINFO_ORIG_MAX_VECT_FACTOR(L) \
+  (LOOP_VINFO_MAX_VECT_FACTOR (LOOP_VINFO_ORIG_LOOP_INFO (L)))
 
 static inline loop_vec_info
 loop_vec_info_for_loop (struct loop *loop)
@@ -1076,6 +1081,20 @@ unlimited_cost_model (loop_p loop)
   return (flag_vect_cost_model == VECT_COST_MODEL_UNLIMITED);
 }
 
+/* Return the number of copies needed for loop vectorization when
+   a statement operates on vectors of type VECTYPE.  This is the
+   vectorization factor divided by the number of elements in
+   VECTYPE and is always known at compile time.  */
+
+static inline unsigned int
+vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
+{
+  gcc_checking_assert (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+		       % TYPE_VECTOR_SUBPARTS (vectype) == 0);
+  return (LOOP_VINFO_VECT_FACTOR (loop_vinfo)
+	  / TYPE_VECTOR_SUBPARTS (vectype));
+}
+
 /* Source location */
 extern source_location vect_location;
 
@@ -1151,8 +1170,8 @@ extern void vect_get_load_cost (struct data_reference *, int, bool,
 extern void vect_get_store_cost (struct data_reference *, int,
 				 unsigned int *, stmt_vector_for_cost *);
 extern bool vect_supportable_shift (enum tree_code, tree);
-extern tree vect_gen_perm_mask_any (tree, const unsigned char *);
-extern tree vect_gen_perm_mask_checked (tree, const unsigned char *);
+extern tree vect_gen_perm_mask_any (tree, vec_perm_indices);
+extern tree vect_gen_perm_mask_checked (tree, vec_perm_indices);
 extern void optimize_mask_stores (struct loop*);
 
 /* In tree-vect-data-refs.c.  */
@@ -1216,7 +1235,7 @@ extern bool vectorizable_reduction (gimple *, gimple_stmt_iterator *,
 extern bool vectorizable_induction (gimple *, gimple_stmt_iterator *,
 				    gimple **, slp_tree);
 extern tree get_initial_def_for_reduction (gimple *, tree, tree *);
-extern int vect_min_worthwhile_factor (enum tree_code);
+extern bool vect_worthwhile_without_simd_p (vec_info *, tree_code);
 extern int vect_get_known_peeling_cost (loop_vec_info, int, int *,
 					stmt_vector_for_cost *,
 					stmt_vector_for_cost *,

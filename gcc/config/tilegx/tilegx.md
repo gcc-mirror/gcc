@@ -2004,8 +2004,8 @@
    ld2s_add\t%0, %I1, %i1"
   [(set_attr "type" "X0,Y2_2cycle,X1_2cycle")])
 
-;; All SImode integer registers should already be in sign-extended
-;; form (see TRULY_NOOP_TRUNCATION and truncdisi2).  We can therefore
+;; All SImode integer registers should already be in sign-extended form
+;; (see TARGET_TRULY_NOOP_TRUNCATION and truncdisi2).  We can therefore
 ;; get rid of register->register instructions if we constrain the
 ;; source to be in the same register as the destination.
 (define_insn_and_split "extendsidi2"
@@ -2028,7 +2028,7 @@
 ;; modes is a no-op, as it is for most other GCC ports.  Truncating
 ;; DImode values to SImode is not a no-op since we
 ;; need to make sure that the lower 32 bits are properly sign-extended
-;; (see TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
+;; (see TARGET_TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
 ;; smaller than SImode is equivalent to two separate truncations:
 ;;
 ;;                        A       B

@@ -873,15 +873,16 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
   if (alt_stmt_code != ERROR_MARK
       && TREE_CODE_CLASS (alt_stmt_code) != tcc_reference)
     {
-      unsigned char *sel
-	= XALLOCAVEC (unsigned char, TYPE_VECTOR_SUBPARTS (vectype));
-      for (i = 0; i < TYPE_VECTOR_SUBPARTS (vectype); ++i)
+      unsigned int count = TYPE_VECTOR_SUBPARTS (vectype);
+      auto_vec_perm_indices sel (count);
+      for (i = 0; i < count; ++i)
 	{
-	  sel[i] = i;
+	  unsigned int elt = i;
 	  if (gimple_assign_rhs_code (stmts[i % group_size]) == alt_stmt_code)
-	    sel[i] += TYPE_VECTOR_SUBPARTS (vectype);
+	    elt += count;
+	  sel.quick_push (elt);
 	}
-      if (!can_vec_perm_p (TYPE_MODE (vectype), false, sel))
+      if (!can_vec_perm_p (TYPE_MODE (vectype), false, &sel))
 	{
 	  for (i = 0; i < group_size; ++i)
 	    if (gimple_assign_rhs_code (stmts[i]) == alt_stmt_code)
@@ -3105,7 +3106,6 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
   stmt_vec_info stmt_vinfo = vinfo_for_stmt (stmt);
   unsigned nunits;
   tree vec_cst;
-  tree *elts;
   unsigned j, number_of_places_left_in_vector;
   tree vector_type;
   tree vop;
@@ -3158,7 +3158,8 @@ vect_get_constant_vectors (tree op, slp_tree slp_node,
 
   number_of_places_left_in_vector = nunits;
   constant_p = true;
-  elts = XALLOCAVEC (tree, nunits);
+  auto_vec<tree, 32> elts (nunits);
+  elts.quick_grow (nunits);
   bool place_after_defs = false;
   for (j = 0; j < number_of_copies; j++)
     {
@@ -3486,7 +3487,6 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
   tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   int group_size = SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
   int mask_element;
-  unsigned char *mask;
   machine_mode mode;
 
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
@@ -3502,7 +3502,8 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
     (int_mode_for_mode (TYPE_MODE (TREE_TYPE (vectype))).require (), 1);
   mask_type = get_vectype_for_scalar_type (mask_element_type);
   nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  mask = XALLOCAVEC (unsigned char, nunits);
+  auto_vec_perm_indices mask (nunits);
+  mask.quick_grow (nunits);
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
@@ -3577,7 +3578,7 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 	  if (index == nunits)
 	    {
 	      if (! noop_p
-		  && ! can_vec_perm_p (mode, false, mask))
+		  && ! can_vec_perm_p (mode, false, &mask))
 		{
 		  if (dump_enabled_p ())
 		    {
@@ -3600,10 +3601,10 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 		  
 		  if (! noop_p)
 		    {
-		      tree *mask_elts = XALLOCAVEC (tree, nunits);
+		      auto_vec<tree, 32> mask_elts (nunits);
 		      for (int l = 0; l < nunits; ++l)
-			mask_elts[l] = build_int_cst (mask_element_type,
-						      mask[l]);
+			mask_elts.quick_push (build_int_cst (mask_element_type,
+							     mask[l]));
 		      mask_vec = build_vector (mask_type, mask_elts);
 		    }
 
@@ -3730,15 +3731,15 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
       enum tree_code code0 = gimple_assign_rhs_code (stmt);
       enum tree_code ocode = ERROR_MARK;
       gimple *ostmt;
-      unsigned char *mask = XALLOCAVEC (unsigned char, group_size);
+      auto_vec_perm_indices mask (group_size);
       FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, ostmt)
 	if (gimple_assign_rhs_code (ostmt) != code0)
 	  {
-	    mask[i] = 1;
+	    mask.quick_push (1);
 	    ocode = gimple_assign_rhs_code (ostmt);
 	  }
 	else
-	  mask[i] = 0;
+	  mask.quick_push (0);
       if (ocode != ERROR_MARK)
 	{
 	  vec<gimple *> v0;
@@ -3759,13 +3760,14 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 	  unsigned k = 0, l;
 	  for (j = 0; j < v0.length (); ++j)
 	    {
-	      tree *melts = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (vectype));
-	      for (l = 0; l < TYPE_VECTOR_SUBPARTS (vectype); ++l)
+	      unsigned int nunits = TYPE_VECTOR_SUBPARTS (vectype);
+	      auto_vec<tree, 32> melts (nunits);
+	      for (l = 0; l < nunits; ++l)
 		{
 		  if (k >= group_size)
 		    k = 0;
-		  melts[l] = build_int_cst
-		      (meltype, mask[k++] * TYPE_VECTOR_SUBPARTS (vectype) + l);
+		  tree t = build_int_cst (meltype, mask[k++] * nunits + l);
+		  melts.quick_push (t);
 		}
 	      tmask = build_vector (mvectype, melts);
 

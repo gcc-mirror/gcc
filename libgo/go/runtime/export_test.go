@@ -41,11 +41,11 @@ type LFNode struct {
 }
 
 func LFStackPush(head *uint64, node *LFNode) {
-	lfstackpush(head, (*lfnode)(unsafe.Pointer(node)))
+	(*lfstack)(head).push((*lfnode)(unsafe.Pointer(node)))
 }
 
 func LFStackPop(head *uint64) *LFNode {
-	return (*LFNode)(unsafe.Pointer(lfstackpop(head)))
+	return (*LFNode)(unsafe.Pointer((*lfstack)(head).pop()))
 }
 
 func GCMask(x interface{}) (ret []byte) {
@@ -241,6 +241,97 @@ func CountPagesInUse() (pagesInUse, counted uintptr) {
 	return
 }
 
+func Fastrand() uint32          { return fastrand() }
+func Fastrandn(n uint32) uint32 { return fastrandn(n) }
+
+type ProfBuf profBuf
+
+func NewProfBuf(hdrsize, bufwords, tags int) *ProfBuf {
+	return (*ProfBuf)(newProfBuf(hdrsize, bufwords, tags))
+}
+
+func (p *ProfBuf) Write(tag *unsafe.Pointer, now int64, hdr []uint64, stk []uintptr) {
+	(*profBuf)(p).write(tag, now, hdr, stk)
+}
+
+const (
+	ProfBufBlocking    = profBufBlocking
+	ProfBufNonBlocking = profBufNonBlocking
+)
+
+func (p *ProfBuf) Read(mode profBufReadMode) ([]uint64, []unsafe.Pointer, bool) {
+	return (*profBuf)(p).read(profBufReadMode(mode))
+}
+
+func (p *ProfBuf) Close() {
+	(*profBuf)(p).close()
+}
+
+// ReadMemStatsSlow returns both the runtime-computed MemStats and
+// MemStats accumulated by scanning the heap.
+func ReadMemStatsSlow() (base, slow MemStats) {
+	stopTheWorld("ReadMemStatsSlow")
+
+	// Run on the system stack to avoid stack growth allocation.
+	systemstack(func() {
+		// Make sure stats don't change.
+		getg().m.mallocing++
+
+		readmemstats_m(&base)
+
+		// Initialize slow from base and zero the fields we're
+		// recomputing.
+		slow = base
+		slow.Alloc = 0
+		slow.TotalAlloc = 0
+		slow.Mallocs = 0
+		slow.Frees = 0
+		var bySize [_NumSizeClasses]struct {
+			Mallocs, Frees uint64
+		}
+
+		// Add up current allocations in spans.
+		for _, s := range mheap_.allspans {
+			if s.state != mSpanInUse {
+				continue
+			}
+			if sizeclass := s.spanclass.sizeclass(); sizeclass == 0 {
+				slow.Mallocs++
+				slow.Alloc += uint64(s.elemsize)
+			} else {
+				slow.Mallocs += uint64(s.allocCount)
+				slow.Alloc += uint64(s.allocCount) * uint64(s.elemsize)
+				bySize[sizeclass].Mallocs += uint64(s.allocCount)
+			}
+		}
+
+		// Add in frees. readmemstats_m flushed the cached stats, so
+		// these are up-to-date.
+		var smallFree uint64
+		slow.Frees = mheap_.nlargefree
+		for i := range mheap_.nsmallfree {
+			slow.Frees += mheap_.nsmallfree[i]
+			bySize[i].Frees = mheap_.nsmallfree[i]
+			bySize[i].Mallocs += mheap_.nsmallfree[i]
+			smallFree += mheap_.nsmallfree[i] * uint64(class_to_size[i])
+		}
+		slow.Frees += memstats.tinyallocs
+		slow.Mallocs += slow.Frees
+
+		slow.TotalAlloc = slow.Alloc + mheap_.largefree + smallFree
+
+		for i := range slow.BySize {
+			slow.BySize[i].Mallocs = bySize[i].Mallocs
+			slow.BySize[i].Frees = bySize[i].Frees
+		}
+
+		getg().m.mallocing--
+	})
+
+	startTheWorld()
+	return
+}
+
 // BlockOnSystemStack switches to the system stack, prints "x\n" to
 // stderr, and blocks in a stack containing
 // "runtime.blockOnSystemStackInternal".
@@ -252,4 +343,24 @@ func blockOnSystemStackInternal() {
 	print("x\n")
 	lock(&deadlock)
 	lock(&deadlock)
+}
+
+type RWMutex struct {
+	rw rwmutex
+}
+
+func (rw *RWMutex) RLock() {
+	rw.rw.rlock()
+}
+
+func (rw *RWMutex) RUnlock() {
+	rw.rw.runlock()
+}
+
+func (rw *RWMutex) Lock() {
+	rw.rw.lock()
+}
+
+func (rw *RWMutex) Unlock() {
+	rw.rw.unlock()
 }

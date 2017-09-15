@@ -8,8 +8,9 @@ package net
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"internal/testenv"
+	"internal/poll"
 	"io/ioutil"
 	"os"
 	"path"
@@ -20,8 +21,13 @@ import (
 	"time"
 )
 
+var goResolver = Resolver{PreferGo: true}
+
 // Test address from 192.0.2.0/24 block, reserved by RFC 5737 for documentation.
 const TestAddr uint32 = 0xc0000201
+
+// Test address from 2001:db8::/32 block, reserved by RFC 3849 for documentation.
+var TestAddr6 = [16]byte{0x20, 0x01, 0x0d, 0xb8, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1}
 
 var dnsTransportFallbackTests = []struct {
 	server  string
@@ -37,18 +43,33 @@ var dnsTransportFallbackTests = []struct {
 }
 
 func TestDNSTransportFallback(t *testing.T) {
-	testenv.MustHaveExternalNetwork(t)
-
+	fake := fakeDNSServer{
+		rh: func(n, _ string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+			r := &dnsMsg{
+				dnsMsgHdr: dnsMsgHdr{
+					id:       q.id,
+					response: true,
+					rcode:    dnsRcodeSuccess,
+				},
+				question: q.question,
+			}
+			if n == "udp" {
+				r.truncated = true
+			}
+			return r, nil
+		},
+	}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 	for _, tt := range dnsTransportFallbackTests {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		msg, err := exchange(ctx, tt.server, tt.name, tt.qtype, time.Second)
+		msg, err := r.exchange(ctx, tt.server, tt.name, tt.qtype, time.Second)
 		if err != nil {
 			t.Error(err)
 			continue
 		}
 		switch msg.rcode {
-		case tt.rcode, dnsRcodeServerFailure:
+		case tt.rcode:
 		default:
 			t.Errorf("got %v from %v; want %v", msg.rcode, tt.server, tt.rcode)
 			continue
@@ -78,13 +99,30 @@ var specialDomainNameTests = []struct {
 }
 
 func TestSpecialDomainName(t *testing.T) {
-	testenv.MustHaveExternalNetwork(t)
+	fake := fakeDNSServer{func(_, _ string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+		r := &dnsMsg{
+			dnsMsgHdr: dnsMsgHdr{
+				id:       q.id,
+				response: true,
+			},
+			question: q.question,
+		}
 
+		switch q.question[0].Name {
+		case "example.com.":
+			r.rcode = dnsRcodeSuccess
+		default:
+			r.rcode = dnsRcodeNameError
+		}
+
+		return r, nil
+	}}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 	server := "8.8.8.8:53"
 	for _, tt := range specialDomainNameTests {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		msg, err := exchange(ctx, server, tt.name, tt.qtype, 3*time.Second)
+		msg, err := r.exchange(ctx, server, tt.name, tt.qtype, 3*time.Second)
 		if err != nil {
 			t.Error(err)
 			continue
@@ -139,14 +177,39 @@ func TestAvoidDNSName(t *testing.T) {
 	}
 }
 
+var fakeDNSServerSuccessful = fakeDNSServer{func(_, _ string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+	r := &dnsMsg{
+		dnsMsgHdr: dnsMsgHdr{
+			id:       q.id,
+			response: true,
+		},
+		question: q.question,
+	}
+	if len(q.question) == 1 && q.question[0].Qtype == dnsTypeA {
+		r.answer = []dnsRR{
+			&dnsRR_A{
+				Hdr: dnsRR_Header{
+					Name:     q.question[0].Name,
+					Rrtype:   dnsTypeA,
+					Class:    dnsClassINET,
+					Rdlength: 4,
+				},
+				A: TestAddr,
+			},
+		}
+	}
+	return r, nil
+}}
+
 // Issue 13705: don't try to resolve onion addresses, etc
 func TestLookupTorOnion(t *testing.T) {
-	addrs, err := goLookupIP(context.Background(), "foo.onion")
-	if len(addrs) > 0 {
-		t.Errorf("unexpected addresses: %v", addrs)
-	}
+	r := Resolver{PreferGo: true, Dial: fakeDNSServerSuccessful.DialContext}
+	addrs, err := r.LookupIPAddr(context.Background(), "foo.onion")
 	if err != nil {
 		t.Fatalf("lookup = %v; want nil", err)
+	}
+	if len(addrs) > 0 {
+		t.Errorf("unexpected addresses: %v", addrs)
 	}
 }
 
@@ -237,7 +300,7 @@ var updateResolvConfTests = []struct {
 }
 
 func TestUpdateResolvConf(t *testing.T) {
-	testenv.MustHaveExternalNetwork(t)
+	r := Resolver{PreferGo: true, Dial: fakeDNSServerSuccessful.DialContext}
 
 	conf, err := newResolvConfTest()
 	if err != nil {
@@ -257,7 +320,7 @@ func TestUpdateResolvConf(t *testing.T) {
 			for j := 0; j < N; j++ {
 				go func(name string) {
 					defer wg.Done()
-					ips, err := goLookupIP(context.Background(), name)
+					ips, err := r.LookupIPAddr(context.Background(), name)
 					if err != nil {
 						t.Error(err)
 						return
@@ -392,7 +455,60 @@ var goLookupIPWithResolverConfigTests = []struct {
 }
 
 func TestGoLookupIPWithResolverConfig(t *testing.T) {
-	testenv.MustHaveExternalNetwork(t)
+	fake := fakeDNSServer{func(n, s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+		switch s {
+		case "[2001:4860:4860::8888]:53", "8.8.8.8:53":
+			break
+		default:
+			time.Sleep(10 * time.Millisecond)
+			return nil, poll.ErrTimeout
+		}
+		r := &dnsMsg{
+			dnsMsgHdr: dnsMsgHdr{
+				id:       q.id,
+				response: true,
+			},
+			question: q.question,
+		}
+		for _, question := range q.question {
+			switch question.Qtype {
+			case dnsTypeA:
+				switch question.Name {
+				case "hostname.as112.net.":
+					break
+				case "ipv4.google.com.":
+					r.answer = append(r.answer, &dnsRR_A{
+						Hdr: dnsRR_Header{
+							Name:     q.question[0].Name,
+							Rrtype:   dnsTypeA,
+							Class:    dnsClassINET,
+							Rdlength: 4,
+						},
+						A: TestAddr,
+					})
+				default:
+
+				}
+			case dnsTypeAAAA:
+				switch question.Name {
+				case "hostname.as112.net.":
+					break
+				case "ipv6.google.com.":
+					r.answer = append(r.answer, &dnsRR_AAAA{
+						Hdr: dnsRR_Header{
+							Name:     q.question[0].Name,
+							Rrtype:   dnsTypeAAAA,
+							Class:    dnsClassINET,
+							Rdlength: 16,
+						},
+						AAAA: TestAddr6,
+					})
+				}
+			}
+		}
+		return r, nil
+	}}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 
 	conf, err := newResolvConfTest()
 	if err != nil {
@@ -405,14 +521,8 @@ func TestGoLookupIPWithResolverConfig(t *testing.T) {
 			t.Error(err)
 			continue
 		}
-		addrs, err := goLookupIP(context.Background(), tt.name)
+		addrs, err := r.LookupIPAddr(context.Background(), tt.name)
 		if err != nil {
-			// This test uses external network connectivity.
-			// We need to take care with errors on both
-			// DNS message exchange layer and DNS
-			// transport layer because goLookupIP may fail
-			// when the IP connectivity on node under test
-			// gets lost during its run.
 			if err, ok := err.(*DNSError); !ok || tt.error != nil && (err.Name != tt.error.(*DNSError).Name || err.Server != tt.error.(*DNSError).Server || err.IsTimeout != tt.error.(*DNSError).IsTimeout) {
 				t.Errorf("got %v; want %v", err, tt.error)
 			}
@@ -437,7 +547,17 @@ func TestGoLookupIPWithResolverConfig(t *testing.T) {
 
 // Test that goLookupIPOrder falls back to the host file when no DNS servers are available.
 func TestGoLookupIPOrderFallbackToFile(t *testing.T) {
-	testenv.MustHaveExternalNetwork(t)
+	fake := fakeDNSServer{func(n, s string, q *dnsMsg, tm time.Time) (*dnsMsg, error) {
+		r := &dnsMsg{
+			dnsMsgHdr: dnsMsgHdr{
+				id:       q.id,
+				response: true,
+			},
+			question: q.question,
+		}
+		return r, nil
+	}}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 
 	// Add a config that simulates no dns servers being available.
 	conf, err := newResolvConfTest()
@@ -455,14 +575,14 @@ func TestGoLookupIPOrderFallbackToFile(t *testing.T) {
 		name := fmt.Sprintf("order %v", order)
 
 		// First ensure that we get an error when contacting a non-existent host.
-		_, _, err := goLookupIPCNAMEOrder(context.Background(), "notarealhost", order)
+		_, _, err := r.goLookupIPCNAMEOrder(context.Background(), "notarealhost", order)
 		if err == nil {
 			t.Errorf("%s: expected error while looking up name not in hosts file", name)
 			continue
 		}
 
 		// Now check that we get an address when the name appears in the hosts file.
-		addrs, _, err := goLookupIPCNAMEOrder(context.Background(), "thor", order) // entry is in "testdata/hosts"
+		addrs, _, err := r.goLookupIPCNAMEOrder(context.Background(), "thor", order) // entry is in "testdata/hosts"
 		if err != nil {
 			t.Errorf("%s: expected to successfully lookup host entry", name)
 			continue
@@ -485,9 +605,6 @@ func TestGoLookupIPOrderFallbackToFile(t *testing.T) {
 func TestErrorForOriginalNameWhenSearching(t *testing.T) {
 	const fqdn = "doesnotexist.domain"
 
-	origTestHookDNSDialer := testHookDNSDialer
-	defer func() { testHookDNSDialer = origTestHookDNSDialer }()
-
 	conf, err := newResolvConfTest()
 	if err != nil {
 		t.Fatal(err)
@@ -498,14 +615,13 @@ func TestErrorForOriginalNameWhenSearching(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d := &fakeDNSDialer{}
-	testHookDNSDialer = func() dnsDialer { return d }
-
-	d.rh = func(s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+	fake := fakeDNSServer{func(_, _ string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
 		r := &dnsMsg{
 			dnsMsgHdr: dnsMsgHdr{
-				id: q.id,
+				id:       q.id,
+				response: true,
 			},
+			question: q.question,
 		}
 
 		switch q.question[0].Name {
@@ -516,24 +632,31 @@ func TestErrorForOriginalNameWhenSearching(t *testing.T) {
 		}
 
 		return r, nil
-	}
+	}}
 
-	_, err = goLookupIP(context.Background(), fqdn)
-	if err == nil {
-		t.Fatal("expected an error")
+	cases := []struct {
+		strictErrors bool
+		wantErr      *DNSError
+	}{
+		{true, &DNSError{Name: fqdn, Err: "server misbehaving", IsTemporary: true}},
+		{false, &DNSError{Name: fqdn, Err: errNoSuchHost.Error()}},
 	}
+	for _, tt := range cases {
+		r := Resolver{PreferGo: true, StrictErrors: tt.strictErrors, Dial: fake.DialContext}
+		_, err = r.LookupIPAddr(context.Background(), fqdn)
+		if err == nil {
+			t.Fatal("expected an error")
+		}
 
-	want := &DNSError{Name: fqdn, Err: errNoSuchHost.Error()}
-	if err, ok := err.(*DNSError); !ok || err.Name != want.Name || err.Err != want.Err {
-		t.Errorf("got %v; want %v", err, want)
+		want := tt.wantErr
+		if err, ok := err.(*DNSError); !ok || err.Name != want.Name || err.Err != want.Err || err.IsTemporary != want.IsTemporary {
+			t.Errorf("got %v; want %v", err, want)
+		}
 	}
 }
 
 // Issue 15434. If a name server gives a lame referral, continue to the next.
 func TestIgnoreLameReferrals(t *testing.T) {
-	origTestHookDNSDialer := testHookDNSDialer
-	defer func() { testHookDNSDialer = origTestHookDNSDialer }()
-
 	conf, err := newResolvConfTest()
 	if err != nil {
 		t.Fatal(err)
@@ -545,10 +668,7 @@ func TestIgnoreLameReferrals(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d := &fakeDNSDialer{}
-	testHookDNSDialer = func() dnsDialer { return d }
-
-	d.rh = func(s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+	fake := fakeDNSServer{func(_, s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
 		t.Log(s, q)
 		r := &dnsMsg{
 			dnsMsgHdr: dnsMsgHdr{
@@ -576,9 +696,10 @@ func TestIgnoreLameReferrals(t *testing.T) {
 		}
 
 		return r, nil
-	}
+	}}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 
-	addrs, err := goLookupIP(context.Background(), "www.golang.org")
+	addrs, err := r.LookupIPAddr(context.Background(), "www.golang.org")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -597,7 +718,7 @@ func BenchmarkGoLookupIP(b *testing.B) {
 	ctx := context.Background()
 
 	for i := 0; i < b.N; i++ {
-		goLookupIP(ctx, "www.example.com")
+		goResolver.LookupIPAddr(ctx, "www.example.com")
 	}
 }
 
@@ -606,7 +727,7 @@ func BenchmarkGoLookupIPNoSuchHost(b *testing.B) {
 	ctx := context.Background()
 
 	for i := 0; i < b.N; i++ {
-		goLookupIP(ctx, "some.nonexistent")
+		goResolver.LookupIPAddr(ctx, "some.nonexistent")
 	}
 }
 
@@ -629,36 +750,68 @@ func BenchmarkGoLookupIPWithBrokenNameServer(b *testing.B) {
 	ctx := context.Background()
 
 	for i := 0; i < b.N; i++ {
-		goLookupIP(ctx, "www.example.com")
+		goResolver.LookupIPAddr(ctx, "www.example.com")
 	}
 }
 
-type fakeDNSDialer struct {
-	// reply handler
-	rh func(s string, q *dnsMsg, t time.Time) (*dnsMsg, error)
+type fakeDNSServer struct {
+	rh func(n, s string, q *dnsMsg, t time.Time) (*dnsMsg, error)
 }
 
-func (f *fakeDNSDialer) dialDNS(_ context.Context, n, s string) (dnsConn, error) {
-	return &fakeDNSConn{f.rh, s, time.Time{}}, nil
+func (server *fakeDNSServer) DialContext(_ context.Context, n, s string) (Conn, error) {
+	return &fakeDNSConn{nil, server, n, s, nil, time.Time{}}, nil
 }
 
 type fakeDNSConn struct {
-	rh func(s string, q *dnsMsg, t time.Time) (*dnsMsg, error)
-	s  string
-	t  time.Time
+	Conn
+	server *fakeDNSServer
+	n      string
+	s      string
+	q      *dnsMsg
+	t      time.Time
 }
 
 func (f *fakeDNSConn) Close() error {
 	return nil
 }
 
+func (f *fakeDNSConn) Read(b []byte) (int, error) {
+	resp, err := f.server.rh(f.n, f.s, f.q, f.t)
+	if err != nil {
+		return 0, err
+	}
+
+	bb, ok := resp.Pack()
+	if !ok {
+		return 0, errors.New("cannot marshal DNS message")
+	}
+	if len(b) < len(bb) {
+		return 0, errors.New("read would fragment DNS message")
+	}
+
+	copy(b, bb)
+	return len(bb), nil
+}
+
+func (f *fakeDNSConn) ReadFrom(b []byte) (int, Addr, error) {
+	return 0, nil, nil
+}
+
+func (f *fakeDNSConn) Write(b []byte) (int, error) {
+	f.q = new(dnsMsg)
+	if !f.q.Unpack(b) {
+		return 0, errors.New("cannot unmarshal DNS message")
+	}
+	return len(b), nil
+}
+
+func (f *fakeDNSConn) WriteTo(b []byte, addr Addr) (int, error) {
+	return 0, nil
+}
+
 func (f *fakeDNSConn) SetDeadline(t time.Time) error {
 	f.t = t
 	return nil
-}
-
-func (f *fakeDNSConn) dnsRoundTrip(q *dnsMsg) (*dnsMsg, error) {
-	return f.rh(f.s, q, f.t)
 }
 
 // UDP round-tripper algorithm should ignore invalid DNS responses (issue 13281).
@@ -723,7 +876,8 @@ func TestIgnoreDNSForgeries(t *testing.T) {
 		},
 	}
 
-	resp, err := dnsRoundTripUDP(c, msg)
+	dc := &dnsPacketConn{c}
+	resp, err := dc.dnsRoundTrip(msg)
 	if err != nil {
 		t.Fatalf("dnsRoundTripUDP failed: %v", err)
 	}
@@ -735,9 +889,6 @@ func TestIgnoreDNSForgeries(t *testing.T) {
 
 // Issue 16865. If a name server times out, continue to the next.
 func TestRetryTimeout(t *testing.T) {
-	origTestHookDNSDialer := testHookDNSDialer
-	defer func() { testHookDNSDialer = origTestHookDNSDialer }()
-
 	conf, err := newResolvConfTest()
 	if err != nil {
 		t.Fatal(err)
@@ -752,12 +903,9 @@ func TestRetryTimeout(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	d := &fakeDNSDialer{}
-	testHookDNSDialer = func() dnsDialer { return d }
-
 	var deadline0 time.Time
 
-	d.rh = func(s string, q *dnsMsg, deadline time.Time) (*dnsMsg, error) {
+	fake := fakeDNSServer{func(_, s string, q *dnsMsg, deadline time.Time) (*dnsMsg, error) {
 		t.Log(s, q, deadline)
 
 		if deadline.IsZero() {
@@ -767,17 +915,18 @@ func TestRetryTimeout(t *testing.T) {
 		if s == "192.0.2.1:53" {
 			deadline0 = deadline
 			time.Sleep(10 * time.Millisecond)
-			return nil, errTimeout
+			return nil, poll.ErrTimeout
 		}
 
-		if deadline == deadline0 {
+		if deadline.Equal(deadline0) {
 			t.Error("deadline didn't change")
 		}
 
 		return mockTXTResponse(q), nil
-	}
+	}}
+	r := &Resolver{PreferGo: true, Dial: fake.DialContext}
 
-	_, err = LookupTXT("www.golang.org")
+	_, err = r.LookupTXT(context.Background(), "www.golang.org")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -796,9 +945,6 @@ func TestRotate(t *testing.T) {
 }
 
 func testRotate(t *testing.T, rotate bool, nameservers, wantServers []string) {
-	origTestHookDNSDialer := testHookDNSDialer
-	defer func() { testHookDNSDialer = origTestHookDNSDialer }()
-
 	conf, err := newResolvConfTest()
 	if err != nil {
 		t.Fatal(err)
@@ -817,18 +963,16 @@ func testRotate(t *testing.T, rotate bool, nameservers, wantServers []string) {
 		t.Fatal(err)
 	}
 
-	d := &fakeDNSDialer{}
-	testHookDNSDialer = func() dnsDialer { return d }
-
 	var usedServers []string
-	d.rh = func(s string, q *dnsMsg, _ time.Time) (*dnsMsg, error) {
+	fake := fakeDNSServer{func(_, s string, q *dnsMsg, deadline time.Time) (*dnsMsg, error) {
 		usedServers = append(usedServers, s)
 		return mockTXTResponse(q), nil
-	}
+	}}
+	r := Resolver{PreferGo: true, Dial: fake.DialContext}
 
 	// len(nameservers) + 1 to allow rotation to get back to start
 	for i := 0; i < len(nameservers)+1; i++ {
-		if _, err := LookupTXT("www.golang.org"); err != nil {
+		if _, err := r.LookupTXT(context.Background(), "www.golang.org"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -859,4 +1003,312 @@ func mockTXTResponse(q *dnsMsg) *dnsMsg {
 	}
 
 	return r
+}
+
+// Issue 17448. With StrictErrors enabled, temporary errors should make
+// LookupIP fail rather than return a partial result.
+func TestStrictErrorsLookupIP(t *testing.T) {
+	conf, err := newResolvConfTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conf.teardown()
+
+	confData := []string{
+		"nameserver 192.0.2.53",
+		"search x.golang.org y.golang.org",
+	}
+	if err := conf.writeAndUpdate(confData); err != nil {
+		t.Fatal(err)
+	}
+
+	const name = "test-issue19592"
+	const server = "192.0.2.53:53"
+	const searchX = "test-issue19592.x.golang.org."
+	const searchY = "test-issue19592.y.golang.org."
+	const ip4 = "192.0.2.1"
+	const ip6 = "2001:db8::1"
+
+	type resolveWhichEnum int
+	const (
+		resolveOK resolveWhichEnum = iota
+		resolveOpError
+		resolveServfail
+		resolveTimeout
+	)
+
+	makeTempError := func(err string) error {
+		return &DNSError{
+			Err:         err,
+			Name:        name,
+			Server:      server,
+			IsTemporary: true,
+		}
+	}
+	makeTimeout := func() error {
+		return &DNSError{
+			Err:       poll.ErrTimeout.Error(),
+			Name:      name,
+			Server:    server,
+			IsTimeout: true,
+		}
+	}
+	makeNxDomain := func() error {
+		return &DNSError{
+			Err:    errNoSuchHost.Error(),
+			Name:   name,
+			Server: server,
+		}
+	}
+
+	cases := []struct {
+		desc          string
+		resolveWhich  func(quest *dnsQuestion) resolveWhichEnum
+		wantStrictErr error
+		wantLaxErr    error
+		wantIPs       []string
+	}{
+		{
+			desc: "No errors",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				return resolveOK
+			},
+			wantIPs: []string{ip4, ip6},
+		},
+		{
+			desc: "searchX error fails in strict mode",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchX {
+					return resolveTimeout
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTimeout(),
+			wantIPs:       []string{ip4, ip6},
+		},
+		{
+			desc: "searchX IPv4-only timeout fails in strict mode",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchX && quest.Qtype == dnsTypeA {
+					return resolveTimeout
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTimeout(),
+			wantIPs:       []string{ip4, ip6},
+		},
+		{
+			desc: "searchX IPv6-only servfail fails in strict mode",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchX && quest.Qtype == dnsTypeAAAA {
+					return resolveServfail
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTempError("server misbehaving"),
+			wantIPs:       []string{ip4, ip6},
+		},
+		{
+			desc: "searchY error always fails",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchY {
+					return resolveTimeout
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTimeout(),
+			wantLaxErr:    makeNxDomain(), // This one reaches the "test." FQDN.
+		},
+		{
+			desc: "searchY IPv4-only socket error fails in strict mode",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchY && quest.Qtype == dnsTypeA {
+					return resolveOpError
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTempError("write: socket on fire"),
+			wantIPs:       []string{ip6},
+		},
+		{
+			desc: "searchY IPv6-only timeout fails in strict mode",
+			resolveWhich: func(quest *dnsQuestion) resolveWhichEnum {
+				if quest.Name == searchY && quest.Qtype == dnsTypeAAAA {
+					return resolveTimeout
+				}
+				return resolveOK
+			},
+			wantStrictErr: makeTimeout(),
+			wantIPs:       []string{ip4},
+		},
+	}
+
+	for i, tt := range cases {
+		fake := fakeDNSServer{func(_, s string, q *dnsMsg, deadline time.Time) (*dnsMsg, error) {
+			t.Log(s, q)
+
+			switch tt.resolveWhich(&q.question[0]) {
+			case resolveOK:
+				// Handle below.
+			case resolveOpError:
+				return nil, &OpError{Op: "write", Err: fmt.Errorf("socket on fire")}
+			case resolveServfail:
+				return &dnsMsg{
+					dnsMsgHdr: dnsMsgHdr{
+						id:       q.id,
+						response: true,
+						rcode:    dnsRcodeServerFailure,
+					},
+					question: q.question,
+				}, nil
+			case resolveTimeout:
+				return nil, poll.ErrTimeout
+			default:
+				t.Fatal("Impossible resolveWhich")
+			}
+
+			switch q.question[0].Name {
+			case searchX, name + ".":
+				// Return NXDOMAIN to utilize the search list.
+				return &dnsMsg{
+					dnsMsgHdr: dnsMsgHdr{
+						id:       q.id,
+						response: true,
+						rcode:    dnsRcodeNameError,
+					},
+					question: q.question,
+				}, nil
+			case searchY:
+				// Return records below.
+			default:
+				return nil, fmt.Errorf("Unexpected Name: %v", q.question[0].Name)
+			}
+
+			r := &dnsMsg{
+				dnsMsgHdr: dnsMsgHdr{
+					id:       q.id,
+					response: true,
+				},
+				question: q.question,
+			}
+			switch q.question[0].Qtype {
+			case dnsTypeA:
+				r.answer = []dnsRR{
+					&dnsRR_A{
+						Hdr: dnsRR_Header{
+							Name:     q.question[0].Name,
+							Rrtype:   dnsTypeA,
+							Class:    dnsClassINET,
+							Rdlength: 4,
+						},
+						A: TestAddr,
+					},
+				}
+			case dnsTypeAAAA:
+				r.answer = []dnsRR{
+					&dnsRR_AAAA{
+						Hdr: dnsRR_Header{
+							Name:     q.question[0].Name,
+							Rrtype:   dnsTypeAAAA,
+							Class:    dnsClassINET,
+							Rdlength: 16,
+						},
+						AAAA: TestAddr6,
+					},
+				}
+			default:
+				return nil, fmt.Errorf("Unexpected Qtype: %v", q.question[0].Qtype)
+			}
+			return r, nil
+		}}
+
+		for _, strict := range []bool{true, false} {
+			r := Resolver{PreferGo: true, StrictErrors: strict, Dial: fake.DialContext}
+			ips, err := r.LookupIPAddr(context.Background(), name)
+
+			var wantErr error
+			if strict {
+				wantErr = tt.wantStrictErr
+			} else {
+				wantErr = tt.wantLaxErr
+			}
+			if !reflect.DeepEqual(err, wantErr) {
+				t.Errorf("#%d (%s) strict=%v: got err %#v; want %#v", i, tt.desc, strict, err, wantErr)
+			}
+
+			gotIPs := map[string]struct{}{}
+			for _, ip := range ips {
+				gotIPs[ip.String()] = struct{}{}
+			}
+			wantIPs := map[string]struct{}{}
+			if wantErr == nil {
+				for _, ip := range tt.wantIPs {
+					wantIPs[ip] = struct{}{}
+				}
+			}
+			if !reflect.DeepEqual(gotIPs, wantIPs) {
+				t.Errorf("#%d (%s) strict=%v: got ips %v; want %v", i, tt.desc, strict, gotIPs, wantIPs)
+			}
+		}
+	}
+}
+
+// Issue 17448. With StrictErrors enabled, temporary errors should make
+// LookupTXT stop walking the search list.
+func TestStrictErrorsLookupTXT(t *testing.T) {
+	conf, err := newResolvConfTest()
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer conf.teardown()
+
+	confData := []string{
+		"nameserver 192.0.2.53",
+		"search x.golang.org y.golang.org",
+	}
+	if err := conf.writeAndUpdate(confData); err != nil {
+		t.Fatal(err)
+	}
+
+	const name = "test"
+	const server = "192.0.2.53:53"
+	const searchX = "test.x.golang.org."
+	const searchY = "test.y.golang.org."
+	const txt = "Hello World"
+
+	fake := fakeDNSServer{func(_, s string, q *dnsMsg, deadline time.Time) (*dnsMsg, error) {
+		t.Log(s, q)
+
+		switch q.question[0].Name {
+		case searchX:
+			return nil, poll.ErrTimeout
+		case searchY:
+			return mockTXTResponse(q), nil
+		default:
+			return nil, fmt.Errorf("Unexpected Name: %v", q.question[0].Name)
+		}
+	}}
+
+	for _, strict := range []bool{true, false} {
+		r := Resolver{StrictErrors: strict, Dial: fake.DialContext}
+		_, rrs, err := r.lookup(context.Background(), name, dnsTypeTXT)
+		var wantErr error
+		var wantRRs int
+		if strict {
+			wantErr = &DNSError{
+				Err:       poll.ErrTimeout.Error(),
+				Name:      name,
+				Server:    server,
+				IsTimeout: true,
+			}
+		} else {
+			wantRRs = 1
+		}
+		if !reflect.DeepEqual(err, wantErr) {
+			t.Errorf("strict=%v: got err %#v; want %#v", strict, err, wantErr)
+		}
+		if len(rrs) != wantRRs {
+			t.Errorf("strict=%v: got %v; want %v", strict, len(rrs), wantRRs)
+		}
+	}
 }

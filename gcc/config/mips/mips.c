@@ -12945,22 +12945,21 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + size - 1) / size;
 }
 
-/* Implement CANNOT_CHANGE_MODE_CLASS.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-bool
-mips_cannot_change_mode_class (machine_mode from,
-			       machine_mode to,
-			       enum reg_class rclass)
+static bool
+mips_can_change_mode_class (machine_mode from,
+			    machine_mode to, reg_class_t rclass)
 {
   /* Allow conversions between different Loongson integer vectors,
      and between those vectors and DImode.  */
   if (GET_MODE_SIZE (from) == 8 && GET_MODE_SIZE (to) == 8
       && INTEGRAL_MODE_P (from) && INTEGRAL_MODE_P (to))
-    return false;
+    return true;
 
   /* Allow conversions between different MSA vector modes.  */
   if (MSA_SUPPORTED_MODE_P (from) && MSA_SUPPORTED_MODE_P (to))
-    return false;
+    return true;
 
   /* Otherwise, there are several problems with changing the modes of
      values in floating-point registers:
@@ -12985,7 +12984,7 @@ mips_cannot_change_mode_class (machine_mode from,
 
      We therefore disallow all mode changes involving FPRs.  */
 
-  return reg_classes_intersect_p (FP_REGS, rclass);
+  return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
 /* Implement target hook small_register_classes_for_mode_p.  */
@@ -22329,6 +22328,14 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   *punsignedp = unsignedp;
   return mode;
 }
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return !TARGET_64BIT || inprec <= 32 || outprec > 32;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22620,6 +22627,12 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 
 #undef TARGET_SECONDARY_MEMORY_NEEDED
 #define TARGET_SECONDARY_MEMORY_NEEDED mips_secondary_memory_needed
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS mips_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

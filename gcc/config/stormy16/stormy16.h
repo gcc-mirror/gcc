@@ -478,8 +478,6 @@ enum reg_class
 
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define Pmode HImode
 
 #define FUNCTION_MODE HImode

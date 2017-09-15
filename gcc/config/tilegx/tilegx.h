@@ -378,11 +378,6 @@ enum reg_class
 
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
-/* We represent all SI values as sign-extended DI values in
-   registers.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
-  ((INPREC) <= 32 || (OUTPREC) > 32)
-
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 64, 1)
 

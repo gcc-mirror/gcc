@@ -450,6 +450,8 @@ func gopanic(e interface{}) {
 	}
 	gp._panic = p
 
+	atomic.Xadd(&runningPanicDefers, 1)
+
 	for {
 		d := gp._defer
 		if d == nil {
@@ -486,8 +488,8 @@ func gopanic(e interface{}) {
 		d._panic = nil
 
 		if p.recovered {
-			// Some deferred function called recover.
-			// Stop running this panic.
+			atomic.Xadd(&runningPanicDefers, -1)
+
 			gp._panic = p.link
 
 			// Aborted panics are marked but remain on the g.panic list.
@@ -531,6 +533,11 @@ func gopanic(e interface{}) {
 	// and String methods to prepare the panic strings before startpanic.
 	preprintpanics(gp._panic)
 	startpanic()
+
+	// startpanic set panicking, which will block main from exiting,
+	// so now OK to decrement runningPanicDefers.
+	atomic.Xadd(&runningPanicDefers, -1)
+
 	printpanics(gp._panic)
 	dopanic(0)       // should not return
 	*(*int)(nil) = 0 // not reached
@@ -801,7 +808,17 @@ func throw(s string) {
 	*(*int)(nil) = 0 // not reached
 }
 
-//uint32 runtime·panicking;
+// runningPanicDefers is non-zero while running deferred functions for panic.
+// runningPanicDefers is incremented and decremented atomically.
+// This is used to try hard to get a panic stack trace out when exiting.
+var runningPanicDefers uint32
+
+// panicking is non-zero when crashing the program for an unrecovered panic.
+// panicking is incremented and decremented atomically.
+var panicking uint32
+
+// paniclk is held while printing the panic information and stack trace,
+// so that two concurrent panics don't overlap their output.
 var paniclk mutex
 
 func startpanic() {

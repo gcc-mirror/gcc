@@ -1,3 +1,80 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/82192
+	* gcc.c-torture/execute/pr82192.c: New test.
+
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82217
+	* gcc.dg/torture/pr82217.c: New testcase.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82145
+	* gcc.target/i386/pr82145.c: New test.
+
+2017-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82184
+	* gfortran.dg/pointer_array_9.f90: New test.
+
+2017-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/abs128-1.c: Use __builtin_fabsf128 instead of
+	__builtin_fabsq.
+	* gcc.target/powerpc/float128-5.c: Use __builtin_fabsf128 instead
+	of __builtin_fabsq.  Prevent the test from running on 32-bit.
+	* gcc.target/powerpc/float128-fma1.c: New test.
+	* gcc.target/powerpc/float128-fma2.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt1.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt2.c: Likewise.
+
+2017-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82174
+	* jit.dg/test-error-gcc_jit_context_get_builtin_function-unknown-builtin.c:
+	New test case.
+
+2017-09-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/r2_shrink-wrap.c: New.
+
+2017-09-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: Add
+	lp64 requirement.
+
+2017-09-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-59.c: New testcase.
+	* gcc.dg/uninit-suppress_2.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-sccvn-2.c: Likewise.
+
+2017-09-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/80996
+	* gcc.dg/vect/vect-multitypes-12.c: Remove sparc*-*-* handling.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81325
+	* g++.dg/cpp0x/pr81325.C: New test.
+
+2017-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_10.f03 : New test.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68177
+	* g++.dg/cpp0x/lambda/lambda-68177.C: New.
+
+2017-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82154
+	* g++.dg/torture/pr82154.C: New test.
+
 2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/61362

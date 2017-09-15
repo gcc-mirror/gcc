@@ -376,11 +376,7 @@ mode_change_ok (machine_mode orig_mode, machine_mode new_mode,
   if (partial_subreg_p (orig_mode, new_mode))
     return false;
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
-  return !REG_CANNOT_CHANGE_MODE_P (regno, orig_mode, new_mode);
-#endif
-
-  return true;
+  return REG_CAN_CHANGE_MODE_P (regno, orig_mode, new_mode);
 }
 
 /* Register REGNO was originally set in ORIG_MODE.  It - or a copy of it -

@@ -98,8 +98,8 @@ func issue10979() {
 // issue11347
 // These should not crash.
 var a1, b1 /* ERROR cycle */ , c1 /* ERROR cycle */ b1 = 0 > 0<<""[""[c1]]>c1
-var a2, b2 /* ERROR cycle */ = 0 /* ERROR mismatch */ /* ERROR mismatch */ > 0<<""[b2]
-var a3, b3 /* ERROR cycle */ = int /* ERROR mismatch */ /* ERROR mismatch */ (1<<""[b3])
+var a2, b2 /* ERROR cycle */ = 0 /* ERROR cannot initialize */ /* ERROR cannot initialize */ > 0<<""[b2]
+var a3, b3 /* ERROR cycle */ = int /* ERROR cannot initialize */ /* ERROR cannot initialize */ (1<<""[b3])
 
 // issue10260
 // Check that error messages explain reason for interface assignment failures.
@@ -185,4 +185,25 @@ func issue15755() {
 	var u, v []int = f1 /* ERROR cannot use f1 */ ()
 	_ = u
 	_ = v
+}
+
+// Test that we don't get "declared but not used"
+// errors in the context of invalid/C objects.
+func issue20358() {
+	var F C /* ERROR "undeclared" */ .F
+	var A C /* ERROR "undeclared" */ .A
+	var S C /* ERROR "undeclared" */ .S
+	type T C /* ERROR "undeclared" */ .T
+	type P C /* ERROR "undeclared" */ .P
+
+	// these variables must be "used" even though
+	// the LHS expressions/types below in which
+	// context they are used are unknown/invalid
+	var f, a, s1, s2, s3, t, p int
+
+	_ = F(f)
+	_ = A[a]
+	_ = S[s1:s2:s3]
+	_ = T{t}
+	_ = P{f: p}
 }

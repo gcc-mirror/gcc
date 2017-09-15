@@ -2334,34 +2334,7 @@ This macro helps control the handling of multiple-word values
 in the reload pass.
 @end defmac
 
-@defmac CANNOT_CHANGE_MODE_CLASS (@var{from}, @var{to}, @var{class})
-If defined, a C expression that returns nonzero for a @var{class} for which
-a change from mode @var{from} to mode @var{to} is invalid.
-
-For example, loading 32-bit integer or floating-point objects into
-floating-point registers on Alpha extends them to 64 bits.
-Therefore loading a 64-bit object and then storing it as a 32-bit object
-does not store the low-order 32 bits, as would be the case for a normal
-register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
-as below:
-
-@smallexample
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
-   ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
-@end smallexample
-
-Even if storing from a register in mode @var{to} would be valid,
-if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
-than @code{word_mode}, then we must prevent @var{to} narrowing the
-mode.  This happens when the middle-end assumes that it can load
-or store pieces of an @var{N}-word pseudo, and that the pseudo will
-eventually be allocated to @var{N} @code{word_mode} hard registers.
-Failure to prevent this kind of mode change will result in the
-entire @code{raw_reg_mode} being modified instead of the partial
-value that the middle-end intended.
-
-@end defmac
+@hook TARGET_CAN_CHANGE_MODE_CLASS
 
 @hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 
@@ -3308,13 +3281,7 @@ argument @var{libname} exists for symmetry with
 
 @hook TARGET_FUNCTION_ARG_ADVANCE
 
-@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
-If defined, a C expression that is the number of bytes to add to the
-offset of the argument passed in memory.  This is needed for the SPU,
-which passes @code{char} and @code{short} arguments in the preferred
-slot that is in the middle of the quad word instead of starting at the
-top.
-@end defmac
+@hook TARGET_FUNCTION_ARG_OFFSET
 
 @hook TARGET_FUNCTION_ARG_PADDING
 
@@ -7451,12 +7418,12 @@ define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
 You may return a non-@code{UNKNOWN} value even if for some hard registers
 the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
-of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
+of these hard registers @code{TARGET_CAN_CHANGE_MODE_CLASS} returns false
 when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
 integral mode larger than this but not larger than @code{word_mode}.
 
 You must return @code{UNKNOWN} if for some hard registers that allow this
-mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
+mode, @code{TARGET_CAN_CHANGE_MODE_CLASS} says that they cannot change to
 @code{word_mode}, but that they can change to another integral mode that
 is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
@@ -7509,21 +7476,7 @@ You need not define this macro if it would always have the value of zero.
 @anchor{TARGET_SHIFT_TRUNCATION_MASK}
 @hook TARGET_SHIFT_TRUNCATION_MASK
 
-@defmac TRULY_NOOP_TRUNCATION (@var{outprec}, @var{inprec})
-A C expression which is nonzero if on this machine it is safe to
-``convert'' an integer of @var{inprec} bits to one of @var{outprec}
-bits (where @var{outprec} is smaller than @var{inprec}) by merely
-operating on it as if it had only @var{outprec} bits.
-
-On many machines, this expression can be 1.
-
-@c rearranged this, removed the phrase "it is reported that".  this was
-@c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
-for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
-If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
-such cases may improve things.
-@end defmac
+@hook TARGET_TRULY_NOOP_TRUNCATION
 
 @hook TARGET_MODE_REP_EXTENDED
 

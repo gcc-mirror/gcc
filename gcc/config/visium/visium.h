@@ -723,24 +723,6 @@ enum reg_class
    registers. */
 #define PREFERRED_RELOAD_CLASS(X,CLASS) CLASS
 
-/*  `CANNOT_CHANGE_MODE_CLASS (from, to, class)
-
-    If defined, a C expression that returns nonzero for a `class' for
-    which a change from mode `from' to mode `to' is invalid.
-
-    It's not obvious from the above that MDB cannot change mode. However
-    difficulties arise from expressions of the form
-
-    (subreg:SI (reg:DI R_MDB) 0)
- 
-    There is no way to convert that reference to a single machine
-    register and, without the following definition, reload will quietly
-    convert it to
- 
-     (reg:SI R_MDB)  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
-  (CLASS == MDB ? (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)) : 0)
-
 #define CLASS_MAX_NREGS(CLASS, MODE)    \
   ((CLASS) == MDB ?                     \
   ((GET_MODE_SIZE (MODE) + 2 * UNITS_PER_WORD - 1) / (2 * UNITS_PER_WORD)) \
@@ -1219,21 +1201,6 @@ do									\
    deletion of truncations of the values that serve as arguments to
    bitfield instructions. */
 #define SHIFT_COUNT_TRUNCATED 0
-
-/* `TRULY_NOOP_TRUNCATION (OUTPREC, INPREC)'
-
-   A C expression which is nonzero if on this machine it is safe to
-   "convert" an integer of INPREC bits to one of OUTPREC bits (where
-   OUTPREC is smaller than INPREC) by merely operating on it as if it
-   had only OUTPREC bits.
-
-   On many machines, this expression can be 1.
-
-   When `TRULY_NOOP_TRUNCATION' returns 1 for a pair of sizes for
-   modes for which `TARGET_MODES_TIEABLE_P' is 0, suboptimal code can result.
-   If this is the case, making `TRULY_NOOP_TRUNCATION' return 0 in
-   such cases may improve things. */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* `STORE_FLAG_VALUE'
 

@@ -515,8 +515,6 @@ do {                                                                    \
 
 #define CASE_VECTOR_MODE Pmode
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define LOAD_EXTEND_OP(MODE) (ZERO_EXTEND)
 
 #define WORD_REGISTER_OPERATIONS 1

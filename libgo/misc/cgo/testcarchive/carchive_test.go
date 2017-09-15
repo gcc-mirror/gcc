@@ -120,8 +120,10 @@ func init() {
 func goEnv(key string) string {
 	out, err := exec.Command("go", "env", key).Output()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "go env %s failed:\n%s", key, err)
-		fmt.Fprintf(os.Stderr, "%s", err.(*exec.ExitError).Stderr)
+		fmt.Fprintf(os.Stderr, "go env %s failed:\n%s\n", key, err)
+		if ee, ok := err.(*exec.ExitError); ok {
+			fmt.Fprintf(os.Stderr, "%s", ee.Stderr)
+		}
 		os.Exit(2)
 	}
 	return strings.TrimSpace(string(out))
@@ -238,15 +240,7 @@ func TestEarlySignalHandler(t *testing.T) {
 }
 
 func TestSignalForwarding(t *testing.T) {
-	switch GOOS {
-	case "darwin":
-		switch GOARCH {
-		case "arm", "arm64":
-			t.Skipf("skipping on %s/%s; see https://golang.org/issue/13701", GOOS, GOARCH)
-		}
-	case "windows":
-		t.Skip("skipping signal test on Windows")
-	}
+	checkSignalForwardingTest(t)
 
 	defer func() {
 		os.Remove("libgo2.a")
@@ -274,32 +268,19 @@ func TestSignalForwarding(t *testing.T) {
 	cmd = exec.Command(bin[0], append(bin[1:], "1")...)
 
 	out, err := cmd.CombinedOutput()
+	t.Logf("%s", out)
+	expectSignal(t, err, syscall.SIGSEGV)
 
-	if err == nil {
-		t.Logf("%s", out)
-		t.Error("test program succeeded unexpectedly")
-	} else if ee, ok := err.(*exec.ExitError); !ok {
-		t.Logf("%s", out)
-		t.Errorf("error (%v) has type %T; expected exec.ExitError", err, err)
-	} else if ws, ok := ee.Sys().(syscall.WaitStatus); !ok {
-		t.Logf("%s", out)
-		t.Errorf("error.Sys (%v) has type %T; expected syscall.WaitStatus", ee.Sys(), ee.Sys())
-	} else if !ws.Signaled() || ws.Signal() != syscall.SIGSEGV {
-		t.Logf("%s", out)
-		t.Errorf("got %v; expected SIGSEGV", ee)
-	}
+	// Test SIGPIPE forwarding
+	cmd = exec.Command(bin[0], append(bin[1:], "3")...)
+
+	out, err = cmd.CombinedOutput()
+	t.Logf("%s", out)
+	expectSignal(t, err, syscall.SIGPIPE)
 }
 
 func TestSignalForwardingExternal(t *testing.T) {
-	switch GOOS {
-	case "darwin":
-		switch GOARCH {
-		case "arm", "arm64":
-			t.Skipf("skipping on %s/%s; see https://golang.org/issue/13701", GOOS, GOARCH)
-		}
-	case "windows":
-		t.Skip("skipping signal test on Windows")
-	}
+	checkSignalForwardingTest(t)
 
 	defer func() {
 		os.Remove("libgo2.a")
@@ -370,19 +351,44 @@ func TestSignalForwardingExternal(t *testing.T) {
 			continue
 		}
 
-		if ee, ok := err.(*exec.ExitError); !ok {
-			t.Errorf("error (%v) has type %T; expected exec.ExitError", err, err)
-		} else if ws, ok := ee.Sys().(syscall.WaitStatus); !ok {
-			t.Errorf("error.Sys (%v) has type %T; expected syscall.WaitStatus", ee.Sys(), ee.Sys())
-		} else if !ws.Signaled() || ws.Signal() != syscall.SIGSEGV {
-			t.Errorf("got %v; expected SIGSEGV", ee)
-		} else {
-			// We got the error we expected.
+		if expectSignal(t, err, syscall.SIGSEGV) {
 			return
 		}
 	}
 
 	t.Errorf("program succeeded unexpectedly %d times", tries)
+}
+
+// checkSignalForwardingTest calls t.Skip if the SignalForwarding test
+// doesn't work on this platform.
+func checkSignalForwardingTest(t *testing.T) {
+	switch GOOS {
+	case "darwin":
+		switch GOARCH {
+		case "arm", "arm64":
+			t.Skipf("skipping on %s/%s; see https://golang.org/issue/13701", GOOS, GOARCH)
+		}
+	case "windows":
+		t.Skip("skipping signal test on Windows")
+	}
+}
+
+// expectSignal checks that err, the exit status of a test program,
+// shows a failure due to a specific signal. Returns whether we found
+// the expected signal.
+func expectSignal(t *testing.T, err error, sig syscall.Signal) bool {
+	if err == nil {
+		t.Error("test program succeeded unexpectedly")
+	} else if ee, ok := err.(*exec.ExitError); !ok {
+		t.Errorf("error (%v) has type %T; expected exec.ExitError", err, err)
+	} else if ws, ok := ee.Sys().(syscall.WaitStatus); !ok {
+		t.Errorf("error.Sys (%v) has type %T; expected syscall.WaitStatus", ee.Sys(), ee.Sys())
+	} else if !ws.Signaled() || ws.Signal() != sig {
+		t.Errorf("got %v; expected signal %v", ee, sig)
+	} else {
+		return true
+	}
+	return false
 }
 
 func TestOsSignal(t *testing.T) {
@@ -584,4 +590,86 @@ func hasDynTag(t *testing.T, f *elf.File, tag elf.DynTag) bool {
 		}
 	}
 	return false
+}
+
+func TestSIGPROF(t *testing.T) {
+	switch GOOS {
+	case "windows", "plan9":
+		t.Skipf("skipping SIGPROF test on %s", GOOS)
+	}
+
+	t.Parallel()
+
+	defer func() {
+		os.Remove("testp6" + exeSuffix)
+		os.Remove("libgo6.a")
+		os.Remove("libgo6.h")
+	}()
+
+	cmd := exec.Command("go", "build", "-buildmode=c-archive", "-o", "libgo6.a", "libgo6")
+	cmd.Env = gopathEnv
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Logf("%s", out)
+		t.Fatal(err)
+	}
+
+	ccArgs := append(cc, "-o", "testp6"+exeSuffix, "main6.c", "libgo6.a")
+	if runtime.Compiler == "gccgo" {
+		ccArgs = append(ccArgs, "-lgo")
+	}
+	if out, err := exec.Command(ccArgs[0], ccArgs[1:]...).CombinedOutput(); err != nil {
+		t.Logf("%s", out)
+		t.Fatal(err)
+	}
+
+	argv := cmdToRun("./testp6")
+	cmd = exec.Command(argv[0], argv[1:]...)
+	if out, err := cmd.CombinedOutput(); err != nil {
+		t.Logf("%s", out)
+		t.Fatal(err)
+	}
+}
+
+// TestCompileWithoutShared tests that if we compile code without the
+// -shared option, we can put it into an archive. When we use the go
+// tool with -buildmode=c-archive, it passes -shared to the compiler,
+// so we override that. The go tool doesn't work this way, but Bazel
+// will likely do it in the future. And it ought to work. This test
+// was added because at one time it did not work on PPC GNU/Linux.
+func TestCompileWithoutShared(t *testing.T) {
+	// For simplicity, reuse the signal forwarding test.
+	checkSignalForwardingTest(t)
+
+	defer func() {
+		os.Remove("libgo2.a")
+		os.Remove("libgo2.h")
+	}()
+
+	cmd := exec.Command("go", "build", "-buildmode=c-archive", "-gcflags=-shared=false", "-o", "libgo2.a", "libgo2")
+	cmd.Env = gopathEnv
+	t.Log(cmd.Args)
+	out, err := cmd.CombinedOutput()
+	t.Logf("%s", out)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	exe := "./testnoshared" + exeSuffix
+	ccArgs := append(cc, "-o", exe, "main5.c", "libgo2.a")
+	if runtime.Compiler == "gccgo" {
+		ccArgs = append(ccArgs, "-lgo")
+	}
+	t.Log(ccArgs)
+	out, err = exec.Command(ccArgs[0], ccArgs[1:]...).CombinedOutput()
+	t.Logf("%s", out)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.Remove(exe)
+
+	binArgs := append(cmdToRun(exe), "3")
+	t.Log(binArgs)
+	out, err = exec.Command(binArgs[0], binArgs[1:]...).CombinedOutput()
+	t.Logf("%s", out)
+	expectSignal(t, err, syscall.SIGPIPE)
 }

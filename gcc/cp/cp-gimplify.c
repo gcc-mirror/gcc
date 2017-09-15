@@ -895,6 +895,8 @@ omp_var_to_track (tree decl)
   tree type = TREE_TYPE (decl);
   if (is_invisiref_parm (decl))
     type = TREE_TYPE (type);
+  else if (TREE_CODE (type) == REFERENCE_TYPE)
+    type = TREE_TYPE (type);
   while (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
   if (type == error_mark_node || !CLASS_TYPE_P (type))
@@ -946,6 +948,8 @@ omp_cxx_notice_variable (struct cp_genericize_omp_taskreg *omp_ctx, tree decl)
 		 it will be already too late.  */
 	      tree type = TREE_TYPE (decl);
 	      if (is_invisiref_parm (decl))
+		type = TREE_TYPE (type);
+	      else if (TREE_CODE (type) == REFERENCE_TYPE)
 		type = TREE_TYPE (type);
 	      while (TREE_CODE (type) == ARRAY_TYPE)
 		type = TREE_TYPE (type);

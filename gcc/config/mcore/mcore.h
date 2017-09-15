@@ -549,9 +549,6 @@ extern const enum reg_class regno_reg_class[FIRST_PSEUDO_REGISTER];
    target.  */
 #define SHIFT_COUNT_TRUNCATED 0
 
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC)  1
-
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.
    Desirable on machines where ordinary constants are expensive

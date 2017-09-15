@@ -1855,7 +1855,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 
 /* Compute alias-sets for all data references in DRS.  */
 
-static void
+static bool 
 build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();
@@ -1868,6 +1868,18 @@ build_alias_set (scop_p scop)
     for (j = i+1; scop->drs.iterate (j, &dr2); j++)
       if (dr_may_alias_p (dr1->dr, dr2->dr, true))
 	{
+	  /* Dependences in the same alias set need to be handled
+	     by just looking at DR_ACCESS_FNs.  */
+	  if (DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
+	      || ! operand_equal_p (DR_BASE_OBJECT (dr1->dr),
+				    DR_BASE_OBJECT (dr2->dr),
+				    OEP_ADDRESS_OF)
+	      || ! types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (dr1->dr)),
+				       TREE_TYPE (DR_BASE_OBJECT (dr2->dr))))
+	    {
+	      free_graph (g);
+	      return false;
+	    }
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
 	}
@@ -1883,6 +1895,7 @@ build_alias_set (scop_p scop)
     scop->drs[i].alias_set = g->vertices[i].component + 1;
 
   free_graph (g);
+  return true;
 }
 
 /* Gather BBs and conditions for a SCOP.  */
@@ -2075,7 +2088,12 @@ build_scops (vec<scop_p> *scops)
       scop->pbbs.qsort (cmp_pbbs);
       order.release ();
 
-      build_alias_set (scop);
+      if (! build_alias_set (scop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot handle dependences\n");
+	  free_scop (scop);
+	  continue;
+	}
 
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */
