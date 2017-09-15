@@ -4866,7 +4866,9 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
   if (TREE_TYPE (expr) == type)
     return expr;
 
-  if (!semantic_type)
+  /* For C11, integer conversions may have results with excess
+     precision.  */
+  if (flag_isoc11 || !semantic_type)
     return convert_and_check (loc, type, expr);
 
   if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
@@ -4994,7 +4996,31 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
 	       || code2 == COMPLEX_TYPE))
     {
-      result_type = c_common_type (type1, type2);
+      /* In C11, a conditional expression between a floating-point
+	 type and an integer type should convert the integer type to
+	 the evaluation format of the floating-point type, with
+	 possible excess precision.  */
+      tree eptype1 = type1;
+      tree eptype2 = type2;
+      if (flag_isoc11)
+	{
+	  tree eptype;
+	  if (ANY_INTEGRAL_TYPE_P (type1)
+	      && (eptype = excess_precision_type (type2)) != NULL_TREE)
+	    {
+	      eptype2 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	  else if (ANY_INTEGRAL_TYPE_P (type2)
+		   && (eptype = excess_precision_type (type1)) != NULL_TREE)
+	    {
+	      eptype1 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	}
+      result_type = c_common_type (eptype1, eptype2);
       if (result_type == error_mark_node)
 	return error_mark_node;
       do_warn_double_promotion (result_type, type1, type2,

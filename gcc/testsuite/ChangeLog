@@ -1,3 +1,8 @@
+2017-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* gcc.target/i386/excess-precision-8.c: New test.
+
 2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
