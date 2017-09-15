@@ -1,6 +1,16 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* c-common.c (parse_optimize_options): Add argument to function
+	call.
+	* c-pragma.c (handle_pragma_diagnostic): Likewise.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81128
