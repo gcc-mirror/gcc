@@ -1897,9 +1897,6 @@ enum arm_auto_incmodes
    rotates is modulo 32 used.  */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
 
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
-
 /* Calling from registers is a massive pain.  */
 #define NO_FUNCTION_CSE 1
 

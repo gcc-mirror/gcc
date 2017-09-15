@@ -1911,10 +1911,6 @@ typedef struct ix86_args {
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be
    stored in a register.  This macro is only called when TYPE is a

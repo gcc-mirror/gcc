@@ -669,10 +669,6 @@ typedef struct xtensa_args
 /* Shift instructions ignore all but the low-order few bits.  */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 32, 1)
 #define CTZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = -1, 1)
 

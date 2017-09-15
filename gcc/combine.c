@@ -7721,7 +7721,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   else if (!MEM_P (inner))
     {
       /* On the LHS, don't create paradoxical subregs implicitely truncating
-	 the register unless TRULY_NOOP_TRUNCATION.  */
+	 the register unless TARGET_TRULY_NOOP_TRUNCATION.  */
       if (in_dest
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (inner),
 					     wanted_inner_mode))
@@ -12499,7 +12499,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
 	     (ne:DI (and:DI (reg:DI 4) (const_int 0xffffffff)) (const_int 0))
 	     -> (ne:DI (reg:SI 4) (const_int 0))
 
-	     unless TRULY_NOOP_TRUNCATION allows it or the register is
+	     unless TARGET_TRULY_NOOP_TRUNCATION allows it or the register is
 	     known to hold a value of the required mode the
 	     transformation is invalid.  */
 	  if ((equality_comparison_p || unsigned_comparison_p)
@@ -13339,8 +13339,8 @@ reg_truncated_to_mode (machine_mode mode, const_rtx x)
 }
 
 /* If X is a hard reg or a subreg record the mode that the register is
-   accessed in.  For non-TRULY_NOOP_TRUNCATION targets we might be able
-   to turn a truncate into a subreg using this information.  Return true
+   accessed in.  For non-TARGET_TRULY_NOOP_TRUNCATION targets we might be
+   able to turn a truncate into a subreg using this information.  Return true
    if traversing X is complete.  */
 
 static bool

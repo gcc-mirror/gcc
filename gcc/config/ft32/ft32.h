@@ -449,7 +449,6 @@ do { \
    quickly between memory and registers or between two memory
    locations.  */
 #define MOVE_MAX 4
-#define TRULY_NOOP_TRUNCATION(op,ip) 1
 
 /* Define this to be nonzero if shift instructions ignore all but the low-order
    few bits.  */

@@ -637,8 +637,6 @@ typedef struct {
 
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */

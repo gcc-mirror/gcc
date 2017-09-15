@@ -1430,8 +1430,6 @@ extern bool current_function_interrupt;
 #define MAYBE_BASE_REGISTER_RTX_P(X, STRICT)			\
   ((REG_P (X) && REG_OK_FOR_BASE_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))),	\
-				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
        && REG_P (SUBREG_REG (X))			\
        && REG_OK_FOR_BASE_P (SUBREG_REG (X), STRICT)))
 
@@ -1441,8 +1439,6 @@ extern bool current_function_interrupt;
 #define MAYBE_INDEX_REGISTER_RTX_P(X, STRICT)				\
   ((REG_P (X) && REG_OK_FOR_INDEX_P (X, STRICT))	\
    || (GET_CODE (X) == SUBREG					\
-       && TRULY_NOOP_TRUNCATION (GET_MODE_BITSIZE (GET_MODE ((X))), \
-				 GET_MODE_BITSIZE (GET_MODE (SUBREG_REG (X)))) \
        && REG_P (SUBREG_REG (X))		\
        && SUBREG_OK_FOR_INDEX_P (SUBREG_REG (X), SUBREG_BYTE (X), STRICT)))
 
@@ -1556,9 +1552,6 @@ extern bool current_function_interrupt;
    truncation in the library function call patterns, as this gives slightly
    more compact code.  */
 #define SHIFT_COUNT_TRUNCATED (0)
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC,INPREC) (true)
 
 /* Define this if addresses of constant functions
    shouldn't be put through pseudo regs where they can be cse'd.

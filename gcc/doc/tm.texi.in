@@ -7482,21 +7482,7 @@ You need not define this macro if it would always have the value of zero.
 @anchor{TARGET_SHIFT_TRUNCATION_MASK}
 @hook TARGET_SHIFT_TRUNCATION_MASK
 
-@defmac TRULY_NOOP_TRUNCATION (@var{outprec}, @var{inprec})
-A C expression which is nonzero if on this machine it is safe to
-``convert'' an integer of @var{inprec} bits to one of @var{outprec}
-bits (where @var{outprec} is smaller than @var{inprec}) by merely
-operating on it as if it had only @var{outprec} bits.
-
-On many machines, this expression can be 1.
-
-@c rearranged this, removed the phrase "it is reported that".  this was
-@c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for modes
-for which @code{TARGET_MODES_TIEABLE_P} is false, suboptimal code can result.
-If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
-such cases may improve things.
-@end defmac
+@hook TARGET_TRULY_NOOP_TRUNCATION
 
 @hook TARGET_MODE_REP_EXTENDED
 

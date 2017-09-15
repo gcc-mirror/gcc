@@ -788,8 +788,6 @@ typedef struct { int regs; int lib; } CUMULATIVE_ARGS;
 
 #define MOVE_MAX 8
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* ??? MMIX allows a choice of STORE_FLAG_VALUE.  Revisit later,
    we don't have scc expanders yet.  */
 

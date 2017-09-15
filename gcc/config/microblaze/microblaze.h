@@ -554,11 +554,6 @@ typedef struct microblaze_args
 
 #define SHIFT_COUNT_TRUNCATED			1
 
-/* This results in inefficient code for 64 bit to 32 conversions.
-   Something needs to be done about this.  Perhaps not use any 32 bit
-   instructions?  Perhaps use PROMOTE_MODE?  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
-
 #define Pmode SImode
 
 #define FUNCTION_MODE   SImode

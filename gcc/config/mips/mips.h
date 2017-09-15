@@ -2658,11 +2658,6 @@ typedef struct mips_args {
    do not truncate the shift amount at all.  */
 #define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_VECTORS)
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
-  (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
-
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

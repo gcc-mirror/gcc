@@ -781,8 +781,8 @@ extern scalar_int_mode ptr_mode;
 extern void init_adjust_machine_modes (void);
 
 #define TRULY_NOOP_TRUNCATION_MODES_P(MODE1, MODE2) \
-  TRULY_NOOP_TRUNCATION (GET_MODE_PRECISION (MODE1), \
-			 GET_MODE_PRECISION (MODE2))
+  (targetm.truly_noop_truncation (GET_MODE_PRECISION (MODE1), \
+				  GET_MODE_PRECISION (MODE2)))
 
 #define HWI_COMPUTABLE_MODE_P(MODE) \
   (SCALAR_INT_MODE_P (MODE) \

@@ -773,8 +773,6 @@ typedef struct
    if we don't have to, for power-saving reasons.  */
 #define SLOW_BYTE_ACCESS		0
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define NO_FUNCTION_CSE	1
 
 /* Specify the machine mode that the hardware addresses have.

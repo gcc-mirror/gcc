@@ -3130,6 +3130,20 @@ has an instruction for the division, and 2 if it does not.",
  unsigned int, (machine_mode mode),
  default_min_divisions_for_recip_mul)
 
+DEFHOOK
+(truly_noop_truncation,
+ "This hook returns true if it is safe to ``convert'' a value of\n\
+@var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is\n\
+smaller than @var{inprec}) by merely operating on it as if it had only\n\
+@var{outprec} bits.  The default returns true unconditionally, which\n\
+is correct for most machines.\n\
+\n\
+If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
+suboptimal code can result if this hook returns true for the corresponding\n\
+mode sizes.  Making this hook return false in such cases may improve things.",
+ bool, (unsigned int outprec, unsigned int inprec),
+ hook_bool_uint_uint_true)
+
 /* If the representation of integral MODE is such that values are
    always sign-extended to a wider mode MODE_REP then return
    SIGN_EXTEND.  Return UNKNOWN otherwise.  */
@@ -3160,7 +3174,7 @@ to define @code{LOAD_EXTEND_OP (mode)} to return the same type of\n\
 extension.\n\
 \n\
 In order to enforce the representation of @code{mode},\n\
-@code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
+@code{TARGET_TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
  int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)

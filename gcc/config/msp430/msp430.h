@@ -204,8 +204,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define RETURN_ADDR_RTX(COUNT, FA)		\
   msp430_return_addr_rtx (COUNT)
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
-
 #define SLOW_BYTE_ACCESS		0
 
 

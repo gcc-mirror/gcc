@@ -596,7 +596,6 @@ do {									\
 #define CASE_VECTOR_MODE SImode
 #define MOVE_MAX 4
 #define MOVE_RATIO(SPEED) 4
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 #define Pmode SImode
 #define FUNCTION_MODE QImode
