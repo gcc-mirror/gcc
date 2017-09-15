@@ -1,3 +1,14 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* lib/target-supports.exp (check_effective_target_c++17): Return
+	1 also if check_effective_target_c++2a.
+	(check_effective_target_c++17_down): New.
+	(check_effective_target_c++2a_only): New.
+	(check_effective_target_c++2a): New.
+	* g++.dg/cpp2a/cplusplus.C: New.
+
 2017-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/82071

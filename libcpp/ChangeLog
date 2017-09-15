@@ -1,3 +1,11 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* include/cpplib.h (c_lang): Add CXX2A and GNUCXX2A.
+	* init.c (lang_defaults): Add rows for CXX2A and GNUCXX2A.
+	(cpp_init_builtins): Set __cplusplus to 201709L for C++2a.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/cpplib.h (enum c_lang): Rename CLK_GNUCXX1Z

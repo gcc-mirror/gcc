@@ -1,3 +1,14 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* c-common.h (cxx_dialect): Add cxx2a as a dialect.
+	* opt.c: Add options for -std=c++2a and -std=gnu++2a.
+	* c-opts.c (set_std_cxx2a): New.
+	(c_common_handle_option): Set options when -std=c++2a is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx14, set_std_cxx17): Likewise.
+
 2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* c-pragma.c (handle_pragma_scalar_storage_order): Expand on error

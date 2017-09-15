@@ -7863,8 +7863,35 @@ proc check_effective_target_c++17_only { } {
     }
     return 0
 }
+
 proc check_effective_target_c++17 { } {
-    return [check_effective_target_c++17_only]
+    if [check_effective_target_c++17_only] {
+	return 1
+    }
+    return [check_effective_target_c++2a]
+}
+proc check_effective_target_c++17_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [expr ![check_effective_target_c++2a] ]
+}
+
+proc check_effective_target_c++2a_only { } {
+    global cxx_default
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    if [check-flags { { } { } { -std=c++2a -std=gnu++2a } }] {
+	return 1
+    }
+    if { $cxx_default == "c++20" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
+}
+proc check_effective_target_c++2a { } {
+    return [check_effective_target_c++2a_only]
 }
 
 # Check for C++ Concepts TS support, i.e. -fconcepts flag.

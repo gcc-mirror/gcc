@@ -1932,6 +1932,10 @@ std=c++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard.
 
+std=c++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard (experimental and incomplete support).
+
 std=c11
 C ObjC
 Conform to the ISO 2011 C standard.
@@ -1989,6 +1993,10 @@ Deprecated in favor of -std=gnu++17.
 std=gnu++17
 C++ ObjC++
 Conform to the ISO 2017 C++ standard with GNU extensions.
+
+std=gnu++2a
+C++ ObjC++
+Conform to the ISO 2020(?) C++ draft standard with GNU extensions (experimental and incomplete support).
 
 std=gnu11
 C ObjC
