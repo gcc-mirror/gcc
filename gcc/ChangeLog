@@ -1,3 +1,9 @@
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82217
+	* tree-ssa-sccvn.c (visit_phi): Properly handle all VN_TOP
+	but not undefined case.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82145
