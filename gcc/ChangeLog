@@ -1,6 +1,15 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	PR tree-opt/81696
+	* ipa-icf-gimple.c (func_checker::compare_cst_or_decl): Consider
+	LABEL_DECLs that can be from a different function.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-06-28  Martin Liska  <mliska@suse.cz>
 
 	PR ipa/81128
