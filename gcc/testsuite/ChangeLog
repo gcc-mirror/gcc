@@ -1,6 +1,14 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	PR tree-opt/81696
+	* gcc.dg/ipa/pr81696.c: New test.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-07-19  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/63361

@@ -361,10 +361,14 @@ func_checker::compare_cst_or_decl (tree t1, tree t2)
       }
     case LABEL_DECL:
       {
+	if (t1 == t2)
+	  return true;
+
 	int *bb1 = m_label_bb_map.get (t1);
 	int *bb2 = m_label_bb_map.get (t2);
 
-	return return_with_debug (*bb1 == *bb2);
+	/* Labels can point to another function (non-local GOTOs).  */
+	return return_with_debug (bb1 != NULL && bb2 != NULL && *bb1 == *bb2);
       }
     case PARM_DECL:
     case RESULT_DECL:
