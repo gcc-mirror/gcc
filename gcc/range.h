@@ -62,6 +62,7 @@ class irange
   /* The pairs of sub-ranges in the range.  */
   wide_int bounds[max_pairs * 2];
 
+  void insert (const wide_int &x, const wide_int &y, unsigned pos);
   void prepend (const wide_int &x, const wide_int &y);
   void append (const wide_int &x, const wide_int &y);
   void remove (unsigned i, unsigned j);

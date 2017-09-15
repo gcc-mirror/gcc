@@ -459,6 +459,31 @@ irange::canonicalize ()
   gcc_assert (!CHECKING_P || valid_p ());
 }
 
+/* Insert [x,y] into position POS.  There must be enough space to hold
+   the new sub-range, otherwise this function will abort.  */
+
+void
+irange::insert (const wide_int &x, const wide_int &y, unsigned pos)
+{
+  /* Make sure it will fit.  */
+  gcc_assert (nitems < max_pairs * 2);
+  /* Make sure we're inserting into a sane position.  */
+  gcc_assert (pos <= nitems && pos % 2 == 0);
+
+  if (pos == nitems)
+    return append (x, y);
+
+  for (unsigned i = nitems; i > pos; i -= 2)
+    {
+      bounds[i] = bounds[i - 2];
+      bounds[i + 1] = bounds[i - 1];
+    }
+  bounds[pos] = x;
+  bounds[pos + 1] = y;
+  nitems += 2;
+  canonicalize ();
+}
+
 // Prepend [X,Y] into THIS.
 
 void
@@ -467,16 +492,7 @@ irange::prepend (const wide_int &x, const wide_int &y)
   /* If we have enough space, shift everything to the right and
      prepend.  */
   if (nitems < max_pairs * 2)
-    {
-      for (unsigned i = nitems; i; i -= 2)
-	{
-	  bounds[i] = bounds[i - 2];
-	  bounds[i + 1] = bounds[i - 1];
-	}
-      bounds[0] = x;
-      bounds[1] = y;
-      nitems += 2;
-    }
+    return insert (x, y, 0);
   /* Otherwise, merge it with the first entry.  */
   else
     bounds[0] = x;
@@ -619,6 +635,18 @@ irange::union_ (const wide_int &x, const wide_int &y)
   while (i);
   gcc_assert (xpos != ~0U);
 
+  /* Handle [X,Y] fitting between two sub-ranges:
+
+     [a,b][X,Y][b,c].  */
+  if (nitems < max_pairs * 2
+      && wi::gt_p (x, bounds[xpos + 1], TYPE_SIGN (type))
+      && wi::lt_p (y, bounds[xpos + 2], TYPE_SIGN (type)))
+    {
+      insert (x, y, xpos + 2);
+      gcc_assert (!CHECKING_P || valid_p ());
+      return *this;
+    }
+
   /* Find Y.  */
   unsigned ypos = ~0U;
   for (i = 1; i < nitems; i += 2)
@@ -636,7 +664,7 @@ irange::union_ (const wide_int &x, const wide_int &y)
       return *this;
     }
 
-  /* Merge the sub-ranges in between xpos and ypos.  */
+  /* Squash the sub-ranges in between xpos and ypos.  */
   wide_int tmp = bounds[ypos];
   remove (xpos + 2, ypos);
   bounds[xpos + 1] = tmp;
@@ -661,6 +689,12 @@ irange::union_ (const irange &r)
   else if (r.empty_p ())
     return *this;
 
+  /* FIXME: It would be nice to look at both THIS and R as a whole and
+     optimize the case where they don't overlap and be easily appended
+     or prepended.  That is, do the calculation in this function
+     instead of doing it piecemeal below.
+
+     For example: [8,10][14,14] U [135,255].  */
   for (unsigned i = 0; i < r.nitems; i += 2)
     union_ (r.bounds[i], r.bounds[i + 1]);
 
@@ -1433,6 +1467,16 @@ irange_tests ()
 	  r2.union_ (irange (integer_type_node, 50, 60));
 	  ASSERT_TRUE (r0 == r2);
 	}
+
+      /* Test cases where a union inserts a sub-range inside a larger
+	 range.
+
+	 [8,10][135,255] U [14,14] => [8,10][14,14][135,255].  */
+      r0 = irange_union (irange (integer_type_node, 8, 10),
+			 irange (integer_type_node, 135, 255));
+      r1 = irange (integer_type_node, 14, 14);
+      r0.union_ (r1);
+      ASSERT_TRUE (r0 == RANGE3 (8, 10, 14, 14, 135, 255));
     }
 
   /* [10,20] ^ [15,30] => [15,20].  */
