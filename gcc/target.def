@@ -4573,6 +4573,16 @@ used for arguments without any special help.",
  default_function_arg_advance)
 
 DEFHOOK
+(function_arg_offset,
+ "This hook returns the number of bytes to add to the offset of an\n\
+argument of type @var{type} and mode @var{mode} when passed in memory.\n\
+This is needed for the SPU, which passes @code{char} and @code{short}\n\
+arguments in the preferred slot that is in the middle of the quad word\n\
+instead of starting at the top.  The default implementation returns 0.",
+ HOST_WIDE_INT, (machine_mode mode, const_tree type),
+ default_function_arg_offset)
+
+DEFHOOK
 (function_arg_padding,
  "This hook determines whether, and in which direction, to pad out\n\
 an argument of mode @var{mode} and type @var{type}.  It returns\n\

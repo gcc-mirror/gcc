@@ -309,13 +309,6 @@ targetm.resolve_overloaded_builtin = spu_resolve_overloaded_builtin;	\
 #define INIT_CUMULATIVE_ARGS(CUM,FNTYPE,LIBNAME,FNDECL,N_NAMED_ARGS) \
 		((CUM) = 0)
 
-/* The SPU ABI wants 32/64-bit types at offset 0 in the quad-word on the
-   stack.  8/16-bit types should be at offsets 3/2 respectively.  */
-#define FUNCTION_ARG_OFFSET(MODE, TYPE)					\
-(((TYPE) && INTEGRAL_TYPE_P (TYPE) && GET_MODE_SIZE (MODE) < 4)		\
- ? (4 - GET_MODE_SIZE (MODE))						\
- : 0)
-
 #define PAD_VARARGS_DOWN 0
 
 #define FUNCTION_ARG_REGNO_P(N) ((N) >= (FIRST_ARG_REGNUM) && (N) <= (LAST_ARG_REGNUM))

@@ -734,6 +734,14 @@ default_function_arg_advance (cumulative_args_t ca ATTRIBUTE_UNUSED,
   gcc_unreachable ();
 }
 
+/* Default implementation of TARGET_FUNCTION_ARG_OFFSET.  */
+
+HOST_WIDE_INT
+default_function_arg_offset (machine_mode, const_tree)
+{
+  return 0;
+}
+
 /* Default implementation of TARGET_FUNCTION_ARG_PADDING: usually pad
    upward, but pad short args downward on big-endian machines.  */
 

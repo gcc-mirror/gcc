@@ -3281,13 +3281,7 @@ argument @var{libname} exists for symmetry with
 
 @hook TARGET_FUNCTION_ARG_ADVANCE
 
-@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
-If defined, a C expression that is the number of bytes to add to the
-offset of the argument passed in memory.  This is needed for the SPU,
-which passes @code{char} and @code{short} arguments in the preferred
-slot that is in the middle of the quad word instead of starting at the
-top.
-@end defmac
+@hook TARGET_FUNCTION_ARG_OFFSET
 
 @hook TARGET_FUNCTION_ARG_PADDING
 
