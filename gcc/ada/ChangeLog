@@ -1,3 +1,11 @@
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
+	2017-08-29  Martin Liska  <mliska@suse.cz>
+
+	PR other/39851
+	* gcc-interface/trans.c (Pragma_to_gnu): Set argument to NULL.
+
 2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/utils.c (unchecked_convert): When the result type is a
