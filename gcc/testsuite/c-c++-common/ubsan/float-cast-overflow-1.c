@@ -1,6 +1,7 @@
 /* { dg-do run { target { lp64 || ilp32 } } } */
 /* { dg-options "-fsanitize=float-cast-overflow" } */
-/* { dg-additional-options "-msse2 -mfpmath=sse" { target { sse2_runtime && ia32 } } } */
+/* { dg-additional-options "-ffloat-store" { target { ia32 } } } */
+/* { dg-additional-options "-mieee" { target { { alpha*-*-* } || { sh*-*-* } } } } */
 
 #include <limits.h>
 #include "float-cast.h"
