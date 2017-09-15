@@ -8,6 +8,12 @@
 	* simple-object.h (simple_object_copy_lto_debug_sections): New
 	function.
 
+2017-07-31  Nick Clifton  <nickc@redhat.com>
+
+	Binutils PR 21850
+	* ansidecl.h (OVERRIDE): Protect check of __cplusplus value with
+	#idef __cplusplus.
+
 2017-07-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
 
 	* dwarf2.def (DW_IDX_compile_unit, DW_IDX_type_unit, DW_IDX_die_offset)
