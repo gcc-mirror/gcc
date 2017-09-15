@@ -6068,13 +6068,19 @@ thread_prologue_and_epilogue_insns (void)
 
   try_shrink_wrapping (&entry_edge, &bb_flags, prologue_seq);
 
+  rtx_insn *split_prologue_insn = split_prologue_seq;
   if (split_prologue_seq != NULL_RTX)
     {
+      while (split_prologue_insn && !NONDEBUG_INSN_P (split_prologue_insn))
+	split_prologue_insn = NEXT_INSN (split_prologue_insn);
       insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
       inserted = true;
     }
+  rtx_insn *prologue_insn = prologue_seq;
   if (prologue_seq != NULL_RTX)
     {
+      while (prologue_insn && !NONDEBUG_INSN_P (prologue_insn))
+	prologue_insn = NEXT_INSN (prologue_insn);
       insert_insn_on_edge (prologue_seq, entry_edge);
       inserted = true;
     }
@@ -6215,8 +6221,19 @@ epilogue_done:
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
+      if (split_prologue_insn
+	  && BLOCK_FOR_INSN (split_prologue_insn) == NULL)
+	split_prologue_insn = NULL;
+      if (prologue_insn
+	  && BLOCK_FOR_INSN (prologue_insn) == NULL)
+	prologue_insn = NULL;
       blocks = sbitmap_alloc (last_basic_block_for_fn (cfun));
       bitmap_clear (blocks);
+      if (split_prologue_insn)
+	bitmap_set_bit (blocks,
+			BLOCK_FOR_INSN (split_prologue_insn)->index);
+      if (prologue_insn)
+	bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
       bitmap_set_bit (blocks, entry_edge->dest->index);
       bitmap_set_bit (blocks, orig_entry_edge->dest->index);
       find_many_sub_basic_blocks (blocks);

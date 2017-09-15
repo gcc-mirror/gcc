@@ -1,6 +1,16 @@
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81766
+	* gcc.target/i386/pr81766.c: New testcase.
+
+	2017-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79499
+	* gcc.dg/pr79499.c: New test.
+
 	2017-06-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/81225
