@@ -1,3 +1,7 @@
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Remove myself as a vxworks maintainer.
+
 2017-09-13  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* MAINTAINERS: Remove email address of Jim Norris.
