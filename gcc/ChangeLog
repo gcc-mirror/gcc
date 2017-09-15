@@ -1,6 +1,14 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-09-14  Martin Liska  <mliska@suse.cz>
+
+	* gimple-ssa-strength-reduction.c (create_add_on_incoming_edge):
+	Add proper printf format.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-08-30  Martin Liska  <mliska@suse.cz>
 
 	PR inline-asm/82001
