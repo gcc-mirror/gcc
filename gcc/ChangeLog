@@ -1,3 +1,11 @@
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/68823
+	* graphite-scop-detection.c (build_alias_set): If we have a
+	possible dependence check whether we can handle them by just
+	looking at the DRs DR_ACCESS_FNs.
+	(build_scops): If build_alias_set fails, fail the SCOP.
+
 2017-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_1_HW): New macros
