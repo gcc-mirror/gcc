@@ -7230,12 +7230,13 @@
 (define_insn "vec_extract_lo_<mode><mask_name>"
   [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V8FI 1 "nonimmediate_operand" "v,m")
+	  (match_operand:V8FI 1 "<store_mask_predicate>" "v,<store_mask_constraint>")
 	  (parallel [(const_int 0) (const_int 1)
             (const_int 2) (const_int 3)])))]
-  "TARGET_AVX512F && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+  "TARGET_AVX512F
+   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
-  if (<mask_applied> || !TARGET_AVX512VL)
+  if (<mask_applied> || (!TARGET_AVX512VL && !MEM_P (operands[1])))
     return "vextract<shuffletype>64x4\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
   else
     return "#";
@@ -7374,14 +7375,15 @@
 (define_insn "vec_extract_lo_<mode><mask_name>"
   [(set (match_operand:<ssehalfvecmode> 0 "nonimmediate_operand" "=v,m")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:V16FI 1 "nonimmediate_operand" "vm,v")
+	  (match_operand:V16FI 1 "<store_mask_predicate>"
+				 "<store_mask_constraint>,v")
 	  (parallel [(const_int 0) (const_int 1)
                      (const_int 2) (const_int 3)
                      (const_int 4) (const_int 5)
                      (const_int 6) (const_int 7)])))]
   "TARGET_AVX512F
    && <mask_mode512bit_condition>
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)
     return "vextract<shuffletype>32x8\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";
@@ -7413,11 +7415,12 @@
 (define_insn "vec_extract_lo_<mode><mask_name>"
   [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=v,m")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI8F_256 1 "nonimmediate_operand" "vm,v")
+	  (match_operand:VI8F_256 1 "<store_mask_predicate>"
+				    "<store_mask_constraint>,v")
 	  (parallel [(const_int 0) (const_int 1)])))]
   "TARGET_AVX
    && <mask_avx512vl_condition> && <mask_avx512dq_condition>
-   && !(MEM_P (operands[0]) && MEM_P (operands[1]))"
+   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)
     return "vextract<shuffletype>64x2\t{$0x0, %1, %0%{%3%}|%0%{%3%}, %1, 0x0}";
@@ -7493,12 +7496,16 @@
 
 
 (define_insn "vec_extract_lo_<mode><mask_name>"
-  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>" "=<store_mask_constraint>")
+  [(set (match_operand:<ssehalfvecmode> 0 "<store_mask_predicate>"
+					  "=<store_mask_constraint>,v")
 	(vec_select:<ssehalfvecmode>
-	  (match_operand:VI4F_256 1 "register_operand" "v")
+	  (match_operand:VI4F_256 1 "<store_mask_predicate>"
+				    "v,<store_mask_constraint>")
 	  (parallel [(const_int 0) (const_int 1)
 		     (const_int 2) (const_int 3)])))]
-  "TARGET_AVX && <mask_avx512vl_condition> && <mask_avx512dq_condition>"
+  "TARGET_AVX
+   && <mask_avx512vl_condition> && <mask_avx512dq_condition>
+   && (<mask_applied> || !(MEM_P (operands[0]) && MEM_P (operands[1])))"
 {
   if (<mask_applied>)
     return "vextract<shuffletype>32x4\t{$0x0, %1, %0<mask_operand2>|%0<mask_operand2>, %1, 0x0}";

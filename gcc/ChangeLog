@@ -1,3 +1,19 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81225
+	* config/i386/sse.md (vec_extract_lo_<mode><mask_name>): For
+	V8FI, V16FI and VI8F_256 iterators, use <store_mask_predicate> instead
+	of nonimmediate_operand and <store_mask_constraint> instead of m for
+	the input operand.  For V8FI iterator, always split if input is a MEM.
+	For V16FI and V8SF_256 iterators, don't test if both operands are MEM
+	if <mask_applied>.  For VI4F_256 iterator, use <store_mask_predicate>
+	instead of register_operand and <store_mask_constraint> instead of v for
+	the input operand.  Make sure both operands aren't MEMs for if not
+	<mask_applied>.
+
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline

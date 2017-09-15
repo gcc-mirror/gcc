@@ -1,3 +1,11 @@
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81225
+	* gcc.target/i386/pr81225.c: New test.
+
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
