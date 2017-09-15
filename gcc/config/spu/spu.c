@@ -7162,6 +7162,17 @@ spu_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
 	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
 }
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  GCC assumes that modes are
+   in the lowpart of a register, which is only true for SPU.  */
+
+static bool
+spu_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
+{
+  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+	  || (GET_MODE_SIZE (from) <= 4 && GET_MODE_SIZE (to) <= 4)
+	  || (GET_MODE_SIZE (from) >= 16 && GET_MODE_SIZE (to) >= 16));
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7392,6 +7403,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS spu_hard_regno_nregs
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS spu_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

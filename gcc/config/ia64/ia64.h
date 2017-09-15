@@ -777,17 +777,6 @@ enum reg_class
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == RFmode) ? 1 \
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == XCmode) ? 2 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* In BR regs, we can't change the DImode at all.
-   In FP regs, we can't change FP values to integer values and vice versa,
-   but we can change e.g. DImode to SImode, and V2SFmode into DImode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 		\
-  (reg_classes_intersect_p (CLASS, BR_REGS)			\
-   ? (FROM) != (TO)						\
-   : (SCALAR_FLOAT_MODE_P (FROM) != SCALAR_FLOAT_MODE_P (TO)	\
-      ? reg_classes_intersect_p (CLASS, FR_REGS)		\
-      : 0))
 
 /* Basic Stack Layout */
 

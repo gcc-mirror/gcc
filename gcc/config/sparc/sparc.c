@@ -682,7 +682,8 @@ static unsigned int sparc_min_arithmetic_precision (void);
 static unsigned int sparc_hard_regno_nregs (unsigned int, machine_mode);
 static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
-
+static bool sparc_can_change_mode_class (machine_mode, machine_mode,
+					 reg_class_t);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -920,6 +921,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P sparc_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS sparc_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13399,6 +13403,28 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   *update
     = compound_expr (compound_expr (update_stfsr, update_ldfsr), update_call);
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  Borrowed from the PA port.
+
+   SImode loads to floating-point registers are not zero-extended.
+   The definition for LOAD_EXTEND_OP specifies that integer loads
+   narrower than BITS_PER_WORD will be zero-extended.  As a result,
+   we inhibit changes from SImode unless they are to a mode that is
+   identical in size.
+
+   Likewise for SFmode, since word-mode paradoxical subregs are
+   problematic on big-endian architectures.  */
+
+static bool
+sparc_can_change_mode_class (machine_mode from, machine_mode to,
+			     reg_class_t rclass)
+{
+  if (TARGET_ARCH64
+      && GET_MODE_SIZE (from) == 4
+      && GET_MODE_SIZE (to) != 4)
+    return !reg_classes_intersect_p (rclass, FP_REGS);
+  return true;
 }
 
 #include "gt-sparc.h"

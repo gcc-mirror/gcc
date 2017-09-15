@@ -3151,7 +3151,7 @@ widest integral mode and currently we take advantage of this fact.)\n\
 Similarly to @code{LOAD_EXTEND_OP} you may return a non-@code{UNKNOWN}\n\
 value even if the extension is not performed on certain hard registers\n\
 as long as for the @code{REGNO_REG_CLASS} of these hard registers\n\
-@code{CANNOT_CHANGE_MODE_CLASS} returns nonzero.\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} returns false.\n\
 \n\
 Note that @code{TARGET_MODE_REP_EXTENDED} and @code{LOAD_EXTEND_OP}\n\
 describe two related properties.  If you define\n\
@@ -5043,6 +5043,38 @@ This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+DEFHOOK
+(can_change_mode_class,
+ "This hook returns true if it is possible to bitcast values held in\n\
+registers of class @var{rclass} from mode @var{from} to mode @var{to}\n\
+and if doing so preserves the low-order bits that are common to both modes.\n\
+The result is only meaningful if @var{rclass} has registers that can hold\n\
+both @code{from} and @code{to}.  The default implementation returns true.\n\
+\n\
+As an example of when such bitcasting is invalid, loading 32-bit integer or\n\
+floating-point objects into floating-point registers on Alpha extends them\n\
+to 64 bits.  Therefore loading a 64-bit object and then storing it as a\n\
+32-bit object does not store the low-order 32 bits, as would be the case\n\
+for a normal register.  Therefore, @file{alpha.h} defines\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} to return:\n\
+\n\
+@smallexample\n\
+(GET_MODE_SIZE (from) == GET_MODE_SIZE (to)\n\
+ || !reg_classes_intersect_p (FLOAT_REGS, rclass))\n\
+@end smallexample\n\
+\n\
+Even if storing from a register in mode @var{to} would be valid,\n\
+if both @var{from} and @code{raw_reg_mode} for @var{rclass} are wider\n\
+than @code{word_mode}, then we must prevent @var{to} narrowing the\n\
+mode.  This happens when the middle-end assumes that it can load\n\
+or store pieces of an @var{N}-word pseudo, and that the pseudo will\n\
+eventually be allocated to @var{N} @code{word_mode} hard registers.\n\
+Failure to prevent this kind of mode change will result in the\n\
+entire @code{raw_reg_mode} being modified instead of the partial\n\
+value that the middle-end intended.",
+ bool, (machine_mode from, machine_mode to, reg_class_t rclass),
+ hook_bool_mode_mode_reg_class_t_true)
+
 /* Change pseudo allocno class calculated by IRA.  */
 DEFHOOK
 (ira_change_pseudo_allocno_class,
@@ -5466,8 +5498,8 @@ DEFHOOK
 at register number @var{regno}, required to hold a value of mode\n\
 @var{mode}.  This hook must never return zero, even if a register\n\
 cannot hold the requested mode - indicate that with\n\
-@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}\n\
-instead.\n\
+@code{TARGET_HARD_REGNO_MODE_OK} and/or\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} instead.\n\
 \n\
 The default definition returns the number of words in @var{mode}.",
  unsigned int, (unsigned int regno, machine_mode mode),

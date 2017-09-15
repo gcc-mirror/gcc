@@ -3987,6 +3987,14 @@ riscv_slow_unaligned_access (machine_mode, unsigned int)
   return riscv_slow_unaligned_access_p;
 }
 
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
+
+static bool
+riscv_can_change_mode_class (machine_mode, machine_mode, reg_class_t rclass)
+{
+  return !reg_classes_intersect_p (FP_REGS, rclass);
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -4130,6 +4138,9 @@ riscv_slow_unaligned_access (machine_mode, unsigned int)
 
 #undef TARGET_SECONDARY_MEMORY_NEEDED
 #define TARGET_SECONDARY_MEMORY_NEEDED riscv_secondary_memory_needed
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS riscv_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

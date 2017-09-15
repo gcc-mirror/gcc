@@ -142,7 +142,7 @@
 	(match_operand:V4HF 1 "s_register_operand"))]
   "TARGET_NEON && TARGET_FP16"
 {
-  /* We need to use force_reg to avoid CANNOT_CHANGE_MODE_CLASS
+  /* We need to use force_reg to avoid TARGET_CAN_CHANGE_MODE_CLASS
      causing an ICE on big-endian because it cannot extract subregs in
      this case.  */
   if (can_create_pseudo_p ())
@@ -157,7 +157,7 @@
 	(match_operand:V8HF 1 ""))]
   "TARGET_NEON && TARGET_FP16"
 { 
-  /* We need to use force_reg to avoid CANNOT_CHANGE_MODE_CLASS
+  /* We need to use force_reg to avoid TARGET_CAN_CHANGE_MODE_CLASS
      causing an ICE on big-endian because it cannot extract subregs in
      this case.  */
   if (can_create_pseudo_p ())

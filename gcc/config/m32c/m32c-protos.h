@@ -38,7 +38,6 @@ int  m32c_trampoline_size (void);
 
 #ifdef RTX_CODE
 
-int  m32c_cannot_change_mode_class (machine_mode, machine_mode, int);
 rtx  m32c_eh_return_stackadj_rtx (void);
 void m32c_emit_eh_epilogue (rtx);
 int  m32c_expand_cmpstr (rtx *);

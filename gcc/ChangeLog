@@ -1,3 +1,137 @@
+2017-09-15  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayard  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* target.def (can_change_mode_class): New hook.
+	(mode_rep_extended): Refer to it instead of CANNOT_CHANGE_MODE_CLASS.
+	(hard_regno_nregs): Likewise.
+	* hooks.h (hook_bool_mode_mode_reg_class_t_true): Declare.
+	* hooks.c (hook_bool_mode_mode_reg_class_t_true): New function.
+	* doc/tm.texi.in (CANNOT_CHANGE_MODE_CLASS): Replace with...
+	(TARGET_CAN_CHANGE_MODE_CLASS): ...this.
+	(LOAD_EXTEND_OP): Update accordingly.
+	* doc/tm.texi: Regenerate.
+	* doc/rtl.texi: Refer to TARGET_CAN_CHANGE_MODE_CLASS instead of
+	CANNOT_CHANGE_MODE_CLASS.
+	* hard-reg-set.h (REG_CANNOT_CHANGE_MODE_P): Replace with...
+	(REG_CAN_CHANGE_MODE_P): ...this new macro.
+	* combine.c (simplify_set): Update accordingly.
+	* emit-rtl.c (validate_subreg): Likewise.
+	* recog.c (general_operand): Likewise.
+	* regcprop.c (mode_change_ok): Likewise.
+	* reload1.c (choose_reload_regs): Likewise.
+	(inherit_piecemeal_p): Likewise.
+	* rtlanal.c (simplify_subreg_regno): Likewise.
+	* postreload.c (reload_cse_simplify_set): Use REG_CAN_CHANGE_MODE_P
+	instead of CANNOT_CHANGE_MODE_CLASS.
+	(reload_cse_simplify_operands): Likewise.
+	* reload.c (push_reload): Use targetm.can_change_mode_class
+	instead of CANNOT_CHANGE_MODE_CLASS.
+	(push_reload): Likewise.  Also use REG_CAN_CHANGE_MODE_P instead of
+	REG_CANNOT_CHANGE_MODE_P.
+	* config/alpha/alpha.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/alpha/alpha.c (alpha_can_change_mode_class): New function.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/arm/arm.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/arm/arm.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(arm_can_change_mode_class): New function.
+	* config/arm/neon.md: Refer to TARGET_CAN_CHANGE_MODE_CLASS rather
+	than CANNOT_CHANGE_MODE_CLASS in comments.
+	* config/i386/i386.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/i386/i386-protos.h (ix86_cannot_change_mode_class): Delete.
+	* config/i386/i386.c (ix86_cannot_change_mode_class): Replace with...
+	(ix86_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/ia64/ia64.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/ia64/ia64.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(ia64_can_change_mode_class): New function.
+	* config/m32c/m32c.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/m32c/m32c-protos.h (m32c_cannot_change_mode_class): Delete.
+	* config/m32c/m32c.c (m32c_cannot_change_mode_class): Replace with...
+	(m32c_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/mips/mips.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/mips/mips-protos.h (mips_cannot_change_mode_class): Delete.
+	* config/mips/mips.c (mips_cannot_change_mode_class): Replace with...
+	(mips_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/msp430/msp430.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/msp430/msp430.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(msp430_can_change_mode_class): New function.
+	* config/nvptx/nvptx.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/nvptx/nvptx.c (nvptx_can_change_mode_class): New function.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/pa/pa32-regs.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/pa/pa64-regs.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/pa/pa-protos.h (pa_cannot_change_mode_class): Delete.
+	* config/pa/pa.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(pa_cannot_change_mode_class): Replace with...
+	(pa_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(pa_modes_tieable_p): Refer to TARGET_CAN_CHANGE_MODE_CLASS rather
+	than CANNOT_CHANGE_MODE_CLASS in comments.
+	* config/pdp11/pdp11.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/pdp11/pdp11-protos.h (pdp11_cannot_change_mode_class): Delete.
+	* config/pdp11/pdp11.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(pdp11_cannot_change_mode_class): Replace with...
+	(pdp11_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	* config/powerpcspe/powerpcspe.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/powerpcspe/powerpcspe-protos.h
+	(rs6000_cannot_change_mode_class_ptr): Delete.
+	* config/powerpcspe/powerpcspe.c
+	(rs6000_cannot_change_mode_class_ptr): Delete.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(rs6000_option_override_internal): Assign to
+	targetm.can_change_mode_class instead of
+	rs6000_cannot_change_mode_class_ptr.
+	(rs6000_cannot_change_mode_class): Replace with...
+	(rs6000_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(rs6000_debug_cannot_change_mode_class): Replace with...
+	(rs6000_debug_can_change_mode_class): ...this new function.
+	* config/riscv/riscv.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/riscv/riscv.c (riscv_can_change_mode_class): New function.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/rs6000/rs6000.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/rs6000/rs6000-protos.h (rs6000_cannot_change_mode_class_ptr):
+	Delete.
+	* config/rs6000/rs6000.c (rs6000_cannot_change_mode_class_ptr): Delete.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(rs6000_option_override_internal): Assign to
+	targetm.can_change_mode_class instead of
+	rs6000_cannot_change_mode_class_ptr.
+	(rs6000_cannot_change_mode_class): Replace with...
+	(rs6000_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(rs6000_debug_cannot_change_mode_class): Replace with...
+	(rs6000_debug_can_change_mode_class): ...this new function.
+	* config/s390/s390.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/s390/s390-protos.h (s390_cannot_change_mode_class): Delete.
+	* config/s390/s390.c (s390_cannot_change_mode_class): Replace with...
+	(s390_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/sh/sh.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/sh/sh-protos.h (sh_cannot_change_mode_class): Delete.
+	* config/sh/sh.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(sh_cannot_change_mode_class): Replace with...
+	(sh_can_change_mode_class): ...this new function, inverting the
+	sense of the return value.
+	* config/sparc/sparc.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/sparc/sparc.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(sparc_can_change_mode_class): New function.
+	* config/spu/spu.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/spu/spu.c (spu_can_change_mode_class): New function.
+	(TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	* config/visium/visium.h (CANNOT_CHANGE_MODE_CLASS): Delete.
+	* config/visium/visium.c (TARGET_CAN_CHANGE_MODE_CLASS): Redefine.
+	(visium_can_change_mode_class): New function.
+	* system.h (CANNOT_CHANGE_MODE_CLASS): Poison.
+
 2017-09-15  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82217

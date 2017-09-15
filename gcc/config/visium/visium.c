@@ -234,6 +234,9 @@ static bool visium_hard_regno_mode_ok (unsigned int, machine_mode);
 
 static bool visium_modes_tieable_p (machine_mode, machine_mode);
 
+static bool visium_can_change_mode_class (machine_mode, machine_mode,
+					  reg_class_t);
+
 /* Setup the global target hooks structure.  */
 
 #undef  TARGET_MAX_ANCHOR_OFFSET
@@ -353,6 +356,9 @@ static bool visium_modes_tieable_p (machine_mode, machine_mode);
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P visium_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS visium_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -4291,6 +4297,26 @@ reg_or_subreg_regno (rtx op)
     regno = INVALID_REGNUM;
 
   return regno;
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.
+
+   It's not obvious from the documentation of the hook that MDB cannot
+   change mode.  However difficulties arise from expressions of the form
+
+   (subreg:SI (reg:DI R_MDB) 0)
+
+   There is no way to convert that reference to a single machine
+   register and, without the following definition, reload will quietly
+   convert it to
+
+   (reg:SI R_MDB).  */
+
+static bool
+visium_can_change_mode_class (machine_mode from, machine_mode to,
+			      reg_class_t rclass)
+{
+  return (rclass != MDB || GET_MODE_SIZE (from) == GET_MODE_SIZE (to));
 }
 
 #include "gt-visium.h"

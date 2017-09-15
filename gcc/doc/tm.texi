@@ -2018,8 +2018,8 @@ This hook returns the number of consecutive hard registers, starting
 at register number @var{regno}, required to hold a value of mode
 @var{mode}.  This hook must never return zero, even if a register
 cannot hold the requested mode - indicate that with
-@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}
-instead.
+@code{TARGET_HARD_REGNO_MODE_OK} and/or
+@code{TARGET_CAN_CHANGE_MODE_CLASS} instead.
 
 The default definition returns the number of words in @var{mode}.
 @end deftypefn
@@ -2814,25 +2814,27 @@ This macro helps control the handling of multiple-word values
 in the reload pass.
 @end defmac
 
-@defmac CANNOT_CHANGE_MODE_CLASS (@var{from}, @var{to}, @var{class})
-If defined, a C expression that returns nonzero for a @var{class} for which
-a change from mode @var{from} to mode @var{to} is invalid.
+@deftypefn {Target Hook} bool TARGET_CAN_CHANGE_MODE_CLASS (machine_mode @var{from}, machine_mode @var{to}, reg_class_t @var{rclass})
+This hook returns true if it is possible to bitcast values held in
+registers of class @var{rclass} from mode @var{from} to mode @var{to}
+and if doing so preserves the low-order bits that are common to both modes.
+The result is only meaningful if @var{rclass} has registers that can hold
+both @code{from} and @code{to}.  The default implementation returns true.
 
-For example, loading 32-bit integer or floating-point objects into
-floating-point registers on Alpha extends them to 64 bits.
-Therefore loading a 64-bit object and then storing it as a 32-bit object
-does not store the low-order 32 bits, as would be the case for a normal
-register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
-as below:
+As an example of when such bitcasting is invalid, loading 32-bit integer or
+floating-point objects into floating-point registers on Alpha extends them
+to 64 bits.  Therefore loading a 64-bit object and then storing it as a
+32-bit object does not store the low-order 32 bits, as would be the case
+for a normal register.  Therefore, @file{alpha.h} defines
+@code{TARGET_CAN_CHANGE_MODE_CLASS} to return:
 
 @smallexample
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
-   ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
+(GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+ || !reg_classes_intersect_p (FLOAT_REGS, rclass))
 @end smallexample
 
 Even if storing from a register in mode @var{to} would be valid,
-if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
+if both @var{from} and @code{raw_reg_mode} for @var{rclass} are wider
 than @code{word_mode}, then we must prevent @var{to} narrowing the
 mode.  This happens when the middle-end assumes that it can load
 or store pieces of an @var{N}-word pseudo, and that the pseudo will
@@ -2840,8 +2842,7 @@ eventually be allocated to @var{N} @code{word_mode} hard registers.
 Failure to prevent this kind of mode change will result in the
 entire @code{raw_reg_mode} being modified instead of the partial
 value that the middle-end intended.
-
-@end defmac
+@end deftypefn
 
 @deftypefn {Target Hook} reg_class_t TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS (int, @var{reg_class_t}, @var{reg_class_t})
 A target hook which can change allocno class for given pseudo from
@@ -10695,12 +10696,12 @@ define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
 You may return a non-@code{UNKNOWN} value even if for some hard registers
 the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
-of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
+of these hard registers @code{TARGET_CAN_CHANGE_MODE_CLASS} returns false
 when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
 integral mode larger than this but not larger than @code{word_mode}.
 
 You must return @code{UNKNOWN} if for some hard registers that allow this
-mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
+mode, @code{TARGET_CAN_CHANGE_MODE_CLASS} says that they cannot change to
 @code{word_mode}, but that they can change to another integral mode that
 is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
@@ -10813,7 +10814,7 @@ widest integral mode and currently we take advantage of this fact.)
 Similarly to @code{LOAD_EXTEND_OP} you may return a non-@code{UNKNOWN}
 value even if the extension is not performed on certain hard registers
 as long as for the @code{REGNO_REG_CLASS} of these hard registers
-@code{CANNOT_CHANGE_MODE_CLASS} returns nonzero.
+@code{TARGET_CAN_CHANGE_MODE_CLASS} returns false.
 
 Note that @code{TARGET_MODE_REP_EXTENDED} and @code{LOAD_EXTEND_OP}
 describe two related properties.  If you define
