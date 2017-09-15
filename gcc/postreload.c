@@ -409,9 +409,12 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
       CLEAR_HARD_REG_SET (equiv_regs[i]);
 
       /* cselib blows up on CODE_LABELs.  Trying to fix that doesn't seem
-	 right, so avoid the problem here.  Likewise if we have a constant
-         and the insn pattern doesn't tell us the mode we need.  */
+	 right, so avoid the problem here.  Similarly NOTE_INSN_DELETED_LABEL.
+	 Likewise if we have a constant and the insn pattern doesn't tell us
+	 the mode we need.  */
       if (LABEL_P (recog_data.operand[i])
+	  || (NOTE_P (recog_data.operand[i])
+	      && NOTE_KIND (recog_data.operand[i]) == NOTE_INSN_DELETED_LABEL)
 	  || (CONSTANT_P (recog_data.operand[i])
 	      && recog_data.operand_mode[i] == VOIDmode))
 	continue;
