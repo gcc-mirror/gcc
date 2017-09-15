@@ -1,3 +1,9 @@
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Iterate marking dependent sections necessary.
+
 2017-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	* cp-demangle.c (is_fnqual_component_type): Reimplement using
