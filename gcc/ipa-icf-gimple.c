@@ -543,11 +543,8 @@ func_checker::compare_operand (tree t1, tree t2)
     }
 }
 
-/* Compares two tree list operands T1 and T2 and returns true if these
-   two trees are semantically equivalent.  */
-
 bool
-func_checker::compare_tree_list_operand (tree t1, tree t2)
+func_checker::compare_asm_inputs_outputs (tree t1, tree t2)
 {
   gcc_assert (TREE_CODE (t1) == TREE_LIST);
   gcc_assert (TREE_CODE (t2) == TREE_LIST);
@@ -558,6 +555,16 @@ func_checker::compare_tree_list_operand (tree t1, tree t2)
 	return false;
 
       if (!compare_operand (TREE_VALUE (t1), TREE_VALUE (t2)))
+	return return_false ();
+
+      tree p1 = TREE_PURPOSE (t1);
+      tree p2 = TREE_PURPOSE (t2);
+
+      gcc_assert (TREE_CODE (p1) == TREE_LIST);
+      gcc_assert (TREE_CODE (p2) == TREE_LIST);
+
+      if (strcmp (TREE_STRING_POINTER (TREE_VALUE (p1)),
+		  TREE_STRING_POINTER (TREE_VALUE (p2))) != 0)
 	return return_false ();
 
       t2 = TREE_CHAIN (t2);
@@ -1008,7 +1015,7 @@ func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
       tree input1 = gimple_asm_input_op (g1, i);
       tree input2 = gimple_asm_input_op (g2, i);
 
-      if (!compare_tree_list_operand (input1, input2))
+      if (!compare_asm_inputs_outputs (input1, input2))
 	return return_false_with_msg ("ASM input is different");
     }
 
@@ -1017,7 +1024,7 @@ func_checker::compare_gimple_asm (const gasm *g1, const gasm *g2)
       tree output1 = gimple_asm_output_op (g1, i);
       tree output2 = gimple_asm_output_op (g2, i);
 
-      if (!compare_tree_list_operand (output1, output2))
+      if (!compare_asm_inputs_outputs (output1, output2))
 	return return_false_with_msg ("ASM output is different");
     }
 
