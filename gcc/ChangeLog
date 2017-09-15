@@ -1,6 +1,15 @@
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
+	2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR sanitizer/81224
+	* asan.c (instrument_derefs): Bail out inner references
+	that are hard register variables.
+
+2017-09-15  Martin Liska  <mliska@suse.cz>
+
+	Backport from mainline
 	2017-08-30  Martin Liska  <mliska@suse.cz>
 
 	PR inline-asm/82001
