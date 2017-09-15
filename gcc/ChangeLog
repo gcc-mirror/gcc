@@ -8,6 +8,12 @@
 	behavior of always calling find_many_sub_basic_blocks on
 	the inserted prologue.
 
+	2017-08-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81052
+	* omp-low.c (diagnose_sb_0): Handle flag_openmp_simd like flag_openmp.
+	(pass_diagnose_omp_blocks::gate): Enable also for flag_openmp_simd.
+
 	2017-08-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/79499
