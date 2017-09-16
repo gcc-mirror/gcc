@@ -511,6 +511,12 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 	{
 	  bool cond_ok = false;
 
+	  /* E.g. C sizeof (vla) could add COMPOUND_EXPRs with
+	     evaluation of the vla VAR_DECL.  We need to readd
+	     them to the non-decl operand.  See PR45784.  */
+	  while (TREE_CODE (cond) == COMPOUND_EXPR)
+	    cond = TREE_OPERAND (cond, 1);
+
 	  if (EXPR_HAS_LOCATION (cond))
 	    elocus = EXPR_LOCATION (cond);
 
@@ -584,6 +590,21 @@ c_finish_omp_for (location_t locus, enum tree_code code, tree declv,
 					 ? LT_EXPR : GE_EXPR);
 		  else if (code != CILK_SIMD && code != CILK_FOR)
 		    cond_ok = false;
+		}
+
+	      if (cond_ok && TREE_VEC_ELT (condv, i) != cond)
+		{
+		  tree ce = NULL_TREE, *pce = &ce;
+		  tree type = TREE_TYPE (TREE_OPERAND (cond, 1));
+		  for (tree c = TREE_VEC_ELT (condv, i); c != cond;
+		       c = TREE_OPERAND (c, 1))
+		    {
+		      *pce = build2 (COMPOUND_EXPR, type, TREE_OPERAND (c, 0),
+				     TREE_OPERAND (cond, 1));
+		      pce = &TREE_OPERAND (*pce, 1);
+		    }
+		  TREE_OPERAND (cond, 1) = ce;
+		  TREE_VEC_ELT (condv, i) = cond;
 		}
 	    }
 
