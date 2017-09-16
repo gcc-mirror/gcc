@@ -1,3 +1,13 @@
+2017-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-06-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81154
+	* semantics.c (handle_omp_array_sections_1, finish_omp_clauses):
+	Complain about t not being a variable if t is OVERLOAD even
+	when processing_template_decl.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81006
