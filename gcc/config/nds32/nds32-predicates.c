@@ -175,47 +175,47 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
     {
       elt = XVECEXP (op, 0, index);
       if (GET_CODE (elt) != SET)
-        return false;
+	return false;
     }
 
   /* For push operation, the parallel rtx looks like:
      (parallel [(set (mem (plus (reg:SI SP_REGNUM) (const_int -32)))
-                     (reg:SI Rb))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
-                     (reg:SI Rb+1))
-                ...
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
-                     (reg:SI Re))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
-                     (reg:SI FP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
-                     (reg:SI GP_REGNUM))
-                (set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
-                     (reg:SI LP_REGNUM))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int -32)))])
+		     (reg:SI Rb))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -28)))
+		     (reg:SI Rb+1))
+		...
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -16)))
+		     (reg:SI Re))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -12)))
+		     (reg:SI FP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -8)))
+		     (reg:SI GP_REGNUM))
+		(set (mem (plus (reg:SI SP_REGNUM) (const_int -4)))
+		     (reg:SI LP_REGNUM))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int -32)))])
 
      For pop operation, the parallel rtx looks like:
      (parallel [(set (reg:SI Rb)
-                     (mem (reg:SI SP_REGNUM)))
-                (set (reg:SI Rb+1)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
-                ...
-                (set (reg:SI Re)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
-                (set (reg:SI FP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
-                (set (reg:SI GP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
-                (set (reg:SI LP_REGNUM)
-                     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
-                (set (reg:SI SP_REGNUM)
-                     (plus (reg:SI SP_REGNUM) (const_int 32)))]) */
+		     (mem (reg:SI SP_REGNUM)))
+		(set (reg:SI Rb+1)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 4))))
+		...
+		(set (reg:SI Re)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 16))))
+		(set (reg:SI FP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 20))))
+		(set (reg:SI GP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 24))))
+		(set (reg:SI LP_REGNUM)
+		     (mem (plus (reg:SI SP_REGNUM) (const_int 28))))
+		(set (reg:SI SP_REGNUM)
+		     (plus (reg:SI SP_REGNUM) (const_int 32)))]) */
 
   /* 1. Consecutive registers push/pop operations.
-        We need to calculate how many registers should be consecutive.
-        The $sp adjustment rtx, $fp push rtx, $gp push rtx,
-        and $lp push rtx are excluded.  */
+	We need to calculate how many registers should be consecutive.
+	The $sp adjustment rtx, $fp push rtx, $gp push rtx,
+	and $lp push rtx are excluded.  */
 
   /* Detect whether we have $fp, $gp, or $lp in the parallel rtx.  */
   save_fp = reg_mentioned_p (gen_rtx_REG (SImode, FP_REGNUM), op);
@@ -239,19 +239,19 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
       first_regno = REGNO (elt_reg);
 
       /* The 'push' operation is a kind of store operation.
-         The 'pop' operation is a kind of load operation.
-         Pass corresponding false/true as second argument (bool load_p).
-         The par_index is supposed to start with index 0.  */
+	 The 'pop' operation is a kind of load operation.
+	 Pass corresponding false/true as second argument (bool load_p).
+	 The par_index is supposed to start with index 0.  */
       if (!nds32_consecutive_registers_load_store_p (op,
 						     !push_p ? true : false,
 						     0,
 						     first_regno,
 						     rest_count))
-        return false;
+	return false;
     }
 
   /* 2. Valid $fp/$gp/$lp push/pop operations.
-        Remember to set start index for checking them.  */
+	Remember to set start index for checking them.  */
 
   /* The rest_count is the start index for checking $fp/$gp/$lp.  */
   index = rest_count;
@@ -270,9 +270,9 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
       index++;
 
       if (GET_CODE (elt_mem) != MEM
-          || GET_CODE (elt_reg) != REG
-          || REGNO (elt_reg) != FP_REGNUM)
-        return false;
+	  || GET_CODE (elt_reg) != REG
+	  || REGNO (elt_reg) != FP_REGNUM)
+	return false;
     }
   if (save_gp)
     {
@@ -282,9 +282,9 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
       index++;
 
       if (GET_CODE (elt_mem) != MEM
-          || GET_CODE (elt_reg) != REG
-          || REGNO (elt_reg) != GP_REGNUM)
-        return false;
+	  || GET_CODE (elt_reg) != REG
+	  || REGNO (elt_reg) != GP_REGNUM)
+	return false;
     }
   if (save_lp)
     {
@@ -294,16 +294,16 @@ nds32_valid_stack_push_pop_p (rtx op, bool push_p)
       index++;
 
       if (GET_CODE (elt_mem) != MEM
-          || GET_CODE (elt_reg) != REG
-          || REGNO (elt_reg) != LP_REGNUM)
-        return false;
+	  || GET_CODE (elt_reg) != REG
+	  || REGNO (elt_reg) != LP_REGNUM)
+	return false;
     }
 
   /* 3. The last element must be stack adjustment rtx.
-        Its form of rtx should be:
-          (set (reg:SI SP_REGNUM)
-               (plus (reg:SI SP_REGNUM) (const_int X)))
-        The X could be positive or negative value.  */
+	Its form of rtx should be:
+	  (set (reg:SI SP_REGNUM)
+	       (plus (reg:SI SP_REGNUM) (const_int X)))
+	The X could be positive or negative value.  */
 
   /* Pick up the last element.  */
   elt = XVECEXP (op, 0, total_count - 1);
