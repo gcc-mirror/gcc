@@ -15224,7 +15224,14 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 
 	  cond = cond_expr.value;
 	  cond = c_objc_common_truthvalue_conversion (cond_loc, cond);
-	  cond = c_fully_fold (cond, false, NULL);
+	  if (COMPARISON_CLASS_P (cond))
+	    {
+	      tree op0 = TREE_OPERAND (cond, 0), op1 = TREE_OPERAND (cond, 1);
+	      op0 = c_fully_fold (op0, false, NULL);
+	      op1 = c_fully_fold (op1, false, NULL);
+	      TREE_OPERAND (cond, 0) = op0;
+	      TREE_OPERAND (cond, 1) = op1;
+	    }
 	  switch (cond_expr.original_code)
 	    {
 	    case GT_EXPR:
