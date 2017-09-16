@@ -1,3 +1,11 @@
+2017-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/a-intnam__rtems.ads: Update copyright date.
+	* libgnarl/s-interr__hwint.adb: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+
 2017-09-13  Nicolas Roche  <roche@adacore.com>
 
 	* Make-lang.in: In the fallback mechanim, parse the associated .ali
