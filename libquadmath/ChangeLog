@@ -1,3 +1,8 @@
+2017-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/65757
+	* math/roundq.c: Cherry-pick upstream glibc 2015-04-28 change.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
