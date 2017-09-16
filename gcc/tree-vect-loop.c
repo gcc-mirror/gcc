@@ -7029,11 +7029,6 @@ vectorizable_live_operation (gimple *stmt,
 
   gcc_assert (STMT_VINFO_LIVE_P (stmt_info));
 
-  if (slp_node)
-    ncopies = 1;
-  else
-    ncopies = vect_get_num_copies (loop_vinfo, vectype);
-
   if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
     return false;
 
@@ -7053,6 +7048,11 @@ vectorizable_live_operation (gimple *stmt,
 			 "place.\n");
       return true;
     }
+
+  if (slp_node)
+    ncopies = 1;
+  else
+    ncopies = vect_get_num_copies (loop_vinfo, vectype);
 
   if (!vec_stmt)
     /* No transformation required.  */
