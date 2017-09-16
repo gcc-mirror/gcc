@@ -10,6 +10,10 @@
 
 	2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81621
+	* bb-reorder.c (pass_partition_blocks::execute): Return TODO_df_finish
+	after setting changeable df flags.
+
 	PR middle-end/81052
 	* omp-low.c (diagnose_sb_0): Handle flag_openmp_simd like flag_openmp.
 	(pass_diagnose_omp_blocks::gate): Enable also for flag_openmp_simd.

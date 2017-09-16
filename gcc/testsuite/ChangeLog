@@ -8,6 +8,9 @@
 
 	2017-08-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/81621
+	* gcc.dg/pr81621.c: New test.
+
 	PR middle-end/81052
 	* c-c++-common/pr81052.c: New test.
 
