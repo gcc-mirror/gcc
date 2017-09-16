@@ -1,3 +1,14 @@
+2017-09-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
+	* config/nds32/nds32.c: Refine formatting and comments.
+	* config/nds32/nds32.h: Likewise.
+	* config/nds32/nds32.md: Likewise.
+	* config/nds32/nds32-cost.c: Likewise.
+	* config/nds32/nds32-isr.c: Likewise.
+	* config/nds32/nds32-md-auxiliary.c: Likewise.
+	* config/nds32/nds32-multiple.md: Likewise.
+	* config/nds32/nds32-predicates.c: Likewise.
+
 2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

@@ -453,33 +453,33 @@ nds32_output_32bit_load_s (rtx *operands, int byte)
     {
     case REG:
       /* (mem (reg X))
-         => access location by using register,
-         use "lbsi / lhsi" */
+	 => access location by using register,
+	 use "lbsi / lhsi" */
       snprintf (pattern, sizeof (pattern), "l%csi\t%%0, %%1", size);
       break;
 
     case SYMBOL_REF:
     case CONST:
       /* (mem (symbol_ref X))
-         (mem (const (...)))
-         => access global variables,
-         use "lbsi.gp / lhsi.gp" */
+	 (mem (const (...)))
+	 => access global variables,
+	 use "lbsi.gp / lhsi.gp" */
       operands[1] = XEXP (operands[1], 0);
       snprintf (pattern, sizeof (pattern), "l%csi.gp\t%%0, [ + %%1]", size);
       break;
 
     case POST_INC:
       /* (mem (post_inc reg))
-         => access location by using register which will be post increment,
-         use "lbsi.bi / lhsi.bi" */
+	 => access location by using register which will be post increment,
+	 use "lbsi.bi / lhsi.bi" */
       snprintf (pattern, sizeof (pattern),
 		"l%csi.bi\t%%0, %%1, %d", size, byte);
       break;
 
     case POST_DEC:
       /* (mem (post_dec reg))
-         => access location by using register which will be post decrement,
-         use "lbsi.bi / lhsi.bi" */
+	 => access location by using register which will be post decrement,
+	 use "lbsi.bi / lhsi.bi" */
       snprintf (pattern, sizeof (pattern),
 		"l%csi.bi\t%%0, %%1, -%d", size, byte);
       break;
@@ -585,8 +585,8 @@ nds32_output_stack_push (rtx par_rtx)
       && (cfun->machine->va_args_size == 0))
     {
       /* For stack v3push:
-           operands[0]: Re
-           operands[1]: imm8u */
+	   operands[0]: Re
+	   operands[1]: imm8u */
 
       /* This variable is to check if 'push25 Re,imm8u' is available.  */
       int sp_adjust;
@@ -595,7 +595,7 @@ nds32_output_stack_push (rtx par_rtx)
       operands[0] = gen_rtx_REG (SImode, re_callee_saved);
 
       /* Check if we can generate 'push25 Re,imm8u',
-         otherwise, generate 'push25 Re,0'.  */
+	 otherwise, generate 'push25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
 		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
@@ -611,12 +611,12 @@ nds32_output_stack_push (rtx par_rtx)
   else
     {
       /* For normal stack push multiple:
-         operands[0]: Rb
-         operands[1]: Re
-         operands[2]: En4 */
+	 operands[0]: Rb
+	 operands[1]: Re
+	 operands[2]: En4 */
 
       /* This variable is used to check if we only need to generate En4 field.
-         As long as Rb==Re=SP_REGNUM, we set this variable to 1.  */
+	 As long as Rb==Re=SP_REGNUM, we set this variable to 1.  */
       int push_en4_only_p = 0;
 
       /* Set operands[0] and operands[1].  */
@@ -678,8 +678,8 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
       && (cfun->machine->va_args_size == 0))
     {
       /* For stack v3pop:
-           operands[0]: Re
-           operands[1]: imm8u */
+	   operands[0]: Re
+	   operands[1]: imm8u */
 
       /* This variable is to check if 'pop25 Re,imm8u' is available.  */
       int sp_adjust;
@@ -688,12 +688,12 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
       operands[0] = gen_rtx_REG (SImode, re_callee_saved);
 
       /* Check if we can generate 'pop25 Re,imm8u',
-         otherwise, generate 'pop25 Re,0'.
-         We have to consider alloca issue as well.
-         If the function does call alloca(), the stack pointer is not fixed.
-         In that case, we cannot use 'pop25 Re,imm8u' directly.
-         We have to caculate stack pointer from frame pointer
-         and then use 'pop25 Re,0'.  */
+	 otherwise, generate 'pop25 Re,0'.
+	 We have to consider alloca issue as well.
+	 If the function does call alloca(), the stack pointer is not fixed.
+	 In that case, we cannot use 'pop25 Re,imm8u' directly.
+	 We have to caculate stack pointer from frame pointer
+	 and then use 'pop25 Re,0'.  */
       sp_adjust = cfun->machine->local_size
 		  + cfun->machine->out_args_size
 		  + cfun->machine->callee_saved_area_gpr_padding_bytes;
@@ -710,12 +710,12 @@ nds32_output_stack_pop (rtx par_rtx ATTRIBUTE_UNUSED)
   else
     {
       /* For normal stack pop multiple:
-         operands[0]: Rb
-         operands[1]: Re
-         operands[2]: En4 */
+	 operands[0]: Rb
+	 operands[1]: Re
+	 operands[2]: En4 */
 
       /* This variable is used to check if we only need to generate En4 field.
-         As long as Rb==Re=SP_REGNUM, we set this variable to 1.  */
+	 As long as Rb==Re=SP_REGNUM, we set this variable to 1.  */
       int pop_en4_only_p = 0;
 
       /* Set operands[0] and operands[1].  */
