@@ -1,6 +1,16 @@
 2017-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-08-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81687
+	* omp-low.c (omp_copy_decl): Don't remap FORCED_LABEL or DECL_NONLOCAL
+	LABEL_DECLs.
+	* tree-cfg.c (move_stmt_op): Don't adjust DECL_CONTEXT of FORCED_LABEL
+	or DECL_NONLOCAL labels.
+	(move_stmt_r) <case GIMPLE_LABEL>: Adjust DECL_CONTEXT of FORCED_LABEL
+	or DECL_NONLOCAL labels here.
+
 	2017-08-08  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/81766
