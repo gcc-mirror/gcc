@@ -1,6 +1,15 @@
 2017-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-common.c (sync_resolve_size): Instead of c_dialect_cxx ()
+	assertion check that in the condition.
+	(get_atomic_generic_size): Likewise.  Before testing if parameter
+	has pointer type, if it has array type, call for C++
+	default_conversion to perform array-to-pointer conversion.
+
 	2017-07-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/45784
