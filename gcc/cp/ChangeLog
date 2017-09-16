@@ -8,6 +8,13 @@
 	Complain about t not being a variable if t is OVERLOAD even
 	when processing_template_decl.
 
+	2017-06-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/80984
+	* cp-gimplify.c (cp_genericize): Only look for VAR_DECLs in
+	BLOCK_VARS (outer) chain.
+	(cxx_omp_const_qual_no_mutable): Likewise.
+
 2017-06-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/81006
