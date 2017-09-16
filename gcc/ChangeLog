@@ -1,3 +1,9 @@
+2017-09-16  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82228
+	* tree-vect-loop.c (vectorizable_live_operation): Move initialization
+	of ncopies.
+
 2017-09-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
 	* common/config/nds32/nds32-common.c
