@@ -1,5 +1,12 @@
 2017-09-16  Chung-Ju Wu  <jasonwucj@gmail.com>
 
+	* common/config/nds32/nds32-common.c
+	(nds32_option_optimization_table): Refine formatting.
+	(nds32_option_optimization_table): Use -fsched-pressure and
+	-fomit-frame-pointer for specific optimization level.
+
+2017-09-16  Chung-Ju Wu  <jasonwucj@gmail.com>
+
 	* config/nds32/nds32.c: Refine formatting and comments.
 	* config/nds32/nds32.h: Likewise.
 	* config/nds32/nds32.md: Likewise.
