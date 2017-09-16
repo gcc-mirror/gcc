@@ -1,3 +1,21 @@
+2017-09-16  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-08-08  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81766
+	* function.c (thread_prologue_and_epilogue_insns): Restore
+	behavior of always calling find_many_sub_basic_blocks on
+	the inserted prologue.
+
+	2017-08-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/79499
+	* function.c (thread_prologue_and_epilogue_insns): Determine blocks
+	for find_many_sub_basic_blocks bitmap by looking up BLOCK_FOR_INSN
+	of first NONDEBUG_INSN_P in each of the split_prologue_seq and
+	prologue_seq sequences - if any.
+
 2017-09-15  Martin Liska  <mliska@suse.cz>
 
 	Backport from mainline
