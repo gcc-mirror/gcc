@@ -1,3 +1,8 @@
+2017-09-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/81875
+	* testsuite/libgomp.c-c++-common/pr81875.c: New test.
+
 2017-09-14  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.c++/cancel-taskgroup-1.C: Remove.

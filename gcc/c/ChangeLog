@@ -1,3 +1,9 @@
+2017-09-16  Tom de Vries  <tom@codesourcery.com>
+
+	PR c/81875
+	* c-parser.c (c_parser_omp_for_loop): Fold only operands of cond, not
+	cond itself.
+
 2017-09-15  Joseph Myers  <joseph@codesourcery.com>
 
 	PR c/82071
