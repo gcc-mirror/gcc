@@ -1,3 +1,17 @@
+2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* decl.c (gfc_get_pdt_instance): Use the component initializer
+	expression for the default, rather than the parameter value.
+	* resolve.c (resolve_pdt): New function.
+	(resolve_symbol): Call it. Remove false error, prohibiting
+	deferred type parameters for dummy arguments.
+
+	PR fortran/60483
+	* primary.c (gfc_match_varspec): If the type of an associate
+	name is unknown and yet there is a match, try resolving the
+	target expression and using its type.
+
 2017-09-15  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82184
