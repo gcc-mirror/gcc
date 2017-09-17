@@ -2513,7 +2513,7 @@ public:
   static const unsigned MAX_REGS = 18;
   static const unsigned MAX_EXTRA_REGS = MAX_REGS - MIN_REGS;
   static const unsigned VARIANT_COUNT = MAX_EXTRA_REGS + 1;
-  static const unsigned STUB_NAME_MAX_LEN = 16;
+  static const unsigned STUB_NAME_MAX_LEN = 20;
   static const char * const STUB_BASE_NAMES[XLOGUE_STUB_COUNT];
   static const unsigned REG_ORDER[MAX_REGS];
   static const unsigned REG_ORDER_REALIGN[MAX_REGS];
@@ -2536,7 +2536,7 @@ private:
   struct reginfo m_regs[MAX_REGS];
 
   /* Lazy-inited cache of symbol names for stubs.  */
-  static char s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+  static char s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 			  [STUB_NAME_MAX_LEN];
 
   static const xlogue_layout s_instances[XLOGUE_SET_COUNT];
@@ -2588,7 +2588,7 @@ const unsigned xlogue_layout::VARIANT_COUNT;
 const unsigned xlogue_layout::STUB_NAME_MAX_LEN;
 
 /* Initialize xlogue_layout::s_stub_names to zero.  */
-char xlogue_layout::s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+char xlogue_layout::s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 				[STUB_NAME_MAX_LEN];
 
 /* Instantiates all xlogue_layout instances.  */
@@ -2692,13 +2692,16 @@ const char *
 xlogue_layout::get_stub_name (enum xlogue_stub stub,
 			      unsigned n_extra_regs)
 {
-  char *name = s_stub_names[stub][n_extra_regs];
+  const int have_avx = TARGET_AVX;
+  char *name = s_stub_names[!!have_avx][stub][n_extra_regs];
 
   /* Lazy init */
   if (!*name)
     {
-      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%u",
-			  STUB_BASE_NAMES[stub], MIN_REGS + n_extra_regs);
+      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%s_%u",
+			  (have_avx ? "avx" : "sse"),
+			  STUB_BASE_NAMES[stub],
+			  MIN_REGS + n_extra_regs);
       gcc_checking_assert (res < (int)STUB_NAME_MAX_LEN);
     }
 

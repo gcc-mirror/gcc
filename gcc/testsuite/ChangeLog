@@ -1,3 +1,8 @@
+2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
+
+	gcc.target/i386/pr82196-1.c: New test.
+	gcc.target/i386/pr82196-2.c: Likewise.
+
 2017-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82166
