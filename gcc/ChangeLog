@@ -1,3 +1,11 @@
+2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
+
+	config/i386/i386.c: (xlogue_layout::STUB_NAME_MAX_LEN): Increase to 20
+	bytes.
+	(xlogue_layout::s_stub_names): Add an additional size-2 diminsion.
+	(xlogue_layout::get_stub_name): Modify to select the appropairate sse
+	or avx version of the stub.
+
 2017-09-17  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82166

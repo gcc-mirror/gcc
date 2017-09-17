@@ -1,4 +1,4 @@
-/* Epilogue stub for 64-bit ms/sysv clobbers: restore (with hard frame pointer)
+/* Prologue stub for 64-bit ms/sysv clobbers: save (with hard frame pointer)
    Copyright (C) 2016-2017 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
@@ -26,30 +26,30 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __x86_64__
 #include "i386-asm.h"
 
-/* Epilogue routine for restoring 64-bit ms/sysv registers when hard frame
-   pointer is used.  */
+/* Prologue routine for saving 64-bit ms/sysv registers when realignment is
+ * needed or hard frame pointer used.  */
 
 	.text
-HIDDEN_FUNC(__resms64f_17)
-	mov	-0x68(%rsi),%r15
-HIDDEN_FUNC(__resms64f_16)
-	mov	-0x60(%rsi),%r14
-HIDDEN_FUNC(__resms64f_15)
-	mov	-0x58(%rsi),%r13
-HIDDEN_FUNC(__resms64f_14)
-	mov	-0x50(%rsi),%r12
-HIDDEN_FUNC(__resms64f_13)
-	mov	-0x48(%rsi),%rbx
-HIDDEN_FUNC(__resms64f_12)
-	mov	-0x40(%rsi),%rdi
-	SSE_RESTORE
-	mov	-0x38(%rsi),%rsi
+MS2SYSV_STUB_BEGIN(savms64f_17)
+	mov	%r15,-0x68(%rax)
+MS2SYSV_STUB_BEGIN(savms64f_16)
+	mov	%r14,-0x60(%rax)
+MS2SYSV_STUB_BEGIN(savms64f_15)
+	mov	%r13,-0x58(%rax)
+MS2SYSV_STUB_BEGIN(savms64f_14)
+	mov	%r12,-0x50(%rax)
+MS2SYSV_STUB_BEGIN(savms64f_13)
+	mov	%rbx,-0x48(%rax)
+MS2SYSV_STUB_BEGIN(savms64f_12)
+	mov	%rdi,-0x40(%rax)
+	mov	%rsi,-0x38(%rax)
+	SSE_SAVE
 	ret
-FUNC_END(__resms64f_12)
-FUNC_END(__resms64f_13)
-FUNC_END(__resms64f_14)
-FUNC_END(__resms64f_15)
-FUNC_END(__resms64f_16)
-FUNC_END(__resms64f_17)
+MS2SYSV_STUB_END(savms64f_12)
+MS2SYSV_STUB_END(savms64f_13)
+MS2SYSV_STUB_END(savms64f_14)
+MS2SYSV_STUB_END(savms64f_15)
+MS2SYSV_STUB_END(savms64f_16)
+MS2SYSV_STUB_END(savms64f_17)
 
 #endif /* __x86_64__ */

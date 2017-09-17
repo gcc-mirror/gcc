@@ -1,4 +1,4 @@
-/* Epilogue stub for 64-bit ms/sysv clobbers: restore and return
+/* Epilogue stub for 64-bit ms/sysv clobbers: restore, leave and return
    Copyright (C) 2016-2017 Free Software Foundation, Inc.
    Contributed by Daniel Santos <daniel.santos@pobox.com>
 
@@ -26,34 +26,32 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifdef __x86_64__
 #include "i386-asm.h"
 
-/* Epilogue routine for restoring 64-bit ms/sysv registers and returning from
- * function.  */
+/* Epilogue routine for 64-bit ms/sysv registers when hard frame pointer
+ * used -- restores registers, restores frame pointer and then returns
+ * from the function.  */
 
 	.text
-HIDDEN_FUNC(__resms64x_18)
-	mov	-0x70(%rsi),%r15
-HIDDEN_FUNC(__resms64x_17)
-	mov	-0x68(%rsi),%r14
-HIDDEN_FUNC(__resms64x_16)
-	mov	-0x60(%rsi),%r13
-HIDDEN_FUNC(__resms64x_15)
-	mov	-0x58(%rsi),%r12
-HIDDEN_FUNC(__resms64x_14)
-	mov	-0x50(%rsi),%rbp
-HIDDEN_FUNC(__resms64x_13)
+MS2SYSV_STUB_BEGIN(resms64fx_17)
+	mov	-0x68(%rsi),%r15
+MS2SYSV_STUB_BEGIN(resms64fx_16)
+	mov	-0x60(%rsi),%r14
+MS2SYSV_STUB_BEGIN(resms64fx_15)
+	mov	-0x58(%rsi),%r13
+MS2SYSV_STUB_BEGIN(resms64fx_14)
+	mov	-0x50(%rsi),%r12
+MS2SYSV_STUB_BEGIN(resms64fx_13)
 	mov	-0x48(%rsi),%rbx
-HIDDEN_FUNC(__resms64x_12)
+MS2SYSV_STUB_BEGIN(resms64fx_12)
 	mov	-0x40(%rsi),%rdi
 	SSE_RESTORE
 	mov	-0x38(%rsi),%rsi
-	mov	%r10,%rsp
+	leaveq
 	ret
-FUNC_END(__resms64x_12)
-FUNC_END(__resms64x_13)
-FUNC_END(__resms64x_14)
-FUNC_END(__resms64x_15)
-FUNC_END(__resms64x_16)
-FUNC_END(__resms64x_17)
-FUNC_END(__resms64x_18)
+MS2SYSV_STUB_END(resms64fx_12)
+MS2SYSV_STUB_END(resms64fx_13)
+MS2SYSV_STUB_END(resms64fx_14)
+MS2SYSV_STUB_END(resms64fx_15)
+MS2SYSV_STUB_END(resms64fx_16)
+MS2SYSV_STUB_END(resms64fx_17)
 
 #endif /* __x86_64__ */

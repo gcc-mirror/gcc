@@ -29,29 +29,29 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 /* Epilogue routine for restoring 64-bit ms/sysv registers.  */
 
 	.text
-HIDDEN_FUNC(__resms64_18)
+MS2SYSV_STUB_BEGIN(resms64_18)
 	mov	-0x70(%rsi),%r15
-HIDDEN_FUNC(__resms64_17)
+MS2SYSV_STUB_BEGIN(resms64_17)
 	mov	-0x68(%rsi),%r14
-HIDDEN_FUNC(__resms64_16)
+MS2SYSV_STUB_BEGIN(resms64_16)
 	mov	-0x60(%rsi),%r13
-HIDDEN_FUNC(__resms64_15)
+MS2SYSV_STUB_BEGIN(resms64_15)
 	mov	-0x58(%rsi),%r12
-HIDDEN_FUNC(__resms64_14)
+MS2SYSV_STUB_BEGIN(resms64_14)
 	mov	-0x50(%rsi),%rbp
-HIDDEN_FUNC(__resms64_13)
+MS2SYSV_STUB_BEGIN(resms64_13)
 	mov	-0x48(%rsi),%rbx
-HIDDEN_FUNC(__resms64_12)
+MS2SYSV_STUB_BEGIN(resms64_12)
 	mov	-0x40(%rsi),%rdi
 	SSE_RESTORE
 	mov	-0x38(%rsi),%rsi
 	ret
-FUNC_END(__resms64_12)
-FUNC_END(__resms64_13)
-FUNC_END(__resms64_14)
-FUNC_END(__resms64_15)
-FUNC_END(__resms64_16)
-FUNC_END(__resms64_17)
-FUNC_END(__resms64_18)
+MS2SYSV_STUB_END(resms64_12)
+MS2SYSV_STUB_END(resms64_13)
+MS2SYSV_STUB_END(resms64_14)
+MS2SYSV_STUB_END(resms64_15)
+MS2SYSV_STUB_END(resms64_16)
+MS2SYSV_STUB_END(resms64_17)
+MS2SYSV_STUB_END(resms64_18)
 
 #endif /* __x86_64__ */
