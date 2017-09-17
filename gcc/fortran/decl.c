@@ -3275,8 +3275,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    kind_expr = gfc_copy_expr (actual_param->expr);
 	  else
 	    {
-	      if (param->value)
-		kind_expr = gfc_copy_expr (param->value);
+	      if (c1->initializer)
+		kind_expr = gfc_copy_expr (c1->initializer);
 	      else if (!(actual_param && param->attr.pdt_len))
 		{
 		  gfc_error ("The derived parameter '%qs' at %C does not "

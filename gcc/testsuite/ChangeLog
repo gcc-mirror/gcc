@@ -1,3 +1,19 @@
+2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_1.f03 : Eliminate spurious error checks.
+	* gfortran.dg/pdt_2.f03 : The same.
+	* gfortran.dg/pdt_3.f03 : The same.
+	* gfortran.dg/pdt_4.f03 : Add 'modtype' and two new errors in
+	module 'bad_vars'. Add error concerning assumed parameters and
+	save attribute.
+	* gfortran.dg/pdt_11.f03 : New test.
+
+	PR fortran/60483
+	* gfortran.dg/associate_9.f90 : Remove XFAIL and change to run.
+	* gfortran.dg/associate_25.f90 : New test.
+	* gfortran.dg/pdt_12.f03 : New test.
+
 2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 
