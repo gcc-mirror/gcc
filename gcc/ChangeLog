@@ -1,3 +1,10 @@
+2017-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82166
+	* config/i386/i386.c (ix86_finalize_stack_frame_flags): Properly
+	compute the minimum stack alignment.  Also update preferred stack
+	boundary for leaf functions.
+
 2017-09-16  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/82228

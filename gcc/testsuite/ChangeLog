@@ -1,3 +1,8 @@
+2017-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82166
+	* gcc.target/i386/pr82166.c: New test.
+
 2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173

@@ -14257,11 +14257,12 @@ ix86_finalize_stack_frame_flags (void)
   unsigned int incoming_stack_boundary
     = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
        ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  unsigned int stack_alignment
+    = (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
+       ? crtl->max_used_stack_slot_alignment
+       : crtl->stack_alignment_needed);
   unsigned int stack_realign
-    = (incoming_stack_boundary
-       < (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
-	  ? crtl->max_used_stack_slot_alignment
-	  : crtl->stack_alignment_needed));
+    = (incoming_stack_boundary < stack_alignment);
   bool recompute_frame_layout_p = false;
 
   if (crtl->stack_realign_finalized)
@@ -14306,7 +14307,9 @@ ix86_finalize_stack_frame_flags (void)
 			   HARD_FRAME_POINTER_REGNUM);
 
       /* The preferred stack alignment is the minimum stack alignment.  */
-      unsigned int stack_alignment = crtl->preferred_stack_boundary;
+      if (stack_alignment > crtl->preferred_stack_boundary)
+	stack_alignment = crtl->preferred_stack_boundary;
+
       bool require_stack_frame = false;
 
       FOR_EACH_BB_FN (bb, cfun)
@@ -14348,6 +14351,10 @@ ix86_finalize_stack_frame_flags (void)
 	      crtl->max_used_stack_slot_alignment
 		= incoming_stack_boundary;
 	      crtl->stack_alignment_needed
+		= incoming_stack_boundary;
+	      /* Also update preferred_stack_boundary for leaf
+	         functions.  */
+	      crtl->preferred_stack_boundary
 		= incoming_stack_boundary;
 	    }
 	}
