@@ -20486,7 +20486,7 @@ parsing_nsdmi (void)
    which we ultimately want to defer to instantiation time. */
 
 bool
-parsing_default_capturing_generic_lambda_in_template (void)
+parsing_default_capturing_generic_lambda (void)
 {
   if (!processing_template_decl || !current_class_type)
     return false;
@@ -20499,12 +20499,7 @@ parsing_default_capturing_generic_lambda_in_template (void)
   if (!callop)
     return false;
 
-  return (DECL_TEMPLATE_INFO (callop)
-	  && (DECL_TEMPLATE_RESULT (DECL_TI_TEMPLATE (callop)) == callop)
-	  && ((current_nonlambda_class_type ()
-	       && CLASSTYPE_TEMPLATE_INFO (current_nonlambda_class_type ()))
-	      || ((current_nonlambda_function ()
-		   && DECL_TEMPLATE_INFO (current_nonlambda_function ())))));
+  return generic_lambda_fn_p (callop);
 }
 
 /* Parse a late-specified return type, if any.  This is not a separate

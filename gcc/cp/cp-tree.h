@@ -6125,7 +6125,7 @@ extern bool maybe_clone_body			(tree);
 /* In parser.c */
 extern tree cp_convert_range_for (tree, tree, tree, tree, unsigned int, bool);
 extern bool parsing_nsdmi (void);
-extern bool parsing_default_capturing_generic_lambda_in_template (void);
+extern bool parsing_default_capturing_generic_lambda (void);
 extern void inject_this_parameter (tree, cp_cv_quals);
 
 /* in pt.c */
