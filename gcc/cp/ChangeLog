@@ -1,5 +1,8 @@
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81671 - nullptr_t template parameter
+	* pt.c (convert_nontype_argument): Fix nullptr_t check.
+
 	PR c++/81525 - wrong constant value with generic lambda
 	* pt.c (tsubst_decl) [VAR_DECL]: Avoid clobbering auto.
 	(tsubst_copy) [VAR_DECL]: Handle auto.
