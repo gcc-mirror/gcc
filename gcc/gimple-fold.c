@@ -5483,9 +5483,12 @@ fold_ctor_reference (tree type, tree ctor, unsigned HOST_WIDE_INT offset,
       && !compare_tree_int (TYPE_SIZE (TREE_TYPE (ctor)), size))
     {
       ret = canonicalize_constructor_val (unshare_expr (ctor), from_decl);
-      ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
       if (ret)
-	STRIP_USELESS_TYPE_CONVERSION (ret);
+	{
+	  ret = fold_unary (VIEW_CONVERT_EXPR, type, ret);
+	  if (ret)
+	    STRIP_USELESS_TYPE_CONVERSION (ret);
+	}
       return ret;
     }
   /* For constants and byte-aligned/sized reads try to go through

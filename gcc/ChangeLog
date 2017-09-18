@@ -1,3 +1,30 @@
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-04-10  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80362
+	* fold-const.c (fold_binary_loc): Look at unstripped ops when
+	looking for NEGATE_EXPR in -A / -B to A / B folding.
+
+	2015-11-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/68528
+	* fold-const.c (fold_binary_loc): Do not call negate_expr_p
+	on stripped operands.
+
+	2017-03-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/80171
+	* gimple-fold.c (fold_ctor_reference): Properly guard against
+	NULL return value from canonicalize_constructor_val.
+
+	2016-06-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/64516
+	* fold-const.c (fold_unary_loc): Preserve alignment when
+	folding a VIEW_CONVERT_EXPR into a MEM_REF.
+
 2017-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline

@@ -8152,8 +8152,13 @@ fold_unary_loc (location_t loc, enum tree_code code, tree type, tree op0)
 
     case VIEW_CONVERT_EXPR:
       if (TREE_CODE (op0) == MEM_REF)
-	return fold_build2_loc (loc, MEM_REF, type,
-				TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
+	{
+	  if (TYPE_ALIGN (TREE_TYPE (op0)) != TYPE_ALIGN (type))
+	    type = build_aligned_type (type, TYPE_ALIGN (TREE_TYPE (op0)));
+	  tem = fold_build2_loc (loc, MEM_REF, type,
+				 TREE_OPERAND (op0, 0), TREE_OPERAND (op0, 1));
+	  return tem;
+	}
 
       return NULL_TREE;
 
@@ -10574,13 +10579,12 @@ fold_binary_loc (location_t loc,
 	}
       /* (-A) - B -> (-B) - A  where B is easily negated and we can swap.  */
       if (TREE_CODE (arg0) == NEGATE_EXPR
-	  && negate_expr_p (arg1)
+	  && negate_expr_p (op1)
 	  && reorder_operands_p (arg0, arg1))
 	return fold_build2_loc (loc, MINUS_EXPR, type,
-			    fold_convert_loc (loc, type,
-					      negate_expr (arg1)),
-			    fold_convert_loc (loc, type,
-					      TREE_OPERAND (arg0, 0)));
+				negate_expr (op1),
+				fold_convert_loc (loc, type,
+						  TREE_OPERAND (arg0, 0)));
 
       /* X - (X / Y) * Y is X % Y.  */
       if ((INTEGRAL_TYPE_P (type) || VECTOR_INTEGER_TYPE_P (type))
@@ -10679,17 +10683,16 @@ fold_binary_loc (location_t loc,
 	}
 
       /* A - B -> A + (-B) if B is easily negatable.  */
-      if (negate_expr_p (arg1)
-	  && !TYPE_OVERFLOW_SANITIZED (type)
+      if (negate_expr_p (op1)
+	  && ! TYPE_OVERFLOW_SANITIZED (type)
 	  && ((FLOAT_TYPE_P (type)
                /* Avoid this transformation if B is a positive REAL_CST.  */
-	       && (TREE_CODE (arg1) != REAL_CST
-		   ||  REAL_VALUE_NEGATIVE (TREE_REAL_CST (arg1))))
+	       && (TREE_CODE (op1) != REAL_CST
+		   || REAL_VALUE_NEGATIVE (TREE_REAL_CST (op1))))
 	      || INTEGRAL_TYPE_P (type)))
 	return fold_build2_loc (loc, PLUS_EXPR, type,
-			    fold_convert_loc (loc, type, arg0),
-			    fold_convert_loc (loc, type,
-					      negate_expr (arg1)));
+				fold_convert_loc (loc, type, arg0),
+				negate_expr (op1));
 
       /* Try folding difference of addresses.  */
       {
@@ -10757,15 +10760,14 @@ fold_binary_loc (location_t loc,
       if (! FLOAT_TYPE_P (type))
 	{
 	  /* Transform x * -C into -x * C if x is easily negatable.  */
-	  if (TREE_CODE (arg1) == INTEGER_CST
-	      && tree_int_cst_sgn (arg1) == -1
-	      && negate_expr_p (arg0)
-	      && (tem = negate_expr (arg1)) != arg1
-	      && !TREE_OVERFLOW (tem))
+	  if (TREE_CODE (op1) == INTEGER_CST
+	      && tree_int_cst_sgn (op1) == -1
+	      && negate_expr_p (op0)
+	      && (tem = negate_expr (op1)) != op1
+	      && ! TREE_OVERFLOW (tem))
 	    return fold_build2_loc (loc, MULT_EXPR, type,
-	    			fold_convert_loc (loc, type,
-						  negate_expr (arg0)),
-				tem);
+				    fold_convert_loc (loc, type,
+						      negate_expr (op0)), tem);
 
 	  /* (a * (1 << b)) is (a << b)  */
 	  if (TREE_CODE (arg1) == LSHIFT_EXPR
@@ -11940,8 +11942,8 @@ fold_binary_loc (location_t loc,
       /* Convert -A / -B to A / B when the type is signed and overflow is
 	 undefined.  */
       if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
-	  && TREE_CODE (arg0) == NEGATE_EXPR
-	  && negate_expr_p (arg1))
+	  && TREE_CODE (op0) == NEGATE_EXPR
+	  && negate_expr_p (op1))
 	{
 	  if (INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -11949,14 +11951,13 @@ fold_binary_loc (location_t loc,
 				    "division"),
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_build2_loc (loc, code, type,
-			      fold_convert_loc (loc, type,
-						TREE_OPERAND (arg0, 0)),
-			      fold_convert_loc (loc, type,
-						negate_expr (arg1)));
+				  fold_convert_loc (loc, type,
+						    TREE_OPERAND (arg0, 0)),
+				  negate_expr (op1));
 	}
       if ((!INTEGRAL_TYPE_P (type) || TYPE_OVERFLOW_UNDEFINED (type))
-	  && TREE_CODE (arg1) == NEGATE_EXPR
-	  && negate_expr_p (arg0))
+	  && TREE_CODE (op1) == NEGATE_EXPR
+	  && negate_expr_p (op0))
 	{
 	  if (INTEGRAL_TYPE_P (type))
 	    fold_overflow_warning (("assuming signed overflow does not occur "
@@ -11964,10 +11965,9 @@ fold_binary_loc (location_t loc,
 				    "division"),
 				   WARN_STRICT_OVERFLOW_MISC);
 	  return fold_build2_loc (loc, code, type,
-			      fold_convert_loc (loc, type,
-						negate_expr (arg0)),
-			      fold_convert_loc (loc, type,
-						TREE_OPERAND (arg1, 0)));
+				  negate_expr (op0),
+				  fold_convert_loc (loc, type,
+						    TREE_OPERAND (arg1, 0)));
 	}
 
       /* If arg0 is a multiple of arg1, then rewrite to the fastest div
