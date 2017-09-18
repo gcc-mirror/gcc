@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vect-loop.c (vectorizable_live_operation): Fix element size
+	calculation for vector booleans.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-stmts.c (can_vectorize_live_stmts): New function,
 	split out from...
 	(vect_transform_stmt): ...here.
