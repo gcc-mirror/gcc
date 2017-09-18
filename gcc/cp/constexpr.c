@@ -1504,8 +1504,13 @@ reduced_constant_expression_p (tree t)
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
       tree elt; unsigned HOST_WIDE_INT idx;
       FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), idx, elt)
-	if (!reduced_constant_expression_p (elt))
-	  return false;
+	{
+	  if (!elt)
+	    /* We're in the middle of initializing this element.  */
+	    return false;
+	  if (!reduced_constant_expression_p (elt))
+	    return false;
+	}
       return true;
 
     default:
@@ -2693,12 +2698,10 @@ cxx_eval_indirect_ref (const constexpr_ctx *ctx, tree t,
 	}
     }
 
-  /* If we're pulling out the value of an empty base, make sure
-     that the whole object is constant and then return an empty
+  /* If we're pulling out the value of an empty base, just return an empty
      CONSTRUCTOR.  */
   if (empty_base && !lval)
     {
-      VERIFY_CONSTANT (r);
       r = build_constructor (TREE_TYPE (t), NULL);
       TREE_CONSTANT (r) = true;
     }

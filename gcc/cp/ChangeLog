@@ -1,5 +1,11 @@
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80294 - ICE with constexpr and inheritance.
+	* constexpr.c (reduced_constant_expression_p):
+	A null constructor element is non-constant.
+	(cxx_eval_indirect_ref): Don't VERIFY_CONSTANT before
+	returning an empty base.
+
 	PR c++/79607 - ICE with T{} initializer
 	* decl.c (type_dependent_init_p): Check the type of a CONSTRUCTOR.
 
