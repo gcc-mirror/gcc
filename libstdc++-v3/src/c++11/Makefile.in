@@ -97,15 +97,20 @@ am__objects_3 = chrono.lo codecvt.lo condition_variable.lo \
 	system_error.lo thread.lo $(am__objects_1) $(am__objects_2)
 @ENABLE_DUAL_ABI_TRUE@am__objects_4 = cow-fstream-inst.lo \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.lo cow-string-inst.lo \
-@ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.lo cxx11-locale-inst.lo \
-@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.lo
+@ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cow-wstring-io-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-locale-inst.lo \
+@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.lo sso_string.lo
 @ENABLE_EXTERN_TEMPLATE_TRUE@am__objects_5 = $(am__objects_4) \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ext11-inst.lo fstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ios-inst.lo iostream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	istream-inst.lo locale-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	ostream-inst.lo sstream-inst.lo \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.lo string-inst.lo \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.lo wstring-inst.lo
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-io-inst.lo wlocale-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.lo \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-io-inst.lo
 am_libc__11convenience_la_OBJECTS = $(am__objects_3) $(am__objects_5)
 libc__11convenience_la_OBJECTS = $(am_libc__11convenience_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
@@ -395,9 +400,12 @@ sources = \
 @ENABLE_DUAL_ABI_TRUE@	cow-fstream-inst.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-sstream-inst.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-string-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-string-io-inst.cc \
 @ENABLE_DUAL_ABI_TRUE@	cow-wstring-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	cow-wstring-io-inst.cc \
 @ENABLE_DUAL_ABI_TRUE@	cxx11-locale-inst.cc \
-@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.cc
+@ENABLE_DUAL_ABI_TRUE@	cxx11-wlocale-inst.cc \
+@ENABLE_DUAL_ABI_TRUE@	sso_string.cc
 
 # XTEMPLATE_FLAGS =
 @ENABLE_EXTERN_TEMPLATE_FALSE@inst_sources = 
@@ -415,8 +423,10 @@ sources = \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	sstream-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	streambuf-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	string-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	string-io-inst.cc \
 @ENABLE_EXTERN_TEMPLATE_TRUE@	wlocale-inst.cc \
-@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-inst.cc \
+@ENABLE_EXTERN_TEMPLATE_TRUE@	wstring-io-inst.cc
 
 libc__11convenience_la_SOURCES = $(sources)  $(inst_sources)
 

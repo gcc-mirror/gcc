@@ -20,20 +20,12 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-// We don't want to change the type thrown by __throw_ios_failure (yet?)
-#define _GLIBCXX_USE_CXX11_ABI 0
-
 #include <bits/functexcept.h>
 #include <cstdlib>
 #include <exception>
 #include <stdexcept>
 #include <new>
 #include <typeinfo>
-#include <ios>
-#include <system_error>
-#include <future>
-#include <functional>
-#include <bits/regex_error.h>
 #include <stdarg.h>
 
 #ifdef _GLIBCXX_USE_NLS
@@ -120,28 +112,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   void
   __throw_underflow_error(const char* __s __attribute__((unused)))
   { _GLIBCXX_THROW_OR_ABORT(underflow_error(_(__s))); }
-
-  void
-  __throw_ios_failure(const char* __s __attribute__((unused)))
-  { _GLIBCXX_THROW_OR_ABORT(ios_base::failure(_(__s))); }
-
-  void
-  __throw_system_error(int __i __attribute__((unused)))
-  { _GLIBCXX_THROW_OR_ABORT(system_error(error_code(__i,
-						    generic_category()))); }
-
-  void
-  __throw_future_error(int __i __attribute__((unused)))
-  { _GLIBCXX_THROW_OR_ABORT(future_error(make_error_code(future_errc(__i)))); }
-
-  void
-  __throw_bad_function_call()
-  { _GLIBCXX_THROW_OR_ABORT(bad_function_call()); }
-
-  void
-  __throw_regex_error(regex_constants::error_type __ecode
-		      __attribute__((unused)))
-  { _GLIBCXX_THROW_OR_ABORT(regex_error(__ecode)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

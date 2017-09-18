@@ -36,34 +36,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
-  // string related to iostreams
-  template 
-    basic_istream<char>& 
-    operator>>(basic_istream<char>&, string&);
-  template 
-    basic_ostream<char>& 
-    operator<<(basic_ostream<char>&, const string&);
-  template 
-    basic_istream<char>& 
-    getline(basic_istream<char>&, string&, char);
-  template 
-    basic_istream<char>& 
-    getline(basic_istream<char>&, string&);
-#ifdef _GLIBCXX_USE_WCHAR_T
-  template 
-    basic_istream<wchar_t>& 
-    operator>>(basic_istream<wchar_t>&, wstring&);
-  template 
-    basic_ostream<wchar_t>& 
-    operator<<(basic_ostream<wchar_t>&, const wstring&);
-  template 
-    basic_istream<wchar_t>& 
-    getline(basic_istream<wchar_t>&, wstring&, wchar_t);
-  template 
-    basic_istream<wchar_t>& 
-    getline(basic_istream<wchar_t>&, wstring&);
-#endif
-
 #if _GLIBCXX_USE_CXX11_ABI
   // C++98 members that are not instantiated by src/c++11/string-inst.cc
   // because they changed in C++11 to take const_iterator parameters.

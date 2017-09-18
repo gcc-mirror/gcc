@@ -1,3 +1,38 @@
+2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-02-03  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60936
+	* src/c++11/Makefile.am: Add new files.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++11/cow-string-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
+	(operator<<, operator>>, getline): Move explicit instantiations to ...
+	* src/c++11/cow-string-io-inst.cc: ... new file.
+	* src/c++11/cow-wstring-inst.cc [!_GLIBCXX_USE_CXX11_ABI]
+	(operator<<, operator>>, getline): Move explicit instantiations to ...
+	* src/c++11/cow-wstring-io-inst.cc: ... new file.
+	* src/c++11/functexcept.cc (__throw_ios_failure, __throw_system_error)
+	(__throw_future_error, __throw_bad_function_call):
+	(__throw_regex_error): Move functions for C++11 exceptions to the
+	files that define the exception types.
+	* src/c++11/functional.cc (__throw_bad_function_call): Move here.
+	* src/c++11/future.cc (__throw_future_error): Likewise.
+	* src/c++11/ios.cc (__throw_ios_failure): Likewise.
+	* src/c++11/regex.cc (__throw_regex_error): Likewise.
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Print decimal
+	representation directly instead of calling __int_to_char.
+	* src/c++11/sso_string.cc (__sso_string): New file for definition
+	of __sso_string type.
+	* src/c++11/string-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
+	explicit instantiations of narrow string I/O functions.
+	* src/c++11/system_error.cc (__throw_system_error): Move here.
+	(__sso_string): Move to new file.
+	* src/c++11/wstring-io-inst.cc [_GLIBCXX_USE_CXX11_ABI]: New file for
+	explicit instantiations of wide string I/O functions.
+	* src/c++98/misc-inst.cc [_GLIBCXX_USE_CXX11_ABI] (operator<<)
+	(operator>>, getline): Remove explicit instantiations from here.
+
 2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81468

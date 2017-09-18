@@ -26,12 +26,28 @@
 // ISO C++ 14882: 27.4  Iostreams base classes
 //
 
+// Determines the version of ios_base::failure thrown by __throw_ios_failure.
+// If !_GLIBCXX_USE_DUAL_ABI this will get undefined automatically.
+#define _GLIBCXX_USE_CXX11_ABI 0
+
 #include <ios>
 #include <limits>
+#include <bits/functexcept.h>
+
+#ifdef _GLIBCXX_USE_NLS
+# include <libintl.h>
+# define _(msgid)   gettext (msgid)
+#else
+# define _(msgid)   (msgid)
+#endif
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  void
+  __throw_ios_failure(const char* __s __attribute__((unused)))
+  { _GLIBCXX_THROW_OR_ABORT(ios_base::failure(_(__s))); }
 
   // Definitions for static const members of ios_base.
   const ios_base::fmtflags ios_base::boolalpha;

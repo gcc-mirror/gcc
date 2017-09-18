@@ -23,6 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <future>
+#include <bits/functexcept.h>
 
 namespace
 {
@@ -69,6 +70,10 @@ namespace
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  void
+  __throw_future_error(int __i __attribute__((unused)))
+  { _GLIBCXX_THROW_OR_ABORT(future_error(make_error_code(future_errc(__i)))); }
 
   const error_category& future_category() noexcept
   { return __future_category_instance(); }

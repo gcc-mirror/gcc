@@ -1,6 +1,6 @@
-// Reference-counted COW wide string instantiations -*- C++ -*-
+// Reference-counted COW wide string instantiations for I/O -*- C++ -*-
 
-// Copyright (C) 2014-2016 Free Software Foundation, Inc.
+// Copyright (C) 2014-2017 Free Software Foundation, Inc.
 //
 // This file is part of the GNU ISO C++ Library.  This library is free
 // software; you can redistribute it and/or modify it under the
@@ -30,11 +30,34 @@
 #include <bits/c++config.h>
 
 #ifdef _GLIBCXX_USE_WCHAR_T
-#define C wchar_t
-#include "string-inst.cc"
+#include <ostream>
+#include <istream>
 
 #if ! _GLIBCXX_USE_DUAL_ABI
 # error This file should not be compiled for this configuration.
 #endif
 
+namespace std _GLIBCXX_VISIBILITY(default)
+{
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
+  // The equivalent SSO wstring instantiations are in c++98/misc-inst.cc,
+  // repeat them for COW wstring
+
+  // string related to iostreams
+  template
+    basic_istream<wchar_t>&
+    operator>>(basic_istream<wchar_t>&, wstring&);
+  template
+    basic_ostream<wchar_t>&
+    operator<<(basic_ostream<wchar_t>&, const wstring&);
+  template
+    basic_istream<wchar_t>&
+    getline(basic_istream<wchar_t>&, wstring&, wchar_t);
+  template
+    basic_istream<wchar_t>&
+    getline(basic_istream<wchar_t>&, wstring&);
+
+_GLIBCXX_END_NAMESPACE_VERSION
+} // namespace
 #endif
