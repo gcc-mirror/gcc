@@ -5702,6 +5702,12 @@ vectorizable_store (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 
   op = gimple_assign_rhs1 (stmt);
 
+  /* In the case this is a store from a STRING_CST make sure
+     native_encode_expr can handle it.  */
+  if (TREE_CODE (op) == STRING_CST
+      && ! can_native_encode_string_p (op))
+    return false;
+
   if (!vect_is_simple_use (op, vinfo, &def_stmt, &dt, &rhs_vectype))
     {
       if (dump_enabled_p ())
@@ -7109,7 +7115,6 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
     {
       first_stmt = GROUP_FIRST_ELEMENT (stmt_info);
       group_size = GROUP_SIZE (vinfo_for_stmt (first_stmt));
-      int group_gap = GROUP_GAP (vinfo_for_stmt (first_stmt));
       /* For SLP vectorization we directly vectorize a subchain
          without permutation.  */
       if (slp && ! SLP_TREE_LOAD_PERMUTATION (slp_node).exists ())
@@ -7152,7 +7157,8 @@ vectorizable_load (gimple *stmt, gimple_stmt_iterator *gsi, gimple **vec_stmt,
 	  else
 	    {
 	      vec_num = SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node);
-	      group_gap_adj = group_gap;
+	      group_gap_adj
+		= group_size - SLP_INSTANCE_GROUP_SIZE (slp_node_instance);
 	    }
     	}
       else
