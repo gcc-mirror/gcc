@@ -1338,40 +1338,23 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
   loop_p nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
   loop_p loop = loop_containing_stmt (stmt);
-  vec<data_reference_p> drs = vNULL;
+  if (!loop_in_sese_p (loop, scop))
+    loop = nest;
 
-  graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+  auto_vec<data_reference_p> drs;
+  if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
+    return false;
 
   int j;
   data_reference_p dr;
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
-      int nb_subscripts = DR_NUM_DIMENSIONS (dr);
-
-      if (nb_subscripts < 1)
-	{
-	  free_data_refs (drs);
+      for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
+	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
 	  return false;
-	}
-
-      tree ref = DR_REF (dr);
-
-      for (int i = nb_subscripts - 1; i >= 0; i--)
-	{
-	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
-	      || (TREE_CODE (ref) != ARRAY_REF && TREE_CODE (ref) != MEM_REF
-		  && TREE_CODE (ref) != COMPONENT_REF))
-	    {
-	      free_data_refs (drs);
-	      return false;
-	    }
-
-	  ref = TREE_OPERAND (ref, 0);
-	}
     }
 
-    free_data_refs (drs);
-    return true;
+  return true;
 }
 
 /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
@@ -1875,7 +1858,8 @@ build_alias_set (scop_p scop)
 	{
 	  /* Dependences in the same alias set need to be handled
 	     by just looking at DR_ACCESS_FNs.  */
-	  if (DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
+	  if (DR_NUM_DIMENSIONS (dr1->dr) == 0
+	      || DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
 	      || ! operand_equal_p (DR_BASE_OBJECT (dr1->dr),
 				    DR_BASE_OBJECT (dr2->dr),
 				    OEP_ADDRESS_OF)
