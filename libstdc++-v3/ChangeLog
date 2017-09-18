@@ -1,5 +1,9 @@
 2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/std/utility (_Itup_cat, _Make_integer_sequence): Remove.
+	(_Build_index_tuple, make_integer_sequence): Use built-in to generate
+	pack expansion.
+
 	PR libstdc++/71187
 	* include/std/type_traits (__declval): New function to deduce return
 	type of declval.
