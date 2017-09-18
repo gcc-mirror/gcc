@@ -1,3 +1,8 @@
+2017-09-18  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* omp-offload.c (oacc_xform_loop): Enable SIMD vectorization on
+	non-SIMT targets in acc vector loops.
+
 2017-09-18  Claudiu Zissulescu  <claziss@synopsys.com>
 
 	* configure.ac: Add arc and check if assembler supports gdwarf2.
