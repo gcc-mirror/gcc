@@ -1,4 +1,11 @@
 2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Cope
+	with types that aren't in fact scalar.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree-vect-slp.c (vect_record_max_nunits): New function,
 	split out from...
