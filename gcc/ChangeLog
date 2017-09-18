@@ -1,3 +1,9 @@
+2017-09-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (fold_builtin_cpu): Add M_AMDFAM17H
+	to processor_model and "amdfam17h" to arch_names_table.
+	* doc/extend.texi (__builtin_cpu_is): Document amdfam17h CPU name.
+
 2017-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/82234
