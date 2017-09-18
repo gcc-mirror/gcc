@@ -1246,8 +1246,7 @@ extern void vect_free_slp_instance (slp_instance);
 extern bool vect_transform_slp_perm_load (slp_tree, vec<tree> ,
                                           gimple_stmt_iterator *, int,
                                           slp_instance, bool, unsigned *);
-extern bool vect_slp_analyze_operations (vec<slp_instance> slp_instances,
-					 void *);
+extern bool vect_slp_analyze_operations (vec_info *);
 extern bool vect_schedule_slp (vec_info *);
 extern bool vect_analyze_slp (vec_info *, unsigned);
 extern bool vect_make_slp_decision (loop_vec_info);
