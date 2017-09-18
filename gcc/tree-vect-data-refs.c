@@ -118,6 +118,11 @@ vect_get_smallest_scalar_type (gimple *stmt, HOST_WIDE_INT *lhs_size_unit,
   tree scalar_type = gimple_expr_type (stmt);
   HOST_WIDE_INT lhs, rhs;
 
+  /* During the analysis phase, this function is called on arbitrary
+     statements that might not have scalar results.  */
+  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (scalar_type)))
+    return scalar_type;
+
   lhs = rhs = TREE_INT_CST_LOW (TYPE_SIZE_UNIT (scalar_type));
 
   if (is_gimple_assign (stmt)
