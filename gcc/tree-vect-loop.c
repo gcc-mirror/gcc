@@ -3663,8 +3663,8 @@ vect_estimate_min_profitable_iters (loop_vec_info loop_vinfo,
 	       min_profitable_iters);
 
   /* We want the vectorized loop to execute at least once.  */
-  if (min_profitable_iters < (vf + peel_iters_prologue + peel_iters_epilogue))
-    min_profitable_iters = vf + peel_iters_prologue + peel_iters_epilogue;
+  if (min_profitable_iters < (vf + peel_iters_prologue))
+    min_profitable_iters = vf + peel_iters_prologue;
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
