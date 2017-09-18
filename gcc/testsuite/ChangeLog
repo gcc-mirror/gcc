@@ -1,3 +1,9 @@
+2017-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/81736
+	* gcc.target/i386/pr81736-3.c: Add -mno-omit-leaf-frame-pointer.
+	* gcc.target/i386/pr81736-4.c: Likewise.
+
 2017-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79622
