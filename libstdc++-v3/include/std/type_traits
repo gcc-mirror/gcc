@@ -754,15 +754,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Destructible and constructible type properties.
 
-  template<typename>
-    struct add_rvalue_reference;
-
   /**
    *  @brief  Utility to simplify expressions used in unevaluated operands
    *  @ingroup utilities
    */
+
+  template<typename _Tp, typename _Up = _Tp&&>
+    _Up
+    __declval(int);
+
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval() noexcept;
+    _Tp
+    __declval(long);
+
+  template<typename _Tp>
+    auto declval() noexcept -> decltype(__declval<_Tp>(0));
 
   template<typename, unsigned = 0>
     struct extent;
@@ -2079,16 +2085,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __declval_protector
     {
       static const bool __stop = false;
-      static typename add_rvalue_reference<_Tp>::type __delegate();
     };
 
   template<typename _Tp>
-    inline typename add_rvalue_reference<_Tp>::type
-    declval() noexcept
+    auto declval() noexcept -> decltype(__declval<_Tp>(0))
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
-      return __declval_protector<_Tp>::__delegate();
+      return __declval<_Tp>(0);
     }
 
   /// result_of
