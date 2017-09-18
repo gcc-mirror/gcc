@@ -2,6 +2,25 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vectorizer.h (vect_slp_analyze_operations): Replace parameters
+	with a vec_info *.
+	* tree-vect-loop.c (vect_analyze_loop_operations): Update call
+	accordingly.
+	* tree-vect-slp.c (vect_slp_analyze_node_operations): Add vec_info *
+	parameter.  Set SLP_TREE_NUMBER_OF_VEC_STMTS here rather than in
+	vect_schedule_slp_instance.
+	(vect_slp_analyze_operations): Replace parameters with a vec_info *.
+	Update call to vect_slp_analyze_node_operations.  Simplify return
+	value.
+	(vect_slp_analyze_bb_1): Update call accordingly.
+	(vect_schedule_slp_instance): Remove vectorization_factor parameter.
+	Don't calculate SLP_TREE_NUMBER_OF_VEC_STMTS here.
+	(vect_schedule_slp): Update call accordingly.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vect-data-refs.c (vect_get_smallest_scalar_type): Cope
 	with types that aren't in fact scalar.
 

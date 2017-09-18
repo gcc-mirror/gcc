@@ -2525,11 +2525,14 @@ _bb_vec_info::~_bb_vec_info ()
 }
 
 
-/* Analyze statements contained in SLP tree node after recursively analyzing
-   the subtree. Return TRUE if the operations are supported.  */
+/* Analyze statements contained in SLP tree NODE after recursively analyzing
+   the subtree.  NODE_INSTANCE contains NODE and VINFO contains INSTANCE.
+
+   Return true if the operations are supported.  */
 
 static bool
-vect_slp_analyze_node_operations (slp_tree node, slp_instance node_instance)
+vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
+				  slp_instance node_instance)
 {
   bool dummy;
   int i, j;
@@ -2540,7 +2543,7 @@ vect_slp_analyze_node_operations (slp_tree node, slp_instance node_instance)
     return true;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    if (!vect_slp_analyze_node_operations (child, node_instance))
+    if (!vect_slp_analyze_node_operations (vinfo, child, node_instance))
       return false;
 
   stmt = SLP_TREE_SCALAR_STMTS (node)[0];
@@ -2592,6 +2595,29 @@ vect_slp_analyze_node_operations (slp_tree node, slp_instance node_instance)
 	STMT_VINFO_VECTYPE (vinfo_for_stmt (sstmt)) = vectype;
     }
 
+  /* Calculate the number of vector statements to be created for the
+     scalar stmts in this node.  For SLP reductions it is equal to the
+     number of vector statements in the children (which has already been
+     calculated by the recursive call).  Otherwise it is the number of
+     scalar elements in one scalar iteration (GROUP_SIZE) multiplied by
+     VF divided by the number of elements in a vector.  */
+  if (GROUP_FIRST_ELEMENT (stmt_info)
+      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
+    SLP_TREE_NUMBER_OF_VEC_STMTS (node)
+      = SLP_TREE_NUMBER_OF_VEC_STMTS (SLP_TREE_CHILDREN (node)[0]);
+  else
+    {
+      int vf;
+      if (loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo))
+	vf = loop_vinfo->vectorization_factor;
+      else
+	vf = 1;
+      unsigned int group_size = SLP_INSTANCE_GROUP_SIZE (node_instance);
+      tree vectype = STMT_VINFO_VECTYPE (stmt_info);
+      SLP_TREE_NUMBER_OF_VEC_STMTS (node)
+	= vf * group_size / TYPE_VECTOR_SUBPARTS (vectype);
+    }
+
   /* Push SLP node def-type to stmt operands.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), j, child)
     if (SLP_TREE_DEF_TYPE (child) != vect_internal_def)
@@ -2610,11 +2636,11 @@ vect_slp_analyze_node_operations (slp_tree node, slp_instance node_instance)
 }
 
 
-/* Analyze statements in SLP instances of the basic block.  Return TRUE if the
+/* Analyze statements in SLP instances of VINFO.  Return true if the
    operations are supported. */
 
 bool
-vect_slp_analyze_operations (vec<slp_instance> slp_instances, void *data)
+vect_slp_analyze_operations (vec_info *vinfo)
 {
   slp_instance instance;
   int i;
@@ -2623,9 +2649,10 @@ vect_slp_analyze_operations (vec<slp_instance> slp_instances, void *data)
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "=== vect_slp_analyze_operations ===\n");
 
-  for (i = 0; slp_instances.iterate (i, &instance); )
+  for (i = 0; vinfo->slp_instances.iterate (i, &instance); )
     {
-      if (!vect_slp_analyze_node_operations (SLP_INSTANCE_TREE (instance),
+      if (!vect_slp_analyze_node_operations (vinfo,
+					     SLP_INSTANCE_TREE (instance),
 					     instance))
         {
 	  dump_printf_loc (MSG_NOTE, vect_location,
@@ -2634,20 +2661,17 @@ vect_slp_analyze_operations (vec<slp_instance> slp_instances, void *data)
 			    SLP_TREE_SCALAR_STMTS
 			      (SLP_INSTANCE_TREE (instance))[0], 0);
 	  vect_free_slp_instance (instance);
-          slp_instances.ordered_remove (i);
+          vinfo->slp_instances.ordered_remove (i);
 	}
       else
 	{
 	  /* Compute the costs of the SLP instance.  */
-	  vect_analyze_slp_cost (instance, data);
+	  vect_analyze_slp_cost (instance, vinfo->target_cost_data);
 	  i++;
 	}
     }
 
-  if (!slp_instances.length ())
-    return false;
-
-  return true;
+  return !vinfo->slp_instances.is_empty ();
 }
 
 
@@ -2921,8 +2945,7 @@ vect_slp_analyze_bb_1 (gimple_stmt_iterator region_begin,
       return NULL;
     }
 
-  if (!vect_slp_analyze_operations (BB_VINFO_SLP_INSTANCES (bb_vinfo),
-				    BB_VINFO_TARGET_COST_DATA (bb_vinfo)))
+  if (!vect_slp_analyze_operations (bb_vinfo))
     {
       if (dump_enabled_p ())
         dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -3676,14 +3699,13 @@ vect_transform_slp_perm_load (slp_tree node, vec<tree> dr_chain,
 /* Vectorize SLP instance tree in postorder.  */
 
 static bool
-vect_schedule_slp_instance (slp_tree node, slp_instance instance,
-                            unsigned int vectorization_factor)
+vect_schedule_slp_instance (slp_tree node, slp_instance instance)
 {
   gimple *stmt;
   bool grouped_store, is_store;
   gimple_stmt_iterator si;
   stmt_vec_info stmt_info;
-  unsigned int vec_stmts_size, nunits, group_size;
+  unsigned int group_size;
   tree vectype;
   int i, j;
   slp_tree child;
@@ -3692,7 +3714,7 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
     return false;
 
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
-    vect_schedule_slp_instance (child, instance, vectorization_factor);
+    vect_schedule_slp_instance (child, instance);
 
   /* Push SLP node def-type to stmts.  */
   FOR_EACH_VEC_ELT (SLP_TREE_CHILDREN (node), i, child)
@@ -3705,27 +3727,10 @@ vect_schedule_slp_instance (slp_tree node, slp_instance instance,
 
   /* VECTYPE is the type of the destination.  */
   vectype = STMT_VINFO_VECTYPE (stmt_info);
-  nunits = (unsigned int) TYPE_VECTOR_SUBPARTS (vectype);
   group_size = SLP_INSTANCE_GROUP_SIZE (instance);
 
-  /* For each SLP instance calculate number of vector stmts to be created
-     for the scalar stmts in each node of the SLP tree.  Number of vector
-     elements in one vector iteration is the number of scalar elements in
-     one scalar iteration (GROUP_SIZE) multiplied by VF divided by vector
-     size.
-     Unless this is a SLP reduction in which case the number of vector
-     stmts is equal to the number of vector stmts of the children.  */
-  if (GROUP_FIRST_ELEMENT (stmt_info)
-      && !STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    vec_stmts_size = SLP_TREE_NUMBER_OF_VEC_STMTS (SLP_TREE_CHILDREN (node)[0]);
-  else
-    vec_stmts_size = (vectorization_factor * group_size) / nunits;
-
   if (!SLP_TREE_VEC_STMTS (node).exists ())
-    {
-      SLP_TREE_VEC_STMTS (node).create (vec_stmts_size);
-      SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vec_stmts_size;
-    }
+    SLP_TREE_VEC_STMTS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
 
   if (dump_enabled_p ())
     {
@@ -3874,20 +3879,15 @@ vect_schedule_slp (vec_info *vinfo)
 {
   vec<slp_instance> slp_instances;
   slp_instance instance;
-  unsigned int i, vf;
+  unsigned int i;
   bool is_store = false;
 
   slp_instances = vinfo->slp_instances;
-  if (is_a <loop_vec_info> (vinfo))
-    vf = as_a <loop_vec_info> (vinfo)->vectorization_factor;
-  else
-    vf = 1;
-
   FOR_EACH_VEC_ELT (slp_instances, i, instance)
     {
       /* Schedule the tree of INSTANCE.  */
       is_store = vect_schedule_slp_instance (SLP_INSTANCE_TREE (instance),
-                                             instance, vf);
+                                             instance);
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
                          "vectorizing stmts using SLP.\n");

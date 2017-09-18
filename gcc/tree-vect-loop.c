@@ -2031,8 +2031,7 @@ start_over:
 	 remove unsupported SLP instances which makes the above
 	 SLP kind detection invalid.  */
       unsigned old_size = LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length ();
-      vect_slp_analyze_operations (LOOP_VINFO_SLP_INSTANCES (loop_vinfo),
-				   LOOP_VINFO_TARGET_COST_DATA (loop_vinfo));
+      vect_slp_analyze_operations (loop_vinfo);
       if (LOOP_VINFO_SLP_INSTANCES (loop_vinfo).length () != old_size)
 	goto again;
     }
