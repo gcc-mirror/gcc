@@ -142,6 +142,7 @@ cygwin, mingw-w64	Jonathan Yong		<10walls@gmail.com>
 C front end/ISO C99	Joseph Myers		<joseph@codesourcery.com>
 Ada front end		Arnaud Charlet		<charlet@adacore.com>
 Ada front end		Eric Botcazou		<ebotcazou@libertysurf.fr>
+Ada front end		Pierre-Marie de Rodat	<derodat@adacore.com>
 BRIG (HSAIL) front end	Pekka Jääskeläinen	<pekka.jaaskelainen@parmance.com>
 BRIG (HSAIL) front end 	Martin Jambor		<mjambor@suse.cz>
 c++			Jason Merrill		<jason@redhat.com>
