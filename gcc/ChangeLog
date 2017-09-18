@@ -1,3 +1,9 @@
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82220
+	* tree-vect-loop.c (vect_estimate_min_profitable_iters): Exclude
+	epilogue niters from the min_profitable_iters compute.
+
 2017-09-18  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82145
