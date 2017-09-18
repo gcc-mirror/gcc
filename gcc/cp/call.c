@@ -2279,8 +2279,10 @@ add_conv_candidate (struct z_candidate **candidates, tree fn, tree obj,
 
       if (i == 0)
 	{
-	  t = implicit_conversion (totype, argtype, arg, /*c_cast_p=*/false,
-				   flags, complain);
+	  t = build_identity_conv (argtype, NULL_TREE);
+	  t = build_conv (ck_user, totype, t);
+	  /* Leave the 'cand' field null; we'll figure out the conversion in
+	     convert_like_real if this candidate is chosen.  */
 	  convert_type = totype;
 	}
       else if (parmnode == void_list_node)
@@ -6665,6 +6667,13 @@ convert_like_real (conversion *convs, tree expr, tree fn, int argnum,
     case ck_user:
       {
 	struct z_candidate *cand = convs->cand;
+
+	if (cand == NULL)
+	  /* We chose the surrogate function from add_conv_candidate, now we
+	     actually need to build the conversion.  */
+	  cand = build_user_type_conversion_1 (totype, expr,
+					       LOOKUP_NO_CONVERSION, complain);
+
 	tree convfn = cand->fn;
 
 	/* When converting from an init list we consider explicit
@@ -9128,7 +9137,9 @@ compare_ics (conversion *ics1, conversion *ics2)
 	return 0;
       else if (t1->kind == ck_user)
 	{
-	  if (t1->cand->fn != t2->cand->fn)
+	  tree f1 = t1->cand ? t1->cand->fn : t1->type;
+	  tree f2 = t2->cand ? t2->cand->fn : t2->type;
+	  if (f1 != f2)
 	    return 0;
 	}
       else
