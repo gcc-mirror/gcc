@@ -1,3 +1,10 @@
+2017-09-18  Alan Modra  <amodra@gmail.com>
+
+	PR target/81996
+	* gcc/config/rs6000/rs6000.c (rs6000_return_addr): Use
+	stack_pointer_rtx for count 0.  Update comments.  Break up
+	large rtl expression.
+
 2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
 
 	config/i386/i386.c: (xlogue_layout::STUB_NAME_MAX_LEN): Increase to 20
