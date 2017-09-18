@@ -1,4 +1,4 @@
-// { dg-do compile { target { ! c++1z } } }
+// { dg-do compile { target { ! c++17 } } }
 
 // Copyright (C) 2007-2017 Free Software Foundation, Inc.
 //

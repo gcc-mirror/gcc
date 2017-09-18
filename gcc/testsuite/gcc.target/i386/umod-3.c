@@ -9,9 +9,11 @@ int
 main ()
 {
   unsigned char cy;
-  
-  cy = cx / 6; if (cy != 1) exit (1);
-  cy = cx % 6; if (cy != 1) exit (1);
+  unsigned char cz = 1;
+  asm ("" : "+q" (cz));
+
+  cy = cx / 6; if (cy != cz) exit (1);
+  cy = cx % 6; if (cy != cz) exit (1);
 
   exit(0);
 }

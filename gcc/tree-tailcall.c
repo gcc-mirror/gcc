@@ -289,8 +289,7 @@ process_assignment (gassign *stmt,
 	     type is smaller than mode's precision,
 	     reduce_to_bit_field_precision would generate additional code.  */
 	  if (INTEGRAL_TYPE_P (TREE_TYPE (dest))
-	      && (GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (dest)))
-		  > TYPE_PRECISION (TREE_TYPE (dest))))
+	      && !type_has_mode_precision_p (TREE_TYPE (dest)))
 	    return FAIL;
 	}
 
@@ -572,6 +571,11 @@ find_tail_calls (basic_block bb, struct tailcall **ret)
       else if (ret == TRY_MOVE)
 	{
 	  if (! tail_recursion)
+	    return;
+	  /* Do not deal with checking dominance, the real fix is to
+	     do path isolation for the transform phase anyway, removing
+	     the need to compute the accumulators with new stmts.  */
+	  if (abb != bb)
 	    return;
 	  for (unsigned opno = 1; opno < gimple_num_ops (stmt); ++opno)
 	    {

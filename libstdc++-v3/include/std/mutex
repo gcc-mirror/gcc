@@ -556,7 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
         }
     }
 
-#if __cplusplus > 201402L
+#if __cplusplus >= 201703L
 #define __cpp_lib_scoped_lock 201703
   /** @brief A scoped lock type for multiple lockable objects.
    *
@@ -570,7 +570,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit scoped_lock(_MutexTypes&... __m) : _M_devices(std::tie(__m...))
       { std::lock(__m...); }
 
-      explicit scoped_lock(_MutexTypes&... __m, adopt_lock_t) noexcept
+      explicit scoped_lock(adopt_lock_t, _MutexTypes&... __m) noexcept
       : _M_devices(std::tie(__m...))
       { } // calling thread owns mutex
 
@@ -609,7 +609,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       explicit scoped_lock(mutex_type& __m) : _M_device(__m)
       { _M_device.lock(); }
 
-      explicit scoped_lock(mutex_type& __m, adopt_lock_t) noexcept
+      explicit scoped_lock(adopt_lock_t, mutex_type& __m) noexcept
       : _M_device(__m)
       { } // calling thread owns mutex
 

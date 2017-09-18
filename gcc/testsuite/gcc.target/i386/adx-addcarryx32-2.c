@@ -44,9 +44,9 @@ adx_test (void)
   sum_ref = 0x0;
 
   /* X = 0x00000001, Y = 0x00000000, C = 0.  */
-  c = _subborrow_u32 (c, x, y, &x);
+  c = _subborrow_u32 (c, y, x, &x);
   /* X = 0xFFFFFFFF, Y = 0x00000000, C = 1.  */
-  c = _subborrow_u32 (c, x, y, &x);
+  c = _subborrow_u32 (c, y, x, &x);
   /* X = 0xFFFFFFFF, Y = 0xFFFFFFFF, C = 1.  */
 
   if (x != sum_ref)

@@ -449,7 +449,8 @@ setup_reg_mode_hard_regset (void)
     for (hard_regno = 0; hard_regno < FIRST_PSEUDO_REGISTER; hard_regno++)
       {
 	CLEAR_HARD_REG_SET (ira_reg_mode_hard_regset[hard_regno][m]);
-	for (i = hard_regno_nregs[hard_regno][m] - 1; i >= 0; i--)
+	for (i = hard_regno_nregs (hard_regno, (machine_mode) m) - 1;
+	     i >= 0; i--)
 	  if (hard_regno + i < FIRST_PSEUDO_REGISTER)
 	    SET_HARD_REG_BIT (ira_reg_mode_hard_regset[hard_regno][m],
 			      hard_regno + i);
@@ -1508,7 +1509,7 @@ setup_prohibited_class_mode_regs (void)
 	  for (k = ira_class_hard_regs_num[cl] - 1; k >= 0; k--)
 	    {
 	      hard_regno = ira_class_hard_regs[cl][k];
-	      if (! HARD_REGNO_MODE_OK (hard_regno, (machine_mode) j))
+	      if (!targetm.hard_regno_mode_ok (hard_regno, (machine_mode) j))
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
 				  hard_regno);
 	      else if (in_hard_reg_set_p (temp_hard_regset,
@@ -1540,7 +1541,7 @@ clarify_prohibited_class_mode_regs (void)
 	    hard_regno = ira_class_hard_regs[cl][k];
 	    if (TEST_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j], hard_regno))
 	      continue;
-	    nregs = hard_regno_nregs[hard_regno][j];
+	    nregs = hard_regno_nregs (hard_regno, (machine_mode) j);
 	    if (hard_regno + nregs > FIRST_PSEUDO_REGISTER)
 	      {
 		SET_HARD_REG_BIT (ira_prohibited_class_mode_regs[cl][j],
@@ -1754,7 +1755,7 @@ setup_prohibited_mode_move_regs (void)
       SET_HARD_REG_SET (ira_prohibited_mode_move_regs[i]);
       for (j = 0; j < FIRST_PSEUDO_REGISTER; j++)
 	{
-	  if (! HARD_REGNO_MODE_OK (j, (machine_mode) i))
+	  if (!targetm.hard_regno_mode_ok (j, (machine_mode) i))
 	    continue;
 	  set_mode_and_regno (test_reg1, (machine_mode) i, j);
 	  set_mode_and_regno (test_reg2, (machine_mode) i, j);
@@ -2509,7 +2510,7 @@ check_allocation (void)
       if (ALLOCNO_CAP_MEMBER (a) != NULL
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
-      nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
+      nregs = hard_regno_nregs (hard_regno, ALLOCNO_MODE (a));
       if (nregs == 1)
 	/* We allocated a single hard register.  */
 	n = 1;
@@ -2538,9 +2539,8 @@ check_allocation (void)
 	      if (conflict_hard_regno < 0)
 		continue;
 
-	      conflict_nregs
-		= (hard_regno_nregs
-		   [conflict_hard_regno][ALLOCNO_MODE (conflict_a)]);
+	      conflict_nregs = hard_regno_nregs (conflict_hard_regno,
+						 ALLOCNO_MODE (conflict_a));
 
 	      if (ALLOCNO_NUM_OBJECTS (conflict_a) > 1
 		  && conflict_nregs == ALLOCNO_NUM_OBJECTS (conflict_a))

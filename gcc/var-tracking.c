@@ -970,7 +970,7 @@ use_narrower_mode_test (rtx x, const_rtx subreg)
 /* Transform X into narrower mode MODE from wider mode WMODE.  */
 
 static rtx
-use_narrower_mode (rtx x, machine_mode mode, machine_mode wmode)
+use_narrower_mode (rtx x, scalar_int_mode mode, scalar_int_mode wmode)
 {
   rtx op0, op1;
   if (CONSTANT_P (x))
@@ -991,7 +991,8 @@ use_narrower_mode (rtx x, machine_mode mode, machine_mode wmode)
       /* Ensure shift amount is not wider than mode.  */
       if (GET_MODE (op1) == VOIDmode)
 	op1 = lowpart_subreg (mode, op1, wmode);
-      else if (GET_MODE_PRECISION (mode) < GET_MODE_PRECISION (GET_MODE (op1)))
+      else if (GET_MODE_PRECISION (mode)
+	       < GET_MODE_PRECISION (as_a <scalar_int_mode> (GET_MODE (op1))))
 	op1 = lowpart_subreg (mode, op1, GET_MODE (op1));
       return simplify_gen_binary (ASHIFT, mode, op0, op1);
     default:
@@ -1008,6 +1009,7 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
   rtx mem, addr = loc, tem;
   machine_mode mem_mode_save;
   bool store_save;
+  scalar_int_mode tem_mode, tem_subreg_mode;
   switch (GET_CODE (loc))
     {
     case REG:
@@ -1122,16 +1124,14 @@ adjust_mems (rtx loc, const_rtx old_rtx, void *data)
 	      || GET_CODE (SUBREG_REG (tem)) == MINUS
 	      || GET_CODE (SUBREG_REG (tem)) == MULT
 	      || GET_CODE (SUBREG_REG (tem)) == ASHIFT)
-	  && (GET_MODE_CLASS (GET_MODE (tem)) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (tem)) == MODE_PARTIAL_INT)
-	  && (GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_INT
-	      || GET_MODE_CLASS (GET_MODE (SUBREG_REG (tem))) == MODE_PARTIAL_INT)
-	  && GET_MODE_PRECISION (GET_MODE (tem))
-	     < GET_MODE_PRECISION (GET_MODE (SUBREG_REG (tem)))
+	  && is_a <scalar_int_mode> (GET_MODE (tem), &tem_mode)
+	  && is_a <scalar_int_mode> (GET_MODE (SUBREG_REG (tem)),
+				     &tem_subreg_mode)
+	  && (GET_MODE_PRECISION (tem_mode)
+	      < GET_MODE_PRECISION (tem_subreg_mode))
 	  && subreg_lowpart_p (tem)
 	  && use_narrower_mode_test (SUBREG_REG (tem), tem))
-	return use_narrower_mode (SUBREG_REG (tem), GET_MODE (tem),
-				  GET_MODE (SUBREG_REG (tem)));
+	return use_narrower_mode (SUBREG_REG (tem), tem_mode, tem_subreg_mode);
       return tem;
     case ASM_OPERANDS:
       /* Don't do any replacements in second and following
@@ -5295,7 +5295,7 @@ track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
       machine_mode pseudo_mode;
 
       pseudo_mode = PSEUDO_REGNO_MODE (ORIGINAL_REGNO (loc));
-      if (GET_MODE_SIZE (mode) > GET_MODE_SIZE (pseudo_mode))
+      if (paradoxical_subreg_p (mode, pseudo_mode))
 	{
 	  offset += byte_lowpart_offset (pseudo_mode, mode);
 	  mode = pseudo_mode;
@@ -5309,10 +5309,10 @@ track_loc_p (rtx loc, tree expr, HOST_WIDE_INT offset, bool store_reg_p,
      because the real and imaginary parts are represented as separate
      pseudo registers, even if the whole complex value fits into one
      hard register.  */
-  if ((GET_MODE_SIZE (mode) > GET_MODE_SIZE (DECL_MODE (expr))
+  if ((paradoxical_subreg_p (mode, DECL_MODE (expr))
        || (store_reg_p
 	   && !COMPLEX_MODE_P (DECL_MODE (expr))
-	   && hard_regno_nregs[REGNO (loc)][DECL_MODE (expr)] == 1))
+	   && hard_regno_nregs (REGNO (loc), DECL_MODE (expr)) == 1))
       && offset + byte_lowpart_offset (DECL_MODE (expr), mode) == 0)
     {
       mode = DECL_MODE (expr);
@@ -6301,18 +6301,19 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	else if (REG_P (x))
 	  {
 	    cselib_val *val = cselib_lookup (x, GET_MODE (x), 0, VOIDmode);
+	    scalar_int_mode mode;
 	    if (val && cselib_preserved_value_p (val))
 	      item = val->val_rtx;
-	    else if (GET_MODE_CLASS (GET_MODE (x)) == MODE_INT
-		     || GET_MODE_CLASS (GET_MODE (x)) == MODE_PARTIAL_INT)
+	    else if (is_a <scalar_int_mode> (GET_MODE (x), &mode))
 	      {
-		machine_mode mode = GET_MODE (x);
-
-		while ((mode = GET_MODE_WIDER_MODE (mode)) != VOIDmode
-		       && GET_MODE_BITSIZE (mode) <= BITS_PER_WORD)
+		opt_scalar_int_mode mode_iter;
+		FOR_EACH_WIDER_MODE (mode_iter, mode)
 		  {
-		    rtx reg = simplify_subreg (mode, x, GET_MODE (x), 0);
+		    mode = mode_iter.require ();
+		    if (GET_MODE_BITSIZE (mode) > BITS_PER_WORD)
+		      break;
 
+		    rtx reg = simplify_subreg (mode, x, GET_MODE (x), 0);
 		    if (reg == NULL_RTX || !REG_P (reg))
 		      continue;
 		    val = cselib_lookup (reg, mode, 0, VOIDmode);
@@ -6347,8 +6348,9 @@ prepare_call_arguments (basic_block bb, rtx_insn *insn)
 	      {
 		/* For non-integer stack argument see also if they weren't
 		   initialized by integers.  */
-		machine_mode imode = int_mode_for_mode (GET_MODE (mem));
-		if (imode != GET_MODE (mem) && imode != BLKmode)
+		scalar_int_mode imode;
+		if (int_mode_for_mode (GET_MODE (mem)).exists (&imode)
+		    && imode != GET_MODE (mem))
 		  {
 		    val = cselib_lookup (adjust_address_nv (mem, imode, 0),
 					 imode, 0, VOIDmode);
@@ -8705,12 +8707,11 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
       last_limit = offsets[n_var_parts] + GET_MODE_SIZE (mode);
 
       /* Attempt to merge adjacent registers or memory.  */
-      wider_mode = GET_MODE_WIDER_MODE (mode);
       for (j = i + 1; j < var->n_var_parts; j++)
 	if (last_limit <= VAR_PART_OFFSET (var, j))
 	  break;
       if (j < var->n_var_parts
-	  && wider_mode != VOIDmode
+	  && GET_MODE_WIDER_MODE (mode).exists (&wider_mode)
 	  && var->var_part[j].cur_loc
 	  && mode == GET_MODE (var->var_part[j].cur_loc)
 	  && (REG_P (loc[n_var_parts]) || MEM_P (loc[n_var_parts]))
@@ -8721,8 +8722,8 @@ emit_note_insn_var_location (variable **varp, emit_note_data *data)
 	  rtx new_loc = NULL;
 
 	  if (REG_P (loc[n_var_parts])
-	      && hard_regno_nregs[REGNO (loc[n_var_parts])][mode] * 2
-		 == hard_regno_nregs[REGNO (loc[n_var_parts])][wider_mode]
+	      && hard_regno_nregs (REGNO (loc[n_var_parts]), mode) * 2
+		 == hard_regno_nregs (REGNO (loc[n_var_parts]), wider_mode)
 	      && end_hard_regno (mode, REGNO (loc[n_var_parts]))
 		 == REGNO (loc2))
 	    {

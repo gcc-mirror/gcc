@@ -17,7 +17,7 @@ class test_class {
   int class_field1; // { dg-warning "Decl Field class_field1" }
   int class_field2; // { dg-warning "Decl Field class_field2" }
 
-  test_class() // { dg-warning "Decl Function test_class" }
+  test_class() // { dg-warning "Decl Function __ct" }
     : class_field1(0), class_field2(0)
   {}
 

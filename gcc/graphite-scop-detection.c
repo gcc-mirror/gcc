@@ -1338,40 +1338,23 @@ scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
   loop_p nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
   loop_p loop = loop_containing_stmt (stmt);
-  vec<data_reference_p> drs = vNULL;
+  if (!loop_in_sese_p (loop, scop))
+    loop = nest;
 
-  graphite_find_data_references_in_stmt (nest, loop, stmt, &drs);
+  auto_vec<data_reference_p> drs;
+  if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
+    return false;
 
   int j;
   data_reference_p dr;
   FOR_EACH_VEC_ELT (drs, j, dr)
     {
-      int nb_subscripts = DR_NUM_DIMENSIONS (dr);
-
-      if (nb_subscripts < 1)
-	{
-	  free_data_refs (drs);
+      for (unsigned i = 0; i < DR_NUM_DIMENSIONS (dr); ++i)
+	if (! graphite_can_represent_scev (DR_ACCESS_FN (dr, i)))
 	  return false;
-	}
-
-      tree ref = DR_REF (dr);
-
-      for (int i = nb_subscripts - 1; i >= 0; i--)
-	{
-	  if (!graphite_can_represent_scev (DR_ACCESS_FN (dr, i))
-	      || (TREE_CODE (ref) != ARRAY_REF && TREE_CODE (ref) != MEM_REF
-		  && TREE_CODE (ref) != COMPONENT_REF))
-	    {
-	      free_data_refs (drs);
-	      return false;
-	    }
-
-	  ref = TREE_OPERAND (ref, 0);
-	}
     }
 
-    free_data_refs (drs);
-    return true;
+  return true;
 }
 
 /* GIMPLE_ASM and GIMPLE_CALL may embed arbitrary side effects.
@@ -1744,7 +1727,9 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
   gimple *use_stmt;
   imm_use_iterator imm_iter;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if (def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+    if ((def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+	/* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
+	|| gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI)
       {
 	writes->safe_push (def);
 	DEBUG_PRINT (dp << "Adding scalar write: ";
@@ -1758,7 +1743,8 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
       }
 }
 
-/* Record DEF if it is used in other bbs different than DEF_BB in the SCOP.  */
+/* Record USE if it is defined in other bbs different than USE_STMT
+   in the SCOP.  */
 
 static void
 build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
@@ -1774,7 +1760,9 @@ build_cross_bb_scalars_use (scop_p scop, tree use, gimple *use_stmt,
     return;
 
   gimple *def_stmt = SSA_NAME_DEF_STMT (use);
-  if (gimple_bb (def_stmt) != gimple_bb (use_stmt))
+  if (gimple_bb (def_stmt) != gimple_bb (use_stmt)
+      /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
+      || gimple_code (def_stmt) == GIMPLE_PHI)
     {
       DEBUG_PRINT (dp << "Adding scalar read: ";
 		   print_generic_expr (dump_file, use);
@@ -1855,7 +1843,7 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
 
 /* Compute alias-sets for all data references in DRS.  */
 
-static void
+static bool 
 build_alias_set (scop_p scop)
 {
   int num_vertices = scop->drs.length ();
@@ -1868,6 +1856,19 @@ build_alias_set (scop_p scop)
     for (j = i+1; scop->drs.iterate (j, &dr2); j++)
       if (dr_may_alias_p (dr1->dr, dr2->dr, true))
 	{
+	  /* Dependences in the same alias set need to be handled
+	     by just looking at DR_ACCESS_FNs.  */
+	  if (DR_NUM_DIMENSIONS (dr1->dr) == 0
+	      || DR_NUM_DIMENSIONS (dr1->dr) != DR_NUM_DIMENSIONS (dr2->dr)
+	      || ! operand_equal_p (DR_BASE_OBJECT (dr1->dr),
+				    DR_BASE_OBJECT (dr2->dr),
+				    OEP_ADDRESS_OF)
+	      || ! types_compatible_p (TREE_TYPE (DR_BASE_OBJECT (dr1->dr)),
+				       TREE_TYPE (DR_BASE_OBJECT (dr2->dr))))
+	    {
+	      free_graph (g);
+	      return false;
+	    }
 	  add_edge (g, i, j);
 	  add_edge (g, j, i);
 	}
@@ -1883,6 +1884,7 @@ build_alias_set (scop_p scop)
     scop->drs[i].alias_set = g->vertices[i].component + 1;
 
   free_graph (g);
+  return true;
 }
 
 /* Gather BBs and conditions for a SCOP.  */
@@ -2075,7 +2077,12 @@ build_scops (vec<scop_p> *scops)
       scop->pbbs.qsort (cmp_pbbs);
       order.release ();
 
-      build_alias_set (scop);
+      if (! build_alias_set (scop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot handle dependences\n");
+	  free_scop (scop);
+	  continue;
+	}
 
       /* Do not optimize a scop containing only PBBs that do not belong
 	 to any loops.  */

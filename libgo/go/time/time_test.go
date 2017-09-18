@@ -11,7 +11,9 @@ import (
 	"fmt"
 	"math/big"
 	"math/rand"
+	"os"
 	"runtime"
+	"strings"
 	"testing"
 	"testing/quick"
 	. "time"
@@ -231,6 +233,7 @@ var truncateRoundTests = []struct {
 	{Date(-1, January, 1, 12, 15, 31, 5e8, UTC), 3},
 	{Date(2012, January, 1, 12, 15, 30, 5e8, UTC), Second},
 	{Date(2012, January, 1, 12, 15, 31, 5e8, UTC), Second},
+	{Unix(-19012425939, 649146258), 7435029458905025217}, // 5.8*d rounds to 6*d, but .8*d+.8*d < 0 < d
 }
 
 func TestTruncateRound(t *testing.T) {
@@ -1056,6 +1059,66 @@ func TestDurationHours(t *testing.T) {
 	}
 }
 
+var durationTruncateTests = []struct {
+	d    Duration
+	m    Duration
+	want Duration
+}{
+	{0, Second, 0},
+	{Minute, -7 * Second, Minute},
+	{Minute, 0, Minute},
+	{Minute, 1, Minute},
+	{Minute + 10*Second, 10 * Second, Minute + 10*Second},
+	{2*Minute + 10*Second, Minute, 2 * Minute},
+	{10*Minute + 10*Second, 3 * Minute, 9 * Minute},
+	{Minute + 10*Second, Minute + 10*Second + 1, 0},
+	{Minute + 10*Second, Hour, 0},
+	{-Minute, Second, -Minute},
+	{-10 * Minute, 3 * Minute, -9 * Minute},
+	{-10 * Minute, Hour, 0},
+}
+
+func TestDurationTruncate(t *testing.T) {
+	for _, tt := range durationTruncateTests {
+		if got := tt.d.Truncate(tt.m); got != tt.want {
+			t.Errorf("Duration(%s).Truncate(%s) = %s; want: %s", tt.d, tt.m, got, tt.want)
+		}
+	}
+}
+
+var durationRoundTests = []struct {
+	d    Duration
+	m    Duration
+	want Duration
+}{
+	{0, Second, 0},
+	{Minute, -11 * Second, Minute},
+	{Minute, 0, Minute},
+	{Minute, 1, Minute},
+	{2 * Minute, Minute, 2 * Minute},
+	{2*Minute + 10*Second, Minute, 2 * Minute},
+	{2*Minute + 30*Second, Minute, 3 * Minute},
+	{2*Minute + 50*Second, Minute, 3 * Minute},
+	{-Minute, 1, -Minute},
+	{-2 * Minute, Minute, -2 * Minute},
+	{-2*Minute - 10*Second, Minute, -2 * Minute},
+	{-2*Minute - 30*Second, Minute, -3 * Minute},
+	{-2*Minute - 50*Second, Minute, -3 * Minute},
+	{8e18, 3e18, 9e18},
+	{9e18, 5e18, 1<<63 - 1},
+	{-8e18, 3e18, -9e18},
+	{-9e18, 5e18, -1 << 63},
+	{3<<61 - 1, 3 << 61, 3 << 61},
+}
+
+func TestDurationRound(t *testing.T) {
+	for _, tt := range durationRoundTests {
+		if got := tt.d.Round(tt.m); got != tt.want {
+			t.Errorf("Duration(%s).Round(%s) = %s; want: %s", tt.d, tt.m, got, tt.want)
+		}
+	}
+}
+
 var defaultLocTests = []struct {
 	name string
 	f    func(t1, t2 Time) bool
@@ -1252,5 +1315,16 @@ func TestMarshalBinaryZeroTime(t *testing.T) {
 func TestZeroMonthString(t *testing.T) {
 	if got, want := Month(0).String(), "%!Month(0)"; got != want {
 		t.Errorf("zero month = %q; want %q", got, want)
+	}
+}
+
+func TestReadFileLimit(t *testing.T) {
+	const zero = "/dev/zero"
+	if _, err := os.Stat(zero); err != nil {
+		t.Skip("skipping test without a /dev/zero")
+	}
+	_, err := ReadFile(zero)
+	if err == nil || !strings.Contains(err.Error(), "is too large") {
+		t.Errorf("readFile(%q) error = %v; want error containing 'is too large'", zero, err)
 	}
 }

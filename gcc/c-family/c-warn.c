@@ -28,9 +28,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm_p.h"
 #include "diagnostic.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "gcc-rich-location.h"
 #include "gimplify.h"
+#include "c-family/c-indentation.h"
 
 /* Print a warning if a constant expression had overflow in folding.
    Invoke this function on every expression that the language
@@ -318,6 +321,59 @@ find_array_ref_with_const_idx_r (tree *expr_p, int *, void *)
   return NULL_TREE;
 }
 
+/* Subroutine of warn_tautological_cmp.  Warn about bitwise comparison
+   that always evaluate to true or false.  LOC is the location of the
+   ==/!= comparison specified by CODE; LHS and RHS are the usual operands
+   of this comparison.  */
+
+static void
+warn_tautological_bitwise_comparison (location_t loc, tree_code code,
+				      tree lhs, tree rhs)
+{
+  if (code != EQ_EXPR && code != NE_EXPR)
+    return;
+
+  /* Extract the operands from e.g. (x & 8) == 4.  */
+  tree bitop;
+  tree cst;
+  if ((TREE_CODE (lhs) == BIT_AND_EXPR
+       || TREE_CODE (lhs) == BIT_IOR_EXPR)
+      && TREE_CODE (rhs) == INTEGER_CST)
+    bitop = lhs, cst = rhs;
+  else if ((TREE_CODE (rhs) == BIT_AND_EXPR
+	    || TREE_CODE (rhs) == BIT_IOR_EXPR)
+	   && TREE_CODE (lhs) == INTEGER_CST)
+    bitop = rhs, cst = lhs;
+  else
+    return;
+
+  tree bitopcst;
+  if (TREE_CODE (TREE_OPERAND (bitop, 0)) == INTEGER_CST)
+    bitopcst = TREE_OPERAND (bitop, 0);
+  else if (TREE_CODE (TREE_OPERAND (bitop, 1)) == INTEGER_CST)
+    bitopcst = TREE_OPERAND (bitop, 1);
+  else
+    return;
+
+  wide_int res;
+  if (TREE_CODE (bitop) == BIT_AND_EXPR)
+    res = wi::bit_and (bitopcst, cst);
+  else
+    res = wi::bit_or (bitopcst, cst);
+
+  /* For BIT_AND only warn if (CST2 & CST1) != CST1, and
+     for BIT_OR only if (CST2 | CST1) != CST1.  */
+  if (res == cst)
+    return;
+
+  if (code == EQ_EXPR)
+    warning_at (loc, OPT_Wtautological_compare,
+		"bitwise comparison always evaluates to false");
+  else
+    warning_at (loc, OPT_Wtautological_compare,
+		"bitwise comparison always evaluates to true");
+}
+
 /* Warn if a self-comparison always evaluates to true or false.  LOC
    is the location of the comparison with code CODE, LHS and RHS are
    operands of the comparison.  */
@@ -333,6 +389,8 @@ warn_tautological_cmp (location_t loc, enum tree_code code, tree lhs, tree rhs)
       || from_macro_expansion_at (EXPR_LOCATION (lhs))
       || from_macro_expansion_at (EXPR_LOCATION (rhs)))
     return;
+
+  warn_tautological_bitwise_comparison (loc, code, lhs, rhs);
 
   /* We do not warn for constants because they are typical of macro
      expansions that test for features, sizeof, and similar.  */
@@ -464,7 +522,6 @@ warn_if_unused_value (const_tree exp, location_t locus)
     case TARGET_EXPR:
     case CALL_EXPR:
     case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
     case EXIT_EXPR:
     case VA_ARG_EXPR:
       return false;
@@ -1799,12 +1856,12 @@ warn_for_memset (location_t loc, tree arg0, tree arg2,
 	  tree domain = TYPE_DOMAIN (type);
 	  if (!integer_onep (TYPE_SIZE_UNIT (elt_type))
 	      && domain != NULL_TREE
-	      && TYPE_MAXVAL (domain)
-	      && TYPE_MINVAL (domain)
-	      && integer_zerop (TYPE_MINVAL (domain))
+	      && TYPE_MAX_VALUE (domain)
+	      && TYPE_MIN_VALUE (domain)
+	      && integer_zerop (TYPE_MIN_VALUE (domain))
 	      && integer_onep (fold_build2 (MINUS_EXPR, domain,
 					    arg2,
-					    TYPE_MAXVAL (domain))))
+					    TYPE_MAX_VALUE (domain))))
 	    warning_at (loc, OPT_Wmemset_elt_size,
 			"%<memset%> used with length equal to "
 			"number of elements without multiplication "
@@ -1891,9 +1948,10 @@ warn_for_sign_compare (location_t location,
 				   c_common_signed_type (base_type)))
 	/* OK */;
       else
-	warning_at (location,
-		    OPT_Wsign_compare,
-		    "comparison between signed and unsigned integer expressions");
+	warning_at (location, OPT_Wsign_compare,
+		    "comparison of integer expressions of different "
+		    "signedness: %qT and %qT", TREE_TYPE (orig_op0),
+		    TREE_TYPE (orig_op1));
     }
 
   /* Warn if two unsigned values are being compared in a size larger
@@ -2400,4 +2458,102 @@ do_warn_duplicated_branches_r (tree *tp, int *, void *)
   if (TREE_CODE (*tp) == COND_EXPR)
     do_warn_duplicated_branches (*tp);
   return NULL_TREE;
+}
+
+/* Implementation of -Wmultistatement-macros.  This warning warns about
+   cases when a macro expands to multiple statements not wrapped in
+   do {} while (0) or ({ }) and is used as a body of if/else/for/while
+   conditionals.  For example,
+
+   #define DOIT x++; y++
+
+   if (c)
+     DOIT;
+
+   will increment y unconditionally.
+
+   BODY_LOC is the location of the first token in the body after labels
+   have been parsed, NEXT_LOC is the location of the next token after the
+   body of the conditional has been parsed, and GUARD_LOC is the location
+   of the conditional.  */
+
+void
+warn_for_multistatement_macros (location_t body_loc, location_t next_loc,
+				location_t guard_loc, enum rid keyword)
+{
+  if (!warn_multistatement_macros)
+    return;
+
+  /* Ain't got time to waste.  We only care about macros here.  */
+  if (!from_macro_expansion_at (body_loc)
+      || !from_macro_expansion_at (next_loc))
+    return;
+
+  /* Let's skip macros defined in system headers.  */
+  if (in_system_header_at (body_loc)
+      || in_system_header_at (next_loc))
+    return;
+
+  /* Find the actual tokens in the macro definition.  BODY_LOC and
+     NEXT_LOC have to come from the same spelling location, but they
+     will resolve to different locations in the context of the macro
+     definition.  */
+  location_t body_loc_exp
+    = linemap_resolve_location (line_table, body_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+  location_t next_loc_exp
+    = linemap_resolve_location (line_table, next_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+  location_t guard_loc_exp
+    = linemap_resolve_location (line_table, guard_loc,
+				LRK_MACRO_DEFINITION_LOCATION, NULL);
+
+  /* These are some funky cases we don't want to warn about.  */
+  if (body_loc_exp == guard_loc_exp
+      || next_loc_exp == guard_loc_exp
+      || body_loc_exp == next_loc_exp)
+    return;
+
+  /* Find the macro maps for the macro expansions.  */
+  const line_map *body_map = linemap_lookup (line_table, body_loc);
+  const line_map *next_map = linemap_lookup (line_table, next_loc);
+  const line_map *guard_map = linemap_lookup (line_table, guard_loc);
+
+  /* Now see if the following token (after the body) is coming from the
+     same macro expansion.  If it is, it might be a problem.  */
+  if (body_map != next_map)
+    return;
+
+  /* The conditional itself must not come from the same expansion, because
+     we don't want to warn about
+     #define IF if (x) x++; y++
+     and similar.  */
+  if (guard_map == body_map)
+    return;
+
+  /* Handle the case where NEXT and BODY come from the same expansion while
+     GUARD doesn't, yet we shouldn't warn.  E.g.
+
+       #define GUARD if (...)
+       #define GUARD2 GUARD
+
+     and in the definition of another macro:
+
+       GUARD2
+	foo ();
+       return 1;
+   */
+  while (linemap_macro_expansion_map_p (guard_map))
+    {
+      const line_map_macro *mm = linemap_check_macro (guard_map);
+      guard_loc_exp = MACRO_MAP_EXPANSION_POINT_LOCATION (mm);
+      guard_map = linemap_lookup (line_table, guard_loc_exp);
+      if (guard_map == body_map)
+	return;
+    }
+
+  if (warning_at (body_loc, OPT_Wmultistatement_macros,
+		  "macro expands to multiple statements"))
+    inform (guard_loc, "some parts of macro expansion are not guarded by "
+	    "this %qs clause", guard_tinfo_to_string (keyword));
 }

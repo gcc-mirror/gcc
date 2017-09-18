@@ -115,6 +115,8 @@
 #include "bb-reorder.h"
 #include "except.h"
 #include "fibonacci_heap.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* The number of rounds.  In most cases there will only be 4 rounds, but
    when partitioning hot and cold basic blocks into separate sections of
@@ -206,8 +208,8 @@ static void find_traces_1_round (int, int, gcov_type, struct trace *, int *,
 				 int, bb_heap_t **, int);
 static basic_block copy_bb (basic_block, edge, basic_block, int);
 static long bb_to_key (basic_block);
-static bool better_edge_p (const_basic_block, const_edge, int, int, int, int,
-			   const_edge);
+static bool better_edge_p (const_basic_block, const_edge, profile_probability,
+			   int, profile_probability, int, const_edge);
 static bool connect_better_edge_p (const_edge, bool, int, const_edge,
 				   struct trace *);
 static void connect_traces (int, struct trace *);
@@ -513,11 +515,12 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
       do
 	{
-	  int prob, freq;
+	  profile_probability prob;
+	  int freq;
 	  bool ends_in_call;
 
 	  /* The probability and frequency of the best edge.  */
-	  int best_prob = INT_MIN / 2;
+	  profile_probability best_prob = profile_probability::uninitialized ();
 	  int best_freq = INT_MIN / 2;
 
 	  best_edge = NULL;
@@ -565,7 +568,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 		 successor (i.e. it is unsuitable successor).  When optimizing
 		 for size, ignore the probability and frequency.  */
 	      if (!(e->flags & EDGE_CAN_FALLTHRU) || (e->flags & EDGE_COMPLEX)
-		  || ((prob < branch_th || EDGE_FREQUENCY (e) < exec_th
+		  || !prob.initialized_p ()
+		  || ((prob.to_reg_br_prob_base () < branch_th
+		       || EDGE_FREQUENCY (e) < exec_th
 		      || e->count < count_th) && (!for_size)))
 		continue;
 
@@ -648,7 +653,9 @@ find_traces_1_round (int branch_th, int exec_th, gcov_type count_th,
 
 		  if (!(e->flags & EDGE_CAN_FALLTHRU)
 		      || (e->flags & EDGE_COMPLEX)
-		      || prob < branch_th || freq < exec_th
+		      || !prob.initialized_p ()
+		      || prob.to_reg_br_prob_base () < branch_th
+		      || freq < exec_th
 		      || e->count < count_th)
 		    {
 		      /* When partitioning hot/cold basic blocks, make sure
@@ -936,14 +943,15 @@ bb_to_key (basic_block bb)
    BEST_PROB; similarly for frequency.  */
 
 static bool
-better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
-	       int best_prob, int best_freq, const_edge cur_best_edge)
+better_edge_p (const_basic_block bb, const_edge e, profile_probability prob,
+	       int freq, profile_probability best_prob, int best_freq,
+	       const_edge cur_best_edge)
 {
   bool is_better_edge;
 
   /* The BEST_* values do not have to be best, but can be a bit smaller than
      maximum values.  */
-  int diff_prob = best_prob / 10;
+  profile_probability diff_prob = best_prob.apply_scale (1, 10);
   int diff_freq = best_freq / 10;
 
   /* The smaller one is better to keep the original order.  */
@@ -951,7 +959,14 @@ better_edge_p (const_basic_block bb, const_edge e, int prob, int freq,
     return !cur_best_edge
 	   || cur_best_edge->dest->index > e->dest->index;
 
-  if (prob > best_prob + diff_prob)
+  /* Those edges are so expensive that continuing a trace is not useful
+     performance wise.  */
+  if (e->flags & (EDGE_ABNORMAL | EDGE_EH))
+    return false;
+
+  if (prob > best_prob + diff_prob
+      || (!best_prob.initialized_p ()
+	  && prob > profile_probability::guessed_never ()))
     /* The edge has higher probability than the temporary best edge.  */
     is_better_edge = true;
   else if (prob < best_prob - diff_prob)
@@ -1289,16 +1304,15 @@ connect_traces (int n_traces, struct trace *traces)
 		      }
 		  }
 
-	      if (crtl->has_bb_partition)
-		try_copy = false;
-
 	      /* Copy tiny blocks always; copy larger blocks only when the
 		 edge is traversed frequently enough.  */
 	      if (try_copy
+		  && BB_PARTITION (best->src) == BB_PARTITION (best->dest)
 		  && copy_bb_p (best->dest,
 				optimize_edge_for_speed_p (best)
 				&& EDGE_FREQUENCY (best) >= freq_threshold
-				&& best->count >= count_threshold))
+				&& (!best->count.initialized_p ()
+				    || best->count >= count_threshold)))
 		{
 		  basic_block new_bb;
 
@@ -1440,11 +1454,13 @@ fix_up_crossing_landing_pad (eh_landing_pad old_lp, basic_block old_bb)
   last_bb = EXIT_BLOCK_PTR_FOR_FN (cfun)->prev_bb;
   new_bb = create_basic_block (new_label, jump, last_bb);
   new_bb->aux = last_bb->aux;
+  new_bb->frequency = post_bb->frequency;
+  new_bb->count = post_bb->count;
   last_bb->aux = new_bb;
 
   emit_barrier_after_bb (new_bb);
 
-  make_edge (new_bb, post_bb, 0);
+  make_single_succ_edge (new_bb, post_bb, 0);
 
   /* Make sure new bb is in the other partition.  */
   new_partition = BB_PARTITION (old_bb);
@@ -1494,7 +1510,8 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
       vec<edge, va_gc> *edges = walk_up ? bb->preds : bb->succs;
       edge e;
       edge_iterator ei;
-      int highest_probability = 0;
+      profile_probability highest_probability
+				 = profile_probability::uninitialized ();
       int highest_freq = 0;
       profile_count highest_count = profile_count::uninitialized ();
       bool found = false;
@@ -1509,6 +1526,11 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           if (e->flags & EDGE_DFS_BACK)
             continue;
 
+	  /* Do not expect profile insanities when profile was not adjusted.  */
+	  if (e->probability == profile_probability::never ()
+	      || e->count == profile_count::zero ())
+	    continue;
+
           if (BB_PARTITION (reach_bb) != BB_COLD_PARTITION)
           {
             found = true;
@@ -1517,12 +1539,13 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           /* The following loop will look for the hottest edge via
              the edge count, if it is non-zero, then fallback to the edge
              frequency and finally the edge probability.  */
-          if (e->count > highest_count)
+          if (!highest_count.initialized_p () || e->count > highest_count)
             highest_count = e->count;
           int edge_freq = EDGE_FREQUENCY (e);
           if (edge_freq > highest_freq)
             highest_freq = edge_freq;
-          if (e->probability > highest_probability)
+          if (!highest_probability.initialized_p ()
+	      || e->probability > highest_probability)
             highest_probability = e->probability;
         }
 
@@ -1538,6 +1561,10 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
         {
           if (e->flags & EDGE_DFS_BACK)
             continue;
+	  /* Do not expect profile insanities when profile was not adjusted.  */
+	  if (e->probability == profile_probability::never ()
+	      || e->count == profile_count::zero ())
+	    continue;
           /* Select the hottest edge using the edge count, if it is non-zero,
              then fallback to the edge frequency and finally the edge
              probability.  */
@@ -1559,6 +1586,10 @@ sanitize_hot_paths (bool walk_up, unsigned int cold_bb_count,
           /* We have a hot bb with an immediate dominator that is cold.
              The dominator needs to be re-marked hot.  */
           BB_SET_PARTITION (reach_bb, BB_HOT_PARTITION);
+	  if (dump_file)
+	    fprintf (dump_file, "Promoting bb %i to hot partition to sanitize "
+		     "profile of bb %i in %s walk\n", reach_bb->index,
+		     bb->index, walk_up ? "backward" : "forward");
           cold_bb_count--;
 
           /* Now we need to examine newly-hot reach_bb to see if it is also
@@ -1585,6 +1616,8 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
   edge_iterator ei;
   unsigned int cold_bb_count = 0;
   auto_vec<basic_block> bbs_in_hot_partition;
+
+  propagate_unlikely_bbs_forward ();
 
   /* Mark which partition (hot/cold) each basic block belongs in.  */
   FOR_EACH_BB_FN (bb, cfun)
@@ -1634,6 +1667,12 @@ find_rarely_executed_basic_blocks_and_crossing_edges (void)
                                           &bbs_in_hot_partition);
       if (cold_bb_count)
         sanitize_hot_paths (false, cold_bb_count, &bbs_in_hot_partition);
+
+      hash_set <basic_block> set;
+      find_bbs_reachable_by_hot_paths (&set);
+      FOR_EACH_BB_FN (bb, cfun)
+	if (!set.contains (bb))
+	  BB_SET_PARTITION (bb, BB_COLD_PARTITION);
     }
 
   /* The format of .gcc_except_table does not allow landing pads to
@@ -1804,18 +1843,14 @@ static void
 fix_up_fall_thru_edges (void)
 {
   basic_block cur_bb;
-  basic_block new_bb;
-  edge succ1;
-  edge succ2;
-  edge fall_thru;
-  edge cond_jump = NULL;
-  bool cond_jump_crosses;
-  int invert_worked;
-  rtx_insn *old_jump;
-  rtx_code_label *fall_thru_label;
 
   FOR_EACH_BB_FN (cur_bb, cfun)
     {
+      edge succ1;
+      edge succ2;
+      edge fall_thru = NULL;
+      edge cond_jump = NULL;
+
       fall_thru = NULL;
       if (EDGE_COUNT (cur_bb->succs) > 0)
 	succ1 = EDGE_SUCC (cur_bb, 0);
@@ -1841,20 +1876,8 @@ fix_up_fall_thru_edges (void)
 	  fall_thru = succ2;
 	  cond_jump = succ1;
 	}
-      else if (succ1
-	       && (block_ends_with_call_p (cur_bb)
-		   || can_throw_internal (BB_END (cur_bb))))
-	{
-	  edge e;
-	  edge_iterator ei;
-
-	  FOR_EACH_EDGE (e, ei, cur_bb->succs)
-	    if (e->flags & EDGE_FALLTHRU)
-	      {
-		fall_thru = e;
-		break;
-	      }
-	}
+      else if (succ2 && EDGE_COUNT (cur_bb->succs) > 2)
+	fall_thru = find_fallthru_edge (cur_bb->succs);
 
       if (fall_thru && (fall_thru->dest != EXIT_BLOCK_PTR_FOR_FN (cfun)))
 	{
@@ -1865,9 +1888,9 @@ fix_up_fall_thru_edges (void)
 	      /* The fall_thru edge crosses; now check the cond jump edge, if
 		 it exists.  */
 
-	      cond_jump_crosses = true;
-	      invert_worked  = 0;
-	      old_jump = BB_END (cur_bb);
+	      bool cond_jump_crosses = true;
+	      int invert_worked = 0;
+	      rtx_insn *old_jump = BB_END (cur_bb);
 
 	      /* Find the jump instruction, if there is one.  */
 
@@ -1887,12 +1910,13 @@ fix_up_fall_thru_edges (void)
 		      /* Find label in fall_thru block. We've already added
 			 any missing labels, so there must be one.  */
 
-		      fall_thru_label = block_label (fall_thru->dest);
+		      rtx_code_label *fall_thru_label
+			= block_label (fall_thru->dest);
 
 		      if (old_jump && fall_thru_label)
 			{
-			  rtx_jump_insn *old_jump_insn =
-				dyn_cast <rtx_jump_insn *> (old_jump);
+			  rtx_jump_insn *old_jump_insn
+			    = dyn_cast <rtx_jump_insn *> (old_jump);
 			  if (old_jump_insn)
 			    invert_worked = invert_jump (old_jump_insn,
 							 fall_thru_label, 0);
@@ -1923,7 +1947,7 @@ fix_up_fall_thru_edges (void)
 		     becomes EDGE_CROSSING.  */
 
 		  fall_thru->flags &= ~EDGE_CROSSING;
-		  new_bb = force_nonfallthru (fall_thru);
+		  basic_block new_bb = force_nonfallthru (fall_thru);
 
 		  if (new_bb)
 		    {
@@ -2125,7 +2149,7 @@ fix_crossing_conditional_branches (void)
 		 for 'dest'.  */
 
 	      if (EDGE_COUNT (new_bb->succs) == 0)
-		new_edge = make_edge (new_bb, dest, 0);
+		new_edge = make_single_succ_edge (new_bb, dest, 0);
 	      else
 		new_edge = EDGE_SUCC (new_bb, 0);
 
@@ -2882,7 +2906,8 @@ pass_partition_blocks::execute (function *fun)
 
   crossing_edges = find_rarely_executed_basic_blocks_and_crossing_edges ();
   if (!crossing_edges.exists ())
-    return 0;
+    /* Make sure to process deferred rescans and clear changeable df flags.  */
+    return TODO_df_finish;
 
   crtl->has_bb_partition = true;
 
@@ -2948,7 +2973,8 @@ pass_partition_blocks::execute (function *fun)
       df_analyze ();
     }
 
-  return 0;
+  /* Make sure to process deferred rescans and clear changeable df flags.  */
+  return TODO_df_finish;
 }
 
 } // anon namespace

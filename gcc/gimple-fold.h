@@ -58,6 +58,7 @@ extern bool gimple_fold_builtin_sprintf (gimple_stmt_iterator *);
 extern bool gimple_fold_builtin_snprintf (gimple_stmt_iterator *);
 extern bool arith_code_with_undefined_signed_overflow (tree_code);
 extern gimple_seq rewrite_to_defined_overflow (gimple *);
+extern void replace_call_with_value (gimple_stmt_iterator *, tree);
 
 /* gimple_build, functionally matching fold_buildN, outputs stmts
    int the provided sequence, matching and simplifying them on-the-fly.
@@ -124,6 +125,21 @@ inline tree
 gimple_convert_to_ptrofftype (gimple_seq *seq, tree op)
 {
   return gimple_convert_to_ptrofftype (seq, UNKNOWN_LOCATION, op);
+}
+
+extern tree gimple_build_vector_from_val (gimple_seq *, location_t, tree,
+					  tree);
+inline tree
+gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
+{
+  return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
+}
+
+extern tree gimple_build_vector (gimple_seq *, location_t, tree, vec<tree>);
+inline tree
+gimple_build_vector (gimple_seq *seq, tree type, vec<tree> elts)
+{
+  return gimple_build_vector (seq, UNKNOWN_LOCATION, type, elts);
 }
 
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);

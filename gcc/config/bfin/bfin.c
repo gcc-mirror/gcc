@@ -25,6 +25,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -2112,16 +2114,30 @@ bfin_expand_call (rtx retval, rtx fnaddr, rtx callarg1, rtx cookie, int sibcall)
     CALL_INSN_FUNCTION_USAGE (call) = use;
 }
 
-/* Return 1 if hard register REGNO can hold a value of machine-mode MODE.  */
+/* Implement TARGET_HARD_REGNO_NREGS.  */
 
-int
-hard_regno_mode_ok (int regno, machine_mode mode)
+static unsigned int
+bfin_hard_regno_nregs (unsigned int regno, machine_mode mode)
+{
+  if (mode == PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 1;
+  if (mode == V2PDImode && (regno == REG_A0 || regno == REG_A1))
+    return 2;
+  return CLASS_MAX_NREGS (GENERAL_REGS, mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.
+
+   Do not allow to store a value in REG_CC for any mode.
+   Do not allow to store value in pregs if mode is not SI.  */
+static bool
+bfin_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
   /* Allow only dregs to store value of mode HI or QI */
   enum reg_class rclass = REGNO_REG_CLASS (regno);
 
   if (mode == CCmode)
-    return 0;
+    return false;
 
   if (mode == V2HImode)
     return D_REGNO_P (regno);
@@ -2137,9 +2153,24 @@ hard_regno_mode_ok (int regno, machine_mode mode)
 
   if (mode == SImode
       && TEST_HARD_REG_BIT (reg_class_contents[PROLOGUE_REGS], regno))
-    return 1;
+    return true;
 
   return TEST_HARD_REG_BIT (reg_class_contents[MOST_REGS], regno);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+bfin_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || ((GET_MODE_CLASS (mode1) == MODE_INT
+	       || GET_MODE_CLASS (mode1) == MODE_FLOAT)
+	      && (GET_MODE_CLASS (mode2) == MODE_INT
+		  || GET_MODE_CLASS (mode2) == MODE_FLOAT)
+	      && mode1 != BImode && mode2 != BImode
+	      && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
 }
 
 /* Implements target hook vector_mode_supported_p.  */
@@ -2435,9 +2466,8 @@ cbranch_predicted_taken_p (rtx insn)
 
   if (x)
     {
-      int pred_val = XINT (x, 0);
-
-      return pred_val >= REG_BR_PROB_BASE / 2;
+      return profile_probability::from_reg_br_prob_note (XINT (x, 0))
+	     >= profile_probability::even ();
     }
 
   return 0;
@@ -5843,5 +5873,13 @@ bfin_conditional_register_usage (void)
 
 #undef TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P bfin_can_use_doloop_p
+
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS bfin_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK bfin_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P bfin_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;

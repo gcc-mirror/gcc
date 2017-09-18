@@ -43,6 +43,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "gimple-low.h"
+#include "stringpool.h"
+#include "attribs.h"
+#include "asan.h"
 
 /* In some instances a tree and a gimple need to be stored in a same table,
    i.e. in hash tables. This is a structure to do this. */
@@ -1413,11 +1416,12 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
       x = gimple_build_assign (finally_tmp,
 			       build_int_cst (integer_type_node,
 					      fallthru_index));
+      gimple_set_location (x, finally_loc);
       gimple_seq_add_stmt (&tf->top_p_seq, x);
 
       tmp = build_int_cst (integer_type_node, fallthru_index);
       last_case = build_case_label (tmp, NULL,
-				    create_artificial_label (tf_loc));
+				    create_artificial_label (finally_loc));
       case_label_vec.quick_push (last_case);
       last_case_index++;
 
@@ -1426,7 +1430,7 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
       tmp = lower_try_finally_fallthru_label (tf);
       x = gimple_build_goto (tmp);
-      gimple_set_location (x, tf_loc);
+      gimple_set_location (x, finally_loc);
       gimple_seq_add_stmt (&switch_body, x);
     }
 
@@ -1562,12 +1566,6 @@ lower_try_finally_switch (struct leh_state *state, struct leh_tf_state *tf)
 
 /* Decide whether or not we are going to duplicate the finally block.
    There are several considerations.
-
-   First, if this is Java, then the finally block contains code
-   written by the user.  It has line numbers associated with it,
-   so duplicating the block means it's difficult to set a breakpoint.
-   Since controlling code generation via -g is verboten, we simply
-   never duplicate code without optimization.
 
    Second, we'd like to prevent egregious code growth.  One way to
    do this is to estimate the size of the finally block, multiply
@@ -3244,9 +3242,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	    }
 
 	  gcc_assert (EDGE_COUNT (bb->succs) == 0);
-	  e = make_edge (bb, new_bb, EDGE_FALLTHRU);
-	  e->count = bb->count;
-	  e->probability = REG_BR_PROB_BASE;
+	  e = make_single_succ_edge (bb, new_bb, EDGE_FALLTHRU);
 	}
       else
 	{
@@ -3262,7 +3258,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	  e = single_succ_edge (bb);
 	  gcc_assert (e->flags & EDGE_EH);
 	  e->flags = (e->flags & ~EDGE_EH) | EDGE_FALLTHRU;
-	  e->probability = REG_BR_PROB_BASE;
+	  e->probability = profile_probability::always ();
 	  e->count = bb->count;
 
 	  /* If there are no more EH users of the landing pad, delete it.  */
@@ -3287,7 +3283,7 @@ lower_resx (basic_block bb, gresx *stmt,
 	 _Unwind_Resume library function.  */
 
       /* The ARM EABI redefines _Unwind_Resume as __cxa_end_cleanup
-	 with no arguments for C++ and Java.  Check for that.  */
+	 with no arguments for C++.  Check for that.  */
       if (src_r->use_cxa_end_cleanup)
 	{
 	  fn = builtin_decl_implicit (BUILT_IN_CXA_END_CLEANUP);
@@ -3303,6 +3299,18 @@ lower_resx (basic_block bb, gresx *stmt,
 	  var = make_ssa_name (var, x);
 	  gimple_call_set_lhs (x, var);
 	  gsi_insert_before (&gsi, x, GSI_SAME_STMT);
+
+	  /* When exception handling is delegated to a caller function, we
+	     have to guarantee that shadow memory variables living on stack
+	     will be cleaner before control is given to a parent function.  */
+	  if (sanitize_flags_p (SANITIZE_ADDRESS))
+	    {
+	      tree decl
+		= builtin_decl_implicit (BUILT_IN_ASAN_HANDLE_NO_RETURN);
+	      gimple *g = gimple_build_call (decl, 0);
+	      gimple_set_location (g, gimple_location (stmt));
+	      gsi_insert_before (&gsi, g, GSI_SAME_STMT);
+	    }
 
 	  fn = builtin_decl_implicit (BUILT_IN_UNWIND_RESUME);
 	  x = gimple_build_call (fn, 1, var);
@@ -4283,7 +4291,7 @@ cleanup_empty_eh_move_lp (basic_block bb, edge e_out,
 
   /* Clean up E_OUT for the fallthru.  */
   e_out->flags = (e_out->flags & ~EDGE_EH) | EDGE_FALLTHRU;
-  e_out->probability = REG_BR_PROB_BASE;
+  e_out->probability = profile_probability::always ();
   e_out->count = e_out->src->count;
 }
 

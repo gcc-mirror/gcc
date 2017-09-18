@@ -94,5 +94,5 @@ compare_symbols(const char* baseline_file, const char* test_file, bool verb);
 symbols
 create_symbols(const char* file);
 
-const char*
+std::string
 demangle(const std::string& mangled);

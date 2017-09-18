@@ -131,10 +131,10 @@
   /* Allow labels and local symbols.  */
   if (GET_CODE (op) == LABEL_REF)
     return true;
-  if (GET_CODE (op) == SYMBOL_REF)
+  if (SYMBOL_REF_P (op))
     return (!SYMBOL_FLAG_NOTALIGN2_P (op)
 	    && SYMBOL_REF_TLS_MODEL (op) == 0
-	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
+	    && s390_rel_address_ok_p (op));
 
   /* Everything else must have a CONST, so strip it.  */
   if (GET_CODE (op) != CONST)
@@ -156,10 +156,11 @@
   /* Labels and local symbols allowed here as well.  */
   if (GET_CODE (op) == LABEL_REF)
     return true;
-  if (GET_CODE (op) == SYMBOL_REF)
+  if (SYMBOL_REF_P (op))
     return (!SYMBOL_FLAG_NOTALIGN2_P (op)
 	    && SYMBOL_REF_TLS_MODEL (op) == 0
-	    && (!flag_pic || SYMBOL_REF_LOCAL_P (op)));
+	    && s390_rel_address_ok_p (op));
+
 
   /* Now we must have a @GOTENT offset or @PLT stub
      or an @INDNTPOFF TLS offset.  */
@@ -277,25 +278,25 @@
 
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCL1mode:
+    case E_CCL1mode:
       return GET_CODE (op) == LTU;
 
-    case CCL2mode:
+    case E_CCL2mode:
       return GET_CODE (op) == LEU;
 
-    case CCL3mode:
+    case E_CCL3mode:
       return GET_CODE (op) == GEU;
 
-    case CCUmode:
+    case E_CCUmode:
       return GET_CODE (op) == GTU;
 
-    case CCURmode:
+    case E_CCURmode:
       return GET_CODE (op) == LTU;
 
-    case CCSmode:
+    case E_CCSmode:
       return GET_CODE (op) == UNGT;
 
-    case CCSRmode:
+    case E_CCSRmode:
       return GET_CODE (op) == UNLT;
 
     default:
@@ -322,25 +323,25 @@
 
   switch (GET_MODE (XEXP (op, 0)))
     {
-    case CCL1mode:
+    case E_CCL1mode:
       return GET_CODE (op) == GEU;
 
-    case CCL2mode:
+    case E_CCL2mode:
       return GET_CODE (op) == GTU;
 
-    case CCL3mode:
+    case E_CCL3mode:
       return GET_CODE (op) == LTU;
 
-    case CCUmode:
+    case E_CCUmode:
       return GET_CODE (op) == LEU;
 
-    case CCURmode:
+    case E_CCURmode:
       return GET_CODE (op) == GEU;
 
-    case CCSmode:
+    case E_CCSmode:
       return GET_CODE (op) == LE;
 
-    case CCSRmode:
+    case E_CCSRmode:
       return GET_CODE (op) == GE;
 
     default:

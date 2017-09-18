@@ -136,10 +136,10 @@ struct alg_hash_entry {
 #define NUM_MODE_INT \
   (MAX_MODE_INT - MIN_MODE_INT + 1)
 #define NUM_MODE_PARTIAL_INT \
-  (MIN_MODE_PARTIAL_INT == VOIDmode ? 0 \
+  (MIN_MODE_PARTIAL_INT == E_VOIDmode ? 0 \
    : MAX_MODE_PARTIAL_INT - MIN_MODE_PARTIAL_INT + 1)
 #define NUM_MODE_VECTOR_INT \
-  (MIN_MODE_VECTOR_INT == VOIDmode ? 0 \
+  (MIN_MODE_VECTOR_INT == E_VOIDmode ? 0 \
    : MAX_MODE_VECTOR_INT - MIN_MODE_VECTOR_INT + 1)
 
 #define NUM_MODE_IP_INT (NUM_MODE_INT + NUM_MODE_PARTIAL_INT)
@@ -679,9 +679,9 @@ convert_cost (machine_mode to_mode, machine_mode from_mode,
 
 extern int mult_by_coeff_cost (HOST_WIDE_INT, machine_mode, bool);
 extern rtx emit_cstore (rtx target, enum insn_code icode, enum rtx_code code,
-			enum machine_mode mode, enum machine_mode compare_mode,
+			machine_mode mode, machine_mode compare_mode,
 			int unsignedp, rtx x, rtx y, int normalizep,
-			enum machine_mode target_mode);
+			machine_mode target_mode);
 
 /* Arguments MODE, RTX: return an rtx for the negation of that value.
    May emit insns.  */
@@ -689,7 +689,7 @@ extern rtx negate_rtx (machine_mode, rtx);
 
 /* Arguments MODE, RTX: return an rtx for the flipping of that value.
    May emit insns.  */
-extern rtx flip_storage_order (enum machine_mode, rtx);
+extern rtx flip_storage_order (machine_mode, rtx);
 
 /* Expand a logical AND operation.  */
 extern rtx expand_and (machine_mode, rtx, rtx, rtx);
@@ -728,6 +728,7 @@ extern rtx extract_bit_field (rtx, unsigned HOST_WIDE_INT,
 			      machine_mode, machine_mode, bool, rtx *);
 extern rtx extract_low_bits (machine_mode, machine_mode, rtx);
 extern rtx expand_mult (machine_mode, rtx, rtx, rtx, int);
-extern rtx expand_mult_highpart_adjust (machine_mode, rtx, rtx, rtx, rtx, int);
+extern rtx expand_mult_highpart_adjust (scalar_int_mode, rtx, rtx, rtx,
+					rtx, int);
 
 #endif  // EXPMED_H

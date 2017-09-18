@@ -740,9 +740,9 @@ validate_pattern (rtx pattern, md_rtx_info *info, rtx set, int set_code)
     case VEC_SELECT:
       if (GET_MODE (pattern) != VOIDmode)
 	{
-	  enum machine_mode mode = GET_MODE (pattern);
-	  enum machine_mode imode = GET_MODE (XEXP (pattern, 0));
-	  enum machine_mode emode
+	  machine_mode mode = GET_MODE (pattern);
+	  machine_mode imode = GET_MODE (XEXP (pattern, 0));
+	  machine_mode emode
 	    = VECTOR_MODE_P (mode) ? GET_MODE_INNER (mode) : mode;
 	  if (GET_CODE (XEXP (pattern, 1)) == PARALLEL)
 	    {
@@ -4489,7 +4489,7 @@ print_parameter_value (const parameter &param)
 	break;
 
       case parameter::MODE:
-	printf ("%smode", GET_MODE_NAME ((machine_mode) param.value));
+	printf ("E_%smode", GET_MODE_NAME ((machine_mode) param.value));
 	break;
 
       case parameter::INT:

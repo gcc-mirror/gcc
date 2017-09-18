@@ -1,5 +1,5 @@
 // PR c++/64969
-// { dg-options "-std=c++1z" }
+// { dg-options "-std=c++17" }
 
 auto f1(auto x) { return *x; }
 decltype(auto) f2(auto x) { return *x; }

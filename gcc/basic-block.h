@@ -45,7 +45,7 @@ struct GTY((user)) edge_def {
   unsigned int dest_idx;
 
   int flags;			/* see cfg-flags.def */
-  int probability;		/* biased by REG_BR_PROB_BASE */
+  profile_probability probability;
   profile_count count;		/* Expected number of executions calculated
 				   in profile.c  */
 };
@@ -300,8 +300,7 @@ enum cfg_bb_flags
 					 ? EDGE_SUCC ((bb), 1) : EDGE_SUCC ((bb), 0))
 
 /* Return expected execution frequency of the edge E.  */
-#define EDGE_FREQUENCY(e)		RDIV ((e)->src->frequency * (e)->probability, \
-					      REG_BR_PROB_BASE)
+#define EDGE_FREQUENCY(e)		e->probability.apply (e->src->frequency)
 
 /* Compute a scale factor (or probability) suitable for scaling of
    gcov_type values via apply_probability() and apply_scale().  */

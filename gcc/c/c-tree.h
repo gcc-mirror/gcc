@@ -147,6 +147,14 @@ struct c_expr
   location_t get_start () const { return src_range.m_start; }
   location_t get_finish () const { return src_range.m_finish; }
 
+  location_t get_location () const
+  {
+    if (EXPR_HAS_LOCATION (value))
+      return EXPR_LOCATION (value);
+    else
+      return make_location (get_start (), get_start (), get_finish ());
+  }
+
   /* Set the value to error_mark_node whilst ensuring that src_range
      is initialized.  */
   void set_error ()
@@ -634,7 +642,7 @@ extern void mark_exp_read (tree);
 extern tree composite_type (tree, tree);
 extern tree build_component_ref (location_t, tree, tree, location_t);
 extern tree build_array_ref (location_t, tree, tree);
-extern tree build_external_ref (location_t, tree, int, tree *);
+extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
@@ -644,7 +652,7 @@ extern struct c_expr parser_build_binary_op (location_t,
     					     enum tree_code, struct c_expr,
 					     struct c_expr);
 extern tree build_conditional_expr (location_t, tree, bool, tree, tree,
-				    tree, tree);
+				    location_t, tree, tree, location_t);
 extern tree build_compound_expr (location_t, tree, tree);
 extern tree c_cast_expr (location_t, struct c_type_name *, tree);
 extern tree build_c_cast (location_t, tree, tree);
@@ -763,5 +771,12 @@ set_c_expr_source_range (c_expr *expr,
 extern tree decl_constant_value_for_optimization (tree);
 
 extern vec<tree> incomplete_record_decls;
+
+#if CHECKING_P
+namespace selftest {
+  extern void run_c_tests (void);
+} // namespace selftest
+#endif /* #if CHECKING_P */
+
 
 #endif /* ! GCC_C_TREE_H */

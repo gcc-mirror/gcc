@@ -130,8 +130,6 @@ along with GCC; see the file COPYING3.  If not see
    of the privileged architecture.  */
 #define STRICT_ALIGNMENT TARGET_STRICT_ALIGN
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) riscv_slow_unaligned_access
-
 /* Define this if you wish to imitate the way many other C compilers
    handle alignment of bitfields and the structures that contain
    them.
@@ -223,12 +221,6 @@ along with GCC; see the file COPYING3.  If not see
    Extensions of pointers to word_mode must be signed.  */
 #define POINTERS_EXTEND_UNSIGNED false
 
-/* When floating-point registers are wider than integer ones, moves between
-   them must go through memory.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)	\
-  (GET_MODE_SIZE (MODE) > UNITS_PER_WORD		\
-   && ((CLASS1) == FP_REGS) != ((CLASS2) == FP_REGS))
-
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
@@ -294,18 +286,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define FP_REG_RTX_P(X) (REG_P (X) && FP_REG_P (REGNO (X)))
 
-#define HARD_REGNO_NREGS(REGNO, MODE) riscv_hard_regno_nregs (REGNO, MODE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  riscv_hard_regno_mode_ok_p (REGNO, MODE)
-
-/* Don't allow floating-point modes to be tied, since type punning of
-   single-precision and double-precision is implementation defined.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  ((MODE1) == (MODE2)					\
-   || !(GET_MODE_CLASS (MODE1) == MODE_FLOAT		\
-	&& GET_MODE_CLASS (MODE2) == MODE_FLOAT))
-
 /* Use s0 as the frame pointer if it is so requested.  */
 #define HARD_FRAME_POINTER_REGNUM 8
 #define STACK_POINTER_REGNUM 2
@@ -340,7 +320,7 @@ along with GCC; see the file COPYING3.  If not see
     rtx fun, ra;							\
     ra = get_hard_reg_initial_val (Pmode, RETURN_ADDR_REGNUM);		\
     fun = gen_rtx_SYMBOL_REF (Pmode, MCOUNT_NAME);			\
-    emit_library_call (fun, LCT_NORMAL, VOIDmode, 1, ra, Pmode);	\
+    emit_library_call (fun, LCT_NORMAL, VOIDmode, ra, Pmode);		\
   }
 
 /* All the work done in PROFILE_HOOK, but still required.  */
@@ -475,9 +455,6 @@ enum reg_class
 #define LUI_OPERAND(VALUE)						\
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  reg_classes_intersect_p (FP_REGS, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -659,8 +636,6 @@ typedef struct {
 #define SLOW_BYTE_ACCESS 0
 
 #define SHIFT_COUNT_TRUNCATED 1
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
@@ -864,8 +839,6 @@ while (0)
 
 #ifndef USED_FOR_TARGET
 extern const enum reg_class riscv_regno_to_class[];
-extern bool riscv_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
-extern bool riscv_slow_unaligned_access;
 #endif
 
 #define ASM_PREFERRED_EH_DATA_FORMAT(CODE,GLOBAL) \

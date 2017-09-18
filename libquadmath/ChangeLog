@@ -1,3 +1,74 @@
+2017-09-01  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR libquadmath/81848
+	* configure.ac (powerpc*-linux*): Use attribute mode KC to create
+	complex __float128 on PowerPC instead of attribute mode TC.
+	* quadmath.h (__complex128): Likewise.
+	* configure: Regenerate.
+	* math/cbrtq.c (CBRT2): Use __float128 not long double.
+	(CBRT4): Likewise.
+	(CBRT2I): Likewise.
+	(CBRT4I): Likewise.
+	* math/j0q.c (U0): Likewise.
+	* math/sqrtq.c (sqrtq): Don't depend on implicit conversion
+	between __float128, instead explicitly convert the __float128
+	value to long double because the PowerPC does not allow __float128
+	and long double in the same expression.
+
+2017-07-19  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* math/powq.c (powq): Use uint32_t instead of u_int32_t.
+
+2017-07-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libquadmath/65757
+	* quadmath-imp.h (math_opt_barrier, math_force_eval,
+	math_narrow_eval, math_check_force_underflow,
+	math_check_force_underflow_nonneg): Define.
+	* math/ceilq.c: Backport changes from upstream glibc
+	between 2012-11-01 and 2017-07-13.
+	* math/remquoq.c: Likewise.
+	* math/expq.c: Likewise.
+	* math/llroundq.c: Likewise.
+	* math/logq.c: Likewise.
+	* math/atanq.c: Likewise.
+	* math/nearbyintq.c: Likewise.
+	* math/scalblnq.c: Likewise.
+	* math/finiteq.c: Likewise.
+	* math/atanhq.c: Likewise.
+	* math/expm1q.c: Likewise.
+	* math/sinhq.c: Likewise.
+	* math/log10q.c: Likewise.
+	* math/rintq.c: Likewise.
+	* math/roundq.c: Likewise.
+	* math/fmaq.c: Likewise.
+	* math/erfq.c: Likewise.
+	* math/log2q.c: Likewise.
+	* math/lroundq.c: Likewise.
+	* math/j1q.c: Likewise.
+	* math/scalbnq.c: Likewise.
+	* math/truncq.c: Likewise.
+	* math/frexpq.c: Likewise.
+	* math/sincosq.c: Likewise.
+	* math/tanhq.c: Likewise.
+	* math/asinq.c: Likewise.
+	* math/coshq.c: Likewise.
+	* math/j0q.c: Likewise.
+	* math/asinhq.c: Likewise.
+	* math/floorq.c: Likewise.
+	* math/sinq_kernel.c: Likewise.
+	* math/powq.c: Likewise.
+	* math/hypotq.c: Likewise.
+	* math/sincos_table.c: Likewise.
+	* math/rem_pio2q.c: Likewise.
+	* math/nextafterq.c: Likewise.
+	* math/log1pq.c: Likewise.
+	* math/sincosq_kernel.c: Likewise.
+	* math/tanq.c: Likewise.
+	* math/acosq.c: Likewise.
+	* math/lrintq.c: Likewise.
+	* math/llrintq.c: Likewise.
+
 2017-02-09  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* configure.ac (ACX_BUGURL): Update.

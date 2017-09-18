@@ -917,6 +917,11 @@
 			    (V16QI "QI") (V8HI "HI") (V4SI "SI") (V2DI "DI")
 			    (V2DF "DF")])
 
+;; As above, but in lower case.
+(define_mode_attr unitmode [(SF "sf") (DF "df") (V2SF "sf") (V4SF "sf")
+			    (V16QI "qi") (V8QI "qi") (V8HI "hi") (V4HI "hi")
+			    (V4SI "si") (V2SI "si") (V2DI "di") (V2DF "df")])
+
 ;; This attribute gives the integer mode that has the same size as a
 ;; fixed-point mode.
 (define_mode_attr IMODE [(QQ "QI") (HQ "HI") (SQ "SI") (DQ "DI")
@@ -3237,9 +3242,9 @@
 		 (match_operand:GPR 2 "and_reg_operand")))])
 
 ;; The middle-end is not allowed to convert ANDing with 0xffff_ffff into a
-;; zero_extendsidi2 because of TRULY_NOOP_TRUNCATION, so handle these here.
-;; Note that this variant does not trigger for SI mode because we require
-;; a 64-bit HOST_WIDE_INT and 0xffff_ffff wouldn't be a canonical
+;; zero_extendsidi2 because of TARGET_TRULY_NOOP_TRUNCATION, so handle these
+;; here.  Note that this variant does not trigger for SI mode because we
+;; require a 64-bit HOST_WIDE_INT and 0xffff_ffff wouldn't be a canonical
 ;; sign-extended SImode value.
 ;;
 ;; These are possible combinations for operand 1 and 2.  The table
@@ -3421,7 +3426,7 @@
 ;; modes is a no-op, as it is for most other GCC ports.  Truncating
 ;; DImode values to SImode is not a no-op for TARGET_64BIT since we
 ;; need to make sure that the lower 32 bits are properly sign-extended
-;; (see TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
+;; (see TARGET_TRULY_NOOP_TRUNCATION).  Truncating DImode values into modes
 ;; smaller than SImode is equivalent to two separate truncations:
 ;;
 ;;                        A       B
@@ -3639,7 +3644,7 @@
 ;; Those for integer source operand are ordered widest source type first.
 
 ;; When TARGET_64BIT, all SImode integer and accumulator registers
-;; should already be in sign-extended form (see TRULY_NOOP_TRUNCATION
+;; should already be in sign-extended form (see TARGET_TRULY_NOOP_TRUNCATION
 ;; and truncdisi2).  We can therefore get rid of register->register
 ;; instructions if we constrain the source to be in the same register as
 ;; the destination.
@@ -6410,14 +6415,14 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case HImode:
+    case E_HImode:
       output_asm_insn ("sll\t%3,%0,1", operands);
       output_asm_insn ("<d>la\t%2,%1", operands);
       output_asm_insn ("<d>addu\t%3,%2,%3", operands);
       output_asm_insn ("lh\t%3,0(%3)", operands);
       break;
 
-    case SImode:
+    case E_SImode:
       output_asm_insn ("sll\t%3,%0,2", operands);
       output_asm_insn ("<d>la\t%2,%1", operands);
       output_asm_insn ("<d>addu\t%3,%2,%3", operands);
@@ -7358,7 +7363,7 @@
 {
   gcc_assert (GET_CODE (operands[0]) == CONST_DOUBLE);
   assemble_real (*CONST_DOUBLE_REAL_VALUE (operands[0]),
-		 GET_MODE (operands[0]),
+		 as_a <scalar_float_mode> (GET_MODE (operands[0])),
 		 GET_MODE_BITSIZE (GET_MODE (operands[0])));
   return "";
 }

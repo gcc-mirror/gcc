@@ -129,6 +129,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "gimple-pretty-print.h"
 #include "intl.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Hash based set of pairs of types.  */
 struct type_pair
@@ -1601,62 +1603,6 @@ odr_types_equivalent_p (tree t1, tree t2, bool warn, bool *warned,
 			       "is defined in another translation unit"));
 		
 		return false;
-	      }
-	    if ((TYPE_MAIN_VARIANT (t1) == t1 || TYPE_MAIN_VARIANT (t2) == t2)
-		&& COMPLETE_TYPE_P (TYPE_MAIN_VARIANT (t1))
-		&& COMPLETE_TYPE_P (TYPE_MAIN_VARIANT (t2))
-		&& odr_type_p (TYPE_MAIN_VARIANT (t1))
-		&& odr_type_p (TYPE_MAIN_VARIANT (t2))
-		&& (TYPE_METHODS (TYPE_MAIN_VARIANT (t1))
-		    != TYPE_METHODS (TYPE_MAIN_VARIANT (t2))))
-	      {
-		/* Currently free_lang_data sets TYPE_METHODS to error_mark_node
-		   if it is non-NULL so this loop will never realy execute.  */
-		if (TYPE_METHODS (TYPE_MAIN_VARIANT (t1)) != error_mark_node
-		    && TYPE_METHODS (TYPE_MAIN_VARIANT (t2)) != error_mark_node)
-		  for (f1 = TYPE_METHODS (TYPE_MAIN_VARIANT (t1)),
-		       f2 = TYPE_METHODS (TYPE_MAIN_VARIANT (t2));
-		       f1 && f2 ; f1 = DECL_CHAIN (f1), f2 = DECL_CHAIN (f2))
-		    {
-		      if (DECL_ASSEMBLER_NAME (f1) != DECL_ASSEMBLER_NAME (f2))
-			{
-			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("a different method of same type "
-				       "is defined in another "
-				       "translation unit"));
-			  return false;
-			}
-		      if (DECL_VIRTUAL_P (f1) != DECL_VIRTUAL_P (f2))
-			{
-			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("a definition that differs by virtual "
-				       "keyword in another translation unit"));
-			  return false;
-			}
-		      if (DECL_VINDEX (f1) != DECL_VINDEX (f2))
-			{
-			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("virtual table layout differs "
-				       "in another translation unit"));
-			  return false;
-			}
-		      if (odr_subtypes_equivalent_p (TREE_TYPE (f1),
-						     TREE_TYPE (f2), visited,
-						     loc1, loc2))
-			{
-			  warn_odr (t1, t2, f1, f2, warn, warned,
-				    G_("method with incompatible type is "
-				       "defined in another translation unit"));
-			  return false;
-			}
-		    }
-		if ((f1 == NULL) != (f2 == NULL))
-		  {
-		    warn_odr (t1, t2, NULL, NULL, warn, warned,
-			      G_("a type with different number of methods "
-				 "is defined in another translation unit"));
-		    return false;
-		  }
 	      }
 	  }
 	break;

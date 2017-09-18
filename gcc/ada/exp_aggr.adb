@@ -59,9 +59,9 @@ with Sinfo;    use Sinfo;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
-with Targparm; use Targparm;
 with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
+with Urealp;   use Urealp;
 
 package body Exp_Aggr is
 
@@ -644,15 +644,27 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         --  Checks 11: (part of an object declaration)
+         --  Checks 11: The C code generator cannot handle aggregates that are
+         --  not part of an object declaration.
 
-         if Modify_Tree_For_C
-           and then Nkind (Parent (N)) /= N_Object_Declaration
-           and then
-             (Nkind (Parent (N)) /= N_Qualified_Expression
-               or else Nkind (Parent (Parent (N))) /= N_Object_Declaration)
-         then
-            return False;
+         if Modify_Tree_For_C then
+            declare
+               Par : Node_Id := Parent (N);
+
+            begin
+               --  Skip enclosing nested aggregates and their qualified
+               --  expressions.
+
+               while Nkind (Par) = N_Aggregate
+                 or else Nkind (Par) = N_Qualified_Expression
+               loop
+                  Par := Parent (Par);
+               end loop;
+
+               if Nkind (Par) /= N_Object_Declaration then
+                  return False;
+               end if;
+            end;
          end if;
 
          --  Checks on components
@@ -3310,9 +3322,10 @@ package body Exp_Aggr is
 
                   if Has_Interfaces (Base_Type (Typ)) then
                      Init_Secondary_Tags
-                       (Typ        => Base_Type (Typ),
-                        Target     => Target,
-                        Stmts_List => Assign);
+                       (Typ            => Base_Type (Typ),
+                        Target         => Target,
+                        Stmts_List     => Assign,
+                        Init_Tags_List => Assign);
                   end if;
                end if;
 
@@ -3845,9 +3858,10 @@ package body Exp_Aggr is
 
          if Has_Interfaces (Base_Type (Typ)) then
             Init_Secondary_Tags
-              (Typ        => Base_Type (Typ),
-               Target     => Target,
-               Stmts_List => L);
+              (Typ            => Base_Type (Typ),
+               Target         => Target,
+               Stmts_List     => L,
+               Init_Tags_List => L);
          end if;
       end if;
 
@@ -4881,7 +4895,7 @@ package body Exp_Aggr is
       --    4. The array type has no null ranges (the purpose of this is to
       --       avoid a bogus warning for an out-of-range value).
 
-      --    5. The component type is discrete
+      --    5. The component type is elementary
 
       --    6. The component size is Storage_Unit or the value is of the form
       --       M * (1 + A**1 + A**2 + .. A**(K-1)) where A = 2**(Storage_Unit)
@@ -4957,8 +4971,30 @@ package body Exp_Aggr is
             return False;
          end if;
 
-         if not Is_Discrete_Type (Ctyp) then
+         --  All elementary types are supported
+
+         if not Is_Elementary_Type (Ctyp) then
             return False;
+         end if;
+
+         --  However access types need to be dealt with specially
+
+         if Is_Access_Type (Ctyp) then
+
+            --  Fat pointers are rejected as they are not really elementary
+            --  for the backend.
+
+            if Esize (Ctyp) /= System_Address_Size then
+               return False;
+            end if;
+
+            --  The supported expressions are NULL and constants, others are
+            --  rejected upfront to avoid being analyzed below, which can be
+            --  problematic for some of them, for example allocators.
+
+            if Nkind (Expr) /= N_Null and then not Is_Entity_Name (Expr) then
+               return False;
+            end if;
          end if;
 
          --  The expression needs to be analyzed if True is returned
@@ -4976,6 +5012,14 @@ package body Exp_Aggr is
          if not Compile_Time_Known_Value (Expr) then
             return False;
          end if;
+
+         --  The only supported value for floating point is 0.0
+
+         if Is_Floating_Point_Type (Ctyp) then
+            return Expr_Value_R (Expr) = Ureal_0;
+         end if;
+
+         --  For other types, we can look into the value as an integer
 
          Value := Expr_Value (Expr);
 
@@ -6248,7 +6292,6 @@ package body Exp_Aggr is
          --  then we could go into an infinite recursion.
 
          if (In_Place_Assign_OK_For_Declaration or else Maybe_In_Place_OK)
-           and then not AAMP_On_Target
            and then not CodePeer_Mode
            and then not Modify_Tree_For_C
            and then not Possible_Bit_Aligned_Component (Target)
@@ -6263,7 +6306,7 @@ package body Exp_Aggr is
               New_List (
                 Make_Assignment_Statement (Loc,
                   Name       => Target,
-                  Expression => New_Copy (N)));
+                  Expression => New_Copy_Tree (N)));
 
          else
             Aggr_Code :=
@@ -7135,6 +7178,13 @@ package body Exp_Aggr is
 
             elsif Modify_Tree_For_C
               and then Nkind (Expr_Q) = N_Identifier
+              and then Is_Array_Type (Etype (Expr_Q))
+            then
+               Static_Components := False;
+               return True;
+
+            elsif Modify_Tree_For_C
+              and then Nkind (Expr_Q) = N_Type_Conversion
               and then Is_Array_Type (Etype (Expr_Q))
             then
                Static_Components := False;

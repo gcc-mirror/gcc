@@ -18,7 +18,10 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 /* This header provides a declarative way of describing the attributes
-   that are applied to some functions by default.
+   that are applied to some built-in functions by default.  Attributes
+   that are meant to be used by user-defined functions but aren't used
+   by any built-ins, or attributes that apply to types or variables
+   but not to functions need not and should not be defined here.
 
    Before including this header, you must define the following macros.
    In each case where there is an ENUM, it is an identifier used to
@@ -85,7 +88,9 @@ DEF_LIST_INT_INT (5,0)
 DEF_LIST_INT_INT (5,6)
 #undef DEF_LIST_INT_INT
 
-/* Construct trees for identifiers.  */
+/* Construct trees for identifiers used in built-in function attributes.
+   The construction contributes to startup costs so only attributes that
+   are used to define built-ins should be defined here.  */
 DEF_ATTR_IDENT (ATTR_ALLOC_SIZE, "alloc_size")
 DEF_ATTR_IDENT (ATTR_COLD, "cold")
 DEF_ATTR_IDENT (ATTR_CONST, "const")

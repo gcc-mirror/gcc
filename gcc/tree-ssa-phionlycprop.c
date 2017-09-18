@@ -313,8 +313,6 @@ propagate_rhs_into_lhs (gimple *stmt, tree lhs, tree rhs,
 		  te->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
 		  te->flags &= ~EDGE_ABNORMAL;
 		  te->flags |= EDGE_FALLTHRU;
-		  if (te->probability > REG_BR_PROB_BASE)
-		    te->probability = REG_BR_PROB_BASE;
 	        }
 	    }
 	}
@@ -420,10 +418,11 @@ eliminate_degenerate_phis_1 (basic_block bb, bitmap interesting_names,
   basic_block son;
   bool cfg_altered = false;
 
-  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);)
     {
       gphi *phi = gsi.phi ();
-
+      /* We might end up removing PHI so advance the iterator now.  */
+      gsi_next (&gsi);
       cfg_altered |= eliminate_const_or_copy (phi, interesting_names,
 					      need_eh_cleanup);
     }

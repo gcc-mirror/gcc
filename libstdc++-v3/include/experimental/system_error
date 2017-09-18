@@ -35,31 +35,29 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <system_error>
 #include <experimental/bits/lfts_config.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 // See C++14 §19.5, System error support
 template <typename _Tp>
   constexpr bool is_error_code_enum_v = is_error_code_enum<_Tp>::value;
 template <typename _Tp>
   constexpr bool is_error_condition_enum_v =
     is_error_condition_enum<_Tp>::value;
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

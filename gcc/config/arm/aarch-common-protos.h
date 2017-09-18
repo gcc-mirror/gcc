@@ -25,7 +25,6 @@
 
 extern int aarch_accumulator_forwarding (rtx_insn *, rtx_insn *);
 extern int aarch_crypto_can_dual_issue (rtx_insn *, rtx_insn *);
-extern int aarch_forward_to_shift_is_not_shifted_reg (rtx_insn *, rtx_insn *);
 extern bool aarch_rev16_p (rtx);
 extern bool aarch_rev16_shleft_mask_imm_p (rtx, machine_mode);
 extern bool aarch_rev16_shright_mask_imm_p (rtx, machine_mode);

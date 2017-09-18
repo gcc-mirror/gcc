@@ -354,10 +354,10 @@ connect_loops (struct loop *loop1, struct loop *loop2)
     }
 
   new_e->count = skip_bb->count;
-  new_e->probability = PROB_LIKELY;
+  new_e->probability = profile_probability::likely ();
   new_e->count = skip_e->count.apply_probability (PROB_LIKELY);
   skip_e->count -= new_e->count;
-  skip_e->probability = inverse_probability (PROB_LIKELY);
+  skip_e->probability = profile_probability::unlikely ();
 
   return new_e;
 }
@@ -559,9 +559,13 @@ split_loop (struct loop *loop1, struct tree_niter_desc *niter)
 	   them, and fix up SSA form for that.  */
 	initialize_original_copy_tables ();
 	basic_block cond_bb;
+
+	/* FIXME: probabilities seems wrong here.  */
 	struct loop *loop2 = loop_version (loop1, cond, &cond_bb,
-					   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
-					   REG_BR_PROB_BASE, REG_BR_PROB_BASE,
+					   profile_probability::always (),
+					   profile_probability::always (),
+					   profile_probability::always (),
+					   profile_probability::always (),
 					   true);
 	gcc_assert (loop2);
 	update_ssa (TODO_update_ssa);

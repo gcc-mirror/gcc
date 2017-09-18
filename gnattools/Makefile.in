@@ -69,16 +69,10 @@ INCLUDES_FOR_SUBDIR = -iquote . -iquote .. -iquote ../.. \
 		      -iquote $(fsrcdir) -I$(ftop_srcdir)/include
 ADA_INCLUDES_FOR_SUBDIR = -I. -I$(fsrcdir)/ada
 
-CXX_LFLAGS = \
- -B../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
- -B../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs \
- -L../../../$(target_noncanonical)/libstdc++-v3/src/.libs \
- -L../../../$(target_noncanonical)/libstdc++-v3/libsupc++/.libs
-
 # Variables for gnattools, native
 TOOLS_FLAGS_TO_PASS_NATIVE= \
 	"CC=../../xgcc -B../../" \
-	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
+	"CXX=$(CXX)" \
 	"CFLAGS=$(CFLAGS) $(WARN_CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \
@@ -96,7 +90,7 @@ TOOLS_FLAGS_TO_PASS_NATIVE= \
 # Variables for regnattools
 TOOLS_FLAGS_TO_PASS_RE= \
 	"CC=../../xgcc -B../../" \
-	"CXX=../../xg++ -B../../ $(CXX_LFLAGS)" \
+	"CXX=$(CXX)" \
 	"CFLAGS=$(CFLAGS)" \
 	"LDFLAGS=$(LDFLAGS)" \
 	"ADAFLAGS=$(ADAFLAGS)" \

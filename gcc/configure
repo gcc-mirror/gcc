@@ -11489,15 +11489,15 @@ fi
 # --------------------------------------------------------
 
 # Collect build-machine-specific information.
-. ${srcdir}/config.build
+. ${srcdir}/config.build || exit 1
 
 # Collect host-machine-specific information.
-. ${srcdir}/config.host
+. ${srcdir}/config.host || exit 1
 
 target_gtfiles=
 
 # Collect target-machine-specific information.
-. ${srcdir}/config.gcc
+. ${srcdir}/config.gcc || exit 1
 
 extra_objs="${host_extra_objs} ${extra_objs}"
 extra_gcc_objs="${host_extra_gcc_objs} ${extra_gcc_objs}"
@@ -24820,6 +24820,42 @@ $as_echo "#define HAVE_AS_AVR_MRMW_OPTION 1" >>confdefs.h
 fi
 
 
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for __gcc_isr pseudo instruction" >&5
+$as_echo_n "checking assembler for __gcc_isr pseudo instruction... " >&6; }
+if test "${gcc_cv_as_avr_mgccisr+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_avr_mgccisr=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text
+      		    __gcc_isr 1
+      		    __gcc_isr 2
+      		    __gcc_isr 0,r24
+      		   ' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -mgcc-isr -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_avr_mgccisr=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_avr_mgccisr" >&5
+$as_echo "$gcc_cv_as_avr_mgccisr" >&6; }
+if test $gcc_cv_as_avr_mgccisr = yes; then
+
+$as_echo "#define HAVE_AS_AVR_MGCCISR_OPTION 1" >>confdefs.h
+
+fi
+
+
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -24851,29 +24887,32 @@ EOF
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; }
-    if test -f conftest.nm
+    if test -s conftest.nm
     then
 	if grep ' R xxvaryy' conftest.nm > /dev/null; then
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+
+$as_echo "#define HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH 1" >>confdefs.h
+
 	else
 	    { $as_echo "$as_me:${as_lineno-$LINENO}: result: no: avrxmega3 .rodata located in RAM" >&5
 $as_echo "no: avrxmega3 .rodata located in RAM" >&6; }
 	    echo "$as_me: nm output was" >&5
 	    cat conftest.nm >&5
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
 	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
-	    as_fn_error "support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)" "$LINENO" 5
+	    { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&5
+$as_echo "$as_me: WARNING: support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)" >&2;}
 	fi
     else
 	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: test failed" >&5
 $as_echo "test failed" >&6; }
 	echo "$as_me: failed program was" >&5
 	cat conftest.s >&5
-	rm -f conftest.s conftest.o conftest.elf
-	as_fn_error "see \`config.log' for details" "$LINENO" 5
+	{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: see \`config.log' for details" >&5
+$as_echo "$as_me: WARNING: see \`config.log' for details" >&2;}
     fi
+    rm -f conftest.s conftest.o conftest.elf conftest.nm
     ;;
 
   cris-*-*)
@@ -25276,6 +25315,43 @@ $as_echo "$gcc_cv_as_sparc_sparc5" >&6; }
 if test $gcc_cv_as_sparc_sparc5 = yes; then
 
 $as_echo "#define HAVE_AS_SPARC5_VIS4 1" >>confdefs.h
+
+fi
+
+
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking assembler for SPARC6 instructions" >&5
+$as_echo_n "checking assembler for SPARC6 instructions... " >&6; }
+if test "${gcc_cv_as_sparc_sparc6+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  gcc_cv_as_sparc_sparc6=no
+  if test x$gcc_cv_as != x; then
+    $as_echo '.text
+       .register %g2, #scratch
+       .register %g3, #scratch
+       .align 4
+       rd %entropy, %g1
+       fpsll64x %f0, %f2, %f4' > conftest.s
+    if { ac_try='$gcc_cv_as $gcc_cv_as_flags -xarch=sparc6 -o conftest.o conftest.s >&5'
+  { { eval echo "\"\$as_me\":${as_lineno-$LINENO}: \"$ac_try\""; } >&5
+  (eval $ac_try) 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; }
+    then
+	gcc_cv_as_sparc_sparc6=yes
+    else
+      echo "configure: failed program was" >&5
+      cat conftest.s >&5
+    fi
+    rm -f conftest.o conftest.s
+  fi
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_as_sparc_sparc6" >&5
+$as_echo "$gcc_cv_as_sparc_sparc6" >&6; }
+if test $gcc_cv_as_sparc_sparc6 = yes; then
+
+$as_echo "#define HAVE_AS_SPARC6 1" >>confdefs.h
 
 fi
 
@@ -27588,9 +27664,9 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  aarch64 | alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze \
-  | mips | nios2 | pa | riscv | rs6000 | score | sparc | spu | tilegx \
-  | tilepro | visium | xstormy16 | xtensa)
+  aarch64 | alpha | arc | arm | avr | bfin | cris | i386 | m32c | m68k \
+  | microblaze | mips | nios2 | pa | riscv | rs6000 | score | sparc | spu \
+  | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

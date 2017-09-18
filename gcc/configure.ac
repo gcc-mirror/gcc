@@ -1442,15 +1442,15 @@ fi
 # --------------------------------------------------------
 
 # Collect build-machine-specific information.
-. ${srcdir}/config.build
+. ${srcdir}/config.build || exit 1
 
 # Collect host-machine-specific information.
-. ${srcdir}/config.host
+. ${srcdir}/config.host || exit 1
 
 target_gtfiles=
 
 # Collect target-machine-specific information.
-. ${srcdir}/config.gcc
+. ${srcdir}/config.gcc || exit 1
 
 extra_objs="${host_extra_objs} ${extra_objs}"
 extra_gcc_objs="${host_extra_gcc_objs} ${extra_gcc_objs}"
@@ -3817,6 +3817,16 @@ AS_HELP_STRING([--disable-fix-cortex-a53-843419],
       [AC_DEFINE(HAVE_AS_AVR_MRMW_OPTION, 1,
 		[Define if your avr assembler supports -mrmw option.])])
 
+    gcc_GAS_CHECK_FEATURE([__gcc_isr pseudo instruction],
+      gcc_cv_as_avr_mgccisr,,
+      [-mgcc-isr], [.text
+      		    __gcc_isr 1
+      		    __gcc_isr 2
+      		    __gcc_isr 0,r24
+      		   ],,
+      [AC_DEFINE(HAVE_AS_AVR_MGCCISR_OPTION, 1,
+		[Define if your avr assembler supports -mgcc-isr option.])])
+
     # Check how default linker description file implements .rodata for
     # avrxmega3 (PR21472).  avr-gcc assumes .rodata is *not* loaded to
     # RAM so avr-gcc skips __do_copy_data for .rodata objects.
@@ -3832,26 +3842,26 @@ EOF
     AC_TRY_COMMAND([$gcc_cv_as -mmcu=avrxmega3 conftest.s -o conftest.o])
     AC_TRY_COMMAND([$gcc_cv_ld -mavrxmega3 conftest.o -o conftest.elf])
     AC_TRY_COMMAND([$gcc_cv_nm conftest.elf > conftest.nm])
-    if test -f conftest.nm
+    if test -s conftest.nm
     then
 	if grep ' R xxvaryy' conftest.nm > /dev/null; then
 	    AC_MSG_RESULT(yes)
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
+	    AC_DEFINE(HAVE_LD_AVR_AVRXMEGA3_RODATA_IN_FLASH, 1,
+		[Define if your default avr linker script for avrxmega3 leaves .rodata in flash.])
 	else
 	    AC_MSG_RESULT(no: avrxmega3 .rodata located in RAM)
 	    echo "$as_me: nm output was" >&AS_MESSAGE_LOG_FD
 	    cat conftest.nm >&AS_MESSAGE_LOG_FD
-	    rm -f conftest.s conftest.o conftest.elf conftest.nm
 	    avr_ld_ver="`$gcc_cv_ld -v | sed -e 's:^.* ::'`"
-	    AC_MSG_ERROR([[support for avrxmega3 needs Binutils 2.29 or higher (have $avr_ld_ver)]])
+	    AC_MSG_WARN([[support for avrxmega3 .rodata in flash needs Binutils 2.29 or higher (have $avr_ld_ver)]])
 	fi
     else
 	AC_MSG_RESULT(test failed)
 	echo "$as_me: failed program was" >&AS_MESSAGE_LOG_FD
 	cat conftest.s >&AS_MESSAGE_LOG_FD
-	rm -f conftest.s conftest.o conftest.elf
-	AC_MSG_ERROR([[see `config.log' for details]])
+	AC_MSG_WARN([[see `config.log' for details]])
     fi
+    rm -f conftest.s conftest.o conftest.elf conftest.nm
     ;;
 
   cris-*-*)
@@ -4002,6 +4012,18 @@ foo:
        fpadd8 %f0, %f2, %f4],,
       [AC_DEFINE(HAVE_AS_SPARC5_VIS4, 1,
                 [Define if your assembler supports SPARC5 and VIS 4.0 instructions.])])
+
+    gcc_GAS_CHECK_FEATURE([SPARC6 instructions],
+      gcc_cv_as_sparc_sparc6,,
+      [-xarch=sparc6],
+      [.text
+       .register %g2, #scratch
+       .register %g3, #scratch
+       .align 4
+       rd %entropy, %g1
+       fpsll64x %f0, %f2, %f4],,
+      [AC_DEFINE(HAVE_AS_SPARC6, 1,
+                [Define if your assembler supports SPARC6 instructions.])])
 
     gcc_GAS_CHECK_FEATURE([LEON instructions],
       gcc_cv_as_sparc_leon,,
@@ -4788,9 +4810,9 @@ esac
 # ??? Once 2.11 is released, probably need to add first known working
 # version to the per-target configury.
 case "$cpu_type" in
-  aarch64 | alpha | arm | avr | bfin | cris | i386 | m32c | m68k | microblaze \
-  | mips | nios2 | pa | riscv | rs6000 | score | sparc | spu | tilegx \
-  | tilepro | visium | xstormy16 | xtensa)
+  aarch64 | alpha | arc | arm | avr | bfin | cris | i386 | m32c | m68k \
+  | microblaze | mips | nios2 | pa | riscv | rs6000 | score | sparc | spu \
+  | tilegx | tilepro | visium | xstormy16 | xtensa)
     insn="nop"
     ;;
   ia64 | s390)

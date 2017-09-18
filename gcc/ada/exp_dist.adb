@@ -977,7 +977,7 @@ package body Exp_Dist is
                     or else
                       (Is_Generic_Instance (Pkg_Ent)
                          and then Comes_From_Source
-                                    (Get_Package_Instantiation_Node (Pkg_Ent)))
+                                    (Get_Unit_Instantiation_Node (Pkg_Ent)))
                   then
                      Visit_Nested_Pkg (Decl);
                   end if;

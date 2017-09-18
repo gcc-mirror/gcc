@@ -95,7 +95,7 @@ Target Report RejectNegative Negative(mthumb) InverseMask(THUMB)
 Generate code in 32 bit ARM state.
 
 mbig-endian
-Target Report RejectNegative Mask(BIG_END)
+Target Report RejectNegative Negative(mlittle-endian) Mask(BIG_END)
 Assume target CPU is configured as big endian.
 
 mcallee-super-interworking
@@ -160,7 +160,7 @@ mhard-float
 Target RejectNegative Alias(mfloat-abi=, hard) Undocumented
 
 mlittle-endian
-Target Report RejectNegative InverseMask(BIG_END)
+Target Report RejectNegative Negative(mbig-endian) InverseMask(BIG_END)
 Assume target CPU is configured as little endian.
 
 mlong-calls
@@ -192,7 +192,7 @@ Target RejectNegative Alias(mfloat-abi=, soft) Undocumented
 
 mstructure-size-boundary=
 Target RejectNegative Joined UInteger Var(arm_structure_size_boundary) Init(DEFAULT_STRUCTURE_SIZE_BOUNDARY)
-Specify the minimum bit alignment of structures.
+Specify the minimum bit alignment of structures. (Deprecated).
 
 mthumb
 Target Report RejectNegative Negative(marm) Mask(THUMB) Save
@@ -286,3 +286,11 @@ Assume unified syntax for inline assembly code.
 mpure-code
 Target Report Var(target_pure_code) Init(0)
 Do not allow constant data to be placed in code sections.
+
+mbe8
+Target Report RejectNegative Negative(mbe32) Mask(BE8)
+When linking for big-endian targets, generate a BE8 format image.
+
+mbe32
+Target Report RejectNegative Negative(mbe8) InverseMask(BE8)
+When linking for big-endian targets, generate a legacy BE32 format image.

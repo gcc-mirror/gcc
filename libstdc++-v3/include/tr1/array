@@ -35,10 +35,10 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   /**
    *  @brief A standard container for storing a fixed size sequence of elements.
    *
@@ -243,9 +243,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline const _Tp&
     get(const array<_Tp, _Nm>& __arr)
     { return __arr[_Int]; }
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
-}
 }
 
 #endif // _GLIBCXX_TR1_ARRAY

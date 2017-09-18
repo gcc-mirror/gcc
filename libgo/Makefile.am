@@ -117,6 +117,8 @@ toolexeclib_LTLIBRARIES = libgo.la
 toolexeclib_LIBRARIES = libgobegin.a libgolibbegin.a
 endif
 
+noinst_LIBRARIES = libgotool.a
+
 toolexeclibgo_DATA = \
 	bufio.gox \
 	bytes.gox \
@@ -299,6 +301,7 @@ toolexeclibgomathdir = $(toolexeclibgodir)/math
 
 toolexeclibgomath_DATA = \
 	math/big.gox \
+	math/bits.gox \
 	math/cmplx.gox \
 	math/rand.gox
 
@@ -399,12 +402,6 @@ rtems_task_variable_add_file =
 endif
 
 if LIBGO_IS_LINUX
-runtime_thread_files = runtime/thread-linux.c
-else
-runtime_thread_files = runtime/thread-sema.c
-endif
-
-if LIBGO_IS_LINUX
 runtime_getncpu_file = runtime/getncpu-linux.c
 else
 if LIBGO_IS_DARWIN
@@ -469,7 +466,6 @@ runtime_files = \
 	runtime/runtime_c.c \
 	runtime/stack.c \
 	runtime/thread.c \
-	$(runtime_thread_files) \
 	runtime/yield.c \
 	$(rtems_task_variable_add_file) \
 	$(runtime_getncpu_file)
@@ -541,8 +537,25 @@ s-sigtab: $(srcdir)/mksigtab.sh gen-sysinfo.go
 	$(SHELL) $(srcdir)/mvifdiff.sh tmp-sigtab.go sigtab.go
 	$(STAMP) $@
 
+GCCGO_INSTALL_NAME := $(shell echo gccgo|sed '$(program_transform_name)')
+GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
+GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
+
+zdefaultcc.go: s-zdefaultcc; @true
+s-zdefaultcc: Makefile
+	echo 'package cfg' > zdefaultcc.go.tmp
+	echo >> zdefaultcc.go.tmp
+	echo 'const DefaultGCCGO = "$(bindir)/$(GCCGO_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'const DefaultCC = "$(GCC_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'const DefaultCXX = "$(GXX_INSTALL_NAME)"' >> zdefaultcc.go.tmp
+	echo 'const DefaultPkgConfig = "pkg-config"' >> zdefaultcc.go.tmp
+	$(SHELL) $(srcdir)/../move-if-change zdefaultcc.go.tmp zdefaultcc.go
+	$(STAMP) $@ 
+
 # _Complex_lock and _Reader_lock are Go translations of some AIX system
 # types and should not be exported back to C
+# semt is a Go translation of the C type sem_t; it fails to convert on
+# some systems and need not be exported back to C.
 # sigset conflicts with system type sigset on AIX, so we need to rename it
 runtime.inc: s-runtime-inc; @true
 s-runtime-inc: runtime.lo Makefile
@@ -551,7 +564,7 @@ s-runtime-inc: runtime.lo Makefile
 	for pattern in '_[GP][a-z]' _Max _Lock _Sig _Trace _MHeap _Num; do \
 	  grep "#define $$pattern" runtime.inc.tmp >> runtime.inc.tmp2; \
 	done
-	for TYPE in _Complex_lock _Reader_lock; do \
+	for TYPE in _Complex_lock _Reader_lock semt; do \
 	  sed -e '/struct '$${TYPE}' {/,/^}/s/^.*$$//' runtime.inc.tmp2 > runtime.inc.tmp3; \
 	  mv runtime.inc.tmp3 runtime.inc.tmp2; \
 	done
@@ -560,13 +573,13 @@ s-runtime-inc: runtime.lo Makefile
 	rm -f runtime.inc.tmp2 runtime.inc.tmp3
 	$(STAMP) $@
 
-noinst_DATA = zstdpkglist.go
+noinst_DATA = zstdpkglist.go zdefaultcc.go
 
 # Generate the list of go std packages that were included in libgo
 zstdpkglist.go: s-zstdpkglist; @true
 s-zstdpkglist: Makefile
 	rm -f zstdpkglist.go.tmp
-	echo 'package main' > zstdpkglist.go.tmp
+	echo 'package load' > zstdpkglist.go.tmp
 	echo "" >> zstdpkglist.go.tmp
 	echo 'var stdpkg = map[string]bool{' >> zstdpkglist.go.tmp
 	echo $(libgo_go_objs) 'unsafe.lo' 'runtime/cgo.lo' | sed 's|[a-z0-9_/]*_c\.lo||g' | sed 's|\([a-z0-9_/]*\)\.lo|"\1": true,|g' >> zstdpkglist.go.tmp
@@ -665,7 +678,6 @@ PACKAGES = \
 	archive/zip \
 	bufio \
 	bytes \
-	cmd/internal/browser \
 	compress/bzip2 \
 	compress/flate \
 	compress/gzip \
@@ -729,6 +741,7 @@ PACKAGES = \
 	go/importer \
 	go/internal/gccgoimporter \
 	go/internal/gcimporter \
+	go/internal/srcimporter \
 	go/parser \
 	go/printer \
 	go/scanner \
@@ -741,7 +754,10 @@ PACKAGES = \
 	golang_org/x/net/http2/hpack \
 	golang_org/x/net/idna \
 	golang_org/x/net/lex/httplex \
+	golang_org/x/net/proxy \
+	golang_org/x/text/secure/bidirule \
 	golang_org/x/text/transform \
+	golang_org/x/text/unicode/bidi \
 	golang_org/x/text/unicode/norm \
 	golang_org/x/text/width \
 	hash \
@@ -761,7 +777,7 @@ PACKAGES = \
 	image/png \
 	index/suffixarray \
 	internal/nettrace \
-	internal/pprof/profile \
+	internal/poll \
 	internal/race \
 	internal/singleflight \
 	internal/syscall/unix \
@@ -773,6 +789,7 @@ PACKAGES = \
 	log/syslog \
 	math \
 	math/big \
+	math/bits \
 	math/cmplx \
 	math/rand \
 	mime \
@@ -809,7 +826,7 @@ PACKAGES = \
 	runtime/internal/atomic \
 	runtime/internal/sys \
 	runtime/pprof \
-	runtime/pprof/internal/protopprof \
+	runtime/pprof/internal/profile \
 	runtime/trace \
 	sort \
 	strconv \
@@ -876,6 +893,37 @@ libgolibbegin_a_SOURCES = \
 
 libgolibbegin_a_CFLAGS = $(AM_CFLAGS) -fPIC
 
+GOTOOL_PACKAGES = \
+	cmd/go/internal/base \
+	cmd/go/internal/bug \
+	cmd/go/internal/buildid \
+	cmd/go/internal/cfg \
+	cmd/go/internal/clean \
+	cmd/go/internal/cmdflag \
+	cmd/go/internal/doc \
+	cmd/go/internal/envcmd \
+	cmd/go/internal/fix \
+	cmd/go/internal/fmtcmd \
+	cmd/go/internal/generate \
+	cmd/go/internal/get \
+	cmd/go/internal/help \
+	cmd/go/internal/list \
+	cmd/go/internal/load \
+	cmd/go/internal/run \
+	cmd/go/internal/str \
+	cmd/go/internal/test \
+	cmd/go/internal/tool \
+	cmd/go/internal/version \
+	cmd/go/internal/vet \
+	cmd/go/internal/web \
+	cmd/go/internal/work \
+	cmd/internal/browser \
+	cmd/internal/objabi
+
+libgotool_a_SOURCES =
+libgotool_a_DEPENDENCIES = $(addsuffix .lo,$(GOTOOL_PACKAGES))
+libgotool_a_LIBADD = $(addsuffix .o,$(GOTOOL_PACKAGES))
+
 # Make sure runtime.inc is built before compiling any .c file.
 $(libgo_la_OBJECTS): runtime.inc
 $(libgo_llgo_la_OBJECTS): runtime.inc
@@ -930,7 +978,7 @@ GOBENCH =
 CHECK = \
 	GC="$(GOC) $(GOCFLAGS) $($(subst /,_,$@)_GOCFLAGS) -L `${PWD_COMMAND}` -L `${PWD_COMMAND}`/.libs"; \
 	export GC; \
-	GOLIBS="$(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
+	GOLIBS="$(extra_check_libs_$(subst /,_,$(@D))) $(MATH_LIBS) $(NET_LIBS) $(LIBS)"; \
 	export GOLIBS; \
 	RUNTESTFLAGS="$(RUNTESTFLAGS)"; \
 	export RUNTESTFLAGS; \
@@ -990,7 +1038,8 @@ CHECK_DEPS = \
 	$(toolexeclibgotesting_DATA) \
 	$(toolexeclibgotext_DATA) \
 	$(toolexeclibgotexttemplate_DATA) \
-	$(toolexeclibgounicode_DATA)
+	$(toolexeclibgounicode_DATA) \
+	$(noinst_LIBRARIES)
 
 if GOC_IS_LLGO
 CHECK_DEPS += libgo-llgo.la libgobegin-llgo.a
@@ -1030,6 +1079,7 @@ endef
 # This line expands PACKAGE_template once for each package name listed
 # in $(PACKAGES).
 $(foreach package,$(PACKAGES),$(eval $(call PACKAGE_template,$(package))))
+$(foreach package,$(GOTOOL_PACKAGES),$(eval $(call PACKAGE_template,$(package))))
 
 # Pass -ffp-contract=off, or 386-specific options, when building the
 # math package.  MATH_FLAG is defined in configure.ac.
@@ -1070,6 +1120,17 @@ runtime_pprof_check_GOCFLAGS = -static-libgo -fno-inline
 
 extra_go_files_runtime_internal_sys = version.go
 runtime/internal/sys.lo.dep: $(extra_go_files_runtime_internal_sys)
+
+extra_go_files_cmd_go_internal_cfg = zdefaultcc.go
+cmd/go/internal/cfg.lo.dep: $(extra_go_files_cmd_go_internal_cfg)
+
+extra_go_files_cmd_go_internal_load = zstdpkglist.go
+cmd/go/internal/load.lo.dep: $(extra_go_files_cmd_go_internal_load)
+
+extra_check_libs_cmd_go_internal_generate = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_get = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_load = $(abs_builddir)/libgotool.a
+extra_check_libs_cmd_go_internal_work = $(abs_builddir)/libgotool.a
 
 # FIXME: The following C files may as well move to the runtime
 # directory and be treated like other C files.
@@ -1182,6 +1243,11 @@ TEST_PACKAGES = \
 	unicode/check \
 	archive/tar/check \
 	archive/zip/check \
+	cmd/go/internal/generate/check \
+	cmd/go/internal/get/check \
+	cmd/go/internal/load/check \
+	cmd/go/internal/work/check \
+	cmd/internal/objabi/check \
 	compress/bzip2/check \
 	compress/flate/check \
 	compress/gzip/check \
@@ -1235,6 +1301,7 @@ TEST_PACKAGES = \
 	go/format/check \
 	go/internal/gcimporter/check \
 	go/internal/gccgoimporter/check \
+	go/internal/srcimporter/check \
 	go/parser/check \
 	go/printer/check \
 	go/scanner/check \
@@ -1248,6 +1315,7 @@ TEST_PACKAGES = \
 	golang_org/x/net/idna/check \
 	golang_org/x/net/lex/httplex/check \
 	$(golang_org_x_net_lif_check) \
+	golang_org/x/net/proxy/check \
 	$(golang_org_x_net_route_check) \
 	hash/adler32/check \
 	hash/crc32/check \
@@ -1258,12 +1326,13 @@ TEST_PACKAGES = \
 	image/jpeg/check \
 	image/png/check \
 	index/suffixarray/check \
-	internal/pprof/profile/check \
+	internal/poll/check \
 	internal/singleflight/check \
 	internal/trace/check \
 	io/ioutil/check \
 	log/syslog/check \
 	math/big/check \
+	math/bits/check \
 	math/cmplx/check \
 	math/rand/check \
 	mime/multipart/check \
@@ -1292,7 +1361,7 @@ TEST_PACKAGES = \
 	runtime/internal/atomic/check \
 	runtime/internal/sys/check \
 	runtime/pprof/check \
-	runtime/pprof/internal/protopprof/check \
+	runtime/pprof/internal/profile/check \
 	runtime/trace/check \
 	sync/atomic/check \
 	text/scanner/check \
@@ -1418,7 +1487,7 @@ mostlyclean-local:
 	find . -name '*-testsum' -print | xargs rm -f
 	find . -name '*-testlog' -print | xargs rm -f
 
-CLEANFILES = *.go *.c s-version libgo.sum libgo.log runtime.inc
+CLEANFILES = *.go *.c s-* libgo.sum libgo.log runtime.inc
 
 clean-local:
 	find . -name '*.la' -print | xargs $(LIBTOOL) --mode=clean rm -f

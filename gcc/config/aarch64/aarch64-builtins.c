@@ -41,30 +41,30 @@
 #include "gimple-iterator.h"
 #include "case-cfn-macros.h"
 
-#define v8qi_UP  V8QImode
-#define v4hi_UP  V4HImode
-#define v4hf_UP  V4HFmode
-#define v2si_UP  V2SImode
-#define v2sf_UP  V2SFmode
-#define v1df_UP  V1DFmode
-#define di_UP    DImode
-#define df_UP    DFmode
-#define v16qi_UP V16QImode
-#define v8hi_UP  V8HImode
-#define v8hf_UP  V8HFmode
-#define v4si_UP  V4SImode
-#define v4sf_UP  V4SFmode
-#define v2di_UP  V2DImode
-#define v2df_UP  V2DFmode
-#define ti_UP	 TImode
-#define oi_UP	 OImode
-#define ci_UP	 CImode
-#define xi_UP	 XImode
-#define si_UP    SImode
-#define sf_UP    SFmode
-#define hi_UP    HImode
-#define hf_UP    HFmode
-#define qi_UP    QImode
+#define v8qi_UP  E_V8QImode
+#define v4hi_UP  E_V4HImode
+#define v4hf_UP  E_V4HFmode
+#define v2si_UP  E_V2SImode
+#define v2sf_UP  E_V2SFmode
+#define v1df_UP  E_V1DFmode
+#define di_UP    E_DImode
+#define df_UP    E_DFmode
+#define v16qi_UP E_V16QImode
+#define v8hi_UP  E_V8HImode
+#define v8hf_UP  E_V8HFmode
+#define v4si_UP  E_V4SImode
+#define v4sf_UP  E_V4SFmode
+#define v2di_UP  E_V2DImode
+#define v2df_UP  E_V2DFmode
+#define ti_UP	 E_TImode
+#define oi_UP	 E_OImode
+#define ci_UP	 E_CImode
+#define xi_UP	 E_XImode
+#define si_UP    E_SImode
+#define sf_UP    E_SFmode
+#define hi_UP    E_HImode
+#define hf_UP    E_HFmode
+#define qi_UP    E_QImode
 #define UP(X) X##_UP
 
 #define SIMD_MAX_BUILTIN_ARGS 5
@@ -385,7 +385,7 @@ enum aarch64_builtins
 
 #undef CRC32_BUILTIN
 #define CRC32_BUILTIN(N, M) \
-  {"__builtin_aarch64_"#N, M##mode, CODE_FOR_aarch64_##N, AARCH64_BUILTIN_##N},
+  {"__builtin_aarch64_"#N, E_##M##mode, CODE_FOR_aarch64_##N, AARCH64_BUILTIN_##N},
 
 static aarch64_crc_builtin_datum aarch64_crc_builtin_data[] = {
   AARCH64_CRC32_BUILTINS
@@ -464,7 +464,7 @@ struct aarch64_simd_type_info
 };
 
 #define ENTRY(E, M, Q, G)  \
-  {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, M##mode, qualifier_##Q},
+  {E, "__" #E, #G "__" #E, NULL_TREE, NULL_TREE, E_##M##mode, qualifier_##Q},
 static struct aarch64_simd_type_info aarch64_simd_types [] = {
 #include "aarch64-simd-builtin-types.def"
 };
@@ -530,34 +530,34 @@ aarch64_mangle_builtin_type (const_tree type)
 }
 
 static tree
-aarch64_simd_builtin_std_type (enum machine_mode mode,
+aarch64_simd_builtin_std_type (machine_mode mode,
 			       enum aarch64_type_qualifiers q)
 {
 #define QUAL_TYPE(M)  \
   ((q == qualifier_none) ? int##M##_type_node : unsigned_int##M##_type_node);
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return QUAL_TYPE (QI);
-    case HImode:
+    case E_HImode:
       return QUAL_TYPE (HI);
-    case SImode:
+    case E_SImode:
       return QUAL_TYPE (SI);
-    case DImode:
+    case E_DImode:
       return QUAL_TYPE (DI);
-    case TImode:
+    case E_TImode:
       return QUAL_TYPE (TI);
-    case OImode:
+    case E_OImode:
       return aarch64_simd_intOI_type_node;
-    case CImode:
+    case E_CImode:
       return aarch64_simd_intCI_type_node;
-    case XImode:
+    case E_XImode:
       return aarch64_simd_intXI_type_node;
-    case HFmode:
+    case E_HFmode:
       return aarch64_fp16_type_node;
-    case SFmode:
+    case E_SFmode:
       return float_type_node;
-    case DFmode:
+    case E_DFmode:
       return double_type_node;
     default:
       gcc_unreachable ();
@@ -566,7 +566,7 @@ aarch64_simd_builtin_std_type (enum machine_mode mode,
 }
 
 static tree
-aarch64_lookup_simd_builtin_type (enum machine_mode mode,
+aarch64_lookup_simd_builtin_type (machine_mode mode,
 				  enum aarch64_type_qualifiers q)
 {
   int i;
@@ -585,7 +585,7 @@ aarch64_lookup_simd_builtin_type (enum machine_mode mode,
 }
 
 static tree
-aarch64_simd_builtin_type (enum machine_mode mode,
+aarch64_simd_builtin_type (machine_mode mode,
 			   bool unsigned_p, bool poly_p)
 {
   if (poly_p)
@@ -649,7 +649,7 @@ aarch64_init_simd_builtin_types (void)
   for (i = 0; i < nelts; i++)
     {
       tree eltype = aarch64_simd_types[i].eltype;
-      enum machine_mode mode = aarch64_simd_types[i].mode;
+      machine_mode mode = aarch64_simd_types[i].mode;
 
       if (aarch64_simd_types[i].itype == NULL)
 	{
@@ -754,7 +754,7 @@ aarch64_init_simd_builtins (void)
   for (i = 0; i < ARRAY_SIZE (aarch64_simd_builtin_data); i++, fcode++)
     {
       bool print_type_signature_p = false;
-      char type_signature[SIMD_MAX_BUILTIN_ARGS] = { 0 };
+      char type_signature[SIMD_MAX_BUILTIN_ARGS + 1] = { 0 };
       aarch64_simd_builtin_datum *d = &aarch64_simd_builtin_data[i];
       char namebuf[60];
       tree ftype = NULL;
@@ -1015,7 +1015,7 @@ typedef enum
 static rtx
 aarch64_simd_expand_args (rtx target, int icode, int have_retval,
 			  tree exp, builtin_simd_arg *args,
-			  enum machine_mode builtin_mode)
+			  machine_mode builtin_mode)
 {
   rtx pat;
   rtx op[SIMD_MAX_BUILTIN_ARGS + 1]; /* First element for result operand.  */
@@ -1040,7 +1040,7 @@ aarch64_simd_expand_args (rtx target, int icode, int have_retval,
       else
 	{
 	  tree arg = CALL_EXPR_ARG (exp, opc - have_retval);
-	  enum machine_mode mode = insn_data[icode].operand[opc].mode;
+	  machine_mode mode = insn_data[icode].operand[opc].mode;
 	  op[opc] = expand_normal (arg);
 
 	  switch (thisarg)

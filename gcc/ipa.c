@@ -37,7 +37,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-fnsummary.h"
 #include "dbgcnt.h"
 #include "debug.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Return true when NODE has ADDR reference.  */
 
@@ -118,8 +119,7 @@ process_references (symtab_node *snode,
       if (node->definition && !node->in_other_partition
 	  && ((!DECL_EXTERNAL (node->decl) || node->alias)
 	      || (((before_inlining_p
-		    && ((TREE_CODE (node->decl) != FUNCTION_DECL
-			 && optimize)
+		    && (TREE_CODE (node->decl) != FUNCTION_DECL
 			|| (TREE_CODE (node->decl) == FUNCTION_DECL
 			    && opt_for_fn (body->decl, optimize))
 		        || (symtab->state < IPA_SSA
@@ -312,7 +312,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   hash_set<symtab_node *> reachable;
   hash_set<tree> body_needed_for_clonning;
   hash_set<void *> reachable_call_targets;
-  bool before_inlining_p = symtab->state < (!optimize ? IPA_SSA
+  bool before_inlining_p = symtab->state < (!optimize && !in_lto_p ? IPA_SSA
 					    : IPA_SSA_AFTER_INLINING);
 
   timevar_push (TV_IPA_UNREACHABLE);
@@ -696,7 +696,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
   symtab_node::checking_verify_symtab_nodes ();
 
   /* If we removed something, perhaps profile could be improved.  */
-  if (changed && optimize && ipa_call_summaries)
+  if (changed && (optimize || in_lto_p) && ipa_call_summaries)
     FOR_EACH_DEFINED_FUNCTION (node)
       ipa_propagate_frequency (node);
 
@@ -757,7 +757,7 @@ bool
 set_writeonly_bit (varpool_node *vnode, void *data)
 {
   vnode->writeonly = true;
-  if (optimize)
+  if (optimize || in_lto_p)
     {
       DECL_INITIAL (vnode->decl) = NULL;
       if (!vnode->alias)
@@ -1175,7 +1175,7 @@ pass_ipa_cdtor_merge::gate (function *)
   /* Perform the pass when we have no ctors/dtors support
      or at LTO time to merge multiple constructors into single
      function.  */
-  return !targetm.have_ctors_dtors || (optimize && in_lto_p);
+  return !targetm.have_ctors_dtors || in_lto_p;
 }
 
 } // anon namespace
@@ -1387,16 +1387,9 @@ public:
   {}
 
   /* opt_pass methods: */
-  virtual bool gate (function *);
   virtual unsigned int execute (function *) { return ipa_single_use (); }
 
 }; // class pass_ipa_single_use
-
-bool
-pass_ipa_single_use::gate (function *)
-{
-  return optimize;
-}
 
 } // anon namespace
 

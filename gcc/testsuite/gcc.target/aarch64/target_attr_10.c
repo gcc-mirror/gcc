@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=armv8-a+simd" } */
+/* { dg-options "-O2 -march=armv8-a+simd -mcpu=generic" } */
 
 /* Using a SIMD intrinsic from a function tagged with nosimd should fail
    due to inlining rules.  */

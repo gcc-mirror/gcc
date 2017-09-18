@@ -112,7 +112,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       explicit
       basic_stringbuf(const __string_type& __str,
 		      ios_base::openmode __mode = ios_base::in | ios_base::out)
-      : __streambuf_type(), _M_mode(), _M_string(__str.data(), __str.size())
+      : __streambuf_type(), _M_mode(),
+	_M_string(__str.data(), __str.size(), __str.get_allocator())
       { _M_stringbuf_init(__mode); }
 
 #if __cplusplus >= 201103L
@@ -165,14 +166,14 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       __string_type
       str() const
       {
-	__string_type __ret;
+	__string_type __ret(_M_string.get_allocator());
 	if (this->pptr())
 	  {
 	    // The current egptr() may not be the actual string end.
 	    if (this->pptr() > this->egptr())
-	      __ret = __string_type(this->pbase(), this->pptr());
+	      __ret.assign(this->pbase(), this->pptr());
 	    else
- 	      __ret = __string_type(this->pbase(), this->egptr());
+	      __ret.assign(this->pbase(), this->egptr());
 	  }
 	else
 	  __ret = _M_string;
@@ -302,18 +303,31 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 	__xfer_bufptrs(const basic_stringbuf& __from, basic_stringbuf* __to)
 	: _M_to{__to}, _M_goff{-1, -1, -1}, _M_poff{-1, -1, -1}
 	{
-	  const _CharT* __str = __from._M_string.data();
+	  const _CharT* const __str = __from._M_string.data();
+	  const _CharT* __end = nullptr;
 	  if (__from.eback())
 	    {
-	    _M_goff[0] = __from.eback() - __str;
-	    _M_goff[1] = __from.gptr() - __str;
-	    _M_goff[2] = __from.egptr() - __str;
+	      _M_goff[0] = __from.eback() - __str;
+	      _M_goff[1] = __from.gptr() - __str;
+	      _M_goff[2] = __from.egptr() - __str;
+	      __end = __from.egptr();
 	    }
 	  if (__from.pbase())
 	    {
 	      _M_poff[0] = __from.pbase() - __str;
 	      _M_poff[1] = __from.pptr() - __from.pbase();
 	      _M_poff[2] = __from.epptr() - __str;
+	      if (__from.pptr() > __end)
+		__end = __from.pptr();
+	    }
+
+	  // Set _M_string length to the greater of the get and put areas.
+	  if (__end)
+	    {
+	      // The const_cast avoids changing this constructor's signature,
+	      // because it is exported from the dynamic library.
+	      auto& __mut_from = const_cast<basic_stringbuf&>(__from);
+	      __mut_from._M_string._M_length(__end - __str);
 	    }
 	}
 

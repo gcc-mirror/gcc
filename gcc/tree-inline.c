@@ -57,7 +57,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "builtins.h"
 #include "tree-chkp.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* I'm not real happy about this, but we need to handle gimple and
    non-gimple trees.  */
@@ -553,9 +554,16 @@ remap_type_1 (tree type, copy_body_data *id)
   /* All variants of type share the same size, so use the already remaped data.  */
   if (TYPE_MAIN_VARIANT (new_tree) != new_tree)
     {
-      gcc_checking_assert (TYPE_SIZE (type) == TYPE_SIZE (TYPE_MAIN_VARIANT (type)));
-      gcc_checking_assert (TYPE_SIZE_UNIT (type) == TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type)));
-
+      tree s = TYPE_SIZE (type);
+      tree mvs = TYPE_SIZE (TYPE_MAIN_VARIANT (type));
+      tree su = TYPE_SIZE_UNIT (type);
+      tree mvsu = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (type));
+      gcc_checking_assert ((TREE_CODE (s) == PLACEHOLDER_EXPR
+			    && (TREE_CODE (mvs) == PLACEHOLDER_EXPR))
+			   || s == mvs);
+      gcc_checking_assert ((TREE_CODE (su) == PLACEHOLDER_EXPR
+			    && (TREE_CODE (mvsu) == PLACEHOLDER_EXPR))
+			   || su == mvsu);
       TYPE_SIZE (new_tree) = TYPE_SIZE (TYPE_MAIN_VARIANT (new_tree));
       TYPE_SIZE_UNIT (new_tree) = TYPE_SIZE_UNIT (TYPE_MAIN_VARIANT (new_tree));
     }
@@ -2291,10 +2299,44 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 	    }
 	}
 
+      bool update_probs = false;
+
       if (gimple_code (copy_stmt) == GIMPLE_EH_DISPATCH)
-	make_eh_dispatch_edges (as_a <geh_dispatch *> (copy_stmt));
+	{
+	  make_eh_dispatch_edges (as_a <geh_dispatch *> (copy_stmt));
+	  update_probs = true;
+	}
       else if (can_throw)
-	make_eh_edges (copy_stmt);
+	{
+	  make_eh_edges (copy_stmt);
+	  update_probs = true;
+	}
+
+      /* EH edges may not match old edges.  Copy as much as possible.  */
+      if (update_probs)
+	{
+          edge e;
+          edge_iterator ei;
+	  basic_block copy_stmt_bb = gimple_bb (copy_stmt);
+
+          FOR_EACH_EDGE (old_edge, ei, bb->succs)
+            if ((old_edge->flags & EDGE_EH)
+		&& (e = find_edge (copy_stmt_bb,
+				   (basic_block) old_edge->dest->aux))
+		&& (e->flags & EDGE_EH))
+	      {
+		e->probability = old_edge->probability;
+		e->count = old_edge->count;
+	      }
+	    
+          FOR_EACH_EDGE (e, ei, copy_stmt_bb->succs)
+	    if ((e->flags & EDGE_EH) && !e->probability.initialized_p ())
+	      {
+	        e->probability = profile_probability::never ();
+	        e->count = profile_count::zero ();
+	      }
+        }
+
 
       /* If the call we inline cannot make abnormal goto do not add
          additional abnormal edges but only retain those already present
@@ -2317,7 +2359,8 @@ copy_edges_for_bb (basic_block bb, profile_count num, profile_count den,
 		   && gimple_call_arg (copy_stmt, 0) == boolean_true_node)
 	    nonlocal_goto = false;
 	  else
-	    make_edge (copy_stmt_bb, abnormal_goto_dest, EDGE_ABNORMAL);
+	    make_single_succ_edge (copy_stmt_bb, abnormal_goto_dest,
+				   EDGE_ABNORMAL);
 	}
 
       if ((can_throw || nonlocal_goto)
@@ -2789,7 +2832,7 @@ copy_cfg_body (copy_body_data * id, profile_count count, int frequency_scale,
   if (new_entry)
     {
       edge e = make_edge (entry_block_map, (basic_block)new_entry->aux, EDGE_FALLTHRU);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = incoming_count;
     }
 
@@ -3836,7 +3879,7 @@ estimate_move_cost (tree type, bool ARG_UNUSED (speed_p))
 
   if (TREE_CODE (type) == VECTOR_TYPE)
     {
-      machine_mode inner = TYPE_MODE (TREE_TYPE (type));
+      scalar_mode inner = SCALAR_TYPE_MODE (TREE_TYPE (type));
       machine_mode simd
 	= targetm.vectorize.preferred_simd_mode (inner);
       int simd_mode_size = GET_MODE_SIZE (simd);
@@ -4614,6 +4657,9 @@ expand_call_inline (basic_block bb, gimple *stmt, copy_body_data *id)
     vec_alloc (id->dst_simt_vars, 0);
   else
     id->dst_simt_vars = NULL;
+
+  if (profile_status_for_fn (id->src_cfun) == PROFILE_ABSENT)
+    profile_status_for_fn (dst_cfun) = PROFILE_ABSENT;
 
   /* If the src function contains an IFN_VA_ARG, then so will the dst
      function after inlining.  Likewise for IFN_GOMP_USE_SIMT.  */

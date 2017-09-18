@@ -355,15 +355,15 @@
    "@internal
     A valid _small-data_ memory operand for ARCompact instructions"
    (and (match_code "mem")
-	(match_test "compact_sda_memory_operand (op, VOIDmode)")))
+	(match_test "compact_sda_memory_operand (op, VOIDmode, true)")))
 
+; Usc constant is only used for storing long constants, hence we can
+; have only [b,s9], and [b] types of addresses.
 (define_memory_constraint "Usc"
   "@internal
    A valid memory operand for storing constants"
   (and (match_code "mem")
-       (match_test "!CONSTANT_P (XEXP (op,0))")
-;; ??? the assembler rejects stores of immediates to small data.
-       (match_test "!compact_sda_memory_operand (op, VOIDmode)")))
+       (match_test "!CONSTANT_P (XEXP (op,0))")))
 
 (define_constraint "Us<"
   "@internal
@@ -403,7 +403,7 @@
 
 (define_constraint "Cpc"
   "pc-relative constant"
-  (match_test "arc_legitimate_pc_offset_p (op)"))
+  (match_test "arc_legitimate_pic_addr_p (op)"))
 
 (define_constraint "Clb"
   "label"
@@ -412,12 +412,12 @@
 
 (define_constraint "Cal"
   "constant for arithmetic/logical operations"
-  (match_test "immediate_operand (op, VOIDmode) && !arc_legitimate_pc_offset_p (op)"))
+  (match_test "immediate_operand (op, VOIDmode) && !arc_legitimate_pic_addr_p (op)"))
 
 (define_constraint "C32"
   "32 bit constant for arithmetic/logical operations"
   (match_test "immediate_operand (op, VOIDmode)
-	       && !arc_legitimate_pc_offset_p (op)
+	       && !arc_legitimate_pic_addr_p (op)
 	       && !satisfies_constraint_I (op)"))
 
 ; Note that the 'cryptic' register constraints will not make reload use the

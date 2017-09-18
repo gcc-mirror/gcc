@@ -30,6 +30,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 #include "ubsan.h"
 #include "params.h"
@@ -37,6 +39,12 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-ssa.h"
 #include "tree-phinodes.h"
 #include "ssa-iterators.h"
+#include "gimplify.h"
+#include "gimple-iterator.h"
+#include "gimple-walk.h"
+#include "cfghooks.h"
+#include "tree-dfa.h"
+#include "tree-ssa.h"
 
 /* This is used to carry information about basic blocks.  It is
    attached to the AUX field of the standard CFG block.  */
@@ -858,6 +866,137 @@ sanitize_asan_mark_poison (void)
     }
 }
 
+/* Rewrite all usages of tree OP which is a PARM_DECL with a VAR_DECL
+   that is it's DECL_VALUE_EXPR.  */
+
+static tree
+rewrite_usage_of_param (tree *op, int *walk_subtrees, void *)
+{
+  if (TREE_CODE (*op) == PARM_DECL && DECL_HAS_VALUE_EXPR_P (*op))
+    {
+      *op = DECL_VALUE_EXPR (*op);
+      *walk_subtrees = 0;
+    }
+
+  return NULL;
+}
+
+/* For a given function FUN, rewrite all addressable parameters so that
+   a new automatic variable is introduced.  Right after function entry
+   a parameter is assigned to the variable.  */
+
+static void
+sanitize_rewrite_addressable_params (function *fun)
+{
+  gimple *g;
+  gimple_seq stmts = NULL;
+  bool has_any_addressable_param = false;
+  auto_vec<tree> clear_value_expr_list;
+
+  for (tree arg = DECL_ARGUMENTS (current_function_decl);
+       arg; arg = DECL_CHAIN (arg))
+    {
+      tree type = TREE_TYPE (arg);
+      if (TREE_ADDRESSABLE (arg) && !TREE_ADDRESSABLE (type)
+	  && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST)
+	{
+	  TREE_ADDRESSABLE (arg) = 0;
+	  /* The parameter is no longer addressable.  */
+	  has_any_addressable_param = true;
+
+	  /* Create a new automatic variable.  */
+	  tree var = build_decl (DECL_SOURCE_LOCATION (arg),
+				 VAR_DECL, DECL_NAME (arg), type);
+	  TREE_ADDRESSABLE (var) = 1;
+	  DECL_IGNORED_P (var) = 1;
+
+	  gimple_add_tmp_var (var);
+
+	  if (dump_file)
+	    fprintf (dump_file,
+		     "Rewriting parameter whose address is taken: %s\n",
+		     IDENTIFIER_POINTER (DECL_NAME (arg)));
+
+	  gcc_assert (!DECL_HAS_VALUE_EXPR_P (arg));
+
+	  SET_DECL_PT_UID (var, DECL_PT_UID (arg));
+
+	  /* Assign value of parameter to newly created variable.  */
+	  if ((TREE_CODE (type) == COMPLEX_TYPE
+	       || TREE_CODE (type) == VECTOR_TYPE))
+	    {
+	      /* We need to create a SSA name that will be used for the
+		 assignment.  */
+	      DECL_GIMPLE_REG_P (arg) = 1;
+	      tree tmp = get_or_create_ssa_default_def (cfun, arg);
+	      g = gimple_build_assign (var, tmp);
+	      gimple_set_location (g, DECL_SOURCE_LOCATION (arg));
+	      gimple_seq_add_stmt (&stmts, g);
+	    }
+	  else
+	    {
+	      g = gimple_build_assign (var, arg);
+	      gimple_set_location (g, DECL_SOURCE_LOCATION (arg));
+	      gimple_seq_add_stmt (&stmts, g);
+	    }
+
+	  if (target_for_debug_bind (arg))
+	    {
+	      g = gimple_build_debug_bind (arg, var, NULL);
+	      gimple_seq_add_stmt (&stmts, g);
+	      clear_value_expr_list.safe_push (arg);
+	    }
+
+	  DECL_HAS_VALUE_EXPR_P (arg) = 1;
+	  SET_DECL_VALUE_EXPR (arg, var);
+	}
+    }
+
+  if (!has_any_addressable_param)
+    return;
+
+  /* Replace all usages of PARM_DECLs with the newly
+     created variable VAR.  */
+  basic_block bb;
+  FOR_EACH_BB_FN (bb, fun)
+    {
+      gimple_stmt_iterator gsi;
+      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gimple *stmt = gsi_stmt (gsi);
+	  gimple_stmt_iterator it = gsi_for_stmt (stmt);
+	  walk_gimple_stmt (&it, NULL, rewrite_usage_of_param, NULL);
+	}
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	{
+	  gphi *phi = dyn_cast<gphi *> (gsi_stmt (gsi));
+          for (unsigned i = 0; i < gimple_phi_num_args (phi); ++i)
+	    {
+	      hash_set<tree> visited_nodes;
+	      walk_tree (gimple_phi_arg_def_ptr (phi, i),
+			 rewrite_usage_of_param, NULL, &visited_nodes);
+	    }
+	}
+    }
+
+  /* Unset value expr for parameters for which we created debug bind
+     expressions.  */
+  unsigned i;
+  tree arg;
+  FOR_EACH_VEC_ELT (clear_value_expr_list, i, arg)
+    {
+      DECL_HAS_VALUE_EXPR_P (arg) = 0;
+      SET_DECL_VALUE_EXPR (arg, NULL_TREE);
+    }
+
+  /* Insert default assignments at the beginning of a function.  */
+  basic_block entry_bb = ENTRY_BLOCK_PTR_FOR_FN (fun);
+  entry_bb = split_edge (single_succ_edge (entry_bb));
+
+  gimple_stmt_iterator gsi = gsi_start_bb (entry_bb);
+  gsi_insert_seq_before (&gsi, stmts, GSI_NEW_STMT);
+}
+
 unsigned int
 pass_sanopt::execute (function *fun)
 {
@@ -891,6 +1030,9 @@ pass_sanopt::execute (function *fun)
       sanitize_asan_mark_poison ();
     }
 
+  if (asan_sanitize_stack_p ())
+    sanitize_rewrite_addressable_params (fun);
+
   bool use_calls = ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD < INT_MAX
     && asan_num_accesses >= ASAN_INSTRUMENTATION_WITH_CALL_THRESHOLD;
 
@@ -923,6 +1065,9 @@ pass_sanopt::execute (function *fun)
 		  break;
 		case IFN_UBSAN_OBJECT_SIZE:
 		  no_next = ubsan_expand_objsize_ifn (&gsi);
+		  break;
+		case IFN_UBSAN_PTR:
+		  no_next = ubsan_expand_ptr_ifn (&gsi);
 		  break;
 		case IFN_UBSAN_VPTR:
 		  no_next = ubsan_expand_vptr_ifn (&gsi);

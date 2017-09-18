@@ -336,7 +336,7 @@ for (i = 0; i < n_opts; i++) {
 		alias_posarg = nth_arg(1, alias_arg)
 		alias_negarg = nth_arg(2, alias_arg)
 
-		if (var_ref(opts[i], flags[i]) != "-1")
+		if (var_ref(opts[i], flags[i]) != "(unsigned short) -1")
 			print "#error Alias setting variable"
 
 		if (alias_posarg != "" && alias_negarg == "") {
@@ -399,8 +399,9 @@ for (i = 0; i < n_opts; i++) {
 		printf("    %s,\n" \
 		       "    0, %s,\n",
 		       cl_flags, cl_bit_fields)
-	printf("    %s, %s }%s\n", var_ref(opts[i], flags[i]),
-	       var_set(flags[i]), comma)
+	printf("    %s, %s, %s }%s\n", var_ref(opts[i], flags[i]),
+	       var_set(flags[i]), integer_range_info(opt_args("IntegerRange", flags[i]),
+		    opt_args("Init", flags[i]), opts[i]), comma)
 }
 
 print "};"

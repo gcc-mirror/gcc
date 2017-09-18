@@ -35,6 +35,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "hash-set.h"
 #include "rtl.h"
 #include "tree-pass.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* ----- Type related -----  */
 
@@ -388,14 +390,14 @@ copy_var_decl (tree var, tree name, tree type)
 /* Strip off a legitimate source ending from the input string NAME of
    length LEN.  Rather than having to know the names used by all of
    our front ends, we strip off an ending of a period followed by
-   up to five characters.  (Java uses ".class".)  */
+   up to four characters.  (like ".cpp".)  */
 
 static inline void
 remove_suffix (char *name, int len)
 {
   int i;
 
-  for (i = 2;  i < 8 && len > i;  i++)
+  for (i = 2;  i < 7 && len > i;  i++)
     {
       if (name[len - i] == '.')
 	{

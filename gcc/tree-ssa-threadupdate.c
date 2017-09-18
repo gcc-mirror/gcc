@@ -302,7 +302,7 @@ remove_ctrl_stmt_and_useless_edges (basic_block bb, basic_block dest_bb)
 	}
       else
 	{
-	  e->probability = REG_BR_PROB_BASE;
+	  e->probability = profile_probability::always ();
 	  e->count = bb->count;
 	  ei_next (&ei);
 	}
@@ -546,11 +546,9 @@ static void
 create_edge_and_update_destination_phis (struct redirection_data *rd,
 					 basic_block bb, int idx)
 {
-  edge e = make_edge (bb, rd->path->last ()->e->dest, EDGE_FALLTHRU);
+  edge e = make_single_succ_edge (bb, rd->path->last ()->e->dest, EDGE_FALLTHRU);
 
   rescan_loop_exit (e, true, false);
-  e->probability = REG_BR_PROB_BASE;
-  e->count = bb->count;
 
   /* We used to copy the thread path here.  That was added in 2007
      and dutifully updated through the representation changes in 2013.
@@ -765,7 +763,7 @@ compute_path_counts (struct redirection_data *rd,
   /* Handle incoming profile insanities.  */
   if (total_count < path_in_count)
     path_in_count = total_count;
-  int onpath_scale = path_in_count.probability_in (total_count);
+  profile_probability onpath_scale = path_in_count.probability_in (total_count);
 
   /* Walk the entire path to do some more computation in order to estimate
      how much of the path_in_count will flow out of the duplicated threading
@@ -909,7 +907,7 @@ recompute_probabilities (basic_block bb)
 
       /* Prevent overflow computation due to insane profiles.  */
       if (esucc->count < bb->count)
-	esucc->probability = esucc->count.probability_in (bb->count);
+	esucc->probability = esucc->count.probability_in (bb->count).guessed ();
       else
 	/* Can happen with missing/guessed probabilities, since we
 	   may determine that more is flowing along duplicated
@@ -919,7 +917,7 @@ recompute_probabilities (basic_block bb)
 	   get a flow verification error.
 	   Not much we can do to make counts/freqs sane without
 	   redoing the profile estimation.  */
-	esucc->probability = REG_BR_PROB_BASE;
+	esucc->probability = profile_probability::guessed_always ();
     }
 }
 
@@ -978,7 +976,8 @@ update_joiner_offpath_counts (edge epath, basic_block dup_bb,
 	 among the duplicated off-path edges based on their original
 	 ratio to the full off-path count (total_orig_off_path_count).
 	 */
-      int scale = enonpath->count.probability_in (total_orig_off_path_count);
+      profile_probability scale
+		 = enonpath->count.probability_in (total_orig_off_path_count);
       /* Give the duplicated offpath edge a portion of the duplicated
 	 total.  */
       enonpathdup->count = total_dup_off_path_count.apply_probability (scale);
@@ -1048,9 +1047,14 @@ freqs_to_counts_path (struct redirection_data *rd)
       /* Scale up the frequency by REG_BR_PROB_BASE, to avoid rounding
 	 errors applying the probability when the frequencies are very
 	 small.  */
-      ein->count = profile_count::from_gcov_type
-		(apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
-				      ein->probability));
+      if (ein->probability.initialized_p ())
+        ein->count = profile_count::from_gcov_type
+		  (apply_probability (ein->src->frequency * REG_BR_PROB_BASE,
+				        ein->probability
+					  .to_reg_br_prob_base ())).guessed ();
+      else
+	/* FIXME: this is hack; we should track uninitialized values.  */
+	ein->count = profile_count::zero ();
     }
 
   for (unsigned int i = 1; i < path->length (); i++)
@@ -2201,18 +2205,13 @@ bb_in_bbs (basic_block bb, basic_block *bbs, int n)
    and create a single fallthru edge pointing to the same destination as the
    EXIT edge.
 
-   The new basic blocks are stored to REGION_COPY in the same order as they had
-   in REGION, provided that REGION_COPY is not NULL.
-
    Returns false if it is unable to copy the region, true otherwise.  */
 
 static bool
-duplicate_thread_path (edge entry, edge exit,
-		       basic_block *region, unsigned n_region,
-		       basic_block *region_copy)
+duplicate_thread_path (edge entry, edge exit, basic_block *region,
+		       unsigned n_region)
 {
   unsigned i;
-  bool free_region_copy = false;
   struct loop *loop = entry->dest->loop_father;
   edge exit_copy;
   edge redirected;
@@ -2238,12 +2237,7 @@ duplicate_thread_path (edge entry, edge exit,
 
   set_loop_copy (loop, loop);
 
-  if (!region_copy)
-    {
-      region_copy = XNEWVEC (basic_block, n_region);
-      free_region_copy = true;
-    }
-
+  basic_block *region_copy = XNEWVEC (basic_block, n_region);
   copy_bbs (region, n_region, region_copy, &exit, 1, &exit_copy, loop,
 	    split_edge_bb_loc (entry), false);
 
@@ -2358,7 +2352,7 @@ duplicate_thread_path (edge entry, edge exit,
   if (e)
     {
       rescan_loop_exit (e, true, false);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = region_copy[n_region - 1]->count;
     }
 
@@ -2372,8 +2366,7 @@ duplicate_thread_path (edge entry, edge exit,
   /* Add the other PHI node arguments.  */
   add_phi_args_after_copy (region_copy, n_region, NULL);
 
-  if (free_region_copy)
-    free (region_copy);
+  free (region_copy);
 
   free_original_copy_tables ();
   return true;
@@ -2498,7 +2491,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
       for (unsigned int j = 0; j < len - 1; j++)
 	region[j] = (*path)[j]->e->dest;
 
-      if (duplicate_thread_path (entry, exit, region, len - 1, NULL))
+      if (duplicate_thread_path (entry, exit, region, len - 1))
 	{
 	  /* We do not update dominance info.  */
 	  free_dominance_info (CDI_DOMINATORS);
@@ -2584,7 +2577,7 @@ thread_through_all_blocks (bool may_peel_loop_headers)
   return retval;
 }
 
-/* Delete the jump threading path PATH.  We have to explcitly delete
+/* Delete the jump threading path PATH.  We have to explicitly delete
    each entry in the vector, then the container.  */
 
 void

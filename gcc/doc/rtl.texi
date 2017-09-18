@@ -1872,7 +1872,7 @@ expression is called @dfn{paradoxical}.  The canonical test for this
 class of @code{subreg} is:
 
 @smallexample
-GET_MODE_SIZE (@var{m1}) > GET_MODE_SIZE (@var{m2})
+paradoxical_subreg_p (@var{m1}, @var{m2})
 @end smallexample
 
 Paradoxical @code{subreg}s can be used as both lvalues and rvalues.
@@ -2024,17 +2024,17 @@ has an unknown number of undefined bits, so the assignment:
 does not guarantee that @samp{(subreg:HI (reg:PSI 0) 0)} has the
 value @samp{(reg:HI 4)}.
 
-@cindex @code{CANNOT_CHANGE_MODE_CLASS} and subreg semantics
+@cindex @code{TARGET_CAN_CHANGE_MODE_CLASS} and subreg semantics
 The rules above apply to both pseudo @var{reg}s and hard @var{reg}s.
 If the semantics are not correct for particular combinations of
 @var{m1}, @var{m2} and hard @var{reg}, the target-specific code
 must ensure that those combinations are never used.  For example:
 
 @smallexample
-CANNOT_CHANGE_MODE_CLASS (@var{m2}, @var{m1}, @var{class})
+TARGET_CAN_CHANGE_MODE_CLASS (@var{m2}, @var{m1}, @var{class})
 @end smallexample
 
-must be true for every class @var{class} that includes @var{reg}.
+must be false for every class @var{class} that includes @var{reg}.
 
 @findex SUBREG_REG
 @findex SUBREG_BYTE
@@ -4022,9 +4022,10 @@ are stored in the @code{REG_NOTES} field of an insn.
 @item REG_BR_PROB
 This is used to specify the ratio of branches to non-branches of a
 branch insn according to the profile data.  The note is represented
-as an @code{int_list} expression whose integer value is between 0 and
-REG_BR_PROB_BASE.  Larger values indicate a higher probability that
-the branch will be taken.
+as an @code{int_list} expression whose integer value is an encoding
+of @code{profile_probability} type.  @code{profile_probability} provide
+member function @code{from_reg_br_prob_note} and @code{to_reg_br_prob_note}
+to extract and store the probability into the RTL encoding.
 
 @findex REG_BR_PRED
 @item REG_BR_PRED

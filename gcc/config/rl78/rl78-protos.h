@@ -22,15 +22,13 @@ const char *    rl78_addsi3_internal (rtx *, unsigned int);
 void		rl78_emit_eh_epilogue (rtx);
 void		rl78_expand_compare (rtx *);
 void		rl78_expand_movsi (rtx *);
-void		rl78_split_movsi (rtx *, enum machine_mode);
+void		rl78_split_movsi (rtx *, machine_mode);
 int		rl78_force_nonfar_2 (rtx *, rtx (*gen)(rtx,rtx));
 int		rl78_force_nonfar_3 (rtx *, rtx (*gen)(rtx,rtx,rtx));
 void		rl78_expand_eh_epilogue (rtx);
 void		rl78_expand_epilogue (void);
 void		rl78_expand_prologue (void);
 int		rl78_far_p (rtx x);
-int		rl78_hard_regno_mode_ok (int, machine_mode);
-int		rl78_hard_regno_nregs (int, machine_mode);
 bool		rl78_hl_b_c_addr_p (rtx);
 int		rl78_initial_elimination_offset (int, int);
 bool		rl78_as_legitimate_address (machine_mode, rtx,

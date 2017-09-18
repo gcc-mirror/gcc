@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p9vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power9" } } */
-/* { dg-options "-mcpu=power9 -O3 -mupper-regs-df -mupper-regs-sf -funroll-loops" } */
+/* { dg-options "-mcpu=power9 -O3 -funroll-loops" } */
 
 /* derived from 20021120-1.c, compiled for -mcpu=power9.  */
 

@@ -752,10 +752,6 @@ gen_shrink_wrap_conditions (gcall *bi_call, vec<gimple *> conds,
   return;
 }
 
-
-/* Probability of the branch (to the call) is taken.  */
-#define ERR_PROB 0.01
-
 /* Shrink-wrap BI_CALL so that it is only called when one of the NCONDS
    conditions in CONDS is false.  */
 
@@ -916,14 +912,15 @@ shrink_wrap_one_built_in_call_with_conds (gcall *bi_call, vec <gimple *> conds,
       basic_block src_bb = call_edge->src;
       gcc_assert (src_bb == nocall_edge->src);
 
-      call_edge->probability = REG_BR_PROB_BASE * ERR_PROB;
+      call_edge->probability = profile_probability::very_unlikely ();
       call_edge->count
 	 = src_bb->count.apply_probability (call_edge->probability);
-      nocall_edge->probability = inverse_probability (call_edge->probability);
+      nocall_edge->probability = profile_probability::always ()
+				 - call_edge->probability;
       nocall_edge->count = src_bb->count - call_edge->count;
 
-      unsigned int call_frequency = apply_probability (src_bb->frequency,
-						       call_edge->probability);
+      unsigned int call_frequency
+	 = call_edge->probability.apply (src_bb->frequency);
 
       bi_call_bb->count += call_edge->count;
       bi_call_bb->frequency += call_frequency;
@@ -1022,6 +1019,7 @@ use_internal_fn (gcall *call)
     args.safe_push (gimple_call_arg (call, i));
   gcall *new_call = gimple_build_call_internal_vec (ifn, args);
   gimple_set_location (new_call, gimple_location (call));
+  gimple_call_set_nothrow (new_call, gimple_call_nothrow_p (call));
 
   /* Transfer the LHS to the new call.  */
   tree lhs = gimple_call_lhs (call);

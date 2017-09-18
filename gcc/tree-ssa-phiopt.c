@@ -374,7 +374,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
     {
       EDGE_SUCC (cond_block, 0)->flags |= EDGE_FALLTHRU;
       EDGE_SUCC (cond_block, 0)->flags &= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      EDGE_SUCC (cond_block, 0)->probability = REG_BR_PROB_BASE;
+      EDGE_SUCC (cond_block, 0)->probability = profile_probability::always ();
       EDGE_SUCC (cond_block, 0)->count += EDGE_SUCC (cond_block, 1)->count;
 
       block_to_remove = EDGE_SUCC (cond_block, 1)->dest;
@@ -384,7 +384,7 @@ replace_phi_edge_with_variable (basic_block cond_block,
       EDGE_SUCC (cond_block, 1)->flags |= EDGE_FALLTHRU;
       EDGE_SUCC (cond_block, 1)->flags
 	&= ~(EDGE_TRUE_VALUE | EDGE_FALSE_VALUE);
-      EDGE_SUCC (cond_block, 1)->probability = REG_BR_PROB_BASE;
+      EDGE_SUCC (cond_block, 1)->probability = profile_probability::always ();
       EDGE_SUCC (cond_block, 1)->count += EDGE_SUCC (cond_block, 0)->count;
 
       block_to_remove = EDGE_SUCC (cond_block, 0)->dest;
@@ -1017,7 +1017,7 @@ value_replacement (basic_block cond_bb, basic_block middle_bb,
   if (optimize_bb_for_speed_p (cond_bb)
       /* The special case is useless if it has a low probability.  */
       && profile_status_for_fn (cfun) != PROFILE_ABSENT
-      && EDGE_PRED (middle_bb, 0)->probability < PROB_EVEN
+      && EDGE_PRED (middle_bb, 0)->probability < profile_probability::even ()
       /* If assign is cheap, there is no point avoiding it.  */
       && estimate_num_insns (assign, &eni_time_weights)
 	 >= 3 * estimate_num_insns (cond, &eni_time_weights))

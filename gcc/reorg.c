@@ -840,7 +840,8 @@ mostly_true_jump (rtx jump_insn)
   rtx note = find_reg_note (jump_insn, REG_BR_PROB, 0);
   if (note)
     {
-      int prob = XINT (note, 0);
+      int prob = profile_probability::from_reg_br_prob_note (XINT (note, 0))
+			.to_reg_br_prob_base ();
 
       if (prob >= REG_BR_PROB_BASE * 9 / 10)
 	return 2;

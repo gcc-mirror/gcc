@@ -540,7 +540,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (struct loop *loop,
 static edge
 slpeel_add_loop_guard (basic_block guard_bb, tree cond,
 		       basic_block guard_to, basic_block dom_bb,
-		       int probability, bool irreducible_p)
+		       profile_probability probability, bool irreducible_p)
 {
   gimple_stmt_iterator gsi;
   edge new_e, enter_e;
@@ -571,7 +571,7 @@ slpeel_add_loop_guard (basic_block guard_bb, tree cond,
     new_e->flags |= EDGE_IRREDUCIBLE_LOOP;
 
   enter_e->count -= new_e->count;
-  enter_e->probability = inverse_probability (probability);
+  enter_e->probability = probability.invert ();
   set_immediate_dominator (CDI_DOMINATORS, guard_to, dom_bb);
 
   /* Split enter_e to preserve LOOPS_HAVE_PREHEADERS.  */
@@ -949,7 +949,6 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
 			     basic_block bb, int *bound)
 {
   struct data_reference *dr = LOOP_VINFO_UNALIGNED_DR (loop_vinfo);
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   tree var;
   tree niters_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
   gimple_seq stmts = NULL, new_stmts = NULL;
@@ -977,7 +976,7 @@ vect_gen_prolog_loop_niters (loop_vec_info loop_vinfo,
       tree offset = negative
 	  ? size_int (-TYPE_VECTOR_SUBPARTS (vectype) + 1) : size_zero_node;
       tree start_addr = vect_create_addr_base_for_vector_ref (dr_stmt,
-						&stmts, offset, loop);
+							      &stmts, offset);
       tree type = unsigned_type_for (TREE_TYPE (start_addr));
       tree vectype_align_minus_1 = build_int_cst (type, vectype_align - 1);
       HOST_WIDE_INT elem_size =
@@ -1660,7 +1659,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   edge e, guard_e;
   tree type = TREE_TYPE (niters), guard_cond;
   basic_block guard_bb, guard_to;
-  int prob_prolog, prob_vector, prob_epilog;
+  profile_probability prob_prolog, prob_vector, prob_epilog;
   int bound_prolog = 0, bound_scalar = 0, bound = 0;
   int vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   int prolog_peeling = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
@@ -1670,10 +1669,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
   if (!prolog_peeling && !epilog_peeling)
     return NULL;
 
-  prob_vector = 9 * REG_BR_PROB_BASE / 10;
+  prob_vector = profile_probability::guessed_always ().apply_scale (9, 10);
   if ((vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo)) == 2)
     vf = 3;
-  prob_prolog = prob_epilog = (vf - 1) * REG_BR_PROB_BASE / vf;
+  prob_prolog = prob_epilog = profile_probability::guessed_always ()
+			.apply_scale (vf - 1, vf);
   vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
 
   struct loop *prolog, *epilog = NULL, *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -1718,8 +1718,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	 separately.  Note in this case, the probability of epilog loop
 	 needs to be scaled back later.  */
       basic_block bb_before_loop = loop_preheader_edge (loop)->src;
-      scale_bbs_frequencies_int (&bb_before_loop, 1, prob_vector,
-				 REG_BR_PROB_BASE);
+      if (prob_vector.initialized_p ())
+      scale_bbs_frequencies (&bb_before_loop, 1, prob_vector);
       scale_loop_profile (loop, prob_vector, bound);
     }
 
@@ -1762,14 +1762,13 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (loop));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_prolog),
+					   prob_prolog.invert (),
 					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
 	  slpeel_update_phi_nodes_for_guard1 (prolog, loop, guard_e, e);
 
-	  scale_bbs_frequencies_int (&bb_after_prolog, 1, prob_prolog,
-				     REG_BR_PROB_BASE);
+	  scale_bbs_frequencies (&bb_after_prolog, 1, prob_prolog);
 	  scale_loop_profile (prolog, prob_prolog, bound_prolog);
 	}
       /* Update init address of DRs.  */
@@ -1834,7 +1833,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (loop_preheader_edge (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond,
 					   guard_to, guard_bb,
-					   inverse_probability (prob_vector),
+					   prob_vector.invert (),
 					   irred_flag);
 	  e = EDGE_PRED (guard_to, 0);
 	  e = (e != guard_e ? e : EDGE_PRED (guard_to, 1));
@@ -1845,9 +1844,15 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to->frequency = guard_bb->frequency;
 	  guard_to->count = guard_bb->count;
 	  single_succ_edge (guard_to)->count = guard_to->count;
-	  /* Scale probability of epilog loop back.  */
-	  int scale_up = REG_BR_PROB_BASE * REG_BR_PROB_BASE / prob_vector;
-	  scale_loop_frequencies (epilog, scale_up, REG_BR_PROB_BASE);
+	  /* Scale probability of epilog loop back.
+	     FIXME: We should avoid scaling down and back up.  Profile may
+	     get lost if we scale down to 0.  */
+	  int scale_up = REG_BR_PROB_BASE * REG_BR_PROB_BASE
+			 / prob_vector.to_reg_br_prob_base ();
+	  basic_block *bbs = get_loop_body (epilog);
+	  scale_bbs_frequencies_int (bbs, epilog->num_nodes, scale_up,
+				     REG_BR_PROB_BASE);
+	  free (bbs);
 	}
 
       basic_block bb_before_epilog = loop_preheader_edge (epilog)->src;
@@ -1875,7 +1880,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  guard_to = split_edge (single_exit (epilog));
 	  guard_e = slpeel_add_loop_guard (guard_bb, guard_cond, guard_to,
 					   skip_vector ? anchor : guard_bb,
-					   inverse_probability (prob_epilog),
+					   prob_epilog.invert (),
 					   irred_flag);
 	  slpeel_update_phi_nodes_for_guard2 (loop, epilog, guard_e,
 					      single_exit (epilog));
@@ -1883,11 +1888,9 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	     the guard_bb, which is the case when skip_vector is true.  */
 	  if (guard_bb != bb_before_epilog)
 	    {
-	      prob_epilog = (combine_probabilities (prob_vector, prob_epilog)
-			     + inverse_probability (prob_vector));
+	      prob_epilog = prob_vector * prob_epilog + prob_vector.invert ();
 
-	      scale_bbs_frequencies_int (&bb_before_epilog, 1, prob_epilog,
-					 REG_BR_PROB_BASE);
+	      scale_bbs_frequencies (&bb_before_epilog, 1, prob_epilog);
 	    }
 	  scale_loop_profile (epilog, prob_epilog, bound);
 	}
@@ -1941,6 +1944,19 @@ vect_create_cond_for_niters_checks (loop_vec_info loop_vinfo, tree *cond_expr)
     *cond_expr = part_cond_expr;
 }
 
+/* Set *COND_EXPR to a tree that is true when both the original *COND_EXPR
+   and PART_COND_EXPR are true.  Treat a null *COND_EXPR as "true".  */
+
+static void
+chain_cond_expr (tree *cond_expr, tree part_cond_expr)
+{
+  if (*cond_expr)
+    *cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+			      *cond_expr, part_cond_expr);
+  else
+    *cond_expr = part_cond_expr;
+}
+
 /* Function vect_create_cond_for_align_checks.
 
    Create a conditional expression that represents the alignment checks for
@@ -1971,7 +1987,6 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
                                    tree *cond_expr,
 				   gimple_seq *cond_expr_stmt_list)
 {
-  struct loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   vec<gimple *> may_misalign_stmts
     = LOOP_VINFO_MAY_MISALIGN_STMTS (loop_vinfo);
   gimple *ref_stmt;
@@ -2012,7 +2027,7 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
       /* create: addr_tmp = (int)(address_of_first_vector) */
       addr_base =
 	vect_create_addr_base_for_vector_ref (ref_stmt, &new_stmt_list,
-					      offset, loop);
+					      offset);
       if (new_stmt_list != NULL)
 	gimple_seq_add_seq (cond_expr_stmt_list, new_stmt_list);
 
@@ -2052,11 +2067,28 @@ vect_create_cond_for_align_checks (loop_vec_info loop_vinfo,
   ptrsize_zero = build_int_cst (int_ptrsize_type, 0);
   part_cond_expr = fold_build2 (EQ_EXPR, boolean_type_node,
 				and_tmp_name, ptrsize_zero);
-  if (*cond_expr)
-    *cond_expr = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-			      *cond_expr, part_cond_expr);
-  else
-    *cond_expr = part_cond_expr;
+  chain_cond_expr (cond_expr, part_cond_expr);
+}
+
+/* If LOOP_VINFO_CHECK_UNEQUAL_ADDRS contains <A1, B1>, ..., <An, Bn>,
+   create a tree representation of: (&A1 != &B1) && ... && (&An != &Bn).
+   Set *COND_EXPR to a tree that is true when both the original *COND_EXPR
+   and this new condition are true.  Treat a null *COND_EXPR as "true".  */
+
+static void
+vect_create_cond_for_unequal_addrs (loop_vec_info loop_vinfo, tree *cond_expr)
+{
+  vec<vec_object_pair> pairs = LOOP_VINFO_CHECK_UNEQUAL_ADDRS (loop_vinfo);
+  unsigned int i;
+  vec_object_pair *pair;
+  FOR_EACH_VEC_ELT (pairs, i, pair)
+    {
+      tree addr1 = build_fold_addr_expr (pair->first);
+      tree addr2 = build_fold_addr_expr (pair->second);
+      tree part_cond_expr = fold_build2 (NE_EXPR, boolean_type_node,
+					 addr1, addr2);
+      chain_cond_expr (cond_expr, part_cond_expr);
+    }
 }
 
 /* Function vect_create_cond_for_alias_checks.
@@ -2132,17 +2164,17 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
   tree cond_expr = NULL_TREE;
   gimple_seq cond_expr_stmt_list = NULL;
   tree arg;
-  unsigned prob = 4 * REG_BR_PROB_BASE / 5;
+  profile_probability prob = profile_probability::likely ();
   gimple_seq gimplify_stmt_list = NULL;
-  tree scalar_loop_iters = LOOP_VINFO_NITERS (loop_vinfo);
+  tree scalar_loop_iters = LOOP_VINFO_NITERSM1 (loop_vinfo);
   bool version_align = LOOP_REQUIRES_VERSIONING_FOR_ALIGNMENT (loop_vinfo);
   bool version_alias = LOOP_REQUIRES_VERSIONING_FOR_ALIAS (loop_vinfo);
   bool version_niter = LOOP_REQUIRES_VERSIONING_FOR_NITERS (loop_vinfo);
 
   if (check_profitability)
-    cond_expr = fold_build2 (GT_EXPR, boolean_type_node, scalar_loop_iters,
+    cond_expr = fold_build2 (GE_EXPR, boolean_type_node, scalar_loop_iters,
 			     build_int_cst (TREE_TYPE (scalar_loop_iters),
-						       th));
+					    th - 1));
 
   if (version_niter)
     vect_create_cond_for_niters_checks (loop_vinfo, &cond_expr);
@@ -2156,7 +2188,10 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
 				       &cond_expr_stmt_list);
 
   if (version_alias)
-    vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr);
+    {
+      vect_create_cond_for_unequal_addrs (loop_vinfo, &cond_expr);
+      vect_create_cond_for_alias_checks (loop_vinfo, &cond_expr);
+    }
 
   cond_expr = force_gimple_operand_1 (cond_expr, &gimplify_stmt_list,
 				      is_gimple_condexpr, NULL_TREE);
@@ -2171,9 +2206,8 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
       /* We don't want to scale SCALAR_LOOP's frequencies, we need to
 	 scale LOOP's frequencies instead.  */
       nloop = loop_version (scalar_loop, cond_expr, &condition_bb,
-			    prob, REG_BR_PROB_BASE - prob,
-			    REG_BR_PROB_BASE, REG_BR_PROB_BASE - prob, true);
-      scale_loop_frequencies (loop, prob, REG_BR_PROB_BASE);
+			    prob, prob.invert (), prob, prob.invert (), true);
+      scale_loop_frequencies (loop, prob);
       /* CONDITION_BB was created above SCALAR_LOOP's preheader,
 	 while we need to move it above LOOP's preheader.  */
       e = loop_preheader_edge (loop);
@@ -2200,8 +2234,7 @@ vect_loop_versioning (loop_vec_info loop_vinfo,
     }
   else
     nloop = loop_version (loop, cond_expr, &condition_bb,
-			  prob, REG_BR_PROB_BASE - prob,
-			  prob, REG_BR_PROB_BASE - prob, true);
+			  prob, prob.invert (), prob, prob.invert (), true);
 
   if (version_niter)
     {

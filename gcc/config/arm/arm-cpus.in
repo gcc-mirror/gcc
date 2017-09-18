@@ -46,6 +46,7 @@
 #   tune for <cpu>
 #   [tune flags <list>]
 #   base <name>
+#   [profile <A|R|M>]
 #   isa <isa-flags-list>
 # end arch <name>
 #
@@ -211,12 +212,14 @@ end arch armv6t2
 begin arch armv6-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6-m
 
 begin arch armv6s-m
  tune for cortex-m1
  base 6M
+ profile M
  isa ARMv6m
 end arch armv6s-m
 
@@ -235,6 +238,7 @@ begin arch armv7-a
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7a
 # fp => VFPv3-d16, simd => neon-vfpv3
  option fp	       add VFPv3 FP_DBL
@@ -257,6 +261,7 @@ begin arch armv7ve
  tune for cortex-a8
  tune flags CO_PROC
  base 7A
+ profile A
  isa ARMv7ve
 # fp => VFPv4-d16, simd => neon-vfpv4
  option vfpv3-d16      add VFPv3 FP_DBL
@@ -279,6 +284,7 @@ begin arch armv7-r
  tune for cortex-r4
  tune flags CO_PROC
  base 7R
+ profile R
  isa ARMv7r
 # ARMv7-r uses VFPv3-d16
  option fp.sp add VFPv3
@@ -294,6 +300,7 @@ begin arch armv7-m
  tune for cortex-m3
  tune flags CO_PROC
  base 7M
+ profile M
  isa ARMv7m
 # In theory FP is permitted in v7-m, but in practice no implementations exist.
 # leave it out for now.
@@ -303,6 +310,7 @@ begin arch armv7e-m
  tune for cortex-m4
  tune flags CO_PROC
  base 7EM
+ profile M
  isa ARMv7em
 # fp => VFPv4-sp-d16; fpv5 => FPv5-sp-d16; fp.dp => FPv5-d16
  option fp add VFPv4
@@ -317,6 +325,7 @@ begin arch armv8-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8a
  option crc add bit_crc32
  option simd add FP_ARMv8 NEON
@@ -329,6 +338,7 @@ begin arch armv8.1-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_1a
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
@@ -340,6 +350,7 @@ begin arch armv8.2-a
  tune for cortex-a53
  tune flags CO_PROC
  base 8A
+ profile A
  isa ARMv8_2a
  option simd add FP_ARMv8 NEON
  option fp16 add bit_fp16 FP_ARMv8 NEON
@@ -351,6 +362,7 @@ end arch armv8.2-a
 begin arch armv8-m.base
  tune for cortex-m23
  base 8M_BASE
+ profile M
  isa ARMv8m_base
 end arch armv8-m.base
 
@@ -358,6 +370,7 @@ begin arch armv8-m.main
  tune for cortex-m7
  tune flags CO_PROC
  base 8M_MAIN
+ profile M
  isa ARMv8m_main
  option dsp add bit_ARMv7em
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16
@@ -366,6 +379,22 @@ begin arch armv8-m.main
  option nofp remove ALL_FP
  option nodsp remove bit_ARMv7em
 end arch armv8-m.main
+
+begin arch armv8-r
+ tune for cortex-r52
+ tune flags CO_PROC
+ base 8R
+ profile R
+ isa ARMv8r
+ option crc add bit_crc32
+# fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
+# note: no fp option for fp-armv8 (d16) + double precision at the moment
+ option fp.sp add FPv5
+ option simd add FP_ARMv8 NEON
+ option crypto add FP_ARMv8 CRYPTO
+ option nocrypto remove ALL_CRYPTO
+ option nofp remove ALL_FP
+end arch armv8-r
 
 begin arch iwmmxt
  tune for iwmmxt
@@ -1193,7 +1222,6 @@ begin cpu xgene1
  costs xgene1
 end cpu xgene1
 
-
 # V8 A-profile big.LITTLE implementations
 begin cpu cortex-a57.cortex-a53
  cname cortexa57cortexa53
@@ -1236,6 +1264,40 @@ begin cpu cortex-a73.cortex-a53
 end cpu cortex-a73.cortex-a53
 
 
+# ARMv8.2 A-profile Architecture Processors
+begin cpu cortex-a55
+ cname cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ option nofp remove ALL_FP
+ costs cortex_a53
+end cpu cortex-a55
+
+begin cpu cortex-a75
+ cname cortexa75
+ tune for cortex-a57
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75
+
+
+# ARMv8.2 A-profile ARM DynamIQ big.LITTLE implementations
+begin cpu cortex-a75.cortex-a55
+ cname cortexa75cortexa55
+ tune for cortex-a53
+ tune flags LDSCHED
+ architecture armv8.2-a+fp16
+ fpu neon-fp-armv8
+ option crypto add FP_ARMv8 CRYPTO
+ costs cortex_a73
+end cpu cortex-a75.cortex-a55
+
 # V8 M-profile implementations.
 begin cpu cortex-m23
  cname cortexm23
@@ -1252,6 +1314,16 @@ begin cpu cortex-m33
  option nofp remove ALL_FP
  costs v7m
 end cpu cortex-m33
+
+# V8 R-profile implementations.
+begin cpu cortex-r52
+ cname cortexr52
+ tune flags LDSCHED
+ architecture armv8-r+crc+simd
+ fpu neon-fp-armv8
+ option nofp.dp remove FP_DBL ALL_SIMD
+ costs cortex
+end cpu cortex-r52
 
 # FPU entries
 # format:
@@ -1328,7 +1400,7 @@ begin fpu fpv5-d16
 end fpu fpv5-d16
 
 begin fpu fp-armv8
- isa FP_ARMv8 FP_D32
+ isa FP_ARMv8
 end fpu fp-armv8
 
 begin fpu neon-fp-armv8

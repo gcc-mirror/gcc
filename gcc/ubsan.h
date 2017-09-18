@@ -52,6 +52,7 @@ enum ubsan_encode_value_phase {
 extern bool ubsan_expand_bounds_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_null_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_objsize_ifn (gimple_stmt_iterator *);
+extern bool ubsan_expand_ptr_ifn (gimple_stmt_iterator *);
 extern bool ubsan_expand_vptr_ifn (gimple_stmt_iterator *);
 extern bool ubsan_instrument_unreachable (gimple_stmt_iterator *);
 extern tree ubsan_create_data (const char *, int, const location_t *, ...);

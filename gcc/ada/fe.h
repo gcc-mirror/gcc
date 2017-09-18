@@ -56,7 +56,9 @@ extern char Fold_Lower[], Fold_Upper[];
 
 /* debug: */
 
-#define Debug_Flag_NN debug__debug_flag_nn
+#define Debug_Flag_Dot_R	debug__debug_flag_dot_r
+#define Debug_Flag_NN		debug__debug_flag_nn
+extern Boolean Debug_Flag_Dot_R;
 extern Boolean Debug_Flag_NN;
 
 /* einfo: */
@@ -241,12 +243,6 @@ extern Entity_Id  First_Stored_Discriminant    (Entity_Id);
 extern Entity_Id  First_Subtype                (Entity_Id);
 extern Boolean    Is_By_Reference_Type         (Entity_Id);
 extern Boolean    Is_Derived_Type              (Entity_Id);
-
-/* sem_elim: */
-
-#define Eliminate_Error_Msg    sem_elim__eliminate_error_msg
-
-extern void Eliminate_Error_Msg (Node_Id, Entity_Id);
 
 /* sem_eval: */
 

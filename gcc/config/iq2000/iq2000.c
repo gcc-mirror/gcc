@@ -24,6 +24,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -163,6 +165,7 @@ static rtx iq2000_function_arg	      (cumulative_args_t,
 				       machine_mode, const_tree, bool);
 static void iq2000_function_arg_advance (cumulative_args_t,
 					 machine_mode, const_tree, bool);
+static pad_direction iq2000_function_arg_padding (machine_mode, const_tree);
 static unsigned int iq2000_function_arg_boundary (machine_mode,
 						  const_tree);
 static void iq2000_va_start	      (tree, rtx);
@@ -175,6 +178,8 @@ static rtx iq2000_libcall_value       (machine_mode, const_rtx);
 static void iq2000_print_operand      (FILE *, rtx, int);
 static void iq2000_print_operand_address (FILE *, machine_mode, rtx);
 static bool iq2000_print_operand_punct_valid_p (unsigned char code);
+static bool iq2000_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool iq2000_modes_tieable_p (machine_mode, machine_mode);
 
 #undef  TARGET_INIT_BUILTINS
 #define TARGET_INIT_BUILTINS 		iq2000_init_builtins
@@ -227,6 +232,8 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_FUNCTION_ARG		iq2000_function_arg
 #undef  TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE	iq2000_function_arg_advance
+#undef  TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING	iq2000_function_arg_padding
 #undef  TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY	iq2000_function_arg_boundary
 
@@ -251,6 +258,11 @@ static bool iq2000_print_operand_punct_valid_p (unsigned char code);
 #define TARGET_ASM_TRAMPOLINE_TEMPLATE	iq2000_asm_trampoline_template
 #undef  TARGET_TRAMPOLINE_INIT
 #define TARGET_TRAMPOLINE_INIT		iq2000_trampoline_init
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK	iq2000_hard_regno_mode_ok
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P		iq2000_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -622,17 +634,17 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 		{
 		default:
 		  break;
-		case SFmode:
+		case E_SFmode:
 		  ret = "lw\t%0,%1";
 		  break;
-		case SImode:
-		case CCmode:
+		case E_SImode:
+		case E_CCmode:
 		  ret = "lw\t%0,%1";
 		  break;
-		case HImode:
+		case E_HImode:
 		  ret = (unsignedp) ? "lhu\t%0,%1" : "lh\t%0,%1";
 		  break;
-		case QImode:
+		case E_QImode:
 		  ret = (unsignedp) ? "lbu\t%0,%1" : "lb\t%0,%1";
 		  break;
 		}
@@ -732,10 +744,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	    {
 	      switch (mode)
 		{
-		case SFmode: ret = "sw\t%1,%0"; break;
-		case SImode: ret = "sw\t%1,%0"; break;
-		case HImode: ret = "sh\t%1,%0"; break;
-		case QImode: ret = "sb\t%1,%0"; break;
+		case E_SFmode: ret = "sw\t%1,%0"; break;
+		case E_SImode: ret = "sw\t%1,%0"; break;
+		case E_HImode: ret = "sh\t%1,%0"; break;
+		case E_QImode: ret = "sb\t%1,%0"; break;
 		default: break;
 		}
 	    }
@@ -745,10 +757,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	{
 	  switch (mode)
 	    {
-	    case SFmode: ret = "sw\t%z1,%0"; break;
-	    case SImode: ret = "sw\t%z1,%0"; break;
-	    case HImode: ret = "sh\t%z1,%0"; break;
-	    case QImode: ret = "sb\t%z1,%0"; break;
+	    case E_SFmode: ret = "sw\t%z1,%0"; break;
+	    case E_SImode: ret = "sw\t%z1,%0"; break;
+	    case E_HImode: ret = "sh\t%z1,%0"; break;
+	    case E_QImode: ret = "sb\t%z1,%0"; break;
 	    default: break;
 	    }
 	}
@@ -757,10 +769,10 @@ iq2000_move_1word (rtx operands[], rtx_insn *insn, int unsignedp)
 	{
 	  switch (mode)
 	    {
-	    case SFmode: ret = "sw\t%.,%0"; break;
-	    case SImode: ret = "sw\t%.,%0"; break;
-	    case HImode: ret = "sh\t%.,%0"; break;
-	    case QImode: ret = "sb\t%.,%0"; break;
+	    case E_SFmode: ret = "sw\t%.,%0"; break;
+	    case E_SImode: ret = "sw\t%.,%0"; break;
+	    case E_HImode: ret = "sh\t%.,%0"; break;
+	    case E_QImode: ret = "sb\t%.,%0"; break;
 	    default: break;
 	    }
 	}
@@ -1150,7 +1162,7 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
   cum->arg_number++;
   switch (mode)
     {
-    case VOIDmode:
+    case E_VOIDmode:
       break;
 
     default:
@@ -1162,37 +1174,37 @@ iq2000_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 			 / UNITS_PER_WORD);
       break;
 
-    case BLKmode:
+    case E_BLKmode:
       cum->gp_reg_found = 1;
       cum->arg_words += ((int_size_in_bytes (type) + UNITS_PER_WORD - 1)
 			 / UNITS_PER_WORD);
       break;
 
-    case SFmode:
+    case E_SFmode:
       cum->arg_words ++;
       if (! cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 1 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DFmode:
+    case E_DFmode:
       cum->arg_words += 2;
       if (! cum->gp_reg_found && cum->arg_number <= 2)
 	cum->fp_code += 2 << ((cum->arg_number - 1) * 2);
       break;
 
-    case DImode:
+    case E_DImode:
       cum->gp_reg_found = 1;
       cum->arg_words += 2;
       break;
 
-    case TImode:
+    case E_TImode:
       cum->gp_reg_found = 1;
       cum->arg_words += 4;
       break;
 
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       cum->gp_reg_found = 1;
       cum->arg_words ++;
       break;
@@ -1230,11 +1242,11 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
   cum->last_arg_fp = 0;
   switch (mode)
     {
-    case SFmode:
+    case E_SFmode:
       regbase = GP_ARG_FIRST;
       break;
 
-    case DFmode:
+    case E_DFmode:
       cum->arg_words += cum->arg_words & 1;
 
       regbase = GP_ARG_FIRST;
@@ -1245,25 +1257,25 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
 		  || GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT);
 
       /* FALLTHRU */
-    case BLKmode:
+    case E_BLKmode:
       if (type != NULL_TREE && TYPE_ALIGN (type) > (unsigned) BITS_PER_WORD)
 	cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
       break;
 
-    case VOIDmode:
-    case QImode:
-    case HImode:
-    case SImode:
+    case E_VOIDmode:
+    case E_QImode:
+    case E_HImode:
+    case E_SImode:
       regbase = GP_ARG_FIRST;
       break;
 
-    case DImode:
+    case E_DImode:
       cum->arg_words += (cum->arg_words & 1);
       regbase = GP_ARG_FIRST;
       break;
 
-    case TImode:
+    case E_TImode:
       cum->arg_words += (cum->arg_words & 3);
       regbase = GP_ARG_FIRST;
       break;
@@ -1365,6 +1377,22 @@ iq2000_function_arg (cumulative_args_t cum_v, machine_mode mode,
     }
 
   return ret;
+}
+
+/* Implement TARGET_FUNCTION_ARG_PADDING.  */
+
+static pad_direction
+iq2000_function_arg_padding (machine_mode mode, const_tree type)
+{
+  return (! BYTES_BIG_ENDIAN
+	  ? PAD_UPWARD
+	  : ((mode == BLKmode
+	      ? (type
+		 && TREE_CODE (TYPE_SIZE (type)) == INTEGER_CST
+		 && int_size_in_bytes (type) < (PARM_BOUNDARY / BITS_PER_UNIT))
+	      : (GET_MODE_BITSIZE (mode) < PARM_BOUNDARY
+		 && GET_MODE_CLASS (mode) == MODE_INT))
+	     ? PAD_DOWNWARD : PAD_UPWARD));
 }
 
 static unsigned int
@@ -3481,6 +3509,27 @@ iq2000_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
   mem = adjust_address (m_tramp, Pmode,
 			TRAMPOLINE_CODE_SIZE + GET_MODE_SIZE (Pmode));
   emit_move_insn (mem, chain_value);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+iq2000_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (REGNO_REG_CLASS (regno) == GR_REGS
+	  ? (regno & 1) == 0 || GET_MODE_SIZE (mode) <= 4
+	  : (regno & 1) == 0 || GET_MODE_SIZE (mode) == 4);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+iq2000_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
 }
 
 #include "gt-iq2000.h"

@@ -176,12 +176,12 @@
 
 (define_insn_reservation "load1_op" 2
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "load_byte,load1"))
+      (eq_attr "type" "load_byte,load_4"))
  "a_e+l_e,l_m,a_w+l_w")
 
 (define_insn_reservation "store1_op" 0
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "store1"))
+      (eq_attr "type" "store_4"))
  "a_e+l_e,l_m,a_w+l_w")
 
 ;; A load's result can be stored by an immediately following store
@@ -206,22 +206,22 @@
 
 (define_insn_reservation "load2_op" 2
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "load2"))
+      (eq_attr "type" "load_8"))
  "a_e+l_e,l_m,a_w+l_w")
 
 (define_insn_reservation "store2_op" 0
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "store2"))
+      (eq_attr "type" "store_8"))
  "a_e+l_e,l_m,a_w+l_w")
 
 (define_insn_reservation "load34_op" 3
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "load3,load4"))
+      (eq_attr "type" "load_12,load_16"))
  "a_e+l_e,a_e+l_e+l_m,a_e+l_m,a_w+l_w")
 
 (define_insn_reservation "store34_op" 0
  (and (eq_attr "tune" "arm1026ejs")
-      (eq_attr "type" "store3,store4"))
+      (eq_attr "type" "store_12,store_16"))
  "a_e+l_e,a_e+l_e+l_m,a_e+l_m,a_w+l_w")
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;

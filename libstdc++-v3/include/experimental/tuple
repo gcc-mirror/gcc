@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <tuple>
 #include <bits/invoke.h>
@@ -41,12 +39,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v1
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   // See C++14 §20.4.2.5, tuple helper classes
   template <typename _Tp>
     constexpr size_t tuple_size_v = tuple_size<_Tp>::value;
@@ -71,10 +69,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 					std::forward<_Tuple>(__t),
 					_Indices{});
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v1
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

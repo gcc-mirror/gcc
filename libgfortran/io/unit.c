@@ -94,16 +94,6 @@ static void newunit_free (int);
 /* Unit numbers assigned with NEWUNIT start from here.  */
 #define NEWUNIT_START -10
 
-
-#define NEWUNIT_STACK_SIZE 16
-
-/* A stack to save previously used newunit-assigned unit numbers to
-   allow them to be reused without reallocating the gfc_unit structure
-   which is still in the treap.  */
-static gfc_saved_unit newunit_stack[NEWUNIT_STACK_SIZE];
-static int newunit_tos = 0; /* Index to Top of Stack.  */
-
-
 #define CACHE_SIZE 3
 static gfc_unit *unit_cache[CACHE_SIZE];
 gfc_offset max_offset;
@@ -538,22 +528,6 @@ set_internal_unit (st_parameter_dt *dtp, gfc_unit *iunit, int kind)
 }
 
 
-/* stash_internal_unit()-- Push the internal unit number onto the
-   avaialble stack.  */
-void
-stash_internal_unit (st_parameter_dt *dtp)
-{
-  __gthread_mutex_lock (&unit_lock);
-  newunit_tos++;
-  if (newunit_tos >= NEWUNIT_STACK_SIZE)
-    internal_error (&dtp->common, "stash_internal_unit(): Stack Size Exceeded");
-  newunit_stack[newunit_tos].unit_number = dtp->common.unit;
-  newunit_stack[newunit_tos].unit = dtp->u.p.current_unit;
-  __gthread_mutex_unlock (&unit_lock);
-}
-
-
-
 /* get_unit()-- Returns the unit structure associated with the integer
    unit or the internal file.  */
 
@@ -572,41 +546,11 @@ get_unit (st_parameter_dt *dtp, int do_create)
       else
 	internal_error (&dtp->common, "get_unit(): Bad internal unit KIND");
 
-      if ((dtp->common.flags & IOPARM_DT_HAS_UDTIO) != 0)
-	{
-	  dtp->u.p.unit_is_internal = 1;
-	  dtp->common.unit = newunit_alloc ();
-	  unit = get_gfc_unit (dtp->common.unit, do_create);
-	  set_internal_unit (dtp, unit, kind);
-	  fbuf_init (unit, 128);
-	  return unit;
-	}
-      else
-	{
-	  if (newunit_tos)
-	    {
-	      dtp->common.unit = newunit_stack[newunit_tos].unit_number;
-	      unit = newunit_stack[newunit_tos--].unit;
-	      unit->fbuf->act = unit->fbuf->pos = 0;
-	    }
-	  else
-	    {
-	      dtp->common.unit = newunit_alloc ();
-	      unit = xcalloc (1, sizeof (gfc_unit));
-	      fbuf_init (unit, 128);
-	    }
-	  set_internal_unit (dtp, unit, kind);
-	  return unit;
-	}
-    }
-
-  /* If an internal unit number is passed from the parent to the child
-     it should have been stashed on the newunit_stack ready to be used.
-     Check for it now and return the internal unit if found.  */
-  if (newunit_tos && (dtp->common.unit <= NEWUNIT_START)
-      && (dtp->common.unit == newunit_stack[newunit_tos].unit_number))
-    {
-      unit = newunit_stack[newunit_tos--].unit;
+      dtp->u.p.unit_is_internal = 1;
+      dtp->common.unit = newunit_alloc ();
+      unit = get_gfc_unit (dtp->common.unit, do_create);
+      set_internal_unit (dtp, unit, kind);
+      fbuf_init (unit, 128);
       return unit;
     }
 
@@ -746,10 +690,6 @@ init_units (void)
   max_offset = 0;
   for (i = 0; i < sizeof (max_offset) * 8 - 1; i++)
     max_offset = max_offset + ((gfc_offset) 1 << i);
-
-  /* Initialize the newunit stack.  */
-  memset (newunit_stack, 0, NEWUNIT_STACK_SIZE * sizeof(gfc_saved_unit));
-  newunit_tos = 0;
 }
 
 
@@ -830,14 +770,6 @@ close_units (void)
   while (unit_root != NULL)
     close_unit_1 (unit_root, 1);
   __gthread_mutex_unlock (&unit_lock);
-
-  while (newunit_tos != 0)
-    if (newunit_stack[newunit_tos].unit)
-      {
-	fbuf_destroy (newunit_stack[newunit_tos].unit);
-	free (newunit_stack[newunit_tos].unit->s);
-	free (newunit_stack[newunit_tos--].unit);
-      }
 
   free (newunits);
 

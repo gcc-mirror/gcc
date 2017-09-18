@@ -542,10 +542,10 @@ should_warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 
 /* Return the string identifier corresponding to the given guard token.  */
 
-static const char *
-guard_tinfo_to_string (const token_indent_info &guard_tinfo)
+const char *
+guard_tinfo_to_string (enum rid keyword)
 {
-  switch (guard_tinfo.keyword)
+  switch (keyword)
     {
     case RID_FOR:
       return "for";
@@ -557,6 +557,8 @@ guard_tinfo_to_string (const token_indent_info &guard_tinfo)
       return "while";
     case RID_DO:
       return "do";
+    case RID_SWITCH:
+      return "switch";
     default:
       gcc_unreachable ();
     }
@@ -605,10 +607,10 @@ warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
     {
       if (warning_at (guard_tinfo.location, OPT_Wmisleading_indentation,
 		      "this %qs clause does not guard...",
-		      guard_tinfo_to_string (guard_tinfo)))
+		      guard_tinfo_to_string (guard_tinfo.keyword)))
 	inform (next_tinfo.location,
 		"...this statement, but the latter is misleadingly indented"
 		" as if it were guarded by the %qs",
-		guard_tinfo_to_string (guard_tinfo));
+		guard_tinfo_to_string (guard_tinfo.keyword));
     }
 }

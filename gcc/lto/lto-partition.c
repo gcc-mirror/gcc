@@ -506,7 +506,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
   /* Collect all variables that should not be reordered.  */
   FOR_EACH_VARIABLE (vnode)
     if (vnode->get_partitioning_class () == SYMBOL_PARTITION
-	&& (!flag_toplevel_reorder || vnode->no_reorder))
+	&& vnode->no_reorder)
       varpool_order.safe_push (vnode);
   n_varpool_nodes = varpool_order.length ();
   varpool_order.qsort (varpool_node_cmp);
@@ -547,7 +547,8 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 	}
       add_sorted_nodes (next_nodes, partition);
 
-      add_symbol_to_partition (partition, order[i]);
+      if (!symbol_partitioned_p (order[i]))
+        add_symbol_to_partition (partition, order[i]);
       if (!order[i]->alias)
         total_size -= ipa_fn_summaries->get (order[i])->size;
 	  
@@ -634,7 +635,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		vnode = dyn_cast <varpool_node *> (ref->referred);
 		if (!vnode->definition)
 		  continue;
-		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
+		if (!symbol_partitioned_p (vnode)
 		    && !vnode->no_reorder
 		    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
 		  add_symbol_to_partition (partition, vnode);
@@ -672,7 +673,7 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
 		   because it allows them to be removed.  Coupling
 		   with objects they refer to only helps to reduce
 		   number of symbols promoted to hidden.  */
-		if (!symbol_partitioned_p (vnode) && flag_toplevel_reorder
+		if (!symbol_partitioned_p (vnode)
 		    && !vnode->no_reorder
 		    && !vnode->can_remove_if_no_refs_p ()
 		    && vnode->get_partitioning_class () == SYMBOL_PARTITION)
@@ -767,14 +768,10 @@ lto_balanced_map (int n_lto_partitions, int max_partition_size)
   next_nodes.truncate (0);
 
   /* Varables that are not reachable from the code go into last partition.  */
-  if (flag_toplevel_reorder)
-    {
-      FOR_EACH_VARIABLE (vnode)
-	if (vnode->get_partitioning_class () == SYMBOL_PARTITION
-	    && !symbol_partitioned_p (vnode)
-	    && !vnode->no_reorder)
-	  next_nodes.safe_push (vnode);
-    }
+  FOR_EACH_VARIABLE (vnode)
+    if (vnode->get_partitioning_class () == SYMBOL_PARTITION
+	&& !symbol_partitioned_p (vnode))
+      next_nodes.safe_push (vnode);
 
   /* Output remaining ordered symbols.  */
   while (varpool_pos < n_varpool_nodes)

@@ -1,3 +1,102 @@
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	PR demangler/82195
+	* cp-demangle.c (d_name): Add 'toplevel' parm.  Pass to	...
+	(d_local_name): ... here.  Parse trailing function args on nested
+	local_name.
+	(d_encoding, d_special_name, d_class_enum_type): Adjust d_name calls.
+	* testsuite/demangle-expected: Add tests.
+
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Iterate marking dependent sections necessary.
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* cp-demangle.c (is_fnqual_component_type): Reimplement using
+	FNQUAL_COMPONENT_CASE.
+	(d_encoding): Hold bare_function_type in local var.
+	(d_local_name): Build name in both cases and build result once.
+	Collapse switch-if to single conditional.
+	(d_local_name): 
+
+	* testsuite/demangle-expected: Realign blank lines with tests.
+
+2017-09-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* dwarfnames.c (DW_CFA_DUP): New define.
+
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_sections):
+	Remove duplicite declaration.
+
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Keep names of removed global symbols.
+
+2017-08-29  Tony Reix  <tony.reix@atos.net>
+
+	* simple-object-xcoff.c (simple_object_xcoff_find_sections):
+	Improve .go_export csect handling.  Don't make assumptions
+	on containing section or number of auxiliary entries.
+
+2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81968
+	* simple-object-elf.c (simple_object_elf_copy_lto_debug_section):
+	Adjust field with for sh_type write, set SHF_EXCLUDE only for
+	removed sections.
+
+2017-08-22  Richard Biener  <rguenther@suse.de>
+
+	PR lto/81925
+	* simple-object-elf.c (simple_object_elf_write_shdr): Adjust
+	type of sh_addralign and sh_entsize and properly write
+	sh_entsize as Elf_Addr.
+	(simple_object_elf_write_to_file): Read sh_entsize as Elf_Addr.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+	* simple-object-common.h (struct simple_object_functions): Add
+	copy_lto_debug_sections hook.
+	* simple-object.c: Include fcntl.h.
+	(handle_lto_debug_sections): New helper function.
+	(simple_object_copy_lto_debug_sections): New function copying
+	early LTO debug sections to regular debug sections in a new file.
+	(simple_object_start_write): Handle NULL segment_name.
+	* simple-object-coff.c (simple_object_coff_functions): Adjust
+	for not implemented copy_lto_debug_sections hook.
+	* simple-object-mach-o.c (simple_object_mach_o_functions): Likewise.
+	* simple-object-xcoff.c (simple_object_xcoff_functions): Likewise.
+	* simple-object-elf.c (SHT_NULL, SHT_SYMTAB, SHT_RELA, SHT_REL,
+	SHT_GROUP): Add various sectopn header types.
+	(SHF_EXCLUDE): Add flag.
+	(Elf32_External_Sym, Elf64_External_Sym): Add symbol struct.
+	(ELF_ST_BIND, ELF_ST_TYPE, ELF_ST_INFO): Add accessors.
+	(STT_OBJECT, STT_FUNC, STT_TLS, STT_GNU_IFUNC): Add Symbol types.
+	(STV_DEFAULT): Add symbol visibility.
+	(SHN_COMMON): Add special section index name.
+	(struct simple_object_elf_write): New.
+	(simple_object_elf_start_write): Adjust for new private data.
+	(simple_object_elf_write_shdr): Pass in values for all fields
+	we write.
+	(simple_object_elf_write_to_file): Adjust.  Copy from recorded
+	section headers if requested.
+	(simple_object_elf_release_write): Release private data.
+	(simple_object_elf_copy_lto_debug_sections): Copy and rename sections
+	as denoted by PFN and all their dependences, symbols and relocations
+	to the empty destination file.
+	(simple_object_elf_functions): Adjust for copy_lto_debug_sections hook.
+
+2017-07-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
+
+	* dwarfnames.c (DW_FIRST_IDX, DW_END_IDX, DW_IDX, DW_IDX_DUP): New.
+
 2017-06-07  Tony Reix  <tony.reix@atos.net>
 	    Matthieu Sarter  <matthieu.sarter.external@atos.net>
 	    David Edelsohn  <dje.gcc@gmail.com>

@@ -275,7 +275,7 @@ function var_ref(name, flags)
 		return "offsetof (struct gcc_options, x_target_flags)"
 	if (opt_args("InverseMask", flags) != "")
 		return "offsetof (struct gcc_options, x_target_flags)"
-	return "-1"
+	return "(unsigned short) -1"
 }
 
 # Given the option called NAME return a sanitized version of its name.
@@ -312,6 +312,19 @@ function search_var_name(name, opt_numbers, opts, flags, n_opts)
         }
     }
     return ""
+}
+
+function integer_range_info(range_option, init, option)
+{
+    if (range_option != "") {
+	start = nth_arg(0, range_option);
+	end = nth_arg(1, range_option);
+	if (init != "" && init != "-1" && (init < start || init > end))
+	  print "#error initial value " init " of '" option "' must be in range [" start "," end "]"
+	return start ", " end
+    }
+    else
+        return "-1, -1"
 }
 
 # Handle LangEnabledBy(ENABLED_BY_LANGS, ENABLEDBY_NAME, ENABLEDBY_POSARG,

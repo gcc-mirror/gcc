@@ -1,5 +1,5 @@
 /* { dg-do compile { target { powerpc*-*-* && lp64 } } } */
-/* { dg-options "-O1 -mcpu=power8 -mlra" } */
+/* { dg-options "-O1 -mcpu=power8" } */
 
 typedef __int128_t __attribute__((__vector_size__(16))) vector_128_t;
 typedef unsigned long long scalar_64_t;

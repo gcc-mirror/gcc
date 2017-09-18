@@ -196,10 +196,6 @@ extern tree arm_fp16_type_node;
 /* FPU supports fused-multiply-add operations.  */
 #define TARGET_FMA (bitmap_bit_p (arm_active_target.isa, isa_bit_VFPv4))
 
-/* FPU is ARMv8 compatible.  */
-#define TARGET_FPU_ARMV8					\
-  (bitmap_bit_p (arm_active_target.isa, isa_bit_FP_ARMv8))
-
 /* FPU supports Crypto extensions.  */
 #define TARGET_CRYPTO (bitmap_bit_p (arm_active_target.isa, isa_bit_crypto))
 
@@ -216,7 +212,7 @@ extern tree arm_fp16_type_node;
 
 /* FPU supports the floating point FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_VFP_FP16INST \
-  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_FPU_ARMV8 && arm_fp16_inst)
+  (TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP5 && arm_fp16_inst)
 
 /* FPU supports the AdvSIMD FP16 instructions for ARMv8.2 and later.  */
 #define TARGET_NEON_FP16INST (TARGET_VFP_FP16INST && TARGET_NEON_RDMA)
@@ -384,7 +380,8 @@ enum base_architecture
   BASE_ARCH_7EM = 7,
   BASE_ARCH_8A = 8,
   BASE_ARCH_8M_BASE = 8,
-  BASE_ARCH_8M_MAIN = 8
+  BASE_ARCH_8M_MAIN = 8,
+  BASE_ARCH_8R = 8
 };
 
 /* The major revision number of the ARM Architecture implemented by the target.  */
@@ -979,26 +976,6 @@ extern int arm_arch_cmse;
 #define SUBTARGET_FRAME_POINTER_REQUIRED 0
 #endif
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   On the ARM core regs are UNITS_PER_WORD bits wide.  */
-#define HARD_REGNO_NREGS(REGNO, MODE)  	\
-  ((TARGET_32BIT			\
-    && REGNO > PC_REGNUM		\
-    && REGNO != FRAME_POINTER_REGNUM	\
-    && REGNO != ARG_POINTER_REGNUM)	\
-    && !IS_VFP_REGNUM (REGNO)		\
-   ? 1 : ARM_NUM_REGS (MODE))
-
-/* Return true if REGNO is suitable for holding a quantity of type MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  arm_hard_regno_mode_ok ((REGNO), (MODE))
-
-#define MODES_TIEABLE_P(MODE1, MODE2) arm_modes_tieable_p (MODE1, MODE2)
-
 #define VALID_IWMMXT_REG_MODE(MODE) \
  (arm_vector_mode_supported_p (MODE) || (MODE) == DImode)
 
@@ -1175,23 +1152,6 @@ enum reg_class
    or could index an array.  */
 #define REGNO_REG_CLASS(REGNO)  arm_regno_class (REGNO)
 
-/* In VFPv1, VFP registers could only be accessed in the mode they
-   were set, so subregs would be invalid there.  However, we don't
-   support VFPv1 at the moment, and the restriction was lifted in
-   VFPv2.
-   In big-endian mode, modes greater than word size (i.e. DFmode) are stored in
-   VFP registers in little-endian order.  We can't describe that accurately to
-   GCC, so avoid taking subregs of such values.
-   The only exception is going from a 128-bit to a 64-bit type.  In that case
-   the data layout happens to be consistent for big-endian, so we explicitly allow
-   that case.  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (TARGET_BIG_END						\
-   && !(GET_MODE_SIZE (FROM) == 16 && GET_MODE_SIZE (TO) == 8)	\
-   && (GET_MODE_SIZE (FROM) > UNITS_PER_WORD			\
-       || GET_MODE_SIZE (TO) > UNITS_PER_WORD)			\
-   && reg_classes_intersect_p (VFP_REGS, (CLASS)))
-
 /* The class value for index registers, and the one for base regs.  */
 #define INDEX_REG_CLASS  (TARGET_THUMB1 ? LO_REGS : GENERAL_REGS)
 #define BASE_REG_CLASS   (TARGET_THUMB1 ? LO_REGS : CORE_REGS)
@@ -1220,7 +1180,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : ((CLASS) != LO_REGS && (CLASS) != BASE_REGS			\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS))
 
@@ -1228,7 +1188,7 @@ enum reg_class
   (lra_in_progress ? NO_REGS						\
    : (CLASS) != LO_REGS && (CLASS) != BASE_REGS				\
       ? ((true_regnum (X) == -1 ? LO_REGS				\
-         : (true_regnum (X) + HARD_REGNO_NREGS (0, MODE) > 8) ? LO_REGS	\
+         : (true_regnum (X) + hard_regno_nregs (0, MODE) > 8) ? LO_REGS	\
          : NO_REGS)) 							\
       : NO_REGS)
 
@@ -1489,11 +1449,8 @@ typedef struct
 } CUMULATIVE_ARGS;
 #endif
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (arm_pad_arg_upward (MODE, TYPE) ? upward : downward)
-
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? upward : downward)
+  (arm_pad_reg_upward (MODE, TYPE, FIRST) ? PAD_UPWARD : PAD_DOWNWARD)
 
 /* For AAPCS, padding should never be below the argument. For other ABIs,
  * mimic the default.  */
@@ -1929,8 +1886,6 @@ enum arm_auto_incmodes
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 0
 
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 1
-
 /* Immediate shift counts are truncated by the output routines (or was it
    the assembler?).  Shift counts in a register are truncated by ARM.  Note
    that the native compiler puts too large (> 32) immediate shift counts
@@ -1941,9 +1896,6 @@ enum arm_auto_incmodes
    On the arm, Y in a register is used modulo 256 for the shift. Only for
    rotates is modulo 32 used.  */
 /* #define SHIFT_COUNT_TRUNCATED 1 */
-
-/* All integers have the same format so truncation is easy.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 /* Calling from registers is a massive pain.  */
 #define NO_FUNCTION_CSE 1
@@ -2189,13 +2141,7 @@ extern int making_const_table;
 /* Expands to an upper-case char of the target's architectural
    profile.  */
 #define TARGET_ARM_ARCH_PROFILE				\
-  (!arm_arch_notm					\
-    ? 'M'						\
-    : (arm_arch7					\
-      ? (strlen (arm_arch_name) >=3			\
-	? (arm_arch_name[strlen (arm_arch_name) - 3])	\
-      	: 0)						\
-      : 0))
+  (arm_active_target.profile)
 
 /* Bit-field indicating what size LDREX/STREX loads/stores are available.
    Bit 0 for bytes, up to bit 3 for double-words.  */
@@ -2263,11 +2209,16 @@ const char *arm_canon_arch_option (int argc, const char **argv);
 #define CANON_ARCH_SPEC_FUNCTION		\
   { "canon_arch", arm_canon_arch_option },
 
+const char *arm_be8_option (int argc, const char **argv);
+#define BE8_SPEC_FUNCTION			\
+  { "be8_linkopt", arm_be8_option },
+
 # define EXTRA_SPEC_FUNCTIONS			\
   MCPU_MTUNE_NATIVE_FUNCTIONS			\
   ASM_CPU_SPEC_FUNCTIONS			\
   CANON_ARCH_SPEC_FUNCTION			\
-  TARGET_MODE_SPEC_FUNCTIONS
+  TARGET_MODE_SPEC_FUNCTIONS			\
+  BE8_SPEC_FUNCTION
 
 /* Automatically add -mthumb for Thumb-only targets if mode isn't specified
    via the configuration option --with-mode or via the command line. The

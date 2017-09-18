@@ -11,6 +11,17 @@ package time
 
 import "errors"
 
+// maxFileSize is the max permitted size of files read by readFile.
+// As reference, the zoneinfo.zip distributed by Go is ~350 KB,
+// so 10MB is overkill.
+const maxFileSize = 10 << 20
+
+type fileSizeError string
+
+func (f fileSizeError) Error() string {
+	return "time: file " + string(f) + " is too large"
+}
+
 // Copies of io.Seek* constants to avoid importing "io":
 const (
 	seekStart   = 0
@@ -188,7 +199,7 @@ func loadZoneData(bytes []byte) (l *Location, err error) {
 
 	// Fill in the cache with information about right now,
 	// since that will be the most common lookup.
-	sec, _ := now()
+	sec, _, _ := now()
 	for i := range tx {
 		if tx[i].when <= sec && (i+1 == len(tx) || sec < tx[i+1].when) {
 			l.cacheStart = tx[i].when

@@ -28,10 +28,6 @@ along with GCC; see the file COPYING3.  If not see
 extern void init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
 #endif
 extern unsigned long sparc_type_code (tree);
-#ifdef ARGS_SIZE_RTX
-/* expr.h defines ARGS_SIZE_RTX and `enum direction' */
-extern enum direction function_arg_padding (machine_mode, const_tree);
-#endif /* ARGS_SIZE_RTX */
 #endif /* TREE_CODE */
 
 extern void order_regs_for_local_alloc (void);
@@ -111,7 +107,6 @@ extern void sparc_expand_vec_perm_bmask(machine_mode, rtx);
 extern bool sparc_expand_conditional_move (machine_mode, rtx *);
 extern void sparc_expand_vcond (machine_mode, rtx *, int, int);
 unsigned int sparc_regmode_natural_size (machine_mode);
-bool sparc_modes_tieable_p (machine_mode, machine_mode);
 #endif /* RTX_CODE */
 
 extern rtl_opt_pass *make_pass_work_around_errata (gcc::context *);

@@ -44,7 +44,7 @@ extern void brig_parse_input_files (const char **, unsigned int,
 extern void brig_write_globals (void);
 
 extern tree brig_type_for_size (unsigned int bits, int unsignedp);
-extern tree brig_type_for_mode (enum machine_mode, int unsignedp);
+extern tree brig_type_for_mode (machine_mode, int unsignedp);
 
 /* Functions defined in the GCC interface called by the Brig frontend
    proper.  */

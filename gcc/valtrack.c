@@ -701,7 +701,7 @@ dead_debug_insert_temp (struct dead_debug_local *debug, unsigned int uregno,
 	     the debug temp to.  */
 	  else if (REGNO (reg) < FIRST_PSEUDO_REGISTER
 		   && (REG_NREGS (reg)
-		       != hard_regno_nregs[REGNO (reg)][GET_MODE (dest)]))
+		       != hard_regno_nregs (REGNO (reg), GET_MODE (dest))))
 	    breg = NULL;
 	  /* Yay, we can use SRC, just adjust its mode.  */
 	  else

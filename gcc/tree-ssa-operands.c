@@ -1139,7 +1139,7 @@ DEBUG_FUNCTION bool
 verify_imm_links (FILE *f, tree var)
 {
   use_operand_p ptr, prev, list;
-  int count;
+  unsigned int count;
 
   gcc_assert (TREE_CODE (var) == SSA_NAME);
 
@@ -1157,20 +1157,31 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->next; ptr != list; )
     {
       if (prev != ptr->prev)
-	goto error;
+	{
+	  fprintf (f, "prev != ptr->prev\n");
+	  goto error;
+	}
 
       if (ptr->use == NULL)
-	goto error; /* 2 roots, or SAFE guard node.  */
+	{
+	  fprintf (f, "ptr->use == NULL\n");
+	  goto error; /* 2 roots, or SAFE guard node.  */
+	}
       else if (*(ptr->use) != var)
-	goto error;
+	{
+	  fprintf (f, "*(ptr->use) != var\n");
+	  goto error;
+	}
 
       prev = ptr;
       ptr = ptr->next;
 
-      /* Avoid infinite loops.  50,000,000 uses probably indicates a
-	 problem.  */
-      if (count++ > 50000000)
-	goto error;
+      count++;
+      if (count == 0)
+	{
+	  fprintf (f, "number of immediate uses doesn't fit unsigned int\n");
+	  goto error;
+	}
     }
 
   /* Verify list in the other direction.  */
@@ -1178,15 +1189,25 @@ verify_imm_links (FILE *f, tree var)
   for (ptr = list->prev; ptr != list; )
     {
       if (prev != ptr->next)
-	goto error;
+	{
+	  fprintf (f, "prev != ptr->next\n");
+	  goto error;
+	}
       prev = ptr;
       ptr = ptr->prev;
-      if (count-- < 0)
-	goto error;
+      if (count == 0)
+	{
+	  fprintf (f, "count-- < 0\n");
+	  goto error;
+	}
+      count--;
     }
 
   if (count != 0)
-    goto error;
+    {
+      fprintf (f, "count != 0\n");
+      goto error;
+    }
 
   return false;
 

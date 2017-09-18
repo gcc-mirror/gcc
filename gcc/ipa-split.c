@@ -1292,9 +1292,7 @@ split_function (basic_block return_bb, struct split_point *split_point,
 		break;
 	      }
 	}
-      e = make_edge (new_return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-      e->probability = REG_BR_PROB_BASE;
-      e->count = new_return_bb->count;
+      e = make_single_succ_edge (new_return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
       add_bb_to_loop (new_return_bb, current_loops->tree_root);
       bitmap_set_bit (split_point->split_bbs, new_return_bb->index);
       retbnd = find_retbnd (return_bb);
@@ -1527,11 +1525,9 @@ split_function (basic_block return_bb, struct split_point *split_point,
     }
   else
     {
-      e = make_edge (call_bb, return_bb,
-		     return_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
-		     ? 0 : EDGE_FALLTHRU);
-      e->count = call_bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      e = make_single_succ_edge (call_bb, return_bb,
+				 return_bb == EXIT_BLOCK_PTR_FOR_FN (cfun)
+				 ? 0 : EDGE_FALLTHRU);
 
       /* If there is return basic block, see what value we need to store
          return value into and put call just before it.  */

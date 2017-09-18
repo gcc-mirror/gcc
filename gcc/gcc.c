@@ -878,8 +878,7 @@ proper position among the other output files.  */
 #endif
 
 #ifdef ENABLE_DEFAULT_PIE
-#define NO_PIE_SPEC		"no-pie|static"
-#define PIE_SPEC		NO_PIE_SPEC "|r|shared:;"
+#define PIE_SPEC		"!no-pie"
 #define NO_FPIE1_SPEC		"fno-pie"
 #define FPIE1_SPEC		NO_FPIE1_SPEC ":;"
 #define NO_FPIE2_SPEC		"fno-PIE"
@@ -900,7 +899,6 @@ proper position among the other output files.  */
 #define FPIE_OR_FPIC_SPEC	NO_FPIE_AND_FPIC_SPEC ":;"
 #else
 #define PIE_SPEC		"pie"
-#define NO_PIE_SPEC		PIE_SPEC "|r|shared:;"
 #define FPIE1_SPEC		"fpie"
 #define NO_FPIE1_SPEC		FPIE1_SPEC ":;"
 #define FPIE2_SPEC		"fPIE"
@@ -929,7 +927,7 @@ proper position among the other output files.  */
 #else
 #define LD_PIE_SPEC ""
 #endif
-#define LINK_PIE_SPEC "%{no-pie:} " "%{" PIE_SPEC ":" LD_PIE_SPEC "} "
+#define LINK_PIE_SPEC "%{static|shared|r:;" PIE_SPEC ":" LD_PIE_SPEC "} "
 #endif
 
 #ifndef LINK_BUILDID_SPEC
@@ -1017,8 +1015,11 @@ proper position among the other output files.  */
 #endif
 
 /* -u* was put back because both BSD and SysV seem to support it.  */
-/* %{static:} simply prevents an error message if the target machine
-   doesn't handle -static.  */
+/* %{static|no-pie|static-pie:} simply prevents an error message:
+   1. If the target machine doesn't handle -static.
+   2. If PIE isn't enabled by default.
+   3. If the target machine doesn't handle -static-pie.
+ */
 /* We want %{T*} after %{L*} and %D so that it can be used to specify linker
    scripts which exist in user specified directories, or in standard
    directories.  */
@@ -1035,7 +1036,7 @@ proper position among the other output files.  */
    "%{fuse-ld=*:-fuse-ld=%*} " LINK_COMPRESS_DEBUG_SPEC \
    "%X %{o*} %{e*} %{N} %{n} %{r}\
     %{s} %{t} %{u*} %{z} %{Z} %{!nostdlib:%{!nostartfiles:%S}} \
-    %{static:} %{L*} %(mfwrap) %(link_libgcc) " \
+    %{static|no-pie|static-pie:} %{L*} %(mfwrap) %(link_libgcc) " \
     VTABLE_VERIFICATION_SPEC " " SANITIZER_EARLY_SPEC " %o " CHKP_SPEC " \
     %{fopenacc|fopenmp|%:gt(%{ftree-parallelize-loops=*:%*} 1):\
 	%:include(libgomp.spec)%(link_gomp)}\
@@ -1305,9 +1306,6 @@ static const struct compiler default_compilers[] =
   {".f03", "#Fortran", 0, 0, 0}, {".F03", "#Fortran", 0, 0, 0},
   {".f08", "#Fortran", 0, 0, 0}, {".F08", "#Fortran", 0, 0, 0},
   {".r", "#Ratfor", 0, 0, 0},
-  {".p", "#Pascal", 0, 0, 0}, {".pas", "#Pascal", 0, 0, 0},
-  {".java", "#Java", 0, 0, 0}, {".class", "#Java", 0, 0, 0},
-  {".zip", "#Java", 0, 0, 0}, {".jar", "#Java", 0, 0, 0},
   {".go", "#Go", 0, 1, 0},
   /* Next come the entries for C.  */
   {".c", "@c", 0, 0, 1},
@@ -1673,17 +1671,19 @@ init_gcc_specs (struct obstack *obstack, const char *shared_name,
 {
   char *buf;
 
-  buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name, "}"
-		"%{!static:%{!static-libgcc:"
 #if USE_LD_AS_NEEDED
+  buf = concat ("%{static|static-libgcc|static-pie:", static_name, " ", eh_name, "}"
+		"%{!static:%{!static-libgcc:%{!static-pie:"
 		"%{!shared-libgcc:",
 		static_name, " " LD_AS_NEEDED_OPTION " ",
 		shared_name, " " LD_NO_AS_NEEDED_OPTION
 		"}"
 		"%{shared-libgcc:",
 		shared_name, "%{!shared: ", static_name, "}"
-		"}"
+		"}}"
 #else
+  buf = concat ("%{static|static-libgcc:", static_name, " ", eh_name, "}"
+		"%{!static:%{!static-libgcc:"
 		"%{!shared:"
 		"%{!shared-libgcc:", static_name, " ", eh_name, "}"
 		"%{shared-libgcc:", shared_name, " ", static_name, "}"
@@ -1791,8 +1791,8 @@ init_spec (void)
 			    "-lgcc_eh"
 #ifdef USE_LIBUNWIND_EXCEPTIONS
 # ifdef HAVE_LD_STATIC_DYNAMIC
-			    " %{!static:" LD_STATIC_OPTION "} -lunwind"
-			    " %{!static:" LD_DYNAMIC_OPTION "}"
+			    " %{!static:%{!static-pie:" LD_STATIC_OPTION "}} -lunwind"
+			    " %{!static:%{!static-pie:" LD_DYNAMIC_OPTION "}}"
 # else
 			    " -lunwind"
 # endif
@@ -3138,26 +3138,50 @@ execute (void)
 	int status = statuses[i];
 
 	if (WIFSIGNALED (status))
-	  {
-#ifdef SIGPIPE
-	    /* SIGPIPE is a special case.  It happens in -pipe mode
-	       when the compiler dies before the preprocessor is done,
-	       or the assembler dies before the compiler is done.
-	       There's generally been an error already, and this is
-	       just fallout.  So don't generate another error unless
-	       we would otherwise have succeeded.  */
-	    if (WTERMSIG (status) == SIGPIPE
-		&& (signal_count || greatest_status >= MIN_FATAL_STATUS))
-	      {
-		signal_count++;
-		ret_code = -1;
-	      }
-	    else
+	  switch (WTERMSIG (status))
+	    {
+	    case SIGINT:
+	    case SIGTERM:
+	      /* SIGQUIT and SIGKILL are not available on MinGW.  */
+#ifdef SIGQUIT
+	    case SIGQUIT:
 #endif
-	      internal_error_no_backtrace ("%s (program %s)",
+#ifdef SIGKILL
+	    case SIGKILL:
+#endif
+	      /* The user (or environment) did something to the
+		 inferior.  Making this an ICE confuses the user into
+		 thinking there's a compiler bug.  Much more likely is
+		 the user or OOM killer nuked it.  */
+	      fatal_error (input_location,
+			   "%s signal terminated program %s",
+			   strsignal (WTERMSIG (status)),
+			   commands[i].prog);
+	      break;
+
+#ifdef SIGPIPE
+	    case SIGPIPE:
+	      /* SIGPIPE is a special case.  It happens in -pipe mode
+		 when the compiler dies before the preprocessor is
+		 done, or the assembler dies before the compiler is
+		 done.  There's generally been an error already, and
+		 this is just fallout.  So don't generate another
+		 error unless we would otherwise have succeeded.  */
+	      if (signal_count || greatest_status >= MIN_FATAL_STATUS)
+		{
+		  signal_count++;
+		  ret_code = -1;
+		  break;
+		}
+#endif
+	      /* FALLTHROUGH */
+
+	    default:
+	      /* The inferior failed to catch the signal.  */
+	      internal_error_no_backtrace ("%s signal terminated program %s",
 					   strsignal (WTERMSIG (status)),
 					   commands[i].prog);
-	  }
+	    }
 	else if (WIFEXITED (status)
 		 && WEXITSTATUS (status) >= MIN_FATAL_STATUS)
 	  {
@@ -3457,7 +3481,8 @@ display_help (void)
   fputs (_("  -S                       Compile only; do not assemble or link.\n"), stdout);
   fputs (_("  -c                       Compile and assemble, but do not link.\n"), stdout);
   fputs (_("  -o <file>                Place the output into <file>.\n"), stdout);
-  fputs (_("  -pie                     Create a position independent executable.\n"), stdout);
+  fputs (_("  -pie                     Create a dynamically linked position independent\n\
+                           executable.\n"), stdout);
   fputs (_("  -shared                  Create a shared library.\n"), stdout);
   fputs (_("\
   -x <language>            Specify the language of the following input files.\n\
@@ -3748,7 +3773,8 @@ driver_handle_option (struct gcc_options *opts,
 		      unsigned int lang_mask ATTRIBUTE_UNUSED, int kind,
 		      location_t loc,
 		      const struct cl_option_handlers *handlers ATTRIBUTE_UNUSED,
-		      diagnostic_context *dc)
+		      diagnostic_context *dc,
+		      void (*) (void))
 {
   size_t opt_index = decoded->opt_index;
   const char *arg = decoded->arg;
@@ -4615,23 +4641,23 @@ process_command (unsigned int decoded_options_count,
 
   /* Decide if undefined variable references are allowed in specs.  */
 
-  /* --version and --help alone or together are safe.  Note that -v would
-     make them unsafe, as they'd then be run for subprocesses as well, the
-     location of which might depend on variables possibly coming from
-     self-specs.
+  /* -v alone is safe. --version and --help alone or together are safe.  Note
+     that -v would make them unsafe, as they'd then be run for subprocesses as
+     well, the location of which might depend on variables possibly coming
+     from self-specs.  Note also that the command name is counted in
+     decoded_options_count.  */
 
-     Count the number of options we have for which undefined variables
-     are harmless for sure, and check that nothing else is set.  */
-
-  unsigned n_varsafe_options = 0;
+  unsigned help_version_count = 0;
 
   if (print_version)
-    n_varsafe_options++;
-  
+    help_version_count++;
+
   if (print_help_list)
-    n_varsafe_options++;
-  
-  spec_undefvar_allowed = (n_varsafe_options == decoded_options_count - 1);
+    help_version_count++;
+
+  spec_undefvar_allowed =
+    ((verbose_flag && decoded_options_count == 2)
+     || help_version_count == decoded_options_count - 1);
 
   alloc_switch ();
   switches[n_switches].part1 = 0;

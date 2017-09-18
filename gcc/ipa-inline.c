@@ -117,6 +117,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "auto-profile.h"
 #include "builtins.h"
 #include "fibonacci_heap.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 typedef fibonacci_heap <sreal, cgraph_edge> edge_heap_t;
@@ -322,6 +324,11 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_BODY_NOT_AVAILABLE;
       inlinable = false;
     }
+  if (!early && !opt_for_fn (callee->decl, optimize))
+    {
+      e->inline_failed = CIF_FUNCTION_NOT_OPTIMIZED;
+      inlinable = false;
+    }
   else if (callee->calls_comdat_local)
     {
       e->inline_failed = CIF_USES_COMDAT_LOCAL;
@@ -402,6 +409,7 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
 	 Not even for always_inline declared functions.  */
      else if (check_match (flag_wrapv)
 	      || check_match (flag_trapv)
+	      || check_match (flag_pcc_struct_return)
 	      /* When caller or callee does FP math, be sure FP codegen flags
 		 compatible.  */
 	      || ((caller_info->fp_expressions && callee_info->fp_expressions)
@@ -939,7 +947,8 @@ check_callers (struct cgraph_node *node, void *has_hot_call)
   struct cgraph_edge *e;
    for (e = node->callers; e; e = e->next_caller)
      {
-       if (!opt_for_fn (e->caller->decl, flag_inline_functions_called_once))
+       if (!opt_for_fn (e->caller->decl, flag_inline_functions_called_once)
+	   || !opt_for_fn (e->caller->decl, optimize))
 	 return true;
        if (!can_inline_edge_p (e, true))
          return true;
@@ -1746,7 +1755,8 @@ inline_small_functions (void)
     if (!node->global.inlined_to)
       {
 	if (!node->alias && node->analyzed
-	    && (node->has_gimple_body_p () || node->thunk.thunk_p))
+	    && (node->has_gimple_body_p () || node->thunk.thunk_p)
+	    && opt_for_fn (node->decl, optimize))
 	  {
 	    struct ipa_fn_summary *info = ipa_fn_summaries->get (node);
 	    struct ipa_dfs_info *dfs = (struct ipa_dfs_info *) node->aux;
@@ -1768,12 +1778,13 @@ inline_small_functions (void)
 		int id = dfs->scc_no + 1;
 		for (n2 = node; n2;
 		     n2 = ((struct ipa_dfs_info *) node->aux)->next_cycle)
-		  {
-		    struct ipa_fn_summary *info2 = ipa_fn_summaries->get (n2);
-		    if (info2->scc_no)
-		      break;
-		    info2->scc_no = id;
-		  }
+		  if (opt_for_fn (n2->decl, optimize))
+		    {
+		      struct ipa_fn_summary *info2 = ipa_fn_summaries->get (n2);
+		      if (info2->scc_no)
+			break;
+		      info2->scc_no = id;
+		    }
 	      }
 	  }
 
@@ -1800,6 +1811,9 @@ inline_small_functions (void)
       bool update = false;
       struct cgraph_edge *next = NULL;
       bool has_speculative = false;
+
+      if (!opt_for_fn (node->decl, optimize))
+	continue;
 
       if (dump_file)
 	fprintf (dump_file, "Enqueueing calls in %s.\n", node->dump_name ());
@@ -2048,8 +2062,8 @@ inline_small_functions (void)
 	  fprintf (dump_file,
 		   " Inlined %s into %s which now has time %f and size %i, "
 		   "net change of %+i.\n",
-		   edge->callee->name (),
-		   edge->caller->name (),
+		   xstrdup_for_dump (edge->callee->name ()),
+		   xstrdup_for_dump (edge->caller->name ()),
 		   ipa_fn_summaries->get (edge->caller)->time.to_double (),
 		   ipa_fn_summaries->get (edge->caller)->size,
 		   overall_size - old_size);
@@ -2369,9 +2383,6 @@ ipa_inline (void)
   int cold;
   bool remove_functions = false;
 
-  if (!optimize)
-    return 0;
-
   cgraph_freq_base_rec = (sreal) 1 / (sreal) CGRAPH_FREQ_BASE;
   percent_rec = (sreal) 1 / (sreal) 100;
 
@@ -2467,6 +2478,10 @@ ipa_inline (void)
 	  struct cgraph_edge *edge, *next;
 	  bool update=false;
 
+	  if (!opt_for_fn (node->decl, optimize)
+	      || !opt_for_fn (node->decl, flag_inline_functions_called_once))
+	    continue;
+
 	  for (edge = node->callees; edge; edge = next)
 	    {
 	      next = edge->next_callee;
@@ -2499,8 +2514,7 @@ ipa_inline (void)
     }
 
   /* Free ipa-prop structures if they are no longer needed.  */
-  if (optimize)
-    ipa_free_all_structures_after_iinln ();
+  ipa_free_all_structures_after_iinln ();
 
   if (dump_file)
     {

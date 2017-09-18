@@ -160,10 +160,10 @@ verify_flow_info (void)
 		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
-	  if (e->probability < 0 || e->probability > REG_BR_PROB_BASE)
+	  if (!e->probability.verify ())
 	    {
-	      error ("verify_flow_info: Wrong probability of edge %i->%i %i",
-		     e->src->index, e->dest->index, e->probability);
+	      error ("verify_flow_info: Wrong probability of edge %i->%i",
+		     e->src->index, e->dest->index);
 	      err = 1;
 	    }
 	  if (!e->count.verify ())
@@ -443,8 +443,6 @@ redirect_edge_succ_nodup (edge e, basic_block new_succ)
     {
       s->flags |= e->flags;
       s->probability += e->probability;
-      if (s->probability > REG_BR_PROB_BASE)
-	s->probability = REG_BR_PROB_BASE;
       s->count += e->count;
       /* FIXME: This should be called via a hook and only for IR_GIMPLE.  */
       redirect_edge_var_map_dup (s, e);
@@ -640,7 +638,7 @@ split_edge (edge e)
   ret = cfg_hooks->split_edge (e);
   ret->count = count;
   ret->frequency = freq;
-  single_succ_edge (ret)->probability = REG_BR_PROB_BASE;
+  single_succ_edge (ret)->probability = profile_probability::always ();
   single_succ_edge (ret)->count = count;
 
   if (irr)
@@ -1087,7 +1085,7 @@ duplicate_block (basic_block bb, edge e, basic_block after)
   if (after)
     move_block_after (new_bb, after);
 
-  new_bb->flags = bb->flags;
+  new_bb->flags = (bb->flags & ~BB_DUPLICATED);
   FOR_EACH_EDGE (s, ei, bb->succs)
     {
       /* Since we are creating edges from a new block to successors
@@ -1207,7 +1205,8 @@ flow_call_edges_add (sbitmap blocks)
 void
 execute_on_growing_pred (edge e)
 {
-  if (cfg_hooks->execute_on_growing_pred)
+  if (! (e->dest->flags & BB_DUPLICATED)
+      && cfg_hooks->execute_on_growing_pred)
     cfg_hooks->execute_on_growing_pred (e);
 }
 
@@ -1217,7 +1216,8 @@ execute_on_growing_pred (edge e)
 void
 execute_on_shrinking_pred (edge e)
 {
-  if (cfg_hooks->execute_on_shrinking_pred)
+  if (! (e->dest->flags & BB_DUPLICATED)
+      && cfg_hooks->execute_on_shrinking_pred)
     cfg_hooks->execute_on_shrinking_pred (e);
 }
 
@@ -1353,6 +1353,12 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
   basic_block bb, new_bb, dom_bb;
   edge e;
 
+  /* Mark the blocks to be copied.  This is used by edge creation hooks
+     to decide whether to reallocate PHI nodes capacity to avoid reallocating
+     PHIs in the set of source BBs.  */
+  for (i = 0; i < n; i++)
+    bbs[i]->flags |= BB_DUPLICATED;
+
   /* Duplicate bbs, update dominators, assign bbs to loops.  */
   for (i = 0; i < n; i++)
     {
@@ -1360,7 +1366,6 @@ copy_bbs (basic_block *bbs, unsigned n, basic_block *new_bbs,
       bb = bbs[i];
       new_bb = new_bbs[i] = duplicate_block (bb, NULL, after);
       after = new_bb;
-      bb->flags |= BB_DUPLICATED;
       if (bb->loop_father)
 	{
 	  /* Possibly set loop header.  */
@@ -1444,17 +1449,17 @@ account_profile_record (struct profile_record *record, int after_pass)
   basic_block bb;
   edge_iterator ei;
   edge e;
-  int sum;
 
   FOR_ALL_BB_FN (bb, cfun)
    {
       if (bb != EXIT_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
-	  sum = 0;
+	  profile_probability sum = profile_probability::never ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    sum += e->probability;
-	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
+	  if (EDGE_COUNT (bb->succs)
+	      && sum.differs_from_p (profile_probability::always ()))
 	    record->num_mismatched_freq_out[after_pass]++;
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
@@ -1465,7 +1470,7 @@ account_profile_record (struct profile_record *record, int after_pass)
       if (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun)
 	  && profile_status_for_fn (cfun) != PROFILE_ABSENT)
 	{
-	  sum = 0;
+	  int sum = 0;
 	  FOR_EACH_EDGE (e, ei, bb->preds)
 	    sum += EDGE_FREQUENCY (e);
 	  if (abs (sum - bb->frequency) > 100

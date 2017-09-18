@@ -31,11 +31,6 @@
 #undef STRING_LIMIT
 #define STRING_LIMIT ((unsigned) 64)
 
-/* Output alignment 2**1 for jump tables.  */
-#undef ASM_OUTPUT_BEFORE_CASE_LABEL
-#define ASM_OUTPUT_BEFORE_CASE_LABEL(FILE, PREFIX, NUM, TABLE) \
-  ASM_OUTPUT_ALIGN (FILE, 1);
-
 /* Be conservative in crtstuff.c.  */
 #undef INIT_SECTION_ASM_OP
 #undef FINI_SECTION_ASM_OP

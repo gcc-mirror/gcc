@@ -85,11 +85,11 @@ type uintptr uintptr
 // byte is an alias for uint8 and is equivalent to uint8 in all ways. It is
 // used, by convention, to distinguish byte values from 8-bit unsigned
 // integer values.
-type byte byte
+type byte = uint8
 
 // rune is an alias for int32 and is equivalent to int32 in all ways. It is
 // used, by convention, to distinguish character values from integer values.
-type rune rune
+type rune = int32
 
 // iota is a predeclared identifier representing the untyped integer ordinal
 // number of the current const specification in a (usually parenthesized)
@@ -179,7 +179,7 @@ func cap(v Type) int
 //	Channel: The channel's buffer is initialized with the specified
 //	buffer capacity. If zero, or the size is omitted, the channel is
 //	unbuffered.
-func make(Type, size IntegerType) Type
+func make(t Type, size ...IntegerType) Type
 
 // The new built-in function allocates memory. The first argument is a type,
 // not a value, and the value returned is a pointer to a newly

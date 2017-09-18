@@ -163,6 +163,13 @@ bool flag_stack_usage_info = false
 Variable
 int flag_debug_asm
 
+; How many NOP insns to place at each function entry by default
+Variable
+HOST_WIDE_INT function_entry_patch_area_size
+
+; And how far the real asm entry point is into this area
+Variable
+HOST_WIDE_INT function_entry_patch_area_start
 
 ; Balance between GNAT encodings and standard DWARF to emit.
 Variable
@@ -226,10 +233,9 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
-fsanitize-coverage=trace-pc
-Common Report Var(flag_sanitize_coverage)
-Enable coverage-guided fuzzing code instrumentation.
-Inserts call to __sanitizer_cov_trace_pc into every basic block.
+; What the coverage sanitizers should instrument
+Variable
+unsigned int flag_sanitize_coverage
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -345,6 +351,9 @@ Common Alias(pedantic-errors)
 
 -pie
 Driver Alias(pie)
+
+-static-pie
+Driver Alias(static-pie)
 
 -pipe
 Driver Alias(pipe)
@@ -546,7 +555,7 @@ Common Var(warn_array_bounds) Warning
 Warn if an array is accessed out of bounds.
 
 Warray-bounds=
-Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning
+Common Joined RejectNegative UInteger Var(warn_array_bounds) Warning IntegerRange(0, 2)
 Warn if an array is accessed out of bounds.
 
 Wattributes
@@ -555,6 +564,10 @@ Warn about inappropriate attribute usage.
 
 Wcast-align
 Common Var(warn_cast_align) Warning
+Warn about pointer casts which increase alignment.
+
+Wcast-align=strict
+Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
 
 Wcpp
@@ -601,7 +614,7 @@ Wimplicit-fallthrough
 Common Alias(Wimplicit-fallthrough=,3,0) Warning
 
 Wimplicit-fallthrough=
-Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning
+Common Var(warn_implicit_fallthrough) RejectNegative Joined UInteger Warning IntegerRange(0, 5)
 Warn when a switch case falls through.
 
 Winline
@@ -975,6 +988,10 @@ fsanitize=
 Common Driver Report Joined
 Select what to sanitize.
 
+fsanitize-coverage=
+Common Report Joined
+Select what to coverage sanitize.
+
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
 -fasan-shadow-offset=<number>	Use custom shadow memory offset.
@@ -1296,8 +1313,8 @@ Common Report Var(flag_early_inlining) Init(1) Optimization
 Perform early inlining.
 
 feliminate-dwarf2-dups
-Common Report Var(flag_eliminate_dwarf2_dups)
-Perform DWARF duplicate elimination.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 fipa-sra
 Common Report Var(flag_ipa_sra) Init(0) Optimization
@@ -1778,7 +1795,7 @@ Specify the algorithm to partition symbols and vars at linktime.
 
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
-Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1)
+Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 9)
 -flto-compression-level=<number>	Use zlib compression level <number> for IL.
 
 flto-odr-type-merging
@@ -2030,6 +2047,10 @@ fprofile-reorder-functions
 Common Report Var(flag_profile_reorder_functions)
 Enable function reordering that improves code placement.
 
+fpatchable-function-entry=
+Common Joined Optimization
+Insert NOP instructions at each function entry.
+
 frandom-seed
 Common Var(common_deferred_options) Defer
 
@@ -2061,7 +2082,7 @@ Tell DSE that the storage for a C++ object is dead when the constructor
 starts and when the destructor finishes.
 
 flifetime-dse=
-Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization
+Common Joined RejectNegative UInteger Var(flag_lifetime_dse) Optimization IntegerRange(0, 2)
 
 flive-range-shrinkage
 Common Report Var(flag_live_range_shrinkage) Init(0) Optimization
@@ -2680,8 +2701,9 @@ fvar-tracking-uninit
 Common Report Var(flag_var_tracking_uninit) PerFunction
 Perform variable tracking and also tag variables that are uninitialized.
 
+; Alias to enable both -ftree-loop-vectorize and -ftree-slp-vectorize.
 ftree-vectorize
-Common Report Var(flag_tree_vectorize) Optimization
+Common Report Optimization
 Enable vectorization on trees.
 
 ftree-vectorizer-verbose=
@@ -2689,11 +2711,11 @@ Common Joined RejectNegative Ignore
 Does nothing.  Preserved for backward compatibility.
 
 ftree-loop-vectorize
-Common Report Var(flag_tree_loop_vectorize) Optimization
+Common Report Var(flag_tree_loop_vectorize) Optimization EnabledBy(ftree-vectorize)
 Enable loop vectorization on trees.
 
 ftree-slp-vectorize
-Common Report Var(flag_tree_slp_vectorize) Optimization
+Common Report Var(flag_tree_slp_vectorize) Optimization EnabledBy(ftree-vectorize)
 Enable basic block vectorization (SLP) on trees.
 
 fvect-cost-model=
@@ -3050,7 +3072,7 @@ x
 Driver Joined Separate
 
 shared
-Driver RejectNegative Negative(pie)
+Driver RejectNegative Negative(static-pie)
 Create a shared library.
 
 shared-libgcc
@@ -3096,11 +3118,15 @@ Driver
 
 no-pie
 Driver RejectNegative Negative(shared)
-Don't create a position independent executable.
+Don't create a dynamically linked position independent executable.
 
 pie
 Driver RejectNegative Negative(no-pie)
-Create a position independent executable.
+Create a dynamically linked position independent executable.
+
+static-pie
+Driver RejectNegative Negative(pie)
+Create a static position independent executable.
 
 z
 Driver Joined Separate

@@ -46,7 +46,6 @@ extern void avr_init_cumulative_args (CUMULATIVE_ARGS*, tree, rtx, tree);
 #endif /* TREE_CODE */
 
 #ifdef RTX_CODE
-extern int avr_hard_regno_call_part_clobbered (unsigned, machine_mode);
 extern const char *output_movqi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movhi (rtx_insn *insn, rtx operands[], int *l);
 extern const char *output_movsisf (rtx_insn *insn, rtx operands[], int *l);
@@ -87,7 +86,7 @@ extern bool avr_emit_movmemhi (rtx*);
 extern int avr_epilogue_uses (int regno);
 extern int avr_starting_frame_offset (void);
 
-extern void avr_output_addr_vec_elt (FILE *stream, int value);
+extern void avr_output_addr_vec (rtx_insn*, rtx);
 extern const char *avr_out_sbxx_branch (rtx_insn *insn, rtx operands[]);
 extern const char* avr_out_bitop (rtx, rtx*, int*);
 extern const char* avr_out_plus (rtx, rtx*, int* =NULL, int* =NULL, bool =true);
@@ -112,7 +111,6 @@ extern int avr_jump_mode (rtx x, rtx_insn *insn);
 extern int test_hard_reg_class (enum reg_class rclass, rtx x);
 extern int jump_over_one_insn_p (rtx_insn *insn, rtx dest);
 
-extern int avr_hard_regno_mode_ok (int regno, machine_mode mode);
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
 extern int avr_simplify_comparison_p (machine_mode mode,
@@ -158,6 +156,7 @@ extern bool avr_have_dimode;
 namespace gcc { class context; }
 class rtl_opt_pass;
 
+extern rtl_opt_pass *make_avr_pass_pre_proep (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_recompute_notes (gcc::context *);
 extern rtl_opt_pass *make_avr_pass_casesi (gcc::context *);
 
@@ -175,6 +174,7 @@ typedef struct
   unsigned address_cost :1;
   unsigned builtin :1;
   unsigned constraints :1;
+  unsigned insn_addresses :1;
   unsigned legitimate_address_p :1;
   unsigned legitimize_address :1;
   unsigned legitimize_reload_address :1;

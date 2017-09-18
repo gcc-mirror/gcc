@@ -9,7 +9,8 @@ public:
   virtual ~X();
 }
 
-X::x()	// { dg-error "6:no 'X X::x\\(\\)' member function declared in class 'X'" }
+X::x()	// { dg-error "1:no declaration matches" }
+// { dg-message "1:no functions named" "note" { target *-*-* } .-1 }
 {
 }
 

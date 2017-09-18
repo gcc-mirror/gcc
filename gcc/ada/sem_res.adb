@@ -2533,8 +2533,11 @@ package body Sem_Res is
                  and then Ekind (Entity (Name (N))) = E_Function
                then
                   Error_Msg_NE
-                    ("cannot use function & in a procedure call",
+                    ("cannot use call to function & as a statement",
                      Name (N), Entity (Name (N)));
+                  Error_Msg_N
+                    ("\return value of a function call cannot be ignored",
+                     Name (N));
 
                --  Otherwise give general message (not clear what cases this
                --  covers, but no harm in providing for them).
@@ -5452,6 +5455,13 @@ package body Sem_Res is
             Resolve (L, B_Typ);
             Resolve (R, TR);
 
+         --  If both operands are universal and the context is a floating
+         --  point type, the operands are resolved to the type of the context.
+
+         elsif Is_Floating_Point_Type (B_Typ) then
+            Resolve (L, B_Typ);
+            Resolve (R, B_Typ);
+
          else
             Set_Mixed_Mode_Operand (L, TR);
             Set_Mixed_Mode_Operand (R, TL);
@@ -6627,11 +6637,15 @@ package body Sem_Res is
                null;
 
             --  Calls cannot be inlined inside assertions, as GNATprove treats
-            --  assertions as logic expressions.
+            --  assertions as logic expressions. Only issue a message when the
+            --  body has been seen, otherwise this leads to spurious messages
+            --  on expression functions.
 
             elsif In_Assertion_Expr /= 0 then
-               Cannot_Inline
-                 ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               if Present (Body_Id) then
+                  Cannot_Inline
+                    ("cannot inline & (in assertion expression)?", N, Nam_UA);
+               end if;
 
             --  Calls cannot be inlined inside default expressions
 
@@ -6643,10 +6657,28 @@ package body Sem_Res is
 
             elsif Full_Analysis then
 
+               --  Do not inline calls inside expression functions, as this
+               --  would prevent interpreting them as logical formulas in
+               --  GNATprove. Only issue a message when the body has been seen,
+               --  otherwise this leads to spurious messages on callees that
+               --  are themselves expression functions.
+
+               if Present (Current_Subprogram)
+                 and then Is_Expression_Function_Or_Completion
+                            (Current_Subprogram)
+               then
+                  if Present (Body_Id)
+                    and then Present (Body_To_Inline (Nam_Decl))
+                  then
+                     Cannot_Inline
+                       ("cannot inline & (inside expression function)?",
+                        N, Nam_UA);
+                  end if;
+
                --  With the one-pass inlining technique, a call cannot be
                --  inlined if the corresponding body has not been seen yet.
 
-               if No (Body_Id) then
+               elsif No (Body_Id) then
                   Cannot_Inline
                     ("cannot inline & (body not seen yet)?", N, Nam_UA);
 
@@ -6656,18 +6688,6 @@ package body Sem_Res is
 
                elsif No (Body_To_Inline (Nam_Decl)) then
                   null;
-
-               --  Do not inline calls inside expression functions, as this
-               --  would prevent interpreting them as logical formulas in
-               --  GNATprove.
-
-               elsif Present (Current_Subprogram)
-                       and then
-                     Is_Expression_Function_Or_Completion (Current_Subprogram)
-               then
-                  Cannot_Inline
-                    ("cannot inline & (inside expression function)?",
-                     N, Nam_UA);
 
                --  Calls cannot be inlined inside potentially unevaluated
                --  expressions, as this would create complex actions inside
@@ -6752,6 +6772,7 @@ package body Sem_Res is
 
       Set_Etype (N, Typ);
       Eval_Case_Expression (N);
+      Analyze_Dimension (N);
    end Resolve_Case_Expression;
 
    -------------------------------
@@ -7519,10 +7540,15 @@ package body Sem_Res is
 
       if Nkind (Entry_Name) = N_Selected_Component then
 
-         --  Simple entry call
+         --  Simple entry or protected operation call
 
          Nam := Entity (Selector_Name (Entry_Name));
          Obj := Prefix (Entry_Name);
+
+         if Is_Subprogram (Nam) then
+            Check_For_Eliminated_Subprogram (Entry_Name, Nam);
+         end if;
+
          Was_Over := Is_Overloaded (Selector_Name (Entry_Name));
 
       else pragma Assert (Nkind (Entry_Name) = N_Indexed_Component);
@@ -7971,11 +7997,20 @@ package body Sem_Res is
             Check_Restriction (No_Dispatching_Calls, N);
          end if;
 
+         --  Only warn for redundant equality comparison to True for objects
+         --  (e.g. "X = True") and operations (e.g. "(X < Y) = True"). For
+         --  other expressions, it may be a matter of preference to write
+         --  "Expr = True" or "Expr".
+
          if Warn_On_Redundant_Constructs
            and then Comes_From_Source (N)
            and then Comes_From_Source (R)
            and then Is_Entity_Name (R)
            and then Entity (R) = Standard_True
+           and then
+             ((Is_Entity_Name (L) and then Is_Object (Entity (L)))
+                 or else
+               Nkind (L) in N_Op)
          then
             Error_Msg_N -- CODEFIX
               ("?r?comparison with True is redundant!", N);
@@ -8332,6 +8367,8 @@ package body Sem_Res is
       if not Error_Posted (N) then
          Eval_If_Expression (N);
       end if;
+
+      Analyze_Dimension (N);
    end Resolve_If_Expression;
 
    -------------------------------
@@ -9338,6 +9375,7 @@ package body Sem_Res is
             return;
 
          elsif Nkind (Parent (N)) in N_Op
+           and then Present (Etype (Parent (N)))
            and then Is_Fixed_Point_Type (Etype (Parent (N)))
            and then Etype (N) = Universal_Real
            and then Comes_From_Source (N)
@@ -11412,13 +11450,29 @@ package body Sem_Res is
 
    begin
       --  Do not perform this transformation within a pre/postcondition,
-      --  because the expression will be re-analyzed, and the transformation
+      --  because the expression will be reanalyzed, and the transformation
       --  might affect the visibility of the operator, e.g. in an instance.
       --  Note that fully analyzed and expanded pre/postconditions appear as
       --  pragma Check equivalents.
 
       if In_Pre_Post_Condition (N) then
          return;
+      end if;
+
+      --  Likewise when an expression function is being preanalyzed, since the
+      --  expression will be reanalyzed as part of the generated body.
+
+      if In_Spec_Expression then
+         declare
+            S : constant Entity_Id := Current_Scope_No_Loops;
+         begin
+            if Ekind (S) = E_Function
+              and then Nkind (Original_Node (Unit_Declaration_Node (S))) =
+                         N_Expression_Function
+            then
+               return;
+            end if;
+         end;
       end if;
 
       --  Rewrite the operator node using the real operator, not its renaming.

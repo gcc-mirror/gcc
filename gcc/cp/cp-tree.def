@@ -163,8 +163,7 @@ DEFTREECODE (TEMPLATE_PARM_INDEX, "template_parm_index", tcc_exceptional, 0)
    TEMPLATE_PARM_INDEX.
 
    It is used without template arguments like TT in C<TT>,
-   TEMPLATE_TEMPLATE_PARM_TEMPLATE_INFO is NULL_TREE
-   and TYPE_NAME is a TEMPLATE_DECL.  */
+   TYPE_NAME is a TEMPLATE_DECL.  */
 DEFTREECODE (TEMPLATE_TEMPLATE_PARM, "template_template_parm", tcc_type, 0)
 
 /* The ordering of the following codes is optimized for the checking
@@ -469,8 +468,7 @@ DEFTREECODE (TRAIT_EXPR, "trait_expr", tcc_exceptional, 0)
    LAMBDA_EXPR_THIS_CAPTURE goes straight to the capture of `this', if it exists.
    LAMBDA_EXPR_PENDING_PROXIES is a vector of capture proxies which need to
    be pushed once scope returns to the lambda.
-   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.
-   LAMBDA_EXPR_RETURN_TYPE holds the return type, if it was specified.  */
+   LAMBDA_EXPR_MUTABLE_P signals whether this lambda was declared mutable.  */
 DEFTREECODE (LAMBDA_EXPR, "lambda_expr", tcc_exceptional, 0)
 
 /* The declared type of an expression.  This is a C++0x extension.

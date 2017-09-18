@@ -1,3 +1,10 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* encoding.c (_darwin_rs6000_special_round_type_align): Prefix mode
+	names with E_ in case statements.
+
 2017-02-07  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/79256

@@ -1,3 +1,4 @@
+--  { dg-do compile }
 --  { dg-options "-cargs -gdwarf-4 -fdebug-types-section -dA -margs" }
 --  { dg-final { scan-assembler-times "DW_AT_location" 4 } }
 

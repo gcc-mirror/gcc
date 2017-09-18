@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1999-2015, Free Software Foundation, Inc.         --
+--          Copyright (C) 1999-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -191,17 +191,6 @@ package Targparm is
    --  of the package. The only way they get modified is by calling the
    --  Get_Target_Parameters routine which reads the values from a provided
    --  text buffer containing the source of the system package.
-
-   ----------------------------
-   -- Special Target Control --
-   ----------------------------
-
-   --  The great majority of GNAT ports are based on GCC. The switches in
-   --  this section indicate the use of some non-standard target back end
-   --  or other special targetting requirements.
-
-   AAMP_On_Target : Boolean := False;
-   --  Set to True if target is AAMP
 
    -------------------------------
    -- Backend Arithmetic Checks --
@@ -559,18 +548,6 @@ package Targparm is
    --  and division for fixed-point types with a small value equal to
    --  2 ** (-(T'Object_Size - 1)) and whose values have an absolute
    --  value less than 1.0.
-
-   -----------------
-   -- Data Layout --
-   -----------------
-
-   --  Normally when using the GCC backend, Gigi and GCC perform much of the
-   --  data layout using the standard layout capabilities of GCC. If the
-   --  parameter Backend_Layout is set to False, then the front end must
-   --  perform all data layout. For further details see the package Layout.
-
-   Frontend_Layout_On_Target : Boolean := False;
-   --  Set True if front end does layout
 
    -----------------
    -- Subprograms --

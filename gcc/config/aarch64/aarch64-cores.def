@@ -65,8 +65,8 @@ AARCH64_CORE("thunderxt83",   thunderxt83,   thunderx,  8A,  AARCH64_FL_FOR_ARCH
 AARCH64_CORE("xgene1",      xgene1,    xgene1,    8A,  AARCH64_FL_FOR_ARCH8, xgene1, 0x50, 0x000, -1)
 
 /* Qualcomm ('Q') cores. */
-AARCH64_CORE("falkor",      falkor,    cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0xC00, -1)
-AARCH64_CORE("qdf24xx",     qdf24xx,   cortexa57, 8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("falkor",      falkor,    falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA, qdf24xx,   0x51, 0xC00, -1)
+AARCH64_CORE("qdf24xx",     qdf24xx,   falkor,    8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO | AARCH64_FL_RDMA, qdf24xx,   0x51, 0xC00, -1)
 
 /* Samsung ('S') cores. */
 AARCH64_CORE("exynos-m1",   exynosm1,  exynosm1,  8A,  AARCH64_FL_FOR_ARCH8 | AARCH64_FL_CRC | AARCH64_FL_CRYPTO, exynosm1,  0x53, 0x001, -1)

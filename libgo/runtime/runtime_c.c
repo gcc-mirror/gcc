@@ -10,6 +10,10 @@
 #include <cpuid.h>
 #endif
 
+#ifdef __linux__
+#include <syscall.h>
+#endif
+
 #include "config.h"
 
 #include "runtime.h"
@@ -81,13 +85,6 @@ runtime_signalstack(byte *p, uintptr n)
 		*(int *)0xf1 = 0xf1;
 }
 
-struct debugVars	runtime_debug;
-
-void
-runtime_setdebug(struct debugVars* d) {
-  runtime_debug = *d;
-}
-
 int32 go_open(char *, int32, int32)
   __asm__ (GOSYM_PREFIX "runtime.open");
 
@@ -139,6 +136,10 @@ uintptr getEnd(void)
 uintptr
 getEnd()
 {
+#ifdef _AIX
+  // mmap adresses range start at 0x30000000 on AIX for 32 bits processes
+  uintptr end = 0x30000000U;
+#else
   uintptr end = 0;
   uintptr *pend;
 
@@ -146,6 +147,8 @@ getEnd()
   if (pend != nil) {
     end = *pend;
   }
+#endif
+
   return end;
 }
 
@@ -178,3 +181,18 @@ publicationBarrier()
 {
   __atomic_thread_fence(__ATOMIC_RELEASE);
 }
+
+#ifdef __linux__
+
+/* Currently sbrk0 is only called on GNU/Linux.  */
+
+uintptr sbrk0(void)
+  __asm__ (GOSYM_PREFIX "runtime.sbrk0");
+
+uintptr
+sbrk0()
+{
+  return syscall(SYS_brk, (uintptr)(0));
+}
+
+#endif /* __linux__ */

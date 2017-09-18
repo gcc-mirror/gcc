@@ -31,21 +31,19 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <list>
 #include <experimental/memory_resource>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _Tp, typename _Alloc, typename _Predicate>
     inline void
     erase_if(list<_Tp, _Alloc>& __cont, _Predicate __pred)
@@ -59,19 +57,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       erase_if(__cont, [&](__elem_type& __elem) { return __elem == __value; });
     }
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
   template<typename _Tp>
     using list = std::list<_Tp, polymorphic_allocator<_Tp>>;
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace pmr
 
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++14

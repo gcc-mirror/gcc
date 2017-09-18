@@ -110,7 +110,8 @@ static void handle_OPT_d (const char *);
 static void set_std_cxx98 (int);
 static void set_std_cxx11 (int);
 static void set_std_cxx14 (int);
-static void set_std_cxx1z (int);
+static void set_std_cxx17 (int);
+static void set_std_cxx2a (int);
 static void set_std_c89 (int, int);
 static void set_std_c99 (int);
 static void set_std_c11 (int);
@@ -631,10 +632,16 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	set_std_cxx14 (code == OPT_std_c__14 /* ISO */);
       break;
 
-    case OPT_std_c__1z:
-    case OPT_std_gnu__1z:
+    case OPT_std_c__17:
+    case OPT_std_gnu__17:
       if (!preprocessing_asm_p)
-	set_std_cxx1z (code == OPT_std_c__1z /* ISO */);
+	set_std_cxx17 (code == OPT_std_c__17 /* ISO */);
+      break;
+
+    case OPT_std_c__2a:
+    case OPT_std_gnu__2a:
+      if (!preprocessing_asm_p)
+	set_std_cxx2a (code == OPT_std_c__2a /* ISO */);
       break;
 
     case OPT_std_c90:
@@ -886,7 +893,7 @@ c_common_post_options (const char **pfilename)
 
   /* -Wregister is enabled by default in C++17.  */
   if (!global_options_set.x_warn_register)
-    warn_register = cxx_dialect >= cxx1z;
+    warn_register = cxx_dialect >= cxx17;
 
   /* Declone C++ 'structors if -Os.  */
   if (flag_declone_ctor_dtor == -1)
@@ -923,9 +930,9 @@ c_common_post_options (const char **pfilename)
   if (!global_options_set.x_flag_new_inheriting_ctors)
     flag_new_inheriting_ctors = abi_version_at_least (11);
 
-  /* For GCC 7, only enable DR150 resolution by default if -std=c++1z.  */
+  /* For GCC 7, only enable DR150 resolution by default if -std=c++17.  */
   if (!global_options_set.x_flag_new_ttp)
-    flag_new_ttp = (cxx_dialect >= cxx1z);
+    flag_new_ttp = (cxx_dialect >= cxx17);
 
   if (cxx_dialect >= cxx11)
     {
@@ -938,7 +945,7 @@ c_common_post_options (const char **pfilename)
 	warn_narrowing = 1;
 
       /* Unless -f{,no-}ext-numeric-literals has been used explicitly,
-	 for -std=c++{11,14,1z} default to -fno-ext-numeric-literals.  */
+	 for -std=c++{11,14,17,2a} default to -fno-ext-numeric-literals.  */
       if (flag_iso && !global_options_set.x_flag_ext_numeric_literals)
 	cpp_opts->ext_numeric_literals = 0;
     }
@@ -949,7 +956,7 @@ c_common_post_options (const char **pfilename)
      for earlier C++ as well, so chaining works as expected.  */
   if (c_dialect_cxx ()
       && flag_strong_eval_order == -1)
-    flag_strong_eval_order = (cxx_dialect >= cxx1z ? 2 : 1);
+    flag_strong_eval_order = (cxx_dialect >= cxx17 ? 2 : 1);
 
   /* Global sized deallocation is new in C++14.  */
   if (flag_sized_deallocation == -1)
@@ -957,16 +964,18 @@ c_common_post_options (const char **pfilename)
 
   if (flag_extern_tls_init)
     {
-#if !defined (ASM_OUTPUT_DEF) || !SUPPORTS_WEAK
-      /* Lazy TLS initialization for a variable in another TU requires
-	 alias and weak reference support. */
-      if (flag_extern_tls_init > 0)
-	sorry ("external TLS initialization functions not supported "
-	       "on this target");
-      flag_extern_tls_init = 0;
-#else
-      flag_extern_tls_init = 1;
-#endif
+      if (!TARGET_SUPPORTS_ALIASES || !SUPPORTS_WEAK)
+	{
+	  /* Lazy TLS initialization for a variable in another TU requires
+	     alias and weak reference support.  */
+	  if (flag_extern_tls_init > 0)
+	    sorry ("external TLS initialization functions not supported "
+		   "on this target");
+
+	  flag_extern_tls_init = 0;
+	}
+      else
+	flag_extern_tls_init = 1;
     }
 
   if (num_in_fnames > 1)
@@ -1143,8 +1152,11 @@ c_common_finish (void)
 {
   FILE *deps_stream = NULL;
 
-  /* Don't write the deps file if there are errors.  */
-  if (cpp_opts->deps.style != DEPS_NONE && !seen_error ())
+  /* Note that we write the dependencies even if there are errors. This is
+     useful for handling outdated generated headers that now trigger errors
+     (for example, with #error) which would be resolved by re-generating
+     them. In a sense, this complements -MG.  */
+  if (cpp_opts->deps.style != DEPS_NONE)
     {
       /* If -M or -MM was seen without -MF, default output to the
 	 output stream.  */
@@ -1576,7 +1588,7 @@ set_std_cxx11 (int iso)
   lang_hooks.name = "GNU C++11";
 }
 
-/* Set the C++ 2014 draft standard (without GNU extensions if ISO).  */
+/* Set the C++ 2014 standard (without GNU extensions if ISO).  */
 static void
 set_std_cxx14 (int iso)
 {
@@ -1584,27 +1596,43 @@ set_std_cxx14 (int iso)
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++14 includes the C99 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   cxx_dialect = cxx14;
   lang_hooks.name = "GNU C++14";
 }
 
-/* Set the C++ 201z draft standard (without GNU extensions if ISO).  */
+/* Set the C++ 2017 standard (without GNU extensions if ISO).  */
 static void
-set_std_cxx1z (int iso)
+set_std_cxx17 (int iso)
 {
-  cpp_set_lang (parse_in, iso ? CLK_CXX1Z: CLK_GNUCXX1Z);
+  cpp_set_lang (parse_in, iso ? CLK_CXX17: CLK_GNUCXX17);
   flag_no_gnu_keywords = iso;
   flag_no_nonansi_builtin = iso;
   flag_iso = iso;
-  /* C++11 includes the C99 standard library.  */
+  /* C++17 includes the C11 standard library.  */
   flag_isoc94 = 1;
   flag_isoc99 = 1;
   flag_isoc11 = 1;
-  cxx_dialect = cxx1z;
-  lang_hooks.name = "GNU C++14"; /* Pretend C++14 till standarization.  */
+  cxx_dialect = cxx17;
+  lang_hooks.name = "GNU C++17";
+}
+
+/* Set the C++ 202a draft standard (without GNU extensions if ISO).  */
+static void
+set_std_cxx2a (int iso)
+{
+  cpp_set_lang (parse_in, iso ? CLK_CXX2A: CLK_GNUCXX2A);
+  flag_no_gnu_keywords = iso;
+  flag_no_nonansi_builtin = iso;
+  flag_iso = iso;
+  /* C++17 includes the C11 standard library.  */
+  flag_isoc94 = 1;
+  flag_isoc99 = 1;
+  flag_isoc11 = 1;
+  cxx_dialect = cxx2a;
+  lang_hooks.name = "GNU C++17"; /* Pretend C++17 until standardization.  */
 }
 
 /* Args to -d specify what to dump.  Silently ignore

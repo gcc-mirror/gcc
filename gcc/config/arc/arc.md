@@ -505,8 +505,8 @@
   (cond [(eq_attr "in_delay_slot" "false")
 	 (const_string "no")
 	 (match_test "regno_clobbered_p
-			(arc_return_address_regs
-			  [arc_compute_function_type (cfun)],
+			(arc_return_address_register
+			  (arc_compute_function_type (cfun)),
 			 insn, SImode, 1)")
 	 (const_string "no")]
 	(const_string "yes")))
@@ -553,6 +553,11 @@
   [(eq_attr "in_ret_delay_slot" "yes")
    (eq_attr "annul_ret_delay_insn" "yes")
    (eq_attr "cond_ret_delay_insn" "yes")])
+
+(define_delay (eq_attr "type" "loop_end")
+  [(eq_attr "in_delay_slot" "true")
+   (eq_attr "in_delay_slot" "true")
+   (nil)])
 
 ;; For ARC600, unexposing the delay sloy incurs a penalty also in the
 ;; non-taken case, so the only meaningful way to have an annull-true
@@ -618,8 +623,8 @@
 ; The iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
 (define_insn "*movqi_insn"
-  [(set (match_operand:QI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w,w,???w,h, w,Rcq,  S,!*x,  r,r, Ucm,m,???m,Usc")
-	(match_operand:QI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL,I,?Rac,i,?i,  T,Rcq,Usd,Ucm,m,?Rac,c,?Rac,Cm3"))]
+  [(set (match_operand:QI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,???w,h,w*l,Rcq,  S,!*x,  r,r, Ucm,m,???m,  m,Usc")
+	(match_operand:QI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1, cL,  I,?Rac,i, ?i,  T,Rcq,Usd,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], QImode)
    || register_operand (operands[1], QImode)"
   "@
@@ -641,11 +646,12 @@
    xstb%U0 %1,%0
    stb%U0%V0 %1,%0
    stb%U0%V0 %1,%0
+   stb%U0%V0 %1,%0
    stb%U0%V0 %1,%0"
-  [(set_attr "type" "move,move,move,move,move,move,move,move,move,move,load,store,load,load,load,store,store,store,store")
-   (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,false,maybe_limm,false,true,true,true,false,false,false,false,false,false")
-   (set_attr "predicable" "yes,no,yes,no,no,yes,no,yes,yes,yes,no,no,no,no,no,no,no,no,no")
-   (set_attr "cpu_facility" "av1,av1,av1,av2,av2,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
+  [(set_attr "type" "move,move,move,move,move,move,move,move,move,move,load,store,load,load,load,store,store,store,store,store")
+   (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,false,maybe_limm,false,true,true,true,false,false,false,false,false,false,false")
+   (set_attr "predicable" "yes,no,yes,no,no,yes,no,yes,yes,yes,no,no,no,no,no,no,no,no,no,no")
+   (set_attr "cpu_facility" "av1,av1,av1,av2,av2,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*")])
 
 (define_expand "movhi"
   [(set (match_operand:HI 0 "move_dest_operand" "")
@@ -654,8 +660,8 @@
   "if (prepare_move_operands (operands, HImode)) DONE;")
 
 (define_insn "*movhi_insn"
-  [(set (match_operand:HI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w,w,???w,Rcq#q,h, w,Rcq,  S,  r,r, Ucm,m,???m,VUsc,VUsc")
-	(match_operand:HI 1 "move_src_operand" "   cL,   cP,Rcq#q,    P,hCm1,cL,I,?Rac,    i,i,?i,  T,Rcq,Ucm,m,?Rac,c,?Rac, Cm3,i"))]
+  [(set (match_operand:HI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,???w,Rcq#q,h,w*l,Rcq,  S,  r,r, Ucm,m,???m,  m,VUsc")
+	(match_operand:HI 1 "move_src_operand" "   cL,   cP,Rcq#q,    P,hCm1, cL,  I,?Rac,    i,i, ?i,  T,Rcq,Ucm,m,?Rac,c,?Rac,Cm3,i"))]
   "register_operand (operands[0], HImode)
    || register_operand (operands[1], HImode)
    || (CONSTANT_P (operands[1])
@@ -705,9 +711,9 @@
 ; the iscompact attribute allows the epilogue expander to know for which
 ; insns it should lengthen the return insn.
 ; N.B. operand 1 of alternative 7 expands into pcl,symbol@gotpc .
-(define_insn "*movsi_insn"                      ;   0     1     2     3    4  5 6   7   8   9   10  11  12  13    14  15   16  17  18     19     20  21  22    23    24 25 26    27 28  29   30   31
-  [(set (match_operand:SI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h, w,w,  w,  w,  w,  w,???w, ?w,  w,Rcq#q,  h,   w,Rcq,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,???m,VUsc,VUsc")
-	(match_operand:SI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1,cL,I,Crr,Clo,Chi,Cbi,?Rac,Cpc,Clb, ?Cal,Cal,?Cal,  T,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  w,!*Rzd,c,?Rac, Cm3, C32"))]
+(define_insn "*movsi_insn"                      ;   0     1     2     3    4  5    6   7   8   9   10    11  12  13    14  15   16  17  18     19     20  21  22    23    24 25 26    27 28  29  30   31
+  [(set (match_operand:SI 0 "move_dest_operand" "=Rcq,Rcq#q,    w,Rcq#q,   h,w*l,w*l,  w,  w,  w,  w,  ???w, ?w,  w,Rcq#q,  h, w*l,Rcq,  S,   Us<,RcqRck,!*x,  r,!*Rsd,!*Rcd,r,Ucm,  Usd,m,???m,  m,VUsc")
+	(match_operand:SI 1 "move_src_operand"  "  cL,   cP,Rcq#q,    P,hCm1, cL,  I,Crr,Clo,Chi,Cbi,?Rac*l,Cpc,Clb, ?Cal,Cal,?Cal,Uts,Rcq,RcqRck,   Us>,Usd,Ucm,  Usd,  Ucd,m,  w,!*Rzd,c,?Rac,Cm3, C32"))]
   "register_operand (operands[0], SImode)
    || register_operand (operands[1], SImode)
    || (CONSTANT_P (operands[1])
@@ -730,10 +736,10 @@
    mov%? %0,%1		;11
    add %0,%S1		;12
    add %0,pcl,%1@pcl    ;13
-   mov%? %0,%S1%&	;14
-   mov%? %0,%S1		;15
-   mov%? %0,%S1		;16
-   ld%? %0,%1%&		;17
+   mov%? %0,%1  	;14
+   mov%? %0,%1		;15
+   mov%? %0,%1		;16
+   ld%?%U1 %0,%1	;17
    st%? %1,%0%&		;18
    * return arc_short_long (insn, \"push%? %1%&\", \"st%U0 %1,%0%&\");
    * return arc_short_long (insn, \"pop%? %0%&\",  \"ld%U1 %0,%1%&\");
@@ -747,13 +753,13 @@
    st%U0%V0 %1,%0	;28
    st%U0%V0 %1,%0	;29
    st%U0%V0 %1,%0	;30
-   st%U0%V0 %S1,%0	;31"
+   st%U0%V0 %1,%0	;31"
    ;                         0     1     2     3    4    5      6       7           8     9    10     11    12    13           14        15    16   17    18    19   20    21    22   23  24    25    26    27    28    29   30   31
   [(set_attr "type"       "move, move, move,move,move, move, move,two_cycle_core,shift,shift,shift, move,binary,binary,      move,      move, move,load,store,store,load,load, load,load,load, load,store,store,store,store,store,store")
    (set_attr "iscompact" "maybe,maybe,maybe,true,true,false,false,         false,false,false,false,false, false, false,maybe_limm,maybe_limm,false,true, true, true,true,true,false,true,true,false,false, true,false,false,false,false")
    ; Use default length for iscompact to allow for COND_EXEC.  But set length
    ; of Crr to 4.
-   (set_attr "length" "*,*,*,*,*,4,4,4,4,4,4,4,8,8,*,*,*,*,*,*,*,*,4,*,4,*,*,*,*,*,4,8")
+   (set_attr "length" "*,*,*,*,*,4,4,4,4,4,4,4,8,8,*,*,*,*,*,*,*,*,4,*,4,*,*,*,*,*,*,8")
    (set_attr "predicable" "yes,no,yes,no,no,yes,no,no,no,no,no,yes,no,no,yes,yes,yes,no,no,no,no,no,no,no,no,no,no,no,no,no,no,no")
    (set_attr "cpu_facility" "av1,av1,av1,av2,av2,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,*,av2,av2,*,*,av2,*,*,av2,*")])
 
@@ -1634,7 +1640,7 @@
 )
 
 (define_insn "*zero_extendqisi2_ac"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq,Rcq#q,Rcw,w,qRcq,!*x,r,r")
+  [(set (match_operand:SI 0 "dest_reg_operand"    "=Rcq,Rcq#q,Rcw,w,qRcq,!*x,r,r")
 	(zero_extend:SI (match_operand:QI 1 "nonvol_nonimm_operand" "0,Rcq#q,0,c,T,Usd,Ucm,m")))]
   ""
   "@
@@ -1659,19 +1665,19 @@
 
 (define_insn "*zero_extendhisi2_i"
   [(set (match_operand:SI 0 "dest_reg_operand" "=Rcq,q,Rcw,w,!x,Rcqq,r,r")
-	(zero_extend:SI (match_operand:HI 1 "nonvol_nonimm_operand" "0,q,0,c,Usd,Usd,Ucm,m")))]
+	(zero_extend:SI (match_operand:HI 1 "nonvol_nonimm_operand" "0,q,0,c,Usd,T,Ucm,m")))]
   ""
   "@
    ext%_%? %0,%1%&
    ext%_%? %0,%1%&
    bmsk%? %0,%1,15
    ext%_ %0,%1
-   ld%_%? %0,%1%&
-   ld%_%U1 %0,%1
+   ld%_%? %0,%1
+   ld%_%? %0,%1
    * return TARGET_EM ? \"xldh%U1%V1 %0,%1\" : \"xldw%U1 %0,%1\";
    ld%_%U1%V1 %0,%1"
   [(set_attr "type" "unary,unary,unary,unary,load,load,load,load")
-   (set_attr "iscompact" "maybe,true,false,false,true,false,false,false")
+   (set_attr "iscompact" "maybe,true,false,false,true,true,false,false")
    (set_attr "predicable" "no,no,yes,no,no,no,no,no")])
 
 
@@ -1726,7 +1732,7 @@
 )
 
 (define_insn "*extendhisi2_i"
-  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,w,Rcq,r,r")
+  [(set (match_operand:SI 0 "dest_reg_operand" "=Rcqq,w,Rcqq,r,r")
 	(sign_extend:SI (match_operand:HI 1 "nonvol_nonimm_operand" "Rcqq,c,Ucd,Uex,m")))]
   ""
   "@
@@ -2649,30 +2655,7 @@
 			    (match_operand:DI 2 "nonmemory_operand" "")))
 	      (clobber (reg:CC CC_REG))])]
   ""
-{
-  if (TARGET_EXPAND_ADDDI)
-    {
-      rtx l0 = gen_lowpart (SImode, operands[0]);
-      rtx h0 = disi_highpart (operands[0]);
-      rtx l1 = gen_lowpart (SImode, operands[1]);
-      rtx h1 = disi_highpart (operands[1]);
-      rtx l2 = gen_lowpart (SImode, operands[2]);
-      rtx h2 = disi_highpart (operands[2]);
-      rtx cc_c = gen_rtx_REG (CC_Cmode, CC_REG);
-
-      if (CONST_INT_P (h2) && INTVAL (h2) < 0 && SIGNED_INT12 (INTVAL (h2)))
-	{
-	  emit_insn (gen_sub_f (l0, l1, gen_int_mode (-INTVAL (l2), SImode)));
-	  emit_insn (gen_sbc (h0, h1,
-			      gen_int_mode (-INTVAL (h2) - (l1 != 0), SImode),
-			      cc_c));
-	  DONE;
-	}
-      emit_insn (gen_add_f (l0, l1, l2));
-      emit_insn (gen_adc (h0, h1, h2));
-      DONE;
-    }
-})
+{})
 
 ; This assumes that there can be no strictly partial overlap between
 ; operands[1] and operands[2].
@@ -2911,20 +2894,6 @@
 {
   if (!register_operand (operands[2], DImode))
     operands[1] = force_reg (DImode, operands[1]);
-  if (TARGET_EXPAND_ADDDI)
-    {
-      rtx l0 = gen_lowpart (SImode, operands[0]);
-      rtx h0 = disi_highpart (operands[0]);
-      rtx l1 = gen_lowpart (SImode, operands[1]);
-      rtx h1 = disi_highpart (operands[1]);
-      rtx l2 = gen_lowpart (SImode, operands[2]);
-      rtx h2 = disi_highpart (operands[2]);
-      rtx cc_c = gen_rtx_REG (CC_Cmode, CC_REG);
-
-      emit_insn (gen_sub_f (l0, l1, l2));
-      emit_insn (gen_sbc (h0, h1, h2, cc_c));
-      DONE;
-    }
 })
 
 (define_insn_and_split "subdi3_i"
@@ -4080,13 +4049,13 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case SImode:
+    case E_SImode:
       return \"ld.as %0,[%1,%2]%&\";
-    case HImode:
+    case E_HImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	return \"ld%_.as %0,[%1,%2]\";
       return \"ld%_.x.as %0,[%1,%2]\";
-    case QImode:
+    case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	return \"ldb%? %0,[%1,%2]%&\";
       return \"ldb.x %0,[%1,%2]\";
@@ -4149,7 +4118,7 @@
 
   switch (GET_MODE (diff_vec))
     {
-    case SImode:
+    case E_SImode:
       /* Max length can be 12 in this case, but this is OK because
 	 2 of these are for alignment, and are anticipated in the length
 	 of the ADDR_DIFF_VEC.  */
@@ -4161,7 +4130,7 @@
 	s = \"add %2,%0,2\n\tld.as %2,[pcl,%2]\";
       arc_clear_unalign ();
       break;
-    case HImode:
+    case E_HImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	{
 	  if (satisfies_constraint_Rcq (xop[0]))
@@ -4190,7 +4159,7 @@
 	}
       arc_toggle_unalign ();
       break;
-    case QImode:
+    case E_QImode:
       if (ADDR_DIFF_VEC_FLAGS (diff_vec).offset_unsigned)
 	{
 	  if ((rtx_equal_p (xop[2], xop[0])
@@ -4533,9 +4502,21 @@
    (set_attr "type" "two_cycle_core,two_cycle_core")])
 
 (define_expand "clzsi2"
-  [(set (match_operand:SI 0 "dest_reg_operand" "")
-	(clz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(parallel
+    [(set (match_operand:SI 0 "register_operand" "")
+	  (clz:SI (match_operand:SI 1 "register_operand" "")))
+     (clobber (match_dup 2))])]
   "TARGET_NORM"
+  "operands[2] = gen_rtx_REG (CC_ZNmode, CC_REG);")
+
+(define_insn_and_split "*arc_clzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(clz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   emit_insn (gen_norm_f (operands[0], operands[1]));
   emit_insn
@@ -4549,12 +4530,28 @@
        gen_rtx_GE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
        gen_rtx_SET (operands[0], plus_constant (SImode, operands[0], 1))));
   DONE;
-})
+}
+[(set_attr "type" "unary")
+ (set_attr "length" "12")])
 
 (define_expand "ctzsi2"
-  [(set (match_operand:SI 0 "register_operand" "")
-	(ctz:SI (match_operand:SI 1 "register_operand" "")))]
+  [(match_operand:SI 0 "register_operand" "")
+   (match_operand:SI 1 "register_operand" "")]
   "TARGET_NORM"
+  "
+  emit_insn (gen_arc_ctzsi2 (operands[0], operands[1]));
+  DONE;
+")
+
+(define_insn_and_split "arc_ctzsi2"
+  [(set (match_operand:SI 0 "register_operand" "=r")
+	(ctz:SI (match_operand:SI 1 "register_operand" "r")))
+   (clobber (reg:CC_ZN CC_REG))
+   (clobber (match_scratch:SI 2 "=&r"))]
+  "TARGET_NORM"
+  "#"
+  "reload_completed"
+  [(const_int 0)]
 {
   rtx temp = operands[0];
 
@@ -4562,10 +4559,10 @@
       || (REGNO (temp) < FIRST_PSEUDO_REGISTER
 	  && !TEST_HARD_REG_BIT (reg_class_contents[GENERAL_REGS],
 				 REGNO (temp))))
-    temp = gen_reg_rtx (SImode);
+    temp = operands[2];
   emit_insn (gen_addsi3 (temp, operands[1], constm1_rtx));
   emit_insn (gen_bic_f_zn (temp, temp, operands[1]));
-  emit_insn (gen_clrsbsi2 (temp, temp));
+  emit_insn (gen_clrsbsi2 (operands[0], temp));
   emit_insn
     (gen_rtx_COND_EXEC
       (VOIDmode,
@@ -4575,10 +4572,12 @@
     (gen_rtx_COND_EXEC
       (VOIDmode,
        gen_rtx_GE (VOIDmode, gen_rtx_REG (CC_ZNmode, CC_REG), const0_rtx),
-       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31), temp))));
+       gen_rtx_SET (operands[0], gen_rtx_MINUS (SImode, GEN_INT (31),
+						operands[0]))));
   DONE;
-})
-
+}
+[(set_attr "type" "unary")
+ (set_attr "length" "20")])
 
 (define_insn "swap"
   [(set (match_operand:SI  0 "dest_reg_operand" "=w,w,w")
@@ -4859,7 +4858,8 @@
 {
   rtx reg
     = gen_rtx_REG (Pmode,
-		   arc_return_address_regs[arc_compute_function_type (cfun)]);
+		   arc_return_address_register (arc_compute_function_type
+						(cfun)));
 
   if (TARGET_V2
       && ARC_INTERRUPT_P (arc_compute_function_type (cfun)))
@@ -4908,7 +4908,8 @@
   xop[0] = operands[0];
   xop[1]
     = gen_rtx_REG (Pmode,
-		   arc_return_address_regs[arc_compute_function_type (cfun)]);
+		   arc_return_address_register (arc_compute_function_type
+						(cfun)));
 
   if (TARGET_PAD_RETURN)
     arc_pad_return ();
@@ -5110,317 +5111,123 @@
 				xtr, const0_rtx);
 })
 
-; operand 0 is the loop count pseudo register
-; operand 1 is the loop end pattern
-(define_expand "doloop_begin"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (match_operand 1 "" ""))]
-  ""
-{
-  /* Using the INSN_UID of the loop end pattern to identify it causes
-     trouble with -fcompare-debug, so allocate a debug-independent
-     id instead.  We use negative numbers so that we can use the same
-     slot in doloop_end_i where we later store a CODE_LABEL_NUMBER, and
-     still be able to tell what kind of number this is.  */
-  static HOST_WIDE_INT loop_end_id = 0;
-
-  rtx id = GEN_INT (--loop_end_id);
-  XEXP (XVECEXP (PATTERN (operands[1]), 0, 4), 0) = id;
-  emit_insn (gen_doloop_begin_i (operands[0], const0_rtx, id,
-				 const0_rtx, const0_rtx));
-  DONE;
-})
-
-; ??? can't describe the insn properly as then the optimizers try to
-; hoist the SETs.
-;(define_insn "doloop_begin_i"
-;  [(set (reg:SI LP_START) (pc))
-;   (set (reg:SI LP_END) (unspec:SI [(pc)] UNSPEC_ARC_LP))
-;   (use (match_operand 0 "const_int_operand" "n"))]
-;  ""
-;  "lp .L__GCC__LP%0"
-;)
-
-; The operands of doloop_end_i are also read / written by arc_reorg with
-; XVECEXP (PATTERN (lp, 0, N), so if you want to change the pattern, you
-; might have to adjust arc_reorg.
-; operands 0 / 2 are supplied by the expander, 1, 3 and 4 are filled in
-; by arc_reorg.  arc_reorg might also alter operand 0.
-;
-; N in XVECEXP PATTERN (lp, 0 N)
-;  V              rtl                 purpose
-;  0           unspec UNSPEC_ARC_LP identify pattern
-;  1           clobber LP_START     show LP_START is set
-;  2           clobber LP_END       show LP_END is set
-;  3           use operand0         loop count pseudo register
-;  4           use operand1         before arc_reorg: -id
-;                                   after : CODE_LABEL_NUMBER of loop top label
-;  5           use operand2         INSN_UID of loop end insn
-;  6           use operand3         loop setup not at start (1 above, 2 below)
-;  7           use operand4         LABEL_REF of top label, if not
-;                                   immediately following
-; If operand1 is still zero after arc_reorg, this is an orphaned loop
-; instruction that was not at the start of the loop.
-; There is no point is reloading this insn - then lp_count would still not
-; be available for the loop end.
-(define_insn "doloop_begin_i"
-  [(unspec:SI [(pc)] UNSPEC_ARC_LP)
-   (clobber (reg:SI LP_START))
-   (clobber (reg:SI LP_END))
-   (use (match_operand:SI 0 "register_operand" "l,l,????*X"))
-   (use (match_operand 1 "const_int_operand" "n,n,C_0"))
-   (use (match_operand 2 "const_int_operand" "n,n,X"))
-   (use (match_operand 3 "const_int_operand" "C_0,n,X"))
-   (use (match_operand 4 "const_int_operand" "C_0,X,X"))]
-  ""
-{
-  rtx_insn *scan;
-  int len, size = 0;
-  int n_insns = 0;
-  rtx loop_start = operands[4];
-
-  if (CONST_INT_P (loop_start))
-    loop_start = NULL_RTX;
-  /* Size implications of the alignment will be taken care of by the
-     alignment inserted at the loop start.  */
-  if (LOOP_ALIGN (0) && INTVAL (operands[1]))
-    {
-      asm_fprintf (asm_out_file, "\t.p2align %d\\n", LOOP_ALIGN (0));
-      arc_clear_unalign ();
-    }
-  if (!INTVAL (operands[1]))
-    return "; LITTLE LOST LOOP";
-  if (loop_start && flag_pic)
-    {
-      /* ??? Can do better for when a scratch register
-	 is known.  But that would require extra testing.  */
-      return "push_s r0\;add r0,pcl,%4@pcl\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1@pcl\;sr r0,[3]; LP_END\;pop_s r0";
-    }
-  /* Check if the loop end is in range to be set by the lp instruction.  */
-  size = INTVAL (operands[3]) < 2 ? 0 : 2048;
-  for (scan = insn; scan && size < 2048; scan = NEXT_INSN (scan))
-    {
-      if (!INSN_P (scan))
-	continue;
-      if (recog_memoized (scan) == CODE_FOR_doloop_end_i
-	  && (XEXP (XVECEXP (PATTERN (scan), 0, 4), 0)
-	      == XEXP (XVECEXP (PATTERN (insn), 0, 4), 0)))
-	break;
-      len = get_attr_length (scan);
-      size += len;
-    }
-  /* Try to verify that there are at least three instruction fetches
-     between the loop setup and the first encounter of the loop end.  */
-  for (scan = NEXT_INSN (insn); scan && n_insns < 3; scan = NEXT_INSN (scan))
-    {
-      if (!INSN_P (scan))
-	continue;
-      if (rtx_sequence *seq = dyn_cast <rtx_sequence *> (PATTERN (scan)))
-	scan = seq->insn (0);
-      if (JUMP_P (scan))
-	{
-	  if (recog_memoized (scan) != CODE_FOR_doloop_end_i)
-	    {
-	      n_insns += 2;
-	      if (simplejump_p (scan))
-		{
-		  scan = as_a <rtx_insn *> (XEXP (SET_SRC (PATTERN (scan)), 0));
-		  continue;
-		}
-
-	      rtx lab = JUMP_LABEL (scan);
-	      if (!lab)
-		break;
-
-	      rtx_insn *next_scan
-		= next_active_insn (NEXT_INSN (PREV_INSN (scan)));
-	      if (next_scan
-		  && recog_memoized (next_scan) != CODE_FOR_doloop_begin_i)
-		break;
-
-	      /* JUMP_LABEL might be simple_return instead if an insn.  */
-	      if (!INSN_P (lab))
-		{
-		  n_insns++;
-		  break;
-		}
-
-	      rtx_insn *next_lab = next_active_insn (as_a<rtx_insn *> (lab));
-	      if (next_lab
-		  && recog_memoized (next_lab) != CODE_FOR_doloop_begin_i)
-		break;
-
-		n_insns++;
-	    }
-	  break;
-	}
-      len = get_attr_length (scan);
-      /* Size estimation of asms assumes that each line which is nonempty
-	 codes an insn, and that each has a long immediate.  For minimum insn
-	 count, assume merely that a nonempty asm has at least one insn.  */
-      if (GET_CODE (PATTERN (scan)) == ASM_INPUT
-	  || asm_noperands (PATTERN (scan)) >= 0)
-	n_insns += (len != 0);
-      else
-	n_insns += (len > 4 ? 2 : (len ? 1 : 0));
-    }
-  if (LOOP_ALIGN (0))
-    {
-      asm_fprintf (asm_out_file, "\t.p2align %d\\n", LOOP_ALIGN (0));
-      arc_clear_unalign ();
-    }
-  gcc_assert (n_insns || GET_CODE (next_nonnote_insn (insn)) == CODE_LABEL);
-  if (size >= 2048 || (TARGET_ARC600 && n_insns == 1) || loop_start)
-    {
-      if (flag_pic)
-	{
-	  /* ??? Can do better for when a scratch register
-	     is known.  But that would require extra testing.  */
-	  arc_clear_unalign ();
-	  return ".p2align 2\;push_s r0\;add r0,pcl,24\;sr r0,[2]; LP_START\;add r0,pcl,.L__GCC__LP%1@pcl\;sr r0,[3]; LP_END\;pop_s r0";
-	}
-      output_asm_insn ((size < 2048
-			? "lp .L__GCC__LP%1" : "sr .L__GCC__LP%1,[3]; LP_END"),
-		       operands);
-      output_asm_insn (loop_start
-		       ? "sr %4,[2]; LP_START" : "sr 0f,[2]; LP_START",
-		       operands);
-      if (TARGET_ARC600 && n_insns < 1)
-	output_asm_insn ("nop", operands);
-      return (TARGET_ARC600 && n_insns < 3) ? "nop_s\;nop_s\;0:" : "0:";
-    }
-  else if (TARGET_ARC600 && n_insns < 3)
-    {
-      /* At least four instructions are needed between the setting of LP_COUNT
-	 and the loop end - but the lp instruction qualifies as one.  */
-      rtx_insn *prev = prev_nonnote_insn (insn);
-
-      if (!INSN_P (prev) || dead_or_set_regno_p (prev, LP_COUNT))
-	output_asm_insn ("nop", operands);
-    }
-  return "lp .L__GCC__LP%1";
-}
-  [(set_attr "type" "loop_setup")
-   (set_attr_alternative "length"
-;     FIXME: length is usually 4, but we need branch shortening
-;     to get this right.
-;     [(if_then_else (match_test "TARGET_ARC600") (const_int 16) (const_int 4))
-     [(if_then_else (match_test "flag_pic") (const_int 24) (const_int 16))
-      (if_then_else (match_test "flag_pic") (const_int 28) (const_int 16))
-      (const_int 0)])]
-  ;; ??? we should really branch shorten this insn, but then we'd
-  ;; need a proper label first.  N.B. the end label can not only go out
-  ;; of range when it is far away, but also when it precedes the loop -
-  ;; which, unfortunately, it sometimes does, when the loop "optimizer"
-  ;; messes things up.
-)
+;; -------------------------------------------------------------------
+;; Hardware loop
+;; -------------------------------------------------------------------
 
 ; operand 0 is the loop count pseudo register
 ; operand 1 is the label to jump to at the top of the loop
-; Use this for the ARC600 and ARC700.
-; ??? ARC600 might want to check if the loop has few iteration and only a
-; single insn - loop setup is expensive then.
 (define_expand "doloop_end"
-  [(use (match_operand 0 "register_operand" ""))
-   (use (label_ref (match_operand 1 "" "")))]
-  "!TARGET_ARC601"
+  [(parallel [(set (pc)
+		   (if_then_else
+		    (ne (match_operand 0 "" "")
+			(const_int 1))
+		    (label_ref (match_operand 1 "" ""))
+		    (pc)))
+	      (set (match_dup 0) (plus (match_dup 0) (const_int -1)))
+	      (unspec [(const_int 0)] UNSPEC_ARC_LP)
+	      (clobber (match_dup 2))])]
+  ""
 {
-  /* We could do smaller bivs with biv widening, and wider bivs by having
-     a high-word counter in an outer loop - but punt on this for now.  */
-  if (GET_MODE (operands[0]) != SImode)
-    FAIL;
-  emit_jump_insn (gen_doloop_end_i (operands[0], operands[1], const0_rtx));
-  DONE;
+ if (GET_MODE (operands[0]) != SImode)
+   FAIL;
+ operands[2] = gen_rtx_SCRATCH (SImode);
 })
 
-(define_insn_and_split "doloop_end_i"
+(define_insn "arc_lp"
+  [(unspec:SI [(match_operand:SI 0 "register_operand" "l")]
+	      UNSPEC_ARC_LP)
+   (use (label_ref (match_operand 1 "" "")))
+   (use (label_ref (match_operand 2 "" "")))]
+  ""
+  "lp\\t@%l2\\t; %0:@%l1->@%l2"
+  [(set_attr "type" "loop_setup")
+   (set_attr "length" "4")])
+
+;; if by any chance the lp_count is not used, then use an 'r'
+;; register, instead of going to memory.
+(define_insn "loop_end"
   [(set (pc)
-	(if_then_else (ne (match_operand:SI 0 "shouldbe_register_operand" "+l,*c,*m")
-			   (const_int 1))
+	(if_then_else (ne (match_operand:SI 2 "nonimmediate_operand" "0,0")
+			  (const_int 1))
 		      (label_ref (match_operand 1 "" ""))
 		      (pc)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))
-   (use (reg:SI LP_START))
-   (use (reg:SI LP_END))
-   (use (match_operand 2 "const_int_operand" "n,???Cn0,???X"))
-   (clobber (match_scratch:SI 3 "=X,X,&????r"))]
+   (set (match_operand:SI 0 "nonimmediate_operand" "=l!r,m")
+	(plus (match_dup 2) (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_ARC_LP)
+   (clobber (match_scratch:SI 3 "=X,&r"))]
   ""
-  "*
-{
-  rtx_insn *prev = prev_nonnote_insn (insn);
+  "\\t;%0 %1 %2"
+  [(set_attr "length" "0")
+   (set_attr "predicable" "no")
+   (set_attr "type" "loop_end")])
 
-  /* If there is an immediately preceding label, we must output a nop,
-     lest a branch to that label will fall out of the loop.
-     ??? We could try to avoid this by claiming to have a delay slot if there
-     is a preceding label, and outputting the delay slot insn instead, if
-     present.
-     Or we could have some optimization that changes the source edge to update
-     the loop count and jump to the loop start instead.  */
-  /* For ARC600, we must also prevent jumps inside the loop and jumps where
-     the loop counter value is live at the target from being directly at the
-     loop end.  Being sure that the loop counter is dead at the target is
-     too much hair - we can't rely on data flow information at this point -
-     so insert a nop for all branches.
-     The ARC600 also can't read the loop counter in the last insn of a loop.  */
-  if (LABEL_P (prev))
-    output_asm_insn (\"nop%?\", operands);
-  return \"\\n.L__GCC__LP%2: ; loop end, start is %1\";
-}"
-  "&& memory_operand (operands[0], SImode)"
-  [(pc)]
-{
-  emit_move_insn (operands[3], operands[0]);
-  emit_jump_insn (gen_doloop_fallback_m (operands[3], operands[1], operands[0]));
-  DONE;
-}
-  [(set_attr "type" "loop_end")
-   (set (attr "length")
-	(if_then_else (match_test "LABEL_P (prev_nonnote_insn (insn))")
-		      (const_int 4) (const_int 0)))]
-)
+;; split pattern for the very slim chance when the loop register is
+;; memory.
+(define_split
+  [(set (pc)
+	(if_then_else (ne (match_operand:SI 0 "memory_operand")
+			  (const_int 1))
+		      (label_ref (match_operand 1 ""))
+		      (pc)))
+   (set (match_dup 0) (plus (match_dup 0) (const_int -1)))
+   (unspec [(const_int 0)] UNSPEC_ARC_LP)
+   (clobber (match_scratch:SI 2))]
+  "memory_operand (operands[0], SImode)"
+  [(set (match_dup 2) (match_dup 0))
+   (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
+   (set (match_dup 0) (match_dup 2))
+   (set (reg:CC CC_REG) (compare:CC (match_dup 2) (const_int 0)))
+   (set (pc)
+	(if_then_else (ne (reg:CC CC_REG)
+			  (const_int 0))
+		      (label_ref (match_dup 1))
+		      (pc)))]
+  "")
 
-; This pattern is generated by arc_reorg when there is no recognizable
-; loop start.
-(define_insn "*doloop_fallback"
-  [(set (pc) (if_then_else (ne (match_operand:SI 0 "register_operand" "+r,!w")
-				(const_int 1))
-			   (label_ref (match_operand 1 "" ""))
-			   (pc)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))]
-   ; avoid fooling the loop optimizer into assuming this is a special insn.
-  "reload_completed"
-  "*return get_attr_length (insn) == 8
-   ? \"brne.d %0,1,%1\;sub %0,%0,1\"
-   : \"breq %0,1,0f\;b.d %1\;sub %0,%0,1\\n0:\";"
-  [(set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -256))
- 			   (le (minus (match_dup 1) (pc)) (const_int 244)))
- 		      (const_int 8) (const_int 12)))
-   (set_attr "type" "brcc_no_delay_slot")
-   (set_attr "cond" "nocond")]
-)
+(define_insn "loop_fail"
+  [(set (reg:SI LP_COUNT)
+	(plus:SI (reg:SI LP_COUNT) (const_int -1)))
+   (set (reg:CC_ZN CC_REG)
+	(compare:CC_ZN (plus:SI (reg:SI LP_COUNT) (const_int -1))
+		       (const_int 0)))]
+  ""
+  "sub.f%?\\tlp_count,lp_count,1"
+  [(set_attr "iscompact" "false")
+   (set_attr "type" "compare")
+   (set_attr "cond" "set_zn")
+   (set_attr "length" "4")
+   (set_attr "predicable" "yes")])
 
-; reload can't make output reloads for jump insns, so we have to do this by hand.
-(define_insn "doloop_fallback_m"
-  [(set (pc) (if_then_else (ne (match_operand:SI 0 "register_operand" "+&r")
-				(const_int 1))
-			   (label_ref (match_operand 1 "" ""))
-			   (pc)))
-   (set (match_dup 0) (plus:SI (match_dup 0) (const_int -1)))
-   (set (match_operand:SI 2 "memory_operand" "=m")
-	(plus:SI (match_dup 0) (const_int -1)))]
-   ; avoid fooling the loop optimizer into assuming this is a special insn.
-  "reload_completed"
-  "*return get_attr_length (insn) == 12
-   ? \"sub %0,%0,1\;brne.d %0,0,%1\;st%U2%V2 %0,%2\"
-   : \"sub %0,%0,1\;breq %0,0,0f\;b.d %1\\n0:\tst%U2%V2 %0,%2\";"
-  [(set (attr "length")
-	(if_then_else (and (ge (minus (match_dup 1) (pc)) (const_int -252))
- 			   (le (minus (match_dup 1) (pc)) (const_int 244)))
- 		      (const_int 12) (const_int 16)))
-   (set_attr "type" "brcc_no_delay_slot")
-   (set_attr "cond" "nocond")]
-)
+(define_insn_and_split "dbnz"
+  [(set (pc)
+	(if_then_else
+	 (ne (plus:SI (match_operand:SI 0 "nonimmediate_operand" "+r!l,m")
+		      (const_int -1))
+	     (const_int 0))
+	 (label_ref (match_operand 1 "" ""))
+	 (pc)))
+   (set (match_dup 0)
+	(plus:SI (match_dup 0)
+		 (const_int -1)))
+   (clobber (match_scratch:SI 2 "=X,r"))]
+  "TARGET_V2"
+  "@
+   dbnz%#\\t%0,%l1
+   #"
+  "TARGET_V2 && reload_completed && memory_operand (operands[0], SImode)"
+  [(set (match_dup 2) (match_dup 0))
+   (set (match_dup 2) (plus:SI (match_dup 2) (const_int -1)))
+   (set (reg:CC CC_REG) (compare:CC (match_dup 2) (const_int 0)))
+   (set (match_dup 0) (match_dup 2))
+   (set (pc) (if_then_else (ge (reg:CC CC_REG)
+			       (const_int 0))
+			   (label_ref (match_dup 1))
+			   (pc)))]
+  ""
+  [(set_attr "iscompact" "false")
+   (set_attr "type" "loop_end")
+   (set_attr "length" "4,20")])
 
 (define_expand "movmemsi"
   [(match_operand:BLK 0 "" "")

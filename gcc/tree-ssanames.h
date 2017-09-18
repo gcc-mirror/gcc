@@ -69,6 +69,9 @@ struct GTY ((variable_size)) range_info_def {
 /* Sets the value range to SSA.  */
 extern void set_range_info (tree, enum value_range_type, const wide_int_ref &,
 			    const wide_int_ref &);
+extern void set_range_info_raw (tree, enum value_range_type,
+				const wide_int_ref &,
+				const wide_int_ref &);
 /* Gets the value range from SSA.  */
 extern enum value_range_type get_range_info (const_tree, wide_int *,
 					     wide_int *);

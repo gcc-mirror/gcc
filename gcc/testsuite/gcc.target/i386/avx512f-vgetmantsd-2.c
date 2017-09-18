@@ -5,6 +5,10 @@
 
 #include "avx512f-check.h"
 #include <math.h>
+#include "avx512f-helper.h"
+
+#define SIZE (128/64)
+#include "avx512f-mask-type.h"
 
 union fp_int_t
 {
@@ -76,18 +80,51 @@ compute_vgetmantsd (double *r, double *s1, double *s2, int interv,
 static void
 avx512f_test (void)
 {
-  union128d res1, src1, src2;
+  union128d res1, res2, res3, res4, res5, res6, src1, src2;
   double res_ref[2];
-  int interv = _MM_MANT_NORM_p5_1;
-  int signctrl = _MM_MANT_SIGN_src;
+  MASK_TYPE mask = MASK_VALUE;
 
   src1.x = _mm_set_pd (-3.0, 111.111);
   src2.x = _mm_set_pd (222.222, -2.0);
+  
+  int i; 
+  for (i = 0; i < SIZE; i++)
+    {
+      res2.a[i] = DEFAULT_VALUE;
+      res5.a[i] = DEFAULT_VALUE;
+    }
 
-  res1.x = _mm_getmant_sd (src1.x, src2.x, interv, signctrl);
+  res1.x = _mm_getmant_sd (src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src);
+  res2.x = _mm_mask_getmant_sd (res2.x, mask, src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src);
+  res3.x = _mm_maskz_getmant_sd (mask, src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src);
+  res4.x = _mm_getmant_round_sd (src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
+  res5.x = _mm_mask_getmant_round_sd (res5.x, mask, src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
+  res6.x = _mm_maskz_getmant_round_sd (mask, src1.x, src2.x, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src, _MM_FROUND_NO_EXC);
 
-  compute_vgetmantsd (res_ref, src1.a, src2.a, interv, signctrl);
+  compute_vgetmantsd (res_ref, src1.a, src2.a, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src);
 
   if (check_union128d (res1, res_ref))
     abort ();
+  
+  MASK_MERGE (d) (res_ref, mask, 1);
+  if (check_union128d (res2, res_ref))
+    abort ();
+
+  MASK_ZERO (d) (res_ref, mask, 1);
+  if (check_union128d (res3, res_ref))
+    abort ();
+
+  compute_vgetmantsd (res_ref, src1.a, src2.a, _MM_MANT_NORM_p5_1, _MM_MANT_SIGN_src);
+
+  if (check_union128d (res4, res_ref))
+    abort ();
+  
+  MASK_MERGE (d) (res_ref, mask, 1);
+  if (check_union128d (res5, res_ref))
+    abort ();
+
+  MASK_ZERO (d) (res_ref, mask, 1);
+  if (check_union128d (res6, res_ref))
+    abort ();
+
 }

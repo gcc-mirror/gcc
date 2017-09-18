@@ -598,55 +598,6 @@ while (0)
 
 /* How Values Fit in Registers */
 
-/* A C expression for the number of consecutive hard registers, starting at
-   register number REGNO, required to hold a value of mode MODE.  */
-
-/* ??? We say that BImode PR values require two registers.  This allows us to
-   easily store the normal and inverted values.  We use CCImode to indicate
-   a single predicate register.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  ((REGNO) == PR_REG (0) && (MODE) == DImode ? 64			\
-   : PR_REGNO_P (REGNO) && (MODE) == BImode ? 2				\
-   : (PR_REGNO_P (REGNO) || GR_REGNO_P (REGNO)) && (MODE) == CCImode ? 1\
-   : FR_REGNO_P (REGNO) && (MODE) == XFmode ? 1				\
-   : FR_REGNO_P (REGNO) && (MODE) == RFmode ? 1				\
-   : FR_REGNO_P (REGNO) && (MODE) == XCmode ? 2				\
-   : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* A C expression that is nonzero if it is permissible to store a value of mode
-   MODE in hard register number REGNO (or in several registers starting with
-   that one).  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)				\
-  (FR_REGNO_P (REGNO) ?						\
-     GET_MODE_CLASS (MODE) != MODE_CC &&			\
-     (MODE) != BImode &&					\
-     (MODE) != TFmode 						\
-   : PR_REGNO_P (REGNO) ?					\
-     (MODE) == BImode || GET_MODE_CLASS (MODE) == MODE_CC	\
-   : GR_REGNO_P (REGNO) ?					\
-     (MODE) != XFmode && (MODE) != XCmode && (MODE) != RFmode	\
-   : AR_REGNO_P (REGNO) ? (MODE) == DImode			\
-   : BR_REGNO_P (REGNO) ? (MODE) == DImode			\
-   : 0)
-
-/* A C expression that is nonzero if it is desirable to choose register
-   allocation so as to avoid move instructions between a value of mode MODE1
-   and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R, MODE2)' are
-   ever different for any R, then `MODES_TIEABLE_P (MODE1, MODE2)' must be
-   zero.  */
-/* Don't tie integer and FP modes, as that causes us to get integer registers
-   allocated for FP instructions.  XFmode only supported in FP registers so
-   we can't tie it with any other modes.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)			\
-  (GET_MODE_CLASS (MODE1) == GET_MODE_CLASS (MODE2)	\
-   && ((((MODE1) == XFmode) || ((MODE1) == XCmode) || ((MODE1) == RFmode))	\
-       == (((MODE2) == XFmode) || ((MODE2) == XCmode) || ((MODE2) == RFmode)))	\
-   && (((MODE1) == BImode) == ((MODE2) == BImode)))
-
 /* Specify the modes required to caller save a given hard regno.
    We need to ensure floating pt regs are not saved as DImode.  */
 
@@ -816,27 +767,9 @@ enum reg_class
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
  ia64_secondary_reload_class (CLASS, MODE, X)
 
-/* Certain machines have the property that some registers cannot be copied to
-   some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is nonzero if objects of mode M in
-   registers of CLASS1 can only be copied to registers of class CLASS2 by
-   storing a register of CLASS1 into memory and loading that memory location
-   into a register of CLASS2.  */
-
-#if 0
-/* ??? May need this, but since we've disallowed XFmode in GR_REGS,
-   I'm not quite sure how it could be invoked.  The normal problems
-   with unions should be solved with the addressof fiddling done by
-   movxf and friends.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((MODE) == XFmode || (MODE) == XCmode)				\
-   && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)			\
-       || ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
-#endif
-
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
-   This is closely related to the macro `HARD_REGNO_NREGS'.  */
+   This is closely related to TARGET_HARD_REGNO_NREGS.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) \
   ((MODE) == BImode && (CLASS) == PR_REGS ? 2			\
@@ -844,17 +777,6 @@ enum reg_class
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == RFmode) ? 1 \
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == XCmode) ? 2 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* In BR regs, we can't change the DImode at all.
-   In FP regs, we can't change FP values to integer values and vice versa,
-   but we can change e.g. DImode to SImode, and V2SFmode into DImode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 		\
-  (reg_classes_intersect_p (CLASS, BR_REGS)			\
-   ? (FROM) != (TO)						\
-   : (SCALAR_FLOAT_MODE_P (FROM) != SCALAR_FLOAT_MODE_P (TO)	\
-      ? reg_classes_intersect_p (CLASS, FR_REGS)		\
-      : 0))
 
 /* Basic Stack Layout */
 
@@ -1644,12 +1566,6 @@ do {									\
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
 #define MOVE_MAX 8
-
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of INPREC bits to one of OUTPREC bits (where OUTPREC is smaller
-   than INPREC) by merely operating on it as if it had only OUTPREC bits.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* A C expression describing the value returned by a comparison operator with
    an integral mode and stored by a store-flag instruction (`sCOND') when the

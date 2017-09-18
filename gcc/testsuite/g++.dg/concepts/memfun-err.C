@@ -1,5 +1,5 @@
 // { dg-do run}
-// { dg-options "-std=c++1z -fconcepts" }
+// { dg-options "-std=c++17 -fconcepts" }
 
 
 template<typename T>
@@ -15,16 +15,16 @@ int called = 0;
 
 // Test constrained member definitions
 template<typename T>
-  struct S1 {
+  struct S1 { // { dg-message "defined here" }
     void f1() requires C<T>() { }
     void g1() requires C<T>() and true;
     template<C U> void h1(U u) { called = 1; }
 
-    void g2() requires C<T>(); // { dg-error "candidate" }
+    void g2() requires C<T>(); // { dg-message "candidate" }
   };
 
 template<typename T>
-  void S1<T>::g2() requires D<T>() { } // { dg-error "prototype" }
+  void S1<T>::g2() requires D<T>() { } // { dg-error "no declaration matches" }
 
 int main() {
   S1<X> sx;

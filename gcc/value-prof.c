@@ -104,11 +104,6 @@ along with GCC; see the file COPYING3.  If not see
      and gimple_value_profile_transformations table-driven, perhaps...
 */
 
-static tree gimple_divmod_fixed_value (gassign *, tree, int, gcov_type,
-				       gcov_type);
-static tree gimple_mod_pow2 (gassign *, int, gcov_type, gcov_type);
-static tree gimple_mod_subtract (gassign *, int, int, int, gcov_type,
-				 gcov_type, gcov_type);
 static bool gimple_divmod_fixed_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_pow2_value_transform (gimple_stmt_iterator *);
 static bool gimple_mod_subtract_transform (gimple_stmt_iterator *);
@@ -564,8 +559,6 @@ free_hist (void **slot, void *data ATTRIBUTE_UNUSED)
 {
   histogram_value hist = *(histogram_value *) slot;
   free (hist->hvalue.counters);
-  if (flag_checking)
-    memset (hist, 0xab, sizeof (*hist));
   free (hist);
   return 1;
 }
@@ -695,7 +688,7 @@ gimple_value_profile_transformations (void)
    alter the original STMT.  */
 
 static tree
-gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
+gimple_divmod_fixed_value (gassign *stmt, tree value, profile_probability prob,
 			   gcov_type count, gcov_type all)
 {
   gassign *stmt1, *stmt2;
@@ -755,16 +748,16 @@ gimple_divmod_fixed_value (gassign *stmt, tree value, int prob,
   e12->count = profile_count::from_gcov_type (count);
 
   e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
-  e13->probability = REG_BR_PROB_BASE - prob;
+  e13->probability = prob.invert ();
   e13->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e23);
 
   e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
-  e24->probability = REG_BR_PROB_BASE;
+  e24->probability = profile_probability::always ();
   e24->count = profile_count::from_gcov_type (count);
 
-  e34->probability = REG_BR_PROB_BASE;
+  e34->probability = profile_probability::always ();
   e34->count = profile_count::from_gcov_type (all - count);
 
   return tmp2;
@@ -779,7 +772,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
   enum tree_code code;
   gcov_type val, count, all;
   tree result, value, tree_val;
-  gcov_type prob;
+  profile_probability prob;
   gassign *stmt;
 
   stmt = dyn_cast <gassign *> (gsi_stmt (*si));
@@ -818,9 +811,9 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
 
   /* Compute probability of taking the optimal path.  */
   if (all > 0)
-    prob = GCOV_COMPUTE_SCALE (count, all);
+    prob = profile_probability::probability_in_gcov_type (count, all);
   else
-    prob = 0;
+    prob = profile_probability::never ();
 
   if (sizeof (gcov_type) == sizeof (HOST_WIDE_INT))
     tree_val = build_int_cst (get_gcov_type (), val);
@@ -857,7 +850,7 @@ gimple_divmod_fixed_value_transform (gimple_stmt_iterator *si)
    the temp; it does not replace or alter the original STMT.  */
 
 static tree
-gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
+gimple_mod_pow2 (gassign *stmt, profile_probability prob, gcov_type count, gcov_type all)
 {
   gassign *stmt1, *stmt2, *stmt3;
   gcond *stmt4;
@@ -920,16 +913,16 @@ gimple_mod_pow2 (gassign *stmt, int prob, gcov_type count, gcov_type all)
   e12->count = profile_count::from_gcov_type (count);
 
   e13 = make_edge (bb, bb3, EDGE_TRUE_VALUE);
-  e13->probability = REG_BR_PROB_BASE - prob;
+  e13->probability = prob.invert ();
   e13->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e23);
 
   e24 = make_edge (bb2, bb4, EDGE_FALLTHRU);
-  e24->probability = REG_BR_PROB_BASE;
+  e24->probability = profile_probability::always ();
   e24->count = profile_count::from_gcov_type (count);
 
-  e34->probability = REG_BR_PROB_BASE;
+  e34->probability = profile_probability::always ();
   e34->count = profile_count::from_gcov_type (all - count);
 
   return result;
@@ -944,7 +937,7 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
   enum tree_code code;
   gcov_type count, wrong_values, all;
   tree lhs_type, result, value;
-  gcov_type prob;
+  profile_probability prob;
   gassign *stmt;
 
   stmt = dyn_cast <gassign *> (gsi_stmt (*si));
@@ -989,9 +982,9 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
     return false;
 
   if (all > 0)
-    prob = GCOV_COMPUTE_SCALE (count, all);
+    prob = profile_probability::probability_in_gcov_type (count, all);
   else
-    prob = 0;
+    prob = profile_probability::never ();
 
   result = gimple_mod_pow2 (stmt, prob, count, all);
 
@@ -1011,7 +1004,8 @@ gimple_mod_pow2_value_transform (gimple_stmt_iterator *si)
 /* FIXME: Generalize the interface to handle NCOUNTS > 1.  */
 
 static tree
-gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
+gimple_mod_subtract (gassign *stmt, profile_probability prob1,
+		     profile_probability prob2, int ncounts,
 		     gcov_type count1, gcov_type count2, gcov_type all)
 {
   gassign *stmt1;
@@ -1081,7 +1075,7 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
 
   e12->flags &= ~EDGE_FALLTHRU;
   e12->flags |= EDGE_FALSE_VALUE;
-  e12->probability = REG_BR_PROB_BASE - prob1;
+  e12->probability = prob1.invert ();
   e12->count = profile_count::from_gcov_type (all - count1);
 
   e14 = make_edge (bb, bb4, EDGE_TRUE_VALUE);
@@ -1093,14 +1087,14 @@ gimple_mod_subtract (gassign *stmt, int prob1, int prob2, int ncounts,
       e23->flags &= ~EDGE_FALLTHRU;
       e23->flags |= EDGE_FALSE_VALUE;
       e23->count = profile_count::from_gcov_type (all - count1 - count2);
-      e23->probability = REG_BR_PROB_BASE - prob2;
+      e23->probability = prob2.invert ();
 
       e24 = make_edge (bb2, bb4, EDGE_TRUE_VALUE);
       e24->probability = prob2;
       e24->count = profile_count::from_gcov_type (count2);
     }
 
-  e34->probability = REG_BR_PROB_BASE;
+  e34->probability = profile_probability::always ();
   e34->count = profile_count::from_gcov_type (all - count1 - count2);
 
   return result;
@@ -1115,7 +1109,7 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   enum tree_code code;
   gcov_type count, wrong_values, all;
   tree lhs_type, result;
-  gcov_type prob1, prob2;
+  profile_probability prob1, prob2;
   unsigned int i, steps;
   gcov_type count1, count2;
   gassign *stmt;
@@ -1183,12 +1177,12 @@ gimple_mod_subtract_transform (gimple_stmt_iterator *si)
   /* Compute probability of taking the optimal path(s).  */
   if (all > 0)
     {
-      prob1 = GCOV_COMPUTE_SCALE (count1, all);
-      prob2 = GCOV_COMPUTE_SCALE (count2, all);
+      prob1 = profile_probability::probability_in_gcov_type (count1, all);
+      prob2 = profile_probability::probability_in_gcov_type (count2, all);
     }
   else
     {
-      prob1 = prob2 = 0;
+      prob1 = prob2 = profile_probability::never ();
     }
 
   /* In practice, "steps" is always 2.  This interface reflects this,
@@ -1318,7 +1312,7 @@ check_ic_target (gcall *call_stmt, struct cgraph_node *target)
 
 gcall *
 gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
-	   int prob, profile_count count, profile_count all)
+	   profile_probability prob, profile_count count, profile_count all)
 {
   gcall *dcall_stmt;
   gassign *load_stmt;
@@ -1388,7 +1382,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
       /* The indirect call might be noreturn.  */
       if (e_ij != NULL)
 	{
-	  e_ij->probability = REG_BR_PROB_BASE;
+	  e_ij->probability = profile_probability::always ();
 	  e_ij->count = all - count;
 	  e_ij = single_pred_edge (split_edge (e_ij));
 	}
@@ -1404,7 +1398,7 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
   e_cd->count = count;
 
   e_ci = make_edge (cond_bb, icall_bb, EDGE_FALSE_VALUE);
-  e_ci->probability = REG_BR_PROB_BASE - prob;
+  e_ci->probability = prob.invert ();
   e_ci->count = all - count;
 
   remove_edge (e_di);
@@ -1416,12 +1410,12 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
       else
 	{
 	  e_dj = make_edge (dcall_bb, join_bb, EDGE_FALLTHRU);
-	  e_dj->probability = REG_BR_PROB_BASE;
+	  e_dj->probability = profile_probability::always ();
 	  e_dj->count = count;
 
 	  e_ij->count = all - count;
 	}
-      e_ij->probability = REG_BR_PROB_BASE;
+      e_ij->probability = profile_probability::always ();
     }
 
   /* Insert PHI node for the call result if necessary.  */
@@ -1499,6 +1493,8 @@ gimple_ic (gcall *icall_stmt, struct cgraph_node *direct_call,
     if (e_eh->flags & (EDGE_EH | EDGE_ABNORMAL))
       {
 	e = make_edge (dcall_bb, e_eh->dest, e_eh->flags);
+	e->probability = e_eh->probability;
+	e->count = e_eh->count;
 	for (gphi_iterator psi = gsi_start_phis (e_eh->dest);
 	     !gsi_end_p (psi); gsi_next (&psi))
 	  {
@@ -1647,7 +1643,7 @@ interesting_stringop_to_profile_p (gcall *call, int *size_arg)
    assuming we'll propagate a true constant into ICALL_SIZE later.  */
 
 static void
-gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
+gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, profile_probability prob,
 			     gcov_type count, gcov_type all)
 {
   gassign *tmp_stmt;
@@ -1711,16 +1707,16 @@ gimple_stringop_fixed_value (gcall *vcall_stmt, tree icall_size, int prob,
   e_ci->count = profile_count::from_gcov_type (count);
 
   e_cv = make_edge (cond_bb, vcall_bb, EDGE_FALSE_VALUE);
-  e_cv->probability = REG_BR_PROB_BASE - prob;
+  e_cv->probability = prob.invert ();
   e_cv->count = profile_count::from_gcov_type (all - count);
 
   remove_edge (e_iv);
 
   e_ij = make_edge (icall_bb, join_bb, EDGE_FALLTHRU);
-  e_ij->probability = REG_BR_PROB_BASE;
+  e_ij->probability = profile_probability::always ();
   e_ij->count = profile_count::from_gcov_type (count);
 
-  e_vj->probability = REG_BR_PROB_BASE;
+  e_vj->probability = profile_probability::always ();
   e_vj->count = profile_count::from_gcov_type (all - count);
 
   /* Insert PHI node for the call result if necessary.  */
@@ -1755,7 +1751,7 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   gcov_type count, all, val;
   tree dest, src;
   unsigned int dest_align, src_align;
-  gcov_type prob;
+  profile_probability prob;
   tree tree_val;
   int size_arg;
 
@@ -1790,9 +1786,9 @@ gimple_stringops_transform (gimple_stmt_iterator *gsi)
   if (check_counter (stmt, "value", &count, &all, gimple_bb (stmt)->count))
     return false;
   if (all > 0)
-    prob = GCOV_COMPUTE_SCALE (count, all);
+    prob = profile_probability::probability_in_gcov_type (count, all);
   else
-    prob = 0;
+    prob = profile_probability::never ();
 
   dest = gimple_call_arg (stmt, 0);
   dest_align = get_pointer_alignment (dest);

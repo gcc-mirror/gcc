@@ -1,9 +1,10 @@
-// { dg-do assemble  }
+// { dg-do compile  }
 
-class A { // { dg-error "" } synthesized copy ctor
+class A { // { dg-message "A::A" } synthesized copy ctor
+  // { dg-message "defined here" "note" { target *-*-* } .-1 }
 public:
-  A(int);			// { dg-error "" } referenced below
-  A(float);			// { dg-error "" } referenced below
+  A(int);			// { dg-message "A::A" }
+  A(float);			// { dg-message "A::A" }
   ~A();
 };
 

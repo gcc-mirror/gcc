@@ -528,8 +528,9 @@ get_format_string (tree format, location_t *ploc)
 
   tree type = TREE_TYPE (format);
 
-  if (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (type))) != MODE_INT
-      || GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (type))) != 1)
+  scalar_int_mode char_mode;
+  if (!is_int_mode (TYPE_MODE (TREE_TYPE (type)), &char_mode)
+      || GET_MODE_SIZE (char_mode) != 1)
     {
       /* Wide format string.  */
       return NULL;
@@ -1407,7 +1408,7 @@ format_integer (const directive &dir, tree arg)
 
       return res;
     }
-  else if (TREE_CODE (TREE_TYPE (arg)) == INTEGER_TYPE
+  else if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
 	   || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE)
     /* Determine the type of the provided non-constant argument.  */
     argtype = TREE_TYPE (arg);
@@ -1427,7 +1428,7 @@ format_integer (const directive &dir, tree arg)
 
   if (arg
       && TREE_CODE (arg) == SSA_NAME
-      && TREE_CODE (argtype) == INTEGER_TYPE)
+      && INTEGRAL_TYPE_P (argtype))
     {
       /* Try to determine the range of values of the integer argument
 	 (range information is not available for pointers).  */
@@ -1472,7 +1473,7 @@ format_integer (const directive &dir, tree arg)
 	      if (code == NOP_EXPR)
 		{
 		  tree type = TREE_TYPE (gimple_assign_rhs1 (def));
-		  if (TREE_CODE (type) == INTEGER_TYPE
+		  if (INTEGRAL_TYPE_P (type)
 		      || TREE_CODE (type) == POINTER_TYPE)
 		    argtype = type;
 		}
@@ -3868,7 +3869,7 @@ pass_sprintf_length::handle_gimple_call (gimple_stmt_iterator *gsi)
 	    }
 	  else if (dstsize > target_int_max ())
 	    warning_at (gimple_location (info.callstmt), info.warnopt (),
-			"specified bound %wu exceeds %<INT_MAX %>",
+			"specified bound %wu exceeds %<INT_MAX%>",
 			dstsize);
 	}
       else if (TREE_CODE (size) == SSA_NAME)

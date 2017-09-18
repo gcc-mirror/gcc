@@ -12048,6 +12048,9 @@ elf*) FORMAT_FILE="elf.lo" ;;
 pecoff) FORMAT_FILE="pecoff.lo"
         backtrace_supports_data=no
 	;;
+xcoff*) FORMAT_FILE="xcoff.lo"
+        backtrace_supports_data=no
+        ;;
 *) { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: could not determine output file type" >&5
 $as_echo "$as_me: WARNING: could not determine output file type" >&2;}
    FORMAT_FILE="unknown.lo"
@@ -12066,6 +12069,19 @@ esac
 
 cat >>confdefs.h <<_ACEOF
 #define BACKTRACE_ELF_SIZE $elfsize
+_ACEOF
+
+
+# XCOFF defines.
+xcoffsize=
+case "$libbacktrace_cv_sys_filetype" in
+xcoff32) xcoffsize=32 ;;
+xcoff64) xcoffsize=64 ;;
+*)       xcoffsize=unused
+esac
+
+cat >>confdefs.h <<_ACEOF
+#define BACKTRACE_XCOFF_SIZE $xcoffsize
 _ACEOF
 
 
@@ -12604,6 +12620,53 @@ fi
 if test "$have_dl_iterate_phdr" = "yes"; then
 
 $as_echo "#define HAVE_DL_ITERATE_PHDR 1" >>confdefs.h
+
+fi
+
+# Check for loadquery.
+for ac_header in sys/ldr.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "sys/ldr.h" "ac_cv_header_sys_ldr_h" "$ac_includes_default"
+if test "x$ac_cv_header_sys_ldr_h" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_SYS_LDR_H 1
+_ACEOF
+
+fi
+
+done
+
+if test "$ac_cv_header_sys_ldr_h" = "no"; then
+  have_loadquery=no
+else
+  if test -n "${with_target_subdir}"; then
+    # When built as a GCC target library, we can't do a link test.
+    cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#include <sys/ldr.h>
+
+_ACEOF
+if (eval "$ac_cpp conftest.$ac_ext") 2>&5 |
+  $EGREP "loadquery" >/dev/null 2>&1; then :
+  have_loadquery=yes
+else
+  have_loadquery=no
+fi
+rm -f conftest*
+
+  else
+    ac_fn_c_check_func "$LINENO" "loadquery" "ac_cv_func_loadquery"
+if test "x$ac_cv_func_loadquery" = x""yes; then :
+  have_loadquery=yes
+else
+  have_loadquery=no
+fi
+
+  fi
+fi
+if test "$have_loadquery" = "yes"; then
+
+$as_echo "#define HAVE_LOADQUERY 1" >>confdefs.h
 
 fi
 

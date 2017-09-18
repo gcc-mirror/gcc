@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-cfgcleanup.h"
 #include "insn-addr.h" /* for INSN_ADDRESSES_ALLOC.  */
 #include "diagnostic-core.h" /* for fnotice */
+#include "stringpool.h"
+#include "attribs.h"
 
 using namespace gcc;
 
@@ -1796,6 +1798,7 @@ emergency_dump_function ()
   if (!dump_file || !cfun)
     return;
   fnotice (stderr, "dump file: %s\n", dump_file_name);
+  fprintf (dump_file, "\n\n\nEMERGENCY DUMP:\n\n");
   execute_function_dump (cfun, current_pass);
 }
 

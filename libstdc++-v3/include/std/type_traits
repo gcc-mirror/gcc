@@ -754,15 +754,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Destructible and constructible type properties.
 
-  template<typename>
-    struct add_rvalue_reference;
-
   /**
    *  @brief  Utility to simplify expressions used in unevaluated operands
    *  @ingroup utilities
    */
+
+  template<typename _Tp, typename _Up = _Tp&&>
+    _Up
+    __declval(int);
+
   template<typename _Tp>
-    typename add_rvalue_reference<_Tp>::type declval() noexcept;
+    _Tp
+    __declval(long);
+
+  template<typename _Tp>
+    auto declval() noexcept -> decltype(__declval<_Tp>(0));
 
   template<typename, unsigned = 0>
     struct extent;
@@ -2079,16 +2085,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct __declval_protector
     {
       static const bool __stop = false;
-      static typename add_rvalue_reference<_Tp>::type __delegate();
     };
 
   template<typename _Tp>
-    inline typename add_rvalue_reference<_Tp>::type
-    declval() noexcept
+    auto declval() noexcept -> decltype(__declval<_Tp>(0))
     {
       static_assert(__declval_protector<_Tp>::__stop,
 		    "declval() must not be used!");
-      return __declval_protector<_Tp>::__delegate();
+      return __declval<_Tp>(0);
     }
 
   /// result_of
@@ -2873,14 +2877,16 @@ template <typename _Base, typename _Derived>
 template <typename _From, typename _To>
   inline constexpr bool is_convertible_v = is_convertible<_From, _To>::value;
 
-#ifdef __has_builtin
-# if !__has_builtin(__has_unique_object_representations)
-// Try not to break non-GNU compilers that don't support the built-in:
-#  define _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#if __GNUC__ >= 7
+# define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
+#elif defined(__is_identifier)
+// For non-GNU compilers:
+# if ! __is_identifier(__has_unique_object_representations)
+#  define _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP 1
 # endif
 #endif
 
-#ifndef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#ifdef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 # define __cpp_lib_has_unique_object_representations 201606
   /// has_unique_object_representations
   template<typename _Tp>
@@ -2890,13 +2896,13 @@ template <typename _From, typename _To>
       )>
     { };
 #endif
-#undef _GLIBCXX_NO_BUILTIN_HAS_UNIQ_OBJ_REP
+#undef _GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP
 
 #if __GNUC__ >= 7
 # define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
-#elif defined __has_builtin
+#elif defined(__is_identifier)
 // For non-GNU compilers:
-# if __has_builtin(__is_aggregate)
+# if ! __is_identifier(__is_aggregate)
 #  define _GLIBCXX_HAVE_BUILTIN_IS_AGGREGATE 1
 # endif
 #endif

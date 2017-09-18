@@ -324,13 +324,6 @@ typedef struct GTY(()) machine_function
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 1
 
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  pa_modes_tieable_p (MODE1, MODE2)
-
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
 
@@ -670,11 +663,6 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
   the standard parameter passing conventions on the RS6000.  That's why
   you'll see lots of similar code in rs6000.h.  */
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  */
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  pa_function_arg_padding ((MODE), (TYPE))
-
 /* Specify padding for the last element of a block move between registers
    and memory.
 
@@ -685,7 +673,7 @@ struct hppa_args {int words, nargs_prototype, incoming, indirect; };
    so that there is only one element.  This allows the object to be
    correctly padded.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  pa_function_arg_padding ((MODE), (TYPE))
+  targetm.calls.function_arg_padding ((MODE), (TYPE))
 
 
 /* On HPPA, we emit profiling code as rtl via PROFILE_HOOK rather than
@@ -1030,10 +1018,6 @@ do {									     \
 
 /* Nonzero if access to memory by bytes is slow and undesirable.  */
 #define SLOW_BYTE_ACCESS 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

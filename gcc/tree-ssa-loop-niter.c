@@ -42,6 +42,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-chrec.h"
 #include "tree-scalar-evolution.h"
 #include "params.h"
+#include "tree-dfa.h"
 
 
 /* The maximum number of dominator BBs we search for conditions
@@ -1142,8 +1143,12 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
   tree niter_type = TREE_TYPE (step);
   tree mod = fold_build2 (FLOOR_MOD_EXPR, niter_type, *delta, step);
   tree tmod;
-  tree assumption = boolean_true_node, bound;
-  tree type1 = (POINTER_TYPE_P (type)) ? sizetype : type;
+  mpz_t mmod;
+  tree assumption = boolean_true_node, bound, noloop;
+  bool ret = false, fv_comp_no_overflow;
+  tree type1 = type;
+  if (POINTER_TYPE_P (type))
+    type1 = sizetype;
 
   if (TREE_CODE (mod) != INTEGER_CST)
     return false;
@@ -1151,51 +1156,96 @@ number_of_iterations_lt_to_ne (tree type, affine_iv *iv0, affine_iv *iv1,
     mod = fold_build2 (MINUS_EXPR, niter_type, step, mod);
   tmod = fold_convert (type1, mod);
 
+  mpz_init (mmod);
+  wi::to_mpz (mod, mmod, UNSIGNED);
+  mpz_neg (mmod, mmod);
+
   /* If the induction variable does not overflow and the exit is taken,
-     then the computation of the final value does not overflow.  There
-     are three cases:
-       1) The case if the new final value is equal to the current one.
-       2) Induction varaible has pointer type, as the code cannot rely
-	  on the object to that the pointer points being placed at the
-	  end of the address space (and more pragmatically,
-	  TYPE_{MIN,MAX}_VALUE is not defined for pointers).
-       3) EXIT_MUST_BE_TAKEN is true, note it implies that the induction
-	  variable does not overflow.  */
-  if (!integer_zerop (mod) && !POINTER_TYPE_P (type) && !exit_must_be_taken)
+     then the computation of the final value does not overflow.  This is
+     also obviously the case if the new final value is equal to the
+     current one.  Finally, we postulate this for pointer type variables,
+     as the code cannot rely on the object to that the pointer points being
+     placed at the end of the address space (and more pragmatically,
+     TYPE_{MIN,MAX}_VALUE is not defined for pointers).  */
+  if (integer_zerop (mod) || POINTER_TYPE_P (type))
+    fv_comp_no_overflow = true;
+  else if (!exit_must_be_taken)
+    fv_comp_no_overflow = false;
+  else
+    fv_comp_no_overflow =
+	    (iv0->no_overflow && integer_nonzerop (iv0->step))
+	    || (iv1->no_overflow && integer_nonzerop (iv1->step));
+
+  if (integer_nonzerop (iv0->step))
     {
-      if (integer_nonzerop (iv0->step))
+      /* The final value of the iv is iv1->base + MOD, assuming that this
+	 computation does not overflow, and that
+	 iv0->base <= iv1->base + MOD.  */
+      if (!fv_comp_no_overflow)
 	{
-	  /* The final value of the iv is iv1->base + MOD, assuming
-	     that this computation does not overflow, and that
-	     iv0->base <= iv1->base + MOD.  */
 	  bound = fold_build2 (MINUS_EXPR, type1,
 			       TYPE_MAX_VALUE (type1), tmod);
 	  assumption = fold_build2 (LE_EXPR, boolean_type_node,
 				    iv1->base, bound);
+	  if (integer_zerop (assumption))
+	    goto end;
 	}
+      if (mpz_cmp (mmod, bnds->below) < 0)
+	noloop = boolean_false_node;
+      else if (POINTER_TYPE_P (type))
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      iv0->base,
+			      fold_build_pointer_plus (iv1->base, tmod));
       else
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      iv0->base,
+			      fold_build2 (PLUS_EXPR, type1,
+					   iv1->base, tmod));
+    }
+  else
+    {
+      /* The final value of the iv is iv0->base - MOD, assuming that this
+	 computation does not overflow, and that
+	 iv0->base - MOD <= iv1->base. */
+      if (!fv_comp_no_overflow)
 	{
-	  /* The final value of the iv is iv0->base - MOD, assuming
-	     that this computation does not overflow, and that
-	     iv0->base - MOD <= iv1->base.  */
 	  bound = fold_build2 (PLUS_EXPR, type1,
 			       TYPE_MIN_VALUE (type1), tmod);
 	  assumption = fold_build2 (GE_EXPR, boolean_type_node,
 				    iv0->base, bound);
+	  if (integer_zerop (assumption))
+	    goto end;
 	}
-      if (integer_zerop (assumption))
-	return false;
-      else if (!integer_nonzerop (assumption))
-	niter->assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
-					  niter->assumptions, assumption);
+      if (mpz_cmp (mmod, bnds->below) < 0)
+	noloop = boolean_false_node;
+      else if (POINTER_TYPE_P (type))
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      fold_build_pointer_plus (iv0->base,
+						       fold_build1 (NEGATE_EXPR,
+								    type1, tmod)),
+			      iv1->base);
+      else
+	noloop = fold_build2 (GT_EXPR, boolean_type_node,
+			      fold_build2 (MINUS_EXPR, type1,
+					   iv0->base, tmod),
+			      iv1->base);
     }
 
-  /* Since we are transforming LT to NE and DELTA is constant, there
-     is no need to compute may_be_zero because this loop must roll.  */
-
+  if (!integer_nonzerop (assumption))
+    niter->assumptions = fold_build2 (TRUTH_AND_EXPR, boolean_type_node,
+				      niter->assumptions,
+				      assumption);
+  if (!integer_zerop (noloop))
+    niter->may_be_zero = fold_build2 (TRUTH_OR_EXPR, boolean_type_node,
+				      niter->may_be_zero,
+				      noloop);
   bounds_add (bnds, wi::to_widest (mod), type);
   *delta = fold_build2 (PLUS_EXPR, niter_type, *delta, mod);
-  return true;
+
+  ret = true;
+end:
+  mpz_clear (mmod);
+  return ret;
 }
 
 /* Add assertions to NITER that ensure that the control variable of the loop
@@ -1668,18 +1718,36 @@ number_of_iterations_cond (struct loop *loop,
 	exit_must_be_taken = true;
     }
 
-  /* We can handle the case when neither of the sides of the comparison is
-     invariant, provided that the test is NE_EXPR.  This rarely occurs in
-     practice, but it is simple enough to manage.  */
+  /* We can handle cases which neither of the sides of the comparison is
+     invariant:
+
+       {iv0.base, iv0.step} cmp_code {iv1.base, iv1.step}
+     as if:
+       {iv0.base, iv0.step - iv1.step} cmp_code {iv1.base, 0}
+
+     provided that either below condition is satisfied:
+
+       a) the test is NE_EXPR;
+       b) iv0.step - iv1.step is integer and iv0/iv1 don't overflow.
+
+     This rarely occurs in practice, but it is simple enough to manage.  */
   if (!integer_zerop (iv0->step) && !integer_zerop (iv1->step))
     {
       tree step_type = POINTER_TYPE_P (type) ? sizetype : type;
-      if (code != NE_EXPR)
+      tree step = fold_binary_to_constant (MINUS_EXPR, step_type,
+					   iv0->step, iv1->step);
+
+      /* No need to check sign of the new step since below code takes care
+	 of this well.  */
+      if (code != NE_EXPR
+	  && (TREE_CODE (step) != INTEGER_CST
+	      || !iv0->no_overflow || !iv1->no_overflow))
 	return false;
 
-      iv0->step = fold_binary_to_constant (MINUS_EXPR, step_type,
-					   iv0->step, iv1->step);
-      iv0->no_overflow = false;
+      iv0->step = step;
+      if (!POINTER_TYPE_P (type))
+	iv0->no_overflow = false;
+
       iv1->step = build_int_cst (step_type, 0);
       iv1->no_overflow = true;
     }
@@ -1915,6 +1983,21 @@ expand_simple_operations (tree expr, tree stop)
 
       if (code == SSA_NAME)
 	return expand_simple_operations (e, stop);
+      else if (code == ADDR_EXPR)
+	{
+	  HOST_WIDE_INT offset;
+	  tree base = get_addr_base_and_unit_offset (TREE_OPERAND (e, 0),
+						     &offset);
+	  if (base
+	      && TREE_CODE (base) == MEM_REF)
+	    {
+	      ee = expand_simple_operations (TREE_OPERAND (base, 0), stop);
+	      return fold_build2 (POINTER_PLUS_EXPR, TREE_TYPE (expr), ee,
+				  wide_int_to_tree (sizetype,
+						    mem_ref_offset (base)
+						    + offset));
+	    }
+	}
 
       return expr;
     }
@@ -2362,9 +2445,9 @@ number_of_iterations_exit (struct loop *loop, edge exit,
     return true;
 
   if (warn)
-    warning_at (gimple_location_safe (stmt),
-		OPT_Wunsafe_loop_optimizations,
-		"missed loop optimization, the loop counter may overflow");
+    dump_printf_loc (MSG_MISSED_OPTIMIZATION, gimple_location_safe (stmt),
+		     "missed loop optimization: niters analysis ends up "
+		     "with assumptions.\n");
 
   return false;
 }

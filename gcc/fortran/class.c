@@ -310,7 +310,6 @@ class_array_ref_detected (gfc_ref *ref, bool *full_array)
       else if (ref->next && ref->next->type == REF_ARRAY
 	    && !ref->next->next
 	    && ref->type == REF_COMPONENT
-	    && ref->next->type == REF_ARRAY
 	    && ref->next->u.ar.type != AR_ELEMENT)
 	{
 	  with_data = true;

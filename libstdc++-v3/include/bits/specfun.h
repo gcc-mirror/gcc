@@ -1203,6 +1203,7 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // Confluent hypergeometric functions
 
@@ -1302,6 +1303,7 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
       return std::__detail::__hyperg<__type>(__a, __b, __c, __x);
     }
 
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace __gnu_cxx
 
 #pragma GCC visibility pop

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -111,6 +111,7 @@ package body ALI is
       Locking_Policy_Specified               := ' ';
       No_Normalize_Scalars_Specified         := False;
       No_Object_Specified                    := False;
+      No_Component_Reordering_Specified      := False;
       GNATprove_Mode_Specified               := False;
       Normalize_Scalars_Specified            := False;
       Partition_Elaboration_Policy_Specified := ' ';
@@ -885,6 +886,7 @@ package body ALI is
         Main_Priority                => -1,
         Main_CPU                     => -1,
         Main_Program                 => None,
+        No_Component_Reordering      => False,
         No_Object                    => False,
         Normalize_Scalars            => False,
         Ofile_Full_Name              => Full_Object_File_Name,
@@ -1122,9 +1124,15 @@ package body ALI is
             elsif C = 'N' then
                C := Getc;
 
+               --  Processing for NC
+
+               if C = 'C' then
+                  ALIs.Table (Id).No_Component_Reordering := True;
+                  No_Component_Reordering_Specified := True;
+
                --  Processing for NO
 
-               if C = 'O' then
+               elsif C = 'O' then
                   ALIs.Table (Id).No_Object := True;
                   No_Object_Specified := True;
 

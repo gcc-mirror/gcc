@@ -159,18 +159,18 @@ enum nds32_16bit_address_type
 /* This macro is used to return the register number for passing argument.
    We need to obey the following rules:
      1. If it is required MORE THAN one register,
-        we need to further check if it really needs to be
-        aligned on double words.
-          a) If double word alignment is necessary,
-             the register number must be even value.
-          b) Otherwise, the register number can be odd or even value.
+	we need to further check if it really needs to be
+	aligned on double words.
+	  a) If double word alignment is necessary,
+	     the register number must be even value.
+	  b) Otherwise, the register number can be odd or even value.
      2. If it is required ONLY one register,
-        the register number can be odd or even value.  */
-#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type)  \
-  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                     \
-   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)          \
-      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)      \
-      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))                \
+	the register number can be odd or even value.  */
+#define NDS32_AVAILABLE_REGNUM_FOR_GPR_ARG(reg_offset, mode, type) \
+  ((NDS32_NEED_N_REGS_FOR_ARG (mode, type) > 1)                    \
+   ? ((NDS32_MODE_TYPE_ALIGN (mode, type) > PARM_BOUNDARY)         \
+      ? (((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM + 1) & ~1)     \
+      : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))               \
    : ((reg_offset) + NDS32_GPR_ARG_FIRST_REGNUM))
 
 /* This macro is to check if there are still available registers
@@ -596,25 +596,6 @@ enum nds32_builtins
    own cost calculations.  */
 #define HONOR_REG_ALLOC_ORDER optimize_size
 
-/* The number of consecutive hard regs needed starting at
-   reg "regno" for holding a value of mode "mode".  */
-#define HARD_REGNO_NREGS(regno, mode) nds32_hard_regno_nregs (regno, mode)
-
-/* Value is 1 if hard register "regno" can hold a value
-   of machine-mode "mode".  */
-#define HARD_REGNO_MODE_OK(regno, mode) nds32_hard_regno_mode_ok (regno, mode)
-
-/* A C expression that is nonzero if a value of mode1
-   is accessible in mode2 without copying.
-   Define this macro to return nonzero in as many cases as possible
-   since doing so will allow GCC to perform better register allocation.
-   We can use general registers to tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(mode1, mode2)          \
-  (GET_MODE_CLASS (mode1) == MODE_INT          \
-   && GET_MODE_CLASS (mode2) == MODE_INT       \
-   && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD  \
-   && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD)
-
 
 /* Register Classes.  */
 
@@ -780,13 +761,13 @@ enum reg_class
    The trampoline code for nds32 target must contains following parts:
 
      1. instructions (4 * 4 = 16 bytes):
-          get $pc first
-          load chain_value to static chain register via $pc
-          load nested function address to $r15 via $pc
-          jump to desired nested function via $r15
+	  get $pc first
+	  load chain_value to static chain register via $pc
+	  load nested function address to $r15 via $pc
+	  jump to desired nested function via $r15
      2. data (4 * 2 = 8 bytes):
-          chain_value
-          nested function address
+	  chain_value
+	  nested function address
 
    Please check nds32.c implementation for more information.  */
 #define TRAMPOLINE_SIZE 24
@@ -897,13 +878,13 @@ enum reg_class
     {                                                                   \
       switch (GET_MODE (body))                                          \
         {                                                               \
-        case QImode:                                                    \
+        case E_QImode:                                                    \
           asm_fprintf (stream, "\t.byte\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
-        case HImode:                                                    \
+        case E_HImode:                                                    \
           asm_fprintf (stream, "\t.short\t.L%d-.L%d\n", value, rel);    \
           break;                                                        \
-        case SImode:                                                    \
+        case E_SImode:                                                    \
           asm_fprintf (stream, "\t.word\t.L%d-.L%d\n", value, rel);     \
           break;                                                        \
         default:                                                        \
@@ -925,10 +906,10 @@ enum reg_class
   do                                                   \
     {                                                  \
       /* Because our jump table is in text section,    \
-         we need to make sure 2-byte alignment after   \
-         the jump table for instructions fetch.  */    \
+	 we need to make sure 2-byte alignment after   \
+	 the jump table for instructions fetch.  */    \
       if (GET_MODE (PATTERN (table)) == QImode)        \
-        ASM_OUTPUT_ALIGN (stream, 1);                  \
+	ASM_OUTPUT_ALIGN (stream, 1);                  \
       asm_fprintf (stream, "\t! Jump Table End\n");    \
     }  while (0)
 
@@ -1016,11 +997,6 @@ enum reg_class
    actually used for the count of a shift operation is equal to the number
    of bits needed to represent the size of the object being shifted.  */
 #define SHIFT_COUNT_TRUNCATED 1
-
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of 'inprec' bits to one of 'outprec' bits by merely operating
-   on it as if it had only 'outprec' bits.  */
-#define TRULY_NOOP_TRUNCATION(outprec, inprec) 1
 
 /* A C expression describing the value returned by a comparison operator with
    an integral mode and stored by a store-flag instruction ('cstoremode4')

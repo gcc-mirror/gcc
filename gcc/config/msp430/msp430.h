@@ -58,12 +58,14 @@ extern bool msp430x;
   "%{!msim:-md} %{msim:%{mlarge:-md}} " /* Copy data from ROM to RAM if necessary.  */ \
   "%{msilicon-errata=*:-msilicon-errata=%*} " /* Pass on -msilicon-errata.  */ \
   "%{msilicon-errata-warn=*:-msilicon-errata-warn=%*} " /* Pass on -msilicon-errata-warn.  */ \
-  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */
+  "%{ffunction-sections:-gdwarf-sections} " /* If function sections are being created then create DWARF line number sections as well.  */ \
+  "%{mdata-region=*:-mdata-region=%*} " /* Pass on -mdata-region.  */
 
 /* Enable linker section garbage collection by default, unless we
    are creating a relocatable binary (gc does not work) or debugging
    is enabled  (the GDB testsuite relies upon unused entities not being deleted).  */
-#define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}}"
+#define LINK_SPEC "%{mrelax:--relax} %{mlarge:%{!r:%{!g:--gc-sections}}} " \
+  "%{mcode-region=*:--code-region=%*} %{mdata-region=*:--data-region=%*}"
 
 extern const char * msp430_select_hwmult_lib (int, const char **);
 # define EXTRA_SPEC_FUNCTIONS				\
@@ -202,8 +204,6 @@ extern const char * msp430_select_hwmult_lib (int, const char **);
 #define RETURN_ADDR_RTX(COUNT, FA)		\
   msp430_return_addr_rtx (COUNT)
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)   1
-
 #define SLOW_BYTE_ACCESS		0
 
 
@@ -330,15 +330,6 @@ typedef struct
 #define FUNCTION_PROFILER(FILE, LABELNO)	\
     fprintf (FILE, "\tcall\t__mcount\n");
 
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-  msp430_hard_regno_nregs (REGNO, MODE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 			\
-  msp430_hard_regno_mode_ok (REGNO, MODE)
-
-#define MODES_TIEABLE_P(MODE1, MODE2)				\
-  msp430_modes_tieable_p (MODE1, MODE2)
-
 /* Exception Handling */
 
 /* R12,R13,R14 - EH data
@@ -413,14 +404,6 @@ typedef struct
    when spilling hard registers when they may contain PSImode values.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO,NREGS,MODE) \
   ((TARGET_LARGE && ((NREGS) <= 2)) ? PSImode : choose_hard_reg_mode ((REGNO), (NREGS), false))
-
-/* Also stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
-#define CANNOT_CHANGE_MODE_CLASS(FROM,TO,CLASS) \
-  (   ((TO) == PSImode && (FROM) == SImode)	\
-   || ((TO) == SImode  && (FROM) == PSImode)    \
-   || ((TO) == DImode  && (FROM) == PSImode)    \
-   || ((TO) == PSImode && (FROM) == DImode)     \
-      )
 
 #define ACCUMULATE_OUTGOING_ARGS 1
 

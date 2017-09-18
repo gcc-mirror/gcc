@@ -204,6 +204,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "tree-chkp.h"
 #include "lto-section-names.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Queue of cgraph nodes scheduled to be added into cgraph.  This is a
    secondary queue used during optimization to accommodate passes that
@@ -449,6 +451,8 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
   node->definition = true;
   notice_global_symbol (decl);
   node->lowered = DECL_STRUCT_FUNCTION (decl)->cfg != NULL;
+  if (!flag_toplevel_reorder)
+    node->no_reorder = true;
 
   /* With -fkeep-inline-functions we are keeping all inline functions except
      for extern inline ones.  */
@@ -471,7 +475,8 @@ cgraph_node::finalize_function (tree decl, bool no_collect)
      declared inline and nested functions.  These were optimized out
      in the original implementation and it is unclear whether we want
      to change the behavior here.  */
-  if (((!opt_for_fn (decl, optimize) || flag_keep_static_functions)
+  if (((!opt_for_fn (decl, optimize) || flag_keep_static_functions
+	|| node->no_reorder)
        && !node->cpp_implicit_alias
        && !DECL_DISREGARD_INLINE_LIMITS (decl)
        && !DECL_DECLARED_INLINE_P (decl)
@@ -840,13 +845,13 @@ varpool_node::finalize_decl (tree decl)
      it is available to notice_global_symbol.  */
   node->definition = true;
   notice_global_symbol (decl);
+  if (!flag_toplevel_reorder)
+    node->no_reorder = true;
   if (TREE_THIS_VOLATILE (decl) || DECL_PRESERVE_P (decl)
       /* Traditionally we do not eliminate static variables when not
 	 optimizing and when not doing toplevel reoder.  */
-      || node->no_reorder
-      || ((!flag_toplevel_reorder
-          && !DECL_COMDAT (node->decl)
-	   && !DECL_ARTIFICIAL (node->decl))))
+      || (node->no_reorder && !DECL_COMDAT (node->decl)
+	  && !DECL_ARTIFICIAL (node->decl)))
     node->force_output = true;
 
   if (symtab->state == CONSTRUCTION
@@ -857,8 +862,8 @@ varpool_node::finalize_decl (tree decl)
   /* Some frontends produce various interface variables after compilation
      finished.  */
   if (symtab->state == FINISHED
-      || (!flag_toplevel_reorder
-	&& symtab->state == EXPANSION))
+      || (node->no_reorder
+	  && symtab->state == EXPANSION))
     node->assemble_decl ();
 
   if (DECL_INITIAL (decl))
@@ -1506,18 +1511,18 @@ init_lowered_empty_function (tree decl, bool in_ssa, profile_count count)
 
   /* Create BB for body of the function and connect it properly.  */
   ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
+  ENTRY_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   EXIT_BLOCK_PTR_FOR_FN (cfun)->count = count;
-  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = REG_BR_PROB_BASE;
+  EXIT_BLOCK_PTR_FOR_FN (cfun)->frequency = BB_FREQ_MAX;
   bb = create_basic_block (NULL, ENTRY_BLOCK_PTR_FOR_FN (cfun));
   bb->count = count;
   bb->frequency = BB_FREQ_MAX;
   e = make_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun), bb, EDGE_FALLTHRU);
   e->count = count;
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = profile_probability::always ();
   e = make_edge (bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
   e->count = count;
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = profile_probability::always ();
   add_bb_to_loop (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun)->loop_father);
 
   return bb;
@@ -1891,19 +1896,18 @@ cgraph_node::expand_thunk (bool output_asm_thunks, bool force_gimple_thunk)
 					    NULL_TREE, NULL_TREE);
 		  gsi_insert_after (&bsi, stmt, GSI_NEW_STMT);
 		  e = make_edge (bb, then_bb, EDGE_TRUE_VALUE);
-		  e->probability = REG_BR_PROB_BASE - REG_BR_PROB_BASE / 16;
+		  e->probability = profile_probability::guessed_always ()
+					.apply_scale (1, 16);
 		  e->count = count - count.apply_scale (1, 16);
 		  e = make_edge (bb, else_bb, EDGE_FALSE_VALUE);
-		  e->probability = REG_BR_PROB_BASE / 16;
+		  e->probability = profile_probability::guessed_always ()
+					.apply_scale (1, 16);
 		  e->count = count.apply_scale (1, 16);
-		  e = make_edge (return_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-		  e->probability = REG_BR_PROB_BASE;
-		  e->count = count;
-		  e = make_edge (then_bb, return_bb, EDGE_FALLTHRU);
-		  e->probability = REG_BR_PROB_BASE;
-		  e->count = count - count.apply_scale (1, 16);
+		  make_single_succ_edge (return_bb,
+					 EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
+		  make_single_succ_edge (then_bb, return_bb, EDGE_FALLTHRU);
 		  e = make_edge (else_bb, return_bb, EDGE_FALLTHRU);
-		  e->probability = REG_BR_PROB_BASE;
+		  e->probability = profile_probability::always ();
 		  e->count = count.apply_scale (1, 16);
 		  bsi = gsi_last_bb (then_bb);
 		}
@@ -2227,11 +2231,10 @@ struct cgraph_order_sort
    according to their order fields, which is the order in which they
    appeared in the file.  This implements -fno-toplevel-reorder.  In
    this mode we may output functions and variables which don't really
-   need to be output.
-   When NO_REORDER is true only do this for symbols marked no reorder. */
+   need to be output.  */
 
 static void
-output_in_order (bool no_reorder)
+output_in_order (void)
 {
   int max;
   cgraph_order_sort *nodes;
@@ -2246,7 +2249,7 @@ output_in_order (bool no_reorder)
     {
       if (pf->process && !pf->thunk.thunk_p && !pf->alias)
 	{
-	  if (no_reorder && !pf->no_reorder)
+	  if (!pf->no_reorder)
 	    continue;
 	  i = pf->order;
 	  gcc_assert (nodes[i].kind == ORDER_UNDEFINED);
@@ -2259,7 +2262,7 @@ output_in_order (bool no_reorder)
      Please keep them in sync.  */
   FOR_EACH_VARIABLE (pv)
     {
-      if (no_reorder && !pv->no_reorder)
+      if (!pv->no_reorder)
 	continue;
       if (DECL_HARD_REGISTER (pv->decl)
 	  || DECL_HAS_VALUE_EXPR_P (pv->decl))
@@ -2461,10 +2464,6 @@ symbol_table::compile (void)
     fprintf (stderr, "Performing interprocedural optimizations\n");
   state = IPA;
 
-  /* Offloading requires LTO infrastructure.  */
-  if (!in_lto_p && g->have_offload)
-    flag_generate_offload = 1;
-
   /* If LTO is enabled, initialize the streamer hooks needed by GIMPLE.  */
   if (flag_generate_lto || flag_generate_offload)
     lto_streamer_hooks_init ();
@@ -2533,16 +2532,11 @@ symbol_table::compile (void)
 
   state = EXPANSION;
 
-  if (!flag_toplevel_reorder)
-    output_in_order (false);
-  else
-    {
-      /* Output first asm statements and anything ordered. The process
-         flag is cleared for these nodes, so we skip them later.  */
-      output_in_order (true);
-      expand_all_functions ();
-      output_variables ();
-    }
+  /* Output first asm statements and anything ordered. The process
+     flag is cleared for these nodes, so we skip them later.  */
+  output_in_order ();
+  expand_all_functions ();
+  output_variables ();
 
   process_new_functions ();
   state = FINISHED;
@@ -2615,6 +2609,10 @@ symbol_table::finalize_compilation_unit (void)
 
   /* Gimplify and lower thunks.  */
   analyze_functions (/*first_time=*/false);
+
+  /* Offloading requires LTO infrastructure.  */
+  if (!in_lto_p && g->have_offload)
+    flag_generate_offload = 1;
 
   if (!seen_error ())
     {

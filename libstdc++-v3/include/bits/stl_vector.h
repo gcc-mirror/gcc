@@ -65,8 +65,15 @@
 
 #include <debug/assertions.h>
 
+#if _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR
+extern "C" void
+__sanitizer_annotate_contiguous_container(const void*, const void*,
+					  const void*, const void*);
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
 _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
   /// See bits/stl_deque.h's _Deque_base for an explanation.
@@ -106,6 +113,121 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	  std::swap(_M_finish, __x._M_finish);
 	  std::swap(_M_end_of_storage, __x._M_end_of_storage);
 	}
+
+#if _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR
+	template<typename = _Tp_alloc_type>
+	  struct _Asan
+	  {
+	    typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>
+	      ::size_type size_type;
+
+	    static void _S_shrink(_Vector_impl&, size_type) { }
+	    static void _S_on_dealloc(_Vector_impl&) { }
+
+	    typedef _Vector_impl& _Reinit;
+
+	    struct _Grow
+	    {
+	      _Grow(_Vector_impl&, size_type) { }
+	      void _M_grew(size_type) { }
+	    };
+	  };
+
+	// Enable ASan annotations for memory obtained from std::allocator.
+	template<typename _Up>
+	  struct _Asan<allocator<_Up> >
+	  {
+	    typedef typename __gnu_cxx::__alloc_traits<_Tp_alloc_type>
+	      ::size_type size_type;
+
+	    // Adjust ASan annotation for [_M_start, _M_end_of_storage) to
+	    // mark end of valid region as __curr instead of __prev.
+	    static void
+	    _S_adjust(_Vector_impl& __impl, pointer __prev, pointer __curr)
+	    {
+	      __sanitizer_annotate_contiguous_container(__impl._M_start,
+		  __impl._M_end_of_storage, __prev, __curr);
+	    }
+
+	    static void
+	    _S_grow(_Vector_impl& __impl, size_type __n)
+	    { _S_adjust(__impl, __impl._M_finish, __impl._M_finish + __n); }
+
+	    static void
+	    _S_shrink(_Vector_impl& __impl, size_type __n)
+	    { _S_adjust(__impl, __impl._M_finish + __n, __impl._M_finish); }
+
+	    static void
+	    _S_on_dealloc(_Vector_impl& __impl)
+	    {
+	      if (__impl._M_start)
+		_S_adjust(__impl, __impl._M_finish, __impl._M_end_of_storage);
+	    }
+
+	    // Used on reallocation to tell ASan unused capacity is invalid.
+	    struct _Reinit
+	    {
+	      explicit _Reinit(_Vector_impl& __impl) : _M_impl(__impl)
+	      {
+		// Mark unused capacity as valid again before deallocating it.
+		_S_on_dealloc(_M_impl);
+	      }
+
+	      ~_Reinit()
+	      {
+		// Mark unused capacity as invalid after reallocation.
+		if (_M_impl._M_start)
+		  _S_adjust(_M_impl, _M_impl._M_end_of_storage,
+			    _M_impl._M_finish);
+	      }
+
+	      _Vector_impl& _M_impl;
+
+#if __cplusplus >= 201103L
+	      _Reinit(const _Reinit&) = delete;
+	      _Reinit& operator=(const _Reinit&) = delete;
+#endif
+	    };
+
+	    // Tell ASan when unused capacity is initialized to be valid.
+	    struct _Grow
+	    {
+	      _Grow(_Vector_impl& __impl, size_type __n)
+	      : _M_impl(__impl), _M_n(__n)
+	      { _S_grow(_M_impl, __n); }
+
+	      ~_Grow() { if (_M_n) _S_shrink(_M_impl, _M_n); }
+
+	      void _M_grew(size_type __n) { _M_n -= __n; }
+
+#if __cplusplus >= 201103L
+	      _Grow(const _Grow&) = delete;
+	      _Grow& operator=(const _Grow&) = delete;
+#endif
+	    private:
+	      _Vector_impl& _M_impl;
+	      size_type _M_n;
+	    };
+	  };
+
+#define _GLIBCXX_ASAN_ANNOTATE_REINIT \
+  typename _Base::_Vector_impl::template _Asan<>::_Reinit const \
+	__attribute__((__unused__)) __reinit_guard(this->_M_impl)
+#define _GLIBCXX_ASAN_ANNOTATE_GROW(n) \
+  typename _Base::_Vector_impl::template _Asan<>::_Grow \
+	__attribute__((__unused__)) __grow_guard(this->_M_impl, (n))
+#define _GLIBCXX_ASAN_ANNOTATE_GREW(n) __grow_guard._M_grew(n)
+#define _GLIBCXX_ASAN_ANNOTATE_SHRINK(n) \
+  _Base::_Vector_impl::template _Asan<>::_S_shrink(this->_M_impl, n)
+#define _GLIBCXX_ASAN_ANNOTATE_BEFORE_DEALLOC \
+  _Base::_Vector_impl::template _Asan<>::_S_on_dealloc(this->_M_impl)
+#else // ! (_GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR)
+#define _GLIBCXX_ASAN_ANNOTATE_REINIT
+#define _GLIBCXX_ASAN_ANNOTATE_GROW(n)
+#define _GLIBCXX_ASAN_ANNOTATE_GREW(n)
+#define _GLIBCXX_ASAN_ANNOTATE_SHRINK(n)
+#define _GLIBCXX_ASAN_ANNOTATE_BEFORE_DEALLOC
+#endif // _GLIBCXX_SANITIZE_STD_ALLOCATOR && _GLIBCXX_SANITIZE_VECTOR
       };
 
     public:
@@ -159,8 +281,10 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 #endif
 
       ~_Vector_base() _GLIBCXX_NOEXCEPT
-      { _M_deallocate(this->_M_impl._M_start, this->_M_impl._M_end_of_storage
-		      - this->_M_impl._M_start); }
+      {
+	_M_deallocate(_M_impl._M_start,
+		      _M_impl._M_end_of_storage - _M_impl._M_start);
+      }
 
     public:
       _Vector_impl _M_impl;
@@ -189,7 +313,6 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	this->_M_impl._M_end_of_storage = this->_M_impl._M_start + __n;
       }
     };
-
 
   /**
    *  @brief A standard container which offers fixed time access to
@@ -431,8 +554,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
        *  responsibility.
        */
       ~vector() _GLIBCXX_NOEXCEPT
-      { std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
-		      _M_get_Tp_allocator()); }
+      {
+	std::_Destroy(this->_M_impl._M_start, this->_M_impl._M_finish,
+		      _M_get_Tp_allocator());
+	_GLIBCXX_ASAN_ANNOTATE_BEFORE_DEALLOC;
+      }
 
       /**
        *  @brief  %Vector assignment operator.
@@ -940,9 +1066,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       {
 	if (this->_M_impl._M_finish != this->_M_impl._M_end_of_storage)
 	  {
+	    _GLIBCXX_ASAN_ANNOTATE_GROW(1);
 	    _Alloc_traits::construct(this->_M_impl, this->_M_impl._M_finish,
 				     __x);
 	    ++this->_M_impl._M_finish;
+	    _GLIBCXX_ASAN_ANNOTATE_GREW(1);
 	  }
 	else
 	  _M_realloc_insert(end(), __x);
@@ -977,6 +1105,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	__glibcxx_requires_nonempty();
 	--this->_M_impl._M_finish;
 	_Alloc_traits::destroy(this->_M_impl, this->_M_impl._M_finish);
+	_GLIBCXX_ASAN_ANNOTATE_SHRINK(1);
       }
 
 #if __cplusplus >= 201103L
@@ -1510,8 +1639,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       void
       _M_erase_at_end(pointer __pos) _GLIBCXX_NOEXCEPT
       {
-	std::_Destroy(__pos, this->_M_impl._M_finish, _M_get_Tp_allocator());
-	this->_M_impl._M_finish = __pos;
+	if (size_type __n = this->_M_impl._M_finish - __pos)
+	  {
+	    std::_Destroy(__pos, this->_M_impl._M_finish,
+			  _M_get_Tp_allocator());
+	    this->_M_impl._M_finish = __pos;
+	    _GLIBCXX_ASAN_ANNOTATE_SHRINK(__n);
+	  }
       }
 
       iterator
@@ -1561,7 +1695,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Ptr>
 	typename std::pointer_traits<_Ptr>::element_type*
 	_M_data_ptr(_Ptr __ptr) const
-	{ return empty() ? nullptr : std::__addressof(*__ptr); }
+	{ return empty() ? nullptr : std::__to_address(__ptr); }
 #else
       template<typename _Up>
 	_Up*
@@ -1571,12 +1705,12 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       template<typename _Ptr>
 	value_type*
 	_M_data_ptr(_Ptr __ptr)
-	{ return __ptr.operator->(); }
+	{ return empty() ? (value_type*)0 : __ptr.operator->(); }
 
       template<typename _Ptr>
 	const value_type*
 	_M_data_ptr(_Ptr __ptr) const
-	{ return __ptr.operator->(); }
+	{ return empty() ? (const value_type*)0 : __ptr.operator->(); }
 #endif
     };
 
@@ -1655,6 +1789,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
     { __x.swap(__y); }
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_VECTOR_H */

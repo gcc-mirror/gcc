@@ -45,47 +45,7 @@
 #error "This module must not be compiled with IEEE 128-bit hardware support"
 #endif
 
-#include <sys/auxv.h>
-
-/* Use the namespace clean version of getauxval.  However, not all versions of
-   sys/auxv.h declare it, so declare it here.  This code is intended to be
-   temporary until a suitable version of __builtin_cpu_supports is added that
-   allows us to tell quickly if the machine supports IEEE 128-bit hardware.  */
-extern unsigned long __getauxval (unsigned long);
-
-static int
-have_ieee_hw_p (void)
-{
-  static int ieee_hw_p = -1;
-
-  if (ieee_hw_p < 0)
-    {
-      char *p = (char *) __getauxval (AT_PLATFORM);
-
-      ieee_hw_p = 0;
-
-      /* Don't use atoi/strtol/strncmp/etc.  These may require the normal
-	 environment to be setup to set errno to 0, and the ifunc resolvers run
-	 before the whole glibc environment is initialized.  */
-      if (p && p[0] == 'p' && p[1] == 'o' && p[2] == 'w' && p[3] == 'e'
-	  && p[4] == 'r')
-	{
-	  long n = 0;
-	  char ch;
-
-	  p += 5;
-	  while ((ch = *p++) >= '0' && (ch <= '9'))
-	    n = (n * 10) + (ch - '0');
-
-	  if (n >= 9)
-	    ieee_hw_p = 1;
-	}
-    }
-
-  return ieee_hw_p;
-}
-
-#define SW_OR_HW(SW, HW) (have_ieee_hw_p () ? HW : SW)
+#define SW_OR_HW(SW, HW) (__builtin_cpu_supports ("ieee128") ? HW : SW)
 
 /* Resolvers.  */
 

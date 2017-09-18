@@ -1,3 +1,7 @@
+2017-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	* config-lang.in: Source cp/config-lang.in, sort objc++ gtfiles list.
+
 2017-06-02  Nathan Sidwell  <nathan@acm.org>
 
 	* objcp-decl.h (SIZEOF_OBJC_TYPE_LANG_SPECIFIC): Use lang_type.

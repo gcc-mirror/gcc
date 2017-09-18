@@ -1,3 +1,68 @@
+2017-09-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* MAINTAINERS: Add myself as a maintainer for the Ada front end.
+
+2017-09-15  Nathan Sidwell  <nathan@acm.org>
+
+	* MAINTAINERS: Remove myself as a vxworks maintainer.
+
+2017-09-13  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* MAINTAINERS: Remove email address of Jim Norris.
+
+2017-09-11  Kyrylo Tkachov  <kyrylo.tkachov@arm.com>
+
+	* MAINTAINERS (Reviewers): Move myself from here...
+	(CPU Port Maintainers): ... to here.
+
+2017-09-09  James Greenhalgh  <james.greenhalgh@arm.com>
+
+	* MAINTAINERS (James Greenhalgh): Move to AArch64 maintainers.
+
+2017-07-31  Robin Dapp  <rdapp@linux.vnet.ibm.com>
+
+        * MAINTAINERS (write after approval): Add myself.
+
+2017-07-28  Tony Reix  <tony.reix@atos.net>
+
+	* configure.ac (target-libffi): Don't disable for AIX.
+	(go): Don't add to unsupported_languages on AIX.
+	(target-libgo): Don't disable for AIX.
+	* configure: Regenerate.
+
+2017-07-19  Yury Gribov  <tetra2005@gmail.com>
+
+	* MAINTAINERS: Add myself.
+
+2017-07-18  Trevor Saunders  <tbsaunde+gcc@tbsaunde.org>
+
+	* MAINTAINERS: Update my email address.
+
+2017-07-04  Richard Earnshaw  <rearnsha@arm.com>
+
+	* contrib/gcc_update (files_and_dependencies): Remove stamp rules for
+	arm-specific auto-generated header files.
+
+2017-07-03  Nathan Sidwell  <nathan@acm.org>
+
+	* configure.ac: Set srcdir when sourcing config-lang.in fragments.
+	* configure: Rebuilt.
+
+2017-07-03  Bernd Schmidt  <bschmidt@redhat.com>
+
+	* MAINTAINERS: Readd myself for c6x.
+
+2017-06-28  Martin Liska  <mliska@suse.cz>
+
+	PR bootstrap/81217
+	* Makefile.def: Remove superfluous bootstrap_target from
+	bootstrap_stage.
+	* Makefile.in: Re-generate the file.
+
+2017-06-26  Maxim Ostapenko  <m.ostapenko@samsung.com>
+
+        * MAINTAINERS: Add myself to Write After Approval
+
 2017-06-21  Andrew Jenner  <andrew@codesourcery.com>
 
 	* MAINTAINERS: Add myself as maintainer for PowerPC SPE port.

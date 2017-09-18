@@ -66,10 +66,10 @@
     that are the hallmarks of an open-source project are applied to libstdc++.
     </para> 
     <para>
-    All of the standard classes and functions from C++98/C++03
+    All of the standard classes and functions from C++98/C++03, C++11 and C++14
     (such as <classname>string</classname>,
     <classname>vector&lt;&gt;</classname>, iostreams, algorithms etc.)
-    are freely available and atempt to be fully compliant.
+    are freely available and attempt to be fully compliant.
     Work is ongoing to complete support for the current revision of the
     ISO C++ Standard.
     </para>
@@ -539,6 +539,9 @@
     </para>
   </question>
   <answer xml:id="a-solaris_long_long">
+    <note>
+       <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
     By default we try to support the C99 <type>long long</type> type.
     This requires that certain functions from your C library be present.
@@ -692,7 +695,7 @@
 <qandaentry xml:id="faq.freebsd_wchar">
   <question xml:id="q-freebsd_wchar">
     <para>
-      Can't use wchar_t/wstring on FreeBSD
+      Can't use <type>wchar_t</type>/<classname>wstring</classname> on FreeBSD
     </para>
   </question>
   <answer xml:id="a-freebsd_wchar">
@@ -764,7 +767,8 @@
     published on <link xmlns:xlink="http://www.w3.org/1999/xlink"
     xlink:href="http://www.open-std.org/jtc1/sc22/wg21/">the WG21
     website</link>.
-    Many of these issues have resulted in code changes in libstdc++.
+    Many of these issues have resulted in
+    <link linkend="manual.intro.status.bugs.iso">code changes in libstdc++</link>.
     </para> 
     <para>
     If you think you've discovered a new bug that is not listed,
@@ -794,8 +798,8 @@
     </para> 
     <para> 
     Before reporting a bug, please examine the
-    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/bugs/">bugs database</link> with the
-    category set to <quote>g++</quote>. 
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://gcc.gnu.org/bugs/">bugs database</link>, with the
+    component set to <quote>c++</quote>.
     </para> 
   </answer>
 </qandaentry>
@@ -813,8 +817,12 @@
     </para>
   </question>
   <answer xml:id="a-stream_reopening_fails">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
-    One of the most-reported non-bug reports. Executing a sequence like:
+    Prior to GCC 4.0 this was one of the most-reported non-bug reports.
+    Executing a sequence like this would fail:
     </para>
 
     <programlisting>
@@ -829,19 +837,20 @@
     </programlisting>
     
     <para>
-    All operations on the re-opened <varname>fs</varname> will fail, or at
-    least act very strangely.  Yes, they often will, especially if
-    <varname>fs</varname> reached the EOF state on the previous file.  The
-    reason is that the state flags are <emphasis>not</emphasis> cleared
-    on a successful call to open().  The standard unfortunately did
-    not specify behavior in this case, and to everybody's great sorrow,
-    the <link linkend="manual.intro.status.bugs">proposed LWG resolution in
-      DR #22</link> is to leave the flags unchanged.  You must insert a call
-    to <function>fs.clear()</function> between the calls to close() and open(),
-    and then everything will work like we all expect it to work.
-    <emphasis>Update:</emphasis> for GCC 4.0 we implemented the resolution
-    of <link linkend="manual.intro.status.bugs">DR #409</link> and open() 
-    now calls <function>clear()</function> on success!
+    All operations on the re-opened <varname>fs</varname> would fail, or at
+    least act very strangely, especially if <varname>fs</varname> reached the
+    EOF state on the previous file.
+    The original C++98 standard did not specify behavior in this case, and
+    the <link linkend="manual.bugs.dr22">resolution of DR #22</link> was to
+    leave the state flags unchanged on a successful call to
+    <function>open()</function>.
+    You had to insert a call to <function>fs.clear()</function> between the
+    calls to <function>close()</function> and <function>open()</function>,
+    and then everything will work as expected.
+    <emphasis>Update:</emphasis> For GCC 4.0 we implemented the resolution
+    of <link linkend="manual.bugs.dr409">DR #409</link> and
+    <function>open()</function>
+    now calls <function>clear()</function> on success.
     </para> 
   </answer>
 </qandaentry>
@@ -858,7 +867,9 @@
     libstdc++ <option>-Weffc++</option>-clean is not a goal of the project,
     for a few reasons.  Mainly, that option tries to enforce
     object-oriented programming, while the Standard Library isn't
-    necessarily trying to be OO.
+    necessarily trying to be OO. The option also enforces outdated guidelines
+    from old editions of the books, and the advice isn't all relevant to
+    modern C++ (especially C++11 and later).
     </para> 
     <para>
     We do, however, try to have libstdc++ sources as clean as possible. If
@@ -879,9 +890,10 @@
     Another problem is the <literal>rel_ops</literal> namespace and the template
     comparison operator functions contained therein.  If they become
     visible in the same namespace as other comparison functions
-    (e.g., <quote>using</quote> them and the &lt;iterator&gt; header),
+    (e.g., <quote>using</quote> them and the
+    <filename class="headerfile">&lt;iterator&gt;</filename> header),
     then you will suddenly be faced with huge numbers of ambiguity
-    errors.  This was discussed on the -v3 list; Nathan Myers
+    errors.  This was discussed on the mailing list; Nathan Myers
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://gcc.gnu.org/ml/libstdc++/2001-01/msg00247.html">sums
       things up here</link>.  The collisions with vector/string iterator
     types have been fixed for 3.1.
@@ -896,6 +908,9 @@
     </para>
   </question>
   <answer xml:id="a-v2_headers">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
       <para>
 	If you are using headers in
 	<filename class="directory">${prefix}/include/g++-3</filename>, or if
@@ -981,11 +996,15 @@
     </para>
   </question>
   <answer xml:id="a-memory_leaks">
+    <note>
+      <para>This answer is old and probably no longer be relevant.</para>
+    </note>
     <para>
     A few people have reported that the standard containers appear
     to leak memory when tested with memory checkers such as
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://valgrind.org/"><command>valgrind</command></link>.
-    Under some configurations the library's allocators keep free memory in a
+    Under some (non-default) configurations the library's allocators keep
+    free memory in a
     pool for later reuse, rather than returning it to the OS.  Although
     this memory is always reachable by the library and is never
     lost, memory debugging tools can report it as a leak.  If you
@@ -999,7 +1018,7 @@
 <qandaentry xml:id="faq.list_size_on">
   <question xml:id="q-list_size_on">
     <para>
-      list::size() is O(n)!
+      <code>list::size()</code> is O(n)!
     </para>
   </question>
   <answer xml:id="a-list_size_on">
@@ -1049,7 +1068,8 @@
 <qandaentry xml:id="faq.iterator_as_pod">
   <question xml:id="faq.iterator_as_pod_q">
     <para>
-      string::iterator is not char*; vector&lt;T&gt;::iterator is not T*
+      <classname>string::iterator</classname> is not <code>char*</code>;
+      <classname>vector&lt;T&gt;::iterator</classname> is not <code>T*</code>
     </para>
   </question>
   <answer xml:id="faq.iterator_as_pod_a">
@@ -1067,11 +1087,9 @@
     arguments.
     </para>
     <para>
-    Code which does assume that a vector iterator <varname>i</varname>
+    Code which does assume that a vector/string iterator <varname>i</varname>
     is a pointer can often be fixed by changing <varname>i</varname> in
-    certain expressions to <varname>&amp;*i</varname>.  Future revisions
-    of the Standard are expected to bless this usage for
-    vector&lt;&gt; (but not for basic_string&lt;&gt;).
+    certain expressions to <varname>&amp;*i</varname>.
     </para>
   </answer>
 </qandaentry>
@@ -1084,17 +1102,10 @@
   </question>
   <answer xml:id="a-what_is_next">
       <para>
-	Hopefully, not much.  The goal of libstdc++ is to produce a
-	fully-compliant, fully-portable Standard Library.  After that,
-	we're mostly done: there won't <emphasis>be</emphasis> any
-	more compliance work to do.
-      </para>
-      <para>
-	There is an effort underway to add significant extensions to
-	the standard library specification.  The latest version of
-	this effort is described in
-         <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
-         The C++ Library Technical Report 1</link>.
+	The goal of libstdc++ is to produce a
+	fully-compliant, fully-portable Standard Library.
+	While the C++ Standard continues to evolve the libstdc++ will
+        continue to track it.
       </para>
   </answer>
 </qandaentry>
@@ -1107,18 +1118,27 @@
   </question>
   <answer xml:id="a-sgi_stl">
     <para>
-      The <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/">STL from SGI</link>,
-    version 3.3, was the final merge of the STL codebase.  The
-    code in libstdc++ contains many fixes and changes, and
-    the SGI code is no longer under active
-    development.  We expect that no future merges will take place.
+    The STL (Standard Template Library) was the inspiration for large chunks
+    of the C++ Standard Library, but the terms are not interchangeable and
+    they don't mean the same thing. The C++ Standard Library includes lots of
+    things that didn't come from the STL, and some of them aren't even
+    templates, such as <classname>std::locale</classname> and
+    <classname>std::thread</classname>.
+    </para>
+    <para>
+    Libstdc++-v3 incorporates a lot of code from
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/">the SGI STL</link>
+    (the final merge was from
+    <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.sgi.com/tech/stl/whats_new.html">release 3.3</link>).
+    The code in libstdc++ contains many fixes and changes compared to the
+    original SGI code.
     </para>
     <para>
     In particular, <classname>string</classname> is not from SGI and makes no
-    use of their "rope" class (which is included as an
-    optional extension), nor is <classname>valarray</classname> and some others.
-    Classes like <classname>vector&lt;&gt;</classname> are, but have been
-    extensively modified.
+    use of their "rope" class (although that is included as an optional
+    extension), neither is <classname>valarray</classname> nor some others.
+    Classes like <classname>vector&lt;&gt;</classname> were from SGI, but have
+    been extensively modified.
     </para>
     <para>
     More information on the evolution of libstdc++ can be found at the
@@ -1158,14 +1178,19 @@
     Yes.
     </para>
     <para>
-    The C++ Standard Library Technical Report adds many new features to 
-    the library.  The latest version of this effort is described in
+    The C++ Standard Library
     <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2005/n1836.pdf">
-         Technical Report 1</link>.
+    Technical Report 1</link> added many new features to the library.
     </para>
     <para>
-    The implementation status of TR1 in libstdc++ can be tracked <link linkend="status.iso.tr1">on the TR1 status
-    page</link>.
+    The implementation status of TR1 in libstdc++ can be tracked
+    <link linkend="status.iso.tr1">on the TR1 status page</link>.
+    </para>
+    <para>
+    New code should probably not use TR1, because almost everything in it has
+    been added to the main C++ Standard Library (usually with significant
+    improvements).
+    The TR1 implementation in libstdc++ is no longer actively maintained.
     </para>
   </answer>
 </qandaentry>
@@ -1252,13 +1277,18 @@
 <qandaentry xml:id="faq.size_equals_capacity">
   <question xml:id="q-size_equals_capacity">
     <para>
-      How do I make std::vector&lt;T&gt;::capacity() == std::vector&lt;T&gt;::size?
+      How do I make <code>std::vector&lt;T&gt;::capacity() == std::vector&lt;T&gt;::size</code>?
     </para>
   </question>
   <answer xml:id="a-size_equals_capacity">
     <para>
-    The standard idiom for deallocating a <classname>vector&lt;T&gt;</classname>'s
-    unused memory is to create a temporary copy of the vector and swap their
+    Since C++11 just call the <function>shrink_to_fit()</function> member
+    function.
+    </para>
+    <para>
+    Before C++11, the standard idiom for deallocating a
+    <classname>vector&lt;T&gt;</classname>'s
+    unused memory was to create a temporary copy of the vector and swap their
     contents, e.g. for <classname>vector&lt;T&gt; v</classname>
     </para>
     <literallayout class="normal">

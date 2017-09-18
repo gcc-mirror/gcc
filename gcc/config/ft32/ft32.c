@@ -25,6 +25,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "df.h"
 #include "memmodel.h"
 #include "tm_p.h"
@@ -79,7 +81,7 @@ ft32_function_value (const_tree valtype,
    We always return values in register $r0 for ft32.  */
 
 static rtx
-ft32_libcall_value (enum machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
+ft32_libcall_value (machine_mode mode, const_rtx fun ATTRIBUTE_UNUSED)
 {
   return gen_rtx_REG (mode, FT32_R0);
 }
@@ -625,7 +627,7 @@ ft32_initial_elimination_offset (int from, int to)
 
 static void
 ft32_setup_incoming_varargs (cumulative_args_t cum_v,
-			     enum machine_mode mode,
+			     machine_mode mode,
 			     tree type ATTRIBUTE_UNUSED,
 			     int *pretend_size, int no_rtl ATTRIBUTE_UNUSED)
 {
@@ -653,7 +655,7 @@ ft32_fixed_condition_code_regs (unsigned int *p1, unsigned int *p2)
    NULL_RTX if there's no more space.  */
 
 static rtx
-ft32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
+ft32_function_arg (cumulative_args_t cum_v, machine_mode mode,
                    const_tree type ATTRIBUTE_UNUSED,
                    bool named ATTRIBUTE_UNUSED)
 {
@@ -670,7 +672,7 @@ ft32_function_arg (cumulative_args_t cum_v, enum machine_mode mode,
    : (unsigned) int_size_in_bytes (TYPE))
 
 static void
-ft32_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
+ft32_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
                            const_tree type, bool named ATTRIBUTE_UNUSED)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
@@ -684,7 +686,7 @@ ft32_function_arg_advance (cumulative_args_t cum_v, enum machine_mode mode,
 
 static bool
 ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
-                        enum machine_mode mode, const_tree type,
+                        machine_mode mode, const_tree type,
                         bool named ATTRIBUTE_UNUSED)
 {
   unsigned HOST_WIDE_INT size;
@@ -707,7 +709,7 @@ ft32_pass_by_reference (cumulative_args_t cum ATTRIBUTE_UNUSED,
 
 static int
 ft32_arg_partial_bytes (cumulative_args_t cum_v,
-                        enum machine_mode mode, tree type, bool named)
+                        machine_mode mode, tree type, bool named)
 {
   CUMULATIVE_ARGS *cum = get_cumulative_args (cum_v);
   int bytes_left, size;
@@ -790,7 +792,7 @@ ft32_is_mem_pm (rtx o)
 #undef TARGET_VALID_POINTER_MODE
 #define TARGET_VALID_POINTER_MODE ft32_valid_pointer_mode
 static bool
-ft32_valid_pointer_mode (enum machine_mode mode)
+ft32_valid_pointer_mode (scalar_int_mode mode)
 {
   if (mode == SImode)
     return 1;
@@ -799,7 +801,7 @@ ft32_valid_pointer_mode (enum machine_mode mode)
 
 #undef TARGET_ADDR_SPACE_POINTER_MODE
 #define TARGET_ADDR_SPACE_POINTER_MODE ft32_addr_space_pointer_mode
-static enum machine_mode
+static scalar_int_mode
 ft32_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return Pmode;
@@ -807,7 +809,7 @@ ft32_addr_space_pointer_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 
 #undef TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE ft32_addr_space_address_mode
-static enum machine_mode
+static scalar_int_mode
 ft32_addr_space_address_mode (addr_space_t addrspace ATTRIBUTE_UNUSED)
 {
   return Pmode;
@@ -861,8 +863,7 @@ reg_ok_for_base_p (rtx r, bool strict)
 }
 
 static bool
-ft32_addr_space_legitimate_address_p (enum machine_mode mode, rtx x,
-                                      bool strict,
+ft32_addr_space_legitimate_address_p (machine_mode mode, rtx x, bool strict,
                                       addr_space_t as ATTRIBUTE_UNUSED)
 {
   if (mode != BLKmode)

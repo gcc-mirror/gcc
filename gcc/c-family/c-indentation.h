@@ -48,5 +48,7 @@ extern void
 warn_for_misleading_indentation (const token_indent_info &guard_tinfo,
 				 const token_indent_info &body_tinfo,
 				 const token_indent_info &next_tinfo);
+extern const char *
+guard_tinfo_to_string (enum rid keyword);
 
 #endif  /* ! GCC_C_INDENTATION_H  */

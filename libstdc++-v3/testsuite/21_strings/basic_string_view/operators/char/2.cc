@@ -112,7 +112,7 @@ template<class charT, class traits, class Allocator>
 #include <string_view>
 #include <testsuite_hooks.h>
 
-int
+void
 test01()
 {
   std::string_view 	str_0("costa rica");
@@ -120,7 +120,7 @@ test01()
   std::string_view 	str_2("cost");
   std::string_view	str_3("costa ricans");
   std::string_view        str_4;
-  
+
   str_4 = str_0;
   //comparisons between string objects
   VERIFY( !(str_0 == str_1) );
@@ -140,7 +140,131 @@ test01()
   VERIFY( str_3 != str_0 );
   VERIFY( !(str_0 != str_4) );
   VERIFY( !(str_4 != str_0) );
-   
+
+  VERIFY( str_0 > str_1 ); //true cuz r>m
+  VERIFY( str_0 > str_2 );
+  VERIFY( !(str_0 > str_3) );
+  VERIFY( !(str_1 > str_0) ); //false cuz m<r
+  VERIFY( !(str_2 > str_0) );
+  VERIFY( str_3 > str_0 );
+  VERIFY( !(str_0 > str_4) );
+  VERIFY( !(str_4 > str_0) );
+
+  VERIFY( !(str_0 < str_1) ); //false cuz r>m
+  VERIFY( !(str_0 < str_2) );
+  VERIFY( str_0 < str_3 );
+  VERIFY( str_1 < str_0 ); //true cuz m<r
+  VERIFY( str_2 < str_0 );
+  VERIFY( !(str_3 < str_0) );
+  VERIFY( !(str_0 < str_4) );
+  VERIFY( !(str_4 < str_0) );
+
+  VERIFY( str_0 >= str_1 ); //true cuz r>m
+  VERIFY( str_0 >= str_2 );
+  VERIFY( !(str_0 >= str_3) );
+  VERIFY( !(str_1 >= str_0) );//false cuz m<r
+  VERIFY( !(str_2 >= str_0) );
+  VERIFY( str_3 >= str_0 );
+  VERIFY( str_0 >= str_4 );
+  VERIFY( str_4 >= str_0 );
+
+  VERIFY( !(str_0 <= str_1) );//false cuz r>m
+  VERIFY( !(str_0 <= str_2) );
+  VERIFY( str_0 <= str_3 );
+  VERIFY( str_1 <= str_0 );//true cuz m<r
+  VERIFY( str_2 <= str_0 );
+  VERIFY( !(str_3 <= str_0) );
+  VERIFY( str_0 <= str_4 );
+  VERIFY( str_4 <= str_0 );
+
+  //comparisons between string object and string literal
+  VERIFY( !(str_0 == "costa marbella") );
+  VERIFY( !(str_0 == "cost") );
+  VERIFY( !(str_0 == "costa ricans") );
+  VERIFY( !("costa marbella" == str_0) );
+  VERIFY( !("cost" == str_0) );
+  VERIFY( !("costa ricans" == str_0) );
+  VERIFY( "costa rica" == str_0 );
+  VERIFY( str_0 == "costa rica" );
+
+  VERIFY( str_0 != "costa marbella" );
+  VERIFY( str_0 != "cost" );
+  VERIFY( str_0 != "costa ricans" );
+  VERIFY( "costa marbella" != str_0 );
+  VERIFY( "cost" != str_0 );
+  VERIFY( "costa ricans" != str_0 );
+  VERIFY( !("costa rica" != str_0) );
+  VERIFY( !(str_0 != "costa rica") );
+
+  VERIFY( str_0 > "costa marbella" ); //true cuz r>m
+  VERIFY( str_0 > "cost" );
+  VERIFY( !(str_0 > "costa ricans") );
+  VERIFY( !("costa marbella" > str_0) );//false cuz m<r
+  VERIFY( !("cost" > str_0) );
+  VERIFY( "costa ricans" > str_0 );
+  VERIFY( !("costa rica" > str_0) );
+  VERIFY( !(str_0 > "costa rica") );
+
+  VERIFY( !(str_0 < "costa marbella") );//false cuz r>m
+  VERIFY( !(str_0 < "cost") );
+  VERIFY( str_0 < "costa ricans" );
+  VERIFY( "costa marbella" < str_0 );//true cuz m<r
+  VERIFY( "cost" < str_0 );
+  VERIFY( !("costa ricans" < str_0) );
+  VERIFY( !("costa rica" < str_0) );
+  VERIFY( !(str_0 < "costa rica") );
+
+  VERIFY( str_0 >= "costa marbella" );//true cuz r>m
+  VERIFY( str_0 >= "cost" );
+  VERIFY( !(str_0 >= "costa ricans") );
+  VERIFY( !("costa marbella" >= str_0) );//false cuz m<r
+  VERIFY( !("cost" >= str_0) );
+  VERIFY( "costa ricans" >= str_0 );
+  VERIFY( "costa rica" >= str_0 );
+  VERIFY( str_0 >= "costa rica" );
+
+  VERIFY( !(str_0 <= "costa marbella") );//false cuz r>m
+  VERIFY( !(str_0 <= "cost") );
+  VERIFY( str_0 <= "costa ricans" );
+  VERIFY( "costa marbella" <= str_0 );//true cuz m<r
+  VERIFY( "cost" <= str_0 );
+  VERIFY( !("costa ricans" <= str_0) );
+  VERIFY( "costa rica" <= str_0 );
+  VERIFY( str_0 <= "costa rica" );
+}
+
+constexpr bool
+test02()
+{
+  std::string_view 	str_0("costa rica");
+  std::string_view 	str_1("costa marbella");
+  std::string_view 	str_2("cost");
+  std::string_view	str_3("costa ricans");
+  std::string_view        str_4;
+
+#undef VERIFY
+#define VERIFY(x) if (!(x)) return false
+
+  str_4 = str_0;
+  //comparisons between string objects
+  VERIFY( !(str_0 == str_1) );
+  VERIFY( !(str_0 == str_2) );
+  VERIFY( !(str_0 == str_3) );
+  VERIFY( !(str_1 == str_0) );
+  VERIFY( !(str_2 == str_0) );
+  VERIFY( !(str_3 == str_0) );
+  VERIFY( str_4 == str_0 );
+  VERIFY( str_0 == str_4 );
+
+  VERIFY( str_0 != str_1 );
+  VERIFY( str_0 != str_2 );
+  VERIFY( str_0 != str_3 );
+  VERIFY( str_1 != str_0 );
+  VERIFY( str_2 != str_0 );
+  VERIFY( str_3 != str_0 );
+  VERIFY( !(str_0 != str_4) );
+  VERIFY( !(str_4 != str_0) );
+
   VERIFY( str_0 > str_1 ); //true cuz r>m
   VERIFY( str_0 > str_2 );
   VERIFY( !(str_0 > str_3) );
@@ -232,13 +356,12 @@ test01()
   VERIFY( "costa rica" <= str_0 );
   VERIFY( str_0 <= "costa rica" );
 
-  return 0;
+  return true;
 }
 
 int
-main() 
+main()
 {
   test01();
-
-  return 0;
+  static_assert( test02() );
 }

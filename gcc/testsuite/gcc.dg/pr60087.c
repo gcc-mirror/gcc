@@ -10,5 +10,5 @@ foo (unsigned int ui, int i)
   b = 0 != ~uc; /* { dg-warning "9:promoted ~unsigned is always non-zero" } */
   b = 2 != ~uc; /* { dg-warning "9:comparison of promoted ~unsigned with constant" } */
   b = uc == ~uc; /* { dg-warning "10:comparison of promoted ~unsigned with unsigned" } */
-  b = i == ui; /* { dg-warning "9:comparison between signed and unsigned integer expressions" } */
+  b = i == ui; /* { dg-warning "9:comparison of integer expressions of different signedness" } */
 }

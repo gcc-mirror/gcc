@@ -279,7 +279,7 @@ can_eliminate_compare (rtx compare, rtx eh_note, struct comparison *cmp)
     return false;
 
   /* New mode must be compatible with the previous compare mode.  */
-  enum machine_mode new_mode
+  machine_mode new_mode
     = targetm.cc_modes_compatible (GET_MODE (compare), cmp->orig_mode);
 
   if (new_mode == VOIDmode)

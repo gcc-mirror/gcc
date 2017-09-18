@@ -1,3 +1,22 @@
+2017-08-07  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/system/sys/ptrace.h: New file.
+
+2017-07-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/80998
+	* ubsan/ubsan_handlers.cc: Cherry-pick upstream r304461.
+	* ubsan/ubsan_checks.inc: Likewise.
+	* ubsan/ubsan_handlers.h: Likewise.
+
+2017-07-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81066
+	* sanitizer_common/sanitizer_linux.h: Cherry-pick upstream r307969.
+	* sanitizer_common/sanitizer_linux.cc: Likewise.
+	* sanitizer_common/sanitizer_stoptheworld_linux_libcdep.cc: Likewise.
+	* tsan/tsan_platform_linux.cc: Likewise.
+
 2017-04-06  Martin Liska  <mliska@suse.cz>
 
 	PR sanitizer/80166

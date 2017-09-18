@@ -287,9 +287,11 @@ func TestShellSafety(t *testing.T) {
 		{"-I${SRCDIR}/../include", "/projects/src/issue 11868", "-I/projects/src/issue 11868/../include", true},
 		{"-I${SRCDIR}", "wtf$@%", "-Iwtf$@%", true},
 		{"-X${SRCDIR}/1,${SRCDIR}/2", "/projects/src/issue 11868", "-X/projects/src/issue 11868/1,/projects/src/issue 11868/2", true},
-		{"-I/tmp -I/tmp", "/tmp2", "-I/tmp -I/tmp", false},
+		{"-I/tmp -I/tmp", "/tmp2", "-I/tmp -I/tmp", true},
 		{"-I/tmp", "/tmp/[0]", "-I/tmp", true},
 		{"-I${SRCDIR}/dir", "/tmp/[0]", "-I/tmp/[0]/dir", false},
+		{"-I${SRCDIR}/dir", "/tmp/go go", "-I/tmp/go go/dir", true},
+		{"-I${SRCDIR}/dir dir", "/tmp/go", "-I/tmp/go/dir dir", true},
 	}
 	for _, test := range tests {
 		output, ok := expandSrcDir(test.input, test.srcdir)
@@ -298,6 +300,40 @@ func TestShellSafety(t *testing.T) {
 		}
 		if output != test.expected {
 			t.Errorf("Expected %q while %q expands with SRCDIR=%q; got %q", test.expected, test.input, test.srcdir, output)
+		}
+	}
+}
+
+// Want to get a "cannot find package" error when directory for package does not exist.
+// There should be valid partial information in the returned non-nil *Package.
+func TestImportDirNotExist(t *testing.T) {
+	testenv.MustHaveGoBuild(t) // really must just have source
+	ctxt := Default
+	ctxt.GOPATH = ""
+
+	tests := []struct {
+		label        string
+		path, srcDir string
+		mode         ImportMode
+	}{
+		{"Import(full, 0)", "go/build/doesnotexist", "", 0},
+		{"Import(local, 0)", "./doesnotexist", filepath.Join(ctxt.GOROOT, "src/go/build"), 0},
+		{"Import(full, FindOnly)", "go/build/doesnotexist", "", FindOnly},
+		{"Import(local, FindOnly)", "./doesnotexist", filepath.Join(ctxt.GOROOT, "src/go/build"), FindOnly},
+	}
+	for _, test := range tests {
+		p, err := ctxt.Import(test.path, test.srcDir, test.mode)
+		if err == nil || !strings.HasPrefix(err.Error(), "cannot find package") {
+			t.Errorf(`%s got error: %q, want "cannot find package" error`, test.label, err)
+		}
+		// If an error occurs, build.Import is documented to return
+		// a non-nil *Package containing partial information.
+		if p == nil {
+			t.Fatalf(`%s got nil p, want non-nil *Package`, test.label)
+		}
+		// Verify partial information in p.
+		if p.ImportPath != "go/build/doesnotexist" {
+			t.Errorf(`%s got p.ImportPath: %q, want "go/build/doesnotexist"`, test.label, p.ImportPath)
 		}
 	}
 }

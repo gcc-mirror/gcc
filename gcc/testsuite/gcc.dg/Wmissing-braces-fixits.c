@@ -162,3 +162,28 @@ struct sa3 arr_4_sa3[4] = \
      6, 7, 8, 9, 10, 11};
      {{     }}{{       }}
      { dg-end-multiline-output "" } */
+
+/* PR c/81405.  */
+int a5[][0][0] = { 1, 2 }; /* { dg-line pr_81405 } */
+
+  /* { dg-warning "missing braces around initializer" "" { target c } pr_81405 } */
+  /* { dg-begin-multiline-output "" }
+ int a5[][0][0] = { 1, 2 };
+                  ^
+ {                  -----
+                    {{1}}}}, {{{2 }}
+     { dg-end-multiline-output "" } */
+
+  /* { dg-warning "excess elements" "" { target c } pr_81405 } */
+  /* { dg-begin-multiline-output "" }
+ int a5[][0][0] = { 1, 2 };
+                    ^
+     { dg-end-multiline-output "" } */
+  /* { dg-begin-multiline-output "" }
+ int a5[][0][0] = { 1, 2 };
+                       ^
+     { dg-end-multiline-output "" } */
+  /* { dg-begin-multiline-output "" }
+ int a5[][0][0] = { 1, 2 };
+ ^~~
+     { dg-end-multiline-output "" } */

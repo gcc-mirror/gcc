@@ -14,13 +14,14 @@ import (
 	"unicode"
 )
 
-// A declInfo describes a package-level const, type, var, func, or alias declaration.
+// A declInfo describes a package-level const, type, var, or func declaration.
 type declInfo struct {
 	file  *Scope        // scope of file containing this declaration
 	lhs   []*Var        // lhs of n:1 variable declarations, or nil
 	typ   ast.Expr      // type, or nil
 	init  ast.Expr      // init/orig expression, or nil
 	fdecl *ast.FuncDecl // func declaration, or nil
+	alias bool          // type alias declaration
 
 	// The deps field tracks initialization expression dependencies.
 	// As a special (overloaded) case, it also tracks dependencies of
@@ -124,6 +125,73 @@ func (check *Checker) filename(fileNo int) string {
 	return fmt.Sprintf("file[%d]", fileNo)
 }
 
+func (check *Checker) importPackage(pos token.Pos, path, dir string) *Package {
+	// If we already have a package for the given (path, dir)
+	// pair, use it instead of doing a full import.
+	// Checker.impMap only caches packages that are marked Complete
+	// or fake (dummy packages for failed imports). Incomplete but
+	// non-fake packages do require an import to complete them.
+	key := importKey{path, dir}
+	imp := check.impMap[key]
+	if imp != nil {
+		return imp
+	}
+
+	// no package yet => import it
+	if path == "C" && check.conf.FakeImportC {
+		imp = NewPackage("C", "C")
+		imp.fake = true
+	} else {
+		// ordinary import
+		var err error
+		if importer := check.conf.Importer; importer == nil {
+			err = fmt.Errorf("Config.Importer not installed")
+		} else if importerFrom, ok := importer.(ImporterFrom); ok {
+			imp, err = importerFrom.ImportFrom(path, dir, 0)
+			if imp == nil && err == nil {
+				err = fmt.Errorf("Config.Importer.ImportFrom(%s, %s, 0) returned nil but no error", path, dir)
+			}
+		} else {
+			imp, err = importer.Import(path)
+			if imp == nil && err == nil {
+				err = fmt.Errorf("Config.Importer.Import(%s) returned nil but no error", path)
+			}
+		}
+		// make sure we have a valid package name
+		// (errors here can only happen through manipulation of packages after creation)
+		if err == nil && imp != nil && (imp.name == "_" || imp.name == "") {
+			err = fmt.Errorf("invalid package name: %q", imp.name)
+			imp = nil // create fake package below
+		}
+		if err != nil {
+			check.errorf(pos, "could not import %s (%s)", path, err)
+			if imp == nil {
+				// create a new fake package
+				// come up with a sensible package name (heuristic)
+				name := path
+				if i := len(name); i > 0 && name[i-1] == '/' {
+					name = name[:i-1]
+				}
+				if i := strings.LastIndex(name, "/"); i >= 0 {
+					name = name[i+1:]
+				}
+				imp = NewPackage(path, name)
+			}
+			// continue to use the package as best as we can
+			imp.fake = true // avoid follow-up lookup failures
+		}
+	}
+
+	// package should be complete or marked fake, but be cautious
+	if imp.complete || imp.fake {
+		check.impMap[key] = imp
+		return imp
+	}
+
+	// something went wrong (importer may have returned incomplete package without error)
+	return nil
+}
+
 // collectObjects collects all file and package objects and inserts them
 // into their respective scopes. It also performs imports and associates
 // methods with receiver base type names.
@@ -133,23 +201,12 @@ func (check *Checker) collectObjects() {
 	// pkgImports is the set of packages already imported by any package file seen
 	// so far. Used to avoid duplicate entries in pkg.imports. Allocate and populate
 	// it (pkg.imports may not be empty if we are checking test files incrementally).
+	// Note that pkgImports is keyed by package (and thus package path), not by an
+	// importKey value. Two different importKey values may map to the same package
+	// which is why we cannot use the check.impMap here.
 	var pkgImports = make(map[*Package]bool)
 	for _, imp := range pkg.imports {
 		pkgImports[imp] = true
-	}
-
-	// srcDir is the directory used by the Importer to look up packages.
-	// The typechecker itself doesn't need this information so it is not
-	// explicitly provided. Instead, we extract it from position info of
-	// the source files as needed.
-	// This is the only place where the type-checker (just the importer)
-	// needs to know the actual source location of a file.
-	// TODO(gri) can we come up with a better API instead?
-	var srcDir string
-	if len(check.files) > 0 {
-		// FileName may be "" (typically for tests) in which case
-		// we get "." as the srcDir which is what we would want.
-		srcDir = dir(check.fset.Position(check.files[0].Name.Pos()).Filename)
 	}
 
 	for fileNo, file := range check.files {
@@ -167,6 +224,11 @@ func (check *Checker) collectObjects() {
 		fileScope := NewScope(check.pkg.scope, pos, end, check.filename(fileNo))
 		check.recordScope(file, fileScope)
 
+		// determine file directory, necessary to resolve imports
+		// FileName may be "" (typically for tests) in which case
+		// we get "." as the directory which is what we would want.
+		fileDir := dir(check.fset.Position(file.Name.Pos()).Filename)
+
 		for _, decl := range file.Decls {
 			switch d := decl.(type) {
 			case *ast.BadDecl:
@@ -178,35 +240,15 @@ func (check *Checker) collectObjects() {
 					switch s := spec.(type) {
 					case *ast.ImportSpec:
 						// import package
-						var imp *Package
 						path, err := validatedImportPath(s.Path.Value)
 						if err != nil {
 							check.errorf(s.Path.Pos(), "invalid import path (%s)", err)
 							continue
 						}
-						if path == "C" && check.conf.FakeImportC {
-							// TODO(gri) shouldn't create a new one each time
-							imp = NewPackage("C", "C")
-							imp.fake = true
-						} else {
-							// ordinary import
-							if importer := check.conf.Importer; importer == nil {
-								err = fmt.Errorf("Config.Importer not installed")
-							} else if importerFrom, ok := importer.(ImporterFrom); ok {
-								imp, err = importerFrom.ImportFrom(path, srcDir, 0)
-								if imp == nil && err == nil {
-									err = fmt.Errorf("Config.Importer.ImportFrom(%s, %s, 0) returned nil but no error", path, pkg.path)
-								}
-							} else {
-								imp, err = importer.Import(path)
-								if imp == nil && err == nil {
-									err = fmt.Errorf("Config.Importer.Import(%s) returned nil but no error", path)
-								}
-							}
-							if err != nil {
-								check.errorf(s.Path.Pos(), "could not import %s (%s)", path, err)
-								continue
-							}
+
+						imp := check.importPackage(s.Path.Pos(), path, fileDir)
+						if imp == nil {
+							continue
 						}
 
 						// add package to list of explicit imports
@@ -214,9 +256,7 @@ func (check *Checker) collectObjects() {
 						// for clients; it is not needed for type-checking)
 						if !pkgImports[imp] {
 							pkgImports[imp] = true
-							if imp != Unsafe {
-								pkg.imports = append(pkg.imports, imp)
-							}
+							pkg.imports = append(pkg.imports, imp)
 						}
 
 						// local name overrides imported package name
@@ -273,13 +313,6 @@ func (check *Checker) collectObjects() {
 							// declare imported package object in file scope
 							check.declare(fileScope, nil, obj, token.NoPos)
 						}
-
-					// Alias-related code. Keep for now.
-					// case *ast.AliasSpec:
-					// 	obj := NewAlias(s.Name.Pos(), pkg, s.Name.Name, nil)
-					// 	obj.typ = nil // unresolved
-					// 	obj.kind = d.Tok
-					// 	check.declarePkgObj(s.Name, obj, &declInfo{file: fileScope, init: s.Orig})
 
 					case *ast.ValueSpec:
 						switch d.Tok {
@@ -347,7 +380,7 @@ func (check *Checker) collectObjects() {
 
 					case *ast.TypeSpec:
 						obj := NewTypeName(s.Name.Pos(), pkg, s.Name.Name, nil)
-						check.declarePkgObj(s.Name, obj, &declInfo{file: fileScope, typ: s.Type})
+						check.declarePkgObj(s.Name, obj, &declInfo{file: fileScope, typ: s.Type, alias: s.Assign.IsValid()})
 
 					default:
 						check.invalidAST(s.Pos(), "unknown ast.Spec node %T", s)

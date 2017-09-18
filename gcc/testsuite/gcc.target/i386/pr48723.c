@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-stack-check "" } */
 /* { dg-options "-fstack-check -mavx" } */
 
 struct S0

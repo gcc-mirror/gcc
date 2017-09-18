@@ -195,7 +195,6 @@ extern const avr_arch_t *avr_arch;
 
 extern const avr_mcu_t avr_mcu_types[];
 
-extern void avr_inform_devices (void);
 extern void avr_inform_core_architectures (void);
 
 #endif /* AVR_ARCH_H */

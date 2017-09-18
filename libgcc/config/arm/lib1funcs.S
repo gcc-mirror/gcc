@@ -109,7 +109,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #if defined(__ARM_ARCH_8A__) || defined(__ARM_ARCH_8M_BASE__) \
-	|| defined(__ARM_ARCH_8M_MAIN__)
+	|| defined(__ARM_ARCH_8M_MAIN__) || defined(__ARM_ARCH_8R__)
 # define __ARM_ARCH__ 8
 #endif
 

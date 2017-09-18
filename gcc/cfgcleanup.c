@@ -559,7 +559,7 @@ try_forward_edges (int mode, basic_block b)
 	{
 	  /* Save the values now, as the edge may get removed.  */
 	  profile_count edge_count = e->count;
-	  int edge_probability = e->probability;
+	  profile_probability edge_probability = e->probability;
 	  int edge_frequency;
 	  int n = 0;
 
@@ -585,7 +585,7 @@ try_forward_edges (int mode, basic_block b)
 	  /* We successfully forwarded the edge.  Now update profile
 	     data: for each edge we traversed in the chain, remove
 	     the original edge's execution count.  */
-	  edge_frequency = apply_probability (b->frequency, edge_probability);
+	  edge_frequency = edge_probability.apply (b->frequency);
 
 	  do
 	    {
@@ -1435,6 +1435,13 @@ flow_find_cross_jump (basic_block bb1, basic_block bb2, rtx_insn **f1,
       if (i1 == BB_HEAD (bb1) || i2 == BB_HEAD (bb2))
 	break;
 
+      /* Do not turn corssing edge to non-crossing or vice versa after
+	 reload. */
+      if (BB_PARTITION (BLOCK_FOR_INSN (i1))
+	  != BB_PARTITION (BLOCK_FOR_INSN (i2))
+	  && reload_completed)
+	break;
+
       dir = merge_dir (dir, old_insns_match_p (0, i1, i2));
       if (dir == dir_none || (!dir_p && dir != dir_both))
 	break;
@@ -1710,24 +1717,28 @@ outgoing_edges_match (int mode, basic_block bb1, basic_block bb2)
 	  && optimize_bb_for_speed_p (bb1)
 	  && optimize_bb_for_speed_p (bb2))
 	{
-	  int prob2;
+	  profile_probability prob2;
 
 	  if (b1->dest == b2->dest)
 	    prob2 = b2->probability;
 	  else
 	    /* Do not use f2 probability as f2 may be forwarded.  */
-	    prob2 = REG_BR_PROB_BASE - b2->probability;
+	    prob2 = b2->probability.invert ();
 
 	  /* Fail if the difference in probabilities is greater than 50%.
 	     This rules out two well-predicted branches with opposite
 	     outcomes.  */
-	  if (abs (b1->probability - prob2) > REG_BR_PROB_BASE / 2)
+	  if (b1->probability.differs_lot_from_p (prob2))
 	    {
 	      if (dump_file)
-		fprintf (dump_file,
-			 "Outcomes of branch in bb %i and %i differ too much (%i %i)\n",
-			 bb1->index, bb2->index, b1->probability, prob2);
-
+		{
+		  fprintf (dump_file,
+			   "Outcomes of branch in bb %i and %i differ too"
+			   " much (", bb1->index, bb2->index);
+		  b1->probability.dump (dump_file);
+		  prob2.dump (dump_file);
+		  fprintf (dump_file, ")\n");
+		}
 	      return false;
 	    }
 	}
@@ -1954,18 +1965,6 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 
   newpos1 = newpos2 = NULL;
 
-  /* If we have partitioned hot/cold basic blocks, it is a bad idea
-     to try this optimization.
-
-     Basic block partitioning may result in some jumps that appear to
-     be optimizable (or blocks that appear to be mergeable), but which really
-     must be left untouched (they are required to make it safely across
-     partition boundaries).  See the comments at the top of
-     bb-reorder.c:partition_hot_cold_basic_blocks for complete details.  */
-
-  if (crtl->has_bb_partition && reload_completed)
-    return false;
-
   /* Search backward through forwarder blocks.  We don't need to worry
      about multiple entry or chained forwarders, as they will be optimized
      away.  We do this to look past the unconditional jump following a
@@ -1999,6 +1998,11 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
   if (EDGE_COUNT (src1->preds) == 0 || EDGE_COUNT (src2->preds) == 0)
     return false;
 
+  /* Do not turn corssing edge to non-crossing or vice versa after reload.  */
+  if (BB_PARTITION (src1) != BB_PARTITION (src2)
+      && reload_completed)
+    return false;
+
   /* Look for the common insn sequence, part the first ...  */
   if (!outgoing_edges_match (mode, src1, src2))
     return false;
@@ -2020,12 +2024,10 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 
   if (dir == dir_backward)
     {
-#define SWAP(T, X, Y) do { T tmp = (X); (X) = (Y); (Y) = tmp; } while (0)
-      SWAP (basic_block, osrc1, osrc2);
-      SWAP (basic_block, src1, src2);
-      SWAP (edge, e1, e2);
-      SWAP (rtx_insn *, newpos1, newpos2);
-#undef SWAP
+      std::swap (osrc1, osrc2);
+      std::swap (src1, src2);
+      std::swap (e1, e2);
+      std::swap (newpos1, newpos2);
     }
 
   /* Don't proceed with the crossjump unless we found a sufficient number
@@ -2149,12 +2151,9 @@ try_crossjump_to_edge (int mode, edge e1, edge e2,
 	}
 
       if (!redirect_edges_to->frequency && !src1->frequency)
-	s->probability = (s->probability + s2->probability) / 2;
-      else
-	s->probability
-	  = ((s->probability * redirect_edges_to->frequency +
-	      s2->probability * src1->frequency)
-	     / (redirect_edges_to->frequency + src1->frequency));
+	s->probability = s->probability.combine_with_freq
+			   (redirect_edges_to->frequency,
+			    s2->probability, src1->frequency);
     }
 
   /* Adjust count and frequency for the block.  An earlier jump

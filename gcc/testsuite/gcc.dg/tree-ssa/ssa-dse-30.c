@@ -8,7 +8,7 @@ void test_bcopy (const void *s)
 {
   char d[33];
 
-  /* Bcopy is transformed into memcpy and those calls are expanded
+  /* Bcopy is transformed into memmove and those calls are expanded
      inline in EVRP, before DSE runs, so this test doesn't actually
      verify that DSE does its job.  */
   __builtin_bcopy (s, d, sizeof d);
@@ -28,4 +28,4 @@ void test_bzero (void)
 }
 
 /* { dg-final { scan-tree-dump-times "builtin_memset" 1 "dse1" } } */
-/* { dg-final { scan-tree-dump-not "builtin_(bcopy|bzero|memcpy)" "dse1" } } */
+/* { dg-final { scan-tree-dump-not "builtin_(bcopy|bzero|memcpy|memmove)" "dse1" } } */

@@ -29,6 +29,8 @@
 #include "target.h"
 #include "rtl.h"
 #include "tree.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "cfghooks.h"
 #include "df.h"
 #include "memmodel.h"
@@ -964,25 +966,25 @@ rx_gen_move_template (rtx * operands, bool is_movu)
   /* Decide which extension, if any, should be given to the move instruction.  */
   switch (CONST_INT_P (src) ? GET_MODE (dest) : GET_MODE (src))
     {
-    case QImode:
+    case E_QImode:
       /* The .B extension is not valid when
 	 loading an immediate into a register.  */
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	extension = ".B";
       break;
-    case HImode:
+    case E_HImode:
       if (! REG_P (dest) || ! CONST_INT_P (src))
 	/* The .W extension is not valid when
 	   loading an immediate into a register.  */
 	extension = ".W";
       break;
-    case DFmode:
-    case DImode:
-    case SFmode:
-    case SImode:
+    case E_DFmode:
+    case E_DImode:
+    case E_SFmode:
+    case E_SImode:
       extension = ".L";
       break;
-    case VOIDmode:
+    case E_VOIDmode:
       /* This mode is used by constants.  */
       break;
     default:
@@ -1886,8 +1888,7 @@ add_vector_labels (FILE *file, const char *aname)
 }
 
 static void
-rx_output_function_prologue (FILE * file,
-			     HOST_WIDE_INT frame_size ATTRIBUTE_UNUSED)
+rx_output_function_prologue (FILE * file)
 {
   add_vector_labels (file, "interrupt");
   add_vector_labels (file, "vector");
@@ -3078,15 +3079,15 @@ flags_from_mode (machine_mode mode)
 {
   switch (mode)
     {
-    case CC_ZSmode:
+    case E_CC_ZSmode:
       return CC_FLAG_S | CC_FLAG_Z;
-    case CC_ZSOmode:
+    case E_CC_ZSOmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O;
-    case CC_ZSCmode:
+    case E_CC_ZSCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_C;
-    case CCmode:
+    case E_CCmode:
       return CC_FLAG_S | CC_FLAG_Z | CC_FLAG_O | CC_FLAG_C;
-    case CC_Fmode:
+    case E_CC_Fmode:
       return CC_FLAG_FP;
     default:
       gcc_unreachable ();
@@ -3433,6 +3434,32 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
     emit_insn (gen_mvtc (GEN_INT (CTRLREG_PSW), m_prev_psw_reg));
 }
 
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+rx_hard_regno_nregs (unsigned int, machine_mode mode)
+{
+  return CLASS_MAX_NREGS (0, mode);
+}
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+rx_hard_regno_mode_ok (unsigned int regno, machine_mode)
+{
+  return REGNO_REG_CLASS (regno) == GR_REGS;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+rx_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return ((GET_MODE_CLASS (mode1) == MODE_FLOAT
+	   || GET_MODE_CLASS (mode1) == MODE_COMPLEX_FLOAT)
+	  == (GET_MODE_CLASS (mode2) == MODE_FLOAT
+	      || GET_MODE_CLASS (mode2) == MODE_COMPLEX_FLOAT));
+}
 
 #undef  TARGET_NARROW_VOLATILE_BITFIELD
 #define TARGET_NARROW_VOLATILE_BITFIELD		rx_narrow_volatile_bitfield
@@ -3586,6 +3613,14 @@ rx_atomic_sequence::~rx_atomic_sequence (void)
 
 #undef  TARGET_LRA_P
 #define TARGET_LRA_P 				rx_enable_lra
+
+#undef  TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS			rx_hard_regno_nregs
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK		rx_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P			rx_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

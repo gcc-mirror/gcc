@@ -769,6 +769,12 @@ parse_add_or_inc (rtx_insn *insn, bool before_mem)
   inc_insn.pat = pat;
   inc_insn.reg_res = SET_DEST (pat);
   inc_insn.reg0 = XEXP (SET_SRC (pat), 0);
+
+  /* Block any auto increment of the frame pointer since it expands into
+     an addition and cannot be removed by copy propagation.  */
+  if (inc_insn.reg0 == frame_pointer_rtx)
+    return false;
+
   if (rtx_equal_p (inc_insn.reg_res, inc_insn.reg0))
     inc_insn.form = before_mem ? FORM_PRE_INC : FORM_POST_INC;
   else

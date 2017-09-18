@@ -1212,7 +1212,8 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   gimple_stmt_iterator bsi;
   use_operand_p op;
   bool ok;
-  unsigned i, prob, prob_entry, scale_unrolled, scale_rest;
+  unsigned i;
+  profile_probability prob, prob_entry, scale_unrolled;
   profile_count freq_e, freq_h;
   gcov_type new_est_niter = niter_for_unrolled_loop (loop, factor);
   unsigned irr = loop_preheader_edge (loop)->flags & EDGE_IRREDUCIBLE_LOOP;
@@ -1224,9 +1225,10 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
 
   /* Let us assume that the unrolled loop is quite likely to be entered.  */
   if (integer_nonzerop (enter_main_cond))
-    prob_entry = REG_BR_PROB_BASE;
+    prob_entry = profile_probability::always ();
   else
-    prob_entry = PROB_UNROLLED_LOOP_ENTERED * REG_BR_PROB_BASE / 100;
+    prob_entry = profile_probability::guessed_always ()
+			.apply_scale (PROB_UNROLLED_LOOP_ENTERED, 100);
 
   /* The values for scales should keep profile consistent, and somewhat close
      to correct.
@@ -1241,11 +1243,11 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
      of this change (scale the frequencies of blocks before and after the exit
      by appropriate factors).  */
   scale_unrolled = prob_entry;
-  scale_rest = REG_BR_PROB_BASE;
 
-  new_loop = loop_version (loop, enter_main_cond, NULL,
-			   prob_entry, REG_BR_PROB_BASE - prob_entry,
-			   scale_unrolled, scale_rest, true);
+  new_loop = loop_version (loop, enter_main_cond, NULL, prob_entry,
+			   prob_entry.invert (), scale_unrolled,
+			   profile_probability::guessed_always (),
+			   true);
   gcc_assert (new_loop != NULL);
   update_ssa (TODO_update_ssa);
 
@@ -1259,9 +1261,13 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   /* Since the exit edge will be removed, the frequency of all the blocks
      in the loop that are dominated by it must be scaled by
      1 / (1 - exit->probability).  */
-  scale_dominated_blocks_in_loop (loop, exit->src,
-				  REG_BR_PROB_BASE,
-				  REG_BR_PROB_BASE - exit->probability);
+  if (exit->probability.initialized_p ())
+    scale_dominated_blocks_in_loop (loop, exit->src,
+				    /* We are scaling up here so probability
+				       does not fit.  */
+				    REG_BR_PROB_BASE,
+				    REG_BR_PROB_BASE
+				    - exit->probability.to_reg_br_prob_base ());
 
   bsi = gsi_last_bb (exit_bb);
   exit_if = gimple_build_cond (EQ_EXPR, integer_zero_node,
@@ -1278,11 +1284,11 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
   new_exit->count = exit->count;
   new_exit->probability = exit->probability;
   new_nonexit = single_pred_edge (loop->latch);
-  new_nonexit->probability = REG_BR_PROB_BASE - exit->probability;
+  new_nonexit->probability = exit->probability.invert ();
   new_nonexit->flags = EDGE_TRUE_VALUE;
   new_nonexit->count -= exit->count;
-  scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
-			     REG_BR_PROB_BASE);
+  if (new_nonexit->probability.initialized_p ())
+    scale_bbs_frequencies (&loop->latch, 1, new_nonexit->probability);
 
   old_entry = loop_preheader_edge (loop);
   new_entry = loop_preheader_edge (new_loop);
@@ -1362,31 +1368,29 @@ tree_transform_and_unroll_loop (struct loop *loop, unsigned factor,
     }
   if (freq_h > 0)
     {
-      gcov_type scale;
       /* Avoid dropping loop body profile counter to 0 because of zero count
 	 in loop's preheader.  */
       if (freq_e == profile_count::zero ())
         freq_e = profile_count::from_gcov_type (1);
-      /* This should not overflow.  */
-      scale = freq_e.probability_in (freq_h);
-      scale_loop_frequencies (loop, scale, REG_BR_PROB_BASE);
+      scale_loop_frequencies (loop, freq_e.probability_in (freq_h));
     }
 
   exit_bb = single_pred (loop->latch);
   new_exit = find_edge (exit_bb, rest);
   new_exit->count = loop_preheader_edge (loop)->count;
-  new_exit->probability = REG_BR_PROB_BASE / (new_est_niter + 1);
+  new_exit->probability = profile_probability::always ()
+				.apply_scale (1, new_est_niter + 1);
 
   rest->count += new_exit->count;
   rest->frequency += EDGE_FREQUENCY (new_exit);
 
   new_nonexit = single_pred_edge (loop->latch);
   prob = new_nonexit->probability;
-  new_nonexit->probability = REG_BR_PROB_BASE - new_exit->probability;
+  new_nonexit->probability = new_exit->probability.invert ();
   new_nonexit->count = exit_bb->count - new_exit->count;
-  if (prob > 0)
-    scale_bbs_frequencies_int (&loop->latch, 1, new_nonexit->probability,
-			       prob);
+  prob = new_nonexit->probability / prob;
+  if (prob.initialized_p ())
+    scale_bbs_frequencies (&loop->latch, 1, prob);
 
   /* Finally create the new counter for number of iterations and add the new
      exit instruction.  */
@@ -1502,7 +1506,6 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
   gcond *stmt;
   edge exit = single_dom_exit (loop);
   gimple_seq stmts;
-  machine_mode mode;
   bool unsigned_p = false;
 
   for (psi = gsi_start_phis (loop->header);
@@ -1529,7 +1532,7 @@ canonicalize_loop_ivs (struct loop *loop, tree *nit, bool bump_in_latch)
       precision = TYPE_PRECISION (type);
     }
 
-  mode = smallest_mode_for_size (precision, MODE_INT);
+  scalar_int_mode mode = smallest_int_mode_for_size (precision);
   precision = GET_MODE_PRECISION (mode);
   type = build_nonstandard_integer_type (precision, unsigned_p);
 

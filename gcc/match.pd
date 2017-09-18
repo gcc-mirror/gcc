@@ -155,6 +155,58 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || !COMPLEX_FLOAT_TYPE_P (type)))
    (negate @0)))
 
+(for cmp (gt ge lt le)
+     outp (convert convert negate negate)
+     outn (negate negate convert convert)
+ /* Transform (X > 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X >= 0.0 ? 1.0 : -1.0) into copysign(1, X). */
+ /* Transform (X < 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ /* Transform (X <= 0.0 ? 1.0 : -1.0) into copysign(1,-X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_onep@1 real_minus_onep)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outp @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outp @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outp @0))))))
+ /* Transform (X > 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X >= 0.0 ? -1.0 : 1.0) into copysign(1,-X). */
+ /* Transform (X < 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ /* Transform (X <= 0.0 ? -1.0 : 1.0) into copysign(1,X). */
+ (simplify
+  (cond (cmp @0 real_zerop) real_minus_onep real_onep@1)
+  (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type)
+       && types_match (type, TREE_TYPE (@0)))
+   (switch
+    (if (types_match (type, float_type_node))
+     (BUILT_IN_COPYSIGNF @1 (outn @0)))
+    (if (types_match (type, double_type_node))
+     (BUILT_IN_COPYSIGN @1 (outn @0)))
+    (if (types_match (type, long_double_type_node))
+     (BUILT_IN_COPYSIGNL @1 (outn @0)))))))
+
+/* Transform X * copysign (1.0, X) into abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep @0))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (abs @0)))
+
+/* Transform X * copysign (1.0, -X) into -abs(X). */
+(simplify
+ (mult:c @0 (COPYSIGN real_onep (negate @0)))
+ (if (!HONOR_NANS (type) && !HONOR_SIGNED_ZEROS (type))
+  (negate (abs @0))))
+
+/* Transform copysign (CST, X) into copysign (ABS(CST), X). */
+(simplify
+ (COPYSIGN REAL_CST@0 @1)
+ (if (REAL_VALUE_NEGATIVE (TREE_REAL_CST (@0)))
+  (COPYSIGN (negate @0) @1)))
+
 /* X * 1, X / 1 -> X.  */
 (for op (mult trunc_div ceil_div floor_div round_div exact_div)
   (simplify
@@ -191,8 +243,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  /* X / X is one.  */
  (simplify
   (div @0 @0)
-  /* But not for 0 / 0 so that we can get the proper warnings and errors.  */
-  (if (!integer_zerop (@0))
+  /* But not for 0 / 0 so that we can get the proper warnings and errors.
+     And not for _Fract types where we can't build 1.  */
+  (if (!integer_zerop (@0) && !ALL_FRACT_MODE_P (TYPE_MODE (type)))
    { build_one_cst (type); }))
  /* X / abs (X) is X < 0 ? -1 : 1.  */ 
  (simplify
@@ -230,6 +283,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (if (TYPE_UNSIGNED (type)
 	 || mul != wi::min_value (TYPE_PRECISION (type), SIGNED))
      { build_zero_cst (type); })))))
+
+/* Combine successive multiplications.  Similar to above, but handling
+   overflow is different.  */
+(simplify
+ (mult (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+ (with {
+   bool overflow_p;
+   wide_int mul = wi::mul (@1, @2, TYPE_SIGN (type), &overflow_p);
+  }
+  /* Skip folding on overflow: the only special case is @1 * @2 == -INT_MIN,
+     otherwise undefined overflow implies that @0 must be zero.  */
+  (if (!overflow_p || TYPE_OVERFLOW_WRAPS (type))
+   (mult @0 { wide_int_to_tree (type, mul); }))))
 
 /* Optimize A / A to 1.0 if we don't care about
    NaNs or Infinities.  */
@@ -590,14 +656,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (minus (bit_and:cs @0 @1) (bit_and:cs @0 (bit_not @1)))
   (minus @1 (bit_xor @0 @1)))
 
-/* Simplify (X & ~Y) | (~X & Y) -> X ^ Y.  */
-(simplify
- (bit_ior (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1))
-  (bit_xor @0 @1))
-(simplify
- (bit_ior:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
- (if (wi::bit_not (@2) == @1)
-  (bit_xor @0 @1)))
+/* Simplify (X & ~Y) |^+ (~X & Y) -> X ^ Y.  */
+(for op (bit_ior bit_xor plus)
+ (simplify
+  (op (bit_and:c @0 (bit_not @1)) (bit_and:c (bit_not @0) @1))
+   (bit_xor @0 @1))
+ (simplify
+  (op:c (bit_and @0 INTEGER_CST@2) (bit_and (bit_not @0) INTEGER_CST@1))
+  (if (wi::bit_not (@2) == @1)
+   (bit_xor @0 @1))))
 
 /* PR53979: Transform ((a ^ b) | a) -> (a | b) */
 (simplify
@@ -833,7 +900,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (X | Y) | (X | Z) -> (X | Y) | Z  */
 (for op (bit_and bit_ior)
  (simplify
-  (op:c (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
+  (op (convert1?@3 (op:c@4 @0 @1)) (convert2?@5 (op:c@6 @0 @2)))
   (if (tree_nop_conversion_p (type, TREE_TYPE (@1))
        && tree_nop_conversion_p (type, TREE_TYPE (@2)))
    (if (single_use (@5) && single_use (@6))
@@ -861,7 +928,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (match negate_expr_p
  INTEGER_CST
  (if ((INTEGRAL_TYPE_P (type)
-       && TYPE_OVERFLOW_WRAPS (type))
+       && TYPE_UNSIGNED (type))
       || (!TYPE_OVERFLOW_SANITIZED (type)
 	  && may_negate_without_overflow_p (t)))))
 (match negate_expr_p
@@ -925,7 +992,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || GET_MODE_CLASS (TYPE_MODE (type)) != MODE_INT
 	   /* Or if the precision of TO is not the same as the precision
 	      of its mode.  */
-	   || TYPE_PRECISION (type) != GET_MODE_PRECISION (TYPE_MODE (type))))
+	   || !type_has_mode_precision_p (type)))
    (convert (bitop @0 (convert @1))))))
 
 (for bitop (bit_and bit_ior)
@@ -1035,6 +1102,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && tree_nop_conversion_p (type, TREE_TYPE (@1)))
   (convert (bit_and (bit_not @1) @0))))
 
+/* (m1 CMP m2) * d -> (m1 CMP m2) ? d : 0  */
+(for cmp (gt lt ge le)
+(simplify
+ (mult (convert (cmp @0 @1)) @2)
+  (cond (cmp @0 @1) @2 { build_zero_cst (type); })))
+
 /* For integral types with undefined overflow and C != 0 fold
    x * C EQ/NE y * C into x EQ/NE y.  */
 (for cmp (eq ne)
@@ -1043,6 +1116,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
        && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (@0))
        && tree_expr_nonzero_p (@1))
+   (cmp @0 @2))))
+
+/* For integral types with wrapping overflow and C odd fold
+   x * C EQ/NE y * C into x EQ/NE y.  */
+(for cmp (eq ne)
+ (simplify
+  (cmp (mult @0 INTEGER_CST@1) (mult @2 @1))
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@1))
+       && TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))
+       && (TREE_INT_CST_LOW (@1) & 1) != 0)
    (cmp @0 @2))))
 
 /* For integral types with undefined overflow and C != 0 fold
@@ -1061,12 +1144,79 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	&& wi::neg_p (@1, TYPE_SIGN (TREE_TYPE (@1))))
     (cmp @2 @0))))))
 
+/* (X - 1U) <= INT_MAX-1U into (int) X > 0.  */
+(for cmp (le gt)
+     icmp (gt le)
+ (simplify
+  (cmp (plus @0 integer_minus_onep@1) INTEGER_CST@2)
+   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& TYPE_UNSIGNED (TREE_TYPE (@0))
+	&& TYPE_PRECISION (TREE_TYPE (@0)) > 1
+	&& wi::eq_p (@2, wi::max_value (TYPE_PRECISION (TREE_TYPE (@0)),
+					SIGNED) - 1))
+    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
+     (icmp (convert:stype @0) { build_int_cst (stype, 0); })))))
+
 /* X / 4 < Y / 4 iff X < Y when the division is known to be exact.  */
 (for cmp (simple_comparison)
  (simplify
   (cmp (exact_div @0 INTEGER_CST@2) (exact_div @1 @2))
   (if (wi::gt_p(@2, 0, TYPE_SIGN (TREE_TYPE (@2))))
    (cmp @0 @1))))
+
+/* X / C1 op C2 into a simple range test.  */
+(for cmp (simple_comparison)
+ (simplify
+  (cmp (trunc_div:s @0 INTEGER_CST@1) INTEGER_CST@2)
+  (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
+       && integer_nonzerop (@1)
+       && !TREE_OVERFLOW (@1)
+       && !TREE_OVERFLOW (@2))
+   (with { tree lo, hi; bool neg_overflow;
+	   enum tree_code code = fold_div_compare (cmp, @1, @2, &lo, &hi,
+						   &neg_overflow); }
+    (switch
+     (if (code == LT_EXPR || code == GE_EXPR)
+       (if (TREE_OVERFLOW (lo))
+	{ build_int_cst (type, (code == LT_EXPR) ^ neg_overflow); }
+	(if (code == LT_EXPR)
+	 (lt @0 { lo; })
+	 (ge @0 { lo; }))))
+     (if (code == LE_EXPR || code == GT_EXPR)
+       (if (TREE_OVERFLOW (hi))
+	{ build_int_cst (type, (code == LE_EXPR) ^ neg_overflow); }
+	(if (code == LE_EXPR)
+	 (le @0 { hi; })
+	 (gt @0 { hi; }))))
+     (if (!lo && !hi)
+      { build_int_cst (type, code == NE_EXPR); })
+     (if (code == EQ_EXPR && !hi)
+      (ge @0 { lo; }))
+     (if (code == EQ_EXPR && !lo)
+      (le @0 { hi; }))
+     (if (code == NE_EXPR && !hi)
+      (lt @0 { lo; }))
+     (if (code == NE_EXPR && !lo)
+      (gt @0 { hi; }))
+     (if (GENERIC)
+      { build_range_check (UNKNOWN_LOCATION, type, @0, code == EQ_EXPR,
+			   lo, hi); })
+     (with
+      {
+	tree etype = range_check_type (TREE_TYPE (@0));
+	if (etype)
+	  {
+	    if (! TYPE_UNSIGNED (etype))
+	      etype = unsigned_type_for (etype);
+	    hi = fold_convert (etype, hi);
+	    lo = fold_convert (etype, lo);
+	    hi = const_binop (MINUS_EXPR, etype, hi, lo);
+	  }
+      }
+      (if (etype && hi && !TREE_OVERFLOW (hi))
+       (if (code == EQ_EXPR)
+	(le (minus (convert:etype @0) { lo; }) { hi; })
+	(gt (minus (convert:etype @0) { lo; }) { hi; })))))))))
 
 /* X + Z < Y + Z is the same as X < Y when there is no overflow.  */
 (for op (lt le ge gt)
@@ -1321,6 +1471,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (minus @0 (minus @0 @1))
    @1)
+  /* (A +- B) + (C - A)   -> C +- B */
+  /* (A +  B) - (A - C)   -> B + C */
+  /* More cases are handled with comparisons.  */
+  (simplify
+   (plus:c (plus:c @0 @1) (minus @2 @0))
+   (plus @2 @1))
+  (simplify
+   (plus:c (minus @0 @1) (minus @2 @0))
+   (minus @2 @1))
+  (simplify
+   (minus (plus:c @0 @1) (minus @0 @2))
+   (plus @1 @2))
 
   /* (A +- CST1) +- CST2 -> A + CST3
      Use view_convert because it is safe for vectors and equivalent for
@@ -1758,8 +1920,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        if (shift == LSHIFT_EXPR)
 	 zerobits = ((HOST_WIDE_INT_1U << shiftc) - 1);
        else if (shift == RSHIFT_EXPR
-		&& (TYPE_PRECISION (shift_type)
-		    == GET_MODE_PRECISION (TYPE_MODE (shift_type))))
+		&& type_has_mode_precision_p (shift_type))
 	 {
 	   prec = TYPE_PRECISION (TREE_TYPE (@3));
 	   tree arg00 = @0;
@@ -1769,8 +1930,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	       && TYPE_UNSIGNED (TREE_TYPE (@0)))
 	     {
 	       tree inner_type = TREE_TYPE (@0);
-	       if ((TYPE_PRECISION (inner_type)
-		    == GET_MODE_PRECISION (TYPE_MODE (inner_type)))
+	       if (type_has_mode_precision_p (inner_type)
 		   && TYPE_PRECISION (inner_type) < prec)
 		 {
 		   prec = TYPE_PRECISION (inner_type);
@@ -2063,6 +2223,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (simplify
  (mult @0 integer_minus_onep)
  (negate @0))
+
+/* Reassociate (X * CST) * Y to (X * Y) * CST.  This does not introduce
+   signed overflow for CST != 0 && CST != -1.  */
+(simplify
+ (mult:c (mult:s @0 INTEGER_CST@1) @2)
+ (if (TREE_CODE (@2) != INTEGER_CST
+      && !integer_zerop (@1) && !integer_minus_onep (@1))
+  (mult (mult @0 @2) @1)))
 
 /* True if we can easily extract the real and imaginary parts of a complex
    number.  */
@@ -2729,6 +2897,80 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       (if (! HONOR_NANS (@0))
 	(cmp @0 @1))))))
 
+/* Optimize various special cases of (FTYPE) N CMP CST.  */
+(for cmp  (lt le eq ne ge gt)
+     icmp (le le eq ne ge ge)
+ (simplify
+  (cmp (float @0) REAL_CST@1)
+   (if (SCALAR_FLOAT_TYPE_P (TREE_TYPE (@1))
+	&& ! DECIMAL_FLOAT_TYPE_P (TREE_TYPE (@1)))
+    (with
+     {
+       tree itype = TREE_TYPE (@0);
+       signop isign = TYPE_SIGN (itype);
+       format_helper fmt (REAL_MODE_FORMAT (TYPE_MODE (TREE_TYPE (@1))));
+       const REAL_VALUE_TYPE *cst = TREE_REAL_CST_PTR (@1);
+       /* Be careful to preserve any potential exceptions due to
+	  NaNs.  qNaNs are ok in == or != context.
+	  TODO: relax under -fno-trapping-math or
+	  -fno-signaling-nans.  */
+       bool exception_p
+         = real_isnan (cst) && (cst->signalling
+				|| (cmp != EQ_EXPR && cmp != NE_EXPR));
+       /* INT?_MIN is power-of-two so it takes
+	  only one mantissa bit.  */
+       bool signed_p = isign == SIGNED;
+       bool itype_fits_ftype_p
+	 = TYPE_PRECISION (itype) - signed_p <= significand_size (fmt);
+     }
+     /* TODO: allow non-fitting itype and SNaNs when
+	-fno-trapping-math.  */
+     (if (itype_fits_ftype_p && ! exception_p)
+      (with
+       {
+	 REAL_VALUE_TYPE imin, imax;
+	 real_from_integer (&imin, fmt, wi::min_value (itype), isign);
+	 real_from_integer (&imax, fmt, wi::max_value (itype), isign);
+
+	 REAL_VALUE_TYPE icst;
+	 if (cmp == GT_EXPR || cmp == GE_EXPR)
+	   real_ceil (&icst, fmt, cst);
+	 else if (cmp == LT_EXPR || cmp == LE_EXPR)
+	   real_floor (&icst, fmt, cst);
+	 else
+	   real_trunc (&icst, fmt, cst);
+
+	 bool cst_int_p = real_identical (&icst, cst);
+
+	 bool overflow_p = false;
+	 wide_int icst_val
+	   = real_to_integer (&icst, &overflow_p, TYPE_PRECISION (itype));
+       }
+       (switch
+	/* Optimize cases when CST is outside of ITYPE's range.  */
+	(if (real_compare (LT_EXPR, cst, &imin))
+	 { constant_boolean_node (cmp == GT_EXPR || cmp == GE_EXPR || cmp == NE_EXPR,
+				  type); })
+	(if (real_compare (GT_EXPR, cst, &imax))
+	 { constant_boolean_node (cmp == LT_EXPR || cmp == LE_EXPR || cmp == NE_EXPR,
+				  type); })
+	/* Remove cast if CST is an integer representable by ITYPE.  */
+	(if (cst_int_p)
+	 (cmp @0 { gcc_assert (!overflow_p);
+		   wide_int_to_tree (itype, icst_val); })
+	)
+	/* When CST is fractional, optimize
+	    (FTYPE) N == CST -> 0
+	    (FTYPE) N != CST -> 1.  */
+	(if (cmp == EQ_EXPR || cmp == NE_EXPR)
+	 { constant_boolean_node (cmp == NE_EXPR, type); }) 
+	/* Otherwise replace with sensible integer constant.  */
+	(with
+	 {
+	   gcc_checking_assert (!overflow_p);
+	 }
+	 (icmp @0 { wide_int_to_tree (itype, icst_val); })))))))))
+
 /* Fold A /[ex] B CMP C to A CMP B * C.  */
 (for cmp (eq ne)
  (simplify
@@ -2982,8 +3224,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (simplify
   (cmp (bit_and (convert?@2 @0) integer_pow2p@1) integer_zerop)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
-       && (TYPE_PRECISION (TREE_TYPE (@0))
-	   == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@0))))
+       && type_has_mode_precision_p (TREE_TYPE (@0))
        && element_precision (@2) >= element_precision (@0)
        && wi::only_sign_bit_p (@1, element_precision (@0)))
    (with { tree stype = signed_type_for (TREE_TYPE (@0)); }
@@ -3053,14 +3294,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		    || TREE_CODE (base1) == STRING_CST))
          equal = (base0 == base1);
      }
-     (if (equal == 1
-	  && (cmp == EQ_EXPR || cmp == NE_EXPR
-	      /* If the offsets are equal we can ignore overflow.  */
-	      || off0 == off1
-	      || POINTER_TYPE_OVERFLOW_UNDEFINED
-	      /* Or if we compare using pointers to decls or strings.  */
-	      || (POINTER_TYPE_P (TREE_TYPE (@2))
-		  && (DECL_P (base0) || TREE_CODE (base0) == STRING_CST))))
+     (if (equal == 1)
       (switch
        (if (cmp == EQ_EXPR)
 	{ constant_boolean_node (off0 == off1, type); })
@@ -3163,7 +3397,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	     associated with the mode of @1, so the sign bit is
 	     specified by this mode.  Check that @1 is the signed
 	     max associated with this sign bit.  */
-	  && prec == GET_MODE_PRECISION (TYPE_MODE (arg1_type))
+	  && prec == GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (arg1_type))
 	  /* signed_type does not work on pointer types.  */
 	  && INTEGRAL_TYPE_P (arg1_type))
       /* The following case also applies to X < signed_max+1
@@ -3283,6 +3517,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (if (!HONOR_SNANS (type))
    @0))
 
+ (for op (plus minus)
+  /* Simplify (A / C) +- (B / C) -> (A +- B) / C.  */
+  (simplify
+   (op (rdiv @0 @1)
+       (rdiv @2 @1))
+   (rdiv (op @0 @2) @1)))
+
  /* Simplify sqrt(x) * sqrt(y) -> sqrt(x*y).  */
  (for root (SQRT CBRT)
   (simplify
@@ -3384,6 +3625,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (simplify
    (logs (pows @0 @1))
    (mult @1 (logs @0))))
+
+ /* pow(C,x) -> exp(log(C)*x) if C > 0.  */
+ (for pows (POW)
+      exps (EXP)
+      logs (LOG)
+  (simplify
+   (pows REAL_CST@0 @1)
+    (if (real_compare (GT_EXPR, TREE_REAL_CST_PTR (@0), &dconst0)
+	 && real_isfinite (TREE_REAL_CST_PTR (@0)))
+     (exps (mult (logs @0) @1)))))
 
  (for sqrts (SQRT)
       cbrts (CBRT)
@@ -3792,11 +4043,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 /* The precision of the type of each operand must match the
 	    precision of the mode of each operand, similarly for the
 	    result.  */
-	 && (TYPE_PRECISION (TREE_TYPE (@0))
-	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@0))))
-	 && (TYPE_PRECISION (TREE_TYPE (@1))
-	     == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@1))))
-	 && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
+	 && type_has_mode_precision_p (TREE_TYPE (@0))
+	 && type_has_mode_precision_p (TREE_TYPE (@1))
+	 && type_has_mode_precision_p (type)
 	 /* The inner conversion must be a widening conversion.  */
 	 && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
 	 && types_match (@0, type)
@@ -3826,11 +4075,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        /* The precision of the type of each operand must match the
 	  precision of the mode of each operand, similarly for the
 	  result.  */
-       && (TYPE_PRECISION (TREE_TYPE (@0))
-	   == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@0))))
-       && (TYPE_PRECISION (TREE_TYPE (@1))
-	   == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (@1))))
-       && TYPE_PRECISION (type) == GET_MODE_PRECISION (TYPE_MODE (type))
+       && type_has_mode_precision_p (TREE_TYPE (@0))
+       && type_has_mode_precision_p (TREE_TYPE (@1))
+       && type_has_mode_precision_p (type)
        /* The inner conversion must be a widening conversion.  */
        && TYPE_PRECISION (TREE_TYPE (@2)) > TYPE_PRECISION (TREE_TYPE (@0))
        && types_match (@0, @1)
@@ -4008,3 +4255,25 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 { CONSTRUCTOR_ELT (ctor, idx / k)->value; })
 	(BIT_FIELD_REF { CONSTRUCTOR_ELT (ctor, idx / k)->value; }
 		       @1 { bitsize_int ((idx % k) * width); })))))))))
+
+/* Simplify a bit extraction from a bit insertion for the cases with
+   the inserted element fully covering the extraction or the insertion
+   not touching the extraction.  */
+(simplify
+ (BIT_FIELD_REF (bit_insert @0 @1 @ipos) @rsize @rpos)
+ (with
+  {
+    unsigned HOST_WIDE_INT isize;
+    if (INTEGRAL_TYPE_P (TREE_TYPE (@1)))
+      isize = TYPE_PRECISION (TREE_TYPE (@1));
+    else
+      isize = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (@1)));
+  }
+  (switch
+   (if (wi::leu_p (@ipos, @rpos)
+        && wi::leu_p (wi::add (@rpos, @rsize), wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @1 @rsize { wide_int_to_tree (bitsizetype,
+                                                 wi::sub (@rpos, @ipos)); }))
+   (if (wi::geu_p (@ipos, wi::add (@rpos, @rsize))
+        || wi::geu_p (@rpos, wi::add (@ipos, isize)))
+    (BIT_FIELD_REF @0 @rsize @rpos)))))

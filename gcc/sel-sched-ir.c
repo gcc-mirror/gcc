@@ -4747,7 +4747,11 @@ compute_succs_info (insn_t insn, short flags)
           sinfo->probs_ok.safe_push (
 		    /* FIXME: Improve calculation when skipping
                        inner loop to exits.  */
-                    si.bb_end ? si.e1->probability : REG_BR_PROB_BASE);
+                    si.bb_end
+		    ? (si.e1->probability.initialized_p ()
+                       ? si.e1->probability.to_reg_br_prob_base ()
+                       : 0)
+		    : REG_BR_PROB_BASE);
           sinfo->succs_ok_n++;
         }
       else
@@ -4756,8 +4760,8 @@ compute_succs_info (insn_t insn, short flags)
       /* Compute all_prob.  */
       if (!si.bb_end)
         sinfo->all_prob = REG_BR_PROB_BASE;
-      else
-        sinfo->all_prob += si.e1->probability;
+      else if (si.e1->probability.initialized_p ())
+        sinfo->all_prob += si.e1->probability.to_reg_br_prob_base ();
 
       sinfo->all_succs_n++;
     }

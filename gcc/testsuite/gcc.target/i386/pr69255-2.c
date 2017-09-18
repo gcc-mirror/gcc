@@ -12,7 +12,8 @@ __attribute__ ((__vector_size__ (16))) int b;
 void
 foo (const long long *p)
 {
-  __builtin_ia32_gather3siv4di (a, p, b, 1, 1);		/* { dg-error "needs isa option -m32 -mavx512vl" } */
+  volatile __attribute__ ((__vector_size__ (32))) long long c;
+  c = __builtin_ia32_gather3siv4di (a, p, b, 1, 1);		/* { dg-error "needs isa option -m32 -mavx512vl" } */
   /* { dg-warning "AVX vector return without AVX enabled changes the ABI" "" { target *-*-* } .-1 } */
   /* { dg-warning "AVX vector argument without AVX enabled changes the ABI" "" { target *-*-* } .-2 } */
 }

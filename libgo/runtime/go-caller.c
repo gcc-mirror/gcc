@@ -74,7 +74,7 @@ static void *back_state;
 
 /* A lock to control creating back_state.  */
 
-static Lock back_state_lock;
+static uint32 back_state_lock;
 
 /* The program arguments.  */
 
@@ -85,7 +85,15 @@ extern Slice runtime_get_args(void);
 struct backtrace_state *
 __go_get_backtrace_state ()
 {
-  runtime_lock (&back_state_lock);
+  uint32 set;
+
+  /* We may not have a g here, so we can't use runtime_lock.  */
+  set = 0;
+  while (!__atomic_compare_exchange_n (&back_state_lock, &set, 1, false, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+    {
+      runtime_osyield ();
+      set = 0;
+    }
   if (back_state == NULL)
     {
       Slice args;
@@ -113,7 +121,7 @@ __go_get_backtrace_state ()
 
       back_state = backtrace_create_state (filename, 1, error_callback, NULL);
     }
-  runtime_unlock (&back_state_lock);
+  __atomic_store_n (&back_state_lock, 0, __ATOMIC_RELEASE);
   return back_state;
 }
 

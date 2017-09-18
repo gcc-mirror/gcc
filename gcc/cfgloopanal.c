@@ -469,16 +469,12 @@ single_likely_exit (struct loop *loop)
   exits = get_loop_exit_edges (loop);
   FOR_EACH_VEC_ELT (exits, i, ex)
     {
-      if (ex->flags & (EDGE_EH | EDGE_ABNORMAL_CALL))
-	continue;
-      /* The constant of 5 is set in a way so noreturn calls are
-	 ruled out by this test.  The static branch prediction algorithm
-         will not assign such a low probability to conditionals for usual
-         reasons.
-	 FIXME: Turn to likely_never_executed  */
-      if ((profile_status_for_fn (cfun) != PROFILE_ABSENT
-	   && ex->probability < 5)
-	  || ex->count == profile_count::zero ())
+      if (probably_never_executed_edge_p (cfun, ex)
+	  /* We want to rule out paths to noreturns but not low probabilities
+	     resulting from adjustments or combining.
+	     FIXME: once we have better quality tracking, make this more
+	     robust.  */
+	  || ex->probability <= profile_probability::very_unlikely ())
 	continue;
       if (!found)
 	found = ex;

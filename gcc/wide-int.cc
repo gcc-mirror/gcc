@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tm.h"
 #include "tree.h"
 #include "selftest.h"
-#include "wide-int-print.h"
 
 
 #define HOST_BITS_PER_HALF_WIDE_INT 32

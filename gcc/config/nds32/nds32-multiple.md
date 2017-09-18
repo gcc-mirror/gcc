@@ -49,9 +49,9 @@
      otherwise we have to FAIL this rtx generation:
        1. The number of consecutive registers must be integer.
        2. Maximum 4 or 8 registers for lmw.bi instruction
-          (based on this nds32-multiple.md design).
+	  (based on this nds32-multiple.md design).
        3. Minimum 2 registers for lmw.bi instruction
-          (based on this nds32-multiple.md design).
+	  (based on this nds32-multiple.md design).
        4. operands[0] must be register for sure.
        5. operands[1] must be memory for sure.
        6. Do not cross $r15 register because it is not allocatable.  */
@@ -231,9 +231,9 @@
      otherwise we have to FAIL this rtx generation:
        1. The number of consecutive registers must be integer.
        2. Maximum 4 or 8 registers for smw.bi instruction
-          (based on this nds32-multiple.md design).
+	  (based on this nds32-multiple.md design).
        3. Minimum 2 registers for smw.bi instruction
-          (based on this nds32-multiple.md design).
+	  (based on this nds32-multiple.md design).
        4. operands[0] must be memory for sure.
        5. operands[1] must be register for sure.
        6. Do not cross $r15 register because it is not allocatable.  */

@@ -768,8 +768,8 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
       if (bb_gcov_count (bb))
 	{
 	  FOR_EACH_EDGE (e, ei, bb->succs)
-	    e->probability = GCOV_COMPUTE_SCALE (edge_gcov_count (e),
-						 bb_gcov_count (bb));
+	    e->probability = profile_probability::probability_in_gcov_type
+		(edge_gcov_count (e), bb_gcov_count (bb));
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)
 	      && EDGE_COUNT (bb->succs) >= 2)
@@ -784,7 +784,7 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 		if (!(e->flags & (EDGE_FAKE | EDGE_FALLTHRU)))
 		  break;
 
-	      prob = e->probability;
+	      prob = e->probability.to_reg_br_prob_base ();
 	      index = prob * 20 / REG_BR_PROB_BASE;
 
 	      if (index == 20)
@@ -810,15 +810,17 @@ compute_branch_probabilities (unsigned cfg_checksum, unsigned lineno_checksum)
 	    {
 	      FOR_EACH_EDGE (e, ei, bb->succs)
 		if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
-		  e->probability = REG_BR_PROB_BASE / total;
+		  e->probability
+		    = profile_probability::guessed_always ().apply_scale (1, total);
 		else
-		  e->probability = 0;
+		  e->probability = profile_probability::never ();
 	    }
 	  else
 	    {
 	      total += EDGE_COUNT (bb->succs);
 	      FOR_EACH_EDGE (e, ei, bb->succs)
-		e->probability = REG_BR_PROB_BASE / total;
+		e->probability
+		 = profile_probability::guessed_always ().apply_scale (1, total);
 	    }
 	  if (bb->index >= NUM_FIXED_BLOCKS
 	      && block_ends_with_condjump_p (bb)

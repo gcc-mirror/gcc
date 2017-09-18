@@ -131,6 +131,20 @@ cxx_types_compatible_p (tree x, tree y)
   return same_type_ignoring_top_level_qualifiers_p (x, y);
 }
 
+struct debug_type_hasher : ggc_cache_ptr_hash<tree_map>
+{
+  static hashval_t hash (tree_map *m) { return tree_map_hash (m); }
+  static bool equal (tree_map *a, tree_map *b) { return tree_map_eq (a, b); }
+
+  static int
+  keep_cache_entry (tree_map *&e)
+  {
+    return ggc_marked_p (e->base.from);
+  }
+};
+
+static GTY((cache)) hash_table<debug_type_hasher> *debug_type_hash;
+
 /* Return a type to use in the debug info instead of TYPE, or NULL_TREE to
    keep TYPE.  */
 
@@ -138,8 +152,35 @@ tree
 cp_get_debug_type (const_tree type)
 {
   if (TYPE_PTRMEMFUNC_P (type) && !typedef_variant_p (type))
-    return build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
-			      TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
+    {
+      if (debug_type_hash == NULL)
+	debug_type_hash = hash_table<debug_type_hasher>::create_ggc (512);
+
+      /* We cannot simply use build_offset_type here because the function uses
+	 the type canonicalization hashtable, which is GC-ed, so its behavior
+	 depends on the actual collection points.  Since we are building these
+	 types on the fly for the debug info only, they would not be attached
+	 to any GC root and always be swept, so we would make the contents of
+	 the debug info depend on the collection points.  */
+      struct tree_map in, *h;
+
+      in.base.from = CONST_CAST_TREE (type);
+      in.hash = htab_hash_pointer (type);
+      h = debug_type_hash->find_with_hash (&in, in.hash);
+      if (h)
+	return h->to;
+
+      tree t = build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
+				  TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
+
+      h = ggc_alloc<tree_map> ();
+      h->base.from = CONST_CAST_TREE (type);
+      h->hash = htab_hash_pointer (type);
+      h->to = t;
+      *debug_type_hash->find_slot_with_hash (h, h->hash, INSERT) = h;
+
+      return t;
+    }
 
   return NULL_TREE;
 }
@@ -210,6 +251,13 @@ cp_decl_dwarf_attribute (const_tree decl, int attr)
 	  else
 	    return DW_INL_inlined;
 	}
+      break;
+
+    case DW_AT_export_symbols:
+      if (TREE_CODE (decl) == NAMESPACE_DECL
+	  && (DECL_NAMESPACE_INLINE_P (decl)
+	      || (DECL_NAME (decl) == NULL_TREE && dwarf_version >= 5)))
+	return 1;
       break;
 
     default:

@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
 /* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power7" } } */
-/* { dg-options "-mcpu=power8 -w -std=c++14 -mlra" } */
+/* { dg-options "-mcpu=power8 -w -std=c++14" } */
 
 /* target/69667, compiler got
    internal compiler error: Max. number of generated reload insns per insn is achieved (90)  */

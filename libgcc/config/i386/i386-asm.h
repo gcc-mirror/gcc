@@ -26,57 +26,88 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #ifndef I386_ASM_H
 #define I386_ASM_H
 
+#include "auto-host.h"
+
+#define PASTE2(a, b) PASTE2a(a, b)
+#define PASTE2a(a, b) a ## b
+
+/* These macros currently support GNU/Linux, Solaris and Darwin.  */
+
 #ifdef __ELF__
-# define ELFFN(fn) .type fn,@function
+# define FN_TYPE(fn) .type fn,@function
+# define FN_SIZE(fn) .size fn,.-fn
+# ifdef HAVE_GAS_HIDDEN
+#  define FN_HIDDEN(fn) .hidden fn
+# endif
 #else
-# define ELFFN(fn)
+# define FN_TYPE(fn)
+# define FN_SIZE(fn)
 #endif
 
-#define FUNC_START(fn)	\
-	.global fn;	\
-	ELFFN (fn);	\
-fn:
+#ifndef FN_HIDDEN
+# define FN_HIDDEN(fn)
+#endif
 
-#define HIDDEN_FUNC(fn)\
-	FUNC_START (fn)	\
-	.hidden fn;	\
+#ifdef __USER_LABEL_PREFIX__
+# define ASMNAME(name)		PASTE2(__USER_LABEL_PREFIX__, name)
+#else
+# define ASMNAME(name)		name
+#endif
 
-#define FUNC_END(fn) .size fn,.-fn
+#define FUNC_BEGIN(fn)		\
+	.globl ASMNAME(fn);	\
+	FN_TYPE (ASMNAME(fn));	\
+ASMNAME(fn):
 
-#ifdef __SSE2__
-# ifdef __AVX__
-#  define MOVAPS vmovaps
-# else
-#  define MOVAPS movaps
-# endif
+#define HIDDEN_FUNC(fn)		\
+	.globl ASMNAME(fn);	\
+	FN_TYPE(ASMNAME(fn));	\
+	FN_HIDDEN(ASMNAME(fn));	\
+ASMNAME(fn):
+
+#define FUNC_END(fn) FN_SIZE(ASMNAME(fn))
+
+#ifdef MS2SYSV_STUB_AVX
+# define MS2SYSV_STUB_PREFIX __avx_
+# define MOVAPS vmovaps
+#elif defined(MS2SYSV_STUB_SSE)
+# define MS2SYSV_STUB_PREFIX __sse_
+# define MOVAPS movaps
+#endif
+
+#if defined (MS2SYSV_STUB_PREFIX) && defined (MOVAPS)
+
+# define MS2SYSV_STUB_BEGIN(base_name) \
+	HIDDEN_FUNC(PASTE2(MS2SYSV_STUB_PREFIX, base_name))
+
+# define MS2SYSV_STUB_END(base_name) \
+	FUNC_END(PASTE2(MS2SYSV_STUB_PREFIX, base_name))
 
 /* Save SSE registers 6-15. off is the offset of rax to get to xmm6.  */
-.macro SSE_SAVE off=0
-	MOVAPS %xmm15,(\off - 0x90)(%rax)
-	MOVAPS %xmm14,(\off - 0x80)(%rax)
-	MOVAPS %xmm13,(\off - 0x70)(%rax)
-	MOVAPS %xmm12,(\off - 0x60)(%rax)
-	MOVAPS %xmm11,(\off - 0x50)(%rax)
-	MOVAPS %xmm10,(\off - 0x40)(%rax)
-	MOVAPS %xmm9, (\off - 0x30)(%rax)
-	MOVAPS %xmm8, (\off - 0x20)(%rax)
-	MOVAPS %xmm7, (\off - 0x10)(%rax)
-	MOVAPS %xmm6, \off(%rax)
-.endm
+# define SSE_SAVE		   \
+	MOVAPS %xmm15,-0x30(%rax); \
+	MOVAPS %xmm14,-0x20(%rax); \
+	MOVAPS %xmm13,-0x10(%rax); \
+	MOVAPS %xmm12,     (%rax); \
+	MOVAPS %xmm11, 0x10(%rax); \
+	MOVAPS %xmm10, 0x20(%rax); \
+	MOVAPS %xmm9,  0x30(%rax); \
+	MOVAPS %xmm8,  0x40(%rax); \
+	MOVAPS %xmm7,  0x50(%rax); \
+	MOVAPS %xmm6,  0x60(%rax)
 
 /* Restore SSE registers 6-15. off is the offset of rsi to get to xmm6.  */
-.macro SSE_RESTORE off=0
-	MOVAPS (\off - 0x90)(%rsi), %xmm15
-	MOVAPS (\off - 0x80)(%rsi), %xmm14
-	MOVAPS (\off - 0x70)(%rsi), %xmm13
-	MOVAPS (\off - 0x60)(%rsi), %xmm12
-	MOVAPS (\off - 0x50)(%rsi), %xmm11
-	MOVAPS (\off - 0x40)(%rsi), %xmm10
-	MOVAPS (\off - 0x30)(%rsi), %xmm9
-	MOVAPS (\off - 0x20)(%rsi), %xmm8
-	MOVAPS (\off - 0x10)(%rsi), %xmm7
-	MOVAPS \off(%rsi), %xmm6
-.endm
+# define SSE_RESTORE		    \
+	MOVAPS -0x30(%rsi), %xmm15; \
+	MOVAPS -0x20(%rsi), %xmm14; \
+	MOVAPS -0x10(%rsi), %xmm13; \
+	MOVAPS      (%rsi), %xmm12; \
+	MOVAPS  0x10(%rsi), %xmm11; \
+	MOVAPS  0x20(%rsi), %xmm10; \
+	MOVAPS  0x30(%rsi), %xmm9 ; \
+	MOVAPS  0x40(%rsi), %xmm8 ; \
+	MOVAPS  0x50(%rsi), %xmm7 ; \
+	MOVAPS  0x60(%rsi), %xmm6
 
-#endif /* __SSE2__ */
+#endif /* defined (MS2SYSV_STUB_ISA) && defined (MOVAPS) */
 #endif /* I386_ASM_H */

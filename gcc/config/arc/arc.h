@@ -65,9 +65,9 @@ along with GCC; see the file COPYING3.  If not see
 %(subtarget_cpp_spec)"
 
 #undef CC1_SPEC
-#define CC1_SPEC "\
-%{EB:%{EL:%emay not use both -EB and -EL}} \
-%{EB:-mbig-endian} %{EL:-mlittle-endian} \
+#define CC1_SPEC "%{EB:%{EL:%emay not use both -EB and -EL}}	\
+%{EB:-mbig-endian} %{EL:-mlittle-endian}			\
+%{G*}								\
 "
 extern const char *arc_cpu_to_as (int argc, const char **argv);
 
@@ -441,36 +441,6 @@ if (GET_MODE_CLASS (MODE) == MODE_INT		\
   48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62,		\
   27, 28, 29, 30, 31, 63}
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.  */
-#define HARD_REGNO_NREGS(REGNO, MODE) \
-((GET_MODE_SIZE (MODE) == 16 \
-  && REGNO >= ARC_FIRST_SIMD_VR_REG && REGNO <= ARC_LAST_SIMD_VR_REG) ? 1 \
- : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-extern unsigned int arc_hard_regno_mode_ok[];
-extern unsigned int arc_mode_class[];
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-((arc_hard_regno_mode_ok[REGNO] & arc_mode_class[MODE]) != 0)
-
-/* A C expression that is nonzero if it is desirable to choose
-   register allocation so as to avoid move instructions between a
-   value of mode MODE1 and a value of mode MODE2.
-
-   If `HARD_REGNO_MODE_OK (R, MODE1)' and `HARD_REGNO_MODE_OK (R,
-   MODE2)' are ever different for any R, then `MODES_TIEABLE_P (MODE1,
-   MODE2)' must be zero.  */
-
-/* Tie QI/HI/SI modes together.  */
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-(GET_MODE_CLASS (MODE1) == MODE_INT		\
- && GET_MODE_CLASS (MODE2) == MODE_INT		\
- && GET_MODE_SIZE (MODE1) <= UNITS_PER_WORD	\
- && GET_MODE_SIZE (MODE2) <= UNITS_PER_WORD)
-
 /* Internal macros to classify a register number as to whether it's a
    general purpose register for compact insns (r0-r3,r12-r15), or
    stack pointer (r28).  */
@@ -581,15 +551,15 @@ enum reg_class
   {0x0000f00f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},	     /* 'q', r0-r3, r12-r15 */		\
   {0x1000f00f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},	     /* 'e', r0-r3, r12-r15, sp */	\
   {0x1c001fff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},    /* "Rsc", r0-r12 */ \
-  {0x9fffffff, 0xc0000000, 0x00000000, 0x00000000, 0x00000000},      /* 'r', r0-r28, blink, ap and pcl */	\
+  {0x9fffffff, 0x80000000, 0x00000000, 0x00000000, 0x00000000},      /* 'r', r0-r28, blink, ap and pcl */	\
   {0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'W',  r0-r31 */ \
   /* Include ap / pcl in WRITABLE_CORE_REGS for sake of symmetry.  As these \
      registers are fixed, it does not affect the literal meaning of the \
      constraints, but it makes it a superset of GENERAL_REGS, thus \
      enabling some operations that would otherwise not be possible.  */ \
-  {0xffffffff, 0xd0000000, 0x00000000, 0x00000000, 0x00000000},      /* 'w', r0-r31, r60 */ \
-  {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'c', r0-r60, ap, pcl */ \
-  {0xffffffff, 0xdfffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'Rac', r0-r60, ap, pcl */ \
+  {0xffffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'w', r0-r31, r60 */ \
+  {0xffffffff, 0x9fffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'c', r0-r60, ap, pcl */ \
+  {0xffffffff, 0x9fffffff, 0x00000000, 0x00000000, 0x00000000},      /* 'Rac', r0-r60, ap, pcl */ \
   {0x0000000f, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rcd', r0-r3 */ \
   {0x00000003, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'Rsd', r0-r1 */ \
   {0x9fffffff, 0x00000000, 0x00000000, 0x00000000, 0x00000000},      /* 'h',  r0-28, r30 */ \
@@ -901,10 +871,10 @@ extern int arc_initial_elimination_offset(int from, int to);
    a special predicate for the memory operand of stores, like for the SH.  */
 
 /* Recognize any constant value that is a valid address.  */
-#define CONSTANT_ADDRESS_P(X) \
-(flag_pic?arc_legitimate_pic_addr_p (X): \
-(GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
- || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
+#define CONSTANT_ADDRESS_P(X)					\
+  (flag_pic ? (arc_legitimate_pic_addr_p (X) || LABEL_P (X)):	\
+   (GET_CODE (X) == LABEL_REF || GET_CODE (X) == SYMBOL_REF	\
+    || GET_CODE (X) == CONST_INT || GET_CODE (X) == CONST))
 
 /* Is the argument a const_int rtx, containing an exact power of 2 */
 #define  IS_POWEROF2_P(X) (! ( (X) & ((X) - 1)) && (X))
@@ -1083,7 +1053,8 @@ arc_select_cc_mode (OP, X, Y)
    check it either.  You need not define this macro if all constants
    (including SYMBOL_REF) can be immediate operands when generating
    position independent code.  */
-#define LEGITIMATE_PIC_OPERAND_P(X)  (arc_legitimate_pic_operand_p(X))
+#define LEGITIMATE_PIC_OPERAND_P(X)  \
+  (!arc_raw_symbolic_reference_mentioned_p ((X), true))
 
 /* PIC and small data don't mix on ARC because they use the same register.  */
 #define SDATA_BASE_REGNUM 26
@@ -1262,6 +1233,13 @@ extern char rname56[], rname57[], rname58[], rname59[];
   "lp_start", "lp_end" \
 }
 
+#define ADDITIONAL_REGISTER_NAMES		\
+{						\
+  {"ilink",  29},				\
+  {"r29",    29},				\
+  {"r30",    30}				\
+}
+
 /* Entry to the insn conditionalizer.  */
 #define FINAL_PRESCAN_INSN(INSN, OPVEC, NOPERANDS) \
   arc_final_prescan_insn (INSN, OPVEC, NOPERANDS)
@@ -1306,9 +1284,9 @@ do {							\
   ASM_GENERATE_INTERNAL_LABEL (label, "L", VALUE);	\
   switch (GET_MODE (BODY))				\
     {							\
-    case QImode: fprintf (FILE, "\t.byte "); break;	\
-    case HImode: fprintf (FILE, "\t.hword "); break;	\
-    case SImode: fprintf (FILE, "\t.word "); break;	\
+    case E_QImode: fprintf (FILE, "\t.byte "); break;	\
+    case E_HImode: fprintf (FILE, "\t.hword "); break;	\
+    case E_SImode: fprintf (FILE, "\t.word "); break;	\
     default: gcc_unreachable ();			\
     }							\
   assemble_name (FILE, label);				\
@@ -1343,7 +1321,7 @@ do {							\
    of a loop.  */
 /* On the ARC, align loops to 4 byte boundaries unless doing all-out size
    optimization.  */
-#define LOOP_ALIGN JUMP_ALIGN
+#define LOOP_ALIGN(X) 0
 
 #define LABEL_ALIGN(LABEL) (arc_label_align (LABEL))
 
@@ -1362,10 +1340,6 @@ do { \
     chose what to output.  */
 #define ASM_OUTPUT_ALIGNED_DECL_LOCAL(STREAM, DECL, NAME, SIZE, ALIGNMENT) \
   arc_asm_output_aligned_decl_local (STREAM, DECL, NAME, SIZE, ALIGNMENT, 0)
-
-/* To translate the return value of arc_function_type into a register number
-   to jump through for function return.  */
-extern int arc_return_address_regs[5];
 
 /* Debugging information.  */
 
@@ -1475,10 +1449,6 @@ extern int arc_return_address_regs[5];
 */
 #define SHIFT_COUNT_TRUNCATED 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* We assume that the store-condition-codes instructions store 0 for false
    and some other value for true.  This is the value stored for true.  */
 #define STORE_FLAG_VALUE 1
@@ -1499,22 +1469,38 @@ extern struct rtx_def *arc_compare_op0, *arc_compare_op1;
 
 /* ARC function types.   */
 enum arc_function_type {
-  ARC_FUNCTION_UNKNOWN, ARC_FUNCTION_NORMAL,
+  /* No function should have the unknown type.  This value is used to
+   indicate the that function type has not yet been computed.  */
+  ARC_FUNCTION_UNKNOWN  = 0,
+
+  /* The normal function type indicates that the function has the
+   standard prologue and epilogue.  */
+  ARC_FUNCTION_NORMAL  = 1 << 0,
   /* These are interrupt handlers.  The name corresponds to the register
      name that contains the return address.  */
-  ARC_FUNCTION_ILINK1, ARC_FUNCTION_ILINK2,
+  ARC_FUNCTION_ILINK1  = 1 << 1,
+  ARC_FUNCTION_ILINK2  = 1 << 2,
   /* Fast interrupt is only available on ARCv2 processors.  */
-  ARC_FUNCTION_FIRQ
+  ARC_FUNCTION_FIRQ    = 1 << 3,
+  /* The naked function type indicates that the function does not have
+   prologue or epilogue, and that no stack frame is available.  */
+  ARC_FUNCTION_NAKED   = 1 << 4
 };
-#define ARC_INTERRUPT_P(TYPE)						\
-  (((TYPE) == ARC_FUNCTION_ILINK1) || ((TYPE) == ARC_FUNCTION_ILINK2)	\
-   || ((TYPE) == ARC_FUNCTION_FIRQ))
 
-#define ARC_FAST_INTERRUPT_P(TYPE) ((TYPE) == ARC_FUNCTION_FIRQ)
+/* Check if a function is an interrupt function.  */
+#define ARC_INTERRUPT_P(TYPE)					\
+  (((TYPE) & (ARC_FUNCTION_ILINK1 | ARC_FUNCTION_ILINK2		\
+	      | ARC_FUNCTION_FIRQ)) != 0)
 
-/* Compute the type of a function from its DECL.  Needed for EPILOGUE_USES.  */
-struct function;
-extern enum arc_function_type arc_compute_function_type (struct function *);
+/* Check if a function is a fast interrupt function.  */
+#define ARC_FAST_INTERRUPT_P(TYPE) (((TYPE) & ARC_FUNCTION_FIRQ) != 0)
+
+/* Check if a function is normal, that is, has standard prologue and
+   epilogue.  */
+#define ARC_NORMAL_P(TYPE) (((TYPE) & ARC_FUNCTION_NORMAL) != 0)
+
+/* Check if a function is naked.  */
+#define ARC_NAKED_P(TYPE) (((TYPE) & ARC_FUNCTION_NAKED) != 0)
 
 /* Called by crtstuff.c to make calls to function FUNCTION that are defined in
    SECTION_OP, and then to switch back to text section.  */

@@ -667,6 +667,23 @@
 		     | RS6000_BTC_UNARY),                               \
 		    CODE_FOR_ ## ICODE)                 /* ICODE */
 
+/* IEEE 128-bit floating-point builtins that need the ISA 3.0 hardware.  */
+#define BU_FLOAT128_1_HW(ENUM, NAME, ATTR, ICODE)                       \
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_UNARY),                               \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
+#define BU_FLOAT128_3_HW(ENUM, NAME, ATTR, ICODE)                       \
+  RS6000_BUILTIN_3 (MISC_BUILTIN_ ## ENUM,              /* ENUM */      \
+		    "__builtin_" NAME,                  /* NAME */      \
+		    RS6000_BTM_FLOAT128_HW,             /* MASK */      \
+		    (RS6000_BTC_ ## ATTR                /* ATTR */      \
+		     | RS6000_BTC_TERNARY),                             \
+		    CODE_FOR_ ## ICODE)                 /* ICODE */
+
 /* Miscellaneous builtins for instructions added in ISA 3.0.  These
    instructions don't require either the DFP or VSX options, just the basic
    ISA 3.0 enablement since they operate on general purpose registers.  */
@@ -1134,6 +1151,13 @@ BU_ALTIVEC_1 (VUPKLSB,	      "vupklsb",	CONST,	altivec_vupklsb)
 BU_ALTIVEC_1 (VUPKLPX,	      "vupklpx",	CONST,	altivec_vupklpx)
 BU_ALTIVEC_1 (VUPKLSH,	      "vupklsh",	CONST,	altivec_vupklsh)
 
+BU_ALTIVEC_1 (VREVE_V2DI,      "vreve_v2di", CONST,  altivec_vrevev2di2)
+BU_ALTIVEC_1 (VREVE_V4SI,      "vreve_v4si", CONST,  altivec_vrevev4si2)
+BU_ALTIVEC_1 (VREVE_V8HI,      "vreve_v8hi", CONST,  altivec_vrevev8hi2)
+BU_ALTIVEC_1 (VREVE_V16QI,     "vreve_v16qi", CONST, altivec_vrevev16qi2)
+BU_ALTIVEC_1 (VREVE_V2DF,      "vreve_v2df", CONST,  altivec_vrevev2df2)
+BU_ALTIVEC_1 (VREVE_V4SF,      "vreve_v4sf", CONST,  altivec_vrevev4sf2)
+
 BU_ALTIVEC_1 (FLOAT_V4SI_V4SF,    "float_sisf",	    FP,	floatv4siv4sf2)
 BU_ALTIVEC_1 (UNSFLOAT_V4SI_V4SF, "uns_float_sisf", FP, floatunsv4siv4sf2)
 BU_ALTIVEC_1 (FIX_V4SF_V4SI,      "fix_sfsi",       FP, fix_truncv4sfv4si2)
@@ -1422,6 +1446,8 @@ BU_ALTIVEC_OVERLOAD_1 (VUPKLPX,	   "vupklpx")
 BU_ALTIVEC_OVERLOAD_1 (VUPKLSB,	   "vupklsb")
 BU_ALTIVEC_OVERLOAD_1 (VUPKLSH,	   "vupklsh")
 
+BU_ALTIVEC_OVERLOAD_1 (VREVE,        "vreve")
+
 /* Overloaded altivec predicates.  */
 BU_ALTIVEC_OVERLOAD_P (VCMPEQ_P,   "vcmpeq_p")
 BU_ALTIVEC_OVERLOAD_P (VCMPGT_P,   "vcmpgt_p")
@@ -1465,6 +1491,8 @@ BU_ALTIVEC_OVERLOAD_X (STVLX,	   "stvlx")
 BU_ALTIVEC_OVERLOAD_X (STVLXL,	   "stvlxl")
 BU_ALTIVEC_OVERLOAD_X (STVRX,	   "stvrx")
 BU_ALTIVEC_OVERLOAD_X (STVRXL,	   "stvrxl")
+BU_ALTIVEC_OVERLOAD_X (SUBE,	   "sube")
+BU_ALTIVEC_OVERLOAD_X (SUBEC,	   "subec")
 BU_ALTIVEC_OVERLOAD_X (VCFSX,	   "vcfsx")
 BU_ALTIVEC_OVERLOAD_X (VCFUX,	   "vcfux")
 BU_ALTIVEC_OVERLOAD_X (VSPLTB,	   "vspltb")
@@ -1602,6 +1630,9 @@ BU_VSX_2 (CMPLE_U2DI,         "cmple_u2di",     CONST,  vector_ngtuv2di)
 BU_VSX_2 (FLOAT2_V2DI,        "float2_v2di",    CONST,  float2_v2di)
 BU_VSX_2 (UNS_FLOAT2_V2DI,    "uns_float2_v2di",    CONST,  uns_float2_v2di)
 
+BU_VSX_2 (VEC_VSIGNED2_V2DF,      "vsigned2_v2df",    CONST,  vsigned2_v2df)
+BU_VSX_2 (VEC_VUNSIGNED2_V2DF,    "vunsigned2_v2df",  CONST,  vunsigned2_v2df)
+
 /* VSX abs builtin functions.  */
 BU_VSX_A (XVABSDP,	      "xvabsdp",	CONST,	absv2df2)
 BU_VSX_A (XVNABSDP,	      "xvnabsdp",	CONST,	vsx_nabsv2df2)
@@ -1693,6 +1724,16 @@ BU_VSX_1 (DOUBLEL_V4SI,      "doublel_v4si",     CONST,	doublelv4si2)
 BU_VSX_1 (DOUBLEL_V4SF,      "doublel_v4sf",     CONST,	doublelv4sf2)
 BU_VSX_1 (UNS_DOUBLEL_V4SI,  "uns_doublel_v4si", CONST,	unsdoublelv4si2)
 
+BU_VSX_1 (VEC_VSIGNED_V4SF,      "vsigned_v4sf",     CONST,  vsx_xvcvspsxws)
+BU_VSX_1 (VEC_VSIGNED_V2DF,      "vsigned_v2df",     CONST,  vsx_xvcvdpsxds)
+BU_VSX_1 (VEC_VSIGNEDE_V2DF,     "vsignede_v2df",    CONST,  vsignede_v2df)
+BU_VSX_1 (VEC_VSIGNEDO_V2DF,     "vsignedo_v2df",    CONST,  vsignedo_v2df)
+
+BU_VSX_1 (VEC_VUNSIGNED_V4SF,    "vunsigned_v4sf",    CONST,  vsx_xvcvspsxws)
+BU_VSX_1 (VEC_VUNSIGNED_V2DF,    "vunsigned_v2df",    CONST,  vsx_xvcvdpsxds)
+BU_VSX_1 (VEC_VUNSIGNEDE_V2DF,   "vunsignede_v2df",   CONST,  vunsignede_v2df)
+BU_VSX_1 (VEC_VUNSIGNEDO_V2DF,   "vunsignedo_v2df",   CONST,  vunsignedo_v2df)
+
 /* VSX predicate functions.  */
 BU_VSX_P (XVCMPEQSP_P,	      "xvcmpeqsp_p",	CONST,	vector_eq_v4sf_p)
 BU_VSX_P (XVCMPGESP_P,	      "xvcmpgesp_p",	CONST,	vector_ge_v4sf_p)
@@ -1711,6 +1752,14 @@ BU_VSX_X (LXVW4X_V4SF,	      "lxvw4x_v4sf",	MEM)
 BU_VSX_X (LXVW4X_V4SI,        "lxvw4x_v4si",	MEM)
 BU_VSX_X (LXVW4X_V8HI,        "lxvw4x_v8hi",	MEM)
 BU_VSX_X (LXVW4X_V16QI,	      "lxvw4x_v16qi",	MEM)
+
+BU_VSX_X (XL_BE_V16QI, "xl_be_v16qi", MEM)
+BU_VSX_X (XL_BE_V8HI, "xl_be_v8hi", MEM)
+BU_VSX_X (XL_BE_V4SI, "xl_be_v4si", MEM)
+BU_VSX_X (XL_BE_V2DI, "xl_be_v2di", MEM)
+BU_VSX_X (XL_BE_V4SF, "xl_be_v4sf", MEM)
+BU_VSX_X (XL_BE_V2DF, "xl_be_v2df", MEM)
+
 BU_VSX_X (STXSDX,	      "stxsdx",		MEM)
 BU_VSX_X (STXVD2X_V1TI,	      "stxvd2x_v1ti",	MEM)
 BU_VSX_X (STXVD2X_V2DF,	      "stxvd2x_v2df",	MEM)
@@ -1782,6 +1831,8 @@ BU_VSX_OVERLOAD_2 (XXSPLTD,  "xxspltd")
 BU_VSX_OVERLOAD_2 (XXSPLTW,  "xxspltw")
 BU_VSX_OVERLOAD_2 (FLOAT2,   "float2")
 BU_VSX_OVERLOAD_2 (UNS_FLOAT2,   "uns_float2")
+BU_VSX_OVERLOAD_2 (VSIGNED2,     "vsigned2")
+BU_VSX_OVERLOAD_2 (VUNSIGNED2,   "vunsigned2")
 
 /* 1 argument VSX overloaded builtin functions.  */
 BU_VSX_OVERLOAD_1 (DOUBLE,   "double")
@@ -1797,10 +1848,19 @@ BU_VSX_OVERLOAD_1 (FLOAT,  "float")
 BU_VSX_OVERLOAD_1 (FLOATE,  "floate")
 BU_VSX_OVERLOAD_1 (FLOATO,  "floato")
 
+BU_VSX_OVERLOAD_1 (VSIGNED,   "vsigned")
+BU_VSX_OVERLOAD_1 (VSIGNEDE,  "vsignede")
+BU_VSX_OVERLOAD_1 (VSIGNEDO,  "vsignedo")
+
+BU_VSX_OVERLOAD_1 (VUNSIGNED,   "vunsigned")
+BU_VSX_OVERLOAD_1 (VUNSIGNEDE,  "vunsignede")
+BU_VSX_OVERLOAD_1 (VUNSIGNEDO,  "vunsignedo")
+
 /* VSX builtins that are handled as special cases.  */
 BU_VSX_OVERLOAD_X (LD,	     "ld")
 BU_VSX_OVERLOAD_X (ST,	     "st")
 BU_VSX_OVERLOAD_X (XL,	     "xl")
+BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
 /* 2 argument CMPB instructions added in ISA 2.05. */
@@ -1956,10 +2016,12 @@ BU_P8V_OVERLOAD_3 (VSUBEUQM,	"vsubeuqm")
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_AV_2 (VSLV,		"vslv",			CONST, vslv)
 BU_P9V_AV_2 (VSRV,		"vsrv",			CONST, vsrv)
+BU_P9V_AV_2 (CONVERT_4F32_8I16, "convert_4f32_8i16", CONST, convert_4f32_8i16)
 
 /* ISA 3.0 vector overloaded 2-argument functions. */
 BU_P9V_OVERLOAD_2 (VSLV,	"vslv")
 BU_P9V_OVERLOAD_2 (VSRV,	"vsrv")
+BU_P9V_OVERLOAD_2 (CONVERT_4F32_8I16, "convert_4f32_8i16")
 
 /* 2 argument vector functions added in ISA 3.0 (power9). */
 BU_P9V_AV_2 (VADUB,		"vadub",		CONST,  vaduv16qi3)
@@ -1988,6 +2050,10 @@ BU_P9V_OVERLOAD_3 (RLMI,	"rlmi")
 BU_P9V_64BIT_VSX_1 (VSEEDP,	"scalar_extract_exp",	CONST,	xsxexpdp)
 BU_P9V_64BIT_VSX_1 (VSESDP,	"scalar_extract_sig",	CONST,	xsxsigdp)
 
+BU_P9V_64BIT_VSX_1 (VSEEQP,	"scalar_extract_expq",	CONST,	xsxexpqp)
+BU_P9V_64BIT_VSX_1 (VSESQP,	"scalar_extract_sigq",	CONST,	xsxsigqp)
+
+BU_P9V_VSX_1 (VSTDCNQP,	"scalar_test_neg_qp",	CONST,	xststdcnegqp)
 BU_P9V_VSX_1 (VSTDCNDP,	"scalar_test_neg_dp",	CONST,	xststdcnegdp)
 BU_P9V_VSX_1 (VSTDCNSP,	"scalar_test_neg_sp",	CONST,	xststdcnegsp)
 
@@ -2003,11 +2069,15 @@ BU_P9V_VSX_1 (XXBRH_V8HI,	"xxbrh_v8hi",	CONST,	p9_xxbrh_v8hi)
 BU_P9V_64BIT_VSX_2 (VSIEDP,	"scalar_insert_exp",	CONST,	xsiexpdp)
 BU_P9V_64BIT_VSX_2 (VSIEDPF,	"scalar_insert_exp_dp",	CONST,	xsiexpdpf)
 
+BU_P9V_64BIT_VSX_2 (VSIEQP,	"scalar_insert_exp_q",	CONST,	xsiexpqp)
+BU_P9V_64BIT_VSX_2 (VSIEQPF,	"scalar_insert_exp_qp",	CONST,	xsiexpqpf)
+
 BU_P9V_VSX_2 (VSCEDPGT,	"scalar_cmp_exp_dp_gt",	CONST,	xscmpexpdp_gt)
 BU_P9V_VSX_2 (VSCEDPLT,	"scalar_cmp_exp_dp_lt",	CONST,	xscmpexpdp_lt)
 BU_P9V_VSX_2 (VSCEDPEQ,	"scalar_cmp_exp_dp_eq",	CONST,	xscmpexpdp_eq)
 BU_P9V_VSX_2 (VSCEDPUO,	"scalar_cmp_exp_dp_unordered",	CONST,	xscmpexpdp_unordered)
 
+BU_P9V_VSX_2 (VSTDCQP,	"scalar_test_data_class_qp",	CONST,	xststdcqp)
 BU_P9V_VSX_2 (VSTDCDP,	"scalar_test_data_class_dp",	CONST,	xststdcdp)
 BU_P9V_VSX_2 (VSTDCSP,	"scalar_test_data_class_sp",	CONST,	xststdcsp)
 
@@ -2016,15 +2086,20 @@ BU_P9V_OVERLOAD_1 (VSEEDP,	"scalar_extract_exp")
 BU_P9V_OVERLOAD_1 (VSESDP,	"scalar_extract_sig")
 
 BU_P9V_OVERLOAD_1 (VSTDCN,	"scalar_test_neg")
+BU_P9V_OVERLOAD_1 (VSTDCNQP,	"scalar_test_neg_qp")
 BU_P9V_OVERLOAD_1 (VSTDCNDP,	"scalar_test_neg_dp")
 BU_P9V_OVERLOAD_1 (VSTDCNSP,	"scalar_test_neg_sp")
 
 BU_P9V_OVERLOAD_1 (REVB,	"revb")
 
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth")
+BU_P9V_OVERLOAD_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl")
+
 /* ISA 3.0 vector scalar overloaded 2 argument functions.  */
 BU_P9V_OVERLOAD_2 (VSIEDP,	"scalar_insert_exp")
 
 BU_P9V_OVERLOAD_2 (VSTDC,	"scalar_test_data_class")
+BU_P9V_OVERLOAD_2 (VSTDCQP,	"scalar_test_data_class_qp")
 BU_P9V_OVERLOAD_2 (VSTDCDP,	"scalar_test_data_class_dp")
 BU_P9V_OVERLOAD_2 (VSTDCSP,	"scalar_test_data_class_sp")
 
@@ -2038,6 +2113,8 @@ BU_P9V_VSX_1 (VEEDP, "extract_exp_dp", CONST, xvxexpdp)
 BU_P9V_VSX_1 (VEESP, "extract_exp_sp", CONST, xvxexpsp)
 BU_P9V_VSX_1 (VESDP, "extract_sig_dp", CONST, xvxsigdp)
 BU_P9V_VSX_1 (VESSP, "extract_sig_sp", CONST, xvxsigsp)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTH, "vextract_fp_from_shorth", CONST, vextract_fp_from_shorth)
+BU_P9V_VSX_1 (VEXTRACT_FP_FROM_SHORTL, "vextract_fp_from_shortl", CONST, vextract_fp_from_shortl)
 
 /* 2 argument vsx vector functions added in ISA 3.0 (power9).  */
 BU_P9V_VSX_2 (VIEDP, "insert_exp_dp", CONST, xviexpdp)
@@ -2251,6 +2328,7 @@ BU_P9V_OVERLOAD_1 (VPRTYB,	"vprtyb")
 BU_P9V_OVERLOAD_1 (VPRTYBD,	"vprtybd")
 BU_P9V_OVERLOAD_1 (VPRTYBQ,	"vprtybq")
 BU_P9V_OVERLOAD_1 (VPRTYBW,	"vprtybw")
+BU_P9V_OVERLOAD_1 (VPARITY_LSBB,	"vparity_lsbb")
 
 /* 2 argument functions added in ISA 3.0 (power9).  */
 BU_P9_2 (CMPRB,	"byte_in_range",	CONST,	cmprb)
@@ -2262,11 +2340,18 @@ BU_P9_OVERLOAD_2 (CMPRB,	"byte_in_range")
 BU_P9_OVERLOAD_2 (CMPRB2,	"byte_in_either_range")
 BU_P9_OVERLOAD_2 (CMPEQB,	"byte_in_set")
 
-/* 1 argument IEEE 128-bit floating-point functions.  */
+/* 1 and 2 argument IEEE 128-bit floating-point functions.  These functions use
+   the older 'q' suffix from libquadmath.  The standard built-in functions
+   support fabsf128 and copysignf128, but older code used these 'q' versions,
+   so keep them around.  */
 BU_FLOAT128_1 (FABSQ,		"fabsq",       CONST, abskf2)
-
-/* 2 argument IEEE 128-bit floating-point functions.  */
 BU_FLOAT128_2 (COPYSIGNQ,	"copysignq",   CONST, copysignkf3)
+
+/* 1 and 3 argument IEEE 128-bit floating point functions that require ISA 3.0
+   hardware.  These functions use the new 'f128' suffix.  Eventually these
+   should be folded into the common built-in function handling. */
+BU_FLOAT128_1_HW (SQRTF128,	"sqrtf128",	CONST, sqrtkf2)
+BU_FLOAT128_3_HW (FMAF128,	"fmaf128",	CONST, fmakf4_hw)
 
 /* 1 argument crypto functions.  */
 BU_CRYPTO_1 (VSBOX,		"vsbox",	  CONST, crypto_vsbox)

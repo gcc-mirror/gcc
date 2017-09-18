@@ -108,8 +108,8 @@ lto_write_options (void)
 	gcc_unreachable ();
       }
   /* The default -fmath-errno, -fsigned-zeros and -ftrapping-math change
-     depending on the language (they can be disabled by the Ada and Java
-     front-ends).  Pass thru conservative standard settings.  */
+     depending on the language (they can be disabled by the Ada front-end).
+     Pass thru conservative standard settings.  */
   if (!global_options_set.x_flag_errno_math)
     append_to_collect_gcc_options (&temporary_obstack, &first_p,
 				   global_options.x_flag_errno_math

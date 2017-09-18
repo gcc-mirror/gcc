@@ -84,7 +84,6 @@ along with GCC; see the file COPYING3.  If not see
    FIXME: Could eliminate the duplication here if we were allowed to
    use string concatenation.  */
 
-#ifdef NETBSD_ENABLE_PTHREADS
 #define NETBSD_LIB_SPEC		\
   "%{pthread:			\
      %{!p:			\
@@ -96,26 +95,13 @@ along with GCC; see the file COPYING3.  If not see
        %{!pg:-lposix}}		\
      %{p:-lposix_p}		\
      %{pg:-lposix_p}}		\
+   %{shared:-lc}		\
    %{!shared:			\
      %{!symbolic:		\
        %{!p:			\
 	 %{!pg:-lc}}		\
        %{p:-lc_p}		\
        %{pg:-lc_p}}}"
-#else
-#define NETBSD_LIB_SPEC		\
-  "%{posix:			\
-     %{!p:			\
-       %{!pg:-lposix}}		\
-     %{p:-lposix_p}		\
-     %{pg:-lposix_p}}		\
-   %{!shared:			\
-     %{!symbolic:		\
-       %{!p:			\
-	 %{!pg:-lc}}		\
-       %{p:-lc_p}		\
-       %{pg:-lc_p}}}"
-#endif
 
 #undef LIB_SPEC
 #define LIB_SPEC NETBSD_LIB_SPEC
@@ -139,7 +125,7 @@ along with GCC; see the file COPYING3.  If not see
 #define LIBGCC_SPEC NETBSD_LIBGCC_SPEC
 
 #if defined(HAVE_LD_EH_FRAME_HDR)
-#define LINK_EH_SPEC "%{!static:--eh-frame-hdr} "
+#define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
 #undef TARGET_LIBC_HAS_FUNCTION

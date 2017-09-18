@@ -37,9 +37,7 @@ darwin_find_version_from_kernel (void)
   size_t osversion_len = sizeof (osversion) - 1;
   static int osversion_name[2] = { CTL_KERN, KERN_OSRELEASE };
   int major_vers;
-  char minor_vers[6];
   char * version_p;
-  char * version_pend;
   char * new_flag;
 
   /* Determine the version of the running OS.  If we can't, warn user,
@@ -61,13 +59,6 @@ darwin_find_version_from_kernel (void)
     major_vers = major_vers * 10 + (*version_p++ - '0');
   if (*version_p++ != '.')
     goto parse_failed;
-  version_pend = strchr(version_p, '.');
-  if (!version_pend)
-    goto parse_failed;
-  if (! ISDIGIT (*version_p))
-    goto parse_failed;
-  strncpy(minor_vers, version_p, version_pend - version_p);
-  minor_vers[version_pend - version_p] = '\0';
   
   /* The major kernel version number is 4 plus the second OS version
      component.  */
@@ -77,7 +68,11 @@ darwin_find_version_from_kernel (void)
        FIXME: we should not assume this - a newer linker could be used.  */
     asprintf (&new_flag, "10.%d", major_vers - 4);
   else
-    asprintf (&new_flag, "10.%d.%s", major_vers - 4, minor_vers);
+    /* Although the newer linker supports three-component system
+       versions, there's no guarantee that the minor version component
+       of the kernel and the system are the same. Apple's clang always
+       uses 0 as the minor version: do the same.  */
+    asprintf (&new_flag, "10.%d.0", major_vers - 4);
 
   return new_flag;
 
@@ -86,7 +81,6 @@ darwin_find_version_from_kernel (void)
 	   (int) osversion_len, osversion);
   return NULL;
 }
-
 #endif
 
 /* When running on a Darwin system and using that system's headers and

@@ -47,6 +47,9 @@ enum prediction
    TAKEN
 };
 
+/* In emit-rtl.c.  */
+extern profile_probability split_branch_probability;
+
 extern gcov_type get_hot_bb_threshold (void);
 extern void set_hot_bb_threshold (gcov_type);
 extern bool maybe_hot_count_p (struct function *, profile_count);
@@ -95,5 +98,8 @@ extern const char *predictor_name (enum br_predictor);
 extern void rebuild_frequencies (void);
 extern void report_predictor_hitrates (void);
 extern void force_edge_cold (edge, bool);
+extern void propagate_unlikely_bbs_forward (void);
+
+extern void add_reg_br_prob_note (rtx_insn *, profile_probability);
 
 #endif  /* GCC_PREDICT_H */

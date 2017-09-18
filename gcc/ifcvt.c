@@ -78,14 +78,12 @@ static int cond_exec_changed_p;
 
 /* Forward references.  */
 static int count_bb_insns (const_basic_block);
-static bool cheap_bb_rtx_cost_p (const_basic_block, int, int);
+static bool cheap_bb_rtx_cost_p (const_basic_block, profile_probability, int);
 static rtx_insn *first_active_insn (basic_block);
 static rtx_insn *last_active_insn (basic_block, int);
 static rtx_insn *find_active_insn_before (basic_block, rtx_insn *);
 static rtx_insn *find_active_insn_after (basic_block, rtx_insn *);
 static basic_block block_fallthru (basic_block);
-static int cond_exec_process_insns (ce_if_block *, rtx_insn *, rtx, rtx, int,
-				    int);
 static rtx cond_exec_get_condition (rtx_insn *);
 static rtx noce_get_condition (rtx_insn *, rtx_insn **, bool);
 static int noce_operand_ok (const_rtx);
@@ -132,11 +130,14 @@ count_bb_insns (const_basic_block bb)
    plus a small fudge factor.  */
 
 static bool
-cheap_bb_rtx_cost_p (const_basic_block bb, int scale, int max_cost)
+cheap_bb_rtx_cost_p (const_basic_block bb,
+		     profile_probability prob, int max_cost)
 {
   int count = 0;
   rtx_insn *insn = BB_HEAD (bb);
   bool speed = optimize_bb_for_speed_p (bb);
+  int scale = prob.initialized_p () ? prob.to_reg_br_prob_base ()
+	      : REG_BR_PROB_BASE;
 
   /* Set scale to REG_BR_PROB_BASE to void the identical scaling
      applied to insn_rtx_cost when optimizing for size.  Only do
@@ -332,7 +333,8 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 			 /* if block information */rtx_insn *start,
 			 /* first insn to look at */rtx end,
 			 /* last insn to look at */rtx test,
-			 /* conditional execution test */int prob_val,
+			 /* conditional execution test */profile_probability
+							    prob_val,
 			 /* probability of branch taken. */int mod_ok)
 {
   int must_be_last = FALSE;
@@ -407,10 +409,11 @@ cond_exec_process_insns (ce_if_block *ce_info ATTRIBUTE_UNUSED,
 
       validate_change (insn, &PATTERN (insn), pattern, 1);
 
-      if (CALL_P (insn) && prob_val >= 0)
+      if (CALL_P (insn) && prob_val.initialized_p ())
 	validate_change (insn, &REG_NOTES (insn),
 			 gen_rtx_INT_LIST ((machine_mode) REG_BR_PROB,
-					   prob_val, REG_NOTES (insn)), 1);
+					   prob_val.to_reg_br_prob_note (),
+					   REG_NOTES (insn)), 1);
 
     insn_done:
       if (insn == end)
@@ -469,8 +472,8 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   int then_mod_ok;		/* whether conditional mods are ok in THEN */
   rtx true_expr;		/* test for else block insns */
   rtx false_expr;		/* test for then block insns */
-  int true_prob_val;		/* probability of else block */
-  int false_prob_val;		/* probability of then block */
+  profile_probability true_prob_val;/* probability of else block */
+  profile_probability false_prob_val;/* probability of then block */
   rtx_insn *then_last_head = NULL;	/* Last match at the head of THEN */
   rtx_insn *else_last_head = NULL;	/* Last match at the head of ELSE */
   rtx_insn *then_first_tail = NULL;	/* First match at the tail of THEN */
@@ -615,13 +618,13 @@ cond_exec_process_if_block (ce_if_block * ce_info,
   note = find_reg_note (BB_END (test_bb), REG_BR_PROB, NULL_RTX);
   if (note)
     {
-      true_prob_val = XINT (note, 0);
-      false_prob_val = REG_BR_PROB_BASE - true_prob_val;
+      true_prob_val = profile_probability::from_reg_br_prob_note (XINT (note, 0));
+      false_prob_val = true_prob_val.invert ();
     }
   else
     {
-      true_prob_val = -1;
-      false_prob_val = -1;
+      true_prob_val = profile_probability::uninitialized ();
+      false_prob_val = profile_probability::uninitialized ();
     }
 
   /* If we have && or || tests, do them here.  These tests are in the adjacent
@@ -2805,13 +2808,17 @@ noce_try_bitop (struct noce_if_info *if_info)
 {
   rtx cond, x, a, result;
   rtx_insn *seq;
-  machine_mode mode;
+  scalar_int_mode mode;
   enum rtx_code code;
   int bitnum;
 
   x = if_info->x;
   cond = if_info->cond;
   code = GET_CODE (cond);
+
+  /* Check for an integer operation.  */
+  if (!is_a <scalar_int_mode> (GET_MODE (x), &mode))
+    return FALSE;
 
   if (!noce_simple_bbs (if_info))
     return FALSE;
@@ -2835,7 +2842,6 @@ noce_try_bitop (struct noce_if_info *if_info)
 	  || ! rtx_equal_p (x, XEXP (cond, 0)))
 	return FALSE;
       bitnum = INTVAL (XEXP (cond, 2));
-      mode = GET_MODE (x);
       if (BITS_BIG_ENDIAN)
 	bitnum = GET_MODE_BITSIZE (mode) - 1 - bitnum;
       if (bitnum < 0 || bitnum >= HOST_BITS_PER_WIDE_INT)
@@ -3192,7 +3198,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	{
 	  machine_mode src_mode = GET_MODE (new_val);
 	  machine_mode dst_mode = GET_MODE (temp);
-	  if (GET_MODE_SIZE (src_mode) <= GET_MODE_SIZE (dst_mode))
+	  if (!partial_subreg_p (dst_mode, src_mode))
 	    {
 	      end_sequence ();
 	      return FALSE;
@@ -3203,7 +3209,7 @@ noce_convert_multiple_sets (struct noce_if_info *if_info)
 	{
 	  machine_mode src_mode = GET_MODE (old_val);
 	  machine_mode dst_mode = GET_MODE (temp);
-	  if (GET_MODE_SIZE (src_mode) <= GET_MODE_SIZE (dst_mode))
+	  if (!partial_subreg_p (dst_mode, src_mode))
 	    {
 	      end_sequence ();
 	      return FALSE;
@@ -4807,7 +4813,8 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   basic_block new_bb;
-  int then_bb_index, then_prob;
+  int then_bb_index;
+  profile_probability then_prob;
   rtx else_target = NULL_RTX;
 
   /* If we are partitioning hot/cold basic blocks, we don't want to
@@ -4853,10 +4860,7 @@ find_if_case_1 (basic_block test_bb, edge then_edge, edge else_edge)
 	     "\nIF-CASE-1 found, start %d, then %d\n",
 	     test_bb->index, then_bb->index);
 
-  if (then_edge->probability)
-    then_prob = REG_BR_PROB_BASE - then_edge->probability;
-  else
-    then_prob = REG_BR_PROB_BASE / 2;
+  then_prob = then_edge->probability.invert ();
 
   /* We're speculating from the THEN path, we want to make sure the cost
      of speculation is within reason.  */
@@ -4927,7 +4931,7 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   basic_block then_bb = then_edge->dest;
   basic_block else_bb = else_edge->dest;
   edge else_succ;
-  int then_prob, else_prob;
+  profile_probability then_prob, else_prob;
 
   /* We do not want to speculate (empty) loop latches.  */
   if (current_loops
@@ -4973,16 +4977,8 @@ find_if_case_2 (basic_block test_bb, edge then_edge, edge else_edge)
   if (then_bb->index < NUM_FIXED_BLOCKS)
     return FALSE;
 
-  if (else_edge->probability)
-    {
-      else_prob = else_edge->probability;
-      then_prob = REG_BR_PROB_BASE - else_prob;
-    }
-  else
-    {
-      else_prob = REG_BR_PROB_BASE / 2;
-      then_prob = REG_BR_PROB_BASE / 2;
-    }
+  else_prob = else_edge->probability;
+  then_prob = else_prob.invert ();
 
   /* ELSE is predicted or SUCC(ELSE) postdominates THEN.  */
   if (else_prob > then_prob)
@@ -5128,7 +5124,9 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	return FALSE;
 
       rtx note = find_reg_note (jump, REG_BR_PROB, NULL_RTX);
-      int prob_val = (note ? XINT (note, 0) : -1);
+      profile_probability prob_val
+	  = (note ? profile_probability::from_reg_br_prob_note (XINT (note, 0))
+	     : profile_probability::uninitialized ());
 
       if (reversep)
 	{
@@ -5137,8 +5135,7 @@ dead_or_predicable (basic_block test_bb, basic_block merge_bb,
 	    return FALSE;
 	  cond = gen_rtx_fmt_ee (rev, GET_MODE (cond), XEXP (cond, 0),
 			         XEXP (cond, 1));
-	  if (prob_val >= 0)
-	    prob_val = REG_BR_PROB_BASE - prob_val;
+	  prob_val = prob_val.invert ();
 	}
 
       if (cond_exec_process_insns (NULL, head, end, cond, prob_val, 0)

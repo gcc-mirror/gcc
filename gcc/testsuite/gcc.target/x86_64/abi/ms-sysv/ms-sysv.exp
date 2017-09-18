@@ -56,52 +56,48 @@ proc host_supports_c++11 {} {
 
 # Exit immediately if this isn't a native x86_64 target.
 if { (![istarget x86_64-*-*] && ![istarget i?86-*-*])
-     || ![is-effective-target lp64] || ![isnative]
-     || ![host_supports_c++11] } then {
-    unsupported "$subdir"
+      || ![is-effective-target lp64] || ![isnative]
+      || ![host_supports_c++11] } then {
+
+    # Gate "unsupported" message return value of first runtest_file_p call.
+    if [runtest_file_p $runtests "$srcdir/$subdir/ms-sysv.c"] {
+	unsupported "$subdir"
+    }
     return
 }
 
-global GCC_RUNTEST_PARALLELIZE_DIR
-
 proc runtest_ms_sysv { cflags generator_args } {
     global GCC_UNDER_TEST HOSTCXX HOSTCXXFLAGS tmpdir srcdir subdir \
-	   parallel_dir next_test
+	   TEST_ALWAYS_FLAGS runtests
 
     set objdir "$tmpdir/ms-sysv"
     set generator "$tmpdir/ms-sysv-generate.exe"
     set generated_header "$objdir/ms-sysv-generated.h"
-    set do_test_o "$objdir/do-test.o"
-    set ms_sysv_o "$objdir/ms-sysv.o"
-    set ms_sysv_exe "$objdir/ms-sysv.exe"
     set status 0
     set warn_flags "-Wall"
-    set this_test $next_test
-    incr next_test
-
-    # Do parallelization here
-    if [catch {set fd [open "$parallel_dir/$this_test" \
-			    [list RDWR CREAT EXCL]]} ] {
-	if { [lindex $::errorCode 1] eq "EEXIST" } then {
-	    # Another job is running this test
-	    return
-	} else {
-	    error "Failed to open $parallel_dir/$this_test: $::errorCode"
-	    set status 1
-	}
-    } else {
-      close $fd
-    }
 
     # Detect when hard frame pointers are enabled (or required) so we know not
     # to generate bp clobbers.
-    if [regexp "^(.+ +| *)-(O0|fno-omit-frame-pointer|p|pg)( +.*)?$" \
-	       $cflags match] then {
+    if { [regexp "(^| )-(O0|fno-omit-frame-pointer|p|pg)( |$)" \
+		 "$TEST_ALWAYS_FLAGS $cflags" match]
+	 || [istarget *-*-solaris*] } then {
 	set generator_args "$generator_args --omit-rbp-clobbers"
     }
 
-    set descr "$subdir CFLAGS=\"$cflags\" generator_args=\"$generator_args\""
-    verbose "$tmpdir: Running test $descr" 1
+    # Add all other flags
+    set escaped_generator_args [regsub -all " " $generator_args "\\ "]
+    set cflags "$cflags\"-DGEN_ARGS=$escaped_generator_args\""
+
+    gcc_parallel_test_enable 1
+    if ![runtest_file_p $runtests "$srcdir/$subdir/ms-sysv.c"] then {
+	return
+    }
+
+    #verbose "runtest_ms_sysv $cflags" 0
+
+    # Make sure there's no previous header file so that we can't accidentally
+    # pass if generation fails.
+    file delete -force $generated_header
 
     # Cleanup any previous test in objdir
     file delete -force $objdir
@@ -109,18 +105,16 @@ proc runtest_ms_sysv { cflags generator_args } {
 
     # Build the generator (only needs to be done once).
     set src "$srcdir/$subdir/gen.cc"
-    if { $status == 0 } then {
-	if { (![file exists "$generator"]) || ([file mtime "$generator"]
-					    < [file mtime "$src"]) } {
-	    # Temporarily switch to the environment for the host compiler.
-	    restore_ld_library_path_env_vars
-	    set cxx "$HOSTCXX $HOSTCXXFLAGS $warn_flags -std=c++11"
-	    set status [remote_exec host "$cxx -o $generator $src"]
-	    set status [lindex $status 0]
-	    set_ld_library_path_env_vars
-	    if { $status != 0 } then {
-		warning "Could not build $subdir generator"
-	    }
+    if { (![file exists "$generator"]) || ([file mtime "$generator"]
+					   < [file mtime "$src"]) } {
+	# Temporarily switch to the environment for the host compiler.
+	restore_ld_library_path_env_vars
+	set cxx "$HOSTCXX $HOSTCXXFLAGS $TEST_ALWAYS_FLAGS $warn_flags -std=c++11"
+	set status [remote_exec host "$cxx -o $generator $src"]
+	set status [lindex $status 0]
+	set_ld_library_path_env_vars
+	if { $status != 0 } then {
+	    warning "Could not build $subdir generator"
 	}
     }
 
@@ -133,75 +127,26 @@ proc runtest_ms_sysv { cflags generator_args } {
 	}
     }
 
-    set cc "$GCC_UNDER_TEST -I$objdir -I$srcdir/$subdir $cflags $warn_flags"
-
-    # Assemble do-test.S
-    set src "$srcdir/$subdir/do-test.S"
-    if { $status == 0 } then {
-	set status [remote_exec build "$cc -c -o $do_test_o $src"]
-	set status [lindex $status 0]
-	if { $status != 0 } then {
-	    warning "Could not assemble $src"
-	}
-    }
-
-    # Build ms-sysv.c
-    set src "$srcdir/$subdir/ms-sysv.c"
-    if { $status == 0 } then {
-	set status [remote_exec build "$cc -c -o $ms_sysv_o $src" "" "" "" 1200]
-	set status [lindex $status 0]
-	if { $status != 0 } then {
-	    warning "Could not build $src."
-	}
-    }
-
-    # Link
-    if { $status == 0 } then {
-	set status [remote_exec build "$cc -o $ms_sysv_exe $ms_sysv_o $do_test_o"]
-	set status [lindex $status 0]
-	if { $status != 0 } then {
-	    warning "Link failed."
-	}
-    }
-
-    # Execute
-    if { $status == 0 } then {
-	set status [remote_exec build "$ms_sysv_exe"]
-	set status [lindex $status 0]
-    }
-
-    if { $status != 0 } then {
-	fail $descr
-    } else {
-	pass $descr
-    }
+    gcc_parallel_test_enable 0
+    dg-runtest $srcdir/$subdir/ms-sysv.c "$cflags" "-I$objdir -I$srcdir/$subdir $warn_flags"
+    gcc_parallel_test_enable 1
 }
 
 dg-init
 
-# Setup parallelization
-set next_test 0
-set parallel_dir "$env(GCC_RUNTEST_PARALLELIZE_DIR)/abi-ms-sysv"
-file mkdir "$env(GCC_RUNTEST_PARALLELIZE_DIR)"
-file mkdir "$parallel_dir"
+# Standard test parameters.
+set gen_pcount_opts [list "-p0" "-p1" "-p5"]
+set base_cflags_arr [list " -O2 " " -O0 -g3 "]
 
-if { ![file isdirectory "$parallel_dir"] } then {
-    error "Failed to create directory $parallel_dir: $::errorCode"
-    return
-}
+foreach gen_opts $gen_pcount_opts {
+    foreach cflags $base_cflags_arr {
+	# Run without -mcall-ms2sysv-xlogues always
+	runtest_ms_sysv "$cflags" "$gen_opts"
 
-set gen_opts "-p0-5"
-set all_options [list "-O2" "-O0 -g3"]
-
-# Run without -mcall-ms2sysv-xlogues always
-foreach opt $all_options {
-    runtest_ms_sysv "$opt" "$gen_opts"
-}
-
-# Skip -mcall-ms2sysv-xlogues on Windows (not supported)
-if { ![istarget *-*-cygwin*] && ![istarget *-*-mingw*] } {
-    foreach opt $all_options {
-	runtest_ms_sysv "-mcall-ms2sysv-xlogues $opt" "$gen_opts"
+	# Skip unsupported -mcall-ms2sysv-xlogues on Windows
+	if { ![istarget *-*-cygwin*] && ![istarget *-*-mingw*] } {
+	    runtest_ms_sysv "-mcall-ms2sysv-xlogues$cflags" "$gen_opts"
+	}
     }
 }
 

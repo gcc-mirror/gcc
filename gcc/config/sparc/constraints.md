@@ -19,7 +19,7 @@
 
 ;;; Unused letters:
 ;;;     B
-;;;    a        jkl    q  tuv xyz
+;;;    a        jkl        uv xyz
 
 
 ;; Register constraints
@@ -57,6 +57,16 @@
       (match_test "const_all_ones_operand (op, mode)")))
 
 ;; Integer constant constraints
+
+(define_constraint "q"
+ "Unsigned 2-bit integer constant"
+  (and (match_code "const_int")
+       (match_test "SPARC_IMM2_P (ival)")))
+
+(define_constraint "t"
+ "Unsigned 5-bit integer constant"
+ (and (match_code "const_int")
+      (match_test "SPARC_IMM5_P (ival)")))
 
 (define_constraint "A"
  "Signed 5-bit integer constant"
@@ -147,10 +157,10 @@
 ;; register into the register class, which would not restrict things
 ;; at all.
 ;;
-;; Using a combination of GENERAL_REGS and HARD_REGNO_MODE_OK is not a
-;; full solution either.  In fact, even though IRA uses the macro
-;; HARD_REGNO_MODE_OK to calculate which registers are prohibited from
-;; use in certain modes, it still can allocate an odd hard register
+;; Using a combination of GENERAL_REGS and TARGET_HARD_REGNO_MODE_OK is
+;; not a full solution either.  In fact, even though IRA uses the macro
+;; TARGET_HARD_REGNO_MODE_OK to calculate which registers are prohibited
+;; from use in certain modes, it still can allocate an odd hard register
 ;; for DImode values.  This is due to how IRA populates the table
 ;; ira_useful_class_mode_regs[][].  It suffers from the same problem
 ;; as using a register class to describe this restriction.  Namely, it

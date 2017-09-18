@@ -312,15 +312,11 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 #undef  TARGET_MODULO
 #undef  TARGET_P9_VECTOR
 #undef  TARGET_P9_MINMAX
-#undef  TARGET_P9_DFORM_SCALAR
-#undef  TARGET_P9_DFORM_VECTOR
 #undef  TARGET_P9_MISC
 #define TARGET_FLOAT128_HW 0
 #define TARGET_MODULO 0
 #define TARGET_P9_VECTOR 0
 #define TARGET_P9_MINMAX 0
-#define TARGET_P9_DFORM_SCALAR 0
-#define TARGET_P9_DFORM_VECTOR 0
 #define TARGET_P9_MISC 0
 #endif
 
@@ -600,8 +596,7 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_128	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
 				 && TARGET_POWERPC64)
 #define TARGET_VEXTRACTUB	(TARGET_P9_VECTOR && TARGET_DIRECT_MOVE \
-				 && TARGET_UPPER_REGS_DI && TARGET_POWERPC64)
-
+				 && TARGET_POWERPC64)
 
 /* Whether we should avoid (SUBREG:SI (REG:SF) and (SUBREG:SF (REG:SI).  */
 #define TARGET_NO_SF_SUBREG	TARGET_DIRECT_MOVE_64BIT
@@ -644,7 +639,8 @@ extern int rs6000_vector_align[];
 #define MASK_DIRECT_MOVE		OPTION_MASK_DIRECT_MOVE
 #define MASK_DLMZB			OPTION_MASK_DLMZB
 #define MASK_EABI			OPTION_MASK_EABI
-#define MASK_FLOAT128_TYPE		OPTION_MASK_FLOAT128_TYPE
+#define MASK_FLOAT128_KEYWORD		OPTION_MASK_FLOAT128_KEYWORD
+#define MASK_FLOAT128_HW		OPTION_MASK_FLOAT128_HW
 #define MASK_FPRND			OPTION_MASK_FPRND
 #define MASK_P8_FUSION			OPTION_MASK_P8_FUSION
 #define MASK_HARD_FLOAT			OPTION_MASK_HARD_FLOAT
@@ -668,7 +664,6 @@ extern int rs6000_vector_align[];
 #define MASK_STRING			OPTION_MASK_STRING
 #define MASK_UPDATE			OPTION_MASK_UPDATE
 #define MASK_VSX			OPTION_MASK_VSX
-#define MASK_VSX_TIMODE			OPTION_MASK_VSX_TIMODE
 
 #ifndef IN_LIBGCC2
 #define MASK_POWERPC64			OPTION_MASK_POWERPC64
@@ -761,7 +756,6 @@ extern int rs6000_vector_align[];
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_P8_VECTOR		\
 					 && TARGET_POWERPC64		\
-					 && TARGET_UPPER_REGS_DI	\
 					 && (rs6000_altivec_element_order != 2))
 
 /* Whether the various reciprocal divide/square root estimate instructions
@@ -975,19 +969,6 @@ enum data_align { align_abi, align_opt, align_both };
 /* Nonzero if move instructions will actually fail to work
    when given unaligned data.  */
 #define STRICT_ALIGNMENT 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a cost
-   many times greater than aligned accesses, for example if they are
-   emulated in a trap handler.  */
-/* Altivec vector memory instructions simply ignore the low bits; VSX memory
-   instructions are aligned to 4 or 8 bytes.  */
-#define SLOW_UNALIGNED_ACCESS(MODE, ALIGN)				\
-  (STRICT_ALIGNMENT							\
-   || (!TARGET_EFFICIENT_UNALIGNED_VSX					\
-       && ((SCALAR_FLOAT_MODE_NOT_VECTOR_P (MODE) && (ALIGN) < 32)	\
-	   || ((VECTOR_MODE_P (MODE) || FLOAT128_VECTOR_P (MODE))	\
-	       && (int) (ALIGN) < VECTOR_ALIGN (MODE)))))
-
 
 /* Standard register usage.  */
 
@@ -1222,11 +1203,6 @@ enum data_align { align_abi, align_opt, align_both };
   (INT_REGNO_P (N) || ALTIVEC_REGNO_P (N)				\
    || (TARGET_VSX && FP_REGNO_P (N)))					\
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE) rs6000_hard_regno_nregs[(MODE)][(REGNO)]
-
 /* When setting up caller-save slots (MODE == VOIDmode) ensure we allocate
    enough space to account for vectors in FP regs.  However, TFmode/TDmode
    should not use VSX instructions to do a caller save. */
@@ -1242,13 +1218,6 @@ enum data_align { align_abi, align_opt, align_both };
    : (MODE) == TDmode && FP_REGNO_P (REGNO)				\
    ? DImode								\
    : choose_hard_reg_mode ((REGNO), (NREGS), false))
-
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  (((TARGET_32BIT && TARGET_POWERPC64					\
-     && (GET_MODE_SIZE (MODE) > 4)					\
-     && INT_REGNO_P (REGNO)) ? 1 : 0)					\
-   || (TARGET_VSX && FP_REGNO_P (REGNO)					\
-       && GET_MODE_SIZE (MODE) > 8 && !FLOAT128_2REG_P (MODE)))
 
 #define VSX_VECTOR_MODE(MODE)		\
 	 ((MODE) == V4SFmode		\
@@ -1271,45 +1240,6 @@ enum data_align { align_abi, align_opt, align_both };
 
 #define PAIRED_VECTOR_MODE(MODE)        \
          ((MODE) == V2SFmode)            
-
-/* Value is TRUE if hard register REGNO can hold a value of
-   machine-mode MODE.  */
-#define HARD_REGNO_MODE_OK(REGNO, MODE) \
-  rs6000_hard_regno_mode_ok_p[(int)(MODE)][REGNO]
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.
-
-   PTImode cannot tie with other modes because PTImode is restricted to even
-   GPR registers, and TImode can go in any GPR as well as VSX registers (PR
-   57744).
-
-   Altivec/VSX vector tests were moved ahead of scalar float mode, so that IEEE
-   128-bit floating point on VSX systems ties with other vectors.  */
-#define MODES_TIEABLE_P(MODE1, MODE2)		\
-  ((MODE1) == PTImode				\
-   ? (MODE2) == PTImode				\
-   : (MODE2) == PTImode				\
-   ? 0						\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE1)		\
-   ? ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   : ALTIVEC_OR_VSX_VECTOR_MODE (MODE2)		\
-   ? 0						\
-   : SCALAR_FLOAT_MODE_P (MODE1)		\
-   ? SCALAR_FLOAT_MODE_P (MODE2)		\
-   : SCALAR_FLOAT_MODE_P (MODE2)		\
-   ? 0						\
-   : GET_MODE_CLASS (MODE1) == MODE_CC		\
-   ? GET_MODE_CLASS (MODE2) == MODE_CC		\
-   : GET_MODE_CLASS (MODE2) == MODE_CC		\
-   ? 0						\
-   : PAIRED_VECTOR_MODE (MODE1)			\
-   ? PAIRED_VECTOR_MODE (MODE2)			\
-   : PAIRED_VECTOR_MODE (MODE2)			\
-   ? 0						\
-   : 1)
 
 /* Post-reload, we can't use any new AltiVec registers, as we already
    emitted the vrsave mask.  */
@@ -1577,28 +1507,6 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
 #define SECONDARY_RELOAD_CLASS(CLASS,MODE,IN) \
   rs6000_secondary_reload_class_ptr (CLASS, MODE, IN)
 
-/* If we are copying between FP or AltiVec registers and anything
-   else, we need a memory location.  The exception is when we are
-   targeting ppc64 and the move to/from fpr to gpr instructions
-   are available.*/
-
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)			\
-  rs6000_secondary_memory_needed_ptr (CLASS1, CLASS2, MODE)
-
-/* For cpus that cannot load/store SDmode values from the 64-bit
-   FP registers without using a full 64-bit load/store, we need
-   to allocate a full 64-bit stack slot for them.  */
-
-#define SECONDARY_MEMORY_NEEDED_RTX(MODE) \
-  rs6000_secondary_memory_needed_rtx (MODE)
-
-/* Specify the mode to be used for memory when a secondary memory
-   location is needed.  For cpus that cannot load/store SDmode values
-   from the 64-bit FP registers without using a full 64-bit
-   load/store, we need a wider mode.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
-  rs6000_secondary_memory_needed_mode (MODE)
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.
 
@@ -1606,11 +1514,6 @@ extern enum reg_class rs6000_constraints[RS6000_CONSTRAINT_MAX];
    a single reg is enough for two words, unless we have VSX, where the FP
    registers can hold 128 bits.  */
 #define CLASS_MAX_NREGS(CLASS, MODE) rs6000_class_max_nregs[(MODE)][(CLASS)]
-
-/* Return nonzero if for CLASS a mode change from FROM to TO is invalid.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)			\
-  rs6000_cannot_change_mode_class_ptr (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1863,16 +1766,8 @@ typedef struct rs6000_args
   init_cumulative_args (&CUM, NULL_TREE, LIBNAME, FALSE, TRUE, \
 			0, NULL_TREE, MODE)
 
-/* If defined, a C expression which determines whether, and in which
-   direction, to pad out an argument with extra space.  The value
-   should be of type `enum direction': either `upward' to pad above
-   the argument, `downward' to pad below, or `none' to inhibit
-   padding.  */
-
-#define FUNCTION_ARG_PADDING(MODE, TYPE) function_arg_padding (MODE, TYPE)
-
 #define PAD_VARARGS_DOWN \
-   (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 /* Output assembler code to FILE to increment profiler label # LABELNO
    for profiling a function entry.  */
@@ -2111,10 +2006,6 @@ do {									     \
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* The cntlzw and cntlzd instructions return 32 and 64 for input of zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) \
   ((VALUE) = GET_MODE_BITSIZE (MODE), 2)
@@ -2130,8 +2021,8 @@ do {									     \
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction
    between pointers and any other objects of this machine mode.  */
-extern unsigned rs6000_pmode;
-#define Pmode ((machine_mode)rs6000_pmode)
+extern scalar_int_mode rs6000_pmode;
+#define Pmode rs6000_pmode
 
 /* Supply definition of STACK_SIZE_MODE for allocate_dynamic_stack_space.  */
 #define STACK_SIZE_MODE (TARGET_32BIT ? SImode : DImode)
@@ -2599,7 +2490,8 @@ extern int frame_pointer_needed;
 #define RS6000_BTM_HARD_FLOAT	MASK_SOFT_FLOAT	/* Hardware floating point.  */
 #define RS6000_BTM_LDBL128	MASK_MULTIPLE	/* 128-bit long double.  */
 #define RS6000_BTM_64BIT	MASK_64BIT	/* 64-bit addressing.  */
-#define RS6000_BTM_FLOAT128	MASK_FLOAT128_TYPE /* IEEE 128-bit float.  */
+#define RS6000_BTM_FLOAT128	MASK_FLOAT128_KEYWORD /* IEEE 128-bit float.  */
+#define RS6000_BTM_FLOAT128_HW	MASK_FLOAT128_HW /* IEEE 128-bit float h/w.  */
 
 #define RS6000_BTM_COMMON	(RS6000_BTM_ALTIVEC			\
 				 | RS6000_BTM_VSX			\
@@ -2618,7 +2510,8 @@ extern int frame_pointer_needed;
 				 | RS6000_BTM_DFP			\
 				 | RS6000_BTM_HARD_FLOAT		\
 				 | RS6000_BTM_LDBL128			\
-				 | RS6000_BTM_FLOAT128)
+				 | RS6000_BTM_FLOAT128			\
+				 | RS6000_BTM_FLOAT128_HW)
 
 /* Define builtin enum index.  */
 

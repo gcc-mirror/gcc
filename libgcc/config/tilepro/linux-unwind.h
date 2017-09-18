@@ -61,7 +61,7 @@ tile_fallback_frame_state (struct _Unwind_Context *context,
   struct rt_sigframe {
     unsigned char save_area[C_ABI_SAVE_AREA_SIZE];
     siginfo_t info;
-    struct ucontext uc;
+    ucontext_t uc;
   } *rt_;
 
   /* Return if this is not a signal handler.  */

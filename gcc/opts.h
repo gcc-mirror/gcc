@@ -110,6 +110,10 @@ struct cl_option
   enum cl_var_type var_type;
   /* Value or bit-mask with which to set a field.  */
   HOST_WIDE_INT var_value;
+  /* Range info minimum, or -1.  */
+  int range_min;
+  /* Range info maximum, or -1.  */
+  int range_max;
 };
 
 /* Records that the state of an option consists of SIZE bytes starting
@@ -200,8 +204,9 @@ extern const unsigned int cl_enums_count;
 #define CL_ERR_MISSING_ARG	(1 << 1) /* Argument required but missing.  */
 #define CL_ERR_WRONG_LANG	(1 << 2) /* Option for wrong language.  */
 #define CL_ERR_UINT_ARG		(1 << 3) /* Bad unsigned integer argument.  */
-#define CL_ERR_ENUM_ARG		(1 << 4) /* Bad enumerated argument.  */
-#define CL_ERR_NEGATIVE		(1 << 5) /* Negative form of option
+#define CL_ERR_INT_RANGE_ARG	(1 << 4) /* Bad unsigned integer argument.  */
+#define CL_ERR_ENUM_ARG		(1 << 5) /* Bad enumerated argument.  */
+#define CL_ERR_NEGATIVE		(1 << 6) /* Negative form of option
 					    not permitted (together
 					    with OPT_SPECIAL_unknown).  */
 
@@ -267,7 +272,8 @@ struct cl_option_handler_func
 		   const struct cl_decoded_option *decoded,
 		   unsigned int lang_mask, int kind, location_t loc,
 		   const struct cl_option_handlers *handlers,
-		   diagnostic_context *dc);
+		   diagnostic_context *dc,
+		   void (*target_option_override_hook) (void));
 
   /* The mask that must have some bit in common with the flags for the
      option for this particular handler to be used.  */
@@ -288,6 +294,9 @@ struct cl_option_handlers
      language.  */
   void (*wrong_lang_callback) (const struct cl_decoded_option *decoded,
 			       unsigned int lang_mask);
+
+  /* Target option override hook.  */
+  void (*target_option_override_hook) (void);
 
   /* The number of individual handlers.  */
   size_t num_handlers;
@@ -333,13 +342,15 @@ extern void decode_cmdline_options_to_array_default_mask (unsigned int argc,
 							  const char **argv, 
 							  struct cl_decoded_option **decoded_options,
 							  unsigned int *decoded_options_count);
-extern void set_default_handlers (struct cl_option_handlers *handlers);
+extern void set_default_handlers (struct cl_option_handlers *handlers,
+				  void (*target_option_override_hook) (void));
 extern void decode_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    struct cl_decoded_option *decoded_options,
 			    unsigned int decoded_options_count,
 			    location_t loc,
-			    diagnostic_context *dc);
+			    diagnostic_context *dc,
+			    void (*target_option_override_hook) (void));
 extern int option_enabled (int opt_idx, void *opts);
 extern bool get_option_state (struct gcc_options *, int,
 			      struct cl_option_state *);
@@ -386,14 +397,16 @@ extern bool common_handle_option (struct gcc_options *opts,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc);
+				  diagnostic_context *dc,
+				  void (*target_option_override_hook) (void));
 extern bool target_handle_option (struct gcc_options *opts,
 				  struct gcc_options *opts_set,
 				  const struct cl_decoded_option *decoded,
 				  unsigned int lang_mask, int kind,
 				  location_t loc,
 				  const struct cl_option_handlers *handlers,
-				  diagnostic_context *dc);
+				  diagnostic_context *dc,
+				  void (*target_option_override_hook) (void));
 extern void finish_options (struct gcc_options *opts,
 			    struct gcc_options *opts_set,
 			    location_t loc);

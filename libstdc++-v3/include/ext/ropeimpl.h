@@ -844,7 +844,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     public:
       
       _Rope_flatten_char_consumer(_CharT* __buffer)
-      { _M_buf_ptr = __buffer; };
+      { _M_buf_ptr = __buffer; }
 
       ~_Rope_flatten_char_consumer() {}
       
@@ -897,8 +897,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Insert_ostream& _M_o;
     public:
       _Rope_insert_char_consumer(_Insert_ostream& __writer)
-	: _M_o(__writer) {};
-      ~_Rope_insert_char_consumer() { };
+	: _M_o(__writer) {}
+      ~_Rope_insert_char_consumer() { }
       // Caller is presumed to own the ostream
       bool operator() (const _CharT* __leaf, size_t __n);
       // Returns true to continue traversal.

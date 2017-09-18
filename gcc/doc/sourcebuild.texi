@@ -1582,6 +1582,12 @@ Test system supports executing NEON v2 instructions.
 ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
+@item arm_neon_ok_no_float_abi
+@anchor{arm_neon_ok_no_float_abi}
+ARM Target supports NEON with @code{-mfpu=neon}, but without any
+-mfloat-abi= option.  Some multilibs may be incompatible with this
+option.
+
 @item arm_neonv2_ok
 @anchor{arm_neonv2_ok}
 ARM Target supports @code{-mfpu=neon-vfpv4 -mfloat-abi=softfp} or compatible
@@ -1840,11 +1846,26 @@ PowerPC target supports executing VSX instructions (ISA 2.06).
 
 @c Please keep this table sorted alphabetically.
 @table @code
+@item autoincdec
+Target supports autoincrement/decrement addressing.
+
 @item avx
 Target supports compiling @code{avx} instructions.
 
 @item avx_runtime
 Target supports the execution of @code{avx} instructions.
+
+@item avx2
+Target supports compiling @code{avx2} instructions.
+
+@item avx2_runtime
+Target supports the execution of @code{avx2} instructions.
+
+@item avx512f
+Target supports compiling @code{avx512f} instructions.
+
+@item avx512f_runtime
+Target supports the execution of @code{avx512f} instructions.
 
 @item cell_hw
 Test system can execute AltiVec and Cell PPU instructions.
@@ -1898,6 +1919,9 @@ or @code{EM_SPARCV9} executables.
 
 @item vect_cmdline_needed
 Target requires a command line argument to enable a SIMD instruction set.
+
+@item xorsign
+Target supports the xorsign optab expansion.
 
 @end table
 
@@ -2304,6 +2328,11 @@ the codeset to convert to.
 @item dg-require-profiling @var{profopt}
 Skip the test if the target does not support profiling with option
 @var{profopt}.
+
+@item dg-require-stack-check @var{check}
+Skip the test if the target does not support the @code{-fstack-check}
+option.  If @var{check} is @code{""}, support for @code{-fstack-check}
+is checked, for @code{-fstack-check=("@var{check}")} otherwise.
 
 @item dg-require-visibility @var{vis}
 Skip the test if the target does not support the @code{visibility} attribute.

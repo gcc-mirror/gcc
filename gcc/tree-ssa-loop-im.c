@@ -86,7 +86,9 @@ struct lim_aux_data
   unsigned cost;		/* Cost of the computation performed by the
 				   statement.  */
 
-  vec<gimple *> depends;		/* Vector of statements that must be also
+  unsigned ref;			/* The simple_mem_ref in this stmt or 0.  */
+
+  vec<gimple *> depends;	/* Vector of statements that must be also
 				   hoisted out of the loop when this statement
 				   is hoisted; i.e. those that define the
 				   operands of the statement and are inside of
@@ -586,27 +588,6 @@ simple_mem_ref_in_stmt (gimple *stmt, bool *is_store)
     return NULL;
 }
 
-/* Returns the memory reference contained in STMT.  */
-
-static im_mem_ref *
-mem_ref_in_stmt (gimple *stmt)
-{
-  bool store;
-  tree *mem = simple_mem_ref_in_stmt (stmt, &store);
-  hashval_t hash;
-  im_mem_ref *ref;
-
-  if (!mem)
-    return NULL;
-  gcc_assert (!store);
-
-  hash = iterative_hash_expr (*mem, 0);
-  ref = memory_accesses.refs->find_with_hash (*mem, hash);
-
-  gcc_assert (ref != NULL);
-  return ref;
-}
-
 /* From a controlling predicate in DOM determine the arguments from
    the PHI node PHI that are chosen if the predicate evaluates to
    true and false and store them to *TRUE_ARG_P and *FALSE_ARG_P if
@@ -747,23 +728,18 @@ determine_max_movement (gimple *stmt, bool must_preserve_exec)
 
   if (gimple_vuse (stmt))
     {
-      im_mem_ref *ref = mem_ref_in_stmt (stmt);
-
-      if (ref)
+      im_mem_ref *ref
+	= lim_data ? memory_accesses.refs_list[lim_data->ref] : NULL;
+      if (ref
+	  && MEM_ANALYZABLE (ref))
 	{
-	  lim_data->max_loop
-		  = outermost_indep_loop (lim_data->max_loop, loop, ref);
+	  lim_data->max_loop = outermost_indep_loop (lim_data->max_loop,
+						     loop, ref);
 	  if (!lim_data->max_loop)
 	    return false;
 	}
-      else
-	{
-	  if ((val = gimple_vuse (stmt)) != NULL_TREE)
-	    {
-	      if (!add_dependency (val, lim_data, loop, false))
-		return false;
-	    }
-	}
+      else if (! add_dependency (gimple_vuse (stmt), lim_data, loop, false))
+	return false;
     }
 
   lim_data->cost += stmt_cost (stmt);
@@ -1000,7 +976,9 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 	if (pos == MOVE_IMPOSSIBLE)
 	  continue;
 
-	lim_data = init_lim_data (stmt);
+	lim_data = get_lim_data (stmt);
+	if (! lim_data)
+	  lim_data = init_lim_data (stmt);
 	lim_data->always_executed_in = outermost;
 
 	if (!determine_max_movement (stmt, false))
@@ -1037,7 +1015,9 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 	     store-motion work.  */
 	  else if (stmt_makes_single_store (stmt))
 	    {
-	      struct lim_aux_data *lim_data = init_lim_data (stmt);
+	      struct lim_aux_data *lim_data = get_lim_data (stmt);
+	      if (! lim_data)
+		lim_data = init_lim_data (stmt);
 	      lim_data->always_executed_in = outermost;
 	    }
 	  continue;
@@ -1073,7 +1053,9 @@ invariantness_dom_walker::before_dom_children (basic_block bb)
 	    stmt = rewrite_bittest (&bsi);
 	}
 
-      lim_data = init_lim_data (stmt);
+      lim_data = get_lim_data (stmt);
+      if (! lim_data)
+	lim_data = init_lim_data (stmt);
       lim_data->always_executed_in = outermost;
 
       if (maybe_never && pos == MOVE_PRESERVE_EXECUTION)
@@ -1498,6 +1480,7 @@ gather_mem_refs_stmt (struct loop *loop, gimple *stmt)
       bitmap_set_bit (&memory_accesses.refs_stored_in_loop[loop->num], ref->id);
       mark_ref_stored (ref, loop);
     }
+  init_lim_data (stmt)->ref = ref->id;
   return;
 }
 
@@ -1801,7 +1784,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   int freq_sum = 0;
   profile_count count_sum = profile_count::zero ();
   int nbbs = 0, ncount = 0;
-  int flag_probability = -1;
+  profile_probability flag_probability = profile_probability::uninitialized ();
 
   /* Flag is set in FLAG_BBS. Determine probability that flag will be true
      at loop exit.
@@ -1824,27 +1807,29 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
        if ((*it)->count.initialized_p ())
          count_sum += (*it)->count, ncount ++;
        if (dominated_by_p (CDI_DOMINATORS, ex->src, *it))
-	 flag_probability = REG_BR_PROB_BASE;
+	 flag_probability = profile_probability::always ();
        nbbs++;
     }
 
-  if (flag_probability != -1)
+  profile_probability cap = profile_probability::always ().apply_scale (2, 3);
+
+  if (flag_probability.initialized_p ())
     ;
   else if (ncount == nbbs && count_sum > 0 && preheader->count >= count_sum)
     {
       flag_probability = count_sum.probability_in (preheader->count);
-      if (flag_probability > REG_BR_PROB_BASE * 2 / 3)
-	flag_probability = REG_BR_PROB_BASE * 2 / 3;
+      if (flag_probability > cap)
+	flag_probability = cap;
     }
   else if (freq_sum > 0 && EDGE_FREQUENCY (preheader) >= freq_sum)
     {
-      flag_probability = GCOV_COMPUTE_SCALE (freq_sum,
-					     EDGE_FREQUENCY (preheader));
-      if (flag_probability > REG_BR_PROB_BASE * 2 / 3)
-	flag_probability = REG_BR_PROB_BASE * 2 / 3;
+      flag_probability = profile_probability::from_reg_br_prob_base
+		(GCOV_COMPUTE_SCALE (freq_sum, EDGE_FREQUENCY (preheader)));
+      if (flag_probability > cap)
+	flag_probability = cap;
     }
   else
-    flag_probability = REG_BR_PROB_BASE * 2 / 3;
+    flag_probability = cap;
 
   /* ?? Insert store after previous store if applicable.  See note
      below.  */
@@ -1876,7 +1861,7 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   old_dest = ex->dest;
   new_bb = split_edge (ex);
   then_bb = create_empty_bb (new_bb);
-  then_bb->frequency = apply_probability (new_bb->frequency, flag_probability);
+  then_bb->frequency = flag_probability.apply (new_bb->frequency);
   then_bb->count = new_bb->count.apply_probability (flag_probability);
   if (irr)
     then_bb->flags = BB_IRREDUCIBLE_LOOP;
@@ -1901,13 +1886,11 @@ execute_sm_if_changed (edge ex, tree mem, tree tmp_var, tree flag,
   e1->flags |= EDGE_FALSE_VALUE | (irr ? EDGE_IRREDUCIBLE_LOOP : 0);
   e1->flags &= ~EDGE_FALLTHRU;
 
-  e1->probability = REG_BR_PROB_BASE - flag_probability;
+  e1->probability = flag_probability.invert ();
   e1->count = new_bb->count - then_bb->count;
 
-  then_old_edge = make_edge (then_bb, old_dest,
+  then_old_edge = make_single_succ_edge (then_bb, old_dest,
 			     EDGE_FALLTHRU | (irr ? EDGE_IRREDUCIBLE_LOOP : 0));
-  then_old_edge->probability = REG_BR_PROB_BASE;
-  then_old_edge->count = then_bb->count;
 
   set_immediate_dominator (CDI_DOMINATORS, then_bb, new_bb);
 

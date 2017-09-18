@@ -23,6 +23,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "cp-tree.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 /* Test if we should instrument vptr access.  */
@@ -34,6 +36,9 @@ cp_ubsan_instrument_vptr_p (tree type)
     return false;
 
   if (!sanitize_flags_p (SANITIZE_VPTR))
+    return false;
+
+  if (current_function_decl == NULL_TREE)
     return false;
 
   if (type)

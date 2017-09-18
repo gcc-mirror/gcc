@@ -65,6 +65,8 @@
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
     enum { _S_max_rope_depth = 45 };
@@ -75,8 +77,6 @@ namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
   using std::ptrdiff_t;
   using std::allocator;
   using std::_Destroy;
-
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // See libstdc++/36832.
   template<typename _ForwardIterator, typename _Allocator>
@@ -150,7 +150,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class char_producer
     {
     public:
-      virtual ~char_producer() { };
+      virtual ~char_producer() { }
 
       virtual void
       operator()(size_t __start_pos, size_t __len,
@@ -314,7 +314,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // compile-time would do.  Hence this should all be private
       // for now.
       // The symmetry with char_producer is accidental and temporary.
-      virtual ~_Rope_char_consumer() { };
+      virtual ~_Rope_char_consumer() { }
   
       virtual bool
       operator()(const _CharT* __buffer, size_t __len) = 0;
@@ -924,9 +924,9 @@ protected:
       ~_Rope_self_destruct_ptr()
       { _Rope_RopeRep<_CharT, _Alloc>::_S_unref(_M_ptr); }
 #if __cpp_exceptions
-      _Rope_self_destruct_ptr() : _M_ptr(0) { };
+      _Rope_self_destruct_ptr() : _M_ptr(0) { }
 #else
-      _Rope_self_destruct_ptr() { };
+      _Rope_self_destruct_ptr() { }
 #endif
       _Rope_self_destruct_ptr(_Rope_RopeRep<_CharT, _Alloc>* __p)
       : _M_ptr(__p) { }
@@ -1153,7 +1153,7 @@ protected:
       typedef const _CharT* pointer;
 
     public:
-      _Rope_const_iterator() { };
+      _Rope_const_iterator() { }
 
       _Rope_const_iterator(const _Rope_const_iterator& __x)
       : _Rope_iterator_base<_CharT,_Alloc>(__x) { }
@@ -1325,7 +1325,7 @@ protected:
       _Rope_iterator()
       {
         this->_M_root = 0;  // Needed for reference counting.
-      };
+      }
 
       _Rope_iterator(const _Rope_iterator& __x)
       : _Rope_iterator_base<_CharT, _Alloc>(__x)
@@ -2937,10 +2937,10 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 namespace std _GLIBCXX_VISIBILITY(default)
 { 
-namespace tr1
-{
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
+namespace tr1
+{
   template<>
     struct hash<__gnu_cxx::crope>
     {
@@ -2967,9 +2967,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return 13 * __str[0] + 5 * __str[__size - 1] + __size;
       }
     };
+} // namespace tr1
 
 _GLIBCXX_END_NAMESPACE_VERSION
-} // namespace tr1
 } // namespace std
 
 # include <ext/ropeimpl.h>

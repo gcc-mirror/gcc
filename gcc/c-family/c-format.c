@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "substring-locations.h"
 #include "selftest.h"
 #include "builtins.h"
+#include "attribs.h"
 
 /* Handle attributes associated with format checking.  */
 
@@ -55,6 +56,7 @@ struct function_format_info
 
 /* Initialized in init_dynamic_diag_info.  */
 static GTY(()) tree local_tree_type_node;
+static GTY(()) tree local_gcall_ptr_node;
 static GTY(()) tree locus;
 
 static bool decode_format_attr (tree, function_format_info *, int);
@@ -67,7 +69,6 @@ static bool check_format_string (tree argument,
 static bool get_constant (tree expr, unsigned HOST_WIDE_INT *value,
 			  int validated_p);
 static const char *convert_format_name_to_system_name (const char *attr_name);
-static bool cmp_attribs (const char *tattr_name, const char *attr_name);
 
 static int first_target_format_type;
 static const char *format_name (int format_num);
@@ -672,6 +673,7 @@ static const format_char_info asm_fprintf_char_table[] =
   { "L",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "U",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "r",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",  "", NULL },
+  { "z",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { "@",   0, STD_C89, NOARGUMENTS, "",      "",   NULL },
   { NULL,  0, STD_C89, NOLENGTHS, NULL, NULL, NULL }
 };
@@ -688,7 +690,9 @@ static const format_char_info gcc_diag_char_table[] =
 
   /* Custom conversion specifiers.  */
 
-  /* These will require a "tree" at runtime.  */
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
+  /* K requires a "tree" argument at runtime.  */
   { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "\"",   NULL },
 
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "//cR",   NULL },
@@ -716,6 +720,9 @@ static const format_char_info gcc_tdiag_char_table[] =
   { "DFTV", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "'",   NULL },
   { "E", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K", 1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G", 1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
@@ -746,6 +753,9 @@ static const format_char_info gcc_cdiag_char_table[] =
   { "E",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+", "",   NULL },
   { "K",   1, STD_C89, { T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
 
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G",   1, STD_C89, { T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "", "\"",   NULL },
+
   { "v",   0, STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
 
   { "r",   1, STD_C89, { T89_C,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",    "/cR",   NULL },
@@ -775,6 +785,9 @@ static const format_char_info gcc_cxxdiag_char_table[] =
   { "E", 1,STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q+#",   "",   NULL },
   { "K", 1, STD_C89,{ T89_T,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
   { "v", 0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q#",  "",   NULL },
+
+  /* G requires a "gcall*" argument at runtime.  */
+  { "G", 1, STD_C89,{ T89_G,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "",   "\"",   NULL },
 
   /* These accept either an 'int' or an 'enum tree_code' (which is handled as an 'int'.)  */
   { "CLOPQ",0,STD_C89, { T89_I,   BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN,  BADLEN  }, "q",  "",   NULL },
@@ -976,6 +989,7 @@ struct format_check_context
   format_check_results *res;
   function_format_info *info;
   tree params;
+  vec<location_t> *arglocs;
 };
 
 /* Return the format name (as specified in the original table) for the format
@@ -998,14 +1012,16 @@ format_flags (int format_num)
   gcc_unreachable ();
 }
 
-static void check_format_info (function_format_info *, tree);
+static void check_format_info (function_format_info *, tree,
+			       vec<location_t> *);
 static void check_format_arg (void *, tree, unsigned HOST_WIDE_INT);
 static void check_format_info_main (format_check_results *,
 				    function_format_info *, const char *,
 				    location_t, tree,
 				    int, tree,
 				    unsigned HOST_WIDE_INT,
-				    object_allocator<format_wanted_type> &);
+				    object_allocator<format_wanted_type> &,
+				    vec<location_t> *);
 
 static void init_dollar_format_checking (int, tree);
 static int maybe_read_dollar_number (const char **, int,
@@ -1020,7 +1036,8 @@ static void check_format_types (const substring_loc &fmt_loc,
 				format_wanted_type *,
 				const format_kind_info *fki,
 				int offset_to_type_start,
-				char conversion_char);
+				char conversion_char,
+				vec<location_t> *arglocs);
 static void format_type_warning (const substring_loc &fmt_loc,
 				 source_range *param_range,
 				 format_wanted_type *, tree,
@@ -1063,7 +1080,8 @@ decode_format_type (const char *s)
    attribute themselves.  */
 
 void
-check_function_format (tree attrs, int nargs, tree *argarray)
+check_function_format (tree attrs, int nargs, tree *argarray,
+		       vec<location_t> *arglocs)
 {
   tree a;
 
@@ -1084,7 +1102,7 @@ check_function_format (tree attrs, int nargs, tree *argarray)
 	      int i;
 	      for (i = nargs - 1; i >= 0; i--)
 		params = tree_cons (NULL_TREE, argarray[i], params);
-	      check_format_info (&info, params);
+	      check_format_info (&info, params, arglocs);
 	    }
 
 	  /* Attempt to detect whether the current function might benefit
@@ -1387,7 +1405,8 @@ get_flag_spec (const format_flag_spec *spec, int flag, const char *predicates)
    PARAMS is the list of argument values.  */
 
 static void
-check_format_info (function_format_info *info, tree params)
+check_format_info (function_format_info *info, tree params,
+		   vec<location_t> *arglocs)
 {
   format_check_context format_ctx;
   unsigned HOST_WIDE_INT arg_num;
@@ -1421,6 +1440,7 @@ check_format_info (function_format_info *info, tree params)
   format_ctx.res = &res;
   format_ctx.info = info;
   format_ctx.params = params;
+  format_ctx.arglocs = arglocs;
 
   check_function_arguments_recurse (check_format_arg, &format_ctx,
 				    format_tree, arg_num);
@@ -1505,6 +1525,7 @@ check_format_arg (void *ctx, tree format_tree,
   format_check_results *res = format_ctx->res;
   function_format_info *info = format_ctx->info;
   tree params = format_ctx->params;
+  vec<location_t> *arglocs = format_ctx->arglocs;
 
   int format_length;
   HOST_WIDE_INT offset;
@@ -1690,7 +1711,7 @@ check_format_arg (void *ctx, tree format_tree,
   res->number_other++;
   object_allocator <format_wanted_type> fwt_pool ("format_wanted_type pool");
   check_format_info_main (res, info, format_chars, fmt_param_loc, format_tree,
-			  format_length, params, arg_num, fwt_pool);
+			  format_length, params, arg_num, fwt_pool, arglocs);
 }
 
 /* Support class for argument_parser and check_format_info_main.
@@ -1755,7 +1776,8 @@ class argument_parser
 		   const char * const orig_format_chars,
 		   location_t format_string_loc, flag_chars_t &flag_chars,
 		   int &has_operand_number, tree first_fillin_param,
-		   object_allocator <format_wanted_type> &fwt_pool_);
+		   object_allocator <format_wanted_type> &fwt_pool_,
+		   vec<location_t> *arglocs);
 
   bool read_any_dollar ();
 
@@ -1834,6 +1856,7 @@ class argument_parser
  private:
   format_wanted_type *first_wanted_type;
   format_wanted_type *last_wanted_type;
+  vec<location_t> *arglocs;
 };
 
 /* flag_chars_t's constructor.  */
@@ -1984,7 +2007,8 @@ argument_parser (function_format_info *info_, const char *&format_chars_,
 		 flag_chars_t &flag_chars_,
 		 int &has_operand_number_,
 		 tree first_fillin_param_,
-		 object_allocator <format_wanted_type> &fwt_pool_)
+		 object_allocator <format_wanted_type> &fwt_pool_,
+		 vec<location_t> *arglocs_)
 : info (info_),
   fki (&format_types[info->format_type]),
   flag_specs (fki->flag_specs),
@@ -2000,7 +2024,8 @@ argument_parser (function_format_info *info_, const char *&format_chars_,
   has_operand_number (has_operand_number_),
   first_fillin_param (first_fillin_param_),
   first_wanted_type (NULL),
-  last_wanted_type (NULL)
+  last_wanted_type (NULL),
+  arglocs (arglocs_)
 {
 }
 
@@ -2723,7 +2748,7 @@ check_argument_type (const format_char_info *fci,
       ptrdiff_t offset_to_type_start = type_start - orig_format_chars;
       check_format_types (fmt_loc, first_wanted_type, fki,
 			  offset_to_type_start,
-			  conversion_char);
+			  conversion_char, arglocs);
     }
 
   return true;
@@ -2742,7 +2767,8 @@ check_format_info_main (format_check_results *res,
 			location_t fmt_param_loc, tree format_string_cst,
 			int format_length, tree params,
 			unsigned HOST_WIDE_INT arg_num,
-			object_allocator <format_wanted_type> &fwt_pool)
+			object_allocator <format_wanted_type> &fwt_pool,
+			vec<location_t> *arglocs)
 {
   const char * const orig_format_chars = format_chars;
   const tree first_fillin_param = params;
@@ -2789,7 +2815,7 @@ check_format_info_main (format_check_results *res,
       argument_parser arg_parser (info, format_chars, format_string_cst,
 				  orig_format_chars, format_string_loc,
 				  flag_chars, has_operand_number,
-				  first_fillin_param, fwt_pool);
+				  first_fillin_param, fwt_pool, arglocs);
 
       if (!arg_parser.read_any_dollar ())
 	return;
@@ -3019,7 +3045,8 @@ static void
 check_format_types (const substring_loc &fmt_loc,
 		    format_wanted_type *types, const format_kind_info *fki,
 		    int offset_to_type_start,
-		    char conversion_char)
+		    char conversion_char,
+		    vec<location_t> *arglocs)
 {
   for (; types != 0; types = types->next)
     {
@@ -3059,9 +3086,17 @@ check_format_types (const substring_loc &fmt_loc,
 
       source_range param_range;
       source_range *param_range_ptr;
-      if (CAN_HAVE_LOCATION_P (cur_param))
+      if (EXPR_HAS_LOCATION (cur_param))
 	{
 	  param_range = EXPR_LOCATION_RANGE (cur_param);
+	  param_range_ptr = &param_range;
+	}
+      else if (arglocs)
+	{
+	  /* arg_num is 1-based.  */
+	  gcc_assert (types->arg_num > 0);
+	  location_t param_loc = (*arglocs)[types->arg_num - 1];
+	  param_range = get_range_from_loc (line_table, param_loc);
 	  param_range_ptr = &param_range;
 	}
       else
@@ -3833,6 +3868,29 @@ init_dynamic_diag_info (void)
 	local_tree_type_node = void_type_node;
     }
 
+  /* Similar to the above but for gcall*.  */
+  if (!local_gcall_ptr_node
+      || local_gcall_ptr_node == void_type_node)
+    {
+      if ((local_gcall_ptr_node = maybe_get_identifier ("gcall")))
+	{
+	  local_gcall_ptr_node
+	    = identifier_global_value (local_gcall_ptr_node);
+	  if (local_gcall_ptr_node)
+	    {
+	      if (TREE_CODE (local_gcall_ptr_node) != TYPE_DECL)
+		{
+		  error ("%<gcall%> is not defined as a type");
+		  local_gcall_ptr_node = 0;
+		}
+	      else
+		local_gcall_ptr_node = TREE_TYPE (local_gcall_ptr_node);
+	    }
+	}
+      else
+	local_gcall_ptr_node = void_type_node;
+    }
+
   static tree hwi;
 
   if (!hwi)
@@ -3975,24 +4033,6 @@ convert_format_name_to_system_name (const char *attr_name)
   return attr_name;
 }
 
-/* Return true if TATTR_NAME and ATTR_NAME are the same format attribute,
-   counting "name" and "__name__" as the same, false otherwise.  */
-static bool
-cmp_attribs (const char *tattr_name, const char *attr_name)
-{
-  int alen = strlen (attr_name);
-  int slen = (tattr_name ? strlen (tattr_name) : 0);
-  if (alen > 4 && attr_name[0] == '_' && attr_name[1] == '_'
-      && attr_name[alen - 1] == '_' && attr_name[alen - 2] == '_')
-    {
-      attr_name += 2;
-      alen -= 4;
-    }
-  if (alen != slen || strncmp (tattr_name, attr_name, alen) != 0)
-    return false;
-  return true;
-}
-
 /* Handle a "format" attribute; arguments as in
    struct attribute_spec.handler.  */
 tree
@@ -4020,6 +4060,10 @@ handle_format_attribute (tree *node, tree ARG_UNUSED (name), tree args,
       n_format_types += TARGET_N_FORMAT_TYPES;
     }
 #endif
+
+  /* Canonicalize name of format function.  */
+  if (TREE_CODE (TREE_VALUE (args)) == IDENTIFIER_NODE)
+    TREE_VALUE (args) = canonicalize_attr_name (TREE_VALUE (args));
 
   if (!decode_format_attr (args, &info, 0))
     {

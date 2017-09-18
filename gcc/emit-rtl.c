@@ -59,6 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-iter.h"
 #include "stor-layout.h"
 #include "opts.h"
+#include "predict.h"
 
 struct target_rtl default_target_rtl;
 #if SWITCHABLE_TARGET
@@ -69,10 +70,9 @@ struct target_rtl *this_target_rtl = &default_target_rtl;
 
 /* Commonly used modes.  */
 
-machine_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
-machine_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
-machine_mode double_mode;	/* Mode whose width is DOUBLE_TYPE_SIZE.  */
-machine_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
+scalar_int_mode byte_mode;	/* Mode whose width is BITS_PER_UNIT.  */
+scalar_int_mode word_mode;	/* Mode whose width is BITS_PER_WORD.  */
+scalar_int_mode ptr_mode;	/* Mode whose width is POINTER_SIZE.  */
 
 /* Datastructures maintained for currently processed function in RTL form.  */
 
@@ -190,9 +190,8 @@ static reg_attrs *get_reg_attrs (tree, int);
 static rtx gen_const_vector (machine_mode, int);
 static void copy_rtx_if_shared_1 (rtx *orig);
 
-/* Probability of the conditional branch currently proceeded by try_split.
-   Set to -1 otherwise.  */
-int split_branch_probability = -1;
+/* Probability of the conditional branch currently proceeded by try_split.  */
+profile_probability split_branch_probability;
 
 /* Returns a hash code for X (which is a really a CONST_INT).  */
 
@@ -420,7 +419,7 @@ void
 set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
 {
   unsigned int nregs = (HARD_REGISTER_NUM_P (regno)
-			? hard_regno_nregs[regno][mode]
+			? hard_regno_nregs (regno, mode)
 			: 1);
   PUT_MODE_RAW (x, mode);
   set_regno_raw (x, regno, nregs);
@@ -433,7 +432,7 @@ set_mode_and_regno (rtx x, machine_mode mode, unsigned int regno)
 rtx
 gen_raw_REG (machine_mode mode, unsigned int regno)
 {
-  rtx x = rtx_alloc_stat (REG MEM_STAT_INFO);
+  rtx x = rtx_alloc (REG MEM_STAT_INFO);
   set_mode_and_regno (x, mode, regno);
   REG_ATTRS (x) = NULL;
   ORIGINAL_REGNO (x) = regno;
@@ -600,7 +599,8 @@ rtx
 immed_wide_int_const (const wide_int_ref &v, machine_mode mode)
 {
   unsigned int len = v.get_len ();
-  unsigned int prec = GET_MODE_PRECISION (mode);
+  /* Not scalar_int_mode because we also allow pointer bound modes.  */
+  unsigned int prec = GET_MODE_PRECISION (as_a <scalar_mode> (mode));
 
   /* Allow truncation but not extension since we do not know if the
      number is signed or unsigned.  */
@@ -660,18 +660,10 @@ immed_double_const (HOST_WIDE_INT i0, HOST_WIDE_INT i1, machine_mode mode)
         (i.e., i1 consists only from copies of the sign bit, and sign
 	of i0 and i1 are the same), then we return a CONST_INT for i0.
      3) Otherwise, we create a CONST_DOUBLE for i0 and i1.  */
-  if (mode != VOIDmode)
-    {
-      gcc_assert (GET_MODE_CLASS (mode) == MODE_INT
-		  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT
-		  /* We can get a 0 for an error mark.  */
-		  || GET_MODE_CLASS (mode) == MODE_VECTOR_INT
-		  || GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT
-		  || GET_MODE_CLASS (mode) == MODE_POINTER_BOUNDS);
-
-      if (GET_MODE_BITSIZE (mode) <= HOST_BITS_PER_WIDE_INT)
-	return gen_int_mode (i0, mode);
-    }
+  scalar_mode smode;
+  if (is_a <scalar_mode> (mode, &smode)
+      && GET_MODE_BITSIZE (smode) <= HOST_BITS_PER_WIDE_INT)
+    return gen_int_mode (i0, mode);
 
   /* If this integer fits in one word, return a CONST_INT.  */
   if ((i1 == 0 && i0 >= 0) || (i1 == ~0 && i0 < 0))
@@ -874,13 +866,11 @@ validate_subreg (machine_mode omode, machine_mode imode,
     {
       unsigned int regno = REGNO (reg);
 
-#ifdef CANNOT_CHANGE_MODE_CLASS
       if ((COMPLEX_MODE_P (imode) || VECTOR_MODE_P (imode))
 	  && GET_MODE_INNER (imode) == omode)
 	;
-      else if (REG_CANNOT_CHANGE_MODE_P (regno, imode, omode))
+      else if (!REG_CAN_CHANGE_MODE_P (regno, imode, omode))
 	return false;
-#endif
 
       return subreg_offset_representable_p (regno, imode, offset, omode);
     }
@@ -1008,10 +998,37 @@ int
 byte_lowpart_offset (machine_mode outer_mode,
 		     machine_mode inner_mode)
 {
-  if (GET_MODE_SIZE (outer_mode) < GET_MODE_SIZE (inner_mode))
-    return subreg_lowpart_offset (outer_mode, inner_mode);
-  else
+  if (paradoxical_subreg_p (outer_mode, inner_mode))
     return -subreg_lowpart_offset (inner_mode, outer_mode);
+  else
+    return subreg_lowpart_offset (outer_mode, inner_mode);
+}
+
+/* Return the offset of (subreg:OUTER_MODE (mem:INNER_MODE X) OFFSET)
+   from address X.  For paradoxical big-endian subregs this is a
+   negative value, otherwise it's the same as OFFSET.  */
+
+int
+subreg_memory_offset (machine_mode outer_mode, machine_mode inner_mode,
+		      unsigned int offset)
+{
+  if (paradoxical_subreg_p (outer_mode, inner_mode))
+    {
+      gcc_assert (offset == 0);
+      return -subreg_lowpart_offset (inner_mode, outer_mode);
+    }
+  return offset;
+}
+
+/* As above, but return the offset that existing subreg X would have
+   if SUBREG_REG (X) were stored in memory.  The only significant thing
+   about the current SUBREG_REG is its mode.  */
+
+int
+subreg_memory_offset (const_rtx x)
+{
+  return subreg_memory_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)),
+			       SUBREG_BYTE (x));
 }
 
 /* Generate a REG rtx for a new pseudo register of mode MODE.
@@ -1411,9 +1428,9 @@ gen_lowpart_common (machine_mode mode, rtx x)
   innermode = GET_MODE (x);
   if (CONST_INT_P (x)
       && msize * BITS_PER_UNIT <= HOST_BITS_PER_WIDE_INT)
-    innermode = mode_for_size (HOST_BITS_PER_WIDE_INT, MODE_INT, 0);
+    innermode = int_mode_for_size (HOST_BITS_PER_WIDE_INT, 0).require ();
   else if (innermode == VOIDmode)
-    innermode = mode_for_size (HOST_BITS_PER_DOUBLE_INT, MODE_INT, 0);
+    innermode = int_mode_for_size (HOST_BITS_PER_DOUBLE_INT, 0).require ();
 
   xsize = GET_MODE_SIZE (innermode);
 
@@ -1431,9 +1448,11 @@ gen_lowpart_common (machine_mode mode, rtx x)
   if (SCALAR_FLOAT_MODE_P (mode) && msize > xsize)
     return 0;
 
+  scalar_int_mode int_mode, int_innermode, from_mode;
   if ((GET_CODE (x) == ZERO_EXTEND || GET_CODE (x) == SIGN_EXTEND)
-      && (GET_MODE_CLASS (mode) == MODE_INT
-	  || GET_MODE_CLASS (mode) == MODE_PARTIAL_INT))
+      && is_a <scalar_int_mode> (mode, &int_mode)
+      && is_a <scalar_int_mode> (innermode, &int_innermode)
+      && is_a <scalar_int_mode> (GET_MODE (XEXP (x, 0)), &from_mode))
     {
       /* If we are getting the low-order part of something that has been
 	 sign- or zero-extended, we can either just use the object being
@@ -1443,12 +1462,12 @@ gen_lowpart_common (machine_mode mode, rtx x)
 
 	 This case is used mostly by combine and cse.  */
 
-      if (GET_MODE (XEXP (x, 0)) == mode)
+      if (from_mode == int_mode)
 	return XEXP (x, 0);
-      else if (msize < GET_MODE_SIZE (GET_MODE (XEXP (x, 0))))
-	return gen_lowpart_common (mode, XEXP (x, 0));
-      else if (msize < xsize)
-	return gen_rtx_fmt_e (GET_CODE (x), mode, XEXP (x, 0));
+      else if (GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (from_mode))
+	return gen_lowpart_common (int_mode, XEXP (x, 0));
+      else if (GET_MODE_SIZE (int_mode) < GET_MODE_SIZE (int_innermode))
+	return gen_rtx_fmt_e (GET_CODE (x), int_mode, XEXP (x, 0));
     }
   else if (GET_CODE (x) == SUBREG || REG_P (x)
 	   || GET_CODE (x) == CONCAT || GET_CODE (x) == CONST_VECTOR
@@ -1551,16 +1570,6 @@ subreg_lowpart_p (const_rtx x)
 
   return (subreg_lowpart_offset (GET_MODE (x), GET_MODE (SUBREG_REG (x)))
 	  == SUBREG_BYTE (x));
-}
-
-/* Return true if X is a paradoxical subreg, false otherwise.  */
-bool
-paradoxical_subreg_p (const_rtx x)
-{
-  if (GET_CODE (x) != SUBREG)
-    return false;
-  return (GET_MODE_PRECISION (GET_MODE (x))
-	  > GET_MODE_PRECISION (GET_MODE (SUBREG_REG (x))));
 }
 
 /* Return subword OFFSET of operand OP.
@@ -2220,12 +2229,12 @@ adjust_address_1 (rtx memref, machine_mode mode, HOST_WIDE_INT offset,
 {
   rtx addr = XEXP (memref, 0);
   rtx new_rtx;
-  machine_mode address_mode;
+  scalar_int_mode address_mode;
   int pbits;
   struct mem_attrs attrs = *get_mem_attrs (memref), *defattrs;
   unsigned HOST_WIDE_INT max_align;
 #ifdef POINTERS_EXTEND_UNSIGNED
-  machine_mode pointer_mode
+  scalar_int_mode pointer_mode
     = targetm.addr_space.pointer_mode (attrs.addrspace);
 #endif
 
@@ -3662,7 +3671,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
   rtx_insn *before, *after;
   rtx note;
   rtx_insn *seq, *tem;
-  int probability;
+  profile_probability probability;
   rtx_insn *insn_last, *insn;
   int njumps = 0;
   rtx_insn *call_insn = NULL;
@@ -3673,12 +3682,16 @@ try_split (rtx pat, rtx_insn *trial, int last)
 
   if (any_condjump_p (trial)
       && (note = find_reg_note (trial, REG_BR_PROB, 0)))
-    split_branch_probability = XINT (note, 0);
+    split_branch_probability
+      = profile_probability::from_reg_br_prob_note (XINT (note, 0));
+  else
+    split_branch_probability = profile_probability::uninitialized ();
+
   probability = split_branch_probability;
 
   seq = split_insns (pat, trial);
 
-  split_branch_probability = -1;
+  split_branch_probability = profile_probability::uninitialized ();
 
   if (!seq)
     return trial;
@@ -3709,7 +3722,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 	    CROSSING_JUMP_P (insn) = CROSSING_JUMP_P (trial);
 	  mark_jump_label (PATTERN (insn), insn, 0);
 	  njumps++;
-	  if (probability != -1
+	  if (probability.initialized_p ()
 	      && any_condjump_p (insn)
 	      && !find_reg_note (insn, REG_BR_PROB, 0))
 	    {
@@ -3718,7 +3731,7 @@ try_split (rtx pat, rtx_insn *trial, int last)
 		 is responsible for this step using
 		 split_branch_probability variable.  */
 	      gcc_assert (njumps == 1);
-	      add_int_reg_note (insn, REG_BR_PROB, probability);
+	      add_reg_br_prob_note (insn, probability);
 	    }
 	}
     }
@@ -5870,23 +5883,23 @@ init_emit_regs (void)
 void
 init_derived_machine_modes (void)
 {
-  byte_mode = VOIDmode;
-  word_mode = VOIDmode;
-
-  for (machine_mode mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  opt_scalar_int_mode mode_iter, opt_byte_mode, opt_word_mode;
+  FOR_EACH_MODE_IN_CLASS (mode_iter, MODE_INT)
     {
+      scalar_int_mode mode = mode_iter.require ();
+
       if (GET_MODE_BITSIZE (mode) == BITS_PER_UNIT
-	  && byte_mode == VOIDmode)
-	byte_mode = mode;
+	  && !opt_byte_mode.exists ())
+	opt_byte_mode = mode;
 
       if (GET_MODE_BITSIZE (mode) == BITS_PER_WORD
-	  && word_mode == VOIDmode)
-	word_mode = mode;
+	  && !opt_word_mode.exists ())
+	opt_word_mode = mode;
     }
 
-  ptr_mode = mode_for_size (POINTER_SIZE, GET_MODE_CLASS (Pmode), 0);
+  byte_mode = opt_byte_mode.require ();
+  word_mode = opt_word_mode.require ();
+  ptr_mode = int_mode_for_size (POINTER_SIZE, 0).require ();
 }
 
 /* Create some permanent unique rtl objects shared between all functions.  */
@@ -5896,7 +5909,8 @@ init_emit_once (void)
 {
   int i;
   machine_mode mode;
-  machine_mode double_mode;
+  scalar_float_mode double_mode;
+  opt_scalar_mode smode_iter;
 
   /* Initialize the CONST_INT, CONST_WIDE_INT, CONST_DOUBLE,
      CONST_FIXED, and memory attribute hash tables.  */
@@ -5940,7 +5954,7 @@ init_emit_once (void)
   else
     const_true_rtx = gen_rtx_CONST_INT (VOIDmode, STORE_FLAG_VALUE);
 
-  double_mode = mode_for_size (DOUBLE_TYPE_SIZE, MODE_FLOAT, 0);
+  double_mode = float_mode_for_size (DOUBLE_TYPE_SIZE).require ();
 
   real_from_integer (&dconst0, double_mode, 0, SIGNED);
   real_from_integer (&dconst1, double_mode, 1, SIGNED);
@@ -5957,23 +5971,17 @@ init_emit_once (void)
       const REAL_VALUE_TYPE *const r =
 	(i == 0 ? &dconst0 : i == 1 ? &dconst1 : &dconst2);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_FLOAT)
 	const_tiny_rtx[i][(int) mode] =
 	  const_double_from_real_value (*r, mode);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_DECIMAL_FLOAT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_DECIMAL_FLOAT)
 	const_tiny_rtx[i][(int) mode] =
 	  const_double_from_real_value (*r, mode);
 
       const_tiny_rtx[i][(int) VOIDmode] = GEN_INT (i);
 
-      for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-	   mode != VOIDmode;
-	   mode = GET_MODE_WIDER_MODE (mode))
+      FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
 	const_tiny_rtx[i][(int) mode] = GEN_INT (i);
 
       for (mode = MIN_MODE_PARTIAL_INT;
@@ -5984,140 +5992,118 @@ init_emit_once (void)
 
   const_tiny_rtx[3][(int) VOIDmode] = constm1_rtx;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_INT)
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
 
   for (mode = MIN_MODE_PARTIAL_INT;
        mode <= MAX_MODE_PARTIAL_INT;
        mode = (machine_mode)((int)(mode) + 1))
     const_tiny_rtx[3][(int) mode] = constm1_rtx;
-      
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_COMPLEX_INT)
     {
       rtx inner = const_tiny_rtx[0][(int)GET_MODE_INNER (mode)];
       const_tiny_rtx[0][(int) mode] = gen_rtx_CONCAT (mode, inner, inner);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_COMPLEX_FLOAT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_COMPLEX_FLOAT)
     {
       rtx inner = const_tiny_rtx[0][(int)GET_MODE_INNER (mode)];
       const_tiny_rtx[0][(int) mode] = gen_rtx_CONCAT (mode, inner, inner);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_INT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
       const_tiny_rtx[3][(int) mode] = gen_const_vector (mode, 3);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FLOAT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_FRACT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_FRACT)
     {
-      FCONST0 (mode).data.high = 0;
-      FCONST0 (mode).data.low = 0;
-      FCONST0 (mode).mode = mode;
-      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST0 (mode), mode);
+      scalar_mode smode = smode_iter.require ();
+      FCONST0 (smode).data.high = 0;
+      FCONST0 (smode).data.low = 0;
+      FCONST0 (smode).mode = smode;
+      const_tiny_rtx[0][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST0 (smode), smode);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_UFRACT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_UFRACT)
     {
-      FCONST0 (mode).data.high = 0;
-      FCONST0 (mode).data.low = 0;
-      FCONST0 (mode).mode = mode;
-      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST0 (mode), mode);
+      scalar_mode smode = smode_iter.require ();
+      FCONST0 (smode).data.high = 0;
+      FCONST0 (smode).data.low = 0;
+      FCONST0 (smode).mode = smode;
+      const_tiny_rtx[0][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST0 (smode), smode);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_ACCUM);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_ACCUM)
     {
-      FCONST0 (mode).data.high = 0;
-      FCONST0 (mode).data.low = 0;
-      FCONST0 (mode).mode = mode;
-      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST0 (mode), mode);
+      scalar_mode smode = smode_iter.require ();
+      FCONST0 (smode).data.high = 0;
+      FCONST0 (smode).data.low = 0;
+      FCONST0 (smode).mode = smode;
+      const_tiny_rtx[0][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST0 (smode), smode);
 
       /* We store the value 1.  */
-      FCONST1 (mode).data.high = 0;
-      FCONST1 (mode).data.low = 0;
-      FCONST1 (mode).mode = mode;
-      FCONST1 (mode).data
-	= double_int_one.lshift (GET_MODE_FBIT (mode),
+      FCONST1 (smode).data.high = 0;
+      FCONST1 (smode).data.low = 0;
+      FCONST1 (smode).mode = smode;
+      FCONST1 (smode).data
+	= double_int_one.lshift (GET_MODE_FBIT (smode),
 				 HOST_BITS_PER_DOUBLE_INT,
-				 SIGNED_FIXED_POINT_MODE_P (mode));
-      const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST1 (mode), mode);
+				 SIGNED_FIXED_POINT_MODE_P (smode));
+      const_tiny_rtx[1][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST1 (smode), smode);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_UACCUM);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_UACCUM)
     {
-      FCONST0 (mode).data.high = 0;
-      FCONST0 (mode).data.low = 0;
-      FCONST0 (mode).mode = mode;
-      const_tiny_rtx[0][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST0 (mode), mode);
+      scalar_mode smode = smode_iter.require ();
+      FCONST0 (smode).data.high = 0;
+      FCONST0 (smode).data.low = 0;
+      FCONST0 (smode).mode = smode;
+      const_tiny_rtx[0][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST0 (smode), smode);
 
       /* We store the value 1.  */
-      FCONST1 (mode).data.high = 0;
-      FCONST1 (mode).data.low = 0;
-      FCONST1 (mode).mode = mode;
-      FCONST1 (mode).data
-	= double_int_one.lshift (GET_MODE_FBIT (mode),
+      FCONST1 (smode).data.high = 0;
+      FCONST1 (smode).data.low = 0;
+      FCONST1 (smode).mode = smode;
+      FCONST1 (smode).data
+	= double_int_one.lshift (GET_MODE_FBIT (smode),
 				 HOST_BITS_PER_DOUBLE_INT,
-				 SIGNED_FIXED_POINT_MODE_P (mode));
-      const_tiny_rtx[1][(int) mode] = CONST_FIXED_FROM_FIXED_VALUE (
-				      FCONST1 (mode), mode);
+				 SIGNED_FIXED_POINT_MODE_P (smode));
+      const_tiny_rtx[1][(int) smode]
+	= CONST_FIXED_FROM_FIXED_VALUE (FCONST1 (smode), smode);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_FRACT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FRACT)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_UFRACT);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_UFRACT)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_ACCUM);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_ACCUM)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
     }
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_VECTOR_UACCUM);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_UACCUM)
     {
       const_tiny_rtx[0][(int) mode] = gen_const_vector (mode, 0);
       const_tiny_rtx[1][(int) mode] = gen_const_vector (mode, 1);
@@ -6131,12 +6117,11 @@ init_emit_once (void)
   if (STORE_FLAG_VALUE == 1)
     const_tiny_rtx[1][(int) BImode] = const1_rtx;
 
-  for (mode = GET_CLASS_NARROWEST_MODE (MODE_POINTER_BOUNDS);
-       mode != VOIDmode;
-       mode = GET_MODE_WIDER_MODE (mode))
+  FOR_EACH_MODE_IN_CLASS (smode_iter, MODE_POINTER_BOUNDS)
     {
-      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (mode));
-      const_tiny_rtx[0][mode] = immed_wide_int_const (wi_zero, mode);
+      scalar_mode smode = smode_iter.require ();
+      wide_int wi_zero = wi::zero (GET_MODE_PRECISION (smode));
+      const_tiny_rtx[0][smode] = immed_wide_int_const (wi_zero, smode);
     }
 
   pc_rtx = gen_rtx_fmt_ (PC, VOIDmode);

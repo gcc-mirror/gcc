@@ -119,7 +119,7 @@
 
 ;; Initialization of a vector.
 
-(define_expand "vec_init<mode>"
+(define_expand "vec_init<mode><unitmode>"
   [(set (match_operand:VWHB 0 "register_operand")
 	(match_operand 1 ""))]
   "TARGET_HARD_FLOAT && TARGET_LOONGSON_VECTORS"

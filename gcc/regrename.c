@@ -312,7 +312,7 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
 		 struct du_head *this_head, HARD_REG_SET this_unavailable)
 {
   machine_mode mode = GET_MODE (*this_head->first->loc);
-  int nregs = hard_regno_nregs[new_reg][mode];
+  int nregs = hard_regno_nregs (new_reg, mode);
   int i;
   struct du_chain *tmp;
 
@@ -335,12 +335,12 @@ check_new_reg_p (int reg ATTRIBUTE_UNUSED, int new_reg,
   /* See whether it accepts all modes that occur in
      definition and uses.  */
   for (tmp = this_head->first; tmp; tmp = tmp->next_use)
-    if ((! HARD_REGNO_MODE_OK (new_reg, GET_MODE (*tmp->loc))
+    if ((!targetm.hard_regno_mode_ok (new_reg, GET_MODE (*tmp->loc))
 	 && ! DEBUG_INSN_P (tmp->insn))
 	|| (this_head->need_caller_save_reg
-	    && ! (HARD_REGNO_CALL_PART_CLOBBERED
+	    && ! (targetm.hard_regno_call_part_clobbered
 		  (reg, GET_MODE (*tmp->loc)))
-	    && (HARD_REGNO_CALL_PART_CLOBBERED
+	    && (targetm.hard_regno_call_part_clobbered
 		(new_reg, GET_MODE (*tmp->loc)))))
       return false;
 
@@ -990,7 +990,7 @@ regrename_do_replace (struct du_head *head, int reg)
   mode = GET_MODE (*head->first->loc);
   head->renamed = 1;
   head->regno = reg;
-  head->nregs = hard_regno_nregs[reg][mode];
+  head->nregs = hard_regno_nregs (reg, mode);
   return true;
 }
 

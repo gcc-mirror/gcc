@@ -57,4 +57,6 @@ int main()
   return 0;
 }
 
-/* { dg-final { scan-tree-dump-times "basic block vectorized" 1 "slp1" } } */
+/* We should also be able to use 2-lane SLP to initialize the real and
+   imaginary components in the first loop of main.  */
+/* { dg-final { scan-tree-dump-times "basic block vectorized" 2 "slp1" } } */

@@ -12516,7 +12516,11 @@ else
   cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
     typedef _Complex float __attribute__((mode(TC))) __complex128;
+    #else
+    typedef _Complex float __attribute__((mode(KC))) __complex128;
+    #endif
 
     __float128 foo (__float128 x)
     {
@@ -12563,7 +12567,11 @@ fi
 cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 
+    #if (!defined(_ARCH_PPC)) || defined(__LONG_DOUBLE_IEEE128__)
     typedef _Complex float __attribute__((mode(TC))) __complex128;
+    #else
+    typedef _Complex float __attribute__((mode(KC))) __complex128;
+    #endif
 
     __float128 foo (__float128 x)
     {

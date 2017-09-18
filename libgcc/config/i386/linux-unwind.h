@@ -58,7 +58,7 @@ x86_64_fallback_frame_state (struct _Unwind_Context *context,
   if (*(unsigned char *)(pc+0) == 0x48
       && *(unsigned long long *)(pc+1) == RT_SIGRETURN_SYSCALL)
     {
-      struct ucontext *uc_ = context->cfa;
+      ucontext_t *uc_ = context->cfa;
       /* The void * cast is necessary to avoid an aliasing warning.
          The aliasing warning is correct, but should not be a problem
          because it does not alias anything.  */
@@ -138,7 +138,7 @@ x86_fallback_frame_state (struct _Unwind_Context *context,
 	siginfo_t *pinfo;
 	void *puc;
 	siginfo_t info;
-	struct ucontext uc;
+	ucontext_t uc;
       } *rt_ = context->cfa;
       /* The void * cast is necessary to avoid an aliasing warning.
          The aliasing warning is correct, but should not be a problem

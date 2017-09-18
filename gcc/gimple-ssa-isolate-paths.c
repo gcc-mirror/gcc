@@ -160,14 +160,17 @@ isolate_path (basic_block bb, basic_block duplicate,
 	for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
 	  remove_edge (e2);
     }
-  bb->frequency += EDGE_FREQUENCY (e);
-  bb->count += e->count;
 
   /* Complete the isolation step by redirecting E to reach DUPLICATE.  */
   e2 = redirect_edge_and_branch (e, duplicate);
   if (e2)
-    flush_pending_stmts (e2);
+    {
+      flush_pending_stmts (e2);
 
+      /* Update profile only when redirection is really processed.  */
+      bb->frequency += EDGE_FREQUENCY (e);
+      bb->count += e->count;
+    }
 
   /* There may be more than one statement in DUPLICATE which exhibits
      undefined behavior.  Ultimately we want the first such statement in
@@ -442,6 +445,8 @@ find_implicit_erroneous_behavior (void)
 	      if (!integer_zerop (op))
 		continue;
 
+	      location_t phi_arg_loc = gimple_phi_arg_location (phi, i);
+
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
@@ -454,7 +459,7 @@ find_implicit_erroneous_behavior (void)
 
 		  location_t loc = gimple_location (use_stmt)
 		    ? gimple_location (use_stmt)
-		    : gimple_phi_arg_location (phi, i);
+		    : phi_arg_loc;
 
 		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc))
 		    {

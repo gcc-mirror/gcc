@@ -35,9 +35,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201103L
-# include <bits/c++14_warning.h>
-#else
+#if __cplusplus >= 201402L
 
 #include <memory>
 #include <type_traits>
@@ -47,12 +45,12 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 inline namespace fundamentals_v2
 {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_observer_ptr 201411
 
   template <typename _Tp>
@@ -231,8 +229,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return !(__p1 < __p2);
     }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace fundamentals_v2
 } // namespace experimental
 
@@ -250,6 +246,8 @@ template <typename _Tp>
     }
   };
 
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // __cplusplus <= 201103L

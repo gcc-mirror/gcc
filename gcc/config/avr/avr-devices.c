@@ -128,39 +128,6 @@ avr_mcu_types[] =
 
 #ifndef IN_GEN_AVR_MMCU_TEXI
 
-/* Copy-pastes from `gen-avr-mmcu-texi.c' follow...  */
-
-static const char*
-mcu_name[sizeof avr_mcu_types / sizeof avr_mcu_types[0]];
-
-static int
-comparator (const void *va, const void *vb)
-{
-  const char *a = *(const char* const*) va;
-  const char *b = *(const char* const*) vb;
-
-  while (*a && *b)
-    {
-      /* Make letters smaller than digits so that `atmega16a' follows
-         `atmega16' without `atmega161' etc. between them.  */
-      
-      if (ISALPHA (*a) && ISDIGIT (*b))
-        return -1;
-
-      if (ISDIGIT (*a) && ISALPHA (*b))
-        return 1;
-
-      if (*a != *b)
-        return *a - *b;
-      
-      a++;
-      b++;
-    }
-
-  return *a - *b;
-}
-
-
 static char*
 avr_archs_str (void)
 {
@@ -176,39 +143,6 @@ avr_archs_str (void)
 }
 
   
-static char*
-avr_mcus_str (void)
-{
-  size_t n_mcus = 0;
-  char *mcus = concat ("", NULL);
-
-  // Build array of proper devices' names.
-
-  for (const avr_mcu_t *mcu = avr_mcu_types; mcu->name; mcu++)
-    if (mcu->macro)
-      mcu_name[n_mcus++] = mcu->name;
-
-  // Sort MCUs so that they are displayed in the same canonical order as
-  // in doc/avr-mcus.texi.
-
-  qsort (mcu_name, n_mcus, sizeof (char*), comparator);
-
-  for (size_t i = 0; i < n_mcus; i++)
-    mcus = concat (mcus, " ", mcu_name[i], NULL);
-
-  return mcus;
-}
-
-
-void
-avr_inform_devices (void)
-{
-  char *mcus = avr_mcus_str ();
-  inform (input_location, "devices natively supported:%s", mcus);
-  free (mcus);
-}
-
-
 void
 avr_inform_core_architectures (void)
 {

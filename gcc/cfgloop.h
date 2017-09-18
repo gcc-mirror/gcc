@@ -114,7 +114,8 @@ struct GTY ((chain_next ("%h.next"))) control_iv {
 
 /* Structure to hold information for each natural loop.  */
 struct GTY ((chain_next ("%h.next"))) loop {
-  /* Index into loops array.  */
+  /* Index into loops array.  Note indices will never be reused after loop
+     is destroyed.  */
   int num;
 
   /* Number of loop insns.  */
@@ -224,6 +225,16 @@ struct GTY ((chain_next ("%h.next"))) loop {
      by IFN_GOMP_SIMD_VF, IFN_GOMP_SIMD_LANE and IFN_GOMP_SIMD_LAST_LANE
      builtins.  */
   tree simduid;
+
+  /* In loop optimization, it's common to generate loops from the original
+     loop.  This field records the index of the original loop which can be
+     used to track the original loop from newly generated loops.  This can
+     be done by calling function get_loop (cfun, orig_loop_num).  Note the
+     original loop could be destroyed for various reasons thus no longer
+     exists, as a result, function call to get_loop returns NULL pointer.
+     In this case, this field should not be used and needs to be cleared
+     whenever possible.  */
+  int orig_loop_num;
 
   /* Upper bound on number of iterations of a loop.  */
   struct nb_iter_bound *bounds;
@@ -410,10 +421,10 @@ struct rtx_iv
   rtx delta, mult;
 
   /* The mode it is extended to.  */
-  machine_mode extend_mode;
+  scalar_int_mode extend_mode;
 
   /* The mode the variable iterates in.  */
-  machine_mode mode;
+  scalar_int_mode mode;
 
   /* Whether the first iteration needs to be handled specially.  */
   unsigned first_special : 1;
@@ -454,19 +465,19 @@ struct GTY(()) niter_desc
   bool signed_p;
 
   /* The mode in that niter_expr should be computed.  */
-  machine_mode mode;
+  scalar_int_mode mode;
 
   /* The number of iterations of the loop.  */
   rtx niter_expr;
 };
 
 extern void iv_analysis_loop_init (struct loop *);
-extern bool iv_analyze (rtx_insn *, rtx, struct rtx_iv *);
+extern bool iv_analyze (rtx_insn *, scalar_int_mode, rtx, struct rtx_iv *);
 extern bool iv_analyze_result (rtx_insn *, rtx, struct rtx_iv *);
-extern bool iv_analyze_expr (rtx_insn *, rtx, machine_mode,
+extern bool iv_analyze_expr (rtx_insn *, scalar_int_mode, rtx,
 			     struct rtx_iv *);
 extern rtx get_iv_value (struct rtx_iv *, rtx);
-extern bool biv_p (rtx_insn *, rtx);
+extern bool biv_p (rtx_insn *, scalar_int_mode, rtx);
 extern void find_simple_exit (struct loop *, struct niter_desc *);
 extern void iv_analysis_done (void);
 

@@ -196,24 +196,22 @@ A revised ISO C++ standard was published in 2011 as ISO/IEC
 14882:2011, and is referred to as C++11; before its publication it was
 commonly referred to as C++0x.  C++11 contains several changes to the
 C++ language, all of which have been implemented in GCC@. For details
-see @uref{https://gcc.gnu.org/projects/@/cxx0x.html}.
+see @uref{https://gcc.gnu.org/projects/@/cxx-status.html#cxx11}.
 To select this standard in GCC, use the option @option{-std=c++11}.
 
 Another revised ISO C++ standard was published in 2014 as ISO/IEC
 14882:2014, and is referred to as C++14; before its publication it was
 sometimes referred to as C++1y.  C++14 contains several further
 changes to the C++ language, all of which have been implemented in GCC@.
-For details see @uref{https://gcc.gnu.org/projects/@/cxx1y.html}.
+For details see @uref{https://gcc.gnu.org/projects/@/cxx-status.html#cxx14}.
 To select this standard in GCC, use the option @option{-std=c++14}.
 
-GCC also supports the C++ Concepts Technical Specification,
-ISO/IEC TS 19217:2015, which allows constraints to be defined for templates,
-allowing template arguments to be checked and for templates to be
-overloaded or specialized based on the constraints. Support for C++ Concepts
-is included in an experimental C++1z mode that corresponds to the next
-revision of the ISO C++ standard, expected to be published in 2017. To enable
-C++1z support in GCC, use the option @option{-std=c++17} or
-@option{-std=c++1z}.
+The C++ language was further revised in 2017 and ISO/IEC 14882:2017 was
+published.  This is referred to as C++17, and before publication was
+often referred to as C++1z.  GCC supports all the changes in the new
+specification.  For further details see
+@uref{https://gcc.gnu.org/projects/@/cxx-status.html#cxx1z}.  Use the option
+@option{-std=c++17} to select this variant of C++.
 
 More information about the C++ standards is available on the ISO C++
 committee's web site at @uref{http://www.open-std.org/@/jtc1/@/sc22/@/wg21/}.
@@ -232,7 +230,7 @@ select an extended version of the C++ language explicitly with
 @option{-std=gnu++98} (for C++98 with GNU extensions), or
 @option{-std=gnu++11} (for C++11 with GNU extensions), or
 @option{-std=gnu++14} (for C++14 with GNU extensions), or
-@option{-std=gnu++1z} (for C++1z with GNU extensions).  
+@option{-std=gnu++17} (for C++17 with GNU extensions).  
 
 The default, if
 no C++ language dialect options are given, is @option{-std=gnu++14}.

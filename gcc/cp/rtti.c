@@ -29,6 +29,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "stor-layout.h"
 #include "c-family/c-pragma.h"
+#include "gcc-rich-location.h"
 
 /* C++ returns type information to the user in struct type_info
    objects. We also use type information to implement dynamic_cast and
@@ -316,7 +317,12 @@ typeid_ok_p (void)
 
   if (!COMPLETE_TYPE_P (const_type_info_type_node))
     {
-      error ("must %<#include <typeinfo>%> before using %<typeid%>");
+      gcc_rich_location richloc (input_location);
+      maybe_add_include_fixit (&richloc, "<typeinfo>");
+      error_at_rich_loc (&richloc,
+			 "must %<#include <typeinfo>%> before using"
+			 " %<typeid%>");
+
       return false;
     }
 
@@ -1556,7 +1562,7 @@ emit_support_tinfos (void)
   bltn_type = TREE_TYPE (bltn_type);
   if (!COMPLETE_TYPE_P (bltn_type))
     return;
-  tree dtor = CLASSTYPE_DESTRUCTORS (bltn_type);
+  tree dtor = CLASSTYPE_DESTRUCTOR (bltn_type);
   if (!dtor || DECL_EXTERNAL (dtor))
     return;
 

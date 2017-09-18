@@ -4,6 +4,11 @@
 void
 use_cpu_is_builtins (unsigned int *p)
 {
+  /* If GCC was configured to use an old GLIBC (before 2.23), the
+     __builtin_cpu_is and __builtin_cpu_supports built-in functions return 0,
+     and the compiler issues a warning that you need a newer glibc to use them.
+     Use #ifdef to avoid the warning.  */
+#ifdef __BUILTIN_CPU_SUPPORTS__
   p[0] = __builtin_cpu_is ("power9");
   p[1] = __builtin_cpu_is ("power8");
   p[2] = __builtin_cpu_is ("power7");
@@ -19,11 +24,15 @@ use_cpu_is_builtins (unsigned int *p)
   p[12] = __builtin_cpu_is ("ppc440");
   p[13] = __builtin_cpu_is ("ppc405");
   p[14] = __builtin_cpu_is ("ppc-cell-be");
+#else
+  p[0] = 0;
+#endif
 }
 
 void
 use_cpu_supports_builtins (unsigned int *p)
 {
+#ifdef __BUILTIN_CPU_SUPPORTS__
   p[0] = __builtin_cpu_supports ("4xxmac");
   p[1] = __builtin_cpu_supports ("altivec");
   p[2] = __builtin_cpu_supports ("arch_2_05");
@@ -62,4 +71,9 @@ use_cpu_supports_builtins (unsigned int *p)
   p[35] = __builtin_cpu_supports ("ucache");
   p[36] = __builtin_cpu_supports ("vcrypto");
   p[37] = __builtin_cpu_supports ("vsx");
+  p[38] = __builtin_cpu_supports ("darn");
+  p[39] = __builtin_cpu_supports ("scv");
+#else
+  p[0] = 0;
+#endif
 }

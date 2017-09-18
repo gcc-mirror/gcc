@@ -81,6 +81,10 @@ mvis4
 Target Report Mask(VIS4)
 Use UltraSPARC Visual Instruction Set version 4.0 extensions.
 
+mvis4b
+Target Report Mask(VIS4B)
+Use additional VIS instructions introduced in OSA2017.
+
 mcbcond
 Target Report Mask(CBCOND)
 Use UltraSPARC Compare-and-Branch extensions.
@@ -88,6 +92,10 @@ Use UltraSPARC Compare-and-Branch extensions.
 mfmaf
 Target Report Mask(FMAF)
 Use UltraSPARC Fused Multiply-Add extensions.
+
+mfsmuld
+Target Report Mask(FSMULD)
+Use Floating-point Multiply Single to Double (FsMULd) instruction.
 
 mpopc
 Target Report Mask(POPC)
@@ -209,6 +217,9 @@ Enum(sparc_processor_type) String(niagara4) Value(PROCESSOR_NIAGARA4)
 EnumValue
 Enum(sparc_processor_type) String(niagara7) Value(PROCESSOR_NIAGARA7)
 
+EnumValue
+Enum(sparc_processor_type) String(m8) Value(PROCESSOR_M8)
+
 mcmodel=
 Target RejectNegative Joined Var(sparc_cmodel_string)
 Use given SPARC-V9 code model.
@@ -229,6 +240,18 @@ Enable workaround for single erratum of AT697F processor
 mfix-ut699
 Target Report RejectNegative Var(sparc_fix_ut699)
 Enable workarounds for the errata of the UT699 processor.
+
+mfix-ut700
+Target Report RejectNegative Var(sparc_fix_ut700)
+Enable workarounds for the errata of the UT699E/UT700 processor.
+
+mfix-gr712rc
+Target Report RejectNegative Var(sparc_fix_gr712rc)
+Enable workarounds for the errata of the GR712RC processor.
+
+;; Enable workaround for back-to-back store errata
+TargetVariable
+unsigned int sparc_fix_b2bst
 
 Mask(LONG_DOUBLE_128)
 ;; Use 128-bit long double

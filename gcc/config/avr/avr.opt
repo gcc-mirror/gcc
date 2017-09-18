@@ -26,6 +26,10 @@ mmcu=
 Target RejectNegative Joined Var(avr_mmcu) MissingArgError(missing device or architecture after %qs)
 -mmcu=MCU	Select the target MCU.
 
+mgas-isr-prologues
+Target Report Var(avr_gasisr_prologues) UInteger Init(0)
+Allow usage of __gcc_isr pseudo instructions in ISR prologues and epilogues.
+
 mn-flash=
 Target RejectNegative Joined Var(avr_n_flash) UInteger Init(-1)
 Set the number of 64 KiB flash segments.

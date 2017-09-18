@@ -40,17 +40,14 @@
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental
 {
 namespace filesystem
 {
 inline namespace v1
 {
-#if _GLIBCXX_INLINE_VERSION
-inline namespace __8 { }
-#endif
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #if _GLIBCXX_USE_CXX11_ABI
 inline namespace __cxx11 __attribute__((__abi_tag__ ("cxx11"))) { }
 #endif
@@ -282,10 +279,11 @@ _GLIBCXX_END_NAMESPACE_CXX11
   bool is_symlink(file_status) noexcept;
 
   // @} group filesystem
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace v1
 } // namespace filesystem
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif // C++11

@@ -32,6 +32,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "optabs.h"
 #include "regs.h"
 #include "emit-rtl.h"
@@ -738,9 +739,8 @@ c6x_initialize_trampoline (rtx tramp, tree fndecl, rtx cxt)
 #ifdef CLEAR_INSN_CACHE
   tramp = XEXP (tramp, 0);
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, "__gnu_clear_cache"),
-		     LCT_NORMAL, VOIDmode, 2, tramp, Pmode,
-		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE),
-		     Pmode);
+		     LCT_NORMAL, VOIDmode, tramp, Pmode,
+		     plus_constant (Pmode, tramp, TRAMPOLINE_SIZE), Pmode);
 #endif
 }
 
@@ -1591,7 +1591,7 @@ c6x_expand_compare (rtx comparison, machine_mode mode)
 	    }
 	  start_sequence ();
 
-	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode, 2,
+	  cmp = emit_library_call_value (libfunc, 0, LCT_CONST, SImode,
 					 op0, op_mode, op1, op_mode);
 	  insns = get_insns ();
 	  end_sequence ();
@@ -1727,7 +1727,7 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
 	mark_addressable (src_expr);
       if (dst_expr)
 	mark_addressable (dst_expr);
-      emit_library_call (fn, LCT_NORMAL, VOIDmode, 3,
+      emit_library_call (fn, LCT_NORMAL, VOIDmode,
 			 dstreg, Pmode, srcreg, Pmode, count_exp, SImode);
       return true;
     }
@@ -1758,8 +1758,8 @@ c6x_expand_movmem (rtx dst, rtx src, rtx count_exp, rtx align_exp,
       if (dst_size > src_size)
 	dst_size = src_size;
 
-      srcmode = mode_for_size (src_size * BITS_PER_UNIT, MODE_INT, 0);
-      dstmode = mode_for_size (dst_size * BITS_PER_UNIT, MODE_INT, 0);
+      srcmode = int_mode_for_size (src_size * BITS_PER_UNIT, 0).require ();
+      dstmode = int_mode_for_size (dst_size * BITS_PER_UNIT, 0).require ();
       if (src_size >= 4)
 	reg_lowpart = reg = gen_reg_rtx (srcmode);
       else
@@ -2834,7 +2834,7 @@ c6x_expand_prologue (void)
 				 reg);
 	  RTX_FRAME_RELATED_P (insn) = 1;
 
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   gcc_assert (nsaved == frame.nregs);
@@ -2922,7 +2922,7 @@ c6x_expand_epilogue (bool sibcall)
 	  emit_move_insn (reg, adjust_address (mem, save_mode, off));
 
 	  off += GET_MODE_SIZE (save_mode);
-	  nsaved += HARD_REGNO_NREGS (regno, save_mode);
+	  nsaved += hard_regno_nregs (regno, save_mode);
 	}
     }
   if (!frame_pointer_needed)
@@ -4025,7 +4025,7 @@ static void
 c6x_mark_reg_read (rtx reg, bool cross)
 {
   unsigned regno = REGNO (reg);
-  unsigned nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  unsigned nregs = REG_NREGS (reg);
 
   while (nregs-- > 0)
     c6x_mark_regno_read (regno + nregs, cross);
@@ -4037,7 +4037,7 @@ static void
 c6x_mark_reg_written (rtx reg, int cycles)
 {
   unsigned regno = REGNO (reg);
-  unsigned nregs = hard_regno_nregs[regno][GET_MODE (reg)];
+  unsigned nregs = REG_NREGS (reg);
 
   while (nregs-- > 0)
     ss.reg_set_in_cycle[regno + nregs] = cycles;
@@ -6065,7 +6065,7 @@ c6x_rtx_costs (rtx x, machine_mode mode, int outer_code, int opno, int *total,
       /* Recognize a mult_highpart operation.  */
       if ((mode == HImode || mode == SImode)
 	  && GET_CODE (XEXP (x, 0)) == LSHIFTRT
-	  && GET_MODE (XEXP (x, 0)) == GET_MODE_2XWIDER_MODE (mode)
+	  && GET_MODE (XEXP (x, 0)) == GET_MODE_2XWIDER_MODE (mode).require ()
 	  && GET_CODE (XEXP (XEXP (x, 0), 0)) == MULT
 	  && GET_CODE (XEXP (XEXP (x, 0), 1)) == CONST_INT
 	  && INTVAL (XEXP (XEXP (x, 0), 1)) == GET_MODE_BITSIZE (mode))
@@ -6225,11 +6225,11 @@ c6x_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V2HImode:
-    case V4QImode:
-    case V2SImode:
-    case V4HImode:
-    case V8QImode:
+    case E_V2HImode:
+    case E_V4QImode:
+    case E_V2SImode:
+    case E_V4HImode:
+    case E_V8QImode:
       return true;
     default:
       return false;
@@ -6238,13 +6238,13 @@ c6x_vector_mode_supported_p (machine_mode mode)
 
 /* Implements TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 static machine_mode
-c6x_preferred_simd_mode (machine_mode mode)
+c6x_preferred_simd_mode (scalar_mode mode)
 {
   switch (mode)
     {
-    case HImode:
+    case E_HImode:
       return V2HImode;
-    case QImode:
+    case E_QImode:
       return V4QImode;
 
     default:
@@ -6255,7 +6255,7 @@ c6x_preferred_simd_mode (machine_mode mode)
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
-c6x_scalar_mode_supported_p (machine_mode mode)
+c6x_scalar_mode_supported_p (scalar_mode mode)
 {
   if (ALL_FIXED_POINT_MODE_P (mode)
       && GET_MODE_PRECISION (mode) <= 2 * BITS_PER_WORD)
@@ -6336,7 +6336,7 @@ c6x_dwarf_register_span (rtx rtl)
     rtx p;
 
     regno = REGNO (rtl);
-    nregs = HARD_REGNO_NREGS (regno, GET_MODE (rtl));
+    nregs = REG_NREGS (rtl);
     if (nregs == 1)
       return  NULL_RTX;
 
@@ -6696,6 +6696,25 @@ c6x_debug_unwind_info (void)
 
   return default_debug_unwind_info ();
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+c6x_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= UNITS_PER_WORD || (regno & 1) == 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+c6x_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	      && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD));
+}
+
 
 /* Target Structure.  */
 
@@ -6861,6 +6880,11 @@ c6x_debug_unwind_info (void)
 #define TARGET_EXPAND_BUILTIN c6x_expand_builtin
 #undef  TARGET_BUILTIN_DECL
 #define TARGET_BUILTIN_DECL c6x_builtin_decl
+
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK c6x_hard_regno_mode_ok
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P c6x_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

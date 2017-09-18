@@ -318,7 +318,7 @@ arc*-*-*)
 	cpu_type=arc
 	c_target_objs="arc-c.o"
 	cxx_target_objs="arc-c.o"
-	extra_options="${extra_options} arc/arc-tables.opt"
+	extra_options="${extra_options} arc/arc-tables.opt g.opt"
 	extra_headers="arc-simd.h"
 	;;
 arm*-*-*)
@@ -454,9 +454,11 @@ powerpc*-*-*spe*)
 	;;
 powerpc*-*-*)
 	cpu_type=rs6000
-	extra_objs="rs6000-string.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o"
 	extra_headers="ppc-asm.h altivec.h htmintrin.h htmxlintrin.h"
-	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h x86intrin.h"
+	extra_headers="${extra_headers} bmi2intrin.h bmiintrin.h"
+	extra_headers="${extra_headers} xmmintrin.h mm_malloc.h"
+	extra_headers="${extra_headers} mmintrin.h x86intrin.h"
 	extra_headers="${extra_headers} ppu_intrinsics.h spu2vmx.h vec_types.h si2vmx.h"
 	extra_headers="${extra_headers} paired.h"
 	case x$with_cpu in
@@ -472,7 +474,7 @@ riscv*)
 	;;
 rs6000*-*-*)
 	extra_options="${extra_options} g.opt fused-madd.opt rs6000/rs6000-tables.opt"
-	extra_objs="rs6000-string.o"
+	extra_objs="rs6000-string.o rs6000-p8swap.o"
 	;;
 sparc*-*-*)
 	cpu_type=sparc
@@ -652,7 +654,7 @@ case ${target} in
   cxx_target_objs="${cxx_target_objs} darwin-c.o"
   fortran_target_objs="darwin-f.o"
   target_has_targetcm=yes
-  extra_objs="darwin.o"
+  extra_objs="${extra_objs} darwin.o"
   extra_gcc_objs="darwin-driver.o"
   default_use_cxa_atexit=yes
   use_gcc_stdint=wrap
@@ -794,31 +796,10 @@ case ${target} in
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
-
-  # NetBSD 2.0 and later get POSIX threads enabled by default.
-  # Allow them to be explicitly enabled on any other version.
   case ${enable_threads} in
-    "")
-      case ${target} in
-        *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-          thread_file='posix'
-          tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-          ;;
-      esac
-      ;;
-    yes | posix)
-      thread_file='posix'
-      tm_defines="${tm_defines} NETBSD_ENABLE_PTHREADS"
-      ;;
+    "" | yes | posix) thread_file='posix' ;;
   esac
-
-  # NetBSD 2.0 and later provide __cxa_atexit(), which we use by
-  # default (unless overridden by --disable-__cxa_atexit).
-  case ${target} in
-    *-*-netbsd[2-9]* | *-*-netbsdelf[2-9]*)
-      default_use_cxa_atexit=yes
-      ;;
-  esac
+  default_use_cxa_atexit=yes
   ;;
 *-*-openbsd*)
   tmake_file="t-openbsd"
@@ -925,6 +906,11 @@ case ${target} in
     no) ;;
     "" | yes | vxworks) thread_file='vxworks' ;;
     *) echo 'Unknown thread configuration for VxWorks'; exit 1 ;;
+  esac
+  case $target in
+    *-*-vxworks7*)
+      tm_defines="$tm_defines TARGET_VXWORKS7=1"
+      ;;
   esac
   ;;
 *-*-elf|arc*-*-elf*)
@@ -1053,7 +1039,7 @@ arc*-*-elf*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
 	;;
-arc*-*-linux-uclibc*)
+arc*-*-linux*)
 	tm_file="arc/arc-arch.h dbxelf.h elfos.h gnu-user.h linux.h linux-android.h glibc-stdint.h arc/linux.h ${tm_file}"
 	tmake_file="${tmake_file} arc/t-arc"
 	extra_gcc_objs="driver-arc.o"
@@ -1074,11 +1060,23 @@ arc*-*-linux-uclibc*)
 	big*)	tm_file="arc/big.h ${tm_file}"
 	esac
         ;;
-arm-wrs-vxworks)
-	tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+arm-wrs-vxworks|arm-wrs-vxworks7)
 	extra_options="${extra_options} arm/vxworks.opt"
 	tmake_file="${tmake_file} arm/t-arm arm/t-vxworks"
-	target_cpu_cname="arm6"
+        case $target in
+	*-vxworks7)
+            # VxWorks7 on ARM adheres to the ARM Base Platform ABI
+	    tmake_file="${tmake_file} arm/t-bpabi"
+	    tm_file="arm/bpabi.h ${tm_file}"
+	    # The BPABI long long divmod functions return a 128-bit value in
+	    # registers r0-r3.
+	    need_64bit_hwint=yes
+	    default_use_cxa_atexit=yes
+	    ;;
+        *)  ;;
+        esac
+        tm_file="elfos.h arm/elf.h arm/aout.h ${tm_file} vx-common.h vxworks.h arm/vxworks.h"
+	target_cpu_cname="arm8"
 	;;
 arm*-*-freebsd*)                # ARM FreeBSD EABI
 	tm_file="dbxelf.h elfos.h ${fbsd_tm_file} arm/elf.h"
@@ -1675,8 +1673,15 @@ i[34567]86-*-solaris2* | x86_64-*-solaris2.1[0-9]*)
 		esac
 	fi
 	;;
-i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae)
-	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h vx-common.h"
+i[4567]86-wrs-vxworks|i[4567]86-wrs-vxworksae|i[4567]86-wrs-vxworks7|x86_64-wrs-vxworks7)
+	tm_file="${tm_file} i386/unix.h i386/att.h elfos.h"
+	case ${target} in
+	  x86_64-*)
+	    need_64bit_isa=yes
+	    tm_file="${tm_file} i386/x86-64.h"
+	    ;;
+	esac
+	tm_file="${tm_file} vx-common.h"
 	case ${target} in
 	  *-vxworksae*)
 	    tm_file="${tm_file} vxworksae.h i386/vxworks.h i386/vxworksae.h"
@@ -2048,7 +2053,7 @@ riscv*-*-linux*)
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
 	;;
-riscv*-*-elf*)
+riscv*-*-elf* | riscv*-*-rtems*)
 	tm_file="elfos.h newlib-stdint.h ${tm_file} riscv/elf.h"
 	case "x${enable_multilib}" in
 	xno) ;;
@@ -2061,6 +2066,11 @@ riscv*-*-elf*)
 	# Force .init_array support.  The configure script cannot always
 	# automatically detect that GAS supports it, yet we require it.
 	gcc_cv_initfini_array=yes
+	case ${target} in
+	riscv*-*-rtems*)
+	  tm_file="${tm_file} rtems.h riscv/rtems.h"
+	  ;;
+	esac
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
@@ -2432,8 +2442,8 @@ powerpc-*-rtems*spe*)
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-rtems powerpcspe/t-ppccomm"
 	;;
 powerpc-*-rtems*)
-	tm_file="${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/eabi.h rs6000/rtems.h rtems.h"
-	extra_options="${extra_options} rs6000/sysv4.opt"
+	tm_file="rs6000/biarch64.h ${tm_file} dbxelf.h elfos.h freebsd-spec.h newlib-stdint.h rs6000/sysv4.h rs6000/rtems.h rtems.h"
+	extra_options="${extra_options} rs6000/sysv4.opt rs6000/linux64.opt"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-rtems rs6000/t-ppccomm"
 	;;
 powerpc*-*-linux*spe*)
@@ -2534,14 +2544,14 @@ powerpc*-*-linux*)
 		    ;;
 	esac
 	;;
-powerpc-wrs-vxworksspe)
+powerpc-wrs-vxworks*spe)
 	tm_file="${tm_file} elfos.h freebsd-spec.h powerpcspe/sysv4.h"
 	tmake_file="${tmake_file} powerpcspe/t-fprules powerpcspe/t-ppccomm powerpcspe/t-vxworks"
 	extra_options="${extra_options} powerpcspe/sysv4.opt"
 	extra_headers=ppc-asm.h
 	tm_file="${tm_file} vx-common.h vxworks.h powerpcspe/vxworks.h powerpcspe/e500.h"
 	;;
-powerpc-wrs-vxworks|powerpc-wrs-vxworksae|powerpc-wrs-vxworksmils)
+powerpc-wrs-vxworks*)
 	tm_file="${tm_file} elfos.h freebsd-spec.h rs6000/sysv4.h"
 	tmake_file="${tmake_file} rs6000/t-fprules rs6000/t-ppccomm rs6000/t-vxworks"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -3098,6 +3108,16 @@ i[34567]86-*-* | x86_64-*-*)
 	;;
 powerpc*-*-* | rs6000-*-*)
 	tm_file="${tm_file} ${cpu_type}/option-defaults.h"
+esac
+
+# non-glibc systems
+case ${target} in
+*-linux-musl*)
+	tmake_file="${tmake_file} t-musl"
+	;;
+*-linux-uclibc*)
+	tmake_file="${tmake_file} t-uclibc"
+	;;
 esac
 
 # Build mkoffload tool
@@ -4361,7 +4381,7 @@ case "${target}" in
 		for which in arch tune; do
 			eval "val=\$with_$which"
 			case ${val} in
-			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
+			"" | native | g5 | g6 | z900 | z990 | z9-109 | z9-ec | z10 | z196 | zEC12 | z13 | z14 | arch3 | arch5 | arch6 | arch7 | arch8 | arch9 | arch10 | arch11 | arch12)
 				# OK
 				;;
 			*)
@@ -4413,7 +4433,7 @@ case "${target}" in
 			| sparclite | f930 | f934 | sparclite86x \
 			| sparclet | tsc701 \
 			| v9 | ultrasparc | ultrasparc3 | niagara | niagara2 \
-			| niagara3 | niagara4 | niagara7)
+			| niagara3 | niagara4 | niagara7 | m8)
 				# OK
 				;;
 			*)

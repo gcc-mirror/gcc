@@ -52,14 +52,13 @@ set_default_std_flags (void)
 static void
 set_dec_flags (int value)
 {
-  /* Allow legacy code without warnings.  */
-  gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
-    | GFC_STD_GNU | GFC_STD_LEGACY;
-  gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
-
-  /* Set -fd-lines-as-comments by default.  */
-  if (value && gfc_current_form != FORM_FREE && gfc_option.flag_d_lines == -1)
-    gfc_option.flag_d_lines = 0;
+  if (value)
+    {
+      /* Allow legacy code without warnings.  */
+      gfc_option.allow_std |= GFC_STD_F95_OBS | GFC_STD_F95_DEL
+        | GFC_STD_GNU | GFC_STD_LEGACY;
+      gfc_option.warn_std &= ~(GFC_STD_LEGACY | GFC_STD_F95_DEL);
+    }
 
   /* Set other DEC compatibility extensions.  */
   flag_dollar_ok |= value;
@@ -235,7 +234,9 @@ gfc_post_options (const char **pfilename)
   if (flag_protect_parens == -1)
     flag_protect_parens = !optimize_fast;
 
-  if (flag_stack_arrays == -1)
+  /* -Ofast sets implies -fstack-arrays unless an explicit size is set for
+     stack arrays.  */
+  if (flag_stack_arrays == -1 && flag_max_stack_var_size == -2)
     flag_stack_arrays = optimize_fast;
 
   /* By default, disable (re)allocation during assignment for -std=f95,
@@ -337,8 +338,15 @@ gfc_post_options (const char **pfilename)
 	diagnostic_classify_diagnostic (global_dc, OPT_Wline_truncation,
 					DK_ERROR, UNKNOWN_LOCATION);
     }
-  else if (warn_line_truncation == -1)
-    warn_line_truncation = 0;
+  else
+    {
+      /* With -fdec, set -fd-lines-as-comments by default in fixed form.  */
+      if (flag_dec && gfc_option.flag_d_lines == -1)
+	gfc_option.flag_d_lines = 0;
+
+      if (warn_line_truncation == -1)
+	warn_line_truncation = 0;
+    }
 
   /* If -pedantic, warn about the use of GNU extensions.  */
   if (pedantic && (gfc_option.allow_std & GFC_STD_GNU) != 0)
@@ -379,6 +387,10 @@ gfc_post_options (const char **pfilename)
       flag_recursive = 1;
       flag_max_stack_var_size = -1;
     }
+
+  /* Set flag_stack_arrays correctly.  */
+  if (flag_stack_arrays == -1)
+    flag_stack_arrays = 0;
 
   /* Set default.  */
   if (flag_max_stack_var_size == -2)

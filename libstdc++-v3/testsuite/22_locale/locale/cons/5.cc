@@ -37,34 +37,7 @@ void test04()
 
 #ifdef _GLIBCXX_HAVE_SETENV
 
-  const char* LANG_orig = getenv("LANG") ? strdup(getenv("LANG")) : "";
-  const char* LC_ALL_orig = getenv("LC_ALL") ? strdup(getenv("LC_ALL")) : "";
-  const char* LC_CTYPE_orig = 
-    getenv("LC_CTYPE") ? strdup(getenv("LC_CTYPE")) : "";
-  const char* LC_NUMERIC_orig = 
-    getenv("LC_NUMERIC") ? strdup(getenv("LC_NUMERIC")) : "";
-  const char* LC_TIME_orig = 
-    getenv("LC_TIME") ? strdup(getenv("LC_TIME")) : "";
-  const char* LC_COLLATE_orig =
-    getenv("LC_COLLATE") ? strdup(getenv("LC_COLLATE")) : "";
-  const char* LC_MONETARY_orig = 
-    getenv("LC_MONETARY") ? strdup(getenv("LC_MONETARY")) : "";
-  const char* LC_MESSAGES_orig = 
-    getenv("LC_MESSAGES") ? strdup(getenv("LC_MESSAGES")) : "";
-#if _GLIBCXX_NUM_CATEGORIES
-  const char* LC_PAPER_orig = 
-    getenv("LC_PAPER") ? strdup(getenv("LC_PAPER")) : "";
-  const char* LC_NAME_orig = 
-    getenv("LC_NAME") ? strdup(getenv("LC_NAME")) : "";
-  const char* LC_ADDRESS_orig = 
-    getenv("LC_ADDRESS") ? strdup(getenv("LC_ADDRESS")) : "";
-  const char* LC_TELEPHONE_orig = 
-    getenv("LC_TELEPHONE") ? strdup(getenv("LC_TELEPHONE")) : "";
-  const char* LC_MEASUREMENT_orig = 
-    getenv("LC_MEASUREMENT") ? strdup(getenv("LC_MEASUREMENT")) : "";
-  const char* LC_IDENTIFICATION_orig =
-    getenv("LC_IDENTIFICATION") ? strdup(getenv("LC_IDENTIFICATION")) : "";
-#endif
+  char* LANG_orig = strdup(getenv("LANG") ? getenv("LANG") : "");
 
   // Check that a "POSIX" LC_ALL is equivalent to "C".
   if (!setenv("LC_ALL", "POSIX", 1))
@@ -91,12 +64,11 @@ void test04()
 	  VERIFY( loc.name() == "en_PH" );
 	}
       setenv("LC_ALL", "", 1);
-      setenv("LANG", LANG_orig ? LANG_orig : "", 1);
-      setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
+      setenv("LANG", LANG_orig, 1);
     }
 
   // NB: LANG checks all LC_* macro settings. As such, all LC_* macros
-  // must be cleared for these tests, and then restored.
+  // must be cleared for these tests.
   setenv("LC_ALL", "", 1);
   setenv("LC_CTYPE", "", 1);
   setenv("LC_NUMERIC", "", 1);
@@ -173,26 +145,9 @@ void test04()
     }
 #endif
 
-  // Restore the environment.
-  setenv("LANG", LANG_orig ? LANG_orig : "", 1);
-  setenv("LC_ALL", LC_ALL_orig ? LC_ALL_orig : "", 1);
-  setenv("LC_CTYPE", LC_CTYPE_orig ? LC_CTYPE_orig : "", 1);
-  setenv("LC_NUMERIC", LC_NUMERIC_orig ? LC_NUMERIC_orig : "", 1);
-  setenv("LC_TIME", LC_TIME_orig ? LC_TIME_orig : "", 1);
-  setenv("LC_COLLATE", LC_COLLATE_orig ? LC_COLLATE_orig : "", 1);
-  setenv("LC_MONETARY", LC_MONETARY_orig ? LC_MONETARY_orig : "", 1);
-  setenv("LC_MESSAGES", LC_MESSAGES_orig ? LC_MESSAGES_orig : "", 1);
-#if _GLIBCXX_NUM_CATEGORIES
-  setenv("LC_PAPER", LC_PAPER_orig ? LC_PAPER_orig : "", 1);
-  setenv("LC_NAME", LC_NAME_orig ? LC_NAME_orig : "", 1);
-  setenv("LC_ADDRESS", LC_ADDRESS_orig ? LC_ADDRESS_orig : "", 1);
-  setenv("LC_TELEPHONE", LC_TELEPHONE_orig ? LC_TELEPHONE_orig : "", 1);
-  setenv("LC_MEASUREMENT", LC_MEASUREMENT_orig ? LC_MEASUREMENT_orig : "", 1);
-  setenv("LC_IDENTIFICATION", 
-         LC_IDENTIFICATION_orig ? LC_IDENTIFICATION_orig : "", 1);
-#endif
+  free(LANG_orig);
 
-#endif
+#endif // _GLIBCXX_HAVE_SETENV
 }
 
 int main()

@@ -68,6 +68,38 @@ create_dispatcher_calls (struct cgraph_node *node)
       || !is_function_default_version (node->decl))
     return;
 
+  if (!targetm.has_ifunc_p ())
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"the call requires ifunc, which is not"
+		" supported by this target");
+      return;
+    }
+  else if (!targetm.get_function_versions_dispatcher)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"target does not support function version dispatcher");
+      return;
+    }
+
+  tree idecl = targetm.get_function_versions_dispatcher (node->decl);
+  if (!idecl)
+    {
+      error_at (DECL_SOURCE_LOCATION (node->decl),
+		"default target_clones attribute was not set");
+      return;
+    }
+
+  cgraph_node *inode = cgraph_node::get (idecl);
+  gcc_assert (inode);
+  tree resolver_decl = targetm.generate_version_dispatcher_body (inode);
+
+  /* Update aliases.  */
+  inode->alias = true;
+  inode->alias_target = resolver_decl;
+  if (!inode->analyzed)
+    inode->resolve_alias (cgraph_node::get (resolver_decl));
+
   auto_vec<cgraph_edge *> edges_to_redirect;
   auto_vec<ipa_ref *> references_to_redirect;
 
@@ -80,38 +112,6 @@ create_dispatcher_calls (struct cgraph_node *node)
 
   if (!edges_to_redirect.is_empty () || !references_to_redirect.is_empty ())
     {
-      if (!targetm.has_ifunc_p ())
-	{
-	  error_at (DECL_SOURCE_LOCATION (node->decl),
-		    "the call requires ifunc, which is not"
-		    " supported by this target");
-	  return;
-	}
-      else if (!targetm.get_function_versions_dispatcher)
-	{
-	  error_at (DECL_SOURCE_LOCATION (node->decl),
-		    "target does not support function version dispatcher");
-	  return;
-	}
-
-      tree idecl = targetm.get_function_versions_dispatcher (node->decl);
-      if (!idecl)
-	{
-	  error_at (DECL_SOURCE_LOCATION (node->decl),
-		    "default target_clones attribute was not set");
-	  return;
-	}
-
-      cgraph_node *inode = cgraph_node::get (idecl);
-      gcc_assert (inode);
-      tree resolver_decl = targetm.generate_version_dispatcher_body (inode);
-
-      /* Update aliases.  */
-      inode->alias = true;
-      inode->alias_target = resolver_decl;
-      if (!inode->analyzed)
-	inode->resolve_alias (cgraph_node::get (resolver_decl));
-
       /* Redirect edges.  */
       unsigned i;
       cgraph_edge *e;
@@ -148,6 +148,7 @@ create_dispatcher_calls (struct cgraph_node *node)
 	}
     }
 
+  TREE_PUBLIC (node->decl) = 0;
   symtab->change_decl_assembler_name (node->decl,
 				      clone_function_name (node->decl,
 							   "default"));

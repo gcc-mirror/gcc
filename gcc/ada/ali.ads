@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -176,6 +176,11 @@ package ALI is
       --  Set to True if ALI and object file produced in GNATprove_Mode as
       --  signalled by GP appearing on the P line. Not set if 'P' appears in
       --  Ignore_Lines.
+
+      No_Component_Reordering : Boolean;
+      --  Set to True if file was compiled with a configuration pragma file
+      --  containing pragma No_Component_Reordering.  Not set if 'P' appears
+      --  in Ignore_Lines.
 
       No_Object : Boolean;
       --  Set to True if no object file generated. Not set if 'P' appears in
@@ -356,7 +361,7 @@ package ALI is
       --  used for informational output, and also for constructing the main
       --  unit if it is being built in Ada.
 
-      Elab_Position : aliased Natural;
+      Elab_Position : Nat;
       --  Initialized to zero. Set non-zero when a unit is chosen and
       --  placed in the elaboration order. The value represents the
       --  ordinal position in the elaboration order.
@@ -491,6 +496,10 @@ package ALI is
    No_Normalize_Scalars_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if an ali file indicates
    --  that the file was compiled without normalize scalars.
+
+   No_Component_Reordering_Specified : Boolean := False;
+   --  Set to False by Initialize_ALI. Set to True if an ali file contains
+   --  the No_Component_Reordering flag.
 
    No_Object_Specified : Boolean := False;
    --  Set to False by Initialize_ALI. Set to True if an ali file contains

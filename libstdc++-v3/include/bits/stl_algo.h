@@ -3857,8 +3857,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #endif // C++11
 
-_GLIBCXX_END_NAMESPACE_VERSION
-
 _GLIBCXX_BEGIN_NAMESPACE_ALGO
 
   /**
@@ -5831,13 +5829,15 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 		    "sample size must be an integer type");
 
       typename iterator_traits<_PopulationIterator>::difference_type __d = __n;
-      return std::__sample(__first, __last, __pop_cat{}, __out, __samp_cat{},
-			   __d, std::forward<_UniformRandomBitGenerator>(__g));
+      return _GLIBCXX_STD_A::
+	__sample(__first, __last, __pop_cat{}, __out, __samp_cat{}, __d,
+		 std::forward<_UniformRandomBitGenerator>(__g));
     }
 #endif // C++17
 #endif // C++14
 
 _GLIBCXX_END_NAMESPACE_ALGO
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif /* _STL_ALGO_H */

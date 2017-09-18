@@ -778,7 +778,20 @@ DW_CFA (DW_CFA_MIPS_advance_loc8, 0x1d)
 /* GNU extensions.
    NOTE: DW_CFA_GNU_window_save is multiplexed on Sparc and AArch64.  */
 DW_CFA (DW_CFA_GNU_window_save, 0x2d)
+DW_CFA_DUP (DW_CFA_AARCH64_negate_ra_state, 0x2d)
 DW_CFA (DW_CFA_GNU_args_size, 0x2e)
 DW_CFA (DW_CFA_GNU_negative_offset_extended, 0x2f)
 
 DW_END_CFA
+
+/* Index attributes in the Abbreviations Table.  */
+DW_FIRST_IDX (DW_IDX_compile_unit, 1)
+DW_IDX (DW_IDX_type_unit, 2)
+DW_IDX (DW_IDX_die_offset, 3)
+DW_IDX (DW_IDX_parent, 4)
+DW_IDX (DW_IDX_type_hash, 5)
+DW_IDX_DUP (DW_IDX_lo_user, 0x2000)
+DW_IDX (DW_IDX_hi_user, 0x3fff)
+DW_IDX (DW_IDX_GNU_internal, 0x2000)
+DW_IDX (DW_IDX_GNU_external, 0x2001)
+DW_END_IDX

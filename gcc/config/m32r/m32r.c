@@ -28,6 +28,7 @@
 #include "memmodel.h"
 #include "tm_p.h"
 #include "stringpool.h"
+#include "attribs.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
 #include "recog.h"
@@ -69,8 +70,8 @@ static tree  m32r_handle_model_attribute (tree *, tree, tree, int, bool *);
 static void  m32r_print_operand (FILE *, rtx, int);
 static void  m32r_print_operand_address (FILE *, machine_mode, rtx);
 static bool  m32r_print_operand_punct_valid_p (unsigned char code);
-static void  m32r_output_function_prologue (FILE *, HOST_WIDE_INT);
-static void  m32r_output_function_epilogue (FILE *, HOST_WIDE_INT);
+static void  m32r_output_function_prologue (FILE *);
+static void  m32r_output_function_epilogue (FILE *);
 
 static void  m32r_file_start (void);
 
@@ -101,6 +102,8 @@ static void m32r_conditional_register_usage (void);
 static void m32r_trampoline_init (rtx, tree, rtx);
 static bool m32r_legitimate_constant_p (machine_mode, rtx);
 static bool m32r_attribute_identifier (const_tree);
+static bool m32r_hard_regno_mode_ok (unsigned int, machine_mode);
+static bool m32r_modes_tieable_p (machine_mode, machine_mode);
 
 /* M32R specific attributes.  */
 
@@ -208,6 +211,12 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef TARGET_LEGITIMATE_CONSTANT_P
 #define TARGET_LEGITIMATE_CONSTANT_P m32r_legitimate_constant_p
 
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK m32r_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P m32r_modes_tieable_p
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by m32r_option_override to initialize various things.  */
@@ -269,14 +278,14 @@ enum m32r_mode_class
 
 /* Value is 1 if register/mode pair is acceptable on arc.  */
 
-const unsigned int m32r_hard_regno_mode_ok[FIRST_PSEUDO_REGISTER] =
+static const unsigned int m32r_hard_regno_modes[FIRST_PSEUDO_REGISTER] =
 {
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, T_MODES,
   T_MODES, T_MODES, T_MODES, T_MODES, T_MODES, S_MODES, S_MODES, S_MODES,
   S_MODES, C_MODES, A_MODES, A_MODES
 };
 
-unsigned int m32r_mode_class [NUM_MACHINE_MODES];
+static unsigned int m32r_mode_class [NUM_MACHINE_MODES];
 
 enum reg_class m32r_regno_reg_class[FIRST_PSEUDO_REGISTER];
 
@@ -1743,7 +1752,7 @@ m32r_expand_prologue (void)
    m32r_compute_frame_size which calculates the prolog size.  */
 
 static void
-m32r_output_function_prologue (FILE * file, HOST_WIDE_INT size)
+m32r_output_function_prologue (FILE * file)
 {
   enum m32r_function_type fn_type = m32r_compute_function_type (current_function_decl);
 
@@ -1752,7 +1761,7 @@ m32r_output_function_prologue (FILE * file, HOST_WIDE_INT size)
     fprintf (file, "\t%s interrupt handler\n", ASM_COMMENT_START);
 
   if (! current_frame_info.initialized)
-    m32r_compute_frame_size (size);
+    m32r_compute_frame_size (get_frame_size ());
 
   /* This is only for the human reader.  */
   fprintf (file,
@@ -1879,8 +1888,7 @@ m32r_expand_epilogue (void)
    and regs.  */
 
 static void
-m32r_output_function_epilogue (FILE * file ATTRIBUTE_UNUSED,
-			       HOST_WIDE_INT size ATTRIBUTE_UNUSED)
+m32r_output_function_epilogue (FILE *)
 {
   /* Reset state info for each function.  */
   current_frame_info = zero_frame_info;
@@ -2493,7 +2501,7 @@ block_move_call (rtx dest_reg, rtx src_reg, rtx bytes_rtx)
     bytes_rtx = convert_to_mode (Pmode, bytes_rtx, 1);
 
   emit_library_call (m32r_function_symbol ("memcpy"), LCT_NORMAL,
-		     VOIDmode, 3, dest_reg, Pmode, src_reg, Pmode,
+		     VOIDmode, dest_reg, Pmode, src_reg, Pmode,
 		     convert_to_mode (TYPE_MODE (sizetype), bytes_rtx,
 				      TYPE_UNSIGNED (sizetype)),
 		     TYPE_MODE (sizetype));
@@ -2747,6 +2755,25 @@ m32r_output_block_move (rtx insn ATTRIBUTE_UNUSED, rtx operands[])
     }
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+m32r_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return (m32r_hard_regno_modes[regno] & m32r_mode_class[mode]) != 0;
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  Tie QI/HI/SI modes together.  */
+
+static bool
+m32r_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (GET_MODE_CLASS (mode1) == MODE_INT
+	  && GET_MODE_CLASS (mode2) == MODE_INT
+	  && GET_MODE_SIZE (mode1) <= UNITS_PER_WORD
+	  && GET_MODE_SIZE (mode2) <= UNITS_PER_WORD);
+}
+
 /* Return true if using NEW_REG in place of OLD_REG is ok.  */
 
 int
@@ -2796,7 +2823,7 @@ m32r_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 		gen_int_mode (m32r_cache_flush_trap, SImode)));
   else if (m32r_cache_flush_func && m32r_cache_flush_func[0])
     emit_library_call (m32r_function_symbol (m32r_cache_flush_func),
-		       LCT_NORMAL, VOIDmode, 3, XEXP (m_tramp, 0), Pmode,
+		       LCT_NORMAL, VOIDmode, XEXP (m_tramp, 0), Pmode,
 		       gen_int_mode (TRAMPOLINE_SIZE, SImode), SImode,
 		       GEN_INT (3), SImode);
 }

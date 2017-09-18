@@ -223,7 +223,7 @@ rtx_alloc_stat_v (RTX_CODE code MEM_STAT_DECL, int extra)
    all the rest is initialized to zero.  */
 
 rtx
-rtx_alloc_stat (RTX_CODE code MEM_STAT_DECL)
+rtx_alloc (RTX_CODE code MEM_STAT_DECL)
 {
   return rtx_alloc_stat_v (code PASS_MEM_STAT, 0);
 }
@@ -359,7 +359,7 @@ copy_rtx (rtx orig)
 /* Create a new copy of an rtx.  Only copy just one level.  */
 
 rtx
-shallow_copy_rtx_stat (const_rtx orig MEM_STAT_DECL)
+shallow_copy_rtx (const_rtx orig MEM_STAT_DECL)
 {
   const unsigned int size = rtx_size (orig);
   rtx const copy = ggc_alloc_rtx_def_stat (size PASS_MEM_STAT);

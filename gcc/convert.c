@@ -33,6 +33,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "builtins.h"
 #include "ubsan.h"
+#include "stringpool.h"
+#include "attribs.h"
 #include "asan.h"
 
 #define maybe_fold_build1_loc(FOLD_P, LOC, CODE, TYPE, EXPR) \
@@ -432,6 +434,13 @@ do_narrow (location_t loc,
     typex = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
 					    TYPE_UNSIGNED (typex));
 
+  /* The type demotion below might cause doing unsigned arithmetic
+     instead of signed, and thus hide overflow bugs.  */
+  if ((ex_form == PLUS_EXPR || ex_form == MINUS_EXPR)
+      && !TYPE_UNSIGNED (typex)
+      && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+    return NULL_TREE;
+
   /* But now perhaps TYPEX is as wide as INPREC.
      In that case, do nothing special here.
      (Otherwise would recurse infinitely in convert.  */
@@ -709,8 +718,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	     the signed-to-unsigned case the high-order bits have to
 	     be cleared.  */
 	  if (TYPE_UNSIGNED (type) != TYPE_UNSIGNED (TREE_TYPE (expr))
-	      && (TYPE_PRECISION (TREE_TYPE (expr))
-		  != GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (expr)))))
+	      && !type_has_mode_precision_p (TREE_TYPE (expr)))
 	    code = CONVERT_EXPR;
 	  else
 	    code = NOP_EXPR;
@@ -865,7 +873,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		break;
 
 	      if (outprec >= BITS_PER_WORD
-		  || TRULY_NOOP_TRUNCATION (outprec, inprec)
+		  || targetm.truly_noop_truncation (outprec, inprec)
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
 		{
@@ -878,6 +886,12 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    break;
 
 	  case NEGATE_EXPR:
+	    /* Using unsigned arithmetic for signed types may hide overflow
+	       bugs.  */
+	    if (!TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (expr, 0)))
+		&& sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+	      break;
+	    /* Fall through.  */
 	  case BIT_NOT_EXPR:
 	    /* This is not correct for ABS_EXPR,
 	       since we must test the sign before truncation.  */
@@ -938,7 +952,8 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
       return build1 (CONVERT_EXPR, type, expr);
 
     case REAL_TYPE:
-      if (sanitize_flags_p (SANITIZE_FLOAT_CAST))
+      if (sanitize_flags_p (SANITIZE_FLOAT_CAST)
+	  && current_function_decl != NULL_TREE)
 	{
 	  expr = save_expr (expr);
 	  tree check = ubsan_instrument_float_cast (loc, type, expr);

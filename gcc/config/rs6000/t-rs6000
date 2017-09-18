@@ -30,6 +30,10 @@ rs6000-string.o: $(srcdir)/config/rs6000/rs6000-string.c
 	$(COMPILE) $<
 	$(POSTCOMPILE)
 
+rs6000-p8swap.o: $(srcdir)/config/rs6000/rs6000-p8swap.c
+	$(COMPILE) $<
+	$(POSTCOMPILE)
+
 $(srcdir)/config/rs6000/rs6000-tables.opt: $(srcdir)/config/rs6000/genopt.sh \
   $(srcdir)/config/rs6000/rs6000-cpus.def
 	$(SHELL) $(srcdir)/config/rs6000/genopt.sh $(srcdir)/config/rs6000 > \

@@ -88,10 +88,12 @@ void copy_ctor()
 {
   static_assert(is_copy_constructible_v<variant<int, string>>, "");
   static_assert(!is_copy_constructible_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_copy_constructible_v<variant<int>>, "");
+  static_assert(!is_trivially_copy_constructible_v<variant<std::string>>, "");
 
   {
     variant<int> a;
-    static_assert(!noexcept(variant<int>(a)), "");
+    static_assert(noexcept(variant<int>(a)), "");
   }
   {
     variant<string> a;
@@ -103,7 +105,7 @@ void copy_ctor()
   }
   {
     variant<int, char> a;
-    static_assert(!noexcept(variant<int, char>(a)), "");
+    static_assert(noexcept(variant<int, char>(a)), "");
   }
 }
 
@@ -111,6 +113,8 @@ void move_ctor()
 {
   static_assert(is_move_constructible_v<variant<int, string>>, "");
   static_assert(!is_move_constructible_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_move_constructible_v<variant<int>>, "");
+  static_assert(!is_trivially_move_constructible_v<variant<std::string>>, "");
   static_assert(!noexcept(variant<int, Empty>(declval<variant<int, Empty>>())), "");
   static_assert(noexcept(variant<int, DefaultNoexcept>(declval<variant<int, DefaultNoexcept>>())), "");
 }
@@ -148,13 +152,15 @@ void copy_assign()
 {
   static_assert(is_copy_assignable_v<variant<int, string>>, "");
   static_assert(!is_copy_assignable_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_copy_assignable_v<variant<int>>, "");
+  static_assert(!is_trivially_copy_assignable_v<variant<string>>, "");
   {
     variant<Empty> a;
     static_assert(!noexcept(a = a), "");
   }
   {
     variant<DefaultNoexcept> a;
-    static_assert(!noexcept(a = a), "");
+    static_assert(noexcept(a = a), "");
   }
 }
 
@@ -162,6 +168,8 @@ void move_assign()
 {
   static_assert(is_move_assignable_v<variant<int, string>>, "");
   static_assert(!is_move_assignable_v<variant<AllDeleted, string>>, "");
+  static_assert(is_trivially_move_assignable_v<variant<int>>, "");
+  static_assert(!is_trivially_move_assignable_v<variant<string>>, "");
   {
     variant<Empty> a;
     static_assert(!noexcept(a = std::move(a)), "");
@@ -453,4 +461,93 @@ void test_emplace()
   static_assert(has_index_emplace<variant<int>, 0>(0), "");
   static_assert(!has_type_emplace<variant<AllDeleted>, AllDeleted>(0), "");
   static_assert(!has_index_emplace<variant<AllDeleted>, 0>(0), "");
+}
+
+void test_triviality()
+{
+#define TEST_TEMPLATE(DT, CC, MC, CA, MA, CC_VAL, MC_VAL, CA_VAL, MA_VAL) \
+  { \
+    struct A \
+    { \
+      ~A() DT; \
+      A(const A&) CC; \
+      A(A&&) MC; \
+      A& operator=(const A&) CA; \
+      A& operator=(A&&) MA; \
+    }; \
+    static_assert(CC_VAL == is_trivially_copy_constructible_v<variant<A>>, ""); \
+    static_assert(MC_VAL == is_trivially_move_constructible_v<variant<A>>, ""); \
+    static_assert(CA_VAL == is_trivially_copy_assignable_v<variant<A>>, ""); \
+    static_assert(MA_VAL == is_trivially_move_assignable_v<variant<A>>, ""); \
+  }
+  TEST_TEMPLATE(=default, =default, =default, =default, =default,  true,  true,  true,  true)
+  TEST_TEMPLATE(=default, =default, =default, =default,       {},  true,  true,  true, false)
+  TEST_TEMPLATE(=default, =default, =default,       {}, =default,  true,  true, false,  true)
+  TEST_TEMPLATE(=default, =default, =default,       {},       {},  true,  true, false, false)
+  TEST_TEMPLATE(=default, =default,       {}, =default, =default,  true, false,  true,  true)
+  TEST_TEMPLATE(=default, =default,       {}, =default,       {},  true, false,  true, false)
+  TEST_TEMPLATE(=default, =default,       {},       {}, =default,  true, false, false,  true)
+  TEST_TEMPLATE(=default, =default,       {},       {},       {},  true, false, false, false)
+  TEST_TEMPLATE(=default,       {}, =default, =default, =default, false,  true,  true,  true)
+  TEST_TEMPLATE(=default,       {}, =default, =default,       {}, false,  true,  true, false)
+  TEST_TEMPLATE(=default,       {}, =default,       {}, =default, false,  true, false,  true)
+  TEST_TEMPLATE(=default,       {}, =default,       {},       {}, false,  true, false, false)
+  TEST_TEMPLATE(=default,       {},       {}, =default, =default, false, false,  true,  true)
+  TEST_TEMPLATE(=default,       {},       {}, =default,       {}, false, false,  true, false)
+  TEST_TEMPLATE(=default,       {},       {},       {}, =default, false, false, false,  true)
+  TEST_TEMPLATE(=default,       {},       {},       {},       {}, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default, =default, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default, =default, =default,       {}, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default, =default,       {}, =default, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default, =default,       {},       {}, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default,       {}, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default,       {}, =default,       {}, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default,       {},       {}, =default, false, false, false, false)
+  TEST_TEMPLATE(      {}, =default,       {},       {},       {}, false, false, false, false)
+  TEST_TEMPLATE(      {},       {}, =default, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(      {},       {}, =default, =default,       {}, false, false, false, false)
+  TEST_TEMPLATE(      {},       {}, =default,       {}, =default, false, false, false, false)
+  TEST_TEMPLATE(      {},       {}, =default,       {},       {}, false, false, false, false)
+  TEST_TEMPLATE(      {},       {},       {}, =default, =default, false, false, false, false)
+  TEST_TEMPLATE(      {},       {},       {}, =default,       {}, false, false, false, false)
+  TEST_TEMPLATE(      {},       {},       {},       {}, =default, false, false, false, false)
+  TEST_TEMPLATE(      {},       {},       {},       {},       {}, false, false, false, false)
+#undef TEST_TEMPLATE
+
+#define TEST_TEMPLATE(CC, MC, CA, MA) \
+  { \
+    struct A \
+    { \
+      A(const A&) CC; \
+      A(A&&) MC; \
+      A& operator=(const A&) CA; \
+      A& operator=(A&&) MA; \
+    }; \
+    static_assert(!is_trivially_copy_constructible_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_move_constructible_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_copy_assignable_v<variant<AllDeleted, A>>, ""); \
+    static_assert(!is_trivially_move_assignable_v<variant<AllDeleted, A>>, ""); \
+  }
+  TEST_TEMPLATE(=default, =default, =default, =default)
+  TEST_TEMPLATE(=default, =default, =default,       {})
+  TEST_TEMPLATE(=default, =default,       {}, =default)
+  TEST_TEMPLATE(=default, =default,       {},       {})
+  TEST_TEMPLATE(=default,       {}, =default, =default)
+  TEST_TEMPLATE(=default,       {}, =default,       {})
+  TEST_TEMPLATE(=default,       {},       {}, =default)
+  TEST_TEMPLATE(=default,       {},       {},       {})
+  TEST_TEMPLATE(      {}, =default, =default, =default)
+  TEST_TEMPLATE(      {}, =default, =default,       {})
+  TEST_TEMPLATE(      {}, =default,       {}, =default)
+  TEST_TEMPLATE(      {}, =default,       {},       {})
+  TEST_TEMPLATE(      {},       {}, =default, =default)
+  TEST_TEMPLATE(      {},       {}, =default,       {})
+  TEST_TEMPLATE(      {},       {},       {}, =default)
+  TEST_TEMPLATE(      {},       {},       {},       {})
+#undef TEST_TEMPLATE
+
+  static_assert(is_trivially_copy_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_move_constructible_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_copy_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
+  static_assert(is_trivially_move_assignable_v<variant<DefaultNoexcept, int, char, float, double>>, "");
 }

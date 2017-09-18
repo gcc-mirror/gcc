@@ -1374,5 +1374,6 @@ const struct simple_object_functions simple_object_mach_o_functions =
   simple_object_mach_o_release_attributes,
   simple_object_mach_o_start_write,
   simple_object_mach_o_write_to_file,
-  simple_object_mach_o_release_write
+  simple_object_mach_o_release_write,
+  NULL
 };

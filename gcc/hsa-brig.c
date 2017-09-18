@@ -500,7 +500,7 @@ brig_init (void)
 	  else
 	    part++;
 	  char *modname2;
-	  asprintf (&modname2, "%s_%s", modname, part);
+	  modname2 = xasprintf ("%s_%s", modname, part);
 	  free (modname);
 	  modname = modname2;
 	}
@@ -910,7 +910,7 @@ emit_immediate_scalar_to_buffer (tree value, char *data, unsigned need_len)
 		 "operands");
 	  return 2;
 	}
-      unsigned int_len = GET_MODE_SIZE (TYPE_MODE (type));
+      unsigned int_len = GET_MODE_SIZE (SCALAR_FLOAT_TYPE_MODE (type));
       /* There are always 32 bits in each long, no matter the size of
 	 the hosts long.  */
       long tmp[6];

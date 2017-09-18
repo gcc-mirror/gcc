@@ -147,11 +147,14 @@ static const size_t fcache_line_record_size = 100;
    associated line/column) in the context of a macro expansion, the
    returned location is the first one (while unwinding the macro
    location towards its expansion point) that is in real source
-   code.  */
+   code.
+
+   ASPECT controls which part of the location to use.  */
 
 static expanded_location
 expand_location_1 (source_location loc,
-		   bool expansion_point_p)
+		   bool expansion_point_p,
+		   enum location_aspect aspect)
 {
   expanded_location xloc;
   const line_map_ordinary *map;
@@ -181,8 +184,36 @@ expand_location_1 (source_location loc,
 							  loc, NULL);
 	  lrk = LRK_SPELLING_LOCATION;
 	}
-      loc = linemap_resolve_location (line_table, loc,
-				      lrk, &map);
+      loc = linemap_resolve_location (line_table, loc, lrk, &map);
+
+      /* loc is now either in an ordinary map, or is a reserved location.
+	 If it is a compound location, the caret is in a spelling location,
+	 but the start/finish might still be a virtual location.
+	 Depending of what the caller asked for, we may need to recurse
+	 one level in order to resolve any virtual locations in the
+	 end-points.  */
+      switch (aspect)
+	{
+	default:
+	  gcc_unreachable ();
+	  /* Fall through.  */
+	case LOCATION_ASPECT_CARET:
+	  break;
+	case LOCATION_ASPECT_START:
+	  {
+	    source_location start = get_start (loc);
+	    if (start != loc)
+	      return expand_location_1 (start, expansion_point_p, aspect);
+	  }
+	  break;
+	case LOCATION_ASPECT_FINISH:
+	  {
+	    source_location finish = get_finish (loc);
+	    if (finish != loc)
+	      return expand_location_1 (finish, expansion_point_p, aspect);
+	  }
+	  break;
+	}
       xloc = linemap_expand_location (line_table, map, loc);
     }
 
@@ -773,7 +804,8 @@ is_location_from_builtin_token (source_location loc)
 expanded_location
 expand_location (source_location loc)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/true);
+  return expand_location_1 (loc, /*expansion_point_p=*/true,
+			    LOCATION_ASPECT_CARET);
 }
 
 /* Expand the source location LOC into a human readable location.  If
@@ -785,7 +817,8 @@ expand_location (source_location loc)
 expanded_location
 expand_location_to_spelling_point (source_location loc)
 {
-  return expand_location_1 (loc, /*expansion_point_p=*/false);
+  return expand_location_1 (loc, /*expansion_point_p=*/false,
+			    LOCATION_ASPECT_CARET);
 }
 
 /* The rich_location class within libcpp requires a way to expand
@@ -795,12 +828,13 @@ expand_location_to_spelling_point (source_location loc)
    to do this.
 
    This is the implementation for libcommon.a (all host binaries),
-   which simply calls into expand_location_to_spelling_point.  */
+   which simply calls into expand_location_1.  */
 
 expanded_location
-linemap_client_expand_location_to_spelling_point (source_location loc)
+linemap_client_expand_location_to_spelling_point (source_location loc,
+						  enum location_aspect aspect)
 {
-  return expand_location_to_spelling_point (loc);
+  return expand_location_1 (loc, /*expansion_point_p=*/false, aspect);
 }
 
 
@@ -862,6 +896,15 @@ make_location (location_t caret, location_t start, location_t finish)
 						   src_range,
 						   NULL);
   return combined_loc;
+}
+
+/* Same as above, but taking a source range rather than two locations.  */
+
+location_t
+make_location (location_t caret, source_range src_range)
+{
+  location_t pure_loc = get_pure_location (caret);
+  return COMBINE_LOCATION_DATA (line_table, pure_loc, src_range, NULL);
 }
 
 #define ONE_K 1024

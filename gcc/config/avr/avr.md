@@ -85,6 +85,7 @@
   [UNSPECV_PROLOGUE_SAVES
    UNSPECV_EPILOGUE_RESTORES
    UNSPECV_WRITE_SP
+   UNSPECV_GASISR
    UNSPECV_GOTO_RECEIVER
    UNSPECV_ENABLE_IRQS
    UNSPECV_MEMORY_BARRIER
@@ -94,6 +95,12 @@
    UNSPECV_DELAY_CYCLES
    ])
 
+;; Chunk numbers for __gcc_isr are hard-coded in GAS.
+(define_constants
+  [(GASISR_Prologue 1)
+   (GASISR_Epilogue 2)
+   (GASISR_Done     0)
+   ])
 
 (include "predicates.md")
 (include "constraints.md")
@@ -5185,7 +5192,7 @@
    (set_attr "cc" "none")])
 
 ;; table jump
-;; For entries in jump table see avr_output_addr_vec_elt.
+;; For entries in jump table see avr_output_addr_vec.
 
 ;; Table made from
 ;;    "rjmp .L<n>"   instructions for <= 8K devices
@@ -5799,6 +5806,38 @@
   [(set_attr "length" "2,3")
    (set_attr "cc" "clobber")
    (set_attr "isa" "rjmp,jmp")])
+
+
+;; $0 = Chunk: 1 = Prologue,  2 = Epilogue
+;; $1 = Register as printed by chunk 0 (Done) in final postscan.
+(define_expand "gasisr"
+  [(parallel [(unspec_volatile [(match_operand:QI 0 "const_int_operand")
+                                (match_operand:QI 1 "const_int_operand")]
+                               UNSPECV_GASISR)
+              (set (reg:HI REG_SP)
+                   (unspec_volatile:HI [(reg:HI REG_SP)] UNSPECV_GASISR))
+              (set (match_dup 2)
+                   (unspec_volatile:BLK [(match_dup 2)]
+                                        UNSPECV_MEMORY_BARRIER))])]
+  "avr_gasisr_prologues"
+  {
+    operands[2] = gen_rtx_MEM (BLKmode, gen_rtx_SCRATCH (Pmode));
+    MEM_VOLATILE_P (operands[2]) = 1;
+  })
+
+(define_insn "*gasisr"
+  [(unspec_volatile [(match_operand:QI 0 "const_int_operand" "P,K")
+                     (match_operand:QI 1 "const_int_operand" "n,n")]
+                    UNSPECV_GASISR)
+   (set (reg:HI REG_SP)
+        (unspec_volatile:HI [(reg:HI REG_SP)] UNSPECV_GASISR))
+   (set (match_operand:BLK 2)
+        (unspec_volatile:BLK [(match_dup 2)] UNSPECV_MEMORY_BARRIER))]
+  "avr_gasisr_prologues"
+  "__gcc_isr %0"
+  [(set_attr "length" "6,5")
+   (set_attr "cc" "clobber")])
+
 
 ; return
 (define_insn "return"

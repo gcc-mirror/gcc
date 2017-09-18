@@ -32,6 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "debug.h"
 #include "convert.h"
 #include "gimplify.h"
+#include "stringpool.h"
 #include "attribs.h"
 #include "flags.h"
 
@@ -90,7 +91,6 @@ lvalue_kind (const_tree ref)
     case PREINCREMENT_EXPR:
     case PREDECREMENT_EXPR:
     case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
     case REALPART_EXPR:
     case IMAGPART_EXPR:
       return lvalue_kind (TREE_OPERAND (ref, 0));
@@ -1503,13 +1503,13 @@ strip_typedefs (tree t, bool *remove_attributes)
       break;
     case TYPENAME_TYPE:
       {
+	bool changed = false;
 	tree fullname = TYPENAME_TYPE_FULLNAME (t);
 	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR
 	    && TREE_OPERAND (fullname, 1))
 	  {
 	    tree args = TREE_OPERAND (fullname, 1);
 	    tree new_args = copy_node (args);
-	    bool changed = false;
 	    for (int i = 0; i < TREE_VEC_LENGTH (args); ++i)
 	      {
 		tree arg = TREE_VEC_ELT (args, i);
@@ -1533,12 +1533,15 @@ strip_typedefs (tree t, bool *remove_attributes)
 	    else
 	      ggc_free (new_args);
 	  }
-	result = make_typename_type (strip_typedefs (TYPE_CONTEXT (t),
-						     remove_attributes),
-				     fullname, typename_type, tf_none);
-	/* Handle 'typedef typename A::N N;'  */
-	if (typedef_variant_p (result))
-	  result = TYPE_MAIN_VARIANT (DECL_ORIGINAL_TYPE (TYPE_NAME (result)));
+	tree ctx = strip_typedefs (TYPE_CONTEXT (t), remove_attributes);
+	if (!changed && ctx == TYPE_CONTEXT (t) && !typedef_variant_p (t))
+	  return t;
+	tree name = fullname;
+	if (TREE_CODE (fullname) == TEMPLATE_ID_EXPR)
+	  name = TREE_OPERAND (fullname, 0);
+	/* Use build_typename_type rather than make_typename_type because we
+	   don't want to resolve it here, just strip typedefs.  */
+	result = build_typename_type (ctx, name, fullname, typename_type);
       }
       break;
     case DECLTYPE_TYPE:
@@ -2025,6 +2028,7 @@ build_qualified_name (tree type, tree scope, tree name, bool template_p)
       || scope == error_mark_node
       || name == error_mark_node)
     return error_mark_node;
+  gcc_assert (TREE_CODE (name) != SCOPE_REF);
   t = build2 (SCOPE_REF, type, scope, name);
   QUALIFIED_NAME_IS_TEMPLATE (t) = template_p;
   PTRMEM_OK_P (t) = true;
@@ -2815,7 +2819,6 @@ extern int depth_reached;
 void
 cxx_print_statistics (void)
 {
-  print_search_statistics ();
   print_class_statistics ();
   print_template_statistics ();
   if (GATHER_STATISTICS)
@@ -3581,16 +3584,6 @@ cp_tree_equal (tree t1, tree t2)
 	return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t2, 1));
       }
 
-    case WITH_CLEANUP_EXPR:
-      if (!cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0)))
-	return false;
-      return cp_tree_equal (TREE_OPERAND (t1, 1), TREE_OPERAND (t1, 1));
-
-    case COMPONENT_REF:
-      if (TREE_OPERAND (t1, 1) != TREE_OPERAND (t2, 1))
-	return false;
-      return cp_tree_equal (TREE_OPERAND (t1, 0), TREE_OPERAND (t2, 0));
-
     case PARM_DECL:
       /* For comparing uses of parameters in late-specified return types
 	 with an out-of-class definition of the function, but can also come
@@ -3984,8 +3977,7 @@ type_has_nontrivial_copy_init (const_tree type)
       else if (CLASSTYPE_LAZY_COPY_CTOR (t))
 	{
 	  saw_copy = true;
-	  if (type_has_user_declared_move_constructor (t)
-	      || type_has_user_declared_move_assign (t))
+	  if (classtype_has_move_assign_or_move_ctor_p (t, true))
 	    /* [class.copy]/8 If the class definition declares a move
 	       constructor or move assignment operator, the implicitly declared
 	       copy constructor is defined as deleted.... */;
@@ -3996,7 +3988,7 @@ type_has_nontrivial_copy_init (const_tree type)
 	    saw_non_deleted = true;
 	}
 
-      if (!saw_non_deleted && CLASSTYPE_METHOD_VEC (t))
+      if (!saw_non_deleted)
 	for (ovl_iterator iter (CLASSTYPE_CONSTRUCTORS (t)); iter; ++iter)
 	  {
 	    tree fn = *iter;
@@ -4634,6 +4626,21 @@ cxx_type_hash_eq (const_tree typea, const_tree typeb)
 			    TYPE_RAISES_EXCEPTIONS (typeb), ce_exact);
 }
 
+/* Copy the language-specific type variant modifiers from TYPEB to TYPEA.  For
+   C++, these are the exception-specifier and ref-qualifier.  */
+
+tree
+cxx_copy_lang_qualifiers (const_tree typea, const_tree typeb)
+{
+  tree type = CONST_CAST_TREE (typea);
+  if (TREE_CODE (type) == FUNCTION_TYPE || TREE_CODE (type) == METHOD_TYPE)
+    {
+      type = build_exception_variant (type, TYPE_RAISES_EXCEPTIONS (typeb));
+      type = build_ref_qualified_type (type, type_memfn_rqual (typeb));
+    }
+  return type;
+}
+
 /* Apply FUNC to all language-specific sub-trees of TP in a pre-order
    traversal.  Called from walk_tree.  */
 
@@ -4672,6 +4679,8 @@ cp_walk_subtrees (tree *tp, int *walk_subtrees_p, walk_tree_fn func,
       break;
 
     case BASELINK:
+      if (BASELINK_QUALIFIED_P (*tp))
+	WALK_SUBTREE (BINFO_TYPE (BASELINK_ACCESS_BINFO (*tp)));
       WALK_SUBTREE (BASELINK_FUNCTIONS (*tp));
       *walk_subtrees_p = 0;
       break;

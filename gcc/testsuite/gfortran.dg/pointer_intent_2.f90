@@ -14,6 +14,6 @@ program test
  call a(p) ! { dg-error "Type mismatch in argument" }
 contains
   subroutine a(p)! { dg-error "has no IMPLICIT type" }
-    integer, pointer,intent(in) :: p ! { dg-error "POINTER attribute with INTENT attribute" }
+    integer, pointer,intent(in) :: p ! { dg-error "POINTER attribute conflicts with INTENT attribute" }
   end subroutine
 end program

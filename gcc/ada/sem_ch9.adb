@@ -2773,7 +2773,7 @@ package body Sem_Ch9 is
       Generate_Definition (Obj_Id);
       Tasking_Used := True;
 
-      --  A single task declaration is transformed into a pait of an anonymous
+      --  A single task declaration is transformed into a pair of an anonymous
       --  task type and an object of that type. Generate:
 
       --    task type Typ is ...;

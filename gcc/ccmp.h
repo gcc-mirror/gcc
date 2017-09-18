@@ -20,6 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_CCMP_H
 #define GCC_CCMP_H
 
-extern rtx expand_ccmp_expr (gimple *);
+extern rtx expand_ccmp_expr (gimple *, machine_mode);
 
 #endif  /* GCC_CCMP_H  */

@@ -72,22 +72,20 @@ func hashStrRev(sep string) (uint32, uint32) {
 	return hash, pow
 }
 
-// Count counts the number of non-overlapping instances of sep in s.
-// If sep is an empty string, Count returns 1 + the number of Unicode code points in s.
-func Count(s, sep string) int {
-	n := 0
-	// special cases
-	if len(sep) == 0 {
+// countGeneric implements Count.
+func countGeneric(s, substr string) int {
+	// special case
+	if len(substr) == 0 {
 		return utf8.RuneCountInString(s) + 1
 	}
-	offset := 0
+	n := 0
 	for {
-		i := Index(s[offset:], sep)
+		i := Index(s, substr)
 		if i == -1 {
 			return n
 		}
 		n++
-		offset += i + len(sep)
+		s = s[i+len(substr):]
 	}
 }
 
@@ -106,16 +104,16 @@ func ContainsRune(s string, r rune) bool {
 	return IndexRune(s, r) >= 0
 }
 
-// LastIndex returns the index of the last instance of sep in s, or -1 if sep is not present in s.
-func LastIndex(s, sep string) int {
-	n := len(sep)
+// LastIndex returns the index of the last instance of substr in s, or -1 if substr is not present in s.
+func LastIndex(s, substr string) int {
+	n := len(substr)
 	switch {
 	case n == 0:
 		return len(s)
 	case n == 1:
-		return LastIndexByte(s, sep[0])
+		return LastIndexByte(s, substr[0])
 	case n == len(s):
-		if sep == s {
+		if substr == s {
 			return 0
 		}
 		return -1
@@ -123,20 +121,20 @@ func LastIndex(s, sep string) int {
 		return -1
 	}
 	// Rabin-Karp search from the end of the string
-	hashsep, pow := hashStrRev(sep)
+	hashss, pow := hashStrRev(substr)
 	last := len(s) - n
 	var h uint32
 	for i := len(s) - 1; i >= last; i-- {
 		h = h*primeRK + uint32(s[i])
 	}
-	if h == hashsep && s[last:] == sep {
+	if h == hashss && s[last:] == substr {
 		return last
 	}
 	for i := last - 1; i >= 0; i-- {
 		h *= primeRK
 		h += uint32(s[i])
 		h -= pow * uint32(s[i+n])
-		if h == hashsep && s[i:i+n] == sep {
+		if h == hashss && s[i:i+n] == substr {
 			return i
 		}
 	}
@@ -240,61 +238,187 @@ func genSplit(s, sep string, sepSave, n int) []string {
 	if n < 0 {
 		n = Count(s, sep) + 1
 	}
-	c := sep[0]
-	start := 0
+
 	a := make([]string, n)
-	na := 0
-	for i := 0; i+len(sep) <= len(s) && na+1 < n; i++ {
-		if s[i] == c && (len(sep) == 1 || s[i:i+len(sep)] == sep) {
-			a[na] = s[start : i+sepSave]
-			na++
-			start = i + len(sep)
-			i += len(sep) - 1
+	n--
+	i := 0
+	for i < n {
+		m := Index(s, sep)
+		if m < 0 {
+			break
 		}
+		a[i] = s[:m+sepSave]
+		s = s[m+len(sep):]
+		i++
 	}
-	a[na] = s[start:]
-	return a[0 : na+1]
+	a[i] = s
+	return a[:i+1]
 }
 
 // SplitN slices s into substrings separated by sep and returns a slice of
 // the substrings between those separators.
-// If sep is empty, SplitN splits after each UTF-8 sequence.
+//
 // The count determines the number of substrings to return:
 //   n > 0: at most n substrings; the last substring will be the unsplit remainder.
 //   n == 0: the result is nil (zero substrings)
 //   n < 0: all substrings
+//
+// Edge cases for s and sep (for example, empty strings) are handled
+// as described in the documentation for Split.
 func SplitN(s, sep string, n int) []string { return genSplit(s, sep, 0, n) }
 
 // SplitAfterN slices s into substrings after each instance of sep and
 // returns a slice of those substrings.
-// If sep is empty, SplitAfterN splits after each UTF-8 sequence.
+//
 // The count determines the number of substrings to return:
 //   n > 0: at most n substrings; the last substring will be the unsplit remainder.
 //   n == 0: the result is nil (zero substrings)
 //   n < 0: all substrings
+//
+// Edge cases for s and sep (for example, empty strings) are handled
+// as described in the documentation for SplitAfter.
 func SplitAfterN(s, sep string, n int) []string {
 	return genSplit(s, sep, len(sep), n)
 }
 
 // Split slices s into all substrings separated by sep and returns a slice of
 // the substrings between those separators.
-// If sep is empty, Split splits after each UTF-8 sequence.
+//
+// If s does not contain sep and sep is not empty, Split returns a
+// slice of length 1 whose only element is s.
+//
+// If sep is empty, Split splits after each UTF-8 sequence. If both s
+// and sep are empty, Split returns an empty slice.
+//
 // It is equivalent to SplitN with a count of -1.
 func Split(s, sep string) []string { return genSplit(s, sep, 0, -1) }
 
 // SplitAfter slices s into all substrings after each instance of sep and
 // returns a slice of those substrings.
-// If sep is empty, SplitAfter splits after each UTF-8 sequence.
+//
+// If s does not contain sep and sep is not empty, SplitAfter returns
+// a slice of length 1 whose only element is s.
+//
+// If sep is empty, SplitAfter splits after each UTF-8 sequence. If
+// both s and sep are empty, SplitAfter returns an empty slice.
+//
 // It is equivalent to SplitAfterN with a count of -1.
 func SplitAfter(s, sep string) []string {
 	return genSplit(s, sep, len(sep), -1)
 }
 
+var asciiSpace = [256]uint8{'\t': 1, '\n': 1, '\v': 1, '\f': 1, '\r': 1, ' ': 1}
+
 // Fields splits the string s around each instance of one or more consecutive white space
 // characters, as defined by unicode.IsSpace, returning an array of substrings of s or an
 // empty list if s contains only white space.
 func Fields(s string) []string {
-	return FieldsFunc(s, unicode.IsSpace)
+	// First count the fields.
+	// This is an exact count if s is ASCII, otherwise it is an approximation.
+	n := 0
+	wasSpace := 1
+	// setBits is used to track which bits are set in the bytes of s.
+	setBits := uint8(0)
+	for i := 0; i < len(s); i++ {
+		r := s[i]
+		setBits |= r
+		isSpace := int(asciiSpace[r])
+		n += wasSpace & ^isSpace
+		wasSpace = isSpace
+	}
+
+	if setBits < utf8.RuneSelf { // ASCII fast path
+		a := make([]string, n)
+		na := 0
+		fieldStart := 0
+		i := 0
+		// Skip spaces in the front of the input.
+		for i < len(s) && asciiSpace[s[i]] != 0 {
+			i++
+		}
+		fieldStart = i
+		for i < len(s) {
+			if asciiSpace[s[i]] == 0 {
+				i++
+				continue
+			}
+			a[na] = s[fieldStart:i]
+			na++
+			i++
+			// Skip spaces in between fields.
+			for i < len(s) && asciiSpace[s[i]] != 0 {
+				i++
+			}
+			fieldStart = i
+		}
+		if fieldStart < len(s) { // Last field might end at EOF.
+			a[na] = s[fieldStart:]
+		}
+		return a
+	}
+
+	// Some runes in the input string are not ASCII.
+	// Same general approach as in the ASCII path but
+	// uses DecodeRuneInString and unicode.IsSpace if
+	// a non-ASCII rune needs to be decoded and checked
+	// if it corresponds to a space.
+	a := make([]string, 0, n)
+	fieldStart := 0
+	i := 0
+	// Skip spaces in the front of the input.
+	for i < len(s) {
+		if c := s[i]; c < utf8.RuneSelf {
+			if asciiSpace[c] == 0 {
+				break
+			}
+			i++
+		} else {
+			r, w := utf8.DecodeRuneInString(s[i:])
+			if !unicode.IsSpace(r) {
+				break
+			}
+			i += w
+		}
+	}
+	fieldStart = i
+	for i < len(s) {
+		if c := s[i]; c < utf8.RuneSelf {
+			if asciiSpace[c] == 0 {
+				i++
+				continue
+			}
+			a = append(a, s[fieldStart:i])
+			i++
+		} else {
+			r, w := utf8.DecodeRuneInString(s[i:])
+			if !unicode.IsSpace(r) {
+				i += w
+				continue
+			}
+			a = append(a, s[fieldStart:i])
+			i += w
+		}
+		// Skip spaces in between fields.
+		for i < len(s) {
+			if c := s[i]; c < utf8.RuneSelf {
+				if asciiSpace[c] == 0 {
+					break
+				}
+				i++
+			} else {
+				r, w := utf8.DecodeRuneInString(s[i:])
+				if !unicode.IsSpace(r) {
+					break
+				}
+				i += w
+			}
+		}
+		fieldStart = i
+	}
+	if fieldStart < len(s) { // Last field might end at EOF.
+		a = append(a, s[fieldStart:])
+	}
+	return a
 }
 
 // FieldsFunc splits the string s at each run of Unicode code points c satisfying f(c)
@@ -383,40 +507,71 @@ func Map(mapping func(rune) rune, s string) string {
 	// In the worst case, the string can grow when mapped, making
 	// things unpleasant. But it's so rare we barge in assuming it's
 	// fine. It could also shrink but that falls out naturally.
-	maxbytes := len(s) // length of b
-	nbytes := 0        // number of bytes encoded in b
+
 	// The output buffer b is initialized on demand, the first
 	// time a character differs.
 	var b []byte
+	// nbytes is the number of bytes encoded in b.
+	var nbytes int
 
 	for i, c := range s {
 		r := mapping(c)
-		if b == nil {
-			if r == c {
-				continue
-			}
-			b = make([]byte, maxbytes)
-			nbytes = copy(b, s[:i])
+		if r == c {
+			continue
 		}
+
+		b = make([]byte, len(s)+utf8.UTFMax)
+		nbytes = copy(b, s[:i])
 		if r >= 0 {
-			wid := 1
-			if r >= utf8.RuneSelf {
-				wid = utf8.RuneLen(r)
+			if r <= utf8.RuneSelf {
+				b[nbytes] = byte(r)
+				nbytes++
+			} else {
+				nbytes += utf8.EncodeRune(b[nbytes:], r)
 			}
-			if nbytes+wid > maxbytes {
-				// Grow the buffer.
-				maxbytes = maxbytes*2 + utf8.UTFMax
-				nb := make([]byte, maxbytes)
-				copy(nb, b[0:nbytes])
-				b = nb
-			}
-			nbytes += utf8.EncodeRune(b[nbytes:maxbytes], r)
 		}
+
+		if c == utf8.RuneError {
+			// RuneError is the result of either decoding
+			// an invalid sequence or '\uFFFD'. Determine
+			// the correct number of bytes we need to advance.
+			_, w := utf8.DecodeRuneInString(s[i:])
+			i += w
+		} else {
+			i += utf8.RuneLen(c)
+		}
+
+		s = s[i:]
+		break
 	}
+
 	if b == nil {
 		return s
 	}
-	return string(b[0:nbytes])
+
+	for _, c := range s {
+		r := mapping(c)
+
+		// common case
+		if (0 <= r && r <= utf8.RuneSelf) && nbytes < len(b) {
+			b[nbytes] = byte(r)
+			nbytes++
+			continue
+		}
+
+		// b is not big enough or r is not a ASCII rune.
+		if r >= 0 {
+			if nbytes+utf8.UTFMax >= len(b) {
+				// Grow the buffer.
+				nb := make([]byte, 2*len(b))
+				copy(nb, b[:nbytes])
+				b = nb
+			}
+			nbytes += utf8.EncodeRune(b[nbytes:], r)
+		}
+	}
+
+	return string(b[:nbytes])
 }
 
 // Repeat returns a new string consisting of count copies of the string s.
@@ -561,17 +716,10 @@ func LastIndexFunc(s string, f func(rune) bool) int {
 // truth==false, the sense of the predicate function is
 // inverted.
 func indexFunc(s string, f func(rune) bool, truth bool) int {
-	start := 0
-	for start < len(s) {
-		wid := 1
-		r := rune(s[start])
-		if r >= utf8.RuneSelf {
-			r, wid = utf8.DecodeRuneInString(s[start:])
-		}
+	for i, r := range s {
 		if f(r) == truth {
-			return start
+			return i
 		}
-		start += wid
 	}
 	return -1
 }

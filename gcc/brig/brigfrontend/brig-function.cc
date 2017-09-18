@@ -38,6 +38,7 @@
 #include "phsa.h"
 #include "tree-pretty-print.h"
 #include "dumpfile.h"
+#include "profile-count.h"
 #include "tree-cfg.h"
 #include "errors.h"
 #include "function.h"

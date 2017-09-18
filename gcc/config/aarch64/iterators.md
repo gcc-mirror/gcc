@@ -44,6 +44,9 @@
 ;; Iterator for all scalar floating point modes (HF, SF, DF)
 (define_mode_iterator GPF_F16 [(HF "AARCH64_ISA_F16") SF DF])
 
+;; Iterator for all scalar floating point modes (HF, SF, DF)
+(define_mode_iterator GPF_HF [HF SF DF])
+
 ;; Iterator for all scalar floating point modes (HF, SF, DF and TF)
 (define_mode_iterator GPF_TF_F16 [HF SF DF TF])
 
@@ -384,6 +387,11 @@
 ;; 32-bit version and "%x0" in the 64-bit version.
 (define_mode_attr w [(QI "w") (HI "w") (SI "w") (DI "x") (SF "s") (DF "d")])
 
+;; The size of access, in bytes.
+(define_mode_attr ldst_sz [(SI "4") (DI "8")])
+;; Likewise for load/store pair.
+(define_mode_attr ldpstp_sz [(SI "8") (DI "16")])
+
 ;; For inequal width int to float conversion
 (define_mode_attr w1 [(HF "w") (SF "w") (DF "x")])
 (define_mode_attr w2 [(HF "x") (SF "x") (DF "w")])
@@ -520,6 +528,17 @@
 			(SI   "SI") (HI   "HI")
 			(QI   "QI")])
 
+;; Define element mode for each vector mode (lower case).
+(define_mode_attr Vel [(V8QI "qi") (V16QI "qi")
+			(V4HI "hi") (V8HI "hi")
+			(V2SI "si") (V4SI "si")
+			(DI "di")   (V2DI "di")
+			(V4HF "hf") (V8HF "hf")
+			(V2SF "sf") (V4SF "sf")
+			(V2DF "df") (DF "df")
+			(SI   "si") (HI   "hi")
+			(QI   "qi")])
+
 ;; 64-bit container modes the inner or scalar source mode.
 (define_mode_attr VCOND [(HI "V4HI") (SI "V2SI")
 			 (V4HI "V4HI") (V8HI "V4HI")
@@ -648,25 +667,25 @@
 ;; Double vector types for ALLX.
 (define_mode_attr Vallxd [(QI "8b") (HI "4h") (SI "2s")])
 
-;; Mode of result of comparison operations.
-(define_mode_attr V_cmp_result [(V8QI "V8QI") (V16QI "V16QI")
-				(V4HI "V4HI") (V8HI  "V8HI")
-				(V2SI "V2SI") (V4SI  "V4SI")
-				(DI   "DI")   (V2DI  "V2DI")
-				(V4HF "V4HI") (V8HF  "V8HI")
-				(V2SF "V2SI") (V4SF  "V4SI")
-				(V2DF "V2DI") (DF    "DI")
-				(SF   "SI")   (HF    "HI")])
+;; Mode with floating-point values replaced by like-sized integers.
+(define_mode_attr V_INT_EQUIV [(V8QI "V8QI") (V16QI "V16QI")
+			       (V4HI "V4HI") (V8HI  "V8HI")
+			       (V2SI "V2SI") (V4SI  "V4SI")
+			       (DI   "DI")   (V2DI  "V2DI")
+			       (V4HF "V4HI") (V8HF  "V8HI")
+			       (V2SF "V2SI") (V4SF  "V4SI")
+			       (V2DF "V2DI") (DF    "DI")
+			       (SF   "SI")   (HF    "HI")])
 
-;; Lower case mode of results of comparison operations.
-(define_mode_attr v_cmp_result [(V8QI "v8qi") (V16QI "v16qi")
-				(V4HI "v4hi") (V8HI  "v8hi")
-				(V2SI "v2si") (V4SI  "v4si")
-				(DI   "di")   (V2DI  "v2di")
-				(V4HF "v4hi") (V8HF  "v8hi")
-				(V2SF "v2si") (V4SF  "v4si")
-				(V2DF "v2di") (DF    "di")
-				(SF   "si")])
+;; Lower case mode with floating-point values replaced by like-sized integers.
+(define_mode_attr v_int_equiv [(V8QI "v8qi") (V16QI "v16qi")
+			       (V4HI "v4hi") (V8HI  "v8hi")
+			       (V2SI "v2si") (V4SI  "v4si")
+			       (DI   "di")   (V2DI  "v2di")
+			       (V4HF "v4hi") (V8HF  "v8hi")
+			       (V2SF "v2si") (V4SF  "v4si")
+			       (V2DF "v2di") (DF    "di")
+			       (SF   "si")])
 
 ;; Mode for vector conditional operations where the comparison has
 ;; different type from the lhs.
@@ -696,21 +715,6 @@
 ;; opaque large integer mode, and the number of elements touched by the
 ;; ld..._lane and st..._lane operations.
 (define_mode_attr nregs [(OI "2") (CI "3") (XI "4")])
-
-(define_mode_attr VRL2 [(V8QI "V32QI") (V4HI "V16HI")
-			(V4HF "V16HF")
-			(V2SI "V8SI")  (V2SF "V8SF")
-			(DI   "V4DI")  (DF   "V4DF")])
-
-(define_mode_attr VRL3 [(V8QI "V48QI") (V4HI "V24HI")
-			(V4HF "V24HF")
-			(V2SI "V12SI")  (V2SF "V12SF")
-			(DI   "V6DI")  (DF   "V6DF")])
-
-(define_mode_attr VRL4 [(V8QI "V64QI") (V4HI "V32HI")
-			(V4HF "V32HF")
-			(V2SI "V16SI")  (V2SF "V16SF")
-			(DI   "V8DI")  (DF   "V8DF")])
 
 ;; Mode for atomic operation suffixes
 (define_mode_attr atomic_sfx

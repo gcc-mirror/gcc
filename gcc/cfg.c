@@ -264,6 +264,7 @@ unchecked_make_edge (basic_block src, basic_block dst, int flags)
   n_edges_for_fn (cfun)++;
 
   e->count = profile_count::uninitialized ();
+  e->probability = profile_probability::uninitialized ();
   e->src = src;
   e->dest = dst;
   e->flags = flags;
@@ -332,7 +333,7 @@ make_single_succ_edge (basic_block src, basic_block dest, int flags)
 {
   edge e = make_edge (src, dest, flags);
 
-  e->probability = REG_BR_PROB_BASE;
+  e->probability = profile_probability::always ();
   e->count = src->count;
   return e;
 }
@@ -400,7 +401,6 @@ static void
 check_bb_profile (basic_block bb, FILE * file, int indent)
 {
   edge e;
-  int sum = 0;
   edge_iterator ei;
   struct function *fun = DECL_STRUCT_FUNCTION (current_function_decl);
   char *s_indent = (char *) alloca ((size_t) indent + 1);
@@ -413,21 +413,38 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
   if (bb != EXIT_BLOCK_PTR_FOR_FN (fun))
     {
       bool found = false;
+      profile_probability sum = profile_probability::never ();
+      int isum = 0;
+
       FOR_EACH_EDGE (e, ei, bb->succs)
 	{
-	  if (!(e->flags & EDGE_EH))
+	  if (!(e->flags & (EDGE_EH | EDGE_FAKE)))
 	    found = true;
 	  sum += e->probability;
+	  if (e->probability.initialized_p ())
+	    isum += e->probability.to_reg_br_prob_base ();
 	}
       /* Only report mismatches for non-EH control flow. If there are only EH
 	 edges it means that the BB ends by noreturn call.  Here the control
 	 flow may just terminate.  */
       if (found)
 	{
-	  if (EDGE_COUNT (bb->succs) && abs (sum - REG_BR_PROB_BASE) > 100)
-	    fprintf (file,
-		     ";; %sInvalid sum of outgoing probabilities %.1f%%\n",
-		     s_indent, sum * 100.0 / REG_BR_PROB_BASE);
+	  if (sum.differs_from_p (profile_probability::always ()))
+	    {
+	      fprintf (file,
+		       ";; %sInvalid sum of outgoing probabilities ",
+		       s_indent);
+	      sum.dump (file);
+	      fprintf (file, "\n");
+	    }
+	  /* Probabilities caps to 100% and thus the previous test will never
+	     fire if the sum of probabilities is too large.  */
+	  else if (isum > REG_BR_PROB_BASE + 100)
+	    {
+	      fprintf (file,
+		       ";; %sInvalid sum of outgoing probabilities %.1f%%\n",
+		       s_indent, isum * 100.0 / REG_BR_PROB_BASE);
+	    }
 	  profile_count lsum = profile_count::zero ();
 	  FOR_EACH_EDGE (e, ei, bb->succs)
 	    lsum += e->count;
@@ -442,9 +459,9 @@ check_bb_profile (basic_block bb, FILE * file, int indent)
 	    }
 	}
     }
-    if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
+  if (bb != ENTRY_BLOCK_PTR_FOR_FN (fun))
     {
-      sum = 0;
+      int sum = 0;
       FOR_EACH_EDGE (e, ei, bb->preds)
 	sum += EDGE_FREQUENCY (e);
       if (abs (sum - bb->frequency) > 100)
@@ -498,8 +515,12 @@ dump_edge_info (FILE *file, edge e, dump_flags_t flags, int do_succ)
   else
     fprintf (file, " %d", side->index);
 
-  if (e->probability && do_details)
-    fprintf (file, " [%.1f%%] ", e->probability * 100.0 / REG_BR_PROB_BASE);
+  if (e->probability.initialized_p () && do_details)
+    {
+      fprintf (file, " [");
+      e->probability.dump (file);
+      fprintf (file, "] ");
+    }
 
   if (e->count.initialized_p () && do_details)
     {
@@ -860,7 +881,7 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
 				 profile_count count, edge taken_edge)
 {
   edge c;
-  int prob;
+  profile_probability prob;
   edge_iterator ei;
 
   if (bb->count < count)
@@ -878,59 +899,51 @@ update_bb_profile_for_threading (basic_block bb, int edge_frequency,
   /* Compute the probability of TAKEN_EDGE being reached via threaded edge.
      Watch for overflows.  */
   if (bb->frequency)
-    prob = GCOV_COMPUTE_SCALE (edge_frequency, bb->frequency);
+    /* FIXME: We should get edge frequency as count.  */
+    prob = profile_probability::probability_in_gcov_type
+		 (edge_frequency, bb->frequency);
   else
-    prob = 0;
+    prob = profile_probability::never ();
   if (prob > taken_edge->probability)
     {
       if (dump_file)
-	fprintf (dump_file, "Jump threading proved probability of edge "
-		 "%i->%i too small (it is %i, should be %i).\n",
-		 taken_edge->src->index, taken_edge->dest->index,
-		 taken_edge->probability, prob);
-      prob = taken_edge->probability * 6 / 8;
+	{
+	  fprintf (dump_file, "Jump threading proved probability of edge "
+		   "%i->%i too small (it is ",
+		   taken_edge->src->index, taken_edge->dest->index);	
+	  taken_edge->probability.dump (dump_file);
+	  fprintf (dump_file, " should be ");
+	  prob.dump (dump_file);
+	  fprintf (dump_file, ")\n");
+	}
+      prob = taken_edge->probability.apply_scale (6, 8);
     }
 
   /* Now rescale the probabilities.  */
   taken_edge->probability -= prob;
-  prob = REG_BR_PROB_BASE - prob;
-  if (prob <= 0)
+  prob = prob.invert ();
+  if (prob == profile_probability::never ())
     {
       if (dump_file)
 	fprintf (dump_file, "Edge frequencies of bb %i has been reset, "
 		 "frequency of block should end up being 0, it is %i\n",
 		 bb->index, bb->frequency);
-      EDGE_SUCC (bb, 0)->probability = REG_BR_PROB_BASE;
+      EDGE_SUCC (bb, 0)->probability = profile_probability::guessed_always ();
       ei = ei_start (bb->succs);
       ei_next (&ei);
       for (; (c = ei_safe_edge (ei)); ei_next (&ei))
-	c->probability = 0;
+	c->probability = profile_probability::guessed_never ();
     }
-  else if (prob != REG_BR_PROB_BASE)
+  else if (!(prob == profile_probability::always ()))
     {
-      int scale = RDIV (65536 * REG_BR_PROB_BASE, prob);
-
       FOR_EACH_EDGE (c, ei, bb->succs)
-	{
-	  /* Protect from overflow due to additional scaling.  */
-	  if (c->probability > prob)
-	    c->probability = REG_BR_PROB_BASE;
-	  else
-	    {
-	      c->probability = RDIV (c->probability * scale, 65536);
-	      if (c->probability > REG_BR_PROB_BASE)
-		c->probability = REG_BR_PROB_BASE;
-	    }
-	}
+	c->probability /= prob;
     }
 
   gcc_assert (bb == taken_edge->src);
-  if (taken_edge->count < count)
-    {
-      if (dump_file)
-	fprintf (dump_file, "edge %i->%i count became negative after threading",
-		 taken_edge->src->index, taken_edge->dest->index);
-    }
+  if (dump_file && taken_edge->count < count)
+    fprintf (dump_file, "edge %i->%i count became negative after threading",
+	     taken_edge->src->index, taken_edge->dest->index);
   taken_edge->count -= count;
 }
 
@@ -1035,6 +1048,26 @@ scale_bbs_frequencies_profile_count (basic_block *bbs, int nbbs,
       bbs[i]->count = bbs[i]->count.apply_scale (num, den);
       FOR_EACH_EDGE (e, ei, bbs[i]->succs)
 	e->count =  e->count.apply_scale (num, den);
+    }
+}
+
+/* Multiply all frequencies of basic blocks in array BBS of length NBBS
+   by NUM/DEN, in profile_count arithmetic.  More accurate than previous
+   function but considerably slower.  */
+void
+scale_bbs_frequencies (basic_block *bbs, int nbbs,
+		       profile_probability p)
+{
+  int i;
+  edge e;
+
+  for (i = 0; i < nbbs; i++)
+    {
+      edge_iterator ei;
+      bbs[i]->frequency = p.apply (bbs[i]->frequency);
+      bbs[i]->count = bbs[i]->count.apply_probability (p);
+      FOR_EACH_EDGE (e, ei, bbs[i]->succs)
+	e->count =  e->count.apply_probability (p);
     }
 }
 

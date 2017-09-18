@@ -22,7 +22,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "tm.h"
 #include "opts.h"
-#include "signop.h"
 #include "hash-set.h"
 #include "fixed-value.h"
 #include "alias.h"

@@ -231,8 +231,8 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 				}
 				return errNotEnough
 			}
-			// Both lzwr and br should be exhausted. Reading from them should
-			// yield (0, io.EOF).
+			// In theory, both lzwr and br should be exhausted. Reading from them
+			// should yield (0, io.EOF).
 			//
 			// The spec (Appendix F - Compression), says that "An End of
 			// Information code... must be the last code output by the encoder
@@ -248,11 +248,21 @@ func (d *decoder) decode(r io.Reader, configOnly bool) error {
 				}
 				return errTooMuch
 			}
-			if n, err := br.Read(d.tmp[:1]); n != 0 || err != io.EOF {
+
+			// In practice, some GIFs have an extra byte in the data sub-block
+			// stream, which we ignore. See https://golang.org/issue/16146.
+			for nExtraBytes := 0; ; {
+				n, err := br.Read(d.tmp[:2])
+				nExtraBytes += n
+				if nExtraBytes > 1 {
+					return errTooMuch
+				}
+				if err == io.EOF {
+					break
+				}
 				if err != nil {
 					return fmt.Errorf("gif: reading image data: %v", err)
 				}
-				return errTooMuch
 			}
 
 			// Check that the color indexes are inside the palette.
@@ -410,14 +420,29 @@ func (d *decoder) newImageFromDescriptor() (*image.Paletted, error) {
 	height := int(d.tmp[6]) + int(d.tmp[7])<<8
 	d.imageFields = d.tmp[8]
 
-	// The GIF89a spec, Section 20 (Image Descriptor) says:
-	// "Each image must fit within the boundaries of the Logical
-	// Screen, as defined in the Logical Screen Descriptor."
-	bounds := image.Rect(left, top, left+width, top+height)
-	if bounds != bounds.Intersect(image.Rect(0, 0, d.width, d.height)) {
+	// The GIF89a spec, Section 20 (Image Descriptor) says: "Each image must
+	// fit within the boundaries of the Logical Screen, as defined in the
+	// Logical Screen Descriptor."
+	//
+	// This is conceptually similar to testing
+	//	frameBounds := image.Rect(left, top, left+width, top+height)
+	//	imageBounds := image.Rect(0, 0, d.width, d.height)
+	//	if !frameBounds.In(imageBounds) { etc }
+	// but the semantics of the Go image.Rectangle type is that r.In(s) is true
+	// whenever r is an empty rectangle, even if r.Min.X > s.Max.X. Here, we
+	// want something stricter.
+	//
+	// Note that, by construction, left >= 0 && top >= 0, so we only have to
+	// explicitly compare frameBounds.Max (left+width, top+height) against
+	// imageBounds.Max (d.width, d.height) and not frameBounds.Min (left, top)
+	// against imageBounds.Min (0, 0).
+	if left+width > d.width || top+height > d.height {
 		return nil, errors.New("gif: frame bounds larger than image bounds")
 	}
-	return image.NewPaletted(bounds, nil), nil
+	return image.NewPaletted(image.Rectangle{
+		Min: image.Point{left, top},
+		Max: image.Point{left + width, top + height},
+	}, nil), nil
 }
 
 func (d *decoder) readBlock() (int, error) {

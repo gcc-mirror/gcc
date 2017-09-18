@@ -9,4 +9,5 @@ int f(int x, int y)
   return ret;
 }
 
-/* { dg-final { scan-tree-dump "Folded to: ret_\[0-9\]+ = 0;"  "dom2" } } */
+/* { dg-final { scan-tree-dump "Replaced redundant expr \[^\r\n\]* with .0."  "dom2" } } */
+

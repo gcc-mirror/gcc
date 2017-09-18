@@ -37,11 +37,11 @@
 #include <experimental/bits/lfts_config.h>
 
 namespace std {
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+
 namespace experimental {
 inline namespace fundamentals_v2 {
 namespace pmr {
-_GLIBCXX_BEGIN_NAMESPACE_VERSION
-
 #define __cpp_lib_experimental_memory_resources 201402L
 
   class memory_resource;
@@ -168,8 +168,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template <typename _Tp1, typename... _Args> //used here
 	void construct(_Tp1* __p, _Args&&... __args)
 	{
-	  auto __use_tag = __use_alloc<_Tp1, memory_resource*,
-	       _Args...>(this->resource());
+	  memory_resource* const __resource = this->resource();
+	  auto __use_tag
+	    = __use_alloc<_Tp1, memory_resource*, _Args...>(__resource);
 	  _M_construct(__use_tag, __p, std::forward<_Args>(__args)...);
 	}
 
@@ -180,10 +181,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		       tuple<_Args1...> __x,
 		       tuple<_Args2...> __y)
 	{
+	  memory_resource* const __resource = this->resource();
 	  auto __x_use_tag =
-	    __use_alloc<_Tp1, memory_resource*, _Args1...>(this->resource());
+	    __use_alloc<_Tp1, memory_resource*, _Args1...>(__resource);
 	  auto __y_use_tag =
-	    __use_alloc<_Tp2, memory_resource*, _Args2...>(this->resource());
+	    __use_alloc<_Tp2, memory_resource*, _Args2...>(__resource);
 
 	  ::new(__p) std::pair<_Tp1, _Tp2>(piecewise_construct,
 					   _M_construct_p(__x_use_tag, __x),
@@ -377,11 +379,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __r = new_delete_resource();
     return __get_default_resource().exchange(__r);
   }
-
-_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace pmr
 } // namespace fundamentals_v2
 } // namespace experimental
+
+_GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
 #endif

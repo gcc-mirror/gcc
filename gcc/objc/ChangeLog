@@ -1,3 +1,46 @@
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* objc-encoding.c (encode_type): Use SCALAR_INT_TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* objc-encoding.c (encode_type): Use SCALAR_FLOAT_TYPE_MODE
+	instead of TYPE_MODE.
+
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* objc-encoding.c (encode_gnu_bitfield): Prefix mode names with E_ in
+	case statements.
+
+2017-08-09  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81417
+	* objc-next-runtime-abi-02.c (build_v2_build_objc_method_call): Update
+	a call to build_conditional_expr.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* objc-gnu-runtime-abi-01.c: Include header files.
+	* objc-next-runtime-abi-01.c: Likewise.
+	* objc-next-runtime-abi-02.c: Likewise.
+
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* objc-runtime-shared-support.c (build_ivar_list_initializer):
+	Don't presume first item is a FIELD_DECL.
+
+2017-07-19  Nathan Sidwell  <nathan@acm.org>
+
+	* objc-act.h (CLASS_NST_METHODS, CLASS_CLS_METHODS): Use
+	TYPE_{MIN,MAX}_VALUE_RAW.
+
 2017-05-16  Sylvestre Ledru  <sylvestre@debian.org>
 
 	* objc-runtime-shared-support.c (build_module_descriptor):

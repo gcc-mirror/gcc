@@ -39,7 +39,7 @@ main (int argc, int *argv[])
   x.nan.mant_high = 0x1234;
   x.nan.mant_low = 0xabcdef;
 
-  z.value = __builtin_fabsq (x.value);
+  z.value = __builtin_fabsf128 (x.value);
 
   if (z.nan.negative != 0
       || z.nan.exponent != 0x22
@@ -48,7 +48,7 @@ main (int argc, int *argv[])
       || z.nan.mant_low != 0xabcdef)
     abort ();
 
-  z.value = __builtin_fabsq (z.value);
+  z.value = __builtin_fabsf128 (z.value);
 
   if (z.nan.negative != 0
       || z.nan.exponent != 0x22

@@ -60,6 +60,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "builtins.h"
 #include "stor-layout.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Print a warning message and set that we have seen an error.  */
 
@@ -1929,7 +1931,7 @@ gen_hsa_addr (tree ref, hsa_bb *hbb, HOST_WIDE_INT *output_bitsize = NULL,
 
   if (handled_component_p (ref))
     {
-      enum machine_mode mode;
+      machine_mode mode;
       int unsignedp, volatilep, preversep;
 
       ref = get_inner_reference (ref, &bitsize, &bitpos, &varoffset, &mode,
@@ -5655,8 +5657,37 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
   hphi = new hsa_insn_phi (count, dest);
   hphi->m_bb = hbb->m_bb;
 
-  tree lhs = gimple_phi_result (phi_stmt);
+  auto_vec <tree, 8> aexprs;
+  auto_vec <hsa_op_reg *, 8> aregs;
 
+  /* Calling split_edge when processing a PHI node messes up with the order of
+     gimple phi node arguments (it moves the one associated with the edge to
+     the end).  We need to keep the order of edges and arguments of HSA phi
+     node arguments consistent, so we do all required splitting as the first
+     step, and in reverse order as to not be affected by the re-orderings.  */
+  for (unsigned j = count; j != 0; j--)
+    {
+      unsigned i = j - 1;
+      tree op = gimple_phi_arg_def (phi_stmt, i);
+      if (TREE_CODE (op) != ADDR_EXPR)
+	continue;
+
+      edge e = gimple_phi_arg_edge (as_a <gphi *> (phi_stmt), i);
+      hsa_bb *hbb_src = hsa_init_new_bb (split_edge (e));
+      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
+					   hbb_src);
+
+      hsa_op_reg *dest
+	= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
+      hsa_insn_basic *insn
+	= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
+			      dest, addr);
+      hbb_src->append_insn (insn);
+      aexprs.safe_push (op);
+      aregs.safe_push (dest);
+    }
+
+  tree lhs = gimple_phi_result (phi_stmt);
   for (unsigned i = 0; i < count; i++)
     {
       tree op = gimple_phi_arg_def (phi_stmt, i);
@@ -5682,18 +5713,14 @@ gen_hsa_phi_from_gimple_phi (gimple *phi_stmt, hsa_bb *hbb)
 	    }
 	  else if (TREE_CODE (op) == ADDR_EXPR)
 	    {
-	      edge e = gimple_phi_arg_edge (as_a <gphi *> (phi_stmt), i);
-	      hsa_bb *hbb_src = hsa_init_new_bb (split_edge (e));
-	      hsa_op_address *addr = gen_hsa_addr (TREE_OPERAND (op, 0),
-						   hbb_src);
-
-	      hsa_op_reg *dest
-		= new hsa_op_reg (hsa_get_segment_addr_type (BRIG_SEGMENT_FLAT));
-	      hsa_insn_basic *insn
-		= new hsa_insn_basic (2, BRIG_OPCODE_LDA, BRIG_TYPE_U64,
-				      dest, addr);
-	      hbb_src->append_insn (insn);
-
+	      hsa_op_reg *dest = NULL;
+	      for (unsigned a_idx = 0; a_idx < aexprs.length (); a_idx++)
+		if (aexprs[a_idx] == op)
+		  {
+		    dest = aregs[a_idx];
+		    break;
+		  }
+	      gcc_assert (dest);
 	      hphi->set_op (i, dest);
 	    }
 	  else
@@ -6139,7 +6166,7 @@ convert_switch_statements (void)
 	auto_vec <edge> new_edges;
 	auto_vec <phi_definition *> phi_todo_list;
 	auto_vec <profile_count> edge_counts;
-	auto_vec <int> edge_probabilities;
+	auto_vec <profile_probability> edge_probabilities;
 
 	/* Investigate all labels that and PHI nodes in these edges which
 	   should be fixed after we add new collection of edges.  */
@@ -6231,12 +6258,12 @@ convert_switch_statements (void)
 	    basic_block label_bb
 	      = label_to_block_fn (func, CASE_LABEL (label));
 	    edge new_edge = make_edge (cur_bb, label_bb, EDGE_TRUE_VALUE);
-	    int prob_sum = sum_slice <int> (edge_probabilities, i, labels, 0) +
-	       edge_probabilities[0];
+	    profile_probability prob_sum = sum_slice <profile_probability>
+		 (edge_probabilities, i, labels, profile_probability::never ())
+		  + edge_probabilities[0];
 
-	    if (prob_sum)
-	      new_edge->probability
-		= RDIV (REG_BR_PROB_BASE * edge_probabilities[i], prob_sum);
+	    if (prob_sum.initialized_p ())
+	      new_edge->probability = edge_probabilities[i] / prob_sum;
 
 	    new_edge->count = edge_counts[i];
 	    new_edges.safe_push (new_edge);
@@ -6253,8 +6280,7 @@ convert_switch_statements (void)
 		  }
 
 		edge next_edge = make_edge (cur_bb, next_bb, EDGE_FALSE_VALUE);
-		next_edge->probability
-		  = inverse_probability (new_edge->probability);
+		next_edge->probability = new_edge->probability.invert ();
 		next_edge->count = edge_counts[0]
 		  + sum_slice <profile_count> (edge_counts, i, labels,
 					       profile_count::zero ());
@@ -6265,7 +6291,7 @@ convert_switch_statements (void)
 		    of the switch.  */
 	      {
 		edge e = make_edge (cur_bb, default_label_bb, EDGE_FALSE_VALUE);
-		e->probability = inverse_probability (new_edge->probability);
+		e->probability = new_edge->probability.invert ();
 		e->count = edge_counts[0];
 		new_edges.safe_insert (0, e);
 	      }

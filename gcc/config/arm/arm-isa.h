@@ -40,7 +40,8 @@ enum isa_feature
     isa_bit_ARMv6,	/* Architecture rel 6.  */
     isa_bit_ARMv6k,	/* Architecture rel 6k.  */
     isa_bit_thumb2,	/* Thumb-2.  */
-    isa_bit_notm,	/* Instructions that are not present in 'M' profile.  */
+    isa_bit_notm,	/* Instructions not present in 'M' profile.  */
+    isa_bit_be8,	/* Architecture uses be8 mode in big-endian.  */
     isa_bit_tdiv,	/* Thumb division instructions.  */
     isa_bit_ARMv7em,	/* Architecture rel 7e-m.  */
     isa_bit_ARMv7,	/* Architecture rel 7.  */
@@ -59,7 +60,6 @@ enum isa_feature
     isa_bit_VFPv4,	/* Vector floating point v4.  */
     isa_bit_FPv5,	/* Floating point v5.  */
     isa_bit_lpae,	/* ARMv7-A LPAE.  */
-    isa_bit_FP_ARMv8,	/* ARMv8 floating-point extension.  */
     isa_bit_neon,	/* Advanced SIMD instructions.  */
     isa_bit_fp16conv,	/* Conversions to/from fp16 (VFPv3 extension).  */
     isa_bit_fp_dbl,	/* Double precision operations supported.  */
@@ -101,7 +101,7 @@ enum isa_feature
 #define ISA_ARMv5e	ISA_ARMv5, isa_bit_ARMv5e
 #define ISA_ARMv5te	ISA_ARMv5e, isa_bit_thumb
 #define ISA_ARMv5tej	ISA_ARMv5te
-#define ISA_ARMv6	ISA_ARMv5te, isa_bit_ARMv6
+#define ISA_ARMv6	ISA_ARMv5te, isa_bit_ARMv6, isa_bit_be8
 #define ISA_ARMv6j	ISA_ARMv6
 #define ISA_ARMv6k	ISA_ARMv6, isa_bit_ARMv6k
 #define ISA_ARMv6z	ISA_ARMv6
@@ -126,6 +126,7 @@ enum isa_feature
 #define ISA_ARMv8_2a	ISA_ARMv8_1a, isa_bit_ARMv8_2
 #define ISA_ARMv8m_base ISA_ARMv6m, isa_bit_ARMv8, isa_bit_cmse, isa_bit_tdiv
 #define ISA_ARMv8m_main ISA_ARMv7m, isa_bit_ARMv8, isa_bit_cmse
+#define ISA_ARMv8r	ISA_ARMv8a
 
 /* List of all cryptographic extensions to stripout if crypto is
    disabled.  Currently, that's trivial, but we define it anyway for
@@ -141,7 +142,7 @@ enum isa_feature
    default.  isa_bit_fp16 is deliberately missing from this list.  */
 #define ISA_ALL_FPU_INTERNAL						\
   isa_bit_VFPv2, isa_bit_VFPv3, isa_bit_VFPv4, isa_bit_FPv5,		\
-  isa_bit_FP_ARMv8, isa_bit_fp16conv, isa_bit_fp_dbl, ISA_ALL_SIMD
+  isa_bit_fp16conv, isa_bit_fp_dbl, ISA_ALL_SIMD
 
 /* Similarly, but including fp16 and other extensions that aren't part of
    -mfpu support.  */
@@ -152,10 +153,10 @@ enum isa_feature
 #define ISA_VFPv3	ISA_VFPv2, isa_bit_VFPv3
 #define ISA_VFPv4	ISA_VFPv3, isa_bit_VFPv4, isa_bit_fp16conv
 #define ISA_FPv5	ISA_VFPv4, isa_bit_FPv5
-#define ISA_FP_ARMv8	ISA_FPv5, isa_bit_FP_ARMv8
 
 #define ISA_FP_DBL	isa_bit_fp_dbl
 #define ISA_FP_D32	ISA_FP_DBL, isa_bit_fp_d32
+#define ISA_FP_ARMv8	ISA_FPv5, ISA_FP_D32
 #define ISA_NEON	ISA_FP_D32, isa_bit_neon
 #define ISA_CRYPTO	ISA_NEON, isa_bit_crypto
 

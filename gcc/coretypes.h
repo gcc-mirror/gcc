@@ -55,6 +55,17 @@ typedef const struct simple_bitmap_def *const_sbitmap;
 struct rtx_def;
 typedef struct rtx_def *rtx;
 typedef const struct rtx_def *const_rtx;
+class scalar_mode;
+class scalar_int_mode;
+class scalar_float_mode;
+class complex_mode;
+template<typename> class opt_mode;
+typedef opt_mode<scalar_mode> opt_scalar_mode;
+typedef opt_mode<scalar_int_mode> opt_scalar_int_mode;
+typedef opt_mode<scalar_float_mode> opt_scalar_float_mode;
+template<typename> class pod_mode;
+typedef pod_mode<scalar_mode> scalar_mode_pod;
+typedef pod_mode<scalar_int_mode> scalar_int_mode_pod;
 
 /* Subclasses of rtx_def, using indentation to show the class
    hierarchy, along with the relevant invariant.
@@ -219,6 +230,22 @@ enum optimization_type {
   OPTIMIZE_FOR_SIZE
 };
 
+/* Enumerates a padding direction.  */
+enum pad_direction {
+  /* No padding is required.  */
+  PAD_NONE,
+
+  /* Insert padding above the data, i.e. at higher memeory addresses
+     when dealing with memory, and at the most significant end when
+     dealing with registers.  */
+  PAD_UPWARD,
+
+  /* Insert padding below the data, i.e. at lower memeory addresses
+     when dealing with memory, and at the least significant end when
+     dealing with registers.  */
+  PAD_DOWNWARD
+};
+
 /* Possible initialization status of a variable.   When requested
    by the user, this information is tracked and recorded in the DWARF
    debug information, along with the variable's location.  */
@@ -310,6 +337,11 @@ union _dont_use_tree_here_;
 #define tree union _dont_use_tree_here_ *
 #define const_tree union _dont_use_tree_here_ *
 
+typedef struct scalar_mode scalar_mode;
+typedef struct scalar_int_mode scalar_int_mode;
+typedef struct scalar_float_mode scalar_float_mode;
+typedef struct complex_mode complex_mode;
+
 #endif
 
 /* Classes of functions that compiler needs to check
@@ -358,12 +390,17 @@ typedef void (*gt_pointer_operator) (void *, void *);
 typedef unsigned char uchar;
 #endif
 
-/* Most host source files will require the following headers.  */
-#if !defined (GENERATOR_FILE) && !defined (USED_FOR_TARGET)
-#include "machmode.h"
+/* Most source files will require the following headers.  */
+#if !defined (USED_FOR_TARGET)
+#include "insn-modes.h"
 #include "signop.h"
 #include "wide-int.h" 
+#include "wide-int-print.h"
+#include "insn-modes-inline.h"
+#include "machmode.h"
 #include "double-int.h"
+/* Most host source files will require the following headers.  */
+#if !defined (GENERATOR_FILE)
 #include "real.h"
 #include "fixed-value.h"
 #include "hash-table.h"
@@ -372,6 +409,7 @@ typedef unsigned char uchar;
 #include "is-a.h"
 #include "memory-block.h"
 #include "dumpfile.h"
+#endif
 #endif /* GENERATOR_FILE && !USED_FOR_TARGET */
 
 #endif /* coretypes.h */

@@ -1,3 +1,27 @@
+2017-07-20  Nathan Sidwell  <nathan@acm.org>
+
+	Remove TYPE_METHODS.
+	* libcp1plugin.cc (plugin_build_decl): Member fns are on TYPE_FIELDS.
+
+2017-07-12  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use
+	DECL_CXX_{CON,DE}STRUCTOR directly.
+
+2017-07-05  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* libcp1plugin.cc (plugin_build_field): Use SET_DECL_MODE.
+
+2017-06-30  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Use make_conv_op_name.
+	(plugin_build_dependent_expr): Likewise.
+
+2017-06-26  Nathan Sidwell  <nathan@acm.org>
+
+	* libcp1plugin.cc (plugin_build_decl): Don't set
+	DECL_ASSIGNMENT_OPERATOR_P.
+
 2017-06-16  Nathan Sidwell  <nathan@acm.org>
 
 	* libcp1plugin.cc (plugin_build_decl): Adjust parm building.

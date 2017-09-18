@@ -241,7 +241,7 @@ brig_langhook_type_for_size (unsigned int bits,
 }
 
 static tree
-brig_langhook_type_for_mode (enum machine_mode mode, int unsignedp)
+brig_langhook_type_for_mode (machine_mode mode, int unsignedp)
 {
   if (mode == TYPE_MODE (void_type_node))
     return void_type_node;

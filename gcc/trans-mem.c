@@ -50,7 +50,8 @@
 #include "langhooks.h"
 #include "cfgloop.h"
 #include "tree-ssa-address.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 #define A_RUNINSTRUMENTEDCODE	0x0001
 #define A_RUNUNINSTRUMENTEDCODE	0x0002
@@ -2934,9 +2935,9 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       join_bb->frequency = test_bb->frequency = transaction_bb->frequency;
       join_bb->count = test_bb->count = transaction_bb->count;
 
-      ei->probability = PROB_ALWAYS;
-      et->probability = PROB_LIKELY;
-      ef->probability = PROB_UNLIKELY;
+      ei->probability = profile_probability::always ();
+      et->probability = profile_probability::likely ();
+      ef->probability = profile_probability::unlikely ();
       et->count = test_bb->count.apply_probability (et->probability);
       ef->count = test_bb->count.apply_probability (ef->probability);
 
@@ -2967,20 +2968,20 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       edge ei = make_edge (transaction_bb, test_bb, EDGE_FALLTHRU);
       test_bb->frequency = transaction_bb->frequency;
       test_bb->count = transaction_bb->count;
-      ei->probability = PROB_ALWAYS;
+      ei->probability = profile_probability::always ();
 
       // Not abort edge.  If both are live, chose one at random as we'll
       // we'll be fixing that up below.
       redirect_edge_pred (fallthru_edge, test_bb);
       fallthru_edge->flags = EDGE_FALSE_VALUE;
-      fallthru_edge->probability = PROB_VERY_LIKELY;
+      fallthru_edge->probability = profile_probability::very_likely ();
       fallthru_edge->count = test_bb->count.apply_probability
 				(fallthru_edge->probability);
 
       // Abort/over edge.
       redirect_edge_pred (abort_edge, test_bb);
       abort_edge->flags = EDGE_TRUE_VALUE;
-      abort_edge->probability = PROB_VERY_UNLIKELY;
+      abort_edge->probability = profile_probability::unlikely ();
       abort_edge->count = test_bb->count.apply_probability
 				(abort_edge->probability);
 
@@ -3020,13 +3021,13 @@ expand_transaction (struct tm_region *region, void *data ATTRIBUTE_UNUSED)
       // use the uninst path when falling back to serial mode.
       redirect_edge_pred (inst_edge, test_bb);
       inst_edge->flags = EDGE_FALSE_VALUE;
-      inst_edge->probability = REG_BR_PROB_BASE / 2;
+      inst_edge->probability = profile_probability::even ();
       inst_edge->count
 	= test_bb->count.apply_probability (inst_edge->probability);
 
       redirect_edge_pred (uninst_edge, test_bb);
       uninst_edge->flags = EDGE_TRUE_VALUE;
-      uninst_edge->probability = REG_BR_PROB_BASE / 2;
+      uninst_edge->probability = profile_probability::even ();
       uninst_edge->count
 	= test_bb->count.apply_probability (uninst_edge->probability);
     }
@@ -3211,7 +3212,12 @@ split_bb_make_tm_edge (gimple *stmt, basic_block dest_bb,
       edge e = split_block (bb, stmt);
       *pnext = gsi_start_bb (e->dest);
     }
-  make_edge (bb, dest_bb, EDGE_ABNORMAL);
+  edge e = make_edge (bb, dest_bb, EDGE_ABNORMAL);
+  if (e)
+    {
+      e->probability = profile_probability::guessed_never ();
+      e->count = profile_count::guessed_zero ();
+    }
 
   // Record the need for the edge for the benefit of the rtl passes.
   if (cfun->gimple_df->tm_restart == NULL)

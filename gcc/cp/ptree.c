@@ -151,9 +151,6 @@ cxx_print_type (FILE *file, tree node, int indent)
     fputs (" delete[]", file);
   if (TYPE_HAS_COPY_ASSIGN (node))
     fputs (" this=(X&)", file);
-  if (CLASSTYPE_SORTED_FIELDS (node))
-    fprintf (file, " sorted-fields %p",
-	     (void *) CLASSTYPE_SORTED_FIELDS (node));
 
   if (TREE_CODE (node) == RECORD_TYPE)
     {
@@ -181,7 +178,6 @@ cxx_print_identifier (FILE *file, tree node, int indent)
   fprintf (file, "%s local bindings <%p>", get_identifier_kind_name (node),
 	   (void *) IDENTIFIER_BINDING (node));
   print_node (file, "label", IDENTIFIER_LABEL_VALUE (node), indent + 4);
-  print_node (file, "template", IDENTIFIER_TEMPLATE (node), indent + 4);
 }
 
 void
@@ -208,8 +204,6 @@ cxx_print_lambda_node (FILE *file, tree node, int indent)
   fprintf (file, "] ");
   print_node (file, "capture_list", LAMBDA_EXPR_CAPTURE_LIST (node), indent + 4);
   print_node (file, "this_capture", LAMBDA_EXPR_THIS_CAPTURE (node), indent + 4);
-  print_node (file, "return_type", LAMBDA_EXPR_RETURN_TYPE (node), indent + 4);
-  print_node (file, "closure", LAMBDA_EXPR_CLOSURE (node), indent + 4);
 }
 
 void

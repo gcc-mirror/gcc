@@ -58,7 +58,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "hsa-common.h"
 #include "debug.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* OMP region information.  Every parallel and workshare
    directive is enclosed between two markers, the OMP_* directive
@@ -1741,9 +1742,9 @@ expand_omp_for_init_counts (struct omp_for_data *fd, gimple_stmt_iterator *gsi,
 				       entry_bb);
 	    }
 	  ne = make_edge (entry_bb, zero_iter_bb, EDGE_FALSE_VALUE);
-	  ne->probability = REG_BR_PROB_BASE / 2000 - 1;
+	  ne->probability = profile_probability::very_unlikely ();
 	  e->flags = EDGE_TRUE_VALUE;
-	  e->probability = REG_BR_PROB_BASE - ne->probability;
+	  e->probability = ne->probability.invert ();
 	  if (l2_dom_bb == NULL)
 	    l2_dom_bb = entry_bb;
 	  entry_bb = e->dest;
@@ -1920,7 +1921,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, basic_block cont_bb,
       if (i < fd->collapse - 1)
 	{
 	  e = make_edge (last_bb, bb, EDGE_FALSE_VALUE);
-	  e->probability = REG_BR_PROB_BASE / 8;
+	  e->probability = profile_probability::guessed_always ().apply_scale (1, 8);
 
 	  t = fd->loops[i + 1].n1;
 	  t = force_gimple_operand_gsi (&gsi, t,
@@ -1961,7 +1962,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, basic_block cont_bb,
 	  stmt = gimple_build_cond_empty (t);
 	  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 	  e = make_edge (bb, body_bb, EDGE_TRUE_VALUE);
-	  e->probability = REG_BR_PROB_BASE * 7 / 8;
+	  e->probability = profile_probability::guessed_always ().apply_scale (7, 8);
 	}
       else
 	make_edge (bb, body_bb, EDGE_FALLTHRU);
@@ -2219,8 +2220,8 @@ expand_omp_ordered_sink (gimple_stmt_iterator *gsi, struct omp_for_data *fd,
 				   GSI_CONTINUE_LINKING);
   gsi_insert_after (gsi, gimple_build_cond_empty (cond), GSI_NEW_STMT);
   edge e3 = make_edge (e1->src, e2->dest, EDGE_FALSE_VALUE);
-  e3->probability = REG_BR_PROB_BASE / 8;
-  e1->probability = REG_BR_PROB_BASE - e3->probability;
+  e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
+  e1->probability = e3->probability.invert ();
   e1->flags = EDGE_TRUE_VALUE;
   set_immediate_dominator (CDI_DOMINATORS, e2->dest, e1->src);
 
@@ -2373,9 +2374,9 @@ expand_omp_for_ordered_loops (struct omp_for_data *fd, tree *counts,
       remove_edge (e1);
       make_edge (body_bb, new_header, EDGE_FALLTHRU);
       e3->flags = EDGE_FALSE_VALUE;
-      e3->probability = REG_BR_PROB_BASE / 8;
+      e3->probability = profile_probability::guessed_always ().apply_scale (1, 8);
       e1 = make_edge (new_header, new_body, EDGE_TRUE_VALUE);
-      e1->probability = REG_BR_PROB_BASE - e3->probability;
+      e1->probability = e3->probability.invert ();
 
       set_immediate_dominator (CDI_DOMINATORS, new_header, body_bb);
       set_immediate_dominator (CDI_DOMINATORS, new_body, new_header);
@@ -3149,8 +3150,8 @@ expand_omp_for_generic (struct omp_region *region,
 	e->flags = EDGE_TRUE_VALUE;
       if (e)
 	{
-	  e->probability = REG_BR_PROB_BASE * 7 / 8;
-	  find_edge (cont_bb, l2_bb)->probability = REG_BR_PROB_BASE / 8;
+	  e->probability = profile_probability::guessed_always ().apply_scale (7, 8);
+	  find_edge (cont_bb, l2_bb)->probability = e->probability.invert ();
 	}
       else
 	{
@@ -3351,9 +3352,9 @@ expand_omp_for_static_nochunk (struct omp_region *region,
       ep = split_block (entry_bb, cond_stmt);
       ep->flags = EDGE_TRUE_VALUE;
       entry_bb = ep->dest;
-      ep->probability = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
+      ep->probability = profile_probability::very_likely ();
       ep = make_edge (ep->src, fin_bb, EDGE_FALSE_VALUE);
-      ep->probability = REG_BR_PROB_BASE / 2000 - 1;
+      ep->probability = profile_probability::very_unlikely ();
       if (gimple_in_ssa_p (cfun))
 	{
 	  int dest_idx = find_edge (entry_bb, fin_bb)->dest_idx;
@@ -3634,10 +3635,10 @@ expand_omp_for_static_nochunk (struct omp_region *region,
 
   /* Connect all the blocks.  */
   ep = make_edge (entry_bb, third_bb, EDGE_FALSE_VALUE);
-  ep->probability = REG_BR_PROB_BASE / 4 * 3;
+  ep->probability = profile_probability::guessed_always ().apply_scale (3, 4);
   ep = find_edge (entry_bb, second_bb);
   ep->flags = EDGE_TRUE_VALUE;
-  ep->probability = REG_BR_PROB_BASE / 4;
+  ep->probability = profile_probability::guessed_always ().apply_scale (1, 4);
   find_edge (third_bb, seq_start_bb)->flags = EDGE_FALSE_VALUE;
   find_edge (third_bb, fin_bb)->flags = EDGE_TRUE_VALUE;
 
@@ -3835,9 +3836,9 @@ expand_omp_for_static_chunk (struct omp_region *region,
       se = split_block (entry_bb, cond_stmt);
       se->flags = EDGE_TRUE_VALUE;
       entry_bb = se->dest;
-      se->probability = REG_BR_PROB_BASE - (REG_BR_PROB_BASE / 2000 - 1);
+      se->probability = profile_probability::very_likely ();
       se = make_edge (se->src, fin_bb, EDGE_FALSE_VALUE);
-      se->probability = REG_BR_PROB_BASE / 2000 - 1;
+      se->probability = profile_probability::very_unlikely ();
       if (gimple_in_ssa_p (cfun))
 	{
 	  int dest_idx = find_edge (iter_part_bb, fin_bb)->dest_idx;
@@ -4206,6 +4207,10 @@ expand_omp_for_static_chunk (struct omp_region *region,
 	  source_location locus;
 
 	  phi = psi.phi ();
+	  if (operand_equal_p (gimple_phi_arg_def (phi, 0),
+			       redirect_edge_var_map_def (vm), 0))
+	    continue;
+
 	  t = gimple_phi_result (phi);
 	  gcc_assert (t == redirect_edge_var_map_result (vm));
 
@@ -4448,8 +4453,8 @@ expand_cilk_for (struct omp_region *region, struct omp_for_data *fd)
 
     }
   ne->flags = EDGE_FALSE_VALUE;
-  e->probability = REG_BR_PROB_BASE * 7 / 8;
-  ne->probability = REG_BR_PROB_BASE / 8;
+  e->probability = profile_probability::guessed_always ().apply_scale (7, 8);
+  ne->probability = e->probability.invert ();
 
   set_immediate_dominator (CDI_DOMINATORS, l1_bb, entry_bb);
   set_immediate_dominator (CDI_DOMINATORS, l2_bb, l2_dom_bb);
@@ -4725,24 +4730,28 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 	      tree itype2 = TREE_TYPE (fd->loops[i - 1].v);
 	      if (POINTER_TYPE_P (itype2))
 		itype2 = signed_type_for (itype2);
+	      t = fold_convert (itype2, fd->loops[i - 1].step);
+	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
+					    GSI_SAME_STMT);
 	      t = build3 (COND_EXPR, itype2,
 			  build2 (fd->loops[i].cond_code, boolean_type_node,
 				  fd->loops[i].v,
 				  fold_convert (itype, fd->loops[i].n2)),
-			  build_int_cst (itype2, 0),
-			  fold_convert (itype2, fd->loops[i - 1].step));
+			  build_int_cst (itype2, 0), t);
 	      if (POINTER_TYPE_P (TREE_TYPE (fd->loops[i - 1].v)))
 		t = fold_build_pointer_plus (fd->loops[i - 1].v, t);
 	      else
 		t = fold_build2 (PLUS_EXPR, itype2, fd->loops[i - 1].v, t);
 	      expand_omp_build_assign (&gsi, fd->loops[i - 1].v, t);
 
+	      t = fold_convert (itype, fd->loops[i].n1);
+	      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE, true,
+					    GSI_SAME_STMT);
 	      t = build3 (COND_EXPR, itype,
 			  build2 (fd->loops[i].cond_code, boolean_type_node,
 				  fd->loops[i].v,
 				  fold_convert (itype, fd->loops[i].n2)),
-			  fd->loops[i].v,
-			  fold_convert (itype, fd->loops[i].n1));
+			  fd->loops[i].v, t);
 	      expand_omp_build_assign (&gsi, fd->loops[i].v, t);
 	    }
 	}
@@ -4810,8 +4819,8 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
 
     }
   ne->flags = EDGE_FALSE_VALUE;
-  e->probability = REG_BR_PROB_BASE * 7 / 8;
-  ne->probability = REG_BR_PROB_BASE / 8;
+  e->probability = profile_probability::guessed_always ().apply_scale (7, 8);
+  ne->probability = e->probability.invert ();
 
   set_immediate_dominator (CDI_DOMINATORS, l1_bb, entry_bb);
   set_immediate_dominator (CDI_DOMINATORS, l0_bb, l1_bb);
@@ -4824,8 +4833,10 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       gsi_insert_after (&gsi, cond_stmt, GSI_NEW_STMT);
       make_edge (entry_bb, l2_bb, EDGE_FALSE_VALUE);
       FALLTHRU_EDGE (entry_bb)->flags = EDGE_TRUE_VALUE;
-      FALLTHRU_EDGE (entry_bb)->probability = REG_BR_PROB_BASE * 7 / 8;
-      BRANCH_EDGE (entry_bb)->probability = REG_BR_PROB_BASE / 8;
+      FALLTHRU_EDGE (entry_bb)->probability
+	 = profile_probability::guessed_always ().apply_scale (7, 8);
+      BRANCH_EDGE (entry_bb)->probability 
+	 = FALLTHRU_EDGE (entry_bb)->probability.invert ();
       l2_dom_bb = entry_bb;
     }
   set_immediate_dominator (CDI_DOMINATORS, l2_bb, l2_dom_bb);
@@ -4845,8 +4856,7 @@ expand_omp_simd (struct omp_region *region, struct omp_for_data *fd)
       /* If not -fno-tree-loop-vectorize, hint that we want to vectorize
 	 the loop.  */
       if ((flag_tree_loop_vectorize
-	   || (!global_options_set.x_flag_tree_loop_vectorize
-	       && !global_options_set.x_flag_tree_vectorize))
+	   || !global_options_set.x_flag_tree_loop_vectorize)
 	  && flag_tree_loop_optimize
 	  && loop->safelen > 1)
 	{
@@ -5018,9 +5028,9 @@ expand_omp_taskloop_for_outer (struct omp_region *region,
   gsi = gsi_last_bb (exit_bb);
   gsi_remove (&gsi, true);
 
-  FALLTHRU_EDGE (entry_bb)->probability = REG_BR_PROB_BASE;
+  FALLTHRU_EDGE (entry_bb)->probability = profile_probability::always ();
   remove_edge (BRANCH_EDGE (entry_bb));
-  FALLTHRU_EDGE (cont_bb)->probability = REG_BR_PROB_BASE;
+  FALLTHRU_EDGE (cont_bb)->probability = profile_probability::always ();
   remove_edge (BRANCH_EDGE (cont_bb));
   set_immediate_dominator (CDI_DOMINATORS, exit_bb, cont_bb);
   set_immediate_dominator (CDI_DOMINATORS, region->entry,
@@ -5208,7 +5218,7 @@ expand_omp_taskloop_for_inner (struct omp_region *region,
   gsi = gsi_last_bb (exit_bb);
   gsi_remove (&gsi, true);
 
-  FALLTHRU_EDGE (entry_bb)->probability = REG_BR_PROB_BASE;
+  FALLTHRU_EDGE (entry_bb)->probability = profile_probability::always ();
   if (!broken_loop)
     remove_edge (BRANCH_EDGE (entry_bb));
   else
@@ -5323,6 +5333,8 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
     }
   if (POINTER_TYPE_P (diff_type) || TYPE_UNSIGNED (diff_type))
     diff_type = signed_type_for (diff_type);
+  if (TYPE_PRECISION (diff_type) < TYPE_PRECISION (integer_type_node))
+    diff_type = integer_type_node;
 
   basic_block entry_bb = region->entry; /* BB ending in OMP_FOR */
   basic_block exit_bb = region->exit; /* BB ending in OMP_RETURN */
@@ -5658,9 +5670,16 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 	  cont_bb = split->dest;
 
 	  split->flags ^= EDGE_FALLTHRU | EDGE_FALSE_VALUE;
-	  make_edge (elem_cont_bb, elem_body_bb, EDGE_TRUE_VALUE);
+	  split->probability = profile_probability::unlikely ().guessed ();
+	  edge latch_edge
+	    = make_edge (elem_cont_bb, elem_body_bb, EDGE_TRUE_VALUE);
+	  latch_edge->probability = profile_probability::likely ().guessed ();
 
-	  make_edge (body_bb, cont_bb, EDGE_FALSE_VALUE);
+	  edge skip_edge = make_edge (body_bb, cont_bb, EDGE_FALSE_VALUE);
+	  skip_edge->probability = profile_probability::unlikely ().guessed ();
+	  edge loop_entry_edge = EDGE_SUCC (body_bb, 1 - skip_edge->dest_idx);
+	  loop_entry_edge->probability
+	    = profile_probability::likely ().guessed ();
 
 	  gsi = gsi_for_stmt (cont_stmt);
 	}
@@ -5713,7 +5732,9 @@ expand_oacc_for (struct omp_region *region, struct omp_for_data *fd)
 
 	  /* Fixup edges from bottom_bb.  */
 	  split->flags ^= EDGE_FALLTHRU | EDGE_FALSE_VALUE;
-	  make_edge (bottom_bb, head_bb, EDGE_TRUE_VALUE);
+	  split->probability = profile_probability::unlikely ().guessed ();
+	  edge latch_edge = make_edge (bottom_bb, head_bb, EDGE_TRUE_VALUE);
+	  latch_edge->probability = profile_probability::likely ().guessed ();
 	}
     }
 
@@ -6604,8 +6625,11 @@ expand_omp_atomic_pipeline (basic_block load_bb, basic_block store_bb,
   e = single_succ_edge (store_bb);
   e->flags &= ~EDGE_FALLTHRU;
   e->flags |= EDGE_FALSE_VALUE;
+  /* Expect no looping.  */
+  e->probability = profile_probability::guessed_always ();
 
   e = make_edge (store_bb, loop_header, EDGE_TRUE_VALUE);
+  e->probability = profile_probability::guessed_never ();
 
   /* Copy the new value to loadedi (we already did that before the condition
      if we are not in SSA).  */
@@ -6719,17 +6743,18 @@ expand_omp_atomic (struct omp_region *region)
       if (exact_log2 (align) >= index)
 	{
 	  /* Atomic load.  */
+	  scalar_mode smode;
 	  if (loaded_val == stored_val
-	      && (GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
-		  || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
-	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	      && (is_int_mode (TYPE_MODE (type), &smode)
+		  || is_float_mode (TYPE_MODE (type), &smode))
+	      && GET_MODE_BITSIZE (smode) <= BITS_PER_WORD
 	      && expand_omp_atomic_load (load_bb, addr, loaded_val, index))
 	    return;
 
 	  /* Atomic store.  */
-	  if ((GET_MODE_CLASS (TYPE_MODE (type)) == MODE_INT
-	       || GET_MODE_CLASS (TYPE_MODE (type)) == MODE_FLOAT)
-	      && GET_MODE_BITSIZE (TYPE_MODE (type)) <= BITS_PER_WORD
+	  if ((is_int_mode (TYPE_MODE (type), &smode)
+	       || is_float_mode (TYPE_MODE (type), &smode))
+	      && GET_MODE_BITSIZE (smode) <= BITS_PER_WORD
 	      && store_bb == single_succ (load_bb)
 	      && first_stmt (store_bb) == store
 	      && expand_omp_atomic_store (load_bb, addr, loaded_val,

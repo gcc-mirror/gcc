@@ -58,7 +58,10 @@ namespace selftest {
 void
 run_c_tests (void)
 {
-  c_format_c_tests ();
+  /* Run selftests shared within the C family.  */
+  c_family_tests ();
+
+  /* Additional C-specific tests.  */
 }
 
 } // namespace selftest

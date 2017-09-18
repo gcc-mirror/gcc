@@ -13,6 +13,12 @@ rev_char (vector char a)
   return vec_revb (a);		/* XXBRQ.  */
 }
 
+vector bool char
+rev_bool_char (vector bool char a)
+{
+  return vec_revb (a);		/* XXBRQ.  */
+}
+
 vector signed char
 rev_schar (vector signed char a)
 {
@@ -31,6 +37,12 @@ rev_short (vector short a)
   return vec_revb (a);		/* XXBRH.  */
 }
 
+vector bool short
+rev_bool_short (vector bool short a)
+{
+  return vec_revb (a);		/* XXBRH.  */
+}
+
 vector unsigned short
 rev_ushort (vector unsigned short a)
 {
@@ -39,6 +51,12 @@ rev_ushort (vector unsigned short a)
 
 vector int
 rev_int (vector int a)
+{
+  return vec_revb (a);		/* XXBRW.  */
+}
+
+vector bool int
+rev_bool_int (vector bool int a)
 {
   return vec_revb (a);		/* XXBRW.  */
 }
@@ -62,6 +80,6 @@ rev_double (vector double a)
 }
 
 /* { dg-final { scan-assembler-times "xxbrd" 1 } } */
-/* { dg-final { scan-assembler-times "xxbrh" 2 } } */
-/* { dg-final { scan-assembler-times "xxbrq" 3 } } */
-/* { dg-final { scan-assembler-times "xxbrw" 3 } } */
+/* { dg-final { scan-assembler-times "xxbrh" 3 } } */
+/* { dg-final { scan-assembler-times "xxbrq" 4 } } */
+/* { dg-final { scan-assembler-times "xxbrw" 4 } } */

@@ -1,3 +1,37 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* include/cpplib.h (c_lang): Add CXX2A and GNUCXX2A.
+	* init.c (lang_defaults): Add rows for CXX2A and GNUCXX2A.
+	(cpp_init_builtins): Set __cplusplus to 201709L for C++2a.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/cpplib.h (enum c_lang): Rename CLK_GNUCXX1Z
+	to CLK_GNUCXX17 and CLK_CXX1Z to CLK_CXX17.
+	* init.c (lang_defaults, cpp_init_builtins): Likewise.
+	* expr.c (cpp_classify_number): Use C++17 instead of C++1z
+	in diagnostics.
+
+2017-07-07  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* line-map.c (linemap_macro_loc_to_def_point): Preserve range
+	information for macro expansions by delaying resolving ad-hoc
+	locations until within the loop.
+
+2017-07-06  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/79300
+	* include/line-map.h (enum location_aspect): New enum.
+	(linemap_client_expand_location_to_spelling_point): Add
+	enum location_aspect param.
+	* line-map.c (rich_location::get_expanded_location): Update for
+	new param of linemap_client_expand_location_to_spelling_point.
+	(rich_location::maybe_add_fixit): Likewise.
+	(fixit_hint::affects_line_p): Likewise.
+
 2017-06-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* line-map.c (location_adhoc_data_update): Perform addition in

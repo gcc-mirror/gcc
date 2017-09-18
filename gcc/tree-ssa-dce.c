@@ -1054,7 +1054,7 @@ remove_dead_stmt (gimple_stmt_iterator *i, basic_block bb)
 	      e = e2;
 	}
       gcc_assert (e);
-      e->probability = REG_BR_PROB_BASE;
+      e->probability = profile_probability::always ();
       e->count = bb->count;
 
       /* The edge is no longer associated with a conditional, so it does

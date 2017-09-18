@@ -77,6 +77,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rtl-chkp.h"
 #include "tree-dfa.h"
 #include "tree-ssa.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 /* So we can assign to cfun in this file.  */
 #undef cfun
@@ -2098,7 +2100,7 @@ aggregate_value_p (const_tree exp, const_tree fntype)
     return 0;
 
   regno = REGNO (reg);
-  nregs = hard_regno_nregs[regno][TYPE_MODE (type)];
+  nregs = hard_regno_nregs (regno, TYPE_MODE (type));
   for (i = 0; i < nregs; i++)
     if (! call_used_regs[regno + i])
       return 1;
@@ -2218,20 +2220,11 @@ use_register_for_decl (const_tree decl)
   if (!DECL_REGISTER (decl))
     return false;
 
-  switch (TREE_CODE (TREE_TYPE (decl)))
-    {
-    case RECORD_TYPE:
-    case UNION_TYPE:
-    case QUAL_UNION_TYPE:
-      /* When not optimizing, disregard register keyword for variables with
-	 types containing methods, otherwise the methods won't be callable
-	 from the debugger.  */
-      if (TYPE_METHODS (TYPE_MAIN_VARIANT (TREE_TYPE (decl))))
-	return false;
-      break;
-    default:
-      break;
-    }
+  /* When not optimizing, disregard register keyword for types that
+     could have methods, otherwise the methods won't be callable from
+     the debugger.  */
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+    return false;
 
   return true;
 }
@@ -2720,7 +2713,7 @@ assign_parm_find_stack_rtl (tree parm, struct assign_parm_data_one *data)
      is TARGET_FUNCTION_ARG_BOUNDARY.  If we're using slot_offset, we're
      intentionally forcing upward padding.  Otherwise we have to come
      up with a guess at the alignment based on OFFSET_RTX.  */
-  if (data->locate.where_pad != downward || data->entry_parm)
+  if (data->locate.where_pad != PAD_DOWNWARD || data->entry_parm)
     align = boundary;
   else if (CONST_INT_P (offset_rtx))
     {
@@ -2874,7 +2867,7 @@ assign_parm_setup_block_p (struct assign_parm_data_one *data)
   if (REG_P (data->entry_parm)
       && GET_MODE_SIZE (data->promoted_mode) < UNITS_PER_WORD
       && (BLOCK_REG_PADDING (data->passed_mode, data->passed_type, 1)
-	  == (BYTES_BIG_ENDIAN ? upward : downward)))
+	  == (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
     return true;
 #endif
 
@@ -2985,14 +2978,14 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	 that mode's store operation.  */
       else if (size <= UNITS_PER_WORD)
 	{
-	  machine_mode mode
-	    = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	  unsigned int bits = size * BITS_PER_UNIT;
+	  machine_mode mode = int_mode_for_size (bits, 0).else_blk ();
 
 	  if (mode != BLKmode
 #ifdef BLOCK_REG_PADDING
 	      && (size == UNITS_PER_WORD
 		  || (BLOCK_REG_PADDING (mode, data->passed_type, 1)
-		      != (BYTES_BIG_ENDIAN ? upward : downward)))
+		      != (BYTES_BIG_ENDIAN ? PAD_UPWARD : PAD_DOWNWARD)))
 #endif
 	      )
 	    {
@@ -3004,7 +2997,8 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 		 to the value directly in mode MODE, otherwise we must
 		 start with the register in word_mode and explicitly
 		 convert it.  */
-	      if (TRULY_NOOP_TRUNCATION (size * BITS_PER_UNIT, BITS_PER_WORD))
+	      if (targetm.truly_noop_truncation (size * BITS_PER_UNIT,
+						 BITS_PER_WORD))
 		reg = gen_rtx_REG (mode, REGNO (entry_parm));
 	      else
 		{
@@ -3032,7 +3026,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	      gcc_checking_assert (BYTES_BIG_ENDIAN
 				   && (BLOCK_REG_PADDING (mode,
 							  data->passed_type, 1)
-				       == upward));
+				       == PAD_UPWARD));
 
 	      int by = (UNITS_PER_WORD - size) * BITS_PER_UNIT;
 
@@ -3053,7 +3047,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 	  else if (size != UNITS_PER_WORD
 #ifdef BLOCK_REG_PADDING
 		   && (BLOCK_REG_PADDING (mode, data->passed_type, 1)
-		       == downward)
+		       == PAD_DOWNWARD)
 #else
 		   && BYTES_BIG_ENDIAN
 #endif
@@ -3077,7 +3071,7 @@ assign_parm_setup_block (struct assign_parm_data_all *all,
 #ifdef BLOCK_REG_PADDING
 	  gcc_checking_assert (BLOCK_REG_PADDING (GET_MODE (mem),
 						  data->passed_type, 0)
-			       == upward);
+			       == PAD_UPWARD);
 #endif
 	  emit_move_insn (mem, entry_parm);
 	}
@@ -3269,13 +3263,11 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       push_to_sequence2 (all->first_conversion_insn, all->last_conversion_insn);
       tempreg = convert_to_mode (data->nominal_mode, tempreg, unsignedp);
 
-      if (GET_CODE (tempreg) == SUBREG
+      if (partial_subreg_p (tempreg)
 	  && GET_MODE (tempreg) == data->nominal_mode
 	  && REG_P (SUBREG_REG (tempreg))
 	  && data->nominal_mode == data->passed_mode
-	  && GET_MODE (SUBREG_REG (tempreg)) == GET_MODE (data->entry_parm)
-	  && GET_MODE_SIZE (GET_MODE (tempreg))
-	     < GET_MODE_SIZE (GET_MODE (data->entry_parm)))
+	  && GET_MODE (SUBREG_REG (tempreg)) == GET_MODE (data->entry_parm))
 	{
 	  /* The argument is already sign/zero extended, so note it
 	     into the subreg.  */
@@ -3372,8 +3364,7 @@ assign_parm_setup_reg (struct assign_parm_data_all *all, tree parm,
       /* Mark complex types separately.  */
       if (GET_CODE (parmreg) == CONCAT)
 	{
-	  machine_mode submode
-	    = GET_MODE_INNER (GET_MODE (parmreg));
+	  scalar_mode submode = GET_MODE_INNER (GET_MODE (parmreg));
 	  int regnor = REGNO (XEXP (parmreg, 0));
 	  int regnoi = REGNO (XEXP (parmreg, 1));
 	  rtx stackr = adjust_address_nv (data->stack_parm, submode, 0);
@@ -3510,7 +3501,7 @@ assign_parms_unsplit_complex (struct assign_parm_data_all *all,
 	  && targetm.calls.split_complex_arg (TREE_TYPE (parm)))
 	{
 	  rtx tmp, real, imag;
-	  machine_mode inner = GET_MODE_INNER (DECL_MODE (parm));
+	  scalar_mode inner = GET_MODE_INNER (DECL_MODE (parm));
 
 	  real = DECL_RTL (fnargs[i]);
 	  imag = DECL_RTL (fnargs[i + 1]);
@@ -4108,7 +4099,7 @@ gimplify_parameters (void)
    rounding affects the initial and starting offsets, but not the argument
    size.
 
-   The second, controlled by FUNCTION_ARG_PADDING and PARM_BOUNDARY,
+   The second, controlled by TARGET_FUNCTION_ARG_PADDING and PARM_BOUNDARY,
    optionally rounds the size of the parm to PARM_BOUNDARY.  The
    initial offset is not affected by this rounding, while the size always
    is and the starting offset may be.  */
@@ -4126,7 +4117,7 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 		     struct locate_and_pad_arg_data *locate)
 {
   tree sizetree;
-  enum direction where_pad;
+  pad_direction where_pad;
   unsigned int boundary, round_boundary;
   int part_size_in_regs;
 
@@ -4152,7 +4143,7 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 
   sizetree
     = type ? size_in_bytes (type) : size_int (GET_MODE_SIZE (passed_mode));
-  where_pad = FUNCTION_ARG_PADDING (passed_mode, type);
+  where_pad = targetm.calls.function_arg_padding (passed_mode, type);
   boundary = targetm.calls.function_arg_boundary (passed_mode, type);
   round_boundary = targetm.calls.function_arg_round_boundary (passed_mode,
 							      type);
@@ -4201,7 +4192,7 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
 
       {
 	tree s2 = sizetree;
-	if (where_pad != none
+	if (where_pad != PAD_NONE
 	    && (!tree_fits_uhwi_p (sizetree)
 		|| (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
 	  s2 = round_up (s2, round_boundary / BITS_PER_UNIT);
@@ -4226,7 +4217,7 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
       /* Pad_below needs the pre-rounded size to know how much to pad
 	 below.  */
       locate->offset = locate->slot_offset;
-      if (where_pad == downward)
+      if (where_pad == PAD_DOWNWARD)
 	pad_below (&locate->offset, passed_mode, sizetree);
 
     }
@@ -4245,10 +4236,10 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
       /* Pad_below needs the pre-rounded size to know how much to pad below
 	 so this must be done before rounding up.  */
       locate->offset = locate->slot_offset;
-      if (where_pad == downward)
+      if (where_pad == PAD_DOWNWARD)
 	pad_below (&locate->offset, passed_mode, sizetree);
 
-      if (where_pad != none
+      if (where_pad != PAD_NONE
 	  && (!tree_fits_uhwi_p (sizetree)
 	      || (tree_to_uhwi (sizetree) * BITS_PER_UNIT) % round_boundary))
 	sizetree = round_up (sizetree, round_boundary / BITS_PER_UNIT);
@@ -4258,9 +4249,8 @@ locate_and_pad_parm (machine_mode passed_mode, tree type, int in_regs,
       locate->size.constant -= part_size_in_regs;
     }
 
-#ifdef FUNCTION_ARG_OFFSET
-  locate->offset.constant += FUNCTION_ARG_OFFSET (passed_mode, type);
-#endif
+  locate->offset.constant
+    += targetm.calls.function_arg_offset (passed_mode, type);
 }
 
 /* Round the stack offset in *OFFSET_PTR up to a multiple of BOUNDARY.
@@ -4329,21 +4319,16 @@ pad_to_arg_alignment (struct args_size *offset_ptr, int boundary,
 static void
 pad_below (struct args_size *offset_ptr, machine_mode passed_mode, tree sizetree)
 {
+  unsigned int align = PARM_BOUNDARY / BITS_PER_UNIT;
   if (passed_mode != BLKmode)
-    {
-      if (GET_MODE_BITSIZE (passed_mode) % PARM_BOUNDARY)
-	offset_ptr->constant
-	  += (((GET_MODE_BITSIZE (passed_mode) + PARM_BOUNDARY - 1)
-	       / PARM_BOUNDARY * PARM_BOUNDARY / BITS_PER_UNIT)
-	      - GET_MODE_SIZE (passed_mode));
-    }
+    offset_ptr->constant += -GET_MODE_SIZE (passed_mode) & (align - 1);
   else
     {
       if (TREE_CODE (sizetree) != INTEGER_CST
-	  || (TREE_INT_CST_LOW (sizetree) * BITS_PER_UNIT) % PARM_BOUNDARY)
+	  || (TREE_INT_CST_LOW (sizetree) & (align - 1)) != 0)
 	{
 	  /* Round the size up to multiple of PARM_BOUNDARY bits.  */
-	  tree s2 = round_up (sizetree, PARM_BOUNDARY / BITS_PER_UNIT);
+	  tree s2 = round_up (sizetree, align);
 	  /* Add it in.  */
 	  ADD_PARM_SIZE (*offset_ptr, s2);
 	  SUB_PARM_SIZE (*offset_ptr, sizetree);
@@ -5263,6 +5248,16 @@ expand_function_start (tree subr)
 	}
     }
 
+  /* The following was moved from init_function_start.
+     The move is supposed to make sdb output more accurate.  */
+  /* Indicate the beginning of the function body,
+     as opposed to parm setup.  */
+  emit_note (NOTE_INSN_FUNCTION_BEG);
+
+  gcc_assert (NOTE_P (get_last_insn ()));
+
+  parm_birth_insn = get_last_insn ();
+
   /* If the function receives a non-local goto, then store the
      bits we need to restore the frame pointer.  */
   if (cfun->nonlocal_goto_save_area)
@@ -5283,16 +5278,6 @@ expand_function_start (tree subr)
       emit_move_insn (r_save, targetm.builtin_setjmp_frame_value ());
       update_nonlocal_goto_save_area ();
     }
-
-  /* The following was moved from init_function_start.
-     The move is supposed to make sdb output more accurate.  */
-  /* Indicate the beginning of the function body,
-     as opposed to parm setup.  */
-  emit_note (NOTE_INSN_FUNCTION_BEG);
-
-  gcc_assert (NOTE_P (get_last_insn ()));
-
-  parm_birth_insn = get_last_insn ();
 
   if (crtl->profile)
     {
@@ -5504,6 +5489,7 @@ expand_function_end (void)
 	  : DECL_REGISTER (decl_result))
 	{
 	  rtx real_decl_rtl = crtl->return_rtx;
+	  complex_mode cmode;
 
 	  /* This should be set in assign_parms.  */
 	  gcc_assert (REG_FUNCTION_VALUE_P (real_decl_rtl));
@@ -5544,8 +5530,8 @@ expand_function_end (void)
 	     need to generate some non-trivial bitfield insertions.  Do that
 	     on a pseudo and not the hard register.  */
 	  else if (GET_CODE (decl_rtl) == CONCAT
-		   && GET_MODE_CLASS (GET_MODE (decl_rtl)) == MODE_COMPLEX_INT
-		   && GET_MODE_BITSIZE (GET_MODE (decl_rtl)) <= BITS_PER_WORD)
+		   && is_complex_int_mode (GET_MODE (decl_rtl), &cmode)
+		   && GET_MODE_BITSIZE (cmode) <= BITS_PER_WORD)
 	    {
 	      int old_generating_concat_p;
 	      rtx tmp;
@@ -5601,8 +5587,8 @@ expand_function_end (void)
       REG_FUNCTION_VALUE_P (outgoing) = 1;
 
       /* The address may be ptr_mode and OUTGOING may be Pmode.  */
-      value_address = convert_memory_address (GET_MODE (outgoing),
-					      value_address);
+      scalar_int_mode mode = as_a <scalar_int_mode> (GET_MODE (outgoing));
+      value_address = convert_memory_address (mode, value_address);
 
       emit_move_insn (outgoing, value_address);
 
@@ -6057,20 +6043,42 @@ thread_prologue_and_epilogue_insns (void)
 
   if (split_prologue_seq || prologue_seq)
     {
+      rtx_insn *split_prologue_insn = split_prologue_seq;
       if (split_prologue_seq)
-	insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	{
+	  while (split_prologue_insn && !NONDEBUG_INSN_P (split_prologue_insn))
+	    split_prologue_insn = NEXT_INSN (split_prologue_insn);
+	  insert_insn_on_edge (split_prologue_seq, orig_entry_edge);
+	}
 
+      rtx_insn *prologue_insn = prologue_seq;
       if (prologue_seq)
-	insert_insn_on_edge (prologue_seq, entry_edge);
+	{
+	  while (prologue_insn && !NONDEBUG_INSN_P (prologue_insn))
+	    prologue_insn = NEXT_INSN (prologue_insn);
+	  insert_insn_on_edge (prologue_seq, entry_edge);
+	}
 
       commit_edge_insertions ();
 
       /* Look for basic blocks within the prologue insns.  */
-      auto_sbitmap blocks (last_basic_block_for_fn (cfun));
-      bitmap_clear (blocks);
-      bitmap_set_bit (blocks, entry_edge->dest->index);
-      bitmap_set_bit (blocks, orig_entry_edge->dest->index);
-      find_many_sub_basic_blocks (blocks);
+      if (split_prologue_insn
+	  && BLOCK_FOR_INSN (split_prologue_insn) == NULL)
+	split_prologue_insn = NULL;
+      if (prologue_insn
+	  && BLOCK_FOR_INSN (prologue_insn) == NULL)
+	prologue_insn = NULL;
+      if (split_prologue_insn || prologue_insn)
+	{
+	  auto_sbitmap blocks (last_basic_block_for_fn (cfun));
+	  bitmap_clear (blocks);
+	  if (split_prologue_insn)
+	    bitmap_set_bit (blocks,
+			    BLOCK_FOR_INSN (split_prologue_insn)->index);
+	  if (prologue_insn)
+	    bitmap_set_bit (blocks, BLOCK_FOR_INSN (prologue_insn)->index);
+	  find_many_sub_basic_blocks (blocks);
+	}
     }
 
   default_rtl_profile ();
@@ -6249,7 +6257,7 @@ fndecl_name (tree fndecl)
 {
   if (fndecl == NULL)
     return "(nofn)";
-  return lang_hooks.decl_printable_name (fndecl, 2);
+  return lang_hooks.decl_printable_name (fndecl, 1);
 }
 
 /* Returns the name of function FN.  */

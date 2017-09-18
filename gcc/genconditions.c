@@ -67,6 +67,7 @@ write_header (void)
 #undef ENABLE_RTL_FLAG_CHECKING\n\
 #undef ENABLE_GC_CHECKING\n\
 #undef ENABLE_GC_ALWAYS_COLLECT\n\
+#define USE_ENUM_MODES\n\
 \n\
 #include \"coretypes.h\"\n\
 #include \"tm.h\"\n\

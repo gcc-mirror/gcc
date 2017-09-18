@@ -1,0 +1,5 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename gccbrig.info
+@settitle The GNU BRIG Compiler
+
+@bye

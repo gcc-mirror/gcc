@@ -141,6 +141,12 @@ struct simple_object_functions
 
   /* Release the private data for an simple_object_write.  */
   void (*release_write) (void *);
+
+  /* Copy LTO debug sections.  */
+  const char *(*copy_lto_debug_sections) (simple_object_read *sobj,
+					  simple_object_write *dobj,
+					  int (*pfn) (const char **),
+					  int *err);
 };
 
 /* The known object file formats.  */

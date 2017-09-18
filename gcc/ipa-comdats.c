@@ -416,7 +416,7 @@ public:
 bool
 pass_ipa_comdats::gate (function *)
 {
-  return HAVE_COMDAT_GROUP && optimize;
+  return HAVE_COMDAT_GROUP;
 }
 
 } // anon namespace

@@ -661,6 +661,11 @@ decode_cmdline_option (const char **argv, unsigned int lang_mask,
       value = integral_argument (arg);
       if (value == -1)
 	errors |= CL_ERR_UINT_ARG;
+
+      /* Reject value out of a range.  */
+      if (option->range_max != -1
+	  && (value < option->range_min || value > option->range_max))
+	errors |= CL_ERR_INT_RANGE_ARG;
     }
 
   /* If the switch takes an enumerated argument, convert it.  */
@@ -988,7 +993,8 @@ handle_option (struct gcc_options *opts,
       {
 	if (!handlers->handlers[i].handler (opts, opts_set, decoded,
 					    lang_mask, kind, loc,
-					    handlers, dc))
+					    handlers, dc,
+					    handlers->target_option_override_hook))
 	  return false;
       }
   
@@ -1134,6 +1140,13 @@ cmdline_handle_error (location_t loc, const struct cl_option *option,
     {
       error_at (loc, "argument to %qs should be a non-negative integer",
 		option->opt_text);
+      return true;
+    }
+
+  if (errors & CL_ERR_INT_RANGE_ARG)
+    {
+      error_at (loc, "argument to %qs is not between %d and %d",
+		option->opt_text, option->range_min, option->range_max);
       return true;
     }
 

@@ -5,9 +5,11 @@ package body Vect16 is
 
    procedure Add_Sub (X, Y : Sarray; R,S : out Sarray) is
    begin
-      for I in Sarray'Range loop
-         R(I) := X(I) + Y(I);
-         S(I) := X(I) - Y(I);
+      R(1) := X(5) + Y(5);
+      S(1) := X(5) - Y(5);
+      for I in 1 .. 4 loop
+         R(I + 1) := X(I) + Y(I);
+         S(I + 1) := X(I) - Y(I);
       end loop;
    end;
 

@@ -47,7 +47,7 @@ extern unsigned int arm_dbx_register_number (unsigned int);
 extern void arm_output_fn_unwind (FILE *, bool);
 
 extern rtx arm_expand_builtin (tree exp, rtx target, rtx subtarget
-			       ATTRIBUTE_UNUSED, enum machine_mode mode
+			       ATTRIBUTE_UNUSED, machine_mode mode
 			       ATTRIBUTE_UNUSED, int ignore ATTRIBUTE_UNUSED);
 extern tree arm_builtin_decl (unsigned code, bool initialize_p
 			      ATTRIBUTE_UNUSED);
@@ -61,8 +61,6 @@ extern void arm_gen_unlikely_cbranch (enum rtx_code, machine_mode cc_mode,
 				      rtx label_ref);
 extern bool arm_vector_mode_supported_p (machine_mode);
 extern bool arm_small_register_classes_for_mode_p (machine_mode);
-extern int arm_hard_regno_mode_ok (unsigned int, machine_mode);
-extern bool arm_modes_tieable_p (machine_mode, machine_mode);
 extern int const_ok_for_arm (HOST_WIDE_INT);
 extern int const_ok_for_op (HOST_WIDE_INT, enum rtx_code);
 extern int const_ok_for_dimode_op (HOST_WIDE_INT, enum rtx_code);
@@ -179,7 +177,6 @@ extern bool arm_coproc_ldc_stc_legitimate_address (rtx);
 
 #if defined TREE_CODE
 extern void arm_init_cumulative_args (CUMULATIVE_ARGS *, tree, rtx, tree);
-extern bool arm_pad_arg_upward (machine_mode, const_tree);
 extern bool arm_pad_reg_upward (machine_mode, tree, int);
 #endif
 extern int arm_apply_result_size (void);
@@ -464,6 +461,8 @@ struct arm_build_target
   const char *arch_pp_name;
   /* The base architecture value.  */
   enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  char profile;
   /* Bitmap encapsulating the isa_bits for the target environment.  */
   sbitmap isa;
   /* Flags used for tuning.  Long term, these move into tune_params.  */
@@ -507,6 +506,8 @@ struct arch_option
   const char *arch;
   /* Base architecture, from which this specific architecture is derived.  */
   enum base_architecture base_arch;
+  /* The profile letter for the architecture, upper case by convention.  */
+  const char profile;
   /* Default tune target (in the absence of any more specific data).  */
   enum processor_type tune_id;
 };

@@ -120,6 +120,9 @@ import (
 // Unmarshal maps an XML element to a pointer by setting the pointer
 // to a freshly allocated value and then mapping the element to that value.
 //
+// A missing element or empty attribute value will be unmarshaled as a zero value.
+// If the field is a slice, a zero value will be appended to the field. Otherwise, the
+// field will be set to its zero value.
 func Unmarshal(data []byte, v interface{}) error {
 	return NewDecoder(bytes.NewReader(data)).Decode(v)
 }
@@ -211,7 +214,7 @@ func (p *Decoder) unmarshalInterface(val Unmarshaler, start *StartElement) error
 // unmarshalTextInterface unmarshals a single XML element into val.
 // The chardata contained in the element (but not its children)
 // is passed to the text unmarshaler.
-func (p *Decoder) unmarshalTextInterface(val encoding.TextUnmarshaler, start *StartElement) error {
+func (p *Decoder) unmarshalTextInterface(val encoding.TextUnmarshaler) error {
 	var buf []byte
 	depth := 1
 	for depth > 0 {
@@ -285,8 +288,7 @@ func (p *Decoder) unmarshalAttr(val reflect.Value, attr Attr) error {
 		return nil
 	}
 
-	copyValue(val, []byte(attr.Value))
-	return nil
+	return copyValue(val, []byte(attr.Value))
 }
 
 var (
@@ -342,13 +344,13 @@ func (p *Decoder) unmarshal(val reflect.Value, start *StartElement) error {
 	}
 
 	if val.CanInterface() && val.Type().Implements(textUnmarshalerType) {
-		return p.unmarshalTextInterface(val.Interface().(encoding.TextUnmarshaler), start)
+		return p.unmarshalTextInterface(val.Interface().(encoding.TextUnmarshaler))
 	}
 
 	if val.CanAddr() {
 		pv := val.Addr()
 		if pv.CanInterface() && pv.Type().Implements(textUnmarshalerType) {
-			return p.unmarshalTextInterface(pv.Interface().(encoding.TextUnmarshaler), start)
+			return p.unmarshalTextInterface(pv.Interface().(encoding.TextUnmarshaler))
 		}
 	}
 
@@ -608,24 +610,40 @@ func copyValue(dst reflect.Value, src []byte) (err error) {
 	default:
 		return errors.New("cannot unmarshal into " + dst0.Type().String())
 	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		if len(src) == 0 {
+			dst.SetInt(0)
+			return nil
+		}
 		itmp, err := strconv.ParseInt(string(src), 10, dst.Type().Bits())
 		if err != nil {
 			return err
 		}
 		dst.SetInt(itmp)
 	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		if len(src) == 0 {
+			dst.SetUint(0)
+			return nil
+		}
 		utmp, err := strconv.ParseUint(string(src), 10, dst.Type().Bits())
 		if err != nil {
 			return err
 		}
 		dst.SetUint(utmp)
 	case reflect.Float32, reflect.Float64:
+		if len(src) == 0 {
+			dst.SetFloat(0)
+			return nil
+		}
 		ftmp, err := strconv.ParseFloat(string(src), dst.Type().Bits())
 		if err != nil {
 			return err
 		}
 		dst.SetFloat(ftmp)
 	case reflect.Bool:
+		if len(src) == 0 {
+			dst.SetBool(false)
+			return nil
+		}
 		value, err := strconv.ParseBool(strings.TrimSpace(string(src)))
 		if err != nil {
 			return err

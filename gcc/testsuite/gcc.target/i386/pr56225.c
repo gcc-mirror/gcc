@@ -1,5 +1,5 @@
 /* PR target/56225 */
-/* { dg-do compile { target { ia32 } } } */
+/* { dg-do compile { target ia32 } } */
 /* { dg-options "-O2 -march=pentium3 -mtune=generic" } */
 
 void bar (int);

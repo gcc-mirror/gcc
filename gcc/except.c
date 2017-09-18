@@ -974,7 +974,6 @@ dw2_build_landing_pads (void)
     {
       basic_block bb;
       rtx_insn *seq;
-      edge e;
 
       if (lp == NULL || lp->post_landing_pad == NULL)
 	continue;
@@ -991,9 +990,9 @@ dw2_build_landing_pads (void)
       end_sequence ();
 
       bb = emit_to_new_bb_before (seq, label_rtx (lp->post_landing_pad));
-      e = make_edge (bb, bb->next_bb, e_flags);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      bb->count = bb->next_bb->count;
+      bb->frequency = bb->next_bb->frequency;
+      make_single_succ_edge (bb, bb->next_bb, e_flags);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;
@@ -1183,14 +1182,15 @@ sjlj_emit_function_enter (rtx_code_label *dispatch_label)
 
       emit_cmp_and_jump_insns (x, const0_rtx, NE, 0,
 			       TYPE_MODE (integer_type_node), 0,
-			       dispatch_label, REG_BR_PROB_BASE / 100);
+			       dispatch_label,
+			       profile_probability::unlikely ());
 #else
       expand_builtin_setjmp_setup (addr, dispatch_label);
 #endif
     }
 
   emit_library_call (unwind_sjlj_register_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (fc, 0), Pmode);
+		     XEXP (fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1232,7 +1232,7 @@ sjlj_emit_function_exit (void)
   start_sequence ();
 
   emit_library_call (unwind_sjlj_unregister_libfunc, LCT_NORMAL, VOIDmode,
-		     1, XEXP (crtl->eh.sjlj_fc, 0), Pmode);
+		     XEXP (crtl->eh.sjlj_fc, 0), Pmode);
 
   seq = get_insns ();
   end_sequence ();
@@ -1251,14 +1251,13 @@ sjlj_emit_function_exit (void)
 static void
 sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 {
-  machine_mode unwind_word_mode = targetm.unwind_word_mode ();
-  machine_mode filter_mode = targetm.eh_return_filter_mode ();
+  scalar_int_mode unwind_word_mode = targetm.unwind_word_mode ();
+  scalar_int_mode filter_mode = targetm.eh_return_filter_mode ();
   eh_landing_pad lp;
   rtx mem, fc, exc_ptr_reg, filter_reg;
   rtx_insn *seq;
   basic_block bb;
   eh_region r;
-  edge e;
   int i, disp_index;
   vec<tree> dispatch_labels = vNULL;
 
@@ -1346,9 +1345,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
 
 	rtx_insn *before = label_rtx (lp->post_landing_pad);
 	bb = emit_to_new_bb_before (seq2, before);
-	e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-	e->count = bb->count;
-	e->probability = REG_BR_PROB_BASE;
+	make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
 	if (current_loops)
 	  {
 	    struct loop *loop = bb->next_bb->loop_father;
@@ -1386,9 +1383,7 @@ sjlj_emit_dispatch_table (rtx_code_label *dispatch_label, int num_dispatch)
   bb = emit_to_new_bb_before (seq, first_reachable_label);
   if (num_dispatch == 1)
     {
-      e = make_edge (bb, bb->next_bb, EDGE_FALLTHRU);
-      e->count = bb->count;
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (bb, bb->next_bb, EDGE_FALLTHRU);
       if (current_loops)
 	{
 	  struct loop *loop = bb->next_bb->loop_father;
@@ -2078,7 +2073,7 @@ expand_builtin_eh_copy_values (tree exp)
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 0));
   eh_region src
     = expand_builtin_eh_common (CALL_EXPR_ARG (exp, 1));
-  machine_mode fmode = targetm.eh_return_filter_mode ();
+  scalar_int_mode fmode = targetm.eh_return_filter_mode ();
 
   if (dst->exc_ptr_reg == NULL)
     dst->exc_ptr_reg = gen_reg_rtx (ptr_mode);
@@ -2449,6 +2444,61 @@ emit_note_eh_region_end (rtx_insn *insn)
   return emit_note_after (NOTE_INSN_EH_REGION_END, insn);
 }
 
+/* Add NOP after NOTE_INSN_SWITCH_TEXT_SECTIONS when the cold section starts
+   with landing pad.
+   With landing pad being at offset 0 from the start label of the section
+   we would miss EH delivery because 0 is special and means no landing pad.  */
+
+static bool
+maybe_add_nop_after_section_switch (void)
+{
+  if (!crtl->uses_eh_lsda
+      || !crtl->eh.call_site_record_v[1])
+    return false;
+  int n = vec_safe_length (crtl->eh.call_site_record_v[1]);
+  hash_set<rtx_insn *> visited;
+
+  for (int i = 0; i < n; ++i)
+    {
+      struct call_site_record_d *cs
+	 = (*crtl->eh.call_site_record_v[1])[i];
+      if (cs->landing_pad)
+	{
+	  rtx_insn *insn = as_a <rtx_insn *> (cs->landing_pad);
+	  while (true)
+	    {
+	      /* Landing pads have LABEL_PRESERVE_P flag set.  This check make
+		 sure that we do not walk past landing pad visited earlier
+		 which would result in possible quadratic behaviour.  */
+	      if (LABEL_P (insn) && LABEL_PRESERVE_P (insn)
+		  && visited.add (insn))
+		break;
+
+	      /* Conservatively assume that ASM insn may be empty.  We have
+		 now way to tell what they contain.  */
+	      if (active_insn_p (insn)
+		  && GET_CODE (PATTERN (insn)) != ASM_INPUT
+		  && GET_CODE (PATTERN (insn)) != ASM_OPERANDS)
+		break;
+
+	      /* If we reached the start of hot section, then NOP will be
+		 needed.  */
+	      if (GET_CODE (insn) == NOTE
+		  && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
+		{
+		  emit_insn_after (gen_nop (), insn);
+		  break;
+		}
+
+	      /* We visit only labels from cold section.  We should never hit
+		 begining of the insn stream here.  */
+	      insn = PREV_INSN (insn);
+	    }
+	}
+    }
+  return false;
+}
+
 /* Turn REG_EH_REGION notes back into NOTE_INSN_EH_REGION notes.
    The new note numbers will not refer to region numbers, but
    instead to call site entries.  */
@@ -2636,7 +2686,9 @@ public:
   virtual bool gate (function *);
   virtual unsigned int execute (function *)
     {
-      return convert_to_eh_region_ranges ();
+      int ret = convert_to_eh_region_ranges ();
+      maybe_add_nop_after_section_switch ();
+      return ret;
     }
 
 }; // class pass_convert_to_eh_region_ranges

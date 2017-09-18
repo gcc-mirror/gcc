@@ -48,6 +48,10 @@ grep -v '^// ' gen-sysinfo.go | \
 grep '^type _arpcom ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
+# Same on Solaris for _mld_hdr_t.
+grep '^type _mld_hdr_t ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
 # The errno constants.  These get type Errno.
   egrep '#define E[A-Z0-9_]+ ' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
@@ -310,17 +314,8 @@ upcase_fields () {
 # _user_regs_struct.
 regs=`grep '^type _user_regs_struct struct' gen-sysinfo.go || true`
 if test "$regs" = ""; then
-  # s390
-  regs=`grep '^type __user_regs_struct struct' gen-sysinfo.go || true`
-  if test "$regs" != ""; then
-    # Substructures of __user_regs_struct on s390
-    upcase_fields "__user_psw_struct" "PtracePsw" >> ${OUT} || true
-    upcase_fields "__user_fpregs_struct" "PtraceFpregs" >> ${OUT} || true
-    upcase_fields "__user_per_struct" "PtracePer" >> ${OUT} || true
-  else
-    # mips*
-    regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
-  fi
+  # mips*
+  regs=`grep '^type _pt_regs struct' gen-sysinfo.go || true`
 fi
 if test "$regs" != ""; then
   regs=`echo $regs | sed -e 's/type _pt_regs struct//'`
@@ -471,6 +466,7 @@ fi | sed -e 's/type _stat64/type Stat_t/' \
          -e 's/st_ctim/Ctim/' \
          -e 's/\([^a-zA-Z0-9_]\)_timeval\([^a-zA-Z0-9_]\)/\1Timeval\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
+         -e 's/\([^a-zA-Z0-9_]\)_st_timespec_t\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timespec\([^a-zA-Z0-9_]\)/\1Timespec\2/g' \
          -e 's/\([^a-zA-Z0-9_]\)_timestruc_t\([^a-zA-Z0-9_]\)/\1Timestruc\2/g' \
          -e 's/Godump_[0-9] struct { \([^;]*;\) };/\1/g' \

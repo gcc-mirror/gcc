@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -49,6 +49,7 @@ package body Bcheck is
    procedure Check_Consistent_Dynamic_Elaboration_Checking;
    procedure Check_Consistent_Interrupt_States;
    procedure Check_Consistent_Locking_Policy;
+   procedure Check_Consistent_No_Component_Reordering;
    procedure Check_Consistent_Normalize_Scalars;
    procedure Check_Consistent_Optimize_Alignment;
    procedure Check_Consistent_Partition_Elaboration_Policy;
@@ -78,6 +79,10 @@ package body Bcheck is
 
       if Locking_Policy_Specified /= ' ' then
          Check_Consistent_Locking_Policy;
+      end if;
+
+      if No_Component_Reordering_Specified then
+         Check_Consistent_No_Component_Reordering;
       end if;
 
       if Partition_Elaboration_Policy_Specified /= ' ' then
@@ -642,6 +647,69 @@ package body Bcheck is
          end if;
       end loop Find_Policy;
    end Check_Consistent_Locking_Policy;
+
+   ----------------------------------------------
+   -- Check_Consistent_No_Component_Reordering --
+   ----------------------------------------------
+
+   --  This routine checks for a consistent No_Component_Reordering setting.
+   --  Note that internal units are excluded from this check, since we don't
+   --  in any case allow the pragma to affect types in internal units, and
+   --  there is thus no requirement to recompile the run-time with the setting.
+
+   procedure Check_Consistent_No_Component_Reordering is
+      OK : Boolean := True;
+   begin
+      --  Check that all entries have No_Component_Reordering set
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if not Is_Internal_File_Name (ALIs.Table (A1).Sfile)
+           and then not ALIs.Table (A1).No_Component_Reordering
+         then
+            OK := False;
+            exit;
+         end if;
+      end loop;
+
+      --  All do, return
+
+      if OK then
+         return;
+      end if;
+
+      --  Here we have an inconsistency
+
+      Consistency_Error_Msg
+        ("some but not all files compiled with No_Component_Reordering");
+
+      Write_Eol;
+      Write_Str ("files compiled with No_Component_Reordering");
+      Write_Eol;
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if not Is_Internal_File_Name (ALIs.Table (A1).Sfile)
+           and then ALIs.Table (A1).No_Component_Reordering
+         then
+            Write_Str ("  ");
+            Write_Name (ALIs.Table (A1).Sfile);
+            Write_Eol;
+         end if;
+      end loop;
+
+      Write_Eol;
+      Write_Str ("files compiled without No_Component_Reordering");
+      Write_Eol;
+
+      for A1 in ALIs.First .. ALIs.Last loop
+         if not Is_Internal_File_Name (ALIs.Table (A1).Sfile)
+           and then not ALIs.Table (A1).No_Component_Reordering
+         then
+            Write_Str ("  ");
+            Write_Name (ALIs.Table (A1).Sfile);
+            Write_Eol;
+         end if;
+      end loop;
+   end Check_Consistent_No_Component_Reordering;
 
    ----------------------------------------
    -- Check_Consistent_Normalize_Scalars --

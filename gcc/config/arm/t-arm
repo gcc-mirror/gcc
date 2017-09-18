@@ -18,7 +18,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-TM_H += $(srcdir)/config/arm/arm-cpu.h
+TM_H += arm-cpu.h
+GTM_H += arm-cpu.h
 
 # All md files - except for arm.md.
 # This list should be kept in alphabetical order and updated whenever an md
@@ -75,26 +76,32 @@ $(srcdir)/config/arm/arm-tune.md: $(srcdir)/config/arm/parsecpu.awk \
 $(srcdir)/config/arm/arm-tables.opt: $(srcdir)/config/arm/parsecpu.awk \
   $(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=opt \
-		$(srcdir)/config/arm/arm-cpus.in > \
-		$(srcdir)/config/arm/arm-tables.opt
+		$(srcdir)/config/arm/arm-cpus.in > arm-tables.new
+	mv arm-tables.new $(srcdir)/config/arm/arm-tables.opt
 
-$(srcdir)/config/arm/arm-cpu.h: $(srcdir)/config/arm/parsecpu.awk \
+arm-cpu.h: s-arm-cpu ; @true
+s-arm-cpu: $(srcdir)/config/arm/parsecpu.awk \
   $(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=headers \
-		$(srcdir)/config/arm/arm-cpus.in > arm-cpu.new
-	mv arm-cpu.new $(srcdir)/config/arm/arm-cpu.h
+		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-cpu.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-arm-cpu.h arm-cpu.h
+	$(STAMP) s-arm-cpu
 
-$(srcdir)/config/arm/arm-cpu-data.h: $(srcdir)/config/arm/parsecpu.awk \
+arm-cpu-data.h: s-arm-data ; @true
+s-arm-data: $(srcdir)/config/arm/parsecpu.awk \
   $(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=data \
-		$(srcdir)/config/arm/arm-cpus.in > arm-cpu-data.new
-	mv arm-cpu-data.new $(srcdir)/config/arm/arm-cpu-data.h
+		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-cpu-data.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-arm-cpu-data.h arm-cpu-data.h
+	$(STAMP) s-arm-data
 
-$(srcdir)/config/arm/arm-cpu-cdata.h: $(srcdir)/config/arm/parsecpu.awk \
+arm-cpu-cdata.h: s-arm-cdata ; @true
+s-arm-cdata: $(srcdir)/config/arm/parsecpu.awk \
   $(srcdir)/config/arm/arm-cpus.in
 	$(AWK) -f $(srcdir)/config/arm/parsecpu.awk -v cmd=common-data \
-		$(srcdir)/config/arm/arm-cpus.in > arm-cpu-cdata.new
-	mv arm-cpu-cdata.new $(srcdir)/config/arm/arm-cpu-cdata.h
+		$(srcdir)/config/arm/arm-cpus.in > tmp-arm-cpu-cdata.h
+	$(SHELL) $(srcdir)/../move-if-change tmp-arm-cpu-cdata.h arm-cpu-cdata.h
+	$(STAMP) s-arm-cdata
 
 aarch-common.o: $(srcdir)/config/arm/aarch-common.c $(CONFIG_H) $(SYSTEM_H) \
     coretypes.h $(TM_H) $(TM_P_H) $(RTL_H) $(TREE_H) output.h $(C_COMMON_H)
@@ -109,7 +116,7 @@ arm.o: $(srcdir)/config/arm/arm.c $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   $(GGC_H) except.h $(C_PRAGMA_H) $(TM_P_H) \
   $(TARGET_H) $(TARGET_DEF_H) debug.h langhooks.h $(DF_H) \
   intl.h libfuncs.h $(PARAMS_H) $(OPTS_H) sched-int.h \
-  $(srcdir)/config/arm/arm-cpu-data.h \
+  arm-cpu-data.h \
   $(srcdir)/config/arm/arm-protos.h \
   $(srcdir)/config/arm/arm_neon_builtins.def \
   $(srcdir)/config/arm/arm_vfp_builtins.def
@@ -130,4 +137,4 @@ arm-c.o: $(srcdir)/config/arm/arm-c.c $(CONFIG_H) $(SYSTEM_H) \
 	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(INCLUDES) \
 		$(srcdir)/config/arm/arm-c.c
 
-arm-common.o: $(srcdir)/config/arm/arm-cpu-cdata.h
+arm-common.o: arm-cpu-cdata.h

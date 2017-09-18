@@ -74,6 +74,49 @@ remove_fallthru_edge (vec<edge, va_gc> *ev)
   return false;
 }
 
+/* Convert a SWTCH with single non-default case to gcond and replace it
+   at GSI.  */
+
+static bool
+convert_single_case_switch (gswitch *swtch, gimple_stmt_iterator &gsi)
+{
+  if (gimple_switch_num_labels (swtch) != 2)
+    return false;
+
+  tree index = gimple_switch_index (swtch);
+  tree default_label = CASE_LABEL (gimple_switch_default_label (swtch));
+  tree label = gimple_switch_label (swtch, 1);
+  tree low = CASE_LOW (label);
+  tree high = CASE_HIGH (label);
+
+  basic_block default_bb = label_to_block_fn (cfun, default_label);
+  basic_block case_bb = label_to_block_fn (cfun, CASE_LABEL (label));
+
+  basic_block bb = gimple_bb (swtch);
+  gcond *cond;
+
+  /* Replace switch statement with condition statement.  */
+  if (high)
+    {
+      tree lhs, rhs;
+      generate_range_test (bb, index, low, high, &lhs, &rhs);
+      cond = gimple_build_cond (LE_EXPR, lhs, rhs, NULL_TREE, NULL_TREE);
+    }
+  else
+    cond = gimple_build_cond (EQ_EXPR, index,
+			      fold_convert (TREE_TYPE (index), low),
+			      NULL_TREE, NULL_TREE);
+
+  gsi_replace (&gsi, cond, true);
+
+  /* Update edges.  */
+  edge case_edge = find_edge (bb, case_bb);
+  edge default_edge = find_edge (bb, default_bb);
+
+  case_edge->flags |= EDGE_TRUE_VALUE;
+  default_edge->flags |= EDGE_FALSE_VALUE;
+  return true;
+}
 
 /* Disconnect an unreachable block in the control expression starting
    at block BB.  */
@@ -92,6 +135,12 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
       edge_iterator ei;
       bool warned;
       tree val = NULL_TREE;
+
+      /* Try to convert a switch with just a single non-default case to
+	 GIMPLE condition.  */
+      if (gimple_code (stmt) == GIMPLE_SWITCH
+	  && convert_single_case_switch (as_a<gswitch *> (stmt), gsi))
+	stmt = gsi_stmt (gsi);
 
       fold_defer_overflow_warnings ();
       switch (gimple_code (stmt))
@@ -155,8 +204,6 @@ cleanup_control_expr_graph (basic_block bb, gimple_stmt_iterator gsi,
 	}
       if (!warned)
 	fold_undefer_and_ignore_overflow_warnings ();
-      if (taken_edge->probability > REG_BR_PROB_BASE)
-	taken_edge->probability = REG_BR_PROB_BASE;
     }
   else
     taken_edge = single_succ_edge (bb);
@@ -638,6 +685,19 @@ fixup_noreturn_call (gimple *stmt)
   return changed;
 }
 
+/* Return true if we want to merge BB1 and BB2 into a single block.  */
+
+static bool
+want_merge_blocks_p (basic_block bb1, basic_block bb2)
+{
+  if (!can_merge_blocks_p (bb1, bb2))
+    return false;
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb1);
+  if (gsi_end_p (gsi) || !stmt_can_terminate_bb_p (gsi_stmt (gsi)))
+    return true;
+  return bb1->count.ok_for_merging (bb2->count);
+}
+
 
 /* Tries to cleanup cfg in basic block BB.  Returns true if anything
    changes.  */
@@ -654,7 +714,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      This happens when we visit BBs in a non-optimal order and
      avoids quadratic behavior with adjusting stmts BB pointer.  */
   if (single_pred_p (bb)
-      && can_merge_blocks_p (single_pred (bb), bb))
+      && want_merge_blocks_p (single_pred (bb), bb))
     /* But make sure we _do_ visit it.  When we remove unreachable paths
        ending in a backedge we fail to mark the destinations predecessors
        as changed.  */
@@ -664,7 +724,7 @@ cleanup_tree_cfg_bb (basic_block bb)
      conditional branches (due to the elimination of single-valued PHI
      nodes).  */
   else if (single_succ_p (bb)
-	   && can_merge_blocks_p (bb, single_succ (bb)))
+	   && want_merge_blocks_p (bb, single_succ (bb)))
     {
       merge_blocks (bb, single_succ (bb));
       return true;
@@ -1205,7 +1265,8 @@ execute_cleanup_cfg_post_optimizing (void)
     }
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
-  group_case_labels ();
+  if (group_case_labels ())
+    todo |= TODO_cleanup_cfg;
   if ((flag_compare_debug_opt || flag_compare_debug)
       && flag_dump_final_insns)
     {

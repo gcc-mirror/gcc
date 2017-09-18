@@ -51,7 +51,7 @@ alpha_fallback_frame_state (struct _Unwind_Context *context,
     {
       struct rt_sigframe {
 	siginfo_t info;
-	struct ucontext uc;
+	ucontext_t uc;
       } *rt_ = context->cfa;
       sc = &rt_->uc.uc_mcontext;
     }

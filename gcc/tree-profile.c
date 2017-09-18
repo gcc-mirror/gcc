@@ -50,6 +50,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "profile.h"
 #include "tree-cfgcleanup.h"
 #include "params.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 static GTY(()) tree gcov_type_node;
 static GTY(()) tree tree_interval_profiler_fn;
@@ -436,16 +438,16 @@ gimple_gen_ic_func_profiler (void)
   edge true_edge = single_succ_edge (cond_bb);
   true_edge->flags = EDGE_TRUE_VALUE;
 
-  int probability;
+  profile_probability probability;
   if (DECL_VIRTUAL_P (current_function_decl))
-    probability = PROB_VERY_LIKELY;
+    probability = profile_probability::very_likely ();
   else
-    probability = PROB_UNLIKELY;
+    probability = profile_probability::unlikely ();
 
   true_edge->probability = probability;
   edge e = make_edge (cond_bb, single_succ_edge (update_bb)->dest,
 		      EDGE_FALSE_VALUE);
-  e->probability = REG_BR_PROB_BASE - true_edge->probability;
+  e->probability = true_edge->probability.invert ();
 
   /* Insert code:
 
@@ -497,10 +499,10 @@ gimple_gen_time_profiler (unsigned tag, unsigned base)
 
   edge true_edge = single_succ_edge (cond_bb);
   true_edge->flags = EDGE_TRUE_VALUE;
-  true_edge->probability = PROB_UNLIKELY;
+  true_edge->probability = profile_probability::unlikely ();
   edge e
     = make_edge (cond_bb, single_succ_edge (update_bb)->dest, EDGE_FALSE_VALUE);
-  e->probability = REG_BR_PROB_BASE - true_edge->probability;
+  e->probability = true_edge->probability.invert ();
 
   gimple_stmt_iterator gsi = gsi_start_bb (cond_bb);
   tree original_ref = tree_coverage_counter_ref (tag, base);

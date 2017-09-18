@@ -103,7 +103,7 @@ enum block_op_methods
   BLOCK_OP_TAILCALL
 };
 
-typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, machine_mode);
+typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, scalar_int_mode);
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,
@@ -288,8 +288,8 @@ expand_normal (tree exp)
 extern tree string_constant (tree, tree *);
 
 /* Two different ways of generating switch statements.  */
-extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, int);
-extern int try_tablejump (tree, tree, tree, tree, rtx, rtx, int);
+extern int try_casesi (tree, tree, tree, tree, rtx, rtx, rtx, profile_probability);
+extern int try_tablejump (tree, tree, tree, tree, rtx, rtx, profile_probability);
 
 extern int safe_from_p (const_rtx, tree, int);
 

@@ -333,6 +333,7 @@ namespace gccjit
     type get_const ();
     type get_volatile ();
     type get_aligned (size_t alignment_in_bytes);
+    type get_vector (size_t num_units);
 
     // Shortcuts for getting values of numeric types:
     rvalue zero ();
@@ -1304,6 +1305,13 @@ type::get_aligned (size_t alignment_in_bytes)
 {
   return type (gcc_jit_type_get_aligned (get_inner_type (),
 					 alignment_in_bytes));
+}
+
+inline type
+type::get_vector (size_t num_units)
+{
+  return type (gcc_jit_type_get_vector (get_inner_type (),
+					num_units));
 }
 
 inline rvalue

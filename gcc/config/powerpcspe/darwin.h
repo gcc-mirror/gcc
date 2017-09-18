@@ -344,7 +344,7 @@ extern int darwin_emit_branch_islands;
    registers and memory.  FIRST is nonzero if this is the only
    element.  */
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (!(FIRST) ? upward : FUNCTION_ARG_PADDING (MODE, TYPE))
+  (!(FIRST) ? PAD_UPWARD : targetm.calls.function_arg_padding (MODE, TYPE))
 
 #define DOUBLE_INT_ASM_OP "\t.quad\t"
 

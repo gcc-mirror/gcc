@@ -255,7 +255,6 @@ along with GCC; see the file COPYING3.  If not see
       NEXT_PASS (pass_optimize_bswap);
       NEXT_PASS (pass_laddress);
       NEXT_PASS (pass_lim);
-      NEXT_PASS (pass_split_crit_edges);
       NEXT_PASS (pass_walloca, false);
       NEXT_PASS (pass_pre);
       NEXT_PASS (pass_sink_code);
@@ -394,6 +393,7 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_lower_vaarg);
   NEXT_PASS (pass_lower_vector);
   NEXT_PASS (pass_lower_complex_O0);
+  NEXT_PASS (pass_lower_switch);
   NEXT_PASS (pass_sancov_O0);
   NEXT_PASS (pass_asan_O0);
   NEXT_PASS (pass_tsan_O0);

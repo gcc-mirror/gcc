@@ -1185,7 +1185,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(unique_ptr<_Yp, _Del>&& __r)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
-	  auto __raw = _S_raw_ptr(__r.get());
+	  auto __raw = __to_address(__r.get());
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
 	  _M_enable_shared_from_this_with(__raw);
 	}
@@ -1201,7 +1201,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__shared_ptr(unique_ptr<_Tp1, _Del>&& __r, __sp_array_delete)
 	: _M_ptr(__r.get()), _M_refcount()
 	{
-	  auto __raw = _S_raw_ptr(__r.get());
+	  auto __raw = __to_address(__r.get());
 	  _M_refcount = __shared_count<_Lp>(std::move(__r));
 	  _M_enable_shared_from_this_with(__raw);
 	}
@@ -1385,16 +1385,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void*
       _M_get_deleter(const std::type_info& __ti) const noexcept
       { return _M_refcount._M_get_deleter(__ti); }
-
-      template<typename _Tp1>
-	static _Tp1*
-	_S_raw_ptr(_Tp1* __ptr)
-	{ return __ptr; }
-
-      template<typename _Tp1>
-	static auto
-	_S_raw_ptr(_Tp1 __ptr) -> decltype(std::__addressof(*__ptr))
-	{ return std::__addressof(*__ptr); }
 
       template<typename _Tp1, _Lock_policy _Lp1> friend class __shared_ptr;
       template<typename _Tp1, _Lock_policy _Lp1> friend class __weak_ptr;

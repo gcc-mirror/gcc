@@ -1,6 +1,7 @@
 /* { dg-do run { target { powerpc*-*-linux* } } } */
 /* { dg-require-effective-target ppc_float128_sw } */
-/* { dg-options "-mcpu=power7 -O2 -mfloat128 -static-libgcc" } */
+/* { dg-require-effective-target vsx_hw } */
+/* { dg-options "-mvsx -O2" } */
 
 /*
  * Test program to make sure we are getting more precision than the 53 bits we

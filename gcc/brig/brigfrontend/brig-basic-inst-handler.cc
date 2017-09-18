@@ -33,6 +33,7 @@
 #include "stor-layout.h"
 #include "diagnostic-core.h"
 #include "brig-builtins.h"
+#include "fold-const.h"
 
 brig_basic_inst_handler::brig_basic_inst_handler (brig_to_generic &parent)
   : brig_code_entry_handler (parent)
@@ -112,10 +113,8 @@ brig_basic_inst_handler::build_shuffle (tree arith_type,
     {
       tree mask_element
 	= build3 (BIT_FIELD_REF, mask_element_type, mask_operand,
-		  build_int_cst (unsigned_char_type_node,
-				 input_mask_element_size),
-		  build_int_cst (unsigned_char_type_node,
-				 i * input_mask_element_size));
+		  bitsize_int (input_mask_element_size),
+		  bitsize_int (i * input_mask_element_size));
 
       mask_element = convert (element_type, mask_element);
 

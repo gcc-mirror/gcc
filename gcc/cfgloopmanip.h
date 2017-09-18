@@ -37,14 +37,14 @@ extern edge mfb_kj_edge;
 extern bool remove_path (edge, bool * = NULL, bitmap = NULL);
 extern void place_new_loop (struct function *, struct loop *);
 extern void add_loop (struct loop *, struct loop *);
-extern void scale_loop_frequencies (struct loop *, int, int);
-extern void scale_loop_profile (struct loop *, int, gcov_type);
+extern void scale_loop_frequencies (struct loop *, profile_probability);
+extern void scale_loop_profile (struct loop *, profile_probability, gcov_type);
 extern edge create_empty_if_region_on_edge (edge, tree);
 extern struct loop *create_empty_loop_on_edge (edge, tree, tree, tree, tree,
 					       tree *, tree *, struct loop *);
 extern struct loop *loopify (edge, edge,
 			     basic_block, edge, edge, bool,
-			     unsigned, unsigned);
+			     profile_probability, profile_probability);
 extern void unloop (struct loop *, bool *, bitmap);
 extern void copy_loop_info (struct loop *loop, struct loop *target);
 extern struct loop * duplicate_loop (struct loop *, struct loop *);
@@ -58,7 +58,8 @@ basic_block create_preheader (struct loop *, int);
 extern void create_preheaders (int);
 extern void force_single_succ_latches (void);
 struct loop * loop_version (struct loop *, void *,
-			    basic_block *, unsigned, unsigned,
-			    unsigned, unsigned, bool);
+			    basic_block *,
+			    profile_probability, profile_probability,
+			    profile_probability, profile_probability, bool);
 
 #endif /* GCC_CFGLOOPMANIP_H */

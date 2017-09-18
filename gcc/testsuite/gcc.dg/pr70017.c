@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-stack-check "generic" } */
 /* { dg-options "-fstack-check=generic" } */
 
 /* Check that the expected warning is issued for large frames.  */

@@ -213,7 +213,7 @@ match gfc_match_decl_type_spec (gfc_typespec *, int);
 
 match gfc_match_end (gfc_statement *);
 match gfc_match_data_decl (void);
-match gfc_match_formal_arglist (gfc_symbol *, int, int);
+match gfc_match_formal_arglist (gfc_symbol *, int, int, bool = false);
 match gfc_match_procedure (void);
 match gfc_match_generic (void);
 match gfc_match_function_decl (void);
@@ -274,7 +274,7 @@ match gfc_get_type_attr_spec (symbol_attribute *, char*);
 match gfc_match_structure_constructor (gfc_symbol *, gfc_expr **);
 match gfc_match_variable (gfc_expr **, int);
 match gfc_match_equiv_variable (gfc_expr **);
-match gfc_match_actual_arglist (int, gfc_actual_arglist **);
+match gfc_match_actual_arglist (int, gfc_actual_arglist **, bool = false);
 match gfc_match_literal_constant (gfc_expr **, int);
 
 /* expr.c -- FIXME: this one should be eliminated by moving the

@@ -1,5 +1,55 @@
-2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
+2017-08-30  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
 
+	* lto-lang.c (lto_type_for_mode): Use as_a <scalar_int_mode>.
+
+2017-08-21  Richard Biener  <rguenther@suse.de>
+
+        * lto.c (unify_scc): Truncate DIE reference queue for dropped SCCs.
+        (lto_read_decls): Process TRANSLATION_UNIT_DECLs.  Remove
+        TYPE_DECL debug processing, register DIE references from
+        prevailing SCCs with the debug machinery.
+        (lto_section_with_id): Handle LTO debug sections.
+
+2017-08-16  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_type): Use TYPE_LANG_SLOT_1.
+	(compare_tree_sccs_1): No need to compare TYPE_BINFO directly.
+	(lto_fixup_prevailing_decls): Use TYPE_LANG_SLOT_1.
+
+2017-08-08  Tom de Vries  <tom@codesourcery.com>
+
+	* lto.c: Include attribs.h.
+
+2017-08-08  Martin Liska  <mliska@suse.cz>
+
+	* lto-lang.c: Include header files.
+	* lto-symtab.c: Likewise.
+
+2017-08-03  Richard Biener  <rguenther@suse.de>
+
+	* lto-symtab.h (lto_symtab_prevail_decl): Do not use
+	DECL_ABSTRACT_ORIGIN as flag we can end up using that.  Instead
+	use DECL_LANG_FLAG_0.
+	(lto_symtab_prevail_decl): Likewise.
+
+2017-07-07  Torsten Duwe  <duwe@suse.de>
+
+	* lto-lang.c (lto_attribute_table): Add entry for
+	"patchable_function_entry".
+
+2017-07-19  Nathan Sidwell  <nathan@acm.org>
+
+	* lto.c (mentions_vars_p_type): Use TYPE_{MIN,MAX}_VALUE_RAW.
+	(compare_tree_sccs_1, lto_fixup_prevailing_decls): Likewise.
+
+2017-07-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* lto-partition.c (lto_balanced_map): Do not check
+	flag_toplevel_reorder.
+
+2017-06-23  Marc Glisse  <marc.glisse@inria.fr>
 	* lto-lang.c (lto_init): Use builtin_structptr_types.
 
 2017-06-15  Jan Hubicka  <hubicka@ucw.cz>

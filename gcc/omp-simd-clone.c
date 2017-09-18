@@ -48,7 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "tree-eh.h"
 #include "varasm.h"
-
+#include "stringpool.h"
+#include "attribs.h"
 
 /* Allocate a fresh `simd_clone' and return it.  NARGS is the number
    of arguments to reserve space for.  */
@@ -495,7 +496,7 @@ simd_clone_adjust_return_type (struct cgraph_node *node)
     veclen = node->simdclone->vecsize_int;
   else
     veclen = node->simdclone->vecsize_float;
-  veclen /= GET_MODE_BITSIZE (TYPE_MODE (t));
+  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (t));
   if (veclen > node->simdclone->simdlen)
     veclen = node->simdclone->simdlen;
   if (POINTER_TYPE_P (t))
@@ -605,7 +606,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	    veclen = sc->vecsize_int;
 	  else
 	    veclen = sc->vecsize_float;
-	  veclen /= GET_MODE_BITSIZE (TYPE_MODE (parm_type));
+	  veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (parm_type));
 	  if (veclen > sc->simdlen)
 	    veclen = sc->simdlen;
 	  adj.arg_prefix = "simd";
@@ -649,7 +650,7 @@ simd_clone_adjust_argument_types (struct cgraph_node *node)
 	veclen = sc->vecsize_int;
       else
 	veclen = sc->vecsize_float;
-      veclen /= GET_MODE_BITSIZE (TYPE_MODE (base_type));
+      veclen /= GET_MODE_BITSIZE (SCALAR_TYPE_MODE (base_type));
       if (veclen > sc->simdlen)
 	veclen = sc->simdlen;
       if (sc->mask_mode != VOIDmode)
@@ -791,8 +792,8 @@ simd_clone_init_simd_arrays (struct cgraph_node *node,
 		  arg = DECL_CHAIN (arg);
 		  j++;
 		}
-	      elemsize
-		= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (TREE_TYPE (arg))));
+	      tree elemtype = TREE_TYPE (TREE_TYPE (arg));
+	      elemsize = GET_MODE_SIZE (SCALAR_TYPE_MODE (elemtype));
 	      tree t = build2 (MEM_REF, TREE_TYPE (arg), ptr,
 			       build_int_cst (ptype, k * elemsize));
 	      t = build2 (MODIFY_EXPR, TREE_TYPE (t), t, arg);
@@ -1151,8 +1152,7 @@ simd_clone_adjust (struct cgraph_node *node)
 
   if (incr_bb)
     {
-      edge e = make_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
-      e->probability = REG_BR_PROB_BASE;
+      make_single_succ_edge (incr_bb, EXIT_BLOCK_PTR_FOR_FN (cfun), 0);
       gsi = gsi_last_bb (incr_bb);
       iter2 = make_ssa_name (iter);
       g = gimple_build_assign (iter2, PLUS_EXPR, iter1,
@@ -1226,7 +1226,7 @@ simd_clone_adjust (struct cgraph_node *node)
 			      mask_array, iter1, NULL, NULL);
 	  g = gimple_build_assign (mask, aref);
 	  gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-	  int bitsize = GET_MODE_BITSIZE (TYPE_MODE (TREE_TYPE (aref)));
+	  int bitsize = GET_MODE_BITSIZE (SCALAR_TYPE_MODE (TREE_TYPE (aref)));
 	  if (!INTEGRAL_TYPE_P (TREE_TYPE (aref)))
 	    {
 	      aref = build1 (VIEW_CONVERT_EXPR,
@@ -1241,8 +1241,11 @@ simd_clone_adjust (struct cgraph_node *node)
       g = gimple_build_cond (EQ_EXPR, mask, build_zero_cst (TREE_TYPE (mask)),
 			     NULL, NULL);
       gsi_insert_after (&gsi, g, GSI_CONTINUE_LINKING);
-      make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
-      FALLTHRU_EDGE (loop->header)->flags = EDGE_FALSE_VALUE;
+      edge e = make_edge (loop->header, incr_bb, EDGE_TRUE_VALUE);
+      e->probability = profile_probability::unlikely ().guessed ();
+      edge fallthru = FALLTHRU_EDGE (loop->header);
+      fallthru->flags = EDGE_FALSE_VALUE;
+      fallthru->probability = profile_probability::likely ().guessed ();
     }
 
   basic_block latch_bb = NULL;
@@ -1264,7 +1267,10 @@ simd_clone_adjust (struct cgraph_node *node)
 
       redirect_edge_succ (FALLTHRU_EDGE (latch_bb), body_bb);
 
-      make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+      edge new_e = make_edge (incr_bb, new_exit_bb, EDGE_FALSE_VALUE);
+
+      /* FIXME: Do we need to distribute probabilities for the conditional? */
+      new_e->probability = profile_probability::guessed_never ();
       /* The successor of incr_bb is already pointing to latch_bb; just
 	 change the flags.
 	 make_edge (incr_bb, latch_bb, EDGE_TRUE_VALUE);  */

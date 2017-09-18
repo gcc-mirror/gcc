@@ -27,6 +27,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "intl.h"
 #include "cxx-pretty-print.h"
 #include "tree-pretty-print.h"
+#include "gimple-pretty-print.h"
 #include "c-family/c-objc.h"
 #include "ubsan.h"
 #include "internal-fn.h"
@@ -2664,7 +2665,6 @@ dump_expr (cxx_pretty_printer *pp, tree t, int flags)
       break;
 
     case TRY_CATCH_EXPR:
-    case WITH_CLEANUP_EXPR:
     case CLEANUP_POINT_EXPR:
       dump_expr (pp, TREE_OPERAND (t, 0), flags);
       break;
@@ -3047,6 +3047,8 @@ location_of (tree t)
 
   if (DECL_P (t))
     return DECL_SOURCE_LOCATION (t);
+  if (TREE_CODE (t) == DEFAULT_ARG)
+    return defarg_location (t);
   return EXPR_LOC_OR_LOC (t, input_location);
 }
 
@@ -3173,10 +3175,6 @@ type_to_string (tree typ, int verbose)
       if (len == aka_len && memcmp (p, p+aka_start, len) == 0)
 	p[len] = '\0';
     }
-
-  if (typ && TYPE_P (typ) && TREE_CODE (typ) == ENUMERAL_TYPE)
-    pp_string (cxx_pp, M_(" {enum}"));
-
   return pp_ggc_formatted_text (cxx_pp);
 }
 
@@ -4053,8 +4051,13 @@ cp_printer (pretty_printer *pp, text_info *text, const char *spec,
     case 'V': result = cv_to_string (next_tree, verbose);	break;
     case 'X': result = eh_spec_to_string (next_tree, verbose);  break;
 
+    case 'G':
+      percent_G_format (text);
+      return true;
+
     case 'K':
-      percent_K_format (text);
+      t = va_arg (*text->args_ptr, tree);
+      percent_K_format (text, t);
       return true;
 
     case 'H':

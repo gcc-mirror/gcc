@@ -143,7 +143,7 @@ static const struct xcoff_type_number xcoff_type_numbers[] = {
   { "float", -12 },
   { "double", -13 },
   { "long double", -14 },
-  /* Pascal and Fortran types run from -15 to -29.  */
+  /* Fortran types run from -15 to -29.  */
   { "wchar", -30 },  /* XXX Should be "wchar_t" ? */
   { "long long int", -31 },
   { "long long unsigned int", -32 },

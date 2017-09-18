@@ -12,14 +12,6 @@ import (
 	_ "unsafe" // for go:linkname
 )
 
-// For gccgo, use go:linkname to rename compiler-called functions to
-// themselves, so that the compiler will export them.
-// These are temporary for C runtime code to call.
-//go:linkname traceback runtime.traceback
-//go:linkname printtrace runtime.printtrace
-//go:linkname goroutineheader runtime.goroutineheader
-//go:linkname printcreatedby runtime.printcreatedby
-
 func printcreatedby(gp *g) {
 	// Show what created goroutine, except main goroutine (goid 1).
 	pc := gp.gopc
@@ -71,6 +63,7 @@ func traceback(skip int32) {
 	var locbuf [100]location
 	c := c_callers(skip+1, &locbuf[0], int32(len(locbuf)), false)
 	printtrace(locbuf[:c], getg())
+	printcreatedby(getg())
 }
 
 // printtrace prints a traceback from locbuf.
@@ -223,7 +216,7 @@ func tracebackothers(me *g) {
 			print("\tgoroutine running on other thread; stack unavailable\n")
 			printcreatedby(gp)
 		} else if readgstatus(gp)&^_Gscan == _Gsyscall {
-			print("\tgoroutine in C code; stack unavailable\n")
+			print("\tin C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
 			gp.traceback = &tb

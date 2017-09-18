@@ -1,5 +1,5 @@
-// { dg-options "-lstdc++fs -std=gnu++1z" }
-// { dg-do run { target c++1z } }
+// { dg-options "-lstdc++fs -std=gnu++17" }
+// { dg-do run { target c++17 } }
 // { dg-require-filesystem-ts "" }
 
 // Copyright (C) 2016-2017 Free Software Foundation, Inc.

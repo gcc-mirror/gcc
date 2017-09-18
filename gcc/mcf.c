@@ -1231,12 +1231,15 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
 	    }
 
           if (bb_gcov_count (bb))
-	    e->probability = RDIV (REG_BR_PROB_BASE * edge_gcov_count (e),
-			           bb_gcov_count (bb));
+	    e->probability = profile_probability::probability_in_gcov_type
+			 (edge_gcov_count (e), bb_gcov_count (bb));
           if (dump_file)
-	    fprintf (dump_file, " = %" PRId64 "\t(%.1f%%)\n",
-		     edge_gcov_count (e),
-		     e->probability * 100.0 / REG_BR_PROB_BASE);
+	    {
+	      fprintf (dump_file, " = %" PRId64 "\t",
+		       edge_gcov_count (e));
+	      e->probability.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
         }
     }
 
@@ -1251,31 +1254,8 @@ adjust_cfg_counts (fixup_graph_type *fixup_graph)
       if (bb_gcov_count (bb))
         {
           FOR_EACH_EDGE (e, ei, bb->succs)
-            e->probability = RDIV (REG_BR_PROB_BASE * edge_gcov_count (e),
-				   bb_gcov_count (bb));
-        }
-      else
-        {
-          int total = 0;
-          FOR_EACH_EDGE (e, ei, bb->succs)
-            if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
-              total++;
-          if (total)
-            {
-              FOR_EACH_EDGE (e, ei, bb->succs)
-                {
-                  if (!(e->flags & (EDGE_COMPLEX | EDGE_FAKE)))
-                    e->probability = REG_BR_PROB_BASE / total;
-                  else
-                    e->probability = 0;
-                }
-            }
-          else
-            {
-              total += EDGE_COUNT (bb->succs);
-              FOR_EACH_EDGE (e, ei, bb->succs)
-                  e->probability = REG_BR_PROB_BASE / total;
-            }
+            e->probability = profile_probability::probability_in_gcov_type
+				(edge_gcov_count (e), bb_gcov_count (bb));
         }
     }
 

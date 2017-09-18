@@ -47,11 +47,8 @@ extern bool s390_can_use_simple_return_insn (void);
 extern bool s390_can_use_return_insn (void);
 extern void s390_function_profiler (FILE *, int);
 extern void s390_set_has_landing_pad_p (bool);
-extern bool s390_hard_regno_mode_ok (unsigned int, machine_mode);
 extern bool s390_hard_regno_rename_ok (unsigned int, unsigned int);
 extern int s390_class_max_nregs (enum reg_class, machine_mode);
-extern int s390_cannot_change_mode_class (machine_mode, machine_mode,
-					  enum reg_class);
 extern bool s390_function_arg_vector (machine_mode, const_tree);
 #if S390_USE_TARGET_ATTRIBUTE
 extern tree s390_valid_target_attribute_tree (tree args,
@@ -79,6 +76,7 @@ extern bool s390_bytemask_vector_p (rtx, unsigned *);
 extern bool s390_split_ok_p (rtx, rtx, machine_mode, int);
 extern bool s390_overlap_p (rtx, rtx, HOST_WIDE_INT);
 extern bool s390_offset_p (rtx, rtx, rtx);
+extern bool s390_rel_address_ok_p (rtx);
 extern int tls_symbolic_operand (rtx);
 
 extern bool s390_match_ccmode (rtx_insn *, machine_mode);

@@ -1321,7 +1321,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 	      opcode = ARRAY_REF;
 	      break;
 	    case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
-	      identifier = mangle_conv_op_name_for_type (TREE_TYPE (sym_type));
+	      identifier = make_conv_op_name (TREE_TYPE (sym_type));
 	      break;
 	      // C++11-only:
 	    case CHARS2 ('l', 'i'): // operator "" <id>
@@ -1419,17 +1419,15 @@ plugin_build_decl (cc1_plugin::connection *self,
       if (ctor || dtor)
 	{
 	  if (ctor)
-	    DECL_CONSTRUCTOR_P (decl) = 1;
+	    DECL_CXX_CONSTRUCTOR_P (decl) = 1;
 	  if (dtor)
-	    DECL_DESTRUCTOR_P (decl) = 1;
+	    DECL_CXX_DESTRUCTOR_P (decl) = 1;
 	}
       else
 	{
 	  if ((sym_flags & GCC_CP_FLAG_SPECIAL_FUNCTION)
 	      && opcode != ERROR_MARK)
 	    SET_OVERLOADED_OPERATOR_CODE (decl, opcode);
-	  if (assop)
-	    DECL_ASSIGNMENT_OPERATOR_P (decl) = true;
 	}
     }
   else if (RECORD_OR_UNION_CODE_P (code))
@@ -1558,7 +1556,7 @@ plugin_build_decl (cc1_plugin::connection *self,
 
   if ((ctor || dtor)
       /* Don't crash after a duplicate declaration of a cdtor.  */
-      && TYPE_METHODS (current_class_type) == decl)
+      && TYPE_FIELDS (current_class_type) == decl)
     {
       /* ctors and dtors clones are chained after DECL.
 	 However, we create the clones before TYPE_METHODS is
@@ -1570,9 +1568,9 @@ plugin_build_decl (cc1_plugin::connection *self,
       tree save = DECL_CHAIN (decl);
       DECL_CHAIN (decl) = NULL_TREE;
       clone_function_decl (decl, /*update_methods=*/true);
-      gcc_assert (TYPE_METHODS (current_class_type) == decl);
-      TYPE_METHODS (current_class_type)
-	= nreverse (TYPE_METHODS (current_class_type));
+      gcc_assert (TYPE_FIELDS (current_class_type) == decl);
+      TYPE_FIELDS (current_class_type)
+	= nreverse (TYPE_FIELDS (current_class_type));
       DECL_CHAIN (decl) = save;
     }
 
@@ -1889,7 +1887,7 @@ plugin_build_field (cc1_plugin::connection *,
 	= c_build_bitfield_integer_type (bitsize, TYPE_UNSIGNED (field_type));
     }
 
-  DECL_MODE (decl) = TYPE_MODE (TREE_TYPE (decl));
+  SET_DECL_MODE (decl, TYPE_MODE (TREE_TYPE (decl)));
 
   // There's no way to recover this from DWARF.
   SET_DECL_OFFSET_ALIGN (decl, TYPE_PRECISION (pointer_sized_int_node));
@@ -2624,7 +2622,7 @@ plugin_build_dependent_expr (cc1_plugin::connection *self,
 	  break;
 	case CHARS2 ('c', 'v'): // operator <T> (conversion operator)
 	  convop = true;
-	  identifier = mangle_conv_op_name_for_type (conv_type);
+	  identifier = make_conv_op_name (conv_type);
 	  break;
 	  // C++11-only:
 	case CHARS2 ('l', 'i'): // operator "" <id>

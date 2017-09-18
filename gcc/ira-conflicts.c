@@ -743,6 +743,7 @@ ira_build_conflicts (void)
       for (i = 0; i < n; i++)
 	{
 	  ira_object_t obj = ALLOCNO_OBJECT (a, i);
+	  machine_mode obj_mode = obj->allocno->mode;
 	  rtx allocno_reg = regno_reg_rtx [ALLOCNO_REGNO (a)];
 
 	  if ((! flag_caller_saves && ALLOCNO_CALLS_CROSSED_NUM (a) != 0)
@@ -775,7 +776,7 @@ ira_build_conflicts (void)
 	     cannot be accessed in the widest mode.  */
 	  machine_mode outer_mode = ALLOCNO_WMODE (a);
 	  machine_mode inner_mode = ALLOCNO_MODE (a);
-	  if (GET_MODE_SIZE (outer_mode) > GET_MODE_SIZE (inner_mode))
+	  if (paradoxical_subreg_p (outer_mode, inner_mode))
 	    {
 	      enum reg_class aclass = ALLOCNO_CLASS (a);
 	      for (int j = ira_class_hard_regs_num[aclass] - 1; j >= 0; --j)
@@ -804,8 +805,8 @@ ira_build_conflicts (void)
 		 regs must conflict with them.  */
 	      for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
 		if (!TEST_HARD_REG_BIT (call_used_reg_set, regno)
-		    && HARD_REGNO_CALL_PART_CLOBBERED (regno,
-						       obj->allocno->mode))
+		    && targetm.hard_regno_call_part_clobbered (regno,
+							       obj_mode))
 		  {
 		    SET_HARD_REG_BIT (OBJECT_CONFLICT_HARD_REGS (obj), regno);
 		    SET_HARD_REG_BIT (OBJECT_TOTAL_CONFLICT_HARD_REGS (obj),

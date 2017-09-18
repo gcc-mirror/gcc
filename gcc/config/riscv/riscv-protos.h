@@ -38,18 +38,17 @@ enum riscv_symbol_type {
 /* Routines implemented in riscv.c.  */
 extern enum riscv_symbol_type riscv_classify_symbolic_expression (rtx);
 extern bool riscv_symbolic_constant_p (rtx, enum riscv_symbol_type *);
-extern int riscv_regno_mode_ok_for_base_p (int, enum machine_mode, bool);
-extern bool riscv_hard_regno_mode_ok_p (unsigned int, enum machine_mode);
-extern int riscv_address_insns (rtx, enum machine_mode, bool);
+extern int riscv_regno_mode_ok_for_base_p (int, machine_mode, bool);
+extern int riscv_address_insns (rtx, machine_mode, bool);
 extern int riscv_const_insns (rtx);
 extern int riscv_split_const_insns (rtx);
 extern int riscv_load_store_insns (rtx, rtx_insn *);
 extern rtx riscv_emit_move (rtx, rtx);
-extern bool riscv_split_symbol (rtx, rtx, enum machine_mode, rtx *);
+extern bool riscv_split_symbol (rtx, rtx, machine_mode, rtx *);
 extern bool riscv_split_symbol_type (enum riscv_symbol_type);
 extern rtx riscv_unspec_address (rtx, enum riscv_symbol_type);
 extern void riscv_move_integer (rtx, rtx, HOST_WIDE_INT);
-extern bool riscv_legitimize_move (enum machine_mode, rtx, rtx);
+extern bool riscv_legitimize_move (machine_mode, rtx, rtx);
 extern rtx riscv_subword (rtx, bool);
 extern bool riscv_split_64bit_move_p (rtx, rtx);
 extern void riscv_split_doubleword_move (rtx, rtx);
@@ -68,15 +67,14 @@ extern HOST_WIDE_INT riscv_initial_elimination_offset (int, int);
 extern void riscv_expand_prologue (void);
 extern void riscv_expand_epilogue (bool);
 extern bool riscv_can_use_return_insn (void);
-extern rtx riscv_function_value (const_tree, const_tree, enum machine_mode);
-extern unsigned int riscv_hard_regno_nregs (int, enum machine_mode);
+extern rtx riscv_function_value (const_tree, const_tree, machine_mode);
 
 /* Routines implemented in riscv-c.c.  */
 void riscv_cpu_cpp_builtins (cpp_reader *);
 
 /* Routines implemented in riscv-builtins.c.  */
 extern void riscv_atomic_assign_expand_fenv (tree *, tree *, tree *);
-extern rtx riscv_expand_builtin (tree, rtx, rtx, enum machine_mode, int);
+extern rtx riscv_expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern tree riscv_builtin_decl (unsigned int, bool);
 extern void riscv_init_builtins (void);
 

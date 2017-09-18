@@ -39,32 +39,7 @@
 #include <dlfcn.h>
 #include "libgomp-plugin.h"
 #include "gomp-constants.h"
-
-/* Secure getenv() which returns NULL if running as SUID/SGID.  */
-#ifndef HAVE_SECURE_GETENV
-#ifdef HAVE___SECURE_GETENV
-#define secure_getenv __secure_getenv
-#elif defined (HAVE_UNISTD_H) && defined(HAVE_GETUID) && defined(HAVE_GETEUID) \
-  && defined(HAVE_GETGID) && defined(HAVE_GETEGID)
-
-#include <unistd.h>
-
-/* Implementation of secure_getenv() for targets where it is not provided but
-   we have at least means to test real and effective IDs. */
-
-static char *
-secure_getenv (const char *name)
-{
-  if ((getuid () == geteuid ()) && (getgid () == getegid ()))
-    return getenv (name);
-  else
-    return NULL;
-}
-
-#else
-#define secure_getenv getenv
-#endif
-#endif
+#include "secure_getenv.h"
 
 /* As an HSA runtime is dlopened, following structure defines function
    pointers utilized by the HSA plug-in.  */

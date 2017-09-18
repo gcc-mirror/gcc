@@ -1,4 +1,5 @@
 -- { dg-do run }
+-- { dg-require-stack-check "" }
 -- { dg-options "-fstack-check" }
 
 -- This test requires architecture- and OS-specific support code for unwinding

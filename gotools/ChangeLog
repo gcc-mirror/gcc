@@ -1,3 +1,60 @@
+2017-09-14  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (LIBGOTOOL): Define.
+	(go_cmd_go_files): Update for Go 1.9 release.
+	(go$(EXEEXT)): Depend on and link against $(LIBGOTOOL).
+	(CHECK_ENV): Add definition of shell variable fl.
+	(check-go-tool): Update for rearrangement of cmd/go sources in Go
+	1.9 release.  Echo failure message if test fails.
+	(check-runtime): Echo failure message if test fails.
+	(check-cgo-test, check-carchive-test): Likewise.
+	* Makefile.in: Rebuild.
+
+2017-08-30  Ian Lance Taylor  <iant@golang.org>
+
+	* configure.ac: Substitute GOC_FOR_TARGET and GCC_FOR_TARGET.
+	* Makefile.am (MOSTLYCLEANFILES): Add check-gcc.
+	(check-gccgo): Create via a temporary file.
+	(check-gcc): New target.
+	(CHECK_ENV): Set CC.
+	(ECHO_ENV): Report CC.
+	(check-go-tool): Depend on check-gcc.
+	(check-runtime, check-cgo-test, check-carchive-test): Likewise.
+	* configure, Makefile.in: Rebuild.
+
+2017-07-26  Ian Lance Taylor  <iant@golang.org>
+
+	PR go/81548
+	* Makefile.am (MOSTLYCLEANFILES): Add *.sent.
+	* Makefile.in: Rebuild.
+
+2017-07-15  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (CHECK_ENV): Set GOROOT.
+	(ECHO_ENV): Report setting GOROOT.
+	* Makefile.in: Rebuild.
+
+2017-06-29  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (MOSTLYCLEANFILES): Remove testing files and logs.
+	(mostlyclean-local): Remove check-runtime-dir, cgo-test-dir,
+	carchive-test-dir.
+	(ECHO_ENV): Define.
+	(check-go-tool): Depend on cgo.  Write command to testlog.
+	(check-runtime): New target.
+	(check-cgo-test): New target.
+	(check-carchive-test): New target.
+	(check): Depend on check-runtime, check-cgo-test,
+	check-carchive-test.  Add @ to prettify output.
+	(.PHONY): Add check-runtime, check-cgo-test, check-carchive-test.
+	* Makefile.in: Rebuild.
+
+2017-06-26  Ian Lance Taylor  <iant@golang.org>
+
+	* Makefile.am (s-zdefaultcc): Don't record $(bindir) for defaultCC
+	or defaultCXX.
+	* Makefile.in: Rebuild.
+
 2017-06-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* Makefile.am (check-go-tool): Don't use >& for I/O redirection.

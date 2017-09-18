@@ -649,11 +649,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
       else if (_M_writing)
 	{
- 	  if (overflow() == traits_type::eof())
- 	    return __ret;
- 	  _M_set_buffer(-1);
- 	  _M_writing = false;
- 	}
+	  if (overflow() == traits_type::eof())
+	    return __ret;
+	  _M_set_buffer(-1);
+	  _M_writing = false;
+	}
  
       // Optimization in the always_noconv() case, to be generalized in the
       // future: when __n > __buflen we read directly instead of using the
@@ -662,57 +662,55 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const streamsize __buflen = _M_buf_size > 1 ? _M_buf_size - 1 : 1;
  
       if (__n > __buflen && __check_facet(_M_codecvt).always_noconv()
- 	   && __testin)
- 	 {
- 	   // First, copy the chars already present in the buffer.
- 	   const streamsize __avail = this->egptr() - this->gptr();
- 	   if (__avail != 0)
- 	     {
-	       traits_type::copy(__s, this->gptr(), __avail);
- 	       __s += __avail;
-	       this->setg(this->eback(), this->gptr() + __avail,
-			  this->egptr());
-	       __ret += __avail;
-	       __n -= __avail;
- 	     }
+	  && __testin)
+	{
+	  // First, copy the chars already present in the buffer.
+	  const streamsize __avail = this->egptr() - this->gptr();
+	  if (__avail != 0)
+	    {
+	      traits_type::copy(__s, this->gptr(), __avail);
+	      __s += __avail;
+	      this->setg(this->eback(), this->gptr() + __avail, this->egptr());
+	      __ret += __avail;
+	      __n -= __avail;
+	    }
  
- 	   // Need to loop in case of short reads (relatively common
- 	   // with pipes).
- 	   streamsize __len;
- 	   for (;;)
- 	     {
- 	       __len = _M_file.xsgetn(reinterpret_cast<char*>(__s),
- 				      __n);
- 	       if (__len == -1)
- 		 __throw_ios_failure(__N("basic_filebuf::xsgetn "
- 					 "error reading the file"));
- 	       if (__len == 0)
- 		 break;
+	  // Need to loop in case of short reads (relatively common
+	  // with pipes).
+	  streamsize __len;
+	  for (;;)
+	    {
+	      __len = _M_file.xsgetn(reinterpret_cast<char*>(__s), __n);
+	      if (__len == -1)
+		__throw_ios_failure(__N("basic_filebuf::xsgetn "
+					"error reading the file"));
+	      if (__len == 0)
+		break;
  
- 	       __n -= __len;
- 	       __ret += __len;
- 	       if (__n == 0)
- 		 break;
- 
- 	       __s += __len;
- 	     }
- 
- 	   if (__n == 0)
- 	     {
- 	       _M_set_buffer(0);
- 	       _M_reading = true;
- 	     }
- 	   else if (__len == 0)
- 	     {
- 	       // If end of file is reached, set 'uncommitted'
- 	       // mode, thus allowing an immediate write without
- 	       // an intervening seek.
- 	       _M_set_buffer(-1);
- 	       _M_reading = false;
- 	     }
- 	 }
+	      __n -= __len;
+	      __ret += __len;
+	      if (__n == 0)
+		break;
+
+	      __s += __len;
+	    }
+
+	  if (__n == 0)
+	    {
+	      // Set _M_reading. Buffer is already in initial 'read' mode.
+	      _M_reading = true;
+	    }
+	  else if (__len == 0)
+	    {
+	      // If end of file is reached, set 'uncommitted'
+	      // mode, thus allowing an immediate write without
+	      // an intervening seek.
+	      _M_set_buffer(-1);
+	      _M_reading = false;
+	    }
+	}
       else
- 	 __ret += __streambuf_type::xsgetn(__s, __n);
+	__ret += __streambuf_type::xsgetn(__s, __n);
  
       return __ret;
     }
@@ -729,7 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const bool __testout = (_M_mode & ios_base::out
 			      || _M_mode & ios_base::app);
       if (__check_facet(_M_codecvt).always_noconv()
- 	   && __testout && !_M_reading)
+	  && __testout && !_M_reading)
 	{
 	  // Measurement would reveal the best choice.
 	  const streamsize __chunk = 1ul << 10;
@@ -839,8 +837,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      if (_M_writing)
 		__computed_off = this->pptr() - this->pbase();
 	      
- 	      off_type __file_off = _M_file.seekoff(0, ios_base::cur);
- 	      if (__file_off != off_type(-1))
+	      off_type __file_off = _M_file.seekoff(0, ios_base::cur);
+	      if (__file_off != off_type(-1))
 		{
 		  __ret = __file_off + __computed_off;
 		  __ret.state(__state);

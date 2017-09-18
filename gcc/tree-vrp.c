@@ -62,6 +62,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "alloc-pool.h"
 #include "domwalk.h"
 #include "tree-cfgcleanup.h"
+#include "stringpool.h"
+#include "attribs.h"
 
 #define VR_INITIALIZER { VR_UNDEFINED, NULL_TREE, NULL_TREE, NULL }
 
@@ -796,7 +798,8 @@ get_single_symbol (tree t, bool *neg, tree *inv)
   if (TREE_CODE (t) != SSA_NAME)
     return NULL_TREE;
 
-  gcc_assert (! inv_ || ! TREE_OVERFLOW_P (inv_));
+  if (inv_ && TREE_OVERFLOW_P (inv_))
+    inv_ = drop_tree_overflow (inv_);
 
   *neg = neg_;
   *inv = inv_;
@@ -1611,6 +1614,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
   signop sign = TYPE_SIGN (TREE_TYPE (val1));
   wide_int res;
 
+  *overflow_p = false;
+
   switch (code)
     {
     case RSHIFT_EXPR:
@@ -1682,8 +1687,6 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
       gcc_unreachable ();
     }
 
-  *overflow_p = overflow;
-
   if (overflow
       && TYPE_OVERFLOW_UNDEFINED (TREE_TYPE (val1)))
     {
@@ -1726,6 +1729,8 @@ vrp_int_const_binop (enum tree_code code, tree val1, tree val2,
 	return wi::min_value (TYPE_PRECISION (TREE_TYPE (val1)),
 			      TYPE_SIGN (TREE_TYPE (val1)));
     }
+
+  *overflow_p = overflow;
 
   return res;
 }
@@ -3567,6 +3572,7 @@ extract_range_basic (value_range *vr, gimple *stmt)
       int mini, maxi, zerov = 0, prec;
       enum tree_code subcode = ERROR_MARK;
       combined_fn cfn = gimple_call_combined_fn (stmt);
+      scalar_int_mode mode;
 
       switch (cfn)
 	{
@@ -3627,10 +3633,9 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
 	  maxi = prec;
-	  if (optab_handler (clz_optab, TYPE_MODE (TREE_TYPE (arg)))
-	      != CODE_FOR_nothing
-	      && CLZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (arg)),
-					    zerov)
+	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (optab_handler (clz_optab, mode) != CODE_FOR_nothing
+	      && CLZ_DEFINED_VALUE_AT_ZERO (mode, zerov)
 	      /* Handle only the single common value.  */
 	      && zerov != prec)
 	    /* Magic value to give up, unless vr0 proves
@@ -3679,10 +3684,9 @@ extract_range_basic (value_range *vr, gimple *stmt)
 	  prec = TYPE_PRECISION (TREE_TYPE (arg));
 	  mini = 0;
 	  maxi = prec - 1;
-	  if (optab_handler (ctz_optab, TYPE_MODE (TREE_TYPE (arg)))
-	      != CODE_FOR_nothing
-	      && CTZ_DEFINED_VALUE_AT_ZERO (TYPE_MODE (TREE_TYPE (arg)),
-					    zerov))
+	  mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (arg));
+	  if (optab_handler (ctz_optab, mode) != CODE_FOR_nothing
+	      && CTZ_DEFINED_VALUE_AT_ZERO (mode, zerov))
 	    {
 	      /* Handle only the two common values.  */
 	      if (zerov == -1)
@@ -5242,7 +5246,7 @@ register_edge_assert_for_2 (tree name, edge e,
 	      && tree_fits_uhwi_p (cst2)
 	      && INTEGRAL_TYPE_P (TREE_TYPE (name2))
 	      && IN_RANGE (tree_to_uhwi (cst2), 1, prec - 1)
-	      && prec == GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (val))))
+	      && type_has_mode_precision_p (TREE_TYPE (val)))
 	    {
 	      mask = wi::mask (tree_to_uhwi (cst2), false, prec);
 	      val2 = fold_binary (LSHIFT_EXPR, TREE_TYPE (val), val, cst2);
@@ -6393,20 +6397,37 @@ process_assert_insertions_for (tree name, assert_locus *loc)
   gcc_unreachable ();
 }
 
-/* Qsort helper for sorting assert locations.  */
+/* Qsort helper for sorting assert locations.  If stable is true, don't
+   use iterative_hash_expr because it can be unstable for -fcompare-debug,
+   on the other side some pointers might be NULL.  */
 
+template <bool stable>
 static int
 compare_assert_loc (const void *pa, const void *pb)
 {
   assert_locus * const a = *(assert_locus * const *)pa;
   assert_locus * const b = *(assert_locus * const *)pb;
-  if (! a->e && b->e)
+
+  /* If stable, some asserts might be optimized away already, sort
+     them last.  */
+  if (stable)
+    {
+      if (a == NULL)
+	return b != NULL;
+      else if (b == NULL)
+	return -1;
+    }
+
+  if (a->e == NULL && b->e != NULL)
     return 1;
-  else if (a->e && ! b->e)
+  else if (a->e != NULL && b->e == NULL)
     return -1;
 
+  /* After the above checks, we know that (a->e == NULL) == (b->e == NULL),
+     no need to test both a->e and b->e.  */
+
   /* Sort after destination index.  */
-  if (! a->e && ! b->e)
+  if (a->e == NULL)
     ;
   else if (a->e->dest->index > b->e->dest->index)
     return 1;
@@ -6419,14 +6440,30 @@ compare_assert_loc (const void *pa, const void *pb)
   else if (a->comp_code < b->comp_code)
     return -1;
 
+  hashval_t ha, hb;
+
+  /* E.g. if a->val is ADDR_EXPR of a VAR_DECL, iterative_hash_expr
+     uses DECL_UID of the VAR_DECL, so sorting might differ between
+     -g and -g0.  When doing the removal of redundant assert exprs
+     and commonization to successors, this does not matter, but for
+     the final sort needs to be stable.  */
+  if (stable)
+    {
+      ha = 0;
+      hb = 0;
+    }
+  else
+    {
+      ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
+      hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
+    }
+
   /* Break the tie using hashing and source/bb index.  */
-  hashval_t ha = iterative_hash_expr (a->expr, iterative_hash_expr (a->val, 0));
-  hashval_t hb = iterative_hash_expr (b->expr, iterative_hash_expr (b->val, 0));
   if (ha == hb)
-    return (a->e && b->e
+    return (a->e != NULL
 	    ? a->e->src->index - b->e->src->index
 	    : a->bb->index - b->bb->index);
-  return ha - hb;
+  return ha > hb ? 1 : -1;
 }
 
 /* Process all the insertions registered for every name N_i registered
@@ -6452,7 +6489,7 @@ process_assert_insertions (void)
       auto_vec<assert_locus *, 16> asserts;
       for (; loc; loc = loc->next)
 	asserts.safe_push (loc);
-      asserts.qsort (compare_assert_loc);
+      asserts.qsort (compare_assert_loc<false>);
 
       /* Push down common asserts to successors and remove redundant ones.  */
       unsigned ecnt = 0;
@@ -6506,11 +6543,14 @@ process_assert_insertions (void)
 	    }
 	}
 
+      /* The asserts vector sorting above might be unstable for
+	 -fcompare-debug, sort again to ensure a stable sort.  */
+      asserts.qsort (compare_assert_loc<true>);
       for (unsigned j = 0; j < asserts.length (); ++j)
 	{
 	  loc = asserts[j];
 	  if (! loc)
-	    continue;
+	    break;
 	  update_edges_p |= process_assert_insertions_for (ssa_name (i), loc);
 	  num_asserts++;
 	  free (loc);
@@ -10053,8 +10093,9 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 {
   tree rhs1 = gimple_assign_rhs1 (stmt);
   value_range *vr = get_value_range (rhs1);
-  machine_mode fltmode = TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
-  machine_mode mode;
+  scalar_float_mode fltmode
+    = SCALAR_FLOAT_TYPE_MODE (TREE_TYPE (gimple_assign_lhs (stmt)));
+  scalar_int_mode mode;
   tree tem;
   gassign *conv;
 
@@ -10065,21 +10106,21 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
     return false;
 
   /* First check if we can use a signed type in place of an unsigned.  */
+  scalar_int_mode rhs_mode = SCALAR_INT_TYPE_MODE (TREE_TYPE (rhs1));
   if (TYPE_UNSIGNED (TREE_TYPE (rhs1))
-      && (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)), 0)
-	  != CODE_FOR_nothing)
+      && can_float_p (fltmode, rhs_mode, 0) != CODE_FOR_nothing
       && range_fits_type_p (vr, TYPE_PRECISION (TREE_TYPE (rhs1)), SIGNED))
-    mode = TYPE_MODE (TREE_TYPE (rhs1));
+    mode = rhs_mode;
   /* If we can do the conversion in the current input mode do nothing.  */
-  else if (can_float_p (fltmode, TYPE_MODE (TREE_TYPE (rhs1)),
+  else if (can_float_p (fltmode, rhs_mode,
 			TYPE_UNSIGNED (TREE_TYPE (rhs1))) != CODE_FOR_nothing)
     return false;
   /* Otherwise search for a mode we can use, starting from the narrowest
      integer mode available.  */
   else
     {
-      mode = GET_CLASS_NARROWEST_MODE (MODE_INT);
-      do
+      mode = NARROWEST_INT_MODE;
+      for (;;)
 	{
 	  /* If we cannot do a signed conversion to float from mode
 	     or if the value-range does not fit in the signed type
@@ -10088,15 +10129,12 @@ simplify_float_conversion_using_ranges (gimple_stmt_iterator *gsi,
 	      && range_fits_type_p (vr, GET_MODE_PRECISION (mode), SIGNED))
 	    break;
 
-	  mode = GET_MODE_WIDER_MODE (mode);
 	  /* But do not widen the input.  Instead leave that to the
 	     optabs expansion code.  */
-	  if (GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
+	  if (!GET_MODE_WIDER_MODE (mode).exists (&mode)
+	      || GET_MODE_PRECISION (mode) > TYPE_PRECISION (TREE_TYPE (rhs1)))
 	    return false;
 	}
-      while (mode != VOIDmode);
-      if (mode == VOIDmode)
-	return false;
     }
 
   /* It works, insert a truncation or sign-change before the

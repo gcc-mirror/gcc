@@ -100,6 +100,8 @@ one is not the default.
 * Runtime Options::     Influencing runtime behavior
 * Code Gen Options::    Specifying conventions for function calls, data layout
                         and register usage.
+* Interoperability Options::  Options for interoperability with other
+                              languages.
 * Environment Variables:: Environment variables that affect @command{gfortran}.
 @end menu
 
@@ -170,6 +172,10 @@ and warnings}.
 @gccoptlist{-fconvert=@var{conversion} -fmax-subrecord-length=@var{length} @gol
 -frecord-marker=@var{length} -fsign-zero
 }
+
+@item Interoperability Options
+@xref{Interoperability Options,,Options for interoperability}.
+@gccoptlist{-fc-prototypes}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for code generation conventions}.
@@ -1564,12 +1570,12 @@ The default value for @var{n} is 32768.
 
 @item -fstack-arrays
 @opindex @code{fstack-arrays}
-Adding this option will make the Fortran compiler put all local arrays,
-even those of unknown size onto stack memory.  If your program uses very
+Adding this option will make the Fortran compiler put all arrays of
+unknown size and array temporaries onto stack memory.  If your program uses very
 large local arrays it is possible that you will have to extend your runtime
 limits for stack memory on some operating systems. This flag is enabled
-by default at optimization level @option{-Ofast}.
-
+by default at optimization level @option{-Ofast} unless
+@option{-fmax-stack-var-size} is specified.
 
 @item -fpack-derived
 @opindex @code{fpack-derived}
@@ -1745,6 +1751,34 @@ offered by the GBE
 shared by @command{gfortran}, @command{gcc}, and other GNU compilers.
 
 @c man end
+
+@node Interoperability Options
+@section Options for interoperability with other languages
+
+@table @asis
+
+@item -fc-prototypes
+@opindex @code{c-prototypes}
+@cindex Generating C prototypes from Fortran source code
+This option will generate C prototypes from @code{BIND(C)} variable
+declarations, types and procedure interfaces and writes them to
+standard output.  @code{ENUM} is not yet supported.
+
+The generated prototypes may need inclusion of an appropriate header,
+such as @code{<stdint.h>} or @code{<stdlib.h>}.  For types which are
+not specified using the appropriate kind from the @code{iso_c_binding}
+module, a warning is added as a comment to the code.
+
+For function pointers, a pointer to a function returning @code{int}
+without an explicit argument list is generated.
+
+Example of use:
+@smallexample
+$ gfortran -fc-prototypes -fsyntax-only foo.f90 > foo.h
+@end smallexample
+where the C code intended for interoperating with the Fortran code
+then  uses @code{#include "foo.h"}.
+@end table
 
 @node Environment Variables
 @section Environment variables affecting @command{gfortran}

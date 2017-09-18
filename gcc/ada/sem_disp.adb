@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1992-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -427,29 +427,6 @@ package body Sem_Disp is
 
       procedure Check_Direct_Call is
          Typ : Entity_Id := Etype (Control);
-
-         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean;
-         --  Determine whether an entity denotes a user-defined equality
-
-         ------------------------------
-         -- Is_User_Defined_Equality --
-         ------------------------------
-
-         function Is_User_Defined_Equality (Id : Entity_Id) return Boolean is
-         begin
-            return
-              Ekind (Id) = E_Function
-                and then Chars (Id) = Name_Op_Eq
-                and then Comes_From_Source (Id)
-
-               --  Internally generated equalities have a full type declaration
-               --  as their parent.
-
-                and then Nkind (Parent (Id)) = N_Function_Specification;
-         end Is_User_Defined_Equality;
-
-      --  Start of processing for Check_Direct_Call
-
       begin
          --  Predefined primitives do not receive wrappers since they are built
          --  from scratch for the corresponding record of synchronized types.

@@ -791,11 +791,8 @@ case "${target}" in
     noconfigdirs="$noconfigdirs target-libffi"
     ;;
   powerpc-*-aix*)
-    # copied from rs6000-*-* entry
-    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   rs6000-*-aix*)
-    noconfigdirs="$noconfigdirs target-libffi"
     ;;
   ft32-*-*)
     noconfigdirs="$noconfigdirs target-libffi"
@@ -808,7 +805,7 @@ esac
 # Disable the go frontend on systems where it is known to not work. Please keep
 # this in sync with contrib/config-list.mk.
 case "${target}" in
-*-*-darwin* | *-*-cygwin* | *-*-mingw* | *-*-aix*)
+*-*-darwin* | *-*-cygwin* | *-*-mingw*)
     unsupported_languages="$unsupported_languages go"
     ;;
 esac
@@ -822,9 +819,6 @@ if test x$enable_libgo = x; then
 	noconfigdirs="$noconfigdirs target-libgo"
 	;;
     *-*-cygwin* | *-*-mingw*)
-	noconfigdirs="$noconfigdirs target-libgo"
-	;;
-    *-*-aix*)
 	noconfigdirs="$noconfigdirs target-libgo"
 	;;
     esac
@@ -1839,7 +1833,12 @@ if test -d ${srcdir}/gcc; then
         language=
         lang_requires=
         lang_requires_boot_languages=
-        . ${lang_frag}
+        # set srcdir during sourcing lang_frag to the gcc dir.
+        # Sadly overriding srcdir on the . line doesn't work in plain sh as it
+        # polutes this shell
+        saved_srcdir=${srcdir}
+        srcdir=${srcdir}/gcc . ${lang_frag}
+        srcdir=${saved_srcdir}
         for other in ${lang_requires} ${lang_requires_boot_languages}; do
           case ,${enable_languages}, in
 	    *,$other,*) ;;
@@ -1914,7 +1913,10 @@ if test -d ${srcdir}/gcc; then
         subdir_requires=
         boot_language=no
         build_by_default=yes
-        . ${lang_frag}
+        # set srcdir during sourcing.  See above about save & restore
+        saved_srcdir=${srcdir}
+        srcdir=${srcdir}/gcc . ${lang_frag}
+        srcdir=${saved_srcdir}
         if test x${language} = x; then
           echo "${lang_frag} doesn't set \$language." 1>&2
           exit 1

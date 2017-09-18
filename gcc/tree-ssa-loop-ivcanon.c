@@ -529,7 +529,7 @@ remove_exits_and_undefined_stmts (struct loop *loop, unsigned int npeeled)
 	    }
 	  if (!loop_exit_edge_p (loop, exit_edge))
 	    exit_edge = EDGE_SUCC (bb, 1);
-	  exit_edge->probability = REG_BR_PROB_BASE;
+	  exit_edge->probability = profile_probability::always ();
 	  exit_edge->count = exit_edge->src->count;
 	  gcc_checking_assert (loop_exit_edge_p (loop, exit_edge));
 	  gcond *cond_stmt = as_a <gcond *> (elt->stmt);
@@ -642,7 +642,7 @@ unloop_loops (bitmap loop_closed_ssa_invalidated,
 	 it in.  */
       stmt = gimple_build_call (builtin_decl_implicit (BUILT_IN_UNREACHABLE), 0);
       latch_edge = make_edge (latch, create_basic_block (NULL, NULL, latch), flags);
-      latch_edge->probability = 0;
+      latch_edge->probability = profile_probability::never ();
       latch_edge->count = profile_count::zero ();
       latch_edge->flags |= flags;
       latch_edge->goto_locus = locus;
@@ -1104,12 +1104,13 @@ try_peel_loop (struct loop *loop,
 	entry_freq += e->src->frequency;
 	gcc_assert (!flow_bb_inside_loop_p (loop, e->src));
       }
-  int scale = 1;
+  profile_probability p = profile_probability::very_unlikely ();
   if (loop->header->count > 0)
-    scale = entry_count.probability_in (loop->header->count);
+    p = entry_count.probability_in (loop->header->count);
   else if (loop->header->frequency)
-    scale = RDIV (entry_freq * REG_BR_PROB_BASE, loop->header->frequency);
-  scale_loop_profile (loop, scale, 0);
+    p = profile_probability::probability_in_gcov_type
+		 (entry_freq, loop->header->frequency);
+  scale_loop_profile (loop, p, 0);
   bitmap_set_bit (peeled_loops, loop->num);
   return true;
 }

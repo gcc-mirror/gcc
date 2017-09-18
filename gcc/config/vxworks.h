@@ -23,6 +23,11 @@ along with GCC; see the file COPYING3.  If not see
 #undef TARGET_VXWORKS
 #define TARGET_VXWORKS 1
 
+/* If TARGET_VXWORKS7 is undefined, then we're not targeting it.  */
+#ifndef TARGET_VXWORKS7
+#define TARGET_VXWORKS7 0
+#endif
+
 /* In kernel mode, VxWorks provides all the libraries itself, as well as
    the functionality of startup files, etc.  In RTP mode, it behaves more
    like a traditional Unix, with more external files.  Most of our specs
@@ -36,6 +41,23 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Since we provide a default -isystem, expand -isystem on the command
    line early.  */
+#if TARGET_VXWORKS7
+
+#undef VXWORKS_ADDITIONAL_CPP_SPEC
+#define VXWORKS_ADDITIONAL_CPP_SPEC                     \
+ "%{!nostdinc:                                          \
+    %{isystem*}                                         \
+    %{mrtp: -idirafter %:getenv(VSB_DIR /h)             \
+            -idirafter %:getenv(VSB_DIR /share/h)       \
+            -idirafter %:getenv(VSB_DIR /usr/h/public)  \
+            -idirafter %:getenv(VSB_DIR /usr/h)         \
+      ;:    -idirafter %:getenv(VSB_DIR /h)             \
+            -idirafter %:getenv(VSB_DIR /share/h)       \
+            -idirafter %:getenv(VSB_DIR /krnl/h/system) \
+            -idirafter %:getenv(VSB_DIR /krnl/h/public)}}"
+
+#else /* TARGET_VXWORKS7 */
+
 #undef VXWORKS_ADDITIONAL_CPP_SPEC
 #define VXWORKS_ADDITIONAL_CPP_SPEC		\
  "%{!nostdinc:					\
@@ -43,14 +65,40 @@ along with GCC; see the file COPYING3.  If not see
     %{mrtp: %:getenv(WIND_USR /h)		\
       ;:    %:getenv(WIND_BASE /target/h)}}"
 
+#endif
+
 /* The references to __init and __fini will be satisfied by
-   libc_internal.a.  */
+   libc_internal.a, and some versions of VxWorks rely on explicit
+   extra libraries for system calls.  */
+
+#define VXWORKS_SYSCALL_LIBS_RTP
+
+#define VXWORKS_LIBS_RTP \
+  VXWORKS_SYSCALL_LIBS_RTP " -lc -lgcc -lc_internal -lnet -ldsi"
+
+/* On Vx6 and previous, the libraries to pick up depends on the architecture,
+   so cannot be defined for all archs at once.  On Vx7, a VSB is always needed
+   and its structure is fixed and does not depend on the arch.  We can thus
+   tell gcc where to look for when linking with RTP libraries.  */
+
+/* On Vx7 RTP, we need to drag the __tls__ symbol to trigger initialization of
+   tlsLib, responsible for TLS support by the OS.  */
+
+#if TARGET_VXWORKS7
+#define VXWORKS_LIBS_DIR_RTP "-L%:getenv(VSB_DIR /usr/lib/common)"
+#define TLS_SYM "-u __tls__"
+#else
+#define VXWORKS_LIBS_DIR_RTP ""
+#define TLS_SYM ""
+#endif
+
 #undef VXWORKS_LIB_SPEC
 #define	VXWORKS_LIB_SPEC						\
 "%{mrtp:%{shared:-u " USER_LABEL_PREFIX "__init -u " USER_LABEL_PREFIX "__fini} \
 	%{!shared:%{non-static:-u " USER_LABEL_PREFIX "_STI__6__rtld -ldl} \
-		  --start-group -lc -lgcc -lc_internal -lnet -ldsi	\
-		  --end-group}}"
+		  " TLS_SYM " \
+		  --start-group " VXWORKS_LIBS_RTP " --end-group} \
+        " VXWORKS_LIBS_DIR_RTP "}"
 
 /* The no-op spec for "-shared" below is present because otherwise GCC
    will treat it as an unrecognized option.  */
@@ -84,6 +132,9 @@ along with GCC; see the file COPYING3.  If not see
 #define VXWORKS_ENDFILE_SPEC ""
 
 /* Do VxWorks-specific parts of TARGET_OPTION_OVERRIDE.  */
+
+#define VXWORKS_HAVE_TLS (TARGET_VXWORKS7 && TARGET_VXWORKS_RTP)
+
 #undef VXWORKS_OVERRIDE_OPTIONS
 #define VXWORKS_OVERRIDE_OPTIONS vxworks_override_options ()
 extern void vxworks_override_options (void);
@@ -131,6 +182,19 @@ extern void vxworks_asm_out_destructor (rtx symbol, int priority);
 	builtin_define ("__RTP__");					\
       else								\
 	builtin_define ("_WRS_KERNEL");					\
+      builtin_define ("_VX_TOOL_FAMILY=gnu");				\
+      builtin_define ("_VX_TOOL=gnu");					\
+      if (TARGET_VXWORKS7)						\
+        {								\
+           builtin_define ("_VSB_CONFIG_FILE=<config/vsbConfig.h>");	\
+           								\
+	   /* _ALLOW_KEYWORD_MACROS is needed on VxWorks 7 to		\
+	      prevent compilation failures triggered by our		\
+	      definition of "inline" in ansidecl when "inline"		\
+	      is not a keyword.  */					\
+	   if (!flag_isoc99 && !c_dialect_cxx())			\
+             builtin_define ("_ALLOW_KEYWORD_MACROS");			\
+        }								\
     }									\
   while (0)
 
