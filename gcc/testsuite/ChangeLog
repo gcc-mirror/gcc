@@ -1,3 +1,8 @@
+2017-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80947
+	* g++.dg/cpp0x/lambda/lambda-80947.C: New.
+
 2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc.dg/vect/slp-multitypes-13.c: New test.
