@@ -1,3 +1,9 @@
+2017-09-18  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/81613
+	* config/m68k/m68k.md (moveq feeding equality comparison): Check
+	that the registers are different.
+
 2017-09-18  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (fold_builtin_cpu): Add M_AMDFAM17H
