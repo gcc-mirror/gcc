@@ -2666,6 +2666,16 @@ package body Sem_Ch3 is
                   Freeze_From := Last_Entity (Current_Scope);
 
                else
+                  --  For declarations in a subprogram body there is no issue
+                  --  with name resolution in aspect specifications, but in
+                  --  ASIS mode we need to preanalyze aspect specifications
+                  --  that may otherwise only be analyzed during expansion
+                  --  (e.g. during generation of a related subprogram).
+
+                  if ASIS_Mode then
+                     Resolve_Aspects;
+                  end if;
+
                   Freeze_All (First_Entity (Current_Scope), Decl);
                   Freeze_From := Last_Entity (Current_Scope);
                end if;
@@ -13510,6 +13520,7 @@ package body Sem_Ch3 is
          end if;
 
          Constrain_Discriminated_Type (Def_Id, SI, Related_Nod);
+         Set_First_Private_Entity (Def_Id, First_Private_Entity (T_Ent));
 
          Set_Depends_On_Private (Def_Id, Has_Private_Component (Def_Id));
          Set_Corresponding_Record_Type (Def_Id,

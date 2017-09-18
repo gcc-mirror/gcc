@@ -1,3 +1,15 @@
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/validity_check.adb: New testcase.
+
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/overload.ads, gnat.dg/overload.adb: New testcase.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/tagged_prefix_call.adb: New testcase.
+
 2017-09-18  Ed Schonberg  <schonberg@adacore.com>
 
 	* gnat.dg/default_variants.adb: New testcase.

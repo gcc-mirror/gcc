@@ -1074,49 +1074,6 @@ package body Sem_Attr is
                end if;
             end loop;
          end;
-
-         --  Check for aliased view. We allow a nonaliased prefix when within
-         --  an instance because the prefix may have been a tagged formal
-         --  object, which is defined to be aliased even when the actual
-         --  might not be (other instance cases will have been caught in the
-         --  generic). Similarly, within an inlined body we know that the
-         --  attribute is legal in the original subprogram, and therefore
-         --  legal in the expansion.
-
-         if not Is_Aliased_View (P)
-           and then not In_Instance
-           and then not In_Inlined_Body
-           and then Comes_From_Source (N)
-         then
-            --  Here we have a non-aliased view. This is illegal unless we
-            --  have the case of Unrestricted_Access, where for now we allow
-            --  this (we will reject later if expected type is access to an
-            --  unconstrained array with a thin pointer).
-
-            --  No need for an error message on a generated access reference
-            --  for the controlling argument in a dispatching call: error will
-            --  be reported when resolving the call.
-
-            if Aname /= Name_Unrestricted_Access then
-               Error_Attr_P ("prefix of % attribute must be aliased");
-               Check_No_Implicit_Aliasing (P);
-
-            --  For Unrestricted_Access, record that prefix is not aliased
-            --  to simplify legality check later on.
-
-            else
-               Set_Non_Aliased_Prefix (N);
-            end if;
-
-         --  If we have an aliased view, and we have Unrestricted_Access, then
-         --  output a warning that Unchecked_Access would have been fine, and
-         --  change the node to be Unchecked_Access.
-
-         else
-            --  For now, hold off on this change ???
-
-            null;
-         end if;
       end Analyze_Access_Attribute;
 
       ----------------------------------
@@ -11120,24 +11077,56 @@ package body Sem_Attr is
                end if;
             end if;
 
-            --  Check for unrestricted access where expected type is a thin
-            --  pointer to an unconstrained array.
+            --  Check for aliased view. We allow a nonaliased prefix when in
+            --  an instance because the prefix may have been a tagged formal
+            --  object, which is defined to be aliased even when the actual
+            --  might not be (other instance cases will have been caught in
+            --  the generic). Similarly, within an inlined body we know that
+            --  the attribute is legal in the original subprogram, therefore
+            --  legal in the expansion.
 
-            if Non_Aliased_Prefix (N)
-              and then Has_Size_Clause (Typ)
-              and then RM_Size (Typ) = System_Address_Size
+            if not (Is_Entity_Name (P)
+                     and then Is_Overloadable (Entity (P)))
+              and then not (Nkind (P) = N_Selected_Component
+                             and then
+                            Is_Overloadable (Entity (Selector_Name (P))))
+              and then not Is_Aliased_View (P)
+              and then not In_Instance
+              and then not In_Inlined_Body
+              and then Comes_From_Source (N)
             then
-               declare
-                  DT : constant Entity_Id := Designated_Type (Typ);
-               begin
-                  if Is_Array_Type (DT) and then not Is_Constrained (DT) then
-                     Error_Msg_N
-                       ("illegal use of Unrestricted_Access attribute", P);
-                     Error_Msg_N
-                       ("\attempt to generate thin pointer to unaliased "
-                        & "object", P);
-                  end if;
-               end;
+               --  Here we have a non-aliased view. This is illegal unless we
+               --  have the case of Unrestricted_Access, where for now we allow
+               --  this (we will reject later if expected type is access to an
+               --  unconstrained array with a thin pointer).
+
+               --  No need for an error message on a generated access reference
+               --  for the controlling argument in a dispatching call: error
+               --  will be reported when resolving the call.
+
+               if Attr_Id /= Attribute_Unrestricted_Access then
+                  Error_Msg_N ("prefix of % attribute must be aliased", P);
+
+               --  Check for unrestricted access where expected type is a thin
+               --  pointer to an unconstrained array.
+
+               elsif Has_Size_Clause (Typ)
+                 and then RM_Size (Typ) = System_Address_Size
+               then
+                  declare
+                     DT : constant Entity_Id := Designated_Type (Typ);
+                  begin
+                     if Is_Array_Type (DT)
+                       and then not Is_Constrained (DT)
+                     then
+                        Error_Msg_N
+                          ("illegal use of Unrestricted_Access attribute", P);
+                        Error_Msg_N
+                          ("\attempt to generate thin pointer to unaliased "
+                           & "object", P);
+                     end if;
+                  end;
+               end if;
             end if;
 
             --  Mark that address of entity is taken in case of

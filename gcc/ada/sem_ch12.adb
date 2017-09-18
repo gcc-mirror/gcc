@@ -15118,10 +15118,10 @@ package body Sem_Ch12 is
                --  preserved. In order to preserve some of this information,
                --  wrap the aggregate in a qualified expression, using the id
                --  of its type. For further disambiguation we qualify the type
-               --  name with its scope (if visible) because both id's will have
-               --  corresponding entities in an instance. This resolves most of
-               --  the problems with missing type information on aggregates in
-               --  instances.
+               --  name with its scope (if visible and not hidden by a local
+               --  homograph) because both id's will have corresponding
+               --  entities in an instance. This resolves most of the problems
+               --  with missing type information on aggregates in instances.
 
                if Present (N2)
                  and then Nkind (N2) = Nkind (N)
@@ -15131,7 +15131,9 @@ package body Sem_Ch12 is
                then
                   Nam := Make_Identifier (Loc, Chars (Typ));
 
-                  if Is_Immediately_Visible (Scope (Typ)) then
+                  if Is_Immediately_Visible (Scope (Typ))
+                    and then Current_Entity (Scope (Typ)) = Scope (Typ)
+                  then
                      Nam :=
                        Make_Selected_Component (Loc,
                          Prefix        =>
