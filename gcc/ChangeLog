@@ -1,3 +1,9 @@
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/81361
+	* dwarf2cfi.c (add_cfis_to_fde): Do not generate DW_CFA_set_loc after
+	switching to a new text section.
+
 2017-09-18  Richard Biener  <rguenther@suse.de>
 
 	* graphite-scop-detection.c (scop_detection::stmt_has_simple_data_ref):
