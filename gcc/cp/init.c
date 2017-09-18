@@ -1810,6 +1810,19 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
       return;
     }
 
+  /* List-initialization from {} becomes value-initialization for non-aggregate
+     classes with default constructors.  Handle this here so protected access
+     works.  */
+  if (init && TREE_CODE (init) == TREE_LIST)
+    {
+      tree elt = TREE_VALUE (init);
+      if (DIRECT_LIST_INIT_P (elt)
+	  && CONSTRUCTOR_ELTS (elt) == 0
+	  && CLASSTYPE_NON_AGGREGATE (type)
+	  && TYPE_HAS_DEFAULT_CONSTRUCTOR (type))
+	init = void_type_node;
+    }
+
   /* If an explicit -- but empty -- initializer list was present,
      that's value-initialization.  */
   if (init == void_type_node)

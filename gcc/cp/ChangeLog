@@ -1,3 +1,9 @@
+2017-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/55922
+	PR c++/63151
+	* init.c (expand_aggr_init_1): Handle list-initialization from {}.
+
 2017-09-16  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
