@@ -1,3 +1,10 @@
+2017-09-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82145
+	* config/i386/i386.c (ix86_init_large_pic_reg): Revert 2017-09-01
+	changes.  Turn CODE_LABEL into NOTE_INSN_DELETED_LABEL immediately.
+	(ix86_init_pic_reg): Revert 2017-09-01 changes.
+
 2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR target/81361
