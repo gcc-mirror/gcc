@@ -1,3 +1,8 @@
+2017-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45033
+	* g++.dg/expr/delete1.C: New.
+
 2017-09-18  Bob Duff  <duff@adacore.com>
 
 	* gnat.dg/validity_check.adb: New testcase.
