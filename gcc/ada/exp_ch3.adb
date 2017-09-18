@@ -517,6 +517,10 @@ package body Exp_Ch3 is
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
       Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
+      Comp_Type_Simple : constant Boolean :=
+        Needs_Simple_Initialization
+          (Comp_Type, Consider_IS =>
+             not (Validity_Check_Copies and Is_Bit_Packed_Array (A_Type)));
       Body_Stmts       : List_Id;
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
@@ -557,7 +561,7 @@ package body Exp_Ch3 is
                   Convert_To (Comp_Type,
                     Default_Aspect_Component_Value (First_Subtype (A_Type)))));
 
-         elsif Needs_Simple_Initialization (Comp_Type) then
+         elsif Comp_Type_Simple then
             Set_Assignment_OK (Comp);
             return New_List (
               Make_Assignment_Statement (Loc,
@@ -589,7 +593,7 @@ package body Exp_Ch3 is
          --  the dummy Init_Proc needed for Initialize_Scalars processing.
 
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
-           and then not Needs_Simple_Initialization (Comp_Type)
+           and then not Comp_Type_Simple
            and then not Has_Task (Comp_Type)
            and then not Has_Default_Aspect (A_Type)
          then
@@ -679,7 +683,7 @@ package body Exp_Ch3 is
       --  init_proc.
 
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
-                            or else Needs_Simple_Initialization (Comp_Type)
+                            or else Comp_Type_Simple
                             or else Has_Task (Comp_Type)
                             or else Has_Default_Aspect (A_Type);
 

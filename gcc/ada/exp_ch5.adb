@@ -74,6 +74,12 @@ package body Exp_Ch5 is
    --  Utility to create declarations and loop statement for both forms
    --  of formal container iterators.
 
+   function Convert_To_Iterable_Type
+     (Container : Entity_Id; Loc : Source_Ptr) return Node_Id;
+   --  Returns New_Occurrence_Of (Container), possibly converted to an
+   --  ancestor type, if the type of Container inherited the Iterable
+   --  aspect_specification from that ancestor.
+
    function Change_Of_Representation (N : Node_Id) return Boolean;
    --  Determine if the right-hand side of assignment N is a type conversion
    --  which requires a change of representation. Called only for the array
@@ -189,7 +195,7 @@ package body Exp_Ch5 is
             Make_Function_Call (Loc,
               Name                   => New_Occurrence_Of (First_Op, Loc),
               Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc))));
+                Convert_To_Iterable_Type (Container, Loc))));
 
       --  Statement that advances cursor in loop
 
@@ -200,7 +206,7 @@ package body Exp_Ch5 is
             Make_Function_Call (Loc,
               Name                   => New_Occurrence_Of (Next_Op, Loc),
               Parameter_Associations => New_List (
-                New_Occurrence_Of (Container, Loc),
+                Convert_To_Iterable_Type (Container, Loc),
                 New_Occurrence_Of (Cursor, Loc))));
 
       --  Iterator is rewritten as a while_loop
@@ -211,13 +217,12 @@ package body Exp_Ch5 is
             Make_Iteration_Scheme (Loc,
               Condition =>
                 Make_Function_Call (Loc,
-                  Name                   =>
-                    New_Occurrence_Of (Has_Element_Op, Loc),
+                  Name => New_Occurrence_Of (Has_Element_Op, Loc),
                   Parameter_Associations => New_List (
-                    New_Occurrence_Of (Container, Loc),
+                    Convert_To_Iterable_Type (Container, Loc),
                     New_Occurrence_Of (Cursor, Loc)))),
-          Statements       => Stats,
-          End_Label        => Empty);
+          Statements => Stats,
+          End_Label  => Empty);
    end Build_Formal_Container_Iteration;
 
    ------------------------------
@@ -232,6 +237,26 @@ package body Exp_Ch5 is
           and then
             not Same_Representation (Etype (Rhs), Etype (Expression (Rhs)));
    end Change_Of_Representation;
+
+   ------------------------------
+   -- Convert_To_Iterable_Type --
+   ------------------------------
+
+   function Convert_To_Iterable_Type
+     (Container : Entity_Id; Loc : Source_Ptr) return Node_Id
+   is
+      Typ    : constant Entity_Id  := Base_Type (Etype (Container));
+      Aspect : constant Node_Id := Find_Aspect (Typ, Aspect_Iterable);
+      Result : Node_Id := New_Occurrence_Of (Container, Loc);
+   begin
+      if Entity (Aspect) /= Typ then
+         Result := Make_Type_Conversion (Loc,
+                     Subtype_Mark => New_Occurrence_Of (Entity (Aspect), Loc),
+                     Expression   => Result);
+      end if;
+
+      return Result;
+   end Convert_To_Iterable_Type;
 
    -------------------------
    -- Expand_Assign_Array --
@@ -3207,7 +3232,7 @@ package body Exp_Ch5 is
            Make_Function_Call (Loc,
              Name                   => New_Occurrence_Of (Element_Op, Loc),
              Parameter_Associations => New_List (
-               New_Occurrence_Of (Container, Loc),
+               Convert_To_Iterable_Type (Container, Loc),
                New_Occurrence_Of (Cursor, Loc))));
 
          Set_Statements (New_Loop,
@@ -3226,7 +3251,7 @@ package body Exp_Ch5 is
                Make_Function_Call (Loc,
                  Name                   => New_Occurrence_Of (Element_Op, Loc),
                  Parameter_Associations => New_List (
-                   New_Occurrence_Of (Container, Loc),
+                   Convert_To_Iterable_Type (Container, Loc),
                    New_Occurrence_Of (Cursor, Loc))));
 
          Prepend (Elmt_Ref, Stats);
