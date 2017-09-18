@@ -1,5 +1,12 @@
 2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
 
+	* tree-vect-slp.c (vect_record_max_nunits): New function,
+	split out from...
+	(vect_build_slp_tree_1): ...here.
+	(vect_build_slp_tree_2): Call it for phis too.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
 	* tree-vect-stmts.c (vectorizable_mask_load_store): Pass mask_vectype
 	to vect_get_vec_def_for_operand when getting the mask operand.
 
