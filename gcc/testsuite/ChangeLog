@@ -1,3 +1,21 @@
+2017-09-18  Richard Biener  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81977
+	* g++.dg/torture/pr81977.C: New testcase.
+
+	2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* g++.dg/torture/pr82084.C: New testcase.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* gcc.dg/ubsan/pr81505.c: New testcase.
+
 2017-09-18  Martin Liska  <mliska@suse.cz>
 
 	* gcc.dg/asan/pr81224.c: Remove.

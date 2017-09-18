@@ -1,3 +1,27 @@
+2017-09-18  Richard Biener  <rguenther@suse.de>
+ 
+	Backport from mainline
+	2017-08-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81977
+	* tree-ssa-sccvn.c (vn_reference_lookup_3): Fix look through
+	memcpy.
+
+	2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* fold-const.h (can_native_encode_string_p): Declare.
+	* fold-const.c (can_native_encode_string_p): Factor out from ...
+	(native_encode_string): ... here.
+	* tree-vect-stmts.c (vectorizable_store): Call it to avoid
+	vectorizing stores from constants we later cannot handle.
+
+	2017-07-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/81505
+	* fold-const.c (fold_negate_const): TREE_OVERFLOW should be
+	sticky.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
