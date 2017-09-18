@@ -11467,8 +11467,8 @@ package body Sem_Res is
             S : constant Entity_Id := Current_Scope_No_Loops;
          begin
             if Ekind (S) = E_Function
-              and then Nkind (Original_Node (Unit_Declaration_Node (S)))
-                                                        = N_Expression_Function
+              and then Nkind (Original_Node (Unit_Declaration_Node (S))) =
+                         N_Expression_Function
             then
                return;
             end if;

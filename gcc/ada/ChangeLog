@@ -1,3 +1,22 @@
+2017-09-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb, sem_ch6.adb, sem_res.adb: Minor reformatting.
+
+2017-09-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Is_Imported): Update comment, as this
+	routine also applies to constants.
+
+2017-09-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Find_Placement_In_State_Space): Allow generic package
+	holding state.
+
+2017-09-18  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Is_Non_Significant_Pragma_Reference): Change the
+	constant indication for Pragma_Linker_Section.
+
 2017-09-18  Bob Duff  <duff@adacore.com>
 
 	Alternate fix for PR ada/71358

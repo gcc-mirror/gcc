@@ -7922,7 +7922,7 @@ package body Sem_Util is
 
       Context := Scope (Item_Id);
       while Present (Context) and then Context /= Standard_Standard loop
-         if Ekind (Context) = E_Package then
+         if Is_Package_Or_Generic_Package (Context) then
             Pack_Id := Context;
 
             --  A package body is a cut off point for the traversal as the item

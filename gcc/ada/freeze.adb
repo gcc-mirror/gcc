@@ -8237,6 +8237,7 @@ package body Freeze is
          if No (Extra_Formals (E)) then
             Create_Extra_Formals (E);
          end if;
+
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd
