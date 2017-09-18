@@ -1,5 +1,8 @@
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/79607 - ICE with T{} initializer
+	* decl.c (type_dependent_init_p): Check the type of a CONSTRUCTOR.
+
 	PR c++/72457
 	* init.c (expand_aggr_init_1): Only handle value-init of bases.
 	* constexpr.c (build_data_member_initialization): Handle multiple

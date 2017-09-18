@@ -6349,6 +6349,9 @@ type_dependent_init_p (tree init)
   else if (TREE_CODE (init) == CONSTRUCTOR)
   /* A brace-enclosed initializer, e.g.: int i = { 3 }; ? */
     {
+      if (dependent_type_p (TREE_TYPE (init)))
+	return true;
+
       vec<constructor_elt, va_gc> *elts;
       size_t nelts;
       size_t i;
