@@ -662,7 +662,7 @@ struct GTY(()) cgraph_thunk_info {
      * for this-adjusting thunks, after the FIXED_OFFSET based adjustment is
        done, add to the result the offset found in the vtable at:
 	 vptr + VIRTUAL_VALUE
-     * for result-adjusting thinks, the FIXED_OFFSET adjustment is done after
+     * for result-adjusting thunks, the FIXED_OFFSET adjustment is done after
        the virtual one.  */
   bool virtual_offset_p;
 
