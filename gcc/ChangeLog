@@ -1,4 +1,9 @@
 2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree-vect-stmts.c (vectorizable_mask_load_store): Pass mask_vectype
+	to vect_get_vec_def_for_operand when getting the mask operand.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
