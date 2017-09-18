@@ -4314,7 +4314,8 @@ Alternatively, you may run the script using the following command line:
 
   :switch:`--harness-only`
     When this option is given, ``gnattest`` creates a harness for all
-    sources, treating them as test packages.
+    sources, treating them as test packages. This option is not compatible with
+    closure computation done by -U main.
 
 
     .. index:: --separate-drivers (gnattest)

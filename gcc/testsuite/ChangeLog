@@ -1,3 +1,7 @@
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/default_variants.adb: New testcase.
+
 2017-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	PR target/81736

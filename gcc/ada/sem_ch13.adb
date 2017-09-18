@@ -5084,6 +5084,22 @@ package body Sem_Ch13 is
                         Register_Address_Clause_Check
                           (N, U_Ent, No_Uint, O_Ent, Off);
                      end if;
+
+                     --  If the overlay changes the storage order, mark the
+                     --  entity as being volatile to block any optimization
+                     --  for it since the construct is not really supported
+                     --  by the back end.
+
+                     if (Is_Record_Type (Etype (U_Ent))
+                          or else Is_Array_Type (Etype (U_Ent)))
+                       and then (Is_Record_Type (Etype (O_Ent))
+                                  or else Is_Array_Type (Etype (O_Ent)))
+                       and then Reverse_Storage_Order (Etype (U_Ent))
+                                      /= Reverse_Storage_Order (Etype (O_Ent))
+                     then
+                        Set_Treat_As_Volatile (U_Ent);
+                     end if;
+
                   else
                      --  If this is not an overlay, mark a variable as being
                      --  volatile to prevent unwanted optimizations. It's a
