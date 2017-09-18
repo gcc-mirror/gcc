@@ -480,6 +480,48 @@ again:
   return 0;
 }
 
+/* A subroutine of vect_build_slp_tree for checking VECTYPE, which is the
+   caller's attempt to find the vector type in STMT with the narrowest
+   element type.  Return true if VECTYPE is nonnull and if it is valid
+   for VINFO.  When returning true, update MAX_NUNITS to reflect the
+   number of units in VECTYPE.  VINFO, GORUP_SIZE and MAX_NUNITS are
+   as for vect_build_slp_tree.  */
+
+static bool
+vect_record_max_nunits (vec_info *vinfo, gimple *stmt, unsigned int group_size,
+			tree vectype, unsigned int *max_nunits)
+{
+  if (!vectype)
+    {
+      if (dump_enabled_p ())
+	{
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			   "Build SLP failed: unsupported data-type in ");
+	  dump_gimple_stmt (MSG_MISSED_OPTIMIZATION, TDF_SLIM, stmt, 0);
+	  dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
+	}
+      /* Fatal mismatch.  */
+      return false;
+    }
+
+  /* If populating the vector type requires unrolling then fail
+     before adjusting *max_nunits for basic-block vectorization.  */
+  if (is_a <bb_vec_info> (vinfo)
+      && TYPE_VECTOR_SUBPARTS (vectype) > group_size)
+    {
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		       "Build SLP failed: unrolling required "
+		       "in basic block SLP\n");
+      /* Fatal mismatch.  */
+      return false;
+    }
+
+  /* In case of multiple types we need to detect the smallest type.  */
+  if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
+    *max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
+
+  return true;
+}
 
 /* Verify if the scalar stmts STMTS are isomorphic, require data
    permutation or are of unsupported types of operation.  Return
@@ -560,37 +602,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 
       scalar_type = vect_get_smallest_scalar_type (stmt, &dummy, &dummy);
       vectype = get_vectype_for_scalar_type (scalar_type);
-      if (!vectype)
-        {
-          if (dump_enabled_p ())
-            {
-              dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-			       "Build SLP failed: unsupported data-type ");
-              dump_generic_expr (MSG_MISSED_OPTIMIZATION, TDF_SLIM,
-				 scalar_type);
-              dump_printf (MSG_MISSED_OPTIMIZATION, "\n");
-            }
+      if (!vect_record_max_nunits (vinfo, stmt, group_size, vectype,
+				   max_nunits))
+	{
 	  /* Fatal mismatch.  */
 	  matches[0] = false;
           return false;
         }
-
-      /* If populating the vector type requires unrolling then fail
-         before adjusting *max_nunits for basic-block vectorization.  */
-      if (is_a <bb_vec_info> (vinfo)
-	  && TYPE_VECTOR_SUBPARTS (vectype) > group_size)
-	{
-	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location, 
-			   "Build SLP failed: unrolling required "
-			   "in basic block SLP\n");
-	  /* Fatal mismatch.  */
-	  matches[0] = false;
-	  return false;
-	}
-
-      /* In case of multiple types we need to detect the smallest type.  */
-      if (*max_nunits < TYPE_VECTOR_SUBPARTS (vectype))
-	*max_nunits = TYPE_VECTOR_SUBPARTS (vectype);
 
       if (gcall *call_stmt = dyn_cast <gcall *> (stmt))
 	{
@@ -1018,6 +1036,12 @@ vect_build_slp_tree_2 (vec_info *vinfo,
      the recursion.  */
   if (gimple_code (stmt) == GIMPLE_PHI)
     {
+      tree scalar_type = TREE_TYPE (PHI_RESULT (stmt));
+      tree vectype = get_vectype_for_scalar_type (scalar_type);
+      if (!vect_record_max_nunits (vinfo, stmt, group_size, vectype,
+				   max_nunits))
+	return NULL;
+
       vect_def_type def_type = STMT_VINFO_DEF_TYPE (vinfo_for_stmt (stmt));
       /* Induction from different IVs is not supported.  */
       if (def_type == vect_induction_def)
