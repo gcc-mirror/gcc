@@ -1,3 +1,13 @@
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vect-stmts.c (can_vectorize_live_stmts): New function,
+	split out from...
+	(vect_transform_stmt): ...here.
+	(vect_analyze_stmt): Use it instead of calling
+	vectorizable_live_operation directly.
+
 2017-09-18  Cesar Philippidis  <cesar@codesourcery.com>
 
 	* omp-offload.c (oacc_xform_loop): Enable SIMD vectorization on
