@@ -1811,9 +1811,9 @@ expand_aggr_init_1 (tree binfo, tree true_exp, tree exp, tree init, int flags,
     }
 
   /* List-initialization from {} becomes value-initialization for non-aggregate
-     classes with default constructors.  Handle this here so protected access
-     works.  */
-  if (init && TREE_CODE (init) == TREE_LIST)
+     classes with default constructors.  Handle this here when we're
+     initializing a base, so protected access works.  */
+  if (exp != true_exp && init && TREE_CODE (init) == TREE_LIST)
     {
       tree elt = TREE_VALUE (init);
       if (DIRECT_LIST_INIT_P (elt)
