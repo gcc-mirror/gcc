@@ -1,3 +1,7 @@
+2017-09-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* MAINTAINERS: Add myself as a maintainer for the Ada front end.
+
 2017-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	* MAINTAINERS: Remove myself as a vxworks maintainer.
