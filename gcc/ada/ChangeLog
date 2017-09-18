@@ -1,3 +1,11 @@
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	Alternate fix for PR ada/71358
+	* libgnat/g-comlin.adb (Getopt): Remove manual null access checks.
+	Instead, make a local copy of Config, and if it's null, allocate an
+	empty Command_Line_Configuration_Record, so we won't crash on null
+	pointer dereference.
+
 2017-09-16  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* libgnarl/a-intnam__rtems.ads: Update copyright date.
