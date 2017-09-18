@@ -1,3 +1,7 @@
+2017-09-18  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* cgraph.h (cgraph_thunk_info): Fix a typo in a comment.
+
 2017-09-18  Alan Modra  <amodra@gmail.com>
 
 	PR target/81996
