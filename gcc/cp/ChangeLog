@@ -1,3 +1,9 @@
+2017-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/81525 - wrong constant value with generic lambda
+	* pt.c (tsubst_decl) [VAR_DECL]: Avoid clobbering auto.
+	(tsubst_copy) [VAR_DECL]: Handle auto.
+
 2017-09-15  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
