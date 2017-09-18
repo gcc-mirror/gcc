@@ -267,32 +267,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // extract the elements in a tuple.
   template<size_t... _Indexes> struct _Index_tuple { };
 
-  // Concatenates two _Index_tuples.
-  template<typename _Itup1, typename _Itup2> struct _Itup_cat;
-
-  template<size_t... _Ind1, size_t... _Ind2>
-    struct _Itup_cat<_Index_tuple<_Ind1...>, _Index_tuple<_Ind2...>>
-    {
-      using __type = _Index_tuple<_Ind1..., (_Ind2 + sizeof...(_Ind1))...>;
-    };
+#ifdef __has_builtin
+# if __has_builtin(__make_integer_seq)
+#  define _GLIBCXX_USE_MAKE_INTEGER_SEQ 1
+# endif
+#endif
 
   // Builds an _Index_tuple<0, 1, 2, ..., _Num-1>.
   template<size_t _Num>
     struct _Build_index_tuple
-    : _Itup_cat<typename _Build_index_tuple<_Num / 2>::__type,
-		typename _Build_index_tuple<_Num - _Num / 2>::__type>
-    { };
-
-  template<>
-    struct _Build_index_tuple<1>
     {
-      typedef _Index_tuple<0> __type;
-    };
+#if _GLIBCXX_USE_MAKE_INTEGER_SEQ
+      template<typename, size_t... _Indices>
+        using _IdxTuple = _Index_tuple<_Indices...>;
 
-  template<>
-    struct _Build_index_tuple<0>
-    {
-      typedef _Index_tuple<> __type;
+      using __type = __make_integer_seq<_IdxTuple, size_t, _Num>;
+#else
+      using __type = _Index_tuple<__integer_pack(_Num)...>;
+#endif
     };
 
 #if __cplusplus > 201103L
@@ -307,23 +299,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static constexpr size_t size() { return sizeof...(_Idx); }
     };
 
-  template<typename _Tp, _Tp _Num,
-	   typename _ISeq = typename _Build_index_tuple<_Num>::__type>
-    struct _Make_integer_sequence;
-
-  template<typename _Tp, _Tp _Num,  size_t... _Idx>
-    struct _Make_integer_sequence<_Tp, _Num, _Index_tuple<_Idx...>>
-    {
-      static_assert( _Num >= 0,
-		     "Cannot make integer sequence of negative length" );
-
-      typedef integer_sequence<_Tp, static_cast<_Tp>(_Idx)...> __type;
-    };
-
   /// Alias template make_integer_sequence
   template<typename _Tp, _Tp _Num>
     using make_integer_sequence
-      = typename _Make_integer_sequence<_Tp, _Num>::__type;
+#if _GLIBCXX_USE_MAKE_INTEGER_SEQ
+      = __make_integer_seq<integer_sequence, _Tp, _Num>;
+#else
+      = integer_sequence<_Tp, __integer_pack(_Num)...>;
+#endif
+
+#undef _GLIBCXX_USE_MAKE_INTEGER_SEQ
 
   /// Alias template index_sequence
   template<size_t... _Idx>
