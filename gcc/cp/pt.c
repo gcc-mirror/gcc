@@ -6849,7 +6849,7 @@ convert_nontype_argument (tree type, tree expr, tsubst_flags_t complain)
     }
   else if (NULLPTR_TYPE_P (type))
     {
-      if (expr != nullptr_node)
+      if (!NULLPTR_TYPE_P (TREE_TYPE (expr)))
 	{
 	  if (complain & tf_error)
 	    error ("%qE is not a valid template argument for type %qT "
