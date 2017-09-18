@@ -1,3 +1,9 @@
+2017-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82069 - ICE with lambda in template
+	* semantics.c (process_outer_var_ref): Check uses_template_parms
+	instead of any_dependent_template_arguments_p.
+
 2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
 	    Paolo Carlini  <paolo.carlini@oracle.com>
 
