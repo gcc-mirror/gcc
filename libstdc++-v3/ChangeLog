@@ -1,5 +1,9 @@
 2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81468
+	* testsuite/20_util/duration/cons/dr1177.cc: Fix incorrect test and
+	improve static assertion messages.
+
 	* include/std/utility (_Itup_cat, _Make_integer_sequence): Remove.
 	(_Build_index_tuple, make_integer_sequence): Use built-in to generate
 	pack expansion.
