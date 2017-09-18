@@ -5579,9 +5579,10 @@ check_for_uninitialized_const_var (tree decl)
 		   "uninitialized const %qD", decl);
       else
 	{
-	  error_at (DECL_SOURCE_LOCATION (decl),
-		    "uninitialized variable %qD in %<constexpr%> function",
-		    decl);
+	  if (!is_instantiation_of_constexpr (current_function_decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "uninitialized variable %qD in %<constexpr%> function",
+		      decl);
 	  cp_function_chain->invalid_constexpr = true;
 	}
 

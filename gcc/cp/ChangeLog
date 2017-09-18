@@ -1,5 +1,9 @@
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/80935 - wrong C++17 error with lambda
+	* decl.c (check_for_uninitialized_const_var): Check
+	is_instantiation_of_constexpr.
+
 	PR c++/81671 - nullptr_t template parameter
 	* pt.c (convert_nontype_argument): Fix nullptr_t check.
 
