@@ -7091,7 +7091,7 @@ vectorizable_live_operation (gimple *stmt,
       vec_lhs = gimple_get_lhs (SLP_TREE_VEC_STMTS (slp_node)[vec_entry]);
 
       /* Get entry to use.  */
-      bitstart = build_int_cst (unsigned_type_node, vec_index);
+      bitstart = bitsize_int (vec_index);
       bitstart = int_const_binop (MULT_EXPR, bitsize, bitstart);
     }
   else
