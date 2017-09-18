@@ -2008,7 +2008,9 @@ finish_qualified_id_expr (tree qualifying_class,
 					    qualifying_class);
       pop_deferring_access_checks ();
     }
-  else if (BASELINK_P (expr) && !processing_template_decl)
+  else if (BASELINK_P (expr)
+	   && (!processing_template_decl
+	       || parsing_default_capturing_generic_lambda ()))
     {
       /* See if any of the functions are non-static members.  */
       /* If so, the expression may be relative to 'this'.  */
@@ -3584,12 +3586,12 @@ finish_id_expression (tree id_expression,
 		    : CP_ID_KIND_UNQUALIFIED)));
 
       /* If the name was dependent on a template parameter and we're not in a
-	 default capturing generic lambda within a template, we will resolve the
+	 default capturing generic lambda, we will resolve the
 	 name at instantiation time.  FIXME: For lambdas, we should defer
 	 building the closure type until instantiation time then we won't need
 	 the extra test here.  */
       if (dependent_p
-	  && !parsing_default_capturing_generic_lambda_in_template ())
+	  && !parsing_default_capturing_generic_lambda ())
 	{
 	  if (DECL_P (decl)
 	      && any_dependent_type_attributes_p (DECL_ATTRIBUTES (decl)))

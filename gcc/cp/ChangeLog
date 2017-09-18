@@ -1,5 +1,11 @@
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
+	PR c++/81236 - ICE with template-id in generic lambda
+	* parser.c (parsing_default_capturing_generic_lambda): Don't check
+	for enclosing template.
+	* semantics.c (finish_qualified_id_expr): Call it.
+	* cp-tree.h: Adjust.
+
 	PR c++/80767 - unnecessary instantiation of generic lambda
 	PR c++/82030 - ICE inheriting from multiple lambdas
 	* call.c (convert_like_real): Call build_user_type_conversion_1 if
