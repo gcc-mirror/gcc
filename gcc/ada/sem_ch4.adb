@@ -3930,6 +3930,23 @@ package body Sem_Ch4 is
       Set_Etype (N, Any_Type);
       Find_Type (Mark);
       T := Entity (Mark);
+
+      if Nkind_In
+        (Enclosing_Declaration (N),
+         N_Formal_Type_Declaration,
+         N_Full_Type_Declaration,
+         N_Incomplete_Type_Declaration,
+         N_Protected_Type_Declaration,
+         N_Private_Extension_Declaration,
+         N_Private_Type_Declaration,
+         N_Subtype_Declaration,
+         N_Task_Type_Declaration)
+        and then T = Defining_Identifier (Enclosing_Declaration (N))
+      then
+         Error_Msg_N ("current instance not allowed", Mark);
+         T := Any_Type;
+      end if;
+
       Set_Etype (N, T);
 
       if T = Any_Type then

@@ -1,3 +1,27 @@
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Analyze_Qualified_Expression): Give an error if the type
+	mark refers to the current instance. Set the type to Any_Type in that
+	case, to avoid later crashes.
+
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Replace_Discriminant_References): New procedure,
+	subsidiary of Build_Assignment, used to handle the initialization code
+	for a mutable record component whose default value is an aggregate that
+	sets the values of the discriminants of the components.
+
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Address>: Mark
+	the entity as being volatile for an overlay that toggles the scalar
+	storage order.
+
+2017-09-18  Fedor Rybin  <frybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document that gnattest
+	options -U main and --harness-only are not compatible.
+
 2017-09-18  Hristian Kirtchev  <kirtchev@adacore.com>
 
 	* freeze.adb, sem_ch6.adb, sem_res.adb: Minor reformatting.
