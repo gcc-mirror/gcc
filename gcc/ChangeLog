@@ -1,3 +1,8 @@
+2017-09-18  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* configure.ac: Add arc and check if assembler supports gdwarf2.
+	* configure: Regenerate.
+
 2017-09-18  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82220
