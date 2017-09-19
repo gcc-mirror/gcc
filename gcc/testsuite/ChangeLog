@@ -1,3 +1,13 @@
+2017-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/pr31146-2.C: Only do scan-tree-dump for c++14_down.
+	* g++.dg/tree-ssa/pr41428.C: Likewise.
+	* g++.dg/expr/bool1.C: Only do dg-do compile instead of dg-do run for
+	c++17 and up.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+
 2017-09-18  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854
