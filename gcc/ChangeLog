@@ -1,3 +1,11 @@
+2017-09-19  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57878
+	PR rtl-optimization/68988
+	* lra-assigns.c (reload_pseudo_compare_func): Remove fragmentation
+	avoidance test involving non_reload_pseudos.  Move frequency test
+	below the general fragmentation avoidance test.
+
 2017-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/69728
