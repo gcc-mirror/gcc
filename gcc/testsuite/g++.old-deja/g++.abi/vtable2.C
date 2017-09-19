@@ -1,5 +1,5 @@
 // { dg-do run  }
-// { dg-options "-fno-strict-aliasing" }
+// { dg-options "-Wno-attributes -fno-strict-aliasing" }
 // Origin: Mark Mitchell <mark@codesourcery.com>
 
 #if defined (__GXX_ABI_VERSION) && __GXX_ABI_VERSION >= 100
@@ -126,7 +126,8 @@ void S4::s1 ()
 extern "C" {
   /* We can use weakref here without dg-require-weak, because we know
      the symbols are defined, so we don't actually issue the .weak
-     directives.  */
+     directives.  The references to the incompatible virtual S3::s3()
+     and S4::s1() trigger -Wattributes.  */
   static void S3_s3 () __attribute__((__weakref__ ("_ZN2S32s3Ev")));
   static void S4_s1 () __attribute__((__weakref__ ("_ZN2S42s1Ev")));
 }

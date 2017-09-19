@@ -1,3 +1,15 @@
+2017-09-18  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* gcc.dg/pr81854.c: New test.
+	* g++.dg/ext/attr-ifunc-5.C: New test.
+	* g++.dg/ext/attr-ifunc-1.C: Adjust.
+	* g++.dg/ext/attr-ifunc-2.C: Same.
+	* g++.dg/ext/attr-ifunc-3.C: Same.
+	* g++.dg/ext/attr-ifunc-4.C: Same.
+	* g++.old-deja/g++.abi/vtable2.C: Same.
+	* gcc.dg/attr-ifunc-1.c: Same.
+
 2017-09-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* gcc.target/powerpc/fold-vec-ld-misc.c: New.
