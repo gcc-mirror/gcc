@@ -9,9 +9,9 @@ template<int M, int N> struct pair
 
 template<int... M> struct S
 {
-  template<int... N> static int foo() throw (pair <M, N>...) // { dg-error "mismatched" "" { target { ! c++1z } } }
-  {							     // { dg-error "dynamic exception specification" "" { target c++1z } .-1 }
-    return 1;						     // { dg-warning "deprecated" "" { target { ! c++1z } } .-2 }
+  template<int... N> static int foo() throw (pair <M, N>...) // { dg-error "mismatched" "" { target { ! c++17 } } }
+  {							     // { dg-error "dynamic exception specification" "" { target c++17 } .-1 }
+    return 1;						     // { dg-warning "deprecated" "" { target { ! c++17 } } .-2 }
   }
 };
 
@@ -22,5 +22,5 @@ int bar ()
 
 int wibble()
 {
-  return S<0, 1, 2>::foo<0, 1> (); // { dg-error "no matching" "" { target { ! c++1z } } }
+  return S<0, 1, 2>::foo<0, 1> (); // { dg-error "no matching" "" { target { ! c++17 } } }
 }

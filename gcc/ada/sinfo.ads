@@ -2083,13 +2083,6 @@ package Sinfo is
    --    is used for properly setting out of range values for use by pragmas
    --    Initialize_Scalars and Normalize_Scalars.
 
-   --  Non_Aliased_Prefix (Flag18-Sem)
-   --    Present in N_Attribute_Reference nodes. Set only for the case of an
-   --    Unrestricted_Access reference whose prefix is non-aliased, which is
-   --    the case that is permitted for Unrestricted_Access except when the
-   --    expected type is a thin pointer to unconstrained array. This flag is
-   --    to assist in detecting this illegal use of Unrestricted_Access.
-
    --  Null_Excluding_Subtype (Flag16)
    --    Present in N_Access_To_Object_Definition. Indicates that the subtype
    --    indication carries a null-exclusion indicator, which is distinct from
@@ -3944,7 +3937,6 @@ package Sinfo is
       --  Do_Overflow_Check (Flag17-Sem)
       --  Header_Size_Added (Flag11-Sem)
       --  Must_Be_Byte_Aligned (Flag14-Sem)
-      --  Non_Aliased_Prefix (Flag18-Sem)
       --  Redundant_Use (Flag13-Sem)
       --  plus fields for expression
 
@@ -9732,9 +9724,6 @@ package Sinfo is
    function No_Truncation
      (N : Node_Id) return Boolean;    -- Flag17
 
-   function Non_Aliased_Prefix
-     (N : Node_Id) return Boolean;    -- Flag18
-
    function Null_Excluding_Subtype
      (N : Node_Id) return Boolean;    -- Flag16
 
@@ -10790,9 +10779,6 @@ package Sinfo is
 
    procedure Set_No_Truncation
      (N : Node_Id; Val : Boolean := True);    -- Flag17
-
-   procedure Set_Non_Aliased_Prefix
-     (N : Node_Id; Val : Boolean := True);    -- Flag18
 
    procedure Set_Null_Excluding_Subtype
      (N : Node_Id; Val : Boolean := True);    -- Flag16
@@ -13129,7 +13115,6 @@ package Sinfo is
    pragma Inline (No_Minimize_Eliminate);
    pragma Inline (No_Side_Effect_Removal);
    pragma Inline (No_Truncation);
-   pragma Inline (Non_Aliased_Prefix);
    pragma Inline (Null_Excluding_Subtype);
    pragma Inline (Null_Exclusion_Present);
    pragma Inline (Null_Exclusion_In_Return_Present);
@@ -13478,7 +13463,6 @@ package Sinfo is
    pragma Inline (Set_No_Minimize_Eliminate);
    pragma Inline (Set_No_Side_Effect_Removal);
    pragma Inline (Set_No_Truncation);
-   pragma Inline (Set_Non_Aliased_Prefix);
    pragma Inline (Set_Null_Excluding_Subtype);
    pragma Inline (Set_Null_Exclusion_Present);
    pragma Inline (Set_Null_Exclusion_In_Return_Present);

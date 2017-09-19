@@ -339,6 +339,8 @@ static bool ia64_vectorize_vec_perm_const_ok (machine_mode vmode,
 static unsigned int ia64_hard_regno_nregs (unsigned int, machine_mode);
 static bool ia64_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool ia64_modes_tieable_p (machine_mode, machine_mode);
+static bool ia64_can_change_mode_class (machine_mode, machine_mode,
+					reg_class_t);
 
 #define MAX_VECT_LEN	8
 
@@ -667,6 +669,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P ia64_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS ia64_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -1626,8 +1631,8 @@ ia64_split_tmode_move (rtx operands[])
 
 /* ??? Fixing GR->FR XFmode moves during reload is hard.  You need to go
    through memory plus an extra GR scratch register.  Except that you can
-   either get the first from SECONDARY_MEMORY_NEEDED or the second from
-   SECONDARY_RELOAD_CLASS, but not both.
+   either get the first from TARGET_SECONDARY_MEMORY_NEEDED or the second
+   from SECONDARY_RELOAD_CLASS, but not both.
 
    We got into problems in the first place by allowing a construct like
    (subreg:XF (reg:TI)), which we got from a union containing a long double.
@@ -11906,6 +11911,23 @@ ia64_expand_vec_perm_even_odd (rtx target, rtx op0, rtx op1, int odd)
 
   ok = ia64_expand_vec_perm_const_1 (&d);
   gcc_assert (ok);
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.
+
+   In BR regs, we can't change the DImode at all.
+   In FP regs, we can't change FP values to integer values and vice versa,
+   but we can change e.g. DImode to SImode, and V2SFmode into DImode.  */
+
+static bool
+ia64_can_change_mode_class (machine_mode from, machine_mode to,
+			    reg_class_t rclass)
+{
+  if (reg_classes_intersect_p (rclass, BR_REGS))
+    return from == to;
+  if (SCALAR_FLOAT_MODE_P (from) != SCALAR_FLOAT_MODE_P (to))
+    return !reg_classes_intersect_p (rclass, FR_REGS);
+  return true;
 }
 
 #include "gt-ia64.h"

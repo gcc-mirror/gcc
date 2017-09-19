@@ -127,6 +127,21 @@ gimple_convert_to_ptrofftype (gimple_seq *seq, tree op)
   return gimple_convert_to_ptrofftype (seq, UNKNOWN_LOCATION, op);
 }
 
+extern tree gimple_build_vector_from_val (gimple_seq *, location_t, tree,
+					  tree);
+inline tree
+gimple_build_vector_from_val (gimple_seq *seq, tree type, tree op)
+{
+  return gimple_build_vector_from_val (seq, UNKNOWN_LOCATION, type, op);
+}
+
+extern tree gimple_build_vector (gimple_seq *, location_t, tree, vec<tree>);
+inline tree
+gimple_build_vector (gimple_seq *seq, tree type, vec<tree> elts)
+{
+  return gimple_build_vector (seq, UNKNOWN_LOCATION, type, elts);
+}
+
 extern bool gimple_stmt_nonnegative_warnv_p (gimple *, bool *, int = 0);
 extern bool gimple_stmt_integer_valued_real_p (gimple *, int = 0);
 

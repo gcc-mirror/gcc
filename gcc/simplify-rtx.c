@@ -2665,7 +2665,7 @@ simplify_binary_operation_1 (enum rtx_code code, machine_mode mode,
 	  HOST_WIDE_INT c1 = INTVAL (XEXP (op0, 1));
 	  HOST_WIDE_INT c2 = INTVAL (trueop1);
 
-	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes X.  */
+	  /* If (C1&C2) == C1, then (X&C1)|C2 becomes C2.  */
 	  if ((c1 & c2) == c1
 	      && !side_effects_p (XEXP (op0, 0)))
 	    return trueop1;

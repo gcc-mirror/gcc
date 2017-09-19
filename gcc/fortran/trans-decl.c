@@ -4374,6 +4374,7 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 	}
 
       if (sym->attr.pointer && sym->attr.dimension
+	  && sym->attr.save == SAVE_NONE
 	  && !sym->attr.use_assoc
 	  && !sym->attr.host_assoc
 	  && !sym->attr.dummy

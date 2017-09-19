@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++1z } }
+// { dg-do compile { target c++17 } }
 
 // In C++17 these names are not reserved by the library.
 #define io_state 1

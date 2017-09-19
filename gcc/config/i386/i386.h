@@ -1518,24 +1518,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
-
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
-
-/* Get_secondary_mem widens integral modes to BITS_PER_WORD.
-   There is no need to emit full 64 bit move on 64 bit targets
-   for integral modes that can be moved using 32 bit move.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
-  (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
-   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()	\
-   : MODE)
-
-/* Return a class of registers that cannot change FROM mode to TO mode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  ix86_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1928,10 +1910,6 @@ typedef struct ix86_args {
    take the modulo of the bit offset operand.  */
 
 /* #define SHIFT_COUNT_TRUNCATED */
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be

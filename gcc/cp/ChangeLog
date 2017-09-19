@@ -1,3 +1,107 @@
+2017-09-18  Jason Merrill  <jason@redhat.com>
+
+	PR c++/82069 - ICE with lambda in template
+	* semantics.c (process_outer_var_ref): Check uses_template_parms
+	instead of any_dependent_template_arguments_p.
+
+2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64644
+	* decl2.c (finish_anon_union): Complain about "anonymous union with
+	no members" with a pedwarn.
+
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* typeck.c (build_reinterpret_cast_1,
+	build_const_cast_1): Implement -Wcast-align=strict.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.c (redeclaration_error_message): Use cxx17 instead of cxx1z,
+	adjust diagnostics refering to C++1z or -std=gnu++1z or -std=c++1z
+	to C++17 or -std=gnu++17 or -std=c++17.  Adjust comments.
+	(cxx_init_decl_processing, next_initializable_field,
+	is_direct_enum_init, check_initializer, cp_finish_decl,
+	mark_inline_variable, grokdeclarator, grokparms, xref_basetypes,
+	finish_function): Likewise.
+	* cp-tree.h (DECL_INLINE_VAR_P): Likewise.
+	* pt.c (mark_template_parm, convert_nontype_argument,
+	instantiate_class_template_1, type_unification_real, unify,
+	get_partial_spec_bindings, dependent_type_p_r): Likewise.
+	* typeck.c (cp_build_unary_op): Likewise.
+	* constexpr.c (var_in_maybe_constexpr_fn): Likewise.
+	* call.c (build_user_type_conversion_1, build_over_call,
+	build_special_member_call): Likewise.
+	* lambda.c (begin_lambda_type): Likewise.
+	* typeck2.c (process_init_constructor_record): Likewise.
+	* class.c (build_base_field, finalize_literal_type_property,
+	explain_non_literal_class): Likewise.
+	* parser.c (cp_parser_diagnose_invalid_type_name,
+	cp_parser_primary_expression, cp_parser_lambda_introducer,
+	cp_parser_lambda_declarator_opt, cp_parser_selection_statement,
+	cp_convert_range_for, cp_parser_perform_range_for_lookup,
+	cp_parser_decomposition_declaration, cp_parser_linkage_specification,
+	cp_parser_static_assert, cp_parser_simple_type_specifier,
+	cp_parser_namespace_definition, cp_parser_using_declaration,
+	cp_parser_init_declarator, cp_parser_type_parameter_key,
+	cp_parser_exception_specification_opt, cp_parser_std_attribute_spec,
+	cp_parser_constructor_declarator_p): Likewise.
+	* mangle.c (struct globals): Rename need_cxx1z_warning to
+	need_cxx17_warning.
+	(write_exception_spec, start_mangling, mangle_decl): Likewise.
+	* Make-lang.in (check-c++1z): Rename to check-c++17, depend on
+	it.
+	(check-c++17): New goal.  Use 17 instead of 1z.
+	(check-c++-all): Use 17 instead of 1z.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/81314
+	* cp-gimplify.c (omp_var_to_track): Look through references.
+	(omp_cxx_notice_variable): Likewise.
+
+2017-09-13  Nathan Sidwell  <nathan@acm.org>
+
+	Conv-op identifers not in identifier hash table
+	* lex.c (conv_type_hasher): Make member fns inline.
+	(make_conv_op_name): Directly clone conv_op_identifier.
+
+	Rename CLASSTYPE_METHOD_VEC to CLASSTYPE_MEMBER_VEC.
+	* cp-tree.h (struct lang_type): Rename methods to members.
+	(CLASSTYPE_METHOD_VEC): Rename to ...
+	(CLASSTYPE_MEMBER_VEC): ... this.
+	* name-lookup.h (get_method_slot): Rename to ...
+	(get_member_slot): ... this.
+	(resort_type_method_vec): Rename to ...
+	(resort_type_member_vec): ... this.
+	* class.c (add_method, warn_hidden): Adjust.
+	* search.c (dfs_locate_field_accessor_pre): Adjust.
+	* name-lookup.c (method_vec_binary_search): Rename to ...
+	(member_vec_binary_search): ... this and adjust.
+	(method_vec_linear_search): Rename to ...
+	(member_vec_linear_search): ... this and adjust.
+	(fields_linear_search, get_class_binding_direct): Adjust.
+	(get_method_slot): Rename to ...
+	(get_member_slot): ... this and adjust.
+	(method_name_slot): Rename to ...
+	(member_name_slot): ... this and adjust.
+	(resort_type_method_vec): Rename to ...
+	(resort_type_member_vec): ... this and adjust.
+	(method_vec_append_class_fields): Rename to ...
+	(member_vec_append_class_fields): ... this and adjust.
+	(method_vec_append_enum_values): Rename to ...
+	(member_vec_append_enum_values): ... this and adjust.
+	(method_vec_dedup): Rename to ...
+	(member_vec_dedup): ... this and adjust.
+	(set_class_bindings, insert_late_enum_def_bindings): Adjust.
+	
+2017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* decl.c (start_decl): Early return error_mark_node if duplicate_decls
+	returns it; avoid misleading error message.
+
 2017-09-12  Nathan Sidwell  <nathan@acm.org>
 
 	Kill CLASSTYPE_SORTED_FIELDS.

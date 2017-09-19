@@ -61,7 +61,8 @@
 #define CPP_OS_DEFAULT_SPEC "%(cpp_os_linux)"
 
 #undef  LINK_SHLIB_SPEC
-#define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}}"
+#define LINK_SHLIB_SPEC "%{shared:-shared} %{!shared: %{static:-static}} \
+  %{static-pie:-static -pie --no-dynamic-linker -z text}"
 
 #undef	LIB_DEFAULT_SPEC
 #define LIB_DEFAULT_SPEC "%(lib_linux)"
@@ -93,8 +94,9 @@
 
 #undef LINK_OS_LINUX_SPEC
 #define LINK_OS_LINUX_SPEC LINK_OS_LINUX_EMUL " %{!shared: %{!static: \
-  %{rdynamic:-export-dynamic} \
-  -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}"
+  %{!static-pie: \
+    %{rdynamic:-export-dynamic} \
+    -dynamic-linker " GNU_USER_DYNAMIC_LINKER "}}}"
 
 /* For backward compatibility, we must continue to use the AIX
    structure return convention.  */

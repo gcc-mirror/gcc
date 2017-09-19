@@ -2,13 +2,25 @@
 !
 ! Test bad PDT coding: Based on pdt_3.f03
 !
-module vars
+module m
   integer :: d_dim = 4
   integer :: mat_dim = 256
   integer, parameter :: ftype = kind(0.0d0)
+  type :: modtype (a,b)
+    integer, kind :: a = kind(0.0e0)
+    integer, LEN :: b = 4
+    integer :: i
+    real(kind = a) :: d(b, b)
+  end type
 end module
 
-  use vars
+module bad_vars
+  use m
+  type(modtype(8,mat_dim)) :: mod_q ! { dg-error "must not have the SAVE attribute" }
+  type(modtype(8,*)) :: mod_r       ! { dg-error "ASSUMED type parameters" }
+end module
+
+  use m
   implicit none
   integer :: i
   integer, kind :: bad_kind    ! { dg-error "not allowed outside a TYPE definition" }
@@ -50,7 +62,7 @@ end module
   type(thytype(:, 4, 4)) :: w_ugh    ! { dg-error "cannot either be ASSUMED or DEFERRED" }
 
   type(thytype(ftype, b=4, h=4)) :: w
-  type(x(8,4,mat_dim)) :: q
+  type(x(8,4,mat_dim)) :: q          ! { dg-error "must not have the SAVE attribute" }
   class(mytype(ftype, :)), allocatable :: cz
 
   w%a = 1                           ! { dg-error "assignment to a KIND or LEN component" }
@@ -81,10 +93,10 @@ end module
   end select
   deallocate (cz)
 contains
-  subroutine foo(arg)               ! { dg-error "has no IMPLICIT type" }
-    type (mytype(4, *)) :: arg      ! { dg-error "is being used before it is defined" }
+  subroutine foo(arg)
+    type (mytype(4, *)) :: arg      ! OK
   end subroutine
-  subroutine bar(arg)               ! { dg-error "cannot have DEFERRED type parameters" }
+  subroutine bar(arg)               ! OK
     type (thytype(8, :, 4) :: arg
   end subroutine
 end

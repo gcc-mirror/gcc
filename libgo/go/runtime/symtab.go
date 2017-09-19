@@ -7,6 +7,7 @@ package runtime
 // Frames may be used to get function/file/line information for a
 // slice of PC values returned by Callers.
 type Frames struct {
+	// callers is a slice of PCs that have not yet been expanded.
 	callers []uintptr
 
 	// The last PC we saw.
@@ -18,23 +19,34 @@ type Frames struct {
 
 // Frame is the information returned by Frames for each call frame.
 type Frame struct {
-	// Program counter for this frame; multiple frames may have
-	// the same PC value.
+	// PC is the program counter for the location in this frame.
+	// For a frame that calls another frame, this will be the
+	// program counter of a call instruction. Because of inlining,
+	// multiple frames may have the same PC value, but different
+	// symbolic information.
 	PC uintptr
 
-	// Func for this frame; may be nil for non-Go code or fully
-	// inlined functions.
+	// Func is the Func value of this call frame. This may be nil
+	// for non-Go code or fully inlined functions.
 	Func *Func
 
-	// Function name, file name, and line number for this call frame.
-	// May be the empty string or zero if not known.
+	// Function is the package path-qualified function name of
+	// this call frame. If non-empty, this string uniquely
+	// identifies a single function in the program.
+	// This may be the empty string if not known.
 	// If Func is not nil then Function == Func.Name().
 	Function string
-	File     string
-	Line     int
 
-	// Entry point for the function; may be zero if not known.
-	// If Func is not nil then Entry == Func.Entry().
+	// File and Line are the file name and line number of the
+	// location in this frame. For non-leaf frames, this will be
+	// the location of a call. These may be the empty string and
+	// zero, respectively, if not known.
+	File string
+	Line int
+
+	// Entry point program counter for the function; may be zero
+	// if not known. If Func is not nil then Entry ==
+	// Func.Entry().
 	Entry uintptr
 }
 
@@ -94,7 +106,8 @@ func (ci *Frames) Next() (frame Frame, more bool) {
 // NOTE: Func does not expose the actual unexported fields, because we return *Func
 // values to users, and we want to keep them from being able to overwrite the data
 // with (say) *f = Func{}.
-// All code operating on a *Func must call raw to get the *_func instead.
+// All code operating on a *Func must call raw() to get the *_func
+// or funcInfo() to get the funcInfo instead.
 
 // A Func represents a Go function in the running binary.
 type Func struct {
@@ -104,6 +117,9 @@ type Func struct {
 
 // FuncForPC returns a *Func describing the function that contains the
 // given program counter address, or else nil.
+//
+// If pc represents multiple functions because of inlining, it returns
+// the *Func describing the outermost function.
 func FuncForPC(pc uintptr) *Func {
 	name, _, _ := funcfileline(pc, -1)
 	if name == "" {

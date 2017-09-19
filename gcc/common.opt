@@ -566,6 +566,10 @@ Wcast-align
 Common Var(warn_cast_align) Warning
 Warn about pointer casts which increase alignment.
 
+Wcast-align=strict
+Common Var(warn_cast_align,2) Warning
+Warn about pointer casts which increase alignment.
+
 Wcpp
 Common Var(warn_cpp) Init(1) Warning
 Warn when a #warning directive is encountered.

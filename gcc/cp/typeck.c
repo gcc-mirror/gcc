@@ -6177,11 +6177,11 @@ cp_build_unary_op (enum tree_code code, tree xarg, bool noconvert,
 	      }
 	    else
 	      {
-		if (cxx_dialect >= cxx1z)
+		if (cxx_dialect >= cxx17)
 		  {
 		    if (complain & tf_error)
 		      error ("use of an operand of type %qT in "
-			     "%<operator++%> is forbidden in C++1z",
+			     "%<operator++%> is forbidden in C++17",
 			     boolean_type_node);
 		    return error_mark_node;
 		  }
@@ -7265,15 +7265,16 @@ build_reinterpret_cast_1 (tree type, tree expr, bool c_cast_p,
 					       complain))
 	return error_mark_node;
       /* Warn about possible alignment problems.  */
-      if (STRICT_ALIGNMENT && warn_cast_align
-          && (complain & tf_warning)
+      if ((STRICT_ALIGNMENT || warn_cast_align == 2)
+	  && (complain & tf_warning)
 	  && !VOID_TYPE_P (type)
 	  && TREE_CODE (TREE_TYPE (intype)) != FUNCTION_TYPE
 	  && COMPLETE_TYPE_P (TREE_TYPE (type))
 	  && COMPLETE_TYPE_P (TREE_TYPE (intype))
-	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (intype)))
+	  && min_align_of_type (TREE_TYPE (type))
+	     > min_align_of_type (TREE_TYPE (intype)))
 	warning (OPT_Wcast_align, "cast from %qH to %qI "
-                 "increases required alignment of target type", intype, type);
+		 "increases required alignment of target type", intype, type);
 
       /* We need to strip nops here, because the front end likes to
 	 create (int *)&a for array-to-pointer decay, instead of &a[0].  */
@@ -7447,6 +7448,14 @@ build_const_cast_1 (tree dst_type, tree expr, tsubst_flags_t complain,
 		 the user is making a potentially unsafe cast.  */
 	      check_for_casting_away_constness (src_type, dst_type,
 						CAST_EXPR, complain);
+	      /* ??? comp_ptr_ttypes_const ignores TYPE_ALIGN.  */
+	      if ((STRICT_ALIGNMENT || warn_cast_align == 2)
+		  && (complain & tf_warning)
+		  && min_align_of_type (TREE_TYPE (dst_type))
+		     > min_align_of_type (TREE_TYPE (src_type)))
+		warning (OPT_Wcast_align, "cast from %qH to %qI "
+			 "increases required alignment of target type",
+			 src_type, dst_type);
 	    }
 	  if (reference_type)
 	    {

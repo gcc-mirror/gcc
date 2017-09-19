@@ -7827,13 +7827,13 @@ proc check_effective_target_c++14 { } {
     if [check_effective_target_c++14_only] {
 	return 1
     }
-    return [check_effective_target_c++1z]
+    return [check_effective_target_c++17]
 }
 proc check_effective_target_c++14_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [expr ![check_effective_target_c++1z] ]
+    return [expr ![check_effective_target_c++17] ]
 }
 
 proc check_effective_target_c++98_only { } {
@@ -7850,7 +7850,7 @@ proc check_effective_target_c++98_only { } {
     return 0
 }
 
-proc check_effective_target_c++1z_only { } {
+proc check_effective_target_c++17_only { } {
     global cxx_default
     if ![check_effective_target_c++] {
 	return 0
@@ -7863,8 +7863,35 @@ proc check_effective_target_c++1z_only { } {
     }
     return 0
 }
-proc check_effective_target_c++1z { } {
-    return [check_effective_target_c++1z_only]
+
+proc check_effective_target_c++17 { } {
+    if [check_effective_target_c++17_only] {
+	return 1
+    }
+    return [check_effective_target_c++2a]
+}
+proc check_effective_target_c++17_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [expr ![check_effective_target_c++2a] ]
+}
+
+proc check_effective_target_c++2a_only { } {
+    global cxx_default
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    if [check-flags { { } { } { -std=c++2a -std=gnu++2a } }] {
+	return 1
+    }
+    if { $cxx_default == "c++20" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
+}
+proc check_effective_target_c++2a { } {
+    return [check_effective_target_c++2a_only]
 }
 
 # Check for C++ Concepts TS support, i.e. -fconcepts flag.
@@ -8504,8 +8531,8 @@ proc check_effective_target_rdrand { } {
     } "-mrdrnd" ]
 }
 
-# Return 1 if the target supports coprocessor instructions: cdp, ldc, stc, mcr and
-# mrc.
+# Return 1 if the target supports coprocessor instructions: cdp, ldc, ldcl,
+# stc, stcl, mcr and mrc.
 proc check_effective_target_arm_coproc1_ok_nocache { } {
     if { ![istarget arm*-*-*] } {
 	return 0
@@ -8530,7 +8557,7 @@ proc check_effective_target_arm_coproc2_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc2_ok assembly {
-	#if __ARM_ARCH < 5
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 5
 	#error FOO
 	#endif
     }]
@@ -8549,7 +8576,8 @@ proc check_effective_target_arm_coproc3_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc3_ok assembly {
-	#if __ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__)
+	#if (__thumb__ && !__thumb2__) \
+	    || (__ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__))
 	#error FOO
 	#endif
     }]
@@ -8568,7 +8596,7 @@ proc check_effective_target_arm_coproc4_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc4_ok assembly {
-	#if __ARM_ARCH < 6
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 6
 	#error FOO
 	#endif
     }]

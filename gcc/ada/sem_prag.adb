@@ -9097,14 +9097,9 @@ package body Sem_Prag is
          --  The entity of the first Ghost subprogram encountered while
          --  processing the arguments of the pragma.
 
-         procedure Make_Inline (Subp : Entity_Id);
-         --  Subp is the defining unit name of the subprogram declaration. If
-         --  the pragma is valid, call Set_Inline_Flags on Subp, as well as on
-         --  the corresponding body, if there is one present.
-
-         procedure Set_Inline_Flags (Subp : Entity_Id);
-         --  Set Has_Pragma_{No_Inline,Inline,Inline_Always} flag on Subp.
-         --  Also set or clear Is_Inlined flag on Subp depending on Status.
+         procedure Check_Inline_Always_Placement (Spec_Id : Entity_Id);
+         --  Verify the placement of pragma Inline_Always with respect to the
+         --  initial declaration of subprogram Spec_Id.
 
          function Inlining_Not_Possible (Subp : Entity_Id) return Boolean;
          --  Returns True if it can be determined at this stage that inlining
@@ -9115,6 +9110,222 @@ package body Sem_Prag is
          --
          --  ??? is business with link symbols still valid, or does it relate
          --  to front end ZCX which is being phased out ???
+
+         procedure Make_Inline (Subp : Entity_Id);
+         --  Subp is the defining unit name of the subprogram declaration. If
+         --  the pragma is valid, call Set_Inline_Flags on Subp, as well as on
+         --  the corresponding body, if there is one present.
+
+         procedure Set_Inline_Flags (Subp : Entity_Id);
+         --  Set Has_Pragma_{No_Inline,Inline,Inline_Always} flag on Subp.
+         --  Also set or clear Is_Inlined flag on Subp depending on Status.
+
+         -----------------------------------
+         -- Check_Inline_Always_Placement --
+         -----------------------------------
+
+         procedure Check_Inline_Always_Placement (Spec_Id : Entity_Id) is
+            Spec_Decl : constant Node_Id := Unit_Declaration_Node (Spec_Id);
+
+            function Compilation_Unit_OK return Boolean;
+            pragma Inline (Compilation_Unit_OK);
+            --  Determine whether pragma Inline_Always applies to a compatible
+            --  compilation unit denoted by Spec_Id.
+
+            function Declarative_List_OK return Boolean;
+            pragma Inline (Declarative_List_OK);
+            --  Determine whether the initial declaration of subprogram Spec_Id
+            --  and the pragma appear in compatible declarative lists.
+
+            function Subprogram_Body_OK return Boolean;
+            pragma Inline (Subprogram_Body_OK);
+            --  Determine whether pragma Inline_Always applies to a compatible
+            --  subprogram body denoted by Spec_Id.
+
+            -------------------------
+            -- Compilation_Unit_OK --
+            -------------------------
+
+            function Compilation_Unit_OK return Boolean is
+               Comp_Unit : constant Node_Id := Parent (Spec_Decl);
+
+            begin
+               --  The pragma appears after the initial declaration of a
+               --  compilation unit.
+
+               --    procedure Comp_Unit;
+               --    pragma Inline_Always (Comp_Unit);
+
+               --  Note that for compatibility reasons, the following case is
+               --  also accepted.
+
+               --    procedure Stand_Alone_Body_Comp_Unit is
+               --       ...
+               --    end Stand_Alone_Body_Comp_Unit;
+               --    pragma Inline_Always (Stand_Alone_Body_Comp_Unit);
+
+               return
+                 Nkind (Comp_Unit) = N_Compilation_Unit
+                   and then Present (Aux_Decls_Node (Comp_Unit))
+                   and then Is_List_Member (N)
+                   and then List_Containing (N) =
+                              Pragmas_After (Aux_Decls_Node (Comp_Unit));
+            end Compilation_Unit_OK;
+
+            -------------------------
+            -- Declarative_List_OK --
+            -------------------------
+
+            function Declarative_List_OK return Boolean is
+               Context : constant Node_Id := Parent (Spec_Decl);
+
+               Init_Decl : Node_Id;
+               Init_List : List_Id;
+               Prag_List : List_Id;
+
+            begin
+               --  Determine the proper initial declaration. In general this is
+               --  the declaration node of the subprogram except when the input
+               --  denotes a generic instantiation.
+
+               --    procedure Inst is new Gen;
+               --    pragma Inline_Always (Inst);
+
+               --  In this case the original subprogram is moved inside an
+               --  anonymous package while pragma Inline_Always remains at the
+               --  level of the anonymous package. Use the declaration of the
+               --  package because it reflects the placement of the original
+               --  instantiation.
+
+               --    package Anon_Pack is
+               --       procedure Inst is ... end Inst;  --  original
+               --    end Anon_Pack;
+
+               --    procedure Inst renames Anon_Pack.Inst;
+               --    pragma Inline_Always (Inst);
+
+               if Is_Generic_Instance (Spec_Id) then
+                  Init_Decl := Parent (Parent (Spec_Decl));
+                  pragma Assert (Nkind (Init_Decl) = N_Package_Declaration);
+               else
+                  Init_Decl := Spec_Decl;
+               end if;
+
+               if Is_List_Member (Init_Decl) and then Is_List_Member (N) then
+                  Init_List := List_Containing (Init_Decl);
+                  Prag_List := List_Containing (N);
+
+                  --  The pragma and then initial declaration appear within the
+                  --  same declarative list.
+
+                  if Init_List = Prag_List then
+                     return True;
+
+                  --  A special case of the above is when both the pragma and
+                  --  the initial declaration appear in different lists of a
+                  --  package spec, protected definition, or a task definition.
+
+                  --    package Pack is
+                  --       procedure Proc;
+                  --    private
+                  --       pragma Inline_Always (Proc);
+                  --    end Pack;
+
+                  elsif Nkind_In (Context, N_Package_Specification,
+                                           N_Protected_Definition,
+                                           N_Task_Definition)
+                    and then Init_List = Visible_Declarations (Context)
+                    and then Prag_List = Private_Declarations (Context)
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               return False;
+            end Declarative_List_OK;
+
+            ------------------------
+            -- Subprogram_Body_OK --
+            ------------------------
+
+            function Subprogram_Body_OK return Boolean is
+               Body_Decl : Node_Id;
+
+            begin
+               --  The pragma appears within the declarative list of a stand-
+               --  alone subprogram body.
+
+               --    procedure Stand_Alone_Body is
+               --       pragma Inline_Always (Stand_Alone_Body);
+               --    begin
+               --       ...
+               --    end Stand_Alone_Body;
+
+               --  The compiler creates a dummy spec in this case, however the
+               --  pragma remains within the declarative list of the body.
+
+               if Nkind (Spec_Decl) = N_Subprogram_Declaration
+                 and then not Comes_From_Source (Spec_Decl)
+                 and then Present (Corresponding_Body (Spec_Decl))
+               then
+                  Body_Decl :=
+                    Unit_Declaration_Node (Corresponding_Body (Spec_Decl));
+
+                  if Present (Declarations (Body_Decl))
+                    and then Is_List_Member (N)
+                    and then List_Containing (N) = Declarations (Body_Decl)
+                  then
+                     return True;
+                  end if;
+               end if;
+
+               return False;
+            end Subprogram_Body_OK;
+
+         --  Start of processing for Check_Inline_Always_Placement
+
+         begin
+            --  This check is relevant only for pragma Inline_Always
+
+            if Pname /= Name_Inline_Always then
+               return;
+
+            --  Nothing to do when the pragma is internally generated on the
+            --  assumption that it is properly placed.
+
+            elsif not Comes_From_Source (N) then
+               return;
+
+            --  Nothing to do for internally generated subprograms that act
+            --  as accidental homonyms of a source subprogram being inlined.
+
+            elsif not Comes_From_Source (Spec_Id) then
+               return;
+
+            --  Nothing to do for generic formal subprograms that act as
+            --  homonyms of another source subprogram being inlined.
+
+            elsif Is_Formal_Subprogram (Spec_Id) then
+               return;
+
+            elsif Compilation_Unit_OK
+              or else Declarative_List_OK
+              or else Subprogram_Body_OK
+            then
+               return;
+            end if;
+
+            --  At this point it is known that the pragma applies to or appears
+            --  within a completing body, a completing stub, or a subunit.
+
+            Error_Msg_Name_1 := Pname;
+            Error_Msg_Name_2 := Chars (Spec_Id);
+            Error_Msg_Sloc   := Sloc (Spec_Id);
+
+            Error_Msg_N
+              ("pragma % must appear on initial declaration of subprogram "
+               & "% defined #", N);
+         end Check_Inline_Always_Placement;
 
          ---------------------------
          -- Inlining_Not_Possible --
@@ -9236,6 +9447,12 @@ package body Sem_Prag is
             --  retrieve it as the alias of the visible subprogram instance.
 
             if Is_Subprogram (Subp) then
+
+               --  Ensure that pragma Inline_Always is associated with the
+               --  initial declaration of the subprogram.
+
+               Check_Inline_Always_Placement (Subp);
+
                if Is_Wrapper_Package (Scope (Subp)) then
                   Inner_Subp := Subp;
                else
@@ -13662,8 +13879,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -14523,8 +14740,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -15463,8 +15680,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -15906,7 +16123,7 @@ package body Sem_Prag is
                then
                   Id := Defining_Entity (Context);
 
-               --  Pragma Ghost applies to a stand alone subprogram body
+               --  Pragma Ghost applies to a stand-alone subprogram body
 
                elsif Nkind (Context) = N_Subprogram_Body
                  and then No (Corresponding_Spec (Context))
@@ -16050,8 +16267,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -19828,8 +20045,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -19875,8 +20092,8 @@ package body Sem_Prag is
          --    related subprogram [body] when it is:
 
          --       aspect on subprogram declaration
-         --       aspect on stand alone subprogram body
-         --       pragma on stand alone subprogram body
+         --       aspect on stand-alone subprogram body
+         --       pragma on stand-alone subprogram body
 
          --    The annotation must prepare its own template when it is:
 
@@ -21859,7 +22076,7 @@ package body Sem_Prag is
 
                if Nkind_In (Decl, N_Entry_Body, N_Subprogram_Body) then
 
-                  --  A stand alone subprogram body
+                  --  A stand-alone subprogram body
 
                   if Body_Id = Spec_Id then
                      Check_Pragma_Conformance
@@ -28644,7 +28861,7 @@ package body Sem_Prag is
          Depends := Get_Pragma (Subp_Id, Pragma_Refined_Depends);
          Global  := Get_Pragma (Subp_Id, Pragma_Refined_Global);
 
-      --  Subprogram declaration or stand alone body case, look for pragmas
+      --  Subprogram declaration or stand-alone body case, look for pragmas
       --  Depends and Global
 
       else
@@ -29548,7 +29765,7 @@ package body Sem_Prag is
       Pragma_Linker_Constructor             => -1,
       Pragma_Linker_Destructor              => -1,
       Pragma_Linker_Options                 => -1,
-      Pragma_Linker_Section                 =>  0,
+      Pragma_Linker_Section                 => -1,
       Pragma_List                           =>  0,
       Pragma_Lock_Free                      =>  0,
       Pragma_Locking_Policy                 =>  0,

@@ -137,39 +137,31 @@ DEF_GO_RUNTIME(MAPITERNEXT, "runtime.mapiternext", P1(POINTER), R0())
 DEF_GO_RUNTIME(MAKECHAN, "runtime.makechan", P2(TYPE, INT64), R1(CHAN))
 
 // Send a value on a channel.
-DEF_GO_RUNTIME(CHANSEND, "runtime.chansend1", P3(TYPE, CHAN, POINTER), R0())
+DEF_GO_RUNTIME(CHANSEND, "runtime.chansend1", P2(CHAN, POINTER), R0())
 
 // Receive a value from a channel.
-DEF_GO_RUNTIME(CHANRECV1, "runtime.chanrecv1", P3(TYPE, CHAN, POINTER), R0())
+DEF_GO_RUNTIME(CHANRECV1, "runtime.chanrecv1", P2(CHAN, POINTER), R0())
 
 // Receive a value from a channel returning whether it is closed.
-DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P3(TYPE, CHAN, POINTER),
-	       R1(BOOL))
+DEF_GO_RUNTIME(CHANRECV2, "runtime.chanrecv2", P2(CHAN, POINTER), R1(BOOL))
 
 
 // Start building a select statement.
 DEF_GO_RUNTIME(NEWSELECT, "runtime.newselect", P3(POINTER, INT64, INT32), R0())
 
 // Add a default clause to a select statement.
-DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault",
-	       P2(POINTER, INT32), R0())
+DEF_GO_RUNTIME(SELECTDEFAULT, "runtime.selectdefault", P1(POINTER), R0())
 
 // Add a send clause to a select statement.
-DEF_GO_RUNTIME(SELECTSEND, "runtime.selectsend",
-	       P4(POINTER, CHAN, POINTER, INT32), R0())
+DEF_GO_RUNTIME(SELECTSEND, "runtime.selectsend", P3(POINTER, CHAN, POINTER),
+	       R0())
 
-// Add a receive clause to a select statement, for a clause which does
-// not check whether the channel is closed.
+// Add a receive clause to a select statement.
 DEF_GO_RUNTIME(SELECTRECV, "runtime.selectrecv",
-	       P4(POINTER, CHAN, POINTER, INT32), R0())
-
-// Add a receive clause to a select statement, for a clause which does
-// check whether the channel is closed.
-DEF_GO_RUNTIME(SELECTRECV2, "runtime.selectrecv2",
-	       P5(POINTER, CHAN, POINTER, BOOLPTR, INT32), R0())
+	       P4(POINTER, CHAN, POINTER, BOOLPTR), R0())
 
 // Run a select, returning the index of the selected clause.
-DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT32))
+DEF_GO_RUNTIME(SELECTGO, "runtime.selectgo", P1(POINTER), R1(INT))
 
 
 // Panic.

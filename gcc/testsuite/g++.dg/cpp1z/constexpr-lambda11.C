@@ -1,5 +1,5 @@
 // Testcase from P0170R1
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 // 'v' & 'm' are odr-used but do not occur in a constant-expression within the nested
 // lambda, so are well-formed.

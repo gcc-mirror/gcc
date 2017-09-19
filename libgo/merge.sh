@@ -128,7 +128,7 @@ echo ${rev} > VERSION
 (cd ${NEWDIR}/src && find . -name '*.go' -print) | while read f; do
   skip=false
   case "$f" in
-  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/*)
+  ./cmd/cgo/* | ./cmd/go/* | ./cmd/gofmt/* | ./cmd/internal/browser/* | ./cmd/internal/objabi/*)
     ;;
   ./cmd/*)
     skip=true

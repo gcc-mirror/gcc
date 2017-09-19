@@ -1384,17 +1384,12 @@ static enum reg_class rs6000_debug_secondary_reload_class (enum reg_class,
 static enum reg_class rs6000_preferred_reload_class (rtx, enum reg_class);
 static enum reg_class rs6000_debug_preferred_reload_class (rtx,
 							   enum reg_class);
-static bool rs6000_secondary_memory_needed (enum reg_class, enum reg_class,
-					    machine_mode);
-static bool rs6000_debug_secondary_memory_needed (enum reg_class,
-						  enum reg_class,
-						  machine_mode);
-static bool rs6000_cannot_change_mode_class (machine_mode,
-					     machine_mode,
-					     enum reg_class);
-static bool rs6000_debug_cannot_change_mode_class (machine_mode,
-						   machine_mode,
-						   enum reg_class);
+static bool rs6000_debug_secondary_memory_needed (machine_mode,
+						  reg_class_t,
+						  reg_class_t);
+static bool rs6000_debug_can_change_mode_class (machine_mode,
+						machine_mode,
+						reg_class_t);
 static bool rs6000_save_toc_in_prologue_p (void);
 static rtx rs6000_internal_arg_pointer (void);
 
@@ -1411,15 +1406,6 @@ enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 
 enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx, enum reg_class)
   = rs6000_preferred_reload_class;
-
-bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class, enum reg_class,
-					    machine_mode)
-  = rs6000_secondary_memory_needed;
-
-bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
-					     machine_mode,
-					     enum reg_class)
-  = rs6000_cannot_change_mode_class;
 
 const int INSN_NOT_AVAILABLE = -1;
 
@@ -1897,6 +1883,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD rs6000_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED rs6000_secondary_memory_needed
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE rs6000_secondary_memory_needed_mode
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P rs6000_legitimate_address_p
@@ -1991,6 +1981,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SLOW_UNALIGNED_ACCESS
 #define TARGET_SLOW_UNALIGNED_ACCESS rs6000_slow_unaligned_access
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS rs6000_can_change_mode_class
 
 
 /* Processor table.  */
@@ -5096,10 +5089,10 @@ rs6000_option_override_internal (bool global_init_p)
 	  targetm.legitimize_address = rs6000_debug_legitimize_address;
 	  rs6000_secondary_reload_class_ptr
 	    = rs6000_debug_secondary_reload_class;
-	  rs6000_secondary_memory_needed_ptr
+	  targetm.secondary_memory_needed
 	    = rs6000_debug_secondary_memory_needed;
-	  rs6000_cannot_change_mode_class_ptr
-	    = rs6000_debug_cannot_change_mode_class;
+	  targetm.can_change_mode_class
+	    = rs6000_debug_can_change_mode_class;
 	  rs6000_preferred_reload_class_ptr
 	    = rs6000_debug_preferred_reload_class;
 	  rs6000_legitimize_reload_address_ptr
@@ -21811,10 +21804,9 @@ rs6000_secondary_memory_needed_rtx (machine_mode mode)
   return ret;
 }
 
-/* Return the mode to be used for memory when a secondary memory
-   location is needed.  For SDmode values we need to use DDmode, in
-   all other cases we can use the same mode.  */
-machine_mode
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.  For SDmode values we
+   need to use DDmode, in all other cases we can use the same mode.  */
+static machine_mode
 rs6000_secondary_memory_needed_mode (machine_mode mode)
 {
   if (lra_in_progress && mode == SDmode)
@@ -23148,9 +23140,9 @@ rs6000_debug_preferred_reload_class (rtx x, enum reg_class rclass)
    set and vice versa.  */
 
 static bool
-rs6000_secondary_memory_needed (enum reg_class from_class,
-				enum reg_class to_class,
-				machine_mode mode)
+rs6000_secondary_memory_needed (machine_mode mode,
+				reg_class_t from_class,
+				reg_class_t to_class)
 {
   enum rs6000_reg_type from_type, to_type;
   bool altivec_p = ((from_class == ALTIVEC_REGS)
@@ -23174,11 +23166,11 @@ rs6000_secondary_memory_needed (enum reg_class from_class,
 
 /* Debug version of rs6000_secondary_memory_needed.  */
 static bool
-rs6000_debug_secondary_memory_needed (enum reg_class from_class,
-				      enum reg_class to_class,
-				      machine_mode mode)
+rs6000_debug_secondary_memory_needed (machine_mode mode,
+				      reg_class_t from_class,
+				      reg_class_t to_class)
 {
-  bool ret = rs6000_secondary_memory_needed (from_class, to_class, mode);
+  bool ret = rs6000_secondary_memory_needed (mode, from_class, to_class);
 
   fprintf (stderr,
 	   "rs6000_secondary_memory_needed, return: %s, from_class = %s, "
@@ -23300,12 +23292,12 @@ rs6000_debug_secondary_reload_class (enum reg_class rclass,
   return ret;
 }
 
-/* Return nonzero if for CLASS a mode change from FROM to TO is invalid.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
-rs6000_cannot_change_mode_class (machine_mode from,
-				 machine_mode to,
-				 enum reg_class rclass)
+rs6000_can_change_mode_class (machine_mode from,
+			      machine_mode to,
+			      reg_class_t rclass)
 {
   unsigned from_size = GET_MODE_SIZE (from);
   unsigned to_size = GET_MODE_SIZE (to);
@@ -23329,31 +23321,31 @@ rs6000_cannot_change_mode_class (machine_mode from,
 	     values.  */
 
 	  if (to_float128_vector_p && from_float128_vector_p)
-	    return false;
+	    return true;
 
 	  else if (to_float128_vector_p || from_float128_vector_p)
-	    return true;
+	    return false;
 
 	  /* TDmode in floating-mode registers must always go into a register
 	     pair with the most significant word in the even-numbered register
 	     to match ISA requirements.  In little-endian mode, this does not
 	     match subreg numbering, so we cannot allow subregs.  */
 	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
-	    return true;
+	    return false;
 
 	  if (from_size < 8 || to_size < 8)
-	    return true;
+	    return false;
 
 	  if (from_size == 8 && (8 * to_nregs) != to_size)
-	    return true;
+	    return false;
 
 	  if (to_size == 8 && (8 * from_nregs) != from_size)
-	    return true;
+	    return false;
 
-	  return false;
+	  return true;
 	}
       else
-	return false;
+	return true;
     }
 
   if (TARGET_E500_DOUBLE
@@ -23364,7 +23356,7 @@ rs6000_cannot_change_mode_class (machine_mode from,
 	  || (((to) == DDmode) + ((from) == DDmode)) == 1
 	  || (((to) == TDmode) + ((from) == TDmode)) == 1
 	  || (((to) == DImode) + ((from) == DImode)) == 1))
-    return true;
+    return false;
 
   /* Since the VSX register set includes traditional floating point registers
      and altivec registers, just check for the size being different instead of
@@ -23377,32 +23369,32 @@ rs6000_cannot_change_mode_class (machine_mode from,
       unsigned num_regs = (from_size + 15) / 16;
       if (hard_regno_nregs (FIRST_FPR_REGNO, to) > num_regs
 	  || hard_regno_nregs (FIRST_FPR_REGNO, from) > num_regs)
-	return true;
+	return false;
 
-      return (from_size != 8 && from_size != 16);
+      return (from_size == 8 || from_size == 16);
     }
 
   if (TARGET_ALTIVEC && rclass == ALTIVEC_REGS
       && (ALTIVEC_VECTOR_MODE (from) + ALTIVEC_VECTOR_MODE (to)) == 1)
-    return true;
+    return false;
 
   if (TARGET_SPE && (SPE_VECTOR_MODE (from) + SPE_VECTOR_MODE (to)) == 1
       && reg_classes_intersect_p (GENERAL_REGS, rclass))
-    return true;
+    return false;
 
-  return false;
+  return true;
 }
 
-/* Debug version of rs6000_cannot_change_mode_class.  */
+/* Debug version of rs6000_can_change_mode_class.  */
 static bool
-rs6000_debug_cannot_change_mode_class (machine_mode from,
-				       machine_mode to,
-				       enum reg_class rclass)
+rs6000_debug_can_change_mode_class (machine_mode from,
+				    machine_mode to,
+				    reg_class_t rclass)
 {
-  bool ret = rs6000_cannot_change_mode_class (from, to, rclass);
+  bool ret = rs6000_can_change_mode_class (from, to, rclass);
 
   fprintf (stderr,
-	   "rs6000_cannot_change_mode_class, return %s, from = %s, "
+	   "rs6000_can_change_mode_class, return %s, from = %s, "
 	   "to = %s, rclass = %s\n",
 	   ret ? "true" : "false",
 	   GET_MODE_NAME (from), GET_MODE_NAME (to),

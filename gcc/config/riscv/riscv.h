@@ -221,12 +221,6 @@ along with GCC; see the file COPYING3.  If not see
    Extensions of pointers to word_mode must be signed.  */
 #define POINTERS_EXTEND_UNSIGNED false
 
-/* When floating-point registers are wider than integer ones, moves between
-   them must go through memory.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE)	\
-  (GET_MODE_SIZE (MODE) > UNITS_PER_WORD		\
-   && ((CLASS1) == FP_REGS) != ((CLASS2) == FP_REGS))
-
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
 
@@ -462,9 +456,6 @@ enum reg_class
   (((VALUE) | ((1UL<<31) - IMM_REACH)) == ((1UL<<31) - IMM_REACH)	\
    || ((VALUE) | ((1UL<<31) - IMM_REACH)) + IMM_REACH == 0)
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  reg_classes_intersect_p (FP_REGS, CLASS)
-
 /* Stack layout; function entry, exit and calling.  */
 
 #define STACK_GROWS_DOWNWARD 1
@@ -645,8 +636,6 @@ typedef struct {
 #define SLOW_BYTE_ACCESS 0
 
 #define SHIFT_COUNT_TRUNCATED 1
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

@@ -21,7 +21,7 @@
   end type
 
   type(mytype(b=4)) :: z(2)
-  type(mytype(ftype, pdt_len)) :: z2
+  type(mytype(ftype, 4)) :: z2
 
   z(1)%i = 1
   z(2)%i = 2

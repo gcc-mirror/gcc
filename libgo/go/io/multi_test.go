@@ -176,13 +176,26 @@ func (f readerFunc) Read(p []byte) (int, error) {
 	return f(p)
 }
 
+// callDepth returns the logical call depth for the given PCs.
+func callDepth(callers []uintptr) (depth int) {
+	frames := runtime.CallersFrames(callers)
+	more := true
+	for more {
+		_, more = frames.Next()
+		depth++
+	}
+	return
+}
+
 // Test that MultiReader properly flattens chained multiReaders when Read is called
 func TestMultiReaderFlatten(t *testing.T) {
 	pc := make([]uintptr, 1000) // 1000 should fit the full stack
-	var myDepth = runtime.Callers(0, pc)
+	n := runtime.Callers(0, pc)
+	var myDepth = callDepth(pc[:n])
 	var readDepth int // will contain the depth from which fakeReader.Read was called
 	var r Reader = MultiReader(readerFunc(func(p []byte) (int, error) {
-		readDepth = runtime.Callers(1, pc)
+		n := runtime.Callers(1, pc)
+		readDepth = callDepth(pc[:n])
 		return 0, errors.New("irrelevant")
 	}))
 
@@ -244,14 +257,17 @@ func TestMultiReaderFreesExhaustedReaders(t *testing.T) {
 
 	var mr Reader
 	closed := make(chan struct{})
-	{
+	// The closure ensures that we don't have a live reference to buf1
+	// on our stack after MultiReader is inlined (Issue 18819).  This
+	// is a work around for a limitation in liveness analysis.
+	func() {
 		buf1 := bytes.NewReader([]byte("foo"))
 		buf2 := bytes.NewReader([]byte("bar"))
 		mr = MultiReader(buf1, buf2)
 		runtime.SetFinalizer(buf1, func(*bytes.Reader) {
 			close(closed)
 		})
-	}
+	}()
 
 	buf := make([]byte, 4)
 	if n, err := ReadFull(mr, buf); err != nil || string(buf) != "foob" {

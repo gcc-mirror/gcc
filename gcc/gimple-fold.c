@@ -3862,24 +3862,18 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 		  tree fndecl = builtin_decl_implicit (BUILT_IN_UNREACHABLE);
 		  gimple *new_stmt = gimple_build_call (fndecl, 0);
 		  gimple_set_location (new_stmt, gimple_location (stmt));
+		  /* If the call had a SSA name as lhs morph that into
+		     an uninitialized value.  */
 		  if (lhs && TREE_CODE (lhs) == SSA_NAME)
 		    {
 		      tree var = create_tmp_var (TREE_TYPE (lhs));
-		      tree def = get_or_create_ssa_default_def (cfun, var);
-
-		      /* To satisfy condition for
-			 cgraph_update_edges_for_call_stmt_node,
-			 we need to preserve GIMPLE_CALL statement
-			 at position of GSI iterator.  */
-		      update_call_from_tree (gsi, def);
-		      gsi_insert_before (gsi, new_stmt, GSI_NEW_STMT);
+		      SET_SSA_NAME_VAR_OR_IDENTIFIER (lhs, var);
+		      SSA_NAME_DEF_STMT (lhs) = gimple_build_nop ();
+		      set_ssa_default_def (cfun, var, lhs);
 		    }
-		  else
-		    {
-		      gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-		      gimple_set_vdef (new_stmt, gimple_vdef (stmt));
-		      gsi_replace (gsi, new_stmt, false);
-		    }
+		  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
+		  gimple_set_vdef (new_stmt, gimple_vdef (stmt));
+		  gsi_replace (gsi, new_stmt, false);
 		  return true;
 		}
 	    }
@@ -5925,18 +5919,18 @@ gimple_fold_stmt_to_constant_1 (gimple *stmt, tree (*valueize) (tree),
 		       && (CONSTRUCTOR_NELTS (rhs)
 			   == TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs))))
 		{
-		  unsigned i;
-		  tree val, *vec;
+		  unsigned i, nelts;
+		  tree val;
 
-		  vec = XALLOCAVEC (tree,
-				    TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs)));
+		  nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (rhs));
+		  auto_vec<tree, 32> vec (nelts);
 		  FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (rhs), i, val)
 		    {
 		      val = (*valueize) (val);
 		      if (TREE_CODE (val) == INTEGER_CST
 			  || TREE_CODE (val) == REAL_CST
 			  || TREE_CODE (val) == FIXED_CST)
-			vec[i] = val;
+			vec.quick_push (val);
 		      else
 			return NULL_TREE;
 		    }
@@ -7062,6 +7056,58 @@ gimple_convert_to_ptrofftype (gimple_seq *seq, location_t loc, tree op)
   if (ptrofftype_p (TREE_TYPE (op)))
     return op;
   return gimple_convert (seq, loc, sizetype, op);
+}
+
+/* Build a vector of type TYPE in which each element has the value OP.
+   Return a gimple value for the result, appending any new statements
+   to SEQ.  */
+
+tree
+gimple_build_vector_from_val (gimple_seq *seq, location_t loc, tree type,
+			      tree op)
+{
+  tree res, vec = build_vector_from_val (type, op);
+  if (is_gimple_val (vec))
+    return vec;
+  if (gimple_in_ssa_p (cfun))
+    res = make_ssa_name (type);
+  else
+    res = create_tmp_reg (type);
+  gimple *stmt = gimple_build_assign (res, vec);
+  gimple_set_location (stmt, loc);
+  gimple_seq_add_stmt_without_update (seq, stmt);
+  return res;
+}
+
+/* Build a vector of type TYPE in which the elements have the values
+   given by ELTS.  Return a gimple value for the result, appending any
+   new instructions to SEQ.  */
+
+tree
+gimple_build_vector (gimple_seq *seq, location_t loc, tree type,
+		     vec<tree> elts)
+{
+  unsigned int nelts = elts.length ();
+  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
+  for (unsigned int i = 0; i < nelts; ++i)
+    if (!TREE_CONSTANT (elts[i]))
+      {
+	vec<constructor_elt, va_gc> *v;
+	vec_alloc (v, nelts);
+	for (i = 0; i < nelts; ++i)
+	  CONSTRUCTOR_APPEND_ELT (v, NULL_TREE, elts[i]);
+
+	tree res;
+	if (gimple_in_ssa_p (cfun))
+	  res = make_ssa_name (type);
+	else
+	  res = create_tmp_reg (type);
+	gimple *stmt = gimple_build_assign (res, build_constructor (type, v));
+	gimple_set_location (stmt, loc);
+	gimple_seq_add_stmt_without_update (seq, stmt);
+	return res;
+      }
+  return build_vector (type, elts);
 }
 
 /* Return true if the result of assignment STMT is known to be non-negative.

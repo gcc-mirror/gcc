@@ -12,7 +12,21 @@ import (
 
 const (
 	_WorkbufSize = 2048 // in bytes; larger values result in less contention
+
+	// workbufAlloc is the number of bytes to allocate at a time
+	// for new workbufs. This must be a multiple of pageSize and
+	// should be a multiple of _WorkbufSize.
+	//
+	// Larger values reduce workbuf allocation overhead. Smaller
+	// values reduce heap fragmentation.
+	workbufAlloc = 32 << 10
 )
+
+func init() {
+	if workbufAlloc%pageSize != 0 || workbufAlloc%_WorkbufSize != 0 {
+		throw("bad workbufAlloc")
+	}
+}
 
 // Garbage collector work pool abstraction.
 //
@@ -24,21 +38,6 @@ const (
 // produce pointers to grey objects. Scanning consumes pointers to
 // grey objects, thus blackening them, and then scans them,
 // potentially producing new pointers to grey objects.
-
-// A wbufptr holds a workbuf*, but protects it from write barriers.
-// workbufs never live on the heap, so write barriers are unnecessary.
-// Write barriers on workbuf pointers may also be dangerous in the GC.
-//
-// TODO: Since workbuf is now go:notinheap, this isn't necessary.
-type wbufptr uintptr
-
-func wbufptrOf(w *workbuf) wbufptr {
-	return wbufptr(unsafe.Pointer(w))
-}
-
-func (wp wbufptr) ptr() *workbuf {
-	return (*workbuf)(unsafe.Pointer(wp))
-}
 
 // A gcWork provides the interface to produce and consume work for the
 // garbage collector.
@@ -75,7 +74,7 @@ type gcWork struct {
 	// next.
 	//
 	// Invariant: Both wbuf1 and wbuf2 are nil or neither are.
-	wbuf1, wbuf2 wbufptr
+	wbuf1, wbuf2 *workbuf
 
 	// Bytes marked (blackened) on this gcWork. This is aggregated
 	// into work.bytesMarked by dispose.
@@ -87,12 +86,12 @@ type gcWork struct {
 }
 
 func (w *gcWork) init() {
-	w.wbuf1 = wbufptrOf(getempty())
+	w.wbuf1 = getempty()
 	wbuf2 := trygetfull()
 	if wbuf2 == nil {
 		wbuf2 = getempty()
 	}
-	w.wbuf2 = wbufptrOf(wbuf2)
+	w.wbuf2 = wbuf2
 }
 
 // put enqueues a pointer for the garbage collector to trace.
@@ -100,18 +99,18 @@ func (w *gcWork) init() {
 //go:nowritebarrier
 func (w *gcWork) put(obj uintptr) {
 	flushed := false
-	wbuf := w.wbuf1.ptr()
+	wbuf := w.wbuf1
 	if wbuf == nil {
 		w.init()
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		// wbuf is empty at this point.
 	} else if wbuf.nobj == len(wbuf.obj) {
 		w.wbuf1, w.wbuf2 = w.wbuf2, w.wbuf1
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		if wbuf.nobj == len(wbuf.obj) {
 			putfull(wbuf)
 			wbuf = getempty()
-			w.wbuf1 = wbufptrOf(wbuf)
+			w.wbuf1 = wbuf
 			flushed = true
 		}
 	}
@@ -132,7 +131,7 @@ func (w *gcWork) put(obj uintptr) {
 // otherwise it returns false and the caller needs to call put.
 //go:nowritebarrier
 func (w *gcWork) putFast(obj uintptr) bool {
-	wbuf := w.wbuf1.ptr()
+	wbuf := w.wbuf1
 	if wbuf == nil {
 		return false
 	} else if wbuf.nobj == len(wbuf.obj) {
@@ -151,15 +150,15 @@ func (w *gcWork) putFast(obj uintptr) bool {
 // other gcWork instances or other caches.
 //go:nowritebarrier
 func (w *gcWork) tryGet() uintptr {
-	wbuf := w.wbuf1.ptr()
+	wbuf := w.wbuf1
 	if wbuf == nil {
 		w.init()
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		// wbuf is empty at this point.
 	}
 	if wbuf.nobj == 0 {
 		w.wbuf1, w.wbuf2 = w.wbuf2, w.wbuf1
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		if wbuf.nobj == 0 {
 			owbuf := wbuf
 			wbuf = trygetfull()
@@ -167,7 +166,7 @@ func (w *gcWork) tryGet() uintptr {
 				return 0
 			}
 			putempty(owbuf)
-			w.wbuf1 = wbufptrOf(wbuf)
+			w.wbuf1 = wbuf
 		}
 	}
 
@@ -180,7 +179,7 @@ func (w *gcWork) tryGet() uintptr {
 // the caller is expected to call tryGet().
 //go:nowritebarrier
 func (w *gcWork) tryGetFast() uintptr {
-	wbuf := w.wbuf1.ptr()
+	wbuf := w.wbuf1
 	if wbuf == nil {
 		return 0
 	}
@@ -197,15 +196,15 @@ func (w *gcWork) tryGetFast() uintptr {
 // been retrieved.  get returns 0 if there are no pointers remaining.
 //go:nowritebarrier
 func (w *gcWork) get() uintptr {
-	wbuf := w.wbuf1.ptr()
+	wbuf := w.wbuf1
 	if wbuf == nil {
 		w.init()
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		// wbuf is empty at this point.
 	}
 	if wbuf.nobj == 0 {
 		w.wbuf1, w.wbuf2 = w.wbuf2, w.wbuf1
-		wbuf = w.wbuf1.ptr()
+		wbuf = w.wbuf1
 		if wbuf.nobj == 0 {
 			owbuf := wbuf
 			wbuf = getfull()
@@ -213,7 +212,7 @@ func (w *gcWork) get() uintptr {
 				return 0
 			}
 			putempty(owbuf)
-			w.wbuf1 = wbufptrOf(wbuf)
+			w.wbuf1 = wbuf
 		}
 	}
 
@@ -231,21 +230,21 @@ func (w *gcWork) get() uintptr {
 //
 //go:nowritebarrier
 func (w *gcWork) dispose() {
-	if wbuf := w.wbuf1.ptr(); wbuf != nil {
+	if wbuf := w.wbuf1; wbuf != nil {
 		if wbuf.nobj == 0 {
 			putempty(wbuf)
 		} else {
 			putfull(wbuf)
 		}
-		w.wbuf1 = 0
+		w.wbuf1 = nil
 
-		wbuf = w.wbuf2.ptr()
+		wbuf = w.wbuf2
 		if wbuf.nobj == 0 {
 			putempty(wbuf)
 		} else {
 			putfull(wbuf)
 		}
-		w.wbuf2 = 0
+		w.wbuf2 = nil
 	}
 	if w.bytesMarked != 0 {
 		// dispose happens relatively infrequently. If this
@@ -265,14 +264,14 @@ func (w *gcWork) dispose() {
 // global queue.
 //go:nowritebarrier
 func (w *gcWork) balance() {
-	if w.wbuf1 == 0 {
+	if w.wbuf1 == nil {
 		return
 	}
-	if wbuf := w.wbuf2.ptr(); wbuf.nobj != 0 {
+	if wbuf := w.wbuf2; wbuf.nobj != 0 {
 		putfull(wbuf)
-		w.wbuf2 = wbufptrOf(getempty())
-	} else if wbuf := w.wbuf1.ptr(); wbuf.nobj > 4 {
-		w.wbuf1 = wbufptrOf(handoff(wbuf))
+		w.wbuf2 = getempty()
+	} else if wbuf := w.wbuf1; wbuf.nobj > 4 {
+		w.wbuf1 = handoff(wbuf)
 	} else {
 		return
 	}
@@ -285,7 +284,7 @@ func (w *gcWork) balance() {
 // empty returns true if w has no mark work available.
 //go:nowritebarrier
 func (w *gcWork) empty() bool {
-	return w.wbuf1 == 0 || (w.wbuf1.ptr().nobj == 0 && w.wbuf2.ptr().nobj == 0)
+	return w.wbuf1 == nil || (w.wbuf1.nobj == 0 && w.wbuf2.nobj == 0)
 }
 
 // Internally, the GC work pool is kept in arrays in work buffers.
@@ -327,23 +326,56 @@ func (b *workbuf) checkempty() {
 func getempty() *workbuf {
 	var b *workbuf
 	if work.empty != 0 {
-		b = (*workbuf)(lfstackpop(&work.empty))
+		b = (*workbuf)(work.empty.pop())
 		if b != nil {
 			b.checkempty()
 		}
 	}
 	if b == nil {
-		b = (*workbuf)(persistentalloc(unsafe.Sizeof(*b), sys.CacheLineSize, &memstats.gc_sys))
+		// Allocate more workbufs.
+		var s *mspan
+		if work.wbufSpans.free.first != nil {
+			lock(&work.wbufSpans.lock)
+			s = work.wbufSpans.free.first
+			if s != nil {
+				work.wbufSpans.free.remove(s)
+				work.wbufSpans.busy.insert(s)
+			}
+			unlock(&work.wbufSpans.lock)
+		}
+		if s == nil {
+			systemstack(func() {
+				s = mheap_.allocManual(workbufAlloc/pageSize, &memstats.gc_sys)
+			})
+			if s == nil {
+				throw("out of memory")
+			}
+			// Record the new span in the busy list.
+			lock(&work.wbufSpans.lock)
+			work.wbufSpans.busy.insert(s)
+			unlock(&work.wbufSpans.lock)
+		}
+		// Slice up the span into new workbufs. Return one and
+		// put the rest on the empty list.
+		for i := uintptr(0); i+_WorkbufSize <= workbufAlloc; i += _WorkbufSize {
+			newb := (*workbuf)(unsafe.Pointer(s.base() + i))
+			newb.nobj = 0
+			if i == 0 {
+				b = newb
+			} else {
+				putempty(newb)
+			}
+		}
 	}
 	return b
 }
 
 // putempty puts a workbuf onto the work.empty list.
-// Upon entry this go routine owns b. The lfstackpush relinquishes ownership.
+// Upon entry this go routine owns b. The lfstack.push relinquishes ownership.
 //go:nowritebarrier
 func putempty(b *workbuf) {
 	b.checkempty()
-	lfstackpush(&work.empty, &b.node)
+	work.empty.push(&b.node)
 }
 
 // putfull puts the workbuf on the work.full list for the GC.
@@ -352,14 +384,14 @@ func putempty(b *workbuf) {
 //go:nowritebarrier
 func putfull(b *workbuf) {
 	b.checknonempty()
-	lfstackpush(&work.full, &b.node)
+	work.full.push(&b.node)
 }
 
 // trygetfull tries to get a full or partially empty workbuffer.
 // If one is not immediately available return nil
 //go:nowritebarrier
 func trygetfull() *workbuf {
-	b := (*workbuf)(lfstackpop(&work.full))
+	b := (*workbuf)(work.full.pop())
 	if b != nil {
 		b.checknonempty()
 		return b
@@ -380,7 +412,7 @@ func trygetfull() *workbuf {
 // phase.
 //go:nowritebarrier
 func getfull() *workbuf {
-	b := (*workbuf)(lfstackpop(&work.full))
+	b := (*workbuf)(work.full.pop())
 	if b != nil {
 		b.checknonempty()
 		return b
@@ -398,7 +430,7 @@ func getfull() *workbuf {
 				println("runtime: work.nwait=", decnwait, "work.nproc=", work.nproc)
 				throw("work.nwait > work.nproc")
 			}
-			b = (*workbuf)(lfstackpop(&work.full))
+			b = (*workbuf)(work.full.pop())
 			if b != nil {
 				b.checknonempty()
 				return b
@@ -412,15 +444,11 @@ func getfull() *workbuf {
 		if work.nwait == work.nproc && work.markrootNext >= work.markrootJobs {
 			return nil
 		}
-		_g_ := getg()
 		if i < 10 {
-			_g_.m.gcstats.nprocyield++
 			procyield(20)
 		} else if i < 20 {
-			_g_.m.gcstats.nosyield++
 			osyield()
 		} else {
-			_g_.m.gcstats.nsleep++
 			usleep(100)
 		}
 	}
@@ -434,11 +462,49 @@ func handoff(b *workbuf) *workbuf {
 	b.nobj -= n
 	b1.nobj = n
 	memmove(unsafe.Pointer(&b1.obj[0]), unsafe.Pointer(&b.obj[b.nobj]), uintptr(n)*unsafe.Sizeof(b1.obj[0]))
-	_g_ := getg()
-	_g_.m.gcstats.nhandoff++
-	_g_.m.gcstats.nhandoffcnt += uint64(n)
 
 	// Put b on full list - let first half of b get stolen.
 	putfull(b)
 	return b1
+}
+
+// prepareFreeWorkbufs moves busy workbuf spans to free list so they
+// can be freed to the heap. This must only be called when all
+// workbufs are on the empty list.
+func prepareFreeWorkbufs() {
+	lock(&work.wbufSpans.lock)
+	if work.full != 0 {
+		throw("cannot free workbufs when work.full != 0")
+	}
+	// Since all workbufs are on the empty list, we don't care
+	// which ones are in which spans. We can wipe the entire empty
+	// list and move all workbuf spans to the free list.
+	work.empty = 0
+	work.wbufSpans.free.takeAll(&work.wbufSpans.busy)
+	unlock(&work.wbufSpans.lock)
+}
+
+// freeSomeWbufs frees some workbufs back to the heap and returns
+// true if it should be called again to free more.
+func freeSomeWbufs(preemptible bool) bool {
+	const batchSize = 64 // ~1–2 µs per span.
+	lock(&work.wbufSpans.lock)
+	if gcphase != _GCoff || work.wbufSpans.free.isEmpty() {
+		unlock(&work.wbufSpans.lock)
+		return false
+	}
+	systemstack(func() {
+		gp := getg().m.curg
+		for i := 0; i < batchSize && !(preemptible && gp.preempt); i++ {
+			span := work.wbufSpans.free.first
+			if span == nil {
+				break
+			}
+			work.wbufSpans.free.remove(span)
+			mheap_.freeManual(span, &memstats.gc_sys)
+		}
+	})
+	more := !work.wbufSpans.free.isEmpty()
+	unlock(&work.wbufSpans.lock)
+	return more
 }

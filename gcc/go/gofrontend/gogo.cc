@@ -2498,6 +2498,8 @@ Specific_type_functions::type(Type* t)
     case Type::TYPE_NAMED:
       {
 	Named_type* nt = t->named_type();
+	if (nt->is_alias())
+	  return TRAVERSE_CONTINUE;
 	if (t->needs_specific_type_functions(this->gogo_))
 	  t->type_functions(this->gogo_, nt, NULL, NULL, &hash_fn, &equal_fn);
 

@@ -323,7 +323,7 @@ package Einfo is
 --  only].  These are representation attributes which must always apply to a
 --  full non-private type, and where the attributes are always on the full
 --  type. The attribute can be referenced on a subtype (and automatically
---  retries the value from the implementation base type). However, it is an
+--  retrieves the value from the implementation base type). However, it is an
 --  error to try to set the attribute on other than the implementation base
 --  type, and if assertions are enabled, an attempt to set the attribute on a
 --  subtype will raise an assert error.
@@ -980,8 +980,9 @@ package Einfo is
 --       incomplete type.
 
 --    Disable_Controlled (Flag253)
---      Present in all entities. Set for a controlled type (Is_Controlled flag
---      set) if the aspect Disable_Controlled is active for the type.
+--      Present in all entities. Set for a controlled type subject to aspect
+--      Disable_Controlled which evaluates to True. This flag is taken into
+--      account in synthesized attribute Is_Controlled.
 
 --    Discard_Names (Flag88)
 --       Defined in types and exception entities. Set if pragma Discard_Names
@@ -2443,14 +2444,14 @@ package Einfo is
 --       Defined in function and procedure entities. Set if a pragma
 --       CPP_Constructor applies to the subprogram.
 
---    Is_Controlled (Flag42) [base type only]
+--    Is_Controlled_Active (Flag42) [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
 --       i.e. is either a descendant of Ada.Finalization.Controlled or of
 --       Ada.Finalization.Limited_Controlled.
 
---    Is_Controlled_Active (synth) [base type only]
---       Defined in all type entities. Set if Is_Controlled is set for the
---       type, and Disable_Controlled is not set.
+--    Is_Controlled (synth) [base type only]
+--       Defined in all type entities. Set if Is_Controlled_Active is set for
+--       the type, and Disable_Controlled is not set.
 
 --    Is_Controlling_Formal (Flag97)
 --       Defined in all Formal_Kind entities. Marks the controlling parameters
@@ -2683,9 +2684,9 @@ package Einfo is
 
 --    Is_Imported (Flag24)
 --       Defined in all entities. Set if the entity is imported. For now we
---       only allow the import of exceptions, functions, procedures, packages.
---       and variables. Exceptions, packages and types can only be imported in
---       the Java VM implementation, which is retired.
+--       only allow the import of exceptions, functions, procedures, packages,
+--       constants, and variables. Exceptions, packages, and types can only be
+--       imported in the Java VM implementation, which is retired.
 
 --    Is_Incomplete_Or_Private_Type (synthesized)
 --       Applies to all entities, true for private and incomplete types
@@ -5648,7 +5649,7 @@ package Einfo is
    --    Is_Atomic                           (Flag85)
    --    Is_Constr_Subt_For_U_Nominal        (Flag80)
    --    Is_Constr_Subt_For_UN_Aliased       (Flag141)
-   --    Is_Controlled                       (Flag42)   (base type only)
+   --    Is_Controlled_Active                (Flag42)   (base type only)
    --    Is_Eliminated                       (Flag124)
    --    Is_Frozen                           (Flag4)
    --    Is_Generic_Actual_Type              (Flag94)
@@ -5684,7 +5685,7 @@ package Einfo is
    --    Invariant_Procedure                 (synth)
    --    Is_Access_Protected_Subprogram_Type (synth)
    --    Is_Atomic_Or_VFA                    (synth)
-   --    Is_Controlled_Active                (synth)
+   --    Is_Controlled                       (synth)
    --    Partial_Invariant_Procedure         (synth)
    --    Predicate_Function                  (synth)
    --    Predicate_Function_M                (synth)
@@ -6344,7 +6345,7 @@ package Einfo is
    --    Private_View                        (Node22)
    --    Stored_Constraint                   (Elist23)
    --    Has_Completion                      (Flag26)
-   --    Is_Controlled                       (Flag42)   (base type only)
+   --    Is_Controlled_Active                (Flag42)   (base type only)
    --    Is_For_Access_Subtype               (Flag118)  (subtype only)
    --    (plus type attributes)
 
@@ -6497,7 +6498,7 @@ package Einfo is
    --    Is_Class_Wide_Equivalent_Type       (Flag35)
    --    Is_Concurrent_Record_Type           (Flag20)
    --    Is_Constrained                      (Flag12)
-   --    Is_Controlled                       (Flag42)   (base type only)
+   --    Is_Controlled_Active                (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
    --    No_Reordering                       (Flag239)  (base type only)
@@ -6526,7 +6527,7 @@ package Einfo is
    --    Has_Record_Rep_Clause               (Flag65)   (base type only)
    --    Is_Concurrent_Record_Type           (Flag20)
    --    Is_Constrained                      (Flag12)
-   --    Is_Controlled                       (Flag42)   (base type only)
+   --    Is_Controlled_Active                (Flag42)   (base type only)
    --    Is_Interface                        (Flag186)
    --    Is_Limited_Interface                (Flag197)
    --    No_Reordering                       (Flag239)  (base type only)
@@ -7169,7 +7170,7 @@ package Einfo is
    function Is_Constr_Subt_For_UN_Aliased       (Id : E) return B;
    function Is_Constrained                      (Id : E) return B;
    function Is_Constructor                      (Id : E) return B;
-   function Is_Controlled                       (Id : E) return B;
+   function Is_Controlled_Active                (Id : E) return B;
    function Is_Controlling_Formal               (Id : E) return B;
    function Is_CPP_Class                        (Id : E) return B;
    function Is_Descendant_Of_Address            (Id : E) return B;
@@ -7489,7 +7490,7 @@ package Einfo is
    function Is_Base_Type                        (Id : E) return B;
    function Is_Boolean_Type                     (Id : E) return B;
    function Is_Constant_Object                  (Id : E) return B;
-   function Is_Controlled_Active                (Id : E) return B;
+   function Is_Controlled                       (Id : E) return B;
    function Is_Discriminal                      (Id : E) return B;
    function Is_Dynamic_Scope                    (Id : E) return B;
    function Is_External_State                   (Id : E) return B;
@@ -7858,7 +7859,7 @@ package Einfo is
    procedure Set_Is_Constr_Subt_For_UN_Aliased   (Id : E; V : B := True);
    procedure Set_Is_Constrained                  (Id : E; V : B := True);
    procedure Set_Is_Constructor                  (Id : E; V : B := True);
-   procedure Set_Is_Controlled                   (Id : E; V : B := True);
+   procedure Set_Is_Controlled_Active            (Id : E; V : B := True);
    procedure Set_Is_Controlling_Formal           (Id : E; V : B := True);
    procedure Set_Is_CPP_Class                    (Id : E; V : B := True);
    procedure Set_Is_Descendant_Of_Address        (Id : E; V : B := True);
@@ -8676,7 +8677,7 @@ package Einfo is
    pragma Inline (Is_Constr_Subt_For_UN_Aliased);
    pragma Inline (Is_Constrained);
    pragma Inline (Is_Constructor);
-   pragma Inline (Is_Controlled);
+   pragma Inline (Is_Controlled_Active);
    pragma Inline (Is_Controlling_Formal);
    pragma Inline (Is_CPP_Class);
    pragma Inline (Is_Decimal_Fixed_Point_Type);
@@ -9190,7 +9191,7 @@ package Einfo is
    pragma Inline (Set_Is_Constr_Subt_For_UN_Aliased);
    pragma Inline (Set_Is_Constrained);
    pragma Inline (Set_Is_Constructor);
-   pragma Inline (Set_Is_Controlled);
+   pragma Inline (Set_Is_Controlled_Active);
    pragma Inline (Set_Is_Controlling_Formal);
    pragma Inline (Set_Is_CPP_Class);
    pragma Inline (Set_Is_Descendant_Of_Address);
@@ -9434,7 +9435,7 @@ package Einfo is
 
    pragma Inline (Base_Type);
    pragma Inline (Is_Base_Type);
-   pragma Inline (Is_Controlled_Active);
+   pragma Inline (Is_Controlled);
    pragma Inline (Is_Package_Or_Generic_Package);
    pragma Inline (Is_Packed_Array);
    pragma Inline (Is_Subprogram_Or_Generic_Subprogram);

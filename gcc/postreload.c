@@ -335,12 +335,8 @@ reload_cse_simplify_set (rtx set, rtx_insn *insn)
 	      && !REG_P (SET_SRC (set))))
 	{
 	  if (extend_op != UNKNOWN
-#ifdef CANNOT_CHANGE_MODE_CLASS
-	      && !CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
-					    word_mode,
-					    REGNO_REG_CLASS (REGNO (SET_DEST (set))))
-#endif
-	      )
+	      && REG_CAN_CHANGE_MODE_P (REGNO (SET_DEST (set)),
+					GET_MODE (SET_DEST (set)), word_mode))
 	    {
 	      rtx wide_dest = gen_rtx_REG (word_mode, REGNO (SET_DEST (set)));
 	      ORIGINAL_REGNO (wide_dest) = ORIGINAL_REGNO (SET_DEST (set));
@@ -409,9 +405,12 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
       CLEAR_HARD_REG_SET (equiv_regs[i]);
 
       /* cselib blows up on CODE_LABELs.  Trying to fix that doesn't seem
-	 right, so avoid the problem here.  Likewise if we have a constant
-         and the insn pattern doesn't tell us the mode we need.  */
+	 right, so avoid the problem here.  Similarly NOTE_INSN_DELETED_LABEL.
+	 Likewise if we have a constant and the insn pattern doesn't tell us
+	 the mode we need.  */
       if (LABEL_P (recog_data.operand[i])
+	  || (NOTE_P (recog_data.operand[i])
+	      && NOTE_KIND (recog_data.operand[i]) == NOTE_INSN_DELETED_LABEL)
 	  || (CONSTANT_P (recog_data.operand[i])
 	      && recog_data.operand_mode[i] == VOIDmode))
 	continue;
@@ -434,15 +433,13 @@ reload_cse_simplify_operands (rtx_insn *insn, rtx testreg)
 		   || GET_CODE (SET_SRC (set)) == ZERO_EXTEND
 		   || GET_CODE (SET_SRC (set)) == SIGN_EXTEND)
 	    ; /* Continue ordinary processing.  */
-#ifdef CANNOT_CHANGE_MODE_CLASS
 	  /* If the register cannot change mode to word_mode, it follows that
 	     it cannot have been used in word_mode.  */
 	  else if (REG_P (SET_DEST (set))
-		   && CANNOT_CHANGE_MODE_CLASS (GET_MODE (SET_DEST (set)),
-						word_mode,
-						REGNO_REG_CLASS (REGNO (SET_DEST (set)))))
+		   && !REG_CAN_CHANGE_MODE_P (REGNO (SET_DEST (set)),
+					      GET_MODE (SET_DEST (set)),
+					      word_mode))
 	    ; /* Continue ordinary processing.  */
-#endif
 	  /* If this is a straight load, make the extension explicit.  */
 	  else if (REG_P (SET_DEST (set))
 		   && recog_data.n_operands == 2

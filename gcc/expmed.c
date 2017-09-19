@@ -1854,7 +1854,7 @@ extract_bit_field_1 (rtx str_rtx, unsigned HOST_WIDE_INT bitsize,
       && !reverse
       /* ??? We could limit the structure size to the part of OP0 that
 	 contains the field, with appropriate checks for endianness
-	 and TRULY_NOOP_TRUNCATION.  */
+	 and TARGET_TRULY_NOOP_TRUNCATION.  */
       && get_best_reg_extraction_insn (&extv, pattern,
 				       GET_MODE_BITSIZE (op0_mode.require ()),
 				       tmode))
@@ -2233,7 +2233,7 @@ extract_split_bit_field (rtx op0, opt_scalar_int_mode op0_mode,
        a zero extension
 
      - when MODE is smaller than SRC_MODE, the extraction involves
-       a truncation (and is thus subject to TRULY_NOOP_TRUNCATION).
+       a truncation (and is thus subject to TARGET_TRULY_NOOP_TRUNCATION).
 
    In other words, this routine performs a computation, whereas the
    gen_lowpart* routines are conceptually lvalue or rvalue subreg
@@ -5180,15 +5180,14 @@ make_tree (tree type, rtx x)
       {
 	int units = CONST_VECTOR_NUNITS (x);
 	tree itype = TREE_TYPE (type);
-	tree *elts;
 	int i;
 
 	/* Build a tree with vector elements.  */
-	elts = XALLOCAVEC (tree, units);
-	for (i = units - 1; i >= 0; --i)
+	auto_vec<tree, 32> elts (units);
+	for (i = 0; i < units; ++i)
 	  {
 	    rtx elt = CONST_VECTOR_ELT (x, i);
-	    elts[i] = make_tree (itype, elt);
+	    elts.quick_push (make_tree (itype, elt));
 	  }
 
 	return build_vector (type, elts);

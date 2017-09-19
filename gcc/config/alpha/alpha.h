@@ -479,29 +479,6 @@ enum reg_class {
 
 #define PREFERRED_RELOAD_CLASS  alpha_preferred_reload_class
 
-/* If we are copying between general and FP registers, we need a memory
-   location unless the FIX extension is available.  */
-
-#define SECONDARY_MEMORY_NEEDED(CLASS1,CLASS2,MODE) \
- (! TARGET_FIX && (((CLASS1) == FLOAT_REGS && (CLASS2) != FLOAT_REGS) \
-                   || ((CLASS2) == FLOAT_REGS && (CLASS1) != FLOAT_REGS)))
-
-/* Specify the mode to be used for memory when a secondary memory
-   location is needed.  If MODE is floating-point, use it.  Otherwise,
-   widen to a word like the default.  This is needed because we always
-   store integers in FP registers in quadword format.  This whole
-   area is very tricky! */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)		\
-  (GET_MODE_CLASS (MODE) == MODE_FLOAT ? (MODE)		\
-   : GET_MODE_SIZE (MODE) >= 4 ? (MODE)			\
-   : mode_for_size (BITS_PER_WORD, GET_MODE_CLASS (MODE), 0).require ())
-
-/* Return the class of registers that cannot change mode from FROM to TO.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		\
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO)			\
-   ? reg_classes_intersect_p (FLOAT_REGS, CLASS) : 0)
-
 /* Provide the cost of a branch.  Exact meaning under development.  */
 #define BRANCH_COST(speed_p, predictable_p) 5
 
@@ -822,10 +799,6 @@ do {									     \
 
 /* Define if loading short immediate values into registers sign extends.  */
 #define SHORT_IMMEDIATES_SIGN_EXTEND 1
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* The CIX ctlz and cttz instructions return 64 for zero.  */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE)  ((VALUE) = 64, \

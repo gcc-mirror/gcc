@@ -12945,22 +12945,21 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + size - 1) / size;
 }
 
-/* Implement CANNOT_CHANGE_MODE_CLASS.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-bool
-mips_cannot_change_mode_class (machine_mode from,
-			       machine_mode to,
-			       enum reg_class rclass)
+static bool
+mips_can_change_mode_class (machine_mode from,
+			    machine_mode to, reg_class_t rclass)
 {
   /* Allow conversions between different Loongson integer vectors,
      and between those vectors and DImode.  */
   if (GET_MODE_SIZE (from) == 8 && GET_MODE_SIZE (to) == 8
       && INTEGRAL_MODE_P (from) && INTEGRAL_MODE_P (to))
-    return false;
+    return true;
 
   /* Allow conversions between different MSA vector modes.  */
   if (MSA_SUPPORTED_MODE_P (from) && MSA_SUPPORTED_MODE_P (to))
-    return false;
+    return true;
 
   /* Otherwise, there are several problems with changing the modes of
      values in floating-point registers:
@@ -12985,7 +12984,7 @@ mips_cannot_change_mode_class (machine_mode from,
 
      We therefore disallow all mode changes involving FPRs.  */
 
-  return reg_classes_intersect_p (FP_REGS, rclass);
+  return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
 /* Implement target hook small_register_classes_for_mode_p.  */
@@ -13201,11 +13200,22 @@ mips_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 	  + memory_move_secondary_cost (mode, rclass, in));
 } 
 
-/* Implement SECONDARY_MEMORY_NEEDED.  */
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
-bool
-mips_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      machine_mode mode)
+   When targeting the o32 FPXX ABI, all moves with a length of doubleword
+   or greater must be performed by FR-mode-aware instructions.
+   This can be achieved using MFHC1/MTHC1 when these instructions are
+   available but otherwise moves must go via memory.
+   For the o32 FP64A ABI, all odd-numbered moves with a length of
+   doubleword or greater are required to use memory.  Using MTC1/MFC1
+   to access the lower-half of these registers would require a forbidden
+   single-precision access.  We require all double-word moves to use
+   memory because adding even and odd floating-point registers classes
+   would have a significant impact on the backend.  */
+
+static bool
+mips_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			      reg_class_t class2)
 {
   /* Ignore spilled pseudos.  */
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
@@ -22318,6 +22328,14 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   *punsignedp = unsignedp;
   return mode;
 }
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return !TARGET_64BIT || inprec <= 32 || outprec > 32;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22606,6 +22624,15 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 /* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
+
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED mips_secondary_memory_needed
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS mips_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

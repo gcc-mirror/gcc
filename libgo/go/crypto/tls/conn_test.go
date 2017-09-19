@@ -138,7 +138,7 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 
 		tlsConn := Client(clientConn, config)
 		if err := tlsConn.Handshake(); err != nil {
-			t.Errorf("Error from client handshake: %s", err)
+			t.Errorf("Error from client handshake: %v", err)
 			return
 		}
 
@@ -147,12 +147,12 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 		var recordSizes []int
 
 		for {
-			n, err := clientConn.Read(recordHeader[:])
+			n, err := io.ReadFull(clientConn, recordHeader[:])
 			if err == io.EOF {
 				break
 			}
 			if err != nil || n != len(recordHeader) {
-				t.Errorf("Error from client read: %s", err)
+				t.Errorf("io.ReadFull = %d, %v", n, err)
 				return
 			}
 
@@ -161,9 +161,9 @@ func runDynamicRecordSizingTest(t *testing.T, config *Config) {
 				record = make([]byte, length)
 			}
 
-			n, err = clientConn.Read(record[:length])
+			n, err = io.ReadFull(clientConn, record[:length])
 			if err != nil || n != length {
-				t.Errorf("Error from client read: %s", err)
+				t.Errorf("io.ReadFull = %d, %v", n, err)
 				return
 			}
 
@@ -240,4 +240,35 @@ func TestDynamicRecordSizingWithAEAD(t *testing.T) {
 	config := testConfig.Clone()
 	config.CipherSuites = []uint16{TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256}
 	runDynamicRecordSizingTest(t, config)
+}
+
+// hairpinConn is a net.Conn that makes a “hairpin” call when closed, back into
+// the tls.Conn which is calling it.
+type hairpinConn struct {
+	net.Conn
+	tlsConn *Conn
+}
+
+func (conn *hairpinConn) Close() error {
+	conn.tlsConn.ConnectionState()
+	return nil
+}
+
+func TestHairpinInClose(t *testing.T) {
+	// This tests that the underlying net.Conn can call back into the
+	// tls.Conn when being closed without deadlocking.
+	client, server := net.Pipe()
+	defer server.Close()
+	defer client.Close()
+
+	conn := &hairpinConn{client, nil}
+	tlsConn := Server(conn, &Config{
+		GetCertificate: func(*ClientHelloInfo) (*Certificate, error) {
+			panic("unreachable")
+		},
+	})
+	conn.tlsConn = tlsConn
+
+	// This call should not deadlock.
+	tlsConn.Close()
 }

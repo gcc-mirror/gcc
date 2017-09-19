@@ -1,3 +1,215 @@
+2017-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71500
+	* include/bits/regex_executor.tcc
+	(_Backref_matcher<BidIt, regex_traits<C>>::_M_apply): Use
+	std::__equal4 instead of C++14 4-iterator overloads of std::equal.
+	* include/bits/stl_algobase.h (__equal4): New functions implementing
+	4-iterator overloads of std::equal for use in C++11.
+	(equal(It1, It1, It2, It2), equal(It1, It1, It2, It2, BinaryPred)):
+	Move function bodies to new __equal4 functions.
+	* testsuite/28_regex/simple_c++11.cc: New.
+
+	PR libstdc++/82254
+	* include/std/type_traits (__is_invocable): Add partial specialization
+	for INVOKE<void> case and remove is_void<R> check from partial
+	specialization for INVOKE<R> case.
+	(__is_nt_invocable_impl): New helper for is_nothrow_invocable_r.
+	(is_nothrow_invocable_r): Use __is_nt_invocable_impl.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Add tests for
+	conversions that can throw or fail to convert. Use static assert
+	strings to explain negative results.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Use
+	is_nothrow_constructible in is_nt_invocable_conv.
+
+2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81468
+	* testsuite/20_util/duration/cons/dr1177.cc: Fix incorrect test and
+	improve static assertion messages.
+
+	* include/std/utility (_Itup_cat, _Make_integer_sequence): Remove.
+	(_Build_index_tuple, make_integer_sequence): Use built-in to generate
+	pack expansion.
+
+	PR libstdc++/71187
+	* include/std/type_traits (__declval): New function to deduce return
+	type of declval.
+	(__declval_protector::_delegate): Remove.
+	(declval): Use __declval instead of add_rvalue_reference and
+	__declval_protector::__delegate.
+	* testsuite/20_util/declval/requirements/1_neg.cc: Adjust dg-error
+	lineno.
+	* testsuite/20_util/make_signed/requirements/typedefs_neg.cc:
+	Likewise.
+	* testsuite/20_util/make_unsigned/requirements/typedefs_neg.cc:
+	Likewise.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libstdc++-prettyprinters/cxx17.cc: Use -std=c++17 or
+	-std=gnu++17 instead of -std=c++1z or -std=gnu++1z.  Use c++17 instead
+	of c++1z and c++17_only instead of c++1z_only.  Adjust expected
+	diagnostics and comments refering to 1z to 17.
+	* testsuite/30_threads/lock_guard/cons/deduction.cc: Likewise.
+	* testsuite/30_threads/scoped_lock/cons/deduction.cc: Likewise.
+	* testsuite/30_threads/scoped_lock/cons/1.cc: Likewise.
+	* testsuite/30_threads/scoped_lock/requirements/typedefs.cc: Likewise.
+	* testsuite/30_threads/scoped_lock/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/30_threads/unique_lock/cons/deduction.cc: Likewise.
+	* testsuite/18_support/launder/1.cc (test02): Likewise.
+	* testsuite/18_support/launder/requirements_neg.cc: Likewise.
+	* testsuite/18_support/launder/requirements.cc: Likewise.
+	* testsuite/18_support/byte/requirements.cc: Likewise.
+	* testsuite/18_support/byte/ops.cc: Likewise.
+	* testsuite/18_support/byte/global_neg.cc: Likewise.
+	* testsuite/18_support/uncaught_exceptions/uncaught_exceptions.cc:
+	Likewise.
+	* testsuite/27_io/types/4.cc: Likewise.
+	* testsuite/25_algorithms/sample/81221.cc: Likewise.
+	* testsuite/25_algorithms/sample/1.cc: Likewise.
+	* testsuite/25_algorithms/sample/2.cc: Likewise.
+	* testsuite/25_algorithms/search/searcher.cc: Likewise.
+	* testsuite/28_regex/basic_regex/ctors/deduction.cc: Likewise.
+	* testsuite/experimental/filesystem/path/construct/string_view.cc:
+	Likewise.
+	* testsuite/24_iterators/range_access_cpp17.cc: Likewise.
+	* testsuite/24_iterators/container_access.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/hash_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/hash_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/list_update_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/priority_queue_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_set_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/tree_map_rand.cc: Likewise.
+	* testsuite/ext/pb_ds/regression/trie_map_rand.cc: Likewise.
+	* testsuite/20_util/shared_ptr/casts/reinterpret.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/deduction.cc: Likewise.
+	* testsuite/20_util/shared_ptr/cons/array.cc: Likewise.
+	* testsuite/20_util/shared_ptr/observers/array.cc (struct A): Likewise.
+	* testsuite/20_util/pair/cons/deduction.cc: Likewise.
+	* testsuite/20_util/variant/deduction.cc: Likewise.
+	* testsuite/20_util/tuple/78939.cc: Likewise.
+	* testsuite/20_util/tuple/cons/deduction.cc: Likewise.
+	* testsuite/20_util/void_t/1.cc: Likewise.
+	* testsuite/20_util/duration/arithmetic/constexpr_c++17.cc: Likewise.
+	* testsuite/20_util/unique_ptr/cons/deduction_neg.cc: Likewise.
+	* testsuite/20_util/addressof/requirements/constexpr.cc: Likewise.
+	* testsuite/20_util/weak_ptr/cons/deduction.cc: Likewise.
+	* testsuite/20_util/has_unique_object_representations/requirements/typedefs.cc:
+	Likewise.
+	* testsuite/20_util/has_unique_object_representations/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/has_unique_object_representations/value.cc:
+	Likewise.
+	* testsuite/20_util/time_point/arithmetic/constexpr.cc: Likewise.
+	* testsuite/20_util/function_objects/invoke/59768.cc: Likewise.
+	* testsuite/20_util/function_objects/mem_fn/80478.cc: Likewise.
+	* testsuite/20_util/function/cons/deduction.cc: Likewise.
+	* testsuite/20_util/specialized_algorithms/memory_management_tools/destroy_neg.cc:
+	Likewise.
+	* testsuite/20_util/is_aggregate/requirements/typedefs.cc: Likewise.
+	* testsuite/20_util/is_aggregate/requirements/explicit_instantiation.cc:
+	Likewise.
+	* testsuite/20_util/is_aggregate/value.cc: Likewise.
+	* testsuite/26_numerics/lcm/1.cc: Likewise.
+	* testsuite/26_numerics/lcm/lcm_neg.cc: Likewise.
+	* testsuite/26_numerics/gcd/1.cc: Likewise.
+	* testsuite/26_numerics/gcd/gcd_neg.cc: Likewise.
+	* testsuite/26_numerics/valarray/deduction.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/types_std_c++0x_neg.cc: Likewise.
+	* testsuite/26_numerics/headers/cmath/hypot.cc: Likewise.
+	* testsuite/23_containers/queue/members/emplace_cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/array/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/array/cons/deduction_neg.cc: Likewise.
+	* testsuite/23_containers/deque/modifiers/emplace/cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/deque/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/stack/members/emplace_cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/list/modifiers/emplace/cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/list/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/forward_list/modifiers/emplace_cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/forward_list/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/unordered_set/allocator/ext_ptr.cc: Likewise.
+	* testsuite/23_containers/vector/modifiers/emplace/cxx17_return.cc:
+	Likewise.
+	* testsuite/23_containers/vector/cons/deduction.cc: Likewise.
+	* testsuite/23_containers/vector/bool/emplace_cxx17_return.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/char/9.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/deduction.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/char/79162.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/9.cc: Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/deduction.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string/cons/wchar_t/79162.cc: Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/char/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/modifiers/swap/wchar_t/1.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/2.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/char/70483.cc:
+	Likewise.
+	* testsuite/21_strings/basic_string_view/operations/compare/wchar_t/2.cc:
+	Likewise.
+	* testsuite/21_strings/char_traits/requirements/constexpr_functions_c++17.cc:
+	Likewise.
+
+2017-09-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/81468
+	* include/std/chrono (__enable_if_is_duration)
+	(__disable_if_is_duration): New alias templates to simplify SFINAE.
+	(duration_cast, floor, ceil): Use __enable_if_is_duration.
+	(duration::__is_float, duration::__is_harmonic): New alias templates
+	to simplify SFINAE.
+	(duration::duration(const _Rep2&)): Use _Require, __is_float and
+	__is_harmonic.
+	(duration::duration(const duration<_Rep2, _Period2>&)): Likewise.
+	(__common_rep_type): Remove, replace with ...
+	(__common_rep_t): New alias template.
+	(operator*, operator/, operator%): Use __common_rep_t and
+	__disable_if_is_duration.
+	(time_point::time_point(const time_point<clock, _Dur2>&)): Add missing
+	constraint from LWG DR 1177.
+	* testsuite/20_util/duration/cons/dr1177.cc: New.
+	* testsuite/20_util/duration/literals/range.cc: Update dg-error line.
+	* testsuite/20_util/duration/requirements/typedefs_neg1.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg2.cc: Likewise.
+	* testsuite/20_util/duration/requirements/typedefs_neg3.cc: Likewise.
+	* testsuite/20_util/time_point/cons/81468.cc: New.
+
+	* doc/doxygen/mainpage.html: Fix broken URLs.
+
+	PR libstdc++/81835
+	* doc/xml/manual/extensions.xml: Replace unstable URL.
+	* doc/html/manual/ext_demangling.html: Regenerate.
+	* libsupc++/cxxabi.h (__cxa_demangle): Fix broken URL.
+
+	* include/bits/allocated_ptr.h (__allocated_ptr::get): Use
+	__to_address.
+	(__allocated_ptr::_S_raw_ptr): Remove.
+	* include/bits/forward_list.h (_Fwd_list_base::_M_get_node): Use
+	__to_address.
+	* include/bits/hashtable_policy.h (_Hashtable_alloc): Likewise.
+	* include/bits/ptr_traits.h (__to_address): Define new function
+	template.
+	* include/bits/shared_ptr_base.h (__shared_ptr): Use __to_address.
+	(__shared_ptr::_S_raw_ptr): Remove.
+	* include/bits/stl_vector.h [__cplusplus >= 201103L]
+	(vector::_M_data_ptr): Use __to_address.
+	[__cplusplus < 201103L] (vector::_M_data_ptr): Don't dereference
+	possibly invalid pointers.
+	* include/ext/alloc_traits.h (__alloc_traits::construct)
+	(__alloc_traits::destroy): Use __to_address.
+
 2017-09-12  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79433
@@ -154,7 +366,7 @@
 2017-09-11  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
-	* include/bits/regex_executor.tcc: Support icase in regex_tratis<...>
+	* include/bits/regex_executor.tcc: Support icase in regex_traits<...>
 	for back reference matches.
 	* testsuite/28_regex/regression.cc: Test case.
 

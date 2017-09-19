@@ -3743,7 +3743,7 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   /* FIXME P0135 doesn't say what to do in C++17 about list-initialization from
      a single element.  For now, let's handle constructors as before and also
      consider conversion operators from the element.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && CONSTRUCTOR_NELTS (expr) == 1)
     fromtype = TREE_TYPE (CONSTRUCTOR_ELT (expr, 0)->value);
@@ -8035,7 +8035,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* In C++17 we shouldn't be copying a TARGET_EXPR except into a base
 	 subobject.  */
-      if (CHECKING_P && cxx_dialect >= cxx1z)
+      if (CHECKING_P && cxx_dialect >= cxx17)
 	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
 		    /* It's from binding the ref parm to a packed field. */
 		    || convs[0]->need_temporary_p
@@ -8792,7 +8792,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
      of the destination, the initializer expression is used to initialize the
      destination object."  Handle that here to avoid doing overload
      resolution.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && args && vec_safe_length (*args) == 1
       && name == complete_ctor_identifier)
     {

@@ -924,11 +924,9 @@ package Exp_Util is
    --  consist of constants, when the object has a nontrivial initialization
    --  or is controlled.
 
-   function Needs_Finalization (T : Entity_Id) return Boolean;
-   --  True if type T is controlled, or has controlled subcomponents. Also
-   --  True if T is a class-wide type, because some type extension might add
-   --  controlled subcomponents, except that if pragma Restrictions
-   --  (No_Finalization) applies, this is False for class-wide types.
+   function Needs_Finalization (Typ : Entity_Id) return Boolean;
+   --  Determine whether type Typ is controlled and this requires finalization
+   --  actions.
 
    function Non_Limited_Designated_Type (T : Entity_Id) return Entity_Id;
    --  An anonymous access type may designate a limited view. Check whether

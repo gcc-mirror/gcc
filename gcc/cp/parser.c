@@ -3163,9 +3163,9 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
       error_at (location,
 		"invalid use of template-name %qE without an argument list",
 		decl);
-      if (DECL_CLASS_TEMPLATE_P (decl) && cxx_dialect < cxx1z)
+      if (DECL_CLASS_TEMPLATE_P (decl) && cxx_dialect < cxx17)
 	inform (location, "class template argument deduction is only available "
-		"with -std=c++1z or -std=gnu++1z");
+		"with -std=c++17 or -std=gnu++17");
       inform (DECL_SOURCE_LOCATION (decl), "%qD declared here", decl);
     }
   else if (TREE_CODE (id) == BIT_NOT_EXPR)
@@ -5034,10 +5034,10 @@ cp_parser_primary_expression (cp_parser *parser,
 	  {
 	    expr = cp_parser_fold_expression (parser, expr);
 	    if (expr != error_mark_node
-		&& cxx_dialect < cxx1z
+		&& cxx_dialect < cxx17
 		&& !in_system_header_at (input_location))
 	      pedwarn (input_location, 0, "fold-expressions only available "
-		       "with -std=c++1z or -std=gnu++1z");
+		       "with -std=c++17 or -std=gnu++17");
 	  }
 	else
 	  /* Let the front end know that this expression was
@@ -10200,9 +10200,9 @@ cp_parser_lambda_introducer (cp_parser* parser, tree lambda_expr)
 	  && cp_lexer_nth_token_is_keyword (parser->lexer, 2, RID_THIS))
 	{
 	  location_t loc = cp_lexer_peek_token (parser->lexer)->location;
-	  if (cxx_dialect < cxx1z)
+	  if (cxx_dialect < cxx17)
 	    pedwarn (loc, 0, "%<*this%> capture only available with "
-			     "-std=c++1z or -std=gnu++1z");
+			     "-std=c++17 or -std=gnu++17");
 	  cp_lexer_consume_token (parser->lexer);
 	  cp_lexer_consume_token (parser->lexer);
 	  add_capture (lambda_expr,
@@ -10474,12 +10474,12 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr)
 
     if (lambda_specs.locations[ds_constexpr])
       {
-	if (cxx_dialect >= cxx1z)
+	if (cxx_dialect >= cxx17)
 	  return_type_specs.locations[ds_constexpr]
 	    = lambda_specs.locations[ds_constexpr];
 	else
 	  error_at (lambda_specs.locations[ds_constexpr], "%<constexpr%> "
-		    "lambda only available with -std=c++1z or -std=gnu++1z");
+		    "lambda only available with -std=c++17 or -std=gnu++17");
       }
 
     p = obstack_alloc (&declarator_obstack, 0);
@@ -11284,9 +11284,9 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	  {
 	    cx = true;
 	    cp_token *tok = cp_lexer_consume_token (parser->lexer);
-	    if (cxx_dialect < cxx1z && !in_system_header_at (tok->location))
+	    if (cxx_dialect < cxx17 && !in_system_header_at (tok->location))
 	      pedwarn (tok->location, 0, "%<if constexpr%> only available "
-		       "with -std=c++1z or -std=gnu++1z");
+		       "with -std=c++17 or -std=gnu++17");
 	  }
 
 	/* Look for the `('.  */
@@ -11310,10 +11310,10 @@ cp_parser_selection_statement (cp_parser* parser, bool *if_p,
 	if (cp_parser_init_statement_p (parser))
 	  {
 	    tree decl;
-	    if (cxx_dialect < cxx1z)
+	    if (cxx_dialect < cxx17)
 	      pedwarn (cp_lexer_peek_token (parser->lexer)->location, 0,
 		       "init-statement in selection statements only available "
-		       "with -std=c++1z or -std=gnu++1z");
+		       "with -std=c++17 or -std=gnu++17");
 	    cp_parser_init_statement (parser, &decl);
 	  }
 
@@ -11884,7 +11884,7 @@ cp_convert_range_for (tree statement, tree range_decl, tree range_expr,
 		  /*is_constant_init*/false, NULL_TREE,
 		  LOOKUP_ONLYCONVERTING);
 
-  if (cxx_dialect >= cxx1z)
+  if (cxx_dialect >= cxx17)
     iter_type = cv_unqualified (TREE_TYPE (end_expr));
   end = build_decl (input_location, VAR_DECL,
 		    get_identifier ("__for_end"), iter_type);
@@ -12024,7 +12024,7 @@ cp_parser_perform_range_for_lookup (tree range, tree *begin, tree *end)
 	     be the same, as required by the multiple auto declaration.  */
 	  if (!same_type_p (iter_type, cv_unqualified (TREE_TYPE (*end))))
 	    {
-	      if (cxx_dialect >= cxx1z
+	      if (cxx_dialect >= cxx17
 		  && (build_x_binary_op (input_location, NE_EXPR,
 					 *begin, ERROR_MARK,
 					 *end, ERROR_MARK,
@@ -13178,9 +13178,9 @@ cp_parser_decomposition_declaration (cp_parser *parser,
 	}
     }
 
-  if (cxx_dialect < cxx1z)
+  if (cxx_dialect < cxx17)
     pedwarn (loc, 0, "structured bindings only available with "
-		     "-std=c++1z or -std=gnu++1z");
+		     "-std=c++17 or -std=gnu++17");
 
   tree pushed_scope;
   cp_declarator *declarator = make_declarator (cdk_decomp);
@@ -13771,7 +13771,7 @@ cp_parser_linkage_specification (cp_parser* parser)
 
    static_assert-declaration:
      static_assert ( constant-expression , string-literal ) ; 
-     static_assert ( constant-expression ) ; (C++1Z)
+     static_assert ( constant-expression ) ; (C++17)
 
    If MEMBER_P, this static_assert is a class member.  */
 
@@ -13812,10 +13812,10 @@ cp_parser_static_assert(cp_parser *parser, bool member_p)
 
   if (cp_lexer_peek_token (parser->lexer)->type == CPP_CLOSE_PAREN)
     {
-      if (cxx_dialect < cxx1z)
+      if (cxx_dialect < cxx17)
 	pedwarn (input_location, OPT_Wpedantic,
 		 "static_assert without a message "
-		 "only available with -std=c++1z or -std=gnu++1z");
+		 "only available with -std=c++17 or -std=gnu++17");
       /* Eat the ')'  */
       cp_lexer_consume_token (parser->lexer);
       message = build_string (1, "");
@@ -17040,7 +17040,7 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 
       /* Don't gobble tokens or issue error messages if this is an
 	 optional type-specifier.  */
-      if ((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx1z)
+      if ((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
 	cp_parser_parse_tentatively (parser);
 
       token = cp_lexer_peek_token (parser->lexer);
@@ -17088,10 +17088,10 @@ cp_parser_simple_type_specifier (cp_parser* parser,
 	  && identifier_p (DECL_NAME (type)))
 	maybe_note_name_used_in_class (DECL_NAME (type), type);
       /* If it didn't work out, we don't have a TYPE.  */
-      if (((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx1z)
+      if (((flags & CP_PARSER_FLAGS_OPTIONAL) || cxx_dialect >= cxx17)
 	  && !cp_parser_parse_definitely (parser))
 	type = NULL_TREE;
-      if (!type && cxx_dialect >= cxx1z)
+      if (!type && cxx_dialect >= cxx17)
 	{
 	  if (flags & CP_PARSER_FLAGS_OPTIONAL)
 	    cp_parser_parse_tentatively (parser);
@@ -18425,10 +18425,10 @@ cp_parser_namespace_definition (cp_parser* parser)
       if (cp_lexer_next_token_is_not (parser->lexer, CPP_SCOPE))
 	break;
   
-      if (!nested_definition_count && cxx_dialect < cxx1z)
+      if (!nested_definition_count && cxx_dialect < cxx17)
         pedwarn (input_location, OPT_Wpedantic,
                  "nested namespace definitions only available with "
-                 "-std=c++1z or -std=gnu++1z");
+                 "-std=c++17 or -std=gnu++17");
 
       /* Nested namespace names can create new namespaces (unlike
 	 other qualified-ids).  */
@@ -18657,11 +18657,11 @@ cp_parser_using_declaration (cp_parser* parser,
   else if (cp_lexer_next_token_is (parser->lexer, CPP_ELLIPSIS))
     {
       cp_token *ell = cp_lexer_consume_token (parser->lexer);
-      if (cxx_dialect < cxx1z
+      if (cxx_dialect < cxx17
 	  && !in_system_header_at (ell->location))
 	pedwarn (ell->location, 0,
 		 "pack expansion in using-declaration only available "
-		 "with -std=c++1z or -std=gnu++1z");
+		 "with -std=c++17 or -std=gnu++17");
       qscope = make_pack_expansion (qscope);
     }
 
@@ -18720,10 +18720,10 @@ cp_parser_using_declaration (cp_parser* parser,
       && cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
     {
       cp_token *comma = cp_lexer_consume_token (parser->lexer);
-      if (cxx_dialect < cxx1z)
+      if (cxx_dialect < cxx17)
 	pedwarn (comma->location, 0,
 		 "comma-separated list in using-declaration only available "
-		 "with -std=c++1z or -std=gnu++1z");
+		 "with -std=c++17 or -std=gnu++17");
       goto again;
     }
 
@@ -19317,7 +19317,7 @@ cp_parser_init_declarator (cp_parser* parser,
       /* Handle C++17 deduction guides.  */
       if (!decl_specifiers->type
 	  && ctor_dtor_or_conv_p <= 0
-	  && cxx_dialect >= cxx1z)
+	  && cxx_dialect >= cxx17)
 	{
 	  cp_declarator *id = get_id_declarator (declarator);
 	  tree name = id->u.id.unqualified_name;
@@ -23085,12 +23085,12 @@ cp_parser_type_parameter_key (cp_parser* parser)
   if ((tag_type = cp_parser_token_is_type_parameter_key (token)) != none_type)
     {
       cp_lexer_consume_token (parser->lexer);
-      if (pedantic && tag_type == typename_type && cxx_dialect < cxx1z)
+      if (pedantic && tag_type == typename_type && cxx_dialect < cxx17)
 	/* typename is not allowed in a template template parameter
-	   by the standard until C++1Z.  */
+	   by the standard until C++17.  */
 	pedwarn (token->location, OPT_Wpedantic, 
 		 "ISO C++ forbids typename key in template template parameter;"
-		 " use -std=c++1z or -std=gnu++1z");
+		 " use -std=c++17 or -std=gnu++17");
     }
   else
     cp_parser_error (parser, "expected %<class%> or %<typename%>");
@@ -24122,9 +24122,9 @@ cp_parser_exception_specification_opt (cp_parser* parser)
       /* Restore the saved message.  */
       parser->type_definition_forbidden_message = saved_message;
 
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	{
-	  error_at (loc, "ISO C++1z does not allow dynamic exception "
+	  error_at (loc, "ISO C++17 does not allow dynamic exception "
 			 "specifications");
 	  type_id_list = NULL_TREE;
 	}
@@ -24136,7 +24136,7 @@ cp_parser_exception_specification_opt (cp_parser* parser)
   /* In C++17, throw() is equivalent to noexcept (true).  throw()
      is deprecated in C++11 and above as well, but is still widely used,
      so don't warn about it yet.  */
-  else if (cxx_dialect >= cxx1z)
+  else if (cxx_dialect >= cxx17)
     type_id_list = noexcept_true_spec;
   else
     type_id_list = empty_except_spec;
@@ -25133,11 +25133,11 @@ cp_parser_std_attribute_spec (cp_parser *parser)
 	  if (attr_ns
 	      && cp_lexer_nth_token_is (parser->lexer, 3, CPP_COLON))
 	    {
-	      if (cxx_dialect < cxx1z
+	      if (cxx_dialect < cxx17
 		  && !in_system_header_at (input_location))
 		pedwarn (input_location, 0,
 			 "attribute using prefix only available "
-			 "with -std=c++1z or -std=gnu++1z");
+			 "with -std=c++17 or -std=gnu++17");
 
 	      cp_lexer_consume_token (parser->lexer);
 	      cp_lexer_consume_token (parser->lexer);
@@ -26197,7 +26197,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
      nested-name-specifier.  Except in C++17 mode, where we
      might be declaring a guiding declaration.  */
   if (!nested_name_specifier && outside_class_specifier_p
-      && cxx_dialect < cxx1z)
+      && cxx_dialect < cxx17)
     constructor_p = false;
   else if (nested_name_specifier == error_mark_node)
     constructor_p = false;
@@ -26228,7 +26228,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 	   };
 
 	 we must recognize that the nested `S' names a class.  */
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	cp_parser_parse_tentatively (parser);
 
       tree type_decl;
@@ -26240,7 +26240,7 @@ cp_parser_constructor_declarator_p (cp_parser *parser, bool friend_p)
 					/*class_head_p=*/false,
 					/*is_declaration=*/false);
 
-      if (cxx_dialect >= cxx1z
+      if (cxx_dialect >= cxx17
 	  && !cp_parser_parse_definitely (parser))
 	{
 	  type_decl = NULL_TREE;

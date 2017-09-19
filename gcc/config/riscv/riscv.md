@@ -1307,7 +1307,8 @@
    (set_attr "mode" "HI")])
 
 ;; HImode constant generation; see riscv_move_integer for details.
-;; si+si->hi without truncation is legal because of TRULY_NOOP_TRUNCATION.
+;; si+si->hi without truncation is legal because of
+;; TARGET_TRULY_NOOP_TRUNCATION.
 
 (define_insn "*add<mode>hi3"
   [(set (match_operand:HI            0 "register_operand" "=r,r")

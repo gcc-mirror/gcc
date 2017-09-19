@@ -83,6 +83,16 @@ const pemTooFewEndingDashes = `
 dGVzdA==
 -----END FOO----`
 
+const pemTooManyEndingDashes = `
+-----BEGIN FOO-----
+dGVzdA==
+-----END FOO------`
+
+const pemTrailingNonWhitespace = `
+-----BEGIN FOO-----
+dGVzdA==
+-----END FOO----- .`
+
 const pemWrongEndingType = `
 -----BEGIN FOO-----
 dGVzdA==
@@ -100,6 +110,14 @@ var badPEMTests = []struct {
 	{
 		"too few trailing dashes",
 		pemTooFewEndingDashes,
+	},
+	{
+		"too many trailing dashes",
+		pemTooManyEndingDashes,
+	},
+	{
+		"trailing non-whitespace",
+		pemTrailingNonWhitespace,
 	},
 	{
 		"incorrect ending type",
@@ -188,10 +206,20 @@ func TestLineBreaker(t *testing.T) {
 }
 
 func TestFuzz(t *testing.T) {
+	// PEM is a text-based format. Assume header fields with leading/trailing spaces
+	// or embedded newlines will not round trip correctly and don't need to be tested.
+	isBad := func(s string) bool {
+		return strings.ContainsAny(s, "\r\n") || strings.TrimSpace(s) != s
+	}
+
 	testRoundtrip := func(block Block) bool {
-		for key := range block.Headers {
-			if strings.Contains(key, ":") {
-				// Keys with colons cannot be encoded.
+		if isBad(block.Type) {
+			return true
+		}
+		for key, val := range block.Headers {
+			// Reject bad key/val.
+			// Also, keys with colons cannot be encoded, because : is the key: val separator.
+			if isBad(key) || isBad(val) || strings.Contains(key, ":") {
 				return true
 			}
 		}

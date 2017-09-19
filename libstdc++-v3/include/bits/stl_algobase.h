@@ -1082,6 +1082,60 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       return true;
     }
 
+#if __cplusplus >= 201103L
+  // 4-iterator version of std::equal<It1, It2> for use in C++11.
+  template<typename _II1, typename _II2>
+    inline bool
+    __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
+    {
+      using _RATag = random_access_iterator_tag;
+      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
+      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
+	}
+
+      for (; __first1 != __last1 && __first2 != __last2;
+	  ++__first1, (void)++__first2)
+	if (!(*__first1 == *__first2))
+	  return false;
+      return __first1 == __last1 && __first2 == __last2;
+    }
+
+  // 4-iterator version of std::equal<It1, It2, BinaryPred> for use in C++11.
+  template<typename _II1, typename _II2, typename _BinaryPredicate>
+    inline bool
+    __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2,
+	     _BinaryPredicate __binary_pred)
+    {
+      using _RATag = random_access_iterator_tag;
+      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
+      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
+      if (_RAIters())
+	{
+	  auto __d1 = std::distance(__first1, __last1);
+	  auto __d2 = std::distance(__first2, __last2);
+	  if (__d1 != __d2)
+	    return false;
+	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
+				       __binary_pred);
+	}
+
+      for (; __first1 != __last1 && __first2 != __last2;
+	  ++__first1, (void)++__first2)
+	if (!bool(__binary_pred(*__first1, *__first2)))
+	  return false;
+      return __first1 == __last1 && __first2 == __last2;
+    }
+#endif // C++11
+
 #if __cplusplus > 201103L
 
 #define __cpp_lib_robust_nonmodifying_seq_ops 201304
@@ -1112,24 +1166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
-      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
-	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
-	    return false;
-	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2);
-	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!(*__first1 == *__first2))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      return _GLIBCXX_STD_A::__equal4(__first1, __last1, __first2, __last2);
     }
 
   /**
@@ -1159,27 +1196,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       __glibcxx_requires_valid_range(__first1, __last1);
       __glibcxx_requires_valid_range(__first2, __last2);
 
-      using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_IIter1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_IIter2>::iterator_category;
-      using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
-      if (_RAIters())
-	{
-	  auto __d1 = std::distance(__first1, __last1);
-	  auto __d2 = std::distance(__first2, __last2);
-	  if (__d1 != __d2)
-	    return false;
-	  return _GLIBCXX_STD_A::equal(__first1, __last1, __first2,
-				       __binary_pred);
-	}
-
-      for (; __first1 != __last1 && __first2 != __last2;
-	  ++__first1, (void)++__first2)
-	if (!bool(__binary_pred(*__first1, *__first2)))
-	  return false;
-      return __first1 == __last1 && __first2 == __last2;
+      return _GLIBCXX_STD_A::__equal4(__first1, __last1, __first2, __last2,
+				      __binary_pred);
     }
-#endif
+#endif // C++14
 
   /**
    *  @brief Performs @b dictionary comparison on ranges.

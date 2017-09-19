@@ -1389,17 +1389,12 @@ static enum reg_class rs6000_debug_secondary_reload_class (enum reg_class,
 static enum reg_class rs6000_preferred_reload_class (rtx, enum reg_class);
 static enum reg_class rs6000_debug_preferred_reload_class (rtx,
 							   enum reg_class);
-static bool rs6000_secondary_memory_needed (enum reg_class, enum reg_class,
-					    machine_mode);
-static bool rs6000_debug_secondary_memory_needed (enum reg_class,
-						  enum reg_class,
-						  machine_mode);
-static bool rs6000_cannot_change_mode_class (machine_mode,
-					     machine_mode,
-					     enum reg_class);
-static bool rs6000_debug_cannot_change_mode_class (machine_mode,
-						   machine_mode,
-						   enum reg_class);
+static bool rs6000_debug_secondary_memory_needed (machine_mode,
+						  reg_class_t,
+						  reg_class_t);
+static bool rs6000_debug_can_change_mode_class (machine_mode,
+						machine_mode,
+						reg_class_t);
 static bool rs6000_save_toc_in_prologue_p (void);
 static rtx rs6000_internal_arg_pointer (void);
 
@@ -1416,15 +1411,6 @@ enum reg_class (*rs6000_secondary_reload_class_ptr) (enum reg_class,
 
 enum reg_class (*rs6000_preferred_reload_class_ptr) (rtx, enum reg_class)
   = rs6000_preferred_reload_class;
-
-bool (*rs6000_secondary_memory_needed_ptr) (enum reg_class, enum reg_class,
-					    machine_mode)
-  = rs6000_secondary_memory_needed;
-
-bool (*rs6000_cannot_change_mode_class_ptr) (machine_mode,
-					     machine_mode,
-					     enum reg_class)
-  = rs6000_cannot_change_mode_class;
 
 const int INSN_NOT_AVAILABLE = -1;
 
@@ -1876,6 +1862,10 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD rs6000_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED rs6000_secondary_memory_needed
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE rs6000_secondary_memory_needed_mode
 
 #undef TARGET_LEGITIMATE_ADDRESS_P
 #define TARGET_LEGITIMATE_ADDRESS_P rs6000_legitimate_address_p
@@ -1981,6 +1971,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_SLOW_UNALIGNED_ACCESS
 #define TARGET_SLOW_UNALIGNED_ACCESS rs6000_slow_unaligned_access
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS rs6000_can_change_mode_class
 
 
 /* Processor table.  */
@@ -3905,7 +3898,8 @@ rs6000_builtin_mask_calculate (void)
 	  | ((TARGET_DFP)		    ? RS6000_BTM_DFP	   : 0)
 	  | ((TARGET_HARD_FLOAT)	    ? RS6000_BTM_HARD_FLOAT : 0)
 	  | ((TARGET_LONG_DOUBLE_128)	    ? RS6000_BTM_LDBL128   : 0)
-	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0));
+	  | ((TARGET_FLOAT128_TYPE)	    ? RS6000_BTM_FLOAT128  : 0)
+	  | ((TARGET_FLOAT128_HW)	    ? RS6000_BTM_FLOAT128_HW : 0));
 }
 
 /* Implement TARGET_MD_ASM_ADJUST.  All asm statements are considered
@@ -4714,10 +4708,10 @@ rs6000_option_override_internal (bool global_init_p)
 	  targetm.legitimize_address = rs6000_debug_legitimize_address;
 	  rs6000_secondary_reload_class_ptr
 	    = rs6000_debug_secondary_reload_class;
-	  rs6000_secondary_memory_needed_ptr
+	  targetm.secondary_memory_needed
 	    = rs6000_debug_secondary_memory_needed;
-	  rs6000_cannot_change_mode_class_ptr
-	    = rs6000_debug_cannot_change_mode_class;
+	  targetm.can_change_mode_class
+	    = rs6000_debug_can_change_mode_class;
 	  rs6000_preferred_reload_class_ptr
 	    = rs6000_debug_preferred_reload_class;
 	  rs6000_legitimize_reload_address_ptr
@@ -16109,6 +16103,9 @@ rs6000_invalid_builtin (enum rs6000_builtins fncode)
   else if ((fnmask & RS6000_BTM_HARD_FLOAT) != 0)
     error ("builtin function %qs requires the %qs option", name,
 	   "-mhard-float");
+  else if ((fnmask & RS6000_BTM_FLOAT128_HW) != 0)
+    error ("builtin function %qs requires ISA 3.0 IEEE 128-bit floating point",
+	   name);
   else if ((fnmask & RS6000_BTM_FLOAT128) != 0)
     error ("builtin function %qs requires the %qs option", name, "-mfloat128");
   else
@@ -16549,6 +16546,48 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	update_call_from_tree (gsi, res);
 	return true;
       }
+    /* Vector loads.  */
+    case ALTIVEC_BUILTIN_LVX_V16QI:
+    case ALTIVEC_BUILTIN_LVX_V8HI:
+    case ALTIVEC_BUILTIN_LVX_V4SI:
+    case ALTIVEC_BUILTIN_LVX_V4SF:
+    case ALTIVEC_BUILTIN_LVX_V2DI:
+    case ALTIVEC_BUILTIN_LVX_V2DF:
+      {
+	 arg0 = gimple_call_arg (stmt, 0);  // offset
+	 arg1 = gimple_call_arg (stmt, 1);  // address
+	 /* Do not fold for -maltivec=be on LE targets.  */
+	 if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
+	    return false;
+	 lhs = gimple_call_lhs (stmt);
+	 location_t loc = gimple_location (stmt);
+	 /* Since arg1 may be cast to a different type, just use ptr_type_node
+	    here instead of trying to enforce TBAA on pointer types.  */
+	 tree arg1_type = ptr_type_node;
+	 tree lhs_type = TREE_TYPE (lhs);
+	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	    the tree using the value from arg0.  The resulting type will match
+	    the type of arg1.  */
+	 gimple_seq stmts = NULL;
+	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg1_type, arg1, temp_offset);
+	 /* Mask off any lower bits from the address.  */
+	 tree aligned_addr = gimple_build (&stmts, loc, BIT_AND_EXPR,
+					  arg1_type, temp_addr,
+					  build_int_cst (arg1_type, -16));
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 /* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	    take an offset, but since we've already incorporated the offset
+	    above, here we just pass in a zero.  */
+	 gimple *g;
+	 g = gimple_build_assign (lhs, build2 (MEM_REF, lhs_type, aligned_addr,
+						build_int_cst (arg1_type, 0)));
+	 gimple_set_location (g, loc);
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
+
     default:
 	if (TARGET_DEBUG_BUILTIN)
 	   fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",
@@ -19242,10 +19281,9 @@ mems_ok_for_quad_peep (rtx mem1, rtx mem2)
   return 1;
 }
 
-/* Return the mode to be used for memory when a secondary memory
-   location is needed.  For SDmode values we need to use DDmode, in
-   all other cases we can use the same mode.  */
-machine_mode
+/* Implement TARGET_SECONDARY_RELOAD_NEEDED_MODE.  For SDmode values we
+   need to use DDmode, in all other cases we can use the same mode.  */
+static machine_mode
 rs6000_secondary_memory_needed_mode (machine_mode mode)
 {
   if (lra_in_progress && mode == SDmode)
@@ -20490,9 +20528,9 @@ rs6000_debug_preferred_reload_class (rtx x, enum reg_class rclass)
    set and vice versa.  */
 
 static bool
-rs6000_secondary_memory_needed (enum reg_class from_class,
-				enum reg_class to_class,
-				machine_mode mode)
+rs6000_secondary_memory_needed (machine_mode mode,
+				reg_class_t from_class,
+				reg_class_t to_class)
 {
   enum rs6000_reg_type from_type, to_type;
   bool altivec_p = ((from_class == ALTIVEC_REGS)
@@ -20516,11 +20554,11 @@ rs6000_secondary_memory_needed (enum reg_class from_class,
 
 /* Debug version of rs6000_secondary_memory_needed.  */
 static bool
-rs6000_debug_secondary_memory_needed (enum reg_class from_class,
-				      enum reg_class to_class,
-				      machine_mode mode)
+rs6000_debug_secondary_memory_needed (machine_mode mode,
+				      reg_class_t from_class,
+				      reg_class_t to_class)
 {
-  bool ret = rs6000_secondary_memory_needed (from_class, to_class, mode);
+  bool ret = rs6000_secondary_memory_needed (mode, from_class, to_class);
 
   fprintf (stderr,
 	   "rs6000_secondary_memory_needed, return: %s, from_class = %s, "
@@ -20642,12 +20680,12 @@ rs6000_debug_secondary_reload_class (enum reg_class rclass,
   return ret;
 }
 
-/* Return nonzero if for CLASS a mode change from FROM to TO is invalid.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
 static bool
-rs6000_cannot_change_mode_class (machine_mode from,
-				 machine_mode to,
-				 enum reg_class rclass)
+rs6000_can_change_mode_class (machine_mode from,
+			      machine_mode to,
+			      reg_class_t rclass)
 {
   unsigned from_size = GET_MODE_SIZE (from);
   unsigned to_size = GET_MODE_SIZE (to);
@@ -20671,31 +20709,31 @@ rs6000_cannot_change_mode_class (machine_mode from,
 	     values.  */
 
 	  if (to_float128_vector_p && from_float128_vector_p)
-	    return false;
+	    return true;
 
 	  else if (to_float128_vector_p || from_float128_vector_p)
-	    return true;
+	    return false;
 
 	  /* TDmode in floating-mode registers must always go into a register
 	     pair with the most significant word in the even-numbered register
 	     to match ISA requirements.  In little-endian mode, this does not
 	     match subreg numbering, so we cannot allow subregs.  */
 	  if (!BYTES_BIG_ENDIAN && (to == TDmode || from == TDmode))
-	    return true;
+	    return false;
 
 	  if (from_size < 8 || to_size < 8)
-	    return true;
+	    return false;
 
 	  if (from_size == 8 && (8 * to_nregs) != to_size)
-	    return true;
+	    return false;
 
 	  if (to_size == 8 && (8 * from_nregs) != from_size)
-	    return true;
+	    return false;
 
-	  return false;
+	  return true;
 	}
       else
-	return false;
+	return true;
     }
 
   /* Since the VSX register set includes traditional floating point registers
@@ -20709,28 +20747,28 @@ rs6000_cannot_change_mode_class (machine_mode from,
       unsigned num_regs = (from_size + 15) / 16;
       if (hard_regno_nregs (FIRST_FPR_REGNO, to) > num_regs
 	  || hard_regno_nregs (FIRST_FPR_REGNO, from) > num_regs)
-	return true;
+	return false;
 
-      return (from_size != 8 && from_size != 16);
+      return (from_size == 8 || from_size == 16);
     }
 
   if (TARGET_ALTIVEC && rclass == ALTIVEC_REGS
       && (ALTIVEC_VECTOR_MODE (from) + ALTIVEC_VECTOR_MODE (to)) == 1)
-    return true;
+    return false;
 
-  return false;
+  return true;
 }
 
-/* Debug version of rs6000_cannot_change_mode_class.  */
+/* Debug version of rs6000_can_change_mode_class.  */
 static bool
-rs6000_debug_cannot_change_mode_class (machine_mode from,
-				       machine_mode to,
-				       enum reg_class rclass)
+rs6000_debug_can_change_mode_class (machine_mode from,
+				    machine_mode to,
+				    reg_class_t rclass)
 {
-  bool ret = rs6000_cannot_change_mode_class (from, to, rclass);
+  bool ret = rs6000_can_change_mode_class (from, to, rclass);
 
   fprintf (stderr,
-	   "rs6000_cannot_change_mode_class, return %s, from = %s, "
+	   "rs6000_can_change_mode_class, return %s, from = %s, "
 	   "to = %s, rclass = %s\n",
 	   ret ? "true" : "false",
 	   GET_MODE_NAME (from), GET_MODE_NAME (to),
@@ -25013,24 +25051,23 @@ debug_stack_info (rs6000_stack_t *info)
 rtx
 rs6000_return_addr (int count, rtx frame)
 {
-  /* Currently we don't optimize very well between prolog and body
-     code and for PIC code the code can be actually quite bad, so
-     don't try to be too clever here.  */
+  /* We can't use get_hard_reg_initial_val for LR when count == 0 if LR
+     is trashed by the prologue, as it is for PIC on ABI_V4 and Darwin.  */
   if (count != 0
       || ((DEFAULT_ABI == ABI_V4 || DEFAULT_ABI == ABI_DARWIN) && flag_pic))
     {
       cfun->machine->ra_needs_full_frame = 1;
 
-      return
-	gen_rtx_MEM
-	  (Pmode,
-	   memory_address
-	   (Pmode,
-	    plus_constant (Pmode,
-			   copy_to_reg
-			   (gen_rtx_MEM (Pmode,
-					 memory_address (Pmode, frame))),
-			   RETURN_ADDRESS_OFFSET)));
+      if (count == 0)
+	/* FRAME is set to frame_pointer_rtx by the generic code, but that
+	   is good for loading 0(r1) only when !FRAME_GROWS_DOWNWARD.  */
+	frame = stack_pointer_rtx;
+      rtx prev_frame_addr = memory_address (Pmode, frame);
+      rtx prev_frame = copy_to_reg (gen_rtx_MEM (Pmode, prev_frame_addr));
+      rtx lr_save_off = plus_constant (Pmode,
+				       prev_frame, RETURN_ADDRESS_OFFSET);
+      rtx lr_save_addr = memory_address (Pmode, lr_save_off);
+      return gen_rtx_MEM (Pmode, lr_save_addr);
     }
 
   cfun->machine->ra_need_lr = 1;
@@ -36230,6 +36267,7 @@ static struct rs6000_opt_mask const rs6000_builtin_mask_names[] =
   { "hard-float",	 RS6000_BTM_HARD_FLOAT,	false, false },
   { "long-double-128",	 RS6000_BTM_LDBL128,	false, false },
   { "float128",		 RS6000_BTM_FLOAT128,   false, false },
+  { "float128-hw",	 RS6000_BTM_FLOAT128_HW,false, false },
 };
 
 /* Option variables that we want to support inside attribute((target)) and
@@ -37807,6 +37845,11 @@ rs6000_set_up_by_prologue (struct hard_reg_set_container *set)
     add_to_hard_reg_set (&set->set, Pmode, RS6000_PIC_OFFSET_TABLE_REGNUM);
   if (cfun->machine->split_stack_argp_used)
     add_to_hard_reg_set (&set->set, Pmode, 12);
+
+  /* Make sure the hard reg set doesn't include r2, which was possibly added
+     via PIC_OFFSET_TABLE_REGNUM.  */
+  if (TARGET_TOC)
+    remove_from_hard_reg_set (&set->set, Pmode, TOC_REGNUM);
 }
 
 

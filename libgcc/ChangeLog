@@ -1,3 +1,31 @@
+2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
+
+	config/i386/i386-asm.h (PASTE2): New macro.
+	(ASMNAME): Modify to use PASTE2.
+	(MS2SYSV_STUB_PREFIX): New macro for isa prefix.
+	(MS2SYSV_STUB_BEGIN, MS2SYSV_STUB_END): New macros for stub headers.
+	config/i386/resms64.S: Rename to a header file, use MS2SYSV_STUB_BEGIN
+	instead of HIDDEN_FUNC and MS2SYSV_STUB_END instead of FUNC_END.
+	config/i386/resms64f.S: Likewise.
+	config/i386/resms64fx.S: Likewise.
+	config/i386/resms64x.S: Likewise.
+	config/i386/savms64.S: Likewise.
+	config/i386/savms64f.S: Likewise.
+	config/i386/avx_resms64.S: New file that only defines a macro and
+	includes it's corresponding header file.
+	config/i386/avx_resms64f.S: Likewise.
+	config/i386/avx_resms64fx.S: Likewise.
+	config/i386/avx_resms64x.S: Likewise.
+	config/i386/avx_savms64.S: Likewise.
+	config/i386/avx_savms64f.S: Likewise.
+	config/i386/sse_resms64.S: Likewise.
+	config/i386/sse_resms64f.S: Likewise.
+	config/i386/sse_resms64fx.S: Likewise.
+	config/i386/sse_resms64x.S: Likewise.
+	config/i386/sse_savms64.S: Likewise.
+	config/i386/sse_savms64f.S: Likewise.
+	config/i386/t-msabi: Modified to add avx and sse versions of stubs.
+
 2017-09-01  Olivier Hainque  <hainque@adacore.com>
 
 	* config.host (*-*-vxworks7): Widen scope to vxworks7*.

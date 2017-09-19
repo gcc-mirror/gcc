@@ -10296,48 +10296,48 @@ package body Exp_Util is
    -- Needs_Finalization --
    ------------------------
 
-   function Needs_Finalization (T : Entity_Id) return Boolean is
-      function Has_Some_Controlled_Component (Rec : Entity_Id) return Boolean;
-      --  If type is not frozen yet, check explicitly among its components,
-      --  because the Has_Controlled_Component flag is not necessarily set.
+   function Needs_Finalization (Typ : Entity_Id) return Boolean is
+      function Has_Some_Controlled_Component
+        (Input_Typ : Entity_Id) return Boolean;
+      --  Determine whether type Input_Typ has at least one controlled
+      --  component.
 
       -----------------------------------
       -- Has_Some_Controlled_Component --
       -----------------------------------
 
       function Has_Some_Controlled_Component
-        (Rec : Entity_Id) return Boolean
+        (Input_Typ : Entity_Id) return Boolean
       is
          Comp : Entity_Id;
 
       begin
-         if Has_Controlled_Component (Rec) then
+         --  When a type is already frozen and has at least one controlled
+         --  component, or is manually decorated, it is sufficient to inspect
+         --  flag Has_Controlled_Component.
+
+         if Has_Controlled_Component (Input_Typ) then
             return True;
 
-         elsif not Is_Frozen (Rec) then
-            if Is_Record_Type (Rec) then
-               Comp := First_Entity (Rec);
+         --  Otherwise inspect the internals of the type
 
+         elsif not Is_Frozen (Input_Typ) then
+            if Is_Array_Type (Input_Typ) then
+               return Needs_Finalization (Component_Type (Input_Typ));
+
+            elsif Is_Record_Type (Input_Typ) then
+               Comp := First_Component (Input_Typ);
                while Present (Comp) loop
-                  if not Is_Type (Comp)
-                    and then Needs_Finalization (Etype (Comp))
-                  then
+                  if Needs_Finalization (Etype (Comp)) then
                      return True;
                   end if;
 
-                  Next_Entity (Comp);
+                  Next_Component (Comp);
                end loop;
-
-               return False;
-
-            else
-               return
-                 Is_Array_Type (Rec)
-                   and then Needs_Finalization (Component_Type (Rec));
             end if;
-         else
-            return False;
          end if;
+
+         return False;
       end Has_Some_Controlled_Component;
 
    --  Start of processing for Needs_Finalization
@@ -10349,32 +10349,34 @@ package body Exp_Util is
       if Restriction_Active (No_Finalization) then
          return False;
 
-      --  C++ types are not considered controlled. It is assumed that the
-      --  non-Ada side will handle their clean up.
+      --  C++ types are not considered controlled. It is assumed that the non-
+      --  Ada side will handle their clean up.
 
-      elsif Convention (T) = Convention_CPP then
+      elsif Convention (Typ) = Convention_CPP then
          return False;
 
-      --  Never needs finalization if Disable_Controlled set
+      --  Class-wide types are treated as controlled because derivations from
+      --  the root type may introduce controlled components.
 
-      elsif Disable_Controlled (T) then
-         return False;
+      elsif Is_Class_Wide_Type (Typ) then
+         return True;
 
-      elsif Is_Class_Wide_Type (T) and then Disable_Controlled (Etype (T)) then
-         return False;
+      --  Concurrent types are controlled as long as their corresponding record
+      --  is controlled.
+
+      elsif Is_Concurrent_Type (Typ)
+        and then Present (Corresponding_Record_Type (Typ))
+        and then Needs_Finalization (Corresponding_Record_Type (Typ))
+      then
+         return True;
+
+      --  Otherwise the type is controlled when it is either derived from type
+      --  [Limited_]Controlled and not subject to aspect Disable_Controlled, or
+      --  contains at least one controlled component.
 
       else
-         --  Class-wide types are treated as controlled because derivations
-         --  from the root type can introduce controlled components.
-
          return
-           Is_Class_Wide_Type (T)
-             or else Is_Controlled (T)
-             or else Has_Some_Controlled_Component (T)
-             or else
-               (Is_Concurrent_Type (T)
-                 and then Present (Corresponding_Record_Type (T))
-                 and then Needs_Finalization (Corresponding_Record_Type (T)));
+           Is_Controlled (Typ) or else Has_Some_Controlled_Component (Typ);
       end if;
    end Needs_Finalization;
 
@@ -10387,7 +10389,6 @@ package body Exp_Util is
       Typ  : Entity_Id) return Boolean
    is
    begin
-
       --  If we have no initialization of any kind, then we don't need to place
       --  any restrictions on the address clause, because the object will be
       --  elaborated after the address clause is evaluated. This happens if the

@@ -1014,7 +1014,7 @@ add_method (tree type, tree method, bool via_using)
   /* Maintain TYPE_HAS_USER_CONSTRUCTOR, etc.  */
   grok_special_member_properties (method);
 
-  tree *slot = get_method_slot (type, DECL_NAME (method));
+  tree *slot = get_member_slot (type, DECL_NAME (method));
   tree current_fns = *slot;
 
   gcc_assert (!DECL_EXTERN_C_P (method));
@@ -2818,10 +2818,10 @@ check_for_override (tree decl, tree ctype)
 static void
 warn_hidden (tree t)
 {
-  if (vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (t))
-    for (unsigned ix = method_vec->length (); ix--;)
+  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (t))
+    for (unsigned ix = member_vec->length (); ix--;)
       {
-	tree fns = (*method_vec)[ix];
+	tree fns = (*member_vec)[ix];
 
 	if (!OVL_P (fns))
 	  continue;
@@ -4317,7 +4317,7 @@ build_base_field (record_layout_info rli, tree binfo,
 	 back end issues with overlapping FIELD_DECLs, but that doesn't seem to
 	 be a problem anymore.  We need them to handle initialization of C++17
 	 aggregate bases.  */
-      if (cxx_dialect >= cxx1z && !BINFO_VIRTUAL_P (binfo))
+      if (cxx_dialect >= cxx17 && !BINFO_VIRTUAL_P (binfo))
 	{
 	  tree decl = build_base_field_1 (t, basetype, next_field);
 	  DECL_FIELD_OFFSET (decl) = BINFO_OFFSET (binfo);
@@ -4594,7 +4594,7 @@ decl_cloned_function_p (const_tree decl, bool just_testing)
 
 /* Produce declarations for all appropriate clones of FN.  If
    UPDATE_METHODS is true, the clones are added to the
-   CLASSTYPE_METHOD_VEC.  */
+   CLASSTYPE_MEMBER_VEC.  */
 
 void
 clone_function_decl (tree fn, bool update_methods)
@@ -5351,7 +5351,7 @@ finalize_literal_type_property (tree t)
       || TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     CLASSTYPE_LITERAL_P (t) = false;
   else if (CLASSTYPE_LITERAL_P (t) && LAMBDA_TYPE_P (t))
-    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx1z);
+    CLASSTYPE_LITERAL_P (t) = (cxx_dialect >= cxx17);
   else if (CLASSTYPE_LITERAL_P (t) && !TYPE_HAS_TRIVIAL_DFLT (t)
 	   && CLASSTYPE_NON_AGGREGATE (t)
 	   && !TYPE_HAS_CONSTEXPR_CTOR (t))
@@ -5394,9 +5394,9 @@ explain_non_literal_class (tree t)
     return;
 
   inform (0, "%q+T is not literal because:", t);
-  if (cxx_dialect < cxx1z && LAMBDA_TYPE_P (t))
+  if (cxx_dialect < cxx17 && LAMBDA_TYPE_P (t))
     inform (0, "  %qT is a closure type, which is only literal in "
-	    "C++1z and later", t);
+	    "C++17 and later", t);
   else if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
     inform (0, "  %q+T has a non-trivial destructor", t);
   else if (CLASSTYPE_NON_AGGREGATE (t)

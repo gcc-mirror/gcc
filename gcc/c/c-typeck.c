@@ -2909,7 +2909,7 @@ c_expr_sizeof_expr (location_t loc, struct c_expr expr)
 	  if (warning_at (loc, OPT_Wsizeof_array_argument,
 			  "%<sizeof%> on array function parameter %qE will "
 			  "return size of %qT", expr.value,
-			  expr.original_type))
+			  TREE_TYPE (expr.value)))
 	    inform (DECL_SOURCE_LOCATION (expr.value), "declared here");
 	}
       tree folded_expr = c_fully_fold (expr.value, require_constant_value,
@@ -4866,7 +4866,9 @@ ep_convert_and_check (location_t loc, tree type, tree expr,
   if (TREE_TYPE (expr) == type)
     return expr;
 
-  if (!semantic_type)
+  /* For C11, integer conversions may have results with excess
+     precision.  */
+  if (flag_isoc11 || !semantic_type)
     return convert_and_check (loc, type, expr);
 
   if (TREE_CODE (TREE_TYPE (expr)) == INTEGER_TYPE
@@ -4994,7 +4996,31 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 	   && (code2 == INTEGER_TYPE || code2 == REAL_TYPE
 	       || code2 == COMPLEX_TYPE))
     {
-      result_type = c_common_type (type1, type2);
+      /* In C11, a conditional expression between a floating-point
+	 type and an integer type should convert the integer type to
+	 the evaluation format of the floating-point type, with
+	 possible excess precision.  */
+      tree eptype1 = type1;
+      tree eptype2 = type2;
+      if (flag_isoc11)
+	{
+	  tree eptype;
+	  if (ANY_INTEGRAL_TYPE_P (type1)
+	      && (eptype = excess_precision_type (type2)) != NULL_TREE)
+	    {
+	      eptype2 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	  else if (ANY_INTEGRAL_TYPE_P (type2)
+		   && (eptype = excess_precision_type (type1)) != NULL_TREE)
+	    {
+	      eptype1 = eptype;
+	      if (!semantic_result_type)
+		semantic_result_type = c_common_type (type1, type2);
+	    }
+	}
+      result_type = c_common_type (eptype1, eptype2);
       if (result_type == error_mark_node)
 	return error_mark_node;
       do_warn_double_promotion (result_type, type1, type2,
@@ -5578,7 +5604,7 @@ build_c_cast (location_t loc, tree type, tree expr)
 	}
 
       /* Warn about possible alignment problems.  */
-      if (STRICT_ALIGNMENT
+      if ((STRICT_ALIGNMENT || warn_cast_align == 2)
 	  && TREE_CODE (type) == POINTER_TYPE
 	  && TREE_CODE (otype) == POINTER_TYPE
 	  && TREE_CODE (TREE_TYPE (otype)) != VOID_TYPE
@@ -5587,7 +5613,8 @@ build_c_cast (location_t loc, tree type, tree expr)
 	     restriction is unknown.  */
 	  && !(RECORD_OR_UNION_TYPE_P (TREE_TYPE (otype))
 	       && TYPE_MODE (TREE_TYPE (otype)) == VOIDmode)
-	  && TYPE_ALIGN (TREE_TYPE (type)) > TYPE_ALIGN (TREE_TYPE (otype)))
+	  && min_align_of_type (TREE_TYPE (type))
+	     > min_align_of_type (TREE_TYPE (otype)))
 	warning_at (loc, OPT_Wcast_align,
 		    "cast increases required alignment of target type");
 

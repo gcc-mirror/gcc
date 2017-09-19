@@ -34,7 +34,7 @@ end module
 
   real, allocatable :: matrix (:,:)
   type(thytype(ftype, 4, 4)) :: w
-  type(x(8,4,mat_dim)) :: q
+  type(x(8,4,256)) :: q
   class(mytype(ftype, :)), allocatable :: cz
 
   w%d = reshape ([(real(i), i = 1, d_dim*d_dim)],[d_dim,d_dim])

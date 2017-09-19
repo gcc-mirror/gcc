@@ -6,6 +6,15 @@
 // easier to remap stdin and stdout, connect I/O with pipes, and do other
 // adjustments.
 //
+// Unlike the "system" library call from C and other languages, the
+// os/exec package intentionally does not invoke the system shell and
+// does not expand any glob patterns or handle other expansions,
+// pipelines, or redirections typically done by shells. The package
+// behaves more like C's "exec" family of functions. To expand glob
+// patterns, either call the shell directly, taking care to escape any
+// dangerous input, or use the path/filepath package's Glob function.
+// To expand environment variables, use package os's ExpandEnv.
+//
 // Note that the examples in this package assume a Unix system.
 // They may not run on Windows, and they do not run in the Go Playground
 // used by golang.org and godoc.org.
@@ -55,7 +64,11 @@ type Cmd struct {
 	Args []string
 
 	// Env specifies the environment of the process.
-	// If Env is nil, Run uses the current process's environment.
+	// Each entry is of the form "key=value".
+	// If Env is nil, the new process uses the current process's
+	// environment.
+	// If Env contains duplicate environment keys, only the last
+	// value in the slice for each duplicate key is used.
 	Env []string
 
 	// Dir specifies the working directory of the command.
@@ -79,17 +92,14 @@ type Cmd struct {
 	// If either is nil, Run connects the corresponding file descriptor
 	// to the null device (os.DevNull).
 	//
-	// If Stdout and Stderr are the same writer, at most one
-	// goroutine at a time will call Write.
+	// If Stdout and Stderr are the same writer, and have a type that can be compared with ==,
+	// at most one goroutine at a time will call Write.
 	Stdout io.Writer
 	Stderr io.Writer
 
 	// ExtraFiles specifies additional open files to be inherited by the
 	// new process. It does not include standard input, standard output, or
 	// standard error. If non-nil, entry i becomes file descriptor 3+i.
-	//
-	// BUG(rsc): On OS X 10.6, child processes may sometimes inherit unwanted fds.
-	// https://golang.org/issue/2603
 	ExtraFiles []*os.File
 
 	// SysProcAttr holds optional, operating system-specific attributes.
@@ -270,9 +280,8 @@ func (c *Cmd) closeDescriptors(closers []io.Closer) {
 // copying stdin, stdout, and stderr, and exits with a zero exit
 // status.
 //
-// If the command fails to run or doesn't complete successfully, the
-// error is of type *ExitError. Other error types may be
-// returned for I/O problems.
+// If the command starts but does not complete successfully, the error is of
+// type *ExitError. Other error types may be returned for other situations.
 func (c *Cmd) Run() error {
 	if err := c.Start(); err != nil {
 		return err
@@ -354,7 +363,7 @@ func (c *Cmd) Start() error {
 	c.Process, err = os.StartProcess(c.Path, c.argv(), &os.ProcAttr{
 		Dir:   c.Dir,
 		Files: c.childFiles,
-		Env:   c.envv(),
+		Env:   dedupEnv(c.envv()),
 		Sys:   c.SysProcAttr,
 	})
 	if err != nil {
@@ -407,8 +416,10 @@ func (e *ExitError) Error() string {
 	return e.ProcessState.String()
 }
 
-// Wait waits for the command to exit.
-// It must have been started by Start.
+// Wait waits for the command to exit and waits for any copying to
+// stdin or copying from stdout or stderr to complete.
+//
+// The command must have been started by Start.
 //
 // The returned error is nil if the command runs, has no problems
 // copying stdin, stdout, and stderr, and exits with a zero exit
@@ -711,4 +722,36 @@ func minInt(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// dedupEnv returns a copy of env with any duplicates removed, in favor of
+// later values.
+// Items not of the normal environment "key=value" form are preserved unchanged.
+func dedupEnv(env []string) []string {
+	return dedupEnvCase(runtime.GOOS == "windows", env)
+}
+
+// dedupEnvCase is dedupEnv with a case option for testing.
+// If caseInsensitive is true, the case of keys is ignored.
+func dedupEnvCase(caseInsensitive bool, env []string) []string {
+	out := make([]string, 0, len(env))
+	saw := map[string]int{} // key => index into out
+	for _, kv := range env {
+		eq := strings.Index(kv, "=")
+		if eq < 0 {
+			out = append(out, kv)
+			continue
+		}
+		k := kv[:eq]
+		if caseInsensitive {
+			k = strings.ToLower(k)
+		}
+		if dupIdx, isDup := saw[k]; isDup {
+			out[dupIdx] = kv
+			continue
+		}
+		saw[k] = len(out)
+		out = append(out, kv)
+	}
+	return out
 }

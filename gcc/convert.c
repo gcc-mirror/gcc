@@ -873,7 +873,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		break;
 
 	      if (outprec >= BITS_PER_WORD
-		  || TRULY_NOOP_TRUNCATION (outprec, inprec)
+		  || targetm.truly_noop_truncation (outprec, inprec)
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
 		{

@@ -3130,6 +3130,20 @@ has an instruction for the division, and 2 if it does not.",
  unsigned int, (machine_mode mode),
  default_min_divisions_for_recip_mul)
 
+DEFHOOK
+(truly_noop_truncation,
+ "This hook returns true if it is safe to ``convert'' a value of\n\
+@var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is\n\
+smaller than @var{inprec}) by merely operating on it as if it had only\n\
+@var{outprec} bits.  The default returns true unconditionally, which\n\
+is correct for most machines.\n\
+\n\
+If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
+suboptimal code can result if this hook returns true for the corresponding\n\
+mode sizes.  Making this hook return false in such cases may improve things.",
+ bool, (unsigned int outprec, unsigned int inprec),
+ hook_bool_uint_uint_true)
+
 /* If the representation of integral MODE is such that values are
    always sign-extended to a wider mode MODE_REP then return
    SIGN_EXTEND.  Return UNKNOWN otherwise.  */
@@ -3151,7 +3165,7 @@ widest integral mode and currently we take advantage of this fact.)\n\
 Similarly to @code{LOAD_EXTEND_OP} you may return a non-@code{UNKNOWN}\n\
 value even if the extension is not performed on certain hard registers\n\
 as long as for the @code{REGNO_REG_CLASS} of these hard registers\n\
-@code{CANNOT_CHANGE_MODE_CLASS} returns nonzero.\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} returns false.\n\
 \n\
 Note that @code{TARGET_MODE_REP_EXTENDED} and @code{LOAD_EXTEND_OP}\n\
 describe two related properties.  If you define\n\
@@ -3160,7 +3174,7 @@ to define @code{LOAD_EXTEND_OP (mode)} to return the same type of\n\
 extension.\n\
 \n\
 In order to enforce the representation of @code{mode},\n\
-@code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
+@code{TARGET_TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
  int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
@@ -4559,6 +4573,16 @@ used for arguments without any special help.",
  default_function_arg_advance)
 
 DEFHOOK
+(function_arg_offset,
+ "This hook returns the number of bytes to add to the offset of an\n\
+argument of type @var{type} and mode @var{mode} when passed in memory.\n\
+This is needed for the SPU, which passes @code{char} and @code{short}\n\
+arguments in the preferred slot that is in the middle of the quad word\n\
+instead of starting at the top.  The default implementation returns 0.",
+ HOST_WIDE_INT, (machine_mode mode, const_tree type),
+ default_function_arg_offset)
+
+DEFHOOK
 (function_arg_padding,
  "This hook determines whether, and in which direction, to pad out\n\
 an argument of mode @var{mode} and type @var{type}.  It returns\n\
@@ -5043,6 +5067,38 @@ This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+DEFHOOK
+(can_change_mode_class,
+ "This hook returns true if it is possible to bitcast values held in\n\
+registers of class @var{rclass} from mode @var{from} to mode @var{to}\n\
+and if doing so preserves the low-order bits that are common to both modes.\n\
+The result is only meaningful if @var{rclass} has registers that can hold\n\
+both @code{from} and @code{to}.  The default implementation returns true.\n\
+\n\
+As an example of when such bitcasting is invalid, loading 32-bit integer or\n\
+floating-point objects into floating-point registers on Alpha extends them\n\
+to 64 bits.  Therefore loading a 64-bit object and then storing it as a\n\
+32-bit object does not store the low-order 32 bits, as would be the case\n\
+for a normal register.  Therefore, @file{alpha.h} defines\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} to return:\n\
+\n\
+@smallexample\n\
+(GET_MODE_SIZE (from) == GET_MODE_SIZE (to)\n\
+ || !reg_classes_intersect_p (FLOAT_REGS, rclass))\n\
+@end smallexample\n\
+\n\
+Even if storing from a register in mode @var{to} would be valid,\n\
+if both @var{from} and @code{raw_reg_mode} for @var{rclass} are wider\n\
+than @code{word_mode}, then we must prevent @var{to} narrowing the\n\
+mode.  This happens when the middle-end assumes that it can load\n\
+or store pieces of an @var{N}-word pseudo, and that the pseudo will\n\
+eventually be allocated to @var{N} @code{word_mode} hard registers.\n\
+Failure to prevent this kind of mode change will result in the\n\
+entire @code{raw_reg_mode} being modified instead of the partial\n\
+value that the middle-end intended.",
+ bool, (machine_mode from, machine_mode to, reg_class_t rclass),
+ hook_bool_mode_mode_reg_class_t_true)
+
 /* Change pseudo allocno class calculated by IRA.  */
 DEFHOOK
 (ira_change_pseudo_allocno_class,
@@ -5252,7 +5308,7 @@ in memory and the hard register number if it is in a register.\n\
 \n\
 Scratch operands in memory (constraint @code{\"=m\"} / @code{\"=&m\"}) are\n\
 currently not supported.  For the time being, you will have to continue\n\
-to use @code{SECONDARY_MEMORY_NEEDED} for that purpose.\n\
+to use @code{TARGET_SECONDARY_MEMORY_NEEDED} for that purpose.\n\
 \n\
 @code{copy_cost} also uses this target hook to find out how values are\n\
 copied.  If you want it to include some extra cost for the need to allocate\n\
@@ -5264,6 +5320,42 @@ forwarding logic, you can set @code{sri->extra_cost} to a negative amount.",
  (bool in_p, rtx x, reg_class_t reload_class, machine_mode reload_mode,
   secondary_reload_info *sri),
  default_secondary_reload)
+
+DEFHOOK
+(secondary_memory_needed,
+ "Certain machines have the property that some registers cannot be copied\n\
+to some other registers without using memory.  Define this hook on\n\
+those machines to return true if objects of mode @var{m} in registers\n\
+of @var{class1} can only be copied to registers of class @var{class2} by\n\
+ storing a register of @var{class1} into memory and loading that memory\n\
+location into a register of @var{class2}.  The default definition returns\n\
+false for all inputs.",
+ bool, (machine_mode mode, reg_class_t class1, reg_class_t class2),
+ hook_bool_mode_reg_class_t_reg_class_t_false)
+
+DEFHOOK
+(secondary_memory_needed_mode,
+ "If @code{TARGET_SECONDARY_MEMORY_NEEDED} tells the compiler to use memory\n\
+when moving between two particular registers of mode @var{mode},\n\
+this hook specifies the mode that the memory should have.\n\
+\n\
+The default depends on @code{TARGET_LRA_P}.  Without LRA, the default\n\
+is to use a word-sized mode for integral modes that are smaller than a\n\
+a word.  This is right thing to do on most machines because it ensures\n\
+that all bits of the register are copied and prevents accesses to the\n\
+registers in a narrower mode, which some machines prohibit for\n\
+floating-point registers.\n\
+\n\
+However, this default behavior is not correct on some machines, such as\n\
+the DEC Alpha, that store short integers in floating-point registers\n\
+differently than in integer registers.  On those machines, the default\n\
+widening will not work correctly and you must define this hook to\n\
+suppress that widening in some cases.  See the file @file{alpha.c} for\n\
+details.\n\
+\n\
+With LRA, the default is to use @var{mode} unmodified.",
+ machine_mode, (machine_mode mode),
+ default_secondary_memory_needed_mode)
 
 /* Given an rtx X being reloaded into a reg required to be in class CLASS,
    return the class of reg to actually use.  */
@@ -5430,8 +5522,8 @@ DEFHOOK
 at register number @var{regno}, required to hold a value of mode\n\
 @var{mode}.  This hook must never return zero, even if a register\n\
 cannot hold the requested mode - indicate that with\n\
-@code{TARGET_HARD_REGNO_MODE_OK} and/or @code{CANNOT_CHANGE_MODE_CLASS}\n\
-instead.\n\
+@code{TARGET_HARD_REGNO_MODE_OK} and/or\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} instead.\n\
 \n\
 The default definition returns the number of words in @var{mode}.",
  unsigned int, (unsigned int regno, machine_mode mode),

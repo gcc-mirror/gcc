@@ -9563,6 +9563,7 @@
   [(set_attr "conds" "set")
    (set_attr "predicable" "no")
    (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_depr_it" "yes,no,no,no,no,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
@@ -9645,6 +9646,7 @@
   "
   [(set_attr "conds" "set")
    (set_attr "arch" "t2,t2,t2,t2,t2,any,any,any,any")
+   (set_attr "enabled_for_depr_it" "yes,no,no,no,no,no,no,no,no")
    (set_attr_alternative "length"
       [(const_int 6)
        (const_int 8)
@@ -9667,13 +9669,13 @@
 )
 
 (define_insn_and_split "*ior_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts,Ts")
 	(ior:SI (match_operator:SI 3 "arm_comparison_operator"
-		 [(match_operand:SI 1 "s_register_operand" "r")
-		  (match_operand:SI 2 "arm_add_operand" "rIL")])
+		 [(match_operand:SI 1 "s_register_operand" "l,r")
+		  (match_operand:SI 2 "arm_add_operand" "lPy,rIL")])
 		(match_operator:SI 6 "arm_comparison_operator"
-		 [(match_operand:SI 4 "s_register_operand" "r")
-		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
+		 [(match_operand:SI 4 "s_register_operand" "l,r")
+		  (match_operand:SI 5 "arm_add_operand" "lPy,rIL")])))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_OR_Y)
@@ -9692,6 +9694,7 @@
 						  DOM_CC_X_OR_Y),
 		    CC_REGNUM);"
   [(set_attr "conds" "clob")
+   (set_attr "enabled_for_depr_it" "yes,no")
    (set_attr "length" "16")
    (set_attr "type" "multiple")]
 )
@@ -9701,13 +9704,13 @@
 (define_insn_and_split "*ior_scc_scc_cmp"
   [(set (match_operand 0 "dominant_cc_register" "")
 	(compare (ior:SI (match_operator:SI 3 "arm_comparison_operator"
-			  [(match_operand:SI 1 "s_register_operand" "r")
-			   (match_operand:SI 2 "arm_add_operand" "rIL")])
+			  [(match_operand:SI 1 "s_register_operand" "l,r")
+			   (match_operand:SI 2 "arm_add_operand" "lPy,rIL")])
 			 (match_operator:SI 6 "arm_comparison_operator"
-			  [(match_operand:SI 4 "s_register_operand" "r")
-			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
+			  [(match_operand:SI 4 "s_register_operand" "l,r")
+			   (match_operand:SI 5 "arm_add_operand" "lPy,rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=Ts")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts,Ts")
 	(ior:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -9722,18 +9725,19 @@
    (set (match_dup 7) (ne:SI (match_dup 0) (const_int 0)))]
   ""
   [(set_attr "conds" "set")
+   (set_attr "enabled_for_depr_it" "yes,no")
    (set_attr "length" "16")
    (set_attr "type" "multiple")]
 )
 
 (define_insn_and_split "*and_scc_scc"
-  [(set (match_operand:SI 0 "s_register_operand" "=Ts")
+  [(set (match_operand:SI 0 "s_register_operand" "=Ts,Ts")
 	(and:SI (match_operator:SI 3 "arm_comparison_operator"
-		 [(match_operand:SI 1 "s_register_operand" "r")
-		  (match_operand:SI 2 "arm_add_operand" "rIL")])
+		 [(match_operand:SI 1 "s_register_operand" "l,r")
+		  (match_operand:SI 2 "arm_add_operand" "lPy,rIL")])
 		(match_operator:SI 6 "arm_comparison_operator"
-		 [(match_operand:SI 4 "s_register_operand" "r")
-		  (match_operand:SI 5 "arm_add_operand" "rIL")])))
+		 [(match_operand:SI 4 "s_register_operand" "l,r")
+		  (match_operand:SI 5 "arm_add_operand" "lPy,rIL")])))
    (clobber (reg:CC CC_REGNUM))]
   "TARGET_32BIT
    && (arm_select_dominance_cc_mode (operands[3], operands[6], DOM_CC_X_AND_Y)
@@ -9754,6 +9758,7 @@
 						  DOM_CC_X_AND_Y),
 		    CC_REGNUM);"
   [(set_attr "conds" "clob")
+   (set_attr "enabled_for_depr_it" "yes,no")
    (set_attr "length" "16")
    (set_attr "type" "multiple")]
 )
@@ -9763,13 +9768,13 @@
 (define_insn_and_split "*and_scc_scc_cmp"
   [(set (match_operand 0 "dominant_cc_register" "")
 	(compare (and:SI (match_operator:SI 3 "arm_comparison_operator"
-			  [(match_operand:SI 1 "s_register_operand" "r")
-			   (match_operand:SI 2 "arm_add_operand" "rIL")])
+			  [(match_operand:SI 1 "s_register_operand" "l,r")
+			   (match_operand:SI 2 "arm_add_operand" "lPy,rIL")])
 			 (match_operator:SI 6 "arm_comparison_operator"
-			  [(match_operand:SI 4 "s_register_operand" "r")
-			   (match_operand:SI 5 "arm_add_operand" "rIL")]))
+			  [(match_operand:SI 4 "s_register_operand" "l,r")
+			   (match_operand:SI 5 "arm_add_operand" "lPy,rIL")]))
 		 (const_int 0)))
-   (set (match_operand:SI 7 "s_register_operand" "=Ts")
+   (set (match_operand:SI 7 "s_register_operand" "=Ts,Ts")
 	(and:SI (match_op_dup 3 [(match_dup 1) (match_dup 2)])
 		(match_op_dup 6 [(match_dup 4) (match_dup 5)])))]
   "TARGET_32BIT"
@@ -9784,6 +9789,7 @@
    (set (match_dup 7) (ne:SI (match_dup 0) (const_int 0)))]
   ""
   [(set_attr "conds" "set")
+   (set_attr "enabled_for_depr_it" "yes,no")
    (set_attr "length" "16")
    (set_attr "type" "multiple")]
 )

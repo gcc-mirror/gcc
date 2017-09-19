@@ -30,7 +30,7 @@ struct B {};
 void
 foo (const char *fmt, ...)
 #if __cplusplus <= 201402L
-throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   va_list arg;

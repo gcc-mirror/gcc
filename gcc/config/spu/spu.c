@@ -3881,6 +3881,18 @@ spu_function_arg_advance (cumulative_args_t cum_v, machine_mode mode,
 	   : spu_hard_regno_nregs (FIRST_ARG_REGNUM, mode));
 }
 
+/* Implement TARGET_FUNCTION_ARG_OFFSET.  The SPU ABI wants 32/64-bit
+   types at offset 0 in the quad-word on the stack.  8/16-bit types
+   should be at offsets 3/2 respectively.  */
+
+static HOST_WIDE_INT
+spu_function_arg_offset (machine_mode mode, const_tree type)
+{
+  if (type && INTEGRAL_TYPE_P (type) && GET_MODE_SIZE (mode) < 4)
+    return 4 - GET_MODE_SIZE (mode);
+  return 0;
+}
+
 /* Implement TARGET_FUNCTION_ARG_PADDING.  */
 
 static pad_direction
@@ -7162,6 +7174,25 @@ spu_modes_tieable_p (machine_mode mode1, machine_mode mode2)
   return (GET_MODE_BITSIZE (mode1) <= MAX_FIXED_MODE_SIZE
 	  && GET_MODE_BITSIZE (mode2) <= MAX_FIXED_MODE_SIZE);
 }
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  GCC assumes that modes are
+   in the lowpart of a register, which is only true for SPU.  */
+
+static bool
+spu_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
+{
+  return (GET_MODE_SIZE (from) == GET_MODE_SIZE (to)
+	  || (GET_MODE_SIZE (from) <= 4 && GET_MODE_SIZE (to) <= 4)
+	  || (GET_MODE_SIZE (from) >= 16 && GET_MODE_SIZE (to) >= 16));
+}
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return inprec <= 32 && outprec <= inprec;
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7281,6 +7312,9 @@ static const struct attribute_spec spu_attribute_table[] =
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE spu_function_arg_advance
 
+#undef TARGET_FUNCTION_ARG_OFFSET
+#define TARGET_FUNCTION_ARG_OFFSET spu_function_arg_offset
+
 #undef TARGET_FUNCTION_ARG_PADDING
 #define TARGET_FUNCTION_ARG_PADDING spu_function_arg_padding
 
@@ -7392,6 +7426,12 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_HARD_REGNO_NREGS
 #define TARGET_HARD_REGNO_NREGS spu_hard_regno_nregs
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS spu_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

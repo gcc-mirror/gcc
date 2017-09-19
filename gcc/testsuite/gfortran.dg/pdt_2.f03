@@ -7,7 +7,6 @@
 !
   implicit none
   integer, parameter :: ftype = kind(0.0e0)
-  integer :: pdt_len = 4
   integer :: i
   type :: mytype (a,b)
     integer, kind :: a = kind(0.0d0)
@@ -17,7 +16,7 @@
     character (len = b*b) :: chr
   end type
 
-  type(mytype(ftype, pdt_len)) :: z2
+  type(mytype(ftype, 4)) :: z2
   call foobar (z2)
 contains
   subroutine foobar (arg)

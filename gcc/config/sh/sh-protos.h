@@ -324,8 +324,6 @@ extern bool sh_cfun_interrupt_handler_p (void);
 extern bool sh_cfun_resbank_handler_p (void);
 extern bool sh_attr_renesas_p (const_tree);
 extern bool sh_cfun_attr_renesas_p (void);
-extern bool sh_cannot_change_mode_class
-	      (machine_mode, machine_mode, enum reg_class);
 extern bool sh_small_register_classes_for_mode_p (machine_mode);
 extern void sh_mark_label (rtx, int);
 extern bool check_use_sfunc_addr (rtx_insn *, rtx);

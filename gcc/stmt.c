@@ -1063,8 +1063,10 @@ expand_sjlj_dispatch_table (rtx dispatch_index,
       for (int i = ncases - 1; i >= 0; --i)
 	{
 	  tree elt = dispatch_table[i];
-	  case_list.safe_push (simple_case_node (CASE_LOW (elt),
-						 CASE_HIGH (elt),
+	  tree high = CASE_HIGH (elt);
+	  if (high == NULL_TREE)
+	    high = CASE_LOW (elt);
+	  case_list.safe_push (simple_case_node (CASE_LOW (elt), high,
 						 CASE_LABEL (elt)));
 	}
 

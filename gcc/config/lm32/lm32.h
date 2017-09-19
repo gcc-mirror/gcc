@@ -519,8 +519,6 @@ do {                                                            \
 
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define Pmode SImode
 
 #define FUNCTION_MODE SImode

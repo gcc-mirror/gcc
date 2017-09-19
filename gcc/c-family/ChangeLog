@@ -1,3 +1,38 @@
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* c-common.h (cxx_dialect): Add cxx2a as a dialect.
+	* opt.c: Add options for -std=c++2a and -std=gnu++2a.
+	* c-opts.c (set_std_cxx2a): New.
+	(c_common_handle_option): Set options when -std=c++2a is enabled.
+	(c_common_post_options): Adjust comments.
+	(set_std_cxx14, set_std_cxx17): Likewise.
+
+2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-pragma.c (handle_pragma_scalar_storage_order): Expand on error
+	message for non-uniform endianness and issue a warning in C++.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wc++1z-compat): Change from option to undocumented alias.
+	(Wc++17-compat): Change from undocumented alias to option.
+	(Wnoexcept-type): Enable by Wc++17-compat instead of Wc++1z-compat,
+	change C++1z to C++17 in description.
+	(std=c++1z, std=gnu++1z): Change from option to undocumented
+	deprecated alias.
+	(std=c++17, std=gnu++17): Change from undocumented alias to option.
+	Adjust description.
+	* c-common.h (enum cxx_dialect): Rename cxx1z to cxx17.
+	* c-opts.c (set_std_cxx1z): Rename to ...
+	(set_std_cxx17): ... this.
+	(c_common_handle_option): Rename OPT_std_c__1z to OPT_std_c__17
+	and OPT_std_gnu__1z to OPT_std_gnu__17.  Adjust set_std_cxx1z
+	caller.  
+	(c_common_post_options): Use cxx17 instead of cxx1z.  Adjust
+	comments.
+
 2017-09-12  H.J. Lu  <hongjiu.lu@intel.com>
 
 	* c-attribs.c (common_handle_aligned_attribute): Don't warn

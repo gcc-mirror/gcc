@@ -2644,7 +2644,8 @@ package body Sem_Ch7 is
          end if;
 
          if Priv_Is_Base_Type then
-            Set_Is_Controlled (Priv, Is_Controlled            (Full_Base));
+            Set_Is_Controlled_Active
+                              (Priv, Is_Controlled_Active     (Full_Base));
             Set_Finalize_Storage_Only
                               (Priv, Finalize_Storage_Only    (Full_Base));
             Set_Has_Controlled_Component

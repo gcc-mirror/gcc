@@ -456,6 +456,7 @@ var fieldstests = []FieldsTest{
 	{"", []string{}},
 	{" ", []string{}},
 	{" \t ", []string{}},
+	{"\u2000", []string{}},
 	{"  abc  ", []string{"abc"}},
 	{"1 2 3 4", []string{"1", "2", "3", "4"}},
 	{"1  2  3  4", []string{"1", "2", "3", "4"}},
@@ -463,6 +464,9 @@ var fieldstests = []FieldsTest{
 	{"1\u20002\u20013\u20024", []string{"1", "2", "3", "4"}},
 	{"\u2000\u2001\u2002", []string{}},
 	{"\n™\t™\n", []string{"™", "™"}},
+	{"\n\u20001™2\u2000 \u2001 ™", []string{"1™2", "™"}},
+	{"\n1\uFFFD \uFFFD2\u20003\uFFFD4", []string{"1\uFFFD", "\uFFFD2", "3\uFFFD4"}},
+	{"1\xFF\u2000\xFF2\xFF \xFF", []string{"1\xFF", "\xFF2\xFF", "\xFF"}},
 	{faces, []string{faces}},
 }
 
@@ -628,6 +632,19 @@ func TestMap(t *testing.T) {
 	if (*reflect.StringHeader)(unsafe.Pointer(&orig)).Data !=
 		(*reflect.StringHeader)(unsafe.Pointer(&m)).Data {
 		t.Error("unexpected copy during identity map")
+	}
+
+	// 7. Handle invalid UTF-8 sequence
+	replaceNotLatin := func(r rune) rune {
+		if unicode.Is(unicode.Latin, r) {
+			return r
+		}
+		return '?'
+	}
+	m = Map(replaceNotLatin, "Hello\255World")
+	expect = "Hello?World"
+	if m != expect {
+		t.Errorf("replace invalid sequence: expected %q got %q", expect, m)
 	}
 }
 
@@ -1444,6 +1461,24 @@ func BenchmarkCountTortureOverlapping(b *testing.B) {
 	}
 }
 
+func BenchmarkCountByte(b *testing.B) {
+	indexSizes := []int{10, 32, 4 << 10, 4 << 20, 64 << 20}
+	benchStr := Repeat(benchmarkString,
+		(indexSizes[len(indexSizes)-1]+len(benchmarkString)-1)/len(benchmarkString))
+	benchFunc := func(b *testing.B, benchStr string) {
+		b.SetBytes(int64(len(benchStr)))
+		for i := 0; i < b.N; i++ {
+			Count(benchStr, "=")
+		}
+	}
+	for _, size := range indexSizes {
+		b.Run(fmt.Sprintf("%d", size), func(b *testing.B) {
+			benchFunc(b, benchStr[:size])
+		})
+	}
+
+}
+
 var makeFieldsInput = func() string {
 	x := make([]byte, 1<<20)
 	// Input is ~10% space, ~10% 2-byte UTF-8, rest ASCII non-space.
@@ -1464,37 +1499,85 @@ var makeFieldsInput = func() string {
 	return string(x)
 }
 
-var fieldsInput = makeFieldsInput()
+var makeFieldsInputASCII = func() string {
+	x := make([]byte, 1<<20)
+	// Input is ~10% space, rest ASCII non-space.
+	for i := range x {
+		if rand.Intn(10) == 0 {
+			x[i] = ' '
+		} else {
+			x[i] = 'x'
+		}
+	}
+	return string(x)
+}
+
+var stringdata = []struct{ name, data string }{
+	{"ASCII", makeFieldsInputASCII()},
+	{"Mixed", makeFieldsInput()},
+}
 
 func BenchmarkFields(b *testing.B) {
-	b.SetBytes(int64(len(fieldsInput)))
-	for i := 0; i < b.N; i++ {
-		Fields(fieldsInput)
+	for _, sd := range stringdata {
+		b.Run(sd.name, func(b *testing.B) {
+			for j := 1 << 4; j <= 1<<20; j <<= 4 {
+				b.Run(fmt.Sprintf("%d", j), func(b *testing.B) {
+					b.ReportAllocs()
+					b.SetBytes(int64(j))
+					data := sd.data[:j]
+					for i := 0; i < b.N; i++ {
+						Fields(data)
+					}
+				})
+			}
+		})
 	}
 }
 
 func BenchmarkFieldsFunc(b *testing.B) {
-	b.SetBytes(int64(len(fieldsInput)))
-	for i := 0; i < b.N; i++ {
-		FieldsFunc(fieldsInput, unicode.IsSpace)
+	for _, sd := range stringdata {
+		b.Run(sd.name, func(b *testing.B) {
+			for j := 1 << 4; j <= 1<<20; j <<= 4 {
+				b.Run(fmt.Sprintf("%d", j), func(b *testing.B) {
+					b.ReportAllocs()
+					b.SetBytes(int64(j))
+					data := sd.data[:j]
+					for i := 0; i < b.N; i++ {
+						FieldsFunc(data, unicode.IsSpace)
+					}
+				})
+			}
+		})
 	}
 }
 
-func BenchmarkSplit1(b *testing.B) {
+func BenchmarkSplitEmptySeparator(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Split(benchInputHard, "")
 	}
 }
 
-func BenchmarkSplit2(b *testing.B) {
+func BenchmarkSplitSingleByteSeparator(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Split(benchInputHard, "/")
 	}
 }
 
-func BenchmarkSplit3(b *testing.B) {
+func BenchmarkSplitMultiByteSeparator(b *testing.B) {
 	for i := 0; i < b.N; i++ {
 		Split(benchInputHard, "hello")
+	}
+}
+
+func BenchmarkSplitNSingleByteSeparator(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		SplitN(benchInputHard, "/", 10)
+	}
+}
+
+func BenchmarkSplitNMultiByteSeparator(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		SplitN(benchInputHard, "hello", 10)
 	}
 }
 

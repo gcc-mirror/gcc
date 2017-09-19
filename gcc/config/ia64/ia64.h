@@ -767,24 +767,6 @@ enum reg_class
 #define SECONDARY_RELOAD_CLASS(CLASS, MODE, X) \
  ia64_secondary_reload_class (CLASS, MODE, X)
 
-/* Certain machines have the property that some registers cannot be copied to
-   some other registers without using memory.  Define this macro on those
-   machines to be a C expression that is nonzero if objects of mode M in
-   registers of CLASS1 can only be copied to registers of class CLASS2 by
-   storing a register of CLASS1 into memory and loading that memory location
-   into a register of CLASS2.  */
-
-#if 0
-/* ??? May need this, but since we've disallowed XFmode in GR_REGS,
-   I'm not quite sure how it could be invoked.  The normal problems
-   with unions should be solved with the addressof fiddling done by
-   movxf and friends.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((MODE) == XFmode || (MODE) == XCmode)				\
-   && (((CLASS1) == GR_REGS && (CLASS2) == FR_REGS)			\
-       || ((CLASS1) == FR_REGS && (CLASS2) == GR_REGS)))
-#endif
-
 /* A C expression for the maximum number of consecutive registers of
    class CLASS needed to hold a value of mode MODE.
    This is closely related to TARGET_HARD_REGNO_NREGS.  */
@@ -795,17 +777,6 @@ enum reg_class
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == RFmode) ? 1 \
    : (((CLASS) == FR_REGS || (CLASS) == FP_REGS) && (MODE) == XCmode) ? 2 \
    : (GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-/* In BR regs, we can't change the DImode at all.
-   In FP regs, we can't change FP values to integer values and vice versa,
-   but we can change e.g. DImode to SImode, and V2SFmode into DImode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) 		\
-  (reg_classes_intersect_p (CLASS, BR_REGS)			\
-   ? (FROM) != (TO)						\
-   : (SCALAR_FLOAT_MODE_P (FROM) != SCALAR_FLOAT_MODE_P (TO)	\
-      ? reg_classes_intersect_p (CLASS, FR_REGS)		\
-      : 0))
 
 /* Basic Stack Layout */
 
@@ -1595,12 +1566,6 @@ do {									\
 /* The maximum number of bytes that a single instruction can move quickly from
    memory to memory.  */
 #define MOVE_MAX 8
-
-/* A C expression which is nonzero if on this machine it is safe to "convert"
-   an integer of INPREC bits to one of OUTPREC bits (where OUTPREC is smaller
-   than INPREC) by merely operating on it as if it had only OUTPREC bits.  */
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 /* A C expression describing the value returned by a comparison operator with
    an integral mode and stored by a store-flag instruction (`sCOND') when the

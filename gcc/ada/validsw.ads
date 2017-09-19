@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2001-2012, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -54,7 +54,7 @@ package Validsw is
 
    Validity_Check_Default : Boolean := True;
    --  Controls default (reference manual) validity checking. If this switch is
-   --  set to True using -gnatVd or a 'd' in the argument of a Validity_ Checks
+   --  set to True using -gnatVd or a 'd' in the argument of a Validity_Checks
    --  pragma (or the initial default value is used, set True), then left side
    --  subscripts and case statement arguments are checked for validity. This
    --  switch is also set by default if no -gnatV switch is used and no

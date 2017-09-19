@@ -2909,7 +2909,7 @@ redeclaration_error_message (tree newdecl, tree olddecl)
 	 if the variable is defined within the class with constexpr
 	 specifier is declaration rather than definition (and
 	 deprecated).  */
-      if (cxx_dialect >= cxx1z
+      if (cxx_dialect >= cxx17
 	  && DECL_CLASS_SCOPE_P (olddecl)
 	  && DECL_DECLARED_CONSTEXPR_P (olddecl)
 	  && !DECL_INITIAL (newdecl))
@@ -4050,7 +4050,7 @@ cxx_init_decl_processing (void)
   std_node = current_namespace;
   pop_namespace ();
 
-  flag_noexcept_type = (cxx_dialect >= cxx1z);
+  flag_noexcept_type = (cxx_dialect >= cxx17);
 
   c_common_nodes_and_builtins ();
 
@@ -4150,7 +4150,7 @@ cxx_init_decl_processing (void)
       aligned_new_threshold = 1;
     }
   if (aligned_new_threshold == -1)
-    aligned_new_threshold = (cxx_dialect >= cxx1z) ? 1 : 0;
+    aligned_new_threshold = (cxx_dialect >= cxx17) ? 1 : 0;
   if (aligned_new_threshold == 1)
     aligned_new_threshold = malloc_alignment () / BITS_PER_UNIT;
 
@@ -5022,11 +5022,12 @@ start_decl (const cp_declarator *declarator,
 		 about this situation, and so we check here.  */
 	      if (initialized && DECL_INITIALIZED_IN_CLASS_P (field))
 		error ("duplicate initialization of %qD", decl);
-	      if (duplicate_decls (decl, field, /*newdecl_is_friend=*/false))
+	      field = duplicate_decls (decl, field,
+				       /*newdecl_is_friend=*/false);
+	      if (field == error_mark_node)
+		return error_mark_node;
+	      else if (field)
 		decl = field;
-              if (decl_spec_seq_has_spec_p (declspecs, ds_constexpr)
-                  && !DECL_DECLARED_CONSTEXPR_P (field))
-                error ("%qD declared %<constexpr%> outside its class", field);
 	    }
 	}
       else
@@ -5572,7 +5573,7 @@ next_initializable_field (tree field)
 	 && (TREE_CODE (field) != FIELD_DECL
 	     || (DECL_C_BIT_FIELD (field) && !DECL_NAME (field))
 	     || (DECL_ARTIFICIAL (field)
-		 && !(cxx_dialect >= cxx1z && DECL_FIELD_IS_BASE (field)))))
+		 && !(cxx_dialect >= cxx17 && DECL_FIELD_IS_BASE (field)))))
     field = DECL_CHAIN (field);
 
   return field;
@@ -5584,7 +5585,7 @@ next_initializable_field (tree field)
 bool
 is_direct_enum_init (tree type, tree init)
 {
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && TREE_CODE (type) == ENUMERAL_TYPE
       && ENUM_FIXED_UNDERLYING_TYPE_P (type)
       && TREE_CODE (init) == CONSTRUCTOR
@@ -6350,7 +6351,7 @@ check_initializer (tree decl, tree init, int flags, vec<tree, va_gc> **cleanups)
 
       if (cxx_dialect < cxx11)
 	error ("initializer invalid for static member with constructor");
-      else if (cxx_dialect < cxx1z)
+      else if (cxx_dialect < cxx17)
 	error ("non-constant in-class initialization invalid for static "
 	       "member %qD", decl);
       else
@@ -6726,9 +6727,9 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
      or local register variable extension.  */
   if (VAR_P (decl) && DECL_REGISTER (decl) && asmspec_tree == NULL_TREE)
     {
-      if (cxx_dialect >= cxx1z)
+      if (cxx_dialect >= cxx17)
 	pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
-		 "ISO C++1z does not allow %<register%> storage "
+		 "ISO C++17 does not allow %<register%> storage "
 		 "class specifier");
       else
 	warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
@@ -9786,10 +9787,10 @@ mark_inline_variable (tree decl)
 	     "%qD declared at block scope", decl);
       inlinep = false;
     }
-  else if (cxx_dialect < cxx1z)
+  else if (cxx_dialect < cxx17)
     pedwarn (DECL_SOURCE_LOCATION (decl), 0,
 	     "inline variables are only available "
-	     "with -std=c++1z or -std=gnu++1z");
+	     "with -std=c++17 or -std=gnu++17");
   if (inlinep)
     {
       retrofit_lang_decl (decl);
@@ -10521,7 +10522,7 @@ grokdeclarator (const cp_declarator *declarator,
   /* We might have ignored or rejected some of the qualifiers.  */
   type_quals = cp_type_quals (type);
 
-  if (cxx_dialect >= cxx1z && type && is_auto (type)
+  if (cxx_dialect >= cxx17 && type && is_auto (type)
       && innermost_code != cdk_function
       && id_declarator && declarator != id_declarator)
     if (tree tmpl = CLASS_PLACEHOLDER_TEMPLATE (type))
@@ -11729,7 +11730,7 @@ grokdeclarator (const cp_declarator *declarator,
 	error ("cannot use %<::%> in parameter declaration");
 
       if (type_uses_auto (type)
-	  && !(cxx_dialect >= cxx1z && template_parm_flag))
+	  && !(cxx_dialect >= cxx17 && template_parm_flag))
 	{
 	  if (cxx_dialect >= cxx14)
 	    error ("%<auto%> parameter not permitted in this context");
@@ -12062,7 +12063,7 @@ grokdeclarator (const cp_declarator *declarator,
 		  mark_inline_variable (decl);
 
 		if (!DECL_VAR_DECLARED_INLINE_P (decl)
-		    && !(cxx_dialect >= cxx1z && constexpr_p))
+		    && !(cxx_dialect >= cxx17 && constexpr_p))
 		  /* Even if there is an in-class initialization, DECL
 		     is considered undefined until an out-of-class
 		     definition is provided, unless this is an inline
@@ -12331,9 +12332,9 @@ grokdeclarator (const cp_declarator *declarator,
 	/* Warn about register storage specifiers on PARM_DECLs.  */
 	if (TREE_CODE (decl) == PARM_DECL)
 	  {
-	    if (cxx_dialect >= cxx1z)
+	    if (cxx_dialect >= cxx17)
 	      pedwarn (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
-		       "ISO C++1z does not allow %<register%> storage "
+		       "ISO C++17 does not allow %<register%> storage "
 		       "class specifier");
 	    else
 	      warning_at (DECL_SOURCE_LOCATION (decl), OPT_Wregister,
@@ -12600,8 +12601,7 @@ grokparms (tree parmlist, tree *parms)
 	    }
 	  else if (abstract_virtuals_error (decl, type))
 	    any_error = 1;  /* Seems like a good idea.  */
-	  else if (cxx_dialect < cxx1z
-		   && POINTER_TYPE_P (type))
+	  else if (cxx_dialect < cxx17 && POINTER_TYPE_P (type))
 	    {
 	      /* Before C++17 DR 393:
 		 [dcl.fct]/6, parameter types cannot contain pointers
@@ -13802,7 +13802,7 @@ xref_basetypes (tree ref, tree base_list)
 
       /* Before C++17, an aggregate cannot have base classes.  In C++17, an
 	 aggregate can't have virtual, private, or protected base classes.  */
-      if (cxx_dialect < cxx1z
+      if (cxx_dialect < cxx17
 	  || access != access_public_node
 	  || via_virtual)
 	CLASSTYPE_NON_AGGREGATE (ref) = true;
@@ -15573,7 +15573,7 @@ finish_function (int flags)
     check_function_concept (fndecl);
 
   /* Lambda closure members are implicitly constexpr if possible.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && LAMBDA_TYPE_P (CP_DECL_CONTEXT (fndecl)))
     DECL_DECLARED_CONSTEXPR_P (fndecl)
       = ((processing_template_decl

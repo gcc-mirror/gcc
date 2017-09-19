@@ -203,6 +203,15 @@ package body Sem_Ch13 is
    --  renaming_as_body. For tagged types, the specification is one of the
    --  primitive specs.
 
+   procedure Register_Address_Clause_Check
+     (N   : Node_Id;
+      X   : Entity_Id;
+      A   : Uint;
+      Y   : Entity_Id;
+      Off : Boolean);
+   --  Register a check for the address clause N. The rest of the parameters
+   --  are in keeping with the components of Address_Clause_Check_Record below.
+
    procedure Resolve_Iterable_Operation
      (N      : Node_Id;
       Cursor : Entity_Id;
@@ -318,6 +327,11 @@ package body Sem_Ch13 is
 
       Off : Boolean;
       --  Whether the address is offset within Y in the second case
+
+      Alignment_Checks_Suppressed : Boolean;
+      --  Whether alignment checks are suppressed by an active scope suppress
+      --  setting. We need to save the value in order to be able to reuse it
+      --  after the back end has been run.
    end record;
 
    package Address_Clause_Checks is new Table.Table (
@@ -327,6 +341,26 @@ package body Sem_Ch13 is
      Table_Initial        => 20,
      Table_Increment      => 200,
      Table_Name           => "Address_Clause_Checks");
+
+   function Alignment_Checks_Suppressed
+     (ACCR : Address_Clause_Check_Record) return Boolean;
+   --  Return whether the alignment check generated for the address clause
+   --  is suppressed.
+
+   ---------------------------------
+   -- Alignment_Checks_Suppressed --
+   ---------------------------------
+
+   function Alignment_Checks_Suppressed
+     (ACCR : Address_Clause_Check_Record) return Boolean
+   is
+   begin
+      if Checks_May_Be_Suppressed (ACCR.X) then
+         return Is_Check_Suppressed (ACCR.X, Alignment_Check);
+      else
+         return ACCR.Alignment_Checks_Suppressed;
+      end if;
+   end Alignment_Checks_Suppressed;
 
    -----------------------------------------
    -- Adjust_Record_For_Reverse_Bit_Order --
@@ -1595,6 +1629,9 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Convention;
             --  Perform analysis of aspect Convention
 
+            procedure Analyze_Aspect_Disable_Controlled;
+            --  Perform analysis of aspect Disable_Controlled
+
             procedure Analyze_Aspect_Export_Import;
             --  Perform analysis of aspects Export or Import
 
@@ -1677,6 +1714,60 @@ package body Sem_Ch13 is
                   Insert_Pragma (Aitem);
                end if;
             end Analyze_Aspect_Convention;
+
+            ---------------------------------------
+            -- Analyze_Aspect_Disable_Controlled --
+            ---------------------------------------
+
+            procedure Analyze_Aspect_Disable_Controlled is
+            begin
+               --  The aspect applies only to controlled records
+
+               if not (Ekind (E) = E_Record_Type
+                        and then Is_Controlled_Active (E))
+               then
+                  Error_Msg_N
+                    ("aspect % requires controlled record type", Aspect);
+                  return;
+               end if;
+
+               --  Preanalyze the expression (if any) when the aspect resides
+               --  in a generic unit.
+
+               if Inside_A_Generic then
+                  if Present (Expr) then
+                     Preanalyze_And_Resolve (Expr, Any_Boolean);
+                  end if;
+
+               --  Otherwise the aspect resides in a nongeneric context
+
+               else
+                  --  A controlled record type loses its controlled semantics
+                  --  when the expression statically evaluates to True.
+
+                  if Present (Expr) then
+                     Analyze_And_Resolve (Expr, Any_Boolean);
+
+                     if Is_OK_Static_Expression (Expr) then
+                        if Is_True (Static_Boolean (Expr)) then
+                           Set_Disable_Controlled (E);
+                        end if;
+
+                     --  Otherwise the expression is not static
+
+                     else
+                        Error_Msg_N
+                          ("expression of aspect % must be static", Aspect);
+                     end if;
+
+                  --  Otherwise the aspect appears without an expression and
+                  --  defaults to True.
+
+                  else
+                     Set_Disable_Controlled (E);
+                  end if;
+               end if;
+            end Analyze_Aspect_Disable_Controlled;
 
             ----------------------------------
             -- Analyze_Aspect_Export_Import --
@@ -3468,34 +3559,7 @@ package body Sem_Ch13 is
                   --  Disable_Controlled
 
                   elsif A_Id = Aspect_Disable_Controlled then
-                     if Ekind (E) /= E_Record_Type
-                       or else not Is_Controlled (E)
-                     then
-                        Error_Msg_N
-                          ("aspect % requires controlled record type", Aspect);
-                        goto Continue;
-                     end if;
-
-                     --  If we're in a generic template, we don't want to try
-                     --  to disable controlled types, because typical usage is
-                     --  "Disable_Controlled => not <some_check>'Enabled", and
-                     --  the value of Enabled is not known until we see a
-                     --  particular instance. In such a context, we just need
-                     --  to preanalyze the expression for legality.
-
-                     if Expander_Active then
-                        Analyze_And_Resolve (Expr, Standard_Boolean);
-
-                        if not Present (Expr)
-                          or else Is_True (Static_Boolean (Expr))
-                        then
-                           Set_Disable_Controlled (E);
-                        end if;
-
-                     elsif Serious_Errors_Detected = 0 then
-                        Preanalyze_And_Resolve (Expr, Standard_Boolean);
-                     end if;
-
+                     Analyze_Aspect_Disable_Controlled;
                      goto Continue;
                   end if;
 
@@ -5017,9 +5081,25 @@ package body Sem_Ch13 is
                        and then not Is_Generic_Type (Etype (U_Ent))
                        and then Address_Clause_Overlay_Warnings
                      then
-                        Address_Clause_Checks.Append
-                          ((N, U_Ent, No_Uint, O_Ent, Off));
+                        Register_Address_Clause_Check
+                          (N, U_Ent, No_Uint, O_Ent, Off);
                      end if;
+
+                     --  If the overlay changes the storage order, mark the
+                     --  entity as being volatile to block any optimization
+                     --  for it since the construct is not really supported
+                     --  by the back end.
+
+                     if (Is_Record_Type (Etype (U_Ent))
+                          or else Is_Array_Type (Etype (U_Ent)))
+                       and then (Is_Record_Type (Etype (O_Ent))
+                                  or else Is_Array_Type (Etype (O_Ent)))
+                       and then Reverse_Storage_Order (Etype (U_Ent))
+                                      /= Reverse_Storage_Order (Etype (O_Ent))
+                     then
+                        Set_Treat_As_Volatile (U_Ent);
+                     end if;
+
                   else
                      --  If this is not an overlay, mark a variable as being
                      --  volatile to prevent unwanted optimizations. It's a
@@ -5043,8 +5123,8 @@ package body Sem_Ch13 is
                         if Compile_Time_Known_Value (Addr)
                           and then Address_Clause_Overlay_Warnings
                         then
-                           Address_Clause_Checks.Append
-                             ((N, U_Ent, Expr_Value (Addr), Empty, False));
+                           Register_Address_Clause_Check
+                             (N, U_Ent, Expr_Value (Addr), Empty, False);
                         end if;
                      end;
                   end if;
@@ -10839,8 +10919,8 @@ package body Sem_Ch13 is
 
       E : constant Entity_Id := Entity (N);
 
-      Non_Generic_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
-      --  True in non-generic case. Some of the processing here is skipped
+      Nongeneric_Case : constant Boolean := Nkind (N) = N_Freeze_Entity;
+      --  True in nongeneric case. Some of the processing here is skipped
       --  for the generic case since it is not needed. Basically in the
       --  generic case, we only need to do stuff that might generate error
       --  messages or warnings.
@@ -10867,7 +10947,7 @@ package body Sem_Ch13 is
       --  This is not needed in the generic case
 
       if Ada_Version >= Ada_2005
-        and then Non_Generic_Case
+        and then Nongeneric_Case
         and then Ekind (E) = E_Record_Type
         and then Is_Tagged_Type (E)
         and then not Is_Interface (E)
@@ -11003,7 +11083,7 @@ package body Sem_Ch13 is
       --  predefined primitives.
 
       if Is_Type (E)
-        and then Non_Generic_Case
+        and then Nongeneric_Case
         and then not Within_Internal_Subprogram
         and then Has_Predicates (E)
       then
@@ -11019,7 +11099,7 @@ package body Sem_Ch13 is
 
       --  This is also not needed in the generic case
 
-      if Non_Generic_Case
+      if Nongeneric_Case
         and then Has_Delayed_Aspects (E)
         and then Scope (E) = Current_Scope
       then
@@ -12223,6 +12303,22 @@ package body Sem_Ch13 is
          end if;
       end if;
    end Push_Scope_And_Install_Discriminants;
+
+   -----------------------------------
+   -- Register_Address_Clause_Check --
+   -----------------------------------
+
+   procedure Register_Address_Clause_Check
+     (N   : Node_Id;
+      X   : Entity_Id;
+      A   : Uint;
+      Y   : Entity_Id;
+      Off : Boolean)
+   is
+      ACS : constant Boolean := Scope_Suppress.Suppress (Alignment_Check);
+   begin
+      Address_Clause_Checks.Append ((N, X, A, Y, Off, ACS));
+   end Register_Address_Clause_Check;
 
    ------------------------
    -- Rep_Item_Too_Early --
@@ -13435,7 +13531,7 @@ package body Sem_Ch13 is
                --  Check for known value not multiple of alignment
 
                if No (ACCR.Y) then
-                  if not Alignment_Checks_Suppressed (ACCR.X)
+                  if not Alignment_Checks_Suppressed (ACCR)
                     and then X_Alignment /= 0
                     and then ACCR.A mod X_Alignment /= 0
                   then
@@ -13480,7 +13576,7 @@ package body Sem_Ch13 is
                --  Note: we do not check the alignment if we gave a size
                --  warning, since it would likely be redundant.
 
-               elsif not Alignment_Checks_Suppressed (ACCR.X)
+               elsif not Alignment_Checks_Suppressed (ACCR)
                  and then Y_Alignment /= Uint_0
                  and then
                    (Y_Alignment < X_Alignment

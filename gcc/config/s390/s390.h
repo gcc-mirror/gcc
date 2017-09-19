@@ -477,9 +477,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define CLASS_MAX_NREGS(CLASS, MODE)   					\
   s390_class_max_nregs ((CLASS), (MODE))
 
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS)		        \
-  s390_cannot_change_mode_class ((FROM), (TO), (CLASS))
-
 /* We can reverse a CC mode safely if we know whether it comes from a
    floating point compare or not.  With the vector modes it is encoded
    as part of the mode.
@@ -575,36 +572,6 @@ extern const enum reg_class regclass_map[FIRST_PSEUDO_REGISTER];
       && REGNO_REG_CLASS ((REGNO)) == ADDR_REGS) 			\
      || ADDR_REGNO_P (reg_renumber[REGNO]))
 #define REGNO_OK_FOR_BASE_P(REGNO) REGNO_OK_FOR_INDEX_P (REGNO)
-
-
-/* We need secondary memory to move data between GPRs and FPRs.
-
-   - With DFP the ldgr lgdr instructions are available.  Due to the
-     different alignment we cannot use them for SFmode.  For 31 bit a
-     64 bit value in GPR would be a register pair so here we still
-     need to go via memory.
-
-   - With z13 we can do the SF/SImode moves with vlgvf.  Due to the
-     overlapping of FPRs and VRs we still disallow TF/TD modes to be
-     in full VRs so as before also on z13 we do these moves via
-     memory.
-
-     FIXME: Should we try splitting it into two vlgvg's/vlvg's instead?  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  (((reg_classes_intersect_p ((CLASS1), VEC_REGS)			\
-     && reg_classes_intersect_p ((CLASS2), GENERAL_REGS))		\
-    || (reg_classes_intersect_p ((CLASS1), GENERAL_REGS)		\
-	&& reg_classes_intersect_p ((CLASS2), VEC_REGS)))		\
-   && (!TARGET_DFP || !TARGET_64BIT || GET_MODE_SIZE (MODE) != 8)	\
-   && (!TARGET_VX || (SCALAR_FLOAT_MODE_P (MODE)			\
-			  && GET_MODE_SIZE (MODE) > 8)))
-
-/* Get_secondary_mem widens its argument to BITS_PER_WORD which loses on 64bit
-   because the movsi and movsf patterns don't handle r/f moves.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
- (GET_MODE_BITSIZE (MODE) < 32					\
-  ? mode_for_size (32, GET_MODE_CLASS (MODE), 0).require ()	\
-  : (MODE))
 
 
 /* Stack layout and calling conventions.  */
@@ -995,10 +962,6 @@ do {									\
 /* Specify the machine mode that this machine uses for the index in the
    tablejump instruction.  */
 #define CASE_VECTOR_MODE (TARGET_64BIT ? DImode : SImode)
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC)  1
 
 /* Specify the machine mode that pointers have.
    After generation of rtl, the compiler makes no further distinction

@@ -672,6 +672,9 @@ static void sparc_print_operand_address (FILE *, machine_mode, rtx);
 static reg_class_t sparc_secondary_reload (bool, rtx, reg_class_t,
 					   machine_mode,
 					   secondary_reload_info *);
+static bool sparc_secondary_memory_needed (machine_mode, reg_class_t,
+					   reg_class_t);
+static machine_mode sparc_secondary_memory_needed_mode (machine_mode);
 static scalar_int_mode sparc_cstore_mode (enum insn_code icode);
 static void sparc_atomic_assign_expand_fenv (tree *, tree *, tree *);
 static bool sparc_fixed_condition_code_regs (unsigned int *, unsigned int *);
@@ -679,7 +682,8 @@ static unsigned int sparc_min_arithmetic_precision (void);
 static unsigned int sparc_hard_regno_nregs (unsigned int, machine_mode);
 static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
-
+static bool sparc_can_change_mode_class (machine_mode, machine_mode,
+					 reg_class_t);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -859,6 +863,10 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD sparc_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED sparc_secondary_memory_needed
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE sparc_secondary_memory_needed_mode
 
 #undef TARGET_CONDITIONAL_REGISTER_USAGE
 #define TARGET_CONDITIONAL_REGISTER_USAGE sparc_conditional_register_usage
@@ -913,6 +921,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P sparc_modes_tieable_p
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS sparc_can_change_mode_class
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -6182,7 +6193,9 @@ output_return (rtx_insn *insn)
 
       if (final_sequence)
 	{
-	  rtx delay, pat;
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
 
 	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
@@ -6197,9 +6210,15 @@ output_return (rtx_insn *insn)
 	  else
 	    {
 	      output_asm_insn ("jmp\t%%i7+%)", NULL);
-	      output_restore (pat);
+
+	      /* We're going to output the insn in the delay slot manually.
+		 Make sure to output its source location first.  */
 	      PATTERN (delay) = gen_blockage ();
 	      INSN_CODE (delay) = -1;
+	      final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	      INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	      output_restore (pat);
 	    }
 	}
       else
@@ -6255,13 +6274,23 @@ output_sibcall (rtx_insn *insn, rtx call_operand)
 
       if (final_sequence)
 	{
-	  rtx_insn *delay = NEXT_INSN (insn);
+	  rtx_insn *delay;
+	  rtx pat;
+	  int seen;
+
+	  delay = NEXT_INSN (insn);
 	  gcc_assert (delay);
 
-	  output_restore (PATTERN (delay));
+	  pat = PATTERN (delay);
 
+	  /* We're going to output the insn in the delay slot manually.
+	     Make sure to output its source location first.  */
 	  PATTERN (delay) = gen_blockage ();
 	  INSN_CODE (delay) = -1;
+	  final_scan_insn (delay, asm_out_file, optimize, 0, &seen);
+	  INSN_LOCATION (delay) = UNKNOWN_LOCATION;
+
+	  output_restore (pat);
 	}
       else
 	output_restore (NULL_RTX);
@@ -11421,7 +11450,7 @@ sparc_vis_mul8x16 (int e8, int e16)
    the result into the array N_ELTS, whose elements are of INNER_TYPE.  */
 
 static void
-sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
+sparc_handle_vis_mul8x16 (vec<tree> *n_elts, enum sparc_builtins fncode,
 			  tree inner_type, tree cst0, tree cst1)
 {
   unsigned i, num = VECTOR_CST_NELTS (cst0);
@@ -11435,7 +11464,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 TREE_INT_CST_LOW (VECTOR_CST_ELT (cst1, i)));
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11447,7 +11476,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11459,7 +11488,7 @@ sparc_handle_vis_mul8x16 (tree *n_elts, enum sparc_builtins fncode,
 	  int val
 	    = sparc_vis_mul8x16 (TREE_INT_CST_LOW (VECTOR_CST_ELT (cst0, i)),
 				 scale);
-	  n_elts[i] = build_int_cst (inner_type, val);
+	  n_elts->quick_push (build_int_cst (inner_type, val));
 	}
       break;
 
@@ -11508,14 +11537,15 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree *n_elts;
 	  unsigned i;
 
-	  n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
+	  auto_vec<tree, 32> n_elts (VECTOR_CST_NELTS (arg0));
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
-	    n_elts[i] = build_int_cst (inner_type,
-				       TREE_INT_CST_LOW
-				         (VECTOR_CST_ELT (arg0, i)) << 4);
+	    {
+	      unsigned HOST_WIDE_INT val
+		= TREE_INT_CST_LOW (VECTOR_CST_ELT (arg0, i));
+	      n_elts.quick_push (build_int_cst (inner_type, val << 4));
+	    }
 	  return build_vector (rtype, n_elts);
 	}
       break;
@@ -11531,8 +11561,8 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
 	  tree inner_type = TREE_TYPE (rtype);
-	  tree *n_elts = XALLOCAVEC (tree, VECTOR_CST_NELTS (arg0));
-	  sparc_handle_vis_mul8x16 (n_elts, code, inner_type, arg0, arg1);
+	  auto_vec<tree, 32> n_elts (VECTOR_CST_NELTS (arg0));
+	  sparc_handle_vis_mul8x16 (&n_elts, code, inner_type, arg0, arg1);
 	  return build_vector (rtype, n_elts);
 	}
       break;
@@ -11545,12 +11575,12 @@ sparc_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 
       if (TREE_CODE (arg0) == VECTOR_CST && TREE_CODE (arg1) == VECTOR_CST)
 	{
-	  tree *n_elts = XALLOCAVEC (tree, 2 * VECTOR_CST_NELTS (arg0));
+	  auto_vec<tree, 32> n_elts (2 * VECTOR_CST_NELTS (arg0));
 	  unsigned i;
 	  for (i = 0; i < VECTOR_CST_NELTS (arg0); ++i)
 	    {
-	      n_elts[2*i] = VECTOR_CST_ELT (arg0, i);
-	      n_elts[2*i+1] = VECTOR_CST_ELT (arg1, i);
+	      n_elts.quick_push (VECTOR_CST_ELT (arg0, i));
+	      n_elts.quick_push (VECTOR_CST_ELT (arg1, i));
 	    }
 
 	  return build_vector (rtype, n_elts);
@@ -13032,6 +13062,45 @@ sparc_secondary_reload (bool in_p, rtx x, reg_class_t rclass_i,
   return NO_REGS;
 }
 
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
+
+   On SPARC when not VIS3 it is not possible to directly move data
+   between GENERAL_REGS and FP_REGS.  */
+
+static bool
+sparc_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			       reg_class_t class2)
+{
+  return ((FP_REG_CLASS_P (class1) != FP_REG_CLASS_P (class2))
+	  && (! TARGET_VIS3
+	      || GET_MODE_SIZE (mode) > 8
+	      || GET_MODE_SIZE (mode) < 4));
+}
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
+
+   get_secondary_mem widens its argument to BITS_PER_WORD which loses on v9
+   because the movsi and movsf patterns don't handle r/f moves.
+   For v8 we copy the default definition.  */
+
+static machine_mode
+sparc_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (TARGET_ARCH64)
+    {
+      if (GET_MODE_BITSIZE (mode) < 32)
+	return mode_for_size (32, GET_MODE_CLASS (mode), 0).require ();
+      return mode;
+    }
+  else
+    {
+      if (GET_MODE_BITSIZE (mode) < BITS_PER_WORD)
+	return mode_for_size (BITS_PER_WORD,
+			      GET_MODE_CLASS (mode), 0).require ();
+      return mode;
+    }
+}
+
 /* Emit code to conditionally move either OPERANDS[2] or OPERANDS[3] into
    OPERANDS[0] in MODE.  OPERANDS[1] is the operator of the condition.  */
 
@@ -13334,6 +13403,28 @@ sparc_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 
   *update
     = compound_expr (compound_expr (update_stfsr, update_ldfsr), update_call);
+}
+
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  Borrowed from the PA port.
+
+   SImode loads to floating-point registers are not zero-extended.
+   The definition for LOAD_EXTEND_OP specifies that integer loads
+   narrower than BITS_PER_WORD will be zero-extended.  As a result,
+   we inhibit changes from SImode unless they are to a mode that is
+   identical in size.
+
+   Likewise for SFmode, since word-mode paradoxical subregs are
+   problematic on big-endian architectures.  */
+
+static bool
+sparc_can_change_mode_class (machine_mode from, machine_mode to,
+			     reg_class_t rclass)
+{
+  if (TARGET_ARCH64
+      && GET_MODE_SIZE (from) == 4
+      && GET_MODE_SIZE (to) != 4)
+    return !reg_classes_intersect_p (rclass, FP_REGS);
+  return true;
 }
 
 #include "gt-sparc.h"

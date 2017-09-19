@@ -3347,8 +3347,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
      time to implicitly capture.  */
   if (context == containing_function
       && DECL_TEMPLATE_INFO (containing_function)
-      && any_dependent_template_arguments_p (DECL_TI_ARGS
-					     (containing_function)))
+      && uses_template_parms (DECL_TI_ARGS (containing_function)))
     return decl;
 
   /* Core issue 696: "[At the July 2009 meeting] the CWG expressed

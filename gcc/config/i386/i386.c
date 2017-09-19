@@ -2513,7 +2513,7 @@ public:
   static const unsigned MAX_REGS = 18;
   static const unsigned MAX_EXTRA_REGS = MAX_REGS - MIN_REGS;
   static const unsigned VARIANT_COUNT = MAX_EXTRA_REGS + 1;
-  static const unsigned STUB_NAME_MAX_LEN = 16;
+  static const unsigned STUB_NAME_MAX_LEN = 20;
   static const char * const STUB_BASE_NAMES[XLOGUE_STUB_COUNT];
   static const unsigned REG_ORDER[MAX_REGS];
   static const unsigned REG_ORDER_REALIGN[MAX_REGS];
@@ -2536,7 +2536,7 @@ private:
   struct reginfo m_regs[MAX_REGS];
 
   /* Lazy-inited cache of symbol names for stubs.  */
-  static char s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+  static char s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 			  [STUB_NAME_MAX_LEN];
 
   static const xlogue_layout s_instances[XLOGUE_SET_COUNT];
@@ -2588,7 +2588,7 @@ const unsigned xlogue_layout::VARIANT_COUNT;
 const unsigned xlogue_layout::STUB_NAME_MAX_LEN;
 
 /* Initialize xlogue_layout::s_stub_names to zero.  */
-char xlogue_layout::s_stub_names[XLOGUE_STUB_COUNT][VARIANT_COUNT]
+char xlogue_layout::s_stub_names[2][XLOGUE_STUB_COUNT][VARIANT_COUNT]
 				[STUB_NAME_MAX_LEN];
 
 /* Instantiates all xlogue_layout instances.  */
@@ -2692,13 +2692,16 @@ const char *
 xlogue_layout::get_stub_name (enum xlogue_stub stub,
 			      unsigned n_extra_regs)
 {
-  char *name = s_stub_names[stub][n_extra_regs];
+  const int have_avx = TARGET_AVX;
+  char *name = s_stub_names[!!have_avx][stub][n_extra_regs];
 
   /* Lazy init */
   if (!*name)
     {
-      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%u",
-			  STUB_BASE_NAMES[stub], MIN_REGS + n_extra_regs);
+      int res = snprintf (name, STUB_NAME_MAX_LEN, "__%s_%s_%u",
+			  (have_avx ? "avx" : "sse"),
+			  STUB_BASE_NAMES[stub],
+			  MIN_REGS + n_extra_regs);
       gcc_checking_assert (res < (int)STUB_NAME_MAX_LEN);
     }
 
@@ -8885,7 +8888,7 @@ ix86_use_pseudo_pic_reg (void)
 
 /* Initialize large model PIC register.  */
 
-static rtx_code_label *
+static void
 ix86_init_large_pic_reg (unsigned int tmp_regno)
 {
   rtx_code_label *label;
@@ -8902,7 +8905,10 @@ ix86_init_large_pic_reg (unsigned int tmp_regno)
   emit_insn (gen_set_got_offset_rex64 (tmp_reg, label));
   emit_insn (ix86_gen_add3 (pic_offset_table_rtx,
 			    pic_offset_table_rtx, tmp_reg));
-  return label;
+  const char *name = LABEL_NAME (label);
+  PUT_CODE (label, NOTE);
+  NOTE_KIND (label) = NOTE_INSN_DELETED_LABEL;
+  NOTE_DELETED_LABEL_NAME (label) = name;
 }
 
 /* Create and initialize PIC register if required.  */
@@ -8911,7 +8917,6 @@ ix86_init_pic_reg (void)
 {
   edge entry_edge;
   rtx_insn *seq;
-  rtx_code_label *label = NULL;
 
   if (!ix86_use_pseudo_pic_reg ())
     return;
@@ -8921,7 +8926,7 @@ ix86_init_pic_reg (void)
   if (TARGET_64BIT)
     {
       if (ix86_cmodel == CM_LARGE_PIC)
-	label = ix86_init_large_pic_reg (R11_REG);
+	ix86_init_large_pic_reg (R11_REG);
       else
 	emit_insn (gen_set_got_rex64 (pic_offset_table_rtx));
     }
@@ -8945,22 +8950,6 @@ ix86_init_pic_reg (void)
   entry_edge = single_succ_edge (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   insert_insn_on_edge (seq, entry_edge);
   commit_one_edge_insertion (entry_edge);
-
-  if (label)
-    {
-      basic_block bb = BLOCK_FOR_INSN (label);
-      rtx_insn *bb_note = PREV_INSN (label);
-      /* If the note preceding the label starts a basic block, and the
-	 label is a member of the same basic block, interchange the two.  */
-      if (bb_note != NULL_RTX
-	  && NOTE_INSN_BASIC_BLOCK_P (bb_note)
-	  && bb != NULL
-	  && bb == BLOCK_FOR_INSN (bb_note))
-	{
-	  reorder_insns_nobb (bb_note, bb_note, label);
-	  BB_HEAD (bb) = label;
-	}
-    }
 }
 
 /* Initialize a variable CUM of type CUMULATIVE_ARGS
@@ -14257,11 +14246,12 @@ ix86_finalize_stack_frame_flags (void)
   unsigned int incoming_stack_boundary
     = (crtl->parm_stack_boundary > ix86_incoming_stack_boundary
        ? crtl->parm_stack_boundary : ix86_incoming_stack_boundary);
+  unsigned int stack_alignment
+    = (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
+       ? crtl->max_used_stack_slot_alignment
+       : crtl->stack_alignment_needed);
   unsigned int stack_realign
-    = (incoming_stack_boundary
-       < (crtl->is_leaf && !ix86_current_function_calls_tls_descriptor
-	  ? crtl->max_used_stack_slot_alignment
-	  : crtl->stack_alignment_needed));
+    = (incoming_stack_boundary < stack_alignment);
   bool recompute_frame_layout_p = false;
 
   if (crtl->stack_realign_finalized)
@@ -14306,7 +14296,9 @@ ix86_finalize_stack_frame_flags (void)
 			   HARD_FRAME_POINTER_REGNUM);
 
       /* The preferred stack alignment is the minimum stack alignment.  */
-      unsigned int stack_alignment = crtl->preferred_stack_boundary;
+      if (stack_alignment > crtl->preferred_stack_boundary)
+	stack_alignment = crtl->preferred_stack_boundary;
+
       bool require_stack_frame = false;
 
       FOR_EACH_BB_FN (bb, cfun)
@@ -14348,6 +14340,10 @@ ix86_finalize_stack_frame_flags (void)
 	      crtl->max_used_stack_slot_alignment
 		= incoming_stack_boundary;
 	      crtl->stack_alignment_needed
+		= incoming_stack_boundary;
+	      /* Also update preferred_stack_boundary for leaf
+	         functions.  */
+	      crtl->preferred_stack_boundary
 		= incoming_stack_boundary;
 	    }
 	}
@@ -26710,7 +26706,7 @@ ix86_split_long_move (rtx operands[])
 	 Do an lea to the last part and use only one colliding move.  */
       else if (collisions > 1)
 	{
-	  rtx base, addr, tls_base = NULL_RTX;
+	  rtx base, addr;
 
 	  collisions = 1;
 
@@ -26727,44 +26723,13 @@ ix86_split_long_move (rtx operands[])
 	      struct ix86_address parts;
 	      int ok = ix86_decompose_address (addr, &parts);
 	      gcc_assert (ok);
-	      if (parts.seg == DEFAULT_TLS_SEG_REG)
-		{
-		  /* It is not valid to use %gs: or %fs: in
-		     lea though, so we need to remove it from the
-		     address used for lea and add it to each individual
-		     memory loads instead.  */
-		  addr = copy_rtx (addr);
-		  rtx *x = &addr;
-		  while (GET_CODE (*x) == PLUS)
-		    {
-		      for (i = 0; i < 2; i++)
-			{
-			  rtx u = XEXP (*x, i);
-			  if (GET_CODE (u) == ZERO_EXTEND)
-			    u = XEXP (u, 0);
-			  if (GET_CODE (u) == UNSPEC
-			      && XINT (u, 1) == UNSPEC_TP)
-			    {
-			      tls_base = XEXP (*x, i);
-			      *x = XEXP (*x, 1 - i);
-			      break;
-			    }
-			}
-		      if (tls_base)
-			break;
-		      x = &XEXP (*x, 0);
-		    }
-		  gcc_assert (tls_base);
-		}
+	      /* It is not valid to use %gs: or %fs: in lea.  */
+	      gcc_assert (parts.seg == ADDR_SPACE_GENERIC);
 	    }
 	  emit_insn (gen_rtx_SET (base, addr));
-	  if (tls_base)
-	    base = gen_rtx_PLUS (GET_MODE (base), base, tls_base);
 	  part[1][0] = replace_equiv_address (part[1][0], base);
 	  for (i = 1; i < nparts; i++)
 	    {
-	      if (tls_base)
-		base = copy_rtx (base);
 	      tmp = plus_constant (Pmode, base, UNITS_PER_WORD * i);
 	      part[1][i] = replace_equiv_address (part[1][i], tmp);
 	    }
@@ -34408,6 +34373,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_INTEL_KNL,
     M_AMD_BTVER1,
     M_AMD_BTVER2,    
+    M_AMDFAM17H,
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -34462,6 +34428,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bdver3", M_AMDFAM15H_BDVER3},
       {"bdver4", M_AMDFAM15H_BDVER4},
       {"btver2", M_AMD_BTVER2},
+      {"amdfam17h", M_AMDFAM17H},
       {"znver1", M_AMDFAM17H_ZNVER1},
     };
 
@@ -41102,8 +41069,8 @@ ix86_class_likely_spilled_p (reg_class_t rclass)
    To optimize register_move_cost performance, define inline variant.  */
 
 static inline bool
-inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-				machine_mode mode, int strict)
+inline_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+				reg_class_t class2, int strict)
 {
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
     return false;
@@ -41155,11 +41122,27 @@ inline_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
   return false;
 }
 
-bool
-ix86_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      machine_mode mode, int strict)
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.  */
+
+static bool
+ix86_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			      reg_class_t class2)
 {
-  return inline_secondary_memory_needed (class1, class2, mode, strict);
+  return inline_secondary_memory_needed (mode, class1, class2, true);
+}
+
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED_MODE.
+
+   get_secondary_mem widens integral modes to BITS_PER_WORD.
+   There is no need to emit full 64 bit move on 64 bit targets
+   for integral modes that can be moved using 32 bit move.  */
+
+static machine_mode
+ix86_secondary_memory_needed_mode (machine_mode mode)
+{
+  if (GET_MODE_BITSIZE (mode) < 32 && INTEGRAL_MODE_P (mode))
+    return mode_for_size (32, GET_MODE_CLASS (mode), 0).require ();
+  return mode;
 }
 
 /* Implement the TARGET_CLASS_MAX_NREGS hook.
@@ -41188,20 +41171,19 @@ ix86_class_max_nregs (reg_class_t rclass, machine_mode mode)
     }
 }
 
-/* Return true if the registers in CLASS cannot represent the change from
-   modes FROM to TO.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-bool
-ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
-			       enum reg_class regclass)
+static bool
+ix86_can_change_mode_class (machine_mode from, machine_mode to,
+			    reg_class_t regclass)
 {
   if (from == to)
-    return false;
+    return true;
 
   /* x87 registers can't do subreg at all, as all values are reformatted
      to extended precision.  */
   if (MAYBE_FLOAT_CLASS_P (regclass))
-    return true;
+    return false;
 
   if (MAYBE_SSE_CLASS_P (regclass) || MAYBE_MMX_CLASS_P (regclass))
     {
@@ -41210,10 +41192,10 @@ ix86_cannot_change_mode_class (machine_mode from, machine_mode to,
 	 drop the subreg from (subreg:SI (reg:HI 100) 0).  This affects
 	 the vec_dupv4hi pattern.  */
       if (GET_MODE_SIZE (from) < 4)
-	return true;
+	return false;
     }
 
-  return false;
+  return true;
 }
 
 /* Return the cost of moving data of mode M between a
@@ -41366,7 +41348,7 @@ ix86_register_move_cost (machine_mode mode, reg_class_t class1_i,
      by load.  In order to avoid bad register allocation choices, we need
      for this to be *at least* as high as the symmetric MEMORY_MOVE_COST.  */
 
-  if (inline_secondary_memory_needed (class1, class2, mode, 0))
+  if (inline_secondary_memory_needed (mode, class1, class2, false))
     {
       int cost = 1;
 
@@ -53206,6 +53188,10 @@ ix86_run_selftests (void)
 
 #undef TARGET_SECONDARY_RELOAD
 #define TARGET_SECONDARY_RELOAD ix86_secondary_reload
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED ix86_secondary_memory_needed
+#undef TARGET_SECONDARY_MEMORY_NEEDED_MODE
+#define TARGET_SECONDARY_MEMORY_NEEDED_MODE ix86_secondary_memory_needed_mode
 
 #undef TARGET_CLASS_MAX_NREGS
 #define TARGET_CLASS_MAX_NREGS ix86_class_max_nregs
@@ -53413,6 +53399,9 @@ ix86_run_selftests (void)
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   ix86_hard_regno_call_part_clobbered
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS ix86_can_change_mode_class
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

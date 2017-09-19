@@ -665,8 +665,6 @@ __transfer_from_trampoline ()					\
 #define MOVE_MAX 4
 #define SLOW_BYTE_ACCESS 0
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* The 68020 BFFFO and ColdFire FF1 instructions return 32 for zero. */
 #define CLZ_DEFINED_VALUE_AT_ZERO(MODE, VALUE) ((VALUE) = 32, 1)
 

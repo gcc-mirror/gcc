@@ -25,7 +25,7 @@ struct A
   int i = 0;
 };
 
-// C++1z 20.11.2.2.5 shared_ptr observers [util.smartptr.shared.obs]
+// C++17 20.11.2.2.5 shared_ptr observers [util.smartptr.shared.obs]
 
 // get
 void

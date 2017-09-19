@@ -7922,7 +7922,7 @@ package body Sem_Util is
 
       Context := Scope (Item_Id);
       while Present (Context) and then Context /= Standard_Standard loop
-         if Ekind (Context) = E_Package then
+         if Is_Package_Or_Generic_Package (Context) then
             Pack_Id := Context;
 
             --  A package body is a cut off point for the traversal as the item
@@ -22049,14 +22049,14 @@ package body Sem_Util is
          end if;
       end if;
 
-      --  If E is an object or component, and the type of E is an anonymous
-      --  access type with no convention set, then also set the convention of
-      --  the anonymous access type. We do not do this for anonymous protected
-      --  types, since protected types always have the default convention.
+      --  If E is an object, including a component, and the type of E is an
+      --  anonymous access type with no convention set, then also set the
+      --  convention of the anonymous access type. We do not do this for
+      --  anonymous protected types, since protected types always have the
+      --  default convention.
 
       if Present (Etype (E))
         and then (Is_Object (E)
-                   or else Ekind (E) = E_Component
 
                    --  Allow E_Void (happens for pragma Convention appearing
                    --  in the middle of a record applying to a component)
@@ -22075,15 +22075,13 @@ package body Sem_Util is
                Set_Has_Convention_Pragma (Typ);
 
                --  And for the access subprogram type, deal similarly with the
-               --  designated E_Subprogram_Type if it is also internal (which
-               --  it always is?)
+               --  designated E_Subprogram_Type, which is always internal.
 
                if Ekind (Typ) = E_Anonymous_Access_Subprogram_Type then
                   declare
                      Dtype : constant Entity_Id := Designated_Type (Typ);
                   begin
                      if Ekind (Dtype) = E_Subprogram_Type
-                       and then Is_Itype (Dtype)
                        and then not Has_Convention_Pragma (Dtype)
                      then
                         Basic_Set_Convention (Dtype, Val);

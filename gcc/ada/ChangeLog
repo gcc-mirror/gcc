@@ -1,3 +1,226 @@
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Complete_Object_Operation): Do not insert 'Access for
+	reference types in the access-to-access case.
+
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_attr.adb (Analyze_Access_Attribute): Move check for the presence
+	of the "aliased" keyword on the prefix from here to...
+	(Resolve_Attribute) <Attribute_Access>: ...here.  Remove useless call
+	to Check_No_Implicit_Aliasing.
+	* sinfo.ads (Non_Aliased_Prefix): Delete.
+	(Set_Non_Aliased_Prefix): Likewise.
+	* sinfo.adb (Non_Aliased_Prefix): Delete.
+	(Set_Non_Aliased_Prefix): Likewise.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Build_Formal_Container_Iteration,
+	Expand_Formal_Container_Element_Loop): Convert the container to the
+	root type before passing it to the iteration operations, so it will be
+	of the right type.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads, validsw.ads, treepr.ads, sem_util.ads: Comment fixes.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb (Build_Array_Init_Proc): If validity checking is enabled,
+	and it's a bit-packed array, pass False to the Consider_IS parameter of
+	Needs_Simple_Initialization.
+
+2017-09-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_ch6.adb (Check_Inline_Pragma): Link the newly generated spec to
+	the preexisting body.
+	* sem_prag.adb (Check_Inline_Always_Placement): New routine.
+	(Process_Inline): Verify the placement of pragma Inline_Always. The
+	pragma must now appear on the initial declaration of the related
+	subprogram.
+
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch3.adb (Analyze_Declarations): In ASIS mode,  At the end of the
+	declarative list in a subprogram body, analyze aspext specifications to
+	provide basic semantic information, because otherwise the aspect
+	specifications might only be snalyzed during expansion, when related
+	subprograms are generated.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* exp_ch9.adb (Is_Simple_Barrier_Name): Follow Original_Node, in case
+	validity checks have rewritten the tree.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* sem_util.adb: Comment fixes, and remove redundant Is_Itype check.
+
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Save_References_In_Aggregate): When constructing a
+	qualified exxpression for an aggregate in a generic unit, verify that
+	the scope of the type is itself visible and not hidden, so that the
+	qualified expression is correctly resolved in any instance.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* sem_ch4.adb (Analyze_Qualified_Expression): Give an error if the type
+	mark refers to the current instance. Set the type to Any_Type in that
+	case, to avoid later crashes.
+
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* exp_ch3.adb (Replace_Discriminant_References): New procedure,
+	subsidiary of Build_Assignment, used to handle the initialization code
+	for a mutable record component whose default value is an aggregate that
+	sets the values of the discriminants of the components.
+
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause) <Address>: Mark
+	the entity as being volatile for an overlay that toggles the scalar
+	storage order.
+
+2017-09-18  Fedor Rybin  <frybin@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Document that gnattest
+	options -U main and --harness-only are not compatible.
+
+2017-09-18  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* freeze.adb, sem_ch6.adb, sem_res.adb: Minor reformatting.
+
+2017-09-18  Piotr Trojanek  <trojanek@adacore.com>
+
+	* einfo.ads (Is_Imported): Update comment, as this
+	routine also applies to constants.
+
+2017-09-18  Yannick Moy  <moy@adacore.com>
+
+	* sem_util.adb (Find_Placement_In_State_Space): Allow generic package
+	holding state.
+
+2017-09-18  Justin Squirek  <squirek@adacore.com>
+
+	* sem_prag.adb (Is_Non_Significant_Pragma_Reference): Change the
+	constant indication for Pragma_Linker_Section.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	Alternate fix for PR ada/71358
+	* libgnat/g-comlin.adb (Getopt): Remove manual null access checks.
+	Instead, make a local copy of Config, and if it's null, allocate an
+	empty Command_Line_Configuration_Record, so we won't crash on null
+	pointer dereference.
+
+2017-09-16  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* libgnarl/a-intnam__rtems.ads: Update copyright date.
+	* libgnarl/s-interr__hwint.adb: Likewise.
+	* libgnarl/s-osinte__kfreebsd-gnu.ads: Likewise.
+	* libgnarl/s-osinte__rtems.adb: Likewise.
+	* libgnarl/s-osinte__rtems.ads: Likewise.
+
+2017-09-13  Nicolas Roche  <roche@adacore.com>
+
+	* Make-lang.in: In the fallback mechanim, parse the associated .ali
+	file and try to guess the locations of dependencies.
+
+2017-09-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Register_Address_Clause_Check): New procedure to save
+	the suppression status of Alignment_Check on the current scope.
+	(Alignment_Checks_Suppressed): New function to use the saved instead of
+	the current suppression status of Alignment_Check.
+	(Address_Clause_Check_Record): Add Alignment_Checks_Suppressed field.
+	(Analyze_Attribute_Definition_Clause): Instead of manually appending to
+	the table, call Register_Address_Clause_Check.
+	(Validate_Address_Clauses): Call Alignment_Checks_Suppressed on the
+	recorded address clause instead of its entity.
+
+2017-09-13  Jerome Guitton  <guitton@adacore.com>
+
+	* libgnarl/s-tpopsp__vxworks-tls.adb,
+	libgnarl/s-tpopsp__vxworks-rtp.adb, libgnarl/s-tpopsp__vxworks.adb
+	(Self): Register thread if task id is null.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnat/s-htable.adb, libgnat/s-htable.ads: Minor style tuning.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* lib-xref-spark_specific.adb (Scopes): simplify hash map; now it maps
+	from an entity to only scope index, as a mapping from an entity to the
+	same entity was useless.
+	(Get_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Set_Scope_Num): refactor as a simple renaming; rename parameter from N
+	to E.
+	(Is_Constant_Object_Without_Variable_Input): remove local "Result"
+	variable, just use return statements.
+
+2017-09-13  Arnaud Charlet  <charlet@adacore.com>
+
+	* libgnarl/s-vxwext__kernel-smp.adb,
+	libgnarl/s-tpopsp__vxworks-rtp.adb, libgnarl/s-vxwext__noints.adb:
+	New file.
+
+2017-09-13  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* einfo.adb: Flag42 is now Is_Controlled_Active.
+	(Is_Controlled): This attribute is now synthesized.
+	(Is_Controlled_Active): This attribute is now an explicit flag rather
+	than a synthesized attribute.	(Set_Is_Controlled): Removed.
+	(Set_Is_Controlled_Active): New routine.
+	(Write_Entity_Flags): Update the output for Flag42.
+	* einfo.ads: Update the documentation of the following attributes:
+	Disable_Controlled, Is_Controlled, Is_Controlled_Active, Is_Controlled
+	and Is_Controlled_Active have swapped their functionality.
+	(Is_Controlled): Renamed to Is_Controlled_Active.
+	(Is_Controlled_Active): Renamed to Is_Controlled.
+	(Set_Is_Controlled): Renamed to Set_Is_Controlled_Active.
+	* exp_ch3.adb (Expand_Freeze_Record_Type): Restore the original use of
+	Is_Controlled.
+	* exp_util.adb (Has_Some_Controlled_Component): Code clean up.
+	(Needs_Finalization): Code clean up. Remove the tests for
+	Disable_Controlled because a) they were incorrect as they would reject
+	a type which is sublect to the aspect, but may contain controlled
+	components, and b) they are no longer necessary.
+	* exp_util.ads (Needs_Finalization): Update comment on documentation.
+	* freeze.adb (Freeze_Array_Type): Restore the original use of
+	Is_Controlled.
+	(Freeze_Record_Type): Restore the original use of Is_Controlled.
+	* sem_ch3.adb (Analyze_Object_Declaration): Restore the original use of
+	Is_Controlled.
+	(Array_Type_Declaration): Restore the original use of Is_Controlled.
+	(Build_Derived_Private_Type): Restore the original use of
+	Is_Controlled.
+	(Build_Derived_Record_Type): Set the Is_Controlled_Active flag of a
+	type derived from Ada.Finalization.[Limited_]Controlled.
+	(Build_Derived_Type): Restore the original use of Is_Controlled.
+	(Record_Type_Definition): Restore the original use of Is_Controlled.
+	* sem_ch7.adb (Preserve_Full_Attributes): Restore the original use of
+	Is_Controlled.
+	* sem_ch13.adb (Analyze_Aspect_Disable_Controlled): New routine.
+	(Analyze_Aspect_Specifications): Use routine
+	Analyze_Aspect_Disable_Controlled to process aspect Disable_Controlled.
+
+2017-09-13  Vincent Celier  <celier@adacore.com>
+
+	* clean.adb (Gnatclean): Fix error when looking for target
+	of <target>-gnatclean
+
+2017-09-13  Javier Miranda  <miranda@adacore.com>
+            Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch8.adb (Find_Expanded_Name): Complete code that identifies an
+	expanded name that designates the current instance of a child unit in
+	its own body and appears as the prefix of a reference to an entity
+	local to the child unit.
+
 2017-09-12  Bob Duff  <duff@adacore.com>
 
 	* sem_warn.adb: Minor comment.

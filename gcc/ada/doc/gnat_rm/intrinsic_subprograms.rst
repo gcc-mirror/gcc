@@ -12,7 +12,7 @@ GNAT allows a user application program to write the declaration:
 .. code-block:: ada
 
      pragma Import (Intrinsic, name);
-  
+
 
 providing that the name corresponds to one of the implemented intrinsic
 subprograms in GNAT, and that the parameter profile of the referenced
@@ -49,12 +49,26 @@ You can use an intrinsic operator declaration as in the following example:
      function "+" (X1 : Int1; X2 : Int2) return Int1;
      function "+" (X1 : Int1; X2 : Int2) return Int2;
      pragma Import (Intrinsic, "+");
-  
+
 
 This declaration would permit 'mixed mode' arithmetic on items
 of the differing types ``Int1`` and ``Int2``.
 It is also possible to specify such operators for private types, if the
 full views are appropriate arithmetic types.
+
+.. _Compilation_ISO_Date:
+
+Compilation_ISO_Date
+====================
+
+.. index:: Compilation_ISO_Date
+
+This intrinsic subprogram is used in the implementation of the
+library package ``GNAT.Source_Info``.  The only useful use of the
+intrinsic import in this case is the one in this unit, so an
+application program should simply call the function
+``GNAT.Source_Info.Compilation_ISO_Date`` to obtain the date of
+the current compilation (in local time format YYYY-MM-DD).
 
 .. _Compilation_Date:
 
@@ -63,12 +77,8 @@ Compilation_Date
 
 .. index:: Compilation_Date
 
-This intrinsic subprogram is used in the implementation of the
-library package ``GNAT.Source_Info``.  The only useful use of the
-intrinsic import in this case is the one in this unit, so an
-application program should simply call the function
-``GNAT.Source_Info.Compilation_ISO_Date`` to obtain the date of
-the current compilation (in local time format YYYY-MM-DD).
+Same as Compilation_ISO_Date, except the string is in the form
+MMM DD YYYY.
 
 .. _Compilation_Time:
 
@@ -194,7 +204,7 @@ type (signed or modular), as in this example:
      function Shift_Left
        (Value  : T;
         Amount : Natural) return T;
-  
+
 
 The function name must be one of
 Shift_Left, Shift_Right, Shift_Right_Arithmetic, Rotate_Left, or
@@ -222,4 +232,3 @@ intrinsic import in this case is the one in this unit, so an
 application program should simply call the function
 ``GNAT.Source_Info.Source_Location`` to obtain the current
 source file location.
-

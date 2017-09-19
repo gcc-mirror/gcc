@@ -517,6 +517,10 @@ package body Exp_Ch3 is
 
    procedure Build_Array_Init_Proc (A_Type : Entity_Id; Nod : Node_Id) is
       Comp_Type        : constant Entity_Id  := Component_Type (A_Type);
+      Comp_Type_Simple : constant Boolean :=
+        Needs_Simple_Initialization
+          (Comp_Type, Consider_IS =>
+             not (Validity_Check_Copies and Is_Bit_Packed_Array (A_Type)));
       Body_Stmts       : List_Id;
       Has_Default_Init : Boolean;
       Index_List       : List_Id;
@@ -557,7 +561,7 @@ package body Exp_Ch3 is
                   Convert_To (Comp_Type,
                     Default_Aspect_Component_Value (First_Subtype (A_Type)))));
 
-         elsif Needs_Simple_Initialization (Comp_Type) then
+         elsif Comp_Type_Simple then
             Set_Assignment_OK (Comp);
             return New_List (
               Make_Assignment_Statement (Loc,
@@ -589,7 +593,7 @@ package body Exp_Ch3 is
          --  the dummy Init_Proc needed for Initialize_Scalars processing.
 
          if not Has_Non_Null_Base_Init_Proc (Comp_Type)
-           and then not Needs_Simple_Initialization (Comp_Type)
+           and then not Comp_Type_Simple
            and then not Has_Task (Comp_Type)
            and then not Has_Default_Aspect (A_Type)
          then
@@ -679,7 +683,7 @@ package body Exp_Ch3 is
       --  init_proc.
 
       Has_Default_Init := Has_Non_Null_Base_Init_Proc (Comp_Type)
-                            or else Needs_Simple_Initialization (Comp_Type)
+                            or else Comp_Type_Simple
                             or else Has_Task (Comp_Type)
                             or else Has_Default_Aspect (A_Type);
 
@@ -1782,12 +1786,64 @@ package body Exp_Ch3 is
          Lhs      : Node_Id;
          Res      : List_Id;
 
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result;
+         --  Analysis of the aggregate has replaced discriminants by their
+         --  corresponding discriminals, but these are irrelevant when the
+         --  component has a mutable type and is initialized with an aggregate.
+         --  Instead, they must be replaced by the values supplied in the
+         --  aggregate, that will be assigned during the expansion of the
+         --  assignment.
+
+         -----------------------
+         -- Replace_Discr_Ref --
+         -----------------------
+
+         function Replace_Discr_Ref (N : Node_Id) return Traverse_Result is
+            Val : Node_Id;
+         begin
+            if Is_Entity_Name (N)
+              and then Present (Entity (N))
+              and then Is_Formal (Entity (N))
+              and then Present (Discriminal_Link (Entity (N)))
+            then
+               Val :=
+                  Make_Selected_Component (N_Loc,
+                    Prefix => New_Copy_Tree (Lhs),
+                    Selector_Name => New_Occurrence_Of
+                      (Discriminal_Link (Entity (N)), N_Loc));
+               if Present (Val) then
+                  Rewrite (N, New_Copy_Tree (Val));
+               end if;
+            end if;
+
+            return OK;
+         end Replace_Discr_Ref;
+
+         procedure Replace_Discriminant_References is
+           new Traverse_Proc (Replace_Discr_Ref);
+
       begin
          Lhs :=
            Make_Selected_Component (N_Loc,
              Prefix        => Make_Identifier (Loc, Name_uInit),
              Selector_Name => New_Occurrence_Of (Id, N_Loc));
          Set_Assignment_OK (Lhs);
+
+         if Nkind (Exp) = N_Aggregate
+           and then Has_Discriminants (Typ)
+           and then not Is_Constrained (Base_Type (Typ))
+         then
+            --  The aggregate may provide new values for the discriminants
+            --  of the component, and other components may depend on those
+            --  discriminants. Previous analysis of those expressions have
+            --  replaced the discriminants by the formals of the initialization
+            --  procedure for the type, but these are irrelevant in the
+            --  enclosing initialization procedure: those discriminant
+            --  references must be replaced by the values provided in the
+            --  aggregate.
+
+            Replace_Discriminant_References (Exp);
+         end if;
 
          --  Case of an access attribute applied to the current instance.
          --  Replace the reference to the type by a reference to the actual
@@ -4951,7 +5007,7 @@ package body Exp_Ch3 is
            and then
              (Has_Controlled_Component (Comp_Typ)
                or else (Chars (Comp) /= Name_uParent
-                         and then (Is_Controlled_Active (Comp_Typ))))
+                         and then Is_Controlled (Comp_Typ)))
          then
             Set_Has_Controlled_Component (Typ);
          end if;

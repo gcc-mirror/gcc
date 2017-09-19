@@ -1803,18 +1803,18 @@ dfs_locate_field_accessor_pre (tree binfo, void *data)
   locate_field_data *lfd = (locate_field_data *)data;
   tree type = BINFO_TYPE (binfo);
 
-  vec<tree, va_gc> *method_vec;
+  vec<tree, va_gc> *member_vec;
   tree fn;
   size_t i;
 
   if (!CLASS_TYPE_P (type))
     return NULL_TREE;
 
-  method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
+  member_vec = CLASSTYPE_MEMBER_VEC (type);
+  if (!member_vec)
     return NULL_TREE;
 
-  for (i = 0; vec_safe_iterate (method_vec, i, &fn); ++i)
+  for (i = 0; vec_safe_iterate (member_vec, i, &fn); ++i)
     if (fn)
       if (field_accessor_p (fn, lfd->field_decl, lfd->const_p))
 	return fn;

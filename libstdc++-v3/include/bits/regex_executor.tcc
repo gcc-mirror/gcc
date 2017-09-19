@@ -366,17 +366,17 @@ namespace __detail
 	       _BiIter __actual_end)
       {
 	if (!_M_icase)
-	  return std::equal(__expected_begin, __expected_end,
-			    __actual_begin, __actual_end);
+	  return std::__equal4(__expected_begin, __expected_end,
+			       __actual_begin, __actual_end);
 	typedef std::ctype<_CharT> __ctype_type;
 	const auto& __fctyp = use_facet<__ctype_type>(_M_traits.getloc());
-	return std::equal(__expected_begin, __expected_end,
-			  __actual_begin, __actual_end,
-			  [this, &__fctyp](_CharT __lhs, _CharT __rhs)
-			  {
-			    return __fctyp.tolower(__lhs)
-				== __fctyp.tolower(__rhs);
-			  });
+	return std::__equal4(__expected_begin, __expected_end,
+			     __actual_begin, __actual_end,
+			     [this, &__fctyp](_CharT __lhs, _CharT __rhs)
+			     {
+			       return __fctyp.tolower(__lhs)
+				 == __fctyp.tolower(__rhs);
+			     });
       }
 
       bool _M_icase;

@@ -6000,11 +6000,13 @@ package body Exp_Ch9 is
 
       begin
          --  Check if the name is a component of the protected object. If
-         --  the expander is active, the component has been transformed into
-         --  a renaming of _object.all.component.
+         --  the expander is active, the component has been transformed into a
+         --  renaming of _object.all.component. Original_Node is needed in case
+         --  validity checking is enabled, in which case the simple object
+         --  reference will have been rewritten.
 
          if Expander_Active then
-            Renamed := Renamed_Object (Entity (N));
+            Renamed := Renamed_Object (Entity (Original_Node (N)));
 
             return
               Present (Renamed)

@@ -526,8 +526,6 @@ while (0)
 
 #define SHIFT_COUNT_TRUNCATED 1
 
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 #define STORE_FLAG_VALUE 1
 
 #define Pmode SImode

@@ -3812,6 +3812,22 @@ msp430x_logical_shift_right (rtx amount)
      right shift instruction to perform the rest of the shift.  */
   return "rrum.w\t#1, %0 { rpt\t%Z2 { rrax.w\t%0"; /* Six bytes.  */
 }
+
+/* Stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS msp430_can_change_mode_class
+
+static bool
+msp430_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
+{
+  if ((to == PSImode && from == SImode)
+      || (to == SImode && from == PSImode)
+      || (to == DImode && from == PSImode)
+      || (to == PSImode && from == DImode))
+    return false;
+  return true;
+}
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
