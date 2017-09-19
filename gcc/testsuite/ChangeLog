@@ -1,3 +1,10 @@
+2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/bt-5.c: New test.
+	* gcc.target/i386/bt-6.c: Ditto.
+	* gcc.target/i386/bt-mask-3.c: Ditto.
+	* gcc.target/i386/bt-mask-4.c: Ditto.
+
 2017-09-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/tree-ssa/pr31146-2.C: Only do scan-tree-dump for c++14_down.
