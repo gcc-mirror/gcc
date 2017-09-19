@@ -1,3 +1,12 @@
+2017-09-19  Martin Liska  <mliska@suse.cz>
+
+	Revert backport:
+	2017-08-10  Martin Liska  <mliska@suse.cz>
+
+	PR c++/81355
+	* c-attribs.c (handle_target_attribute):
+	Report warning for an empty string argument of target attribute.
+
 2017-09-18  Richard Biener  <rguenther@suse.de>
  
 	Backport from mainline
