@@ -1,3 +1,9 @@
+2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	* graphite-scop-detection.c (scop_detection::can_represent_loop):
+	Do not iterate to sibling loops but only to siblings of inner
+	loops.
+
 2017-09-18  Andreas Schwab  <schwab@linux-m68k.org>
 
 	PR target/81613
