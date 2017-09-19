@@ -1,3 +1,7 @@
+2017-09-17  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* simplify-rtx.c (simplify_binary_operation_1): Fix typo in comment.
+
 2017-09-18  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854
