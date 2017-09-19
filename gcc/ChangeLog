@@ -1,5 +1,13 @@
 2017-09-19  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/69728
+	* graphite-sese-to-poly.c (schedule_error): New global.
+	(add_loop_schedule): Handle empty domain by failing the
+	schedule.
+	(build_original_schedule): Handle schedule_error.
+
+2017-09-19  Richard Biener  <rguenther@suse.de>
+
 	* graphite-scop-detection.c (scop_detection::can_represent_loop):
 	Do not iterate to sibling loops but only to siblings of inner
 	loops.
