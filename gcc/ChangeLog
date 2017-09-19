@@ -1,3 +1,9 @@
+2017-09-18  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* cgraphunit.c (handle_alias_pairs): Reject aliases between functions
+	of incompatible types.
+
 2017-09-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling

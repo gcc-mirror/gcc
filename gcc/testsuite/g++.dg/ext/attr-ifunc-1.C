@@ -2,33 +2,41 @@
 /* { dg-require-ifunc "" } */
 /* { dg-options "-Wno-pmf-conversions" } */
 
-#include <stdio.h>
-
 struct Klass
 {
   int implementation ();
   int magic ();
-  static void *resolver ();
+
+  typedef int (Klass::*MemFuncPtr)();
+
+  static MemFuncPtr resolver ();
 };
+
+Klass::MemFuncPtr p = &Klass::implementation;
 
 int Klass::implementation (void)
 {
-  printf ("'ere I am JH\n");
-  return 0;
+  __builtin_printf ("'ere I am JH\n");
+  return 1234;
 }
 
-void *Klass::resolver (void)
+
+Klass::MemFuncPtr Klass::resolver (void)
 {
-  int (Klass::*pmf) () = &Klass::implementation;
-  
-  return (void *)(int (*)(Klass *))(((Klass *)0)->*pmf);
+  return &Klass::implementation;
 }
+
+int f (void) __attribute__ ((ifunc ("foo")));
+
+typedef int (F)(void);
+extern "C" F* foo () { return 0; }
+
 
 int Klass::magic (void) __attribute__ ((ifunc ("_ZN5Klass8resolverEv")));
 
 int main ()
 {
   Klass obj;
-  
-  return obj.magic () != 0;
+
+  return !(obj.magic () == 1234);
 }
