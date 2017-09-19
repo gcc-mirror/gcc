@@ -1,3 +1,7 @@
+2017-09-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-misc.c: New.
+
 2017-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82244
