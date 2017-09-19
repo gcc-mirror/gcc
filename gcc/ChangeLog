@@ -1,3 +1,9 @@
+2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (fold_builtin_cpu): Add M_AMDFAM17H
+	to processor_model and "amdfam17h" to arch_names_table.
+	* doc/extend.texi (__builtin_cpu_is): Document amdfam17h CPU name.
+
 2017-09-19  Martin Liska  <mliska@suse.cz>
 
 	PR c++/81355
@@ -13,7 +19,7 @@
 	Report warning for an empty string argument of target attribute.
 
 2017-09-18  Richard Biener  <rguenther@suse.de>
- 
+
 	Backport from mainline
 	2017-08-28  Richard Biener  <rguenther@suse.de>
 
