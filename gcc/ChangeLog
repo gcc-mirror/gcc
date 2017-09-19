@@ -1,3 +1,10 @@
+2017-09-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early folding of vector loads (ALTIVEC_BUILTIN_LVX_*).
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Remove obsoleted code for handling ALTIVEC_BUILTIN_VEC_LD.
+
 2017-09-19  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82244
