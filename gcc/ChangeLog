@@ -1,5 +1,10 @@
 2017-09-19  Martin Liska  <mliska@suse.cz>
 
+	PR c++/81355
+	* config/i386/i386.c (sorted_attr_string): Skip empty strings.
+
+2017-09-19  Martin Liska  <mliska@suse.cz>
+
 	Revert backport:
 	2017-08-10  Martin Liska  <mliska@suse.cz>
 
