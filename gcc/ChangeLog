@@ -1,8 +1,13 @@
-2017-09-17  Segher Boessenkool  <segher@kernel.crashing.org>
+2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_split_long_move): Do not handle
+	address used for LEA in a special way.
+
+2017-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* simplify-rtx.c (simplify_binary_operation_1): Fix typo in comment.
 
-2017-09-18  Martin Sebor  <msebor@redhat.com>
+2017-09-19  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854
 	* cgraphunit.c (handle_alias_pairs): Reject aliases between functions
