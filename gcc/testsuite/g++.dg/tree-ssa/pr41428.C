@@ -11,4 +11,6 @@ int foo(void)
   return *(int *)&f;
 }
 
-/* { dg-final { scan-tree-dump "Folded into: if \\\(1 != 0\\\)" "ccp1" } } */
+/* -std=c++17 and above doesn't emit operator new () != NULL, so there is
+   nothing to fold anymore.  */
+/* { dg-final { scan-tree-dump "Folded into: if \\\(1 != 0\\\)" "ccp1" { target c++14_down } } } */
