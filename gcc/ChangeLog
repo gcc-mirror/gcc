@@ -1,3 +1,9 @@
+2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82244
+	* tree-vrp.c (remove_range_assertions): Do not propagate
+	a constant to abnormals but replace the assert with a copy.
+
 2017-09-19  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR rtl-optimization/57878

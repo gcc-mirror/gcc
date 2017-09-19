@@ -7039,6 +7039,14 @@ remove_range_assertions (void)
 		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		    SET_USE (use_p, var);
 	      }
+	    /* But do not propagate constants as that is invalid.  */
+	    else if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
+	      {
+		gassign *ass = gimple_build_assign (lhs, var);
+		gsi_replace (&si, ass, true);
+		gsi_next (&si);
+		continue;
+	      }
 	    else
 	      replace_uses_by (lhs, var);
 
