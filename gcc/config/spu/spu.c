@@ -1767,7 +1767,7 @@ spu_expand_prologue (void)
 
   if (total_size > 0)
     {
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* We compare against total_size-1 because
 	     ($sp >= total_size) <=> ($sp > total_size-1) */
@@ -5390,7 +5390,7 @@ spu_allocate_stack (rtx op0, rtx op1)
   emit_insn (gen_spu_convert (sp, stack_pointer_rtx));
   emit_insn (gen_subv4si3 (sp, sp, splatted));
 
-  if (flag_stack_check)
+  if (flag_stack_check || flag_stack_clash_protection)
     {
       rtx avail = gen_reg_rtx(SImode);
       rtx result = gen_reg_rtx(SImode);
