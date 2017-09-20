@@ -216,7 +216,7 @@ func tracebackothers(me *g) {
 			print("\tgoroutine running on other thread; stack unavailable\n")
 			printcreatedby(gp)
 		} else if readgstatus(gp)&^_Gscan == _Gsyscall {
-			print("\tin C code; stack unavailable\n")
+			print("\tgoroutine in C code; stack unavailable\n")
 			printcreatedby(gp)
 		} else {
 			gp.traceback = &tb
