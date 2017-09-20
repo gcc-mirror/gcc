@@ -64,6 +64,7 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
   irange op1_range, op2_range;
   tree op1, op2;
   bool op1_in_chain, op2_in_chain;
+  bool ret = false;
 
   op1 = stmt.operand1 ();
   op2 = stmt.operand2 ();
@@ -134,16 +135,29 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
       return true;
     }
 
-  /* Don't look thru expressions with more than one in_chain argument.  */
+  /* Can't resolve both sides at once, so take a guess at operand 1, calculate
+     operand 2 and check if the guess at operand 1 was good.  */
   if (op1_in_chain && op2_in_chain)
-    return false;
-
-  if (op1_in_chain)
     {
-      get_operand_range (op2_range, op2);
+      irange tmp_op1_range;
+      get_operand_range (tmp_op1_range, op1);
+      stmt.op2_irange (op2_range, lhs, tmp_op1_range, trace_output);
+      get_range_from_stmt (SSA_NAME_DEF_STMT (op2), r, name, op2_range);
       stmt.op1_irange (op1_range, lhs, op2_range, trace_output);
-      return get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name, op1_range);
+      ret = get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name, op1_range);
+      /* If the guess is good, we're done. */
+      if (op1_range == tmp_op1_range)
+        return ret;
+      /* Otherwise fall thru and recalculate op2_range again.  */
     }
+  else
+    if (op1_in_chain)
+      {
+	get_operand_range (op2_range, op2);
+	stmt.op1_irange (op1_range, lhs, op2_range, trace_output);
+	return get_range_from_stmt (SSA_NAME_DEF_STMT (op1), r, name,
+				    op1_range);
+      }
 
   get_operand_range (op1_range, op1);
   stmt.op2_irange (op2_range, lhs, op1_range, trace_output);
@@ -166,7 +180,7 @@ gori::get_range_from_stmt (gimple *stmt, irange& r, tree name,
      has no range either.  */
   if (lhs.empty_p ())
     {
-      r = lhs;
+      r.clear (TREE_TYPE (name));
       return true;
     }
 
@@ -734,6 +748,42 @@ path_ranger::determine_block (basic_block bb)
 bool
 path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
 {
+#if 0
+  if (is_a <gphi *> (g))
+    {
+      gphi *phi = as_a <gphi *> (g);
+      tree phi_def = gimple_phi_result (phi);
+      irange tmp;
+      unsigned x;
+
+      /* Only calculate ranges for PHI defs.  */
+      if (phi_def != name)
+        return false;
+
+      r.clear (TREE_TYPE (name));
+
+      for (x = 0; x < gimple_phi_num_args (phi); x++)
+        {
+	  bool res;
+	  tree arg = gimple_phi_arg_def (phi, x);
+	  if (TREE_CODE (arg) == SSA_NAME)
+	    res = path_range_edge (tmp, arg, gimple_phi_arg_edge (phi, x));
+	  else
+	    res = get_operand_range (tmp, arg);
+          if (res)
+	    r.union_ (tmp);
+	  else
+	    {
+	      r.set_range_for_type (name);
+	      return false;
+	    }
+	  if (r.range_for_type_p ())
+	    return true;
+	}
+      return true;
+
+    }
+#endif
   return range_on_stmt (r, name, g);
 }
 

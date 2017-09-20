@@ -92,6 +92,7 @@ along with GCC; see the file COPYING3.  If not see
    branch.  */
 
 #define trace_output ((FILE *)0)
+//#define trace_output dump_file
 
 
 irange_operator *
@@ -550,7 +551,7 @@ range_stmt::dump (FILE *f) const
       fprintf (f, ") ");
     }
 
-  print_generic_expr (stderr, op1, TDF_SLIM);
+  print_generic_expr (f, op1, TDF_SLIM);
 
   if (state != RS_I && state != RS_S)
     {
