@@ -1,5 +1,28 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	Backport from mainline
+	2017-06-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/test.xml: Correct instructions on running tests.
+	* testsuite/27_io/basic_ios/copyfmt/char/1.cc: Adjust to pass when
+	-D_GLIBCXX_USE_CXX11_ABI=0 added to RUNTESTFLAGS.
+	* testsuite/27_io/basic_ios/exceptions/char/1.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/char/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_arithmetic/wchar_t/
+	exceptions_failbit.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/extractors_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/char/12297.cc: Likewise.
+	* testsuite/27_io/basic_istream/sentry/wchar_t/12297.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/char/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/basic_ostream/inserters_other/wchar_t/
+	exceptions_null.cc: Likewise.
+	* testsuite/27_io/ios_base/storage/2.cc: Likewise.
+
 	PR libstdc++/79162
 	* include/bits/basic_string.h [!_GLIBCXX_USE_CXX11_ABI]
 	(basic_string::_If_sv): Remove from the overload set when the
