@@ -1,5 +1,10 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/81469
+	* libsupc++/exception (uncaught_exception): Deprecate for C++17.
+	* testsuite/18_support/exception_ptr/62258.cc: Add -Wno-deprecated.
+	* testsuite/18_support/uncaught_exception/14026.cc: Likewise.
+
 	* include/bits/c++config (_GLIBCXX17_DEPRECATED): Define.
 	* include/bits/functional_hash.h (__hash_base::result_type)
 	(__hash_base::argument_type): Add _GLIBCXX17_DEPRECATED.
