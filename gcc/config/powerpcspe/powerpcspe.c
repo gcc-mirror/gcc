@@ -29688,7 +29688,7 @@ rs6000_emit_prologue (void)
     current_function_static_stack_size = info->total_size;
 
   if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
-      || flag_stack_check_protection)
+      || flag_stack_clash_protection)
     {
       HOST_WIDE_INT size = info->total_size;
 
