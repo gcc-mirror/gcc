@@ -1,3 +1,17 @@
+2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backport from mainline
+	2017-02-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/60936
+	* src/c++11/snprintf_lite.cc (__concat_size_t): Calculate length
+	written to buffer, not length remaining in buffer.
+
+	Backport from mainline
+	2017-02-08  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* src/c++11/snprintf_lite.cc (__err): Update bug reporting URL.
+
 2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backport from mainline
