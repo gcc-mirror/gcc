@@ -101,17 +101,26 @@ range_stmt::handler () const
   return irange_op_handler (code);
 }
 
-#define ACCEPTABLE_SSA(T) ((T) && TREE_CODE (T) == SSA_NAME		\
-			   && (INTEGRAL_TYPE_P (TREE_TYPE (T))		\
-			       || POINTER_TYPE_P (TREE_TYPE (T))))
+
+static inline
+tree integral_ssa (tree t)
+{
+  if (t && TREE_CODE (t) == SSA_NAME)
+    {
+      tree type = TREE_TYPE (t);
+      if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
+        return t;
+    }
+  return NULL_TREE;
+}
 
 /* Intialize the state based on the operands to the expression.  */
 enum range_stmt_state
 range_stmt::determine_state (tree t1, tree t2)
 {
   enum range_stmt_state st = RS_INV;
-  ssa1 = ACCEPTABLE_SSA (t1) ? t1 : NULL_TREE;
-  ssa2 = ACCEPTABLE_SSA (t2) ? t2 : NULL_TREE;
+  ssa1 = integral_ssa (t1);
+  ssa2 = integral_ssa (t2);
 
   if (!t2 || TYPE_P (t2))
     {
@@ -132,7 +141,7 @@ range_stmt::determine_state (tree t1, tree t2)
 	      /* Resolving 2 SSA names is only allowed with relational and
 		 logical operations.  */
 	      if ((code >= LT_EXPR && code <= NE_EXPR)
-	          || combine_range_p (TREE_TYPE (t1)))
+	          || logical_expr_p (TREE_TYPE (t1)))
 		st = RS_SS;
 	    }
 	  else
@@ -198,7 +207,7 @@ range_stmt::from_stmt (gimple *s)
 
 
 bool
-range_stmt::combine_range_p (tree type)
+range_stmt::logical_expr_p (tree type) const
 {
 
   /* Look for boolean and/or condition.  */
@@ -221,11 +230,11 @@ range_stmt::combine_range_p (tree type)
 }
 
 bool
-range_stmt::combine_range (irange& r, const irange& lhs, const irange& op1_true,
-			   const irange& op1_false, const irange& op2_true,
-			   const irange& op2_false)
+range_stmt::logical_expr (irange& r, const irange& lhs, const irange& op1_true,
+			  const irange& op1_false, const irange& op2_true,
+			  const irange& op2_false)
 {
-  gcc_checking_assert (combine_range_p (TREE_TYPE (op1)));
+  gcc_checking_assert (logical_expr_p (TREE_TYPE (op1)));
  
   if (trace_output)
     {

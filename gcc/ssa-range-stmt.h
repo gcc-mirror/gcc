@@ -72,10 +72,10 @@ public:
   tree ssa_operand1 () const;
   tree ssa_operand2 () const;
 
-  bool combine_range_p (tree type);
-  bool combine_range (irange& r, const irange& lhs, const irange& op1_true,
-  		      const irange& op1_false, const irange& op2_true,
-		      const irange& op2_false);
+  bool logical_expr_p (tree type) const;
+  bool logical_expr (irange& r, const irange& lhs, const irange& op1_true,
+  		     const irange& op1_false, const irange& op2_true,
+		     const irange& op2_false);
   bool fold (irange& res, FILE *trace = NULL) const;
   bool op1_irange (irange& r, const irange& lhs, const irange& op2,
 		   FILE *trace = NULL) const;

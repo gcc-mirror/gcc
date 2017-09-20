@@ -47,7 +47,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "ssa-range-gen.h"
 
 
-
 ssa_define_chain::ssa_define_chain (bool within_bb)
 {
   def_chain.create (0);

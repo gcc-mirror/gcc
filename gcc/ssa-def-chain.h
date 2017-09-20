@@ -30,7 +30,7 @@ along with GCC; see the file COPYING3.  If not see
    Initially this is being utilized by the ssa range generator to determine  
    which expressions can be re-expressed.
    
-   Assuming operators -,+ and * are understood, using the follwing snippet:
+   Assuming operators -,+ and * are understood, using the following snippet:
 
 	 b_6 = t_2 << 6
 	 a_3 = b_6 + 4
@@ -46,14 +46,16 @@ along with GCC; see the file COPYING3.  If not see
    using an unknow operator. 
    
    This means the "terminal" node in each of the chains shown is b_6. This is
-   the first value used wihch cannot be calculated.
+   the first value used which cannot be calculated, or which comes from
+   outside the basic block.
 
    If there is more than one possible terminal name, ie both b_6 and q_9 could
    be considered terminal in this case:
          q_9 = foo ()
 	 b_6 = t_2 << 6
 	 a_3 = b_6 + q_9 
-   the last confirmed single name is used... in this case a_3.
+   the last confirmed single name is used... in this case a_3.  There can
+   be no more than a single terminal.
    
    These are calculated on demand and cached.  */
    

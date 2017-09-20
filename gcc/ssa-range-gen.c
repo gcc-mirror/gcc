@@ -95,15 +95,22 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
     return false;
   
   /* Check for boolean cases which require developing ranges and combining.  */
-  if (stmt.combine_range_p (TREE_TYPE (op1)))
+  if (stmt.logical_expr_p (TREE_TYPE (op1)))
     {
       irange bool_zero (boolean_type_node, 0, 0);
       irange bool_one (boolean_type_node, 1, 1);
       irange op1_true, op1_false, op2_true, op2_false;
 
+      /* If the lhs is not a true or false constant, we can't tell anything
+         about the arguments.  */
+      if (lhs.range_for_type_p ())
+        {
+	  r.set_range_for_type (TREE_TYPE (name));
+	  return true;
+	}
+
       /* The false path is not always a simple inversion of the true side.
 	 Calulate ranges for true and false on both sides. */
-
       if (op1_in_chain)
 	{
 	  get_range_from_stmt (SSA_NAME_DEF_STMT (op1), op1_true, name,
@@ -129,8 +136,8 @@ gori::get_range (range_stmt& stmt, irange& r, tree name,
 	  get_operand_range (op2_true, name);
 	  get_operand_range (op2_false, name);
 	}
-      if (!stmt.combine_range (r, lhs, op1_true, op1_false, op2_true,
-			       op2_false))
+      if (!stmt.logical_expr (r, lhs, op1_true, op1_false, op2_true,
+			      op2_false))
 	r.set_range_for_type (TREE_TYPE (name));
       return true;
     }
