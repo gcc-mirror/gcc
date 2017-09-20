@@ -15,9 +15,6 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// The library throws the new definition of std::ios::failure
-// { dg-options "-D_GLIBCXX_USE_CXX11_ABI=1" }
-
 // 27.6.1.1.2 class basic_istream::sentry
 
 #include <sstream>
@@ -28,16 +25,23 @@ int main()
   using namespace std;
   wistringstream stream;
   stream.exceptions(ios_base::eofbit);
-  
+
+  // The library throws the new definition of std::ios::failure
+#if _GLIBCXX_USE_CXX11_ABI
+    typedef std::ios_base::failure exception_type;
+#else
+    typedef std::exception exception_type;
+#endif
+
   try
     {
       wistream::sentry sentry(stream, false);
       VERIFY( false );
     }
-  catch (ios_base::failure&)
+  catch (exception_type&)
     {
       VERIFY( stream.rdstate() == (ios_base::eofbit | ios_base::failbit) );
     }
-  
+
   return 0;
 }
