@@ -39,6 +39,8 @@ class gori
   void build ();
   void build (basic_block bb);
 
+  bool process_logical (range_stmt& stmt, irange& r, tree name,
+			const irange& lhs);
   bool get_range (range_stmt& stmt, irange& r, tree name, const irange& lhs);
   bool get_range_from_stmt (gimple *stmt, irange& r, tree name,
 			    const irange& lhs);

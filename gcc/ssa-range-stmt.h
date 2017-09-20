@@ -130,5 +130,16 @@ range_stmt::ssa_operand2 () const
   return ssa2;
 }
 
+static inline
+tree irange_ssa (tree t)
+{
+  if (t && TREE_CODE (t) == SSA_NAME)
+    {
+      tree type = TREE_TYPE (t);
+      if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
+        return t;
+    }
+  return NULL_TREE;
+}
 
 #endif /* GCC_SSA_RANGE_STMT_H */

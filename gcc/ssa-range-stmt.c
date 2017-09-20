@@ -101,26 +101,13 @@ range_stmt::handler () const
   return irange_op_handler (code);
 }
 
-
-static inline
-tree integral_ssa (tree t)
-{
-  if (t && TREE_CODE (t) == SSA_NAME)
-    {
-      tree type = TREE_TYPE (t);
-      if (INTEGRAL_TYPE_P (type) || POINTER_TYPE_P (type))
-        return t;
-    }
-  return NULL_TREE;
-}
-
 /* Intialize the state based on the operands to the expression.  */
 enum range_stmt_state
 range_stmt::determine_state (tree t1, tree t2)
 {
   enum range_stmt_state st = RS_INV;
-  ssa1 = integral_ssa (t1);
-  ssa2 = integral_ssa (t2);
+  ssa1 = irange_ssa (t1);
+  ssa2 = irange_ssa (t2);
 
   if (!t2 || TYPE_P (t2))
     {
