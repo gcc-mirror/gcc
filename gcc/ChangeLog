@@ -1,3 +1,11 @@
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* tree-ssa-sccvn.c (vn_phi_eq): Use safe_dyn_cast to check
+	for GIMPLE_CONDs.
+	(vn_phi_lookup): Likewise.
+	(vn_phi_insert): Likewise.
+
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	* dwarf2out.c (tree_add_const_value_attribute): For INTEGER_CST
