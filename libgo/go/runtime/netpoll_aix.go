@@ -64,14 +64,14 @@ func netpollinit() {
 	var p [2]int32
 
 	if ps = pollset_create(-1); ps < 0 {
-		throw("netpollinit: failed to create pollset")
+		throw("runtime: netpollinit failed to create pollset")
 	}
 	// It is not possible to add or remove descriptors from
 	// the pollset while pollset_poll is active.
 	// We use a pipe to wakeup pollset_poll when the pollset
 	// needs to be updated.
 	if err := libc_pipe(&p[0]); err < 0 {
-		throw("netpollinit: failed to create pipe")
+		throw("runtime: netpollinit failed to create pipe")
 	}
 	rdwake = p[0]
 	wrwake = p[1]
@@ -90,10 +90,15 @@ func netpollinit() {
 	pctl.fd = rdwake
 	pctl.events = _POLLIN
 	if pollset_ctl(ps, &pctl, 1) != 0 {
-		throw("netpollinit: failed to register pipe")
+		throw("runtime: netpollinit failed to register pipe")
 	}
 
 	mpfds = make(map[int32]*pollDesc)
+}
+
+func netpolldescriptor() uintptr {
+	// ps is not a real file descriptor.
+	return ^uintptr(0)
 }
 
 func netpollopen(fd uintptr, pd *pollDesc) int32 {
@@ -144,7 +149,7 @@ func netpollclose(fd uintptr) int32 {
 }
 
 func netpollarm(pd *pollDesc, mode int) {
-	throw("unused")
+	throw("runtime: unused")
 }
 
 func netpoll(block bool) *g {
@@ -168,7 +173,7 @@ retry:
 	if nfound < 0 {
 		e := errno()
 		if e != _EINTR {
-			throw("pollset_poll failed")
+			throw("runtime: pollset_poll failed")
 		}
 		goto retry
 	}
