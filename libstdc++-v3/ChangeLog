@@ -1,5 +1,8 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/24_iterators/range_access_cpp17.cc: Fix order of dg-do
+	and dg-options directives. Fix invalid test.
+
 	PR libstdc++/81469
 	* libsupc++/exception (uncaught_exception): Deprecate for C++17.
 	* testsuite/18_support/exception_ptr/62258.cc: Add -Wno-deprecated.
