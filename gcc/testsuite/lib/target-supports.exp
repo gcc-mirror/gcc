@@ -437,11 +437,14 @@ proc check_effective_target_alias { } {
 proc check_ifunc_available { } {
     return [check_no_compiler_messages ifunc_available object {
 	#ifdef __cplusplus
-	extern "C"
+	extern "C" {
 	#endif
 	typedef void F (void);
 	F* g() {}
 	void f() __attribute__((ifunc("g")));
+	#ifdef __cplusplus
+	}
+	#endif
     }]
 }
 

@@ -1,13 +1,18 @@
 2017-09-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854
+	* g++.dg/ext/attr-ifunc-2.C: Correct type errors.
+	* g++.dg/ext/attr-ifunc-4.C: Ditto.
+	* lib/target-supports.exp: Adjust for C++.
+
+	PR c/81854
 	* gcc.dg/attr-ifunc-1.c: Correct type errors.
 	* gcc.dg/attr-ifunc-2.c: Ditto.
 	* gcc.dg/attr-ifunc-3.c: Ditto.
 	* gcc.dg/attr-ifunc-4.c: Ditto.
 	* gcc.dg/attr-ifunc-5.c: Ditto.
 	* gcc.dg/pr81854.c: Require ifunc support.
-	* gcc/testsuite/lib/target-supports.exp: Correct type error.
+	* lib/target-supports.exp: Correct type error.
 
 2017-09-20  Jeff Law  <law@redhat.com>
 
