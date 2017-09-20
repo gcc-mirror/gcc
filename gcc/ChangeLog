@@ -1,3 +1,11 @@
+2017-09-20  Jeff Law  <law@redhat.com>
+
+	* explow.c (compute_stack_clash_protection_loop_data): Use
+	CONST_INT_P instead of explicit test.  Verify object is a
+	CONST_INT_P before looking at INTVAL.
+	(anti_adjust_stack_and_probe_stack_clash): Use CONST_INT_P
+	instead of explicit test.
+
 2017-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/77687

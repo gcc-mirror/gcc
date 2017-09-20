@@ -1,3 +1,8 @@
+2017-09-20  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/stack-check-11.c: Update test and regexp
+	so that it works for both i?86 and x86_64.
+
 2017-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR target/77687
