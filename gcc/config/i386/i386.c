@@ -13547,7 +13547,7 @@ ix86_add_queued_cfa_restore_notes (rtx insn)
    zero if %r11 register is live and cannot be freely used and positive
    otherwise.  */
 
-static void
+static rtx
 pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
 			   int style, bool set_cfa)
 {
@@ -13638,6 +13638,7 @@ pro_epilogue_adjust_stack (rtx dest, rtx src, rtx offset,
       m->fs.sp_valid = valid;
       m->fs.sp_realigned = realigned;
     }
+  return insn;
 }
 
 /* Find an available register to be used as dynamic realign argument
@@ -13987,9 +13988,11 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
       for (i = probe_interval; i <= size; i += probe_interval)
 	{
 	  /* Allocate PROBE_INTERVAL bytes.  */
-	  pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
-				     GEN_INT (-probe_interval), -1,
-				     m->fs.cfa_reg == stack_pointer_rtx);
+	  rtx insn
+	    = pro_epilogue_adjust_stack (stack_pointer_rtx, stack_pointer_rtx,
+					 GEN_INT (-PROBE_INTERVAL), -1,
+					 m->fs.cfa_reg == stack_pointer_rtx);
+	  add_reg_note (insn, REG_STACK_CHECK, const0_rtx);
 
 	  /* And probe at *sp.  */
 	  emit_stack_probe (stack_pointer_rtx);

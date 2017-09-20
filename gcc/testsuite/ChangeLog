@@ -1,5 +1,7 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* gcc.target/i386/stack-check-11.c: New test.
+
 	* gcc.dg/stack-check-4.c: New test.
 	* gcc.dg/stack-check-5.c: New test.
 	* gcc.dg/stack-check-6.c: New test.

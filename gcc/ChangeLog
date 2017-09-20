@@ -1,5 +1,13 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* combine-stack-adj.c (combine_stack_adjustments_for_block): Do
+	nothing for stack adjustments with REG_STACK_CHECK.
+	* sched-deps.c (parse_add_or_inc): Reject insns with
+	REG_STACK_CHECK from dependency breaking.
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Return insn.
+	(ix86_adjust_satck_and_probe_stack_clash): Add REG_STACK_NOTEs.
+	* reg-notes.def (STACK_CHECK): New note.
+
 	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): New.
 	(ix86_expand_prologue): Dump stack clash info as needed.
 	Call ix86_adjust_stack_and_probe_stack_clash as needed.
