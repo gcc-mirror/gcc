@@ -19446,6 +19446,19 @@ tree_add_const_value_attribute (dw_die_ref die, tree t)
   init = t;
   gcc_assert (!DECL_P (init));
 
+  if (TREE_CODE (init) == INTEGER_CST)
+    {
+      if (tree_fits_uhwi_p (init))
+	{
+	  add_AT_unsigned (die, DW_AT_const_value, tree_to_uhwi (init));
+	  return true;
+	}
+      if (tree_fits_shwi_p (init))
+	{
+	  add_AT_int (die, DW_AT_const_value, tree_to_shwi (init));
+	  return true;
+	}
+    }
   if (! early_dwarf)
     {
       rtl = rtl_for_decl_init (init, type);

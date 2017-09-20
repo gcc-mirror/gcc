@@ -1,3 +1,19 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/template-params-13.C: New test.
+	* g++.dg/debug/dwarf2/template-params-5.C: Adjust regexps so that
+	it doesn't match newlines.
+	* g++.dg/debug/dwarf2/template-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp98.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-5.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Likewise.
+
 2017-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/64954
