@@ -16546,6 +16546,48 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	update_call_from_tree (gsi, res);
 	return true;
       }
+    /* Vector loads.  */
+    case ALTIVEC_BUILTIN_LVX_V16QI:
+    case ALTIVEC_BUILTIN_LVX_V8HI:
+    case ALTIVEC_BUILTIN_LVX_V4SI:
+    case ALTIVEC_BUILTIN_LVX_V4SF:
+    case ALTIVEC_BUILTIN_LVX_V2DI:
+    case ALTIVEC_BUILTIN_LVX_V2DF:
+      {
+	 arg0 = gimple_call_arg (stmt, 0);  // offset
+	 arg1 = gimple_call_arg (stmt, 1);  // address
+	 /* Do not fold for -maltivec=be on LE targets.  */
+	 if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
+	    return false;
+	 lhs = gimple_call_lhs (stmt);
+	 location_t loc = gimple_location (stmt);
+	 /* Since arg1 may be cast to a different type, just use ptr_type_node
+	    here instead of trying to enforce TBAA on pointer types.  */
+	 tree arg1_type = ptr_type_node;
+	 tree lhs_type = TREE_TYPE (lhs);
+	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	    the tree using the value from arg0.  The resulting type will match
+	    the type of arg1.  */
+	 gimple_seq stmts = NULL;
+	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg0);
+	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg1_type, arg1, temp_offset);
+	 /* Mask off any lower bits from the address.  */
+	 tree aligned_addr = gimple_build (&stmts, loc, BIT_AND_EXPR,
+					  arg1_type, temp_addr,
+					  build_int_cst (arg1_type, -16));
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	 /* Use the build2 helper to set up the mem_ref.  The MEM_REF could also
+	    take an offset, but since we've already incorporated the offset
+	    above, here we just pass in a zero.  */
+	 gimple *g;
+	 g = gimple_build_assign (lhs, build2 (MEM_REF, lhs_type, aligned_addr,
+						build_int_cst (arg1_type, 0)));
+	 gimple_set_location (g, loc);
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
+
     default:
 	if (TARGET_DEBUG_BUILTIN)
 	   fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",

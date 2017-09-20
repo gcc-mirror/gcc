@@ -1352,6 +1352,66 @@ handle_alias_pairs (void)
       if (TREE_CODE (p->decl) == FUNCTION_DECL
           && target_node && is_a <cgraph_node *> (target_node))
 	{
+	  tree t1 = TREE_TYPE (p->decl);
+	  tree t2 = TREE_TYPE (target_node->decl);
+
+	  if (lookup_attribute ("ifunc", DECL_ATTRIBUTES (p->decl)))
+	    {
+	      t2 = TREE_TYPE (t2);
+	      if (POINTER_TYPE_P (t2))
+		{
+		  t2 = TREE_TYPE (t2);
+		  if (!FUNC_OR_METHOD_TYPE_P (t2))
+		    {
+		      if (warning_at (DECL_SOURCE_LOCATION (p->decl),
+				      OPT_Wattributes,
+				      "%q+D %<ifunc%> resolver should return "
+				      "a function pointer",
+				      p->decl))
+			inform (DECL_SOURCE_LOCATION (target_node->decl),
+				"resolver declaration here");
+
+		      t2 = NULL_TREE;
+		    }
+		}
+	      else
+		{
+		  /* Deal with static member function pointers.  */
+		  if (TREE_CODE (t2) == RECORD_TYPE
+		      && TYPE_FIELDS (t2)
+		      && TREE_CODE (TREE_TYPE (TYPE_FIELDS (t2))) == POINTER_TYPE
+		      && (TREE_CODE (TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t2))))
+			  == METHOD_TYPE))
+		    t2 = TREE_TYPE (TREE_TYPE (TYPE_FIELDS (t2)));
+		  else
+		    {
+		      error ("%q+D %<ifunc%> resolver must return a function "
+			     "pointer",
+			     p->decl);
+		      inform (DECL_SOURCE_LOCATION (target_node->decl),
+			      "resolver declaration here");
+
+		      t2 = NULL_TREE;
+		    }
+		}
+	    }
+
+	  if (t2
+	      && (!FUNC_OR_METHOD_TYPE_P (t2)
+		  || (prototype_p (t1)
+		      && prototype_p (t2)
+		      && !types_compatible_p (t1, t2))))
+	    {
+	      /* Warn for incompatibilities.  Avoid warning for functions
+		 without a prototype to make it possible to declare aliases
+		 without knowing the exact type, as libstdc++ does.  */
+	      if (warning_at (DECL_SOURCE_LOCATION (p->decl), OPT_Wattributes,
+			      "%q+D alias between functions of incompatible "
+			      "types %qT and %qT", p->decl, t1, t2))
+		inform (DECL_SOURCE_LOCATION (target_node->decl),
+			"aliased declaration here");
+	    }
+
 	  cgraph_node *src_node = cgraph_node::get (p->decl);
 	  if (src_node && src_node->definition)
 	    src_node->reset ();
@@ -1366,10 +1426,11 @@ handle_alias_pairs (void)
 	}
       else
 	{
-	  error ("%q+D alias in between function and variable is not supported",
+	  error ("%q+D alias between function and variable is not supported",
 		 p->decl);
-	  warning (0, "%q+D aliased declaration",
-		   target_node->decl);
+	  inform (DECL_SOURCE_LOCATION (target_node->decl),
+		  "aliased declaration here");
+
 	  alias_pairs->unordered_remove (i);
 	}
     }

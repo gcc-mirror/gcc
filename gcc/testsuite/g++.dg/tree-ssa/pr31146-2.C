@@ -20,4 +20,6 @@ double foo (void)
   return v.a[2];
 }
 
-/* { dg-final { scan-tree-dump "Replaced .* != 0B. with .1" "forwprop1" } } */
+/* -std=c++17 and above doesn't emit operator new () != NULL, so there is
+   nothing to fold anymore.  */
+/* { dg-final { scan-tree-dump "Replaced .* != 0B. with .1" "forwprop1" { target c++14_down } } } */

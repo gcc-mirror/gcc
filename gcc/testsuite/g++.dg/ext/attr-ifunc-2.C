@@ -8,7 +8,10 @@ struct Klass
 {
   int implementation ();
   int magic ();
-  static void *resolver ();
+
+  typedef int (Klass::*MemFuncPtr)();
+
+  static MemFuncPtr resolver ();
 };
 
 int Klass::implementation (void)
@@ -17,11 +20,9 @@ int Klass::implementation (void)
   return 0;
 }
 
-void *Klass::resolver (void)
+Klass::memFuncPtr Klass::resolver (void)
 {
-  int (Klass::*pmf) () = &Klass::implementation;
-  
-  return (void *)(int (*)(Klass *))(((Klass *)0)->*pmf);
+  return &Klass::implementation;
 }
 
 int Klass::magic (void) __attribute__ ((ifunc ("_ZN5Klass8resolverEv")));
@@ -33,6 +34,6 @@ struct Klassier : Klass
 int main ()
 {
   Klassier obj;
-  
+
   return obj.magic () != 0;
 }

@@ -2,17 +2,17 @@
 /* { dg-require-ifunc "" } */
 /* { dg-options "" } */
 
-#include <stdio.h>
+typedef int F (void);
 
 static int implementation (void)
 {
-  printf ("'ere I am JH\n");
+  __builtin_printf ("'ere I am JH\n");
   return 0;
 }
 
-static void *resolver (void)
+static F* resolver (void)
 {
-  return (void *)implementation;
+  return implementation;
 }
 
 extern int magic (void) __attribute__ ((ifunc ("resolver")));

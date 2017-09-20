@@ -1,5 +1,5 @@
 --  { dg-do run }
---  { dg-options "-cargs -O -gnatn -gnatVa -gnatws -margs" }
+--  { dg-options "-O -gnatn -gnatVa -gnatws" }
 
 pragma Initialize_Scalars;
 

@@ -975,11 +975,9 @@ scop_detection::can_represent_loop (loop_p loop, sese_l scop)
 {
   if (!can_represent_loop_1 (loop, scop))
     return false;
-  if (loop->inner && !can_represent_loop (loop->inner, scop))
-    return false;
-  if (loop->next && !can_represent_loop (loop->next, scop))
-    return false;
-
+  for (loop_p inner = loop->inner; inner; inner = inner->next)
+    if (!can_represent_loop (inner, scop))
+      return false;
   return true;
 }
 

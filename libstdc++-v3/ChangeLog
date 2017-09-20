@@ -1,3 +1,27 @@
+2017-09-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/71500
+	* include/bits/regex_executor.tcc
+	(_Backref_matcher<BidIt, regex_traits<C>>::_M_apply): Use
+	std::__equal4 instead of C++14 4-iterator overloads of std::equal.
+	* include/bits/stl_algobase.h (__equal4): New functions implementing
+	4-iterator overloads of std::equal for use in C++11.
+	(equal(It1, It1, It2, It2), equal(It1, It1, It2, It2, BinaryPred)):
+	Move function bodies to new __equal4 functions.
+	* testsuite/28_regex/simple_c++11.cc: New.
+
+	PR libstdc++/82254
+	* include/std/type_traits (__is_invocable): Add partial specialization
+	for INVOKE<void> case and remove is_void<R> check from partial
+	specialization for INVOKE<R> case.
+	(__is_nt_invocable_impl): New helper for is_nothrow_invocable_r.
+	(is_nothrow_invocable_r): Use __is_nt_invocable_impl.
+	* testsuite/20_util/is_nothrow_invocable/value.cc: Add tests for
+	conversions that can throw or fail to convert. Use static assert
+	strings to explain negative results.
+	* testsuite/20_util/is_nothrow_invocable/value_ext.cc: Use
+	is_nothrow_constructible in is_nt_invocable_conv.
+
 2017-09-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/81468
@@ -342,7 +366,7 @@
 2017-09-11  Tim Shen  <timshen@google.com>
 
 	PR libstdc++/71500
-	* include/bits/regex_executor.tcc: Support icase in regex_tratis<...>
+	* include/bits/regex_executor.tcc: Support icase in regex_traits<...>
 	for back reference matches.
 	* testsuite/28_regex/regression.cc: Test case.
 

@@ -6472,85 +6472,15 @@ altivec_resolve_overloaded_builtin (location_t loc, tree fndecl,
       return stmt;
     }
 
-  /* Expand vec_ld into an expression that masks the address and
-     performs the load.  We need to expand this early to allow
+  /* Expand vec_st into an expression that masks the address and
+     performs the store.  We need to expand this early to allow
      the best aliasing, as by the time we get into RTL we no longer
      are able to honor __restrict__, for example.  We may want to
      consider this for all memory access built-ins.
 
      When -maltivec=be is specified, or the wrong number of arguments
      is provided, simply punt to existing built-in processing.  */
-  if (fcode == ALTIVEC_BUILTIN_VEC_LD
-      && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG)
-      && nargs == 2)
-    {
-      tree arg0 = (*arglist)[0];
-      tree arg1 = (*arglist)[1];
 
-      /* Strip qualifiers like "const" from the pointer arg.  */
-      tree arg1_type = TREE_TYPE (arg1);
-      if (TREE_CODE (arg1_type) == ARRAY_TYPE && c_dialect_cxx ())
-	{
-	  /* Force array-to-pointer decay for C++.  */
-	  arg1 = default_conversion (arg1);
-	  arg1_type = TREE_TYPE (arg1);
-	}
-      if (!POINTER_TYPE_P (arg1_type))
-	goto bad;
-
-      tree inner_type = TREE_TYPE (arg1_type);
-      if (TYPE_QUALS (TREE_TYPE (arg1_type)) != 0)
-	{
-	  arg1_type = build_pointer_type (build_qualified_type (inner_type,
-								0));
-	  arg1 = fold_convert (arg1_type, arg1);
-	}
-
-      /* Construct the masked address.  Let existing error handling take
-	 over if we don't have a constant offset.  */
-      arg0 = fold (arg0);
-
-      if (TREE_CODE (arg0) == INTEGER_CST)
-	{
-	  if (!ptrofftype_p (TREE_TYPE (arg0)))
-	    arg0 = build1 (NOP_EXPR, sizetype, arg0);
-
-	  tree addr = fold_build2_loc (loc, POINTER_PLUS_EXPR, arg1_type,
-				       arg1, arg0);
-	  tree aligned = fold_build2_loc (loc, BIT_AND_EXPR, arg1_type, addr,
-					  build_int_cst (arg1_type, -16));
-
-	  /* Find the built-in to get the return type so we can convert
-	     the result properly (or fall back to default handling if the
-	     arguments aren't compatible).  */
-	  for (desc = altivec_overloaded_builtins;
-	       desc->code && desc->code != fcode; desc++)
-	    continue;
-
-	  for (; desc->code == fcode; desc++)
-	    if (rs6000_builtin_type_compatible (TREE_TYPE (arg0), desc->op1)
-		&& (rs6000_builtin_type_compatible (TREE_TYPE (arg1),
-						    desc->op2)))
-	      {
-		tree ret_type = rs6000_builtin_type (desc->ret_type);
-		if (TYPE_MODE (ret_type) == V2DImode)
-		  /* Type-based aliasing analysis thinks vector long
-		     and vector long long are different and will put them
-		     in distinct alias classes.  Force our return type
-		     to be a may-alias type to avoid this.  */
-		  ret_type
-		    = build_pointer_type_for_mode (ret_type, Pmode,
-						   true/*can_alias_all*/);
-		else
-		  ret_type = build_pointer_type (ret_type);
-		aligned = build1 (NOP_EXPR, ret_type, aligned);
-		tree ret_val = build_indirect_ref (loc, aligned, RO_NULL);
-		return ret_val;
-	      }
-	}
-    }
-
-  /* Similarly for stvx.  */
   if (fcode == ALTIVEC_BUILTIN_VEC_ST
       && (BYTES_BIG_ENDIAN || !VECTOR_ELT_ORDER_BIG)
       && nargs == 3)
