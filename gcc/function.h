@@ -551,6 +551,14 @@ do {								\
   ((TARGET_PTRMEMFUNC_VBIT_LOCATION == ptrmemfunc_vbit_in_pfn)	     \
    ? MAX (FUNCTION_BOUNDARY, 2 * BITS_PER_UNIT) : FUNCTION_BOUNDARY)
 
+enum stack_clash_probes {
+  NO_PROBE_NO_FRAME,
+  NO_PROBE_SMALL_FRAME,
+  PROBE_INLINE,
+  PROBE_LOOP
+};
+
+extern void dump_stack_clash_frame_info (enum stack_clash_probes, bool);
 
 
 extern void push_function_context (void);
