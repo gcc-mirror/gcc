@@ -404,6 +404,20 @@ AC_SUBST(PTHREAD_CFLAGS)
 
 AM_CONDITIONAL(HAVE_PTHREAD, test "$libgo_cv_lib_pthread" = yes)
 
+AC_ARG_VAR(OBJCOPY, [location of objcopy])
+AC_CHECK_PROG(OBJCOPY, objcopy, objcopy,)
+AC_CACHE_CHECK([whether objcopy supports debuglink],
+[libbacktrace_cv_objcopy_debuglink],
+[if test -n "${with_target_subdir}"; then
+  libbacktrace_cv_objcopy_debuglink=no
+elif ${OBJCOPY} --add-gnu-debuglink=x /bin/ls /tmp/ls$$; then
+  rm -f /tmp/ls$$
+  libbacktrace_cv_objcopy_debuglink=yes
+else
+  libbacktrace_cv_objcopy_debuglink=no
+fi])
+AM_CONDITIONAL(HAVE_OBJCOPY_DEBUGLINK, test "$libbacktrace_cv_objcopy_debuglink" = yes)
+
 AC_CACHE_CHECK([whether tests can run],
   [libbacktrace_cv_sys_native],
   [AC_RUN_IFELSE([AC_LANG_PROGRAM([], [return 0;])],

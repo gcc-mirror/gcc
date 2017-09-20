@@ -1,3 +1,35 @@
+2017-09-20  Ian Lance Taylor  <iant@golang.org>
+	    Denis Khalikov  <d.khalikov@partner.samsung.com>
+
+	PR sanitizer/77631
+	Support for external debug info.
+	* elf.c: Include <errno.h>, <sys/stat.h>, <unistd.h>.
+	(S_ISLNK): Define if not defined.
+	(xstrnlen): Define if strnlen is not available.
+	(b_elf_note): Define type.
+	(NT_GNU_BUILD_ID): Define macro.
+	(elf_crc32, elf_crc32_file): New static functions.
+	(elf_is_symlink, elf_readlink): New static functions.
+	(elf_open_debugfile_by_buildid): New static function.
+	(elf_try_debugfile): New static function.
+	(elf_find_debugfile_by_debuglink): New static function.
+	(elf_open_debugfile_by_debuglink): New static function.
+	(elf_add): Add filename and debuginfo parameters.  Adjust all
+	callers.  Look for external debug info notes, and try to fetch
+	debug info from external file.
+	(struct phdr_data): Add exe_filename field.
+	(phdr_callback): Pass filename to elf_add.
+	(backtrace_initialize): Add filename parameter.
+	* internal.h (backtrace_initialize): Add filename parameter.
+	* fileline.c (fileline_initialize): Pass filename to
+	backtrace_initialize.
+	* pecoff.c (fileline_initialize): Add unused filename parameter.
+	* unknown.c (fileline_initialize): Likewise.
+	* xcoff.c (fileline_initialize): Likewise.
+	* configure.ac: Check for objcopy --add-gnu-debuglink.
+	* Makefile.am (dtest): New test target.
+	* configure, Makefile.in: Rebuild.
+
 2017-09-12  Steve Ellcey  <sellcey@cavium.com>
 
 	PR other/81096

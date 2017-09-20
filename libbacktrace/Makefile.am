@@ -122,6 +122,16 @@ ttest_LDADD = libbacktrace.la
 
 endif HAVE_PTHREAD
 
+if HAVE_OBJCOPY_DEBUGLINK
+
+TESTS += dtest
+
+dtest: btest
+	$(OBJCOPY) --only-keep-debug btest btest.debug
+	$(OBJCOPY) --strip-debug --add-gnu-debuglink=btest.debug btest dtest
+
+endif HAVE_OBJCOPY_DEBUGLINK
+
 endif NATIVE
 
 # We can't use automake's automatic dependency tracking, because it
