@@ -1,3 +1,153 @@
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config.gcc: Support "knm".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect "knm".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_KNM.
+	* config/i386/i386.c (m_KNM): Define.
+	(processor_target_table): Add "knm".
+	(PTA_KNM): Define.
+	(ix86_option_override_internal): Add "knm".
+	(ix86_issue_rate): Add PROCESSOR_KNM.
+	(ix86_adjust_cost): Ditto.
+	(ia32_multipass_dfa_lookahead): Ditto.
+	(get_builtin_code_for_version): Handle PROCESSOR_KNM.
+	(fold_builtin_cpu): Add M_INTEL_KNM.
+	* config/i386/i386.h (processor_costs): Define TARGET_KNM.
+	(processor_type): Add PROCESSOR_KNM.
+	* config/i386/x86-tune.def: Add m_KNM.
+	* doc/invoke.texi: Add knm as x86 -march=/-mtune= CPU type.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/80213
+	* graphite-scop-detection.c (trivially_empty_bb_p): Labels
+	are allowed in empty BBs as well.
+	(canonicalize_loop_closed_ssa): Also look for other complex
+	edges.
+	(scop_detection::get_sese): Include the loop-closed PHI block
+	in loop SESEs.
+	(scop_detection::merge_sese): Remove code adding extra blocks.
+	(scop_detection::region_has_one_loop): Adjust for get_sese changes.
+	(build_scops): Assert the final returned scop is invalid.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* tree-ssa-sccvn.c (vn_phi_eq): Use safe_dyn_cast to check
+	for GIMPLE_CONDs.
+	(vn_phi_lookup): Likewise.
+	(vn_phi_insert): Likewise.
+
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (tree_add_const_value_attribute): For INTEGER_CST
+	that fits into uhwi or shwi, add DW_AT_const_value regardless
+	of early_dwarf without going through RTL, using add_AT_unsigned
+	or add_AT_int.
+
+	* dwarf2out.c (DEBUG_LTO_DWO_INFO_SECTION): Reorder defines.
+	(DEBUG_LTO_ABBREV_SECTION): Likewise.
+	(DEBUG_LTO_MACINFO_SECTION): Likewise.
+	(DEBUG_MACRO_SECTION): Likewise.
+	(DEBUG_LTO_MACRO_SECTION): Likewise.
+	(DEBUG_STR_DWO_SECTION): Likewise.
+	(DEBUG_LTO_STR_DWO_SECTION): Likewise.
+	(DEBUG_LTO_LINE_SECTION): Drop .dwo suffix from the name.
+	(DEBUG_LTO_DWO_LINE_SECTION): Define.
+	(DEBUG_LTO_LINE_STR_SECTION): Define.
+	(init_sections_and_labels): Initialize debug_line_str_section
+	variable.  Initialize debug_loc_section for -gdwarf-5 to
+	DEBUG_LOCLISTS_SECTION.  Formatting fixes.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	* graphite-sese-to-poly.c (extract_affine): Properly handle
+	POINTER_PLUS_EXPR, BIT_NOT_EXPR and conversion to signed.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81373
+	* graphite-scop-detection.c (build_cross_bb_scalars_def):
+	Force SESE live-out defs to be handled even if they are
+	scev_analyzable_p.
+
+2017-09-19  Jeff Law  <law@redhat.com>
+
+	* combine-stack-adj.c (combine_stack_adjustments_for_block): Do
+	nothing for stack adjustments with REG_STACK_CHECK.
+	* sched-deps.c (parse_add_or_inc): Reject insns with
+	REG_STACK_CHECK from dependency breaking.
+	* config/i386/i386.c (pro_epilogue_adjust_stack): Return insn.
+	(ix86_adjust_satck_and_probe_stack_clash): Add REG_STACK_NOTEs.
+	* reg-notes.def (STACK_CHECK): New note.
+
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): New.
+	(ix86_expand_prologue): Dump stack clash info as needed.
+	Call ix86_adjust_stack_and_probe_stack_clash as needed.
+
+        * function.c (dump_stack_clash_frame_info): New function.
+        * function.h (dump_stack_clash_frame_info): Prototype.
+        (enum stack_clash_probes): New enum.
+
+	* config/alpha/alpha.c (alpha_expand_prologue): Also check
+	flag_stack_clash_protection.
+	* config/arm/arm.c (arm_compute_static_chain_stack_bytes): Likewise.
+	(arm_expand_prologue, thumb1_expand_prologue): Likewise.
+	(arm_frame_pointer_required): Likewise.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Likewise.
+	(ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+	* config/spu/spu.c (spu_expand_prologue): Likewise.
+
+	* explow.c: Include "params.h".
+	(anti_adjust_stack_and_probe_stack_clash): New function.
+	(get_stack_check_protect): Likewise.
+	(compute_stack_clash_protection_loop_data): Likewise.
+	(emit_stack_clash_protection_loop_start): Likewise.
+	(emit_stack_clash_protection_loop_end): Likewise.
+	(allocate_dynamic_stack_space): Use get_stack_check_protect.
+	Use anti_adjust_stack_and_probe_stack_clash.
+	* explow.h (compute_stack_clash_protection_loop_data): Prototype.
+	(emit_stack_clash_protection_loop_start): Likewise.
+	(emit_stack_clash_protection_loop_end): Likewise.
+	* rtl.h (get_stack_check_protect): Prototype.
+	* target.def (stack_clash_protection_final_dynamic_probe): New hook.
+	* targhooks.c (default_stack_clash_protection_final_dynamic_probe): New.
+	* targhooks.h (default_stack_clash_protection_final_dynamic_probe):
+	Prototype.
+	* doc/tm.texi.in (TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE):
+	Add @hook.
+	* doc/tm.texi: Rebuilt.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use
+	get_stack_check_protect.
+	* config/alpha/alpha.c (alpha_expand_prologue): Likewise.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	(arm_frame_pointer_required): Likewise.
+	* config/i386/i386.c (ix86_expand_prologue): Likewise.
+	* config/ia64/ia64.c (ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_emit_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+
+	* common.opt (-fstack-clash-protection): New option.
+	* flag-types.h (enum stack_check_type): Note difference between
+	-fstack-check= and -fstack-clash-protection.
+	* params.def (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE): New PARAM.
+	(PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL): Likewise.
+	* toplev.c (process_options): Issue warnings/errors for cases
+	not handled with -fstack-clash-protection.
+	* doc/invoke.texi (-fstack-clash-protection): Document new option.
+	(-fstack-check): Note additional problem with -fstack-check=generic.
+	Note that -fstack-check is primarily for Ada and refer users
+	to -fstack-clash-protection for stack-clash-protection.
+	Document new params for stack clash protection.
+
 2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_split_long_move): Do not handle
@@ -182,8 +332,8 @@
 
 2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
 
-	config/i386/i386.c: (xlogue_layout::STUB_NAME_MAX_LEN): Increase to 20
-	bytes.
+	* config/i386/i386.c (xlogue_layout::STUB_NAME_MAX_LEN):
+	Increase to 20 bytes.
 	(xlogue_layout::s_stub_names): Add an additional size-2 diminsion.
 	(xlogue_layout::get_stub_name): Modify to select the appropairate sse
 	or avx version of the stub.

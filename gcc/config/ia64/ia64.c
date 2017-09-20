@@ -2704,7 +2704,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
     mark_reg_gr_used_mask (cfun->machine->ia64_eh_epilogue_bsp, NULL);
 
   /* Static stack checking uses r2 and r3.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     current_frame_info.gr_used_mask |= 0xc;
 
   /* Find the size of the register stack frame.  We have only 80 local
@@ -3494,7 +3495,8 @@ ia64_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = current_frame_info.total_size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       HOST_WIDE_INT size = current_frame_info.total_size;
       int bs_size = BACKING_STORE_SIZE (current_frame_info.n_input_regs
@@ -3502,15 +3504,16 @@ ia64_expand_prologue (void)
 
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					 size - STACK_CHECK_PROTECT,
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    ia64_emit_probe_stack_range (get_stack_check_protect (),
+					 size - get_stack_check_protect (),
 					 bs_size);
-	  else if (size + bs_size > STACK_CHECK_PROTECT)
-	    ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, 0, bs_size);
+	  else if (size + bs_size > get_stack_check_protect ())
+	    ia64_emit_probe_stack_range (get_stack_check_protect (),
+					 0, bs_size);
 	}
       else if (size + bs_size > 0)
-	ia64_emit_probe_stack_range (STACK_CHECK_PROTECT, size, bs_size);
+	ia64_emit_probe_stack_range (get_stack_check_protect (), size, bs_size);
     }
 
   if (dump_file) 

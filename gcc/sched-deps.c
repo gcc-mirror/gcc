@@ -4714,6 +4714,11 @@ parse_add_or_inc (struct mem_inc_info *mii, rtx_insn *insn, bool before_mem)
   if (RTX_FRAME_RELATED_P (insn) || !pat)
     return false;
 
+  /* Do not allow breaking data dependencies for insns that are marked
+     with REG_STACK_CHECK.  */
+  if (find_reg_note (insn, REG_STACK_CHECK, NULL))
+    return false;
+
   /* Result must be single reg.  */
   if (!REG_P (SET_DEST (pat)))
     return false;

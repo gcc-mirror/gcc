@@ -26765,12 +26765,12 @@ rs6000_emit_prologue (void)
 
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					   size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    rs6000_emit_probe_stack_range (get_stack_check_protect (),
+					   size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	rs6000_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	rs6000_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   if (TARGET_FIX_AND_CONTINUE)

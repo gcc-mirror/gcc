@@ -1,3 +1,39 @@
+2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/79162
+	* include/bits/basic_string.h (basic_string::_If_sv): Remove from the
+	overload set when the argument is derived from basic_string.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc: New
+	test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	New test.
+
+	* testsuite/24_iterators/range_access_cpp17.cc: Fix order of dg-do
+	and dg-options directives. Fix invalid test.
+
+	PR libstdc++/81469
+	* libsupc++/exception (uncaught_exception): Deprecate for C++17.
+	* testsuite/18_support/exception_ptr/62258.cc: Add -Wno-deprecated.
+	* testsuite/18_support/uncaught_exception/14026.cc: Likewise.
+
+	* include/bits/c++config (_GLIBCXX17_DEPRECATED): Define.
+	* include/bits/functional_hash.h (__hash_base::result_type)
+	(__hash_base::argument_type): Add _GLIBCXX17_DEPRECATED.
+	* include/std/optional (hash<optional<T>>::result_type)
+	(hash<optional<T>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<optional<T>>>): Add partial specialization.
+	* include/std/variant (hash<variant<Types...>>::result_type)
+	(hash<variant<Types...>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<variant<Types...>>>): Add partial specialization.
+
+	* libsupc++/exception_ptr.h (copy_exception): Remove deprecated
+	non-standard function.
+
+	PR libstdc++/82262
+	* include/std/optional (__optional_hash_call_base): Add template
+	parameter for remove_const_t<_Tp> and use it consistently.
+	* testsuite/20_util/optional/hash.cc: Test optional<const T>.
+
 2017-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71500

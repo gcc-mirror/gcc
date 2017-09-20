@@ -1,3 +1,89 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0409R2 - allow lambda capture [=, this]
+	* g++.dg/cpp1z/lambda-this1.C: Don't expect error for c++2a on [=, this]
+	capture.  Add further tests.
+	* g++.dg/cpp0x/lambda/lambda-capture-redundancy.C: Don't expect error
+	for c++2a on [=, this] capture.
+
+	* g++.dg/cpp1z/cplusplus.C: Test that __cplusplus is equal to 201703L.
+	* g++.dg/cpp1z/cplusplus_1z.C: New test.
+
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Test knm.
+	* gcc.target/i386/funcspec-56.inc: Test arch=knm.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77362
+	* gcc.dg/graphite/pr77362.c: New testcase.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* gcc.dg/torture/pr82264.c: New testcase.
+
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/template-params-13.C: New test.
+	* g++.dg/debug/dwarf2/template-params-5.C: Adjust regexps so that
+	it doesn't match newlines.
+	* g++.dg/debug/dwarf2/template-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp98.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-5.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Likewise.
+
+2017-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64954
+	* g++.dg/cpp0x/constexpr-ctor20.C: New.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81373
+	* gcc.dg/graphite/pr81373.c: New testcase.
+
+2017-09-19  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/stack-check-11.c: New test.
+
+	* gcc.dg/stack-check-4.c: New test.
+	* gcc.dg/stack-check-5.c: New test.
+	* gcc.dg/stack-check-6.c: New test.
+	* gcc.dg/stack-check-6a.c: New test.
+	* gcc.dg/stack-check-7.c: New test.
+	* gcc.dg/stack-check-8.c: New test.
+	* gcc.dg/stack-check-9.c: New test.
+	* gcc.dg/stack-check-10.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	x86 and x86_64 targets.
+
+	* gcc.dg/stack-check-3.c: New test.
+
+	* gcc.dg/stack-check-2.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): New.
+	(check_effective_target_frame_pointer_for_non_leaf): Likewise.
+	(check_effective_target_caller_implicit_probes): Likewise.
+
+2017-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/pr31146-2.C: Only do scan-tree-dump for c++14_down.
+	* g++.dg/tree-ssa/pr41428.C: Likewise.
+	* g++.dg/expr/bool1.C: Only do dg-do compile instead of dg-do run for
+	c++17 and up.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+
 2017-09-18  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854

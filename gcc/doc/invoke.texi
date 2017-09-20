@@ -10187,6 +10187,21 @@ compilation without.  The value for compilation with profile feedback
 needs to be more conservative (higher) in order to make tracer
 effective.
 
+@item stack-clash-protection-guard-size
+Specify the size of the operating system provided stack guard as
+2 raised to @var{num} bytes.  The default value is 12 (4096 bytes).
+Acceptable values are between 12 and 30.  Higher values may reduce the
+number of explicit probes, but a value larger than the operating system
+provided guard will leave code vulnerable to stack clash style attacks.
+
+@item stack-clash-protection-probe-interval
+Stack clash protection involves probing stack space as it is allocated.  This
+param controls the maximum distance between probes into the stack as 2 raised
+to @var{num} bytes.  Acceptable values are between 10 and 16 and defaults to
+12.  Higher values may reduce the number of explicit probes, but a value
+larger than the operating system provided guard will leave code vulnerable to
+stack clash style attacks.
+
 @item max-cse-path-length
 
 The maximum number of basic blocks on path that CSE considers.
@@ -11412,7 +11427,8 @@ target support in the compiler but comes with the following drawbacks:
 @enumerate
 @item
 Modified allocation strategy for large objects: they are always
-allocated dynamically if their size exceeds a fixed threshold.
+allocated dynamically if their size exceeds a fixed threshold.  Note this
+may change the semantics of some code.
 
 @item
 Fixed limit on the size of the static frame of functions: when it is
@@ -11426,6 +11442,25 @@ generic implementation, code performance is hampered.
 
 Note that old-style stack checking is also the fallback method for
 @samp{specific} if no target support has been added in the compiler.
+
+@samp{-fstack-check=} is designed for Ada's needs to detect infinite recursion
+and stack overflows.  @samp{specific} is an excellent choice when compiling
+Ada code.  It is not generally sufficient to protect against stack-clash
+attacks.  To protect against those you want @samp{-fstack-clash-protection}.
+
+@item -fstack-clash-protection
+@opindex fstack-clash-protection
+Generate code to prevent stack clash style attacks.  When this option is
+enabled, the compiler will only allocate one page of stack space at a time
+and each page is accessed immediately after allocation.  Thus, it prevents
+allocations from jumping over any stack guard page provided by the
+operating system.
+
+Most targets do not fully support stack clash protection.  However, on
+those targets @option{-fstack-clash-protection} will protect dynamic stack
+allocations.  @option{-fstack-clash-protection} may also provide limited
+protection for static stack allocations if the target supports
+@option{-fstack-check=specific}.
 
 @item -fstack-limit-register=@var{reg}
 @itemx -fstack-limit-symbol=@var{sym}
@@ -25053,6 +25088,12 @@ Intel Knight's Landing CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
 SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
 BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER and
 AVX512CD instruction set support.
+
+@item knm
+Intel Knights Mill CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
+SSSE3, SSE4.1, SSE4.2, POPCNT, AVX, AVX2, AES, PCLMUL, FSGSBASE, RDRND, FMA,
+BMI, BMI2, F16C, RDSEED, ADCX, PREFETCHW, AVX512F, AVX512PF, AVX512ER, AVX512CD,
+AVX5124VNNIW, AVX5124FMAPS and AVX512VPOPCNTDQ instruction set support.
 
 @item skylake-avx512
 Intel Skylake Server CPU with 64-bit extensions, MOVBE, MMX, SSE, SSE2, SSE3,
