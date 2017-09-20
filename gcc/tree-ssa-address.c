@@ -191,8 +191,8 @@ rtx
 addr_for_mem_ref (struct mem_address *addr, addr_space_t as,
 		  bool really_expand)
 {
-  machine_mode address_mode = targetm.addr_space.address_mode (as);
-  machine_mode pointer_mode = targetm.addr_space.pointer_mode (as);
+  scalar_int_mode address_mode = targetm.addr_space.address_mode (as);
+  scalar_int_mode pointer_mode = targetm.addr_space.pointer_mode (as);
   rtx address, sym, bse, idx, st, off;
   struct mem_addr_template *templ;
 

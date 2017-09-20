@@ -209,13 +209,6 @@ FIXME: DRIVER_SELF_SPECS has changed.
 #define ADJUST_REG_ALLOC_ORDER avr_adjust_reg_alloc_order()
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE)                                   \
-  ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1) / UNITS_PER_WORD)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE) avr_hard_regno_mode_ok(REGNO, MODE)
-
-#define MODES_TIEABLE_P(MODE1, MODE2) 1
-
 enum reg_class {
   NO_REGS,
   R0_REG,			/* r0 */
@@ -284,9 +277,6 @@ enum reg_class {
   avr_regno_mode_code_ok_for_base_p (num, mode, as, outer_code, index_code)
 
 #define REGNO_OK_FOR_INDEX_P(NUM) 0
-
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)     \
-  avr_hard_regno_call_part_clobbered (REGNO, MODE)
 
 #define TARGET_SMALL_REGISTER_CLASSES_FOR_MODE_P hook_bool_mode_true
 
@@ -480,8 +470,6 @@ typedef struct avr_args
    Also see avr_use_by_pieces_infrastructure_p. */
 
 #define MOVE_RATIO(speed) ((speed) ? 3 : 2)
-
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
 
 #define Pmode HImode
 

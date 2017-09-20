@@ -1359,6 +1359,8 @@ build_accesses_from_assign (gimple *stmt)
       link->lacc = lacc;
       link->racc = racc;
       add_link_to_rhs (racc, link);
+      add_access_to_work_queue (racc);
+
       /* Let's delay marking the areas as written until propagation of accesses
 	 across link, unless the nature of rhs tells us that its data comes
 	 from elsewhere.  */
@@ -2118,7 +2120,6 @@ sort_and_splice_var_accesses (tree var)
       access->grp_total_scalarization = total_scalarization;
       access->grp_partial_lhs = grp_partial_lhs;
       access->grp_unscalarizable_region = unscalarizable_region;
-      add_access_to_work_queue (access);
 
       *prev_acc_ptr = access;
       prev_acc_ptr = &access->next_grp;
@@ -2712,6 +2713,8 @@ propagate_all_subaccesses (void)
       struct access *racc = pop_access_from_work_queue ();
       struct assign_link *link;
 
+      if (racc->group_representative)
+	racc= racc->group_representative;
       gcc_assert (racc->first_link);
 
       for (link = racc->first_link; link; link = link->next)

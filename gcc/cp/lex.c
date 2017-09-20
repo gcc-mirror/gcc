@@ -531,10 +531,24 @@ unqualified_fn_lookup_error (cp_expr name_expr)
   return unqualified_name_lookup_error (name, loc);
 }
 
+
+/* Hasher for the conversion operator name hash table.  */
 struct conv_type_hasher : ggc_ptr_hash<tree_node>
 {
-  static hashval_t hash (tree);
-  static bool equal (tree, tree);
+  /* Hash NODE, an identifier node in the table.  TYPE_UID is
+     suitable, as we're not concerned about matching canonicalness
+     here.  */
+  static hashval_t hash (tree node)
+  {
+    return (hashval_t) TYPE_UID (TREE_TYPE (node));
+  }
+
+  /* Compare NODE, an identifier node in the table, against TYPE, an
+     incoming TYPE being looked up.  */
+  static bool equal (tree node, tree type)
+  {
+    return TREE_TYPE (node) == type;
+  }
 };
 
 /* This hash table maps TYPEs to the IDENTIFIER for a conversion
@@ -543,57 +557,41 @@ struct conv_type_hasher : ggc_ptr_hash<tree_node>
 
 static GTY (()) hash_table<conv_type_hasher> *conv_type_names;
 
-/* Hash a node (VAL1) in the table.  */
-
-hashval_t
-conv_type_hasher::hash (tree val)
-{
-  return (hashval_t) TYPE_UID (TREE_TYPE (val));
-}
-
-/* Compare VAL1 (a node in the table) with VAL2 (a TYPE).  */
-
-bool
-conv_type_hasher::equal (tree val1, tree val2)
-{
-  return TREE_TYPE (val1) == val2;
-}
-
-/* Return an identifier for a conversion operator to TYPE.  We can
-   get from the returned identifier to the type.  */
+/* Return an identifier for a conversion operator to TYPE.  We can get
+   from the returned identifier to the type.  We store TYPE, which is
+   not necessarily the canonical type,  which allows us to report the
+   form the user used in error messages.  All these identifiers are
+   not in the identifier hash table, and have the same string name.
+   These IDENTIFIERS are not in the identifier hash table, and all
+   have the same IDENTIFIER_STRING.  */
 
 tree
 make_conv_op_name (tree type)
 {
-  tree *slot;
-  tree identifier;
-
   if (type == error_mark_node)
     return error_mark_node;
 
   if (conv_type_names == NULL)
     conv_type_names = hash_table<conv_type_hasher>::create_ggc (31);
 
-  slot = conv_type_names->find_slot_with_hash (type,
-					       (hashval_t) TYPE_UID (type),
-					       INSERT);
-  identifier = *slot;
+  tree *slot = conv_type_names->find_slot_with_hash
+    (type, (hashval_t) TYPE_UID (type), INSERT);
+  tree identifier = *slot;
   if (!identifier)
     {
-      char buffer[64];
+      /* Create a raw IDENTIFIER outside of the identifier hash
+	 table.  */
+      identifier = copy_node (conv_op_identifier);
 
-       /* Create a unique name corresponding to TYPE.  */
-      sprintf (buffer, "operator %lu",
-	       (unsigned long) conv_type_names->elements ());
-      identifier = get_identifier (buffer);
-      *slot = identifier;
+      /* Just in case something managed to bind.  */
+      IDENTIFIER_BINDING (identifier) = NULL;
+      IDENTIFIER_LABEL_VALUE (identifier) = NULL_TREE;
 
       /* Hang TYPE off the identifier so it can be found easily later
 	 when performing conversions.  */
       TREE_TYPE (identifier) = type;
 
-      /* Set the identifier kind so we know later it's a conversion.  */
-      set_identifier_kind (identifier, cik_conv_op);
+      *slot = identifier;
     }
 
   return identifier;

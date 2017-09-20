@@ -46,6 +46,7 @@ with Sinput;   use Sinput;
 with Snames;   use Snames;
 with Stand;    use Stand;
 with Stringt;  use Stringt;
+with Tbuild;   use Tbuild;
 with Uintp;    use Uintp;
 
 package body Sem_Warn is
@@ -1381,16 +1382,25 @@ package body Sem_Warn is
                   --  deal with case where original unset reference has been
                   --  rewritten during expansion.
 
-                  --  In some cases, the original node may be a type conversion
-                  --  or qualification, and in this case we want the object
-                  --  entity inside.
+                  --  In some cases, the original node may be a type
+                  --  conversion, a qualification or an attribute reference and
+                  --  in this case we want the object entity inside. Same for
+                  --  an expression with actions.
 
                   UR := Original_Node (UR);
-                  while Nkind (UR) = N_Type_Conversion
-                    or else Nkind (UR) = N_Qualified_Expression
-                    or else Nkind (UR) = N_Expression_With_Actions
                   loop
-                     UR := Expression (UR);
+                     if Nkind_In (UR, N_Expression_With_Actions,
+                                      N_Qualified_Expression,
+                                      N_Type_Conversion)
+                     then
+                        UR := Expression (UR);
+
+                     elsif Nkind (UR) = N_Attribute_Reference then
+                        UR := Prefix (UR);
+
+                     else
+                        exit;
+                     end if;
                   end loop;
 
                   --  Don't issue warning if appearing inside Initial_Condition
@@ -2373,15 +2383,6 @@ package body Sem_Warn is
 
          if not In_Extended_Main_Source_Unit (Cnode) then
             return;
-
-         --  In configurable run time mode, we remove the bodies of non-inlined
-         --  subprograms, which may lead to spurious warnings, which are
-         --  clearly undesirable.
-
-         elsif Configurable_Run_Time_Mode
-           and then Is_Predefined_Unit (Unit)
-         then
-            return;
          end if;
 
          --  Loop through context items in this unit
@@ -2797,6 +2798,7 @@ package body Sem_Warn is
 
          --  Note: use of OR instead of OR ELSE here is deliberate, we want
          --  to mess with Unmodified flags on both body and spec entities.
+         --  Has_Unmodified has side effects!
 
          return Has_Unmodified (E)
                   or
@@ -3608,10 +3610,14 @@ package body Sem_Warn is
 
       --  Local variables
 
-      Act1  : Node_Id;
-      Act2  : Node_Id;
-      Form1 : Entity_Id;
-      Form2 : Entity_Id;
+      Act1      : Node_Id;
+      Act2      : Node_Id;
+      Form1     : Entity_Id;
+      Form2     : Entity_Id;
+      Warn_Only : Boolean;
+      --  GNAT warns on overlapping in-out parameters even when there are no
+      --  two in-out parameters of an elementary type, as stated in
+      --  RM 6.5.1 (17/2).
 
    --  Start of processing for Warn_On_Overlapping_Actuals
 
@@ -3620,6 +3626,29 @@ package body Sem_Warn is
       if Ada_Version < Ada_2012 and then not Warn_On_Overlap then
          return;
       end if;
+
+      --  The call is illegal only if there are at least two in-out parameters
+      --  of the same elementary type.
+
+      Warn_Only := True;
+      Form1 := First_Formal (Subp);
+      while Present (Form1) loop
+         Form2 := Next_Formal (Form1);
+         while Present (Form2) loop
+            if Is_Elementary_Type (Etype (Form1))
+              and then Is_Elementary_Type (Etype (Form2))
+              and then Ekind (Form1) /= E_In_Parameter
+              and then Ekind (Form2) /= E_In_Parameter
+            then
+               Warn_Only := False;
+               exit;
+            end if;
+
+            Next_Formal (Form2);
+         end loop;
+
+         Next_Formal (Form1);
+      end loop;
 
       --  Exclude calls rewritten as enumeration literals
 
@@ -3684,14 +3713,6 @@ package body Sem_Warn is
                   then
                      null;
 
-                  --  If the types of the formals are different there can
-                  --  be no aliasing (even though there might be overlap
-                  --  through address clauses, which must be intentional).
-
-                  elsif Base_Type (Etype (Form1)) /= Base_Type (Etype (Form2))
-                  then
-                     null;
-
                   --  Here we may need to issue overlap message
 
                   else
@@ -3708,10 +3729,11 @@ package body Sem_Warn is
 
                        or else not Is_Elementary_Type (Etype (Form1))
 
-                       --  Finally, debug flag -gnatd.E changes the error to a
-                       --  warning even in Ada 2012 mode.
+                       --  debug flag -gnatd.E changes the error to a warning
+                       --  even in Ada 2012 mode.
 
-                       or else Error_To_Warning;
+                       or else Error_To_Warning
+                       or else Warn_Only;
 
                      declare
                         Act  : Node_Id;
@@ -3858,6 +3880,13 @@ package body Sem_Warn is
          procedure Warn1;
          --  Generate first warning line
 
+         procedure Warn_On_Index_Below_Lower_Bound;
+         --  Generate a warning on indexing the array with a literal value
+         --  below the lower bound of the index type.
+
+         procedure Warn_On_Literal_Index;
+         --  Generate a warning on indexing the array with a literal value
+
          ----------------------
          -- Length_Reference --
          ----------------------
@@ -3883,21 +3912,31 @@ package body Sem_Warn is
               ("?w?index for& may assume lower bound of^", X, Ent);
          end Warn1;
 
-      --  Start of processing for Test_Suspicious_Index
+         -------------------------------------
+         -- Warn_On_Index_Below_Lower_Bound --
+         -------------------------------------
 
-      begin
-         --  Nothing to do if subscript does not come from source (we don't
-         --  want to give garbage warnings on compiler expanded code, e.g. the
-         --  loops generated for slice assignments. Such junk warnings would
-         --  be placed on source constructs with no subscript in sight).
+         procedure Warn_On_Index_Below_Lower_Bound is
+         begin
+            if Is_Standard_String_Type (Typ) then
+               Discard_Node
+                 (Compile_Time_Constraint_Error
+                   (N   => X,
+                    Msg => "?w?string index should be positive"));
+            else
+               Discard_Node
+                 (Compile_Time_Constraint_Error
+                   (N   => X,
+                    Msg => "?w?index out of the allowed range"));
+            end if;
+         end Warn_On_Index_Below_Lower_Bound;
 
-         if not Comes_From_Source (Original_Node (X)) then
-            return;
-         end if;
+         ---------------------------
+         -- Warn_On_Literal_Index --
+         ---------------------------
 
-         --  Case where subscript is a constant integer
-
-         if Nkind (X) = N_Integer_Literal then
+         procedure Warn_On_Literal_Index is
+         begin
             Warn1;
 
             --  Case where original form of subscript is an integer literal
@@ -4016,6 +4055,34 @@ package body Sem_Warn is
 
                Error_Msg_FE -- CODEFIX
                  ("\?w?suggested replacement: `&~`", Original_Node (X), Ent);
+            end if;
+         end Warn_On_Literal_Index;
+
+      --  Start of processing for Test_Suspicious_Index
+
+      begin
+         --  Nothing to do if subscript does not come from source (we don't
+         --  want to give garbage warnings on compiler expanded code, e.g. the
+         --  loops generated for slice assignments. Such junk warnings would
+         --  be placed on source constructs with no subscript in sight).
+
+         if not Comes_From_Source (Original_Node (X)) then
+            return;
+         end if;
+
+         --  Case where subscript is a constant integer
+
+         if Nkind (X) = N_Integer_Literal then
+
+            --  Case where subscript is lower than the lowest possible bound.
+            --  This might be the case for example when programmers try to
+            --  access a string at index 0, as they are used to in other
+            --  programming languages like C.
+
+            if Intval (X) < Low_Bound then
+               Warn_On_Index_Below_Lower_Bound;
+            else
+               Warn_On_Literal_Index;
             end if;
 
          --  Case where subscript is of the form X'Length

@@ -33,10 +33,29 @@ test01()
   VERIFY( str0 == wstring_view{L"pus mons"} );
 }
 
+constexpr bool
+test02()
+{
+  using std::wstring_view;
+
+  wstring_view str0{L"olympus mons"};
+  wstring_view::pointer p = str0.data();
+  str0.remove_prefix(4);
+  if ( str0.data() != p + 4)
+    return false;
+  if ( str0.length() != 8 )
+    return false;
+  if ( str0 != wstring_view{L"pus mons"} )
+    return false;
+
+  return true;
+}
+
 int
 main()
 { 
   test01();
+  static_assert( test02() );
 
   return 0;
 }

@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2016, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -800,7 +800,8 @@ build_load_modify_store (tree dest, tree src, Node_Id gnat_node)
 		{
 		  unsigned int size = tree_to_uhwi (TYPE_SIZE (type));
 		  type = copy_type (type);
-		  SET_TYPE_MODE (type, mode_for_size (size, MODE_INT, 0));
+		  machine_mode mode = int_mode_for_size (size, 0).else_blk ();
+		  SET_TYPE_MODE (type, mode);
 		}
 
 	      /* Create the temporary by inserting a SAVE_EXPR.  */
@@ -2348,6 +2349,12 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   /* If the initializer, if present, is a NULL_EXPR, just return a new one.  */
   if (init && TREE_CODE (init) == NULL_EXPR)
     return build1 (NULL_EXPR, result_type, TREE_OPERAND (init, 0));
+
+  /* If we are just annotating types, also return a NULL_EXPR.  */
+  else if (type_annotate_only)
+    return build1 (NULL_EXPR, result_type,
+		   build_call_raise (CE_Range_Check_Failed, gnat_node,
+				     N_Raise_Constraint_Error));
 
   /* If the initializer, if present, is a COND_EXPR, deal with each branch.  */
   else if (init && TREE_CODE (init) == COND_EXPR)

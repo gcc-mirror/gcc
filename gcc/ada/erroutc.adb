@@ -299,6 +299,7 @@ package body Erroutc is
       w ("  Uncond   = ", E.Uncond);
       w ("  Msg_Cont = ", E.Msg_Cont);
       w ("  Deleted  = ", E.Deleted);
+      w ("  Node     = ", Int (E.Node));
 
       Write_Eol;
    end dmsg;
@@ -632,7 +633,22 @@ package body Erroutc is
          --  Postfix warning tag to message if needed
 
          if Tag /= "" and then Warning_Doc_Switch then
-            Txt := new String'(Text.all & ' ' & Tag);
+            if Include_Subprogram_In_Messages then
+               Txt :=
+                 new String'
+                   (Subprogram_Name_Ptr (Errors.Table (E).Node) &
+                    ": " & Text.all & ' ' & Tag);
+            else
+               Txt := new String'(Text.all & ' ' & Tag);
+            end if;
+
+         elsif Include_Subprogram_In_Messages
+           and then (Errors.Table (E).Warn or else Errors.Table (E).Style)
+         then
+            Txt :=
+              new String'
+                (Subprogram_Name_Ptr (Errors.Table (E).Node) &
+                 ": " & Text.all);
          else
             Txt := Text;
          end if;

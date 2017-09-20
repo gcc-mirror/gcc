@@ -147,6 +147,13 @@ package Warnsw is
    --  the command line or .C in a string literal in pragma Warnings. Returns
    --  True for valid warning character C, False for invalid character.
 
+   function Set_Underscore_Warning_Switch (C : Character) return Boolean;
+   --  This function sets the warning switch or switches corresponding to the
+   --  given character preceded by an underscore. Used to process a -gnatw_
+   --  switch on the command line or _C in a string literal in pragma Warnings.
+   --  Returns True for valid warnings character C, False for invalid
+   --  character.
+
    procedure Set_GNAT_Mode_Warnings;
    --  This is called in -gnatg mode to set the warnings for gnat mode. It is
    --  also used to set the proper warning statuses for -gnatw.g. Note that

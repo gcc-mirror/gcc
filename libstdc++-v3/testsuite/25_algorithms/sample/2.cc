@@ -16,7 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-options "-std=gnu++17" }
-// { dg-do run { target c++1z } }
+// { dg-do run { target c++17 } }
 
 #ifndef _GLIBCXX_ASSERTIONS
 // Make std::uniform_int_distribution check its parameters

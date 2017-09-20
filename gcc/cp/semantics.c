@@ -3347,8 +3347,7 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
      time to implicitly capture.  */
   if (context == containing_function
       && DECL_TEMPLATE_INFO (containing_function)
-      && any_dependent_template_arguments_p (DECL_TI_ARGS
-					     (containing_function)))
+      && uses_template_parms (DECL_TI_ARGS (containing_function)))
     return decl;
 
   /* Core issue 696: "[At the July 2009 meeting] the CWG expressed
@@ -9009,10 +9008,10 @@ classtype_has_nothrow_assign_or_copy_p (tree type, bool assign_p)
 {
   tree fns = NULL_TREE;
 
-  if (assign_p)
-    fns = lookup_fnfields_slot (type, cp_assignment_operator_id (NOP_EXPR));
-  else if (TYPE_HAS_COPY_CTOR (type))
-    fns = lookup_fnfields_slot (type, ctor_identifier);
+  if (assign_p || TYPE_HAS_COPY_CTOR (type))
+    fns = get_class_binding (type,
+			     assign_p ? cp_assignment_operator_id (NOP_EXPR)
+			     : ctor_identifier);
 
   bool saw_copy = false;
   for (ovl_iterator iter (fns); iter; ++iter)

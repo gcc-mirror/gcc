@@ -580,7 +580,25 @@ package body Sem_Ch5 is
 
       Set_Assignment_Type (Lhs, T1);
 
-      Resolve (Rhs, T1);
+      --  If the target of the assignment is an entity of a mutable type and
+      --  the expression is a conditional expression, its alternatives can be
+      --  of different subtypes of the nominal type of the LHS, so they must be
+      --  resolved with the base type, given that their subtype may differ from
+      --  that of the target mutable object.
+
+      if Is_Entity_Name (Lhs)
+        and then Ekind_In (Entity (Lhs), E_In_Out_Parameter,
+                                         E_Out_Parameter,
+                                         E_Variable)
+        and then Is_Composite_Type (T1)
+        and then not Is_Constrained (Etype (Entity (Lhs)))
+        and then Nkind_In (Rhs, N_If_Expression, N_Case_Expression)
+      then
+         Resolve (Rhs, Base_Type (T1));
+
+      else
+         Resolve (Rhs, T1);
+      end if;
 
       --  This is the point at which we check for an unset reference
 
@@ -1902,8 +1920,8 @@ package body Sem_Ch5 is
 
       Preanalyze_Range (Iter_Name);
 
-      --  Set the kind of the loop variable, which is not visible within
-      --  the iterator name.
+      --  Set the kind of the loop variable, which is not visible within the
+      --  iterator name.
 
       Set_Ekind (Def_Id, E_Variable);
 
@@ -2495,7 +2513,10 @@ package body Sem_Ch5 is
                & "iteration", Discrete_Subtype_Definition (N),
                T, Suggest_Static => True);
 
-         elsif Inside_A_Generic and then Is_Generic_Formal (T) then
+         elsif Inside_A_Generic
+           and then Is_Generic_Formal (T)
+           and then Is_Discrete_Type (T)
+         then
             Set_No_Dynamic_Predicate_On_Actual (T);
          end if;
       end Check_Predicate_Use;
@@ -3727,7 +3748,8 @@ package body Sem_Ch5 is
                      Check_SPARK_05_Restriction
                        ("unreachable code is not allowed", Error_Node);
                   else
-                     Error_Msg ("??unreachable code!", Sloc (Error_Node));
+                     Error_Msg
+                       ("??unreachable code!", Sloc (Error_Node), Error_Node);
                   end if;
                end if;
 

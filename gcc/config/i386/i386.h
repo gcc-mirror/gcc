@@ -351,6 +351,7 @@ extern const struct processor_costs ix86_size_cost;
 #define TARGET_BONNELL (ix86_tune == PROCESSOR_BONNELL)
 #define TARGET_SILVERMONT (ix86_tune == PROCESSOR_SILVERMONT)
 #define TARGET_KNL (ix86_tune == PROCESSOR_KNL)
+#define TARGET_KNM (ix86_tune == PROCESSOR_KNM)
 #define TARGET_SKYLAKE_AVX512 (ix86_tune == PROCESSOR_SKYLAKE_AVX512)
 #define TARGET_INTEL (ix86_tune == PROCESSOR_INTEL)
 #define TARGET_GENERIC (ix86_tune == PROCESSOR_GENERIC)
@@ -1073,25 +1074,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 
 #define OVERRIDE_ABI_FORMAT(FNDECL) ix86_call_abi_override (FNDECL)
 
-/* Return number of consecutive hard regs needed starting at reg REGNO
-   to hold something of mode MODE.
-   This is ordinarily the length in words of a value of mode MODE
-   but can be less for certain modes in special long registers.
-
-   Actually there are no two word move instructions for consecutive
-   registers.  And only registers 0-3 may have mov byte instructions
-   applied to them.  */
-
-#define HARD_REGNO_NREGS(REGNO, MODE)					\
-  (GENERAL_REGNO_P (REGNO)						\
-   ? ((MODE) == XFmode							\
-      ? (TARGET_64BIT ? 2 : 3)						\
-      : ((MODE) == XCmode						\
-	 ? (TARGET_64BIT ? 4 : 6)					\
-	 : CEIL (GET_MODE_SIZE (MODE), UNITS_PER_WORD)))		\
-   : (COMPLEX_MODE_P (MODE) ? 2 :					\
-      (((MODE == V64SFmode) || (MODE == V64SImode)) ? 4 : 1)))
-
 #define HARD_REGNO_NREGS_HAS_PADDING(REGNO, MODE)			\
   (TARGET_128BIT_LONG_DOUBLE && !TARGET_64BIT				\
    && GENERAL_REGNO_P (REGNO)						\
@@ -1181,19 +1163,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   (TARGET_FMA4 && ((MODE) == V4SFmode || (MODE) == V2DFmode \
 		  || (MODE) == V8SFmode || (MODE) == V4DFmode))
 
-/* Value is 1 if hard register REGNO can hold a value of machine-mode MODE.  */
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)	\
-   ix86_hard_regno_mode_ok ((REGNO), (MODE))
-
-/* Value is 1 if it is a good idea to tie two pseudo registers
-   when one has mode MODE1 and one has mode MODE2.
-   If HARD_REGNO_MODE_OK could produce different values for MODE1 and MODE2,
-   for any hard reg, then this must be 0 for correct output.  */
-
-#define MODES_TIEABLE_P(MODE1, MODE2) \
-  ix86_modes_tieable_p ((MODE1), (MODE2))
-
 /* It is possible to write patterns to move flags; but until someone
    does it,  */
 #define AVOID_CCMODE_COPIES
@@ -1213,12 +1182,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
    : (MODE) == QImode && !(ANY_QI_REGNO_P (REGNO)			\
 			   || MASK_REGNO_P (REGNO)) ? SImode		\
    : (MODE))
-
-/* The only ABI that saves SSE registers across calls is Win64 (thus no
-   need to check the current ABI here), and with AVX enabled Win64 only
-   guarantees that the low 16 bytes are saved.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)             \
-  (SSE_REGNO_P (REGNO) && GET_MODE_SIZE (MODE) > 16)
 
 /* Specify the registers used for certain standard purposes.
    The values of these macros are register numbers.  */
@@ -1556,24 +1519,6 @@ enum reg_class
 
 #define INDEX_REG_CLASS INDEX_REGS
 #define BASE_REG_CLASS GENERAL_REGS
-
-/* If we are copying between general and FP registers, we need a memory
-   location. The same is true for SSE and MMX registers.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE) \
-  ix86_secondary_memory_needed ((CLASS1), (CLASS2), (MODE), 1)
-
-/* Get_secondary_mem widens integral modes to BITS_PER_WORD.
-   There is no need to emit full 64 bit move on 64 bit targets
-   for integral modes that can be moved using 32 bit move.  */
-#define SECONDARY_MEMORY_NEEDED_MODE(MODE)			\
-  (GET_MODE_BITSIZE (MODE) < 32 && INTEGRAL_MODE_P (MODE)	\
-   ? mode_for_size (32, GET_MODE_CLASS (MODE), 0)		\
-   : MODE)
-
-/* Return a class of registers that cannot change FROM mode to TO mode.  */
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  ix86_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -1967,10 +1912,6 @@ typedef struct ix86_args {
 
 /* #define SHIFT_COUNT_TRUNCATED */
 
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) 1
-
 /* A macro to update M and UNSIGNEDP when an object whose type is
    TYPE and which has the specified mode and signedness is to be
    stored in a register.  This macro is only called when TYPE is a
@@ -2035,20 +1976,6 @@ do {							\
 
 /* Nonzero if access to memory by shorts is slow and undesirable.  */
 #define SLOW_SHORT_ACCESS 0
-
-/* Define this macro to be the value 1 if unaligned accesses have a
-   cost many times greater than aligned accesses, for example if they
-   are emulated in a trap handler.
-
-   When this macro is nonzero, the compiler will act as if
-   `STRICT_ALIGNMENT' were nonzero when generating code for block
-   moves.  This can cause significantly more instructions to be
-   produced.  Therefore, do not set this macro nonzero if unaligned
-   accesses only add a cycle or two to the time for a memory access.
-
-   If the value of this macro is always zero, it need not be defined.  */
-
-/* #define SLOW_UNALIGNED_ACCESS(MODE, ALIGN) 0 */
 
 /* Define this macro if it is as good or better to call a constant
    function address than to call an address kept in a register.
@@ -2324,6 +2251,7 @@ enum processor_type
   PROCESSOR_BONNELL,
   PROCESSOR_SILVERMONT,
   PROCESSOR_KNL,
+  PROCESSOR_KNM,
   PROCESSOR_SKYLAKE_AVX512,
   PROCESSOR_INTEL,
   PROCESSOR_GEODE,

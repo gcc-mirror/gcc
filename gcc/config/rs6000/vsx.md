@@ -4373,7 +4373,7 @@
 	  (match_operand:DI 2 "register_operand" "+r")]
 	 UNSPEC_STXVL))]
   "TARGET_P9_VECTOR && TARGET_64BIT"
-  "sldi %2,%2\;stxvl %x0,%1,%2"
+  "sldi %2,%2,56\;stxvl %x0,%1,%2"
   [(set_attr "length" "8")
    (set_attr "type" "vecstore")])
 

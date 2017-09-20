@@ -117,7 +117,7 @@ if HAVE_PTHREAD
 check_PROGRAMS += ttest
 
 ttest_SOURCES = ttest.c testlib.c
-ttest_CFLAGS = -pthread
+ttest_CFLAGS = $(AM_CFLAGS) -pthread
 ttest_LDADD = libbacktrace.la
 
 endif HAVE_PTHREAD

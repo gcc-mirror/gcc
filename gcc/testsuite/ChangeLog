@@ -1,3 +1,1262 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0409R2 - allow lambda capture [=, this]
+	* g++.dg/cpp1z/lambda-this1.C: Don't expect error for c++2a on [=, this]
+	capture.  Add further tests.
+	* g++.dg/cpp0x/lambda/lambda-capture-redundancy.C: Don't expect error
+	for c++2a on [=, this] capture.
+
+	* g++.dg/cpp1z/cplusplus.C: Test that __cplusplus is equal to 201703L.
+	* g++.dg/cpp1z/cplusplus_1z.C: New test.
+
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Test knm.
+	* gcc.target/i386/funcspec-56.inc: Test arch=knm.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/77362
+	* gcc.dg/graphite/pr77362.c: New testcase.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* gcc.dg/torture/pr82264.c: New testcase.
+
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/debug/dwarf2/template-params-13.C: New test.
+	* g++.dg/debug/dwarf2/template-params-5.C: Adjust regexps so that
+	it doesn't match newlines.
+	* g++.dg/debug/dwarf2/template-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-3.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp98.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-func-params-5.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-1.C: Likewise.
+	* g++.dg/debug/dwarf2/template-params-2.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp14.C: Likewise.
+	* g++.dg/debug/dwarf2/lang-cpp11.C: Likewise.
+
+2017-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64954
+	* g++.dg/cpp0x/constexpr-ctor20.C: New.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81373
+	* gcc.dg/graphite/pr81373.c: New testcase.
+
+2017-09-19  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/stack-check-11.c: New test.
+
+	* gcc.dg/stack-check-4.c: New test.
+	* gcc.dg/stack-check-5.c: New test.
+	* gcc.dg/stack-check-6.c: New test.
+	* gcc.dg/stack-check-6a.c: New test.
+	* gcc.dg/stack-check-7.c: New test.
+	* gcc.dg/stack-check-8.c: New test.
+	* gcc.dg/stack-check-9.c: New test.
+	* gcc.dg/stack-check-10.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	x86 and x86_64 targets.
+
+	* gcc.dg/stack-check-3.c: New test.
+
+	* gcc.dg/stack-check-2.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): New.
+	(check_effective_target_frame_pointer_for_non_leaf): Likewise.
+	(check_effective_target_caller_implicit_probes): Likewise.
+
+2017-09-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/tree-ssa/pr31146-2.C: Only do scan-tree-dump for c++14_down.
+	* g++.dg/tree-ssa/pr41428.C: Likewise.
+	* g++.dg/expr/bool1.C: Only do dg-do compile instead of dg-do run for
+	c++17 and up.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+
+2017-09-18  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* gcc.dg/pr81854.c: New test.
+	* g++.dg/ext/attr-ifunc-5.C: New test.
+	* g++.dg/ext/attr-ifunc-1.C: Adjust.
+	* g++.dg/ext/attr-ifunc-2.C: Same.
+	* g++.dg/ext/attr-ifunc-3.C: Same.
+	* g++.dg/ext/attr-ifunc-4.C: Same.
+	* g++.old-deja/g++.abi/vtable2.C: Same.
+	* gcc.dg/attr-ifunc-1.c: Same.
+
+2017-09-19  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-misc.c: New.
+
+2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82244
+	* gcc.dg/torture/pr82244.c: New testcase.
+
+2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/69728
+	* gfortran.dg/graphite/pr69728.f90: New testcase.
+	* gcc.dg/graphite/pr69728.c: Likewise.
+
+2017-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/80947
+	* g++.dg/cpp0x/lambda/lambda-80947.C: New.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc.dg/vect/slp-multitypes-13.c: New test.
+
+2017-09-18  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gfortran.dg/vect/mask-store-1.f90: New test.
+
+2017-09-18  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/45033
+	* g++.dg/expr/delete1.C: New.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/validity_check.adb: New testcase.
+
+2017-09-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/overload.ads, gnat.dg/overload.adb: New testcase.
+
+2017-09-18  Bob Duff  <duff@adacore.com>
+
+	* gnat.dg/tagged_prefix_call.adb: New testcase.
+
+2017-09-18  Ed Schonberg  <schonberg@adacore.com>
+
+	* gnat.dg/default_variants.adb: New testcase.
+
+2017-09-18  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/81736
+	* gcc.target/i386/pr81736-3.c: Add -mno-omit-leaf-frame-pointer.
+	* gcc.target/i386/pr81736-4.c: Likewise.
+
+2017-09-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/79622
+	* gcc.dg/graphite/pr79622.c: New testcase.
+
+2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
+
+	gcc.target/i386/pr82196-1.c: New test.
+	gcc.target/i386/pr82196-2.c: Likewise.
+
+2017-09-17  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/82166
+	* gcc.target/i386/pr82166.c: New test.
+
+2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_1.f03 : Eliminate spurious error checks.
+	* gfortran.dg/pdt_2.f03 : The same.
+	* gfortran.dg/pdt_3.f03 : The same.
+	* gfortran.dg/pdt_4.f03 : Add 'modtype' and two new errors in
+	module 'bad_vars'. Add error concerning assumed parameters and
+	save attribute.
+	* gfortran.dg/pdt_11.f03 : New test.
+
+	PR fortran/60483
+	* gfortran.dg/associate_9.f90 : Remove XFAIL and change to run.
+	* gfortran.dg/associate_25.f90 : New test.
+	* gfortran.dg/pdt_12.f03 : New test.
+
+2017-09-15  Andrew Sutton  <andrew.n.sutton@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	Add support for -std=c++2a.
+	* lib/target-supports.exp (check_effective_target_c++17): Return
+	1 also if check_effective_target_c++2a.
+	(check_effective_target_c++17_down): New.
+	(check_effective_target_c++2a_only): New.
+	(check_effective_target_c++2a): New.
+	* g++.dg/cpp2a/cplusplus.C: New.
+
+2017-09-15  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* gcc.target/i386/excess-precision-8.c: New test.
+
+2017-09-15  Manuel Lopez-Ibanez  <manu@gcc.gnu.org>
+	    Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64644
+	* g++.dg/other/anon-union4.C: New.
+	* g++.old-deja/g++.law/union4.C: Adjust.
+	* g++.old-deja/g++.other/anon1.C: Likewise.
+
+2017-09-15  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	* c-c++-common/Wcast-align.c: New test.
+
+2017-09-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/sso-1.C: New test.
+	* g++.dg/sso-2.C: Likewise.
+
+2017-09-15  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78648
+	* g++.dg/cpp0x/lambda/lambda-ice21.C: New.
+
+2017-09-15  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	PR tree-optimization/71026
+	* gcc/testsuire/gcc.dg/fold-div-1.c: Use -O1.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/g++-dg.exp (g++-dg-runtest): Use 17 instead of 1z.
+	* lib/target-supports.exp (check_effective_target_c++14): Use
+	check_effective_target_c++17 instead of check_effective_target_c++1z.
+	(check_effective_target_c++14_down): Likewise.
+	(check_effective_target_c++1z_only): Rename to ...
+	(check_effective_target_c++17_only): ... this.
+	(check_effective_target_c++1z): Rename to ...
+	(check_effective_target_c++17): ... this.
+	* g++.dg/debug/dwarf2/inline-var-1.C: Use -std=c++17 or -std=gnu++17
+	instead of -std=c++1z or -std=gnu++1z.  Use c++17 instead of c++1z
+	and c++17_only instead of c++1z_only.  Adjust expected diagnostics
+	and comments refering to 1z to 17.
+	* g++.dg/debug/dwarf2/inline-var-2.C: Likewise.
+	* g++.dg/template/partial5.C: Likewise.
+	* g++.dg/template/nontype8.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type5.C: Likewise.
+	* g++.dg/cpp1z/nontype3a.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda4.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type16.C: Likewise.
+	* g++.dg/cpp1z/class-deduction32.C: Likewise.
+	* g++.dg/cpp1z/pr78771.C: Likewise.
+	* g++.dg/cpp1z/elide1.C: Likewise.
+	* g++.dg/cpp1z/fold3.C: Likewise.
+	* g++.dg/cpp1z/class-deduction2.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type12.C: Likewise.
+	* g++.dg/cpp1z/inline-var2.C: Likewise.
+	* g++.dg/cpp1z/eval-order2.C: Likewise.
+	* g++.dg/cpp1z/decomp21.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda11.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda9.C: Likewise.
+	* g++.dg/cpp1z/utf8-neg.C: Likewise.
+	* g++.dg/cpp1z/class-deduction41.C: Likewise.
+	* g++.dg/cpp1z/class-deduction23.C: Likewise.
+	* g++.dg/cpp1z/nodiscard3.C: Likewise.
+	* g++.dg/cpp1z/static_assert-nomsg.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type9.C: Likewise.
+	* g++.dg/cpp1z/class-deduction21.C: Likewise.
+	* g++.dg/cpp1z/range-for1.C: Likewise.
+	* g++.dg/cpp1z/init-statement4.C: Likewise.
+	* g++.dg/cpp1z/udlit-utf8char.C: Likewise.
+	* g++.dg/cpp1z/decomp30.C: Likewise.
+	* g++.dg/cpp1z/class-deduction39.C: Likewise.
+	* g++.dg/cpp1z/register2.C: Likewise.
+	* g++.dg/cpp1z/decomp9.C: Likewise.
+	* g++.dg/cpp1z/regress1.C: Likewise.
+	* g++.dg/cpp1z/direct-enum-init1.C: Likewise.
+	* g++.dg/cpp1z/class-deduction30.C: Likewise.
+	* g++.dg/cpp1z/abbrev2.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto6.C: Likewise.
+	* g++.dg/cpp1z/regress2.C: Likewise.
+	* g++.dg/cpp1z/decomp16.C: Likewise.
+	* g++.dg/cpp1z/bool-increment1.C: Likewise.
+	* g++.dg/cpp1z/aligned-new1.C: Likewise.
+	* g++.dg/cpp1z/decomp3.C: Likewise.
+	* g++.dg/cpp1z/register1.C: Likewise.
+	* g++.dg/cpp1z/namespace-attribs.C: Likewise.
+	* g++.dg/cpp1z/class-deduction1.C: Likewise.
+	* g++.dg/cpp1z/decomp10.C: Likewise.
+	* g++.dg/cpp1z/constexpr-if11.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda10.C: Likewise.
+	* g++.dg/cpp1z/decomp27.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type2.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda6.C: Likewise.
+	* g++.dg/cpp1z/class-deduction9.C: Likewise.
+	* g++.dg/cpp1z/attributes-enum-1.C: Likewise.
+	* g++.dg/cpp1z/decomp11.C: Likewise.
+	* g++.dg/cpp1z/aligned-new3.C: Likewise.
+	* g++.dg/cpp1z/utf8-2.C: Likewise.
+	* g++.dg/cpp1z/lambda-this3.C: Likewise.
+	* g++.dg/cpp1z/decomp-constexpr1.C: Likewise.
+	* g++.dg/cpp1z/byte1.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto9.C: Likewise.
+	* g++.dg/cpp1z/aggr-base4.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda1.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto3.C: Likewise.
+	* g++.dg/cpp1z/utf8-2a.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda7.C: Likewise.
+	* g++.dg/cpp1z/aggr-base6.C: Likewise.
+	* g++.dg/cpp1z/cplusplus.C: Likewise.
+	* g++.dg/cpp1z/class-deduction20.C: Likewise.
+	* g++.dg/cpp1z/aggr-base2.C: Likewise.
+	* g++.dg/cpp1z/class-deduction6.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type3.C: Likewise.
+	* g++.dg/cpp1z/class-deduction31.C: Likewise.
+	* g++.dg/cpp1z/class-deduction25.C: Likewise.
+	* g++.dg/cpp1z/class-deduction18.C: Likewise.
+	* g++.dg/cpp1z/fold9.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type8.C: Likewise.
+	* g++.dg/cpp1z/abbrev1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-if10.C: Likewise.
+	* g++.dg/cpp1z/utf8.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type7.C: Likewise.
+	* g++.dg/cpp1z/aggr-base3.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda8.C: Likewise.
+	* g++.dg/cpp1z/init-statement2.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto4.C: Likewise.
+	* g++.dg/cpp1z/constexpr-if12.C: Likewise.
+	* g++.dg/cpp1z/class-deduction40.C: Likewise.
+	* g++.dg/cpp1z/nontype3.C: Likewise.
+	* g++.dg/cpp1z/class-deduction14.C: Likewise.
+	* g++.dg/cpp1z/fold7.C: Likewise.
+	* g++.dg/cpp1z/nontype2.C: Likewise.
+	* g++.dg/cpp1z/class-deduction15.C: Likewise.
+	* g++.dg/cpp1z/nested-namespace-def1.C: Likewise.
+	* g++.dg/cpp1z/class-deduction13.C: Likewise.
+	* g++.dg/cpp1z/aligned-new7.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type1.C: Likewise.
+	* g++.dg/cpp1z/nontype1.C: Likewise.
+	* g++.dg/cpp1z/init-statement5.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto2.C: Likewise.
+	* g++.dg/cpp1z/decomp17.C: Likewise.
+	* g++.dg/cpp1z/fold4.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda2.C: Likewise.
+	* g++.dg/cpp1z/fold7a.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto5.C: Likewise.
+	* g++.dg/cpp1z/init-statement7.C: Likewise.
+	* g++.dg/cpp1z/aggr-base5.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda5.C: Likewise.
+	* g++.dg/cpp1z/pr79143.C: Likewise.
+	* g++.dg/cpp1z/class-deduction38.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto8.C: Likewise.
+	* g++.dg/cpp1z/class-deduction12.C: Likewise.
+	* g++.dg/cpp1z/decomp20.C: Likewise.
+	* g++.dg/cpp1z/class-deduction22.C: Likewise.
+	* g++.dg/cpp1z/class-deduction29.C: Likewise.
+	* g++.dg/cpp1z/class-deduction8.C: Likewise.
+	* g++.dg/cpp1z/class-deduction43.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+	* g++.dg/cpp1z/fold8.C: Likewise.
+	* g++.dg/cpp1z/init-statement3.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto10.C: Likewise.
+	* g++.dg/cpp1z/class-deduction36.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type17.C: Likewise.
+	* g++.dg/cpp1z/fallthrough1.C: Likewise.
+	* g++.dg/cpp1z/fold1.C: Likewise.
+	* g++.dg/cpp1z/class-deduction26.C: Likewise.
+	* g++.dg/cpp1z/fold-ice1.C: Likewise.
+	* g++.dg/cpp1z/fold5.C: Likewise.
+	* g++.dg/cpp1z/class-deduction34.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type6.C: Likewise.
+	* g++.dg/cpp1z/class-deduction7.C: Likewise.
+	* g++.dg/cpp1z/class-deduction16.C: Likewise.
+	* g++.dg/cpp1z/class-deduction10.C: Likewise.
+	* g++.dg/cpp1z/eval-order3.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda13.C: Likewise.
+	* g++.dg/cpp1z/aggr-base2a.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto1.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda3.C: Likewise.
+	* g++.dg/cpp1z/nontype-auto7.C: Likewise.
+	* g++.dg/cpp1z/decomp15.C: Likewise.
+	* g++.dg/cpp1z/noexcept-type4.C: Likewise.
+	* g++.dg/cpp1z/fold-mangle.C: Likewise.
+	* g++.dg/cpp1z/class-deduction35.C: Likewise.
+	* g++.dg/cpp1z/decomp4.C: Likewise.
+	* g++.dg/cpp1z/class-deduction42.C: Likewise.
+	* g++.dg/cpp1z/init-statement8.C: Likewise.
+	* g++.dg/cpp1z/inline-var1a.C: Likewise.
+	* g++.dg/cpp1z/init-statement6.C: Likewise.
+	* g++.dg/cpp1z/class-deduction17.C: Likewise.
+	* g++.dg/cpp1z/class-deduction28.C: Likewise.
+	* g++.dg/cpp1z/class-deduction27.C: Likewise.
+	* g++.dg/cpp1z/decomp-bitfield1.C: Likewise.
+	* g++.dg/cpp1z/attributes-enum-1a.C: Likewise.
+	* g++.dg/cpp1z/class-deduction11.C: Likewise.
+	* g++.dg/cpp1z/constexpr-lambda12.C: Likewise.
+	* g++.dg/cpp1z/init-statement9.C: Likewise.
+	* g++.dg/cpp1z/class-deduction19.C: Likewise.
+	* g++.dg/cpp1z/class-deduction5.C: Likewise.
+	* g++.dg/cpp1z/fold2.C: Likewise.
+	* g++.dg/cpp1z/class-deduction33.C: Likewise.
+	* g++.dg/cpp1z/class-deduction24.C: Likewise.
+	* g++.dg/cpp1z/aggr-base1.C: Likewise.
+	* g++.dg/cpp1z/fold6.C: Likewise.
+	* g++.dg/cpp1z/decomp12.C: Likewise.
+	* g++.dg/cpp1z/class-deduction4.C: Likewise.
+	* g++.dg/cpp1z/inline-var1.C: Likewise.
+	* g++.dg/cpp1z/aligned-new2.C: Likewise.
+	* g++.dg/cpp1z/class-deduction3.C: Likewise.
+	* g++.dg/other/error3.C: Likewise.
+	* g++.dg/init/new25.C: Likewise.
+	* g++.dg/init/new13.C: Likewise.
+	* g++.dg/tls/diag-2.C: Likewise.
+	* g++.dg/tls/diag-4.C: Likewise.
+	* g++.dg/opt/noreturn-1.C: Likewise.
+	* g++.dg/eh/async-unwind2.C: Likewise.
+	* g++.dg/eh/spec9.C: Likewise.
+	* g++.dg/eh/spec7.C: Likewise.
+	* g++.dg/eh/template1.C: Likewise.
+	* g++.dg/eh/cond4.C: Likewise.
+	* g++.dg/eh/pr41819.C: Likewise.
+	* g++.dg/eh/delete1.C: Likewise.
+	* g++.dg/eh/spec3.C: Likewise.
+	* g++.dg/eh/forced4.C: Likewise.
+	* g++.dg/eh/spec2.C: Likewise.
+	* g++.dg/eh/shadow1.C: Likewise.
+	* g++.dg/eh/pr38662.C: Likewise.
+	* g++.dg/eh/ehopt1.C: Likewise.
+	* g++.dg/eh/spec8.C: Likewise.
+	* g++.dg/eh/init-temp2.C: Likewise.
+	* g++.dg/rtti/crash3.C: Likewise.
+	* g++.dg/warn/Wreturn-type-3.C: Likewise.
+	* g++.dg/warn/register-parm-1.C: Likewise.
+	* g++.dg/warn/register-var-2.C: Likewise.
+	* g++.dg/gcov/gcov-7.C: Likewise.
+	* g++.dg/tree-ssa/pr45605.C: Likewise.
+	* g++.dg/cpp/pr23827_cxx98_neg.C: Likewise.
+	* g++.dg/lookup/exception1.C: Likewise.
+	* g++.dg/ubsan/pr79589.C: Likewise.
+	* g++.dg/tm/pr47340.C: Likewise.
+	* g++.dg/tm/pr46567.C: Likewise.
+	* g++.dg/expr/bitfield5.C: Likewise.
+	* g++.dg/expr/bool1.C: Likewise.
+	* g++.dg/expr/lval3.C: Likewise.
+	* g++.dg/expr/lval4.C: Likewise.
+	* g++.dg/expr/bitfield4.C: Likewise.
+	* g++.dg/expr/bitfield6.C: Likewise.
+	* g++.dg/expr/bool3.C: Likewise.
+	* g++.dg/ext/has_nothrow_constructor.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-7.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-1.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-2.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-4.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-5.C: Likewise.
+	* g++.dg/ext/has_nothrow_copy-6.C: Likewise.
+	* g++.dg/ext/has_nothrow_assign.C: Likewise.
+	* g++.dg/parse/register1.C: Likewise.
+	* g++.dg/parse/error15.C: Likewise.
+	* g++.dg/parse/linkage2.C: Likewise.
+	* g++.dg/concepts/intro2.C: Likewise.
+	* g++.dg/concepts/class.C: Likewise.
+	* g++.dg/concepts/traits1.C: Likewise.
+	* g++.dg/concepts/req5.C: Likewise.
+	* g++.dg/concepts/var-concept5.C: Likewise.
+	* g++.dg/concepts/fn-concept2.C: Likewise.
+	* g++.dg/concepts/traits2.C: Likewise.
+	* g++.dg/concepts/placeholder2.C: Likewise.
+	* g++.dg/concepts/class6.C: Likewise.
+	* g++.dg/concepts/memtmpl1.C: Likewise.
+	* g++.dg/concepts/friend2.C: Likewise.
+	* g++.dg/concepts/template-parm3.C: Likewise.
+	* g++.dg/concepts/template-parm10.C: Likewise.
+	* g++.dg/concepts/explicit-spec1.C: Likewise.
+	* g++.dg/concepts/explicit-spec3.C: Likewise.
+	* g++.dg/concepts/var-templ2.C: Likewise.
+	* g++.dg/concepts/intro5.C: Likewise.
+	* g++.dg/concepts/deduction-constraint1.C: Likewise.
+	* g++.dg/concepts/iconv1.C: Likewise.
+	* g++.dg/concepts/constrained-parm.C: Likewise.
+	* g++.dg/concepts/template-template-parm1.C: Likewise.
+	* g++.dg/concepts/var-concept3.C: Likewise.
+	* g++.dg/concepts/class3.C: Likewise.
+	* g++.dg/concepts/memfun2.C: Likewise.
+	* g++.dg/concepts/req1.C: Likewise.
+	* g++.dg/concepts/disjunction1.C: Likewise.
+	* g++.dg/concepts/req17.C: Likewise.
+	* g++.dg/concepts/pr65848.C: Likewise.
+	* g++.dg/concepts/placeholder4.C: Likewise.
+	* g++.dg/concepts/decl-diagnose.C: Likewise.
+	* g++.dg/concepts/intro7.C: Likewise.
+	* g++.dg/concepts/pr68683.C: Likewise.
+	* g++.dg/concepts/partial-spec4.C: Likewise.
+	* g++.dg/concepts/template-parm5.C: Likewise.
+	* g++.dg/concepts/explicit-inst1.C: Likewise.
+	* g++.dg/concepts/class-deduction1.C: Likewise.
+	* g++.dg/concepts/class1.C: Likewise.
+	* g++.dg/concepts/req15.C: Likewise.
+	* g++.dg/concepts/memfun.C: Likewise.
+	* g++.dg/concepts/pr68434.C: Likewise.
+	* g++.dg/concepts/inherit-ctor4.C: Likewise.
+	* g++.dg/concepts/partial-spec6.C: Likewise.
+	* g++.dg/concepts/var-templ1.C: Likewise.
+	* g++.dg/concepts/template-parm8.C: Likewise.
+	* g++.dg/concepts/explicit-inst3.C: Likewise.
+	* g++.dg/concepts/class4.C: Likewise.
+	* g++.dg/concepts/req6.C: Likewise.
+	* g++.dg/concepts/fn8.C: Likewise.
+	* g++.dg/concepts/class5.C: Likewise.
+	* g++.dg/concepts/placeholder5.C: Likewise.
+	* g++.dg/concepts/req16.C: Likewise.
+	* g++.dg/concepts/req10.C: Likewise.
+	* g++.dg/concepts/var-concept2.C: Likewise.
+	* g++.dg/concepts/auto3.C: Likewise.
+	* g++.dg/concepts/generic-fn-err.C: Likewise.
+	* g++.dg/concepts/pr65552.C: Likewise.
+	* g++.dg/concepts/partial-concept-id2.C: Likewise.
+	* g++.dg/concepts/fn1.C: Likewise.
+	* g++.dg/concepts/partial-spec.C: Likewise.
+	* g++.dg/concepts/template-parm12.C: Likewise.
+	* g++.dg/concepts/diagnostic1.C: Likewise.
+	* g++.dg/concepts/intro1.C: Likewise.
+	* g++.dg/concepts/explicit-inst4.C: Likewise.
+	* g++.dg/concepts/req18.C: Likewise.
+	* g++.dg/concepts/explicit-spec5.C: Likewise.
+	* g++.dg/concepts/var-concept6.C: Likewise.
+	* g++.dg/concepts/fn9.C: Likewise.
+	* g++.dg/concepts/req2.C: Likewise.
+	* g++.dg/concepts/template-parm7.C: Likewise.
+	* g++.dg/concepts/req14.C: Likewise.
+	* g++.dg/concepts/template-parm6.C: Likewise.
+	* g++.dg/concepts/variadic4.C: Likewise.
+	* g++.dg/concepts/fn6.C: Likewise.
+	* g++.dg/concepts/req-neg1.C: Likewise.
+	* g++.dg/concepts/alias3.C: Likewise.
+	* g++.dg/concepts/expression2.C: Likewise.
+	* g++.dg/concepts/partial-spec3.C: Likewise.
+	* g++.dg/concepts/expression3.C: Likewise.
+	* g++.dg/concepts/memfun-err.C: Likewise.
+	* g++.dg/concepts/pr66091.C: Likewise.
+	* g++.dg/concepts/explicit-spec2.C: Likewise.
+	* g++.dg/concepts/equiv.C: Likewise.
+	* g++.dg/concepts/friend1.C: Likewise.
+	* g++.dg/concepts/fn4.C: Likewise.
+	* g++.dg/concepts/var-templ3.C: Likewise.
+	* g++.dg/concepts/explicit-inst2.C: Likewise.
+	* g++.dg/concepts/alias2.C: Likewise.
+	* g++.dg/concepts/regress/alias-decl-42.C: Likewise.
+	* g++.dg/concepts/placeholder6.C: Likewise.
+	* g++.dg/concepts/fn10.C: Likewise.
+	* g++.dg/concepts/req3.C: Likewise.
+	* g++.dg/concepts/variadic2.C: Likewise.
+	* g++.dg/concepts/pr65636.C: Likewise.
+	* g++.dg/concepts/intro6.C: Likewise.
+	* g++.dg/concepts/class2.C: Likewise.
+	* g++.dg/concepts/fn2.C: Likewise.
+	* g++.dg/concepts/req20.C: Likewise.
+	* g++.dg/concepts/req8.C: Likewise.
+	* g++.dg/concepts/placeholder1.C: Likewise.
+	* g++.dg/concepts/pr65854.C: Likewise.
+	* g++.dg/concepts/member-concept.C: Likewise.
+	* g++.dg/concepts/template-parm2.C: Likewise.
+	* g++.dg/concepts/variadic1.C: Likewise.
+	* g++.dg/concepts/fn7.C: Likewise.
+	* g++.dg/concepts/intro4.C: Likewise.
+	* g++.dg/concepts/req13.C: Likewise.
+	* g++.dg/concepts/inherit-ctor3.C: Likewise.
+	* g++.dg/concepts/explicit-spec6.C: Likewise.
+	* g++.dg/concepts/auto1.C: Likewise.
+	* g++.dg/concepts/alias1.C: Likewise.
+	* g++.dg/concepts/fn-concept1.C: Likewise.
+	* g++.dg/concepts/template-parm11.C: Likewise.
+	* g++.dg/concepts/explicit-spec4.C: Likewise.
+	* g++.dg/concepts/partial-concept-id1.C: Likewise.
+	* g++.dg/concepts/req9.C: Likewise.
+	* g++.dg/concepts/req4.C: Likewise.
+	* g++.dg/concepts/pr65681.C: Likewise.
+	* g++.dg/concepts/req7.C: Likewise.
+	* g++.dg/concepts/req12.C: Likewise.
+	* g++.dg/concepts/fn5.C: Likewise.
+	* g++.dg/concepts/alias4.C: Likewise.
+	* g++.dg/concepts/generic-fn.C: Likewise.
+	* g++.dg/concepts/feature-macro.C: Likewise.
+	* g++.dg/concepts/req19.C: Likewise.
+	* g++.dg/concepts/placeholder3.C: Likewise.
+	* g++.dg/concepts/intro3.C: Likewise.
+	* g++.dg/concepts/partial-spec5.C: Likewise.
+	* g++.dg/concepts/template-parm4.C: Likewise.
+	* g++.dg/concepts/dr1430.C: Likewise.
+	* g++.dg/concepts/pr65634.C: Likewise.
+	* g++.dg/concepts/var-concept4.C: Likewise.
+	* g++.dg/concepts/pr67249.C: Likewise.
+	* g++.dg/concepts/expression.C: Likewise.
+	* g++.dg/concepts/pr65575.C: Likewise.
+	* g++.dg/concepts/partial-spec2.C: Likewise.
+	* g++.dg/concepts/template-parm9.C: Likewise.
+	* g++.dg/concepts/inherit-ctor1.C: Likewise.
+	* g++.dg/concepts/equiv2.C: Likewise.
+	* g++.dg/concepts/req11.C: Likewise.
+	* g++.dg/concepts/template-parm1.C: Likewise.
+	* g++.dg/concepts/inherit-ctor2.C: Likewise.
+	* g++.dg/concepts/var-concept1.C: Likewise.
+	* g++.dg/concepts/fn3.C: Likewise.
+	* g++.dg/torture/pr46364.C: Likewise.
+	* g++.dg/torture/stackalign/eh-alloca-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-fastcall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-vararg-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-global-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-thiscall-1.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-2.C: Likewise.
+	* g++.dg/torture/stackalign/eh-inline-1.C: Likewise.
+	* g++.dg/torture/pr52918-1.C: Likewise.
+	* g++.dg/torture/pr49394.C: Likewise.
+	* g++.dg/torture/pr57190.C: Likewise.
+	* g++.dg/cpp0x/static_assert8.C: Likewise.
+	* g++.dg/cpp0x/noexcept19.C: Likewise.
+	* g++.dg/cpp0x/variadic-throw.C: Likewise.
+	* g++.dg/cpp0x/variadic73.C: Likewise.
+	* g++.dg/cpp0x/noexcept02.C: Likewise.
+	* g++.dg/cpp0x/defaulted23.C: Likewise.
+	* g++.dg/cpp0x/noexcept08.C: Likewise.
+	* g++.dg/cpp0x/auto9.C: Likewise.
+	* g++.dg/cpp0x/lambda/lambda-eh2.C: Likewise.
+	* g++.dg/cpp0x/error5.C: Likewise.
+	* c-c++-common/gomp/atomic-12.c: Likewise.
+	* c-c++-common/gomp/atomic-13.c: Likewise.
+	* c-c++-common/gomp/atomic-14.c: Likewise.
+	* c-c++-common/Wvarargs-2.c: Likewise.
+	* c-c++-common/Wvarargs.c: Likewise.
+	* c-c++-common/vector-subscript-2.c: Likewise.
+	* g++.old-deja/g++.robertl/eb123.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl3.C: Likewise.
+	* g++.old-deja/g++.eh/cleanup2.C: Likewise.
+	* g++.old-deja/g++.eh/badalloc1.C: Likewise.
+	* g++.old-deja/g++.eh/throw2.C: Likewise.
+	* g++.old-deja/g++.eh/throw1.C: Likewise.
+	* g++.old-deja/g++.eh/tmpl1.C: Likewise.
+	* g++.old-deja/g++.other/new7.C: Likewise.
+	* g++.old-deja/g++.other/crash30.C: Likewise.
+	* g++.old-deja/g++.other/regstack.C: Likewise.
+	* g++.old-deja/g++.other/crash28.C: Likewise.
+	* g++.old-deja/g++.jason/bool5.C: Likewise.
+	* g++.old-deja/g++.mike/p10416.C: Likewise.
+	* g++.old-deja/g++.mike/eh25.C: Likewise.
+	* g++.old-deja/g++.mike/eh55.C: Likewise.
+
+	PR rtl-optimization/82192
+	* gcc.c-torture/execute/pr82192.c: New test.
+
+2017-09-15  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82217
+	* gcc.dg/torture/pr82217.c: New testcase.
+
+2017-09-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82145
+	* gcc.target/i386/pr82145.c: New test.
+
+2017-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82184
+	* gfortran.dg/pointer_array_9.f90: New test.
+
+2017-09-14  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/abs128-1.c: Use __builtin_fabsf128 instead of
+	__builtin_fabsq.
+	* gcc.target/powerpc/float128-5.c: Use __builtin_fabsf128 instead
+	of __builtin_fabsq.  Prevent the test from running on 32-bit.
+	* gcc.target/powerpc/float128-fma1.c: New test.
+	* gcc.target/powerpc/float128-fma2.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt1.c: Likewise.
+	* gcc.target/powerpc/float128-sqrt2.c: Likewise.
+
+2017-09-14  David Malcolm  <dmalcolm@redhat.com>
+
+	PR jit/82174
+	* jit.dg/test-error-gcc_jit_context_get_builtin_function-unknown-builtin.c:
+	New test case.
+
+2017-09-14  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/r2_shrink-wrap.c: New.
+
+2017-09-14  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: Add
+	lp64 requirement.
+
+2017-09-14  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-fre-59.c: New testcase.
+	* gcc.dg/uninit-suppress_2.c: Adjust.
+	* gcc.dg/tree-ssa/ssa-sccvn-2.c: Likewise.
+
+2017-09-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR tree-optimization/80996
+	* gcc.dg/vect/vect-multitypes-12.c: Remove sparc*-*-* handling.
+
+2017-09-14  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81325
+	* g++.dg/cpp0x/pr81325.C: New test.
+
+2017-09-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_10.f03 : New test.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68177
+	* g++.dg/cpp0x/lambda/lambda-68177.C: New.
+
+2017-09-13  Martin Liska  <mliska@suse.cz>
+
+	PR middle-end/82154
+	* g++.dg/torture/pr82154.C: New test.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61362
+	* g++.dg/cpp0x/lambda/lambda-ice19.C: New.
+	* g++.dg/cpp0x/lambda/lambda-ice20.C: Likewise.
+
+2017-09-13  Steve Ellcey  <sellcey@cavium.com>
+
+	PR tree-optimization/80925
+	* gfortran.dg/vect/vect-2.f90: Add
+	--param vect-max-peeling-for-alignment=0 option.
+	Remove unaligned access and peeling checks.
+	* gfortran.dg/vect/vect-3.f90: Ditto.
+	* gfortran.dg/vect/vect-4.f90: Ditto.
+	* gfortran.dg/vect/vect-5.f90: Ditto.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/61135
+	* g++.dg/cpp0x/lambda/lambda-ice18.C: New.
+	* g++.dg/cpp1y/lambda-ice2.C: Likewise.
+
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/simd/vect_str_zero.c: Update testcase.
+
+2017-09-13  Marek Polacek  <polacek@redhat.com>
+
+	PR c/82167
+	* gcc.dg/pr82167.c: New test.
+
+2017-09-13  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-ld-char.c: New.
+	* gcc.target/powerpc/fold-vec-ld-double.c: New.
+	* gcc.target/powerpc/fold-vec-ld-float.c: New.
+	* gcc.target/powerpc/fold-vec-ld-int.c: New.
+	* gcc.target/powerpc/fold-vec-ld-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-ld-short.c: New.
+
+2017-09-13  Jackson Woodruff  <jackson.woodruff@arm.com>
+
+	* gcc.target/aarch64/pr62178.c: Updated testcase
+	to scan for two ldrs and an mla.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59949
+	* g++.dg/cpp0x/lambda/lambda-defarg7.C: New.
+
+2017-09-13  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	* gcc.target/aarch64/vmov_n_1.c: Update dup scan-assembler.
+
+2017-09-13  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* gcc.target/arm/acle/cdp.c: Skip __ARM_FEATURE_COPROC check for
+	ARMv8-A and ARMv8-R.
+	* gcc.target/arm/acle/cdp2.c: Likewise.
+	* gcc.target/arm/acle/ldc.c: Likewise.
+	* gcc.target/arm/acle/ldc2.c: Likewise.
+	* gcc.target/arm/acle/ldc2l.c: Likewise.
+	* gcc.target/arm/acle/ldcl.c: Likewise.
+	* gcc.target/arm/acle/mcr.c: Likewise.
+	* gcc.target/arm/acle/mcr2.c: Likewise.
+	* gcc.target/arm/acle/mcrr.c: Likewise.
+	* gcc.target/arm/acle/mcrr2.c: Likewise.
+	* gcc.target/arm/acle/mrc.c: Likewise.
+	* gcc.target/arm/acle/mrc2.c: Likewise.
+	* gcc.target/arm/acle/mrrc.c: Likewise.
+	* gcc.target/arm/acle/mrrc2.c: Likewise.
+	* gcc.target/arm/acle/stc.c: Likewise.
+	* gcc.target/arm/acle/stc2.c: Likewise.
+	* gcc.target/arm/acle/stc2l.c: Likewise.
+	* gcc.target/arm/acle/stcl.c: Likewise.
+	* lib/target-supports.exp:
+	(check_effective_target_arm_coproc1_ok_nocache): Mention ldcl
+	and stcl in the comment.
+	(check_effective_target_arm_coproc2_ok_nocache): Allow Thumb-2 targets
+	and disable Thumb-1 targets.
+	(check_effective_target_arm_coproc3_ok_nocache): Likewise.
+	(check_effective_target_arm_coproc4_ok_nocache): Likewise.
+
+2017-09-13  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/47226
+	* g++.dg/cpp0x/lambda/lambda-variadic4.C: New.
+	* g++.dg/cpp0x/lambda/lambda-variadic5.C: Likewise.
+
+2017-09-13  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82128
+	* gimple-fold.c (gimple_fold_call): Update SSA name in-place to
+	default-def to avoid breaking iterator update with the weird
+	interaction with cgraph_update_edges_for_call_stmt_node.
+
+2017-09-13  Kugan Vivekanandarajah  <kuganv@linaro.org>
+
+	* gcc.target/aarch64/pr63304_1.c: Remove-mno-fix-cortex-a53-843419.
+
+017-09-12  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70621
+	* g++.dg/torture/pr70621.C: New.
+
+2017-09-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/82173
+	* gfortran.dg/pdt_4.f03 : Remove the 'is being used before it
+	is defined' error.
+	* gfortran.dg/pdt_6.f03 : New test.
+	* gfortran.dg/pdt_7.f03 : New test.
+	* gfortran.dg/pdt_8.f03 : New test.
+
+	PR fortran/82168
+	* gfortran.dg/pdt_9.f03 : New test.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* gcc.target/powerpc/pr82112.c: New test.
+	* g++.dg/ext/altivec-18.C: New test.
+
+2017-09-12  Martin Liska  <mliska@suse.cz>
+
+	PR testsuite/82114
+	* gcc.dg/gimplefe-14.c (main): Add handling of case 0.
+
+2017-09-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82157
+	* gcc.dg/torture/pr82157.c: New testcase.
+
+2017-09-12  Simon Atanasyan  <simon.atanasyan@imgtec.com>
+
+	* gcc.target/mips/near-far-1.c: Add check for 'short_call'
+	attribute.
+	* gcc.target/mips/near-far-2.c: Likewise.
+	* gcc.target/mips/near-far-3.c: Likewise.
+	* gcc.target/mips/near-far-4.c: Likewise.
+
+2017-09-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82112
+	* c-c++-common/pr82112.c: New test.
+	* gcc.dg/pr82112.c: New test.
+
+2017-09-10  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/79441
+	* gnat.dg/pack9.adb: Robustify.
+
+2017-09-10  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/34640
+	* gfortran.dg/associate_24.f90: New test.
+	* gfortran.dg/assumed_type_2.f90: Adjust some of the tree dump
+	checks.
+	* gfortran.dg/no_arg_check_2.f90: Likewise.
+	* gfortran.dg/pointer_array_1.f90: New test.
+	* gfortran.dg/pointer_array_2.f90: New test.
+	* gfortran.dg/pointer_array_7.f90: New test.
+	* gfortran.dg/pointer_array_8.f90: New test.
+	* gfortran.dg/pointer_array_component_1.f90: New test.
+	* gfortran.dg/pointer_array_component_2.f90: New test.
+	* gfortran.dg/goacc/kernels-alias-4.f95: Bump up both tree scan
+	counts by 1.
+
+	PR fortran/40737
+	* gfortran.dg/pointer_array_3.f90: New test.
+
+	PR fortran/57116
+	* gfortran.dg/pointer_array_4.f90: New test.
+
+	PR fortran/55763
+	* gfortran.dg/pointer_array_5.f90: New test.
+
+	PR fortran/57019
+	* gfortran.dg/pointer_array_6.f90: New test.
+
+2017-09-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/81852
+	* g++.dg/cpp1y/feat-cxx11.C: Check __cpp_threadsafe_static_init.
+	* g++.dg/cpp1y/feat-cxx14.C: Likewise.
+	* g++.dg/cpp1y/feat-cxx98.C: Likewise.
+	* g++.dg/cpp1y/feat-neg.C: Likewise.
+	* g++.dg/cpp1z/feat-cxx1z.C: Likewise.
+
+2017-09-09  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* gnat.dg/debug14.adb: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/atomic3.ads: New test.
+
+2017-09-09  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/vfa.ads: Rename into...
+	* gnat.dg/specs/vfa1.ads: ...this.
+	* gnat.dg/specs/vfa2.ads: New test.
+
+2017-09-09  Paul Thomas  <pault@gcc.gnu.org>
+
+	* gfortran.dg/pdt_1.f03 : New test.
+	* gfortran.dg/pdt_2.f03 : New test.
+	* gfortran.dg/pdt_3.f03 : New test.
+	* gfortran.dg/pdt_4.f03 : New test.
+	* gfortran.dg/pdt_5.f03 : New test.
+
+2017-09-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/pr81988.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/opt67.adb: New test.
+	* gnat.dg/opt67_pkg.ad[sb]: New helper.
+
+2017-09-07  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81979
+	* gcc.dg/pr81979.c: New test.
+
+2017-09-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/82126
+	* gnat.dg/alignment3.adb: Add pragma No_Component_Reordering.
+
+2017-09-07  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/ssa-thread-12.c: XFAIL third FSM threading
+	opportunity.
+
+2017-09-07  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/float128-1.c: Update options to know that
+	-mfloat128 is now on by default on PowerPC VSX systems.  Remove
+	-static-libgcc option which is no longer needed.  Use -mvsx or
+	-mpower9-vector to enable VSX or hardware IEEE support, rather
+	than specifying a particular CPU.
+	* gcc.target/powerpc/float128-2.c: Likewise.
+	* gcc.target/powerpc/float128-cmp.c: Likewise.
+	* gcc.target/powerpc/float128-complex-1.c: Likewise.
+	* gcc.target/powerpc/float128-complex-2.c: Likewise.
+	* gcc.target/powerpc/float128-hw.c: Likewise.
+	* gcc.target/powerpc/float128-mix.c: Likewise.
+	* gcc.target/powerpc/float128-type-1.c: Likewise.
+	* gcc.target/powerpc/float128-type-2.c: Likewise.
+	* gcc.target/powerpc/float128-3.c: New test.
+	* gcc.target/powerpc/float128-4.c: Likewise.
+	* gcc.target/powerpc/float128-5.c: Likewise.
+
+2017-09-06  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR middle-end/78468
+	* gcc.dg/pr78468.c: Add alignment test.
+
+2017-09-06  Wish Wu  <wishwu007@gmail.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.dg/sancov/cmp0.c: New test.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	* gcc.c-torture/execute/20050604-1.c: Adjust to be a better
+	test for correctness of vector lowering.
+
+2017-09-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82108
+	* gcc.dg/vect/pr82108.c: New testcase.
+
+2017-09-06  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82078
+	* gcc.dg/tree-ssa/pr82078.c: New test.
+
+2017-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/82095
+	* gcc.dg/tls/pr82095.c: New test.
+
+2017-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-2.c: New test.
+
+	PR middle-end/81768
+	* gcc.dg/gomp/pr81768-1.c: New test.
+
+2017-09-05  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR target/81833
+	* gcc.target/powerpc/pr81833-1.c: New file.
+	* gcc.target/powerpc/pr81833-2.c: New file.
+
+2017-09-05  H.J. Lu  <hongjiu.lu@intel.com>
+
+	PR target/59501
+	PR target/81624
+	PR target/81769
+	* gcc.target/i386/pr59501-4a.c: Remove xfail.
+	* gcc.target/i386/pr81769-1a.c: New test.
+	* gcc.target/i386/pr81769-1b.c: Likewise.
+	* gcc.target/i386/pr81769-2.c: Likewise.
+
+2017-09-05  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072-2.c: New test.
+
+2017-09-05  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/81942
+	* g++.dg/cpp1y/constexpr-return3.C: New.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/incomplete5.ad[sb]: New test.
+	* gnat.dg/incomplete5_pkg.ad[sb]: New helper.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/uc2.ads: New test.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/taft_type4.adb: New test.
+	* gnat.dg/taft_type4_pkg.ad[sb]: New helper.
+
+2017-09-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82102
+	* gcc.dg/torture/pr82102.c: New testcase.
+
+2017-09-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* testsuite/gnat.dg/array29.ad[sb]: New test.
+
+2017-09-05  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82032
+	* g++.dg/other/pr82032.C: New test.
+	* gcc.dg/tree-ssa/pr68198.c: Update scanned pattern.
+	* gcc.dg/tree-ssa/vrp34.c: Likewise.
+	* gcc.dg/switch-10.c: Likewise.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-os-support.h: New file.
+	* gcc.target/i386/mpx/mpx-check.h: Include mpx-os-support.h.
+
+2017-09-04  Bernd Edlinger  <bernd.edlinger@hotmail.de>
+
+	PR target/77308
+	* gcc.target/arm/pr77308-1.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82084
+	* g++.dg/torture/pr82084.C: New testcase.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR c/81783
+	* c-c++-common/Wtautological-compare-5.c: New test.
+
+2017-09-04  Jeff Law  <law@redhat.com>
+
+	PR tree-optimization/64910
+	* gcc.dg/tree-ssa/pr64910-2.c: New test.
+
+2017-09-04  Marek Polacek  <polacek@redhat.com>
+
+	PR sanitizer/82072
+	* c-c++-common/ubsan/pr82072.c: New test.
+
+2017-09-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82060
+	* g++.dg/torture/pr82060.C: New testcase.
+
+2017-09-04  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR rtl-optimization/57448
+	PR target/67458
+	PR target/81316
+	* gcc.dg/atomic/pr80640-2.c: New testcase.
+	* gcc.dg/atomic/pr81316.c: New testcase.
+
+2017-09-04  Tom de Vries  <tom@codesourcery.com>
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c (fn2): Add parameters corresponding to
+	call in fn11.
+
+2017-09-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81981
+	* gcc.dg/ubsan/pr81981.c: New test.
+
+	PR tree-optimization/70043
+	PR testsuite/82093
+	* gfortran.dg/vect/pr70043.f90 (fn1): Start loop from 1 instead of 0.
+
+2017-09-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/adx-check.h (main): Use __get_cpuid_count.
+	* gcc.target/i386/bmi-check.h (main): Ditto.
+	* gcc.target/i386/bmi2-check.h (main): Ditto.
+	* gcc.target/i386/rtm-check.h (main): Ditto.
+	* gcc.target/i386/sha-check.h (main): Ditto.
+	* gcc.target/i386/avx2-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.
+	* gcc.target/i386/avx512-check.h (check_osxsave): New function.
+	(main): Use __get_cpuid_count.  Use check_osxsave.  Reorder conditions.
+	* gcc.target/i386/mpx/mpx-check.h (check_osxsave): New function.
+	(main): Use check_osxsave.
+
+2017-09-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.target/i386/mpx/mpx-check.h (main): Use __get_cpuid_count
+	and return NORUNRES on failure.
+	* gcc.target/i386/mpx/va-arg-pack-1-lbv.c (foo1): Use
+	__builtin_va_arg_pack instead of __va_arg_pack.
+	* gcc.target/i386/mpx/va-arg-pack-1-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-1-ubv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-lbv.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-nov.c (foo1): Ditto.
+	* gcc.target/i386/mpx/va-arg-pack-2-ubv.c (foo1): Ditto.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/81766
+	* gcc.target/i386/pr81766.c: New test.
+
+2017-09-01  Joseph Myers  <joseph@codesourcery.com>
+
+	PR c/82071
+	* gcc.target/i386/excess-precision-7.c: New test.
+
+2017-09-01  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	PR target/82012
+	* gcc.target/s390/target-attribute/pr82012.c: New test.
+
+2017-09-01  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/const-in-bss.c: New test.
+
+	PR tree-optimization/82052
+	* gcc.c-torture/compile/pr82052.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81923
+	* gcc.dg/asan/pr81923.c: New test.
+
+2017-09-01  Martin Liska  <mliska@suse.cz>
+
+	PR tree-optimization/82059
+	* gcc.dg/tree-ssa/pr82059.c: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/loop-1.c: Deleted.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/arc.exp: Test also cpp files.
+	* gcc.target/arc/tdelay_slots.cpp: New test.
+
+2017-09-01  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/pr9001184797.c: New test.
+
+2017-09-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/81887
+	* c-c++-common/gomp/pr81887.c: New test.
+	* gfortran.dg/gomp/pr81887.f90: New test.
+
+2017-09-01  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/82040
+	* g++.dg/warn/Wbool-operation-1.C: New test.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-5.c: New test.
+	* gcc.target/arc/arc700-stld-hazard.c: Update test options.
+
+2017-08-31  Claudiu Zissulescu  <claziss@synopsys.com>
+
+	* gcc.target/arc/sdata-3.c: New file.
+	* gcc.target/arc/sdata-4.c: Likewise.
+
+2017-08-31  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82054
+	* g++.dg/gomp/pr82054.C: New testcase.
+
+2017-08-31  Renlin Li  <renlin.li@arm.com>
+	    Aaron Sawdey  <acsawdey@linux.vnet.ibm.com>
+
+	* gcc.dg/memcmp-1.c: Use memcpy instead of strcpy.
+
+2017-08-30  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/81987
+	* g++.dg/torture/pr81987.C: New file.
+
+2017-08-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr22.ad[sb]: New test.
+
+2017-08-30  Pat Haugen  <pthaugen@us.ibm.com>
+
+	* gcc.target/powerpc/cr_shrink-wrap.c: New.
+
+2017-08-30  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	PR target/82015
+	* gcc.target/powerpc/pr82015.c: Fix up error message.
+
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
+	PR inline-asm/82001
+	* gcc.dg/ipa/pr82001.c: New test.
+
+2017-08-30  Martin Liska  <mliska@suse.cz>
+
+	* gcc.dg/tree-ssa/vrp104.c: Change dump file name.
+
+2017-08-30  Richard Biener  <rguenther@suse.de>
+
+	* g++.dg/pr78112-2.C: Do not expect duplicate DW_AT_object_pointer.
+
 2017-08-29  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	PR target/82015

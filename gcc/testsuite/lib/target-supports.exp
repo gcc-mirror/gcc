@@ -7827,13 +7827,13 @@ proc check_effective_target_c++14 { } {
     if [check_effective_target_c++14_only] {
 	return 1
     }
-    return [check_effective_target_c++1z]
+    return [check_effective_target_c++17]
 }
 proc check_effective_target_c++14_down { } {
     if ![check_effective_target_c++] {
 	return 0
     }
-    return [expr ![check_effective_target_c++1z] ]
+    return [expr ![check_effective_target_c++17] ]
 }
 
 proc check_effective_target_c++98_only { } {
@@ -7850,7 +7850,7 @@ proc check_effective_target_c++98_only { } {
     return 0
 }
 
-proc check_effective_target_c++1z_only { } {
+proc check_effective_target_c++17_only { } {
     global cxx_default
     if ![check_effective_target_c++] {
 	return 0
@@ -7863,8 +7863,35 @@ proc check_effective_target_c++1z_only { } {
     }
     return 0
 }
-proc check_effective_target_c++1z { } {
-    return [check_effective_target_c++1z_only]
+
+proc check_effective_target_c++17 { } {
+    if [check_effective_target_c++17_only] {
+	return 1
+    }
+    return [check_effective_target_c++2a]
+}
+proc check_effective_target_c++17_down { } {
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    return [expr ![check_effective_target_c++2a] ]
+}
+
+proc check_effective_target_c++2a_only { } {
+    global cxx_default
+    if ![check_effective_target_c++] {
+	return 0
+    }
+    if [check-flags { { } { } { -std=c++2a -std=gnu++2a } }] {
+	return 1
+    }
+    if { $cxx_default == "c++20" && [check-flags { { } { } { } { -std=* } }] } {
+	return 1
+    }
+    return 0
+}
+proc check_effective_target_c++2a { } {
+    return [check_effective_target_c++2a_only]
 }
 
 # Check for C++ Concepts TS support, i.e. -fconcepts flag.
@@ -8504,8 +8531,8 @@ proc check_effective_target_rdrand { } {
     } "-mrdrnd" ]
 }
 
-# Return 1 if the target supports coprocessor instructions: cdp, ldc, stc, mcr and
-# mrc.
+# Return 1 if the target supports coprocessor instructions: cdp, ldc, ldcl,
+# stc, stcl, mcr and mrc.
 proc check_effective_target_arm_coproc1_ok_nocache { } {
     if { ![istarget arm*-*-*] } {
 	return 0
@@ -8530,7 +8557,7 @@ proc check_effective_target_arm_coproc2_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc2_ok assembly {
-	#if __ARM_ARCH < 5
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 5
 	#error FOO
 	#endif
     }]
@@ -8549,7 +8576,8 @@ proc check_effective_target_arm_coproc3_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc3_ok assembly {
-	#if __ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__)
+	#if (__thumb__ && !__thumb2__) \
+	    || (__ARM_ARCH < 6 && !defined (__ARM_ARCH_5TE__))
 	#error FOO
 	#endif
     }]
@@ -8568,7 +8596,7 @@ proc check_effective_target_arm_coproc4_ok_nocache { } {
 	return 0
     }
     return [check_no_compiler_messages_nocache arm_coproc4_ok assembly {
-	#if __ARM_ARCH < 6
+	#if (__thumb__ && !__thumb2__) || __ARM_ARCH < 6
 	#error FOO
 	#endif
     }]
@@ -8592,4 +8620,85 @@ proc check_effective_target_autoincdec { } {
 	return 1
     }
     return 0
+}
+
+# Return 1 if the target has support for stack probing designed
+# to avoid stack-clash style attacks.
+#
+# This is used to restrict the stack-clash mitigation tests to
+# just those targets that have been explicitly supported.
+# 
+# In addition to the prologue work on those targets, each target's
+# properties should be described in the functions below so that
+# tests do not become a mess of unreadable target conditions.
+# 
+proc check_effective_target_supports_stack_clash_protection { } {
+
+   # Temporary until the target bits are fully ACK'd.
+#  if { [istarget aarch*-*-*]
+#       || [istarget s390*-*-*]
+#       || [istarget powerpc*-*-*] || [istarget rs6000*-*-*] } {
+#	return 1
+#  }
+
+    if { [istarget x86_64-*-*] || [istarget i?86-*-*] } {
+	return 1
+    }
+  return 0
+}
+
+# Return 1 if the target creates a frame pointer for non-leaf functions
+# Note we ignore cases where we apply tail call optimization here.
+proc check_effective_target_frame_pointer_for_non_leaf { } {
+  if { [istarget aarch*-*-*] } {
+	return 1
+  }
+  return 0
+}
+
+# Return 1 if the target's calling sequence or its ABI
+# create implicit stack probes at or prior to function entry.
+proc check_effective_target_caller_implicit_probes { } {
+
+  # On x86/x86_64 the call instruction itself pushes the return
+  # address onto the stack.  That is an implicit probe of *sp.
+  if { [istarget x86_64-*-*] || [istarget i?86-*-*] } {
+	return 1
+  }
+
+  # On PPC, the ABI mandates that the address of the outer
+  # frame be stored at *sp.  Thus each allocation of stack
+  # space is itself an implicit probe of *sp.
+  if { [istarget powerpc*-*-*] || [istarget rs6000*-*-*] } {
+	return 1
+  }
+
+  # s390's ABI has a register save area allocated by the
+  # caller for use by the callee.  The mere existence does
+  # not constitute a probe by the caller, but when the slots
+  # used by the callee those stores are implicit probes.
+  if { [istarget s390*-*-*] } {
+	return 1
+  }
+
+  # Not strictly true on aarch64, but we have agreed that we will
+  # consider any function that pushes SP more than 3kbytes into
+  # the guard page as broken.  This essentially means that we can
+  # consider the aarch64 as having a caller implicit probe at
+  # *(sp + 1k).
+  if { [istarget aarch64*-*-*] } {
+	return 1;
+  }
+
+  return 0
+}
+
+# Targets that potentially realign the stack pointer often cause residual
+# stack allocations and make it difficult to elimination loops or residual
+# allocations for dynamic stack allocations
+proc check_effective_target_callee_realigns_stack { } {
+  if { [istarget x86_64-*-*] || [istarget i?86-*-*] } {
+	return 1
+  }
+  return 0
 }

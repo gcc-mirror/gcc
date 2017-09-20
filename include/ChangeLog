@@ -1,7 +1,23 @@
+2017-09-15  Yao Qi  <yao.qi@linaro.org>
+	    Pedro Alves  <palves@redhat.com>
+
+	* ansidecl.h (DISABLE_COPY_AND_ASSIGN): New macro.
+
+2017-09-12  Jiong Wang  <jiong.wang@arm.com>
+
+	* dwarf2.def (DW_CFA_AARCH64_negate_ra_state): New DW_CFA_DUP.
+	* dwarf2.h (DW_CFA_DUP): New define.
+
 2017-08-21  Richard Biener  <rguenther@suse.de>
 
 	* simple-object.h (simple_object_copy_lto_debug_sections): New
 	function.
+
+2017-07-31  Nick Clifton  <nickc@redhat.com>
+
+	Binutils PR 21850
+	* ansidecl.h (OVERRIDE): Protect check of __cplusplus value with
+	#idef __cplusplus.
 
 2017-07-02  Jan Kratochvil  <jan.kratochvil@redhat.com>
 

@@ -61,11 +61,12 @@ with Sem_Ch12;
 with Sem_Ch13;
 with Sem_Elim;
 with Sem_Eval;
+with Sem_SPARK; use Sem_SPARK;
 with Sem_Type;
 with Set_Targ;
 with Sinfo;    use Sinfo;
 with Sinput.L; use Sinput.L;
-with Snames;
+with Snames;   use Snames;
 with Sprint;   use Sprint;
 with Stringt;
 with Stylesw;  use Stylesw;
@@ -178,6 +179,13 @@ procedure Gnat1drv is
          Error_To_Warning := True;
       end if;
 
+      --  -gnatdJ sets Include_Subprogram_In_Messages, adding the related
+      --  subprogram as part of the error and warning messages.
+
+      if Debug_Flag_JJ then
+         Include_Subprogram_In_Messages := True;
+      end if;
+
       --  Disable CodePeer_Mode in Check_Syntax, since we need front-end
       --  expansion.
 
@@ -264,7 +272,15 @@ procedure Gnat1drv is
          Restrict.Restrictions.Set   (Max_Asynchronous_Select_Nesting) := True;
          Restrict.Restrictions.Value (Max_Asynchronous_Select_Nesting) := 0;
 
-         --  Suppress division by zero and access checks since they are handled
+         --  Enable pragma Ignore_Pragma (Global) to support legacy code. As a
+         --  consequence, Refined_Global pragma should be ignored as well, as
+         --  it is only allowed on a body when pragma Global is given for the
+         --  spec.
+
+         Set_Name_Table_Boolean3 (Name_Global, True);
+         Set_Name_Table_Boolean3 (Name_Refined_Global, True);
+
+         --  Suppress division by zero checks since they are handled
          --  implicitly by CodePeer.
 
          --  Turn off dynamic elaboration checks: generates inconsistencies in
@@ -345,6 +361,7 @@ procedure Gnat1drv is
          Reset_Validity_Check_Options;
          Validity_Check_Default       := True;
          Validity_Check_Copies        := True;
+         Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options and ignore any style check pragmas
          --  since we are not interested in any front-end warnings when we are
@@ -497,6 +514,7 @@ procedure Gnat1drv is
          --  data is directly detected by GNATprove's flow analysis.
 
          Validity_Checks_On := False;
+         Check_Validity_Of_Parameters := False;
 
          --  Turn off style check options since we are not interested in any
          --  front-end warnings when we are getting SPARK output.
@@ -536,7 +554,7 @@ procedure Gnat1drv is
          Configurable_Run_Time_Mode := True;
       end if;
 
-      --  Set -gnatR3m mode if debug flag A set
+      --  Set -gnatRm mode if debug flag A set
 
       if Debug_Flag_AA then
          Back_Annotate_Rep_Info := True;
@@ -556,13 +574,13 @@ procedure Gnat1drv is
          Atree.Num_Extension_Nodes := Atree.Num_Extension_Nodes + 1;
       end if;
 
-      --  Disable static allocation of dispatch tables if -gnatd.t or if layout
-      --  is enabled. The front end's layout phase currently treats types that
-      --  have discriminant-dependent arrays as not being static even when a
+      --  Disable static allocation of dispatch tables if -gnatd.t is enabled.
+      --  The front end's layout phase currently treats types that have
+      --  discriminant-dependent arrays as not being static even when a
       --  discriminant constraint on the type is static, and this leads to
       --  problems with subtypes of type Ada.Tags.Dispatch_Table_Wrapper. ???
 
-      if Debug_Flag_Dot_T or else Frontend_Layout_On_Target then
+      if Debug_Flag_Dot_T then
          Static_Dispatch_Tables := False;
       end if;
 
@@ -570,12 +588,6 @@ procedure Gnat1drv is
 
       if Debug_Flag_8 then
          Ttypes.Bytes_Big_Endian := not Ttypes.Bytes_Big_Endian;
-      end if;
-
-      --  Activate front-end layout if debug flag -gnatdF is set
-
-      if Debug_Flag_FF then
-         Targparm.Frontend_Layout_On_Target := True;
       end if;
 
       --  Set and check exception mechanism. This is only meaningful when
@@ -962,10 +974,11 @@ procedure Gnat1drv is
       --  Validate independence pragmas (again using values annotated by the
       --  back end for component layout where possible) but only for non-GCC
       --  back ends, as this is done a priori for GCC back ends.
-
-      if AAMP_On_Target then
-         Sem_Ch13.Validate_Independence;
-      end if;
+      --  ??? We use to test for AAMP_On_Target which is now gone, consider
+      --
+      --  if AAMP_On_Target then
+      --     Sem_Ch13.Validate_Independence;
+      --  end if;
    end Post_Compilation_Validation_Checks;
 
    --  Local variables
@@ -1349,9 +1362,9 @@ begin
                Write_Str (" (subunit)");
                Write_Eol;
 
-               --  Force generation of ALI file, for backward compatibility
-
-               Opt.Force_ALI_Tree_File := True;
+               --  Do not generate an ALI file in this case, because it would
+               --  become obsolete when the parent is compiled, and thus
+               --  confuse tools such as gnatfind.
 
             elsif Main_Unit_Kind = N_Subprogram_Declaration then
                Write_Str (" (subprogram spec)");
@@ -1417,7 +1430,6 @@ begin
         and then
           (not (Back_Annotate_Rep_Info or Generate_SCIL or GNATprove_Mode)
             or else Main_Unit_Kind = N_Subunit
-            or else Frontend_Layout_On_Target
             or else ASIS_GNSA_Mode)
       then
          Post_Compilation_Validation_Checks;
@@ -1442,11 +1454,18 @@ begin
 
       Prepcomp.Add_Dependencies;
 
-      --  In gnatprove mode we're writing the ALI much earlier than usual
-      --  as flow analysis needs the file present in order to append its
-      --  own globals to it.
-
       if GNATprove_Mode then
+
+         --  Perform the new SPARK checking rules for pointer aliasing. This is
+         --  only activated in GNATprove mode and on SPARK code.
+
+         if Debug_Flag_FF then
+            Check_Safe_Pointers (Main_Unit_Node);
+         end if;
+
+         --  In GNATprove mode we're writing the ALI much earlier than usual
+         --  as flow analysis needs the file present in order to append its
+         --  own globals to it.
 
          --  Note: In GNATprove mode, an "object" file is always generated as
          --  the result of calling gnat1 or gnat2why, although this is not the

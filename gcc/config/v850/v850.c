@@ -270,19 +270,19 @@ const_double_split (rtx x, HOST_WIDE_INT * p_high, HOST_WIDE_INT * p_low)
 
       switch (GET_MODE (x))
 	{
-	case DFmode:
+	case E_DFmode:
 	  REAL_VALUE_TO_TARGET_DOUBLE (*CONST_DOUBLE_REAL_VALUE (x), t);
 	  *p_high = t[1];	/* since v850 is little endian */
 	  *p_low = t[0];	/* high is second word */
 	  return;
 
-	case SFmode:
+	case E_SFmode:
 	  REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (x), *p_high);
 	  *p_low = 0;
 	  return;
 
-	case VOIDmode:
-	case DImode:
+	case E_VOIDmode:
+	case E_DImode:
 	  *p_high = CONST_DOUBLE_HIGH (x);
 	  *p_low  = CONST_DOUBLE_LOW (x);
 	  return;
@@ -594,10 +594,10 @@ v850_print_operand (FILE * file, rtx x, int code)
 	default:
 	  gcc_unreachable ();
 
-	case QImode: fputs (".b", file); break;
-	case HImode: fputs (".h", file); break;
-	case SImode: fputs (".w", file); break;
-	case SFmode: fputs (".w", file); break;
+	case E_QImode: fputs (".b", file); break;
+	case E_HImode: fputs (".h", file); break;
+	case E_SImode: fputs (".w", file); break;
+	case E_SFmode: fputs (".w", file); break;
 	}
       break;
     case '.':			/* Register r0.  */
@@ -1020,7 +1020,7 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 4);
       else if ((TARGET_V850E_UP)
@@ -1030,7 +1030,7 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 	max_offset = (1 << 7);
       break;
 
-    case HImode:
+    case E_HImode:
       if (TARGET_SMALL_SLD)
 	max_offset = (1 << 5);
       else if ((TARGET_V850E_UP)
@@ -1040,8 +1040,8 @@ ep_memory_offset (machine_mode mode, int unsignedp ATTRIBUTE_UNUSED)
 	max_offset = (1 << 8);
       break;
 
-    case SImode:
-    case SFmode:
+    case E_SImode:
+    case E_SFmode:
       max_offset = (1 << 8);
       break;
       
@@ -1376,12 +1376,11 @@ v850_reorg (void)
 		 for the register */
 	      if (GET_CODE (dest) == REG)
 		{
-		  machine_mode mode = GET_MODE (dest);
 		  int regno;
 		  int endregno;
 
 		  regno = REGNO (dest);
-		  endregno = regno + HARD_REGNO_NREGS (regno, mode);
+		  endregno = END_REGNO (dest);
 
 		  if (!use_ep)
 		    {
@@ -3247,6 +3246,23 @@ v850_gen_movdi (rtx * operands)
   
   return "st.dw %1, %0";
 }
+
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+v850_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return GET_MODE_SIZE (mode) <= 4 || ((regno & 1) == 0 && regno != 0);
+}
+
+/* Implement TARGET_MODES_TIEABLE_P.  */
+
+static bool
+v850_modes_tieable_p (machine_mode mode1, machine_mode mode2)
+{
+  return (mode1 == mode2
+	  || (GET_MODE_SIZE (mode1) <= 4 && GET_MODE_SIZE (mode2) <= 4));
+}
 
 /* Initialize the GCC target structure.  */
 
@@ -3351,6 +3367,12 @@ v850_gen_movdi (rtx * operands)
 
 #undef  TARGET_CAN_USE_DOLOOP_P
 #define TARGET_CAN_USE_DOLOOP_P can_use_doloop_if_innermost
+
+#undef  TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK v850_hard_regno_mode_ok
+
+#undef  TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P v850_modes_tieable_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

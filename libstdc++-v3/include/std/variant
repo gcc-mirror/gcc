@@ -31,9 +31,7 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 #include <type_traits>
 #include <utility>
@@ -69,6 +67,8 @@ namespace __variant
 
 } // namespace __variant
 } // namespace __detail
+
+#define __cpp_lib_variant 201603
 
   template<typename... _Types> class tuple;
   template<typename... _Types> class variant;
@@ -1420,15 +1420,15 @@ namespace __variant
 	variant<_Types...>, std::index_sequence_for<_Types...>>,
       public __variant_hash_call_base<_Types...>
     {
-      using result_type = size_t;
-      using argument_type = variant<_Types...>;
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = variant<_Types...>;
     };
 
   template<>
     struct hash<monostate>
     {
-      using result_type = size_t;
-      using argument_type = monostate;
+      using result_type [[__deprecated__]] = size_t;
+      using argument_type [[__deprecated__]] = monostate;
 
       size_t
       operator()(const monostate& __t) const noexcept
@@ -1437,6 +1437,11 @@ namespace __variant
 	return __magic_monostate_hash;
       }
     };
+
+  template<typename... _Types>
+    struct __is_fast_hash<hash<variant<_Types...>>>
+    : bool_constant<(__is_fast_hash<_Types>::value && ...)>
+    { };
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

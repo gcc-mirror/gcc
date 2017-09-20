@@ -875,7 +875,7 @@ decode_omp_directive (void)
       matcho ("end do", gfc_match_omp_end_nowait, ST_OMP_END_DO);
       matchs ("end simd", gfc_match_omp_eos, ST_OMP_END_SIMD);
       matcho ("end master", gfc_match_omp_eos, ST_OMP_END_MASTER);
-      matcho ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
+      matchs ("end ordered", gfc_match_omp_eos, ST_OMP_END_ORDERED);
       matchs ("end parallel do simd", gfc_match_omp_eos,
 	      ST_OMP_END_PARALLEL_DO_SIMD);
       matcho ("end parallel do", gfc_match_omp_eos, ST_OMP_END_PARALLEL_DO);
@@ -929,14 +929,16 @@ decode_omp_directive (void)
       matcho ("master", gfc_match_omp_master, ST_OMP_MASTER);
       break;
     case 'o':
-      if (flag_openmp && gfc_match ("ordered depend (") == MATCH_YES)
+      if (gfc_match ("ordered depend (") == MATCH_YES)
 	{
 	  gfc_current_locus = old_locus;
+	  if (!flag_openmp)
+	    break;
 	  matcho ("ordered", gfc_match_omp_ordered_depend,
 		  ST_OMP_ORDERED_DEPEND);
 	}
       else
-	matcho ("ordered", gfc_match_omp_ordered, ST_OMP_ORDERED);
+	matchs ("ordered", gfc_match_omp_ordered, ST_OMP_ORDERED);
       break;
     case 'p':
       matchs ("parallel do simd", gfc_match_omp_parallel_do_simd,

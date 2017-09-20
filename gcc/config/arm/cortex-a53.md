@@ -141,13 +141,13 @@
 
 (define_insn_reservation "cortex_a53_load1" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load_byte,load1,load_acq"))
+       (eq_attr "type" "load_byte,load_4,load_acq"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store1" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store1,store_rel"))
+       (eq_attr "type" "store_4,store_rel"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store")
 
@@ -155,14 +155,14 @@
 
 (define_insn_reservation "cortex_a53_load2" 4
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
   "cortex_a53_single_issue+cortex_a53_ls_agen,
    cortex_a53_load+cortex_a53_slot0,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store2" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store")
 
@@ -170,14 +170,14 @@
 
 (define_insn_reservation "cortex_a53_load3plus" 6
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "cortex_a53_single_issue+cortex_a53_ls_agen,
    cortex_a53_load+cortex_a53_slot0,
    cortex_a53_load")
 
 (define_insn_reservation "cortex_a53_store3plus" 2
   (and (eq_attr "tune" "cortexa53")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "cortex_a53_slot_any+cortex_a53_ls_agen,
    cortex_a53_store+cortex_a53_slot0,
    cortex_a53_store")

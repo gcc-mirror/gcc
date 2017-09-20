@@ -237,6 +237,7 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
     return NULL;
   }
 
+  tree type = TREE_TYPE (e);
   switch (TREE_CODE (e))
     {
     case POLYNOMIAL_CHREC:
@@ -247,8 +248,22 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       res = extract_affine_mul (s, e, space);
       break;
 
-    case PLUS_EXPR:
     case POINTER_PLUS_EXPR:
+      {
+	lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
+	/* The RHS of a pointer-plus expression is to be interpreted
+	   as signed value.  Try to look through a sign-changing conversion
+	   first.  */
+	tree tem = TREE_OPERAND (e, 1);
+	STRIP_NOPS (tem);
+	rhs = extract_affine (s, tem, space);
+	if (TYPE_UNSIGNED (TREE_TYPE (tem)))
+	  rhs = wrap (rhs, TYPE_PRECISION (type) - 1);
+	res = isl_pw_aff_add (lhs, rhs);
+	break;
+      }
+
+    case PLUS_EXPR:
       lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
       rhs = extract_affine (s, TREE_OPERAND (e, 1), space);
       res = isl_pw_aff_add (lhs, rhs);
@@ -260,8 +275,13 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       res = isl_pw_aff_sub (lhs, rhs);
       break;
 
-    case NEGATE_EXPR:
     case BIT_NOT_EXPR:
+      lhs = extract_affine (s, integer_minus_one_node, isl_space_copy (space));
+      rhs = extract_affine (s, TREE_OPERAND (e, 0), space);
+      res = isl_pw_aff_sub (lhs, rhs);
+      break;
+
+    case NEGATE_EXPR:
       lhs = extract_affine (s, TREE_OPERAND (e, 0), isl_space_copy (space));
       rhs = extract_affine (s, integer_minus_one_node, space);
       res = isl_pw_aff_mul (lhs, rhs);
@@ -279,6 +299,12 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       return res;
 
     CASE_CONVERT:
+      res = extract_affine (s, TREE_OPERAND (e, 0), space);
+      /* signed values, even if overflow is undefined, get modulo-reduced.  */
+      if (! TYPE_UNSIGNED (type))
+	res = wrap (res, TYPE_PRECISION (type) - 1);
+      break;
+
     case NON_LVALUE_EXPR:
       res = extract_affine (s, TREE_OPERAND (e, 0), space);
       break;
@@ -288,7 +314,6 @@ extract_affine (scop_p s, tree e, __isl_take isl_space *space)
       break;
     }
 
-  tree type = TREE_TYPE (e);
   if (TYPE_UNSIGNED (type))
     res = wrap (res, TYPE_PRECISION (type));
 
@@ -1030,6 +1055,8 @@ outer_projection_mupa (__isl_take isl_union_set *set, int n)
   return isl_multi_union_pw_aff_from_union_pw_multi_aff (data.res);
 }
 
+static bool schedule_error;
+
 /* Embed SCHEDULE in the constraints of the LOOP domain.  */
 
 static isl_schedule *
@@ -1042,6 +1069,16 @@ add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
   int empty = isl_set_is_empty (iterators);
   if (empty < 0 || empty)
     return empty < 0 ? isl_schedule_free (schedule) : schedule;
+
+  isl_union_set *domain = isl_schedule_get_domain (schedule);
+  /* We cannot apply an empty domain to pbbs in this loop so fail.
+     ??? Somehow drop pbbs in the loop instead.  */
+  if (isl_union_set_is_empty (domain))
+    {
+      schedule_error = true;
+      isl_union_set_free (domain);
+      return schedule;
+    }
 
   isl_space *space = isl_set_get_space (iterators);
   int loop_index = isl_space_dim (space, isl_dim_set) - 1;
@@ -1063,7 +1100,6 @@ add_loop_schedule (__isl_take isl_schedule *schedule, loop_p loop,
   prefix = isl_multi_aff_set_tuple_id (prefix, isl_dim_out, label);
 
   int n = isl_multi_aff_dim (prefix, isl_dim_in);
-  isl_union_set *domain = isl_schedule_get_domain (schedule);
   isl_multi_union_pw_aff *mupa = outer_projection_mupa (domain, n);
   mupa = isl_multi_union_pw_aff_apply_multi_aff (mupa, prefix);
   return isl_schedule_insert_partial_schedule (schedule, mupa);
@@ -1169,6 +1205,8 @@ build_schedule_loop_nest (scop_p scop, int *index, loop_p context_loop)
 static bool
 build_original_schedule (scop_p scop)
 {
+  schedule_error = false;
+
   int i = 0;
   int n = scop->pbbs.length ();
   while (i < n)
@@ -1181,6 +1219,14 @@ build_original_schedule (scop_p scop)
 	s = build_schedule_loop_nest (scop, &i, NULL);
 
       scop->original_schedule = add_in_sequence (scop->original_schedule, s);
+    }
+
+  if (schedule_error)
+    {
+      if (dump_file)
+	fprintf (dump_file, "[sese-to-poly] failed to build "
+		 "original schedule\n");
+      return false;
     }
 
   if (dump_file)

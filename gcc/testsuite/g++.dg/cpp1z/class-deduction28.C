@@ -1,5 +1,5 @@
 // PR c++/79350
-// { dg-options -std=c++1z }
+// { dg-options -std=c++17 }
 
 template <class T>
 struct A

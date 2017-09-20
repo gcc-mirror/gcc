@@ -14,4 +14,6 @@ void foo (void) {
     }
 }
 
-/* { dg-final { scan-assembler "ld1r\\t\{v\[0-9\]+\."} } */
+/* { dg-final { scan-assembler "ldr\\ts\[0-9\]+, \\\[x\[0-9\]+, \[0-9\]+\\\]!" } } */
+/* { dg-final { scan-assembler "ldr\\tq\[0-9\]+, \\\[x\[0-9\]+\\\], \[0-9\]+" } } */
+/* { dg-final { scan-assembler "mla\\tv\[0-9\]+\.4s, v\[0-9\]+\.4s, v\[0-9\]+\.s\\\[0\\\]" } } */

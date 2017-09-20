@@ -29,7 +29,7 @@ struct B {};
 void
 foo (int size)
 #if __cplusplus <= 201402L
-throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++1z } } } }
+throw (B,A)			// { dg-warning "deprecated" "" { target { c++11 && { ! c++17 } } } }
 #endif
 {
   char *p = (char*) __builtin_alloca (size + 1);

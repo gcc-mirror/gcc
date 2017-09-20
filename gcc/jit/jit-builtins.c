@@ -68,7 +68,10 @@ matches_builtin (const char *in_name,
 		 const struct builtin_data& bd)
 {
   const bool debug = 0;
-  gcc_assert (bd.name);
+
+  /* Ignore entries with a NULL name.  */
+  if (!bd.name)
+    return false;
 
   if (debug)
     fprintf (stderr, "seen builtin: %s\n", bd.name);

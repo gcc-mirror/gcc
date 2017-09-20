@@ -1061,7 +1061,7 @@ setup_profitable_hard_regs (void)
 	  || (hard_regno = ALLOCNO_HARD_REGNO (a)) < 0)
 	continue;
       mode = ALLOCNO_MODE (a);
-      nregs = hard_regno_nregs[hard_regno][mode];
+      nregs = hard_regno_nregs (hard_regno, mode);
       nobj = ALLOCNO_NUM_OBJECTS (a);
       for (k = 0; k < nobj; k++)
 	{
@@ -1593,7 +1593,7 @@ check_hard_reg_p (ira_allocno_t a, int hard_regno,
   /* Checking only profitable hard regs.  */
   if (! TEST_HARD_REG_BIT (profitable_regs, hard_regno))
     return false;
-  nregs = hard_regno_nregs[hard_regno][mode];
+  nregs = hard_regno_nregs (hard_regno, mode);
   nwords = ALLOCNO_NUM_OBJECTS (a);
   for (j = 0; j < nregs; j++)
     {
@@ -1627,7 +1627,7 @@ calculate_saved_nregs (int hard_regno, machine_mode mode)
   int nregs = 0;
 
   ira_assert (hard_regno >= 0);
-  for (i = hard_regno_nregs[hard_regno][mode] - 1; i >= 0; i--)
+  for (i = hard_regno_nregs (hard_regno, mode) - 1; i >= 0; i--)
     if (!allocated_hardreg_p[hard_regno + i]
 	&& !TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + i)
 	&& !LOCAL_REGNO (hard_regno + i))
@@ -1760,7 +1760,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 		  int conflict_nregs;
 
 		  mode = ALLOCNO_MODE (conflict_a);
-		  conflict_nregs = hard_regno_nregs[hard_regno][mode];
+		  conflict_nregs = hard_regno_nregs (hard_regno, mode);
 		  if (conflict_nregs == n_objects && conflict_nregs > 1)
 		    {
 		      int num = OBJECT_SUBWORD (conflict_obj);
@@ -1858,7 +1858,8 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
 	    rclass = REGNO_REG_CLASS (hard_regno);
 	    add_cost = ((ira_memory_move_cost[mode][rclass][0]
 		         + ira_memory_move_cost[mode][rclass][1])
-		        * saved_nregs / hard_regno_nregs[hard_regno][mode] - 1);
+		        * saved_nregs / hard_regno_nregs (hard_regno,
+							  mode) - 1);
 	    cost += add_cost;
 	    full_cost += add_cost;
 	  }
@@ -1885,7 +1886,7 @@ assign_hard_reg (ira_allocno_t a, bool retry_p)
  fail:
   if (best_hard_regno >= 0)
     {
-      for (i = hard_regno_nregs[best_hard_regno][mode] - 1; i >= 0; i--)
+      for (i = hard_regno_nregs (best_hard_regno, mode) - 1; i >= 0; i--)
 	allocated_hardreg_p[best_hard_regno + i] = true;
     }
   if (! retry_p)
@@ -2890,10 +2891,10 @@ improve_allocation (void)
 		spill_cost -= ALLOCNO_UPDATED_CLASS_COST (conflict_a);
 	      spill_cost
 		+= allocno_copy_cost_saving (conflict_a, conflict_hregno);
-	      conflict_nregs
-		= hard_regno_nregs[conflict_hregno][ALLOCNO_MODE (conflict_a)];
+	      conflict_nregs = hard_regno_nregs (conflict_hregno,
+						 ALLOCNO_MODE (conflict_a));
 	      for (r = conflict_hregno;
-		   r >= 0 && r + hard_regno_nregs[r][mode] > conflict_hregno;
+		   r >= 0 && (int) end_hard_regno (mode, r) > conflict_hregno;
 		   r--)
 		if (check_hard_reg_p (a, r,
 				      conflicting_regs, profitable_hard_regs))
@@ -2926,7 +2927,7 @@ improve_allocation (void)
 	   by spilling some conflicting allocnos does not improve the
 	   allocation cost.  */
 	continue;
-      nregs = hard_regno_nregs[best][mode];
+      nregs = hard_regno_nregs (best, mode);
       /* Now spill conflicting allocnos which contain a hard register
 	 of A when we assign the best chosen hard register to it.  */
       for (word = 0; word < nwords; word++)
@@ -2941,8 +2942,8 @@ improve_allocation (void)
 
 	      if ((conflict_hregno = ALLOCNO_HARD_REGNO (conflict_a)) < 0)
 		continue;
-	      conflict_nregs
-		= hard_regno_nregs[conflict_hregno][ALLOCNO_MODE (conflict_a)];
+	      conflict_nregs = hard_regno_nregs (conflict_hregno,
+						 ALLOCNO_MODE (conflict_a));
 	      if (best + nregs <= conflict_hregno
 		  || conflict_hregno + conflict_nregs <= best)
 		/* No intersection.  */
@@ -4669,7 +4670,7 @@ calculate_spill_cost (int *regnos, rtx in, rtx out, rtx_insn *insn,
       a = ira_regno_allocno_map[regno];
       length += ALLOCNO_EXCESS_PRESSURE_POINTS_NUM (a) / ALLOCNO_NUM_OBJECTS (a);
       cost += ALLOCNO_MEMORY_COST (a) - ALLOCNO_CLASS_COST (a);
-      nregs = hard_regno_nregs[hard_regno][ALLOCNO_MODE (a)];
+      nregs = hard_regno_nregs (hard_regno, ALLOCNO_MODE (a));
       for (j = 0; j < nregs; j++)
 	if (! TEST_HARD_REG_BIT (call_used_reg_set, hard_regno + j))
 	  break;

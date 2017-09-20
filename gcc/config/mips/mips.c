@@ -494,7 +494,7 @@ static int mips_base_align_jumps; /* align_jumps */
 static int mips_base_align_functions; /* align_functions */
 
 /* Index [M][R] is true if register R is allowed to hold a value of mode M.  */
-bool mips_hard_regno_mode_ok[(int) MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
+static bool mips_hard_regno_mode_ok_p[MAX_MACHINE_MODE][FIRST_PSEUDO_REGISTER];
 
 /* Index C is true if character C is a valid PRINT_OPERAND punctation
    character.  */
@@ -598,6 +598,7 @@ static const struct attribute_spec mips_attribute_table[] = {
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req, handler,
        om_diagnostic } */
   { "long_call",   0, 0, false, true,  true,  NULL, false },
+  { "short_call",  0, 0, false, true,  true,  NULL, false },
   { "far",     	   0, 0, false, true,  true,  NULL, false },
   { "near",        0, 0, false, true,  true,  NULL, false },
   /* We would really like to treat "mips16" and "nomips16" as type
@@ -1171,13 +1172,14 @@ mflip_mips16_use_mips16_p (tree decl)
   return *slot;
 }
 
-/* Predicates to test for presence of "near" and "far"/"long_call"
+/* Predicates to test for presence of "near"/"short_call" and "far"/"long_call"
    attributes on the given TYPE.  */
 
 static bool
 mips_near_type_p (const_tree type)
 {
-  return lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL;
+  return (lookup_attribute ("short_call", TYPE_ATTRIBUTES (type)) != NULL
+	  || lookup_attribute ("near", TYPE_ATTRIBUTES (type)) != NULL);
 }
 
 static bool
@@ -6117,18 +6119,17 @@ mips_get_reg_raw_mode (int regno)
   return default_get_reg_raw_mode (regno);
 }
 
-/* Return true if FUNCTION_ARG_PADDING (MODE, TYPE) should return
-   upward rather than downward.  In other words, return true if the
-   first byte of the stack slot has useful data, false if the last
-   byte does.  */
+/* Implement TARGET_FUNCTION_ARG_PADDING; return PAD_UPWARD if the first
+   byte of the stack slot has useful data, PAD_DOWNWARD if the last byte
+   does.  */
 
-bool
-mips_pad_arg_upward (machine_mode mode, const_tree type)
+static pad_direction
+mips_function_arg_padding (machine_mode mode, const_tree type)
 {
   /* On little-endian targets, the first byte of every stack argument
      is passed in the first byte of the stack slot.  */
   if (!BYTES_BIG_ENDIAN)
-    return true;
+    return PAD_UPWARD;
 
   /* Otherwise, integral types are padded downward: the last byte of a
      stack argument is passed in the last byte of the stack slot.  */
@@ -6138,22 +6139,24 @@ mips_pad_arg_upward (machine_mode mode, const_tree type)
 	 || FIXED_POINT_TYPE_P (type))
       : (SCALAR_INT_MODE_P (mode)
 	 || ALL_SCALAR_FIXED_POINT_MODE_P (mode)))
-    return false;
+    return PAD_DOWNWARD;
 
   /* Big-endian o64 pads floating-point arguments downward.  */
   if (mips_abi == ABI_O64)
     if (type != 0 ? FLOAT_TYPE_P (type) : GET_MODE_CLASS (mode) == MODE_FLOAT)
-      return false;
+      return PAD_DOWNWARD;
 
   /* Other types are padded upward for o32, o64, n32 and n64.  */
   if (mips_abi != ABI_EABI)
-    return true;
+    return PAD_UPWARD;
 
   /* Arguments smaller than a stack slot are padded downward.  */
-  if (mode != BLKmode)
-    return GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY;
-  else
-    return int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT);
+  if (mode != BLKmode
+      ? GET_MODE_BITSIZE (mode) >= PARM_BOUNDARY
+      : int_size_in_bytes (type) >= (PARM_BOUNDARY / BITS_PER_UNIT))
+    return PAD_UPWARD;
+
+  return PAD_DOWNWARD;
 }
 
 /* Likewise BLOCK_REG_PADDING (MODE, TYPE, ...).  Return !BYTES_BIG_ENDIAN
@@ -6169,7 +6172,7 @@ mips_pad_reg_upward (machine_mode mode, tree type)
 
   /* Otherwise, apply the same padding to register arguments as we do
      to stack arguments.  */
-  return mips_pad_arg_upward (mode, type);
+  return mips_function_arg_padding (mode, type) == PAD_UPWARD;
 }
 
 /* Return nonzero when an argument must be passed by reference.  */
@@ -6383,7 +6386,7 @@ mips_function_value_1 (const_tree valtype, const_tree fn_decl_or_type,
 	  if (size % UNITS_PER_WORD != 0)
 	    {
 	      size += UNITS_PER_WORD - size % UNITS_PER_WORD;
-	      mode = mode_for_size (size * BITS_PER_UNIT, MODE_INT, 0);
+	      mode = int_mode_for_size (size * BITS_PER_UNIT, 0).require ();
 	    }
 	}
 
@@ -7611,7 +7614,7 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 	     general registers.  */
 	  switch (GET_MODE (retval))
 	    {
-	    case SCmode:
+	    case E_SCmode:
 	      mips_output_32bit_xfer ('f', GP_RETURN + TARGET_BIG_ENDIAN,
 				      TARGET_BIG_ENDIAN
 				      ? FP_REG_FIRST + 2
@@ -7641,16 +7644,16 @@ mips16_build_call_stub (rtx retval, rtx *fn_ptr, rtx args_size, int fp_code)
 		}
 	      break;
 
-	    case SFmode:
+	    case E_SFmode:
 	      mips_output_32bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
 	      break;
 
-	    case DCmode:
+	    case E_DCmode:
 	      mips_output_64bit_xfer ('f', GP_RETURN + (8 / UNITS_PER_WORD),
 				      FP_REG_FIRST + 2);
 	      /* FALLTHRU */
- 	    case DFmode:
-	    case V2SFmode:
+ 	    case E_DFmode:
+	    case E_V2SFmode:
 	      gcc_assert (TARGET_PAIRED_SINGLE_FLOAT
 			  || GET_MODE (retval) != V2SFmode);
 	      mips_output_64bit_xfer ('f', GP_RETURN, FP_REG_FIRST);
@@ -7991,7 +7994,7 @@ mips_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length)
 	bits = BITS_PER_WORD;
     }
 
-  mode = mode_for_size (bits, MODE_INT, 0);
+  mode = int_mode_for_size (bits, 0).require ();
   delta = bits / BITS_PER_UNIT;
 
   /* Allocate a buffer for the temporary registers.  */
@@ -8396,7 +8399,7 @@ mips_expand_ins_as_unaligned_store (rtx dest, rtx src, HOST_WIDE_INT width,
   if (!mips_get_unaligned_mem (dest, width, bitpos, &left, &right))
     return false;
 
-  mode = mode_for_size (width, MODE_INT, 0);
+  mode = int_mode_for_size (width, 0).require ();
   src = gen_lowpart (mode, src);
   if (mode == DImode)
     {
@@ -9116,18 +9119,18 @@ mips_print_operand (FILE *file, rtx op, int letter)
     case 'v':
       switch (GET_MODE (op))
 	{
-	case V16QImode:
+	case E_V16QImode:
 	  fprintf (file, "b");
 	  break;
-	case V8HImode:
+	case E_V8HImode:
 	  fprintf (file, "h");
 	  break;
-	case V4SImode:
-	case V4SFmode:
+	case E_V4SImode:
+	case E_V4SFmode:
 	  fprintf (file, "w");
 	  break;
-	case V2DImode:
-	case V2DFmode:
+	case E_V2DImode:
+	case E_V2DFmode:
 	  fprintf (file, "d");
 	  break;
 	default:
@@ -12077,16 +12080,17 @@ mips_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (size > PROBE_INTERVAL && size > STACK_CHECK_PROTECT)
-	    mips_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					 size - STACK_CHECK_PROTECT);
+	  if (size > PROBE_INTERVAL && size > get_stack_check_protect ())
+	    mips_emit_probe_stack_range (get_stack_check_protect (),
+					 size - get_stack_check_protect ());
 	}
       else if (size > 0)
-	mips_emit_probe_stack_range (STACK_CHECK_PROTECT, size);
+	mips_emit_probe_stack_range (get_stack_check_protect (), size);
     }
 
   /* Save the registers.  Allocate up to MIPS_MAX_FIRST_STACK_STEP
@@ -12725,7 +12729,7 @@ mips_can_use_return_insn (void)
    The result of this function is cached in mips_hard_regno_mode_ok.  */
 
 static bool
-mips_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
+mips_hard_regno_mode_ok_uncached (unsigned int regno, machine_mode mode)
 {
   unsigned int size;
   enum mode_class mclass;
@@ -12830,6 +12834,14 @@ mips_hard_regno_mode_ok_p (unsigned int regno, machine_mode mode)
   return false;
 }
 
+/* Implement TARGET_HARD_REGNO_MODE_OK.  */
+
+static bool
+mips_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
+{
+  return mips_hard_regno_mode_ok_p[mode][regno];
+}
+
 /* Return nonzero if register OLD_REG can be renamed to register NEW_REG.  */
 
 bool
@@ -12857,10 +12869,30 @@ mips_hard_regno_scratch_ok (unsigned int regno)
   return true;
 }
 
-/* Implement HARD_REGNO_NREGS.  */
+/* Implement TARGET_HARD_REGNO_CALL_PART_CLOBBERED.  Odd-numbered
+   single-precision registers are not considered callee-saved for o32
+   FPXX as they will be clobbered when run on an FR=1 FPU.  MSA vector
+   registers with MODE > 64 bits are part clobbered too.  */
 
-unsigned int
-mips_hard_regno_nregs (int regno, machine_mode mode)
+static bool
+mips_hard_regno_call_part_clobbered (unsigned int regno, machine_mode mode)
+{
+  if (TARGET_FLOATXX
+      && hard_regno_nregs (regno, mode) == 1
+      && FP_REG_P (regno)
+      && (regno & 1) != 0)
+    return true;
+
+  if (ISA_HAS_MSA && FP_REG_P (regno) && GET_MODE_SIZE (mode) > 8)
+    return true;
+
+  return false;
+}
+
+/* Implement TARGET_HARD_REGNO_NREGS.  */
+
+static unsigned int
+mips_hard_regno_nregs (unsigned int regno, machine_mode mode)
 {
   if (ST_REG_P (regno))
     /* The size of FP status registers is always 4, because they only hold
@@ -12892,14 +12924,14 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   COPY_HARD_REG_SET (left, reg_class_contents[(int) rclass]);
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) ST_REGS]))
     {
-      if (HARD_REGNO_MODE_OK (ST_REG_FIRST, mode))
+      if (mips_hard_regno_mode_ok (ST_REG_FIRST, mode))
 	size = MIN (size, 4);
 
       AND_COMPL_HARD_REG_SET (left, reg_class_contents[(int) ST_REGS]);
     }
   if (hard_reg_set_intersect_p (left, reg_class_contents[(int) FP_REGS]))
     {
-      if (HARD_REGNO_MODE_OK (FP_REG_FIRST, mode))
+      if (mips_hard_regno_mode_ok (FP_REG_FIRST, mode))
 	{
 	  if (MSA_SUPPORTED_MODE_P (mode))
 	    size = MIN (size, UNITS_PER_MSA_REG);
@@ -12914,22 +12946,21 @@ mips_class_max_nregs (enum reg_class rclass, machine_mode mode)
   return (GET_MODE_SIZE (mode) + size - 1) / size;
 }
 
-/* Implement CANNOT_CHANGE_MODE_CLASS.  */
+/* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
-bool
-mips_cannot_change_mode_class (machine_mode from,
-			       machine_mode to,
-			       enum reg_class rclass)
+static bool
+mips_can_change_mode_class (machine_mode from,
+			    machine_mode to, reg_class_t rclass)
 {
   /* Allow conversions between different Loongson integer vectors,
      and between those vectors and DImode.  */
   if (GET_MODE_SIZE (from) == 8 && GET_MODE_SIZE (to) == 8
       && INTEGRAL_MODE_P (from) && INTEGRAL_MODE_P (to))
-    return false;
+    return true;
 
   /* Allow conversions between different MSA vector modes.  */
   if (MSA_SUPPORTED_MODE_P (from) && MSA_SUPPORTED_MODE_P (to))
-    return false;
+    return true;
 
   /* Otherwise, there are several problems with changing the modes of
      values in floating-point registers:
@@ -12954,7 +12985,7 @@ mips_cannot_change_mode_class (machine_mode from,
 
      We therefore disallow all mode changes involving FPRs.  */
 
-  return reg_classes_intersect_p (FP_REGS, rclass);
+  return !reg_classes_intersect_p (FP_REGS, rclass);
 }
 
 /* Implement target hook small_register_classes_for_mode_p.  */
@@ -12974,14 +13005,14 @@ mips_mode_ok_for_mov_fmt_p (machine_mode mode)
 {
   switch (mode)
     {
-    case CCFmode:
-    case SFmode:
+    case E_CCFmode:
+    case E_SFmode:
       return TARGET_HARD_FLOAT;
 
-    case DFmode:
+    case E_DFmode:
       return TARGET_HARD_FLOAT && TARGET_DOUBLE_FLOAT;
 
-    case V2SFmode:
+    case E_V2SFmode:
       return TARGET_HARD_FLOAT && TARGET_PAIRED_SINGLE_FLOAT;
 
     default:
@@ -12989,9 +13020,9 @@ mips_mode_ok_for_mov_fmt_p (machine_mode mode)
     }
 }
 
-/* Implement MODES_TIEABLE_P.  */
+/* Implement TARGET_MODES_TIEABLE_P.  */
 
-bool
+static bool
 mips_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   /* FPRs allow no mode punning, so it's not worth tying modes if we'd
@@ -13170,11 +13201,22 @@ mips_memory_move_cost (machine_mode mode, reg_class_t rclass, bool in)
 	  + memory_move_secondary_cost (mode, rclass, in));
 } 
 
-/* Implement SECONDARY_MEMORY_NEEDED.  */
+/* Implement TARGET_SECONDARY_MEMORY_NEEDED.
 
-bool
-mips_secondary_memory_needed (enum reg_class class1, enum reg_class class2,
-			      machine_mode mode)
+   When targeting the o32 FPXX ABI, all moves with a length of doubleword
+   or greater must be performed by FR-mode-aware instructions.
+   This can be achieved using MFHC1/MTHC1 when these instructions are
+   available but otherwise moves must go via memory.
+   For the o32 FP64A ABI, all odd-numbered moves with a length of
+   doubleword or greater are required to use memory.  Using MTC1/MFC1
+   to access the lower-half of these registers would require a forbidden
+   single-precision access.  We require all double-word moves to use
+   memory because adding even and odd floating-point registers classes
+   would have a significant impact on the backend.  */
+
+static bool
+mips_secondary_memory_needed (machine_mode mode, reg_class_t class1,
+			      reg_class_t class2)
 {
   /* Ignore spilled pseudos.  */
   if (lra_in_progress && (class1 == NO_REGS || class2 == NO_REGS))
@@ -13262,7 +13304,7 @@ mips_secondary_reload_class (enum reg_class rclass,
 /* Implement TARGET_MODE_REP_EXTENDED.  */
 
 static int
-mips_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
+mips_mode_rep_extended (scalar_int_mode mode, scalar_int_mode mode_rep)
 {
   /* On 64-bit targets, SImode register values are sign-extended to DImode.  */
   if (TARGET_64BIT && mode == SImode && mode_rep == DImode)
@@ -13274,7 +13316,7 @@ mips_mode_rep_extended (machine_mode mode, machine_mode mode_rep)
 /* Implement TARGET_VALID_POINTER_MODE.  */
 
 static bool
-mips_valid_pointer_mode (machine_mode mode)
+mips_valid_pointer_mode (scalar_int_mode mode)
 {
   return mode == SImode || (TARGET_64BIT && mode == DImode);
 }
@@ -13286,22 +13328,22 @@ mips_vector_mode_supported_p (machine_mode mode)
 {
   switch (mode)
     {
-    case V2SFmode:
+    case E_V2SFmode:
       return TARGET_PAIRED_SINGLE_FLOAT;
 
-    case V2HImode:
-    case V4QImode:
-    case V2HQmode:
-    case V2UHQmode:
-    case V2HAmode:
-    case V2UHAmode:
-    case V4QQmode:
-    case V4UQQmode:
+    case E_V2HImode:
+    case E_V4QImode:
+    case E_V2HQmode:
+    case E_V2UHQmode:
+    case E_V2HAmode:
+    case E_V2UHAmode:
+    case E_V4QQmode:
+    case E_V4UQQmode:
       return TARGET_DSP;
 
-    case V2SImode:
-    case V4HImode:
-    case V8QImode:
+    case E_V2SImode:
+    case E_V4HImode:
+    case E_V8QImode:
       return TARGET_LOONGSON_VECTORS;
 
     default:
@@ -13312,7 +13354,7 @@ mips_vector_mode_supported_p (machine_mode mode)
 /* Implement TARGET_SCALAR_MODE_SUPPORTED_P.  */
 
 static bool
-mips_scalar_mode_supported_p (machine_mode mode)
+mips_scalar_mode_supported_p (scalar_mode mode)
 {
   if (ALL_FIXED_POINT_MODE_P (mode)
       && GET_MODE_PRECISION (mode) <= 2 * BITS_PER_WORD)
@@ -13324,7 +13366,7 @@ mips_scalar_mode_supported_p (machine_mode mode)
 /* Implement TARGET_VECTORIZE_PREFERRED_SIMD_MODE.  */
 
 static machine_mode
-mips_preferred_simd_mode (machine_mode mode)
+mips_preferred_simd_mode (scalar_mode mode)
 {
   if (TARGET_PAIRED_SINGLE_FLOAT
       && mode == SFmode)
@@ -13335,19 +13377,19 @@ mips_preferred_simd_mode (machine_mode mode)
 
   switch (mode)
     {
-    case QImode:
+    case E_QImode:
       return V16QImode;
-    case HImode:
+    case E_HImode:
       return V8HImode;
-    case SImode:
+    case E_SImode:
       return V4SImode;
-    case DImode:
+    case E_DImode:
       return V2DImode;
 
-    case SFmode:
+    case E_SFmode:
       return V4SFmode;
 
-    case DFmode:
+    case E_DFmode:
       return V2DFmode;
 
     default:
@@ -20090,8 +20132,8 @@ mips_option_override (void)
   /* Set up mips_hard_regno_mode_ok.  */
   for (mode = 0; mode < MAX_MACHINE_MODE; mode++)
     for (regno = 0; regno < FIRST_PSEUDO_REGISTER; regno++)
-      mips_hard_regno_mode_ok[mode][regno]
-	= mips_hard_regno_mode_ok_p (regno, (machine_mode) mode);
+      mips_hard_regno_mode_ok_p[mode][regno]
+	= mips_hard_regno_mode_ok_uncached (regno, (machine_mode) mode);
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &mips_init_machine_status;
@@ -21105,7 +21147,8 @@ mips_expand_vselect_vconcat (rtx target, rtx op0, rtx op1,
   machine_mode v2mode;
   rtx x;
 
-  v2mode = GET_MODE_2XWIDER_MODE (GET_MODE (op0));
+  if (!GET_MODE_2XWIDER_MODE (GET_MODE (op0)).exists (&v2mode))
+    return false;
   x = gen_rtx_VEC_CONCAT (v2mode, op0, op1);
   return mips_expand_vselect (target, x, perm, nelt);
 }
@@ -21139,7 +21182,7 @@ mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
   t1 = gen_reg_rtx (d->vmode);
   switch (d->vmode)
     {
-    case V4HImode:
+    case E_V4HImode:
       emit_insn (gen_loongson_punpckhhw (t0, d->op0, d->op1));
       emit_insn (gen_loongson_punpcklhw (t1, d->op0, d->op1));
       if (odd)
@@ -21148,7 +21191,7 @@ mips_expand_vpc_loongson_even_odd (struct expand_vec_perm_d *d)
 	emit_insn (gen_loongson_punpcklhw (d->target, t1, t0));
       break;
 
-    case V8QImode:
+    case E_V8QImode:
       t2 = gen_reg_rtx (d->vmode);
       t3 = gen_reg_rtx (d->vmode);
       emit_insn (gen_loongson_punpckhbh (t0, d->op0, d->op1));
@@ -21481,7 +21524,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
     {
       switch (imode)
 	{
-	case V4SImode:
+	case E_V4SImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_w;
 	  else
@@ -21490,7 +21533,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  cmpFunc = gen_msa_clt_s_w;
 	  break;
 
-	case V8HImode:
+	case E_V8HImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_h;
 	  else
@@ -21499,7 +21542,7 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 	  cmpFunc = gen_msa_clt_s_h;
 	  break;
 
-	case V16QImode:
+	case E_V16QImode:
 	  if (BYTES_BIG_ENDIAN != high_p)
 	    unpack = gen_msa_ilvl_b;
 	  else
@@ -21532,14 +21575,14 @@ mips_expand_vec_unpack (rtx operands[2], bool unsigned_p, bool high_p)
 
   switch (imode)
     {
-    case V8QImode:
+    case E_V8QImode:
       if (high_p)
 	unpack = gen_loongson_punpckhbh;
       else
 	unpack = gen_loongson_punpcklbh;
       cmpFunc = gen_loongson_pcmpgtb;
       break;
-    case V4HImode:
+    case E_V4HImode:
       if (high_p)
 	unpack = gen_loongson_punpckhhw;
       else
@@ -21612,10 +21655,10 @@ mips_expand_vi_broadcast (machine_mode vmode, rtx target, rtx elt)
   t1 = gen_reg_rtx (vmode);
   switch (vmode)
     {
-    case V8QImode:
+    case E_V8QImode:
       emit_insn (gen_loongson_vec_init1_v8qi (t1, elt));
       break;
-    case V4HImode:
+    case E_V4HImode:
       emit_insn (gen_loongson_vec_init1_v4hi (t1, elt));
       break;
     default:
@@ -21757,10 +21800,10 @@ mips_expand_vector_init (rtx target, rtx vals)
 	    {
 	      switch (vmode)
 		{
-		case V16QImode:
-		case V8HImode:
-		case V4SImode:
-		case V2DImode:
+		case E_V16QImode:
+		case E_V8HImode:
+		case E_V4SImode:
+		case E_V2DImode:
 		  temp = gen_rtx_CONST_VECTOR (vmode, XVEC (vals, 0));
 		  emit_move_insn (target, temp);
 		  return;
@@ -21780,18 +21823,18 @@ mips_expand_vector_init (rtx target, rtx vals)
 
 	  switch (vmode)
 	    {
-	    case V16QImode:
-	    case V8HImode:
-	    case V4SImode:
-	    case V2DImode:
+	    case E_V16QImode:
+	    case E_V8HImode:
+	    case E_V4SImode:
+	    case E_V2DImode:
 	      mips_emit_move (target, gen_rtx_VEC_DUPLICATE (vmode, temp));
 	      break;
 
-	    case V4SFmode:
+	    case E_V4SFmode:
 	      emit_insn (gen_msa_splati_w_f_scalar (target, temp));
 	      break;
 
-	    case V2DFmode:
+	    case E_V2DFmode:
 	      emit_insn (gen_msa_splati_d_f_scalar (target, temp));
 	      break;
 
@@ -21814,27 +21857,27 @@ mips_expand_vector_init (rtx target, rtx vals)
 	      emit_move_insn (temp, XVECEXP (vals, 0, i));
 	      switch (vmode)
 		{
-		case V16QImode:
+		case E_V16QImode:
 		  emit_insn (gen_vec_setv16qi (target, temp, GEN_INT (i)));
 		  break;
 
-		case V8HImode:
+		case E_V8HImode:
 		  emit_insn (gen_vec_setv8hi (target, temp, GEN_INT (i)));
 		  break;
 
-		case V4SImode:
+		case E_V4SImode:
 		  emit_insn (gen_vec_setv4si (target, temp, GEN_INT (i)));
 		  break;
 
-		case V2DImode:
+		case E_V2DImode:
 		  emit_insn (gen_vec_setv2di (target, temp, GEN_INT (i)));
 		  break;
 
-		case V4SFmode:
+		case E_V4SFmode:
 		  emit_insn (gen_vec_setv4sf (target, temp, GEN_INT (i)));
 		  break;
 
-		case V2DFmode:
+		case E_V2DFmode:
 		  emit_insn (gen_vec_setv2df (target, temp, GEN_INT (i)));
 		  break;
 
@@ -21897,7 +21940,7 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
   fold = gen_reg_rtx (vmode);
   switch (vmode)
     {
-    case V2SFmode:
+    case E_V2SFmode:
       /* Use PUL/PLU to produce { L, H } op { H, L }.
 	 By reversing the pair order, rather than a pure interleave high,
 	 we avoid erroneous exceptional conditions that we might otherwise
@@ -21908,12 +21951,12 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
       gcc_assert (ok);
       break;
 
-    case V2SImode:
+    case E_V2SImode:
       /* Use interleave to produce { H, L } op { H, H }.  */
       emit_insn (gen_loongson_punpckhwd (fold, last, last));
       break;
 
-    case V4HImode:
+    case E_V4HImode:
       /* Perform the first reduction with interleave,
 	 and subsequent reductions with shifts.  */
       emit_insn (gen_loongson_punpckhwd_hi (fold, last, last));
@@ -21927,7 +21970,7 @@ mips_expand_vec_reduc (rtx target, rtx in, rtx (*gen)(rtx, rtx, rtx))
       emit_insn (gen_vec_shr_v4hi (fold, last, x));
       break;
 
-    case V8QImode:
+    case E_V8QImode:
       emit_insn (gen_loongson_punpckhwd_qi (fold, last, last));
 
       next = gen_reg_rtx (vmode);
@@ -22008,10 +22051,10 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 
   switch (cmp_mode)
     {
-    case V16QImode:
-    case V8HImode:
-    case V4SImode:
-    case V2DImode:
+    case E_V16QImode:
+    case E_V8HImode:
+    case E_V4SImode:
+    case E_V2DImode:
       switch (cond)
 	{
 	case NE:
@@ -22039,8 +22082,8 @@ mips_expand_msa_cmp (rtx dest, enum rtx_code cond, rtx op0, rtx op1)
 	emit_move_insn (dest, gen_rtx_NOT (GET_MODE (dest), dest));
       break;
 
-    case V4SFmode:
-    case V2DFmode:
+    case E_V4SFmode:
+    case E_V2DFmode:
       switch (cond)
 	{
 	case UNORDERED:
@@ -22286,6 +22329,14 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
   *punsignedp = unsignedp;
   return mode;
 }
+
+/* Implement TARGET_TRULY_NOOP_TRUNCATION.  */
+
+static bool
+mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
+{
+  return !TARGET_64BIT || inprec <= 32 || outprec > 32;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22430,6 +22481,8 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #define TARGET_FUNCTION_ARG mips_function_arg
 #undef TARGET_FUNCTION_ARG_ADVANCE
 #define TARGET_FUNCTION_ARG_ADVANCE mips_function_arg_advance
+#undef TARGET_FUNCTION_ARG_PADDING
+#define TARGET_FUNCTION_ARG_PADDING mips_function_arg_padding
 #undef TARGET_FUNCTION_ARG_BOUNDARY
 #define TARGET_FUNCTION_ARG_BOUNDARY mips_function_arg_boundary
 #undef TARGET_GET_RAW_RESULT_MODE
@@ -22557,9 +22610,30 @@ mips_promote_function_mode (const_tree type ATTRIBUTE_UNUSED,
 #undef TARGET_HARD_REGNO_SCRATCH_OK
 #define TARGET_HARD_REGNO_SCRATCH_OK mips_hard_regno_scratch_ok
 
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS mips_hard_regno_nregs
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK mips_hard_regno_mode_ok
+
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P mips_modes_tieable_p
+
+#undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
+#define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
+  mips_hard_regno_call_part_clobbered
+
 /* The architecture reserves bit 0 for MIPS16 so use bit 1 for descriptors.  */
 #undef TARGET_CUSTOM_FUNCTION_DESCRIPTORS
 #define TARGET_CUSTOM_FUNCTION_DESCRIPTORS 2
+
+#undef TARGET_SECONDARY_MEMORY_NEEDED
+#define TARGET_SECONDARY_MEMORY_NEEDED mips_secondary_memory_needed
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS mips_can_change_mode_class
+
+#undef TARGET_TRULY_NOOP_TRUNCATION
+#define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

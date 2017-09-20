@@ -1,3 +1,4 @@
+--  { dg-do compile }
 --  { dg-options "-cargs -O0 -g -dA -fgnat-encodings=minimal -margs" }
 --
 --  This testcase checks that in the DWARF description of the variant type

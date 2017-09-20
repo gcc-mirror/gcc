@@ -28,6 +28,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "auto-host.h"
 
+#define PASTE2(a, b) PASTE2a(a, b)
+#define PASTE2a(a, b) a ## b
+
 /* These macros currently support GNU/Linux, Solaris and Darwin.  */
 
 #ifdef __ELF__
@@ -46,9 +49,7 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #endif
 
 #ifdef __USER_LABEL_PREFIX__
-# define ASMNAME2(prefix, name)	prefix ## name
-# define ASMNAME1(prefix, name)	ASMNAME2(prefix, name)
-# define ASMNAME(name)		ASMNAME1(__USER_LABEL_PREFIX__, name)
+# define ASMNAME(name)		PASTE2(__USER_LABEL_PREFIX__, name)
 #else
 # define ASMNAME(name)		name
 #endif
@@ -66,15 +67,24 @@ ASMNAME(fn):
 
 #define FUNC_END(fn) FN_SIZE(ASMNAME(fn))
 
-#ifdef __SSE2__
-# ifdef __AVX__
-#  define MOVAPS vmovaps
-# else
-#  define MOVAPS movaps
-# endif
+#ifdef MS2SYSV_STUB_AVX
+# define MS2SYSV_STUB_PREFIX __avx_
+# define MOVAPS vmovaps
+#elif defined(MS2SYSV_STUB_SSE)
+# define MS2SYSV_STUB_PREFIX __sse_
+# define MOVAPS movaps
+#endif
+
+#if defined (MS2SYSV_STUB_PREFIX) && defined (MOVAPS)
+
+# define MS2SYSV_STUB_BEGIN(base_name) \
+	HIDDEN_FUNC(PASTE2(MS2SYSV_STUB_PREFIX, base_name))
+
+# define MS2SYSV_STUB_END(base_name) \
+	FUNC_END(PASTE2(MS2SYSV_STUB_PREFIX, base_name))
 
 /* Save SSE registers 6-15. off is the offset of rax to get to xmm6.  */
-#define SSE_SAVE		   \
+# define SSE_SAVE		   \
 	MOVAPS %xmm15,-0x30(%rax); \
 	MOVAPS %xmm14,-0x20(%rax); \
 	MOVAPS %xmm13,-0x10(%rax); \
@@ -87,7 +97,7 @@ ASMNAME(fn):
 	MOVAPS %xmm6,  0x60(%rax)
 
 /* Restore SSE registers 6-15. off is the offset of rsi to get to xmm6.  */
-#define SSE_RESTORE		    \
+# define SSE_RESTORE		    \
 	MOVAPS -0x30(%rsi), %xmm15; \
 	MOVAPS -0x20(%rsi), %xmm14; \
 	MOVAPS -0x10(%rsi), %xmm13; \
@@ -99,5 +109,5 @@ ASMNAME(fn):
 	MOVAPS  0x50(%rsi), %xmm7 ; \
 	MOVAPS  0x60(%rsi), %xmm6
 
-#endif /* __SSE2__ */
+#endif /* defined (MS2SYSV_STUB_ISA) && defined (MOVAPS) */
 #endif /* I386_ASM_H */

@@ -103,7 +103,7 @@ enum block_op_methods
   BLOCK_OP_TAILCALL
 };
 
-typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, machine_mode);
+typedef rtx (*by_pieces_constfn) (void *, HOST_WIDE_INT, scalar_int_mode);
 
 extern rtx emit_block_move (rtx, rtx, rtx, enum block_op_methods);
 extern rtx emit_block_move_hints (rtx, rtx, rtx, enum block_op_methods,

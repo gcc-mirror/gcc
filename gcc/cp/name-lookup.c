@@ -1113,55 +1113,160 @@ extract_conversion_operator (tree fns, tree type)
   return convs;
 }
 
-/* TYPE is a class type. Return the member functions in the method
-   vector with name NAME.  Does not lazily declare implicitly-declared
-   member functions.  */
+/* Binary search of (ordered) MEMBER_VEC for NAME.  */
+
+static tree
+member_vec_binary_search (vec<tree, va_gc> *member_vec, tree name)
+{
+  for (unsigned lo = 0, hi = member_vec->length (); lo < hi;)
+    {
+      unsigned mid = (lo + hi) / 2;
+      tree binding = (*member_vec)[mid];
+      tree binding_name = OVL_NAME (binding);
+
+      if (binding_name > name)
+	hi = mid;
+      else if (binding_name < name)
+	lo = mid + 1;
+      else
+	return binding;
+    }
+
+  return NULL_TREE;
+}
+
+/* Linear search of (unordered) MEMBER_VEC for NAME.  */
+
+static tree
+member_vec_linear_search (vec<tree, va_gc> *member_vec, tree name)
+{
+  for (int ix = member_vec->length (); ix--;)
+    /* We can get a NULL binding during insertion of a new method
+       name, because the identifier_binding machinery performs a
+       lookup.  If we find such a NULL slot, that's the thing we were
+       looking for, so we might as well bail out immediately.  */
+    if (tree binding = (*member_vec)[ix])
+      {
+	if (OVL_NAME (binding) == name)
+	  return binding;
+      }
+    else
+      break;
+
+  return NULL_TREE;
+}
+
+/* Linear search of (partially ordered) fields of KLASS for NAME.  */
+
+static tree
+fields_linear_search (tree klass, tree name, bool want_type)
+{
+  for (tree fields = TYPE_FIELDS (klass); fields; fields = DECL_CHAIN (fields))
+    {
+      tree decl = fields;
+
+      if (!want_type
+	  && TREE_CODE (decl) == FIELD_DECL
+	  && ANON_AGGR_TYPE_P (TREE_TYPE (decl)))
+	{
+	  tree anon = TREE_TYPE (decl);
+	  gcc_assert (COMPLETE_TYPE_P (anon));
+	  tree temp;
+	  
+	  if (vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (anon))
+	    temp = member_vec_linear_search (member_vec, name);
+	  else
+	    temp = fields_linear_search (anon, name, want_type);
+
+	  if (temp)
+	    {
+	      /* Anon members can only contain fields.  */
+	      gcc_assert (!STAT_HACK_P (temp) && !DECL_DECLARES_TYPE_P (temp));
+	      return temp;
+	    }
+	}
+
+      if (DECL_NAME (decl) != name)
+	continue;
+      
+      if (TREE_CODE (decl) == USING_DECL)
+	{
+	  decl = strip_using_decl (decl);
+	  if (is_overloaded_fn (decl))
+	    continue;
+	}
+
+      if (DECL_DECLARES_FUNCTION_P (decl))
+	/* Functions are found separately.  */
+	continue;
+
+      if (!want_type || DECL_DECLARES_TYPE_P (decl))
+	return decl;
+    }
+
+  return NULL_TREE;
+}
+
+/* Look for NAME as an immediate member of KLASS (including
+   anon-members or unscoped enum member).  TYPE_OR_FNS is zero for
+   regular search.  >0 to get a type binding (if there is one) and <0
+   if you want (just) the member function binding.
+
+   Use this if you do not want lazy member creation.  */
 
 tree
-lookup_fnfields_slot_nolazy (tree type, tree name)
+get_class_binding_direct (tree klass, tree name, int type_or_fns)
 {
-  vec<tree, va_gc> *method_vec = CLASSTYPE_METHOD_VEC (type);
-  if (!method_vec)
-    return NULL_TREE;
+  gcc_checking_assert (RECORD_OR_UNION_TYPE_P (klass));
 
   /* Conversion operators can only be found by the marker conversion
      operator name.  */
   bool conv_op = IDENTIFIER_CONV_OP_P (name);
   tree lookup = conv_op ? conv_op_identifier : name;
   tree val = NULL_TREE;
-  tree fns;
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
 
-  /* If the type is complete, use binary search.  */
-  if (COMPLETE_TYPE_P (type))
+  if (COMPLETE_TYPE_P (klass) && member_vec)
     {
-      int lo = 0;
-      int hi = method_vec->length ();
-      while (lo < hi)
+      val = member_vec_binary_search (member_vec, lookup);
+      if (!val)
+	;
+      else if (type_or_fns > 0)
 	{
-	  int i = (lo + hi) / 2;
+	  if (STAT_HACK_P (val))
+	    val = STAT_TYPE (val);
+	  else if (!DECL_DECLARES_TYPE_P (val))
+	    val = NULL_TREE;
+	}
+      else if (STAT_HACK_P (val))
+	val = STAT_DECL (val);
 
-	  fns = (*method_vec)[i];
-	  tree fn_name = OVL_NAME (fns);
-	  if (fn_name > lookup)
-	    hi = i;
-	  else if (fn_name < lookup)
-	    lo = i + 1;
+      if (val && TREE_CODE (val) == OVERLOAD
+	  && TREE_CODE (OVL_FUNCTION (val)) == USING_DECL)
+	{
+	  /* An overload with a dependent USING_DECL.  Does the caller
+	     want the USING_DECL or the functions?  */
+	  if (type_or_fns < 0)
+	    val = OVL_CHAIN (val);
 	  else
-	    {
-	      val = fns;
-	      break;
-	    }
+	    val = OVL_FUNCTION (val);  
 	}
     }
   else
-    for (int i = 0; vec_safe_iterate (method_vec, i, &fns); ++i)
-      {
-	if (OVL_NAME (fns) == lookup)
-	  {
-	    val = fns;
-	    break;
-	  }
-      }
+    {
+      if (member_vec && type_or_fns <= 0)
+	val = member_vec_linear_search (member_vec, lookup);
+
+      if (type_or_fns < 0)
+	/* Don't bother looking for field.  We don't want it.  */;
+      else if (!val || (TREE_CODE (val) == OVERLOAD && OVL_USING_P (val)))
+	/* Dependent using declarations are a 'field', make sure we
+	   return that even if we saw an overload already.  */
+	if (tree field_val = fields_linear_search (klass, lookup,
+						   type_or_fns > 0))
+	  if (!val || TREE_CODE (field_val) == USING_DECL)
+	    val = field_val;
+    }
 
   /* Extract the conversion operators asked for, unless the general
      conversion operator was requested.   */
@@ -1176,173 +1281,444 @@ lookup_fnfields_slot_nolazy (tree type, tree name)
   return val;
 }
 
-/* Do a 1-level search for NAME as a member of TYPE.  The caller must
-   figure out whether it can access this field.  (Since it is only one
-   level, this is reasonable.)  */
+/* Look for NAME's binding in exactly KLASS.  See
+   get_class_binding_direct for argument description.  Does lazy
+   special function creation as necessary.  */
 
 tree
-lookup_field_1 (tree type, tree name, bool want_type)
+get_class_binding (tree klass, tree name, int type_or_fns)
 {
-  tree field = NULL_TREE;
+  klass = complete_type (klass);
 
-  gcc_assert (identifier_p (name) && RECORD_OR_UNION_TYPE_P (type));
-
-  if (CLASSTYPE_BINDINGS (type))
+  if (COMPLETE_TYPE_P (klass))
     {
-      tree *slot = CLASSTYPE_BINDINGS (type)->get (name);
-
-      if (slot)
-	{
-	  field = *slot;
-
-	  if (STAT_HACK_P (field))
-	    {
-	      if (want_type)
-		field = STAT_TYPE (field);
-	      else
-		field = STAT_DECL (field);
-	    }
-
-	  field = strip_using_decl (field);
-	  if (OVL_P (field))
-	    field = NULL_TREE;
-	  else if (want_type && !DECL_DECLARES_TYPE_P (field))
-	    field = NULL_TREE;
-	}
-      return field;
-    }
-
-  field = TYPE_FIELDS (type);
-
-  for (field = TYPE_FIELDS (type); field; field = DECL_CHAIN (field))
-    {
-      tree decl = field;
-
-      if (DECL_DECLARES_FUNCTION_P (decl))
-	/* Functions are kep separately, at the moment.  */
-	continue;
-
-      gcc_assert (DECL_P (field));
-      if (DECL_NAME (field) == NULL_TREE
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	{
-	  tree temp = lookup_field_1 (TREE_TYPE (field), name, want_type);
-	  if (temp)
-	    return temp;
-	}
-
-      if (TREE_CODE (decl) == USING_DECL
-	  && DECL_NAME (decl) == name)
-	{
-	  decl = strip_using_decl (decl);
-	  if (is_overloaded_fn (decl))
-	    continue;
-	}
-
-      if (DECL_NAME (decl) == name
-	  && (!want_type || DECL_DECLARES_TYPE_P (decl)))
-	return decl;
-    }
-
-  /* We used to special-case vptr_identifier.  Make sure it's not
-     special any more.  */
-  gcc_assert (name != vptr_identifier || !TYPE_VFIELD (type));
-
-  return NULL_TREE;
-}
-
-/* TYPE is a class type. Return the overloads in
-   the method vector with name NAME.  Lazily create ctors etc.  */
-
-tree
-lookup_fnfields_slot (tree type, tree name)
-{
-  type = complete_type (type);
-
-  if (COMPLETE_TYPE_P (type))
-    {
+      /* Lazily declare functions, if we're going to search these.  */
       if (IDENTIFIER_CTOR_P (name))
 	{
-	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (type))
-	    lazily_declare_fn (sfk_constructor, type);
-	  if (CLASSTYPE_LAZY_COPY_CTOR (type))
-	    lazily_declare_fn (sfk_copy_constructor, type);
-	  if (CLASSTYPE_LAZY_MOVE_CTOR (type))
-	    lazily_declare_fn (sfk_move_constructor, type);
-	}
-      else if (name == cp_assignment_operator_id (NOP_EXPR))
-	{
-	  if (CLASSTYPE_LAZY_COPY_ASSIGN (type))
-	    lazily_declare_fn (sfk_copy_assignment, type);
-	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (type))
-	    lazily_declare_fn (sfk_move_assignment, type);
+	  if (CLASSTYPE_LAZY_DEFAULT_CTOR (klass))
+	    lazily_declare_fn (sfk_constructor, klass);
+	  if (CLASSTYPE_LAZY_COPY_CTOR (klass))
+	    lazily_declare_fn (sfk_copy_constructor, klass);
+	  if (CLASSTYPE_LAZY_MOVE_CTOR (klass))
+	    lazily_declare_fn (sfk_move_constructor, klass);
 	}
       else if (IDENTIFIER_DTOR_P (name))
 	{
-	  if (CLASSTYPE_LAZY_DESTRUCTOR (type))
-	    lazily_declare_fn (sfk_destructor, type);
+	  if (CLASSTYPE_LAZY_DESTRUCTOR (klass))
+	    lazily_declare_fn (sfk_destructor, klass);
+	}
+      else if (name == cp_assignment_operator_id (NOP_EXPR))
+	{
+	  if (CLASSTYPE_LAZY_COPY_ASSIGN (klass))
+	    lazily_declare_fn (sfk_copy_assignment, klass);
+	  if (CLASSTYPE_LAZY_MOVE_ASSIGN (klass))
+	    lazily_declare_fn (sfk_move_assignment, klass);
 	}
     }
 
-  return lookup_fnfields_slot_nolazy (type, name);
+  return get_class_binding_direct (klass, name, type_or_fns);
 }
 
-/* Add DECL into MAP under NAME.  Collisions fail silently.  Doesn't
-   do sophisticated collision checking.  Deals with STAT_HACK.  */
+/* Find the slot containing overloads called 'NAME'.  If there is no
+   such slot, create an empty one.  KLASS might be complete at this
+   point, in which case we need to preserve ordering.  Deals with
+   conv_op marker handling.  */
 
-static void
-add_class_member (hash_map<lang_identifier *, tree> *map, tree name, tree decl)
+tree *
+get_member_slot (tree klass, tree name)
 {
-  bool existed;
-  tree *slot = &map->get_or_insert (name, &existed);
-  if (!existed)
-    *slot = decl;
-  else if (TREE_CODE (*slot) == TYPE_DECL && DECL_ARTIFICIAL (*slot))
-    *slot = stat_hack (decl, *slot);
-  else if (TREE_CODE (decl) == TYPE_DECL && DECL_ARTIFICIAL (decl))
-    *slot = stat_hack (*slot, decl);
-
-  /* Else ignore collision.  */
-}
-
-/* Insert the chain FIELDS into MAP.  */
-
-static void
-add_class_members (hash_map<lang_identifier *, tree> *map, tree fields)
-{
-  for (tree field = fields; field; field = DECL_CHAIN (field))
+  bool complete_p = COMPLETE_TYPE_P (klass);
+  
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+  if (!member_vec)
     {
-      if (TREE_CODE (field) == FIELD_DECL
-	  && ANON_AGGR_TYPE_P (TREE_TYPE (field)))
-	add_class_members (map, TYPE_FIELDS (TREE_TYPE (field)));
-      else if (DECL_NAME (field))
-	add_class_member (map, DECL_NAME (field), field);
+      vec_alloc (member_vec, 8);
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
+      if (complete_p)
+	{
+	  /* If the class is complete but had no member_vec, we need
+	     to add the TYPE_FIELDS into it.  We're also most likely
+	     to be adding ctors & dtors, so ask for 6 spare slots (the
+	     abstract cdtors and their clones).  */
+	  set_class_bindings (klass, 6);
+	  member_vec = CLASSTYPE_MEMBER_VEC (klass);
+	}
+    }
+
+  if (IDENTIFIER_CONV_OP_P (name))
+    name = conv_op_identifier;
+
+  unsigned ix, length = member_vec->length ();
+  for (ix = 0; ix < length; ix++)
+    {
+      tree *slot = &(*member_vec)[ix];
+      tree fn_name = OVL_NAME (*slot);
+
+      if (fn_name == name)
+	{
+	  /* If we found an existing slot, it must be a function set.
+	     Even with insertion after completion, because those only
+	     happen with artificial fns that have unspellable names.
+	     This means we do not have to deal with the stat hack
+	     either.  */
+	  gcc_checking_assert (OVL_P (*slot));
+	  if (name == conv_op_identifier)
+	    {
+	      gcc_checking_assert (OVL_FUNCTION (*slot) == conv_op_marker);
+	      /* Skip the conv-op marker. */
+	      slot = &OVL_CHAIN (*slot);
+	    }
+	  return slot;
+	}
+
+      if (complete_p && fn_name > name)
+	break;
+    }
+
+  /* No slot found.  Create one at IX.  We know in this case that our
+     caller will succeed in adding the function.  */
+  if (complete_p)
+    {
+      /* Do exact allocation when complete, as we don't expect to add
+	 many.  */
+      vec_safe_reserve_exact (member_vec, 1);
+      member_vec->quick_insert (ix, NULL_TREE);
+    }
+  else
+    {
+      gcc_checking_assert (ix == length);
+      vec_safe_push (member_vec, NULL_TREE);
+    }
+  CLASSTYPE_MEMBER_VEC (klass) = member_vec;
+
+  tree *slot = &(*member_vec)[ix];
+  if (name == conv_op_identifier)
+    {
+      /* Install the marker prefix.  */
+      *slot = ovl_make (conv_op_marker, NULL_TREE);
+      slot = &OVL_CHAIN (*slot);
+    }
+
+  return slot;
+}
+
+/* Comparison function to compare two MEMBER_VEC entries by name.
+   Because we can have duplicates during insertion of TYPE_FIELDS, we
+   do extra checking so deduping doesn't have to deal with so many
+   cases.  */
+
+static int
+member_name_cmp (const void *a_p, const void *b_p)
+{
+  tree a = *(const tree *)a_p;
+  tree b = *(const tree *)b_p;
+  tree name_a = DECL_NAME (TREE_CODE (a) == OVERLOAD ? OVL_FUNCTION (a) : a);
+  tree name_b = DECL_NAME (TREE_CODE (b) == OVERLOAD ? OVL_FUNCTION (b) : b);
+
+  gcc_checking_assert (name_a && name_b);
+  if (name_a != name_b)
+    return name_a < name_b ? -1 : +1;
+
+  if (name_a == conv_op_identifier)
+    {
+      /* Strip the conv-op markers. */
+      gcc_checking_assert (OVL_FUNCTION (a) == conv_op_marker
+			   && OVL_FUNCTION (b) == conv_op_marker);
+      a = OVL_CHAIN (a);
+      b = OVL_CHAIN (b);
+    }
+
+  if (TREE_CODE (a) == OVERLOAD)
+    a = OVL_FUNCTION (a);
+  if (TREE_CODE (b) == OVERLOAD)
+    b = OVL_FUNCTION (b);
+
+  /* We're in STAT_HACK or USING_DECL territory (or possibly error-land). */
+  if (TREE_CODE (a) == TREE_CODE (b))
+    /* We can get two TYPE_DECLs or two USING_DECLs.  Place in source
+       order.  */
+    return DECL_SOURCE_LOCATION (a) < DECL_SOURCE_LOCATION (b) ? -1 : +1;
+
+  /* If one of them is a TYPE_DECL, it loses.  */
+  if (TREE_CODE (a) == TYPE_DECL)
+    return +1;
+  else if (TREE_CODE (b) == TYPE_DECL)
+    return -1;
+
+  /* If one of them is a USING_DECL, it loses.  */
+  if (TREE_CODE (a) == USING_DECL)
+    return +1;
+  else if (TREE_CODE (b) == USING_DECL)
+    return -1;
+
+  /* There are no other cases, as duplicate detection should have
+     kicked in earlier.  However, some erroneous cases get though.
+     Order by source location.  We should really prevent this
+     happening.  */
+  gcc_assert (errorcount);
+  return DECL_SOURCE_LOCATION (a) < DECL_SOURCE_LOCATION (b) ? -1 : +1;
+}
+
+static struct {
+  gt_pointer_operator new_value;
+  void *cookie;
+} resort_data;
+
+/* This routine compares two fields like member_name_cmp but using the
+   pointer operator in resort_field_decl_data.  We don't have to deal
+   with duplicates here.  */
+
+static int
+resort_member_name_cmp (const void *a_p, const void *b_p)
+{
+  tree a = *(const tree *)a_p;
+  tree b = *(const tree *)b_p;
+  tree name_a = OVL_NAME (a);
+  tree name_b = OVL_NAME (b);
+
+  resort_data.new_value (&name_a, resort_data.cookie);
+  resort_data.new_value (&name_b, resort_data.cookie);
+
+  gcc_checking_assert (name_a != name_b);
+
+  return name_a < name_b ? -1 : +1;
+}
+
+/* Resort CLASSTYPE_MEMBER_VEC because pointers have been reordered.  */
+
+void
+resort_type_member_vec (void *obj, void */*orig_obj*/,
+			gt_pointer_operator new_value, void* cookie)
+{
+  if (vec<tree, va_gc> *member_vec = (vec<tree, va_gc> *) obj)
+    {
+      resort_data.new_value = new_value;
+      resort_data.cookie = cookie;
+      qsort (member_vec->address (), member_vec->length (),
+	     sizeof (tree), resort_member_name_cmp);
     }
 }
 
-/* Create the binding map of KLASS and insert FIELDS.  */
+/* Recursively count the number of fields in KLASS, including anonymous
+   union members.  */
 
-void 
-set_class_bindings (tree klass, tree fields)
+static unsigned
+count_class_fields (tree klass)
 {
-  gcc_assert (!CLASSTYPE_BINDINGS (klass));
+  unsigned n_fields = 0;
 
-  CLASSTYPE_BINDINGS (klass)
-    = hash_map<lang_identifier *, tree>::create_ggc (8);
-  add_class_members (CLASSTYPE_BINDINGS (klass), fields);
+  for (tree fields = TYPE_FIELDS (klass); fields; fields = DECL_CHAIN (fields))
+    if (DECL_DECLARES_FUNCTION_P (fields))
+      /* Functions are dealt with separately.  */;
+    else if (TREE_CODE (fields) == FIELD_DECL
+	     && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
+      n_fields += count_class_fields (TREE_TYPE (fields));
+    else if (DECL_NAME (fields))
+      n_fields += 1;
+
+  return n_fields;
 }
 
-/* Insert lately defined enum ENUMTYPE into T for the sorted case.  */
+/* Append all the nonfunction members fields of KLASS to MEMBER_VEC.
+   Recurse for anonymous members.  MEMBER_VEC must have space.  */
+
+static void
+member_vec_append_class_fields (vec<tree, va_gc> *member_vec, tree klass)
+{
+  for (tree fields = TYPE_FIELDS (klass); fields; fields = DECL_CHAIN (fields))
+    if (DECL_DECLARES_FUNCTION_P (fields))
+      /* Functions are handled separately.  */;
+    else if (TREE_CODE (fields) == FIELD_DECL
+	     && ANON_AGGR_TYPE_P (TREE_TYPE (fields)))
+      member_vec_append_class_fields (member_vec, TREE_TYPE (fields));
+    else if (DECL_NAME (fields))
+      {
+	tree field = fields;
+	/* Mark a conv-op USING_DECL with the conv-op-marker.  */
+	if (TREE_CODE (field) == USING_DECL
+	    && IDENTIFIER_CONV_OP_P (DECL_NAME (field)))
+	  field = ovl_make (conv_op_marker, field);
+	member_vec->quick_push (field);
+      }
+}
+
+/* Append all of the enum values of ENUMTYPE to MEMBER_VEC.
+   MEMBER_VEC must have space.  */
+
+static void
+member_vec_append_enum_values (vec<tree, va_gc> *member_vec, tree enumtype)
+{
+  for (tree values = TYPE_VALUES (enumtype);
+       values; values = TREE_CHAIN (values))
+    member_vec->quick_push (TREE_VALUE (values));
+}
+
+/* MEMBER_VEC has just had new DECLs added to it, but is sorted.
+   DeDup adjacent DECLS of the same name.  We already dealt with
+   conflict resolution when adding the fields or methods themselves.
+   There are three cases (which could all be combined):
+   1) a TYPE_DECL and non TYPE_DECL.  Deploy STAT_HACK as appropriate.
+   2) a USING_DECL and an overload.  If the USING_DECL is dependent,
+   it wins.  Otherwise the OVERLOAD does.
+   3) two USING_DECLS. ...
+
+   member_name_cmp will have ordered duplicates as
+   <fns><using><type>  */
+
+static void
+member_vec_dedup (vec<tree, va_gc> *member_vec)
+{
+  unsigned len = member_vec->length ();
+  unsigned store = 0;
+
+  tree current = (*member_vec)[0], name = OVL_NAME (current);
+  tree next = NULL_TREE, next_name = NULL_TREE;
+  for (unsigned jx, ix = 0; ix < len;
+       ix = jx, current = next, name = next_name)
+    {
+      tree to_type = NULL_TREE;
+      tree to_using = NULL_TREE;
+      tree marker = NULL_TREE;
+      if (IDENTIFIER_CONV_OP_P (name))
+	{
+	  marker = current;
+	  current = OVL_CHAIN (current);
+	  name = DECL_NAME (OVL_FUNCTION (marker));
+	  gcc_checking_assert (name == conv_op_identifier);
+	}
+
+      if (TREE_CODE (current) == USING_DECL)
+	{
+	  current = strip_using_decl (current);
+	  if (is_overloaded_fn (current))
+	    current = NULL_TREE;
+	  else if (TREE_CODE (current) == USING_DECL)
+	    {
+	      to_using = current;
+	      current = NULL_TREE;
+	    }
+	}
+
+      if (current && DECL_DECLARES_TYPE_P (current))
+	{
+	  to_type = current;
+	  current = NULL_TREE;
+	}
+
+      for (jx = ix + 1; jx < len; jx++)
+	{
+	  next = (*member_vec)[jx];
+	  next_name = OVL_NAME (next);
+	  if (next_name != name)
+	    break;
+
+	  if (marker)
+	    {
+	      gcc_checking_assert (OVL_FUNCTION (marker)
+				   == OVL_FUNCTION (next));
+	      next = OVL_CHAIN (next);
+	    }
+
+	  if (TREE_CODE (next) == USING_DECL)
+	    {
+	      next = strip_using_decl (next);
+	      if (is_overloaded_fn (next))
+		next = NULL_TREE;
+	      else if (TREE_CODE (next) == USING_DECL)
+		{
+		  to_using = next;
+		  next = NULL_TREE;
+		}
+	    }
+
+	  if (next && DECL_DECLARES_TYPE_P (next))
+	    to_type = next;
+	}
+
+      if (to_using)
+	{
+	  if (!current)
+	    current = to_using;
+	  else
+	    current = ovl_make (to_using, current);
+	}
+
+      if (to_type)
+	{
+	  if (!current)
+	    current = to_type;
+	  else
+	    current = stat_hack (current, to_type);
+	}
+
+      gcc_assert (current);
+      if (marker)
+	{
+	  OVL_CHAIN (marker) = current;
+	  current = marker;
+	}
+      (*member_vec)[store++] = current;
+    }
+
+  while (store++ < len)
+    member_vec->pop ();
+}
+
+/* Add the non-function members to CLASSTYPE_MEMBER_VEC.  If there is
+   no existing MEMBER_VEC and fewer than 8 fields, do nothing.  We
+   know there must be at least 1 field -- the self-reference
+   TYPE_DECL, except for anon aggregates, which will have at least
+   one field.  */
+
+void 
+set_class_bindings (tree klass, unsigned extra)
+{
+  unsigned n_fields = count_class_fields (klass);
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
+
+  if (member_vec || n_fields >= 8)
+    {
+      /* Append the new fields.  */
+      vec_safe_reserve_exact (member_vec, extra + n_fields);
+      member_vec_append_class_fields (member_vec, klass);
+    }
+
+  if (member_vec)
+    {
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
+      qsort (member_vec->address (), member_vec->length (),
+	     sizeof (tree), member_name_cmp);
+      member_vec_dedup (member_vec);
+    }
+}
+
+/* Insert lately defined enum ENUMTYPE into KLASS for the sorted case.  */
 
 void
 insert_late_enum_def_bindings (tree klass, tree enumtype)
 {
-  hash_map<lang_identifier *, tree> *map = CLASSTYPE_BINDINGS (klass);
+  int n_fields;
+  vec<tree, va_gc> *member_vec = CLASSTYPE_MEMBER_VEC (klass);
 
-  for (tree values = TYPE_VALUES (enumtype);
-       values; values = TREE_CHAIN (values))
-    add_class_member (map, DECL_NAME (TREE_VALUE (values)),
-		      TREE_VALUE (values));
+  /* The enum bindings will already be on the TYPE_FIELDS, so don't
+     count them twice.  */
+  if (!member_vec)
+    n_fields = count_class_fields (klass);
+  else
+    n_fields = list_length (TYPE_VALUES (enumtype));
+
+  if (member_vec || n_fields >= 8)
+    {
+      vec_safe_reserve_exact (member_vec, n_fields);
+      if (CLASSTYPE_MEMBER_VEC (klass))
+	member_vec_append_enum_values (member_vec, enumtype);
+      else
+	member_vec_append_class_fields (member_vec, klass);
+      CLASSTYPE_MEMBER_VEC (klass) = member_vec;
+      qsort (member_vec->address (), member_vec->length (),
+	     sizeof (tree), member_name_cmp);
+      member_vec_dedup (member_vec);
+    }
 }
 
 /* Compute the chain index of a binding_entry given the HASH value of its
@@ -4353,20 +4729,6 @@ push_class_level_binding (tree name, tree x)
 tree
 do_class_using_decl (tree scope, tree name)
 {
-  /* The USING_DECL returned by this function.  */
-  tree value;
-  /* The declaration (or declarations) name by this using
-     declaration.  NULL if we are in a template and cannot figure out
-     what has been named.  */
-  tree decl;
-  /* True if SCOPE is a dependent type.  */
-  bool scope_dependent_p;
-  /* True if SCOPE::NAME is dependent.  */
-  bool name_dependent_p;
-  /* True if any of the bases of CURRENT_CLASS_TYPE are dependent.  */
-  bool bases_dependent_p;
-  tree binfo;
-
   if (name == error_mark_node)
     return NULL_TREE;
 
@@ -4382,6 +4744,7 @@ do_class_using_decl (tree scope, tree name)
       error ("%<%T::%D%> names destructor", scope, name);
       return NULL_TREE;
     }
+
   /* Using T::T declares inheriting ctors, even if T is a typedef.  */
   if (MAYBE_CLASS_TYPE_P (scope)
       && (name == TYPE_IDENTIFIER (scope)
@@ -4391,21 +4754,14 @@ do_class_using_decl (tree scope, tree name)
       name = ctor_identifier;
       CLASSTYPE_NON_AGGREGATE (current_class_type) = true;
     }
+
+  /* Cannot introduce a constructor name.  */
   if (constructor_name_p (name, current_class_type))
     {
       error ("%<%T::%D%> names constructor in %qT",
 	     scope, name, current_class_type);
       return NULL_TREE;
     }
-
-  scope_dependent_p = dependent_scope_p (scope);
-  name_dependent_p = (scope_dependent_p
-		      || (IDENTIFIER_CONV_OP_P (name)
-			  && dependent_type_p (TREE_TYPE (name))));
-
-  bases_dependent_p = any_dependent_bases_p ();
-
-  decl = NULL_TREE;
 
   /* From [namespace.udecl]:
 
@@ -4417,14 +4773,18 @@ do_class_using_decl (tree scope, tree name)
      class type. Morover, if SCOPE is dependent, it might match a
      non-dependent base.  */
 
-  if (!scope_dependent_p)
+  tree decl = NULL_TREE;
+  if (!dependent_scope_p (scope))
     {
       base_kind b_kind;
-      binfo = lookup_base (current_class_type, scope, ba_any, &b_kind,
-			   tf_warning_or_error);
+      tree binfo = lookup_base (current_class_type, scope, ba_any, &b_kind,
+				tf_warning_or_error);
       if (b_kind < bk_proper_base)
 	{
-	  if (!bases_dependent_p || b_kind == bk_same_type)
+	  /* If there are dependent bases, scope might resolve at
+	     instantiation time, even if it isn't exactly one of the
+	     dependent bases.  */
+	  if (b_kind == bk_same_type || !any_dependent_bases_p ())
 	    {
 	      error_not_base_type (scope, current_class_type);
 	      return NULL_TREE;
@@ -4435,7 +4795,8 @@ do_class_using_decl (tree scope, tree name)
 	  error ("cannot inherit constructors from indirect base %qT", scope);
 	  return NULL_TREE;
 	}
-      else if (!name_dependent_p)
+      else if (!IDENTIFIER_CONV_OP_P (name)
+	       || !dependent_type_p (TREE_TYPE (name)))
 	{
 	  decl = lookup_member (binfo, name, 0, false, tf_warning_or_error);
 	  if (!decl)
@@ -4444,13 +4805,14 @@ do_class_using_decl (tree scope, tree name)
 		     scope);
 	      return NULL_TREE;
 	    }
+
 	  /* The binfo from which the functions came does not matter.  */
 	  if (BASELINK_P (decl))
 	    decl = BASELINK_FUNCTIONS (decl);
 	}
     }
 
-  value = build_lang_decl (USING_DECL, name, NULL_TREE);
+  tree value = build_lang_decl (USING_DECL, name, NULL_TREE);
   USING_DECL_DECLS (value) = decl;
   USING_DECL_SCOPE (value) = scope;
   DECL_DEPENDENT_P (value) = !decl;

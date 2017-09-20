@@ -71,7 +71,7 @@ package Sem_Elab is
    --  output a warning.
 
    --  For calls to a subprogram in a with'ed unit or a 'Access or variable
-   --  refernece (SPARK mode case), we require that a pragma Elaborate_All
+   --  reference (SPARK mode case), we require that a pragma Elaborate_All
    --  or pragma Elaborate be present, or that the referenced unit have a
    --  pragma Preelaborate, pragma Pure, or pragma Elaborate_Body. If none
    --  of these conditions is met, then a warning is generated that a pragma

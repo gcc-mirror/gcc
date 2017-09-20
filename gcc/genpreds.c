@@ -1581,7 +1581,8 @@ write_insn_preds_c (void)
 #include \"reload.h\"\n\
 #include \"regs.h\"\n\
 #include \"emit-rtl.h\"\n\
-#include \"tm-constrs.h\"\n");
+#include \"tm-constrs.h\"\n\
+#include \"target.h\"\n");
 
   FOR_ALL_PREDICATES (p)
     write_one_predicate_function (p);

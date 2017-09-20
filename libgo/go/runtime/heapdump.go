@@ -413,7 +413,7 @@ func dumpmemstats() {
 	dumpint(memstats.gc_sys)
 	dumpint(memstats.other_sys)
 	dumpint(memstats.next_gc)
-	dumpint(memstats.last_gc)
+	dumpint(memstats.last_gc_unix)
 	dumpint(memstats.pause_total_ns)
 	for i := 0; i < 256; i++ {
 		dumpint(memstats.pause_ns[i])
@@ -515,7 +515,7 @@ func writeheapdump_m(fd uintptr) {
 	// Update stats so we can dump them.
 	// As a side effect, flushes all the MCaches so the MSpan.freelist
 	// lists contain all the free objects.
-	updatememstats(nil)
+	updatememstats()
 
 	// Set dump file.
 	dumpfd = fd

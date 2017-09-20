@@ -1679,7 +1679,7 @@ FP_ASM_SPEC "\
   DATA_ALIGNMENT (TYPE, ALIGN)
   
 #define PAD_VARARGS_DOWN \
-  (FUNCTION_ARG_PADDING (TYPE_MODE (type), type) == downward)
+  (targetm.calls.function_arg_padding (TYPE_MODE (type), type) == PAD_DOWNWARD)
 
 /* Define if operations between registers always perform the operation
    on the full register even if a narrower mode is specified.  */
@@ -1959,27 +1959,12 @@ FP_ASM_SPEC "\
    : COP3_REG_P (REGNO) ? '3' : '?')
 
 
-#define HARD_REGNO_NREGS(REGNO, MODE) mips_hard_regno_nregs (REGNO, MODE)
-
-#define HARD_REGNO_MODE_OK(REGNO, MODE)					\
-  mips_hard_regno_mode_ok[ (int)(MODE) ][ (REGNO) ]
-
 #define HARD_REGNO_RENAME_OK(OLD_REG, NEW_REG)				\
   mips_hard_regno_rename_ok (OLD_REG, NEW_REG)
 
 /* Select a register mode required for caller save of hard regno REGNO.  */
 #define HARD_REGNO_CALLER_SAVE_MODE(REGNO, NREGS, MODE) \
   mips_hard_regno_caller_save_mode (REGNO, NREGS, MODE)
-
-/* Odd-numbered single-precision registers are not considered callee-saved
-   for o32 FPXX as they will be clobbered when run on an FR=1 FPU.
-   MSA vector registers with MODE > 64 bits are part clobbered too.  */
-#define HARD_REGNO_CALL_PART_CLOBBERED(REGNO, MODE)			\
-  ((TARGET_FLOATXX && hard_regno_nregs[REGNO][MODE] == 1		\
-   && FP_REG_P (REGNO) && ((REGNO) & 1))				\
-   || (ISA_HAS_MSA && FP_REG_P (REGNO) && GET_MODE_SIZE (MODE) > 8))
-
-#define MODES_TIEABLE_P mips_modes_tieable_p
 
 /* Register to use for pushing function arguments.  */
 #define STACK_POINTER_REGNUM (GP_REG_FIRST + 29)
@@ -2313,26 +2298,10 @@ enum reg_class
 #define SECONDARY_OUTPUT_RELOAD_CLASS(CLASS, MODE, X)			\
   mips_secondary_reload_class (CLASS, MODE, X, false)
 
-/* When targeting the o32 FPXX ABI, all moves with a length of doubleword
-   or greater must be performed by FR-mode-aware instructions.
-   This can be achieved using MFHC1/MTHC1 when these instructions are
-   available but otherwise moves must go via memory.
-   For the o32 FP64A ABI, all odd-numbered moves with a length of
-   doubleword or greater are required to use memory.  Using MTC1/MFC1
-   to access the lower-half of these registers would require a forbidden
-   single-precision access.  We require all double-word moves to use
-   memory because adding even and odd floating-point registers classes
-   would have a significant impact on the backend.  */
-#define SECONDARY_MEMORY_NEEDED(CLASS1, CLASS2, MODE)			\
-  mips_secondary_memory_needed ((CLASS1), (CLASS2), (MODE))
-
 /* Return the maximum number of consecutive registers
    needed to represent mode MODE in a register of class CLASS.  */
 
 #define CLASS_MAX_NREGS(CLASS, MODE) mips_class_max_nregs (CLASS, MODE)
-
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  mips_cannot_change_mode_class (FROM, TO, CLASS)
 
 /* Stack layout; function entry, exit and calling.  */
 
@@ -2534,11 +2503,8 @@ typedef struct mips_args {
 #define INIT_CUMULATIVE_ARGS(CUM, FNTYPE, LIBNAME, INDIRECT, N_NAMED_ARGS) \
   mips_init_cumulative_args (&CUM, FNTYPE)
 
-#define FUNCTION_ARG_PADDING(MODE, TYPE) \
-  (mips_pad_arg_upward (MODE, TYPE) ? upward : downward)
-
 #define BLOCK_REG_PADDING(MODE, TYPE, FIRST) \
-  (mips_pad_reg_upward (MODE, TYPE) ? upward : downward)
+  (mips_pad_reg_upward (MODE, TYPE) ? PAD_UPWARD : PAD_DOWNWARD)
 
 /* True if using EABI and varargs can be passed in floating-point
    registers.  Under these conditions, we need a more complex form
@@ -2603,7 +2569,7 @@ typedef struct mips_args {
   /* Flush both caches.  We need to flush the data cache in case	\
      the system has a write-back cache.  */				\
   emit_library_call (gen_rtx_SYMBOL_REF (Pmode, mips_cache_flush_func),	\
-		     LCT_NORMAL, VOIDmode, 3, ADDR, Pmode, SIZE, Pmode,	\
+		     LCT_NORMAL, VOIDmode, ADDR, Pmode, SIZE, Pmode,	\
 		     GEN_INT (3), TYPE_MODE (integer_type_node))
 
 
@@ -2691,11 +2657,6 @@ typedef struct mips_args {
    width of the shifted operand.  However, Loongson vector shifts
    do not truncate the shift amount at all.  */
 #define SHIFT_COUNT_TRUNCATED (!TARGET_LOONGSON_VECTORS)
-
-/* Value is 1 if truncating an integer of INPREC bits to OUTPREC bits
-   is done just by pretending it is already truncated.  */
-#define TRULY_NOOP_TRUNCATION(OUTPREC, INPREC) \
-  (TARGET_64BIT ? ((INPREC) <= 32 || (OUTPREC) > 32) : 1)
 
 
 /* Specify the machine mode that pointers have.
@@ -3222,7 +3183,6 @@ struct mips_asm_switch {
 };
 
 extern const enum reg_class mips_regno_to_class[];
-extern bool mips_hard_regno_mode_ok[][FIRST_PSEUDO_REGISTER];
 extern const char *current_function_file; /* filename current function is in */
 extern int num_source_filenames;	/* current .file # */
 extern struct mips_asm_switch mips_noreorder;

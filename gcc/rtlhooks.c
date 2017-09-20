@@ -30,6 +30,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "recog.h"
 #include "rtlhooks-def.h"
 #include "explow.h"
+#include "target.h"
 
 
 /* For speed, we will copy the RTX hooks struct member-by-member
@@ -64,11 +65,12 @@ gen_lowpart_general (machine_mode mode, rtx x)
       gcc_assert (MEM_P (x));
 
       /* The following exposes the use of "x" to CSE.  */
-      if (GET_MODE_SIZE (GET_MODE (x)) <= UNITS_PER_WORD
-	  && SCALAR_INT_MODE_P (GET_MODE (x))
-	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, GET_MODE (x))
+      scalar_int_mode xmode;
+      if (is_a <scalar_int_mode> (GET_MODE (x), &xmode)
+	  && GET_MODE_SIZE (xmode) <= UNITS_PER_WORD
+	  && TRULY_NOOP_TRUNCATION_MODES_P (mode, xmode)
 	  && !reload_completed)
-	return gen_lowpart_general (mode, force_reg (GET_MODE (x), x));
+	return gen_lowpart_general (mode, force_reg (xmode, x));
 
       if (WORDS_BIG_ENDIAN)
 	offset = (MAX (GET_MODE_SIZE (GET_MODE (x)), UNITS_PER_WORD)
@@ -85,23 +87,15 @@ gen_lowpart_general (machine_mode mode, rtx x)
 }
 
 rtx
-reg_num_sign_bit_copies_general (const_rtx x ATTRIBUTE_UNUSED,
-				 machine_mode mode ATTRIBUTE_UNUSED,
-                                 const_rtx known_x ATTRIBUTE_UNUSED,
-				 machine_mode known_mode ATTRIBUTE_UNUSED,
-                                 unsigned int known_ret ATTRIBUTE_UNUSED,
-                                 unsigned int *result ATTRIBUTE_UNUSED)
+reg_num_sign_bit_copies_general (const_rtx, scalar_int_mode, scalar_int_mode,
+				 unsigned int *)
 {
   return NULL;
 }
 
 rtx
-reg_nonzero_bits_general (const_rtx x ATTRIBUTE_UNUSED,
-			  machine_mode mode ATTRIBUTE_UNUSED,
-			  const_rtx known_x ATTRIBUTE_UNUSED,
-                          machine_mode known_mode ATTRIBUTE_UNUSED,
-                          unsigned HOST_WIDE_INT known_ret ATTRIBUTE_UNUSED,
-                          unsigned HOST_WIDE_INT *nonzero ATTRIBUTE_UNUSED)
+reg_nonzero_bits_general (const_rtx, scalar_int_mode, scalar_int_mode,
+			  unsigned HOST_WIDE_INT *)
 {
   return NULL;
 }

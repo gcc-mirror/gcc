@@ -15224,7 +15224,14 @@ c_parser_omp_for_loop (location_t loc, c_parser *parser, enum tree_code code,
 
 	  cond = cond_expr.value;
 	  cond = c_objc_common_truthvalue_conversion (cond_loc, cond);
-	  cond = c_fully_fold (cond, false, NULL);
+	  if (COMPARISON_CLASS_P (cond))
+	    {
+	      tree op0 = TREE_OPERAND (cond, 0), op1 = TREE_OPERAND (cond, 1);
+	      op0 = c_fully_fold (op0, false, NULL);
+	      op1 = c_fully_fold (op1, false, NULL);
+	      TREE_OPERAND (cond, 0) = op0;
+	      TREE_OPERAND (cond, 1) = op1;
+	    }
 	  switch (cond_expr.original_code)
 	    {
 	    case GT_EXPR:
@@ -15647,6 +15654,11 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
 
       if (!strcmp ("depend", p))
 	{
+	  if (!flag_openmp)	/* flag_openmp_simd  */
+	    {
+	      c_parser_skip_to_pragma_eol (parser, false);
+	      return false;
+	    }
 	  if (context == pragma_stmt)
 	    {
 	      error_at (loc,
@@ -15667,6 +15679,11 @@ c_parser_omp_ordered (c_parser *parser, enum pragma_context context,
 
   tree clauses = c_parser_omp_all_clauses (parser, OMP_ORDERED_CLAUSE_MASK,
 					   "#pragma omp ordered");
+
+  if (!flag_openmp	/* flag_openmp_simd  */
+      && omp_find_clause (clauses, OMP_CLAUSE_SIMD) == NULL_TREE)
+    return false;
+
   c_finish_omp_ordered (loc, clauses,
 			c_parser_omp_structured_block (parser, if_p));
   return true;

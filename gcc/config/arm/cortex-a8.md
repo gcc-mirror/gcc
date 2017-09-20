@@ -198,7 +198,7 @@
 ;; We assume 64-bit alignment for doubleword loads.
 (define_insn_reservation "cortex_a8_load1_2" 3
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "load1,load2,load_byte"))
+       (eq_attr "type" "load_4,load_8,load_byte"))
   "cortex_a8_load_store_1")
 
 (define_bypass 2 "cortex_a8_load1_2"
@@ -221,7 +221,7 @@
 ;; issued as two micro-ops.
 (define_insn_reservation "cortex_a8_load3_4" 5
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "load3,load4"))
+       (eq_attr "type" "load_12,load_16"))
   "cortex_a8_load_store_2")
 
 (define_bypass 4 "cortex_a8_load3_4"
@@ -238,12 +238,12 @@
 
 (define_insn_reservation "cortex_a8_store1_2" 0
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "store1,store2"))
+       (eq_attr "type" "store_4,store_8"))
   "cortex_a8_load_store_1")
 
 (define_insn_reservation "cortex_a8_store3_4" 0
   (and (eq_attr "tune" "cortexa8")
-       (eq_attr "type" "store3,store4"))
+       (eq_attr "type" "store_12,store_16"))
   "cortex_a8_load_store_2")
 
 ;; An ALU instruction acting as a producer for a store instruction

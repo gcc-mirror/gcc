@@ -93,33 +93,33 @@
 ;; The load instructions.
 (define_insn_reservation "cortex_m7_load1" 2
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "load_byte, load1"))
+        (eq_attr "type" "load_byte, load_4"))
    "cm7_i0|cm7_i1,cm7_lsu")
 
 (define_insn_reservation "cortex_m7_load2" 2
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "load2"))
+        (eq_attr "type" "load_8"))
    "cm7_all_units")
 
 (define_insn_reservation "cortex_m7_loadm" 2
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "load3,load4"))
+        (eq_attr "type" "load_12,load_16"))
    "cm7_all_units*2")
 
 ;; The store instructions.
 (define_insn_reservation "cortex_m7_store1" 0
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "store1"))
+        (eq_attr "type" "store_4"))
    "cm7_i0|cm7_i1,cm7_lsu+cm7_wb")
 
 (define_insn_reservation "cortex_m7_store2" 0
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "store2"))
+        (eq_attr "type" "store_8"))
    "cm7_all_units")
 
 (define_insn_reservation "cortex_m7_storem" 0
    (and (eq_attr "tune" "cortexm7")
-        (eq_attr "type" "store3,store4"))
+        (eq_attr "type" "store_12,store_16"))
    "cm7_all_units*2")
 
 ;; The FPU instructions.

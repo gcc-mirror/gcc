@@ -157,10 +157,10 @@
 ;; register into the register class, which would not restrict things
 ;; at all.
 ;;
-;; Using a combination of GENERAL_REGS and HARD_REGNO_MODE_OK is not a
-;; full solution either.  In fact, even though IRA uses the macro
-;; HARD_REGNO_MODE_OK to calculate which registers are prohibited from
-;; use in certain modes, it still can allocate an odd hard register
+;; Using a combination of GENERAL_REGS and TARGET_HARD_REGNO_MODE_OK is
+;; not a full solution either.  In fact, even though IRA uses the macro
+;; TARGET_HARD_REGNO_MODE_OK to calculate which registers are prohibited
+;; from use in certain modes, it still can allocate an odd hard register
 ;; for DImode values.  This is due to how IRA populates the table
 ;; ira_useful_class_mode_regs[][].  It suffers from the same problem
 ;; as using a register class to describe this restriction.  Namely, it

@@ -258,15 +258,24 @@ avail_exprs_stack::lookup_avail_expr (gimple *stmt, bool insert, bool tbaa_p)
     {
       /* If we did not find the expression in the hash table, we may still
 	 be able to produce a result for some expressions.  */
-      tree alt = avail_exprs_stack::simplify_binary_operation (stmt, element);
-      if (alt)
-	return alt;
+      tree retval = avail_exprs_stack::simplify_binary_operation (stmt,
+								  element);
 
+      /* We have, in effect, allocated *SLOT for ELEMENT at this point.
+	 We must initialize *SLOT to a real entry, even if we found a
+	 way to prove ELEMENT was a constant after not finding ELEMENT
+	 in the hash table.
+
+	 An uninitialized or empty slot is an indication no prior objects
+	 entered into the hash table had a hash collection with ELEMENT.
+
+	 If we fail to do so and had such entries in the table, they
+	 would become unreachable.  */
       class expr_hash_elt *element2 = new expr_hash_elt (element);
       *slot = element2;
 
       record_expr (element2, NULL, '2');
-      return NULL_TREE;
+      return retval;
     }
 
   /* If we found a redundant memory operation do an alias walk to

@@ -233,10 +233,9 @@ unsigned int flag_sanitize
 Variable
 unsigned int flag_sanitize_recover = (SANITIZE_UNDEFINED | SANITIZE_UNDEFINED_NONDEFAULT | SANITIZE_KERNEL_ADDRESS) & ~(SANITIZE_UNREACHABLE | SANITIZE_RETURN)
 
-fsanitize-coverage=trace-pc
-Common Report Var(flag_sanitize_coverage)
-Enable coverage-guided fuzzing code instrumentation.
-Inserts call to __sanitizer_cov_trace_pc into every basic block.
+; What the coverage sanitizers should instrument
+Variable
+unsigned int flag_sanitize_coverage
 
 ; Flag whether a prefix has been added to dump_base_name
 Variable
@@ -352,6 +351,9 @@ Common Alias(pedantic-errors)
 
 -pie
 Driver Alias(pie)
+
+-static-pie
+Driver Alias(static-pie)
 
 -pipe
 Driver Alias(pipe)
@@ -562,6 +564,10 @@ Warn about inappropriate attribute usage.
 
 Wcast-align
 Common Var(warn_cast_align) Warning
+Warn about pointer casts which increase alignment.
+
+Wcast-align=strict
+Common Var(warn_cast_align,2) Warning
 Warn about pointer casts which increase alignment.
 
 Wcpp
@@ -981,6 +987,10 @@ Does nothing. Preserved for backward compatibility.
 fsanitize=
 Common Driver Report Joined
 Select what to sanitize.
+
+fsanitize-coverage=
+Common Report Joined
+Select what to coverage sanitize.
 
 fasan-shadow-offset=
 Common Joined RejectNegative Var(common_deferred_options) Defer
@@ -2310,12 +2320,17 @@ Common Report Var(flag_variable_expansion_in_unroller) Optimization
 Apply variable expansion when loops are unrolled.
 
 fstack-check=
-Common Report RejectNegative Joined
+Common Report RejectNegative Joined Optimization
 -fstack-check=[no|generic|specific]	Insert stack checking code into the program.
 
 fstack-check
 Common Alias(fstack-check=, specific, no)
 Insert stack checking code into the program.  Same as -fstack-check=specific.
+
+fstack-clash-protection
+Common Report Var(flag_stack_clash_protection) Optimization
+Insert code to probe each page of stack space as it is allocated to protect
+from stack-clash style attacks.
 
 fstack-limit
 Common Var(common_deferred_options) Defer
@@ -3062,7 +3077,7 @@ x
 Driver Joined Separate
 
 shared
-Driver RejectNegative Negative(pie)
+Driver RejectNegative Negative(static-pie)
 Create a shared library.
 
 shared-libgcc
@@ -3108,11 +3123,15 @@ Driver
 
 no-pie
 Driver RejectNegative Negative(shared)
-Don't create a position independent executable.
+Don't create a dynamically linked position independent executable.
 
 pie
 Driver RejectNegative Negative(no-pie)
-Create a position independent executable.
+Create a dynamically linked position independent executable.
+
+static-pie
+Driver RejectNegative Negative(pie)
+Create a static position independent executable.
 
 z
 Driver Joined Separate

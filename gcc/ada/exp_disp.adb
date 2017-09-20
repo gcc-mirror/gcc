@@ -625,6 +625,17 @@ package body Exp_Disp is
       raise Program_Error;
    end Default_Prim_Op_Position;
 
+   ----------------------
+   -- Elab_Flag_Needed --
+   ----------------------
+
+   function Elab_Flag_Needed (Typ : Entity_Id) return Boolean is
+   begin
+      return Ada_Version >= Ada_2005
+        and then not Is_Interface (Typ)
+        and then Has_Interfaces (Typ);
+   end Elab_Flag_Needed;
+
    -----------------------------
    -- Expand_Dispatching_Call --
    -----------------------------
@@ -690,6 +701,16 @@ package body Exp_Disp is
                   while Present (F) loop
                      if F = Entity (N) then
                         Rewrite (N, New_Copy_Tree (A));
+
+                        --  If the formal is class-wide, and thus not a
+                        --  controlling argument, preserve its type because
+                        --  it may appear in a nested call with a class-wide
+                        --  parameter.
+
+                        if Is_Class_Wide_Type (Etype (F)) then
+                           Set_Etype (N, Etype (F));
+                        end if;
+
                         exit;
                      end if;
 
@@ -1183,7 +1204,7 @@ package body Exp_Disp is
 
    procedure Expand_Interface_Conversion (N : Node_Id) is
       function Underlying_Record_Type (Typ : Entity_Id) return Entity_Id;
-      --  Return the underlying record type of Typ.
+      --  Return the underlying record type of Typ
 
       ----------------------------
       -- Underlying_Record_Type --
@@ -1193,10 +1214,10 @@ package body Exp_Disp is
          E : Entity_Id := Typ;
 
       begin
-         --  Handle access to class-wide interface types
+         --  Handle access types
 
          if Is_Access_Type (E) then
-            E := Etype (Directly_Designated_Type (E));
+            E := Directly_Designated_Type (E);
          end if;
 
          --  Handle class-wide types. This conversion can appear explicitly in
@@ -1500,11 +1521,6 @@ package body Exp_Disp is
             Insert_Action (N, Func, Suppress => All_Checks);
 
             if Is_Access_Type (Etype (Expression (N))) then
-
-               Apply_Accessibility_Check
-                 (N           => Expression (N),
-                  Typ         => Etype (N),
-                  Insert_Node => N);
 
                --  Generate: Func (Address!(Expression))
 
@@ -5874,7 +5890,17 @@ package body Exp_Disp is
                   --  Retrieve the ultimate alias of the primitive for proper
                   --  handling of renamings and eliminated primitives.
 
-                  E        := Ultimate_Alias (Prim);
+                  E := Ultimate_Alias (Prim);
+
+                  --  If the alias is not a primitive operation then Prim does
+                  --  not rename another primitive, but rather an operation
+                  --  declared elsewhere (e.g. in another scope) and therefore
+                  --  Prim is a new primitive.
+
+                  if No (Find_Dispatching_Type (E)) then
+                     E := Prim;
+                  end if;
+
                   Prim_Pos := UI_To_Int (DT_Position (E));
 
                   --  Skip predefined primitives because they are located in a
@@ -6669,6 +6695,24 @@ package body Exp_Disp is
    begin
       pragma Assert (No (Access_Disp_Table (Typ)));
       Set_Access_Disp_Table (Typ, New_Elmt_List);
+
+      --  If the elaboration of this tagged type needs a boolean flag then
+      --  define now its entity. It is initialized to True to indicate that
+      --  elaboration is still pending; set to False by the IP routine.
+
+      --      TypFxx : boolean := True;
+
+      if Elab_Flag_Needed (Typ) then
+         Set_Access_Disp_Table_Elab_Flag (Typ,
+           Make_Defining_Identifier (Loc,
+             Chars => New_External_Name (Tname, 'F')));
+
+         Append_To (Result,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => Access_Disp_Table_Elab_Flag (Typ),
+             Object_Definition   => New_Occurrence_Of (Standard_Boolean, Loc),
+             Expression          => New_Occurrence_Of (Standard_True, Loc)));
+      end if;
 
       --  1) Generate the primary tag entities
 
@@ -7742,24 +7786,37 @@ package body Exp_Disp is
                Set_DT_Position_Value (Alias (Prim), DT_Position (E));
                Set_Fixed_Prim (UI_To_Int (DT_Position (Prim)));
 
-            --  Overriding primitives must use the same entry as the
-            --  overridden primitive.
+            --  Overriding primitives must use the same entry as the overridden
+            --  primitive. Note that the Alias of the operation is set when the
+            --  operation is declared by a renaming, in which case it is not
+            --  overriding. If it renames another primitive it will use the
+            --  same dispatch table slot, but if it renames an operation in a
+            --  nested package it's a new primitive and will have its own slot.
 
             elsif not Present (Interface_Alias (Prim))
               and then Present (Alias (Prim))
               and then Chars (Prim) = Chars (Alias (Prim))
-              and then Find_Dispatching_Type (Alias (Prim)) /= Typ
-              and then Is_Ancestor
-                         (Find_Dispatching_Type (Alias (Prim)), Typ,
-                          Use_Full_View => True)
-              and then Present (DTC_Entity (Alias (Prim)))
+              and then Nkind (Unit_Declaration_Node (Prim)) /=
+                         N_Subprogram_Renaming_Declaration
             then
-               E := Alias (Prim);
-               Set_DT_Position_Value (Prim, DT_Position (E));
+               declare
+                  Par_Type : constant Entity_Id :=
+                               Find_Dispatching_Type (Alias (Prim));
 
-               if not Is_Predefined_Dispatching_Alias (E) then
-                  Set_Fixed_Prim (UI_To_Int (DT_Position (E)));
-               end if;
+               begin
+                  if Present (Par_Type)
+                    and then Par_Type /= Typ
+                    and then Is_Ancestor (Par_Type, Typ, Use_Full_View => True)
+                    and then Present (DTC_Entity (Alias (Prim)))
+                  then
+                     E := Alias (Prim);
+                     Set_DT_Position_Value (Prim, DT_Position (E));
+
+                     if not Is_Predefined_Dispatching_Alias (E) then
+                        Set_Fixed_Prim (UI_To_Int (DT_Position (E)));
+                     end if;
+                  end if;
+               end;
             end if;
 
             Next_Elmt (Prim_Elmt);

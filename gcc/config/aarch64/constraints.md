@@ -156,6 +156,14 @@
  (and (match_code "mem")
       (match_test "REG_P (XEXP (op, 0))")))
 
+(define_memory_constraint "Umq"
+  "@internal
+   A memory address which uses a base register with an offset small enough for
+   a load/store pair operation in DI mode."
+   (and (match_code "mem")
+	(match_test "aarch64_legitimate_address_p (DImode, XEXP (op, 0),
+						   PARALLEL, false)")))
+
 (define_memory_constraint "Ump"
   "@internal
   A memory address suitable for a load/store pair operation."

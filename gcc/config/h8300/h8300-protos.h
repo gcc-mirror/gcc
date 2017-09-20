@@ -99,8 +99,6 @@ extern int h8300_current_function_monitor_function_p (void);
 extern int h8300_initial_elimination_offset (int, int);
 extern int h8300_regs_ok_for_stm (int, rtx[]);
 extern int h8300_hard_regno_rename_ok (unsigned int, unsigned int);
-extern int h8300_hard_regno_nregs (int, machine_mode);
-extern int h8300_hard_regno_mode_ok (int, machine_mode);
 extern bool h8300_move_ok (rtx, rtx);
 
 struct cpp_reader;

@@ -434,6 +434,13 @@ do_narrow (location_t loc,
     typex = lang_hooks.types.type_for_size (TYPE_PRECISION (typex),
 					    TYPE_UNSIGNED (typex));
 
+  /* The type demotion below might cause doing unsigned arithmetic
+     instead of signed, and thus hide overflow bugs.  */
+  if ((ex_form == PLUS_EXPR || ex_form == MINUS_EXPR)
+      && !TYPE_UNSIGNED (typex)
+      && sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+    return NULL_TREE;
+
   /* But now perhaps TYPEX is as wide as INPREC.
      In that case, do nothing special here.
      (Otherwise would recurse infinitely in convert.  */
@@ -866,7 +873,7 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 		break;
 
 	      if (outprec >= BITS_PER_WORD
-		  || TRULY_NOOP_TRUNCATION (outprec, inprec)
+		  || targetm.truly_noop_truncation (outprec, inprec)
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg0))
 		  || inprec > TYPE_PRECISION (TREE_TYPE (arg1)))
 		{
@@ -879,6 +886,12 @@ convert_to_integer_1 (tree type, tree expr, bool dofold)
 	    break;
 
 	  case NEGATE_EXPR:
+	    /* Using unsigned arithmetic for signed types may hide overflow
+	       bugs.  */
+	    if (!TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (expr, 0)))
+		&& sanitize_flags_p (SANITIZE_SI_OVERFLOW))
+	      break;
+	    /* Fall through.  */
 	  case BIT_NOT_EXPR:
 	    /* This is not correct for ABS_EXPR,
 	       since we must test the sign before truncation.  */

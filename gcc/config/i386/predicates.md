@@ -567,6 +567,10 @@
   (and (match_code "symbol_ref")
        (match_test "op == ix86_tls_module_base ()")))
 
+(define_predicate "tls_address_pattern"
+  (and (match_code "set,parallel,unspec,unspec_volatile")
+       (match_test "ix86_tls_address_pattern_p (op)")))
+
 ;; Test for a pc-relative call operand
 (define_predicate "constant_call_address_operand"
   (match_code "symbol_ref")

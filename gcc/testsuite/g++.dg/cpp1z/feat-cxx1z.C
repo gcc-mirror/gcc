@@ -1,4 +1,4 @@
-// { dg-options "-std=c++1z -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
+// { dg-options "-std=c++17 -I${srcdir}/g++.dg/cpp1y -I${srcdir}/g++.dg/cpp1y/testinc" }
 
 //  C++98 features:
 
@@ -104,6 +104,12 @@
 #  error "__cpp_alias_templates"
 #elif __cpp_alias_templates != 200704
 #  error "__cpp_alias_templates != 200704"
+#endif
+
+#ifndef __cpp_threadsafe_static_init
+#  error "__cpp_threadsafe_static_init"
+#elif __cpp_threadsafe_static_init != 200806
+#  error "__cpp_threadsafe_static_init != 200806"
 #endif
 
 //  C++14 features:

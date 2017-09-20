@@ -109,6 +109,8 @@ extern basic_block insert_cond_bb (basic_block, gimple *, gimple *,
 extern bool gimple_find_sub_bbs (gimple_seq, gimple_stmt_iterator *);
 extern bool extract_true_false_controlled_edges (basic_block, basic_block,
 						 edge *, edge *);
+extern void generate_range_test (basic_block bb, tree index, tree low,
+				 tree high, tree *lhs, tree *rhs);
 
 /* Return true if the LHS of a call should be removed.  */
 

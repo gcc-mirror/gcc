@@ -339,6 +339,7 @@ struct {\
   type *base_addr;\
   size_t offset;\
   index_type dtype;\
+  index_type span;\
   descriptor_dimension dim[r];\
 }
 

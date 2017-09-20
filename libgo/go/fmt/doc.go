@@ -38,7 +38,7 @@
 		%E	scientific notation, e.g. -1.234456E+78
 		%f	decimal point but no exponent, e.g. 123.456
 		%F	synonym for %f
-		%g	%e for large exponents, %f otherwise
+		%g	%e for large exponents, %f otherwise. Precision is discussed below.
 		%G	%E for large exponents, %F otherwise
 	String and slice of bytes (treated equivalently with these verbs):
 		%s	the uninterpreted bytes of the string or slice
@@ -94,7 +94,7 @@
 	precision sets the number of places after the decimal, if appropriate,
 	except that for %g/%G precision sets the total number of significant
 	digits. For example, given 12.345 the format %6.3f prints 12.345 while
-	%.3g prints 12.3. The default precision for %e and %f is 6; for %g it
+	%.3g prints 12.3. The default precision for %e, %f and %#g is 6; for %g it
 	is the smallest number of digits necessary to identify the value uniquely.
 
 	For complex numbers, the width and precision apply to the two
@@ -109,6 +109,8 @@
 			0X for hex (%#X); suppress 0x for %p (%#p);
 			for %q, print a raw (backquoted) string if strconv.CanBackquote
 			returns true;
+			always print a decimal point for %e, %E, %f, %F, %g and %G;
+			do not remove trailing zeros for %g and %G;
 			write e.g. U+0078 'x' if the character is printable for %U (%#U).
 		' '	(space) leave a space for elided sign in numbers (% d);
 			put spaces between bytes printing strings or slices in hex (% x, % X)
@@ -190,9 +192,9 @@
 	For example,
 		fmt.Sprintf("%[2]d %[1]d\n", 11, 22)
 	will yield "22 11", while
-		fmt.Sprintf("%[3]*.[2]*[1]f", 12.0, 2, 6),
+		fmt.Sprintf("%[3]*.[2]*[1]f", 12.0, 2, 6)
 	equivalent to
-		fmt.Sprintf("%6.2f", 12.0),
+		fmt.Sprintf("%6.2f", 12.0)
 	will yield " 12.00". Because an explicit index affects subsequent verbs,
 	this notation can be used to print the same values multiple times
 	by resetting the index for the first argument to be repeated:

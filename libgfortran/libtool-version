@@ -3,4 +3,4 @@
 # This is a separate file so that version updates don't involve re-running
 # automake.
 # CURRENT:REVISION:AGE
-4:0:0
+5:0:0

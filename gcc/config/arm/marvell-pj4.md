@@ -138,31 +138,31 @@
 
 (define_insn_reservation "pj4_ldr"  3
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "load_byte,load1"))
+       (eq_attr "type" "load_byte,load_4"))
                        "pj4_is,pj4_alu1,nothing*2,pj4_cp")
 
 (define_insn_reservation "pj4_ldrd" 3
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "load2"))
+       (eq_attr "type" "load_8"))
                        "pj4_is,pj4_alu1,nothing*2,pj4_cpb")
 
 (define_insn_reservation "pj4_str"  1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "store1"))
+       (eq_attr "type" "store_4"))
                        "pj4_is,pj4_alu1,nothing*2,pj4_cp")
 
 (define_insn_reservation "pj4_strd" 1
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "store2"))
+       (eq_attr "type" "store_8"))
                        "pj4_is,pj4_alu1,nothing*2,pj4_cpb")
 
 (define_insn_reservation "pj4_ldm" 4
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "load3,load4")) "pj4_isb,pj4_isb+pj4_alu1,pj4_alu1,nothing,pj4_cp,pj4_cp")
+       (eq_attr "type" "load_12,load_16")) "pj4_isb,pj4_isb+pj4_alu1,pj4_alu1,nothing,pj4_cp,pj4_cp")
 
 (define_insn_reservation "pj4_stm" 2
   (and (eq_attr "tune" "marvell_pj4")
-       (eq_attr "type" "store3,store4")) "pj4_isb,pj4_isb+pj4_alu1,pj4_alu1,nothing,pj4_cp,pj4_cp")
+       (eq_attr "type" "store_12,store_16")) "pj4_isb,pj4_isb+pj4_alu1,pj4_alu1,nothing,pj4_cp,pj4_cp")
 
 ;; Loads forward at WR-stage to ALU pipes
 (define_bypass 2 "pj4_ldr,pj4_ldrd" "pj4_alu")

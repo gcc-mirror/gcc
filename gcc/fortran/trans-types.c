@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "toplev.h"	/* For rest_of_decl_compilation.  */
 #include "trans-types.h"
 #include "trans-const.h"
+#include "trans-array.h"
 #include "dwarf2out.h"	/* For struct array_descr_info.  */
 #include "attribs.h"
 
@@ -363,22 +364,25 @@ gfc_init_c_interop_kinds (void)
 void
 gfc_init_kinds (void)
 {
-  unsigned int mode;
+  opt_scalar_int_mode int_mode_iter;
+  opt_scalar_float_mode float_mode_iter;
   int i_index, r_index, kind;
   bool saw_i4 = false, saw_i8 = false;
   bool saw_r4 = false, saw_r8 = false, saw_r10 = false, saw_r16 = false;
 
-  for (i_index = 0, mode = MIN_MODE_INT; mode <= MAX_MODE_INT; mode++)
+  i_index = 0;
+  FOR_EACH_MODE_IN_CLASS (int_mode_iter, MODE_INT)
     {
+      scalar_int_mode mode = int_mode_iter.require ();
       int kind, bitsize;
 
-      if (!targetm.scalar_mode_supported_p ((machine_mode) mode))
+      if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
       /* The middle end doesn't support constants larger than 2*HWI.
 	 Perhaps the target hook shouldn't have accepted these either,
 	 but just to be safe...  */
-      bitsize = GET_MODE_BITSIZE ((machine_mode) mode);
+      bitsize = GET_MODE_BITSIZE (mode);
       if (bitsize > 2*HOST_BITS_PER_WIDE_INT)
 	continue;
 
@@ -418,22 +422,22 @@ gfc_init_kinds (void)
   /* Set the maximum integer kind.  Used with at least BOZ constants.  */
   gfc_max_integer_kind = gfc_integer_kinds[i_index - 1].kind;
 
-  for (r_index = 0, mode = MIN_MODE_FLOAT; mode <= MAX_MODE_FLOAT; mode++)
+  r_index = 0;
+  FOR_EACH_MODE_IN_CLASS (float_mode_iter, MODE_FLOAT)
     {
-      const struct real_format *fmt =
-	REAL_MODE_FORMAT ((machine_mode) mode);
+      scalar_float_mode mode = float_mode_iter.require ();
+      const struct real_format *fmt = REAL_MODE_FORMAT (mode);
       int kind;
 
       if (fmt == NULL)
 	continue;
-      if (!targetm.scalar_mode_supported_p ((machine_mode) mode))
+      if (!targetm.scalar_mode_supported_p (mode))
 	continue;
 
       /* Only let float, double, long double and __float128 go through.
 	 Runtime support for others is not provided, so they would be
 	 useless.  */
-      if (!targetm.libgcc_floating_mode_supported_p ((machine_mode)
-						       mode))
+      if (!targetm.libgcc_floating_mode_supported_p (mode))
 	continue;
       if (mode != TYPE_MODE (float_type_node)
 	    && (mode != TYPE_MODE (double_type_node))
@@ -1783,6 +1787,12 @@ gfc_get_array_descriptor_base (int dimen, int codimen, bool restricted)
 				    gfc_array_index_type, &chain);
   TREE_NO_WARNING (decl) = 1;
 
+  /* Add the span component.  */
+  decl = gfc_add_field_to_struct_1 (fat_type,
+				    get_identifier ("span"),
+				    gfc_array_index_type, &chain);
+  TREE_NO_WARNING (decl) = 1;
+
   /* Build the array type for the stride and bound components.  */
   if (dimen + codimen > 0)
     {
@@ -2438,6 +2448,8 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
   gfc_namespace *ns;
   tree tmp;
 
+  gcc_assert (!derived->attr.pdt_template);
+
   if (derived->attr.unlimited_polymorphic
       || (flag_coarray == GFC_FCOARRAY_LIB
 	  && derived->from_intmod == INTMOD_ISO_FORTRAN_ENV
@@ -2632,7 +2644,8 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
         field_type = c->ts.u.derived->backend_decl;
       else
 	{
-	  if (c->ts.type == BT_CHARACTER && !c->ts.deferred)
+	  if (c->ts.type == BT_CHARACTER
+	      && !c->ts.deferred && !c->attr.pdt_string)
 	    {
 	      /* Evaluate the string length.  */
 	      gfc_conv_const_charlen (c->ts.u.cl);
@@ -2649,7 +2662,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
          required.  */
       if ((c->attr.dimension || c->attr.codimension) && !c->attr.proc_pointer )
 	{
-	  if (c->attr.pointer || c->attr.allocatable)
+	  if (c->attr.pointer || c->attr.allocatable || c->attr.pdt_array)
 	    {
 	      enum gfc_array_kind akind;
 	      if (c->attr.pointer)
@@ -2670,7 +2683,7 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
 						    PACKED_STATIC,
 						    !c->attr.target);
 	}
-      else if ((c->attr.pointer || c->attr.allocatable)
+      else if ((c->attr.pointer || c->attr.allocatable || c->attr.pdt_string)
 	       && !c->attr.proc_pointer
 	       && !(unlimited_entity && c == derived->components))
 	field_type = build_pointer_type (field_type);
@@ -2708,6 +2721,11 @@ gfc_get_derived_type (gfc_symbol * derived, int codimen)
       gcc_assert (field);
       if (!c->backend_decl)
 	c->backend_decl = field;
+
+      if (c->attr.pointer && c->attr.dimension
+	  && !(c->ts.type == BT_DERIVED
+	       && strcmp (c->name, "_data") == 0))
+	GFC_DECL_PTR_ARRAY_P (c->backend_decl) = 1;
 
       /* Do not add a caf_token field for classes' data components.  */
       if (codimen && !c->attr.dimension && !c->attr.codimension
@@ -3108,14 +3126,15 @@ gfc_type_for_mode (machine_mode mode, int unsignedp)
 {
   int i;
   tree *base;
+  scalar_int_mode int_mode;
 
   if (GET_MODE_CLASS (mode) == MODE_FLOAT)
     base = gfc_real_types;
   else if (GET_MODE_CLASS (mode) == MODE_COMPLEX_FLOAT)
     base = gfc_complex_types;
-  else if (SCALAR_INT_MODE_P (mode))
+  else if (is_a <scalar_int_mode> (mode, &int_mode))
     {
-      tree type = gfc_type_for_size (GET_MODE_PRECISION (mode), unsignedp);
+      tree type = gfc_type_for_size (GET_MODE_PRECISION (int_mode), unsignedp);
       return type != NULL_TREE && mode == TYPE_MODE (type) ? type : NULL_TREE;
     }
   else if (VECTOR_MODE_P (mode))
@@ -3147,7 +3166,7 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
 {
   int rank, dim;
   bool indirect = false;
-  tree etype, ptype, field, t, base_decl;
+  tree etype, ptype, t, base_decl;
   tree data_off, dim_off, dtype_off, dim_size, elem_size;
   tree lower_suboff, upper_suboff, stride_suboff;
 
@@ -3204,24 +3223,11 @@ gfc_get_array_descr_info (const_tree type, struct array_descr_info *info)
   if (indirect)
     base_decl = build1 (INDIRECT_REF, ptype, base_decl);
 
-  if (GFC_TYPE_ARRAY_SPAN (type))
-    elem_size = GFC_TYPE_ARRAY_SPAN (type);
-  else
-    elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
-  field = TYPE_FIELDS (TYPE_MAIN_VARIANT (type));
-  data_off = byte_position (field);
-  field = DECL_CHAIN (field);
-  field = DECL_CHAIN (field);
-  dtype_off = byte_position (field);
-  field = DECL_CHAIN (field);
-  dim_off = byte_position (field);
-  dim_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (field)));
-  field = TYPE_FIELDS (TREE_TYPE (TREE_TYPE (field)));
-  stride_suboff = byte_position (field);
-  field = DECL_CHAIN (field);
-  lower_suboff = byte_position (field);
-  field = DECL_CHAIN (field);
-  upper_suboff = byte_position (field);
+  elem_size = fold_convert (gfc_array_index_type, TYPE_SIZE_UNIT (etype));
+
+  gfc_get_descriptor_offsets_for_info (type, &data_off, &dtype_off, &dim_off,
+				       &dim_size, &stride_suboff,
+				       &lower_suboff, &upper_suboff);
 
   t = base_decl;
   if (!integer_zerop (data_off))

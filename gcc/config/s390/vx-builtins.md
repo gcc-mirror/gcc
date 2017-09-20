@@ -314,9 +314,9 @@
    machine_mode half_mode;
    switch (<MODE>mode)
    {
-     case V8HImode: half_mode = V16QImode; break;
-     case V4SImode: half_mode = V8HImode; break;
-     case V2DImode: half_mode = V4SImode; break;
+     case E_V8HImode: half_mode = V16QImode; break;
+     case E_V4SImode: half_mode = V8HImode; break;
+     case E_V2DImode: half_mode = V4SImode; break;
      default: gcc_unreachable ();
    }
    s390_expand_vcond (operands[1], operands[1], null_vec,

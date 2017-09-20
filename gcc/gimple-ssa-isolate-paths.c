@@ -160,14 +160,17 @@ isolate_path (basic_block bb, basic_block duplicate,
 	for (ei = ei_start (duplicate->succs); (e2 = ei_safe_edge (ei)); )
 	  remove_edge (e2);
     }
-  bb->frequency += EDGE_FREQUENCY (e);
-  bb->count += e->count;
 
   /* Complete the isolation step by redirecting E to reach DUPLICATE.  */
   e2 = redirect_edge_and_branch (e, duplicate);
   if (e2)
-    flush_pending_stmts (e2);
+    {
+      flush_pending_stmts (e2);
 
+      /* Update profile only when redirection is really processed.  */
+      bb->frequency += EDGE_FREQUENCY (e);
+      bb->count += e->count;
+    }
 
   /* There may be more than one statement in DUPLICATE which exhibits
      undefined behavior.  Ultimately we want the first such statement in

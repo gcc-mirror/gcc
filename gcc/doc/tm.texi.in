@@ -1698,16 +1698,10 @@ This macro is optional.  If not specified, it defaults to the value
 of @code{CALL_USED_REGISTERS}.
 @end defmac
 
-@defmac HARD_REGNO_CALL_PART_CLOBBERED (@var{regno}, @var{mode})
 @cindex call-used register
 @cindex call-clobbered register
 @cindex call-saved register
-A C expression that is nonzero if it is not permissible to store a
-value of mode @var{mode} in hard register number @var{regno} across a
-call without some part of it being clobbered.  For most machines this
-macro need not be defined.  It is only required for machines that do not
-preserve the entire contents of a register across a call.
-@end defmac
+@hook TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 
 @findex fixed_regs
 @findex call_used_regs
@@ -1810,22 +1804,7 @@ This section discusses the macros that describe which kinds of values
 (specifically, which machine modes) each register can hold, and how many
 consecutive registers are needed for a given mode.
 
-@defmac HARD_REGNO_NREGS (@var{regno}, @var{mode})
-A C expression for the number of consecutive hard registers, starting
-at register number @var{regno}, required to hold a value of mode
-@var{mode}.  This macro must never return zero, even if a register
-cannot hold the requested mode - indicate that with HARD_REGNO_MODE_OK
-and/or CANNOT_CHANGE_MODE_CLASS instead.
-
-On a machine where all registers are exactly one word, a suitable
-definition of this macro is
-
-@smallexample
-#define HARD_REGNO_NREGS(REGNO, MODE)            \
-   ((GET_MODE_SIZE (MODE) + UNITS_PER_WORD - 1)  \
-    / UNITS_PER_WORD)
-@end smallexample
-@end defmac
+@hook TARGET_HARD_REGNO_NREGS
 
 @defmac HARD_REGNO_NREGS_HAS_PADDING (@var{regno}, @var{mode})
 A C expression that is nonzero if a value of mode @var{mode}, stored
@@ -1833,7 +1812,7 @@ in memory, ends with padding that causes it to take up more space than
 in registers starting at register number @var{regno} (as determined by
 multiplying GCC's notion of the size of the register when containing
 this mode by the number of registers returned by
-@code{HARD_REGNO_NREGS}).  By default this is zero.
+@code{TARGET_HARD_REGNO_NREGS}).  By default this is zero.
 
 For example, if a floating-point value is stored in three 32-bit
 registers but takes up 128 bits in memory, then this would be
@@ -1863,66 +1842,7 @@ happens for example on SPARC 64-bit where the natural size of
 floating-point registers is still 32-bit.
 @end defmac
 
-@defmac HARD_REGNO_MODE_OK (@var{regno}, @var{mode})
-A C expression that is nonzero if it is permissible to store a value
-of mode @var{mode} in hard register number @var{regno} (or in several
-registers starting with that one).  For a machine where all registers
-are equivalent, a suitable definition is
-
-@smallexample
-#define HARD_REGNO_MODE_OK(REGNO, MODE) 1
-@end smallexample
-
-You need not include code to check for the numbers of fixed registers,
-because the allocation mechanism considers them to be always occupied.
-
-@cindex register pairs
-On some machines, double-precision values must be kept in even/odd
-register pairs.  You can implement that by defining this macro to reject
-odd register numbers for such modes.
-
-The minimum requirement for a mode to be OK in a register is that the
-@samp{mov@var{mode}} instruction pattern support moves between the
-register and other hard register in the same class and that moving a
-value into the register and back out not alter it.
-
-Since the same instruction used to move @code{word_mode} will work for
-all narrower integer modes, it is not necessary on any machine for
-@code{HARD_REGNO_MODE_OK} to distinguish between these modes, provided
-you define patterns @samp{movhi}, etc., to take advantage of this.  This
-is useful because of the interaction between @code{HARD_REGNO_MODE_OK}
-and @code{MODES_TIEABLE_P}; it is very desirable for all integer modes
-to be tieable.
-
-Many machines have special registers for floating point arithmetic.
-Often people assume that floating point machine modes are allowed only
-in floating point registers.  This is not true.  Any registers that
-can hold integers can safely @emph{hold} a floating point machine
-mode, whether or not floating arithmetic can be done on it in those
-registers.  Integer move instructions can be used to move the values.
-
-On some machines, though, the converse is true: fixed-point machine
-modes may not go in floating registers.  This is true if the floating
-registers normalize any value stored in them, because storing a
-non-floating value there would garble it.  In this case,
-@code{HARD_REGNO_MODE_OK} should reject fixed-point machine modes in
-floating registers.  But if the floating registers do not automatically
-normalize, if you can store any bit pattern in one and retrieve it
-unchanged without a trap, then any machine mode may go in a floating
-register, so you can define this macro to say so.
-
-The primary significance of special floating registers is rather that
-they are the registers acceptable in floating point arithmetic
-instructions.  However, this is of no concern to
-@code{HARD_REGNO_MODE_OK}.  You handle it by writing the proper
-constraints for those instructions.
-
-On some machines, the floating registers are especially slow to access,
-so that it is better to store a value in a stack frame than in such a
-register if floating point arithmetic is not being done.  As long as the
-floating registers are not in class @code{GENERAL_REGS}, they will not
-be used unless some pattern's constraint asks for one.
-@end defmac
+@hook TARGET_HARD_REGNO_MODE_OK
 
 @defmac HARD_REGNO_RENAME_OK (@var{from}, @var{to})
 A C expression that is nonzero if it is OK to rename a hard register
@@ -1935,21 +1855,7 @@ handler.
 The default is always nonzero.
 @end defmac
 
-@defmac MODES_TIEABLE_P (@var{mode1}, @var{mode2})
-A C expression that is nonzero if a value of mode
-@var{mode1} is accessible in mode @var{mode2} without copying.
-
-If @code{HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and
-@code{HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always the same for
-any @var{r}, then @code{MODES_TIEABLE_P (@var{mode1}, @var{mode2})}
-should be nonzero.  If they differ for any @var{r}, you should define
-this macro to return zero unless some other mechanism ensures the
-accessibility of the value in a narrower mode.
-
-You should define this macro to return nonzero in as many cases as
-possible since doing so will allow GCC to perform better register
-allocation.
-@end defmac
+@hook TARGET_MODES_TIEABLE_P
 
 @hook TARGET_HARD_REGNO_SCRATCH_OK
 
@@ -2120,7 +2026,7 @@ When a value occupying several consecutive registers is expected in a
 certain class, all the registers used must belong to that class.
 Therefore, register classes cannot be used to enforce a requirement for
 a register pair to start with an even-numbered register.  The way to
-specify this requirement is with @code{HARD_REGNO_MODE_OK}.
+specify this requirement is with @code{TARGET_HARD_REGNO_MODE_OK}.
 
 Register classes used for input-operands of bitwise-and or shift
 instructions have a special requirement: each such class must have, for
@@ -2397,50 +2303,19 @@ intermediate storage.  This case often occurs between floating-point and
 general registers.
 @end defmac
 
-@defmac SECONDARY_MEMORY_NEEDED (@var{class1}, @var{class2}, @var{m})
-Certain machines have the property that some registers cannot be copied
-to some other registers without using memory.  Define this macro on
-those machines to be a C expression that is nonzero if objects of mode
-@var{m} in registers of @var{class1} can only be copied to registers of
-class @var{class2} by storing a register of @var{class1} into memory
-and loading that memory location into a register of @var{class2}.
-
-Do not define this macro if its value would always be zero.
-@end defmac
+@hook TARGET_SECONDARY_MEMORY_NEEDED
 
 @defmac SECONDARY_MEMORY_NEEDED_RTX (@var{mode})
-Normally when @code{SECONDARY_MEMORY_NEEDED} is defined, the compiler
+Normally when @code{TARGET_SECONDARY_MEMORY_NEEDED} is defined, the compiler
 allocates a stack slot for a memory location needed for register copies.
 If this macro is defined, the compiler instead uses the memory location
 defined by this macro.
 
 Do not define this macro if you do not define
-@code{SECONDARY_MEMORY_NEEDED}.
+@code{TARGET_SECONDARY_MEMORY_NEEDED}.
 @end defmac
 
-@defmac SECONDARY_MEMORY_NEEDED_MODE (@var{mode})
-When the compiler needs a secondary memory location to copy between two
-registers of mode @var{mode}, it normally allocates sufficient memory to
-hold a quantity of @code{BITS_PER_WORD} bits and performs the store and
-load operations in a mode that many bits wide and whose class is the
-same as that of @var{mode}.
-
-This is right thing to do on most machines because it ensures that all
-bits of the register are copied and prevents accesses to the registers
-in a narrower mode, which some machines prohibit for floating-point
-registers.
-
-However, this default behavior is not correct on some machines, such as
-the DEC Alpha, that store short integers in floating-point registers
-differently than in integer registers.  On those machines, the default
-widening will not work correctly and you must define this macro to
-suppress that widening in some cases.  See the file @file{alpha.h} for
-details.
-
-Do not define this macro if you do not define
-@code{SECONDARY_MEMORY_NEEDED} or if widening @var{mode} to a mode that
-is @code{BITS_PER_WORD} bits wide is correct for your machine.
-@end defmac
+@hook TARGET_SECONDARY_MEMORY_NEEDED_MODE
 
 @hook TARGET_CLASS_LIKELY_SPILLED_P
 
@@ -2450,43 +2325,16 @@ is @code{BITS_PER_WORD} bits wide is correct for your machine.
 A C expression for the maximum number of consecutive registers
 of class @var{class} needed to hold a value of mode @var{mode}.
 
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.  In fact,
 the value of the macro @code{CLASS_MAX_NREGS (@var{class}, @var{mode})}
-should be the maximum value of @code{HARD_REGNO_NREGS (@var{regno},
+should be the maximum value of @code{TARGET_HARD_REGNO_NREGS (@var{regno},
 @var{mode})} for all @var{regno} values in the class @var{class}.
 
 This macro helps control the handling of multiple-word values
 in the reload pass.
 @end defmac
 
-@defmac CANNOT_CHANGE_MODE_CLASS (@var{from}, @var{to}, @var{class})
-If defined, a C expression that returns nonzero for a @var{class} for which
-a change from mode @var{from} to mode @var{to} is invalid.
-
-For example, loading 32-bit integer or floating-point objects into
-floating-point registers on Alpha extends them to 64 bits.
-Therefore loading a 64-bit object and then storing it as a 32-bit object
-does not store the low-order 32 bits, as would be the case for a normal
-register.  Therefore, @file{alpha.h} defines @code{CANNOT_CHANGE_MODE_CLASS}
-as below:
-
-@smallexample
-#define CANNOT_CHANGE_MODE_CLASS(FROM, TO, CLASS) \
-  (GET_MODE_SIZE (FROM) != GET_MODE_SIZE (TO) \
-   ? reg_classes_intersect_p (FLOAT_REGS, (CLASS)) : 0)
-@end smallexample
-
-Even if storing from a register in mode @var{to} would be valid,
-if both @var{from} and @code{raw_reg_mode} for @var{class} are wider
-than @code{word_mode}, then we must prevent @var{to} narrowing the
-mode.  This happens when the middle-end assumes that it can load
-or store pieces of an @var{N}-word pseudo, and that the pseudo will
-eventually be allocated to @var{N} @code{word_mode} hard registers.
-Failure to prevent this kind of mode change will result in the
-entire @code{raw_reg_mode} being modified instead of the partial
-value that the middle-end intended.
-
-@end defmac
+@hook TARGET_CAN_CHANGE_MODE_CLASS
 
 @hook TARGET_IRA_CHANGE_PSEUDO_ALLOCNO_CLASS
 
@@ -2999,6 +2847,8 @@ GCC computed the default from the values of the above macros and you will
 normally not need to override that default.
 @end defmac
 
+@hook TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE
+
 @need 2000
 @node Frame Registers
 @subsection Registers That Address the Stack Frame
@@ -3433,29 +3283,9 @@ argument @var{libname} exists for symmetry with
 
 @hook TARGET_FUNCTION_ARG_ADVANCE
 
-@defmac FUNCTION_ARG_OFFSET (@var{mode}, @var{type})
-If defined, a C expression that is the number of bytes to add to the
-offset of the argument passed in memory.  This is needed for the SPU,
-which passes @code{char} and @code{short} arguments in the preferred
-slot that is in the middle of the quad word instead of starting at the
-top.
-@end defmac
+@hook TARGET_FUNCTION_ARG_OFFSET
 
-@defmac FUNCTION_ARG_PADDING (@var{mode}, @var{type})
-If defined, a C expression which determines whether, and in which direction,
-to pad out an argument with extra space.  The value should be of type
-@code{enum direction}: either @code{upward} to pad above the argument,
-@code{downward} to pad below, or @code{none} to inhibit padding.
-
-The @emph{amount} of padding is not controlled by this macro, but by the
-target hook @code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is
-always just enough to reach the next multiple of that boundary. 
-
-This macro has a default definition which is right for most systems.
-For little-endian machines, the default is to pad upward.  For
-big-endian machines, the default is to pad downward for an argument of
-constant size shorter than an @code{int}, and upward otherwise.
-@end defmac
+@hook TARGET_FUNCTION_ARG_PADDING
 
 @defmac PAD_VARARGS_DOWN
 If defined, a C expression which determines whether the default
@@ -4651,23 +4481,7 @@ may eliminate subsequent memory access if subsequent accesses occur to
 other fields in the same word of the structure, but to different bytes.
 @end defmac
 
-@defmac SLOW_UNALIGNED_ACCESS (@var{mode}, @var{alignment})
-Define this macro to be the value 1 if memory accesses described by the
-@var{mode} and @var{alignment} parameters have a cost many times greater
-than aligned accesses, for example if they are emulated in a trap
-handler.  This macro is invoked only for unaligned accesses, i.e. when
-@code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.
-
-When this macro is nonzero, the compiler will act as if
-@code{STRICT_ALIGNMENT} were nonzero when generating code for block
-moves.  This can cause significantly more instructions to be produced.
-Therefore, do not set this macro nonzero if unaligned accesses only add a
-cycle or two to the time for a memory access.
-
-If the value of this macro is always zero, it need not be defined.  If
-this macro is defined, it should produce a nonzero value when
-@code{STRICT_ALIGNMENT} is nonzero.
-@end defmac
+@hook TARGET_SLOW_UNALIGNED_ACCESS
 
 @defmac MOVE_RATIO (@var{speed})
 The threshold of number of scalar memory-to-memory move insns, @emph{below}
@@ -7606,12 +7420,12 @@ define it as the constant @code{SIGN_EXTEND} or @code{ZERO_EXTEND}.
 
 You may return a non-@code{UNKNOWN} value even if for some hard registers
 the sign extension is not performed, if for the @code{REGNO_REG_CLASS}
-of these hard registers @code{CANNOT_CHANGE_MODE_CLASS} returns nonzero
+of these hard registers @code{TARGET_CAN_CHANGE_MODE_CLASS} returns false
 when the @var{from} mode is @var{mem_mode} and the @var{to} mode is any
 integral mode larger than this but not larger than @code{word_mode}.
 
 You must return @code{UNKNOWN} if for some hard registers that allow this
-mode, @code{CANNOT_CHANGE_MODE_CLASS} says that they cannot change to
+mode, @code{TARGET_CAN_CHANGE_MODE_CLASS} says that they cannot change to
 @code{word_mode}, but that they can change to another integral mode that
 is larger then @var{mem_mode} but still smaller than @code{word_mode}.
 @end defmac
@@ -7664,21 +7478,7 @@ You need not define this macro if it would always have the value of zero.
 @anchor{TARGET_SHIFT_TRUNCATION_MASK}
 @hook TARGET_SHIFT_TRUNCATION_MASK
 
-@defmac TRULY_NOOP_TRUNCATION (@var{outprec}, @var{inprec})
-A C expression which is nonzero if on this machine it is safe to
-``convert'' an integer of @var{inprec} bits to one of @var{outprec}
-bits (where @var{outprec} is smaller than @var{inprec}) by merely
-operating on it as if it had only @var{outprec} bits.
-
-On many machines, this expression can be 1.
-
-@c rearranged this, removed the phrase "it is reported that".  this was
-@c to fix an overfull hbox.  --mew 10feb93
-When @code{TRULY_NOOP_TRUNCATION} returns 1 for a pair of sizes for
-modes for which @code{MODES_TIEABLE_P} is 0, suboptimal code can result.
-If this is the case, making @code{TRULY_NOOP_TRUNCATION} return 0 in
-such cases may improve things.
-@end defmac
+@hook TARGET_TRULY_NOOP_TRUNCATION
 
 @hook TARGET_MODE_REP_EXTENDED
 

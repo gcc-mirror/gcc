@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1997-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1997-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -194,7 +194,7 @@ package body Sem_Elim is
    -- Tables --
    ------------
 
-   --  The following table records the data for each pragmas, using the
+   --  The following table records the data for each pragma, using the
    --  entity name as the hash key for retrieval. Entries in this table
    --  are set by Process_Eliminate_Pragma and read by Check_Eliminated.
 

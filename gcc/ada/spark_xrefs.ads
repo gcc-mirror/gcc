@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 2011-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2011-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -29,8 +29,8 @@
 --  file, and by Get_SPARK_Xrefs/Put_SPARK_Xrefs to read/write the textual
 --  representation that is stored in the ALI file.
 
+with Table;
 with Types;      use Types;
-with GNAT.Table;
 
 package SPARK_Xrefs is
 
@@ -258,12 +258,13 @@ package SPARK_Xrefs is
       --  Column number for the reference
    end record;
 
-   package SPARK_Xref_Table is new GNAT.Table (
+   package SPARK_Xref_Table is new Table.Table (
      Table_Component_Type => SPARK_Xref_Record,
      Table_Index_Type     => Xref_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 2000,
-     Table_Increment      => 300);
+     Table_Increment      => 300,
+     Table_Name           => "Xref_Table");
 
    -----------------
    -- Scope Table --
@@ -323,12 +324,13 @@ package SPARK_Xrefs is
       --  Entity (subprogram or package) for the scope
    end record;
 
-   package SPARK_Scope_Table is new GNAT.Table (
+   package SPARK_Scope_Table is new Table.Table (
      Table_Component_Type => SPARK_Scope_Record,
      Table_Index_Type     => Scope_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 200,
-     Table_Increment      => 300);
+     Table_Increment      => 300,
+     Table_Name           => "Scope_Table");
 
    ----------------
    -- File Table --
@@ -360,12 +362,13 @@ package SPARK_Xrefs is
       --  Ending index in Scope table for this unit
    end record;
 
-   package SPARK_File_Table is new GNAT.Table (
+   package SPARK_File_Table is new Table.Table (
      Table_Component_Type => SPARK_File_Record,
      Table_Index_Type     => File_Index,
      Table_Low_Bound      => 1,
      Table_Initial        => 20,
-     Table_Increment      => 200);
+     Table_Increment      => 200,
+     Table_Name           => "File_Table");
 
    ---------------
    -- Constants --

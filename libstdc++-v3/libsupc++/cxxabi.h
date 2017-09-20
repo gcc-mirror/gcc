@@ -182,7 +182,7 @@ namespace __cxxabiv1
    *  with GNU extensions. For example, this function is used in
    *  __gnu_cxx::__verbose_terminate_handler.
    *
-   *  See http://gcc.gnu.org/onlinedocs/libstdc++/manual/bk01pt12ch39.html
+   *  See https://gcc.gnu.org/onlinedocs/libstdc++/manual/ext_demangling.html
    *  for other examples of use.
    *
    *  @note The same demangling functionality is available via

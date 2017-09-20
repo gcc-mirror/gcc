@@ -1418,8 +1418,9 @@ package body Freeze is
          New_Prag : Node_Id;
 
       begin
-         A_Pre := Get_Pragma (Par_Prim, Pragma_Precondition);
-         if Present (A_Pre) and then Class_Present (A_Pre) then
+         A_Pre := Get_Class_Wide_Pragma (Par_Prim, Pragma_Precondition);
+
+         if Present (A_Pre) then
             New_Prag := New_Copy_Tree (A_Pre);
             Build_Class_Wide_Expression
               (Prag          => New_Prag,
@@ -1436,9 +1437,9 @@ package body Freeze is
             end if;
          end if;
 
-         A_Post := Get_Pragma (Par_Prim, Pragma_Postcondition);
+         A_Post := Get_Class_Wide_Pragma (Par_Prim, Pragma_Postcondition);
 
-         if Present (A_Post) and then Class_Present (A_Post) then
+         if Present (A_Post) then
             New_Prag := New_Copy_Tree (A_Post);
             Build_Class_Wide_Expression
               (Prag           => New_Prag,
@@ -1494,12 +1495,12 @@ package body Freeze is
 
             Analyze_Entry_Or_Subprogram_Contract (Par_Prim);
 
-            --  In SPARK mode this is where we can collect the inherited
+            --  In GNATprove mode this is where we can collect the inherited
             --  conditions, because we do not create the Check pragmas that
             --  normally convey the the modified class-wide conditions on
             --  overriding operations.
 
-            if SPARK_Mode = On then
+            if GNATprove_Mode then
                Collect_Inherited_Class_Wide_Conditions (Prim);
 
             --  Otherwise build the corresponding pragmas to check for legality
@@ -2573,7 +2574,7 @@ package body Freeze is
 
             --  Propagate flags for component type
 
-            if Is_Controlled_Active (Component_Type (Arr))
+            if Is_Controlled (Component_Type (Arr))
               or else Has_Controlled_Component (Ctyp)
             then
                Set_Has_Controlled_Component (Arr);
@@ -3817,6 +3818,10 @@ package body Freeze is
          --  Accumulates total RM_Size values of all sized components. Used
          --  for processing of Implicit_Packing.
 
+         Sized_Component_Total_Round_RM_Size : Uint := Uint_0;
+         --  Accumulates total RM_Size values of all sized components, rounded
+         --  individually to a multiple of the storage unit.
+
          SSO_ADC : Node_Id;
          --  Scalar_Storage_Order attribute definition clause for the record
 
@@ -4122,21 +4127,32 @@ package body Freeze is
             --  an implicit subtype declaration.
 
             if Known_Static_RM_Size (Etype (Comp)) then
-               Sized_Component_Total_RM_Size :=
-                 Sized_Component_Total_RM_Size + RM_Size (Etype (Comp));
+               declare
+                  Comp_Type : constant Entity_Id := Etype (Comp);
+                  Comp_Size : constant Uint := RM_Size (Comp_Type);
+                  SSU       : constant Int := Ttypes.System_Storage_Unit;
 
-               if Present (Underlying_Type (Etype (Comp)))
-                 and then Is_Elementary_Type (Underlying_Type (Etype (Comp)))
-               then
-                  Elem_Component_Total_Esize :=
-                    Elem_Component_Total_Esize + Esize (Etype (Comp));
-               else
-                  All_Elem_Components := False;
+               begin
+                  Sized_Component_Total_RM_Size :=
+                    Sized_Component_Total_RM_Size + Comp_Size;
 
-                  if RM_Size (Etype (Comp)) mod System_Storage_Unit /= 0 then
-                     All_Storage_Unit_Components := False;
+                  Sized_Component_Total_Round_RM_Size :=
+                    Sized_Component_Total_Round_RM_Size +
+                      (Comp_Size + SSU - 1) / SSU * SSU;
+
+                  if Present (Underlying_Type (Comp_Type))
+                    and then Is_Elementary_Type (Underlying_Type (Comp_Type))
+                  then
+                     Elem_Component_Total_Esize :=
+                       Elem_Component_Total_Esize + Esize (Comp_Type);
+                  else
+                     All_Elem_Components := False;
+
+                     if Comp_Size mod SSU /= 0 then
+                        All_Storage_Unit_Components := False;
+                     end if;
                   end if;
-               end if;
+               end;
             else
                All_Sized_Components := False;
             end if;
@@ -4441,17 +4457,6 @@ package body Freeze is
             end if;
          end;
 
-         --  Set OK_To_Reorder_Components depending on debug flags
-
-         if Is_Base_Type (Rec) and then Convention (Rec) = Convention_Ada then
-            if (Has_Discriminants (Rec) and then Debug_Flag_Dot_V)
-                 or else
-                   (not Has_Discriminants (Rec) and then Debug_Flag_Dot_R)
-            then
-               Set_OK_To_Reorder_Components (Rec);
-            end if;
-         end if;
-
          --  Check for useless pragma Pack when all components placed. We only
          --  do this check for record types, not subtypes, since a subtype may
          --  have all its components placed, and it still makes perfectly good
@@ -4503,7 +4508,7 @@ package body Freeze is
                    (Has_Controlled_Component (Etype (Comp))
                      or else
                        (Chars (Comp) /= Name_uParent
-                         and then Is_Controlled_Active (Etype (Comp)))
+                         and then Is_Controlled (Etype (Comp)))
                      or else
                        (Is_Protected_Type (Etype (Comp))
                          and then
@@ -4613,12 +4618,13 @@ package body Freeze is
                  and then RM_Size (Rec) < Elem_Component_Total_Esize)
              or else
                (not All_Elem_Components
-                 and then not All_Storage_Unit_Components))
+                 and then not All_Storage_Unit_Components
+                 and then RM_Size (Rec) < Sized_Component_Total_Round_RM_Size))
 
            --  And the total RM size cannot be greater than the specified size
            --  since otherwise packing will not get us where we have to be.
 
-           and then RM_Size (Rec) >= Sized_Component_Total_RM_Size
+           and then Sized_Component_Total_RM_Size <= RM_Size (Rec)
 
            --  Never do implicit packing in CodePeer or SPARK modes since
            --  we don't do any packing in these modes, since this generates
@@ -5048,12 +5054,13 @@ package body Freeze is
 
             Prag := Copy_Import_Pragma;
 
-            --  Fix up spec to be not imported any more
+            --  Fix up spec so it is no longer imported and has convention Ada
 
             Set_Has_Completion (E, False);
             Set_Import_Pragma  (E, Empty);
             Set_Interface_Name (E, Empty);
             Set_Is_Imported    (E, False);
+            Set_Convention     (E, Convention_Ada);
 
             --  Grab the subprogram declaration and specification
 
@@ -5277,8 +5284,12 @@ package body Freeze is
       --  pragma or attribute definition clause in the tree at this point. We
       --  also analyze the aspect specification node at the freeze point when
       --  the aspect doesn't correspond to pragma/attribute definition clause.
+      --  In addition, a derived type may have inherited aspects that were
+      --  delayed in the parent, so these must also be captured now.
 
-      if Has_Delayed_Aspects (E) then
+      if Has_Delayed_Aspects (E)
+        or else May_Inherit_Delayed_Rep_Aspects (E)
+      then
          Analyze_Aspects_At_Freeze_Point (E);
       end if;
 
@@ -5495,6 +5506,13 @@ package body Freeze is
               and then not Has_Delayed_Freeze (E)
             then
                Explode_Initialization_Compound_Statement (E);
+            end if;
+
+            --  Do not generate a freeze node for a generic unit
+
+            if Is_Generic_Unit (E) then
+               Result := No_List;
+               goto Leave;
             end if;
          end if;
 
@@ -8216,7 +8234,10 @@ package body Freeze is
       --  that we know the convention.
 
       if not Has_Foreign_Convention (E) then
-         Create_Extra_Formals (E);
+         if No (Extra_Formals (E)) then
+            Create_Extra_Formals (E);
+         end if;
+
          Set_Mechanisms (E);
 
          --  If this is convention Ada and a Valued_Procedure, that's odd

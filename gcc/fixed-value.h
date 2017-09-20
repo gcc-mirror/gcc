@@ -22,8 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 struct GTY(()) fixed_value
 {
-  double_int data;		/* Store data up to 2 wide integers.  */
-  machine_mode mode;	/* Use machine mode to know IBIT and FBIT.  */
+  double_int data;       /* Store data up to 2 wide integers.  */
+  scalar_mode_pod mode;  /* Use machine mode to know IBIT and FBIT.  */
 };
 
 #define FIXED_VALUE_TYPE struct fixed_value
@@ -47,14 +47,13 @@ extern rtx const_fixed_from_fixed_value (FIXED_VALUE_TYPE, machine_mode);
 
 /* Construct a FIXED_VALUE from a bit payload and machine mode MODE.
    The bits in PAYLOAD are sign-extended/zero-extended according to MODE.  */
-extern FIXED_VALUE_TYPE fixed_from_double_int (double_int,
-						     machine_mode);
+extern FIXED_VALUE_TYPE fixed_from_double_int (double_int, scalar_mode);
 
 /* Return a CONST_FIXED from a bit payload and machine mode MODE.
    The bits in PAYLOAD are sign-extended/zero-extended according to MODE.  */
 static inline rtx
 const_fixed_from_double_int (double_int payload,
-                             machine_mode mode)
+			     scalar_mode mode)
 {
   return
     const_fixed_from_fixed_value (fixed_from_double_int (payload, mode),
@@ -63,25 +62,25 @@ const_fixed_from_double_int (double_int payload,
 
 /* Initialize from a decimal or hexadecimal string.  */
 extern void fixed_from_string (FIXED_VALUE_TYPE *, const char *,
-			       machine_mode);
+			       scalar_mode);
 
 /* In tree.c: wrap up a FIXED_VALUE_TYPE in a tree node.  */
 extern tree build_fixed (tree, FIXED_VALUE_TYPE);
 
 /* Extend or truncate to a new mode.  */
-extern bool fixed_convert (FIXED_VALUE_TYPE *, machine_mode,
+extern bool fixed_convert (FIXED_VALUE_TYPE *, scalar_mode,
 			   const FIXED_VALUE_TYPE *, bool);
 
 /* Convert to a fixed-point mode from an integer.  */
-extern bool fixed_convert_from_int (FIXED_VALUE_TYPE *, machine_mode,
+extern bool fixed_convert_from_int (FIXED_VALUE_TYPE *, scalar_mode,
 				    double_int, bool, bool);
 
 /* Convert to a fixed-point mode from a real.  */
-extern bool fixed_convert_from_real (FIXED_VALUE_TYPE *, machine_mode,
+extern bool fixed_convert_from_real (FIXED_VALUE_TYPE *, scalar_mode,
 				     const REAL_VALUE_TYPE *, bool);
 
 /* Convert to a real mode from a fixed-point.  */
-extern void real_convert_from_fixed (REAL_VALUE_TYPE *, machine_mode,
+extern void real_convert_from_fixed (REAL_VALUE_TYPE *, scalar_mode,
 				     const FIXED_VALUE_TYPE *);
 
 /* Compare two fixed-point objects for bitwise identity.  */

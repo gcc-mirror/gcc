@@ -415,7 +415,19 @@ handle_pragma_scalar_storage_order (cpp_reader *ARG_UNUSED(dummy))
   tree x;
 
   if (BYTES_BIG_ENDIAN != WORDS_BIG_ENDIAN)
-    error ("scalar_storage_order is not supported");
+    {
+      error ("scalar_storage_order is not supported because endianness "
+	     "is not uniform");
+      return;
+    }
+
+  if (c_dialect_cxx ())
+    {
+      if (warn_unknown_pragmas > in_system_header_at (input_location))
+	warning (OPT_Wunknown_pragmas,
+		 "%<#pragma scalar_storage_order%> is not supported for C++");
+      return;
+    }
 
   token = pragma_lex (&x);
   if (token != CPP_NAME)
@@ -1277,7 +1289,6 @@ static const struct omp_pragma_def omp_pragmas[] = {
   { "end", PRAGMA_OMP_END_DECLARE_TARGET },
   { "flush", PRAGMA_OMP_FLUSH },
   { "master", PRAGMA_OMP_MASTER },
-  { "ordered", PRAGMA_OMP_ORDERED },
   { "section", PRAGMA_OMP_SECTION },
   { "sections", PRAGMA_OMP_SECTIONS },
   { "single", PRAGMA_OMP_SINGLE },
@@ -1291,6 +1302,7 @@ static const struct omp_pragma_def omp_pragmas_simd[] = {
   { "declare", PRAGMA_OMP_DECLARE },
   { "distribute", PRAGMA_OMP_DISTRIBUTE },
   { "for", PRAGMA_OMP_FOR },
+  { "ordered", PRAGMA_OMP_ORDERED },
   { "parallel", PRAGMA_OMP_PARALLEL },
   { "simd", PRAGMA_OMP_SIMD },
   { "target", PRAGMA_OMP_TARGET },

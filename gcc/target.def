@@ -1859,7 +1859,7 @@ mode @var{mode}.  The default is\n\
 equal to @code{word_mode}, because the vectorizer can do some\n\
 transformations even in absence of specialized @acronym{SIMD} hardware.",
  machine_mode,
- (machine_mode mode),
+ (scalar_mode mode),
  default_preferred_simd_mode)
 
 /* Returns a mask of vector sizes to iterate over when auto-vectorizing
@@ -1877,10 +1877,16 @@ The default is zero which means to not iterate over other vector sizes.",
 /* Function to get a target mode for a vector mask.  */
 DEFHOOK
 (get_mask_mode,
- "This hook returns mode to be used for a mask to be used for a vector\n\
-of specified @var{length} with @var{nunits} elements.  By default an integer\n\
-vector mode of a proper size is returned.",
- machine_mode,
+ "A vector mask is a value that holds one boolean result for every element\n\
+in a vector.  This hook returns the machine mode that should be used to\n\
+represent such a mask when the vector in question is @var{length} bytes\n\
+long and contains @var{nunits} elements.  The hook returns an empty\n\
+@code{opt_machine_mode} if no such mode exists.\n\
+\n\
+The default implementation returns the mode of an integer vector that\n\
+is @var{length} bytes long and that contains @var{nunits} elements,\n\
+if such a mode exists.",
+ opt_machine_mode,
  (unsigned nunits, unsigned length),
  default_get_mask_mode)
 
@@ -2009,7 +2015,7 @@ char *, (void), hook_charptr_void_null)
 DEFHOOK_UNDOC
 (eh_return_filter_mode,
  "Return machine mode for filter value.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_eh_return_filter_mode)
 
 /* Return machine mode for libgcc expanded cmp instructions.  */
@@ -2019,7 +2025,7 @@ DEFHOOK
 of compare instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_cmp_return_mode)
 
 /* Return machine mode for libgcc expanded shift instructions.  */
@@ -2029,7 +2035,7 @@ DEFHOOK
 of shift instructions expanded to libgcc calls.  If not defined\n\
 @code{word_mode} is returned which is the right choice for a majority of\n\
 targets.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_libgcc_shift_count_mode)
 
 /* Return machine mode to be used for _Unwind_Word type.  */
@@ -2037,7 +2043,7 @@ DEFHOOK
 (unwind_word_mode,
  "Return machine mode to be used for @code{_Unwind_Word} type.\n\
 The default is to use @code{word_mode}.",
- machine_mode, (void),
+ scalar_int_mode, (void),
  default_unwind_word_mode)
 
 /* Given two decls, merge their attributes and return the result.  */
@@ -3124,6 +3130,20 @@ has an instruction for the division, and 2 if it does not.",
  unsigned int, (machine_mode mode),
  default_min_divisions_for_recip_mul)
 
+DEFHOOK
+(truly_noop_truncation,
+ "This hook returns true if it is safe to ``convert'' a value of\n\
+@var{inprec} bits to one of @var{outprec} bits (where @var{outprec} is\n\
+smaller than @var{inprec}) by merely operating on it as if it had only\n\
+@var{outprec} bits.  The default returns true unconditionally, which\n\
+is correct for most machines.\n\
+\n\
+If @code{TARGET_MODES_TIEABLE_P} returns false for a pair of modes,\n\
+suboptimal code can result if this hook returns true for the corresponding\n\
+mode sizes.  Making this hook return false in such cases may improve things.",
+ bool, (unsigned int outprec, unsigned int inprec),
+ hook_bool_uint_uint_true)
+
 /* If the representation of integral MODE is such that values are
    always sign-extended to a wider mode MODE_REP then return
    SIGN_EXTEND.  Return UNKNOWN otherwise.  */
@@ -3145,7 +3165,7 @@ widest integral mode and currently we take advantage of this fact.)\n\
 Similarly to @code{LOAD_EXTEND_OP} you may return a non-@code{UNKNOWN}\n\
 value even if the extension is not performed on certain hard registers\n\
 as long as for the @code{REGNO_REG_CLASS} of these hard registers\n\
-@code{CANNOT_CHANGE_MODE_CLASS} returns nonzero.\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} returns false.\n\
 \n\
 Note that @code{TARGET_MODE_REP_EXTENDED} and @code{LOAD_EXTEND_OP}\n\
 describe two related properties.  If you define\n\
@@ -3154,9 +3174,9 @@ to define @code{LOAD_EXTEND_OP (mode)} to return the same type of\n\
 extension.\n\
 \n\
 In order to enforce the representation of @code{mode},\n\
-@code{TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
+@code{TARGET_TRULY_NOOP_TRUNCATION} should return false when truncating to\n\
 @code{mode}.",
- int, (machine_mode mode, machine_mode rep_mode),
+ int, (scalar_int_mode mode, scalar_int_mode rep_mode),
  default_mode_rep_extended)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE"))).  */
@@ -3165,7 +3185,7 @@ DEFHOOK
  "Define this to return nonzero if the port can handle pointers\n\
 with machine mode @var{mode}.  The default version of this\n\
 hook returns true for both @code{ptr_mode} and @code{Pmode}.",
- bool, (machine_mode mode),
+ bool, (scalar_int_mode mode),
  default_valid_pointer_mode)
 
 /* Disambiguate with errno.  */
@@ -3190,7 +3210,7 @@ DEFHOOK
  "Define this to return the machine mode to use for pointers to\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{ptr_mode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_pointer_mode)
 
 /* MODE to use for an address in another address space.  */
@@ -3199,7 +3219,7 @@ DEFHOOK
  "Define this to return the machine mode to use for addresses in\n\
 @var{address_space} if the target supports named address spaces.\n\
 The default version of this hook returns @code{Pmode}.",
- machine_mode, (addr_space_t address_space),
+ scalar_int_mode, (addr_space_t address_space),
  default_addr_space_address_mode)
 
 /* True if MODE is valid for a pointer in __attribute__((mode("MODE")))
@@ -3213,7 +3233,7 @@ except that it includes explicit named address space support.  The default\n\
 version of this hook returns true for the modes returned by either the\n\
 @code{TARGET_ADDR_SPACE_POINTER_MODE} or @code{TARGET_ADDR_SPACE_ADDRESS_MODE}\n\
 target hooks for the given address space.",
- bool, (machine_mode mode, addr_space_t as),
+ bool, (scalar_int_mode mode, addr_space_t as),
  default_addr_space_valid_pointer_mode)
 
 /* True if an address is a valid memory address to a given named address
@@ -3315,7 +3335,7 @@ The default version of this hook returns true for any mode\n\
 required to handle the basic C types (as defined by the port).\n\
 Included here are the double-word arithmetic supported by the\n\
 code in @file{optabs.c}.",
- bool, (machine_mode mode),
+ bool, (scalar_mode mode),
  default_scalar_mode_supported_p)
 
 /* Similarly for vector modes.  "Supported" here is less strict.  At
@@ -3378,27 +3398,27 @@ floating-point mode @var{mode}, which is known to pass \n\
 @code{TARGET_SCALAR_MODE_SUPPORTED_P}.  The default version of this \n\
 hook returns true for all of @code{SFmode}, @code{DFmode}, \n\
 @code{XFmode} and @code{TFmode}, if such modes exist.",
- bool, (machine_mode mode),
+ bool, (scalar_float_mode mode),
  default_libgcc_floating_mode_supported_p)
 
 DEFHOOK
 (floatn_mode,
  "Define this to return the machine mode to use for the type \n\
 @code{_Float@var{n}}, if @var{extended} is false, or the type \n\
-@code{_Float@var{n}x}, if @var{extended} is true.  If such a type \n\
-is not supported, return @code{VOIDmode}.  The default version of this \n\
-hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for \n\
+@code{_Float@var{n}x}, if @var{extended} is true.  If such a type is not\n\
+supported, return @code{opt_scalar_float_mode ()}.  The default version of\n\
+this hook returns @code{SFmode} for @code{_Float32}, @code{DFmode} for\n\
 @code{_Float64} and @code{_Float32x} and @code{TFmode} for \n\
 @code{_Float128}, if those modes exist and satisfy the requirements for \n\
 those types and pass @code{TARGET_SCALAR_MODE_SUPPORTED_P} and \n\
 @code{TARGET_LIBGCC_FLOATING_MODE_SUPPORTED_P}; for @code{_Float64x}, it \n\
 returns the first of @code{XFmode} and @code{TFmode} that exists and \n\
 satisfies the same requirements; for other types, it returns \n\
-@code{VOIDmode}.  The hook is only called for values of @var{n} and \n\
-@var{extended} that are valid according to ISO/IEC TS 18661-3:2015; that \n\
-is, @var{n} is one of 32, 64, 128, or, if @var{extended} is false, 16 or \n\
-greater than 128 and a multiple of 32.",
- machine_mode, (int n, bool extended),
+@code{opt_scalar_float_mode ()}.  The hook is only called for values\n\
+of @var{n} and @var{extended} that are valid according to\n\
+ISO/IEC TS 18661-3:2015; that is, @var{n} is one of 32, 64, 128, or,\n\
+if @var{extended} is false, 16 or greater than 128 and a multiple of 32.",
+ opt_scalar_float_mode, (int n, bool extended),
  default_floatn_mode)
 
 /* Compute cost of moving data from a register of class FROM to one of
@@ -3504,6 +3524,25 @@ particular mode from being used for block comparisons by returning a\n\
 negative number from this hook.",
  int, (machine_mode mode),
  default_compare_by_pieces_branch_ratio)
+
+DEFHOOK
+(slow_unaligned_access,
+ "This hook returns true if memory accesses described by the\n\
+@var{mode} and @var{alignment} parameters have a cost many times greater\n\
+than aligned accesses, for example if they are emulated in a trap handler.\n\
+This hook is invoked only for unaligned accesses, i.e. when\n\
+@code{@var{alignment} < GET_MODE_ALIGNMENT (@var{mode})}.\n\
+\n\
+When this hook returns true, the compiler will act as if\n\
+@code{STRICT_ALIGNMENT} were true when generating code for block\n\
+moves.  This can cause significantly more instructions to be produced.\n\
+Therefore, do not make this hook return true if unaligned accesses only\n\
+add a cycle or two to the time for a memory access.\n\
+\n\
+The hook must return true whenever @code{STRICT_ALIGNMENT} is true.\n\
+The default implementation returns @code{STRICT_ALIGNMENT}.",
+ bool, (machine_mode mode, unsigned int align),
+ default_slow_unaligned_access)
 
 DEFHOOK
 (optab_supported_p,
@@ -4533,6 +4572,34 @@ used for arguments without any special help.",
  (cumulative_args_t ca, machine_mode mode, const_tree type, bool named),
  default_function_arg_advance)
 
+DEFHOOK
+(function_arg_offset,
+ "This hook returns the number of bytes to add to the offset of an\n\
+argument of type @var{type} and mode @var{mode} when passed in memory.\n\
+This is needed for the SPU, which passes @code{char} and @code{short}\n\
+arguments in the preferred slot that is in the middle of the quad word\n\
+instead of starting at the top.  The default implementation returns 0.",
+ HOST_WIDE_INT, (machine_mode mode, const_tree type),
+ default_function_arg_offset)
+
+DEFHOOK
+(function_arg_padding,
+ "This hook determines whether, and in which direction, to pad out\n\
+an argument of mode @var{mode} and type @var{type}.  It returns\n\
+@code{PAD_UPWARD} to insert padding above the argument, @code{PAD_DOWNWARD}\n\
+to insert padding below the argument, or @code{PAD_NONE} to inhibit padding.\n\
+\n\
+The @emph{amount} of padding is not controlled by this hook, but by\n\
+@code{TARGET_FUNCTION_ARG_ROUND_BOUNDARY}.  It is always just enough\n\
+to reach the next multiple of that boundary.\n\
+\n\
+This hook has a default definition that is right for most systems.\n\
+For little-endian machines, the default is to pad upward.  For\n\
+big-endian machines, the default is to pad downward for an argument of\n\
+constant size shorter than an @code{int}, and upward otherwise.",
+ pad_direction, (machine_mode mode, const_tree type),
+ default_function_arg_padding)
+
 /* Return zero if the argument described by the state of CA should
    be placed on a stack, or a hard register in which to store the
    argument.  The values MODE, TYPE, and NAMED describe that
@@ -5000,6 +5067,38 @@ This is currently used only by the C and C++ front ends.",
  tree, (tree type, tree expr),
  hook_tree_tree_tree_null)
 
+DEFHOOK
+(can_change_mode_class,
+ "This hook returns true if it is possible to bitcast values held in\n\
+registers of class @var{rclass} from mode @var{from} to mode @var{to}\n\
+and if doing so preserves the low-order bits that are common to both modes.\n\
+The result is only meaningful if @var{rclass} has registers that can hold\n\
+both @code{from} and @code{to}.  The default implementation returns true.\n\
+\n\
+As an example of when such bitcasting is invalid, loading 32-bit integer or\n\
+floating-point objects into floating-point registers on Alpha extends them\n\
+to 64 bits.  Therefore loading a 64-bit object and then storing it as a\n\
+32-bit object does not store the low-order 32 bits, as would be the case\n\
+for a normal register.  Therefore, @file{alpha.h} defines\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} to return:\n\
+\n\
+@smallexample\n\
+(GET_MODE_SIZE (from) == GET_MODE_SIZE (to)\n\
+ || !reg_classes_intersect_p (FLOAT_REGS, rclass))\n\
+@end smallexample\n\
+\n\
+Even if storing from a register in mode @var{to} would be valid,\n\
+if both @var{from} and @code{raw_reg_mode} for @var{rclass} are wider\n\
+than @code{word_mode}, then we must prevent @var{to} narrowing the\n\
+mode.  This happens when the middle-end assumes that it can load\n\
+or store pieces of an @var{N}-word pseudo, and that the pseudo will\n\
+eventually be allocated to @var{N} @code{word_mode} hard registers.\n\
+Failure to prevent this kind of mode change will result in the\n\
+entire @code{raw_reg_mode} being modified instead of the partial\n\
+value that the middle-end intended.",
+ bool, (machine_mode from, machine_mode to, reg_class_t rclass),
+ hook_bool_mode_mode_reg_class_t_true)
+
 /* Change pseudo allocno class calculated by IRA.  */
 DEFHOOK
 (ira_change_pseudo_allocno_class,
@@ -5093,7 +5192,7 @@ DEFHOOK
   for the cstore being performed.  Not definiting this hook is the same\
   as accepting the mode encoded into operand 0 of the cstore expander\
   patterns.",
-  machine_mode, (enum insn_code icode),
+  scalar_int_mode, (enum insn_code icode),
   default_cstore_mode)
 
 /* This target hook allows the backend to compute the register pressure
@@ -5209,7 +5308,7 @@ in memory and the hard register number if it is in a register.\n\
 \n\
 Scratch operands in memory (constraint @code{\"=m\"} / @code{\"=&m\"}) are\n\
 currently not supported.  For the time being, you will have to continue\n\
-to use @code{SECONDARY_MEMORY_NEEDED} for that purpose.\n\
+to use @code{TARGET_SECONDARY_MEMORY_NEEDED} for that purpose.\n\
 \n\
 @code{copy_cost} also uses this target hook to find out how values are\n\
 copied.  If you want it to include some extra cost for the need to allocate\n\
@@ -5221,6 +5320,42 @@ forwarding logic, you can set @code{sri->extra_cost} to a negative amount.",
  (bool in_p, rtx x, reg_class_t reload_class, machine_mode reload_mode,
   secondary_reload_info *sri),
  default_secondary_reload)
+
+DEFHOOK
+(secondary_memory_needed,
+ "Certain machines have the property that some registers cannot be copied\n\
+to some other registers without using memory.  Define this hook on\n\
+those machines to return true if objects of mode @var{m} in registers\n\
+of @var{class1} can only be copied to registers of class @var{class2} by\n\
+ storing a register of @var{class1} into memory and loading that memory\n\
+location into a register of @var{class2}.  The default definition returns\n\
+false for all inputs.",
+ bool, (machine_mode mode, reg_class_t class1, reg_class_t class2),
+ hook_bool_mode_reg_class_t_reg_class_t_false)
+
+DEFHOOK
+(secondary_memory_needed_mode,
+ "If @code{TARGET_SECONDARY_MEMORY_NEEDED} tells the compiler to use memory\n\
+when moving between two particular registers of mode @var{mode},\n\
+this hook specifies the mode that the memory should have.\n\
+\n\
+The default depends on @code{TARGET_LRA_P}.  Without LRA, the default\n\
+is to use a word-sized mode for integral modes that are smaller than a\n\
+a word.  This is right thing to do on most machines because it ensures\n\
+that all bits of the register are copied and prevents accesses to the\n\
+registers in a narrower mode, which some machines prohibit for\n\
+floating-point registers.\n\
+\n\
+However, this default behavior is not correct on some machines, such as\n\
+the DEC Alpha, that store short integers in floating-point registers\n\
+differently than in integer registers.  On those machines, the default\n\
+widening will not work correctly and you must define this hook to\n\
+suppress that widening in some cases.  See the file @file{alpha.c} for\n\
+details.\n\
+\n\
+With LRA, the default is to use @var{mode} unmodified.",
+ machine_mode, (machine_mode mode),
+ default_secondary_memory_needed_mode)
 
 /* Given an rtx X being reloaded into a reg required to be in class CLASS,
    return the class of reg to actually use.  */
@@ -5302,10 +5437,10 @@ DEFHOOK
  "A target hook returns the maximum number of consecutive registers\n\
 of class @var{rclass} needed to hold a value of mode @var{mode}.\n\
 \n\
-This is closely related to the macro @code{HARD_REGNO_NREGS}.  In fact,\n\
-the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},\n\
+This is closely related to the macro @code{TARGET_HARD_REGNO_NREGS}.\n\
+In fact, the value returned by @code{TARGET_CLASS_MAX_NREGS (@var{rclass},\n\
 @var{mode})} target hook should be the maximum value of\n\
-@code{HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}\n\
+@code{TARGET_HARD_REGNO_NREGS (@var{regno}, @var{mode})} for all @var{regno}\n\
 values in the class @var{rclass}.\n\
 \n\
 This target hook helps control the handling of multiple-word values\n\
@@ -5381,6 +5516,97 @@ that are not actually in any insns yet, but will be later.",
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(hard_regno_nregs,
+ "This hook returns the number of consecutive hard registers, starting\n\
+at register number @var{regno}, required to hold a value of mode\n\
+@var{mode}.  This hook must never return zero, even if a register\n\
+cannot hold the requested mode - indicate that with\n\
+@code{TARGET_HARD_REGNO_MODE_OK} and/or\n\
+@code{TARGET_CAN_CHANGE_MODE_CLASS} instead.\n\
+\n\
+The default definition returns the number of words in @var{mode}.",
+ unsigned int, (unsigned int regno, machine_mode mode),
+ default_hard_regno_nregs)
+
+DEFHOOK
+(hard_regno_mode_ok,
+ "This hook returns true if it is permissible to store a value\n\
+of mode @var{mode} in hard register number @var{regno} (or in several\n\
+registers starting with that one).  The default definition returns true\n\
+unconditionally.\n\
+\n\
+You need not include code to check for the numbers of fixed registers,\n\
+because the allocation mechanism considers them to be always occupied.\n\
+\n\
+@cindex register pairs\n\
+On some machines, double-precision values must be kept in even/odd\n\
+register pairs.  You can implement that by defining this hook to reject\n\
+odd register numbers for such modes.\n\
+\n\
+The minimum requirement for a mode to be OK in a register is that the\n\
+@samp{mov@var{mode}} instruction pattern support moves between the\n\
+register and other hard register in the same class and that moving a\n\
+value into the register and back out not alter it.\n\
+\n\
+Since the same instruction used to move @code{word_mode} will work for\n\
+all narrower integer modes, it is not necessary on any machine for\n\
+this hook to distinguish between these modes, provided you define\n\
+patterns @samp{movhi}, etc., to take advantage of this.  This is\n\
+useful because of the interaction between @code{TARGET_HARD_REGNO_MODE_OK}\n\
+and @code{TARGET_MODES_TIEABLE_P}; it is very desirable for all integer\n\
+modes to be tieable.\n\
+\n\
+Many machines have special registers for floating point arithmetic.\n\
+Often people assume that floating point machine modes are allowed only\n\
+in floating point registers.  This is not true.  Any registers that\n\
+can hold integers can safely @emph{hold} a floating point machine\n\
+mode, whether or not floating arithmetic can be done on it in those\n\
+registers.  Integer move instructions can be used to move the values.\n\
+\n\
+On some machines, though, the converse is true: fixed-point machine\n\
+modes may not go in floating registers.  This is true if the floating\n\
+registers normalize any value stored in them, because storing a\n\
+non-floating value there would garble it.  In this case,\n\
+@code{TARGET_HARD_REGNO_MODE_OK} should reject fixed-point machine modes in\n\
+floating registers.  But if the floating registers do not automatically\n\
+normalize, if you can store any bit pattern in one and retrieve it\n\
+unchanged without a trap, then any machine mode may go in a floating\n\
+register, so you can define this hook to say so.\n\
+\n\
+The primary significance of special floating registers is rather that\n\
+they are the registers acceptable in floating point arithmetic\n\
+instructions.  However, this is of no concern to\n\
+@code{TARGET_HARD_REGNO_MODE_OK}.  You handle it by writing the proper\n\
+constraints for those instructions.\n\
+\n\
+On some machines, the floating registers are especially slow to access,\n\
+so that it is better to store a value in a stack frame than in such a\n\
+register if floating point arithmetic is not being done.  As long as the\n\
+floating registers are not in class @code{GENERAL_REGS}, they will not\n\
+be used unless some pattern's constraint asks for one.",
+ bool, (unsigned int regno, machine_mode mode),
+ hook_bool_uint_mode_true)
+
+DEFHOOK
+(modes_tieable_p,
+ "This hook returns true if a value of mode @var{mode1} is accessible\n\
+in mode @var{mode2} without copying.\n\
+\n\
+If @code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode1})} and\n\
+@code{TARGET_HARD_REGNO_MODE_OK (@var{r}, @var{mode2})} are always\n\
+the same for any @var{r}, then\n\
+@code{TARGET_MODES_TIEABLE_P (@var{mode1}, @var{mode2})}\n\
+should be true.  If they differ for any @var{r}, you should define\n\
+this hook to return false unless some other mechanism ensures the\n\
+accessibility of the value in a narrower mode.\n\
+\n\
+You should define this hook to return true in as many cases as\n\
+possible since doing so will allow GCC to perform better register\n\
+allocation.  The default definition returns true unconditionally.",
+ bool, (machine_mode mode1, machine_mode mode2),
+ hook_bool_mode_mode_true)
+
 /* Return true if is OK to use a hard register REGNO as scratch register
    in peephole2.  */
 DEFHOOK
@@ -5394,6 +5620,19 @@ is not saved by a prologue in an interrupt handler.\n\
 The default version of this hook always returns @code{true}.",
  bool, (unsigned int regno),
  default_hard_regno_scratch_ok)
+
+DEFHOOK
+(hard_regno_call_part_clobbered,
+ "This hook should return true if @var{regno} is partly call-saved and\n\
+partly call-clobbered, and if a value of mode @var{mode} would be partly\n\
+clobbered by a call.  For example, if the low 32 bits of @var{regno} are\n\
+preserved across a call but higher bits are clobbered, this hook should\n\
+return true for a 64-bit mode but false for a 32-bit mode.\n\
+\n\
+The default implementation returns false, which is correct\n\
+for targets that don't have partly call-clobbered registers.",
+ bool, (unsigned int regno, machine_mode mode),
+ hook_bool_uint_mode_false)
 
 /* Return the smallest number of different values for which it is best to
    use a jump-table instead of a tree of conditional branches.  */
@@ -5495,6 +5734,13 @@ controlled by target switches, then GCC will automatically avoid using\n\
 these registers when the target switches are opposed to them.)",
  void, (void),
  hook_void_void)
+
+DEFHOOK
+(stack_clash_protection_final_dynamic_probe,
+ "Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.",
+ bool, (rtx residual),
+ default_stack_clash_protection_final_dynamic_probe)
+
 
 /* Functions specific to the C family of frontends.  */
 #undef HOOK_PREFIX

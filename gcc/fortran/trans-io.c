@@ -2569,6 +2569,12 @@ gfc_trans_transfer (gfc_code * code)
 	  gcc_assert (ref && ref->type == REF_ARRAY);
 	}
 
+      if (expr->ts.type != BT_CLASS
+	 && expr->expr_type == EXPR_VARIABLE
+	 && gfc_expr_attr (expr).pointer)
+	goto scalarize;
+
+
       if (!(gfc_bt_struct (expr->ts.type)
 	      || expr->ts.type == BT_CLASS)
 	    && ref && ref->next == NULL
@@ -2603,6 +2609,7 @@ gfc_trans_transfer (gfc_code * code)
 	  goto finish_block_label;
 	}
 
+scalarize:
       /* Initialize the scalarizer.  */
       ss = gfc_walk_expr (expr);
       gfc_init_loopinfo (&loop);
@@ -2618,7 +2625,9 @@ gfc_trans_transfer (gfc_code * code)
 
       gfc_copy_loopinfo_to_se (&se, &loop);
       se.ss = ss;
+
       gfc_conv_expr_reference (&se, expr);
+
       if (expr->ts.type == BT_CLASS)
 	vptr = gfc_get_vptr_from_expr (ss->info->data.array.descriptor);
       else

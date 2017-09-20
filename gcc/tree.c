@@ -873,7 +873,7 @@ tree_size (const_tree node)
 
     case VECTOR_CST:
       return (sizeof (struct tree_vector)
-	      + (TYPE_VECTOR_SUBPARTS (TREE_TYPE (node)) - 1) * sizeof (tree));
+	      + (VECTOR_CST_NELTS (node) - 1) * sizeof (tree));
 
     case STRING_CST:
       return TREE_STRING_LENGTH (node) + offsetof (struct tree_string, str) + 1;
@@ -1696,23 +1696,26 @@ make_vector (unsigned len MEM_STAT_DECL)
 
   TREE_SET_CODE (t, VECTOR_CST);
   TREE_CONSTANT (t) = 1;
+  VECTOR_CST_NELTS (t) = len;
 
   return t;
 }
 
 /* Return a new VECTOR_CST node whose type is TYPE and whose values
-   are in a list pointed to by VALS.  */
+   are given by VALS.  */
 
 tree
-build_vector (tree type, tree *vals MEM_STAT_DECL)
+build_vector (tree type, vec<tree> vals MEM_STAT_DECL)
 {
+  unsigned int nelts = vals.length ();
+  gcc_assert (nelts == TYPE_VECTOR_SUBPARTS (type));
   int over = 0;
   unsigned cnt = 0;
-  tree v = make_vector (TYPE_VECTOR_SUBPARTS (type));
+  tree v = make_vector (nelts);
   TREE_TYPE (v) = type;
 
   /* Iterate through elements and check for overflow.  */
-  for (cnt = 0; cnt < TYPE_VECTOR_SUBPARTS (type); ++cnt)
+  for (cnt = 0; cnt < nelts; ++cnt)
     {
       tree value = vals[cnt];
 
@@ -1735,20 +1738,21 @@ build_vector (tree type, tree *vals MEM_STAT_DECL)
 tree
 build_vector_from_ctor (tree type, vec<constructor_elt, va_gc> *v)
 {
-  tree *vec = XALLOCAVEC (tree, TYPE_VECTOR_SUBPARTS (type));
-  unsigned HOST_WIDE_INT idx, pos = 0;
+  unsigned int nelts = TYPE_VECTOR_SUBPARTS (type);
+  unsigned HOST_WIDE_INT idx;
   tree value;
 
+  auto_vec<tree, 32> vec (nelts);
   FOR_EACH_CONSTRUCTOR_VALUE (v, idx, value)
     {
       if (TREE_CODE (value) == VECTOR_CST)
 	for (unsigned i = 0; i < VECTOR_CST_NELTS (value); ++i)
-	  vec[pos++] = VECTOR_CST_ELT (value, i);
+	  vec.quick_push (VECTOR_CST_ELT (value, i));
       else
-	vec[pos++] = value;
+	vec.quick_push (value);
     }
-  while (pos < TYPE_VECTOR_SUBPARTS (type))
-    vec[pos++] = build_zero_cst (TREE_TYPE (type));
+  while (vec.length () < nelts)
+    vec.quick_push (build_zero_cst (TREE_TYPE (type)));
 
   return build_vector (type, vec);
 }
@@ -1773,9 +1777,9 @@ build_vector_from_val (tree vectype, tree sc)
 
   if (CONSTANT_CLASS_P (sc))
     {
-      tree *v = XALLOCAVEC (tree, nunits);
+      auto_vec<tree, 32> v (nunits);
       for (i = 0; i < nunits; ++i)
-	v[i] = sc;
+	v.quick_push (sc);
       return build_vector (vectype, v);
     }
   else
@@ -2132,8 +2136,9 @@ build_minus_one_cst (tree type)
     case FIXED_POINT_TYPE:
       /* We can only generate 1 for accum types.  */
       gcc_assert (ALL_SCALAR_ACCUM_MODE_P (TYPE_MODE (type)));
-      return build_fixed (type, fixed_from_double_int (double_int_minus_one,
-						       TYPE_MODE (type)));
+      return build_fixed (type,
+			  fixed_from_double_int (double_int_minus_one,
+						 SCALAR_TYPE_MODE (type)));
 
     case VECTOR_TYPE:
       {
@@ -8461,7 +8466,7 @@ retry:
   /* Third, unsigned integers with top bit set never fit signed types.  */
   if (!TYPE_UNSIGNED (type) && sgn_c == UNSIGNED)
     {
-      int prec = GET_MODE_PRECISION (TYPE_MODE (TREE_TYPE (c))) - 1;
+      int prec = GET_MODE_PRECISION (SCALAR_INT_TYPE_MODE (TREE_TYPE (c))) - 1;
       if (prec < TYPE_PRECISION (TREE_TYPE (c)))
 	{
 	  /* When a tree_cst is converted to a wide-int, the precision
@@ -9689,8 +9694,8 @@ build_common_tree_nodes (bool signed_char)
     {
       int n = floatn_nx_types[i].n;
       bool extended = floatn_nx_types[i].extended;
-      machine_mode mode = targetm.floatn_mode (n, extended);
-      if (mode == VOIDmode)
+      scalar_float_mode mode;
+      if (!targetm.floatn_mode (n, extended).exists (&mode))
 	continue;
       int precision = GET_MODE_PRECISION (mode);
       /* Work around the rs6000 KFmode having precision 113 not
@@ -10201,6 +10206,7 @@ tree
 build_vector_type_for_mode (tree innertype, machine_mode mode)
 {
   int nunits;
+  unsigned int bitsize;
 
   switch (GET_MODE_CLASS (mode))
     {
@@ -10215,11 +10221,9 @@ build_vector_type_for_mode (tree innertype, machine_mode mode)
 
     case MODE_INT:
       /* Check that there are no leftover bits.  */
-      gcc_assert (GET_MODE_BITSIZE (mode)
-		  % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
-
-      nunits = GET_MODE_BITSIZE (mode)
-	       / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
+      bitsize = GET_MODE_BITSIZE (as_a <scalar_int_mode> (mode));
+      gcc_assert (bitsize % TREE_INT_CST_LOW (TYPE_SIZE (innertype)) == 0);
+      nunits = bitsize / TREE_INT_CST_LOW (TYPE_SIZE (innertype));
       break;
 
     default:
@@ -10243,10 +10247,8 @@ build_vector_type (tree innertype, int nunits)
 tree
 build_truth_vector_type (unsigned nunits, unsigned vector_size)
 {
-  machine_mode mask_mode = targetm.vectorize.get_mask_mode (nunits,
-							    vector_size);
-
-  gcc_assert (mask_mode != VOIDmode);
+  machine_mode mask_mode
+    = targetm.vectorize.get_mask_mode (nunits, vector_size).else_blk ();
 
   unsigned HOST_WIDE_INT vsize;
   if (mask_mode == BLKmode)
@@ -12634,15 +12636,16 @@ vector_type_mode (const_tree t)
       && (!targetm.vector_mode_supported_p (mode)
 	  || !have_regs_of_mode[mode]))
     {
-      machine_mode innermode = TREE_TYPE (t)->type_common.mode;
+      scalar_int_mode innermode;
 
       /* For integers, try mapping it to a same-sized scalar mode.  */
-      if (GET_MODE_CLASS (innermode) == MODE_INT)
+      if (is_int_mode (TREE_TYPE (t)->type_common.mode, &innermode))
 	{
-	  mode = mode_for_size (TYPE_VECTOR_SUBPARTS (t)
-				* GET_MODE_BITSIZE (innermode), MODE_INT, 0);
-
-	  if (mode != VOIDmode && have_regs_of_mode[mode])
+	  unsigned int size = (TYPE_VECTOR_SUBPARTS (t)
+			       * GET_MODE_BITSIZE (innermode));
+	  scalar_int_mode mode;
+	  if (int_mode_for_size (size, 0).exists (&mode)
+	      && have_regs_of_mode[mode])
 	    return mode;
 	}
 
@@ -13221,9 +13224,7 @@ verify_type (const_tree t)
       debug_tree (ct);
       error_found = true;
     }
-  /* FIXME: this is violated by the C++ FE as discussed in PR70029, when
-     FUNCTION_*_QUALIFIED flags are set.  */
-  if (0 && TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
+  if (TYPE_MAIN_VARIANT (t) == t && ct && TYPE_MAIN_VARIANT (ct) != ct)
    {
       error ("TYPE_CANONICAL of main variant is not main variant");
       debug_tree (ct);

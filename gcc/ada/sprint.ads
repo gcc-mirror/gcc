@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 S p e c                                  --
 --                                                                          --
---          Copyright (C) 1992-2013, Free Software Foundation, Inc.         --
+--          Copyright (C) 1992-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -42,7 +42,7 @@ package Sprint is
    --  When the generated tree is printed, it contains constructs that are not
    --  pure Ada. For convenience, syntactic extensions to Ada have been defined
    --  purely for the purposes of this printout (they are not recognized by the
-   --  parser)
+   --  parser).
 
    --  Could use more documentation for all of these ???
 

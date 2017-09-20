@@ -48,6 +48,10 @@ grep -v '^// ' gen-sysinfo.go | \
 grep '^type _arpcom ' gen-sysinfo.go | \
   sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
 
+# Same on Solaris for _mld_hdr_t.
+grep '^type _mld_hdr_t ' gen-sysinfo.go | \
+  sed -e 's/_in6_addr/[16]byte/' >> ${OUT}
+
 # The errno constants.  These get type Errno.
   egrep '#define E[A-Z0-9_]+ ' errno.i | \
   sed -e 's/^#define \(E[A-Z0-9_]*\) .*$/const \1 = Errno(_\1)/' >> ${OUT}
@@ -481,6 +485,7 @@ fi | sed -e 's/type _dirent64/type Dirent/' \
          -e 's/d_name/Name/' \
          -e 's/]int8/]byte/' \
          -e 's/d_ino/Ino/' \
+         -e 's/d_namlen/Namlen/' \
          -e 's/d_off/Off/' \
          -e 's/d_reclen/Reclen/' \
          -e 's/d_type/Type/' \

@@ -5,10 +5,10 @@
 
 unsigned long foo_11(vector __int128_t *p)
 {
-  return __builtin_unpack_vector_int128(*p, 11); /* { dg-error "argument 2 must be 0 or 1" } */
+  return __builtin_unpack_vector_int128(*p, 11); /* { dg-error "argument 2 must be a 1-bit unsigned literal" } */
 }
 
 unsigned long foo_n(vector __int128_t *p, unsigned long n)
 {
-  return __builtin_unpack_vector_int128(*p, n);	/* { dg-error "argument 2 must be 0 or 1" } */
+  return __builtin_unpack_vector_int128(*p, n);	/* { dg-error "argument 2 must be a 1-bit unsigned literal" } */
 }

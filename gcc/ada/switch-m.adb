@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 2001-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 2001-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -24,11 +24,8 @@
 ------------------------------------------------------------------------------
 
 with Debug;    use Debug;
-with Makeutl;  use Makeutl;
 with Osint;    use Osint;
 with Opt;      use Opt;
-with Prj;      use Prj;
-with Prj.Env;  use Prj.Env;
 with Table;
 
 with System.Multiprocessors; use System.Multiprocessors;
@@ -50,6 +47,8 @@ package body Switch.M is
 
    Global_Switches : Argument_List_Access := null;
    --  Used by function Normalize_Compiler_Switches
+
+   Subdirs_Option : constant String := "--subdirs=";
 
    ---------------------------------
    -- Normalize_Compiler_Switches --
@@ -710,8 +709,7 @@ package body Switch.M is
    ------------------------
 
    procedure Scan_Make_Switches
-     (Env               : in out Prj.Tree.Environment;
-      Switch_Chars      : String;
+     (Switch_Chars      : String;
       Success           : out Boolean)
    is
       Ptr : Integer          := Switch_Chars'First;
@@ -745,6 +743,10 @@ package body Switch.M is
 
       --  Multiple character switches
 
+      --  To preserve building gnat_util, it is not possible to use the
+      --  constant Strings declare in Make_Util, as Make_Util is not in
+      --  gnat_util.
+
       if Switch_Chars'Length > 2 then
          if Switch_Chars = "--create-missing-dirs" then
             Setup_Projects := True;
@@ -757,21 +759,20 @@ package body Switch.M is
                                                             Subdirs_Option
          then
             Subdirs :=
-              new String'
-                (Switch_Chars
-                  (Switch_Chars'First + Subdirs_Option'Length ..
-                   Switch_Chars'Last));
+              new String'(Switch_Chars
+                           (Switch_Chars'First + Subdirs_Option'Length ..
+                            Switch_Chars'Last));
 
-         elsif Switch_Chars = Makeutl.Unchecked_Shared_Lib_Imports then
+         elsif Switch_Chars = "--unchecked-shared-lib-imports" then
             Opt.Unchecked_Shared_Lib_Imports := True;
 
-         elsif Switch_Chars = Makeutl.Single_Compile_Per_Obj_Dir_Switch then
+         elsif Switch_Chars = "--single-compile-per-obj-dir" then
             Opt.One_Compilation_Per_Obj_Dir := True;
 
-         elsif Switch_Chars = Makeutl.No_Exit_Message_Option then
+         elsif Switch_Chars = "--no-exit-message" then
             Opt.No_Exit_Message := True;
 
-         elsif Switch_Chars = Makeutl.Keep_Temp_Files_Option then
+         elsif Switch_Chars = "--keep-temp-files" then
             Opt.Keep_Temporary_Files := True;
 
          elsif Switch_Chars (Ptr) = '-' then
@@ -780,19 +781,18 @@ package body Switch.M is
          elsif Switch_Chars'Length > 3
            and then Switch_Chars (Ptr .. Ptr + 1) = "aP"
          then
-            Add_Directories
-              (Env.Project_Path,
-               Switch_Chars (Ptr + 2 .. Switch_Chars'Last));
+            null;
+            --  This is only used by gprbuild
 
          elsif C = 'v' and then Switch_Chars'Length = 3 then
             Ptr := Ptr + 1;
             Verbose_Mode := True;
 
             case Switch_Chars (Ptr) is
-               when 'l'    => Verbosity_Level := Opt.Low;
-               when 'm'    => Verbosity_Level := Opt.Medium;
-               when 'h'    => Verbosity_Level := Opt.High;
-               when others => Success := False;
+            when 'l'    => Verbosity_Level := Opt.Low;
+            when 'm'    => Verbosity_Level := Opt.Medium;
+            when 'h'    => Verbosity_Level := Opt.High;
+            when others => Success := False;
             end case;
 
          elsif C = 'd' then
@@ -823,37 +823,37 @@ package body Switch.M is
 
                --  Processing for eI switch
 
-               when 'I' =>
-                  Ptr := Ptr + 1;
-                  Scan_Pos (Switch_Chars, Max, Ptr, Main_Index, C);
+            when 'I' =>
+               Ptr := Ptr + 1;
+               Scan_Pos (Switch_Chars, Max, Ptr, Main_Index, C);
 
-                  if Ptr <= Max then
-                     Bad_Switch (Switch_Chars);
-                  end if;
+               if Ptr <= Max then
+                  Bad_Switch (Switch_Chars);
+               end if;
 
                --  Processing for eL switch
 
-               when 'L' =>
-                  if Ptr /= Max then
-                     Bad_Switch (Switch_Chars);
+            when 'L' =>
+               if Ptr /= Max then
+                  Bad_Switch (Switch_Chars);
 
-                  else
-                     Follow_Links_For_Files := True;
-                     Follow_Links_For_Dirs  := True;
-                  end if;
+               else
+                  Follow_Links_For_Files := True;
+                  Follow_Links_For_Dirs  := True;
+               end if;
 
                --  Processing for eS switch
 
-               when 'S' =>
-                  if Ptr /= Max then
-                     Bad_Switch (Switch_Chars);
-
-                  else
-                     Commands_To_Stdout := True;
-                  end if;
-
-               when others =>
+            when 'S' =>
+               if Ptr /= Max then
                   Bad_Switch (Switch_Chars);
+
+               else
+                  Commands_To_Stdout := True;
+               end if;
+
+            when others =>
+               Bad_Switch (Switch_Chars);
             end case;
 
          elsif C = 'j' then

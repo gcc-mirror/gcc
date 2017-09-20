@@ -1,5 +1,5 @@
 // { dg-options "-std=gnu++17" }
-// { dg-do compile { target c++1z } }
+// { dg-do compile { target c++17 } }
 // { dg-require-cstdint "" }
 // { dg-require-gthreads "" }
 
@@ -27,7 +27,7 @@
 
 #ifndef __cpp_lib_scoped_lock
 # error "Feature-test macro for scoped_lock missing"
-#elif __cpp_lib_scoped_lock != 201707
+#elif __cpp_lib_scoped_lock != 201703
 # error "Feature-test macro for scoped_lock has wrong value"
 #endif
 

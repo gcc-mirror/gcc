@@ -1732,15 +1732,30 @@ reduced_constant_expression_p (tree t)
 
     case CONSTRUCTOR:
       /* And we need to handle PTRMEM_CST wrapped in a CONSTRUCTOR.  */
-      tree elt; unsigned HOST_WIDE_INT idx;
-      FOR_EACH_CONSTRUCTOR_VALUE (CONSTRUCTOR_ELTS (t), idx, elt)
+      tree idx, val, field; unsigned HOST_WIDE_INT i;
+      if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
+	field = next_initializable_field (TYPE_FIELDS (TREE_TYPE (t)));
+      else
+	field = NULL_TREE;
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (t), i, idx, val)
 	{
-	  if (!elt)
+	  if (!val)
 	    /* We're in the middle of initializing this element.  */
 	    return false;
-	  if (!reduced_constant_expression_p (elt))
+	  if (!reduced_constant_expression_p (val))
 	    return false;
+	  if (field)
+	    {
+	      if (idx != field)
+		return false;
+	      field = next_initializable_field (DECL_CHAIN (field));
+	    }
 	}
+      if (field)
+	return false;
+      else if (CONSTRUCTOR_NO_IMPLICIT_ZERO (t))
+	/* All the fields are initialized.  */
+	CONSTRUCTOR_NO_IMPLICIT_ZERO (t) = false;
       return true;
 
     default:
@@ -3289,7 +3304,7 @@ var_in_constexpr_fn (tree t)
 bool
 var_in_maybe_constexpr_fn (tree t)
 {
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && DECL_FUNCTION_SCOPE_P (t)
       && LAMBDA_FUNCTION_P (DECL_CONTEXT (t)))
     return true;
@@ -3671,7 +3686,9 @@ static bool
 returns (tree *jump_target)
 {
   return *jump_target
-    && TREE_CODE (*jump_target) == RETURN_EXPR;
+    && (TREE_CODE (*jump_target) == RETURN_EXPR
+	|| (TREE_CODE (*jump_target) == LABEL_DECL
+	    && LABEL_DECL_CDTOR (*jump_target)));
 }
 
 static bool
@@ -4554,7 +4571,9 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 
     case GOTO_EXPR:
       *jump_target = TREE_OPERAND (t, 0);
-      gcc_assert (breaks (jump_target) || continues (jump_target));
+      gcc_assert (breaks (jump_target) || continues (jump_target)
+		  /* Allow for jumping to a cdtor_label.  */
+		  || returns (jump_target));
       break;
 
     case LOOP_EXPR:

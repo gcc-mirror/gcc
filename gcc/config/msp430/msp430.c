@@ -872,7 +872,7 @@ msp430_option_override (void)
 #define TARGET_SCALAR_MODE_SUPPORTED_P msp430_scalar_mode_supported_p
 
 static bool
-msp430_scalar_mode_supported_p (machine_mode m)
+msp430_scalar_mode_supported_p (scalar_mode m)
 {
   if (m == PSImode && msp430x)
     return true;
@@ -900,11 +900,11 @@ msp430_ms_bitfield_layout_p (const_tree record_type ATTRIBUTE_UNUSED)
 
 /* Register Usage */
 
-/* Implements HARD_REGNO_NREGS.  MSP430X registers can hold a single
-   PSImode value, but not an SImode value.  */
-int
-msp430_hard_regno_nregs (int regno ATTRIBUTE_UNUSED,
-			 machine_mode mode)
+#undef TARGET_HARD_REGNO_NREGS
+#define TARGET_HARD_REGNO_NREGS msp430_hard_regno_nregs
+
+static unsigned int
+msp430_hard_regno_nregs (unsigned int, machine_mode mode)
 {
   if (mode == PSImode && msp430x)
     return 1;
@@ -933,16 +933,20 @@ msp430_hard_regno_nregs_with_padding (int regno ATTRIBUTE_UNUSED,
   return msp430_hard_regno_nregs (regno, mode);
 }
 
-/* Implements HARD_REGNO_MODE_OK.  */
-int
-msp430_hard_regno_mode_ok (int regno ATTRIBUTE_UNUSED,
-			   machine_mode mode)
+#undef TARGET_HARD_REGNO_MODE_OK
+#define TARGET_HARD_REGNO_MODE_OK msp430_hard_regno_mode_ok
+
+static bool
+msp430_hard_regno_mode_ok (unsigned int regno, machine_mode mode)
 {
-  return regno <= (ARG_POINTER_REGNUM - msp430_hard_regno_nregs (regno, mode));
+  return regno <= (ARG_POINTER_REGNUM
+		   - (unsigned int) msp430_hard_regno_nregs (regno, mode));
 }
 
-/* Implements MODES_TIEABLE_P.  */
-bool
+#undef TARGET_MODES_TIEABLE_P
+#define TARGET_MODES_TIEABLE_P msp430_modes_tieable_p
+
+static bool
 msp430_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 {
   if ((mode1 == PSImode || mode2 == SImode)
@@ -1023,7 +1027,7 @@ msp430_initial_elimination_offset (int from, int to)
 #undef  TARGET_ADDR_SPACE_ADDRESS_MODE
 #define TARGET_ADDR_SPACE_ADDRESS_MODE msp430_addr_space_pointer_mode
 
-static machine_mode
+static scalar_int_mode
 msp430_addr_space_pointer_mode (addr_space_t addrspace)
 {
   switch (addrspace)
@@ -1043,7 +1047,7 @@ msp430_addr_space_pointer_mode (addr_space_t addrspace)
 #undef  TARGET_UNWIND_WORD_MODE
 #define TARGET_UNWIND_WORD_MODE msp430_unwind_word_mode
 
-static machine_mode
+static scalar_int_mode
 msp430_unwind_word_mode (void)
 {
   /* This needs to match msp430_init_dwarf_reg_sizes_extra (below).  */
@@ -3547,10 +3551,10 @@ msp430_print_operand (FILE * file, rtx op, int letter)
     case 'b':
       switch (GET_MODE (op))
 	{
-	case QImode: fprintf (file, ".B"); return;
-	case HImode: fprintf (file, ".W"); return;
-	case PSImode: fprintf (file, ".A"); return;
-	case SImode: fprintf (file, ".A"); return;
+	case E_QImode: fprintf (file, ".B"); return;
+	case E_HImode: fprintf (file, ".W"); return;
+	case E_PSImode: fprintf (file, ".A"); return;
+	case E_SImode: fprintf (file, ".A"); return;
 	default:
 	  return;
 	}
@@ -3807,6 +3811,22 @@ msp430x_logical_shift_right (rtx amount)
      that the top bit is zero and we can use the arithmetic
      right shift instruction to perform the rest of the shift.  */
   return "rrum.w\t#1, %0 { rpt\t%Z2 { rrax.w\t%0"; /* Six bytes.  */
+}
+
+/* Stop GCC from thinking that it can eliminate (SUBREG:PSI (SI)).  */
+
+#undef TARGET_CAN_CHANGE_MODE_CLASS
+#define TARGET_CAN_CHANGE_MODE_CLASS msp430_can_change_mode_class
+
+static bool
+msp430_can_change_mode_class (machine_mode from, machine_mode to, reg_class_t)
+{
+  if ((to == PSImode && from == SImode)
+      || (to == SImode && from == PSImode)
+      || (to == DImode && from == PSImode)
+      || (to == PSImode && from == DImode))
+    return false;
+  return true;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;

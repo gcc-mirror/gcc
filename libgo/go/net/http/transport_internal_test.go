@@ -9,6 +9,7 @@ package http
 import (
 	"errors"
 	"net"
+	"strings"
 	"testing"
 )
 
@@ -30,6 +31,7 @@ func TestTransportPersistConnReadLoopEOF(t *testing.T) {
 
 	tr := new(Transport)
 	req, _ := NewRequest("GET", "http://"+ln.Addr().String(), nil)
+	req = req.WithT(t)
 	treq := &transportRequest{Request: req}
 	cm := connectMethod{targetScheme: "http", targetAddr: ln.Addr().String()}
 	pc, err := tr.getConn(treq, cm)
@@ -47,13 +49,13 @@ func TestTransportPersistConnReadLoopEOF(t *testing.T) {
 
 	_, err = pc.roundTrip(treq)
 	if !isTransportReadFromServerError(err) && err != errServerClosedIdle {
-		t.Fatalf("roundTrip = %#v, %v; want errServerClosedConn or errServerClosedIdle", err, err)
+		t.Errorf("roundTrip = %#v, %v; want errServerClosedIdle or transportReadFromServerError", err, err)
 	}
 
 	<-pc.closech
 	err = pc.closed
 	if !isTransportReadFromServerError(err) && err != errServerClosedIdle {
-		t.Fatalf("pc.closed = %#v, %v; want errServerClosedConn or errServerClosedIdle", err, err)
+		t.Errorf("pc.closed = %#v, %v; want errServerClosedIdle or transportReadFromServerError", err, err)
 	}
 }
 
@@ -78,6 +80,19 @@ func dummyRequest(method string) *Request {
 	if err != nil {
 		panic(err)
 	}
+	return req
+}
+func dummyRequestWithBody(method string) *Request {
+	req, err := NewRequest(method, "http://fake.tld/", strings.NewReader("foo"))
+	if err != nil {
+		panic(err)
+	}
+	return req
+}
+
+func dummyRequestWithBodyNoGetBody(method string) *Request {
+	req := dummyRequestWithBody(method)
+	req.GetBody = nil
 	return req
 }
 
@@ -130,6 +145,18 @@ func TestTransportShouldRetryRequest(t *testing.T) {
 			req:  dummyRequest("GET"),
 			err:  errServerClosedIdle,
 			want: true,
+		},
+		7: {
+			pc:   &persistConn{reused: true},
+			req:  dummyRequestWithBody("POST"),
+			err:  nothingWrittenError{},
+			want: true,
+		},
+		8: {
+			pc:   &persistConn{reused: true},
+			req:  dummyRequestWithBodyNoGetBody("POST"),
+			err:  nothingWrittenError{},
+			want: false,
 		},
 	}
 	for i, tt := range tests {

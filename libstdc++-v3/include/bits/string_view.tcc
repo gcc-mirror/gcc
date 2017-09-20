@@ -36,16 +36,14 @@
 
 #pragma GCC system_header
 
-#if __cplusplus <= 201402L
-# include <bits/c++17_warning.h>
-#else
+#if __cplusplus >= 201703L
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find(const _CharT* __str, size_type __pos, size_type __n) const noexcept
     {
@@ -66,7 +64,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find(_CharT __c, size_type __pos) const noexcept
     {
@@ -82,7 +80,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     rfind(const _CharT* __str, size_type __pos, size_type __n) const noexcept
     {
@@ -102,7 +100,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     rfind(_CharT __c, size_type __pos) const noexcept
     {
@@ -119,7 +117,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_first_of(const _CharT* __str, size_type __pos, size_type __n) const
     {
@@ -135,7 +133,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_last_of(const _CharT* __str, size_type __pos, size_type __n) const
     {
@@ -156,7 +154,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_first_not_of(const _CharT* __str, size_type __pos, size_type __n) const
     {
@@ -168,7 +166,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_first_not_of(_CharT __c, size_type __pos) const noexcept
     {
@@ -179,7 +177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_last_not_of(const _CharT* __str, size_type __pos, size_type __n) const
     {
@@ -200,7 +198,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
   template<typename _CharT, typename _Traits>
-    typename basic_string_view<_CharT, _Traits>::size_type
+    constexpr typename basic_string_view<_CharT, _Traits>::size_type
     basic_string_view<_CharT, _Traits>::
     find_last_not_of(_CharT __c, size_type __pos) const noexcept
     {

@@ -15,14 +15,14 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++1z" }
-// { dg-do compile { target c++1z } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <numeric>
 
-#ifndef __cpp_lib_gcd
+#ifndef __cpp_lib_gcd_lcm
 # error "Feature-test macro for gcd missing"
-#elif __cpp_lib_gcd != 201606
+#elif __cpp_lib_gcd_lcm != 201606
 # error "Feature-test macro for gcd has wrong value"
 #endif
 

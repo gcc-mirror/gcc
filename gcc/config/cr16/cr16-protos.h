@@ -23,7 +23,6 @@
 
 /* Register usage.  */
 extern enum reg_class cr16_regno_reg_class (int);
-extern int cr16_hard_regno_mode_ok (int regno, machine_mode);
 
 /* Passing function arguments.  */
 extern int cr16_function_arg_regno_p (int);

@@ -15,8 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-// { dg-options "-std=gnu++1z" }
-// { dg-do compile { target c++1z } }
+// { dg-options "-std=gnu++17" }
+// { dg-do compile { target c++17 } }
 
 #include <numeric>
 
@@ -31,9 +31,9 @@ test01()
   std::lcm(0.1, 0.1);   // { dg-error "from here" }
 }
 
-// { dg-error "integers" "" { target *-*-* } 143 }
-// { dg-error "integers" "" { target *-*-* } 144 }
-// { dg-error "not bools" "" { target *-*-* } 145 }
-// { dg-error "not bools" "" { target *-*-* } 146 }
+// { dg-error "integers" "" { target *-*-* } 146 }
+// { dg-error "integers" "" { target *-*-* } 147 }
+// { dg-error "not bools" "" { target *-*-* } 148 }
+// { dg-error "not bools" "" { target *-*-* } 149 }
 // { dg-prune-output "deleted function" }
 // { dg-prune-output "invalid operands" }

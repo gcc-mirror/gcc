@@ -21,6 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_OPTABS_QUERY_H
 
 #include "insn-opinit.h"
+#include "target.h"
 
 /* Return the insn used to implement mode MODE of OP, or CODE_FOR_nothing
    if the target does not have such an insn.  */
@@ -141,16 +142,17 @@ struct extraction_insn
   enum insn_code icode;
 
   /* The mode that the structure operand should have.  This is byte_mode
-     when using the legacy insv, extv and extzv patterns to access memory.  */
-  machine_mode struct_mode;
+     when using the legacy insv, extv and extzv patterns to access memory.
+     If no mode is given, the structure is a BLKmode memory.  */
+  opt_scalar_int_mode struct_mode;
 
   /* The mode of the field to be inserted or extracted, and by extension
      the mode of the insertion or extraction itself.  */
-  machine_mode field_mode;
+  scalar_int_mode field_mode;
 
   /* The mode of the field's bit position.  This is only important
      when the position is variable rather than constant.  */
-  machine_mode pos_mode;
+  scalar_int_mode pos_mode;
 };
 
 bool get_best_reg_extraction_insn (extraction_insn *,
@@ -164,7 +166,7 @@ enum insn_code can_extend_p (machine_mode, machine_mode, int);
 enum insn_code can_float_p (machine_mode, machine_mode, int);
 enum insn_code can_fix_p (machine_mode, machine_mode, int, bool *);
 bool can_conditionally_move_p (machine_mode mode);
-bool can_vec_perm_p (machine_mode, bool, const unsigned char *);
+bool can_vec_perm_p (machine_mode, bool, vec_perm_indices *);
 enum insn_code widening_optab_handler (optab, machine_mode, machine_mode);
 /* Find a widening optab even if it doesn't widen as much as we want.  */
 #define find_widening_optab_handler(A,B,C,D) \

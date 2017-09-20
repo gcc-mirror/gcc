@@ -116,6 +116,10 @@ c_finish_omp_ordered (location_t loc, tree clauses, tree stmt)
   tree t = make_node (OMP_ORDERED);
   TREE_TYPE (t) = void_type_node;
   OMP_ORDERED_BODY (t) = stmt;
+  if (!flag_openmp	/* flag_openmp_simd */
+      && (OMP_CLAUSE_CODE (clauses) != OMP_CLAUSE_SIMD
+	  || OMP_CLAUSE_CHAIN (clauses)))
+    clauses = build_omp_clause (loc, OMP_CLAUSE_SIMD);
   OMP_ORDERED_CLAUSES (t) = clauses;
   SET_EXPR_LOCATION (t, loc);
   return add_stmt (t);

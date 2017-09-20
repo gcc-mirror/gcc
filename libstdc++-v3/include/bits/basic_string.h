@@ -115,8 +115,24 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename _Res>
 	using _If_sv = enable_if_t<
 	  __and_<is_convertible<const _Tp&, __sv_type>,
+		 __not_<is_convertible<const _Tp*, const basic_string*>>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
+
+      // Allows an implicit conversion to __sv_type.
+      static __sv_type
+      _S_to_string_view(__sv_type __svt) noexcept
+      { return __svt; }
+
+      // Wraps a string_view by explicit conversion and thus
+      // allows to add an internal constructor that does not
+      // participate in overload resolution when a string_view
+      // is provided.
+      struct __sv_wrapper
+      {
+	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
+	__sv_type _M_sv;
+      };
 #endif
 
       // Use empty-base optimization: http://www.cantrip.org/emptyopt.html
@@ -593,7 +609,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Construct string from a substring of a string_view.
-       *  @param  __t   Source string view.
+       *  @param  __t   Source object convertible to string view.
        *  @param  __pos The index of the first character to copy from __t.
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
@@ -601,16 +617,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       template<typename _Tp, typename = _If_sv<_Tp, void>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
-	: basic_string(__sv_type(__t).substr(__pos, __n), __a) { }
+	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }
 
       /**
        *  @brief  Construct string from a string_view.
-       *  @param  __sv  Source string view.
+       *  @param  __t  Source object convertible to string view.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+      template<typename _Tp, typename = _If_sv<_Tp, void>>
+	explicit
+	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
+	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
       explicit
-      basic_string(__sv_type __sv, const _Alloc& __a = _Alloc())
-      : basic_string(__sv.data(), __sv.size(), __a) { }
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -756,19 +783,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value to string constructed from a string_view.
-       *  @param  __sv  A string_view.
+       *  @param  __svt  An object convertible to string_view.
        */
-      template<typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	operator=(_Tp __sv)
-	{ return this->assign(__sv); }
+     template<typename _Tp>
+       _If_sv<_Tp, basic_string&>
+       operator=(const _Tp& __svt)
+       { return this->assign(__svt); }
 
       /**
        *  @brief  Convert to a string_view.
        *  @return A string_view.
        */
       operator __sv_type() const noexcept
-      {	return __sv_type(data(), size()); }
+      { return __sv_type(data(), size()); }
 #endif // C++17
 
       // Iterators:
@@ -1157,12 +1184,13 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt  An object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      operator+=(__sv_type __sv)
-      {	return this->append(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator+=(const _Tp& __svt)
+	{ return this->append(__svt); }
 #endif // C++17
 
       /**
@@ -1265,22 +1293,26 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt  An object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      append(__sv_type __sv)
-      { return this->append(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        append(const _Tp& __svt)
+        {
+          __sv_type __sv = __svt;
+          return this->append(__sv.data(), __sv.size());
+        }
 
       /**
        *  @brief  Append a range of characters from a string_view.
-       *  @param __sv  The string_view to be appended from.
+       *  @param __svt  An object convertible to string_view to be appended from.
        *  @param __pos The position in the string_view to append from.
        *  @param __n   The number of characters to append from the string_view.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
 	append(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -1433,21 +1465,25 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value from a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @return  Reference to this string.
        */
-      basic_string&
-      assign(__sv_type __sv)
-      {	return this->assign(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	assign(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->assign(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Set value from a range of characters in a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @param __pos  The position in the string_view to assign from.
        *  @param __n  The number of characters to assign.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
@@ -1692,23 +1728,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      insert(size_type __pos, __sv_type __sv)
-      {	return this->insert(__pos, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	insert(size_type __pos, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->insert(__pos, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert from.
+       *  @param __svt  The object convertible to string_view to insert from.
        *  @param __pos  Iterator referencing position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	insert(size_type __pos1, const _Tp& __svt,
 	       size_type __pos2, size_type __n = npos)
@@ -2120,23 +2160,27 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
        *  @param __n    The number of characters to replace.
-       *  @param __sv  The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(size_type __pos, size_type __n, __sv_type __sv)
-      {	return this->replace(__pos, __n, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(size_type __pos, size_type __n, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__pos, __n, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos1  The position to replace at.
        *  @param __n1    The number of characters to replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @param __pos2  The position in the string_view to insert from.
        *  @param __n2    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
 	replace(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos)
@@ -2153,12 +2197,16 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
           to replace at.
        *  @param __i2    An iterator referencing the end position
           for the replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(const_iterator __i1, const_iterator __i2, __sv_type __sv)
-      {	return this->replace(__i1 - begin(), __i2 - __i1, __sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(const_iterator __i1, const_iterator __i2, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__i1 - begin(), __i2 - __i1, __sv);
+	}
 #endif // C++17
 
     private:
@@ -2288,13 +2336,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a string_view.
-       *  @param __sv  The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
       */
-      size_type
-      find(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2345,13 +2398,18 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a string_view.
-       *  @param __sv   The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of start of last occurrence.
       */
-      size_type
-      rfind(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->rfind(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	rfind(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->rfind(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2419,13 +2477,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character of a string_view.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
       */
-      size_type
-      find_first_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find_first_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2497,13 +2561,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character of string.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
       */
-      size_type
-      find_last_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->find_last_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2574,13 +2644,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  A object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        */
-      size_type
-      find_first_not_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      {	return this->find_first_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_not_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2650,13 +2726,19 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        */
-      size_type
-      find_last_not_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      {	return this->find_last_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_not_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -2754,46 +2836,57 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Compare to a string_view.
-       *  @param __sv  A string_view to compare against.
+       *  @param __svt An object convertible to string_view to compare against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(__sv_type __sv) const
-      {
-	const size_type __size = this->size();
-	const size_type __osize = __sv.size();
-	const size_type __len = std::min(__size, __osize);
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  const size_type __size = this->size();
+	  const size_type __osize = __sv.size();
+	  const size_type __len = std::min(__size, __osize);
 
-	int __r = traits_type::compare(_M_data(), __sv.data(), __len);
-	if (!__r)
-	  __r = _S_compare(__size, __osize);
-	return __r;
-      }
+	  int __r = traits_type::compare(_M_data(), __sv.data(), __len);
+	  if (!__r)
+	    __r = _S_compare(__size, __osize);
+	  return __r;
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos  A position in the string to start comparing from.
        *  @param __n  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(size_type __pos, size_type __n, __sv_type __sv) const
-      { return __sv_type(*this).substr(__pos, __n).compare(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(size_type __pos, size_type __n, const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return __sv_type(*this).substr(__pos, __n).compare(__sv);
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos1  A position in the string to start comparing from.
        *  @param __n1  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @param __pos2  A position in the string_view to start comparing from.
        *  @param __n2  The number of characters to compare.
        *  @return  Integer < 0, 0, or > 0.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, int>
 	compare(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
 	{
 	  __sv_type __sv = __svt;
 	  return __sv_type(*this)
@@ -3348,6 +3441,21 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	  __and_<is_convertible<const _Tp&, __sv_type>,
 		 __not_<is_convertible<const _Tp&, const _CharT*>>>::value,
 	  _Res>;
+
+      // Allows an implicit conversion to __sv_type.
+      static __sv_type
+      _S_to_string_view(__sv_type __svt) noexcept
+      { return __svt; }
+
+      // Wraps a string_view by explicit conversion and thus
+      // allows to add an internal constructor that does not
+      // participate in overload resolution when a string_view
+      // is provided.
+      struct __sv_wrapper
+      {
+	explicit __sv_wrapper(__sv_type __sv) noexcept : _M_sv(__sv) { }
+	__sv_type _M_sv;
+      };
 #endif
 
     public:
@@ -3474,7 +3582,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Construct string from a substring of a string_view.
-       *  @param  __t   Source string view.
+       *  @param  __t   Source object convertible to string view.
        *  @param  __pos The index of the first character to copy from __t.
        *  @param  __n   The number of characters to copy from __t.
        *  @param  __a   Allocator to use.
@@ -3482,16 +3590,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
       template<typename _Tp, typename = _If_sv<_Tp, void>>
 	basic_string(const _Tp& __t, size_type __pos, size_type __n,
 		     const _Alloc& __a = _Alloc())
-	: basic_string(__sv_type(__t).substr(__pos, __n), __a) { }
+	: basic_string(_S_to_string_view(__t).substr(__pos, __n), __a) { }
 
       /**
        *  @brief  Construct string from a string_view.
-       *  @param  __sv  Source string view.
+       *  @param  __t  Source object convertible to string view.
        *  @param  __a  Allocator to use (default is default allocator).
        */
+      template<typename _Tp, typename = _If_sv<_Tp, void>>
+	explicit
+	basic_string(const _Tp& __t, const _Alloc& __a = _Alloc())
+	: basic_string(__sv_wrapper(_S_to_string_view(__t)), __a) { }
+
+      /**
+       *  @brief  Only internally used: Construct string from a string view
+       *          wrapper.
+       *  @param  __svw  string view wrapper.
+       *  @param  __a  Allocator to use.
+       */
       explicit
-      basic_string(__sv_type __sv, const _Alloc& __a = _Alloc())
-      : basic_string(__sv.data(), __sv.size(), __a) { }
+      basic_string(__sv_wrapper __svw, const _Alloc& __a)
+      : basic_string(__svw._M_sv.data(), __svw._M_sv.size(), __a) { }
 #endif // C++17
 
       /**
@@ -3562,12 +3681,12 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value to string constructed from a string_view.
-       *  @param  __sv  A string_view.
+       *  @param  __svt An object convertible to  string_view.
        */
       template<typename _Tp>
 	_If_sv<_Tp, basic_string&>
-	operator=(_Tp __sv)
-	{ return this->assign(__sv); }
+	operator=(const _Tp& __svt)
+	{ return this->assign(__svt); }
 
       /**
        *  @brief  Convert to a string_view.
@@ -3984,12 +4103,13 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt The object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      operator+=(__sv_type __sv)
-      { return this->append(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	operator+=(const _Tp& __svt)
+	{ return this->append(__svt); }
 #endif // C++17
 
       /**
@@ -4075,22 +4195,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Append a string_view.
-       *  @param __sv  The string_view to be appended.
+       *  @param __svt The object convertible to string_view to be appended.
        *  @return  Reference to this string.
        */
-      basic_string&
-      append(__sv_type __sv)
-      { return this->append(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	append(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->append(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Append a range of characters from a string_view.
-       *  @param __sv  The string_view to be appended from.
+       *  @param __svt The object convertible to string_view to be appended
+       *               from.
        *  @param __pos The position in the string_view to append from.
        *  @param __n   The number of characters to append from the string_view.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
 	append(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -4228,23 +4353,27 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Set value from a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt The source object convertible to string_view.
        *  @return  Reference to this string.
        */
-      basic_string&
-      assign(__sv_type __sv)
-      { return this->assign(__sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	assign(const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->assign(__sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Set value from a range of characters in a string_view.
-       *  @param __sv  The source string_view.
+       *  @param __svt  The source object convertible to string_view.
        *  @param __pos  The position in the string_view to assign from.
        *  @param __n  The number of characters to assign.
        *  @return  Reference to this string.
        */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        assign(const _Tp& __svt, size_type __pos, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
 	  return assign(__sv.data()
@@ -4432,25 +4561,29 @@ _GLIBCXX_END_NAMESPACE_CXX11
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      insert(size_type __pos, __sv_type __sv)
-      { return this->insert(__pos, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	insert(size_type __pos, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->insert(__pos, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Insert a string_view.
        *  @param __pos  Iterator referencing position in string to insert at.
-       *  @param __sv   The string_view to insert from.
+       *  @param __svt  The object convertible to string_view to insert from.
        *  @param __pos  Iterator referencing position in string_view to insert
        *  from.
        *  @param __n    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	insert(size_type __pos1, const _Tp& __svt,
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        insert(size_type __pos1, const _Tp& __svt,
 	       size_type __pos2, size_type __n = npos)
 	{
 	  __sv_type __sv = __svt;
@@ -4793,7 +4926,7 @@ _GLIBCXX_END_NAMESPACE_CXX11
 	return this->replace(__i1 - _M_ibegin(), __i2 - __i1,
 			     __k1.base(), __k2 - __k1);
       }
-      
+
 #if __cplusplus >= 201103L
       /**
        *  @brief  Replace range of characters with initializer_list.
@@ -4819,31 +4952,35 @@ _GLIBCXX_END_NAMESPACE_CXX11
        *  @brief  Replace range of characters with string_view.
        *  @param __pos  The position to replace at.
        *  @param __n    The number of characters to replace.
-       *  @param __sv  The string_view to insert.
+       *  @param __svt  The object convertible to string_view to insert.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(size_type __pos, size_type __n, __sv_type __sv)
-      { return this->replace(__pos, __n, __sv.data(), __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(size_type __pos, size_type __n, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__pos, __n, __sv.data(), __sv.size());
+	}
 
       /**
        *  @brief  Replace range of characters with string_view.
        *  @param __pos1  The position to replace at.
        *  @param __n1    The number of characters to replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @param __pos2  The position in the string_view to insert from.
        *  @param __n2    The number of characters to insert.
        *  @return  Reference to this string.
       */
-      template <typename _Tp>
-	_If_sv<_Tp, basic_string&>
-	replace(size_type __pos1, size_type __n1, const _Tp& __svt,
+      template<typename _Tp>
+        _If_sv<_Tp, basic_string&>
+        replace(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos)
 	{
 	  __sv_type __sv = __svt;
-	  return this->replace(__pos1, __n1, __sv.data()
-			       + __sv._M_check(__pos2, "basic_string::replace"),
-			       __sv._M_limit(__pos2, __n2));
+	  return this->replace(__pos1, __n1,
+	      __sv.data() + __sv._M_check(__pos2, "basic_string::replace"),
+	      __sv._M_limit(__pos2, __n2));
 	}
 
       /**
@@ -4852,12 +4989,16 @@ _GLIBCXX_END_NAMESPACE_CXX11
           to replace at.
        *  @param __i2    An iterator referencing the end position
           for the replace.
-       *  @param __sv    The string_view to insert from.
+       *  @param __svt   The object convertible to string_view to insert from.
        *  @return  Reference to this string.
       */
-      basic_string&
-      replace(const_iterator __i1, const_iterator __i2, __sv_type __sv)
-      { return this->replace(__i1 - begin(), __i2 - __i1, __sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, basic_string&>
+	replace(const_iterator __i1, const_iterator __i2, const _Tp& __svt)
+	{
+	  __sv_type __sv = __svt;
+	  return this->replace(__i1 - begin(), __i2 - __i1, __sv);
+	}
 #endif // C++17
 
     private:
@@ -5062,13 +5203,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a string_view.
-       *  @param __sv  The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of start of first occurrence.
       */
-      size_type
-      find(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5135,13 +5281,18 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a string_view.
-       *  @param __sv   The string_view to locate.
+       *  @param __svt  The object convertible to string_view to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of start of last occurrence.
       */
-      size_type
-      rfind(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->rfind(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	rfind(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->rfind(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5213,13 +5364,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character of a string_view.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
       */
-      size_type
-      find_first_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find_first_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5291,13 +5448,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character of string.
-       *  @param __sv   A string_view containing characters to locate.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to locate.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
       */
-      size_type
-      find_last_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->find_last_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5366,13 +5529,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search from (default 0).
        *  @return  Index of first occurrence.
        */
-      size_type
-      find_first_not_of(__sv_type __sv, size_type __pos = 0) const noexcept
-      { return this->find_first_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_first_not_of(const _Tp& __svt, size_type __pos = 0) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_first_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5442,13 +5611,19 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Find last position of a character not in a string_view.
-       *  @param __sv   A string_view containing characters to avoid.
+       *  @param __svt  An object convertible to string_view containing
+       *                characters to avoid.
        *  @param __pos  Index of character to search back from (default end).
        *  @return  Index of last occurrence.
        */
-      size_type
-      find_last_not_of(__sv_type __sv, size_type __pos = npos) const noexcept
-      { return this->find_last_not_of(__sv.data(), __pos, __sv.size()); }
+      template<typename _Tp>
+	_If_sv<_Tp, size_type>
+	find_last_not_of(const _Tp& __svt, size_type __pos = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return this->find_last_not_of(__sv.data(), __pos, __sv.size());
+	}
 #endif // C++17
 
       /**
@@ -5498,46 +5673,57 @@ _GLIBCXX_END_NAMESPACE_CXX11
 #if __cplusplus > 201402L
       /**
        *  @brief  Compare to a string_view.
-       *  @param __sv  A string_view to compare against.
+       *  @param __svt An object convertible to string_view to compare against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(__sv_type __sv) const
-      {
-	const size_type __size = this->size();
-	const size_type __osize = __sv.size();
-	const size_type __len = std::min(__size, __osize);
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	   __sv_type __sv = __svt;
+	  const size_type __size = this->size();
+	  const size_type __osize = __sv.size();
+	  const size_type __len = std::min(__size, __osize);
 
-	int __r = traits_type::compare(_M_data(), __sv.data(), __len);
-	if (!__r)
-	  __r = _S_compare(__size, __osize);
-	return __r;
-      }
+	  int __r = traits_type::compare(_M_data(), __sv.data(), __len);
+	  if (!__r)
+	    __r = _S_compare(__size, __osize);
+	  return __r;
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos  A position in the string to start comparing from.
        *  @param __n  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt  An object convertible to string_view to compare
+       *                against.
        *  @return  Integer < 0, 0, or > 0.
        */
-      int
-      compare(size_type __pos, size_type __n, __sv_type __sv) const
-      { return __sv_type(*this).substr(__pos, __n).compare(__sv); }
+      template<typename _Tp>
+	_If_sv<_Tp, int>
+	compare(size_type __pos, size_type __n, const _Tp& __svt) const
+	noexcept(is_same<_Tp, __sv_type>::value)
+	{
+	  __sv_type __sv = __svt;
+	  return __sv_type(*this).substr(__pos, __n).compare(__sv);
+	}
 
       /**
        *  @brief  Compare to a string_view.
        *  @param __pos1  A position in the string to start comparing from.
        *  @param __n1  The number of characters to compare.
-       *  @param __sv   A string_view to compare against.
+       *  @param __svt   An object convertible to string_view to compare
+       *                 against.
        *  @param __pos2  A position in the string_view to start comparing from.
        *  @param __n2  The number of characters to compare.
        *  @return  Integer < 0, 0, or > 0.
        */
-      template <typename _Tp>
+      template<typename _Tp>
 	_If_sv<_Tp, int>
 	compare(size_type __pos1, size_type __n1, const _Tp& __svt,
 		size_type __pos2, size_type __n2 = npos) const
+	noexcept(is_same<_Tp, __sv_type>::value)
 	{
 	  __sv_type __sv = __svt;
 	  return __sv_type(*this)

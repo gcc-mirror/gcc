@@ -232,7 +232,7 @@ expand_builtin_dwarf_sp_column (void)
    which has mode MODE.  Initialize column C as a return address column.  */
 
 static void
-init_return_column_size (machine_mode mode, rtx mem, unsigned int c)
+init_return_column_size (scalar_int_mode mode, rtx mem, unsigned int c)
 {
   HOST_WIDE_INT offset = c * GET_MODE_SIZE (mode);
   HOST_WIDE_INT size = GET_MODE_SIZE (Pmode);
@@ -299,7 +299,7 @@ void
 expand_builtin_init_dwarf_reg_sizes (tree address)
 {
   unsigned int i;
-  machine_mode mode = TYPE_MODE (char_type_node);
+  scalar_int_mode mode = SCALAR_INT_TYPE_MODE (char_type_node);
   rtx addr = expand_normal (address);
   rtx mem = gen_rtx_MEM (BLKmode, addr);
 
@@ -2209,20 +2209,13 @@ add_cfis_to_fde (void)
 {
   dw_fde_ref fde = cfun->fde;
   rtx_insn *insn, *next;
-  /* We always start with a function_begin label.  */
-  bool first = false;
 
   for (insn = get_insns (); insn; insn = next)
     {
       next = NEXT_INSN (insn);
 
       if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_SWITCH_TEXT_SECTIONS)
-	{
-	  fde->dw_fde_switch_cfi_index = vec_safe_length (fde->dw_fde_cfi);
-	  /* Don't attempt to advance_loc4 between labels
-	     in different sections.  */
-	  first = true;
-	}
+	fde->dw_fde_switch_cfi_index = vec_safe_length (fde->dw_fde_cfi);
 
       if (NOTE_P (insn) && NOTE_KIND (insn) == NOTE_INSN_CFI)
 	{
@@ -2247,8 +2240,7 @@ add_cfis_to_fde (void)
 
 	      /* Set the location counter to the new label.  */
 	      xcfi = new_cfi ();
-	      xcfi->dw_cfi_opc = (first ? DW_CFA_set_loc
-				  : DW_CFA_advance_loc4);
+	      xcfi->dw_cfi_opc = DW_CFA_advance_loc4;
 	      xcfi->dw_cfi_oprnd1.dw_cfi_addr = label;
 	      vec_safe_push (fde->dw_fde_cfi, xcfi);
 
@@ -2263,7 +2255,6 @@ add_cfis_to_fde (void)
 	      insn = NEXT_INSN (insn);
 	    }
 	  while (insn != next);
-	  first = false;
 	}
     }
 }

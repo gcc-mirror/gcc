@@ -305,6 +305,67 @@ gfc_build_addr_expr (tree type, tree t)
 }
 
 
+static tree
+get_array_span (tree type, tree decl)
+{
+  tree span;
+
+  /* Return the span for deferred character length array references.  */
+  if (type && TREE_CODE (type) == ARRAY_TYPE
+      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
+      && (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF)
+      && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF
+	  || TREE_CODE (decl) == FUNCTION_DECL
+	  || DECL_CONTEXT (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
+					== DECL_CONTEXT (decl)))
+    {
+      span = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+      span = fold_convert (gfc_array_index_type, span);
+    }
+  /* Likewise for class array or pointer array references.  */
+  else if (TREE_CODE (decl) == FIELD_DECL
+	   || VAR_OR_FUNCTION_DECL_P (decl)
+	   || TREE_CODE (decl) == PARM_DECL)
+    {
+      if (GFC_DECL_CLASS (decl))
+	{
+	  /* When a temporary is in place for the class array, then the
+	     original class' declaration is stored in the saved
+	     descriptor.  */
+	  if (DECL_LANG_SPECIFIC (decl) && GFC_DECL_SAVED_DESCRIPTOR (decl))
+	    decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
+	  else
+	    {
+	      /* Allow for dummy arguments and other good things.  */
+	      if (POINTER_TYPE_P (TREE_TYPE (decl)))
+		decl = build_fold_indirect_ref_loc (input_location, decl);
+
+	      /* Check if '_data' is an array descriptor.  If it is not,
+		 the array must be one of the components of the class
+		 object, so return a null span.  */
+	      if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (
+					  gfc_class_data_get (decl))))
+		return NULL_TREE;
+	    }
+	  span = gfc_class_vtab_size_get (decl);
+	}
+      else if (GFC_DECL_PTR_ARRAY_P (decl))
+	{
+	  if (TREE_CODE (decl) == PARM_DECL)
+	    decl = build_fold_indirect_ref_loc (input_location, decl);
+	  span = gfc_conv_descriptor_span_get (decl);
+	}
+      else
+	span = NULL_TREE;
+    }
+  else
+    span = NULL_TREE;
+
+  return span;
+}
+
+
 /* Build an ARRAY_REF with its natural type.  */
 
 tree
@@ -312,7 +373,7 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 {
   tree type = TREE_TYPE (base);
   tree tmp;
-  tree span;
+  tree span = NULL_TREE;
 
   if (GFC_ARRAY_TYPE_P (type) && GFC_TYPE_ARRAY_RANK (type) == 0)
     {
@@ -331,77 +392,23 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 
   type = TREE_TYPE (type);
 
-  /* Use pointer arithmetic for deferred character length array
-     references.  */
-  if (type && TREE_CODE (type) == ARRAY_TYPE
-      && TYPE_MAX_VALUE (TYPE_DOMAIN (type)) != NULL_TREE
-      && (VAR_P (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-	  || TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF)
-      && decl
-      && (TREE_CODE (TYPE_MAX_VALUE (TYPE_DOMAIN (type))) == INDIRECT_REF
-	  || TREE_CODE (decl) == FUNCTION_DECL
-	  || (DECL_CONTEXT (TYPE_MAX_VALUE (TYPE_DOMAIN (type)))
-	      == DECL_CONTEXT (decl))))
-    span = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
-  else
-    span = NULL_TREE;
-
   if (DECL_P (base))
     TREE_ADDRESSABLE (base) = 1;
 
   /* Strip NON_LVALUE_EXPR nodes.  */
   STRIP_TYPE_NOPS (offset);
 
-  /* If the array reference is to a pointer, whose target contains a
-     subreference, use the span that is stored with the backend decl
-     and reference the element with pointer arithmetic.  */
-  if ((decl && (TREE_CODE (decl) == FIELD_DECL
-		|| VAR_OR_FUNCTION_DECL_P (decl)
-		|| TREE_CODE (decl) == PARM_DECL)
-       && ((GFC_DECL_SUBREF_ARRAY_P (decl)
-	    && !integer_zerop (GFC_DECL_SPAN (decl)))
-	   || GFC_DECL_CLASS (decl)
-	   || span != NULL_TREE))
-      || vptr != NULL_TREE)
+  /* If decl or vptr are non-null, pointer arithmetic for the array reference
+     is likely. Generate the 'span' for the array reference.  */
+  if (vptr)
+    span = gfc_vptr_size_get (vptr);
+  else if (decl)
+    span = get_array_span (type, decl);
+
+  /* If a non-null span has been generated reference the element with
+     pointer arithmetic.  */
+  if (span != NULL_TREE)
     {
-      if (decl)
-	{
-	  if (GFC_DECL_CLASS (decl))
-	    {
-	      /* When a temporary is in place for the class array, then the
-		 original class' declaration is stored in the saved
-		 descriptor.  */
-	      if (DECL_LANG_SPECIFIC (decl) && GFC_DECL_SAVED_DESCRIPTOR (decl))
-		decl = GFC_DECL_SAVED_DESCRIPTOR (decl);
-	      else
-		{
-		  /* Allow for dummy arguments and other good things.  */
-		  if (POINTER_TYPE_P (TREE_TYPE (decl)))
-		    decl = build_fold_indirect_ref_loc (input_location, decl);
-
-		  /* Check if '_data' is an array descriptor.  If it is not,
-		     the array must be one of the components of the class
-		     object, so return a normal array reference.  */
-		  if (!GFC_DESCRIPTOR_TYPE_P (TREE_TYPE (
-						gfc_class_data_get (decl))))
-		    return build4_loc (input_location, ARRAY_REF, type, base,
-				       offset, NULL_TREE, NULL_TREE);
-		}
-
-	      span = gfc_class_vtab_size_get (decl);
-	    }
-	  else if (GFC_DECL_SUBREF_ARRAY_P (decl))
-	    span = GFC_DECL_SPAN (decl);
-	  else if (span)
-	    span = fold_convert (gfc_array_index_type, span);
-	  else
-	    gcc_unreachable ();
-	}
-      else if (vptr)
-	span = gfc_vptr_size_get (vptr);
-      else
-	gcc_unreachable ();
-
       offset = fold_build2_loc (input_location, MULT_EXPR,
 				gfc_array_index_type,
 				offset, span);
@@ -412,8 +419,8 @@ gfc_build_array_ref (tree base, tree offset, tree decl, tree vptr)
 	tmp = build_fold_indirect_ref_loc (input_location, tmp);
       return tmp;
     }
+  /* Otherwise use a straightforward array reference.  */
   else
-    /* Otherwise use a straightforward array reference.  */
     return build4_loc (input_location, ARRAY_REF, type, base, offset,
 		       NULL_TREE, NULL_TREE);
 }
@@ -2302,7 +2309,8 @@ gfc_deferred_strlen (gfc_component *c, tree *decl)
 {
   char name[GFC_MAX_SYMBOL_LEN+9];
   gfc_component *strlen;
-  if (!(c->ts.type == BT_CHARACTER && c->ts.deferred))
+  if (!(c->ts.type == BT_CHARACTER
+	&& (c->ts.deferred || c->attr.pdt_string)))
     return false;
   sprintf (name, "_%s_length", c->name);
   for (strlen = c; strlen; strlen = strlen->next)

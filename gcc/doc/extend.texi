@@ -3299,7 +3299,8 @@ or separate the options with a comma (@samp{,}) within a single string.
 
 The options supported are specific to each target; refer to @ref{x86
 Function Attributes}, @ref{PowerPC Function Attributes},
-@ref{ARM Function Attributes},and @ref{Nios II Function Attributes},
+@ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
+@ref{Nios II Function Attributes}, and @ref{S/390 Function Attributes}
 for details.
 
 @item target_clones (@var{options})
@@ -4528,10 +4529,12 @@ void __attribute__ ((interrupt("vector=hw3"))) v9 ();
 @end smallexample
 
 @item long_call
+@itemx short_call
 @itemx near
 @itemx far
 @cindex indirect calls, MIPS
 @cindex @code{long_call} function attribute, MIPS
+@cindex @code{short_call} function attribute, MIPS
 @cindex @code{near} function attribute, MIPS
 @cindex @code{far} function attribute, MIPS
 These attributes specify how a particular function is called on MIPS@.
@@ -4539,8 +4542,9 @@ The attributes override the @option{-mlong-calls} (@pxref{MIPS Options})
 command-line switch.  The @code{long_call} and @code{far} attributes are
 synonyms, and cause the compiler to always call
 the function by first loading its address into a register, and then using
-the contents of that register.  The @code{near} attribute has the opposite
-effect; it specifies that non-PIC calls should be made using the more
+the contents of that register.  The @code{short_call} and @code{near}
+attributes are synonyms, and have the opposite
+effect; they specify that non-PIC calls should be made using the more
 efficient @code{jal} instruction.
 
 @item mips16
@@ -9679,6 +9683,7 @@ For mixed operations between a scalar @code{s} and a vector @code{v},
 @code{s && v} is equivalent to @code{s?v!=0:0} (the evaluation is
 short-circuit) and @code{v && s} is equivalent to @code{v!=0 & (s?-1:0)}.
 
+@findex __builtin_shuffle
 Vector shuffling is available using functions
 @code{__builtin_shuffle (vec, mask)} and
 @code{__builtin_shuffle (vec0, vec1, mask)}.
@@ -15336,6 +15341,21 @@ Similar to @code{__builtin_nans}, except the return type is @code{__float128}.
 @findex __builtin_nansq
 @end table
 
+The following built-in functions are available on Linux 64-bit systems
+that use the ISA 3.0 instruction set.
+
+@table @code
+@item __float128 __builtin_sqrtf128 (__float128)
+Similar to @code{__builtin_sqrtf}, except the return and input types
+are @code{__float128}.
+@findex __builtin_sqrtf128
+
+@item __float128 __builtin_fmaf128 (__float128, __float128, __float128)
+Similar to @code{__builtin_fma}, except the return and input types are
+@code{__float128}.
+@findex __builtin_fmaf128
+@end table
+
 The following built-in functions are available for the PowerPC family
 of processors, starting with ISA 2.05 or later (@option{-mcpu=power6}
 or @option{-mcmpb}):
@@ -19894,8 +19914,11 @@ AMD Family 15h Bulldozer version 4.
 @item btver2
 AMD Family 16h CPU.
 
-@item znver1
+@item amdfam17h
 AMD Family 17h CPU.
+
+@item znver1
+AMD Family 17h Zen version 1.
 @end table
 
 Here is an example:
@@ -21836,7 +21859,7 @@ function.  The parenthesis around the options is optional.
 @code{target} attribute and the attribute syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
-x86, PowerPC, and Nios II targets only.
+x86, ARM, AArch64, PowerPC, S/390, and Nios II targets only.
 @end table
 
 @table @code

@@ -3738,12 +3738,12 @@ build_user_type_conversion_1 (tree totype, tree expr, int flags,
   if (CLASS_TYPE_P (totype))
     /* Use lookup_fnfields_slot instead of lookup_fnfields to avoid
        creating a garbage BASELINK; constructors can't be inherited.  */
-    ctors = lookup_fnfields_slot (totype, complete_ctor_identifier);
+    ctors = get_class_binding (totype, complete_ctor_identifier);
 
   /* FIXME P0135 doesn't say what to do in C++17 about list-initialization from
      a single element.  For now, let's handle constructors as before and also
      consider conversion operators from the element.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && BRACE_ENCLOSED_INITIALIZER_P (expr)
       && CONSTRUCTOR_NELTS (expr) == 1)
     fromtype = TREE_TYPE (CONSTRUCTOR_ELT (expr, 0)->value);
@@ -8035,7 +8035,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 
       /* In C++17 we shouldn't be copying a TARGET_EXPR except into a base
 	 subobject.  */
-      if (CHECKING_P && cxx_dialect >= cxx1z)
+      if (CHECKING_P && cxx_dialect >= cxx17)
 	gcc_assert (TREE_CODE (arg) != TARGET_EXPR
 		    /* It's from binding the ref parm to a packed field. */
 		    || convs[0]->need_temporary_p
@@ -8243,9 +8243,7 @@ first_non_public_field (tree type)
 static bool
 has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 {
-  tree fns = cp_assignment_operator_id (NOP_EXPR);
-  fns = lookup_fnfields_slot (type, fns);
-
+  tree fns = get_class_binding (type, cp_assignment_operator_id (NOP_EXPR));
   bool all_trivial = true;
 
   /* Iterate over overloads of the assignment operator, checking
@@ -8294,8 +8292,7 @@ has_trivial_copy_assign_p (tree type, bool access, bool *hasassign)
 static bool
 has_trivial_copy_p (tree type, bool access, bool hasctor[2])
 {
-  tree fns = lookup_fnfields_slot (type, complete_ctor_identifier);
-
+  tree fns = get_class_binding (type, complete_ctor_identifier);
   bool all_trivial = true;
 
   for (ovl_iterator oi (fns); oi; ++oi)
@@ -8795,7 +8792,7 @@ build_special_member_call (tree instance, tree name, vec<tree, va_gc> **args,
      of the destination, the initializer expression is used to initialize the
      destination object."  Handle that here to avoid doing overload
      resolution.  */
-  if (cxx_dialect >= cxx1z
+  if (cxx_dialect >= cxx17
       && args && vec_safe_length (*args) == 1
       && name == complete_ctor_identifier)
     {
@@ -9561,7 +9558,9 @@ compare_ics (conversion *ics1, conversion *ics2)
 	return 0;
       else if (t1->kind == ck_user)
 	{
-	  if (t1->cand->fn != t2->cand->fn)
+	  tree f1 = t1->cand ? t1->cand->fn : t1->type;
+	  tree f2 = t2->cand ? t2->cand->fn : t2->type;
+	  if (f1 != f2)
 	    return 0;
 	}
       else

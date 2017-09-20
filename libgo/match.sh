@@ -151,18 +151,18 @@ for f in $gofiles; do
 		    fi
 		    match=false
 		    ;;
-		$goos | $goarch | $cgotag | $cmdlinetag | "gccgo")
+		$goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | go1.[0-9])
 		    match=true
 		    ;;
-		"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo")
+		"!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!"go1.[0-9])
 		    ;;
 		*,*)
 		    cmatch=true
 		    for ctag in `echo $tag | sed -e 's/,/ /g'`; do
 			case $ctag in
-			    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo")
+			    $goos | $goarch | $cgotag | $cmdlinetag | "gccgo" | go1.[0-9])
 				;;
-			    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo")
+			    "!"$goos | "!"$goarch | "!"$cgotag | "!"$cmdlinetag | "!gccgo" | "!"go1.[0-9])
 				cmatch=false
 				;;
 			    "!"*)
