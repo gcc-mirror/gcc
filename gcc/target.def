@@ -5735,6 +5735,13 @@ these registers when the target switches are opposed to them.)",
  void, (void),
  hook_void_void)
 
+DEFHOOK
+(stack_clash_protection_final_dynamic_probe,
+ "Some targets make optimistic assumptions about the state of stack probing when they emit their prologues.  On such targets a probe into the end of any dynamically allocated space is likely required for safety against stack clash style attacks.  Define this variable to return nonzero if such a probe is required or zero otherwise.  You need not define this macro if it would always have the value zero.",
+ bool, (rtx residual),
+ default_stack_clash_protection_final_dynamic_probe)
+
+
 /* Functions specific to the C family of frontends.  */
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_C_"

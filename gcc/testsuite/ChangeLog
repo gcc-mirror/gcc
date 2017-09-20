@@ -1,5 +1,7 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/stack-check-3.c: New test.
+
 	* gcc.dg/stack-check-2.c: New test.
 	* lib/target-supports.exp
 	(check_effective_target_supports_stack_clash_protection): New function.
