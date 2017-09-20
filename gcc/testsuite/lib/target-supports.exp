@@ -8635,11 +8635,15 @@ proc check_effective_target_autoincdec { } {
 proc check_effective_target_supports_stack_clash_protection { } {
 
    # Temporary until the target bits are fully ACK'd.
-#  if { [istarget aarch*-*-*] || [istarget x86_64-*-*]
-#       || [istarget i?86-*-*] || [istarget s390*-*-*]
+#  if { [istarget aarch*-*-*]
+#       || [istarget s390*-*-*]
 #       || [istarget powerpc*-*-*] || [istarget rs6000*-*-*] } {
 #	return 1
 #  }
+
+    if { [istarget x86_64-*-*] || [istarget i?86-*-*] } {
+	return 1
+    }
   return 0
 }
 

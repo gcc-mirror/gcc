@@ -1,10 +1,22 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* gcc.dg/stack-check-4.c: New test.
+	* gcc.dg/stack-check-5.c: New test.
+	* gcc.dg/stack-check-6.c: New test.
+	* gcc.dg/stack-check-6a.c: New test.
+	* gcc.dg/stack-check-7.c: New test.
+	* gcc.dg/stack-check-8.c: New test.
+	* gcc.dg/stack-check-9.c: New test.
+	* gcc.dg/stack-check-10.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	x86 and x86_64 targets.
+
 	* gcc.dg/stack-check-3.c: New test.
 
 	* gcc.dg/stack-check-2.c: New test.
 	* lib/target-supports.exp
-	(check_effective_target_supports_stack_clash_protection): New function.
+	(check_effective_target_supports_stack_clash_protection): New.
 	(check_effective_target_frame_pointer_for_non_leaf): Likewise.
 	(check_effective_target_caller_implicit_probes): Likewise.
 
