@@ -7,7 +7,7 @@
    residual allocation + probe for f?.  */
 
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection -fdump-rtl-expand -fno-optimize-sibling-calls --param stack-clash-protection-probe-interval=4096 --param stack-clash-protection-guard-size=4096" } */
+/* { dg-options "-O2 -fstack-clash-protection -fdump-rtl-expand -fno-optimize-sibling-calls --param stack-clash-protection-probe-interval=12 --param stack-clash-protection-guard-size=12" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
 __attribute__((noinline, noclone)) void

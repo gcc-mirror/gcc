@@ -1,5 +1,9 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): New.
+	(ix86_expand_prologue): Dump stack clash info as needed.
+	Call ix86_adjust_stack_and_probe_stack_clash as needed.
+
         * function.c (dump_stack_clash_frame_info): New function.
         * function.h (dump_stack_clash_frame_info): Prototype.
         (enum stack_clash_probes): New enum.
