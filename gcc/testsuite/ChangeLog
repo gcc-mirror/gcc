@@ -1,3 +1,8 @@
+2017-09-20  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/64954
+	* g++.dg/cpp0x/constexpr-ctor20.C: New.
+
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/81373
