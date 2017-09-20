@@ -7761,7 +7761,7 @@ alpha_expand_prologue (void)
 
   probed_size = frame_size;
   if (flag_stack_check)
-    probed_size += STACK_CHECK_PROTECT;
+    probed_size += get_stack_check_protect ();
 
   if (probed_size <= 32768)
     {

@@ -3666,12 +3666,14 @@ aarch64_expand_prologue (void)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
-	  if (frame_size > PROBE_INTERVAL && frame_size > STACK_CHECK_PROTECT)
-	    aarch64_emit_probe_stack_range (STACK_CHECK_PROTECT,
-					    frame_size - STACK_CHECK_PROTECT);
+	  if (frame_size > PROBE_INTERVAL
+	      && frame_size > get_stack_check_protect ())
+	    aarch64_emit_probe_stack_range (get_stack_check_protect (),
+					    (frame_size
+					     - get_stack_check_protect ()));
 	}
       else if (frame_size > 0)
-	aarch64_emit_probe_stack_range (STACK_CHECK_PROTECT, frame_size);
+	aarch64_emit_probe_stack_range (get_stack_check_protect (), frame_size);
     }
 
   aarch64_sub_sp (IP0_REGNUM, initial_adjust, true);

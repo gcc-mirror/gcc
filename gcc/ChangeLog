@@ -1,5 +1,37 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* explow.c: Include "params.h".
+	(anti_adjust_stack_and_probe_stack_clash): New function.
+	(get_stack_check_protect): Likewise.
+	(compute_stack_clash_protection_loop_data): Likewise.
+	(emit_stack_clash_protection_loop_start): Likewise.
+	(emit_stack_clash_protection_loop_end): Likewise.
+	(allocate_dynamic_stack_space): Use get_stack_check_protect.
+	Use anti_adjust_stack_and_probe_stack_clash.
+	* explow.h (compute_stack_clash_protection_loop_data): Prototype.
+	(emit_stack_clash_protection_loop_start): Likewise.
+	(emit_stack_clash_protection_loop_end): Likewise.
+	* rtl.h (get_stack_check_protect): Prototype.
+	* target.def (stack_clash_protection_final_dynamic_probe): New hook.
+	* targhooks.c (default_stack_clash_protection_final_dynamic_probe): New.
+	* targhooks.h (default_stack_clash_protection_final_dynamic_probe): 
+	Prototype.
+	* doc/tm.texi.in (TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE):
+	Add @hook.
+	* doc/tm.texi: Rebuilt.
+	* config/aarch64/aarch64.c (aarch64_expand_prologue): Use
+	get_stack_check_protect.
+	* config/alpha/alpha.c (alpha_expand_prologue): Likewise.
+	* config/arm/arm.c (arm_expand_prologue): Likewise.
+	(arm_frame_pointer_required): Likewise.
+	* config/i386/i386.c (ix86_expand_prologue): Likewise.
+	* config/ia64/ia64.c (ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_emit_prologue): Likewise.
+	* config/rs6000/rs6000.c (rs6000_emit_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+
 	* common.opt (-fstack-clash-protection): New option.
 	* flag-types.h (enum stack_check_type): Note difference between
 	-fstack-check= and -fstack-clash-protection.
