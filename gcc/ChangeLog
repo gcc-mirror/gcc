@@ -1,3 +1,23 @@
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* config.gcc: Support "knm".
+	* config/i386/driver-i386.c (host_detect_local_cpu): Detect "knm".
+	* config/i386/i386-c.c (ix86_target_macros_internal): Handle
+	PROCESSOR_KNM.
+	* config/i386/i386.c (m_KNM): Define.
+	(processor_target_table): Add "knm".
+	(PTA_KNM): Define.
+	(ix86_option_override_internal): Add "knm".
+	(ix86_issue_rate): Add PROCESSOR_KNM.
+	(ix86_adjust_cost): Ditto.
+	(ia32_multipass_dfa_lookahead): Ditto.
+	(get_builtin_code_for_version): Handle PROCESSOR_KNM.
+	(fold_builtin_cpu): Add M_INTEL_KNM.
+	* config/i386/i386.h (processor_costs): Define TARGET_KNM.
+	(processor_type): Add PROCESSOR_KNM.
+	* config/i386/x86-tune.def: Add m_KNM.
+	* doc/invoke.texi: Add knm as x86 -march=/-mtune= CPU type.
+
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/80213
@@ -97,7 +117,7 @@
 	* rtl.h (get_stack_check_protect): Prototype.
 	* target.def (stack_clash_protection_final_dynamic_probe): New hook.
 	* targhooks.c (default_stack_clash_protection_final_dynamic_probe): New.
-	* targhooks.h (default_stack_clash_protection_final_dynamic_probe): 
+	* targhooks.h (default_stack_clash_protection_final_dynamic_probe):
 	Prototype.
 	* doc/tm.texi.in (TARGET_STACK_CLASH_PROTECTION_FINAL_DYNAMIC_PROBE):
 	Add @hook.
@@ -312,8 +332,8 @@
 
 2017-09-17  Daniel Santos  <daniel.santos@pobox.com>
 
-	config/i386/i386.c: (xlogue_layout::STUB_NAME_MAX_LEN): Increase to 20
-	bytes.
+	* config/i386/i386.c (xlogue_layout::STUB_NAME_MAX_LEN):
+	Increase to 20 bytes.
 	(xlogue_layout::s_stub_names): Add an additional size-2 diminsion.
 	(xlogue_layout::get_stub_name): Modify to select the appropairate sse
 	or avx version of the stub.

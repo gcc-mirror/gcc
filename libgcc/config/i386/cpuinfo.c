@@ -137,6 +137,10 @@ get_intel_cpu (unsigned int family, unsigned int model, unsigned int brand_id)
 	      /* Knights Landing.  */
 	      __cpu_model.__cpu_type = INTEL_KNL;
 	      break;
+	    case 0x85:
+	      /* Knights Mill. */
+	      __cpu_model.__cpu_type = INTEL_KNM;
+	      break;
 	    case 0x1a:
 	    case 0x1e:
 	    case 0x1f:

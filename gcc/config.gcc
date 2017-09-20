@@ -623,7 +623,7 @@ pentium4 pentium4m pentiumpro prescott lakemont"
 x86_64_archs="amdfam10 athlon64 athlon64-sse3 barcelona bdver1 bdver2 \
 bdver3 bdver4 znver1 btver1 btver2 k8 k8-sse3 opteron opteron-sse3 nocona \
 core2 corei7 corei7-avx core-avx-i core-avx2 atom slm nehalem westmere \
-sandybridge ivybridge haswell broadwell bonnell silvermont knl \
+sandybridge ivybridge haswell broadwell bonnell silvermont knl knm \
 skylake-avx512 x86-64 native"
 
 # Additional x86 processors supported by --with-cpu=.  Each processor

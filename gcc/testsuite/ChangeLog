@@ -1,3 +1,8 @@
+2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
+
+	* gcc.target/i386/builtin_target.c: Test knm.
+	* gcc.target/i386/funcspec-56.inc: Test arch=knm.
+
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/77362

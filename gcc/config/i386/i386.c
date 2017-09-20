@@ -2192,6 +2192,7 @@ const struct processor_costs *ix86_cost = &pentium_cost;
 #define m_BONNELL (1U<<PROCESSOR_BONNELL)
 #define m_SILVERMONT (1U<<PROCESSOR_SILVERMONT)
 #define m_KNL (1U<<PROCESSOR_KNL)
+#define m_KNM (1U<<PROCESSOR_KNM)
 #define m_SKYLAKE_AVX512 (1U<<PROCESSOR_SKYLAKE_AVX512)
 #define m_INTEL (1U<<PROCESSOR_INTEL)
 
@@ -2903,6 +2904,7 @@ static const struct ptt processor_target_table[PROCESSOR_max] =
   {"bonnell", &atom_cost, 16, 15, 16, 7, 16},
   {"silvermont", &slm_cost, 16, 15, 16, 7, 16},
   {"knl", &slm_cost, 16, 15, 16, 7, 16},
+  {"knm", &slm_cost, 16, 15, 16, 7, 16},
   {"skylake-avx512", &core_cost, 16, 10, 16, 10, 16},
   {"intel", &intel_cost, 16, 15, 16, 7, 16},
   {"geode", &geode_cost, 0, 0, 0, 0, 0},
@@ -5352,6 +5354,8 @@ ix86_option_override_internal (bool main_args_p,
   (PTA_CORE2 | PTA_MOVBE)
 #define PTA_SILVERMONT \
   (PTA_WESTMERE | PTA_MOVBE)
+#define PTA_KNM \
+  (PTA_KNL | PTA_AVX5124VNNIW | PTA_AVX5124FMAPS | PTA_AVX512VPOPCNTDQ)
 
 /* if this reaches 64, need to widen struct pta flags below */
 
@@ -5422,6 +5426,7 @@ ix86_option_override_internal (bool main_args_p,
       {"silvermont", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"slm", PROCESSOR_SILVERMONT, CPU_SLM, PTA_SILVERMONT},
       {"knl", PROCESSOR_KNL, CPU_SLM, PTA_KNL},
+      {"knm", PROCESSOR_KNM, CPU_SLM, PTA_KNM},
       {"intel", PROCESSOR_INTEL, CPU_SLM, PTA_NEHALEM},
       {"geode", PROCESSOR_GEODE, CPU_GEODE,
 	PTA_MMX | PTA_3DNOW | PTA_3DNOW_A | PTA_PREFETCH_SSE},
@@ -30282,6 +30287,7 @@ ix86_issue_rate (void)
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
+    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
     case PROCESSOR_K6:
     case PROCESSOR_BTVER2:
@@ -30648,6 +30654,7 @@ ix86_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn, int cost,
 
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
+    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
       if (!reload_completed)
 	return cost;
@@ -30719,6 +30726,7 @@ ia32_multipass_dfa_lookahead (void)
     case PROCESSOR_BONNELL:
     case PROCESSOR_SILVERMONT:
     case PROCESSOR_KNL:
+    case PROCESSOR_KNM:
     case PROCESSOR_INTEL:
       /* Generally, we want haifa-sched:max_issue() to look ahead as far
 	 as many instructions can be executed on a cycle, i.e.,
@@ -33844,6 +33852,10 @@ get_builtin_code_for_version (tree decl, tree *predicate_list)
 	      arg_str = "knl";
 	      priority = P_PROC_AVX512F;
 	      break;
+	    case PROCESSOR_KNM:
+	      arg_str = "knm";
+	      priority = P_PROC_AVX512F;
+	      break;
 	    case PROCESSOR_SILVERMONT:
 	      arg_str = "silvermont";
 	      priority = P_PROC_SSE4_2;
@@ -34527,6 +34539,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
     M_AMD_BTVER1,
     M_AMD_BTVER2,    
     M_AMDFAM17H,
+    M_INTEL_KNM,
     M_CPU_SUBTYPE_START,
     M_INTEL_COREI7_NEHALEM,
     M_INTEL_COREI7_WESTMERE,
@@ -34570,6 +34583,7 @@ fold_builtin_cpu (tree fndecl, tree *args)
       {"bonnell", M_INTEL_BONNELL},
       {"silvermont", M_INTEL_SILVERMONT},
       {"knl", M_INTEL_KNL},
+      {"knm", M_INTEL_KNM},
       {"amdfam10h", M_AMDFAM10H},
       {"barcelona", M_AMDFAM10H_BARCELONA},
       {"shanghai", M_AMDFAM10H_SHANGHAI},
