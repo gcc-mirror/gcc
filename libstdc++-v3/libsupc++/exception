@@ -98,9 +98,10 @@ namespace std
    *  %exception can result in a call of @c terminate()
    *  (15.5.1).'
    */
+  _GLIBCXX17_DEPRECATED
   bool uncaught_exception() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
 
-#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++1z or gnu++98
+#if __cplusplus > 201402L || !defined(__STRICT_ANSI__) // c++17 or gnu++98
 #define __cpp_lib_uncaught_exceptions 201411
   /// The number of uncaught exceptions.
   int uncaught_exceptions() _GLIBCXX_USE_NOEXCEPT __attribute__ ((__pure__));
