@@ -1,5 +1,13 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	PR libstdc++/79162
+	* include/bits/basic_string.h (basic_string::_If_sv): Remove from the
+	overload set when the argument is derived from basic_string.
+	* testsuite/21_strings/basic_string/cons/char/moveable2_c++17.cc: New
+	test.
+	* testsuite/21_strings/basic_string/cons/wchar_t/moveable2_c++17.cc:
+	New test.
+
 	* testsuite/24_iterators/range_access_cpp17.cc: Fix order of dg-do
 	and dg-options directives. Fix invalid test.
 
