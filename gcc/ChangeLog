@@ -130,12 +130,6 @@
 
 2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
-	* config/i386/i386.md (*scc_bt<mode>): New insn_and_split pattern.
-	(*scc_bt<mode>_1): Ditto.
-	(*scc_bt<mode>_mask): Ditto.
-
-2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
-
 	* config/i386/i386.c (ix86_split_long_move): Do not handle
 	address used for LEA in a special way.
 
