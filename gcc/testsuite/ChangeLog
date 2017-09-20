@@ -1,3 +1,11 @@
+2017-09-19  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-2.c: New test.
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): New function.
+	(check_effective_target_frame_pointer_for_non_leaf): Likewise.
+	(check_effective_target_caller_implicit_probes): Likewise.
+
 2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* gcc.target/i386/bt-5.c: New test.

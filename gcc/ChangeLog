@@ -1,3 +1,18 @@
+2017-09-19  Jeff Law  <law@redhat.com>
+
+	* common.opt (-fstack-clash-protection): New option.
+	* flag-types.h (enum stack_check_type): Note difference between
+	-fstack-check= and -fstack-clash-protection.
+	* params.def (PARAM_STACK_CLASH_PROTECTION_GUARD_SIZE): New PARAM.
+	(PARAM_STACK_CLASH_PROTECTION_PROBE_INTERVAL): Likewise.
+	* toplev.c (process_options): Issue warnings/errors for cases
+	not handled with -fstack-clash-protection.
+	* doc/invoke.texi (-fstack-clash-protection): Document new option.
+	(-fstack-check): Note additional problem with -fstack-check=generic.
+	Note that -fstack-check is primarily for Ada and refer users
+	to -fstack-clash-protection for stack-clash-protection.
+	Document new params for stack clash protection.
+
 2017-09-19  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.md (*scc_bt<mode>): New insn_and_split pattern.
