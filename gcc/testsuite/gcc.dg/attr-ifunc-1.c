@@ -2,15 +2,13 @@
 /* { dg-require-ifunc "" } */
 /* { dg-options "" } */
 
-typedef int F (void);
-
 static int implementation (void)
 {
   __builtin_printf ("'ere I am JH\n");
   return 0;
 }
 
-static F* resolver (void)
+static __typeof__ (implementation)* resolver (void)
 {
   return implementation;
 }

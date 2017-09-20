@@ -4,15 +4,15 @@
 
 #include <stdio.h>
 
-static void *implementation (void)
+static int implementation (void)
 {
   printf ("'ere I am JH\n");
   return 0;
 }
 
-static void *resolver (void)
+static __typeof__ (implementation)* resolver (void)
 {
-  return (void *)implementation;
+  return implementation;
 }
 
 static int magic (void) __attribute__ ((ifunc ("resolver")));
