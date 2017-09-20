@@ -1,5 +1,10 @@
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	* dwarf2out.c (tree_add_const_value_attribute): For INTEGER_CST
+	that fits into uhwi or shwi, add DW_AT_const_value regardless
+	of early_dwarf without going through RTL, using add_AT_unsigned
+	or add_AT_int.
+
 	* dwarf2out.c (DEBUG_LTO_DWO_INFO_SECTION): Reorder defines.
 	(DEBUG_LTO_ABBREV_SECTION): Likewise.
 	(DEBUG_LTO_MACINFO_SECTION): Likewise.
