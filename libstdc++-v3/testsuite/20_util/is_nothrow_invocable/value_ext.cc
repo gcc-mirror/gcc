@@ -27,7 +27,9 @@ template<typename... T>
   constexpr bool is_nt_invocable_conv(std::true_type)
   {
     using result_type = typename std::__invoke_result<T...>::type;
-    return std::is_void<R>::value || std::is_convertible<result_type, R>::value;
+    return std::is_void<R>::value
+      || (std::is_convertible<result_type, R>::value
+	  && std::is_nothrow_constructible<R, result_type>::value);
   }
 
 template<typename R, typename... T>
