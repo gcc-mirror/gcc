@@ -1,5 +1,10 @@
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
+	* graphite-sese-to-poly.c (extract_affine): Properly handle
+	POINTER_PLUS_EXPR, BIT_NOT_EXPR and conversion to signed.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/81373
 	* graphite-scop-detection.c (build_cross_bb_scalars_def):
 	Force SESE live-out defs to be handled even if they are
