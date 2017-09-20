@@ -20,7 +20,7 @@ int Klass::implementation (void)
   return 0;
 }
 
-Klass::memFuncPtr Klass::resolver (void)
+Klass::MemFuncPtr Klass::resolver (void)
 {
   return &Klass::implementation;
 }
