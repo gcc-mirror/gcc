@@ -1,5 +1,8 @@
 2017-09-20  Jeff Law  <law@redhat.com>
 
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_prologue): Fix
+	thinko in stack clash protection support.
+
 	* explow.c (compute_stack_clash_protection_loop_data): Use
 	CONST_INT_P instead of explicit test.  Verify object is a
 	CONST_INT_P before looking at INTVAL.
