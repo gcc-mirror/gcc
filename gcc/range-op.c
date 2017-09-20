@@ -154,7 +154,7 @@ get_bool_state (irange& r, const irange& lhs, const_tree val_type)
       return BRS_EMPTY;
     }
 
-  // there are multiple types of boolean nodes.  "const cool" fer instance
+  // there are multiple types of boolean nodes.  for instance
   // gcc_assert (lhs.valid_p () && lhs.get_type () == boolean_type_node);
 
   // if the bounds arent the same, then its not a constant.  */
@@ -164,7 +164,7 @@ get_bool_state (irange& r, const irange& lhs, const_tree val_type)
       return BRS_FULL;
     }
 
-  if (lhs == irange (boolean_type_node, 0 ,0))
+  if (lhs.zero_p ())
     return BRS_FALSE;
 
   return BRS_TRUE;
@@ -1207,7 +1207,8 @@ operator_bitwise_or::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
   /* If this is really a logical operation, call that.  */
-  if (lh.get_type () == boolean_type_node)
+  if (types_compatible_p (const_cast <tree> (lh.get_type ()),
+			  boolean_type_node))
     return op_logical_or.fold_range (r, lh, rh);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
@@ -1220,7 +1221,8 @@ operator_bitwise_or::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2) const
 {
   /* If this is really a logical operation, call that.  */
-  if (lhs.get_type () == boolean_type_node)
+  if (types_compatible_p (const_cast <tree> (lhs.get_type ()),
+			  boolean_type_node))
     return op_logical_or.op1_irange (r, lhs, op2);
 
   /* For now do nothing with bitwise AND of iranges, just return the type. */
@@ -1302,7 +1304,8 @@ operator_bitwise_not::fold_range (irange& r, const irange& lh,
 				  const irange& rh) const
 {
   /* If this is a boolean not, call the logical version.  */
-  if (lh.get_type () == boolean_type_node)
+  if (types_compatible_p (const_cast <tree> (lh.get_type ()),
+			  boolean_type_node))
     return op_logical_not.fold_range (r, lh, rh);
 
   /* Not sure how to logical not a range, add bitpattern support.  */
@@ -1315,7 +1318,8 @@ operator_bitwise_not::op1_irange (irange& r, const irange& lhs,
 				  const irange& op2 ATTRIBUTE_UNUSED) const
 {
   /* If this is a boolean not, call the logical version.  */
-  if (lhs.get_type () == boolean_type_node)
+  if (types_compatible_p (const_cast <tree> (lhs.get_type ()),
+			  boolean_type_node))
     return op_logical_not.op1_irange (r, lhs, op2);
 
   /* Not sure how to logical not a range, add bitpattern support.  */
@@ -1344,12 +1348,11 @@ operator_cst::dump (FILE *f) const
 
 bool
 operator_cst::fold_range (irange& r, const irange& lh,
-				  const irange& rh ATTRIBUTE_UNUSED) const
+			  const irange& rh ATTRIBUTE_UNUSED) const
 {
   r = lh;
   return true;
 }
-
 
 
 /*  ----------------------------------------------------------------------  */
