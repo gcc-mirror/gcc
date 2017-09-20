@@ -485,6 +485,7 @@ fi | sed -e 's/type _dirent64/type Dirent/' \
          -e 's/d_name/Name/' \
          -e 's/]int8/]byte/' \
          -e 's/d_ino/Ino/' \
+         -e 's/d_namlen/Namlen/' \
          -e 's/d_off/Off/' \
          -e 's/d_reclen/Reclen/' \
          -e 's/d_type/Type/' \
