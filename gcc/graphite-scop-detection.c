@@ -261,7 +261,8 @@ trivially_empty_bb_p (basic_block bb)
   gimple_stmt_iterator gsi;
 
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG)
+    if (gimple_code (gsi_stmt (gsi)) != GIMPLE_DEBUG
+	&& gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
       return false;
 
   return true;
@@ -355,7 +356,7 @@ canonicalize_loop_closed_ssa (loop_p loop)
   edge e = single_exit (loop);
   basic_block bb;
 
-  if (!e || e->flags & EDGE_ABNORMAL)
+  if (!e || (e->flags & EDGE_COMPLEX))
     return;
 
   bb = e->dest;
@@ -674,14 +675,19 @@ scop_detection::get_sese (loop_p loop)
   if (!loop)
     return invalid_sese;
 
-  if (!loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
-    return invalid_sese;
-  edge scop_end = single_exit (loop);
-  if (!scop_end)
-    return invalid_sese;
   edge scop_begin = loop_preheader_edge (loop);
-  sese_l s (scop_begin, scop_end);
-  return s;
+  edge scop_end = single_exit (loop);
+  if (!scop_end || (scop_end->flags & EDGE_COMPLEX))
+    return invalid_sese;
+  /* Include the BB with the loop-closed SSA PHI nodes.
+     canonicalize_loop_closed_ssa makes sure that is in proper shape.  */
+  if (! single_pred_p (scop_end->dest)
+      || ! single_succ_p (scop_end->dest)
+      || ! trivially_empty_bb_p (scop_end->dest))
+    gcc_unreachable ();
+  scop_end = single_succ_edge (scop_end->dest);
+
+  return sese_l (scop_begin, scop_end);
 }
 
 /* Return the closest dominator with a single entry edge.  */
@@ -848,26 +854,6 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
       return invalid_sese;
     }
 
-  /* FIXME: We should remove this piece of code once
-     canonicalize_loop_closed_ssa has been removed, because that function
-     adds a BB with single exit.  */
-  if (!trivially_empty_bb_p (get_exit_bb (combined)))
-    {
-      /* Find the first empty succ (with single exit) of combined.exit.  */
-      basic_block imm_succ = combined.exit->dest;
-      if (single_succ_p (imm_succ)
-	  && single_pred_p (imm_succ)
-	  && trivially_empty_bb_p (imm_succ))
-	combined.exit = single_succ_edge (imm_succ);
-      else
-	{
-	  DEBUG_PRINT (dp << "[scop-detection-fail] Discarding SCoP because "
-			  << "no single exit (empty succ) for sese exit";
-		       print_sese (dump_file, combined));
-	  return invalid_sese;
-	}
-    }
-
   /* Analyze all the BBs in new sese.  */
   if (harmful_loop_in_region (combined))
     return invalid_sese;
@@ -1027,7 +1013,8 @@ scop_detection::region_has_one_loop (sese_l s)
     return false;
 
   /* Otherwise, check whether we have adjacent loops.  */
-  return begin->dest->loop_father == end->src->loop_father;
+  return (single_pred_p (end->src)
+	  && begin->dest->loop_father == single_pred (end->src)->loop_father);
 }
 
 /* Add to SCOPS a scop starting at SCOP_BEGIN and ending at SCOP_END.  */
@@ -2053,8 +2040,12 @@ build_scops (vec<scop_p> *scops)
 
   canonicalize_loop_closed_ssa_form ();
 
+  /* ???  We walk the loop tree assuming loop->next is ordered.
+     This is not so but we'd be free to order it here.  */
   scop_detection sb;
-  sb.build_scop_depth (scop_detection::invalid_sese, current_loops->tree_root);
+  sese_l tem = sb.build_scop_depth (scop_detection::invalid_sese,
+				    current_loops->tree_root);
+  gcc_assert (! tem);
 
   /* Now create scops from the lightweight SESEs.  */
   vec<sese_l> scops_l = sb.get_scops ();

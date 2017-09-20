@@ -1,5 +1,18 @@
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/80213
+	* graphite-scop-detection.c (trivially_empty_bb_p): Labels
+	are allowed in empty BBs as well.
+	(canonicalize_loop_closed_ssa): Also look for other complex
+	edges.
+	(scop_detection::get_sese): Include the loop-closed PHI block
+	in loop SESEs.
+	(scop_detection::merge_sese): Remove code adding extra blocks.
+	(scop_detection::region_has_one_loop): Adjust for get_sese changes.
+	(build_scops): Assert the final returned scop is invalid.
+
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82264
 	* tree-ssa-sccvn.c (vn_phi_eq): Use safe_dyn_cast to check
 	for GIMPLE_CONDs.
