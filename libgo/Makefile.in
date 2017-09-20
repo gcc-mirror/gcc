@@ -765,6 +765,12 @@ toolexeclibgounicode_DATA = \
 	unicode/utf16.gox \
 	unicode/utf8.gox
 
+
+# Some packages are only needed for tests, so unlike the other
+# internal packages nothing will explicitly depend on them.
+# Force them to be built.
+noinst_DATA = internal/testenv.gox net/internal/socktest.gox \
+	zstdpkglist.go zdefaultcc.go
 @LIBGO_IS_RTEMS_FALSE@rtems_task_variable_add_file = 
 @LIBGO_IS_RTEMS_TRUE@rtems_task_variable_add_file = runtime/rtems-task-variable-add.c
 @LIBGO_IS_AIX_FALSE@@LIBGO_IS_DARWIN_FALSE@@LIBGO_IS_FREEBSD_FALSE@@LIBGO_IS_IRIX_FALSE@@LIBGO_IS_LINUX_FALSE@@LIBGO_IS_NETBSD_FALSE@@LIBGO_IS_SOLARIS_FALSE@runtime_getncpu_file = runtime/getncpu-none.c
@@ -817,7 +823,6 @@ runtime_files = \
 GCCGO_INSTALL_NAME := $(shell echo gccgo|sed '$(program_transform_name)')
 GCC_INSTALL_NAME := $(shell echo gcc|sed '$(program_transform_name)')
 GXX_INSTALL_NAME := $(shell echo g++|sed '$(program_transform_name)')
-noinst_DATA = zstdpkglist.go zdefaultcc.go
 @LIBGO_IS_LINUX_FALSE@syscall_epoll_file = 
 @LIBGO_IS_LINUX_TRUE@syscall_epoll_file = epoll.go
 SYSINFO_FLAGS = \
@@ -3247,6 +3252,12 @@ s-epoll: Makefile
 	echo '}' >> epoll.go.tmp
 	$(SHELL) $(srcdir)/mvifdiff.sh epoll.go.tmp epoll.go
 	$(STAMP) $@
+
+define STATIC_template
+$(subst -,_,$(subst .,_,$(subst /,_,$(1))))_GOCFLAGS = -static
+endef
+
+$(foreach package,$(GOTOOL_PACKAGES),$(eval $(call STATIC_template,$(package).lo)))
 
 # Make sure runtime.inc is built before compiling any .c file.
 $(libgo_la_OBJECTS): runtime.inc
