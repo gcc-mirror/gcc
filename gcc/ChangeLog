@@ -1,3 +1,19 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* dwarf2out.c (DEBUG_LTO_DWO_INFO_SECTION): Reorder defines.
+	(DEBUG_LTO_ABBREV_SECTION): Likewise.
+	(DEBUG_LTO_MACINFO_SECTION): Likewise.
+	(DEBUG_MACRO_SECTION): Likewise.
+	(DEBUG_LTO_MACRO_SECTION): Likewise.
+	(DEBUG_STR_DWO_SECTION): Likewise.
+	(DEBUG_LTO_STR_DWO_SECTION): Likewise.
+	(DEBUG_LTO_LINE_SECTION): Drop .dwo suffix from the name.
+	(DEBUG_LTO_DWO_LINE_SECTION): Define.
+	(DEBUG_LTO_LINE_STR_SECTION): Define.
+	(init_sections_and_labels): Initialize debug_line_str_section
+	variable.  Initialize debug_loc_section for -gdwarf-5 to
+	DEBUG_LOCLISTS_SECTION.  Formatting fixes.
+
 2017-09-20  Richard Biener  <rguenther@suse.de>
 
 	* graphite-sese-to-poly.c (extract_affine): Properly handle
