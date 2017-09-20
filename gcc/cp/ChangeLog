@@ -1,3 +1,9 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	P0409R2 - allow lambda capture [=, this]
+	* parser.c (cp_parser_lambda_introducer): For cxx2a don't pedwarn on
+	redundant [=, this].
+
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/82069 - ICE with lambda in template

@@ -1,5 +1,11 @@
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
+	P0409R2 - allow lambda capture [=, this]
+	* g++.dg/cpp1z/lambda-this1.C: Don't expect error for c++2a on [=, this]
+	capture.  Add further tests.
+	* g++.dg/cpp0x/lambda/lambda-capture-redundancy.C: Don't expect error
+	for c++2a on [=, this] capture.
+
 	* g++.dg/cpp1z/cplusplus.C: Test that __cplusplus is equal to 201703L.
 	* g++.dg/cpp1z/cplusplus_1z.C: New test.
 
