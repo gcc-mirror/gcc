@@ -5734,7 +5734,8 @@ sparc_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{
@@ -5845,7 +5846,8 @@ sparc_flat_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       if (crtl->is_leaf && !cfun->calls_alloca)
 	{

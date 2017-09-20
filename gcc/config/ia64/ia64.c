@@ -2704,7 +2704,8 @@ ia64_compute_frame_size (HOST_WIDE_INT size)
     mark_reg_gr_used_mask (cfun->machine->ia64_eh_epilogue_bsp, NULL);
 
   /* Static stack checking uses r2 and r3.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     current_frame_info.gr_used_mask |= 0xc;
 
   /* Find the size of the register stack frame.  We have only 80 local
@@ -3494,7 +3495,8 @@ ia64_expand_prologue (void)
   if (flag_stack_usage_info)
     current_function_static_stack_size = current_frame_info.total_size;
 
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      || flag_stack_clash_protection)
     {
       HOST_WIDE_INT size = current_frame_info.total_size;
       int bs_size = BACKING_STORE_SIZE (current_frame_info.n_input_regs

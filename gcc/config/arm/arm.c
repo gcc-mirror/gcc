@@ -19164,7 +19164,8 @@ arm_compute_static_chain_stack_bytes (void)
   /* See the defining assertion in arm_expand_prologue.  */
   if (IS_NESTED (arm_current_func_type ())
       && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
-	  || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	       || flag_stack_clash_protection)
 	      && !df_regs_ever_live_p (LR_REGNUM)))
       && arm_r3_live_at_start_p ()
       && crtl->args.pretend_args_size == 0)
@@ -21466,7 +21467,8 @@ arm_expand_prologue (void)
      clobbered when creating the frame, we need to save and restore it.  */
   clobber_ip = IS_NESTED (func_type)
 	       && ((TARGET_APCS_FRAME && frame_pointer_needed && TARGET_ARM)
-		   || (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+		   || ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+			|| flag_stack_clash_protection)
 		       && !df_regs_ever_live_p (LR_REGNUM)
 		       && arm_r3_live_at_start_p ()));
 
@@ -21680,7 +21682,8 @@ arm_expand_prologue (void)
      stack checking.  We use IP as the first scratch register, except for the
      non-APCS nested functions if LR or r3 are available (see clobber_ip).  */
   if (!IS_INTERRUPT (func_type)
-      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK)
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection))
     {
       unsigned int regno;
 
@@ -24991,7 +24994,9 @@ thumb1_expand_prologue (void)
     current_function_static_stack_size = size;
 
   /* If we have a frame, then do stack checking.  FIXME: not implemented.  */
-  if (flag_stack_check == STATIC_BUILTIN_STACK_CHECK && size)
+  if ((flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+       || flag_stack_clash_protection)
+      && size)
     sorry ("-fstack-check=specific for Thumb-1");
 
   amount = offsets->outgoing_args - offsets->saved_regs;
@@ -27871,7 +27876,8 @@ arm_frame_pointer_required (void)
      instruction prior to the stack adjustment and this requires a frame
      pointer if we want to catch the exception using the EABI unwinder.  */
   if (!IS_INTERRUPT (arm_current_func_type ())
-      && flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+      && (flag_stack_check == STATIC_BUILTIN_STACK_CHECK
+	  || flag_stack_clash_protection)
       && arm_except_unwind_info (&global_options) == UI_TARGET
       && cfun->can_throw_non_call_exceptions)
     {

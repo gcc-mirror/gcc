@@ -7760,7 +7760,7 @@ alpha_expand_prologue (void)
      Note that we are only allowed to adjust sp once in the prologue.  */
 
   probed_size = frame_size;
-  if (flag_stack_check)
+  if (flag_stack_check || flag_stack_clash_protection)
     probed_size += get_stack_check_protect ();
 
   if (probed_size <= 32768)
@@ -7775,7 +7775,7 @@ alpha_expand_prologue (void)
 	  /* We only have to do this probe if we aren't saving registers or
 	     if we are probing beyond the frame because of -fstack-check.  */
 	  if ((sa_size == 0 && probed_size > probed - 4096)
-	      || flag_stack_check)
+	      || flag_stack_check || flag_stack_clash_protection)
 	    emit_insn (gen_probe_stack (GEN_INT (-probed_size)));
 	}
 
@@ -7805,7 +7805,8 @@ alpha_expand_prologue (void)
 	 late in the compilation, generate the loop as a single insn.  */
       emit_insn (gen_prologue_stack_probe_loop (count, ptr));
 
-      if ((leftover > 4096 && sa_size == 0) || flag_stack_check)
+      if ((leftover > 4096 && sa_size == 0)
+	  || flag_stack_check || flag_stack_clash_protection)
 	{
 	  rtx last = gen_rtx_MEM (DImode,
 				  plus_constant (Pmode, ptr, -leftover));
@@ -7813,7 +7814,7 @@ alpha_expand_prologue (void)
 	  emit_move_insn (last, const0_rtx);
 	}
 
-      if (flag_stack_check)
+      if (flag_stack_check || flag_stack_clash_protection)
 	{
 	  /* If -fstack-check is specified we have to load the entire
 	     constant into a register and subtract from the sp in one go,

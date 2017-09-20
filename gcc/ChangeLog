@@ -1,5 +1,18 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+	* config/alpha/alpha.c (alpha_expand_prologue): Also check
+	flag_stack_clash_protection.
+	* config/arm/arm.c (arm_compute_static_chain_stack_bytes): Likewise.
+	(arm_expand_prologue, thumb1_expand_prologue): Likewise.
+	(arm_frame_pointer_required): Likewise.
+	* config/ia64/ia64.c (ia64_compute_frame_size): Likewise.
+	(ia64_expand_prologue): Likewise.
+	* config/mips/mips.c (mips_expand_prologue): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_prologue): Likewise.
+	* config/sparc/sparc.c (sparc_expand_prologue): Likewise.
+	(sparc_flat_expand_prologue): Likewise.
+	* config/spu/spu.c (spu_expand_prologue): Likewise.
+
 	* explow.c: Include "params.h".
 	(anti_adjust_stack_and_probe_stack_clash): New function.
 	(get_stack_check_protect): Likewise.
