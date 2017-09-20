@@ -1,3 +1,8 @@
+2017-09-20  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp1z/cplusplus.C: Test that __cplusplus is equal to 201703L.
+	* g++.dg/cpp1z/cplusplus_1z.C: New test.
+
 2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* gcc.target/i386/builtin_target.c: Test knm.
