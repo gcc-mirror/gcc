@@ -1,3 +1,15 @@
+2017-09-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backport from trunk
+	PR libgfortran/78387
+	* io/list_read.c (nml_read_obj): Remove use of stash.
+	* io/transfer.c (st_read_done, st_write_done): Likewise.
+	* io/unit.c (stash_internal_unit): Delete function.
+	(get_unit): Remove use of stash.
+	(init_units): Likewise.
+	(close_units): Likewise.
+	* io/write.c (nml_write_obj): Likewise:
+
 2017-08-14  Release Manager
 
 	* GCC 7.2.0 released.
