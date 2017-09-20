@@ -268,6 +268,7 @@ extern int backtrace_vector_release (struct backtrace_state *state,
    appropriate one.  */
 
 extern int backtrace_initialize (struct backtrace_state *state,
+				 const char *filename,
 				 int descriptor,
 				 backtrace_error_callback error_callback,
 				 void *data,
