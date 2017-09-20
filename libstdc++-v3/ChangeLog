@@ -1,3 +1,10 @@
+2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/82262
+	* include/std/optional (__optional_hash_call_base): Add template
+	parameter for remove_const_t<_Tp> and use it consistently.
+	* testsuite/20_util/optional/hash.cc: Test optional<const T>.
+
 2017-09-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/71500
