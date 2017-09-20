@@ -1,5 +1,15 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* include/bits/c++config (_GLIBCXX17_DEPRECATED): Define.
+	* include/bits/functional_hash.h (__hash_base::result_type)
+	(__hash_base::argument_type): Add _GLIBCXX17_DEPRECATED.
+	* include/std/optional (hash<optional<T>>::result_type)
+	(hash<optional<T>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<optional<T>>>): Add partial specialization.
+	* include/std/variant (hash<variant<Types...>>::result_type)
+	(hash<variant<Types...>>::argument_type): Add deprecated attribute.
+	(__is_fast_hash<hash<variant<Types...>>>): Add partial specialization.
+
 	* libsupc++/exception_ptr.h (copy_exception): Remove deprecated
 	non-standard function.
 
