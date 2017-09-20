@@ -29,14 +29,23 @@ template<class T>
 auto f(...) -> decltype(std::false_type());
 
 static_assert(!decltype(f<S>(0))::value, "");
-static_assert(!std::is_invocable_v<
-    std::hash<std::optional<S>>&, std::optional<S> const&> );
-static_assert(std::is_invocable_v<
-    std::hash<std::optional<int>>&, std::optional<int> const&> );
+
+template<typename T>
+constexpr bool hashable()
+{ return std::is_invocable_v<std::hash<T>&, const T&>; }
+
+static_assert(!hashable<std::optional<S>>());
+static_assert(!hashable<std::optional<const S>>());
+static_assert(hashable<std::optional<int>>());
+static_assert(hashable<std::optional<const int>>());
 
 int main()
 {
   int x = 42;
   std::optional<int> x2 = 42;
   VERIFY(std::hash<int>()(x) == std::hash<std::optional<int>>()(x2));
+
+  // PR libstdc++/82262
+  std::optional<const int> x3 = x2;
+  VERIFY(std::hash<int>()(x) == std::hash<std::optional<const int>>()(x3));
 }
