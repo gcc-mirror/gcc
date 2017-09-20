@@ -1,5 +1,8 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* testsuite/24_iterators/range_access_cpp17.cc: Fix order of dg-do
+	and dg-options directives. Fix invalid test.
+
 	Backport from mainline
 	2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
