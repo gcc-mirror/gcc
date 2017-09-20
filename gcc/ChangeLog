@@ -1,5 +1,9 @@
 2017-09-19  Jeff Law  <law@redhat.com>
 
+        * function.c (dump_stack_clash_frame_info): New function.
+        * function.h (dump_stack_clash_frame_info): Prototype.
+        (enum stack_clash_probes): New enum.
+
 	* config/alpha/alpha.c (alpha_expand_prologue): Also check
 	flag_stack_clash_protection.
 	* config/arm/arm.c (arm_compute_static_chain_stack_bytes): Likewise.
