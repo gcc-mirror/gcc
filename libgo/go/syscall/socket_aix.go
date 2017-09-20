@@ -1,10 +1,8 @@
-// socket_bsd.go -- Socket handling specific to *BSD based systems.
+// socket_aix.go -- Socket handling specific to AIX.
 
-// Copyright 2010 The Go Authors. All rights reserved.
+// Copyright 2017 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-// +build darwin dragonfly freebsd openbsd netbsd
 
 package syscall
 
@@ -12,7 +10,7 @@ import "unsafe"
 
 const SizeofSockaddrInet4 = 16
 const SizeofSockaddrInet6 = 28
-const SizeofSockaddrUnix = 110
+const SizeofSockaddrUnix = 1025
 
 type RawSockaddrInet4 struct {
 	Len    uint8
@@ -44,7 +42,7 @@ func (sa *RawSockaddrInet6) setLen() Socklen_t {
 type RawSockaddrUnix struct {
 	Len    uint8
 	Family uint8
-	Path   [108]int8
+	Path   [1023]int8
 }
 
 func (sa *RawSockaddrUnix) setLen(n int) {
@@ -52,13 +50,11 @@ func (sa *RawSockaddrUnix) setLen(n int) {
 }
 
 func (sa *RawSockaddrUnix) getLen() (int, error) {
-	if sa.Len < 3 || sa.Len > SizeofSockaddrUnix {
-		return 0, EINVAL
-	}
-	n := int(sa.Len) - 3 // subtract leading Family, Len, terminating NUL.
+	// Some versions of AIX have a bug in getsockname (see IV78655).
+	// We can't rely on sa.Len being set correctly.
+	n := SizeofSockaddrUnix - 3 // substract leading Family, Len, terminating NUL.
 	for i := 0; i < n; i++ {
 		if sa.Path[i] == 0 {
-			// found early NUL; assume Len is overestimating.
 			n = i
 			break
 		}
