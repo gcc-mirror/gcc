@@ -1,3 +1,9 @@
+2017-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77687
+	* config/rs6000/rs6000.md (stack_restore_tie): Store to a scratch
+	address instead of to r1 and r11.
+
 2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config.gcc: Support "knm".
