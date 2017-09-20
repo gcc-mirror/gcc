@@ -1,3 +1,8 @@
+2017-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77687
+	* gcc.target/powerpc/pr77687.c: New testcase.
+
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	P0409R2 - allow lambda capture [=, this]
