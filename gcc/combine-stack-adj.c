@@ -508,6 +508,8 @@ combine_stack_adjustments_for_block (basic_block bb)
 	continue;
 
       set = single_set_for_csa (insn);
+      if (set && find_reg_note (insn, REG_STACK_CHECK, NULL_RTX))
+	set = NULL_RTX;
       if (set)
 	{
 	  rtx dest = SET_DEST (set);
