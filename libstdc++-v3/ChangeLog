@@ -1,5 +1,8 @@
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
+	* libsupc++/exception_ptr.h (copy_exception): Remove deprecated
+	non-standard function.
+
 	PR libstdc++/82262
 	* include/std/optional (__optional_hash_call_base): Add template
 	parameter for remove_const_t<_Tp> and use it consistently.
