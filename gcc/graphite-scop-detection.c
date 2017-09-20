@@ -1717,17 +1717,20 @@ build_cross_bb_scalars_def (scop_p scop, tree def, basic_block def_bb,
   if (!def || !is_gimple_reg (def))
     return;
 
-  /* Do not gather scalar variables that can be analyzed by SCEV as they can be
-     generated out of the induction variables.  */
-  if (scev_analyzable_p (def, scop->scop_info->region))
-    return;
+  bool scev_analyzable = scev_analyzable_p (def, scop->scop_info->region);
 
   gimple *use_stmt;
   imm_use_iterator imm_iter;
   FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    if ((def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
-	/* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
-	|| gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI)
+    /* Do not gather scalar variables that can be analyzed by SCEV as they can
+       be generated out of the induction variables.  */
+    if ((! scev_analyzable
+	 /* But gather SESE liveouts as we otherwise fail to rewrite their
+	    exit PHIs.  */
+	 || ! bb_in_sese_p (gimple_bb (use_stmt), scop->scop_info->region))
+	&& ((def_bb != gimple_bb (use_stmt) && !is_gimple_debug (use_stmt))
+	    /* PHIs have their effect at "BBs" on the edges.  See PR79622.  */
+	    || gimple_code (SSA_NAME_DEF_STMT (def)) == GIMPLE_PHI))
       {
 	writes->safe_push (def);
 	DEBUG_PRINT (dp << "Adding scalar write: ";
