@@ -1,3 +1,10 @@
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81373
+	* graphite-scop-detection.c (build_cross_bb_scalars_def):
+	Force SESE live-out defs to be handled even if they are
+	scev_analyzable_p.
+
 2017-09-19  Jeff Law  <law@redhat.com>
 
 	* combine-stack-adj.c (combine_stack_adjustments_for_block): Do

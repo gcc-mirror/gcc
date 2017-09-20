@@ -1,3 +1,8 @@
+2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/81373
+	* gcc.dg/graphite/pr81373.c: New testcase.
+
 2017-09-19  Jeff Law  <law@redhat.com>
 
 	* gcc.target/i386/stack-check-11.c: New test.
