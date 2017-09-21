@@ -1,3 +1,9 @@
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82260
+	* gcc.target/i386/pr82260-1.c: New test.
+	* gcc.target/i386/pr82260-2.c: New test.
+
 2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 	    Jeff Law  <law@redhat.com>
 

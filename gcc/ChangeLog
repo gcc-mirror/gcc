@@ -1,3 +1,13 @@
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82260
+	* config/i386/i386.md (*movqi_internal): Replace (=q,q) alternative
+	with (=Q,Q), (=R,R) and (=r,r) alternatives, only enable the
+	latter two for 64-bit, renumber alternatives, for -Os imov (=q,n)
+	alternative always use QI mode, for -Os imov (=R,R) alternative
+	always use SI mode, for imov (=Q,Q) or (=r,r) alternatives
+	ignore -Os.
+
 2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 	    Jeff Law  <law@redhat.com>
 
