@@ -1,8 +1,6 @@
-2017-09-21  Tamar Christina  <tamar.christina@arm.com>
+2017-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
-	PR testsuite/78421
-	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
-	Invert arm check.
+	* stor-layout.c (bit_from_pos): Do not distribute the conversion.
 
 2017-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
