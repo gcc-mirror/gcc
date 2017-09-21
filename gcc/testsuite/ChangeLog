@@ -1,3 +1,11 @@
+2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-5.c:  Add argument for s390.
+	* lib/target-supports.exp: 
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	s390/s390x targets.
+
 2017-09-20  Martin Sebor  <msebor@redhat.com>
 
 	PR c/81854
