@@ -1489,6 +1489,7 @@ backtrace_initialize (struct backtrace_state *state, const char *filename,
   pd.fileline_fn = &elf_fileline_fn;
   pd.found_sym = &found_sym;
   pd.found_dwarf = &found_dwarf;
+  pd.exe_filename = filename;
   pd.exe_descriptor = ret < 0 ? descriptor : -1;
 
   dl_iterate_phdr (phdr_callback, (void *) &pd);
