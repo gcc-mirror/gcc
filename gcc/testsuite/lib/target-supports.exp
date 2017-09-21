@@ -5951,7 +5951,7 @@ proc check_effective_target_vect_hw_misalign { } {
 	  set et_vect_hw_misalign_saved($et_index) 1
 	}
 	if { [istarget arm*-*-*] } {
-	    set et_vect_hw_misalign_saved($et_index) [check_effective_target_arm_vect_no_misalign]
+	    set et_vect_hw_misalign_saved($et_index) ![check_effective_target_arm_vect_no_misalign]
 	}
     }
     verbose "check_effective_target_vect_hw_misalign:\
