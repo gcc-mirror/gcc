@@ -225,7 +225,7 @@ struct common_sched_info_def *common_sched_info;
 #define FEEDS_BACKTRACK_INSN(INSN) (HID (INSN)->feeds_backtrack_insn)
 #define SHADOW_P(INSN) (HID (INSN)->shadow_p)
 #define MUST_RECOMPUTE_SPEC_P(INSN) (HID (INSN)->must_recompute_spec)
-/* Cached cost of the instruction.  Use insn_cost to get cost of the
+/* Cached cost of the instruction.  Use insn_sched_cost to get cost of the
    insn.  -1 here means that the field is not initialized.  */
 #define INSN_COST(INSN)	(HID (INSN)->cost)
 
@@ -1383,7 +1383,7 @@ static rtx_insn *nonscheduled_insns_begin;
    This is the number of cycles between instruction issue and
    instruction results.  */
 int
-insn_cost (rtx_insn *insn)
+insn_sched_cost (rtx_insn *insn)
 {
   int cost;
 
@@ -1470,7 +1470,7 @@ dep_cost_1 (dep_t link, dw_t dw)
     {
       enum reg_note dep_type = DEP_TYPE (link);
 
-      cost = insn_cost (insn);
+      cost = insn_sched_cost (insn);
 
       if (INSN_CODE (insn) >= 0)
 	{
@@ -1608,11 +1608,11 @@ priority (rtx_insn *insn)
 	  INSN_FUSION_PRIORITY (insn) = this_fusion_priority;
 	}
       else if (dep_list_size (insn, SD_LIST_FORW) == 0)
-	/* ??? We should set INSN_PRIORITY to insn_cost when and insn has
-	   some forward deps but all of them are ignored by
+	/* ??? We should set INSN_PRIORITY to insn_sched_cost when and insn
+	   has some forward deps but all of them are ignored by
 	   contributes_to_priority hook.  At the moment we set priority of
 	   such insn to 0.  */
-	this_priority = insn_cost (insn);
+	this_priority = insn_sched_cost (insn);
       else
 	{
 	  rtx_insn *prev_first, *twin;
@@ -1683,7 +1683,7 @@ priority (rtx_insn *insn)
 	{
 	  gcc_assert (this_priority == -1);
 
-	  this_priority = insn_cost (insn);
+	  this_priority = insn_sched_cost (insn);
 	}
 
       INSN_PRIORITY (insn) = this_priority;

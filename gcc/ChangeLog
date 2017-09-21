@@ -1,3 +1,9 @@
+2017-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* haifa-sched.c: Rename insn_cost to insn_sched_cost.
+	* sched-rgn.c: Ditto.
+	* sel-sched-ir.c: Ditto.
+
 2017-09-21  Alexander Monakov  <amonakov@ispras.ru>
 
 	* toplev.h (set_random_seed): Adjust return type.

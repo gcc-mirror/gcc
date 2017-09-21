@@ -2837,8 +2837,8 @@ void debug_dependencies (rtx_insn *head, rtx_insn *tail)
 			       : INSN_PRIORITY (insn))
 		: INSN_PRIORITY (insn)),
 	       (sel_sched_p () ? (sched_emulate_haifa_p ? -1
-			       : insn_cost (insn))
-		: insn_cost (insn)));
+			       : insn_sched_cost (insn))
+		: insn_sched_cost (insn)));
 
       if (recog_memoized (insn) < 0)
 	fprintf (sched_dump, "nothing");
