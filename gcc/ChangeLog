@@ -1,3 +1,10 @@
+2017-09-21  Alan Modra  <amodra@gmail.com>
+
+	PR target/81996
+	* gcc/config/rs6000/rs6000.c (rs6000_return_addr): Use
+	stack_pointer_rtx for count 0.  Update comments.  Break up
+	large rtl expression.
+
 2017-09-19  Martin Liska  <mliska@suse.cz>
 
 	PR c++/81355
