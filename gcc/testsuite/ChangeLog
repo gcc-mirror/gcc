@@ -1,3 +1,9 @@
+2017-09-21  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp
+	(check_effective_target_frame_pointer_for_non_leaf): Add
+	case for x86 Solaris.
+
 2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/78512

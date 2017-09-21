@@ -8657,6 +8657,12 @@ proc check_effective_target_frame_pointer_for_non_leaf { } {
   if { [istarget aarch*-*-*] } {
 	return 1
   }
+
+  # Solaris/x86 defaults to -fno-omit-frame-pointer.
+  if { [istarget i?86-*-solaris*] || [istarget x86_64-*-solaris*] } {
+    return 1
+  }
+
   return 0
 }
 
