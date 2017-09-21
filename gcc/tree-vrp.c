@@ -2930,9 +2930,11 @@ extract_range_from_binary_expr_1 (value_range *vr,
 		= wi::set_bit_in_zero (TYPE_PRECISION (expr_type) - 1,
 				       TYPE_PRECISION (expr_type));
 	      if (!TYPE_UNSIGNED (expr_type)
-		  && ((value_range_constant_singleton (&vr0)
+		  && ((int_cst_range0
+		       && value_range_constant_singleton (&vr0)
 		       && !wi::cmps (vr0.min, sign_bit))
-		      || (value_range_constant_singleton (&vr1)
+		      || (int_cst_range1
+			  && value_range_constant_singleton (&vr1)
 			  && !wi::cmps (vr1.min, sign_bit))))
 		{
 		  min = TYPE_MIN_VALUE (expr_type);
