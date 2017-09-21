@@ -1,3 +1,9 @@
+2017-09-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/78421
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	Invert arm check.
+
 2017-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	* haifa-sched.c: Rename insn_cost to insn_sched_cost.
