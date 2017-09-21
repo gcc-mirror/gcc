@@ -2,6 +2,12 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* loop-unroll.c (split_iv): Call copy_rtx on the step.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree.c (find_atomic_core_type): Check tree_fits_uhwi_p before
 	calling tree_to_uhwi.
 
