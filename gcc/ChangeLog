@@ -1,3 +1,11 @@
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71351
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_to_gimple::
+	graphite_create_new_loop_guard): Remove, fold remaining parts
+	into caller ...
+	(translate_isl_ast_node_for): ... here and simplify.
+
 2017-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82260
