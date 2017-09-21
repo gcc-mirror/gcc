@@ -8396,11 +8396,23 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
 	sym->attr.subref_array_pointer = 1;
     }
 
+  if (target->expr_type == EXPR_NULL)
+    {
+      gfc_error ("Selector at %L cannot be NULL()", &target->where);
+      return;
+    }
+  else if (target->ts.type == BT_UNKNOWN)
+    {
+      gfc_error ("Selector at %L has no type", &target->where);
+      return;
+    }
+
   /* Get type if this was not already set.  Note that it can be
      some other type than the target in case this is a SELECT TYPE
      selector!  So we must not update when the type is already there.  */
   if (sym->ts.type == BT_UNKNOWN)
     sym->ts = target->ts;
+
   gcc_assert (sym->ts.type != BT_UNKNOWN);
 
   /* See if this is a valid association-to-variable.  */
@@ -11926,6 +11938,7 @@ deferred_requirements (gfc_symbol *sym)
   if (sym->ts.deferred
       && !(sym->attr.pointer
 	   || sym->attr.allocatable
+	   || sym->attr.associate_var
 	   || sym->attr.omp_udr_artificial_var))
     {
       gfc_error ("Entity %qs at %L has a deferred type parameter and "
@@ -14763,6 +14776,7 @@ resolve_symbol (gfc_symbol *sym)
   if (class_attr.codimension
       && !(class_attr.allocatable || sym->attr.dummy || sym->attr.save
 	   || sym->attr.select_type_temporary
+	   || sym->attr.associate_var
 	   || (sym->ns->save_all && !sym->attr.automatic)
 	   || sym->ns->proc_name->attr.flavor == FL_MODULE
 	   || sym->ns->proc_name->attr.is_main_program
