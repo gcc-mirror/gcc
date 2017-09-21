@@ -1,3 +1,8 @@
+2017-09-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/71951
+	* config/aarch64/aarch64.h (LIBGCC2_UNWIND_ATTRIBUTE): Define.
+
 2017-09-21  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
