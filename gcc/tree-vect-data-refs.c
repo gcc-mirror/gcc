@@ -2393,6 +2393,8 @@ compare_tree (tree t1, tree t2)
   if (t2 == NULL)
     return 1;
 
+  STRIP_NOPS (t1);
+  STRIP_NOPS (t2);
 
   if (TREE_CODE (t1) != TREE_CODE (t2))
     return TREE_CODE (t1) < TREE_CODE (t2) ? -1 : 1;

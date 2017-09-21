@@ -1,3 +1,11 @@
+2017-09-22  Alexander Monakov  <amonakov@ispras.ru>
+
+	PR tree-optimization/71702
+	Backport r230667
+	2015-11-20  Jim Wilson  <jim.wilson@linaro.org>
+
+	* tree-vect-data-refs.c (compare_tree): Call STRIP_NOPS.
+
 2017-09-21  Alan Modra  <amodra@gmail.com>
 
 	PR target/81996
