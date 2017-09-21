@@ -3055,7 +3055,7 @@ spu_sched_adjust_cost (rtx_insn *insn, int dep_type, rtx_insn *dep_insn,
      jump_insn.  We adjust here so higher cost insns will get scheduled
      earlier. */
   if (JUMP_P (insn) && dep_type == REG_DEP_ANTI)
-    return insn_cost (dep_insn) - 3;
+    return insn_sched_cost (dep_insn) - 3;
 
   return cost;
 }
