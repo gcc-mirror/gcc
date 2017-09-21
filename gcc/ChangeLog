@@ -1,4 +1,14 @@
-2017-09-21  Evgeny Kudryashov <kudryashov@ispras.ru>
+2017-09-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* toplev.h (set_random_seed): Adjust return type.
+	* toplev.c (init_local_tick): Move eager initialization of random_seed
+	to get_random_seed.  Adjust comment.
+	(init_random_seed): Inline to get_random_seed, delete.
+	(get_random_seed): Initialize random_seed lazily.
+	(set_random_seed): Do not return previous value.
+	(print_switch_value): Do not call get_random_seed.
+
+2017-09-21  Evgeny Kudryashov  <kudryashov@ispras.ru>
 
 	* cgraph.c (delete_function_version): New, broken out from...
 	(cgraph_node::delete_function_version): ...here.  Rename to
