@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree.c (find_atomic_core_type): Check tree_fits_uhwi_p before
+	calling tree_to_uhwi.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-ssa-ccp.c (get_value_for_expr): Use a positive test for
 	INTEGER_CST rather than a negative test for ADDR_EXPR.
 
