@@ -1,3 +1,10 @@
+2017-09-21  Evgeny Kudryashov <kudryashov@ispras.ru>
+
+	* cgraph.c (delete_function_version): New, broken out from...
+	(cgraph_node::delete_function_version): ...here.  Rename to
+	cgraph_node::delete_function_version_by_decl.  Update all uses.
+	(cgraph_node::remove): Call delete_function_version.
+
 2017-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81715
