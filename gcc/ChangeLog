@@ -1,3 +1,9 @@
+2017-09-21  Martin Sebor  <msebor@redhat.com>
+
+	* PR c/81882
+	* doc/extend.texi (attribute ifunc): Avoid relying on ill-formed
+	code (in C++) or code that triggers warnings.
+
 2017-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* stor-layout.c (bit_from_pos): Do not distribute the conversion.

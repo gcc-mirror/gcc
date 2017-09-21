@@ -2783,21 +2783,23 @@ The @code{ifunc} attribute is used to mark a function as an indirect
 function using the STT_GNU_IFUNC symbol type extension to the ELF
 standard.  This allows the resolution of the symbol value to be
 determined dynamically at load time, and an optimized version of the
-routine can be selected for the particular processor or other system
+routine to be selected for the particular processor or other system
 characteristics determined then.  To use this attribute, first define
 the implementation functions available, and a resolver function that
 returns a pointer to the selected implementation function.  The
 implementation functions' declarations must match the API of the
-function being implemented, the resolver's declaration is be a
-function returning pointer to void function returning void:
+function being implemented.  The resolver should be declared to
+be a function taking no arguments and returning a pointer to
+a function of the same type as the implementation.  For example:
 
 @smallexample
 void *my_memcpy (void *dst, const void *src, size_t len)
 @{
   @dots{}
+  return dst;
 @}
 
-static void (*resolve_memcpy (void)) (void)
+static void * (*resolve_memcpy (void))(void *, const void *, size_t)
 @{
   return my_memcpy; // we'll just always select this routine
 @}
