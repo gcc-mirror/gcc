@@ -1,3 +1,8 @@
+2017-09-21  Jeff Law  <law@redhat.com>
+
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash):
+	Fix dump output if the only stack space is for pushed registers.
+
 2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* config/spu/spu.c (spu_sched_adjust_cost): Update after renaming

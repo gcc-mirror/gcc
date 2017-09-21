@@ -13946,7 +13946,13 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
      no probes are needed.  */
   if (!size)
     {
-      dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
+      /* However, the allocation of space via pushes for register
+	 saves could be viewed as allocating space, but without the
+	 need to probe.  */
+      if (m->frame.nregs || m->frame.nsseregs || frame_pointer_needed)
+        dump_stack_clash_frame_info (NO_PROBE_SMALL_FRAME, true);
+      else
+	dump_stack_clash_frame_info (NO_PROBE_NO_FRAME, false);
       return;
     }
 
