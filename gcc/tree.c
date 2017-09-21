@@ -5821,11 +5821,10 @@ find_atomic_core_type (tree type)
   tree base_atomic_type;
 
   /* Only handle complete types.  */
-  if (TYPE_SIZE (type) == NULL_TREE)
+  if (!tree_fits_uhwi_p (TYPE_SIZE (type)))
     return NULL_TREE;
 
-  HOST_WIDE_INT type_size = tree_to_uhwi (TYPE_SIZE (type));
-  switch (type_size)
+  switch (tree_to_uhwi (TYPE_SIZE (type)))
     {
     case 8:
       base_atomic_type = atomicQI_type_node;
