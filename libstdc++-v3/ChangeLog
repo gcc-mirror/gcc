@@ -1,3 +1,9 @@
+2017-09-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/25_algorithms/clamp/1.cc: Fix order of arguments and
+	expected results when using predicate defining reverse order.
+	* testsuite/25_algorithms/clamp/constexpr.cc: Likewise.
+
 2017-09-20  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/79162
