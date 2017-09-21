@@ -81,15 +81,15 @@ Ada AdaWhy AdaSCIL
 Make \"char\" signed by default.
 
 gant
-Ada AdaWhy AdaSCIL Driver Joined Undocumented
+Ada AdaWhy AdaSCIL Driver Joined Undocumented RejectNegative
 Catch typos.
 
 gnatO
-Ada AdaWhy AdaSCIL Driver Separate
+Ada AdaWhy AdaSCIL Driver Separate RejectNegative
 Set name of output ALI file (internal switch).
 
 gnat
-Ada AdaWhy AdaSCIL Driver Joined
+Ada AdaWhy AdaSCIL Driver Joined RejectNegative
 -gnat<options>	Specify options to GNAT.
 
 fbuiltin-printf

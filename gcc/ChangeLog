@@ -1,3 +1,26 @@
+2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+
+	* common.opt (Wa, Wl, Wp, g, gz=): Add
+	RejectNegative.
+	(gno-column-info): Remove.
+	(gcolumn-info): Drop RejectNegative.
+	(gno-): New prefix.
+	(gno-record-gcc-switches): Remove.
+	(grecord-gcc-switches): Drop RejectNegative.
+	(gno-split-dwarf): Remove.
+	(gsplit-dwarf): Drop RejectNegative.
+	(gno-strict-dwarf): Remove.
+	(gstrict-dwarf): Drop RejectNegative.
+	* config/darwin.opt (gfull, gused): Add RejectNegative.
+	* dwarf2out.c (gen_producer_string): Drop
+	gno-record-gcc-switches handler.
+	* optc-gen.awk: Add g to prefixes with negative forms.
+	* opts-common.c (remapping_prefix_p): New.
+	(find_opt): Check it.
+	(generate_canonical_option): Test g prefix.
+	(option_map): Add -gno- mapping.
+	(add_misspelling_candidates): Check remapping_prefix_p.
+
 2017-09-20  Jeff Law  <law@redhat.com>
 
 	* config/powerpcspe/powerpcspe.c (rs6000_expand_prologue): Fix
