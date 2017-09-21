@@ -1,5 +1,11 @@
 2017-09-21  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82276
+	PR tree-optimization/82244
+	* gcc.dg/torture/pr82276.c: New testcase.
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/71351
 	* gfortran.dg/graphite/pr71351.f90: New testcase.
 	* gfortran.dg/graphite/interchange-3.f90: Adjust.

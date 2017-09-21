@@ -4520,7 +4520,12 @@ build_assert_expr_for (tree cond, tree v)
      operand of the ASSERT_EXPR.  Create it so the new name and the old one
      are registered in the replacement table so that we can fix the SSA web
      after adding all the ASSERT_EXPRs.  */
-  create_new_def_for (v, assertion, NULL);
+  tree new_def = create_new_def_for (v, assertion, NULL);
+  /* Make sure we preserve abnormalness throughout an ASSERT_EXPR chain
+     given we have to be able to fully propagate those out to re-create
+     valid SSA when removing the asserts.  */
+  if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (v))
+    SSA_NAME_OCCURS_IN_ABNORMAL_PHI (new_def) = 1;
 
   return assertion;
 }
@@ -7040,14 +7045,6 @@ remove_range_assertions (void)
 		FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 		  FOR_EACH_IMM_USE_ON_STMT (use_p, iter)
 		    SET_USE (use_p, var);
-	      }
-	    /* But do not propagate constants as that is invalid.  */
-	    else if (SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
-	      {
-		gassign *ass = gimple_build_assign (lhs, var);
-		gsi_replace (&si, ass, true);
-		gsi_next (&si);
-		continue;
 	      }
 	    else
 	      replace_uses_by (lhs, var);
