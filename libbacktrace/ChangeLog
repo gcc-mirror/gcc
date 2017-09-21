@@ -1,3 +1,8 @@
+2017-09-21  Ian Lance Taylor  <iant@google.com>
+
+	PR go/82284
+	* elf.c (backtrace_initialize): Set pd.exe_filename.
+
 2017-09-20  Ian Lance Taylor  <iant@golang.org>
 	    Denis Khalikov  <d.khalikov@partner.samsung.com>
 
