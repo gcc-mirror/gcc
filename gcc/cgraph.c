@@ -190,30 +190,34 @@ cgraph_node::insert_new_function_version (void)
   return version_info_node;
 }
 
-/* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
-   DECL is a duplicate declaration.  */
-void
-cgraph_node::delete_function_version (tree decl)
+/* Remove the cgraph_function_version_info node given by DECL_V.  */
+static void
+delete_function_version (cgraph_function_version_info *decl_v)
 {
-  cgraph_node *decl_node = cgraph_node::get (decl);
-  cgraph_function_version_info *decl_v = NULL;
-
-  if (decl_node == NULL)
-    return;
-
-  decl_v = decl_node->function_version ();
-
   if (decl_v == NULL)
     return;
 
   if (decl_v->prev != NULL)
-   decl_v->prev->next = decl_v->next;
+    decl_v->prev->next = decl_v->next;
 
   if (decl_v->next != NULL)
     decl_v->next->prev = decl_v->prev;
 
   if (cgraph_fnver_htab != NULL)
     cgraph_fnver_htab->remove_elt (decl_v);
+}
+
+/* Remove the cgraph_function_version_info and cgraph_node for DECL.  This
+   DECL is a duplicate declaration.  */
+void
+cgraph_node::delete_function_version_by_decl (tree decl)
+{
+  cgraph_node *decl_node = cgraph_node::get (decl);
+
+  if (decl_node == NULL)
+    return;
+
+  delete_function_version (decl_node->function_version ());
 
   decl_node->remove ();
 }
@@ -1844,6 +1848,7 @@ cgraph_node::remove (void)
   remove_callers ();
   remove_callees ();
   ipa_transforms_to_apply.release ();
+  delete_function_version (function_version ());
 
   /* Incremental inlining access removed nodes stored in the postorder list.
      */

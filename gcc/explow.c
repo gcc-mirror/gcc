@@ -1834,11 +1834,11 @@ compute_stack_clash_protection_loop_data (rtx *rounded_size, rtx *last_addr,
       if (*rounded_size == CONST0_RTX (Pmode))
 	fprintf (dump_file,
 		 "Stack clash skipped dynamic allocation and probing loop.\n");
-      else if (GET_CODE (*rounded_size) == CONST_INT
+      else if (CONST_INT_P (*rounded_size)
 	       && INTVAL (*rounded_size) <= 4 * *probe_interval)
 	fprintf (dump_file,
 		 "Stack clash dynamic allocation and probing inline.\n");
-      else if (GET_CODE (*rounded_size) == CONST_INT)
+      else if (CONST_INT_P (*rounded_size))
 	fprintf (dump_file,
 		 "Stack clash dynamic allocation and probing in "
 		 "rotated loop.\n");
@@ -1936,7 +1936,8 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 
   if (rounded_size != CONST0_RTX (Pmode))
     {
-      if (INTVAL (rounded_size) <= 4 * probe_interval)
+      if (CONST_INT_P (rounded_size)
+	  && INTVAL (rounded_size) <= 4 * probe_interval)
 	{
 	  for (HOST_WIDE_INT i = 0;
 	       i < INTVAL (rounded_size);
@@ -1956,7 +1957,7 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
       else
 	{
 	  rtx loop_lab, end_loop;
-	  bool rotate_loop = GET_CODE (rounded_size) == CONST_INT;
+	  bool rotate_loop = CONST_INT_P (rounded_size);
 	  emit_stack_clash_protection_probe_loop_start (&loop_lab, &end_loop,
 							last_addr, rotate_loop);
 
@@ -1994,7 +1995,7 @@ anti_adjust_stack_and_probe_stack_clash (rtx size)
 	 might hold live data.  So probe at *sp if we know that
 	 an allocation was made, otherwise probe into the red zone
 	 which is obviously undesirable.  */
-      if (GET_CODE (size) == CONST_INT)
+      if (CONST_INT_P (size))
 	{
 	  emit_stack_probe (stack_pointer_rtx);
 	  emit_insn (gen_blockage ());

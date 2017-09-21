@@ -1,3 +1,172 @@
+2017-09-21  Martin Sebor  <msebor@redhat.com>
+
+	* PR c/81882
+	* doc/extend.texi (attribute ifunc): Avoid relying on ill-formed
+	code (in C++) or code that triggers warnings.
+
+2017-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* stor-layout.c (bit_from_pos): Do not distribute the conversion.
+
+2017-09-21  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* haifa-sched.c: Rename insn_cost to insn_sched_cost.
+	* sched-rgn.c: Ditto.
+	* sel-sched-ir.c: Ditto.
+
+2017-09-21  Alexander Monakov  <amonakov@ispras.ru>
+
+	* toplev.h (set_random_seed): Adjust return type.
+	* toplev.c (init_local_tick): Move eager initialization of random_seed
+	to get_random_seed.  Adjust comment.
+	(init_random_seed): Inline to get_random_seed, delete.
+	(get_random_seed): Initialize random_seed lazily.
+	(set_random_seed): Do not return previous value.
+	(print_switch_value): Do not call get_random_seed.
+
+2017-09-21  Evgeny Kudryashov  <kudryashov@ispras.ru>
+
+	* cgraph.c (delete_function_version): New, broken out from...
+	(cgraph_node::delete_function_version): ...here.  Rename to
+	cgraph_node::delete_function_version_by_decl.  Update all uses.
+	(cgraph_node::remove): Call delete_function_version.
+
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81715
+	* tree-inline.c (expand_call_inline): Emit clobber stmts for
+	VAR_DECLs to which addressable non-volatile parameters are mapped
+	and for id->retvar after the return value assignment.  Clear
+	id->retval and id->retbnd after inlining.
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82276
+	PR tree-optimization/82244
+	* tree-vrp.c (build_assert_expr_for): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI if the variable we assert on
+	has it set.
+	(remove_range_assertions): Revert earlier change.
+
+2017-09-21  Wilco Dijkstra  <wdijkstr@arm.com>
+
+	PR target/71951
+	* config/aarch64/aarch64.h (LIBGCC2_UNWIND_ATTRIBUTE): Define.
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
+	Restore valid IL after code generation errors.
+	* graphite.c (graphite_transform_loops): Diagnose code
+	generation issues as MSG_MISSED_OPTIMIZATION and continue
+	with processing SCOPs.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* calls.c (compute_argument_addresses): Use simplify_gen_binary
+	rather than choosing between plus_constant and gen_rtx_<CODE>.
+	* expr.c (emit_push_insn): Likewise.
+	(expand_expr_real_2): Likewise.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* loop-unroll.c (split_iv): Call copy_rtx on the step.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree.c (find_atomic_core_type): Check tree_fits_uhwi_p before
+	calling tree_to_uhwi.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-ssa-ccp.c (get_value_for_expr): Use a positive test for
+	INTEGER_CST rather than a negative test for ADDR_EXPR.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vrp.c (extract_range_from_binary_expr_1): Check
+	int_cst_rangeN before calling value_range_constant_singleton (&vrN).
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71351
+	* graphite-isl-ast-to-gimple.c (translate_isl_ast_to_gimple::
+	graphite_create_new_loop_guard): Remove, fold remaining parts
+	into caller ...
+	(translate_isl_ast_node_for): ... here and simplify.
+
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82260
+	* config/i386/i386.md (*movqi_internal): Replace (=q,q) alternative
+	with (=Q,Q), (=R,R) and (=r,r) alternatives, only enable the
+	latter two for 64-bit, renumber alternatives, for -Os imov (=q,n)
+	alternative always use QI mode, for -Os imov (=R,R) alternative
+	always use SI mode, for imov (=Q,Q) or (=r,r) alternatives
+	ignore -Os.
+
+2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* config/s390/s390.c (MIN_UNROLL_PROBES): Define.
+	(allocate_stack_space): New function, partially extracted from
+	s390_emit_prologue.
+	(s390_emit_prologue): Track offset to most recent stack probe.
+	Code to allocate space moved into allocate_stack_space.
+	Dump actions when no stack is allocated.
+	(s390_prologue_plus_offset): New function.
+	(s390_emit_stack_probe): Likewise.
+
+2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+
+	* common.opt (Wa, Wl, Wp, g, gz=): Add
+	RejectNegative.
+	(gno-column-info): Remove.
+	(gcolumn-info): Drop RejectNegative.
+	(gno-): New prefix.
+	(gno-record-gcc-switches): Remove.
+	(grecord-gcc-switches): Drop RejectNegative.
+	(gno-split-dwarf): Remove.
+	(gsplit-dwarf): Drop RejectNegative.
+	(gno-strict-dwarf): Remove.
+	(gstrict-dwarf): Drop RejectNegative.
+	* config/darwin.opt (gfull, gused): Add RejectNegative.
+	* dwarf2out.c (gen_producer_string): Drop
+	gno-record-gcc-switches handler.
+	* optc-gen.awk: Add g to prefixes with negative forms.
+	* opts-common.c (remapping_prefix_p): New.
+	(find_opt): Check it.
+	(generate_canonical_option): Test g prefix.
+	(option_map): Add -gno- mapping.
+	(add_misspelling_candidates): Check remapping_prefix_p.
+
+2017-09-20  Jeff Law  <law@redhat.com>
+
+	* config/powerpcspe/powerpcspe.c (rs6000_expand_prologue): Fix
+	thinko in stack clash protection support.
+
+	* explow.c (compute_stack_clash_protection_loop_data): Use
+	CONST_INT_P instead of explicit test.  Verify object is a
+	CONST_INT_P before looking at INTVAL.
+	(anti_adjust_stack_and_probe_stack_clash): Use CONST_INT_P
+	instead of explicit test.
+
+2017-09-20  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77687
+	* config/rs6000/rs6000.md (stack_restore_tie): Store to a scratch
+	address instead of to r1 and r11.
+
 2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config.gcc: Support "knm".

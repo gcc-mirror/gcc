@@ -14,7 +14,7 @@ struct Klassier : Klass
   int implementation ();
   int magic ();
 
-  typedef int (Klass::*MemFuncPtr)();
+  typedef int (Klassier::*MemFuncPtr)();
 
   static MemFuncPtr resolver ();
 };

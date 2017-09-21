@@ -1888,8 +1888,15 @@ gfc_match_associate (void)
       if (gfc_match (" %n => %e", newAssoc->name, &newAssoc->target)
 	    != MATCH_YES)
 	{
-	  gfc_error ("Expected association at %C");
-	  goto assocListError;
+	  /* Have another go, allowing for procedure pointer selectors.  */
+	  gfc_matching_procptr_assignment = 1;
+	  if (gfc_match (" %n => %e", newAssoc->name, &newAssoc->target)
+ 	      != MATCH_YES)
+ 	    {
+ 	      gfc_error ("Expected association at %C");
+ 	      goto assocListError;
+ 	    }
+	  gfc_matching_procptr_assignment = 0;
 	}
       newAssoc->where = gfc_current_locus;
 

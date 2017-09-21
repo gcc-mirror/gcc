@@ -54,6 +54,7 @@ unknown_fileline (struct backtrace_state *state ATTRIBUTE_UNUSED,
 
 int
 backtrace_initialize (struct backtrace_state *state ATTRIBUTE_UNUSED,
+		      const char *filename ATTRIBUTE_UNUSED,
 		      int descriptor ATTRIBUTE_UNUSED,
 		      backtrace_error_callback error_callback ATTRIBUTE_UNUSED,
 		      void *data ATTRIBUTE_UNUSED, fileline *fileline_fn)

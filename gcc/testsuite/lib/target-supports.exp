@@ -437,10 +437,14 @@ proc check_effective_target_alias { } {
 proc check_ifunc_available { } {
     return [check_no_compiler_messages ifunc_available object {
 	#ifdef __cplusplus
-	extern "C"
+	extern "C" {
 	#endif
-	void g() {}
+	typedef void F (void);
+	F* g() {}
 	void f() __attribute__((ifunc("g")));
+	#ifdef __cplusplus
+	}
+	#endif
     }]
 }
 
@@ -5947,7 +5951,7 @@ proc check_effective_target_vect_hw_misalign { } {
 	  set et_vect_hw_misalign_saved($et_index) 1
 	}
 	if { [istarget arm*-*-*] } {
-	    set et_vect_hw_misalign_saved($et_index) [check_effective_target_arm_vect_no_misalign]
+	    set et_vect_hw_misalign_saved($et_index) ![check_effective_target_arm_vect_no_misalign]
 	}
     }
     verbose "check_effective_target_vect_hw_misalign:\
@@ -8636,12 +8640,12 @@ proc check_effective_target_supports_stack_clash_protection { } {
 
    # Temporary until the target bits are fully ACK'd.
 #  if { [istarget aarch*-*-*]
-#       || [istarget s390*-*-*]
 #       || [istarget powerpc*-*-*] || [istarget rs6000*-*-*] } {
 #	return 1
 #  }
 
-    if { [istarget x86_64-*-*] || [istarget i?86-*-*] } {
+    if { [istarget x86_64-*-*] || [istarget i?86-*-*] 
+	  || [istarget s390*-*-*] } {
 	return 1
     }
   return 0

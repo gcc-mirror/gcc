@@ -4739,14 +4739,19 @@ __thunk_4294967297__$_1x
 # demangler/82195 members of lambdas
 --no-params
 _ZZZ3FoovENKUlT_E_clIiEEfS_EN5Local2fnEv
-Foo()::float {lambda(auto:1)#1}::operator()<int>(int) const::Local::fn()
-Foo()::float {lambda(auto:1)#1}::operator()<int>(int) const::Local::fn
+float Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::Local::fn()
+float Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::Local::fn
 --no-params
 _Z7CaptureIZZ3FoovENKUlT_E_clIiEEvS0_EUlvE_EvOS0_
-void Capture<Foo()::void {lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>(Foo()::void {lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}&&)
-Capture<Foo()::void {lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>
+void Capture<void Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>(void Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}&&)
+Capture<void Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>
 --no-params
 _Z4FrobIZZ3FoovENKUlT_E_clIiEEvS0_EUlvE_Evv
-void Frob<Foo()::void {lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>()
-Frob<Foo()::void {lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>
+void Frob<void Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>()
+Frob<void Foo()::{lambda(auto:1)#1}::operator()<int>(int) const::{lambda()#1}>
 #
+# A lambda {local-class::member-fn}
+--no-params
+_ZZ3FoovENKUlT_E_clIiEEfS_
+float Foo()::{lambda(auto:1)#1}::operator()<int>(int) const
+Foo()::{lambda(auto:1)#1}::operator()<int>
