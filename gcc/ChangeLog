@@ -1,3 +1,15 @@
+2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* config/s390/s390.c (MIN_UNROLL_PROBES): Define.
+	(allocate_stack_space): New function, partially extracted from
+	s390_emit_prologue.
+	(s390_emit_prologue): Track offset to most recent stack probe.
+	Code to allocate space moved into allocate_stack_space.
+	Dump actions when no stack is allocated.
+	(s390_prologue_plus_offset): New function.
+	(s390_emit_stack_probe): Likewise.
+
 2017-09-20  Alexandre Oliva <aoliva@redhat.com>
 
 	* common.opt (Wa, Wl, Wp, g, gz=): Add
