@@ -1,3 +1,8 @@
+2017-09-20  Nathan Sidwell  <nathan@acm.org>
+
+	* name-lookup.c (member_name_cmp): Use DECL_UID for final
+	ordering.
+
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	P0409R2 - allow lambda capture [=, this]
