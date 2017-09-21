@@ -1,3 +1,7 @@
+2017-09-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/wait.f90: New test.
+
 2017-09-21  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81715
