@@ -1,3 +1,23 @@
+2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78512
+	* gfortran.dg/associate_26.f90 : New test.
+
+	PR fortran/80120
+	* gfortran.dg/associate_27.f90 : New test.
+
+	PR fortran/81903
+	* gfortran.dg/associate_28.f90 : New test.
+
+	PR fortran/82121
+	* gfortran.dg/associate_29.f90 : New test.
+
+	PR fortran/67543
+	* gfortran.dg/associate_30.f90 : New test.
+
+	PR fortran/52832
+	* gfortran.dg/associate_31.f90 : New test.
+
 2017-09-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/discr48.adb: New test.
@@ -42,7 +62,7 @@
 	    Jeff Law  <law@redhat.com>
 
 	* gcc.dg/stack-check-5.c:  Add argument for s390.
-	* lib/target-supports.exp: 
+	* lib/target-supports.exp:
 	(check_effective_target_supports_stack_clash_protection): Enable for
 	s390/s390x targets.
 
