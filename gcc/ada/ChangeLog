@@ -1,3 +1,8 @@
+2017-09-20  Alexandre Oliva <aoliva@redhat.com>
+
+	* gcc-interface/lang.opt (gant, gnatO, gnat): Add
+	RejectNegative.
+
 2017-09-18  Bob Duff  <duff@adacore.com>
 
 	* sem_ch4.adb (Complete_Object_Operation): Do not insert 'Access for
