@@ -1,3 +1,8 @@
+2017-09-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* openmp.c (gfc_match_oacc_wait): Don't restrict wait directive
+	arguments to constant integers.
+
 2017-09-17  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82173
