@@ -337,17 +337,16 @@ graphite_transform_loops (void)
 	if (!apply_poly_transforms (scop))
 	  continue;
 
-	need_cfg_cleanup_p = true;
-	/* When code generation is not successful, do not continue
-	   generating code for the next scops: the IR has to be cleaned up
-	   and could be in an inconsistent state.  */
-	if (!graphite_regenerate_ast_isl (scop))
-	  break;
-
 	location_t loc = find_loop_location
-			   (scop->scop_info->region.entry->dest->loop_father);
-	dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
-			 "loop nest optimized\n");
+	  (scops[i]->scop_info->region.entry->dest->loop_father);
+
+	need_cfg_cleanup_p = true;
+	if (!graphite_regenerate_ast_isl (scop))
+	  dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			   "loop nest not optimized, code generation error\n");
+	else
+	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
+			   "loop nest optimized\n");
       }
 
   free_scops (scops);

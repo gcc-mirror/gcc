@@ -1,3 +1,11 @@
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (graphite_regenerate_ast_isl):
+	Restore valid IL after code generation errors.
+	* graphite.c (graphite_transform_loops): Diagnose code
+	generation issues as MSG_MISSED_OPTIMIZATION and continue
+	with processing SCOPs.
+
 2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>

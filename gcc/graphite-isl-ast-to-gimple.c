@@ -2997,6 +2997,26 @@ graphite_regenerate_ast_isl (scop_p scop)
 	}
     }
 
+  if (t.codegen_error_p ())
+    {
+      /* We registered new names, scrap that.  */
+      if (need_ssa_update_p (cfun))
+	delete_update_ssa ();
+      /* Remove the unreachable region.  */
+      remove_edge_and_dominated_blocks (if_region->true_region->region.entry);
+      basic_block ifb = if_region->false_region->region.entry->src;
+      gimple_stmt_iterator gsi = gsi_last_bb (ifb);
+      gsi_remove (&gsi, true);
+      if_region->false_region->region.entry->flags &= ~EDGE_FALSE_VALUE;
+      if_region->false_region->region.entry->flags |= EDGE_FALLTHRU;
+      /* remove_edge_and_dominated_blocks marks loops for removal but
+	 doesn't actually remove them (fix that...).  */
+      loop_p loop;
+      FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
+	if (! loop->header)
+	  delete_loop (loop);
+    }
+
   free (if_region->true_region);
   free (if_region->region);
   free (if_region);
