@@ -2,6 +2,13 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-ssa-ccp.c (get_value_for_expr): Use a positive test for
+	INTEGER_CST rather than a negative test for ADDR_EXPR.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vrp.c (extract_range_from_binary_expr_1): Check
 	int_cst_rangeN before calling value_range_constant_singleton (&vrN).
 
