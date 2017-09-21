@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* calls.c (compute_argument_addresses): Use simplify_gen_binary
+	rather than choosing between plus_constant and gen_rtx_<CODE>.
+	* expr.c (emit_push_insn): Likewise.
+	(expand_expr_real_2): Likewise.
+
+2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* loop-unroll.c (split_iv): Call copy_rtx on the step.
 
 2017-09-21  Richard Sandiford  <richard.sandiford@linaro.org>

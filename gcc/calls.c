@@ -2197,11 +2197,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	  if (POINTER_BOUNDS_P (args[i].tree_value))
 	    continue;
 
-	  if (CONST_INT_P (offset))
-	    addr = plus_constant (Pmode, arg_reg, INTVAL (offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, offset);
-
+	  addr = simplify_gen_binary (PLUS, Pmode, arg_reg, offset);
 	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
@@ -2231,11 +2227,7 @@ compute_argument_addresses (struct arg_data *args, rtx argblock, int num_actuals
 	    }
 	  set_mem_align (args[i].stack, align);
 
-	  if (CONST_INT_P (slot_offset))
-	    addr = plus_constant (Pmode, arg_reg, INTVAL (slot_offset));
-	  else
-	    addr = gen_rtx_PLUS (Pmode, arg_reg, slot_offset);
-
+	  addr = simplify_gen_binary (PLUS, Pmode, arg_reg, slot_offset);
 	  addr = plus_constant (Pmode, addr, arg_offset);
 
 	  if (args[i].partial != 0)
