@@ -1,3 +1,10 @@
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81715
+	* g++.dg/tree-ssa/pr8781.C (noop): Change argument type from
+	const predicate to const predicate & to avoid UB.
+	* g++.dg/opt/pr81715.C: New test.
+
 2017-09-21  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82276
