@@ -43,6 +43,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfghooks.h"
 #include "tree.h"
 #include "gimple.h"
+#include "ssa.h"
 #include "fold-const.h"
 #include "gimple-iterator.h"
 #include "tree-cfg.h"
@@ -53,6 +54,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-parloops.h"
 #include "tree-cfgcleanup.h"
 #include "tree-vectorizer.h"
+#include "tree-ssa-loop-manip.h"
 #include "graphite.h"
 
 /* Print global statistics to FILE.  */
@@ -213,7 +215,7 @@ print_graphite_statistics (FILE* file, vec<scop_p> scops)
 /* Initialize graphite: when there are no loops returns false.  */
 
 static bool
-graphite_initialize (isl_ctx *ctx)
+graphite_initialize (void)
 {
   int min_loops = PARAM_VALUE (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION);
   int max_bbs = PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION);
@@ -240,12 +242,10 @@ graphite_initialize (isl_ctx *ctx)
 	  print_global_statistics (dump_file);
 	}
 
-      isl_ctx_free (ctx);
       return false;
     }
 
-  scev_reset ();
-  recompute_all_dominators ();
+  calculate_dominance_info (CDI_DOMINATORS);
   initialize_original_copy_tables ();
 
   if (dump_file && dump_flags)
@@ -263,7 +263,6 @@ graphite_initialize (isl_ctx *ctx)
 static void
 graphite_finalize (bool need_cfg_cleanup_p)
 {
-  free_dominance_info (CDI_POST_DOMINATORS);
   if (need_cfg_cleanup_p)
     {
       free_dominance_info (CDI_DOMINATORS);
@@ -294,6 +293,162 @@ free_scops (vec<scop_p> scops)
   scops.release ();
 }
 
+/* Returns true when P1 and P2 are close phis with the same
+   argument.  */
+
+static inline bool
+same_close_phi_node (gphi *p1, gphi *p2)
+{
+  return (types_compatible_p (TREE_TYPE (gimple_phi_result (p1)),
+			      TREE_TYPE (gimple_phi_result (p2)))
+	  && operand_equal_p (gimple_phi_arg_def (p1, 0),
+			      gimple_phi_arg_def (p2, 0), 0));
+}
+
+static void make_close_phi_nodes_unique (basic_block bb);
+
+/* Remove the close phi node at GSI and replace its rhs with the rhs
+   of PHI.  */
+
+static void
+remove_duplicate_close_phi (gphi *phi, gphi_iterator *gsi)
+{
+  gimple *use_stmt;
+  use_operand_p use_p;
+  imm_use_iterator imm_iter;
+  tree res = gimple_phi_result (phi);
+  tree def = gimple_phi_result (gsi->phi ());
+
+  gcc_assert (same_close_phi_node (phi, gsi->phi ()));
+
+  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
+    {
+      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	SET_USE (use_p, res);
+
+      update_stmt (use_stmt);
+
+      /* It is possible that we just created a duplicate close-phi
+	 for an already-processed containing loop.  Check for this
+	 case and clean it up.  */
+      if (gimple_code (use_stmt) == GIMPLE_PHI
+	  && gimple_phi_num_args (use_stmt) == 1)
+	make_close_phi_nodes_unique (gimple_bb (use_stmt));
+    }
+
+  remove_phi_node (gsi, true);
+}
+
+/* Removes all the close phi duplicates from BB.  */
+
+static void
+make_close_phi_nodes_unique (basic_block bb)
+{
+  gphi_iterator psi;
+
+  for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+    {
+      gphi_iterator gsi = psi;
+      gphi *phi = psi.phi ();
+
+      /* At this point, PHI should be a close phi in normal form.  */
+      gcc_assert (gimple_phi_num_args (phi) == 1);
+
+      /* Iterate over the next phis and remove duplicates.  */
+      gsi_next (&gsi);
+      while (!gsi_end_p (gsi))
+	if (same_close_phi_node (phi, gsi.phi ()))
+	  remove_duplicate_close_phi (phi, &gsi);
+	else
+	  gsi_next (&gsi);
+    }
+}
+
+/* Return true when NAME is defined in LOOP.  */
+
+static bool
+defined_in_loop_p (tree name, loop_p loop)
+{
+  gcc_assert (TREE_CODE (name) == SSA_NAME);
+  return loop == loop_containing_stmt (SSA_NAME_DEF_STMT (name));
+}
+
+/* Transforms LOOP to the canonical loop closed SSA form.  */
+
+static void
+canonicalize_loop_closed_ssa (loop_p loop)
+{
+  edge e = single_exit (loop);
+  basic_block bb;
+
+  if (!e || (e->flags & EDGE_COMPLEX))
+    return;
+
+  bb = e->dest;
+
+  if (single_pred_p (bb))
+    {
+      e = split_block_after_labels (bb);
+      make_close_phi_nodes_unique (e->src);
+    }
+  else
+    {
+      gphi_iterator psi;
+      basic_block close = split_edge (e);
+      e = single_succ_edge (close);
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+	{
+	  gphi *phi = psi.phi ();
+	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  tree arg = USE_FROM_PTR (use_p);
+
+	  /* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
+	  if (TREE_CODE (arg) != SSA_NAME
+	      || !defined_in_loop_p (arg, loop))
+	    continue;
+
+	  tree res = copy_ssa_name (arg);
+	  gphi *close_phi = create_phi_node (res, close);
+	  add_phi_arg (close_phi, arg, gimple_phi_arg_edge (close_phi, 0),
+		       UNKNOWN_LOCATION);
+	  SET_USE (use_p, res);
+	}
+
+      make_close_phi_nodes_unique (close);
+    }
+}
+
+/* Converts the current loop closed SSA form to a canonical form
+   expected by the Graphite code generation.
+
+   The loop closed SSA form has the following invariant: a variable
+   defined in a loop that is used outside the loop appears only in the
+   phi nodes in the destination of the loop exit.  These phi nodes are
+   called close phi nodes.
+
+   The canonical loop closed SSA form contains the extra invariants:
+
+   - when the loop contains only one exit, the close phi nodes contain
+   only one argument.  That implies that the basic block that contains
+   the close phi nodes has only one predecessor, that is a basic block
+   in the loop.
+
+   - the basic block containing the close phi nodes does not contain
+   other statements.
+
+   - there exist only one phi node per definition in the loop.
+*/
+
+static void
+canonicalize_loop_closed_ssa_form (void)
+{
+  loop_p loop;
+  FOR_EACH_LOOP (loop, 0)
+    canonicalize_loop_closed_ssa (loop);
+
+  checking_verify_loop_closed_ssa (true);
+}
+
 isl_ctx *the_isl_ctx;
 
 /* Perform a set of linear transforms on the loops of the current
@@ -313,13 +468,18 @@ graphite_transform_loops (void)
   if (parallelized_function_p (cfun->decl))
     return;
 
-  ctx = isl_ctx_alloc ();
-  isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
-  if (!graphite_initialize (ctx))
+  if (!graphite_initialize ())
     return;
 
+  ctx = isl_ctx_alloc ();
+  isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
   the_isl_ctx = ctx;
+
+  canonicalize_loop_closed_ssa_form ();
+
+  calculate_dominance_info (CDI_POST_DOMINATORS);
   build_scops (&scops);
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {

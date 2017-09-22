@@ -2759,7 +2759,8 @@ translate_pending_phi_nodes ()
 	}
 
       auto_vec <tree, 1> iv_map;
-      if (bb_contains_loop_phi_nodes (new_bb))
+      if (bb_contains_loop_phi_nodes (new_bb)
+	  && bb_contains_loop_phi_nodes (old_bb))
 	codegen_error = !copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
 					    ibp_new_bb, false);
       else if (bb_contains_loop_close_phi_nodes (new_bb))
@@ -2941,12 +2942,8 @@ graphite_regenerate_ast_isl (scop_p scop)
       print_isl_ast (dump_file, root_node);
     }
 
-  recompute_all_dominators ();
-  graphite_verify ();
-
   if_region = move_sese_in_condition (region);
   region->if_region = if_region;
-  recompute_all_dominators ();
 
   loop_p context_loop = region->region.entry->src->loop_father;
 
@@ -2960,45 +2957,28 @@ graphite_regenerate_ast_isl (scop_p scop)
   region->if_region->true_region->region.exit = single_succ_edge (bb);
 
   t.translate_isl_ast (context_loop, root_node, e, ip);
+  if (! t.codegen_error_p ())
+    t.translate_pending_phi_nodes ();
+  if (! t.codegen_error_p ())
+    {
+      sese_insert_phis_for_liveouts (region,
+				     if_region->region->region.exit->src,
+				     if_region->false_region->region.exit,
+				     if_region->true_region->region.exit);
+      if (dump_file)
+	fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
+
+      mark_virtual_operands_for_renaming (cfun);
+      update_ssa (TODO_update_ssa);
+    }
+
   if (t.codegen_error_p ())
     {
       if (dump_file)
 	fprintf (dump_file, "codegen error: "
 		 "reverting back to the original code.\n");
       set_ifsese_condition (if_region, integer_zero_node);
-    }
-  else
-    {
-      t.translate_pending_phi_nodes ();
-      if (!t.codegen_error_p ())
-	{
-	  sese_insert_phis_for_liveouts (region,
-					 if_region->region->region.exit->src,
-					 if_region->false_region->region.exit,
-					 if_region->true_region->region.exit);
-	  mark_virtual_operands_for_renaming (cfun);
-	  update_ssa (TODO_update_ssa);
 
-
-	  graphite_verify ();
-	  scev_reset ();
-	  recompute_all_dominators ();
-	  graphite_verify ();
-
-	  if (dump_file)
-	    fprintf (dump_file, "[codegen] isl AST to Gimple succeeded.\n");
-	}
-      else
-	{
-	  if (dump_file)
-	    fprintf (dump_file, "[codegen] unsuccessful in translating"
-		     " pending phis, reverting back to the original code.\n");
-	  set_ifsese_condition (if_region, integer_zero_node);
-	}
-    }
-
-  if (t.codegen_error_p ())
-    {
       /* We registered new names, scrap that.  */
       if (need_ssa_update_p (cfun))
 	delete_update_ssa ();
@@ -3016,6 +2996,9 @@ graphite_regenerate_ast_isl (scop_p scop)
 	if (! loop->header)
 	  delete_loop (loop);
     }
+
+  graphite_verify ();
+  scev_reset ();
 
   free (if_region->true_region);
   free (if_region->region);

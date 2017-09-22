@@ -335,9 +335,11 @@ get_false_edge_from_guard_bb (basic_block bb)
 
 /* Sets the false region of an IF_REGION to REGION.  */
 
-void
+static void
 if_region_set_false_region (ifsese if_region, sese_info_p region)
 {
+  free_dominance_info (CDI_DOMINATORS);
+
   basic_block condition = if_region_get_condition_block (if_region);
   edge false_edge = get_false_edge_from_guard_bb (condition);
   basic_block dummy = false_edge->dest;
@@ -348,6 +350,8 @@ if_region_set_false_region (ifsese if_region, sese_info_p region)
   hashval_t hash = htab_hash_pointer (exit_region);
   loop_exit **slot
     = current_loops->exits->find_slot_with_hash (exit_region, hash, NO_INSERT);
+  bool latch_p
+    = exit_region->dest->loop_father->latch == exit_region->src;
 
   entry_region->flags = false_edge->flags;
   false_edge->flags = exit_region->flags;
@@ -359,7 +363,6 @@ if_region_set_false_region (ifsese if_region, sese_info_p region)
   delete_basic_block (dummy);
 
   exit_region->flags = EDGE_FALLTHRU;
-  recompute_all_dominators ();
 
   region->region.exit = false_edge;
 
@@ -381,6 +384,10 @@ if_region_set_false_region (ifsese if_region, sese_info_p region)
       *slot = loop_exit;
       false_edge->src->loop_father->exits->next = loop_exit;
     }
+  if (latch_p)
+    exit_region->dest->loop_father->latch = before_region;
+
+  calculate_dominance_info (CDI_DOMINATORS);
 }
 
 /* Creates an IFSESE with CONDITION on edge ENTRY.  */
@@ -429,6 +436,7 @@ create_if_region_on_edge (edge entry, tree condition)
 ifsese
 move_sese_in_condition (sese_info_p region)
 {
+  gcc_assert (! dom_info_available_p (cfun, CDI_POST_DOMINATORS));
   basic_block pred_block = split_edge (region->region.entry);
   ifsese if_region;
 
