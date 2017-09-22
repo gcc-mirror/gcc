@@ -1,5 +1,21 @@
 2017-09-22  Richard Biener  <rguenther@suse.de>
 
+	* graphite-isl-ast-to-gimple.c (graphite_verify): Inline into
+	single caller.
+	(graphite_regenerate_ast_isl): Do not reset SCEV.  Move debug
+	print of no dependency loops ...
+	* graphite.c (graphite_transform_loops): ... here.
+	(canonicalize_loop_closed_ssa_form): Work from inner to outer
+	loops.
+	(same_close_phi_node, remove_duplicate_close_phi,
+	make_close_phi_nodes_unique, defined_in_loop_p): Fold into ...
+	(canonicalize_loop_closed_ssa): ... here and simplify.
+	* graphite-optimize-isl.c: Include tree-vectorizer.h.
+	(optimize_isl): Use dump_printf_loc to tell when we stopped
+	optimizing because of an ISL timeout.
+
+2017-09-22  Richard Biener  <rguenther@suse.de>
+
 	PR tree-optimization/82291
 	* tree-if-conv.c (predicate_mem_writes): Make sure to
 	remove writes in blocks predicated with false.

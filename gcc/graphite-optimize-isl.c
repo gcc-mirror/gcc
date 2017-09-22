@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-data-ref.h"
 #include "params.h"
 #include "dumpfile.h"
+#include "tree-vectorizer.h"
 #include "graphite.h"
 
 
@@ -156,9 +157,12 @@ optimize_isl (scop_p scop)
   if (!scop->transformed_schedule
       || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
     {
-      if (dump_file && dump_flags)
-	fprintf (dump_file, "isl timed out --param max-isl-operations=%d\n",
-		 max_operations);
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+		       "loop nest not optimized, optimization timed out "
+		       "after %d operations [--param max-isl-operations]\n",
+		       max_operations);
       return false;
     }
 

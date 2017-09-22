@@ -73,15 +73,6 @@ struct ast_build_info
   bool is_parallelizable;
 };
 
-/* Verifies properties that GRAPHITE should maintain during translation.  */
-
-static inline void
-graphite_verify (void)
-{
-  checking_verify_loop_structure ();
-  checking_verify_loop_closed_ssa (true);
-}
-
 /* IVS_PARAMS maps isl's scattering and parameter identifiers
    to corresponding trees.  */
 
@@ -2997,8 +2988,9 @@ graphite_regenerate_ast_isl (scop_p scop)
 	  delete_loop (loop);
     }
 
-  graphite_verify ();
-  scev_reset ();
+  /* Verifies properties that GRAPHITE should maintain during translation.  */
+  checking_verify_loop_structure ();
+  checking_verify_loop_closed_ssa (true);
 
   free (if_region->true_region);
   free (if_region->region);
@@ -3007,19 +2999,6 @@ graphite_regenerate_ast_isl (scop_p scop)
   ivs_params_clear (ip);
   isl_ast_node_free (root_node);
   timevar_pop (TV_GRAPHITE_CODE_GEN);
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      loop_p loop;
-      int num_no_dependency = 0;
-
-      FOR_EACH_LOOP (loop, 0)
-	if (loop->can_be_parallel)
-	  num_no_dependency++;
-
-      fprintf (dump_file, "%d loops carried no dependency.\n",
-	       num_no_dependency);
-    }
 
   return !t.codegen_error_p ();
 }
