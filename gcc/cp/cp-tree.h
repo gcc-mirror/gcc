@@ -5659,6 +5659,8 @@ struct cp_parameter_declarator {
   tree default_argument;
   /* True iff this is a template parameter pack.  */
   bool template_parameter_pack_p;
+  /* Location within source.  */
+  location_t loc;
 };
 
 /* A declarator.  */

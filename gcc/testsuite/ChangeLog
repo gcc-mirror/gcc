@@ -1,3 +1,9 @@
+2017-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* g++.dg/diagnostic/param-type-mismatch.C: Update expected results
+	to reflect highlighting of parameters; add test coverage for
+	callback parameters.
+
 2017-09-22  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/scop-24.c: New testcase.

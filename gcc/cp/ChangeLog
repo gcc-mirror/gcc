@@ -1,3 +1,19 @@
+2017-09-22  David Malcolm  <dmalcolm@redhat.com>
+
+	* call.c (get_fndecl_argument_location): New function.
+	(convert_like_real): Use it  when complaining about argument type
+	mismatches.
+	* cp-tree.h (struct cp_parameter_declarator): Add "loc" field.
+	* parser.c (make_parameter_declarator): Add "loc" param and use
+	it to initialize the new field.
+	(cp_parser_translation_unit): Add UNKNOWN_LOCATION for "loc" of
+	the "no_parameters" parameter.
+	(cp_parser_parameter_declaration_list): Set the location of the
+	result of grokdeclarator to be the parameter's loc, assuming no
+	errors.
+	(cp_parser_parameter_declaration): Generate a location for the
+	parameter and pass to make_parameter_declarator.
+
 2017-09-20  Nathan Sidwell  <nathan@acm.org>
 
 	* name-lookup.c (member_name_cmp): Use DECL_UID for final

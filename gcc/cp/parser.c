@@ -1691,6 +1691,7 @@ cp_parameter_declarator *
 make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
 			   cp_declarator *declarator,
 			   tree default_argument,
+			   location_t loc,
 			   bool template_parameter_pack_p = false)
 {
   cp_parameter_declarator *parameter;
@@ -1705,6 +1706,7 @@ make_parameter_declarator (cp_decl_specifier_seq *decl_specifiers,
   parameter->declarator = declarator;
   parameter->default_argument = default_argument;
   parameter->template_parameter_pack_p = template_parameter_pack_p;
+  parameter->loc = loc;
 
   return parameter;
 }
@@ -4379,7 +4381,8 @@ cp_parser_translation_unit (cp_parser* parser)
       /* Create the error declarator.  */
       cp_error_declarator = make_declarator (cdk_error);
       /* Create the empty parameter list.  */
-      no_parameters = make_parameter_declarator (NULL, NULL, NULL_TREE);
+      no_parameters = make_parameter_declarator (NULL, NULL, NULL_TREE,
+						 UNKNOWN_LOCATION);
       /* Remember where the base of the declarator obstack lies.  */
       declarator_obstack_base = obstack_next_free (&declarator_obstack);
     }
@@ -21218,6 +21221,8 @@ cp_parser_parameter_declaration_list (cp_parser* parser, bool *is_error)
 				 PARM,
 				 parameter->default_argument != NULL_TREE,
 				 &parameter->decl_specifiers.attributes);
+	  if (decl != error_mark_node && parameter->loc != UNKNOWN_LOCATION)
+	    DECL_SOURCE_LOCATION (decl) = parameter->loc;
 	}
 
       deprecated_state = DEPRECATED_NORMAL;
@@ -21371,6 +21376,7 @@ cp_parser_parameter_declaration (cp_parser *parser,
     = G_("types may not be defined in parameter types");
 
   /* Parse the declaration-specifiers.  */
+  cp_token *decl_spec_token_start = cp_lexer_peek_token (parser->lexer);
   cp_parser_decl_specifier_seq (parser,
 				CP_PARSER_FLAGS_NONE,
 				&decl_specifiers,
@@ -21555,9 +21561,33 @@ cp_parser_parameter_declaration (cp_parser *parser,
   else
     default_argument = NULL_TREE;
 
+  /* Generate a location for the parameter, ranging from the start of the
+     initial token to the end of the final token (using input_location for
+     the latter, set up by cp_lexer_set_source_position_from_token when
+     consuming tokens).
+
+     If we have a identifier, then use it for the caret location, e.g.
+
+       extern int callee (int one, int (*two)(int, int), float three);
+                                   ~~~~~~^~~~~~~~~~~~~~
+
+     otherwise, reuse the start location for the caret location e.g.:
+
+       extern int callee (int one, int (*)(int, int), float three);
+                                   ^~~~~~~~~~~~~~~~~
+
+  */
+  location_t caret_loc = (declarator && declarator->id_loc != UNKNOWN_LOCATION
+			  ? declarator->id_loc
+			  : decl_spec_token_start->location);
+  location_t param_loc = make_location (caret_loc,
+					decl_spec_token_start->location,
+					input_location);
+
   return make_parameter_declarator (&decl_specifiers,
 				    declarator,
 				    default_argument,
+				    param_loc,
 				    template_parameter_pack_p);
 }
 
