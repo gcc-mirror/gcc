@@ -1,3 +1,9 @@
+2017-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35691
+	* match.pd: Simplify x == -1 & y == -1 into (x & y) == -1
+	and x != -1 | y != -1 into (x & y) != -1.
+
 2017-09-22  Steve Ellcey  <sellcey@cavium.com>
 
 	* config.gcc: Add new case statement to set
