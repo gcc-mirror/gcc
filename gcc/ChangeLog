@@ -1,5 +1,16 @@
 2017-09-22  Richard Earnshaw  <richard.earnshaw@arm.com>
 
+	* config/arm/parsecpu.awk (fatal): Note that we've encountered an
+	error.  Only quit immediately if parsing is complete.
+	(BEGIN): Initialize fatal_err and parse_done.
+	(begin fpu, end fpu): Check number of arguments.
+	(begin arch, end arch): Likewise.
+	(begin cpu, end cpu): Likewise.
+	(cname, tune for, tune flags, architecture, fpu, option): Likewise.
+	(optalias): Likewise.
+
+2017-09-22  Richard Earnshaw  <richard.earnshaw@arm.com>
+
 	* config.gcc (arm*-*-*): Don't add arm-isa.h to tm_p_file.
 	* config/arm/arm-isa.h: Delete.  Move definitions to ...
 	* arm-cpus.in: ... here.  Use new feature and fgroup values.
