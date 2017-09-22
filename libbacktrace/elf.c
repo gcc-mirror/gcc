@@ -75,6 +75,35 @@ xstrnlen (const char *s, size_t maxlen)
 
 #endif
 
+#ifndef HAVE_LSTAT
+
+/* Dummy version of lstat for systems that don't have it.  */
+
+static int
+xlstat (const char *path ATTRIBUTE_UNUSED, struct stat *st ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+#define lstat xlstat
+
+#endif
+
+#ifndef HAVE_READLINK
+
+/* Dummy version of readlink for systems that don't have it.  */
+
+static ssize_t
+xreadlink (const char *path ATTRIBUTE_UNUSED, char *buf ATTRIBUTE_UNUSED,
+	   size_t bufsz ATTRIBUTE_UNUSED)
+{
+  return -1;
+}
+
+#define readlink xreadlink
+
+#endif
+
 #ifndef HAVE_DL_ITERATE_PHDR
 
 /* Dummy version of dl_iterate_phdr for systems that don't have it.  */
