@@ -1,3 +1,11 @@
+2017-09-22  Ian Lance Taylor  <iant@golang.org>
+
+	PR sanitizer/77631
+	* configure.ac: Check for lstat and readlink.
+	* elf.c (lstat, readlink): Provide dummy versions if real versions
+	are not available.
+	* configure, config.h.in: Rebuild.
+
 2017-09-21  Ian Lance Taylor  <iant@google.com>
 
 	PR go/82284

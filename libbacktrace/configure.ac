@@ -373,6 +373,7 @@ if test "$have_fcntl" = "yes"; then
 fi
 
 AC_CHECK_DECLS(strnlen)
+AC_CHECK_FUNCS(lstat readlink)
 
 # Check for getexecname function.
 if test -n "${with_target_subdir}"; then
