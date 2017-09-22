@@ -1,5 +1,13 @@
 2017-09-22  Richard Biener  <rguenther@suse.de>
 
+	* sese.c: Include cfganal.h.
+	(if_region_set_false_region): Remove.
+	(create_if_region_on_edge): Likewise.
+	(move_sese_in_condition): Re-implement without destroying
+	dominators.
+
+2017-09-22  Richard Biener  <rguenther@suse.de>
+
 	* graphite-isl-ast-to-gimple.c (translate_pending_phi_nodes):
 	Verify both BBs contain loop PHI nodes before dispatching to
 	copy_loop_phi_args.
