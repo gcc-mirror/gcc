@@ -1,3 +1,11 @@
+2017-09-22  Steve Ellcey  <sellcey@cavium.com>
+
+	* config.gcc: Add new case statement to set
+	default_gnu_indirect_function.  Remove it from x86_64-*-linux*,
+	i[34567]86-*, powerpc*-*-linux*spe*, powerpc*-*-linux*, s390-*-linux*,
+	s390x-*-linux* case statements.   Added aarch64 to the list of
+	supported architectures.
+
 2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/82289
