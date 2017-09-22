@@ -1,3 +1,25 @@
+2017-09-22  Richard Earnshaw  <richard.earnshaw@arm.com>
+
+	* config.gcc (arm*-*-*): Don't add arm-isa.h to tm_p_file.
+	* config/arm/arm-isa.h: Delete.  Move definitions to ...
+	* arm-cpus.in: ... here.  Use new feature and fgroup values.
+	* config/arm/arm.c (arm_option_override): Use lower case for feature
+	bit names.
+	* config/arm/arm.h (TARGET_HARD_FLOAT): Likewise.
+	(TARGET_VFP3, TARGET_VFP5, TARGET_FMA): Likewise.
+	* config/arm/parsecpu.awk (END): Add new command 'isa'.
+	(isa_pfx): Delete.
+	(print_isa_bits_for): New function.
+	(gen_isa): New function.
+	(gen_comm_data): Use print_isa_bits_for.
+	(define feature): New keyword.
+	(define fgroup): New keyword.
+	* config/arm/t-arm (TM_H): Remove.
+	(GTM_H): Add arm-isa.h.
+	(arm-isa.h): Add rule to generate file.
+	* common/config/arm/arm-common.c: (arm_canon_arch_option): Use lower
+	case for feature bit names.
+
 2017-09-22  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c (graphite_verify): Inline into
