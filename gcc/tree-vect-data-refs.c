@@ -955,7 +955,6 @@ vect_compute_data_ref_alignment (struct data_reference *dr)
   return true;
 }
 
-
 /* Function vect_update_misalignment_for_peel.
    Sets DR's misalignment
    - to 0 if it has the same alignment as DR_PEEL,
@@ -975,8 +974,8 @@ vect_update_misalignment_for_peel (struct data_reference *dr,
   unsigned int i;
   vec<dr_p> same_aligned_drs;
   struct data_reference *current_dr;
-  int dr_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr))));
-  int dr_peel_size = GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr_peel))));
+  int dr_size = vect_get_scalar_dr_size (dr);
+  int dr_peel_size = vect_get_scalar_dr_size (dr_peel);
   stmt_vec_info stmt_info = vinfo_for_stmt (DR_STMT (dr));
   stmt_vec_info peel_stmt_info = vinfo_for_stmt (DR_STMT (dr_peel));
 
@@ -1664,8 +1663,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
 
               vectype = STMT_VINFO_VECTYPE (stmt_info);
               nelements = TYPE_VECTOR_SUBPARTS (vectype);
-              mis = DR_MISALIGNMENT (dr) / GET_MODE_SIZE (TYPE_MODE (
-                                                TREE_TYPE (DR_REF (dr))));
+	      mis = DR_MISALIGNMENT (dr) / vect_get_scalar_dr_size (dr);
 	      if (DR_MISALIGNMENT (dr) != 0)
 		npeel_tmp = (negative ? (mis - nelements)
 			     : (nelements - mis)) & (nelements - 1);
@@ -1937,8 +1935,7 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  updating DR_MISALIGNMENT values.  The peeling factor is the
                  vectorization factor minus the misalignment as an element
                  count.  */
-              mis = DR_MISALIGNMENT (dr0);
-              mis /= GET_MODE_SIZE (TYPE_MODE (TREE_TYPE (DR_REF (dr0))));
+	      mis = DR_MISALIGNMENT (dr0) / vect_get_scalar_dr_size (dr0);
               npeel = ((negative ? mis - nelements : nelements - mis)
 		       & (nelements - 1));
             }

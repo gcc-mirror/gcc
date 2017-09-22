@@ -1095,6 +1095,19 @@ vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
 	  / TYPE_VECTOR_SUBPARTS (vectype));
 }
 
+/* Return the size of the value accessed by unvectorized data reference DR.
+   This is only valid once STMT_VINFO_VECTYPE has been calculated for the
+   associated gimple statement, since that guarantees that DR accesses
+   either a scalar or a scalar equivalent.  ("Scalar equivalent" here
+   includes things like V1SI, which can be vectorized in the same way
+   as a plain SI.)  */
+
+inline unsigned int
+vect_get_scalar_dr_size (struct data_reference *dr)
+{
+  return tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (DR_REF (dr))));
+}
+
 /* Source location */
 extern source_location vect_location;
 

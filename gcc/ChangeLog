@@ -1,3 +1,11 @@
+2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	* tree-vectorizer.h (vect_get_scalar_dr_size): New function.
+	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Use it.
+	(vect_enhance_data_refs_alignment): Likewise.
+
 2017-09-22  Richard Earnshaw  <richard.earnshaw@arm.com>
 
 	* config/arm/parsecpu.awk (fatal): Note that we've encountered an
