@@ -1,5 +1,12 @@
 2017-09-22  Jakub Jelinek  <jakub@redhat.com>
 
+	PR middle-end/35691
+	* gcc.dg/pr35691-1.c: Use -fdump-tree-forwprop1-details
+	instead of -fdump-tree-forwprop-details in dg-options.
+	* gcc.dg/pr35691-2.c: Likewise.
+	* gcc.dg/pr35691-3.c: New test.
+	* gcc.dg/pr35691-4.c: New test.
+
 	PR sanitizer/81929
 	* g++.dg/ubsan/pr81929.C: New test.
 
