@@ -293,59 +293,53 @@ free_scops (vec<scop_p> scops)
   scops.release ();
 }
 
-/* Returns true when P1 and P2 are close phis with the same
-   argument.  */
-
-static inline bool
-same_close_phi_node (gphi *p1, gphi *p2)
-{
-  return (types_compatible_p (TREE_TYPE (gimple_phi_result (p1)),
-			      TREE_TYPE (gimple_phi_result (p2)))
-	  && operand_equal_p (gimple_phi_arg_def (p1, 0),
-			      gimple_phi_arg_def (p2, 0), 0));
-}
-
-static void make_close_phi_nodes_unique (basic_block bb);
-
-/* Remove the close phi node at GSI and replace its rhs with the rhs
-   of PHI.  */
+/* Transforms LOOP to the canonical loop closed SSA form.  */
 
 static void
-remove_duplicate_close_phi (gphi *phi, gphi_iterator *gsi)
+canonicalize_loop_closed_ssa (loop_p loop)
 {
-  gimple *use_stmt;
-  use_operand_p use_p;
-  imm_use_iterator imm_iter;
-  tree res = gimple_phi_result (phi);
-  tree def = gimple_phi_result (gsi->phi ());
-
-  gcc_assert (same_close_phi_node (phi, gsi->phi ()));
-
-  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, def)
-    {
-      FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
-	SET_USE (use_p, res);
-
-      update_stmt (use_stmt);
-
-      /* It is possible that we just created a duplicate close-phi
-	 for an already-processed containing loop.  Check for this
-	 case and clean it up.  */
-      if (gimple_code (use_stmt) == GIMPLE_PHI
-	  && gimple_phi_num_args (use_stmt) == 1)
-	make_close_phi_nodes_unique (gimple_bb (use_stmt));
-    }
-
-  remove_phi_node (gsi, true);
-}
-
-/* Removes all the close phi duplicates from BB.  */
-
-static void
-make_close_phi_nodes_unique (basic_block bb)
-{
+  edge e = single_exit (loop);
+  basic_block bb;
   gphi_iterator psi;
 
+  if (!e || (e->flags & EDGE_COMPLEX))
+    return;
+
+  bb = e->dest;
+
+  /* Make the loop-close PHI node BB contain only PHIs and have a
+     single predecessor.  */
+  if (single_pred_p (bb))
+    {
+      e = split_block_after_labels (bb);
+      bb = e->src;
+    }
+  else
+    {
+      basic_block close = split_edge (e);
+      e = single_succ_edge (close);
+      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
+	{
+	  gphi *phi = psi.phi ();
+	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
+	  tree arg = USE_FROM_PTR (use_p);
+
+	  /* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
+	  if (TREE_CODE (arg) != SSA_NAME
+	      || loop_containing_stmt (SSA_NAME_DEF_STMT (arg)) != loop)
+	    continue;
+
+	  tree res = copy_ssa_name (arg);
+	  gphi *close_phi = create_phi_node (res, close);
+	  add_phi_arg (close_phi, arg, gimple_phi_arg_edge (close_phi, 0),
+		       UNKNOWN_LOCATION);
+	  SET_USE (use_p, res);
+	}
+      bb = close;
+    }
+
+  /* Eliminate duplicates.  This relies on processing loops from
+     innermost to outer.  */
   for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
     {
       gphi_iterator gsi = psi;
@@ -357,64 +351,14 @@ make_close_phi_nodes_unique (basic_block bb)
       /* Iterate over the next phis and remove duplicates.  */
       gsi_next (&gsi);
       while (!gsi_end_p (gsi))
-	if (same_close_phi_node (phi, gsi.phi ()))
-	  remove_duplicate_close_phi (phi, &gsi);
+	if (gimple_phi_arg_def (phi, 0) == gimple_phi_arg_def (gsi.phi (), 0))
+	  {
+	    replace_uses_by (gimple_phi_result (gsi.phi ()),
+			     gimple_phi_result (phi));
+	    remove_phi_node (&gsi, true);
+	  }
 	else
 	  gsi_next (&gsi);
-    }
-}
-
-/* Return true when NAME is defined in LOOP.  */
-
-static bool
-defined_in_loop_p (tree name, loop_p loop)
-{
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-  return loop == loop_containing_stmt (SSA_NAME_DEF_STMT (name));
-}
-
-/* Transforms LOOP to the canonical loop closed SSA form.  */
-
-static void
-canonicalize_loop_closed_ssa (loop_p loop)
-{
-  edge e = single_exit (loop);
-  basic_block bb;
-
-  if (!e || (e->flags & EDGE_COMPLEX))
-    return;
-
-  bb = e->dest;
-
-  if (single_pred_p (bb))
-    {
-      e = split_block_after_labels (bb);
-      make_close_phi_nodes_unique (e->src);
-    }
-  else
-    {
-      gphi_iterator psi;
-      basic_block close = split_edge (e);
-      e = single_succ_edge (close);
-      for (psi = gsi_start_phis (bb); !gsi_end_p (psi); gsi_next (&psi))
-	{
-	  gphi *phi = psi.phi ();
-	  use_operand_p use_p = PHI_ARG_DEF_PTR_FROM_EDGE (phi, e);
-	  tree arg = USE_FROM_PTR (use_p);
-
-	  /* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
-	  if (TREE_CODE (arg) != SSA_NAME
-	      || !defined_in_loop_p (arg, loop))
-	    continue;
-
-	  tree res = copy_ssa_name (arg);
-	  gphi *close_phi = create_phi_node (res, close);
-	  add_phi_arg (close_phi, arg, gimple_phi_arg_edge (close_phi, 0),
-		       UNKNOWN_LOCATION);
-	  SET_USE (use_p, res);
-	}
-
-      make_close_phi_nodes_unique (close);
     }
 }
 
@@ -443,7 +387,7 @@ static void
 canonicalize_loop_closed_ssa_form (void)
 {
   loop_p loop;
-  FOR_EACH_LOOP (loop, 0)
+  FOR_EACH_LOOP (loop, LI_FROM_INNERMOST)
     canonicalize_loop_closed_ssa (loop);
 
   checking_verify_loop_closed_ssa (true);
@@ -508,6 +452,19 @@ graphite_transform_loops (void)
 	  dump_printf_loc (MSG_OPTIMIZED_LOCATIONS, loc,
 			   "loop nest optimized\n");
       }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      loop_p loop;
+      int num_no_dependency = 0;
+
+      FOR_EACH_LOOP (loop, 0)
+	if (loop->can_be_parallel)
+	  num_no_dependency++;
+
+      fprintf (dump_file, "%d loops carried no dependency.\n",
+	       num_no_dependency);
+    }
 
   free_scops (scops);
   graphite_finalize (need_cfg_cleanup_p);
