@@ -1194,7 +1194,7 @@ See RS/6000 and PowerPC Options.
 -mincoming-stack-boundary=@var{num} @gol
 -mcld  -mcx16  -msahf  -mmovbe  -mcrc32 @gol
 -mrecip  -mrecip=@var{opt} @gol
--mvzeroupper  -mprefer-avx128 @gol
+-mvzeroupper  -mprefer-avx128 -mprefer-avx256 @gol
 -mmmx  -msse  -msse2  -msse3  -mssse3  -msse4.1  -msse4.2  -msse4  -mavx @gol
 -mavx2  -mavx512f  -mavx512pf  -mavx512er  -mavx512cd  -mavx512vl @gol
 -mavx512bw  -mavx512dq  -mavx512ifma  -mavx512vbmi  -msha  -maes @gol
@@ -25857,6 +25857,11 @@ intrinsics.
 @opindex mprefer-avx128
 This option instructs GCC to use 128-bit AVX instructions instead of
 256-bit AVX instructions in the auto-vectorizer.
+
+@item -mprefer-avx256
+@opindex mprefer-avx256
+This option instructs GCC to use 256-bit AVX instructions instead of
+512-bit AVX instructions in the auto-vectorizer.
 
 @item -mcx16
 @opindex mcx16

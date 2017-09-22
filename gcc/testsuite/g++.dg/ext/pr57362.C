@@ -81,6 +81,8 @@ __attribute__((target("dispatch-scheduler")))
 int foo(void) { return 1; }
 __attribute__((target("prefer-avx128")))
 int foo(void) { return 1; }
+__attribute__((target("prefer-avx256")))
+int foo(void) { return 1; }
 __attribute__((target("32")))
 int foo(void) { return 1; }
 __attribute__((target("64")))
