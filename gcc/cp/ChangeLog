@@ -1,3 +1,12 @@
+2017-09-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81929
+	* tree.c (struct replace_placeholders_t): Add pset field.
+	(replace_placeholders_r): Call cp_walk_tree with d->pset as
+	last argument instead of NULL.  Formatting fix.
+	(replace_placeholders): Add pset variable, add its address
+	into data.  Pass &pset instead of NULL to cp_walk_tree.
+
 2017-09-18  Jason Merrill  <jason@redhat.com>
 
 	PR c++/81236 - ICE with template-id in generic lambda
