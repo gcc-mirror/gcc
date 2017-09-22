@@ -40,6 +40,210 @@
 # names in the final compiler.  The order within each group is preserved and
 # forms the order for the list within the compiler.
 
+# Most objects in this file support forward references.  The major
+# exception is feature groups, which may only refer to previously
+# defined features or feature groups.  This is done to avoid the risk
+# of feature groups recursively referencing each other and causing
+# the parser to hang.
+
+# Features - general convention: all lower case.
+
+# Extended multiply
+define feature armv3m
+
+# 26-bit mode support
+define feature mode26
+
+# 32-bit mode support
+define feature mode32
+
+# Architecture rel 4
+define feature armv4
+
+# Architecture rel 5
+define feature armv5
+
+# Thumb aware.
+define feature thumb
+
+# Architecture rel 5e.
+define feature armv5e
+
+# XScale.
+define feature xscale
+
+# Architecture rel 6.
+define feature armv6
+
+# Architecture rel 6k.
+define feature armv6k
+
+# Thumb-2.
+define feature thumb2
+
+# Instructions not present in 'M' profile.
+define feature notm
+
+# Architecture uses be8 mode in big-endian.
+define feature be8
+
+# Thumb division instructions.
+define feature tdiv
+
+# Architecture rel 7e-m.
+define feature armv7em
+
+# Architecture rel 7.
+define feature armv7
+
+# ARM division instructions.
+define feature adiv
+
+# Architecture rel 8.
+define feature armv8
+
+# ARMv8 CRC32 instructions.
+define feature crc32
+
+# XScale v2 (Wireless MMX).
+define feature iwmmxt
+
+# XScale Wireless MMX2.
+define feature iwmmxt2
+
+# Architecture rel 8.1.
+define feature armv8_1
+
+# Architecutre rel 8.2.
+define feature armv8_2
+
+# M-Profile security extensions.
+define feature cmse
+
+# Floating point and Neon extensions.
+# VFPv1 is not supported in GCC.
+
+# Vector floating point v2.
+define feature vfpv2
+
+# Vector floating point v3.
+define feature vfpv3
+
+# Vector floating point v4.
+define feature vfpv4
+
+# Floating point v5.
+define feature fpv5
+
+# ARMv7-A LPAE.
+define feature lpae
+
+# Advanced SIMD instructions.
+define feature neon
+
+# Conversions to/from fp16 (VFPv3 extension).
+define feature fp16conv
+
+# Double precision operations supported.
+define feature fp_dbl
+
+# 32 Double precision registers.
+define feature fp_d32
+
+# Crypto extension to ARMv8.
+define feature crypto
+
+# FP16 data processing (half-precision float).
+define feature fp16
+
+
+# ISA Quirks (errata?).  Don't forget to add this to the fgroup
+# ALL_QUIRKS below.
+
+# No volatile memory in IT blocks.
+define feature quirk_no_volatile_ce
+
+# Previously mis-identified by GCC.
+define feature quirk_armv6kz
+
+# Cortex-M3 LDRD quirk.
+define feature quirk_cm3_ldrd
+
+# (Very) slow multiply operations.  Should probably be a tuning bit.
+define feature smallmul
+
+# Feature groups.  Conventionally all (or mostly) upper case.
+
+# List of all cryptographic extensions to stripout if crypto is
+# disabled.  Currently, that's trivial, but we define it anyway for
+# consistency with the SIMD and FP disable lists.
+define fgroup ALL_CRYPTO	crypto
+
+# List of all SIMD bits to strip out if SIMD is disabled.  This does
+# strip off 32 D-registers, but does not remove support for
+# double-precision FP.
+define fgroup ALL_SIMD	fp_d32 neon ALL_CRYPTO
+
+# List of all FPU bits to strip out if -mfpu is used to override the
+# default.  fp16 is deliberately missing from this list.
+define fgroup ALL_FPU_INTERNAL	vfpv2 vfpv3 vfpv4 fpv5 fp16conv fp_dbl ALL_SIMD
+
+# Similarly, but including fp16 and other extensions that aren't part of
+# -mfpu support.
+define fgroup ALL_FP	fp16 ALL_FPU_INTERNAL
+
+define fgroup ARMv2       notm
+define fgroup ARMv3       ARMv2 mode32
+define fgroup ARMv3m      ARMv3 armv3m
+define fgroup ARMv4       ARMv3m armv4
+define fgroup ARMv4t      ARMv4 thumb
+define fgroup ARMv5       ARMv4 armv5
+define fgroup ARMv5t      ARMv5 thumb
+define fgroup ARMv5e      ARMv5 armv5e
+define fgroup ARMv5te     ARMv5e thumb
+define fgroup ARMv5tej    ARMv5te
+define fgroup ARMv6       ARMv5te armv6 be8
+define fgroup ARMv6j      ARMv6
+define fgroup ARMv6k      ARMv6 armv6k
+define fgroup ARMv6z      ARMv6
+define fgroup ARMv6kz     ARMv6k quirk_armv6kz
+define fgroup ARMv6zk     ARMv6k
+define fgroup ARMv6t2     ARMv6 thumb2
+# This is suspect.  ARMv6-m doesn't really pull in any useful features
+# from ARMv5* or ARMv6.
+define fgroup ARMv6m      mode32 armv3m armv4 thumb armv5 armv5e armv6
+# This is suspect, the 'common' ARMv7 subset excludes the thumb2 'DSP' and
+# integer SIMD instructions that are in ARMv6T2.  */
+define fgroup ARMv7       ARMv6m thumb2 armv7
+
+define fgroup ARMv7a      ARMv7 notm armv6k
+define fgroup ARMv7ve     ARMv7a adiv tdiv lpae
+define fgroup ARMv7r      ARMv7a tdiv
+define fgroup ARMv7m      ARMv7 tdiv
+define fgroup ARMv7em     ARMv7m armv7em
+define fgroup ARMv8a      ARMv7ve armv8
+define fgroup ARMv8_1a    ARMv8a crc32 armv8_1
+define fgroup ARMv8_2a    ARMv8_1a armv8_2
+define fgroup ARMv8m_base ARMv6m armv8 cmse tdiv
+define fgroup ARMv8m_main ARMv7m armv8 cmse
+define fgroup ARMv8r      ARMv8a
+
+# Useful combinations.
+define fgroup VFPv2	vfpv2
+define fgroup VFPv3	VFPv2 vfpv3
+define fgroup VFPv4	VFPv3 vfpv4 fp16conv
+define fgroup FPv5	VFPv4 fpv5
+
+define fgroup FP_DBL	fp_dbl
+define fgroup FP_D32	FP_DBL fp_d32
+define fgroup FP_ARMv8	FPv5 FP_D32
+define fgroup NEON	FP_D32 neon
+define fgroup CRYPTO	NEON crypto
+
+# List of all quirk bits to strip out when comparing CPU features with
+# architectures.
+define fgroup ALL_QUIRKS   quirk_no_volatile_ce quirk_armv6kz quirk_cm3_ldrd
+
 # Architecture entries
 # format:
 # begin arch <name>
@@ -55,38 +259,38 @@ begin arch armv2
  tune for arm2
  tune flags CO_PROC NO_MODE32
  base 2
- isa ARMv2 bit_mode26
+ isa ARMv2 mode26
 end arch armv2
 
 begin arch armv2a
  tune for arm2
  tune flags CO_PROC NO_MODE32
  base 2
- isa ARMv2 bit_mode26
+ isa ARMv2 mode26
 end arch armv2a
 
 begin arch armv3
  tune for arm6
  tune flags CO_PROC
  base 3
- isa ARMv3 bit_mode26
+ isa ARMv3 mode26
 end arch armv3
 
 begin arch armv3m
  tune for arm7m
  tune flags CO_PROC
  base 3M
- isa ARMv3m bit_mode26
+ isa ARMv3m mode26
 end arch armv3m
 
 begin arch armv4
  tune for arm7tdmi
  tune flags CO_PROC
  base 4
- isa ARMv4 bit_mode26
+ isa ARMv4 mode26
 end arch armv4
 
-# Strictly, bit_mode26 is a permitted option for v4t, but there are no
+# Strictly, mode26 is a permitted option for v4t, but there are no
 # implementations that support it, so we will leave it out for now.
 begin arch armv4t
  tune for arm7tdmi
@@ -244,14 +448,14 @@ begin arch armv7-a
  option fp	       add VFPv3 FP_DBL
  optalias vfpv3-d16    fp
  option vfpv3	       add VFPv3 FP_D32
- option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
- option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 bit_fp16conv
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 fp16conv
  option vfpv4-d16      add VFPv4 FP_DBL
  option vfpv4	       add VFPv4 FP_D32
  option simd	       add VFPv3 NEON
  optalias neon	       simd
  optalias neon-vfpv3   simd
- option neon-fp16      add VFPv3 NEON bit_fp16conv
+ option neon-fp16      add VFPv3 NEON fp16conv
  option neon-vfpv4     add VFPv4 NEON
  option nosimd	    remove ALL_SIMD
  option nofp	    remove ALL_FP
@@ -266,14 +470,14 @@ begin arch armv7ve
 # fp => VFPv4-d16, simd => neon-vfpv4
  option vfpv3-d16      add VFPv3 FP_DBL
  option vfpv3 	       add VFPv3 FP_D32
- option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
- option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 bit_fp16conv
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16     add VFPv3 FP_DBL FP_D32 fp16conv
  option fp 	       add VFPv4 FP_DBL
  optalias vfpv4-d16    fp
  option vfpv4 	       add VFPv4 FP_D32
  option neon 	       add VFPv3 NEON
  optalias neon-vfpv3   neon
- option neon-fp16      add VFPv3 NEON bit_fp16conv
+ option neon-fp16      add VFPv3 NEON fp16conv
  option simd 	       add VFPv4 NEON
  optalias neon-vfpv4   simd
  option nosimd	    remove ALL_SIMD
@@ -291,9 +495,9 @@ begin arch armv7-r
  optalias vfpv3xd fp.sp
  option fp add VFPv3 FP_DBL
  optalias vfpv3-d16 fp
- option idiv add bit_adiv
+ option idiv add adiv
  option nofp remove ALL_FP
- option noidiv remove bit_adiv
+ option noidiv remove adiv
 end arch armv7-r
 
 begin arch armv7-m
@@ -327,7 +531,7 @@ begin arch armv8-a
  base 8A
  profile A
  isa ARMv8a
- option crc add bit_crc32
+ option crc add crc32
  option simd add FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
@@ -353,7 +557,7 @@ begin arch armv8.2-a
  profile A
  isa ARMv8_2a
  option simd add FP_ARMv8 NEON
- option fp16 add bit_fp16 FP_ARMv8 NEON
+ option fp16 add fp16 FP_ARMv8 NEON
  option crypto add FP_ARMv8 CRYPTO
  option nocrypto remove ALL_CRYPTO
  option nofp remove ALL_FP
@@ -372,12 +576,12 @@ begin arch armv8-m.main
  base 8M_MAIN
  profile M
  isa ARMv8m_main
- option dsp add bit_ARMv7em
+ option dsp add armv7em
 # fp => FPv5-sp-d16; fp.dp => FPv5-d16
  option fp add FPv5
  option fp.dp add FPv5 FP_DBL
  option nofp remove ALL_FP
- option nodsp remove bit_ARMv7em
+ option nodsp remove armv7em
 end arch armv8-m.main
 
 begin arch armv8-r
@@ -386,7 +590,7 @@ begin arch armv8-r
  base 8R
  profile R
  isa ARMv8r
- option crc add bit_crc32
+ option crc add crc32
 # fp.sp => fp-armv8 (d16); simd => simd + fp-armv8 + d32 + double precision
 # note: no fp option for fp-armv8 (d16) + double precision at the moment
  option fp.sp add FPv5
@@ -400,14 +604,14 @@ begin arch iwmmxt
  tune for iwmmxt
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te bit_xscale bit_iwmmxt
+ isa ARMv5te xscale iwmmxt
 end arch iwmmxt
 
 begin arch iwmmxt2
  tune for iwmmxt2
  tune flags LDSCHED STRONG XSCALE
  base 5TE
- isa ARMv5te bit_xscale bit_iwmmxt bit_iwmmxt2
+ isa ARMv5te xscale iwmmxt iwmmxt2
 end arch iwmmxt2
 
 # CPU entries
@@ -783,7 +987,7 @@ end cpu arm1022e
 begin cpu xscale
  tune flags LDSCHED XSCALE
  architecture armv5te
- isa bit_xscale
+ isa xscale
  costs xscale
 end cpu xscale
 
@@ -961,14 +1165,14 @@ begin cpu generic-armv7-a
  fpu vfpv3-d16
  option vfpv3-d16 add VFPv3 FP_DBL
  option vfpv3 add VFPv3 FP_D32
- option vfpv3-d16-fp16 add VFPv3 FP_DBL bit_fp16conv
- option vfpv3-fp16 add VFPv3 FP_D32 bit_fp16conv
+ option vfpv3-d16-fp16 add VFPv3 FP_DBL fp16conv
+ option vfpv3-fp16 add VFPv3 FP_D32 fp16conv
  option vfpv4-d16 add VFPv4 FP_DBL
  option vfpv4 add VFPv4 FP_D32
  option simd add VFPv3 NEON
  optalias neon simd
  optalias neon-vfpv3 simd
- option neon-fp16 add VFPv3 NEON bit_fp16conv
+ option neon-fp16 add VFPv3 NEON fp16conv
  option neon-vfpv4 add VFPv4 NEON
  option nosimd remove ALL_SIMD
  option nofp remove ALL_FP
@@ -1344,7 +1548,7 @@ begin fpu vfpv3
 end fpu vfpv3
 
 begin fpu vfpv3-fp16
- isa VFPv3 FP_D32 bit_fp16conv
+ isa VFPv3 FP_D32 fp16conv
 end fpu vfpv3-fp16
 
 begin fpu vfpv3-d16
@@ -1352,7 +1556,7 @@ begin fpu vfpv3-d16
 end fpu vfpv3-d16
 
 begin fpu vfpv3-d16-fp16
- isa VFPv3 FP_DBL bit_fp16conv
+ isa VFPv3 FP_DBL fp16conv
 end fpu vfpv3-d16-fp16
 
 begin fpu vfpv3xd
@@ -1360,7 +1564,7 @@ begin fpu vfpv3xd
 end fpu vfpv3xd
 
 begin fpu vfpv3xd-fp16
- isa VFPv3 bit_fp16conv
+ isa VFPv3 fp16conv
 end fpu vfpv3xd-fp16
 
 begin fpu neon
@@ -1372,7 +1576,7 @@ begin fpu neon-vfpv3
 end fpu neon-vfpv3
 
 begin fpu neon-fp16
- isa VFPv3 NEON bit_fp16conv
+ isa VFPv3 NEON fp16conv
 end fpu neon-fp16
 
 begin fpu vfpv4
