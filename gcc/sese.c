@@ -40,8 +40,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfgloop.h"
 #include "tree-data-ref.h"
 #include "tree-scalar-evolution.h"
-#include "sese.h"
 #include "tree-ssa-propagate.h"
+#include "cfganal.h"
+#include "sese.h"
 
 /* For a USE in BB, if BB is outside REGION, mark the USE in the
    LIVEOUTS set.  */
@@ -333,99 +334,6 @@ get_false_edge_from_guard_bb (basic_block bb)
   return NULL;
 }
 
-/* Sets the false region of an IF_REGION to REGION.  */
-
-static void
-if_region_set_false_region (ifsese if_region, sese_info_p region)
-{
-  free_dominance_info (CDI_DOMINATORS);
-
-  basic_block condition = if_region_get_condition_block (if_region);
-  edge false_edge = get_false_edge_from_guard_bb (condition);
-  basic_block dummy = false_edge->dest;
-  edge entry_region = region->region.entry;
-  edge exit_region = region->region.exit;
-  basic_block before_region = entry_region->src;
-  basic_block last_in_region = exit_region->src;
-  hashval_t hash = htab_hash_pointer (exit_region);
-  loop_exit **slot
-    = current_loops->exits->find_slot_with_hash (exit_region, hash, NO_INSERT);
-  bool latch_p
-    = exit_region->dest->loop_father->latch == exit_region->src;
-
-  entry_region->flags = false_edge->flags;
-  false_edge->flags = exit_region->flags;
-
-  redirect_edge_pred (entry_region, condition);
-  redirect_edge_pred (exit_region, before_region);
-  redirect_edge_pred (false_edge, last_in_region);
-  redirect_edge_succ (false_edge, single_succ (dummy));
-  delete_basic_block (dummy);
-
-  exit_region->flags = EDGE_FALLTHRU;
-
-  region->region.exit = false_edge;
-
-  free (if_region->false_region);
-  if_region->false_region = region;
-
-  if (slot)
-    {
-      struct loop_exit *loop_exit = ggc_cleared_alloc<struct loop_exit> ();
-
-      memcpy (loop_exit, *((struct loop_exit **) slot),
-	      sizeof (struct loop_exit));
-      current_loops->exits->clear_slot (slot);
-
-      hashval_t hash = htab_hash_pointer (false_edge);
-      slot = current_loops->exits->find_slot_with_hash (false_edge, hash,
-							INSERT);
-      loop_exit->e = false_edge;
-      *slot = loop_exit;
-      false_edge->src->loop_father->exits->next = loop_exit;
-    }
-  if (latch_p)
-    exit_region->dest->loop_father->latch = before_region;
-
-  calculate_dominance_info (CDI_DOMINATORS);
-}
-
-/* Creates an IFSESE with CONDITION on edge ENTRY.  */
-
-static ifsese
-create_if_region_on_edge (edge entry, tree condition)
-{
-  edge e;
-  edge_iterator ei;
-  sese_info_p sese_region = XNEW (struct sese_info_t);
-  sese_info_p true_region = XNEW (struct sese_info_t);
-  sese_info_p false_region = XNEW (struct sese_info_t);
-  ifsese if_region = XNEW (struct ifsese_s);
-  edge exit = create_empty_if_region_on_edge (entry, condition);
-
-  if_region->region = sese_region;
-  if_region->region->region.entry = entry;
-  if_region->region->region.exit = exit;
-
-  FOR_EACH_EDGE (e, ei, entry->dest->succs)
-    {
-      if (e->flags & EDGE_TRUE_VALUE)
-	{
-	  true_region->region.entry = e;
-	  true_region->region.exit = single_succ_edge (e->dest);
-	  if_region->true_region = true_region;
-	}
-      else if (e->flags & EDGE_FALSE_VALUE)
-	{
-	  false_region->region.entry = e;
-	  false_region->region.exit = single_succ_edge (e->dest);
-	  if_region->false_region = false_region;
-	}
-    }
-
-  return if_region;
-}
-
 /* Moves REGION in a condition expression:
    | if (1)
    |   ;
@@ -436,14 +344,32 @@ create_if_region_on_edge (edge entry, tree condition)
 ifsese
 move_sese_in_condition (sese_info_p region)
 {
-  gcc_assert (! dom_info_available_p (cfun, CDI_POST_DOMINATORS));
+  basic_block region_entry_dest = region->region.entry->dest;
   basic_block pred_block = split_edge (region->region.entry);
-  ifsese if_region;
+  basic_block merge_block = split_edge (region->region.exit);
 
-  region->region.entry = single_succ_edge (pred_block);
-  if_region = create_if_region_on_edge (single_pred_edge (pred_block),
-					integer_one_node);
-  if_region_set_false_region (if_region, region);
+  edge true_edge = make_edge (pred_block, merge_block, EDGE_TRUE_VALUE);
+  edge false_edge = find_edge (pred_block, region_entry_dest);
+  false_edge->flags &= ~EDGE_FALLTHRU;
+  false_edge->flags |= EDGE_FALSE_VALUE;
+  gimple_stmt_iterator gsi = gsi_last_bb (pred_block);
+  gcond *cond = gimple_build_cond (NE_EXPR, integer_one_node, integer_zero_node,
+				   NULL_TREE, NULL_TREE);
+  gsi_insert_after (&gsi, cond, GSI_CONTINUE_LINKING);
+  if (dom_info_available_p (CDI_DOMINATORS))
+    set_immediate_dominator (CDI_DOMINATORS, merge_block, pred_block);
+
+  ifsese if_region = XNEW (ifsese_s);
+  if_region->region = XCNEW (sese_info_t);
+  if_region->true_region = XCNEW (sese_info_t);
+  if_region->false_region = XCNEW (sese_info_t);
+  if_region->region->region.entry = single_pred_edge (pred_block);
+  if_region->region->region.exit = single_succ_edge (merge_block);
+  if_region->false_region->region.entry = false_edge;
+  if_region->false_region->region.exit = region->region.exit;
+  if_region->true_region->region.entry = true_edge;
+  if_region->true_region->region.exit
+    = single_succ_edge (split_edge (true_edge));
 
   return if_region;
 }
