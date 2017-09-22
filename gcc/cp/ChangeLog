@@ -1,3 +1,8 @@
+2017-09-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR bootstrap/81926
+	* cp-objcp-common.c (cp_get_debug_type): Do only one lookup
+
 2017-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR sanitizer/81929
