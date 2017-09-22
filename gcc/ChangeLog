@@ -2,6 +2,15 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* tree-vrp.c (extract_range_from_multiplicative_op_1): Assert
+	for VR_RANGE only; don't allow VR_ANTI_RANGE.
+	(extract_range_from_binary_expr_1): Don't call
+	extract_range_from_multiplicative_op_1 if !range_int_cst_p.
+
+2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* target.def (preferred_vector_alignment): New hook.
 	* doc/tm.texi.in (TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT): New
 	hook.
