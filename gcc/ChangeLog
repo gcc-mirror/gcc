@@ -1,3 +1,27 @@
+2017-09-22  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (translate_pending_phi_nodes):
+	Verify both BBs contain loop PHI nodes before dispatching to
+	copy_loop_phi_args.
+	(graphite_regenerate_ast_isl): Do not recompute dominators,
+	do not verify three times.  Restructure for clarity.
+	* graphite-scop-detection.c (same_close_phi_node,
+	remove_duplicate_close_phi, make_close_phi_nodes_unique,
+	defined_in_loop_p, canonicalize_loop_closed_ssa,
+	canonicalize_loop_closed_ssa_form): Simplify, remove excess
+	checking and SSA rewrite, move to ...
+	* graphite.c: ... here.  Include ssa.h and tree-ssa-loop-manip.h.
+	(graphite_initialize): Do not pass in ctx, do not reset the
+	SCEV cache, compute only dominators.
+	(graphite_transform_loops): Allocate ISL ctx after
+	graphite_initialize.  Call canonicalize_loop_closed_ssa_form.
+	Maintain post-dominators only around build_scops.
+	* sese.c (if_region_set_false_region): Make static.  Free
+	and recompute dominators.
+	(move_sese_in_condition): Assert we don't get called with
+	post-dominators computed.
+	* sese.h (if_region_set_false_region): Remove.
+
 2017-09-22  Sergey Shalnov  <sergey.shalnov@intel.com>
 
         * config/i386/sse.md ("mov<mode>_internal"): Use <sseinsnmode>
