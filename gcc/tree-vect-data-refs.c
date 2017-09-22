@@ -1326,6 +1326,9 @@ vect_get_peeling_costs_all_drs (vec<data_reference_p> datarefs,
     {
       gimple *stmt = DR_STMT (dr);
       stmt_vec_info stmt_info = vinfo_for_stmt (stmt);
+      if (!STMT_VINFO_RELEVANT_P (stmt_info))
+	continue;
+
       /* For interleaving, only the alignment of the first access
          matters.  */
       if (STMT_VINFO_GROUPED_ACCESS (stmt_info)

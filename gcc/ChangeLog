@@ -1,4 +1,10 @@
 2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82289
+	* tree-vect-data-refs.c (vect_get_peeling_costs_all_drs): Check
+	STMT_VINFO_RELEVANT_P.
+
+2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

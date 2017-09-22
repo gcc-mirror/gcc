@@ -1,4 +1,9 @@
 2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82289
+	* gcc.dg/vect/pr82289.c: New test.
+
+2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
