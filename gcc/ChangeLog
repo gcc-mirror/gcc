@@ -1,5 +1,11 @@
 2017-09-22  Richard Biener  <rguenther@suse.de>
 
+	PR tree-optimization/82291
+	* tree-if-conv.c (predicate_mem_writes): Make sure to
+	remove writes in blocks predicated with false.
+
+2017-09-22  Richard Biener  <rguenther@suse.de>
+
 	* sese.c: Include cfganal.h.
 	(if_region_set_false_region): Remove.
 	(create_if_region_on_edge): Likewise.
