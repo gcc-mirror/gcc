@@ -162,13 +162,13 @@ cp_get_debug_type (const_tree type)
 	 types on the fly for the debug info only, they would not be attached
 	 to any GC root and always be swept, so we would make the contents of
 	 the debug info depend on the collection points.  */
-      struct tree_map in, *h;
+      struct tree_map in, *h, **slot;
 
       in.base.from = CONST_CAST_TREE (type);
       in.hash = htab_hash_pointer (type);
-      h = debug_type_hash->find_with_hash (&in, in.hash);
-      if (h)
-	return h->to;
+      slot = debug_type_hash->find_slot_with_hash (&in, in.hash, INSERT);
+      if (*slot)
+	return (*slot)->to;
 
       tree t = build_offset_type (TYPE_PTRMEMFUNC_OBJECT_TYPE (type),
 				  TREE_TYPE (TYPE_PTRMEMFUNC_FN_TYPE (type)));
@@ -177,7 +177,7 @@ cp_get_debug_type (const_tree type)
       h->base.from = CONST_CAST_TREE (type);
       h->hash = htab_hash_pointer (type);
       h->to = t;
-      *debug_type_hash->find_slot_with_hash (h, h->hash, INSERT) = h;
+      *slot = h;
 
       return t;
     }
