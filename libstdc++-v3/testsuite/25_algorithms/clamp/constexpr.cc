@@ -27,5 +27,5 @@
 # error "Feature-test macro for clamp has wrong value"
 #endif
 
-static_assert(std::clamp(2, 0, 1) == 1, "");
-static_assert(std::clamp(2, 0, 1, std::greater<int>()) == 0, "");
+static_assert(std::clamp(2, 0, 1) == 1);
+static_assert(std::clamp(2, 1, 0, std::greater<int>()) == 1);

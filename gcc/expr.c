@@ -4541,15 +4541,8 @@ emit_push_insn (rtx x, machine_mode mode, tree type, rtx size,
       else
 #endif
 	{
-	  if (CONST_INT_P (args_so_far))
-	    addr
-	      = memory_address (mode,
-				plus_constant (Pmode, args_addr,
-					       INTVAL (args_so_far)));
-	  else
-	    addr = memory_address (mode, gen_rtx_PLUS (Pmode, args_addr,
-						       args_so_far));
-	  dest = gen_rtx_MEM (mode, addr);
+	  addr = simplify_gen_binary (PLUS, Pmode, args_addr, args_so_far);
+	  dest = gen_rtx_MEM (mode, memory_address (mode, addr));
 
 	  /* We do *not* set_mem_attributes here, because incoming arguments
 	     may overlap with sibling call outgoing arguments and we cannot
@@ -8565,14 +8558,7 @@ expand_expr_real_2 (sepops ops, rtx target, machine_mode tmode,
 	{
 	  expand_operands (treeop0, treeop1,
 			   NULL_RTX, &op0, &op1, modifier);
-
-	  /* If the last operand is a CONST_INT, use plus_constant of
-	     the negated constant.  Else make the MINUS.  */
-	  if (CONST_INT_P (op1))
-	    return REDUCE_BIT_FIELD (plus_constant (mode, op0,
-						    -INTVAL (op1)));
-	  else
-	    return REDUCE_BIT_FIELD (gen_rtx_MINUS (mode, op0, op1));
+	  return simplify_gen_binary (MINUS, mode, op0, op1);
 	}
 
       /* No sense saving up arithmetic to be done

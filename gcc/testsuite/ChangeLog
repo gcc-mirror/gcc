@@ -1,3 +1,97 @@
+2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/78512
+	* gfortran.dg/associate_26.f90 : New test.
+
+	PR fortran/80120
+	* gfortran.dg/associate_27.f90 : New test.
+
+	PR fortran/81903
+	* gfortran.dg/associate_28.f90 : New test.
+
+	PR fortran/82121
+	* gfortran.dg/associate_29.f90 : New test.
+
+	PR fortran/67543
+	* gfortran.dg/associate_30.f90 : New test.
+
+	PR fortran/52832
+	* gfortran.dg/associate_31.f90 : New test.
+
+2017-09-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/discr48.adb: New test.
+	* gnat.dg/discr48_pkg.ads: New helper.
+
+2017-09-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR testsuite/78421
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	Invert arm check.
+
+2017-09-21  Cesar Philippidis  <cesar@codesourcery.com>
+
+	* gfortran.dg/goacc/wait.f90: New test.
+
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR sanitizer/81715
+	* g++.dg/tree-ssa/pr8781.C (noop): Change argument type from
+	const predicate to const predicate & to avoid UB.
+	* g++.dg/opt/pr81715.C: New test.
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82276
+	PR tree-optimization/82244
+	* gcc.dg/torture/pr82276.c: New testcase.
+
+2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/71351
+	* gfortran.dg/graphite/pr71351.f90: New testcase.
+	* gfortran.dg/graphite/interchange-3.f90: Adjust.
+
+2017-09-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82260
+	* gcc.target/i386/pr82260-1.c: New test.
+	* gcc.target/i386/pr82260-2.c: New test.
+
+2017-09-20  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+	    Jeff Law  <law@redhat.com>
+
+	* gcc.dg/stack-check-5.c:  Add argument for s390.
+	* lib/target-supports.exp:
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	s390/s390x targets.
+
+2017-09-20  Martin Sebor  <msebor@redhat.com>
+
+	PR c/81854
+	* g++.dg/ext/attr-ifunc-2.C: Correct type errors.
+	* g++.dg/ext/attr-ifunc-4.C: Ditto.
+	* lib/target-supports.exp: Adjust for C++.
+
+	PR c/81854
+	* gcc.dg/attr-ifunc-1.c: Correct type errors.
+	* gcc.dg/attr-ifunc-2.c: Ditto.
+	* gcc.dg/attr-ifunc-3.c: Ditto.
+	* gcc.dg/attr-ifunc-4.c: Ditto.
+	* gcc.dg/attr-ifunc-5.c: Ditto.
+	* gcc.dg/pr81854.c: Require ifunc support.
+	* lib/target-supports.exp: Correct type error.
+
+2017-09-20  Jeff Law  <law@redhat.com>
+
+	* gcc.target/i386/stack-check-11.c: Update test and regexp
+	so that it works for both i?86 and x86_64.
+
+2017-09-19  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR target/77687
+	* gcc.target/powerpc/pr77687.c: New testcase.
+
 2017-09-20  Jakub Jelinek  <jakub@redhat.com>
 
 	P0409R2 - allow lambda capture [=, this]

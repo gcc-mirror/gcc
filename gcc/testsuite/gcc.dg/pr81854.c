@@ -1,5 +1,6 @@
 /* PR c/81854 - weak alias of an incompatible symbol accepted
-   { dg-do compile } */
+   { dg-do compile }
+   { dg-require-ifunc "" } */
 
 const char* __attribute__ ((weak, alias ("f0_target")))
 f0 (void);          /* { dg-error "alias between function and variable" } */

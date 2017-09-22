@@ -239,7 +239,7 @@ announce_function (tree decl)
     }
 }
 
-/* Initialize local_tick with a random number or -1 if
+/* Initialize local_tick with the time of day, or -1 if
    flag_random_seed is set.  */
 
 static void
@@ -247,19 +247,6 @@ init_local_tick (void)
 {
   if (!flag_random_seed)
     {
-      /* Try urandom first. Time of day is too likely to collide. 
-	 In case of any error we just use the local tick. */
-
-      int fd = open ("/dev/urandom", O_RDONLY);
-      if (fd >= 0)
-        {
-          if (read (fd, &random_seed, sizeof (random_seed))
-              != sizeof (random_seed))
-            random_seed = 0;
-          close (fd);
-        }
-
-      /* Now get the tick anyways  */
 #ifdef HAVE_GETTIMEOFDAY
       {
 	struct timeval tv;
@@ -280,34 +267,33 @@ init_local_tick (void)
     local_tick = -1;
 }
 
-/* Set up a default flag_random_seed and local_tick, unless the user
-   already specified one.  Must be called after init_local_tick.  */
-
-static void
-init_random_seed (void)
-{
-  if (!random_seed)
-    random_seed = local_tick ^ getpid ();  /* Old racey fallback method */
-}
-
 /* Obtain the random_seed.  Unless NOINIT, initialize it if
    it's not provided in the command line.  */
 
 HOST_WIDE_INT
 get_random_seed (bool noinit)
 {
-  if (!flag_random_seed && !noinit)
-    init_random_seed ();
+  if (!random_seed && !noinit)
+    {
+      int fd = open ("/dev/urandom", O_RDONLY);
+      if (fd >= 0)
+        {
+          if (read (fd, &random_seed, sizeof (random_seed))
+              != sizeof (random_seed))
+            random_seed = 0;
+          close (fd);
+        }
+      if (!random_seed)
+	random_seed = local_tick ^ getpid ();
+    }
   return random_seed;
 }
 
-/* Modify the random_seed string to VAL.  Return its previous
-   value.  */
+/* Set flag_random_seed to VAL, and if non-null, reinitialize random_seed.  */
 
-const char *
+void
 set_random_seed (const char *val)
 {
-  const char *old = flag_random_seed;
   flag_random_seed = val;
   if (flag_random_seed)
     {
@@ -318,7 +304,6 @@ set_random_seed (const char *val)
       if (!(endp > flag_random_seed && *endp == 0))
         random_seed = crc32_string (0, flag_random_seed);
     }
-  return old;
 }
 
 /* Handler for fatal signals, such as SIGSEGV.  These are transformed
@@ -817,11 +802,6 @@ print_switch_values (print_switch_fn_type print_fn)
 {
   int pos = 0;
   size_t j;
-
-  /* Fill in the -frandom-seed option, if the user didn't pass it, so
-     that it can be printed below.  This helps reproducibility.  */
-  if (!flag_random_seed)
-    init_random_seed ();
 
   /* Print the options as passed.  */
   pos = print_single_switch (print_fn, pos,

@@ -328,7 +328,7 @@ for (i = 0; i < n_opts; i++) {
 			alias_data = "NULL, NULL, N_OPTS"
 		if (flag_set_p("Enum.*", flags[i])) {
 			if (!flag_set_p("RejectNegative", flags[i]) \
-			    && opts[i] ~ "^[Wfm]")
+			    && opts[i] ~ "^[Wfgm]")
 				print "#error Enum allowing negative form"
 		}
 	} else {
@@ -370,7 +370,7 @@ for (i = 0; i < n_opts; i++) {
 		if (flag_set_p("RejectNegative", flags[i]))
 			idx = -1;
 		else {
-			if (opts[i] ~ "^[Wfm]")
+			if (opts[i] ~ "^[Wfgm]")
 				idx = indices[opts[i]];
 			else
 				idx = -1;

@@ -23349,7 +23349,6 @@ gen_producer_string (void)
       case OPT_SPECIAL_program_name:
       case OPT_SPECIAL_input_file:
       case OPT_grecord_gcc_switches:
-      case OPT_gno_record_gcc_switches:
       case OPT__output_pch_:
       case OPT_fdiagnostics_show_location_:
       case OPT_fdiagnostics_show_option:

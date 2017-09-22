@@ -1731,7 +1731,8 @@ split_iv (struct iv_to_split *ivts, rtx_insn *insn, unsigned delta)
   else
     {
       incr = simplify_gen_binary (MULT, mode,
-				  ivts->step, gen_int_mode (delta, mode));
+				  copy_rtx (ivts->step),
+				  gen_int_mode (delta, mode));
       expr = simplify_gen_binary (PLUS, GET_MODE (ivts->base_var),
 				  ivts->base_var, incr);
     }
