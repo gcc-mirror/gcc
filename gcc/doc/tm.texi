@@ -5758,6 +5758,18 @@ For vector memory operations the cost may depend on type (@var{vectype}) and
 misalignment value (@var{misalign}).
 @end deftypefn
 
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT (const_tree @var{type})
+This hook returns the preferred alignment in bits for accesses to
+vectors of type @var{type} in vectorized code.  This might be less than
+or greater than the ABI-defined value returned by
+@code{TARGET_VECTOR_ALIGNMENT}.  It can be equal to the alignment of
+a single element, in which case the vectorizer will not try to optimize
+for alignment.
+
+The default hook returns @code{TYPE_ALIGN (@var{type})}, which is
+correct for most targets.
+@end deftypefn
+
 @deftypefn {Target Hook} bool TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE (const_tree @var{type}, bool @var{is_packed})
 Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
 @end deftypefn

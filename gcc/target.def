@@ -1820,6 +1820,20 @@ misalignment value (@var{misalign}).",
  int, (enum vect_cost_for_stmt type_of_cost, tree vectype, int misalign),
  default_builtin_vectorization_cost)
 
+DEFHOOK
+(preferred_vector_alignment,
+ "This hook returns the preferred alignment in bits for accesses to\n\
+vectors of type @var{type} in vectorized code.  This might be less than\n\
+or greater than the ABI-defined value returned by\n\
+@code{TARGET_VECTOR_ALIGNMENT}.  It can be equal to the alignment of\n\
+a single element, in which case the vectorizer will not try to optimize\n\
+for alignment.\n\
+\n\
+The default hook returns @code{TYPE_ALIGN (@var{type})}, which is\n\
+correct for most targets.",
+ HOST_WIDE_INT, (const_tree type),
+ default_preferred_vector_alignment)
+
 /* Return true if vector alignment is reachable (by peeling N
    iterations) for the given scalar type.  */
 DEFHOOK
