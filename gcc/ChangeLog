@@ -2,6 +2,54 @@
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 
+	* target.def (preferred_vector_alignment): New hook.
+	* doc/tm.texi.in (TARGET_VECTORIZE_PREFERRED_VECTOR_ALIGNMENT): New
+	hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_preferred_vector_alignment): Declare.
+	* targhooks.c (default_preferred_vector_alignment): New function.
+	* tree-vectorizer.h (dataref_aux): Add a target_alignment field.
+	Expand commentary.
+	(DR_TARGET_ALIGNMENT): New macro.
+	(aligned_access_p): Update commentary.
+	(vect_known_alignment_in_bytes): New function.
+	* tree-vect-data-refs.c (vect_calculate_required_alignment): New
+	function.
+	(vect_compute_data_ref_alignment): Set DR_TARGET_ALIGNMENT.
+	Calculate the misalignment based on the target alignment rather than
+	the vector size.
+	(vect_update_misalignment_for_peel): Use DR_TARGET_ALIGMENT
+	rather than TYPE_ALIGN / BITS_PER_UNIT to update the misalignment.
+	(vect_enhance_data_refs_alignment): Mask the byte misalignment with
+	the target alignment, rather than masking the element misalignment
+	with the number of elements in a vector.  Also use the target
+	alignment when calculating the maximum number of peels.
+	(vect_find_same_alignment_drs): Use vect_calculate_required_alignment
+	instead of TYPE_ALIGN_UNIT.
+	(vect_duplicate_ssa_name_ptr_info): Remove stmt_info parameter.
+	Measure DR_MISALIGNMENT relative to DR_TARGET_ALIGNMENT.
+	(vect_create_addr_base_for_vector_ref): Update call accordingly.
+	(vect_create_data_ref_ptr): Likewise.
+	(vect_setup_realignment): Realign by ANDing with
+	-DR_TARGET_MISALIGNMENT.
+	* tree-vect-loop-manip.c (vect_gen_prolog_loop_niters): Calculate
+	the number of peels based on DR_TARGET_ALIGNMENT.
+	* tree-vect-stmts.c (get_group_load_store_type): Compare the gap
+	with the guaranteed alignment boundary when deciding whether
+	overrun is OK.
+	(vectorizable_mask_load_store): Interpret DR_MISALIGNMENT
+	relative to DR_TARGET_ALIGNMENT instead of TYPE_ALIGN_UNIT.
+	(ensure_base_align): Remove stmt_info parameter.  Get the
+	target base alignment from DR_TARGET_ALIGNMENT.
+	(vectorizable_store): Update call accordingly.   Interpret
+	DR_MISALIGNMENT relative to DR_TARGET_ALIGNMENT instead of
+	TYPE_ALIGN_UNIT.
+	(vectorizable_load): Likewise.
+
+2017-09-22  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
 	* tree-vectorizer.h (vect_get_scalar_dr_size): New function.
 	* tree-vect-data-refs.c (vect_update_misalignment_for_peel): Use it.
 	(vect_enhance_data_refs_alignment): Likewise.
