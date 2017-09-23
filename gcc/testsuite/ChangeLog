@@ -1,3 +1,9 @@
+2017-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	* gfortran.dg/promotion_3.f90: New test case.
+	* gfortran.dg/promotion_4.f90: New test case.
+
 2017-09-23  Daniel Santos  <daniel.santos@pobox.com>
 
 	* gcc.target/i386/pr82196-1.c: (b): Remove volatile asm.
