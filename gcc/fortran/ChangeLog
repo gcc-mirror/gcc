@@ -1,3 +1,14 @@
+2017-09-23  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	* lang.opt: Add the options -fdefault-real-10 and -fdefault-real-16.
+	Rename flag_default_real to flag_default_real_8.
+	* invoke.texi: Add documentation.
+	* module.c (use_iso_fortran_env_module): flag_default_real is renamed.
+	* trans-types.c (gfc_init_kinds): Implement the flags
+	-fdefault-real-10 and -fdefault-real-16. Make -fdefault-double-8 work
+	without -fdefault-real-8.
+
 2017-09-21  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/52832

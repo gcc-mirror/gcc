@@ -6741,7 +6741,7 @@ use_iso_fortran_env_module (void)
 				   "standard", symbol[i].name, &u->where))
 	        continue;
 
-	      if ((flag_default_integer || flag_default_real)
+	      if ((flag_default_integer || flag_default_real_8)
 		  && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 		gfc_warning_now (0, "Use of the NUMERIC_STORAGE_SIZE named "
 				 "constant from intrinsic module "
@@ -6808,7 +6808,7 @@ use_iso_fortran_env_module (void)
 	  if ((gfc_option.allow_std & symbol[i].standard) == 0)
 	    continue;
 
-	  if ((flag_default_integer || flag_default_real)
+	  if ((flag_default_integer || flag_default_real_8)
 	      && symbol[i].id == ISOFORTRANENV_NUMERIC_STORAGE_SIZE)
 	    gfc_warning_now (0,
 			     "Use of the NUMERIC_STORAGE_SIZE named constant "
