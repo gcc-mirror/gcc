@@ -1,3 +1,11 @@
+2017-09-23  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR bootstrap/82306
+	* config/i386/i386.opt (mprefer-avx256): Use
+	ix86_target_flags variable.
+	* config/i386/i386.c (ix86_target_string): Move
+	-mprefer-avx256 to flag2_opts.
+
 2017-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35691

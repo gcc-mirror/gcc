@@ -592,7 +592,7 @@ Target Report Mask(PREFER_AVX128) Save
 Use 128-bit AVX instructions instead of 256-bit AVX instructions in the auto-vectorizer.
 
 mprefer-avx256
-Target Report Mask(PREFER_AVX256) Save
+Target Report Mask(PREFER_AVX256) Var(ix86_target_flags) Save
 Use 256-bit AVX instructions instead of 512-bit AVX instructions in the auto-vectorizer.
 
 ;; ISA support
