@@ -1,3 +1,12 @@
+2017-09-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* configure.ac: Add Check for HAVE_AS_AVX.
+	* config.in: Regenerate.
+	* configure: Likewise.
+	* config/i386/i386-asm.h: Include auto-target.h from libgcc.
+	(SSE_SAVE, SSE_RESTORE): Emit .byte sequence for !HAVE_AS_AVX.
+	Correct out-of-date comments.
+
 2017-09-20  Sebastian Peryt  <sebastian.peryt@intel.com>
 
 	* config/i386/cpuinfo.h (processor_types): Add INTEL_KNM.
