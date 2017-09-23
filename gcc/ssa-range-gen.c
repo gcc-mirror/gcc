@@ -820,6 +820,58 @@ path_ranger::path_range_stmt (irange& r, tree name, gimple *g)
   return range_on_stmt (r, name, g);
 }
 
+/* Calculate the known range for NAME on a path of basic blocks in
+   BBS.  If such a range exists, store it in R and return TRUE,
+   otherwise return FALSE.  */
+
+bool
+path_ranger::path_range (irange &r, tree name, const vec<basic_block> &bbs)
+{
+  /* Handle paths in which the blocks are reversed.  */
+  if (bbs.length () > 1 && find_edge (bbs[1], bbs[0]))
+    return path_range_reverse (r, name, bbs);
+
+  /* ?? Should we start with a known range for NAME?  */
+  r.set_range_for_type (TREE_TYPE (name));
+
+  for (unsigned i = 1; i < bbs.length (); ++i)
+    {
+      edge e = find_edge (bbs[i - 1], bbs[i]);
+      gcc_assert (e);
+      irange redge;
+      if (range_on_edge (redge, name, e))
+	r.intersect (redge);
+    }
+
+  if (r.range_for_type_p ())
+    return false;
+  return true;
+}
+
+/* The same as above, but handle the case where BBS are a path of
+   basic blocks in reverse order.  */
+
+bool
+path_ranger::path_range_reverse (irange &r, tree name,
+				 const vec<basic_block> &bbs)
+{
+  /* ?? Should we start with a known range for NAME?  */
+  r.set_range_for_type (TREE_TYPE (name));
+
+  for (int i = bbs.length () - 1; i > 0; --i)
+    {
+      edge e = find_edge (bbs[i], bbs[i - 1]);
+      gcc_assert (e);
+      irange redge;
+      if (range_on_edge (redge, name, e))
+	r.intersect (redge);
+    }
+
+  if (r.range_for_type_p ())
+    return false;
+  return true;
+}
+
 void
 path_ranger::dump(FILE *f)
 {

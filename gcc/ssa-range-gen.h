@@ -94,6 +94,7 @@ private:
   bool init (tree name);
   void range_for_bb (irange &r, basic_block bb);
   void determine_block (basic_block bb);
+  bool path_range_reverse (irange &r, tree name, const vec<basic_block> &);
 public:
   path_ranger ();
 
@@ -101,6 +102,7 @@ public:
   bool path_range_edge (irange& r, tree name, edge e);
   bool path_range_entry (irange& r, tree name, basic_block bb);
   bool path_range_stmt (irange& r, tree name, gimple *g);
+  bool path_range (irange &r, tree name, const vec<basic_block> &bbs);
 
   void dump (FILE *f);
   void exercise (FILE *f);   /* do a full mapping pass, dump if provided.  */
