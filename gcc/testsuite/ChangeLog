@@ -1,3 +1,8 @@
+2017-09-23  Daniel Santos  <daniel.santos@pobox.com>
+
+	* gcc.target/i386/pr82196-1.c: (b): Remove volatile asm.
+	* gcc.target/i386/pr82196-2.c: (b): Likewise.
+
 2017-09-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35691
