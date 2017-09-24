@@ -19953,6 +19953,14 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	  code = 'k';
 	}
 
+      /* Since the upper 32 bits of RSP are always zero for x32, we can
+	 encode %esp as %rsp to avoid 0x67 prefix if there is no index or
+	 base register.  */
+      if (TARGET_X32 && Pmode == SImode
+	  && ((!index && base && REGNO (base) == SP_REG)
+	      || (!base && index && REGNO (index) == SP_REG)))
+	code = 'q';
+
       if (ASSEMBLER_DIALECT == ASM_ATT)
 	{
 	  if (disp)

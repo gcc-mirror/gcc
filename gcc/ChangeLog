@@ -1,3 +1,10 @@
+2017-09-24  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/82267
+	* config/i386/i386.c (ix86_print_operand_address_as): Encode
+	%esp as %rsp to avoid 0x67 prefix if there is no index or base
+	register.
+
 2017-09-23  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR bootstrap/82306
