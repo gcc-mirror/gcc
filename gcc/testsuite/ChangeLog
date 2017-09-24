@@ -1,4 +1,10 @@
 2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/54633
+	* gfortran.dg/intrinsic_bounds_1.f90: New test.
+	* gfortran.dg/intrinsic_param_1.f90: New test.
+
+2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
 	PR fortran/80118
