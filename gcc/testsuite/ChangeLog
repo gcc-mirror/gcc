@@ -1,4 +1,9 @@
 2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
+	PR fortran/66328
+
+	* gfortran.dg/data_derived_1.f90: New test.
+
+2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	PR fortran/54633
 	* gfortran.dg/intrinsic_bounds_1.f90: New test.
