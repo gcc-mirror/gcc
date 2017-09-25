@@ -25490,10 +25490,16 @@ dwarf2out_early_global_decl (tree decl)
 	     so that all nested DIEs are generated at the proper scope in the
 	     first shot.  */
 	  tree context = decl_function_context (decl);
-	  if (context != NULL && lookup_decl_die (context) == NULL)
+	  if (context != NULL)
 	    {
+	      dw_die_ref context_die = lookup_decl_die (context);
 	      current_function_decl = context;
-	      dwarf2out_decl (context);
+
+	      /* Avoid emitting DIEs multiple times, but still process CONTEXT
+		 enough so that it lands in its own context.  This avoids type
+		 pruning issues later on.  */
+	      if (context_die == NULL || is_declaration_die (context_die))
+		dwarf2out_decl (context);
 	    }
 
 	  /* Emit an abstract origin of a function first.  This happens
