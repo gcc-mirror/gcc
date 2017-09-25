@@ -38,7 +38,9 @@ pragma Polling (Off);
 --  Turn off polling, we do not want ATC polling to take place during tasking
 --  operations. It causes infinite loops and other problems.
 
-with Interfaces.C; use Interfaces; use type Interfaces.C.int;
+with Interfaces.C; use Interfaces;
+use type Interfaces.C.int;
+use type Interfaces.C.long;
 
 with System.Task_Info;
 with System.Tasking.Debug;
@@ -64,7 +66,6 @@ package body System.Task_Primitives.Operations is
    use System.Parameters;
    use System.OS_Primitives;
    use System.Task_Info;
-   use type Interfaces.C.long;
 
    ----------------
    -- Local Data --
@@ -316,12 +317,9 @@ package body System.Task_Primitives.Operations is
              TS_Aft0.tv_nsec - TS_Bef0.tv_nsec))
             --  The most recent calls to clock_gettime were more better.
          then
-            TS_Bef0.tv_sec := TS_Bef.tv_sec;
-            TS_Bef0.tv_nsec := TS_Bef.tv_nsec;
-            TS_Aft0.tv_sec := TS_Aft.tv_sec;
-            TS_Aft0.tv_nsec := TS_Aft.tv_nsec;
-            TS_Mon0.tv_sec := TS_Mon.tv_sec;
-            TS_Mon0.tv_nsec := TS_Mon.tv_nsec;
+            TS_Bef0 := TS_Bef;
+            TS_Aft0 := TS_Aft;
+            TS_Mon0 := TS_Mon;
          end if;
       end loop;
 

@@ -263,10 +263,176 @@ package body Exp_Imgv is
    --  position of the enumeration value in the enumeration type.
 
    procedure Expand_Image_Attribute (N : Node_Id) is
-      Loc       : constant Source_Ptr := Sloc (N);
-      Exprs     : constant List_Id    := Expressions (N);
-      Pref      : constant Node_Id    := Prefix (N);
-      Expr      : constant Node_Id    := Relocate_Node (First (Exprs));
+      Loc   : constant Source_Ptr := Sloc (N);
+      Exprs : constant List_Id    := Expressions (N);
+      Expr  : constant Node_Id    := Relocate_Node (First (Exprs));
+      Pref  : constant Node_Id    := Prefix (N);
+
+      function Is_User_Defined_Enumeration_Type
+        (Typ : Entity_Id) return Boolean;
+      --  Return True if Typ is an user-defined enumeration type
+
+      procedure Expand_User_Defined_Enumeration_Image;
+      --  Expand attribute 'Image in user-defined enumeration types avoiding
+      --  string copy.
+
+      -------------------------------------------
+      -- Expand_User_Defined_Enumeration_Image --
+      -------------------------------------------
+
+      procedure Expand_User_Defined_Enumeration_Image is
+         Ins_List : constant List_Id   := New_List;
+         P1_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
+         P2_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
+         P3_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
+         P4_Id    : constant Entity_Id := Make_Temporary (Loc, 'P');
+         Ptyp     : constant Entity_Id := Entity (Pref);
+         Rtyp     : constant Entity_Id := Root_Type (Ptyp);
+         S1_Id    : constant Entity_Id := Make_Temporary (Loc, 'S');
+
+      begin
+         --  Apply a validity check, since it is a bit drastic to get a
+         --  completely junk image value for an invalid value.
+
+         if not Expr_Known_Valid (Expr) then
+            Insert_Valid_Check (Expr);
+         end if;
+
+         --  Generate:
+         --    P1 : constant Natural := Pos;
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => P1_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (Standard_Natural, Loc),
+             Constant_Present    => True,
+             Expression =>
+               Convert_To (Standard_Natural,
+                 Make_Attribute_Reference (Loc,
+                   Attribute_Name => Name_Pos,
+                   Prefix         => New_Occurrence_Of (Ptyp, Loc),
+                   Expressions    => New_List (Expr)))));
+
+         --  Compute the index of the string start generating:
+         --    P2 : constant Natural := call_put_enumN (P1);
+
+         Append_To (Ins_List,
+           Make_Object_Declaration (Loc,
+             Defining_Identifier => P2_Id,
+             Object_Definition   =>
+               New_Occurrence_Of (Standard_Natural, Loc),
+             Constant_Present    => True,
+             Expression =>
+               Convert_To (Standard_Natural,
+                 Make_Indexed_Component (Loc,
+                   Prefix      =>
+                     New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                   Expressions =>
+                     New_List (New_Occurrence_Of (P1_Id, Loc))))));
+
+         --  Compute the index of the next value generating:
+         --    P3 : constant Natural := call_put_enumN (P1 + 1);
+
+         declare
+            Add_Node : constant Node_Id := New_Op_Node (N_Op_Add, Loc);
+
+         begin
+            Set_Left_Opnd  (Add_Node, New_Occurrence_Of (P1_Id, Loc));
+            Set_Right_Opnd (Add_Node, Make_Integer_Literal (Loc, 1));
+
+            Append_To (Ins_List,
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => P3_Id,
+                Object_Definition   =>
+                  New_Occurrence_Of (Standard_Natural, Loc),
+                Constant_Present    => True,
+                Expression =>
+                  Convert_To (Standard_Natural,
+                    Make_Indexed_Component (Loc,
+                      Prefix      =>
+                        New_Occurrence_Of (Lit_Indexes (Rtyp), Loc),
+                      Expressions =>
+                        New_List (Add_Node)))));
+         end;
+
+         --  Generate:
+         --    S4 : String renames call_put_enumS (S2 .. S3 - 1);
+
+         declare
+            Sub_Node : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
+
+         begin
+            Set_Left_Opnd  (Sub_Node, New_Occurrence_Of (P3_Id, Loc));
+            Set_Right_Opnd (Sub_Node, Make_Integer_Literal (Loc, 1));
+
+            Append_To (Ins_List,
+              Make_Object_Renaming_Declaration (Loc,
+                Defining_Identifier => P4_Id,
+                Subtype_Mark        =>
+                  New_Occurrence_Of (Standard_String, Loc),
+                Name                =>
+                  Make_Slice (Loc,
+                    Prefix         =>
+                      New_Occurrence_Of (Lit_Strings (Rtyp), Loc),
+                    Discrete_Range =>
+                      Make_Range (Loc,
+                        Low_Bound  => New_Occurrence_Of (P2_Id, Loc),
+                        High_Bound => Sub_Node))));
+         end;
+
+         --  Generate:
+         --    subtype S1 is string (1 .. P3 - P2);
+
+         declare
+            HB : constant Node_Id := New_Op_Node (N_Op_Subtract, Loc);
+
+         begin
+            Set_Left_Opnd  (HB, New_Occurrence_Of (P3_Id, Loc));
+            Set_Right_Opnd (HB, New_Occurrence_Of (P2_Id, Loc));
+
+            Append_To (Ins_List,
+              Make_Subtype_Declaration (Loc,
+                Defining_Identifier => S1_Id,
+                Subtype_Indication  =>
+                  Make_Subtype_Indication (Loc,
+                    Subtype_Mark =>
+                      New_Occurrence_Of (Standard_String, Loc),
+                    Constraint   =>
+                      Make_Index_Or_Discriminant_Constraint (Loc,
+                        Constraints => New_List (
+                          Make_Range (Loc,
+                            Low_Bound  => Make_Integer_Literal (Loc, 1),
+                            High_Bound => HB))))));
+         end;
+
+         --  Insert all the above declarations before N. We suppress checks
+         --  because everything is in range at this stage.
+
+         Insert_Actions (N, Ins_List, Suppress => All_Checks);
+
+         Rewrite (N,
+           Unchecked_Convert_To (S1_Id,
+             New_Occurrence_Of (P4_Id, Loc)));
+         Analyze_And_Resolve (N, Standard_String);
+      end Expand_User_Defined_Enumeration_Image;
+
+      --------------------------------------
+      -- Is_User_Defined_Enumeration_Type --
+      --------------------------------------
+
+      function Is_User_Defined_Enumeration_Type
+        (Typ : Entity_Id) return Boolean is
+      begin
+         return Ekind (Typ) = E_Enumeration_Type
+           and then Typ /= Standard_Boolean
+           and then Typ /= Standard_Character
+           and then Typ /= Standard_Wide_Character
+           and then Typ /= Standard_Wide_Wide_Character;
+      end Is_User_Defined_Enumeration_Type;
+
+      --  Local variables
+
       Imid      : RE_Id;
       Ptyp      : Entity_Id;
       Rtyp      : Entity_Id;
@@ -287,6 +453,16 @@ package body Exp_Imgv is
    begin
       if Is_Object_Image (Pref) then
          Rewrite_Object_Image (N, Pref, Name_Image, Standard_String);
+         return;
+
+      --  Enable speed optimized expansion of user-defined enumeration types
+      --  if we are compiling with optimizations enabled. Otherwise the call
+      --  will be expanded into a call to the runtime library.
+
+      elsif Optimization_Level > 0
+        and then Is_User_Defined_Enumeration_Type (Root_Type (Entity (Pref)))
+      then
+         Expand_User_Defined_Enumeration_Image;
          return;
       end if;
 
