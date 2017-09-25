@@ -165,10 +165,9 @@ package body System.Task_Primitives.Operations is
    procedure Abort_Handler (signo : Signal);
 
    function Compute_Base_Monotonic_Clock return Duration;
-   --  The monotonic clock epoch is set to some undetermined time
-   --  in the past (typically system boot time).  In order to use the
-   --  monotonic clock for absolute time, the offset from a known epoch
-   --  is needed.
+   --  The monotonic clock epoch is set to some undetermined time in the past
+   --  (typically system boot time). In order to use the monotonic clock for
+   --  absolute time, the offset from a known epoch is needed.
 
    function GNAT_pthread_condattr_setup
      (attr : access pthread_condattr_t) return C.int;
@@ -288,14 +287,14 @@ package body System.Task_Primitives.Operations is
       pragma Assert (Res_A = 0);
 
       for I in 1 .. 10 loop
-         --  Guard against a leap second which will cause CLOCK_REALTIME
-         --  to jump backwards.  In the extrenmely unlikely event we call
-         --  clock_gettime before and after the jump the epoch result will
-         --  be off slightly.
-         --  Use only results where the tv_sec values match for the sake
-         --  of convenience.
-         --  Also try to calculate the most accurate
-         --  epoch by taking the minimum difference of 10 tries.
+         --  Guard against a leap second that will cause CLOCK_REALTIME to jump
+         --  backwards. In the extrenmely unlikely event we call clock_gettime
+         --  before and after the jump the epoch, the result will be off
+         --  slightly.
+         --  Use only results where the tv_sec values match, for the sake of
+         --  convenience.
+         --  Also try to calculate the most accurate epoch by taking the
+         --  minimum difference of 10 tries.
 
          Res_B := clock_gettime
           (clock_id => OSC.CLOCK_REALTIME, tp => TS_Bef'Unchecked_Access);
@@ -309,13 +308,13 @@ package body System.Task_Primitives.Operations is
 
          if (TS_Bef0.tv_sec /= TS_Aft0.tv_sec and then
              TS_Bef.tv_sec  = TS_Aft.tv_sec)
-            --  The calls to clock_gettime before the loop were no good.
+            --  The calls to clock_gettime before the loop were no good
             or else
             (TS_Bef0.tv_sec = TS_Aft0.tv_sec and then
              TS_Bef.tv_sec  = TS_Aft.tv_sec and then
             (TS_Aft.tv_nsec  - TS_Bef.tv_nsec <
              TS_Aft0.tv_nsec - TS_Bef0.tv_nsec))
-            --  The most recent calls to clock_gettime were more better.
+            --  The most recent calls to clock_gettime were better
          then
             TS_Bef0 := TS_Bef;
             TS_Aft0 := TS_Aft;
@@ -328,7 +327,7 @@ package body System.Task_Primitives.Operations is
       Aft := To_Duration (TS_Aft0);
 
       return Bef / 2 + Aft / 2 - Mon;
-      --  Distribute the division to avoid potential type overflow someday.
+      --  Distribute the division, to avoid potential type overflow someday
    end Compute_Base_Monotonic_Clock;
 
    --------------

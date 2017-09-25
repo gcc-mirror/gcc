@@ -12797,7 +12797,14 @@ package body Sem_Ch13 is
 
             return Skip;
 
-         elsif Nkind (N) = N_Identifier and then Chars (N) /= Chars (E) then
+         --  Resolve identifiers that are not selectors in parameter
+         --  associations (these are never resolved by visibility).
+
+         elsif Nkind (N) = N_Identifier
+           and then Chars (N) /= Chars (E)
+           and then (Nkind (Parent (N)) /= N_Parameter_Association
+                      or else N /= Selector_Name (Parent (N)))
+         then
             Find_Direct_Name (N);
 
             --  In ASIS mode we must analyze overloaded identifiers to ensure

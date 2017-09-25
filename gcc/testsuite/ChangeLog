@@ -1,3 +1,7 @@
+2017-09-25  Justin Squirek  <squirek@adacore.com>
+
+	* gnat.dg/entry_family.adb: New testcase
+
 2017-09-24  H.J. Lu  <hongjiu.lu@intel.com>
 
 	PR target/82267
