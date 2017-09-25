@@ -167,9 +167,6 @@ struct GTY(()) machine_function
 #define DATA_ABI_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_data_alignment (TYPE, BASIC_ALIGN)
 
-#define CONSTANT_ALIGNMENT(CONSTANT, BASIC_ALIGN) \
- mmix_constant_alignment (CONSTANT, BASIC_ALIGN)
-
 #define LOCAL_ALIGNMENT(TYPE, BASIC_ALIGN) \
  mmix_local_alignment (TYPE, BASIC_ALIGN)
 

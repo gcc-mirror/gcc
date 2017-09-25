@@ -3335,6 +3335,21 @@ HOOK_VECTOR_END (addr_space)
 #undef HOOK_PREFIX
 #define HOOK_PREFIX "TARGET_"
 
+DEFHOOK
+(constant_alignment,
+ "This hook returns the alignment in bits of a constant that is being\n\
+placed in memory.  @var{constant} is the constant and @var{basic_align}\n\
+is the alignment that the object would ordinarily have.\n\
+\n\
+The default definition just returns @var{basic_align}.\n\
+\n\
+The typical use of this hook is to increase alignment for string\n\
+constants to be word aligned so that @code{strcpy} calls that copy\n\
+constants can be done inline.  The function\n\
+@code{constant_alignment_word_strings} provides such a definition.",
+ HOST_WIDE_INT, (const_tree constant, HOST_WIDE_INT basic_align),
+ default_constant_alignment)
+
 /* True if MODE is valid for the target.  By "valid", we mean able to
    be manipulated in non-trivial ways.  In particular, this means all
    the arithmetic is supported.  */

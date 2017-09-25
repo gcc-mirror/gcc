@@ -90,14 +90,6 @@
    port.  */
 #define TARGET_PTRMEMFUNC_VBIT_LOCATION ptrmemfunc_vbit_in_delta
 
-/* Make strings word-aligned so that strcpy from constants will be
-   faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-  ((TREE_CODE (EXP) == STRING_CST		\
-    && !optimize_size				\
-    && (ALIGN) < BITS_PER_WORD)			\
-   ? BITS_PER_WORD : ALIGN)
-
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the

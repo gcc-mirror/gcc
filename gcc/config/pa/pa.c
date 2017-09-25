@@ -425,6 +425,9 @@ static size_t n_deferred_plabels = 0;
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS pa_can_change_mode_class
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Parse the -mfixed-range= option string.  */

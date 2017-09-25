@@ -462,12 +462,6 @@ extern const sh_atomic_model& selected_atomic_model (void);
 /* The best alignment to use in cases where we have a choice.  */
 #define FASTEST_ALIGNMENT (32)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)	\
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-    ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* get_mode_alignment assumes complex values are always held in multiple
    registers, but that is not the case on the SH; CQImode and CHImode are
    held in a single integer register.  */

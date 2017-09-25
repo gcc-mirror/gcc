@@ -1165,6 +1165,25 @@ tree default_mangle_decl_assembler_name (tree decl ATTRIBUTE_UNUSED,
    return id;
 }
 
+/* The default implementation of TARGET_CONSTANT_ALIGNMENT.  */
+
+HOST_WIDE_INT
+default_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return align;
+}
+
+/* An implementation of TARGET_CONSTANT_ALIGNMENT that aligns strings
+   to at least BITS_PER_WORD but otherwise makes no changes.  */
+
+HOST_WIDE_INT
+constant_alignment_word_strings (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
 /* Default to natural alignment for vector types.  */
 HOST_WIDE_INT
 default_vector_alignment (const_tree type)

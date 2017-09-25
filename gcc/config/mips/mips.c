@@ -22336,6 +22336,16 @@ mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 {
   return !TARGET_64BIT || inprec <= 32 || outprec > 32;
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+mips_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST || TREE_CODE (exp) == CONSTRUCTOR)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
 
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
@@ -22633,6 +22643,9 @@ mips_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 
 #undef TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION mips_truly_noop_truncation
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT mips_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

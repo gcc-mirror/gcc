@@ -1102,19 +1102,18 @@ must be aligned to 16 byte boundaries.
 If this macro is not defined, then @var{basic-align} is used.
 @end defmac
 
-@defmac CONSTANT_ALIGNMENT (@var{constant}, @var{basic-align})
-If defined, a C expression to compute the alignment given to a constant
-that is being placed in memory.  @var{constant} is the constant and
-@var{basic-align} is the alignment that the object would ordinarily
-have.  The value of this macro is used instead of that alignment to
-align the object.
+@deftypefn {Target Hook} HOST_WIDE_INT TARGET_CONSTANT_ALIGNMENT (const_tree @var{constant}, HOST_WIDE_INT @var{basic_align})
+This hook returns the alignment in bits of a constant that is being
+placed in memory.  @var{constant} is the constant and @var{basic_align}
+is the alignment that the object would ordinarily have.
 
-The default definition just returns @var{basic-align}.
+The default definition just returns @var{basic_align}.
 
-The typical use of this macro is to increase alignment for string
+The typical use of this hook is to increase alignment for string
 constants to be word aligned so that @code{strcpy} calls that copy
-constants can be done inline.
-@end defmac
+constants can be done inline.  The function
+@code{constant_alignment_word_strings} provides such a definition.
+@end deftypefn
 
 @defmac LOCAL_ALIGNMENT (@var{type}, @var{basic-align})
 If defined, a C expression to compute the alignment for a variable in

@@ -684,6 +684,7 @@ static bool sparc_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool sparc_modes_tieable_p (machine_mode, machine_mode);
 static bool sparc_can_change_mode_class (machine_mode, machine_mode,
 					 reg_class_t);
+static HOST_WIDE_INT sparc_constant_alignment (const_tree, HOST_WIDE_INT);
 
 #ifdef SUBTARGET_ATTRIBUTE_TABLE
 /* Table of valid machine attributes.  */
@@ -924,6 +925,9 @@ char sparc_hard_reg_printed[8];
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS sparc_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT sparc_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
@@ -13427,6 +13431,16 @@ sparc_can_change_mode_class (machine_mode from, machine_mode to,
       && GET_MODE_SIZE (to) != 4)
     return !reg_classes_intersect_p (rclass, FP_REGS);
   return true;
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+sparc_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST)
+    return MAX (align, FASTEST_ALIGNMENT);
+  return align;
 }
 
 #include "gt-sparc.h"

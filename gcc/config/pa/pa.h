@@ -309,11 +309,6 @@ typedef struct GTY(()) machine_function
    atomic operations.  */
 #define MALLOC_ABI_ALIGNMENT (TARGET_SOM ? 64 : 128)
 
-/* Get around hp-ux assembler bug, and make strcpy of constants fast.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)		\
-  (TREE_CODE (EXP) == STRING_CST		\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\
   (TREE_CODE (TYPE) == ARRAY_TYPE		\

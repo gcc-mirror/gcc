@@ -848,20 +848,6 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
   x86_field_alignment ((TYPE), (COMPUTED))
 #endif
 
-/* If defined, a C expression to compute the alignment given to a
-   constant that is being placed in memory.  EXP is the constant
-   and ALIGN is the alignment that the object would ordinarily have.
-   The value of this macro is used instead of that alignment to align
-   the object.
-
-   If this macro is not defined, then ALIGN is used.
-
-   The typical use of this macro is to increase alignment for string
-   constants to be word aligned so that `strcpy' calls that copy
-   constants can be done inline.  */
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) ix86_constant_alignment ((EXP), (ALIGN))
-
 /* If defined, a C expression to compute the alignment for a static
    variable.  TYPE is the data type, and ALIGN is the alignment that
    the object would ordinarily have.  The value of this macro is used

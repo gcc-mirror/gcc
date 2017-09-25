@@ -5882,4 +5882,7 @@ bfin_conditional_register_usage (void)
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P bfin_modes_tieable_p
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
