@@ -1,3 +1,10 @@
+2017-09-25  Tom de Vries  <tom@codesourcery.com>
+
+	PR target/80035
+	PR target/81069
+	* config/nvptx/nvptx.c (nvptx_output_call_insn): Add exit after call to
+	noreturn function.
+
 2017-09-25  Richard Biener  <rguenther@suse.de>
 
 	* graphite-optimize-isl.c (optimize_isl): Fail and dump if
