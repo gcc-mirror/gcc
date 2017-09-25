@@ -38,6 +38,7 @@ extern "C" {
 #endif
 #endif
 
+#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "hash-set.h"
@@ -75,7 +76,6 @@ extern "C" {
 #include "tree-scalar-evolution.h"
 #include "gimple-ssa.h"
 #include "tree-into-ssa.h"
-#include <map>
 
 #ifdef HAVE_isl
 #include "graphite-poly.h"

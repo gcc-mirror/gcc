@@ -215,6 +215,18 @@ extern int errno;
 #endif
 
 #ifdef __cplusplus
+# ifdef INCLUDE_LIST
+#  include <list>
+# endif
+# ifdef INCLUDE_MAP
+#  include <map>
+# endif
+# ifdef INCLUDE_SET
+#  include <set>
+# endif
+# ifdef INCLUDE_VECTOR
+#  include <vector>
+# endif
 # include <algorithm>
 # include <cstring>
 # include <utility>

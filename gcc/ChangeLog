@@ -1,3 +1,32 @@
+2017-09-26  Iain Sandoe  <iain@codesourcery.com>
+            Ryan Mounce  <ryan@mounce.com.au>
+
+	PR bootstrap/81037
+ 	Backport from mainline r235362
+ 	2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+ 
+	* system.h (list, map, set, vector): Include conditionally.
+	* auto-profile.c (INCLUDE_MAP, INCLUDE_SET): Define.
+	* graphite-isl-ast-to-gimple.c (INCLUDE_MAP): Define.
+	* ipa-icf.c (INCLUDE_LIST): Define.
+	* ipa-icf-gimple.c (INCLUDE_LIST): Define.
+	* config/sh/sh.c (INCLUDE_VECTOR): Define.
+	* config/sh/sh_treg_combine.cc (INCLUDE_ALGORITHM): Define.
+	(INCLUDE_LIST, INCLUDE_VECTOR): Define.
+	* fortran/trans-common.c (INCLUDE_MAP): Define.
+
+	Backport from mainline r235361
+	2016-04-22  Szabolcs Nagy  <szabolcs.nagy@arm.com>
+
+	* auto-profile.c: Remove <string.h> include.
+	* diagnostic.c: Remove <new> include.
+	* genmatch.c: Likewise.
+	* pretty-print.c: Likewise.
+	* toplev.c: Likewise
+	* c/c-objc-common.c: Likewise.
+	* cp/error.c: Likewise.
+	* fortran/error.c: Likewise.
+
 2017-09-22  Alexander Monakov  <amonakov@ispras.ru>
 
 	PR tree-optimization/71702

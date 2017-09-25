@@ -135,8 +135,6 @@ along with GCC; see the file COPYING3.  If not see
 #define HAVE_prologue 0
 #endif
 
-#include <new>
-
 static void general_init (const char *, bool);
 static void do_compile ();
 static void process_options (void);

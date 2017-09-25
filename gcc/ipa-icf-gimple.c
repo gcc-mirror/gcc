@@ -20,6 +20,7 @@ along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
 #include "config.h"
+#define INCLUDE_LIST
 #include "system.h"
 #include "coretypes.h"
 #include "hash-set.h"
@@ -74,7 +75,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "cgraph.h"
 #include "data-streamer.h"
 #include "ipa-utils.h"
-#include <list>
 #include "tree-ssanames.h"
 #include "tree-eh.h"
 #include "builtins.h"

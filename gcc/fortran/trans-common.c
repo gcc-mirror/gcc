@@ -92,8 +92,8 @@ along with GCC; see the file COPYING3.  If not see
    is examined for still-unused equivalence conditions.  We create a
    block for each merged equivalence list.  */
 
-#include <map>
 #include "config.h"
+#define INCLUDE_MAP
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"

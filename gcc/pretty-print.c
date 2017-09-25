@@ -25,8 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "pretty-print.h"
 #include "diagnostic-color.h"
 
-#include <new>                    // For placement-new.
-
 #if HAVE_ICONV
 #include <iconv.h>
 #endif
