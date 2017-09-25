@@ -419,6 +419,7 @@ graphite_transform_loops (void)
   isl_options_set_on_error (ctx, ISL_ON_ERROR_ABORT);
   the_isl_ctx = ctx;
 
+  sort_sibling_loops (cfun);
   canonicalize_loop_closed_ssa_form ();
 
   calculate_dominance_info (CDI_POST_DOMINATORS);

@@ -1,3 +1,11 @@
+2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	* cfgloop.h (sort_sibling_loops): Declare.
+	* cfgloop.c (sort_sibling_loops_cmp): New helper.
+	(sort_sibling_loops): New function sorting the sibling loop list
+	in RPO order.
+	* graphite.c (graphite_transform_loops): Sort sibling loops.
+
 2017-09-25  Richard Sandiford  <richard.sandifird@linaro.org>
 
 	* target.def (vec_perm_const_ok): Change sel parameter to
