@@ -65,8 +65,7 @@ with Ttypes;   use Ttypes;
 with Urealp;   use Urealp;
 with Validsw;  use Validsw;
 
-with GNAT.HTable; use GNAT.HTable;
-
+with GNAT.HTable;
 package body Exp_Util is
 
    ---------------------------------------------------------

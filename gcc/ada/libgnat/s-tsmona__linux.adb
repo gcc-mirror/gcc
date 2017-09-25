@@ -38,8 +38,6 @@ separate (System.Traceback.Symbolic)
 
 package body Module_Name is
 
-   use System;
-
    pragma Linker_Options ("-ldl");
 
    function Is_Shared_Lib (Base : Address) return Boolean;

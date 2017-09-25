@@ -72,7 +72,6 @@ package body System.Tasking.Restricted.Stages is
 
    use Parameters;
    use Task_Primitives.Operations;
-   use Task_Info;
 
    Tasks_Activation_Chain : Task_Id;
    --  Chain of all the tasks to activate

@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Csets;    use Csets;
-with Opt;      use Opt;
+with Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 

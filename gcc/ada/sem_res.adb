@@ -3010,6 +3010,14 @@ package body Sem_Res is
                Resolve_Unchecked_Type_Conversion (N, Ctx_Type);
          end case;
 
+         --  Mark relevant use-type and use-package clauses as effective using
+         --  the original node because constant folding may have occured and
+         --  removed references that need to be examined.
+
+         if Nkind (Original_Node (N)) in N_Op then
+            Mark_Use_Clauses (Original_Node (N));
+         end if;
+
          --  Ada 2012 (AI05-0149): Apply an (implicit) conversion to an
          --  expression of an anonymous access type that occurs in the context
          --  of a named general access type, except when the expression is that
@@ -6724,6 +6732,8 @@ package body Sem_Res is
          end if;
       end if;
 
+      Mark_Use_Clauses (Subp);
+
       Warn_On_Overlapping_Actuals (Nam, N);
    end Resolve_Call;
 
@@ -7279,6 +7289,8 @@ package body Sem_Res is
             Check_Ghost_Context (E, N);
          end if;
       end if;
+
+      Mark_Use_Clauses (E);
    end Resolve_Entity_Name;
 
    -------------------

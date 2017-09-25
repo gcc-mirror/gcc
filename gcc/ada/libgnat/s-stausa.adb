@@ -35,7 +35,6 @@ with System.IO;
 
 package body System.Stack_Usage is
    use System.Storage_Elements;
-   use System;
    use System.IO;
    use Interfaces;
 

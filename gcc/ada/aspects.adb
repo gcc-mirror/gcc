@@ -35,7 +35,7 @@ with Nlists;   use Nlists;
 with Sinfo;    use Sinfo;
 with Tree_IO;  use Tree_IO;
 
-with GNAT.HTable;           use GNAT.HTable;
+with GNAT.HTable;
 
 package body Aspects is
 

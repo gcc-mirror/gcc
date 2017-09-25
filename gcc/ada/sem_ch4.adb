@@ -6477,9 +6477,17 @@ package body Sem_Ch4 is
       --------------------
 
       procedure Try_One_Interp (T1 : Entity_Id) is
-         Bas : constant Entity_Id := Base_Type (T1);
+         Bas : Entity_Id;
 
       begin
+         --  Perform a sanity check in case of previous errors
+
+         if No (T1) then
+            return;
+         end if;
+
+         Bas := Base_Type (T1);
+
          --  If the operator is an expanded name, then the type of the operand
          --  must be defined in the corresponding scope. If the type is
          --  universal, the context will impose the correct type. An anonymous

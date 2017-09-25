@@ -1498,6 +1498,7 @@ package body Sem_Ch6 is
       end;
 
       Process_End_Label (Handled_Statement_Sequence (N), 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
       Check_Subprogram_Order (N);
 
@@ -4357,6 +4358,7 @@ package body Sem_Ch6 is
       --  Deal with end of scope processing for the body
 
       Process_End_Label (HSS, 't', Current_Scope);
+      Update_Use_Clause_Chain;
       End_Scope;
 
       --  If we are compiling an entry wrapper, remove the enclosing

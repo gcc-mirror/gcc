@@ -30,7 +30,7 @@ with Debug;    use Debug;
 with Einfo;    use Einfo;
 with Elists;   use Elists;
 with Errout;   use Errout;
-with Exp_Dist; use Exp_Dist;
+with Exp_Dist;
 with Fname;    use Fname;
 with Fname.UF; use Fname.UF;
 with Ghost;    use Ghost;

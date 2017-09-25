@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---          Copyright (C) 1998-2016, Free Software Foundation, Inc.         --
+--          Copyright (C) 1998-2017, Free Software Foundation, Inc.         --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -36,7 +36,7 @@ with Ada.Strings.Unbounded;     use Ada.Strings.Unbounded;
 
 with GNAT.OS_Lib;               use GNAT.OS_Lib;
 with GNAT.Directory_Operations; use GNAT.Directory_Operations;
-with GNAT.HTable;               use GNAT.HTable;
+with GNAT.HTable;
 with GNAT.Heap_Sort_G;
 
 package body Xr_Tabls is
