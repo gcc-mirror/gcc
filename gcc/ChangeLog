@@ -1,3 +1,10 @@
+2017-09-25  Iain Sandoe  <iain@codesourcery.com>
+
+	PR target/80556
+	* config/i386/darwin.h (REAL_LIB_SPEC): New; put libSystem ahead
+	of libgcc_eh for m64.
+	* config/i386/darwin64.h: Likewise.
+
 2017-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/82144
