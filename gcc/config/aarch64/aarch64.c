@@ -141,8 +141,8 @@ static void aarch64_elf_asm_constructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_elf_asm_destructor (rtx, int) ATTRIBUTE_UNUSED;
 static void aarch64_override_options_after_change (void);
 static bool aarch64_vector_mode_supported_p (machine_mode);
-static bool aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
-						 const unsigned char *sel);
+static bool aarch64_vectorize_vec_perm_const_ok (machine_mode,
+						 vec_perm_indices);
 static int aarch64_address_cost (rtx, machine_mode, addr_space_t, bool);
 static bool aarch64_builtin_support_vector_misalignment (machine_mode mode,
 							 const_tree type,
@@ -13146,9 +13146,8 @@ aarch64_split_combinev16qi (rtx operands[3])
 struct expand_vec_perm_d
 {
   rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
+  auto_vec_perm_indices perm;
   machine_mode vmode;
-  unsigned char nelt;
   bool one_vector_p;
   bool testing_p;
 };
@@ -13231,7 +13230,7 @@ aarch64_expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
 static bool
 aarch64_evpc_trn (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13319,7 +13318,7 @@ aarch64_evpc_trn (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13406,7 +13405,7 @@ aarch64_evpc_uzp (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_zip (struct expand_vec_perm_d *d)
 {
-  unsigned int i, high, mask, nelt = d->nelt;
+  unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out, in0, in1, x;
   rtx (*gen) (rtx, rtx, rtx);
   machine_mode vmode = d->vmode;
@@ -13499,7 +13498,7 @@ aarch64_evpc_zip (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_ext (struct expand_vec_perm_d *d)
 {
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
@@ -13563,7 +13562,7 @@ aarch64_evpc_ext (struct expand_vec_perm_d *d)
 static bool
 aarch64_evpc_rev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->nelt;
+  unsigned int i, j, diff, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx);
 
   if (!d->one_vector_p)
@@ -13641,7 +13640,7 @@ aarch64_evpc_dup (struct expand_vec_perm_d *d)
   rtx out = d->target;
   rtx in0;
   machine_mode vmode = d->vmode;
-  unsigned int i, elt, nelt = d->nelt;
+  unsigned int i, elt, nelt = d->perm.length ();
   rtx lane;
 
   elt = d->perm[0];
@@ -13686,7 +13685,7 @@ aarch64_evpc_tbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
   machine_mode vmode = d->vmode;
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
 
   if (d->testing_p)
     return true;
@@ -13720,12 +13719,11 @@ aarch64_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
-  if (d->perm[0] >= d->nelt)
+  unsigned int nelt = d->perm.length ();
+  if (d->perm[0] >= nelt)
     {
-      unsigned i, nelt = d->nelt;
-
       gcc_assert (nelt == (nelt & -nelt));
-      for (i = 0; i < nelt; ++i)
+      for (unsigned int i = 0; i < nelt; ++i)
 	d->perm[i] ^= nelt; /* Keep the same index, but in the other vector.  */
 
       std::swap (d->op0, d->op1);
@@ -13764,15 +13762,16 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 
   d.vmode = GET_MODE (target);
   gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = false;
 
+  nelt = GET_MODE_NUNITS (d.vmode);
+  d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
       int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
-      d.perm[i] = ei;
+      d.perm.quick_push (ei);
     }
 
   switch (which)
@@ -13807,19 +13806,18 @@ aarch64_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 }
 
 static bool
-aarch64_vectorize_vec_perm_const_ok (machine_mode vmode,
-				     const unsigned char *sel)
+aarch64_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
   bool ret;
 
   d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
+  d.perm.safe_splice (sel);
 
   /* Calculate whether all elements are in one vector.  */
+  nelt = sel.length ();
   for (i = which = 0; i < nelt; ++i)
     {
       unsigned char e = d.perm[i];

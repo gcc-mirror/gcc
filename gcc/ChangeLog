@@ -1,3 +1,34 @@
+2017-09-25  Richard Sandiford  <richard.sandifird@linaro.org>
+
+	* target.def (vec_perm_const_ok): Change sel parameter to
+	vec_perm_indices.
+	* optabs-query.c (can_vec_perm_p): Update accordingly.
+	* doc/tm.texi: Regenerate.
+	* config/aarch64/aarch64.c (expand_vec_perm_d): Change perm to
+	auto_vec_perm_indices and remove separate nelt field.
+	(aarch64_evpc_trn, aarch64_evpc_uzp, aarch64_evpc_zip)
+	(aarch64_evpc_ext, aarch64_evpc_rev, aarch64_evpc_dup)
+	(aarch64_evpc_tbl, aarch64_expand_vec_perm_const_1)
+	(aarch64_expand_vec_perm_const): Update accordingly.
+	(aarch64_vectorize_vec_perm_const_ok): Likewise.  Change sel
+	to vec_perm_indices.
+	* config/arm/arm.c (expand_vec_perm_d): Change perm to
+	auto_vec_perm_indices and remove separate nelt field.
+	(arm_evpc_neon_vuzp, arm_evpc_neon_vzip, arm_evpc_neon_vrev)
+	(arm_evpc_neon_vtrn, arm_evpc_neon_vext, arm_evpc_neon_vtbl)
+	(arm_expand_vec_perm_const_1, arm_expand_vec_perm_const): Update
+	accordingly.
+	(arm_vectorize_vec_perm_const_ok): Likewise.  Change sel
+	to vec_perm_indices.
+	* config/i386/i386.c (ix86_vectorize_vec_perm_const_ok): Change
+	sel to vec_perm_indices.
+	* config/ia64/ia64.c (ia64_vectorize_vec_perm_const_ok): Likewise.
+	* config/mips/mips.c (mips_vectorize_vec_perm_const_ok): Likewise.
+	* config/powerpcspe/powerpcspe.c (rs6000_vectorize_vec_perm_const_ok):
+	Likewise.
+	* config/rs6000/rs6000.c (rs6000_vectorize_vec_perm_const_ok):
+	Likewise.
+
 2017-09-25  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	PR debug/82155
