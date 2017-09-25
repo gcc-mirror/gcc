@@ -237,6 +237,10 @@ Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions.
 
+Wdo-subscript
+Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
+Warn about possibly incorrect subscripts in do loops
+
 Wextra
 Fortran Warning
 ; Documented in common

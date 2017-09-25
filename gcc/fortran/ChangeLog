@@ -1,3 +1,25 @@
+2017-09-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* lang.opt:  Add -Wdo-subscript.
+	* frontend-passes.c (do_t): New type.
+	(doloop_list): Use variable of do_type.
+	(if_level): Variable to track if levels.
+	(select_level): Variable to track select levels.
+	(gfc_run_passes): Initialize i_level and select_level.
+	(doloop_code): Record current level of if + select
+	level in doloop_list.  Add seen_goto if there could
+	be a branch outside the loop. Use different type for
+	doloop_list.
+	(doloop_function): Call do_intent and do_subscript; move
+	functionality of checking INTENT to do_intent.
+	(insert_index_t): New type, for callback_insert_index.
+	(callback_insert_index): New function.
+	(insert_index): New function.
+	(do_subscript): New function.
+	(do_intent): New function.
+	(gfc_code_walker): Keep track of if_level and select_level.
+	* invoke.texi: Document -Wdo-subscript.
+
 2017-09-25  Janne Blomqvist  <jb@gcc.gnu.org>
 
 	* trans.c (gfc_unlikely): Remove unnecessary fold_convert.
