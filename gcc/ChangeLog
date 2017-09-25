@@ -1,3 +1,11 @@
+2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	* graphite-optimize-isl.c (optimize_isl): Fail and dump if
+	ISL errors other than isl_error_quota happen.  Dump if the
+	schedule is the same.
+	* graphite-sese-to-poly.c (build_poly_scop): Fail on ISL
+	errors instead of aborting inside ISL.
+
 2017-09-25  Iain Sandoe  <iain@codesourcery.com>
 
 	PR target/80556
