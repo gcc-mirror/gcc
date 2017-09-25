@@ -12755,9 +12755,13 @@ package body Sem_Ch3 is
          end if;
 
          --  A deferred constant is a visible entity. If type has invariants,
-         --  verify that the initial value satisfies them.
+         --  verify that the initial value satisfies them. This is not done in
+         --  GNATprove mode, as GNATprove handles invariant checks itself.
 
-         if Has_Invariants (T) and then Present (Invariant_Procedure (T)) then
+         if Has_Invariants (T)
+           and then Present (Invariant_Procedure (T))
+           and then not GNATprove_Mode
+         then
             Insert_After (N,
               Make_Invariant_Call (New_Occurrence_Of (Prev, Sloc (N))));
          end if;

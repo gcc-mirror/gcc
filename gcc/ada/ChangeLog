@@ -1,3 +1,29 @@
+2017-09-25  Yannick Moy  <moy@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Indexed_Component,
+	Expand_SPARK_Selected_Component): New procedures to insert explicit
+	dereference if required.
+	(Expand_SPARK): Call the new procedures.
+
+2017-09-25  Patrick Bernardi  <bernardi@adacore.com>
+
+	* libgnat/a-stwiun.adb, libgnat/s-stchop__vxworks.adb,
+	libgnat/g-socthi__vxworks.ads, libgnat/a-stzunb.adb,
+	libgnat/a-strunb.adb, libgnarl/s-osinte__lynxos178.adb,
+	libgnarl/s-intman__vxworks.adb, libgnarl/s-osinte__darwin.adb,
+	libgnarl/a-exetim__darwin.adb: Removed ineffective use-clauses.
+
+2017-09-25  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* adaint.c (win32_wait): Properly handle error and take into account
+	the WIN32 limitation on the number of simultaneous wait objects.
+
+2017-09-25  Yannick Moy  <moy@adacore.com>
+
+	* sem_ch3.adb (Constant_Redeclaration): Do not insert a call to the
+	invariant procedure in GNATprove mode.
+	* sem_ch5.adb (Analyze_Assignment): Likewise.
+
 2017-09-25  Piotr Trojanek  <trojanek@adacore.com>
 
 	* adabkend.adb (Call_Back_End): Fix wording of "front-end" and

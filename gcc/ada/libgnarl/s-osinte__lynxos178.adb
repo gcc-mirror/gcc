@@ -37,8 +37,6 @@ pragma Polling (Off);
 
 package body System.OS_Interface is
 
-   use Interfaces.C;
-
    ------------------
    --  Current_CPU --
    ------------------
