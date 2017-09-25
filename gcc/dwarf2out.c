@@ -21246,8 +21246,6 @@ gen_enumeration_type_die (tree type, dw_die_ref context_die)
   else
     add_AT_flag (type_die, DW_AT_declaration, 1);
 
-  add_alignment_attribute (type_die, type);
-
   add_pubtype (type, type_die);
 
   return type_die;
