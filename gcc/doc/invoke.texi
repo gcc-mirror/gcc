@@ -2462,8 +2462,11 @@ controlled by @code{#pragma implementation}.  This causes linker
 errors if these functions are not inlined everywhere they are called.
 
 @item -fmodules
+@itemx -fmodules++
 @opindex fmodules
-Enable experimental support for the Extensions to C++ for Modules extension.
+@opindex fmodules++
+Enable experimental support for the Extensions to C++ for Modules
+extension.
 
 @item -fmodule-output=@var{file}
 @opindex fmodule-output

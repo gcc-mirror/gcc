@@ -1,3 +1,27 @@
+2017-09-25  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/c-family/
+	* c_common_handle_option: Handle fmodules++.
+	* c.opt (fmodules): Make Uinteger.
+	(fmodules++, fmodules-ts): New.
+	gcc/cp/
+	* parser.c (cp_parser_consume_semicolon_at_end_of_statement):
+	Return success bool.
+	(cp_parser_translation_unit): Adjust cp_parser_declaration_seq_opt
+	call.
+	(cp_parser_declaration_seq_opt): Add top_level parm, look for
+	module-decl here.
+	(cp_parser_module_declaration): Handle -fmodules++ syntax.
+	(cp_parser_module_export): No need to handle module-declaration
+	here ...
+	(cp_parser_declaration): ... or here.
+	gcc/
+	* doc/invoke.texi (-fmodules++): Document.
+	gcc/testsute/
+	* g++.dg/modules/mod++-decl-0_[abc].C: New.
+	* g++.dg/modules/mod++-decl-[12].C: New.
+	* g++.dg/modules/mod-decl-1.C: Adjust expected error.
+
 2017-09-15  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk 252831.

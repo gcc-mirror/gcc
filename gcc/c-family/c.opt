@@ -1492,8 +1492,15 @@ C ObjC C++ ObjC++ Var(flag_lax_vector_conversions)
 Allow implicit conversions between vectors with differing numbers of subparts and/or differing element types.
 
 fmodules
-C++ ObjC++ Var(flag_modules)
-Enable C++ modules (experimental).
+C++ ObjC++ Var(flag_modules) Uinteger
+Enable C++ modules (experimental, 2=more experimental).
+
+fmodules++
+C++ ObjC++ Var(flag_modules) Uinteger
+Enable C++ modules (more experimental).
+
+fmodules-ts
+C++ ObjC++ Alias(fmodules)
 
 fmodule-output=
 C++ ObjC++ Joined MissingArgError(missing filename after %qs)

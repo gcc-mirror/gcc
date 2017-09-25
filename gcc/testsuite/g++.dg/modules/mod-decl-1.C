@@ -7,7 +7,7 @@ module foo.second; // { dg-error "already declared" }
 
 namespace Foo 
 {
-  module third; // { dg-error "only occur at" }
+  module third; // { dg-error "expected" }
 }
 
 struct Baz

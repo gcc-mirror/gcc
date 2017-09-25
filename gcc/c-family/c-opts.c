@@ -606,6 +606,10 @@ c_common_handle_option (size_t scode, const char *arg, int value,
 	error ("output filename specified twice");
       break;
 
+    case OPT_fmodules__:
+      flag_modules = 2;
+      break;
+
     case OPT_fmodule_output_:
       module_output = arg;
       break;

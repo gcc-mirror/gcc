@@ -2144,7 +2144,7 @@ static void cp_parser_already_scoped_statement
 /* Declarations [gram.dcl.dcl] */
 
 static void cp_parser_declaration_seq_opt
-  (cp_parser *);
+(cp_parser *, bool top_level = false);
 static void cp_parser_declaration
   (cp_parser *);
 static void cp_parser_block_declaration
@@ -2616,7 +2616,7 @@ static int cp_parser_skip_to_closing_parenthesis
   (cp_parser *, bool, bool, bool);
 static void cp_parser_skip_to_end_of_statement
   (cp_parser *);
-static void cp_parser_consume_semicolon_at_end_of_statement
+static bool cp_parser_consume_semicolon_at_end_of_statement
   (cp_parser *);
 static void cp_parser_skip_to_end_of_block_or_statement
   (cp_parser *);
@@ -3211,7 +3211,8 @@ cp_parser_diagnose_invalid_type_name (cp_parser *parser, tree id,
 	inform (location, "%<concept%> only available with -fconcepts");
       else if (!flag_modules && (id == ridpointers[(int)RID_MODULE]
 				 || id == ridpointers[(int)RID_IMPORT]))
-	inform (location, "%qE only available with -fmodules", id);
+	inform (location, "%qE only available with -fmodules or -fmodules++",
+		id);
       else if (processing_template_decl && current_class_type
 	       && TYPE_BINFO (current_class_type))
 	{
@@ -3546,11 +3547,12 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
    If the next token is a semicolon, it is consumed; otherwise, error
    recovery is attempted.  */
 
-static void
+static bool
 cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
 {
   /* Look for the trailing `;'.  */
-  if (!cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON))
+  bool ok = cp_parser_require (parser, CPP_SEMICOLON, RT_SEMICOLON);
+  if (!ok)
     {
       /* If there is additional (erroneous) input, skip to the end of
 	 the statement.  */
@@ -3559,6 +3561,7 @@ cp_parser_consume_semicolon_at_end_of_statement (cp_parser *parser)
       if (cp_lexer_next_token_is (parser->lexer, CPP_SEMICOLON))
 	cp_lexer_consume_token (parser->lexer);
     }
+  return ok;
 }
 
 /* Skip tokens until we have consumed an entire block, or until we
@@ -4387,7 +4390,7 @@ cp_parser_translation_unit (cp_parser* parser)
       declarator_obstack_base = obstack_next_free (&declarator_obstack);
     }
 
-  cp_parser_declaration_seq_opt (parser);
+  cp_parser_declaration_seq_opt (parser, true);
 
   /* If there are no tokens left then all went well.  */
   if (cp_lexer_next_token_is (parser->lexer, CPP_EOF))
@@ -12596,21 +12599,34 @@ check_module_outermost (const cp_token *token, const char *msg)
    module module-name attr-spec-seq-opt ; */
 
 static void
-cp_parser_module_declaration (cp_parser *parser, bool is_interface)
+cp_parser_module_declaration (cp_parser *parser, bool exporting)
 {
-  gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE));
-
   cp_token *token = cp_lexer_consume_token (parser->lexer);
   tree name = cp_parser_module_name (parser);
   tree attrs = cp_parser_attributes_opt (parser);
-  cp_parser_consume_semicolon_at_end_of_statement (parser);
 
+  if (!cp_parser_consume_semicolon_at_end_of_statement (parser))
+    return;
   if (!name)
-    ;
-  else if (!check_module_outermost (token, "module-declaration"))
-    ;
-  else
-    declare_module (token->location, name, is_interface, attrs);
+    return;
+
+  if (flag_modules == 2
+      && cp_lexer_nth_token_is_keyword (parser->lexer, 1, RID_MODULE)
+      && cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_BRACE))
+    {
+      /* Consume the global module.  */
+      cp_lexer_consume_token (parser->lexer);
+      matching_braces braces;
+      if (braces.require_open (parser))
+	{
+	  cp_parser_declaration_seq_opt (parser);
+			  
+	  /* Look for the final `}'.  */
+	  braces.require_close (parser);
+	}
+    }
+
+  declare_module (token->location, name, exporting, attrs);
 }
 
 /* Import-declaration
@@ -12636,7 +12652,6 @@ cp_parser_import_declaration (cp_parser *parser)
 
 /*  export-declaration.
 
-    export module-declaration
     export declaration
     export { declaration-seq-opt }  */
 
@@ -12646,39 +12661,34 @@ cp_parser_module_export (cp_parser *parser)
   gcc_assert (cp_lexer_next_token_is_keyword (parser->lexer, RID_EXPORT));
   cp_token *token = cp_lexer_consume_token (parser->lexer);
 
-  if (cp_lexer_next_token_is_keyword (parser->lexer, RID_MODULE))
-    cp_parser_module_declaration (parser, true);
-  else
+  if (!module_interface_p ())
+    error_at (token->location,
+	      "%qE may only occur after an interface module declaration",
+	      token->u.value);
+
+  bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
+  int prev = push_module_export (!braced);
+
+  if (prev)
+    error_at (token->location,
+	      prev < -1
+	      ? "%qE may not occur in a proclaimed-ownership declaration"
+	      : "%qE may only occur once in an export declaration",
+	      token->u.value);
+
+  if (braced)
     {
-      if (!module_interface_p ())
-	error_at (token->location,
-		  "%qE may only occur after an interface module declaration",
-		  token->u.value);
+      cp_ensure_no_omp_declare_simd (parser);
+      cp_ensure_no_oacc_routine (parser);
 
-      bool braced = cp_lexer_next_token_is (parser->lexer, CPP_OPEN_BRACE);
-      int prev = push_module_export (!braced);
-
-      if (prev)
-	error_at (token->location,
-		  prev < -1
-		  ? "%qE may not occur in a proclaimed-ownership declaration"
-		  : "%qE may only occur once in an export declaration",
-		  token->u.value);
-
-      if (braced)
-	{
-	  cp_ensure_no_omp_declare_simd (parser);
-	  cp_ensure_no_oacc_routine (parser);
-
-	  cp_lexer_consume_token (parser->lexer);
-	  cp_parser_declaration_seq_opt (parser);
-	  cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
-	}
-      else
-	cp_parser_declaration (parser);
-
-      pop_module_export (prev);
+      cp_lexer_consume_token (parser->lexer);
+      cp_parser_declaration_seq_opt (parser);
+      cp_parser_require (parser, CPP_CLOSE_BRACE, RT_CLOSE_BRACE);
     }
+  else
+    cp_parser_declaration (parser);
+
+  pop_module_export (prev);
 }
 
 /* Proclaimed ownership declaration:
@@ -12703,14 +12713,15 @@ cp_parser_module_proclamation (cp_parser *parser)
 
 /* Declarations [gram.dcl.dcl] */
 
-/* Parse an optional declaration-sequence.
+/* Parse an optional declaration-sequence.  TOP_LEVEL is true, if this
+   is the top-level declaration sequence.
 
    declaration-seq:
      declaration
      declaration-seq declaration  */
 
 static void
-cp_parser_declaration_seq_opt (cp_parser* parser)
+cp_parser_declaration_seq_opt (cp_parser* parser, bool top_level)
 {
   while (true)
     {
@@ -12735,15 +12746,13 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 
       /* If we're entering or exiting a region that's implicitly
 	 extern "C", modify the lang context appropriately.  */
-      if (!parser->implicit_extern_c && token->implicit_extern_c)
+      if (parser->implicit_extern_c != token->implicit_extern_c)
 	{
-	  push_lang_context (lang_name_c);
-	  parser->implicit_extern_c = true;
-	}
-      else if (parser->implicit_extern_c && !token->implicit_extern_c)
-	{
-	  pop_lang_context ();
-	  parser->implicit_extern_c = false;
+	  if (token->implicit_extern_c)
+	    push_lang_context (lang_name_c);
+	  else
+	    pop_lang_context ();
+	  parser->implicit_extern_c = token->implicit_extern_c;
 	}
 
       if (token->type == CPP_PRAGMA)
@@ -12754,6 +12763,25 @@ cp_parser_declaration_seq_opt (cp_parser* parser)
 	     handled in cp_parser_statement.)  */
 	  cp_parser_pragma (parser, pragma_external, NULL);
 	  continue;
+	}
+
+      if (top_level && flag_modules)
+	{
+	  /* Clear top-level, we either have a preamble or we don't.  */
+	  if (flag_modules == 2)
+	    top_level = false;
+
+	  bool exporting = token->keyword == RID_EXPORT;
+
+	  if (cp_lexer_nth_token_is_keyword (parser->lexer, 1 + exporting,
+					     RID_MODULE))
+	    {
+	      if (exporting)
+		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_module_declaration (parser, exporting);
+
+	      continue;
+	    }
 	}
 
       /* Parse the declaration itself.  */
@@ -12822,11 +12850,9 @@ cp_parser_declaration (cp_parser* parser)
   /* Get the high-water mark for the DECLARATOR_OBSTACK.  */
   p = obstack_alloc (&declarator_obstack, 0);
 
-  if (flag_modules && token1.keyword == RID_MODULE)
-    cp_parser_module_declaration (parser, false);
   /* If the next token is `extern' and the following token is a string
      literal, then we have a linkage specification.  */
-  else if (token1.keyword == RID_EXTERN
+  if (token1.keyword == RID_EXTERN
       && cp_parser_is_pure_string_literal (&token2))
     cp_parser_linkage_specification (parser);
   else if (token1.keyword == RID_EXTERN
