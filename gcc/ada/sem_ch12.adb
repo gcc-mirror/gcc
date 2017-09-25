@@ -15132,7 +15132,9 @@ package body Sem_Ch12 is
                   Nam := Make_Identifier (Loc, Chars (Typ));
 
                   if Is_Immediately_Visible (Scope (Typ))
-                    and then Current_Entity (Scope (Typ)) = Scope (Typ)
+                    and then
+                      (not In_Open_Scopes (Scope (Typ))
+                         or else Current_Entity (Scope (Typ)) = Scope (Typ))
                   then
                      Nam :=
                        Make_Selected_Component (Loc,

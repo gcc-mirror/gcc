@@ -11089,7 +11089,7 @@ package body Sem_Attr is
                      and then Is_Overloadable (Entity (P)))
               and then not (Nkind (P) = N_Selected_Component
                              and then
-                            Is_Overloadable (Entity (Selector_Name (P))))
+                               Is_Overloadable (Entity (Selector_Name (P))))
               and then not Is_Aliased_View (P)
               and then not In_Instance
               and then not In_Inlined_Body

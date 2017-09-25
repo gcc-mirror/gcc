@@ -5094,8 +5094,8 @@ package body Sem_Ch13 is
                           or else Is_Array_Type (Etype (U_Ent)))
                        and then (Is_Record_Type (Etype (O_Ent))
                                   or else Is_Array_Type (Etype (O_Ent)))
-                       and then Reverse_Storage_Order (Etype (U_Ent))
-                                      /= Reverse_Storage_Order (Etype (O_Ent))
+                       and then Reverse_Storage_Order (Etype (U_Ent)) /=
+                                Reverse_Storage_Order (Etype (O_Ent))
                      then
                         Set_Treat_As_Volatile (U_Ent);
                      end if;
