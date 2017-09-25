@@ -1847,7 +1847,7 @@ DEFHOOK
 DEFHOOK
 (vec_perm_const_ok,
  "Return true if a vector created for @code{vec_perm_const} is valid.",
- bool, (machine_mode, const unsigned char *sel),
+ bool, (machine_mode, vec_perm_indices),
  NULL)
 
 /* Return true if the target supports misaligned store/load of a

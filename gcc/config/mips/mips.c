@@ -21470,8 +21470,7 @@ mips_sched_reassociation_width (unsigned int opc ATTRIBUTE_UNUSED,
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
 
 static bool
-mips_vectorize_vec_perm_const_ok (machine_mode vmode,
-				  const unsigned char *sel)
+mips_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
@@ -21480,12 +21479,12 @@ mips_vectorize_vec_perm_const_ok (machine_mode vmode,
   d.vmode = vmode;
   d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
 
   /* Categorize the set of elements in the selector.  */
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned char e = sel[i];
+      d.perm[i] = e;
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }

@@ -5774,7 +5774,7 @@ correct for most targets.
 Return true if vector alignment is reachable (by peeling N iterations) for the given scalar type @var{type}.  @var{is_packed} is false if the scalar access using @var{type} is known to be naturally aligned.
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, const unsigned char *@var{sel})
+@deftypefn {Target Hook} bool TARGET_VECTORIZE_VEC_PERM_CONST_OK (machine_mode, @var{vec_perm_indices})
 Return true if a vector created for @code{vec_perm_const} is valid.
 @end deftypefn
 

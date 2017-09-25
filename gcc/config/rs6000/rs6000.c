@@ -35594,8 +35594,7 @@ rs6000_expand_vec_perm_const (rtx operands[4])
 /* Test whether a constant permutation is supported.  */
 
 static bool
-rs6000_vectorize_vec_perm_const_ok (machine_mode vmode,
-				    const unsigned char *sel)
+rs6000_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   /* AltiVec (and thus VSX) can handle arbitrary permutations.  */
   if (TARGET_ALTIVEC)

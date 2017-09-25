@@ -287,8 +287,7 @@ static int arm_cortex_a5_branch_cost (bool, bool);
 static int arm_cortex_m_branch_cost (bool, bool);
 static int arm_cortex_m7_branch_cost (bool, bool);
 
-static bool arm_vectorize_vec_perm_const_ok (machine_mode vmode,
-					     const unsigned char *sel);
+static bool arm_vectorize_vec_perm_const_ok (machine_mode, vec_perm_indices);
 
 static bool aarch_macro_fusion_pair_p (rtx_insn*, rtx_insn*);
 
@@ -28657,9 +28656,8 @@ arm_split_atomic_op (enum rtx_code code, rtx old_out, rtx new_out, rtx mem,
 struct expand_vec_perm_d
 {
   rtx target, op0, op1;
-  unsigned char perm[MAX_VECT_LEN];
+  auto_vec_perm_indices perm;
   machine_mode vmode;
-  unsigned char nelt;
   bool one_vector_p;
   bool testing_p;
 };
@@ -28766,7 +28764,7 @@ neon_pair_endian_lane_map (machine_mode mode, int lane)
 static bool
 arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
@@ -28778,7 +28776,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
   /* arm_expand_vec_perm_const_1 () helpfully swaps the operands for the
      big endian pattern on 64 bit vectors, so we correct for that.  */
   swap_nelt = BYTES_BIG_ENDIAN && !d->one_vector_p
-    && GET_MODE_SIZE (d->vmode) == 8 ? d->nelt : 0;
+    && GET_MODE_SIZE (d->vmode) == 8 ? nelt : 0;
 
   first_elem = d->perm[neon_endian_lane_map (d->vmode, 0)] ^ swap_nelt;
 
@@ -28837,7 +28835,7 @@ arm_evpc_neon_vuzp (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 {
-  unsigned int i, high, mask, nelt = d->nelt;
+  unsigned int i, high, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
   int first_elem;
@@ -28912,7 +28910,7 @@ arm_evpc_neon_vzip (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 {
-  unsigned int i, j, diff, nelt = d->nelt;
+  unsigned int i, j, diff, nelt = d->perm.length ();
   rtx (*gen)(rtx, rtx);
 
   if (!d->one_vector_p)
@@ -28988,7 +28986,7 @@ arm_evpc_neon_vrev (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 {
-  unsigned int i, odd, mask, nelt = d->nelt;
+  unsigned int i, odd, mask, nelt = d->perm.length ();
   rtx out0, out1, in0, in1;
   rtx (*gen)(rtx, rtx, rtx, rtx);
 
@@ -29054,7 +29052,7 @@ arm_evpc_neon_vtrn (struct expand_vec_perm_d *d)
 static bool
 arm_evpc_neon_vext (struct expand_vec_perm_d *d)
 {
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
   rtx (*gen) (rtx, rtx, rtx, rtx);
   rtx offset;
 
@@ -29128,7 +29126,7 @@ arm_evpc_neon_vtbl (struct expand_vec_perm_d *d)
 {
   rtx rperm[MAX_VECT_LEN], sel;
   machine_mode vmode = d->vmode;
-  unsigned int i, nelt = d->nelt;
+  unsigned int i, nelt = d->perm.length ();
 
   /* TODO: ARM's VTBL indexing is little-endian.  In order to handle GCC's
      numbering of elements for big-endian, we must reverse the order.  */
@@ -29165,11 +29163,10 @@ arm_expand_vec_perm_const_1 (struct expand_vec_perm_d *d)
   /* The pattern matching functions above are written to look for a small
      number to begin the sequence (0, 1, N/2).  If we begin with an index
      from the second operand, we can swap the operands.  */
-  if (d->perm[0] >= d->nelt)
+  unsigned int nelt = d->perm.length ();
+  if (d->perm[0] >= nelt)
     {
-      unsigned i, nelt = d->nelt;
-
-      for (i = 0; i < nelt; ++i)
+      for (unsigned int i = 0; i < nelt; ++i)
 	d->perm[i] = (d->perm[i] + nelt) & (2 * nelt - 1);
 
       std::swap (d->op0, d->op1);
@@ -29204,15 +29201,16 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 
   d.vmode = GET_MODE (target);
   gcc_assert (VECTOR_MODE_P (d.vmode));
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = false;
 
+  nelt = GET_MODE_NUNITS (d.vmode);
+  d.perm.reserve (nelt);
   for (i = which = 0; i < nelt; ++i)
     {
       rtx e = XVECEXP (sel, 0, i);
       int ei = INTVAL (e) & (2 * nelt - 1);
       which |= (ei < nelt ? 1 : 2);
-      d.perm[i] = ei;
+      d.perm.quick_push (ei);
     }
 
   switch (which)
@@ -29249,19 +29247,18 @@ arm_expand_vec_perm_const (rtx target, rtx op0, rtx op1, rtx sel)
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST_OK.  */
 
 static bool
-arm_vectorize_vec_perm_const_ok (machine_mode vmode,
-				 const unsigned char *sel)
+arm_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
 {
   struct expand_vec_perm_d d;
   unsigned int i, nelt, which;
   bool ret;
 
   d.vmode = vmode;
-  d.nelt = nelt = GET_MODE_NUNITS (d.vmode);
   d.testing_p = true;
-  memcpy (d.perm, sel, nelt);
+  d.perm.safe_splice (sel);
 
   /* Categorize the set of elements in the selector.  */
+  nelt = GET_MODE_NUNITS (d.vmode);
   for (i = which = 0; i < nelt; ++i)
     {
       unsigned char e = d.perm[i];
