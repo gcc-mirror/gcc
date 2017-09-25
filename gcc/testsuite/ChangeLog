@@ -1,3 +1,13 @@
+2017-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* gcc.target/powerpc/fold-vec-st-char.c: New.
+	* gcc.target/powerpc/fold-vec-st-double.c: New.
+	* gcc.target/powerpc/fold-vec-st-float.c: New.
+	* gcc.target/powerpc/fold-vec-st-int.c: New.
+	* gcc.target/powerpc/fold-vec-st-longlong.c: New.
+	* gcc.target/powerpc/fold-vec-st-pixel.c: New.
+	* gcc.target/powerpc/fold-vec-st-short.c: New.
+
 2017-09-25  Pierre-Marie de Rodat  <derodat@adacore.com>
 
 	* g++.dg/pr82155.C: New testcase.
