@@ -1,3 +1,9 @@
+2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/82144
+	* dwarf2out.c (gen_enumeration_type_die): Do not add alignment
+	attribute for incomplete types nor twice for complete ones.
+
 2017-09-24  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/82267
