@@ -1,3 +1,7 @@
+2017-09-25  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	* g++.dg/pr82155.C: New testcase.
+
 2017-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82285

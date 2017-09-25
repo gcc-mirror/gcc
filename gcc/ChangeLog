@@ -1,3 +1,10 @@
+2017-09-25  Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR debug/82155
+	* dwarf2out.c (dwarf2out_early_global_decl): Call dwarf2out_decl
+	on the FUNCTION_DECL function context if it has a DIE that is a
+	declaration.
+
 2017-09-25  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82285
