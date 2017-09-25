@@ -75,10 +75,11 @@ package body Exp_Ch5 is
    --  of formal container iterators.
 
    function Convert_To_Iterable_Type
-     (Container : Entity_Id; Loc : Source_Ptr) return Node_Id;
-   --  Returns New_Occurrence_Of (Container), possibly converted to an
-   --  ancestor type, if the type of Container inherited the Iterable
-   --  aspect_specification from that ancestor.
+     (Container : Entity_Id;
+      Loc       : Source_Ptr) return Node_Id;
+   --  Returns New_Occurrence_Of (Container), possibly converted to an ancestor
+   --  type, if the type of Container inherited the Iterable aspect from that
+   --  ancestor.
 
    function Change_Of_Representation (N : Node_Id) return Boolean;
    --  Determine if the right-hand side of assignment N is a type conversion
@@ -243,16 +244,21 @@ package body Exp_Ch5 is
    ------------------------------
 
    function Convert_To_Iterable_Type
-     (Container : Entity_Id; Loc : Source_Ptr) return Node_Id
+     (Container : Entity_Id;
+      Loc       : Source_Ptr) return Node_Id
    is
-      Typ    : constant Entity_Id  := Base_Type (Etype (Container));
-      Aspect : constant Node_Id := Find_Aspect (Typ, Aspect_Iterable);
-      Result : Node_Id := New_Occurrence_Of (Container, Loc);
+      Typ    : constant Entity_Id := Base_Type (Etype (Container));
+      Aspect : constant Node_Id   := Find_Aspect (Typ, Aspect_Iterable);
+      Result : Node_Id;
+
    begin
+      Result := New_Occurrence_Of (Container, Loc);
+
       if Entity (Aspect) /= Typ then
-         Result := Make_Type_Conversion (Loc,
-                     Subtype_Mark => New_Occurrence_Of (Entity (Aspect), Loc),
-                     Expression   => Result);
+         Result :=
+           Make_Type_Conversion (Loc,
+             Subtype_Mark => New_Occurrence_Of (Entity (Aspect), Loc),
+             Expression   => Result);
       end if;
 
       return Result;

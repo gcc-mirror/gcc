@@ -1,3 +1,13 @@
+2017-09-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Save_References_In_Aggregate): Small correction to
+	previous change.
+
+2017-09-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_ch5.adb, sem_ch4.adb, sem_ch13.adb, sem_attr.adb, exp_ch3.adb:
+	Minor reformatting.
+
 2017-09-20  Alexandre Oliva <aoliva@redhat.com>
 
 	* gcc-interface/lang.opt (gant, gnatO, gnat): Add RejectNegative.
