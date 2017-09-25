@@ -1,3 +1,50 @@
+2017-09-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_res.adb (Replace_Actual_Discriminants): Replace a discriminant
+	for GNATprove.
+	(Resolve_Entry): Clean up predicate
+
+2017-09-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* sem_prag.adb (Analyze_Constituent): Raise Unrecoverable_Error rather
+	than Program_Error because U_E is more in line with respect to the
+	intended behavior.
+
+2017-09-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expressions): The expression for aspect
+	Storage_Size does not freeze, and thus can include references to
+	deferred constants.
+
+2017-09-25  Hristian Kirtchev  <kirtchev@adacore.com>
+
+	* exp_spark.adb (Expand_SPARK_Potential_Renaming): Do not process a
+	reference when it appears within a pragma of no significance to SPARK.
+	(In_Insignificant_Pragma): New routine.
+	* sem_prag.ads: Add new table Pragma_Significant_In_SPARK.
+
+2017-09-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch12.adb (Analyze_Associations, case N_Formal_Package): If the
+	actual is a renaming, indicate that it is the renamed package that must
+	be frozen before the instantiation.
+
+2017-09-25  Yannick Moy  <moy@adacore.com>
+
+	* doc/gnat_ugn/gnat_and_program_execution.rst: Fix typo in description
+	of dimensionality system in GNAT UG.
+	* gnat_ugn.texi: Regenerate.
+
+2017-09-25  Yannick Moy  <moy@adacore.com>
+
+	* gnat1drv.adb: Call Check_Safe_Pointers from the frontend in
+	GNATprove_Mode when switch -gnatdF used.
+
+2017-09-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* adabkend.adb (Call_Back_End): Reset Current_Error_Node when starting
+	the backend.
+
 2017-09-25  Javier Miranda  <miranda@adacore.com>
 
 	* exp_imgv.adb (Expand_Image_Attribute): Disable the optimized

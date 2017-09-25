@@ -191,6 +191,10 @@ package body System.Task_Primitives.Operations is
    --  Note well: If this function or related code is modified, it should be
    --  tested by hand, because automated testing doesn't exercise it.
 
+   -------------------------
+   -- Get_Ceiling_Support --
+   -------------------------
+
    function Get_Ceiling_Support return Boolean is
       Ceiling_Support : Boolean := False;
    begin
@@ -271,22 +275,40 @@ package body System.Task_Primitives.Operations is
    ----------------------------------
 
    function Compute_Base_Monotonic_Clock return Duration is
-      TS_Bef0, TS_Mon0, TS_Aft0 : aliased timespec;
-      TS_Bef,  TS_Mon,  TS_Aft  : aliased timespec;
-      Bef, Mon, Aft             : Duration;
-      Res_B, Res_M, Res_A       : Interfaces.C.int;
+      Aft     : Duration;
+      Bef     : Duration;
+      Mon     : Duration;
+      Res_A   : Interfaces.C.int;
+      Res_B   : Interfaces.C.int;
+      Res_M   : Interfaces.C.int;
+      TS_Aft  : aliased timespec;
+      TS_Aft0 : aliased timespec;
+      TS_Bef  : aliased timespec;
+      TS_Bef0 : aliased timespec;
+      TS_Mon  : aliased timespec;
+      TS_Mon0 : aliased timespec;
+
    begin
-      Res_B := clock_gettime
-       (clock_id => OSC.CLOCK_REALTIME, tp => TS_Bef0'Unchecked_Access);
+      Res_B :=
+        clock_gettime
+          (clock_id => OSC.CLOCK_REALTIME,
+           tp       => TS_Bef0'Unchecked_Access);
       pragma Assert (Res_B = 0);
-      Res_M := clock_gettime
-       (clock_id => OSC.CLOCK_RT_Ada, tp => TS_Mon0'Unchecked_Access);
+
+      Res_M :=
+        clock_gettime
+          (clock_id => OSC.CLOCK_RT_Ada,
+           tp       => TS_Mon0'Unchecked_Access);
       pragma Assert (Res_M = 0);
-      Res_A := clock_gettime
-       (clock_id => OSC.CLOCK_REALTIME, tp => TS_Aft0'Unchecked_Access);
+
+      Res_A :=
+        clock_gettime
+          (clock_id => OSC.CLOCK_REALTIME,
+           tp       => TS_Aft0'Unchecked_Access);
       pragma Assert (Res_A = 0);
 
       for I in 1 .. 10 loop
+
          --  Guard against a leap second that will cause CLOCK_REALTIME to jump
          --  backwards. In the extrenmely unlikely event we call clock_gettime
          --  before and after the jump the epoch, the result will be off
@@ -296,25 +318,36 @@ package body System.Task_Primitives.Operations is
          --  Also try to calculate the most accurate epoch by taking the
          --  minimum difference of 10 tries.
 
-         Res_B := clock_gettime
-          (clock_id => OSC.CLOCK_REALTIME, tp => TS_Bef'Unchecked_Access);
+         Res_B :=
+           clock_gettime
+             (clock_id => OSC.CLOCK_REALTIME,
+              tp       => TS_Bef'Unchecked_Access);
          pragma Assert (Res_B = 0);
-         Res_M := clock_gettime
-          (clock_id => OSC.CLOCK_RT_Ada, tp => TS_Mon'Unchecked_Access);
+
+         Res_M :=
+           clock_gettime
+             (clock_id => OSC.CLOCK_RT_Ada,
+              tp       => TS_Mon'Unchecked_Access);
          pragma Assert (Res_M = 0);
-         Res_A := clock_gettime
-          (clock_id => OSC.CLOCK_REALTIME, tp => TS_Aft'Unchecked_Access);
+
+         Res_A :=
+           clock_gettime
+             (clock_id => OSC.CLOCK_REALTIME,
+              tp       => TS_Aft'Unchecked_Access);
          pragma Assert (Res_A = 0);
 
-         if (TS_Bef0.tv_sec /= TS_Aft0.tv_sec and then
-             TS_Bef.tv_sec  = TS_Aft.tv_sec)
-            --  The calls to clock_gettime before the loop were no good
-            or else
-            (TS_Bef0.tv_sec = TS_Aft0.tv_sec and then
-             TS_Bef.tv_sec  = TS_Aft.tv_sec and then
-            (TS_Aft.tv_nsec  - TS_Bef.tv_nsec <
-             TS_Aft0.tv_nsec - TS_Bef0.tv_nsec))
-            --  The most recent calls to clock_gettime were better
+         --  The calls to clock_gettime before the loop were no good
+
+         if (TS_Bef0.tv_sec /= TS_Aft0.tv_sec
+               and then TS_Bef.tv_sec  = TS_Aft.tv_sec)
+
+           --  The most recent calls to clock_gettime were better
+
+           or else
+             (TS_Bef0.tv_sec = TS_Aft0.tv_sec
+                and then TS_Bef.tv_sec = TS_Aft.tv_sec
+                and then (TS_Aft.tv_nsec - TS_Bef.tv_nsec
+                            < TS_Aft0.tv_nsec - TS_Bef0.tv_nsec))
          then
             TS_Bef0 := TS_Bef;
             TS_Aft0 := TS_Aft;
@@ -326,8 +359,9 @@ package body System.Task_Primitives.Operations is
       Mon := To_Duration (TS_Mon0);
       Aft := To_Duration (TS_Aft0);
 
-      return Bef / 2 + Aft / 2 - Mon;
       --  Distribute the division, to avoid potential type overflow someday
+
+      return Bef / 2 + Aft / 2 - Mon;
    end Compute_Base_Monotonic_Clock;
 
    --------------

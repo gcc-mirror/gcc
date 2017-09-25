@@ -268,13 +268,13 @@ package body Exp_Imgv is
       Expr  : constant Node_Id    := Relocate_Node (First (Exprs));
       Pref  : constant Node_Id    := Prefix (N);
 
-      function Is_User_Defined_Enumeration_Type
-        (Typ : Entity_Id) return Boolean;
-      --  Return True if Typ is a user-defined enumeration type
-
       procedure Expand_User_Defined_Enumeration_Image;
       --  Expand attribute 'Image in user-defined enumeration types, avoiding
       --  string copy.
+
+      function Is_User_Defined_Enumeration_Type
+        (Typ : Entity_Id) return Boolean;
+      --  Return True if Typ is a user-defined enumeration type
 
       -------------------------------------------
       -- Expand_User_Defined_Enumeration_Image --
@@ -307,7 +307,7 @@ package body Exp_Imgv is
              Object_Definition   =>
                New_Occurrence_Of (Standard_Natural, Loc),
              Constant_Present    => True,
-             Expression =>
+             Expression          =>
                Convert_To (Standard_Natural,
                  Make_Attribute_Reference (Loc,
                    Attribute_Name => Name_Pos,
@@ -323,7 +323,7 @@ package body Exp_Imgv is
              Object_Definition   =>
                New_Occurrence_Of (Standard_Natural, Loc),
              Constant_Present    => True,
-             Expression =>
+             Expression          =>
                Convert_To (Standard_Natural,
                  Make_Indexed_Component (Loc,
                    Prefix      =>
@@ -347,7 +347,7 @@ package body Exp_Imgv is
                 Object_Definition   =>
                   New_Occurrence_Of (Standard_Natural, Loc),
                 Constant_Present    => True,
-                Expression =>
+                Expression          =>
                   Convert_To (Standard_Natural,
                     Make_Indexed_Component (Loc,
                       Prefix      =>
@@ -412,8 +412,8 @@ package body Exp_Imgv is
          Insert_Actions (N, Ins_List, Suppress => All_Checks);
 
          Rewrite (N,
-           Unchecked_Convert_To (S1_Id,
-             New_Occurrence_Of (P4_Id, Loc)));
+           Unchecked_Convert_To (S1_Id, New_Occurrence_Of (P4_Id, Loc)));
+
          Analyze_And_Resolve (N, Standard_String);
       end Expand_User_Defined_Enumeration_Image;
 

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 13, 2017
+GNAT User's Guide for Native Platforms , Sep 25, 2017
 
 AdaCore
 
@@ -22773,7 +22773,7 @@ However, incorrect assignments such as:
 
 @example
 Distance := 5.0;
-Distance := 5.0 * kg:
+Distance := 5.0 * kg;
 @end example
 @end quotation
 
@@ -22854,7 +22854,7 @@ end;
 @end quotation
 
 Here @code{DV(Acc)} = @code{DV(Acceleration)} =
-@code{(Meter=>1, Kilogram=>0, Second => -2, Ampere=>0, Kelvin=>0, Mole=>0, Candela => 0)}.
+@code{(Meter=>1, Kilogram=>0, Second=>-2, Ampere=>0, Kelvin=>0, Mole=>0, Candela=>0)}.
 Symbolically, we can express this as @code{Meter / Second**2}.
 
 The dimension vector of an arithmetic expression is synthesized from the

@@ -36,6 +36,7 @@ with Nmake;    use Nmake;
 with Rtsfind;  use Rtsfind;
 with Sem;      use Sem;
 with Sem_Eval; use Sem_Eval;
+with Sem_Prag; use Sem_Prag;
 with Sem_Res;  use Sem_Res;
 with Sem_Util; use Sem_Util;
 with Sinfo;    use Sinfo;
@@ -368,10 +369,45 @@ package body Exp_SPARK is
    -------------------------------------
 
    procedure Expand_SPARK_Potential_Renaming (N : Node_Id) is
+      function In_Insignificant_Pragma (Nod : Node_Id) return Boolean;
+      --  Determine whether arbitrary node Nod appears within a significant
+      --  pragma for SPARK.
+
+      -----------------------------
+      -- In_Insignificant_Pragma --
+      -----------------------------
+
+      function In_Insignificant_Pragma (Nod : Node_Id) return Boolean is
+         Par : Node_Id;
+
+      begin
+         --  Climb the parent chain looking for an enclosing pragma
+
+         Par := Nod;
+         while Present (Par) loop
+            if Nkind (Par) = N_Pragma then
+               return not Pragma_Significant_In_SPARK (Get_Pragma_Id (Par));
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return False;
+      end In_Insignificant_Pragma;
+
+      --  Local variables
+
       Loc    : constant Source_Ptr := Sloc (N);
       Obj_Id : constant Entity_Id  := Entity (N);
       Typ    : constant Entity_Id  := Etype (N);
       Ren    : Node_Id;
+
+   --  Start of processing for Expand_SPARK_Potential_Renaming
 
    begin
       --  Replace a reference to a renaming with the actual renamed object
@@ -381,12 +417,20 @@ package body Exp_SPARK is
 
          if Present (Ren) then
 
+            --  Do not process a reference when it appears within a pragma of
+            --  no significance to SPARK. It is assumed that the replacement
+            --  will violate the semantics of the pragma and cause a spurious
+            --  error.
+
+            if In_Insignificant_Pragma (N) then
+               return;
+
             --  Instantiations and inlining of subprograms employ "prologues"
             --  which map actual to formal parameters by means of renamings.
             --  Replace a reference to a formal by the corresponding actual
             --  parameter.
 
-            if Nkind (Ren) in N_Entity then
+            elsif Nkind (Ren) in N_Entity then
                Rewrite (N, New_Occurrence_Of (Ren, Loc));
 
             --  Otherwise the renamed object denotes a name

@@ -6,7 +6,7 @@
 --                                                                          --
 --                                 B o d y                                  --
 --                                                                          --
---                     Copyright (C) 2001-2016, AdaCore                     --
+--                     Copyright (C) 2001-2017, AdaCore                     --
 --                                                                          --
 -- GNAT is free software;  you can  redistribute it  and/or modify it under --
 -- terms of the  GNU General Public License as published  by the Free Soft- --
@@ -22,6 +22,7 @@
 
 --  This is the version of the Back_End package for back ends written in Ada
 
+with Atree;    use Atree;
 with Debug;
 with Lib;
 with Opt;      use Opt;
@@ -55,6 +56,13 @@ package body Adabkend is
          Write_Eol;
          Write_Eol;
       end if;
+
+      --  Frontend leaves the Current_Error_Node at a location that is
+      --  meaningless and confusing when emitting bugboxes from the backed. By
+      --  resetting it here we default to "No source file position information
+      --  available" message on backend crashes.
+
+      Current_Error_Node := Empty;
 
       Driver (Lib.Cunit (Types.Main_Unit));
    end Call_Back_End;
