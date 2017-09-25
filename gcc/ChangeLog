@@ -1,3 +1,15 @@
+2017-09-25  Bin Cheng  <bin.cheng@arm.com>
+
+	PR tree-optimization/82163
+	* tree-ssa-loop-manip.h (verify_loop_closed_ssa): New parameter.
+	(checking_verify_loop_closed_ssa): New parameter.
+	* tree-ssa-loop-manip.c (check_loop_closed_ssa_use): Delete.
+	(check_loop_closed_ssa_stmt): Delete.
+	(check_loop_closed_ssa_def, check_loop_closed_ssa_bb): New functions.
+	(verify_loop_closed_ssa): Check loop closed ssa form for LOOP.
+	(tree_transform_and_unroll_loop): Check loop closed ssa form only for
+	changed loops.
+
 2017-09-25  Pekka Jaaskelainen <pekka@parmance.com>
 
 	* brig-builtins.def: Treat HSAIL barrier builtins as
