@@ -599,18 +599,34 @@ brig_to_generic::group_segment_size () const
   return m_next_group_offset;
 }
 
-/* Appends a new group variable to the current kernel's private segment.  */
+/* Appends a new variable to the current kernel's private segment.  */
 
 void
 brig_to_generic::append_private_variable (const std::string &name,
 					  size_t size, size_t alignment)
 {
+  /* We need to take care of two cases of alignment with private
+     variables because of the layout where the same variable for
+     each work-item is laid out in successive addresses.
+
+     1) Ensure the first work-item's variable is in an aligned
+     offset:  */
   size_t align_padding = m_next_private_offset % alignment == 0 ?
     0 : (alignment - m_next_private_offset % alignment);
+
+  /* 2) Each successive per-work-item copy should be aligned.
+     If the variable has wider alignment than size then we need
+     to add extra padding to ensure it.  The padding must be
+     included in the size to allow per-work-item offset computation
+     to find their own aligned copy.  */
+
+  size_t per_var_padding = size % alignment == 0 ?
+    0 : (alignment - size % alignment);
+  m_private_data_sizes[name] = size + per_var_padding;
+
   m_next_private_offset += align_padding;
   m_private_offsets[name] = m_next_private_offset;
-  m_next_private_offset += size;
-  m_private_data_sizes[name] = size + align_padding;
+  m_next_private_offset += size + per_var_padding;
 }
 
 size_t

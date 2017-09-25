@@ -318,14 +318,6 @@ phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr)
   hsa_kernel_dispatch_packet_t *dp = context->dp;
   size_t x, y, z;
 
-  /* TO DO: host-side memory management of group and private segment
-     memory.  Agents in general are less likely to support efficient dynamic mem
-     allocation.  */
-  if (dp->group_segment_size > 0
-      && posix_memalign (&group_base_ptr, PRIVATE_SEGMENT_ALIGN,
-			 dp->group_segment_size) != 0)
-    phsa_fatal_error (3);
-
   context->group_segment_start_addr = (size_t) group_base_ptr;
 
   /* HSA seems to allow the WG size to be larger than the grid size.  We need to
@@ -371,9 +363,6 @@ phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr)
 
   phsa_execute_wi_gang (context, group_base_ptr, sat_wg_size_x, sat_wg_size_y,
 			sat_wg_size_z);
-
-  if (dp->group_segment_size > 0)
-    free (group_base_ptr);
 }
 #endif
 
@@ -389,14 +378,6 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr)
 {
   hsa_kernel_dispatch_packet_t *dp = context->dp;
   size_t x, y, z, wg_x, wg_y, wg_z;
-
-  /* TODO: host-side memory management of group and private segment
-     memory.  Agents in general are less likely to support efficient dynamic mem
-     allocation.  */
-  if (dp->group_segment_size > 0
-      && posix_memalign (&group_base_ptr, GROUP_SEGMENT_ALIGN,
-			 dp->group_segment_size) != 0)
-    phsa_fatal_error (3);
 
   context->group_segment_start_addr = (size_t) group_base_ptr;
 
@@ -509,10 +490,6 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr)
   printf ("### %lu WIs executed in %lu s (%lu WIs / s)\n", wi_total,
 	  (uint64_t) spent_time_sec, (uint64_t) wis_per_sec);
 #endif
-
-  if (dp->group_segment_size > 0)
-    free (group_base_ptr);
-
   free (private_base_ptr);
   private_base_ptr = NULL;
 }

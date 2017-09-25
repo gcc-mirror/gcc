@@ -1,3 +1,8 @@
+2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brigfrontend/brig-to-generic.cc: Ensure per WI copies of
+	private variables are aligned too.
+
 2017-09-17  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* Make-lang.in (GO_TEXI_FILES): Rename to...

@@ -1,3 +1,7 @@
+2017-09-25  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* rt/workitems.c: Assume the host runtime allocates the work group
+	memory.
 2017-05-03  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* rt/workitems.c: Removed a leftover comment.
