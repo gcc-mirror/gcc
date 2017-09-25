@@ -1,3 +1,8 @@
+2017-09-25  Janne Blomqvist  <jb@gcc.gnu.org>
+
+	* trans.c (gfc_unlikely): Remove unnecessary fold_convert.
+	(gfc_likely): Likewise.
+
 2017-09-24  Thomas Koenig  <tkoenig@gcc.gnu.org>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 
