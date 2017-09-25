@@ -1837,7 +1837,17 @@ package body Sem_Res is
    --  Start of processing for Replace_Actual_Discriminants
 
    begin
-      if not Expander_Active then
+      if Expander_Active then
+         null;
+
+      --  Allow the replacement of concurrent discriminants in GNATprove even
+      --  though this is a light expansion activity. Note that generic units
+      --  are not modified.
+
+      elsif GNATprove_Mode and not Inside_A_Generic then
+         null;
+
+      else
          return;
       end if;
 
@@ -1848,9 +1858,7 @@ package body Sem_Res is
          Tsk := Prefix (Prefix (Name (N)));
       end if;
 
-      if No (Tsk) then
-         return;
-      else
+      if Present (Tsk) then
          Replace_Discrs (Default);
       end if;
    end Replace_Actual_Discriminants;
@@ -3561,6 +3569,7 @@ package body Sem_Res is
             Rewrite (Actval,
               Make_Raise_Constraint_Error (Loc,
                 Reason => CE_Range_Check_Failed));
+
             Set_Raises_Constraint_Error (Actval);
             Set_Etype (Actval, Etype (F));
          end if;
@@ -3568,12 +3577,12 @@ package body Sem_Res is
          Assoc :=
            Make_Parameter_Association (Loc,
              Explicit_Actual_Parameter => Actval,
-             Selector_Name => Make_Identifier (Loc, Chars (F)));
+             Selector_Name             => Make_Identifier (Loc, Chars (F)));
 
          --  Case of insertion is first named actual
 
-         if No (Prev) or else
-            Nkind (Parent (Prev)) /= N_Parameter_Association
+         if No (Prev)
+           or else Nkind (Parent (Prev)) /= N_Parameter_Association
          then
             Set_Next_Named_Actual (Assoc, First_Named_Actual (N));
             Set_First_Named_Actual (N, Actval);
@@ -7474,13 +7483,10 @@ package body Sem_Res is
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
 
-         --  Generate a reference for the index entity when the index is not a
-         --  literal.
+         --  Generate a reference for the index when it denotes an entity
 
-         if Nkind (Index) in N_Has_Entity
-           and then Nkind (Entity (Index)) in N_Entity
-         then
-            Generate_Reference (Entity (Index), Nam, ' ');
+         if Is_Entity_Name (Index) then
+            Generate_Reference (Entity (Index), Nam);
          end if;
 
          --  Up to this point the expression could have been the actual in a

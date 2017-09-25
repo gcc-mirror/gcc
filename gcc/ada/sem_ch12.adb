@@ -1980,8 +1980,22 @@ package body Sem_Ch12 is
 
                            if Needs_Freezing then
                               Check_Generic_Parent;
-                              Set_Has_Delayed_Freeze (Actual);
-                              Append_Elmt (Actual, Actuals_To_Freeze);
+
+                              --  If the actual is a renaming of a proper
+                              --  instance of the formal package, indicate
+                              --  that it is the instance that must be frozen.
+
+                              if Nkind (Parent (Actual)) =
+                                N_Package_Renaming_Declaration
+                              then
+                                 Set_Has_Delayed_Freeze
+                                   (Renamed_Entity (Actual));
+                                 Append_Elmt
+                                  (Renamed_Entity (Actual), Actuals_To_Freeze);
+                              else
+                                 Set_Has_Delayed_Freeze (Actual);
+                                 Append_Elmt (Actual, Actuals_To_Freeze);
+                              end if;
                            end if;
                         end if;
                      end Explicit_Freeze_Check;
