@@ -1,3 +1,9 @@
+2017-09-25  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR c/81854
+	* src/c++98/complex_io.cc (_GLIBCXX_LDBL_COMPAT): Declare alias
+	target as a C++ function with no prototype.
+
 2017-09-21  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/25_algorithms/clamp/1.cc: Fix order of arguments and
