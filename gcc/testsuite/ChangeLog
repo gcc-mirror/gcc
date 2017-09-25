@@ -1,3 +1,9 @@
+2017-09-25  Jeff Law  <law@redhat.com>
+
+	* lib/target-supports.exp
+	(check_effective_target_supports_stack_clash_protection): Enable for
+	rs6000 and powerpc targets.
+
 2017-09-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82163
