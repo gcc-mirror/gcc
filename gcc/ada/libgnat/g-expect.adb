@@ -907,8 +907,6 @@ package body GNAT.Expect is
       Status     : not null access Integer;
       Err_To_Out : Boolean := False) return String
    is
-      use GNAT.Expect;
-
       Process : Process_Descriptor;
 
       Output : String_Access := new String (1 .. 1024);

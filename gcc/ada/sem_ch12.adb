@@ -4840,7 +4840,7 @@ package body Sem_Ch12 is
          end loop;
 
          if Removed then
-            Install_Context (Curr_Comp);
+            Install_Context (Curr_Comp, Chain => False);
 
             if Present (Curr_Scope)
               and then Is_Child_Unit (Curr_Scope)

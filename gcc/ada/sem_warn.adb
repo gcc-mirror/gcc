@@ -2225,29 +2225,21 @@ package body Sem_Warn is
             ----------------------
 
             function Check_Use_Clause (N : Node_Id) return Traverse_Result is
-               Nam  : Node_Id;
-
             begin
-               if Nkind (N) = N_Use_Package_Clause then
-                  Nam := First (Names (N));
-                  while Present (Nam) loop
-                     if Entity (Nam) = Pack then
+               if Nkind (N) = N_Use_Package_Clause
+                 and then Entity (Name (N)) = Pack
+               then
+                  --  Suppress message if any serious errors detected that turn
+                  --  off expansion, and thus result in false positives for
+                  --  this warning.
 
-                        --  Suppress message if any serious errors detected
-                        --  that turn off expansion, and thus result in false
-                        --  positives for this warning.
-
-                        if Serious_Errors_Detected = 0 then
-                           Error_Msg_Qual_Level := 1;
-                           Error_Msg_NE -- CODEFIX
-                             ("?u?no entities of package& are referenced!",
-                                Nam, Pack);
-                           Error_Msg_Qual_Level := 0;
-                        end if;
-                     end if;
-
-                     Next (Nam);
-                  end loop;
+                  if Serious_Errors_Detected = 0 then
+                     Error_Msg_Qual_Level := 1;
+                     Error_Msg_NE -- CODEFIX
+                       ("?u?no entities of package& are referenced!",
+                          Name (N), Pack);
+                     Error_Msg_Qual_Level := 0;
+                  end if;
                end if;
 
                return OK;

@@ -1132,6 +1132,7 @@ package body Sem_Ch5 is
          end if;
 
          Check_References (Ent);
+         Update_Use_Clause_Chain;
          End_Scope;
 
          if Unblocked_Exit_Count = 0 then

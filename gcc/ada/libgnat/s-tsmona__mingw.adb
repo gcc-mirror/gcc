@@ -37,8 +37,6 @@ separate (System.Traceback.Symbolic)
 
 package body Module_Name is
 
-   use System;
-
    ---------------------------------
    -- Build_Cache_For_All_Modules --
    ---------------------------------

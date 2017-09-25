@@ -4411,7 +4411,7 @@ package body Ch3 is
 
          when Tok_Use =>
             Check_Bad_Layout;
-            Append (P_Use_Clause, Decls);
+            P_Use_Clause (Decls);
             Done := False;
 
          when Tok_With =>

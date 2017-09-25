@@ -38,7 +38,7 @@ with Opt;      use Opt;
 with Output;   use Output;
 with System;   use System;
 with Tree_IO;  use Tree_IO;
-with Widechar; use Widechar;
+with Widechar;
 
 with Interfaces; use Interfaces;
 

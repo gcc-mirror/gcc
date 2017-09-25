@@ -1,3 +1,90 @@
+2017-09-25  Justin Squirek  <squirek@adacore.com>
+
+	* aspects.adb, bindgen.adb, clean.adb, erroutc.adb, exp_ch13.adb,
+	exp_dbug.adb, exp_unst.adb, exp_util.adb, frontend.adb, gnat1drv.adb,
+	gnatdll.adb, gnatlink.adb, gnatls.adb, gnatname.adb, gnatxref.adb,
+	gnatfind.adb, libgnat/a-cfhama.ads, libgnat/a-exetim__mingw.adb,
+	libgnat/a-strmap.adb, libgnat/a-teioed.adb, libgnat/g-alvety.ads,
+	libgnat/g-expect.adb, libgnat/g-regist.adb, libgnat/g-socket.adb,
+	libgnat/g-socthi__mingw.ads, libgnat/s-stausa.adb,
+	libgnat/s-tsmona__linux.adb, libgnat/s-tsmona__mingw.adb,
+	libgnarl/s-taenca.adb, libgnarl/s-tassta.adb, libgnarl/s-tarest.adb,
+	libgnarl/s-tpobop.adb, make.adb, makeusg.adb, namet.adb, output.ads,
+	put_scos.adb, repinfo.adb, rtsfind.adb, scn.ads, sem_attr.adb,
+	sem_aux.ads, sem_warn.ads, targparm.adb, xr_tabls.adb, xref_lib.adb:
+	Removal of ineffective use-clauses.
+	* exp_ch9.adb (Is_Simple_Barrier_Name): Check for false positives with
+	constant folded barriers.
+	* ghost.adb, sprint.adb, sem_ch10.adb, sem_warn.adb: Change access to
+	Subtype_Marks and Names list in use-clause nodes to their new singular
+	counterparts (e.g. Subtype_Mark, Name).
+	* par.adb, par-ch8.adb (Append_Use_Clause): Created to set
+	Prev_Ids and More_Ids in use-clause nodes.
+	(P_Use_Clause): Modify to take a list as a parameter.
+	(P_Use_Package_Clause, P_Use_Type_Clause): Divide names and
+	subtype_marks within an aggregate use-clauses into individual clauses.
+	* par-ch3.adb, par-ch10.adb, par-ch12.adb: Trivally modify call to
+	P_Use_Clause to match its new behavior.
+	* sem.adb (Analyze): Mark use clauses for non-overloaded entities.
+	* sem_ch4.adb (Try_One_Interp): Add sanity check to handle previous
+	errors.
+	* sem_ch6.adb (Analyze_Generic_Subprogram_Body,
+	Analyze_Subprogram_Body_Helper): Update use clause chain at the end of
+	the declarative region.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Update use clause chain
+	after analysis (Analyze_Package_Specification): Update use clause chain
+	when there is no body.
+	* sem_ch8.ads, sem_ch8.adb (Analyze_Use_Package, Analyze_Use_Type): Add
+	parameter to determine weither the installation of scopes should also
+	propagate on the use-clause "chain".
+	(Mark_Use_Clauses): Created to traverse use-clause chains and determine
+	what constitutes a valid "use" of a clause.
+	(Update_Use_Clause_Chain): Created to aggregate common machinary used
+	to clean up use-clause chains (and warn on ineffectiveness) at the end
+	of declaritive regions.
+	* sem_ch8.adb (Analyze_Package_Name): Created to perform analysis on a
+	package name from a use-package clause.
+	(Analyze_Package_Name_List): Created to perform analysis on a list of
+	package names (similar to Analyze_Package_Name).
+	(Find_Most_Prev): Created to traverse to the beginning of a given
+	use-clause chain.
+	(Most_Decendant_Use_Clause): Create to identify which clause from a
+	given set is highest in scope (not always the most prev).
+	(Use_One_Package, Use_One_Type): Major cleanup and reorganization to
+	handle the new chaining algorithm, also many changes related to
+	redundant clauses. A new parameter has also been added to force
+	installation to handle certain cases.
+	* sem_ch9.adb (Analyze_Entry_Body, Analyze_Protected_Body,
+	Analyze_Task_Body): Mark use clauses on relevant entities.
+	* sem_ch10.adb, sem_ch10.ads (Install_Context_Clauses,
+	Install_Parents): Add parameter to determine weither the installation
+	of scopes should also propagate on the use-clause "chain".
+	* sem_ch12.adb (Inline_Instance_Body): Add flag in call to
+	Install_Context to avoid redundant chaining of use-clauses.
+	* sem_ch13.adb: Minor reformatting.
+	* sem_res.adb (Resolve): Mark use clauses on operators.
+	(Resolve_Call, Resolve_Entity_Name): Mark use clauses on relevant
+	entities.
+	* sinfo.adb, sinfo.ads (Is_Effective_Use_Clause,
+	Set_Is_Effective_Use_Clause): Add new flag to N_Use_Clause nodes to
+	represent any given clause's usage/reference/necessity.
+	(Prev_Use_Clause, Set_Prev_Use_Clause): Add new field to N_Use_Clause
+	nodes to allow loose chaining of redundant clauses.
+	(Set_Used_Operations, Set_Subtype_Mark, Set_Prev_Ids, Set_Names,
+	Set_More_Ids, Set_Name): Modify set procedure calls to reflect
+	reorganization in node fields.
+	* types.ads (Source_File_Index): Adjust index bounds.
+	(No_Access_To_Source_File): New constant.
+
+2017-09-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Analyze_One_Aspect): In ASIS mode make a full copy of
+	the expression to be used in the generated attribute specification
+	(rather than relocating it) to avoid resolving a potentially malformed
+	tree when the expression is resolved through an ASIS-specific call to
+	Resolve_Aspect_Expressions.  This manifests itself as a crash on a
+	function with parameter associations.
+
 2017-09-25  Yannick Moy  <moy@adacore.com>
 
 	* exp_spark.adb (Expand_SPARK_Indexed_Component,

@@ -867,7 +867,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    -------------
 
    package Ch8 is
-      function P_Use_Clause                           return Node_Id;
+      procedure P_Use_Clause (Item_List : List_Id);
    end Ch8;
 
    -------------

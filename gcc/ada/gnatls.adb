@@ -29,7 +29,7 @@ with ALI;         use ALI;
 with ALI.Util;    use ALI.Util;
 with Binderr;     use Binderr;
 with Butil;       use Butil;
-with Csets;       use Csets;
+with Csets;
 with Fname;       use Fname;
 with Gnatvsn;     use Gnatvsn;
 with Make_Util;   use Make_Util;

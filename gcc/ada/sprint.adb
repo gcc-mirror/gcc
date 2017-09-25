@@ -3435,12 +3435,12 @@ package body Sprint is
 
          when N_Use_Package_Clause =>
             Write_Indent_Str_Sloc ("use ");
-            Sprint_Comma_List (Names (Node));
+            Sprint_Node_Sloc (Name (Node));
             Write_Char (';');
 
          when N_Use_Type_Clause =>
             Write_Indent_Str_Sloc ("use type ");
-            Sprint_Comma_List (Subtype_Marks (Node));
+            Sprint_Node_Sloc (Subtype_Mark (Node));
             Write_Char (';');
 
          when N_Validate_Unchecked_Conversion =>

@@ -2264,13 +2264,29 @@ package body Sem_Ch13 is
                      end if;
                   end if;
 
-                  --  Construct the attribute definition clause
+                  --  Construct the attribute_definition_clause. The expression
+                  --  in the aspect specification is simply shared with the
+                  --  constructed attribute, because it will be fully analyzed
+                  --  when the attribute is processed. However, in ASIS mode
+                  --  the aspect expression itself is preanalyzed and resolved
+                  --  to catch visibility errors that are otherwise caught
+                  --  later, and we create a separate copy of the expression
+                  --  to prevent analysis of a malformed tree (e.g. a function
+                  --  call with parameter associations).
 
-                  Aitem :=
-                    Make_Attribute_Definition_Clause (Loc,
-                      Name       => Ent,
-                      Chars      => Chars (Id),
-                      Expression => Relocate_Node (Expr));
+                  if ASIS_Mode then
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => New_Copy_Tree (Expr));
+                  else
+                     Aitem :=
+                       Make_Attribute_Definition_Clause (Loc,
+                         Name       => Ent,
+                         Chars      => Chars (Id),
+                         Expression => Relocate_Node (Expr));
+                  end if;
 
                   --  If the address is specified, then we treat the entity as
                   --  referenced, to avoid spurious warnings. This is analogous

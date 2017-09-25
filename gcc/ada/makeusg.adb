@@ -24,7 +24,7 @@
 ------------------------------------------------------------------------------
 
 with Make_Util;
-with Osint;   use Osint;
+with Osint;
 with Output;  use Output;
 with Switch;  use Switch;
 with Usage;
