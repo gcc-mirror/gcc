@@ -1244,6 +1244,9 @@ build_original_schedule (scop_p scop)
 bool
 build_poly_scop (scop_p scop)
 {
+  int old_err = isl_options_get_on_error (scop->isl_context);
+  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_CONTINUE);
+
   build_scop_context (scop);
 
   unsigned i = 0;
@@ -1253,6 +1256,14 @@ build_poly_scop (scop_p scop)
 
   build_scop_drs (scop);
   build_original_schedule (scop);
-  return true;
+
+  enum isl_error err = isl_ctx_last_error (scop->isl_context);
+  isl_ctx_reset_error (scop->isl_context);
+  isl_options_set_on_error (scop->isl_context, old_err);
+  if (err != isl_error_none)
+    dump_printf (MSG_MISSED_OPTIMIZATION,
+		 "ISL error while building poly scop\n");
+
+  return err == isl_error_none;
 }
 #endif  /* HAVE_isl */

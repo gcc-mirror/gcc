@@ -111,6 +111,7 @@ scop_get_domains (scop_p scop)
 static bool
 optimize_isl (scop_p scop)
 {
+  int old_err = isl_options_get_on_error (scop->isl_context);
   int old_max_operations = isl_ctx_get_max_operations (scop->isl_context);
   int max_operations = PARAM_VALUE (PARAM_MAX_ISL_OPERATIONS);
   if (max_operations)
@@ -150,19 +151,23 @@ optimize_isl (scop_p scop)
   scop->transformed_schedule =
     isl_schedule_map_schedule_node_bottom_up (scop->transformed_schedule,
 					      get_schedule_for_node_st, NULL);
-  isl_options_set_on_error (scop->isl_context, ISL_ON_ERROR_ABORT);
 
+  isl_options_set_on_error (scop->isl_context, old_err);
   isl_ctx_reset_operations (scop->isl_context);
   isl_ctx_set_max_operations (scop->isl_context, old_max_operations);
   if (!scop->transformed_schedule
-      || isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+      || isl_ctx_last_error (scop->isl_context) != isl_error_none)
     {
       location_t loc = find_loop_location
 	(scop->scop_info->region.entry->dest->loop_father);
-      dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
-		       "loop nest not optimized, optimization timed out "
-		       "after %d operations [--param max-isl-operations]\n",
-		       max_operations);
+      if (isl_ctx_last_error (scop->isl_context) == isl_error_quota)
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, optimization timed out "
+			 "after %d operations [--param max-isl-operations]\n",
+			 max_operations);
+      else
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, loc,
+			 "loop nest not optimized, ISL signalled an error\n");
       return false;
     }
 
@@ -175,12 +180,13 @@ optimize_isl (scop_p scop)
 
   if (same_schedule)
     {
+      location_t loc = find_loop_location
+	(scop->scop_info->region.entry->dest->loop_father);
+      dump_printf_loc (MSG_NOTE, loc,
+		       "loop nest not optimized, optimized schedule is "
+		       "identical to original schedule\n");
       if (dump_file)
-	{
-	  fprintf (dump_file, "[scheduler] isl optimized schedule is "
-		   "identical to the original schedule.\n");
-	  print_schedule_ast (dump_file, scop->original_schedule, scop);
-	}
+	print_schedule_ast (dump_file, scop->original_schedule, scop);
       isl_schedule_free (scop->transformed_schedule);
       scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
       return false;
