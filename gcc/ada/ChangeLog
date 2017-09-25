@@ -1,3 +1,23 @@
+2017-09-25  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Compute_Base_Monotonic_Clock): Refine.
+
+2017-09-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_imgv.adb (Is_User_Defined_Enumeration_Type): New subprogram.
+	(Expand_User_Defined_Enumeration_Image): New subprogram.
+	(Expand_Image_Attribute): Enable speed-optimized expansion of
+	user-defined enumeration types when we are compiling with optimizations
+	enabled.
+
+2017-09-25  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Has_Null_Abstract_State): Remove, as an exactly same
+	routine is already provided by Einfo.
+	* einfo.adb (Has_Null_Abstract_State): Replace with the body from
+	Sem_Util, which had better comments and avoided double calls to
+	Abstract_State.
+
 2017-09-25  Bob Duff  <duff@adacore.com>
 
 	* exp_ch3.adb: Rename Comp_Type_Simple to be Comp_Simple_Init.

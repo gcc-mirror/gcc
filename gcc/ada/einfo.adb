@@ -7707,12 +7707,17 @@ package body Einfo is
    -----------------------------
 
    function Has_Null_Abstract_State (Id : E) return B is
-   begin
       pragma Assert (Ekind_In (Id, E_Generic_Package, E_Package));
 
+      States : constant Elist_Id := Abstract_States (Id);
+
+   begin
+      --  Check first available state of related package. A null abstract
+      --  state always appears as the sole element of the state list.
+
       return
-        Present (Abstract_States (Id))
-          and then Is_Null_State (Node (First_Elmt (Abstract_States (Id))));
+        Present (States)
+          and then Is_Null_State (Node (First_Elmt (States)));
    end Has_Null_Abstract_State;
 
    ---------------------------------

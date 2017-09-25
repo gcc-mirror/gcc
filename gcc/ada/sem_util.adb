@@ -3138,33 +3138,9 @@ package body Sem_Util is
    ---------------------------
 
    procedure Check_No_Hidden_State (Id : Entity_Id) is
-      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean;
-      --  Determine whether the entity of a package denoted by Pkg has a null
-      --  abstract state.
-
-      -----------------------------
-      -- Has_Null_Abstract_State --
-      -----------------------------
-
-      function Has_Null_Abstract_State (Pkg : Entity_Id) return Boolean is
-         States : constant Elist_Id := Abstract_States (Pkg);
-
-      begin
-         --  Check first available state of related package. A null abstract
-         --  state always appears as the sole element of the state list.
-
-         return
-           Present (States)
-             and then Is_Null_State (Node (First_Elmt (States)));
-      end Has_Null_Abstract_State;
-
-      --  Local variables
-
       Context     : Entity_Id := Empty;
       Not_Visible : Boolean   := False;
       Scop        : Entity_Id;
-
-   --  Start of processing for Check_No_Hidden_State
 
    begin
       pragma Assert (Ekind_In (Id, E_Abstract_State, E_Variable));
