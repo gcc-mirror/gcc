@@ -1,3 +1,16 @@
+2017-09-25  Bob Duff  <duff@adacore.com>
+
+	* exp_ch3.adb: Rename Comp_Type_Simple to be Comp_Simple_Init.
+
+2017-09-25  Doug Rupp  <rupp@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb (Base_Monotonic_Clock): New variable.
+	(Compute_Base_Monotonic_Clock): New function.
+	(Timed_Sleep): Adjust to use Base_Monotonic_Clock.
+	(Timed_Delay): Likewise.
+	(Monotonic_Clock): Likewise.
+	* s-oscons-tmplt.c (CLOCK_MONOTONIC): Use on Linux.
+
 2017-09-25  Ed Schonberg  <schonberg@adacore.com>
 
 	* sem_ch12.adb (Save_References_In_Aggregate): Small correction to
