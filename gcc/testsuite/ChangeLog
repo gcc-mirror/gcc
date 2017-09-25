@@ -1,3 +1,8 @@
+2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82285
+	* gcc.dg/torture/pr82285.c: New testcase.
+
 2017-09-25  Justin Squirek  <squirek@adacore.com>
 
 	* gnat.dg/entry_family.adb: New testcase

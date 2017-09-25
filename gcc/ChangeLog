@@ -1,3 +1,9 @@
+2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82285
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Also handle
+	enumeral types.
+
 2017-09-25  Tom de Vries  <tom@codesourcery.com>
 
 	PR target/80035
