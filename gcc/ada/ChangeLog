@@ -1,3 +1,23 @@
+2017-09-25  Javier Miranda  <miranda@adacore.com>
+
+	* exp_imgv.adb (Expand_Image_Attribute): Disable the optimized
+	expansion of user-defined enumeration types when the generation of
+	names for enumeration literals is suppressed.
+
+2017-09-25  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnarl/s-taprop__linux.adb: Minor reformatting.
+
+2017-09-25  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch13.adb (Resolve_Aspect_Expressions): Do not resolve identifiers
+	that appear as selector names of parameter associations, as these are
+	never resolved by visibility.
+
+2017-09-25  Justin Squirek  <squirek@adacore.com>
+
+	* sem_res.adb (Resolve_Entry): Generate reference for index entities.
+
 2017-09-25  Doug Rupp  <rupp@adacore.com>
 
 	* libgnarl/s-taprop__linux.adb (Compute_Base_Monotonic_Clock): Refine.

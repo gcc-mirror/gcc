@@ -7474,6 +7474,15 @@ package body Sem_Res is
          Index := First (Expressions (Entry_Name));
          Resolve (Index, Entry_Index_Type (Nam));
 
+         --  Generate a reference for the index entity when the index is not a
+         --  literal.
+
+         if Nkind (Index) in N_Has_Entity
+           and then Nkind (Entity (Index)) in N_Entity
+         then
+            Generate_Reference (Entity (Index), Nam, ' ');
+         end if;
+
          --  Up to this point the expression could have been the actual in a
          --  simple entry call, and be given by a named association.
 
