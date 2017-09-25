@@ -16157,6 +16157,25 @@ rs6000_fold_builtin (tree fndecl, int n_args ATTRIBUTE_UNUSED,
 #endif
 }
 
+/*  Helper function to sort out which built-ins may be valid without having
+    a LHS.  */
+static bool
+rs6000_builtin_valid_without_lhs (enum rs6000_builtins fn_code)
+{
+  switch (fn_code)
+    {
+    case ALTIVEC_BUILTIN_STVX_V16QI:
+    case ALTIVEC_BUILTIN_STVX_V8HI:
+    case ALTIVEC_BUILTIN_STVX_V4SI:
+    case ALTIVEC_BUILTIN_STVX_V4SF:
+    case ALTIVEC_BUILTIN_STVX_V2DI:
+    case ALTIVEC_BUILTIN_STVX_V2DF:
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* Fold a machine-dependent built-in in GIMPLE.  (For folding into
    a constant, use rs6000_fold_builtin.)  */
 
@@ -16184,8 +16203,9 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
   if (!rs6000_fold_gimple)
     return false;
 
-  /* Generic solution to prevent gimple folding of code without a LHS.  */
-  if (!gimple_call_lhs (stmt))
+  /* Prevent gimple folding for code that does not have a LHS, unless it is
+   allowed per the rs6000_builtin_valid_without_lhs helper function.  */
+  if (!gimple_call_lhs (stmt) && !rs6000_builtin_valid_without_lhs (fn_code))
     return false;
 
   switch (fn_code)
@@ -16587,7 +16607,54 @@ rs6000_gimple_fold_builtin (gimple_stmt_iterator *gsi)
 	 gsi_replace (gsi, g, true);
 	 return true;
       }
-
+    /* Vector stores.  */
+    case ALTIVEC_BUILTIN_STVX_V16QI:
+    case ALTIVEC_BUILTIN_STVX_V8HI:
+    case ALTIVEC_BUILTIN_STVX_V4SI:
+    case ALTIVEC_BUILTIN_STVX_V4SF:
+    case ALTIVEC_BUILTIN_STVX_V2DI:
+    case ALTIVEC_BUILTIN_STVX_V2DF:
+      {
+	 /* Do not fold for -maltivec=be on LE targets.  */
+	 if (VECTOR_ELT_ORDER_BIG && !BYTES_BIG_ENDIAN)
+	    return false;
+	 arg0 = gimple_call_arg (stmt, 0); /* Value to be stored.  */
+	 arg1 = gimple_call_arg (stmt, 1); /* Offset.  */
+	 tree arg2 = gimple_call_arg (stmt, 2); /* Store-to address.  */
+	 location_t loc = gimple_location (stmt);
+	 tree arg0_type = TREE_TYPE (arg0);
+	 /* Use ptr_type_node (no TBAA) for the arg2_type.
+	  FIXME: (Richard)  "A proper fix would be to transition this type as
+	  seen from the frontend to GIMPLE, for example in a similar way we
+	  do for MEM_REFs by piggy-backing that on an extra argument, a
+	  constant zero pointer of the alias pointer type to use (which would
+	  also serve as a type indicator of the store itself).  I'd use a
+	  target specific internal function for this (not sure if we can have
+	  those target specific, but I guess if it's folded away then that's
+	  fine) and get away with the overload set."
+	  */
+	 tree arg2_type = ptr_type_node;
+	 /* POINTER_PLUS_EXPR wants the offset to be of type 'sizetype'.  Create
+	    the tree using the value from arg0.  The resulting type will match
+	    the type of arg2.  */
+	 gimple_seq stmts = NULL;
+	 tree temp_offset = gimple_convert (&stmts, loc, sizetype, arg1);
+	 tree temp_addr = gimple_build (&stmts, loc, POINTER_PLUS_EXPR,
+				       arg2_type, arg2, temp_offset);
+	 /* Mask off any lower bits from the address.  */
+	 tree aligned_addr = gimple_build (&stmts, loc, BIT_AND_EXPR,
+					  arg2_type, temp_addr,
+					  build_int_cst (arg2_type, -16));
+	 gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
+	/* The desired gimple result should be similar to:
+	 MEM[(__vector floatD.1407 *)_1] = vf1D.2697;  */
+	 gimple *g;
+	 g = gimple_build_assign (build2 (MEM_REF, arg0_type, aligned_addr,
+					   build_int_cst (arg2_type, 0)), arg0);
+	 gimple_set_location (g, loc);
+	 gsi_replace (gsi, g, true);
+	 return true;
+      }
     default:
 	if (TARGET_DEBUG_BUILTIN)
 	   fprintf (stderr, "gimple builtin intrinsic not matched:%d %s %s\n",

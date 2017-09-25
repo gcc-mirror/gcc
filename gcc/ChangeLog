@@ -1,3 +1,11 @@
+2017-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
+
+	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling
+	for early folding of vector stores (ALTIVEC_BUILTIN_ST_*).
+	(rs6000_builtin_valid_without_lhs): New helper function.
+	* config/rs6000/rs6000-c.c (altivec_resolve_overloaded_builtin):
+	Remove obsoleted code for handling ALTIVEC_BUILTIN_VEC_ST.
+
 2017-09-25  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* target.h (vec_perm_indices): Use unsigned short rather than
