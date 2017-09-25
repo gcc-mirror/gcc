@@ -672,6 +672,9 @@ static const struct attribute_spec ia64_attribute_table[] =
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS ia64_can_change_mode_class
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Returns TRUE iff the target attribute indicated by ATTR_ID takes a plain

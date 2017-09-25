@@ -592,15 +592,6 @@ extern int arm_arch_cmse;
 #define BIGGEST_FIELD_ALIGNMENT 64
 #endif
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT_FACTOR (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2)
-
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)				\
-   ((TREE_CODE (EXP) == STRING_CST				\
-     && !optimize_size						\
-     && (ALIGN) < BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR)	\
-    ? BITS_PER_WORD * CONSTANT_ALIGNMENT_FACTOR : (ALIGN))
-
 /* Align definitions of arrays, unions and structures so that
    initializations and copies can be made more efficient.  This is not
    ABI-changing, so it only affects places where we can see the

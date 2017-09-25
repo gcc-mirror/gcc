@@ -147,12 +147,6 @@ along with GCC; see the file COPYING3.  If not see
 
 #define MALLOC_ABI_ALIGNMENT BIGGEST_ALIGNMENT
 
-/* Make strings dword-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  ((TREE_CODE (EXP) == STRING_CST	\
-    && (ALIGN) < FASTEST_ALIGNMENT)	\
-   ? FASTEST_ALIGNMENT : (ALIGN))
-
 /* Make arrays of chars dword-aligned for the same reasons.
    Also, align arrays of SImode items.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN)		\

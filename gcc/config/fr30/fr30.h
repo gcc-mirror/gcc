@@ -88,10 +88,6 @@ along with GCC; see the file COPYING3.  If not see
    && TYPE_MODE (TREE_TYPE (TYPE)) == QImode	\
    && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)  \
-  (TREE_CODE (EXP) == STRING_CST	\
-   && (ALIGN) < BITS_PER_WORD ? BITS_PER_WORD : (ALIGN))
-
 #define STRICT_ALIGNMENT 1
 
 #define PCC_BITFIELD_TYPE_MATTERS 1

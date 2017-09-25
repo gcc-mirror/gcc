@@ -316,6 +316,7 @@ static opt_scalar_float_mode arm_floatn_mode (int, bool);
 static unsigned int arm_hard_regno_nregs (unsigned int, machine_mode);
 static bool arm_hard_regno_mode_ok (unsigned int, machine_mode);
 static bool arm_modes_tieable_p (machine_mode, machine_mode);
+static HOST_WIDE_INT arm_constant_alignment (const_tree, HOST_WIDE_INT);
 
 /* Table of machine attributes.  */
 static const struct attribute_spec arm_attribute_table[] =
@@ -795,6 +796,9 @@ static const struct attribute_spec arm_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS arm_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT arm_constant_alignment
 
 /* Obstack for minipool constant handling.  */
 static struct obstack minipool_obstack;
@@ -31274,6 +31278,18 @@ arm_can_change_mode_class (machine_mode from, machine_mode to,
       && reg_classes_intersect_p (VFP_REGS, rclass))
     return false;
   return true;
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
+   strcpy from constants will be faster.  */
+
+static HOST_WIDE_INT
+arm_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  unsigned int factor = (TARGET_THUMB || ! arm_tune_xscale ? 1 : 2);
+  if (TREE_CODE (exp) == STRING_CST && !optimize_size)
+    return MAX (align, BITS_PER_WORD * factor);
+  return align;
 }
 
 #if CHECKING_P

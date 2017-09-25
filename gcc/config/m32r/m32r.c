@@ -217,6 +217,9 @@ static const struct attribute_spec m32r_attribute_table[] =
 #undef TARGET_MODES_TIEABLE_P
 #define TARGET_MODES_TIEABLE_P m32r_modes_tieable_p
 
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 /* Called by m32r_option_override to initialize various things.  */

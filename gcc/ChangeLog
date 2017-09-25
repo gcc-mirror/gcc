@@ -1,3 +1,131 @@
+2017-09-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.def (constant_alignment): New hook.
+	* defaults.h (CONSTANT_ALIGNMENT): Delete.
+	* doc/tm.texi.in (CONSTANT_ALIGNMENT): Replace with...
+	(TARGET_CONSTANT_ALIGNMENT): ...this new hook.
+	* doc/tm.texi: Regenerate.
+	* targhooks.h (default_constant_alignment): Declare.
+	(constant_alignment_word_strings): Likewise.
+	* targhooks.c (default_constant_alignment): New function.
+	(constant_alignment_word_strings): Likewise.
+	* builtins.c (get_object_alignment_2): Use targetm.constant_alignment
+	instead of CONSTANT_ALIGNMENT.
+	* varasm.c (align_variable, get_variable_align, build_constant_desc)
+	(force_const_mem): Likewise.
+	* config/aarch64/aarch64.h (CONSTANT_ALIGNMENT): Delete.
+	* config/aarch64/aarch64.c (aarch64_constant_alignment): New function.
+	(aarch64_classify_address): Call it instead of CONSTANT_ALIGNMENT.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/alpha/alpha.h (CONSTANT_ALIGNMENT): Delete commented-out
+	definition.
+	* config/arc/arc.h (CONSTANT_ALIGNMENT): Delete.
+	* config/arc/arc.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/arm/arm.h (CONSTANT_ALIGNMENT_FACTOR): Delete.
+	(CONSTANT_ALIGNMENT): Likewise.
+	* config/arm/arm.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(arm_constant_alignment): New function.
+	* config/bfin/bfin.h (CONSTANT_ALIGNMENT): Delete.
+	* config/bfin/bfin.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/cr16/cr16.h (CONSTANT_ALIGNMENT): Delete.
+	* config/cr16/cr16.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/cris/cris.h (CONSTANT_ALIGNMENT): Delete.
+	* config/cris/cris.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(cris_constant_alignment): New function.
+	* config/epiphany/epiphany.h (CONSTANT_ALIGNMENT): Delete.
+	* config/epiphany/epiphany.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(epiphany_constant_alignment): New function.
+	* config/fr30/fr30.h (CONSTANT_ALIGNMENT): Delete.
+	* config/fr30/fr30.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/frv/frv.h (CONSTANT_ALIGNMENT): Delete.
+	* config/frv/frv.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/ft32/ft32.h (CONSTANT_ALIGNMENT): Delete.
+	* config/ft32/ft32.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/i386/i386.h (CONSTANT_ALIGNMENT): Delete.
+	* config/i386/i386-protos.h (ix86_constant_alignment): Delete.
+	* config/i386/i386.c (ix86_constant_alignment): Make static.
+	Use the same interface as the target hook.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/ia64/ia64.h (CONSTANT_ALIGNMENT): Delete.
+	* config/ia64/ia64.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/iq2000/iq2000.h (CONSTANT_ALIGNMENT): Delete.
+	* config/iq2000/iq2000.c (iq2000_constant_alignment): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/lm32/lm32.h (CONSTANT_ALIGNMENT): Delete.
+	* config/lm32/lm32.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/m32r/m32r.h (CONSTANT_ALIGNMENT): Delete.
+	* config/m32r/m32r.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/mcore/mcore.h (CONSTANT_ALIGNMENT): Delete.
+	* config/mcore/mcore.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/microblaze/microblaze.h (CONSTANT_ALIGNMENT): Delete.
+	* config/microblaze/microblaze.c (microblaze_constant_alignment):
+	New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/mips/mips.h (CONSTANT_ALIGNMENT): Delete.
+	* config/mips/mips.c (mips_constant_alignment): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/mmix/mmix.h (CONSTANT_ALIGNMENT): Delete.
+	* config/mmix/mmix-protos.h (mmix_constant_alignment): Delete.
+	* config/mmix/mmix.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(mmix_constant_alignment): Make static.  Use the same interface
+	as the target hook.
+	* config/moxie/moxie.h (CONSTANT_ALIGNMENT): Delete.
+	* config/moxie/moxie.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/nios2/nios2.h (CONSTANT_ALIGNMENT): Delete.
+	* config/nios2/nios2.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/pa/pa.h (CONSTANT_ALIGNMENT): Delete.
+	* config/pa/pa.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/powerpcspe/powerpcspe.h (CONSTANT_ALIGNMENT): Delete.
+	* config/powerpcspe/powerpcspe.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(rs6000_constant_alignment): New function.
+	* config/riscv/riscv.h (CONSTANT_ALIGNMENT): Delete.
+	* config/riscv/riscv.c (riscv_constant_alignment): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/rs6000/rs6000.h (CONSTANT_ALIGNMENT): Delete.
+	* config/rs6000/rs6000.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(rs6000_constant_alignment): New function.
+	* config/s390/s390.h (CONSTANT_ALIGNMENT): Delete.
+	* config/s390/s390.c (s390_constant_alignment): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/sh/sh.h (CONSTANT_ALIGNMENT): Delete.
+	* config/sh/sh.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/sparc/sparc.h (CONSTANT_ALIGNMENT): Delete.
+	* config/sparc/sparc.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(sparc_constant_alignment): New function.
+	* config/spu/spu.h (CONSTANT_ALIGNMENT): Delete.
+	* config/spu/spu.c (spu_constant_alignment): New function.
+	(TARGET_CONSTANT_ALIGNMENT): Redefine.
+	* config/stormy16/stormy16.h (CONSTANT_ALIGNMENT): Delete.
+	* config/stormy16/stormy16.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/tilegx/tilegx.h (CONSTANT_ALIGNMENT): Delete.
+	* config/tilegx/tilegx.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/tilepro/tilepro.h (CONSTANT_ALIGNMENT): Delete.
+	* config/tilepro/tilepro.c (TARGET_CONSTANT_ALIGNMENT): Redefine to
+	constant_alignment_word_strings.
+	* config/visium/visium.h (CONSTANT_ALIGNMENT): Delete.
+	* config/visium/visium.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(visium_constant_alignment): New function.
+	* config/xtensa/xtensa.h (CONSTANT_ALIGNMENT): Delete.
+	* config/xtensa/xtensa.c (TARGET_CONSTANT_ALIGNMENT): Redefine.
+	(xtensa_constant_alignment): New function.
+	* system.h (CONSTANT_ALIGNMENT): Poison.
+
 2017-09-25  Will Schmidt  <will_schmidt@vnet.ibm.com>
 
 	* config/rs6000/rs6000.c (rs6000_gimple_fold_builtin): Add handling

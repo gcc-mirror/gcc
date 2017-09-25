@@ -667,6 +667,9 @@ moxie_legitimate_address_p (machine_mode mode ATTRIBUTE_UNUSED,
 #undef  TARGET_PRINT_OPERAND_ADDRESS
 #define TARGET_PRINT_OPERAND_ADDRESS moxie_print_operand_address
 
+#undef  TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT constant_alignment_word_strings
+
 struct gcc_target targetm = TARGET_INITIALIZER;
 
 #include "gt-moxie.h"

@@ -4159,7 +4159,7 @@ spu_encode_section_info (tree decl, rtx rtl, int first)
    which is both 16-byte aligned and padded to a 16-byte boundary.  This
    would make it safe to store with a single instruction. 
    We guarantee the alignment and padding for static objects by aligning
-   all of them to 16-bytes. (DATA_ALIGNMENT and CONSTANT_ALIGNMENT.)
+   all of them to 16-bytes. (DATA_ALIGNMENT and TARGET_CONSTANT_ALIGNMENT.)
    FIXME: We currently cannot guarantee this for objects on the stack
    because assign_parm_setup_stack calls assign_stack_local with the
    alignment of the parameter mode and in that case the alignment never
@@ -7193,6 +7193,18 @@ spu_truly_noop_truncation (unsigned int outprec, unsigned int inprec)
 {
   return inprec <= 32 && outprec <= inprec;
 }
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.
+
+   Make all static objects 16-byte aligned.  This allows us to assume
+   they are also padded to 16 bytes, which means we can use a single
+   load or store instruction to access them.  */
+
+static HOST_WIDE_INT
+spu_constant_alignment (const_tree, HOST_WIDE_INT align)
+{
+  return MAX (align, 128);
+}
 
 /*  Table of machine attributes.  */
 static const struct attribute_spec spu_attribute_table[] =
@@ -7432,6 +7444,9 @@ static const struct attribute_spec spu_attribute_table[] =
 
 #undef TARGET_TRULY_NOOP_TRUNCATION
 #define TARGET_TRULY_NOOP_TRUNCATION spu_truly_noop_truncation
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT spu_constant_alignment
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

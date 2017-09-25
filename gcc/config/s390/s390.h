@@ -315,7 +315,6 @@ extern const char *s390_host_detect_local_cpu (int argc, const char **argv);
 #define EMPTY_FIELD_BOUNDARY 32
 
 /* Alignment on even addresses for LARL instruction.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 #define DATA_ABI_ALIGNMENT(TYPE, ALIGN) (ALIGN) < 16 ? 16 : (ALIGN)
 
 /* Alignment is not required by the hardware.  */

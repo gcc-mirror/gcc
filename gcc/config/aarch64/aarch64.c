@@ -1142,6 +1142,17 @@ aarch64_hard_regno_caller_save_mode (unsigned regno, unsigned nregs,
     return choose_hard_reg_mode (regno, nregs, false);
 }
 
+/* Implement TARGET_CONSTANT_ALIGNMENT.  Make strings word-aligned so
+   that strcpy from constants will be faster.  */
+
+static HOST_WIDE_INT
+aarch64_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST && !optimize_size)
+    return MAX (align, BITS_PER_WORD);
+  return align;
+}
+
 /* Return true if calls to DECL should be treated as
    long-calls (ie called via a register).  */
 static bool
@@ -4622,7 +4633,7 @@ aarch64_classify_address (struct aarch64_address_info *info,
 		{
 		  tree exp = SYMBOL_REF_DECL (sym);
 		  align = TYPE_ALIGN (TREE_TYPE (exp));
-		  align = CONSTANT_ALIGNMENT (exp, align);
+		  align = aarch64_constant_alignment (exp, align);
 		}
 	      else if (SYMBOL_REF_DECL (sym))
 		align = DECL_ALIGN (SYMBOL_REF_DECL (sym));
@@ -15686,6 +15697,9 @@ aarch64_libgcc_floating_mode_supported_p
 #undef TARGET_HARD_REGNO_CALL_PART_CLOBBERED
 #define TARGET_HARD_REGNO_CALL_PART_CLOBBERED \
   aarch64_hard_regno_call_part_clobbered
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT aarch64_constant_alignment
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

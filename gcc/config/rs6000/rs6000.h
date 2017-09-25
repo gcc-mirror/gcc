@@ -950,14 +950,6 @@ enum data_align { align_abi, align_opt, align_both };
 #define LOCAL_ALIGNMENT(TYPE, ALIGN)				\
   rs6000_data_alignment (TYPE, ALIGN, align_both)
 
-/* Make strings word-aligned so strcpy from constants will be faster.  */
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)                           \
-  (TREE_CODE (EXP) == STRING_CST	                         \
-   && (STRICT_ALIGNMENT || !optimize_size)                       \
-   && (ALIGN) < BITS_PER_WORD                                    \
-   ? BITS_PER_WORD                                               \
-   : (ALIGN))
-
 /* Make arrays of chars word-aligned for the same reasons.  */
 #define DATA_ALIGNMENT(TYPE, ALIGN) \
   rs6000_data_alignment (TYPE, ALIGN, align_opt)

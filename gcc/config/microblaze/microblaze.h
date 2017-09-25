@@ -234,12 +234,6 @@ extern enum pipeline_type microblaze_pipe;
 #undef PTRDIFF_TYPE
 #define PTRDIFF_TYPE "int"
 
-#define CONSTANT_ALIGNMENT(EXP, ALIGN)					\
-  ((TREE_CODE (EXP) == STRING_CST  || TREE_CODE (EXP) == CONSTRUCTOR)	\
-   && (ALIGN) < BITS_PER_WORD						\
-	? BITS_PER_WORD							\
-	: (ALIGN))
-
 #define DATA_ALIGNMENT(TYPE, ALIGN)					\
   ((((ALIGN) < BITS_PER_WORD)						\
     && (TREE_CODE (TYPE) == ARRAY_TYPE					\

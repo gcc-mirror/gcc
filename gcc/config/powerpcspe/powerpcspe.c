@@ -1984,6 +1984,9 @@ static const struct attribute_spec rs6000_attribute_table[] =
 
 #undef TARGET_CAN_CHANGE_MODE_CLASS
 #define TARGET_CAN_CHANGE_MODE_CLASS rs6000_can_change_mode_class
+
+#undef TARGET_CONSTANT_ALIGNMENT
+#define TARGET_CONSTANT_ALIGNMENT rs6000_constant_alignment
 
 
 /* Processor table.  */
@@ -43751,6 +43754,17 @@ rs6000_optab_supported_p (int op, machine_mode mode1, machine_mode,
     default:
       return true;
     }
+}
+
+/* Implement TARGET_CONSTANT_ALIGNMENT.  */
+
+static HOST_WIDE_INT
+rs6000_constant_alignment (const_tree exp, HOST_WIDE_INT align)
+{
+  if (TREE_CODE (exp) == STRING_CST
+      && (STRICT_ALIGNMENT || !optimize_size))
+    return MAX (align, BITS_PER_WORD);
+  return align;
 }
 
 struct gcc_target targetm = TARGET_INITIALIZER;
