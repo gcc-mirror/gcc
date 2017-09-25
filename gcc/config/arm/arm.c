@@ -29261,7 +29261,7 @@ arm_vectorize_vec_perm_const_ok (machine_mode vmode, vec_perm_indices sel)
   nelt = GET_MODE_NUNITS (d.vmode);
   for (i = which = 0; i < nelt; ++i)
     {
-      unsigned char e = d.perm[i];
+      unsigned int e = d.perm[i];
       gcc_assert (e < 2 * nelt);
       which |= (e < nelt ? 1 : 2);
     }

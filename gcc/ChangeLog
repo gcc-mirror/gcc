@@ -1,3 +1,12 @@
+2017-09-25  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* target.h (vec_perm_indices): Use unsigned short rather than
+	unsigned char.
+	(auto_vec_perm_indices): Likewise.
+	* config/aarch64/aarch64.c (aarch64_vectorize_vec_perm_const_ok):
+	Use unsigned int rather than unsigned char.
+	* config/arm/arm.c (arm_vectorize_vec_perm_const_ok): Likewise.
+
 2017-09-25  Richard Biener  <rguenther@suse.de>
 
 	* cfgloop.h (sort_sibling_loops): Declare.
