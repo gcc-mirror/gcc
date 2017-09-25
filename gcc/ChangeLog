@@ -1,3 +1,22 @@
+2017-09-25  Jeff Law  <law@redhat.com>
+
+	* config/rs6000/rs6000-protos.h (output_probe_stack_range): Update
+	prototype for new argument.
+	* config/rs6000/rs6000.c (rs6000_emit_allocate_stack_1): New function,
+	mostly extracted from rs6000_emit_allocate_stack.
+	(rs6000_emit_probe_stack_range_stack_clash): New function.
+	(rs6000_emit_allocate_stack): Call
+	rs6000_emit_probe_stack_range_stack_clash as needed.
+	(rs6000_emit_probe_stack_range): Add additional argument
+	to call to gen_probe_stack_range{si,di}.
+	(output_probe_stack_range): New.
+	(output_probe_stack_range_1): Renamed from output_probe_stack_range.
+	(output_probe_stack_range_stack_clash): New.
+	(rs6000_emit_prologue): Emit notes into dump file as requested.
+	* rs6000.md (allocate_stack): Handle -fstack-clash-protection.
+	(probe_stack_range<P:mode>): Operand 0 is now early-clobbered.
+	Add additional operand and pass it to output_probe_stack_range.
+    
 2017-09-25  Bin Cheng  <bin.cheng@arm.com>
 
 	PR tree-optimization/82163
