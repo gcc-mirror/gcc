@@ -3004,6 +3004,20 @@ package body Exp_Ch6 is
             then
                Prev_Orig := Prev;
 
+            --  A class-wide precondition generates a test in which formals of
+            --  the subprogram are replaced by actuals that came from source.
+            --  In that case as well, the accessiblity comes from the actual.
+            --  This is the one case in which there are references to formals
+            --  outside of their subprogram.
+
+            elsif Prev_Orig /= Prev
+              and then Is_Entity_Name (Prev_Orig)
+              and then Present (Entity (Prev_Orig))
+              and then Is_Formal (Entity (Prev_Orig))
+              and then not In_Open_Scopes (Scope (Entity (Prev_Orig)))
+            then
+               Prev_Orig := Prev;
+
             --  If the actual is a formal of an enclosing subprogram it is
             --  the right entity, even if it is a rewriting. This happens
             --  when the call is within an inherited condition or predicate.

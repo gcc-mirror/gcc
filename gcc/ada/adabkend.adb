@@ -57,10 +57,10 @@ package body Adabkend is
          Write_Eol;
       end if;
 
-      --  Frontend leaves the Current_Error_Node at a location that is
-      --  meaningless and confusing when emitting bugboxes from the backed. By
-      --  resetting it here we default to "No source file position information
-      --  available" message on backend crashes.
+      --  The front end leaves the Current_Error_Node at a location that is
+      --  meaningless and confusing when emitting bug boxes from the back end.
+      --  By resetting it here we default to "No source file position
+      --  information available" message on back end crashes.
 
       Current_Error_Node := Empty;
 
@@ -91,7 +91,7 @@ package body Adabkend is
       --
       --  If the switch is not valid, control will not return. The switches
       --  must still be scanned to skip the "-o" arguments, or internal GCC
-      --  switches, which may be safely ignored by other back-ends.
+      --  switches, which may be safely ignored by other back ends.
 
       ----------------------------
       -- Scan_Back_End_Switches --
@@ -251,7 +251,7 @@ package body Adabkend is
                else
                   Add_Src_Search_Dir (Argv);
 
-                  --  Add directory to lib search so that back-end can take as
+                  --  Add directory to lib search so that back end can take as
                   --  input ALI files if needed. Otherwise this won't have any
                   --  impact on the compiler.
 
