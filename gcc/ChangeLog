@@ -1,3 +1,10 @@
+2017-09-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000.md (extendsi<mode>2): Add a splitter to do
+	sign extension from a vector register to a GPR by doing a 32-bit
+	direct move and then an EXTSW.
+	(extendsi<mode>2 splitter): Likewise.
+
 2017-09-26  Martin Jambor  <mjambor@suse.cz>
 
 	* tree-sra.c (compare_access_positions): Put integral types first,
