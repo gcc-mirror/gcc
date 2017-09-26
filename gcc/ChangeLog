@@ -1,5 +1,9 @@
 2017-09-26  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82267
+	* config/i386/i386.c (ix86_print_operand_address_as): Only test
+	REGNO (base) == SP_REG if base is a REG.
+
 	PR middle-end/35691
 	* tree-ssa-reassoc.c (update_range_test): Dump r->exp each time
 	if it is different SSA_NAME.

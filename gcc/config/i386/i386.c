@@ -19957,7 +19957,7 @@ ix86_print_operand_address_as (FILE *file, rtx addr,
 	 encode %esp as %rsp to avoid 0x67 prefix if there is no index or
 	 base register.  */
       if (TARGET_X32 && Pmode == SImode
-	  && ((!index && base && REGNO (base) == SP_REG)
+	  && ((!index && base && REG_P (base) && REGNO (base) == SP_REG)
 	      || (!base && index && REGNO (index) == SP_REG)))
 	code = 'q';
 
