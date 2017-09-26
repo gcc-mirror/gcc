@@ -1338,8 +1338,18 @@ d_encoding (struct d_info *di, int top_level)
 
 	      ftype = d_bare_function_type (di, has_return_type (dc));
 	      if (ftype)
-		dc = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
-				  dc, ftype);
+		{
+		  /* If this is a non-top-level local-name, clear the
+		     return type, so it doesn't confuse the user by
+		     being confused with the return type of whaever
+		     this is nested within.  */
+		  if (!top_level && dc->type == DEMANGLE_COMPONENT_LOCAL_NAME
+		      && ftype->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+		    d_left (ftype) = NULL;
+
+		  dc = d_make_comp (di, DEMANGLE_COMPONENT_TYPED_NAME,
+				    dc, ftype);
+		}
 	      else
 		dc = NULL;
 	    }
@@ -3620,6 +3630,13 @@ d_local_name (struct d_info *di)
       if (num >= 0)
 	name = d_make_default_arg (di, num, name);
     }
+
+  /* Elide the return type of the containing function so as to not
+     confuse the user thinking it is the return type of whatever local
+     function we might be containing.  */
+  if (function->type == DEMANGLE_COMPONENT_TYPED_NAME
+      && d_right (function)->type == DEMANGLE_COMPONENT_FUNCTION_TYPE)
+    d_left (d_right (function)) = NULL;
 
   return d_make_comp (di, DEMANGLE_COMPONENT_LOCAL_NAME, function, name);
 }
