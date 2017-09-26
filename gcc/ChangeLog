@@ -1,5 +1,12 @@
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/s390.c (s390_expand_vec_compare): Use the new mode
+	independent expanders.
+	* config/s390/vector.md ("vec_cmpuneq", "vec_cmpltgt")
+	("vec_ordered", "vec_unordered"): New expanders.
+
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_preferred_simd_mode): Return V4SFmode
 	for SFmode.
 
