@@ -1065,10 +1065,85 @@
   "vmlo<bhfgq>\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
-; vec_widen_umult_hi
-; vec_widen_umult_lo
-; vec_widen_smult_hi
-; vec_widen_smult_lo
+
+; Widening hi/lo multiplications
+
+; The S/390 instructions vml and vmh return the low or high parts of
+; the double sized result elements in the corresponding elements of
+; the target register.  That's NOT what the vec_widen_umult_lo/hi
+; patterns are expected to do.
+
+; We emulate the widening lo/hi multiplies with the even/odd versions
+; followed by a vector merge
+
+
+(define_expand "vec_widen_umult_lo_<mode>"
+  [(set (match_dup 3)
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
+			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+			     UNSPEC_VEC_UMULT_EVEN))
+   (set (match_dup 4)
+	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
+			     UNSPEC_VEC_UMULT_ODD))
+   (set (match_operand:<vec_double>                 0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
+			     UNSPEC_VEC_MERGEL))]
+  "TARGET_VX"
+ {
+   operands[3] = gen_reg_rtx (<vec_double>mode);
+   operands[4] = gen_reg_rtx (<vec_double>mode);
+ })
+
+(define_expand "vec_widen_umult_hi_<mode>"
+  [(set (match_dup 3)
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
+			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+			     UNSPEC_VEC_UMULT_EVEN))
+   (set (match_dup 4)
+	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
+			     UNSPEC_VEC_UMULT_ODD))
+   (set (match_operand:<vec_double>                 0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
+			     UNSPEC_VEC_MERGEH))]
+  "TARGET_VX"
+ {
+   operands[3] = gen_reg_rtx (<vec_double>mode);
+   operands[4] = gen_reg_rtx (<vec_double>mode);
+ })
+
+(define_expand "vec_widen_smult_lo_<mode>"
+  [(set (match_dup 3)
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
+			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+			     UNSPEC_VEC_SMULT_EVEN))
+   (set (match_dup 4)
+	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
+			     UNSPEC_VEC_SMULT_ODD))
+   (set (match_operand:<vec_double>                 0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
+			     UNSPEC_VEC_MERGEL))]
+  "TARGET_VX"
+ {
+   operands[3] = gen_reg_rtx (<vec_double>mode);
+   operands[4] = gen_reg_rtx (<vec_double>mode);
+ })
+
+(define_expand "vec_widen_smult_hi_<mode>"
+  [(set (match_dup 3)
+	(unspec:<vec_double> [(match_operand:VI_QHS 1 "register_operand" "%v")
+			      (match_operand:VI_QHS 2 "register_operand"  "v")]
+			     UNSPEC_VEC_SMULT_EVEN))
+   (set (match_dup 4)
+	(unspec:<vec_double> [(match_dup 1) (match_dup 2)]
+			     UNSPEC_VEC_SMULT_ODD))
+   (set (match_operand:<vec_double>                 0 "register_operand" "=v")
+	(unspec:<vec_double> [(match_dup 3) (match_dup 4)]
+			     UNSPEC_VEC_MERGEH))]
+  "TARGET_VX"
+ {
+   operands[3] = gen_reg_rtx (<vec_double>mode);
+   operands[4] = gen_reg_rtx (<vec_double>mode);
+ })
 
 ; vec_widen_ushiftl_hi
 ; vec_widen_ushiftl_lo
