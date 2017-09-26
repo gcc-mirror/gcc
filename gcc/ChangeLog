@@ -16,6 +16,11 @@
 	instruction instead of FRSP and XSCVDPSPN.
 	* config/rs6000/vsx.md (vsx_xscvspdp_scalar2): Move insn so that
 	it is adjacent to the other XSCVSPDP insns.
+	(vsx_xscvdpsp_scalar): Use "ww" constraint instead of "f" to allow
+	SFmode to be in traditional Altivec registers.
+	(vsx_xscvdpspn): Eliminate useless alternative constraint.
+	(vsx_xscvspdpn): Likewise.
+	(vsx_xscvspdpn_scalar): Likewise.
 
 2017-09-26  Martin Jambor  <mjambor@suse.cz>
 

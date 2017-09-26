@@ -1803,7 +1803,7 @@
 ;; format of scalars is actually DF.
 (define_insn "vsx_xscvdpsp_scalar"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "f")]
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
 		     UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvdpsp %x0,%x1"
@@ -1811,24 +1811,24 @@
 
 ;; ISA 2.07 xscvdpspn/xscvspdpn that does not raise an error on signalling NaNs
 (define_insn "vsx_xscvdpspn"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww,?ww")
-	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "wd,wa")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=ww")
+	(unspec:V4SF [(match_operand:DF 1 "vsx_register_operand" "ws")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
   [(set_attr "type" "fp")])
 
 (define_insn "vsx_xscvspdpn"
-  [(set (match_operand:DF 0 "vsx_register_operand" "=ws,?ws")
-	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wf,wa")]
+  [(set (match_operand:DF 0 "vsx_register_operand" "=ws")
+	(unspec:DF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
 		   UNSPEC_VSX_CVSPDPN))]
   "TARGET_XSCVSPDPN"
   "xscvspdpn %x0,%x1"
   [(set_attr "type" "fp")])
 
 (define_insn "vsx_xscvdpspn_scalar"
-  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wf,?wa")
-	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww,ww")]
+  [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
+	(unspec:V4SF [(match_operand:SF 1 "vsx_register_operand" "ww")]
 		     UNSPEC_VSX_CVDPSPN))]
   "TARGET_XSCVDPSPN"
   "xscvdpspn %x0,%x1"
