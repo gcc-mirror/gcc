@@ -1,3 +1,8 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82320
+	* gcc.dg/torture/pr82320.c: New testcase.
+
 2017-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):

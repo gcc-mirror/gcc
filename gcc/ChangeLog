@@ -1,3 +1,9 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82320
+	* tree-ssa-sccvn.c (set_ssa_val_to): Changing undef to undef
+	isn't a change.
+
 2017-09-25  Jeff Law  <law@redhat.com>
 
 	* config/rs6000/rs6000-protos.h (output_probe_stack_range): Update
