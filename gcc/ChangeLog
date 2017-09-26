@@ -1,3 +1,42 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	Backport from mainline
+	2017-09-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82244
+	* tree-vrp.c (remove_range_assertions): Do not propagate
+	a constant to abnormals but replace the assert with a copy.
+
+	2017-09-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82276
+	PR tree-optimization/82244
+	* tree-vrp.c (build_assert_expr_for): Set
+	SSA_NAME_OCCURS_IN_ABNORMAL_PHI if the variable we assert on
+	has it set.
+	(remove_range_assertions): Revert earlier change.
+
+	2017-09-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82264
+	* tree-ssa-sccvn.c (vn_phi_eq): Use safe_dyn_cast to check
+	for GIMPLE_CONDs.
+	(vn_phi_lookup): Likewise.
+	(vn_phi_insert): Likewise.
+	* is-a.h (safe_dyn_cast): New.
+
+	2017-09-25  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82285
+	* tree-vect-patterns.c (vect_recog_bool_pattern): Also handle
+	enumeral types.
+
+	2017-09-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82291
+	* tree-if-conv.c (predicate_mem_writes): Make sure to
+	remove writes in blocks predicated with false.
+
 2017-09-21  Alan Modra  <amodra@gmail.com>
 
 	PR target/81996
