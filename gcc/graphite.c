@@ -326,7 +326,9 @@ canonicalize_loop_closed_ssa (loop_p loop)
 
 	  /* Only add close phi nodes for SSA_NAMEs defined in LOOP.  */
 	  if (TREE_CODE (arg) != SSA_NAME
-	      || loop_containing_stmt (SSA_NAME_DEF_STMT (arg)) != loop)
+	      || SSA_NAME_IS_DEFAULT_DEF (arg)
+	      || ! flow_bb_inside_loop_p (loop,
+					  gimple_bb (SSA_NAME_DEF_STMT (arg))))
 	    continue;
 
 	  tree res = copy_ssa_name (arg);

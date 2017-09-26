@@ -1,3 +1,8 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82321
+	* gcc.dg/graphite/pr82321.c: New testcase.
+
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* lib/target-supports.exp: Enable tests for S/390.
