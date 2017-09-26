@@ -2228,9 +2228,12 @@ const char *arm_be8_option (int argc, const char **argv);
   "                     %{mfloat-abi=*: abi %*}"	\
   "                     %<march=*) "
 
+/* Complete set of specs for the driver.  Commas separate the
+   individual rules so that any option suppression (%<opt...)is
+   completed before starting subsequent rules.  */
 #define DRIVER_SELF_SPECS			\
-  MCPU_MTUNE_NATIVE_SPECS			\
-  TARGET_MODE_SPECS				\
+  MCPU_MTUNE_NATIVE_SPECS,			\
+  TARGET_MODE_SPECS,				\
   ARCH_CANONICAL_SPECS
 
 #define TARGET_SUPPORTS_WIDE_INT 1
