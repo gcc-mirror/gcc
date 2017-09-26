@@ -1,3 +1,9 @@
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vector.md ("vec_widen_umult_lo_<mode>")
+	("vec_widen_umult_hi_<mode>", "vec_widen_smult_lo_<mode>")
+	("vec_widen_smult_hi_<mode>"): New expander definitions.
+
 2017-09-26  Richard Earnshaw  <rearnsha@arm.com>
 
 	PR target/82175
