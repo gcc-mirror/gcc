@@ -1,3 +1,8 @@
+2017-09-26  Carl Love  <cel@us.ibm.com>
+
+	* gcc.target/powerpc/builtins-5-p9-runnable.c: Add new runable test
+	file for the new built-ins and the existing built-ins.
+
 2017-09-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/82143

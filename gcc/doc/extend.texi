@@ -15653,6 +15653,8 @@ vector unsigned short vec_xl_len (unsigned short *addr, size_t len);
 vector double vec_xl_len (double *addr, size_t len);
 vector float vec_xl_len (float *addr, size_t len);
 
+vector unsigned char vec_xl_len_r (unsigned char *addr, size_t len);
+
 void vec_xst_len (vector signed char data, signed char *addr, size_t len);
 void vec_xst_len (vector unsigned char data, unsigned char *addr, size_t len);
 void vec_xst_len (vector signed int data, signed int *addr, size_t len);
@@ -15665,6 +15667,8 @@ void vec_xst_len (vector unsigned short data, unsigned short *addr, size_t len);
 void vec_xst_len (vector signed __int128 data, signed __int128 *addr, size_t len);
 void vec_xst_len (vector double data, double *addr, size_t len);
 void vec_xst_len (vector float data, float *addr, size_t len);
+
+void vec_xst_len_r (vector unsigned char data, unsigned char *addr, size_t len);
 
 signed char vec_xlx (unsigned int index, vector signed char data);
 unsigned char vec_xlx (unsigned int index, vector unsigned char data);

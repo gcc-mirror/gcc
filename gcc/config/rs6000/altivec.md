@@ -2594,6 +2594,15 @@
   DONE;
 })
 
+(define_insn "altivec_lvsl_reg"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+	(unspec:V16QI
+	[(match_operand:DI 1 "gpc_reg_operand" "b")]
+	UNSPEC_LVSL_REG))]
+  "TARGET_ALTIVEC"
+  "lvsl %0,0,%1"
+  [(set_attr "type" "vecload")])
+
 (define_insn "altivec_lvsl_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")
 	(unspec:V16QI [(match_operand:V16QI 1 "memory_operand" "Z")]
@@ -2603,8 +2612,8 @@
   [(set_attr "type" "vecload")])
 
 (define_expand "altivec_lvsr"
-  [(use (match_operand:V16QI 0 "register_operand" ""))
-   (use (match_operand:V16QI 1 "memory_operand" ""))]
+  [(use (match_operand:V16QI 0 "altivec_register_operand"))
+   (use (match_operand:V16QI 1 "memory_operand"))]
   "TARGET_ALTIVEC"
 {
   if (VECTOR_ELT_ORDER_BIG)
@@ -2625,6 +2634,15 @@
     }
   DONE;
 })
+
+(define_insn "altivec_lvsr_reg"
+  [(set (match_operand:V16QI 0 "altivec_register_operand" "=v")
+       (unspec:V16QI
+       [(match_operand:DI 1 "gpc_reg_operand" "b")]
+       UNSPEC_LVSR_REG))]
+  "TARGET_ALTIVEC"
+  "lvsr %0,0,%1"
+  [(set_attr "type" "vecload")])
 
 (define_insn "altivec_lvsr_direct"
   [(set (match_operand:V16QI 0 "register_operand" "=v")

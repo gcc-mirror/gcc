@@ -4798,6 +4798,10 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
   { P9V_BUILTIN_VEC_VSCEDPUO, P9V_BUILTIN_VSCEDPUO,
     RS6000_BTI_INTSI, RS6000_BTI_double, RS6000_BTI_double, 0 },
 
+  { P9V_BUILTIN_VEC_XL_LEN_R, P9V_BUILTIN_XL_LEN_R,
+    RS6000_BTI_unsigned_V16QI, ~RS6000_BTI_UINTQI,
+    RS6000_BTI_unsigned_long_long, 0 },
+
   { P9V_BUILTIN_VEC_LXVL, P9V_BUILTIN_LXVL,
     RS6000_BTI_V16QI, ~RS6000_BTI_INTQI,
     RS6000_BTI_unsigned_long_long, 0 },
@@ -4841,6 +4845,10 @@ const struct altivec_builtin_types altivec_overloaded_builtins[] = {
     RS6000_BTI_unsigned_long_long, 0 },
   /* At an appropriate future time, add support for the
      RS6000_BTI_Float16 (exact name to be determined) type here.  */
+
+  { P9V_BUILTIN_VEC_XST_LEN_R, P9V_BUILTIN_XST_LEN_R,
+    RS6000_BTI_void, RS6000_BTI_unsigned_V16QI,
+    ~RS6000_BTI_UINTQI, RS6000_BTI_unsigned_long_long},
 
   { P9V_BUILTIN_VEC_STXVL, P9V_BUILTIN_STXVL,
     RS6000_BTI_void, RS6000_BTI_V16QI, ~RS6000_BTI_INTQI,

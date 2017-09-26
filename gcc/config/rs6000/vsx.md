@@ -382,8 +382,16 @@
    UNSPEC_VSX_VTSTDC
    UNSPEC_VSX_VEC_INIT
    UNSPEC_VSX_VSIGNED2
+
    UNSPEC_LXVL
+   UNSPEC_LXVLL
+   UNSPEC_LVSL_REG
+   UNSPEC_LVSR_REG
    UNSPEC_STXVL
+   UNSPEC_STXVLL
+   UNSPEC_XL_LEN_R
+   UNSPEC_XST_LEN_R
+
    UNSPEC_VCLZLSBB
    UNSPEC_VCTZLSBB
    UNSPEC_VEXTUBLX
@@ -4352,6 +4360,43 @@
   [(set_attr "length" "8")
    (set_attr "type" "vecload")])
 
+(define_insn "lxvll"
+  [(set (match_operand:V16QI 0 "vsx_register_operand" "=wa")
+	(unspec:V16QI [(match_operand:DI 1 "gpc_reg_operand" "b")
+		       (match_operand:DI 2 "register_operand" "r")]
+		      UNSPEC_LXVLL))]
+  "TARGET_P9_VECTOR"
+  "lxvll %x0,%1,%2"
+  [(set_attr "type" "vecload")])
+
+;; Expand for builtin xl_len_r
+(define_expand "xl_len_r"
+  [(match_operand:V16QI 0 "vsx_register_operand")
+   (match_operand:DI 1 "register_operand")
+   (match_operand:DI 2 "register_operand")]
+  ""
+{
+  rtx shift_mask = gen_reg_rtx (V16QImode);
+  rtx rtx_vtmp = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (DImode);
+
+  emit_insn (gen_altivec_lvsl_reg (shift_mask, operands[2]));
+  emit_insn (gen_ashldi3 (tmp, operands[2], GEN_INT (56)));
+  emit_insn (gen_lxvll (rtx_vtmp, operands[1], tmp));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (operands[0], rtx_vtmp, rtx_vtmp,
+	     shift_mask));
+  DONE;
+})
+
+(define_insn "stxvll"
+  [(set (mem:V16QI (match_operand:DI 1 "gpc_reg_operand" "b"))
+	(unspec:V16QI [(match_operand:V16QI 0 "vsx_register_operand" "wa")
+		       (match_operand:DI 2 "register_operand" "r")]
+	              UNSPEC_STXVLL))]
+  "TARGET_P9_VECTOR"
+  "stxvll %x0,%1,%2"
+  [(set_attr "type" "vecstore")])
+
 ;; Store VSX Vector with Length
 (define_expand "stxvl"
   [(set (match_dup 3)
@@ -4376,6 +4421,25 @@
   "sldi %2,%2,56\;stxvl %x0,%1,%2"
   [(set_attr "length" "8")
    (set_attr "type" "vecstore")])
+
+;; Expand for builtin xst_len_r
+(define_expand "xst_len_r"
+  [(match_operand:V16QI 0 "vsx_register_operand" "=wa")
+   (match_operand:DI 1 "register_operand" "b")
+   (match_operand:DI 2 "register_operand" "r")]
+  "UNSPEC_XST_LEN_R"
+{
+  rtx shift_mask = gen_reg_rtx (V16QImode);
+  rtx rtx_vtmp = gen_reg_rtx (V16QImode);
+  rtx tmp = gen_reg_rtx (DImode);
+
+  emit_insn (gen_altivec_lvsr_reg (shift_mask, operands[2]));
+  emit_insn (gen_altivec_vperm_v8hiv16qi (rtx_vtmp, operands[0], operands[0],
+	     shift_mask));
+  emit_insn (gen_ashldi3 (tmp, operands[2], GEN_INT (56)));
+  emit_insn (gen_stxvll (rtx_vtmp, operands[1], tmp));
+  DONE;
+})
 
 ;; Vector Compare Not Equal Byte
 (define_insn "vcmpneb"
