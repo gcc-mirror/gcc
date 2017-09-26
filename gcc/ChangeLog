@@ -1,3 +1,9 @@
+2017-09-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	PR fortran/82324
+	* doc/sourcebuild.texi: Document fortran_real_10 and fortran_real_16.
+
 2017-09-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/rs6000.md (extendsi<mode>2): Add a splitter to do

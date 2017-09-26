@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdefault-real-10" }
+! { dg-require-effective-target fortran_real_10 }
 !
 ! PR 82143: add a -fdefault-real-16 flag
 !
@@ -12,5 +13,5 @@ double precision :: d
 if (kind(r4) /= 4) call abort
 if (kind(r8) /= 8) call abort
 if (kind(r) /= 10) call abort
-if (kind(d) /= 16) call abort
+if (kind(d)  < 10) call abort
 end

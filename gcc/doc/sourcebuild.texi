@@ -1357,6 +1357,12 @@ Target has runtime support for any options added with
 @item fortran_integer_16
 Target supports Fortran @code{integer} that is 16 bytes or longer.
 
+@item fortran_real_10
+Target supports Fortran @code{real} that is 10 bytes or longer.
+
+@item fortran_real_16
+Target supports Fortran @code{real} that is 16 bytes or longer.
+
 @item fortran_large_int
 Target supports Fortran @code{integer} kinds larger than @code{integer(8)}.
 

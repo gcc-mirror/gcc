@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fdefault-real-16" }
+! { dg-require-effective-target fortran_real_16 }
 !
 ! PR 82143: add a -fdefault-real-16 flag
 !

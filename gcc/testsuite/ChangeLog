@@ -1,3 +1,12 @@
+2017-09-26  Janus Weil  <janus@gcc.gnu.org>
+
+	PR fortran/82143
+	PR fortran/82324
+	* lib/target-supports.exp (check_effective_target_fortran_real_10): New.
+	* gfortran.dg/promotion_3.f90: Only run if real(16) is available.
+	* gfortran.dg/promotion_4.f90: Only run if real(10) is available.
+	Don't assume that DOUBLE PRECISION has kind=16.
+
 2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* gfortran.dg/gomp/associate1.f90: Really commit change
