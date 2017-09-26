@@ -1,3 +1,9 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82321
+	* graphite.c (canonicalize_loop_closed_ssa): Properly check
+	for the def being inside the loop.
+
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* config/s390/vx-builtins.md ("vmslg"): Add missing operand in
