@@ -15571,6 +15571,9 @@ altivec_expand_builtin (tree exp, rtx target, bool *expandedp)
     case P9V_BUILTIN_STXVL:
       return altivec_expand_stxvl_builtin (CODE_FOR_stxvl, exp);
 
+    case P9V_BUILTIN_XST_LEN_R:
+      return altivec_expand_stxvl_builtin (CODE_FOR_xst_len_r, exp);
+
     case VSX_BUILTIN_STXVD2X_V1TI:
       return altivec_expand_stv_builtin (CODE_FOR_vsx_store_v1ti, exp);
     case VSX_BUILTIN_STXVD2X_V2DF:
@@ -17629,8 +17632,12 @@ altivec_init_builtins (void)
   def_builtin ("__builtin_vec_stvrxl", void_ftype_v16qi_long_pvoid, ALTIVEC_BUILTIN_VEC_STVRXL);
 
   if (TARGET_P9_VECTOR)
-    def_builtin ("__builtin_altivec_stxvl", void_ftype_v16qi_pvoid_long,
-		 P9V_BUILTIN_STXVL);
+    {
+      def_builtin ("__builtin_altivec_stxvl", void_ftype_v16qi_pvoid_long,
+		   P9V_BUILTIN_STXVL);
+      def_builtin ("__builtin_xst_len_r", void_ftype_v16qi_pvoid_long,
+		   P9V_BUILTIN_XST_LEN_R);
+    }
 
   /* Add the DST variants.  */
   d = bdesc_dst;

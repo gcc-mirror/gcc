@@ -1,3 +1,22 @@
+2017-09-26  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-c.c (P9V_BUILTIN_VEC_XL_LEN_R,
+	P9V_BUILTIN_VEC_XST_LEN_R): Add support for builtins
+	vector unsigned char vec_xl_len_r (unsigned char *, size_t);
+	void vec_xst_len_r (vector unsigned char, unsigned char *, size_t);
+	* config/rs6000/altivec.h (vec_xl_len_r, vec_xst_len_r): Add defines.
+	* config/rs6000/rs6000-builtin.def (XL_LEN_R, XST_LEN_R): Add
+	definitions and overloading.
+	* config/rs6000/rs6000.c (altivec_expand_builtin): Add case
+	statement for P9V_BUILTIN_XST_LEN_R.
+	(altivec_init_builtins): Add def_builtin for P9V_BUILTIN_STXVLL.
+	* config/rs6000/vsx.md (lxvll, stxvll, xl_len_r, xst_len_r): Add
+	define_expand and define_insn for the instructions and builtins.
+	* doc/extend.texi: Update the built-in documentation file for the new
+	built-in functions.
+	* config/rs6000/altivec.md (altivec_lvsl_reg, altivec_lvsr_reg): Add
+	define_insn for the instructions
+
 2017-09-26  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	PR target/39570
