@@ -1,3 +1,8 @@
+2017-09-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/82175
+	* config/arm/arm.h (DRIVER_SELF_SPECS): Separate sub-rules with commas.
+
 2017-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82320
