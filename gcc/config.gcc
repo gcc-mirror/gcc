@@ -792,7 +792,9 @@ case ${target} in
   target_has_targetcm=yes
   ;;
 *-*-netbsd*)
-  tmake_file="t-slibgcc"
+  tm_p_file="${tm_p_file} netbsd-protos.h"
+  tmake_file="t-netbsd t-slibgcc"
+  extra_objs="${extra_objs} netbsd.o"
   gas=yes
   gnu_ld=yes
   use_gcc_stdint=wrap
