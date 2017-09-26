@@ -11,7 +11,9 @@
 	(movdi_from_sf_zero_ext): Likewise.
 	(reload_gpr_from_vsxsf): Likewise.
 	(p8_mfvsrd_4_disf): Delete, no longer used.
-
+	(movsi_from_df): Optimize converting a DFmode to a SFmode, and
+	then needing to move the SFmode to a GPR to use the XSCVDPSP
+	instruction instead of FRSP and XSCVDPSPN.
 
 2017-09-26  Martin Jambor  <mjambor@suse.cz>
 
