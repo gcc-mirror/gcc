@@ -1,3 +1,10 @@
+2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.dg/gomp/associate1.f90: Really commit change
+	from 2017-09-25.
+	* gfortran.dg/predcom-1.f: Likewise.
+	* gfortran.dg/unconstrained_commons.f: Likewise.
+
 2017-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/35691

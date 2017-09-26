@@ -9,8 +9,8 @@
       IMPLICIT DOUBLE PRECISION (X)
       INTEGER J
       COMMON /MYCOMMON / X(1)
-      DO 10 J=1,1024
-         X(J+1)=X(J+7)
+      DO 10 J=1,1024 ! { dg-warning "out of bounds" }
+         X(J+1)=X(J+7) ! { dg-warning "out of bounds" }
   10  CONTINUE
       RETURN
       END
