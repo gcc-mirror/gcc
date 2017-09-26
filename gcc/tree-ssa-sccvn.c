@@ -3355,6 +3355,12 @@ set_ssa_val_to (tree from, tree to)
 
   if (currval != to
       && !operand_equal_p (currval, to, 0)
+      /* Different undefined SSA names are not actually different.  See
+         PR82320 for a testcase were we'd otherwise not terminate iteration.  */
+      && !(TREE_CODE (currval) == SSA_NAME
+	   && TREE_CODE (to) == SSA_NAME
+	   && ssa_undefined_value_p (currval, false)
+	   && ssa_undefined_value_p (to, false))
       /* ???  For addresses involving volatile objects or types operand_equal_p
          does not reliably detect ADDR_EXPRs as equal.  We know we are only
 	 getting invariant gimple addresses here, so can use
