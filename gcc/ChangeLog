@@ -1,5 +1,11 @@
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md ("vec_unpacks_lo_v4sf")
+	("vec_unpacks_hi_v4sf", "vec_unpacks_lo_v2df")
+	("vec_unpacks_hi_v2df", "vec_pack_trunc_v2df"): New expanders.
+
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/predicates.md ("const_shift_by_byte_operand"): New
 	predicate.
 	* config/s390/vector.md ("*vec_srb<mode>"): Change modes to V_128
