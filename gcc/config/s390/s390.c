@@ -15859,6 +15859,14 @@ s390_atomic_assign_expand_fenv (tree *hold, tree *clear, tree *update)
 static machine_mode
 s390_preferred_simd_mode (scalar_mode mode)
 {
+  if (TARGET_VXE)
+    switch (mode)
+      {
+      case E_SFmode:
+	return V4SFmode;
+      default:;
+      }
+
   if (TARGET_VX)
     switch (mode)
       {
