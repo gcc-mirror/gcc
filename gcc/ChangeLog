@@ -4,6 +4,14 @@
 	sign extension from a vector register to a GPR by doing a 32-bit
 	direct move and then an EXTSW.
 	(extendsi<mode>2 splitter): Likewise.
+	(movsi_from_sf): Adjust code to eliminate doing a 32-bit shift
+	right or vector extract after doing XSCVDPSPN.  Use
+	zero_extendsidi2 instead of p8_mfvsrd_4_disf to move the value to
+	the GPRs.
+	(movdi_from_sf_zero_ext): Likewise.
+	(reload_gpr_from_vsxsf): Likewise.
+	(p8_mfvsrd_4_disf): Delete, no longer used.
+
 
 2017-09-26  Martin Jambor  <mjambor@suse.cz>
 
