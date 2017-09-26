@@ -178,7 +178,8 @@ range_stmt::from_stmt (gimple *s)
 		op2 = gimple_assign_rhs2 (g);
 	      else
 	        /* Unary operations often need the type, think casting.  */
-		if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS)
+		if (get_gimple_rhs_class (code) == GIMPLE_UNARY_RHS
+		    || get_gimple_rhs_class (code) == GIMPLE_SINGLE_RHS)
 		  op2 = TREE_TYPE (op1);
 		else
 		  op2 = NULL;

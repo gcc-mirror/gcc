@@ -1355,6 +1355,42 @@ operator_cst::fold_range (irange& r, const irange& lh,
 }
 
 
+
+class operator_ssa_name : public irange_operator
+{
+public:
+  virtual void dump (FILE *f) const;
+
+  virtual bool fold_range (irange& r, const irange& op1,
+			   const irange& op2) const;
+  virtual bool op1_irange (irange& r, const irange& lhs,
+			   const irange& op2) const;
+} op_ssa_name;
+
+void 
+operator_ssa_name::dump (FILE *f) const
+{
+  fprintf (f, " SSA_NAME ");
+}
+
+bool
+operator_ssa_name::fold_range (irange& r, const irange& lh,
+			  const irange& rh ATTRIBUTE_UNUSED) const
+{
+  r = lh;
+  return true;
+}
+
+bool
+operator_ssa_name::op1_irange (irange& r, const irange& lhs,
+			       const irange& op2 ATTRIBUTE_UNUSED) const
+{
+  r = lhs;
+  return true;
+}
+
+
+
 /*  ----------------------------------------------------------------------  */
 
 /* Create the irange operator table as a local object in this file, and the
@@ -1398,6 +1434,7 @@ irange_op_table::irange_op_table ()
   irange_tree[BIT_NOT_EXPR] = &op_bitwise_not;
 
   irange_tree[INTEGER_CST] = &op_integer_cst;
+  irange_tree[SSA_NAME] = &op_ssa_name;
 }
 
 /* The table is hidden and accessed via a simple extern function.  */
