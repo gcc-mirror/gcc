@@ -14,6 +14,8 @@
 	(movsi_from_df): Optimize converting a DFmode to a SFmode, and
 	then needing to move the SFmode to a GPR to use the XSCVDPSP
 	instruction instead of FRSP and XSCVDPSPN.
+	* config/rs6000/vsx.md (vsx_xscvspdp_scalar2): Move insn so that
+	it is adjacent to the other XSCVSPDP insns.
 
 2017-09-26  Martin Jambor  <mjambor@suse.cz>
 
