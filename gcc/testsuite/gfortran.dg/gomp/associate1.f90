@@ -14,7 +14,7 @@ program associate1
   type(dt) :: b(3)
   i = 1
   j = 2
-  associate(k => v, l => a(i, j), m => a(i, :)) ! { dg-warning "out of bounds" }
+  associate(k => v, l => a(i, j), m => a(i, :))
   associate(n => b(j)%c(:, :)%i, o => a, p => b)
 !$omp parallel shared (l)	! { dg-error "ASSOCIATE name" }
 !$omp end parallel
@@ -75,7 +75,7 @@ program associate1
   end do
   k = 1
 !$omp simd linear (k : 2)	! { dg-error "ASSOCIATE name" }
-  do i = 1, 10 ! { dg-warning "out of bounds" }
+  do i = 1, 10
     k = k + 2
   end do
   end associate

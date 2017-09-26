@@ -2484,6 +2484,10 @@ do_subscript (gfc_expr **e)
   if (v->expr_type == EXPR_CONSTANT)
     return 0;
 
+  /* Wrong warnings will be generated in an associate list.  */
+  if (in_assoc_list)
+    return 0;
+
   for (ref = v->ref; ref; ref = ref->next)
     {
       if (ref->type == REF_ARRAY && ref->u.ar.type == AR_ELEMENT)
