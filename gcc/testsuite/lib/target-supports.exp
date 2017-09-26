@@ -1464,6 +1464,20 @@ proc check_effective_target_fortran_real_16 { } {
     }]
 }
 
+# Return 1 if the target supports Fortran real kind 10,
+# 0 otherwise. Contrary to check_effective_target_fortran_large_real
+# this checks for real(10) only.
+#
+# When the target name changes, replace the cached result.
+
+proc check_effective_target_fortran_real_10 { } {
+    return [check_no_compiler_messages fortran_real_10 executable {
+	! Fortran
+	real(kind=10) :: x
+	x = cos (x)
+	end
+    }]
+}
 
 # Return 1 if the target supports Fortran's IEEE modules,
 # 0 otherwise.
