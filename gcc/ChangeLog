@@ -1,3 +1,11 @@
+2017-09-26  Martin Jambor  <mjambor@suse.cz>
+
+	* tree-sra.c (compare_access_positions): Put integral types first,
+	stabilize sorting of integral types, remove conditions putting
+	non-full-precision integers last.
+	(sort_and_splice_var_accesses): Disable scalarization if a
+	non-integert would be represented by a non-full-precision integer.
+
 2017-09-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/microblaze/linux.h (TARGET_ASM_FILE_END): Likewise.
