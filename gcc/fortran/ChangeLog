@@ -1,3 +1,8 @@
+2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.c (do_subscript): Don't do anything
+	if inside an associate list.
+
 2017-09-25  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* lang.opt:  Add -Wdo-subscript.
