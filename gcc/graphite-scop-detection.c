@@ -362,17 +362,7 @@ public:
 
   /* Build scop outer->inner if possible.  */
 
-  sese_l build_scop_depth (sese_l s, loop_p loop);
-
-  /* If loop and loop->next are valid scops, try to merge them.  */
-
-  sese_l build_scop_breadth (sese_l s1, loop_p loop);
-
-  /* Return true when LOOP is a valid scop, that is a Static Control Part, a
-     region of code that can be represented in the polyhedral model.  SCOP
-     defines the region we analyse.  */
-
-  bool loop_is_valid_in_scop (loop_p loop, sese_l scop) const;
+  void build_scop_depth (loop_p loop);
 
   /* Return true when BEGIN is the preheader edge of a loop with a single exit
      END.  */
@@ -397,18 +387,6 @@ public:
   /* Remove one of the scops when it intersects with any other.  */
 
   void remove_intersecting_scops (sese_l s1);
-
-  /* Return true when the body of LOOP has statements that can be represented
-     as a valid scop.  */
-
-  bool loop_body_is_valid_scop (loop_p loop, sese_l scop) const;
-
-  /* Return true when BB contains a harmful operation for a scop: that
-     can be a function call with side effects, the induction variables
-     are not linear with respect to SCOP, etc.  The current open
-     scop should end before this statement.  */
-
-  bool harmful_stmt_in_bb (sese_l scop, basic_block bb) const;
 
   /* Return true when a statement in SCOP cannot be represented by Graphite.
      The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
@@ -467,18 +445,11 @@ public:
      FIXME: For the moment, graphite cannot be used on loops that iterate using
      induction variables that wrap.  */
 
-  static bool can_represent_loop_1 (loop_p loop, sese_l scop);
-
-  /* Return true when all the loops within LOOP can be represented by
-     Graphite.  */
-
   static bool can_represent_loop (loop_p loop, sese_l scop);
 
   /* Returns the number of pbbs that are in loops contained in SCOP.  */
 
   static int nb_pbbs_in_loops (scop_p scop);
-
-  static bool graphite_can_represent_stmt (sese_l, gimple *, basic_block);
 
 private:
   vec<sese_l> scops;
@@ -673,10 +644,6 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
       return invalid_sese;
     }
 
-  /* Analyze all the BBs in new sese.  */
-  if (harmful_loop_in_region (combined))
-    return invalid_sese;
-
   DEBUG_PRINT (dp << "[merged-sese] s1: "; print_sese (dump_file, combined));
 
   return combined;
@@ -684,71 +651,40 @@ scop_detection::merge_sese (sese_l first, sese_l second) const
 
 /* Build scop outer->inner if possible.  */
 
-sese_l
-scop_detection::build_scop_depth (sese_l s, loop_p loop)
+void
+scop_detection::build_scop_depth (loop_p loop)
 {
-  if (!loop)
-    return s;
-
-  DEBUG_PRINT (dp << "[Depth loop_" << loop->num << "]\n");
-  s = build_scop_depth (s, loop->inner);
-
-  sese_l s2 = merge_sese (s, get_sese (loop));
-  if (!s2)
+  sese_l s = invalid_sese;
+  loop = loop->inner;
+  while (loop)
     {
-      /* s might be a valid scop, so return it and start analyzing from the
-	 adjacent loop.  */
-      build_scop_depth (invalid_sese, loop->next);
-      return s;
-    }
-
-  if (!loop_is_valid_in_scop (loop, s2))
-    return build_scop_depth (invalid_sese, loop->next);
-
-  return build_scop_breadth (s2, loop);
-}
-
-/* If loop and loop->next are valid scops, try to merge them.  */
-
-sese_l
-scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
-{
-  if (!loop)
-    return s1;
-  DEBUG_PRINT (dp << "[Breadth loop_" << loop->num << "]\n");
-  gcc_assert (s1);
-
-  loop_p l = loop;
-  sese_l s2 = build_scop_depth (invalid_sese, l->next);
-  if (!s2)
-    {
-      if (s1)
-	add_scop (s1);
-      return s1;
-    }
-
-  sese_l combined = merge_sese (s1, s2);
-
-  /* Combining adjacent loops may add unrelated loops into the
-     region so we have to check all sub-loops of the outer loop
-     that are in the combined region.  */
-  if (combined)
-    for (l = loop_outer (loop)->inner; l; l = l->next)
-      if (bb_in_sese_p (l->header, combined)
-	  && ! loop_is_valid_in_scop (l, combined))
+      sese_l next = get_sese (loop);
+      if (! next
+	  || harmful_loop_in_region (next))
 	{
-	  combined = invalid_sese;
-	  break;
+	  if (s)
+	    add_scop (s);
+	  build_scop_depth (loop);
+	  s = invalid_sese;
 	}
-
-  if (combined)
-    s1 = combined;
-  else
-    add_scop (s2);
-
-  if (s1)
-    add_scop (s1);
-  return s1;
+      else if (! s)
+	s = next;
+      else
+	{
+	  sese_l combined = merge_sese (s, next);
+	  if (! combined
+	      || harmful_loop_in_region (combined))
+	    {
+	      add_scop (s);
+	      s = next;
+	    }
+	  else
+	    s = combined;
+	}
+      loop = loop->next;
+    }
+  if (s)
+    add_scop (s);
 }
 
 /* Returns true when Graphite can represent LOOP in SCOP.
@@ -756,7 +692,7 @@ scop_detection::build_scop_breadth (sese_l s1, loop_p loop)
    induction variables that wrap.  */
 
 bool
-scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
+scop_detection::can_represent_loop (loop_p loop, sese_l scop)
 {
   tree niter;
   struct tree_niter_desc niter_desc;
@@ -770,53 +706,6 @@ scop_detection::can_represent_loop_1 (loop_p loop, sese_l scop)
     && !chrec_contains_undetermined (scalar_evolution_in_region (scop,
 								 loop, niter))
     && graphite_can_represent_expr (scop, loop, niter);
-}
-
-/* Return true when all the loops within LOOP can be represented by
-   Graphite.  */
-
-bool
-scop_detection::can_represent_loop (loop_p loop, sese_l scop)
-{
-  if (!can_represent_loop_1 (loop, scop))
-    return false;
-  for (loop_p inner = loop->inner; inner; inner = inner->next)
-    if (!can_represent_loop (inner, scop))
-      return false;
-  return true;
-}
-
-/* Return true when LOOP is a valid scop, that is a Static Control Part, a
-   region of code that can be represented in the polyhedral model.  SCOP
-   defines the region we analyse.  */
-
-bool
-scop_detection::loop_is_valid_in_scop (loop_p loop, sese_l scop) const
-{
-  if (!scop)
-    return false;
-
-  if (!optimize_loop_nest_for_speed_p (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
-		      << loop->num << " is not on a hot path.\n");
-      return false;
-    }
-
-  if (!can_represent_loop (loop, scop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
-		      << loop->num << "\n");
-      return false;
-    }
-
-  if (loop_body_is_valid_scop (loop, scop))
-    {
-      DEBUG_PRINT (dp << "[valid-scop] loop_" << loop->num
-		      << " is a valid scop.\n");
-      return true;
-    }
-  return false;
 }
 
 /* Return true when BEGIN is the preheader edge of a loop with a single exit
@@ -914,14 +803,12 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
       loop_p loop = bb->loop_father;
       if (loop_in_sese_p (loop, scop))
 	bitmap_set_bit (loops, loop->num);
-      else
-	{
-	  /* We only check for harmful statements in basic blocks not part of
-	     any loop fully contained in the scop: other bbs are checked below
-	     in loop_is_valid_in_scop.  */
-	  if (harmful_stmt_in_bb (scop, bb))
-	    return true;
-	}
+
+      /* Check for harmful statements in basic blocks part of the region.  */
+      for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
+	   !gsi_end_p (gsi); gsi_next (&gsi))
+	if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
+	  return true;
 
       if (bb != exit_bb)
 	for (basic_block dom = first_dom_son (CDI_DOMINATORS, bb);
@@ -939,8 +826,41 @@ scop_detection::harmful_loop_in_region (sese_l scop) const
       loop_p loop = (*current_loops->larray)[j];
       gcc_assert (loop->num == (int) j);
 
-      if (!loop_is_valid_in_scop (loop, scop))
-	return true;
+      /* Check if the loop nests are to be optimized for speed.  */
+      if (! loop->inner
+	  && ! optimize_loop_for_speed_p (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_"
+		       << loop->num << " is not on a hot path.\n");
+	  return true;
+	}
+
+      if (! can_represent_loop (loop, scop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] cannot represent loop_"
+		       << loop->num << "\n");
+	  return true;
+	}
+
+      if (! loop_ivs_can_be_represented (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
+		       << "IV cannot be represented.\n");
+	  return true;
+	}
+
+      /* Check if all loop nests have at least one data reference.
+	 ???  This check is expensive and loops premature at this point.
+	 If important to retain we can pre-compute this for all innermost
+	 loops and reject those when we build a SESE region for a loop
+	 during SESE discovery.  */
+      if (! loop->inner
+	  && ! loop_nest_has_data_refs (loop))
+	{
+	  DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
+		       << "does not have any data reference.\n");
+	  return true;
+	}
     }
 
   return false;
@@ -1181,14 +1101,32 @@ stmt_has_side_effects (gimple *stmt)
   return false;
 }
 
-/* Returns true if STMT can be represented in polyhedral model. LABEL,
-   simple COND stmts, pure calls, and assignments can be repesented.  */
+/* Return true only when STMT is simple enough for being handled by Graphite.
+   This depends on SCOP, as the parameters are initialized relatively to
+   this basic block, the linear functions are initialized based on the outermost
+   loop containing STMT inside the SCOP.  BB is the place where we try to
+   evaluate the STMT.  */
 
 bool
-scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
-					     basic_block bb)
+scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
+					basic_block bb) const
 {
-  loop_p loop = bb->loop_father;
+  gcc_assert (scop);
+
+  if (is_gimple_debug (stmt))
+    return true;
+
+  if (stmt_has_side_effects (stmt))
+    return false;
+
+  if (!stmt_has_simple_data_refs_p (scop, stmt))
+    {
+      DEBUG_PRINT (dp << "[scop-detection-fail] "
+		      << "Graphite cannot handle data-refs in stmt:\n";
+	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
+      return false;
+    }
+
   switch (gimple_code (stmt))
     {
     case GIMPLE_LABEL:
@@ -1214,6 +1152,7 @@ scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
 	    return false;
 	  }
 
+	loop_p loop = bb->loop_father;
 	for (unsigned i = 0; i < 2; ++i)
 	  {
 	    tree op = gimple_op (stmt, i);
@@ -1244,99 +1183,6 @@ scop_detection::graphite_can_represent_stmt (sese_l scop, gimple *stmt,
 	  print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS | TDF_MEMSYMS));
       return false;
     }
-}
-
-/* Return true only when STMT is simple enough for being handled by Graphite.
-   This depends on SCOP, as the parameters are initialized relatively to
-   this basic block, the linear functions are initialized based on the outermost
-   loop containing STMT inside the SCOP.  BB is the place where we try to
-   evaluate the STMT.  */
-
-bool
-scop_detection::stmt_simple_for_scop_p (sese_l scop, gimple *stmt,
-					basic_block bb) const
-{
-  gcc_assert (scop);
-
-  if (is_gimple_debug (stmt))
-    return true;
-
-  if (stmt_has_side_effects (stmt))
-    return false;
-
-  if (!stmt_has_simple_data_refs_p (scop, stmt))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] "
-		      << "Graphite cannot handle data-refs in stmt:\n";
-	print_gimple_stmt (dump_file, stmt, 0, TDF_VOPS|TDF_MEMSYMS););
-      return false;
-    }
-
-  return graphite_can_represent_stmt (scop, stmt, bb);
-}
-
-/* Return true when BB contains a harmful operation for a scop: that
-   can be a function call with side effects, the induction variables
-   are not linear with respect to SCOP, etc.  The current open
-   scop should end before this statement.  */
-
-bool
-scop_detection::harmful_stmt_in_bb (sese_l scop, basic_block bb) const
-{
-  gimple_stmt_iterator gsi;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    if (!stmt_simple_for_scop_p (scop, gsi_stmt (gsi), bb))
-      return true;
-
-  return false;
-}
-
-/* Return true when the body of LOOP has statements that can be represented as a
-   valid scop.  */
-
-bool
-scop_detection::loop_body_is_valid_scop (loop_p loop, sese_l scop) const
-{
-  if (!loop_ivs_can_be_represented (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		      << "IV cannot be represented.\n");
-      return false;
-    }
-
-  if (!loop_nest_has_data_refs (loop))
-    {
-      DEBUG_PRINT (dp << "[scop-detection-fail] loop_" << loop->num
-		      << "does not have any data reference.\n");
-      return false;
-    }
-
-  basic_block *bbs = get_loop_body (loop);
-  for (unsigned i = 0; i < loop->num_nodes; i++)
-    {
-      basic_block bb = bbs[i];
-
-      if (harmful_stmt_in_bb (scop, bb))
-	{
-	  free (bbs);
-	  return false;
-	}
-    }
-  free (bbs);
-
-  if (loop->inner)
-    {
-      loop = loop->inner;
-      while (loop)
-	{
-	  if (!loop_body_is_valid_scop (loop, scop))
-	    return false;
-	  loop = loop->next;
-	}
-    }
-
-  return true;
 }
 
 /* Returns the number of pbbs that are in loops contained in SCOP.  */
@@ -1857,12 +1703,8 @@ build_scops (vec<scop_p> *scops)
   if (dump_file)
     dp.set_dump_file (dump_file);
 
-  /* ???  We walk the loop tree assuming loop->next is ordered.
-     This is not so but we'd be free to order it here.  */
   scop_detection sb;
-  sese_l tem = sb.build_scop_depth (scop_detection::invalid_sese,
-				    current_loops->tree_root);
-  gcc_assert (! tem);
+  sb.build_scop_depth (current_loops->tree_root);
 
   /* Now create scops from the lightweight SESEs.  */
   vec<sese_l> scops_l = sb.get_scops ();
