@@ -1,3 +1,11 @@
+2017-09-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/35691
+	* tree-ssa-reassoc.c (update_range_test): Dump r->exp each time
+	if it is different SSA_NAME.
+	(optimize_range_tests_cmp_bitwise): New function.
+	(optimize_range_tests): Call it.
+
 2017-09-26  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82321

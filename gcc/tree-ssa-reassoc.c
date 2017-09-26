@@ -2379,7 +2379,16 @@ update_range_test (struct range_entry *range, struct range_entry *otherrange,
 	    r = otherrange + i;
 	  else
 	    r = otherrangep[i];
-	  fprintf (dump_file, " and %c[", r->in_p ? '+' : '-');
+	  if (r->exp
+	      && r->exp != range->exp
+	      && TREE_CODE (r->exp) == SSA_NAME)
+	    {
+	      fprintf (dump_file, " and ");
+	      print_generic_expr (dump_file, r->exp);
+	    }
+	  else
+	    fprintf (dump_file, " and");
+	  fprintf (dump_file, " %c[", r->in_p ? '+' : '-');
 	  print_generic_expr (dump_file, r->low);
 	  fprintf (dump_file, ", ");
 	  print_generic_expr (dump_file, r->high);
@@ -2880,6 +2889,134 @@ optimize_range_tests_to_bit_test (enum tree_code opcode, int first, int length,
   return any_changes;
 }
 
+/* Optimize x != 0 && y != 0 && z != 0 into (x | y | z) != 0
+   and similarly x != -1 && y != -1 && y != -1 into (x & y & z) != -1.  */
+
+static bool
+optimize_range_tests_cmp_bitwise (enum tree_code opcode, int first, int length,
+				  vec<operand_entry *> *ops,
+				  struct range_entry *ranges)
+{
+  int i;
+  unsigned int b;
+  bool any_changes = false;
+  auto_vec<int, 128> buckets;
+  auto_vec<int, 32> chains;
+  auto_vec<struct range_entry *, 32> candidates;
+
+  for (i = first; i < length; i++)
+    {
+      if (ranges[i].exp == NULL_TREE
+	  || TREE_CODE (ranges[i].exp) != SSA_NAME
+	  || !ranges[i].in_p
+	  || TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) <= 1
+	  || TREE_CODE (TREE_TYPE (ranges[i].exp)) == BOOLEAN_TYPE
+	  || ranges[i].low == NULL_TREE
+	  || ranges[i].low != ranges[i].high)
+	continue;
+
+      bool zero_p = integer_zerop (ranges[i].low);
+      if (!zero_p && !integer_all_onesp (ranges[i].low))
+	continue;
+
+      b = TYPE_PRECISION (TREE_TYPE (ranges[i].exp)) * 2 + !zero_p;
+      if (buckets.length () <= b)
+	buckets.safe_grow_cleared (b + 1);
+      if (chains.length () <= (unsigned) i)
+	chains.safe_grow (i + 1);
+      chains[i] = buckets[b];
+      buckets[b] = i + 1;
+    }
+
+  FOR_EACH_VEC_ELT (buckets, b, i)
+    if (i && chains[i - 1])
+      {
+	int j, k = i;
+	for (j = chains[i - 1]; j; j = chains[j - 1])
+	  {
+	    gimple *gk = SSA_NAME_DEF_STMT (ranges[k - 1].exp);
+	    gimple *gj = SSA_NAME_DEF_STMT (ranges[j - 1].exp);
+	    if (reassoc_stmt_dominates_stmt_p (gk, gj))
+	      k = j;
+	  }
+	tree type1 = TREE_TYPE (ranges[k - 1].exp);
+	tree type2 = NULL_TREE;
+	bool strict_overflow_p = false;
+	candidates.truncate (0);
+	for (j = i; j; j = chains[j - 1])
+	  {
+	    tree type = TREE_TYPE (ranges[j - 1].exp);
+	    strict_overflow_p |= ranges[j - 1].strict_overflow_p;
+	    if (j == k
+		|| useless_type_conversion_p (type1, type))
+	      ;
+	    else if (type2 == NULL_TREE
+		     || useless_type_conversion_p (type2, type))
+	      {
+		if (type2 == NULL_TREE)
+		  type2 = type;
+		candidates.safe_push (&ranges[j - 1]);
+	      }
+	  }
+	unsigned l = candidates.length ();
+	for (j = i; j; j = chains[j - 1])
+	  {
+	    tree type = TREE_TYPE (ranges[j - 1].exp);
+	    if (j == k)
+	      continue;
+	    if (useless_type_conversion_p (type1, type))
+	      ;
+	    else if (type2 == NULL_TREE
+		     || useless_type_conversion_p (type2, type))
+	      continue;
+	    candidates.safe_push (&ranges[j - 1]);
+	  }
+	gimple_seq seq = NULL;
+	tree op = NULL_TREE;
+	unsigned int id;
+	struct range_entry *r;
+	candidates.safe_push (&ranges[k - 1]);
+	FOR_EACH_VEC_ELT (candidates, id, r)
+	  {
+	    gimple *g;
+	    if (id == 0)
+	      {
+		op = r->exp;
+		continue;
+	      }
+	    if (id == l)
+	      {
+		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, op);
+		gimple_seq_add_stmt_without_update (&seq, g);
+		op = gimple_assign_lhs (g);
+	      }
+	    tree type = TREE_TYPE (r->exp);
+	    tree exp = r->exp;
+	    if (id >= l && !useless_type_conversion_p (type1, type))
+	      {
+		g = gimple_build_assign (make_ssa_name (type1), NOP_EXPR, exp);
+		gimple_seq_add_stmt_without_update (&seq, g);
+		exp = gimple_assign_lhs (g);
+	      }
+	    g = gimple_build_assign (make_ssa_name (id >= l ? type1 : type2),
+				     (b & 1) ? BIT_AND_EXPR : BIT_IOR_EXPR,
+				     op, exp);
+	    gimple_seq_add_stmt_without_update (&seq, g);
+	    op = gimple_assign_lhs (g);
+	  }
+	candidates.pop ();
+	if (update_range_test (&ranges[k - 1], NULL, candidates.address (),
+			       candidates.length (), opcode, ops, op,
+			       seq, true, ranges[k - 1].low,
+			       ranges[k - 1].low, strict_overflow_p))
+	  any_changes = true;
+	else
+	  gimple_seq_discard (seq);
+      }
+
+  return any_changes;
+}
+
 /* Attempt to optimize for signed a and b where b is known to be >= 0:
    a >= 0 && a < b into (unsigned) a < (unsigned) b
    a >= 0 && a <= b into (unsigned) a <= (unsigned) b  */
@@ -3202,6 +3339,8 @@ optimize_range_tests (enum tree_code opcode,
   if (lshift_cheap_p (optimize_function_for_speed_p (cfun)))
     any_changes |= optimize_range_tests_to_bit_test (opcode, first, length,
 						     ops, ranges);
+  any_changes |= optimize_range_tests_cmp_bitwise (opcode, first, length,
+						   ops, ranges);
   any_changes |= optimize_range_tests_var_bound (opcode, first, length, ops,
 						 ranges);
 
