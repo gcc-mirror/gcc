@@ -1190,7 +1190,7 @@
 		       (match_operand:QI    4 "const_mask_operand" "C")]
 		      UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 (define_insn "vmslg"
@@ -1201,7 +1201,7 @@
 		    (match_operand:QI    4 "const_mask_operand" "C")]
 		   UNSPEC_VEC_MSUM))]
   "TARGET_VXE"
-  "vmslg\t%v0,%v1,%v2,%v3"
+  "vmslg\t%v0,%v1,%v2,%v3,%4"
   [(set_attr "op_type" "VRR")])
 
 

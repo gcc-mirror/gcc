@@ -1,5 +1,11 @@
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vx-builtins.md ("vmslg"): Add missing operand in
+	assembler output.
+	* config/s390/s390-builtins.def: Fix constraint on op4.
+
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/s390.c (s390_expand_vec_compare): Use the new mode
 	independent expanders.
 	* config/s390/vector.md ("vec_cmpuneq", "vec_cmpltgt")
