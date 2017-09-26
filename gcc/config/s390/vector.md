@@ -1781,7 +1781,7 @@
 
 ;; vector load lengthened
 
-; vflls
+; vflls float -> double
 (define_insn "*vec_extendv4sf"
   [(set (match_operand:V2DF 0 "register_operand" "=v")
 	(float_extend:V2DF
@@ -1792,6 +1792,34 @@
   "vldeb\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
 
+(define_expand "vec_unpacks_lo_v4sf"
+  [(set (match_dup 2)
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_dup 1)]
+		     UNSPEC_VEC_MERGEL))
+   (set (match_operand:V2DF               0 "register_operand" "=v")
+	(float_extend:V2DF
+	 (vec_select:V2SF
+	  (match_dup 2)
+	  (parallel [(const_int 0) (const_int 2)]))))]
+  "TARGET_VX"
+{ operands[2] = gen_reg_rtx(V4SFmode); })
+
+(define_expand "vec_unpacks_hi_v4sf"
+  [(set (match_dup 2)
+	(unspec:V4SF [(match_operand:V4SF 1 "register_operand" "v")
+		      (match_dup 1)]
+		     UNSPEC_VEC_MERGEH))
+   (set (match_operand:V2DF               0 "register_operand" "=v")
+	(float_extend:V2DF
+	 (vec_select:V2SF
+	  (match_dup 2)
+	  (parallel [(const_int 0) (const_int 2)]))))]
+  "TARGET_VX"
+{ operands[2] = gen_reg_rtx(V4SFmode); })
+
+
+; double -> long double
 (define_insn "*vec_extendv2df"
   [(set (match_operand:V1TF 0 "register_operand" "=v")
 	(float_extend:V1TF
@@ -1801,6 +1829,72 @@
   "TARGET_VXE"
   "wflld\t%v0,%v1"
   [(set_attr "op_type" "VRR")])
+
+(define_expand "vec_unpacks_lo_v2df"
+  [(set (match_dup 2)
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "v")
+		      (match_dup 1)]
+		     UNSPEC_VEC_MERGEL))
+   (set (match_operand:V1TF               0 "register_operand" "=v")
+	(float_extend:V1TF
+	 (vec_select:V1DF
+	  (match_dup 2)
+	  (parallel [(const_int 0)]))))]
+  "TARGET_VXE"
+{ operands[2] = gen_reg_rtx (V2DFmode); })
+
+(define_expand "vec_unpacks_hi_v2df"
+  [(set (match_dup 2)
+	(unspec:V2DF [(match_operand:V2DF 1 "register_operand" "v")
+		      (match_dup 1)]
+		     UNSPEC_VEC_MERGEH))
+   (set (match_operand:V1TF               0 "register_operand" "=v")
+	(float_extend:V1TF
+	 (vec_select:V1DF
+	  (match_dup 2)
+	  (parallel [(const_int 0)]))))]
+  "TARGET_VXE"
+{ operands[2] = gen_reg_rtx (V2DFmode); })
+
+
+; 2 x v2df -> 1 x v4sf
+(define_expand "vec_pack_trunc_v2df"
+  [(set (match_dup 3)
+	(unspec:V4SF [(match_operand:V2DF 1 "register_operand" "")
+		      (const_int VEC_INEXACT)
+		      (const_int VEC_RND_CURRENT)]
+		     UNSPEC_VEC_VFLR))
+   (set (match_dup 4)
+	(unspec:V4SF [(match_operand:V2DF 2 "register_operand" "")
+		      (const_int VEC_INEXACT)
+		      (const_int VEC_RND_CURRENT)]
+		     UNSPEC_VEC_VFLR))
+   (set (match_dup 6)
+	(unspec:V16QI [(subreg:V16QI (match_dup 3) 0)
+		       (subreg:V16QI (match_dup 4) 0)
+		       (match_dup 5)]
+		      UNSPEC_VEC_PERM))
+   (set (match_operand:V4SF 0 "register_operand" "")
+	(subreg:V4SF (match_dup 6) 0))]
+  "TARGET_VX"
+{
+  rtx constv, perm[16];
+  int i;
+
+  for (i = 0; i < 4; ++i)
+    {
+      perm[i] = GEN_INT (i);
+      perm[i + 4] = GEN_INT (i + 8);
+      perm[i + 8] = GEN_INT (i + 16);
+      perm[i + 12] = GEN_INT (i + 24);
+    }
+  constv = gen_rtx_CONST_VECTOR (V16QImode, gen_rtvec_v (16, perm));
+
+  operands[3] = gen_reg_rtx (V4SFmode);
+  operands[4] = gen_reg_rtx (V4SFmode);
+  operands[5] = force_reg (V16QImode, constv);
+  operands[6] = gen_reg_rtx (V16QImode);
+})
 
 ; reduc_smin
 ; reduc_smax
