@@ -1,3 +1,20 @@
+2017-09-26  Richard Biener  <rguenther@suse.de>
+
+	* graphite-scop-detection.c (scop_detection::build_scop_depth): Rewrite,
+	fold in ...
+	(scop_detection::build_scop_breadth): ... this.  Removed.
+	(scop_detection::loop_is_valid_in_scop): Fold into single caller.
+	(scop_detection::harmful_stmt_in_bb): Likewise.
+	(scop_detection::graphite_can_represent_stmt): Likewise.
+	(scop_detection::loop_body_is_valid_scop): Likewise.  Remove recursion.
+	(scop_detection::can_represent_loop): Remove recursion, fold in ...
+	(scop_detection::can_represent_loop_1): ... this.  Removed.
+	(scop_detection::harmful_loop_in_region): Simplify after inlining
+	the above and remove more quadraticness.
+	(build_scops): Adjust.
+	* tree-data-ref.c (loop_nest_has_data_refs): Remove pointless
+	quadraticness.
+
 2017-09-26  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82267
