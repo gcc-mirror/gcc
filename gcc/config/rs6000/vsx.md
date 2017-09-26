@@ -1781,6 +1781,15 @@
   "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
 
+;; Same as vsx_xscvspdp, but use SF as the type
+(define_insn "vsx_xscvspdp_scalar2"
+  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
+	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
+		   UNSPEC_VSX_CVSPDP))]
+  "VECTOR_UNIT_VSX_P (V4SFmode)"
+  "xscvspdp %x0,%x1"
+  [(set_attr "type" "fp")])
+
 ;; Generate xvcvhpsp instruction
 (define_insn "vsx_xvcvhpsp"
   [(set (match_operand:V4SF 0 "vsx_register_operand" "=wa")
@@ -1798,15 +1807,6 @@
 		     UNSPEC_VSX_CVSPDP))]
   "VECTOR_UNIT_VSX_P (V4SFmode)"
   "xscvdpsp %x0,%x1"
-  [(set_attr "type" "fp")])
-
-;; Same as vsx_xscvspdp, but use SF as the type
-(define_insn "vsx_xscvspdp_scalar2"
-  [(set (match_operand:SF 0 "vsx_register_operand" "=ww")
-	(unspec:SF [(match_operand:V4SF 1 "vsx_register_operand" "wa")]
-		   UNSPEC_VSX_CVSPDP))]
-  "VECTOR_UNIT_VSX_P (V4SFmode)"
-  "xscvspdp %x0,%x1"
   [(set_attr "type" "fp")])
 
 ;; ISA 2.07 xscvdpspn/xscvspdpn that does not raise an error on signalling NaNs
