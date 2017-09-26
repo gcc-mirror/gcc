@@ -1,5 +1,11 @@
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/vector.md ("vec_unpacks_low_v16qi"): Rename to
+	vec_unpacks_lo_v16qi.
+	("vec_unpacku_low_v16qi"): Rename to vec_unpacku_lo_v16qi.
+
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vector.md ("vec_unpacks_lo_v4sf")
 	("vec_unpacks_hi_v4sf", "vec_unpacks_lo_v2df")
 	("vec_unpacks_hi_v2df", "vec_pack_trunc_v2df"): New expanders.

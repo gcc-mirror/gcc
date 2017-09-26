@@ -1652,7 +1652,7 @@
   "vuphb\t%0,%1"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "vec_unpacks_low_v16qi"
+(define_insn "vec_unpacks_lo_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(sign_extend:V8HI
 	 (vec_select:V8QI
@@ -1676,7 +1676,7 @@
   "vuplhb\t%0,%1"
   [(set_attr "op_type" "VRR")])
 
-(define_insn "vec_unpacku_low_v16qi"
+(define_insn "vec_unpacku_lo_v16qi"
   [(set (match_operand:V8HI 0 "register_operand" "=v")
 	(zero_extend:V8HI
 	 (vec_select:V8QI
