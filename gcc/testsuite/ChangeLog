@@ -5,7 +5,36 @@
 
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
-	* lib/target-supports.exp: Enable tests for S/390.
+	* lib/target-supports.exp (check_effective_target_vect_int)
+	(check_effective_target_vect_shift)
+	(check_effective_target_whole_vector_shift)
+	(check_effective_target_vect_shift_char)
+	(check_effective_target_vect_long)
+	(check_effective_target_vect_double)
+	(check_effective_target_vect_long_long)
+	(check_effective_target_vect_perm)
+	(check_effective_target_vect_perm_byte)
+	(check_effective_target_vect_perm_short)
+	(check_effective_target_vect_widen_mult_qi_to_hi)
+	(check_effective_target_vect_widen_mult_hi_to_si)
+	(check_effective_target_vect_widen_mult_qi_to_hi_pattern)
+	(check_effective_target_vect_widen_mult_hi_to_si_pattern)
+	(check_effective_target_vect_widen_mult_si_to_di_pattern)
+	(check_effective_target_vect_pack_trunc)
+	(check_effective_target_vect_unpack)
+	(check_effective_target_vect_hw_misalign)
+	(check_effective_target_vect_condition)
+	(check_effective_target_vect_cond_mixed)
+	(check_effective_target_vect_char_mult)
+	(check_effective_target_vect_short_mult)
+	(check_effective_target_vect_int_mult)
+	(check_effective_target_vect_extract_even_odd)
+	(check_effective_target_vect_interleave)
+	(check_effective_target_sqrt_insn)
+	(check_effective_target_vect_call_sqrtf): Return 1 for S/390 with
+	VX.
+	(check_vect_support_and_set_flags): New proc.
+	(check_effective_target_s390_vxe): Rename arch12 to z14.
 
 2017-09-26  Richard Biener  <rguenther@suse.de>
 
