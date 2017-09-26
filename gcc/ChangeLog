@@ -1,3 +1,14 @@
+2017-09-26  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/39570
+	* gcc/config/netbsd-protos.h: New file.
+	* gcc/config/netbsd.c: New file.
+	* gcc/config/netbsd.h (SUBTARGET_INIT_BUILTINS): Define.
+	* gcc/config/t-netbsd: New file.
+	* gcc/config.gcc (tm_p_file): Add netbsd-protos.h.
+	(tmake_file) Add t-netbsd.
+	(extra_objs) Add netbsd.o.
+
 2017-09-26  Janus Weil  <janus@gcc.gnu.org>
 
 	PR fortran/82143
