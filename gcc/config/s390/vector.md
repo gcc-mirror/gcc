@@ -980,14 +980,42 @@
 
 ; Pattern used by e.g. popcount
 (define_insn "*vec_srb<mode>"
-  [(set (match_operand:V_HW 0 "register_operand"                    "=v")
-	(unspec:V_HW [(match_operand:V_HW 1 "register_operand"       "v")
-		      (match_operand:<tointvec> 2 "register_operand" "v")]
-		     UNSPEC_VEC_SRLB))]
+  [(set (match_operand:V_128                0 "register_operand" "=v")
+	(unspec:V_128 [(match_operand:V_128 1 "register_operand"  "v")
+		       (match_operand:V16QI 2 "register_operand"  "v")]
+		   UNSPEC_VEC_SRLB))]
   "TARGET_VX"
   "vsrlb\t%v0,%v1,%v2"
   [(set_attr "op_type" "VRR")])
 
+
+; Vector shift left by byte
+
+(define_insn "*vec_slb<mode>"
+  [(set (match_operand:V_128                0 "register_operand" "=v")
+	(unspec:V_128 [(match_operand:V_128 1 "register_operand"  "v")
+		    (match_operand:V16QI    2 "register_operand"  "v")]
+		   UNSPEC_VEC_SLB))]
+  "TARGET_VX"
+  "vslb\t%v0,%v1,%v2"
+  [(set_attr "op_type" "VRR")])
+
+; vec_shr is defined as shift towards element 0
+; this means it is a left shift on BE targets!
+(define_expand "vec_shr_<mode>"
+  [(set (match_dup 3)
+	(unspec:V16QI [(match_operand:SI 2 "const_shift_by_byte_operand" "")
+		   (const_int 7)
+		   (match_dup 3)]
+		   UNSPEC_VEC_SET))
+   (set (match_operand:V_128 0 "register_operand" "")
+	(unspec:V_128 [(match_operand:V_128 1 "register_operand" "")
+		    (match_dup 3)]
+		   UNSPEC_VEC_SLB))]
+  "TARGET_VX"
+ {
+   operands[3] = gen_reg_rtx(V16QImode);
+ })
 
 ; vmnb, vmnh, vmnf, vmng
 (define_insn "smin<mode>3"
@@ -1778,9 +1806,6 @@
 ; reduc_smax
 ; reduc_umin
 ; reduc_umax
-
-; vec_shl vrep + vsl
-; vec_shr
 
 ; vec_pack_sfix_trunc: convert + pack ?
 ; vec_pack_ufix_trunc

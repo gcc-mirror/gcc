@@ -1,5 +1,17 @@
 2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* config/s390/predicates.md ("const_shift_by_byte_operand"): New
+	predicate.
+	* config/s390/vector.md ("*vec_srb<mode>"): Change modes to V_128
+	and V16QI.
+	("*vec_slb<mode>"): New insn pattern.
+	("vec_shr_<mode>"): New expander.
+	* config/s390/vx-builtins.md ("vec_slb<mode>"): Turn into expander
+	and force the shift count operand to V16QImode.
+	("vec_srb<mode>"): Set shift count mode to V16QI.
+
+2017-09-26  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* config/s390/vector.md ("vec_widen_umult_lo_<mode>")
 	("vec_widen_umult_hi_<mode>", "vec_widen_smult_lo_<mode>")
 	("vec_widen_smult_hi_<mode>"): New expander definitions.
