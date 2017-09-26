@@ -32,6 +32,12 @@
 # 
 #######################################
 	
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 	.globl	__udivsi3
 	.ent	__udivsi3
 	.type	__udivsi3,@function

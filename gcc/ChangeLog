@@ -1,3 +1,14 @@
+2017-09-26  Joseph Myers  <joseph@codesourcery.com>
+
+	* config/microblaze/linux.h (TARGET_ASM_FILE_END): Likewise.
+	* config/pa/pa.h (NEED_INDICATE_EXEC_STACK): Likewise.
+	* config/pa/pa-linux.h (NEED_INDICATE_EXEC_STACK): Likewise.
+	* config/pa/pa.c (pa_hpux_file_end): Rename to pa_file_end.
+	Define unconditionally, with [ASM_OUTPUT_EXTERNAL_REAL]
+	conditionals inside the function instead of around it.  Call
+	file_end_indicate_exec_stack if NEED_INDICATE_EXEC_STACK.
+	(TARGET_ASM_FILE_END): Define unconditionally to pa_file_end.
+
 2017-09-26  Richard Biener  <rguenther@suse.de>
 
 	* graphite-scop-detection.c (scop_detection::build_scop_depth): Rewrite,
