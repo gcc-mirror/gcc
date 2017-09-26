@@ -1,3 +1,8 @@
+2017-09-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp (check_effective_target_vect_hw_misalign):
+	Fix arm check.
+
 2017-09-25  Jeff Law  <law@redhat.com>
 
 	* lib/target-supports.exp
