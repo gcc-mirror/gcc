@@ -1306,3 +1306,5 @@ do {									     \
    seven and four instructions, respectively.  */  
 #define MAX_PCREL17F_OFFSET \
   (flag_pic ? (TARGET_HPUX ? 198164 : 221312) : 240000)
+
+#define NEED_INDICATE_EXEC_STACK 0

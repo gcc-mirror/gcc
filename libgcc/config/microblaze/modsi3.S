@@ -32,6 +32,12 @@
 # 
 #######################################
 
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
 	.globl	__modsi3
 	.ent	__modsi3
 	.type	__modsi3,@function

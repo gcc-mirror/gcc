@@ -24,6 +24,12 @@
    see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+/* An executable stack is *not* required for these functions.  */
+#ifdef __linux__
+.section .note.GNU-stack,"",%progbits
+.previous
+#endif
+
     .section .init, "ax"
     lw      r15, r0, r1
     rtsd    r15, 8 

@@ -159,9 +159,7 @@ static void pa_hpux64_gas_file_start (void) ATTRIBUTE_UNUSED;
 static void pa_hpux64_hpas_file_start (void) ATTRIBUTE_UNUSED;
 static void output_deferred_plabels (void);
 static void output_deferred_profile_counters (void) ATTRIBUTE_UNUSED;
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-static void pa_hpux_file_end (void);
-#endif
+static void pa_file_end (void);
 static void pa_init_libfuncs (void);
 static rtx pa_struct_value_rtx (tree, int);
 static bool pa_pass_by_reference (cumulative_args_t, machine_mode,
@@ -301,11 +299,7 @@ static size_t n_deferred_plabels = 0;
 #define TARGET_ASM_CAN_OUTPUT_MI_THUNK default_can_output_mi_thunk_no_vcall
 
 #undef TARGET_ASM_FILE_END
-#ifdef ASM_OUTPUT_EXTERNAL_REAL
-#define TARGET_ASM_FILE_END pa_hpux_file_end
-#else
-#define TARGET_ASM_FILE_END output_deferred_plabels
-#endif
+#define TARGET_ASM_FILE_END pa_file_end
 
 #undef TARGET_ASM_RELOC_RW_MASK
 #define TARGET_ASM_RELOC_RW_MASK pa_reloc_rw_mask
@@ -9979,22 +9973,26 @@ pa_hpux_asm_output_external (FILE *file, tree decl, const char *name)
   extern_symbol p = {decl, name};
   vec_safe_push (extern_symbols, p);
 }
+#endif
 
 /* Output text required at the end of an assembler file.
    This includes deferred plabels and .import directives for
    all external symbols that were actually referenced.  */
 
 static void
-pa_hpux_file_end (void)
+pa_file_end (void)
 {
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   unsigned int i;
   extern_symbol *p;
 
   if (!NO_DEFERRED_PROFILE_COUNTERS)
     output_deferred_profile_counters ();
+#endif
 
   output_deferred_plabels ();
 
+#ifdef ASM_OUTPUT_EXTERNAL_REAL
   for (i = 0; vec_safe_iterate (extern_symbols, i, &p); i++)
     {
       tree decl = p->decl;
@@ -10005,8 +10003,11 @@ pa_hpux_file_end (void)
     }
 
   vec_free (extern_symbols);
-}
 #endif
+
+  if (NEED_INDICATE_EXEC_STACK)
+    file_end_indicate_exec_stack ();
+}
 
 /* Implement TARGET_CAN_CHANGE_MODE_CLASS.  */
 
