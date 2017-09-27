@@ -389,10 +389,7 @@ public:
 
   void remove_intersecting_scops (sese_l s1);
 
-  /* Return true when a statement in SCOP cannot be represented by Graphite.
-     The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
-     Limit the number of bbs between adjacent loops to
-     PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
+  /* Return true when a statement in SCOP cannot be represented by Graphite.  */
 
   bool harmful_loop_in_region (sese_l scop) const;
 
@@ -760,10 +757,7 @@ scop_detection::add_scop (sese_l s)
   DEBUG_PRINT (dp << "[scop-detection] Adding SCoP: "; print_sese (dump_file, s));
 }
 
-/* Return true when a statement in SCOP cannot be represented by Graphite.
-   The assumptions are that L1 dominates L2, and SCOP->entry dominates L1.
-   Limit the number of bbs between adjacent loops to
-   PARAM_SCOP_MAX_NUM_BBS_BETWEEN_LOOPS.  */
+/* Return true when a statement in SCOP cannot be represented by Graphite.  */
 
 bool
 scop_detection::harmful_loop_in_region (sese_l scop) const
@@ -1531,7 +1525,8 @@ build_alias_set (scop_p scop)
   for (i = 0; i < num_vertices; i++)
     all_vertices[i] = i;
 
-  graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL);
+  scop->max_alias_set
+    = graphds_dfs (g, all_vertices, num_vertices, NULL, true, NULL) + 1;
   free (all_vertices);
 
   for (i = 0; i < g->n_vertices; i++)
@@ -1755,7 +1750,8 @@ build_scops (vec<scop_p> *scops)
 	}
 
       unsigned max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
-      if (scop->drs.length () >= max_arrays)
+      if (max_arrays > 0
+	  && scop->drs.length () >= max_arrays)
 	{
 	  DEBUG_PRINT (dp << "[scop-detection-fail] too many data references: "
 		       << scop->drs.length ()
