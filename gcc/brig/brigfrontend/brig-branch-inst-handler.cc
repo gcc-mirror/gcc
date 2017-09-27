@@ -117,8 +117,17 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	 they might call builtins that need them or access group/private
 	 memory.  */
 
+      tree group_local_offset
+	= add_temp_var ("group_local_offset",
+			build_int_cst
+			(uint32_type_node,
+			 m_parent.m_cf->m_local_group_variables.size()));
+
+      /* TODO: ensure the callee's frame is aligned!  */
+
       vec_safe_push (in_args, m_parent.m_cf->m_context_arg);
       vec_safe_push (in_args, m_parent.m_cf->m_group_base_arg);
+      vec_safe_push (in_args, group_local_offset);
       vec_safe_push (in_args, m_parent.m_cf->m_private_base_arg);
 
       tree call = build_call_vec (ret_val_type, build_fold_addr_expr (func_ref),

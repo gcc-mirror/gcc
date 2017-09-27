@@ -1,3 +1,11 @@
+2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig.dg/test/gimple/fbarrier.hsail: Fixed tests to match the new
+	new group memory offsetting code in the BRIG frontend.
+	* brig.dg/test/gimple/function_calls.hsail: Likewise.
+	* brig.dg/test/gimple/smoke_test.hsail: Likewise.
+	* brig.dg/test/gimple/variables.hsail: Likewise.
+
 2017-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82159

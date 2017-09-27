@@ -113,7 +113,7 @@ phsa_work_item_thread (int arg0, int arg1)
 	  && wi->z < __hsail_currentworkgroupsize (2, wi))
 	{
 	  l_data->kernel (l_data->kernarg_addr, wi, wg->group_base_ptr,
-			  wg->private_base_ptr);
+			  wg->initial_group_offset, wg->private_base_ptr);
 #ifdef DEBUG_PHSA_RT
 	  printf ("done.\n");
 #endif
@@ -221,7 +221,8 @@ phsa_work_item_thread (int arg0, int arg1)
 
 static void
 phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
-		      size_t wg_size_x, size_t wg_size_y, size_t wg_size_z)
+		      uint32_t group_local_offset, size_t wg_size_x,
+		      size_t wg_size_y, size_t wg_size_z)
 {
   PHSAWorkItem *wi_threads = NULL;
   PHSAWorkGroup wg;
@@ -247,6 +248,7 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
 
   wg.alloca_stack_p = wg.private_segment_total_size;
   wg.alloca_frame_p = wg.alloca_stack_p;
+  wg.initial_group_offset = group_local_offset;
 
 #ifdef EXECUTE_WGS_BACKWARDS
   wg.x = context->wg_max_x - 1;
@@ -313,7 +315,8 @@ phsa_execute_wi_gang (PHSAKernelLaunchData *context, void *group_base_ptr,
    them execute all the WGs, including a potential partial WG.  */
 
 static void
-phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr)
+phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr,
+		       uint32_t group_local_offset)
 {
   hsa_kernel_dispatch_packet_t *dp = context->dp;
   size_t x, y, z;
@@ -361,8 +364,8 @@ phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr)
 	  dp->grid_size_y, dp->grid_size_z);
 #endif
 
-  phsa_execute_wi_gang (context, group_base_ptr, sat_wg_size_x, sat_wg_size_y,
-			sat_wg_size_z);
+  phsa_execute_wi_gang (context, group_base_ptr, group_local_offset,
+			sat_wg_size_x, sat_wg_size_y, sat_wg_size_z);
 }
 #endif
 
@@ -374,7 +377,8 @@ phsa_spawn_work_items (PHSAKernelLaunchData *context, void *group_base_ptr)
    execute massive numbers of work-items in a non-SPMD machine than fibers
    (easily 100x faster).  */
 static void
-phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr)
+phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr,
+			  uint32_t group_local_offset)
 {
   hsa_kernel_dispatch_packet_t *dp = context->dp;
   size_t x, y, z, wg_x, wg_y, wg_z;
@@ -462,7 +466,7 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr)
 	  wi.wg->z = wg_z;
 
 	  context->kernel (context->kernarg_addr, &wi, group_base_ptr,
-			   private_base_ptr);
+			   group_local_offset, private_base_ptr);
 
 #if defined (BENCHMARK_PHSA_RT)
 	  wg_count++;
@@ -527,19 +531,20 @@ phsa_execute_work_groups (PHSAKernelLaunchData *context, void *group_base_ptr)
 
 void
 __hsail_launch_kernel (gccbrigKernelFunc kernel, PHSAKernelLaunchData *context,
-		       void *group_base_ptr)
+		       void *group_base_ptr, uint32_t group_local_offset)
 {
   context->kernel = kernel;
-  phsa_spawn_work_items (context, group_base_ptr);
+  phsa_spawn_work_items (context, group_base_ptr, group_local_offset);
 }
 #endif
 
 void
 __hsail_launch_wg_function (gccbrigKernelFunc kernel,
-			    PHSAKernelLaunchData *context, void *group_base_ptr)
+			    PHSAKernelLaunchData *context, void *group_base_ptr,
+			    uint32_t group_local_offset)
 {
   context->kernel = kernel;
-  phsa_execute_work_groups (context, group_base_ptr);
+  phsa_execute_work_groups (context, group_base_ptr, group_local_offset);
 }
 
 uint32_t

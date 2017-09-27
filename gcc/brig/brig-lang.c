@@ -160,7 +160,7 @@ brig_langhook_post_options (const char **pfilename ATTRIBUTE_UNUSED)
     flag_excess_precision_cmdline = EXCESS_PRECISION_STANDARD;
 
   /* gccbrig casts pointers around like crazy, TBAA produces
-	   broken code if not force disabling it.  */
+     broken code if not force disabling it.  */
   flag_strict_aliasing = 0;
 
   /* Returning false means that the backend should be used.  */
@@ -182,6 +182,8 @@ brig_langhook_parse_file (void)
 {
   brig_to_generic brig_to_gen;
 
+  std::vector <char*> brig_blobs;
+
   for (unsigned int i = 0; i < num_in_fnames; ++i)
     {
 
@@ -194,11 +196,22 @@ brig_langhook_parse_file (void)
 	  error ("could not read the BRIG file");
 	  exit (1);
 	}
-      brig_to_gen.parse (brig_blob);
       fclose (f);
+
+      brig_to_gen.analyze (brig_blob);
+      brig_blobs.push_back (brig_blob);
+    }
+
+  for (size_t i = 0; i < brig_blobs.size(); ++i)
+    {
+      char *brig_blob = brig_blobs.at(i);
+      brig_to_gen.parse (brig_blob);
     }
 
   brig_to_gen.write_globals ();
+
+  for (size_t i = 0; i < brig_blobs.size (); ++i)
+    delete brig_blobs[i];
 }
 
 static tree

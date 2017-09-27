@@ -39,7 +39,8 @@ extern int gccbrig_verbose;
 size_t
 brig_directive_function_handler::operator () (const BrigBase *base)
 {
-  m_parent.finish_function ();
+  if (!m_parent.m_analyzing)
+    m_parent.finish_function ();
 
   size_t bytes_consumed = base->byteCount;
 
@@ -64,9 +65,20 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   if (is_kernel && !is_definition)
     return bytes_consumed;
 
-  m_parent.m_cf = new brig_function (exec, &m_parent);
-
   std::string func_name = m_parent.get_mangled_name (exec);
+  if (is_kernel)
+    /* The generated kernel function is not the one that should be
+       called by the host.  */
+    func_name = std::string ("_") + func_name;
+
+  m_parent.m_cf = new brig_function (exec, &m_parent);
+  m_parent.m_cf->m_name = func_name;
+  m_parent.m_cf->m_is_kernel = is_kernel;
+
+  /* During the analyze step, the above information is all we need per
+     function.  */
+  if (m_parent.m_analyzing)
+    return bytes_consumed;
 
   tree fndecl;
   tree ret_value = NULL_TREE;
@@ -79,10 +91,6 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 
   if (is_kernel)
     {
-      /* The generated kernel function is not the one that should be
-	 called by the host.  */
-      func_name = std::string ("_") + func_name;
-
       tree name_identifier
 	= get_identifier_with_length (func_name.c_str (), func_name.size ());
 
@@ -256,6 +264,23 @@ brig_directive_function_handler::operator () (const BrigBase *base)
   DECL_ARTIFICIAL (group_base_arg) = 1;
   TREE_READONLY (group_base_arg) = 1;
   TREE_USED (group_base_arg) = 1;
+  m_parent.m_cf->m_group_base_arg = group_base_arg;
+
+  /* To implement call stack and (non-kernel) function scope group variables,
+     we need to pass an offset which describes how far are we from
+     group_base_ptr.
+     That must be substracted from any function local group variable offsets to
+     get the address related to the bottom of the group memory chunk.  */
+  tree group_local_offset_arg
+    = build_decl (UNKNOWN_LOCATION, PARM_DECL,
+		  get_identifier ("__group_local_offset"), uint32_type_node);
+  chainon (DECL_ARGUMENTS (fndecl), group_local_offset_arg);
+  DECL_ARG_TYPE (group_local_offset_arg) = uint32_type_node;
+  DECL_CONTEXT (group_local_offset_arg) = fndecl;
+  DECL_ARTIFICIAL (group_local_offset_arg) = 1;
+  TREE_READONLY (group_local_offset_arg) = 1;
+  TREE_USED (group_local_offset_arg) = 1;
+  m_parent.m_cf->m_group_local_offset_arg = group_local_offset_arg;
 
   /* Same for private.  */
   tree private_base_arg
@@ -329,12 +354,9 @@ brig_directive_function_handler::operator () (const BrigBase *base)
 
   m_parent.start_function (fndecl);
 
-  m_parent.m_cf->m_name = func_name;
   m_parent.m_cf->m_func_decl = fndecl;
   m_parent.m_cf->m_current_bind_expr = bind_expr;
-  m_parent.m_cf->m_is_kernel = is_kernel;
   m_parent.m_cf->m_context_arg = context_arg;
-  m_parent.m_cf->m_group_base_arg = group_base_arg;
   m_parent.m_cf->m_private_base_arg = private_base_arg;
 
   if (ret_value != NULL_TREE && TREE_TYPE (ret_value) != void_type_node)

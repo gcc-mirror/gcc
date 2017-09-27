@@ -1,4 +1,29 @@
-2017-05-13  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* brig-lang.c: Improved support for function and module scope
+	group segment variables.  PRM specs defines function and module
+	scope group segment variables as an experimental feature. However,
+	PRM test suite uses and hcc relies on them. In addition, hcc
+	assumes certain group variable layout in its dynamic group segment
+	allocation code.  We cannot have global group memory offsets if we
+	want to both have kernel-specific group segment size and multiple
+	kernels calling the same functions that use function scope group memory
+	variables.  Now group segment is handled by separate book keeping of
+	module scope and function (kernel) offsets. Each function has a "frame"
+	in the group segment offset to which is given as an argument.
+	* brigfrontend/brig-branch-inst-handler.cc: See above.
+	* brigfrontend/brig-code-entry-handler.cc: See above.
+	* brigfrontend/brig-fbarrier-handler.cc: See above.
+	* brigfrontend/brig-function-handler.cc: See above.
+	* brigfrontend/brig-function.cc: See above.
+	* brigfrontend/brig-function.h: See above.
+	* brigfrontend/brig-to-generic.cc: See above.
+	* brigfrontend/brig-to-generic.h: See above.
+	* brigfrontend/brig-util.cc: See above.
+	* brigfrontend/brig-util.h: See above.
+	* brigfrontend/brig-variable-handler.cc: See above.
+
+2017-09-25  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brigfrontend/brig-to-generic.cc: Ensure per WI copies of
 	private variables are aligned too.

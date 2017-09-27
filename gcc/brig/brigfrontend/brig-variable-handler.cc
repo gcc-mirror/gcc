@@ -144,10 +144,25 @@ brig_directive_variable_handler::operator () (const BrigBase *base)
 
   size_t alignment = get_brig_var_alignment (brigVar);
 
-  if (m_parent.m_cf != NULL)
+  bool function_scope = m_parent.m_cf != NULL;
+
+  if (function_scope)
     m_parent.m_cf->m_function_scope_vars.insert (base);
 
   std::string var_name = m_parent.get_mangled_name (brigVar);
+  if (brigVar->segment == BRIG_SEGMENT_GROUP)
+    {
+      /* Non-kernel scope group variables have been added at the
+	 'analyze' stage.  */
+      m_parent.add_group_variable (var_name, var_size, alignment,
+				   function_scope);
+      return base->byteCount;
+    }
+
+  /* During analyze, handle only (module scope) group variables.  */
+  if (m_parent.m_analyzing)
+    return base->byteCount;
+
   if (brigVar->segment == BRIG_SEGMENT_KERNARG)
     {
       /* Do not create a real variable, but only a table of
@@ -156,18 +171,6 @@ brig_directive_variable_handler::operator () (const BrigBase *base)
 	 reference.  Ignore kernel declarations.  */
       if (m_parent.m_cf != NULL && m_parent.m_cf->m_func_decl != NULL_TREE)
 	m_parent.m_cf->append_kernel_arg (brigVar, var_size, alignment);
-      return base->byteCount;
-    }
-  else if (brigVar->segment == BRIG_SEGMENT_GROUP)
-    {
-      /* Handle group region variables similarly as kernargs:
-	 assign offsets to the group region on the fly when
-	 a new module scope or function scope group variable is
-	 introduced.  These offsets will be then added to the
-	 group_base hidden pointer passed to the kernel in order to
-	 get the flat address.  */
-      if (!m_parent.has_group_variable (var_name))
-	m_parent.append_group_variable (var_name, var_size, alignment);
       return base->byteCount;
     }
   else if (brigVar->segment == BRIG_SEGMENT_PRIVATE
