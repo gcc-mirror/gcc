@@ -1,5 +1,10 @@
 2017-09-27  Richard Biener  <rguenther@suse.de>
 
+	* graphite-optimize-isl.c (get_schedule_for_node_st): Allow
+	--param loop-block-tile-size=0 to disable tiling.
+
+2017-09-27  Richard Biener  <rguenther@suse.de>
+
 	* doc/invoke.texi (graphite-max-bbs-per-function): Remove.
 	(graphite-max-nb-scop-params): Document special value zero.
 	* domwalk.h (dom_walker::STOP): New symbolical constant.

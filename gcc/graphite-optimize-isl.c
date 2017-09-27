@@ -64,7 +64,10 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   if (type != isl_schedule_node_leaf)
     return node;
 
-  if (dims <= 1 || !isl_schedule_node_band_get_permutable (node))
+  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
+  if (dims <= 1
+      || tile_size == 0
+      || !isl_schedule_node_band_get_permutable (node))
     {
       if (dump_file && dump_flags)
 	fprintf (dump_file, "not tiled\n");
@@ -74,7 +77,6 @@ get_schedule_for_node_st (__isl_take isl_schedule_node *node, void *user)
   /* Tile loops.  */
   space = isl_schedule_node_band_get_space (node);
   isl_multi_val *sizes = isl_multi_val_zero (space);
-  long tile_size = PARAM_VALUE (PARAM_LOOP_BLOCK_TILE_SIZE);
   isl_ctx *ctx = isl_schedule_node_get_ctx (node);
 
   for (unsigned i = 0; i < dims; i++)
