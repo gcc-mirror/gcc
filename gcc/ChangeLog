@@ -1,3 +1,11 @@
+2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backport from trunk r249639.
+ 	2017-06-26  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/sourcebuild.texi (ARM-specific attributes): Document new
+	arm_neon_ok_no_float_abi effective target.
+
 2017-09-26  Richard Biener  <rguenther@suse.de>
 
 	Backport from mainline
