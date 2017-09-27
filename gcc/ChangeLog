@@ -1,3 +1,10 @@
+2017-09-27  Carl Love  <cel@us.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FP_1MISC_1): Add define macro.
+	(FCTID, FCTIW): Add BU_FP_MISC_1 macro expansion for builtins.
+	* config/rs6000/rs6000.md (lrintsfsi2): Add define_insn for the
+	fctiw instruction.
+
 2017-09-27  Alexander Monakov  <amonakov@ispras.ru>
 
 	* haifa-sched.c (autopref_rank_for_schedule): Order 'irrelevant' insns
