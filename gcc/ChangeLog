@@ -1,3 +1,9 @@
+2017-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* gimplify.c (gimplify_modify_expr): Don't optimize away zero sized
+	lhs from calls if the lhs has addressable type.
+
 2017-09-27  Richard Biener  <rguenther@suse.de>
 
 	* graphite.h (scop::max_alias_set): New member.
