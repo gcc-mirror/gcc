@@ -1,7 +1,15 @@
+2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
+
+	* include/internal/phsa-rt.h: Support for improved group segment
+	handling with a stack-like allocation scheme.
+	* include/internal/workitems.h: Likewise.
+	* rt/workitems.c: Likewise.
+
 2017-09-25  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* rt/workitems.c: Assume the host runtime allocates the work group
 	memory.
+
 2017-05-03  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* rt/workitems.c: Removed a leftover comment.
