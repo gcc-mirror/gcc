@@ -1,3 +1,17 @@
+2017-09-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* config/rs6000/rs6000-p8swap.c (const_load_sequence_p): Revise
+	this function to return false if the definition used by the swap
+	instruction is artificial, or if the memory address from which the
+	constant value is loaded is not represented by a base address held
+	in a register or if the base address register is a frame or stack
+	pointer.  Additionally, return false if the base address of the
+	loaded constant is a SYMBOL_REF but is not considered to be a
+	constant.
+	(replace_swapped_load_constant): New function.
+	(rs6000_analyze_swaps): Add a new pass to replace a swap of a
+	loaded constant vector with a load of a swapped constant vector.
+
 2017-09-27  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-builtin.def (BU_FP_1MISC_1): Add define macro.

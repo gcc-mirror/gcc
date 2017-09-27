@@ -1,3 +1,24 @@
+2017-09-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/swaps-p8-28.c: New test.
+	* gcc.target/powerpc/swaps-p8-29.c: New test.
+	* gcc.target/powerpc/swaps-p8-30.c: New test.
+	* gcc.target/powerpc/swaps-p8-31.c: New test.
+	* gcc.target/powerpc/swaps-p8-32.c: New test.
+	* gcc.target/powerpc/swaps-p8-33.c: New test.
+	* gcc.target/powerpc/swaps-p8-34.c: New test.
+	* gcc.target/powerpc/swaps-p8-35.c: New test.
+	* gcc.target/powerpc/swaps-p8-36.c: New test.
+	* gcc.target/powerpc/swaps-p8-37.c: New test.
+	* gcc.target/powerpc/swaps-p8-38.c: New test.
+	* gcc.target/powerpc/swaps-p8-39.c: New test.
+	* gcc.target/powerpc/swaps-p8-40.c: New test.
+	* gcc.target/powerpc/swaps-p8-41.c: New test.
+	* gcc.target/powerpc/swaps-p8-42.c: New test.
+	* gcc.target/powerpc/swaps-p8-43.c: New test.
+	* gcc.target/powerpc/swaps-p8-44.c: New test.
+	* gcc.target/powerpc/swaps-p8-45.c: New test.
+
 2017-09-27 Carl Love  <cel@us.ibm.com>
 	* gcc.target/powerpc/builtin-fctid-fctiw-runnable.c: New test file
 	for the __builtin_fctid and __builtin_fctiw.
