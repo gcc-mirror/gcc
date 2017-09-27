@@ -443,6 +443,9 @@ public:
   block*
   new_block (const char *name);
 
+  rvalue *
+  get_address (location *loc);
+
   void
   build_stmt_list ();
 

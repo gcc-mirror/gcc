@@ -449,6 +449,23 @@ Function calls
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_rvalue_set_bool_require_tail_call
 
+Function pointers
+*****************
+
+.. function:: gcc_jit_rvalue *\
+	      gcc_jit_function_get_address (gcc_jit_function *fn,\
+                                            gcc_jit_location *loc)
+
+   Get the address of a function as an rvalue, of function pointer
+   type.
+
+   This entrypoint was added in :ref:`LIBGCCJIT_ABI_9`; you can test
+   for its presence using
+
+   .. code-block:: c
+
+      #ifdef LIBGCCJIT_HAVE_gcc_jit_function_get_address
+
 Type-coercion
 *************
 

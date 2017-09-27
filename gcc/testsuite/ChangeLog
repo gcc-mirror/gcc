@@ -1,3 +1,9 @@
+2017-09-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/all-non-failing-tests.h: Add
+	test-returning-function-ptr.c.
+	* jit.dg/test-returning-function-ptr.c: New test case.
+
 2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/71727

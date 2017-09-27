@@ -1,3 +1,33 @@
+2017-09-27  David Malcolm  <dmalcolm@redhat.com>
+
+	* docs/cp/topics/expressions.rst (Function pointers): New section.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_9): New tag.
+	* docs/topics/expressions.rst (Function pointers): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+	* jit-common.h (class gcc::jit::recording::function_pointer): New
+	forward decl.
+	* jit-playback.c (gcc::jit::playback::function::get_address): New
+	method.
+	* jit-playback.h (gcc::jit::playback::function::get_address): New
+	method decl.
+	* jit-recording.c: Within namespace gcc::jit::recording...
+	(function::function): Initialize new field "m_fn_ptr_type".
+	(function::get_address): New method.
+	(function_pointer::replay_into): New method.
+	(function_pointer::visit_children): New method.
+	(function_pointer::make_debug_string): New method.
+	(function_pointer::write_reproducer): New method.
+	* jit-recording.h: Within namespace gcc::jit::recording...
+	(function::get_address): New method.
+	(function): Add field "m_fn_ptr_type".
+	(class function_pointer): New subclass of rvalue.
+	* libgccjit++.h (gccjit::function::get_address): New method.
+	* libgccjit.c (gcc_jit_function_get_address): New function.
+	* libgccjit.h (LIBGCCJIT_HAVE_gcc_jit_function_get_address): New
+	macro.
+	(gcc_jit_function_get_address): New API entrypoint.
+	* libgccjit.map (LIBGCCJIT_ABI_9): New tag.
+
 2017-09-14  David Malcolm  <dmalcolm@redhat.com>
 
 	PR jit/82174
