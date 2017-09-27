@@ -5842,7 +5842,9 @@ Struct_type::do_verify()
       Type* t = p->type();
       if (p->is_anonymous())
 	{
-	  if (t->named_type() != NULL && t->points_to() != NULL)
+	  if ((t->named_type() != NULL && t->points_to() != NULL)
+              || (t->named_type() == NULL && t->points_to() != NULL
+                  && t->points_to()->points_to() != NULL))
 	    {
 	      go_error_at(p->location(), "embedded type may not be a pointer");
 	      p->set_type(Type::make_error_type());
@@ -11848,6 +11850,12 @@ Type::bind_field_or_method(Gogo* gogo, const Type* type, Expression* expr,
 	      go_assert(expr->type()->struct_type() == st);
 	    }
 	  ret = st->field_reference(expr, name, location);
+          if (ret == NULL)
+            {
+              go_error_at(location, "type has no field %qs",
+                          Gogo::message_name(name).c_str());
+              return Expression::make_error(location);
+            }
 	}
       else if (it != NULL && it->find_method(name) != NULL)
 	ret = Expression::make_interface_field_reference(expr, name,
