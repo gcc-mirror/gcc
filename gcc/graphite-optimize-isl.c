@@ -189,7 +189,7 @@ optimize_isl (scop_p scop)
 	print_schedule_ast (dump_file, scop->original_schedule, scop);
       isl_schedule_free (scop->transformed_schedule);
       scop->transformed_schedule = isl_schedule_copy (scop->original_schedule);
-      return false;
+      return flag_graphite_identity || flag_loop_parallelize_all;
     }
 
   return true;

@@ -218,14 +218,9 @@ static bool
 graphite_initialize (void)
 {
   int min_loops = PARAM_VALUE (PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION);
-  int max_bbs = PARAM_VALUE (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION);
-  int nbbs = n_basic_blocks_for_fn (cfun);
   int nloops = number_of_loops (cfun);
 
-  if (nloops <= min_loops
-      /* FIXME: This limit on the number of basic blocks of a function
-	 should be removed when the SCOP detection is faster.  */
-      || (nbbs > max_bbs))
+  if (nloops <= min_loops)
     {
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
@@ -233,10 +228,6 @@ graphite_initialize (void)
 	    fprintf (dump_file, "\nFunction does not have enough loops: "
 		     "PARAM_GRAPHITE_MIN_LOOPS_PER_FUNCTION = %d.\n",
 		     min_loops);
-
-	  else if (nbbs > max_bbs)
-	    fprintf (dump_file, "\nFunction has too many basic blocks: "
-		     "PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION = %d.\n", max_bbs);
 
 	  fprintf (dump_file, "\nnumber of SCoPs: 0\n");
 	  print_global_statistics (dump_file);

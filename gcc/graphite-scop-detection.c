@@ -48,6 +48,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "tree-ssa-propagate.h"
 #include "gimple-pretty-print.h"
+#include "cfganal.h"
 #include "graphite.h"
 
 class debug_printer
@@ -1544,7 +1545,7 @@ build_alias_set (scop_p scop)
 class gather_bbs : public dom_walker
 {
 public:
-  gather_bbs (cdi_direction, scop_p);
+  gather_bbs (cdi_direction, scop_p, int *);
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -1554,8 +1555,8 @@ private:
   scop_p scop;
 };
 }
-gather_bbs::gather_bbs (cdi_direction direction, scop_p scop)
-  : dom_walker (direction), scop (scop)
+gather_bbs::gather_bbs (cdi_direction direction, scop_p scop, int *bb_to_rpo)
+  : dom_walker (direction, false, bb_to_rpo), scop (scop)
 {
 }
 
@@ -1589,7 +1590,7 @@ gather_bbs::before_dom_children (basic_block bb)
 {
   sese_info_p region = scop->scop_info;
   if (!bb_in_sese_p (bb, region->region))
-    return NULL;
+    return dom_walker::STOP;
 
   record_loop_in_sese (bb, region);
 
@@ -1708,6 +1709,15 @@ build_scops (vec<scop_p> *scops)
 
   /* Now create scops from the lightweight SESEs.  */
   vec<sese_l> scops_l = sb.get_scops ();
+
+  /* Domwalk needs a bb to RPO mapping.  Compute it once here.  */
+  int *postorder = XNEWVEC (int, n_basic_blocks_for_fn (cfun));
+  int postorder_num = pre_and_rev_post_order_compute (NULL, postorder, true);
+  int *bb_to_rpo = XNEWVEC (int, last_basic_block_for_fn (cfun));
+  for (int i = 0; i < postorder_num; ++i)
+    bb_to_rpo[postorder[i]] = i;
+  free (postorder);
+
   int i;
   sese_l *s;
   FOR_EACH_VEC_ELT (scops_l, i, s)
@@ -1715,7 +1725,7 @@ build_scops (vec<scop_p> *scops)
       scop_p scop = new_scop (s->entry, s->exit);
 
       /* Record all basic blocks and their conditions in REGION.  */
-      gather_bbs (CDI_DOMINATORS, scop).walk (s->entry->dest);
+      gather_bbs (CDI_DOMINATORS, scop, bb_to_rpo).walk (s->entry->dest);
 
       /* domwalk does not fulfil our code-generations constraints on the
          order of pbb which is to produce sth like execution order, delaying
@@ -1757,8 +1767,8 @@ build_scops (vec<scop_p> *scops)
 
       find_scop_parameters (scop);
       graphite_dim_t max_dim = PARAM_VALUE (PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS);
-
-      if (scop_nb_params (scop) > max_dim)
+      if (max_dim > 0
+	  && scop_nb_params (scop) > max_dim)
 	{
 	  DEBUG_PRINT (dp << "[scop-detection-fail] too many parameters: "
 			  << scop_nb_params (scop)
@@ -1771,6 +1781,7 @@ build_scops (vec<scop_p> *scops)
       scops->safe_push (scop);
     }
 
+  free (bb_to_rpo);
   DEBUG_PRINT (dp << "number of SCoPs: " << (scops ? scops->length () : 0););
 }
 

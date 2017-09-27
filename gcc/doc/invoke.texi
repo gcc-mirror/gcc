@@ -10512,13 +10512,9 @@ sequence pairs.  This option only applies when using
 @item graphite-max-nb-scop-params
 To avoid exponential effects in the Graphite loop transforms, the
 number of parameters in a Static Control Part (SCoP) is bounded.  The
-default value is 10 parameters.  A variable whose value is unknown at
-compilation time and defined outside a SCoP is a parameter of the SCoP.
-
-@item graphite-max-bbs-per-function
-To avoid exponential effects in the detection of SCoPs, the size of
-the functions analyzed by Graphite is bounded.  The default value is
-100 basic blocks.
+default value is 10 parameters, a value of zero can be used to lift
+the bound.  A variable whose value is unknown at compilation time and
+defined outside a SCoP is a parameter of the SCoP.
 
 @item loop-block-tile-size
 Loop blocking or strip mining transforms, enabled with
