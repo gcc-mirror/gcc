@@ -11902,19 +11902,9 @@ aarch64_builtin_support_vector_misalignment (machine_mode mode,
       if (optab_handler (movmisalign_optab, mode) == CODE_FOR_nothing)
         return false;
 
+      /* Misalignment factor is unknown at compile time.  */
       if (misalignment == -1)
-	{
-	  /* Misalignment factor is unknown at compile time but we know
-	     it's word aligned.  */
-	  if (aarch64_simd_vector_alignment_reachable (type, is_packed))
-            {
-              int element_size = TREE_INT_CST_LOW (TYPE_SIZE (type));
-
-              if (element_size != 64)
-                return true;
-            }
-	  return false;
-	}
+	return false;
     }
   return default_builtin_support_vector_misalignment (mode, type, misalignment,
 						      is_packed);
