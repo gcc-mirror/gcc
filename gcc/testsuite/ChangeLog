@@ -1,3 +1,7 @@
+2017-09-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* gcc.dg/tree-ssa/cmpdiv.c: New test.
+
 2017-09-26  Carl Love  <cel@us.ibm.com>
 
 	* gcc.target/powerpc/builtins-5-p9-runnable.c: Add new runable test

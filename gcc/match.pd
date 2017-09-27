@@ -1275,6 +1275,18 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	   || TYPE_OVERFLOW_WRAPS (TREE_TYPE (@0))))
    (op @1 @0))))
 
+/* Transform:
+ * (X / Y) == 0 -> X < Y if X, Y are unsigned.
+ * (X / Y) != 0 -> X >= Y, if X, Y are unsigned.
+ */
+(for cmp (eq ne)
+     ocmp (lt ge)
+ (simplify
+  (cmp (trunc_div @0 @1) integer_zerop)
+  (if (TYPE_UNSIGNED (TREE_TYPE (@0))
+       && (VECTOR_TYPE_P (type) || !VECTOR_TYPE_P (TREE_TYPE (@0))))
+   (ocmp @0 @1))))
+
 /* X == C - X can never be true if C is odd.  */
 (for cmp (eq ne)
  (simplify
