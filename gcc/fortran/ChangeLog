@@ -1,3 +1,7 @@
+2017-09-27  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* lang.opt <Wdo-subscript>: End help text with a period.
+
 2017-09-26  Thomas Koenig  <tkoenig@gcc.gnu.org>
 
 	* frontend-passes.c (do_subscript): Don't do anything
