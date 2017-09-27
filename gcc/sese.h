@@ -94,9 +94,6 @@ typedef struct sese_info_t
   /* Parameters to be renamed.  */
   parameter_rename_map_t *parameter_rename_map;
 
-  /* Loops completely contained in this SESE.  */
-  vec<loop_p> loop_nest;
-
   /* Basic blocks contained in this SESE.  */
   vec<basic_block> bbs;
 
