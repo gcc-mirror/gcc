@@ -1,3 +1,8 @@
+2017-09-27  Alexander Monakov  <amonakov@ispras.ru>
+
+	* haifa-sched.c (autopref_rank_for_schedule): Order 'irrelevant' insns
+	first, always call autopref_rank_data otherwise.
+
 2017-09-27  Richard Biener  <rguenther@suse.de>
 
 	* graphite-scop-detection.c (find_scop_parameters): Move
