@@ -1,3 +1,8 @@
+2017-09-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82159
+	* g++.dg/opt/pr82159.C: New test.
+
 2017-09-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
 	* gcc.dg/vect/pr65947-9.c: Use signed char explicitly.
