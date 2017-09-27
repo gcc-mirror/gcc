@@ -1,3 +1,9 @@
+2017-09-27  François Dumont  <fdumont@gcc.gnu.org>
+
+	* testsuite/22_locale/money_get/get/char/22131.cc: Make test less
+	istreambuf_iterator implementation dependent.
+	* testsuite/22_locale/money_get/get/wchar_t/22131.cc: Likewise.
+
 2017-09-25  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR c/81854
