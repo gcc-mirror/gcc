@@ -1,3 +1,39 @@
+2017-09-27  Richard Biener  <rguenther@suse.de>
+
+	* doc/invoke.texi (graphite-max-bbs-per-function): Remove.
+	(graphite-max-nb-scop-params): Document special value zero.
+	* domwalk.h (dom_walker::STOP): New symbolical constant.
+	(dom_walker::dom_walker): Add optional parameter for bb to
+	RPO mapping.
+	(dom_walker::~dom_walker): Declare.
+	(dom_walker::before_dom_children): Document STOP return value.
+	(dom_walker::m_user_bb_to_rpo): New member.
+	(dom_walker::m_bb_to_rpo): Likewise.
+	* domwalk.c (dom_walker::dom_walker): Compute bb to RPO
+	mapping here if not provided by the user.
+	(dom_walker::~dom_walker): Free bb to RPO mapping if not
+	provided by the user.
+	(dom_walker::STOP): Define.
+	(dom_walker::walk): Do not compute bb to RPO mapping here.
+	Support STOP return value from before_dom_children to stop
+	walking.
+	* graphite-optimize-isl.c (optimize_isl): If the schedule
+	is the same still generate code if -fgraphite-identity
+	or -floop-parallelize-all are given.
+	* graphite-scop-detection.c: Include cfganal.h.
+	(gather_bbs::gather_bbs): Get and pass through bb to RPO
+	mapping.
+	(gather_bbs::before_dom_children): Return STOP for BBs
+	not in the region.
+	(build_scops): Compute bb to RPO mapping and pass it to
+	the domwalk.  Treat --param graphite-max-nb-scop-params=0
+	as not limiting the number of params.
+	* graphite.c (graphite_initialize): Remove limit on the
+	number of basic-blocks in a function.
+	* params.def (PARAM_GRAPHITE_MAX_BBS_PER_FUNCTION): Remove.
+	(PARAM_GRAPHITE_MAX_NB_SCOP_PARAMS): Adjust to documented
+	default value of 10.
+
 2017-09-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* config/rs6000/vsx.md (peephole for optimizing move SF to GPR):
