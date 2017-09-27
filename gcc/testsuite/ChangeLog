@@ -1,3 +1,7 @@
+2017-09-27  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* gcc.dg/vect/pr65947-9.c: Use signed char explicitly.
+
 2017-09-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/pr71977-1.c: Update test to know that we
