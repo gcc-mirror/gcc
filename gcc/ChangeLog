@@ -1,3 +1,8 @@
+2017-09-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
+
+	* match.pd ((X / Y) == 0 -> X < Y): New pattern.
+	((X / Y) != 0 -> X >= Y): Likewise.
+
 2017-09-26  Carl Love  <cel@us.ibm.com>
 
 	* config/rs6000/rs6000-c.c (P9V_BUILTIN_VEC_XL_LEN_R,
