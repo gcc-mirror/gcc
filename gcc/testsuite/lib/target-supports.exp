@@ -3428,8 +3428,9 @@ proc check_effective_target_arm_neon_ok_nocache { } {
     global et_arm_neon_flags
     set et_arm_neon_flags ""
     if { [check_effective_target_arm32] } {
-	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp" "-mfpu=neon -mfloat-abi=softfp -march=armv7-a"} {
+	foreach flags {"" "-mfloat-abi=softfp" "-mfpu=neon" "-mfpu=neon -mfloat-abi=softfp" "-mfpu=neon -mfloat-abi=softfp -march=armv7-a" "-mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard" "-mfpu=neon -mfloat-abi=hard -march=armv7-a"} {
 	    if { [check_no_compiler_messages_nocache arm_neon_ok object {
+		#include <arm_neon.h>
 		int dummy;
 		#ifndef __ARM_NEON__
 		#error not NEON
@@ -3452,6 +3453,38 @@ proc check_effective_target_arm_neon_ok_nocache { } {
 proc check_effective_target_arm_neon_ok { } {
     return [check_cached_effective_target arm_neon_ok \
 		check_effective_target_arm_neon_ok_nocache]
+}
+
+# Return 1 if this is an ARM target supporting -mfpu=neon without any
+# -mfloat-abi= option.  Useful in tests where add_options is not
+# supported (such as lto tests).
+
+proc check_effective_target_arm_neon_ok_no_float_abi_nocache { } {
+    if { [check_effective_target_arm32] } {
+	foreach flags {"-mfpu=neon"} {
+	    if { [check_no_compiler_messages_nocache arm_neon_ok_no_float_abi object {
+		#include <arm_neon.h>
+		int dummy;
+		#ifndef __ARM_NEON__
+		#error not NEON
+		#endif
+		/* Avoid the case where a test adds -mfpu=neon, but the toolchain is
+		   configured for -mcpu=arm926ej-s, for example.  */
+		#if __ARM_ARCH < 7 || __ARM_ARCH_PROFILE == 'M'
+		#error Architecture does not support NEON.
+		#endif
+	    } "$flags"] } {
+		return 1
+	    }
+	}
+    }
+
+    return 0
+}
+
+proc check_effective_target_arm_neon_ok_no_float_abi { } {
+    return [check_cached_effective_target arm_neon_ok_no_float_abi \
+		check_effective_target_arm_neon_ok_no_float_abi_nocache]
 }
 
 proc check_effective_target_arm_crc_ok_nocache { } {

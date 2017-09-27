@@ -1570,6 +1570,12 @@ Test system supports executing NEON v2 instructions.
 ARM Target supports @code{-mfpu=neon -mfloat-abi=softfp} or compatible
 options.  Some multilibs may be incompatible with these options.
 
+@item arm_neon_ok_no_float_abi
+@anchor{arm_neon_ok_no_float_abi}
+ARM Target supports NEON with @code{-mfpu=neon}, but without any
+-mfloat-abi= option.  Some multilibs may be incompatible with this
+option.
+
 @item arm_neonv2_ok
 @anchor{arm_neonv2_ok}
 ARM Target supports @code{-mfpu=neon-vfpv4 -mfloat-abi=softfp} or compatible
