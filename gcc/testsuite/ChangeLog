@@ -1,3 +1,10 @@
+2017-09-26  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* gcc.target/powerpc/pr71977-1.c: Update test to know that we
+	don't generate a 32-bit shift after doing XSCVDPSPN.
+	* gcc.target/powerpc/direct-move-float1.c: Likewise.
+	* gcc.target/powerpc/direct-move-float3.c: New test.
+
 2017-09-26  Prathamesh Kulkarni  <prathamesh.kulkarni@linaro.org>
 
 	* gcc.dg/tree-ssa/cmpdiv.c: New test.

@@ -4797,9 +4797,10 @@
    (SFBOOL_SHL_D		 7)		;; shift left dest
    (SFBOOL_SHL_A		 8)		;; shift left arg
    (SFBOOL_MTVSR_D		 9)		;; move to vecter dest
-   (SFBOOL_BOOL_A_DI		10)		;; SFBOOL_BOOL_A1/A2 as DImode
-   (SFBOOL_TMP_VSX_DI		11)		;; SFBOOL_TMP_VSX as DImode
-   (SFBOOL_MTVSR_D_V4SF		12)])		;; SFBOOL_MTVSRD_D as V4SFmode
+   (SFBOOL_MFVSR_A_V4SF		10)		;; SFBOOL_MFVSR_A as V4SFmode
+   (SFBOOL_BOOL_A_DI		11)		;; SFBOOL_BOOL_A1/A2 as DImode
+   (SFBOOL_TMP_VSX_DI		12)		;; SFBOOL_TMP_VSX as DImode
+   (SFBOOL_MTVSR_D_V4SF		13)])		;; SFBOOL_MTVSRD_D as V4SFmode
 
 ;; Attempt to optimize some common GLIBC operations using logical operations to
 ;; pick apart SFmode operations.  For example, there is code from e_powf.c
@@ -4837,29 +4838,22 @@
 ;;
 ;; (set (reg:DI reg3) (unspec:DI [(reg:V4SF reg2)] UNSPEC_P8V_RELOAD_FROM_VSX))
 ;;
-;; (set (reg:DI reg3) (lshiftrt:DI (reg:DI reg3) (const_int 32)))
+;; (set (reg:DI reg4) (and:DI (reg:DI reg3) (reg:DI reg3)))
 ;;
-;; (set (reg:DI reg5) (and:DI (reg:DI reg3) (reg:DI reg4)))
+;; (set (reg:DI reg5) (ashift:DI (reg:DI reg4) (const_int 32)))
 ;;
-;; (set (reg:DI reg6) (ashift:DI (reg:DI reg5) (const_int 32)))
+;; (set (reg:SF reg6) (unspec:SF [(reg:DI reg5)] UNSPEC_P8V_MTVSRD))
 ;;
-;; (set (reg:SF reg7) (unspec:SF [(reg:DI reg6)] UNSPEC_P8V_MTVSRD))
-;;
-;; (set (reg:SF reg7) (unspec:SF [(reg:SF reg7)] UNSPEC_VSX_CVSPDPN))
+;; (set (reg:SF reg6) (unspec:SF [(reg:SF reg6)] UNSPEC_VSX_CVSPDPN))
 
 (define_peephole2
   [(match_scratch:DI SFBOOL_TMP_GPR "r")
    (match_scratch:V4SF SFBOOL_TMP_VSX "wa")
 
-   ;; MFVSRD
+   ;; MFVSRWZ (aka zero_extend)
    (set (match_operand:DI SFBOOL_MFVSR_D "int_reg_operand")
-	(unspec:DI [(match_operand:V4SF SFBOOL_MFVSR_A "vsx_register_operand")]
-		   UNSPEC_P8V_RELOAD_FROM_VSX))
-
-   ;; SRDI
-   (set (match_dup SFBOOL_MFVSR_D)
-	(lshiftrt:DI (match_dup SFBOOL_MFVSR_D)
-		     (const_int 32)))
+	(zero_extend:DI
+	 (match_operand:SI SFBOOL_MFVSR_A "vsx_register_operand")))
 
    ;; AND/IOR/XOR operation on int
    (set (match_operand:SI SFBOOL_BOOL_D "int_reg_operand")
@@ -4884,15 +4878,15 @@
    && (REG_P (operands[SFBOOL_BOOL_A2])
        || CONST_INT_P (operands[SFBOOL_BOOL_A2]))
    && (REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_MFVSR_D])
-       || peep2_reg_dead_p (3, operands[SFBOOL_MFVSR_D]))
+       || peep2_reg_dead_p (2, operands[SFBOOL_MFVSR_D]))
    && (REGNO (operands[SFBOOL_MFVSR_D]) == REGNO (operands[SFBOOL_BOOL_A1])
        || (REG_P (operands[SFBOOL_BOOL_A2])
 	   && REGNO (operands[SFBOOL_MFVSR_D])
 		== REGNO (operands[SFBOOL_BOOL_A2])))
    && REGNO (operands[SFBOOL_BOOL_D]) == REGNO (operands[SFBOOL_SHL_A])
    && (REGNO (operands[SFBOOL_SHL_D]) == REGNO (operands[SFBOOL_BOOL_D])
-       || peep2_reg_dead_p (4, operands[SFBOOL_BOOL_D]))
-   && peep2_reg_dead_p (5, operands[SFBOOL_SHL_D])"
+       || peep2_reg_dead_p (3, operands[SFBOOL_BOOL_D]))
+   && peep2_reg_dead_p (4, operands[SFBOOL_SHL_D])"
   [(set (match_dup SFBOOL_TMP_GPR)
 	(ashift:DI (match_dup SFBOOL_BOOL_A_DI)
 		   (const_int 32)))
@@ -4901,12 +4895,13 @@
 	(match_dup SFBOOL_TMP_GPR))
 
    (set (match_dup SFBOOL_MTVSR_D_V4SF)
-	(and_ior_xor:V4SF (match_dup SFBOOL_MFVSR_A)
+	(and_ior_xor:V4SF (match_dup SFBOOL_MFVSR_A_V4SF)
 			  (match_dup SFBOOL_TMP_VSX)))]
 {
   rtx bool_a1 = operands[SFBOOL_BOOL_A1];
   rtx bool_a2 = operands[SFBOOL_BOOL_A2];
   int regno_mfvsr_d = REGNO (operands[SFBOOL_MFVSR_D]);
+  int regno_mfvsr_a = REGNO (operands[SFBOOL_MFVSR_A]);
   int regno_tmp_vsx = REGNO (operands[SFBOOL_TMP_VSX]);
   int regno_mtvsr_d = REGNO (operands[SFBOOL_MTVSR_D]);
 
@@ -4925,6 +4920,7 @@
       operands[SFBOOL_BOOL_A_DI] = gen_rtx_REG (DImode, regno_bool_a);
     }
 
+  operands[SFBOOL_MFVSR_A_V4SF] = gen_rtx_REG (V4SFmode, regno_mfvsr_a);
   operands[SFBOOL_TMP_VSX_DI] = gen_rtx_REG (DImode, regno_tmp_vsx);
   operands[SFBOOL_MTVSR_D_V4SF] = gen_rtx_REG (V4SFmode, regno_mtvsr_d);
 })
