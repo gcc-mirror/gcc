@@ -1,3 +1,8 @@
+2017-09-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/71727
+	* gcc.target/aarch64/pr71727-2.c: New test.
+
 2017-09-27  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/swaps-p8-28.c: New test.
