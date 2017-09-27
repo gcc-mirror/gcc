@@ -491,25 +491,6 @@ pdr_add_alias_set (isl_map *acc, dr_info &dri)
   return isl_map_add_constraint (acc, c);
 }
 
-/* Add a constrain to the ACCESSES polyhedron for the alias set of
-   data reference DR.  ACCESSP_NB_DIMS is the dimension of the
-   ACCESSES polyhedron, DOM_NB_DIMS is the dimension of the iteration
-   domain.  */
-
-static isl_map *
-add_scalar_version_numbers (isl_map *acc, tree var)
-{
-  isl_constraint *c = isl_equality_alloc
-      (isl_local_space_from_space (isl_map_get_space (acc)));
-  int max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
-  /* Each scalar variables has a unique alias set number starting from
-     max_arrays.  */
-  c = isl_constraint_set_constant_si (c, -max_arrays - SSA_NAME_VERSION (var));
-  c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
-
-  return isl_map_add_constraint (acc, c);
-}
-
 /* Assign the affine expression INDEX to the output dimension POS of
    MAP and return the result.  */
 
@@ -684,13 +665,21 @@ static void
 build_poly_sr_1 (poly_bb_p pbb, gimple *stmt, tree var, enum poly_dr_type kind,
 		 isl_map *acc, isl_set *subscript_sizes)
 {
-  int max_arrays = PARAM_VALUE (PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP);
+  scop_p scop = PBB_SCOP (pbb);
   /* Each scalar variables has a unique alias set number starting from
-     max_arrays.  */
+     the maximum alias set assigned to a dr.  */
+  int alias_set = scop->max_alias_set + SSA_NAME_VERSION (var);
   subscript_sizes = isl_set_fix_si (subscript_sizes, isl_dim_set, 0,
-				    max_arrays + SSA_NAME_VERSION (var));
+				    alias_set);
 
-  new_poly_dr (pbb, stmt, kind, add_scalar_version_numbers (acc, var),
+  /* Add a constrain to the ACCESSES polyhedron for the alias set of
+     data reference DR.  */
+  isl_constraint *c
+    = isl_equality_alloc (isl_local_space_from_space (isl_map_get_space (acc)));
+  c = isl_constraint_set_constant_si (c, -alias_set);
+  c = isl_constraint_set_coefficient_si (c, isl_dim_out, 0, 1);
+
+  new_poly_dr (pbb, stmt, kind, isl_map_add_constraint (acc, c),
 	       subscript_sizes);
 }
 

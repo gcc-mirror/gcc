@@ -1,5 +1,19 @@
 2017-09-27  Richard Biener  <rguenther@suse.de>
 
+	* graphite.h (scop::max_alias_set): New member.
+	* graphite-scop-detection.c: Remove references to non-existing
+	--param in comments.
+	(build_alias_sets): Record the maximum alias set used for drs.
+	(build_scops): Support zero as unlimited for
+	--param graphite-max-arrays-per-scop.
+	* graphite-sese-to-poly.c (add_scalar_version_numbers): Remove
+	and inline into ...
+	(build_poly_sr_1): ... here.  Compute alias set based on the
+	maximum alias set used for drs rather than
+	PARAM_GRAPHITE_MAX_ARRAYS_PER_SCOP
+
+2017-09-27  Richard Biener  <rguenther@suse.de>
+
 	* graphite-optimize-isl.c (get_schedule_for_node_st): Allow
 	--param loop-block-tile-size=0 to disable tiling.
 
