@@ -1324,7 +1324,7 @@ find_params_in_bb (sese_info_p region, gimple_poly_bb_p gbb)
     }
 }
 
-/* Record the parameters used in the SCOP.  A variable is a parameter
+/* Record the parameters used in the SCOP BBs.  A variable is a parameter
    in a scop if it does not vary during the execution of that scop.  */
 
 static void
@@ -1332,19 +1332,8 @@ find_scop_parameters (scop_p scop)
 {
   unsigned i;
   sese_info_p region = scop->scop_info;
-  struct loop *loop;
 
-  /* Find the parameters used in the loop bounds.  */
-  FOR_EACH_VEC_ELT (region->loop_nest, i, loop)
-    {
-      tree nb_iters = number_of_latch_executions (loop);
-
-      if (!chrec_contains_symbols (nb_iters))
-	continue;
-
-      nb_iters = scalar_evolution_in_region (region->region, loop, nb_iters);
-      scan_tree_for_params (region, nb_iters);
-    }
+  /* Parameters used in loop bounds are processed during gather_bbs.  */
 
   /* Find the parameters used in data accesses.  */
   poly_bb_p pbb;
@@ -1555,28 +1544,6 @@ gather_bbs::gather_bbs (cdi_direction direction, scop_p scop, int *bb_to_rpo)
 {
 }
 
-/* Record in execution order the loops fully contained in the region.  */
-
-static void
-record_loop_in_sese (basic_block bb, sese_info_p region)
-{
-  loop_p father = bb->loop_father;
-  if (loop_in_sese_p (father, region->region))
-    {
-      bool found = false;
-      loop_p loop0;
-      int j;
-      FOR_EACH_VEC_ELT (region->loop_nest, j, loop0)
-	if (father == loop0)
-	  {
-	    found = true;
-	    break;
-	  }
-      if (!found)
-	region->loop_nest.safe_push (father);
-    }
-}
-
 /* Call-back for dom_walk executed before visiting the dominated
    blocks.  */
 
@@ -1587,7 +1554,20 @@ gather_bbs::before_dom_children (basic_block bb)
   if (!bb_in_sese_p (bb, region->region))
     return dom_walker::STOP;
 
-  record_loop_in_sese (bb, region);
+  /* For loops fully contained in the region record parameters in the
+     loop bounds.  */
+  loop_p loop = bb->loop_father;
+  if (loop->header == bb
+      && loop_in_sese_p (loop, region->region))
+    {
+      tree nb_iters = number_of_latch_executions (loop);
+      if (chrec_contains_symbols (nb_iters))
+	{
+	  nb_iters = scalar_evolution_in_region (region->region,
+						 loop, nb_iters);
+	  scan_tree_for_params (region, nb_iters);
+	}
+    }
 
   gcond *stmt = single_pred_cond_non_loop_exit (bb);
 

@@ -179,7 +179,6 @@ new_sese_info (edge entry, edge exit)
 
   region->region.entry = entry;
   region->region.exit = exit;
-  region->loop_nest.create (3);
   region->params.create (3);
   region->rename_map = new rename_map_t;
   region->parameter_rename_map = new parameter_rename_map_t;
@@ -197,7 +196,6 @@ void
 free_sese_info (sese_info_p region)
 {
   region->params.release ();
-  region->loop_nest.release ();
 
   for (rename_map_t::iterator it = region->rename_map->begin ();
        it != region->rename_map->end (); ++it)

@@ -1,3 +1,14 @@
+2017-09-27  Richard Biener  <rguenther@suse.de>
+
+	* graphite-scop-detection.c (find_scop_parameters): Move
+	loop bound handling ...
+	(gather_bbs::before_dom_children): ... here, avoiding the need
+	to build scop_info->loop_nest.
+	(record_loop_in_sese): Remove.
+	* sese.h (sese_info_t::loop_nest): Remove.
+	* sese.c (new_sese_info): Do not allocate loop_nest.
+	(free_sese_info): Do not free loop_nest.
+
 2017-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82159
