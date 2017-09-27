@@ -608,6 +608,16 @@
 		    CODE_FOR_ ## ICODE)			/* ICODE */
 
 
+/* Miscellaneous builtins for instructions added prior to ISA 2.04.  These
+   operate on floating point registers.  */
+#define BU_FP_MISC_1(ENUM, NAME, ATTR, ICODE)				\
+  RS6000_BUILTIN_1 (MISC_BUILTIN_ ## ENUM,		/* ENUM */	\
+		    "__builtin_" NAME,			/* NAME */	\
+		    RS6000_BTM_HARD_FLOAT,		/* MASK */	\
+		    (RS6000_BTC_ ## ATTR		/* ATTR */	\
+		     | RS6000_BTC_UNARY),				\
+		    CODE_FOR_ ## ICODE)			/* ICODE */
+
 /* Miscellaneous builtins for instructions added in ISA 2.06.  These
    instructions don't require either the DFP or VSX options, just the basic ISA
    2.06 (popcntd) enablement since they operate on general purpose
@@ -1863,6 +1873,10 @@ BU_VSX_OVERLOAD_X (XL,	     "xl")
 BU_VSX_OVERLOAD_X (XL_BE,    "xl_be")
 BU_VSX_OVERLOAD_X (XST,	     "xst")
 
+/* 1 argument builtins pre ISA 2.04.  */
+BU_FP_MISC_1 (FCTID,		"fctid",	CONST,  lrintdfdi2)
+BU_FP_MISC_1 (FCTIW,		"fctiw",	CONST,	lrintsfsi2)
+
 /* 2 argument CMPB instructions added in ISA 2.05. */
 BU_P6_2 (CMPB_32,        "cmpb_32",	CONST,	cmpbsi3)
 BU_P6_64BIT_2 (CMPB,     "cmpb",	CONST,	cmpbdi3)

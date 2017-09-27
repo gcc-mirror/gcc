@@ -1,3 +1,7 @@
+2017-09-27 Carl Love  <cel@us.ibm.com>
+	* gcc.target/powerpc/builtin-fctid-fctiw-runnable.c: New test file
+	for the __builtin_fctid and __builtin_fctiw.
+
 2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig.dg/test/gimple/fbarrier.hsail: Fixed tests to match the new
