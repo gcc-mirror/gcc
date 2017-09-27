@@ -23,9 +23,9 @@ mask_and_float_var (float f, uint32_t mask)
   return u.value;
 }
 
-/* { dg-final { scan-assembler     "\[ \t\]xxland " } } */
-/* { dg-final { scan-assembler-not "\[ \t\]and "    } } */
-/* { dg-final { scan-assembler-not "\[ \t\]mfvsrd " } } */
-/* { dg-final { scan-assembler-not "\[ \t\]stxv"    } } */
-/* { dg-final { scan-assembler-not "\[ \t\]lxv"     } } */
-/* { dg-final { scan-assembler-not "\[ \t\]srdi "   } } */
+/* { dg-final { scan-assembler     {\mxxland\M}  } } */
+/* { dg-final { scan-assembler-not {\mand\M}     } } */
+/* { dg-final { scan-assembler-not {\mmfvsrd\M}  } } */
+/* { dg-final { scan-assembler-not {\mstxv\M}    } } */
+/* { dg-final { scan-assembler-not {\mlxv\M}     } } */
+/* { dg-final { scan-assembler-not {\msrdi\M}    } } */
