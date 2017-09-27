@@ -1356,6 +1356,20 @@ new_block (const char *name)
   return result;
 }
 
+/* Construct a playback::rvalue instance wrapping an ADDR_EXPR for
+   this playback::function.  */
+
+playback::rvalue *
+playback::function::get_address (location *loc)
+{
+  tree t_fndecl = as_fndecl ();
+  tree t_fntype = TREE_TYPE (t_fndecl);
+  tree t_fnptr = build1 (ADDR_EXPR, build_pointer_type (t_fntype), t_fndecl);
+  if (loc)
+    m_ctxt->set_tree_location (t_fnptr, loc);
+  return new rvalue (m_ctxt, t_fnptr);
+}
+
 /* Build a statement list for the function as a whole out of the
    lists of statements for the individual blocks, building labels
    for each block.  */

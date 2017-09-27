@@ -3022,3 +3022,23 @@ gcc_jit_type_get_vector (gcc_jit_type *type, size_t num_units)
 
   return (gcc_jit_type *)type->get_vector (num_units);
 }
+
+/* Public entrypoint.  See description in libgccjit.h.
+
+   After error-checking, the real work is done by the
+   gcc::jit::recording::function::get_address method, in
+   jit-recording.c.  */
+
+gcc_jit_rvalue *
+gcc_jit_function_get_address (gcc_jit_function *fn,
+			      gcc_jit_location *loc)
+{
+  RETURN_NULL_IF_FAIL (fn, NULL, NULL, "NULL function");
+
+  gcc::jit::recording::context *ctxt = fn->m_ctxt;
+
+  JIT_LOG_FUNC (ctxt->get_logger ());
+  /* LOC can be NULL.  */
+
+  return (gcc_jit_rvalue *)fn->get_address (loc);
+}

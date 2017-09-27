@@ -1145,6 +1145,8 @@ public:
 
   void dump_to_dot (const char *path);
 
+  rvalue *get_address (location *loc);
+
 private:
   string * make_debug_string () FINAL OVERRIDE;
   void write_reproducer (reproducer &r) FINAL OVERRIDE;
@@ -1159,6 +1161,7 @@ private:
   enum built_in_function m_builtin_id;
   auto_vec<local *> m_locals;
   auto_vec<block *> m_blocks;
+  type *m_fn_ptr_type;
 };
 
 class block : public memento
@@ -1697,6 +1700,32 @@ private:
 
 private:
   lvalue *m_lvalue;
+};
+
+class function_pointer : public rvalue
+{
+public:
+  function_pointer (context *ctxt,
+		    location *loc,
+		    function *fn,
+		    type *type)
+  : rvalue (ctxt, loc, type),
+    m_fn (fn) {}
+
+  void replay_into (replayer *r) FINAL OVERRIDE;
+
+  void visit_children (rvalue_visitor *v) FINAL OVERRIDE;
+
+private:
+  string * make_debug_string () FINAL OVERRIDE;
+  void write_reproducer (reproducer &r) FINAL OVERRIDE;
+  enum precedence get_precedence () const FINAL OVERRIDE
+  {
+    return PRECEDENCE_UNARY;
+  }
+
+private:
+  function *m_fn;
 };
 
 class local : public lvalue

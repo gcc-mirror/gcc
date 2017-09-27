@@ -459,6 +459,15 @@ Function calls
          /* Add "(void)printf (arg0, arg1);".  */
          block.add_eval (ctxt.new_call (printf_func, arg0, arg1));
 
+Function pointers
+*****************
+
+.. function:: gccjit::rvalue \
+	      gccjit::function::get_address (gccjit::location loc)
+
+   Get the address of a function as an rvalue, of function pointer
+   type.
+
 Type-coercion
 *************
 

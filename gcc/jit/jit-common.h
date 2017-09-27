@@ -127,6 +127,7 @@ namespace recording {
 	class global;
         class param;
       class base_call;
+      class function_pointer;
     class statement;
     class case_;
 

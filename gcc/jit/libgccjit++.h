@@ -368,6 +368,8 @@ namespace gccjit
 		      const std::string &name,
 		      location loc = location ());
 
+    rvalue get_address (location loc = location ());
+
     /* A series of overloaded operator () with various numbers of arguments
        for a very terse way of creating a call to this function.  The call
        is created within the same context as the function itself, which may
@@ -1390,6 +1392,13 @@ function::new_local (type type_,
 					     loc.get_inner_location (),
 					     type_.get_inner_type (),
 					     name.c_str ()));
+}
+
+inline rvalue
+function::get_address (location loc)
+{
+  return rvalue (gcc_jit_function_get_address (get_inner_function (),
+					       loc.get_inner_location ()));
 }
 
 inline function
