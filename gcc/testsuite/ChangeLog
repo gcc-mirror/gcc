@@ -1,3 +1,16 @@
+2017-09-28  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/aapcs/align4.c: Require arm_neon_hw effective target.
+	* gcc.target/arm/aapcs/align_rec4.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect1.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect2.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect3.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect4.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect5.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect6.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect7.c: Likewise.
+	* gcc.target/arm/aapcs/neon-vect8.c: Likewise.
+
 2017-09-28  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/test-error-mismatching-types-in-assignment-fn-ptr.c: New
