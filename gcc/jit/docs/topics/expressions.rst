@@ -416,7 +416,8 @@ Function calls
                                                     int numargs, \
                                                     gcc_jit_rvalue **args)
 
-   Given an rvalue of function pointer type, and the given table of
+   Given an rvalue of function pointer type (e.g. from
+   :c:func:`gcc_jit_context_new_function_ptr_type`), and the given table of
    argument rvalues, construct a call to the function pointer, with the
    result as an rvalue.
 
@@ -452,19 +453,15 @@ Function calls
 Function pointers
 *****************
 
-.. function:: gcc_jit_rvalue *\
-	      gcc_jit_function_get_address (gcc_jit_function *fn,\
-                                            gcc_jit_location *loc)
+Function pointers can be obtained:
 
-   Get the address of a function as an rvalue, of function pointer
-   type.
+  * from a :c:type:`gcc_jit_function` using
+    :c:func:`gcc_jit_function_get_address`, or
 
-   This entrypoint was added in :ref:`LIBGCCJIT_ABI_9`; you can test
-   for its presence using
-
-   .. code-block:: c
-
-      #ifdef LIBGCCJIT_HAVE_gcc_jit_function_get_address
+  * from an existing function using
+    :c:func:`gcc_jit_context_new_rvalue_from_ptr`,
+    using a function pointer type obtained using
+    :c:func:`gcc_jit_context_new_function_ptr_type`.
 
 Type-coercion
 *************
