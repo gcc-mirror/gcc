@@ -1,3 +1,8 @@
+2017-09-28  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig-lang.c: Added function attributes and their handlers.
+	Make BRIGFE 3-level optimize by default.
+
 2017-09-27  Pekka Jääskeläinen  <pekka.jaaskelainen@parmance.com>
 
 	* brig-lang.c: Improved support for function and module scope

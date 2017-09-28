@@ -1,3 +1,7 @@
+2017-09-28  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brig-builtins.def: Change pure attributes to const.
+
 2017-09-28  Joseph Myers  <joseph@codesourcery.com>
 
 	* config.gcc (default_gnu_indirect_function): Default to yes for
