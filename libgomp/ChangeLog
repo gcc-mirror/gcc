@@ -1,3 +1,9 @@
+2017-09-28  Tom de Vries  <tom@codesourcery.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-1.c (main): Remove
+	vector_length(32) clause from acc parallel directive.
+	* testsuite/libgomp.oacc-c-c++-common/loop-g-2.c (main): Same.
+
 2017-09-27  Tom de Vries  <tom@codesourcery.com>
 
 	* testsuite/libgomp.oacc-c-c++-common/parallel-reduction.c (main):
