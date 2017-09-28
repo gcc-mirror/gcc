@@ -1,3 +1,8 @@
+2017-09-28  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* config/i386/i386.md (*movsf_internal, *movdf_internal):
+	Return 256-bit AVX modes for TARGET_PREFER_AVX256.
+
 2017-09-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
 
 	* config/arm/arm.c (arm_option_override): Forbid ARMv8-M Security
@@ -785,7 +790,7 @@
 
 2017-09-21  Martin Sebor  <msebor@redhat.com>
 
-	* PR c/81882
+	PR c/81882
 	* doc/extend.texi (attribute ifunc): Avoid relying on ill-formed
 	code (in C++) or code that triggers warnings.
 
