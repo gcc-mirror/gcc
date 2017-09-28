@@ -1,5 +1,16 @@
 2017-09-28  David Malcolm  <dmalcolm@redhat.com>
 
+	* docs/topics/expressions.rst (Function calls): Add link to
+	gcc_jit_context_new_function_ptr_type.
+	(Function pointers): Convert to cross-references to
+	function-pointers.rst, moving material there.
+	* docs/topics/function-pointers.rst: New page.
+	* docs/topics/index.rst: Add function-pointers.rst.
+	* docs/topics/types.rst (Function pointer types): New section.
+	* docs/_build/texinfo/libgccjit.texi: Regenerate.
+
+2017-09-28  David Malcolm  <dmalcolm@redhat.com>
+
 	* jit-recording.c
 	(gcc::jit::recording::function_type::is_same_type_as): New function.
 	* jit-recording.h: In namespace gcc::jit::recording::
