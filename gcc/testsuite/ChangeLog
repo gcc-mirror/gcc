@@ -1,3 +1,9 @@
+2017-09-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82342
+	* gcc.target/i386/pr82260-1.c: Add -mno-bmi2 to dg-options.
+	* gcc.target/i386/pr82260-2.c: Likewise.
+
 2017-09-28  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* gcc.target/i386/avx512f-constant-float-return.c: New test.
