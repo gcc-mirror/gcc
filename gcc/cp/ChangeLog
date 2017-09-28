@@ -1,5 +1,18 @@
 2017-09-28  Jason Merrill  <jason@redhat.com>
 
+	PR c++/56973, DR 696 - capture constant variables only as needed.
+	* expr.c (mark_use): Split out from mark_rvalue_use and
+	mark_lvalue_use.  Handle lambda capture of constant variables.
+	(mark_lvalue_use_nonread): New.
+	* semantics.c (process_outer_var_ref): Don't capture a constant
+	variable until forced.
+	* pt.c (processing_nonlambda_template): New.
+	* call.c (build_this): Check it.
+	* decl2.c (grok_array_decl): Call mark_rvalue_use and
+	mark_lvalue_use_nonread.
+	* init.c (constant_value_1): Don't call mark_rvalue_use.
+	* typeck.c (build_static_cast): Handle lambda capture.
+
 	Use local_specializations to find capture proxies.
 	* cp-tree.h (DECL_CAPTURED_VARIABLE): New.
 	* lambda.c (build_capture_proxy): Set it.

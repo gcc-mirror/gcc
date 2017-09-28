@@ -13,7 +13,7 @@ template <typename T>
 void bar (T) {
   constexpr auto N = a<1>;
   auto f = [&] (auto i) {
-    static_assert (static_cast<int>(N) == 1, "");
+    return static_cast<int>(N) == 1;
   };
   foo (f);
 }

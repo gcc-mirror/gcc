@@ -6249,6 +6249,7 @@ extern tree mark_rvalue_use			(tree,
                                                  location_t = UNKNOWN_LOCATION,
                                                  bool = true);
 extern tree mark_lvalue_use			(tree);
+extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
 extern void mark_exp_read			(tree);
 
@@ -6412,6 +6413,7 @@ extern tree lookup_template_variable		(tree, tree);
 extern int uses_template_parms			(tree);
 extern bool uses_template_parms_level		(tree, int);
 extern bool in_template_function		(void);
+extern bool processing_nonlambda_template	(void);
 extern tree instantiate_class_template		(tree);
 extern tree instantiate_template		(tree, tree, tsubst_flags_t);
 extern tree fn_type_unification			(tree, tree, tree,
@@ -6720,7 +6722,7 @@ extern tree finish_template_type		(tree, tree, int);
 extern tree finish_base_specifier		(tree, tree, bool);
 extern void finish_member_declaration		(tree);
 extern bool outer_automatic_var_p		(tree);
-extern tree process_outer_var_ref		(tree, tsubst_flags_t);
+extern tree process_outer_var_ref		(tree, tsubst_flags_t, bool force_use = false);
 extern cp_expr finish_id_expression		(tree, tree, tree,
 						 cp_id_kind *,
 						 bool, bool, bool *,

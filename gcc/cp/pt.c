@@ -9494,6 +9494,32 @@ in_template_function (void)
   return ret;
 }
 
+/* Returns true iff we are currently within a template other than a generic
+   lambda.  We test this by finding the outermost closure type and checking
+   whether it is dependent.  */
+
+bool
+processing_nonlambda_template (void)
+{
+  if (!processing_template_decl)
+    return false;
+
+  tree outer_closure = NULL_TREE;
+  for (tree t = current_class_type; t;
+       t = decl_type_context (TYPE_MAIN_DECL (t)))
+    {
+      if (LAMBDA_TYPE_P (t))
+	outer_closure = t;
+      else
+	break;
+    }
+
+  if (outer_closure)
+    return dependent_type_p (outer_closure);
+  else
+    return true;
+}
+
 /* Returns true if T depends on any template parameter with level LEVEL.  */
 
 bool

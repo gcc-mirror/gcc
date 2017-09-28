@@ -3362,7 +3362,7 @@ build_this (tree obj)
 {
   /* In a template, we are only concerned about the type of the
      expression, so we can take a shortcut.  */
-  if (processing_template_decl)
+  if (processing_nonlambda_template ())
     return build_address (obj);
 
   return cp_build_addr_expr (obj, tf_warning_or_error);
