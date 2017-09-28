@@ -1,3 +1,11 @@
+2017-09-28  Thomas Preud'homme  <thomas.preudhomme@arm.com>
+
+	* config/arm/arm.c (arm_option_override): Forbid ARMv8-M Security
+	Extensions with more than 16 double VFP registers.
+	(cmse_nonsecure_entry_clear_before_return): Remove second entry of
+	to_clear_mask and all code related to it.  Replace the remaining
+	entry by a sbitmap and adapt code accordingly.
+
 2017-09-28  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brig-builtins.def: Change pure attributes to const.
