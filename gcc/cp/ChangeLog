@@ -1,3 +1,12 @@
+2017-09-28  Jason Merrill  <jason@redhat.com>
+
+	* call.c (build_special_member_call): Use the return value of
+	mark_lvalue_use.
+	* decl.c (compute_array_index_type): Likewise.
+	* parser.c (cp_parser_oacc_wait_list): Likewise.
+	* lambda.c (is_normal_capture_proxy): Handle *this capture.
+	(add_capture): Clarify internal_error message.
+
 2017-09-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR bootstrap/81926
