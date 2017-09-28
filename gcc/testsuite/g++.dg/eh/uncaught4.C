@@ -1,5 +1,6 @@
 // PR c++/41174
 // { dg-do run }
+// { dg-options "-Wno-deprecated" }
 
 #include <exception>
 
