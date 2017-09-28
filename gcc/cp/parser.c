@@ -31712,7 +31712,7 @@ cp_parser_oacc_wait_list (cp_parser *parser, location_t clause_loc, tree list)
 	    {
 	      tree c = build_omp_clause (clause_loc, OMP_CLAUSE_WAIT);
 
-	      mark_rvalue_use (targ);
+	      targ = mark_rvalue_use (targ);
 	      OMP_CLAUSE_DECL (c) = targ;
 	      OMP_CLAUSE_CHAIN (c) = list;
 	      list = c;

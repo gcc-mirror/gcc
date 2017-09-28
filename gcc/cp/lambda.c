@@ -283,6 +283,8 @@ is_normal_capture_proxy (tree decl)
   if (val == error_mark_node)
     return true;
 
+  if (TREE_CODE (val) == ADDR_EXPR)
+    val = TREE_OPERAND (val, 0);
   gcc_assert (TREE_CODE (val) == COMPONENT_REF);
   val = TREE_OPERAND (val, 1);
   return DECL_NORMAL_CAPTURE_P (val);
@@ -592,7 +594,8 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
       && current_class_type == LAMBDA_EXPR_CLOSURE (lambda))
     {
       if (COMPLETE_TYPE_P (current_class_type))
-	internal_error ("trying to capture %qD after closure is complete", id);
+	internal_error ("trying to capture %qD in instantiation of "
+			"generic lambda", id);
       finish_member_declaration (member);
     }
 
