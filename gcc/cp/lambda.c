@@ -296,6 +296,9 @@ is_normal_capture_proxy (tree decl)
 void
 insert_capture_proxy (tree var)
 {
+  if (is_normal_capture_proxy (var))
+    register_local_specialization (var, DECL_CAPTURED_VARIABLE (var));
+
   /* Put the capture proxy in the extra body block so that it won't clash
      with a later local variable.  */
   pushdecl_outermost_localscope (var);
@@ -364,7 +367,7 @@ lambda_proxy_type (tree ref)
    debugging.  */
 
 tree
-build_capture_proxy (tree member)
+build_capture_proxy (tree member, tree init)
 {
   tree var, object, fn, closure, name, lam, type;
 
@@ -413,6 +416,29 @@ build_capture_proxy (tree member)
   DECL_ARTIFICIAL (var) = 1;
   TREE_USED (var) = 1;
   DECL_CONTEXT (var) = fn;
+
+  if (DECL_NORMAL_CAPTURE_P (member))
+    {
+      if (DECL_VLA_CAPTURE_P (member))
+	{
+	  init = CONSTRUCTOR_ELT (init, 0)->value;
+	  init = TREE_OPERAND (init, 0); // Strip ADDR_EXPR.
+	  init = TREE_OPERAND (init, 0); // Strip ARRAY_REF.
+	}
+      else
+	{
+	  if (PACK_EXPANSION_P (init))
+	    init = PACK_EXPANSION_PATTERN (init);
+	  if (TREE_CODE (init) == INDIRECT_REF)
+	    init = TREE_OPERAND (init, 0);
+	  STRIP_NOPS (init);
+	}
+      gcc_assert (VAR_P (init) || TREE_CODE (init) == PARM_DECL);
+      while (is_normal_capture_proxy (init))
+	init = DECL_CAPTURED_VARIABLE (init);
+      retrofit_lang_decl (var);
+      DECL_CAPTURED_VARIABLE (var) = init;
+    }
 
   if (name == this_identifier)
     {
@@ -609,7 +635,7 @@ add_capture (tree lambda, tree id, tree orig_init, bool by_reference_p,
     = tree_cons (listmem, initializer, LAMBDA_EXPR_CAPTURE_LIST (lambda));
 
   if (LAMBDA_EXPR_CLOSURE (lambda))
-    return build_capture_proxy (member);
+    return build_capture_proxy (member, initializer);
   /* For explicit captures we haven't started the function yet, so we wait
      and build the proxy from cp_parser_lambda_body.  */
   return NULL_TREE;
@@ -1243,8 +1269,8 @@ lambda_static_thunk_p (tree fn)
 bool
 is_lambda_ignored_entity (tree val)
 {
-  /* In unevaluated context, look past normal capture proxies.  */
-  if (cp_unevaluated_operand && is_normal_capture_proxy (val))
+  /* Look past normal capture proxies.  */
+  if (is_normal_capture_proxy (val))
     return true;
 
   /* Always ignore lambda fields, their names are only for debugging.  */
@@ -1325,7 +1351,7 @@ start_lambda_function (tree fco, tree lambda_expr)
   /* Push the proxies for any explicit captures.  */
   for (tree cap = LAMBDA_EXPR_CAPTURE_LIST (lambda_expr); cap;
        cap = TREE_CHAIN (cap))
-    build_capture_proxy (TREE_PURPOSE (cap));
+    build_capture_proxy (TREE_PURPOSE (cap), TREE_VALUE (cap));
 
   return body;
 }
