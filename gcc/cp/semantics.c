@@ -3303,16 +3303,19 @@ process_outer_var_ref (tree decl, tsubst_flags_t complain)
   if (parsing_nsdmi ())
     containing_function = NULL_TREE;
 
-  if (containing_function && DECL_TEMPLATE_INFO (context)
-      && LAMBDA_FUNCTION_P (containing_function))
+  if (containing_function && LAMBDA_FUNCTION_P (containing_function))
     {
-      /* Check whether we've already built a proxy;
-	 insert_pending_capture_proxies doesn't update
-	 local_specializations.  */
-      tree d = lookup_name (DECL_NAME (decl));
-      if (d && is_capture_proxy (d)
-	  && DECL_CONTEXT (d) == containing_function)
-	return d;
+      /* Check whether we've already built a proxy.  */
+      tree d = retrieve_local_specialization (decl);
+      if (d && is_capture_proxy (d))
+	{
+	  if (DECL_CONTEXT (d) == containing_function)
+	    /* We already have an inner proxy.  */
+	    return d;
+	  else
+	    /* We need to capture an outer proxy.  */
+	    return process_outer_var_ref (d, complain);
+	}
     }
 
   /* If we are in a lambda function, we can move out until we hit

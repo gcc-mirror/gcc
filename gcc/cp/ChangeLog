@@ -1,5 +1,21 @@
 2017-09-28  Jason Merrill  <jason@redhat.com>
 
+	Use local_specializations to find capture proxies.
+	* cp-tree.h (DECL_CAPTURED_VARIABLE): New.
+	* lambda.c (build_capture_proxy): Set it.
+	(add_capture): Pass initializer to build_capture_proxy.
+	(start_lambda_function): Likewise.
+	(insert_capture_proxy): Use register_local_specialization.
+	(is_lambda_ignored_entity): Always ignore proxies.
+	* name-lookup.c (qualify_lookup): Don't check
+	is_lambda_ignored_entity if LOOKUP_HIDDEN is set.
+	* semantics.c (process_outer_var_ref): Use
+	retrieve_local_specialization.
+	* parser.c (cp_parser_lambda_body): Push local_specializations.
+	* pt.c (tsubst_expr): Pass LOOKUP_HIDDEN when looking for a proxy.
+	(tsubst_lambda_expr): Push local_specializations sooner.
+	(tsubst_copy_and_build): Don't register_local_specialization.
+
 	* call.c (build_special_member_call): Use the return value of
 	mark_lvalue_use.
 	* decl.c (compute_array_index_type): Likewise.

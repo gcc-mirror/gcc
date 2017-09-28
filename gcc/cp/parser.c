@@ -10560,6 +10560,8 @@ cp_parser_lambda_body (cp_parser* parser, tree lambda_expr)
      + function_definition_after_declarator
      + ctor_initializer_opt_and_function_body  */
   {
+    local_specialization_stack s (lss_copy);
+
     tree fco = lambda_function (lambda_expr);
     tree body = start_lambda_function (fco, lambda_expr);
     bool done = false;

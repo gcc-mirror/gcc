@@ -5296,7 +5296,7 @@ qualify_lookup (tree val, int flags)
   if (flags & (LOOKUP_PREFER_NAMESPACES | LOOKUP_PREFER_TYPES))
     return false;
   /* Look through lambda things that we shouldn't be able to see.  */
-  if (is_lambda_ignored_entity (val))
+  if (!(flags & LOOKUP_HIDDEN) && is_lambda_ignored_entity (val))
     return false;
   return true;
 }
