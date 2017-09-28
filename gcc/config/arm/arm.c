@@ -3669,6 +3669,11 @@ arm_option_override (void)
   if (use_cmse && !arm_arch_cmse)
     error ("target CPU does not support ARMv8-M Security Extensions");
 
+  /* We don't clear D16-D31 VFP registers for cmse_nonsecure_call functions
+     and ARMv8-M Baseline and Mainline do not allow such configuration.  */
+  if (use_cmse && LAST_VFP_REGNUM > LAST_LO_VFP_REGNUM)
+    error ("ARMv8-M Security Extensions incompatible with selected FPU");
+
   /* Disable scheduling fusion by default if it's not armv7 processor
      or doesn't prefer ldrd/strd.  */
   if (flag_schedule_fusion == 2
@@ -25075,42 +25080,37 @@ thumb1_expand_prologue (void)
 void
 cmse_nonsecure_entry_clear_before_return (void)
 {
-  uint64_t to_clear_mask[2];
+  int regno, maxregno = TARGET_HARD_FLOAT ? LAST_VFP_REGNUM : IP_REGNUM;
   uint32_t padding_bits_to_clear = 0;
   uint32_t * padding_bits_to_clear_ptr = &padding_bits_to_clear;
-  int regno, maxregno = IP_REGNUM;
+  auto_sbitmap to_clear_bitmap (maxregno + 1);
   tree result_type;
   rtx result_rtl;
 
-  to_clear_mask[0] = (1ULL << (NUM_ARG_REGS)) - 1;
-  to_clear_mask[0] |= (1ULL << IP_REGNUM);
+  bitmap_clear (to_clear_bitmap);
+  bitmap_set_range (to_clear_bitmap, R0_REGNUM, NUM_ARG_REGS);
+  bitmap_set_bit (to_clear_bitmap, IP_REGNUM);
 
   /* If we are not dealing with -mfloat-abi=soft we will need to clear VFP
-     registers.  We also check that TARGET_HARD_FLOAT and !TARGET_THUMB1 hold
-     to make sure the instructions used to clear them are present.  */
-  if (TARGET_HARD_FLOAT && !TARGET_THUMB1)
+     registers.  */
+  if (TARGET_HARD_FLOAT)
     {
-      uint64_t float_mask = (1ULL << (D7_VFP_REGNUM + 1)) - 1;
-      maxregno = LAST_VFP_REGNUM;
+      int float_bits = D7_VFP_REGNUM - FIRST_VFP_REGNUM + 1;
 
-      float_mask &= ~((1ULL << FIRST_VFP_REGNUM) - 1);
-      to_clear_mask[0] |= float_mask;
-
-      float_mask = (1ULL << (maxregno - 63)) - 1;
-      to_clear_mask[1] = float_mask;
+      bitmap_set_range (to_clear_bitmap, FIRST_VFP_REGNUM, float_bits);
 
       /* Make sure we don't clear the two scratch registers used to clear the
 	 relevant FPSCR bits in output_return_instruction.  */
       emit_use (gen_rtx_REG (SImode, IP_REGNUM));
-      to_clear_mask[0] &= ~(1ULL << IP_REGNUM);
+      bitmap_clear_bit (to_clear_bitmap, IP_REGNUM);
       emit_use (gen_rtx_REG (SImode, 4));
-      to_clear_mask[0] &= ~(1ULL << 4);
+      bitmap_clear_bit (to_clear_bitmap, 4);
     }
 
   /* If the user has defined registers to be caller saved, these are no longer
      restored by the function before returning and must thus be cleared for
      security purposes.  */
-  for (regno = NUM_ARG_REGS; regno < LAST_VFP_REGNUM; regno++)
+  for (regno = NUM_ARG_REGS; regno <= maxregno; regno++)
     {
       /* We do not touch registers that can be used to pass arguments as per
 	 the AAPCS, since these should never be made callee-saved by user
@@ -25120,29 +25120,45 @@ cmse_nonsecure_entry_clear_before_return (void)
       if (IN_RANGE (regno, IP_REGNUM, PC_REGNUM))
 	continue;
       if (call_used_regs[regno])
-	to_clear_mask[regno / 64] |= (1ULL << (regno % 64));
+	bitmap_set_bit (to_clear_bitmap, regno);
     }
 
   /* Make sure we do not clear the registers used to return the result in.  */
   result_type = TREE_TYPE (DECL_RESULT (current_function_decl));
   if (!VOID_TYPE_P (result_type))
     {
+      uint64_t to_clear_return_mask;
       result_rtl = arm_function_value (result_type, current_function_decl, 0);
 
       /* No need to check that we return in registers, because we don't
 	 support returning on stack yet.  */
-      to_clear_mask[0]
-	&= ~compute_not_to_clear_mask (result_type, result_rtl, 0,
-				       padding_bits_to_clear_ptr);
+      gcc_assert (REG_P (result_rtl));
+      to_clear_return_mask
+	= compute_not_to_clear_mask (result_type, result_rtl, 0,
+				     padding_bits_to_clear_ptr);
+      if (to_clear_return_mask)
+	{
+	  gcc_assert ((unsigned) maxregno < sizeof (long long) * __CHAR_BIT__);
+	  for (regno = R0_REGNUM; regno <= maxregno; regno++)
+	    {
+	      if (to_clear_return_mask & (1ULL << regno))
+		bitmap_clear_bit (to_clear_bitmap, regno);
+	    }
+	}
     }
 
   if (padding_bits_to_clear != 0)
     {
       rtx reg_rtx;
+      auto_sbitmap to_clear_arg_regs_bitmap (R0_REGNUM + NUM_ARG_REGS);
+
       /* Padding bits to clear is not 0 so we know we are dealing with
 	 returning a composite type, which only uses r0.  Let's make sure that
 	 r1-r3 is cleared too, we will use r1 as a scratch register.  */
-      gcc_assert ((to_clear_mask[0] & 0xe) == 0xe);
+      bitmap_clear (to_clear_arg_regs_bitmap);
+      bitmap_set_range (to_clear_arg_regs_bitmap, R0_REGNUM + 1,
+			NUM_ARG_REGS - 1);
+      gcc_assert (bitmap_subset_p (to_clear_arg_regs_bitmap, to_clear_bitmap));
 
       reg_rtx = gen_rtx_REG (SImode, R1_REGNUM);
 
@@ -25164,7 +25180,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 
   for (regno = R0_REGNUM; regno <= maxregno; regno++)
     {
-      if (!(to_clear_mask[regno / 64] & (1ULL << (regno % 64))))
+      if (!bitmap_bit_p (to_clear_bitmap, regno))
 	continue;
 
       if (IS_VFP_REGNUM (regno))
@@ -25173,7 +25189,7 @@ cmse_nonsecure_entry_clear_before_return (void)
 	     be cleared, use vmov.  */
 	  if (TARGET_VFP_DOUBLE
 	      && VFP_REGNO_OK_FOR_DOUBLE (regno)
-	      && to_clear_mask[regno / 64] & (1ULL << ((regno % 64) + 1)))
+	      && bitmap_bit_p (to_clear_bitmap, regno + 1))
 	    {
 	      emit_move_insn (gen_rtx_REG (DFmode, regno),
 			      CONST1_RTX (DFmode));
