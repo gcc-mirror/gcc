@@ -1,5 +1,10 @@
 2017-09-28  Joseph Myers  <joseph@codesourcery.com>
 
+	* config.gcc (default_gnu_indirect_function): Default to yes for
+	sparc*-*-linux* with glibc.
+
+2017-09-28  Joseph Myers  <joseph@codesourcery.com>
+
 	* config/aarch64/aarch64.c (aarch64_elf_asm_constructor)
 	(aarch64_elf_asm_destructor): Pass SECTION_NOTYPE to get_section
 	when creating .init_array and .fini_array sections with priority
