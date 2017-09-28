@@ -1,3 +1,11 @@
+2017-09-28  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	Backport from mainline
+	2017-05-14  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	PR target/80600
+	* config.host (*-*-netbsd*): Add t-slibgcc-libgcc to tmake_file.
+
 2017-08-14  Release Manager
 
 	* GCC 7.2.0 released.
