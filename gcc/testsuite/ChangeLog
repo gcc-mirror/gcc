@@ -1,3 +1,8 @@
+2017-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79488
+	* g++.dg/cpp0x/lambda/lambda-ice22.C: New.
+
 2017-09-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82342
