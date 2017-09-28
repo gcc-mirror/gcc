@@ -1,3 +1,7 @@
+2017-09-28  Sergey Shalnov  <Sergey.Shalnov@intel.com>
+
+	* gcc.target/i386/avx512f-constant-float-return.c: New test.
+
 2017-09-28  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/aapcs/align4.c: Require arm_neon_hw effective target.
