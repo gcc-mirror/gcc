@@ -1,3 +1,13 @@
+2017-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit-recording.c
+	(gcc::jit::recording::function_type::is_same_type_as): New function.
+	* jit-recording.h: In namespace gcc::jit::recording::
+	(type::accepts_writes_from): Use is_same_type_as rather than pointer
+	equality.
+	(type::is_same_type_as): New virtual function.
+	(function_type::is_same_type_as): New override.
+
 2017-09-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* docs/cp/topics/expressions.rst (Function pointers): New section.

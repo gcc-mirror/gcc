@@ -28,10 +28,15 @@ create_code (gcc_jit_context *ctxt, void *user_data)
         internally_called_function (a * 3, a * 4, a * 5);
      }
 
-     void (*) (int)
+     typedef void (*fn_ptr_type) (int);
+
+     fn_ptr_type
      get_test_caller (void)
      {
-       return internal_test_caller;
+       // Verify that we can assign function pointers to variables
+       fn_ptr_type p;
+       p = internal_test_caller;
+       return p;
      }
   */
   int i;
@@ -87,11 +92,11 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 			      3, args));
   gcc_jit_block_end_with_void_return (block, NULL);
 
-  gcc_jit_rvalue *fn_ptr
-    = gcc_jit_function_get_address (test_caller, NULL);
-
   gcc_jit_type *fn_ptr_type
-    = gcc_jit_rvalue_get_type (fn_ptr);
+    = gcc_jit_context_new_function_ptr_type (ctxt, NULL,
+					     void_type,
+					     1, &int_type,
+					     0);
 
   /* Build the get_test_caller fn.  */
   gcc_jit_function *get_test_caller =
@@ -102,7 +107,21 @@ create_code (gcc_jit_context *ctxt, void *user_data)
 				  0, NULL,
 				  0);
   block = gcc_jit_function_new_block (get_test_caller, NULL);
-  gcc_jit_block_end_with_return (block, NULL, fn_ptr);
+
+  /* fn_ptr_type p; */
+  gcc_jit_lvalue *local_p
+    = gcc_jit_function_new_local (get_test_caller, NULL,
+				  fn_ptr_type, "p");
+
+  /* p = internal_test_caller; */
+  gcc_jit_block_add_assignment (block, NULL,
+				local_p,
+				gcc_jit_function_get_address (test_caller,
+							      NULL));
+
+  /* return p; */
+  gcc_jit_block_end_with_return (block, NULL,
+				 gcc_jit_lvalue_as_rvalue (local_p));
 }
 
 static int called_with[3];

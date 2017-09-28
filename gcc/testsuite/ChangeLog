@@ -1,3 +1,13 @@
+2017-09-28  David Malcolm  <dmalcolm@redhat.com>
+
+	* jit.dg/test-error-mismatching-types-in-assignment-fn-ptr.c: New
+	test case.
+	* jit.dg/test-returning-function-ptr.c (create_code): Update to
+	create a function pointer type independently of the call to
+	gcc_jit_function_get_address, and assign the pointer to a local
+	before returning it, to exercise the function pointer type
+	comparison code.
+
 2017-09-27  David Malcolm  <dmalcolm@redhat.com>
 
 	* jit.dg/all-non-failing-tests.h: Add

@@ -2643,6 +2643,53 @@ recording::function_type::dereference ()
   return NULL;
 }
 
+/* Implementation of virtual hook recording::type::is_same_type_as for
+   recording::function_type.
+
+   We override this to avoid requiring identity of function pointer types,
+   so that if client code has obtained the same signature in
+   different ways (e.g. via gcc_jit_context_new_function_ptr_type
+   vs gcc_jit_function_get_address), the different function_type
+   instances are treated as compatible.
+
+   We can't use type::accepts_writes_from for this as we need a stronger
+   notion of "sameness": if we have a fn_ptr type that has args that are
+   themselves fn_ptr types, then those args still need to match exactly.
+
+   Alternatively, we could consolidate attempts to create identical
+   function_type instances so that pointer equality works, but that runs
+   into issues about the lifetimes of the cache (w.r.t. nested contexts).  */
+
+bool
+recording::function_type::is_same_type_as (type *other)
+{
+  gcc_assert (other);
+
+  function_type *other_fn_type = other->dyn_cast_function_type ();
+  if (!other_fn_type)
+    return false;
+
+  /* Everything must match.  */
+
+  if (!m_return_type->is_same_type_as (other_fn_type->m_return_type))
+    return false;
+
+  if (m_param_types.length () != other_fn_type->m_param_types.length ())
+    return false;
+
+  unsigned i;
+  type *param_type;
+  FOR_EACH_VEC_ELT (m_param_types, i, param_type)
+    if (!param_type->is_same_type_as (other_fn_type->m_param_types[i]))
+      return false;
+
+  if (m_is_variadic != other_fn_type->m_is_variadic)
+    return false;
+
+  /* Passed all tests.  */
+  return true;
+}
+
 /* Implementation of pure virtual hook recording::memento::replay_into
    for recording::function_type.  */
 

@@ -491,7 +491,12 @@ public:
   virtual bool accepts_writes_from (type *rtype)
   {
     gcc_assert (rtype);
-    return this->unqualified () == rtype->unqualified ();
+    return this->unqualified ()->is_same_type_as (rtype->unqualified ());
+  }
+
+  virtual bool is_same_type_as (type *other)
+  {
+    return this == other;
   }
 
   /* Strip off "const" etc */
@@ -750,6 +755,8 @@ public:
   type *dereference () FINAL OVERRIDE;
   function_type *dyn_cast_function_type () FINAL OVERRIDE { return this; }
   function_type *as_a_function_type () FINAL OVERRIDE { return this; }
+
+  bool is_same_type_as (type *other) FINAL OVERRIDE;
 
   bool is_int () const FINAL OVERRIDE { return false; }
   bool is_float () const FINAL OVERRIDE { return false; }
