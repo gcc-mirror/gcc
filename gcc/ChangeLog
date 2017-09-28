@@ -1,3 +1,8 @@
+2017-09-28  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.c (ix86_print_operand_address_as): Do not check
+	index when encoding %esp as %rsp to avoid 0x67 prefix.
+
 2017-09-28  Sergey Shalnov  <Sergey.Shalnov@intel.com>
 
 	* config/i386/i386.md (*movsf_internal, *movdf_internal):
