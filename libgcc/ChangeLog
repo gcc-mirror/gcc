@@ -1,3 +1,7 @@
+2017-09-28  James Bowman  <james.bowman@ftdichip.com>
+
+	* config/ft32/crti-hw.S: Add watchdog vector, FT930 IRQ support.
+
 2017-09-26  Joseph Myers  <joseph@codesourcery.com>
 
 	* config/microblaze/crti.S, config/microblaze/crtn.S,
