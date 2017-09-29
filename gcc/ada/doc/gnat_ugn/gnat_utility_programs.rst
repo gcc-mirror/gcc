@@ -365,7 +365,7 @@ Switches for ``gnatls``
 
 .. index:: --RTS (gnatls)
 
-:switch:`--RTS={rts-path}``
+:switch:`--RTS={rts-path}`
   Specifies the default location of the runtime library. Same meaning as the
   equivalent ``gnatmake`` flag (:ref:`Switches_for_gnatmake`).
 

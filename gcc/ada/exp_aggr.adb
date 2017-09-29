@@ -2725,7 +2725,6 @@ package body Exp_Aggr is
                           Selector_Name => New_Occurrence_Of (Discr, Loc)),
                       Expression => New_Copy_Tree (Discr_Val));
 
-                  Set_No_Ctrl_Actions (Discr_Init);
                   Append_To (List, Discr_Init);
                end if;
 
@@ -2763,7 +2762,6 @@ package body Exp_Aggr is
                 Name       => Comp_Expr,
                 Expression => New_Copy_Tree (Discriminant_Value));
 
-            Set_No_Ctrl_Actions (Instr);
             Append_To (L, Instr);
 
             Next_Discriminant (Discriminant);
@@ -2795,7 +2793,6 @@ package body Exp_Aggr is
                 Name       => Comp_Expr,
                 Expression => New_Copy_Tree (Discriminant_Value));
 
-            Set_No_Ctrl_Actions (Instr);
             Append_To (L, Instr);
 
             Next_Stored_Discriminant (Discriminant);

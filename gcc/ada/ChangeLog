@@ -1,5 +1,43 @@
 2017-09-29  Justin Squirek  <squirek@adacore.com>
 
+	* sem_ch8.adb (Mark_Use_Clauses): Add recursive call to properly handle
+	all cases related to marking entity identifiers.
+
+2017-09-29  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* adaint.c (win32_wait): Properly handle error and take into account
+	the WIN32 limitation on the number of simultaneous wait objects.
+
+2017-09-29  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* cal.c: Minor proofreading.
+
+2017-09-29  Vasiliy Fofanov  <fofanov@adacore.com>
+
+	* doc/gnat_ugn/gnat_utility_programs.rst: Minor formatting fix.
+	* gnat_ugn.texi: Regenerate.
+
+2017-09-29  Bob Duff  <duff@adacore.com>
+
+	* lib-xref.ads: Comment fix.
+
+2017-09-29  Bob Duff  <duff@adacore.com>
+
+	* exp_aggr.adb: Remove calls to Set_No_Ctrl_Actions for discriminants.
+	Discriminants can't need finalization.
+
+2017-09-29  Ed Schonberg  <schonberg@adacore.com>
+
+	* sem_ch6.adb (Analyze_Expression_Function): Do not emit freeze nodes
+	for types in expression if the function is within a generic unit.
+	* sem_res.adb (Resolve): In a generic context do not freeze an
+	expression, unless it is an entity. This exception is solely for the
+	purpose of detecting illegal uses of deferred constants in generic
+	units.
+	* sem_res.adb: Minor reformatting.
+
+2017-09-29  Justin Squirek  <squirek@adacore.com>
+
 	* sem_ch8.adb (Note_Redundant_Use): Add guard to protect against false
 	redundant warnings.
 

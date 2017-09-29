@@ -6,7 +6,7 @@
  *                                                                          *
  *                          C Implementation File                           *
  *                                                                          *
- *          Copyright (C) 1992-2014, Free Software Foundation, Inc.         *
+ *          Copyright (C) 1992-2017, Free Software Foundation, Inc.         *
  *                                                                          *
  * GNAT is free software;  you can  redistribute it  and/or modify it under *
  * terms of the  GNU General Public License as published  by the Free Soft- *
@@ -29,10 +29,10 @@
  *                                                                          *
  ****************************************************************************/
 
-/*  This file contains those routines named by Import pragmas in package    */
+/*  This file contains routines marked with pragmas Import in package       */
 /*  GNAT.Calendar. It is used to do Duration to timeval conversion.         */
-/*  These are simple wrappers function to abstract the fact that the C      */
-/*  struct timeval fields type are not normalized (they are generally       */
+/*  These are simple wrapper functions to abstract the fact that the C      */
+/*  struct timeval fields are not normalized (they are generally            */
 /*  defined as int or long values).                                         */
 
 #if defined (__vxworks)
