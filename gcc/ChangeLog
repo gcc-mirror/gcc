@@ -1,3 +1,8 @@
+2017-09-29  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/82319
+	* match.pd: Fix handling of NaNs in pattern.
+
 2017-09-29  Jeff Law  <law@redhat.com>
 
 	* sbitmap.c (bitmap_bit_in_range_p): New function.

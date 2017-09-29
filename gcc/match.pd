@@ -2961,7 +2961,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 else
 	   real_trunc (&icst, fmt, cst);
 
-	 bool cst_int_p = real_identical (&icst, cst);
+	 bool cst_int_p = !real_isnan (cst) && real_identical (&icst, cst);
 
 	 bool overflow_p = false;
 	 wide_int icst_val

@@ -1,3 +1,8 @@
+2017-09-29  Yury Gribov  <tetra2005@gmail.com>
+
+	PR middle-end/82319
+	* c-c++/common/pr57371-4.c: Test NaN comparisons.
+
 2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* g++.dg/other/dump-ada-spec-10.C: New test.
