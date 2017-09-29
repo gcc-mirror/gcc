@@ -328,7 +328,7 @@ package Snames is
 
    --  Operator Symbol entries. The actual names have an upper case O at the
    --  start in place of the Op_ prefix (e.g. the actual name that corresponds
-   --  to Name_Op_Abs is "Oabs".
+   --  to Name_Op_Abs is "Oabs").
 
    First_Operator_Name                 : constant Name_Id := N + $;
    Name_Op_Abs                         : constant Name_Id := N + $; -- "abs"

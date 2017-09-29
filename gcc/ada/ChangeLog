@@ -1,3 +1,69 @@
+2017-09-29  Bob Duff  <duff@adacore.com>
+
+	* exp_ch6.adb (Expand_Call_Helper): Handle case of build-in-place
+	functions returning nonlimited types. Allow for qualified expressions
+	and type conversions.
+	(Expand_N_Extended_Return_Statement): Correct the computation of
+	Func_Bod to allow for child units.
+	(Expand_Simple_Function_Return): Remove assumption that b-i-p implies
+	limited (initialization of In_Place_Expansion), and implies >= Ada
+	2005.
+	(Is_Build_In_Place_Result_Type): New function to accompany
+	Is_Build_In_Place_Function and Is_Build_In_Place_Function_Call, because
+	sometimes we just have the type on our hands, not the function.  For
+	now, does the same thing as the old version, so build-in-place is
+	disabled for nonlimited types, except that you can use -gnatd.9 to
+	enable it.
+	* exp_ch6.ads (Is_Build_In_Place_Result_Type): New function to
+	accompany Is_Build_In_Place_Function and
+	Is_Build_In_Place_Function_Call, because sometimes we just have the
+	type on our hands, not the function.
+	(Make_Build_In_Place_Call_In_...): Handle nonlimited build-in-place
+	cases.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Remove the
+	questionable code at the end that was setting the Etype.
+	* exp_aggr.adb (Is_Build_In_Place_Aggregate_Return): New function to
+	determine whether "return (...agg...);" is returning from a
+	build-in-place function.
+	(Initialize_Ctrl_Array_Component, Initialize_Ctrl_Record_Component):
+	Remove assumption that b-i-p implies limited (initialization of
+	In_Place_Expansion).
+	(Build_Record_Aggr_Code): AI-287: fix comment; it can't be wrapped in
+	an unchecked conversion.  Add assertions.
+	(Convert_Aggr_In_Object_Decl): Establish_Transient_Scope -- no need for
+	secondary stack here, just because the type needs finalization.  That
+	code is obsolete.
+	(Convert_To_Assignments): Only set Unc_Decl if Nkind (N) = N_Aggregate.
+	For "return (...agg...);" don't assume b-i-p implies limited.
+	Needs_Finalization does not imply secondary stack.
+	(Expand_Array_Aggregate): Named notation.  Reverse the sense of
+	Component_OK_For_Backend -- more readability with fewer double
+	negatives.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove assumptions that
+	b-i-p implies >= Ada 2005.
+	* exp_ch3.adb (Expand_N_Object_Declaration): Remove assumptions that
+	b-i-p implies >= Ada 2005.  Remove Adjust if we're building the return
+	object of an extended return statement in place.
+	* exp_ch4.adb (Expand_Allocator_Expression, Expand_N_Indexed_Component,
+	Expand_N_Selected_Component, Expand_N_Slice): Remove assumptions that
+	b-i-p implies >= Ada 2005.
+	* exp_ch5.adb (Expand_N_Assignment_Statement): Remove assumption that
+	b-i-p implies >= Ada 2005.
+	* exp_ch7.adb: Comment fix.
+	* exp_ch8.adb (Expand_N_Object_Renaming_Declaration): Remove
+	assumptions that b-i-p implies >= Ada 2005.
+	* exp_disp.adb (Expand_Interface_Actuals): Remove assumptions that
+	b-i-p implies >= Ada 2005.
+	* exp_util.adb (Build_Allocate_Deallocate_Proc): Look at Storage_Pool
+	(Expr), in case Pool_Id is not set.
+	(Initialized_By_Aliased_BIP_Func_Call): Handle case where the call is
+	qualified or converted.
+	(Is_Secondary_Stack_BIP_Func_Call): Don't check if Nkind (Selector_Name
+	(Param)) = N_Identifier; that's all it could be.
+	* sinfo.ads: Comment fixes.
+	* snames.ads-tmpl: Comment fixes.
+	* debug.adb: Add flag gnatd.9, to enable the build-in-place machinery.
+
 2017-09-29  Justin Squirek  <squirek@adacore.com>
 
 	* sem_ch8.adb (Mark_Use_Clauses): Add recursive call to properly handle

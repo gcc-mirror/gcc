@@ -2390,13 +2390,13 @@ package body Exp_Ch5 is
             end;
          end if;
 
-      --  Build-in-place function call case. Note that we're not yet doing
-      --  build-in-place for user-written assignment statements (the assignment
-      --  here came from an aggregate.)
+      --  Build-in-place function call case. This is for assignment statements
+      --  that come from aggregate component associations or from init procs.
+      --  User-written assignment statements with b-i-p calls are handled
+      --  elsewhere.
 
-      elsif Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Rhs)
-      then
+      elsif Is_Build_In_Place_Function_Call (Rhs) then
+         pragma Assert (not Comes_From_Source (N));
          Make_Build_In_Place_Call_In_Assignment (N, Rhs);
 
       elsif Is_Tagged_Type (Typ)

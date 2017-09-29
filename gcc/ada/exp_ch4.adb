@@ -793,14 +793,9 @@ package body Exp_Ch4 is
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
-         --  must be passed to the function. Currently we limit such functions
-         --  to those with constrained limited result subtypes, but eventually
-         --  we plan to expand the allowed forms of functions that are treated
-         --  as build-in-place.
+         --  must be passed to the function.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Exp)
-         then
+         if Is_Build_In_Place_Function_Call (Exp) then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
             Apply_Accessibility_Check (N, Built_In_Place => True);
             return;
@@ -812,9 +807,7 @@ package body Exp_Ch4 is
          --  in-place object to reference the secondary dispatch table of a
          --  covered interface type.
 
-         elsif Ada_Version >= Ada_2005
-           and then Present (Unqual_BIP_Iface_Function_Call (Exp))
-         then
+         elsif Present (Unqual_BIP_Iface_Function_Call (Exp)) then
             Make_Build_In_Place_Iface_Call_In_Allocator (N, Exp);
             Apply_Accessibility_Check (N, Built_In_Place => True);
             return;
@@ -1223,14 +1216,9 @@ package body Exp_Ch4 is
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the allocated object
-         --  must be passed to the function. Currently we limit such functions
-         --  to those with constrained limited result subtypes, but eventually
-         --  we plan to expand the allowed forms of functions that are treated
-         --  as build-in-place.
+         --  must be passed to the function.
 
-         if Ada_Version >= Ada_2005
-           and then Is_Build_In_Place_Function_Call (Exp)
-         then
+         if Is_Build_In_Place_Function_Call (Exp) then
             Make_Build_In_Place_Call_In_Allocator (N, Exp);
          end if;
       end if;
@@ -6572,18 +6560,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (P)
-      then
+      if Is_Build_In_Place_Function_Call (P) then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (P))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (P)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
@@ -10221,18 +10205,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (P)
-      then
+      if Is_Build_In_Place_Function_Call (P) then
          Make_Build_In_Place_Call_In_Anonymous_Context (P);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (P))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (P)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (P);
       end if;
 
@@ -10587,18 +10567,14 @@ package body Exp_Ch4 is
       --  Ada 2005 (AI-318-02): If the prefix is a call to a build-in-place
       --  function, then additional actuals must be passed.
 
-      if Ada_Version >= Ada_2005
-        and then Is_Build_In_Place_Function_Call (Pref)
-      then
+      if Is_Build_In_Place_Function_Call (Pref) then
          Make_Build_In_Place_Call_In_Anonymous_Context (Pref);
 
       --  Ada 2005 (AI-318-02): Specialization of the previous case for prefix
       --  containing build-in-place function calls whose returned object covers
       --  interface types.
 
-      elsif Ada_Version >= Ada_2005
-        and then Present (Unqual_BIP_Iface_Function_Call (Pref))
-      then
+      elsif Present (Unqual_BIP_Iface_Function_Call (Pref)) then
          Make_Build_In_Place_Iface_Call_In_Anonymous_Context (Pref);
       end if;
 

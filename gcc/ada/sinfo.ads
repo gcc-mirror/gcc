@@ -1372,9 +1372,9 @@ package Sinfo is
    --    up. For nested aggregates the expansion is delayed until the enclosing
    --    aggregate itself is expanded, e.g. in the context of a declaration. To
    --    delay it we set this flag. This is done to avoid creating a temporary
-   --    for each level of a nested aggregates, and also to prevent the
+   --    for each level of a nested aggregate, and also to prevent the
    --    premature generation of constraint checks. This is also a requirement
-   --    if we want to generate the proper attachment to the internal
+   --    if we want to generate the proper attachment to the internal????
    --    finalization lists (for record with controlled components). Top down
    --    expansion of aggregates is also used for in-place array aggregate
    --    assignment or initialization. When the full context is known, the
@@ -2917,7 +2917,7 @@ package Sinfo is
       --  case the front end must generate an extra temporary and initialize
       --  this temporary as required (the temporary itself is not atomic).
 
-      --  Note: there is not node kind for object definition. Instead, the
+      --  Note: there is no node kind for object definition. Instead, the
       --  corresponding field holds a subtype indication, an array type
       --  definition, or (Ada 2005, AI-406) an access definition.
 
