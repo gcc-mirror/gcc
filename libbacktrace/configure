@@ -607,6 +607,10 @@ NATIVE_TRUE
 HAVE_OBJCOPY_DEBUGLINK_FALSE
 HAVE_OBJCOPY_DEBUGLINK_TRUE
 OBJCOPY
+HAVE_COMPRESSED_DEBUG_FALSE
+HAVE_COMPRESSED_DEBUG_TRUE
+HAVE_ZLIB_FALSE
+HAVE_ZLIB_TRUE
 HAVE_PTHREAD_FALSE
 HAVE_PTHREAD_TRUE
 PTHREAD_CFLAGS
@@ -11141,7 +11145,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11144 "configure"
+#line 11148 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11247,7 +11251,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11250 "configure"
+#line 11254 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12779,6 +12783,103 @@ else
 fi
 
 
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for compress in -lz" >&5
+$as_echo_n "checking for compress in -lz... " >&6; }
+if test "${ac_cv_lib_z_compress+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lz  $LIBS"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char compress ();
+int
+main ()
+{
+return compress ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  ac_cv_lib_z_compress=yes
+else
+  ac_cv_lib_z_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_z_compress" >&5
+$as_echo "$ac_cv_lib_z_compress" >&6; }
+if test "x$ac_cv_lib_z_compress" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBZ 1
+_ACEOF
+
+  LIBS="-lz $LIBS"
+
+fi
+
+if test $ac_cv_lib_z_compress = "yes"; then
+
+$as_echo "#define HAVE_ZLIB 1" >>confdefs.h
+
+fi
+ if test "$ac_cv_lib_z_compress" = yes; then
+  HAVE_ZLIB_TRUE=
+  HAVE_ZLIB_FALSE='#'
+else
+  HAVE_ZLIB_TRUE='#'
+  HAVE_ZLIB_FALSE=
+fi
+
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether --compress-debug-sections is supported" >&5
+$as_echo_n "checking whether --compress-debug-sections is supported... " >&6; }
+if test "${libgo_cv_ld_compress+set}" = set; then :
+  $as_echo_n "(cached) " >&6
+else
+  LDFLAGS_hold=$LDFLAGS
+LDFLAGS="$LDFLAGS -Wl,--compress-debug-sections=zlib-gnu"
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_link "$LINENO"; then :
+  libgo_cv_ld_compress=yes
+else
+  libgo_cv_ld_compress=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LDFLAGS=$LDFLAGS_hold
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgo_cv_ld_compress" >&5
+$as_echo "$libgo_cv_ld_compress" >&6; }
+ if test "$libgo_cv_ld_compress" = yes; then
+  HAVE_COMPRESSED_DEBUG_TRUE=
+  HAVE_COMPRESSED_DEBUG_FALSE='#'
+else
+  HAVE_COMPRESSED_DEBUG_TRUE='#'
+  HAVE_COMPRESSED_DEBUG_FALSE=
+fi
+
+
 
 # Extract the first word of "objcopy", so it can be a program name with args.
 set dummy objcopy; ac_word=$2
@@ -13006,6 +13107,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_PTHREAD_TRUE}" && test -z "${HAVE_PTHREAD_FALSE}"; then
   as_fn_error "conditional \"HAVE_PTHREAD\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_ZLIB_TRUE}" && test -z "${HAVE_ZLIB_FALSE}"; then
+  as_fn_error "conditional \"HAVE_ZLIB\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_COMPRESSED_DEBUG_TRUE}" && test -z "${HAVE_COMPRESSED_DEBUG_FALSE}"; then
+  as_fn_error "conditional \"HAVE_COMPRESSED_DEBUG\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_OBJCOPY_DEBUGLINK_TRUE}" && test -z "${HAVE_OBJCOPY_DEBUGLINK_FALSE}"; then

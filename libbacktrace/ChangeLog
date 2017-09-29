@@ -1,3 +1,47 @@
+2017-09-28  Ian Lance Taylor  <iant@golang.org>
+
+	PR other/67165
+	* elf.c (__builtin_prefetch): Define if not __GNUC__.
+	(unlikely): Define.
+	(SHF_UNCOMPRESSED, ELFCOMPRESS_ZLIB): Define.
+	(b_elf_chdr): Define type.
+	(enum debug_section): Add ZDEBUG_xxx values.
+	(debug_section_names): Add names for new sections.
+	(struct debug_section_info): Add compressed field.
+	(elf_zlib_failed, elf_zlib_fetch): New static functions.
+	(HUFFMAN_TABLE_SIZE, HUFFMAN_VALUE_MASK): Define.
+	(HUFFMAN_BITS_SHIFT, HUFFMAN_BITS_MASK): Define.
+	(HUFFMAN_SECONDARY_SHIFT): Define.
+	(ZDEBUG_TABLE_SIZE): Define.
+	(ZDEBUG_TABLE_CODELEN_OFFSET, ZDEBUG_TABLE_WORK_OFFSET): Define.
+	(final_next_secondary): New static variable if
+	BACKTRACE_GENERATE_FIXED_HUFFMAN_TABLE.
+	(elf_zlib_inflate_table): New static function.
+	(BACKTRACE_GENERATE_FIXED_HUFFMAN_TABLE): If define, define main
+	function to produce fixed Huffman table.
+	(elf_zlib_default_table): New static variable.
+	(elf_zlib_inflate): New static function.
+	(elf_zlib_verify_checksum): Likewise.
+	(elf_zlib_inflate_and_verify): Likewise.
+	(elf_uncompress_zdebug): Likewise.
+	(elf_uncompress_chdr): Likewise.
+	(backtrace_uncompress_zdebug): New extern function.
+	(elf_add): Look for .zdebug sections and SHF_COMPRESSED debug
+	sections, and uncompress them.
+	* internal.h (backtrace_compress_zdebug): Declare.
+	* ztest.c: New file.
+	* configure.ac: Check for -lz and check whether the linker
+	supports --compress-debug-sections.
+	* Makefile.am (ztest_SOURCES): New variable.
+	(ztest_CFLAGS, ztest_LDADD): New variables.
+	(check_PROGRAMS): Add ztest.
+	(ctestg_SOURCES): New variable.
+	(ctestg_CFLAGS, ctestg_LDFLAGS, ctestg_LDADD): New variables.
+	(ctesta_SOURCES): New variable.
+	(ctesta_CFLAGS, ctesta_LDFLAGS, ctesta_LDADD): New variables.
+	(check_PROGRAMS): Add ctestg and ctesta.
+	* configure, config.h.in, Makefile.in: Rebuild.
+
 2017-09-22  Ian Lance Taylor  <iant@golang.org>
 
 	PR sanitizer/77631
