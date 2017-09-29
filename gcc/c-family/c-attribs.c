@@ -426,7 +426,7 @@ handle_packed_attribute (tree *node, tree name, tree ARG_UNUSED (args),
     {
       if (TYPE_ALIGN (TREE_TYPE (*node)) <= BITS_PER_UNIT
 	  /* Still pack bitfields.  */
-	  && ! DECL_INITIAL (*node))
+	  && ! DECL_C_BIT_FIELD (*node))
 	warning (OPT_Wattributes,
 		 "%qE attribute ignored for field of type %qT",
 		 name, TREE_TYPE (*node));
@@ -1773,7 +1773,7 @@ common_handle_aligned_attribute (tree *node, tree args, int flags,
     {
       if (warn_if_not_aligned_p)
 	{
-	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_INITIAL (decl))
+	  if (TREE_CODE (decl) == FIELD_DECL && !DECL_C_BIT_FIELD (decl))
 	    {
 	      SET_DECL_WARN_IF_NOT_ALIGN (decl, (1U << i) * BITS_PER_UNIT);
 	      warn_if_not_aligned_p = false;

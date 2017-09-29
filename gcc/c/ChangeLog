@@ -1,5 +1,10 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* c-decl.c (grokfield): Use SET_DECL_C_BIT_FIELD here if
+	width is non-NULL.
+	(finish_struct): Test DECL_C_BIT_FIELD instead of DECL_INITIAL,
+	don't SET_DECL_C_BIT_FIELD here.
+
 	PR c/82340
 	* c-decl.c (build_compound_literal): Use c_apply_type_quals_to_decl
 	instead of trying to set just TREE_READONLY manually.

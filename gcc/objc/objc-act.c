@@ -4602,8 +4602,14 @@ check_ivars (tree inter, tree imp)
       t1 = TREE_TYPE (intdecls); t2 = TREE_TYPE (impdecls);
 
       if (!comptypes (t1, t2)
+#ifdef OBJCPLUS
+	  || !tree_int_cst_equal (DECL_BIT_FIELD_REPRESENTATIVE (intdecls),
+				  DECL_BIT_FIELD_REPRESENTATIVE (impdecls))
+#else
 	  || !tree_int_cst_equal (DECL_INITIAL (intdecls),
-				  DECL_INITIAL (impdecls)))
+				  DECL_INITIAL (impdecls))
+#endif
+	 )
 	{
 	  if (DECL_NAME (intdecls) == DECL_NAME (impdecls))
 	    {
@@ -8895,10 +8901,14 @@ gen_declaration (tree decl)
 	  strcat (errbuf, IDENTIFIER_POINTER (DECL_NAME (decl)));
 	}
 
-      if (DECL_INITIAL (decl)
-	  && TREE_CODE (DECL_INITIAL (decl)) == INTEGER_CST)
+#ifdef OBJCPLUS
+      tree w = DECL_BIT_FIELD_REPRESENTATIVE (decl);
+#else
+      tree w = DECL_INITIAL (decl);
+#endif
+      if (w && TREE_CODE (w) == INTEGER_CST)
 	sprintf (errbuf + strlen (errbuf), ": " HOST_WIDE_INT_PRINT_DEC,
-		 TREE_INT_CST_LOW (DECL_INITIAL (decl)));
+		 TREE_INT_CST_LOW (w));
     }
 
   return errbuf;
