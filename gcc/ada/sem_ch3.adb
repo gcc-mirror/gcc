@@ -21932,6 +21932,17 @@ package body Sem_Ch3 is
                Next_Discriminant (Comp);
             end loop;
 
+         elsif Nkind (N) = N_Variant_Part then
+            Comp := First_Discriminant (Typ);
+            while Present (Comp) loop
+               if Chars (Comp) = Chars (Name (N)) then
+                  Set_Entity (Name (N), Comp);
+                  exit;
+               end if;
+
+               Next_Component (Comp);
+            end loop;
+
          elsif Nkind (N) = N_Component_Declaration then
             Comp := First_Component (Typ);
             while Present (Comp) loop
