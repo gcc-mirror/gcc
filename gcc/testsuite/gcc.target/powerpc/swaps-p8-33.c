@@ -1,5 +1,5 @@
-/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-do compile { target { powerpc64le-*-* } } } */
+/* { dg-require-effective-target powerpc_p8vector_ok } */
 /* { dg-skip-if "do not override -mcpu" { powerpc*-*-* } { "-mcpu=*" } { "-mcpu=power8" } } */
 /* { dg-options "-mcpu=power8 -O3 " } */
 /* { dg-final { scan-assembler-not "xxpermdi" } } */
