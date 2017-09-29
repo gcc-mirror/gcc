@@ -730,10 +730,6 @@ handle_noipa_attribute (tree *node, tree name, tree, int, bool *no_add_attrs)
       warning (OPT_Wattributes, "%qE attribute ignored", name);
       *no_add_attrs = true;
     }
-  else
-    DECL_ATTRIBUTES (*node)
-      = tree_cons (get_identifier ("stack_protect"),
-		   NULL_TREE, DECL_ATTRIBUTES (*node));
 
   return NULL_TREE;
 }
