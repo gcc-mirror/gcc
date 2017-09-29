@@ -1,3 +1,11 @@
+2017-09-29  Alexander Monakov  <amonakov@ispras.ru>
+
+	* genmodes.c (calc_wider_mode): Suppress qsort macro.
+	* system.h [CHECKING_P] (qsort): Redirect to qsort_chk.
+	(qsort_chk): Declare.
+	* vec.c [CHECKING_P] (qsort_chk_error): New static function.
+	(qsort_chk): New function.
+
 2017-09-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/82337
