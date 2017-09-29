@@ -1,3 +1,9 @@
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82340
+	* c-decl.c (build_compound_literal): Use c_apply_type_quals_to_decl
+	instead of trying to set just TREE_READONLY manually.
+
 2017-09-16  Tom de Vries  <tom@codesourcery.com>
 
 	PR c/81875

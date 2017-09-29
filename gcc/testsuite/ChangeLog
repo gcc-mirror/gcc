@@ -1,5 +1,8 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	PR c/82340
+	* gcc.dg/tree-ssa/pr82340.c: New test.
+
 	* g++.dg/eh/uncaught3.C: Add -Wno-deprecated for c++17.
 
 2017-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
