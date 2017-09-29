@@ -5247,9 +5247,7 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const)
   DECL_ARTIFICIAL (decl) = 1;
   DECL_IGNORED_P (decl) = 1;
   TREE_TYPE (decl) = type;
-  TREE_READONLY (decl) = (TYPE_READONLY (type)
-			  || (TREE_CODE (type) == ARRAY_TYPE
-			      && TYPE_READONLY (TREE_TYPE (type))));
+  c_apply_type_quals_to_decl (TYPE_QUALS (strip_array_types (type)), decl);
   store_init_value (loc, decl, init, NULL_TREE);
 
   if (TREE_CODE (type) == ARRAY_TYPE && !COMPLETE_TYPE_P (type))
