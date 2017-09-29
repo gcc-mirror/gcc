@@ -28,8 +28,6 @@ with Opt;    use Opt;
 with Output; use Output;
 with System; use System;
 
-with Ada.Unchecked_Conversion;
-
 pragma Warnings (Off);
 --  This package is used also by gnatcoll
 with System.OS_Lib; use System.OS_Lib;
