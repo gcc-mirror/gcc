@@ -2252,6 +2252,9 @@ package body Exp_Ch6 is
    procedure Expand_Call (N : Node_Id) is
       Post_Call : List_Id;
    begin
+      pragma Assert
+        (Nkind_In (N, N_Function_Call, N_Procedure_Call_Statement,
+                      N_Entry_Call_Statement));
       Expand_Call_Helper (N, Post_Call);
       Insert_Post_Call_Actions (N, Post_Call);
    end Expand_Call;
@@ -4327,29 +4330,30 @@ package body Exp_Ch6 is
       --  result from the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
-         if not Is_Limited_View (Etype (Subp))
+         --  Build-in-place function calls which appear in anonymous contexts
+         --  need a transient scope to ensure the proper finalization of the
+         --  intermediate result after its use.
+
+         if Is_Build_In_Place_Function_Call (Call_Node)
+           and then
+             Nkind_In (Parent (Unqual_Conv (Call_Node)),
+                       N_Attribute_Reference,
+                       N_Function_Call,
+                       N_Indexed_Component,
+                       N_Object_Renaming_Declaration,
+                       N_Procedure_Call_Statement,
+                       N_Selected_Component,
+                       N_Slice)
+         then
+            Establish_Transient_Scope (Call_Node, Sec_Stack => True);
+
+         elsif not Is_Build_In_Place_Function_Call (Call_Node)
            and then
              (No (First_Formal (Subp))
                 or else
                   not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
          then
             Expand_Ctrl_Function_Call (Call_Node);
-
-         --  Build-in-place function calls which appear in anonymous contexts
-         --  need a transient scope to ensure the proper finalization of the
-         --  intermediate result after its use.
-
-         elsif Is_Build_In_Place_Function_Call (Call_Node)
-           and then
-             Nkind_In (Parent (Call_Node), N_Attribute_Reference,
-                                           N_Function_Call,
-                                           N_Indexed_Component,
-                                           N_Object_Renaming_Declaration,
-                                           N_Procedure_Call_Statement,
-                                           N_Selected_Component,
-                                           N_Slice)
-         then
-            Establish_Transient_Scope (Call_Node, Sec_Stack => True);
          end if;
       end if;
    end Expand_Call_Helper;
@@ -4756,6 +4760,12 @@ package body Exp_Ch6 is
                Func_Bod := Parent (Parent (Corresponding_Body (Func_Bod)));
             end if;
 
+            if Nkind (Func_Bod) = N_Function_Specification then
+               Func_Bod := Parent (Func_Bod); -- one more level for child units
+            end if;
+
+            pragma Assert (Nkind (Func_Bod) = N_Subprogram_Body);
+
             --  Create a flag to track the function state
 
             Flag_Id := Make_Temporary (Loc, 'F');
@@ -4781,8 +4791,7 @@ package body Exp_Ch6 is
       --  Build a simple_return_statement that returns the return object when
       --  there is a statement sequence, or no expression, or the result will
       --  be built in place. Note however that we currently do this for all
-      --  composite cases, even though nonlimited composite results are not yet
-      --  built in place (though we plan to do so eventually).
+      --  composite cases, even though not all are built in place.
 
       if Present (HSS)
         or else Is_Composite_Type (Ret_Typ)
@@ -6385,8 +6394,8 @@ package body Exp_Ch6 is
       end if;
 
       --  For the case of a simple return that does not come from an extended
-      --  return, in the case of Ada 2005 where we are returning a limited
-      --  type, we rewrite "return <expression>;" to be:
+      --  return, in the case of build-in-place, we rewrite "return
+      --  <expression>;" to be:
 
       --    return _anon_ : <return_subtype> := <expression>
 
@@ -6414,9 +6423,13 @@ package body Exp_Ch6 is
       --  class-wide interface type, which is not a limited type, even though
       --  the type of the expression may be.
 
+      pragma Assert
+        (Comes_From_Extended_Return_Statement (N)
+           or else not Is_Build_In_Place_Function_Call (Exp)
+           or else Is_Build_In_Place_Function (Scope_Id));
+
       if not Comes_From_Extended_Return_Statement (N)
-        and then Is_Limited_View (Etype (Expression (N)))
-        and then Ada_Version >= Ada_2005
+        and then Is_Build_In_Place_Function (Scope_Id)
         and then not Debug_Flag_Dot_L
 
          --  The functionality of interface thunks is simple and it is always
@@ -6494,7 +6507,7 @@ package body Exp_Ch6 is
       --  type that requires special processing (indicated by the fact that
       --  it requires a cleanup scope for the secondary stack case).
 
-      if Is_Limited_View (Exptyp)
+      if Is_Build_In_Place_Function (Scope_Id)
         or else Is_Limited_Interface (Exptyp)
       then
          null;
@@ -7186,6 +7199,24 @@ package body Exp_Ch6 is
       return False;
    end Has_Unconstrained_Access_Discriminants;
 
+   -----------------------------------
+   -- Is_Build_In_Place_Result_Type --
+   -----------------------------------
+
+   function Is_Build_In_Place_Result_Type (Typ : Entity_Id) return Boolean is
+   begin
+      --  In Ada 2005 all functions with an inherently limited return type
+      --  must be handled using a build-in-place profile, including the case
+      --  of a function with a limited interface result, where the function
+      --  may return objects of nonlimited descendants.
+
+      if Is_Limited_View (Typ) then
+         return Ada_Version >= Ada_2005 and then not Debug_Flag_Dot_L;
+      else
+         return Debug_Flag_Dot_9;
+      end if;
+   end Is_Build_In_Place_Result_Type;
+
    --------------------------------
    -- Is_Build_In_Place_Function --
    --------------------------------
@@ -7216,19 +7247,9 @@ package body Exp_Ch6 is
          --  intended to be compatible with the other language, but the build-
          --  in place machinery can ensure that the object is not copied.
 
-         if Has_Foreign_Convention (E) then
-            return False;
-
-         --  In Ada 2005 all functions with an inherently limited return type
-         --  must be handled using a build-in-place profile, including the case
-         --  of a function with a limited interface result, where the function
-         --  may return objects of nonlimited descendants.
-
-         else
-            return Is_Limited_View (Etype (E))
-              and then Ada_Version >= Ada_2005
-              and then not Debug_Flag_Dot_L;
-         end if;
+         return Is_Build_In_Place_Result_Type (Etype (E))
+           and then not Has_Foreign_Convention (E)
+           and then not Debug_Flag_Dot_L;
 
       else
          return False;
@@ -7256,34 +7277,33 @@ package body Exp_Ch6 is
       --  may end up with a call that is neither resolved to an entity, nor
       --  an indirect call.
 
-      if not Expander_Active then
+      if not Expander_Active or else Nkind (Exp_Node) /= N_Function_Call then
          return False;
       end if;
 
-      if Nkind (Exp_Node) /= N_Function_Call then
-         return False;
+      if Is_Entity_Name (Name (Exp_Node)) then
+         Function_Id := Entity (Name (Exp_Node));
+
+      --  In the case of an explicitly dereferenced call, use the subprogram
+      --  type generated for the dereference.
+
+      elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
+         Function_Id := Etype (Name (Exp_Node));
+
+      --  This may be a call to a protected function.
+
+      elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
+         Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
 
       else
-         if Is_Entity_Name (Name (Exp_Node)) then
-            Function_Id := Entity (Name (Exp_Node));
-
-         --  In the case of an explicitly dereferenced call, use the subprogram
-         --  type generated for the dereference.
-
-         elsif Nkind (Name (Exp_Node)) = N_Explicit_Dereference then
-            Function_Id := Etype (Name (Exp_Node));
-
-         --  This may be a call to a protected function.
-
-         elsif Nkind (Name (Exp_Node)) = N_Selected_Component then
-            Function_Id := Etype (Entity (Selector_Name (Name (Exp_Node))));
-
-         else
-            raise Program_Error;
-         end if;
-
-         return Is_Build_In_Place_Function (Function_Id);
+         raise Program_Error;
       end if;
+
+      declare
+         Result : constant Boolean := Is_Build_In_Place_Function (Function_Id);
+      begin
+         return Result;
+      end;
    end Is_Build_In_Place_Function_Call;
 
    -----------------------
@@ -7693,16 +7713,9 @@ package body Exp_Ch6 is
          Func_Call := Expression (Func_Call);
       end if;
 
-      --  If the call has already been processed to add build-in-place actuals
-      --  then return. This should not normally occur in an allocator context,
-      --  but we add the protection as a defensive measure.
-
-      if Is_Expanded_Build_In_Place_Call (Func_Call) then
-         return;
-      end if;
-
       --  Mark the call as processed as a build-in-place call
 
+      pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       Loc := Sloc (Function_Call);
@@ -7727,6 +7740,8 @@ package body Exp_Ch6 is
 
       Return_Obj_Access := Make_Temporary (Loc, 'R');
       Set_Etype (Return_Obj_Access, Acc_Type);
+      Set_Can_Never_Be_Null (Acc_Type, False);
+      --  It gets initialized to null, so we can't have that.
 
       --  When the result subtype is constrained, the return object is
       --  allocated on the caller side, and access to it is passed to the
@@ -7738,7 +7753,6 @@ package body Exp_Ch6 is
       --  the characteristics of the full view.
 
       if Is_Constrained (Underlying_Type (Result_Subt)) then
-
          --  Replace the initialized allocator of form "new T'(Func (...))"
          --  with an uninitialized allocator of form "new T", where T is the
          --  result subtype of the called function. The call to the function
@@ -8051,7 +8065,7 @@ package body Exp_Ch6 is
       Lhs          : constant Node_Id := Name (Assign);
       Func_Call    : constant Node_Id := Unqual_Conv (Function_Call);
       Func_Id      : Entity_Id;
-      Loc          : Source_Ptr;
+      Loc          : constant Source_Ptr := Sloc (Function_Call);
       Obj_Decl     : Node_Id;
       Obj_Id       : Entity_Id;
       Ptr_Typ      : Entity_Id;
@@ -8060,19 +8074,10 @@ package body Exp_Ch6 is
       Result_Subt  : Entity_Id;
 
    begin
-      --  If the call has already been processed to add build-in-place actuals
-      --  then return. This should not normally occur in an assignment context,
-      --  but we add the protection as a defensive measure.
-
-      if Is_Expanded_Build_In_Place_Call (Func_Call) then
-         return;
-      end if;
-
       --  Mark the call as processed as a build-in-place call
 
+      pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
-
-      Loc := Sloc (Function_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
          Func_Id := Entity (Name (Func_Call));
@@ -8131,6 +8136,13 @@ package body Exp_Ch6 is
 
       New_Expr := Make_Reference (Loc, Relocate_Node (Func_Call));
 
+      --  Add a conversion if it's the wrong type
+
+      if Etype (New_Expr) /= Ptr_Typ then
+         New_Expr := Make_Unchecked_Type_Conversion (Loc,
+           New_Occurrence_Of (Ptr_Typ, Loc), New_Expr);
+      end if;
+
       Obj_Id := Make_Temporary (Loc, 'R', New_Expr);
       Set_Etype (Obj_Id, Ptr_Typ);
       Set_Is_Known_Non_Null (Obj_Id);
@@ -8165,6 +8177,7 @@ package body Exp_Ch6 is
       Func_Call       : constant Node_Id := Unqual_Conv (Function_Call);
       Function_Id     : Entity_Id;
       Pool_Actual     : Node_Id;
+      Designated_Type : Entity_Id;
       Ptr_Typ         : Entity_Id;
       Ptr_Typ_Decl    : Node_Id;
       Pass_Caller_Acc : Boolean := False;
@@ -8172,16 +8185,9 @@ package body Exp_Ch6 is
       Result_Subt     : Entity_Id;
 
    begin
-      --  If the call has already been processed to add build-in-place actuals
-      --  then return. This should not normally occur in an object declaration,
-      --  but we add the protection as a defensive measure.
-
-      if Is_Expanded_Build_In_Place_Call (Func_Call) then
-         return;
-      end if;
-
       --  Mark the call as processed as a build-in-place call
 
+      pragma Assert (not Is_Expanded_Build_In_Place_Call (Func_Call));
       Set_Is_Expanded_Build_In_Place_Call (Func_Call);
 
       if Is_Entity_Name (Name (Func_Call)) then
@@ -8208,6 +8214,15 @@ package body Exp_Ch6 is
          --  access type must be declared before we establish a transient
          --  scope, so that it receives the proper accessibility level.
 
+         if Is_Class_Wide_Type (Etype (Defining_Identifier (Obj_Decl)))
+           and then not Is_Interface (Etype (Defining_Identifier (Obj_Decl)))
+           and then not Is_Class_Wide_Type (Etype (Function_Call))
+         then
+            Designated_Type := Etype (Defining_Identifier (Obj_Decl));
+         else
+            Designated_Type := Etype (Function_Call);
+         end if;
+
          Ptr_Typ := Make_Temporary (Loc, 'A');
          Ptr_Typ_Decl :=
            Make_Full_Type_Declaration (Loc,
@@ -8216,7 +8231,7 @@ package body Exp_Ch6 is
                Make_Access_To_Object_Definition (Loc,
                  All_Present        => True,
                  Subtype_Indication =>
-                   New_Occurrence_Of (Etype (Function_Call), Loc)));
+                   New_Occurrence_Of (Designated_Type, Loc)));
 
          --  The access type and its accompanying object must be inserted after
          --  the object declaration in the constrained case, so that the
@@ -8238,15 +8253,10 @@ package body Exp_Ch6 is
 
          --  Force immediate freezing of Ptr_Typ because Res_Decl will be
          --  elaborated in an inner (transient) scope and thus won't cause
-         --  freezing by itself.
+         --  freezing by itself. It's not an itype, but it needs to be frozen
+         --  inside the current subprogram (see Freeze_Outside in freeze.adb).
 
-         declare
-            Ptr_Typ_Freeze_Ref : constant Node_Id :=
-                                   New_Occurrence_Of (Ptr_Typ, Loc);
-         begin
-            Set_Parent (Ptr_Typ_Freeze_Ref, Ptr_Typ_Decl);
-            Freeze_Expression (Ptr_Typ_Freeze_Ref);
-         end;
+         Freeze_Itype (Ptr_Typ, Ptr_Typ_Decl);
 
          --  If the object is a return object of an enclosing build-in-place
          --  function, then the implicit build-in-place parameters of the
@@ -8424,13 +8434,25 @@ package body Exp_Ch6 is
          Set_Etype (Def_Id, Ptr_Typ);
          Set_Is_Known_Non_Null (Def_Id);
 
-         Res_Decl :=
-           Make_Object_Declaration (Loc,
-             Defining_Identifier => Def_Id,
-             Constant_Present    => True,
-             Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
-             Expression          =>
-               Make_Reference (Loc, Relocate_Node (Func_Call)));
+         if Nkind (Function_Call) = N_Type_Conversion then
+            Res_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+                Expression          =>
+                Make_Unchecked_Type_Conversion (Loc,
+                   New_Occurrence_Of (Ptr_Typ, Loc),
+                   Make_Reference (Loc, Relocate_Node (Func_Call))));
+         else
+            Res_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier => Def_Id,
+                Constant_Present    => True,
+                Object_Definition   => New_Occurrence_Of (Ptr_Typ, Loc),
+                Expression          =>
+                  Make_Reference (Loc, Relocate_Node (Func_Call)));
+         end if;
 
          Insert_After_And_Analyze (Ptr_Typ_Decl, Res_Decl);
 
@@ -8475,7 +8497,8 @@ package body Exp_Ch6 is
             Rewrite (Obj_Decl,
               Make_Object_Renaming_Declaration (Obj_Loc,
                 Defining_Identifier => Make_Temporary (Obj_Loc, 'D'),
-                Subtype_Mark => New_Occurrence_Of (Result_Subt, Obj_Loc),
+                Subtype_Mark =>
+                  New_Occurrence_Of (Designated_Type, Obj_Loc),
                 Name => Call_Deref));
 
             Set_Renamed_Object (Defining_Identifier (Obj_Decl), Call_Deref);
@@ -8495,18 +8518,6 @@ package body Exp_Ch6 is
               (Obj_Decl, Original_Node (Obj_Decl));
          end if;
       end;
-
-      --  If the object entity has a class-wide Etype, then we need to change
-      --  it to the result subtype of the function call, because otherwise the
-      --  object will be class-wide without an explicit initialization and
-      --  won't be allocated properly by the back end. It seems unclean to make
-      --  such a revision to the type at this point, and we should try to
-      --  improve this treatment when build-in-place functions with class-wide
-      --  results are implemented. ???
-
-      if Is_Class_Wide_Type (Etype (Defining_Identifier (Obj_Decl))) then
-         Set_Etype (Defining_Identifier (Obj_Decl), Result_Subt);
-      end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
    -------------------------------------------------
@@ -9225,6 +9236,11 @@ package body Exp_Ch6 is
    --  Start of processing for Unqual_BIP_Iface_Function_Call
 
    begin
+      if Nkind (Expr) = N_Identifier and then No (Entity (Expr)) then
+         --  Can happen for X'Elab_Spec in the binder-generated file.
+         return Empty;
+      end if;
+
       return Unqual_BIP_Function_Call (Expr);
    end Unqual_BIP_Iface_Function_Call;
 
