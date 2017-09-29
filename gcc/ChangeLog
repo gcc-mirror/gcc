@@ -1,5 +1,11 @@
 2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
+	PR target/81481
+	* ira-costs.c (scan_one_insn): Don't take into account PIC equiv
+	with a symbol for LRA.
+
+2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
+
 	PR rtl-optimization/82338
 	* lra-constraints.c (inherit_in_ebb): Check usage_insns check.
 

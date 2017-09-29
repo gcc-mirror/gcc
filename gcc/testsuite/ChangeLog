@@ -1,3 +1,8 @@
+2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
+
+	PR target/81481
+	* gcc.target/i386/pr81481.c: New.
+
 2017-09-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
 
 	* gcc.target/powerpc/swaps-p8-30.c: Exchange the order of dg-do
