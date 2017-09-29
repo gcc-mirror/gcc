@@ -1,3 +1,20 @@
+2017-09-29  Justin Squirek  <squirek@adacore.com>
+
+	* sem_ch8.adb (Note_Redundant_Use): Add guard to protect against false
+	redundant warnings.
+
+2017-09-29  Yannick Moy  <moy@adacore.com>
+
+	* sinput-c.adb: Remove unused with-clause on Ada.Unchecked_Conversion.
+
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Minor rewording.
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Optimize_Alignment):
+	Document the effect of pragma Optimize_Alignment (Space) on non-packed
+	record types.
+	* gnat_rm.texi: Regenerate.
+
 2017-09-25  Justin Squirek  <squirek@adacore.com>
 
 	* aspects.adb, bindgen.adb, clean.adb, erroutc.adb, exp_ch13.adb,

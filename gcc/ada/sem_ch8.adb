@@ -9322,7 +9322,7 @@ package body Sem_Ch8 is
 
          end if;
 
-         if Present (Redundant) then
+         if Present (Redundant) and then Parent (Redundant) /= Prev_Use then
             --  Make sure we are looking at most-descendant use_package_clause
             --  by traversing the chain with Find_Most_Prev and then verifying
             --  there is no scope manipulation via Most_Descendant_Use_Clause.
