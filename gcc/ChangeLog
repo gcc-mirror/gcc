@@ -1,5 +1,10 @@
 2017-09-29  Jeff Law  <law@redhat.com>
 
+	* sbitmap.c (bitmap_bit_in_range_p): New function.
+	* sbitmap.h (bitmap_bit_in_range_p): Prototype.
+	* tree-ssa-dse.c (live_bytes_read): New function.
+	(dse_classify_store): Ignore reads of dead bytes.
+
 	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): Fix
 	typos and whitespace errors.
 	* config/i386/predicates.md (address_no_seg_operand): Likewise.
