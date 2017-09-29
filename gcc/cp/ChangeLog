@@ -1,5 +1,15 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* class.c (check_bitfield_decl): Retrieve and clear width from
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+	(check_field_decls): Test DECL_BIT_FIELD_REPRESENTATIVE rather than
+	DECL_INITIAL.
+	(remove_zero_width_bit_fields): Adjust comment.
+	* decl2.c (grokbitfield): Stash width into
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
+	* pt.c (tsubst_decl): For DECL_C_BIT_FIELD, tsubst_expr
+	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL for width.
+
 	* parser.c (cp_parser_member_declaration): Parse attributes before
 	colon of a bitfield in addition to after colon.
 

@@ -7600,6 +7600,8 @@ grokfield (location_t loc,
 
   finish_decl (value, loc, NULL_TREE, NULL_TREE, NULL_TREE);
   DECL_INITIAL (value) = width;
+  if (width)
+    SET_DECL_C_BIT_FIELD (value);
 
   if (warn_cxx_compat && DECL_NAME (value) != NULL_TREE)
     {
@@ -7944,12 +7946,11 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
       if (C_DECL_VARIABLE_SIZE (x))
 	C_TYPE_VARIABLE_SIZE (t) = 1;
 
-      if (DECL_INITIAL (x))
+      if (DECL_C_BIT_FIELD (x))
 	{
 	  unsigned HOST_WIDE_INT width = tree_to_uhwi (DECL_INITIAL (x));
 	  DECL_SIZE (x) = bitsize_int (width);
 	  DECL_BIT_FIELD (x) = 1;
-	  SET_DECL_C_BIT_FIELD (x);
 	}
 
       if (TYPE_PACKED (t)

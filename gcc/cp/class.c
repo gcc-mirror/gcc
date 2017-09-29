@@ -3231,12 +3231,12 @@ check_bitfield_decl (tree field)
   tree w;
 
   /* Extract the declared width of the bitfield, which has been
-     temporarily stashed in DECL_INITIAL.  */
-  w = DECL_INITIAL (field);
+     temporarily stashed in DECL_BIT_FIELD_REPRESENTATIVE by grokbitfield.  */
+  w = DECL_BIT_FIELD_REPRESENTATIVE (field);
   gcc_assert (w != NULL_TREE);
   /* Remove the bit-field width indicator so that the rest of the
-     compiler does not treat that value as an initializer.  */
-  DECL_INITIAL (field) = NULL_TREE;
+     compiler does not treat that value as a qualifier.  */
+  DECL_BIT_FIELD_REPRESENTATIVE (field) = NULL_TREE;
 
   /* Detect invalid bit-field type.  */
   if (!INTEGRAL_OR_ENUMERATION_TYPE_P (type))
@@ -3571,7 +3571,8 @@ check_field_decls (tree t, tree *access_decls,
 	    DECL_PACKED (x) = 1;
 	}
 
-      if (DECL_C_BIT_FIELD (x) && integer_zerop (DECL_INITIAL (x)))
+      if (DECL_C_BIT_FIELD (x)
+	  && integer_zerop (DECL_BIT_FIELD_REPRESENTATIVE (x)))
 	/* We don't treat zero-width bitfields as making a class
 	   non-empty.  */
 	;
@@ -5268,9 +5269,9 @@ remove_zero_width_bit_fields (tree t)
     {
       if (TREE_CODE (*fieldsp) == FIELD_DECL
 	  && DECL_C_BIT_FIELD (*fieldsp)
-          /* We should not be confused by the fact that grokbitfield
+	  /* We should not be confused by the fact that grokbitfield
 	     temporarily sets the width of the bit field into
-	     DECL_INITIAL (*fieldsp).
+	     DECL_BIT_FIELD_REPRESENTATIVE (*fieldsp).
 	     check_bitfield_decl eventually sets DECL_SIZE (*fieldsp)
 	     to that width.  */
 	  && (DECL_SIZE (*fieldsp) == NULL_TREE

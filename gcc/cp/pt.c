@@ -12835,11 +12835,10 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 	    cp_apply_type_quals_to_decl (cp_type_quals (type), r);
 
 	    if (DECL_C_BIT_FIELD (r))
-	      /* For bit-fields, DECL_INITIAL gives the number of bits.  For
-		 non-bit-fields DECL_INITIAL is a non-static data member
-		 initializer, which gets deferred instantiation.  */
-	      DECL_INITIAL (r)
-		= tsubst_expr (DECL_INITIAL (t), args,
+	      /* For bit-fields, DECL_BIT_FIELD_REPRESENTATIVE gives the
+		 number of bits.  */
+	      DECL_BIT_FIELD_REPRESENTATIVE (r)
+		= tsubst_expr (DECL_BIT_FIELD_REPRESENTATIVE (t), args,
 			       complain, in_decl,
 			       /*integral_constant_expression_p=*/true);
 	    else if (DECL_INITIAL (t))

@@ -1047,7 +1047,10 @@ grokbitfield (const cp_declarator *declarator,
 	       TREE_TYPE (width));
       else
 	{
-	  DECL_INITIAL (value) = width;
+	  /* Temporarily stash the width in DECL_BIT_FIELD_REPRESENTATIVE.
+	     check_bitfield_decl picks it from there later and sets DECL_SIZE
+	     accordingly.  */
+	  DECL_BIT_FIELD_REPRESENTATIVE (value) = width;
 	  SET_DECL_C_BIT_FIELD (value);
 	}
     }
