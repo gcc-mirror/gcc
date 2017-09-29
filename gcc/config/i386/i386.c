@@ -13967,7 +13967,7 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
 
      ?!? This should be revamped to work like aarch64 and s390 where
      we track the offset from the most recent probe.  Normally that
-     offset would be zero.  For a non-return function we would reset
+     offset would be zero.  For a noreturn function we would reset
      it to PROBE_INTERVAL - (STACK_BOUNDARY / BITS_PER_UNIT).   Then
      we just probe when we cross PROBE_INTERVAL.  */
   if (TREE_THIS_VOLATILE (cfun->decl))
@@ -14047,7 +14047,7 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
 			plus_constant (Pmode, sr.reg,
 				       m->fs.cfa_offset + rounded_size));
 	  RTX_FRAME_RELATED_P (insn) = 1;
-        }
+	}
 
       /* Step 3: the loop.  */
       rtx size_rtx = GEN_INT (rounded_size);
@@ -14060,7 +14060,7 @@ ix86_adjust_stack_and_probe_stack_clash (const HOST_WIDE_INT size)
 			plus_constant (Pmode, stack_pointer_rtx,
 				       m->fs.cfa_offset));
 	  RTX_FRAME_RELATED_P (insn) = 1;
-        }
+	}
       m->fs.sp_offset += rounded_size;
       emit_insn (gen_blockage ());
 
