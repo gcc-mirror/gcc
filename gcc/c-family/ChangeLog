@@ -1,3 +1,33 @@
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* c-ada-spec.c (max_ada_macros): Move around.
+	(store_ada_macro_index): Likewise.
+	(source_file): Rename into...
+	(macro_source_file): ...this.
+	(count_ada_macro): Move around.
+	(store_ada_macro): Likewise.
+	(compare_macro): Likewise.
+	(print_ada_macros): Merge in...
+	(dump_ada_macros): ...this.
+	(source_file_base): Rename into...
+	(current_source_file): ...this.
+	(print_comment): Move around.
+	(dump_ada_nodes): Call dump_ada_declaration directly.
+	(struct with): Change type of limited field to bool.
+	(append_withs): Change type of limited_access parameter to bool.
+	(pp_ada_tree_identifie): Likewise.
+	(dump_ada_decl_nam): Likewise.
+	(dump_generic_ada_node): Likewise.  Do not print the return type.
+	(to_ada_name): Change type of space_found parameter to bool.
+	(dump_ada_function_declaration): Return void and change type of
+	parameters to bool.  Also print the return type for a function.
+	(print_ada_methods): Rename into...
+	(dump_ada_methods): ...this.
+	(print_ada_declaration): Rename into ...
+	(dump_ada_declaration): ...this.  Do not print the return type.
+	(print_ada_struct_decl): Rename into...
+	(dump_ada_struct_decl): ...this.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (handle_packed_attribute): Test DECL_C_BIT_FIELD
