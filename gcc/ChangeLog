@@ -1,3 +1,10 @@
+2017-09-29  Jeff Law  <law@redhat.com>
+
+	* config/i386/i386.c (ix86_adjust_stack_and_probe_stack_clash): Fix
+	typos and whitespace errors.
+	* config/i386/predicates.md (address_no_seg_operand): Likewise.
+	* config/s390/s390.c (s390_emit_prologue): Likewise.
+
 2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/81481

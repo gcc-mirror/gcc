@@ -11359,7 +11359,7 @@ s390_emit_prologue (void)
   /* When probing for stack-clash mitigation, we have to track the distance
      between the stack pointer and closest known reference.
 
-     Most of the time we have to make a worst cast assumption.  The
+     Most of the time we have to make a worst case assumption.  The
      only exception is when TARGET_BACKCHAIN is active, in which case
      we know *sp (offset 0) was written.  */
   HOST_WIDE_INT probe_interval
