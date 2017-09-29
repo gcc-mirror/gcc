@@ -1,3 +1,8 @@
+2017-09-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/82337
+	* gcc.c-torture/compile/pr82337.c: New file.
+
 2017-09-29  Javier Miranda  <miranda@adacore.com>
 
 	* gnat.dg/unchecked_union3.adb: New testcase.
