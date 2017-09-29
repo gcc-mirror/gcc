@@ -1,3 +1,12 @@
+2017-09-29  Tony Reix  <tony.reix@atos.net>
+
+	* xcoff.c: Initial support for DWARF debug sections in XCOFF.
+	(STYP_DWARF, SSUBTYP_DW*): Define.
+	(enum dwarf_section): Define.
+	(struct dwsect_info): Define.
+	(xcoff_add): Look for DWARF sections, pass them to
+	backtrace_dwarf_add.
+
 2017-09-28  Ian Lance Taylor  <iant@golang.org>
 
 	PR other/67165

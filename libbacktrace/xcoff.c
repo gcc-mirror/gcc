@@ -124,8 +124,15 @@ typedef struct {
 
 #endif /* BACKTRACE_XCOFF_SIZE != 32 */
 
+#define STYP_DWARF	0x10	/* DWARF debugging section.  */
 #define STYP_TEXT	0x20	/* Executable text (code) section.  */
 #define STYP_OVRFLO	0x8000	/* Line-number field overflow section.  */
+
+#define SSUBTYP_DWINFO	0x10000	/* DWARF info section.  */
+#define SSUBTYP_DWLINE	0x20000	/* DWARF line-number section.  */
+#define SSUBTYP_DWARNGE	0x50000	/* DWARF aranges section.  */
+#define SSUBTYP_DWABREV	0x60000	/* DWARF abbreviation section.  */
+#define SSUBTYP_DWSTR	0x70000	/* DWARF strings section.  */
 
 /* XCOFF symbol.  */
 
@@ -367,6 +374,29 @@ struct xcoff_fileline_data
   struct xcoff_line_vector vec;
 };
 
+/* An index of DWARF sections we care about.  */
+
+enum dwarf_section
+{
+  DWSECT_INFO,
+  DWSECT_LINE,
+  DWSECT_ABBREV,
+  DWSECT_RANGES,
+  DWSECT_STR,
+  DWSECT_MAX
+};
+
+/* Information we gather for the DWARF sections we care about.  */
+
+struct dwsect_info
+{
+  /* Section file offset.  */
+  off_t offset;
+  /* Section size.  */
+  size_t size;
+  /* Section contents, after read from file.  */
+  const unsigned char *data;
+};
 
 /* A dummy callback function used when we can't find any debug info.  */
 
@@ -1056,12 +1086,16 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   struct backtrace_view linenos_view;
   struct backtrace_view syms_view;
   struct backtrace_view str_view;
+  struct backtrace_view dwarf_view;
   b_xcoff_filhdr fhdr;
   const b_xcoff_scnhdr *sects;
   const b_xcoff_scnhdr *stext;
   uint64_t lnnoptr;
   uint32_t nlnno;
   off_t str_off;
+  off_t min_offset;
+  off_t max_offset;
+  struct dwsect_info dwsect[DWSECT_MAX];
   size_t sects_size;
   size_t syms_size;
   int32_t str_size;
@@ -1069,6 +1103,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   int linenos_view_valid;
   int syms_view_valid;
   int str_view_valid;
+  int dwarf_view_valid;
   int magic_ok;
   int i;
 
@@ -1078,6 +1113,9 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   linenos_view_valid = 0;
   syms_view_valid = 0;
   str_view_valid = 0;
+  dwarf_view_valid = 0;
+
+  str_size = 0;
 
   /* Map the XCOFF file header.  */
   if (!backtrace_get_view (state, descriptor, offset, sizeof (b_xcoff_filhdr),
@@ -1092,7 +1130,7 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
   if (!magic_ok)
     {
       if (exe)
-        error_callback (data, "executable file is not XCOFF", 0);
+	error_callback (data, "executable file is not XCOFF", 0);
       goto fail;
     }
 
@@ -1114,8 +1152,8 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
 
   /* FIXME: assumes only one .text section.  */
   for (i = 0; i < fhdr.f_nscns; ++i)
-      if ((sects[i].s_flags & 0xffff) == STYP_TEXT)
-	  break;
+    if ((sects[i].s_flags & 0xffff) == STYP_TEXT)
+      break;
   if (i == fhdr.f_nscns)
     goto fail;
 
@@ -1134,12 +1172,12 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
       /* Find the matching .ovrflo section.  */
       for (i = 0; i < fhdr.f_nscns; ++i)
 	{
-	    if (((sects[i].s_flags & 0xffff) == STYP_OVRFLO)
-		&& sects[i].s_nlnno == sntext)
-	      {
-		nlnno = sects[i].s_vaddr;
-		break;
-	      }
+	  if (((sects[i].s_flags & 0xffff) == STYP_OVRFLO)
+	      && sects[i].s_nlnno == sntext)
+	    {
+	      nlnno = sects[i].s_vaddr;
+	      break;
+	    }
 	}
     }
 #endif
@@ -1194,9 +1232,91 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
       xcoff_add_syminfo_data (state, sdata);
     }
 
-  /* Read the line number entries.  */
+  /* Read all the DWARF sections in a single view, since they are
+     probably adjacent in the file.  We never release this view.  */
 
-  if (fhdr.f_symptr != 0 && lnnoptr != 0)
+  min_offset = 0;
+  max_offset = 0;
+  memset (dwsect, 0, sizeof dwsect);
+  for (i = 0; i < fhdr.f_nscns; ++i)
+    {
+      off_t end;
+      int idx;
+
+      if ((sects[i].s_flags & 0xffff) != STYP_DWARF
+	  || sects[i].s_size == 0)
+	continue;
+      /* Map DWARF section to array index.  */
+      switch (sects[i].s_flags & 0xffff0000)
+	{
+	  case SSUBTYP_DWINFO:
+	    idx = DWSECT_INFO;
+	    break;
+	  case SSUBTYP_DWLINE:
+	    idx = DWSECT_LINE;
+	    break;
+	  case SSUBTYP_DWABREV:
+	    idx = DWSECT_ABBREV;
+	    break;
+	  case SSUBTYP_DWARNGE:
+	    idx = DWSECT_RANGES;
+	    break;
+	  case SSUBTYP_DWSTR:
+	    idx = DWSECT_STR;
+	    break;
+	  default:
+	    continue;
+	}
+      if (min_offset == 0 || (off_t) sects[i].s_scnptr < min_offset)
+	min_offset = sects[i].s_scnptr;
+      end = sects[i].s_scnptr + sects[i].s_size;
+      if (end > max_offset)
+	max_offset = end;
+      dwsect[idx].offset = sects[i].s_scnptr;
+      dwsect[idx].size = sects[i].s_size;
+    }
+  if (min_offset != 0 && max_offset != 0)
+    {
+      if (!backtrace_get_view (state, descriptor, offset + min_offset,
+			       max_offset - min_offset,
+			       error_callback, data, &dwarf_view))
+	goto fail;
+      dwarf_view_valid = 1;
+
+      for (i = 0; i < (int) DWSECT_MAX; ++i)
+	{
+	  if (dwsect[i].offset == 0)
+	    dwsect[i].data = NULL;
+	  else
+	    dwsect[i].data = ((const unsigned char *) dwarf_view.data
+			      + (dwsect[i].offset - min_offset));
+	}
+
+      if (!backtrace_dwarf_add (state, 0,
+				dwsect[DWSECT_INFO].data,
+				dwsect[DWSECT_INFO].size,
+#if BACKTRACE_XCOFF_SIZE == 32
+				/* XXX workaround for broken lineoff */
+				dwsect[DWSECT_LINE].data - 4,
+#else
+				/* XXX workaround for broken lineoff */
+				dwsect[DWSECT_LINE].data - 12,
+#endif
+				dwsect[DWSECT_LINE].size,
+				dwsect[DWSECT_ABBREV].data,
+				dwsect[DWSECT_ABBREV].size,
+				dwsect[DWSECT_RANGES].data,
+				dwsect[DWSECT_RANGES].size,
+				dwsect[DWSECT_STR].data,
+				dwsect[DWSECT_STR].size,
+				1, /* big endian */
+				error_callback, data, fileline_fn))
+	goto fail;
+    }
+
+  /* Read the XCOFF line number entries if DWARF sections not found.  */
+
+  if (!dwarf_view_valid && fhdr.f_symptr != 0 && lnnoptr != 0)
     {
       size_t linenos_size = (size_t) nlnno * LINESZ;
 
@@ -1239,6 +1359,8 @@ xcoff_add (struct backtrace_state *state, int descriptor, off_t offset,
     backtrace_release_view (state, &syms_view, error_callback, data);
   if (linenos_view_valid)
     backtrace_release_view (state, &linenos_view, error_callback, data);
+  if (dwarf_view_valid)
+    backtrace_release_view (state, &dwarf_view, error_callback, data);
   if (descriptor != -1 && offset == 0)
     backtrace_close (descriptor, error_callback, data);
   return 0;
