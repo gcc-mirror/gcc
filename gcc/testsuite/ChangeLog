@@ -1,3 +1,26 @@
+2017-09-29  Kelvin Nilsen  <kelvin@gcc.gnu.org>
+
+	* gcc.target/powerpc/swaps-p8-30.c: Exchange the order of dg-do
+	and dg-require-effective-target directives to correct testing
+	behavior.
+	* gcc.target/powerpc/swaps-p8-32.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-41.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-34.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-43.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-36.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-45.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-29.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-38.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-31.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-40.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-33.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-42.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-35.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-44.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-28.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-37.c: Likewise.
+	* gcc.target/powerpc/swaps-p8-39.c: Likewise.
+
 2017-09-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	PR tree-optimization/82337
