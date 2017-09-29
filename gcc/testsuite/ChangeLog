@@ -1,5 +1,9 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* g++.dg/ext/bitfield7.C: New test.
+	* g++.dg/ext/bitfield8.C: New test.
+	* g++.dg/ext/bitfield9.C: New test.
+
 	PR c/82340
 	* gcc.dg/tree-ssa/pr82340.c: New test.
 
