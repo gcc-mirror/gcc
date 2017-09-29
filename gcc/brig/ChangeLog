@@ -1,3 +1,10 @@
+2017-09-29  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: Fix crash with
+	calls with more than 4 args. Also fix a misexecution issue
+	with kernels that have both unexpanded ID functions and
+	calls to subfunctions.
+
 2017-09-28  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brig-lang.c: Added function attributes and their handlers.

@@ -42,7 +42,8 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
       vec<tree, va_gc> *out_args;
       vec_alloc (out_args, 1);
       vec<tree, va_gc> *in_args;
-      vec_alloc (in_args, 4);
+      /* Ten elem initially, more reserved if needed. */
+      vec_alloc (in_args, 10);
 
       size_t operand_count = operand_entries->byteCount / 4;
       gcc_assert (operand_count < 4);
@@ -96,6 +97,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 		}
 
 	      gcc_assert (var != NULL_TREE);
+	      vec_safe_reserve (args, 1);
 	      vec_safe_push (args, var);
 	      ++operand_ptr;
 	      bytes -= 4;
@@ -125,6 +127,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 
       /* TODO: ensure the callee's frame is aligned!  */
 
+      vec_safe_reserve (in_args, 4);
       vec_safe_push (in_args, m_parent.m_cf->m_context_arg);
       vec_safe_push (in_args, m_parent.m_cf->m_group_base_arg);
       vec_safe_push (in_args, group_local_offset);
@@ -147,7 +150,6 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	  m_parent.m_cf->append_statement (call);
 	}
 
-      m_parent.m_cf->m_has_unexpanded_dp_builtins = false;
       m_parent.m_cf->m_called_functions.push_back (func_ref);
 
       return base->byteCount;
