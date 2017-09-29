@@ -1,3 +1,11 @@
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	P0683R1 - default member initializers for bit-fields
+	* g++.dg/ext/bitfield6.C: New test.
+	* g++.dg/cpp2a/bitfield1.C: New test.
+	* g++.dg/cpp2a/bitfield2.C: New test.
+	* g++.dg/cpp2a/bitfield3.C: New test.
+
 2017-09-29  Vladimir Makarov  <vmakarov@redhat.com>
 
 	PR target/81481

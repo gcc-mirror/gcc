@@ -3324,7 +3324,7 @@ check_field_decl (tree field,
     {
       for (tree fields = TYPE_FIELDS (type); fields;
 	   fields = DECL_CHAIN (fields))
-	if (TREE_CODE (fields) == FIELD_DECL && !DECL_C_BIT_FIELD (field))
+	if (TREE_CODE (fields) == FIELD_DECL)
 	  any_default_members |= check_field_decl (fields, t,
 						   cant_have_const_ctor,
 						   no_const_asn_ref);
@@ -3636,10 +3636,10 @@ check_field_decls (tree t, tree *access_decls,
 
       /* We set DECL_C_BIT_FIELD in grokbitfield.
 	 If the type and width are valid, we'll also set DECL_BIT_FIELD.  */
-      if ((! DECL_C_BIT_FIELD (x) || ! check_bitfield_decl (x))
-	  && check_field_decl (x, t,
-			       cant_have_const_ctor_p,
-			       no_const_asn_ref_p))
+      if (DECL_C_BIT_FIELD (x))
+	check_bitfield_decl (x);
+
+      if (check_field_decl (x, t, cant_have_const_ctor_p, no_const_asn_ref_p))
 	{
 	  if (any_default_members
 	      && TREE_CODE (t) == UNION_TYPE)

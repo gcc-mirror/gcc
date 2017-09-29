@@ -1,5 +1,22 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	P0683R1 - default member initializers for bit-fields
+	* cp-tree.h (grokbitfield): Add INIT parameter.
+	* parser.c (cp_parser_constant_expression): Add STRICT_P argument,
+	if true, parse a conditional-expression rather than
+	assignment-expression.
+	(cp_parser_member_declaration): For C++11 and later pass true
+	as STRICT_P to cp_parser_constant_expression.  Parse C++2A bitfield
+	NSDMIs.  Adjust grokbitfield caller.  Handle DECL_INITIAL also for
+	DECL_C_BIT_FIELDs.
+	(cp_parser_objc_class_ivars): Adjust grokbitfield caller.
+	* class.c (check_field_decl): Recurse even for DECL_C_BIT_FIELDs.
+	(check_field_decls): Call check_field_decl even for DECL_C_BIT_FIELDs.
+	* decl2.c (grokbitfield): Add INIT parameter, pass it to
+	cp_finish_decl.
+	* pt.c (tsubst_decl): Handle DECL_INITIAL for all FIELD_DECLs, not
+	just non-bitfields.
+
 	* class.c (check_bitfield_decl): Retrieve and clear width from
 	DECL_BIT_FIELD_REPRESENTATIVE rather than DECL_INITIAL.
 	(check_field_decls): Test DECL_BIT_FIELD_REPRESENTATIVE rather than
