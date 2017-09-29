@@ -240,6 +240,7 @@ class translate_isl_ast_to_gimple
   void gsi_insert_earliest (gimple_seq seq);
   tree rename_all_uses (tree new_expr, basic_block new_bb, basic_block old_bb);
   bool codegen_error_p () const { return codegen_error; }
+  void set_codegen_error () { codegen_error = true; }
   bool is_constant (tree op) const
   {
     return TREE_CODE (op) == INTEGER_CST
@@ -347,7 +348,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 	 division by 2^64 that is folded to 0.  */
       if (integer_zerop (tree_rhs_expr))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL_TREE;
 	}
       return fold_build2 (EXACT_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
@@ -357,7 +358,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 	 division by 2^64 that is folded to 0.  */
       if (integer_zerop (tree_rhs_expr))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL_TREE;
 	}
       return fold_build2 (TRUNC_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
@@ -368,7 +369,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 	 division by 2^64 that is folded to 0.  */
       if (integer_zerop (tree_rhs_expr))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL_TREE;
 	}
       return fold_build2 (TRUNC_MOD_EXPR, type, tree_lhs_expr, tree_rhs_expr);
@@ -378,7 +379,7 @@ binary_op_to_tree (tree type, __isl_take isl_ast_expr *expr, ivs_params &ip)
 	 division by 2^64 that is folded to 0.  */
       if (integer_zerop (tree_rhs_expr))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL_TREE;
 	}
       return fold_build2 (FLOOR_DIV_EXPR, type, tree_lhs_expr, tree_rhs_expr);
@@ -1497,7 +1498,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
   tree new_expr;
   if (chrec_contains_undetermined (scev))
     {
-      codegen_error = true;
+      set_codegen_error ();
       return build_zero_cst (TREE_TYPE (old_name));
     }
 
@@ -1510,7 +1511,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
   if (chrec_contains_undetermined (new_expr)
       || tree_contains_chrecs (new_expr, NULL))
     {
-      codegen_error = true;
+      set_codegen_error ();
       return build_zero_cst (TREE_TYPE (old_name));
     }
 
@@ -1519,7 +1520,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
       basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_expr));
       if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return build_zero_cst (TREE_TYPE (old_name));
 	}
     }
@@ -1539,7 +1540,7 @@ get_rename_from_scev (tree old_name, gimple_seq *stmts, loop_p loop,
 	  basic_block bb = gimple_bb (SSA_NAME_DEF_STMT (new_ssa_name));
 	  if (bb && !dominated_by_p (CDI_DOMINATORS, new_bb, bb))
 	    {
-	      codegen_error = true;
+	      set_codegen_error ();
 	      return build_zero_cst (TREE_TYPE (old_name));
 	    }
 	}
@@ -1820,8 +1821,8 @@ copy_loop_phi_nodes (basic_block bb, basic_block new_bb)
       tree new_res = create_new_def_for (res, new_phi,
 					 gimple_phi_result_ptr (new_phi));
       set_rename (res, new_res);
-      codegen_error = !copy_loop_phi_args (phi, ibp_old_bb, new_phi,
-					   ibp_new_bb, true);
+      if (!copy_loop_phi_args (phi, ibp_old_bb, new_phi, ibp_new_bb, true))
+	set_codegen_error ();
       update_stmt (new_phi);
 
       if (dump_file)
@@ -2593,7 +2594,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 	 outside the region.  */
       if (num_phis)
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL;
 	}
     }
@@ -2608,7 +2609,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
       edge e = edge_for_new_close_phis (bb);
       if (!e)
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL;
 	}
 
@@ -2622,7 +2623,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 
       if (!copy_loop_close_phi_nodes (bb, phi_bb, iv_map))
 	{
-	  codegen_error = true;
+	  set_codegen_error ();
 	  return NULL;
 	}
 
@@ -2644,7 +2645,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 	     code.  See gfortran.dg/graphite/pr29832.f90.  */
 	  if (EDGE_COUNT (bb->preds) != EDGE_COUNT (phi_bb->preds))
 	    {
-	      codegen_error = true;
+	      set_codegen_error ();
 	      return NULL;
 	    }
 
@@ -2664,7 +2665,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 	     extend that to reductions that cannot be analyzed by SCEV.  */
 	  if (!bb_in_sese_p (phi_bb, region->if_region->true_region->region))
 	    {
-	      codegen_error = true;
+	      set_codegen_error ();
 	      return NULL;
 	    }
 
@@ -2673,7 +2674,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 		     bb->index);
 	  if (!copy_loop_phi_nodes (bb, phi_bb))
 	    {
-	      codegen_error = true;
+	      set_codegen_error ();
 	      return NULL;
 	    }
 	}
@@ -2695,7 +2696,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 	      || !bb_in_sese_p (phi_bb, region->if_region->true_region->region)
 	      || !copy_cond_phi_nodes (bb, phi_bb, iv_map))
 	    {
-	      codegen_error = true;
+	      set_codegen_error ();
 	      return NULL;
 	    }
 	}
@@ -2718,7 +2719,7 @@ copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 
   if (!graphite_copy_stmts_from_block (bb, new_bb, iv_map))
     {
-      codegen_error = true;
+      set_codegen_error ();
       return NULL;
     }
 
@@ -2752,12 +2753,18 @@ translate_pending_phi_nodes ()
       auto_vec <tree, 1> iv_map;
       if (bb_contains_loop_phi_nodes (new_bb)
 	  && bb_contains_loop_phi_nodes (old_bb))
-	codegen_error = !copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
-					    ibp_new_bb, false);
+	{
+	  if (!copy_loop_phi_args (old_phi, ibp_old_bb, new_phi,
+				   ibp_new_bb, false))
+	    set_codegen_error ();
+	}
       else if (bb_contains_loop_close_phi_nodes (new_bb))
-	codegen_error = !copy_loop_close_phi_args (old_bb, new_bb, iv_map, false);
-      else
-	codegen_error = !copy_cond_phi_args (old_phi, new_phi, iv_map, false);
+	{
+	  if (!copy_loop_close_phi_args (old_bb, new_bb, iv_map, false))
+	    set_codegen_error ();
+	}
+      else if (!copy_cond_phi_args (old_phi, new_phi, iv_map, false))
+	set_codegen_error ();
 
       if (dump_file)
 	{
