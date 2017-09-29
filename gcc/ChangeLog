@@ -1,3 +1,9 @@
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82339
+	* config/i386/i386.md (*movdi_internal peephole2): New -Os peephole
+	for movabsq $(i32 << shift), r64.
+
 2017-09-28  Uros Bizjak  <ubizjak@gmail.com>
 
 	* config/i386/i386.c (ix86_print_operand_address_as): Do not check
