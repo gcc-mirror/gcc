@@ -1,6 +1,15 @@
 2017-09-29  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	Backport from mainline
+	2017-06-29  Maya Rashish  <coypu@sdf.org>
+
+	PR target/77480
+	* config/netbsd.h (NETBSD_LIB_SPEC): Add -lc when creating shared
+	objects.
+
+2017-09-29  Krister Walfridsson  <krister.walfridsson@gmail.com>
+
+	Backport from mainline
 	2017-09-26  Krister Walfridsson  <krister.walfridsson@gmail.com>
 
 	PR target/39570
