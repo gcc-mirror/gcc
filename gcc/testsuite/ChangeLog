@@ -1,3 +1,18 @@
+2017-09-29  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/25071
+	* gfortran.dg/argument_checking_3.f90: Change warnings to errors.
+	* gfortran.dg/argument_checking_4.f90: Likewise.
+	* gfortran.dg/argument_checking_5.f90: Likewise.
+	* gfortran.dg/argument_checking_6.f90: Likewise.
+	* gfortran.dg/argument_checking_10.f90: Likewise.
+	* gfortran.dg/argument_checking_13.f90: Likewise.
+	* gfortran.dg/argument_checking_15.f90: Likewise.
+	* gfortran.dg/argument_checking_18.f90: Likewise.
+	* gfortran.dg/gomp/udr8.f90: Likewise.
+	* gfortran.dg/warn_argument_mismatch_1.f90: Add -std=legacy to
+	the dg-options.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* g++.dg/ext/bitfield7.C: New test.
