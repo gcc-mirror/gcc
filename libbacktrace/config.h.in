@@ -31,6 +31,9 @@
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the `z' library (-lz). */
+#undef HAVE_LIBZ
+
 /* Define to 1 if you have the <link.h> header file. */
 #undef HAVE_LINK_H
 
@@ -75,6 +78,9 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define if -lz is available. */
+#undef HAVE_ZLIB
 
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */

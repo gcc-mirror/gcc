@@ -83,10 +83,12 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2)
-@NATIVE_TRUE@am__append_1 = btest stest edtest
-@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_2 = ttest
-@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_3 = dtest
+check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
+@NATIVE_TRUE@am__append_1 = btest stest ztest edtest
+@HAVE_ZLIB_TRUE@@NATIVE_TRUE@am__append_2 = -lz
+@HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__append_3 = ttest
+@HAVE_OBJCOPY_DEBUGLINK_TRUE@@NATIVE_TRUE@am__append_4 = dtest
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__append_5 = ctestg ctesta
 subdir = .
 DIST_COMMON = README ChangeLog $(srcdir)/Makefile.in \
 	$(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -116,8 +118,11 @@ am_libbacktrace_la_OBJECTS = atomic.lo dwarf.lo fileline.lo posix.lo \
 	print.lo sort.lo state.lo
 libbacktrace_la_OBJECTS = $(am_libbacktrace_la_OBJECTS)
 @NATIVE_TRUE@am__EXEEXT_1 = btest$(EXEEXT) stest$(EXEEXT) \
-@NATIVE_TRUE@	edtest$(EXEEXT)
+@NATIVE_TRUE@	ztest$(EXEEXT) edtest$(EXEEXT)
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@am__EXEEXT_2 = ttest$(EXEEXT)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am__EXEEXT_3 =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg$(EXEEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta$(EXEEXT)
 @NATIVE_TRUE@am_btest_OBJECTS = btest-btest.$(OBJEXT) \
 @NATIVE_TRUE@	btest-testlib.$(OBJEXT)
 btest_OBJECTS = $(am_btest_OBJECTS)
@@ -125,6 +130,22 @@ btest_OBJECTS = $(am_btest_OBJECTS)
 btest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(btest_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctesta_OBJECTS = ctesta-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctesta-testlib.$(OBJEXT)
+ctesta_OBJECTS = $(am_ctesta_OBJECTS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_DEPENDENCIES =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	libbacktrace.la
+ctesta_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(ctesta_CFLAGS) $(CFLAGS) \
+	$(ctesta_LDFLAGS) $(LDFLAGS) -o $@
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@am_ctestg_OBJECTS = ctestg-btest.$(OBJEXT) \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	ctestg-testlib.$(OBJEXT)
+ctestg_OBJECTS = $(am_ctestg_OBJECTS)
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_DEPENDENCIES =  \
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@	libbacktrace.la
+ctestg_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(ctestg_CFLAGS) $(CFLAGS) \
+	$(ctestg_LDFLAGS) $(LDFLAGS) -o $@
 @NATIVE_TRUE@am_edtest_OBJECTS = edtest.$(OBJEXT) \
 @NATIVE_TRUE@	edtest2_build.$(OBJEXT) testlib.$(OBJEXT)
 edtest_OBJECTS = $(am_edtest_OBJECTS)
@@ -140,6 +161,14 @@ ttest_OBJECTS = $(am_ttest_OBJECTS)
 ttest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(ttest_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
+@NATIVE_TRUE@am_ztest_OBJECTS = ztest-ztest.$(OBJEXT) \
+@NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
+ztest_OBJECTS = $(am_ztest_OBJECTS)
+@NATIVE_TRUE@ztest_DEPENDENCIES = libbacktrace.la \
+@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
+ztest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@
 depcomp =
 am__depfiles_maybe =
@@ -153,8 +182,9 @@ LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 SOURCES = $(libbacktrace_la_SOURCES) $(EXTRA_libbacktrace_la_SOURCES) \
-	$(btest_SOURCES) $(edtest_SOURCES) $(stest_SOURCES) \
-	$(ttest_SOURCES)
+	$(btest_SOURCES) $(ctesta_SOURCES) $(ctestg_SOURCES) \
+	$(edtest_SOURCES) $(stest_SOURCES) $(ttest_SOURCES) \
+	$(ztest_SOURCES)
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -345,17 +375,28 @@ libbacktrace_la_LIBADD = \
 	$(ALLOC_FILE)
 
 libbacktrace_la_DEPENDENCIES = $(libbacktrace_la_LIBADD)
-TESTS = $(check_PROGRAMS) $(am__append_3)
+TESTS = $(check_PROGRAMS) $(am__append_4)
 @NATIVE_TRUE@btest_SOURCES = btest.c testlib.c
 @NATIVE_TRUE@btest_CFLAGS = $(AM_CFLAGS) -g -O
 @NATIVE_TRUE@btest_LDADD = libbacktrace.la
 @NATIVE_TRUE@stest_SOURCES = stest.c
 @NATIVE_TRUE@stest_LDADD = libbacktrace.la
+@NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
+@NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
+@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_CFLAGS = $(AM_CFLAGS) -pthread
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_SOURCES = btest.c testlib.c
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_CFLAGS = $(AM_CFLAGS) -g
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_LDFLAGS = -Wl,--compress-debug-sections=zlib-gnu
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctestg_LDADD = libbacktrace.la
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_SOURCES = btest.c testlib.c
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_CFLAGS = $(AM_CFLAGS) -g
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDFLAGS = -Wl,--compress-debug-sections=zlib-gabi
+@HAVE_COMPRESSED_DEBUG_TRUE@@NATIVE_TRUE@ctesta_LDADD = libbacktrace.la
 
 # We can't use automake's automatic dependency tracking, because it
 # breaks when using bootstrap-lean.  Automatic dependency tracking
@@ -448,6 +489,12 @@ clean-checkPROGRAMS:
 btest$(EXEEXT): $(btest_OBJECTS) $(btest_DEPENDENCIES) $(EXTRA_btest_DEPENDENCIES) 
 	@rm -f btest$(EXEEXT)
 	$(btest_LINK) $(btest_OBJECTS) $(btest_LDADD) $(LIBS)
+ctesta$(EXEEXT): $(ctesta_OBJECTS) $(ctesta_DEPENDENCIES) $(EXTRA_ctesta_DEPENDENCIES) 
+	@rm -f ctesta$(EXEEXT)
+	$(ctesta_LINK) $(ctesta_OBJECTS) $(ctesta_LDADD) $(LIBS)
+ctestg$(EXEEXT): $(ctestg_OBJECTS) $(ctestg_DEPENDENCIES) $(EXTRA_ctestg_DEPENDENCIES) 
+	@rm -f ctestg$(EXEEXT)
+	$(ctestg_LINK) $(ctestg_OBJECTS) $(ctestg_LDADD) $(LIBS)
 edtest$(EXEEXT): $(edtest_OBJECTS) $(edtest_DEPENDENCIES) $(EXTRA_edtest_DEPENDENCIES) 
 	@rm -f edtest$(EXEEXT)
 	$(LINK) $(edtest_OBJECTS) $(edtest_LDADD) $(LIBS)
@@ -457,6 +504,9 @@ stest$(EXEEXT): $(stest_OBJECTS) $(stest_DEPENDENCIES) $(EXTRA_stest_DEPENDENCIE
 ttest$(EXEEXT): $(ttest_OBJECTS) $(ttest_DEPENDENCIES) $(EXTRA_ttest_DEPENDENCIES) 
 	@rm -f ttest$(EXEEXT)
 	$(ttest_LINK) $(ttest_OBJECTS) $(ttest_LDADD) $(LIBS)
+ztest$(EXEEXT): $(ztest_OBJECTS) $(ztest_DEPENDENCIES) $(EXTRA_ztest_DEPENDENCIES) 
+	@rm -f ztest$(EXEEXT)
+	$(ztest_LINK) $(ztest_OBJECTS) $(ztest_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -485,6 +535,30 @@ btest-testlib.o: testlib.c
 btest-testlib.obj: testlib.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(btest_CFLAGS) $(CFLAGS) -c -o btest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
+ctesta-btest.o: btest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+ctesta-btest.obj: btest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+ctesta-testlib.o: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ctesta-testlib.obj: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctesta_CFLAGS) $(CFLAGS) -c -o ctesta-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+ctestg-btest.o: btest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-btest.o `test -f 'btest.c' || echo '$(srcdir)/'`btest.c
+
+ctestg-btest.obj: btest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-btest.obj `if test -f 'btest.c'; then $(CYGPATH_W) 'btest.c'; else $(CYGPATH_W) '$(srcdir)/btest.c'; fi`
+
+ctestg-testlib.o: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ctestg-testlib.obj: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ctestg_CFLAGS) $(CFLAGS) -c -o ctestg-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
 ttest-ttest.o: ttest.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_CFLAGS) $(CFLAGS) -c -o ttest-ttest.o `test -f 'ttest.c' || echo '$(srcdir)/'`ttest.c
 
@@ -496,6 +570,18 @@ ttest-testlib.o: testlib.c
 
 ttest-testlib.obj: testlib.c
 	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ttest_CFLAGS) $(CFLAGS) -c -o ttest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
+
+ztest-ztest.o: ztest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-ztest.o `test -f 'ztest.c' || echo '$(srcdir)/'`ztest.c
+
+ztest-ztest.obj: ztest.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-ztest.obj `if test -f 'ztest.c'; then $(CYGPATH_W) 'ztest.c'; else $(CYGPATH_W) '$(srcdir)/ztest.c'; fi`
+
+ztest-testlib.o: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-testlib.o `test -f 'testlib.c' || echo '$(srcdir)/'`testlib.c
+
+ztest-testlib.obj: testlib.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(ztest_CFLAGS) $(CFLAGS) -c -o ztest-testlib.obj `if test -f 'testlib.c'; then $(CYGPATH_W) 'testlib.c'; else $(CYGPATH_W) '$(srcdir)/testlib.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo

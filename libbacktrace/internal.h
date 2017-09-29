@@ -292,4 +292,13 @@ extern int backtrace_dwarf_add (struct backtrace_state *state,
 				backtrace_error_callback error_callback,
 				void *data, fileline *fileline_fn);
 
+/* A test-only hook for elf_uncompress_zdebug.  */
+
+extern int backtrace_uncompress_zdebug (struct backtrace_state *,
+					const unsigned char *compressed,
+					size_t compressed_size,
+					backtrace_error_callback, void *data,
+					unsigned char **uncompressed,
+					size_t *uncompressed_size);
+
 #endif
