@@ -626,7 +626,7 @@ package body Lib is
             Source_File := Get_Source_File_Index (S);
 
             if Unwind_Instances then
-               while Template (Source_File) /= No_Source_File loop
+               while Template (Source_File) > No_Source_File loop
                   Source_File := Template (Source_File);
                end loop;
             end if;

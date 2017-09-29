@@ -3193,7 +3193,7 @@ depend on a file that no longer exists. Such tools include
 If you are using project file, a separate mechanism is provided using
 project attributes.
 
-@c --Comment:
+@c --Comment
 @c See :ref:`Specifying_Configuration_Pragmas` for more details.
 
 @node Generating Object Files,Source Dependencies,Configuration Pragmas,The GNAT Compilation Model
@@ -7925,7 +7925,7 @@ Unique. Recompile at most the main files. It implies -c. Combined with
 -u with a project file and no main has a special meaning.
 @end table
 
-@c --Comment:
+@c --Comment
 @c (See :ref:`Project_Files_and_Main_Subprograms`.)
 
 @geindex -U (gnatmake)

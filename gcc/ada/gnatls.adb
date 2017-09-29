@@ -2097,6 +2097,7 @@ begin
 
    if RTS_Specified = null then
       declare
+         FD   : File_Descriptor;
          Text : Source_Buffer_Ptr;
          Hi   : Source_Ptr;
 
@@ -2104,7 +2105,7 @@ begin
          Name_Buffer (1 .. 10) := "system.ads";
          Name_Len := 10;
 
-         Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+         Read_Source_File (Name_Find, 0, Hi, Text, FD);
 
          if Null_Source_Buffer_Ptr (Text) then
             No_Runtime := True;

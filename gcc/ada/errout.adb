@@ -1813,7 +1813,7 @@ package body Errout is
          --  the Main_Source line is unknown (this happens in error situations,
          --  e.g. when integrated preprocessing fails).
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Write_Str (" ");
             Write_Int (Num_Source_Lines (Main_Source_File));
 
@@ -1938,7 +1938,7 @@ package body Errout is
       --  Source_Reference. This ensures outputting the proper name of
       --  the source file in this situation.
 
-      if Main_Source_File = No_Source_File
+      if Main_Source_File <= No_Source_File
         or else Num_SRef_Pragmas (Main_Source_File) /= 0
       then
          Current_Error_Source_File := No_Source_File;
@@ -2045,7 +2045,7 @@ package body Errout is
 
                   --  Only write the header if Sfile is known
 
-                  if Sfile /= No_Source_File then
+                  if Sfile > No_Source_File then
                      Write_Header (Sfile);
                      Write_Eol;
                   end if;
@@ -2066,7 +2066,7 @@ package body Errout is
                   --  Only output the listing if Sfile is known, to avoid
                   --  crashing the compiler.
 
-                  if Sfile /= No_Source_File then
+                  if Sfile > No_Source_File then
                      for N in 1 .. Last_Source_Line (Sfile) loop
                         while E /= No_Error_Msg
                           and then Errors.Table (E).Deleted
@@ -2141,7 +2141,7 @@ package body Errout is
 
          --  Output the header only when Main_Source_File is known
 
-         if Main_Source_File /= No_Source_File then
+         if Main_Source_File > No_Source_File then
             Write_Header (Main_Source_File);
          end if;
 

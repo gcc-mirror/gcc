@@ -23,10 +23,11 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Csets;    use Csets;
+with Csets;         use Csets;
 with Opt;
-with Osint;    use Osint;
-with Output;   use Output;
+with Osint;         use Osint;
+with Output;        use Output;
+with System.OS_Lib; use System.OS_Lib;
 
 package body Targparm is
    use ASCII;
@@ -156,6 +157,7 @@ package body Targparm is
       Set_NUA : Set_NUA_Type := null;
       Set_NUP : Set_NUP_Type := null)
    is
+      FD   : File_Descriptor;
       Text : Source_Buffer_Ptr;
       Hi   : Source_Ptr;
 
@@ -167,11 +169,15 @@ package body Targparm is
       Name_Buffer (1 .. 10) := "system.ads";
       Name_Len := 10;
 
-      Read_Source_File (Name_Find, Lo => 0, Hi => Hi, Src => Text);
+      Read_Source_File (Name_Find, 0, Hi, Text, FD);
 
       if Null_Source_Buffer_Ptr (Text) then
          Write_Line ("fatal error, run-time library not installed correctly");
-         Write_Line ("cannot locate file system.ads");
+         if FD = Null_FD then
+            Write_Line ("cannot locate file system.ads");
+         else
+            Write_Line ("no read access for file system.ads");
+         end if;
          raise Unrecoverable_Error;
       end if;
 
