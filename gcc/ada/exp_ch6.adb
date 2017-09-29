@@ -4330,11 +4330,19 @@ package body Exp_Ch6 is
       --  result from the secondary stack.
 
       if Needs_Finalization (Etype (Subp)) then
+         if not Is_Build_In_Place_Function_Call (Call_Node)
+           and then
+             (No (First_Formal (Subp))
+                or else
+                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
+         then
+            Expand_Ctrl_Function_Call (Call_Node);
+
          --  Build-in-place function calls which appear in anonymous contexts
          --  need a transient scope to ensure the proper finalization of the
          --  intermediate result after its use.
 
-         if Is_Build_In_Place_Function_Call (Call_Node)
+         elsif Is_Build_In_Place_Function_Call (Call_Node)
            and then
              Nkind_In (Parent (Unqual_Conv (Call_Node)),
                        N_Attribute_Reference,
@@ -4346,14 +4354,6 @@ package body Exp_Ch6 is
                        N_Slice)
          then
             Establish_Transient_Scope (Call_Node, Sec_Stack => True);
-
-         elsif not Is_Build_In_Place_Function_Call (Call_Node)
-           and then
-             (No (First_Formal (Subp))
-                or else
-                  not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
-         then
-            Expand_Ctrl_Function_Call (Call_Node);
          end if;
       end if;
    end Expand_Call_Helper;
@@ -6393,9 +6393,9 @@ package body Exp_Ch6 is
          end if;
       end if;
 
-      --  For the case of a simple return that does not come from an extended
-      --  return, in the case of build-in-place, we rewrite "return
-      --  <expression>;" to be:
+      --  For the case of a simple return that does not come from an
+      --  extended return, in the case of build-in-place, we rewrite
+      --  "return <expression>;" to be:
 
       --    return _anon_ : <return_subtype> := <expression>
 
@@ -8518,6 +8518,18 @@ package body Exp_Ch6 is
               (Obj_Decl, Original_Node (Obj_Decl));
          end if;
       end;
+
+      --  If the object entity has a class-wide Etype, then we need to change
+      --  it to the result subtype of the function call, because otherwise the
+      --  object will be class-wide without an explicit initialization and
+      --  won't be allocated properly by the back end. It seems unclean to make
+      --  such a revision to the type at this point, and we should try to
+      --  improve this treatment when build-in-place functions with class-wide
+      --  results are implemented. ???
+
+      if Is_Class_Wide_Type (Etype (Defining_Identifier (Obj_Decl))) then
+         Set_Etype (Defining_Identifier (Obj_Decl), Result_Subt);
+      end if;
    end Make_Build_In_Place_Call_In_Object_Declaration;
 
    -------------------------------------------------

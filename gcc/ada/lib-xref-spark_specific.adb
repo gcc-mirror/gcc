@@ -249,7 +249,7 @@ package body SPARK_Specific is
       --  Source file could be inexistant as a result of an error, if option
       --  gnatQ is used.
 
-      if File = No_Source_File then
+      if File <= No_Source_File then
          return;
       end if;
 

@@ -354,6 +354,7 @@ package body Sinput.L is
      (N : File_Name_Type;
       T : Osint.File_Type) return Source_File_Index
    is
+      FD  : File_Descriptor;
       Src : Source_Buffer_Ptr;
       X   : Source_File_Index;
       Lo  : Source_Ptr;
@@ -411,12 +412,16 @@ package body Sinput.L is
                   Source_Align) * Source_Align;
       end if;
 
-      Osint.Read_Source_File (N, Lo, Hi, Src, T);
+      Osint.Read_Source_File (N, Lo, Hi, Src, FD, T);
 
       if Null_Source_Buffer_Ptr (Src) then
          Source_File.Decrement_Last;
-         return No_Source_File;
 
+         if FD = Null_FD then
+            return No_Source_File;
+         else
+            return No_Access_To_Source_File;
+         end if;
       else
          if Debug_Flag_L then
             Write_Eol;

@@ -3752,7 +3752,7 @@ package body Sprint is
       --  Ignore if there is no current source file, or we're not in dump
       --  source text mode, or if in freeze actions.
 
-      if Current_Source_File /= No_Source_File
+      if Current_Source_File > No_Source_File
         and then Dump_Source_Text
         and then Freeze_Indent = 0
       then

@@ -1,5 +1,34 @@
 2017-09-29  Bob Duff  <duff@adacore.com>
 
+	* exp_ch6.adb (Expand_Call_Helper): Replace with code more similar to
+	what we had before.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Back out previous
+	change. Set the Etype in the class-wide case. This fixes a regression
+	in the libadalang test suite.
+
+2017-09-29  Joel Brobecker  <brobecker@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,
+	doc/gnat_ugn/the_gnat_compilation_model.rst: Avoid use of single colon
+	in comment markup.
+	* gnat_ugn.texi: Regenerate.
+
+2017-09-29  Justin Squirek  <squirek@adacore.com>
+
+	* ali-util.adb, comperr.adb, cprint.adb, errout.adb, fmap.adb,
+	fname-sf.adb, frontend.adb, lib-xref-spark_specific.adb, gnat1drv.adb,
+	gnatls.adb, lib.adb, lib-load.adb, lib-writ.adb, prepcomp.adb,
+	sinput-d.adb, sinput-l.adb, sprint.adb, targparm.adb: Update comparison
+	for checking source file status and error message and/or call to
+	Read_Source_File.
+	* libgnat/s-os_lib.ads: Add new potential value constant for
+	uninitialized file descriptors.
+	* osint.adb, osint.ads (Read_Source_File): Add extra parameter to
+	return result of IO to encompass a read access failure in addition to a
+	file-not-found error.
+
+2017-09-29  Bob Duff  <duff@adacore.com>
+
 	* exp_ch6.adb (Expand_Call_Helper): Handle case of build-in-place
 	functions returning nonlimited types. Allow for qualified expressions
 	and type conversions.

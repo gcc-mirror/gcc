@@ -852,7 +852,7 @@ procedure Gnat1drv is
          --  pragma, to be used this way and to cause the body file to be
          --  ignored in this context).
 
-         if Src_Ind /= No_Source_File
+         if Src_Ind > No_Source_File
            and then Source_File_Is_Body (Src_Ind)
          then
             Errout.Finalize (Last_Call => False);
@@ -1065,6 +1065,11 @@ begin
                  ("fatal error, run-time library not installed correctly");
                Write_Line ("cannot locate file system.ads");
                raise Unrecoverable_Error;
+            elsif S = No_Access_To_Source_File then
+               Write_Line
+                 ("fatal error, run-time library not installed correctly");
+               Write_Line ("no read access for file system.ads");
+               raise Unrecoverable_Error;
 
             --  Read system.ads successfully, remember its source index
 
@@ -1141,7 +1146,7 @@ begin
 
       --  Exit with errors if the main source could not be parsed
 
-      if Sinput.Main_Source_File = No_Source_File then
+      if Sinput.Main_Source_File <= No_Source_File then
          Errout.Finalize (Last_Call => True);
          Errout.Output_Messages;
          Exit_Program (E_Errors);

@@ -126,7 +126,7 @@ begin
 
    --  Return immediately if the main source could not be found
 
-   if Sinput.Main_Source_File = No_Source_File then
+   if Sinput.Main_Source_File <= No_Source_File then
       return;
    end if;
 
@@ -167,7 +167,7 @@ begin
 
          --  Case of gnat.adc file present
 
-         if Source_gnat_adc /= No_Source_File then
+         if Source_gnat_adc > No_Source_File then
             --  Parse the gnat.adc file for configuration pragmas
 
             Initialize_Scanner (No_Unit, Source_gnat_adc);
@@ -213,7 +213,7 @@ begin
 
                   Source_Config_File := Load_Config_File (Config_Name);
 
-                  if Source_Config_File = No_Source_File then
+                  if Source_Config_File <= No_Source_File then
                      Osint.Fail
                        ("cannot find configuration pragmas file "
                         & Config_File_Names (Index).all);

@@ -253,6 +253,7 @@ package body Comperr is
          --  we use the contents of this file at this point.
 
          declare
+            FD  : File_Descriptor;
             Lo  : Source_Ptr;
             Hi  : Source_Ptr;
             Src : Source_Buffer_Ptr;
@@ -261,7 +262,7 @@ package body Comperr is
             Namet.Unlock;
             Name_Buffer (1 .. 12) := "gnat_bug.box";
             Name_Len := 12;
-            Read_Source_File (Name_Enter, 0, Hi, Src);
+            Read_Source_File (Name_Enter, 0, Hi, Src, FD);
 
             --  If we get a Src file, we use it
 
@@ -457,7 +458,7 @@ package body Comperr is
       --  If parsing was not successful, no Main_Unit is available, so return
       --  immediately.
 
-      if Main_Source_File = No_Source_File then
+      if Main_Source_File <= No_Source_File then
          return;
       end if;
 
