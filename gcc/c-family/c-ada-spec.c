@@ -36,7 +36,7 @@ static int  dump_generic_ada_node (pretty_printer *, tree, tree, int, bool,
 				   bool);
 static int  dump_ada_declaration (pretty_printer *, tree, tree, int);
 static void dump_ada_struct_decl (pretty_printer *, tree, tree, int, bool);
-static char *to_ada_name (const char *, bool *);
+static char *to_ada_name (const char *, unsigned int, bool *);
 
 #define INDENT(SPACE) \
   do { int i; for (i = 0; i<SPACE; i++) pp_space (buffer); } while (0)
@@ -577,7 +577,7 @@ dump_ada_macros (pretty_printer *pp, const char* file)
 	  prev_line = sloc.line;
 
 	  pp_string (pp, "   ");
-	  ada_name = to_ada_name ((const char *) NODE_NAME (node), NULL);
+	  ada_name = to_ada_name ((const char *) NODE_NAME (node), 0, NULL);
 	  pp_string (pp, ada_name);
 	  free (ada_name);
 	  pp_string (pp, " : ");
@@ -1078,18 +1078,20 @@ has_nontrivial_methods (tree type)
   return false;
 }
 
-/* Generate a legal Ada name from a C/C++ NAME and return a malloc'ed string. 
-   SPACE_FOUND, if not NULL, is used to indicate whether a space was found
-   in NAME.  */
+#define INDEX_LENGTH 8
+
+/* Generate a legal Ada name from a C/C++ NAME and return a malloc'ed string.
+   INDEX, if non-zero, is used to disambiguate overloaded names.  SPACE_FOUND,
+   if not NULL, is used to indicate whether a space was found in NAME.  */
 
 static char *
-to_ada_name (const char *name, bool *space_found)
+to_ada_name (const char *name, unsigned int index, bool *space_found)
 {
   const char **names;
   const int len = strlen (name);
   int j, len2 = 0;
   bool found = false;
-  char *s = XNEWVEC (char, len * 2 + 5);
+  char *s = XNEWVEC (char, len * 2 + 5 + (index ? INDEX_LENGTH : 0));
   char c;
 
   if (space_found)
@@ -1287,7 +1289,10 @@ to_ada_name (const char *name, bool *space_found)
   if (s[len2 - 1] == '_')
     s[len2++] = 'u';
 
-  s[len2] = '\0';
+  if (index)
+    snprintf (&s[len2], INDEX_LENGTH, "_u_%d", index + 1);
+  else
+    s[len2] = '\0';
 
   return s;
 }
@@ -1305,16 +1310,17 @@ separate_class_package (tree decl)
 static bool package_prefix = true;
 
 /* Dump in BUFFER the name of an identifier NODE of type TYPE, following Ada
-   syntax.  LIMITED_ACCESS indicates whether NODE can be accessed via a limited
+   syntax.  INDEX, if non-zero, is used to disambiguate overloaded names.
+   LIMITED_ACCESS indicates whether NODE can be accessed via a limited
    'with' clause rather than a regular 'with' clause.  */
 
 static void
 pp_ada_tree_identifier (pretty_printer *buffer, tree node, tree type,
-			bool limited_access)
+			unsigned int index, bool limited_access)
 {
   const char *name = IDENTIFIER_POINTER (node);
   bool space_found = false;
-  char *s = to_ada_name (name, &space_found);
+  char *s = to_ada_name (name, index, &space_found);
   tree decl = get_underlying_decl (type);
 
   /* If the entity comes from another file, generate a package prefix.  */
@@ -1426,6 +1432,71 @@ pp_asm_name (pretty_printer *buffer, tree t)
   pp_string (buffer, ada_name);
 }
 
+/* Hash table of overloaded names associating identifier nodes with DECL_UIDs.
+   It is needed in Ada 2005 because we can have at most one import directive
+   per subprogram name in a given scope, so we have to mangle the subprogram
+   names on the Ada side to import overloaded subprograms from C++.  */
+
+struct overloaded_name_hash {
+  hashval_t hash;
+  tree name;
+  tree context;
+  vec<unsigned int> homonyms;
+};
+
+struct overloaded_name_hasher : delete_ptr_hash<overloaded_name_hash>
+{
+  static inline hashval_t hash (overloaded_name_hash *t)
+    { return t->hash; }
+  static inline bool equal (overloaded_name_hash *a, overloaded_name_hash *b)
+    { return a->name == b->name && a->context == b->context; }
+};
+
+static hash_table<overloaded_name_hasher> *overloaded_names;
+
+/* Compute the overloading index of function DECL in its context.  */
+
+static unsigned int
+compute_overloading_index (tree decl)
+{
+  const hashval_t hashcode
+    = iterative_hash_hashval_t (htab_hash_pointer (DECL_NAME (decl)),
+			        htab_hash_pointer (DECL_CONTEXT (decl)));
+  struct overloaded_name_hash in, *h, **slot;
+  unsigned int index, *iter;
+
+  if (!overloaded_names)
+    overloaded_names = new hash_table<overloaded_name_hasher> (512);
+
+  /* Look up the list of homonyms in the table.  */
+  in.hash = hashcode;
+  in.name = DECL_NAME (decl);
+  in.context = DECL_CONTEXT (decl);
+  slot = overloaded_names->find_slot_with_hash (&in, hashcode, INSERT);
+  if (*slot)
+    h = *slot;
+  else
+    {
+      h = new overloaded_name_hash;
+      h->hash = hashcode;
+      h->name = DECL_NAME (decl);
+      h->context = DECL_CONTEXT (decl);
+      h->homonyms.create (0);
+      *slot = h;
+    }
+
+  /* Look up the function in the list of homonyms.  */
+  FOR_EACH_VEC_ELT (h->homonyms, index, iter)
+    if (*iter == DECL_UID (decl))
+      break;
+
+  /* If it is not present, push it onto the list.  */
+  if (!iter)
+    h->homonyms.safe_push (DECL_UID (decl));
+
+  return index;
+}
+
 /* Dump in BUFFER the name of a DECL node if set, following Ada syntax.
    LIMITED_ACCESS indicates whether NODE can be accessed via a limited
    'with' clause rather than a regular 'with' clause.  */
@@ -1434,7 +1505,13 @@ static void
 dump_ada_decl_name (pretty_printer *buffer, tree decl, bool limited_access)
 {
   if (DECL_NAME (decl))
-    pp_ada_tree_identifier (buffer, DECL_NAME (decl), decl, limited_access);
+    {
+      const unsigned int index
+	= (TREE_CODE (decl) == FUNCTION_DECL && cpp_check)
+	  ? compute_overloading_index (decl) : 0;
+      pp_ada_tree_identifier (buffer, DECL_NAME (decl), decl, index,
+			      limited_access);
+    }
   else
     {
       tree type_name = TYPE_NAME (TREE_TYPE (decl));
@@ -1448,7 +1525,7 @@ dump_ada_decl_name (pretty_printer *buffer, tree decl, bool limited_access)
 	    pp_scalar (buffer, "%d", TYPE_UID (TREE_TYPE (decl)));
 	}
       else if (TREE_CODE (type_name) == IDENTIFIER_NODE)
-	pp_ada_tree_identifier (buffer, type_name, decl, limited_access);
+	pp_ada_tree_identifier (buffer, type_name, decl, 0, limited_access);
     }
 }
 
@@ -1458,7 +1535,7 @@ static void
 dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2)
 {
   if (DECL_NAME (t1))
-    pp_ada_tree_identifier (buffer, DECL_NAME (t1), t1, false);
+    pp_ada_tree_identifier (buffer, DECL_NAME (t1), t1, 0, false);
   else
     {
       pp_string (buffer, "anon");
@@ -1468,7 +1545,7 @@ dump_ada_double_name (pretty_printer *buffer, tree t1, tree t2)
   pp_underscore (buffer);
 
   if (DECL_NAME (t2))
-    pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, false);
+    pp_ada_tree_identifier (buffer, DECL_NAME (t2), t2, 0, false);
   else
     {
       pp_string (buffer, "anon");
@@ -1622,7 +1699,7 @@ dump_ada_function_declaration (pretty_printer *buffer, tree func,
 	  if (DECL_NAME (arg))
 	    {
 	      check_name (buffer, arg);
-	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE,
+	      pp_ada_tree_identifier (buffer, DECL_NAME (arg), NULL_TREE, 0,
 				      false);
 	      pp_string (buffer, " : ");
 	    }
@@ -1958,7 +2035,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
       return 0;
 
     case IDENTIFIER_NODE:
-      pp_ada_tree_identifier (buffer, node, type, limited_access);
+      pp_ada_tree_identifier (buffer, node, type, 0, limited_access);
       break;
 
     case TREE_LIST:
@@ -2016,7 +2093,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		    }
 
 		  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node,
-					  false);
+					  0, false);
 		}
 	      pp_string (buffer, ");");
 	      spc -= INDENT_INCR;
@@ -2039,7 +2116,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 		  newline_and_indent (buffer, spc);
 
 		  pp_ada_tree_identifier (buffer, TREE_PURPOSE (value), node,
-					  false);
+					  0, false);
 		  pp_string (buffer, " : constant ");
 
 		  dump_generic_ada_node
@@ -2069,7 +2146,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	if (tclass == tcc_declaration)
 	  {
 	    if (DECL_NAME (node))
-	      pp_ada_tree_identifier (buffer, DECL_NAME (node), NULL_TREE,
+	      pp_ada_tree_identifier (buffer, DECL_NAME (node), NULL_TREE, 0,
 				      limited_access);
 	    else
 	      pp_string (buffer, "<unnamed type decl>");
@@ -2079,7 +2156,7 @@ dump_generic_ada_node (pretty_printer *buffer, tree node, tree type, int spc,
 	    if (TYPE_NAME (node))
 	      {
 		if (TREE_CODE (TYPE_NAME (node)) == IDENTIFIER_NODE)
-		  pp_ada_tree_identifier (buffer, TYPE_NAME (node), node,
+		  pp_ada_tree_identifier (buffer, TYPE_NAME (node), node, 0,
 					  limited_access);
 		else if (TREE_CODE (TYPE_NAME (node)) == TYPE_DECL
 			 && DECL_NAME (TYPE_NAME (node)))
@@ -2598,7 +2675,7 @@ print_constructor (pretty_printer *buffer, tree t, tree type)
   tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "New_");
-  pp_ada_tree_identifier (buffer, decl_name, t, false);
+  pp_ada_tree_identifier (buffer, decl_name, t, 0, false);
 }
 
 /* Dump in BUFFER destructor spec corresponding to T.  */
@@ -2609,7 +2686,7 @@ print_destructor (pretty_printer *buffer, tree t, tree type)
   tree decl_name = DECL_NAME (TYPE_NAME (type));
 
   pp_string (buffer, "Delete_");
-  pp_ada_tree_identifier (buffer, decl_name, t, false);
+  pp_ada_tree_identifier (buffer, decl_name, t, 0, false);
 }
 
 /* Return the name of type T.  */
@@ -3375,6 +3452,7 @@ dump_ada_specs (void (*collect_all_refs)(const char *),
   for (int i = 0; i < source_refs_used; i++)
     dump_ads (source_refs[i], collect_all_refs, check);
 
-  /* Free files table.  */
+  /* Free various tables.  */
   free (source_refs);
+  delete overloaded_names;
 }

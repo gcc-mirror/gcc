@@ -1,3 +1,7 @@
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* g++.dg/other/dump-ada-spec-10.C: New test.
+
 2017-09-29  Jeff Law  <law@redhat.com>
 
 	* testsuite/gcc.dg/tree-ssa/ssa-dse-26.c: New test.
