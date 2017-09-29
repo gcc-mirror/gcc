@@ -3782,9 +3782,10 @@ package body Sem_Ch8 is
       --  before setting its previous use clause.
 
       if Ekind (Pack) = E_Package
-         and then Present (Current_Use_Clause (Pack))
-         and then Current_Use_Clause (Pack) /= N
-         and then No (Prev_Use_Clause (N))
+        and then Present (Current_Use_Clause (Pack))
+        and then Current_Use_Clause (Pack) /= N
+        and then No (Prev_Use_Clause (N))
+        and then Prev_Use_Clause (Current_Use_Clause (Pack)) /= N
       then
          Set_Prev_Use_Clause (N, Current_Use_Clause (Pack));
       end if;

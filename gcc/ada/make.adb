@@ -1772,7 +1772,7 @@ package body Make is
         (Data : out Compilation_Data;
          OK   : out Boolean)
       is
-         Pid       : Process_Id;
+         Pid : Process_Id;
 
       begin
          pragma Assert (Outstanding_Compiles > 0);
@@ -1790,7 +1790,7 @@ package body Make is
 
          for J in Running_Compile'First .. Outstanding_Compiles loop
             if Pid = Running_Compile (J).Pid then
-               Data    := Running_Compile (J);
+               Data := Running_Compile (J);
                --  If a mapping file was used by this compilation, get its file
                --  name for reuse by a subsequent compilation.
 
