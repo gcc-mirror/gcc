@@ -2089,7 +2089,7 @@ static enum tree_code cp_parser_assignment_operator_opt
 static cp_expr cp_parser_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false);
 static cp_expr cp_parser_constant_expression
-  (cp_parser *, bool = false, bool * = NULL);
+  (cp_parser *, bool = false, bool * = NULL, bool = false);
 static cp_expr cp_parser_builtin_offsetof
   (cp_parser *);
 static cp_expr cp_parser_lambda_expression
@@ -9626,12 +9626,15 @@ cp_parser_expression (cp_parser* parser, cp_id_kind * pidk,
   If ALLOW_NON_CONSTANT_P a non-constant expression is silently
   accepted.  If ALLOW_NON_CONSTANT_P is true and the expression is not
   constant, *NON_CONSTANT_P is set to TRUE.  If ALLOW_NON_CONSTANT_P
-  is false, NON_CONSTANT_P should be NULL.  */
+  is false, NON_CONSTANT_P should be NULL.  If STRICT_P is true,
+  only parse a conditional-expression, otherwise parse an
+  assignment-expression.  See below for rationale.  */
 
 static cp_expr
 cp_parser_constant_expression (cp_parser* parser,
 			       bool allow_non_constant_p,
-			       bool *non_constant_p)
+			       bool *non_constant_p,
+			       bool strict_p)
 {
   bool saved_integral_constant_expression_p;
   bool saved_allow_non_integral_constant_expression_p;
@@ -9665,16 +9668,27 @@ cp_parser_constant_expression (cp_parser* parser,
   parser->allow_non_integral_constant_expression_p
     = (allow_non_constant_p || cxx_dialect >= cxx11);
   parser->non_integral_constant_expression_p = false;
-  /* Although the grammar says "conditional-expression", we parse an
-     "assignment-expression", which also permits "throw-expression"
-     and the use of assignment operators.  In the case that
-     ALLOW_NON_CONSTANT_P is false, we get better errors than we would
+  /* Although the grammar says "conditional-expression", when not STRICT_P,
+     we parse an "assignment-expression", which also permits
+     "throw-expression" and the use of assignment operators.  In the case
+     that ALLOW_NON_CONSTANT_P is false, we get better errors than we would
      otherwise.  In the case that ALLOW_NON_CONSTANT_P is true, it is
      actually essential that we look for an assignment-expression.
      For example, cp_parser_initializer_clauses uses this function to
      determine whether a particular assignment-expression is in fact
      constant.  */
-  expression = cp_parser_assignment_expression (parser);
+  if (strict_p)
+    {
+      /* Parse the binary expressions (logical-or-expression).  */
+      expression = cp_parser_binary_expression (parser, false, false, false,
+						PREC_NOT_OPERATOR, NULL);
+      /* If the next token is a `?' then we're actually looking at
+	 a conditional-expression; otherwise we're done.  */
+      if (cp_lexer_next_token_is (parser->lexer, CPP_QUERY))
+	expression = cp_parser_question_colon_clause (parser, expression);
+    }
+  else
+    expression = cp_parser_assignment_expression (parser);
   /* Restore the old settings.  */
   parser->integral_constant_expression_p
     = saved_integral_constant_expression_p;
@@ -23445,6 +23459,7 @@ cp_parser_member_declaration (cp_parser* parser)
 	{
 	  tree attributes = NULL_TREE;
 	  tree first_attribute;
+	  tree initializer;
 	  bool is_bitfld = false;
 	  bool named_bitfld = false;
 
@@ -23492,18 +23507,48 @@ cp_parser_member_declaration (cp_parser* parser)
 	      cp_lexer_consume_token (parser->lexer);
 
 	      /* Get the width of the bitfield.  */
-	      width = cp_parser_constant_expression (parser);
+	      width = cp_parser_constant_expression (parser, false, NULL,
+						     cxx_dialect >= cxx11);
 
-	      /* Look for attributes that apply to the bitfield after
-		 the `:' token and width.  This is where GCC used to
-		 parse attributes in the past, pedwarn if there is
-		 a std attribute.  */
-	      if (cp_next_tokens_can_be_std_attribute_p (parser))
-		pedwarn (input_location, OPT_Wpedantic,
-			 "ISO C++ allows bit-field attributes only before "
-			 "the %<:%> token");
+	      /* In C++2A and as extension for C++11 and above we allow
+		 default member initializers for bit-fields.  */
+	      initializer = NULL_TREE;
+	      if (cxx_dialect >= cxx11
+		  && (cp_lexer_next_token_is (parser->lexer, CPP_EQ)
+		      || cp_lexer_next_token_is (parser->lexer,
+						 CPP_OPEN_BRACE)))
+		{
+		  location_t loc
+		    = cp_lexer_peek_token (parser->lexer)->location;
+		  if (cxx_dialect < cxx2a
+		      && !in_system_header_at (loc)
+		      && identifier != NULL_TREE)
+		    pedwarn (loc, 0,
+			     "default member initializers for bit-fields "
+			     "only available with -std=c++2a or "
+			     "-std=gnu++2a");
 
-	      late_attributes = cp_parser_attributes_opt (parser);
+		  initializer = cp_parser_save_nsdmi (parser);
+		  if (identifier == NULL_TREE)
+		    {
+		      error_at (loc, "default member initializer for "
+				     "unnamed bit-field");
+		      initializer = NULL_TREE;
+		    }
+		}
+	      else
+		{ 
+		  /* Look for attributes that apply to the bitfield after
+		     the `:' token and width.  This is where GCC used to
+		     parse attributes in the past, pedwarn if there is
+		     a std attribute.  */
+		  if (cp_next_tokens_can_be_std_attribute_p (parser))
+		    pedwarn (input_location, OPT_Wpedantic,
+			     "ISO C++ allows bit-field attributes only "
+			     "before the %<:%> token");
+
+		  late_attributes = cp_parser_attributes_opt (parser);
+		}
 
 	      attributes = chainon (attributes, late_attributes);
 
@@ -23520,13 +23565,12 @@ cp_parser_member_declaration (cp_parser* parser)
 							 sfk_none)
 				   : NULL,
 				   &decl_specifiers,
-				   width,
+				   width, initializer,
 				   attributes);
 	    }
 	  else
 	    {
 	      cp_declarator *declarator;
-	      tree initializer;
 	      tree asm_specification;
 	      int ctor_dtor_or_conv_p;
 
@@ -23745,7 +23789,6 @@ cp_parser_member_declaration (cp_parser* parser)
 	      if (TREE_CODE (decl) == FUNCTION_DECL)
 		cp_parser_save_default_args (parser, decl);
 	      else if (TREE_CODE (decl) == FIELD_DECL
-		       && !DECL_C_BIT_FIELD (decl)
 		       && DECL_INITIAL (decl))
 		/* Add DECL to the queue of NSDMI to be parsed later.  */
 		vec_safe_push (unparsed_nsdmis, decl);
@@ -30086,10 +30129,9 @@ cp_parser_objc_class_ivars (cp_parser* parser)
 	  attributes = chainon (prefix_attributes, attributes);
 
 	  if (width)
-	      /* Create the bitfield declaration.  */
-	      decl = grokbitfield (declarator, &declspecs,
-				   width,
-				   attributes);
+	    /* Create the bitfield declaration.  */
+	    decl = grokbitfield (declarator, &declspecs,
+				 width, NULL_TREE, attributes);
 	  else
 	    decl = grokfield (declarator, &declspecs,
 			      NULL_TREE, /*init_const_expr_p=*/false,
