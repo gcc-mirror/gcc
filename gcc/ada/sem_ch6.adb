@@ -568,8 +568,11 @@ package body Sem_Ch6 is
          --  Note that we cannot defer this freezing to the analysis of the
          --  expression itself, because a freeze node might appear in a nested
          --  scope, leading to an elaboration order issue in gigi.
+         --  As elsewhere, we do not emit freeze nodes within a generic unit.
 
-         Freeze_Expr_Types (Def_Id);
+         if not Inside_A_Generic then
+            Freeze_Expr_Types (Def_Id);
+         end if;
 
          --  For navigation purposes, indicate that the function is a body
 

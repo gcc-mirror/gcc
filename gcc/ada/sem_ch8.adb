@@ -8405,15 +8405,7 @@ package body Sem_Ch8 is
               or else (Present (Prefix (Id))
                          and then Scope (Entity (Id)) /= Entity (Prefix (Id)))
             then
-               --  There is a case whereby a unary operator is used within a
-               --  qualified expression, so mark the parameters as well as the
-               --  entity.
-
-               if Nkind (Entity (Id)) = N_Defining_Operator_Symbol then
-                  Mark_Parameters (Entity (Id));
-               end if;
-
-               Mark_Use_Package (Scope (Entity (Id)));
+               Mark_Use_Clauses (Entity (Id));
             end if;
          end if;
       end if;

@@ -21,7 +21,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Sep 25, 2017
+GNAT User's Guide for Native Platforms , Sep 29, 2017
 
 AdaCore
 
@@ -17654,7 +17654,7 @@ Add @code{dir} at the beginning of the project search dir.
 
 @table @asis
 
-@item @code{--RTS=@emph{rts-path}`}
+@item @code{--RTS=@emph{rts-path}}
 
 Specifies the default location of the runtime library. Same meaning as the
 equivalent @code{gnatmake} flag (@ref{dc,,Switches for gnatmake}).
