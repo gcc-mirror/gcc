@@ -1,3 +1,7 @@
+2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/eh/uncaught3.C: Add -Wno-deprecated for c++17.
+
 2017-09-28  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79488
