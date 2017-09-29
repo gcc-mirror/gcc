@@ -1,5 +1,23 @@
 2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
 
+	* c-ada-spec.c (to_ada_name): Add index parameter.
+	(pp_ada_tree_identifier): Likewise.
+	(dump_ada_macros): Adjust call to to_ada_name.
+	(struct overloaded_name_hash): New type.
+	(struct overloaded_name_hasher): Likewise.
+	(overloaded_names): New hash table.
+	(compute_overloading_index): New function.
+	(dump_ada_decl_name): Call it and pass the result to
+	pp_ada_tree_identifier.
+	(dump_ada_double_name): Adjust calls to pp_ada_tree_identifier.
+	(dump_ada_function_declaration): Likewise.
+	(dump_generic_ada_node): Likewise.
+	(print_constructor): Likewise.
+	(print_destructor): Likewise.
+	(dump_ada_specs): Delete overloaded_names table.
+
+2017-09-29  Eric Botcazou  <ebotcazou@adacore.com>
+
 	* c-ada-spec.c (max_ada_macros): Move around.
 	(store_ada_macro_index): Likewise.
 	(source_file): Rename into...
