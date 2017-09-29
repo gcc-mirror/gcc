@@ -1,3 +1,7 @@
+2017-09-29  Jeff Law  <law@redhat.com>
+
+	* testsuite/gcc.dg/tree-ssa/ssa-dse-26.c: New test.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	P0683R1 - default member initializers for bit-fields
