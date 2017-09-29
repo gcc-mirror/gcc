@@ -23445,35 +23445,68 @@ cp_parser_member_declaration (cp_parser* parser)
 	{
 	  tree attributes = NULL_TREE;
 	  tree first_attribute;
+	  bool is_bitfld = false;
+	  bool named_bitfld = false;
 
 	  /* Peek at the next token.  */
 	  token = cp_lexer_peek_token (parser->lexer);
 
-	  /* Check for a bitfield declaration.  */
-	  if (token->type == CPP_COLON
+	  /* The following code wants to know early if it is a bit-field
+	     or some other declaration.  Attributes can appear before
+	     the `:' token, but are hopefully rare enough that the
+	     simplicity of the tentative lookup pays off.  */
+	  if (cp_next_tokens_can_be_attribute_p (parser)
 	      || (token->type == CPP_NAME
-		  && cp_lexer_peek_nth_token (parser->lexer, 2)->type
-		  == CPP_COLON))
+		  && cp_nth_tokens_can_be_attribute_p (parser, 2)
+		  && (named_bitfld = true)))
+	    {
+	      cp_parser_parse_tentatively (parser);
+	      if (named_bitfld)
+		cp_lexer_consume_token (parser->lexer);
+	      cp_parser_attributes_opt (parser);
+	      token = cp_lexer_peek_token (parser->lexer);
+	      is_bitfld = cp_lexer_next_token_is (parser->lexer, CPP_COLON);
+	      cp_parser_abort_tentative_parse (parser);
+	    }
+
+	  /* Check for a bitfield declaration.  */
+	  if (is_bitfld
+	      || token->type == CPP_COLON
+	      || (token->type == CPP_NAME
+		  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON)
+		  && (named_bitfld = true)))
 	    {
 	      tree identifier;
 	      tree width;
+	      tree late_attributes = NULL_TREE;
 
-	      /* Get the name of the bitfield.  Note that we cannot just
-		 check TOKEN here because it may have been invalidated by
-		 the call to cp_lexer_peek_nth_token above.  */
-	      if (cp_lexer_peek_token (parser->lexer)->type != CPP_COLON)
+	      if (named_bitfld)
 		identifier = cp_parser_identifier (parser);
 	      else
 		identifier = NULL_TREE;
 
-	      /* Consume the `:' token.  */
-	      cp_lexer_consume_token (parser->lexer);
-	      /* Get the width of the bitfield.  */
-	      width
-		= cp_parser_constant_expression (parser);
-
 	      /* Look for attributes that apply to the bitfield.  */
 	      attributes = cp_parser_attributes_opt (parser);
+
+	      /* Consume the `:' token.  */
+	      cp_lexer_consume_token (parser->lexer);
+
+	      /* Get the width of the bitfield.  */
+	      width = cp_parser_constant_expression (parser);
+
+	      /* Look for attributes that apply to the bitfield after
+		 the `:' token and width.  This is where GCC used to
+		 parse attributes in the past, pedwarn if there is
+		 a std attribute.  */
+	      if (cp_next_tokens_can_be_std_attribute_p (parser))
+		pedwarn (input_location, OPT_Wpedantic,
+			 "ISO C++ allows bit-field attributes only before "
+			 "the %<:%> token");
+
+	      late_attributes = cp_parser_attributes_opt (parser);
+
+	      attributes = chainon (attributes, late_attributes);
+
 	      /* Remember which attributes are prefix attributes and
 		 which are not.  */
 	      first_attribute = attributes;

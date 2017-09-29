@@ -1,5 +1,8 @@
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
+	* parser.c (cp_parser_member_declaration): Parse attributes before
+	colon of a bitfield in addition to after colon.
+
 	* Make-lang.in (check-c++-all): Test also c++2a.
 
 2017-09-28  Jason Merrill  <jason@redhat.com>
