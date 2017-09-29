@@ -1,3 +1,10 @@
+2017-09-29  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/25071
+	* interface.c (compare_actual_formal): Change warnings to errors
+	when "Actual argument contains too few elements for dummy
+	argument", unless -std=legacy is used.
+
 2017-09-27  Thomas Schwinge  <thomas@codesourcery.com>
 
 	* lang.opt <Wdo-subscript>: End help text with a period.
