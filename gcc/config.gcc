@@ -801,6 +801,7 @@ case ${target} in
   case ${enable_threads} in
     "" | yes | posix) thread_file='posix' ;;
   esac
+  nbsd_tm_file="netbsd.h netbsd-stdint.h netbsd-elf.h"
   default_use_cxa_atexit=yes
   ;;
 *-*-openbsd*)
@@ -1004,7 +1005,7 @@ alpha*-*-freebsd*)
 	extra_options="${extra_options} alpha/elf.opt"
 	;;
 alpha*-*-netbsd*)
-	tm_file="elfos.h ${tm_file} netbsd.h alpha/elf.h netbsd-elf.h alpha/netbsd.h"
+	tm_file="elfos.h ${tm_file} ${nbsd_tm_file} alpha/elf.h alpha/netbsd.h"
 	tmake_file="${tmake_file} alpha/t-alpha"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt \
 		       alpha/elf.opt"
@@ -1104,7 +1105,7 @@ arm*-*-freebsd*)                # ARM FreeBSD EABI
 	with_tls=${with_tls:-gnu}
 	;;
 arm*-*-netbsdelf*)
-	tm_file="dbxelf.h elfos.h netbsd.h netbsd-elf.h arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
+	tm_file="dbxelf.h elfos.h ${nbsd_tm_file} arm/elf.h arm/aout.h ${tm_file} arm/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} arm/t-arm"
 	target_cpu_cname="arm6"
@@ -1489,11 +1490,11 @@ x86_64-*-freebsd*)
 	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${fbsd_tm_file} i386/x86-64.h i386/freebsd.h i386/freebsd64.h"
 	;;
 i[34567]86-*-netbsdelf*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/netbsd-elf.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${nbsd_tm_file} i386/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 x86_64-*-netbsd*)
-	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h netbsd.h netbsd-stdint.h netbsd-elf.h i386/x86-64.h i386/netbsd64.h"
+	tm_file="${tm_file} i386/unix.h i386/att.h dbxelf.h elfos.h ${nbsd_tm_file} i386/x86-64.h i386/netbsd64.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 i[34567]86-*-openbsd*)
@@ -1931,9 +1932,9 @@ m68k-*-elf* | fido-*-elf*)
 m68k*-*-netbsdelf*)
 	default_m68k_cpu=68020
 	default_cf_cpu=5475
-	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h m68k/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file} m68k/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
-	tm_defines="${tm_defines} MOTOROLA=1"
+	tm_defines="${tm_defines} MOTOROLA=1 CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
 m68k*-*-openbsd*)
 	default_m68k_cpu=68020
@@ -2060,7 +2061,7 @@ riscv*-*-elf* | riscv*-*-rtems*)
 	;;
 mips*-*-netbsd*)			# NetBSD/mips, either endian.
 	target_cpu_default="MASK_ABICALLS"
-	tm_file="elfos.h ${tm_file} mips/elf.h netbsd.h netbsd-elf.h mips/netbsd.h"
+	tm_file="elfos.h ${tm_file} mips/elf.h ${nbsd_tm_file} mips/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	;;
 mips*-img-linux*)
@@ -2376,7 +2377,7 @@ powerpc*-*-freebsd*)
 	esac
 	;;
 powerpc-*-netbsd*)
-	tm_file="${tm_file} dbxelf.h elfos.h netbsd.h netbsd-elf.h freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
+	tm_file="${tm_file} dbxelf.h elfos.h ${nbsd_tm_file} freebsd-spec.h rs6000/sysv4.h rs6000/netbsd.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	tmake_file="${tmake_file} rs6000/t-netbsd"
 	extra_options="${extra_options} rs6000/sysv4.opt"
@@ -2707,7 +2708,7 @@ sh-*-elf* | sh[12346l]*-*-elf* | \
 			fi
 			tm_file="${tm_file} gnu-user.h linux.h glibc-stdint.h sh/linux.h" ;;
 	sh*-*-netbsd*)
-			tm_file="${tm_file} netbsd.h netbsd-elf.h sh/netbsd-elf.h"
+			tm_file="${tm_file} ${nbsd_tm_file} sh/netbsd-elf.h"
 			extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 
 			;;
@@ -2867,7 +2868,7 @@ sparc-*-linux*)
 	fi
 	;;
 sparc-*-netbsdelf*)
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h ${nbsd_tm_file} sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc"
@@ -2915,7 +2916,7 @@ sparc64-*-freebsd*|ultrasparc-*-freebsd*)
 	;;
 sparc64-*-netbsd*)
 	tm_file="sparc/biarch64.h ${tm_file}"
-	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h netbsd.h netbsd-elf.h sparc/netbsd-elf.h"
+	tm_file="${tm_file} dbxelf.h elfos.h sparc/sysv4.h ${nbsd_tm_file} sparc/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt"
 	extra_options="${extra_options} sparc/long-double-switch.opt"
 	tmake_file="${tmake_file} sparc/t-sparc sparc/t-netbsd64"
@@ -3019,8 +3020,9 @@ vax-*-linux*)
 	extra_options="${extra_options} vax/elf.opt"
 	;;
 vax-*-netbsdelf*)
-	tm_file="${tm_file} elfos.h netbsd.h netbsd-elf.h vax/elf.h vax/netbsd-elf.h"
+	tm_file="${tm_file} elfos.h ${nbsd_tm_file} vax/elf.h vax/netbsd-elf.h"
 	extra_options="${extra_options} netbsd.opt netbsd-elf.opt vax/elf.opt"
+	tm_defines="${tm_defines} CHAR_FAST8=1 SHORT_FAST16=1"
 	;;
 vax-*-openbsd*)
 	tm_file="vax/vax.h vax/openbsd1.h openbsd.h openbsd-stdint.h openbsd-libpthread.h vax/openbsd.h"
