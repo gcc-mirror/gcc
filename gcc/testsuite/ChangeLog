@@ -1,5 +1,10 @@
 2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/65949
+	* g++.dg/cpp1y/lambda-generic-variadic5.C: New.
+
+2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/68754
 	* g++.dg/cpp1y/constexpr-68754.C: Move...
 	* g++.dg/cpp0x/constexpr-68754.C: ... here, adjust.
