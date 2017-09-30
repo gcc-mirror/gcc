@@ -2191,9 +2191,11 @@ defaulted_late_check (tree fn)
       || !compparms (TYPE_ARG_TYPES (TREE_TYPE (fn)),
 		     TYPE_ARG_TYPES (TREE_TYPE (implicit_fn))))
     {
-      error ("defaulted declaration %q+D", fn);
-      error_at (DECL_SOURCE_LOCATION (fn),
-		"does not match expected signature %qD", implicit_fn);
+      error ("defaulted declaration %q+D does not match the "
+	     "expected signature", fn);
+      inform (DECL_SOURCE_LOCATION (fn),
+	      "expected signature: %qD", implicit_fn);
+      return;
     }
 
   if (DECL_DELETED_FN (implicit_fn))
