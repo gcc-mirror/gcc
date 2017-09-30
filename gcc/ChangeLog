@@ -1,3 +1,25 @@
+2017-09-30  Krister Walfridsson  <krister.walfridsson@gmail.com>
+	    Maya Rashish  <coypu@sdf.org>
+
+	* config.gcc (*-*-netbsd*): New variable nbsd_tm_file containing
+	netbsd.h, netbsd-stdint.h, and netbsd-elf.h.
+	(alpha*-*-netbsd*) Use nbsd_tm_file.
+	(arm*-*-netbsdelf*) Likewise.
+	(i[34567]86-*-netbsdelf*) Likewise.
+	(x86_64-*-netbsd*) Likewise.
+	(mips*-*-netbsd*) Likewise.
+	(powerpc-*-netbsd*) Likewise.
+	(sh*-*-netbsd*) Likewise.
+	(sparc-*-netbsdelf*) Likewise.
+	(sparc64-*-netbsd*) Likewise.
+	(m68k*-*-netbsdelf*) Use nbsd_tm_file and add CHAR_FAST8/SHORT_FAST16
+	to tm_defines.
+	(vax-*-netbsdelf*) Likewise.
+	* config/netbsd-stdint.h (INT_FAST8_TYPE): Check CHAR_FAST8.
+	(UINT_FAST8_TYPE) Likewise.
+	(INT_FAST16_TYPE) Check CHAR_FAST16.
+	(UINT_FAST16_TYPE) Likewise.
+
 2017-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/82361

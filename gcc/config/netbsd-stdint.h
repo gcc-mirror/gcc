@@ -42,12 +42,28 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define UINT_LEAST32_TYPE UINT32_TYPE
 #define UINT_LEAST64_TYPE UINT64_TYPE
 
+#ifdef CHAR_FAST8
+#define INT_FAST8_TYPE    (LONG_TYPE_SIZE == 64 ? "int" : "signed char")
+#else
 #define INT_FAST8_TYPE    INT32_TYPE
+#endif
+#ifdef SHORT_FAST16
+#define INT_FAST16_TYPE   (LONG_TYPE_SIZE == 64 ? "int" : "short int")
+#else
 #define INT_FAST16_TYPE   INT32_TYPE
+#endif
 #define INT_FAST32_TYPE   INT32_TYPE
 #define INT_FAST64_TYPE   INT64_TYPE
+#ifdef CHAR_FAST8
+#define UINT_FAST8_TYPE   "unsigned char"
+#else
 #define UINT_FAST8_TYPE   UINT32_TYPE
+#endif
+#ifdef SHORT_FAST16
+#define UINT_FAST16_TYPE  "short unsigned int"
+#else
 #define UINT_FAST16_TYPE  UINT32_TYPE
+#endif
 #define UINT_FAST32_TYPE  UINT32_TYPE
 #define UINT_FAST64_TYPE  UINT64_TYPE
 
