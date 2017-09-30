@@ -1,3 +1,9 @@
+2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/68754
+	* method.c (defaulted_late_check): Early return if the defaulted
+	declaration does not match the expected signature.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	P0683R1 - default member initializers for bit-fields
