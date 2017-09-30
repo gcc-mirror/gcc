@@ -1,5 +1,19 @@
 2017-09-30  Jakub Jelinek  <jakub@redhat.com>
 
+	PR target/82361
+	* config/i386/i386.md
+	(TARGET_USE_8BIT_IDIV zext divmodsi4 splitter): New define_split.
+	(divmodsi4_zext_1, divmodsi4_zext_2, *divmodsi4_zext_1,
+	*divmodsi4_zext_2): New define_insn_and_split.
+	(*divmodsi4_noext_zext_1, *divmodsi4_noext_zext_2): New define_insn.
+	(TARGET_USE_8BIT_IDIV zext udivmodsi4 splitter): New define_split.
+	(udivmodsi4_zext_1, udivmodsi4_zext_2, *udivmodsi4_zext_1,
+	*udivmodsi4_zext_2, *udivmodsi4_pow2_zext_1, *udivmodsi4_pow2_zext_2):
+	New define_insn_and_split.
+	(*udivmodsi4_noext_zext_1, *udivmodsi4_noext_zext_2): New define_insn.
+	* config/i386/i386.c (ix86_split_idivmod): Handle operands[0] or
+	operands[1] having DImode when mode is SImode.
+
 	* config/i386/i386.c (ix86_split_idivmod): Use mode instead of
 	always SImode for DIV and MOD in REG_EQUAL notes.
 

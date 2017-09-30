@@ -1,3 +1,9 @@
+2017-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/82361
+	* gcc.target/i386/pr82361-1.c: New test.
+	* gcc.target/i386/pr82361-2.c: New test.
+
 2017-09-29  Yury Gribov  <tetra2005@gmail.com>
 
 	PR middle-end/82319
