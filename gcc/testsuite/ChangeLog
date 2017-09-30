@@ -1,6 +1,11 @@
 2017-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from mainline
+	2017-09-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/82340
+	* gcc.dg/tree-ssa/pr82340.c: New test.
+
 	2017-09-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82159
