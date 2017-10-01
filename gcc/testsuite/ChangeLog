@@ -1,3 +1,8 @@
+2017-10-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/61450
+	* gfortran.dg/binding_label_tests_28.f90: New test.
+
 2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/65949

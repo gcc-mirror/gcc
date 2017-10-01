@@ -1,3 +1,9 @@
+2017-10-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
+
+	PR fortran/61450
+	* parse.c (gfc_global_used): Replace the gfc_internal_error
+	with an error.
+
 2017-09-29  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/25071
