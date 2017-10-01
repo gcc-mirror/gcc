@@ -1,3 +1,17 @@
+2017-10-01  Jeff Law  <law@redhat.com>
+
+	* tree-ssa-dom.c (optimize_stmt): Make this a method within the
+	dom_opt_dom_walker class with direct access to private members.
+	Add comments.  Call test_for_singularity.
+	(dom_opt_dom_walker::before_dom_children): Corresponding changes.
+	(dom_opt_dom_walker::after_dom_children): Do not lazily initialize
+	m_dummy_cond anymore.
+	(class dom_opt_dom_walker): Initialize m_dummy_cond member in the
+	class ctor.
+	(pass_dominator:execute): Build the dummy_cond here and pass it
+	to the dom_opt_dom_walker ctor. 
+	(test_for_singularity): New function.
+
 2017-09-30  Krister Walfridsson  <krister.walfridsson@gmail.com>
 	    Maya Rashish  <coypu@sdf.org>
 

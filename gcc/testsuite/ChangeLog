@@ -1,3 +1,7 @@
+2017-10-01  Jeff Law  <law@redhat.com>
+
+	* gcc.dg/tree-ssa/ssa-dom-simplify-1.c: New test.
+
 2017-10-01  Dominique d'Humieres  <dominiq@lps.ens.fr>
 
 	PR fortran/61450

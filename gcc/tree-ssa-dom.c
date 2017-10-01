@@ -103,9 +103,6 @@ struct opt_stats_d
 static struct opt_stats_d opt_stats;
 
 /* Local functions.  */
-static edge optimize_stmt (basic_block, gimple_stmt_iterator,
-			   class const_and_copies *,
-			   class avail_exprs_stack *);
 static void record_equality (tree, tree, class const_and_copies *);
 static void record_equivalences_from_phis (basic_block);
 static void record_equivalences_from_incoming_edge (basic_block,
@@ -572,11 +569,12 @@ class dom_opt_dom_walker : public dom_walker
 public:
   dom_opt_dom_walker (cdi_direction direction,
 		      class const_and_copies *const_and_copies,
-		      class avail_exprs_stack *avail_exprs_stack)
+		      class avail_exprs_stack *avail_exprs_stack,
+		      gcond *dummy_cond)
     : dom_walker (direction, true),
       m_const_and_copies (const_and_copies),
       m_avail_exprs_stack (avail_exprs_stack),
-      m_dummy_cond (NULL) {}
+      m_dummy_cond (dummy_cond) { }
 
   virtual edge before_dom_children (basic_block);
   virtual void after_dom_children (basic_block);
@@ -587,7 +585,14 @@ private:
   class const_and_copies *m_const_and_copies;
   class avail_exprs_stack *m_avail_exprs_stack;
 
+  /* Dummy condition to avoid creating lots of throw away statements.  */
   gcond *m_dummy_cond;
+
+  /* Optimize a single statement within a basic block using the
+     various tables mantained by DOM.  Returns the taken edge if
+     the statement is a conditional with a statically determined
+     value.  */
+  edge optimize_stmt (basic_block, gimple_stmt_iterator);
 };
 
 /* Jump threading, redundancy elimination and const/copy propagation.
@@ -684,10 +689,12 @@ pass_dominator::execute (function *fun)
   FOR_EACH_BB_FN (bb, fun)
     record_edge_info (bb);
 
+  gcond *dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
+					 integer_zero_node, NULL, NULL);
+
   /* Recursively walk the dominator tree optimizing statements.  */
-  dom_opt_dom_walker walker (CDI_DOMINATORS,
-			     const_and_copies,
-			     avail_exprs_stack);
+  dom_opt_dom_walker walker (CDI_DOMINATORS, const_and_copies,
+			     avail_exprs_stack, dummy_cond);
   walker.walk (fun->cfg->x_entry_block_ptr);
 
   /* Look for blocks where we cleared EDGE_EXECUTABLE on an outgoing
@@ -1348,8 +1355,7 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 
   edge taken_edge = NULL;
   for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    taken_edge
-      = optimize_stmt (bb, gsi, m_const_and_copies, m_avail_exprs_stack);
+    taken_edge = this->optimize_stmt (bb, gsi);
 
   /* Now prepare to process dominated blocks.  */
   record_edge_info (bb);
@@ -1367,10 +1373,6 @@ dom_opt_dom_walker::before_dom_children (basic_block bb)
 void
 dom_opt_dom_walker::after_dom_children (basic_block bb)
 {
-  if (! m_dummy_cond)
-    m_dummy_cond = gimple_build_cond (NE_EXPR, integer_zero_node,
-				      integer_zero_node, NULL, NULL);
-
   thread_outgoing_edges (bb, m_dummy_cond, m_const_and_copies,
 			 m_avail_exprs_stack,
 			 simplify_stmt_for_jump_threading);
@@ -1700,8 +1702,99 @@ cprop_into_stmt (gimple *stmt)
     }
 }
 
-/* Optimize the statement in block BB pointed to by iterator SI
-   using equivalences from CONST_AND_COPIES and AVAIL_EXPRS_STACK.
+/* If STMT contains a relational test, try to convert it into an
+   equality test if there is only a single value which can ever
+   make the test true.
+
+   For example, if the expression hash table contains:
+
+    TRUE = (i <= 1)
+
+   And we have a test within statement of i >= 1, then we can safely
+   rewrite the test as i == 1 since there only a single value where
+   the test is true.
+
+   This is similar to code in VRP.  */
+
+static void
+test_for_singularity (gimple *stmt, gcond *dummy_cond,
+		      avail_exprs_stack *avail_exprs_stack)
+{
+  /* We want to support gimple conditionals as well as assignments
+     where the RHS contains a conditional.  */
+  if (is_gimple_assign (stmt) || gimple_code (stmt) == GIMPLE_COND)
+    {
+      enum tree_code code = ERROR_MARK;
+      tree lhs, rhs;
+
+      /* Extract the condition of interest from both forms we support.  */
+      if (is_gimple_assign (stmt))
+	{
+	  code = gimple_assign_rhs_code (stmt);
+	  lhs = gimple_assign_rhs1 (stmt);
+	  rhs = gimple_assign_rhs2 (stmt);
+	}
+      else if (gimple_code (stmt) == GIMPLE_COND)
+	{
+	  code = gimple_cond_code (as_a <gcond *> (stmt));
+	  lhs = gimple_cond_lhs (as_a <gcond *> (stmt));
+	  rhs = gimple_cond_rhs (as_a <gcond *> (stmt));
+	}
+
+      /* We're looking for a relational test using LE/GE.  Also note we can
+	 canonicalize LT/GT tests against constants into LE/GT tests.  */
+      if (code == LE_EXPR || code == GE_EXPR
+	  || ((code == LT_EXPR || code == GT_EXPR)
+	       && TREE_CODE (rhs) == INTEGER_CST))
+	{
+	  /* For LT_EXPR and GT_EXPR, canonicalize to LE_EXPR and GE_EXPR.  */
+	  if (code == LT_EXPR)
+	    rhs = fold_build2 (MINUS_EXPR, TREE_TYPE (rhs),
+			       rhs, build_int_cst (TREE_TYPE (rhs), 1));
+
+	  if (code == GT_EXPR)
+	    rhs = fold_build2 (PLUS_EXPR, TREE_TYPE (rhs),
+			       rhs, build_int_cst (TREE_TYPE (rhs), 1));
+
+	  /* Determine the code we want to check for in the hash table.  */
+	  enum tree_code test_code;
+	  if (code == GE_EXPR || code == GT_EXPR)
+	    test_code = LE_EXPR;
+	  else
+	    test_code = GE_EXPR;
+
+	  /* Update the dummy statement so we can query the hash tables.  */
+	  gimple_cond_set_code (dummy_cond, test_code);
+	  gimple_cond_set_lhs (dummy_cond, lhs);
+	  gimple_cond_set_rhs (dummy_cond, rhs);
+	  tree cached_lhs
+	    = avail_exprs_stack->lookup_avail_expr (dummy_cond, false, false);
+
+	  /* If the lookup returned 1 (true), then the expression we
+	     queried was in the hash table.  As a result there is only
+	     one value that makes the original conditional true.  Update
+	     STMT accordingly.  */
+	  if (cached_lhs && integer_onep (cached_lhs))
+	    {
+	      if (is_gimple_assign (stmt))
+		{
+		  gimple_assign_set_rhs_code (stmt, EQ_EXPR);
+		  gimple_assign_set_rhs2 (stmt, rhs);
+		  gimple_set_modified (stmt, true);
+		}
+	      else
+		{
+		  gimple_set_modified (stmt, true);
+		  gimple_cond_set_code (as_a <gcond *> (stmt), EQ_EXPR);
+		  gimple_cond_set_rhs (as_a <gcond *> (stmt), rhs);
+		  gimple_set_modified (stmt, true);
+		}
+	    }
+	}
+    }
+}
+
+/* Optimize the statement in block BB pointed to by iterator SI.
 
    We try to perform some simplistic global redundancy elimination and
    constant propagation:
@@ -1714,12 +1807,15 @@ cprop_into_stmt (gimple *stmt)
    2- Constant values and copy assignments.  This is used to do very
       simplistic constant and copy propagation.  When a constant or copy
       assignment is found, we map the value on the RHS of the assignment to
-      the variable in the LHS in the CONST_AND_COPIES table.  */
+      the variable in the LHS in the CONST_AND_COPIES table.
 
-static edge
-optimize_stmt (basic_block bb, gimple_stmt_iterator si,
-	       class const_and_copies *const_and_copies,
-	       class avail_exprs_stack *avail_exprs_stack)
+   3- Very simple redundant store elimination is performed.
+
+   4- We can simpify a condition to a constant or from a relational
+      condition to an equality condition.  */
+
+edge
+dom_opt_dom_walker::optimize_stmt (basic_block bb, gimple_stmt_iterator si)
 {
   gimple *stmt, *old_stmt;
   bool may_optimize_p;
@@ -1832,8 +1928,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	}
 
       update_stmt_if_modified (stmt);
-      eliminate_redundant_computations (&si, const_and_copies,
-					avail_exprs_stack);
+      eliminate_redundant_computations (&si, m_const_and_copies,
+					m_avail_exprs_stack);
       stmt = gsi_stmt (si);
 
       /* Perform simple redundant store elimination.  */
@@ -1855,8 +1951,8 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	  else
 	    new_stmt = gimple_build_assign (rhs, lhs);
 	  gimple_set_vuse (new_stmt, gimple_vuse (stmt));
-	  cached_lhs = avail_exprs_stack->lookup_avail_expr (new_stmt, false,
-							     false);
+	  cached_lhs = m_avail_exprs_stack->lookup_avail_expr (new_stmt, false,
+							       false);
 	  if (cached_lhs && operand_equal_p (rhs, cached_lhs, 0))
 	    {
 	      basic_block bb = gimple_bb (stmt);
@@ -1871,11 +1967,16 @@ optimize_stmt (basic_block bb, gimple_stmt_iterator si,
 	      return retval;
 	    }
 	}
+
+      /* If this statement was not redundant, we may still be able to simplify
+	 it, which may in turn allow other part of DOM or other passes to do
+	 a better job.  */
+      test_for_singularity (stmt, m_dummy_cond, m_avail_exprs_stack);
     }
 
   /* Record any additional equivalences created by this statement.  */
   if (is_gimple_assign (stmt))
-    record_equivalences_from_stmt (stmt, may_optimize_p, avail_exprs_stack);
+    record_equivalences_from_stmt (stmt, may_optimize_p, m_avail_exprs_stack);
 
   /* If STMT is a COND_EXPR or SWITCH_EXPR and it was modified, then we may
      know where it goes.  */
