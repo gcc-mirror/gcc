@@ -37,6 +37,9 @@ Note that while global reviewers can approve changes to any part of
 the compiler or associated libraries, they still need approval for
 their own patches from other maintainers or reviewers.
 
+Also note that maintainership of any area covers changes to web pages,
+docs, and the testsuite related to that.
+
 			CPU Port Maintainers	(CPU alphabetical order)
 
 aarch64 port		Richard Earnshaw	<richard.earnshaw@arm.com>
