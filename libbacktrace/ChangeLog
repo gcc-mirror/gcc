@@ -1,6 +1,13 @@
 2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR other/67165
+	* Makefile.am: Append the content of clock_gettime_link to
+	ztest_LDADD.
+	* configure.ac: Test for the case that clock_gettime is in librt.
+	* Makefile.in: Regenerate.
+	* configure: Likewise.
+
+	PR other/67165
 	* configure.ac: Check for clock_gettime.
 	* config.h.in: Regenerate.
 	* configure: Likewise.

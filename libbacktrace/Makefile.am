@@ -108,6 +108,7 @@ ztest_LDADD = libbacktrace.la
 if HAVE_ZLIB
 ztest_LDADD += -lz
 endif
+ztest_LDADD += $(clock_gettime_link)
 
 check_PROGRAMS += ztest
 
