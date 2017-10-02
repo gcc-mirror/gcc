@@ -1,3 +1,7 @@
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	* gcc_update (files_and_dependencies): Handle libbacktrace.
+
 2016-06-03  Release Manager
 
 	* GCC 5.4.0 released.
