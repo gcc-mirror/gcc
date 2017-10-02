@@ -1,3 +1,11 @@
+2017-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from mainline
+	2017-09-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/i386/i386.c (ix86_split_idivmod): Use mode instead of
+	always SImode for DIV and MOD in REG_EQUAL notes.
+
 2017-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
 
 	Backport from mainline
