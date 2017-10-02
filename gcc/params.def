@@ -894,6 +894,12 @@ DEFPARAM (PARAM_MAX_ISL_OPERATIONS,
 	  "maximum number of isl operations, 0 means unlimited",
 	  350000, 0, 0)
 
+/* For testsuite purposes allow to check for codegen error handling.  */
+DEFPARAM (PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS,
+	  "graphite-allow-codegen-errors",
+	  "whether codegen errors should be ICEs when -fchecking.",
+	  0, 0, 1)
+
 /* Avoid data dependence analysis on very large loops.  */
 DEFPARAM (PARAM_LOOP_MAX_DATAREFS_FOR_DATADEPS,
 	  "loop-max-datarefs-for-datadeps",

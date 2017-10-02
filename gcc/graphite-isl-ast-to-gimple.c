@@ -240,7 +240,14 @@ class translate_isl_ast_to_gimple
   void gsi_insert_earliest (gimple_seq seq);
   tree rename_all_uses (tree new_expr, basic_block new_bb, basic_block old_bb);
   bool codegen_error_p () const { return codegen_error; }
-  void set_codegen_error () { codegen_error = true; }
+
+  void set_codegen_error ()
+  {
+    codegen_error = true;
+    gcc_assert (! flag_checking
+		|| PARAM_VALUE (PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS));
+  }
+
   bool is_constant (tree op) const
   {
     return TREE_CODE (op) == INTEGER_CST

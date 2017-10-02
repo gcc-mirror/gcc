@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O -ftree-loop-linear" } */
+/* { dg-options "-O -ftree-loop-linear -fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" } */
 
 int
 foo (int a[4096], int mi, int mj)
@@ -13,3 +13,5 @@ foo (int a[4096], int mi, int mj)
     }
   return i16;
 }
+
+/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */

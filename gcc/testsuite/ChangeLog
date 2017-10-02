@@ -1,3 +1,22 @@
+2017-10-02  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/graphite/graphite.exp: Add -fdump-tree-graphite-details.
+	* gcc.dg/graphite/id-15.c: Adjust for existing codegen errors.
+	* gcc.dg/graphite/id-16.c: Likewise.
+	* gcc.dg/graphite/pr46168.c: Likewise.
+	* gcc.dg/graphite/pr68756.c: Likewise.
+	* gcc.dg/graphite/pr69728.c: Likewise.
+	* gcc.dg/graphite/pr71575-2.c: Likewise.
+	* gcc.dg/graphite/pr77362.c: Likewise.
+	* gcc.dg/graphite/pr81373.c: Likewise.
+	* gcc.dg/graphite/run-id-pr67700-1.c: Likewise.
+	* gfortran.dg/graphite/interchange-1.f: Likewise.
+	* gfortran.dg/graphite/pr29581.f90: Likewise.
+	* gfortran.dg/graphite/pr42334-1.f: Likewise.
+	* gfortran.dg/graphite/pr42393-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42393.f90: Likewise.
+	* gfortran.dg/graphite/pr47019.f: Likewise.
+
 2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/69977
