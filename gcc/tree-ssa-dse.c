@@ -577,10 +577,10 @@ dse_classify_store (ao_ref *ref, gimple *stmt, gimple **use_stmt,
 	  /* If the statement is a use the store is not dead.  */
 	  else if (ref_maybe_used_by_stmt_p (use_stmt, ref))
 	    {
-	      /* Handle common cases where we can easily build a ao_ref
+	      /* Handle common cases where we can easily build an ao_ref
 		 structure for USE_STMT and in doing so we find that the
 		 references hit non-live bytes and thus can be ignored.  */
-	      if (live_bytes && (!gimple_vdef (use_stmt) || !temp))
+	      if (byte_tracking_enabled && (!gimple_vdef (use_stmt) || !temp))
 		{
 		  if (is_gimple_assign (use_stmt))
 		    {

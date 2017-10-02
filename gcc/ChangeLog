@@ -1,3 +1,11 @@
+2017-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82387
+	PR tree-optimization/82388
+	PR tree-optimization/82389
+	* tree-ssa-dse.c (dse_classify_store): Test byte_tracking_enabled
+	instead of live_bytes non-NULL.
+
 2017-10-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR target/41076
