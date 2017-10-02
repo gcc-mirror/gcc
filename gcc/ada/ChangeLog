@@ -1,3 +1,12 @@
+2017-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+            Pierre-Marie de Rodat  <derodat@adacore.com>
+
+	PR ada/82384
+	* libgnarl/s-linux__x32.ads (suseconds_t): New subtype.
+	(time_t): Change from derived type to subtype.
+	(timeval): Use suseconds_t for tv_usec.
+	* libgnarl/s-osinte__x32.adb (To_Timespec): Remove use type clause.
+
 2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* gcc-interface/decl.c (annotate_value): Use wi::to_widest when
@@ -16,7 +25,7 @@
 	* doc/gnat_ugn/building_executable_programs_with_gnat.rst,
 	doc/gnat_ugn/the_gnat_compilation_model.rst: Avoid use of single colon
 	in comment markup.
-	* gnat_ugn.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
 
 2017-09-29  Justin Squirek  <squirek@adacore.com>
 
