@@ -31,6 +31,7 @@ std_headers = \
 	${std_srcdir}/array \
 	${std_srcdir}/atomic \
 	${std_srcdir}/bitset \
+	${std_srcdir}/charconv \
 	${std_srcdir}/chrono \
 	${std_srcdir}/codecvt \
 	${std_srcdir}/complex \
