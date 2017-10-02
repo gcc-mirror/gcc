@@ -1,3 +1,12 @@
+2017-10-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82387
+	PR tree-optimization/82388
+	PR tree-optimization/82389
+	* gcc.c-torture/compile/pr82389.c: New test.
+	* gcc.c-torture/execute/pr82387.c: New test.
+	* gcc.c-torture/execute/pr82388.c: New test.
+
 2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/79180
