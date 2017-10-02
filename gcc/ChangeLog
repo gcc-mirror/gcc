@@ -1,3 +1,9 @@
+2017-10-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/41076
+	* confg/avr/avr.md (*iorhi3.ashift8-ext.zerox): Add "r,r,0"
+	alternative.
+
 2017-10-02  Richard Biener  <rguenther@suse.de>
 
 	* graphite-isl-ast-to-gimple.c (set_codegen_error): With
