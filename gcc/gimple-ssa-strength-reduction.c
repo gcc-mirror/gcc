@@ -476,7 +476,8 @@ find_phi_def (tree base)
 
   c = base_cand_from_table (base);
 
-  if (!c || c->kind != CAND_PHI)
+  if (!c || c->kind != CAND_PHI
+      || SSA_NAME_OCCURS_IN_ABNORMAL_PHI (gimple_phi_result (c->cand_stmt)))
     return 0;
 
   return c->cand_num;
@@ -513,6 +514,11 @@ find_basis_for_base_expr (slsr_cand_t c, tree base_expr)
 	  || !dominated_by_p (CDI_DOMINATORS,
 			      gimple_bb (c->cand_stmt),
 			      gimple_bb (one_basis->cand_stmt)))
+	continue;
+
+      tree lhs = gimple_assign_lhs (one_basis->cand_stmt);
+      if (lhs && TREE_CODE (lhs) == SSA_NAME
+	  && SSA_NAME_OCCURS_IN_ABNORMAL_PHI (lhs))
 	continue;
 
       if (!basis || basis->cand_num < one_basis->cand_num)

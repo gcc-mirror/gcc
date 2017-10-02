@@ -1,3 +1,14 @@
+2017-10-02  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	Backport from mainline
+	2017-09-29  Bill Schmidt  <wschmidt@linux.vnet.ibm.com>
+
+	PR tree-optimization/82337
+	* gimple-ssa-strength-reduction.c (find_phi_def): Don't record a
+	phi definition if the PHI result appears in an abnormal PHI.
+	(find_basis_for_base_expr): Don't record a basis if the LHS of the
+	basis appears in an abnormal PHI.
+
 2017-09-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/i386/i386.c (ix86_split_idivmod): Use mode instead of
