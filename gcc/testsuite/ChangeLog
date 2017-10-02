@@ -1,3 +1,10 @@
+2017-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82355
+	* gcc.dg/graphite/fuse-1.c: Adjust.
+	* gcc.dg/graphite/fuse-2.c: Likewise.
+	* gcc.dg/graphite/pr82355.c: New testcase.
+
 2017-10-01  Jeff Law  <law@redhat.com>
 
 	* gcc.dg/tree-ssa/ssa-dom-simplify-1.c: New test.

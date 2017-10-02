@@ -774,8 +774,10 @@ build_iv_mapping (vec<tree> iv_map, gimple_poly_bb_p gbb,
       if (codegen_error_p ())
 	t = integer_zero_node;
 
-      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 1);
-      iv_map[old_loop->num] = t;
+      loop_p old_loop = gbb_loop_at_index (gbb, region, i - 2);
+      /* Record sth only for real loops.  */
+      if (loop_in_sese_p (old_loop, region))
+	iv_map[old_loop->num] = t;
     }
 }
 
@@ -2587,18 +2589,6 @@ edge translate_isl_ast_to_gimple::
 copy_bb_and_scalar_dependences (basic_block bb, edge next_e, vec<tree> iv_map)
 {
   int num_phis = number_of_phi_nodes (bb);
-
-  if (region->copied_bb_map->get (bb))
-    {
-      /* FIXME: we should be able to handle phi nodes with args coming from
-	 outside the region.  */
-      if (num_phis)
-	{
-	  set_codegen_error ();
-	  return NULL;
-	}
-    }
-
   basic_block new_bb = NULL;
   if (bb_contains_loop_close_phi_nodes (bb))
     {
