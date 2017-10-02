@@ -1,3 +1,9 @@
+2017-10-02  Richard Biener  <rguenther@suse.de>
+
+	* graphite-isl-ast-to-gimple.c (set_codegen_error): With
+	-fchecking and --param graphite-allow-codegen-errors=0 ICE.
+	* params.def (PARAM_GRAPHITE_ALLOW_CODEGEN_ERRORS): New param.
+
 2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	* tree.h (wi::int_traits <const_tree>::decompose): Assert that the

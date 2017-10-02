@@ -1,4 +1,4 @@
-/* { dg-options "-fno-tree-scev-cprop -fgraphite-identity -O -fdump-tree-graphite-all" } */
+/* { dg-options "-fno-tree-scev-cprop -fgraphite-identity -O -fdump-tree-graphite-all --param graphite-allow-codegen-errors=1" } */
 
 void bar (void);
 
@@ -38,3 +38,4 @@ int toto()
 }
 
 /* { dg-final { scan-tree-dump-times "number of SCoPs: 2" 1 "graphite"} } */
+/* { dg-final { scan-tree-dump-times "code generation error" 1 "graphite" } } */
