@@ -45,8 +45,7 @@ BUILD_TEST (uint32x2_t,  uint32x4_t,  , q, u32, 1, 3)
 BUILD_TEST (float64x1_t, float64x2_t, , q, f64, 0, 1)
 BUILD_TEST (int64x1_t,  int64x2_t,    , q, s64, 0, 1)
 BUILD_TEST (uint64x1_t, uint64x2_t,   , q, u64, 0, 1)
-/* XFAIL due to PR 71307.  */
-/* { dg-final { scan-assembler-times "dup\\td0, v1.d\\\[1\\\]" 3 { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-times "dup\\td0, v1.d\\\[1\\\]" 3 } } */
 
 /* vcopyq_lane.  */
 BUILD_TEST (poly8x16_t, poly8x8_t, q, , p8, 15, 7)

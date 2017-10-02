@@ -1,3 +1,13 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	PR target/71307
+	* config/aarch64/aarch64.h (POINTER_AND_FP_REGS): New reg class.
+	(REG_CLASS_NAMES, REG_CLASS_CONTENTS): Update accordingly.
+	* config/aarch64/aarch64.c (aarch64_class_max_nregs): Handle
+	POINTER_AND_FP_REGS.
+
 2017-10-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82355
