@@ -1,5 +1,7 @@
 /* PR82337: SLSR needs to prevent abnormal SSA names from
    serving as a basis. */
+/* { dg-require-effective-target nonlocal_goto } */
+
 char *a, *b, *c;
 
 struct d {
