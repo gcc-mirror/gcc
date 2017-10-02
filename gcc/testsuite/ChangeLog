@@ -1,5 +1,10 @@
 2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
 
+	PR c++/69977
+	* g++.dg/cpp1y/lambda-generic-69977.C: New.
+
+2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
 	PR c++/59991
 	* g++.dg/cpp0x/lambda/lambda-ice23.C: New.
 
