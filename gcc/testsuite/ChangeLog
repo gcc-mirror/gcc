@@ -1,3 +1,8 @@
+2017-10-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* opt55.ad[sb]: Move to...
+	* gnat.dg/opt55.ad[sb]: ...here.
+
 2017-09-19  Martin Liska  <mliska@suse.cz>
 
 	Revert backport:
