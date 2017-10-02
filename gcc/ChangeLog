@@ -1,5 +1,10 @@
 2017-10-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* tree-dfa.c (get_ref_base_and_extent): Set *pmax_size to -1
+	if *poffset + *pmax_size overflows in HOST_WIDE_INT.
+	Set *poffset to 0 and *psize and *pmax_size to -1 if
+	*poffset + *psize overflows in HOST_WIDE_INT.
+
 	PR tree-optimization/82387
 	PR tree-optimization/82388
 	PR tree-optimization/82389

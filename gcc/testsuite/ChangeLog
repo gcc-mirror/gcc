@@ -1,5 +1,7 @@
 2017-10-02  Jakub Jelinek  <jakub@redhat.com>
 
+	* gcc.dg/pr82389.c: New test.
+
 	PR tree-optimization/82387
 	PR tree-optimization/82388
 	PR tree-optimization/82389
