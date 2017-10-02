@@ -1,3 +1,12 @@
+2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR other/67165
+	* configure.ac: Check for clock_gettime.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* ztest.c (average_time, test_large): Conditionalize test timing
+	on clock_gettime availability.
+
 2017-09-29  Tony Reix  <tony.reix@atos.net>
 
 	* xcoff.c: Initial support for DWARF debug sections in XCOFF.

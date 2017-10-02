@@ -12747,6 +12747,19 @@ $as_echo "#define HAVE_GETEXECNAME 1" >>confdefs.h
 
 fi
 
+# Check for the clock_gettime function.
+for ac_func in clock_gettime
+do :
+  ac_fn_c_check_func "$LINENO" "clock_gettime" "ac_cv_func_clock_gettime"
+if test "x$ac_cv_func_clock_gettime" = x""yes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_CLOCK_GETTIME 1
+_ACEOF
+
+fi
+done
+
+
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -pthread is supported" >&5
 $as_echo_n "checking whether -pthread is supported... " >&6; }
 if test "${libgo_cv_lib_pthread+set}" = set; then :
