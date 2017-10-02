@@ -1,3 +1,8 @@
+2017-10-01  Kevin Buettner  <kevinb@redhat.com>
+
+	* omp-expand.c (adjust_context_scope): New function.
+	(expand_parallel_call): Call adjust_context_scope.
+
 2017-10-01  Jeff Law  <law@redhat.com>
 
 	* tree-ssa-dom.c (optimize_stmt): Make this a method within the

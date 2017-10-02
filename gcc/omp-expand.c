@@ -499,6 +499,42 @@ parallel_needs_hsa_kernel_p (struct omp_region *region)
   return false;
 }
 
+/* Change DECL_CONTEXT of CHILD_FNDECL to that of the parent function.
+   Add CHILD_FNDECL to decl chain of the supercontext of the block
+   ENTRY_BLOCK - this is the block which originally contained the
+   code from which CHILD_FNDECL was created.
+   
+   Together, these actions ensure that the debug info for the outlined
+   function will be emitted with the correct lexical scope.  */
+
+static void
+adjust_context_and_scope (tree entry_block, tree child_fndecl)
+{
+  if (entry_block != NULL_TREE && TREE_CODE (entry_block) == BLOCK)
+    {
+      tree b = BLOCK_SUPERCONTEXT (entry_block);
+
+      if (TREE_CODE (b) == BLOCK)
+        {
+	  tree parent_fndecl;
+
+	  /* Follow supercontext chain until the parent fndecl
+	     is found.  */
+	  for (parent_fndecl = BLOCK_SUPERCONTEXT (b);
+	       TREE_CODE (parent_fndecl) == BLOCK;
+	       parent_fndecl = BLOCK_SUPERCONTEXT (parent_fndecl))
+	    ;
+
+	  gcc_assert (TREE_CODE (parent_fndecl) == FUNCTION_DECL);
+
+	  DECL_CONTEXT (child_fndecl) = parent_fndecl;
+
+	  DECL_CHAIN (child_fndecl) = BLOCK_VARS (b);
+	  BLOCK_VARS (b) = child_fndecl;
+	}
+    }
+}
+
 /* Build the function calls to GOMP_parallel_start etc to actually
    generate the parallel operation.  REGION is the parallel region
    being expanded.  BB is the block where to insert the code.  WS_ARGS
@@ -667,6 +703,8 @@ expand_parallel_call (struct omp_region *region, basic_block bb,
     t1 = build_fold_addr_expr (t);
   tree child_fndecl = gimple_omp_parallel_child_fn (entry_stmt);
   t2 = build_fold_addr_expr (child_fndecl);
+
+  adjust_context_and_scope (gimple_block (entry_stmt), child_fndecl);
 
   vec_alloc (args, 4 + vec_safe_length (ws_args));
   args->quick_push (t2);
