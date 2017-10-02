@@ -1,3 +1,20 @@
+2017-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/82355
+	* graphite-isl-ast-to-gimple.c (build_iv_mapping): Also build
+	a mapping for the enclosing loop but avoid generating one for
+	the loop tree root.
+	(copy_bb_and_scalar_dependences): Remove premature codegen
+	error on PHIs in blocks duplicated into multiple places.
+	* graphite-scop-detection.c
+	(scop_detection::stmt_has_simple_data_refs_p): For a loop not
+	in the region use it as loop and nest to analyze the DR in.
+	(try_generate_gimple_bb): Likewise.
+	* graphite-sese-to-poly.c (extract_affine_chrec): Adjust.
+	(add_loop_constraints): For blocks in a loop not in the region
+	create a dimension with a single iteration.
+	* sese.h (gbb_loop_at_index): Remove assert.
+
 2017-10-01  Kevin Buettner  <kevinb@redhat.com>
 
 	* omp-expand.c (adjust_context_scope): New function.

@@ -1055,10 +1055,12 @@ scop_detection::graphite_can_represent_expr (sese_l scop, loop_p loop,
 bool
 scop_detection::stmt_has_simple_data_refs_p (sese_l scop, gimple *stmt)
 {
-  loop_p nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
+  loop_p nest;
   loop_p loop = loop_containing_stmt (stmt);
   if (!loop_in_sese_p (loop, scop))
-    loop = nest;
+    nest = loop;
+  else
+    nest = outermost_loop_in_sese (scop, gimple_bb (stmt));
 
   auto_vec<data_reference_p> drs;
   if (! graphite_find_data_references_in_stmt (nest, loop, stmt, &drs))
@@ -1450,11 +1452,12 @@ try_generate_gimple_bb (scop_p scop, basic_block bb)
   vec<scalar_use> reads = vNULL;
 
   sese_l region = scop->scop_info->region;
-  loop_p nest = outermost_loop_in_sese (region, bb);
-
+  loop_p nest;
   loop_p loop = bb->loop_father;
   if (!loop_in_sese_p (loop, region))
-    loop = nest;
+    nest = loop;
+  else
+    nest = outermost_loop_in_sese (region, bb);
 
   for (gimple_stmt_iterator gsi = gsi_start_bb (bb); !gsi_end_p (gsi);
        gsi_next (&gsi))
