@@ -1,3 +1,19 @@
+2017-10-02  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new <charconv> header.
+	* include/Makefile.in: Regenerate.
+	* include/precompiled/stdc++.h: Include <charconv>.
+	* include/std/charconv: New file.
+	(to_chars_result, to_chars, from_chars_result, from_chars): Define.
+	* testsuite/20_util/from_chars/1.cc: New test.
+	* testsuite/20_util/from_chars/1_neg.cc: New test.
+	* testsuite/20_util/from_chars/2.cc: New test.
+	* testsuite/20_util/from_chars/requirements.cc: New test.
+	* testsuite/20_util/to_chars/1.cc: New test.
+	* testsuite/20_util/to_chars/1_neg.cc: New test.
+	* testsuite/20_util/to_chars/2.cc: New test.
+	* testsuite/20_util/to_chars/requirements.cc: New test.
+
 2017-09-27  François Dumont  <fdumont@gcc.gnu.org>
 
 	* testsuite/22_locale/money_get/get/char/22131.cc: Make test less
