@@ -81,7 +81,11 @@ namespace __detail
 #if _GLIBCXX_USE_INT128
 	conditional_t<(sizeof(_Tp) <= sizeof(__int128)), unsigned __int128,
 #endif
-	void>>>>;
+	void
+#if _GLIBCXX_USE_INT128
+	>
+#endif
+	>>>;
 
   // Generic implementation for arbitrary bases.
   template<typename _Tp>

@@ -1,3 +1,8 @@
+2017-10-03  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/std/charconv (__unsigned_least_t): Fix number of closing >s for
+	!_GLIBCXX_USE_INT128.
+
 2017-10-02  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/Makefile.am: Add new <charconv> header.
