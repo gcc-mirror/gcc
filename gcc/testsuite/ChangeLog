@@ -1,3 +1,12 @@
+2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79180
+	* g++.dg/cpp0x/lambda/lambda-nested8.C: New.
+	* g++.dg/torture/pr79180.C: Likewise.
+
+	PR c++/71386
+	* g++.dg/cpp1y/lambda-generic-nested1.C: New.
+
 2017-10-02  Richard Biener  <rguenther@suse.de>
 
 	* gcc.dg/graphite/graphite.exp: Add -fdump-tree-graphite-details.
