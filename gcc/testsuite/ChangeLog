@@ -1,3 +1,8 @@
+2017-10-02  Peter Bergner  <bergner@vnet.ibm.com>
+
+	PR target/80210
+	* gcc.target/powerpc/pr80210-2.c: New test.
+
 2017-10-02  Jakub Jelinek  <jakub@redhat.com>
 
 	* gcc.dg/pr82389.c: New test.
