@@ -1,3 +1,8 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* gcc-interface/decl.c (annotate_value): Use wi::to_widest when
+	handling the form (plus/mult (convert @0) @1).
+
 2017-09-29  Bob Duff  <duff@adacore.com>
 
 	* exp_ch6.adb (Expand_Call_Helper): Replace with code more similar to
