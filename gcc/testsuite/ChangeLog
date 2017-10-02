@@ -1,3 +1,8 @@
+2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/79005
+	* g++.dg/cpp1y/lambda-generic-79005.C: New.
+
 2017-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82312
