@@ -1,4 +1,17 @@
 2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* tree.h (wi::int_traits <const_tree>::decompose): Assert that the
+	requested precision matches the type's.
+	* calls.c (alloc_max_size): Calculate the new candidate size as
+	a widest_int and use wi::to_widest when comparing it with the
+	current candidate size.
+	* gimple-ssa-warn-alloca.c (pass_walloca::execute): Compare with
+	zero rather than integer_zero_node.
+	* match.pd: Check for a no-op conversion before using wi::add
+	rather than after.  Use tree_to_uhwi when summing small shift
+	counts into an unsigned int.
+
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
 

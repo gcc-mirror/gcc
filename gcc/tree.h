@@ -5176,6 +5176,7 @@ inline wi::storage_ref
 wi::int_traits <const_tree>::decompose (HOST_WIDE_INT *,
 					unsigned int precision, const_tree x)
 {
+  gcc_checking_assert (precision == TYPE_PRECISION (TREE_TYPE (x)));
   return wi::storage_ref (&TREE_INT_CST_ELT (x, 0), TREE_INT_CST_NUNITS (x),
 			  precision);
 }

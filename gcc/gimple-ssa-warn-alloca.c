@@ -491,7 +491,7 @@ pass_walloca::execute (function *fun)
 			      is_vla ? G_("argument to variable-length array "
 					  "may be too large")
 			      : G_("argument to %<alloca%> may be too large"))
-		  && t.limit != integer_zero_node)
+		  && t.limit != 0)
 		{
 		  print_decu (t.limit, buff);
 		  inform (loc, G_("limit is %u bytes, but argument "
@@ -504,7 +504,7 @@ pass_walloca::execute (function *fun)
 			      is_vla ? G_("argument to variable-length array "
 					  "is too large")
 			      : G_("argument to %<alloca%> is too large"))
-		  && t.limit != integer_zero_node)
+		  && t.limit != 0)
 		{
 		  print_decu (t.limit, buff);
 		  inform (loc, G_("limit is %u bytes, but argument is %s"),

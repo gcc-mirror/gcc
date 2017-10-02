@@ -1,3 +1,8 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* c-warn.c (warn_tautological_bitwise_comparison): Use wi::to_widest
+	when combining the original unconverted comparison operands.
+
 2017-09-29  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-attribs.c (handle_noipa_attribute): Don't add "stack_protect"

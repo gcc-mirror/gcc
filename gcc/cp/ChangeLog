@@ -1,3 +1,8 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	* constexpr.c (cxx_eval_store_expression): Use wi::to_widest
+	when comparing the array bounds with an ARRAY_REF index.
+
 2017-09-30  Paolo Carlini  <paolo.carlini@oracle.com>
 
 	PR c++/68754
