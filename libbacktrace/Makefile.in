@@ -165,7 +165,7 @@ ttest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 @NATIVE_TRUE@	ztest-testlib.$(OBJEXT)
 ztest_OBJECTS = $(am_ztest_OBJECTS)
 @NATIVE_TRUE@ztest_DEPENDENCIES = libbacktrace.la \
-@NATIVE_TRUE@	$(am__DEPENDENCIES_1)
+@NATIVE_TRUE@	$(am__DEPENDENCIES_1) $(am__DEPENDENCIES_1)
 ztest_LINK = $(LIBTOOL) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
 	--mode=link $(CCLD) $(ztest_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
@@ -287,6 +287,7 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
+clock_gettime_link = @clock_gettime_link@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -383,7 +384,8 @@ TESTS = $(check_PROGRAMS) $(am__append_4)
 @NATIVE_TRUE@stest_LDADD = libbacktrace.la
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
-@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2)
+@NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2) \
+@NATIVE_TRUE@	$(clock_gettime_link)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c
