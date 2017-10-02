@@ -1,3 +1,8 @@
+2017-10-02  Tom de Vries  <tom@codesourcery.com>
+
+	* gcc.c-torture/compile/pr82337.c: Add
+	dg-require-effective-target nonlocal_goto.
+
 2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
 	    Alan Hayward  <alan.hayward@arm.com>
 	    David Sherwood  <david.sherwood@arm.com>
