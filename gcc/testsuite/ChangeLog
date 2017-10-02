@@ -1,3 +1,8 @@
+2017-10-02  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/59991
+	* g++.dg/cpp0x/lambda/lambda-ice23.C: New.
+
 2017-10-02  Tom de Vries  <tom@codesourcery.com>
 
 	* gcc.c-torture/compile/pr82337.c: Add
