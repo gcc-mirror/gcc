@@ -388,6 +388,9 @@ if test "$have_getexecname" = "yes"; then
   AC_DEFINE(HAVE_GETEXECNAME, 1, [Define if getexecname is available.])
 fi
 
+# Check for the clock_gettime function.
+AC_CHECK_FUNCS(clock_gettime)
+
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],
 [libgo_cv_lib_pthread],

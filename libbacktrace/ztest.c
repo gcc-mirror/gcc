@@ -43,6 +43,10 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <zlib.h>
 #endif
 
+#ifdef HAVE_CLOCK_GETTIME
+# define TEST_TIMING
+#endif
+
 #include "backtrace.h"
 #include "backtrace-supported.h"
 
@@ -157,7 +161,7 @@ test_samples (struct backtrace_state *state)
     }
 }
 
-#ifdef HAVE_ZLIB
+#if defined HAVE_ZLIB && defined TEST_TIMING
 
 /* Given a set of TRIALS timings, discard the lowest and highest
    values and return the mean average of the rest.  */
@@ -216,6 +220,7 @@ test_large (struct backtrace_state *state)
   unsigned char *uncompressed_buf;
   size_t uncompressed_bufsize;
   int r;
+# ifdef TEST_TIMING
   clockid_t cid;
   struct timespec ts1;
   struct timespec ts2;
@@ -224,6 +229,7 @@ test_large (struct backtrace_state *state)
   const size_t trials = 16;
   size_t ctimes[16];
   size_t ztimes[16];
+# endif /* TEST_TIMING */
   static const char * const names[] = {
     "Mark.Twain-Tom.Sawyer.txt",
     "../libgo/go/compress/testdata/Mark.Twain-Tom.Sawyer.txt"
@@ -341,6 +347,8 @@ test_large (struct backtrace_state *state)
 
   printf ("PASS: inflate large\n");
 
+# ifdef TEST_TIMING
+
   for (i = 0; i < trials; ++i)
     {
       cid = CLOCK_REALTIME;
@@ -410,6 +418,8 @@ test_large (struct backtrace_state *state)
   printf ("backtrace time: %zu ns\n", ctime);
   printf ("zlib time:    : %zu ns\n", ztime);
   printf ("percentage    : %g\n", (double) ztime / (double) ctime);
+
+# endif /* TEST_TIMING */
 
   return;
 

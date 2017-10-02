@@ -9,6 +9,9 @@
 /* Define to 1 if you have the __atomic functions */
 #undef HAVE_ATOMIC_FUNCTIONS
 
+/* Define to 1 if you have the `clock_gettime' function. */
+#undef HAVE_CLOCK_GETTIME
+
 /* Define to 1 if you have the declaration of `strnlen', and to 0 if you
    don't. */
 #undef HAVE_DECL_STRNLEN
