@@ -1,3 +1,10 @@
+2017-10-02  Richard Sandiford  <richard.sandiford@linaro.org>
+	    Alan Hayward  <alan.hayward@arm.com>
+	    David Sherwood  <david.sherwood@arm.com>
+
+	PR target/71307
+	* gcc.target/aarch64/vect_copy_lane_1.c: Remove XFAIL.
+
 2017-10-02  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/82355

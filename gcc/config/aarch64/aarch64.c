@@ -6022,6 +6022,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case POINTER_REGS:
     case GENERAL_REGS:
     case ALL_REGS:
+    case POINTER_AND_FP_REGS:
     case FP_REGS:
     case FP_LO_REGS:
       return
