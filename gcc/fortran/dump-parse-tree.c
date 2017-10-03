@@ -2727,6 +2727,41 @@ show_code_node (int level, gfc_code *c)
 	fprintf (dumpfile, " EOR=%d", dt->eor->value);
       break;
 
+    case EXEC_WAIT:
+      fputs ("WAIT", dumpfile);
+
+      if (c->ext.wait != NULL)
+	{
+	  gfc_wait *wait = c->ext.wait;
+	  if (wait->unit)
+	    {
+	      fputs (" UNIT=", dumpfile);
+	      show_expr (wait->unit);
+	    }
+	  if (wait->iostat)
+	    {
+	      fputs (" IOSTAT=", dumpfile);
+	      show_expr (wait->iostat);
+	    }
+	  if (wait->iomsg)
+	    {
+	      fputs (" IOMSG=", dumpfile);
+	      show_expr (wait->iomsg);
+	    }
+	  if (wait->id)
+	    {
+	      fputs (" ID=", dumpfile);
+	      show_expr (wait->id);
+	    }
+	  if (wait->err)
+	    fprintf (dumpfile, " ERR=%d", wait->err->value);
+	  if (wait->end)
+	    fprintf (dumpfile, " END=%d", wait->end->value);
+	  if (wait->eor)
+	    fprintf (dumpfile, " EOR=%d", wait->eor->value);
+	}
+      break;
+
     case EXEC_OACC_PARALLEL_LOOP:
     case EXEC_OACC_PARALLEL:
     case EXEC_OACC_KERNELS_LOOP:
