@@ -4515,7 +4515,11 @@ gfc_get_full_arrayspec_from_expr (gfc_expr *expr)
   if (expr->expr_type == EXPR_VARIABLE
       || expr->expr_type == EXPR_CONSTANT)
     {
-      as = expr->symtree->n.sym->as;
+      if (expr->symtree)
+	as = expr->symtree->n.sym->as;
+      else
+	as = NULL;
+
       for (ref = expr->ref; ref; ref = ref->next)
 	{
 	  switch (ref->type)
