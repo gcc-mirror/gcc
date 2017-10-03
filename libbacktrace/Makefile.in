@@ -215,6 +215,7 @@ BACKTRACE_SUPPORTS_THREADS = @BACKTRACE_SUPPORTS_THREADS@
 BACKTRACE_USES_MALLOC = @BACKTRACE_USES_MALLOC@
 CC = @CC@
 CFLAGS = @CFLAGS@
+CLOCK_GETTIME_LINK = @CLOCK_GETTIME_LINK@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -287,7 +288,6 @@ build_cpu = @build_cpu@
 build_os = @build_os@
 build_vendor = @build_vendor@
 builddir = @builddir@
-clock_gettime_link = @clock_gettime_link@
 datadir = @datadir@
 datarootdir = @datarootdir@
 docdir = @docdir@
@@ -385,7 +385,7 @@ TESTS = $(check_PROGRAMS) $(am__append_4)
 @NATIVE_TRUE@ztest_SOURCES = ztest.c testlib.c
 @NATIVE_TRUE@ztest_CFLAGS = -DSRCDIR=\"$(srcdir)\"
 @NATIVE_TRUE@ztest_LDADD = libbacktrace.la $(am__append_2) \
-@NATIVE_TRUE@	$(clock_gettime_link)
+@NATIVE_TRUE@	$(CLOCK_GETTIME_LINK)
 @NATIVE_TRUE@edtest_SOURCES = edtest.c edtest2_build.c testlib.c
 @NATIVE_TRUE@edtest_LDADD = libbacktrace.la
 @HAVE_PTHREAD_TRUE@@NATIVE_TRUE@ttest_SOURCES = ttest.c testlib.c

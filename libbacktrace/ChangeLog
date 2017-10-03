@@ -1,3 +1,14 @@
+2017-10-02  Ian Lance Taylor  <iant@golang.org>
+
+	* ztest.c: #include <errno.h>.
+	(TEST_TIMING): Don't define, don't test.
+	(xclock_gettime, xclockid_t): Define if !HAVE_CLOCK_GETTIME.
+	(clockid_t, clock_gettime, CLOCK_REALTIME): Likewise.
+	(ZLIB_CLOCK_GETTIME_ARG): Define.
+	* configure.ac: Change clock_gettime_link to CLOCK_GETTIME_LINK.
+	* Makefile.am: Likewise.
+	* configure, Makefile.in: Rebuild.
+
 2017-10-02  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR other/67165

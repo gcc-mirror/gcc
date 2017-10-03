@@ -32,6 +32,7 @@ POSSIBILITY OF SUCH DAMAGE.  */
 
 #include "config.h"
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -43,15 +44,36 @@ POSSIBILITY OF SUCH DAMAGE.  */
 #include <zlib.h>
 #endif
 
-#ifdef HAVE_CLOCK_GETTIME
-# define TEST_TIMING
-#endif
-
 #include "backtrace.h"
 #include "backtrace-supported.h"
 
 #include "internal.h"
 #include "testlib.h"
+
+#ifndef HAVE_CLOCK_GETTIME
+
+typedef int xclockid_t;
+
+static int
+xclock_gettime (xclockid_t id ATTRIBUTE_UNUSED,
+		struct timespec *ts ATTRIBUTE_UNUSED)
+{
+  errno = EINVAL;
+  return -1;
+}
+
+#define clockid_t xclockid_t
+#define clock_gettime xclock_gettime
+#undef CLOCK_REALTIME
+#define CLOCK_REALTIME 0
+
+#endif /* !defined(HAVE_CLOCK_GETTIME) */
+
+#ifdef CLOCK_PROCESS_CPUTIME_ID
+#define ZLIB_CLOCK_GETTIME_ARG CLOCK_PROCESS_CPUTIME_ID
+#else
+#define ZLIB_CLOCK_GETTIME_ARG CLOCK_REALTIME
+#endif
 
 /* Some tests for the local zlib inflation code.  */
 
@@ -161,7 +183,7 @@ test_samples (struct backtrace_state *state)
     }
 }
 
-#if defined HAVE_ZLIB && defined TEST_TIMING
+#ifdef HAVE_ZLIB
 
 /* Given a set of TRIALS timings, discard the lowest and highest
    values and return the mean average of the rest.  */
@@ -220,7 +242,6 @@ test_large (struct backtrace_state *state)
   unsigned char *uncompressed_buf;
   size_t uncompressed_bufsize;
   int r;
-# ifdef TEST_TIMING
   clockid_t cid;
   struct timespec ts1;
   struct timespec ts2;
@@ -229,7 +250,6 @@ test_large (struct backtrace_state *state)
   const size_t trials = 16;
   size_t ctimes[16];
   size_t ztimes[16];
-# endif /* TEST_TIMING */
   static const char * const names[] = {
     "Mark.Twain-Tom.Sawyer.txt",
     "../libgo/go/compress/testdata/Mark.Twain-Tom.Sawyer.txt"
@@ -347,16 +367,13 @@ test_large (struct backtrace_state *state)
 
   printf ("PASS: inflate large\n");
 
-# ifdef TEST_TIMING
-
   for (i = 0; i < trials; ++i)
     {
-      cid = CLOCK_REALTIME;
-#ifdef CLOCK_PROCESS_CPUTIME_ID
-      cid = CLOCK_PROCESS_CPUTIME_ID;
-#endif
+      cid = ZLIB_CLOCK_GETTIME_ARG;
       if (clock_gettime (cid, &ts1) < 0)
 	{
+	  if (errno == EINVAL)
+	    return;
 	  perror ("clock_gettime");
 	  return;
 	}
@@ -418,8 +435,6 @@ test_large (struct backtrace_state *state)
   printf ("backtrace time: %zu ns\n", ctime);
   printf ("zlib time:    : %zu ns\n", ztime);
   printf ("percentage    : %g\n", (double) ztime / (double) ctime);
-
-# endif /* TEST_TIMING */
 
   return;
 
