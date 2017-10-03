@@ -2691,7 +2691,7 @@ propagate_subaccesses_across_link (struct access *lacc, struct access *racc)
 	    }
 	  else
 	    {
-	      if (rchild->grp_write && !lacc->grp_write)
+	      if (!lacc->grp_write)
 		{
 		  ret = true;
 		  subtree_mark_written_and_enqueue (lacc);
