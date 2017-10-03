@@ -1,3 +1,9 @@
+2017-10-03  Martin Jambor  <mjambor@suse.cz>
+
+	PR tree-optimization/82363
+	* tree-sra.c (propagate_subaccesses_across_link): In unrecoverable
+	mismatch, mark lacc written regardless of racc.
+
 2017-10-03  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82381
