@@ -397,11 +397,11 @@ clock_gettime_link=
 # we're using this for test timing only.
 if test "$ac_cv_func_clock_gettime" = no; then
   AC_CHECK_LIB(rt, clock_gettime,
-    [clock_gettime_link=-lrt
+    [CLOCK_GETTIME_LINK=-lrt
      AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
 	       [Define to 1 if you have the `clock_gettime' function.])])
 fi
-AC_SUBST(clock_gettime_link)
+AC_SUBST(CLOCK_GETTIME_LINK)
 
 dnl Test whether the compiler supports the -pthread option.
 AC_CACHE_CHECK([whether -pthread is supported],

@@ -614,7 +614,7 @@ HAVE_ZLIB_TRUE
 HAVE_PTHREAD_FALSE
 HAVE_PTHREAD_TRUE
 PTHREAD_CFLAGS
-clock_gettime_link
+CLOCK_GETTIME_LINK
 BACKTRACE_USES_MALLOC
 ALLOC_FILE
 VIEW_FILE
@@ -12803,7 +12803,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
 $as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
 if test "x$ac_cv_lib_rt_clock_gettime" = x""yes; then :
-  clock_gettime_link=-lrt
+  CLOCK_GETTIME_LINK=-lrt
 
 $as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
 
