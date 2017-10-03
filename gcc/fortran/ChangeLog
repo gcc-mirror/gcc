@@ -1,3 +1,8 @@
+2017-10-03  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* io.c (match_wait_element): Correctly match END and EOR tags.
+	* dump-parse-tree.c (show_code_node): Handle EXEC_WAIT.
+
 2017-10-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/82312
