@@ -514,36 +514,37 @@ sort_by_operand_rank (const void *pa, const void *pb)
       && TREE_CODE (oea->op) == SSA_NAME
       && TREE_CODE (oeb->op) == SSA_NAME)
     {
-      /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
-	 versions of removed SSA_NAMEs, so if possible, prefer to sort
-	 based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
-	 See PR60418.  */
-      if (!SSA_NAME_IS_DEFAULT_DEF (oea->op)
-	  && !SSA_NAME_IS_DEFAULT_DEF (oeb->op)
-	  && !oea->stmt_to_insert
-	  && !oeb->stmt_to_insert
-	  && SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
+      if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
 	{
+	  /* As SSA_NAME_VERSION is assigned pretty randomly, because we reuse
+	     versions of removed SSA_NAMEs, so if possible, prefer to sort
+	     based on basic block and gimple_uid of the SSA_NAME_DEF_STMT.
+	     See PR60418.  */
 	  gimple *stmta = SSA_NAME_DEF_STMT (oea->op);
 	  gimple *stmtb = SSA_NAME_DEF_STMT (oeb->op);
 	  basic_block bba = gimple_bb (stmta);
 	  basic_block bbb = gimple_bb (stmtb);
 	  if (bbb != bba)
 	    {
+	      /* One of the SSA_NAMEs can be defined in oeN->stmt_to_insert
+		 but the other might not.  */
+	      if (!bba)
+		return 1;
+	      if (!bbb)
+		return -1;
+	      /* If neither is, compare bb_rank.  */
 	      if (bb_rank[bbb->index] != bb_rank[bba->index])
 		return bb_rank[bbb->index] - bb_rank[bba->index];
 	    }
-	  else
-	    {
-	      bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
-	      bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
-	      if (da != db)
-		return da ? 1 : -1;
-	    }
-	}
 
-      if (SSA_NAME_VERSION (oeb->op) != SSA_NAME_VERSION (oea->op))
-	return SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op) ? 1 : -1;
+	  bool da = reassoc_stmt_dominates_stmt_p (stmta, stmtb);
+	  bool db = reassoc_stmt_dominates_stmt_p (stmtb, stmta);
+	  if (da != db)
+	    return da ? 1 : -1;
+
+	  return (SSA_NAME_VERSION (oeb->op) > SSA_NAME_VERSION (oea->op)
+		  ? 1 : -1);
+	}
       else
 	return oeb->id > oea->id ? 1 : -1;
     }

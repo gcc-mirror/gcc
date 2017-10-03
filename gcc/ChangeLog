@@ -1,5 +1,11 @@
 2017-10-03  Jakub Jelinek  <jakub@redhat.com>
 
+	PR tree-optimization/82381
+	* tree-ssa-reassoc.c (sort_by_operand_rank): Don't check
+	stmt_to_insert nor wheather SSA_NAMEs are default defs.
+	Return 1 or -1 if one of bba and bbb is NULL. If bb_rank is equal,
+	fallthrough into reassoc_stmt_dominates_stmt_p.
+
 	PR target/82386
 	* combine.c (combine_instructions): Don't combine in unreachable
 	basic blocks.
