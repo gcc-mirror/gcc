@@ -1,3 +1,8 @@
+2017-10-03  Jeff Law  <law@redhat.com>
+
+	PR target/82358
+	* gcc.target/i386/stack-check-11.c: Use -mtune=generic.
+
 2017-10-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/82363
