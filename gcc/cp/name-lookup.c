@@ -2248,12 +2248,6 @@ supplement_binding_1 (cxx_binding *binding, tree decl)
       region to refer only to the namespace to which it already
       refers.  */
     ok = false;
-  else if (maybe_remove_implicit_alias (bval))
-    {
-      /* There was a mangling compatibility alias using this mangled name,
-	 but now we have a real decl that wants to use it instead.  */
-      binding->value = decl;
-    }
   else
     {
       if (!error_operand_p (bval))
@@ -4853,6 +4847,8 @@ set_global_binding (tree name, tree val)
   tree old = MAYBE_STAT_DECL (*slot);
 
   if (!old)
+    *slot = val;
+  else if (!val)
     *slot = val;
   else if (old == val)
     ;

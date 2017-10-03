@@ -4333,6 +4333,45 @@ generate_mangling_aliases ()
   defer_mangling_aliases = false;
 }
 
+/* If DECL is an implicit mangling alias, return its symtab node; otherwise
+   return NULL.  */
+
+static symtab_node *
+decl_implicit_alias_p (tree decl)
+{
+  if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
+      && DECL_IGNORED_P (decl)
+      && (TREE_CODE (decl) == FUNCTION_DECL
+	  || (VAR_P (decl) && TREE_STATIC (decl))))
+    {
+      symtab_node *n = symtab_node::get (decl);
+      if (n && n->cpp_implicit_alias)
+	return n;
+    }
+  return NULL;
+}
+
+bool
+record_mangling (tree id, tree decl, bool need_warning)
+{
+  /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
+     errors from multiple definitions.  */
+  tree d = IDENTIFIER_GLOBAL_VALUE (id);
+
+  if (d)
+    if (symtab_node *n = decl_implicit_alias_p (d))
+      {
+	n->remove();
+	SET_IDENTIFIER_GLOBAL_VALUE (id, NULL_TREE);
+	d = NULL_TREE;
+      }
+
+  if (!d || need_warning)
+    SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
+
+  return d;
+}
+
 /* The entire file is now complete.  If requested, dump everything
    to a file.  */
 

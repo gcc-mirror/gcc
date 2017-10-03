@@ -6138,6 +6138,7 @@ extern tree finish_case_label			(location_t, tree, tree);
 extern tree cxx_maybe_build_cleanup		(tree, tsubst_flags_t);
 
 /* in decl2.c */
+extern bool record_mangling			(tree, tree, bool);
 extern void note_mangling_alias			(tree, tree);
 extern void generate_mangling_aliases		(void);
 extern tree build_memfn_type			(tree, tree, cp_cv_quals, cp_ref_qualifier);
@@ -7148,7 +7149,6 @@ extern tree add_exception_specifier		(tree, tree, int);
 extern tree merge_exception_specifiers		(tree, tree);
 
 /* in mangle.c */
-extern bool maybe_remove_implicit_alias		(tree);
 extern void init_mangle				(void);
 extern void mangle_decl				(tree);
 extern const char *mangle_type_string		(tree);

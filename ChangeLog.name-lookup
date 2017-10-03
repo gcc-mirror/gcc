@@ -1,3 +1,17 @@
+2017-10-03  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (record_mangling): Declare.
+	(maybe_remove_implicit_alias): Delete.
+	* mangle.c (maybe_remove_implicit_alias): Delete.
+	(mangle_decl): Use record_mangling.
+	(decl_implicit_alias_p): Move to ...
+	* decl2.c (decl_implicit_alias_p): ... here.
+	(record_mangling): New.
+	* name-lookup.c (supplement_binding_1): Delete implicit_alias
+	handling.
+	(set_global_binding): Allow zapping a slot, for now.
+
 2017-09-13  Nathan Sidwell  <nathan@acm.org>
 
 	Merge trunk r252087.
