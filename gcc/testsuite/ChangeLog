@@ -1,3 +1,8 @@
+2017-10-03  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/70343
+	* g++.dg/cpp0x/lambda/lambda-70343.C: New.
+
 2017-10-03  Jeff Law  <law@redhat.com>
 
 	PR target/82358
