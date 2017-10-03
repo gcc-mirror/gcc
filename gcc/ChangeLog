@@ -1,3 +1,9 @@
+2017-10-03  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	PR rtl-optimization/77729
+	* simplify-rtx.c (simplify_binary_operation_1): Delete the (X&C1)|C2
+	to (X&(C1&~C2))|C2 transformations.
+
 2017-10-03  Martin Jambor  <mjambor@suse.cz>
 
 	PR tree-optimization/82363
