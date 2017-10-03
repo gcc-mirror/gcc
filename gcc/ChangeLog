@@ -1,3 +1,45 @@
+2017-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
+
+	* config/rs6000/rs6000-builtin.def (BU_FLOAT128_2_HW): Define new
+	helper macro for IEEE float128 hardware built-in functions.
+	(SQRTF128_ODD): Add built-in functions with the round-to-odd
+	semantics.
+	(TRUNCF128_ODD): Likewise.
+	(ADDF128_ODD): Likewise.
+	(SUBF128_ODD): Likewise.
+	(MULF128_ODD): Likewise.
+	(DIVF128_ODD): Likewise.
+	(FMAF128_ODD): Likewise.
+	* config/rs6000/rs6000.md (UNSPEC_ROUND_TO_ODD): Rename to
+	UNSPEC_TRUNC_ROUND_TO_ODD.
+	(UNSPEC_TRUNC_ROUND_TO_ODD): Likewise.
+	(UNSPEC_ADD_ROUND_TO_ODD): New unspec codes for the IEEE 128-bit
+	floating point round to odd instructions.
+	(UNSPEC_SUB_ROUND_TO_ODD): Likewise.
+	(UNSPEC_MUL_ROUND_TO_ODD): Likewise.
+	(UNSPEC_DIV_ROUND_TO_ODD): Likewise.
+	(UNSPEC_FMA_ROUND_TO_ODD): Likewise.
+	(UNSPEC_SQRT_ROUND_TO_ODD): Likewise.
+	(trunc<mode>sf2_hw): Change the truncate with round to odd
+	expansion to use UNSPEC_TRUNC_ROUND_TO_ODD.
+	(add<mode>3_odd): Add insns for IEEE 128-bit floating point round
+	to odd hardware instructions.
+	(sub<mode>3_odd): Likewise.
+	(mul<mode>3_odd): Likewise.
+	(div<mode>3_odd): Likewise.
+	(sqrt<mode>2_odd): Likewise.
+	(fma<mode>4_odd): Likewise.
+	(fms<mode>4_odd): Likewise.
+	(nfma<mode>4_odd): Likewise.
+	(nfms<mode>4_odd): Likewise.
+	(trunc<mode>df2_odd): Change the truncate with round to odd
+	expansion to use UNSPEC_TRUNC_ROUND_TO_ODD.  Add a generator
+	function.
+	* doc/extend.texi (PowerPC built-in functions): Update documentation
+	for existing IEEE float128-bit built-in functions.  Add built-in
+	functions that generate the IEEE 128-bit floating point round to
+	odd instructions.
+
 2017-10-03  Segher Boessenkool  <segher@kernel.crashing.org>
 
 	PR rtl-optimization/77729
