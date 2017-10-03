@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fstack-clash-protection" } */
+/* { dg-options "-O2 -fstack-clash-protection -mtune=generic" } */
 /* { dg-require-effective-target supports_stack_clash_protection } */
 
 #include <stdint.h>
