@@ -70,7 +70,7 @@ brig_branch_inst_handler::operator () (const BrigBase *base)
 	  const BrigOperandOffset32_t *operand_ptr
 	    = (const BrigOperandOffset32_t *) data->bytes;
 
-	  vec<tree, va_gc> *args = i == 0 ? out_args : in_args;
+	  vec<tree, va_gc> *&args = i == 0 ? out_args : in_args;
 
 	  while (bytes > 0)
 	    {

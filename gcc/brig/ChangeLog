@@ -1,3 +1,9 @@
+2017-10-03  Henry Linjamäki  <henry.linjamaki@parmance.com>
+
+	* brigfrontend/brig-branch-inst-handler.cc: Fix (more) crash with
+	calls with more than 4 args.  It missed a reference which is required
+	because vector expansion can move the object to another location.
+
 2017-09-29  Henry Linjamäki  <henry.linjamaki@parmance.com>
 
 	* brigfrontend/brig-branch-inst-handler.cc: Fix crash with
