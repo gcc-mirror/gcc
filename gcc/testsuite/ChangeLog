@@ -1,3 +1,11 @@
+2017-10-04  Thomas Schwinge  <thomas@codesourcery.com>
+
+	PR tree-optimization/82374
+	* c-c++-common/goacc/kernels-double-reduction-n.c: Adjust for
+	attributes propagation changes for OMP outlined regions.
+	* c-c++-common/goacc/kernels-double-reduction.c: Likewise.
+	* c-c++-common/goacc/kernels-reduction.c: Likewise.
+
 2017-10-04  Richard Sandiford  <richard.sandiford@linaro.org>
 
 	PR tree-optimization/82413
