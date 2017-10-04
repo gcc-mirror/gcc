@@ -1,3 +1,17 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	Move mangling aliases out of global namespace.
+	* cp-tree.h (record_mangling): New.
+	(maybe_remove_implicit_alias): Delete.
+	* decl2.c (mangled_decls): New hash map.
+	(generate_mangling_alias): Reimplement using mangled_decls.
+	(record_mangling): New.
+	* mangle.c (decl_implicit_alias_p,
+	maybe_remove_implicit_alias): Delete.
+	(mangle_decl): Use record_mangling.
+	* name-lookup.c (supplement_binding_1): Remove
+	maybe_remove_implicit_alias check.
+
 2017-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/82373
