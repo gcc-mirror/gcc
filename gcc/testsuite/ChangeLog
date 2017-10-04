@@ -1,3 +1,24 @@
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* lib/target-supports.exp (check_effective_target_vect_float):
+	Return 1 being on a S/390 with VXE.
+	* gcc.dg/vect/pr31699.c: Require vec_float.
+	* gcc.dg/vect/pr61194.c: Likewise.
+	* gcc.dg/vect/pr65947-10.c: Likewise.
+	* gcc.dg/vect/pr66142.c: Likewise.
+	* gcc.dg/vect/slp-10.c: Likewise.
+	* gcc.dg/vect/slp-11c.c: Likewise.
+	* gcc.dg/vect/slp-12b.c: Likewise.
+	* gcc.dg/vect/slp-18.c: Likewise.
+	* gcc.dg/vect/slp-33.c: Likewise.
+	* gcc.dg/vect/slp-cond-2-big-array.c: Likewise.
+	* gcc.dg/vect/slp-cond-2.c: Likewise.
+	* gcc.dg/vect/vect-cond-10.c: Likewise.
+	* gcc.dg/vect/vect-cond-8.c: Likewise.
+	* gcc.dg/vect/vect-cond-9.c: Likewise.
+	* gcc.dg/vect/vect-float-extend-1.c: Likewise.
+	* gcc.dg/vect/vect-float-truncate-1.c: Likewise.
+
 2017-10-04  Thomas Schwinge  <thomas@codesourcery.com>
 
 	PR tree-optimization/82374
