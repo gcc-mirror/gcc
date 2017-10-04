@@ -1,3 +1,8 @@
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
+	* config/s390/vx-builtins.md ("vec_mergeh<mode>")
+	("vec_mergel<mode>"): Change mode iterator to V_128_NOSINGLE.
+
 2017-10-04  Wilco Dijkstra  <wdijkstr@arm.com>
 
 	Revert r253399:
