@@ -1,3 +1,8 @@
+2017-10-04  Paolo Carlini  <paolo.carlini@oracle.com>
+
+	PR c++/78816
+	* g++.dg/cpp1y/lambda-generic-variadic6.C: New.
+
 2017-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR tree-optimization/82374
