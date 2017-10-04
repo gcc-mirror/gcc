@@ -165,3 +165,8 @@ LIBGCCJIT_ABI_9 {
   global:
     gcc_jit_function_get_address;
 } LIBGCCJIT_ABI_8;
+
+LIBGCCJIT_ABI_10 {
+  global:
+    gcc_jit_context_new_rvalue_from_vector;
+} LIBGCCJIT_ABI_9;

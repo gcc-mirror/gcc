@@ -187,6 +187,8 @@ namespace gccjit
     rvalue new_rvalue (type pointer_type,
 		       void *value) const;
     rvalue new_rvalue (const std::string &value) const;
+    rvalue new_rvalue (type vector_type,
+		       std::vector<rvalue> elements) const;
 
     /* Generic unary operations...  */
     rvalue new_unary_op (enum gcc_jit_unary_op op,
@@ -894,6 +896,26 @@ context::new_rvalue (const std::string &value) const
 {
   return rvalue (
     gcc_jit_context_new_string_literal (m_inner_ctxt, value.c_str ()));
+}
+
+inline rvalue
+context::new_rvalue (type vector_type,
+		     std::vector<rvalue> elements) const
+{
+  /* Treat std::vector as an array, relying on it not being resized: */
+  rvalue *as_array_of_wrappers = &elements[0];
+
+  /* Treat the array as being of the underlying pointers, relying on
+     the wrapper type being such a pointer internally.	*/
+  gcc_jit_rvalue **as_array_of_ptrs =
+    reinterpret_cast<gcc_jit_rvalue **> (as_array_of_wrappers);
+
+  return rvalue (
+    gcc_jit_context_new_rvalue_from_vector (m_inner_ctxt,
+					    NULL,
+					    vector_type.get_inner_type (),
+					    elements.size (),
+					    as_array_of_ptrs));
 }
 
 inline rvalue

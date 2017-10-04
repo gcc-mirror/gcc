@@ -114,6 +114,11 @@ public:
   new_string_literal (const char *value);
 
   rvalue *
+  new_rvalue_from_vector (location *loc,
+			  type *type,
+			  const auto_vec<rvalue *> &elements);
+
+  rvalue *
   new_unary_op (location *loc,
 		enum gcc_jit_unary_op op,
 		type *result_type,

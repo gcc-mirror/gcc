@@ -177,6 +177,9 @@ Vector types
 
       #ifdef LIBGCCJIT_HAVE_gcc_jit_type_get_vector
 
+   Vector rvalues can be generated using
+   :func:`gcc_jit_context_new_rvalue_from_vector`.
+
 
 Structures and unions
 ---------------------
