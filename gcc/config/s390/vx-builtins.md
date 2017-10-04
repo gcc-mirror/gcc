@@ -211,9 +211,9 @@
 ; (vec_select op0) (vec_select op1)
 ; vmrhb, vmrhh, vmrhf, vmrhg
 (define_insn "vec_mergeh<mode>"
-  [(set (match_operand:VEC_HW                 0 "register_operand" "=v")
-	(unspec:VEC_HW [(match_operand:VEC_HW 1 "register_operand"  "v")
-			(match_operand:VEC_HW 2 "register_operand"  "v")]
+  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
+	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
+			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
 		       UNSPEC_VEC_MERGEH))]
   "TARGET_VX"
   "vmrh<bhfgq>\t%v0,%1,%2"
@@ -221,9 +221,9 @@
 
 ; vmrlb, vmrlh, vmrlf, vmrlg
 (define_insn "vec_mergel<mode>"
-  [(set (match_operand:VEC_HW                 0 "register_operand" "=v")
-	(unspec:VEC_HW [(match_operand:VEC_HW 1 "register_operand"  "v")
-			(match_operand:VEC_HW 2 "register_operand"  "v")]
+  [(set (match_operand:V_128_NOSINGLE                         0 "register_operand" "=v")
+	(unspec:V_128_NOSINGLE [(match_operand:V_128_NOSINGLE 1 "register_operand"  "v")
+			(match_operand:V_128_NOSINGLE         2 "register_operand"  "v")]
 		     UNSPEC_VEC_MERGEL))]
   "TARGET_VX"
   "vmrl<bhfgq>\t%v0,%1,%2"
