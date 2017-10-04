@@ -12896,15 +12896,17 @@ tsubst_decl (tree t, tree args, tsubst_flags_t complain)
 		&& VAR_HAD_UNKNOWN_BOUND (t)
 		&& type != error_mark_node)
 	      type = strip_array_domain (type);
-	    tree auto_node = type_uses_auto (type);
-	    int len = TREE_VEC_LENGTH (args);
-	    if (auto_node)
-	      /* Mask off any template args past the variable's context so we
-		 don't replace the auto with an unrelated argument.  */
-	      TREE_VEC_LENGTH (args) = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
-	    type = tsubst (type, args, complain, in_decl);
-	    if (auto_node)
-	      TREE_VEC_LENGTH (args) = len;
+	    tree sub_args = args;
+	    if (tree auto_node = type_uses_auto (type))
+	      {
+		/* Mask off any template args past the variable's context so we
+		   don't replace the auto with an unrelated argument.  */
+		int nouter = TEMPLATE_TYPE_LEVEL (auto_node) - 1;
+		int extra = TMPL_ARGS_DEPTH (args) - nouter;
+		if (extra > 0)
+		  sub_args = strip_innermost_template_args (args, extra);
+	      }
+	    type = tsubst (type, sub_args, complain, in_decl);
 	  }
 	if (VAR_P (r))
 	  {
