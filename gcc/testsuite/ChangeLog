@@ -1,3 +1,16 @@
+2017-10-04  Richard Biener  <rguenther@suse.de>
+
+	* gfortran.dg/graphite/id-17.f: For ilp32 allow graphite codegen
+	errors and scan for one.
+	* gfortran.dg/graphite/id-19.f: Likewise.
+	* gfortran.dg/graphite/pr29832.f90: Likewise.
+	* gfortran.dg/graphite/pr42326-1.f90: Likewise.
+	* gfortran.dg/graphite/pr42326.f90: Likewise.
+	* gfortran.dg/graphite/pr68550-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-2.f90: Likewise.
+	* gfortran.dg/graphite/run-id-3.f90: Likewise.
+	* gfortran.dg/graphite/pr42393-1.f90: Dump graphite.
+
 2017-10-03  Michael Meissner  <meissner@linux.vnet.ibm.com>
 
 	* gcc.target/powerpc/float128-odd.c: New test.

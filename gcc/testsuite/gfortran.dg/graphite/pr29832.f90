@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-O2 -ftree-loop-linear" }
+! { dg-additional-options "-fdump-tree-graphite-details --param graphite-allow-codegen-errors=1" { target ilp32 } }
 
 ! Program to test the scalarizer
 program testarray
@@ -24,3 +25,4 @@ program testarray
    end do
 end program
 
+! { dg-final { scan-tree-dump-times "code generation error" 1 " graphite" { target ilp32 } } }
