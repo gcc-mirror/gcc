@@ -7178,8 +7178,9 @@ convert_arg_to_ellipsis (tree arg, tsubst_flags_t complain)
 	 with no corresponding parameter is conditionally-supported, with
 	 implementation-defined semantics.
 
-	 We support it as pass-by-invisible-reference, just like a normal
-	 value parameter.
+	 We support it as pass-by-invisible-reference to the caller's
+	 object.  That's different to named by-value parameters, which
+	 construct a copy and pass a reference to that.
 
 	 If the call appears in the context of a sizeof expression,
 	 it is not potentially-evaluated.  */
