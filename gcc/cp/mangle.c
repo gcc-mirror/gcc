@@ -3839,15 +3839,10 @@ mangle_decl (const tree decl)
 
       if (!DECL_REALLY_EXTERN (decl))
 	{
-	  bool diag = record_mangling (id, decl, G.need_abi_warning);
+	  record_mangling (decl, G.need_abi_warning);
 
 	  if (!G.need_abi_warning)
 	    return;
-
-	  if (diag)
-	    inform (DECL_SOURCE_LOCATION (decl),
-		    "a later -fabi-version= (or =0)"
-		    " avoids this error with a change in mangling");
 
 	  flag_abi_version = flag_abi_compat_version;
 	  id2 = mangle_decl_string (decl);

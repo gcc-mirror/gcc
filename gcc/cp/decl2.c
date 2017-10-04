@@ -102,6 +102,10 @@ static GTY(()) vec<tree, va_gc> *no_linkage_decls;
    is to be an alias for the former if the former is defined.  */
 static GTY(()) vec<tree, va_gc> *mangling_aliases;
 
+/* A hash table of mangled names to decls.  Used to figure out if we
+   need compatibility aliases.  */
+static GTY(()) hash_map<lang_identifier *, tree> *mangled_decls;
+
 /* Nonzero if we're done parsing and into end-of-file activities.  */
 
 int at_eof;
@@ -4276,25 +4280,34 @@ handle_tls_init (void)
 static void
 generate_mangling_alias (tree decl, tree id2)
 {
+  struct cgraph_node *n = NULL;
+
+  if (TREE_CODE (decl) == FUNCTION_DECL)
+    {
+      n = cgraph_node::get (decl);
+      if (!n)
+	/* Don't create an alias to an unreferenced function.  */
+	return;
+    }
+
+  bool existed;
+  tree *slot = &mangled_decls->get_or_insert (id2, &existed);
+
   /* If there's a declaration already using this mangled name,
      don't create a compatibility alias that conflicts.  */
-  if (IDENTIFIER_GLOBAL_VALUE (id2))
-    return;
-
-  struct cgraph_node *n = NULL;
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && !(n = cgraph_node::get (decl)))
-    /* Don't create an alias to an unreferenced function.  */
+  if (existed)
     return;
 
   tree alias = make_alias_for (decl, id2);
-  SET_IDENTIFIER_GLOBAL_VALUE (id2, alias);
+  *slot = alias;
+
   DECL_IGNORED_P (alias) = 1;
   TREE_PUBLIC (alias) = TREE_PUBLIC (decl);
   DECL_VISIBILITY (alias) = DECL_VISIBILITY (decl);
   if (vague_linkage_p (decl))
     DECL_WEAK (alias) = 1;
-  if (TREE_CODE (decl) == FUNCTION_DECL)
+
+  if (n)
     n->create_same_body_alias (alias, decl);
   else
     varpool_node::create_extra_name_alias (alias, decl);
@@ -4333,43 +4346,48 @@ generate_mangling_aliases ()
   defer_mangling_aliases = false;
 }
 
-/* If DECL is an implicit mangling alias, return its symtab node; otherwise
-   return NULL.  */
+/* Record a mangling of DECL, whose DECL_ASSEMBLER_NAME has just been
+   set.  NEED_WARNING is true if we must warn about collisions.  We do
+   this to spot changes in mangling that may require compatibility
+   aliases.  */
 
-static symtab_node *
-decl_implicit_alias_p (tree decl)
+void
+record_mangling (tree decl, bool need_warning)
 {
-  if (DECL_P (decl) && DECL_ARTIFICIAL (decl)
-      && DECL_IGNORED_P (decl)
-      && (TREE_CODE (decl) == FUNCTION_DECL
-	  || (VAR_P (decl) && TREE_STATIC (decl))))
+  if (!mangled_decls)
+    mangled_decls = hash_map<lang_identifier *, tree>::create_ggc (499);
+
+  gcc_checking_assert (DECL_ASSEMBLER_NAME_SET_P (decl));
+  tree id = DECL_ASSEMBLER_NAME (decl);
+  bool existed;
+  tree *slot = &mangled_decls->get_or_insert (id, &existed);
+
+  /* If this is already an alias, remove the alias, because the real
+     decl takes presidence.  */
+  if (!existed)
+    ;
+  else if (DECL_ARTIFICIAL (*slot) && DECL_IGNORED_P (*slot))
+    if (symtab_node *n = symtab_node::get (*slot))
+      if (n->cpp_implicit_alias)
+	{
+	  n->remove ();
+	  existed = false;
+	}
+
+  if (!existed)
+    *slot = decl;
+  else if (need_warning)
     {
-      symtab_node *n = symtab_node::get (decl);
-      if (n && n->cpp_implicit_alias)
-	return n;
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"mangling of %q#D as %qE conflicts with a previous mangle",
+		decl, id);
+      inform (DECL_SOURCE_LOCATION (*slot),
+	      "previous mangling %q#D", *slot);
+      inform (DECL_SOURCE_LOCATION (decl),
+	      "a later -fabi-version= (or =0)"
+	      " avoids this error with a change in mangling");
+      *slot = decl;
     }
-  return NULL;
-}
-
-bool
-record_mangling (tree id, tree decl, bool need_warning)
-{
-  /* Check IDENTIFIER_GLOBAL_VALUE before setting to avoid redundant
-     errors from multiple definitions.  */
-  tree d = IDENTIFIER_GLOBAL_VALUE (id);
-
-  if (d)
-    if (symtab_node *n = decl_implicit_alias_p (d))
-      {
-	n->remove();
-	SET_IDENTIFIER_GLOBAL_VALUE (id, NULL_TREE);
-	d = NULL_TREE;
-      }
-
-  if (!d || need_warning)
-    SET_IDENTIFIER_GLOBAL_VALUE (id, decl);
-
-  return d;
 }
 
 /* The entire file is now complete.  If requested, dump everything

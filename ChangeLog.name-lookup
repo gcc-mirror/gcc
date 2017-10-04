@@ -1,3 +1,22 @@
+2017-10-04  Nathan Sidwell  <nathan@acm.org>
+
+	gcc/cp/
+	* cp-tree.h (record_mangling): Adjust arg types.
+	* decl2.c (mangled_decls): New hash_map.
+	(generate_mangling_alias): Use mangled_decls, not
+	IDENTFIFIER_GLOBAL_VALUE.
+	(decl_implicit_alias_p): Delete.
+	(record_mangling): Use mangled_decls, not
+	IDENTIFIER_GLOBAL_VALUE. Diagnose conflict here.
+	* mangle.c (mangle_decl): Adjust record_mangling call.  Don't
+	diagnose here.
+	* name-lookup.c (set_global_binding): Remove temporary hack.
+	gcc/testsuite/
+	* g++.dg/abi/mangle41.C: Adjust diags.
+	libcc1/
+	* libcp1plugin.cc (supplement_binding): Don't call
+	maybe_remove_implicit_alias.
+
 2017-10-03  Nathan Sidwell  <nathan@acm.org>
 
 	gcc/cp/

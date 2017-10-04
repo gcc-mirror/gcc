@@ -4848,8 +4848,6 @@ set_global_binding (tree name, tree val)
 
   if (!old)
     *slot = val;
-  else if (!val)
-    *slot = val;
   else if (old == val)
     ;
   else if (!STAT_HACK_P (*slot)
