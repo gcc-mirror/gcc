@@ -1,3 +1,8 @@
+2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/82374
+	* gcc.dg/gomp/pr82374.c: New test.
+
 2017-10-04  Richard Biener  <rguenther@suse.de>
 
 	* gfortran.dg/graphite/id-17.f: For ilp32 allow graphite codegen
