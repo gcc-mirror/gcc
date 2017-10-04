@@ -3277,6 +3277,28 @@ proc check_effective_target_vect_floatuint_cvt { } {
     return $et_vect_floatuint_cvt_saved($et_index)
 }
 
+# Return 1 if peeling for alignment might be profitable on the target
+#
+
+proc check_effective_target_vect_peeling_profitable { } {
+    global et_vect_peeling_profitable_saved
+    global et_index
+
+    if [info exists et_vect_peeling_profitable_saved($et_index)] {
+	verbose "check_effective_target_vect_peeling_profitable: using cached result" 2
+    } else {
+	set et_vect_peeling_profitable_saved($et_index) 1
+        if { ([istarget s390*-*-*]
+	      && [check_effective_target_s390_vx]) } {
+	    set et_vect_peeling_profitable_saved($et_index) 0
+        }
+    }
+
+    verbose "check_effective_target_vect_peeling_profitable:\
+	     returning $et_vect_peeling_profitable_saved($et_index)" 2
+    return $et_vect_peeling_profitable_saved($et_index)
+}
+
 # Return 1 if the target supports #pragma omp declare simd, 0 otherwise.
 #
 # This won't change for different subtargets so cache the result.

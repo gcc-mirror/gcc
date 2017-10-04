@@ -1,5 +1,12 @@
 2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
 
+	* g++.dg/vect/slp-pr56812.cc: xfail for targets which don't want
+	vector loop peeling.
+	* lib/target-supports.exp (check_effective_target_vect_peeling_profitable):
+	New proc.
+
+2017-10-04  Andreas Krebbel  <krebbel@linux.vnet.ibm.com>
+
 	* gcc.dg/vect/pr66251.c: Replace vect_floatint_cvt with
 	vect_doubleint_cvt and vect_intfloat_cvt with vect_intdouble_cvt.
 	* gcc.dg/vect/vect-floatint-conversion-2.c: Replace

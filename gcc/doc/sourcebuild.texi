@@ -1404,6 +1404,9 @@ Target supports a vector misalign access.
 @item vect_no_align
 Target does not support a vector alignment mechanism.
 
+@item vect_peeling_profitable
+Target might require to peel loops for alignment purposes.
+
 @item vect_no_int_min_max
 Target does not support a vector min and max instruction on @code{int}.
 
