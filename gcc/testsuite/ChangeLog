@@ -1,3 +1,8 @@
+2017-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/82373
+	* g++.dg/cpp1y/pr82373.C: New test.
+
 2017-10-04  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/diagnostic-range-bad-called-object.c: Update expected
