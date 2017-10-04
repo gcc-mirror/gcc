@@ -1,5 +1,11 @@
 2017-10-04  Jason Merrill  <jason@redhat.com>
 
+	PR c++/82406 - C++ error with noexcept function type
+	PR c++/70029 - ICE with ref-qualifier and -flto
+	* tree.c (cxx_copy_lang_qualifiers): New.
+	* cp-tree.h: Declare it.
+	* cp-objcp-common.h: Define LANG_HOOKS_COPY_LANG_QUALIFIERS.
+
 	PR c++/81525 - broken handling of auto in generic lambda.
 	* pt.c (tsubst_decl) [VAR_DECL]: Use strip_innermost_template_args.
 
