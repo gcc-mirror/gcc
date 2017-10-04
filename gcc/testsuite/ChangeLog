@@ -1,3 +1,8 @@
+2017-10-04  Richard Sandiford  <richard.sandiford@linaro.org>
+
+	PR tree-optimization/82413
+	* g++.dg/pr82413.C: New test.
+
 2017-10-04  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/77296

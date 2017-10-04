@@ -4851,7 +4851,7 @@ build_range_check (location_t loc, tree type, tree exp, int in_p,
     {
       int prec = TYPE_PRECISION (etype);
 
-      if (wi::mask (prec - 1, false, prec) == high)
+      if (wi::mask <widest_int> (prec - 1, false) == wi::to_widest (high))
 	{
 	  if (TYPE_UNSIGNED (etype))
 	    {
